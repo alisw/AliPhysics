@@ -1872,7 +1872,7 @@ void AliAnalysisTaskMuonResolution::FillMeanSigmaClusterVsX(const TH2* hIn, cons
       gMean->SetPoint(j-1, x, meanIn);
       gMean->SetPointError(j-1, xErr, meanInErr);
     }
-    if (gSigma) {
+    if (hOut && gSigma) {
       clusterRes = TMath::Sqrt(sigmaIn*sigmaOut);
       //clusterResErr = (clusterRes > 0.) ? 0.5 * TMath::Sqrt(sigmaInErr*sigmaInErr*sigmaOut*sigmaOut + sigmaIn*sigmaIn*sigmaOutErr*sigmaOutErr) / clusterRes : 0.;
       clusterResErr = TMath::Sqrt(sigmaInErr*sigmaOutErr);

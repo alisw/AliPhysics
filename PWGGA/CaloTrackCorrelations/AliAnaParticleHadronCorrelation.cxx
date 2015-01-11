@@ -326,8 +326,12 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
     fhDeltaPhiChargedMC[mcIndex]->Fill(ptTrig , deltaPhi);
-    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==2 )
-      fhDeltaPhiChargedMC[7]->Fill(ptTrig , deltaPhi);
+    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+    {
+      // check index in GetMCTagIndexHistogram
+      if     ( mcIndex == 2 ) fhDeltaPhiChargedMC[8]->Fill(ptTrig , deltaPhi); // pi0 decay
+      else if( mcIndex == 4 ) fhDeltaPhiChargedMC[9]->Fill(ptTrig , deltaPhi); // eta decay
+    }
   }
   
   if(fDecayTrigger && decayTag > 0)
@@ -471,28 +475,54 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     fhMCPtTrigPout       [histoIndex]->Fill(mcTrigPt, mcpout) ;
   }
 
-  if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+  if(lostDecayPair)
   {
-    fhMCEtaCharged     [7]->Fill(mcAssocPt, mcAssocEta);
-    fhMCPhiCharged     [7]->Fill(mcAssocPt, mcAssocPhi);
-    fhMCDeltaEtaCharged[7]->Fill(mcTrigPt , mcTrigEta-mcAssocEta);
-    fhMCDeltaPhiCharged[7]->Fill(mcTrigPt , mcdeltaPhi);
-    fhMCPtAssocDeltaPhi[7]->Fill(mcAssocPt, mcdeltaPhi);
-    
-    fhMCDeltaPhiDeltaEtaCharged[7]->Fill(mcdeltaPhi,mcTrigEta-mcAssocEta);
-    
-    //delta phi cut for correlation
-    if( (mcdeltaPhi > fDeltaPhiMinCut) && (mcdeltaPhi < fDeltaPhiMaxCut) )
+    // check index in GetMCTagIndexHistogram
+    if(histoIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
     {
-      fhMCDeltaPhiChargedPt[7]->Fill(mcAssocPt,mcdeltaPhi);
-      fhMCPtXECharged      [7]->Fill(mcTrigPt, mcxE);
-      fhMCPtHbpXECharged   [7]->Fill(mcTrigPt, mchbpXE);
-      fhMCPtZTCharged      [7]->Fill(mcTrigPt, mczT);
-      fhMCPtHbpZTCharged   [7]->Fill(mcTrigPt, mchbpZT);
-      fhMCPtTrigPout       [7]->Fill(mcTrigPt, mcpout) ;
-    }
+      // pi0 decay
+      fhMCEtaCharged     [8]->Fill(mcAssocPt, mcAssocEta);
+      fhMCPhiCharged     [8]->Fill(mcAssocPt, mcAssocPhi);
+      fhMCDeltaEtaCharged[8]->Fill(mcTrigPt , mcTrigEta-mcAssocEta);
+      fhMCDeltaPhiCharged[8]->Fill(mcTrigPt , mcdeltaPhi);
+      fhMCPtAssocDeltaPhi[8]->Fill(mcAssocPt, mcdeltaPhi);
+      
+      fhMCDeltaPhiDeltaEtaCharged[8]->Fill(mcdeltaPhi,mcTrigEta-mcAssocEta);
+      
+      //delta phi cut for correlation
+      if( (mcdeltaPhi > fDeltaPhiMinCut) && (mcdeltaPhi < fDeltaPhiMaxCut) )
+      {
+        fhMCDeltaPhiChargedPt[8]->Fill(mcAssocPt,mcdeltaPhi);
+        fhMCPtXECharged      [8]->Fill(mcTrigPt, mcxE);
+        fhMCPtHbpXECharged   [8]->Fill(mcTrigPt, mchbpXE);
+        fhMCPtZTCharged      [8]->Fill(mcTrigPt, mczT);
+        fhMCPtHbpZTCharged   [8]->Fill(mcTrigPt, mchbpZT);
+        fhMCPtTrigPout       [8]->Fill(mcTrigPt, mcpout) ;
+      }
+    } // pi0 decay lost pair
+    if(histoIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+    {
+      // eta decay
+      fhMCEtaCharged     [9]->Fill(mcAssocPt, mcAssocEta);
+      fhMCPhiCharged     [9]->Fill(mcAssocPt, mcAssocPhi);
+      fhMCDeltaEtaCharged[9]->Fill(mcTrigPt , mcTrigEta-mcAssocEta);
+      fhMCDeltaPhiCharged[9]->Fill(mcTrigPt , mcdeltaPhi);
+      fhMCPtAssocDeltaPhi[9]->Fill(mcAssocPt, mcdeltaPhi);
+      
+      fhMCDeltaPhiDeltaEtaCharged[9]->Fill(mcdeltaPhi,mcTrigEta-mcAssocEta);
+      
+      //delta phi cut for correlation
+      if( (mcdeltaPhi > fDeltaPhiMinCut) && (mcdeltaPhi < fDeltaPhiMaxCut) )
+      {
+        fhMCDeltaPhiChargedPt[9]->Fill(mcAssocPt,mcdeltaPhi);
+        fhMCPtXECharged      [9]->Fill(mcTrigPt, mcxE);
+        fhMCPtHbpXECharged   [9]->Fill(mcTrigPt, mchbpXE);
+        fhMCPtZTCharged      [9]->Fill(mcTrigPt, mczT);
+        fhMCPtHbpZTCharged   [9]->Fill(mcTrigPt, mchbpZT);
+        fhMCPtTrigPout       [9]->Fill(mcTrigPt, mcpout) ;
+      }
+    } // eta decay lost pair
   }
-  
   // Underlying event
   
   // Right
@@ -515,15 +545,31 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
     
     fhMCUePart[histoIndex]->Fill(mcTrigPt);
     
-    if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+    if(lostDecayPair)
     {
-      fhMCPtXEUeCharged[7]->Fill(mcTrigPt,mcUexE);
-      if(mcUexE > 0) fhMCPtHbpXEUeCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
-      
-      fhMCPtZTUeCharged[7]->Fill(mcTrigPt,mcUezT);
-      if(mcUezT > 0) fhMCPtHbpZTUeCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
-      
-      fhMCUePart[7]->Fill(mcTrigPt);
+      // check index in GetMCTagIndexHistogram
+      if(histoIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+      {
+        // pi0 decay
+        fhMCPtXEUeCharged[8]->Fill(mcTrigPt,mcUexE);
+        if(mcUexE > 0) fhMCPtHbpXEUeCharged[8]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
+        
+        fhMCPtZTUeCharged[8]->Fill(mcTrigPt,mcUezT);
+        if(mcUezT > 0) fhMCPtHbpZTUeCharged[8]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+        
+        fhMCUePart[8]->Fill(mcTrigPt);
+      }
+      else if(histoIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+      {
+        // eta decay
+        fhMCPtXEUeCharged[9]->Fill(mcTrigPt,mcUexE);
+        if(mcUexE > 0) fhMCPtHbpXEUeCharged[9]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
+        
+        fhMCPtZTUeCharged[9]->Fill(mcTrigPt,mcUezT);
+        if(mcUezT > 0) fhMCPtHbpZTUeCharged[9]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+        
+        fhMCUePart[9]->Fill(mcTrigPt);
+      }
     }
   }
 
@@ -546,13 +592,27 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(Float
       fhMCPtZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,mcUezT);
       if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[histoIndex]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
       
-      if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+      if(lostDecayPair)
       {
-        fhMCPtXEUeLeftCharged[7]->Fill(mcTrigPt,mcUexE);
-        if(mcUexE > 0) fhMCPtHbpXEUeLeftCharged[7]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
-        
-        fhMCPtZTUeLeftCharged[7]->Fill(mcTrigPt,mcUezT);
-        if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[7]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+        // check index in GetMCTagIndexHistogram
+        if(histoIndex == 2  && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+        {
+          // pi0 decay
+          fhMCPtXEUeLeftCharged[8]->Fill(mcTrigPt,mcUexE);
+          if(mcUexE > 0) fhMCPtHbpXEUeLeftCharged[8]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
+          
+          fhMCPtZTUeLeftCharged[8]->Fill(mcTrigPt,mcUezT);
+          if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[8]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+        }
+        else if(histoIndex == 4  && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+        {
+          // eta decay
+          fhMCPtXEUeLeftCharged[9]->Fill(mcTrigPt,mcUexE);
+          if(mcUexE > 0) fhMCPtHbpXEUeLeftCharged[9]->Fill(mcTrigPt,TMath::Log(1/mcUexE));
+          
+          fhMCPtZTUeLeftCharged[9]->Fill(mcTrigPt,mcUezT);
+          if(mcUezT > 0) fhMCPtHbpZTUeLeftCharged[9]->Fill(mcTrigPt,TMath::Log(1/mcUezT));
+        }
       }
     }
   }
@@ -601,8 +661,12 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(Flo
   {
     Int_t mcIndex = GetMCTagHistogramIndex(mcTag);
     fhXEChargedMC[mcIndex]->Fill(ptTrig , xE);
-    if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && mcIndex==2 )
-      fhXEChargedMC[7]->Fill(ptTrig , xE);
+    if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+    {
+      // check index in GetMCTagIndexHistogram
+      if      ( mcIndex == 2 ) fhXEChargedMC[8]->Fill(ptTrig , xE); // pi0 decay
+      else if ( mcIndex == 4 ) fhXEChargedMC[9]->Fill(ptTrig , xE); // eta decay
+    }
   }
   
   // Pile up studies
@@ -1249,7 +1313,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
   
-  TString nameMC[]     = {"Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron","Pi0DecayLostPair"};
+  TString nameMC[]     = {"Photon","Pi0","Pi0Decay","Eta","EtaDecay","OtherDecay","Electron","Hadron","Pi0DecayLostPair","EtaDecayLostPair"};
   TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
   
   // For vz dependent histograms, if option ON
@@ -2887,14 +2951,15 @@ Int_t AliAnaParticleHadronCorrelation::GetMCTagHistogramIndex(Int_t mcTag)
   // Index of MC histograms depending on MC origin
   
   if     ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||        
-           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) return 0;
-  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           return 1;    
-  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      return 2;
-  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  ||
-           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      return 3;
-  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    return 4;
-  else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))      return 5;
-  else                                                                                    return 6;
+           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation) ||
+           GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCISR)          ) return 0;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)          ) return 1;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay)     ) return 2;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)          ) return 3;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay)     ) return 4;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)       ) return 5; // other decays
+  else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)     ) return 6;
+  else                                                                                    return 7;
   
 }
 
@@ -2968,8 +3033,8 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMinLeadHadPt  = 1;
   fMaxLeadHadPt  = 100;
   
-  fMCGenTypeMin = 0;
-  fMCGenTypeMax = 6;
+  fMCGenTypeMin =  0;
+  fMCGenTypeMax = 10;
   
   fNDecayBits = 1;
   fDecayBits[0] = AliNeutralMesonSelection::kPi0;
@@ -3180,12 +3245,11 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // Not needed if already done at the particle identification level,
     // but for isolation studies, it is preferred not to remove so we do it here
     //
-    Int_t clID1  = particle->GetCaloLabel(0) ;
-    Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
-    AliDebug(1,Form("%s Trigger : id1 %d, id2 %d, min %f, max %f, det %d",
-                    GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,particle->GetDetectorTag()));
-    
-    if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
+
+    AliDebug(1,Form("%s Trigger : min %f, max %f, det %d",
+                    GetInputAODName().Data(),fM02MinCut,fM02MaxCut,particle->GetDetectorTag()));
+
+    if(fM02MaxCut > 0 && fM02MinCut > 0) //clID1 > 0 && clID2 < 0 &&
     {
 //      Int_t iclus = -1;
 //      TObjArray* clusters = 0x0;
@@ -3200,9 +3264,12 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 //      }
       
       Float_t m02 = particle->GetM02();
+
       if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
       
       fhPtTriggerSSCut->Fill(pt);
+      
+      AliDebug(1,"Pass the shower shape cut");
     }
     
     //
@@ -3212,7 +3279,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(OnlyIsolated())
     {
       if( !particle->IsIsolated() ) continue;
+
       fhPtTriggerIsoCut->Fill(pt);
+      
+      AliDebug(1,"Pass the isolation cut");
     }
     
     //
@@ -3221,7 +3291,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(IsFiducialCutOn())
     {
       Bool_t in = GetFiducialCut()->IsInFiducialCut(particle->Eta(),particle->Phi(),particle->GetDetectorTag()) ;
+      
       if(! in ) continue ;
+      
+      AliDebug(1,"Pass the fiducial cut");
     }
     
     fhPtTriggerFidCut->Fill(pt);
@@ -3275,8 +3348,12 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
     {
       fhPtTriggerMC[mcIndex]->Fill(pt);
-      if( lostDecayPair && mcIndex==2 )
-        fhPtTriggerMC[7]->Fill(pt);
+      if( lostDecayPair )
+      {
+        // check index in GetMCTagIndexHistogram
+        if     ( mcIndex == 2 ) fhPtTriggerMC[8]->Fill(pt); // pi0 decay
+        else if( mcIndex == 4 ) fhPtTriggerMC[9]->Fill(pt); // eta decay
+      }
     }
     
     if(fDecayTrigger)
@@ -3293,8 +3370,12 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
           if(IsDataMC() && mcIndex >=0 && mcIndex < fgkNmcTypes)
           {
             fhPtDecayTriggerMC[ibit][mcIndex]->Fill(pt);
-            if(lostDecayPair && mcIndex==2 )
-              fhPtDecayTriggerMC[ibit][7]->Fill(pt);
+            if( lostDecayPair )
+            {
+              // check index in GetMCTagIndexHistogram
+              if( mcIndex == 2 )  fhPtDecayTriggerMC[ibit][8]->Fill(pt); // pi0 decay
+              if( mcIndex == 4 )  fhPtDecayTriggerMC[ibit][9]->Fill(pt); // eta decay
+            }
           }
         }// check bit
       }// bit loop
@@ -4204,11 +4285,23 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   fhMCPhiTrigger[histoIndex]->Fill(ptprim,phiprim);
   fhMCEtaTrigger[histoIndex]->Fill(ptprim,etaprim);
   
-  if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+  if(lostDecayPair)
   {
-    fhMCPtTrigger [7]->Fill(ptprim);
-    fhMCPhiTrigger[7]->Fill(ptprim,phiprim);
-    fhMCEtaTrigger[7]->Fill(ptprim,etaprim);
+    // check index in GetMCTagIndexHistogram
+    if     (histoIndex == 2 && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+    {
+      // pi0 decay
+      fhMCPtTrigger [8]->Fill(ptprim);
+      fhMCPhiTrigger[8]->Fill(ptprim,phiprim);
+      fhMCEtaTrigger[8]->Fill(ptprim,etaprim);
+    }
+    else if(histoIndex == 4 && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+    {
+      // eta decay
+      fhMCPtTrigger [9]->Fill(ptprim);
+      fhMCPhiTrigger[9]->Fill(ptprim,phiprim);
+      fhMCEtaTrigger[9]->Fill(ptprim,etaprim);
+    }
   }
   
   if(!leadTrig && (fMakeAbsoluteLeading || fMakeNearSideLeading) )
@@ -4220,11 +4313,23 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     fhMCPhiTriggerNotLeading[histoIndex]->Fill(ptprim,phiprim);
     fhMCEtaTriggerNotLeading[histoIndex]->Fill(ptprim,etaprim);
     
-    if(histoIndex==2 && lostDecayPair && 7 >= fMCGenTypeMin && 7 <= fMCGenTypeMax )
+    if(lostDecayPair)
     {
-      fhMCPtTriggerNotLeading [7]->Fill(ptprim);
-      fhMCPhiTriggerNotLeading[7]->Fill(ptprim,phiprim);
-      fhMCEtaTriggerNotLeading[7]->Fill(ptprim,etaprim);
+      // check index in GetMCTagIndexHistogram
+      if      (histoIndex == 2  && 8 >= fMCGenTypeMin && 8 <= fMCGenTypeMax )
+      {
+        // pi0 decay
+        fhMCPtTriggerNotLeading [8]->Fill(ptprim);
+        fhMCPhiTriggerNotLeading[8]->Fill(ptprim,phiprim);
+        fhMCEtaTriggerNotLeading[8]->Fill(ptprim,etaprim);
+      }
+      else  if(histoIndex == 4  && 9 >= fMCGenTypeMin && 9 <= fMCGenTypeMax )
+      {
+        // eta decay
+        fhMCPtTriggerNotLeading [9]->Fill(ptprim);
+        fhMCPhiTriggerNotLeading[9]->Fill(ptprim,phiprim);
+        fhMCEtaTriggerNotLeading[9]->Fill(ptprim,etaprim);
+      }
     }
   }
 }

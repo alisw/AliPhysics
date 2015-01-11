@@ -91,12 +91,12 @@ void drawBalanceFunctionPsiSummary(const char* lhcPeriod = "LHC11h",
   gStyle->SetPalette(1,0);
 
   //Load the PWG2ebye library
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
 
   // pt bins
   // this could also be retrieved directly from AliBalancePsi

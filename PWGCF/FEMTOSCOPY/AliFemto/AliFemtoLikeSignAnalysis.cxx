@@ -18,10 +18,10 @@ ClassImp(AliFemtoLikeSignAnalysis)
 //  it is called from AliFemtoSimpleAnalysis::ProcessEvent()
 
 
-extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
-				     AliFemtoEvent*               hbtEvent,
-				     AliFemtoParticleCollection*  partCollection);
-
+void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
+			       AliFemtoEvent*               hbtEvent,
+			       AliFemtoParticleCollection*  partCollection,
+			       bool performSharedDaughterCut=kFALSE);
  
 //____________________________
 AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min, double max) : 

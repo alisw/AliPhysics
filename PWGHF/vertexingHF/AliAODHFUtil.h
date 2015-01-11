@@ -20,7 +20,6 @@ class AliAODHFUtil : public TNamed {
  AliAODHFUtil();
  AliAODHFUtil(const char *pName);
  AliAODHFUtil(const AliAODHFUtil& pCopy);
- AliAODHFUtil& operator=(const AliAODHFUtil& pAssign);
  virtual ~AliAODHFUtil();
 
  //VZERO
@@ -28,6 +27,9 @@ class AliAODHFUtil : public TNamed {
  Float_t GetVZEROChannel(Int_t pCh) const;
 
  private:
+
+ AliAODHFUtil& operator=(const AliAODHFUtil& pAssign);
+
  Float_t fVZERO[64]; // VZERO signals
 
  ClassDef(AliAODHFUtil,1) // class to keep event info need in HF analysis

@@ -44,10 +44,12 @@ class AliHFENonPhotonicElectron : public TNamed {
     kElectronfrompi0both = 3,
     kElectronfrometa = 4,
     kElectronfrometaboth = 5,
-    kElectronfromC = 6,
-    kElectronfromB = 7,
-    kElectronfromother = 8,
-    kNoElectron = 9
+    kElectronfromomega = 6,
+    kElectronfromomegaboth = 7,
+    kElectronfromC = 8,
+    kElectronfromB = 9,
+    kElectronfromother = 10,
+    kNoElectron = 11
   } Source_t;
 
   typedef enum{
@@ -74,15 +76,21 @@ class AliHFENonPhotonicElectron : public TNamed {
   void  SetMaxOpening3D		(Double_t MaxOpening3D)		{ fMaxOpening3D		= MaxOpening3D; };
 //  void  SetMaxOpeningTheta	(Double_t MaxOpeningTheta)	{ fMaxOpeningTheta	= MaxOpeningTheta; };
 //  void  SetMaxOpeningPhi	(Double_t MaxOpeningPhi)	{ fMaxOpeningPhi	= MaxOpeningPhi; };
+  void  SetStudyRadius		(Bool_t studyRadius)	 	{ fStudyRadius		= studyRadius; };
   void  SetAlgorithmMA		(Bool_t algorithmMA)	 	{ fAlgorithmMA		= algorithmMA; };
   void  SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
   void  SetITSMeanShift         (Double_t meanshift)            { fITSmeanShift = meanshift; }
   void  SetITSnSigmaHigh        (Double_t nSigmaHigh)           { fITSnSigmaHigh = nSigmaHigh; }
   void  SetITSnSigmaLow         (Double_t nSigmaLow)            { fITSnSigmaLow = nSigmaLow; }
-  void  SetminPt             (Double_t minpt)                { fminPt = minpt; }
+  void  SetminPt             (Double_t minpt)                   { fminPt = minpt; }
+  void  SetEtaDalitzWeightFactor(Double_t etaDalitzWeightFactor){ fEtaDalitzWeightFactor = etaDalitzWeightFactor;}
 
-  void SelectCategory1Tracks(Bool_t doSelect = kTRUE) { fSelectCategory1tracks = doSelect; }
-  void SelectCategory2Tracks(Bool_t doSelect = kTRUE) { fSelectCategory2tracks = doSelect; }
+  void SelectCategory1Tracks(Bool_t doSelect = kTRUE)           { fSelectCategory1tracks = doSelect; }
+  void SelectCategory2Tracks(Bool_t doSelect = kTRUE)           { fSelectCategory2tracks = doSelect; }
+
+  void SetAnaPairGen(Bool_t setAna = kTRUE, Int_t nGen = 2)     { fAnaPairGen = setAna; fNumberofGenerations = nGen;};
+  void SetNPairGenerations(Int_t nGen)                          { fNumberofGenerations = nGen;};
+  void SetDisplayMCStack(Bool_t setDisplay = kTRUE)             { fDisplayMCStack = setDisplay;};
 
   TList      *GetListOutput()		const	{ return fListOutput; };
   THnSparseF *GetAssElectronHisto()	const	{ return fAssElectron; };
@@ -104,9 +112,13 @@ class AliHFENonPhotonicElectron : public TNamed {
   void SetPtBinning(Int_t nbins, const Double_t *const binning) { fPtBinning.Set(nbins+1, binning); }
   void SetEtaBinning(const TArrayD &binning) { fEtaBinning = binning; }
   void SetEtaBinning(Int_t nbins, const Double_t *const binning) { fEtaBinning.Set(nbins+1, binning); }
+  void SetInvMassBinning(const TArrayD &binning) { fInvMassBinning = binning; }
+  void SetInvMassBinning(Int_t nbins, const Double_t *const binning) { fInvMassBinning.Set(nbins+1, binning); }
 
 
  private:
+  void	   FillMotherArray(Int_t tr, int index, Int_t a[], int NumberofGenerations);
+  Int_t    FindGeneration(Int_t a[], Int_t b[], int NumberofGenerations); 
   Int_t    GetMotherPDG(Int_t tr, Int_t &motherIndex) const;
   Int_t    CheckPdg		(Int_t tr) const;
   Double_t Radius               (Int_t tr) const;
@@ -115,6 +127,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   Int_t    IsMotherC		(Int_t tr) const;
   Int_t    IsMotherB		(Int_t tr) const;
   Int_t    IsMotherEta		(Int_t tr) const;
+  Int_t    IsMotherOmega	(Int_t tr) const;
   Bool_t MakePairDCA(const AliVTrack *inclusive, const AliVTrack *associated, AliVEvent *vEvent, Bool_t isAOD, Double_t &invMass, Double_t &angle) const;
   Bool_t MakePairKF(const AliVTrack *inclusive, const AliVTrack *associated, AliKFVertex &primV, Double_t &invMass, Double_t &angle) const;
   Bool_t FilterCategory1Track(const AliVTrack * const track, Bool_t isAOD, Int_t binct);
@@ -130,6 +143,8 @@ class AliHFENonPhotonicElectron : public TNamed {
   const AliPIDResponse      *fkPIDRespons;                  // PID response
   TArrayD                   fPtBinning;                     // pt binning
   TArrayD                   fEtaBinning;                    // eta binning
+  TArrayD                   fInvMassBinning;                // Inv mass binning
+  Bool_t                    fStudyRadius;                   // Study radius
   Bool_t                    fAlgorithmMA;                   // algorithm MA
   Double_t                  fChi2OverNDFCut;                // Limit chi2
   Double_t                  fMaxDCA;                        // Limit dca
@@ -144,6 +159,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   Double_t                  fITSnSigmaHigh;                 // ITS n Sigma electron cut high (>0)
   Double_t                  fITSnSigmaLow;                  // ITS n Sigma electron cut low (<0)
   Double_t                  fminPt;                         // min pT cut for the associated leg
+  Double_t                  fEtaDalitzWeightFactor;         // Relative modification for the weighting factor for electrons from Eta Dalitz decays (default = 1);
   TArrayI                   *fArraytrack;                   //! list of associated tracks
   Int_t                     fCounterPoolBackground;         // number of associated electrons
   Int_t                     fnumberfound;                   // number of inclusive  electrons
@@ -162,10 +178,13 @@ class AliHFENonPhotonicElectron : public TNamed {
 //  THnSparseF              *fUSignAngle;                   //! angle, c, source
 //  THnSparseF              *fLSignAngle;                   //! angle, c, source
 
+  Bool_t                    fAnaPairGen;                     // switch on the analysis of the pair generation (switch for performance)
+  Int_t                     fNumberofGenerations;            // number of generations stored in pair container variable nGen
+  Bool_t                    fDisplayMCStack;                 // display MC stack for true likesign pairs (usually misidentification), for debugging
 
   AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron &ref); 
 
-  ClassDef(AliHFENonPhotonicElectron, 4); //!example of analysis
+  ClassDef(AliHFENonPhotonicElectron, 5); //!example of analysis
 };
 
 #endif

@@ -107,7 +107,7 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   //Objects Controlling Task Behaviour: has to be streamed! 
   Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
   Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change)
-    Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
+  Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
     
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
@@ -134,15 +134,18 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Int_t fTrueMultVZEROA;           //!
   Int_t fTrueMultVZEROC;           //!  
   Int_t fRunNumber;                //!
+
+	//Differential reference multiplicity 
+  Int_t  fRefMultDiffEta[20]; //!
     
-    //Event Characterization Variables - optional
-    Bool_t fEvSel_HasAtLeastSPDVertex;      //!
-    Bool_t fEvSel_VtxZCut;                  //!
-    Bool_t fEvSel_IsNotPileup;              //!
-    Bool_t fEvSel_IsNotPileupMV;            //!
-    Bool_t fEvSel_IsNotPileupInMultBins;    //!
-    Bool_t fEvSel_HasVtxContributor;        //!
-    Bool_t fEvSel_Triggered;                //!
+  //Event Characterization Variables - optional
+  Bool_t fEvSel_HasAtLeastSPDVertex;      //!
+  Bool_t fEvSel_VtxZCut;                  //!
+  Bool_t fEvSel_IsNotPileup;              //!
+  Bool_t fEvSel_IsNotPileupMV;            //!
+  Bool_t fEvSel_IsNotPileupInMultBins;    //!
+  Bool_t fEvSel_HasVtxContributor;        //!
+  Bool_t fEvSel_Triggered;                //!
 
   Float_t fEvSel_VtxZ; //! pv z position (cm) 
   Int_t fEvSel_MCType; //! type of event (to be used in PYTHIA, specifically)   
@@ -180,20 +183,15 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
 	Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
 
   //Event Multiplicity Variables 
-  Float_t fTreeVariableCentV0A;    //!
-  Float_t fTreeVariableCentV0C;    //!
   Float_t fTreeVariableCentV0M;    //!
-  Float_t fTreeVariableCentV0AEq;  //!
-  Float_t fTreeVariableCentV0CEq;  //!
   Float_t fTreeVariableCentV0MEq;  //!
   Float_t fTreeVariableCustomCentV0M;    //!
-  Float_t fTreeVariableAmpV0A;     //!
-  Float_t fTreeVariableAmpV0C;     //!
-  Float_t fTreeVariableAmpV0AEq;   //!
-  Float_t fTreeVariableAmpV0CEq;   //!
   Int_t   fTreeVariableRefMultEta8;  //!
   Int_t   fTreeVariableRefMultEta5;  //!
   Int_t   fTreeVariableRunNumber; //! //want to re-quantile per run? here's your ticket
+
+	//Differential reference multiplicity 
+  Int_t  fTreeVariableRefMultDiffEta[20]; //! 
 
   //MC exclusive Characteristics: 7, also required for feeddown tests
   Float_t fTreeVariablePtMother; //!
@@ -243,23 +241,18 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Float_t fTreeCascVarBachNSigmaKaon;  //! 
 
   //Event Multiplicity Variables 
-  Float_t fTreeCascVarCentV0A;    //!
-  Float_t fTreeCascVarCentV0C;    //!
   Float_t fTreeCascVarCentV0M;    //!
-  Float_t fTreeCascVarCentV0AEq;  //!
-  Float_t fTreeCascVarCentV0CEq;  //!
   Float_t fTreeCascVarCentV0MEq;  //!
   Float_t fTreeCascVarCustomCentV0M;    //!
-  Float_t fTreeCascVarAmpV0A;     //!
-  Float_t fTreeCascVarAmpV0C;     //!
-  Float_t fTreeCascVarAmpV0AEq;   //!
-  Float_t fTreeCascVarAmpV0CEq;   //!
   Int_t fTreeCascVarRefMultEta8;  //!
   Int_t fTreeCascVarRefMultEta5;  //!
   Int_t fTreeCascVarTrueMultEta5; //!
   Int_t fTreeCascVarTrueMultEta8; //!
   Int_t fTreeCascVarTrueMultVZEROA; //!
   Int_t fTreeCascVarTrueMultVZEROC; //!  
+
+	//Differential reference multiplicity 
+  Int_t  fTreeCascVarRefMultDiffEta[20]; //!
 
   //MC-only Variables
   Int_t   fTreeCascVarIsPhysicalPrimary; //!

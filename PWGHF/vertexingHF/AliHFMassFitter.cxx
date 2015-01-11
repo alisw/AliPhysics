@@ -61,8 +61,8 @@ AliHFMassFitter::AliHFMassFitter() :
   fNFinalPars(1),
   fFitPars(0),
   fWithBkg(0),
-  ftypeOfFit4Bkg(0),
-  ftypeOfFit4Sgn(0),
+  ftypeOfFit4Bkg(kExpo),
+  ftypeOfFit4Sgn(kGaus),
   ffactor(1),
   fntuParam(0),
   fMass(1.865),
@@ -88,7 +88,7 @@ AliHFMassFitter::AliHFMassFitter() :
 
 //___________________________________________________________________________
 
-AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin,Int_t fittypeb,Int_t fittypes): 
+AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin, Int_t fittypeb, Int_t fittypes):
  TNamed(),
  fhistoInvMass(0),
  fminMass(0),
@@ -100,8 +100,8 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fNFinalPars(1),
  fFitPars(0),
  fWithBkg(0),
- ftypeOfFit4Bkg(0),
- ftypeOfFit4Sgn(0),
+ ftypeOfFit4Bkg(kExpo),
+ ftypeOfFit4Sgn(kGaus),
  ffactor(1),
  fntuParam(0),
  fMass(1.865),
@@ -345,7 +345,7 @@ Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
   //return kFALSE if something wrong
 
   if(thispar>=fNFinalPars) {
-    cout<<"Error! Parameter out of bounds! Max is "<<fNFinalPars-1<<endl;
+    AliError(Form("Error! Parameter out of bounds! Max is %d\n",fNFinalPars-1));
     return kFALSE;
   }
   if(!fFixPar){
@@ -364,11 +364,11 @@ Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
 Bool_t AliHFMassFitter::GetFixThisParam(Int_t thispar)const{
   //return the value of fFixPar[thispar]
   if(thispar>=fNFinalPars) {
-    cout<<"Error! Parameter out of bounds! Max is "<<fNFinalPars-1<<endl;
+    AliError(Form("Error! Parameter out of bounds! Max is %d\n",fNFinalPars-1));
     return kFALSE;
   }
   if(!fFixPar) {
-    cout<<"Error! Parameters to be fixed still not set"<<endl;
+    AliError("Error! Parameters to be fixed still not set");
     return kFALSE;
 
   }
@@ -552,7 +552,7 @@ void AliHFMassFitter::RebinMass(Int_t bingroup){
   // Rebin invariant mass histogram
 
   if(!fhistoInvMass){
-    cout<<"Histogram not set"<<endl;
+    AliError("Histogram not set!!");
     return;
   }
   Int_t nbinshisto=fhistoInvMass->GetNbinsX();
@@ -706,6 +706,7 @@ Double_t AliHFMassFitter::FitFunction4Sgn (Double_t *x, Double_t *par){
   // * [2] = sigma
   //gaussian = [0]/TMath::Sqrt(2.*TMath::Pi())/[2]*exp[-(x-[1])*(x-[1])/(2*[2]*[2])]
 
+  //  AliInfo("Signal function set to: Gaussian");
   return par[0]/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[2]/par[2]);
 
 }
@@ -744,6 +745,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     // * [1] = B;
     //exponential = [1]*[0]/(exp([1]*max)-exp([1]*min))*exp([1]*x)
     total = par[0+firstPar]*par[1+firstPar]/(TMath::Exp(par[1+firstPar]*fmaxMass)-TMath::Exp(par[1+firstPar]*fminMass))*TMath::Exp(par[1+firstPar]*x[0]);
+    //    AliInfo("Background function set to: exponential");
     break;
   case 1:
     //linear
@@ -751,6 +753,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     // * [0] = integralBkg;
     // * [1] = b;
     total= par[0+firstPar]/(fmaxMass-fminMass)+par[1+firstPar]*(x[0]-0.5*(fmaxMass+fminMass));
+    //    AliInfo("Background function set to: linear");
     break;
   case 2:
     //polynomial
@@ -761,6 +764,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     // * [1] = b;
     // * [2] = c;
     total = par[0+firstPar]/(fmaxMass-fminMass)+par[1]*(x[0]-0.5*(fmaxMass+fminMass))+par[2+firstPar]*(x[0]*x[0]-1/3.*(fmaxMass*fmaxMass*fmaxMass-fminMass*fminMass*fminMass)/(fmaxMass-fminMass));
+    //    AliInfo("Background function set to: polynomial");
     break;
   case 3:
     total=par[0+firstPar];
@@ -777,6 +781,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
     total = par[0+firstPar]*(par[1+firstPar]+1.)/(TMath::Power(fmaxMass-mpi,par[1+firstPar]+1.)-TMath::Power(fminMass-mpi,par[1+firstPar]+1.))*TMath::Power(x[0]-mpi,par[1+firstPar]);
+    //    AliInfo("Background function set to: powerlaw");
     }
     break;
   case 5:
@@ -786,6 +791,7 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
     total = par[1+firstPar]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[2+firstPar]*(x[0]-mpi));
+    //    AliInfo("Background function set to: wit exponential");
     } 
     break;
 //   default:
@@ -810,16 +816,15 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
   Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
   Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin+1);
 
-  Double_t sidebandldouble,sidebandrdouble;
-  Bool_t leftok=kFALSE, rightok=kFALSE;
+  Double_t sidebandldouble=0.,sidebandrdouble=0.;
 
   if(fMass-fminMass < 0 || fmaxMass-fMass <0) {
-    cout<<"Left limit of range > mean or right limit of range < mean: change left/right limit or initial mean value"<<endl;
+    AliError("Left limit of range > mean or right limit of range < mean: change left/right limit or initial mean value");
     return kFALSE;
   } 
   
   //histo limit = fit function limit
-  if((TMath::Abs(fminMass-minHisto) < 1e6 || TMath::Abs(fmaxMass - maxHisto) < 1e6) && (fMass-4.*fSigmaSgn-fminMass) < 1e6){
+  if((TMath::Abs(fminMass-minHisto) < 1e-6 || TMath::Abs(fmaxMass - maxHisto) < 1e-6) && (fMass-4.*fSigmaSgn-fminMass) < 1e-6){
     Double_t coeff = (fMass-fminMass)/fSigmaSgn;
     sidebandldouble=(fMass-0.5*coeff*fSigmaSgn);
     sidebandrdouble=(fMass+0.5*coeff*fSigmaSgn);
@@ -848,7 +853,6 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
   
   if(TMath::Abs(tmp-sidebandldouble) > 1e-6){
     cout<<tmp<<" is not allowed, changing it to the nearest value allowed: ";
-    leftok=kTRUE;
   }
   cout<<sidebandldouble<<" (bin "<<fSideBandl<<")"<<endl;
 
@@ -860,12 +864,11 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
   sidebandrdouble=fhistoInvMass->GetBinLowEdge(fSideBandr+1);
 
   if(TMath::Abs(tmp-sidebandrdouble) > 1e-6){
-    cout<<tmp<<" is not allowed, changing it to the nearest value allowed: ";
-    rightok=kTRUE;
+    AliWarning(Form("%f is not allowed, changing it to the nearest value allowed: \n",tmp));
   }
   cout<<sidebandrdouble<<" (bin "<<fSideBandr<<")"<<endl;
   if (fSideBandl==0 || fSideBandr==fNbin) {
-    cout<<"Error! Range too little"; 
+    AliError("Error! Range too little");
     return kFALSE;
   }
   return kTRUE;
@@ -998,7 +1001,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   Double_t totInt = fhistoInvMass->Integral(fminBinMass,fmaxBinMass, "width");
   //cout<<"Here tot integral is = "<<totInt<<"; integral in whole range is "<<fhistoInvMass->Integral("width")<<endl;
   fSideBands = kTRUE;
-  Double_t width=fhistoInvMass->GetBinWidth(8);
+  Double_t width=fhistoInvMass->GetBinWidth(1);
   //cout<<"fNbin = "<<fNbin<<endl;
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
 
@@ -2027,6 +2030,11 @@ void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Doub
 
 void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const {
   // Return significance integral in a range
+
+  if(fcounter==0){
+    AliError("Number of fits is zero, check whether you made the fit before computing the significance!\n");
+    return;
+  }
 
   Double_t signal,errsignal,background,errbackground;
   Signal(min, max,signal,errsignal);

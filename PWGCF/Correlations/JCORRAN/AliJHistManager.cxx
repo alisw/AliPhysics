@@ -1,4 +1,5 @@
 #include "AliJHistManager.h"
+#include <TMath.h>
 using namespace std;
 //////////////////////////////////////////////////////
 //  AliJBin
@@ -156,13 +157,13 @@ AliJBin& AliJBin::SetBin(const int  n){
 }
 //_____________________________________________________
 void AliJBin::AddBin( const TString& v ){
-    if( fIsFixedBin ) { JERROR( "You can't Add Bin"); }
+    if( fIsFixedBin ) { JERROR( "You can't Add Bini "+GetName()); }
     fBinStr.push_back( (v=="_")?"":v );
     fBinD.push_back( v.Atof() );
 }
 //_____________________________________________________
 void AliJBin::AddBin( float v ){
-    if( fIsFixedBin ) { JERROR( "You can't Add Bin"); }
+    if( fIsFixedBin ) { JERROR( "You can't Add Bin "+GetName()); }
     fBinD.push_back( v ); 
     fBinStr.push_back(Form("%f",v));
 }
@@ -187,6 +188,12 @@ TString AliJBin::GetString(){
 //_____________________________________________________
 void AliJBin::Print(){
     std::cout<<"*"+GetString()<<std::endl;
+}
+
+int AliJBin::GetBin(double x){
+  int i =  TMath::BinarySearch( fBinD.size(), &fBinD[0], x ); 
+  if( fMode == kRange && i+1 >= int(fBinD.size()) ) return -1;
+  return i;
 }
 
 //////////////////////////////////////////////////////
@@ -549,7 +556,7 @@ TString AliJTH1::BuildName(){
 TString AliJTH1::BuildTitle(){
     TString title = fTitle;
     for( int i=0;i<Dimension();i++ )
-        title+=((int(fBins.size()) > i && fBins[i] != NULL)?" "+fBins[i]->BuildTitle(i):"")
+        title+=((int(fBins.size()) > i && fBins[i] != NULL)?" "+fBins[i]->BuildTitle(Index(i)):"")
             +Form("%02d",Index(i));
     return title;
 }
@@ -657,6 +664,32 @@ AliJHistManager::AliJHistManager(TString name):
     this->cd();
 }
 
+AliJHistManager::AliJHistManager(TString name, TString dirname):
+    AliJNamed(name,"","",0),
+    fIsLoadMode(false),
+    fDirectory(gDirectory),
+    fConfigStr(),
+    fBin(0),
+    fHist(0),
+    fManager(0),
+    fBinNames(0),
+    fBinConfigs(0),
+    fHistNames(0),
+    fHistConfigs(0)
+{
+    // constructor
+    if( dirname.Length() > 0 ) {
+        fDirectory = (TDirectory*)gDirectory->Get(dirname);
+        if( !fDirectory ){
+            fDirectory = gDirectory->mkdir( dirname );
+        }
+    }
+    if( !fDirectory ){
+        fDirectory = gDirectory;
+    }
+    this->cd();
+}
+
 //_____________________________________________________
 AliJHistManager::AliJHistManager(const AliJHistManager& obj) :
     AliJNamed(obj.fName,obj.fTitle,obj.fOption,obj.fMode),
@@ -759,6 +792,8 @@ void AliJHistManager::Write(){
 
 void AliJHistManager::WriteConfig(){
     TDirectory *owd = gDirectory;
+    cout<<"DEBUG_T1: "<<gDirectory<<endl;
+    gDirectory->Print();
     TDirectory * fHistConfigDir = fDirectory->mkdir("HistManager");
     fHistConfigDir->cd();
     TObjString * config = new TObjString(GetString().Data());

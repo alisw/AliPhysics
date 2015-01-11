@@ -51,6 +51,7 @@
 #include "AliStack.h"
 #include "AliPHOSGeometry.h"
 #include "AliTriggerAnalysis.h"
+#include "AliPHOSTriggerUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliAnalysisUtils.h"
 #include "AliOADBContainer.h"
@@ -69,6 +70,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fCurrentMixedList(0x0),
   fTriggerAnalysis(0x0),
   fUtils(0x0),
+  fPHOSTrigUtils(0x0),
   fZmax(0.),
   fZmin(0.),
   fPhimax(0.),
@@ -99,6 +101,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fCurrentMixedList(0x0),
   fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
+  fPHOSTrigUtils(0x0),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
@@ -117,10 +120,9 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   // Set bad channel map (empty so far)
   for(Int_t i=0;i<1;i++)
     for(Int_t j=0;j<5;j++)
-      fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
+      fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons  
   for(Int_t i=0;i<6;i++)
     fPHOSBadMap[i]=0x0;
-  
   
 }
 
@@ -135,6 +137,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fCurrentMixedList(0x0),
   fTriggerAnalysis(new AliTriggerAnalysis),  
   fUtils(0x0),
+  fPHOSTrigUtils(0x0),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
@@ -559,6 +562,11 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
   
 
+  //Prepare PHOS trigger utils if necessary
+  if(!fIsMB)
+   fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ; 
+  
+  
   PostData(1, fOutputContainer);
 
 
@@ -607,6 +615,11 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       return;    
     }
   }
+  
+  //If we work with PHOS trigger, prepapre TriggerUtils
+  if(!fIsMB)
+   fPHOSTrigUtils->SetEvent(event) ;
+  
   FillHistogram("hSelEvents",2) ;
   
   // Checks if we have a primary vertex
@@ -755,18 +768,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     if((!fIsMC) && (clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut))
       continue ;          
     
-//    if(clu->GetDistanceToBadChannel()<2.5)
-//      continue ;
-
     
-    FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
-    FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
-    if(fidArea>1){
-      FillHistogram(Form("hCluArea2M%d",mod),cellX,cellZ,1.);
-      if(fidArea>2){
-         FillHistogram(Form("hCluArea3M%d",mod),cellX,cellZ,1.);
-      }
-    }
     
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
@@ -786,8 +788,23 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     p->SetFiducialArea(fidArea) ;
 
+    //Mark photons fired trigger
+    if(!fIsMB) 
+      p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;       
+
+    if(fIsMB || !fIsMB && p->IsTrig()){
+      FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
+      FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
+      if(fidArea>1){
+        FillHistogram(Form("hCluArea2M%d",mod),cellX,cellZ,1.);
+        if(fidArea>2){
+          FillHistogram(Form("hCluArea3M%d",mod),cellX,cellZ,1.);
+        }
+      }
+    }
+    
     if(fIsMC){    
-       //This is primary entered PHOS
+       //Look for MC particle entered PHOS
        FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),clu->E(),float(clu->GetNLabels())) ;
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
        //Look what particle left vertex
@@ -1281,6 +1298,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
     for(Int_t j = i+1 ; j < n ; j++) {
       AliCaloPhoton * p2 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(j));
       
+      //At least one photon should be trigger in PHOS triggered events
+      if(!fIsMB && !p1->IsTrig() &&  !p2->IsTrig() ) 
+        continue ;
+      
       Double_t invMass = (*p1 + *p2).M();   
 
       Double_t nsigma1 = InPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
@@ -1440,6 +1461,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
   //Single particle histgams
   for(Int_t i=0;i<n;i++){
     AliCaloPhoton *p = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
+    
+   //photon should be trigger in PHOS triggered events
+   if(!fIsMB && !p->IsTrig() ) 
+     continue ;
 
     Int_t isolation = p->GetIsolationTag();
 
@@ -1512,6 +1537,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         AliCaloPhoton * p2 = static_cast<AliCaloPhoton*>(event2->At(j)) ;
         Double_t invMass = (*p1 + *p2).M();
 
+        //At least one photon should be trigger in PHOS triggered events
+        if(!fIsMB && !p1->IsTrig() &&  !p2->IsTrig() ) 
+          continue ;	
+	
         if((p1->E()>0.1) && (p2->E()>0.1)){
           FillPIDHistograms("hInvM_Mi_Emin1",p1,p2,invMass,kFALSE) ;
           if((p1->E())>0.2 && (p2->E()>0.2)){
@@ -1668,7 +1697,7 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
       fPHOSgeom->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;   
     }
   }
-    
+  
   //Read BadMap for MC simulations
   Int_t runNumber=196208 ; //LHC13bcdef
   AliOADBContainer badmapContainer(Form("phosBadMap"));
@@ -1686,7 +1715,7 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
       if(h)
         fPHOSBadMap[mod]=new TH2I(*h) ;
     }
-  }    
+  }        
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::FillHistogram(const char * key,Double_t x)const{
@@ -2072,6 +2101,8 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
 Bool_t AliAnalysisTaskTaggedPhotons::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz)
 {
   //Check if this channel belogs to the good ones
+  //Used only for estimate of photon impact in MC simulations
+  //For true clusters a bad map in Tender should be used
   
   if(mod>4 || mod<1){
     return kFALSE ;

@@ -86,32 +86,32 @@ cout<<mc<<" "<<aod<<" "<<griddatadir.Data()<<" "<<root.Data()<<" "<<datapattern.
   gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
   // Load common libraries
-  gSystem->Load("libCore.so");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so"); 
-  gSystem->Load("libGui.so");
-  gSystem->Load("libXMLParser.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libCDB.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libGui");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libCDB");
   gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libProof.so");
-  gSystem->Load("libRAWDatabase.so");
-  gSystem->Load("libSTEER.so");
-  gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so");
-gSystem->Load("libPWGLFspectra.so");
+  gSystem->Load("libProof");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libSTEER");
+  gSystem->Load("libTender");
+    gSystem->Load("libTenderSupplies");
+gSystem->Load("libPWGLFspectra");
   gROOT->ProcessLine(".include $ALICE_ROOT/include ");
   gSystem->SetIncludePath("-I.");
   gROOT->ProcessLine(".include $ALICE_ROOT/TOF ");
 
-  //gSystem->Load("libPWGLFspectra.so");
+  //gSystem->Load("libPWGLFspectra");
  // gROOT->LoadMacro("AliSpectraBothTrackCuts.cxx+g");
  // gROOT->LoadMacro("AliSpectraBothEventCuts.cxx+g");
   // gROOT->LoadMacro("HistogramNames.cxx");
@@ -276,10 +276,10 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",TString daystring)
 
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   //plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF  -I$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD");
-  //plugin->SetAdditionalLibs("libSTEERBase.so libESD.so libAOD.so libANALYSISalice.so libPWGLFspectra.so libTENDER.so libTENDERSupplies.so");
+  //plugin->SetAdditionalLibs("libSTEERBase.so libESD.so libAOD.so libANALYSISalice.so libPWGLFspectra.so libTender.so libTenderSupplies.so");
   //plugin->SetAnalysisSource("AliSpectraBothHistoManager.cxx AliSpectraBothTrackCuts.cxx AliSpectraBothEventCuts.cxx AliSpectraBothPID.cxx AliAnalysisTaskSpectraBoth.cxx");
     plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF ");
-  plugin->SetAdditionalLibs("libTENDER.so libTENDERSupplies.so libPWGLFspectra.so");
+  plugin->SetAdditionalLibs("libTender.so libTenderSupplies.so libPWGLFspectra.so");
  // plugin->SetAnalysisSource("AliSpectraBothHistoManager.cxx AliSpectraBothTrackCuts.cxx AliSpectraBothEventCuts.cxx AliSpectraBothPID.cxx AliAnalysisTaskSpectraBoth.cxx");
   plugin->SetOverwriteMode();
   plugin->SetExecutableCommand("aliroot -q -b");  

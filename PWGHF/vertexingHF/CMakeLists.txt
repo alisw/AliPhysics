@@ -1,0 +1,145 @@
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************/
+
+#Module
+set (MODULE PWGHFvertexingHF)
+
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/PWGHF/vertexingHF)
+
+# Additional includes - alphabetical order except ROOT
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/CORRFW
+                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliRoot_SOURCE_DIR}/PWG/muon
+                    ${AliRoot_SOURCE_DIR}/PWG/TRD
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+  )
+
+# Sources - alphabetical order
+set(SRCS
+  AliAODHFUtil.cxx 
+  AliAODRecoDecayHF.cxx 
+  AliAODRecoDecayHF2Prong.cxx 
+  AliAODRecoDecayHF3Prong.cxx 
+  AliAODRecoDecayHF4Prong.cxx 
+  AliAODRecoCascadeHF.cxx 
+  AliAODPidHF.cxx 
+  AliRDHFCuts.cxx 
+  AliVertexingHFUtils.cxx 
+  AliHFSystErr.cxx 
+  AliRDHFCutsD0toKpi.cxx 
+  AliRDHFCutsJpsitoee.cxx 
+  AliRDHFCutsDplustoKpipi.cxx 
+  AliRDHFCutsDstoKKpi.cxx 
+  AliRDHFCutsLctopKpi.cxx 
+  AliRDHFCutsLctoV0.cxx 
+  AliRDHFCutsD0toKpipipi.cxx 
+  AliRDHFCutsDStartoKpipi.cxx 
+  AliAnalysisVertexingHF.cxx 
+  AliAnalysisTaskSEVertexingHF.cxx 
+  AliAnalysisTaskMEVertexingHF.cxx 
+  AliAnalysisTaskSESelectHF.cxx 
+  AliAnalysisTaskSECompareHF.cxx 
+  AliAnalysisTaskSEDplus.cxx 
+  AliAnalysisTaskSEDs.cxx 
+  AliAnalysisTaskSELambdac.cxx 
+  AliAnalysisTaskSED0Mass.cxx 
+  AliAnalysisTaskSECharmFraction.cxx 
+  AliAnalysisTaskSELc2V0bachelor.cxx 
+  AliAnalysisTaskSEDvsMultiplicity.cxx
+  AliAnalysisTaskCheckHFMCProd.cxx
+  AliCFVertexingHF.cxx 
+  AliCFVertexingHF2Prong.cxx 
+  AliCFVertexingHF3Prong.cxx 
+  AliCFVertexingHFCascade.cxx 
+  AliCFVertexingHFLctoV0bachelor.cxx
+  AliCFTaskVertexingHF.cxx 
+  AliCFTaskForDStarAnalysis.cxx 
+  AliAnalysisTaskSEDStarJets.cxx 
+  AliAnalysisTaskSEDStarSpectra.cxx 
+  AliAnalysisTaskSESignificance.cxx 
+  AliAnalysisTaskSEHFQA.cxx 
+  AliMultiDimVector.cxx 
+  AliSignificanceCalculator.cxx 
+  AliHFMassFitter.cxx 
+  AliHFPtSpectrum.cxx 
+  AliNormalizationCounter.cxx 
+  AliAnalysisTaskSEMonitNorm.cxx 
+  AliAnalysisTaskSEBkgLikeSignD0.cxx 
+  AliAnalysisTaskSEImproveITS.cxx 
+  AliAnalysisTaskCombinHF.cxx 
+  charmFlow/AliEventPlaneResolutionHandler.cxx
+  charmFlow/AliAnalysisTaskSEHFv2.cxx
+  charmFlow/AliHFAfterBurner.cxx
+  charmFlow/AliAnalysisTaskFlowD2H.cxx
+  upgrade/AliAnalysisTaskSELambdacUp.cxx
+  upgrade/AliAnalysisTaskCountLcEta.cxx
+  AliAnalysisTaskSELc2V0bachelorTMVA.cxx 
+  )
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+# Add a shared library
+add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Linking the library
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Installation
+install(TARGETS ${MODULE} 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
+install(FILES ${HDRS} DESTINATION include)
+
+install(FILES
+            AliAODRecoDecayHF.h
+            AliAODRecoDecayHF2Prong.h
+            AddD2HTrain.C
+            ConfigVertexingHF.C
+            ConfigVertexingHF_highmult.C
+        DESTINATION 
+            PWGHF/vertexingHF/)
+
+install(DIRECTORY
+            macros
+        DESTINATION PWGHF/vertexingHF/)
+
+install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)

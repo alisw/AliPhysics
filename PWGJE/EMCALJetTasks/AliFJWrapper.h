@@ -1,8 +1,6 @@
 #ifndef AliFJWrapper_H
 #define AliFJWrapper_H
 
-// $Id$
-
 #if !defined(__CINT__) 
 
 #include <vector>
@@ -62,6 +60,8 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJetLeSub();
   virtual Int_t DoConstituentSubtraction();
 
+  void SetName(const char* name)        { fName           = name;    }
+  void SetTitle(const char* title)      { fTitle          = title;   }
   void SetStrategy(const fastjet::Strategy &strat)                 { fStrategy = strat;  }
   void SetAlgorithm(const fastjet::JetAlgorithm &algor)            { fAlgor    = algor;  }
   void SetRecombScheme(const fastjet::RecombinationScheme &scheme) { fScheme   = scheme; }

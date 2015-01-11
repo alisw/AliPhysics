@@ -248,8 +248,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
  
 
   //PID Type
-  void SetPIDType(PIDType PIDmethod) { fPIDType = PIDmethod; }
-  PIDType GetPIDType() {return fPIDType; }
+  void SetPIDType(AliPIDNameSpace::PIDType PIDmethod) { fPIDType = PIDmethod; }
+  AliPIDNameSpace::PIDType GetPIDType() {return fPIDType; }
   //NSigma cut
   //set cut on beyesian probability
   void SetBayesCut(Double_t cut){fBayesCut=cut;}
@@ -560,7 +560,7 @@ fFracTPCcls=FracSharedTPCcls;//0.4
   Float_t fPtTOFPIDmin; //lower pt bound for the TOCTOF combined circular pid
   Float_t fPtTOFPIDmax; //uper pt bound for the TOCTOF combined circular pid
   Bool_t fRequestTOFPID;//if true returns kSpUndefined if the TOF signal is missing
-  PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
+  AliPIDNameSpace::PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
   Bool_t fFIllPIDQAHistos; //Switch for filling the nSigma histos
   Double_t fNSigmaPID; // number of sigma for PID cut
   Double_t fBayesCut; // Cut on Bayesian probability
@@ -619,7 +619,7 @@ Float_t fFracTPCcls;
 
 
 
-  Float_t fnsigmas[NSpecies][NSigmaPIDType+1]; //nsigma values
+  Float_t fnsigmas[NSpecies][AliPIDNameSpace::NSigmaPIDType+1]; //nsigma values
   Bool_t fHasDoubleCounting[NSpecies];//array with compatible identities
 
   //Int_t fPIDMethod; // PID method

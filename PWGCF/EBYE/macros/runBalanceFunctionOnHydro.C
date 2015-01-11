@@ -61,15 +61,15 @@ void runBalanceFunctionOnHydro(TString aEventDir = ".",
 
   //========================================================//
   //Load the aliroot libraries
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
   //========================================================//
 
   //========================================================//

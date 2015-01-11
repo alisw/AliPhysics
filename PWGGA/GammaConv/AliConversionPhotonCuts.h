@@ -42,7 +42,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		enum cutIds {
 			kv0FinderType,                
 			ketaCut,                                     
-			kRCut,                     
+			kRCut,
+			kEtaForPhiSector,
+			kMinPhiSector,
+			kMaxPhiSector,
 			ksinglePtCut,                 
 			kclsTPCCut,                   
 			kededxSigmaCut,               
@@ -136,6 +139,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
 		Bool_t AcceptanceCuts(AliConversionPhotonBase *photon);
 		Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
+		Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
 		Bool_t dEdxCuts(AliVTrack * track);
 		Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
 		Bool_t AsymmetryCut(AliConversionPhotonBase *photon,AliVEvent *event);
@@ -164,6 +168,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Bool_t SetSinglePtCut(Int_t singlePtCut);
 		Bool_t SetTPCClusterCut(Int_t clsTPCCut);
 		Bool_t SetEtaCut(Int_t etaCut);
+		Bool_t SetEtaForPhiCut(Int_t etaPhiCut);
+		Bool_t SetMinPhiSectorCut(Int_t minPhiCut);
+		Bool_t SetMaxPhiSectorCut(Int_t maxPhiCut);
 		Bool_t SetMinMomPiondEdxCut(Int_t piMinMomdedxSigmaCut);
 		Bool_t SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut);
 		Bool_t SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut);
@@ -195,6 +202,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Double_t 		fMinR;									// r cut
 		Double_t 		fEtaCut;								// eta cut
 		Double_t 		fEtaCutMin;								// eta cut
+		Float_t			fEtaForPhiCutMin;						// eta cut for phi sector selection
+		Float_t			fEtaForPhiCutMax;						// eta cut for phi sector selection
+		Float_t 		fMinPhiCut;								// phi sector cut
+		Float_t 		fMaxPhiCut;								// phi sector cut
+		Bool_t 			fDoShrinkTPCAcceptance;					// Flag for shrinking the TPC acceptance due to different reasons
 		Double_t 		fPtCut;									// pt cut
 		Double_t 		fSinglePtCut;							// pt cut for electron/positron
 		Double_t 		fMaxZ;									// z cut
@@ -285,7 +297,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
 	private:
 	
-		ClassDef(AliConversionPhotonCuts,1)
+		ClassDef(AliConversionPhotonCuts,2)
 };
 
 

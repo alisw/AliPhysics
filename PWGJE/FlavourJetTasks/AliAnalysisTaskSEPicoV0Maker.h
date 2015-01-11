@@ -18,6 +18,8 @@ class AliESDEvent;
 class AliCentrality;
 class AliPIDResponse;
 class AliAnalysisUtils;
+class AliPicoV0RD;
+class AliPicoV0MC;
 
 class AliAnalysisTaskSEPicoV0Maker : public AliAnalysisTaskSE {
 

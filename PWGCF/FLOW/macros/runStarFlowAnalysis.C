@@ -32,9 +32,9 @@ Double_t maxB = 0.9;
 
 void  runStarFlowAnalysis(const char* inputDataFiles="/Users/snelling/alice_data/jthomas/testData/")
 {
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
   gSystem->Load("libPWGflowBase");
 
   Int_t maxNumberOfEvents = 1000000;

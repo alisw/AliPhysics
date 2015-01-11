@@ -98,8 +98,6 @@ done
 <a href="ElectroMIPSeparation_vs_run.png">Separation between electon and MIPs energy loss</a><br>
 <br>
 <a href="MIPattachSlopes_vs_run.png">Attachment parameter p1, A side and C side</a><br>
-#<a href="MIPattachSlopeA_vs_run.png">Attachment parameter p1, A side</a><br>
-#<a href="MIPattachSlopeC_vs_run.png">Attachment parameter p1, C side</a><br>
 <br>
 <a href="pullPhiConstrain_vs_run.png">Tracking parameter phi</a><br>
 <br>

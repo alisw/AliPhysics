@@ -6,7 +6,10 @@
 
 class TH1F;
 class AliESDEvent;
+class AliStack;
+class AliESDCaloCells;
 
+#include "TString.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskEMCALIsolation : public AliAnalysisTaskSE {

@@ -51,10 +51,10 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   //
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
+  gSystem->Load("libTender");
   gSystem->Load("libCORRFW");
 
-  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTPCcalib");
   gSystem->Load("libPWGPP");
 
   gSystem->Load("libPHOSUtils");
@@ -62,7 +62,7 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   gSystem->Load("libPWG4PartCorrBase");
   gSystem->Load("libPWG4PartCorrDep");
 
-  gSystem->Load("libPWGmuon.so"); // The class is here
+  gSystem->Load("libPWGmuon"); // The class is here
 
   //
   // OCDB Configuration 

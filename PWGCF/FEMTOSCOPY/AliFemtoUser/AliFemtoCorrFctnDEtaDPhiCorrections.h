@@ -44,7 +44,7 @@ public:
   double CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2);
   void LoadCorrectionTabFromROOTFile1D(const char *file, ParticleType partType1, ParticleType partType2);
   void LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr);
-  void LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab);
+  //  void LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab); // Not implemented
   void SetCorrectionTab(ParticleType partType);
   
   void WriteHistos();

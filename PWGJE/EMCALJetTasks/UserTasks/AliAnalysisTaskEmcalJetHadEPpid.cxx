@@ -1006,6 +1006,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   Int_t NJETAcc = 0;
   fHistEventQA->Fill(9); // events after track/jet loop to get highest pt
 
+  //cout<<"Event #: "<<event<<endl;
+
   // loop over jets in event and make appropriate cuts
   for (Int_t ijet = 0; ijet < Njets; ++ijet) {
      AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ijet));
@@ -1131,6 +1133,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         //TF2 effCORR = fEffFunctionCorr;
         Double_t trefficiency = -999;
         trefficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorr);
+
+        //if(trefficiency < 0.1) cout<<"track#: "<<iTracks<<"  pt: "<<track->Pt()<<"  eta: "<<track->Eta()<<"  cent: "<<fCent<<"  Eff: "<<trefficiency<<endl;
 
         Int_t ieta = -1;       // initialize deta bin
         Int_t iptjet = -1;     // initialize jet pT bin
@@ -1491,6 +1495,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               Double_t mixefficiency = -999;
               mixefficiency = EffCorrection(part->Eta(), part->Pt(), fDoEffCorr);                           
 
+              //if(mixefficiency < 0.1) cout<<"mixtrack#: "<<ibg<<"  pt: "<<part->Pt()<<"  eta: "<<part->Eta()<<"  cent: "<<fCent<<"  Eff: "<<mixefficiency<<endl;
+
               // create / fill mixed event sparse
               Double_t triggerEntries[9] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
               fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
@@ -1800,7 +1806,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
 
     case 3:
       label = "Relative Eta";
-      nbins = 56; // 42
+      nbins = 56; // 48
       xmin = -1.4;
       xmax = 1.4;
       break;
@@ -2327,82 +2333,126 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::AcceptFlavourJet(AliEmcalJet* fljet, Int_
 //________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Double_t trackPT, Int_t effSwitch) const {
   // default (current) parameters
+
 /*
-  // set min/max range of x & y (track Eta & track pt) 
+  // min/max range of x & y (track Eta & track pt) used by Nat
   Double_t trETAmin = -0.9; Double_t trETAmax = 0.9;
-  Double_t trPTmin = 0.0; Double_t trPTmax = 20.0;
-  Int_t npar = 10;
-  //TF2 TRefficiency = TRefficiency = new TF2("eff", EffFunctionCorr, trETAmin, trETAmax, trPTmin, trPTmax, npar);
-  TRefficiency = new TF2("eff", "([0]*exp(-pow([1]/x,[2])) + [3]*x) * ( (y>-0.07)*([4] + [5]*y + [6]*y*y) + (y<=-0.07)*([7] + [8]*y + [9]*y*y) ) ", trETAmin, trETAmax, trPTmin, trPTmax, npar);
+  Double_t trPTmin = 0.2; Double_t trPTmax = 12.0; ??
 */
 
   // x-variable = track pt, y-variable = track eta
   Double_t x = trackPT;
-  Double_t y = 0;
+  Double_t y = trackETA;
+  //y = TMath::Abs(trackETA);
   Double_t TRefficiency = -999;
   Int_t runNUM = fCurrentRunNumber;
+  Int_t runSwitchGood = -999;
+  Int_t centbin = -99;
 
-  if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309) && fCent < 30 && effSwitch!=1 && effSwitch!=6) {
-    effSwitch = 2;
-    y = trackETA;
+  Double_t etaaxis = 0;
+  Double_t ptaxis = 0;
+
+  if(effSwitch < 1) {
+    if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309)) runSwitchGood = 0;
+
+    if ((runNUM == 167903 || runNUM == 167915 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
+
+    if(fCent>=0 && fCent<10) centbin = 0;
+    else if (fCent>=10 && fCent<30)	centbin = 1;
+    else if (fCent>=30 && fCent<50) centbin = 2;
+    else if (fCent>=50 && fCent<90)	centbin = 3;
+
+    if(runSwitchGood == 0 && centbin == 0) effSwitch = 2;
+    if(runSwitchGood == 0 && centbin == 1) effSwitch = 3;
+    if(runSwitchGood == 0 && centbin == 2) effSwitch = 4;
+    if(runSwitchGood == 0 && centbin == 3) effSwitch = 5;
+    if(runSwitchGood == 1 && centbin == 0) effSwitch = 6;
+    if(runSwitchGood == 1 && centbin == 1) effSwitch = 7;
+    if(runSwitchGood == 1 && centbin == 2) effSwitch = 8;
+    if(runSwitchGood == 1 && centbin == 3) effSwitch = 9;
+
   }
 
-  if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309) && fCent > 30 && effSwitch!=1 && effSwitch!=6) {
-    effSwitch = 3;
-    y = trackETA;
-  }
+  // 0-10% centrality: Semi-Good Runs
+  Double_t p0_10SG[17] = {9.15846e-01, 7.54031e-02, 1.11627e+00, -2.35529e-02, 8.03415e-01, 9.43327e-03, -3.29811e-04, 1.66757e+00, 4.64069e-02, 1.84170e-01, -2.09091e-01, 9.56263e-01, 3.55602e-01, -5.75471e-01, 1.12262e+00, 1.96927e-03, 4.23474e-01}; 
+  // 10-30% centrality: Semi-Good Runs
+  Double_t p10_30SG[17] = {9.27764e-01, 7.69155e-02, 1.11896e+00, -2.55034e-02, 7.57674e-01, 3.68652e-02, -3.75523e-03, 1.64452e+00, 4.49358e-02, 1.92339e-01, -1.99106e-01, 9.59782e-01, 3.50657e-01, -6.07217e-01, 1.09027e+00, 1.58922e-03, 4.57454e-01}; 
+  // 30-50% centrality: Semi-Good Runs
+  Double_t p30_50SG[17] = {9.99833e-01, 8.31729e-02, 1.21066e+00, -2.99180e-02, 8.89407e-01, 2.72632e-02, -6.47995e-03, 1.07181e+00, 3.52573e-03, 3.02167e-01, -8.80560e-02, 9.08866e-01, 3.02663e-01, -5.85203e-01, 9.99932e-01, 2.11319e-03, 5.17128e-01}; 
+  // 50-90% centrality: Semi-Good Runs
+  Double_t p50_90SG[17] = {9.99962e-01, 8.44121e-02, 1.24631e+00, -2.54355e-02, 7.28692e-01, 8.89584e-02, -1.02253e-02, 1.10620e+00, 3.80133e-03, 2.74054e-01, -9.15362e-02, 9.04696e-01, 2.84234e-01, -5.67995e-01, 9.99870e-01, 1.89310e-03, 4.91358e-01};
 
-  if ((runNUM == 167903 || runNUM == 167915 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081) && fCent < 30 && effSwitch!=1 && effSwitch!=6) {
-    effSwitch = 4;
-    y = TMath::Abs(trackETA);
-  }
-
-  if ((runNUM == 167903 || runNUM == 167915 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081) && fCent > 30 && effSwitch!=1 && effSwitch!=6) {
-    effSwitch = 5;
-    y = TMath::Abs(trackETA);
-  }
-
-  // set parameter values
-  Double_t p[10] = {9.30132e-01, 9.78828e-02, 1.50626e+00, -1.30398e-02, 9.04935e-01, 2.93456e-01, -3.84654e-01, 8.64688e-01, -2.59244e-01, -3.50544e-01};  
-  Double_t m[10] = {9.64508e-01, 9.53247e-01, 3.34584e+01, -4.44705e-03, 8.42526e-01, 2.64031e-01, -3.37155e-01, 8.00933e-01, -2.52274e-01, -3.32314e-01};
-  Double_t r[10] = {9.32462e-01, 9.65724e-02, 1.46878e+00, -1.58579e-02, 9.46241e-01, 1.98548e-01, -2.93280e-01, 9.05743e-01, -1.55519e-01, -2.54959e-01};
-  Double_t n[9] = {1.01595e+00, 4.46603e-05, 1.53587e+00, -1.14282e-03, 7.87525e-01, 3.35267e-01, -5.68939e-01, 5.19236e-01, -5.20195e-01};
-  Double_t q[9] = {9.72915e-01, 6.38626e-01, 8.47813e+00, -1.03864e-02, 9.01610e-01, 9.71765e-02, -4.94174e-01, 1.11112e+00, -9.64431e-01};
+  // 0-10% centrality: Good Runs
+  Double_t p0_10G[17] = {9.41769e-01, 7.67433e-02, 1.13335e+00, -2.66193e-02, 8.30263e-01, 5.19029e-03, 3.89549e-05, 1.64552e+00, 3.71978e-02, 1.92558e-01, -2.14009e-01, 9.49016e-01, 1.98726e-01, -2.77058e-01, 1.09062e+00, 1.90219e-03, 4.25480e-01}; 
+  // 10-30% centrality: Good Runs
+  Double_t p10_30G[17] = {9.60095e-01, 7.75887e-02, 1.12192e+00, -2.94920e-02, 8.28189e-01, 1.31810e-02, -1.20607e-03, 1.61751e+00, 3.60181e-02, 2.00906e-01, -1.99320e-01, 9.49605e-01, 1.77662e-01, -2.72506e-01, 1.05439e+00, 1.63010e-03, 4.66318e-01}; 
+  // 30-50% centrality: Good Runs
+  Double_t p30_50G[17] = {9.54634e-01, 8.21353e-02, 1.15674e+00, -3.30327e-02, 6.89883e-01, 8.50469e-02, -1.11555e-02, 1.23933e+00, 4.23219e-03, 2.80843e-01, -1.11685e-01, 9.88261e-01, 1.01834e-01, -1.91367e-01, 1.09119e+00, 1.63848e-03, 4.36947e-01}; 
+  // 50-90% centrality: Good Runs
+  Double_t p50_90G[17] = {9.70498e-01, 8.25935e-02, 1.15688e+00, -3.46965e-02, 7.25662e-01, 6.58188e-02, -7.40451e-03, 1.31635e+00, 5.30976e-03, 2.37158e-01, -1.21794e-01, 9.74182e-01, 1.08888e-01, -2.14606e-01, 1.07135e+00, 1.67715e-03, 4.47729e-01};
 
   // set up a switch for different parameter values...
   switch(effSwitch) {
     case 1 :
-      // first switch value, initial set of parameters on low statistics data for Semi-Good (LHC11h) Run
-      //Double_t p[] = {9.30132e-01, 9.78828e-02, 1.50626e+00, -1.30398e-02, 9.04935e-01, 2.93456e-01, -3.84654e-01, 8.64688e-01, -2.59244e-01, -3.50544e-01};
-      
-      // calculate tracking efficiency as function of track pt and track eta
-      TRefficiency = (p[0]*exp(-pow(p[1]/x,p[2])) + p[3]*x) * ( (y>-0.07)*(p[4] + p[5]*y + p[6]*y*y) + (y<=-0.07)*(p[7] + p[8]*y + p[9]*y*y) );
+      // first switch value - TRefficiency not used so = 1
+      TRefficiency = 1.0;
       break;
 
     case 2 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-30%):
-      TRefficiency = (m[0]*exp(-pow(m[1]/x,m[2])) + m[3]*x) * ( (y>-0.07)*(m[4] + m[5]*y + m[6]*y*y) + (y<=-0.07)*(m[7] + m[8]*y + m[9]*y*y) );
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-10%):
+      ptaxis = (x<2.9)*(p0_10SG[0]*exp(-pow(p0_10SG[1]/x,p0_10SG[2])) + p0_10SG[3]*x) + (x>=2.9)*(p0_10SG[4] + p0_10SG[5]*x + p0_10SG[6]*x*x);
+      etaaxis = (y<0.0)*(p0_10SG[7]*exp(-pow(p0_10SG[8]/TMath::Abs(y+0.9),p0_10SG[9])) + p0_10SG[10]*y) + (y>=0.0 && y<=0.4)*(p0_10SG[11] + p0_10SG[12]*y + p0_10SG[13]*y*y) + (y>0.4)*(p0_10SG[14]*exp(-pow(p0_10SG[15]/TMath::Abs(-y+0.9),p0_10SG[16])));
+      TRefficiency = ptaxis*etaaxis;
       break;
 
     case 3 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-90%):
-      TRefficiency = (r[0]*exp(-pow(r[1]/x,r[2])) + r[3]*x) * ( (y>-0.07)*(r[4] + r[5]*y + r[6]*y*y) + (y<=-0.07)*(r[7] + r[8]*y + r[9]*y*y) );
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (10-30%):
+      ptaxis = (x<2.9)*(p10_30SG[0]*exp(-pow(p10_30SG[1]/x,p10_30SG[2])) + p10_30SG[3]*x) + (x>=2.9)*(p10_30SG[4] + p10_30SG[5]*x + p10_30SG[6]*x*x);
+      etaaxis = (y<0.0)*(p10_30SG[7]*exp(-pow(p10_30SG[8]/TMath::Abs(y+0.9),p10_30SG[9])) + p10_30SG[10]*y) + (y>=0.0 && y<=0.4)*(p10_30SG[11] + p10_30SG[12]*y + p10_30SG[13]*y*y) + (y>0.4)*(p10_30SG[14]*exp(-pow(p10_30SG[15]/TMath::Abs(-y+0.9),p10_30SG[16])));
+      TRefficiency = ptaxis*etaaxis;
       break;
 
     case 4 :
-      // Parameter values for GOOD TPC (LHC11h) runs (0-30%):
-      TRefficiency = (n[0]*exp(-pow(n[1]/x,n[2])) + n[3]*x) * (n[4] + n[5]*y + n[6]*y*y + n[7]*y*y*y + n[8]*y*y*y*y);
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-50%):
+      ptaxis = (x<2.9)*(p30_50SG[0]*exp(-pow(p30_50SG[1]/x,p30_50SG[2])) + p30_50SG[3]*x) + (x>=2.9)*(p30_50SG[4] + p30_50SG[5]*x + p30_50SG[6]*x*x);
+      etaaxis = (y<0.0)*(p30_50SG[7]*exp(-pow(p30_50SG[8]/TMath::Abs(y+0.9),p30_50SG[9])) + p30_50SG[10]*y) + (y>=0.0 && y<=0.4)*(p30_50SG[11] + p30_50SG[12]*y + p30_50SG[13]*y*y) + (y>0.4)*(p30_50SG[14]*exp(-pow(p30_50SG[15]/TMath::Abs(-y+0.9),p30_50SG[16])));
+      TRefficiency = ptaxis*etaaxis;
       break;
 
     case 5 :
-      // Parameter values for GOOD TPC (LHC11h) runs (30-90%):
-      TRefficiency = (q[0]*exp(-pow(q[1]/x,q[2])) + q[3]*x) * (q[4] + q[5]*y + q[6]*y*y + q[7]*y*y*y + q[8]*y*y*y*y);
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (50-90%):
+      ptaxis = (x<2.9)*(p50_90SG[0]*exp(-pow(p50_90SG[1]/x,p50_90SG[2])) + p50_90SG[3]*x) + (x>=2.9)*(p50_90SG[4] + p50_90SG[5]*x + p50_90SG[6]*x*x);
+      etaaxis = (y<0.0)*(p50_90SG[7]*exp(-pow(p50_90SG[8]/TMath::Abs(y+0.9),p50_90SG[9])) + p50_90SG[10]*y) + (y>=0.0 && y<=0.4)*(p50_90SG[11] + p50_90SG[12]*y + p50_90SG[13]*y*y) + (y>0.4)*(p50_90SG[14]*exp(-pow(p50_90SG[15]/TMath::Abs(-y+0.9),p50_90SG[16])));
+      TRefficiency = ptaxis*etaaxis;
       break;
 
     case 6 :
-      // Parameter values for tweaking efficiency function..
-      TRefficiency = (q[0]*exp(-pow(q[1]/x,q[2])) + q[3]*x) * ( (y>-0.07)*(q[4] + q[5]*y + q[6]*y*y) + (y<=-0.07)*(q[7] + q[8]*y + q[9]*y*y) );
-      TRefficiency = 1.0; // for now
+      // Parameter values for GOOD TPC (LHC11h) runs (0-10%):
+      //TRefficiency = ((x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x)) + ((x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x)) * ((y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.9),p0_10G[9])) + p0_10G[10]*y)) + ((y>=0.0 && y<0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y)) + ((y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.9),p0_10G[16]))));
+      ptaxis = (x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x) + (x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x);
+      etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.9),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.9),p0_10G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 7 :
+      // Parameter values for GOOD TPC (LHC11h) runs (10-30%):
+      ptaxis = (x<2.9)*(p10_30G[0]*exp(-pow(p10_30G[1]/x,p10_30G[2])) + p10_30G[3]*x) + (x>=2.9)*(p10_30G[4] + p10_30G[5]*x + p10_30G[6]*x*x);
+      etaaxis = (y<0.0)*(p10_30G[7]*exp(-pow(p10_30G[8]/TMath::Abs(y+0.9),p10_30G[9])) + p10_30G[10]*y) + (y>=0.0 && y<=0.4)*(p10_30G[11] + p10_30G[12]*y + p10_30G[13]*y*y) + (y>0.4)*(p10_30G[14]*exp(-pow(p10_30G[15]/TMath::Abs(-y+0.9),p10_30G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 8 :
+      // Parameter values for GOOD TPC (LHC11h) runs (30-50%):
+      ptaxis = (x<2.9)*(p30_50G[0]*exp(-pow(p30_50G[1]/x,p30_50G[2])) + p30_50G[3]*x) + (x>=2.9)*(p30_50G[4] + p30_50G[5]*x + p30_50G[6]*x*x);
+      etaaxis = (y<0.0)*(p30_50G[7]*exp(-pow(p30_50G[8]/TMath::Abs(y+0.9),p30_50G[9])) + p30_50G[10]*y) + (y>=0.0 && y<=0.4)*(p30_50G[11] + p30_50G[12]*y + p30_50G[13]*y*y) + (y>0.4)*(p30_50G[14]*exp(-pow(p30_50G[15]/TMath::Abs(-y+0.9),p30_50G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 9 :
+      // Parameter values for GOOD TPC (LHC11h) runs (50-90%):
+      ptaxis = (x<2.9)*(p50_90G[0]*exp(-pow(p50_90G[1]/x,p50_90G[2])) + p50_90G[3]*x) + (x>=2.9)*(p50_90G[4] + p50_90G[5]*x + p50_90G[6]*x*x);
+      etaaxis = (y<0.0)*(p50_90G[7]*exp(-pow(p50_90G[8]/TMath::Abs(y+0.9),p50_90G[9])) + p50_90G[10]*y) + (y>=0.0 && y<=0.4)*(p50_90G[11] + p50_90G[12]*y + p50_90G[13]*y*y) + (y>0.4)*(p50_90G[14]*exp(-pow(p50_90G[15]/TMath::Abs(-y+0.9),p50_90G[16])));
+      TRefficiency = ptaxis*etaaxis;
       break;
 
     default :
@@ -2410,6 +2460,9 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
       TRefficiency = 1.0;
 
   }
+
+  //if(TRefficiency < 0.1) cout<<"pt: "<<x<<"  eta: "<<y<<"  cent: "<<fCent<<"  Eff: "<<TRefficiency<<"   Ptaxis: "<<ptaxis<<"   etaaxis: "<<etaaxis<<endl;
+  //if(TRefficiency > 0.86) cout<<"pt: "<<x<<"  eta: "<<y<<"  cent: "<<fCent<<"  Eff: "<<TRefficiency<<"   Ptaxis: "<<ptaxis<<"   etaaxis: "<<etaaxis<<endl;
 
   return TRefficiency;
 }

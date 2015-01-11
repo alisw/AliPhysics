@@ -1259,21 +1259,23 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
             // option not yet implemented in the trigger maker
             if(patch->IsLevel0()) selected = patch;
             break;
-          case kTriggerLevel1Jet: break;
-          if(patch->IsJetHighSimple() || patch->IsJetLowSimple()){
-            if(!selected) selected = patch;
-            else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
-          }
-          break;
-          case kTriggerLevel1Gamma: break;
-          if(patch->IsGammaHigh() || patch->IsGammaLow()){
-            if(!selected) selected = patch;
-            else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
-          }
-          break;
+          case kTriggerLevel1Jet: 
+            if(patch->IsJetHighSimple() || patch->IsJetLowSimple()){
+              if(!selected) selected = patch;
+              else if(patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp()) selected = patch;
+            }
+            break;
+          case kTriggerLevel1Gamma:
+	    if(patch->IsGammaHighSimple() || patch->IsGammaLowSimple()){
+	      if(!selected) selected = patch;
+	      else if(patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp()) selected = patch;
+	    }
+	    break;
+          default:   // Silence compiler warnings
+            AliError("Untreated case: Main Patch is recalculated; should be in 'else' branch");
           };
         }
-      } else {
+      } else {  // Not OfflineSimple
         switch(trigger){
         case kTriggerLevel0:
             if(patch->IsLevel0()) selected = patch;
@@ -1281,20 +1283,36 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
         case kTriggerLevel1Jet:
             if(patch->IsJetHigh() || patch->IsJetLow()){
               if(!selected) selected = patch;
-              else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
+              else if (patch->GetADCAmp() > selected->GetADCAmp()) 
+                selected = patch;
             }
             break;
         case kTriggerLevel1Gamma:
             if(patch->IsGammaHigh() || patch->IsGammaLow()){
               if(!selected) selected = patch;
-              else if(patch->GetADCAmp() > selected->GetADCAmp()) selected = patch;
+              else if (patch->GetADCAmp() > selected->GetADCAmp()) 
+                selected = patch;
             }
             break;
+         default:
+            AliError("Untreated case: Main Patch is recalculated; should be in 'else' branch");
         };
       }
     }
+    else if ((trigger == kTriggerRecalcJet &&  patch->IsRecalcJet()) || 
+             (trigger == kTriggerRecalcGamma && patch->IsRecalcGamma())) {  // recalculated patches
+      if (doSimpleOffline && patch->IsOfflineSimple()) {
+        if(!selected) selected = patch;
+        else if (patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp())  // this in fact should not be needed, but we have it in teh other branches as well, so keeping it for compleness
+          selected = patch;
+      }
+      else if (!doSimpleOffline && !patch->IsOfflineSimple()) {
+        if(!selected) selected = patch;
+        else if (patch->GetADCAmp() > selected->GetADCAmp()) 
+          selected = patch;
+      }
+    }
   }
-
   return selected;
 }
 
@@ -1344,8 +1362,8 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(9,  "MCFlag");
   axis->SetBinLabel(10, "MCGenerator");
   axis->SetBinLabel(11, "ChargeCut");
-  axis->SetBinLabel(12, "Bit11");
-  axis->SetBinLabel(13, "Bit12");
+  axis->SetBinLabel(12, "MinDistanceTPCSectorEdge");
+  axis->SetBinLabel(13, "MinMCLabelAccept");
   axis->SetBinLabel(14, "IsEMCal");
   axis->SetBinLabel(15, "Time");
   axis->SetBinLabel(16, "Energy");

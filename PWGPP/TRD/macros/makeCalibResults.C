@@ -38,15 +38,15 @@
 //
 // In compiled mode : 
 // Don't forget to load first the libraries
-// gSystem->Load("libMemStat.so")
-// gSystem->Load("libMemStatGui.so")
-// gSystem->Load("libANALYSIS.so")
-// gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTENDER.so")
-// gSystem->Load("libSTAT.so")
-// gSystem->Load("libPWGPP.so");
-// gSystem->Load("libNetx.so") ;
-// gSystem->Load("libRAliEn.so");
+// gSystem->Load("libMemStat")
+// gSystem->Load("libMemStatGui")
+// gSystem->Load("libANALYSIS")
+// gSystem->Load("libANALYSISalice")
+// gSystem->Load("libTender")
+// gSystem->Load("libSTAT")
+// gSystem->Load("libPWGPP");
+// gSystem->Load("libNetx") ;
+// gSystem->Load("libRAliEn");
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
@@ -66,7 +66,7 @@
 
 #endif
 
-Char_t const *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libSTAT.so", "libPWGPP.so", "libPWGmuon.so"};
+Char_t const *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libTender", "libSTAT", "libPWGPP", "libPWGmuon"};
 
 // define setup
 TClass *ctask = new TClass;

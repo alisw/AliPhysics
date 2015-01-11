@@ -3,17 +3,17 @@ void runAODProof(Int_t c, const char * proofMode = "full")
 
    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
 
-   gSystem->Load("libMinuit.so");
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libOADB.so");
-   gSystem->Load("libANALYSISalice.so");
+   gSystem->Load("libMinuit");
+   gSystem->Load("libTree");
+   gSystem->Load("libGeom");
+   gSystem->Load("libVMC");
+   gSystem->Load("libPhysics");
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libOADB");
+   gSystem->Load("libANALYSISalice");
    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
 

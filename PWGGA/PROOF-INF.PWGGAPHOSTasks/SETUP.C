@@ -3,7 +3,7 @@
 void SETUP()
 {
    TString ocwd = gSystem->WorkingDirectory();
-   gSystem->Load(ocwd+"/libPWGGAPHOSTasks.so");
+   gSystem->Load(ocwd+"/libPWGGAPHOSTasks");
 
    // Set the Include paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGGAPHOSTasks");

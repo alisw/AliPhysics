@@ -12,20 +12,20 @@
 
 void MakeCuts4Charm4Prong(){
 
-gSystem->Load("libTree.so");
-gSystem->Load("libGeom.so");
-gSystem->Load("libPhysics.so");
-gSystem->Load("libVMC.so");
-gSystem->Load("libMinuit.so");
-gSystem->Load("libSTEERBase.so");
-gSystem->Load("libESD.so");
-gSystem->Load("libAOD.so"); 
-gSystem->Load("libANALYSIS.so");
-gSystem->Load("libANALYSISalice.so");
-gSystem->Load("libCORRFW.so");
-gSystem->Load("libPWGHFbase.so");
-gSystem->Load("libPWGHFvertexingHF.so");
-gSystem->Load("libPWGmuon.so");
+gSystem->Load("libTree");
+gSystem->Load("libGeom");
+gSystem->Load("libPhysics");
+gSystem->Load("libVMC");
+gSystem->Load("libMinuit");
+gSystem->Load("libSTEERBase");
+gSystem->Load("libESD");
+gSystem->Load("libAOD");
+gSystem->Load("libANALYSIS");
+gSystem->Load("libANALYSISalice");
+gSystem->Load("libCORRFW");
+gSystem->Load("libPWGHFbase");
+gSystem->Load("libPWGHFvertexingHF");
+gSystem->Load("libPWGmuon");
 
   AliRDHFCutsD0toKpipipi* RDHFCharm4Prong=new AliRDHFCutsD0toKpipipi();
   RDHFCharm4Prong->SetName("Charm4ProngCuts");
@@ -145,20 +145,20 @@ gSystem->Load("libPWGmuon.so");
 void MakeCuts4Charm4ProngForMaxim(){
 
 gSystem->Clear();
-gSystem->Load("libTree.so");
-gSystem->Load("libGeom.so");
-gSystem->Load("libPhysics.so");
-gSystem->Load("libVMC.so");
-gSystem->Load("libMinuit.so");
-gSystem->Load("libSTEERBase.so");
-gSystem->Load("libESD.so");
-gSystem->Load("libAOD.so"); 
-gSystem->Load("libANALYSIS.so");
-gSystem->Load("libANALYSISalice.so");
-gSystem->Load("libCORRFW.so");
-gSystem->Load("libPWGHFbase.so");
-gSystem->Load("libPWGHFvertexingHF.so");
-gSystem->Load("libPWGmuon.so");
+gSystem->Load("libTree");
+gSystem->Load("libGeom");
+gSystem->Load("libPhysics");
+gSystem->Load("libVMC");
+gSystem->Load("libMinuit");
+gSystem->Load("libSTEERBase");
+gSystem->Load("libESD");
+gSystem->Load("libAOD");
+gSystem->Load("libANALYSIS");
+gSystem->Load("libANALYSISalice");
+gSystem->Load("libCORRFW");
+gSystem->Load("libPWGHFbase");
+gSystem->Load("libPWGHFvertexingHF");
+gSystem->Load("libPWGmuon");
 
   AliRDHFCutsD0toKpipipi* RDHFCharm4Prong=new AliRDHFCutsD0toKpipipi();
   RDHFCharm4Prong->SetName("loosercuts");

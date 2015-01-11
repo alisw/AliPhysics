@@ -6,29 +6,29 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
                               Int_t headerSelectionInt = 0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                               TString cutnumberAODBranch = "1000000060084000001500000",
                               TString periodName = "LHC13d2",  //name of the period for added signals and weighting
-			      Bool_t doWeighting = kFALSE  //enable Weighting
+							  Bool_t doWeighting = kFALSE  //enable Weighting
                            ) {
 
 	// ================= Load Librariers =================================
-	gSystem->Load("libCore.so");  
-	gSystem->Load("libTree.so");
-	gSystem->Load("libGeom.so");
-	gSystem->Load("libVMC.so");
-	gSystem->Load("libPhysics.so");
+	gSystem->Load("libCore");
+	gSystem->Load("libTree");
+	gSystem->Load("libGeom");
+	gSystem->Load("libVMC");
+	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
 	gSystem->Load("libSTEERBase");
 	gSystem->Load("libESD");
 	gSystem->Load("libAOD");
 	gSystem->Load("libANALYSIS");
 	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libCDB.so");
-	gSystem->Load("libSTEER.so");
-	gSystem->Load("libSTEERBase.so");
-	gSystem->Load("libTENDER.so");
-	gSystem->Load("libTENDERSupplies.so");
-	gSystem->Load("libPWGflowBase.so");
-	gSystem->Load("libPWGflowTasks.so");
-	gSystem->Load("libPWGGAGammaConv.so");
+	gSystem->Load("libCDB");
+	gSystem->Load("libSTEER");
+	gSystem->Load("libSTEERBase");
+	gSystem->Load("libTender");
+	gSystem->Load("libTenderSupplies");
+	gSystem->Load("libPWGflowBase");
+	gSystem->Load("libPWGflowTasks");
+	gSystem->Load("libPWGGAGammaConv");
 
 	Int_t isHeavyIon = 1;
 
@@ -49,7 +49,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 	}
 
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "000084001001500000000";
+	TString cutnumberPhoton = "000000084001001500000000";
 	TString cutnumberEvent = "1000000";
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -110,804 +110,847 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
-	Int_t numberOfCuts = 5;
+	if (trainConfig == 135 || trainConfig == 136 || trainConfig == 137 ) Int_t numberOfCuts = 7;
+        else Int_t numberOfCuts = 5; 
 
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
 
 	if (trainConfig == 1){ // Standard cuts
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "042092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "042092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "042092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "042092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "042000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "042000092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "042000092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "042000092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "042000092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
 	} else if (trainConfig == 2) { // Standard cuts
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "042092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "042092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "042092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "042092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "042000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "042000092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "042000092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "042000092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "042000092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
 	} else if (trainConfig == 3) { // Standard cuts only added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "042092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "042092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "042092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "042092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "042000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "042000092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "042000092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "042000092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "042000092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
 	} else if (trainConfig == 4) { // Standard cuts only added signals
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "042092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "042092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "042092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "042092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "042000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "042000092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "042000092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "042000092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "042000092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
 	} else if (trainConfig == 5){ // R-minCut 7.5 cm
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "049092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "049092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "049092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "049092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "049000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "049000092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "049000092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "049000092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "049000092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
 	} else if (trainConfig == 6) { // R-minCut 7.5 cm
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "049092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "049092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "049092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "049092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "049000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "049000092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "049000092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "049000092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "049000092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
 	} else if (trainConfig == 7) {// R-minCut 7.5 cm
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "049092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "049092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "049092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "049092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "049000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "049000092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "049000092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "049000092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "049000092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
 	} else if (trainConfig == 8) { // R-minCut 7.5 cm
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "040092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "049092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "049092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "049092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "049092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%   
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "040000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "049000092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "049000092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "049000092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "049000092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%   
 	} else if (trainConfig == 9){ // R-minCut 12.5 cm
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "048092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "048092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "048092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "048092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "048000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "048000092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "048000092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "048000092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "048000092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
 	} else if (trainConfig == 10) { // R-minCut 12.5 cm
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "048092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "048092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "048092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "048092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "048000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "048000092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "048000092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "048000092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "048000092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
 	} else if (trainConfig == 11) {// R-minCut 12.5 cm
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "048092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "048092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "048092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "048092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "048000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "048000092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "048000092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "048000092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "048000092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
 	} else if (trainConfig == 12) { // R-minCut 12.5 cm
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "040092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "048092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "048092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "048092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "048092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%      
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "040000092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "048000092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "048000092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "048000092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "048000092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%      
 	} else  if (trainConfig == 13){ // LHC10h standard, eta 0.65, y = 0.6 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032000092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032000092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032000092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032000092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 14) {  // LHC10h standard, eta 0.65, y = 0.6 
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032000092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032000092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032000092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032000092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 15) { // LHC10h standard, eta 0.65, y = 0.6  added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032000092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032000092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032000092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032000092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 16) { // LHC10h standard, eta 0.65, y = 0.6  added signals
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032000092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032000092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032000092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032000092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else  if (trainConfig == 17){ // LHC10h standard, eta 0.65, y = 0.6, photon quality 1 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032000092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032000092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032000092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032000092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 18) {  // LHC10h standard, eta 0.65, y = 0.6, photon quality 1 
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032000092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032000092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032000092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032000092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 19) { // LHC10h standard, eta 0.65, y = 0.6, photon quality 1  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032000092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032000092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032000092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032000092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 20) { // LHC10h standard, eta 0.65, y = 0.6, photon quality 1 added signal
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032000092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032000092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032000092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032000092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else  if (trainConfig == 21){ // LHC10h standard, eta 0.65, y = 0.6, photon quality 2 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032092970023220030000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032092970023220030000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032092970023220030000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032092970023220030000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032000092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032000092970023220030000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032000092970023220030000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032000092970023220030000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032000092970023220030000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 22) {  // LHC10h standard, eta 0.65, y = 0.6, photon quality 2 
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032092970023220030000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032092970023220030000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032092970023220030000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032092970023220030000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032000092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032000092970023220030000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032000092970023220030000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032000092970023220030000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032000092970023220030000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 23) { // LHC10h standard, eta 0.65, y = 0.6, photon quality 2  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032092970023220030000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032092970023220030000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032092970023220030000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032092970023220030000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032000092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032000092970023220030000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032000092970023220030000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032000092970023220030000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032000092970023220030000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 24) { // LHC10h standard, eta 0.65, y = 0.6, photon quality 2 added signal
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032092970023220030000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032092970023220030000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032092970023220030000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032092970023220030000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032000092970023220030000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032000092970023220030000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032000092970023220030000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032000092970023220030000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032000092970023220030000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else  if (trainConfig == 25){ // LHC10h standard, eta 0.65, y = 0.6, photon quality 3 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032000092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032000092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "032000092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "032000092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 26) {  // LHC10h standard, eta 0.65, y = 0.6, photon quality 3 
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "032000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "032000092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "032000092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "032000092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "032000092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 27) { // LHC10h standard, eta 0.65, y = 0.6, photon quality 3  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032000092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032000092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "032000092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "032000092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 28) { // LHC10h standard, eta 0.65, y = 0.6, photon quality 3 added signal
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "032000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "032000092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "032000092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "032000092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "032000092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else  if (trainConfig == 29){ // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "037092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "037092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "037092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "037092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "037092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "037000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "037000092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "037000092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "037000092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "037000092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 30) {  // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm 
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "037092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "037092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "037092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "037092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "037092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "037000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "037000092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "037000092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "037000092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "037000092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 31) { // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm  added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "037092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "037092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "037092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "037092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "037092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "037000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "037000092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "037000092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "037000092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "037000092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 32) { // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm  added signals
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "037092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "037092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "037092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "037092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "037092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "037000092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "037000092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "037000092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "037000092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "037000092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else  if (trainConfig == 33){ // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 1 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "037092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "037092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "037092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "037092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "037092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "037000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "037000092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "037000092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "037000092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "037000092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 34) {  // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 1  
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "037092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "037092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "037092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "037092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "037092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "037000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "037000092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "037000092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "037000092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "037000092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 35) { // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 1  added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "037092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "037092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "037092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "037092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "037092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "037000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "037000092970023220020000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "037000092970023220020000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "037000092970023220020000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "037000092970023220020000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 36) { // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 1  added signals
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "037092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "037092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "037092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "037092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "037092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "037000092970023220020000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "037000092970023220020000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "037000092970023220020000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "037000092970023220020000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "037000092970023220020000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else  if (trainConfig == 37){ // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 3 
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "037092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "037092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "037092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "037092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "037092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "037000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "037000092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "037000092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "037000092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "037000092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 38) {  // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 3  
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "037092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "037092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "037092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "037092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
-		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "037092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "037000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "037000092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "037000092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "037000092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+		eventCutArray[ 4] = "5490001"; photonCutArray[ 4] = "037000092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 39) { // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 3  added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "037092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "037092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "037092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "037092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "037092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "037000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "037000092970023220040000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "037000092970023220040000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "037000092970023220040000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "037000092970023220040000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
 	} else if (trainConfig == 40) { // LHC10h standard, eta 0.65, y = 0.6, min R = 35 cm, photon quality 3  added signals
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "037092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "037092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "037092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "037092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
-		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "037092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "037000092970023220040000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "037000092970023220040000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "037000092970023220040000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "037000092970023220040000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+		eventCutArray[ 4] = "5490002"; photonCutArray[ 4] = "037000092970023220040000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
 	} else if (trainConfig == 41){ // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
-		eventCutArray[ 0] = "6016001"; photonCutArray[ 0] = "002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
-		eventCutArray[ 1] = "6126001"; photonCutArray[ 1] = "002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
-		eventCutArray[ 2] = "5016001"; photonCutArray[ 2] = "002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
-		eventCutArray[ 3] = "6126001"; photonCutArray[ 3] = "002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
-		eventCutArray[ 4] = "5026001"; photonCutArray[ 4] = "002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
+		eventCutArray[ 0] = "6016001"; photonCutArray[ 0] = "002000092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
+		eventCutArray[ 1] = "6126001"; photonCutArray[ 1] = "002000092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
+		eventCutArray[ 2] = "5016001"; photonCutArray[ 2] = "002000092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
+		eventCutArray[ 3] = "6126001"; photonCutArray[ 3] = "002000092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
+		eventCutArray[ 4] = "5026001"; photonCutArray[ 4] = "002000092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
 	} else if (trainConfig == 42) { // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
-		eventCutArray[ 0] = "5236001"; photonCutArray[ 0] = "002092970023220000000"; mesonCutArray[ 0] = "01525065009000"; 
-		eventCutArray[ 1] = "5346001"; photonCutArray[ 1] = "002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
-		eventCutArray[ 2] = "5456001"; photonCutArray[ 2] = "002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
-		eventCutArray[ 3] = "5566001"; photonCutArray[ 3] = "002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
-		eventCutArray[ 4] = "5676001"; photonCutArray[ 4] = "002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
+		eventCutArray[ 0] = "5236001"; photonCutArray[ 0] = "002000092970023220000000"; mesonCutArray[ 0] = "01525065009000"; 
+		eventCutArray[ 1] = "5346001"; photonCutArray[ 1] = "002000092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
+		eventCutArray[ 2] = "5456001"; photonCutArray[ 2] = "002000092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
+		eventCutArray[ 3] = "5566001"; photonCutArray[ 3] = "002000092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
+		eventCutArray[ 4] = "5676001"; photonCutArray[ 4] = "002000092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
 	} else if (trainConfig == 43){ // Standard cuts, eta 0.9, only to be run on data
-		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; 
-		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
-		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
-		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002000092970023220000000"; mesonCutArray[ 0] = "01525045009000"; 
+		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002000092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
+		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002000092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
+		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002000092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
 	} else if ( trainConfig == 44){ // qt elipse cut 0.05
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002000092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002000092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
 	} else if ( trainConfig == 45) { // qt elipse cut 0.05
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002000092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002000092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002000092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002000092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002000092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
 	} else if ( trainConfig == 46){ // qt elipse cut 0.05
-		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002000092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002000092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002000092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002000092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
 	} else if ( trainConfig == 47){ // cos(theta_point) cut 0.85
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002000092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002000092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
 	} else if ( trainConfig == 48) { // cos(theta_point) cut 0.85
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002000092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002000092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002000092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002000092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002000092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
 	} else if ( trainConfig == 49){ // cos(theta_point) cut 0.85
-		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002000092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002000092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002000092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002000092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
 	} else if ( trainConfig == 50){ // psi pair 2D 0.05
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002000092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002000092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
 	} else if ( trainConfig == 51) { // psi pair 2D 0.05
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002000092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002000092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002000092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002000092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002000092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
 	} else if ( trainConfig == 52){ // psi pair 2D 0.05
-		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%       
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002000092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002000092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002000092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002000092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%       
 	} else if ( trainConfig == 53){ // psi pair 2D 0.1
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002000092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002000092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
 	} else if ( trainConfig == 54) { // psi pair 2D 0.1
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002000092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002000092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002000092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002000092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002000092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
 	} else if ( trainConfig == 55){ // psi pair 2D 0.1
-		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%          
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002000092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002000092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002000092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002000092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%          
 	} else if ( trainConfig == 56){ // cleaner cuts
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5120001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5020001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 57){ // cleaner cuts added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5120002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5020002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   
 	} else if ( trainConfig == 58) { // cleaner cuts
-		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-40%
-		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 40-60%
-		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 60-80%
-		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
-		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 30-50%  
+		eventCutArray[ 0] = "5240001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-40%
+		eventCutArray[ 1] = "5460001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 40-60%
+		eventCutArray[ 2] = "5680001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 60-80%
+		eventCutArray[ 3] = "5480001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
+		eventCutArray[ 4] = "5350001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 30-50%  
 	} else if ( trainConfig == 59) { // cleaner cuts added signal
-		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-40%
-		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 40-60%
-		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 60-80%
-		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
-		eventCutArray[ 4] = "5350002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 30-50%  		
+		eventCutArray[ 0] = "5240002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-40%
+		eventCutArray[ 1] = "5460002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 40-60%
+		eventCutArray[ 2] = "5680002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 60-80%
+		eventCutArray[ 3] = "5480002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 40-80%
+		eventCutArray[ 4] = "5350002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 30-50%  		
 	} else if ( trainConfig == 60){ // cleaner cuts
-		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-30% 
-		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 30-40% 
-		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 40-50% 
-		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 50-60% 
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 60-70%                
+		eventCutArray[ 0] = "5230001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-30% 
+		eventCutArray[ 1] = "5340001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 30-40% 
+		eventCutArray[ 2] = "5450001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 40-50% 
+		eventCutArray[ 3] = "5560001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 50-60% 
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 60-70%                
 	} else if ( trainConfig == 61){ // cleaner cuts added signal
-		eventCutArray[ 0] = "5230002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-30% 
-		eventCutArray[ 1] = "5340002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 30-40% 
-		eventCutArray[ 2] = "5450002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 40-50% 
-		eventCutArray[ 3] = "5560002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 50-60% 
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 60-70%                   
+		eventCutArray[ 0] = "5230002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-30% 
+		eventCutArray[ 1] = "5340002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 30-40% 
+		eventCutArray[ 2] = "5450002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 40-50% 
+		eventCutArray[ 3] = "5560002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 50-60% 
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 60-70%                   
 	} else if ( trainConfig == 62){ // cleaner cuts
-		eventCutArray[ 0] = "6230001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6340001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "6450001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "6560001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "6670001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6230001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6340001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "6450001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "6560001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "6670001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 63){ // cleaner cuts added signal
-		eventCutArray[ 0] = "6230002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6340002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "6450002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "6560002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "6670002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6230002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6340002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "6450002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "6560002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "6670002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 64){ // cleaner cuts
-		eventCutArray[ 0] = "6780001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6890001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5670001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5780001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5890001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6780001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6890001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5670001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5780001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5890001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 65){ // cleaner cuts added signal
-		eventCutArray[ 0] = "6780002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6890002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5670002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5780002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5890002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6780002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6890002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5670002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5780002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5890002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 66){ // cleaner cuts
-		eventCutArray[ 0] = "7010001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "7120001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "7230001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "7340001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "7450001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "7010001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "7120001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "7230001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "7340001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "7450001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 67){ // cleaner cuts added signal
-		eventCutArray[ 0] = "7010002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "7120002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "7230002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "7340002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "7450002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "7010002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "7120002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "7230002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "7340002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "7450002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 68){ // cleaner cuts
-		eventCutArray[ 0] = "7560001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "7670001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "7780001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "7890001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "7090001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 0-20%	
+		eventCutArray[ 0] = "7560001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "7670001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "7780001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "7890001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "7090001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 0-20%	
 	} else if ( trainConfig == 69){ // cleaner cuts added signal
-		eventCutArray[ 0] = "7560002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "7670002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "7780002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "7890002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "7090002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 0-20%			
+		eventCutArray[ 0] = "7560002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "7670002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "7780002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "7890002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "7090002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 0-20%			
 	} else if ( trainConfig == 70){ // variation eta  0.65
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032092970028250400000"; mesonCutArray[ 0]= "01523065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032092970028250400000"; mesonCutArray[ 1]= "01523065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032092970028250400000"; mesonCutArray[ 2]= "01523065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "032092970028250400000"; mesonCutArray[ 3]= "01523065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "032092970028250400000"; mesonCutArray[ 4]= "01523065000000"; // 20-50% 
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032000092970028250400000"; mesonCutArray[ 0]= "01523065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032000092970028250400000"; mesonCutArray[ 1]= "01523065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "032000092970028250400000"; mesonCutArray[ 2]= "01523065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "032000092970028250400000"; mesonCutArray[ 3]= "01523065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "032000092970028250400000"; mesonCutArray[ 4]= "01523065000000"; // 20-50% 
 	} else if ( trainConfig == 71){ // variation eta  0.65 added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032092970028250400000"; mesonCutArray[ 0]= "01523065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032092970028250400000"; mesonCutArray[ 1]= "01523065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032092970028250400000"; mesonCutArray[ 2]= "01523065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "032092970028250400000"; mesonCutArray[ 3]= "01523065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "032092970028250400000"; mesonCutArray[ 4]= "01523065000000"; // 20-50% 		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "032000092970028250400000"; mesonCutArray[ 0]= "01523065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "032000092970028250400000"; mesonCutArray[ 1]= "01523065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "032000092970028250400000"; mesonCutArray[ 2]= "01523065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "032000092970028250400000"; mesonCutArray[ 3]= "01523065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "032000092970028250400000"; mesonCutArray[ 4]= "01523065000000"; // 20-50% 		
 	} else if ( trainConfig == 72){ // variation eta  0.75
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "042092970028250400000"; mesonCutArray[ 0]= "01522065009000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "042092970028250400000"; mesonCutArray[ 1]= "01522065009000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "042092970028250400000"; mesonCutArray[ 2]= "01522065009000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "042092970028250400000"; mesonCutArray[ 3]= "01522065009000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "042092970028250400000"; mesonCutArray[ 4]= "01522065009000"; // 20-50% 
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "042000092970028250400000"; mesonCutArray[ 0]= "01522065009000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "042000092970028250400000"; mesonCutArray[ 1]= "01522065009000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "042000092970028250400000"; mesonCutArray[ 2]= "01522065009000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "042000092970028250400000"; mesonCutArray[ 3]= "01522065009000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "042000092970028250400000"; mesonCutArray[ 4]= "01522065009000"; // 20-50% 
 	} else if ( trainConfig == 73){ // variation eta  0.75 added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "042092970028250400000"; mesonCutArray[ 0]= "01522065009000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "042092970028250400000"; mesonCutArray[ 1]= "01522065009000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "042092970028250400000"; mesonCutArray[ 2]= "01522065009000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "042092970028250400000"; mesonCutArray[ 3]= "01522065009000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "042092970028250400000"; mesonCutArray[ 4]= "01522065009000"; // 20-50% 
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "042000092970028250400000"; mesonCutArray[ 0]= "01522065009000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "042000092970028250400000"; mesonCutArray[ 1]= "01522065009000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "042000092970028250400000"; mesonCutArray[ 2]= "01522065009000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "042000092970028250400000"; mesonCutArray[ 3]= "01522065009000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "042000092970028250400000"; mesonCutArray[ 4]= "01522065009000"; // 20-50% 
 	} else if ( trainConfig == 74){ // single pt 0.075
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002492970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002492970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002492970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002492970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002492970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000492970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000492970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000492970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000492970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000492970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 75){ // single pt 0.075 added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002492970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002492970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002492970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002492970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002492970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000492970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000492970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000492970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000492970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000492970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 76){ // single pt 0.1
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002192970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002192970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002192970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002192970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002192970028250400000"; mesonCutArray[ 4]= "01525065000000"; //20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000192970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000192970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000192970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000192970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000192970028250400000"; mesonCutArray[ 4]= "01525065000000"; //20-50%
 	} else if ( trainConfig == 77){ // single pt 0.1 added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002192970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002192970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002192970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002192970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002192970028250400000"; mesonCutArray[ 4]= "01525065000000"; //20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000192970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000192970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000192970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000192970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000192970028250400000"; mesonCutArray[ 4]= "01525065000000"; //20-50%
 	} else if ( trainConfig == 78){ // variation TPC cls 0.7
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002062970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002062970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002062970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002062970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002062970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000062970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000062970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000062970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000062970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000062970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 79){ // variation TPC cls 0.7 added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002062970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002062970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002062970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002062970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002062970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000062970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000062970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000062970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000062970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000062970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 80){ // variation TPC cls 0.35
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002082970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002082970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002082970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002082970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002082970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000082970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000082970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000082970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000082970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000082970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 81){ // variation TPC cls 0.35 added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002082970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002082970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002082970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002082970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002082970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000082970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000082970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000082970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000082970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000082970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 82){ // variation edEdx  -4,5
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002093970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002093970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002093970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002093970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002093970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000093970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000093970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000093970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000093970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000093970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 83){ // variation edEdx  -4,5  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002093970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002093970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002093970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002093970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002093970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000093970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000093970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000093970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000093970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000093970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 84){ // variation edEdx  -2.5,4
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002096970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002096970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002096970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002096970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002096970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000096970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000096970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000096970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000096970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000096970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 85){ // variation edEdx  -2.5,4  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002096970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002096970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002096970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002096970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002096970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000096970028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000096970028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000096970028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000096970028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000096970028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 86){ //variation pion p dEdx 0.3-5.
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092951028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092951028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092951028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092951028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092951028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092951028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092951028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092951028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092951028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092951028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 87){ //variation pion p dEdx 0.3-5.  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092951028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092951028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092951028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092951028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092951028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092951028250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092951028250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092951028250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092951028250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092951028250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 88){ // TOF el. PID -3,5
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970038250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970038250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970038250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970038250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970038250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970038250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970038250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970038250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970038250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970038250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 89){ // TOF el. PID -3,5  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970038250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970038250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970038250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970038250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970038250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970038250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970038250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970038250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970038250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970038250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%		
 	} else if ( trainConfig == 90){ // TOF el. PID -2,3
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970048250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970048250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970048250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970048250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970048250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970048250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970048250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970048250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970048250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970048250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 91){ // TOF el. PID -2,3  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970048250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970048250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970048250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970048250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970048250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970048250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970048250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970048250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970048250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970048250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 92){ // qt 0.03
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970029250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970029250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970029250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970029250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970029250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970029250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970029250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970029250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970029250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970029250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 93){ // qt 0.03  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970029250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970029250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970029250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970029250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970029250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970029250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970029250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970029250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970029250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970029250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 94){ // qt 0.07 no2D
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970022250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970022250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970022250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970022250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970022250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
-	} else if ( trainConfig 	== 95){ // qt 0.07 no2D  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970022250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970022250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970022250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970022250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970022250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970022250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970022250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970022250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970022250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970022250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+	} else if ( trainConfig == 95){ // qt 0.07 no2D  added signal
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970022250400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970022250400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970022250400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970022250400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970022250400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 96){ // chi2  50.
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028150400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028150400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028150400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028150400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028150400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028150400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028150400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028150400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028150400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028150400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 97){ // chi2  50.  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028150400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028150400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028150400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028150400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028150400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028150400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028150400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028150400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028150400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028150400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%		
 	} else if ( trainConfig == 98){ // chi2  20.
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028850400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028850400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028850400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028850400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028850400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028850400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028850400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028850400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028850400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028850400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 99){ // chi2  20.  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028850400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028850400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028850400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028850400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028850400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028850400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028850400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028850400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028850400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028850400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 100){ // psi pair 0.05
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028260400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028260400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028260400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028260400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028260400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028260400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028260400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028260400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028260400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028260400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 101){ // psi pair 0.05  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028260400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028260400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028260400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028260400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028260400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028260400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028260400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028260400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028260400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028260400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 102){ // cosPA -1
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250000000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250000000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250000000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250000000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250000000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250000000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250000000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250000000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250000000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250000000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 103){ // cosPA -1  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250000000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250000000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250000000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250000000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250000000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250000000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250000000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250000000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250000000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250000000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 104){ // variation alpha 0.75
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0]= "01525055000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1]= "01525055000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2]= "01525055000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3]= "01525055000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4]= "01525055000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0]= "01525055000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1]= "01525055000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2]= "01525055000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3]= "01525055000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4]= "01525055000000"; // 20-50%
 	} else if ( trainConfig == 105){ // variation alpha 0.75  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0]= "01525055000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1]= "01525055000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2]= "01525055000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3]= "01525055000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4]= "01525055000000"; // 20-50%	
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0]= "01525055000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1]= "01525055000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2]= "01525055000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3]= "01525055000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4]= "01525055000000"; // 20-50%	
 	} else if ( trainConfig == 106){ // variation alpha 0.85
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0]= "01525075000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1]= "01525075000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2]= "01525075000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3]= "01525075000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4]= "01525075000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0]= "01525075000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1]= "01525075000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2]= "01525075000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3]= "01525075000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4]= "01525075000000"; // 20-50%
 	} else if ( trainConfig == 107){ // variation alpha 0.85  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0]= "01525075000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1]= "01525075000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2]= "01525075000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3]= "01525075000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4]= "01525075000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0]= "01525075000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1]= "01525075000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2]= "01525075000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3]= "01525075000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4]= "01525075000000"; // 20-50%
 	} else if ( trainConfig == 108){ // psi pair 0.2
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028280400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028280400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028280400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028280400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028280400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "002111092970028280400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "002111092970028280400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "002111092970028280400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "002111092970028280400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5253601"; photonCutArray[ 4] = "002111092970028280400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 109){ // psi pair 0.2  added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028280400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028280400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028280400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028280400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028280400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028280400000"; mesonCutArray[ 0]= "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028280400000"; mesonCutArray[ 1]= "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028280400000"; mesonCutArray[ 2]= "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028280400000"; mesonCutArray[ 3]= "01525065000000"; // 20-40%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028280400000"; mesonCutArray[ 4]= "01525065000000"; // 20-50%
 	} else if ( trainConfig == 110){ // cleaner cuts
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 111){ // cleaner cuts added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 112){ // cleaner cuts photon Quality 1
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 113){ // cleaner cuts added signal photon Quality 1
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 114){ // cleaner cuts photon Quality 2
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250430000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250430000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250430000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250430000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250430000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250430000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250430000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250430000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250430000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250430000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 115){ // cleaner cuts added signal photon Quality 2
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250430000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250430000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250430000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250430000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250430000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250430000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250430000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250430000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250430000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250430000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 116){ // cleaner cuts photon Quality 3
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 117){ // cleaner cuts added signal photon Quality 3
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 118){ // cleaner cuts, min R = 35 cm
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "007092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "007092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "007092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "007092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "007092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "007000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "007000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "007000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "007000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "007000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 119){ // cleaner cuts, min R = 35 cm added signal
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "007092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "007092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "007000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "007000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 120){ // cleaner cuts, photon Quality 1, min R = 35 cm
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "007092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "007092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "007092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "007092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "007092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "007000092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "007000092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "007000092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "007000092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "007000092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 121){ // cleaner cuts added signal, photon Quality 1, min R = 35 cm
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "007092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "007092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "007000092970028250420000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "007000092970028250420000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007000092970028250420000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007000092970028250420000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007000092970028250420000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 122){ // cleaner cuts, photon Quality 3, min R = 35 cm
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "007092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "007092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "007092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "007092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "007092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "007000092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "007000092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "007000092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "007000092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "007000092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 123){ // cleaner cuts added signal, photon Quality 3, min R = 35 cm
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "007092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "007092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "007000092970028250440000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "007000092970028250440000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "007000092970028250440000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "007000092970028250440000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "007000092970028250440000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%   		
 	} else if ( trainConfig == 124){ // cleaner cuts, specific centrality trigger selection 
-		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // kCentral 0-5%
-		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // kCentral 5-10%
-		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // kCentral 0-10%
-		eventCutArray[ 3] = "5013601"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // kSemiCentral 0-10%
-		eventCutArray[ 4] = "5123601"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // kSemiCentral 10-20%
+		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // kCentral 0-5%
+		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // kCentral 5-10%
+		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // kCentral 0-10%
+		eventCutArray[ 3] = "5013601"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // kSemiCentral 0-10%
+		eventCutArray[ 4] = "5123601"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // kSemiCentral 10-20%
 	} else if ( trainConfig == 125){ // cleaner cuts, specific centrality trigger selection 
-		eventCutArray[ 0] = "5233601"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // kSemiCentral 20-30%
-		eventCutArray[ 1] = "5343601"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // kSemiCentral 30-40%
-		eventCutArray[ 2] = "5453601"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // kSemiCentral 40-50%
-		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // kSemiCentral 20-40%
-		eventCutArray[ 4] = "5253601"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // kSemiCentral 20-50%
+		eventCutArray[ 0] = "5233601"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // kSemiCentral 20-30%
+		eventCutArray[ 1] = "5343601"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // kSemiCentral 30-40%
+		eventCutArray[ 2] = "5453601"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // kSemiCentral 40-50%
+		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // kSemiCentral 20-40%
+		eventCutArray[ 4] = "5253601"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // kSemiCentral 20-50%
 	} else if ( trainConfig == 126){ // cleaner cuts, pion line at 2.5 sigma
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092370028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092370028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092370028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092370028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092370028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092370028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092370028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092370028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092370028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092370028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 127){ // cleaner cuts, pion line at 2.5 sigma added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092370028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092370028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092370028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092370028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092370028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092370028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092370028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092370028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092370028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092370028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 128){ // cleaner cuts, pion line at 2.0 sigma
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092570028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092570028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092570028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092570028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092570028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
-	} else if ( trainConfig == 129){ // cleaner cuts, pion line at 2.0 sigma added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092570028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092570028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092570028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092570028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092570028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "002111092573028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "002111092573028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "002111092573028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "002111092573028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5253601"; photonCutArray[ 4] = "002111092573028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+ 	} else if ( trainConfig == 129){ // cleaner cuts, pion line at 2.0 sigma added signals
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092570028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092570028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092570028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092570028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092570028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 130){ // cleaner cuts, pion line at 2.0, high pt at 1.0
-		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002092874028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002092874028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002092874028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002092874028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002092874028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092874028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092874028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "002000092874028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "002000092874028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "002000092874028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 131){ // cleaner cuts, pion line at 2.0, high pt at 1.0, added signals
-		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002092874028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002092874028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002092874028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002092874028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002092874028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
+		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "002000092874028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "002000092874028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "002000092874028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "002000092874028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "002000092874028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%
 	} else if ( trainConfig == 132){ // cleaner cuts, finer centrality slices
-		eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "002092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
-		eventCutArray[ 1] = "5230001"; photonCutArray[ 1] = "002092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
-		eventCutArray[ 2] = "5340001"; photonCutArray[ 2] = "002092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
-		eventCutArray[ 3] = "5450001"; photonCutArray[ 3] = "002092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
-		eventCutArray[ 4] = "5560001"; photonCutArray[ 4] = "002092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%	
+		eventCutArray[ 0] = "5120001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "5230001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5340001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10%
+		eventCutArray[ 3] = "5450001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 10-20%
+		eventCutArray[ 4] = "5560001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 0-20%	
+	} else if ( trainConfig == 133){ // cleaner cuts with oroc phi cut & specific centrality selection
+		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "002111092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 0-5%
+		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "002111092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 5-10%
+		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "002111092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 0-10% central
+		eventCutArray[ 3] = "5013601"; photonCutArray[ 3] = "002111092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 0-10% semicentral
+		eventCutArray[ 4] = "5123601"; photonCutArray[ 4] = "002111092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 10-20%
+	} else if ( trainConfig == 134){ // cleaner cuts
+		eventCutArray[ 0] = "5243601"; photonCutArray[ 0] = "002111092970028250400000"; mesonCutArray[ 0] = "01525065000000"; // 20-40%
+		eventCutArray[ 1] = "5253601"; photonCutArray[ 1] = "002111092970028250400000"; mesonCutArray[ 1] = "01525065000000"; // 20-50%
+		eventCutArray[ 2] = "5233601"; photonCutArray[ 2] = "002111092970028250400000"; mesonCutArray[ 2] = "01525065000000"; // 20-30%
+		eventCutArray[ 3] = "5343601"; photonCutArray[ 3] = "002111092970028250400000"; mesonCutArray[ 3] = "01525065000000"; // 30-40%
+		eventCutArray[ 4] = "5453601"; photonCutArray[ 4] = "002111092970028250400000"; mesonCutArray[ 4] = "01525065000000"; // 40-50%
+	} else if ( trainConfig == 135){ // flow cuts with eta = 0.9, y = 0.85
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "002000092970028250400000"; mesonCutArray[ 1] = "01525065000000";
+		eventCutArray[ 2] = "5120001"; photonCutArray[ 2] = "002000092970028250400000"; mesonCutArray[ 2] = "01525065000000";
+		eventCutArray[ 3] = "5230001"; photonCutArray[ 3] = "002000092970028250400000"; mesonCutArray[ 3] = "01525065000000";
+		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "002000092970028250400000"; mesonCutArray[ 4] = "01525065000000";
+		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "002000092970028250400000"; mesonCutArray[ 5] = "01525065000000";
+		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "002000092970028250400000"; mesonCutArray[ 6] = "01525065000000";
+	} else if ( trainConfig == 136){ // flow cuts with eta = 0.65, y = 0.6
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "032000092970028250400000"; mesonCutArray[ 0] = "01523065000000";
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "032000092970028250400000"; mesonCutArray[ 1] = "01523065000000";
+		eventCutArray[ 2] = "5120001"; photonCutArray[ 2] = "032000092970028250400000"; mesonCutArray[ 2] = "01523065000000";
+		eventCutArray[ 3] = "5230001"; photonCutArray[ 3] = "032000092970028250400000"; mesonCutArray[ 3] = "01523065000000";
+		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "032000092970028250400000"; mesonCutArray[ 4] = "01523065000000";
+		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "032000092970028250400000"; mesonCutArray[ 5] = "01523065000000";
+		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "032000092970028250400000"; mesonCutArray[ 6] = "01523065000000";
+	} else if ( trainConfig == 137){ // flow cuts with eta = 0.6, y = 0.5
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "012000092970028250400000"; mesonCutArray[ 0] = "01524065000000";
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "012000092970028250400000"; mesonCutArray[ 1] = "01524065000000";
+		eventCutArray[ 2] = "5120001"; photonCutArray[ 2] = "012000092970028250400000"; mesonCutArray[ 2] = "01524065000000";
+		eventCutArray[ 3] = "5230001"; photonCutArray[ 3] = "012000092970028250400000"; mesonCutArray[ 3] = "01524065000000";
+		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "012000092970028250400000"; mesonCutArray[ 4] = "01524065000000";
+		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "012000092970028250400000"; mesonCutArray[ 5] = "01524065000000";
+		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "012000092970028250400000"; mesonCutArray[ 6] = "01524065000000";  
+	} else if ( trainConfig == 138){
+		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "002111092573028280400000"; mesonCutArray[ 0] = "01525065000000"; 
+		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "002111092573028280400000"; mesonCutArray[ 1] = "01525065000000"; 
+		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "002111092573028280400000"; mesonCutArray[ 2] = "01525065000000"; 
+		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "002111092573028280400000"; mesonCutArray[ 3] = "01525065000000"; 
+		eventCutArray[ 4] = "5243601"; photonCutArray[ 4] = "002111092573028280400000"; mesonCutArray[ 4] = "01525065000000"; 
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

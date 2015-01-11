@@ -519,6 +519,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     if(multbins) delete [] multbins; 
     if(vtxbins)  delete [] vtxbins; 
     if(psibins)  delete [] psibins; 
+
+    // set minimum values for track depth, fraction, and number of events
+    fPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
     
     // check pool manager
     if(!fPoolMgr){
@@ -768,7 +771,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	
 	//pool->SetDebug(1);
 
-	if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+	if (pool->IsReady()){ 
 	  
 	  
 	  Int_t nMix = pool->GetCurrentNEvents();
@@ -2182,17 +2185,19 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	      if(motherParticle) {
 		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
 		//if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-		if(pdgCodeOfMother == 113  // rho0
-		   || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
-		   // || pdgCodeOfMother == 221  // eta
-		   // || pdgCodeOfMother == 331  // eta'
-		   // || pdgCodeOfMother == 223  // omega
-		   // || pdgCodeOfMother == 333  // phi
-		   || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
-		   // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
-		   // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
-		   || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
-		   || pdgCodeOfMother == 111  // pi0 Dalitz
+		if(
+		   pdgCodeOfMother == 333  // phi
+		   // pdgCodeOfMother == 113  // rho0
+		   // || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+		   // // || pdgCodeOfMother == 221  // eta
+		   // // || pdgCodeOfMother == 331  // eta'
+		   // // || pdgCodeOfMother == 223  // omega
+		   // // || pdgCodeOfMother == 333  // phi
+		   // || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+		   // // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+		   // // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+		   // || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+		   // || pdgCodeOfMother == 111  // pi0 Dalitz
 		   ) {
 		  kExcludeParticle = kTRUE;
 		}

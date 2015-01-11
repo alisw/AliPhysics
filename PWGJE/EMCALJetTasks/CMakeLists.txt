@@ -1,0 +1,229 @@
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
+
+# Module
+set(MODULE PWGJEEMCALJetTasks)
+
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliRoot_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+                   )
+
+# Additional include folders in alphabetical order except ROOT
+include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/PWG/EMCAL
+                    ${AliRoot_SOURCE_DIR}/PWG/Tools
+                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                   )
+
+# Sources in alphabetical order
+set(SRCS
+    AliAnalysisTaskDeltaPt.cxx
+    AliAnalysisTaskEmcalJet.cxx
+    AliAnalysisTaskEmcalJetSample.cxx
+    AliAnalysisTaskLocalRho.cxx
+    AliAnalysisTaskRhoAverage.cxx
+    AliAnalysisTaskRhoBase.cxx
+    AliAnalysisTaskRho.cxx
+    AliAnalysisTaskRhoFlow.cxx
+    AliAnalysisTaskRhoMassBase.cxx
+    AliAnalysisTaskRhoMass.cxx
+    AliAnalysisTaskRhoSparse.cxx
+    AliAnalysisTaskScale.cxx
+    AliEmcalJetByJetCorrection.cxx
+    AliEmcalJet.cxx
+    AliEmcalPicoTrackInGridMaker.cxx
+    AliJetConstituentTagCopier.cxx
+    AliJetContainer.cxx
+    AliJetEmbeddingFromGenTask.cxx
+    AliJetEmbeddingFromPYTHIATask.cxx
+    AliJetEmbeddingTask.cxx
+    AliJetFastSimulation.cxx
+    AliJetModelBaseTask.cxx
+    AliJetModelCopyTracks.cxx
+    AliJetModelMergeBranches.cxx
+    AliJetRandomizerTask.cxx
+    AliJetResponseMaker.cxx
+    AliJetTriggerSelectionTask.cxx
+    AliLocalRhoParameter.cxx
+    AliPythiaInfo.cxx
+    AliRhoParameter.cxx
+    Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
+    Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
+    Tracks/AliCutValueRange.cxx
+    Tracks/AliEMCalHistoContainer.cxx
+    Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
+    Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
+    Tracks/AliEMCalPtTaskVTrackSelection.cxx
+    Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
+    Tracks/AliEMCalTriggerBinningComponent.cxx
+    Tracks/AliEMCalTriggerBinningFactory.cxx
+    Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerEventCounterAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerEventData.cxx
+    Tracks/AliEMCalTriggerEventSelection.cxx
+    Tracks/AliEMCalTriggerKineCuts.cxx
+    Tracks/AliEMCalTriggerMCJetAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerMCParticleAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerPatchAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerRecJetAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerTaskGroup.cxx
+    Tracks/AliEMCalTriggerTracksAnalysisComponent.cxx
+    UserTasks/AliAnalysisTaskChargedJetsPA.cxx
+    UserTasks/AliAnalysisTaskCLQA.cxx
+    UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
+    UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
+    UserTasks/AliAnalysisTaskDijetHadron.cxx
+    UserTasks/AliAnalysisTaskEmcalBadCells.cxx
+    UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
+    UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
+    UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
+    UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
+    UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
+    UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
+    UserTasks/AliAnalysisTaskEmcalJetMass.cxx
+    UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
+    UserTasks/AliAnalysisTaskEmcalJetMassStructure.cxx
+    UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
+    UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
+    UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
+    UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
+    UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
+    UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
+    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+    UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
+    UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
+    UserTasks/AliAnalysisTaskHJetEmbed.cxx
+    UserTasks/AliAnalysisTaskJetJTJT.cxx
+    UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
+    UserTasks/AliAnalysisTaskJetMatching.cxx
+    UserTasks/AliAnalysisTaskJetShapeConst.cxx
+    UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
+    UserTasks/AliAnalysisTaskJetShapeGR.cxx
+    UserTasks/AliAnalysisTaskJetV2.cxx
+    UserTasks/AliAnalysisTaskRhoMassScale.cxx
+    UserTasks/AliAnalysisTaskSAJF.cxx
+    UserTasks/AliAnalysisTaskSAQA.cxx
+    UserTasks/AliAnalysisTaskSOH.cxx
+    UserTasks/AliAnalysisTaskTriggerRejection.cxx
+    UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
+    UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
+   )
+
+if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+        AliFJWrapper.cxx
+        AliEmcalJetUtility.cxx
+        AliEmcalJetUtilityGenSubtractor.cxx
+        AliEmcalJetUtilityConstSubtractor.cxx
+        AliEmcalJetTask.cxx
+        AliEmcalJetFinder.cxx
+        AliJetEmbeddingFromAODTask.cxx
+        UserTasks/AliAnalysisTaskFullpAJets.cxx
+        UserTasks/AliAnalysisTaskFullppJet.cxx
+        UserTasks/AliAnalysisTaskHJetDphi.cxx
+        UserTasks/AliAnalysisTaskHJetSpectra.cxx
+       )
+
+    include_directories(#${AliRoot_SOURCE_DIR}/HLT/FJWrapper
+                        ${AliRoot_SOURCE_DIR}/JETAN/JETAN
+                       )
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
+
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+if(FASTJET_FOUND)
+  set(HDRS ${HDRS}
+      FJ_includes.h
+     )
+endif(FASTJET_FOUND)
+
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES ANALYSIS)
+if(FASTJET_FOUND)
+    set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
+endif(FASTJET_FOUND)
+
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
+
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+endif(DATE_FOUND)
+
+# Additional compilation and linking flags
+set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Setting compilation flags for the object
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+# Setting the linking flags for the library
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Installation
+install(TARGETS ${MODULE}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
+install(FILES ${HDRS} DESTINATION include)
+
+# Installing the macros
+install (DIRECTORY macros DESTINATION PWGJE/EMCALJetTasks)

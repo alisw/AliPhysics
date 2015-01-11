@@ -178,6 +178,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    }
 
      if(collSyst==kPPb)  task->UseESDTriggerMask(triggerMask);
+     else if(collSyst==kPbPb) task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); 
 
 
    if(collSyst==kPPb) 
@@ -187,7 +188,8 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    else
      task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   
-  
+ 
+
    if ( collSyst == kPP ) 
      task->UseMultiplicity("QUALITY");
    else if(collSyst==kPPb) 

@@ -65,7 +65,7 @@ public:
   
   void ComputeTriggerL0B(ETriggerType tt);
 
-  void ComputeTSGraph(ETriggerType tt);
+  //  void ComputeTSGraph(ETriggerType tt); // Commented out in the implementation file
 
   AliMergeableCollection* DetachMC();
 
@@ -73,7 +73,7 @@ public:
   
   TString GetEventSelectionName(Int_t eventSelectionCorrected) const;
 
-  void GetFnorm(Int_t runNumber, const char* eventSelection, Double_t& value, Double_t& error) const;
+  //  void GetFnorm(Int_t runNumber, const char* eventSelection, Double_t& value, Double_t& error) const; // Not implemented
   
   TGraphErrors* GetGraph(const char* name) const;
   

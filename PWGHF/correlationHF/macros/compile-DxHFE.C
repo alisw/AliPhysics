@@ -23,7 +23,7 @@
   gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libPWGHFhfe.so");
+  gSystem->Load("libPWGHFhfe");
   gSystem->Load("libCORRFW");
   gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/hfe ");
 

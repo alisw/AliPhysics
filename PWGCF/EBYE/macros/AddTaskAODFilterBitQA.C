@@ -1,7 +1,5 @@
 //_________________________________________________________//
-AliAnalysisTaskAODFilterBitQA *AddTaskAODFilterBitQA(TString taskname = "AODFilterBitQA", 
-						     Double_t centralityMin = 0., 
-						     Double_t centralityMax = 80.
+AliAnalysisTaskAODFilterBitQA *AddTaskAODFilterBitQA(TString taskname = "AODFilterBitQA"
 						     ) {
   // Creates an AODFilterBitQA analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
@@ -28,16 +26,13 @@ AliAnalysisTaskAODFilterBitQA *AddTaskAODFilterBitQA(TString taskname = "AODFilt
   
   // Create the task, add it to manager and configure it.
   //===========================================================================
-  AliAnalysisTaskAODFilterBitQA *taskAODFilterBitQA = new AliAnalysisTaskAODFilterBitQA(Form("list_%s_%.0f-%.0f",taskname.Data(),centralityMin,centralityMax));
+  AliAnalysisTaskAODFilterBitQA *taskAODFilterBitQA = new AliAnalysisTaskAODFilterBitQA(Form("list_%s",taskname.Data()));
 
   // ==========================================================================
   // user customization part
-  taskAODFilterBitQA->SetCentralityPercentileRange(centralityMin,centralityMax);
+  taskAODFilterBitQA->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   // ==========================================================================
 
-									 
-   
-  taskAODFilterBitQA->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
 
   mgr->AddTask(taskAODFilterBitQA);
 
@@ -47,7 +42,7 @@ AliAnalysisTaskAODFilterBitQA *AddTaskAODFilterBitQA(TString taskname = "AODFilt
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputFilterBitQA";
-  AliAnalysisDataContainer *coutAODFilterBitQA = mgr->CreateContainer(Form("list_%s_%.0f-%.0f",taskname.Data(),centralityMin,centralityMax), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutAODFilterBitQA = mgr->CreateContainer(Form("list_%s",taskname.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   
   mgr->ConnectInput(taskAODFilterBitQA, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskAODFilterBitQA, 1, coutAODFilterBitQA);

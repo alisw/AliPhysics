@@ -18,12 +18,12 @@ void makeTrendingDB(const Char_t *fl)
 // Make trending of variable list "tl" from trending file list "fl"
 // The trending value list should be formated "var1:var2:var3"
 // The trending file from the list should be found on a path formated "your path"/runId/TRD.PerformanceTrend.root 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGPP.so");
-  gSystem->Load("libPWGmuon.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTender");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGPP");
+  gSystem->Load("libPWGmuon");
 
   const Int_t nt(322);
   const Char_t *tvn[nt][2] = {

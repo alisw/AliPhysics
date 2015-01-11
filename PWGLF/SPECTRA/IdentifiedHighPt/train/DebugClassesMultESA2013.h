@@ -13,18 +13,18 @@ class DeDxTrack : public TObject
   Float_t   phi;
   Float_t   dedx;
 
-  Bool_t    isTOFout;
-  Bool_t    hasTOFtime;
-  Bool_t    isTOFmatched;
+	//Tuning Output size for Tuva (h-V0 correlation) 
+  //Bool_t    isTOFout;
+  //Bool_t    hasTOFtime;
+  //Bool_t    isTOFmatched;
 
-  Float_t   flength;
-  Float_t   ftimetof;
-  Float_t   exptoftimeel;
-  Float_t   exptoftimemu;
-  Float_t   exptoftimepi;
-  Float_t   exptoftimeka;
-  Float_t   exptoftimepr;
-
+  //Float_t   flength;
+  //Float_t   ftimetof;
+  //Float_t   exptoftimeel;
+  //Float_t   exptoftimemu;
+  //Float_t   exptoftimepi;
+  //Float_t   exptoftimeka;
+  //Float_t   exptoftimepr;
 
   Float_t   dcaxy;
   Float_t   dcaz;
@@ -84,6 +84,7 @@ class DeDxV0 : public TObject
   Float_t   dcav0;
   Float_t   dcadaughters;
   Int_t     pdg;
+  Int_t     pdgmother;
   Short_t   primary;  
   Short_t   status;  
   // old
@@ -127,9 +128,9 @@ class DeDxEvent : public TObject
   Int_t     run;         // run number
   UInt_t    time;        // time of event
   Float_t   cent;        // centrality V0A+V0C, default
-  Float_t   centV0A;        // centrality V0A
-  Float_t   centZNA;        // centrality ZNA
-  Float_t   centCL1;        // centrality from number of clusters in layer 1, SPD
+  //Float_t   centV0A;        // centrality V0A
+  //Float_t   centZNA;        // centrality ZNA
+  //Float_t   centCL1;        // centrality from number of clusters in layer 1, SPD
   Float_t   mag;         // magnetic field
   Float_t   zvtx;        // rec vertex
   Float_t   zvtxMC;      // MC true vertes
@@ -142,13 +143,14 @@ class DeDxEvent : public TObject
   Short_t   nMC;         // MC number of added tracks 
   Short_t   process;     // MC process: -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
   Short_t   trig;        // 0=untriggered, &1 = MB, &2=V0 AND
-  Short_t   pileup;      // Is the event marked as pileup?
-  Float_t   sphericity;  //|eta|<0.8, pt>0.5, Nch>3  
-  Float_t   spherocity;  //|eta|<0.8, pt>0.5, Nch>3
-  Float_t   sphericityTPC;  //|eta|<0.8, pt>0.5, Nch>3  
-  Float_t   spherocityTPC;  //|eta|<0.8, pt>0.5, Nch>3
-  Float_t   sphericityMC;  //|eta|<0.8, pt>0.5, Nch>3, true  
-  Float_t   spherocityMC;  //|eta|<0.8, pt>0.5, Nch>3, true  
+
+  //Short_t   pileup;      // Is the event marked as pileup?
+  //Float_t   sphericity;  //|eta|<0.8, pt>0.5, Nch>3  
+  //Float_t   spherocity;  //|eta|<0.8, pt>0.5, Nch>3
+  //Float_t   sphericityTPC;  //|eta|<0.8, pt>0.5, Nch>3  
+  //Float_t   spherocityTPC;  //|eta|<0.8, pt>0.5, Nch>3
+  //Float_t   sphericityMC;  //|eta|<0.8, pt>0.5, Nch>3, true  
+  //Float_t   spherocityMC;  //|eta|<0.8, pt>0.5, Nch>3, true  
 
   DeDxEvent();
   void Copy(TObject& object) const;

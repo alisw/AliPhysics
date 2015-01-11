@@ -193,7 +193,7 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libEventMixing.so");
+    gSystem->Load("libEventMixing");
     gSystem->Load("libCORRFW");
     gSystem->Load("libPWGTools");
     gSystem->Load("libPWGCFebye");

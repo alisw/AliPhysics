@@ -2,13 +2,13 @@
 // Base macro for submitting muon QA analysis.
 //
 // In case it is not run with full aliroot, it needs the following libraries:
-//  - libSTEERBase.so
-//  - libESD.so
-//  - libAOD.so
-//  - libANALYSIS.so
-//  - libANALYSISalice.so
-//  - libCORRFW.so
-//  - libPWGmuon.so
+//  - libSTEERBase
+//  - libESD
+//  - libAOD
+//  - libANALYSIS
+//  - libANALYSISalice
+//  - libCORRFW
+//  - libPWGmuon
 //
 // The macro reads ESDs and store outputs in standard output file (AnalysisResults.root)
 //
@@ -34,11 +34,11 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   
   // Load common libraries
   gSystem->Load("libVMC");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libXMLParser.so");
-  gSystem->Load("libGui.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libGui");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");

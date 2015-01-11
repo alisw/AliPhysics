@@ -38,7 +38,10 @@ class AliCFManager;
 class AliSelectNonHFE;
 class AliPIDResponse;
 
-
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliStack.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
@@ -58,30 +61,36 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
 
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
+  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent);
   void InitParameters();
+
   
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
   Double_t GetPi0weight(Double_t mcPi0pT,Float_t cent) const;
   Double_t GetEtaweight(Double_t mcEtapT,Float_t cent) const;
-  Double_t GetDweight(Int_t whichD, Double_t mcDpT, Float_t cent) const;
-
+  Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Float_t cent) const;
+  Bool_t   IsElectronFromPi0(TParticle *particle, AliStack * stack, Double_t &weight, Float_t cent);
+  Bool_t   IsElectronFromEta(TParticle *particle, AliStack * stack, Double_t &weight, Float_t cent);
+  Bool_t   IsPi0EtaFromHFdecay(TParticle *particle, AliStack* stack);
+  Bool_t   IsPi0EtaFromLMdecay(TParticle *particle, AliStack* stack);
+  Bool_t   IsPi0EtaPrimary(TParticle *particle, AliStack* stack);
 
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
 
-  AliESDEvent        	*fESD;	            		//! ESD object
+  AliESDEvent        	*fESD;	            	//! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
   AliVEvent             *fVevent;               //! VEvent
   AliPIDResponse        *fpidResponse;          //! PID response
 
   AliMCEvent            *fMC;                   //! MC object
     
-  TList              	*fOutputList;		        //! output list
+  TList              	*fOutputList;		//! output list
   
-  AliESDtrackCuts     	*fTrackCuts;      		  //! ESD track cuts
+  AliESDtrackCuts     	*fTrackCuts;      	//! ESD track cuts
   AliHFEcuts 		*fCuts;                 //! Cut Collection
   AliSelectNonHFE       *fNonHFE;               //! Select non heavy flavour electrons
 
@@ -90,50 +99,54 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Bool_t 		fRejectKinkMother;      //! Reject Kink Mother
   Bool_t 		fIsMC;                  //! flag for MC analysis   
   Bool_t                fIsAOD;                 //! flag for AOD analysis
+  Bool_t		fSetMassConstraint;	//! set mass constraint
 
   Double_t 		fVz;                    //! z position of the primary vertex
   AliCFManager 		*fCFM;                  //! Correction Framework Manager
   AliHFEpid 		*fPID;                  //! PID
-  AliHFEpidQAmanager 	*fPIDqa;		            //! PID QA manager
-  Double_t 		fOpeningAngleCut;	      //! openingAngle cut for non-HFE selection
-  Double_t	        fInvmassCut;		        //! invariant mass cut  for non-HFE selection
+  AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
+  Double_t 		fOpeningAngleCut;	//! openingAngle cut for non-HFE selection
+  Double_t	        fInvmassCut;		//! invariant mass cut  for non-HFE selection
   Double_t	        fChi2Cut;               //! Chi2 cut  for non-HFE selection
   Double_t	        fDCAcut;                //! DCA cut  for non-HFE selection
-  Float_t	        fminCent;               //! min centrality
-  Float_t	        fmaxCent;               //! max centrality
   TString               fnonHFEalgorithm;       //! algorithm to select non-HFE pairs (KF or DCA) 
 
-  TH1F		        *fNoEvents;		          //! no of events
-  TH1F		        *fTrkpt;		            //! track pt
-  TH2F		        *fTrkEovPBef;		        //! track E/p before HFE pid
-  TH2F		        *fTrkEovPAft;		        //! track E/p after HFE pid
-  TH2F		        *fdEdxBef;		          //! track dEdx vs p before HFE pid
-  TH2F		        *fdEdxAft;		          //! track dEdx vs p after HFE pid
-  TH1F		        *fPhotoElecPt;		      //! photonic elec pt 
-  TH1F		        *fSemiInclElecPt;	      //! Semi inclusive ele pt
-  THnSparse	        *fMCphotoElecPt;	      //! pt distribution (MC)
+  TH1F		        *fNoEvents;		//! no of events
+  TH1F		        *fTrkpt;		//! track pt
+  TH2F		        *fTrkEovPBef;		//! track E/p before HFE pid
+  TH2F		        *fTrkEovPAft;		//! track E/p after HFE pid
+  TH2F		        *fdEdxBef;		//! track dEdx vs p before HFE pid
+  TH2F		        *fdEdxAft;		//! track dEdx vs p after HFE pid
+  TH1F		        *fPhotoElecPt;		//! photonic elec pt 
+  TH1F		        *fSemiInclElecPt;	//! Semi inclusive ele pt
   
-  TH1F		        *fTrackPtBefTrkCuts;	  //! Track pt before track cuts	
-  TH1F		        *fTrackPtAftTrkCuts;	  //! Track pt after track cuts
-  TH2F		        *fTPCnsigma;		        //! TPC n sigma vs p	
+  TH2F                  *fInvmassLS[3];		//! Inv mass of LS (e,e)
+  TH2F                  *fInvmassULS[3];	//! Inv mass of ULS (e,e)
+  TH2F                  *fOpeningAngleLS[3];	//! opening angle for LS pairs
+  TH2F                  *fOpeningAngleULS[3];	//! opening angle for ULS pairs
+
+  TH1F		        *fTrackPtBefTrkCuts;	//! Track pt before track cuts	
+  TH1F		        *fTrackPtAftTrkCuts;	//! Track pt after track cuts
+  TH2F		        *fTPCnsigma;		//! TPC n sigma vs p	
   
-  TH1F		        *fCent;			            //! centrality
-  TH2F		        *fevPlaneV0;		        //! V0 event plane distribution
-  TH1F		        *fTPCsubEPres;		      //! TPC event plane resolution
-  THnSparse	        *fEPres;		            //! event plane resolution
-  THnSparse	        *fCorr;			            //! correlations
-  THnSparse	        *feTPCV2;		            //! inclusive eletron v2 (only TPC PID)
-  THnSparse	        *feV2;			            //! inclusive eletron v2 (TPC + EMCAL PID)
-  THnSparse	        *fphoteV2;		          //! photonic electron v2 (TPC + EMCAL PID)
-  THnSparse	        *fChargPartV2;		      //! charged particle v2
+  TH1F		        *fCent;			//! centrality
+  TH1F		        *fevPlaneV0[3];		//! V0 event plane distribution
+  TH1F		        *fTPCsubEPres;		//! TPC event plane resolution
+  THnSparse	        *fEPres;		//! event plane resolution
+  THnSparse	        *fCorr;			//! correlations
+  TH2F		        *feTPCV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (only TPC PID)
+  TH2F		        *feV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (TPC + EMCAL PID)
+  TH2F		        *fChargPartV2[3];	//! CosDeltaPhi vs pt of charged particle for trigger correction
+  TH2F		        *fMtcPartV2[3];		//! CosDeltaPhi vs pt of matched particle for trigger correction
     
-  TH2F		        *fGammaWeight;		      //! gamma weight
-  TH2F		        *fPi0Weight;		        //! pi0 weight
-  TH2F		        *fEtaWeight;		        //! eta weight
-  TH2F		        *fD0Weight;		          //! D0 weight
-  TH2F		        *fDplusWeight;		      //! D+ weight
-  TH2F		        *fDminusWeight;		      //! D- weight
+  TH1F		        *fPi0Pt[3];		//! primary pi0 pt to compute the weight
+  TH1F		        *fEtaPt[3];		//! primary eta pt to compute the weight
   
+  TH1F			*fEoverPsig[3][8][4];	//! E/p distribution for electrons
+  TH1F			*fEoverPuls[3][8][4];	//! E/p distribution for electrons from unlike-sign pairs
+  TH1F			*fEoverPls[3][8][4];	//! E/p distribution for electrons from like-sign pairs
+  TH1F			*fEoverPbcg[3][8][4];	//! E/p distribution for hadrons
+
   TH1F		        *fDe[6];
   TH1F		        *fD0e[6];
   TH1F		        *fDpluse[6];
@@ -141,19 +154,19 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   
   TH2F		        *fD0_e;
   
-  TH1F		        *fTot_pi0e;		          //! inclusive electron
-  TH1F		        *fPhot_pi0e;		        //! ULS pair 
-  TH1F		        *fPhotBCG_pi0e;		      //! LS pair
-  TH1F		        *fTot_etae;		          //! inclusive electron
-  TH1F		        *fPhot_etae;		        //! ULS pair 
-  TH1F		        *fPhotBCG_etae;		      //! LS pair
+  TH1F		        *fTot_pi0e;		//! inclusive electron
+  TH1F		        *fPhot_pi0e;		//! ULS pair 
+  TH1F		        *fPhotBCG_pi0e;		//! LS pair
+  TH1F		        *fTot_etae;		//! inclusive electron
+  TH1F		        *fPhot_etae;		//! ULS pair 
+  TH1F		        *fPhotBCG_etae;		//! LS pair
 
-  TH1F                  *fInvMass;		          //! Invariant mass of ULS pairs
-  TH1F                  *fInvMassBack;		      //! Invariant mass if LS pairs
-  TH1F                  *fDCA;		              //! DCA of ULS pairs
-  TH1F                  *fDCABack;		          //! DCA of LS pairs
-  TH1F                  *fOpAngle;		          //! Opening angle of ULS pairs
-  TH1F                  *fOpAngleBack;		      //! Opening angle of LS pairs
+  TH1F                  *fInvMass;		//! Invariant mass of ULS pairs
+  TH1F                  *fInvMassBack;		//! Invariant mass if LS pairs
+  TH1F                  *fDCA;		        //! DCA of ULS pairs
+  TH1F                  *fDCABack;		//! DCA of LS pairs
+  TH1F                  *fOpAngle;		//! Opening angle of ULS pairs
+  TH1F                  *fOpAngleBack;		//! Opening angle of LS pairs
 
 
   AliAnalysisTaskFlowTPCEMCalEP(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented

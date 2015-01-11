@@ -38,10 +38,10 @@ void takuv2c123456_2012_TEST()
    printf("Include path: %s\n", gSystem->GetIncludePath());
 
 // Add aditional AliRoot libraries
-   gSystem->Load("libCORRFW.so");
-   gSystem->Load("libPWG3base.so");
-   gSystem->Load("libPWG3dielectron.so");
-   gSystem->Load("libPWG3hfe.so");
+   gSystem->Load("libCORRFW");
+   gSystem->Load("libPWG3base");
+   gSystem->Load("libPWG3dielectron");
+   gSystem->Load("libPWG3hfe");
 
 // analysis source to be compiled at runtime (if any)
    gROOT->ProcessLine(".L AliDielectronHistosTaku.cxx+g");

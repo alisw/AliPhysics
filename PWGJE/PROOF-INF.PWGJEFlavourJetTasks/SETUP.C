@@ -4,7 +4,7 @@ void SETUP()
 {
   // Load the library
   TString ocwd = gSystem->WorkingDirectory();
-  gSystem->Load(ocwd+"/libPWGJEFlavourJetTasks.so");
+  gSystem->Load(ocwd+"/libPWGJEFlavourJetTasks");
 
   // Set the Include paths
   gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGJEFlavourJetTasks");

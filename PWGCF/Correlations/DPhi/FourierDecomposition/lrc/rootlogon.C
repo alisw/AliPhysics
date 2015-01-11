@@ -7,7 +7,7 @@
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
 
-  gSystem->Load("libTree.so");
+  gSystem->Load("libTree");
   if (gSystem->Getenv("TMPDIR")) 
     gSystem->SetBuildDir(gSystem->Getenv("TMPDIR"));
   if (1) {

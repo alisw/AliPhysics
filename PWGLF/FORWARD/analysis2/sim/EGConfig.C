@@ -10,12 +10,14 @@
 struct EGCfg : public VirtualEGCfg
 {
   Int_t   hftype;     // Heavy flavour type (random)
-
+  Bool_t  fIsLego;    //
+  
   EGCfg() 
-    : hftype(-1)
+    : hftype(-1), fIsLego(false);
   {
     hftype = HFType();
   }
+  virtual Bool_t IsLego() const { return fIsLego; }
 protected:
   /** 
    * Make a random Heavy Flavour type 
@@ -49,26 +51,28 @@ protected:
   {
     Bool_t        asym = grp->IsPA()||grp->IsAP();
     AliGenerator* g    = 0;
-    if      (rt.EndsWith("perugia0chadr"))     g=PythiaHF(0);
-    else if (rt.EndsWith("perugia0bchadr"))    g=PythiaHF(1);
-    else if (rt.EndsWith("perugia0cele"))      g=PythiaHF(2);
-    else if (rt.EndsWith("perugia0bele"))      g=PythiaHF(3);
-    else if (rt.EndsWith("perugia0jspi2e"))    g=PythiaHF(4);
-    else if (rt.EndsWith("perugia0btojspi2e")) g=PythiaHF(5);
-    else if (rt.BeginsWith("pythia"))          g=Pythia(rt);
-    else if (rt.BeginsWith("hijing2000hf"))    g=HFCocktail(rt, b1, b2);
-    else if (rt.BeginsWith("hijing2000"))      g=Hijing(b1, b2, asym, 
+    TString t(rt);
+    if      (t.EqualTo("default"))            t = DeduceRunType();
+    if      (t.EndsWith("perugia0chadr"))     g=PythiaHF(0);
+    else if (t.EndsWith("perugia0bchadr"))    g=PythiaHF(1);
+    else if (t.EndsWith("perugia0cele"))      g=PythiaHF(2);
+    else if (t.EndsWith("perugia0bele"))      g=PythiaHF(3);
+    else if (t.EndsWith("perugia0jspi2e"))    g=PythiaHF(4);
+    else if (t.EndsWith("perugia0btojspi2e")) g=PythiaHF(5);
+    else if (t.BeginsWith("pythia"))          g=Pythia(rt);
+    else if (t.BeginsWith("hijing2000hf"))    g=HFCocktail(rt, b1, b2);
+    else if (t.BeginsWith("hijing2000"))      g=Hijing(b1, b2, asym, 
 							false, 2.3);
-    else if (rt.BeginsWith("hijing"))          g=Hijing(b1, b2, asym, 
+    else if (t.BeginsWith("hijing"))          g=Hijing(b1, b2, asym, 
 							grp->IsAA(), 0);
-    else if (rt.BeginsWith("ampthf"))          g=HFCocktail(rt,b1,b2);
-    else if (rt.BeginsWith("ampt"))            g=Ampt(b1, b2);
-    else if (rt.BeginsWith("dpmjet"))          g=Dpmjet(b1, b2);
-    else if (rt.BeginsWith("phojet"))          g=Dpmjet(b1, b2);
-    else if (rt.BeginsWith("hydjet"))          g=Hydjet(b1, b2);
-
-    if (!g)
-      Fatal("", "Invalid run type \"%s\" specified", rt.Data());
+    else if (t.BeginsWith("ampthf"))          g=HFCocktail(rt,b1,b2);
+    else if (t.BeginsWith("ampt"))            g=Ampt(b1, b2);
+    else if (t.BeginsWith("dpmjet"))          g=Dpmjet(b1, b2);
+    else if (t.BeginsWith("phojet"))          g=Dpmjet(b1, b2);
+    else if (t.BeginsWith("hydjet"))          g=Hydjet(b1, b2);
+    else if (t.BeginsWith("lego"))            g=Lego(rt);
+    if (!g && !fIsLego)
+      Fatal("", "Invalid run type \"%s\" specified", t.Data());
     return g;
   }
   /** 
@@ -266,8 +270,8 @@ protected:
     // reference frame
     gener->SetReferenceFrame("CMS");
     // projectil
-    gener->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    gener->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    gener->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    gener->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     // tell hijing to keep the full parent child chain
     gener->KeepFullEvent();
     // enable jet quenching
@@ -287,8 +291,8 @@ protected:
     if (!slowN || !grp->IsPA() || !grp->IsAP()) return gener;
 
     AliGenCocktail* cocktail = new AliGenCocktail();
-    cocktail->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    cocktail->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    cocktail->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    cocktail->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     cocktail->SetEnergyCMS(grp->energy);
 
     AliGenSlowNucleons*     gray  = new AliGenSlowNucleons(1);
@@ -297,7 +301,7 @@ protected:
     //  Not yet in the release...
     //      model->SetSaturation(kTRUE);
     gray->SetSlowNucleonModel(model);
-    gray->SetTarget(grp->beam2.a, grp->beam2.z);
+    gray->SetTarget(grp->beam1.a, grp->beam1.z);
     gray->SetThetaDist(1);
     gray->SetProtonDirection(grp->beam1.IsP() ? 1 : 2);
     //      gray->SetDebug(1);
@@ -323,16 +327,16 @@ protected:
     LoadDpmjet();
     AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 
     dpmjet->SetEnergyCMS(grp->energy);
-    dpmjet->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    dpmjet->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    dpmjet->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    dpmjet->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
     dpmjet->SetImpactParameterRange(minB, maxB);
-    dpmjet->SetProjectileBeamEnergy(grp->beam1.z*grp->beamEnergy/grp->beam1.a);
+    dpmjet->SetProjectileBeamEnergy(grp->beam2.z*grp->beamEnergy/grp->beam2.a);
     if (grp->IsAA()) { 
       dpmjet->SetPi0Decay(0);
     }
     else if (grp->IsPA() || grp->IsAP()) { 
-      dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
-      dpmjet->SetFragmentProd(fragments); // Alwas disabled 
+      // dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
+      dpmjet->SetFragmentProd(false/*fragments*/); // Alwas disabled 
     }
     else if (grp->IsPP()) { // PhoJet
       dpmjet->SetMomentumRange(0, 999999.);
@@ -353,8 +357,8 @@ protected:
     AliGenAmpt *genHi = new AliGenAmpt(-1);
     genHi->SetEnergyCMS(grp->energy);
     genHi->SetReferenceFrame("CMS");
-    genHi->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    genHi->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    genHi->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    genHi->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     genHi->SetPtHardMin (2);
     genHi->SetImpactParameterRange(minB,maxB);
     // disable jet quenching
@@ -378,8 +382,8 @@ protected:
     LoadHydjet();
     AliGenUHKM *genHi = new AliGenUHKM(-1);
     genHi->SetAllParametersLHC();
-    genHi->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    genHi->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    genHi->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    genHi->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     genHi->SetEcms(grp->energy);
     genHi->SetEnergyCMS(grp->energy);
     genHi->SetBmin(minB);
@@ -387,6 +391,71 @@ protected:
     genHi->SetPyquenPtmin(9);
     return genHi;
   }
+  // === Lego ========================================================
+  /** 
+   * Greate a lego event generator 
+   * 
+   * @param tune Possible tune 
+   * 
+   * @return newly allocated generator or null
+   */
+  AliGenerator* Lego(const TString & variant)
+  {
+    fIsLego = true;
+    return 0;
+#if 0
+    TString v(variant);
+    v.ToUpper();
+    v.ReplaceAll("LEGO", "");
+    Info("Setup", "Making Lego event generator (variant: %s)", v.Data());
+
+    AliLegoGenerator* ret = 0;
+    // XYZ varies origin of the particles in two dimensions:
+    //  X:  o=(0,t1,t2), p=(1,0,0)
+    //  Y:  o=(t1,0,t2), p=(0,1,0)
+    //  Z:  o=(t1,t2,0), p=(0,0,1)
+    // PhiZ varies the momentum in two dimensions
+    //  o=(0,0,t1) p=(cos(t2),sin(t2),0)
+    // Eta varies momentum in two dimensions
+    //  phi=t1
+    //  theta=2*atan(exp(-t2))
+    //  o=(0,0,0) p=(cos(phi)*sin(theta),sin(phi)*cos(theta),cos(theta))
+    // Base varies in two dimensions
+    //  phi=t1
+    //  theta=t2
+    //  o=(0,0,0) p=(cos(phi)*sin(theta),sin(phi)*cos(theta),cos(theta))    
+    if (v.BeginsWith("X") || v.BeginsWith) {
+      const char* c[] = { v(0), '\0' };
+      ret = new AliLegoGeneratorXYZ(c);
+      ret->SetCoor1Range(10,-2,2);   // Y, X
+      ret->SetCoor2Range(10,-10,10); // Z
+    }
+    else if (v.BeginsWith("Z")) {
+      ret = new AliLegoGeneratorXYZ("Z");
+      ret->SetCoor1Range(10,-2,2);   // X
+      ret->SetCoor2Range(10,-2,2);   // Y
+    }
+    else if (v.BeginsWith("PHIZ")) {
+      ret = new AliLegoGeneratorPhiZ();
+      ret->SetCoor1Range(10,-10,10); // Z
+      ret->SetCoor2Range(360,0,360); // phi
+    }
+    else if (v.BeginsWith("ETA")) {
+      ret = new AliLegoGeneratorEta();
+      ret->SetCoor1Range(360,0,360); // phi
+      Double_t aEta = 7;
+      Double_t dEta = (6--4)/200;
+      ret->SetCoor2Range(2*aEta/dEta,-aEta,+aEta); // Eta
+    }
+    else {
+      ret = new AliLegoGenerator();
+      ret->SetCoor1Range(180,0,180); // theta
+      ret->SetCoor1Range(360,0,360); // phi
+    }
+    return ret;
+#endif
+  }
+
   /** 
    * Make a heavy flavour cocktail 
    * 
@@ -398,8 +467,8 @@ protected:
   {
     
     AliGenCocktail *cocktail = new AliGenCocktail();
-    cocktail->SetProjectile(grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
-    cocktail->SetTarget    (grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    cocktail->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    cocktail->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     cocktail->SetEnergyCMS(grp->energy);
     
     // Add underlying event

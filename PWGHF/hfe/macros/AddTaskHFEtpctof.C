@@ -1,8 +1,8 @@
 AliAnalysisTask *AddTaskHFEtpctof(Bool_t isMC,Bool_t kAnalyseTaggedTracks = kFALSE, Bool_t kMCQA = kFALSE, Bool_t kDEStep = kFALSE, Int_t aodfilter=-1, Int_t tpcCls=110,  Int_t tpcClsPID = 70, Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, Double_t tpcs=0., Double_t tpcu=3., Double_t tofs=3., Double_t ipSig=3.0, Bool_t prodcut = kFALSE, Bool_t ipAbs = kFALSE, Int_t itspixelcut=AliHFEextraCuts::kAny, Bool_t withetacorrection=kFALSE, TString listname="", Int_t ptbin=0){
 
   // libraries in case
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
 
   AliLog::SetGlobalDebugLevel(AliLog::kError);
   AliLog::SetClassDebugLevel("AliCFParticleGenCuts",4);

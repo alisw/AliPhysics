@@ -2,7 +2,8 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 						const char* options = "11h",
 						Double_t sigmaWidth = 3.,
 						Int_t downCentLimit = 0,
-						Int_t upCentLimit = 90 )
+						Int_t upCentLimit = 90,
+						const char* suffix = "" )
 {
 	//Author: Ponomarenko Daniil (Daniil.Ponomarenko@cern.ch)
 	/* $Id$ */
@@ -24,20 +25,20 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	TString className = name;
 	TString sigmaName = Form( "%2iSigma", int(sigmaWidth*10.) ) ;
 	if( sigmaWidth==0 ) sigmaName = "00Sigma";
-	TString sName = Form("%s%sCB%it%iCnt", className.Data(), sigmaName.Data(), downCentLimit, upCentLimit);
-	//TString sName = "LOL";
+	TString sName = Form("%s%s%sCB%it%iCnt", className.Data(), suffix, sigmaName.Data(), downCentLimit, upCentLimit);
 
-	AliPHOSCorrelations* task = new AliPHOSCorrelations( Form("%sTask", sName.Data()) );
+	TString combinedName;
+	combinedName.Form("%sTask", sName.Data());
+
+	AliPHOSCorrelations* task = new AliPHOSCorrelations( combinedName );
 
 	if( TString(options).Contains("10h") )	
 	{
-		task->SetPeriod( AliPHOSCorrelations::kLHC10h );
 		task->SetCentralityEstimator("V0M");
 	}
 	
 	if( TString(options).Contains("11h") )	
 	{
-		task->SetPeriod( AliPHOSCorrelations::kLHC11h );
 		task->SetCentralityEstimator("V0M");
 		if( downCentLimit == 0 && upCentLimit == 10 ) 
 		{
@@ -58,7 +59,6 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	
 	if( TString(options).Contains("13") )	
 	{
-		task->SetPeriod( AliPHOSCorrelations::kLHC13 );
 		task->SetCentralityEstimator("V0A");
 		if( downCentLimit == 0 && upCentLimit == 10 ) 
 		{
@@ -85,7 +85,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		const int nbins = 5;
 		Double_t cbin[nbins+1] = {0., 2., 4., 6., 8., 10.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100};
+		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
@@ -95,11 +95,14 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		const int nbins = 6;
 		Double_t cbin[nbins+1] = {20., 25., 30., 35., 40., 45., 50.};
 		TArrayD tbin(nbins+1, cbin);
-		Int_t    nMixed[nbins] = {100, 100, 100, 100, 100, 100};
+		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 
+
+	// Period setup
+	task->SetPeriodName( TString(options) );
 	// Events
 	task->SelectCollisionCandidates(AliVEvent::kAny);
 	task->SetCentralityBorders((Double_t)downCentLimit , (Double_t)upCentLimit) ;
@@ -116,12 +119,11 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
     task->SwitchOffTrackHitSPDSelection();
     task->SetTrackFilterMask(786);
 
-
 	mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
 
-	TString cname(Form("%sCoutput1", sName.Data()));
-	TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), sName.Data()));
+	TString cname(Form("%sCoutput1", combinedName.Data()));
+	TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), combinedName.Data()));
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
 	mgr->ConnectOutput(task, 1, coutput1);
 

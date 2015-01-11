@@ -227,7 +227,7 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   fOutput->Add(fNtupleTracks);
 
   fHistNEvents = new TH1F("hNEvents", "Number of processed events",7,-0.5,6.5);
-  fHistNEvents->Sumw2();
+  //fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"Good vertex"); 
@@ -254,68 +254,68 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   TString tit[kNtrackTypes]={"TPCITS","ITSsa","ITSpureSA"};
   for(Int_t iType=0; iType<kNtrackTypes; iType++){
     fHistPt[iType]=new TH1F(Form("hPt%s",tit[iType].Data()),"",100,0.,2.);
-    fHistPt[iType]->Sumw2();
+    //fHistPt[iType]->Sumw2();
     fOutput->Add(fHistPt[iType]);
     fHistPtGood[iType]=new TH1F(Form("hPtGood%s",tit[iType].Data()),"",100,0.,2.);
-    fHistPtGood[iType]->Sumw2();
+    //fHistPtGood[iType]->Sumw2();
     fOutput->Add(fHistPtGood[iType]);
     fHistPtFake[iType]=new TH1F(Form("hPtFake%s",tit[iType].Data()),"",100,0.,2.);
-    fHistPtFake[iType]->Sumw2();
+    //fHistPtFake[iType]->Sumw2();
     fOutput->Add(fHistPtFake[iType]);
 
     fHistEtaPhi[iType] = new TH2F(Form("hEtaPhi%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhi[iType]->Sumw2();
+    //fHistEtaPhi[iType]->Sumw2();
     fOutput->Add(fHistEtaPhi[iType]);
     fHistEtaPhiGood[iType] = new TH2F(Form("hEtaPhiGood%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhiGood[iType]->Sumw2();
+    //fHistEtaPhiGood[iType]->Sumw2();
     fOutput->Add(fHistEtaPhiGood[iType]);
     fHistEtaPhiFake[iType] = new TH2F(Form("hEtaPhiFake%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhiFake[iType]->Sumw2();
+    //fHistEtaPhiFake[iType]->Sumw2();
     fOutput->Add(fHistEtaPhiFake[iType]);
 
     fHistEtaPhiAny[iType] = new TH2F(Form("hEtaPhiAny%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhiAny[iType]->Sumw2();
+    //fHistEtaPhiAny[iType]->Sumw2();
     fOutput->Add(fHistEtaPhiAny[iType]);
     fHistEtaPhi1SPD[iType] = new TH2F(Form("hEtaPhi1SPD%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhi1SPD[iType]->Sumw2();
+    //fHistEtaPhi1SPD[iType]->Sumw2();
     fOutput->Add(fHistEtaPhi1SPD[iType]);
     fHistEtaPhi4Clu[iType] = new TH2F(Form("hEtaPhi4Clu%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhi4Clu[iType]->Sumw2();
+    //fHistEtaPhi4Clu[iType]->Sumw2();
     fOutput->Add(fHistEtaPhi4Clu[iType]);
     fHistEtaPhi6Clu[iType] = new TH2F(Form("hEtaPhi6Clu%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
-    fHistEtaPhi6Clu[iType]->Sumw2();
+    //fHistEtaPhi6Clu[iType]->Sumw2();
     fOutput->Add(fHistEtaPhi6Clu[iType]);
 
     fHistChi2[iType]=new TH1F(Form("hChi2%s",tit[iType].Data()),"",100,0.,10.);
-    fHistChi2[iType]->Sumw2();
+    //fHistChi2[iType]->Sumw2();
     fOutput->Add(fHistChi2[iType]);
     fHistChi2Good[iType]=new TH1F(Form("hChi2Good%s",tit[iType].Data()),"",100,0.,10.);
-    fHistChi2Good[iType]->Sumw2();
+    //fHistChi2Good[iType]->Sumw2();
     fOutput->Add(fHistChi2Good[iType]);
     fHistChi2Fake[iType]=new TH1F(Form("hChi2Fake%s",tit[iType].Data()),"",100,0.,10.);
-    fHistChi2Fake[iType]->Sumw2();
+    //fHistChi2Fake[iType]->Sumw2();
     fOutput->Add(fHistChi2Fake[iType]);
 
     fHistNclu[iType]=new TH1F(Form("hNclu%s",tit[iType].Data()),"",7,-0.5,6.5);
-    fHistNclu[iType]->Sumw2();
+    //fHistNclu[iType]->Sumw2();
     fOutput->Add(fHistNclu[iType]);
     fHistNcluGood[iType]=new TH1F(Form("hNcluGood%s",tit[iType].Data()),"",7,-0.5,6.5);
-    fHistNcluGood[iType]->Sumw2();
+    //fHistNcluGood[iType]->Sumw2();
     fOutput->Add(fHistNcluGood[iType]);
     fHistNcluFake[iType]=new TH1F(Form("hNcluFake%s",tit[iType].Data()),"",7,-0.5,6.5);
-    fHistNcluFake[iType]->Sumw2();
+    //fHistNcluFake[iType]->Sumw2();
     fOutput->Add(fHistNcluFake[iType]);
 
     fHistdedxvsP2cls[iType] = new TH2F(Form("hdedxvsP2cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
-    fHistdedxvsP2cls[iType]->Sumw2();
+    //fHistdedxvsP2cls[iType]->Sumw2();
     fOutput->Add(fHistdedxvsP2cls[iType]);
 
     fHistdedxvsP3cls[iType] = new TH2F(Form("hdedxvsP3cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
-    fHistdedxvsP3cls[iType]->Sumw2();
+    //fHistdedxvsP3cls[iType]->Sumw2();
     fOutput->Add(fHistdedxvsP3cls[iType]);
 
     fHistdedxvsP4cls[iType] = new TH2F(Form("hdedxvsP4cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
-    fHistdedxvsP4cls[iType]->Sumw2();
+    //fHistdedxvsP4cls[iType]->Sumw2();
     fOutput->Add(fHistdedxvsP4cls[iType]);
   }
 
@@ -331,132 +331,132 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
 
     hisname.Form("hPtTPCITS%s",spname[iSpec].Data());
     fHistPtTPCITS[iSpec] = new TH1F(hisname.Data(),"",100,0.,2.);
-    fHistPtTPCITS[iSpec]->Sumw2();
+    //fHistPtTPCITS[iSpec]->Sumw2();
     fOutput->Add(fHistPtTPCITS[iSpec]);
 
     hisname.Form("hPtITSsa%s",spname[iSpec].Data());
     fHistPtITSsa[iSpec] = new TH1F(hisname.Data(),"",100,0.,2.);
-    fHistPtITSsa[iSpec]->Sumw2();
+    //fHistPtITSsa[iSpec]->Sumw2();
     fOutput->Add(fHistPtITSsa[iSpec]);
 
     hisname.Form("hPtITSpureSA%s",spname[iSpec].Data());
     fHistPtITSpureSA[iSpec] = new TH1F(hisname.Data(),"",100,0.,2.);
-    fHistPtITSpureSA[iSpec]->Sumw2();
+    //fHistPtITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistPtITSpureSA[iSpec]);
 
     //---
 
     hisname.Form("hEtaPhiTPCITS%s",spname[iSpec].Data());
     fHistEtaPhiTPCITS[iSpec] = new TH2F(hisname.Data(),"",50,-1,1.,50,0.,2.*TMath::Pi());
-    fHistEtaPhiTPCITS[iSpec]->Sumw2();
+    //fHistEtaPhiTPCITS[iSpec]->Sumw2();
     fOutput->Add(fHistEtaPhiTPCITS[iSpec]);
 
     hisname.Form("hEtaPhiITSsa%s",spname[iSpec].Data());
     fHistEtaPhiITSsa[iSpec] = new TH2F(hisname.Data(),"",50,-1,1.,50,0.,2.*TMath::Pi());
-    fHistEtaPhiITSsa[iSpec]->Sumw2();
+    //fHistEtaPhiITSsa[iSpec]->Sumw2();
     fOutput->Add(fHistEtaPhiITSsa[iSpec]);
 
     hisname.Form("hEtaPhiITSpureSA%s",spname[iSpec].Data());
     fHistEtaPhiITSpureSA[iSpec] = new TH2F(hisname.Data(),"",50,-1,1.,50,0.,2.*TMath::Pi());
-    fHistEtaPhiITSpureSA[iSpec]->Sumw2();
+    //fHistEtaPhiITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistEtaPhiITSpureSA[iSpec]);
 
     //---
 
     hisname.Form("hNcluTPCITS%s",spname[iSpec].Data());
     fHistNcluTPCITS[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-0.5,6.5);
-    fHistNcluTPCITS[iSpec]->Sumw2();
+    //fHistNcluTPCITS[iSpec]->Sumw2();
     fOutput->Add(fHistNcluTPCITS[iSpec]);
 
     hisname.Form("hNcluITSsa%s",spname[iSpec].Data());
     fHistNcluITSsa[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-0.5,6.5);
-    fHistNcluITSsa[iSpec]->Sumw2();
+    //fHistNcluITSsa[iSpec]->Sumw2();
     fOutput->Add(fHistNcluITSsa[iSpec]);
 
     hisname.Form("hNcluITSpureSA%s",spname[iSpec].Data());
     fHistNcluITSpureSA[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-0.5,6.5);
-    fHistNcluITSpureSA[iSpec]->Sumw2();
+    //fHistNcluITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistNcluITSpureSA[iSpec]);
 
     //---
 
     hisname.Form("hd0rphiITSpureSA%s",spname[iSpec].Data());
     fHistd0rphiITSpureSA[iSpec] = new TH2F(hisname.Data(),"",nbins,xbins,4000,-2,2);
-    fHistd0rphiITSpureSA[iSpec]->Sumw2();
+    //fHistd0rphiITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistd0rphiITSpureSA[iSpec]);
 
     hisname.Form("hd0zITSpureSA%s",spname[iSpec].Data());
     fHistd0zITSpureSA[iSpec] = new TH2F(hisname.Data(),"",nbins,xbins,4000,-2,2);
-    fHistd0zITSpureSA[iSpec]->Sumw2();
+    //fHistd0zITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistd0zITSpureSA[iSpec]);
 
     //---
 
     hisname.Form("hCluInLayTPCITS%s",spname[iSpec].Data());
     fHistCluInLayTPCITS[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-1.5,5.5);
-    fHistCluInLayTPCITS[iSpec]->Sumw2();
+    //fHistCluInLayTPCITS[iSpec]->Sumw2();
     fOutput->Add(fHistCluInLayTPCITS[iSpec]);
     
     hisname.Form("hCluInLayITSsa%s",spname[iSpec].Data());
     fHistCluInLayITSsa[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-1.5,5.5);
-    fHistCluInLayITSsa[iSpec]->Sumw2();
+    //fHistCluInLayITSsa[iSpec]->Sumw2();
     fOutput->Add(fHistCluInLayITSsa[iSpec]);
 
     hisname.Form("hCluInLayITSpureSA%s",spname[iSpec].Data());
     fHistCluInLayITSpureSA[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-1.5,5.5);
-    fHistCluInLayITSpureSA[iSpec]->Sumw2();
+    //fHistCluInLayITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistCluInLayITSpureSA[iSpec]);
     
     hisname.Form("hOuterLayITSpureSA%s",spname[iSpec].Data());
     fHistOuterLayITSpureSA[iSpec] = new TH2F(hisname.Data(),"",100,0.,2.,7,-1.5,5.5);
-    fHistOuterLayITSpureSA[iSpec]->Sumw2();
+    //fHistOuterLayITSpureSA[iSpec]->Sumw2();
     fOutput->Add(fHistOuterLayITSpureSA[iSpec]);
     
     //---
 
     hisname.Form("hPtResid%s",spname[iSpec].Data());
     fHistPtResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-1.,1.);
-    fHistPtResid[iSpec]->Sumw2();
+    //fHistPtResid[iSpec]->Sumw2();
     fOutput->Add(fHistPtResid[iSpec]);
     hisname.Form("hPtRelResid%s",spname[iSpec].Data());
     fHistPtRelResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-0.5,0.5);
-    fHistPtRelResid[iSpec]->Sumw2();
+    //fHistPtRelResid[iSpec]->Sumw2();
     fOutput->Add(fHistPtRelResid[iSpec]);
     
     hisname.Form("hInvPtResid%s",spname[iSpec].Data());
     fHistInvPtResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-1.,1.);
-    fHistInvPtResid[iSpec]->Sumw2();
+    //fHistInvPtResid[iSpec]->Sumw2();
     fOutput->Add(fHistInvPtResid[iSpec]);
     hisname.Form("hInvPtRelResid%s",spname[iSpec].Data());
     fHistInvPtRelResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-0.5,0.5);
-    fHistInvPtRelResid[iSpec]->Sumw2();
+    //fHistInvPtRelResid[iSpec]->Sumw2();
     fOutput->Add(fHistInvPtRelResid[iSpec]);
     
     hisname.Form("hMCPtResid%s",spname[iSpec].Data());
     fHistMCPtResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-1.,1.);
-    fHistMCPtResid[iSpec]->Sumw2();
+    //fHistMCPtResid[iSpec]->Sumw2();
     fOutput->Add(fHistMCPtResid[iSpec]);
     hisname.Form("hMCPtRelResid%s",spname[iSpec].Data());
     fHistMCPtRelResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-0.5,0.5);
-    fHistMCPtRelResid[iSpec]->Sumw2();
+    //fHistMCPtRelResid[iSpec]->Sumw2();
     fOutput->Add(fHistMCPtRelResid[iSpec]);
     
     hisname.Form("hMCInvPtResid%s",spname[iSpec].Data());
     fHistMCInvPtResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-1.,1.);
-    fHistMCInvPtResid[iSpec]->Sumw2();
+    //fHistMCInvPtResid[iSpec]->Sumw2();
     fOutput->Add(fHistMCInvPtResid[iSpec]);
     hisname.Form("hMCInvPtRelResid%s",spname[iSpec].Data());
     fHistMCInvPtRelResid[iSpec]=new TH2F(hisname.Data(),hisname.Data(),nbins,xbins,100,-0.5,0.5);
-    fHistMCInvPtRelResid[iSpec]->Sumw2();
+    //fHistMCInvPtRelResid[iSpec]->Sumw2();
     fOutput->Add(fHistMCInvPtRelResid[iSpec]);
     
   }
 
   fHistMCPhiResid=new TH2F("hMCPhiResid","",nbins,xbins,100,-0.5,0.5);
-  fHistMCPhiResid->Sumw2();
+  //fHistMCPhiResid->Sumw2();
   fOutput->Add(fHistMCPhiResid);
   fHistPhiResid=new TH2F("hPhiResid","",nbins,xbins,100,-0.5,0.5);
-  fHistPhiResid->Sumw2();
+  //fHistPhiResid->Sumw2();
   fOutput->Add(fHistPhiResid);
 
   PostData(1,fOutput);

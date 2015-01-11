@@ -7,7 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPool.h"
-#include "PWG/muon/AliMuonTrackCuts.h"
+#include "AliMuonTrackCuts.h"
 
 class TFormula;
 class TH1;

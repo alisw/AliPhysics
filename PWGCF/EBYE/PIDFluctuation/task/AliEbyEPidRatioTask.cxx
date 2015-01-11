@@ -150,7 +150,7 @@ void AliEbyEPidRatioTask::SetIsRatio(Int_t i) {
   else if (i == 5) { fIsRatio = 0;  fIsPtBin = 1; fIsDetectorWise = 1; }         
   else if (i == 6) { fIsRatio = 1;  fIsPtBin = 1; fIsDetectorWise = 1; } 
   else if (i == 7) { fIsSub   = 1;  fIsBS    = 0; fIsPtBin        = 0; }
-  else if (i == 8) { fIsSub   = 0;  fIsBS    = 1; fIsPtBin        = 0; }
+  else if (i == 8) { fIsSub   = 1;  fIsBS    = 1; fIsRatio        = 1; }
   else if (i == 9) { fIsSub   = 1;  fIsBS    = 1; fIsPtBin        = 0; }
   else if (i ==10) { fIsSub   = 1;  fIsBS    = 0; fIsPtBin        = 1; }
   else if (i ==11) { fIsSub   = 0;  fIsBS    = 1; fIsPtBin        = 1; }

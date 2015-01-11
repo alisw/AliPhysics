@@ -11,6 +11,7 @@
 #define ALIANALYSISTASKPI0FLOWMCAOD_H
 
 class AliAODMCParticle;
+class AliCaloPhoton;
 
 #include "AliAnalysisTaskPi0Flow.h"
 

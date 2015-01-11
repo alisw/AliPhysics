@@ -31,8 +31,8 @@
 // 
 // For stand alone usage please refer to the following example: 
 // {  
-//   gSystem->Load("libANALYSIS.so");
-//   gSystem->Load("libTRDqaRec.so");
+//   gSystem->Load("libANALYSIS");
+//   gSystem->Load("libTRDqaRec");
 //   AliTRDresolution *res = new AliTRDresolution();
 //   //res->SetMCdata();
 //   //res->SetVerbose();

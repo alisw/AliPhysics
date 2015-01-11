@@ -23,12 +23,12 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
   //Load the PWG2ebye library
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libEventMixing.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libEventMixing");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGCFebye");
 
   //correction method check
   if(k2pMethod2D&&!k2pMethod){

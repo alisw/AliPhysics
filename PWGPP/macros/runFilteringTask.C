@@ -21,7 +21,7 @@ void runFilteringTask( const char* esdList,
 
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libTENDER");
+    gSystem->Load("libTender");
     gSystem->Load("libCORRFW");
     gSystem->Load("libPWGUDbase");
     gSystem->Load("libTPCcalib");

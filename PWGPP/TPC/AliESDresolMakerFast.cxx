@@ -37,7 +37,7 @@
   //
   // Load macros
   //
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
   .L $ALICE_ROOT/PWGPP/AliESDresolParams.cxx+
   .L $ALICE_ROOT/PWGPP/AliESDresolMakerFast.cxx+
   TCut cutDCA="Tracks[].fCchi2<100&&abs(Tracks[].fP[4])<8&&abs(Tracks[].fP[3])<1&&sqrt(Tracks[].fC[0])/(0.2+abs(Tracks[].fP[4]))<0.02&&abs(Tracks[].fX)<3&&Tracks[].fITSncls>4&&Tracks.fTPCncls>40"

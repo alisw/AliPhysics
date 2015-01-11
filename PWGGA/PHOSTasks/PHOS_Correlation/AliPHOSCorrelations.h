@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice     */
 
 // Analysis task for identifion PHOS cluster from Pi0 and extracting pi0-hadron correlation.
-// Author: 	Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
+// Author:  Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
 // 20-Sept-2014
 
 class TClonesArray;
@@ -34,7 +34,6 @@ class AliVTrack;
 class AliPHOSCorrelations : public AliAnalysisTaskSE 
 {
 public:
-  enum Period               { kUndefinedPeriod, kLHC10h, kLHC11h, kLHC13 } ;
   enum EventSelection       { kTotal, kEvent, kEventHandler, 
                               kTriggerMaskSelection, kHasVertex, kHasCentrality, 
                               kHasPHOSClusters, kHasTPCTracks, kPHOSEvent, 
@@ -45,13 +44,14 @@ public:
 public:
   AliPHOSCorrelations() ;
   AliPHOSCorrelations(const char *name) ;
-  AliPHOSCorrelations(const char *name, Period period ) ;
   virtual ~AliPHOSCorrelations() ;
 
   virtual void   UserCreateOutputObjects() ;
   virtual void   UserExec(Option_t *option) ;
 
-  void SetPeriod(const Period period)                                             { fPeriod = period                     ; }
+  void SetPeriodName(const TString str)                                           { fPeriod = str                    ; }
+  TString GetPeriod()                                                       const { return fPeriod                   ; }
+
   void SetCentralityEstimator(const char * centr)                                 { fCentralityEstimator = centr         ; }
   void SetEventMixingRPBinning(const UInt_t nBins)                                { fNEMRPBins = nBins                   ; }
   void SetMaxAbsVertexZ(const Float_t z)                                          { fMaxAbsVertexZ = z                   ; }
@@ -214,7 +214,7 @@ private:
 
   Int_t     fRunNumber;                                 //! Run number
   Int_t     fInternalRunNumber ;                        //! Current internal run number 
-  Period    fPeriod;                                    //! kUndefinedPeriod, kLHC10h, kLHC11h, kLHC13
+  TString   fPeriod;
 
   Bool_t    fPHOSEvent;                                 //! PHOS event trigger.
   Bool_t    fMBEvent;                                   //! MB event trigger.

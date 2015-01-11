@@ -4,7 +4,7 @@ void SETUP()
 {
   // Load the library
   TString ocwd = gSystem->WorkingDirectory();
-  gSystem->Load(ocwd+"/libPWGJEEMCALJetTasks.so");
+  gSystem->Load(ocwd+"/libPWGJEEMCALJetTasks");
 
   // Set the Include paths
   gSystem->SetIncludePath("-I$ROOTSYS/include -IPWGJEEMCALJetTasks");

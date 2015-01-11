@@ -81,6 +81,10 @@ private:
     Double_t               fFilterBit;                  // filterbit
     Double_t               fDCAxyCut;           // dca cut
     Double_t               fDCAzCut;            // dcz z
+    Double_t               fLowPtPIDTPCnsigLow_Pion[6]; //nsig low cut Pion
+    Double_t               fLowPtPIDTPCnsigHigh_Pion[6]; //nsig high cut Pion
+    Double_t               fLowPtPIDTPCnsigLow_Kaon[6]; //nsig low cut Kaon
+    Double_t               fLowPtPIDTPCnsigHigh_Kaon[6]; //nsig high cut Kaon
     Bool_t                 fData2011;           // 2011 data
     Bool_t                 fTriggerMB;          // minB trigger
     Bool_t                 fTriggerCentral;     // cen trigger
@@ -108,11 +112,26 @@ private:
     TH2F                  *fHistBetavsPTOFbeforePID;    //! another hist
     TH2F                  *fHistdEdxvsPTPCbeforePID;    //! another hist
     TH3F                  *fhistNsigmaP;        //! another hist
-    TH3F                  *fhistNsigmaPt;       //! another hist
+    TH2F                  *fhistTPCnSigmavsP;   //! another hist
     TH2F                  *fHistBetavsPTOFafterPID;     //! another hist
     TH2F                  *fHistdEdxvsPTPCafterPID;     //! another hist
-    TCutG                 *fCutContour[150];    //! another hist
-    TGraph                *fCutGraph[150];      //! grpahs
+    TH2F                  *fHistBetavsPTOFafterPID_2;     //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPID_2;     //! another hist
+    TH2F                  *fHistBetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistBetavsPTOFafterPIDTPConly; //! another hist
+    TH2F                  *fHistdEdxvsPTPCafterPIDTPConly; //! another hist
+    TH2F                  *fHistPion_BetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistPion_dEdxvsPTPCafterPIDTPCTOF; //!another hist
+    TH2F                  *fHistKaon_BetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistKaon_dEdxvsPTPCafterPIDTPCTOF; //!another hist
+    TH2F                  *fHistProton_BetavsPTOFafterPIDTPCTOF; //! another hist
+    TH2F                  *fHistProton_dEdxvsPTPCafterPIDTPCTOF; //!another hist
+    TH1F                  *fhistPionEtaDistAfter; //!another hist
+    TH1F                  *fhistKaonEtaDistAfter; //!another hist
+    TH1F                  *fhistProtonEtaDistAfter; //!another hist
+    TCutG                 *fCutContour[150];    //! TCutG contours
+    TGraph                *fCutGraph[150];      //! graphs
     
     
     //qa object initialisation

@@ -49,11 +49,11 @@ void AliAnalysisTaskPi0FlowMCParamWeights::UserCreateOutputObjects()
 
       sprintf(key,"hPi0%s_cen%d", pidNames[ipid],iBin);  
       hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key));
-      hist->Sumw2(); printf("     ->Sumw2 invoked for %s.\n",key);
+      if(hist) { hist->Sumw2(); printf("     ->Sumw2 invoked for %s.\n",key); }
 
       sprintf(key,"hMiPi0%s_cen%d", pidNames[ipid],iBin);  
       hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key));
-      hist->Sumw2(); printf("     ->Sumw2 invoked for %s.\n",key);
+      if(hist) { hist->Sumw2(); printf("     ->Sumw2 invoked for %s.\n",key); }
     }
   }
   

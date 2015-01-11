@@ -82,18 +82,18 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
 
       TString myAdditionalLibs;
       if (eventMixinPar) { AliAnalysisAlien::SetupPar("EventMixing"); myAdditionalLibs += " EventMixing.par"; }
-      else { gSystem->Load("libEventMixing.so"); myAdditionalLibs += " libEventMixing.so"; }
+      else { gSystem->Load("libEventMixing"); myAdditionalLibs += " libEventMixing.so"; }
 
       TString rsnLibName = "PWGLFresonances";
       if (gSystem->Getenv("ALICE_ROOT")) {
          TString alirootVersion = gSystem->GetFromPipe("aliroot --version | awk '{print $3}'");
          if (alirootVersion<"v5-02-19-AN" && alirootVersion.CompareTo("trunk")) rsnLibName = "PWG2resonances";
          if (rsnPar) { AliAnalysisAlien::SetupPar(rsnLibName.Data()); myAdditionalLibs += Form(" %s.par",rsnLibName.Data()); }
-         else { gSystem->Load(Form("lib%s.so",rsnLibName.Data())); myAdditionalLibs += Form(" lib%s.so",rsnLibName.Data()); }
+         else { gSystem->Load(Form("lib%s",rsnLibName.Data())); myAdditionalLibs += Form(" lib%s.so",rsnLibName.Data()); }
       }
       if (rsnParDev>=0) {
          if (rsnParDev) { AliAnalysisAlien::SetupPar("PWGLFresonancesdev"); myAdditionalLibs += " PWGLFresonancesdev.par"; }
-         else { gSystem->Load("libPWGLFresonancesdev.so"); myAdditionalLibs += " libPWGLFresonancesdev.so"; }
+         else { gSystem->Load("libPWGLFresonancesdev"); myAdditionalLibs += " libPWGLFresonancesdev.so"; }
       }
       analysisPlugin->SetAdditionalLibs(myAdditionalLibs.Data());
 
@@ -163,9 +163,9 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
 
    } else {
 
-      gSystem->Load("libEventMixing.so");
-      gSystem->Load("libCORRFW.so");
-      gSystem->Load("libPWGLFresonances.so");
+      gSystem->Load("libEventMixing");
+      gSystem->Load("libCORRFW");
+      gSystem->Load("libPWGLFresonances");
    }
 
    if (!input.CompareTo("esd")) rsnBaseSettings.Append("_ESD");

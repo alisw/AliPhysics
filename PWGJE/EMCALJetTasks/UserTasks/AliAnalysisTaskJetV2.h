@@ -5,6 +5,9 @@
 #ifndef AliAnalysisTaskJetV2_H
 #define AliAnalysisTaskJetV2_H
 
+// uncomment to compile with debug information
+//#define DEBUGTASK
+
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
@@ -91,7 +94,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         }
 
         // setters - analysis setup
-        void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetRunToyMC(Bool_t t)                           {fRunToyMC = t; }
         void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
@@ -234,7 +236,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Int_t                   GetVZEROCentralityBin() const;
     private:
         // analysis flags and settings
-        Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         Bool_t                  fRunToyMC;              // run toy mc for fit routine
         Bool_t                  fLocalInit;             //! is the analysis initialized?
         Bool_t                  fAttachToEvent;         // attach local rho to the event

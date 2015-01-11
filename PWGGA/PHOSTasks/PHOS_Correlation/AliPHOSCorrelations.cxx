@@ -77,14 +77,14 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fTracksTPCLists(0x0),
     fRunNumber(-999),
     fInternalRunNumber(0),
-    fPeriod(kUndefinedPeriod),
+    fPeriod("0x0"),
     fPHOSEvent(false),
     fMBEvent(false),
-    fNVtxZBins(10),
+    fNVtxZBins(1),
     fVtxEdges(10),
     fCentEdges(10),
     fCentNMixed(),
-    fNEMRPBins(6),
+    fNEMRPBins(3),
     fAssocBins(),
     fVertexVector(),
     fVtxBin(0),
@@ -116,7 +116,33 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fSelectFractionTPCSharedClusters(kTRUE),
     fCutTPCSharedClustersFraction(0.4)
 {
-    //Deafult constructor, no memory allocations here
+     // Constructor
+
+    fMassMean[0]  = 1.00796e-05 ;
+    fMassMean[1]  = 0.136096    ;
+    fMassSigma[0] = 0.00383029 ;
+    fMassSigma[1] = 0.0041709 ;
+    fMassSigma[2] = 0.00468736 ;
+
+    const Int_t nPtAssoc = 10 ;
+    Double_t ptAssocBins[nPtAssoc] = {0.,0.5,1.0,1.5,2.0,3.,5.,7.,10.,16} ;
+    fAssocBins.Set(nPtAssoc,ptAssocBins) ;
+
+    const int nbins = 9;
+    Double_t edges[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
+    TArrayD centEdges( nbins+1, edges );
+    Int_t nMixed[nbins] = {4,4,6,10,20,30,50,100,100};
+    TArrayI centNMixed(nbins, nMixed);
+    SetCentralityBinning(centEdges, centNMixed);
+    SetVertexBinning();
+
+    fVertex[0] = 0; 
+    fVertex[1] = 0; 
+    fVertex[2] = 0;
+
+    //SetGeometry();
+
+    ZeroingVariables();
 }
 
 //_______________________________________________________________________________
@@ -134,14 +160,14 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fTracksTPCLists(0x0),
     fRunNumber(-999),
     fInternalRunNumber(0),
-    fPeriod(kUndefinedPeriod),
+    fPeriod("0x0"),
     fPHOSEvent(false),
     fMBEvent(false),
-    fNVtxZBins(10),
+    fNVtxZBins(1),
     fVtxEdges(10),
     fCentEdges(10),
     fCentNMixed(),
-    fNEMRPBins(6),
+    fNEMRPBins(3),
     fAssocBins(),
     fVertexVector(),
     fVtxBin(0),
@@ -199,93 +225,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fVertex[1] = 0; 
     fVertex[2] = 0;
 
-    SetGeometry();
-
-    ZeroingVariables();
-}
-
-//_______________________________________________________________________________
-AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
-:AliAnalysisTaskSE(name),
-    fPHOSGeo(0x0),
-    fOutputContainer(0x0),
-    fEvent(0x0),
-    fEventESD(0x0),
-    fEventAOD(0x0),
-    fEventHandler(0),
-    fCaloPhotonsPHOS(0x0),
-    fTracksTPC(0x0),
-    fCaloPhotonsPHOSLists(0x0),
-    fTracksTPCLists(0x0),
-    fRunNumber(-999),
-    fInternalRunNumber(0),
-    fPeriod(period),
-    fPHOSEvent(false),
-    fMBEvent(false),
-    fNVtxZBins(10),
-    fVtxEdges(10),
-    fCentEdges(10),
-    fCentNMixed(),
-    fNEMRPBins(6),
-    fAssocBins(),
-    fVertexVector(),
-    fVtxBin(0),
-    fCentralityEstimator("V0M"),
-    fCentrality(0.),
-    fCentBin(0),
-    fHaveTPCRP(0),
-    fRP(0.),
-    fEMRPBin(0),
-    fMaxAbsVertexZ(10.),
-    fCentralityLowLimit(0.),
-    fCentralityHightLimit(90),
-    fMinClusterEnergy(0.3),
-    fMinBCDistance(0),
-    fMinNCells(3),
-    fMinM02(0.2),
-    fTOFCutEnabled(1),
-    fTOFCut(100.e-9),
-    fUseMassWindowParametrisation(true),
-    fMassInvMeanMin(0.13),
-    fMassInvMeanMax(0.145),
-    fNSigmaWidth(0.),
-    fUseEfficiency(true),
-    fESDtrackCuts(0x0),
-    fSelectHybridTracks(0),
-    fTrackStatus(0),      
-    fTrackFilterMask(786),
-    fSelectSPDHitTracks(0),
-    fSelectFractionTPCSharedClusters(kTRUE),
-    fCutTPCSharedClustersFraction(0.4)
-{
-    // Constructor
-    // Output slots #0 write into a TH1 container
-    DefineOutput(1,THashList::Class());
-
-    fMassMean[0]  = 1.00796e-05 ;
-    fMassMean[1]  = 0.136096    ;
-    fMassSigma[0] = 0.00383029 ;
-    fMassSigma[1] = 0.0041709 ;
-    fMassSigma[2] = 0.00468736 ;
-
-    const Int_t nPtAssoc=10 ;
-    Double_t ptAssocBins[nPtAssoc]={0.,0.5,1.0,1.5,2.0,3.,5.,7.,10.,16} ;
-    fAssocBins.Set(nPtAssoc,ptAssocBins) ;
-
-    const int nbins = 9;
-    Double_t edges[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
-    TArrayD centEdges(nbins+1, edges);
-    Int_t nMixed[nbins] = {4,4,6,10,20,30,50,100,100};
-    //Int_t nMixed[nbins] = {100,100,100,100,100,100,100,100,100};
-    TArrayI centNMixed(nbins, nMixed);
-    SetCentralityBinning(centEdges, centNMixed);
-    SetVertexBinning();
-
-    fVertex[0] = 0; 
-    fVertex[1] = 0; 
-    fVertex[2] = 0; 
-
-    SetGeometry();
+    //SetGeometry();
 
     ZeroingVariables();
 }
@@ -332,7 +272,7 @@ void AliPHOSCorrelations::UserCreateOutputObjects()
     // Create histograms
     // Called once
     const Int_t     nRuns   = 200 ;
-    const Int_t     ptMult  = 300 ;
+    const Int_t     ptMult  = 30 ;
     const Double_t  ptMin   = 0.  ;
     const Double_t  ptMax   = 30. ;
 
@@ -411,7 +351,7 @@ void AliPHOSCorrelations::SetHistPtNumTrigger(const Int_t& ptMult, const Double_
     {
         fOutputContainer->Add(new TH1F(    Form("nTrigger_%s", spid[ipid].Data()), 
                                         Form("Num of trigger particle %s", spid[ipid].Data()), 
-                                        ptMult+300, ptMin, ptMax ) );
+                                        ptMult, ptMin, ptMax ) );
         TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
         h->Sumw2();
         h->GetXaxis()->SetTitle("Pt [GEV]");
@@ -420,7 +360,7 @@ void AliPHOSCorrelations::SetHistPtNumTrigger(const Int_t& ptMult, const Double_
     {
         fOutputContainer->Add(new TH1F( Form("nTrigger_%s_MB", spid[ipid].Data()), 
                                         Form("Num of trigger particle %s", spid[ipid].Data()), 
-                                        ptMult+300, ptMin, ptMax ) );
+                                        ptMult, ptMin, ptMax ) );
         TH1F *h = static_cast<TH1F*>(fOutputContainer->Last()) ;
         h->Sumw2();
         h->GetXaxis()->SetTitle("Pt [GEV]");
@@ -525,15 +465,15 @@ void AliPHOSCorrelations::SetHistPtAssoc(const Int_t& ptMult, const Double_t& pt
 {
     Double_t pi = TMath::Pi();
 
-    Int_t PhiMult  =  100        ;
-    Float_t PhiMin =  -0.5*pi    ;
-    Float_t PhiMax =  1.5*pi    ;
-    Int_t EtaMult  =  20        ; 
-    Float_t EtaMin = -1.        ;
-    Float_t EtaMax =  1.        ;
+    Int_t PhiMult  =  60      ;
+    Float_t PhiMin =  -0.5*pi ;
+    Float_t PhiMax =  1.5*pi  ;
+    Int_t EtaMult  =  20      ; 
+    Float_t EtaMin = -1.      ;
+    Float_t EtaMax =  1.      ;
 
     TString spid[4]={"all","cpv","disp","both"} ;
-    
+
     for (int i = 0; i<fAssocBins.GetSize()-1; i++)
     {
         for(Int_t ipid=0; ipid<4; ipid++)
@@ -615,9 +555,15 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     {
         fRunNumber = fEvent->GetRunNumber();
         fInternalRunNumber = ConvertToInternalRunNumber(fRunNumber);
+        SetGeometry();
         SetESDTrackCuts();
     }
     LogProgress(2);
+
+    if(GetPeriod().Contains("0x0"))
+    {
+        AliWarning("Undefined period!");
+    }
 
     // Step 2: Preparation variables for new event
     ZeroingVariables();
@@ -697,7 +643,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
         LogProgress(8);
     }
 
-    if(fPeriod == kLHC13 && fMBEvent) 
+    if(GetPeriod().Contains("13") && fMBEvent)
     {
         ConsiderPi0s_MBSelection();
         LogProgress(9);
@@ -735,7 +681,7 @@ void AliPHOSCorrelations::SetESDTrackCuts()
 Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(const Int_t& run) const
 {
     // Manual setup using data from logbook.
-    if(fPeriod== kLHC11h)
+    if(GetPeriod().Contains("11h"))
     {
         switch(run)
         {
@@ -923,7 +869,7 @@ Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(const Int_t& run) const
         }
     }
     
-    if(fPeriod== kLHC10h)
+    if(GetPeriod().Contains("10h"))
     {
         switch(run)
         {
@@ -1068,7 +1014,7 @@ Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(const Int_t& run) const
         }
     }
     
-    if( kLHC13 == fPeriod ) 
+    if(GetPeriod().Contains("13"))
     {
         switch(run)
         {
@@ -1246,7 +1192,7 @@ Int_t AliPHOSCorrelations::ConvertToInternalRunNumber(const Int_t& run) const
         }
     }
     
-    if((fPeriod == kUndefinedPeriod) && (fDebug >= 1) ) 
+    if(GetPeriod().Contains("0x0") && fDebug >= 1)
     {
         AliWarning("Period not defined");
     }
@@ -1349,14 +1295,14 @@ Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
     fMBEvent    = false ;
 
     // Choosing triggers for different periods.
-    if(fPeriod == kLHC13) 
+    if(GetPeriod().Contains("13")) 
     {
         // Working: MB + TriggerPHOS events in real events; MB only in mixed events.
         isTriggerEvent  =  isPHI7 || isINT7 ;
         isMIXEvent      =  isINT7 ;
     }
 
-    if(fPeriod == kLHC11h) 
+    if(GetPeriod().Contains("11h"))
     {
         // Working: The same trigger in real and mixed events.
         isTriggerEvent = isCentral || isSemiCentral ;
@@ -2332,7 +2278,7 @@ Double_t AliPHOSCorrelations::GetEfficiency(const Double_t& pt) const
     // TODO: fix functions value below 1 GeV/c.
     if(x < 1.) x = 1.;
 
-    if(fPeriod == kLHC11h)
+    if(GetPeriod().Contains("11h"))
     {
         if (fCentrality <= 5)                       pFitPoint = &par0[0];
         if (fCentrality > 5 && fCentrality <= 10)   pFitPoint = &par1[0];
@@ -2353,7 +2299,7 @@ Double_t AliPHOSCorrelations::GetEfficiency(const Double_t& pt) const
             e = TMath::Exp(-((((1.+(pFit[1]*x))+(pFit[2]*(x*x)))+(pFit[5]*(x*(x*x))))/(((pFit[3]*x)+(pFit[4]*(x*x)))+(pFit[6]*(x*(x*x)))))) ;
     }
     else
-    if( fPeriod == kLHC13 ) 
+    if(GetPeriod().Contains("13")) 
     {
         pFitPoint = &par8[0];
         Double_t pFit[9];
@@ -2482,4 +2428,3 @@ void AliPHOSCorrelations::FillEventBiningProperties() const
         }
     }
 }
-

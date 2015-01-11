@@ -7,7 +7,7 @@
 
 /*
   after running analysis, read the file, and get component
-  gSystem->Load("libPWGPP.so");
+  gSystem->Load("libPWGPP");
   TFile f("Output.root");
   AliComparisonDraw * comp = (AliComparisonDraw*)f.Get("AliComparisonDraw");
   TF1 fl("fl","((min(250./(abs(x+0.000001)),250)-90))",0,2);  // length function

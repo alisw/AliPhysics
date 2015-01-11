@@ -37,6 +37,8 @@ Options:
 	-g|--geant     RELEASE	Set GEANT3 release [*] ($geant)
 	-f|--final     NUMBER 	Run final merging when down to this ($minmerge)
 	-I|--input     DIR      Directory of production
+	-x|--dry-run            Just do a dry run 
+	-S|--stages    STAGES   What to merge 
 
 [*] Only make sense with option -c 
 [**] Only make sense for stage 0
@@ -288,10 +290,11 @@ progress()
     local first=$out
     if test "x$inp" != "x" ; then 
 	first=${inp}/${id}/${run}
-    fi 
+    fi
+    local firsts="$first"
     case $what:$run in 
 	AOD:138190) ;;
-	AOD:*) first=${first}/AOD ;;
+	AOD:*) firsts="${first}/AOD $firsts";;
 	*) ;;
     esac
 	    
@@ -304,13 +307,19 @@ progress()
 	echo "Forcing 6" 
 	stage=6
     else
-	#  Then check for production data 
-	log_msg "" "\nCheck of \e[33m${first}/001"
-	alien_ls ${first}/001 > /dev/null 2>&1 
-	ret=$?
-	# echo "ret=$ret"
-	if test $ret -ne 0 ; then 
-	    echo "No output, stage 0 to be done"
+	#  Then check for production data
+	firstFound=0
+	for f in $firsts ; do  
+	    log_msg "" "\nCheck of \e[33m${f}/001"
+	    alien_ls ${f}/001 > /dev/null 2>&1 
+	    ret=$?
+	    # echo "ret=$ret"
+	    if test $ret -eq 0 ; then
+		firstFound=1
+	    fi
+	done
+	if test $firstFound -lt 1 ; then
+	    log_msg "\nNo production data, forcing 0"
 	    stage=0
 	else
 	    # Finally, check each merge stage 
@@ -532,9 +541,13 @@ if test "x$run" = "x" ; then
 fi
 case $stage in 
     0|1|2|3|4|5) : ;; 
-    6)  
+    6)
+	if test "x$stages" = "x" ; then
+	    echo "No stages to check"
+	    exit 1
+	fi 
 	for s in $stages ; do 
-	    progress $aout $id $run $inp $s
+	    progress "$aout" "$id" "$run" "$inp" "$s"
 	done 
 	;;
     *)  log_err "Invalid stage" "$stage" ; exit 1 ;;

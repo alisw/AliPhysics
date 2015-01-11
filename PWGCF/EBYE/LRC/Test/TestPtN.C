@@ -1,5 +1,5 @@
 {
-    gSystem->Load("libPWG2LRC.so");
+    gSystem->Load("libPWG2LRC");
  	TH1D *gaus = new TH1D("source","source hist",1000,-5,5);
     gaus->FillRandom("gaus",10000);
     TH2D *source = new TH2D("PtN","PtN Test",100,0,100,100,0,5);

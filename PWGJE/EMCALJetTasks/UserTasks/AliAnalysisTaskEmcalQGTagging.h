@@ -73,6 +73,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   
+
+  TH2F                                *fh2ResponseUW;
+  TH2F                                *fh2ResponseW;
   TH2F                                *fPhiJetCorr6;
   TH2F                                *fPhiJetCorr7;
   TH2F                                *fEtaJetCorr6;

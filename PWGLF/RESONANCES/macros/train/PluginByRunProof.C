@@ -58,7 +58,7 @@ AliAnalysisAlien* PluginByRunProof
    plugin->SetAliROOTVersion(aliVersion);
 
    // additional libraries/includes
-   //plugin->SetAdditionalLibs("libTENDER.so TENDERSupplies.par libEventMixing.so libPWG2resonances.so");
+   //plugin->SetAdditionalLibs("libTender.so TenderSupplies.par libEventMixing.so libPWG2resonances.so");
    plugin->SetAdditionalLibs("libEventMixing.so PWG2resonances.par");
    
    // PROOF-specific settings

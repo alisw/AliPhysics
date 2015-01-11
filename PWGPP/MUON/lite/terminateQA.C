@@ -109,7 +109,7 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, 
   gSystem->Load("libPhysics");
   gSystem->Load("libProof");
 
-  TString libsList = "libANALYSIS.so libOADB.so libANALYSISalice.so libCORRFW.so libPWGHFbase.so libPWGmuon.so libPWGPPMUONlite.so";
+  TString libsList = "libANALYSIS libOADB libANALYSISalice libCORRFW libPWGHFbase libPWGmuon libPWGPPMUONlite";
 
   TObjArray* libsArray = libsList.Tokenize(" ");
   libsArray->SetOwner();

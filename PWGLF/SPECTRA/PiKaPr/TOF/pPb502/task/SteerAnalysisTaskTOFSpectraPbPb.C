@@ -7,8 +7,8 @@ SteerAnalysisTaskTOFSpectraPbPb(const Char_t *inputfilename, Bool_t mcFlag = kFA
   /* load libraries */
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTENDER");
-  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
   /* build analysis task class */
   gROOT->LoadMacro("AliAnalysisParticle.cxx+g");
   gROOT->LoadMacro("AliAnalysisEvent.cxx+g");
@@ -87,13 +87,13 @@ SteerAnalysisTaskTOFSpectraPbPb(const Char_t *inputfilename, Bool_t mcFlag = kFA
 #endif
 
   /* create tender, setup and add to manager */
-  AliTender *tender = new AliTender("TENDER");
+  AliTender *tender = new AliTender("Tender");
   tender->SetCheckEventSelection(kFALSE); /* was kFALSE */
   tender->SetDefaultCDBStorage("raw://");
   mgr->AddTask(tender);
   mgr->ConnectInput(tender, 0, inputc);
   mgr->ConnectOutput(tender, 1, outputc);
-  AliTOFTenderSupply *TOFtender = new AliTOFTenderSupply("TOF-TENDER");
+  AliTOFTenderSupply *TOFtender = new AliTOFTenderSupply("TOF-Tender");
   tender->AddSupply(TOFtender);
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");

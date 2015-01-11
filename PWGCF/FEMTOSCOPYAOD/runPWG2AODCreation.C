@@ -5,10 +5,10 @@ void runPWG2AODCreation(const char *esdsource="ESD1503X_v1.txt", int nfiles=1)
 
 void producePWG2AOD(const char *esdsource, int nfiles)
 {
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libXMLIO.so");
+    gSystem->Load("libTree");
+    gSystem->Load("libGeom");
+    gSystem->Load("libVMC");
+    gSystem->Load("libXMLIO");
     SetupPar("STEERBase");
     SetupPar("ESD");
     SetupPar("AOD");

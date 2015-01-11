@@ -398,7 +398,7 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
     
     // convert to MUON track
     AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-    Double_t trackInfo[6] = {0., cent, pT, y, phi, esdTrack->Charge()};
+    Double_t trackInfo[6] = {0., cent, pT, y, phi, static_cast<Double_t>(esdTrack->Charge())};
     
     // tag the removable clusters/chambers, i.e. not needed to fulfill the tracking conditions
     Bool_t removableChambers[10];
