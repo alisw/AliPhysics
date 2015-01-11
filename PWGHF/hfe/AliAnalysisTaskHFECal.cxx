@@ -1177,7 +1177,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   //fCuts->SetMinNClustersITS(3);
   fCuts->SetMinNClustersITS(2);
   fCuts->SetProductionVertex(0,50,0,50);
-  fCuts->SetCutITSpixel(AliHFEextraCuts::kAny);
+  //fCuts->SetCutITSpixel(AliHFEextraCuts::kAny); // default
+  fCuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
   fCuts->SetCheckITSLayerStatus(kFALSE);
   fCuts->SetVertexRange(10.);
   fCuts->SetTOFPIDStep(kFALSE);
