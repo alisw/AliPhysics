@@ -66,6 +66,7 @@ ClassImp(AliFITv2)
 //--------------------------------------------------------------------
 AliFITv2::AliFITv2():  AliFIT(),
 		     fIdSens1(0),
+		     fIdSens2(0),
 		     fPMTeff(0x0)
 
 {
@@ -76,6 +77,7 @@ AliFITv2::AliFITv2():  AliFIT(),
 AliFITv2::AliFITv2(const char *name, const char *title):
   AliFIT(name,title),
   fIdSens1(0),
+  fIdSens2(0),
   fPMTeff(0x0)
 
 {
@@ -115,7 +117,7 @@ void AliFITv2::CreateGeometry()
   Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
   Float_t preg[3] = {1.324, 1.324, 0.05};//photcathode 
 
-  Float_t zV0A = 329.;
+  Float_t zV0A = 325.;
   Float_t pV0Amother[3] = {4.25, 41.25, 0.6};
   Float_t pV0A[3] = {4.3, 41.2, 0.5};
 
@@ -142,11 +144,10 @@ void AliFITv2::CreateGeometry()
   Float_t xa=-12.8;
   Float_t ya=-12.8;
   Int_t itr=0;
-  Int_t itrHole=0;
   for (Int_t itrx=0; itrx<5; itrx++) {
     for (Int_t itry=0; itry<5; itry++) {
       nameTr = Form("0TR%i",itr+1);
-      z=-pstartA[2]+pinstart[2]/*+za[itr]*/;
+      z=-pstartA[2]+pinstart[2]/* +za[itr]*/;
       if(itr !=12){
 	if(TMath::Abs(xa)<10 && TMath::Abs(ya)<10) z= z-2;
 	tr[itr] = new TGeoTranslation(nameTr.Data(),xa,ya, z );
@@ -165,7 +166,7 @@ void AliFITv2::CreateGeometry()
   for (Int_t itrx=0; itrx<6; itrx++) {
     for (Int_t itry=0; itry<6; itry++) {
       nameTr = Form("0TR%i",itr+1);
-      z=-pstartC[2]+pinstart[2]/*+zc[itr]*/;
+      z=-pstartC[2]+pinstart[2] /*+ zc[itr] */;
       if (itr!=39 && itr!=40 && itr!=45 &&itr!=46) {
 	if( TMath::Abs(xc)<10 &&  TMath::Abs(yc)<10) z= z+2;
 	tr[itr] = new TGeoTranslation(nameTr.Data(),xc,yc, z );
@@ -216,13 +217,13 @@ void AliFITv2::CreateGeometry()
 // MCP
    z=-pinstart[2] + 2*ptop[2] + 2*preg[2] + pmcp[2];
   ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
-/*
+
   //V0A 
    TVirtualMC::GetMC()->Gsvolu("0V0AM","TUBE",idtmed[kAir],pV0Amother,3);
    TVirtualMC::GetMC()->Gspos ("0V0AM",1, "ALIC", 0,0,zV0A , 0, "ONLY");
    TVirtualMC::GetMC()->Gsvolu("0V0A","TUBE",idtmed[kSensAir],pV0A,3);
    TVirtualMC::GetMC()->Gspos ("0V0A",1, "0V0AM", 0, 0, 0, 0, "ONLY");
-*/
+
 
  
 }    

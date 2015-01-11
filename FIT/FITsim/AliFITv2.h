@@ -20,6 +20,7 @@ public:
   AliFITv2(const char *name, const char *title);
   AliFITv2(const AliFITv2& o):AliFIT(),
     fIdSens1(0),
+    fIdSens2(0),
     fPMTeff(0x0) {((AliFITv2 &) o).Copy(*this);}
   
   AliFITv2& operator=(const AliFITv2&) { return *this; }
