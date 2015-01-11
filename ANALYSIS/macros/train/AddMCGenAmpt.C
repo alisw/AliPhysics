@@ -10,11 +10,11 @@ AliGenerator *AddMCGenAmpt(
 {
   // User defined generator
 
-  gSystem->Load("libampt.so");       
-  gSystem->Load("libTAmpt.so");
+  gSystem->Load("libAMPT");
+  gSystem->Load("libTAmpt");
   gSystem->Load("libEGPythia6"); 
-  gSystem->Load("libpythia6.so");
-  gSystem->Load("libAliPythia6.so");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
 
 
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);

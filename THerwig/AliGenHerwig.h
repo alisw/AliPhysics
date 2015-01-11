@@ -51,6 +51,7 @@ class AliGenHerwig : public AliGenMC
     virtual void    SetPtRMS(Double_t pt) {fPtRMS=pt;}
     virtual void    SetMaxPr(Int_t i) {fMaxPr=i;}
     virtual void    SetMaxErrors(Int_t i) {fMaxErrors=i;}
+    virtual void    SetSeed(UInt_t seed) {GetRandom()->SetSeed(seed);}
     virtual void    FinishRun();
     virtual void    FinishRunJimmy();
     virtual void    SetEnSoft(Double_t e) {fEnSoft=e;}

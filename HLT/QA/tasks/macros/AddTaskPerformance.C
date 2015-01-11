@@ -20,9 +20,9 @@
 // Usage on the analysis train (default configuration):
 // gSystem->Load("libANALYSIS");
 // gSystem->Load("libANALYSISalice");
-// gSystem->Load("libTPCcalib.so");
-// gSystem->Load("libTENDER.so");
-// gSystem->Load("libPWGPP.so");
+// gSystem->Load("libTPCcalib");
+// gSystem->Load("libTender");
+// gSystem->Load("libPWGPP");
 //
 // gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformanceTPC.C");
 // AliPerformanceTask *tpcQA = AddTaskPerformanceTPC("kTRUE","kTRUE", "kTRUE"¸"triggerClass"); 

@@ -220,7 +220,8 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
     }
     esdEvent->GetStdContent();
   }
-  printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
+  if (esdEvent) printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
+  else printf("----> No ESDEvent found\n");
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
     esdFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
     if( !esdFriend ){ 

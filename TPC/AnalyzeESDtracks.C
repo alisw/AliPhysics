@@ -1,7 +1,7 @@
-//
-// Process ESD tracks  - 
-// Extract TPC tracks  - write them to tree
-//
+/// \file AnalyzeESDtracks.C
+/// 
+/// \brief Process ESD tracks - extract TPC tracks - write them to tree
+
 /*
   .L AnalyzeESDtracks.C+
   .L AliGenInfo.C+

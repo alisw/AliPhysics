@@ -21,8 +21,8 @@ double radii2Phi(double rMin,double rMid,double rMax, double sensW)
 void CreateITSU()
 {
   //
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
 
 
   // build ITS upgrade detector

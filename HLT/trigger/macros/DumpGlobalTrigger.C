@@ -76,7 +76,7 @@ void DumpGlobalTrigger(
 		sys->SetGlobalLoggingLevel(kHLTLogAll);
 	}
 	
-	gSystem->Load("libHLTrec.so");
+	gSystem->Load("libHLTrec");
 	TFile* file = NULL;
 	if (output != NULL)
 	{

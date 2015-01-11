@@ -11,7 +11,7 @@
 void
 ApplyAlignment()
 {
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   TGeoManager::Import("geometry.root");
 
   AliCDBManager* cdb   = AliCDBManager::Instance();

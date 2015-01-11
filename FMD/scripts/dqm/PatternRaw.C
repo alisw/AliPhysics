@@ -19,7 +19,7 @@ CheckFile(const char* prefix, int number, TString& f)
 void
 PatternRaw(const char* file="raw.root", Int_t runno=0)
 {
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
 
   AliCDBManager* cdb = AliCDBManager::Instance();
   const char* cdbUri = gSystem->Getenv("AMORE_CDB_URI");

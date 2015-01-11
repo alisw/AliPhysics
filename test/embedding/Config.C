@@ -502,7 +502,7 @@ AliGenerator* MbPhojet()
 //    DPMJET
 #if defined(__CINT__)
 #endif
-      gSystem->Load("libdpmjet");      // Parton density functions
+      gSystem->Load("libDPMJET");      // Parton density functions
       gSystem->Load("libTDPMjet");      // Parton density functions
 
       AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 

@@ -3,7 +3,7 @@
   
 
 
-  gSystem->Load("libSTAT.so");
+  gSystem->Load("libSTAT");
   .x ~/NimStyle.C
  
  .L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterFast.cxx+

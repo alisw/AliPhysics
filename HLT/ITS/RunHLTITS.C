@@ -41,7 +41,7 @@
 
 Int_t RunHLTITS(Int_t nev=1,Int_t run=0) {
 
-  //  gSystem->Load("libAliHLTITS.so");
+  //  gSystem->Load("libAliHLTITS");
 
   TStopwatch timer;
   timer.Start();

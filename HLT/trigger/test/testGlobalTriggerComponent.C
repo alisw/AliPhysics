@@ -66,10 +66,10 @@ void GenerateInputData()
 	bool loadedLibs = false;
 	if (gClassTable->GetID("AliHLTGlobalTriggerComponent") < 0)
 	{
-		gSystem->Load("libAliHLTUtil.so");
-		gSystem->Load("libAliHLTTRD.so");
-		gSystem->Load("libAliHLTMUON.so");
-		gSystem->Load("libAliHLTTrigger.so");
+		gSystem->Load("libAliHLTUtil");
+		gSystem->Load("libAliHLTTRD");
+		gSystem->Load("libAliHLTMUON");
+		gSystem->Load("libAliHLTTrigger");
 		loadedLibs = true;
 	}
 

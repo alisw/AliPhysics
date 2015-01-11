@@ -63,9 +63,9 @@ int testAliHLTTPCDigitReaderPacked()
 {
   int iResult=0;
 #ifdef __CINT__
-  gSystem->Load("libAliHLTUtil.so");
-  gSystem->Load("libAliHLTRCU.so");
-  gSystem->Load("libAliHLTTPC.so");
+  gSystem->Load("libAliHLTUtil");
+  gSystem->Load("libAliHLTRCU");
+  gSystem->Load("libAliHLTTPC");
 #endif
   AliHLTSystem gHLT;
 

@@ -40,8 +40,8 @@
   #include "AliESDEvent.h"
   #include "AliESDtrack.h"
 
-  #include "UPGRADE/AliITSUClusterPix.h"
-  #include "UPGRADE/AliITSULoader.h"
+  #include "AliITSUClusterPix.h"
+  #include "AliITSULoader.h"
 #endif
 
 Int_t GoodTracksCooked(const Char_t *dir=".");

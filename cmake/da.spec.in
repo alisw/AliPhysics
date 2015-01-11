@@ -1,0 +1,33 @@
+# RPM specfile for  Detector Algorithm
+Summary: @DETECTOR@ Detector Algorithm
+Name: @DA_NAME@
+Version: @ALIROOT_VERSION_RPM@
+Release: @GIT_SHORT_SHA1@
+License: CERN Alice DAQ/Offine
+Group: Applications/Alice
+Prefix: /opt/%{name}
+BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/da-@_ALGORITHM@-rpm/root
+Packager: Alina Grigoras <alina.gabriela.grigoras@cern.ch>
+
+# automatic dependencies
+AutoReqProv: yes
+
+# list here required RPM packages for compilation
+BuildRequires: date
+
+# list here required RPM packages for runtime
+Requires: date, daqDA-lib
+
+# You can specify other dependencies in the description tag below.
+
+# description of the package
+%description
+@RPM_DESCRIPTION@
+
+# Turning off the Fascist build policy
+%define _unpackaged_files_terminate_build 0
+
+# list of files to be installed
+%files
+%defattr (-,root,root)
+%{prefix}/@DA_EXECUTABLE@

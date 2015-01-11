@@ -136,8 +136,8 @@ bool testAliHLTTPCDefinitions()
 {
 	if (gClassTable->GetID("AliHLTTPCDefinitions") < 0)
 	{
-		gSystem->Load("libAliHLTUtil.so");
-		gSystem->Load("libAliHLTTPC.so");
+		gSystem->Load("libAliHLTUtil");
+		gSystem->Load("libAliHLTTPC");
 	}
 	if (! CheckDDLToSlicePatchConversion()) return false;
 	return true;

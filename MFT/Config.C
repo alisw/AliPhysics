@@ -608,8 +608,8 @@ void LoadLibs() {
   
   gSystem->Load("libgeant321");
 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
    
 #endif
 

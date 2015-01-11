@@ -22,7 +22,7 @@ PatternCalib(const char* file="raw.root", const char* calib="$(HOME)/calib/",
 	     Int_t runno=0)
 {
   // AliLog::SetModuleDebugLevel("FMD", 1);
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
 
   AliCDBManager* cdb = AliCDBManager::Instance();
   const char* cdbUri = gSystem->Getenv("AMORE_CDB_URI");

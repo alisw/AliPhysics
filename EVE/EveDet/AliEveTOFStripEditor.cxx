@@ -8,7 +8,7 @@
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 #include "AliEveTOFStripEditor.h"
-#include <EveDet/AliEveTOFStrip.h>
+#include <AliEveTOFStrip.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>

@@ -9,8 +9,8 @@
 
 #include "AliEveMUONChamberGL.h"
 
-#include <EveDet/AliEveMUONChamber.h>
-#include <EveDet/AliEveMUONChamberData.h>
+#include <AliEveMUONChamber.h>
+#include <AliEveMUONChamberData.h>
 
 #include <TGLRnrCtx.h>
 #include <TGLIncludes.h>

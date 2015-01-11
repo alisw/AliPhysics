@@ -17,7 +17,7 @@
 // Simple macro to generate N-tuple for performance analysis.
 // This macro must be compiled and run like so from within the aliroot command
 // prompt:
-//   root [0] gSystem->Load("libAliHLTMUON.so");
+//   root [0] gSystem->Load("libAliHLTMUON");
 //   root [0] .x MakeHitsTable.C+
 
 #include "TVector3.h"
@@ -80,7 +80,7 @@ void MakeHitsTable(
 		cdbManager->SetRun(0);
 	}
 	
-	gSystem->Load("libAliHLTMUON.so");
+	gSystem->Load("libAliHLTMUON");
 	// Must pree load libAliHLTMUON.so before loading this macro and running it in compiled mode.
 
 	TString fieldnames = "event:isprimary:pdgcode:detelem:chamber:x:y:z:dHLTx:dHLTy:dHLTz";

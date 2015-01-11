@@ -26,9 +26,9 @@
   #include "AliESDEvent.h"
   #include "AliESDtrack.h"
 
-  #include "UPGRADE/AliITSUClusterPix.h"
-  #include "UPGRADE/AliITSULoader.h"
-  #include "UPGRADE/AliITSUGeomTGeo.h"
+  #include "AliITSUClusterPix.h"
+  #include "AliITSULoader.h"
+  #include "AliITSUGeomTGeo.h"
 #endif
 
 

@@ -15,7 +15,7 @@ PatternESD()
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDPattern* d = new AliFMDPattern;
   // d->SetMultiplicityCut(0);
   d->AddLoad(AliFMDInput::kESD);

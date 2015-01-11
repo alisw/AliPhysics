@@ -866,7 +866,6 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
     AliError("gAlice was already run. Restart aliroot and try again.");
     return kFALSE;
   }
-
   AliInfo(Form("initializing gAlice with config file %s",
           fConfigFileName.Data()));
 
@@ -894,6 +893,17 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
 
   gAlice->Announce();
 
+  // - cholm - Add this here for consitency 
+  // If requested set the mag. field from the GRP entry.
+  // After this the field is loccked and cannot be changed by Config.C
+  if (fUseMagFieldFromGRP) {
+    AliGRPManager grpM;
+    grpM.ReadGRPEntry();
+    grpM.SetMagField();
+    AliInfo("Field is locked now. It cannot be changed in Config.C");
+  
+  }
+  
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
 
@@ -1347,7 +1357,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
       AliCodeTimerStart(Form("creating summable digits for %s", det->GetName()));
       det->Hits2SDigits();
       AliCodeTimerStop(Form("creating summable digits for %s", det->GetName()));
-      AliSysInfo::AddStamp(Form("Digit_%s_%d",det->GetName(),eventNr), 0,1, eventNr);
+      AliSysInfo::AddStamp(Form("SDigit_%s_%d",det->GetName(),eventNr), 0,1, eventNr);
     }
   }
 
@@ -1368,7 +1378,6 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 				      const char* excludeDetectors)
 {
 // run the digitization and produce digits from sdigits
-
   AliCodeTimerAuto("",0)
 
   // initialize CDB storage, run number, set CDB lock
@@ -1413,6 +1422,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
     }
     detArr.AddLast(digitizer);    
     AliInfo(Form("Created digitizer from SDigits -> Digits for %s", det->GetName()));    
+
   }
   //
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -1428,11 +1438,14 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
     digInp.InitEvent(); //this must be after call of Connect Input tress.
     if (outRl) outRl->SetEventNumber(eventsCreated-1);
     static_cast<AliStream*>(digInp.GetInputStream(0))->ImportgAlice(); // use gAlice of the first input stream
-    for (int id=0;id<ndigs;id++) ((AliDigitizer*)detArr[id])->Digitize("");
+    for (int id=0;id<ndigs;id++) {
+      ((AliDigitizer*)detArr[id])->Digitize("");
+      AliSysInfo::AddStamp(Form("Digit_%s_%d",detArr[id]->GetName(),eventsCreated), 0,2, eventsCreated);       
+    }
     digInp.FinishEvent();
   };
   digInp.FinishGlobal();
-  //
+  // 
   return kTRUE;
 }
 

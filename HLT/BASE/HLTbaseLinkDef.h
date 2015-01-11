@@ -236,5 +236,5 @@
 #pragma link C++ global kHLTLogAll;
 #pragma link C++ global kHLTLogDefault;
 
-
+#pragma link C++ class AliHLTOUTComponent+;
 #endif

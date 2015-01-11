@@ -18,7 +18,7 @@
 #include "TEveTrans.h"
 #include "TEveManager.h"
 
-#include "EveBase/AliEveEventManager.h"
+#include "AliEveEventManager.h"
 
 #include "AliEveTRDData.h"
 #include "AliEveTRDModuleImp.h"

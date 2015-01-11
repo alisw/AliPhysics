@@ -1,12 +1,12 @@
 void LoadLibs(Bool_t anlibs=kTRUE)
 {
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
-  gSystem->Load("libITSUpgradeRec.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
+  gSystem->Load("libITSUpgradeRec");
   //
   if (anlibs) {
-    gSystem->Load("libANALYSIS.so");
-    gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
   }
 }
 

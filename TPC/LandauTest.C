@@ -12,8 +12,9 @@ class TLandauMean: public TObject {
 public:
   void Init(Int_t n, Float_t mean, Float_t sigma);  // initial parameters
   void Gener();          // gener sample 
-  //  void Anal();
-  //
+
+  // void Anal();
+
   Int_t fNSample;      // number of samples
   Float_t fLMean;        // landau mean
   Float_t fLSigma;       // landau sigma
@@ -38,8 +39,8 @@ ClassImp(TLandauMean)
 
 void TLandauMean::Init(Int_t n, Float_t mean, Float_t sigma)
 {
-  //
-  //init parameters
+  /// init parameters
+
   fNSample = n;
   fLMean   = mean;
   fLSigma  = sigma;
@@ -69,8 +70,8 @@ Float_t TLandauMean::Moment3(Float_t sumi1, Float_t sumi2, Float_t sumi3, Int_t 
 
 void TLandauMean::Gener()
 {
-  // 
-  // generate sample
+  /// generate sample
+
   Float_t * buffer = new Float_t[fNSample];
   
   for (Int_t i=0;i<fNSample;i++) {

@@ -13,13 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-/*
-  Author : MI
-  macro to compare TClonesArray hits with interpolated hits
-  ConvertHits1 read 
-*/
+/// Macro to compare TClonesArray hits with interpolated hits
+/// ConvertHits1 read 
+///
+/// \author MI
 
 #include "alles.h"
 #include "AliObjectArray.h"
@@ -27,17 +24,18 @@
 #include "AliArrayBranch.h"
 #include "TestTPCTrackHits.h"
  
+/// \cond CLASSIMP
 ClassImp(AliTPChitD)
+/// \endcond
  
 void CompareHits(TClonesArray * arr, AliTPCTrackHits * myhits,  Bool_t debug, TClonesArray *arrd=0);
 AliTPCTrackHits * MakeTrack(TClonesArray * arr, TClonesArray * arrp, AliTPCTrackHits *myhits);
 
 void ConvertHits(const char * benchmark, Bool_t debug)
 {      
-  //
-  //convert - not parametrised hits stored in Clones array
-  //to
 
+  /// convert - not parametrised hits stored in Clones array
+  /// to
 
   TFile f("galice.root","update");  
   TClonesArray *arr = new TClonesArray("AliTPChit",100);

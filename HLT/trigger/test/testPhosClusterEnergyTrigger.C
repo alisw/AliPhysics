@@ -75,10 +75,10 @@ bool testPhosClusterEnergyTrigger()
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);
-  gSystem->Load("libAliHLTUtil.so");
-  gSystem->Load("libAliHLTMUON.so");
-  gSystem->Load("libAliHLTTRD.so");
-  gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libAliHLTUtil");
+  gSystem->Load("libAliHLTMUON");
+  gSystem->Load("libAliHLTTRD");
+  gSystem->Load("libAliHLTTrigger");
   CreateInput("PhosClusterEnergyTriggerTestInput1.root", -2, 0.1, 0.99);
   CreateInput("PhosClusterEnergyTriggerTestInput2.root", 0, 2.1, 4.0);
   AliHLTSystem sys;

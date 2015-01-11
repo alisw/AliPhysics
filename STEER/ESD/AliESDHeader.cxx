@@ -59,6 +59,7 @@ AliESDHeader::AliESDHeader() :
   SetName("AliESDHeader");
   for(Int_t i = 0; i<kNMaxIR ; i++) fIRArray[i] = 0;
   fTriggerInputsNames.SetOwner(kTRUE);
+  for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=0;
 }
 
 AliESDHeader::~AliESDHeader() 
@@ -109,6 +110,7 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
     AliTriggerIR *ir = (AliTriggerIR*)((header.fIRBufferArray).At(i));
     if (ir) fIRBufferArray.Add(new AliTriggerIR(*ir));
   }
+  for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=header.fTPCNoiseFilterCounter[itype];
 }
 
 AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
@@ -154,6 +156,7 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
       AliTriggerIR *ir = (AliTriggerIR*)((header.fIRBufferArray).At(i));
       if (ir) fIRBufferArray.Add(new AliTriggerIR(*ir));
     }
+    for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=header.fTPCNoiseFilterCounter[itype];
   }
   return *this;
 }
@@ -201,7 +204,7 @@ void AliESDHeader::Reset()
    delete fIRArray[i];
    fIRArray[i]=0;
   }
-
+  for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=0;
   fIRBufferArray.Delete();
 }
 //______________________________________________________________________________
@@ -310,15 +313,23 @@ Bool_t AliESDHeader::IsTriggerInputFired(const char *name) const
   // Checks if the trigger input is fired 
  
   TNamed *trginput = (TNamed *)fTriggerInputsNames.FindObject(name);
-  if (!trginput) return kFALSE;
+  if (trginput == 0) return kFALSE;
 
   Int_t inputIndex = fTriggerInputsNames.IndexOf(trginput);
   if (inputIndex < 0) return kFALSE;
-  
-  if (fL0TriggerInputs & (1lu << inputIndex)) return kTRUE;
-  else if (fL1TriggerInputs & (1lu << (inputIndex-24))) return kTRUE;
-  else if (fL2TriggerInputs & (1u << (inputIndex-48))) return kTRUE;
-  else return kFALSE;
+ 
+  if(inputIndex < 24){
+    if (fL0TriggerInputs & (1lu << inputIndex)) return kTRUE;
+  } else if(inputIndex < 48){
+    if (fL1TriggerInputs & (1lu << (inputIndex-24))) return kTRUE;
+  } else if(inputIndex < 60){
+    if (fL2TriggerInputs & (1u << (inputIndex-48))) return kTRUE;
+  }
+  else {
+    AliError(Form("Index (%d) is outside the allowed range (0,59)!",inputIndex));
+    return kFALSE;
+  }
+  return kFALSE;
 }
 //________________________________________________________________________________
 Int_t  AliESDHeader::GetTriggerIREntries(Int_t int1, Int_t int2, Float_t deltaTime) const

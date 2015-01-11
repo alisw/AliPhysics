@@ -147,6 +147,8 @@ void AliGenMC::Init()
 	break;
     case kHadronicD:
     case kHadronicDWithout4Bodies:
+    case kHadronicDWithV0:
+    case kHadronicDWithout4BodiesWithV0:
 	fChildSelect[0]=kPiPlus;
 	fChildSelect[1]=kKPlus;
 	break;

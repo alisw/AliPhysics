@@ -1,34 +1,26 @@
-//-*- Mode: C++ -*-
-// $Id$
-
-#ifdef __CINT__
-
-
+// Auto generated file - do not edit
+#if !defined(__CINT__) && !defined(__CLING__)
+# error Not for compilation
+#else 
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
-//#pragma link C++ class AliHLTPHOSAgent+;
-#pragma link C++ class AliHLTPHOSClusterizer+;  
-#pragma link C++ class AliHLTPHOSEmcCalibData+;  
-#pragma link C++ class AliHLTPHOSPhysicsAnalyzer+;  
-//#pragma link C++ class AliHLTPHOSPulseGenerator+;  
-#pragma link C++ class AliHLTPHOSRawAnalyzerChiSquareFit+;  
-#pragma link C++ class AliHLTPHOSRawAnalyzerCrude+;  
-//#pragma link C++ class AliHLTPHOSRawAnalyzerKLevel+;  
-//#pragma link C++ class AliHLTPHOSRawAnalyzerLMS+;  
-#pragma link C++ class AliHLTPHOSRawAnalyzerPeakFinder+;  
-#pragma link C++ class AliHLTPHOSDigitMaker+; 
+#pragma link C++ class AliHLTPHOSClusterizerComponent+;
+#pragma link C++ class AliHLTPHOSClusterizerComponentNbyN+;
+#pragma link C++ class AliHLTPHOSRawAnalyzer+;
+#pragma link C++ class AliHLTPHOSRawAnalyzerComponentv3+;
+#pragma link C++ class AliHLTPHOSRawAnalyzerCrude+;
+#pragma link C++ class AliHLTPHOSRawAnalyzerCrudeComponent+;
 #pragma link C++ class AliHLTPHOSDigitMakerComponent+;
-#pragma link C++ class AliHLTPHOSSanityInspector+; 
-#pragma link C++ class AliHLTPHOSESDMaker+; 
-#pragma link C++ class AliHLTPHOSClusterAnalyser+; 
-#pragma link C++ class AliHLTPHOSPhysicsHistogramProducer+;
+#pragma link C++ class AliHLTPHOSMapper+;
+#pragma link C++ class AliHLTPHOSRawAnalyzerPeakFinder+;
+#pragma link C++ class AliHLTPHOSSanityInspector+;
+#pragma link C++ class AliHLTPHOSMonitorTriggerComponent+;
+#pragma link C++ class AliHLTPHOSConstants+;
+#pragma link C++ class AliHLTPHOSRecoParamHandler+;
 
-//#pragma link C++ class AliHLTPHOSChannelBadness+;
-
-
-//#pragma link C++ class AliHLTPHOSEmcCalibrationHistogramProducer+;
-
-
-#endif
+#endif // __CINT__
+//
+// EOF
+//

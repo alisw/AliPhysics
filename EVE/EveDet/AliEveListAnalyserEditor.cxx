@@ -44,10 +44,10 @@
 // selection method!                                                    //
 //////////////////////////////////////////////////////////////////////////
 
-#include <EveDet/AliEveListAnalyser.h>
+#include <AliEveListAnalyser.h>
 #include "AliEveListAnalyserEditor.h"
 
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 #include <TCanvas.h>     
 #include <TEveBrowser.h>
 #include <TEveGedEditor.h> 

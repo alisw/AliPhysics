@@ -84,8 +84,8 @@ void Config()
   gSystem->Load("libhijing");	
   gSystem->Load("libTHijing");
 #endif
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
 
 
   new     TGeant3TGeo("C++ Interface to Geant3");

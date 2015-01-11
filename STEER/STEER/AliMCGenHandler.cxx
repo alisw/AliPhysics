@@ -34,6 +34,9 @@
 #include "AliRun.h"
 #include "AliAnalysisManager.h"
 
+#include "TMacro.h"
+#include "TInterpreter.h"
+
 ClassImp(AliMCGenHandler)
 
 AliMCGenHandler::AliMCGenHandler() :
@@ -44,7 +47,10 @@ AliMCGenHandler::AliMCGenHandler() :
     fHeader(0),
     fGenerator(0),
     fSeedMode(0),
-    fSeed(0)
+    fSeed(0),
+    fGeneratorMacroPath(),
+    fGeneratorMacroParameters(),
+    fGeneratorCustomization(0)
 {
   //
   // Default constructor
@@ -61,7 +67,10 @@ AliMCGenHandler::AliMCGenHandler(const char* name, const char* title) :
     fHeader(0),
     fGenerator(0),
     fSeedMode(0),
-    fSeed(0)
+    fSeed(0),
+    fGeneratorMacroPath(),
+    fGeneratorMacroParameters(),
+    fGeneratorCustomization(0)
 {
   //
   // Constructor
@@ -82,8 +91,37 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
   // Initialize input
     //
     
-    if (!fGenerator)
-      AliFatal("fGenerator needs to be set before");
+    if (!fGenerator) {
+      if (fGeneratorMacroPath.Length() == 0)
+	AliFatal("fGeneratorMacroPath empty!");
+      
+      TString macroPath;
+      macroPath.Form("$ALICE_ROOT/%s", fGeneratorMacroPath.Data());
+      macroPath = gSystem->ExpandPathName(macroPath.Data());
+
+      if (gSystem->AccessPathName(macroPath))
+	  AliFatal(Form("Cannot find macro %s", macroPath.Data()));
+
+      TMacro m(macroPath);
+      Int_t error = 0;
+      Long64_t retval = m.Exec(fGeneratorMacroParameters, &error);
+      if (error != TInterpreter::kNoError)
+	  AliFatal(Form("Macro interpretation %s failed", macroPath.Data()));
+
+      if (retval<0)
+	AliFatal(Form("The macro %s did not return a valid generator (1)", macroPath.Data()));
+
+      fGenerator = reinterpret_cast<AliGenerator*>(retval);
+      if (!fGenerator)
+	AliFatal(Form("The macro %s did not return a valid generator (2)", macroPath.Data()));
+
+      // customization from LEGO train
+      if (fGeneratorCustomization) {
+	fGeneratorCustomization->Exec(Form("(AliGenerator*) %p", fGenerator), &error);
+	if (error != TInterpreter::kNoError)
+	  AliFatal("Execution of generator customization failed");
+      }
+    }
     
     if (fSeedMode == 0)
       Printf("AliMCGenHandler::Init: Not setting any seed. Seed needs to be set externally!");
@@ -111,6 +149,7 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
 
       Printf("AliMCGenHandler::Init: Using seed: %d", fSeed);
       gRandom->SetSeed(fSeed);
+      fGenerator->SetSeed(fSeed);
     }
 
     AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");

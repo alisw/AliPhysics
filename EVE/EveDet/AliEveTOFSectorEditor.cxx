@@ -8,7 +8,7 @@
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 #include "AliEveTOFSectorEditor.h"
-#include <EveDet/AliEveTOFSector.h>
+#include <AliEveTOFSector.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>

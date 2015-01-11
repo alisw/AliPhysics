@@ -53,7 +53,7 @@ using std::endl;
 void HLToutputTodHLTRootObjects(const char* dataSource = "./", bool dumpBinary = false)
 {
 	// setup of the HLT system
-	gSystem->Load("libHLTrec.so");
+	gSystem->Load("libHLTrec");
 	AliHLTSystem* sys = AliHLTPluginBase::GetInstance();
 	if (sys == NULL)
 	{

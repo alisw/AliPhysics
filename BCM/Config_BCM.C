@@ -56,8 +56,8 @@ void Config()
    // libraries required by geant321
 #if defined(__CINT__)
   gSystem->Load("libgeant321");
-  gSystem->Load("libGed.so");
-  gSystem->Load("libRGL.so");
+  gSystem->Load("libGed");
+  gSystem->Load("libRGL");
   //gSystem->Load("libGeom");
   //cout << "\t* Loading TFluka..." << endl;  
   //gSystem->Load("libTFluka");    

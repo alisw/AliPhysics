@@ -132,7 +132,7 @@ AliQAChecker::~AliQAChecker()
 			//AliDebug(AliQAv1::GetQADebugLevel(), Form("defining plugin for %s", qacName.Data()));
 			TString libs = gSystem->GetLibraries();
 		
-			if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
+			if (libs.Contains("lib" + detName + "base") || (gSystem->Load("lib" + detName + "base") >= 0))
 				pluginManager->AddHandler("AliQAChecker", detName, qacName, detName + "qac", qacName + "()");
 			else 
 				pluginManager->AddHandler("AliQAChecker", detName, qacName, detName, qacName + "()");

@@ -15,7 +15,7 @@
 
 #include "AliEveT0Module.h"
 
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 
 #include <AliT0digit.h>
 #include <AliRawReader.h>

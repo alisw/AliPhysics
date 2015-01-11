@@ -2,9 +2,10 @@
 #define AliStorageTypes_H
 
 #include <TSystem.h>
+#include <TFile.h>
 
 inline const char* GetConfigFilePath(){
-	return Form("%s/MONITOR/alistoragemanager/setupStorageDatabase.sh",gSystem->Getenv("ALICE_ROOT"));
+    return Form("%s/setupStorageDatabase.sh",gSystem->Getenv("HOME"));
 }
 
 enum storageSockets{
@@ -15,6 +16,8 @@ enum storageSockets{
 	EVENTS_SERVER_PUB,
 	EVENTS_SERVER_SUB,
 	XML_PUB,
+	ITS_POINTS_PUB,
+	ITS_POINTS_SUB,
 	NUMBER_OF_SOCKETS
 };
 	
@@ -66,6 +69,10 @@ struct serverRequestStruct{
 	int messageType;
 	struct eventStruct event;
 	struct listRequestStruct list;
+};
+
+struct recPointsStruct{
+  TFile *files[10];
 };
 
 typedef struct serverListStruct{

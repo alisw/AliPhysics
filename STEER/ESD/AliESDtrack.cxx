@@ -33,16 +33,27 @@
 //
 //   1.AliESDtrack is the container of the information about the track/particle
 //     reconstructed during Barrel Tracking.
-//     The track information is propagated from one tracking detector to 
-//     other using the functionality of AliESDtrack - Current parameters.  
+//     Content:
+//        a.) Track parameters and covariance - AliExternalTrackParam  - snapshots along trajectory at differnt tracking steps 
+//            current, fIp, fTPCinner, fCp, fOp, fHMPIDp, + friendTrack (fITSout, fTPCout, fTRDin) 
+//        b.) Flags - per detector status bits
+//        c.) Track fit quality -chi2, number of clusters
+//        d.) Detector PID information
+//        d.) Different detector specific information (e.g number of tracklets in TRD, TOF cluster descriptor ...)
 //
-//     No global fit model is used.
-//     Barrel tracking use Kalman filtering technique, it gives optimal local 
-//     track parameters at given point under certian assumptions.
+//
+//     The track information is propagated from one tracking detector to 
+//     other using the functionality of AliESDtrack (AliExternalTrackParam - current parameters)  
+//
+//     Barrel tracking uses Kalman filtering technique (no global fit model is used). Kalman provides optimal local 
+//     track parameters estimate at given position under certian assumptions. 
+//     Following approximations were used:  
+//           a.) gaussian Multiple scattering
+//           b.) gaussian energy loss
+//           c.) gaussian error of the space point residuals  
 //             
-//     Kalman filter take into account additional effect which are 
-//     difficult to handle using global fit.
-//     Effects:
+//     Kalman filter take into account following effects which are 
+//     difficult to handle using global fit:
 //        a.) Multiple scattering
 //        b.) Energy loss
 //        c.) Non homogenous magnetic field
@@ -53,57 +64,70 @@
 //         b. ITS
 //         c. TRD
 //
-//      In general 3 reconstruction itteration are performed:
-//         1. Find tracks   - sequence TPC->ITS
-//         2. PropagateBack - sequence ITS->TPC->TRD -> Outer PID detectors
-//         3. Refit invward - sequence TRD->TPC->ITS
-//      The current tracks are updated after each detector (see bellow).
-//      In specical cases a track  sanpshots are stored.   
+//      Track findind/fitting procedure is done in 3 steps:
+//         1. Cluster2Track(in)   - inward sequence TPC->ITS    
+//         2. PropagateBack(out)   - outward sequence ITS->TPC->TRD -> Outer PID detectors
+//         3. RefitInward(refit)     - inward sequence TRD->TPC->ITS
+//      After each recosntruction step detector status is updated in the data member fFlags
+//      fFlags|=k<DetectorName><step> where step={1:in,2:out,3:refit,}
+//      For some of detectors a special flags were implemented. Declaration of list of all flags can be find in $ALICE_ROOT/STEER/STEERBase/AliVTrack.h
+//
+//  
+//      The current track parameter is updated after each detector (see bellow).
+//      In specical cases a track  snapshots (AliExternalTrackParam) are stored
+//
 // 
 //
 //      For some type of analysis (+visualization) track local parameters at 
 //      different position are neccesary. A snapshots during the track 
-//      propagation are created.
-//      (See AliExternalTrackParam class for desctiption of variables and 
-//      functionality)
+//      propagation are created and stored either in track itself (for analysis purposes) or assiciated friend track (for calibration and debugging purposes)
+//      (See AliExternalTrackParam class for desctiption of variables and functionality)
 //      Snapshots:
-//      a. Current parameters - class itself (AliExternalTrackParam)
-//         Contributors: general case TRD->TPC->ITS
-//         Preferable usage:  Decission  - primary or secondary track
-//         NOTICE - By default the track parameters are stored at the DCA point
-//                  to the primary vertex. optimal for primary tracks, 
-//                  far from optimal for secondary tracks.
-//      b. Constrained parameters - Kalman information updated with 
-//         the Primary vertex information 
-//         Contributors: general case TRD->TPC->ITS
-//         Preferable usage: Use only for tracks selected as primary
-//         NOTICE - not real constrain - taken as additional measurement 
-//         with corresponding error
-//         Function:  
-//       const AliExternalTrackParam *GetConstrainedParam() const {return fCp;}
-//      c. Inner parameters -  Track parameters at inner wall of the TPC 
-//         Contributors: general case TRD->TPC
-//         function:
-//           const AliExternalTrackParam *GetInnerParam() const { return fIp;}
+//      a.)  Current parameters (AliESDtrack itself) 
+//         Description:  as obtained in the last succesfull tracking step
+//         Contributors: best case TRD->TPC->ITS after RefitInward
+//         Recomended way to get track parameters. It includes all of the information.
+//         NOTICE - By default the track parameters are stored at the DCA point to the primary vertex. 
+//                  Optimal for primary tracks, far from optimal for deeply secondary tracks.
+//                  To get optimal track parameters at the secondary vertex, OnTheFly V0s with associated track parameters should be used
 //
-//      d. TPCinnerparam  - contributors - TPC only
-//         Contributors:  TPC
-//         Preferable usage: Requested for HBT study 
-//                         (smaller correlations as using also ITS information)
-//         NOTICE - the track parameters are propagated to the DCA to  
-//         to primary vertex
-//         Optimal for primary, far from optimal for secondary tracks
+//      b.) Constrained parameters (fCp)
+//         Description: 
+//            Kalman track  updated with the Primary vertex information with corresponding error (soft  constraint - see http://en.wikipedia.org/wiki/Constraint_(mathematics)#Hard_and_soft_constraints) 
+//         Function:  
+//            const AliExternalTrackParam *GetConstrainedParam() const {return fCp;}
+//         Contributors: best case TRD->TPC->ITS after RefitInward
+//         Recommended usage: Use only for tracks selected as primary (check GetConstrainedChi2())
+//         NOTICE - not real constraint only soft constraint
+//
+//      c.) Inner parameters (fIp) -  
+//         Description: Track parameters at inner wall of the TPC 
 //         Function:
-//    const AliExternalTrackParam *GetTPCInnerParam() const {return fTPCInner;}
-//     
-//      e. Outer parameters - 
-//           Contributors-  general case - ITS-> TPC -> TRD
-//           The last point - Outer parameters radius is determined
-//           e.a) Local inclination angle bigger than threshold - 
-//                Low momenta tracks 
-//           e.a) Catastrofic energy losss in material
-//           e.b) Not further improvement (no space points)
-//           Usage:             
+//           const AliExternalTrackParam *GetInnerParam() const { return fIp;}
+//         Contributors: general case TRD->TPC (during RefitInward)
+//         Recomended usage: To provide momenta for the TPC PID and to estimate quality of the track determination for further 
+//
+//      d.)  TPCinnerParam (fTPCinner):
+//         Description: TPC only parameters at DCA to the primary vertex (corrected for the material between TPC and vertex)
+//         Function:
+//                const AliExternalTrackParam *GetTPCInnerParam() const {return fTPCInner;}
+//         Contributors:  TPC only from in step  1 (Cluster2Tracks)
+//         Recomended usage: Requested for HBT study 
+//                           (smaller correlations as using also ITS information)
+//         NOTICE: Optimal for primary, far from optimal for secondary tracks (similar to track parameters a.) 
+//                 ! We should always use the c.) fIp in case of the TPC PID analysis, or undo material budget correction!
+//
+//      e.) Outer parameters - (fOp)
+//         Description: track parameters during PropagateBack in the last sucessfull propagation  
+//                  Reason to generate backup  OuterParameters
+//                        a.) Local inclination angle bigger than threshold - 
+//                            Low momenta tracks 
+//                        b.) Catastrofic (large relative>~20 %)energy loss in material outside of the TPC
+//                        c.) No additional  space points contributing to track 
+//         Function:
+//            const AliExternalTrackParam *GetOuterParam() const { return fOp;}
+//         Contributors:  general case - ITS-> TPC -> TRD ( during PropagateBack )
+//         Recomended usage:             
 //              a.) Tracking: Starting parameter for Refit inward 
 //              b.) Visualization
 //              c.) QA
@@ -3441,3 +3465,55 @@ Double_t  AliESDtrack::GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID, Int
   return fTPCdEdxInfo->GetdEdxInfo(fIp, regionID, calibID, qID, valueID);
 }
 
+
+Double_t AliESDtrack::GetdEdxInfoTRD(Int_t method, Double_t p0, Double_t p1, Double_t p2){
+  //
+  // Methods
+  // mean values:
+  //     0.)   linear
+  //     1.)   logarithmic
+  //     2.)   1/sqrt
+  //     3.)   power()
+  // time COG:
+  //     4.)   linear
+  //     5.)   logarithmic
+  //     6.)   square
+  Int_t nSlicesPerLayer=GetNumberOfTRDslices();
+  Int_t nSlicesAll=GetNumberOfTRDslices()*kTRDnPlanes;
+
+  if (method<=3){
+    Double_t sumAmp=0;
+    Int_t    sumW=0;
+    for (Int_t ibin=0; ibin<nSlicesAll; ibin++){
+      if (fTRDslices[ibin]<=0) continue; 
+      sumW++;
+      if (method==0) sumAmp+=fTRDslices[ibin];
+      if (method==1) sumAmp+=TMath::Log(TMath::Abs(fTRDslices[ibin])+p0);
+      if (method==2) sumAmp+=1/TMath::Sqrt(TMath::Abs(fTRDslices[ibin])+p0);
+      if (method==3) sumAmp+=TMath::Power(TMath::Abs(fTRDslices[ibin])+p0,p1);
+    }
+    if (sumW==0) return 0;
+    Double_t dEdx=sumAmp/sumW;
+    if (method==1) dEdx= TMath::Exp(dEdx);
+    if (method==2) dEdx= 1/(dEdx*dEdx);
+    if (method==3) dEdx= TMath::Power(dEdx,1/p1);
+    return dEdx;
+  }
+  if (method>3){
+    Double_t sumWT=0;
+    Double_t sumW=0;
+    for (Int_t ibin=0; ibin<nSlicesAll; ibin++){
+      if (fTRDslices[ibin]<=0) continue; 
+      Double_t time=(ibin%nSlicesPerLayer);
+      Double_t weight=fTRDslices[ibin];
+      if (method==5) weight=TMath::Log((weight+p0)/p0);
+      if (method==6) weight=TMath::Power(weight+p0,p1);
+      sumWT+=time*weight;
+      sumW+=weight;
+    }
+    if (sumW<=0) return 0;
+    Double_t meanTime=sumWT/sumW;
+    return meanTime;
+  }
+  return 0;
+}

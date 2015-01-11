@@ -166,7 +166,7 @@ int AliHLTModuleAgent::ActivateComponentHandler(AliHLTComponentHandler* pHandler
     if (fpComponentHandler!=NULL) {
       // reset and think about deregistration
       fpComponentHandler=NULL;
-      HLTWarning("deregistration of components not yet implemented");
+      //HLTWarning("deregistration of components not yet implemented");
     }
     return 0;
   }

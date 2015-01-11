@@ -5,17 +5,17 @@ void runALICE(TString mode="local",
 	      Int_t nEventsSkip=0,
 	      TString format="esd") {
   
-  gSystem->Load("libTree.so"); 
-  gSystem->Load("libGeom.so"); 
-  gSystem->Load("libVMC.so"); 
-  gSystem->Load("libPhysics.so"); 
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
 
   
   // Create and configure the alien handler plugin 

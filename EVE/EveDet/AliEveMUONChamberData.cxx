@@ -11,15 +11,15 @@
 #include "AliEveMUONChamberData.h"
 
 #include <AliMUONGeometryTransformer.h>
-#include <mapping/AliMpDEIterator.h>
-#include <mapping/AliMpSector.h>
-#include <mapping/AliMpPad.h>
-#include <mapping/AliMpSegmentation.h>
-#include <mapping/AliMpVSegmentation.h>
+#include <AliMpDEIterator.h>
+#include <AliMpSector.h>
+#include <AliMpPad.h>
+#include <AliMpSegmentation.h>
+#include <AliMpVSegmentation.h>
 
 #include <TVector2.h>
 
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveEventManager.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 ///

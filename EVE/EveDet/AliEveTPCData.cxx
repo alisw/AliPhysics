@@ -9,7 +9,7 @@
 
 #include "AliEveTPCData.h"
 
-#include <EveDet/AliEveTPCSectorData.h>
+#include <AliEveTPCSectorData.h>
 
 #include <AliSimDigits.h>
 #include <AliTPCParam.h>

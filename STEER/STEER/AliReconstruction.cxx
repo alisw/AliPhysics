@@ -3476,7 +3476,7 @@ Bool_t AliReconstruction::InitRunLoader()
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       TString detName = fgkDetectorName[iDet];
       if (libs.Contains("lib" + detName + "base.so")) continue;
-      gSystem->Load("lib" + detName + "base.so");
+      gSystem->Load("lib" + detName + "base");
     }
     fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
     if (!fRunLoader) {
@@ -3549,7 +3549,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
     AliDebug(1, Form("defining plugin for %s", recName.Data()));
     TString libs = gSystem->GetLibraries();
     if (libs.Contains("lib" + detName + "base.so") ||
-	(gSystem->Load("lib" + detName + "base.so") >= 0)) {
+	(gSystem->Load("lib" + detName + "base") >= 0)) {
       pluginManager->AddHandler("AliReconstructor", detName, 
 				recName, detName + "rec", recName + "()");
     } else {

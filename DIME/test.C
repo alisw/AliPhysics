@@ -1,8 +1,8 @@
 void test()
 {
-  gSystem->Load("libEG.so");
-  gSystem->Load("libdime.so");
-  gSystem->Load("libTDime.so");
+  gSystem->Load("libEG");
+  gSystem->Load("libdime");
+  gSystem->Load("libTDime");
   
   TDime* dime = new TDime();
   dime->SetEnergyCMS(7000.);

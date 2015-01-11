@@ -46,7 +46,7 @@ void alieve_online_new()
                               geom_gentle_rhoz(),
                               geom_gentle_rhoz());
     
-    //These macros crashes on mac os. To be checked
+    //These macros crashes on mac os. To be checked. Problems on SLC as well.
     
     //TEveUtil::LoadMacro("geom_gentle_trd.C");
     //multiView->InitGeomGentleTrd(geom_gentle_trd());
@@ -188,46 +188,47 @@ void alieve_online_on_new_event()
         mv->SetCenterMuon(x[0], x[1], x[2]);
     mv->ImportEventMuon(top);
     
-    /*
+    
      // Register image to amore.
      // const TString pichost("aldaqacrs3");
      const TString pichost(gEnv->GetValue("AliEve.imageDumpHost", "localhost"));
      TTimeStamp now;
      Double_t delta = now.AsDouble() - g_pic_prev.AsDouble();
      
-     printf("Pre image dump: host='%s', delta=%f.\n",
-     gSystem->HostName(), delta);
+     printf("Pre image dump: host='%s', delta=%f.\n",gSystem->HostName(), delta);
      
      AliSysInfo::AddStamp("on_new_event_pic");
-     if (pichost == gSystem->HostName() && delta >= 30)
+     // if (pichost == gSystem->HostName() && delta >= 30)
      {
-     TString id;      id.Form("online-viz-%03d", g_pic_id);
-     TString pic(id); pic += ".png";
+       TString id;      id.Form("online-viz-%03d", g_pic_id);
+       TString pic(id); pic += ".png";
      
-     printf("In image dump: file='%s'.\n", pic.Data());
+       printf("In image dump: file='%s'.\n", pic.Data());
      
-     gEve->GetBrowser()->RaiseWindow();
-     gEve->FullRedraw3D();
-     gSystem->ProcessEvents();
+       gEve->GetBrowser()->RaiseWindow();
+       gEve->FullRedraw3D();
+       gSystem->ProcessEvents();
      
-     Int_t status;
+       Int_t status;
      
-     // create screenshots from OpenGL views
-     TEveUtil::LoadMacro("saveViews.C");
-     saveViews(pic.Data());
+       // create screenshots from OpenGL views
+       TEveUtil::LoadMacro("saveViews.C");
+       saveViews(pic.Data());
      
-     // send screenshot to AMORE
-     status = gSystem->Exec(TString::Format("SendImageToAmore %s %s %d",
-     id.Data(), pic.Data(),
-     AliEveEventManager::AssertESD()->GetRunNumber()));
+       // send screenshot to AMORE
+       cout<<"Sending:"<<TString::Format("SendImageToAmore %s %s %d",id.Data(), pic.Data(),AliEveEventManager::AssertESD()->GetRunNumber())<<endl;
+
+       status = gSystem->Exec(TString::Format("SendImageToAmore %s %s %d",
+					      id.Data(), pic.Data(),
+					      AliEveEventManager::AssertESD()->GetRunNumber()));
      
-     printf("Post AMORE reg -- status=%d, run=%d.\n", status,
-     AliEveEventManager::AssertESD()->GetRunNumber());
+       printf("Post AMORE reg -- status=%d, run=%d.\n", status,
+	      AliEveEventManager::AssertESD()->GetRunNumber());
      
-     if (++g_pic_id >= g_pic_max)
-     g_pic_id = 0;
-     g_pic_prev.Set();
-     }*/
+       if (++g_pic_id >= g_pic_max)
+	 g_pic_id = 0;
+       g_pic_prev.Set();
+     }
     AliSysInfo::AddStamp("on_new_event_end");
 }
 

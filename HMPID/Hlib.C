@@ -1,7 +1,7 @@
 void Hlib()
 {
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libMinuit.so");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
   
   gSystem->Load("libEG");
   gSystem->Load("libGeom");
@@ -24,9 +24,9 @@ void Hlib()
   
   gSystem->Load("libRAWDatasim");
 
-  gSystem->Load("libHMPIDbase.so");
-  gSystem->Load("libHMPIDsim.so");
-  gSystem->Load("libHMPIDrec.so");
+  gSystem->Load("libHMPIDbase");
+  gSystem->Load("libHMPIDsim");
+  gSystem->Load("libHMPIDrec");
 
 //  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/HMPID"); 
   gInterpreter->AddIncludePath("$HOME/HMPID");

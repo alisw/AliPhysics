@@ -108,6 +108,8 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void    SetTarget(TString tar="", Int_t a = 0, Int_t z = 0)
 	{fTarget = tar; fATarget = a; fZTarget = z;}
     
+    virtual void    SetSeed(UInt_t seed);
+    
  protected:
     virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,

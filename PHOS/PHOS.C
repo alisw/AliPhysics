@@ -4,9 +4,9 @@ PHOS (Int_t event_number=0,Float_t SignalStep=0.001,Int_t SignalMin=15)
 
    // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
-      gSystem->Load("libGeant3Dummy.so");   // a dummy version of Geant3
-      gSystem->Load("PHOS/libPHOSreconstruction.so");        // the standard Alice classes 
-      gSystem->Load("libgalice.so");        // the standard Alice classes 
+      gSystem->Load("libGeant3Dummy");   // a dummy version of Geant3
+      gSystem->Load("PHOS/libPHOSreconstruction");        // the standard Alice classes 
+      gSystem->Load("libgalice");        // the standard Alice classes 
    }
     
    // Connect the Root Galice file containing Geometry, Kine and Hits

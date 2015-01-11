@@ -1,4 +1,4 @@
-//
+/// \file FindKrClustersRaw.C
 
 Int_t FindKrClusterCheck(const char *fileName="data.root");
 
@@ -147,9 +147,9 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
 Int_t FindKrClusterCheck(const char *fileName){
   //
   //
-  gSystem->Load("$ROOTSYS/lib/libGui.so");
-  gSystem->Load("$ROOTSYS/lib/libTree.so");
-  gSystem->Load("$MEMSTAT/libMemStat.so");
+  gSystem->Load("$ROOTSYS/lib/libGui");
+  gSystem->Load("$ROOTSYS/lib/libTree");
+  gSystem->Load("$MEMSTAT/libMemStat");
   {
     TMemStat memstat(1000000,100000,kTRUE);
     AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);

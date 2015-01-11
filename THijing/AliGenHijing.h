@@ -29,6 +29,7 @@ class AliGenHijing : public AliGenMC
     virtual ~AliGenHijing();
     virtual void    Generate();
     virtual void    Init();
+    virtual void    SetSeed(UInt_t seed);
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
     virtual void    SetReferenceFrame(TString frame="CMS")

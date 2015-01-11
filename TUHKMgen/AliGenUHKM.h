@@ -48,7 +48,7 @@ class AliGenUHKM : public AliGenMC
   void SetMuQ(Double_t value) {fHydjetParams.fMuI3 = value;}  // Isospin chemical potential [GeV]
   void SetThFrzTemperature(Double_t value) {fHydjetParams.fThFO = value;}  // Temperature for the thermal freezeout [GeV]
   void SetMuPionThermal(Double_t value) {fHydjetParams.fMu_th_pip = value;} // Chemical potential for pi+ at thermal freezeout [GeV]
-  void SetSeed(Int_t value) {fHydjetParams.fSeed = value;} //parameter to set the random nuber seed (=0 the current time is used
+  virtual void SetSeed(UInt_t value) {fHydjetParams.fSeed = value;} //parameter to set the random nuber seed (=0 the current time is used
   //to set the random generator seed, !=0 the value fSeed is
   //used to set the random generator seed and then the state of random
   //number generator in PYTHIA MRPY(1)=fSeed

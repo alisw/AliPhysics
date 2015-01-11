@@ -1,24 +1,20 @@
-
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// This is a macro which measures the time delay of L1 trigger in TPC      //
-//                                                                         //
-// It reads the ESD tracks and fills histograms with the distance          //
-// between the primary vertex and the Z position                           //
-// of the point of closest approach between the track and the beam axis.   //
-// The processing of forward and backward tracks is done separately.       //
-// The corresponding histograms are fitted with gaussian and the           //
-// shifts of the Z positions are extracted.                                //
-// The L1 time delay is taken as an average of the forward and backward    //
-// (with opposite sign) shifts divided by the drift velocity.              //
-// We assume that the ESD tracks are obtained by the TPC tracking stand    //
-// alone.                                                                  //
-// The propagation to the vertex can be done either with or without        //
-// TGeoManager.                                                            //
-//                                                                         //
-// Cvetan.Cheshkov@cern.ch                                                 //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
+/// \file AliL1Delay.C
+/// \brief Macro that measures the time delay of L1 trigger in TPC
+/// 
+/// It reads the ESD tracks and fills histograms with the distance
+/// between the primary vertex and the Z position
+/// of the point of closest approach between the track and the beam axis.
+/// The processing of forward and backward tracks is done separately.
+/// The corresponding histograms are fitted with gaussian and the
+/// shifts of the Z positions are extracted.
+/// The L1 time delay is taken as an average of the forward and backward
+/// (with opposite sign) shifts divided by the drift velocity.
+/// We assume that the ESD tracks are obtained by the TPC tracking stand
+/// alone.
+/// The propagation to the vertex can be done either with or without
+/// TGeoManager.
+/// 
+/// \author Cvetan Cheshkov <Cvetan.Cheshkov@cern.ch>
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
   #include <TMath.h>

@@ -42,7 +42,7 @@ function(ALICE_CorrectPaths _output value )
     set(external)
     string(REGEX MATCH "^/" external "${path}")
     if(NOT external)
-      list(APPEND corrected "${CMAKE_SOURCE_DIR}/${path}" )
+      list(APPEND corrected "${AliRoot_SOURCE_DIR}/${path}" )
     else()
       list(APPEND corrected "${path}")
     endif(NOT external)
@@ -108,12 +108,12 @@ endfunction(ALICE_RootConfig)
 macro(ALICE_CheckOutOfSourceBuild)
   
   #Check if previous in-source build failed
-  if(EXISTS ${CMAKE_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${CMAKE_SOURCE_DIR}/CMakeFiles)
+  if(EXISTS ${AliRoot_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${AliRoot_SOURCE_DIR}/CMakeFiles)
     message(FATAL_ERROR "CMakeCache.txt or CMakeFiles exists in source directory! Please remove them before running cmake $ALICE_ROOT")
-  endif(EXISTS ${CMAKE_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${CMAKE_SOURCE_DIR}/CMakeFiles)
+  endif(EXISTS ${AliRoot_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${AliRoot_SOURCE_DIR}/CMakeFiles)
   
   #Get Real Paths of the source and binary directories
-  get_filename_component(srcdir "${CMAKE_SOURCE_DIR}" REALPATH)
+  get_filename_component(srcdir "${AliRoot_SOURCE_DIR}" REALPATH)
   get_filename_component(bindir "${CMAKE_BINARY_DIR}" REALPATH)
   
   #Check for in-source builds
@@ -455,7 +455,7 @@ macro(ALICE_BuildLibrary)
   include_directories(${PINC})  
   include_directories(${EINCLUDE})
   include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY}/FromTemplate)
-  include_directories(${CMAKE_SOURCE_DIR})
+  include_directories(${AliRoot_SOURCE_DIR})
   
   add_library(${PACKAGE} SHARED ${PCS} ${PFS} ${PS} ${PDS})
   set_target_properties(${PACKAGE} PROPERTIES SUFFIX .so)  
@@ -585,8 +585,8 @@ macro(ALICE_CopyHeaders)
     foreach(header ${HEADERS})
       get_filename_component( header_name ${header} NAME )
       add_custom_command(OUTPUT ${PEXPORTDEST}/${header_name}
-                         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/${MODULE}/${header} ${PEXPORTDEST}/${header_name}
-			 DEPENDS ${CMAKE_SOURCE_DIR}/${MODULE}/${header})
+                         COMMAND ${CMAKE_COMMAND} -E copy ${AliRoot_SOURCE_DIR}/${MODULE}/${header} ${PEXPORTDEST}/${header_name}
+			 DEPENDS ${AliRoot_SOURCE_DIR}/${MODULE}/${header})
       list(APPEND _headersdep ${PEXPORTDEST}/${header_name})
       install(FILES ${header} DESTINATION include)
     endforeach(header)
@@ -605,13 +605,13 @@ macro(ALICE_GenerateLinkDef)
   endforeach(class)
 
   add_custom_command(OUTPUT ${PDAL}
-    COMMAND sh ${CMAKE_SOURCE_DIR}/cmake/GenerateLinkDef.sh ${PCLASSES} > ${PDAL} 
-    DEPENDS ${PCINTHDRS} ${CMAKE_SOURCE_DIR}/cmake/GenerateLinkDef.sh)
+    COMMAND sh ${AliRoot_SOURCE_DIR}/cmake/GenerateLinkDef.sh ${PCLASSES} > ${PDAL} 
+    DEPENDS ${PCINTHDRS} ${AliRoot_SOURCE_DIR}/cmake/GenerateLinkDef.sh)
 endmacro(ALICE_GenerateLinkDef)
 
 macro(ALICE_BuildPAR)
   
-  if(EXISTS ${CMAKE_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
+  if(EXISTS ${AliRoot_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
     set(PARSRCS)
     foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR} ${OTHERS} )
       get_filename_component(srcdir ${file} PATH)
@@ -651,7 +651,7 @@ macro(ALICE_BuildPAR)
     add_dependencies(test-par-all test-${PACKAGE}.par)
     add_dependencies(test-${MODULE}-par-all test-${PACKAGE}.par)
 
-  endif(EXISTS ${CMAKE_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
+  endif(EXISTS ${AliRoot_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
   # endif(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
 
 endmacro(ALICE_BuildPAR)

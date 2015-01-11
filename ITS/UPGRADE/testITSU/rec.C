@@ -6,9 +6,9 @@ void rec() {
 
   TDatime t;
 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeSim.so");
-  gSystem->Load("libITSUpgradeRec.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
+  gSystem->Load("libITSUpgradeRec");
 
   //  gSystem->Exec("rm -rf *RecPoints* AliESD*");
 

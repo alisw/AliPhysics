@@ -24,10 +24,10 @@ MakeCalibration(const char* base="local://$ALICE_ROOT/OCDB")
   AliCDBManager* cdb   = AliCDBManager::Instance();
   cdb->SetDefaultStorage(base);
 
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libFMDanalysis.so");
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libFMDanalysis");
+  gSystem->Load("libFMDutil");
   AliFMDCalibFaker f(1<<AliFMDCalibFaker::kPulseGain, 0);
   f.SetRunRange(0,999999999);
   f.SetGainSeed(AdcPerMip2Gain(60)); // From astrid test beam 

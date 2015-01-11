@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2009-2010, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2009-2014, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -23,7 +23,7 @@
 // same momentum.
 //
 // By default it starts with He4 nuclei which are the most stable,
-// then He3 nuclei and tritons and finally deuterons. It can also generate
+// then He3 nuclei, tritons and finally deuterons. It can also generate
 // a single nucleus species by disabling the others.
 //
 // Sample code for PYTHIA:
@@ -36,7 +36,7 @@
 //
 //    gener->UsePerEventRates();
 //    gener->AddGenerator(pythia, "PYTHIA", 1);
-//    gener->SetCoalescenceMomentum(0.200); // default (GeV/c)
+//    gener->SetCoalescenceMomentum(0.100); // default (GeV/c)
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -60,7 +60,7 @@ ClassImp(AliGenLightNuclei)
 
 AliGenLightNuclei::AliGenLightNuclei()
 :AliGenCocktail()
-,fP0(0.200)
+,fP0(0.100)
 ,fGenDeuterons(kTRUE)
 ,fGenTritons(kTRUE)
 ,fGenHe3Nuclei(kTRUE)
@@ -173,8 +173,8 @@ Bool_t AliGenLightNuclei::Coalescence(const TParticle* n1, const TParticle* n2) 
 // returns true if the nucleons are inside of an sphere of radius p0
 // (assume the nucleons are in the same place e.g. PYTHIA, PHOJET,...)
 //
-	Double_t deltaP = 2.*this->GetPcm(n1->Px(), n1->Py(), n1->Pz(), n1->GetMass(), 
-	                                  n2->Px(), n2->Py(), n2->Pz(), n2->GetMass());
+	Double_t deltaP = this->GetPcm(n1->Px(), n1->Py(), n1->Pz(), n1->GetMass(), 
+	                               n2->Px(), n2->Py(), n2->Pz(), n2->GetMass());
 	
 	return ( deltaP < fP0);
 }

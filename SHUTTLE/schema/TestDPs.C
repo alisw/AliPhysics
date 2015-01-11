@@ -2,7 +2,7 @@ void TestDPs(const char* detector, int tsFrom, int tsTo)
 {
 	// Query amanda for DPs for detector from timestamp tsFrom to tsTo
 	//
-	gSystem->Load("libRLDAP.so");
+	gSystem->Load("libRLDAP");
 	gSystem->Load("libMonaLisa");
 	gSystem->Load("libSHUTTLE");
 

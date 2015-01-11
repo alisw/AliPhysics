@@ -14,8 +14,8 @@ void ReadQASDD(Int_t runNb = 101498,Int_t year=2009,Char_t period[10]="LHC09c",C
 {
 
   //****************** Connection to alien *****************************************
-  gSystem->Load("libNetx.so") ; 
-  gSystem->Load("libRAliEn.so"); 
+  gSystem->Load("libNetx") ;
+  gSystem->Load("libRAliEn");
   TGrid::Connect("alien://",0,0,"t"); 
   //TGrid *gGrid = TGrid::Connect("alien"); 
   if(!gGrid||!gGrid->IsConnected()) {

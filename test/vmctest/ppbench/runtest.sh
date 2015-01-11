@@ -18,8 +18,8 @@ if [ "$RUNG3" = "1" ]; then
   mv syswatch.log simwatch.log
   aliroot -b -q rec.C      2>&1 | tee rec.log
   mv syswatch.log recwatch.log
-  aliroot -b -q ${ALICE_ROOT}/STEER/CheckESD.C 2>&1 | tee check.log
-  aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
+  aliroot -b -q ${ALICE_ROOT}/STEER/macros/CheckESD.C 2>&1 | tee check.log
+  aliroot -b -q ${ALICE_ROOT}/STEER/macros/CreateAODfromESD.C 2>&1 | tee aod.log
   rm -fr $G3OUTDIR
   mkdir $G3OUTDIR
   mv *.root *.log *.ps GRP $G3OUTDIR
@@ -32,8 +32,8 @@ if [ "$RUNG4" = "1" ]; then
   mv syswatch.log simwatch.log
   aliroot -b -q rec.C      2>&1 | tee rec.log
   mv syswatch.log recwatch.log
-  aliroot -b -q ${ALICE_ROOT}/STEER/CheckESD.C 2>&1 | tee check.log
-  aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
+  aliroot -b -q ${ALICE_ROOT}/STEER/macros/CheckESD.C 2>&1 | tee check.log
+  aliroot -b -q ${ALICE_ROOT}/STEER/macros/CreateAODfromESD.C 2>&1 | tee aod.log
   rm -fr $G4OUTDIR
   mkdir $G4OUTDIR
   mv *.root *.log *.rndm *.ps GRP $G4OUTDIR

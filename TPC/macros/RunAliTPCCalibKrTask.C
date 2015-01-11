@@ -6,16 +6,16 @@
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTPCcalib");
-  gSystem->Load("libXrdClient.so");
-  gSystem->Load("libNetx.so");
+  gSystem->Load("libXrdClient");
+  gSystem->Load("libNetx");
   TGrid::Connect("alien://",0,0,"t");
-  gSystem->Load("$ROOTSYS/lib/libXrdClient.so");
+  gSystem->Load("$ROOTSYS/lib/libXrdClient");
   //
   // 1. Make list of the files 
   //
   .L $ALICE_ROOT/TPC/macros/testTPC/AlienToolkit.cxx+
-  gSystem->Load("libXrdClient.so");
-  gSystem->Load("libNetx.so");
+  gSystem->Load("libXrdClient");
+  gSystem->Load("libNetx");
   AlienToolkit toolkit;
   char *path = "/alice/cern.ch/user/a/amatyja/alice/data/"
   toolkit.MakeCollection(path,"32129*Krypton.root");
@@ -31,9 +31,9 @@
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
   .L /u/miranov/macros/ProofEnableAliRoot.C
   ProofEnableAliRoot("/usr/local/grid/AliRoot/HEAD0108");
-  gProof->Exec("gSystem->Load(\"libANALYSIS.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libSTAT.so\")",kTRUE);
-  gProof->Exec("gSystem->Load(\"libTPCcalib.so\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSIS\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libSTAT\")",kTRUE);
+  gProof->Exec("gSystem->Load(\"libTPCcalib\")",kTRUE);
   gProof->Exec(".x $ALICE_ROOT/TPC/macros/ConfigOCDB.C");
 
   //

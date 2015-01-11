@@ -4,7 +4,7 @@ void sim(Int_t nev=20) {
   gSystem->Load("libEGPythia6");
   gSystem->Load("libpythia6");
   gSystem->Load("libAliPythia6");
-  gSystem->Load("libhijing");
+  gSystem->Load("libHIJING");
   gSystem->Load("libTHijing");
   gSystem->Load("libgeant321");
 

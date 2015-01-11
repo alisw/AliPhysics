@@ -64,8 +64,8 @@
 /** @brief Simple geometry 
     @ingroup geo_geom
     @code 
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libGeom.so");
+    gSystem->Load("libPhysics");
+    gSystem->Load("libGeom");
     gROOT->LoadMacro("GeoGeometry.C+");
     Geometry g;
     g.Exec();

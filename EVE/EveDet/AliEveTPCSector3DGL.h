@@ -12,7 +12,7 @@
 
 #include <TGLObject.h>
 
-#include <EveDet/AliEveTPCSectorData.h>
+#include <AliEveTPCSectorData.h>
 
 class TEveBoxSetGL;
 

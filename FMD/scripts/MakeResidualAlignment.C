@@ -17,7 +17,7 @@ MakeResidualAlignment()
     cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   AliLog::SetModuleDebugLevel("FMD", 1);
-  gSystem->Load("libFMDutil.so");
+  gSystem->Load("libFMDutil");
   AliFMDAlignFaker f(AliFMDAlignFaker::kAll, "geometry.root", "residual.root");
   f.SetComment("Residual alignment for PDC06");
   // f.RemoveAlign(AliFMDAlignFaker::kHalves);

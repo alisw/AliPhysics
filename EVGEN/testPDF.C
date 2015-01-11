@@ -1,7 +1,7 @@
  void testPDF(Double_t a = 208.)
 {
 
-    gSystem->Load("liblhapdf.so");
+    gSystem->Load("liblhapdf");
     StrucFunc_t pdf = kCTEQ6ll;
     
 

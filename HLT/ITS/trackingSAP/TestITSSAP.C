@@ -25,7 +25,7 @@ void TestITSSAP(const char *datapath = "~/ppbench"){
   }
   else inpData = dtPath;
   printf("InputData : %s\n",inpData.Data());
-  gSystem->Load("libAliHLTITS.so");
+  gSystem->Load("libAliHLTITS");
   gROOT->ProcessLine(".L Process.C+");
   Process(inpData.Data());
   //

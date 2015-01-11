@@ -110,7 +110,7 @@ function(git_describe _var)
 		${hash}
 		${ARGN}
 		WORKING_DIRECTORY
-		"${CMAKE_SOURCE_DIR}"
+		"${AliRoot_SOURCE_DIR}"
 		RESULT_VARIABLE
 		res
 		OUTPUT_VARIABLE

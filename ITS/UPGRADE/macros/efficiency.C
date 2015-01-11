@@ -29,9 +29,9 @@ TArrayF radii;
 
 void efficiency(char *title="",Bool_t isPrimary=kTRUE){
 
-  gSystem->Load("libITSUpgradeBase.so");
-  gSystem->Load("libITSUpgradeRec.so");
-  gSystem->Load("libITSUpgradeSim.so");
+  gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeRec");
+  gSystem->Load("libITSUpgradeSim");
 
   // setting up the configuration to be considered
   AliITSsegmentationUpgrade *seg = new AliITSsegmentationUpgrade();

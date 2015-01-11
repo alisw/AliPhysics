@@ -47,7 +47,7 @@ void alieve_loadlibs ()
   gSystem->Load("libAliPythia6");
 
   gSystem->Load("libhijing");
-  gSystem->Load("libTHijing");// AliGenHijingEventHeader needed by libZDCsim.so
+  gSystem->Load("libTHijing");// AliGenHijingEventHeader needed by libZDCsim
 
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOSbase");
@@ -108,7 +108,7 @@ void alieve_loadlibs ()
   gSystem->Load("libAliHLTHough");
   gSystem->Load("libANALYSIS");
 
-  gSystem->Load("libAlieve.so");
+  gSystem->Load("libAlieve");
 
   printf(" done.\n");
 }

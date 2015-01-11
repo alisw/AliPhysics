@@ -144,7 +144,7 @@ bool testAliHLTTPCDataCheckerComponent(bool debug = false)
 {
 	if (gClassTable->GetID("AliHLTTPCDataCheckerComponent") < 0)
 	{
-		gSystem->Load("libAliHLTUtil.so");
+		gSystem->Load("libAliHLTUtil");
 	}
 	GenerateInputData(debug);
 	RunChainToCheckComponent(debug);

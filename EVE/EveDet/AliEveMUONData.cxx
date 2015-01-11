@@ -11,8 +11,8 @@
 
 #include "AliEveMUONData.h"
 
-#include <EveDet/AliEveMUONChamberData.h>
-#include <EveBase/AliEveEventManager.h>
+#include <AliEveMUONChamberData.h>
+#include <AliEveEventManager.h>
 
 #include <AliRawReader.h>
 #include <AliRawReaderFile.h>
