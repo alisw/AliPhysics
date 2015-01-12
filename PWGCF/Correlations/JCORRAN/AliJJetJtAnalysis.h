@@ -66,6 +66,12 @@ class AliJJetJtAnalysis{
 
         void ClearBeforeEvent();
         void FillJtHistogram( TObjArray *Jets, int iContainer );
+
+        void FillBgJtWithSmallerR(const TClonesArray &Jets,int iContainer, 
+            double nR, int iHist);
+
+        void FillBgJtWithDiffAxes (int iao, int ia, int iHist);
+
         void WriteHistograms();
         
         int GetBin(TVector *array, double val){
@@ -126,6 +132,7 @@ class AliJJetJtAnalysis{
         AliJBin fTrkPtBin; 
         AliJBin fTrkLimPtBin; 
         AliJBin fdRBin;
+        AliJBin fiHist;
         AliJTH1D fhNumber;
         AliJTH1D fhKNumber;
         AliJTH1D fhJetPt ;
@@ -153,6 +160,13 @@ class AliJJetJtAnalysis{
         AliJTH1D fhBgLogJtWeightBin;
         AliJTH1D fhBgJtWithPtCutWeightBinBin;
         AliJTH1D fhBgLogJtWithPtCutWeightBinBin;
+        AliJTH1D fhBgJtWithPtCutWeightBinBinSmallerR;
+        AliJTH1D fhBgLogJtWithPtCutWeightBinBinSmallerR;
+        AliJTH1D fhBgJtWithPtCutWeightBinBinDiffR;
+        AliJTH1D fhBgLogJtWithPtCutWeightBinBinDiffR;
+        AliJTH1D fhBgJtBinLimBin;
+        AliJTH1D fhBgJtWeightBinLimBin;
+        AliJTH1D fhBgLogJtWeightBinLimBin;
         
         AliJTH1D fhdeltaE;
         AliJTH1D fhdeltaN;
