@@ -406,10 +406,9 @@ def comment_classdesc(filename, comments):
       comment_lines[:0] = [ '\\file ' + class_name_doxy + '.C' ]
     else:
       comment_lines[:0] = [ '\\class ' + class_name_doxy ]
-
-    # Append author and date if they exist
     comment_lines.append('')
 
+    # Append author and date if they exist
     if author is not None:
       comment_lines.append( '\\author ' + author )
 
@@ -435,7 +434,8 @@ def comment_classdesc(filename, comments):
 #  @param filename  Name of the current file
 #  @param comments  Array of comments: new ones will be appended there
 #  @param recursion Current recursion depth
-def traverse_ast(cursor, filename, comments, recursion=0):
+#  @param in_func   True if we are inside a function or method
+def traverse_ast(cursor, filename, comments, recursion=0, in_func=False):
 
   # libclang traverses included files as well: we do not want this behavior
   if cursor.location.file is not None and str(cursor.location.file) != filename:
@@ -457,8 +457,10 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     # cursor ran into a C++ method
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
+    in_func = True
 
-  elif not is_macro and cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
+  elif not is_macro and not in_func and \
+    cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
 
     # cursor ran into a data member declaration
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
@@ -469,7 +471,7 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, kind, text) )
 
   for child_cursor in cursor.get_children():
-    traverse_ast(child_cursor, filename, comments, recursion+1)
+    traverse_ast(child_cursor, filename, comments, recursion+1, in_func)
 
   if recursion == 0:
     comment_classdesc(filename, comments)
