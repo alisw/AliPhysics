@@ -697,15 +697,21 @@ def rewrite_comments(fhin, fhout, comments):
 
   rindent = r'^(\s*)'
 
-
   def dump_comment_block(cmt):
-   text_indent = ''
-   for i in range(0, cmt.indent):
-     text_indent = text_indent + ' '
+    text_indent = ''
+    for i in range(0, cmt.indent):
+      text_indent = text_indent + ' '
 
-   for lc in cmt.lines:
-     fhout.write( "%s/// %s\n" % (text_indent, lc) );
-   fhout.write('\n')
+    for lc in cmt.lines:
+      fhout.write('%s///' % text_indent )
+      lc = lc.rstrip()
+      if len(lc) != 0:
+        fhout.write(' ')
+        fhout.write(lc)
+      fhout.write('\n')
+
+    # Empty new line at the end of the comment
+    fhout.write('\n')
 
 
   for line in fhin:
