@@ -578,7 +578,10 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   for(Int_t iTr=0; iTr<ntracks; iTr++){
     status[iTr]=0;
     AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr));
-    if(!track) AliFatal("Not a standard AOD");
+    if(!track){
+      AliWarning("Error in casting track to AOD track. Not a standard AOD?");
+      continue;
+    }
     if(IsTrackSelected(track)) status[iTr]+=1;
     
     // PID
@@ -627,7 +630,10 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
  
   for(Int_t iTr1=0; iTr1<ntracks; iTr1++){
     AliAODTrack* trK=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr1));
-    if(!trK) AliFatal("Not a standard AOD");
+    if(!trK){
+      AliWarning("Error in casting track to AOD track. Not a standard AOD?");
+      continue;
+    }
     if((status[iTr1] & 1)==0) continue;
     if(fDoEventMixing>0){
       if(status[iTr1] & 2) fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
@@ -645,7 +651,10 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       if((status[iTr2] & 4)==0) continue;
       if(iTr1==iTr2) continue;
       AliAODTrack* trPi1=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr2));
-      if(!trPi1) AliFatal("Not a standard AOD");
+      if(!trPi1){
+	AliWarning("Error in casting track to AOD track. Not a standard AOD?");
+	continue;
+      }
       Int_t chargePi1=trPi1->Charge();
       trPi1->GetPxPyPz(tmpp);
       px[1] = tmpp[0];
@@ -670,7 +679,10 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
           if((status[iTr3] & 4)==0) continue;
           if(iTr1==iTr3) continue;
           AliAODTrack* trPi2=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr3));
-          if(!trPi2) AliFatal("Not a standard AOD");
+	  if(!trPi2){
+	    AliWarning("Error in casting track to AOD track. Not a standard AOD?");
+	    continue;
+	  }
           Int_t chargePi2=trPi2->Charge();
           if(chargePi2==chargeK) continue;
           nFiltered++;
@@ -820,7 +832,9 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
               if(pdgCode==321){
                 fMassVsPtVsYSig->Fill(mass,pt,rapid);
                 AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
-                fPtVsYVsMultReco->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		if(dmes){
+		  fPtVsYVsMultReco->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		}
               }else{
                 fMassVsPtVsYRefl->Fill(mass,pt,rapid);
               }
