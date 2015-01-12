@@ -244,8 +244,8 @@ Float_t AliTRDCommonParam::GetOmegaTau(Float_t vdrift)
   else if (IsXenon()) {
 
     Int_t ib = ((Int_t) (10 * (fieldAbs - 0.15)));
-    ib       = TMath::Max(  0,ib);
-    ib       = TMath::Min(kNb,ib);
+    ib       = TMath::Max(    0,ib);
+    ib       = TMath::Min(kNb-1,ib);
 
     Float_t alphaL = p0[ib] 
                    + p1[ib] * vdrift
@@ -262,7 +262,7 @@ Float_t AliTRDCommonParam::GetOmegaTau(Float_t vdrift)
   }
 
   return 0.0;
-
+x
 }
 
 //_____________________________________________________________________________
@@ -305,8 +305,8 @@ Bool_t AliTRDCommonParam::GetDiffCoeff(Float_t &dl, Float_t &dt, Float_t vdrift)
     Float_t p3L[kNbL] = {  0.000195,  0.000189,  0.000195,  0.000182,  0.000169 };
     
     Int_t ibL = ((Int_t) (10 * (field - 0.15)));
-    ibL       = TMath::Max(   0,ibL);
-    ibL       = TMath::Min(kNbL,ibL);
+    ibL       = TMath::Max(     0,ibL);
+    ibL       = TMath::Min(kNbL-1,ibL);
     
     fDiffusionL = p0L[ibL] 
                 + p1L[ibL] * vdrift
@@ -321,8 +321,8 @@ Bool_t AliTRDCommonParam::GetDiffCoeff(Float_t &dl, Float_t &dt, Float_t vdrift)
     Float_t p3T[kNbT] = {  0.000131,  0.000122,  0.000111,  0.000098,  0.000085 };
 
     Int_t ibT= ((Int_t) (10 * (field - 0.15)));
-    ibT      = TMath::Max(   0,ibT);
-    ibT      = TMath::Min(kNbT,ibT);
+    ibT      = TMath::Max(     0,ibT);
+    ibT      = TMath::Min(kNbT-1,ibT);
 
     fDiffusionT = p0T[ibT] 
                 + p1T[ibT] * vdrift
