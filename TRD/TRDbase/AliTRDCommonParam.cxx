@@ -262,7 +262,7 @@ Float_t AliTRDCommonParam::GetOmegaTau(Float_t vdrift)
   }
 
   return 0.0;
-x
+
 }
 
 //_____________________________________________________________________________
