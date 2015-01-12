@@ -34,7 +34,8 @@ AliGlauberNucleon::AliGlauberNucleon():
   fY(0),
   fZ(0),
   fInNucleusA(0),
-  fNColl(0)
+  fNColl(0),
+  fSigNN(0.)
 {
   //def ctor
 }
