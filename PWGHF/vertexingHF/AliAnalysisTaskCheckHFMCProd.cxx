@@ -94,6 +94,21 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fReadMC(kTRUE)
 {
   //
+  for(Int_t i=0; i<5; i++){
+    fHistBYPtAllDecay[i]=0x0;
+    fHistYPtAllDecay[i]=0x0;
+    fHistYPtPromptAllDecay[i]=0x0;
+    fHistYPtFeeddownAllDecay[i]=0x0;
+    fHistYPtPrompt[i]=0x0;
+    fHistYPtFeeddown[i]=0x0;
+  }
+  for(Int_t i=0; i<2; i++){
+    fHistYPtD0byDecChannel[i]=0x0;
+    fHistYPtDplusbyDecChannel[i]=0x0;
+    fHistYPtDsbyDecChannel[i]=0x0;
+  }
+  fHistYPtDplusbyDecChannel[2]=0x0;
+
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }

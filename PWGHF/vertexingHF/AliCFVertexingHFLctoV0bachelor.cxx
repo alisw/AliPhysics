@@ -854,6 +854,13 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
       daughter1 = daughterTemp; // the V0 label
     }
 
+    if(!mcPartDaughter1){
+      AliDebug(2, "Null pointer to K0 particle, skipping!!");
+      delete [] fLabelArray;
+      fLabelArray = 0x0;
+      return checkCD;
+    }
+
     if (mcPartDaughter1->GetNDaughters()!=1) {
       AliDebug(2, "The K0/K0bar MC particle doesn't decay in 1 particles, skipping!!");
       delete [] fLabelArray;

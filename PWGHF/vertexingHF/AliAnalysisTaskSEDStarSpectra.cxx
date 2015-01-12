@@ -125,6 +125,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   Info("AliAnalysisTaskSEDStarSpectra","Calling Constructor");
 
   fCuts=cuts;
+  for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,TList::Class());  //All Entries output
