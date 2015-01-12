@@ -60,18 +60,18 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(const Int_t ntru, const AliEM
   SetUniqueID(2);
   
   for(Int_t iTRU=0; iTRU<46; iTRU++){
-    fTRUFastOROffsetX[iTRU] = geo.fTRUFastOROffsetX[iTRU] ;
-    fTRUFastOROffsetY[iTRU] = geo.fTRUFastOROffsetY[iTRU] ;
-    fnFastORInTRUPhi[ iTRU] = geo.fnFastORInTRUPhi[ iTRU] ;
-    fnFastORInTRUEta[ iTRU] = geo.fnFastORInTRUEta[ iTRU] ;
+    fTRUFastOROffsetX[iTRU] = 0;
+    fTRUFastOROffsetY[iTRU] = 0;
+    fnFastORInTRUPhi[ iTRU] = 0;
+    fnFastORInTRUEta[ iTRU] = 0;
   }
   for(Int_t iSM=0; iSM<20; iSM++){
-    fSMFastOROffsetX[ iSM]  = geo.fSMFastOROffsetX[ iSM]  ;
-    fSMFastOROffsetY[ iSM]  = geo.fSMFastOROffsetY[ iSM]  ;
-    fnFastORInSMPhi[  iSM]  = geo.fnFastORInSMPhi[  iSM]  ;
-    fnFastORInSMEta[  iSM]  = geo.fnFastORInSMEta[  iSM]  ;
+    fSMFastOROffsetX[ iSM]  = 0;
+    fSMFastOROffsetY[ iSM]  = 0;
+    fnFastORInSMPhi[  iSM]  = 0;
+    fnFastORInSMEta[  iSM]  = 0;
   }
-  fnModuleInEMCALPhi  = geo.fnModuleInEMCALPhi  ;
+  fnModuleInEMCALPhi  = 0;
 }
 
 //________________________________________________________________________________________________
