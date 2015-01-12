@@ -1543,6 +1543,7 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
 {
 	
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (AODMCTrackArray == NULL) return;
 	
 	// Loop over all primary MC particle
 	for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
@@ -2164,6 +2165,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 	
 	// Process True Mesons
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (AODMCTrackArray == NULL) return;
+	
 	Bool_t isTruePi0 				= kFALSE;
 	Bool_t isTrueEta 				= kFALSE;
 	Bool_t isSameConvertedGamma 	= kFALSE;
