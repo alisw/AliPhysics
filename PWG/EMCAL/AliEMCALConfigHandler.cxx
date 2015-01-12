@@ -42,7 +42,7 @@ void AliEMCALConfigHandler::AddParam(const char* configName, const char* key,
   AliEMCALConfiguration *config = FindConfiguration(configName);
   if(!config){
     this->Warning("AliEMCALConfigHandler", "Configuration with name %s does not exist, creating it", configName);
-    CreateConfiguration(configName);
+    config = CreateConfiguration(configName);
   }
   config->AddParam(key, value);
 }
