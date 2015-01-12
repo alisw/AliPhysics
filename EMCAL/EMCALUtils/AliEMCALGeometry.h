@@ -28,6 +28,7 @@ class TParticle ;
 // --- AliRoot header files ---
 #include "AliEMCALEMCGeometry.h"
 #include "AliEMCALGeoParams.h"
+#include "AliEMCALTriggerMapping.h"
 class AliEMCALShishKebabTrd1Module;
 class AliLog;
 
@@ -78,6 +79,9 @@ public:
   //
   
   AliEMCALEMCGeometry* GetEMCGeometry()       const { return fEMCGeometry                            ; }
+  
+  AliEMCALTriggerMapping* GetTriggerMapping() const { return fTriggerMapping; }
+  
   //
   const Char_t*  GetNameOfEMCALEnvelope(void) const { return fEMCGeometry->GetNameOfEMCALEnvelope()  ; }
   Float_t  GetArm1PhiMin(void)                const { return fEMCGeometry->GetArm1PhiMin()           ; }
@@ -164,9 +168,6 @@ public:
   //
   void SetNZ(Int_t nz)           { fEMCGeometry->SetNZ(nz)         ; }
   void SetNPhi(Int_t nphi)       { fEMCGeometry->SetNPhi(nphi)     ; }
-  //Trigger
-  void SetNTRUEta(Int_t ntru)    { fEMCGeometry->SetNTRUEta(ntru)  ; }
-  void SetNTRUPhi(Int_t ntru)    { fEMCGeometry->SetNTRUPhi(ntru)  ; }
   //
   void SetSampling(Float_t samp) { fEMCGeometry->SetSampling(samp) ; }
   //
@@ -245,44 +246,6 @@ public:
   //
   TArrayD  GetEtaCentersOfCells()    const { return fEtaCentersOfCells    ; }     // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   TArrayD  GetPhiCentersOfCells()    const { return fPhiCentersOfCells    ; }     // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
-
-  
-  // For gamma(Jet) trigger simulations *FIXME OLD TO BE REMOVED with AliEMCALTrigger*
-  Int_t    GetNTRU()             const { return fEMCGeometry->GetNTRU()             ; }  
-  Int_t    GetNTRUEta()          const { return fEMCGeometry->GetNTRUEta()          ; }  
-  Int_t    GetNTRUPhi()          const { return fEMCGeometry->GetNTRUPhi()          ; }
-  Int_t    GetNEtaSubOfTRU()     const { return fEMCGeometry->GetNEtaSubOfTRU()     ; }
-  Int_t    GetNModulesInTRU()    const { return fEMCGeometry->GetNModulesInTRU()    ; }
-  Int_t    GetNModulesInTRUEta() const { return fEMCGeometry->GetNModulesInTRUEta() ; }  
-  Int_t    GetNModulesInTRUPhi() const { return fEMCGeometry->GetNModulesInTRUPhi() ; }
-  Int_t    GetNTotalTRU()        const {return  fEMCGeometry->GetNTotalTRU()        ; }
-  // *MEFIX OLD TO BE REMOVED*
-
-  //
-  // Tranforms Eta-Phi Module index in TRU into Eta-Phi index in Super Module
-  void     GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, 
-                                                     Int_t &ietaSM, Int_t &iphiSM) const;
-  Int_t   GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int_t col, const Int_t sm) const ;
-
-	
-  void     BuildFastOR2DMap();
-  Bool_t   GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const;
-  Bool_t                    GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const;	
-  Bool_t                    GetAbsFastORIndexFromPositionInSM( const Int_t  iSM, const Int_t iEta, const Int_t iPhi, Int_t& id) const;	
-  Bool_t                    GetAbsFastORIndexFromPositionInEMCAL(                const Int_t iEta, const Int_t iPhi, Int_t& id) const;
-  Bool_t             GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const;
-  Bool_t   GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const;
-  Bool_t    GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const;
-  Bool_t GetPositionInEMCALFromAbsFastORIndex(const Int_t id, Int_t& iEta, Int_t& iPhi) const;
-  Bool_t          GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx) const;
-  Bool_t          GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const;
-  Bool_t              GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const;
-  Int_t               GetTRUIndexFromSTUIndex(const Int_t id) const;
-  Bool_t           GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const;
-  Int_t            GetTRUIndexFromOnlineIndex(const Int_t id) const;
-  Bool_t           GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const;
-  Int_t            GetOnlineIndexFromTRUIndex(const Int_t id) const;
-  Bool_t            GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const;
 	
   ///////////////////
   // useful utilities
@@ -305,12 +268,70 @@ public:
   //Returns shift-rotational matrixes for different volumes
   const TGeoHMatrix * GetMatrixForSuperModule(Int_t smod)const ;
 	
+  Bool_t GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const { 
+    return fTriggerMapping->GetAbsFastORIndexFromTRU(iTRU, iADC, id);
+  }
+  Bool_t GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const { 
+    return fTriggerMapping->GetAbsFastORIndexFromPositionInTRU(iTRU, iEta, iPhi, id);
+  }
+  Bool_t GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, const Int_t iEta, const Int_t iPhi, Int_t& id) const { 
+    return fTriggerMapping->GetAbsFastORIndexFromPositionInSM( iSM, iEta, iPhi, id);
+  }
+  Bool_t GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, const Int_t iPhi, Int_t& id) const { 
+    return fTriggerMapping->GetAbsFastORIndexFromPositionInEMCAL(iEta, iPhi, id);
+  }
+  Bool_t GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const { 
+    return fTriggerMapping->GetTRUFromAbsFastORIndex(id, iTRU, iADC);
+  }
+  Bool_t GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const { 
+    return fTriggerMapping->GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi);
+  }
+  Bool_t GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const { 
+    return fTriggerMapping->GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi);
+  }
+  Bool_t GetPositionInEMCALFromAbsFastORIndex(const Int_t id, Int_t& iEta, Int_t& iPhi) const { 
+    return fTriggerMapping->GetPositionInEMCALFromAbsFastORIndex(id, iEta, iPhi);
+  }
+  Bool_t GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx) const { 
+    return fTriggerMapping->GetFastORIndexFromCellIndex(id, idx);
+  }
+  Bool_t GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const { 
+    return fTriggerMapping->GetCellIndexFromFastORIndex(id, idx);
+  }
+  Bool_t GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const { 
+    return fTriggerMapping->GetTRUIndexFromSTUIndex(id, idx);
+  }
+  Bool_t GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const { 
+    return fTriggerMapping->GetTRUIndexFromOnlineIndex(id, idx);
+  }
+  Bool_t GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const { 
+    return fTriggerMapping->GetOnlineIndexFromTRUIndex(id, idx);
+  }
+  Bool_t GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const { 
+    return fTriggerMapping->GetFastORIndexFromL0Index(iTRU, id, idx, size);
+  }
+  Int_t  GetTRUIndexFromSTUIndex(const Int_t id) const { 
+    return fTriggerMapping->GetTRUIndexFromSTUIndex(id);
+  }
+  Int_t  GetTRUIndexFromOnlineIndex(const Int_t id) const { 
+    return fTriggerMapping->GetTRUIndexFromOnlineIndex(id);
+  }
+  Int_t  GetOnlineIndexFromTRUIndex(const Int_t id) const {
+    return fTriggerMapping->GetOnlineIndexFromTRUIndex(id);
+  }
+  Int_t  GetNTotalTRU() const { 
+    return fTriggerMapping->GetNTRU(); 
+  }
+
+  
 protected:
 
   void Init(void);     		     // initializes the parameters of EMCAL
   
   AliEMCALEMCGeometry * fEMCGeometry;// Geometry object for Electromagnetic calorimeter
 
+  AliEMCALTriggerMapping* fTriggerMapping; // Trigger mapping
+  
   TString  fGeoName;                 // geometry name
   Int_t    *fEMCSMSystem;	           // geometry structure
   Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
@@ -354,8 +375,6 @@ protected:
   Float_t  fShellThickness;	         // Total thickness in (x,y) direction
   Float_t  fZLength;		             // Total length in z direction
   Float_t  fSampling;		             // Sampling factor
-
-  Int_t    fFastOR2DMap[48][124];    // FastOR 2D Map over full EMCal
 	
   TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
   Bool_t   fUseExternalMatrices;      // Use the matrices set in fkSModuleMatrix and not those in the geoManager

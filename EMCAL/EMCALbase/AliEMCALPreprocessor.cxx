@@ -61,8 +61,6 @@ const int kReturnCodeNoInfo = 9;
 const int kReturnCodeNoObject = 2;
 const int kReturnCodeNoEntries = 1;
 
-const int kNTRU = 62; // EMCAL  (10 SM + 2/3) + (DCAL 10 SM) * 3 TRU per SM
-
 ClassImp(AliEMCALPreprocessor)
   
 //_______________________________________________________________________________________
@@ -327,6 +325,7 @@ UInt_t AliEMCALPreprocessor::MapTemperature(TMap* dcsAliasMap)
 UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
 { // extract DCS trigger info
 	
+  const Int_t kNTRU = 46;
 	
 	AliInfo("Print DCS alias map content");
 	dcsAliasMap->Print();

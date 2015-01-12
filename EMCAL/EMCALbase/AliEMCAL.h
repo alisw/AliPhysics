@@ -40,7 +40,6 @@ class TF1;
 class AliRawReader;
 #include "AliDetector.h"
 #include "AliEMCALGeometry.h" 
-#include "AliEMCALTrigger.h" 
 #include "AliEMCALRawUtils.h"
 #include "AliReconstructor.h"
 class AliEMCALTriggerData;
@@ -67,9 +66,6 @@ class AliEMCAL : public AliDetector {
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;   
   
-  virtual AliTriggerDetector* CreateTriggerDetector() const 
-    { return new AliEMCALTrigger(); }
-
    //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual const TString Version() const {return TString(" ") ; }   
