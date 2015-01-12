@@ -291,6 +291,10 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 	
 	Float_t b[2];
 	Float_t bCov[3];
+	if (lTrack == NULL){
+		if (fHistCutIndex) fHistCutIndex->Fill(kNoTracks);
+		return kFALSE;  
+	}   
 	lTrack->GetImpactParameters(b,bCov);
 
 	if (bCov[0]<=0 || bCov[2]<=0) {
@@ -305,10 +309,6 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 
 	if (fHistCutIndex) fHistCutIndex->Fill(kPionIn);
 
-	if (lTrack == NULL){
-		if (fHistCutIndex) fHistCutIndex->Fill(kNoTracks);
-		return kFALSE;  
-	}   
 	if (fHistTrackDCAxyPtbefore) fHistTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
 	if (fHistTrackDCAzPtbefore) fHistTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
 	if (fHistTrackNFindClsPtTPCbefore) fHistTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->Pt());
