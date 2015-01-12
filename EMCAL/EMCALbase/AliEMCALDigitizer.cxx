@@ -947,7 +947,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
   
   if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
   
-  Int_t     nSamples = geom->GetNTotalTRU();
+  Int_t     nSamples = 32;
   Int_t *timeSamples = new Int_t[nSamples];
   
   NextDigit = TIter(digitsTMP);

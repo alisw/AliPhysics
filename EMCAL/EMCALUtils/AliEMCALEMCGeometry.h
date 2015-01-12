@@ -110,16 +110,7 @@ public:
   Int_t   GetKey110DEG()      const {return fKey110DEG;}
   Int_t   GetnSupModInDCAL()      const {return fnSupModInDCAL;}
   Int_t   GetILOSS() const {return fILOSS;}
-  Int_t   GetIHADR() const {return fIHADR;}
-    // For gamma(Jet) trigger simulations
-  Int_t    GetNTRU() const    {return fNTRUEta*fNTRUPhi ; }  
-  Int_t    GetNTRUEta() const {return fNTRUEta ; }  
-  Int_t    GetNTRUPhi() const {return fNTRUPhi ; }
-  Int_t    GetNEtaSubOfTRU() const {return fNEtaSubOfTRU;}
-  Int_t    GetNTotalTRU() const {return fNTotalTRU ; }
-  Int_t    GetNModulesInTRU() const {return fNModulesInTRUEta*fNModulesInTRUPhi; }
-  Int_t    GetNModulesInTRUEta() const {return fNModulesInTRUEta ; }  
-  Int_t    GetNModulesInTRUPhi() const {return fNModulesInTRUPhi ; }  
+  Int_t   GetIHADR() const {return fIHADR;}  
 
   // --
   Float_t  GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/ ((Float_t)fNZ);}
@@ -152,10 +143,6 @@ public:
                          printf("SetNZ: Number of modules in Z set to %d", fNZ) ; }
   void SetNPhi(Int_t nphi) { fNPhi= nphi; 
                              printf("SetNPhi: Number of modules in Phi set to %d", fNPhi) ; }
-  void SetNTRUEta(Int_t ntru) {fNTRUEta = ntru;
-               printf("SetNTRU: Number of TRUs per SuperModule in Eta set to %d", fNTRUEta) ;}
-  void SetNTRUPhi(Int_t ntru) {fNTRUPhi = ntru;
-              printf("SetNTRU: Number of TRUs per SuperModule in Phi set to %d", fNTRUPhi) ;}
   void SetSampling(Float_t samp) { fSampling = samp; 
                               printf("SetSampling: Sampling factor set to %f", fSampling) ; }
 
@@ -237,13 +224,6 @@ private:
   Int_t   fNCells;                       // number of cells in calo
   Int_t   fNCellsInSupMod;               // number cell in super module
   Int_t   fNCellsInModule;               // number cell in module)
-  //TRU parameters
-  Int_t   fNTRUEta ;                     // Number of TRUs per module in eta
-  Int_t   fNTRUPhi ;                     // Number of TRUs per module in phi
-  Int_t   fNModulesInTRUEta;             // Number of modules per TRU in eta 
-  Int_t   fNModulesInTRUPhi;             // Number of modules per TRU in phi 
-  Int_t   fNEtaSubOfTRU;                 // Number of eta (z) subregiohi
-  Int_t   fNTotalTRU;			 // Total Number of TRU (all SM)
 
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 

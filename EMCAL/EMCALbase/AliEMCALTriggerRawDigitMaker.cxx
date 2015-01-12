@@ -288,11 +288,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	Int_t idx;
 	
 	AliEMCALTriggerRawDigit* dig = 0x0;
-	
-	TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
-	
-	fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
-	
+
 	fRawReader->Reset();
 	fRawReader->Select("EMCAL",44);	
 
@@ -369,6 +365,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		fTriggerData->SetL1RawData(fSTURawStream->GetRawData());
 		
 		Int_t iTRU, x, y;
+
+		TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
 
 		if (fSTURawStream->GetRawData())
 		{
