@@ -3349,7 +3349,16 @@ TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TString  selec
   }
   TObjArray *arrInputTreesDistortionCalib = inputTreesDistortionCalib.Tokenize("\n");  
   //
+  TString treePrefix="";
   for (Int_t itree=0; itree<arrInputTreesDistortionCalib->GetEntriesFast(); ++itree) {
+    TString fstring = arrInputTreesDistortionCalib->At(itree)->GetName();
+    if (fstring.Index("Prefix:")==0){ //get tree descriptor
+      treePrefix=TString(&(fstring[7]));
+      continue;
+    }
+    if (fstring.Index("#")==0){  // ignore comment field
+      continue;
+    }
     TFile *finput= TFile::Open(arrInputTreesDistortionCalib->At(itree)->GetName());
     TString strFile=arrInputTreesDistortionCalib->At(itree)->GetName();
     TObjArray *path=strFile.Tokenize("/");
@@ -3362,7 +3371,12 @@ TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TString  selec
       if (strstr(key->GetClassName(),"TTree")==0) continue;
       TTree * tree  = dynamic_cast<TTree*>(finput->Get(list->At(ikey)->GetName()));
       if (!tree) continue;
-      TString friendName=TString::Format("%s.%s.%s",path->At(plength-3)->GetName(),path->At(plength-2)->GetName(), tree->GetName()); 
+      TString friendName="";
+      if (treePrefix.Length()==0) {
+	friendName=TString::Format("%s.%s.%s",path->At(plength-3)->GetName(),path->At(plength-2)->GetName(), tree->GetName()); 
+      }else{
+	friendName=TString::Format("%s.%s",treePrefix.Data(), tree->GetName()); 
+      }
       ::Info("AliTPCcalibDButil::ConnectDistortionTrees","%s",friendName.Data());  
       if (tMain==0) {
 	tMain=tree;
