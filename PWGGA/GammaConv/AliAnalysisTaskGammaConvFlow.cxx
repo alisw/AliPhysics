@@ -788,13 +788,11 @@ void AliAnalysisTaskGammaConvFlow::Terminate(const Option_t *)
 void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 {
 
-	// Loop over Photon Candidates allocated by ReaderV1
-	
-	
+	// Loop over Photon Candidates allocated by ReaderV1	
 	for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
 		
 		AliAODConversionPhoton *gammaForv2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
-
+		if (gammaForv2 == NULL) return;
 		AliFlowTrack *sTrack = new AliFlowTrack();
 		sTrack->SetForRPSelection(kFALSE);
 		sTrack->SetForPOISelection(kTRUE);
