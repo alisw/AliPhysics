@@ -230,7 +230,8 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
       continue;
     }
   }
-  printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
+  if (esdFriend) printf("----> ESDFriend %p has %d tracks: \n", esdFriend, esdFriend->GetNumberOfTracks());
+  else printf("----> No ESDFriend found\n");
 
   fAnalysisManager->InitInputData(esdEvent, esdFriend);
   //  fInputHandler->BeginEvent(0);
