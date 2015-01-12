@@ -2349,8 +2349,8 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 		if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 			for(Int_t nEventsInBG=0;nEventsInBG<fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
 				AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-				if(fMoveParticleAccordingToVertex == kTRUE){
-				bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
+				if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+					bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 				}
 
 				for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
@@ -2382,7 +2382,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 			for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
 				AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
 				if(previousEventV0s){
-				if(fMoveParticleAccordingToVertex == kTRUE){
+				if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
 					bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 				}
 				for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
