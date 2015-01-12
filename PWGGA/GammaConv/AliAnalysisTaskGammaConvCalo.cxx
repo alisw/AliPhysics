@@ -2027,6 +2027,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 	}
 	
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (AODMCTrackArray == NULL) return;
 	AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
 	AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
 	fCharPhotonMCInfo = 0;
@@ -2187,6 +2188,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 {
 	
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (AODMCTrackArray == NULL) return;
 	
 	// Loop over all primary MC particle
 	for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
@@ -2785,6 +2787,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 	
 	// Process True Mesons
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (AODMCTrackArray == NULL) return;
 	Bool_t isTruePi0 = kFALSE;
 	Bool_t isTrueEta = kFALSE;
 	
@@ -2987,7 +2990,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 		for(Int_t nEventsInBG=0;nEventsInBG<fBGClusHandler[fiCut]->GetNBGEvents();nEventsInBG++){
 			AliGammaConversionAODVector *previousEventV0s = fBGClusHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-			if(fMoveParticleAccordingToVertex == kTRUE){
+			if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
 				bgEventVertex = fBGClusHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 			}
 			
@@ -2996,10 +2999,14 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 				for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 					AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 					if(fMoveParticleAccordingToVertex == kTRUE){
-						MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
+						if (bgEventVertex){
+							MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
+						}	
 					}
 					if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-						RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+						if (bgEventVertex){
+							RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+						}	
 					}
 					
 					AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
@@ -3020,7 +3027,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 		for(Int_t nEventsInBG=0;nEventsInBG <fBGClusHandler[fiCut]->GetNBGEvents();nEventsInBG++){
 			AliGammaConversionAODVector *previousEventV0s = fBGClusHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
 			if(previousEventV0s){
-				if(fMoveParticleAccordingToVertex == kTRUE){
+				if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
 					bgEventVertex = fBGClusHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 				}
 				for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
@@ -3030,10 +3037,14 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 						AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 					
 						if(fMoveParticleAccordingToVertex == kTRUE){
-							MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
+							if (bgEventVertex){
+								MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
+							}	
 						}
 						if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-							RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+							if (bgEventVertex){
+								RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+							}	
 						}
 					
 						AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
