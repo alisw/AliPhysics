@@ -1086,7 +1086,7 @@ bool JTJTEfficiency::Load(){
 	fCentBinAxis = (TAxis*)fEffDir[2]->Get("CentralityBin");
 	if( !fCentBinAxis ){
 		cout << "J_ERROR : No CentralityBin in directory" << endl;
-		gSystem->Exit(1);
+                return false;
 	}
 
 
