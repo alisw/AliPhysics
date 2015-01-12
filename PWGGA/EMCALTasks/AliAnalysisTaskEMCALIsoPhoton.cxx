@@ -1662,11 +1662,14 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
     return pt;
   }
   if(fESD){
-    if(!fPrTrCuts && !fCompTrCuts)
-      return pt;
-    if(!fPrTrCuts->IsSelected(track) && !fCompTrCuts->IsSelected(track))
-      return pt;
-    pt = track->Pt();
+    if(fPrTrCuts && fPrTrCuts->IsSelected(track))
+      pt = track->Pt();
+    else {
+      if(fCompTrCuts && fCompTrCuts->IsSelected(track))
+	pt = track->Pt();
+      else
+	return pt;
+    }
   }
   return pt;
 }
