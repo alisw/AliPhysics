@@ -654,7 +654,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   TString graphTypeName[3] = {"raw","correctStat","correctSyst"};
   Int_t drawOrder[3] = {0, 2, 1};
   TString drawOpt[3] = {"apz","pz","a2"};
-  Int_t nTypes = ( hasResolution ) ? 3 : 1;
+  const Int_t kNtypes = ( hasResolution ) ? 3 : 1;
 
   TString histoName = "", histoPattern = "";
   ///////////
@@ -672,8 +672,8 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   for ( Int_t istep=0; istep<kNsteps; istep++ ) {
     for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
       TString baseName = Form("%s_%s", stepName[istep].Data(), fSrcKeys->At(isrc)->GetName());
-      TGraphErrors* flowVsCentrality[3];
-      for ( Int_t itype=0; itype<nTypes; itype++ ) {
+      TGraphErrors* flowVsCentrality[kNtypes];
+      for ( Int_t itype=0; itype<kNtypes; itype++ ) {
         histoName = Form("v2VsCentrality_%s_%s", baseName.Data(), graphTypeName[itype].Data());
         flowVsCentrality[itype] = new TGraphErrors();
         flowVsCentrality[itype]->SetName(histoName.Data());
@@ -688,8 +688,8 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
         TAxis* ptAxis = histo2D->GetYaxis();
         
         Int_t ipad = 0;
-        TGraphErrors* flowVsPt[3];
-        for ( Int_t itype=0; itype<nTypes; itype++ ) {
+        TGraphErrors* flowVsPt[kNtypes];
+        for ( Int_t itype=0; itype<kNtypes; itype++ ) {
           histoName = Form("v2VsPt_%s_%s", baseNameCent.Data(), graphTypeName[itype].Data());
           flowVsPt[itype] = new TGraphErrors();
           flowVsPt[itype]->SetName(histoName.Data());
@@ -720,7 +720,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
             func->FixParameter(1,0.);
           }
           projHisto->Fit(func,"R");
-          for ( Int_t itype=0; itype<nTypes; itype++ ) {
+          for ( Int_t itype=0; itype<kNtypes; itype++ ) {
             TGraphErrors* currGraph = ( ipt == 0 ) ? flowVsCentrality[itype] : flowVsPt[itype];
             Double_t resoVal = ( itype == 0 ) ? 1. : wgtReso[0][idx];
             Double_t resoErr = ( itype == 0 ) ? 0. : wgtReso[itype][idx];
@@ -748,7 +748,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
             currGraph->SetPointError(ipoint,xErr,yErr);
           } // loop on type
         } // loop on pt bins
-        for ( Int_t itype=0; itype<nTypes; itype++ ) {
+        for ( Int_t itype=0; itype<kNtypes; itype++ ) {
           Int_t currType = drawOrder[itype];
           if ( itype < 2 ) {
             currName = flowVsPt[currType]->GetName();
@@ -765,7 +765,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
           outList.Add(flowVsPt[currType]);
         } // loop on types
       } // loop on centrality
-      for ( Int_t itype=0; itype<nTypes; itype++ ) {
+      for ( Int_t itype=0; itype<kNtypes; itype++ ) {
         Int_t currType = drawOrder[itype];
         if ( flowVsCentrality[currType]->GetN() == 0 ) continue;
         if ( itype < 2 ) {
