@@ -60,7 +60,6 @@ set(SRCS
     AliEMCALSimParam.cxx
     AliEMCALSpaceFrame.cxx
     AliEMCALSurvey.cxx
-    AliEMCALTrigger.cxx
     AliEMCALTriggerData.cxx
     AliEMCALTriggerDCSConfig.cxx
     AliEMCALTriggerDCSConfigDB.cxx
