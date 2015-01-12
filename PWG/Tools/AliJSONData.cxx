@@ -17,22 +17,22 @@ ClassImp(AliJSONBool)
 ClassImp(AliJSONString)
 ClassImp(AliJSONData)
 
-const char* AliJSONInt::ToString() const { 
+std::string AliJSONInt::ToString() const {
   std::stringstream stringbuilder;
   stringbuilder << fValue;
-  return stringbuilder.str().c_str();
+  return stringbuilder.str();
 }
 
-const char* AliJSONFloat::ToString() const {
+std::string AliJSONFloat::ToString() const {
   std::stringstream stringbuilder;
   stringbuilder << fValue;
-  return stringbuilder.str().c_str();
+  return stringbuilder.str();
 }
 
-const char* AliJSONDouble::ToString() const {
+std::string AliJSONDouble::ToString() const {
   std::stringstream stringbuilder;
   stringbuilder << fValue;
-  return stringbuilder.str().c_str();
+  return stringbuilder.str();
 }
 
 AliJSONData::AliJSONData(const char* key, const char* value):
@@ -53,7 +53,7 @@ AliJSONData::AliJSONData(const char* key, const char* value):
      fValue = new AliJSONString(value);
 }
 
-const char* AliJSONData::ToString() const {
+std::string AliJSONData::ToString() const {
   std::stringstream jsonbuilder;
   jsonbuilder << "\"" << GetName() << "\":\"" << fValue->ToString() << "\"";
   return jsonbuilder.str().c_str();
