@@ -132,4 +132,3 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Install macros
 install(DIRECTORY macros DESTINATION PWGLF/RESONANCES)
-install(FILES extra/AddTaskXiStar.C DESTINATION PWGLF/RESONANCES/extra)
