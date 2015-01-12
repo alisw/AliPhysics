@@ -513,6 +513,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
     AliESDtrack *track = dynamic_cast<AliESDtrack*>(vparticle);
 
+    if(!track) continue;
+
     if (TMath::Abs(track->Eta())>0.7) continue;
  
     fTrackPtBefTrkCuts->Fill(track->Pt());

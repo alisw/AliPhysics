@@ -1074,6 +1074,15 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
     TH1D *convCent[kCentrality-1];
     TH1D *nonHFECent[kCentrality-1]; 
     TH1D *subtractedCent[kCentrality-1];
+
+    for(Int_t initia=0; initia<(kCentrality-1); initia++) {
+      incElecCent[initia]=0x0;
+      charmCent[initia]=0x0;
+      convCent[initia]=0x0;
+      nonHFECent[initia]=0x0; 
+      subtractedCent[initia]=0x0;
+    }
+
     TH1D *measuredTH1Draw = (TH1D *) dataspectrumbeforesubstraction->Project(ptpr);
     CorrectFromTheWidth(measuredTH1Draw);
     if(fBeamType==1){
@@ -1218,6 +1227,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
         centRaw->cd(icent);
         gPad->SetLogx();
         gPad->SetLogy();
+	if(!incElecCent[icent-1] || !charmCent[icent-1] || !convCent[icent-1] || !nonHFECent[icent-1] || !subtractedCent[icent-1]) continue;
         incElecCent[icent-1]->GetXaxis()->SetRangeUser(0.4,8.);
         incElecCent[icent-1]->Draw("p");
         incElecCent[icent-1]->SetMarkerColor(1);
@@ -1260,7 +1270,7 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Bool_t setBackground){
 
   if(fDebugLevel > 0) {
 
-    Int_t ptprd;
+    Int_t ptprd=0;
     if(fBeamType==0) ptprd=0;
     if(fBeamType==1) ptprd=1;
     
@@ -1923,7 +1933,7 @@ AliCFDataGrid *AliHFEspectrum::CorrectV0Efficiency(AliCFDataGrid* const bgsubpec
 
   if(fDebugLevel > 0) {
 
-    Int_t ptpr;
+    Int_t ptpr=0;
     if(fBeamType==0) ptpr=0;
     if(fBeamType==1) ptpr=1;
     
@@ -2127,7 +2137,7 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
 
   if(fDebugLevel > 0) {
 
-    Int_t ptpr;
+    Int_t ptpr=0;
     if(fBeamType==0) ptpr=0;
     if(fBeamType==1) ptpr=1;
     
@@ -2233,7 +2243,7 @@ AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(AliCFDataGrid* const bgsubpe
 
   if(fDebugLevel > 0) {
 
-    Int_t ptpr;
+    Int_t ptpr=0;
     if(fBeamType==0) ptpr=0;
     if(fBeamType==1) ptpr=1;
     
