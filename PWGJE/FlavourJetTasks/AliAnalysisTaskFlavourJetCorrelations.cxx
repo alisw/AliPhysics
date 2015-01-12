@@ -1352,7 +1352,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
       if(fNAxesBigSparse==6 || fNAxesBigSparse==7) point[3]=masses[1];
       if(fSwitchOnSparses && (fSwitchOnOutOfConeAxis || fIsDInJet)) fhsDphiz->Fill(point,1.);
    }
-   delete point;
+   delete[] point;
 }
 
 //_______________________________________________________________________________
@@ -1413,7 +1413,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
    
    FillMassHistograms(deltamass, ptD);
    if(fSwitchOnSparses && (fSwitchOnOutOfConeAxis || fIsDInJet)) fhsDphiz->Fill(point,1.);
-   delete point;
+   delete[] point;
 }
 
 //_______________________________________________________________________________
@@ -1472,7 +1472,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
    //if(fIsDInJet) {
    //  hPtJetWithD->Fill(ptjet,pdgmass,ptD); // candidates within a jet
    //}
-   delete point;
+   delete[] point;
 }
 
 //_______________________________________________________________________________
@@ -1630,7 +1630,7 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
       
       
    }
-   delete point;
+   delete[] point;
 }
 
 //_______________________________________________________________________________
@@ -1865,7 +1865,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       	    }
       	 }      
       }
-      delete daughOutOfJet;
+      
       correction=newjet-thejetv;
       fPmissing[0]=correction(0);
       fPmissing[1]=correction(1);
@@ -1879,7 +1879,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       	 else testDeltaR=kFALSE;
       }
    }
-   
+   delete[] daughOutOfJet;
    delete[] charmDaugh;
    
    Bool_t result=0;
