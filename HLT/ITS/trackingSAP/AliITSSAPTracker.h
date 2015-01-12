@@ -30,6 +30,7 @@ class AliITSSAPTracker : public TObject
   enum {kInvalidBit=BIT(14)};
   //
   struct SPDtracklet {
+  SPDtracklet() : id1(0),id2(0),label(0),dphi(0),dtht(0),chi2(0) {}
     int id1;
     int id2;
     int label;
