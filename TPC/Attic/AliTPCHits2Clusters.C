@@ -1,8 +1,9 @@
-/*
-  .L AliTPCHits2Clusters.C+
-  Hits2ExactClusters();
-
-*/
+/// \file AliTPCHits2Clusters.C
+///
+/// ~~~
+/// .L AliTPCHits2Clusters.C+
+/// Hits2ExactClusters();
+/// ~~~
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -29,9 +30,8 @@ void Hits2ExactClusters(){
 
 
 AliRunLoader* Init(){
-  //
-  // initialization
-  //
+  /// initialization
+
   if (gAlice) {
     delete AliRunLoader::Instance();
     delete gAlice;//if everything was OK here it is already NULL

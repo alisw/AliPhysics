@@ -13,21 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Time Projection Chamber version 1 -- detailed TPC and fast simulation    //
-//                                                                           // 
-//Begin_Html
-/*
-<img src="picts/AliTPCv1Class.gif">
-*/
-//End_Html
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCv1
+///
+/// Time Projection Chamber version 1 -- detailed TPC and fast simulation
+///
+/// ![](picts/AliTPCv1Class.gif)
 
 #include <Riostream.h>
 #include <stdlib.h>
@@ -61,7 +51,9 @@
 
 using std::ifstream;
 using std::ios_base;
+/// \cond CLASSIMP
 ClassImp(AliTPCv1)
+/// \endcond
 
 //_____________________________________________________________________________
 
@@ -76,9 +68,7 @@ ClassImp(AliTPCv1)
 AliTPCv1::AliTPCv1(const char *name, const char *title) 
   :AliTPC(name, title),fIdSens(0)
  {
-  //
-  // Standard constructor for Time Projection Chamber
-  //
+  /// Standard constructor for Time Projection Chamber
 
 
   if (fTPCParam)
@@ -90,12 +80,12 @@ AliTPCv1::AliTPCv1(const char *name, const char *title)
 //_____________________________________________________________________________
 void AliTPCv1::CreateGeometry()
 {
-  //-------------------------------------------------------------
-  // Creates geometry for Time Projection Chamber version 1
-  // Detailed geometry -- Fast simulation - space points
-  // at the pad-rows centers
-  // Origin M.Kowalski, INP Cracow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------
+  /// -------------------------------------------------------------
+  /// Creates geometry for Time Projection Chamber version 1
+  /// Detailed geometry -- Fast simulation - space points
+  /// at the pad-rows centers
+  /// Origin M.Kowalski, INP Cracow, Marek.Kowalski@ifj.edu.pl
+  /// -----------------------------------------------------------
 
   //Begin_Html
   /*
@@ -120,7 +110,7 @@ void AliTPCv1::CreateGeometry()
   // here I define a volume TPC
   // retrive the medium name with "TPC_" as a leading string
   //
-  TGeoPcon *tpc = new TGeoPcon(0.,360.,30); //30 sections
+  TGeoPcon *tpc = new TGeoPcon(0.,360.,30); ///< 30 sections
   //
   tpc->DefineSection(0,-289.6,77.,278.);
   tpc->DefineSection(1,-262.1,77.,278.);
@@ -193,7 +183,7 @@ void AliTPCv1::CreateGeometry()
   //
   // outer insulator
   //
-  TGeoPcon *tpco = new TGeoPcon(0.,360.,6); //insulator
+  TGeoPcon *tpco = new TGeoPcon(0.,360.,6); ///< insulator
   //
   tpco->DefineSection(0,-256.6,264.8,278.);
   tpco->DefineSection(1,-253.6,264.8,278.);
@@ -209,7 +199,7 @@ void AliTPCv1::CreateGeometry()
   //
   // outer containment vessel
   //
-  TGeoPcon *tocv = new TGeoPcon(0.,360.,6);  // containment vessel
+  TGeoPcon *tocv = new TGeoPcon(0.,360.,6);  ///< containment vessel
   //
   tocv->DefineSection(0,-256.6,264.8,278.);
   tocv->DefineSection(1,-253.6,264.8,278.);
@@ -223,10 +213,10 @@ void AliTPCv1::CreateGeometry()
   TGeoMedium *m3 = gGeoManager->GetMedium("TPC_Al");
   TGeoVolume *v3 = new TGeoVolume("TPC_OCV",tocv,m3); 
   //
-  TGeoTube *to1 = new TGeoTube(274.8174,277.995,252.1); //epoxy
-  TGeoTube *to2 = new TGeoTube(274.8274,277.985,252.1); //tedlar
-  TGeoTube *to3 = new TGeoTube(274.8312,277.9812,252.1);//prepreg2
-  TGeoTube *to4 = new TGeoTube(274.9062,277.9062,252.1);//nomex
+  TGeoTube *to1 = new TGeoTube(274.8174,277.995,252.1); ///< epoxy
+  TGeoTube *to2 = new TGeoTube(274.8274,277.985,252.1); ///< tedlar
+  TGeoTube *to3 = new TGeoTube(274.8312,277.9812,252.1);///< prepreg2
+  TGeoTube *to4 = new TGeoTube(274.9062,277.9062,252.1);///< nomex
   //
   TGeoMedium *sm1 = gGeoManager->GetMedium("TPC_Epoxy");
   TGeoMedium *sm2 = gGeoManager->GetMedium("TPC_Tedlar");
@@ -257,9 +247,9 @@ void AliTPCv1::CreateGeometry()
   //
   TGeoVolume *v4 = new TGeoVolume("TPC_TOFC",tofc,m3); 
   //sandwich
-  TGeoTube *tf1 = new TGeoTube(258.0,260.0676,252.1); //tedlar
-  TGeoTube *tf2 = new TGeoTube(258.0038,260.0638,252.1); //prepreg3
-  TGeoTube *tf3 = new TGeoTube(258.0338,260.0338,252.1);//nomex
+  TGeoTube *tf1 = new TGeoTube(258.0,260.0676,252.1); ///< tedlar
+  TGeoTube *tf2 = new TGeoTube(258.0038,260.0638,252.1); ///< prepreg3
+  TGeoTube *tf3 = new TGeoTube(258.0338,260.0338,252.1);///< nomex
   //
   TGeoMedium *sm5 = gGeoManager->GetMedium("TPC_Prepreg3");
   //
@@ -326,8 +316,8 @@ void AliTPCv1::CreateGeometry()
  
   TGeoCone *thsm = new TGeoCone(89.8,67.88,68.1,60.68,60.9);
   TGeoCone *thsmw = new TGeoCone(89.8,67.94,68.04,60.74,60.84);
-  TGeoVolume *hvsm = new TGeoVolume("TPC_HSM",thsm,mhs); //steel
-  TGeoVolume *hvsmw = new TGeoVolume("TPC_HSMW",thsmw,m12); //water 
+  TGeoVolume *hvsm = new TGeoVolume("TPC_HSM",thsm,mhs); ///< steel
+  TGeoVolume *hvsmw = new TGeoVolume("TPC_HSMW",thsmw,m12); ///< water
   // assembly heat screen muon
   hvsm->AddNode(hvsmw,1);
   //-----------------------------------------------
@@ -356,8 +346,8 @@ void AliTPCv1::CreateGeometry()
   //--------------------------------------------------
   TGeoCone *thss = new TGeoCone(89.8,60.68,60.9,65.38,65.6);       
   TGeoCone *thssw = new TGeoCone(89.8,60.74,60.84,65.44,65.54);     
-  TGeoVolume *hvss = new TGeoVolume("TPC_HSS",thss,mhs); //steel
-  TGeoVolume *hvssw = new TGeoVolume("TPC_HSSW",thssw,m12); //water 
+  TGeoVolume *hvss = new TGeoVolume("TPC_HSS",thss,mhs); ///< steel
+  TGeoVolume *hvssw = new TGeoVolume("TPC_HSSW",thssw,m12); ///< water
   //assembly heat screen shaft
   hvss->AddNode(hvssw,1);
   //-----------------------------------------------
@@ -368,10 +358,10 @@ void AliTPCv1::CreateGeometry()
   TGeoTube *t1 = new TGeoTube(76.6774,78.845,0.75);
   TGeoVolume *tv1 = new TGeoVolume("TPC_IFC2",t1,m3);
   // sandwich - outermost parts - 2 copies
-  TGeoTube *t2 = new TGeoTube(76.6774,78.845,74.175); // tedlar 38 microns
-  TGeoTube *t3 = new TGeoTube(76.6812,78.8412,74.175); // prepreg2 500 microns
-  TGeoTube *t4 = new TGeoTube(76.7312,78.7912,74.175); // prepreg3 300 microns
-  TGeoTube *t5 = new TGeoTube(76.7612,78.7612,74.175); // nomex 2 cm
+  TGeoTube *t2 = new TGeoTube(76.6774,78.845,74.175); ///< tedlar 38 microns
+  TGeoTube *t3 = new TGeoTube(76.6812,78.8412,74.175); ///< prepreg2 500 microns
+  TGeoTube *t4 = new TGeoTube(76.7312,78.7912,74.175); ///< prepreg3 300 microns
+  TGeoTube *t5 = new TGeoTube(76.7612,78.7612,74.175); ///< nomex 2 cm
   //
   TGeoVolume *tv2 = new TGeoVolume("TPC_IFC3",t2,sm2);
   TGeoVolume *tv3 = new TGeoVolume("TPC_IFC4",t3,sm3);
@@ -379,19 +369,19 @@ void AliTPCv1::CreateGeometry()
   TGeoVolume *tv5 = new TGeoVolume("TPC_IFC6",t5,sm4);
   //
   // middle parts - 2 copies
-  TGeoTube *t6 = new TGeoTube(76.6774,78.795,5.); // tedlar 38 microns
-  TGeoTube *t7 = new TGeoTube(76.6812,78.7912,5.); // prepreg2 250 microns
-  TGeoTube *t8 = new TGeoTube(76.7062,78.7662,5.); // prepreg3 300 microns
-  TGeoTube *t9 = new TGeoTube(76.7362,78.7362,5.); // nomex 2 cm
+  TGeoTube *t6 = new TGeoTube(76.6774,78.795,5.); ///< tedlar 38 microns
+  TGeoTube *t7 = new TGeoTube(76.6812,78.7912,5.); ///< prepreg2 250 microns
+  TGeoTube *t8 = new TGeoTube(76.7062,78.7662,5.); ///< prepreg3 300 microns
+  TGeoTube *t9 = new TGeoTube(76.7362,78.7362,5.); ///< nomex 2 cm
   //
   TGeoVolume *tv6 = new TGeoVolume("TPC_IFC7",t6,sm2);
   TGeoVolume *tv7 = new TGeoVolume("TPC_IFC8",t7,sm3);
   TGeoVolume *tv8 = new TGeoVolume("TPC_IFC9",t8,sm5);
   TGeoVolume *tv9 = new TGeoVolume("TPC_IFC10",t9,sm4);
   // central part - 1 copy
-  TGeoTube *t10 = new TGeoTube(76.6774,78.745,93.75); // tedlar 38 microns 
-  TGeoTube *t11 = new TGeoTube(76.6812,78.7412,93.75); // prepreg3 300 microns
-  TGeoTube *t12 = new TGeoTube(76.7112,78.7112,93.75); // nomex 2 cm
+  TGeoTube *t10 = new TGeoTube(76.6774,78.745,93.75); ///< tedlar 38 microns
+  TGeoTube *t11 = new TGeoTube(76.6812,78.7412,93.75); ///< prepreg3 300 microns
+  TGeoTube *t12 = new TGeoTube(76.7112,78.7112,93.75); ///< nomex 2 cm
   //
   TGeoVolume *tv10 = new TGeoVolume("TPC_IFC11",t10,sm2);
   TGeoVolume *tv11 = new TGeoVolume("TPC_IFC12",t11,sm5);
@@ -444,9 +434,9 @@ void AliTPCv1::CreateGeometry()
   TGeoTube *cd3 = new TGeoTube(60.6662,61.1662,71.1);  
   //
   TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
-  TGeoVolume *cd1v = new TGeoVolume("TPC_CDR1",cd1,sm2); //tedlar
-  TGeoVolume *cd2v = new TGeoVolume("TPC_CDR2",cd2,sm6);// prepreg1
-  TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm4); //nomex
+  TGeoVolume *cd1v = new TGeoVolume("TPC_CDR1",cd1,sm2); ///< tedlar
+  TGeoVolume *cd2v = new TGeoVolume("TPC_CDR2",cd2,sm6);///< prepreg1
+  TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm4); ///< nomex
   //
   // seals for central drum 2 copies
   //
@@ -501,11 +491,11 @@ void AliTPCv1::CreateGeometry()
   // containing both readout chambers
   //
   Double_t openingAngle = 10.*TMath::DegToRad();
-  Double_t thick=1.5; // rib
+  Double_t thick=1.5; ///< rib
   Double_t shift = thick/TMath::Sin(openingAngle);
   //
-  Double_t lowEdge = 86.3; // hole in the wheel
-  Double_t upEdge = 240.4; // hole in the wheel
+  Double_t lowEdge = 86.3; ///< hole in the wheel
+  Double_t upEdge = 240.4; ///< hole in the wheel
   //
   new TGeoTubeSeg("sec",74.5,264.4,3.,0.,20.);
   //
@@ -527,7 +517,7 @@ void AliTPCv1::CreateGeometry()
   bar->DefineSection(0,-3.,131.5-shift,136.5-shift);
   bar->DefineSection(1,1.5,131.5-shift,136.5-shift);
   TGeoVolume *barv = new TGeoVolume("TPC_WBAR",bar,m3);
-  TGeoVolumeAssembly *ch = new TGeoVolumeAssembly("TPC_WCH");//empty segment
+  TGeoVolumeAssembly *ch = new TGeoVolumeAssembly("TPC_WCH");///< empty segment
   //
   ch->AddNode(sv,1); ch->AddNode(barv,1,tr);
   //
@@ -562,7 +552,7 @@ void AliTPCv1::CreateGeometry()
    //
    // holes for connectors
    //
-   TGeoBBox *conn = new TGeoBBox(0.4,0.3,4.675); // identical for iroc and oroc
+   TGeoBBox *conn = new TGeoBBox(0.4,0.3,4.675); ///< identical for iroc and oroc
    TGeoVolume *connv = new TGeoVolume("TPC_RCCON",conn,m1);
    TString fileName(gSystem->Getenv("ALICE_ROOT"));
    fileName += "/TPC/conn_iroc.dat";
@@ -590,7 +580,7 @@ void AliTPCv1::CreateGeometry()
    //
    // pad plane and wire fixations
    //
-   TGeoTrd1 *pp = new TGeoTrd1(14.5974,23.3521,0.3,24.825); //pad+iso
+   TGeoTrd1 *pp = new TGeoTrd1(14.5974,23.3521,0.3,24.825); ///< pad+iso
    TGeoMedium *m4 = gGeoManager->GetMedium("TPC_G10");
    TGeoVolume *ppv = new TGeoVolume("TPC_IRPP",pp,m4);
    TGeoPara *f1 = new TGeoPara(.6,.5,24.825,0.,-10.,0.);
@@ -736,8 +726,8 @@ void AliTPCv1::CreateGeometry()
    // 
    // now iroc and oroc are placed into a sector...
    //
-   TGeoVolumeAssembly *secta = new TGeoVolumeAssembly("TPC_SECT"); // a-side
-   TGeoVolumeAssembly *sectc = new TGeoVolumeAssembly("TPC_SECT"); // c-side
+   TGeoVolumeAssembly *secta = new TGeoVolumeAssembly("TPC_SECT"); ///< a-side
+   TGeoVolumeAssembly *sectc = new TGeoVolumeAssembly("TPC_SECT"); ///< c-side
    TGeoRotation rot1("rot1",90.,90.,0.);
    TGeoRotation rot2("rot2");
    rot2.RotateY(10.);
@@ -747,12 +737,12 @@ void AliTPCv1::CreateGeometry()
    Double_t x0,y0;
    x0=110.2*TMath::Cos(openingAngle);
    y0=110.2*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); //a-side 
-   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); //c-side
+   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); ///< a-side
+   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); ///< c-side
    x0=188.45*TMath::Cos(openingAngle);
    y0=188.45*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); //a-side
-   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); //c-side
+   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); ///< a-side
+   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); ///< c-side
    //
    // A-side
    //
@@ -790,20 +780,20 @@ void AliTPCv1::CreateGeometry()
   TGeoPgon *sw = new TGeoPgon(0.,20.,1,2);
   sw->DefineSection(0,-4.,80.5,251.75);
   sw->DefineSection(1,4.,80.5,251.75); 
-  TGeoVolume *swv = new TGeoVolume("TPC_SWSEG",sw,m3); //Al
+  TGeoVolume *swv = new TGeoVolume("TPC_SWSEG",sw,m3); ///< Al
   //
   thick=1.;
   shift = thick/TMath::Sin(openingAngle);
   TGeoPgon *sh = new TGeoPgon(0.,20.,1,2);
   sh->DefineSection(0,-4.,81.5-shift,250.75-shift);
   sh->DefineSection(1,4.,81.5-shift,250.75-shift);
-  TGeoVolume *shv = new TGeoVolume("TPC_SWS1",sh,m1); //Air
+  TGeoVolume *shv = new TGeoVolume("TPC_SWS1",sh,m1); ///< Air
   //
   TGeoMedium *m9 =  gGeoManager->GetMedium("TPC_Si"); 
   TGeoPgon *el = new TGeoPgon(0.,20.,1,2);
   el->DefineSection(0,-1.872,81.5-shift,250.75-shift);
   el->DefineSection(1,1.872,81.5-shift,250.75-shift);
-  TGeoVolume *elv = new TGeoVolume("TPC_ELEC",el,m9); //Si 
+  TGeoVolume *elv = new TGeoVolume("TPC_ELEC",el,m9); ///< Si
   //
   shv->AddNode(elv,1);
   //
@@ -815,7 +805,7 @@ void AliTPCv1::CreateGeometry()
   TGeoPgon *co = new TGeoPgon(0.,20.,1,2);
   co->DefineSection(0,-0.5,77.,255.25);
   co->DefineSection(1,0.5,77.,255.25);
-  TGeoVolume *cov = new TGeoVolume("TPC_SWC1",co,m3);//Al
+  TGeoVolume *cov = new TGeoVolume("TPC_SWC1",co,m3);///< Al
   // hole in a cover
   TGeoPgon *coh = new TGeoPgon(0.,20.,1,2);
   shift=4./TMath::Sin(openingAngle);
@@ -987,7 +977,7 @@ void AliTPCv1::CreateGeometry()
   TGeoVolume *rodsv = new TGeoVolume("TPC_rods",rods,m6);
   //brass connectors
  //connectors
-  TGeoTube *bcon = new TGeoTube(0.,0.3,0.3);//connectors
+  TGeoTube *bcon = new TGeoTube(0.,0.3,0.3);///< connectors
   TGeoVolume *bconv = new TGeoVolume("TPC_bcon",bcon,m13);
  //
  // hooks holding strips
@@ -1039,8 +1029,8 @@ void AliTPCv1::CreateGeometry()
   //
   // rod assembly
   //
-  TGeoVolumeAssembly *tpcrrod = new TGeoVolumeAssembly("TPC_rrod");//rrod
-  TGeoVolumeAssembly *tpcmrod = new TGeoVolumeAssembly("TPC_mrod");//makrolon rod  
+  TGeoVolumeAssembly *tpcrrod = new TGeoVolumeAssembly("TPC_rrod");///< rrod
+  TGeoVolumeAssembly *tpcmrod = new TGeoVolumeAssembly("TPC_mrod");///< makrolon rod
   //long pieces
   for(Int_t i=0;i<11;i++){
     tpcrrod->AddNode(ringv,i+1,new TGeoTranslation(0.,0.,-105.+i*21));
@@ -1251,13 +1241,13 @@ TGeoCompositeShape *tpcihs6 = new TGeoCompositeShape("tpcihs6", "tpcihs1-(tpcihs
 //
 // volumes - all makrolon
 //  
- TGeoVolume *tpcihss = new TGeoVolume("TPC_IHSS", tpcihs6, m6); //support
- TGeoVolume *tpcihst = new TGeoVolume("TPC_IHSTR",tpcihs5 , m6); //trapesoid
+ TGeoVolume *tpcihss = new TGeoVolume("TPC_IHSS", tpcihs6, m6); ///< support
+ TGeoVolume *tpcihst = new TGeoVolume("TPC_IHSTR",tpcihs5 , m6); ///< trapesoid
  //now assembly
 TGeoRotation *rot111 = new TGeoRotation(); 
 rot111->RotateY(180.0);
 //
-TGeoVolumeAssembly *tpcihs = new TGeoVolumeAssembly("TPC_IHS");    // assembly of the support
+TGeoVolumeAssembly *tpcihs = new TGeoVolumeAssembly("TPC_IHS");    ///< assembly of the support
 tpcihs->AddNode(tpcihss, 1);
 tpcihs->AddNode(tpcihst, 1, new TGeoTranslation(-4.7, 0.66, 0.0));
 tpcihs->AddNode(tpcihst, 2, new TGeoCombiTrans(4.7, 0.66, 0.0, rot111));
@@ -1331,7 +1321,7 @@ TGeoVolume *tpcinlplug = new TGeoVolume("TPC_INPLL", inplleft, m6);
 //
 //  holder + plugs
 //
- TGeoVolume *tpcihpl = new TGeoVolumeAssembly("TPC_IHPL"); //holder+2 plugs (reflected)
+ TGeoVolume *tpcihpl = new TGeoVolumeAssembly("TPC_IHPL"); ///< holder+2 plugs (reflected)
  tpcihpl->AddNode(tpcinlplug, 1);
  tpcihpl->AddNode(tpcinlplug, 2,ref);
  tpcihpl->AddNode(tpciclamp,1,new TGeoTranslation(0.0, -2.765, 0.0)); 
@@ -1363,7 +1353,7 @@ TGeoBBox *tpcomh2 = new TGeoBBox("tpcomh2", 0.8, 1.4, 6);
 TGeoVolume *tpcomh1v = new TGeoVolume("TPC_OMH1", tpcomh1, m7);    
 TGeoVolume *tpcomh2v = new TGeoVolume("TPC_OMH2", tpcomh2, m7);
 //
-TGeoVolume *tpcomh3v = new TGeoVolumeAssembly("TPC_OMH3");    // assembly1
+TGeoVolume *tpcomh3v = new TGeoVolumeAssembly("TPC_OMH3");    ///< assembly1
 tpcomh3v->AddNode(tpcomh1v, 1, new TGeoTranslation(0.8, -1.4, 4.95));
  tpcomh3v->AddNode(tpcomh1v, 2, new TGeoTranslation(0.8, -1.4, -4.95));
 tpcomh3v->AddNode(tpcomh2v, 1);
@@ -1533,7 +1523,7 @@ trans33->RegisterYourself();
 //
 TGeoCompositeShape *tpcorh9 = new TGeoCompositeShape("tpcorh9", "tpcorh1-tpcorh2-tpcorh3-tpcorh4-tpcorh5-tpcorh6-(tpcorh8:trans33)-tpcorh7");
 //
- TGeoVolume *tpcorh9v = new TGeoVolume("TPC_ORH",tpcorh9,m6); //outer rod holder 
+ TGeoVolume *tpcorh9v = new TGeoVolume("TPC_ORH",tpcorh9,m6); ///< outer rod holder
  //
  // now 2 holders together
  //
@@ -1710,7 +1700,7 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
  // guard ring resistor chain
  //
 
- TGeoTube *gres1 = new TGeoTube(0.,0.375,125.);// inside ifc
+ TGeoTube *gres1 = new TGeoTube(0.,0.375,125.);///< inside ifc
  //
  TGeoVolume *vgres1 = new TGeoVolume("TPC_GRES1",gres1,m10);
 
@@ -1832,18 +1822,15 @@ TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
 //_____________________________________________________________________________
 void AliTPCv1::CreateMaterials()
 {
-  //
-  // Define materials for Time Projection Chamber
-  //
+  /// Define materials for Time Projection Chamber
+
   AliTPC::CreateMaterials();
 }
 
 //_____________________________________________________________________________
 void AliTPCv1::Init()
 {
-  //
-  // Initialises TPC detector after it has been created
-  //
+  /// Initialises TPC detector after it has been created
 
   fIdSens=gMC->VolId("TPC_Strip"); // sensitive strip
 
@@ -1855,9 +1842,8 @@ void AliTPCv1::Init()
 //_____________________________________________________________________________
 void AliTPCv1::StepManager()
 {
-  //
-  // Called at every step in the Time Projection Chamber
-  //
+  /// Called at every step in the Time Projection Chamber
+
   Int_t         copy, id, i;
   Float_t       hits[5];
   Int_t         vol[2];

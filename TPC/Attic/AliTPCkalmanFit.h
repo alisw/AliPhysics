@@ -13,7 +13,7 @@ class AliTrackPoint;
 class TFormula;
 class TBits;
 class THnSparse;
-//
+/// \class AliTPCkalmanFit
 
 class AliTPCkalmanFit: public TNamed{
 public:
@@ -59,27 +59,27 @@ public:
   //
   // Calibration parameters
   //
-  TObjArray *fCalibration;  // array of calibrations
-  TMatrixD  *fCalibParam;   // calibration parameters 
-  TMatrixD  *fCalibCovar;   // calibration parameters 
+  TObjArray *fCalibration;  ///< array of calibrations
+  TMatrixD  *fCalibParam;   ///< calibration parameters
+  TMatrixD  *fCalibCovar;   ///< calibration parameters
   //
   // Linear track
   //
-  TMatrixD  *fLinearParam;      // linear parameters
-  TMatrixD  *fLinearCovar;      // linear covariance
-  THnSparse *fLinearTrackDelta[12];   // linear tracks matching residuals - delta 
-  THnSparse *fLinearTrackPull[12];    // linear tracks matching residuals  - pull
+  TMatrixD  *fLinearParam;      ///< linear parameters
+  TMatrixD  *fLinearCovar;      ///< linear covariance
+  THnSparse *fLinearTrackDelta[12];   ///< linear tracks matching residuals - delta
+  THnSparse *fLinearTrackPull[12];    ///< linear tracks matching residuals  - pull
   //
   //
   //
-  Int_t      fLastTimeStamp; // last time stamp - used for propagation of parameters
+  Int_t      fLastTimeStamp; ///< last time stamp - used for propagation of parameters
   //static AliTPCkalmanFit* Instance();
   void SetInstance(AliTPCkalmanFit*param){fgInstance = param;}
-  static AliTPCkalmanFit*   fgInstance; //! Instance of this class (singleton implementation)
+  static AliTPCkalmanFit*   fgInstance; //!< Instance of this class (singleton implementation)
  private:  
-  Double_t   fCurrentAlpha; //! current rotation frame
-  Double_t   fCA;           //! cosine of current angle
-  Double_t   fSA;           //! sinus of current angle  
+  Double_t   fCurrentAlpha; //!< current rotation frame
+  Double_t   fCA;           //!< cosine of current angle
+  Double_t   fSA;           //!< sinus of current angle
   AliTPCkalmanFit&  operator=(const AliTPCkalmanFit&);// not implemented
   AliTPCkalmanFit(const AliTPCkalmanFit&):TNamed(),
                                   fCalibration(0),

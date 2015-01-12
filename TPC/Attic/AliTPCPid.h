@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/// \class AliTPCPid
 
 #include <TObject.h>
 #include <TVector.h>
@@ -13,7 +13,7 @@
 
 class TF1;
 class TClonesArray;
-//___________________________________________________________________________
+
 class  AliTPCPid :
   public TObject {
 
@@ -53,18 +53,18 @@ public:
 	Int_t	Kaon(){return /*fWk=1.,*/fPcode=321;}
 	Int_t	Proton(){return /*fWp=1.,*/fPcode=2212;}
 private:
-	TF1 *fCutKa; // function
-	TF1 *fCutPr; // function
-	Float_t fCutKaTune,fCutPrTune; // tune cuts
-	Float_t fSigmin; // sigma min
-        Int_t   fSilent; // flag
-	Float_t fcut[13][7],faprob[3][8]; //cuts
-	Int_t       fmxtrs; // fmxtrs
-	TClonesArray *trs; //pointer
-	Float_t fqtot; // tot q
-	Float_t fWpi,fWk,fWp; // weights
-	Float_t fRpik,fRppi,fRpka,fRp; // ratios
-	Int_t 	fPcode; //p-code
+	TF1 *fCutKa; ///< function
+	TF1 *fCutPr; ///< function
+	Float_t fCutKaTune,fCutPrTune; ///< tune cuts
+	Float_t fSigmin; ///< sigma min
+        Int_t   fSilent; ///< flag
+	Float_t fcut[13][7],faprob[3][8]; ///< cuts
+	Int_t       fmxtrs; ///< fmxtrs
+	TClonesArray *trs; ///< pointer
+	Float_t fqtot; ///< tot q
+	Float_t fWpi,fWk,fWp; ///< weights
+	Float_t fRpik,fRppi,fRpka,fRp; ///< ratios
+	Int_t 	fPcode; ///< p-code
 
   ClassDef(AliTPCPid,1) // Class for TPC PID
 
