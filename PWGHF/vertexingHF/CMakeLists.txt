@@ -42,6 +42,7 @@ set(SRCS
   AliAODRecoDecayHF3Prong.cxx 
   AliAODRecoDecayHF4Prong.cxx 
   AliAODRecoCascadeHF.cxx 
+  AliAODRecoCascadeHF3Prong.cxx
   AliAODPidHF.cxx 
   AliRDHFCuts.cxx 
   AliVertexingHFUtils.cxx 
@@ -54,6 +55,8 @@ set(SRCS
   AliRDHFCutsLctoV0.cxx 
   AliRDHFCutsD0toKpipipi.cxx 
   AliRDHFCutsDStartoKpipi.cxx 
+  AliRDHFCutsLctopK0sfromAODtracks.cxx
+  AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx 
   AliAnalysisTaskSEVertexingHF.cxx 
   AliAnalysisTaskMEVertexingHF.cxx 
@@ -67,6 +70,8 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelor.cxx 
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
+  AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
+  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliCFVertexingHF.cxx 
   AliCFVertexingHF2Prong.cxx 
   AliCFVertexingHF3Prong.cxx 
