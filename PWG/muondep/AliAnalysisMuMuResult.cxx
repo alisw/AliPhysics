@@ -461,7 +461,6 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
       return TMath::Limits<Double_t>::Max();
     }
   }
-  return TMath::Limits<Double_t>::Max();
 }
 
 //_____________________________________________________________________________
