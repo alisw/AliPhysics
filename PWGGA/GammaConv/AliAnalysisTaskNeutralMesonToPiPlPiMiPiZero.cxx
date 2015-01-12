@@ -1694,12 +1694,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 				labelp=TMath::Abs(posPionCandidate->GetLabel());
 				fNegativeMCParticle = fMCStack->Particle(labeln);
 				fPositiveMCParticle = fMCStack->Particle(labelp);
+				// check whether MC particles exist, else abort
+				if (fNegativeMCParticle == NULL || fPositiveMCParticle == NULL) return;
+
 				motherlabeln = fNegativeMCParticle->GetMother(0);
 				motherlabelp = fPositiveMCParticle->GetMother(0);
-				if( fPositiveMCParticle && fNegativeMCParticle) {
-					virtualPhoton->SetMCLabelPositive(labelp);
-					virtualPhoton->SetMCLabelNegative(labeln);
-				}				
+				virtualPhoton->SetMCLabelPositive(labelp);
+				virtualPhoton->SetMCLabelNegative(labeln);
+			
 			}
 			
 			AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
