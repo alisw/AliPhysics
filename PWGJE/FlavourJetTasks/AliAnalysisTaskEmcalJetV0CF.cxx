@@ -298,6 +298,8 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillRecoInfo()
   Double_t dZNA = fCentInfo->GetCentralityPercentile("ZNA");
 
   THnSparseD *hs = dynamic_cast<THnSparseD*>(fListUserOutputs->FindObject("hsReco"));
+  if (!hs)
+    return kTRUE;  // should not happen; make Coverity happen
 //=============================================================================
 
   AliPicoV0MC *pV0 = 0;
@@ -395,6 +397,9 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillKineInfo()
   Double_t dZNA = fCentInfo->GetCentralityPercentile("ZNA");
 
   THnSparseD *hs = dynamic_cast<THnSparseD*>(fListUserOutputs->FindObject("hsKine"));
+  if (!hs) {
+    return kTRUE; // Should not happen; make Coverity happy
+  }
 //=============================================================================
 
   AliStack *pStack = 0;

@@ -309,6 +309,7 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fPicoJetsClArrMC04) fPicoJetsClArrMC04->Delete();
 
   if (fPicoV0sClArr) fPicoV0sClArr->Delete();
+  else return kFALSE; // Should not happen, make Coverity happy
 
   if (!AliAnalysisTaskEmcalJet::Run()) return kFALSE;
 //=============================================================================
