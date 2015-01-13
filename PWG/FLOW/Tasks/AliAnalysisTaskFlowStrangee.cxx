@@ -2289,7 +2289,10 @@ void AliAnalysisTaskFlowStrangee::MakeQTPC(AliAODEvent *tAOD) {
   Int_t rawN = tAOD->GetNumberOfTracks();
   for(Int_t id=0; id!=rawN; ++id) {
     track = dynamic_cast<AliAODTrack*>(tAOD->GetTrack(id));
-    if(!track) AliFatal("Not a standard AOD");
+    if(!track) {
+        AliFatal("Not a standard AOD");
+        return;
+    }
     //=>cuts
     if(!track->TestFilterBit(fRFPFilterBit)) continue;
     if( fExcludeTPCEdges )
