@@ -595,8 +595,13 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(t);
+        //AliEmcalParticle* part_sub = new ((*particles_sub)[tid]) AliEmcalParticle(t); MV: leave committed. Cannot have gaps in case both tracks + clusters go into same array. Final decision pending
         part_sub->SetPt(constituents[ic].perp());
+        part_sub->SetPhi(constituents[ic].phi());
+        part_sub->SetEta(constituents[ic].eta());
+        part_sub->SetM(constituents[ic].m());
         jet->AddTrackAt(part_sub_id, nt);
+        //jet->AddTrackAt(tid, nt);
       }
 
       ++nt;
@@ -650,8 +655,13 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(c);
+        //AliEmcalParticle* part_sub = new ((*particles_sub)[cid]) AliEmcalParticle(c);  MV: leave committed. Cannot have gaps in case both tracks + clusters go into same array. Final decision pending
         part_sub->SetPt(constituents[ic].perp());
+        part_sub->SetPhi(constituents[ic].phi());
+        part_sub->SetEta(constituents[ic].eta());
+        part_sub->SetM(constituents[ic].m());
         jet->AddTrackAt(part_sub_id, nt);
+        //jet->AddTrackAt(cid, nt);
       }
 
       ++nc;
