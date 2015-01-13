@@ -51,6 +51,7 @@ set(SRCS
   AliAnalysisTaskFittingQDistribution.cxx 
   AliAnalysisTaskFlowEvent.cxx 
   AliAnalysisTaskFlowStrange.cxx 
+  AliAnalysisTaskFlowStrangee.cxx
   AliAnalysisTaskFlowEventforRP.cxx 
   AliAnalysisTaskMixedHarmonics.cxx 
   AliAnalysisTaskNestedLoops.cxx 
