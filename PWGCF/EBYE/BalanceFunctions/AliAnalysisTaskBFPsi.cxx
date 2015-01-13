@@ -2179,7 +2179,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  Bool_t kExcludeParticle = kFALSE;
 	  Int_t gMotherIndex = particle->GetFirstMother();
 
-	  if(gMotherIndex != -1) {
+	  if(TMath::Abs(particle->GetPdgCode()) != 321 || gMotherIndex != -1) {
 	    // AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
 	    // if(motherTrack) {
 	    //   TParticle *motherParticle = motherTrack->Particle();
