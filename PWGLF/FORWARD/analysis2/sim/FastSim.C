@@ -29,6 +29,7 @@
 # include <TProofOutputFile.h>
 # include <TCanvas.h>
 # include <TTimer.h>
+# include <TUrl.h>
 # include <fstream>
 #else
 class AliGenerator;
@@ -46,7 +47,24 @@ class TProofOutputFile;
 class TCanvas;
 class TVirtualPad;
 class TTimer;
+class TUrl;
 #endif
+
+/** To get DPMJEt common block */
+typedef struct {
+   Double_t	rproj;
+   Double_t	rtarg;
+   Double_t	bimpac;
+   Int_t	nwtsam;
+   Int_t	nwasam;
+   Int_t	nwbsam;
+   Int_t	nwtacc;
+   Int_t	nwtaac;
+   Int_t	nwtbac;
+   Int_t        ncp;
+   Int_t        nct;
+} DtglcpCommon;
+DtglcpCommon* _dtglcp = 0;
 
 //====================================================================
 /** 
@@ -710,6 +728,15 @@ struct FastSim : public TSelector
       case 7:         dd = true;
       }      
 #else
+      static bool   first  = true;
+      
+      if (first) {
+	Func_t add = gSystem->DynFindSymbol("*", "dtglcp_");
+	if (!add) 
+	  Warning("", "Didn't find dtglcp_");
+	else 
+	  _dtglcp = (DtglcpCommon*)add;
+      }
       // The below - or rather a different implementation with some
       // errors - was proposed by Cvetan - I don't think it's right
       // though.  See also
@@ -725,8 +752,19 @@ struct FastSim : public TSelector
       // Check if all partipants are single/double diffractive 
       if      ((ndd == 0) && ((npP == nsd1) || (npT == nsd2)))	sd = true;
       else if (ndd == (npP + npT))                       	dd = true;
-      Printf("Projectile: %3d (%3d) Target: %3d (%3d) DD: %3d Process: %d",
-	     npP, nsd1, npT, nsd2, ndd, type);
+      Int_t ncp = dpm->NN();
+      Int_t nct = dpm->NNw();
+      Int_t nwp = dpm->NwN();
+      Int_t nwt = dpm->NwNw();
+      Int_t nwtacc = _dtglcp->nwtacc;
+      Int_t nwtsam = _dtglcp->nwtsam;
+      if (first) {
+	Printf("@ Npp sd1 Npt sd2  dd tpe Ncp Nct Nwp Nwt acc sam");
+	first = false;
+      }
+      Printf("@ %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d",
+	     npP, nsd1, npT, nsd2, ndd, type, ncp, nct, nwp, nwt,
+	     nwtacc, nwtsam);
 #endif 
     }
     if (gev) fShortHead.fPhiR = gev->GetEventPlane();
@@ -1082,16 +1120,13 @@ struct FastSim : public TSelector
    * 
    * @return true on succes
    */
-  static Bool_t  Run(Long64_t    nev,
-		     UInt_t      run,
-		     const char* gen,
-		     Double_t    bMin,
-		     Double_t    bMax,
-		     Int_t       monitor)
+  static Bool_t  LocalRun(Long64_t       nev,
+			  UInt_t         run,
+			  const TString& gen,
+			  Double_t       bMin,
+			  Double_t       bMax,
+			  Int_t          monitor)
   {
-    TStopwatch stopwatch;
-    stopwatch.Start();
-    
     FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
     sim->Begin(0);
     sim->SlaveBegin(0);
@@ -1119,9 +1154,11 @@ struct FastSim : public TSelector
     sim->SlaveTerminate();
     sim->Terminate();
 
-    stopwatch.Print();
     return true;
   }
+  /**
+   * Load needed libraries in a proof serssion 
+   */
   static void ProofLoadLibs()
   {
     if (!gProof) return;
@@ -1166,26 +1203,17 @@ struct FastSim : public TSelector
    * 
    * @return true on succes
    */
-  static Bool_t Proof(const char*  url,
-		      Long64_t     nev,
-		      UInt_t       run,
-		      const char*  gen,
-		      Double_t     bMin,
-		      Double_t     bMax,
-		      Int_t        monitor=-1,
-		      const char*  opt="")
+  static Bool_t ProofRun(const TUrl&    url,
+			 Long64_t       nev,
+			 UInt_t         run,
+			 const TString& gen,
+			 Double_t       bMin,
+			 Double_t       bMax,
+			 Int_t          monitor=-1,
+			 const char*    opt="")
   {
-    Printf("# events:  %lld", nev);
-    Printf("Run #:     %u",   run);
-    Printf("Generator: %s",   gen);
-    Printf("b range:   %5.1f-%5.1f", bMin, bMax);
-    Printf("monitor:   %ds", monitor);
-	   
-    TStopwatch timer;
-    timer.Start();
-    
-    TProof::Reset(url);
-    TProof::Open(url);
+    TProof::Reset(url.GetUrl());
+    TProof::Open(url.GetUrl());
     gProof->ClearCache();
 
     TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
@@ -1208,9 +1236,129 @@ struct FastSim : public TSelector
     FastSim* sim = new FastSim(gen,run,bMin,bMax,nev);
     gProof->Process(sim, nev, "");
 
-    timer.Print();
     return true; // status >= 0;
   }
+  /** 
+   * Extract key value pair from string 
+   * 
+   * @param in  Input string 
+   * @param key On return, the key 
+   * @param val On return, the value
+   * @param sep Separator between key an value 
+   * 
+   * @return false of separator isn't found in input 
+   */
+  static Bool_t Str2KeyVal(const TString& in,
+			   TString&       key,
+			   TString&       val,
+			   const char     sep='=')
+  {
+    Int_t idx = in.Index(sep);
+    if (idx == kNPOS) return false;
+
+    key = in(0,idx);
+    val = in(idx+1, in.Length()-idx-1);
+    return true;
+  }
+  /** 
+   * Run a simulation. 
+   * 
+   * @a url is the execution URL of the form 
+   * 
+   * @verbatim 
+   PROTOCOL://[HOST[:PORT]]/[?OPTIONS]
+   @endverbatim 
+   *
+   * Where PROTOCOL is one of 
+   * 
+   * - local for local (single thread) execution 
+   * - lite for Proof-Lite execution 
+   * - proof for Proof exection 
+   * 
+   * HOST and PORT is only relevant for Proof. 
+   *
+   * Options is a list of & separated options 
+   * 
+   * - events=NEV  Set the number of events to process 
+   * - run=RUNNO   Set the run number to anchor in 
+   * - eg=NAME     Set the event generator 
+   * - b=RANGE     Set the impact parameter range in fermi 
+   * - monitor=SEC Set the update rate in seconds of monitor histograms 
+   *
+   * 
+   * @param url Exection URL 
+   * @param opt Optimization used when compiling 
+   * 
+   * @return true on success 
+   */
+  static Bool_t Run(const char*  url, const char* opt="")
+  {
+    Long64_t     nev     = 10000;
+    UInt_t       run     = 0;
+    TString      eg      = "default";
+    Double_t     bMin    = 0;
+    Double_t     bMax    = 20;
+    Int_t        monitor = -1;
+    TUrl         u(url);
+    TString      out;
+    TObjArray*   opts    = TString(u.GetOptions()).Tokenize("&");
+    TObjString*  token   = 0;
+    TIter        nextToken(opts);
+    while ((token = static_cast<TObjString*>(nextToken()))) {
+      TString& str = token->String();
+      if (str.IsNull()) continue;
+      
+      TString  key, val;
+      if (!Str2KeyVal(str,key,val)) {
+	if (!out.IsNull()) out.Append("&");
+	out.Append(str);
+	continue;
+      }
+
+      if      (key.EqualTo("events")) nev     = val.Atoll();
+      else if (key.EqualTo("run"))    run     = val.Atoi();
+      else if (key.EqualTo("eg"))     eg      = val;
+      else if (key.EqualTo("monitor"))monitor = val.Atoi();
+      else if (key.EqualTo("b")) {
+	TString min, max;
+	if (Str2KeyVal(val, min, max, '-')) {
+	  bMin = min.Atof();
+	  bMax = max.Atof();
+	}
+      }
+      else {
+	if (!out.IsNull()) out.Append("&");
+	out.Append(str);
+      }
+    }
+    opts->Delete();
+    u.SetOptions(out);
+    if (!u.IsValid()) {
+      Printf("Error: FastSim::Run: URL %s is invalid", u.GetUrl());
+      return false;
+    }
+    
+    Bool_t isLocal = TString(u.GetProtocol()).EqualTo("local");
+
+    Printf("Run %s for %lld events anchored at %d\n"
+	   "  Impact paramter range:  %5.1f-%5.1f fm\n"
+	   "  Monitor frequency:      %d sec\n"
+	   "  Execution url:          %s",
+	   eg.Data(), nev, run, bMin, bMax, monitor, u.GetUrl());
+
+    TStopwatch timer;
+    timer.Start();
+
+    Bool_t ret = false;
+    if (isLocal)
+      ret = LocalRun(nev, run, eg, bMin, bMax, monitor);
+    else 
+      ret = ProofRun(u, nev, run, eg, bMin, bMax, monitor, opt);
+    timer.Print();
+
+    return ret;
+  }
+		    
   ClassDef(FastSim,1); 
 };
 
