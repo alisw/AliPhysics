@@ -24,7 +24,7 @@ SEED=1234567 # random number generator seed
 SIMDIR="generated" # sub-directory where to move simulated files prior to reco
 DUMPEVENT=5 # event to be dump on files (set to negative to skip dumps)
 
-SIMCONFIG="$ALICE_ROOT/MUON/"$MC"Config.C"
+SIMCONFIG="$ALICE_ROOT/../src/MUON/"$MC"Config.C"
 EMBEDWITH="" # no embedding by default
 REALISTIC=0 # ideal simulation by default
 
@@ -122,13 +122,13 @@ fi
 
 # Copy *ALL* the macros we need in the output directory, not to mess
 # with our source dir in any way.
-cp $ALICE_ROOT/MUON/.rootrc \
-  $ALICE_ROOT/MUON/rootlogon.C \
-  $ALICE_ROOT/MUON/runReconstruction.C $ALICE_ROOT/MUON/runSimulation.C \
-  $ALICE_ROOT/MUON/UpdateCDBCTPConfig.C \
-  $ALICE_ROOT/MUON/MUONefficiency.C \
-  $ALICE_ROOT/MUON/MUONTriggerEfficiency.C \
-  $ALICE_ROOT/MUON/MUONCheck.C \
+cp $ALICE_ROOT/../src/MUON/.rootrc \
+  $ALICE_ROOT/../src/MUON/rootlogon.C \
+  $ALICE_ROOT/../src/MUON/runReconstruction.C $ALICE_ROOT/../src/MUON/runSimulation.C \
+  $ALICE_ROOT/../src/MUON/UpdateCDBCTPConfig.C \
+  $ALICE_ROOT/../src/MUON/MUONefficiency.C \
+  $ALICE_ROOT/../src/MUON/MUONTriggerEfficiency.C \
+  $ALICE_ROOT/../src/MUON/MUONCheck.C \
   $OUTDIR
 
 cd $OUTDIR
@@ -155,7 +155,7 @@ fi
 #
 ###############################################################################
 
-if [ ! -f $ALICE_ROOT/OCDB/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
+if [ ! -f $ALICE_ROOT/../src/OCDB/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
 
   echo "Updating GRP CTP config  ..."
 
@@ -197,14 +197,14 @@ if [ "$SIMULATION" -eq 1 ]; then
 
   # save geometry file in a separate directory
   if [ "$MC" = "g3" ]; then
-    rm -fr $ALICE_ROOT/MUON/geometry
-    mkdir $ALICE_ROOT/MUON/geometry
-    cp $OUTDIR/geometry.root $ALICE_ROOT/MUON/geometry
+    rm -fr $ALICE_ROOT/../src/MUON/geometry
+    mkdir $ALICE_ROOT/../src/MUON/geometry
+    cp $OUTDIR/geometry.root $ALICE_ROOT/../src/MUON/geometry
   fi 
 
   # copy input geometry file in a current directory
   if [ "$MC" = "g4" ]; then
-    cp $ALICE_ROOT/MUON/geometry/geometry.root $OUTDIR
+    cp $ALICE_ROOT/../src/MUON/geometry/geometry.root $OUTDIR
   fi 
   
   cp $OUTDIR/geometry.root $OUTDIR/$SIMDIR/geometry.root
@@ -305,7 +305,7 @@ if [ "$DUMPEVENT" -ge 0 ]; then
   if [ -f "$OUTDIR/$SIMDIR/galice.root" ]; then
     aliroot -l -b  << EOF
     AliCDBManager* man = AliCDBManager::Instance();    
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetDefaultStorage("local://$ALICE_ROOT/../src/OCDB");
     AliMUONMCDataInterface mcdSim("$OUTDIR/$SIMDIR/galice.root");
     mcdSim.DumpKine($DUMPEVENT);       > $OUTDIR/dump.$DUMPEVENT.kine
     mcdSim.DumpHits($DUMPEVENT);       > $OUTDIR/dump.$DUMPEVENT.hits
@@ -321,7 +321,7 @@ EOF
   if [ -f "$OUTDIR/galice.root" ]; then
     aliroot -l -b << EOF
     AliCDBManager* man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetDefaultStorage("local://$ALICE_ROOT/../src/OCDB");
     AliMUONDataInterface dRec("$OUTDIR/galice.root");
     dRec.DumpDigits($DUMPEVENT,true); > $OUTDIR/dump.$DUMPEVENT.recdigits
     dRec.DumpRecPoints($DUMPEVENT);  > $OUTDIR/dump.$DUMPEVENT.recpoints
