@@ -78,7 +78,6 @@ set(SRCS
     FourierDecomposition/AliPool.cxx
     MuonHadron/AliAnalysisTaskDiMuonCorrelations.cxx
     MuonHadron/AliAnalysisTaskMuonHadronCorrelations.cxx
-    PhiEffMC/AliAnalysisTaskPhiEffMc.cxx
     PidPid/AliAnalysisTaskPidPidCorrelations.cxx
     TriggerPID/AliAnalysisTaskPIDCORR.cxx
     TriggerPID/AliTwoParticlePIDCorr.cxx
