@@ -1299,7 +1299,7 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
 
 
   TString strTit(title);
-  Float_t etaRange[2] = {fEtaMin, fEtaMax};
+  Float_t etaRange[2] = {(Float_t)fEtaMin, (Float_t)fEtaMax};
   
   //TList *list[4];
   fPhyList->Add(new TList);

@@ -1549,7 +1549,7 @@ void AliAnalysisTaskLambdaStar::ResoBufferTrack::GetShiftedPositionAtShiftedRadi
 //________________________________________________________________________
 void AliAnalysisTaskLambdaStar::ResoBufferTrack::Set(const AliAODTrack *track,const Float_t bfield,const Double_t priVtx[3]){
   // Overloaded function
-  Float_t priVtxPos[3]={priVtx[0],priVtx[1],priVtx[2]};
+  Float_t priVtxPos[3]={(Float_t)priVtx[0],(Float_t)priVtx[1],(Float_t)priVtx[2]};
   Set(track,bfield,priVtxPos);
 }
 
