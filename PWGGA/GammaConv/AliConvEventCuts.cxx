@@ -132,8 +132,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fCaloTriggerPatchInfoName(""),
 	fTriggersEMCAL(0),
 	fTriggersEMCALSelected(-1),
-	fEMCALTrigInitialized(kFALSE)
-	
+	fEMCALTrigInitialized(kFALSE),
+	fSecProdBoundary(1.0)
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -210,7 +210,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fCaloTriggerPatchInfoName(ref.fCaloTriggerPatchInfoName),
 	fTriggersEMCAL(ref.fTriggersEMCAL),
 	fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
-	fEMCALTrigInitialized(kFALSE)
+	fEMCALTrigInitialized(kFALSE),
+	fSecProdBoundary(ref.fSecProdBoundary)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -2365,3 +2366,97 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 	}
 	return arr;
 }
+
+//_________________________________________________________________________
+Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
+	
+	TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
+	if (!particle) return kFALSE; 
+	if (particle->GetMother(0) != -1){
+		Double_t deltaX = particle->Vx() - prodVtxX;
+		Double_t deltaY = particle->Vy() - prodVtxY;
+		Double_t deltaZ = particle->Vz() - prodVtxZ;
+
+		Double_t realRadius2D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
+		Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
+		
+
+		Bool_t dalitzCand = kFALSE;
+		
+		TParticle* firstmother = (TParticle *)MCStack->Particle(particle->GetMother(0));
+		Int_t pdgCodeFirstMother 		= firstmother->GetPdgCode();			
+		Bool_t intDecay = kFALSE;
+		if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
+		if ( intDecay && abs(particle->GetPdgCode()) == 11 ){
+			dalitzCand = kTRUE;
+// 			cout << "dalitz candidate found" << endl;
+		}
+	
+		Int_t source = particle->GetMother(0);
+		Bool_t foundExcludedPart = kFALSE;
+		Bool_t foundShower = kFALSE;		
+		Int_t pdgCodeMotherPrev = 0;
+		Int_t pdgCodeMotherPPrevMother = 0;
+		Int_t depth = 0;
+		if (dalitzCand || realRadius3D < fSecProdBoundary ){
+// 			if (particle->GetPdgCode() == 22){
+// 				cout << endl << endl << "new particle: " << stackpos <<endl;
+// 				cout << particle->GetPdgCode() << "\t" << particle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
+// 			}
+			while (depth < 20){
+				TParticle* mother 	= (TParticle *)MCStack->Particle(source);
+				source 				= mother->GetMother(0); 
+// 				if (particle->GetPdgCode() == 22)cout << "Stackposition: "<< source << endl;
+				Int_t pdgCodeMother 		= mother->GetPdgCode();			
+// 				if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
+				if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
+				if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
+					foundShower = kTRUE;
+					depth =20;
+				}	
+				if (abs(pdgCodeMother) == 22 && abs(pdgCodeMotherPrev) == 11 && abs(pdgCodeMotherPPrevMother) == 22 ){
+					foundShower = kTRUE;
+					depth =20;
+				}
+				
+				// particles to be excluded:
+				// K0s 		- 310  
+				// K0l 		- 130
+				// K+/-		- 321
+				// Lambda	- 3122
+				// Sigma0	- 3212
+				// Sigma+/-	- 3222, 3112
+				// Cascades	- 3322, 3312	
+				if (abs(pdgCodeMother) == 310 	|| abs(pdgCodeMother) == 130 	|| abs(pdgCodeMother) == 321  ||
+					abs(pdgCodeMother) == 3122 	|| abs(pdgCodeMother) == 3212 	|| abs(pdgCodeMother) == 3222 ||
+					abs(pdgCodeMother) == 3112 	|| abs(pdgCodeMother) == 3322 	|| abs(pdgCodeMother) == 3312 
+				) {
+					foundExcludedPart = kTRUE;
+				}	
+// 				if (particle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
+				pdgCodeMotherPPrevMother = pdgCodeMotherPrev;
+				pdgCodeMotherPrev = pdgCodeMother;			
+				if (source == -1) depth = 20;
+				
+// 				if (particle->GetPdgCode() == 22)cout << depth << endl;
+				depth++;
+			}	
+		}	
+		if (foundExcludedPart){
+// 			if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
+			return kFALSE;
+		} else if (dalitzCand){
+// 			if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
+			return kTRUE;
+		} else if (foundShower){
+// 			if (particle->GetPdgCode() == 22)cout << "This is a shower" << endl;
+			return kFALSE;			
+		} else if (realRadius3D > fSecProdBoundary){
+// 			cout << "This is a secondary, to large production radius" << endl;
+			return kFALSE;			
+		}
+	}
+
+	return kTRUE;
+}	
+
