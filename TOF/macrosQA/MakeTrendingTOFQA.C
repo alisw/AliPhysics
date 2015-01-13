@@ -262,12 +262,12 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
   hMeanLVsRun->SetDrawOption("E");
   TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","Ratio of tracks with L<350 cm;; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
   hNegLRatioVsRun->SetDrawOption("E");
-  TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","Matching efficiency (linear fit for p_{T}>1.0 GeV/c);;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","#epsilon_{match} (linear fit for p_{T}>1.0 GeV/c);;#epsilon_{match} (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hMatchEffVsRun->SetDrawOption("E");
-  TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","Matching efficiency normalized to percentage of TOF good channels;;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+  TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","#epsilon_{match} normalized to percentage of TOF good channels;;#epsilon_{match} (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hMatchEffVsRunNormToGoodCh->SetDrawOption("E");
 	
-  TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","Matching efficiency (value for p_{T}=1.0 GeV/c);;matching efficiency (pT=1.0 GeV/c)",nRuns, 0., nRuns);
+  TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","#epsilon_{match} (value for p_{T}=1.0 GeV/c);;#epsilon_{match} (pT=1.0 GeV/c)",nRuns, 0., nRuns);
   hMatchEffVsRun1->SetDrawOption("E");
   TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);;t0A (ps)",nRuns,0., nRuns);
   TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
@@ -1027,25 +1027,26 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   profRatioPosOverNegDx->Divide((TH1*) profDxNeg);
   profRatioPosOverNegDx->GetYaxis()->SetRangeUser(-5.,5.);
   profRatioPosOverNegDx->GetXaxis()->SetRangeUser(0.,2.);
-  if (displayAll){
-    TCanvas *residuals= new TCanvas("residuals","residuals",900,450);
-    residuals->Divide(2,1);
-    residuals->cd(1);
-    gPad->SetGridx();
-    gPad->SetGridy();
-    hDxPos4profile->GetYaxis()->SetRangeUser(-5.,5.);
-    hDxPos4profile->Draw("colz");
-    profDxPos->SetLineColor(kRed);
-    profDxPos ->Draw("same");
-    residuals->cd(2);
-    gPad->SetGridx();
-    gPad->SetGridy();
-    hDxNeg4profile->GetYaxis()->SetRangeUser(-5.,5.); 
-    hDxNeg4profile->Draw("colz");
-    profDxNeg->SetLineColor(kBlue);
-    profDxNeg->Draw("same"); 
-  }
 
+  TCanvas *cPidPerformance= new TCanvas("cResiduals","residuals",900,450);
+  cResiduals->Divide(2,1);
+  cResiduals->cd(1);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hDxPos4profile->GetYaxis()->SetRangeUser(-5.,5.);
+  hDxPos4profile->SetTitle(Form("%i: Dx for positive tracks",runNumber));
+  hDxPos4profile->Draw("colz");
+  profDxPos->SetLineColor(kRed);
+  profDxPos ->Draw("same");
+  cResiduals->cd(2);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hDxNeg4profile->GetYaxis()->SetRangeUser(-5.,5.);
+  hDxNeg4profile->SetTitle(Form("%i: Dx for negative tracks",runNumber));
+  hDxNeg4profile->Draw("colz");
+  profDxNeg->SetLineColor(kBlue);
+  profDxNeg->Draw("same");
+  
   fout->cd();
   hDxPos4profile->Write();
   hDxNeg4profile->Write();
@@ -1137,15 +1138,15 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   
 
   //-------------------------------------------------------------
-  /*MATCHING EFFICIENCY  MONITOR*/
+  /*#epsilon_{match}  MONITOR*/
 
   //TH1F * hMatchingVsP =new TH1F("hMatchingVsP","Matching probability vs. P; P(GeV/c); matching probability", 50, 0., 5. );
   
-  TH1F * hMatchingVsPt =new TH1F("hMatchingVsPt","Matching probability vs. Pt; Pt(GeV/c); matching probability", 50, 0., 5. );
+  TH1F * hMatchingVsPt =new TH1F("hMatchingVsPt","Matching eff. vs p_{T}; p_{T}(GeV/c); #epsilon_{match}", 50, 0., 5. );
   
-  TH1F * hMatchingVsEta =new TH1F("hMatchingVsEta","Matching probability vs. #\Eta; #\Eta; matching probability", 20, -1., 1.);
+  TH1F * hMatchingVsEta =new TH1F("hMatchingVsEta","Matching eff. vs #eta; #eta; #epsilon_{match}", 20, -1., 1.);
   
-  TH1F * hMatchingVsPhi =new TH1F("hMatchingVsPhi","Matching probability vs. Phi; Phi(rad); matching probability", 628, 0., 6.28);
+  TH1F * hMatchingVsPhi =new TH1F("hMatchingVsPhi","Matching eff. vs #phi; #phi(rad); #epsilon_{match}", 628, 0., 6.28);
 
   //matching as function of pT  
   TH1F * hDenom=(TH1F*)generalList->FindObject("hESDprimaryTrackPt"); 
@@ -1154,8 +1155,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     hMatchingVsPt->Rebin(5);
     hDenom->Rebin(5);
     hMatchingVsPt->Divide(hDenom);
-    hMatchingVsPt->GetYaxis()->SetTitle("matching efficiency");
-    hMatchingVsPt->SetTitle("TOF matching efficiency as function of transverse momentum");
+    hMatchingVsPt->GetYaxis()->SetTitle("#epsilon_{match}");
+    hMatchingVsPt->SetTitle(Form("%i: TOF #epsilon_{match} vs p_{T}", runNumber));
     hMatchingVsPt->GetYaxis()->SetRangeUser(0,1.2); 
   }
   
@@ -1168,9 +1169,9 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     hDenom->Rebin(5);
     hMatchingVsEta->Divide(hDenom);
     hMatchingVsEta->GetXaxis()->SetRangeUser(-1,1);
-    hMatchingVsEta->GetYaxis()->SetTitle("matching efficiency");
+    hMatchingVsEta->GetYaxis()->SetTitle("#epsilon_{match}");
     hMatchingVsEta->GetYaxis()->SetRangeUser(0,1.2);
-    hMatchingVsEta->SetTitle("TOF matching efficiency as function of pseudorapidity");
+    hMatchingVsEta->SetTitle(Form("%i: TOF #epsilon_{match} vs #eta", runNumber));
   }
   //matching as function of phi
   hDenom->Clear();
@@ -1180,26 +1181,26 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     //hMatchingVsPhi->Rebin(5);
     //hDenom->Rebin(5);
     hMatchingVsPhi->Divide(hDenom);
-    hMatchingVsPhi->GetYaxis()->SetTitle("matching efficiency");
-    hMatchingVsPhi->SetTitle("TOF matching efficiency as function of phi");
+    hMatchingVsPhi->GetYaxis()->SetTitle("#epsilon_{match}");
+    hMatchingVsPhi->SetTitle(Form("%i: TOF #epsilon_{match} vs #phi", runNumber));
     hMatchingVsPhi->GetYaxis()->SetRangeUser(0,1.2);
   }
-  if (displayAll){
-    TCanvas *cMatchingPerformance= new TCanvas("cMatchingPerformance","summary of matching performance",700,400);
-    cMatchingPerformance->Divide(2,2);
-    cMatchingPerformance->cd(1);
-    gPad->SetGridx();
-    gPad->SetGridy();
-    hMatchingVsPt->Draw();
-    cMatchingPerformance->cd(2);
-    gPad->SetGridx();
-    gPad->SetGridy();
-    hMatchingVsEta->Draw();
-    cMatchingPerformance->cd(3);
-    gPad->SetGridx();
-    gPad->SetGridy();
-    hMatchingVsPhi->Draw();
-  }
+
+  TCanvas *cMatchingPerformance= new TCanvas("cMatchingPerformance","summary of matching performance",1000,600);
+  cMatchingPerformance->Divide(2,2);
+  cMatchingPerformance->cd(1);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hMatchingVsPt->Draw();
+  cMatchingPerformance->cd(2);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hMatchingVsEta->Draw();
+  cMatchingPerformance->cd(3);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hMatchingVsPhi->Draw();
+  
   TH2F* hTOFmatchedDzVsStrip = (TH2F*) generalList->FindObject("hTOFmatchedDzVsStrip");	
   
   fout->cd();
@@ -1233,7 +1234,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   if (!hDiffTimePi) {
     Printf("Plot hDiffTimePi not available (old aliroot?)");
   } else {
-    hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
+    hDiffTimePi->SetTitle(Form("%i: PION t-t_{exp,#pi}",runNumber));
     hDiffTimePi->GetYaxis()->SetRangeUser(-2000.,2000.);
     //hDiffTimePi->GetYaxis()->Rebin(2);//1 bin=10 ps
   }
@@ -1242,8 +1243,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   if (!hDiffTimePiTh) {
     Printf("Plot hDiffTimePiTh not available (old aliroot?)");
   } else {
-    hDiffTimePiTh->SetTitle("PIONS t-t_{exp,#pi} (theoretical) vs. P");
-    hDiffTimePiTh->GetYaxis()->SetRangeUser(-2000.,2000.); 
+    hDiffTimePiTh->SetTitle(Form("%i: PION t-t_{exp,#pi} (theoretical)",runNumber));
+    hDiffTimePiTh->GetYaxis()->SetRangeUser(-2000.,2000.);
     //hDiffTimePiTh->GetYaxis()->Rebin(2);//1 bin=10 ps
   }
 
@@ -1251,7 +1252,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   if (!hDiffTimeKa) {
     Printf("Plot hDiffTimeKa not available (old aliroot?)");
   } else {
-    hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
+    hDiffTimeKa->SetTitle(Form("%i: KAON t-t_{exp,K}",runNumber));
     hDiffTimeKa->GetYaxis()->SetRangeUser(-2000.,2000.);
     //hDiffTimeKa->GetYaxis()->Rebin(2);//1 bin=10 ps
   }
@@ -1260,7 +1261,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   if (!hDiffTimeKaTh) {
     Printf("Plot hDiffTimeKaTh not available (old aliroot?)");
   } else {
-    hDiffTimeKaTh->SetTitle("KAONS t-t_{exp,K} (theoretical) vs. P");
+    hDiffTimeKaTh->SetTitle(Form("%i: KAON t-t_{exp,K} (theoretical)",runNumber));
     hDiffTimeKaTh->GetYaxis()->SetRangeUser(-2000.,2000.);
     //hDiffTimeKaTh->GetYaxis()->Rebin(2);//1 bin=10 ps
   }
@@ -1269,7 +1270,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   if (!hDiffTimePro) {
     Printf("Plot hDiffTimePro not available (old aliroot?)");
   } else {
-    hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
+    hDiffTimePro->SetTitle(Form("%i: PROTON t-t_{exp,p}",runNumber));
     hDiffTimePro->GetYaxis()->SetRangeUser(-2000.,2000.);
     //hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
   }
@@ -1278,13 +1279,17 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   if (!hDiffTimeProTh) {
     Printf("Plot hDiffTimeProTh not available (old aliroot?)");
   } else {
-    hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (theoretical) vs. P");
+    hDiffTimeProTh->SetTitle(Form("%i: PROTON t-t_{exp,p} (theoretical)",runNumber));
     hDiffTimeProTh->GetYaxis()->SetRangeUser(-2000.,2000.);
     //hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
   }
 
+
+  TCanvas *cPidPerformance =0x0;
+  TCanvas *cPidPerformance2 = 0x0;
+  TCanvas *cPidPerformanceTh = 0x0;
   if (displayAll){
-    TCanvas *cPidPerformance= new TCanvas("cPidPerformance","summary of pid performance",800,800);
+    cPidPerformance = new TCanvas("cPidPerformance","summary of pid performance",800,800);
     cPidPerformance->Divide(2,1);
     cPidPerformance->cd(1);
     gPad->SetGridy();
@@ -1298,8 +1303,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     gPad->SetLogy();
     if (hMass) hMass->Draw("HIST BAR");
   
+    cPidPerformance2 = new TCanvas("cPidPerformance2","summary of pid performance - tracking",700,700);
     gStyle->SetOptStat(10);
-    TCanvas *cPidPerformance2= new TCanvas("cPidPerformance2","summary of pid performance - tracking",700,700);
     cPidPerformance2->Divide(2,2);
     cPidPerformance2->cd(1);
     gPad->SetLogz();
@@ -1315,7 +1320,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     gPad->SetLogz();
     if (hDiffTimePro) hDiffTimePro->Draw("colz");
 
-    TCanvas *cPidPerformanceTh= new TCanvas("cPidPerformanceTh","summary of pid performance - theoretical times",700,700);
+    cPidPerformanceTh = new TCanvas("cPidPerformanceTh","summary of pid performance - theoretical times",700,700);
     cPidPerformanceTh->Divide(2,2);
     cPidPerformanceTh->cd(1);
     gPad->SetLogz();
@@ -1355,46 +1360,71 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 
   //SIGMAS PID
   TH2F * hSigmaPi=(TH2F*)pidList->FindObject("hTOFExpSigmaPi"); 
-  TProfile * profSigmaPi = 0x0;
+  hSigmaPi->SetTitle(Form("%i: n#sigma_{TOF} pion vs p",runNumber));
+  //TProfile * profSigmaPi = 0x0;
   if (!hSigmaPi){
     Printf("Plot hSigmaPi not available (old aliroot?)");
   } else {
-    sprintf(profilename,"profSigmaPi");
     hSigmaPi->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaPi->GetXaxis()->SetRangeUser(0.2,10.);	
-    profSigmaPi = (TProfile*)hSigmaPi->ProfileX(profilename); 
-    profSigmaPi->SetLineWidth(2);
-    profSigmaPi->SetLineColor(kRed+2); 
+    //sprintf(profilename,"profSigmaPi");
+    //profSigmaPi = (TProfile*)hSigmaPi->ProfileX(profilename);
+    //profSigmaPi->SetLineWidth(2);
+    //profSigmaPi->SetLineColor(kRed+2);
+    hSigmaPi->FitSlicesY();
+    TH1D * hSigmaPi_1 = (TH1D*)gDirectory->Get("hTOFExpSigmaPi_1");
+    TH1D * hSigmaPi_2 = (TH1D*)gDirectory->Get("hTOFExpSigmaPi_2");
+    hSigmaPi_1->SetLineColor(1);
+    hSigmaPi_1->SetLineWidth(2);
+    hSigmaPi_2->SetLineColor(2);
+    hSigmaPi_2->SetLineWidth(2);
   }
 
   TH2F * hSigmaKa=(TH2F*)pidList->FindObject("hTOFExpSigmaKa"); 
-  TProfile * profSigmaKa = 0x0;
+  hSigmaKa->SetTitle(Form("%i: n#sigma_{TOF} kaon vs p",runNumber));
+    //TProfile * profSigmaKa = 0x0;
   if (!hSigmaKa){
     Printf("Plot hSigmaKa not available (old aliroot?)");
   } else {
-    sprintf(profilename,"profSigmaKa");
     hSigmaKa->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaKa->GetXaxis()->SetRangeUser(0.2,10.);
-    profSigmaKa = (TProfile*)hSigmaKa->ProfileX(profilename); 
-    profSigmaKa->SetLineWidth(2);
-    profSigmaKa->SetLineColor(kBlue);  
+    //sprintf(profilename,"profSigmaKa");
+    //profSigmaKa = (TProfile*)hSigmaKa->ProfileX(profilename);
+    //profSigmaKa->SetLineWidth(2);
+    //profSigmaKa->SetLineColor(kBlue);
+    hSigmaKa->FitSlicesY();
+    TH1D * hSigmaKa_1 = (TH1D*)gDirectory->Get("hTOFExpSigmaKa_1");
+    TH1D * hSigmaKa_2 = (TH1D*)gDirectory->Get("hTOFExpSigmaKa_2");
+    hSigmaKa_1->SetLineColor(1);
+    hSigmaKa_1->SetLineWidth(2);
+    hSigmaKa_2->SetLineColor(2);
+    hSigmaKa_2->SetLineWidth(2);
   }
  
   TH2F * hSigmaPro=(TH2F*)pidList->FindObject("hTOFExpSigmaPro"); 
-  TProfile * profSigmaPro = 0x0;
+  hSigmaPro->SetTitle(Form("%i: n#sigma_{TOF} proton vs p",runNumber));
+  //TProfile * profSigmaPro = 0x0;
   if (!hSigmaPro){
     Printf("Plot hSigmaPro not available (old aliroot?)");
   } else {
-    sprintf(profilename,"profSigmaPro");
     hSigmaPro->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaPro->GetXaxis()->SetRangeUser(0.2,10.);
-    profSigmaPro = (TProfile*)hSigmaPro->ProfileX(profilename); 
-    profSigmaPro->SetLineWidth(2);
-    profSigmaPro->SetLineColor(kGreen+2);  
+    //  sprintf(profilename,"profSigmaPro");
+    //profSigmaPro = (TProfile*)hSigmaPro->ProfileX(profilename);
+    //profSigmaPro->SetLineWidth(2);
+    //profSigmaPro->SetLineColor(kGreen+2);
+    hSigmaPro->FitSlicesY();
+    TH1D * hSigmaPro_1 = (TH1D*)gDirectory->Get("hTOFExpSigmaPro_1");
+    TH1D * hSigmaPro_2 = (TH1D*)gDirectory->Get("hTOFExpSigmaPro_2");
+    hSigmaPro_1->SetLineColor(1);
+    hSigmaPro_1->SetLineWidth(2);
+    hSigmaPro_2->SetLineColor(2);
+    hSigmaPro_2->SetLineWidth(2);
   }
 
   if(includeStartTime && pidQAdir){
-    TH2F * hSigmaPiT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_pion"); 
+    TH2F * hSigmaPiT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_pion");
+    hSigmaPiT0->SetTitle(Form("%i: n#sigma_{TOF} pion vs p, with start time",runNumber));
     hSigmaPiT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaPiT0->GetXaxis()->SetRangeUser(0.2,10.);
     hSigmaPiT0->FitSlicesY();
@@ -1405,7 +1435,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     hSigmaPiT0_2->SetLineColor(2);
     hSigmaPiT0_2->SetLineWidth(2);  
 
-    TH2F * hSigmaKaT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_kaon"); 
+    TH2F * hSigmaKaT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_kaon");
+    hSigmaKaT0->SetTitle(Form("%i: n#sigma_{TOF} kaon vs p, with start time",runNumber));
     hSigmaKaT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaKaT0->GetXaxis()->SetRangeUser(0.2,10.);
     hSigmaKaT0->FitSlicesY();
@@ -1416,7 +1447,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     hSigmaKaT0_2->SetLineColor(2);
     hSigmaKaT0_2->SetLineWidth(2); 
  
-    TH2F * hSigmaProT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_proton"); 
+    TH2F * hSigmaProT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_proton");
+    hSigmaProT0->SetTitle(Form("%i: n#sigma_{TOF} proton vs p, with start time",runNumber));
     hSigmaProT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaProT0->GetXaxis()->SetRangeUser(0.2,10.);
     hSigmaProT0->FitSlicesY();
@@ -1438,7 +1470,9 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   gPad->SetGridy();
   if (hSigmaPi){
     hSigmaPi->Draw("colz");
-    profSigmaPi->Draw("same");
+    hSigmaPi_1->Draw("same");
+    hSigmaPi_2->Draw("same");
+    //profSigmaPi->Draw("same");
   }
   cPidPerformance3->cd(2);
   gPad->SetLogz();
@@ -1447,7 +1481,9 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   gPad->SetGridy();
   if (hSigmaKa){
     hSigmaKa->Draw("colz");
-    profSigmaKa->Draw("same");
+    hSigmaKa_1->Draw("same");
+    hSigmaKa_2->Draw("same");
+    //profSigmaKa->Draw("same");
   }
   cPidPerformance3->cd(3);
   gPad->SetGridx();
@@ -1456,7 +1492,9 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
   gPad->SetLogx();
   if (hSigmaPro){
     hSigmaPro->Draw("colz");
-    profSigmaPro->Draw("same");
+    hSigmaPro_1->Draw("same");
+    hSigmaPro_2->Draw("same");
+    //profSigmaPro->Draw("same");
   }
 
   if(includeStartTime && pidQAdir){   
@@ -1498,15 +1536,21 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 
   if (hSigmaPi){
     hSigmaPi->Write();
-    profSigmaPi->Write();
+    hSigmaPi_1->Write();
+    hSigmaPi_2->Write();
+    //    profSigmaPi->Write();
   }
   if (hSigmaKa){ 
     hSigmaKa->Write();
-    profSigmaKa->Write();
+    hSigmaKa_1->Write();
+    hSigmaKa_2->Write();
+//    profSigmaKa->Write();
   }
   if (hSigmaPro){
     hSigmaPro->Write();
-    profSigmaPro->Write();
+    hSigmaPro_1->Write();
+    hSigmaPro_2->Write();
+//    profSigmaPro->Write();
   }
   if(includeStartTime && pidQAdir){
     hSigmaPiT0->Write();
@@ -1522,33 +1566,33 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
     hSigmaProT0_2->Write();
   }
     
-
-  if (displayAll){
-    TCanvas* cProfile = new TCanvas("cProfile","cProfile",50,50,750,550);
-    gStyle->SetOptStat(0);
-    hTOFmatchedDzVsStrip->Draw("colz");
-    Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
-    Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
-    TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile",binmin, binmax);
-    hDzProfile->SetLineWidth(3);
-    hDzProfile->Draw("same");
-    cProfile->SetGridx();
-    cProfile->SetGridy();
-    TString plotDir(Form("Plots_run%d",runNumber));
-    gSystem->Exec(Form("mkdir %s",plotDir.Data()));
+  TCanvas* cProfile = new TCanvas("cProfile","cProfile",50,50,750,550);
+  gStyle->SetOptStat(0);
+  hTOFmatchedDzVsStrip->SetTitle(Form("%i: Dz vs strip (#eta)",runNumber));
+  hTOFmatchedDzVsStrip->Draw("colz");
+  Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
+  Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
+  TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile",binmin, binmax);
+  hDzProfile->SetLineWidth(3);
+  hDzProfile->Draw("same");
+  cProfile->SetGridx();
+  cProfile->SetGridy();
+    
+  //Save png files
+  TString plotDir(Form("Plots_run%d",runNumber));
+  gSystem->Exec(Form("mkdir %s",plotDir.Data()));
+  cMatchingPerformance->Print(Form("%s/Matching.png",plotDir.Data()));
+  cResiduals->Print(Form("%s/Residuals.png",plotDir.Data()));
+  cProfile->Print(Form("%s/ProfileDZvsStripNumber.png",plotDir.Data()));
+  cPidPerformance3->Print(Form("%s/PID_sigmas.png",plotDir.Data()));
+  if(includeStartTime && pidQAdir)
+    cPidPerformance3T0->Print(Form("%s/%i_PID_sigmaStartTime.png", plotDir.Data()));
+  if (displayAll) {
     cPidPerformance->Print(Form("%s/PID.png",plotDir.Data()));
     cPidPerformance2->Print(Form("%s/PID_ExpTimes.png",plotDir.Data()));
-    cPidPerformance3->Print(Form("%s/PID_sigmas.png",plotDir.Data()));
-    if(includeStartTime && pidQAdir)
-      cPidPerformance3T0->Print(Form("%s/%i_PID_sigmaStartTime.png", plotDir.Data()));  
-    cMatchingPerformance->Print(Form("%s/Matching.png",plotDir.Data()));
-    residuals->Print(Form("%s/Residuals.png",plotDir.Data()));
-    cProfile->Print(Form("%s/ProfileDZvsStripNumber.png",plotDir.Data()));
-    if (displayAll) {
-      cPidPerformanceTh->Print(Form("%s/PID_theoreticalTimes.png",plotDir.Data()));
-      cT0detector->Print(Form("%s/T0Detector.png",plotDir.Data()));
-      cTrackProperties->Print(Form("%s/TrackProperties.png",plotDir.Data()));
-    }
+    cPidPerformanceTh->Print(Form("%s/PID_theoreticalTimes.png",plotDir.Data()));
+    cT0detector->Print(Form("%s/T0Detector.png",plotDir.Data()));
+    cTrackProperties->Print(Form("%s/TrackProperties.png",plotDir.Data()));
   }
   fout->cd();
   fout->Close();
