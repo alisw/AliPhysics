@@ -682,7 +682,7 @@ AliFMDHistCollector::VtxBin::SetupForData(TH2*           coverage,
     fFirstBin[iIdx] = first;
     fLastBin[iIdx]  = last;
 
-    if (fHitMap) { 
+    if (doHitMaps) { 
       TH2* h = fHitMap->Get(d, r);
       h->SetDirectory(0);
       h->SetName(Form("hitMapFMD%d%c", d, r));
