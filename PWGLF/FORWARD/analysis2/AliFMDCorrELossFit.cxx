@@ -1324,6 +1324,7 @@ AliFMDCorrELossFit::GetStacks(Bool_t   err,
     // TH1D* hSigmaN = MakeHist(fEtaAxis,a->GetName(), "sigman", color);
     TH1* hN      = MakeHist(fEtaAxis,a->GetName(), "n",      color);
     TH1* hA[maxN];
+    for (Int_t j = 0; j < maxN; j++) hA[j] = 0;
     const char* ho = (rel || !err ? "hist" : "e");
     sChi2nu->Add(hChi,   "hist"); // 0
     sC     ->Add(hC,     ho);     // 1

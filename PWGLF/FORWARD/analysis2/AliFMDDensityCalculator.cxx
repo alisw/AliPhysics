@@ -708,11 +708,10 @@ AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
   TAxis eta(axis.GetNbins(),
 	    axis.GetXmin(),
 	    axis.GetXmax());
-
-  if(cor) 
-    eta.Set(cor->GetEtaAxis().GetNbins(), 
-	    cor->GetEtaAxis().GetXmin(), 
-	    cor->GetEtaAxis().GetXmax());
+  
+  eta.Set(cor->GetEtaAxis().GetNbins(), 
+	  cor->GetEtaAxis().GetXmin(), 
+	  cor->GetEtaAxis().GetXmax());
 
   Int_t nEta = eta.GetNbins();
   fFMD1iMax.Set(nEta);

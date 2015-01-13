@@ -144,9 +144,9 @@ AliForwardFlowWeights::CalcPidWeight(Int_t id, Int_t type) const
   switch (TMath::Abs(id)) {
   case 211:  return 1.3; break; // pions 
   case 2212: return 1.0; break; // protons 
-  default:   return 0.7; break;
+  default:   /* return 0.7;*/ break;
   }
-  return 1;
+  return .7; // Was 1
 }
 //____________________________________________________________________
 Double_t
