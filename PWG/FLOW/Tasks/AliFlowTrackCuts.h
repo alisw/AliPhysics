@@ -20,6 +20,8 @@
 #include "AliMuonTrackCuts.h"  // XZhang 20120604
 #include "AliPID.h"
 #include "AliESDpid.h"
+#include "TCutG.h"
+
 
 class TBrowser;
 class TArrayD;
@@ -91,10 +93,17 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    kTOFbetaSimple, //simple TOF only cut
                    kTPCbayesian, //bayesian cutTPC
 		   kTPCNuclei,   // added by Natasha for Nuclei
-                   kTPCTOFNsigma // simple cut on combined tpc tof nsigma
+                   kTPCTOFNsigma, // simple cut on combined tpc tof nsigma
+                   kTPCTOFNsigmaPuritybased // purity>0.7 cut on combined tpc tof nsigma
                    };
 
   //setters (interface to AliESDtrackCuts)
+  Int_t MaxSharedITSClusterCuts(Int_t maxITSclusterShared, AliESDtrack* track);
+  Double_t MaxChi2perITSClusterCuts(Double_t maxITSChi2, AliESDtrack* track);
+
+  void SetMaxSharedITSCluster(Int_t b){fMaxITSclusterShared = b;}
+  void SetMaxChi2perITSCluster(Double_t b){fMaxITSChi2 = b;}
+    
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
   void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
@@ -239,6 +248,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //PID
   void SetPID(AliPID::EParticleType pid, PIDsource s=kTOFpid, Double_t prob=0.9)
              {fParticleID=pid; fPIDsource=s; fParticleProbability=prob; fCutPID=kTRUE; InitPIDcuts();}
+  void SetTPCTOFNsigmaPIDCutContours(Bool_t b,Double_t cMin,Double_t cMax){fUseTPCTOFNsigmaCutContours = b; fCentralityPercentileMin=cMin; fCentralityPercentileMax=cMax;}
   AliPID::EParticleType GetParticleID() const {return fParticleID;}
   Bool_t GetCutPID() const {return fCutPID;}
   void SetTPCpidCuts(const TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
@@ -280,7 +290,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
-  
+  void GetTPCTOFPIDContours();
   //gain equalization and recentering
   void SetVZEROgainEqualisation(TH1* g) {fVZEROgainEqualization=g;}
   void SetVZEROApol(Int_t ring, Float_t f) {fVZEROApol[ring]=f;}
@@ -333,9 +343,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
   Bool_t PassesTPCTOFNsigmaCut(const AliAODTrack* track); 
   Bool_t PassesTPCTOFNsigmaCut(const AliESDtrack* track);
+  Bool_t PassesTPCTOFNsigmaCutPuritybased(const AliAODTrack* track);
   Bool_t TPCTOFagree(const AliVTrack *track);
   // end part added by F. Noferini
-
+    
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
   AliMuonTrackCuts* fMuonTrackCuts;  // muon selection cuts // XZhang 20120604
@@ -377,6 +388,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
   Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
   
+  Int_t fCentralityPercentileMin; //centrality min
+  Int_t fCentralityPercentileMax; //centrality max
+    
   Bool_t  fCutPmdDet;   //cut on PMD detector plane 
   Int_t   fPmdDet;      // value of PMD detector plane
   Bool_t  fCutPmdAdc;   //cut on cluster ADC
@@ -422,6 +436,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fAllowTOFmismatchFlag; //allow TOFmismatch flag=1 in ESD
   Bool_t fRequireStrictTOFTPCagreement; //require stricter than TOFmismatch flag TOF-TPC agreement
   Bool_t fCutRejectElectronsWithTPCpid; //reject electrons with TPC pid
+  Bool_t fUseTPCTOFNsigmaCutContours;  // Flag to use purity based TPC-TOF nsigma cuts
 
   // part added by F. Noferini
   static const Int_t fgkPIDptBin = 20; // pT bins for priors
@@ -445,6 +460,24 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
   Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
+    
+    
+  //TPC TOF nsigma Purity based cut contours
+  TFile                 *fContoursFile;       //! contours file
+  TDirectory            *fCutContourList;     //! contour list
+  
+  Int_t  fMaxITSclusterShared;
+  Double_t  fMaxITSChi2;
+  
+    
+  TCutG                 *fCutContour[50];    //! TCutG contours
+  //TCutG                 *fCutContour_kaon[50];    //! TCutG contours
+  //TCutG                 *fCutContour_proton[50];    //! TCutG contours
+  TGraph                *fCutGraph[50];      //! graphs
+  //TGraph                *fCutGraph_kaon[50];      //! graphs
+  //TGraph                *fCutGraph_proton[50];      //! graphs
+    
+    
 
   ClassDef(AliFlowTrackCuts,15)
 };
