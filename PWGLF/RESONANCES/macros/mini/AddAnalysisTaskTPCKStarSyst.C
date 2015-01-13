@@ -40,7 +40,6 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
    Int_t       aodN = 0,
-   Int_t       StdQualityCut_filterbit==10,
    TString     outNameSuffix = ""
 )
 {  
@@ -62,13 +61,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
      task->SetUseCentralityPatch(aodN==49);
    }
-
+   
    if(PbPb2011CentFlat)
      task->SetUseCentralityPatchPbPb2011(PbPb2011CentFlat);
-   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);                      
+   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);        
    task->SelectCollisionCandidates(triggerMask);
-
-
 
 
    if (isPP) 
@@ -139,26 +136,26 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    if((!isMC) && (!enableSyst)){
      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStar.C");
-     if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN, StdQualityCut_filterbit)) return 0x0;
+     if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0;
    }
    if((isMC) && (!enableSyst)) {
      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarMC.C");
-     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313, aodN, StdQualityCut_filterbit)) return 0x0; //K*
-     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313, aodN, StdQualityCut_filterbit)) return 0x0; //anti-K* 
+     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
+     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
    }
    
    //for systematic checks
    if((!isMC) && (enableSyst))
      {
-       gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarSyst.C");
-       if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN, StdQualityCut_filterbit)) return 0x0;  
+   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarSyst.C");
+   if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0;  
      }
-   
+
    //for systematic checks
    if((isMC) && (enableSyst)) {
      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarSyst.C");
-     if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN, StdQualityCut_filterbit)) return 0x0; //K*
-     if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa,enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, -313, aodN, StdQualityCut_filterbit)) return 0x0; //anti-K* 
+     if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
+     if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa,enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
    }
    
    //
