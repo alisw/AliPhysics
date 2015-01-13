@@ -39,7 +39,7 @@
 */
 
 // Original version
-// Chinorat Kobdaj (kobdaj@g.sut.ac.th)
+// Chinorat Kobdaj <kobdaj@g.sut.ac.th> , Stefan Rossegger
 // Revised and adapted to newer AliITSUv1 versions
 // Mario Sitta <sitta@to.infn.it> - Nov 2014
 
