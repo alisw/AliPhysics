@@ -67,7 +67,7 @@ class Colt(str):
 
 
 ## Comment.
-class Comment:
+class Comment(object):
 
   def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
     assert first_line > 0 and last_line >= first_line, 'Wrong line numbers'
@@ -83,7 +83,18 @@ class Comment:
     return line >= self.first_line and line <= self.last_line
 
   def __str__(self):
-    return "<Comment for %s: [%d,%d:%d,%d] %s>" % (self.func, self.first_line, self.first_col, self.last_line, self.last_col, self.lines)
+    return "<%s for %s: [%d,%d:%d,%d] %s>" % ( \
+      self.__class__.__name__, self.func,
+      self.first_line, self.first_col, self.last_line, self.last_col,
+      self.lines)
+
+
+## Prepend comment.
+class PrependComment(Comment):
+
+  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
+    super(PrependComment, self).__init__( \
+      lines, first_line, first_col, last_line, last_col, indent, func)
 
 
 ## A data member comment.
