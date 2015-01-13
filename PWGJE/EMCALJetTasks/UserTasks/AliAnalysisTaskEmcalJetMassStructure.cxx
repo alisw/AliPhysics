@@ -199,22 +199,22 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   for (Int_t i = 0; i < fNcentBins; i++) {
     histName = TString::Format("fh3PtDRMass_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet};r;sum m",histName.Data());
-    fh3PtDRMass[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,101,-0.005,1.005);
+    fh3PtDRMass[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,111,-0.005,1.105);
     fOutput->Add(fh3PtDRMass[i]);
 
     histName = TString::Format("fh3PtDRRho_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet};r;sum #it{p}_{T}",histName.Data());
-    fh3PtDRRho[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,101,-0.005,1.005);
+    fh3PtDRRho[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,111,-0.005,1.105);
     fOutput->Add(fh3PtDRRho[i]);
 
     histName = TString::Format("fh3PtDRMassCorr_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet};r;sum m",histName.Data());
-    fh3PtDRMassCorr[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,101,-0.005,1.005);
+    fh3PtDRMassCorr[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,111,-0.005,1.105);
     fOutput->Add(fh3PtDRMassCorr[i]);
 
     histName = TString::Format("fh3PtDRRhoCorr_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet};r;sum #it{p}_{T}",histName.Data());
-    fh3PtDRRhoCorr[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,101,-0.005,1.005);
+    fh3PtDRRhoCorr[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsR,minR,maxR,111,-0.005,1.105);
     fOutput->Add(fh3PtDRRhoCorr[i]);
 
     histName = TString::Format("fh2PtMass_%d",i);

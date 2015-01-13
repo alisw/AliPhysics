@@ -17,6 +17,7 @@ AliEmcalParticle::AliEmcalParticle() :
   fPhi(0),
   fEta(0),
   fPt(0),
+  fM(0),
   fMatchedPtr(0)
 {
   // Default constructor.
@@ -34,6 +35,7 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
   fPhi(0),
   fEta(0),
   fPt(0),
+  fM(0),
   fMatchedPtr(0)
 {
   // Constructor.
@@ -47,7 +49,8 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
   if (fTrack) {
     fEta = fTrack->Eta();
     fPhi = fTrack->Phi();
-    fPt = fTrack->Pt();
+    fPt  = fTrack->Pt();
+    fM   = fTrack->M();
   } else {
     fCluster = dynamic_cast<AliVCluster*>(particle);
     if (fCluster) {
@@ -57,6 +60,7 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
       fEta = vect.Eta();
       fPhi = vect.Phi();
       fPt  = vect.Pt();
+      fM   = 0.;
     }
   }
 
@@ -78,6 +82,7 @@ AliEmcalParticle::AliEmcalParticle(const AliEmcalParticle &p) :
   fPhi(p.fPhi),
   fEta(p.fEta),
   fPt(p.fPt),
+  fM(p.fM),
   fMatchedPtr(p.fMatchedPtr)
 {
   // Copy constructor.
@@ -107,6 +112,7 @@ AliEmcalParticle &AliEmcalParticle::operator=(const AliEmcalParticle &p)
     fPhi        = p.fPhi;
     fEta        = p.fEta;
     fPt         = p.fPt;
+    fM          = p.fM;
     fMatchedPtr = p.fMatchedPtr;
 
     ResetMatchedObjects();
@@ -158,7 +164,7 @@ TLorentzVector &AliEmcalParticle::GetLorentzVector(const Double_t *vertex) const
   static TLorentzVector vect;
 
   if (fTrack) {
-    vect.SetPtEtaPhiM(fTrack->Pt(), fTrack->Eta(), fTrack->Phi(), M());
+    vect.SetPtEtaPhiM(fPt, fEta, fPhi, fM);
   }
   else if (fCluster && vertex) {
     fCluster->GetMomentum(vect, const_cast<Double_t*>(vertex));

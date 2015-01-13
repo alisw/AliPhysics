@@ -29,9 +29,9 @@ class AliEmcalParticle: public AliVParticle {
   Bool_t            XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return 1; }
   Double_t          OneOverPt() const { return 1./fPt; }
   Double_t          Phi()       const { return fPhi; }
-  Double_t          Theta()     const { return 0.; }
-  Double_t          E()         const { if (fTrack) return fTrack->E(); return fCluster->E(); }
-  Double_t          M()         const { if (fTrack) return fTrack->M(); return 0; }
+  Double_t          Theta()     const { return 2*TMath::ATan(TMath::Exp(-fEta));  }
+  Double_t          E()         const { Double_t p=P(); return TMath::Sqrt(M()*M()+p*p); }
+  Double_t          M()         const { return fM; }
   Double_t          Eta()       const { return fEta; }
   Double_t          Y()         const { if (fTrack) return fTrack->Y(); return fEta; }
   Short_t           Charge()    const { if (fTrack) return fTrack->Charge(); else return 0; }
@@ -70,6 +70,7 @@ class AliEmcalParticle: public AliVParticle {
   void              SetPt(Double_t pt)           { fPt  = pt ; }
   void              SetPhi(Double_t phi)         { fPhi = phi; }
   void              SetEta(Double_t eta)         { fEta = eta; }
+  void              SetM(Double_t m)             { fM   = m  ; }
 
  protected:
   TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
@@ -85,8 +86,9 @@ class AliEmcalParticle: public AliVParticle {
   Double_t          fPhi;                         //!phi
   Double_t          fEta;                         //!eta
   Double_t          fPt;                          //!pt
+  Double_t          fM;                           //!M
   TObjArray        *fMatchedPtr;                  //!pointer to array of matched tracks/clusters
 
-  ClassDef(AliEmcalParticle, 2) // Emcal particle class
+  ClassDef(AliEmcalParticle, 3) // Emcal particle class
 };
 #endif

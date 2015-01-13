@@ -7,8 +7,8 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   Double_t        ecms           = 2760.,
   const char     *tracksName     = "GenParticles",
   const char     *taskName       = "JetEmbeddingFromGenTask",
-  const Double_t  minPt          = 10,
-  const Double_t  maxPt          = 10,
+  const Double_t  minPt          = 0.15,
+  const Double_t  maxPt          = 1000,
   const Double_t  minEta         = -0.9,
   const Double_t  maxEta         = 0.9,
   const Double_t  minPhi         = 0,
@@ -16,11 +16,11 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   const Bool_t    copyArray      = kTRUE,
   const Bool_t    drawQA         = kTRUE,
   const char     *pythiaInfoName = "PythiaInfo",
-  Float_t            ptWeight        =0,
-  Int_t               kTune            =2,
-  Int_t               kColorReco     =1,
-  Float_t            kQuench        =4.4e6,
-  Int_t               kAnglePyquen = 2   
+  Float_t         ptWeight       = 0,
+  Int_t           kTune          = 2,
+  Int_t           kColorReco     = 1,
+  Float_t         kQuench        = 4.4e6,
+  Int_t           kAnglePyquen   = 2   
 )
 {
   AliGenerator *genGen = NULL;
@@ -40,15 +40,14 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   AliJetEmbeddingFromGenTask *task = AddTaskJetEmbeddingFromGen(genGen,tracksName,taskName,minPt,maxPt,minEta,maxEta,minPhi,maxPhi,copyArray,drawQA,pythiaInfoName);
 
   return task;
-
 }
 
 AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   AliGenerator   *genGen,
   const char     *tracksName     = "GenParticles",
   const char     *taskName       = "JetEmbeddingFromGenTask",
-  const Double_t  minPt          = 10,
-  const Double_t  maxPt          = 10,
+  const Double_t  minPt          = 0.15,
+  const Double_t  maxPt          = 1000,
   const Double_t  minEta         = -0.9,
   const Double_t  maxEta         = 0.9,
   const Double_t  minPhi         = 0,

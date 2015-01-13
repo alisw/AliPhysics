@@ -183,9 +183,9 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
     // Fill constituent info
     std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
     std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
-    jet_sub->SetNumberOfTracks(constituents_sub.size());
     fJetTask->FillJetConstituents(jet_sub, constituents_sub, fJetTask->GetTracks(), fJetTask->GetClusters(), constituents_unsub, 1, fParticlesSub);
-
+    jet_sub->SetNumberOfTracks(constituents_sub.size());
+    //    jet_sub->SetNumberOfTracks(constituents_unsub.size());  MV: leave committed. Cannot have gaps in case both tracks + clusters go into same array. Final decision pending
     jetCount++;
   }
 
