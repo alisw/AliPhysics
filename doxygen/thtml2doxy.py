@@ -439,6 +439,51 @@ def comment_classdesc(filename, comments):
     logging.warning('No comment found for class %s' % Colt(class_name_doxy).magenta())
 
 
+## Looks for a special ROOT ClassImp() entry.
+#
+#  Doxygen might get confused by `ClassImp()` entries as they are macros normally written without
+#  the ending `;`: this function wraps the definition inside a condition in order to make Doxygen
+#  ignore it.
+#
+#  @param filename Name of the current file
+#  @param comments Array of comments: new ones will be appended there
+def comment_classimp(filename, comments):
+
+  recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
+
+  line_num = 0
+  reclassimp = r'^(\s*)ClassImp\((.*?)\)\s*;?\s*$'
+
+  with open(filename, 'r') as fp:
+
+    for line in fp:
+
+      line_num = line_num + 1
+      mclassimp = re.search(reclassimp, line)
+      if mclassimp:
+
+        # Adjust indent
+        indent_len = len( mclassimp.group(1) )
+
+        logging.debug(
+          'Comment found for ' +
+          Colt( 'ClassImp(' ).magenta() +
+          Colt( mclassimp.group(2) ).cyan() +
+          Colt( ')' ).magenta() )
+
+        comments.append(PrependComment(
+          ['\cond CLASSIMP'],
+          line_num, 1, line_num, 1,
+          indent_len, 'ClassImp(%s)' % mclassimp.group(2)
+        ))
+
+        comments.append(PrependComment(
+          ['\endcond'],
+          line_num+1, 1, line_num+1, 1,
+          indent_len, 'ClassImp(%s)' % mclassimp.group(2)
+        ))
+
+
 ## Traverse the AST recursively starting from the current cursor.
 #
 #  @param cursor    A Clang parser cursor
@@ -485,6 +530,7 @@ def traverse_ast(cursor, filename, comments, recursion=0, in_func=False):
     traverse_ast(child_cursor, filename, comments, recursion+1, in_func)
 
   if recursion == 0:
+    comment_classimp(filename, comments)
     comment_classdesc(filename, comments)
 
 
@@ -705,11 +751,14 @@ def rewrite_comments(fhin, fhout, comments):
   skip_empty = False
   comm = None
   prev_comm = None
+  restore_lines = None
 
   rindent = r'^(\s*)'
 
-  def dump_comment_block(cmt):
+  def dump_comment_block(cmt, restore=None):
     text_indent = ''
+    ask_skip_empty = False
+
     for i in range(0, cmt.indent):
       text_indent = text_indent + ' '
 
@@ -722,7 +771,18 @@ def rewrite_comments(fhin, fhout, comments):
       fhout.write('\n')
 
     # Empty new line at the end of the comment
-    fhout.write('\n')
+    if not isinstance(cmt, PrependComment):
+      fhout.write('\n')
+      ask_skip_empty = True
+
+    # Restore lines if possible
+    if restore:
+      for lr in restore:
+        fhout.write(lr)
+        fhout.write('\n')
+
+    # Tell the caller whether it should skip the next empty line found
+    return ask_skip_empty
 
 
   for line in fhin:
@@ -738,12 +798,25 @@ def rewrite_comments(fhin, fhout, comments):
 
     if comm:
 
+      # First thing to check: are we in the same comment as before?
+      if comm is not prev_comm and isinstance(comm, Comment) and isinstance(prev_comm, Comment):
+
+        skip_empty = dump_comment_block(prev_comm, restore_lines)
+        in_comment = False
+        restore_lines = None
+        prev_comm = None  # we have just dumped it: pretend it never existed in this loop
+
+      #
+      # Check type of comment and react accordingly
+      #
+
       if isinstance(comm, MemberComment):
 
         # end comment block
         if in_comment:
-          dump_comment_block(prev_comm)
+          skip_empty = dump_comment_block(prev_comm, restore_lines)
           in_comment = False
+          restore_lines = None
 
         non_comment = line[ 0:comm.first_col-1 ]
 
@@ -796,28 +869,46 @@ def rewrite_comments(fhin, fhout, comments):
       elif isinstance(comm, RemoveComment):
         # End comment block and skip this line
         if in_comment:
-          dump_comment_block(prev_comm)
+          skip_empty = dump_comment_block(prev_comm, restore_lines)
           in_comment = False
+          restore_lines = None
 
       elif prev_comm is None:
 
-        # Beginning of a new comment block of type Comment
+        # Beginning of a new comment block of type Comment or PrependComment
         in_comment = True
 
-        # Extract the non-comment part and print it if it exists
-        non_comment = line[ 0:comm.first_col-1 ].rstrip()
-        if non_comment != '':
-          fhout.write( non_comment + '\n' )
+        if isinstance(comm, PrependComment):
+          # Prepare array of lines to dump right after the comment
+          restore_lines = [ line.rstrip('\n') ]
+        else:
+          # Extract the non-comment part and print it if it exists
+          non_comment = line[ 0:comm.first_col-1 ].rstrip()
+          if non_comment != '':
+            fhout.write( non_comment + '\n' )
+
+      elif isinstance(comm, Comment):
+
+        if restore_lines is not None:
+          # From the 2nd line on of comment to prepend
+          restore_lines.append( line.rstrip('\n') )
+
+      else:
+        assert False, 'Unhandled parser state. line=%d comm=%s prev_comm=%s' % \
+          (line_num, comm, prev_comm)
 
     else:
+
+      # Not a comment line
 
       if in_comment:
 
         # We have just exited a comment block of type Comment
-        dump_comment_block(prev_comm)
+        skip_empty = dump_comment_block(prev_comm, restore_lines)
         in_comment = False
-        skip_empty = True
+        restore_lines = None
 
+      # Dump the non-comment line
       line_out = line.rstrip('\n')
       if skip_empty:
         skip_empty = False
