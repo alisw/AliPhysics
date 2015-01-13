@@ -356,7 +356,6 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 	
 	TString par1name("cent");
 	par1name+=fCentEstimator;
-	cout<<par1name.Data()<<endl;
 	TParameter<Double_t>* par= dynamic_cast<TParameter<Double_t>*>(fAOD->FindListObject(par1name.Data()));
 	if(par)
 	{
@@ -414,6 +413,12 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 		else
 		{
 			AliESDEvent* esdevent=dynamic_cast<AliESDEvent*>(fAOD);
+			if(!esdevent)
+			{
+				AliFatal("Not a standard ESD");
+				return kFALSE;
+
+			}
 			AliESDtrackCuts::MultEstTrackType estType = esdevent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
 			Ncharged=AliESDtrackCuts::GetReferenceMultiplicity(esdevent,estType,fetarangeofmultiplicitycut);
 		}
@@ -422,8 +427,17 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 	{
 		AliAODEvent* aodevent=0x0;
 		aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+		if(!aodevent)
+		{
+			AliFatal("Not a standard AOD");
+			return kFALSE;
+		}
                 AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
-                if(!header) AliFatal("Not a standard AOD");
+                if(!header)
+		{ 
+			AliFatal("Not a standard AOD");
+			return kFALSE;
+		}
 
 		if(TMath::Abs(0.8-fetarangeofmultiplicitycut)<0.1)
 			Ncharged=header->GetRefMultiplicityComb08();
