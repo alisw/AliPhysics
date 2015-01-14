@@ -45,27 +45,6 @@ fHVThresholdFrac(0), fMVThresholdFrac(0), fTLThresholdFrac(0), fTRThresholdFrac(
 
 //---------------------------------------------------------------
 
-AliITSDCSAnalyzerSDD::AliITSDCSAnalyzerSDD(const AliITSDCSAnalyzerSDD& /* dcsa */): TObject(),
-fHVDelay(0),fMVDelay(0),fTLDelay(0),fTRDelay(0),fStTLDelay(0),fStTRDelay(0),fOKDelay(0),
-fHVThresholdFrac(0), fMVThresholdFrac(0), fTLThresholdFrac(0), fTRThresholdFrac(0)
-{
-// Copy constructor
-// Copies are not allowed. The method is protected to avoid misuse.
-  AliError("Copy constructor not allowed");
-} /*AliITSDCSAnalyzerSDD::AliITSDCSAnalyzerSDD*/
-
-//---------------------------------------------------------------
-
-AliITSDCSAnalyzerSDD& AliITSDCSAnalyzerSDD::operator=(const AliITSDCSAnalyzerSDD& /* dcsa */)
-{
-// Assigment operator
-// Assignment is not allowed. The method is protected to avoid misuse.
-  AliError("Assignment operator not allowed");
-  return *this;
-}/*AliITSDCSAnalyzerSDD::operator=*/
-
-//---------------------------------------------------------------
-
 AliITSDCSAnalyzerSDD::~AliITSDCSAnalyzerSDD()
 { 
 // Destructor
