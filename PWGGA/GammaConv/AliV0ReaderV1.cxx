@@ -91,7 +91,8 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fRelabelAODs(kFALSE),
 	fEventIsSelected(kFALSE),
 	fNumberOfPrimaryTracks(0),
-	fPeriodName("")
+	fPeriodName(""),
+	fUseMassToZero(kTRUE)
 {
 	// Default constructor
 
@@ -212,11 +213,11 @@ Bool_t AliV0ReaderV1::Notify()
 				TString fileName(file->GetName());
 				TObjArray *arr = fileName.Tokenize("/");
 				for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-				TObjString* testObjString = (TObjString*)arr->At(i);
-				if (testObjString->GetString().Contains("LHC")){
-					fPeriodName = testObjString->GetString();
-					i = arr->GetEntriesFast();
-				}
+					TObjString* testObjString = (TObjString*)arr->At(i);
+					if (testObjString->GetString().Contains("LHC")){
+						fPeriodName = testObjString->GetString();
+						i = arr->GetEntriesFast();
+					}
 				}
 			}
 		}
@@ -349,14 +350,12 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 				// Add Gamma to the TClonesArray
 
 				if(kUseAODConversionPhoton){
-				new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(fCurrentMotherKFCandidate);
-				AliAODConversionPhoton * currentConversionPhoton = (AliAODConversionPhoton*)(fConversionGammas->At(fConversionGammas->GetEntriesFast()-1));
-				currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
-				currentConversionPhoton->SetMassToZero();
-
-				}
-				else{
-				new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
+					new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(fCurrentMotherKFCandidate);
+					AliAODConversionPhoton * currentConversionPhoton = (AliAODConversionPhoton*)(fConversionGammas->At(fConversionGammas->GetEntriesFast()-1));
+					currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
+					if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
+				} else {
+					new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
 				}
 
 				delete fCurrentMotherKFCandidate;
@@ -830,6 +829,14 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
 
 }
 
+//************************************************************************
+// This function counts the number of primary tracks in the event, the 
+// implementation for ESD and AOD had to be different due to the different
+// filters which are already applied on AOD level the so-called filter 
+// bits, we tried to replicate the conditions in both but an exact match 
+// could not be reached. The cuts are similar to the ones used by the 
+// jet-group
+//************************************************************************
 //________________________________________________________________________
 void AliV0ReaderV1::CountTracks(){
 
