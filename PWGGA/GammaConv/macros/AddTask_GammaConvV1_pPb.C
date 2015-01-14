@@ -1065,89 +1065,133 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 || trainConfig == 181  ){
+		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
+			trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
+			trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
+			trainConfig == 181  ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 				} else if (generatorName.CompareTo("HIJING")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 				}
 			}
 		}   
-		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18|| trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178 || trainConfig == 180){
+		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18||
+			trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || 
+			trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178 || trainConfig == 180){
 			if (doWeighting){
-				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
+																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 			}
 			
 		}   
-		if ( trainConfig == 23 || trainConfig == 25 || trainConfig == 27 || trainConfig == 29 || trainConfig == 31 || trainConfig == 33 || trainConfig == 35 || trainConfig == 37|| trainConfig == 39|| trainConfig == 41 || trainConfig == 43 || trainConfig == 153 || trainConfig == 155 || trainConfig == 157 || trainConfig == 159 || trainConfig == 161 || trainConfig == 163 || trainConfig == 165 || trainConfig == 167 || trainConfig == 169 || trainConfig == 171){
+		if ( trainConfig == 23 || trainConfig == 25 || trainConfig == 27 || trainConfig == 29 || trainConfig == 31 || trainConfig == 33 || trainConfig == 35 || trainConfig == 37|| trainConfig == 39||
+			trainConfig == 41 || trainConfig == 43 || trainConfig == 153 || trainConfig == 155 || trainConfig == 157 || trainConfig == 159 || trainConfig == 161 || trainConfig == 163 ||
+			trainConfig == 165 || trainConfig == 167 || trainConfig == 169 || trainConfig == 171){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_0020000V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_0020000V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020000V0A","Eta_Fit_Data_pPb_5023GeV_0020000V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_0020000V0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_0020000V0A", "", "Pi0_Fit_Data_pPb_5023GeV_0020000V0A",
+																				 "Eta_Fit_Data_pPb_5023GeV_0020000V0A");
 				} else if (generatorName.CompareTo("HIJING")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_0020000V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_0020000V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020000V0A","Eta_Fit_Data_pPb_5023GeV_0020000V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_0020000V0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_0020000V0A", "", "Pi0_Fit_Data_pPb_5023GeV_0020000V0A",
+																				 "Eta_Fit_Data_pPb_5023GeV_0020000V0A");
 				}
 			}
 		}   
-		if ( trainConfig == 24 || trainConfig == 26 || trainConfig == 28 || trainConfig == 30 || trainConfig == 32 || trainConfig == 34 || trainConfig == 36 || trainConfig == 38|| trainConfig == 40|| trainConfig == 42|| trainConfig == 44 || trainConfig == 154 || trainConfig == 156 || trainConfig == 158 || trainConfig == 160 || trainConfig == 162 || trainConfig == 164 || trainConfig == 166 || trainConfig == 168 || trainConfig == 170 || trainConfig == 172){
+		if ( trainConfig == 24 || trainConfig == 26 || trainConfig == 28 || trainConfig == 30 || trainConfig == 32 || trainConfig == 34 || trainConfig == 36 || trainConfig == 38|| trainConfig == 40||
+			trainConfig == 42|| trainConfig == 44 || trainConfig == 154 || trainConfig == 156 || trainConfig == 158 || trainConfig == 160 || trainConfig == 162 || trainConfig == 164 || 
+			trainConfig == 166 || trainConfig == 168 || trainConfig == 170 || trainConfig == 172){
 			if (doWeighting){
-				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_0020000V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_0020000V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020000V0A","Eta_Fit_Data_pPb_5023GeV_0020000V0A");
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_0020000V0A",
+																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_0020000V0A", "", "Pi0_Fit_Data_pPb_5023GeV_0020000V0A",
+																			 "Eta_Fit_Data_pPb_5023GeV_0020000V0A");
 			}
 		}   
-		if ( trainConfig == 45 || trainConfig == 47 || trainConfig == 49 || trainConfig == 51 || trainConfig == 53 || trainConfig == 55 || trainConfig == 57 || trainConfig == 59|| trainConfig == 61|| trainConfig == 63 || trainConfig == 65 ){
+		if ( trainConfig == 45 || trainConfig == 47 || trainConfig == 49 || trainConfig == 51 || trainConfig == 53 || trainConfig == 55 || trainConfig == 57 || trainConfig == 59|| trainConfig == 61||
+			trainConfig == 63 || trainConfig == 65 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "", "Pi0_Fit_Data_pPb_5023GeV_2040V0A",
+																				 "Eta_Fit_Data_pPb_5023GeV_2040V0A");
 				} else if (generatorName.CompareTo("HIJING")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_2040V0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "", "Pi0_Fit_Data_pPb_5023GeV_2040V0A", "Eta_Fit_Data_pPb_5023GeV_2040V0A");
 				}
 			}
 		}   
-		if ( trainConfig == 46 || trainConfig == 48 || trainConfig == 50 || trainConfig == 52 || trainConfig == 54 || trainConfig == 56 || trainConfig == 58 || trainConfig == 60|| trainConfig == 62|| trainConfig == 64|| trainConfig == 66){
+		if ( trainConfig == 46 || trainConfig == 48 || trainConfig == 50 || trainConfig == 52 || trainConfig == 54 || trainConfig == 56 || trainConfig == 58 || trainConfig == 60|| trainConfig == 62||
+			trainConfig == 64|| trainConfig == 66){
 			if (doWeighting){
-				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A",
+																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
 			}
 		}   
-		if ( trainConfig == 67 || trainConfig == 69 || trainConfig == 71 || trainConfig == 73 || trainConfig == 75 || trainConfig == 77 || trainConfig == 79 || trainConfig == 81 || trainConfig == 83 || trainConfig == 85 || trainConfig == 87 ){
+		if ( trainConfig == 67 || trainConfig == 69 || trainConfig == 71 || trainConfig == 73 || trainConfig == 75 || trainConfig == 77 || trainConfig == 79 || trainConfig == 81 || trainConfig == 83 ||
+			trainConfig == 85 || trainConfig == 87 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "", "Pi0_Fit_Data_pPb_5023GeV_4060V0A",
+																				 "Eta_Fit_Data_pPb_5023GeV_4060V0A");
 				} else if (generatorName.CompareTo("HIJING")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_4060V0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
 				}
 			}
 		}   
-		if ( trainConfig == 68 || trainConfig == 70 || trainConfig == 72 || trainConfig == 74 || trainConfig == 76 || trainConfig == 78 || trainConfig == 80 || trainConfig == 82 || trainConfig == 84 || trainConfig == 86 || trainConfig == 88){
+		if ( trainConfig == 68 || trainConfig == 70 || trainConfig == 72 || trainConfig == 74 || trainConfig == 76 || trainConfig == 78 || trainConfig == 80 || trainConfig == 82 || trainConfig == 84 ||
+			trainConfig == 86 || trainConfig == 88){
 			if (doWeighting){
-				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A",
+																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
 			}
 		}
-		if ( trainConfig == 89 || trainConfig == 91 || trainConfig == 93 || trainConfig == 95 || trainConfig == 97 || trainConfig == 99 || trainConfig == 101 || trainConfig == 103 || trainConfig == 105 || trainConfig == 107 || trainConfig == 109 ){
+		if ( trainConfig == 89 || trainConfig == 91 || trainConfig == 93 || trainConfig == 95 || trainConfig == 97 || trainConfig == 99 || trainConfig == 101 || trainConfig == 103 || 
+			trainConfig == 105 || trainConfig == 107 || trainConfig == 109 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "", "Pi0_Fit_Data_pPb_5023GeV_6080V0A",
+																				 "Eta_Fit_Data_pPb_5023GeV_6080V0A");
 				} else if (generatorName.CompareTo("HIJING")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_6080V0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "", "Pi0_Fit_Data_pPb_5023GeV_6080V0A", "Eta_Fit_Data_pPb_5023GeV_6080V0A");
 				}
 			}
 		}   
-		if ( trainConfig == 90 || trainConfig == 92 || trainConfig == 94 || trainConfig == 96 || trainConfig == 98 || trainConfig == 100 || trainConfig == 102 || trainConfig == 104 || trainConfig == 106 || trainConfig == 108 || trainConfig == 108 ){
+		if ( trainConfig == 90 || trainConfig == 92 || trainConfig == 94 || trainConfig == 96 || trainConfig == 98 || trainConfig == 100 || trainConfig == 102 || trainConfig == 104 ||
+			trainConfig == 106 || trainConfig == 108 || trainConfig == 108 ){
 			if (doWeighting){
-				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A",
+																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "", "Pi0_Fit_Data_pPb_5023GeV_6080V0A",
+																			 "Eta_Fit_Data_pPb_5023GeV_6080V0A");
 			}
 		}
-		if ( trainConfig == 111 || trainConfig == 113 || trainConfig == 115 || trainConfig == 117 || trainConfig == 119 || trainConfig == 121 || trainConfig == 123 || trainConfig == 125 || trainConfig == 127 || trainConfig == 129 || trainConfig == 131 ){
+		if ( trainConfig == 111 || trainConfig == 113 || trainConfig == 115 || trainConfig == 117 || trainConfig == 119 || trainConfig == 121 || trainConfig == 123 || trainConfig == 125 ||
+			trainConfig == 127 || trainConfig == 129 || trainConfig == 131 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A",
+																				 "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "", "Pi0_Fit_Data_pPb_5023GeV_60100V0A",
+																				 "Eta_Fit_Data_pPb_5023GeV_60100V0A");
 				} else if (generatorName.CompareTo("HIJING")==0){
-					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_60100V0A",
+																				 "Eta_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
 				}
 			}
 		}   
-		if ( trainConfig == 112 || trainConfig == 114 || trainConfig == 116 || trainConfig == 118 || trainConfig == 120 || trainConfig == 122 || trainConfig == 124 || trainConfig == 126 || trainConfig == 128 || trainConfig == 130 || trainConfig == 130){
+		if ( trainConfig == 112 || trainConfig == 114 || trainConfig == 116 || trainConfig == 118 || trainConfig == 120 || trainConfig == 122 || trainConfig == 124 || trainConfig == 126 || 
+			trainConfig == 128 || trainConfig == 130 || trainConfig == 130){
 			if (doWeighting){
-				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A",
+																			"Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "", "Pi0_Fit_Data_pPb_5023GeV_60100V0A",
+																			"Eta_Fit_Data_pPb_5023GeV_60100V0A");
 			}
 		}
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
