@@ -487,7 +487,7 @@ namespace EmcalHJetMassAnalysis {
         for (Int_t i = 0; i < n; i++) {
           AliVParticle *vp2 = static_cast<AliVParticle*>(jet->TrackAt(i, jCont->GetParticleContainer()->GetArray()));
           if(!vp2) continue;
-          if(vp->Phi()==vp2->Phi()) break;
+          if(vp->Phi()==vp2->Phi()) return jet;
         }
       }
     }
