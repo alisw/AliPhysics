@@ -1616,9 +1616,8 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
       delete localendladdercarbonfibertrans[i];
   for(Int_t i=0; i<3; i++) delete localladdercablerot[i];
   for(Int_t i=0; i<klocalladdersidecablesnumber; i++){
-	for(Int_t j=0; j<klocalladdercombitransnumber; j++)
-		delete localladdercablecombitransmatrix[i][j];
-		delete []localladdercablecombitransmatrix[i];
+    for(Int_t j=0; j<klocalladdercombitransnumber; j++)delete localladdercablecombitransmatrix[i][j];
+    delete []localladdercablecombitransmatrix[i];
   }
   delete localendladdercliprot;
   delete localendladdercliptrans;

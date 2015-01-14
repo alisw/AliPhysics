@@ -821,7 +821,12 @@ void AliITSInitGeometry::DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
     mod2 += kLadPerLayer[lay]*kDetPerLadder[lay];
     lay++;
   } while(mod2<=mod); // end while
-  if(lay>6) Error("DecodeDetectorLayers","lay=%d>6",lay);
+  if(lay>6) {
+    AliError(Form("lay=%d>6 - setting ladder and detector number to zero",lay));
+    lad = 0;
+    det = 0;
+    return;
+  }
 
   mod2 = kLadPerLayer[lay-1]*kDetPerLadder[lay-1] - mod2+mod;
   lad = mod2/kDetPerLadder[lay-1];
