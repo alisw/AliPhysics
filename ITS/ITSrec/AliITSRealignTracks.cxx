@@ -1218,9 +1218,9 @@ Bool_t AliITSRealignTracks::AlignVolumesITS(const TArrayI *volids, const TArrayI
 	    layer=(Int_t)AliGeomManager::VolUIDToLayerSafe(volpArray->At(point),module);  
 	    //printf("Number of common tracks: %d \n",fCorrModules[layer-AliGeomManager::kFirstLayer][module]);
 	    fCorrModules[layer-AliGeomManager::kFirstLayer][module]+=frac;
-	    delete volparray;
-	    delete volpArray;
 	  }
+	  delete volparray;
+	  delete volpArray;
 	}
        	else { 
 	  delete volparray;
