@@ -75,7 +75,7 @@ AliJSONValue* AliEMCALConfiguration::GetValue(const char *key) const {
   return val->GetValue();
 }
 
-const char* AliEMCALConfiguration::CreateJSONString() const {
+std::string AliEMCALConfiguration::CreateJSONString() const {
   std::stringstream jsonbuilder;
   jsonbuilder << "{";
   TIter confentries(fParams);

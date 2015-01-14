@@ -8,6 +8,7 @@
 #ifndef _ALIEMCALCONFIGHANDLER_H_
 #define _ALIEMCALCONFIGHANDLER_H_
 
+#include <string>
 #include <TObject.h>
 
 class AliEMCALConfiguration;
@@ -21,8 +22,8 @@ public:
 
   AliEMCALConfiguration *CreateConfiguration(const char *name);
   void AddParam(const char *configName, const char *key, AliJSONValue *value);
-  const char *GetConfigurationString() const;
-  const char *GetConfigurationString(const char *configname) const;
+  std::string GetConfigurationString() const;
+  std::string GetConfigurationString(const char *configname) const;
   AliEMCALConfiguration *FindConfiguration(const char *configName) const;
 
 protected:
