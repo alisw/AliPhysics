@@ -39,6 +39,8 @@ namespace EmcalHJetMassAnalysis {
     void                                Terminate(Option_t *option);
 
     //Setters
+    void SetDoHJetAna(Bool_t b)                                        { fDoHJetAna         = b   ; }
+    void SetDoNSHJetAna(Bool_t b)                                      { fDoNSHJetAna       = b   ; }
     void SetJetContainerBase(Int_t c)                                  { fContainerBase     = c   ; }
     void SetJetContainerUnsub(Int_t c)                                 { fContainerUnsub    = c   ; }
     void SetMinFractionShared(Double_t f, Bool_t useUnsubJet = kFALSE) { fMinFractionShared = f   ; fUseUnsubJet = useUnsubJet; }
@@ -53,12 +55,16 @@ namespace EmcalHJetMassAnalysis {
     Bool_t                              RetrieveEventObjects();
     Bool_t                              Run();
     Bool_t                              FillHJetHistograms(const AliVParticle *vp, const AliEmcalJet *jet);
+    Bool_t                              FillHJetHistogramsWithNS(const AliVParticle *vp, const AliEmcalJet *jet);
+    AliEmcalJet                        *FindNearSideJet(const AliVParticle *vp);
 
     Double_t                            GetJetMass(const AliEmcalJet *jet) const;
     Double_t                            GetDeltaPhi(const AliVParticle *vp, const AliEmcalJet* jet) const;
     Double_t                            GetDeltaPhi(Double_t phi1,Double_t phi2) const; 
     AliVParticle                       *GetSingleInclusiveTT(AliParticleContainer *pCont, Double_t ptmin, Double_t ptmax) const;
 
+    Bool_t                              fDoHJetAna;                  // do normal h-jet analysis
+    Bool_t                              fDoNSHJetAna;                // do NS h-jet analysis
     Int_t                               fContainerBase;              // jets to be analyzed
     Int_t                               fContainerUnsub;             // unsubtracted jets
     Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -85,11 +91,16 @@ namespace EmcalHJetMassAnalysis {
     TH3F            **fh3PtJet1VsRatVsHPtTagged;          //!tagged jets pt vs mass/pt vs track pt
     TH3F            **fh3PtJet1VsRatVsHPtTaggedMatch;     //!tagged jets pt vs mas/pts vs track pt matched to MC
 
+    THnSparse       **fhnAllSel;                          //!all jets after std selection pt vs mass vs track pt vs mass_NS
+    THnSparse       **fhnAllSelMatch;                     //!all jets after std selection pt vs mass vs track pt vs mass_NS matched to MC
+    THnSparse       **fhnTagged;                          //!tagged jets pt vs mass vs track pt vs mass_NS
+    THnSparse       **fhnTaggedMatch;                     //!tagged jets pt vs mass vs track pt vs mass_NS matched to MC
+
   private:
     AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
     AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalHJetMass, 6)
+    ClassDef(AliAnalysisTaskEmcalHJetMass, 7)
       };
 }
 #endif
