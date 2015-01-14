@@ -383,7 +383,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       
       if(fCreateTree) {      
 	fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-	if(jetS && jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
+	if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
 	else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
 	fArea = (Float_t)jet1->Area();
 	fAreaPhi = (Float_t)jet1->AreaPhi();

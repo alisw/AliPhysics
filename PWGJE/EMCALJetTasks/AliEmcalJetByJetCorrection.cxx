@@ -162,7 +162,7 @@ void AliEmcalJetByJetCorrection::Init() {
 
     fh3JetPtDRTrackPt->GetXaxis()->SetRange(binMin,binMax);
     TH2D *h2 = dynamic_cast<TH2D*>(fh3JetPtDRTrackPt->Project3D("zy"));
-    h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
+    if(h2) h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
     fCollTemplates.Add(h2);
     counter++;
   }
