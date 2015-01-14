@@ -61,32 +61,32 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
-  fh3MSubPtTrueDR(0x0),
-  fh3MTruePtTrueDR(0x0),
-  fh3PtTrueDeltaMDR(0x0),
-  fh3PtTrueDeltaMRelDR(0x0),
+  fh3MSubPtTrueLeadPt(0x0),
+  fh3MTruePtTrueLeadPt(0x0),
+  fh3PtTrueDeltaMLeadPt(0x0),
+  fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0)
 {
   // Default constructor.
 
-  fh2MSubMatch         = new TH2F*[fNcentBins];
-  fh2MSubPtRawAll      = new TH2F*[fNcentBins];
-  fh3MSubPtRawDRMatch  = new TH3F*[fNcentBins];
-  fh3MSubPtTrueDR      = new TH3F*[fNcentBins];
-  fh3MTruePtTrueDR     = new TH3F*[fNcentBins];
-  fh3PtTrueDeltaMDR    = new TH3F*[fNcentBins];
-  fh3PtTrueDeltaMRelDR = new TH3F*[fNcentBins];
-  fhnMassResponse      = new THnSparse*[fNcentBins];
+  fh2MSubMatch             = new TH2F*[fNcentBins];
+  fh2MSubPtRawAll          = new TH2F*[fNcentBins];
+  fh3MSubPtRawDRMatch      = new TH3F*[fNcentBins];
+  fh3MSubPtTrueLeadPt      = new TH3F*[fNcentBins];
+  fh3MTruePtTrueLeadPt     = new TH3F*[fNcentBins];
+  fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
+  fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
+  fhnMassResponse          = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh2MSubMatch[i]         = 0;
-    fh2MSubPtRawAll[i]      = 0;
-    fh3MSubPtRawDRMatch[i]  = 0;
-    fh3MSubPtTrueDR[i]      = 0;
-    fh3MTruePtTrueDR[i]     = 0;
-    fh3PtTrueDeltaMDR[i]    = 0;
-    fh3PtTrueDeltaMRelDR[i] = 0;
-    fhnMassResponse[i]      = 0;
+    fh2MSubMatch[i]             = 0;
+    fh2MSubPtRawAll[i]          = 0;
+    fh3MSubPtRawDRMatch[i]      = 0;
+    fh3MSubPtTrueLeadPt[i]      = 0;
+    fh3MTruePtTrueLeadPt[i]     = 0;
+    fh3PtTrueDeltaMLeadPt[i]    = 0;
+    fh3PtTrueDeltaMRelLeadPt[i] = 0;
+    fhnMassResponse[i]          = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -118,32 +118,32 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
-  fh3MSubPtTrueDR(0x0),
-  fh3MTruePtTrueDR(0x0),
-  fh3PtTrueDeltaMDR(0x0),
-  fh3PtTrueDeltaMRelDR(0x0),
+  fh3MSubPtTrueLeadPt(0x0),
+  fh3MTruePtTrueLeadPt(0x0),
+  fh3PtTrueDeltaMLeadPt(0x0),
+  fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0)
 {
   // Standard constructor.
 
-  fh2MSubMatch         = new TH2F*[fNcentBins];
-  fh2MSubPtRawAll      = new TH2F*[fNcentBins];
-  fh3MSubPtRawDRMatch  = new TH3F*[fNcentBins];
-  fh3MSubPtTrueDR      = new TH3F*[fNcentBins];
-  fh3MTruePtTrueDR     = new TH3F*[fNcentBins];
-  fh3PtTrueDeltaMDR    = new TH3F*[fNcentBins];
-  fh3PtTrueDeltaMRelDR = new TH3F*[fNcentBins];
-  fhnMassResponse      = new THnSparse*[fNcentBins];
+  fh2MSubMatch             = new TH2F*[fNcentBins];
+  fh2MSubPtRawAll          = new TH2F*[fNcentBins];
+  fh3MSubPtRawDRMatch      = new TH3F*[fNcentBins];
+  fh3MSubPtTrueLeadPt      = new TH3F*[fNcentBins];
+  fh3MTruePtTrueLeadPt     = new TH3F*[fNcentBins];
+  fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
+  fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
+  fhnMassResponse          = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh2MSubMatch[i]         = 0;
-    fh2MSubPtRawAll[i]      = 0;
-    fh3MSubPtRawDRMatch[i]  = 0;
-    fh3MSubPtTrueDR[i]      = 0;
-    fh3MTruePtTrueDR[i]     = 0;
-    fh3PtTrueDeltaMDR[i]    = 0;
-    fh3PtTrueDeltaMRelDR[i] = 0;
-    fhnMassResponse[i]      = 0;
+    fh2MSubMatch[i]             = 0;
+    fh2MSubPtRawAll[i]          = 0;
+    fh3MSubPtRawDRMatch[i]      = 0;
+    fh3MSubPtTrueLeadPt[i]      = 0;
+    fh3MTruePtTrueLeadPt[i]     = 0;
+    fh3PtTrueDeltaMLeadPt[i]    = 0;
+    fh3PtTrueDeltaMRelLeadPt[i] = 0;
+    fhnMassResponse[i]          = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -192,11 +192,15 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   const Double_t minDRToLJ = 0.;
   const Double_t maxDRToLJ = 1.;
 
+  const Int_t nBinsPtLead = 20;
+  const Double_t minPtLead = 0.;
+  const Double_t maxPtLead = 20.;
+
   //Binning for THnSparse
   const Int_t nBinsSparse0 = 5;
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsDRToLJ};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minDRToLJ};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxDRToLJ};
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
 
   TString histName = "";
   TString histTitle = "";
@@ -219,28 +223,28 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
     fh3MSubPtRawDRMatch[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
     fOutput->Add(fh3MSubPtRawDRMatch[i]);
 
-    histName = Form("fh3MSubPtTrueDR_%d",i);
-    histTitle = Form("fh3MSubPtTrueDR_%d;%s;#it{p}_{T}",i,varName.Data());
-    fh3MSubPtTrueDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
-    fOutput->Add(fh3MSubPtTrueDR[i]);
+    histName = Form("fh3MSubPtTrueLeadPt_%d",i);
+    histTitle = Form("fh3MSubPtTrueLeadPt_%d;%s;#it{p}_{T}",i,varName.Data());
+    fh3MSubPtTrueLeadPt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsPtLead,minPtLead,maxPtLead);
+    fOutput->Add(fh3MSubPtTrueLeadPt[i]);
 
-    histName = Form("fh3MTruePtTrueDR_%d",i);
-    histTitle = Form("fh3MTruePtTrueDR_%d;%s;#it{p}_{T}",i,varName.Data());
-    fh3MTruePtTrueDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
-    fOutput->Add(fh3MTruePtTrueDR[i]);
+    histName = Form("fh3MTruePtTrueLeadPt_%d",i);
+    histTitle = Form("fh3MTruePtTrueLeadPt_%d;%s;#it{p}_{T}",i,varName.Data());
+    fh3MTruePtTrueLeadPt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt,nBinsPtLead,minPtLead,maxPtLead);
+    fOutput->Add(fh3MTruePtTrueLeadPt[i]);
 
-    histName = Form("fh3PtTrueDeltaMDR_%d",i);
-    histTitle = Form("fh3PtTrueDeltaMDR_%d;#it{p}_{T,true};#Delta %s",i,varName.Data());
-    fh3PtTrueDeltaMDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsDM,minDM,maxDM,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
-    fOutput->Add(fh3PtTrueDeltaMDR[i]);
+    histName = Form("fh3PtTrueDeltaMLeadPt_%d",i);
+    histTitle = Form("fh3PtTrueDeltaMLeadPt_%d;#it{p}_{T,true};#Delta %s",i,varName.Data());
+    fh3PtTrueDeltaMLeadPt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsDM,minDM,maxDM,nBinsPtLead,minPtLead,maxPtLead);
+    fOutput->Add(fh3PtTrueDeltaMLeadPt[i]);
 
-    histName = Form("fh3PtTrueDeltaMRelDR_%d",i);
-    histTitle = Form("fh3PtTrueDeltaMRelDR_%d;#it{p}_{T,true};Rel #Delta %s",i,varName.Data());
-    fh3PtTrueDeltaMRelDR[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,400,-1.,3.,nBinsDRToLJ,minDRToLJ,maxDRToLJ);
-    fOutput->Add(fh3PtTrueDeltaMRelDR[i]);
+    histName = Form("fh3PtTrueDeltaMRelLeadPt_%d",i);
+    histTitle = Form("fh3PtTrueDeltaMRelLeadPt_%d;#it{p}_{T,true};Rel #Delta %s",i,varName.Data());
+    fh3PtTrueDeltaMRelLeadPt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,400,-1.,3.,nBinsPtLead,minPtLead,maxPtLead);
+    fOutput->Add(fh3PtTrueDeltaMRelLeadPt[i]);
 
     histName = Form("fhnMassResponse_%d",i);
-    histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#Delta R_{LJ}",i,varName.Data(),varName.Data());
+    histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}",i,varName.Data(),varName.Data());
     fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
     fOutput->Add(fhnMassResponse[i]);
   }
@@ -372,11 +376,11 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	  if(fJetMassVarType==kRatMPt) {
 	    if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
 	  }
-	  fh3MSubPtTrueDR[fCentBin]->Fill(var,jet2->Pt(),drToLJ);
-	  fh3MTruePtTrueDR[fCentBin]->Fill(var2,jet2->Pt(),drToLJ);
-	  fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),var-var2,drToLJ);
-	  if(jet2->M()>0.) fh3PtTrueDeltaMRelDR[fCentBin]->Fill(jet2->Pt(),(var-var2)/var2,drToLJ);
-	  Double_t varsp[5] = {var,var2,ptjet1,jet2->Pt(),drToLJ};
+          fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,jet2->Pt(),jet1->MaxTrackPt());
+          fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,jet2->Pt(),jet1->MaxTrackPt());
+          fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(jet2->Pt(),var-var2,jet1->MaxTrackPt());
+          if(jet2->M()>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(jet2->Pt(),(var-var2)/var2,jet1->MaxTrackPt());
+	  Double_t varsp[5] = {var,var2,ptjet1,jet2->Pt(),jet1->MaxTrackPt()};
 	  fhnMassResponse[fCentBin]->Fill(varsp);
 	}
       }
