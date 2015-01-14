@@ -67,11 +67,8 @@ class AliEmcalParticle: public AliVParticle {
   void              SetMatchedObj(Int_t id, Double_t d)  { ResetMatchedObjects(); fMatchedIds[0] = id; fMatchedDist[0] = d; fNMatched = 1; }
   void              SetMatchedPtr(TObjArray *arr)        { fMatchedPtr = arr; }
 
-  void              SetPt(Double_t pt)           { fPt  = pt ; }
-  void              SetPhi(Double_t phi)         { fPhi = phi; }
-  void              SetEta(Double_t eta)         { fEta = eta; }
-  void              SetM(Double_t m)             { fM   = m  ; }
-
+  void              SetPtEtaPhiM(Double_t pt, Double_t eta, Double_t phi, Double_t m) {fPt=pt; fEta=eta; fPhi=phi; fM=m;}
+  
  protected:
   TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
 
