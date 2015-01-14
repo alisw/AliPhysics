@@ -58,6 +58,9 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure() :
   fh2PtMassCorr(0),
   fhnMassResponse(0),
   fhnMassResponseCorr(0),
+  fhnDeltaMass(0),     
+  fhnDeltaMassCorr(0), 
+  fSwitchResolutionhn(1),
   fh3JetPtDRTrackPt(0),
   fpUsedEfficiency(0)
 {
@@ -102,6 +105,9 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure(const
   fh2PtMassCorr(0),
   fhnMassResponse(0),
   fhnMassResponseCorr(0),
+  fhnDeltaMass(0),     
+  fhnDeltaMassCorr(0), 
+  fSwitchResolutionhn(1),
   fh3JetPtDRTrackPt(0),
   fpUsedEfficiency(0)
 {
@@ -160,6 +166,18 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   Double_t *binsM = new Double_t[nBinsM+1];
   for(Int_t i=0; i<=nBinsM; i++) binsM[i]=(Double_t)minM + (maxM-minM)/nBinsM*(Double_t)i ;
 
+  const Int_t nBinsdM  = 200;
+  const Double_t mindM = -30.;
+  const Double_t maxdM = 20.;
+  Double_t *binsdM = new Double_t[nBinsdM+1];
+  for(Int_t i=0; i<=nBinsdM; i++) binsdM[i]=(Double_t)mindM + (maxdM-mindM)/nBinsdM*(Double_t)i ;
+
+  const Int_t nBinsdMr  = 200;
+  const Double_t mindMr = -2.;
+  const Double_t maxdMr = 2.;
+  Double_t *binsdMr = new Double_t[nBinsdMr+1];
+  for(Int_t i=0; i<=nBinsdM; i++) binsdMr[i]=(Double_t)mindMr + (maxdMr-mindMr)/nBinsdMr*(Double_t)i ;
+
   const Int_t nBinsR  = 80;
   const Double_t minR = -0.005;
   const Double_t maxR = 0.795;
@@ -189,10 +207,14 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   }
 
   //Binning for THnSparse
-  const Int_t nBinsSparse0 = 5;
+  const Int_t nBinsSparse0 = 4;
   const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt};
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt};
+  const Int_t nBinsSparse1 = 5;
+  const Int_t nBins1[nBinsSparse1] = {nBinsdM,nBinsdMr,nBinsM,nBinsPt,nBinsPt};
+  const Double_t xmin1[nBinsSparse1]  = { mindM, mindMr, minM, minPt, minPt};
+  const Double_t xmax1[nBinsSparse1]  = { maxdM, maxdMr, maxM, maxPt, maxPt};
 
   TString histName = "";
   TString histTitle = "";
@@ -246,6 +268,19 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   if(fEJetByJetCorr) fpUsedEfficiency = fEJetByJetCorr->GetAppliedEfficiency();
   fOutput->Add(fpUsedEfficiency);
 
+  if(fSwitchResolutionhn){
+     histName = "fhnDeltaMass";
+     histTitle = Form("%s; #it{M}_{det} - #it{M}_{part} ;(#it{M}_{det} - #it{M}_{part})/#it{M}_{part};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+     fhnDeltaMass = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+     fOutput->Add(fhnDeltaMass);
+     
+     histName = "fhnDeltaMassCorr";
+     histTitle = Form("%s;#it{M}_{det} - #it{M}_{part} ;(#it{M}_{det} - #it{M}_{part})/#it{M}_{part}; #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
+     fhnDeltaMassCorr = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+     fOutput->Add(fhnDeltaMassCorr);
+     
+  }
+  
   TH1::AddDirectory(oldStatus);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -286,6 +321,9 @@ Bool_t AliAnalysisTaskEmcalJetMassStructure::FillHistograms()
       if(jPart) {
         Double_t var[4] = {mJet1,jPart->M(),ptJet1,jPart->Pt()};
         fhnMassResponse->Fill(var);
+         Double_t var1[5] = {mJet1-jPart->M(),(mJet1-jPart->M())/jPart->M(),jPart->M(), ptJet1,jPart->Pt()};
+         fhnDeltaMass->Fill(var1);
+       
       }
 
       // if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
@@ -348,6 +386,9 @@ Bool_t AliAnalysisTaskEmcalJetMassStructure::FillHistograms()
         if(jPart && jetCorr) {
           Double_t varCorr[4] = {jetCorr->M(),jPart->M(),jetCorr->Pt(),jPart->Pt()};
           fhnMassResponseCorr->Fill(varCorr);
+          Double_t varCorr1[5] = {jetCorr->M()-jPart->M(),(jetCorr->M()-jPart->M())/jPart->M(),jPart->M(),jetCorr->Pt(),jPart->Pt()};
+          fhnDeltaMassCorr->Fill(varCorr1);
+          
         }
       }//kMeanPtR method
     }//jet loop

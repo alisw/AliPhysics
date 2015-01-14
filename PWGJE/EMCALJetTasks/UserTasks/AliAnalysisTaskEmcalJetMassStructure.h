@@ -77,12 +77,16 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   THnSparse                          *fhnMassResponseCorr;         //! response matrix corrected
   TH3F                              **fh3JetPtDRTrackPt;           //! jet pt vs dr(jet axis, constituent) vs pT,track
   TProfile                           *fpUsedEfficiency;            //! efficiency used for correction
+  THnSparse                          *fhnDeltaMass;                //! resolution on mass matrix
+  THnSparse                          *fhnDeltaMassCorr;            //! resolution on mass matrix corrected
+
+  Bool_t                             fSwitchResolutionhn;          // switch on/off (default on) the 2 THnSparse for the mass resolution 
 
  private:
   AliAnalysisTaskEmcalJetMassStructure(const AliAnalysisTaskEmcalJetMassStructure&);            // not implemented
   AliAnalysisTaskEmcalJetMassStructure &operator=(const AliAnalysisTaskEmcalJetMassStructure&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 3)
+  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 4)
 };
 #endif
 
