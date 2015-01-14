@@ -1,6 +1,8 @@
-void MakeTPCResMisAlignment(){
-  // Create TClonesArray of residual misalignment objects for TPC
-  //
+/// \file MakeTPCResMisAlignment.C
+/// \brief Create TClonesArray of residual misalignment objects for TPC
+
+void MakeTPCResMisAlignment() {
+
   const char* macroname = "MakeTPCResMisAlignment.C";
 
   // Activate CDB storage and load geometry from CDB

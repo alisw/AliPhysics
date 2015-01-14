@@ -9,8 +9,9 @@
 
 
 void AliTPCDDL(Int_t eventNumber=0, Int_t eth=0){
-  //eth is a threshold.
-  //Digits stored into a file have an amplitude value greater than "eth"
+/// \file AliTPCDDL.C
+/// eth is a threshold.
+/// Digits stored into a file have an amplitude value greater than "eth"
 
   const char * inFile_new = "galice.root";
   AliRunLoader *rl = AliRunLoader::Open(inFile_new,"Event","read");

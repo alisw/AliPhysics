@@ -4,12 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCExBConical class                                                   //
-// date: 02/05/2010                                                       //
-// Authors: Maarian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger                    //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCExBConical
+/// \brief Calculates the space point distortions due to the conical shape of ALICE TPC
+///
+/// \author Maarian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger
+/// \date 02/05/2010
 
 #include "AliTPCCorrection.h"
 
@@ -48,11 +47,11 @@ protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:
-  Float_t fC1; // coefficient C1                 (compare Jim Thomas's notes for definitions)
-  Float_t fC2; // coefficient C2                 (compare Jim Thomas's notes for definitions)
-  Float_t  fConicalFactor;                  // empirical factor - transform conical angle to delta
-  Float_t  fConicalA[3];               // Conical shape parameterization A side
-  Float_t  fConicalC[3];               // Conical shape parameterization C side
+  Float_t fC1; ///< coefficient C1                 (compare Jim Thomas's notes for definitions)
+  Float_t fC2; ///< coefficient C2                 (compare Jim Thomas's notes for definitions)
+  Float_t  fConicalFactor;                  ///< empirical factor - transform conical angle to delta
+  Float_t  fConicalA[3];               ///< Conical shape parameterization A side
+  Float_t  fConicalC[3];               ///< Conical shape parameterization C side
 
   ClassDef(AliTPCExBConical,1);
 };

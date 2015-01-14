@@ -56,6 +56,7 @@
 #pragma link C++ class AliPHOSTriggerRawReader+;
 #pragma link C++ class AliPHOSTRURawReader+;
 
+#pragma link C++ class AliPHOSCpvRawDigiProducer+;
 #pragma link C++ class AliPHOSCpvRawStream+;
 #pragma link C++ class AliPHOSCpvParam+;
 #pragma link C++ class AliPHOSCpv3GConnection+;

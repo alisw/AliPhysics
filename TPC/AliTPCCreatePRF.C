@@ -1,7 +1,10 @@
+/// \file AliTPCCreatePRF.C
+/// create prf
+/// with given parameters
+
 void AliTPCCreatePRF()
 { 
-  //create prf
-  //with given parameters
+
   TFile *f=TFile::Open("AliTPCprf2d.root","recreate");
   AliTPCPRF2D prf;
   prf.SetPad(0.4,0.75);

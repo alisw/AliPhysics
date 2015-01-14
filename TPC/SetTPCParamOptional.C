@@ -1,6 +1,7 @@
-AliTPCParam *SetTPCParamOptional(){
+/// \file SetTPCParamOptional.C
+/// \brief Optional set of parameters
 
-  // optional set of parameters
+AliTPCParam *SetTPCParamOptional(){
 
   AliTPCParam *par=new AliTPCParamSR;
   par->SetTitle("optional"); //This is a dummy code ! Just to change something

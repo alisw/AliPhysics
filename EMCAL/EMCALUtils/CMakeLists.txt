@@ -30,6 +30,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliEMCALCalibTimeDepCorrection.cxx
     AliEMCALEMCGeometry.cxx
+    AliEMCALTriggerMapping.cxx
+    AliEMCALTriggerMappingV1.cxx
+    AliEMCALTriggerMappingV2.cxx
     AliEMCALGeometry.cxx
     AliEMCALGeoParams.cxx
     AliEMCALHistoUtilities.cxx

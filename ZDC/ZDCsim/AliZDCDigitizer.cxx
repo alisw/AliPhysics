@@ -476,21 +476,7 @@ void AliZDCDigitizer::ReadPMTGains()
   }
   fclose(fdata);
   
-  if(((fBeamType.CompareTo("P-P")) == 0) || ((fBeamType.CompareTo("p-p")) == 0)){
-    for(int i=0; i<12; i++){
-      if(beam[i]==0 && fBeamEnergy!=0.){
-        if(det[i]!=31 && det[i]!=32){
-	  for(Int_t j=0; j<5; j++) fPMGain[det[i]-1][j] = gain[i]*(aEne[i]/fBeamEnergy+bEne[i]);
-	}
-        else if(det[i] == 31) fPMGain[2][1] = gain[i]*(aEne[i]-fBeamEnergy*bEne[i]);
-	else if(det[i] == 32) fPMGain[2][2] = gain[i]*(aEne[i]-fBeamEnergy*bEne[i]);
-      }
-    }
-    //
-    printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for p-p @ %1.0f+%1.0f GeV: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);     
-  }
-  else if(((fBeamType.CompareTo("A-A")) == 0)){
+  if(((fBeamType.CompareTo("A-A")) == 0)){
     for(int i=0; i<12; i++){
       if(beam[i]==1){
         Float_t scalGainFactor = fBeamEnergy/2760.;
@@ -503,8 +489,8 @@ void AliZDCDigitizer::ReadPMTGains()
       }
      }  
      //
-     printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
+     printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for %s @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamType.Data(),fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
   }
   else if(((fBeamType.CompareTo("p-A")) == 0) || ((fBeamType.CompareTo("P-A")) == 0)){
     for(int i=0; i<12; i++){
@@ -524,8 +510,8 @@ void AliZDCDigitizer::ReadPMTGains()
 	}
       }
     }
-    printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
-      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
+    printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for %s: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fBeamType.Data(),fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
   }
   else if(((fBeamType.CompareTo("A-p")) == 0) || ((fBeamType.CompareTo("A-P")) == 0)){
     for(int i=0; i<12; i++){
@@ -545,9 +531,24 @@ void AliZDCDigitizer::ReadPMTGains()
 	}
       }
     }
-    printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for Pb-p: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
-      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
+    printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for %s: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fBeamType.Data(),fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
   }
+  else{ // Setting pp gains as default value
+    for(int i=0; i<12; i++){
+      if(beam[i]==0 && fBeamEnergy!=0.){
+        if(det[i]!=31 && det[i]!=32){
+	  for(Int_t j=0; j<5; j++) fPMGain[det[i]-1][j] = gain[i]*(aEne[i]/fBeamEnergy+bEne[i]);
+	}
+        else if(det[i] == 31) fPMGain[2][1] = gain[i]*(aEne[i]-fBeamEnergy*bEne[i]);
+	else if(det[i] == 32) fPMGain[2][2] = gain[i]*(aEne[i]-fBeamEnergy*bEne[i]);
+      }
+    }
+    //
+    printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for %s @ %1.0f+%1.0f GeV: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fBeamType.Data(),fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);     
+  }
+
 }
 
 //_____________________________________________________________________________

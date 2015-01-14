@@ -213,7 +213,8 @@ void AliTPCLaserTrack::LoadTracks()
     fgArrLaserTracks->AddAt(new AliTPCLaserTrack(*ltr),itrack);
   }
 
-  delete arrLaserTracks;
+  //do not delete - the entry is cached in the OCDB manager and is cleaned up there
+  //delete arrLaserTracks;
 }
 
 

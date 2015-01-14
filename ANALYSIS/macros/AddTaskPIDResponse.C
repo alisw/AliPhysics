@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
-                                    Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
+                                    Bool_t tuneOnData=kTRUE, Int_t recoPass=2,
                                     Bool_t cachePID=kFALSE, TString detResponse="",
                                     Bool_t useTPCEtaCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
                                     Bool_t useTPCMultiplicityCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
@@ -15,12 +15,13 @@ AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
   //case of multi input event handler (needed for mixing)
+  //WARNING: most probably this is not fully supported!
   if (inputHandler->IsA() == AliMultiInputEventHandler::Class()) {
     printf("========================================================================================\n");
     printf("PIDResponse: AliMultiInputEventHandler detected, initialising AliPIDResponseInputHandler\n");
     printf("========================================================================================\n");
     AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
-    
+
     AliPIDResponseInputHandler *pidResponseIH = new AliPIDResponseInputHandler();
     multiInputHandler->AddInputEventHandler(pidResponseIH);
 
@@ -32,16 +33,25 @@ AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
   // standard with task
   printf("========================================================================================\n");
   printf("PIDResponse: Initialising AliAnalysisTaskPIDResponse\n");
-  printf("========================================================================================\n");
-  
+
   AliAnalysisTaskPIDResponse *pidTask = new AliAnalysisTaskPIDResponse("PIDResponseTask");
 //   pidTask->SelectCollisionCandidates(AliVEvent::kMB);
   pidTask->SetIsMC(isMC);
-  if(isMC&&tuneOnData) {
-    pidTask->SetTuneOnData(kTRUE,recoPass);
-    // tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
-    // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);   
-    // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);   
+  if(isMC){
+    if (tuneOnData) {
+      printf("             Using MC with tune on data.\n");
+      printf("             !!! ATTENTION ATTENTION ATTENTION !!!\n");
+      printf("             You MUST make sure the reco pass set (%d) corresponds to the one this MC was produced for!\n",recoPass);
+      pidTask->SetTuneOnData(kTRUE,recoPass);
+      // tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
+      // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);
+      // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);
+    } else {
+      printf("             !!! ATTENTION ATTENTION ATTENTION !!!\n");
+      printf("             You are using MC without the tune on data option.\n");
+      printf("             NOTE that this is not supported any longer!.\n");
+      printf("             !!! ATTENTION ATTENTION ATTENTION !!!\n");
+    }
   }
   pidTask->SetCachePID(cachePID);
   pidTask->SetSpecialDetectorResponse(detResponse);
@@ -49,13 +59,14 @@ AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
   pidTask->SetUseTPCMultiplicityCorrection(useTPCMultiplicityCorrection);
   pidTask->SetUserDataRecoPass(recoDataPass);
   mgr->AddTask(pidTask);
-  
+
 //   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PIDResponseQA",
 //     TList::Class(), AliAnalysisManager::kOutputContainer,
 //     "PIDResponseQA.root");
-  
+
   mgr->ConnectInput(pidTask, 0, mgr->GetCommonInputContainer());
 //   mgr->ConnectOutput(pidTask,1,coutput1);
-  
+  printf("========================================================================================\n");
+
   return pidTask;
 }

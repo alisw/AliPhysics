@@ -101,9 +101,9 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     TGeoVolume* CreateSpaceFrameOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateSpaceFrameOuterB1(const TGeoManager *mgr=gGeoManager);
 
-    TGeoArb8* CreateStaveSide(const char *name,
-			       Double_t dz, Double_t angle, Double_t xSign,
-			       Double_t L, Double_t H, Double_t l);
+    TGeoXtru* CreateStaveSide(const char *name,
+			       Double_t dz, Double_t alpha, Double_t beta,
+			       Double_t L, Double_t H, Bool_t top);
     TGeoCombiTrans* CreateCombiTrans( const char *name,
 				      Double_t dy, Double_t dz, Double_t dphi,
 				      Bool_t planeSym=kFALSE);
@@ -182,6 +182,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkOBGlueThickM1;      // OB Glue total Thickness
     static const Double_t fgkOBGlueThick;        // OB Glue Thickness in Model2
     static const Double_t fgkOBModuleZLength;    // OB Chip Length along Z
+    static const Double_t fgkOBHalfStaveYPos;    // OB half staves Y position
     static const Double_t fgkOBHalfStaveYTrans;  // OB half staves Y transl.
     static const Double_t fgkOBHalfStaveXOverlap;// OB half staves X overlap
     static const Double_t fgkOBGraphiteFoilThick;// OB graphite foil thickness
@@ -191,16 +192,21 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkOBCoolTubeThick;    // OB cooling tube thickness
     static const Double_t fgkOBCoolTubeXDist;    // OB cooling tube separation
 
+    static const Double_t fgkOBSpaceFrameZLen[2];// OB Space Frame Length
+    static const Int_t    fgkOBSpaceFrameNUnits[2];//OB Number of SF Units
+    static const Double_t fgkOBSpaceFrameUnitLen;// OB Space Frame Unit length
     static const Double_t fgkOBSpaceFrameWidth;  // OB Space Frame Width
-    static const Double_t fgkOBSpaceFrameTotHigh;// OB Total Y Height
-    static const Double_t fgkOBSFrameBeamRadius; // OB Space Frame Beam Radius
-    static const Double_t fgkOBSpaceFrameLa;     // Parameters defining...
-    static const Double_t fgkOBSpaceFrameHa;     // ...the V side shape...
-    static const Double_t fgkOBSpaceFrameLb;     // ...of the carbon...
-    static const Double_t fgkOBSpaceFrameHb;     // ...OB Space Frame
-    static const Double_t fgkOBSpaceFrameL;      // OB SF
-    static const Double_t fgkOBSFBotBeamAngle;   // OB SF bottom beam angle
-    static const Double_t fgkOBSFrameBeamSidePhi;// OB SF side beam angle
+    static const Double_t fgkOBSpaceFrameHigh;   // OB Space Frame Height
+    static const Double_t fgkOBSpaceFrameTopVL;  // Parameters defining...
+    static const Double_t fgkOBSpaceFrameTopVH;  // ...the Top V shape
+    static const Double_t fgkOBSpaceFrameSideVL; // Parameters defining...
+    static const Double_t fgkOBSpaceFrameSideVH; // ...the Side V shape
+    static const Double_t fgkOBSpaceFrameVAlpha; // Angles of aperture...
+    static const Double_t fgkOBSpaceFrameVBeta;  // ...of the V shapes
+    static const Double_t fgkOBSFrameBaseRibDiam;// OB SFrame Base Rib Diam
+    static const Double_t fgkOBSFrameBaseRibPhi; // OB SF base beam angle
+    static const Double_t fgkOBSFrameSideRibDiam;// OB SFrame Side Rib Diam
+    static const Double_t fgkOBSFrameSideRibPhi; // OB SF side beam angle
 
 
   ClassDef(AliITSUv1Layer,0) // ITS Upgrade v1 geometry

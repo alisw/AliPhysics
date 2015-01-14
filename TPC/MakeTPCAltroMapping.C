@@ -1,7 +1,9 @@
-void MakeTPCAltroMapping(){
-  // Create TObjArray of TPC altro mapping objects and
-  // store it in the CDB
-  //
+/// \file MakeTPCAltroMapping.C
+///
+/// \brief Create TObjArray of TPC altro mapping objects and store it in the CDB
+
+void MakeTPCAltroMapping() {
+
   const char* macroname = "MakeTPCAltroMapping.C";
 
   TObjArray mappingsArray(6);

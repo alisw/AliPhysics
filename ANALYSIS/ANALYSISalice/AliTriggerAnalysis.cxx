@@ -485,7 +485,7 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
   // layer  = 2 --> outer
   
   const AliMultiplicity* mult = aEsd->GetMultiplicity();
-  if (!mult) { AliFatal("AliMultiplicity not available"); }
+  if (!mult) { AliFatal("AliMultiplicity not available"); return 0; }
   
   if (origin == 0) {
     if (layer == 0) return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
@@ -1007,7 +1007,7 @@ Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliVEvent* event, Bool
   // rejects BG based on the cluster vs tracklet correlation
   // returns true if the event is BG
   const AliVMultiplicity* mult = event->GetMultiplicity();
-  if (!mult) { AliFatal("No multiplicity object"); }
+  if (!mult) { AliFatal("No multiplicity object"); return 0; }
   Int_t ntracklet   = mult->GetNumberOfTracklets();
   Int_t spdClusters = event->GetNumberOfITSClusters(0) + event->GetNumberOfITSClusters(1);
   if(fillHists) fHistSPDClsVsTrk->Fill(ntracklet,spdClusters);

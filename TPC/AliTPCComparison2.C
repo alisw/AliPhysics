@@ -1,13 +1,12 @@
-/****************************************************************************
- *           Very important, delicate and rather obscure macro.             *
- *                                                                          *
- *               Creates list of "trackable" tracks,                        *
- *             sorts tracks for matching with the ITS,                      *
- *             calculates efficiency, resolutions etc.                      *
- *                                                                          *
- *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
- * with several nice improvements by: M.Ivanov, GSI, m.ivanov@gsi.de        *
- ****************************************************************************/
+/// \file AliTPCComparison.C
+/// \brief Very important, delicate and rather obscure macro
+///
+/// Creates list of "trackable" tracks, sorts tracks for matching with the ITS,
+/// calculates efficiency, resolutions etc.
+///
+/// There is a possibility to run this macro over several events.
+///
+/// \author I.Belikov, CERN, Jouri.Belikov@cern.ch, M.Ivanov, GSI, m.ivanov@gsi.de
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include<fstream.h>
@@ -55,7 +54,9 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   /***********************************************************************/
 
   TFile *inkin = TFile::Open("rfio:galice.root");
-  //  if(gAlice)delete gAlice;   COMMENTED BECAUSE OF A BUG (IN COMPILED MODE)
+/// \file AliTPCComparison2.C
+///  if(gAlice)delete gAlice;   COMMENTED BECAUSE OF A BUG (IN COMPILED MODE)
+
   gAlice = (AliRun*)inkin->Get("gAlice");
   cout<<"AliRun object found on file "<<gAlice<<endl;
   AliKalmanTrack::SetFieldMap(gAlice->Field());

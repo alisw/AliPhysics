@@ -18,8 +18,9 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSCpvRawDigiProducer.h"
-#include "AliPHOSDigit.h"
 #include "AliPHOSCpvRawStream.h"
+#include "AliPHOSDigit.h"
+#include "AliPHOSGeometry.h"
 #include "AliLog.h"
 #include<iostream>
 using namespace std;
@@ -29,42 +30,50 @@ ClassImp(AliPHOSCpvRawDigiProducer);
 //--------------------------------------------------------------------------------------
 AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer():
   TObject(),
+  fGeom(0),
   fTurbo(kFALSE),
   fCpvMinE(10.),
   fRawStream(0),
   fhErrors(0),
   fPedFilesRLoaded(kFALSE)
 {
+  fGeom=AliPHOSGeometry::GetInstance() ;
+  if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
+
   CreateErrHist();
   // create a 2d array to store the pedestals                                        
   for (Int_t iDDL=0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++){
-    ped[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
-    ped[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
+    fPed[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
+    fPed[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) {
-      ped[0][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
-      ped[1][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
+      fPed[0][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
+      fPed[1][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
     }
   }
 }
 //-------------------------------------------------------------------------------------
-AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer(AliRawReader *& rawReader):
+AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer(AliRawReader * rawReader):
   TObject(),
+  fGeom(0),
   fTurbo(kFALSE),
   fCpvMinE(10.),
   fRawStream(0),
   fhErrors(0),
   fPedFilesRLoaded(kFALSE)
 {
+  fGeom=AliPHOSGeometry::GetInstance() ;
+  if(!fGeom) fGeom = AliPHOSGeometry::GetInstance("IHEP");
+
   fRawStream = new AliPHOSCpvRawStream(rawReader);
   fRawStream->SetTurbo(fTurbo);
   CreateErrHist();
   // create a 2d array to store the pedestals                                               
   for (Int_t iDDL=0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++) {
-    ped[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
-    ped[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
+    fPed[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
+    fPed[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) {
-      ped[0][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
-      ped[1][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
+      fPed[0][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
+      fPed[1][iDDL][ix] = new Int_t [AliPHOSCpvParam::kPadPcY];
     }
   }
 }
@@ -75,11 +84,11 @@ AliPHOSCpvRawDigiProducer::~AliPHOSCpvRawDigiProducer()
   if(fhErrors) delete fhErrors; 
   for(Int_t iDDL = 0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++) {
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) { 
-      delete [] ped[0][iDDL][ix];
-      delete [] ped[1][iDDL][ix];
+      delete [] fPed[0][iDDL][ix];
+      delete [] fPed[1][iDDL][ix];
     }
-    delete [] ped[0][iDDL];
-    delete [] ped[1][iDDL];
+    delete [] fPed[0][iDDL];
+    delete [] fPed[1][iDDL];
   }
 }
 //--------------------------------------------------------------------------------------
@@ -92,7 +101,6 @@ Bool_t AliPHOSCpvRawDigiProducer::LoadPedFiles() {
       if(!pedFile) {
 	Printf("AliPHOSCpvRawDigiProducer::LoadPedFiles: Error, file thr%d_%02d.dat could not be open",iDDL,iCC);
 	continue;
-	//return kFALSE;
       }
       Int_t i3g = 0, iPad = 0;
       Int_t lineCnt = 0;
@@ -117,20 +125,19 @@ Bool_t AliPHOSCpvRawDigiProducer::LoadPedFiles() {
 	if(AliPHOSCpvParam::IsValidAbs(abs)) {
 	  Int_t s = thr & 0x1ff;
 	  Int_t p = thr >> 9;
-	  ped[0][iDDL][AliPHOSCpvParam::A2X(abs)][AliPHOSCpvParam::A2Y(abs)] = p-s;
-	  ped[1][iDDL][AliPHOSCpvParam::A2X(abs)][AliPHOSCpvParam::A2Y(abs)] = s;
+	  fPed[0][iDDL][AliPHOSCpvParam::A2X(abs)][AliPHOSCpvParam::A2Y(abs)] = p-s;
+	  fPed[1][iDDL][AliPHOSCpvParam::A2X(abs)][AliPHOSCpvParam::A2Y(abs)] = s;
 	  int testAbs = AliPHOSCpvParam::XY2A(iDDL,AliPHOSCpvParam::A2X(abs),AliPHOSCpvParam::A2Y(abs));
 	  if(abs!=testAbs)
 	    cout<<"AliPHOSCpvRawDigiProducer::LoadPedFiles(): wrong connection table! abs = "
 		<<abs<<", testAbs = "<<testAbs<<endl;
-	  //Printf("ped[%d][%d] = %d, pad = %d, abs = %d",AliPHOSCpvParam::A2X(abs),AliPHOSCpvParam::A2Y(abs), p + s, iPad, abs);
 	}
 	iPad++;
 	if(iPad == 64) {iPad = 0; i3g++;}
 	lineCnt++;
       }
-      if(lineCnt < AliPHOSCpvParam::kN3GAdd * 64) return kFALSE;
       fclose(pedFile);
+      if(lineCnt < AliPHOSCpvParam::kN3GAdd * 64) return kFALSE;
     }
   fPedFilesRLoaded = kTRUE;
   return kTRUE;
@@ -142,7 +149,7 @@ void AliPHOSCpvRawDigiProducer::SetTurbo(Bool_t turbo)
   if(fRawStream) fRawStream->SetTurbo(fTurbo);
 }
 //--------------------------------------------------------------------------------------
-Bool_t AliPHOSCpvRawDigiProducer::LoadNewEvent(AliRawReader *& rawReader)
+Bool_t AliPHOSCpvRawDigiProducer::LoadNewEvent(AliRawReader * rawReader)
 {
   if(fRawStream) delete fRawStream;
   fRawStream = new AliPHOSCpvRawStream(rawReader);
@@ -154,36 +161,49 @@ Bool_t AliPHOSCpvRawDigiProducer::LoadNewEvent(AliRawReader *& rawReader)
   return kFALSE;
 }
 //--------------------------------------------------------------------------------------
-void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray *& digits) const
+void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
 {
+  // Fills TClonesArray of AliPHOSDigits and 
   // returns histogram of error types
 
-  if(digits) 
-    digits->Clear();
-  digits = new TClonesArray("AliPHOSDigit", AliPHOSCpvParam::kNDDL * AliPHOSCpvParam::kNRows * AliPHOSCpvParam::kN3GAdd * AliPHOSCpvParam::kNPadAdd);
+  Int_t relId[4], absId=-1;
   Int_t iDigit = 0;
-  while(fRawStream->Next()) {
-    for(Int_t iPad=0;iPad<fRawStream->GetNPads();iPad++) {
-      Int_t charge = fRawStream->GetChargeArray()[iPad];
-      Int_t aPad   = fRawStream->GetPadArray()[iPad];
-      //cout<<"AliPHOSCpvRawDigiProducer::MakeDigits(): I've got pad "<<aPad<< "with amplitude "<<charge<<endl;
+  while (fRawStream->Next()) {
+    for (Int_t iPad=0; iPad<fRawStream->GetNPads(); iPad++) {
+      Float_t charge = fRawStream->GetChargeArray()[iPad];
+      Int_t aPad     = fRawStream->GetPadArray()[iPad];
+      Int_t ix       = AliPHOSCpvParam::A2X(aPad);
+      Int_t iy       = AliPHOSCpvParam::A2Y(aPad);
+      Int_t iddl     = AliPHOSCpvParam::A2DDL(aPad);
+
+      relId[0] = AliPHOSCpvParam::DDL2Mod(iddl) ; // counts from 1 to 5
+      relId[1] = 1;      // 1=CPV
+      relId[2] = ix + 1; // counts from 1 to 128
+      relId[3] = iy + 1; // counts from 1 to 60
+      fGeom->RelToAbsNumbering(relId, absId);
+
+      AliDebug(2,Form("CPV digit: pad=%d, (x,z)=(%3d,%2d), DDL=%d, charge=%.0f",
+		      aPad,ix,iy,iddl,charge)); 
+
       if(fPedFilesRLoaded) {
-	Int_t ix   = AliPHOSCpvParam::A2X(aPad);
-	Int_t iy   = AliPHOSCpvParam::A2Y(aPad);
-	Int_t iddl = AliPHOSCpvParam::A2DDL(aPad);
-	if (charge>ped[0][iddl][ix][iy]+ped[1][iddl][ix][iy]){
-	  charge -=ped[0][iddl][ix][iy];
-	}
-	else charge=0;
-	if(charge < fCpvMinE) charge = 0;
+	if (charge > fPed[0][iddl][ix][iy] + fPed[1][iddl][ix][iy])
+	  charge -= fPed[0][iddl][ix][iy];
+	else 
+	  charge  = 0;
       }
-      // if(charge) new((*digits)[iDigit++]) AliPHOSDigit(AliPHOSCpvParam::A2X(aPad),AliPHOSCpvParam::A2Y(aPad),charge);
-      // Check what is aPad! YK 31.12.2014
-      if(charge) new((*digits)[iDigit++]) AliPHOSDigit(-1,aPad,charge,0);
+      if(charge < fCpvMinE) charge = 0;
+      if (charge>0) new((*digits)[iDigit++]) AliPHOSDigit(-1,absId,charge,0.);
       
     }
   } // while(fRawStream->Next())
-  //cout<<"AliPHOSCpvRawDigiProducer::MakeDigits(): I've created "<<iDigit<<" digits."<<endl;
+  digits->Sort() ;
+  for (Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) { 
+    AliPHOSDigit *digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ; 
+    digit->SetIndexInList(i) ;     
+  }
+
+  AliDebug(1,Form("Array of %d CPV digits is created",digits->GetEntriesFast())); 
+
   // fill histogram of errors
   for(Int_t iDDL=0; iDDL<AliPHOSCpvParam::kNDDL; iDDL++) {
     Int_t nErrors = AliPHOSCpvRawStream::GetNErrors();

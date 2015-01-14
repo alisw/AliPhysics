@@ -221,10 +221,12 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   // loop over digits
   Float_t tZN1Corr[10], tZP1Corr[10], tZN2Corr[10], tZP2Corr[10]; 
   for(Int_t i=0; i<10; i++) tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;  
-  Float_t dZEM1Corr[2]={0,0}, dZEM2Corr[2]={0,0}, sPMRef1[2]={0,0}, sPMRef2[2]={0,0}; 
+  Float_t dZEM1Corr[2]={0,0}, dZEM2Corr[2]={0,0}, sPMRef1[]={0,0}, sPMRef2[2]={0,0}; 
   
   Int_t digNentries = digitsTree->GetEntries();
-  Float_t ootDigi[kNch]; Int_t i=0;
+  Float_t ootDigi[kNch]; 
+  for(int l=0; l<kNch; l++) ootDigi[l]=0.;
+  Int_t i=0;
   // -- Reading out-of-time signals (last kNch entries) for current event
   if(fPedSubMode==1){
     for(Int_t iDigit=kNch; iDigit<digNentries; iDigit++){
@@ -251,11 +253,11 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
    }
    else pedindex = (det-1)/3+22;
    //
-   if(fPedSubMode==0){
+   if(fPedSubMode==0 && pedindex>-1){
      ped2SubHg = meanPed[pedindex];
      ped2SubLg = meanPed[pedindex+kNch];
    }
-   else if(fPedSubMode==1){
+   else if(fPedSubMode==1 && pedindex>-1){
      ped2SubHg = corrCoeff1[pedindex]*ootDigi[pedindex]+corrCoeff0[pedindex];
      ped2SubLg = corrCoeff1[pedindex+kNch]*ootDigi[pedindex+kNch]+corrCoeff0[pedindex+kNch];
    }
@@ -373,7 +375,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   
   Float_t tZN1Corr[10], tZP1Corr[10], tZN2Corr[10], tZP2Corr[10]; 
   for(Int_t i=0; i<10; i++) tZN1Corr[i] = tZP1Corr[i] = tZN2Corr[i] = tZP2Corr[i] = 0.;
-  Float_t dZEM1Corr[2]={0,0}, dZEM2Corr[2]={0,0}, sPMRef1[2]={0,0}, sPMRef2[2]={0,0}; 
+  Float_t dZEM1Corr[2]={0,0}, dZEM2Corr[2]={0,0}, sPMRef1[]={0,0}, sPMRef2[2]={0,0}; 
 
   Bool_t isScalerOn=kFALSE;
   Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
