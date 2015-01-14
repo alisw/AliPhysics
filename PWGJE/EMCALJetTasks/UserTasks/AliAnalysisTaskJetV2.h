@@ -87,10 +87,13 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         /* inline */ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
             // return the probability from a Kolmogorov test
             return .5;
+            /* this test is disabeled as it eats a lot of resources but kept as a dummty to 
+             * ensure compatibility of the output with offline macros
             TH1F test(histo);       // stack copy of test statistic
             for(Int_t i(0); i < test.GetXaxis()->GetNbins(); i++) test.SetBinContent(i+1, func->Eval(test.GetXaxis()->GetBinCenter(1+i)));
             if(fFitGoodnessTest == kKolmogorovTOY) return histo.TH1::KolmogorovTest((&test), "X");
             return histo.TH1::KolmogorovTest((&test));
+            */
         }
 
         // setters - analysis setup
