@@ -21,7 +21,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   Bool_t   doAODTrackProp           = kTRUE,
   Bool_t   modifyMatchObjs          = kTRUE,
   Bool_t   useOldBitConfig          = kFALSE,
-  Bool_t   doTriggerQA              = kFALSE
+  Bool_t   doTriggerQA              = kFALSE,
+  Int_t    nCentBins                = 4
 )
 {
   // Add task macros for all jet related helper tasks.
@@ -80,7 +81,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
 								  clusterColName,
 								  trackeff,doAODTrackProp,
-								  0.1,modifyMatchObjs,doHistos);
+								  0.1,modifyMatchObjs,doHistos,nCentBins);
   
   //hard coded names of AliEmcalParticle strings to coincide with AddTaskClusTrackMatching
   TString inputTracks = "AODFilterTracks";
@@ -101,6 +102,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   AliHadCorrTask *hCorr = AddTaskHadCorr(emctracks,emcclusters,outClusName,hadcorr,
 					 minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
+  hCorr->SetNCentBins(nCentBins);
   if (isEmcalTrain) {
     if (doHistos)
       RequestMemory(hCorr,500*1024);
