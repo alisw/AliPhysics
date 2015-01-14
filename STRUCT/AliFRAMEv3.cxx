@@ -242,7 +242,8 @@ void AliFRAMEv3::CreateGeometry()
 
   ppgon[4] = -350.0;
   ppgon[5] =  402.0;
-  ppgon[6] =  415.6;
+  //  ppgon[6] =  415.6;
+  ppgon[6] =  423.6;
 
   ppgon[7] =  -ppgon[4]; 
   ppgon[8] =   ppgon[5];
@@ -491,7 +492,7 @@ void AliFRAMEv3::CreateGeometry()
 //
 // Positioning of diagonal bars
   
-  Float_t rd =  405.5;
+  Float_t rd =  405.5 + 0.51;
   dz = (dymodU[1]+dymodU[0])/2.;
   Float_t dz2 =  (dymodU[1]+dymodU[2])/2.;
 
@@ -592,7 +593,7 @@ void AliFRAMEv3::CreateGeometry()
   */
   Float_t r      =  (hR - longH/2. + iFrH0/2. ); // was 342.
   Float_t rout1  = 406.0;
-  Float_t rout2  = 412.3 - 4. * sin10;
+  Float_t rout2  = 412.3 - 4. * sin10 + 0.51;
   TString module[18];
   TGeoVolume* voIF[18];
   for (i = 0; i < 18; i++) {
@@ -943,6 +944,8 @@ void AliFRAMEv3::CreateGeometry()
 // upper clamps
    TGeoXtru* shBTOFS2 = new TGeoXtru(2);
    TGeoXtru* shBTOFS3 = new TGeoXtru(2);
+   TGeoXtru* shBTOFS4 = new TGeoXtru(2);
+   TGeoXtru* shBTOFS5 = new TGeoXtru(2);
    
    Double_t xxtru1[7];
    Double_t yxtru1[7];
@@ -971,6 +974,17 @@ void AliFRAMEv3::CreateGeometry()
    Double_t xxtru2[7];
    for (Int_t i = 0; i < 7; i++) xxtru2[i]  = -xxtru1[i];
 
+   Double_t xxtru3[5];
+   Double_t yxtru3[5];
+   Double_t xxtru4[5];
+   for (Int_t i = 0; i < 4; i++) {
+     xxtru3[i] = xxtru1[i];
+     yxtru3[i] = yxtru1[i];
+   }
+   xxtru3[4] = xxtru1[6];
+   yxtru3[4] = yxtru1[6];
+   for (Int_t i = 0; i < 5; i++) xxtru4[i]  = -xxtru3[i];
+
    shBTOFS2->DefinePolygon(7, xxtru1, yxtru1);
    shBTOFS2->DefineSection(0, -4.);
    shBTOFS2->DefineSection(1, +4.);
@@ -981,12 +995,27 @@ void AliFRAMEv3::CreateGeometry()
    TGeoVolume* voBTOFS2 = new TGeoVolume("BTOFS2", shBTOFS2, gGeoManager->GetMedium("FRAME_Steel"));
    TGeoVolume* voBTOFS3 = new TGeoVolume("BTOFS3", shBTOFS3, gGeoManager->GetMedium("FRAME_Steel"));
 
+   // different fixation for clamps close to web frame
+   shBTOFS4->DefinePolygon(5, xxtru3, yxtru3);
+   shBTOFS4->DefineSection(0, -4.);
+   shBTOFS4->DefineSection(1, +4.);
+
+   shBTOFS5->DefinePolygon(5, xxtru4, yxtru3);
+   shBTOFS5->DefineSection(0, -4.);
+   shBTOFS5->DefineSection(1, +4.);
+   TGeoVolume* voBTOFS4 = new TGeoVolume("BTOFS4", shBTOFS4, gGeoManager->GetMedium("FRAME_Steel"));
+   TGeoVolume* voBTOFS5 = new TGeoVolume("BTOFS5", shBTOFS5, gGeoManager->GetMedium("FRAME_Steel"));
+
+
    lbox[0] = 5.5;
    lbox[1] = 2.5;
    lbox[2] = 4.0;
    TGeoVolume* voBTOFS21 = new TGeoVolume("BTOFS21", new TGeoBBox(lbox), gGeoManager->GetMedium("FRAME_Air"));
    voBTOFS2->AddNode(voBTOFS21, 1, gGeoIdentity);
    voBTOFS3->AddNode(voBTOFS21, 2, gGeoIdentity);
+   voBTOFS4->AddNode(voBTOFS21, 3, gGeoIdentity);
+   voBTOFS5->AddNode(voBTOFS21, 4, gGeoIdentity);
+
    TGeoVolumeAssembly* asTOFS00 = new TGeoVolumeAssembly("BTOFS00");                                                                                   
    asTOFS00->AddNode(voBTOFS1, 1, gGeoIdentity);
    asTOFS00->AddNode(voBTOFS2, 1, new TGeoTranslation(0., 0.,  40.));
@@ -996,6 +1025,16 @@ void AliFRAMEv3::CreateGeometry()
    asTOFS01->AddNode(voBTOFS1, 2, gGeoIdentity);
    asTOFS01->AddNode(voBTOFS3, 1, new TGeoTranslation(0., 0.,  40.));
    asTOFS01->AddNode(voBTOFS3, 2, new TGeoTranslation(0., 0., -40.));
+
+   TGeoVolumeAssembly* asTOFS02 = new TGeoVolumeAssembly("BTOFS02");
+   asTOFS02->AddNode(voBTOFS1, 3, gGeoIdentity);
+   asTOFS02->AddNode(voBTOFS2, 3, new TGeoTranslation(0., 0., -40.));
+   asTOFS02->AddNode(voBTOFS4, 2, new TGeoTranslation(0., 0.,  40.));
+
+   TGeoVolumeAssembly* asTOFS03 = new TGeoVolumeAssembly("BTOFS03");                                                                                   
+   asTOFS03->AddNode(voBTOFS1, 4, gGeoIdentity);
+   asTOFS03->AddNode(voBTOFS3, 3, new TGeoTranslation(0., 0., -40.));
+   asTOFS03->AddNode(voBTOFS5, 2, new TGeoTranslation(0., 0.,  40.));
 
 
    asTOFS00->SetVisibility(1);
@@ -1008,13 +1047,18 @@ void AliFRAMEv3::CreateGeometry()
      TGeoRotation* rot1 = new TGeoRotation(Form("TOFS_R1_%d", i),  90.0, phi1, 90., phi2, 0., 0.);  
      dx =  TMath::Sin((phi1+8.95) * kdeg2rad) * (rout2 + 12.);
      dy = -TMath::Cos((phi1+8.95) * kdeg2rad) * (rout2 + 12.);
-     //     (gGeoManager->GetVolume("B076"))->AddNode(voBTOFS00, i+1,  new TGeoCombiTrans(dx, dy, 345., rot1));
-     (gGeoManager->GetVolume("B076"))->AddNode(asTOFS01, i,    new TGeoCombiTrans(dx, dy, 345.-53., rot1));
-     
+     if ((i >3 && i < 8) || (i > 10 && i < 15)) { 
+       (gGeoManager->GetVolume("B076"))->AddNode(asTOFS03, i,    new TGeoCombiTrans(dx, dy, 345.-53.-0.5, rot1));
+     } else {
+       (gGeoManager->GetVolume("B076"))->AddNode(asTOFS01, i,    new TGeoCombiTrans(dx, dy, 345.-53.-0.5, rot1));
+     }
      dx =  TMath::Sin((phi1-8.95) * kdeg2rad) * (rout2 + 12.);
      dy = -TMath::Cos((phi1-8.95) * kdeg2rad) * (rout2 + 12.);
-     //(gGeoManager->GetVolume("B076"))->AddNode(voBTOFS1, i+19,  new TGeoCombiTrans(dx, dy, 345., rot1));
-     (gGeoManager->GetVolume("B076"))->AddNode(asTOFS00, i,     new TGeoCombiTrans(dx, dy, 345.-53, rot1));
+     if ((i >3 && i < 8) || (i > 10 && i < 15)) { 
+       (gGeoManager->GetVolume("B076"))->AddNode(asTOFS02, i,     new TGeoCombiTrans(dx, dy, 345.-53-0.5, rot1));
+     } else {
+       (gGeoManager->GetVolume("B076"))->AddNode(asTOFS00, i,     new TGeoCombiTrans(dx, dy, 345.-53-0.5, rot1));
+     }
    }
 
 //
