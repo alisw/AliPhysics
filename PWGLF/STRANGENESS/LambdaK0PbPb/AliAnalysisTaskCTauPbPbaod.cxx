@@ -514,7 +514,7 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
   Int_t mult=0;
   for (Int_t i=0; i<ntrk1; i++) {
     AliAODTrack *t=dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
-    if(!t) AliFatal("Not a standard AOD");
+    if(!t) { AliFatal("Not a standard AOD"); return; }
     if (t->IsMuonTrack()) continue;
     if (!t->IsOn(AliAODTrack::kTPCrefit)) continue;
 

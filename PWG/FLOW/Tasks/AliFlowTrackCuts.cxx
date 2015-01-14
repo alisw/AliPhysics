@@ -35,6 +35,7 @@
 // AliFlowTrack is made using MakeFlowTrack() method, its an 'object factory'
 // so caller needs to take care of the freshly created object.
 
+#include "TFile.h"
 #include <limits.h>
 #include <float.h>
 #include <TMatrix.h>
@@ -116,6 +117,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
   fLinearizeVZEROresponse(kFALSE),
+  fCentralityPercentileMin(0.),
+  fCentralityPercentileMax(5.),
   fCutPmdDet(kFALSE),
   fPmdDet(0),
   fCutPmdAdc(kFALSE),
@@ -156,6 +159,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAllowTOFmismatchFlag(kFALSE),
   fRequireStrictTOFTPCagreement(kFALSE),
   fCutRejectElectronsWithTPCpid(kFALSE),
+  fUseTPCTOFNsigmaCutContours(kFALSE),
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
@@ -166,11 +170,14 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fChi3A(0x0),
   fChi3C(0x0),
   fPIDResponse(NULL),
-  fNsigmaCut2(9)
+  fNsigmaCut2(9),
+  fContoursFile(0),
+  fCutContourList(0),
+  fMaxITSclusterShared(0),
+  fMaxITSChi2(0)
 {
   //io constructor 
   SetPriors(); //init arrays
-  
   // New PID procedure (Bayesian Combined PID)
   // allocating here is necessary because we don't 
   // stream this member
@@ -181,7 +188,12 @@ AliFlowTrackCuts::AliFlowTrackCuts():
       fVZEROApol[i] = 0;
       fVZEROCpol[i] = 0;
   }
-  for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
+  for(Int_t i(0); i < 8; i++){ fUseVZERORing[i] = kTRUE;}
+    
+  for(int i=0;i<50;i++){
+    fCutContour[i]= NULL;
+    fCutGraph[i]=NULL;
+  }
 
 }
 
@@ -227,6 +239,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
   fLinearizeVZEROresponse(kFALSE),
+  fCentralityPercentileMin(0.),
+  fCentralityPercentileMax(5.),
   fCutPmdDet(kFALSE),
   fPmdDet(0),
   fCutPmdAdc(kFALSE),
@@ -267,6 +281,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fAllowTOFmismatchFlag(kFALSE),
   fRequireStrictTOFTPCagreement(kFALSE),
   fCutRejectElectronsWithTPCpid(kFALSE),
+  fUseTPCTOFNsigmaCutContours(kFALSE),
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
@@ -277,9 +292,13 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fChi3A(0x0),
   fChi3C(0x0),
   fPIDResponse(NULL),
-  fNsigmaCut2(9)
+  fNsigmaCut2(9),
+  fContoursFile(0),
+  fCutContourList(0),
+  fMaxITSclusterShared(0),
+  fMaxITSChi2(0)
 {
-  //constructor 
+  //constructor
   SetTitle("AliFlowTrackCuts");
   fESDpid.GetTPCResponse().SetBetheBlochParameters( 0.0283086,
                                                     2.63394e+01,
@@ -287,7 +306,6 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
                                                     2.12543e+00,
                                                     4.88663e+00 );
   SetPriors(); //init arrays
-
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
@@ -296,7 +314,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
       fVZEROCpol[i] = 0;
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
-}
+  }
 
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
@@ -340,6 +358,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
+  fCentralityPercentileMin(that.fCentralityPercentileMin),
+  fCentralityPercentileMax(that.fCentralityPercentileMax),
   fCutPmdDet(that.fCutPmdDet),
   fPmdDet(that.fPmdDet),
   fCutPmdAdc(that.fCutPmdAdc),
@@ -380,6 +400,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fAllowTOFmismatchFlag(that.fAllowTOFmismatchFlag),
   fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement),
   fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid),
+  fUseTPCTOFNsigmaCutContours(that.fUseTPCTOFNsigmaCutContours),
   fProbBayes(0.0),
   fCurrCentr(0.0),
   fVZEROgainEqualization(NULL),
@@ -390,7 +411,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fChi3A(0x0),
   fChi3C(0x0),
   fPIDResponse(that.fPIDResponse),
-  fNsigmaCut2(that.fNsigmaCut2)
+  fNsigmaCut2(that.fNsigmaCut2),
+  fContoursFile(0),
+  fCutContourList(0),
+  fMaxITSclusterShared(0),
+  fMaxITSChi2(0)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -398,6 +423,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
   if (that.fMuonTrackCuts)   fMuonTrackCuts   = new AliMuonTrackCuts(*(that.fMuonTrackCuts));  // XZhang 20120604
   SetPriors(); //init arrays
+  if(fUseTPCTOFNsigmaCutContours) GetTPCTOFPIDContours();
   if (that.fQA) DefineHistograms();
   // would be neater via copy ctor of TArrayD
   fChi2A = new TArrayD(that.fChi2A->GetSize(), that.fChi2A->GetArray());
@@ -407,7 +433,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
-
+    
   // VZERO gain calibration
   // no reason to init fVZEROgainEqualizationPerRing, will be initialized on node if necessary
   // pointer is set to NULL in initialization list of this constructor
@@ -417,6 +443,12 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
       fVZEROCpol[i] = 0.;
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
+  
+    for(int i=0;i<50;i++){
+        fCutContour[i]= that.fCutContour[i];
+        fCutGraph[i]=that.fCutGraph[i];
+    }
+
 
 }
 
@@ -475,6 +507,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
+  fCentralityPercentileMin=that.fCentralityPercentileMin;
+  fCentralityPercentileMax=that.fCentralityPercentileMax;
   fCutPmdDet=that.fCutPmdDet;
   fPmdDet=that.fPmdDet;
   fCutPmdAdc=that.fCutPmdAdc;
@@ -520,9 +554,10 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fAllowTOFmismatchFlag=that.fAllowTOFmismatchFlag;
   fRequireStrictTOFTPCagreement=that.fRequireStrictTOFTPCagreement;
   fCutRejectElectronsWithTPCpid=that.fCutRejectElectronsWithTPCpid;
+  fUseTPCTOFNsigmaCutContours=that.fUseTPCTOFNsigmaCutContours;
   fProbBayes = that.fProbBayes;
   fCurrCentr = that.fCurrCentr;
-  
+    
   fApplyRecentering = that.fApplyRecentering;
   fVZEROgainEqualizationPerRing = that.fVZEROgainEqualizationPerRing;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
@@ -531,6 +566,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   //PH Lets try Clone, however the result might be wrong
   if (that.fVZEROgainEqualization) fVZEROgainEqualization = (TH1*)that.fVZEROgainEqualization->Clone();
 #endif
+    
   for(Int_t i(0); i < 4; i++) { // no use to copy these guys since they're only initialized on worked node
       fVZEROApol[i] = that.fVZEROApol[i];
       fVZEROCpol[i] = that.fVZEROCpol[i];
@@ -577,6 +613,11 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
       delete fChi3C;
       fChi3C = 0x0;
   }
+  fContoursFile->Close();
+  for(int i=0;i<50;i++){
+     delete fCutContour[i];
+     delete fCutGraph[i];
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -620,6 +661,8 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   
   if(fPIDsource==kTOFbayesian) fBayesianResponse->SetDetAND(1);
   else if(fPIDsource==kTPCbayesian) fBayesianResponse->ResetDetOR(1);
+    
+  if(fUseTPCTOFNsigmaCutContours) GetTPCTOFPIDContours();
 }
 
 //-----------------------------------------------------------------------
@@ -1240,7 +1283,25 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     {
       if (!PassesAODpidCut(track)) pass=kFALSE;
     }
-
+/*
+  if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
+     Double_t c = TMath::C()*1.E-9;
+     Double_t length = -999., beta =-999, tofTime = -999., tof = -999.;
+     tofTime = track->GetTOFsignal();//in ps
+     length = track->GetIntegratedLength();
+        
+     tof = tofTime*1E-3; // ns
+     if (tof > 0 && length > 0){
+        length = length*0.01; // in meters
+         tof = tof*c;
+         beta = length/tof;
+         if (fQA){
+             QAbefore(18)->Fill(track->P()*track->Charge(),beta);
+             if(pass) QAafter(18)->Fill(track->P()*track->Charge(),beta);
+         }
+     }
+  }*/
+ 
   if (fQA) {
     // changed 04062014 used to be filled before possible PID cut
     Double_t momTPC = track->GetTPCmomentum();
@@ -1262,6 +1323,10 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
     QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+      
+    //QAbefore(19)->Fill(track->P()*track->Charge(),track->GetDetPid()->GetTPCsignal());
+    //if(pass) QAafter(19)->Fill(track->P()*track->Charge(),track->GetDetPid()->GetTPCsignal());
+      
   }
 
 
@@ -1278,6 +1343,7 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
   track->GetImpactParameters(dcaxy,dcaz);
   const AliExternalTrackParam* pout = track->GetOuterParam();
   const AliExternalTrackParam* pin = track->GetInnerParam();
+  
   if (fIgnoreTPCzRange)
   {
     if (pin&&pout)
@@ -1343,6 +1409,13 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     track->GetTPCpid(pidTPC);
     if (pidTPC[AliPID::kElectron]<fParticleProbability) pass=kFALSE;
   }
+    
+  Int_t counterForSharedCluster=MaxSharedITSClusterCuts(fMaxITSclusterShared, track);
+  if(counterForSharedCluster >= fMaxITSclusterShared) pass=kFALSE;
+    
+  Double_t chi2perClusterITS = MaxChi2perITSClusterCuts(fMaxITSChi2, track);
+  if(chi2perClusterITS >= fMaxITSChi2) pass=kFALSE;
+    
   if (fQA)
   {
     if (pass) QAafter(0)->Fill(track->GetP(),beta);
@@ -1427,6 +1500,7 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
   //calculate the number of track in given event.
   //if argument is NULL(default) take the event attached
   //by SetEvent()
+    
   Int_t multiplicity = 0;
   if (!event)
   {
@@ -2475,6 +2549,13 @@ void AliFlowTrackCuts::DefineHistograms()
 
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
+   /*
+  before->Add(new TH2F("Pionbeta",";p_{t}[GeV/c];#beta",kNbinsP,binsP,1000,0,1000 ));//18
+  after->Add(new TH2F("Pionbeta",";p_{t}[GeV/c];#beta",kNbinsP,binsP,1000,0,1000 ));//18
+    
+  before->Add(new TH2F("PiondEdX",";p_{t}[GeV/c];dE/dX",kNbinsP,binsP,1000,0,1000 ));//19
+  after->Add(new TH2F("PiondEdX",";p_{t}[GeV/c];dE/dX",kNbinsP,binsP,1000,0,1000 ));//19
+*/
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -2631,6 +2712,9 @@ Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
       break;
   case kTPCTOFNsigma:
       if (!PassesTPCTOFNsigmaCut(track)) pass = kFALSE;
+      break;
+  case kTPCTOFNsigmaPuritybased:
+      if(!PassesTPCTOFNsigmaCutPuritybased(track)) pass = kFALSE;
       break;
   default:
     return kTRUE;
@@ -2792,6 +2876,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliAODTrack* track )
 
   //construct the pid index because it's not AliPID::EParticleType
   Int_t pid = 0;
+    cout<<"TOFbeta: fParticleID = "<<fParticleID<<endl;
   switch (fParticleID)
   {
     case AliPID::kPion:
@@ -3579,7 +3664,76 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliESDtrack* track)
     return (nsigma2 < fNsigmaCut2);
 
 }
+//-----------------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCutPuritybased(const AliAODTrack* track)
+{
+    // do a combined cut on the n sigma from tpc and tof based on purity of the identified particle. (Particle is selected if Purity>0.8)
+    // with information of the pid response object (needs pid response task)
 
+    if(!fPIDResponse) return kFALSE;
+    if(!track) return kFALSE;
+    if(!fUseTPCTOFNsigmaCutContours) return kFALSE;
+
+    
+    Bool_t pWithinRange = kFALSE;
+    Int_t p_bin = -999;
+    Double_t pBins[50];
+    for(int b=0;b<50;b++){pBins[b] = 0.1*b;}
+    for(int i=0;i<50;i++){
+        if(track->P()>pBins[i] && track->P()<(pBins[i+1])){
+            p_bin = i;
+        }
+    }
+    Int_t ispecie = 0;
+    switch (fParticleID)
+    {
+        case AliPID::kPion:
+            ispecie=0;
+            break;
+        case AliPID::kKaon:
+            ispecie=1;
+            break;
+        case AliPID::kProton:
+            ispecie=2;
+            break;
+        default:
+            return kFALSE;
+    }
+    
+    Double_t LowPtPIDTPCnsigLow_Pion[6] = {-3,-3,-3,-3,-3,-3};
+    Double_t LowPtPIDTPCnsigLow_Kaon[6] = {-3,-2,0,-1.8,-1.2,-0.8}; //for0.4<Pt<0.5 the purity is lower than 0.7
+    Double_t LowPtPIDTPCnsigHigh_Pion[6] ={2.4,3,3,3,2,1.4};
+    Double_t LowPtPIDTPCnsigHigh_Kaon[6] ={3,2.2,0,-0.2,1,1.8}; //for 0.4<Pt<0.5 he purity is lower than 0.7
+    
+    Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
+    Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
+
+    
+    if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid))){
+        if(p_bin<0) return kFALSE;
+        if(!fCutContour[p_bin]) cout<<"fCutContour[p_bin] does not exist"<<endl;
+        
+        if(p_bin==4 || p_bin>7){
+            if(fCutContour[p_bin]->IsInside(nSigmaTOF,nSigmaTPC)){
+                return kTRUE;
+            }
+            else{
+                return kFALSE;
+            }
+        }
+        
+        if(p_bin<8 && p_bin!=4){
+            if(fParticleID==AliPID::kPion && nSigmaTPC>LowPtPIDTPCnsigLow_Pion[p_bin-2] && nSigmaTPC<LowPtPIDTPCnsigHigh_Pion[p_bin-2]){
+                return kTRUE;
+            }
+            if(fParticleID==AliPID::kKaon && nSigmaTPC>LowPtPIDTPCnsigLow_Kaon[p_bin-2] && nSigmaTPC<LowPtPIDTPCnsigHigh_Kaon[p_bin-2]){return kTRUE;}
+            
+            if(fParticleID==AliPID::kProton && nSigmaTPC>-3 && nSigmaTPC<3){return kTRUE;}
+        }
+    }
+    
+    return kFALSE;
+}
 //-----------------------------------------------------------------------
 void AliFlowTrackCuts::SetPriors(Float_t centrCur){
  //set priors for the bayesian pid selection
@@ -4718,6 +4872,8 @@ const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
       return "TPCnuclei";
     case kTPCTOFNsigma:
       return "TPCTOFNsigma";
+    case kTPCTOFNsigmaPuritybased:
+      return "TPCTOFNsigmaPuritybased";
     default:
       return "NOPID";
   }
@@ -4923,6 +5079,85 @@ Long64_t AliFlowTrackCuts::Merge(TCollection* list)
   }
   return fQA->Merge(&tmplist);
 }
+//________________________________________________________________//
+void AliFlowTrackCuts::GetTPCTOFPIDContours()
+{
+    fContoursFile = TFile::Open(Form("$ALICE_ROOT/PWGCF/FLOW/database/PIDCutContours_%i-%i.root",fCentralityPercentileMin,fCentralityPercentileMax));
+    fCutContourList=(TDirectory*)fContoursFile->Get("Filterbit1");
+    if(!fCutContourList){printf("The contour file is empty"); return;}
+
+    Double_t pBinning[50];
+    for(int b=0;b<50;b++){pBinning[b]=b;}
+    TString species[3] = {"pion","kaon","proton"};
+    TList *Species_contours[3];
+    Int_t ispecie = 0;
+    for(ispecie = 0; ispecie < 3; ispecie++) {
+       Species_contours[ispecie] = (TList*)fCutContourList->Get(species[ispecie]);
+        if(!Species_contours[ispecie]) {
+            cout<<"Contours for species: "<<species[ispecie]<<" not found!!!"<<endl;
+            return;
+        }
+    }
+    Int_t iParticle = 0;
+
+    switch (fParticleID)
+    {
+        case AliPID::kPion:
+            iParticle=0;
+            break;
+        case AliPID::kKaon:
+            iParticle=1;
+            break;
+        case AliPID::kProton:
+            iParticle=2;
+            break;
+        default:
+            return;
+    }
+
+    
+    for(int i=0;i<50;i++){
+ 
+        TString Graph_Name = "contourlines_";
+        Graph_Name += species[iParticle];
+        Graph_Name += Form("%.f%.f-%i%icent",pBinning[i],pBinning[i]+1,fCentralityPercentileMin,fCentralityPercentileMax);
+        fCutGraph[i] = (TGraph*)Species_contours[iParticle]->FindObject(Graph_Name);
+        
+        if(!fCutGraph[i]){cout<<"Contour Graph does not exist"<<endl; continue;}
+        
+        fCutContour[i] = new TCutG(Graph_Name.Data(),fCutGraph[i]->GetN(),fCutGraph[i]->GetX(),fCutGraph[i]->GetY());
+        
+    }
+    
+}
+//__________________
+Int_t AliFlowTrackCuts::MaxSharedITSClusterCuts(Int_t maxITSclusterShared, AliESDtrack* track){
+    
+    Int_t counterForSharedCluster = 0;
+    for(int i =0;i<6;i++){
+        Bool_t sharedITSCluster = track->HasSharedPointOnITSLayer(i);
+        Bool_t PointOnITSLayer = track->HasPointOnITSLayer(i);
+        //   cout << "has a point???    " << PointOnITSLayer << "     is it shared or not??? "  << sharedITSCluster << endl;
+        if(sharedITSCluster == 1) counterForSharedCluster++;
+    }
+    //if(counterForSharedCluster >= maxITSclusterShared) pass=kFALSE;
+    
+    return counterForSharedCluster;
+
+}
+//___________________
+Double_t AliFlowTrackCuts::MaxChi2perITSClusterCuts(Double_t maxITSChi2, AliESDtrack* track){
+    
+    // cout << "  Total Shared Cluster ==   "  <<counterForSharedCluster<< endl;
+    Double_t chi2perClusterITS = track->GetITSchi2()/track->GetNcls(0);
+    //  cout << "  chi2perClusterITS ==   "  <<chi2perClusterITS <<endl;
+    
+    
+    //if(chi2perClusterITS >= maxITSChi2) pass=kFALSE;
+
+    return chi2perClusterITS;
+}
+
 
 
 

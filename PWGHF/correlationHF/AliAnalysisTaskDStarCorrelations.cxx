@@ -846,7 +846,6 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
         Int_t NofEventsinPool = 1;
         if(fmixing) NofEventsinPool = fCorrelator->GetNofEventsInPool();
         
-        Bool_t *trackOrigin = NULL;
        // cout << "crash here 5" << endl;
         //************************************************** LOOP ON EVENTS IN EVENT POOL *****************************************************
         
@@ -922,6 +921,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
               
                  
+		 Bool_t *trackOrigin = NULL;
                  
                  if(fmontecarlo) {trackOrigin = fAssocCuts->IsMCpartFromHF(label,fmcArray);
                      if(trackOrigin[4]) {/*cout << "Something is wrong with hadron in MC - skipping" << endl; */continue;}
@@ -1029,7 +1029,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                      }
                  }
                  
-                 
+		 delete [] trackOrigin;
              } // end loop on associated tracks
             
         } // end loop on events in event pool

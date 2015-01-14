@@ -10,6 +10,7 @@
 #pragma link C++ class AliAODRecoDecayHF3Prong+;
 #pragma link C++ class AliAODRecoDecayHF4Prong+;
 #pragma link C++ class AliAODRecoCascadeHF+;
+#pragma link C++ class AliAODRecoCascadeHF3Prong+;
 #pragma link C++ class AliAODHFUtil+;
 #pragma link C++ class AliAODPidHF+;
 #pragma link C++ class AliRDHFCuts+;
@@ -23,6 +24,8 @@
 #pragma link C++ class AliRDHFCutsLctoV0+;
 #pragma link C++ class AliRDHFCutsD0toKpipipi+;
 #pragma link C++ class AliRDHFCutsDStartoKpipi+;
+#pragma link C++ class AliRDHFCutsLctopK0sfromAODtracks++;
+#pragma link C++ class AliRDHFCutsXicPlustoXiPiPifromAODtracks++;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;
@@ -36,6 +39,8 @@
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelor+;
 #pragma link C++ class AliAnalysisTaskSEDvsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskCheckHFMCProd+;
+#pragma link C++ class AliAnalysisTaskSELc2pK0sfromAODtracks++;
+#pragma link C++ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks++;
 #pragma link C++ class AliCFVertexingHF+;
 #pragma link C++ class AliCFVertexingHF2Prong+;
 #pragma link C++ class AliCFVertexingHF3Prong+;

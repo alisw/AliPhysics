@@ -9,7 +9,9 @@
 #define _ALIJSONDATA_H_
 
 #include <ostream>
+#include <string>
 #include <TNamed.h>
+#include <TString.h>
 
 /************************************************************
  *
@@ -22,7 +24,7 @@ public:
   AliJSONValue() {}
   virtual ~AliJSONValue() {}
 
-  virtual const char *ToString() const = 0;
+  virtual std::string ToString() const = 0;
 
   ClassDef(AliJSONValue,1);
 };
@@ -38,7 +40,7 @@ public:
   void SetValue(Int_t value) { fValue = value; }
   Int_t GetValue() const { return fValue; }
 
-  virtual const char *ToString() const ;
+  virtual std::string ToString() const ;
 private:
   Int_t fValue;
 
@@ -56,7 +58,7 @@ public:
   void SetValue(Float_t value) { fValue = value; }
   Float_t GetValue() const { return fValue; }
 
-  virtual const char *ToString() const;
+  virtual std::string ToString() const;
 private:
   Float_t fValue;
 
@@ -74,7 +76,7 @@ public:
   void SetValue(Double_t value) { fValue = value; }
   Double_t GetValue() const { return fValue; }
 
-  virtual const char *ToString() const;
+  virtual std::string ToString() const;
 private:
   Double_t fValue;
 
@@ -92,7 +94,7 @@ public:
   void SetValue(Bool_t value) { fValue = value; }
   Bool_t GetValue() const { return fValue; }
 
-  virtual const char *ToString() const { return fValue ? "true" : "false"; }
+  virtual std::string ToString() const { return fValue ? "true" : "false"; }
 private:
   Bool_t fValue;
 
@@ -110,7 +112,7 @@ public:
   void SetValue(const char * value) { fValue = value; }
   const char * GetValue() const { return fValue; }
 
-  virtual const char *ToString() const { return fValue; }
+  virtual std::string ToString() const { return std::string(fValue.Data()); }
 private:
   TString fValue;
 
@@ -141,7 +143,7 @@ public:
   }
 
   AliJSONValue *GetValue() const { return fValue; }
-  const char *ToString() const;
+  std::string ToString() const;
 
 protected:
   AliJSONData(const AliJSONData &ref);

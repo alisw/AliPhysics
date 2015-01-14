@@ -72,6 +72,14 @@ class AliBalancePsi : public TObject {
 			Float_t bSign,
 			Double_t kMultorCent = -100,
 			Double_t vertexZ = 0);
+
+  TH1D   *GetTriggers(TString type,
+		      Double_t psiMin, 
+		      Double_t psiMax,
+		      Double_t vertexZMin,
+		      Double_t vertexZMax,
+		      Double_t ptTriggerMin,
+		      Double_t ptTriggerMax);
   
   TH2D   *GetCorrelationFunction(TString type,
 				 Double_t psiMin, Double_t psiMax,
@@ -84,6 +92,7 @@ class AliBalancePsi : public TObject {
 				 AliBalancePsi *bMixed=NULL,
 				 Bool_t normToTrig = kFALSE,
 				 Double_t normalizationRangePhi = TMath::Pi()/6.);
+
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t vertexZMin=-1,
 				   Double_t vertexZMax=-1,

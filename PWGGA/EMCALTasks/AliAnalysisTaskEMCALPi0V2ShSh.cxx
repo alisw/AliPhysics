@@ -202,6 +202,7 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) :
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
+  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
   DefineInput(0, TChain::Class());
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container

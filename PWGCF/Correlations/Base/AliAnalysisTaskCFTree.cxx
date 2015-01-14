@@ -245,7 +245,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fMuons->Clear();
     for (Int_t iTrack = 0; iTrack < aod->GetNumberOfTracks(); iTrack++) {
       AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
-      if(!track) AliFatal("Not a standard AOD");
+      if(!track) {
+        AliWarning("Not a standard AOD");
+        continue;
+      }
       if (!track->IsMuonTrack()) continue;
       Float_t pt     = track->Pt();
       Float_t eta    = track->Eta();
@@ -279,6 +282,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
       label = mcpart->GetMother();
       while (!isPrimary && label>=0) {
         mcpart = (AliVParticle*) fMCEvent->GetTrack(label);
+        if (!mcpart) continue;
         label = mcpart->GetMother();
         isPrimary = fMCEvent->IsPhysicalPrimary(label);
       }

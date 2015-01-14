@@ -101,10 +101,125 @@ AliAnalysisTaskSE("taskITSsaSpectra"),
   Double_t xbins[kNbins+1]={0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.0};
   for(Int_t iBin=0; iBin<kNbins+1; iBin++) fPtBinLimits[iBin]=xbins[iBin];
   fRandGener=new TRandom3(0);
+
+  for(Int_t j=0; j<3; j++){
+    fHistPosNSigmaSep[j]=0x0;
+    fHistNegNSigmaSep[j]=0x0;
+
+    fHistPrimMCpos[j]=0x0;
+    fHistPrimMCneg[j]=0x0;
+    fHistSecStrMCpos[j]=0x0;
+    fHistSecStrMCneg[j]=0x0;
+    fHistSecMatMCpos[j]=0x0;
+    fHistSecMatMCneg[j]=0x0;
+    fHistPrimMCposBefEvSel[j]=0x0;
+    fHistPrimMCposBefEvSelEtaY[j]=0x0;
+    fHistPrimMCposBefEvSelEta[j]=0x0;
+    fHistPrimMCnegBefEvSel[j]=0x0;
+    fHistPrimMCnegBefEvSelEtaY[j]=0x0;
+    fHistPrimMCnegBefEvSelEta[j]=0x0;
+    fHistSecStrMCposBefEvSel[j]=0x0;
+    fHistSecStrMCnegBefEvSel[j]=0x0;
+    fHistSecMatMCposBefEvSel[j]=0x0;
+    fHistSecMatMCnegBefEvSel[j]=0x0;
+    fHistPrimMCposReco[j]=0x0;
+    fHistPrimMCposRecoEtaY[j]=0x0;
+    fHistPrimMCnegReco[j]=0x0;
+    fHistPrimMCnegRecoEtaY[j]=0x0;
+    fHistSecStrMCposReco[j]=0x0;
+    fHistSecStrMCnegReco[j]=0x0;
+    fHistSecMatMCposReco[j]=0x0;
+    fHistSecMatMCnegReco[j]=0x0;
+  }
+
+  for(Int_t j=0; j<4; j++) fHistCharge[j]=0x0;
+
+  for(Int_t j=0; j<kNbins; j++){
+    fHistPosPi[j]=0x0;
+    fHistPosK[j]=0x0;
+    fHistPosP[j]=0x0;
+    fHistNegPi[j]=0x0;
+    fHistNegK[j]=0x0;
+    fHistNegP[j]=0x0;
+    fHistDCAPosPi[j]=0x0;
+    fHistDCAPosK[j]=0x0;
+    fHistDCAPosP[j]=0x0;
+    fHistDCANegPi[j]=0x0;
+    fHistDCANegK[j]=0x0;
+    fHistDCANegP[j]=0x0;
+    fHistMCPrimDCAPosPi[j]=0x0;
+    fHistMCPrimDCAPosK[j]=0x0;
+    fHistMCPrimDCAPosP[j]=0x0;
+    fHistMCPrimDCANegPi[j]=0x0;
+    fHistMCPrimDCANegK[j]=0x0;
+    fHistMCPrimDCANegP[j]=0x0;
+    fHistMCSecStDCAPosPi[j]=0x0;
+    fHistMCSecStDCAPosK[j]=0x0;
+    fHistMCSecStDCAPosP[j]=0x0;
+    fHistMCSecStDCANegPi[j]=0x0;
+    fHistMCSecStDCANegK[j]=0x0;
+    fHistMCSecStDCANegP[j]=0x0;
+    fHistMCSecMatDCAPosPi[j]=0x0;
+    fHistMCSecMatDCAPosK[j]=0x0;
+    fHistMCSecMatDCAPosP[j]=0x0;
+    fHistMCSecMatDCANegPi[j]=0x0;
+    fHistMCSecMatDCANegK[j]=0x0;
+    fHistMCSecMatDCANegP[j]=0x0;
+    fHistMCPosOtherHypPion[j]=0x0;
+    fHistMCPosOtherHypKaon[j]=0x0;
+    fHistMCPosOtherHypProton[j]=0x0;
+    fHistMCPosElHypPion[j]=0x0;
+    fHistMCPosElHypKaon[j]=0x0;
+    fHistMCPosElHypProton[j]=0x0;
+    fHistMCPosPiHypPion[j]=0x0;
+    fHistMCPosPiHypKaon[j]=0x0;
+    fHistMCPosPiHypProton[j]=0x0;
+    fHistMCPosKHypPion[j]=0x0;
+    fHistMCPosKHypKaon[j]=0x0;
+    fHistMCPosKHypProton[j]=0x0;
+    fHistMCPosPHypPion[j]=0x0;
+    fHistMCPosPHypKaon[j]=0x0;
+    fHistMCPosPHypProton[j]=0x0;
+    fHistMCNegOtherHypPion[j]=0x0;
+    fHistMCNegOtherHypKaon[j]=0x0;
+    fHistMCNegOtherHypProton[j]=0x0;
+    fHistMCNegElHypPion[j]=0x0;
+    fHistMCNegElHypKaon[j]=0x0;
+    fHistMCNegElHypProton[j]=0x0;
+    fHistMCNegPiHypPion[j]=0x0;
+    fHistMCNegPiHypKaon[j]=0x0;
+    fHistMCNegPiHypProton[j]=0x0;
+    fHistMCNegKHypPion[j]=0x0;
+    fHistMCNegKHypKaon[j]=0x0;
+    fHistMCNegKHypProton[j]=0x0;
+    fHistMCNegPHypPion[j]=0x0;
+    fHistMCNegPHypKaon[j]=0x0;
+    fHistMCNegPHypProton[j]=0x0;
+  }
+
+  for(Int_t j=0; j<3; j++){
+    fHistPosNSigmaMean[j]=0x0;
+    fHistPosNSigmaMCMean[j]=0x0;
+    fHistPosNSigmaPrimMean[j]=0x0;
+    fHistPosNSigmaPrimMCMean[j]=0x0;
+    fHistNegNSigmaMean[j]=0x0;
+    fHistNegNSigmaMCMean[j]=0x0;
+    fHistNegNSigmaPrimMean[j]=0x0;
+    fHistNegNSigmaPrimMCMean[j]=0x0;
+
+    fHistPosNSigma[j]=0x0;
+    fHistPosNSigmaMC[j]=0x0;
+    fHistPosNSigmaPrim[j]=0x0;
+    fHistPosNSigmaPrimMC[j]=0x0;
+    fHistNegNSigma[j]=0x0;
+    fHistNegNSigmaMC[j]=0x0;
+    fHistNegNSigmaPrim[j]=0x0;
+    fHistNegNSigmaPrimMC[j]=0x0;
+  }
+
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2,TList::Class());
-  Printf("end of AliAnalysisTaskSEITSsaSpectra");
 }
 
 //___________________________________________________________________________
@@ -1287,10 +1402,14 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
   if (!fOutput) {
     printf("ERROR: fOutput not available\n");
     return;
-  } 
-  fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
-  printf("Number of Analyzed Events = %f\n",fHistNEvents->GetBinContent(1));
-  
+  }
+  if(fHistNEvents){
+    fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
+    printf("Number of Analyzed Events = %f\n",fHistNEvents->GetBinContent(1));
+  }else{
+    printf("ERROR: fHistNEvents not available\n");
+  }
+
   Printf("end of Terminate");
   return;
 }

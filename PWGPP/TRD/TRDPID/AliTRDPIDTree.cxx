@@ -300,7 +300,8 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     if(!(hasTOFout && hasTOFtime)) return;
 
     // add kaons?
-    Double_t nSigmaTPC, nSigmaTOF;
+    Double_t nSigmaTPC = 0;
+    Double_t nSigmaTOF = 0;
 
     if(TMath::Abs(pdgfromv0)==11){
 	nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
@@ -533,7 +534,7 @@ void AliTRDPIDTree::ClearV0PIDlist(){
   fV0pions->Clear();
   fV0protons->Clear();
 
-  delete fV0tags;
+  delete[] fV0tags;
   fV0tags = 0;
 
   fNumTagsStored = 0;

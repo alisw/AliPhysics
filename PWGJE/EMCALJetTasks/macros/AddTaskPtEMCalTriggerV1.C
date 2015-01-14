@@ -46,7 +46,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   }
 
   bool isSwapEta = TString(period).CompareTo("LHC13f") ? kFALSE : kTRUE;
-  EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1("ptemcaltriggertask");
+  EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1(Form("ptemcaltriggertask%s", ntrackcuts));
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
   if(isMC) pttriggertask->SetSwapThresholds();
@@ -123,7 +123,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   printf("container name: %s\n", containerName.Data());
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("results", TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("TriggerTracksResults%s", ntrackcuts), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
 
   //Connect input/output
   mgr->ConnectInput(pttriggertask, 0, cinput);

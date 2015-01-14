@@ -513,6 +513,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
     AliESDtrack *track = dynamic_cast<AliESDtrack*>(vparticle);
 
+    if(!track) continue;
+
     if (TMath::Abs(track->Eta())>0.7) continue;
  
     fTrackPtBefTrkCuts->Fill(track->Pt());
@@ -626,7 +628,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
 
     if (m20>0.02 && m02>0.02){
-      Double_t corr[7]={iCent,iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi};
+      Double_t corr[7]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi};
       fCorr->Fill(corr);
     }
   

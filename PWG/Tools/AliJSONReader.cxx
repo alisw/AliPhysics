@@ -114,6 +114,8 @@ TList* AliJSONReader::Decode(const char* jsonstring) const {
   std::vector<AliJSONSyntaxTreeNode *> &daughters = ast->GetDaughters();
   for(std::vector<AliJSONSyntaxTreeNode *>::iterator it = daughters.begin(); it != daughters.end(); it++)
     AddNodeToList(*it, entries);
+  // Delete the syntax tree after being done
+  delete ast;
   return entries;
 }
 

@@ -44,6 +44,11 @@ AliFourPion *AddTaskFourPion(
   FourPionTask->SetMaxPt(1.0);
   FourPionTask->SetKT3transition(0.3);
   FourPionTask->SetKT4transition(0.3);
+  FourPionTask->Setq2Binning(kFALSE);
+  FourPionTask->Setq2Index(0);
+  FourPionTask->Setq2CutLow(0.55);
+  FourPionTask->Setq2CutHigh(1.25);
+
   mgr->AddTask(FourPionTask);
 
 
@@ -96,12 +101,17 @@ AliFourPion *AddTaskFourPion(
       cout << "Requested file:" << inputFileEA << " was not opened. ABORT." << endl;
       return NULL;
     }
-    TH3D *PbPbEA = 0;
-    TH3D *pPbEA = 0;
-    TH3D *ppEA = 0;
-    PbPbEA = (TH3D*)inputFileEA->Get("PbPbEA");
-    pPbEA = (TH3D*)inputFileEA->Get("pPbEA");
-    ppEA = (TH3D*)inputFileEA->Get("ppEA");
+    TH3D *PbPbEA[2];
+    TH3D *pPbEA[2];
+    TH3D *ppEA[2];
+    PbPbEA[0] = (TH3D*)inputFileEA->Get("PbPbEA_c3");
+    pPbEA[0] = (TH3D*)inputFileEA->Get("pPbEA_c3");
+    ppEA[0] = (TH3D*)inputFileEA->Get("ppEA_c3");
+    //
+    PbPbEA[1] = (TH3D*)inputFileEA->Get("PbPbEA_C3");
+    pPbEA[1] = (TH3D*)inputFileEA->Get("pPbEA_C3");
+    ppEA[1] = (TH3D*)inputFileEA->Get("ppEA_C3");
+    //
     FourPionTask->Setc3FitEAs( kTRUE, PbPbEA, pPbEA, ppEA );
     ////////////////////////////////////////////////////
   }// TabulatePairs check

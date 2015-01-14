@@ -168,8 +168,8 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fParticleAntiParticle(rhs.fParticleAntiParticle),
   fIsEventPlane(rhs.fIsEventPlane),
   fnPtBins(rhs.fnPtBins),
-  fPtBinLimits(),
-  fPtBinWidths(),
+  fPtBinLimits(NULL),
+  fPtBinWidths(NULL),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -186,6 +186,8 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
     fTab[i] = rhs.fTab[i];
   }
 
+  fPtBinLimits = new Double_t[fnPtBins+1];
+  fPtBinWidths = new Double_t[fnPtBins];
   for(Int_t i=0; i<fnPtBins; i++){
     fPtBinLimits[i] = rhs.fPtBinLimits[i];
     fPtBinWidths[i] = rhs.fPtBinWidths[i];
@@ -251,6 +253,10 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
   }
 
   fnPtBins = source.fnPtBins;
+  if(fPtBinLimits) delete fPtBinLimits;
+  if(fPtBinWidths) delete fPtBinWidths;
+  fPtBinLimits = new Double_t[fnPtBins+1];
+  fPtBinWidths = new Double_t[fnPtBins];
   for(Int_t i=0; i<fnPtBins; i++){
     fPtBinLimits[i] = source.fPtBinLimits[i];
     fPtBinWidths[i] = source.fPtBinWidths[i];

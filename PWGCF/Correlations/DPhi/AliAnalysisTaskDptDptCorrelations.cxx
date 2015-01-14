@@ -23,7 +23,6 @@
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include "TRandom.h"
-
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -1122,12 +1121,20 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	}
       
       
-      if ( centrality < _centralityMin ||  
+      /* if ( centrality < _centralityMin ||  
 	   centrality > _centralityMax ||
 	   fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
 	{
 	  return;
+	  }*/
+
+      if ( centrality < _centralityMin ||  
+	   centrality > _centralityMax )       //only for pPb centrality
+	{
+	  return;
 	}
+
+
       _eventAccounting->Fill(2);// count all events with right centrality
       
       // filter on z and xy vertex
