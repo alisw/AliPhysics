@@ -47,7 +47,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     int centrMax[9] = {5,10,20,30,40,50,60,70,80};
     const int ncentrminlim = ncentralityminlim;
     const int ncentrmaxlim = ncentralitymaxlim;
-    
+    const int ncentr =  ncentralitymaxlim - ncentralityminlim;
     
     //---------Data selection---------- ESD only!!!
     //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
@@ -251,7 +251,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     TString myNameSP[ncentr][4];
     TString slot[ncentr][4];
     
-    for (int icentr=0; icentr<ncentr; icentr++) {
+    for (int icentr=ncentralityminlim; icentr<ncentralitymaxlim; icentr++) {
         
         // Get the pointer to the existing analysis manager via the static access method.
         //==============================================================================
