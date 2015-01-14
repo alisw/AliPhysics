@@ -66,7 +66,7 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
   AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(inputTracks,inputClus,emctracks,emcclusters);
   emcalParts->SelectCollisionCandidates(pSel);
-
+  emcalParts->SetNCentBins(nCentBins);
   //----------------------- Cluster-Track matching -----------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,doHistos);
