@@ -429,7 +429,8 @@ void AliITSRawStreamSPD::CheckHeaderAndTrailerCount(Int_t ddlID) {
 			   fEqPLChipTrailersRead,fExpectedHeaderTrailerCount,ddlID);
     AliError(errMess.Data());
     fRawReader->AddMajorErrorLog(kHeaderCountErr,errMess.Data());
-    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
+    //   if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderCountErr,ddlID,fEqPLBytesRead,fEqPLChipTrailersRead,errMess.Data());
   }
 }
 //__________________________________________________________________________
