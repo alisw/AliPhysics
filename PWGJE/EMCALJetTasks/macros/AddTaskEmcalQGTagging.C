@@ -13,7 +13,9 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType, AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub ) {
+						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
+						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
+						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection) {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -40,6 +42,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   //task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
+  task->SetJetSelection(jetSelection);
   
   TString thename(njetsBase);
   //if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
@@ -148,7 +151,10 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
  
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kNoSub) contName1 += "_NoSub"; 
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kConstSub) contName1 += "_ConstSub"; 
-  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kDerivSub) contName1 += "_DerivSub"; 
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kDerivSub) contName1 += "_DerivSub";
+  
+  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kInclusive) contName1 += "_Incl";
+  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) contName1 += "_Recoil";
 
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
