@@ -1148,8 +1148,8 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
   Double_t yieldMC = 0.;
   Double_t yieldMCerror = 0.;
   Double_t sumYield = 0.;
-  const Int_t nbinsRec = hRec->GetNbinsX();
-  Double_t sumError2[nbinsRec+1];
+  const Int_t nbinsRec = hRec->GetNbinsX()+1;
+  Double_t sumError2[nbinsRec];
   for(int irec=0; irec<=hRec->GetNbinsX(); irec++)
     sumError2[irec]=0.;
   Double_t eff = 0.;
@@ -1197,7 +1197,7 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
     cout << "igen: " << igen << "\tpTMC: " << hGen->GetXaxis()->GetBinCenter(igen) << "\teff:" << eff << "\tsumYield: " << sumYield << endl;
   }
   
-  for(int i=0; i<=nbinsRec; i++) {
+  for(int i=0; i<nbinsRec; i++) {
     if(sumError2[i]>0.)
       hRec->SetBinError(i+1,TMath::Sqrt(sumError2[i]));
   }

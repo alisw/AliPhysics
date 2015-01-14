@@ -522,6 +522,7 @@ Bool_t AliEmcalPicoTrackInGridMaker::CreateGridPatches(const Int_t dim, const In
   if(!InitPatches(dim,level)) return kFALSE;
 
   Int_t pt = GetPatchType(dim,level);
+  if(pt<0) return kFALSE;
   Int_t nm = (Int_t)(dim/2.);    //size of trigger patch in number of mini patches
   Int_t stepm = (Int_t)(dim/2.); //step size through grid in mini patches
   if(level==1 && fL1Slide)  stepm = GetSlidingStepSizeMiniPatches(dim,level);

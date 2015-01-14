@@ -402,86 +402,85 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   AliEmcalJet *jetL = NULL;
   if(jetContNoEmb) jetL = jetContNoEmb->GetLeadingJet("rho");
 
-  if(jetCont) {
-    jetCont->ResetCurrentID();
-    while((jet1 = jetCont->GetNextAcceptJet())) {
-      jet2 = NULL;
+  jetCont->ResetCurrentID();
+  while((jet1 = jetCont->GetNextAcceptJet())) {
+    jet2 = NULL;
 
-      Double_t mjet1 = jet1->GetSecondOrderSubtracted();
-      Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
-      Double_t var = mjet1;
-      if(fJetMassVarType==kRatMPt) {
-	if(ptjet1>0. || ptjet1<0.) var = mjet1/ptjet1;
-	else var = -999.;
+    Double_t mjet1 = jet1->GetSecondOrderSubtracted();
+    Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
+    Double_t var = mjet1;
+    if(fJetMassVarType==kRatMPt) {
+      if(ptjet1>0. || ptjet1<0.) var = mjet1/ptjet1;
+      else var = -999.;
+    }
+
+    //Fill histograms for all AA jets
+    fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
+    fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
+    fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
+    fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
+    fh2PtRawSubFacV2[fCentBin]->Fill(jet1->Pt(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
+    fh2PtCorrSubFacV2[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
+    fh2NConstSubFacV2[fCentBin]->Fill(jet1->GetNumberOfTracks(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
+
+    Double_t fraction = 0.;
+    fMatch = 0;
+    fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
+    if(fSingleTrackEmb) {
+      AliVParticle *vp = GetEmbeddedConstituent(jet1);
+      if(vp) {
+        fJet2Vec->SetPxPyPzE(vp->Px(),vp->Py(),vp->Pz(),vp->E());
+        fMatch = 1;
       }
-
-      //Fill histograms for all AA jets
-      fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
-      fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
-      fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
-      fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
-      fh2PtRawSubFacV2[fCentBin]->Fill(jet1->Pt(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
-      fh2PtCorrSubFacV2[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
-      fh2NConstSubFacV2[fCentBin]->Fill(jet1->GetNumberOfTracks(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
-
-      Double_t fraction = 0.;
-      fMatch = 0;
-      fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
-      if(fSingleTrackEmb) {
-	AliVParticle *vp = GetEmbeddedConstituent(jet1);
-	if(vp) {
-	  fJet2Vec->SetPxPyPzE(vp->Px(),vp->Py(),vp->Pz(),vp->E());
-	  fMatch = 1;
-	}
-      } else {
-	jet2 = jet1->ClosestJet();
-	fraction = jetCont->GetFractionSharedPt(jet1);
-	fMatch = 1;
-	if(fMinFractionShared>0.) {
-	  if(fraction>fMinFractionShared) {
-	    fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
-	    fMatch = 1;
-	  } else
-	    fMatch = 0;
-	}
-      }
-
-      //      if(fMatch==1 && jet2->GetTagStatus()>0) jet2T = jet2->GetTaggedJet();
-
-      //Fill histograms for matched jets
-      fh2MSubMatch[fCentBin]->Fill(var,fMatch);
-      if(fMatch==1) {
-	Double_t drToLJ = -1.;
-	if(jetL) drToLJ = jet1->DeltaR(jetL);
-	fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
-	if(jet2) {
-	  Double_t var2 = jet2->M();
-	  if(fJetMassVarType==kRatMPt) {
-	    if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
-	  }
-	  fh3MSubPtTrueDR[fCentBin]->Fill(var,jet2->Pt(),drToLJ);
-	  fh3MTruePtTrueDR[fCentBin]->Fill(var2,jet2->Pt(),drToLJ);
-	  fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),var-var2,drToLJ);
-	  if(jet2->M()>0.) fh3PtTrueDeltaMRelDR[fCentBin]->Fill(jet2->Pt(),(var-var2)/var2,drToLJ);
-	  Double_t varsp[5] = {var,var2,ptjet1,jet2->Pt(),drToLJ};
-	  fhnMassResponse[fCentBin]->Fill(varsp);
-	}
-      }
-
-      if(fCreateTree) {      
-	fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-	fArea = (Float_t)jet1->Area();
-	fAreaPhi = (Float_t)jet1->AreaPhi();
-	fAreaEta = (Float_t)jet1->AreaEta();
-	fNConst = (Int_t)jet1->GetNumberOfTracks();
-	fM1st   = (Float_t)jet1->GetFirstOrderSubtracted();
-	fM2nd   = (Float_t)jet1->GetSecondOrderSubtracted();
-	fDeriv1st = (Float_t)jet1->GetFirstDerivative();
-	fDeriv2nd = (Float_t)jet1->GetSecondDerivative();
-	fTreeJetBkg->Fill();
+    } else {
+      jet2 = jet1->ClosestJet();
+      fraction = jetCont->GetFractionSharedPt(jet1);
+      fMatch = 1;
+      if(fMinFractionShared>0.) {
+        if(fraction>fMinFractionShared) {
+          fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
+          fMatch = 1;
+        } else
+          fMatch = 0;
       }
     }
+
+    //      if(fMatch==1 && jet2->GetTagStatus()>0) jet2T = jet2->GetTaggedJet();
+
+    //Fill histograms for matched jets
+    fh2MSubMatch[fCentBin]->Fill(var,fMatch);
+    if(fMatch==1) {
+      Double_t drToLJ = -1.;
+      if(jetL) drToLJ = jet1->DeltaR(jetL);
+      fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
+      if(jet2) {
+        Double_t var2 = jet2->M();
+        if(fJetMassVarType==kRatMPt) {
+          if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+        }
+        fh3MSubPtTrueDR[fCentBin]->Fill(var,jet2->Pt(),drToLJ);
+        fh3MTruePtTrueDR[fCentBin]->Fill(var2,jet2->Pt(),drToLJ);
+        fh3PtTrueDeltaMDR[fCentBin]->Fill(jet2->Pt(),var-var2,drToLJ);
+        if(jet2->M()>0.) fh3PtTrueDeltaMRelDR[fCentBin]->Fill(jet2->Pt(),(var-var2)/var2,drToLJ);
+        Double_t varsp[5] = {var,var2,ptjet1,jet2->Pt(),drToLJ};
+        fhnMassResponse[fCentBin]->Fill(varsp);
+      }
+    }
+
+    if(fCreateTree) {      
+      fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
+      fArea = (Float_t)jet1->Area();
+      fAreaPhi = (Float_t)jet1->AreaPhi();
+      fAreaEta = (Float_t)jet1->AreaEta();
+      fNConst = (Int_t)jet1->GetNumberOfTracks();
+      fM1st   = (Float_t)jet1->GetFirstOrderSubtracted();
+      fM2nd   = (Float_t)jet1->GetSecondOrderSubtracted();
+      fDeriv1st = (Float_t)jet1->GetFirstDerivative();
+      fDeriv2nd = (Float_t)jet1->GetSecondDerivative();
+      fTreeJetBkg->Fill();
+    }
   }
+
   return kTRUE;
 }
 
