@@ -207,12 +207,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
         TH2F* 		fHistClusterdEtadPhiNegTracksBeforeQA;	// 2-dim plot dEta vs. dPhi
         TH2F* 		fHistClusterdEtadPhiPosTracksAfterQA;	// 2-dim plot dEta vs. dPhi
         TH2F* 		fHistClusterdEtadPhiNegTracksAfterQA;	// 2-dim plot dEta vs. dPhi
-        TH2F*       fHistClusterdEtadPhiPosTracksP_00_05BeforeQA;// 2-dim plot dEta vs. dPhi, positive Tracks, P < 0.5
-        TH2F*       fHistClusterdEtadPhiPosTracksP_05_15BeforeQA;// 2-dim plot dEta vs. dPhi, positive Tracks, 0.5 < P < 1.5
-        TH2F*       fHistClusterdEtadPhiPosTracksP_15_99BeforeQA;// 2-dim plot dEta vs. dPhi, positive Tracks, P > 1.5
-        TH2F*       fHistClusterdEtadPhiNegTracksP_00_05BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P < 0.5
-        TH2F*       fHistClusterdEtadPhiNegTracksP_05_15BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, 0.5 < P < 1.5
-        TH2F*       fHistClusterdEtadPhiNegTracksP_15_99BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P > 1.5
+        TH2F*       fHistClusterdEtadPhiPosTracksP_000_075BeforeQA;// 2-dim plot dEta vs. dPhi, positive Tracks, P < 0.75
+        TH2F*       fHistClusterdEtadPhiPosTracksP_075_125BeforeQA;// 2-dim plot dEta vs. dPhi, positive Tracks, 0.75 < P < 1.25
+        TH2F*       fHistClusterdEtadPhiPosTracksP_125_999BeforeQA;// 2-dim plot dEta vs. dPhi, positive Tracks, P > 1.25
+        TH2F*       fHistClusterdEtadPhiNegTracksP_000_075BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P < 0.75
+        TH2F*       fHistClusterdEtadPhiNegTracksP_075_125BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, 0.75 < P < 1.25
+        TH2F*       fHistClusterdEtadPhiNegTracksP_125_999BeforeQA;// 2-dim plot dEta vs. dPhi, negative Tracks, P > 1.25
         TH2F* 		fHistClusterdEtadPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterdPhidPtBeforeQA;			// 2-dim plot dEta vs. Pt
         TH2F* 		fHistClusterM20Pt_dPhiBeforeQA;			// 2-dim plot M20 vs. Pt for given dPhi>0.05

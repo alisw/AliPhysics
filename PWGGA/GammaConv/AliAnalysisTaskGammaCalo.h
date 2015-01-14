@@ -50,6 +50,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
+        	void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		
 	    // Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -257,6 +258,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
+        	Bool_t                              fDoTHnSparse;                       // flag for using THnSparses for background estimation
 
 
 	private:

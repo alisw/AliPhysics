@@ -7,7 +7,8 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 									TString cutnumberAODBranch = "1000000060084000001500000",
 									TString periodName = "LHC13d2",  //name of the period for added signals and weighting
                                     Bool_t doWeighting = kFALSE,  //enable Weighting
-                                    Bool_t enableExtendedMatching = kFALSE //enable or disable extended matching histograms for conversion electrons <-> cluster
+                                    Bool_t enableExtendedMatching = kFALSE, //enable or disable extended matching histograms for conversion electrons <-> cluster
+                                    Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
 								) {
 
 	// ================= Load Librariers =================================
@@ -286,6 +287,7 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t trainConfig = 1,  //change different s
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
+    task->SetUseTHnSparse(isUsingTHnSparse);
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =

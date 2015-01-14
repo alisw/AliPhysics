@@ -146,12 +146,12 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
     fHistClusterdEtadPhiNegTracksBeforeQA(NULL),
     fHistClusterdEtadPhiPosTracksAfterQA(NULL),
     fHistClusterdEtadPhiNegTracksAfterQA(NULL),
-    fHistClusterdEtadPhiPosTracksP_00_05BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracksP_05_15BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracksP_15_99BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracksP_00_05BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracksP_05_15BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracksP_15_99BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_000_075BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_075_125BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_125_999BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_000_075BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_075_125BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_125_999BeforeQA(NULL),
     fHistClusterdEtadPtBeforeQA(NULL),
     fHistClusterdPhidPtBeforeQA(NULL),
     fHistClusterM20Pt_dPhiBeforeQA(NULL),
@@ -236,12 +236,12 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
     fHistClusterdEtadPhiNegTracksBeforeQA(NULL),
     fHistClusterdEtadPhiPosTracksAfterQA(NULL),
     fHistClusterdEtadPhiNegTracksAfterQA(NULL),
-    fHistClusterdEtadPhiPosTracksP_00_05BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracksP_05_15BeforeQA(NULL),
-    fHistClusterdEtadPhiPosTracksP_15_99BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracksP_00_05BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracksP_05_15BeforeQA(NULL),
-    fHistClusterdEtadPhiNegTracksP_15_99BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_000_075BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_075_125BeforeQA(NULL),
+    fHistClusterdEtadPhiPosTracksP_125_999BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_000_075BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_075_125BeforeQA(NULL),
+    fHistClusterdEtadPhiNegTracksP_125_999BeforeQA(NULL),
     fHistClusterdEtadPtBeforeQA(NULL),
     fHistClusterdPhidPtBeforeQA(NULL),
     fHistClusterM20Pt_dPhiBeforeQA(NULL),
@@ -433,18 +433,18 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
             fHistograms->Add(fHistClusterdEtadPhiPosTracksAfterQA);
             fHistClusterdEtadPhiNegTracksAfterQA = new TH2F(Form("dEtaVsdPhi_negTracks_afterClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_afterClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
             fHistograms->Add(fHistClusterdEtadPhiNegTracksAfterQA);
-            fHistClusterdEtadPhiPosTracksP_00_05BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P<0.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P<0.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
-            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_00_05BeforeQA);
-            fHistClusterdEtadPhiPosTracksP_05_15BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_0.5<P<1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_0.5<P<1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
-            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_05_15BeforeQA);
-            fHistClusterdEtadPhiPosTracksP_15_99BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P>1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P>1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
-            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_15_99BeforeQA);
-            fHistClusterdEtadPhiNegTracksP_00_05BeforeQA= new TH2F(Form("dEtaVsdPhi_negTrack_P<0.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTrack_P<0.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
-            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_00_05BeforeQA);
-            fHistClusterdEtadPhiNegTracksP_05_15BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_0.5<P<1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_0.5<P<1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
-            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_05_15BeforeQA);
-            fHistClusterdEtadPhiNegTracksP_15_99BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_P>1.5_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_P>1.5_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
-            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_15_99BeforeQA);
+            fHistClusterdEtadPhiPosTracksP_000_075BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P<0.75_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P<0.75_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_000_075BeforeQA);
+            fHistClusterdEtadPhiPosTracksP_075_125BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_0.75<P<1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_0.75<P<1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_075_125BeforeQA);
+            fHistClusterdEtadPhiPosTracksP_125_999BeforeQA = new TH2F(Form("dEtaVsdPhi_posTracks_P>1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_P>1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiPosTracksP_125_999BeforeQA);
+            fHistClusterdEtadPhiNegTracksP_000_075BeforeQA= new TH2F(Form("dEtaVsdPhi_negTrack_P<0.75_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTrack_P<0.75_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_000_075BeforeQA);
+            fHistClusterdEtadPhiNegTracksP_075_125BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_0.75<P<1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_0.75<P<1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_075_125BeforeQA);
+            fHistClusterdEtadPhiNegTracksP_125_999BeforeQA = new TH2F(Form("dEtaVsdPhi_negTracks_P>1.25_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_P>1.25_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
+            fHistograms->Add(fHistClusterdEtadPhiNegTracksP_125_999BeforeQA);
             fHistClusterdEtadPtBeforeQA = new TH2F(Form("dEtaVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsPt_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],250,0,25);
             fHistograms->Add(fHistClusterdEtadPtBeforeQA);
             fHistClusterdPhidPtBeforeQA = new TH2F(Form("dPhiVsPt_beforeClusterQA %s",GetCutNumber().Data()),"dPhiVsPt_beforeClusterQA",2*nPhiBins,2*PhiRange[0],2*PhiRange[1],250,0,25);
@@ -918,15 +918,15 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
             if(fExtendedMatching){
                 if(inTrack->Charge() > 0) {
                     fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi);
-                    if(inTrack->P() < 0.5) fHistClusterdEtadPhiPosTracksP_00_05BeforeQA->Fill(dEta, dPhi);
-                    else if(inTrack->P() < 1.5) fHistClusterdEtadPhiPosTracksP_05_15BeforeQA->Fill(dEta, dPhi);
-                    else fHistClusterdEtadPhiPosTracksP_15_99BeforeQA->Fill(dEta, dPhi);
+                    if(inTrack->P() < 0.75) fHistClusterdEtadPhiPosTracksP_000_075BeforeQA->Fill(dEta, dPhi);
+                    else if(inTrack->P() < 1.25) fHistClusterdEtadPhiPosTracksP_075_125BeforeQA->Fill(dEta, dPhi);
+                    else fHistClusterdEtadPhiPosTracksP_125_999BeforeQA->Fill(dEta, dPhi);
                 }
                 else{
                     fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi);
-                    if(inTrack->P() < 0.5) fHistClusterdEtadPhiNegTracksP_00_05BeforeQA->Fill(dEta, dPhi);
-                    else if(inTrack->P() < 1.5) fHistClusterdEtadPhiNegTracksP_05_15BeforeQA->Fill(dEta, dPhi);
-                    else fHistClusterdEtadPhiNegTracksP_15_99BeforeQA->Fill(dEta, dPhi);
+                    if(inTrack->P() < 0.75) fHistClusterdEtadPhiNegTracksP_000_075BeforeQA->Fill(dEta, dPhi);
+                    else if(inTrack->P() < 1.25) fHistClusterdEtadPhiNegTracksP_075_125BeforeQA->Fill(dEta, dPhi);
+                    else fHistClusterdEtadPhiNegTracksP_125_999BeforeQA->Fill(dEta, dPhi);
                 }
                 fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt());
                 fHistClusterdPhidPtBeforeQA->Fill(dPhi, inTrack->Pt());

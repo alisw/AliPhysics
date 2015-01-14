@@ -6,7 +6,8 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
                               Int_t doWeightingPart = 0,  //enable Weighting
                               TString generatorName = "DPMJET",
                               TString cutnumberAODBranch = "8000000060084000001500000", // cutnumber for AOD branch
-                              Bool_t enableExtendedMatching = kFALSE //enable or disable extended matching histograms for conversion electrons <-> cluster
+                              Bool_t enableExtendedMatching = kFALSE, //enable or disable extended matching histograms for conversion electrons <-> cluster
+                              Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
 							) {
 
 	// ================= Load Librariers =================================
@@ -267,6 +268,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
+    task->SetUseTHnSparse(isUsingTHnSparse);
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
