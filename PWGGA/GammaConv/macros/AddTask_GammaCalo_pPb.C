@@ -6,7 +6,8 @@ void AddTask_GammaCalo_pPb(
 							TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
 							Int_t doWeightingPart = 0,  //enable Weighting
 							TString generatorName = "DPMJET",
-							TString cutnumberAODBranch = "8000000060084000001500000" // cutnumber for AOD branch
+                            TString cutnumberAODBranch = "8000000060084000001500000", // cutnumber for AOD branch
+                            Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
 						   ) {
 
 	// ================= Load Librariers =================================
@@ -226,6 +227,7 @@ void AddTask_GammaCalo_pPb(
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
+    task->SetUseTHnSparse(isUsingTHnSparse);
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =

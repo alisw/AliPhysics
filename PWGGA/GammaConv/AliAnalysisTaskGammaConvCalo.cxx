@@ -256,7 +256,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fDoClusterQA(0),
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
-	fIsMC(kFALSE)
+    fIsMC(kFALSE),
+    fDoTHnSparse(kTRUE)
 {
   
 }
@@ -459,7 +460,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fDoClusterQA(0),
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
-	fIsMC(kFALSE)
+    fIsMC(kFALSE),
+    fDoTHnSparse(kTRUE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -500,9 +502,11 @@ void AliAnalysisTaskGammaConvCalo::InitBack(){
 	Double_t xMin[nDim] = {0,0, 0,0};
 	Double_t xMax[nDim] = {0.8,25,7,4};
 	
-	fSparseMotherInvMassPtZM = new THnSparseF*[fnCuts];
-	fSparseMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
-	
+    if(fDoTHnSparse){
+        fSparseMotherInvMassPtZM = new THnSparseF*[fnCuts];
+        fSparseMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
+    }
+
 	fBGHandler = new AliGammaConversionAODBGHandler*[fnCuts];
 	fBGHandlerRP = new AliConversionAODBGHandlerRP*[fnCuts];
 
@@ -534,22 +538,24 @@ void AliAnalysisTaskGammaConvCalo::InitBack(){
 				centMax = ((centMax*5)+45);
 			}
 			
-			fBackList[iCut] = new TList();
-			fBackList[iCut]->SetName(Form("%s_%s_%s_%s Back histograms",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(), cutstringMeson.Data()));
-			fBackList[iCut]->SetOwner(kTRUE);
-			fCutFolder[iCut]->Add(fBackList[iCut]);
-			
-			fSparseMotherBackInvMassPtZM[iCut] = new THnSparseF("Back_Back_InvMass_Pt_z_m","Back_Back_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
-			fBackList[iCut]->Add(fSparseMotherBackInvMassPtZM[iCut]);
-			
-			fMotherList[iCut] = new TList();
-			fMotherList[iCut]->SetName(Form("%s_%s_%s_%s Mother histograms",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
-			fMotherList[iCut]->SetOwner(kTRUE);
-			fCutFolder[iCut]->Add(fMotherList[iCut]);
-			
-			fSparseMotherInvMassPtZM[iCut] = new THnSparseF("Back_Mother_InvMass_Pt_z_m","Back_Mother_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
-			fMotherList[iCut]->Add(fSparseMotherInvMassPtZM[iCut]);
-			
+            if(fDoTHnSparse){
+                fBackList[iCut] = new TList();
+                fBackList[iCut]->SetName(Form("%s_%s_%s_%s Back histograms",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(), cutstringMeson.Data()));
+                fBackList[iCut]->SetOwner(kTRUE);
+                fCutFolder[iCut]->Add(fBackList[iCut]);
+
+                fSparseMotherBackInvMassPtZM[iCut] = new THnSparseF("Back_Back_InvMass_Pt_z_m","Back_Back_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
+                fBackList[iCut]->Add(fSparseMotherBackInvMassPtZM[iCut]);
+
+                fMotherList[iCut] = new TList();
+                fMotherList[iCut]->SetName(Form("%s_%s_%s_%s Mother histograms",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+                fMotherList[iCut]->SetOwner(kTRUE);
+                fCutFolder[iCut]->Add(fMotherList[iCut]);
+
+                fSparseMotherInvMassPtZM[iCut] = new THnSparseF("Back_Mother_InvMass_Pt_z_m","Back_Mother_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
+                fMotherList[iCut]->Add(fSparseMotherInvMassPtZM[iCut]);
+            }
+
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
@@ -595,8 +601,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   
 	fCutFolder = new TList*[fnCuts];
 	fESDList = new TList*[fnCuts];
-	fBackList = new TList*[fnCuts];
-	fMotherList = new TList*[fnCuts];
+
+    if(fDoTHnSparse){
+        fBackList = new TList*[fnCuts];
+        fMotherList = new TList*[fnCuts];
+    }
+
 	fHistoNEvents = new TH1I*[fnCuts];
 	fHistoNGoodESDTracks = new TH1I*[fnCuts];
 	fHistoNGammaCandidates = new TH1I*[fnCuts];
@@ -2556,7 +2566,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                                 fHistoMotherEtaConvPhotonEtaPhi[fiCut]->Fill(gamma0->GetPhotonPhi(), gamma0->GetPhotonEta());
 							}
 						}
-						if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
+                        if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
 							Int_t zbin = 0;
 							Int_t mbin = 0;
 							
@@ -2976,15 +2986,18 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
-	
-	Int_t zbin= fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
-	Int_t mbin = 0;
-	
-	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
-		mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
-	} else {
-		mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
-	}
+
+    Int_t zbin = 0;
+    Int_t mbin = 0;
+
+    if(fDoTHnSparse){
+        zbin = fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+            mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+        } else {
+            mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+        }
+    }
 	
 	AliGammaConversionAODBGHandler::GammaConversionVertex *bgEventVertex = NULL;    
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
@@ -3015,8 +3028,10 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 						->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 						fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
 						fHistoPhotonPairMixedEventPtconv[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.Pt());
-						Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-						fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+                        if(fDoTHnSparse){
+                            Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
+                            fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+                        }
 					}
 					delete backgroundCandidate;
 					backgroundCandidate = 0x0;
@@ -3052,8 +3067,10 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 						if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 							fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
 							fHistoPhotonPairMixedEventPtconv[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.Pt());
-							Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-							fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+                            if(fDoTHnSparse){
+                                Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
+                                fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+                            }
 						}
 						delete backgroundCandidate;
 						backgroundCandidate = 0x0;
@@ -3067,14 +3084,17 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::CalculateBackgroundRP(){
 	
-	Int_t zbin= fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
-	Int_t mbin = 0;
-	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
-		mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
-	} else {
-		mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
-	}
-	
+    Int_t zbin = 0;
+    Int_t mbin = 0;
+
+    if(fDoTHnSparse){
+        zbin= fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+            mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+        } else {
+            mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+        }
+    }
 	
 	//Rotation Method
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseRotationMethod()){
@@ -3099,8 +3119,10 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackgroundRP(){
 						->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 						fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
 						fHistoPhotonPairMixedEventPtconv[fiCut]->Fill(backgroundCandidate.M(),gamma0->Pt());
-						Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-						fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+                        if(fDoTHnSparse){
+                            Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
+                            fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+                        }
 					}
 				}
 			}
@@ -3132,8 +3154,10 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackgroundRP(){
 						->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 							fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
 							fHistoPhotonPairMixedEventPtconv[fiCut]->Fill(backgroundCandidate.M(),gamma0->Pt());
-							Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-							fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+                            if(fDoTHnSparse){
+                                Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
+                                fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+                            }
 						}
 					}
 				}
