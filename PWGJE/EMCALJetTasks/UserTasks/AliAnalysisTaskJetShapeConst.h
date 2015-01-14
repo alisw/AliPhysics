@@ -73,16 +73,16 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
   TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
   TH3F          **fh3MSubPtRawDRMatch;                             //! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
-  TH3F          **fh3MSubPtTrueDR;                                 //! subtracted jet mass vs true jet pT vs DR for matched jets for matched jets 
-  TH3F          **fh3MTruePtTrueDR;                                //! true jet mass vs true jet pT vs DR for matched jets for matched jets
-  TH3F          **fh3PtTrueDeltaMDR;                               //! true jet pT vs (Msub - Mtrue) vs distance to leading Pb-Pb jet for matched jets
-  TH3F          **fh3PtTrueDeltaMRelDR;                            //! true jet pT vs (Msub - Mtrue)/Mtrue vs DR for matched jets
+  TH3F          **fh3MSubPtTrueLeadPt;                             //! subtracted jet mass vs true jet pT vs LeadPt for matched jets for matched jets 
+  TH3F          **fh3MTruePtTrueLeadPt;                            //! true jet mass vs true jet pT vs LeadPt for matched jets for matched jets
+  TH3F          **fh3PtTrueDeltaMLeadPt;                           //! true jet pT vs (Msub - Mtrue) vs LeadPt for matched jets
+  TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
 
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 5)
+  ClassDef(AliAnalysisTaskJetShapeConst, 6)
 };
 #endif
 
