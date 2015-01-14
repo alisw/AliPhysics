@@ -73,6 +73,14 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
 		TString GetPeriodName(){return fPeriodName;}
 		Int_t GetNumberOfPrimaryTracks(){return fNumberOfPrimaryTracks;}
+		void SetUseMassToZero (Bool_t b){
+			if(b){
+				cout<<"enable set mass to zero for AliAODConversionPhoton"<<endl;			
+			}else{
+				cout<<"disable set mass to zero for AliAODConversionPhoton "<<endl;		
+			};
+			fUseMassToZero=b;
+		}
 	
 	protected:
 		// Reconstruct Gammas
@@ -110,13 +118,14 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		Bool_t 				fEventIsSelected;
 		Int_t 				fNumberOfPrimaryTracks;	 	// Number of Primary Tracks in AOD or ESD
 		TString 			fPeriodName;
+		Bool_t				fUseMassToZero;				// switch on setting the mass to 0 for AODConversionPhotons
 		
 	private:
 		AliV0ReaderV1(AliV0ReaderV1 &original);
 		AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 4)
+    ClassDef(AliV0ReaderV1, 5)
 };
 
 inline void AliV0ReaderV1::SetConversionCuts(const TString cut){
