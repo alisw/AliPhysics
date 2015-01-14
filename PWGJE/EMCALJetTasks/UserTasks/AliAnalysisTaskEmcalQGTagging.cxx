@@ -21,7 +21,6 @@
 #include "TMatrixDSymEigen.h"
 #include "TVector3.h"
 #include "TVector2.h"
-
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
@@ -36,6 +35,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliPythiaInfo.h"
+#include "TRandom3.h"
 
 
 #include "AliAODEvent.h"
@@ -54,9 +54,13 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fMinFractionShared(0),
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
+  fJetSelection(kInclusive),
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.3),
+  fminpTTrig(20.),
+  fmaxpTTrig(50.),
+  fangWindowRecoil(0.6),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
   fPhiJetCorr6(0x0), 
@@ -65,6 +69,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fEtaJetCorr7(0x0),
   fPtJetCorr(0x0),
   fPtJet(0x0),
+  fhpTjetpT(0x0),
+  fhPt(0x0),
+  fhPhi(0x0),
   fTreeObservableTagging(0)
 
 {
@@ -78,9 +85,13 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fMinFractionShared(0),
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
+  fJetSelection(kInclusive),
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.3),
+  fminpTTrig(20.),
+  fmaxpTTrig(50.),
+  fangWindowRecoil(0.6),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
   fPhiJetCorr6(0x0), 
@@ -89,6 +100,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fEtaJetCorr7(0x0),
   fPtJetCorr(0x0),
   fPtJet(0x0),
+  fhpTjetpT(0x0),
+  fhPt(0x0),
+  fhPhi(0x0),
   fTreeObservableTagging(0)
   
 {
@@ -151,8 +165,8 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   fh2ResponseUW= new TH2F("fh2ResponseUW", "fh2ResponseUW", 100, 0, 200,  100, 0, 200); 
   fOutput->Add(fh2ResponseUW);
-   fh2ResponseW= new TH2F("fh2ResponseW", "fh2ResponseW", 100, 0, 200,  100, 0, 200); 
-   fOutput->Add(fh2ResponseW);
+  fh2ResponseW= new TH2F("fh2ResponseW", "fh2ResponseW", 100, 0, 200,  100, 0, 200);
+  fOutput->Add(fh2ResponseW);
   fPhiJetCorr6= new TH2F("fPhiJetCorr6", "fPhiJetCorr6", 50, 0, 2*TMath::Pi(), 50, 0, 2*TMath::Pi());
   fOutput->Add(fPhiJetCorr6);
   fEtaJetCorr6= new TH2F("fEtaJetCorr6", "fEtaJetCorr6", 50, -1.5, 1.5, 50, -1.5, 1.5);
@@ -166,9 +180,15 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fPtJetCorr= new TH2F("fPtJetCorr", "fPtJetCorr", 100, 0, 200,  100, 0, 200);
   fOutput->Add(fPtJetCorr);
   fPtJet= new TH1F("fPtJet", "fPtJet", 100, 0, 200);
-  fOutput->Add(fPtJet); 
-
-
+  fOutput->Add(fPtJet);
+  
+  fhpTjetpT= new TH2F("fhpTjetpT", "fhpTjetpT", 100, 0, 200,  100, 0, 200);
+  fOutput->Add(fhpTjetpT);
+  fhPt= new TH1F("fhPt", "fhPt", 100, 0, 200);
+  fOutput->Add(fhPt);
+  fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
+  fOutput->Add(fhPhi);
+  
   fOutput->Add(fTreeObservableTagging);
   TH1::AddDirectory(oldStatus);
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -192,6 +212,25 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   AliJetContainer *jetCont = GetJetContainer(0);
   Float_t kWeight=1;
   if(fCent>10) return 0;
+
+  AliAODTrack *triggerHadron = 0x0;
+  
+  if (fJetSelection == kRecoil) {
+    //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
+    Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
+    if (triggerHadronLabel==-9999) {
+      Printf ("Trigger Hadron not found, return");
+      return 0;
+    }
+    AliParticleContainer *partContAn = GetParticleContainer(0);
+    TClonesArray *trackArrayAn = partContAn->GetArray();
+    triggerHadron = static_cast<AliAODTrack*>(trackArrayAn->At(triggerHadronLabel));
+    if (!triggerHadron) {
+      Printf("No Trigger hadron with the found label!!");
+      return 0;
+    }
+  }
+  
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
@@ -201,88 +240,103 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       AliEmcalJet *jetUS = NULL;
       Int_t ifound=0;
       Int_t ilab=-1;
-
-        if (!(fJetShapeType == kData)) {
-	AliPythiaInfo *partonsInfo = 0x0;
-
-	if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb)){
-	  AliJetContainer *jetContTrue = GetJetContainer(1);
+      
+      if (!(fJetShapeType == kData)) {
+        AliPythiaInfo *partonsInfo = 0x0;
+        
+        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb)){
+          AliJetContainer *jetContTrue = GetJetContainer(1);
           AliJetContainer *jetContUS = GetJetContainer(2);
           if(fJetShapeSub==kConstSub){
-    	  for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
-	  jetUS = jetContUS->GetJet(i);
-	  if(jetUS->GetLabel()==jet1->GetLabel()) {
-	    ifound++;
-	    if(ifound==1) ilab = i;
-	  }
-	}   
-          if(ilab==-1) continue;
-	  jetUS=jetContUS->GetJet(ilab);
-
-	    jet2=jetUS->ClosestJet();}
-	  if(!(fJetShapeSub==kConstSub)) jet2 = jet1->ClosestJet();
-	  if (!jet2) {
-	    Printf("jet2 not exists, returning");
-	    continue;
-	  }
-
-          fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());	  
-
+            for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
+              jetUS = jetContUS->GetJet(i);
+              if(jetUS->GetLabel()==jet1->GetLabel()) {
+                ifound++;
+                if(ifound==1) ilab = i;
+              }
+            }
+            if(ilab==-1) continue;
+            jetUS=jetContUS->GetJet(ilab);
+            
+            jet2=jetUS->ClosestJet();
+          }
+          if(!(fJetShapeSub==kConstSub)) jet2 = jet1->ClosestJet();
+          if (!jet2) {
+            Printf("jet2 not exists, returning");
+            continue;
+          }
+          
+          fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());
+          
           Double_t fraction=0;
-	  if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
+          if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
           if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
           cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
           
-	  if(fraction<fMinFractionShared) continue;
-	  partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();     
-	  if(!partonsInfo) return 0;
-          
-	}
-	else {
-	  partonsInfo = (AliPythiaInfo*) jetCont->GetPythiaInfo(); 
-	  jet2=jet1;
+          if(fraction<fMinFractionShared) continue;
+          partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
           if(!partonsInfo) return 0;
-	}
-	
-	Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6()); 
-	Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
-     	kWeight=partonsInfo->GetPythiaEventWeight();
+          
+        }
+        else {
+          partonsInfo = (AliPythiaInfo*) jetCont->GetPythiaInfo();
+          jet2=jet1;
+          if(!partonsInfo) return 0;
+        }
+        
+        Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6());
+        Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
+        kWeight=partonsInfo->GetPythiaEventWeight();
         fh2ResponseW->Fill(jet1->Pt(),jet2->Pt(),kWeight);
-	if (jp1< -1*TMath::Pi()) jp1 = (-2*TMath::Pi())-jp1;
-	else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
-	Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
-	fEtaJetCorr6->Fill(jet2->Eta(), partonsInfo->GetPartonEta6());
-	fPhiJetCorr6->Fill(jet2->Phi(), partonsInfo->GetPartonPhi6());
-	if(dRp1 < fRMatching) {
-	  fShapesVar[0] = partonsInfo->GetPartonFlag6();
-	  fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jet2->Pt());
-	}
-	else {
-	  jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi7());
-	  detap1=(jet2->Eta())-(partonsInfo->GetPartonEta7());
-	  if (jp1< -1*TMath::Pi()) jp1= (-2*TMath::Pi())-jp1;
-	  else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
-	  dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
-	  fEtaJetCorr7->Fill(jet2->Eta(), partonsInfo->GetPartonEta7());
-	  fPhiJetCorr7->Fill(jet2->Phi(), partonsInfo->GetPartonPhi7());
-	  if(dRp1 < fRMatching) {
-	    fShapesVar[0] = partonsInfo->GetPartonFlag7();
-	    fPtJetCorr ->Fill(partonsInfo->GetPartonPt7(), jet2->Pt());
-	  }
-	  else continue;
-	}
+        if (jp1< -1*TMath::Pi()) jp1 = (-2*TMath::Pi())-jp1;
+        else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
+        Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
+        fEtaJetCorr6->Fill(jet2->Eta(), partonsInfo->GetPartonEta6());
+        fPhiJetCorr6->Fill(jet2->Phi(), partonsInfo->GetPartonPhi6());
+        if(dRp1 < fRMatching) {
+          fShapesVar[0] = partonsInfo->GetPartonFlag6();
+          fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jet2->Pt());
+        }
+        else {
+          jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi7());
+          detap1=(jet2->Eta())-(partonsInfo->GetPartonEta7());
+          if (jp1< -1*TMath::Pi()) jp1= (-2*TMath::Pi())-jp1;
+          else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
+          dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
+          fEtaJetCorr7->Fill(jet2->Eta(), partonsInfo->GetPartonEta7());
+          fPhiJetCorr7->Fill(jet2->Phi(), partonsInfo->GetPartonPhi7());
+          if(dRp1 < fRMatching) {
+            fShapesVar[0] = partonsInfo->GetPartonFlag7();
+            fPtJetCorr->Fill(partonsInfo->GetPartonPt7(), jet2->Pt());
+          }
+          else continue;
+        }
       }
       else
-	fShapesVar[0] = 0.;
-     
-      Double_t ptSubtracted = 0; 
-
+        fShapesVar[0] = 0.;
+      
+      Double_t ptSubtracted = 0;
+      
+      Float_t dphiRecoil = 0.;
+      if (fJetSelection == kRecoil){
+        dphiRecoil = RelativePhi(triggerHadron->Phi(), jet1->Phi());
+        if (TMath::Abs(dphiRecoil) < TMath::Pi() - fangWindowRecoil) {
+         // Printf("Recoil jets back to back not found! continuing");
+          continue;
+        }
+        //Printf("Recoil jets back to back found! filling histos!");
+        fhpTjetpT->Fill(triggerHadron->Pt(), jet1->Pt());
+        //Printf("triggerHadron =%f, jet1 = %f", triggerHadron->Pt(), jet1->Pt());
+        fhPt->Fill(triggerHadron->Pt());
+        fhPhi->Fill(RelativePhi(triggerHadron->Phi(), jet1->Phi()));
+      }
+      
       if (((fJetShapeType == kData) || (fJetShapeType == kDetEmb)) && (fJetShapeSub == kConstSub))
-	  ptSubtracted = jet1->Pt(); 
+        ptSubtracted = jet1->Pt();
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
-	  
-      if ((fJetShapeType == kData || fJetShapeType== kDetEmb)) 
-	if ( ptSubtracted < fPtThreshold) continue;	
+      
+      if ((fJetShapeType == kData || fJetShapeType== kDetEmb))
+        if (ptSubtracted < fPtThreshold) continue;
       
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
@@ -296,29 +350,29 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0.;
       Int_t kMatched = 0;
       if (fJetShapeType == kTrueDet || fJetShapeType == kDetEmb) {
-	kMatched = 1;
-	ptMatch=jet2->Pt();
-	ptDMatch=GetJetpTD(jet2, kMatched); 
-	massMatch=GetJetMass(jet2,kMatched);
-	constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
-	angulMatch=GetJetAngularity(jet2, kMatched);
-	circMatch=GetJetCircularity(jet2, kMatched);
-	lesubMatch=GetJetLeSub(jet2, kMatched);
-	sigma2Match = GetSigma2(jet2, kMatched);
+        kMatched = 1;
+        ptMatch=jet2->Pt();
+        ptDMatch=GetJetpTD(jet2, kMatched);
+        massMatch=GetJetMass(jet2,kMatched);
+        constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
+        angulMatch=GetJetAngularity(jet2, kMatched);
+        circMatch=GetJetCircularity(jet2, kMatched);
+        lesubMatch=GetJetLeSub(jet2, kMatched);
+        sigma2Match = GetSigma2(jet2, kMatched);
         
       }
-
-      if (fJetShapeType == kTrue || fJetShapeType == kData) {
-	kMatched = 0;
-	ptMatch=0.;
-	ptDMatch=0.; 
-	massMatch=0.;
-	constMatch=0.;
-	angulMatch=0.;
-	circMatch=0.;
-	lesubMatch=0.;
-	sigma2Match =0.;
       
+      if (fJetShapeType == kTrue || fJetShapeType == kData) {
+        kMatched = 0;
+        ptMatch=0.;
+        ptDMatch=0.;
+        massMatch=0.;
+        constMatch=0.;
+        angulMatch=0.;
+        circMatch=0.;
+        lesubMatch=0.;
+        sigma2Match =0.;
+        
       }
       
       fShapesVar[9] = ptMatch;
@@ -331,10 +385,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[16] = sigma2Match;
       fShapesVar[17] = kWeight;
       fTreeObservableTagging->Fill();
-       
+      
     }
     
-  } 
+  }
   
   return kTRUE;
 }
@@ -609,6 +663,60 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet, Int_t jetCont
     return Sigma2(jet, jetContNb);
  
 }
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT){
+
+  AliParticleContainer *partCont = GetParticleContainer(0);
+  TClonesArray *tracksArray = partCont->GetArray();
+
+  if(!partCont || !tracksArray) return 0; 
+  AliAODTrack *track = 0x0;
+
+  TList *trackList = new TList();
+  Int_t triggers[100];
+  for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0; 
+  Int_t iTT = 0; 
+    
+  for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
+    track = static_cast<AliAODTrack*>(tracksArray->At(iTrack));
+    if (!track) continue;
+    
+    if(TMath::Abs(track->Eta())>0.9) continue;
+    if (track->Pt()<0.15) continue;
+    if (!(track->TestFilterBit(768))) continue;
+    
+    if ((track->Pt() >= minpT) && (track->Pt()< maxpT)) {
+      trackList->Add(track);
+      triggers[iTT] = iTrack;
+      iTT++;
+    }
+  }
+
+  if (iTT == 0) return -9999;
+  Int_t nbRn = 0, index = 0 ; 
+  TRandom3* random = new TRandom3(0); 
+  nbRn = random->Integer(iTT);
+
+  index = triggers[nbRn];
+  //Printf("iTT= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
+  return index; 
+  
+}
+
+//__________________________________________________________________________________
+Double_t AliAnalysisTaskEmcalQGTagging::RelativePhi(Double_t mphi,Double_t vphi){
+
+  if (vphi < -1*TMath::Pi()) vphi += (2*TMath::Pi());
+  else if (vphi > TMath::Pi()) vphi -= (2*TMath::Pi());
+  if (mphi < -1*TMath::Pi()) mphi += (2*TMath::Pi());
+  else if (mphi > TMath::Pi()) mphi -= (2*TMath::Pi());
+  double dphi = mphi-vphi;
+  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
+  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
+  return dphi;//dphi in [-Pi, Pi]
+}
+
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalQGTagging::RetrieveEventObjects() {
