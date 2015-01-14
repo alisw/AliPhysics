@@ -92,7 +92,7 @@ void THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
 	 */
 	THashList *parentgroup = FindGroup(parent);
 	if(!parentgroup){
-		Fatal("THistManager::CreateHistoGroup", "Parent group %s does not exist", parentgroup->GetName());
+		Fatal("THistManager::CreateHistoGroup", "Parent group %s does not exist", parent);
 		return;
 	}
 	THashList *childgroup = new THashList();

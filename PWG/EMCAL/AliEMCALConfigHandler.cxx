@@ -47,7 +47,7 @@ void AliEMCALConfigHandler::AddParam(const char* configName, const char* key,
   config->AddParam(key, value);
 }
 
-const char *AliEMCALConfigHandler::GetConfigurationString() const {
+std::string AliEMCALConfigHandler::GetConfigurationString() const {
   std::stringstream jsonbuilder;
   jsonbuilder << "{";
   TIter confentries(fConfiguration);
@@ -59,10 +59,10 @@ const char *AliEMCALConfigHandler::GetConfigurationString() const {
     if(isFirst) isFirst = false;
   }
   jsonbuilder << "}";
-  return jsonbuilder.str().c_str();
+  return jsonbuilder.str();
 }
 
-const char *AliEMCALConfigHandler::GetConfigurationString(const char* configname) const {
+std::string AliEMCALConfigHandler::GetConfigurationString(const char* configname) const {
   AliEMCALConfiguration *conf = FindConfiguration(configname);
   if(!conf) return "";
   return conf->CreateJSONString();

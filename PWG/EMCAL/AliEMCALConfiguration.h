@@ -9,6 +9,7 @@
 #define _ALIEMCALCONFIGURATION_H_
 
 #include <ostream>
+#include <string>
 #include <TNamed.h>
 
 class TList;
@@ -24,7 +25,7 @@ public:
   void AddConfiguration(AliEMCALConfiguration * conf);
   void Build(const char * jsonstring);
   void Build(TList *entries);
-  const char *CreateJSONString() const;
+  std::string CreateJSONString() const;
 
   Bool_t HasKey(const char *key) const { return GetValue(key) != NULL; }
   AliJSONValue *GetValue(const char *key) const ;
