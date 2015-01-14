@@ -69,7 +69,9 @@ class Colt(str):
 ## Comment.
 class Comment(object):
 
-  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
+  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func, \
+    append_empty=True):
+
     assert first_line > 0 and last_line >= first_line, 'Wrong line numbers'
     self.lines = lines
     self.first_line = first_line
@@ -78,6 +80,7 @@ class Comment(object):
     self.last_col = last_col
     self.indent = indent
     self.func = func
+    self.append_empty = append_empty
 
   def has_comment(self, line):
     return line >= self.first_line and line <= self.last_line
@@ -94,7 +97,7 @@ class PrependComment(Comment):
 
   def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
     super(PrependComment, self).__init__( \
-      lines, first_line, first_col, last_line, last_col, indent, func)
+      lines, first_line, first_col, last_line, last_col, indent, func, False)
 
 
 ## A data member comment.
@@ -454,34 +457,82 @@ def comment_classimp(filename, comments):
   line_num = 0
   reclassimp = r'^(\s*)ClassImp\((.*?)\)\s*;?\s*$'
 
+  in_classimp_cond = False
+  restartcond = r'^\s*///\s*\\cond\s+CLASSIMP\s*$'
+  reendcond = r'^\s*///\s*\\endcond\s*$'
+
   with open(filename, 'r') as fp:
+
+    line_classimp = -1
+    line_startcond = -1
+    line_endcond = -1
+    classimp_class = None
+    classimp_indent = None
 
     for line in fp:
 
       line_num = line_num + 1
+
       mclassimp = re.search(reclassimp, line)
       if mclassimp:
 
         # Adjust indent
-        indent_len = len( mclassimp.group(1) )
+        classimp_indent = len( mclassimp.group(1) )
 
+        line_classimp = line_num
+        classimp_class = mclassimp.group(2)
         logging.debug(
           'Comment found for ' +
           Colt( 'ClassImp(' ).magenta() +
-          Colt( mclassimp.group(2) ).cyan() +
+          Colt( classimp_class ).cyan() +
           Colt( ')' ).magenta() )
 
-        comments.append(PrependComment(
-          ['\cond CLASSIMP'],
-          line_num, 1, line_num, 1,
-          indent_len, 'ClassImp(%s)' % mclassimp.group(2)
-        ))
+      else:
 
-        comments.append(PrependComment(
-          ['\endcond'],
-          line_num+1, 1, line_num+1, 1,
-          indent_len, 'ClassImp(%s)' % mclassimp.group(2)
-        ))
+        mstartcond = re.search(restartcond, line)
+        if mstartcond:
+          logging.debug('Found Doxygen opening condition for ClassImp in {%s}' % line)
+          in_classimp_cond = True
+          line_startcond = line_num
+
+        elif in_classimp_cond:
+
+          mendcond = re.search(reendcond, line)
+          if mendcond:
+            logging.debug('Found Doxygen closing condition for ClassImp')
+            in_classimp_cond = False
+            line_endcond = line_num
+
+  # Did we find something?
+  if line_classimp != -1:
+
+    if line_startcond != -1:
+      comments.append(Comment(
+        ['\cond CLASSIMP'],
+        line_startcond, 1, line_startcond, 1,
+        classimp_indent, 'ClassImp(%s)' % classimp_class,
+        append_empty=False
+      ))
+    else:
+      comments.append(PrependComment(
+        ['\cond CLASSIMP'],
+        line_classimp, 1, line_classimp, 1,
+        classimp_indent, 'ClassImp(%s)' % classimp_class
+      ))
+
+    if line_endcond != -1:
+      comments.append(Comment(
+        ['\endcond'],
+        line_endcond, 1, line_endcond, 1,
+        classimp_indent, 'ClassImp(%s)' % classimp_class,
+        append_empty=False
+      ))
+    else:
+      comments.append(PrependComment(
+        ['\endcond'],
+        line_classimp+1, 1, line_classimp+1, 1,
+        classimp_indent, 'ClassImp(%s)' % classimp_class
+      ))
 
 
 ## Traverse the AST recursively starting from the current cursor.
@@ -771,7 +822,7 @@ def rewrite_comments(fhin, fhout, comments):
       fhout.write('\n')
 
     # Empty new line at the end of the comment
-    if not isinstance(cmt, PrependComment):
+    if cmt.append_empty:
       fhout.write('\n')
       ask_skip_empty = True
 
@@ -799,7 +850,8 @@ def rewrite_comments(fhin, fhout, comments):
     if comm:
 
       # First thing to check: are we in the same comment as before?
-      if comm is not prev_comm and isinstance(comm, Comment) and isinstance(prev_comm, Comment):
+      if comm is not prev_comm and isinstance(comm, Comment) and isinstance(prev_comm, Comment) \
+        and not isinstance(prev_comm, RemoveComment):
 
         skip_empty = dump_comment_block(prev_comm, restore_lines)
         in_comment = False
