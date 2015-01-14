@@ -663,10 +663,8 @@ Double_t AliAnalysisTaskJetShapeGR::CalcGR(AliEmcalJet *jet, Int_t ic) {
   Double_t gR = 0.;
   Double_t wr = 0.04;
   const Int_t nr = TMath::CeilNint(jetCont->GetJetRadius()/wr);
-  Double_t grArr[nr];
-  for(Int_t i = 0; i<nr; i++)
-    grArr[i] = 0.;
-
+  Double_t grArr[999] = {0.};
+ 
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
     for(Int_t j=i; j<jet->GetNumberOfTracks(); j++) {
