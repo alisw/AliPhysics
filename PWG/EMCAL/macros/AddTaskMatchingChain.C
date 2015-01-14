@@ -6,7 +6,8 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
 					 const Bool_t   doAODTrackProp     = kTRUE,
 					 const Double_t maxMatchR          = 0.1,
 					 const Bool_t   modifyMatchObjs    = kTRUE,
-					 const Bool_t   doHistos           = kFALSE
+					 const Bool_t   doHistos           = kFALSE,
+                                         const Int_t    nCentBins          = 4
 ) {
 
   // Add task macros for EMCal cluster track matching
@@ -70,6 +71,7 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,doHistos);
   emcalClus->SelectCollisionCandidates(pSel);
+  emcalClus->SetNCentBins(nCentBins);
 
   Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s",inputTracks.Data(),emctracks.Data(),emcclusters.Data());
 
