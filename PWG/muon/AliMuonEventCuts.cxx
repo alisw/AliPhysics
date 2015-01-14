@@ -131,16 +131,25 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     fVertexVzMin = obj.fVertexVzMin;
     fVertexVzMax = obj.fVertexVzMax;
     fCheckMask = obj.fCheckMask;
-    fSelectedTrigPattern = obj.fSelectedTrigPattern;
-    fRejectedTrigPattern = obj.fRejectedTrigPattern;
-    fSelectedTrigLevel = obj.fSelectedTrigLevel;
-    fSelectedTrigCombination = obj.fSelectedTrigCombination;
-    fTrigInputsMap = obj.fTrigInputsMap;
-    fAllSelectedTrigClasses = obj.fAllSelectedTrigClasses;
-    fCentralityClasses = obj.fCentralityClasses;
-    fAnalysisUtils = obj.fAnalysisUtils;
+    delete fSelectedTrigPattern;
+    fSelectedTrigPattern = ( obj.fSelectedTrigPattern ) ? static_cast<TObjArray*>(obj.fSelectedTrigPattern->Clone() ) : 0x0;
+    delete fRejectedTrigPattern;
+    fRejectedTrigPattern = ( obj.fRejectedTrigPattern ) ? static_cast<TObjArray*>(obj.fRejectedTrigPattern->Clone() ) : 0x0;
+    delete fSelectedTrigLevel;
+    fSelectedTrigLevel = ( obj.fSelectedTrigLevel ) ? static_cast<TObjArray*>(obj.fSelectedTrigLevel->Clone() ) : 0x0;
+    delete fSelectedTrigCombination;
+    fSelectedTrigCombination = ( obj.fSelectedTrigCombination ) ? static_cast<TObjArray*>(obj.fSelectedTrigCombination->Clone() ) : 0x0;
+    delete fTrigInputsMap;
+    fTrigInputsMap = ( obj.fTrigInputsMap ) ? static_cast<TList*>(obj.fTrigInputsMap->Clone() ) : 0x0;
+    delete fAllSelectedTrigClasses;
+    fAllSelectedTrigClasses = ( obj.fAllSelectedTrigClasses ) ? static_cast<TList*>(obj.fAllSelectedTrigClasses->Clone() ) : 0x0;
+    delete fCentralityClasses;
+    fCentralityClasses = ( obj.fCentralityClasses ) ? static_cast<TAxis*>(obj.fCentralityClasses->Clone() ) : 0x0;
+    delete fAnalysisUtils;
+    fAnalysisUtils = ( obj.fAnalysisUtils ) ? static_cast<AliAnalysisUtils*>(obj.fAnalysisUtils->Clone() ) : 0x0;
     fEventTriggerMask = obj.fEventTriggerMask;
-    fSelectedTrigClassesInEvent = obj.fSelectedTrigClassesInEvent;
+    delete fSelectedTrigClassesInEvent;
+    fSelectedTrigClassesInEvent = ( obj.fSelectedTrigClassesInEvent ) ? static_cast<TObjArray*>(obj.fSelectedTrigClassesInEvent->Clone() ) : 0x0;
   }
   return *this;
 }
