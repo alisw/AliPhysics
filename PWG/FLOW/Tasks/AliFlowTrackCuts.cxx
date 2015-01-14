@@ -188,7 +188,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
       fVZEROApol[i] = 0;
       fVZEROCpol[i] = 0;
   }
-  for(Int_t i(0); i < 8; i++){ fUseVZERORing[i] = kTRUE;}
+  for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
     
   for(int i=0;i<50;i++){
     fCutContour[i]= NULL;
@@ -314,7 +314,12 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
       fVZEROCpol[i] = 0;
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
+
+  for(int i=0;i<50;i++){
+    fCutContour[i]= NULL;
+    fCutGraph[i]=NULL;
   }
+}
 
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
@@ -3679,7 +3684,7 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCutPuritybased(const AliAODTrack* tra
     Int_t p_bin = -999;
     Double_t pBins[50];
     for(int b=0;b<50;b++){pBins[b] = 0.1*b;}
-    for(int i=0;i<50;i++){
+    for(int i=0;i<49;i++){      // fixed from <50 14012015 to avoid out-of-bounds RAB
         if(track->P()>pBins[i] && track->P()<(pBins[i+1])){
             p_bin = i;
         }

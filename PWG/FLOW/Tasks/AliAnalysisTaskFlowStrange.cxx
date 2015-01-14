@@ -979,7 +979,10 @@ Int_t AliAnalysisTaskFlowStrange::GetReferenceMultiplicity() { //toberefined
   Int_t ref=0;
   for(Int_t id=0; id!=rawN; ++id) {
     track = dynamic_cast<AliAODTrack*>(tAOD->GetTrack(id));
-    if(!track) AliFatal("Not a standard AOD");
+    if(!track) {
+        AliFatal("Not a standard AOD");
+        continue;
+    }
     if(!track->TestFilterBit(fRFPFilterBit)) continue;
     ++ref;
   }
