@@ -369,7 +369,7 @@ Bool_t AliMuonGridSubmitter::CopyTemplateFilesToLocal()
       if ( c )
       {
         Bool_t ok(kFALSE);
-        if ( stemplate.Contains(".jdl",TString::kIgnoreCase) )
+        if ( stemplate.EndsWith("jdl",TString::kIgnoreCase) )
         {
           ok = Generate(file->String().Data());
         }

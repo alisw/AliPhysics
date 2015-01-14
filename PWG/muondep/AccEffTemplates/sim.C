@@ -1,4 +1,4 @@
-void sim(Int_t nev=100) 
+void sim(Int_t nev=VAR_EVENTS_PER_JOB)
 {
   if ( VAR_PURELY_LOCAL) {
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));

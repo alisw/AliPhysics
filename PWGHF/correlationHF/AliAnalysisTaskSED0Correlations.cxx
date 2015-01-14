@@ -611,7 +611,10 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     for(Int_t itrack=0; itrack<ntracks; itrack++) { // loop on tacks
       //    ... get the track
       AliAODTrack * track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrack));
-      if(!track) AliFatal("Not a standard AOD");
+      if(!track){
+	AliWarning("Error in casting to AOD track. Not a standard AOD?");
+	continue;
+      }
       if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){
 	skipEvent=kTRUE;
 	fNentries->Fill(16);
@@ -671,7 +674,10 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
     for(Int_t itrack=0; itrack<aod->GetNumberOfTracks(); itrack++) { // loop on tacks
       AliAODTrack * track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrack));
-      if(!track) AliFatal("Not a standard AOD");
+      if(!track){
+	AliWarning("Error in casting to AOD track. Not a standard AOD?");
+	continue;
+      }
       //rejection of tracks
       if(track->GetID() < 0) continue; //discard negative ID tracks
       if(track->Pt() < fPtThreshLow.at(0) || track->Pt() > fPtThreshUp.at(0)) continue; //discard tracks outside pt range for hadrons/K

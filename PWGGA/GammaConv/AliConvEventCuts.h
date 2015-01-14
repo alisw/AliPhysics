@@ -187,6 +187,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Int_t 		IsHeavyIon()											{ return fIsHeavyIon									; }
 		void 		DoEtaShift(Bool_t doEtaShift)							{ fDoEtaShift = doEtaShift								; }
 		
+		//MC particle flags - determine whether particle is primary or secondary
+		Bool_t IsConversionPrimaryESD( AliStack *MCStack, Int_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ); 
 		
 	protected:
 		TList 						*fHistograms;
@@ -256,6 +258,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		ULong_t						fTriggersEMCAL;							// list of fired EMCAL triggers
 		ULong_t						fTriggersEMCALSelected;					// list of accepted triggers
 		Bool_t						fEMCALTrigInitialized;					// EMCAL triggers initialized
+		// Primary secondary distinction
+		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
 		
 	private:
 

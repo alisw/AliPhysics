@@ -218,6 +218,11 @@ fhistProtonEtaDistAfter(0)
 //fvalueSpecies(0)root
 {
     //Default Constructor
+    for(int i=0;i<150;i++){
+        fCutContour[i]= NULL;
+        fCutGraph[i]=NULL;
+    }
+
     //fCutContour[150]=NULL;
     //fCutGraph[150]=NULL;
     DefineInput(0,TChain::Class());
@@ -256,7 +261,10 @@ void AliAnalysisTaskPIDconfig::UserCreateOutputObjects()
     //input hander
     AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
-    if (!inputHandler) AliFatal("Input handler needed");
+    if (!inputHandler) {
+        AliFatal("Input handler needed");
+        return;         // to shut up coverity
+    }
     
     //pid response object
     fPIDResponse=inputHandler->GetPIDResponse();
@@ -292,13 +300,15 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
     
-    Int_t ntracks=fAOD->GetNumberOfTracks();
     
     
     if(!(fESD || fAOD)){
         printf("ERROR: fESD & fAOD not available\n");
         return;
     }
+
+    Int_t ntracks=fAOD->GetNumberOfTracks();
+
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     if (!fVevent) {
         printf("ERROR: fVevent not available\n");

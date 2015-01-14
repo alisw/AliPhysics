@@ -17,10 +17,14 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Int_t charge=0,
                                    Int_t MinTPCdedx = 10,
                                    Int_t ncentrality = 6,
+                                   Int_t maxITSCls = 7,
+                                   Double_t maxChi2ITSCls = 37,
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
                                    Bool_t VZERO = kFALSE, // use vzero sp method
                                    Bool_t is2011 = kFALSE,
+                                   Bool_t isAOD = kTRUE,
+                                   Bool_t UsePIDParContours = kFALSE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
 
@@ -115,12 +119,25 @@ for(int icentr=0;icentr<ncentr;icentr++){
     SP_POI[icentr] = DefinePOIcuts(icentr);
 
     SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
-    //SP_POI[icentr]->SetParamType(poitype);
+    if(!isAOD){
+        SP_POI[icentr]->SetMaxSharedITSCluster(maxITSCls);
+        SP_POI[icentr]->SetMaxChi2perITSCluster(maxChi2ITSCls);
+        SP_POI[icentr]->SetMinNClustersITS(2);
+        SP_POI[icentr]->SetRequireITSRefit(kTRUE);
+        SP_POI[icentr]->SetRequireTPCRefit(kTRUE);
+        SP_POI[icentr]->SetMaxDCAToVertexXY(0.3);
+        SP_POI[icentr]->SetMaxDCAToVertexZ(0.3);
+        SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
+        SP_POI[icentr]->SetMinimalTPCdedx(10.);
+    }
     //SP_POI[icentr]->SetParamMix(poimix);
-    SP_POI[icentr]->SetPtRange(0.2,5.);//
+    SP_POI[icentr]->SetPtRange(0.2,6.);//
     SP_POI[icentr]->SetMinNClustersTPC(70);
     SP_POI[icentr]->SetMinChi2PerClusterTPC(0.1);
     SP_POI[icentr]->SetMaxChi2PerClusterTPC(4.0);
+ 
+    
+    
     if(!VZERO && Qvector=="Qa"){
         SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
         printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
@@ -145,12 +162,16 @@ for(int icentr=0;icentr<ncentr;icentr++){
     //SP_POI->SetMaxNsigmaToVertex(1.e+10);
     //SP_POI->SetRequireSigmaToVertex(kFALSE);
     SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
-    if(isPID) SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
+    if(isPID){
+        SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
+        SP_POI[icentr]->SetTPCTOFNsigmaPIDCutContours(UsePIDParContours,centrMin[icentr],centrMax[icentr]);
+    }
+    
     if (charge!=0) SP_POI[icentr]->SetCharge(charge);
     //SP_POI->SetAllowTOFmismatch(kFALSE);
     SP_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
     SP_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
-    SP_POI[icentr]->SetAODfilterBit(AODfilterBit);
+    if(isAOD) SP_POI[icentr]->SetAODfilterBit(AODfilterBit);
     SP_POI[icentr]->SetQA(doQA);
     SP_POI[icentr]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
 
@@ -170,7 +191,9 @@ for(int icentr=0;icentr<ncentr;icentr++){
     if(isPID){
         suffixName[icentr]+=AliFlowTrackCuts::PIDsourceName(sourcePID);
         suffixName[icentr]+="_";
-        suffixName[icentr]+=AliPID::ParticleName(particleType);//particleType
+        suffixName[icentr]+=uniqueStr;
+        suffixName[icentr]+="_";
+        //suffixName[icentr]+=AliPID::ParticleName(particleType);//particleType
     }
     else{
         suffixName[icentr]+="AllCharged";
@@ -342,11 +365,11 @@ AliFlowTrackCuts* DefineRPcuts(Int_t icentr){
     AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts(Form("RP_%d",icentr));
     return cutsRP;
 }
-AliFlowTrackCuts* DefinePOIcuts(Int_t icentr){
+AliFlowTrackCuts* DefinePOIcuts(Int_t    icentr){
     AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts(Form("POI_%d",icentr));
     return cutsPOI;
 }
 
-
+     
 
 

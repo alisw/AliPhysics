@@ -2178,33 +2178,35 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  
 	  Bool_t kExcludeParticle = kFALSE;
 	  Int_t gMotherIndex = particle->GetFirstMother();
-	  if(gMotherIndex != -1) {
-	    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
-	    if(motherTrack) {
-	      TParticle *motherParticle = motherTrack->Particle();
-	      if(motherParticle) {
-		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
-		//if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-		if(pdgCodeOfMother == 113  // rho0
-		   || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
-		   // || pdgCodeOfMother == 221  // eta
-		   // || pdgCodeOfMother == 331  // eta'
-		   // || pdgCodeOfMother == 223  // omega
-		   // || pdgCodeOfMother == 333  // phi
-		   || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
-		   // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
-		   // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
-		   || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
-		   || pdgCodeOfMother == 111  // pi0 Dalitz
-		   ) {
-		  kExcludeParticle = kTRUE;
-		}
-	      }
-	    }
+
+	  if(TMath::Abs(particle->GetPdgCode()) != 321 || gMotherIndex != -1) {
+	    // AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	    // if(motherTrack) {
+	    //   TParticle *motherParticle = motherTrack->Particle();
+	    //   if(motherParticle) {
+	    // 	Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+	    // 	//if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+	    // 	if(pdgCodeOfMother == 113  // rho0
+	    // 	   || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+	    // 	   // || pdgCodeOfMother == 221  // eta
+	    // 	   // || pdgCodeOfMother == 331  // eta'
+	    // 	   // || pdgCodeOfMother == 223  // omega
+	    // 	   // || pdgCodeOfMother == 333  // phi
+	    // 	   || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+	    // 	   // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
+	    // 	   // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
+	    // 	   || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+	    // 	   || pdgCodeOfMother == 111  // pi0 Dalitz
+	    // 	   ) {
+	    kExcludeParticle = kTRUE;
+	    //	}
+	    //	      }
+	    //}
 	  }
 	  
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
+
 	}
 
 	//Exclude electrons with PDG

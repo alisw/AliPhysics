@@ -1244,7 +1244,10 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
      Int_t im2=0;
      for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
-      if(!tr) AliFatal("Not a standard AOD");
+      if(!tr) {
+        AliFatal("Not a standard AOD");
+        return -1;
+      }
       Bool_t bGood = false;
       if(fFilterType == 0)bGood = true;
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();

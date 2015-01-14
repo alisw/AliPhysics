@@ -148,6 +148,7 @@ fUseAODMerging(kFALSE)
   SetLocalDirectory("Snapshot",LocalDir());
   
   SetVar("VAR_OCDB_PATH",Form("\"%s\"",ocdbPath.Data()));
+  SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.root,AliAOD.Muons.root\"");
 
   SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONlib.h");
   SetVar("VAR_GENPARAM_NPART","1");
@@ -284,6 +285,8 @@ fUseAODMerging(kFALSE)
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
   }
 
+  SetVar("VAR_EVENTS_PER_JOB",Form("%i",fMaxEventsPerChunk));
+
   SetGenerator(generator);
   
   if (localOnly)
@@ -297,13 +300,13 @@ fUseAODMerging(kFALSE)
   
   AddToTemplateFileList("CheckESD.C");
   AddToTemplateFileList("CheckAOD.C");
-  AddToTemplateFileList("AODtrain.C");
-  AddToTemplateFileList("validation.sh");
+  AddToTemplateFileList("AODtrainsim.C");
+//  AddToTemplateFileList("validation.sh");
   
   AddToTemplateFileList("Config.C");
   AddToTemplateFileList("rec.C");
   AddToTemplateFileList("sim.C");
-  AddToTemplateFileList("simrun.C");
+  AddToTemplateFileList("simrun.sh");
   AddToTemplateFileList(RunJDLName().Data());
   
   UseExternalConfig(fExternalConfig);
@@ -384,7 +387,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   
   if ( !final )
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrain.C",RemoteDir().Data()));
+    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()));
     OutputToJDL(*os,"OutputDir",Form("%s/$1/Stage_$2/#alien_counter_03i#",RemoteDir().Data()));
     OutputToJDL(*os,"InputDataCollection",Form("%s/$1/Stage_$2.xml,nodownload",RemoteDir().Data()));
     OutputToJDL(*os,"split","se");
@@ -394,7 +397,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   }
   else
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrain.C",RemoteDir().Data()),
+    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()),
            Form("LF:%s/$1/wn.xml",RemoteDir().Data()));
     OutputToJDL(*os,"OutputDir",Form("%s/$1",RemoteDir().Data()));
   }
@@ -425,7 +428,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
               
   OutputToJDL(*os,"Jobtag","comment: AliMuonAccEffSubmitter RUN $1");
 
-  OutputToJDL(*os,"split","production:1-$2");
+  OutputToJDL(*os,"split","production:$2-$3");
 
   OutputToJDL(*os,"Price","1");
   
@@ -440,7 +443,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   
   while ( ( file = static_cast<TObjString*>(next())) )
   {
-    if ( !file->String().Contains(".jdl",TString::kIgnoreCase) ||
+    if ( !file->String().Contains("jdl",TString::kIgnoreCase) &&
          !file->String().Contains("OCDB_") )
     {
       files.Add(new TObjString(Form("LF:%s/%s",RemoteDir().Data(),file->String().Data())));
@@ -465,7 +468,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   {
     // keep only muon AODs and QA
     OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,*.log@disk=1",
-           "root_archive.zip:galice*.root,AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
+           "root_archive.zip:AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
   }
   else if ( CompactMode() == 2 )
   {
@@ -480,13 +483,13 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
     return kFALSE;
   }
   
-  OutputToJDL(*os,"splitarguments","simrun.C --run $1 --chunk #alien_counter# --event $3");
+  OutputToJDL(*os,"splitarguments","--run $1 --event #alien_counter# --eventsPerJob $4");
   
   OutputToJDL(*os,"Workdirectorysize","5000MB");
   
   OutputToJDL(*os,"JDLVariables","Packages","OutputDir");
 
-  OutputToJDL(*os,"Validationcommand",Form("%s/validation.sh",RemoteDir().Data()));
+  OutputToJDL(*os,"Validationcommand","/alice/validation/validation.sh");
 
   if ( GetVar("VAR_GENERATOR").Contains("pythia",TString::kIgnoreCase) )
   {
@@ -533,7 +536,7 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
     }
     else
     {
-      gSystem->Exec(Form("aliroot -b -q -x simrun.C --run %d --snapshot",runNumber));
+      gSystem->Exec(Form("simrun.sh --run %d --snapshot",runNumber));
     
       if ( gSystem->AccessPathName(ocdbSim.Data()) )
       {
@@ -757,6 +760,8 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if (!IsValid()) return kFALSE;
   
+  if ( fCompactMode == 1 ) SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.Muons.root\"");
+
   TString smode(mode);
   smode.ToUpper();
   
@@ -942,26 +947,30 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
     return 0;
   }
   
-  std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
-  
-  std::ofstream out("simrun.sh");
-  
-  out << "#!/bin/bash" << std::endl;
-//  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
-  out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
-
-  out.close();
+//  std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
+//
+//  std::ofstream out("simrun.sh");
+//
+//  out << "#!/bin/bash" << std::endl;
+////  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
+//  out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
+//
+//  out.close();
 
   gSystem->Exec("chmod +x simrun.sh");
+  gSystem->Exec("alien_cp alien:///alice/bin/aliroot_new file:");
+  gSystem->Exec("chmod u+x aliroot_new");
 
   std::cout << "Cleaning up left-over files from previous simulation/reconstructions" << std::endl;
-  
+
   gSystem->Exec("rm -rf TrackRefs.root *.SDigits*.root Kinematics.root *.Hits.root geometry.root gphysi.dat Run*.tag.root HLT*.root *.ps *.Digits.root *.RecPoints.root galice.root *QA*.root Trigger.root *.log AliESD* AliAOD* *.d *.so *.stat");
 
-  std::cout << "Executing the script : ./simrun.sh" << std::endl;
+  TString command = Form("./aliroot_new --run %i --event 1 --eventsPerJob %i", runs[0], fFixedNofEvents);
+
+  std::cout << "Executing the script : " << command.Data() << std::endl;
 
 
-  gSystem->Exec("./simrun.sh");
+  gSystem->Exec(command.Data());
   
   return 1;
 }
@@ -1113,7 +1122,7 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
   //  cout << "number of generated events per MB event = " << ratio << endl;
   //  cout << endl;
   
-  std::cout << "run\tchunks\tevents" << std::endl;
+  std::cout << "run\tfirstChunk\tlastChunk\teventsPerJob" << std::endl;
   std::cout << "----------------------" << std::endl;
   
   Int_t nJobs(0);
@@ -1158,9 +1167,9 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
     
     nEvts += nChunk*nEvtChunk;
     
-    std::cout << runNumber << "\t" << nChunk << "\t" << nEvtChunk << std::endl;
+    std::cout << runNumber << "\t1\t" << nChunk << "\t" << nEvtChunk << std::endl;
     
-    TString query(Form("submit %s %d %d %d", RunJDLName().Data(), runNumber, nChunk, nEvtChunk));
+    TString query(Form("submit %s %d 1 %d %d", RunJDLName().Data(), runNumber, nChunk, nEvtChunk));
     
     std::cout << query.Data() << " ..." << std::flush;
     

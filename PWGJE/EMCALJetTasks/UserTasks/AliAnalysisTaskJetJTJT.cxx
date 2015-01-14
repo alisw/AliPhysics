@@ -953,6 +953,7 @@ JTJTEfficiency::JTJTEfficiency():
 	fInputRoot(NULL),
 	fCentBinAxis(0x0)
 {
+  for (Int_t i=0; i < 3; i++) fEffDir[i] = 0;
 
 }
 
@@ -971,6 +972,7 @@ JTJTEfficiency::JTJTEfficiency(const JTJTEfficiency& obj) :
 {
 	// copy constructor TODO: handling of pointer members
 	JUNUSED(obj);
+  for (Int_t i=0; i < 3; i++) fEffDir[i] = obj.fEffDir[i];
 }
 
 JTJTEfficiency& JTJTEfficiency::operator=(const JTJTEfficiency& obj){
@@ -1067,8 +1069,8 @@ bool JTJTEfficiency::Load(){
 	fInputRoot = TFile::Open( fInputRootName);
 	//fInputRoot = new TFile( fInputRootName,"READ");
 	if( !fInputRoot ) {
-		cout<< "J_ERROR : "<<fInputRootName <<" does not exist"<<endl;
-		gSystem->Exit(1);
+		cout << "J_ERROR : %s does not exist" << fInputRootName << endl;
+                return false;
 	}
 
 	//fEffDir[0] = (TDirectory*)fInputRoot->Get("EffRE");
@@ -1077,14 +1079,14 @@ bool JTJTEfficiency::Load(){
 	//iif( fEffDir[0] && fEffDir[1] && fEffDir[2] )
 	if( !fEffDir[2] )
 	{
-		cout<< "J_ERROR : Directory EFF is not exist"<<endl;
-		gSystem->Exit(1);
+		cout << "J_ERROR : Directory EFF is not exist"<<endl;
+                return false;
 	}
 
 	fCentBinAxis = (TAxis*)fEffDir[2]->Get("CentralityBin");
 	if( !fCentBinAxis ){
-		cout<< "J_ERROR : No CentralityBin in directory"<<endl;
-		gSystem->Exit(1);
+		cout << "J_ERROR : No CentralityBin in directory" << endl;
+                return false;
 	}
 
 

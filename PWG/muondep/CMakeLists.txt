@@ -92,3 +92,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY . DESTINATION PWG/muondep FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY . DESTINATION PWG/muondep FILES_MATCHING PATTERN "*.sh")

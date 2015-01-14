@@ -93,6 +93,7 @@ void THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
 	THashList *parentgroup = FindGroup(parent);
 	if(!parentgroup){
 		Fatal("THistManager::CreateHistoGroup", "Parent group %s does not exist", parentgroup->GetName());
+		return;
 	}
 	THashList *childgroup = new THashList();
 	childgroup->SetName(groupname);
@@ -114,10 +115,14 @@ void THistManager::CreateTH1(const char *name, const char *title, int nbins, dou
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH1", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH1D(hname.Data(), title, nbins, xmin, xmax));
 }
 
@@ -135,10 +140,14 @@ void THistManager::CreateTH1(const char *name, const char *title, int nbins, con
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH1", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH1D(hname.Data(), title, nbins, xbins));
 }
 
@@ -155,10 +164,14 @@ void THistManager::CreateTH1(const char *name, const char *title, const TArrayD 
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH1", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH1D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray()));
 }
 
@@ -180,10 +193,14 @@ void THistManager::CreateTH2(const char *name, const char *title, int nbinsx, do
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH2", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH2D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax));
 }
 
@@ -203,10 +220,14 @@ void THistManager::CreateTH2(const char *name, const char *title, int nbinsx, co
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH2", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH2D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins));
 }
 
@@ -224,10 +245,14 @@ void THistManager::CreateTH2(const char *name, const char *title, const TArrayD 
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH2", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH2D(hname.Data(), title, xbins.GetSize() - 1, xbins.GetArray(), ybins.GetSize() - 1, ybins.GetArray()));
 }
 
@@ -250,10 +275,14 @@ void THistManager::CreateTH3(const char* name, const char* title, int nbinsx, do
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH3", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH3D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax));
 }
 
@@ -275,10 +304,13 @@ void THistManager::CreateTH3(const char* name, const char* title, int nbinsx, co
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH3", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+  }
 	parent->Add(new TH3D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins, nbinsz, zbins));
 }
 
@@ -297,10 +329,14 @@ void THistManager::CreateTH3(const char* name, const char* title, const TArrayD&
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTH3", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new TH3D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), ybins.GetSize()-1, ybins.GetArray(), zbins.GetSize()-1, zbins.GetArray()));
 }
 
@@ -320,10 +356,14 @@ void THistManager::CreateTHnSparse(const char *name, const char *title, int ndim
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname.Data()))
+		return;
+	}
+	if(parent->FindObject(hname.Data())){
 		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	parent->Add(new THnSparseD(hname.Data(), title, ndim, nbins, min, max));
 }
 
@@ -341,10 +381,14 @@ void THistManager::CreateTHnSparse(const char *name, const char *title, int ndim
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
-	if(parent->FindObject(hname))
+		return;
+	}
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		return;
+	}
 	TArrayD xmin(ndim), xmax(ndim);
 	TArrayI nbins(ndim);
 	for(int idim = 0; idim < ndim; ++idim){
@@ -369,12 +413,18 @@ void THistManager::SetObject(TObject * const o, const char *group) {
 	 * the object is not a histogram type
 	 */
 	THashList *parent(FindGroup(group));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::SetObject", "Parent %s does not exist", strcmp(group, "/") ? group : "");
-	if(parent->FindObject(o->GetName()))
+		return;
+	}
+	if(parent->FindObject(o->GetName())){
 		Fatal("THistManager::SetObject", "Parent %s does not exist", strcmp(group, "/") ? group : "");
-	if(!(dynamic_cast<THnBase *>(o) || dynamic_cast<TH1 *>(o)))
+		return;
+	}
+	if(!(dynamic_cast<THnBase *>(o) || dynamic_cast<TH1 *>(o))){
 		Fatal("THistManager::SetObject",  "Object %s is not of a histogram type",o->GetName());
+		return;
+	}
 	fHistos->Add(o);
 }
 
@@ -391,11 +441,15 @@ void THistManager::FillTH1(const char *name, double x, double weight) {
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
+	if(!parent){
 		Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
+		return;
+	}
 	TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname.Data()));
-	if(!hist)
+	if(!hist){
 		Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		return;
+	}
 	hist->Fill(x, weight);
 }
 
@@ -413,11 +467,15 @@ void THistManager::FillTH2(const char *name, double x, double y, double weight) 
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
-		Fatal("THistManager::FillTH2", "Parnt group %s does not exist", dirname.Data());
+	if(!parent){
+		Fatal("THistManager::FillTH2", "Parent group %s does not exist", dirname.Data());
+		return;
+	}
 	TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname.Data()));
-	if(!hist)
+	if(!hist){
 		Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		return;
+	}
 	hist->Fill(x, y, weight);
 }
 
@@ -434,11 +492,15 @@ void THistManager::FillTH2(const char *name, double *point, double weight) {
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
-		Fatal("THistManager::FillTH2", "Parnt group %s does not exist", dirname.Data());
+	if(!parent){
+		Fatal("THistManager::FillTH2", "Parent group %s does not exist", dirname.Data());
+		return;
+	}
 	TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname.Data()));
-	if(!hist)
+	if(!hist){
 		Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		return;
+	}
 	hist->Fill(point[0], point[1], weight);
 }
 
@@ -457,11 +519,15 @@ void THistManager::FillTH3(const char* name, double x, double y, double z, doubl
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
-		Fatal("THistManager::FillTH3", "Parnt group %s does not exist", dirname.Data());
+	if(!parent){
+		Fatal("THistManager::FillTH3", "Parent group %s does not exist", dirname.Data());
+		return;
+	}
 	TH3 *hist = dynamic_cast<TH3 *>(parent->FindObject(hname.Data()));
-	if(!hist)
+	if(!hist){
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		return;
+	}
 	hist->Fill(x, y, z, weight);
 }
 
@@ -478,11 +544,15 @@ void THistManager::FillTH3(const char* name, const double* point, double weight)
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
-		Fatal("THistManager::FillTH3", "Parnt group %s does not exist", dirname.Data());
+	if(!parent){
+		Fatal("THistManager::FillTH3", "Parent group %s does not exist", dirname.Data());
+		return;
+	}
 	TH3 *hist = dynamic_cast<TH3 *>(parent->FindObject(hname.Data()));
-	if(!hist)
+	if(!hist){
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		return;
+	}
 	hist->Fill(point[0], point[1], point[2], weight);
 }
 
@@ -500,11 +570,15 @@ void THistManager::FillTHnSparse(const char *name, const double *x, double weigh
 	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent)
-		Fatal("THistManager::FillTH3", "Parnt group %s does not exist", dirname.Data());
+	if(!parent){
+		Fatal("THistManager::FillTH3", "Parent group %s does not exist", dirname.Data());
+		return;
+	}
 	THnSparseD *hist = dynamic_cast<THnSparseD *>(parent->FindObject(hname.Data()));
-	if(!hist)
+	if(!hist){
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		return;
+	}
 	hist->Fill(x, weight);
 }
 

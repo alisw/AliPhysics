@@ -1871,6 +1871,69 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
   return gHistBalanceFunctionHistogram;
 }
 
+//____________________________________________________________________//
+TH1D *AliBalancePsi::GetTriggers(TString type,
+				 Double_t psiMin, 
+				 Double_t psiMax,
+				 Double_t vertexZMin,
+				 Double_t vertexZMax,
+				 Double_t ptTriggerMin,
+				 Double_t ptTriggerMax
+				 ) {
+
+  // Returns the 2D correlation function for "type"(PN,NP,PP,NN) pairs,
+  // does the division by event mixing inside,
+  // and averaging over several vertexZ and centrality bins
+
+  // security checks
+  if(type != "PN" && type != "NP" && type != "PP" && type != "NN" && type != "ALL"){
+    AliError("Only types allowed: PN,NP,PP,NN,ALL");
+    return NULL;
+  }
+
+  TH1D *gHist  = NULL;
+
+  // ranges (in bins) for vertexZ and centrality (psi)
+  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin+0.00001);
+  Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
+  Int_t binVertexMin = 0;
+  Int_t binVertexMax = 0;
+  if(fVertexBinning){
+    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin+0.00001);
+    binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
+  }  
+  Double_t binPsiLowEdge    = 0.;
+  Double_t binPsiUpEdge     = 1000.;
+  Double_t binVertexLowEdge = 0.;
+  Double_t binVertexUpEdge  = 1000.;
+
+   
+  // first set to range and then obtain histogram
+  if(type=="PN" || type=="PP"){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    gHist = (TH1D*)fHistP->Project(0,1);
+  }
+  else if(type=="NP" || type=="NN"){
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    gHist = (TH1D*)fHistN->Project(0,1);
+  }
+  else if(type=="ALL"){
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+    gHist = (TH1D*)fHistN->Project(0,1);
+    gHist->Add((TH1D*)fHistP->Project(0,1));
+  }
+
+  return gHist;
+}
 
 //____________________________________________________________________//
 TH2D *AliBalancePsi::GetCorrelationFunction(TString type,

@@ -153,7 +153,7 @@ public:
 
     virtual void SetUseSparse( Bool_t flag )            { fUseSparse             = flag;  }
     virtual void SetUseAccumulatingHist( Bool_t flag )  { fUseAccumulatingHist   = flag;  }
-    inline Bool_t IsPhiInRange( Double_t phi, Double_t phiBoundMin, Double_t phiBoundMax );
+    Bool_t IsPhiInRange( Double_t phi, Double_t phiBoundMin, Double_t phiBoundMax );
 
     void SetCorrespondanceWithAliROOTpid();
     void ZeroPidArrays();

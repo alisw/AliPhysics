@@ -406,7 +406,9 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(Double_t etaMin,Double_t et
 	        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iT));
                if(!aodTrack) AliFatal("Not a standard AOD");
 		if (!aodTrack->TestFilterBit(128)) continue;  //FIXME track type hard coded -> TPC only constrained to the vertex
-		if (aodTrack->Eta() <etaMin || aodTrack->Eta() > etaMax)continue;
+		if (aodTrack->Eta() <etaMin || aodTrack->Eta() > etaMax)continue; //default: etaMin=-0.5. etaMax=0.5
+		if (aodTrack->Pt()<0.2 || aodTrack->Pt()>20.)continue; //FIXME add variable pt cut, pt cut as in https://aliceinfo.cern.ch/Notes/node/71
+		
 		mult++;
 		Qx2 += TMath::Cos(2*aodTrack->Phi());
 		Qy2 += TMath::Sin(2*aodTrack->Phi());
@@ -714,7 +716,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
 
 	if(fQvecCalibType==1){
 		if(fNch<0.) return -999.;
-		ic = GetNchBin(fQvecIntegral);
+		if(fQvecIntegral)ic = GetNchBin(fQvecIntegral);
 	} else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
 
 	TH1D *h1D = (TH1D*)fQvecIntegral->ProjectionY("h1D",ic+1,ic+1);
@@ -818,7 +820,7 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side, Int_t type=1){
 			Int_t iv0 = CheckVZEROchannel(v0side, partMC->Eta(), partMC->Phi());
 
 			//use the efficiecy as a weigth
-			multv0mc[iv0] += fV0Aeff->GetFunction("f")->Eval(partMC->Pt());
+			if(iv0>=0)multv0mc[iv0] += fV0Aeff->GetFunction("f")->Eval(partMC->Pt());
 
 			//calculate multiplicity for each vzero channell
 			//multv0mc[iv0]++;
@@ -937,7 +939,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side, Int_t type=1)
 
 	if(fQvecCalibType==1){
 		if(fNch<0.) return -999.;
-		ic = GetNchBin(fQgenIntegral);
+		if(fQgenIntegral)ic = GetNchBin(fQgenIntegral);
 	} else ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
 
 	TH1D *h1D = (TH1D*)fQgenIntegral->ProjectionY("h1Dgen",ic+1,ic+1);
@@ -961,8 +963,8 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side, Int_t type=1)
 			fSplineArrayV0Cgen->AddAtAndExpand(spline,ic);
 		}
 	}
-
-	Double_t percentile = 100*spline->Eval(qvec);
+	Double_t percentile=-999.;
+	if(spline)percentile = 100*spline->Eval(qvec);
 
 	if(percentile>100. || percentile<0.) return -999.;
 

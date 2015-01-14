@@ -256,6 +256,7 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
 	
 	if(!fV0Reader){
 		printf("Error: No V0 Reader");
+		return;
 	} // GetV0Reader
 	
 	

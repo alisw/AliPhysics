@@ -62,8 +62,9 @@ bool AliFemtoSpherocityEventCut::Pass(const AliFemtoEvent* event){
     //if(SumPt==0){return kFALSE;}
       if(MULT<3){return kFALSE;}
  
-	Double_t *pxA=new Double_t[MULT];
-	Double_t *pyA=new Double_t[MULT];
+	Double_t *pxA=new Double_t[MULT]();
+	Double_t *pyA=new Double_t[MULT]();
+
 	Double_t sumapt=0;
 	Int_t counter=0;
   

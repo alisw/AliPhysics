@@ -3579,45 +3579,48 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    }
 
    Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks();
-   Int_t PrimaryTracks10[10][2] =
-      {
-         {9999,9999}, //  0
-         {1210, 928}, // 10
-         { 817, 658}, // 20
-         { 536, 435}, // 30
-         { 337, 276}, // 40
-         { 197, 162}, // 50
-         { 106, 100}, // 60
-         {  51,  44}, // 70
-         {  21,  18}, // 80
-         {   0,   0}  // 90
-      };
-   Int_t PrimaryTracks5a[10][2] =
-      {
-         {9999,9999}, // 0
-         {1485,1168}, // 5
-         {1210, 928}, // 10
-         { 995, 795}, // 15
-         { 817, 658}, // 20
-         { 666, 538}, // 25
-         { 536, 435}, // 30
-         { 428, 350}, // 35
-         { 337, 276}, // 40
-         { 260, 214}  // 45
-      };
-   Int_t PrimaryTracks5b[10][2] =
-      {
-         { 260, 214}, // 45
-         { 197, 162}, // 50
-         { 147, 125}, // 55
-         { 106, 100}, // 60
-         {  75,  63}, // 65
-         {  51,  44}, // 70
-         {  34,  29}, // 75
-         {  21,  18}, // 80
-         {  13,  11}, // 85
-         {   0,   0}  // 90
-      };
+	Int_t PrimaryTracks10[11][2] =
+		{
+			{9999,9999}, //  0
+			{1210, 928}, // 10
+			{ 817, 658}, // 20
+			{ 536, 435}, // 30
+			{ 337, 276}, // 40
+			{ 197, 162}, // 50
+			{ 106, 100}, // 60
+			{  51,  44}, // 70
+			{  21,  18}, // 80
+			{   0,   0},  // 90
+			{   0,   0}  // 100 // only max accessible
+		};
+	Int_t PrimaryTracks5a[11][2] =
+		{
+			{9999,9999}, // 0
+			{1485,1168}, // 5
+			{1210, 928}, // 10
+			{ 995, 795}, // 15
+			{ 817, 658}, // 20
+			{ 666, 538}, // 25
+			{ 536, 435}, // 30
+			{ 428, 350}, // 35
+			{ 337, 276}, // 40
+			{ 260, 214},  // 45
+			{ 0, 162}  // 50 only max accessible
+		};
+	Int_t PrimaryTracks5b[11][2] =
+		{
+			{ 260, 214}, // 45
+			{ 197, 162}, // 50
+			{ 147, 125}, // 55
+			{ 106, 100}, // 60
+			{  75,  63}, // 65
+			{  51,  44}, // 70
+			{  34,  29}, // 75
+			{  21,  18}, // 80
+			{  13,  11}, // 85
+			{   0,   0},  // 90
+			{   0,   0}  // 100 only max accessible
+		};
    Int_t column = 0;
    if(event->IsA()==AliESDEvent::Class()) column = 0;
    if(event->IsA()==AliAODEvent::Class()) column = 1;
@@ -4078,9 +4081,11 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 	AliStack *fMCStack = 0x0;
 	TClonesArray *fMCStackAOD = 0x0;
 	if(MCEvent->IsA()==AliMCEvent::Class()){
-		cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-		if(cHeader) headerFound = kTRUE;
-		if(dynamic_cast<AliMCEvent*>(MCEvent))fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		if (dynamic_cast<AliMCEvent*>(MCEvent)){
+			cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+			if(cHeader) headerFound = kTRUE;
+			fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		}	
 	}
 	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
 		cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));

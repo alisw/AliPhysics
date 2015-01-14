@@ -50,8 +50,9 @@ const Float_t multmax_50_102 = 102;
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta")
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta", const char* suffix = "")
 {
+	if(suffix!="") coutName+=Form("%s",suffix); //for subwagons containers 
 	printf("Addig CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -578,7 +579,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	printf("CREATE TASK\n");
 
 	// create the task
-	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsLctopKpi);
+	TString combinedName; //for subwagons
+	combinedName.Form("AliCFTaskVertexingHF%s", suffix);
+	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF(combinedName,cutsLctopKpi);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetDecayChannel(32);
 	task->SetUseWeight(kFALSE);

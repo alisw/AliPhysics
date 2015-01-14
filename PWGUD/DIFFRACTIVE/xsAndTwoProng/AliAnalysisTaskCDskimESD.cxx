@@ -327,8 +327,14 @@ void AliAnalysisTaskCDskimESD::UserExec(Option_t */*opt*/)
 			(AliMCEventHandler*)am->GetMCtruthEventHandler();
 		TTree* treeK = mcHandler->TreeK();
 		TTree* treeTR = mcHandler->TreeTR();
-		if (!treeK) AliFatal("TreeK not found!");
-		if (!treeTR) AliFatal("TreeTR not found!");
+		if (!treeK) {
+			AliFatal("TreeK not found!");
+			return;
+		}
+		if (!treeTR) {
+			AliFatal("TreeTR not found!");
+			return;
+		}
 
 		fWrkDir = gDirectory;
 		gDirectory = fKinematicsFile;
@@ -336,6 +342,10 @@ void AliAnalysisTaskCDskimESD::UserExec(Option_t */*opt*/)
 		gDirectory->mkdir(dirName);
 		gDirectory->cd(dirName);
 		TTree* outputTreeK = treeK->CloneTree(); // copy the whole tree
+		if (!outputTreeK) {
+			AliFatal("Could not clone TreeK!");
+			return;
+		}
 		outputTreeK->Write();
 		treeK->CopyAddresses(outputTreeK, kTRUE); // separate clone again
 		treeK->GetListOfClones()->Remove((TObject*)outputTreeK);
@@ -346,6 +356,10 @@ void AliAnalysisTaskCDskimESD::UserExec(Option_t */*opt*/)
 		gDirectory->mkdir(dirName);
 		gDirectory->cd(dirName);
 		TTree* outputTreeTR = treeTR->CloneTree(); // copy the whole tree
+		if (!outputTreeTR) {
+			AliFatal("Could not clone TreeTR");
+			return;
+		}
 		outputTreeTR->Write();
 		treeTR->CopyAddresses(outputTreeTR, kTRUE); // separate clone again
 		treeTR->GetListOfClones()->Remove((TObject*)outputTreeTR);

@@ -150,6 +150,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hMCK0sWOWeightPt;									//!
 		TH2F 								**hMCK0sPtY;										//!
 		TH2F 								**hMCSecPi0PtvsSource;								//!
+		TH2F 								**hMCSecPi0RvsSource;								//!
 		TH1F 								**hMCSecPi0Source;									//!
 		TH1F 								**hMCSecEtaPt;										//!
 		TH1F 								**hMCSecEtaSource;									//!

@@ -38,7 +38,7 @@ public:
   
   Int_t LocalTest();
   
-  TString RunJDLName() const { return "run.jdl"; }
+  TString RunJDLName() const { return "JDL"; }
 
   TString MergeJDLName(Bool_t final) const { return (final ? "AOD_merge_final.jdl" : "AOD_merge.jdl"); }
 
@@ -61,7 +61,7 @@ public:
   Bool_t SetGenerator(const char* generator);
 
   Int_t MaxEventsPerChunk() const { return fMaxEventsPerChunk; }
-  void SetMaxEventsPerChunk(Int_t n) { fMaxEventsPerChunk = n; }
+  void SetMaxEventsPerChunk(Int_t n) { fMaxEventsPerChunk = n; SetVar("VAR_EVENTS_PER_JOB", Form("%i",n)); }
 
   TString OCDBPath() const { return GetMapValue("OCDBPath"); }
   
