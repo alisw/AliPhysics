@@ -390,6 +390,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	  arr->AddDriftSpeed(dspres);
 	  arr->SetInjectorStatus(1);
 	  goldenUsed=kTRUE;
+	  delete params;
 	}
       }
       if(!goldenUsed){
