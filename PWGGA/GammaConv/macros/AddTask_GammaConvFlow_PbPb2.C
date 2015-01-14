@@ -75,7 +75,7 @@ void AddTask_GammaConvFlow_PbPb2(
         fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
         fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
         fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-        
+        fV0ReaderV1->SetUseMassToZero(kFALSE);
         if (!mgr) {
             Error("AddTask_V0ReaderV1", "No analysis manager found.");
             return;
