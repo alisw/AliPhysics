@@ -47,7 +47,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     int centrMax[9] = {5,10,20,30,40,50,60,70,80};
     const int ncentrminlim = ncentralityminlim;
     const int ncentrmaxlim = ncentralitymaxlim;
-    const int ncentr =  ncentralitymaxlim - ncentralityminlim;
+    
     
     //---------Data selection---------- ESD only!!!
     //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
@@ -65,16 +65,19 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     
     //===========================================================================
     // EVENTS CUTS:
+    const int ncentr = ncentrmaxlim - ncentrminlim;
+
+    const int nharmonics = uptoWhichHarmonics-1;
     AliFlowEventCuts* cutsEvent[ncentr];
     AliFlowTrackCuts* cutsRP[ncentr];
     AliFlowTrackCuts* cutsPOI[ncentr];
-    TString outputSlotName[ncentr][4];
+    TString outputSlotName[ncentr][nharmonics];
     TString suffixName[ncentr];
     
-    for(int icentr=ncentrminlim;icentr<ncentrmaxlim;icentr++){
+    for(int icentr=0;icentr<ncentr;icentr++){
         cutsEvent[icentr] = new AliFlowEventCuts(Form("eventcuts_%d",icentr));
         cutsEvent[icentr]->SetLHC11h(is2011);
-        cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr],centrMax[icentr]);
+        cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
         cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
         //  cutsEvent[icentr]->SetRefMultMethod(AliFlowEventCuts::kVZERO);
         //cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
@@ -167,7 +170,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
         if(isPID){
             SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
-            SP_POI[icentr]->SetTPCTOFNsigmaPIDCutContours(UsePIDParContours,centrMin[icentr],centrMax[icentr]);
+            SP_POI[icentr]->SetTPCTOFNsigmaPIDCutContours(UsePIDParContours,centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
         }
         
         if (charge!=0) SP_POI[icentr]->SetCharge(charge);
@@ -176,7 +179,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         SP_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
         if(isAOD) SP_POI[icentr]->SetAODfilterBit(AODfilterBit);
         SP_POI[icentr]->SetQA(doQA);
-        SP_POI[icentr]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
+        SP_POI[icentr]->SetPriors((centrMin[icentr+ncentrminlim]+centrMax[icentr+ncentrminlim])*0.5);
         
         
         
@@ -186,9 +189,9 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         if(!VZERO && Qvector=="Qa") suffixName[icentr] = "Qa";
         if(!VZERO && Qvector=="Qb") suffixName[icentr] = "Qb";
         if(VZERO) suffixName[icentr] = "vzero";
-        suffixName[icentr] += "-highharmflow";
-        suffixName[icentr] += Form("%i_", centrMin[icentr]);
-        suffixName[icentr] += Form("%i_", centrMax[icentr]);
+        suffixName[icentr] += "_flow_";
+        suffixName[icentr] += Form("%i_", centrMin[icentr+ncentrminlim]);
+        suffixName[icentr] += Form("%i_", centrMax[icentr+ncentrminlim]);
         suffixName[icentr] += Form("%.f_", EtaGap*10);
         
         if(isPID){
@@ -212,8 +215,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
             outputSlotName[icentr][harmonic-2]+="_";
             outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
-            outputSlotName[icentr][harmonic-2]+=Form("_%i-",centrMin[icentr]);
-            outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr]);
+            outputSlotName[icentr][harmonic-2]+=Form("_%i-",centrMin[icentr+ncentrminlim]);
+            outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr+ncentrminlim]);
             
             
             if(isPID){
@@ -241,17 +244,17 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     AliAnalysisDataContainer* coutputFEQA[ncentr];
     AliAnalysisTaskFlowEvent *taskFE[ncentr];
     
-    AliAnalysisDataContainer *flowEvent[ncentr][4];
-    AliAnalysisTaskFilterFE *tskFilter[ncentr][4];
+    AliAnalysisDataContainer *flowEvent[ncentr][nharmonics];
+    AliAnalysisTaskFilterFE *tskFilter[ncentr][nharmonics];
     
-    AliAnalysisDataContainer *coutputSP[ncentr][4];
-    AliAnalysisTaskScalarProduct *taskSP[ncentr][4];
+    AliAnalysisDataContainer *coutputSP[ncentr][nharmonics];
+    AliAnalysisTaskScalarProduct *taskSP[ncentr][nharmonics];
     
     TString outputQA[ncentr];
-    TString myNameSP[ncentr][4];
-    TString slot[ncentr][4];
+    TString myNameSP[ncentr][nharmonics];
+    TString slot[ncentr][nharmonics];
     
-    for (int icentr=ncentralityminlim; icentr<ncentralitymaxlim; icentr++) {
+    for (int icentr=0; icentr<ncentr; icentr++) {
         
         // Get the pointer to the existing analysis manager via the static access method.
         //==============================================================================
@@ -299,13 +302,12 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         mgr->ConnectInput(taskFE[icentr],0,cinput1[icentr]);
         mgr->ConnectOutput(taskFE[icentr],1,coutputFE[icentr]);
         //==========================================================
-        
         TString Species = "";
         if(isPID) Species += AliPID::ParticleName(particleType);
         else      Species += "Allcharged";
         
         
-        for(int harm=2;harm<6;harm++){
+        for(int harm=2;harm<uptoWhichHarmonics+1;harm++){
             myNameSP[icentr][harm-2] = "SP_";
             myNameSP[icentr][harm-2] += Qvector;
             myNameSP[icentr][harm-2] += Form("_v%i_%s_%.f",harm,outputSlotName[icentr][harm-2].Data(),EtaGap*10);
@@ -365,11 +367,11 @@ AliFlowEventCuts* DefinecutsEvent(Int_t icentr){
     return cutsEvent;
 }
 AliFlowTrackCuts* DefineRPcuts(Int_t icentr){
-    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts(Form("RP_%d",icentr));
+    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts"RP_%d");
     return cutsRP;
 }
 AliFlowTrackCuts* DefinePOIcuts(Int_t    icentr){
-    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts(Form("POI_%d",icentr));
+    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI_%d");
     return cutsPOI;
 }
 
