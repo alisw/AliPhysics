@@ -512,8 +512,6 @@ Int_t AliITSgeom::GetStartDet(Int_t dtype)const{
         return 0;
     } // end switch
 
-    Warning("GetStartDet","undefined detector type %d",dtype);
-    return 0;
 }
 //______________________________________________________________________
 Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
@@ -543,8 +541,7 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
         return 0;
     } // end switch
 
-    Warning("GetLastDet","undefined detector type %d",dtype);
-    return 0;
+ 
 }
 
 //______________________________________________________________________
