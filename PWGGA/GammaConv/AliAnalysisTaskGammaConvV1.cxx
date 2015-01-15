@@ -202,7 +202,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	fDoMesonQA(0),
 	fDoPhotonQA(0),
 	fIsFromMBHeader(kTRUE),
-	fIsMC(kFALSE)
+	fIsMC(kFALSE),
+	fDoTHnSparse(kTRUE)
 {
 
 }
@@ -353,7 +354,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	fDoMesonQA(0),
 	fDoPhotonQA(0),
 	fIsFromMBHeader(kTRUE),
-	fIsMC(kFALSE)
+	fIsMC(kFALSE),
+	fDoTHnSparse(kTRUE)
 {
    // Define output slots here
 	DefineOutput(1, TList::Class());
@@ -382,9 +384,10 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
 	Double_t xMin[nDim] = {0,0, 0,0};
 	Double_t xMax[nDim] = {0.8,25,7,4};
 	
-	sESDMotherInvMassPtZM = new THnSparseF*[fnCuts];
-	sESDMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
-
+	if(fDoTHnSparse){
+		sESDMotherInvMassPtZM = new THnSparseF*[fnCuts];
+		sESDMotherBackInvMassPtZM = new THnSparseF*[fnCuts];
+	}
 	fBGHandler = new AliGammaConversionAODBGHandler*[fnCuts];
 	fBGHandlerRP = new AliConversionAODBGHandlerRP*[fnCuts];
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -411,22 +414,23 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
 				centMax = ((centMax*5)+45);
 			}
 			
-			fBackList[iCut] = new TList();
-			fBackList[iCut]->SetName(Form("%s_%s_%s Back histograms",cutstringEvent.Data(), cutstringPhoton.Data(),cutstringMeson.Data()));
-			fBackList[iCut]->SetOwner(kTRUE);
-			fCutFolder[iCut]->Add(fBackList[iCut]);
+			if(fDoTHnSparse){
+				fBackList[iCut] = new TList();
+				fBackList[iCut]->SetName(Form("%s_%s_%s Back histograms",cutstringEvent.Data(), cutstringPhoton.Data(),cutstringMeson.Data()));
+				fBackList[iCut]->SetOwner(kTRUE);
+				fCutFolder[iCut]->Add(fBackList[iCut]);
 
-			sESDMotherBackInvMassPtZM[iCut] = new THnSparseF("Back_Back_InvMass_Pt_z_m","Back_Back_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
-			fBackList[iCut]->Add(sESDMotherBackInvMassPtZM[iCut]);
+				sESDMotherBackInvMassPtZM[iCut] = new THnSparseF("Back_Back_InvMass_Pt_z_m","Back_Back_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
+				fBackList[iCut]->Add(sESDMotherBackInvMassPtZM[iCut]);
 
-			fMotherList[iCut] = new TList();
-			fMotherList[iCut]->SetName(Form("%s_%s_%s Mother histograms",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
-			fMotherList[iCut]->SetOwner(kTRUE);
-			fCutFolder[iCut]->Add(fMotherList[iCut]);
+				fMotherList[iCut] = new TList();
+				fMotherList[iCut]->SetName(Form("%s_%s_%s Mother histograms",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
+				fMotherList[iCut]->SetOwner(kTRUE);
+				fCutFolder[iCut]->Add(fMotherList[iCut]);
 
-			sESDMotherInvMassPtZM[iCut] = new THnSparseF("Back_Mother_InvMass_Pt_z_m","Back_Mother_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
-			fMotherList[iCut]->Add(sESDMotherInvMassPtZM[iCut]);
-
+				sESDMotherInvMassPtZM[iCut] = new THnSparseF("Back_Mother_InvMass_Pt_z_m","Back_Mother_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
+				fMotherList[iCut]->Add(sESDMotherInvMassPtZM[iCut]);
+			}
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
 																	collisionSystem,centMin,centMax,
@@ -462,8 +466,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 	fCutFolder = new TList*[fnCuts];
 	fESDList = new TList*[fnCuts];
-	fBackList = new TList*[fnCuts];
-	fMotherList = new TList*[fnCuts];
+	if(fDoTHnSparse){
+		fBackList = new TList*[fnCuts];
+		fMotherList = new TList*[fnCuts];
+	}
 	hNEvents = new TH1I*[fnCuts];
 	hNGoodESDTracks = new TH1I*[fnCuts];
 	hNGammaCandidates = new TH1I*[fnCuts];
@@ -1899,7 +1905,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 							hESDMotherEtaPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());       
 						}
 					}   
-					if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
+					if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
 						Int_t zbin = 0;
 						Int_t mbin = 0;
 
@@ -2328,14 +2334,14 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 
-	Int_t zbin= fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+    Int_t zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
 	Int_t mbin = 0;
 
-	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
-		mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
-	} else {
-		mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
-	}
+    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+        mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+    } else {
+        mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+    }
 
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseRotationMethod()){
 
@@ -2364,8 +2370,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 				if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 					->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 					hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-					Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-					sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+					if(fDoTHnSparse){
+						Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
+						sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+					}
 				}
 				delete backgroundCandidate;
 				backgroundCandidate = 0x0;
@@ -2398,8 +2406,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 					if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 						->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 						hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-						Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-						sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+						if(fDoTHnSparse){
+							Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
+							sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+						}
 					}
 					delete backgroundCandidate;
 					backgroundCandidate = 0x0;
@@ -2433,8 +2443,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 						if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 							->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 							hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-							Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-							sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+							if(fDoTHnSparse){
+								Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
+								sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
+							}
 						}
 						delete backgroundCandidate;
 						backgroundCandidate = 0x0;
@@ -2448,14 +2460,17 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
-	Int_t zbin= fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+	Int_t zbin = 0;
 	Int_t mbin = 0;
-	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
-		mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
-	} else {
-		mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+	
+	if(fDoTHnSparse){
+		zbin = fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+		if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+			mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+		} else {
+			mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+		}
 	}
-
 
 	//Rotation Method
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseRotationMethod()){
@@ -2477,8 +2492,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 					backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 					if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 						hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
-						Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-						sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+						if(fDoTHnSparse){
+							Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
+							sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+						}
 					}
 				}
 			}
@@ -2501,21 +2518,23 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
 				for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
 
-				AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
+                    AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
 
-				for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
+                    for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
 
-					AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
+                        AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
 
-					AliAODConversionMother backgroundCandidate(gamma0,gamma1);
-					backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-					if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-						->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-						hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
-						Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-						sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
-					}
-				}
+                        AliAODConversionMother backgroundCandidate(gamma0,gamma1);
+                        backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+                        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
+                            ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+                            hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
+                            if(fDoTHnSparse){
+                                Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
+                                sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);
+                            }
+                        }
+                    }
 				}
 			}
 		}

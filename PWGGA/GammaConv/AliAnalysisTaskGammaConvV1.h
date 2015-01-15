@@ -36,6 +36,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
+		void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void ProcessPhotonCandidates();
 		void CalculatePi0Candidates();
 		void CalculateBackground();
@@ -229,6 +230,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		Int_t 								fDoPhotonQA;										//
 		Bool_t 								fIsFromMBHeader;									//
 		Bool_t 								fIsMC;												//
+		Bool_t                              fDoTHnSparse;                       // flag for using THnSparses for background estimation
 
 	private:
 

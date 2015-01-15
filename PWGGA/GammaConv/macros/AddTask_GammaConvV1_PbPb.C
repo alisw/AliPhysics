@@ -6,7 +6,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
                               Int_t headerSelectionInt = 0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                               TString cutnumberAODBranch = "1000000060084000001500000",
                               TString periodName = "LHC13d2",  //name of the period for added signals and weighting
-							  Bool_t doWeighting = kFALSE  //enable Weighting
+							  Bool_t doWeighting = kFALSE,  //enable Weighting
+							  Bool_t enableUseTHnSparse = kTRUE
                            ) {
 
 	// ================= Load Librariers =================================
@@ -1133,7 +1134,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
-
+	task->SetDoTHnSparse(enableUseTHnSparse);
+	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
