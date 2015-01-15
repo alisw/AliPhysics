@@ -43,10 +43,11 @@ ClassImp(AliMUONLogger)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONLogger::AliMUONLogger(Int_t maxNumberOfEntries) 
+AliMUONLogger::AliMUONLogger(Int_t maxNumberOfEntries, const char* name)
 : TObject(), 
   fMaxNumberOfEntries(maxNumberOfEntries),
-  fLog(new AliMUONStringIntMap)
+  fLog(new AliMUONStringIntMap),
+  fName(name)
 {
     /// ctor. After maxNumberOfEntries, the log is printed and reset
 }
@@ -139,3 +140,45 @@ AliMUONLogger::NumberOfEntries() const
   return fLog->GetNofItems();
 }
 
+//______________________________________________________________________________
+Long64_t AliMUONLogger::Merge(TCollection* list)
+{
+  /// Merge method
+  
+  // Merge a list of AliMUONLogger objects with this
+  // Returns the number of merged objects (including this).
+  //
+  // Not the most clever implementation, but it works...
+  //
+  
+  if (!list) return 0;
+  
+  if (list->IsEmpty()) return 1;
+  
+  TIter next(list);
+  TObject* currObj;
+  Int_t count(0);
+  
+  while ( ( currObj = next() ) )
+  {
+    AliMUONLogger* logger = dynamic_cast<AliMUONLogger*>(currObj);
+    if (!logger)
+    {
+        AliFatal(Form("object named \"%s\" is a %s instead of an logger!", currObj->GetName(), currObj->ClassName()));
+        continue;
+    }
+    logger->ResetItr();
+    TString msg;
+    Int_t occurance;
+    while ( logger->Next(msg,occurance) )
+    {
+      for ( Int_t i = 0; i < occurance; ++i )
+      {
+        Log(msg);
+      }
+    }
+    ++count;
+  }
+  
+  return count+1;
+}
