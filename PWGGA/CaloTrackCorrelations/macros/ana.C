@@ -46,6 +46,10 @@ char * kXML = "collection.xml";
 //This is an specific case for normalization of Pythia files.
 const char * kXSFileName = "pyxsec.root";
 
+// container of xs if xs in file pyxsec_hist.root
+TArrayF* xsArr;
+TArrayI* trArr;
+
 //---------------------------------------------------------------------------
 
 //Set some default values, but used values are set in the code!
@@ -94,28 +98,41 @@ void ana(Int_t mode=mGRID)
   TChain * chainxs = new TChain("Xsection") ;
   CreateChain(mode, chain, chainxs); 
   
-  Double_t scale = -1;
+  Double_t scale  = -1;
   printf("===== kMC %d, chainxs %p\n",kMC,chainxs);
-  if(kMC && chainxs && chainxs->GetEntries() > 0)
+  
+  if(kMC)
   {
-    Int_t nfiles = chainxs->GetEntries();
-    
     //Get the cross section
-    Double_t xsection = 0; 
-    Float_t ntrials   = 0;
+    Double_t xsection = 0;
+    Float_t  ntrials  = 0;
+    Int_t    nfiles =  0;
     
-    GetAverageXsection(chainxs, xsection, ntrials);
+    Bool_t ok = GetAverageXsection(chainxs, xsection, ntrials, nfiles);
     
-    Int_t    nEventsPerFile = chain->GetEntries() / nfiles;
+    printf("n xs files %d",nfiles);
     
-    Double_t trials = ntrials / nEventsPerFile ;
+    if(ok)
+    {
+      Int_t  nEventsPerFile = chain->GetEntries() / nfiles;
+      
+      Double_t trials = ntrials / nEventsPerFile ;
+      
+      scale = xsection / trials;
+      
+      printf("Get Cross section : nfiles  %d, nevents %d, nevents per file %d \n",nfiles, chain->GetEntries(),nEventsPerFile);
+      printf("                    ntrials %d, trials %2.2f, xs %2.2e, scale factor %2.2e\n", ntrials,trials,xsection,scale);
+      
+      if(chainxs->GetEntries()!=chain->GetEntries()) printf("CAREFUL: Number of files in data chain %d, in cross section chain %d \n",
+                                                            chainxs->GetEntries(),chain->GetEntries());
+    } // ok
     
-    scale = xsection/trials;
+    // comment out this line in case the simulation did not have the cross section files produced in the directory
+    if( scale <= 0  || !ok)
+    { printf( "STOP, cross section not available! nfiles %d \n", chainxs->GetEntries() ) ; return ; }
     
-    printf("Get Cross section : nfiles  %d, nevents %d, nevents per file %d \n",nfiles, chain->GetEntries(),nEventsPerFile);     
-    printf("                    ntrials %d, trials %2.2f, xs %2.2e, scale factor %2.2e\n", ntrials,trials,xsection,scale);
-    
-  } 
+  }
+
   
   printf("*********************************************\n");
   printf("number of entries # %lld, skipped %d\n", chain->GetEntries()) ; 	
@@ -208,7 +225,7 @@ void ana(Int_t mode=mGRID)
   //-------------------------------------------------------------------------
   
   // Physics selection
-  if(kInputData=="ESD")
+  if(kInputData=="ESD" && !kMC)
   {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC); 
@@ -234,7 +251,7 @@ void ana(Int_t mode=mGRID)
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
 
-  AliAnalysisTask* count    = AddTaskCounter("");   // All
+  AliAnalysisTask* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
   AliAnalysisTask* countmb  = AddTaskCounter("MB"); // Min Bias
   AliAnalysisTask* countany = AddTaskCounter("Any"); 
   AliAnalysisTask* countint = AddTaskCounter("AnyINT");// Min Bias
@@ -899,20 +916,26 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   //Fills chain with data
   TString ocwd = gSystem->WorkingDirectory();
   
+  if(kInputData == "AOD")
+  {
+    xsArr = new TArrayF;
+    trArr = new TArrayI;
+  }
+  
   //---------------------------------------
   // Local files analysis
   //---------------------------------------
-  if(mode == mLocal){    
+  if(mode == mLocal){
     //If you want to add several ESD files sitting in a common directory INDIR
-    //Specify as environmental variables the directory (INDIR), the number of files 
+    //Specify as environmental variables the directory (INDIR), the number of files
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
     
-    if(gSystem->Getenv("INDIR"))  
-      kInDir = gSystem->Getenv("INDIR") ; 
-    else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
+    if(gSystem->Getenv("INDIR"))
+      kInDir = gSystem->Getenv("INDIR") ;
+    else cout<<"INDIR not set, use default: "<<kInDir<<endl;
     
-    if(gSystem->Getenv("PATTERN"))   
-      kPattern = gSystem->Getenv("PATTERN") ; 
+    if(gSystem->Getenv("PATTERN"))
+      kPattern = gSystem->Getenv("PATTERN") ;
     else  cout<<"PATTERN not set, use default: "<<kPattern<<endl;
     
     if(gSystem->Getenv("NFILES"))
@@ -927,9 +950,9 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
         return ;
       }
       
-      //if(gSystem->Getenv("XSFILE"))  
-      //kXSFileName = gSystem->Getenv("XSFILE") ; 
-      //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;	
+      //if(gSystem->Getenv("XSFILE"))
+      //kXSFileName = gSystem->Getenv("XSFILE") ;
+      //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;
       char * kGener = gSystem->Getenv("GENER");
       if(kGener) {
         cout<<"GENER "<<kGener<<endl;
@@ -938,6 +961,13 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
         else cout<<" UNKNOWN GENER, use default: "<<kXSFileName<<endl;
       }
       else cout<<" GENER not set, use default xs file name: "<<kXSFileName<<endl;
+      
+      if(kInputData=="AOD")
+      {
+        kXSFileName = "pyxsec_hists.root";
+        xsArr->Set(kFile);
+        trArr->Set(kFile);
+      }
       
       cout<<"INDIR   : "<<kInDir     <<endl;
       cout<<"NFILES  : "<<kFile      <<endl;
@@ -951,23 +981,63 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       
       //Loop on ESD/AOD/MC files, add them to chain
       Int_t event =0;
-      Int_t skipped=0 ; 
+      Int_t skipped=0 ;
       char file[120] ;
       char filexs[120] ;
       
       for (event = 0 ; event < kFile ; event++) {
-        sprintf(file,   "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
-        sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
-        TFile * fData = 0 ; 
+        sprintf(file,   "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ;
+        sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ;
+        TFile * fData = 0 ;
         //Check if file exists and add it, if not skip it
         if ( fData = TFile::Open(file)) {
-          if ( fData->Get(kTreeName) ) { 
+          if ( fData->Get(kTreeName) ) {
             printf("++++ Adding %s\n", file) ;
             chain->AddFile(file);
-            chainxs->Add(filexs) ; 
+            
+            if(kInputData != "AOD")
+            {
+              chainxs->Add(filexs) ;
+            }
+            else
+            {
+              TFile*  fxsec = TFile::Open(filexs);
+              if(fxsec)
+              {
+                TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
+                if(!key)
+                {
+                  fxsec->Close();
+                  printf("No key!");
+                  continue;
+                }
+                
+                TList *list = dynamic_cast<TList*>(key->ReadObj());
+                if(!list)
+                {
+                  fxsec->Close();
+                  printf("No list!");
+                  continue;
+                }
+                
+                Float_t xsection = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
+                Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
+                fxsec->Close();
+                
+                xsArr->SetAt(xsection,event);
+                trArr->SetAt(ntrials,event);
+                
+                printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, event);
+                //chainxs->Add(tree);
+                //fileTMP->Close();
+                
+                
+              } // fxsec exists
+            } // xs in AODs
+            
           }
         }
-        else { 
+        else {
           printf("---- Skipping %s\n", file) ;
           skipped++ ;
         }
@@ -991,20 +1061,60 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
     //Feed Grid with collection file
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if (! collection) {
-      AliError(Form("%s not found", kXML)) ; 
-      return kFALSE ; 
+      AliError(Form("%s not found", kXML)) ;
+      return kFALSE ;
     }
     
     TGridResult* result = collection->GetGridResult("",0 ,0);
     
-    // Makes the ESD chain 
+    // Makes the ESD chain
     printf("*** Getting the Chain       ***\n");
     for (Int_t index = 0; index < result->GetEntries(); index++) {
-      TString alienURL = result->GetKey(index, "turl") ; 
-      cout << "================== " << alienURL << endl ; 
-      chain->Add(alienURL) ; 
-      alienURL.ReplaceAll("AliESDs.root",kXSFileName);
-      chainxs->Add(alienURL) ; 
+      TString alienURL = result->GetKey(index, "turl") ;
+      cout << "================== " << alienURL << endl ;
+      chain->Add(alienURL) ;
+      
+      if(kInputData != "AOD")
+      {
+        alienURL.ReplaceAll("AliESDs.root",kXSFileName);
+        alienURL.ReplaceAll("AliAOD.root",kXSFileName);
+        chainxs->Add(alienURL) ;
+      }
+      else
+      {
+        alienURL.ReplaceAll("AliESDs.root","pyxsec_hists.root");
+        alienURL.ReplaceAll("AliAOD.root", "pyxsec_hists.root");
+        TFile*  fxsec = TFile::Open(alienURL);
+        if(fxsec)
+        {
+          TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
+          if(!key)
+          {
+            fxsec->Close();
+            printf("No key!");
+            continue;
+          }
+          
+          TList *list = dynamic_cast<TList*>(key->ReadObj());
+          if(!list)
+          {
+            fxsec->Close();
+            printf("No list!");
+            continue;
+          }
+          
+          Float_t xsection = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
+          Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
+          fxsec->Close();
+          
+          xsArr->SetAt(xsection,event);
+          trArr->SetAt(ntrials,event);
+          
+          printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, event);
+          
+        } // fxsec exists
+      } // xs in AODs
+      
     }
   }// xml analysis
   
@@ -1095,8 +1205,8 @@ void CheckEnvironmentVariables()
   
 }
 
-//_________________________________________________________________
-void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
+//______________________________________________________________________________
+Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
 {
   // Read the PYTHIA statistics from the file pyxsec.root created by
   // the function WriteXsection():
@@ -1110,29 +1220,58 @@ void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
   //
   // Yuri Kharlov 19 June 2007
   // Gustavo Conesa 15 April 2008
-  Double_t xsection = 0;
-  UInt_t    ntrials = 0;
-  xs = 0;
-  ntr = 0;
+  // Add recovery of xs from pyxsec_hists.root file 15/jan/2015
   
-  Int_t nfiles =  tree->GetEntries()  ;
-  if (tree && nfiles > 0) {
+  Double_t xsection = 0 ;
+  UInt_t    ntrials = 0 ;
+  Int_t      nfiles = 0 ;
+  
+  xs  = 0;
+  ntr = 0;
+  n   = 0;
+  if( kInputData != "AOD" &&  tree))
+  {
+    nfiles =  tree->GetEntries()  ;
+    
     tree->SetBranchAddress("xsection",&xsection);
     tree->SetBranchAddress("ntrials" ,&ntrials );
-    for(Int_t i = 0; i < nfiles; i++){
+    for(Int_t i = 0; i < nfiles; i++)
+    {
       tree->GetEntry(i);
-      xs  += xsection ;
-      ntr += ntrials ;
-      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
-    }
+      if(xsection > 0)
+      {
+        xs  += xsection ;
+        ntr += ntrials ;
+        n++;
+      }
+      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl;
+    } // loop
+  }
+  else if( kInputData == "AOD" && xsArr))
+  {
+    nfiles = xsArr->GetSize();
     
-    xs =   xs /  nfiles;
-    ntr =  ntr / nfiles;
-    cout << "-----------------------------------------------------------------"<<endl;
-    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
-    cout << "-----------------------------------------------------------------"<<endl;
-  } 
-  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
+    for(Int_t i = 0; i < nfiles; i++)
+    {
+      if(xsArr->GetAt(i) > 0)
+      {
+        xs  += xsArr->GetAt(i) ;
+        ntr += trArr->GetAt(i) ;
+        n++;
+      }
+      cout << "xsection " <<xsArr->GetAt(i)<<" ntrials "<<trArr->GetAt(i)<<endl;
+    } // loop
+  }
+  else return kFALSE;
+  
+  xs =   xs /  n;
+  ntr =  ntr / n;
+  cout << "-----------------------------------------------------------------"<<endl;
+  cout << "Average of "<< n <<" files: xsection " <<xs<<" ntrials "<<ntr<<endl;
+  cout << "-----------------------------------------------------------------"<<endl;
+  
+  return kTRUE;
   
 }
+
 
