@@ -382,7 +382,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	 AliAODEvent *aodFromExt = ext->GetAOD();
       	 arrayDStartoD0pi=(TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
       }
-   } else {
+   } else if(aodEvent){
       arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject(fBranchName.Data());
    }
    
