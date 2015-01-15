@@ -192,7 +192,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    //tracklets
    Int_t trackletID = task->CreateValue(AliRsnMiniValue::kTracklets, kFALSE);
    AliRsnMiniOutput *outTracklets = task->CreateOutput("eventTracklets", "HIST", "EVENT");
-   outTracklets->AddAxis(trackletID, 400, 0.0, 400.0);
+   outTracklets->AddAxis(trackletID, 250, -0.5, 249.5);
    
    
    //event plane (only for PbPb)
@@ -206,7 +206,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 220,-11.,11.);
    task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
-   TH2F* hmc=new TH2F("MultiVsCent","",100,0.,100.,4000,0.,4000.);
+   TH2F* hmc=new TH2F("MultiVsCent","",100,0.,100.,1000,0.,1000.);
    hmc->GetYaxis()->SetTitle("QUALITY");
    task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
