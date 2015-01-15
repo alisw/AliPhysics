@@ -546,11 +546,13 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
   }
 
-  
-  if(!isEvSel)return;
-  
-  fHistNEvents->Fill(1);
-  
+  if(fAnalysisCuts->GetUseCentrality()>0 && fAnalysisCuts->IsEventSelectedInCentrality(aod)!=0) return;
+  // events not passing the centrality selection can be removed immediately. For the others we must count the generated D mesons
+
+  Int_t ntracks=aod->GetNumberOfTracks();
+  fVtxZ = aod->GetPrimaryVertex()->GetZ();
+  fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
   if(fReadMC){
@@ -566,12 +568,17 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       printf("AliAnalysisTaskCombinHF::UserExec: MC header branch not found!\n");
       return;
     }
-    FillGenHistos(arrayMC);
+    Double_t zMCVertex = mcHeader->GetVtxZ();
+    if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
+      FillGenHistos(arrayMC);
+    }
   }
 
-  Int_t ntracks=aod->GetNumberOfTracks();
-  fVtxZ = aod->GetPrimaryVertex()->GetZ();
-  fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
+  
+  if(!isEvSel)return;
+  
+  fHistNEvents->Fill(1);
+  
 
   // select and flag tracks
   UChar_t* status = new UChar_t[ntracks];
