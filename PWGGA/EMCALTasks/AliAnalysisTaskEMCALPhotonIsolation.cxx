@@ -43,6 +43,9 @@
 
 ClassImp(AliAnalysisTaskEMCALPhotonIsolation)
 
+using std::cout;
+using std::endl;
+
   //________________________________________________________________________
 AliAnalysisTaskEMCALPhotonIsolation::AliAnalysisTaskEMCALPhotonIsolation() :
 AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPhotonIsolation",kTRUE),
