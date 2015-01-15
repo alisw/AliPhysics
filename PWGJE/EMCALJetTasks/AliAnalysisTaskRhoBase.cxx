@@ -281,8 +281,12 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
   Int_t Nclusters = 0;
 
   AliVVZERO* vV0 = InputEvent()->GetVZEROData();
-  Float_t multV0A = vV0->GetMTotV0A();
-  Float_t multV0C = vV0->GetMTotV0C();
+  Float_t multV0A = -1.;
+  Float_t multV0C = -1.;
+  if(vV0) {  
+    multV0A = vV0->GetMTotV0A();
+    multV0C = vV0->GetMTotV0C();
+  }
 
   if (GetParticleContainer(0))
     Ntracks = GetParticleContainer(0)->GetNAcceptedParticles();
