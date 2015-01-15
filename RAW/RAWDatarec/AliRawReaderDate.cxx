@@ -316,32 +316,52 @@ Bool_t AliRawReaderDate::ReadHeader()
       UChar_t version = 2;
       if (fHeader) version=fHeader->GetVersion();
 
-      if (version==2) {
-	if ((fPosition + fHeader->fSize) != fEnd) {
-	  if ((fHeader->fSize != 0xFFFFFFFF) &&
-	      (fEquipment->equipmentId != 4352))
-	    Warning("ReadHeader",
-		    "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
-		    fHeader->fSize, fEnd - fPosition);
-	  fHeader->fSize = fEnd - fPosition;
+      switch (version) {
+      case 2:
+	{
+	  if ((fPosition + fHeader->fSize) != fEnd) {
+	    if ((fHeader->fSize != 0xFFFFFFFF) &&
+		(fEquipment->equipmentId != 4352))
+	      Warning("ReadHeader",
+		      "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
+		      fHeader->fSize, fEnd - fPosition);
+	    fHeader->fSize = fEnd - fPosition;
+	  }
+	  fPosition += sizeof(AliRawDataHeader);
+	  fHeaderV3 = 0;
+	  break;
+	} 
+      case 3:
+	{
+	  fHeaderV3 = (AliRawDataHeaderV3*) fPosition;
+	  if ((fPosition + fHeaderV3->fSize) != fEnd) {
+	    if ((fHeaderV3->fSize != 0xFFFFFFFF) &&
+		(fEquipment->equipmentId != 4352))
+	      Warning("ReadHeader",
+		      "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
+		      fHeaderV3->fSize, fEnd - fPosition);
+	    fHeaderV3->fSize = fEnd - fPosition;
+	  }
+	  fPosition += sizeof(AliRawDataHeaderV3);
+	  fHeader = 0;
+	  break;
 	}
-	fPosition += sizeof(AliRawDataHeader);
-	fHeaderV3 = 0;
-      } else if (version==3) {
-	fHeaderV3 = (AliRawDataHeaderV3*) fPosition;
-	if ((fPosition + fHeaderV3->fSize) != fEnd) {
-	  if ((fHeaderV3->fSize != 0xFFFFFFFF) &&
-	      (fEquipment->equipmentId != 4352))
-	    Warning("ReadHeader",
-		    "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
-		    fHeaderV3->fSize, fEnd - fPosition);
-	  fHeaderV3->fSize = fEnd - fPosition;
-	}
-	fPosition += sizeof(AliRawDataHeaderV3);
-	fHeader = 0;
+      default:
+	// We have got a version we don't know
+	Error("ReadHeader", 
+	      "version is neither 2 nor 3, we can't handle it (version found : %d). Jump to the end of the equipment",version);
+	Warning("ReadHeader", 
+		" run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+		fSubEvent->eventRunNb, 
+		fSubEvent->eventId[0], fSubEvent->eventId[1],
+		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+	
+	fHeader = 0x0;
+	fHeaderV3 = 0x0;
+	fPosition = fEnd;
+	continue;
       }
     }
-
     if (fHeader && (fHeader->fSize != 0xFFFFFFFF)) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
 
