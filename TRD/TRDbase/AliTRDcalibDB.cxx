@@ -289,6 +289,10 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
 	  // Online gain table ID 8
           return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Krypton_2012-01"); 
           break;
+        case 9:
+	  // Online gain table ID 9
+          return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Krypton_2015-01"); 
+          break;
       default:
 	AliError(Form("unknown gaintable requested with ID"));
       }
@@ -1100,7 +1104,7 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
         break;
       }
     }
-    if (tableName.CompareTo("Krypton_2011-01")               == 0)
+    if      (tableName.CompareTo("Krypton_2011-01")               == 0)
       fOnlineGainTableID = 1;
     else if (tableName.CompareTo("Gaintbl_Uniform_FGAN0_2011-01") == 0)
       fOnlineGainTableID = 2;
@@ -1116,6 +1120,8 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
       fOnlineGainTableID = 7;
     else if (tableName.CompareTo("Krypton_2012-01")               == 0)
       fOnlineGainTableID = 8;
+    else if (tableName.CompareTo("Krypton_2015-01")               == 0)
+      fOnlineGainTableID = 9;
     else
       AliFatal(Form("unknown gaintable <%s> requested", tableName.Data()));
 
