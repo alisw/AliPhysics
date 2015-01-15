@@ -811,11 +811,11 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
                dEoccupancyBending[ichamber][idetele],
                dEoccupancyNonBending[ichamber][idetele]);  
                
-          if ( dEchannelsBending[ichamber][idetele] != 0 && dEchannelsBending[ichamber][idetele] !=0 ) {     
+          if ( dEchannelsBending[ichamber][idetele] != 0 && dEchannelsNonBending[ichamber][idetele] !=0 ) {
             printf(">>> DetEle %4d Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n", 
                  idetele+100*(ichamber+1), 
                  100.*((Float_t) dEoccupancyBending[ichamber][idetele])/((Float_t) dEchannelsBending[ichamber][idetele]),
-                 100.*((Float_t) dEoccupancyNonBending[ichamber][idetele])/((Float_t) dEchannelsBending[ichamber][idetele]));
+                 100.*((Float_t) dEoccupancyNonBending[ichamber][idetele])/((Float_t) dEchannelsNonBending[ichamber][idetele]));
           }       
         }
       }
