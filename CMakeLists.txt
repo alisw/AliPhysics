@@ -205,7 +205,7 @@ find_package(ZeroMQ)
 
 # Generating the AliRoot-config.cmake file
 configure_file(${PROJECT_SOURCE_DIR}/cmake/AliRoot-config.cmake.in ${CMAKE_BINARY_DIR}/version/AliRoot-config.cmake @ONLY)
-install(FILES ${PROJECT_BINARY_DIR}/cmake/AliRoot-config.cmake DESTINATION etc)
+install(FILES ${PROJECT_BINARY_DIR}/version/AliRoot-config.cmake DESTINATION etc)
 
 # General flags -> Should be moved into a configuration file
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
