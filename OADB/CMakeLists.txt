@@ -26,6 +26,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources
 set(SRCS
+    AliAnalysisUtils.cxx
+    AliBackgroundSelection.cxx
+    AliCentralitySelectionTask.cxx
+    AliPhysicsSelection.cxx
+    AliPhysicsSelectionTask.cxx
+    AliTriggerAnalysis.cxx
     AliOADBCentrality.cxx
     AliOADBFillingScheme.cxx
     AliOADBPhysicsSelection.cxx
