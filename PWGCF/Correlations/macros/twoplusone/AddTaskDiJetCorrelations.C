@@ -8,15 +8,16 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
 							   Double_t pTrg1max = 16.0,
 							   Double_t pTrg2min = 5.0,
 							   Double_t pTrg2max = 8.0,
-							   TString effLoc = "/alice/cern.ch/user/r/rvarma/TEST/Dcorr/Dec9/THnEfficiency.root")
+                                                         //  Double_t alpha = TMath::Pi(),
+                               Double_t alphaB2B = TMath::Pi(),
+							   TString effLoc = "")
 {
   
   Bool_t UseFbits = kTRUE;
   
   //____________________________________| Correlation class setting..
   AliAnalysisTaskDiJetCorrelations *dijetcorrelations = new AliAnalysisTaskDiJetCorrelations("");
-  dijetcorrelations->
-    (AliVEvent::kMB);
+  dijetcorrelations->SelectCollisionCandidates(AliVEvent::kMB);
   dijetcorrelations->SetSystem(ppOrPbPb); //PbPb = kTRUE
   dijetcorrelations->SetSEorME(SEorME); //kTRUE for mixed events
   if(SEorME)dijetcorrelations->SetMESettings(500, 25000, 8); //evt,track,minMixEvents
@@ -24,11 +25,16 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
   dijetcorrelations->SetTrigger2PTValue(pTrg2min, pTrg2max); //GeV/c
   dijetcorrelations->SetFilterBit(UseFbits);
   if(UseFbits)dijetcorrelations->SetFilterType(272);
-  if(ppOrPbPb)dijetcorrelations->SetCentralityRange(0., 100.1); // 0-100%
+  if(ppOrPbPb)dijetcorrelations->SetCentralityRange(0., 100); // 0-100%
   dijetcorrelations->SetDataType(kTRUE); //track Data/MC tracks=1 or MC Part=0?
   dijetcorrelations->SetVarCentBin(kTRUE); // kTRUE have some trouble ! FIX ME
   dijetcorrelations->SetVarPtBin(kTRUE); // kTRUE have some trouble ! FIX ME
-   
+ // dijetcorrelations->SetAlphaAngle(alphaB2B);
+  if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));
+  dijetcorrelations->SetAlphaAngle(alphaB2B);
+ 
+    
+
   // Create containers for input/output        
   TString finDirname         = "_DiJetMayCERN";
   TString inname             = "cinputDiJetCorrelations";
@@ -64,15 +70,12 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
   mgr->ConnectOutput(dijetcorrelations,1,coutputDiJetCorrelations1);
   mgr->ConnectOutput(dijetcorrelations,2,coutputDiJetCorrelations2);
   
-  if(effLoc!="")
-    dijetcorrelations->Setf3DEffCor(GetEfficiencyCorr(effLoc));
-
   return dijetcorrelations;
   
 }
 
 
-
+/*
 //loads the efficiency correction
 TH3F *GetEfficiencyCorr(TString effLoc){
 
@@ -89,5 +92,6 @@ TH3F *GetEfficiencyCorr(TString effLoc){
     return;
   }
   
-  return (TH3F*)tmp1->Clone("f3DEffCor");
+  return (TH3F*)tmp1->Clone("fEffHist3D");
 }
+ */

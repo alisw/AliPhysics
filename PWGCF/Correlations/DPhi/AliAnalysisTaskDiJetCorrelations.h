@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKDIJETCORRELATIONS_H
-#define ALIANALYSISTASKDIJETCORRELATIONS_H
+#ifndef AliAnalysisTaskDiJetCorrelations_H
+#define AliAnalysisTaskDiJetCorrelations_H
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -65,6 +65,9 @@ public:
     virtual void    SetFilterType(Int_t bittype){fbit= bittype;}
     virtual void    SetVarCentBin(Bool_t varCbin=kTRUE){fuseVarCentBins= varCbin;}
     virtual void    SetVarPtBin(Bool_t varPtbin=kTRUE){fuseVarPtBins= varPtbin;}
+    virtual void    SetEffCorrection(TH3F *hEff){f3DEffCor = hEff;}
+    void    SetAlphaAngle(Double_t alpha){fAlpha = alpha;}
+
  
 private:
     
@@ -72,20 +75,11 @@ private:
     AliAnalysisTaskDiJetCorrelations& operator=(const AliAnalysisTaskDiJetCorrelations& source);
   
     void DefineHistoNames();
+    Double_t GetTrackbyTrackEffValue(AliAODTrack* track, Double_t CentrOrMult, TH3F *h);
     Bool_t ConversionResonanceCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, TH2F*fControlConvResT, TH1F* fHistTCorrTrack);
     Bool_t TwoTrackEfficiencyCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, Float_t bSigntmp);
  
-    //______________________________|  Track Efficiency
-    Double_t GetTrackbyTrackEffValue(AliAODTrack* track, Double_t CentrOrMult){
-      
-        Float_t effvalue = -999.;
-        Int_t binX = f3DEffCor->GetXaxis()->FindBin(CentrOrMult);
-        Int_t binY = f3DEffCor->GetYaxis()->FindBin(track->Eta());
-        Int_t binZ = f3DEffCor->GetZaxis()->FindBin(track->Pt());
-        effvalue = f3DEffCor->GetBinContent(binX, binY, binZ);
-        if(effvalue==0) effvalue=1.;
-        return effvalue;
-    }
+
     
     //______________________________|  DPhi Star
     Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign){
@@ -173,12 +167,12 @@ private:
     
     //______________________________| Mixed Event Pool
     Bool_t DefineMixedEventPool(){
-        Int_t  NofCentBins  = 4;
-        Double_t MBins[]={0, 10, 20, 40, 100.1};
+        Int_t  NofCentBins  = 5;
+        Double_t MBins[]={0, 5, 10, 20, 40, 100.1};
         Double_t * CentrORMultBins = MBins;
         
-        Int_t NofZVrtxBins  = 3;
-        Double_t ZBins[]={-9.999, -2.5, 2.5, 10.1};
+        Int_t NofZVrtxBins  = 5;
+        Double_t ZBins[]={-10.0, -6, -2, 2, 6, 10};
         Double_t *ZVrtxBins = ZBins;
         
         fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
@@ -211,6 +205,7 @@ private:
     Double_t  fTrigger1pTHighThr;
     Double_t  fTrigger2pTLowThr;
     Double_t  fTrigger2pTHighThr;
+    Double_t  fAlpha;
     
     Bool_t    fCutResonances;
     Bool_t    fCutConversions;
@@ -238,7 +233,6 @@ private:
     TH2F *fControlConvResT2; //!
     TH2F *fControlConvResMT1;//!
     TH2F *fControlConvResMT2;//!
-
 
     ClassDef(AliAnalysisTaskDiJetCorrelations, 1); // example of analysis
 };
