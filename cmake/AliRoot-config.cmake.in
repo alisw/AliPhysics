@@ -7,6 +7,7 @@
 ############################################################################
 # Version
 set(AliRoot_VERSION @ALIROOT_VERSION@)
+set(AliRoot_BRANCH_TYPE @BRANCH_TYPE@)
 set(AliRoot_VERSION_MAJOR @ALIROOT_VERSION_MAJOR@)
 set(AliRoot_VERSION_MINOR @ALIROOT_VERSION_MINOR@)
 set(AliRoot_VERSION_PATCH @ALIROOT_VERSION_PATCH@)
