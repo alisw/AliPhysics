@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
                     ${AliRoot_SOURCE_DIR}/PWG/EMCAL
                     ${AliRoot_SOURCE_DIR}/PWG/FLOW
