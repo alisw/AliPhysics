@@ -73,6 +73,9 @@
 #include "AliAnalysisManager.h"
 #include "AliPIDResponse.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliFlowTrackCuts)
 
 //-----------------------------------------------------------------------

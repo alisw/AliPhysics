@@ -66,6 +66,10 @@
 #include <string>
 #include "TLatex.h"
 
+using std::cout;
+using std::endl;
+using std::ifstream;
+
 ClassImp(AliAnalysisMuMu)
 
 //_____________________________________________________________________________

@@ -51,6 +51,9 @@
 #include "AliUPCMuonTrack.h"
 #include "AliUPCEvent.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskUpcFilterSemiforward);
 
 // task for upc semiforward filter
