@@ -78,7 +78,102 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
     avCluEnergySM3 = h->ProjectionX()->GetMean(); avNcellPerCluSM3 = h->ProjectionY()->GetMean();
     avCluMultSM3 = h->Integral()/nEvents;
   }
-      
+    
+  //-------- Average pi0s number per event, pi0 mass, width -------------------------------------------
+    Double_t nraw, enraw, mass, emass, sigma, esigma;
+    Int_t sm; TH1* hm;
+    char name[20],leaf[20];
+    
+    sm = 1;
+    hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+    
+    Float_t avPi0NumSM1   =-9999., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
+    Float_t avPi0NumErrSM1=-9999., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
+    
+    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumSM1,leaf);
+    
+    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassSM1,leaf);
+    
+    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaSM1,leaf);
+    
+    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumErrSM1,leaf);
+    
+    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassErrSM1,leaf);
+    
+    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaErrSM1,leaf);
+    
+    FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+    
+    avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
+    avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma;
+    
+    
+    sm = 2;
+    hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+    
+    Float_t avPi0NumSM2   =-9999., avPi0MassSM2   =-9999., avPi0SigmaSM2   =-9999.;
+    Float_t avPi0NumErrSM2=-9999., avPi0MassErrSM2=-9999., avPi0SigmaErrSM2=-9999.;
+    
+    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumSM2,leaf);
+    
+    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassSM2,leaf);
+    
+    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaSM2,leaf);
+    
+    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumErrSM2,leaf);
+    
+    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassErrSM2,leaf);
+    
+    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaErrSM2,leaf);
+    
+    FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+    
+    avPi0NumSM2 = nraw/nEvents; avPi0MassSM2 = mass; avPi0SigmaSM2 = sigma;
+    avPi0NumErrSM2 = enraw/nEvents; avPi0MassErrSM2 = emass; avPi0SigmaErrSM2 = esigma;
+
+    
+    sm = 3;
+    hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+    
+    Float_t avPi0NumSM3   =-9999., avPi0MassSM3   =-9999., avPi0SigmaSM3   =-9999.;
+    Float_t avPi0NumErrSM3=-9999., avPi0MassErrSM3=-9999., avPi0SigmaErrSM3=-9999.;
+    
+    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumSM3,leaf);
+    
+    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassSM3,leaf);
+    
+    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaSM3,leaf);
+    
+    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumErrSM3,leaf);
+    
+    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassErrSM3,leaf);
+    
+    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaErrSM3,leaf);
+    
+    FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+    
+    avPi0NumSM3 = nraw/nEvents; avPi0MassSM3 = mass; avPi0SigmaSM3 = sigma;
+    avPi0NumErrSM3 = enraw/nEvents; avPi0MassErrSM3 = emass; avPi0SigmaErrSM3 = esigma;
+
+    
   //---------------------------------------------------------------------------------------------------
 
   ttree->Fill();
@@ -87,5 +182,112 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   ttree->Write();
   trendFile->Close();
   
+}
+
+
+
+//-----------------------------------------------------------------------------------------------------
+void MakePi0Averages(TH1* hm1, Int_t runNumber, Int_t sm, TTree* ttree, Int_t nEvents)
+{
+    Float_t avPi0NumSM1   =-9999., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
+    Float_t avPi0NumErrSM1=-9999., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
+
+    char name[20],leaf[20];
+    
+    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumSM1,leaf);
+
+    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassSM1,leaf);
+    
+    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaSM1,leaf);
+    
+    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0NumErrSM1,leaf);
+    
+    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0MassErrSM1,leaf);
+    
+    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+    ttree->Branch(name,&avPi0SigmaErrSM1,leaf);
+ 
+    Double_t nraw, enraw, mass, emass, sigma, esigma;
+    FitPi0(hm1, nraw, enraw, mass, emass, sigma, esigma);
+    
+    avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
+    avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma;
+    printf("%f %f %f\n",avPi0NumSM1,avPi0MassSM1,avPi0SigmaSM1);
+}
+
+//-----------------------------------------------------------------------------------------------------
+void FitPi0(TH1* h, Double_t &nraw, Double_t &enraw,
+            Double_t &mass, Double_t &emass,
+            Double_t &sigma, Double_t &esigma,
+            Double_t emin = 0.05, Double_t emax = 0.3, Int_t rebin = 1)
+{
+    // Fits the pi0 peak with crystal ball + pol2,
+    // fills number of pi0s, mass, width and their errors.
+    
+    nraw = enraw = 0;
+    mass = emass = 0;
+    sigma = esigma = 0;
+    
+    if (h->GetEntries() == 0) return;
+    
+    if (rebin > 1) h->Rebin(rebin);
+    
+    // crystal ball parameters (fixed by hand for EMCAL)
+    Double_t alpha = 1.1;  // alpha >= 0
+    Double_t n = 2.;       // n > 1
+    
+    // CB tail parameters
+    Double_t a = pow((n/alpha), n) * TMath::Exp(-alpha*alpha/2.);
+    Double_t b = n/alpha - alpha;
+    
+    // integral value under crystal ball with amplitude = 1, sigma = 1
+    // (will be sqrt(2pi) at alpha = infinity)
+    Double_t nraw11 = a * pow(b+alpha, 1.-n)/(n-1.) + TMath::Sqrt(TMath::Pi()/2.) * TMath::Erfc(-alpha/TMath::Sqrt(2.));
+    
+    // signal (crystal ball);
+    new TF1("cball", Form("(x-[1])/[2] > -%f ?                        \
+                          [0]*exp(-(x-[1])*(x-[1])/(2*[2]*[2]))    \
+                          : [0]*%f*(%f-(x-[1])/[2])^(-%f)", alpha, a, b, n));
+    
+    // background
+    new TF1("mypol2", "[0] + [1]*(x-0.135) + [2]*(x-0.135)^2", emin, emax);
+    
+    // signal + background
+    TF1 *fitfun = new TF1("fitfun", "cball + mypol2", emin, emax);
+    fitfun->SetParNames("A", "M", "#sigma", "a_{0}", "a_{1}", "a_{2}");
+    fitfun->SetLineColor(kRed);
+    fitfun->SetLineWidth(2);
+    
+    // make a preliminary fit to estimate parameters
+    TF1* ff = new TF1("fastfit", "gaus(0) + [3]");
+    ff->SetParLimits(0, 0., h->GetMaximum()*1.5);
+    ff->SetParLimits(1, 0.1, 0.2);
+    ff->SetParLimits(2, 0.004,0.030);
+    ff->SetParameters(h->GetMaximum()/3., 0.135, 0.010, 0.);
+    h->Fit(ff, "0QL", "", 0.105, 0.165);
+    
+    fitfun->SetParLimits(0, 0., h->GetMaximum()*1.5);
+    fitfun->SetParLimits(1, 0.12, 0.15);
+    fitfun->SetParLimits(2, 0.004,0.030);
+    fitfun->SetParameters(ff->GetParameter(0), ff->GetParameter(1), ff->GetParameter(2), ff->GetParameter(3));
+    h->Fit(fitfun,"QLR", "");
+    
+    // calculate pi0 values
+    mass = fitfun->GetParameter(1);
+    emass = fitfun->GetParError(1);
+    
+    sigma = fitfun->GetParameter(2);
+    esigma = fitfun->GetParError(2);
+    
+    Double_t A = fitfun->GetParameter(0);
+    Double_t eA = fitfun->GetParError(0);
+    
+    nraw = nraw11 * A * sigma / h->GetBinWidth(1);
+    enraw = nraw * (eA/A + esigma/sigma);
 }
 
