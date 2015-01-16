@@ -23,7 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
+                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALrec
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
@@ -98,5 +98,5 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Install macros
-install(FILES AddTaskTender.C DESTINATION ANALYSIS/TenderSupplies)
+install(FILES AddTaskTender.C DESTINATION TENDER/TenderSupplies)
 

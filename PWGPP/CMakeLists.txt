@@ -28,7 +28,7 @@ include_directories(${AliRoot_SOURCE_DIR}/PWGPP)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
+                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
                     ${AliRoot_SOURCE_DIR}/CORRFW
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HMPID/HMPIDbase

@@ -121,7 +121,7 @@ TString Setup
       ::Info("AnalysisSetup", "Adding tender (and then accepting V0 info)", options);
 //      gROOT->LoadMacro(Form("%s/AddTaskTender.C", macroPath)); //for developers usage
 //      gROOT->LoadMacro(Form("$(ALICE_ROOT)/PWGLF/RESONANCES/macros/mini/AddTaskTender.C")); //deprecated
-      gROOT->LoadMacro(Form("$(ALICE_ROOT)/ANALYSIS/TenderSupplies/AddTaskTender.C"));
+      gROOT->LoadMacro(Form("$(ALICE_ROOT)/TENDER/TenderSupplies/AddTaskTender.C"));
       AddTaskTender();
       noV0 = kFALSE;
    }
