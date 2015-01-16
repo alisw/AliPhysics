@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/STAT
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB

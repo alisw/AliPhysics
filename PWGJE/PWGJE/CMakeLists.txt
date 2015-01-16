@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/CORRFW/
                     ${AliRoot_SOURCE_DIR}/JETAN/JETAN
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliRoot_SOURCE_DIR}/PWG/TRD
                     ${AliRoot_SOURCE_DIR}/PWG/Tools
