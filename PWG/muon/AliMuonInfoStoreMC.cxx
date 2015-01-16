@@ -31,7 +31,6 @@
 #include "AliAODTrack.h"
 #include "AliMuonInfoStoreRD.h"
 #include "AliMuonInfoStoreMC.h"
-#include "AliMCEvent.h"
 
 ClassImp(AliMuonInfoStoreMC)
 
@@ -48,7 +47,9 @@ fTrackPDGCode(0),
 fSource(-1),
 fNParents(0),
 fOscillation(kFALSE),
-fWeight(0.)
+fWeight(0.),
+fIsPhyPrim(kFALSE),
+fGeneratorIndex(-1)
 {
   //
   // default constructor
@@ -67,7 +68,9 @@ fTrackPDGCode(0),
 fSource(-1),
 fNParents(0),
 fOscillation(kFALSE),
-fWeight(0.)
+fWeight(0.),
+fIsPhyPrim(kFALSE),
+fGeneratorIndex(-1)
 {
   //
   // default constructor
@@ -88,7 +91,9 @@ fTrackPDGCode(0),
 fSource(-1),
 fNParents(0),
 fOscillation(kFALSE),
-fWeight(0.)
+fWeight(0.),
+fIsPhyPrim(kFALSE),
+fGeneratorIndex(-1)
 {
   //
   // default constructor
@@ -109,7 +114,9 @@ fTrackPDGCode(src.fTrackPDGCode),
 fSource(src.fSource),
 fNParents(src.fNParents),
 fOscillation(src.fOscillation),
-fWeight(src.fWeight)
+fWeight(src.fWeight),
+fIsPhyPrim(src.fIsPhyPrim),
+fGeneratorIndex(src.fGeneratorIndex)
 {
   //
   // copy constructor
@@ -130,17 +137,19 @@ AliMuonInfoStoreMC& AliMuonInfoStoreMC::operator=(const AliMuonInfoStoreMC &src)
   //
   // assignment constructor
   //
-  if(&src==this) return *this;
+  if (&src==this) return *this;
   AliMuonInfoStoreRD::operator=(src);
 
-  fIsFull       = src.fIsFull;
-  fLorentzP     = src.fLorentzP;
-  fTrackIndex   = src.fTrackIndex;
-  fTrackPDGCode = src.fTrackPDGCode;
-  fSource       = src.fSource;
-  fNParents     = src.fNParents;
-  fOscillation  = src.fOscillation;
-  fWeight       = src.fWeight;
+  fIsFull         = src.fIsFull;
+  fLorentzP       = src.fLorentzP;
+  fTrackIndex     = src.fTrackIndex;
+  fTrackPDGCode   = src.fTrackPDGCode;
+  fSource         = src.fSource;
+  fNParents       = src.fNParents;
+  fOscillation    = src.fOscillation;
+  fWeight         = src.fWeight;
+  fIsPhyPrim      = src.fIsPhyPrim;
+  fGeneratorIndex = src.fGeneratorIndex;
   for (Int_t i=5; i--;) {
     fParentIndex[i]   = src.fParentIndex[i];
     fParentPDGCode[i] = src.fParentPDGCode[i];
@@ -166,32 +175,36 @@ void AliMuonInfoStoreMC::SetMCInfoAOD(AliMCEvent *mcEvent, Int_t label)
 {
   // fill track MC info with AOD base
   fTrackIndex = label;
-  if (fTrackIndex<0) { fSource=5; return; }
+  if (fTrackIndex<0) { fSource = 5; return; }
 
   AliAODMCParticle *pMC = (AliAODMCParticle*)mcEvent->GetTrack(fTrackIndex);
   fLorentzP.SetPxPyPzE(pMC->Px(), pMC->Py(), pMC->Pz(), pMC->E());
 
   fTrackPDGCode = pMC->PdgCode();
-  if (TMath::Abs(fTrackPDGCode)!=13) { fSource=4; return; } 
+  if (TMath::Abs(fTrackPDGCode)!=13) { fSource = 4; return; } 
+
+  fGeneratorIndex = pMC->GetGeneratorIndex();
 
   Int_t lineM = pMC->GetMother();
-  if (lineM<0) { fSource=2; return; }
+  Bool_t isPhysicalPrimary = ((AliAODMCParticle*)mcEvent->GetTrack(lineM))->IsPhysicalPrimary();
+  if (isPhysicalPrimary) fIsPhyPrim = kTRUE;
+  if (lineM<0) { fSource = 2; return; }
 
   Bool_t isPrimary = ((AliAODMCParticle*)mcEvent->GetTrack(lineM))->IsPrimary();
-  if (!isPrimary) { fSource=3; return; }
+  if (!isPrimary) { fSource = 3; return; }
 
-  Int_t countP=-1, pdg=0;
+  Int_t countP = -1, pdg = 0;
   Int_t parents[10], parLine[10];
   AliAODMCParticle *mother = 0;
-  while(lineM>=0){
+  while (lineM>=0) {
     mother = (AliAODMCParticle*)mcEvent->GetTrack(lineM);
     pdg = mother->GetPdgCode();
-    if(pdg==92 || pdg==21 || TMath::Abs(pdg)<10 || IsDiquark(pdg)) break;
+    if (pdg==92 || pdg==21 || TMath::Abs(pdg)<10 || IsDiquark(pdg)) break;
     parents[++countP] = pdg;
     parLine[countP] = lineM;
     lineM = mother->GetMother();
   }
-  for(Int_t i=0; i<=countP; i++){
+  for (Int_t i=0; i<=countP; i++) {
     fParentIndex[i] = parLine[countP-i];
     fParentPDGCode[i] = parents[countP-i];
   }
@@ -200,6 +213,7 @@ void AliMuonInfoStoreMC::SetMCInfoAOD(AliMCEvent *mcEvent, Int_t label)
   if (fIsFull && lineM>=0) this->FillHistoryQuarksAOD(mcEvent, lineM);
 
   fSource = this->SelectHFMuon();
+
   return;
 }
 
@@ -208,31 +222,35 @@ void AliMuonInfoStoreMC::SetMCInfoESD(AliMCEvent *mcEvent, Int_t label)
 {
   // fill track MC info with ESD base
   fTrackIndex = label;
-  if (fTrackIndex<0) { fSource=5; return; }
+  if (fTrackIndex<0) { fSource = 5; return; }
 
   TParticle *pMC = ((AliMCParticle*)mcEvent->GetTrack(fTrackIndex))->Particle();
   fLorentzP.SetPxPyPzE(pMC->Px(), pMC->Py(), pMC->Pz(), pMC->Energy());
 
   fTrackPDGCode = pMC->GetPdgCode();
-  if (TMath::Abs(fTrackPDGCode)!=13) { fSource=4; return; }
+  if (TMath::Abs(fTrackPDGCode)!=13) { fSource = 4; return; }
+
+  fGeneratorIndex = ((AliMCParticle*)mcEvent->GetTrack(fTrackIndex))->GetGeneratorIndex();
 
   Int_t lineM = pMC->GetFirstMother();
-  if (lineM<0) { fSource=2; return; }
+  Bool_t isPhysicalPrimary = mcEvent->Stack()->IsPhysicalPrimary(lineM);
+  if (isPhysicalPrimary) fIsPhyPrim = kTRUE;
+  if (lineM<0) { fSource = 2; return; } 
 
-  if (lineM>=mcEvent->Stack()->GetNprimary()) { fSource=3; return; }
+  if (lineM>=mcEvent->Stack()->GetNprimary()) { fSource = 3; return; }
 
-  Int_t countP=-1, pdg=0;
+  Int_t countP = -1, pdg = 0;
   Int_t parents[10], parLine[10];
   TParticle *mother = 0;
-  while(lineM>=0){
+  while (lineM>=0) {
     mother = ((AliMCParticle*)mcEvent->GetTrack(lineM))->Particle();
     pdg = mother->GetPdgCode();
-    if(pdg==92 || pdg==21 || TMath::Abs(pdg)<10 || IsDiquark(pdg)) break;
+    if (pdg==92 || pdg==21 || TMath::Abs(pdg)<10 || IsDiquark(pdg)) break;
     parents[++countP] = pdg;
     parLine[countP] = lineM;
     lineM = mother->GetFirstMother();
   }
-  for(Int_t i=0; i<=countP; i++){
+  for (Int_t i=0; i<=countP; i++) {
     fParentIndex[i] = parLine[countP-i];
     fParentPDGCode[i] = parents[countP-i];
   }
@@ -241,6 +259,7 @@ void AliMuonInfoStoreMC::SetMCInfoESD(AliMCEvent *mcEvent, Int_t label)
   if (fIsFull && lineM>=0) this->FillHistoryQuarksESD(mcEvent, lineM);
 
   fSource = this->SelectHFMuon();
+
   return;
 }
 
@@ -250,9 +269,9 @@ void AliMuonInfoStoreMC::FillHistoryQuarksAOD(AliMCEvent* const mcEvent, Int_t l
   // method in $ALICE_ROOT/MUON/AliMUONTrackLight.cxx 
 
   if (lineM<0) return;
-  Int_t countP=-1, pdg=0;
+  Int_t countP = -1, pdg = 0;
   AliAODMCParticle *mother = 0;
-  while(lineM>=0){
+  while (lineM>=0) {
     mother = (AliAODMCParticle*)mcEvent->GetTrack(lineM);
     pdg = mother->GetPdgCode();
     fQuarkIndex[++countP] = lineM;
@@ -262,21 +281,21 @@ void AliMuonInfoStoreMC::FillHistoryQuarksAOD(AliMCEvent* const mcEvent, Int_t l
 
   // for PYTHIA checking
   countP = 1;
-  for(Int_t par=0; par<4; par++) {
-    if(TMath::Abs(this->QuarkPDGCode(par))<6) { countP=par; break; }
+  for (Int_t par=0; par<4; par++) {
+    if (TMath::Abs(this->QuarkPDGCode(par))<6) { countP=par; break; }
   }
-  if(this->QuarkIndex(countP)>-1 && (this->ParentFlavour(0)==4 || this->ParentFlavour(0)==5)) {
-    if(this->ParentFlavour(0)!=TMath::Abs(this->QuarkPDGCode(countP))) {
+  if (this->QuarkIndex(countP)>-1 && (this->ParentFlavour(0)==4 || this->ParentFlavour(0)==5)) {
+    if (this->ParentFlavour(0)!=TMath::Abs(this->QuarkPDGCode(countP))) {
       AliWarning(Form("quark flavour of parent and that of quark do not correspond: %d %d --> correcting\n",
                  this->ParentFlavour(0), TMath::Abs(this->QuarkPDGCode(countP))));
 
       pdg = this->QuarkPDGCode(countP);
       Int_t line = this->QuarkIndex(countP);
       this->ResetQuarkInfo();
-      while(TMath::Abs(pdg)!=this->ParentFlavour(0)) {
+      while (TMath::Abs(pdg)!=this->ParentFlavour(0)) {
         pdg = ((AliAODMCParticle*)mcEvent->GetTrack(++line))->GetPdgCode();
       }
-      while(line>=0){
+      while (line>=0) {
         mother = (AliAODMCParticle*)mcEvent->GetTrack(line);
         pdg = mother->GetPdgCode();
         fQuarkIndex[countP] = line;
@@ -285,6 +304,7 @@ void AliMuonInfoStoreMC::FillHistoryQuarksAOD(AliMCEvent* const mcEvent, Int_t l
       }
     }
   }
+
   return;
 }
 
@@ -294,9 +314,9 @@ void AliMuonInfoStoreMC::FillHistoryQuarksESD(AliMCEvent* const mcEvent, Int_t l
   // method in $ALICE_ROOT/MUON/AliMUONTrackLight.cxx 
 
   if (lineM<0) return;
-  Int_t countP=-1, pdg=0;
+  Int_t countP = -1, pdg = 0;
   TParticle *mother = 0;
-  while(lineM>=0){
+  while (lineM>=0) {
     mother = ((AliMCParticle*)mcEvent->GetTrack(lineM))->Particle();
     pdg = mother->GetPdgCode();
     fQuarkIndex[++countP] = lineM;
@@ -306,22 +326,22 @@ void AliMuonInfoStoreMC::FillHistoryQuarksESD(AliMCEvent* const mcEvent, Int_t l
 
   // for PYTHIA checking
   countP = 1;
-  for(Int_t par=0; par<4; par++) {
-    if(TMath::Abs(this->QuarkPDGCode(par))<6) { countP=par; break; }
+  for (Int_t par=0; par<4; par++) {
+    if (TMath::Abs(this->QuarkPDGCode(par))<6) { countP=par; break; }
   }
-  if(this->QuarkIndex(countP)>-1 && (this->ParentFlavour(0)==4 || this->ParentFlavour(0)==5)) {
-    if(this->ParentFlavour(0)!=TMath::Abs(this->QuarkPDGCode(countP))) {
+  if (this->QuarkIndex(countP)>-1 && (this->ParentFlavour(0)==4 || this->ParentFlavour(0)==5)) {
+    if (this->ParentFlavour(0)!=TMath::Abs(this->QuarkPDGCode(countP))) {
       AliWarning(Form("quark flavour of parent and that of quark do not correspond: %d %d --> correcting\n",
                  this->ParentFlavour(0), TMath::Abs(this->QuarkPDGCode(countP))));
 
       pdg = this->QuarkPDGCode(countP);
       Int_t line = this->QuarkIndex(countP);
       this->ResetQuarkInfo();
-      while(TMath::Abs(pdg)!=this->ParentFlavour(0)) {
-        pdg = ((AliMCParticle*)mcEvent->GetTrack(++lineM))->Particle()->GetPdgCode();
+      while (TMath::Abs(pdg)!=this->ParentFlavour(0)) {
+        pdg = ((AliMCParticle*)mcEvent->GetTrack(++line))->Particle()->GetPdgCode();
       }
       while(line>=0){
-        mother = ((AliMCParticle*)mcEvent->GetTrack(++lineM))->Particle();
+        mother = ((AliMCParticle*)mcEvent->GetTrack(++line))->Particle();
         pdg = mother->GetPdgCode();
         fQuarkIndex[countP] = line;
         fQuarkPDGCode[countP++] = pdg;
@@ -329,6 +349,7 @@ void AliMuonInfoStoreMC::FillHistoryQuarksESD(AliMCEvent* const mcEvent, Int_t l
       }
     }
   }
+
   return;
 }
 
@@ -343,7 +364,7 @@ Int_t AliMuonInfoStoreMC::SelectHFMuon()
   Bool_t isRes = kFALSE;
   Int_t i=0, nparents=this->ParentsN();
   while (i<nparents && !isRes) {
-    isRes = IsMotherAResonance(i++);
+    isRes = IsMotherAResonance(i++); // quarkonium mother has no anti-particle
   }
 
   if (isRes) return 2;
@@ -368,6 +389,7 @@ void AliMuonInfoStoreMC::ResetQuarkInfo()
     fQuarkIndex[pos] = -1;
     fQuarkPDGCode[pos] = 0;
   }
+
   return;
 }
 
@@ -378,6 +400,7 @@ Int_t AliMuonInfoStoreMC::ParentFlavour(Int_t i) const
   Int_t pdg = ParentPDGCode(i);
   pdg = TMath::Abs(pdg/100);
   if(pdg>9) pdg /= 10;
+
   return pdg;
 }
 
@@ -387,5 +410,6 @@ Bool_t AliMuonInfoStoreMC::IsMotherAResonance(Int_t i) const
   // copy from $ALICE_ROOT/MUON/AliMUONTrackLight.cxx
   Int_t pdg = ParentPDGCode(i);
   Int_t id=pdg%100000;
+
   return (!((id-id%10)%110));
 }

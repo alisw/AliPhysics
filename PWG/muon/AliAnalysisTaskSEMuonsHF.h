@@ -36,32 +36,34 @@ class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *opt);
   virtual void NotifyRun();
 
-  void SetAnaMode(Int_t mode)      { fAnaMode      = ((mode>=0 && mode<3) ? mode : 0); }
-  void SetIsOutputTree(Bool_t ist) { fIsOutputTree = ist;                              }
-  void SetUseMC(Bool_t isMC)       { fIsMC         = isMC;                             }
+  void SetAnaMode(Int_t mode)      { fAnaMode      = ((mode>=0 && mode<=2) ? mode : 0); }
+  void SetIsOutputTree(Bool_t ist) { fIsOutputTree = ist;                               }
+  void SetUseMC(Bool_t isMC)       { fIsMC         = isMC;                              }
+  void SetIsFull(Bool_t isFull)    { fIsFull       = isFull;                            }
 
-  void SetEvsHCuts(Double_t cuts[5])  const { AliMuonsHFHeader::SetSelectionCuts(cuts);   }
+  void SetEvsHCuts(Double_t cuts[5])  const { AliMuonsHFHeader::SetSelectionCuts(cuts); }
 
  private:
 
   AliAnalysisTaskSEMuonsHF(const AliAnalysisTaskSEMuonsHF&);
   AliAnalysisTaskSEMuonsHF& operator=(const AliAnalysisTaskSEMuonsHF&);
 
-  Int_t fAnaMode;        // = 0, ana both single muon and dimuon
-                         // = 1, ana single muon
-                         // = 2, ana dimuon
-  Bool_t fIsOutputTree;  // flag used to switch on/off tree output
-  Bool_t fIsMC;          // flag of whether the input is MC
+  Int_t fAnaMode;       // = 0, ana both single muon and dimuon
+                        // = 1, ana single muon
+                        // = 2, ana dimuon
+  Bool_t fIsOutputTree; // flag used to switch on/off tree output
+  Bool_t fIsMC;         // flag to use MC
+  Bool_t fIsFull;       // flag to save the parton info in MC (PYTHIA)
 
-  AliMuonTrackCuts *fCutsMuon;  // single muon selection cuts
-  AliMuonPairCuts  *fCutsDimu;  // dimuon selection cuts
+  AliMuonTrackCuts *fCutsMuon; // single muon selection cuts
+  AliMuonPairCuts  *fCutsDimu; // dimuon selection cuts
 
-  AliMuonsHFHeader *fHeader;  // output for info at ev level
-  TClonesArray  *fMuonClArr;  // output clones array for single mu
-  TClonesArray  *fDimuClArr;  // output clones array for dimu
-  TList *fListOutput;         // output list of histos
+  AliMuonsHFHeader *fHeader;     // output for info at ev level
+  TClonesArray     *fMuonClArr;  // output clones array for single mu
+  TClonesArray     *fDimuClArr;  // output clones array for dimu
+  TList            *fListOutput; // output list of histos
 
-  ClassDef(AliAnalysisTaskSEMuonsHF, 7);
+  ClassDef(AliAnalysisTaskSEMuonsHF, 8);
 };
 
 #endif
