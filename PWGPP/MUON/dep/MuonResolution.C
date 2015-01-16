@@ -477,7 +477,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   
   // event selection
   if (selectPhysics) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     if (!gROOT->ProcessLineFast("AddTaskPhysicsSelection()")) {
       Error("CreateAnalysisTrain","AliPhysicsSelectionTask not created!");
       return 0x0;

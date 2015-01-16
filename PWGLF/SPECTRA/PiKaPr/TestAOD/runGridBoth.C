@@ -176,7 +176,7 @@ gSystem->Load("libPWGLFspectra");
 taskPID->SetUseTPCEtaCorrection(kTRUE);
  if(!aod)
   {	
-  	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  	gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
         AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
         if(mc)
         {

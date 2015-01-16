@@ -85,7 +85,7 @@ void AnalysisSPDClustTask
   task->SetInput("spectraCombine.root");
   //
   printf("Requesting physics selection in %s mode\n",useMC ? "MC":"Data");
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //  /*
   //gROOT->ProcessLine(".L AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(useMC);

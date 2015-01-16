@@ -91,7 +91,7 @@ void AddTask_GammaConvV1(TString mode){
       AddTaskPIDResponse(isMC);
    }//========= Add PID Reponse to ANALYSIS manager ====
    
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
 
    AliCentralitySelectionTask *taskCentrality;

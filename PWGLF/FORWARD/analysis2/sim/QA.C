@@ -242,7 +242,7 @@ void AddAnalysisTasks(const char *cdb_location)
   
   // --- Event Statistics (Jan Fiete) --------------------------------
   if (qaCfg->DoEventStat()) {
-    gROOT->LoadMacro(ana+"/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro(oadb+"/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE/*MC*/);
     // Hack by Alexander for LHC10h
     // gROOT->LoadMacro("LHC10hPS.C");

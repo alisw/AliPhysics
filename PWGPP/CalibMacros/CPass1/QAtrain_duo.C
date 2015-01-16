@@ -195,7 +195,7 @@ void AddAnalysisTasks(const char *suffix)
   // Event Statistics (Jan Fiete)
   //
   if (doEventStat) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
       AliAnalysisDataContainer *cstatsout = (AliAnalysisDataContainer*)mgr->GetOutputs()->FindObject("cstatsout");
       cstatsout->SetFileName(Form("EventStat_temp%s.root", suffix));

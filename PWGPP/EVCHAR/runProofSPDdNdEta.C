@@ -126,7 +126,7 @@ void Analysis(TString dataset, TString outFileCorr, TString outFileData, TString
   task->SetPhiWindowAna(phiWindowAna);
 
   // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask=AddTaskPhysicsSelection(useMC,kFALSE);
   if (!useMC) {
     AliPhysicsSelection * physSel = physSelTask->GetPhysicsSelection();

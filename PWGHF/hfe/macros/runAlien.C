@@ -189,7 +189,7 @@ void runAlien(TString data, TString mode = "test", Bool_t MC = kFALSE){
   }
 
   // Add Tasks
-  gROOT->LoadMacro(Form("%s/ANALYSIS/macros/AddTaskPhysicsSelection.C", gSystem->Getenv("ALICE_ROOT")));
+  gROOT->LoadMacro(Form("%s/OADB/macros/AddTaskPhysicsSelection.C", gSystem->Getenv("ALICE_ROOT")));
   gROOT->LoadMacro(Form("%s/PWG3/hfe/macros/AddTaskHFE.C", gSystem->Getenv("ALICE_ROOT")));
   AddTaskPhysicsSelection(MC);
   AddTaskHFE();     // @TODO: MC and PbPb flag to be fixed

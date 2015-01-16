@@ -61,7 +61,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   mgr->SetInputEventHandler(esdH);
   
   // event selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection(isMC);
   if(!physicsSelection) {
     Error("RunMuonQA","AliPhysicsSelectionTask not created!");

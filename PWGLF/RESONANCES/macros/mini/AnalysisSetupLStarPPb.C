@@ -131,7 +131,7 @@ TString Setup
 
    if (isESD) {
       ::Info("AnalysisSetup", "Add physics selection by default on ESD analysis");
-      gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$(ALICE_ROOT)/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
       if (noV0) {
          ::Info("AnalysisSetup", "Skip of V0 info is required");

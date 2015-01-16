@@ -67,7 +67,7 @@ void RunCFSingleTrackEfficiencyTask()
 
   // Run physics selection if not reading AODs
   if (!readAOD) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE);
   }
 

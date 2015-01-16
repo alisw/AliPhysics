@@ -51,7 +51,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   mgr->SetCommonFileName("AnalysisResult.root");
 
   // Only for ESD?
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //AddTaskPhysicsSelection(kFALSE, kTRUE);
 
 
