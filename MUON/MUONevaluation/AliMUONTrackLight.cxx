@@ -51,6 +51,7 @@
 #include "TString.h"
 
 #include <cstdio>
+#include <Riostream.h>
 
 ClassImp(AliMUONTrackLight) 
 
