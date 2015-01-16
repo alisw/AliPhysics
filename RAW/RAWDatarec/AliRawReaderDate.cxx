@@ -348,6 +348,8 @@ Bool_t AliRawReaderDate::ReadHeader()
 	}
       default:
 	// We have got a version we don't know
+  		if (fEquipment->equipmentId != 4352)
+		{
 	Error("ReadHeader", 
 	      "version is neither 2 nor 3, we can't handle it (version found : %d). Jump to the end of the equipment",version);
 	Warning("ReadHeader", 
@@ -355,7 +357,7 @@ Bool_t AliRawReaderDate::ReadHeader()
 		fSubEvent->eventRunNb, 
 		fSubEvent->eventId[0], fSubEvent->eventId[1],
 		fSubEvent->eventLdcId, fSubEvent->eventGdcId);
-	
+		}
 	fHeader = 0x0;
 	fHeaderV3 = 0x0;
 	fPosition = fEnd;
