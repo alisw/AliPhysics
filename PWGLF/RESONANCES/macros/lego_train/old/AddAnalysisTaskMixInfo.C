@@ -1,6 +1,6 @@
 #ifndef __CINT__
 #include <ANALYSIS/AliAnalysisManager.h>
-#include <ANALYSIS/EventMixing/AliAnalysisTaskMixInfo.h>
+#include <EVENTMIX/AliAnalysisTaskMixInfo.h>
 #include <ANALYSIS/AliAnalysisDataContainer.h>
 #endif
 void AddAnalysisTaskMixInfo(TString opts = "")

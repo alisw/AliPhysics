@@ -58,7 +58,7 @@ plugin->AddRunNumber(170040);
 // Declare the analysis source files names separated by blancs. To be compiled runtime
 // using ACLiC on the worker nodes.
 //   plugin->SetAnalysisSource("AliAnalysisHelperJetTasks.cxx AliAnalysisTaskPartonDisc.cxx");
-   plugin->AddIncludePath("-I. .I$ALIEN_ROOT/api/lib -I$ROOTSYS/lib -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/ -I$ALICE_ROOT/PWGHF/hfe/macros -I$ALICE_ROOT/PWGHF/hfe -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/ANALYSIS/Tender -I$ALICE_ROOT/ANALYSIS/TenderSupplies -I$ALICE_ROOT/PWG/ -I$ALICE_ROOT/PWG/FLOW -I$ALICE_ROOT/PWG/Base -I$ALICE_ROOT/PWG/Tasks");
+   plugin->AddIncludePath("-I. .I$ALIEN_ROOT/api/lib -I$ROOTSYS/lib -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/ -I$ALICE_ROOT/PWGHF/hfe/macros -I$ALICE_ROOT/PWGHF/hfe -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TENDER/Tender -I$ALICE_ROOT/TENDER/TenderSupplies -I$ALICE_ROOT/PWG/ -I$ALICE_ROOT/PWG/FLOW -I$ALICE_ROOT/PWG/Base -I$ALICE_ROOT/PWG/Tasks");
  //  plugin->SetAdditionalLibs("libGui.so  libXMLParser.so libSTEERBase.so libESD.so libAOD.so libCDB.so libANALYSIS.so libANALYSISalice.so libCORRFW.so  libTender.so libProof.so libRAWDatabase.so libSTEER.so libTOFbase.so libPWGDQdielectron.so");// ConfigLowMassDiE.C")
    plugin->SetAdditionalLibs("libGui.so  libXMLParser.so libSTEERBase.so libESD.so libAOD.so libCDB.so libANALYSIS.so libANALYSISalice.so libCORRFW.so  libPWGflowBase.so libPWGflowTasks.so libPWGHFhfe.so libTender.so libProof.so libRAWDatabase.so libSTEER.so libTOFbase.so");
    

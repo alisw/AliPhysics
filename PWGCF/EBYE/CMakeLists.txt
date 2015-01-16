@@ -23,7 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/PWGCF/EBYE)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/EventMixing
+                    ${AliRoot_SOURCE_DIR}/EVENTMIX
                     ${AliRoot_SOURCE_DIR}/CORRFW
                     ${AliRoot_SOURCE_DIR}/PWG/Tools
                     ${AliRoot_SOURCE_DIR}/PWGCF/EBYE/LRC

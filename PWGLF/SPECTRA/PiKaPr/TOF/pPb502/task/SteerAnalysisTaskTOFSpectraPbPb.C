@@ -74,7 +74,7 @@ SteerAnalysisTaskTOFSpectraPbPb(const Char_t *inputfilename, Bool_t mcFlag = kFA
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AddTaskPIDResponse();
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+  gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
   AddTaskTender(kFALSE,
 		kFALSE,
 		kTRUE,

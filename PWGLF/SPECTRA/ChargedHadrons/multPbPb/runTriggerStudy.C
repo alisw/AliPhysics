@@ -44,7 +44,7 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
 
   // Add tender
 #ifdef TENDER
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+  gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
   AliAnalysisTask* tender=0x0;
   if(!isMC)
     {

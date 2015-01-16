@@ -148,7 +148,7 @@ void AddAnalysisTasks(Int_t merge){
   //
   //AliAnalysisManager::SetCommonFileName("AODQA.root");
   if (useTender) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+    gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
     // IF V0 tender needed, put kTRUE below
     AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
     //      tender->SetDebugLevel(2);
