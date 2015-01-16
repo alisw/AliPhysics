@@ -17,7 +17,7 @@
 set(MODULE Tender)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/TENDER/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
