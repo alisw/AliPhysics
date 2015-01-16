@@ -100,7 +100,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    }
 
    if (useCentralityTask) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kFALSE);
    }
 

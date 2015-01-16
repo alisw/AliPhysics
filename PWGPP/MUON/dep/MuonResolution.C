@@ -485,7 +485,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   }
   
   // centrality selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   if (!gROOT->ProcessLineFast("AddTaskCentrality()")) {
     Error("CreateAnalysisTrain","AliCentralitySelectionTask not created!");
     return 0x0;

@@ -234,7 +234,7 @@ void ana(Int_t mode=mGRID)
   // Centrality
   if(kCollision=="PbPb" && kInputData=="ESD")
   {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   }
   

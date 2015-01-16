@@ -56,7 +56,7 @@ void runJetAna(
 
   // Centrality task
   if (dType == kEsd) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
   }
 

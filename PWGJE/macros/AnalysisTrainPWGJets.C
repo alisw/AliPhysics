@@ -452,7 +452,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    if(kIsPbPb&&!iAODanalysis){
 
      // has to run before AOD filter
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
      AliCentralitySelectionTask *taskC = AddTaskCentrality();
       if (!taskC) ::Warning("AnalysisTrainPWG4Jets", "AliCentralitySelectionTask cannot run for this train conditions - EXCLUDED");
 

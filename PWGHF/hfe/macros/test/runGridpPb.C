@@ -275,7 +275,7 @@ void SetupUtil(bool isMC, bool isAOD){
 
         //===== ADD CENTRALITY: ===
         if(!isAOD){
-                gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+                gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
                 AddTaskCentrality();
         }
 }

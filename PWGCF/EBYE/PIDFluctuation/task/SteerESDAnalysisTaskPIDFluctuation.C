@@ -56,7 +56,7 @@ SteerESDAnalysisTaskPIDFluctuation(const Char_t *inputfilename, Int_t maxFiles =
   /* add tasks */
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE);
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *centralityTask = AddTaskCentrality(); 
   gROOT->LoadMacro("AddAnalysisTaskPIDFluctuation.C");
 

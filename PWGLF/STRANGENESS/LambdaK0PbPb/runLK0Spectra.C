@@ -79,7 +79,7 @@ void runLK0Spectra(const char * data, const char * passOrPath, Long64_t nev = -1
   AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kTRUE,0);
 
   // Centrality
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   //taskCentrality->SetPass(2);
   if(isMC) taskCentrality->SetMCInput();

@@ -103,7 +103,7 @@ void runTaskFluctuationsCentralityTrain(const char* runListFileName = "group4.tx
     mgr->SetDebugLevel(2);
     
     //Add the centrality determination task
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AddTaskCentrality();
     //AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
     //taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);

@@ -133,7 +133,7 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
     physicsSelectionTask->GetPhysicsSelection()->SetCustomOADBObjects(oadbDefaultPbPb,0,0); 
   }
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
   // Create task

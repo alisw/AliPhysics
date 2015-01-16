@@ -66,7 +66,7 @@ void PHOSPbPbQA(const char* dataset="collection.xml")
   mgr->SetDebugLevel(0);
   
   //Add centrality task!
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality() ;
   // taskCentrality->SetMCInput();
 

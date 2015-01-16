@@ -37,7 +37,7 @@ void runTakuMC() {
   physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality =AddTaskCentrality();
   ///taskCentrality->SetPass(2);
   taskCentrality->SetMCInput();
