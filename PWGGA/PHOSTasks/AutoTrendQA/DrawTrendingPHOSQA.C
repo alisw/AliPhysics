@@ -11,10 +11,21 @@ void DrawTrendingPHOSQA(TString mergedTrendFile = "trending.root")
   Int_t nRuns = ttree->GetEntries();
 
   Int_t runNumber = 0; Float_t nEvents = 0;
+
   Float_t avCluEnergySM1=0., avCluMultSM1=0., avNcellPerCluSM1=0.; // Module 1
   Float_t avCluEnergySM2=0., avCluMultSM2=0., avNcellPerCluSM2=0.; // Module 2
   Float_t avCluEnergySM3=0., avCluMultSM3=0., avNcellPerCluSM3=0.; // Module 3
- 
+
+  Float_t avPi0NumSM1=0., avPi0MassSM1=0., avPi0SigmaSM1=0.;
+  Float_t avPi0NumErrSM1=0., avPi0MassErrSM1=0., avPi0SigmaErrSM1=0.;
+
+  Float_t avPi0NumSM2=0., avPi0MassSM2=0., avPi0SigmaSM2=0.;
+  Float_t avPi0NumErrSM2=0., avPi0MassErrSM2=0., avPi0SigmaErrSM2=0.;
+
+  Float_t avPi0NumSM3=0., avPi0MassSM3=0., avPi0SigmaSM3=0.;
+  Float_t avPi0NumErrSM3=0., avPi0MassErrSM3=0., avPi0SigmaErrSM3=0.;
+
+  //clusters
   ttree->SetBranchAddress("run",&runNumber);
   ttree->SetBranchAddress("nEvents",&nEvents);
 
@@ -30,6 +41,28 @@ void DrawTrendingPHOSQA(TString mergedTrendFile = "trending.root")
   ttree->SetBranchAddress("avCluMultSM3",&avCluMultSM3);
   ttree->SetBranchAddress("avNcellPerCluSM3",&avNcellPerCluSM3);
 
+  //pi0
+  ttree->SetBranchAddress("avPi0NumSM1",&avPi0NumSM1);
+  ttree->SetBranchAddress("avPi0NumSM2",&avPi0NumSM2);
+  ttree->SetBranchAddress("avPi0NumSM3",&avPi0NumSM3);
+  ttree->SetBranchAddress("avPi0NumErrSM1",&avPi0NumErrSM2);
+  ttree->SetBranchAddress("avPi0NumErrSM2",&avPi0NumErrSM2);
+  ttree->SetBranchAddress("avPi0NumErrSM3",&avPi0NumErrSM3);
+
+  ttree->SetBranchAddress("avPi0MassSM1",&avPi0MassSM1);
+  ttree->SetBranchAddress("avPi0MassSM2",&avPi0MassSM2);
+  ttree->SetBranchAddress("avPi0MassSM3",&avPi0MassSM3);
+  ttree->SetBranchAddress("avPi0MassErrSM1",&avPi0MassErrSM2);
+  ttree->SetBranchAddress("avPi0MassErrSM2",&avPi0MassErrSM2);
+  ttree->SetBranchAddress("avPi0MassErrSM3",&avPi0MassErrSM3);
+
+  ttree->SetBranchAddress("avPi0SigmaSM1",&avPi0SigmaSM1);
+  ttree->SetBranchAddress("avPi0SigmaSM2",&avPi0SigmaSM2);
+  ttree->SetBranchAddress("avPi0SigmaSM3",&avPi0SigmaSM3);
+  ttree->SetBranchAddress("avPi0SigmaErrSM1",&avPi0SigmaErrSM2);
+  ttree->SetBranchAddress("avPi0SigmaErrSM2",&avPi0SigmaErrSM2);
+  ttree->SetBranchAddress("avPi0SigmaErrSM3",&avPi0SigmaErrSM3);
+
   // booking histograms
   TH1F* havCluEnergySM1 = new TH1F("havCluEnergySM1","Average cluster energy in Module 4",nRuns,0.,nRuns);
   TH1F* havCluEnergySM2 = new TH1F("havCluEnergySM2","Average cluster energy in Module 3",nRuns,0.,nRuns);
@@ -43,6 +76,18 @@ void DrawTrendingPHOSQA(TString mergedTrendFile = "trending.root")
   TH1F* havNcellPerCluSM2 = new TH1F("havNcellPerCluSM2","Average number of cells in cluster in Module 3",nRuns,0.,nRuns);
   TH1F* havNcellPerCluSM3 = new TH1F("havNcellPerCluSM3","Average number of cells in cluster in Module 2",nRuns,0.,nRuns);
 
+  TH1F* havPi0NumSM1 = new TH1F("havPi0NumSM1","Average number of #pi^{0}s per event in Module 4",nRuns,0.,nRuns);
+  TH1F* havPi0NumSM2 = new TH1F("havPi0NumSM2","Average number of #pi^{0}s per event in Module 3",nRuns,0.,nRuns);
+  TH1F* havPi0NumSM3 = new TH1F("havPi0NumSM3","Average number of #pi^{0}s per event in Module 2",nRuns,0.,nRuns);
+
+  TH1F* havPi0MassSM1 = new TH1F("avPi0MassSM1","#pi^{0} mass position in Module 4",nRuns,0.,nRuns);
+  TH1F* havPi0MassSM2 = new TH1F("avPi0MassSM2","#pi^{0} mass position in Module 3",nRuns,0.,nRuns);
+  TH1F* havPi0MassSM3 = new TH1F("avPi0MassSM3","#pi^{0} mass position in Module 2",nRuns,0.,nRuns);
+
+  TH1F* havPi0SigmaSM1 = new TH1F("avPi0SigmaSM1","#pi^{0} peak width in Module 4",nRuns,0.,nRuns);
+  TH1F* havPi0SigmaSM2 = new TH1F("avPi0SigmaSM2","#pi^{0} peak width in Module 3",nRuns,0.,nRuns);
+  TH1F* havPi0SigmaSM3 = new TH1F("avPi0SigmaSM3","#pi^{0} peak width in Module 2",nRuns,0.,nRuns);
+
   // List of histograms for saving
   TList list;
   list.Add(havCluEnergySM1);
@@ -54,6 +99,15 @@ void DrawTrendingPHOSQA(TString mergedTrendFile = "trending.root")
   list.Add(havNcellPerCluSM1);
   list.Add(havNcellPerCluSM2);
   list.Add(havNcellPerCluSM3);
+  list.Add(havPi0NumSM1);
+  list.Add(havPi0NumSM2);
+  list.Add(havPi0NumSM3);
+  list.Add(havPi0MassSM1);
+  list.Add(havPi0MassSM2);
+  list.Add(havPi0MassSM3);
+  list.Add(havPi0SigmaSM1);
+  list.Add(havPi0SigmaSM2);
+  list.Add(havPi0SigmaSM3);
 
   char runlabel[6];
   
@@ -87,7 +141,44 @@ void DrawTrendingPHOSQA(TString mergedTrendFile = "trending.root")
     havNcellPerCluSM2->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
     havNcellPerCluSM3->SetBinContent(irun+1, avNcellPerCluSM3);
-    havNcellPerCluSM3->GetXaxis()->SetBinLabel(irun+1,runlabel);	
+    havNcellPerCluSM3->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0NumSM1->SetBinContent(irun+1,avPi0NumSM1);
+    havPi0NumSM1->SetBinError(irun+1,avPi0NumErrSM1);
+    havPi0NumSM1->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0NumSM2->SetBinContent(irun+1,avPi0NumSM2);
+    havPi0NumSM2->SetBinError(irun+1,avPi0NumErrSM2);
+    havPi0NumSM2->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0NumSM3->SetBinContent(irun+1,avPi0NumSM3);
+    havPi0NumSM3->SetBinError(irun+1,avPi0NumErrSM3);
+    havPi0NumSM3->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0MassSM1->SetBinContent(irun+1,avPi0MassSM1);
+    havPi0MassSM1->SetBinError(irun+1,avPi0MassErrSM1);
+    havPi0MassSM1->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0MassSM2->SetBinContent(irun+1,avPi0MassSM2);
+    havPi0MassSM2->SetBinError(irun+1,avPi0MassErrSM2);
+    havPi0MassSM2->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0MassSM3->SetBinContent(irun+1,avPi0MassSM3);
+    havPi0MassSM3->SetBinError(irun+1,avPi0MassErrSM3);
+    havPi0MassSM3->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0SigmaSM1->SetBinContent(irun+1,avPi0SigmaSM1);
+    havPi0SigmaSM1->SetBinError(irun+1,avPi0SigmaErrSM1);
+    havPi0SigmaSM1->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0SigmaSM2->SetBinContent(irun+1,avPi0SigmaSM2);
+    havPi0SigmaSM2->SetBinError(irun+1,avPi0SigmaErrSM2);
+    havPi0SigmaSM2->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    havPi0SigmaSM3->SetBinContent(irun+1,avPi0SigmaSM3);
+    havPi0SigmaSM3->SetBinError(irun+1,avPi0SigmaErrSM3);
+    havPi0SigmaSM3->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
   }
   
   
