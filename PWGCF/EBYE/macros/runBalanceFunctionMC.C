@@ -94,7 +94,7 @@ void runBalanceFunctionMC(Int_t mode = mLocal,
   }   
 
   if(mAOD){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
     // Add physics selection task (NOT needed for AODs)

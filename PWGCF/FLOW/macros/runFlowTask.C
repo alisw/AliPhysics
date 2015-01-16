@@ -75,7 +75,7 @@ void runFlowTask(Int_t mode = mGrid,
 
   //Add the centrality determination task
   if(kUseCentrality) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AddTaskCentrality();
   }
 

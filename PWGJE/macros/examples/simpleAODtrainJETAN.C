@@ -55,7 +55,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   //AddTaskPhysicsSelection(kFALSE, kTRUE);
 
 
-  // gROOT->Macro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C"); // Only for ESD
+  // gROOT->Macro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C"); // Only for ESD
 
   gROOT->Macro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
 

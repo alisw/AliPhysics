@@ -95,7 +95,7 @@ void AddTask_GammaConvV1(TString mode){
    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
 
    AliCentralitySelectionTask *taskCentrality;
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
    taskCentrality = AddTaskCentrality();
    if (isMC){
       taskCentrality->SetMCInput();

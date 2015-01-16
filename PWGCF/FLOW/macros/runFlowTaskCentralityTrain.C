@@ -68,7 +68,7 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
   if (DATA) centSelTask->SetPass(1);

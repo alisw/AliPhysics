@@ -82,7 +82,7 @@ void MyAnalysisMacroTrackletMulti
   gProof->Load("AliTrackletTaskMulti.cxx++");
   //
   printf("Loading Centrality task\n");
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   //  taskCentrality->SetDebugLevel(2);
   if (useMC) taskCentrality->SetMCInput();

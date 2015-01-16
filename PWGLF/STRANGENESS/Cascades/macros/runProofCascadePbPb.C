@@ -84,7 +84,7 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC);
 
     // centrality selection
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
     if (useMC) {
       taskCentr->SetMCInput();

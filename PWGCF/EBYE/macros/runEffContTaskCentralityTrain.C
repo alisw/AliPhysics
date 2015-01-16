@@ -85,7 +85,7 @@ void runEffContTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA = kFALSE) {
   //mgr->SetDebugLevel(2);
   
   //Add the centrality determination task
-  /*gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  /*gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
   centralityTask->SetMCInput();*/ //antes for ESD
 

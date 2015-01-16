@@ -144,7 +144,7 @@ TString Setup
    //
    if (isESD && !isPP) {
      ::Info("AnalysisSetup", "Add centrality and event plane computation tasks");
-      gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$(ALICE_ROOT)/OADB/macros/AddTaskCentrality.C");
       gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskEventplane.C");
       AliCentralitySelectionTask* taskCentrality = (AliCentralitySelectionTask*)AddTaskCentrality();
       if (isMC) {

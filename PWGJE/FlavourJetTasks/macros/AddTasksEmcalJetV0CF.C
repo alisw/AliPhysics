@@ -101,7 +101,7 @@ Bool_t AddTasksEmcalJetV0CF()
   }
 
   if (bIsCentSel) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentSel = AddTaskCentrality(kTRUE, bIsInfoAOD);
     if (wTriggerMask) taskCentSel->SelectCollisionCandidates(wTriggerMask);
     if (bAnaInfoMC)   taskCentSel->SetMCInput();

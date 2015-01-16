@@ -171,7 +171,7 @@ void runBalanceFunction(
 
     // (only on ESD level, in AODs centrality is already in header and events are selected)
     if(!bAOD){
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
       // Add physics selection task (NOT needed for AODs)

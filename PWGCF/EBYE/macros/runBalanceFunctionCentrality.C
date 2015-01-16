@@ -136,7 +136,7 @@ void runBalanceFunctionCentrality(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
   
   //Add the centrality determination task
     if ((analysisType == "ESD")||(analysisType == "MCESD")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
     centralityTask->SetMCInput();
     //centralityTask->SetPass(2);

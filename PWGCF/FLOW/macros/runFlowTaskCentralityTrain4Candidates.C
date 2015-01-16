@@ -72,7 +72,7 @@ void runFlowTaskCentralityTrain4Candidates(Int_t mode = mGridPAR, Int_t nRuns = 
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AddTaskCentrality();
 
   // Setup analysis per centrality bin:

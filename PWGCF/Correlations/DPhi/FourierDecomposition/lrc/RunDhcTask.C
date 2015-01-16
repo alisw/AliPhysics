@@ -68,7 +68,7 @@ void LocalSetup()
   
   // Load macros/tasks
   if (dataType == "esd") {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   }
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   // gROOT->LoadMacro("AliPool.cxx+g");  
@@ -134,7 +134,7 @@ void ProofSetup()
 void AddDhcTask()
 {
   // Need the following macros loaded beforehand:
-  // "$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C" (ESD only)
+  // "$ALICE_ROOT/OADB/macros/AddTaskCentrality.C" (ESD only)
   // "$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"
   // "AliDhcTask.cxx+g"
 

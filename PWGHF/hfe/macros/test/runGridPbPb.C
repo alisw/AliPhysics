@@ -80,7 +80,7 @@ void runGridPbPb()
    AddTaskPIDResponse();
 
    //===== ADD CENTRALITY: ===
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
    AddTaskCentrality();
 
    //===== ADD VZERO event plane: ===
