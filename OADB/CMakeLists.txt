@@ -88,4 +88,6 @@ install(DIRECTORY COMMON
                   PWGLF
         DESTINATION OADB)
 
+install(DIRECTORY macros DESTINATION OADB)
+
 message(STATUS "${MODULE} enabled")
