@@ -159,7 +159,7 @@ main(int argc, char **argv)
     Int_t dataWords;
     Int_t currentDDL;
     const AliRawDataHeader *currentCDH;
-    const AliRawDataHeaderV3 *currentCDHV3
+    const AliRawDataHeaderV3 *currentCDHV3;
     Int_t currentMiniEventID;
     Int_t currentEventID1;
     Int_t currentL0BCID ;
