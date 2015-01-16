@@ -86,7 +86,7 @@ void AddAnalysisTasks(UInt_t config)
   // Tender and supplies
   //
   if (config & kTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
       AliAnalysisTaskSE *tender = AddTaskTender();
       // SelectCollisionCandidates ?? Tender has to derive from TaskSE
       tender->SelectCollisionCandidates();

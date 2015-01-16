@@ -73,7 +73,7 @@ void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString 
   //____________________________________________//
 
 #ifdef TENDER
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+  gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
   AliAnalysisTask* tender=0x0;
   if(!isMC)
     {
