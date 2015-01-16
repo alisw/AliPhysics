@@ -60,6 +60,18 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
+# ROOT configuration mandatory
+if(ROOTSYS)
+    find_package(ROOT REQUIRED)
+
+    # ROOT must be build with XML2 support
+    if(NOT ROOT_HASXML)
+        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+    endif(NOT ROOT_HASXML)
+else()
+    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
+endif(ROOTSYS)
+
 # ROOT dictionaries and maps
 include(CMakeALICE)
 
@@ -129,18 +141,6 @@ if(MDCRPM)
     set(ALIROOT_STATIC TRUE)
     message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
 endif(MDCRPM)
-
-# ROOT configuration mandatory
-if(ROOTSYS)
-    find_package(ROOT REQUIRED)
-
-    # ROOT must be build with XML2 support
-    if(NOT ROOT_HASXML)
-        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
-    endif(NOT ROOT_HASXML)
-else()
-    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
-endif(ROOTSYS)
 
 # If no Fortran, i.e on Windows
 # We need to specify ROOT fortran
