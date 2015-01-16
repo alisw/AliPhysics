@@ -17,7 +17,7 @@
 set(MODULE EventMixing)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/EVENTMIX)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
