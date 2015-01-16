@@ -71,3 +71,6 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Status message
+message(STATUS "EVENTMIX enabled")
