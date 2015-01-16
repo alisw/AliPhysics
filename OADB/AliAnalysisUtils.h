@@ -11,7 +11,8 @@
 //                                                                          //
 ///////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
+#include <TObject.h>
+#include <TString.h>
 
 class AliVEvent;
 class AliVVertex;
