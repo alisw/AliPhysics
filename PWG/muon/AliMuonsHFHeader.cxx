@@ -36,7 +36,8 @@
 #include "AliVVertex.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
-
+#include "AliAnalysisUtils.h"
+#include "AliMultiplicity.h"
 #include "AliMuonTrackCuts.h"
 #include "AliMuonInfoStoreRD.h"
 #include "AliMuonInfoStoreMC.h"
@@ -44,25 +45,39 @@
 #include "AliDimuInfoStoreMC.h"
 #include "AliMuonsHFHeader.h"
 
+#include "AliMCEvent.h"
+#include "AliGenEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+
 ClassImp(AliMuonsHFHeader)
 
 const TString AliMuonsHFHeader::fgkStdBranchName("MuEvsH");
-Int_t         AliMuonsHFHeader::fgAnaMode = 0;
-Bool_t        AliMuonsHFHeader::fgIsMC    = kFALSE;
 Double_t      AliMuonsHFHeader::fgCuts[5] = { -999999., 999999., 999999., -999999., 999999. };
 
 //_____________________________________________________________________________
 AliMuonsHFHeader::AliMuonsHFHeader() :
 TNamed(),
+fAnaMode(0),
+fIsMC(kFALSE),
 fSelMask(AliVEvent::kAny),
 fIsMB(kFALSE),
 fIsMU(kFALSE),
-fIsPileupSPD(kFALSE),
 fVtxContrsN(0),
 fFiredTriggerClass(),
-fCentrality(-1.),
 fCentQA(-1),
-fEventPlane(0.)
+fEventPlane(0.),
+fIsEvtInChunk(kFALSE),
+fIsVtxSeled2013pA(kFALSE),
+fNumOfTrklets(-1),
+fTrgInpts(0),
+fImpParam(-1.),
+fCentralityV0M(-1.),
+fCentralityV0A(-1.),
+fCentralityV0C(-1.),
+fCentralityCL1(-1.),
+fCentralityZNA(-1.),
+fCentralityZNC(-1.),
+fPUMask(0)
 {
   //
   // default constructor
@@ -74,15 +89,27 @@ fEventPlane(0.)
 //_____________________________________________________________________________
 AliMuonsHFHeader::AliMuonsHFHeader(const AliMuonsHFHeader &src) :
 TNamed(),
+fAnaMode(src.fAnaMode),
+fIsMC(src.fIsMC),
 fSelMask(src.fSelMask),
 fIsMB(src.fIsMB),
 fIsMU(src.fIsMU),
-fIsPileupSPD(src.fIsPileupSPD),
 fVtxContrsN(src.fVtxContrsN),
 fFiredTriggerClass(src.fFiredTriggerClass),
-fCentrality(src.fCentrality),
 fCentQA(src.fCentQA),
-fEventPlane(src.fEventPlane)
+fEventPlane(src.fEventPlane),
+fIsEvtInChunk(src.fIsEvtInChunk),
+fIsVtxSeled2013pA(src.fIsVtxSeled2013pA),
+fNumOfTrklets(src.fNumOfTrklets),
+fTrgInpts(src.fTrgInpts),
+fImpParam(src.fImpParam),
+fCentralityV0M(src.fCentralityV0M),
+fCentralityV0A(src.fCentralityV0A),
+fCentralityV0C(src.fCentralityV0C),
+fCentralityCL1(src.fCentralityCL1),
+fCentralityZNA(src.fCentralityZNA),
+fCentralityZNC(src.fCentralityZNC),
+fPUMask(src.fPUMask)
 {
   //
   // copy constructor
@@ -100,15 +127,27 @@ AliMuonsHFHeader& AliMuonsHFHeader::operator=(const AliMuonsHFHeader &src)
 
   if(&src==this) return *this;
 
+  fAnaMode           = src.fAnaMode;
+  fIsMC              = src.fIsMC;
   fSelMask           = src.fSelMask;
   fIsMB              = src.fIsMB;
   fIsMU              = src.fIsMU;
-  fIsPileupSPD       = src.fIsPileupSPD;
   fVtxContrsN        = src.fVtxContrsN;
   fFiredTriggerClass = src.fFiredTriggerClass;
-  fCentrality        = src.fCentrality;
   fCentQA            = src.fCentQA;
   fEventPlane        = src.fEventPlane;
+  fIsEvtInChunk      = src.fIsEvtInChunk;
+  fIsVtxSeled2013pA  = src.fIsVtxSeled2013pA;
+  fNumOfTrklets      = src.fNumOfTrklets;
+  fTrgInpts          = src.fTrgInpts;
+  fImpParam          = src.fImpParam;
+  fCentralityV0M     = src.fCentralityV0M;
+  fCentralityV0A     = src.fCentralityV0A;
+  fCentralityV0C     = src.fCentralityV0C; 
+  fCentralityCL1     = src.fCentralityCL1; 
+  fCentralityZNA     = src.fCentralityZNA;
+  fCentralityZNC     = src.fCentralityZNC; 
+  fPUMask            = src.fPUMask;
   for (Int_t i=3; i--;) fVtx[i] = src.fVtx[i];
   for (Int_t i=3; i--;) fVMC[i] = src.fVMC[i];
 
@@ -124,39 +163,66 @@ AliMuonsHFHeader::~AliMuonsHFHeader()
 }
 
 //_____________________________________________________________________________
-void AliMuonsHFHeader::SetEventInfo(AliInputEventHandler* const handler, AliMCEvent* const eventMC)
+void AliMuonsHFHeader::SetEventInfo(AliInputEventHandler* const handler)
 {
   // fill info at event level
 
-  AliVEvent *event = handler->GetEvent();
-  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  AliVEvent   *event = handler->GetEvent();
+  AliAODEvent *aod   = dynamic_cast<AliAODEvent*>(event);
+  AliESDEvent *esd   = dynamic_cast<AliESDEvent*>(event);
 
   fSelMask = handler->IsEventSelected();
-  if (aod) fFiredTriggerClass = aod->GetFiredTriggerClasses();
-  if (esd) fFiredTriggerClass = esd->GetFiredTriggerClasses();
+  if (aod) { fFiredTriggerClass = aod->GetFiredTriggerClasses(); fTrgInpts = aod->GetHeader()->GetL0TriggerInputs(); }
+  if (esd) { fFiredTriggerClass = esd->GetFiredTriggerClasses(); fTrgInpts = esd->GetHeader()->GetL0TriggerInputs(); }
   fIsMB = fSelMask & AliVEvent::kMB;
   fIsMU = fSelMask & AliVEvent::kMUON;
 
   const AliVVertex *vertex = event->GetPrimaryVertex();
   vertex->GetXYZ(fVtx);
   fVtxContrsN = vertex->GetNContributors();
-  if (fgIsMC) {
-    if (esd)   eventMC->GetPrimaryVertex()->GetXYZ(fVMC);
+  if (fIsMC) {
+    AliMCEvent *mcEvent = handler->MCEvent();
+    AliGenEventHeader *genHeader = mcEvent->GenEventHeader();
+    if (!genHeader) {  AliError("Header not found. Nothing done!"); return; }
+    AliGenDPMjetEventHeader *dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
+    if (dpmHeader) fImpParam = dpmHeader->ImpactParameter();
+
+    if (esd)   mcEvent->GetPrimaryVertex()->GetXYZ(fVMC);
     if (aod) ((AliAODMCHeader*)aod->FindListObject(AliAODMCHeader::StdBranchName()))->GetVertex(fVMC);
   } this->SetTitle(vertex->GetTitle());
-  fIsPileupSPD = (aod && !aod->GetTracklets()) ? event->IsPileupFromSPD(3,0.8,3.,2.,5.) : event->IsPileupFromSPDInMultBins();
+  //(aod && !aod->GetTracklets()) ? event->IsPileupFromSPD(3,0.8,3.,2.,5.) : event->IsPileupFromSPDInMultBins();
 
-  AliCentrality *cent = event->GetCentrality();
-  if (cent) {
-    fCentrality = cent->GetCentralityPercentileUnchecked("V0M");
-    fCentQA     = cent->GetQuality();
+  AliAnalysisUtils *anaUtils = new AliAnalysisUtils();
+  if (esd) {
+    fIsEvtInChunk     = anaUtils->IsFirstEventInChunk(esd);
+    fIsVtxSeled2013pA = anaUtils->IsVertexSelected2013pA(esd);
+    fNumOfTrklets     = esd->GetMultiplicity()->GetNumberOfTracklets();
+  } 
+  if (aod) {
+    fIsEvtInChunk     = anaUtils->IsFirstEventInChunk(aod);
+    fIsVtxSeled2013pA = anaUtils->IsVertexSelected2013pA(aod);
+    fNumOfTrklets     = aod->GetTracklets()->GetNumberOfTracklets();
   }
+
+  fPUMask = this->CollectPUMask(event);
 
   AliEventplane *evnP = event->GetEventplane();
   if (evnP) fEventPlane = evnP->GetEventplane("Q");
 //if (evnP) fEventPlane = evnP->GetEventplane("V0A");
 
+   AliCentrality *cent = event->GetCentrality(); if (cent) {
+    fCentQA        = cent->GetQuality();
+    fCentralityV0M = cent->GetCentralityPercentileUnchecked("V0M");
+    fCentralityV0A = cent->GetCentralityPercentileUnchecked("V0A");
+    fCentralityV0C = cent->GetCentralityPercentileUnchecked("V0C");
+    fCentralityCL1 = cent->GetCentralityPercentileUnchecked("CL1");
+    fCentralityZNA = cent->GetCentralityPercentileUnchecked("ZNA");
+    fCentralityZNC = cent->GetCentralityPercentileUnchecked("ZNC");
+  }
+
+  aod = 0; esd = 0;
+  delete anaUtils; anaUtils = 0;
+  
   return;
 }
 
@@ -164,13 +230,25 @@ void AliMuonsHFHeader::SetEventInfo(AliInputEventHandler* const handler, AliMCEv
 Bool_t AliMuonsHFHeader::IsSelected()
 {
   // select event according to the event selection cuts
-  if (this->VtxContrsN()<fgCuts[0])       return kFALSE;
-  if (TMath::Abs(this->Vz())>fgCuts[1])   return kFALSE;
-  if (this->Vt()>fgCuts[2])               return kFALSE;
+  if (this->VtxContrsN()<fgCuts[0])     return kFALSE;
+  if (TMath::Abs(this->Vz())>fgCuts[1]) return kFALSE;
+  if (this->Vt()>fgCuts[2])             return kFALSE;
 
   // centrality selection
-  Float_t centr = this->Centrality();
-  if (centr<fgCuts[3] || centr>fgCuts[4]) return kFALSE;
+  Float_t centrV0M = this->Centrality(kV0M);
+  Float_t centrV0A = this->Centrality(kV0A);
+  Float_t centrV0C = this->Centrality(kV0C); 
+  Float_t centrCL1 = this->Centrality(kCL1); 
+  Float_t centrZNA = this->Centrality(kZNA);
+  Float_t centrZNC = this->Centrality(kZNC); 
+
+  if (centrV0M<fgCuts[3] || centrV0M>fgCuts[4]) return kFALSE;
+  if (centrV0A<fgCuts[3] || centrV0A>fgCuts[4]) return kFALSE;
+  if (centrV0C<fgCuts[3] || centrV0C>fgCuts[4]) return kFALSE;
+  if (centrCL1<fgCuts[3] || centrCL1>fgCuts[4]) return kFALSE;
+  if (centrZNA<fgCuts[3] || centrZNA>fgCuts[4]) return kFALSE;
+  if (centrZNC<fgCuts[3] || centrZNC>fgCuts[4]) return kFALSE;
+
   return kTRUE;
 }
 
@@ -179,13 +257,13 @@ void AliMuonsHFHeader::CreateHistograms(TList *list)
 {
   // create output histos of muon analysis according to the analysis mode & MC flag
 
-  if (fgIsMC) {
+  if (fIsMC) {
     this->CreateHistosEvnH(list);
-    if (fgAnaMode!=2) {
+    if (fAnaMode!=2) {
       TString sName[7] = { "Unidentified", "Hadron", "SecondaryMu", "PrimaryMu", "CharmMu", "BottomMu", "" };
       for (Int_t i=7; i--;) this->CreateHistosMuon(list, sName[i]);
     }
-    if (fgAnaMode!=1) {
+    if (fAnaMode!=1) {
       TString sName[7] = { "Uncorr", "Resonance", "DDsame", "DDdiff", "BBsame", "BBdiff", "" };
       for (Int_t i=7; i--;) this->CreateHistosDimu(list, sName[i]);
     }
@@ -193,8 +271,9 @@ void AliMuonsHFHeader::CreateHistograms(TList *list)
   }
 
   this->CreateHistosEvnH(list,"MB"); this->CreateHistosEvnH(list,"MU");
-  if (fgAnaMode!=2) { this->CreateHistosMuon(list,"MB"); this->CreateHistosMuon(list,"MU"); }
-  if (fgAnaMode!=1) { this->CreateHistosDimu(list,"MB"); this->CreateHistosDimu(list,"MU"); }
+  if (fAnaMode!=2) { this->CreateHistosMuon(list,"MB"); this->CreateHistosMuon(list,"MU"); }
+  if (fAnaMode!=1) { this->CreateHistosDimu(list,"MB"); this->CreateHistosDimu(list,"MU"); }
+
   return;
 }
 
@@ -222,6 +301,7 @@ void AliMuonsHFHeader::CreateHistosEvnH(TList *list, TString sName)
   }
 
   TH1::AddDirectory(oldStatus);
+
   return;
 }
 
@@ -249,6 +329,7 @@ void AliMuonsHFHeader::CreateHistosMuon(TList *list, TString sName)
   }
 
   TH1::AddDirectory(oldStatus);
+
   return;
 }
 
@@ -278,6 +359,7 @@ void AliMuonsHFHeader::CreateHistosDimu(TList *list, TString sName)
   }
 
   TH1::AddDirectory(oldStatus);
+
   return;
 }
 
@@ -292,12 +374,13 @@ void AliMuonsHFHeader::FillHistosEvnH(TList *list)
   const Int_t nhs    = 3;
   TString tName[nhs] = {       "Vz",       "Vt",        "VtxNcontr" };
   Double_t dist[nhs] = { this->Vz(), this->Vt(), static_cast<Double_t>(this->VtxContrsN()) };
-  if (fgIsMC && (fSelMask & AliVEvent::kAny)) {
+  if (fIsMC && (fSelMask & AliVEvent::kAny)) {
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h_%s",tName[i].Data())))->Fill(dist[i]);
   } else {
     if (fIsMB && (fSelMask & AliVEvent::kMB))   { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MB",tName[i].Data())))->Fill(dist[i]); }
     if (fIsMU && (fSelMask & AliVEvent::kMUON)) { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MU",tName[i].Data())))->Fill(dist[i]); }
   }
+
   return;
 }
 
@@ -320,7 +403,7 @@ void AliMuonsHFHeader::FillHistosMuon(TList *list, AliMuonInfoStoreRD* const inf
                          static_cast<Double_t>(infoStore->Charge()),
                          infoStore->RabsEnd() };
 
-  if (fgIsMC && (fSelMask & AliVEvent::kAny)) {
+  if (fIsMC && (fSelMask & AliVEvent::kAny)) {
     TString sName[7] = { "BottomMu", "CharmMu", "PrimaryMu", "SecondaryMu", "Hadron", "Unidentified", "" };
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s",sName[6].Data(),tName[i].Data())))->Fill(dist[i]);
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s",sName[s].Data(),tName[i].Data())))->Fill(dist[i]);
@@ -351,7 +434,7 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
                          infoStore->Momentum().Pt(),
                          infoStore->InvM() };
 
-  if (fgIsMC && (fSelMask & AliVEvent::kAny)) {
+  if (fIsMC && (fSelMask & AliVEvent::kAny)) {
     TString sName[7] = { "BBdiff", "BBsame", "DDdiff", "DDsame", "Resonance", "Uncorr", "" };
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s",sName[6].Data(),dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s",sName[s].Data(),dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
@@ -365,4 +448,71 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
   }
 
   return;
+}
+
+//_____________________________________________________________________________
+Float_t AliMuonsHFHeader::Centrality(Int_t centrality)
+{
+  // obtain centrality via selected estimators
+
+  if (centrality==kV0M)      return fCentralityV0M;
+  else if (centrality==kV0A) return fCentralityV0A; 
+  else if (centrality==kV0C) return fCentralityV0C;
+  else if (centrality==kCL1) return fCentralityCL1;
+  else if (centrality==kZNA) return fCentralityZNA;
+  else if (centrality==kZNC) return fCentralityZNC;
+  else return -1.;
+}
+
+//_____________________________________________________________________________
+UInt_t AliMuonsHFHeader::CollectPUMask(AliVEvent *event)
+{
+  // collect the mask for different combination of the parameters;
+  // used to tag pile-up events (IsPileupFromSPD, no IsPileupFromSPDInMultBins at the moment) 
+
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+
+  UInt_t collectMask = 0;
+  Bool_t ISc1z1 = kFALSE, ISc1z2 = kFALSE, ISc1z3 = kFALSE, ISc1z4 = kFALSE,
+         ISc2z1 = kFALSE, ISc2z2 = kFALSE, ISc2z3 = kFALSE, ISc2z4 = kFALSE,
+         ISc3z1 = kFALSE, ISc3z2 = kFALSE, ISc3z3 = kFALSE, ISc3z4 = kFALSE,
+         ISc4z1 = kFALSE, ISc4z2 = kFALSE, ISc4z3 = kFALSE, ISc4z4 = kFALSE;
+
+  ISc1z1 = (aod) ? aod->IsPileupFromSPD(3,0.5,3.,2.,5.) : esd->IsPileupFromSPD(3,0.5,3.,2.,5.);
+  ISc1z2 = (aod) ? aod->IsPileupFromSPD(3,0.6,3.,2.,5.) : esd->IsPileupFromSPD(3,0.6,3.,2.,5.);
+  ISc1z3 = (aod) ? aod->IsPileupFromSPD(3,0.8,3.,2.,5.) : esd->IsPileupFromSPD(3,0.8,3.,2.,5.);
+  ISc1z4 = (aod) ? aod->IsPileupFromSPD(3,0.9,3.,2.,5.) : esd->IsPileupFromSPD(3,0.9,3.,2.,5.);
+  ISc2z1 = (aod) ? aod->IsPileupFromSPD(4,0.5,3.,2.,5.) : esd->IsPileupFromSPD(4,0.5,3.,2.,5.);
+  ISc2z2 = (aod) ? aod->IsPileupFromSPD(4,0.6,3.,2.,5.) : esd->IsPileupFromSPD(4,0.6,3.,2.,5.);
+  ISc2z3 = (aod) ? aod->IsPileupFromSPD(4,0.8,3.,2.,5.) : esd->IsPileupFromSPD(4,0.8,3.,2.,5.);
+  ISc2z4 = (aod) ? aod->IsPileupFromSPD(4,0.9,3.,2.,5.) : esd->IsPileupFromSPD(4,0.9,3.,2.,5.);
+  ISc3z1 = (aod) ? aod->IsPileupFromSPD(5,0.5,3.,2.,5.) : esd->IsPileupFromSPD(5,0.5,3.,2.,5.);
+  ISc3z2 = (aod) ? aod->IsPileupFromSPD(5,0.6,3.,2.,5.) : esd->IsPileupFromSPD(5,0.6,3.,2.,5.);
+  ISc3z3 = (aod) ? aod->IsPileupFromSPD(5,0.8,3.,2.,5.) : esd->IsPileupFromSPD(5,0.8,3.,2.,5.);
+  ISc3z4 = (aod) ? aod->IsPileupFromSPD(5,0.9,3.,2.,5.) : esd->IsPileupFromSPD(5,0.9,3.,2.,5.);
+  ISc4z1 = (aod) ? aod->IsPileupFromSPD(6,0.5,3.,2.,5.) : esd->IsPileupFromSPD(6,0.5,3.,2.,5.);
+  ISc4z2 = (aod) ? aod->IsPileupFromSPD(6,0.6,3.,2.,5.) : esd->IsPileupFromSPD(6,0.6,3.,2.,5.);
+  ISc4z3 = (aod) ? aod->IsPileupFromSPD(6,0.8,3.,2.,5.) : esd->IsPileupFromSPD(6,0.8,3.,2.,5.);
+  ISc4z4 = (aod) ? aod->IsPileupFromSPD(6,0.9,3.,2.,5.) : esd->IsPileupFromSPD(6,0.9,3.,2.,5.);
+  if (ISc1z1) collectMask |= kPUc1z1;
+  if (ISc1z2) collectMask |= kPUc1z2;
+  if (ISc1z3) collectMask |= kPUc1z3;
+  if (ISc1z4) collectMask |= kPUc1z4;
+  if (ISc2z1) collectMask |= kPUc2z1;
+  if (ISc2z2) collectMask |= kPUc2z2;
+  if (ISc2z3) collectMask |= kPUc2z3;
+  if (ISc2z4) collectMask |= kPUc2z4;
+  if (ISc3z1) collectMask |= kPUc3z1;
+  if (ISc3z2) collectMask |= kPUc3z2;
+  if (ISc3z3) collectMask |= kPUc3z3;
+  if (ISc3z4) collectMask |= kPUc3z4;
+  if (ISc4z1) collectMask |= kPUc4z1;
+  if (ISc4z2) collectMask |= kPUc4z2;
+  if (ISc4z3) collectMask |= kPUc4z3;
+  if (ISc4z4) collectMask |= kPUc4z4;
+ 
+  aod = 0; esd = 0;
+
+  return collectMask;
 }

@@ -33,6 +33,7 @@
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 #include "AliESDHeader.h"
 #include "AliAODHeader.h"
 #include "AliESDMuonTrack.h"
@@ -57,6 +58,7 @@ AliAnalysisTaskSE(),
 fAnaMode(0),
 fIsOutputTree(kFALSE),
 fIsMC(kFALSE),
+fIsFull(kFALSE),
 fCutsMuon(0x0),
 fCutsDimu(0x0),
 fHeader(0),
@@ -75,6 +77,7 @@ AliAnalysisTaskSE(name),
 fAnaMode(0),
 fIsOutputTree(kFALSE),
 fIsMC(kFALSE),
+fIsFull(kFALSE),
 fCutsMuon(new AliMuonTrackCuts(cutsMuon)),
 fCutsDimu(new AliMuonPairCuts(cutsDimu)),
 fHeader(0),
@@ -108,12 +111,11 @@ void AliAnalysisTaskSEMuonsHF::Init()
   // Initialization
   // Setting and initializing the running mode and status
 
-  AliMuonsHFHeader::SetAnaMode(fAnaMode);
-  AliMuonsHFHeader::SetIsMC(fIsMC);
   if (!fHeader) {
     fHeader = new AliMuonsHFHeader();
     fHeader->SetName(AliMuonsHFHeader::StdBranchName());
-  }
+  } fHeader->SetAnaMode(fAnaMode);
+    fHeader->SetIsMC(fIsMC);
 
   if (!fMuonClArr) {
     if (fIsMC) { 
@@ -154,6 +156,7 @@ void AliAnalysisTaskSEMuonsHF::UserCreateOutputObjects()
 
   fCutsMuon->Print("mask");
   fCutsDimu->Print("mask");
+
   return;
 }
 
@@ -164,11 +167,11 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
   // muon event header & (di)muon info store
 
   if (fIsMC) {
-    if (MCEvent()) {
-      if (MCEvent()->GetNumberOfTracks()<=0)
+    if (fInputHandler->MCEvent()) {
+      if (fInputHandler->MCEvent()->GetNumberOfTracks()<=0)
            { AliError("MC event not found. Nothing done!"); return; }
     } else { AliError("MC event not found. Nothing done!"); return; }
-  }
+  } 
 
   if ( !fCutsMuon) { AliError("AliMuonTrackCuts should be loaded!"); return;}
   if ((!fCutsDimu) && (fAnaMode!=1)) { AliError("AliMuonPairCuts should be loaded!"); return; }
@@ -188,7 +191,7 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
     ntrks = esd->GetNumberOfMuonTracks();
   } if (fIsOutputTree) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 
-  fHeader->SetEventInfo(fInputHandler, MCEvent());
+  fHeader->SetEventInfo(fInputHandler);
   fHeader->FillHistosEvnH(fListOutput);
 
   fMuonClArr->Delete();
@@ -204,13 +207,13 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
     if (aod) {
       trkAOD = (AliAODTrack*)aod->GetTrack(itrk);
       if (!trkAOD->IsMuonTrack())        { trkAOD=0; continue; }
-      if (fIsMC) muonMC = new AliMuonInfoStoreMC(trkAOD,MCEvent(),fCutsMuon->GetSelectionMask(trkAOD));
+      if (fIsMC) muonMC = new AliMuonInfoStoreMC(trkAOD,fInputHandler->MCEvent(),fCutsMuon->GetSelectionMask(trkAOD),fIsFull);
       else muonRD = new AliMuonInfoStoreRD(trkAOD,fCutsMuon->GetSelectionMask(trkAOD));
       trkAOD = 0;
     } else {
       trkESD = (AliESDMuonTrack*)esd->GetMuonTrack(itrk);
       if (!trkESD->ContainTrackerData()) { trkESD=0; continue; }
-      if (fIsMC) muonMC = new AliMuonInfoStoreMC(trkESD,MCEvent(),fCutsMuon->GetSelectionMask(trkESD));
+      if (fIsMC) muonMC = new AliMuonInfoStoreMC(trkESD,fInputHandler->MCEvent(),fCutsMuon->GetSelectionMask(trkESD),fIsFull);
       else muonRD = new AliMuonInfoStoreRD(trkESD,fCutsMuon->GetSelectionMask(trkESD));
       trkESD = 0;
     } if (muonRD) {
@@ -252,13 +255,14 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
         if (fIsOutputTree) new(dimuRef[countN++]) AliDimuInfoStoreMC(*dimuMC);
       }
 
-      if (dimuRD) { delete dimuRD; dimuRD=0; }
-      if (dimuMC) { delete dimuMC; dimuMC=0; }
+      if (dimuRD) { delete dimuRD; dimuRD = 0; }
+      if (dimuMC) { delete dimuMC; dimuMC = 0; }
     }  // end 2nd loop of muon tracks
   }  // end 1st loop of muon tracks
 
   aod = 0; esd = 0;
   PostData(1, fListOutput);
+
   return;
 }
 
@@ -274,9 +278,10 @@ void AliAnalysisTaskSEMuonsHF::Terminate(Option_t *)
 
 void AliAnalysisTaskSEMuonsHF::NotifyRun()
 {
-  // Notify of the current run number
+  // Notify of the input handler 
 
   if (fCutsMuon) fCutsMuon->SetRun(fInputHandler);
   if (fCutsDimu) fCutsDimu->SetRun(fInputHandler);
+
   return;
 }

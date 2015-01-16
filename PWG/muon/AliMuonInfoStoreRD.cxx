@@ -156,6 +156,7 @@ void AliMuonInfoStoreRD::FillMuonInfo(AliAODTrack *trk)
   this->SetChi2FitMomentum(trk->Chi2perNDF());
   this->SetChi2MatchTrigger(trk->GetChi2MatchTrigger());
   this->SetRabsEnd(trk->GetRAtAbsorberEnd());
+
   return;
 }
 
@@ -175,5 +176,6 @@ void AliMuonInfoStoreRD::FillMuonInfo(AliESDMuonTrack *trk)
   this->SetChi2FitMomentum(trk->GetChi2()/(2.*trk->GetNHit()-5.));
   this->SetChi2MatchTrigger(trk->GetChi2MatchTrigger());
   this->SetRabsEnd(trk->GetRAtAbsorberEnd());
+
   return;
 }
