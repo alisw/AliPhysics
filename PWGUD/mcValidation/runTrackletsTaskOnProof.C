@@ -73,7 +73,7 @@ void runTrackletsTaskOnProof(const Char_t* data, Int_t nRuns=20, Int_t offset=0,
 	
 	Load("../AliTrackletsTask", aDebug);
 	task = new AliTrackletsTask();
-	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+	gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 	printf("The flag for the Physics selection is set to %d\n",(Int_t)mcFlag);
 	AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(mcFlag);
 		

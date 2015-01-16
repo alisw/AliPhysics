@@ -32,7 +32,7 @@ void runGrid(Bool_t mcFlag=kFALSE){
 	AliESDInputHandler* esdH = new AliESDInputHandler();
 	mgr->SetInputEventHandler(esdH);
 	
-	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+	gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 	printf("The flag for the Physics selection is set to %d\n",(Int_t)mcFlag);
 	AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(mcFlag);
 	

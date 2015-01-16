@@ -78,7 +78,7 @@ void runEffContTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA = kFALSE) {
     
   // Task to check the offline trigger:
   //if(mode == mLocal || mode == mGrid || mode == mGridPAR)
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
   //AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA);
   //physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();
   // Enable debug printouts:

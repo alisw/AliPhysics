@@ -59,7 +59,7 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
 #endif
   
   // Add physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC,1,!isMC);//FIXME
   physicsSelectionTask->GetPhysicsSelection()->SetSkipZDCTime(1);// Skip ZDC - applyied later
 

@@ -329,7 +329,7 @@ void AddAnalysisTasks(const char *cdb_location)
   // --- Physics selection -------------------------------------------
   if (aodCfg->UsePhysicsSelection()) {
     // Physics selection task
-    gROOT->LoadMacro(ana+"/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro(oadb+"/macros/AddTaskPhysicsSelection.C");
     mgr->RegisterExtraFile("event_stat.root");
     AliPhysicsSelectionTask *physSelTask = 
       AddTaskPhysicsSelection(aodCfg->UseMC());

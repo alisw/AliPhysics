@@ -286,7 +286,7 @@ Bool_t AliCFMuonResUpsilon(
 
 		if(!readMC){
 		// physics selection
-		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+		gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 		AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 		}
 	}
@@ -296,7 +296,7 @@ Bool_t AliCFMuonResUpsilon(
 
 		if(!readMC) {
 		// physics selection
-		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+		gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 		AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 		}
 	}

@@ -96,7 +96,7 @@ SteerAnalysisTaskTOFSpectraPbPb(const Char_t *inputfilename, Bool_t mcFlag = kFA
   AliTOFTenderSupply *TOFtender = new AliTOFTenderSupply("TOF-Tender");
   tender->AddSupply(TOFtender);
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(mcFlag);
 
   /* pA trigger fix */

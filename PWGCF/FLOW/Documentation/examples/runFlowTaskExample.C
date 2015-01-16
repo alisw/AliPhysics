@@ -137,7 +137,7 @@ void runFlowTaskExample(Int_t nRuns = 2,
   mgr->SetMCtruthEventHandler(mc); 
 
 
-  //  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+  //  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
   //  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
   //  if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   

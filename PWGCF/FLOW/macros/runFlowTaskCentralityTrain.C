@@ -64,7 +64,7 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   }
 
   // Task to check the offline trigger:
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task

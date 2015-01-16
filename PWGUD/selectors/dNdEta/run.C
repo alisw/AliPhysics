@@ -167,7 +167,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   }
   
   // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection((requiredData == 2) ? kFALSE : kTRUE);
   
   // 900 GeV 

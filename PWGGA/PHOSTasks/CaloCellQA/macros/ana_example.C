@@ -18,7 +18,7 @@ void ana_example()
   mgr->SetInputEventHandler(esdH);
 
   // event selection task
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
   // EMCAL

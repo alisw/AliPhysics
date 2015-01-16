@@ -108,7 +108,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   // Add tasks
   // physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   physicsSelectionTask = AddTaskPhysicsSelection(isMC);
 
   //PID

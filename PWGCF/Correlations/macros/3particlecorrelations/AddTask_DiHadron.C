@@ -191,9 +191,9 @@ Float_t FitLowParamV4[NCentralityBins*NParamV4FitLow]={
 
 // physics selection
 Int_t isMC=0;//1 for MC 0 for DATA
-//gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+//gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 //AliPhysicsSelectionTask *PhysicsTask=AddTaskPhysicsSelection(isMC, 0); //isMC is true when processing monte carlo, the second 0 disables the cluster vs tracklets
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC,0);
   task->SelectCollisionCandidates(AliVEvent::kMB);
   //AliCentralitySelectionTask *centSelTask = AliCentralitySelectionTask("CentralitySelection");

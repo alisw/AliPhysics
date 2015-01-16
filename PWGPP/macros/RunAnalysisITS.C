@@ -133,7 +133,7 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
 
   
   // Apply the event selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   Bool_t bkgRej=kTRUE;
   //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(readMC,bkgRej);
   

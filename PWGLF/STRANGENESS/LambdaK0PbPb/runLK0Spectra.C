@@ -75,7 +75,7 @@ void runLK0Spectra(const char * data, const char * passOrPath, Long64_t nev = -1
 
 
   // Physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kTRUE,0);
 
   // Centrality

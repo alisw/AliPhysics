@@ -88,11 +88,11 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
 
    if (physSel) {
       if (!input.CompareTo("esd")) {
-         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+         gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
          AddTaskPhysicsSelection(useMC);
       }
 
-      // maybe we can put it in $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C
+      // maybe we can put it in $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C
       if (multiInputHandler) {
          AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
          ih->SetEventSelection(multiInputHandler->GetEventSelection());

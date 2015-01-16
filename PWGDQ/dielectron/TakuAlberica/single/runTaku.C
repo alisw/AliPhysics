@@ -101,7 +101,7 @@ void runTaku() {
   mgr->SetInputEventHandler(esdH);
   if(gridMode!="")
     mgr->SetGridHandler(alienHandler);
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(kFALSE);
   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality =AddTaskCentrality();

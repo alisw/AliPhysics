@@ -74,7 +74,7 @@ void runNorm(TString inputFileName = "AliAOD.root", Int_t nEvents = 1e6, TString
   
   // event selection and centrality framework
   if ( isESD ){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection(isMC);
     if ( !physicsSelection ) {
       Error("runLocal","AliPhysicsSelectionTask not created!");

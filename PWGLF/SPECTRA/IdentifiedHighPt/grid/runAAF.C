@@ -406,7 +406,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   cout<<"esdAna="<<esdAna<<"  runtype="<<runtype<<endl;
     
   // ######### PHYSICS SELECTION ###############
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   if (analysisMC) {
     AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
@@ -629,7 +629,7 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
 
 
   // ######### PHYSICS SELECTION ###############
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   mgr->InitAnalysis()
   mgr->PrintStatus();

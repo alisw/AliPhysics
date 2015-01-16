@@ -46,7 +46,7 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
 
   // physics and centrality selection
   if (usePS) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask *physicsSelectionTask = AddTaskPhysicsSelection(kFALSE);
     // Trigger analysis defaults
     AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("CustomTA");

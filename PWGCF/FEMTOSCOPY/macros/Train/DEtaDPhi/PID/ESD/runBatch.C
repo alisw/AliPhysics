@@ -167,7 +167,7 @@ void runBatch() {
   // TODO usually requires muon filter libs
   //  AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kFALSE,  kFALSE, kFALSE, kTRUE, kTRUE);
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
 
   //AddTaskPIDResponse

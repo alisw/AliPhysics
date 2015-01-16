@@ -75,7 +75,7 @@ void runGridAODpp()
 	  aodHandler->SetOutputFileName("AliAODs.root");
 	*/
 
-   // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+   // gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
    // AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
 
