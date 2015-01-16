@@ -17,6 +17,8 @@
 #include "AliESDTZEROfriend.h"
 #include "AliESDTZERO.h"
 
+#include <TObjArray.h>
+
 class AliT0Reconstructor: public AliReconstructor {
  public:
   AliT0Reconstructor();
