@@ -1,5 +1,5 @@
 #ifndef ALIANALYSISTASKPHIBAYES_H
-#define ALIANALYSISTASKPHIBayes_H
+#define ALIANALYSISTASKPHIBAYES_H
 
 // ROOT includes
 #include <TObject.h>
