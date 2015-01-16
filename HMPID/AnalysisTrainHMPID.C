@@ -243,7 +243,7 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    }
    
    if(iCentrality && !iAODanalysis){
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
      AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
      taskCentrality->SetPass(2); // remember to set the pass you are processing!!!   
    }     

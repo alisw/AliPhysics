@@ -174,7 +174,7 @@ void AddAnalysisTasks(Int_t merge, const char *cdb_location){
    }
    // Centrality (only Pb-Pb)
    if (iCollision && useCentrality) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
       taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
    }

@@ -187,7 +187,7 @@ void AddAnalysisTasks(const char *cdb_location)
 //        printf("Disabling centrality task for p-p\n");
 //        doCentrality = kFALSE;
 //     } else {           
-        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
         taskCentrality->SetMCInput();        
 //     }   

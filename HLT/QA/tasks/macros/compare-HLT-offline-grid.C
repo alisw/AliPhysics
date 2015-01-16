@@ -203,7 +203,7 @@ void compare_HLT_offline_grid( TString runNumber
      mgr->AddTask(taskCB);     
      taskCB->SetBeamType(beamType);
      if(beamType.Contains("Pb-Pb")){
-        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 	taskCentrality->SetPass(1); 
      }  
