@@ -14,6 +14,8 @@ class JTJTEfficiency;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
+using std::cout;
+using std::endl;
 
 class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
  public:
