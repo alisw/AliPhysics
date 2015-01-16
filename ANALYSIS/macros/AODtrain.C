@@ -194,7 +194,7 @@ void AddAnalysisTasks(const char *cdb_location){
  
    if (usePhysicsSelection) {
    // Physics selection task
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
       AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(useMC);
 //      AliOADBPhysicsSelection * oadbDefaultPbPb = CreateOADBphysicsSelection();      

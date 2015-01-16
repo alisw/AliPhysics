@@ -21,7 +21,7 @@ void SetupAnalysis(TString mode,
 
   // physics selection
   if(!format.CompareTo("esd")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE);
     if(useMC) physSelTask->GetPhysicsSelection()->SetAnalyzeMC();   
     AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();

@@ -83,7 +83,7 @@ void RunTOFqa(const char* plugin_mode="full") {
 	if(saveProofToAlien) mgr->SetSpecialOutputLocation(proofOutdir);
   
 	// Physics Selection
-	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+	gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 	AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
 
 	// TOF qa task

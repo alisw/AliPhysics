@@ -87,7 +87,7 @@ void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString 
     }
 #endif
 
-  gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$(ALICE_ROOT)/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC,1,!isMC); // Use Physics Selection. Enable computation of BG if is not MC
   //  task->SelectCollisionCandidates(); /// This should be disabled, at least for MC: we need all the events
   physSelTask->GetPhysicsSelection()->SetBin0Callback("TaskNormalization");

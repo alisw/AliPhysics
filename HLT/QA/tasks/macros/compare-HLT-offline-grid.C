@@ -59,7 +59,7 @@ void compare_HLT_offline_grid( TString runNumber
   gSystem->Load("libHLTbase");
   gROOT->ProcessLine(".include $ALICE_ROOT/include"); 
   gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I. -I$ALICE_ROOT/STEER -I$ALICE_ROOT/ANALYSIS");
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 
   
   Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE, bCB=kFALSE;

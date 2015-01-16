@@ -238,7 +238,7 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    // in the current workdir, but in AliEn they will be in the file catalog, 
    // mapped from AliRoot and pecified in the jdl input list.
    if(iPhysicsSelection && !iAODanalysis){
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE,kTRUE); // last flag also adds information on  
    }
    

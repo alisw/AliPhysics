@@ -74,7 +74,7 @@ void compare_HLT_offline_local( TString file
   gSystem->Load("libPWGPP");
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     
   Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWGPP = kFALSE, bD0 = kFALSE, bCB = kFALSE;
  

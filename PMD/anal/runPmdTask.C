@@ -73,7 +73,7 @@ void runPmdTask(Bool_t         isGrid = 0,
     AliMCEventHandler *mc = new AliMCEventHandler();
     //mc->SetReadTR(kTRUE);
     mgr->SetMCtruthEventHandler(mc);
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(isMC);
     physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();
 
@@ -82,7 +82,7 @@ void runPmdTask(Bool_t         isGrid = 0,
   } else {
     AliVEventHandler* esdH = new AliESDInputHandler();
     mgr->SetInputEventHandler(esdH);
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(isMC);
     
     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");

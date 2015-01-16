@@ -79,7 +79,7 @@ void AddAnalysisTasks(UInt_t config)
   // Event Statistics (Jan Fiete)
   //
 
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
    mgr->RegisterExtraFile("event_stat.root");
   //
