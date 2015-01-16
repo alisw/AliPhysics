@@ -1,4 +1,3 @@
-// $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -96,12 +95,3 @@
 #pragma link C++ class AliEveHFList+;
 #pragma link C++ class AliEveHFEditor+;
 #pragma link C++ class AliEveHFListEditor+;
-
-// AliEveLego
-#pragma link C++ class AliEveLego+;
-#pragma link C++ class AliEveLegoEditor+;
-
-// AliEveBeamInfo
-#pragma link C++ class AliEveBeamsInfo+;
-#pragma link C++ class AliEveBeamsInfoEditor+;
-
