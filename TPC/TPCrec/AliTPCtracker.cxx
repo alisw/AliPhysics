@@ -136,6 +136,7 @@
 #include "AliMathBase.h"
 //
 
+using std::cout;
 using std::cerr;
 using std::endl;
 ClassImp(AliTPCtracker)

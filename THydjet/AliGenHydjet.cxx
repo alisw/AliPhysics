@@ -32,6 +32,9 @@
 #include "AliRun.h"
 #include "AliPythiaRndm.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliGenHydjet)
 
 AliGenHydjet::AliGenHydjet(Int_t npart) :
