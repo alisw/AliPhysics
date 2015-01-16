@@ -1,18 +1,20 @@
-AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE, Int_t kF = 1) 
+AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE, Int_t kF = 1,Int_t kProcess=0,Double_t ptHardMin=0,Double_t ptHardMax=1.) 
 {
   // Add Pythia 8 generator: 
+  //    -kProcess=0  MB generation
+  //    -kProcess=1  Jet production, pthard generation
   //    - Color reconnection = ON/OFF
   //    - Set k factor, default = 1; range of possible values in xmldoc/CouplingsAndScales.xml
 
   gSystem->Load("liblhapdf");
  
   AliGenerator *genP = NULL;
-  genP = CreatePythia8Gen(e_cms, kCR, kF);
+  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,ptHardMin,ptHardMax);
   
   return genP;
 }
 
-AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF) {
+AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProcess,Double_t ptHardMin,Double_t ptHardMax) {
     
    gSystem->Load("libpythia6");
    gSystem->Load("libEGPythia6");
@@ -27,9 +29,15 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF) {
   AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
 
   // set process (MB)
-  gener->SetProcess(kPyMbDefault);
-  
-  //   Centre of mass energy 
+  if(kProcess==0) gener->SetProcess(kPyMbDefault);
+   
+ 
+  if(kProcess==1) {gener->SetProcess(kPyJets);
+   if(ptHardMin>0.)
+   AliPythia8::Instance()->SetPtHardRange(ptHardMin,ptHardMax);
+  } 
+
+  //Centre of mass energy 
   gener->SetEnergyCMS(e_cms); // in GeV
 
   // Event list
