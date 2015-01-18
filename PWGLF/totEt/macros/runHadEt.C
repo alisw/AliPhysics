@@ -115,7 +115,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   }
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
   if(!physSelTask) { Printf("no physSelTask"); return; }
   AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
@@ -124,7 +124,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
 
   cerr<<"Hello I am here 108"<<endl;
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
 
   AliCentralitySelectionTask *centTask;
   

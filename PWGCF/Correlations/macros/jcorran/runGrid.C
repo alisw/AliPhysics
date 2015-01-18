@@ -75,12 +75,12 @@ void runGrid(){
   mgr->AddStatisticsTask();
 
   //==== CENTRALITY
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
   //taskCentrality->SetPass(2);
 
   //==== Physics Selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kMC, kTRUE);
   physSelTask->SelectCollisionCandidates(AliVEvent::kMB);
 

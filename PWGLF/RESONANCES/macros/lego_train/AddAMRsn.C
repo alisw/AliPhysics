@@ -126,7 +126,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
 
       if (physSel>0) {
          if (!input.CompareTo("esd")) {
-            gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+            gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
             Bool_t physSelBigOut = kTRUE;
 //            physSelBigOut = kFALSE;
 
@@ -134,7 +134,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
             if (physSelBigOut) mrg->SetSpecialOutputLocation("root://aaa//aaa/");
          }
 
-         // maybe we can put it in $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C
+         // maybe we can put it in $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C
          if (multiInputHandler) {
             AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
             ih->SetEventSelection(multiInputHandler->GetEventSelection());
@@ -142,7 +142,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
       }
 
       if (useCentralityTask) {
-         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+         gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
          AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kFALSE);
       }
 

@@ -82,7 +82,7 @@ void MyAnalysisMacroTrackletMulti
   gProof->Load("AliTrackletTaskMulti.cxx++");
   //
   printf("Loading Centrality task\n");
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   //  taskCentrality->SetDebugLevel(2);
   if (useMC) taskCentrality->SetMCInput();
@@ -126,7 +126,7 @@ void MyAnalysisMacroTrackletMulti
   printf("new Task: %p\n",mltTask);
   //
   printf("Requesting physics selection in %s mode\n",useMC ? "MC":"Data");
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(useMC,0);
   mltTask->SelectCollisionCandidates();//AliVEvent::kMB);
   //

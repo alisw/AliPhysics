@@ -37,9 +37,10 @@ include_directories(${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/TenderSupplies
+                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
+                    ${AliRoot_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSrec
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils

@@ -150,7 +150,7 @@ Bool_t AnalysisSetup
       // and swtich off VZERO if tender is not used
       if (usePhysSel) {
          ::Info("AnalysisSetup", "options '%s' require to add physics selection", options);
-         gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+         gROOT->LoadMacro("$(ALICE_ROOT)/OADB/macros/AddTaskPhysicsSelection.C");
          AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
          if (noV0) {
             ::Info("AnalysisSetup", "options '%s' require to skip V0 info", options);

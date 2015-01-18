@@ -222,6 +222,7 @@ void AddAnalysisTasks(const char *cdb_location)
   // --- Some short-hands --------------------------------------------
   TString ali   = "$ALICE_ROOT";
   TString ana   = ali + "/ANALYSIS";
+  TString oadb  = ali + "/OADB";
   TString pwghf = ali + "/PWGHF";
   TString pwglf = ali + "/PWGLF";
   TString pwgje = ali + "/PWGJE";
@@ -241,7 +242,7 @@ void AddAnalysisTasks(const char *cdb_location)
   
   // --- Event Statistics (Jan Fiete) --------------------------------
   if (qaCfg->DoEventStat()) {
-    gROOT->LoadMacro(ana+"/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro(oadb+"/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE/*MC*/);
     // Hack by Alexander for LHC10h
     // gROOT->LoadMacro("LHC10hPS.C");
@@ -257,7 +258,7 @@ void AddAnalysisTasks(const char *cdb_location)
   }    
   // --- Centrality (A. Toia) ----------------------------------------
   if (qaCfg->DoCentrality()) {
-    gROOT->LoadMacro(ana+"/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro(oadb+"/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
     taskCentrality->SetMCInput();        
   }   

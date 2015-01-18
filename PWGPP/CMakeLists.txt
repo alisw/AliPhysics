@@ -28,13 +28,14 @@ include_directories(${AliRoot_SOURCE_DIR}/PWGPP)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
+                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
                     ${AliRoot_SOURCE_DIR}/CORRFW
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HMPID/HMPIDbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/STAT
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB

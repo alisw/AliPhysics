@@ -96,7 +96,7 @@ void anaCaloFilter(Int_t mode=mLocal)
     // ESD physics selection task
     if(kInputData == "ESD" && kUsePhysSel)
     {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     

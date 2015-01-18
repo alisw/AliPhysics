@@ -365,12 +365,12 @@ void runCaloEt(bool submit = false, // true or false
   }
 
   if(isMc) cout<<"I am a MC"<<endl;
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   
   AliPhysicsSelectionTask *physicsSelectionTask = AddTaskPhysicsSelection(isMc);//isMC is true when processing monte carlo
   if(isPb){	 
     cout<<"Adding centrality selection task"<<endl;
-    gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     //gROOT->ProcessLine(".L AliCentralitySelectionTask.cxx++g");
     AliCentralitySelectionTask *centTask = AddTaskCentrality();
     if(isMc){

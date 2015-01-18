@@ -71,7 +71,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kFALSE, Bool_
   //
   // Add physics selection task to analysis manager
   //
-  //    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   //    mgr->AddTask(physSelTask);
 

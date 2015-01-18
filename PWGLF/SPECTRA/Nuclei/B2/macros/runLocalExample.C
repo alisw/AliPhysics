@@ -59,14 +59,14 @@ void runLocalExample(const TString& dir="./")
 	// Create and add the task(s)
 	
 	// PhysicsSelection
-	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+	gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 	
 	AliPhysicsSelectionTask* phySelectionTask = AddTaskPhysicsSelection(kSimulation);
 	
 	// Centrality selection
 	if(kHeavyIons)
 	{
-		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+		gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
 		AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 	}
 	

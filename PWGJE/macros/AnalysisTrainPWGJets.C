@@ -414,7 +414,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    //                                                                                                                              
 
    if (useTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
       AliAnalysisTaskSE *tender = AddTaskTender(kTRUE);
       //      tender->SelectCollisionCandidates();                                                                                      
       tender->SetDebugLevel(2);
@@ -433,7 +433,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
 
 
    if(iPhysicsSelection && !iAODanalysis){
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
      Int_t iTriggerHIC = 0;
      Bool_t rejectBkg = true;
      if(kIsPbPb){
@@ -452,7 +452,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    if(kIsPbPb&&!iAODanalysis){
 
      // has to run before AOD filter
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
      AliCentralitySelectionTask *taskC = AddTaskCentrality();
       if (!taskC) ::Warning("AnalysisTrainPWG4Jets", "AliCentralitySelectionTask cannot run for this train conditions - EXCLUDED");
 

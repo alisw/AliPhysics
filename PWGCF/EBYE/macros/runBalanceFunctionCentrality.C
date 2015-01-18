@@ -123,7 +123,7 @@ void runBalanceFunctionCentrality(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
   // Task to check the offline trigger:
   //if(mode == mLocal || mode == mGrid || mode == mGridPAR)
   if ((analysisType == "ESD")||(analysisType == "MCESD")) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
     AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA);
   }
 
@@ -136,7 +136,7 @@ void runBalanceFunctionCentrality(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
   
   //Add the centrality determination task
     if ((analysisType == "ESD")||(analysisType == "MCESD")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
     centralityTask->SetMCInput();
     //centralityTask->SetPass(2);

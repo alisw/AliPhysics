@@ -54,9 +54,9 @@ SteerAnalysisTaskPIDFluctuation(const Char_t *inputfilename, Int_t maxFiles = kM
   mgr->SetInputEventHandler(esdh);
 
   /* add tasks */
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE);
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *centralityTask = AddTaskCentrality(); 
   gROOT->LoadMacro("AddAnalysisTaskPIDFluctuation.C");
   AliAnalysisTaskPIDFluctuation *thisTask = AddAnalysisTaskPIDFluctuation();

@@ -44,7 +44,7 @@ void Pi0Calib(// const char* dataset="/default/polishch/LHC12c_*_ESDs_pass1_phos
   mgr->SetDebugLevel(0);
 
   // Add physics selection
-//  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+//  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 //  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
   // Add my task

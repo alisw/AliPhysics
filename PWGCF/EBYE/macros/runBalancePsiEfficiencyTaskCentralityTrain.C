@@ -77,14 +77,14 @@ void runBalancePsiEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA
     
   // Task to check the offline trigger:
   //if(mode == mLocal || mode == mGrid || mode == mGridPAR)
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA);
   physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
   
   //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
   centralityTask->SetMCInput();
   //centralityTask->SetPass(2);

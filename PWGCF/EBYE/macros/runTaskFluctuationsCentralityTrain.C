@@ -96,14 +96,14 @@ void runTaskFluctuationsCentralityTrain(const char* runListFileName = "group4.tx
   // Task to check the offline trigger:
   //if(mode == mLocal || mode == mGrid || mode == mGridPAR)
   if(analysisType != "MC") {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
     AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA);
     if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
     // Enable debug printouts:
     mgr->SetDebugLevel(2);
     
     //Add the centrality determination task
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AddTaskCentrality();
     //AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
     //taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);

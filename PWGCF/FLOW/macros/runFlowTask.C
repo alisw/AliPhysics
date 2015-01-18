@@ -70,12 +70,12 @@ void runFlowTask(Int_t mode = mGrid,
   }
 
   // Task to check the offline trigger:
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task
   if(kUseCentrality) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AddTaskCentrality();
   }
 

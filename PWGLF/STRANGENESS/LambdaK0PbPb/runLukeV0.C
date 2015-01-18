@@ -115,7 +115,7 @@ void runLukeV0(
     // For this case, comment out the task->SelectCol.... line, 
     // and see AliBasicTask.cxx UserExec() function for details on this.
 
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(bMCphyssel);
     if(!physSelTask) { Printf("no physSelTask"); return; }
     //AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();

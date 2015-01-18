@@ -21,11 +21,21 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources
 set(SRCS
+    AliAnalysisUtils.cxx
+    AliBackgroundSelection.cxx
+    AliCentralitySelectionTask.cxx
+    AliPhysicsSelection.cxx
+    AliPhysicsSelectionTask.cxx
+    AliTriggerAnalysis.cxx
     AliOADBCentrality.cxx
     AliOADBFillingScheme.cxx
     AliOADBPhysicsSelection.cxx
@@ -77,5 +87,7 @@ install(DIRECTORY COMMON
                   PWGJE
                   PWGLF
         DESTINATION OADB)
+
+install(DIRECTORY macros DESTINATION OADB)
 
 message(STATUS "${MODULE} enabled")

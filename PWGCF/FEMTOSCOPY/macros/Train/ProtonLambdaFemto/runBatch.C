@@ -185,7 +185,7 @@ void runBatch() {
   AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse(kTRUE,kFALSE);
 
                                                                            
-   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+   //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
    //AliCentralitySelectionTask *centrality = AddTaskCentrality();
 
   //________AddTaskFemto_______________

@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ESDfilter
                     ${AliRoot_SOURCE_DIR}/CORRFW
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PWG/Tools
                     ${AliRoot_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
                     ${AliRoot_SOURCE_DIR}/PWGUD/base
