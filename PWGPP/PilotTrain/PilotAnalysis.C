@@ -208,7 +208,7 @@ void AddAnalysisTasks()
   // Event Statistics (Jan Fiete)
   //
   if (doEventStat) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
 //      mgr->RegisterExtraFile("event_stat.root");
       if (!terminateFiles.IsNull()) terminateFiles += ",";
@@ -223,7 +223,7 @@ void AddAnalysisTasks()
         printf("Disabling centrality task for p-p\n");
         doCentrality = kFALSE;
      } else {           
-        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
      }   
   }   

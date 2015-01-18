@@ -88,7 +88,7 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
   }   
 
   if(type != mAOD){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   }
 

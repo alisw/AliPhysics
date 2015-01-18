@@ -130,7 +130,7 @@ void runEMCalAnalysis(
 
   // Centrality task
   if (usedData == "ESD") {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kTRUE);
   }
 

@@ -62,9 +62,9 @@ SteerAnalysisTaskParticleEfficiency(const Char_t *inputfilename, Int_t maxFiles 
   mgr->SetOutputEventHandler(outputh);
   
   /* add tasks */
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kTRUE);
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *centralityTask = AddTaskCentrality(); 
   centralityTask->SetMCInput();
   gROOT->LoadMacro("AddAnalysisTaskParticleEfficiency.C");

@@ -22,7 +22,7 @@ void AliAnalysisTaskSigma1385()
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    gROOT->ProcessLine(".include $ALICE_ROOT/TOF");
    //ANALYSIS PART
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
    gROOT->LoadMacro("AliAnalysisTaskSigma1385.cxx+g");
 
    const char *collectionfile = "sigmaLHC10d1.xml";

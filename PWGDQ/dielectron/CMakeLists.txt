@@ -23,7 +23,8 @@ include_directories(${AliRoot_SOURCE_DIR}/PWGDQ/dielectron)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/CORRFW/
+                    ${AliRoot_SOURCE_DIR}/CORRFW
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PWGCF/Correlations # what deps here?
                     ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks

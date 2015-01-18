@@ -294,6 +294,7 @@ void AddAnalysisTasks(const char *cdb_location)
   // --- Some constants ----------------------------------------------
   TString ali   = "$(ALICE_ROOT)";
   TString ana   = ali + "/ANALYSIS";
+  TString oadb  = ali + "/OADB";
   TString pwghf = ali + "/PWGHF";
   TString pwglf = ali + "/PWGLF";
   TString pwgje = ali + "/PWGJE";
@@ -328,7 +329,7 @@ void AddAnalysisTasks(const char *cdb_location)
   // --- Physics selection -------------------------------------------
   if (aodCfg->UsePhysicsSelection()) {
     // Physics selection task
-    gROOT->LoadMacro(ana+"/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro(oadb+"/macros/AddTaskPhysicsSelection.C");
     mgr->RegisterExtraFile("event_stat.root");
     AliPhysicsSelectionTask *physSelTask = 
       AddTaskPhysicsSelection(aodCfg->UseMC());
@@ -336,7 +337,7 @@ void AddAnalysisTasks(const char *cdb_location)
 
   // --- Centrality (only Pb-Pb) -------------------------------------
   if (aodCfg->UseCentrality()) {
-    gROOT->LoadMacro(ana+"/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro(oadb+"/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
     taskCentrality->SetMCInput();
   }

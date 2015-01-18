@@ -96,7 +96,7 @@ public:
 
     AliAnalysisManager::SetCommonFileName("AODQA.root");
     if (tender) 
-      CoupleCar("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C",
+      CoupleCar("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C",
 	      Form("%d", fOptions.Has("v0-tender")));
     
     if (fOptions.Has("pid-response")) 

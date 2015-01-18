@@ -32,12 +32,12 @@ void runTakuMC() {
   AliMCEventHandler *MC = new AliMCEventHandler;
   mgr->SetMCtruthEventHandler(MC);
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(kTRUE);
   physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality =AddTaskCentrality();
   ///taskCentrality->SetPass(2);
   taskCentrality->SetMCInput();

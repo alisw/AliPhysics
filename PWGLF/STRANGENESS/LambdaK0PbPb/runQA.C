@@ -70,11 +70,11 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   
 
   // Physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC);
 
   // Centrality
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   taskCentrality->SetPass(2);
   if(isMC) taskCentrality->SetMCInput();

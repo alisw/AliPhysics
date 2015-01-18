@@ -23,11 +23,12 @@ include_directories(${AliRoot_SOURCE_DIR}/PWG/EMCAL)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/Tender
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/TenderSupplies
+                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
+                    ${AliRoot_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALrec
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PWG/Tools
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB

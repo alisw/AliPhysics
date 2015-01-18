@@ -24,6 +24,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
                     ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
                     ${AliRoot_SOURCE_DIR}/PWGUD/base

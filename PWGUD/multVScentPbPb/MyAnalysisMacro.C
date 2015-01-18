@@ -207,7 +207,7 @@ void AddPhysicsSelection(Bool_t isMC)
 {
   // physics selection a la Michele
   printf("Requesting physics selection in %s mode\n",isMC ? "MC":"Data");
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //isMC is true when processing monte carlo, the second 0 disables the cluster vs tracklets
   AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(isMC,0);
   if(!isMC) {

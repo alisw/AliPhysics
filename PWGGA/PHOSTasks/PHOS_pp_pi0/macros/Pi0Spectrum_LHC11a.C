@@ -52,7 +52,7 @@ void Pi0Spectrum(const char* dataset="")
   mgr->SetDebugLevel(0);
 
   // Add physics selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
   // Add my task

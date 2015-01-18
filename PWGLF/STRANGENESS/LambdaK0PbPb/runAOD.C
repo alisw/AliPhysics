@@ -73,13 +73,13 @@ void runAOD(const char * data, const char * passOrPath, Long64_t nev = -1, Long6
   }
   
   // Physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kTRUE,0);
     AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kTRUE,0);
   //  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(isMC,kFALSE,0);
   if(!physicsSelectionTask ) { Printf("no physSelTask"); return; }
 
-  /*  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  /*  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   //taskCentrality->SetPass(2);                                                                                                                                                                               i
   if(isMC) taskCentrality->SetMCInput();
@@ -90,7 +90,7 @@ void runAOD(const char * data, const char * passOrPath, Long64_t nev = -1, Long6
   if(!PIDTask ) { Printf("no physSelTask"); return; }
 
   /*  // Centrality
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   //taskCentrality->SetPass(2);
   if(isMC) taskCentrality->SetMCInput();

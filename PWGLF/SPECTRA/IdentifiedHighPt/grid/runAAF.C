@@ -406,7 +406,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   cout<<"esdAna="<<esdAna<<"  runtype="<<runtype<<endl;
     
   // ######### PHYSICS SELECTION ###############
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   if (analysisMC) {
     AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
@@ -415,7 +415,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
   if(esdAna && runtype==2) { // only for ESD and PbPb
 
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
     //taskCentrality->SetPass(2);
     if (analysisMC)
@@ -620,7 +620,7 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
   AliAnalysisManager* mgr = new AliAnalysisManager("PID histos", "testing analysis");
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdHandler);
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
 
   // ######### PID task ###############
@@ -629,7 +629,7 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
 
 
   // ######### PHYSICS SELECTION ###############
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   mgr->InitAnalysis()
   mgr->PrintStatus();

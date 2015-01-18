@@ -20,7 +20,7 @@ void AddTaskCPQA(Bool_t useMC = kFALSE, Bool_t useTender = kFALSE) {
    
 
 if(useTender) {
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+  gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
   gROOT->LoadMacro("AddTaskTender.C");
   AliAnalysisTask* tender=0x0;
 if(!useMC)
@@ -39,7 +39,7 @@ if(!useMC)
  if(!useMC && 0)
    {
     
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
 
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC);
     physSelTask->GetPhysicsSelection()->SetUseBXNumbers(kFALSE);

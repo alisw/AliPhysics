@@ -80,11 +80,11 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
   
   if (!format.CompareTo("ESD")) {
     // physics selection
-    gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(useMC);
 
     // centrality selection
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentr = AddTaskCentrality();
     if (useMC) {
       taskCentr->SetMCInput();

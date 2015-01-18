@@ -44,7 +44,7 @@
 #include "AliESDEvent.h"  
 #include "AliESDInputHandler.h"
 #include "AliESDInputHandlerRP.h"
-#include "../ANALYSIS/EventMixing/AliMixEventInputHandler.h"
+#include "../EVENTMIX/AliMixEventInputHandler.h"
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"

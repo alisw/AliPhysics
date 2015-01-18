@@ -55,7 +55,7 @@ void AddAnalysisTasks(Bool_t writeITSTP, Bool_t useTPCcrv)
   mgr->SetCommonFileName("RecoQAresults.root");
   //
   // Event Statistics (Jan Fiete)
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
   //
   // add standard ITSAlignQA task with only SDD calibration histos activated

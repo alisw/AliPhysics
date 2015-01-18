@@ -45,7 +45,7 @@ void runCentrality(const char * type = "a", const char *mode="grid")
   mgr->SetInputEventHandler(esdH);
   
   // Physics selection
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kFALSE);
   // Selecting collision candidates
   //task->SelectCollisionCandidates();

@@ -78,7 +78,7 @@ void RunDiJetCorrelations()
   AliAODInputHandler *inputHandler = new AliAODInputHandler("handler","handler for Di-Jets Correlations");
   mgr->SetInputEventHandler(inputHandler);
   
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     
   gROOT->LoadMacro("AliAnalysisTaskDiJetCorrelations.cxx++g");
   gROOT->LoadMacro("AddTaskDiJetCorrelations.C");

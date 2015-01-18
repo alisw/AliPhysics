@@ -100,7 +100,7 @@ void runLRCLocal(const char* inputName= "ESDs.lst",Bool_t LoadTaskLocal=kFALSE,B
   LoadAnalysisLibs(LoadTaskLocal);
  
   if (!CreateLRCManager("LocalLRCTest",runKine,runAOD)) return;
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
   gROOT->LoadMacro("AddTaskLRC.C");
@@ -153,7 +153,7 @@ gProof->EnablePackage("VO_ALICE@AliRoot::v4-20-13-AN");
   }
 
   if (!CreateLRCManager("ProofLRCTest",runKine,runAOD)) return;
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
    
   gROOT->LoadMacro("AddTaskLRC.C");
@@ -181,7 +181,7 @@ void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFAL
   LoadAnalysisLibs(LoadTaskLocal);
   
   if (!CreateLRCManager("IntLRCTest",runKine,runAOD)) return;
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
  
   
