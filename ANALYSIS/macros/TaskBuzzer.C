@@ -79,14 +79,14 @@ void AddAnalysisTasks(UInt_t config)
   // Event Statistics (Jan Fiete)
   //
 
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
    mgr->RegisterExtraFile("event_stat.root");
   //
   // Tender and supplies
   //
   if (config & kTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
       AliAnalysisTaskSE *tender = AddTaskTender();
       // SelectCollisionCandidates ?? Tender has to derive from TaskSE
       tender->SelectCollisionCandidates();

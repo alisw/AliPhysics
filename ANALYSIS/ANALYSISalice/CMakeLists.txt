@@ -42,10 +42,7 @@ set(SRCS
     AliAnalysisTaskSE.cxx
     AliAnalysisTaskStat.cxx
     AliAnalysisTaskTagCreator.cxx
-    AliAnalysisUtils.cxx
     AliAODv0KineCuts.cxx
-    AliBackgroundSelection.cxx
-    AliCentralitySelectionTask.cxx
     AliCollisionNormalization.cxx
     AliCollisionNormalizationTask.cxx
     AliEPSelectionTask.cxx
@@ -61,12 +58,9 @@ set(SRCS
     AliKineTrackCuts.cxx
     AliMultiEventInputHandler.cxx
     AliMultiInputEventHandler.cxx
-    AliPhysicsSelection.cxx
-    AliPhysicsSelectionTask.cxx
     AliPIDResponseInputHandler.cxx
     AliPPVsMultUtils.cxx
     AliTagAnalysis.cxx
-    AliTriggerAnalysis.cxx
     AliUnfolding.cxx
     AliVZEROEPSelectionTask.cxx
     AliXMLCollection.cxx

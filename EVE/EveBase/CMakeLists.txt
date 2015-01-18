@@ -28,6 +28,7 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/MONITOR/alistoragemanager
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/OADB
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -41,8 +42,6 @@ include_directories(
 # Sources in alphabetical order
 set(SRCS
     AliEveApplication.cxx
-    AliEveBeamsInfo.cxx
-    AliEveBeamsInfoEditor.cxx
     AliEveCascade.cxx
     AliEveCascadeEditor.cxx
     AliEveCascadeListEditor.cxx
@@ -65,8 +64,6 @@ set(SRCS
     AliEveKink.cxx
     AliEveKinkEditor.cxx
     AliEveKinkListEditor.cxx
-    AliEveLego.cxx
-    AliEveLegoEditor.cxx
     AliEveMacro.cxx
     AliEveMacroEditor.cxx
     AliEveMacroExecutor.cxx
