@@ -17,7 +17,6 @@
 #include "AliT0CalibAnalysisTask.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
-#include "AliTriggerAnalysis.h"
 #include "AliESDpid.h"
 #include "AliESDtrackCuts.h"
 #include "AliCentrality.h"
