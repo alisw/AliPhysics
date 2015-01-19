@@ -14,7 +14,6 @@
 # **************************************************************************
 
 add_subdirectory(TOFbase)
-add_subdirectory(TOFcalib)
 add_subdirectory(TOFrec)
 add_subdirectory(TOFsim)
 

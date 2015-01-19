@@ -48,7 +48,6 @@
 #include "AliGenEventHeader.h"
 #include "AliCentrality.h"
 #include "AliLog.h"
-#include "AliPhysicsSelection.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
