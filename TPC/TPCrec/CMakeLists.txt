@@ -93,4 +93,4 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
-
+install(FILES ${HDRS} DESTINATION include)
