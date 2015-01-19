@@ -98,7 +98,8 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fTPCcalibConfigString("TPCCalib:CalibTimeDrift"),
   fAddTaskMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
   fWriteAnalysisToFile(kFALSE),
-  fEnableDebug(kFALSE)
+  fEnableDebug(kFALSE),
+  fResetAfterPush(kTRUE)
 {
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
@@ -139,6 +140,7 @@ void AliHLTTPCCalibManagerComponent::GetInputDataTypes( vector<AliHLTComponentDa
   list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginAny);
   list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
 }
 
 // #################################################################################
@@ -215,7 +217,6 @@ Int_t AliHLTTPCCalibManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
 Int_t AliHLTTPCCalibManagerComponent::DoDeinit() {
   // see header file for class documentation
 
-  fUID = 0;
   if (fWriteAnalysisToFile && fAnalysisManager) 
     fAnalysisManager->WriteAnalysisToFile();
   delete fAnalysisManager;
@@ -230,21 +231,30 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   HLTInfo("AliHLTTPCCalibManagerComponent::DoEvent\n");
   Int_t iResult=0;
 
-  // -- Only use data event
-  if (!IsDataEvent()) 
-    return 0;
-
   if( fUID == 0 ){
     TTimeStamp t;
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
+  }
+
+  if (!IsDataEvent())
+  {
+    //on EOR push unconditionally
+    const AliHLTComponentBlockData* pBlock = 
+      GetFirstInputBlock(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
+    if (pBlock) 
+    {
+      PushAndReset(fAnalysisManager->GetOutputs()); 
+    }
+    return 0;
   }
 
   // -- Get ESD object
   // -------------------
   AliVEvent* vEvent=NULL;
   AliVfriendEvent* vFriend=NULL;
+  iResult = ReadInput(vEvent,vFriend);
 
-  ReadInput(vEvent,vFriend);
+  if (!vEvent)
 
   if (vEvent) {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
   if(vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
@@ -253,8 +263,9 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
 
-  //PushBack(dynamic_cast<TObject*>(fAnalysisManager->GetOutputs()), 
-  //    kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+  //pushes once every n seconds if
+  //configured with -pushback-period=n
+  PushAndReset(fAnalysisManager->GetOutputs()); 
 
   return iResult;
 }
@@ -286,151 +297,22 @@ Int_t AliHLTTPCCalibManagerComponent::ReadPreprocessorValues(const Char_t* /*mod
 }
 
 // #################################################################################
-Int_t AliHLTTPCCalibManagerComponent::AddCalibTasks()
+Int_t AliHLTTPCCalibManagerComponent::PushAndReset(TObject* object)
 {
-  //add tasks to the manager
-  // Set run time ranges (time stamps)
-  // doesn't really work at the moment, to be checked
-
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
-
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-  if(!entry) {
-    ::Error("AddCalibTimeGain","Cannot get AliCDBEntry");
-    //return;
-  }
-  const AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
-  if(!grpData) {
-    ::Error("AddCalibTimeGain","Cannot get AliGRPObject");
-    //return;
-  }
-
-  time_t sTime = grpData->GetTimeStart();
-  time_t eTime = grpData->GetTimeEnd();
-  TTimeStamp startRunTime(sTime);
-  TTimeStamp stopRunTime(eTime);
-  UInt_t year;
-  startRunTime.GetDate(kTRUE,0,&year);
-  TTimeStamp startTime(year,1,1,0,0,0);
-  TTimeStamp stopTime(year,12,31,23,59,59);
-  Bool_t useQmax = (grpData->GetBeamType()).Contains("Pb-Pb");
-
-  // setup task TPCCalib-------------------------------------------------------------
-  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-
-  AliTPCcalibCalib *calibCalib = new AliTPCcalibCalib("calibTPC","calibTPC");
-  calibCalib->SetDebugLevel(0);
-  calibCalib->SetStreamLevel(0);
-  calibCalib->SetTriggerMask(-1,-1,kFALSE);        //accept everything
-  task1->AddJob(calibCalib);
-
-  AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain("calibTimeGain","calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 10*60);
-  calibTimeGain->SetIsCosmic(kFALSE);
-  calibTimeGain->SetUseCookAnalytical(kTRUE);
-  calibTimeGain->SetUseMax(useQmax);
-  calibTimeGain->SetDebugLevel(0);
-  calibTimeGain->SetStreamLevel(0);
-  calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibTimeGain->SetLowerTrunc(0.02);
-  calibTimeGain->SetUpperTrunc(0.6);
-  task1->AddJob(calibTimeGain);
-
-  AliTPCcalibGainMult *calibGainMult = new AliTPCcalibGainMult("calibGainMult","calibGainMult");
-  calibGainMult->SetUseMax(useQmax);
-  calibGainMult->SetDebugLevel(0);
-  calibGainMult->SetStreamLevel(0);
-  calibGainMult->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibGainMult->SetLowerTrunc(0.02);
-  calibGainMult->SetUpperTrunc(0.6);
-  task1->AddJob(calibGainMult);
-
-  //caliTime crashes at the moment, more investigation is needed
-  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 10*60, 2);
-  calibTime->SetDebugLevel(0);
-  calibTime->SetStreamLevel(0);
-  calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything
-  calibTime->SetCutTracks(15000);              // max 15000 tracks per event
-  task1->AddJob(calibTime);
-
-  fAnalysisManager->AddTask(task1);
-  //AliAnalysisDataContainer *cinput1 = fAnalysisManager->GetCommonInputContainer();
-  //if (!cinput1) cinput1 = fAnalysisManager->CreateContainer("cchain",TChain::Class(),
-  //                                    AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<task1->GetJobs()->GetEntries(); i++) {
-    if (task1->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(task1->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               "AliESDfriends_v1.root:TPCCalib");
-      fAnalysisManager->ConnectOutput(task1,i,coutput);
-    }
-  }
-  //fAnalysisManager->ConnectInput(task1,0,cinput1);
-
-  // setup task TPCAlign--------------------------------------------------------------------------
-  //AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-
-  //AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors"); 
-  //calibAlign->SetDebugLevel(0);
-  //calibAlign->SetStreamLevel(0);
-  //calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  //taskAlign->AddJob(calibAlign);
-
-  //Laser crashes, more investigation is needed
-  /*AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
-  calibLaser->SetDebugLevel(0);
-  calibLaser->SetStreamLevel(0);
-  calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
-  taskAlign->AddJob(calibLaser);*/
-
-  //AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
-  //calibCosmic->SetDebugLevel(0);
-  //calibCosmic->SetStreamLevel(1);
-  //calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  //taskAlign->AddJob(calibCosmic);
-
-  //fAnalysisManager->AddTask(taskAlign);
-  //for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
-  //  if (taskAlign->GetJobs()->At(i)) {
-  //    AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
-  //                                                             AliTPCcalibBase::Class(),
-  //                                                             AliAnalysisManager::kOutputContainer,
-  //                                                             "AliESDfriends_v1.root:TPCAlign");
-  //    fAnalysisManager->ConnectOutput(taskAlign,i,coutput);
-  //  }
-  //}
-  //fAnalysisManager->ConnectInput(taskAlign,0,cinput1);
-
-  // setup task TPCCluster----------------------------------------------------------------
-  //AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-
-  //AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();
-  //AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(30, 0.4, 5, 0.13, 0.018);
+  //push the data - the data might not get pushed, depending on the 
+  //"-pushback-period=" argument which might delay the actual push. 
+  //pushResult==0 if pushing delayed.
   //
-  //AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
-  //calibTracks->SetDebugLevel(0);
-  //calibTracks->SetStreamLevel(0);
-  //calibTracks->SetTriggerMask(-1,-1,kTRUE);
-  //taskCluster->AddJob(calibTracks);
-
-  //fAnalysisManager->AddTask(taskCluster);
-  //for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
-  //  if (taskCluster->GetJobs()->At(i)) {
-  //    AliAnalysisDataContainer* coutput = fAnalysisManager->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
-  //                                                             AliTPCcalibBase::Class(),
-  //                                                             AliAnalysisManager::kOutputContainer,
-  //                                                             "AliESDfriends_v1.root:TPCCluster");
-  //    fAnalysisManager->ConnectOutput(taskCluster,i,coutput);
-  //  }
-  //}
-  //fAnalysisManager->ConnectInput(taskCluster,0,cinput1);
-  //--------------------------------------------------------------------------------------
+  int pushResult = PushBack(object, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+  if (pushResult > 0 && fResetAfterPush) {fAnalysisManager->ResetOutputData();}
   return 0;
 }
 
 // #################################################################################
 Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend)
 {
+  //read input, return code 0 for normal events, 1 for EOR
+
   Int_t iResult=0;
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     vEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
@@ -458,6 +340,7 @@ Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
         tmpFlatEvent->Reinitialize();
       } else {
         tmpFlatEvent = NULL;
+        iResult=-1;
         HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
             DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
       }
@@ -471,6 +354,7 @@ Int_t AliHLTTPCCalibManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
         tmpFlatFriend->Reinitialize();
       } else {
         tmpFlatFriend = NULL;
+        iResult=-1;
         HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
             DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
       }
@@ -490,14 +374,20 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
     fTPCcalibConfigString=value;
     HLTInfo("fTPCcalibConfigString=%s\n",fTPCcalibConfigString.Data());
   }
-  if (option.Contains("WriteAnalysisToFile")) 
+  else if (option.Contains("WriteAnalysisToFile")) 
   {
     fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
-    HLTInfo("fWriteAnalysisToFile=%i\n",(fWriteAnalysisToFile)?1:0);
+    HLTInfo("fWriteAnalysisToFile=%i\n",fWriteAnalysisToFile?1:0);
   }
-  if (option.Contains("AddTaskMacro"))
+  else if (option.Contains("AddTaskMacro"))
   {
     fAddTaskMacro=value;
+    HLTInfo("fAddTaskMacro=%s\n",fAddTaskMacro.Data());
+  }
+  else if (option.Contains("ResetAfterPush"))
+  {
+    fResetAfterPush=(value.Contains("0")?kFALSE:kTRUE);
+    HLTInfo("fResetAfterPush=%i\n",fResetAfterPush?1:0);
   }
   return 1; 
 }
@@ -537,8 +427,12 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
   
   //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))(?(1)[^, =]+(?=[= ,$])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))");
+  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))"
+                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))"
+                    "(?(1)[^, =]+(?=[= ,$])))");
+  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))"
+                   "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
+                   "|[^, =]+))");
 
   stringMap* options = new stringMap;
 
@@ -577,9 +471,9 @@ AliHLTTPCCalibManagerComponent::stringMap* AliHLTTPCCalibManagerComponent::Token
     if (start>=str.Length()-1 || start==prevStart ) break;
   }
 
-  //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  //{
-  //  Printf("%s : %s", i->first.data(), i->second.data());
-  //}
+  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  {
+    Printf("%s : %s", i->first.data(), i->second.data());
+  }
   return options;
 }
