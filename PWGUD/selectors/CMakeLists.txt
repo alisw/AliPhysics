@@ -17,21 +17,21 @@
 set(MODULE PWGUDselectors)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGUD/selectors
-                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/dNdEta
-                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/eventStat
-                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/multiplicity
-                    ${AliRoot_SOURCE_DIR}/PWGUD/selectors/trigger
+include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/selectors
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/selectors/dNdEta
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/selectors/eventStat
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/selectors/multiplicity
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/selectors/trigger
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWGUD/base
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

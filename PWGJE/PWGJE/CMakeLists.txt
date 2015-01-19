@@ -17,22 +17,22 @@
 set(MODULE PWGJE)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGJE/PWGJE)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/PWGJE)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/CORRFW/
-                    ${AliRoot_SOURCE_DIR}/JETAN/JETAN
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliRoot_SOURCE_DIR}/PWG/TRD
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/PWGCF/Correlations/Base # to add dependency
-                    ${AliRoot_SOURCE_DIR}/PWGCF/Correlations/DPhi # to add dependency
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/CORRFW/
+                    ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base # to add dependency
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/DPhi # to add dependency
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
@@ -54,23 +54,23 @@ set(SRCS
     AliPWG4HighPtQATPConly.cxx
     AliPWG4HighPtSpectra.cxx
     AliPWG4HighPtTrackQA.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFFTCF.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetAntenna.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetProtonCorr.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetShape.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPID.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPIDV0base.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPPJetSpectra.cxx
-    ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliIDFFUtils.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFFTCF.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetAntenna.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetProtonCorr.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetShape.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPID.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPIDV0base.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPPJetSpectra.cxx
+    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliIDFFUtils.cxx
    )
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
-        ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx
-        ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
-        ${AliRoot_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHBOM.cxx
+        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx
+        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
+        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHBOM.cxx
     )
 
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
@@ -84,7 +84,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 if(FASTJET_FOUND)
     set(HDRS ${HDRS}
-        ${AliRoot_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h
+        ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h
     )
 endif(FASTJET_FOUND)
 

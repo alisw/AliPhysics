@@ -17,7 +17,7 @@
 set (MODULE PWGCFflowBW)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGCF/FLOW/blastwave)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/blastwave)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}

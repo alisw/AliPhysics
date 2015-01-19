@@ -17,22 +17,22 @@
 set (MODULE PWGHFhfe)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGHF/hfe)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/hfe)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${AliRoot_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
-                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliRoot_SOURCE_DIR}/PWG/muon
-                    ${AliRoot_SOURCE_DIR}/PWG/TRD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
   )
 
 # Sources - alphabetical order

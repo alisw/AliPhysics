@@ -17,11 +17,11 @@
 set(MODULE PWGDQbase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGDQ/base)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/base)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

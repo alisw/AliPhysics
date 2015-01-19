@@ -17,26 +17,26 @@
 set (MODULE PWGmuondep)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/muondep)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/muondep)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONbase
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONcore
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONevaluation
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONgeometry
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONmapping
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONraw
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONrec
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONtrigger
-                    ${AliRoot_SOURCE_DIR}/PWG/muon
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONbase
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONcore
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONevaluation
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONgeometry
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONmapping
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONraw
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONrec
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
   )
 
 # Sources - alphabetical order

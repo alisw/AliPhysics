@@ -17,11 +17,11 @@
 set (MODULE PWGLFthermalfits)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGLF/ThermalFits)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/ThermalFits)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

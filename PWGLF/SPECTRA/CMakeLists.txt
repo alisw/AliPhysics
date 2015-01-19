@@ -17,25 +17,25 @@
 set (MODULE PWGLFspectra)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGLF/SPECTRA)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ESDfilter
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
-                    ${AliRoot_SOURCE_DIR}/PWGUD/base
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/TOF/TOFbase
-                    ${AliRoot_SOURCE_DIR}/TOF/TOFrec
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ESDfilter
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/TOF/TOFbase
+                    ${AliPhysics_SOURCE_DIR}/TOF/TOFrec
   )
 
 # Sources - alphabetical order

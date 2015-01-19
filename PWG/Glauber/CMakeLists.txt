@@ -17,7 +17,7 @@
 set (MODULE PWGGlauber)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/Glauber)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/Glauber)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}

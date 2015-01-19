@@ -23,7 +23,7 @@ project(AliRoot CXX C)
 
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
-message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
+message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
 # You can change the build type using 
@@ -34,12 +34,12 @@ endif(NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 
-if(CMAKE_INSTALL_PREFIX STREQUAL "${AliRoot_SOURCE_DIR}")
+if(CMAKE_INSTALL_PREFIX STREQUAL "${AliPhysics_SOURCE_DIR}")
     message(FATAL_ERROR "Please choose a different installation point than the source tree!")
 endif()
 
 # Path to additonal modules
-set(CMAKE_MODULE_PATH "${AliRoot_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake")
 
 # AliRoot version extracted from Git repository
 # Sets 4 git variables

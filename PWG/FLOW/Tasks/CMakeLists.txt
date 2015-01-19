@@ -17,22 +17,22 @@
 set (MODULE PWGflowTasks)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWG/EMCAL
-                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
-                    ${AliRoot_SOURCE_DIR}/PWG/muon
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

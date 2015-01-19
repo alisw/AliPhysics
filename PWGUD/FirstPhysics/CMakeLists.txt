@@ -17,16 +17,16 @@
 set(MODULE PWGUDFP)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGUD/FirstPhysics
+include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/FirstPhysics
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

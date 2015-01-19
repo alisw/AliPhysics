@@ -17,13 +17,13 @@
 set (MODULE PWGHFbase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGHF/base)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/base)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

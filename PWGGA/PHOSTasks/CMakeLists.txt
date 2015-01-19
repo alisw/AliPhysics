@@ -17,39 +17,39 @@
 set(MODULE PWGGAPHOSTasks)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb_MC
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPbQA
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_pi0
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
+include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb_MC
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPbQA
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_pi0
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
-                    ${AliRoot_SOURCE_DIR}/TENDER/TenderSupplies
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSrec
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${AliRoot_SOURCE_DIR}/PWGGA/PWGGAUtils
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSrec
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

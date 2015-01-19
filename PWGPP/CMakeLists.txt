@@ -22,33 +22,33 @@ add_subdirectory(MUON)
 set (MODULE PWGPP)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGPP)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGPP)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/HMPID/HMPIDbase
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSbase
-                    ${AliRoot_SOURCE_DIR}/ITS/ITSrec
-                    ${AliRoot_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/STAT
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/TOF/TOFbase
-                    ${AliRoot_SOURCE_DIR}/TOF/TOFrec
-                    ${AliRoot_SOURCE_DIR}/TPC/TPCbase
-                    ${AliRoot_SOURCE_DIR}/TPC/TPCrec
-                    ${AliRoot_SOURCE_DIR}/TPC/TPCsim
-                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
-                    ${AliRoot_SOURCE_DIR}/TRD/TRDrec
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/HMPID/HMPIDbase
+                    ${AliPhysics_SOURCE_DIR}/ITS/ITSbase
+                    ${AliPhysics_SOURCE_DIR}/ITS/ITSrec
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/STAT
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/TOF/TOFbase
+                    ${AliPhysics_SOURCE_DIR}/TOF/TOFrec
+                    ${AliPhysics_SOURCE_DIR}/TPC/TPCbase
+                    ${AliPhysics_SOURCE_DIR}/TPC/TPCrec
+                    ${AliPhysics_SOURCE_DIR}/TPC/TPCsim
+                    ${AliPhysics_SOURCE_DIR}/TRD/TRDbase
+                    ${AliPhysics_SOURCE_DIR}/TRD/TRDrec
   )
 
 # Sources as introduced by the authors

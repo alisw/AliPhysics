@@ -17,34 +17,34 @@
 set(MODULE TenderSupplies)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/TENDER/${MODULE})
+include_directories(${AliPhysics_SOURCE_DIR}/TENDER/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALrec
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSrec
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/T0/T0rec
-                    ${AliRoot_SOURCE_DIR}/TOF/TOFbase
-                    ${AliRoot_SOURCE_DIR}/TOF/TOFrec
-                    ${AliRoot_SOURCE_DIR}/TPC/Base
-                    ${AliRoot_SOURCE_DIR}/TPC/TPCbase
-                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
-                    ${AliRoot_SOURCE_DIR}/VZERO/VZERObase
-                    ${AliRoot_SOURCE_DIR}/VZERO/VZEROrec
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALrec
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSrec
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/T0/T0rec
+                    ${AliPhysics_SOURCE_DIR}/TOF/TOFbase
+                    ${AliPhysics_SOURCE_DIR}/TOF/TOFrec
+                    ${AliPhysics_SOURCE_DIR}/TPC/Base
+                    ${AliPhysics_SOURCE_DIR}/TPC/TPCbase
+                    ${AliPhysics_SOURCE_DIR}/TRD/TRDbase
+                    ${AliPhysics_SOURCE_DIR}/VZERO/VZERObase
+                    ${AliPhysics_SOURCE_DIR}/VZERO/VZEROrec
                    )
 
 # Sources
