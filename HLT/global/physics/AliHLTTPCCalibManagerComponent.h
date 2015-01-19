@@ -172,6 +172,8 @@ public:
   Int_t AddCalibTasks();
   Int_t WriteAnalysisToFile();
   Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
+  Int_t PushAndReset(TObject* object);
+
  protected:
 
   /*
@@ -244,8 +246,9 @@ private:
   TString fTPCcalibConfigString;
   TString fAddTaskMacro;
   Bool_t fWriteAnalysisToFile;
-  Bool_t fEnableDebug;
+  Bool_t fEnableDebug; //enable debug output - sysinfo,debug streamer, other files
+  Bool_t fResetAfterPush; //reset the calibration after pushing for merging
 
-  ClassDef(AliHLTTPCCalibManagerComponent, 0)
+  ClassDef(AliHLTTPCCalibManagerComponent, 1)
 };
 #endif
