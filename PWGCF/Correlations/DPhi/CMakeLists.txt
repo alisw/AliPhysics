@@ -17,27 +17,27 @@
 set (MODULE PWGCFCorrelationsDPhi)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGCF/Correlations/DPhi)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/DPhi)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ESDfilter
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/EVGEN
-                    ${AliRoot_SOURCE_DIR}/LHAPDF
-                    ${AliRoot_SOURCE_DIR}/PWG/muon
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/PWGCF/Correlations/Base
-                    ${AliRoot_SOURCE_DIR}/PWGLF/SPECTRA/PiKaPr/TestAOD
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/AliPythia8
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8175/include
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ESDfilter
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/EVGEN
+                    ${AliPhysics_SOURCE_DIR}/LHAPDF
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/PiKaPr/TestAOD
+                    ${AliPhysics_SOURCE_DIR}/PYTHIA6/AliPythia6
+                    ${AliPhysics_SOURCE_DIR}/PYTHIA8/AliPythia8
+                    ${AliPhysics_SOURCE_DIR}/PYTHIA8/pythia8175/include
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

@@ -17,22 +17,22 @@
 set(MODULE PWGDQdielectron)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGDQ/dielectron)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/CORRFW
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWGCF/Correlations # what deps here?
-                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Base
-                    ${AliRoot_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliRoot_SOURCE_DIR}/PWGLF/FORWARD
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/TRD/TRDbase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/TRD/TRDbase
                    )
 
 # Sources in alphabetical order

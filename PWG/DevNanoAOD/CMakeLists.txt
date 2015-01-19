@@ -17,18 +17,18 @@
 set (MODULE PWGDevNanoAOD)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/DevNanoAOD)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ESDfilter
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/PWGLF/SPECTRA/PiKaPr/TestAOD
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ESDfilter
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/PiKaPr/TestAOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

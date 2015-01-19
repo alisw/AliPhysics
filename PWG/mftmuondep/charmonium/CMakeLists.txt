@@ -17,16 +17,16 @@
 set (MODULE PWGmftmuondepCharmonium)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/mftmuondep/charmonium)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/mftmuondep/charmonium)
 
 # Aditional include directories in alphabetical order
-include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/EVENTMIX
-                    ${AliRoot_SOURCE_DIR}/MFT/MFTbase
-                    ${AliRoot_SOURCE_DIR}/MUON/MUONrec
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+include_directories(${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
+                    ${AliPhysics_SOURCE_DIR}/MFT/MFTbase
+                    ${AliPhysics_SOURCE_DIR}/MUON/MUONrec
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 # Sources - alphabetical order
 set(SRCS
@@ -45,8 +45,8 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # VERY IMPORTANT - ADD the correct dependecies
 # Seach any Root class you use inside the ROOT rootmaps and add Root library to the dependency
 # AliRoot classes are usually located in the name of the include
-# Ex: ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS -> ANALYSIS
-#     ${AliRoot_SOURCE_DIR}/EVENTMIX - EventMixing
+# Ex: ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS -> ANALYSIS
+#     ${AliPhysics_SOURCE_DIR}/EVENTMIX - EventMixing
 set(ROOT_DEPENDENCIES Core EG Hist MathCore)
 set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice EventMixing MUONrec MFTbase)
 

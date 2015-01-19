@@ -17,7 +17,7 @@
 set(MODULE PWGGAUtils)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGGA/PWGGAUtils)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}

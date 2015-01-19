@@ -17,11 +17,11 @@
 set (MODULE PWGflowBase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/FLOW/Base)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-#                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+#                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
   )
 
 # Sources - alphabetical order

@@ -17,19 +17,19 @@
 set (MODULE PWGLFtotEt)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGLF/totEt)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/totEt)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSbase
-                    ${AliRoot_SOURCE_DIR}/PHOS/PHOSUtils
-                    ${AliRoot_SOURCE_DIR}/PWGUD/base
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSbase
+                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

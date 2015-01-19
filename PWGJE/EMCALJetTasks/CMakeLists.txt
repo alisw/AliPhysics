@@ -17,24 +17,24 @@
 set(MODULE PWGJEEMCALJetTasks)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWGJE/EMCALJetTasks
-                    ${AliRoot_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWG/EMCAL
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PYTHIA6/pythia6
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
@@ -150,8 +150,8 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
        )
 
-    include_directories(#${AliRoot_SOURCE_DIR}/HLT/FJWrapper
-                        ${AliRoot_SOURCE_DIR}/JETAN/JETAN
+    include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
+                        ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
                        )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})

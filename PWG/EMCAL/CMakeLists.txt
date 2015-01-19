@@ -17,24 +17,24 @@
 set (MODULE PWGEMCAL)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/PWG/EMCAL)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/EMCAL)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/TENDER/Tender
-                    ${AliRoot_SOURCE_DIR}/TENDER/TenderSupplies
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALrec
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliRoot_SOURCE_DIR}/OADB
-                    ${AliRoot_SOURCE_DIR}/PWG/Tools
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALrec
+                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
+                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
+                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
   )
 
 # Sources - alphabetical order
