@@ -24,8 +24,6 @@
 #pragma link C++ class  AliAnalysisFilter+;
 #pragma link C++ class  AliAnalysisCuts+;
 
-#pragma link C++ class AliCollisionNormalization+;
-#pragma link C++ class AliCollisionNormalizationTask+;
 #pragma link C++ class AliEPSelectionTask+;
 #pragma link C++ class AliVZEROEPSelectionTask+;
 #pragma link C++ class AliAnalysisTaskStat+;

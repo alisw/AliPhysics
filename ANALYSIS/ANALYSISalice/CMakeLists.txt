@@ -43,8 +43,6 @@ set(SRCS
     AliAnalysisTaskStat.cxx
     AliAnalysisTaskTagCreator.cxx
     AliAODv0KineCuts.cxx
-    AliCollisionNormalization.cxx
-    AliCollisionNormalizationTask.cxx
     AliEPSelectionTask.cxx
     AliESDpidCuts.cxx
     AliESDtrackCuts.cxx
