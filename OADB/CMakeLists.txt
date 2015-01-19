@@ -33,6 +33,9 @@ set(SRCS
     AliAnalysisUtils.cxx
     AliBackgroundSelection.cxx
     AliCentralitySelectionTask.cxx
+    AliCollisionNormalization.cxx
+    AliCollisionNormalizationTask.cxx
+    AliEPSelectionTask.cxx
     AliPhysicsSelection.cxx
     AliPhysicsSelectionTask.cxx
     AliTriggerAnalysis.cxx

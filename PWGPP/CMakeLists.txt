@@ -173,6 +173,8 @@ set ( SRCS8
 set ( SRCS9
   TOF/AliAnalysisTaskTOFqa.cxx
   TOF/AliAnalysisTaskTOFqaID.cxx
+  TOF/AliTOFAnalysisTaskCalibPass0.cxx
+  TOF/AliTOFAnalysisTaskCalibTree.cxx
   )
 #file ( GLOB SRCS10 "TRD/info/*.cxx" )
 set ( SRCS10
