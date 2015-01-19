@@ -172,7 +172,7 @@ install(FILES ${HDRS} DESTINATION include)
 add_executable(runTrain
   trains/trainMain.cxx
   )
-target_link_libraries(runTrain ANALYSISalice Rint)
+target_link_libraries(runTrain ANALYSIS ANALYSISalice Core Rint)
 install(TARGETS runTrain 
   RUNTIME DESTINATION bin)
 
