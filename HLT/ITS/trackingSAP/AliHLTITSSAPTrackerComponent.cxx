@@ -474,7 +474,7 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   fBenchmark.Stop(0);
 
   // Set log level to "Warning" for on-line system monitoring
-  HLTWarning( "ITS SAP Tracker: output %d tracks;  input %d clusters, VertexTracks: %s",
+  HLTInfo( "ITS SAP Tracker: output %d tracks;  input %d clusters, VertexTracks: %s",
 	   nAddedTracks, nClTotal, vtxOK ? "OK" : "Found" );
 
   HLTInfo(fBenchmark.GetStatistics());
