@@ -75,6 +75,14 @@ set(SRCS
 #  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Additional headers, with no corresponding sources
+#  - Instead of adding headers to the HDRS variable with the string(REPLACE)
+#    command above, you can use a separate list
+#  - With this optional command, headers are appended to the HDRS list
+#  - Those headers will be installed in the include directory during the
+#    installation process
+#list(APPEND HDRS "header1.h" "header2.h" "header3.h")
+
 # Generating the dictionary
 #  - The name of the LinkDef has to be "${MODULE}LinkDef.h"
 #  - Using custom LinkDef names is for advanced users! If you are not sure
