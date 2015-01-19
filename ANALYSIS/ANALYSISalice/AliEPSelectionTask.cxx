@@ -52,8 +52,6 @@
 #include "AliHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliPhysicsSelectionTask.h"
-#include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
 #include "AliESDUtils.h"
 #include "AliOADBContainer.h"

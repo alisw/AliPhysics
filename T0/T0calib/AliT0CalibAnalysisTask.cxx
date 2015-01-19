@@ -8,7 +8,6 @@
 #include "TObjString.h"
 
 #include "AliAnalysisTask.h"
-#include "AliPhysicsSelection.h"
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
