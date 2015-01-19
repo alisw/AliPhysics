@@ -15,6 +15,7 @@
 #pragma link C++ class AliAnalysisUtils+;
 #pragma link C++ class AliBackgroundSelection+;
 #pragma link C++ class AliCentralitySelectionTask+;
+#pragma link C++ class AliEPSelectionTask+;
 #pragma link C++ class AliPhysicsSelection+;
 #pragma link C++ class AliPhysicsSelectionTask+;
 #pragma link C++ class AliTriggerAnalysis+;
