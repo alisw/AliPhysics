@@ -1,28 +1,13 @@
-# **************************************************************************
-# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
-# *                                                                        *
-# * Author: The ALICE Off-line Project.                                    *
-# * Contributors are mentioned in the code where appropriate.              *
-# *                                                                        *
-# * Permission to use, copy, modify and distribute this software and its   *
-# * documentation strictly for non-commercial purposes is hereby granted   *
-# * without fee, provided that the above copyright notice appears in all   *
-# * copies and that both the copyright notice and this permission notice   *
-# * appear in the supporting documentation. The authors make no claims     *
-# * about the suitability of this software for any purpose. It is          *
-# * provided "as is" without express or implied warranty.                  *
-# **************************************************************************
-
 #--------------------------------------------------------------------------#
 # Set Basic CMake Configuration                                            #
 #--------------------------------------------------------------------------#
 
 cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
-project(AliRoot CXX C)
+project(AliPhysics CXX C)
 
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
-message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
+message(STATUS "Build folder: ${AliPhysics_BINARY_DIR}")
 message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
@@ -88,78 +73,10 @@ if(DATE_CONFIG)
     endif()
 endif()
 
-# daqDA
-if(daqDA)
-    find_package(daqDA)
-endif(daqDA)
-
-# AMORE
-if(AMORE_CONFIG)
-    if(ROOTSYS)
-        find_package(AMORE)
-    else()
-        message(FATAL_ERROR "AMORE enabled but no ROOTSYS defined")
-    endif()
-endif(AMORE_CONFIG)
-
-# id DARPM we enable DA if it is not set
-if(DARPM)
-    if(NOT DA)
-        set(DA ON)
-    endif(NOT DA)
-endif(DARPM)
-
-# DA is enabled
-if(DA)
-    if(NOT DIMDIR AND NOT ODIR)
-        set(DA FALSE)
-        message(FATAL_ERROR "Das enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
-    endif()
-
-    if(NOT DATE_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" variable")
-    endif()
-
-    if(NOT daqDA_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
-    endif()
-
-    if(NOT AMORE_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no AMORE support found. Please point to your AMORE installation using \"AMORE_CONFIG\" variable")
-    endif()
-    
-    # Enable static libraries
-    set(ALIROOT_STATIC TRUE)
-    message(STATUS "DAs enabled")
-endif(DA)
-
-# MDC rpm creation enables the static build
-if(MDCRPM)
-    set(ALIROOT_STATIC TRUE)
-    message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
-endif(MDCRPM)
-
 # If no Fortran, i.e on Windows
 # We need to specify ROOT fortran
 # (f95 comes before gfortran in default module)
 include(CheckLanguage)
-
-if(ROOT_FORTRAN)
-    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-else()
-    message(STATUS "Using default system Fortran compiler")
-endif(ROOT_FORTRAN)
-
-check_language(Fortran)
-if(CMAKE_Fortran_COMPILER)
-    enable_language(Fortran OPTIONAL)
-else()
-    message(STATUS "No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
-endif()
 
 # Optional: Doxygen for reference doc generation
 find_package(Doxygen)
@@ -170,149 +87,32 @@ else()
     message(STATUS "Doxygen and Graphviz not found. Disabling support for documentation generation")
 endif(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
 
-# DATE
-if(DATE_CONFIG)
-    find_package(DATE)
-endif(DATE_CONFIG)
-
-# daqDA
-if(daqDA)
-    find_package(daqDA)
-endif(daqDA)
-
-# DA is enabled
-if(DA)
-    if(NOT DATE_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\"")
-    endif()
-    
-    if(NOT daqDA_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
-    endif()
-    
-    # Enable static libraries
-    set(ALIROOT_STATIC TRUE)
-    message(STATUS "DAs enabled")
-endif(DA)
-
 # FastJet
 find_package(FASTJET)
 
 # ZEROMQ
 find_package(ZeroMQ)
 
-# Generating the AliRoot-config.cmake file
-configure_file(${PROJECT_SOURCE_DIR}/cmake/AliRoot-config.cmake.in ${CMAKE_BINARY_DIR}/version/AliRoot-config.cmake @ONLY)
-install(FILES ${PROJECT_BINARY_DIR}/version/AliRoot-config.cmake DESTINATION etc)
-
 # General flags -> Should be moved into a configuration file
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
-# AliRoot base modules
-add_subdirectory(STEER)
-add_subdirectory(RAW)
-add_subdirectory(ANALYSIS)
-
-# Include Vc own cmake
-include(Vc/Vc.cmake)
-add_subdirectory(Vc)
-
-# AliRoot common macros
-add_subdirectory(macros)
-
 # AliRoot modules
-add_subdirectory(ACORDE)
-add_subdirectory(AD)
-add_subdirectory(BCM)
 add_subdirectory(CORRFW)
-add_subdirectory(EMCAL)
-add_subdirectory(EPOS)
-add_subdirectory(EVE)
 add_subdirectory(EVEANALYSIS)
 add_subdirectory(EVENTMIX)
-add_subdirectory(EVGEN)
-add_subdirectory(FASTSIM)
-add_subdirectory(FIT)
-add_subdirectory(FMD)
-add_subdirectory(HLT)
-add_subdirectory(HMPID)
-add_subdirectory(ITS)
+add_subdirectory(HLTANALYSIS)
 add_subdirectory(JETAN)
-add_subdirectory(MFT)
-add_subdirectory(MONITOR)
-add_subdirectory(MUON)
 add_subdirectory(OADB)
-add_subdirectory(PHOS)
-add_subdirectory(PMD)
-add_subdirectory(PYTHIA8)
-add_subdirectory(STARLIGHT)
-add_subdirectory(STAT)
-add_subdirectory(STRUCT)
-add_subdirectory(T0)
-add_subdirectory(TDPMjet)
 add_subdirectory(TENDER)
-add_subdirectory(TEvtGen)
-add_subdirectory(THerwig)
-add_subdirectory(TOF)
-add_subdirectory(TPC)
-add_subdirectory(TRD)
-add_subdirectory(TRIGGER)
-add_subdirectory(TTherminator)
-add_subdirectory(VZERO)
-add_subdirectory(ZDC)
-add_subdirectory(doxygen)
-
-# Fortran modules
-if(CMAKE_Fortran_COMPILER)
-  add_subdirectory(DIME)
-  add_subdirectory(DPMJET)
-  add_subdirectory(HERWIG)
-  add_subdirectory(HIJING)
-  add_subdirectory(LHAPDF)
-  add_subdirectory(MICROCERN)
-  add_subdirectory(PYTHIA6)
-  add_subdirectory(TEPEMGEN)
-  add_subdirectory(THbtp)
-  add_subdirectory(THijing)
-  add_subdirectory(THydjet)
-  add_subdirectory(TPHIC)
-  add_subdirectory(TUHKMgen)
-  add_subdirectory(TAmpt)
-endif(CMAKE_Fortran_COMPILER)
 
 # PWG libraries
 add_subdirectory(PWG)
 add_subdirectory(PWGCF)
-# Depends on PWGCF - To fix dependencies
 add_subdirectory(PWGGA)
-# Depends on CF  - To fix the dependencies
 add_subdirectory(PWGDQ)
 add_subdirectory(PWGHF)
-# Depends on CF
 add_subdirectory(PWGJE)
 add_subdirectory(PWGLF)
 add_subdirectory(PWGPP)
 add_subdirectory(PWGUD)
-add_subdirectory(data)
-add_subdirectory(GRP)
-add_subdirectory(OCDB)
-add_subdirectory(QAref)
-
-# Enable SHUTTLE compilation
-# Check if DIMDIR and ODIR are set
-if(SHUTTLE)
-    if(ROOT_HASALIEN STREQUAL "no")
-	message(FATAL_ERROR "Shuttle needs ROOT build with AliEn support. Please build ROOT with AliEn support. Do not forget to set ALIEN to your AliEn installation")
-    endif()
-    
-    if(DIMDIR AND ODIR AND ALIEN)
-        add_subdirectory(SHUTTLE)
-    else()
-        message(FATAL_ERROR "SHUTTLE enabled! Please specify DIMDIR, ODIR and ALIEN")
-    endif()
-endif(SHUTTLE)
-
-add_subdirectory(ALIROOT)
