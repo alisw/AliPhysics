@@ -18,7 +18,6 @@ if (NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-
 if(CMAKE_INSTALL_PREFIX STREQUAL "${AliPhysics_SOURCE_DIR}")
     message(FATAL_ERROR "Please choose a different installation point than the source tree!")
 endif()
@@ -44,6 +43,9 @@ include(CheckCompiler)
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
+
+# AliRoot Core mandatory
+find_package(AliRoot REQUIRED)
 
 # ROOT configuration mandatory
 if(ROOTSYS)
