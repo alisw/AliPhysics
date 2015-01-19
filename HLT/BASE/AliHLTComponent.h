@@ -1310,7 +1310,7 @@ class AliHLTComponent : public AliHLTLogging {
    * default is no header.
    * The publishing can be downscaled by means of the -pushback-period
    * parameter. This is especially useful for histograms which do not
-   * need to be sent for every event.
+   * need to be sent for every event. At EOR data is always pushed.
    * @param pObject     pointer to root object
    * @param dt          data type of the object
    * @param spec        data specification
@@ -1328,7 +1328,7 @@ class AliHLTComponent : public AliHLTLogging {
    * default is no header.
    * The publishing can be downscaled by means of the -pushback-period
    * parameter. This is especially useful for histograms which do not
-   * need to be sent for every event.
+   * need to be sent for every event. At EOR data is always pushed.
    * @param pObject     pointer to root object
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
