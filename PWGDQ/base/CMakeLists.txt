@@ -21,7 +21,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/base)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

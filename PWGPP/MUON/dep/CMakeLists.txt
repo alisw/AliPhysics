@@ -21,23 +21,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGPP/MUON/dep)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONbase
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONcalib
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONcore
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONevaluation
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONgeometry
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONmapping
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONraw
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONrec
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
-                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
-                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

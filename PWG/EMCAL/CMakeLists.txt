@@ -21,20 +21,10 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/EMCAL)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
-                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALbase
-                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALrec
-                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
-                    ${AliPhysics_SOURCE_DIR}/STEER/CDB
-                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
   )
 
 # Sources - alphabetical order

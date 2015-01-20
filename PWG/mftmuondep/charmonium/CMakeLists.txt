@@ -20,13 +20,7 @@ set (MODULE PWGmftmuondepCharmonium)
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/mftmuondep/charmonium)
 
 # Aditional include directories in alphabetical order
-include_directories(${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
-                    ${AliPhysics_SOURCE_DIR}/MFT/MFTbase
-                    ${AliPhysics_SOURCE_DIR}/MUON/MUONrec
-                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
+include_directories(${AliPhysics_SOURCE_DIR}/EVENTMIX
                    )
 # Sources - alphabetical order
 set(SRCS
