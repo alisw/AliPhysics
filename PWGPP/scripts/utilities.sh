@@ -748,4 +748,4 @@ generPWD(){
 #executes the command given as an argument in this environment
 #use case:
 #  bashdb utilities.sh summarizeLogs * */*
-[[ $# != 0 ]] && eval "$@"
+[[ $# != 0 ]] && eval "$@" || true
