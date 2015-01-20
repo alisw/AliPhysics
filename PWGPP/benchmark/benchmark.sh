@@ -227,6 +227,7 @@ goCPass0()
   echo outputDir             ${outputDir}
   echo PWD                   ${PWD}
   echo ALICE_ROOT            ${ALICE_ROOT}
+  echo ALICE_PHYSICS         ${ALICE_PHYSICS}
   echo "########## ###########"
 
   alirootInfo > ALICE_ROOT.log
@@ -237,9 +238,9 @@ goCPass0()
                "${batchWorkingDirectory}/runCalibTrain.C"
                "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                "${batchWorkingDirectory}/OCDB.root"
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/runCalibTrain.C"
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C"
   )
 
   for file in ${filesCPass0[*]}; do
@@ -437,6 +438,7 @@ goCPass1()
   echo outputDir             ${outputDir}
   echo batchWorkingDirectory ${batchWorkingDirectory}
   echo ALICE_ROOT            ${ALICE_ROOT}
+  echo ALICE_PHYSICS         ${ALICE_PHYSICS}
   echo PWD                   ${PWD}
   echo "#####################"
 
@@ -453,10 +455,10 @@ goCPass1()
                "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                "${batchWorkingDirectory}/OCDB.root"
                "${trustedQAtrainMacro}"
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/recCPass1.C" 
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
-               "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C" 
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
   )
 
@@ -695,11 +697,11 @@ goMergeCPass0()
                     "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                     "${batchWorkingDirectory}/OCDB.root"
                     "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/merge.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh"
   )
   for file in ${filesMergeCPass0[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
@@ -744,8 +746,8 @@ goMergeCPass0()
 
     #produce the calib trees for expert QA (dcsTime.root)
     goMakeLocalOCDBaccessConfig ./OCDB
-    echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
-    aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+    echo aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+    aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
   fi
   
   ### produce the output
@@ -872,11 +874,11 @@ goMergeCPass1()
                     "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                     "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                     "${batchWorkingDirectory}/QAtrain_duo.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/merge.C"
-                    "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
                     "${trustedQAtrainMacro}"
                     "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
   )
@@ -954,8 +956,8 @@ goMergeCPass1()
     aliroot -l -b -q "merge.C(\"${filteredFilesToMerge}\",\"\",kFALSE,\"FilterEvents_Trees.root\")" > mergeFilteredTrees.log
 
     #produce the calib trees for expert QA
-    echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
-    aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")" > calibTree.log
+    echo aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+    aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")" > calibTree.log
   fi
 
   # Create tarball with OCDB, store on the shared directory, create signal file on batch directory
@@ -1012,7 +1014,7 @@ goMerge()
   umask 0002
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   rm -f ${outputFile}
-  aliroot -b -q "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/merge.C(\"${inputList}\",\"\",kFALSE,\"${outputFile}\")" > merge_${inputList}.log
+  aliroot -b -q "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C(\"${inputList}\",\"\",kFALSE,\"${outputFile}\")" > merge_${inputList}.log
   return 0
 )
 
@@ -1305,7 +1307,7 @@ goCreateQAplots()
 
   inputFiles=(
               "${batchWorkingDirectory}/runQA.sh"
-              "${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh"
+              "${ALICE_PHYSICS}/PWGPP/QA/scripts/runQA.sh"
   )
   for file in ${inputFiles[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
@@ -1609,7 +1611,7 @@ EOF
   #fi
   
   if [[ -z ${pretend} ]];then
-    aliroot -l -b -q "${ALICE_ROOT}/PWGPP/macros/runFilteringTask.C(\"${inputListfiles}\",${filterT},${filterV},\"${OCDBpath}\",${maxFiles},${offsetFile},${maxEvents},${offsetEvent},\"${esdFileName}\")" &>> filtering.log
+    aliroot -l -b -q "${ALICE_PHYSICS}/PWGPP/macros/runFilteringTask.C(\"${inputListfiles}\",${filterT},${filterV},\"${OCDBpath}\",${maxFiles},${offsetFile},${maxEvents},${offsetEvent},\"${esdFileName}\")" &>> filtering.log
   else
     sleep ${pretendDelay}
     touch filtering.log FilterEvents_Trees.root
