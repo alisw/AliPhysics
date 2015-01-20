@@ -12,18 +12,18 @@ set(ZEROMQ_FOUND FALSE)
 if(ZEROMQ)
     # ZeroMQ is installed in a custom place
     find_library(ZEROMQ_LIBRARIES NAMES zmq
-                PATH ${ZEROMQ}/lib
+                PATHS ${ZEROMQ}/lib
                 NO_DEFAULT_PATH
                 DOC "Path to libzmq)"
             )
 
     find_library(ZEROMQ_LIBRARIES_STATIC NAMES libzmq.a
-                PATH ${ZEROMQ}/lib
+                PATHS ${ZEROMQ}/lib
                 NO_DEFAULT_PATH
                 DOC "Path to libzmq)"
             )
             
-    find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.hh zmq_utils.h}
+    find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq_utils.h zmq.hpp}
                 PATHS ${ZEROMQ}/include
                 NO_DEFAULT_PATH
                 DOC "Path to ZeroMQ include header files."
