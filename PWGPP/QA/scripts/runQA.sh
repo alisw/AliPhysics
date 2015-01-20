@@ -8,12 +8,14 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
-#include $ALICE_ROOT/PWGPP/scripts/utilities.sh
-if ! source $ALICE_ROOT/PWGPP/scripts/utilities.sh; then 
-  [[ -z "${ALICE_ROOT}" ]] && echo "\$ALICE_ROOT not defined!"
-  echo "exiting..."
+#include $ALICE_PHYSICS/PWGPP/scripts/utilities.sh
+if ! source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh; then 
+  [[ -z "${ALICE_PHYSICS}" ]] && echo "\$ALICE_PHYSICS not defined!"
+  echo "could not source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh exiting..."
   exit 1
 fi
+
+[[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && exit 1
 
 ##############################
 #default values:
@@ -62,8 +64,6 @@ main()
     ${0}
     return 1
   fi
-
-  [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && return 1
 
   ocdbregex='raw://'
   if [[ ${ocdbStorage} =~ ${ocdbregex} ]]; then
@@ -126,7 +126,7 @@ updateQA()
   #ze detector loop
   declare -A arrLogSummary
   declare -A arrPlanB
-  for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
+  for detectorScript in $ALICE_PHYSICS/PWGPP/QA/detectorQAscripts/*; do
     echo
     echo "##############################################"
     echo $(date)
@@ -197,6 +197,7 @@ updateQA()
       echo "anchorYear for ${originalPeriod} is: ${anchorYear}"
 
       tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
+
       tmpRunDir=${tmpProductionDir}/000${runNumber}
       mkdir -p ${tmpRunDir}
       cd ${tmpRunDir}
@@ -320,8 +321,8 @@ updateQA()
       #if trending.root not created, create a default one
       if [[ ! -f trending.root ]]; then
         echo "trending.root not provided, falling back to:"
-        echo "aliroot -b -q -l $ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\") 2>&1 | tee -a runLevelQA.log > simpleTrending.log"
-        aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log > simpleTrending.log
+        echo "aliroot -b -q -l $ALICE_PHYSICS/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\") 2>&1 | tee -a runLevelQA.log > simpleTrending.log"
+        aliroot -b -q -l "$ALICE_PHYSICS/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detectorQAcontainerName}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log > simpleTrending.log
       fi
       if [[ ! -f trending.root ]]; then
         echo "trending.root not created"
