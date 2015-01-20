@@ -28,6 +28,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${ZEROMQ_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order
@@ -70,7 +71,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB MONITOR zmq)
+target_link_libraries(${MODULE} STEERBase STEER ESD CDB MONITOR ${ZEROMQ_LIBRARIES})
 if(DIMDIR AND ODIR)
     target_link_libraries(${MODULE} dim)
 endif()
