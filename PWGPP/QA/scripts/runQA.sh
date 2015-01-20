@@ -196,7 +196,11 @@ updateQA()
       fi
       echo "anchorYear for ${originalPeriod} is: ${anchorYear}"
 
-      tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
+      if [[ ${dataType} =~ "sim" ]]; then
+        tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${originalPeriod}/${pass}
+      else
+        tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
+      fi
 
       tmpRunDir=${tmpProductionDir}/000${runNumber}
       mkdir -p ${tmpRunDir}
