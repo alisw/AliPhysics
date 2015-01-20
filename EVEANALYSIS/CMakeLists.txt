@@ -21,14 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/EVEANALYSIS)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliPhysics_SOURCE_DIR}/EVE/EveBase
-                    ${AliPhysics_SOURCE_DIR}/MONITOR/alistoragemanager
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEER
                    )
 
 # Sources

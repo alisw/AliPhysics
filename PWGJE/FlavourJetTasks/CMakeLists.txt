@@ -21,15 +21,10 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/FlavourJetTasks)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
-                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
-                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
