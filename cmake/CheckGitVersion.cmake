@@ -20,7 +20,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
 
         # generate the short version of the revision hash
         execute_process(COMMAND git rev-parse --short ${GIT_SHA1}
-                          WORKING_DIRECTORY ${ALIPHYSICS_SOURCE_DIR}
+                          WORKING_DIRECTORY ${AliPhysics_SOURCE_DIR}
                           OUTPUT_STRIP_TRAILING_WHITESPACE
                           RESULT_VARIABLE res
                           OUTPUT_VARIABLE GIT_SHORT_SHA1)
@@ -37,7 +37,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         if(NEWGIT)
             # generate the short version of the revision hash using --count
             execute_process(COMMAND git rev-list --count ${GIT_SHA1}
-                            WORKING_DIRECTORY ${ALIPHYSICS_SOURCE_DIR}
+                            WORKING_DIRECTORY ${AliPhysics_SOURCE_DIR}
                             OUTPUT_STRIP_TRAILING_WHITESPACE
                             RESULT_VARIABLE revcount
                             OUTPUT_VARIABLE ALIPHYSICS_SERIAL_ORIGINAL)
@@ -45,7 +45,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
             # generate the short version of the revision hash using -wc -l
             execute_process(COMMAND git rev-list ${GIT_SHA1}
                             COMMAND wc -l
-                            WORKING_DIRECTORY ${ALIPHYSICS_SOURCE_DIR}
+                            WORKING_DIRECTORY ${AliPhysics_SOURCE_DIR}
                             OUTPUT_STRIP_TRAILING_WHITESPACE
                             RESULT_VARIABLE revcount
                             OUTPUT_VARIABLE ALIPHYSICS_SERIAL_ORIGINAL)
