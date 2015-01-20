@@ -21,8 +21,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/PWGJE)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliPhysics_SOURCE_DIR}/CORRFW/
                     ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
                     ${AliPhysics_SOURCE_DIR}/OADB
@@ -31,8 +29,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base # to add dependency
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/DPhi # to add dependency
-                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
