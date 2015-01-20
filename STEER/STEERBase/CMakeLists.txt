@@ -123,6 +123,7 @@ set(SRCS
     AliVTOFcluster.cxx
     AliVTOFHit.cxx
     AliVTOFMatch.cxx
+    AliVTPCseed.cxx
     AliVTrack.cxx
     AliVTrdTrack.cxx
     AliVTrdTracklet.cxx

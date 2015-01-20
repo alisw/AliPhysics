@@ -266,7 +266,7 @@ fhphiClustersLay1(0),
   for (int i=2;i--;) fStoreRefs[i][0] =  fStoreRefs[i][1] = kFALSE;
   TH1::AddDirectory(oldStatus);
 }
-
+/*
 //______________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : 
 AliTrackleter(mr),
@@ -347,6 +347,7 @@ AliITSMultReconstructor& AliITSMultReconstructor::operator=(const AliITSMultReco
   }
   return *this;
 }
+*/
 
 //______________________________________________________________________
 AliITSMultReconstructor::~AliITSMultReconstructor(){

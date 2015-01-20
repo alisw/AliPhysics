@@ -10,6 +10,7 @@
 //  Author Bogdan Vulpescu, LPC Clermont-Ferrand
 
 #include <TGFrame.h>
+#include <TObjArray.h>
 
 class TCanvas;
 class TGCheckButton;
@@ -17,7 +18,6 @@ class TGTextEdit;
 class TPolyLine;
 class TBox;
 class TPaveText;
-class TObjArray;
 class TH1F;
 class TLatex;
 class TGTableLayout;

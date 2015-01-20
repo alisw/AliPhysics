@@ -129,13 +129,13 @@ protected:
   /// Set flag for oscillation
   void SetOscillation(Bool_t oscillation) { fOscillation = oscillation; }
   /// Set hadronised parents and grandparents 
-  void SetParentPDGCode(Int_t index, Int_t pdg) { fParentPDGCode[index] = pdg; } 
+  void SetParentPDGCode(Int_t index, Int_t pdg);
   /// Set line of Pythia output for hadronised parents & grandparents
-  void SetParentPythiaLine(Int_t index, Int_t line) { fParentPythiaLine[index] = line; } 
+  void SetParentPythiaLine(Int_t index, Int_t line);
   /// Set pdg of the string [0], quarks/gluons [1,2], sometimes proton [3] 
-  void SetQuarkPDGCode(Int_t index, Int_t pdg){ fQuarkPDGCode[index] = pdg; }
+  void SetQuarkPDGCode(Int_t index, Int_t pdg);
   /// Set line of Pythia output for string [0] and quarks [1,2], sometimes proton [3]
-  void SetQuarkPythiaLine(Int_t index, Int_t line){ fQuarkPythiaLine[index] = line; }
+  void SetQuarkPythiaLine(Int_t index, Int_t line);
   void ResetQuarkInfo();
 
   ClassDef(AliMUONTrackLight,1)  /// Muon Track for analysis

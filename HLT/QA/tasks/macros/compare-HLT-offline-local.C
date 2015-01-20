@@ -74,7 +74,7 @@ void compare_HLT_offline_local( TString file
   gSystem->Load("libPWGPP");
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
     
   Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWGPP = kFALSE, bD0 = kFALSE, bCB = kFALSE;
  
@@ -243,7 +243,7 @@ void compare_HLT_offline_local( TString file
     taskGLOBAL->SetBeamType(beamType);
     mgr->AddTask(taskGLOBAL);
     if(beamType.Contains("Pb")){
-       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+       gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
        AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
        taskCentrality->SetPass(1);
     }	     
@@ -281,7 +281,7 @@ void compare_HLT_offline_local( TString file
      mgr->AddTask(taskCB); 
      taskCB->SetBeamType(beamType);
      if(beamType.Contains("Pb")){
-        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
 	taskCentrality->SetPass(1);
      }        

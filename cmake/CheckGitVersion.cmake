@@ -80,6 +80,14 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
             string(REPLACE "tags/" ""  ALIROOT_GIT_TAG ${ALIROOT_GIT_TAG})
         endif(ALIROOT_GIT_TAG)
         
+        # using the closest tag for branches
+        git_describe(ALIROOT_CLOSEST_GIT_TAG "--abbrev=0")
+
+        if(ALIROOT_GIT_TAG)
+            string(STRIP ${ALIROOT_GIT_TAG} ALIROOT_GIT_TAG)
+            string(REPLACE "tags/" ""  ALIROOT_GIT_TAG ${ALIROOT_GIT_TAG})
+        endif(ALIROOT_GIT_TAG)
+        
         STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
         
         # the revision is not set in the case of a branch, it means we are doing development
@@ -87,9 +95,11 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         if(BRANCH_TYPE STREQUAL "heads")
             set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
             set(ALIROOT_SERIAL 0)
+            set(ALIROOT_GIT_TAG ${ALIROOT_CLOSEST_GIT_TAG})
             STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
             message(STATUS "This is a working branch, ARVersion will not contain the revision and the serial number")
         else()
+            set(BRANCH_TYPE "tags")
             set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
             set(ALIROOT_REVISION ${GIT_SHORT_SHA1})
             set(ALIROOT_SERIAL ${ALIROOT_SERIAL_ORIGINAL})
@@ -98,9 +108,14 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
         set(ALIROOT_BRANCH ${SHORT_BRANCH})
         set(ALIROOT_VERSION ${SHORT_BRANCH})
         
+        # extract major minor and patch from AliRoot tag
+        string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" ALIROOT_VERSION_MAJOR "${ALIROOT_GIT_TAG}")
+        string(REGEX REPLACE "^[0-9]+\\.([0-9])+\\.[0-9]+" "\\1" ALIROOT_VERSION_MINOR "${ALIROOT_GIT_TAG}")
+        string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" ALIROOT_VERSION_PATCH "${ALIROOT_GIT_TAG}")
+        message(STATUS "Found ALIROOT version ${ALIROOT_VERSION_MAJOR}.${ALIROOT_VERSION_MINOR}.${ALIROOT_VERSION_PATCH}")
+        
         # Replace - with . for rpm creation
         string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
-
 
         message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" - Serial: \"${ALIROOT_SERIAL_ORIGINAL}\"")
 

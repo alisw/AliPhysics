@@ -136,7 +136,7 @@ void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TStr
   TString taskName;
   
   //Wagon for physics event selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
   if (isMC)physSelTask->GetPhysicsSelection()->SetAnalyzeMC();

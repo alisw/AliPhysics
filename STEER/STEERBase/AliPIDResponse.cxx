@@ -2338,12 +2338,11 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
 
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
   for (Int_t j=0; j<nSpecies; j++) {
-    Double_t mass=AliPID::ParticleMassZ(j);//GeV/c^2
     const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(j),2.);
-    Double_t bethe=fITSResponse.Bethe(momITS,mass)*chargeFactor;
     //TODO: in case of the electron, use the SA parametrisation,
     //      this needs to be changed if ITS provides a parametrisation
     //      for electrons also for ITS+TPC tracks
+    Double_t bethe=fITSResponse.Bethe(momITS,(AliPID::EParticleType)j,isSA || (j==(Int_t)AliPID::kElectron))*chargeFactor;
     Double_t sigma=fITSResponse.GetResolution(bethe,nPointsForPid,isSA || (j==(Int_t)AliPID::kElectron));
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;

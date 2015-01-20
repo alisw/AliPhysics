@@ -529,6 +529,11 @@ void AliMUONAlignmentTask::NotifyRun()
       // propagete to Alignment class
       // and printout
       AliMagF* magF = dynamic_cast<AliMagF*>( TGeoGlobalMagField::Instance()->GetField() );
+      if ( !magF ) {
+        AliError( "Failed to get field" );
+        return;
+      }
+      
       fBFieldOn = TMath::Abs( magF->GetFactorDip() ) > 1e-5;
       fAlign->SetBFieldOn( fBFieldOn );
       AliInfo( Form( "Dipole magnetic field factor: %.2f", magF->GetFactorDip() ) );

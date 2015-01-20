@@ -41,8 +41,6 @@ include_directories(
 # Sources in alphabetical order
 set(SRCS
     AliEveApplication.cxx
-    AliEveBeamsInfo.cxx
-    AliEveBeamsInfoEditor.cxx
     AliEveCascade.cxx
     AliEveCascadeEditor.cxx
     AliEveCascadeListEditor.cxx
@@ -65,8 +63,6 @@ set(SRCS
     AliEveKink.cxx
     AliEveKinkEditor.cxx
     AliEveKinkListEditor.cxx
-    AliEveLego.cxx
-    AliEveLegoEditor.cxx
     AliEveMacro.cxx
     AliEveMacroEditor.cxx
     AliEveMacroExecutor.cxx

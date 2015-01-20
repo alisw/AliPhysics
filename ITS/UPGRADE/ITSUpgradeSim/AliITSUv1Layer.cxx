@@ -93,6 +93,7 @@ const Double_t AliITSUv1Layer::fgkOBCarbonPlateThick  =   0.012*fgkcm;
 const Double_t AliITSUv1Layer::fgkOBGlueThickM1       =   0.03 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBGlueThick         =   0.01 *fgkcm;
 const Double_t AliITSUv1Layer::fgkOBModuleZLength     =  21.06 *fgkcm;
+const Double_t AliITSUv1Layer::fgkOBHalfStaveYPos     =   2.067*fgkcm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveYTrans   =   1.76 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBHalfStaveXOverlap =   4.3  *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBGraphiteFoilThick =  30.0  *fgkmicron;
@@ -102,16 +103,22 @@ const Double_t AliITSUv1Layer::fgkOBCoolTubeInnerD    =   2.05 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeThick     =  32.0  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkOBCoolTubeXDist     =  11.1  *fgkmm;
 
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameWidth   =  42.0  *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameTotHigh =  43.1  *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSFrameBeamRadius  =   0.6  *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameLa      =   3.0  *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameHa      =   0.721979*fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameLb      =   3.7  *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameHb      =   0.890428*fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameL       =   0.25 *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSFBotBeamAngle    =  56.5;
-const Double_t AliITSUv1Layer::fgkOBSFrameBeamSidePhi =  65.0;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameZLen[2] = { 900.0*fgkmm,
+							 1526.0*fgkmm};
+const Int_t    AliITSUv1Layer::fgkOBSpaceFrameNUnits[2]= { 23, 39};
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameUnitLen =  39.1  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameWidth   =  42.44 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameHigh    =  36.45 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameTopVL   =   4.0  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameTopVH   =   0.35 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameSideVL  =   4.5  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameSideVH  =   0.35 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameVAlpha  =  60.0; // deg
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameVBeta   =  68.0; // deg
+const Double_t AliITSUv1Layer::fgkOBSFrameBaseRibDiam =   1.33 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameBaseRibPhi  =  54.0; // deg
+const Double_t AliITSUv1Layer::fgkOBSFrameSideRibDiam =   1.25 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameSideRibPhi  =  70.0; // deg
 
 
 ClassImp(AliITSUv1Layer)
@@ -454,6 +461,9 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 //
 // Created:      22 Jun 2011  Mario Sitta
 // Updated:      18 Dec 2013  Mario Sitta  Handle IB and OB
+// Updated:      12 Jan 2015  Mario Sitta  Fix overlap with new OB space frame
+//                            (by moving the latter, not the sensors to avoid
+//                             spoiling their position in space)
 //
 
   char volname[30];
@@ -515,16 +525,18 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
     } else { // (if fStaveModel) Create new stave struct as in TDR
       xpos = ((TGeoBBox*)(hstaveVol->GetShape()))->GetDX()
 	   - fgkOBHalfStaveXOverlap/2;
-      // ypos is CF height as computed in CreateSpaceFrameOuterB1
-      ypos = (fgkOBSpaceFrameTotHigh - fgkOBHalfStaveYTrans)/2;
+      // ypos is now a parameter to avoid HS displacement wrt nominal radii
+      ypos = fgkOBHalfStaveYPos;
       staveVol->AddNode(hstaveVol, 0, new TGeoTranslation(-xpos, ypos, 0));
       staveVol->AddNode(hstaveVol, 1, new TGeoTranslation( xpos, ypos+fgkOBHalfStaveYTrans, 0));
       fHierarchy[kHalfStave] = 2; // RS 
       mechStaveVol = CreateSpaceFrameOuterB();
-      if (mechStaveVol)
+      if (mechStaveVol) {
+	ypos = ((TGeoBBox*)hstaveVol->GetShape())->GetDY();
 	staveVol->AddNode(mechStaveVol, 1,
-			  new TGeoCombiTrans(0, 0, 0,
+			  new TGeoCombiTrans(0, -2*ypos, 0,
 					     new TGeoRotation("", 180, 0, 0)));
+      }
     } // if (fStaveModel)
   }
   
@@ -2874,208 +2886,220 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 // Updated:      15 Jan 2014  Mario Sitta
 // Updated:      18 Feb 2014  Mario Sitta
 // Updated:      12 Mar 2014  Mario Sitta
+// Updated:      15 Dec 2014  Mario Sitta
 //
 
 
-  // Materials defined in AliITSUv0
-  TGeoMedium *medCarbon       = mgr->GetMedium("ITS_CARBON$");
+  // Materials defined in AliITSUv1
+  TGeoMedium *medCarbon       = mgr->GetMedium("ITS_M55J6K$");
   TGeoMedium *medAir          = mgr->GetMedium("ITS_AIR$");
 
 
   // Local parameters
-  Double_t sframeWidth        = fgkOBSpaceFrameWidth;
-  Double_t sframeHeight       = fgkOBSpaceFrameTotHigh - fgkOBHalfStaveYTrans;
-  Double_t staveBeamRadius    = fgkOBSFrameBeamRadius;
-  Double_t staveLa            = fgkOBSpaceFrameLa;
-  Double_t staveHa            = fgkOBSpaceFrameHa;
-  Double_t staveLb            = fgkOBSpaceFrameLb;
-  Double_t staveHb            = fgkOBSpaceFrameHb;
-  Double_t stavel             = fgkOBSpaceFrameL;
-  Double_t bottomBeamAngle    = fgkOBSFBotBeamAngle;
-  Double_t triangleHeight     = sframeHeight - staveBeamRadius;
-  Double_t halfTheta          = TMath::ATan( 0.5*sframeWidth/triangleHeight );
-//  Double_t alpha              = TMath::Pi()*3./4. - halfTheta/2.;
-  Double_t beta               = (TMath::Pi() - 2.*halfTheta)/4.;
-//  Double_t distCenterSideDown = 0.5*sframeWidth/TMath::Cos(beta);
+  Double_t halfFrameWidth  = fgkOBSpaceFrameWidth/2;
+  Double_t triangleHeight  = fgkOBSpaceFrameHigh;
+  Double_t sframeHeight    = triangleHeight + fgkOBSFrameBaseRibDiam;
+  Double_t staveLa         = fgkOBSpaceFrameTopVL;
+  Double_t staveHa         = fgkOBSpaceFrameTopVH;
+  Double_t staveLb         = fgkOBSpaceFrameSideVL;
+  Double_t staveHb         = fgkOBSpaceFrameSideVH;
+  Double_t alphaDeg        = fgkOBSpaceFrameVAlpha;
+  Double_t alphaRad        = alphaDeg*TMath::DegToRad()/2;
+  Double_t beta            = fgkOBSpaceFrameVBeta*TMath::DegToRad()/2;
+  Double_t sideRibRadius   = fgkOBSFrameSideRibDiam/2;
+  Double_t sidePhiDeg      = fgkOBSFrameSideRibPhi;
+  Double_t sidePhiRad      = sidePhiDeg*TMath::DegToRad();
+  Double_t baseRibRadius   = fgkOBSFrameBaseRibDiam/2;
+  Double_t basePhiDeg      = fgkOBSFrameBaseRibPhi;
+  Double_t basePhiRad      = basePhiDeg*TMath::DegToRad();
 
-  Double_t zlen;
+  Double_t xlen, zlen;
   Double_t xpos, ypos, zpos;
-  Double_t seglen;
-  char volname[30];
+  Double_t unitlen;
 
 
-  zlen = fNModules*fgkOBModuleZLength + (fNModules-1)*fgkOBModuleGap;
+  zlen = fgkOBSpaceFrameZLen[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
+  unitlen = fgkOBSpaceFrameUnitLen;
 
-  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSHalfStavePattern(), fLayerNumber);
-  if (gGeoManager->GetVolume(volname)) { // Should always be so
-    sframeHeight -= ((TGeoBBox*)gGeoManager->GetVolume(volname)->GetShape())->GetDY()*2;
-    zlen = ((TGeoBBox*)gGeoManager->GetVolume(volname)->GetShape())->GetDZ()*2;
-  }
-  seglen = zlen/fNModules;
+  xlen = halfFrameWidth + sideRibRadius;
 
-
-  // First create all needed shapes and volumes
-
-  TGeoBBox *spaceFrame = new TGeoBBox(sframeWidth/2,sframeHeight/2,zlen/2);
-  TGeoBBox *segment    = new TGeoBBox(sframeWidth/2,sframeHeight/2,seglen/2);
+  // The space frame container and a single unit
+  // We need two units because the base ribs are alternately oriented
+  // The end units are slightly different
+  TGeoBBox *spaceFrame = new TGeoBBox(xlen, sframeHeight/2, zlen/2);
+  TGeoBBox *frameUnit  = new TGeoBBox(xlen, sframeHeight/2, unitlen/2);
+  TGeoBBox *endUnit    = new TGeoBBox(xlen, sframeHeight/2, unitlen/2);
 
   TGeoVolume *spaceFrameVol = new TGeoVolume("CarbonFrameVolume",
 					     spaceFrame, medAir);
   spaceFrameVol->SetVisibility(kFALSE);
 
-  TGeoVolume *segmentVol    = new TGeoVolume("segmentVol", segment, medAir);
+  TGeoVolume *unitVol[2];
+  unitVol[0] = new TGeoVolume("SpaceFrameUnit0", frameUnit, medAir);
+  unitVol[1] = new TGeoVolume("SpaceFrameUnit1", frameUnit, medAir);
 
-  //SpaceFrame
+  TGeoVolume *endVol  = new TGeoVolume("SpaceFrameEndUnit", endUnit, medAir);
 
-  //--- the top V of the Carbon Fiber Stave (segment)
-  TGeoArb8 *cfStavTop1 = CreateStaveSide("CFstavTopCornerVol1shape", seglen/2., halfTheta, -1, staveLa, staveHa, stavel);
-  TGeoVolume *cfStavTopVol1 = new TGeoVolume("CFstavTopCornerVol1",
-					     cfStavTop1, medCarbon);
-  cfStavTopVol1->SetLineColor(35);
+  // The actual volumes
 
-  TGeoArb8 *cfStavTop2 = CreateStaveSide("CFstavTopCornerVol2shape", seglen/2., halfTheta,  1, staveLa, staveHa, stavel);
-  TGeoVolume *cfStavTopVol2 = new TGeoVolume("CFstavTopCornerVol2",
-					     cfStavTop2, medCarbon );
-  cfStavTopVol2->SetLineColor(35);
+  //--- The top V of the Carbon Fiber Stave (segment)
+  TGeoXtru *cfStavTop = CreateStaveSide("CFstavTopCornerVolshape",
+			unitlen/2., alphaRad, beta, staveLa, staveHa, kTRUE);
 
-  TGeoTranslation *trTop1 = new TGeoTranslation(0, sframeHeight/2, 0);
+  TGeoVolume *cfStavTopVol = new TGeoVolume("CFstavTopCornerVol",
+					    cfStavTop, medCarbon);
+  cfStavTopVol->SetLineColor(35);
+
+  unitVol[0]->AddNode(cfStavTopVol, 1,
+		      new TGeoTranslation(0, triangleHeight/2, 0));
+
+  unitVol[1]->AddNode(cfStavTopVol, 1,
+		      new TGeoTranslation(0, triangleHeight/2, 0));
   
-  //--- the 2 side V
-  TGeoArb8 *cfStavSide1 = CreateStaveSide("CFstavSideCornerVol1shape", seglen/2., beta, -1, staveLb, staveHb, stavel);
-  TGeoVolume *cfStavSideVol1 = new TGeoVolume("CFstavSideCornerVol1",
-					      cfStavSide1, medCarbon);
-  cfStavSideVol1->SetLineColor(35);
+  endVol->AddNode(cfStavTopVol, 1,
+		      new TGeoTranslation(0, triangleHeight/2, 0));
+  
+  //--- The two side V's
+  TGeoXtru *cfStavSide = CreateStaveSide("CFstavSideCornerVolshape",
+			 unitlen/2., alphaRad, beta, staveLb, staveHb, kFALSE);
 
-  TGeoArb8 *cfStavSide2 = CreateStaveSide("CFstavSideCornerVol2shape", seglen/2., beta,  1, staveLb, staveHb, stavel);
-  TGeoVolume *cfStavSideVol2 = new TGeoVolume("CFstavSideCornerVol2",
-					      cfStavSide2, medCarbon );
-  cfStavSideVol2->SetLineColor(35);
+  TGeoVolume *cfStavSideVol = new TGeoVolume("CFstavSideCornerVol",
+					     cfStavSide, medCarbon);
+  cfStavSideVol->SetLineColor(35);
 
-  xpos = -sframeWidth/2;
-  ypos = -sframeHeight/2 + staveBeamRadius + staveHb*TMath::Sin(beta);
-  TGeoCombiTrans *ctSideR = new TGeoCombiTrans( xpos, ypos, 0,
-				       new TGeoRotation("", 180-2*beta*TMath::RadToDeg(), 0, 0));
-  TGeoCombiTrans *ctSideL = new TGeoCombiTrans(-xpos, ypos, 0,
-				       new TGeoRotation("",-180+2*beta*TMath::RadToDeg(), 0, 0));
+  unitVol[0]->AddNode(cfStavSideVol, 1,
+		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
+  unitVol[0]->AddNode(cfStavSideVol, 2,
+		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
+					 new TGeoRotation("",90,180,-90)));
 
-  segmentVol->AddNode(cfStavTopVol1,1,trTop1);
-  segmentVol->AddNode(cfStavTopVol2,1,trTop1);
-  segmentVol->AddNode(cfStavSideVol1,1,ctSideR);
-  segmentVol->AddNode(cfStavSideVol1,2,ctSideL);
-  segmentVol->AddNode(cfStavSideVol2,1,ctSideR);
-  segmentVol->AddNode(cfStavSideVol2,2,ctSideL);
+  unitVol[1]->AddNode(cfStavSideVol, 1,
+		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
+  unitVol[1]->AddNode(cfStavSideVol, 2,
+		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
+					 new TGeoRotation("",90,180,-90)));
+
+  endVol->AddNode(cfStavSideVol, 1,
+		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
+  endVol->AddNode(cfStavSideVol, 2,
+		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
+					 new TGeoRotation("",90,180,-90)));
 
 
   //--- The beams
-  // Beams on the sides
-  Double_t beamPhiPrime = TMath::ASin(1./TMath::Sqrt( (1+TMath::Sin(2*beta)*TMath::Sin(2*beta)/(TanD(fgkOBSFrameBeamSidePhi)*TanD(fgkOBSFrameBeamSidePhi))) ));
-  Double_t beamLength = TMath::Sqrt( sframeHeight*sframeHeight/( TMath::Sin(beamPhiPrime)*TMath::Sin(beamPhiPrime))+ sframeWidth*sframeWidth/4.)-staveLa/2-staveLb/2;
-  TGeoTubeSeg *sideBeam = new TGeoTubeSeg(0, staveBeamRadius,
-					  beamLength/2, 0, 180);
-  TGeoVolume *sideBeamVol = new TGeoVolume("CFstavSideBeamVol",
-					   sideBeam, medCarbon);
-  sideBeamVol->SetLineColor(35);
+  // Ribs on the sides
+  Double_t ribZProj = triangleHeight/TMath::Tan(sidePhiRad);
+  Double_t sideRibLen = TMath::Sqrt( ribZProj*ribZProj             +
+				     triangleHeight*triangleHeight +
+				     halfFrameWidth*halfFrameWidth );
 
-  TGeoRotation *beamRot1 = new TGeoRotation("", /*90-2*beta*/halfTheta*TMath::RadToDeg(),
-				    -beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation *beamRot2 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),
-				     beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation *beamRot3 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
-				     beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation *beamRot4 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
-				    -beamPhiPrime*TMath::RadToDeg(), -90);
+  TGeoTubeSeg *sideRib = new TGeoTubeSeg(0, sideRibRadius,
+					 sideRibLen/2, 0, 180);
+  TGeoVolume *sideRibVol = new TGeoVolume("CFstavSideBeamVol",
+					  sideRib, medCarbon);
+  sideRibVol->SetLineColor(35);
 
-  TGeoCombiTrans *beamTransf[8];
-  xpos = 0.49*triangleHeight*TMath::Tan(halfTheta);//was 0.5, fix small overlap
-  ypos = staveBeamRadius/2;
-  zpos = seglen/8;
-  beamTransf[0] = new TGeoCombiTrans( xpos, ypos,-3*zpos, beamRot1);
+  TGeoCombiTrans *sideTransf[4];
+  xpos = halfFrameWidth/2 + 0.8*staveHa*TMath::Cos(alphaRad/2);
+  ypos = -sideRibRadius/2;
+  zpos = unitlen/4;
 
-  beamTransf[1] = new TGeoCombiTrans( xpos, ypos,-3*zpos, beamRot1);
-  AddTranslationToCombiTrans(beamTransf[1], 0, 0, seglen/2);
+  sideTransf[0] = new TGeoCombiTrans( xpos, ypos,-zpos,
+				      new TGeoRotation("", 90-alphaDeg,
+						       -sidePhiDeg, -90));
+  sideTransf[1] = new TGeoCombiTrans( xpos, ypos, zpos,
+				      new TGeoRotation("", 90-alphaDeg,
+						        sidePhiDeg, -90));
+  sideTransf[2] = new TGeoCombiTrans(-xpos, ypos,-zpos,
+				      new TGeoRotation("", 90+alphaDeg,
+						        sidePhiDeg, -90));
+  sideTransf[3] = new TGeoCombiTrans(-xpos, ypos, zpos,
+				      new TGeoRotation("", 90+alphaDeg,
+						       -sidePhiDeg, -90));
 
-  beamTransf[2] = new TGeoCombiTrans( xpos, ypos,  -zpos, beamRot2);
+  unitVol[0]->AddNode(sideRibVol, 1, sideTransf[0]);
+  unitVol[0]->AddNode(sideRibVol, 2, sideTransf[1]);
+  unitVol[0]->AddNode(sideRibVol, 3, sideTransf[2]);
+  unitVol[0]->AddNode(sideRibVol, 4, sideTransf[3]);
 
-  beamTransf[3] = new TGeoCombiTrans( xpos, ypos,  -zpos, beamRot2);
-  AddTranslationToCombiTrans(beamTransf[3], 0, 0, seglen/2);
+  unitVol[1]->AddNode(sideRibVol, 1, sideTransf[0]);
+  unitVol[1]->AddNode(sideRibVol, 2, sideTransf[1]);
+  unitVol[1]->AddNode(sideRibVol, 3, sideTransf[2]);
+  unitVol[1]->AddNode(sideRibVol, 4, sideTransf[3]);
 
-  beamTransf[4] = new TGeoCombiTrans(-xpos, ypos,-3*zpos, beamRot3);
-
-  beamTransf[5] = new TGeoCombiTrans(-xpos, ypos,-3*zpos, beamRot3);
-  AddTranslationToCombiTrans(beamTransf[5], 0, 0, seglen/2);
-
-  beamTransf[6] = new TGeoCombiTrans(-xpos, ypos,  -zpos, beamRot4);
-  beamTransf[7] = new TGeoCombiTrans(-xpos, ypos, 3*zpos, beamRot4);
-
-  //--- Beams of the bottom
-  TGeoTubeSeg *bottomBeam1 = new TGeoTubeSeg(0, staveBeamRadius,
-					     sframeWidth/2.-staveLb/3, 0, 180);
-  TGeoVolume *bottomBeam1Vol = new TGeoVolume("CFstavBottomBeam1Vol",
-					      bottomBeam1, medCarbon);
-  bottomBeam1Vol->SetLineColor(35);
-
-  TGeoTubeSeg *bottomBeam2 = new TGeoTubeSeg(0, staveBeamRadius,
-					     sframeWidth/2.-staveLb/3, 0, 90);
-  TGeoVolume *bottomBeam2Vol = new TGeoVolume("CFstavBottomBeam2Vol",
-					      bottomBeam2, medCarbon);
-  bottomBeam2Vol->SetLineColor(35);
-
-  TGeoTubeSeg *bottomBeam3 = new TGeoTubeSeg(0, staveBeamRadius,
-			     0.5*sframeWidth/SinD(bottomBeamAngle) - staveLb/3,
-					     0, 180);
-  TGeoVolume *bottomBeam3Vol = new TGeoVolume("CFstavBottomBeam3Vol",
-					      bottomBeam3, medCarbon);
-  bottomBeam3Vol->SetLineColor(35);
-
-  TGeoRotation *bottomBeamRot1 = new TGeoRotation("", 90, 90,  90);
-  TGeoRotation *bottomBeamRot2 = new TGeoRotation("",-90, 90, -90);
-
-  TGeoCombiTrans *bottomBeamTransf1 = new TGeoCombiTrans("",0,
-					 -(sframeHeight/2-staveBeamRadius), 0,
-							 bottomBeamRot1);
-  TGeoCombiTrans *bottomBeamTransf2 = new TGeoCombiTrans(0,
-					 -(sframeHeight/2-staveBeamRadius),
-							 -seglen/2,
-							 bottomBeamRot1);
-  TGeoCombiTrans *bottomBeamTransf3 = new TGeoCombiTrans(0,
-					 -(sframeHeight/2-staveBeamRadius),
-							 seglen/2,
-							 bottomBeamRot2);
-  // be careful for beams #3: when "reading" from -z to +z and 
-  // from the bottom of the stave, it should draw a Lambda, and not a V
-  TGeoRotation *bottomBeamRot4 = new TGeoRotation("",-90, bottomBeamAngle,-90);
-  TGeoRotation *bottomBeamRot5 = new TGeoRotation("",-90,-bottomBeamAngle,-90);
-
-  TGeoCombiTrans *bottomBeamTransf4 = new TGeoCombiTrans(0,
-					 -(sframeHeight/2-staveBeamRadius),
-							 -seglen/4,
-							 bottomBeamRot4);
-  TGeoCombiTrans *bottomBeamTransf5 = new TGeoCombiTrans(0,
-					 -(sframeHeight/2-staveBeamRadius),
-							 seglen/4,
-							 bottomBeamRot5);
+  endVol->AddNode(sideRibVol, 1, sideTransf[0]);
+  endVol->AddNode(sideRibVol, 2, sideTransf[1]);
+  endVol->AddNode(sideRibVol, 3, sideTransf[2]);
+  endVol->AddNode(sideRibVol, 4, sideTransf[3]);
 
 
-  segmentVol->AddNode(sideBeamVol,1, beamTransf[0]);
-  segmentVol->AddNode(sideBeamVol,2, beamTransf[1]);
-  segmentVol->AddNode(sideBeamVol,3, beamTransf[2]);
-  segmentVol->AddNode(sideBeamVol,4, beamTransf[3]);
-  segmentVol->AddNode(sideBeamVol,5, beamTransf[4]);
-  segmentVol->AddNode(sideBeamVol,6, beamTransf[5]);
-  segmentVol->AddNode(sideBeamVol,7, beamTransf[6]);
-  segmentVol->AddNode(sideBeamVol,8, beamTransf[7]);
-  segmentVol->AddNode(bottomBeam1Vol,1,bottomBeamTransf1);
-  segmentVol->AddNode(bottomBeam2Vol,1,bottomBeamTransf2);
-  segmentVol->AddNode(bottomBeam2Vol,2,bottomBeamTransf3);
-  segmentVol->AddNode(bottomBeam3Vol,1,bottomBeamTransf4);
-  segmentVol->AddNode(bottomBeam3Vol,2,bottomBeamTransf5);
+  // Ribs on the bottom
+  // Rib1 are the inclined ones, Rib2 the straight ones
+  Double_t baseRibLen = 0.98*2*halfFrameWidth/TMath::Sin(basePhiRad);
+
+  TGeoTubeSeg *baseRib1 = new TGeoTubeSeg(0, baseRibRadius,
+					  baseRibLen/2, 0, 180);
+  TGeoVolume *baseRib1Vol = new TGeoVolume("CFstavBaseBeam1Vol",
+					   baseRib1, medCarbon);
+  baseRib1Vol->SetLineColor(35);
+
+  TGeoTubeSeg *baseRib2 = new TGeoTubeSeg(0, baseRibRadius,
+					  halfFrameWidth, 0, 90);
+  TGeoVolume *baseRib2Vol = new TGeoVolume("CFstavBaseBeam2Vol",
+					   baseRib2, medCarbon);
+  baseRib2Vol->SetLineColor(35);
+
+  TGeoTubeSeg *baseEndRib = new TGeoTubeSeg(0, baseRibRadius,
+					    halfFrameWidth, 0, 180);
+  TGeoVolume *baseEndRibVol = new TGeoVolume("CFstavBaseEndBeamVol",
+					     baseEndRib, medCarbon);
+  baseEndRibVol->SetLineColor(35);
+
+  TGeoCombiTrans *baseTransf[5];
+  ypos = sframeHeight/2 - baseRibRadius;
+  zpos = unitlen/2;
+
+  baseTransf[0] = new TGeoCombiTrans("", 0, -ypos, -zpos,
+				     new TGeoRotation("", 90, 90,  90));
+  baseTransf[1] = new TGeoCombiTrans("", 0, -ypos,  zpos,
+				     new TGeoRotation("",-90, 90, -90));
+  baseTransf[2] = new TGeoCombiTrans(0, -ypos, 0,
+				     new TGeoRotation("",-90, basePhiDeg,-90));
+  baseTransf[3] = new TGeoCombiTrans(0, -ypos, 0,
+				     new TGeoRotation("",-90,-basePhiDeg,-90));
+  zpos -= baseEndRib->GetRmax();
+  baseTransf[4] = new TGeoCombiTrans("", 0, -ypos, -zpos,
+				     new TGeoRotation("", 90, 90,  90));
+
+  unitVol[0]->AddNode(baseRib2Vol, 1, baseTransf[0]);
+  unitVol[0]->AddNode(baseRib2Vol, 2, baseTransf[1]);
+  unitVol[0]->AddNode(baseRib1Vol, 1, baseTransf[2]);
+
+  unitVol[1]->AddNode(baseRib2Vol, 1, baseTransf[0]);
+  unitVol[1]->AddNode(baseRib2Vol, 2, baseTransf[1]);
+  unitVol[1]->AddNode(baseRib1Vol, 1, baseTransf[3]);
+
+  endVol->AddNode(baseEndRibVol, 1, baseTransf[4]);
+  endVol->AddNode(baseRib2Vol,   1, baseTransf[1]);
+  endVol->AddNode(baseRib1Vol,   1, baseTransf[2]);
 
 
-  // Then build up the space frame
-  for(Int_t i=0; i<fNModules; i++){
-    zpos = -spaceFrame->GetDZ() + (1 + 2*i)*segment->GetDZ();
-    spaceFrameVol->AddNode(segmentVol, i, new TGeoTranslation(0, 0, zpos));
+  // Finally build up the space frame
+  Int_t nUnits = fgkOBSpaceFrameNUnits[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
+
+  zpos = -spaceFrame->GetDZ() + endUnit->GetDZ();
+  spaceFrameVol->AddNode(endVol, 1, new TGeoTranslation(0, 0, zpos));
+
+  for(Int_t i=1; i<nUnits-1; i++){
+    zpos = -spaceFrame->GetDZ() + (1 + 2*i)*frameUnit->GetDZ();
+    Int_t j = i/2;
+    Int_t k = i - j*2;  // alternatively 0 or 1
+    spaceFrameVol->AddNode(unitVol[k], j+1, new TGeoTranslation(0, 0, zpos));
   }
+
+  zpos = -spaceFrame->GetDZ() + (2*nUnits - 1)*endUnit->GetDZ();
+  spaceFrameVol->AddNode(endVol, 2, new TGeoCombiTrans(0, 0, zpos,
+					   new TGeoRotation("", 90,180,-90)));
 
 
   // Done, return the space frame structure
@@ -3377,38 +3401,63 @@ void AliITSUv1Layer::SetStaveWidth(const Double_t w){
 }
 
 //________________________________________________________________________
-TGeoArb8 *AliITSUv1Layer::CreateStaveSide(const char *name,
-                         Double_t dz, Double_t angle, Double_t xSign,
-                         Double_t L, Double_t H, Double_t l) {
+TGeoXtru *AliITSUv1Layer::CreateStaveSide(const char *name,
+                         Double_t dz, Double_t alpha, Double_t beta,
+                         Double_t L, Double_t H, Bool_t top) {
 //
 // Creates the V-shaped sides of the OB space frame
 // (from a similar method with same name and function
 // in AliITSv11GeometrySDD class by L.Gaudichet)
 //
+// Updated:      15 Dec 2014  Mario Sitta  Rewritten using Xtru
+// Updated:      09 Jan 2015  Mario Sitta  Rewritten again using different
+//                                         aperture angles (info by C.Gargiulo)
+//
 
-    // Create one half of the V shape corner of CF stave
+    // Create the V shape corner of CF stave
+
+    const Int_t nv = 6;
+    Double_t xv[nv], yv[nv];
   
-    TGeoArb8 *cfStavSide = new TGeoArb8(dz);
+    TGeoXtru *cfStavSide = new TGeoXtru(2);
     cfStavSide->SetName(name);
 
+    Double_t theta = TMath::PiOver2() - beta;
+    Double_t gamma = beta - alpha;
     // Points must be in clockwise order
-    cfStavSide->SetVertex(0, 0,  0);
-    cfStavSide->SetVertex(2, xSign*(L*TMath::Sin(angle)-l*TMath::Cos(angle)),
-			  -L*TMath::Cos(angle)-l*TMath::Sin(angle));
-    cfStavSide->SetVertex(4, 0,  0);
-    cfStavSide->SetVertex(6, xSign*(L*TMath::Sin(angle)-l*TMath::Cos(angle)),
-			  -L*TMath::Cos(angle)-l*TMath::Sin(angle));
-    if (xSign < 0) {
-     cfStavSide->SetVertex(1, 0, -H);
-     cfStavSide->SetVertex(3, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
-     cfStavSide->SetVertex(5, 0, -H);
-     cfStavSide->SetVertex(7, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
-    } else {
-     cfStavSide->SetVertex(1, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
-     cfStavSide->SetVertex(3, 0, -H);
-     cfStavSide->SetVertex(5, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
-     cfStavSide->SetVertex(7, 0, -H);
+    if (top) { // TOP - vertices not in order
+      xv[3] = 0;
+      yv[3] = 0;
+      xv[2] =  L*TMath::Sin(alpha);
+      yv[2] = -L*TMath::Cos(alpha);
+      xv[1] = xv[2] - H*TMath::Cos(alpha);
+      yv[1] = yv[2] - H*TMath::Sin(alpha);
+      xv[0] = 0;
+      yv[0] = yv[1] + TMath::Tan(theta)*xv[1];
+      xv[4] = -xv[2];  // Reflect
+      yv[4] =  yv[2];
+      xv[5] = -xv[1];
+      yv[5] =  yv[1];
+    } else { // SIDE
+      Double_t m = -TMath::Tan(alpha), n = TMath::Tan(gamma);
+      xv[0] = 0;
+      yv[0] = 0;
+      xv[1] = -L*TMath::Cos(2*alpha);
+      yv[1] =  L*TMath::Sin(2*alpha);
+      xv[2] = xv[1] - H*TMath::Sin(2*alpha);
+      yv[2] = yv[1] - H*TMath::Cos(2*alpha);
+      xv[4] = -L;
+      yv[4] =  H;
+      xv[5] = xv[4];
+      yv[5] = 0;
+      xv[3] = (yv[4] - n*xv[4])/(m - n);
+      yv[3] = m*xv[3];
     }
+
+    cfStavSide->DefinePolygon(nv, xv, yv);
+    cfStavSide->DefineSection(0,-dz);
+    cfStavSide->DefineSection(1, dz);
+
     return cfStavSide;
 }
 

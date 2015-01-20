@@ -1174,7 +1174,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   Float_t y   = -100.;
   if((momentum != TMath::Abs(p[2]))&&(momentum != 0))
     eta = 0.5*TMath::Log((momentum + p[2])/(momentum - p[2]));
-  if((energy != TMath::Abs(p[2]))&&(momentum != 0))
+  if((energy != TMath::Abs(p[2]))&&(energy != 0))
     y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
     
   if (extCov[14] < 0) 

@@ -141,8 +141,8 @@ void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   // see header file for class documentation
   TIter next(&fPlugins);
   TObject* obj=NULL;
-  TDirectory* dirBackup=gDirectory;
-  gDirectory=NULL;
+  Bool_t dirStatusBackup = gDirectory->AddDirectoryStatus();
+  gDirectory->AddDirectory(kFALSE);
   while ((obj=next())) {
     AliHLTQADataMakerBase* plugin=dynamic_cast<AliHLTQADataMakerBase*>(obj);
     if (!plugin) continue;
@@ -172,7 +172,7 @@ void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
       }
     }
   }
-  gDirectory=dirBackup;
+  gDirectory->AddDirectory(dirStatusBackup);
 }
 
 void AliHLTQADataMakerRec::MakeRaws(AliRawReader * rawReader)

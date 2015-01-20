@@ -60,6 +60,18 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
+# ROOT configuration mandatory
+if(ROOTSYS)
+    find_package(ROOT REQUIRED)
+
+    # ROOT must be build with XML2 support
+    if(NOT ROOT_HASXML)
+        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+    endif(NOT ROOT_HASXML)
+else()
+    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
+endif(ROOTSYS)
+
 # ROOT dictionaries and maps
 include(CMakeALICE)
 
@@ -130,18 +142,6 @@ if(MDCRPM)
     message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
 endif(MDCRPM)
 
-# ROOT configuration mandatory
-if(ROOTSYS)
-    find_package(ROOT REQUIRED)
-
-    # ROOT must be build with XML2 support
-    if(NOT ROOT_HASXML)
-        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
-    endif(NOT ROOT_HASXML)
-else()
-    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
-endif(ROOTSYS)
-
 # If no Fortran, i.e on Windows
 # We need to specify ROOT fortran
 # (f95 comes before gfortran in default module)
@@ -203,6 +203,10 @@ find_package(FASTJET)
 # ZEROMQ
 find_package(ZeroMQ)
 
+# Generating the AliRoot-config.cmake file
+configure_file(${PROJECT_SOURCE_DIR}/cmake/AliRoot-config.cmake.in ${CMAKE_BINARY_DIR}/version/AliRoot-config.cmake @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/version/AliRoot-config.cmake DESTINATION etc)
+
 # General flags -> Should be moved into a configuration file
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
@@ -223,7 +227,6 @@ add_subdirectory(macros)
 add_subdirectory(ACORDE)
 add_subdirectory(AD)
 add_subdirectory(BCM)
-add_subdirectory(CORRFW)
 add_subdirectory(EMCAL)
 add_subdirectory(EPOS)
 add_subdirectory(EVE)
@@ -234,11 +237,9 @@ add_subdirectory(FMD)
 add_subdirectory(HLT)
 add_subdirectory(HMPID)
 add_subdirectory(ITS)
-add_subdirectory(JETAN)
 add_subdirectory(MFT)
 add_subdirectory(MONITOR)
 add_subdirectory(MUON)
-add_subdirectory(OADB)
 add_subdirectory(PHOS)
 add_subdirectory(PMD)
 add_subdirectory(PYTHIA8)
@@ -276,19 +277,6 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(TAmpt)
 endif(CMAKE_Fortran_COMPILER)
 
-# PWG libraries
-add_subdirectory(PWG)
-add_subdirectory(PWGCF)
-# Depends on PWGCF - To fix dependencies
-add_subdirectory(PWGGA)
-# Depends on CF  - To fix the dependencies
-add_subdirectory(PWGDQ)
-add_subdirectory(PWGHF)
-# Depends on CF
-add_subdirectory(PWGJE)
-add_subdirectory(PWGLF)
-add_subdirectory(PWGPP)
-add_subdirectory(PWGUD)
 add_subdirectory(data)
 add_subdirectory(GRP)
 add_subdirectory(OCDB)

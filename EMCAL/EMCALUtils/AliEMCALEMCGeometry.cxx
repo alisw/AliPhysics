@@ -94,9 +94,6 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
     fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fPhiSuperModule(0),fNPhiSuperModule(0),
     fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
-    // Trigger staff
-    fNTRUEta(0), fNTRUPhi(0), fNModulesInTRUEta(0), fNModulesInTRUPhi(0), fNEtaSubOfTRU(0), fNTotalTRU(0),
-    // 
     fTrd1Angle(0.),f2Trd1Dx2(0.),fPhiGapForSM(0.),fKey110DEG(0),fnSupModInDCAL(0),fPhiBoundariesOfSM(0),
     fPhiCentersOfSM(0),fPhiCentersOfSMSec(0),fEtaMaxOfTRD1(0),fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
     fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
@@ -126,9 +123,6 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
     fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fPhiSuperModule(0),fNPhiSuperModule(0),
     fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
-    // Trigger staff
-    fNTRUEta(0), fNTRUPhi(0), fNModulesInTRUEta(0), fNModulesInTRUPhi(0), fNEtaSubOfTRU(0), fNTotalTRU(0),
-    // 
     fTrd1Angle(0.),f2Trd1Dx2(0.),fPhiGapForSM(0.),fKey110DEG(0),fnSupModInDCAL(0),fPhiBoundariesOfSM(0),
     fPhiCentersOfSM(0),fPhiCentersOfSMSec(0),fEtaMaxOfTRD1(0),fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
     fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
@@ -192,14 +186,6 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fNCells(geom.fNCells),
     fNCellsInSupMod(geom.fNCellsInSupMod),
     fNCellsInModule(geom.fNCellsInModule),
-    // Trigger staff
-    fNTRUEta(geom.fNTRUEta),
-    fNTRUPhi(geom.fNTRUPhi),
-    fNModulesInTRUEta(geom.fNModulesInTRUEta),
-    fNModulesInTRUPhi(geom.fNModulesInTRUPhi),
-    fNEtaSubOfTRU(geom.fNEtaSubOfTRU),
-    fNTotalTRU(geom.fNTotalTRU),
-    //
     fTrd1Angle(geom.fTrd1Angle),
     f2Trd1Dx2(geom.f2Trd1Dx2),
     fPhiGapForSM(geom.fPhiGapForSM),
@@ -552,31 +538,6 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   
   //called after setting of scintillator and lead layer parameters
   DefineSamplingFraction(mcname,mctitle);
-
-  
-  // TRU parameters - Apr 29,08 by PAI. 
-  // These parameters values was updated at Nov 05, 2007
-  // As is on Olivier  BOURRION (LPSC) ppt preasentation 
-  // at ALICE trigger meeting at 13th-14th March
-  fNTRUEta = 1;           // was 3
-  fNTRUPhi = 3;           // was 1
-  fNModulesInTRUEta = 24; // was 8
-  fNModulesInTRUPhi = 4;  // was 12
-  // Jet trigger 
-  // 3*6*10 + 2*6*2 = 204 -> matrix (nphi(17), neta(12))
-  fNEtaSubOfTRU     = 6;  
-
-  fNTotalTRU = 0;
-  for(Int_t i = 0; i < GetNumberOfSuperModules(); i++){
-    if(      GetSMType(i) == kEMCAL_Standard)  fNTotalTRU += 3;
-    else if( GetSMType(i) == kEMCAL_Half)      fNTotalTRU += 1;
-    else if( GetSMType(i) == kEMCAL_3rd)       fNTotalTRU += 1;
-    else if( GetSMType(i) == kDCAL_Standard)   fNTotalTRU += 3;
-    else if( GetSMType(i) == kDCAL_Ext)        fNTotalTRU += 1;
-    else {
-      AliError(Form("Uknown SuperModule Type !!"));
-    }
-  }
 
   fgInit = kTRUE; 
 }

@@ -25,6 +25,7 @@
 # @DHDRS  Dictionary headers
 # @DINCDIR Include folders that need to be passed to cint/cling
 macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
+
     # Creating the INCLUDE path for cint/cling
     foreach( dir ${DINCDIRS})
         set(INCLUDE_PATH -I${dir} ${INCLUDE_PATH})
@@ -43,6 +44,7 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
     get_directory_property(tmpdirdefs DEFINITIONS)
     string(REPLACE " " ";" tmpdirdefs "${tmpdirdefs}")
 
+    if (ROOT_VERSION_MAJOR LESS 6)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
                        ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p 
@@ -51,6 +53,21 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
                        DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                       )
+    else (ROOT_VERSION_MAJOR LESS 6)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
+                       COMMAND
+                         LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
+                       ARGS
+                         -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
+                         -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap -rml lib${DNAME}
+                         ${tmpdirdefs} ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
+                       DEPENDS
+                         ${DHDRS} ${LDNAME} ${ROOT_CINT}
+                       WORKING_DIRECTORY
+                         ${CMAKE_CURRENT_BINARY_DIR}
+                      )
+    endif (ROOT_VERSION_MAJOR LESS 6)
+
 endmacro(generate_dictionary)
 
 # Generate the ROOTmap files
@@ -62,6 +79,8 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
 #    message(STATUS "LIBDEPS = ${LIBDEPS}")
 #    message(STATUS "LINKDEF = ${LINKDEF}")
 #    message(STATUS "ROOT_LIBMAP=${ROOT_LIBMAP}")
+
+if (ROOT_VERSION_MAJOR LESS 6)
 
     set(LOCAL_DEPS)
     foreach(file ${LIBDEPS})
@@ -82,7 +101,9 @@ macro(generate_rootmap LIBNAME LIBDEPS LINKDEF)
                       )
     add_custom_target(lib${LIBNAME}.rootmap ALL DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap DESTINATION lib)
-    
+
+endif (ROOT_VERSION_MAJOR LESS 6)
+
 endmacro(generate_rootmap)
 
 #########################

@@ -358,7 +358,10 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
       xx=trk[1];
       zz=trk[2];
 
-      q+=(driftTime*rsdd->GetADCvsDriftTime(fModule)); // correction for zero supp.
+      Double_t dEdxslope;
+      if(digits) dEdxslope=rsdd->GetADCvsDriftTime(fModule,kTRUE);
+      else dEdxslope=rsdd->GetADCvsDriftTime(fModule);
+      q+=(driftTime*dEdxslope); // correction for zero supp.
       q/=rsdd->GetADCtokeV(fModule);
       if(cal-> IsAMAt20MHz()) q*=2.; // account for 1/2 sampling freq.
       if(q<repa->GetMinClusterChargeSDD()) continue; // remove noise clusters

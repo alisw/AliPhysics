@@ -204,6 +204,14 @@ GAINda http://alisoft.cern.ch/viewvc/trunk/PMD/PMDGAINda.cxx?root=AliRoot&view=l
 =======================
 How to build PMD DA
 =======================
+Building of the DAs is handled in Aliroot. You can find below some 
+hints on how to build DAs for revisions before 12/2014. (Added on 15/01/15 sjena)
+The Aliroot DA build system has been updated, please refer to the 
+official documentation: http://git.cern.ch/pubweb/AliRoot.git/blob/HEAD:/INSTALLDA.txt
+
+Previous way of building DAs - before 12/2014 , for reference. 
+
+
 Building of the DAs is handled in Aliroot. You can find below some hints on 
 how to build DAs, but this is no official documentation (such documentation 
 has been requested). In case of problems please report directly to the 

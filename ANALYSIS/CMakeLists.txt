@@ -16,10 +16,7 @@
 add_subdirectory(ANALYSIS)
 add_subdirectory(ANALYSISalice)
 add_subdirectory(ANALYSIScalib)
-add_subdirectory(Tender)
-add_subdirectory(TenderSupplies)
 add_subdirectory(ESDfilter)
-add_subdirectory(EventMixing)
 
 # Installing the macros
 install(DIRECTORY macros DESTINATION ANALYSIS)

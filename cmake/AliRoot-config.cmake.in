@@ -1,0 +1,39 @@
+############################################################################
+# AliRoot cmake configuration file                                         #
+############################################################################
+
+############################################################################
+# AliRoot version and configuration                                        #
+############################################################################
+# Version
+set(AliRoot_VERSION @ALIROOT_VERSION@)
+set(AliRoot_BRANCH_TYPE @BRANCH_TYPE@)
+set(AliRoot_VERSION_MAJOR @ALIROOT_VERSION_MAJOR@)
+set(AliRoot_VERSION_MINOR @ALIROOT_VERSION_MINOR@)
+set(AliRoot_VERSION_PATCH @ALIROOT_VERSION_PATCH@)
+
+# Git revision
+set(AliRoot_REVISION @GIT_SHORT_SHA1@)
+
+# Information about architecture and compiler
+set(AliRoot_ARCH @CMAKE_SYSTEM@)
+set(AliRoot_COMPILER @CMAKE_CXX_COMPILER_ID@)
+set(AliRoot_COMPILER_VERSION @CMAKE_CXX_COMPILER_VERSION@)
+
+############################################################################
+# FastJet version                                                          #
+############################################################################
+set(FASTJET_VERSION @FASTJET_VERSION@)
+set(FASTJET_VERSION_MAJOR @FASTJET_VERSION_MAJOR@)
+set(FASTJET_VERSION_MINOR @FASTJET_VERSION_MINOR@)
+set(FASTJET_VERSION_PATCH @FASTJET_VERSION_PATCH@)
+
+############################################################################
+# ROOT version                                                             #
+############################################################################
+set(ROOT_VERSION @ROOT_VERSION@) # as reported by root-config
+set(ROOT_VERSION_MAJOR @ROOT_VERSION_MAJOR@)
+set(ROOT_VERSIOM_MINOR @ROOT_VERSION_MINOR@)
+set(ROOT_VERSION_PATCH @ROOT_VERSION_PATCH@)
+
+

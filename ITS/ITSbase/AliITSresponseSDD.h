@@ -43,6 +43,7 @@ class AliITSresponseSDD : public TObject {
   virtual void SetLayer4CTimeZero(Float_t tzero){
     for(Int_t iLad=1; iLad<=kNLaddersLay4; iLad++) SetHalfLadderCTimeZero(4,iLad,tzero);
   }
+  virtual void SetMCDefaults();
   virtual void SetHalfLadderATimeZero(Int_t lay, Int_t lad, Float_t tzero);
   virtual void SetHalfLadderCTimeZero(Int_t lay, Int_t lad, Float_t tzero);
   virtual void SetModuleTimeZero(Int_t modIndex, Float_t tzero){
@@ -88,8 +89,11 @@ class AliITSresponseSDD : public TObject {
   virtual void SetADCvsDriftTime(Int_t modIndex, Float_t slope){
     if(CheckModuleIndex(modIndex)) fADCvsDriftTime[modIndex-kNSPDmods]=slope;
   }
-  virtual Float_t GetADCvsDriftTime(Int_t modIndex) const {
-    if(CheckModuleIndex(modIndex)) return fADCvsDriftTime[modIndex-kNSPDmods];
+  virtual Float_t GetADCvsDriftTime(Int_t modIndex, Bool_t isMC=kFALSE) const {
+    if(CheckModuleIndex(modIndex)){
+      if(isMC) return fADCvsDriftTimeMC[modIndex-kNSPDmods];
+      return fADCvsDriftTime[modIndex-kNSPDmods];
+    }
     else return 0.;
   }
 
@@ -139,6 +143,7 @@ class AliITSresponseSDD : public TObject {
   Float_t  fChargevsTime;           // --> obsolete, kept for backw. comp. 
 
   Float_t  fADCvsDriftTime[kNSDDmods]; // Correction for zero suppression effect
+  Float_t  fADCvsDriftTimeMC[kNSDDmods]; // Correction for zero suppression effect (MC)
   Float_t  fADCtokeV[kNSDDmods];       // ADC to keV conversion for each module
 
  private:
@@ -146,7 +151,7 @@ class AliITSresponseSDD : public TObject {
   AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-  ClassDef(AliITSresponseSDD,21) 
+  ClassDef(AliITSresponseSDD,22) 
      
     };
 #endif

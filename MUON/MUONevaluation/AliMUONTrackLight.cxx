@@ -51,6 +51,7 @@
 #include "TString.h"
 
 #include <cstdio>
+#include <Riostream.h>
 
 ClassImp(AliMUONTrackLight) 
 
@@ -418,8 +419,44 @@ Bool_t AliMUONTrackLight::IsParentPionOrKaon(Int_t idparent){
 }
 //====================================
 Bool_t AliMUONTrackLight::IsDiquark(Int_t pdg) const{
-  /// check if the provided pdg code corresponds to a diquark 
+  /// check if the provided pdg code corresponds to a diquark
   pdg = TMath::Abs(pdg);
   if((pdg > 1000) && (pdg%100 < 10)) return kTRUE;
   else return kFALSE;
+}
+//====================================
+void AliMUONTrackLight::SetParentPDGCode(Int_t index, Int_t pdg) {
+  /// Set hadronised parents and grandparents
+  if ( index < fgkNParentsMax ) {
+    fParentPDGCode[index] = pdg;
+  } else {
+    AliErrorStream() << "Index outside the array size." << std::endl;
+  }
+}
+//====================================
+void AliMUONTrackLight::SetParentPythiaLine(Int_t index, Int_t line) {
+  /// Set line of Pythia output for hadronised parents & grandparents
+  if ( index < fgkNParentsMax ) {
+    fParentPythiaLine[index] = line;
+  } else {
+    AliErrorStream() << "Index outside the array size." << std::endl;
+  }
+}
+//====================================
+void AliMUONTrackLight::SetQuarkPDGCode(Int_t index, Int_t pdg){
+  /// Set pdg of the string [0], quarks/gluons [1,2], sometimes proton [3]
+  if ( index < 4 ) {
+    fQuarkPDGCode[index] = pdg;
+  } else {
+    AliErrorStream() << "Index outside the array size." << std::endl;
+  }
+}
+//====================================
+void AliMUONTrackLight::SetQuarkPythiaLine(Int_t index, Int_t line){
+  /// Set line of Pythia output for string [0] and quarks [1,2], sometimes proton [3]
+  if ( index < 4 ) {
+    fQuarkPythiaLine[index] = line;
+  } else {
+    AliErrorStream() << "Index outside the array size." << std::endl;
+  }
 }

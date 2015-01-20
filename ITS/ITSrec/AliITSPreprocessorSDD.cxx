@@ -285,6 +285,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	retfscf=fscanf(injFil,"%d",&polDeg);
 	if(retfscf<0){
 	  Log(Form("File %s has bad format.",inpFileName.Data()));
+	  fclose(injFil);
 	  continue;
 	}
 	while (!feof(injFil)){
@@ -389,6 +390,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	  arr->AddDriftSpeed(dspres);
 	  arr->SetInjectorStatus(1);
 	  goldenUsed=kTRUE;
+	  delete [] params;
 	}
       }
       if(!goldenUsed){

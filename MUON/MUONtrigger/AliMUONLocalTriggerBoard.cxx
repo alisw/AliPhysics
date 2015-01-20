@@ -621,7 +621,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       printf("===============================================================\n");
       for (i=30; i>=0; i--) {
          printf("%i \t",i);
-         for (istrip=31; istrip>=0; istrip--) printf("%i",rearImage[i][istrip]);
+         for (istrip=30; istrip>=0; istrip--) printf("%i",rearImage[i][istrip]);
          printf("\n");   
       }
    }

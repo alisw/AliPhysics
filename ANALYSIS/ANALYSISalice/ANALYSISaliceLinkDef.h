@@ -21,19 +21,9 @@
 
 #pragma link C++ class AliMultiEventInputHandler+;
 
-#pragma link C++ class AliTriggerAnalysis+;
-
-#pragma link C++ class AliPhysicsSelection+;
-#pragma link C++ class AliPhysicsSelectionTask+;
-#pragma link C++ class AliBackgroundSelection+;
-
 #pragma link C++ class  AliAnalysisFilter+;
 #pragma link C++ class  AliAnalysisCuts+;
 
-#pragma link C++ class AliCollisionNormalization+;
-#pragma link C++ class AliCollisionNormalizationTask+;
-#pragma link C++ class AliCentralitySelectionTask+;
-#pragma link C++ class AliEPSelectionTask+;
 #pragma link C++ class AliVZEROEPSelectionTask+;
 #pragma link C++ class AliAnalysisTaskStat+;
 #pragma link C++ class AliMultiInputEventHandler+;
@@ -48,7 +38,6 @@
 #pragma link C++ class AliEventPoolManager+;
 #pragma link C++ class AliUnfolding+;
 
-#pragma link C++ class AliAnalysisUtils+;
 #pragma link C++ class AliAnalysisTaskBadChunkID+;
 #pragma link C++ class AliPPVsMultUtils+;
 

@@ -28,10 +28,10 @@ Bool_t AddAMEventMixingTest(TString analysisSource = "proof", TString analysisMo
   AliMultiInputEventHandler *multiInputHandler = mgr->GetInputEventHandler();
 
    if (usePhysSel) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       AddTaskPhysicsSelection(useMC);
 
-      // maybe we can put it in $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C
+      // maybe we can put it in $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C
       AliMultiInputEventHandler *multiIH = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
       if (multiIH){
          AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler *>(multiIH->GetFirstInputEventHandler());

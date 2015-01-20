@@ -29,7 +29,7 @@ using std::ofstream;
 class AliMUONLogger : public TObject
 {
 public:
-  AliMUONLogger(Int_t maxNumberOfEntries=-1);
+  AliMUONLogger(Int_t maxNumberOfEntries=-1, const char* name="AliMUONLogger");
   virtual ~AliMUONLogger();
   
   Int_t  Log(const char* message);
@@ -46,6 +46,12 @@ public:
   
   Int_t NumberOfEntries() const;
   
+  Long64_t Merge(TCollection* list);
+
+  const char* GetName() const { return fName.Data(); }
+
+  ULong_t Hash() const { return fName.Hash(); }
+
 private:
   /// Not implemented
   AliMUONLogger(const AliMUONLogger& rhs); // not implemented
@@ -56,8 +62,9 @@ private:
   
   Int_t fMaxNumberOfEntries; //!< after this number, print and reset
   AliMUONStringIntMap* fLog; //!< map from message to number of times the message was issued
+  TString fName; //!< object name
   
-  ClassDef(AliMUONLogger,1) // A logger that keeps track of the number of times a message appeared
+  ClassDef(AliMUONLogger,2) // A logger that keeps track of the number of times a message appeared
 };
 
 #endif

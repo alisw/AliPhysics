@@ -161,7 +161,7 @@ inline void  AliITStrackV2::SetModuleIndexInfo(Int_t ilayer,Int_t idet,Int_t sta
   Int_t zInt = Int_t(zloc*10.);
 
   if(TMath::Abs(xloc*10.-(Float_t)xInt)>0.5){
-    if(zloc>0) { 
+    if(xloc>0) { 
       xInt++; 
     } 
     else { 

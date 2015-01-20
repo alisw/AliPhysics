@@ -358,21 +358,21 @@ void AddAnalysisTasks()
   // Tender and supplies. Needs to be called for every event.
   //
    if (useTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
       AliAnalysisTaskSE *tender = AddTaskTender(kTRUE);
 //      tender->SelectCollisionCandidates();
       tender->SetDebugLevel(2);
    }
    if (usePhysicsSelection) {
    // Physics selection task
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
       AliPhysicsSelectionTask *physSel = AddTaskPhysicsSelection(useMC);
       mgr->AddStatisticsTask();
    }
    
    if (useCentrality) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();   
    }
 

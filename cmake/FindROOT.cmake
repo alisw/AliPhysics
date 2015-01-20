@@ -50,7 +50,7 @@ if(ROOTSYS)
     endif(NOT ROOT_CONFIG)
 
     # Check for rlibmap
-    find_program(ROOT_LIBMAP NAMES rlibmap PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
+    find_program(ROOT_LIBMAP NAMES rlibmap rootcling PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
     if(ROOT_LIBMAP)
         message(STATUS "Found ${ROOT_LIBMAP}")
     else()

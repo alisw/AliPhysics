@@ -2175,9 +2175,6 @@ AliMUONTrackerData::Value(const AliMUONVCalibParam& param, Int_t i,
       return 0.0;
     }
   }
-  
-  AliError("Why am I here ?");
-  return 0.0;
 }
 
 //_____________________________________________________________________________

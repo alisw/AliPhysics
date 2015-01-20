@@ -85,3 +85,6 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
+
+# Header installation into $CMAKE_INSTALL_PREFIX/include
+install(FILES ${HDRS} DESTINATION include)

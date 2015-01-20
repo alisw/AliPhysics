@@ -624,7 +624,7 @@ AliFMDGeometry::ExtractGeomInfo()
     TGeoVolume* actiVol = gGeoManager->GetVolume("FIAC");
     TGeoVolume* actoVol = gGeoManager->GetVolume("FOAC");
     if (actiVol) AddActive(actiVol->GetNumber());
-    if (actiVol) AddActive(actoVol->GetNumber());
+    if (actoVol) AddActive(actoVol->GetNumber());
   }
   else if (sectorDepth < 0) {
     fDetailed    = kFALSE;

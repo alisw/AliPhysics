@@ -184,6 +184,7 @@ int main(int argc, char **argv) {
 	  currentEquipment = rawReader->GetEquipmentId();
 	  currentDDL = rawReader->GetDDLID();
 	  const AliRawDataHeader *currentCDH = (AliRawDataHeader*)rawReader->GetDataHeader();
+        const AliRawDataHeaderV3 *currentCDHV3 = (AliRawDataHeaderV3*)rawReader->GetDataHeaderV3();
 	  if (currentDDL%2==0)
 	    nchDDL = 2160;
 	  else
@@ -212,7 +213,7 @@ int main(int argc, char **argv) {
 	    data = 0x0;
 	    continue;
 	  }
-	  if (decoderTOF->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
+	  if (decoderTOF->Decode((UInt_t *)data, kDataWords, currentCDH, currentCDHV3) == kTRUE) {
 	    rawReader->AddMajorErrorLog(AliTOFRawStream::kDDLDecoder,Form("DDL # = %d",currentDDL));
 	    printf("Error while decoding DDL # %d: decoder returned with errors \n", currentDDL);
 	  }

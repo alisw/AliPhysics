@@ -146,7 +146,7 @@ void AddAnalysisTasks(Int_t merge, const char *cdb_location){
   //
    AliAnalysisManager::SetCommonFileName("AODQA.root");
    if (useTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
       // IF V0 tender needed, put kTRUE below
       AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
 //      tender->SetDebugLevel(2);
@@ -165,7 +165,7 @@ void AddAnalysisTasks(Int_t merge, const char *cdb_location){
 
    if (usePhysicsSelection) {
    // Physics selection task
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
       AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kTRUE);
 //      AliOADBPhysicsSelection * oadbDefaultPbPb = CreateOADBphysicsSelection();      
@@ -174,7 +174,7 @@ void AddAnalysisTasks(Int_t merge, const char *cdb_location){
    }
    // Centrality (only Pb-Pb)
    if (iCollision && useCentrality) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
       taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
    }
