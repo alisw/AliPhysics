@@ -101,7 +101,9 @@ set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
 # AliRoot modules
 add_subdirectory(CORRFW)
-add_subdirectory(EVEANALYSIS)
+if(ZeroMQ_FOUND)
+  add_subdirectory(EVEANALYSIS)
+endif(ZeroMQ_FOUND)
 add_subdirectory(EVENTMIX)
 add_subdirectory(HLTANALYSIS)
 add_subdirectory(JETAN)
