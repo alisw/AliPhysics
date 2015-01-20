@@ -21,15 +21,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/totEt)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSbase
-                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSUtils
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
-                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
   )
 
 # Sources - alphabetical order

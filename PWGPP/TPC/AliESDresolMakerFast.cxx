@@ -62,7 +62,7 @@
 
 
 #include "TVectorD.h"
-#include "../STAT/TStatToolkit.h"
+#include "TStatToolkit.h"
 #include "TMath.h"
 #include "TCut.h"
 #include "TTree.h"

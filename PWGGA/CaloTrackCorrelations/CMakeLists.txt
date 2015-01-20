@@ -21,13 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/CaloTrackCorrelations)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliPhysics_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliPhysics_SOURCE_DIR}/PHOS/PHOSUtils
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliPhysics_SOURCE_DIR}/STEER/AOD
-                    ${AliPhysics_SOURCE_DIR}/STEER/ESD
-                    ${AliPhysics_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order

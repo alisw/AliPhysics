@@ -1,0 +1,230 @@
+############################################################################
+# GENERAL SETTINGS                                                         #
+############################################################################
+
+# CMake configuration is controlled through CMakeLists files.
+#   - Normally a single CMakeLists files should contain a single target/library.
+#   - The file below tries to offer a standard format for generating libraries
+#     but full access to cmake functions and utilities is possible.
+#    - For any customization please use instructions provided by the minum cmake 
+#     version 2.8.11
+#     http://www.cmake.org/cmake/help/v2.8.11/cmake.html
+
+# Module name
+# Module name translates into library name
+# Ex: set(MODULE ANALYSIS)
+set(MODULE ModuleNameExample)
+
+# Module include folder
+#  - Add here all include folders containing headers that belong
+#    to this module. 
+#  - Do not add dependencies here
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+# For more information about include_directories please read 
+# documentation for minimum required version:
+# http://www.cmake.org/cmake/help/v2.8.11/cmake.html#command:include_directories
+# Ex: include_directories(${AliRoot_SOURCE_DIR}/ANALYS/${MODULE})
+include_directories()
+
+# Additional include folders in alphabetical order except ROOT
+#  - ROOT include folders are added by the FindROOT macro
+#  - To remove compilation warnings related to dependencies headers
+#    please add them as SYSTEM headers.
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+# For more information about include_directories please read 
+# documentation for minimum required version:
+# http://www.cmake.org/cmake/help/v2.8.11/cmake.html#command:include_directories
+# Ex: include_directories(${AliRoot_SOURCE_DIR}/STEER/STEERBase
+#                   )
+include_directories(
+                   )
+
+# Library sources in alphabetical order
+#  - Only these sources will be added to the library
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+# Ex:
+#set(SRCS
+#    AliAnalysisDataContainer.cxx
+#    AliAnalysisDataSlot.cxx
+#   )
+set(SRCS
+   )
+
+# Headers generated from sources list
+#  - This list is used mainly during dictionary generating and installation step,
+#    all source headers will be installed into $CMAKE_INSTALL_PREFIX/include
+#  - Note that it is possible to create your own custom list of headers, to add
+#    to the existing one or to delete from it. Change this variable as it suits
+#    the purpose of the library, but be sure you do not affect the dictionary 
+#    generation
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Generating the dictionary
+#  - The name of the LinkDef has to be "${MODULE}LinkDef.h"
+#  - Using custom LinkDef names is for advanced users! If you are not sure
+#    how to generate the dictionary please contact aliroot-git-admins@cern.ch
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+get_directory_property(incdirs INCLUDE_DIRECTORIES)
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+# End Generation the dictionary
+
+# Seting ROOT and AliRoot dependecies
+#  - Any ROOT symbols used in the current sources has to be added to the list of 
+#    dependecies. 
+#  - The mapping between ROOT symbols and libraries can be found inside the ROOT
+#    map files. If you are not sure which library contains a certain symbol grep
+#    the rootmap files for the symbol:
+# Ex:
+#       $ cd $ROOTSYS/lib
+#       $ grep TSelectorCint *.rootmap
+#         libTree.rootmap:Library.TSelectorCint:                      libTree.so libNet.so libRIO.so libThread.so
+#   TSelectorCint symbol belongs to Tree library and we add it to ROOT_DEPENDENCIES
+# Ex: set(ROOT_DEPENDENCIES Core Gpad Hist Net RIO Tree XMLParser)
+# Ex: set(ALIROOT_DEPENDENCIES STEERBase ANALYSIS)
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES)
+
+# Generating the ROOT map
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+set(LIBDEPS ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+# End Generating the ROOT map
+
+############################################################################
+# END GENERAL SETTINGS                                                     #
+############################################################################
+
+
+############################################################################
+# COMPILATION AND LINKING CUSTOM FLAGS                                    #
+############################################################################
+
+# Setting custom compilation and linking flags
+# Ex system dependent: Modify the way the library is build
+#       if(${CMAKE_SYSTEM} MATCHES Darwin)
+#               set(MODULE_LINK_FLAGS "-undefined dynamic_lookup")
+#       endif(${CMAKE_SYSTEM} MATCHES Darwin)
+#  - MODULE_COMPILE_FLAGS and MODULE_LINK_FLAGS will be used later for library
+#    generation
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+set(MODULE_COMPILE_FLAGS )
+set(MODULE_LINK_FLAGS )
+
+############################################################################
+# END COMPILATION AND LINKING  CUSTOM FLAGS                                #
+############################################################################
+
+
+############################################################################
+# LIBRARY CREATION                                                         #
+############################################################################
+
+# Two options are availabe when creating the libraries:
+#       - dynamic only libraries
+#       - dinamic and static libraries
+#         Static libraries are by used the DAs. If you are sure the library will 
+#         be used by the DAs it is mandatory to create the static version.
+#  - Use only one of the options at a time, DO NOT FORGET to delete the content
+#    that is not used
+
+############################################################################
+## 1. DYNAMIC LIBRARY CREATION - NO STATIC LIBRARY NEEDED                  #
+############################################################################
+
+# Create the dynamic library
+#  - DELETE if static libraries are neded and follow Dynamic/Static libraries 
+#    instructions
+#  - DELETE the dynamic/static block if only dynamic libraries are needed
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+
+# Additional compilation flags
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+
+# Additional linking flags
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS ${MODULE_LINK_FLAGS})
+
+# Link library to dependecies
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+############################################################################
+## END DYNAMIC LIBRARY CREATION - NO STATIC LIBRARY NEEDED                 #
+############################################################################
+
+
+############################################################################
+## 2. DYNAMIC/STATIC LIBRARY CREATION                                      #
+############################################################################
+
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+#  - DELETE if no static libraries are needed
+#  - Create an object to be reused in case of static libraries 
+#    otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+
+#  - Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
+
+# Additional compilation flags
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
+
+# Additional linking flags
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS ${MODULE_LINK_FLAGS})
+
+# Link library to dependecies
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+# Create the static library only if ALIROOT_STATIC variable is set
+# ALIROOT_STATIC is automatically set by the DA flag
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
+
+    # Public include folders that will be propagated to the dependecies
+    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
+    
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)
+
+############################################################################
+## END DYNAMIC/STATIC LIBRARY CREATION                                     #
+############################################################################
+
+############################################################################
+# END LIBRARY CREATION                                                     #
+############################################################################
+
+############################################################################
+# INSTALLATION                                                             #
+############################################################################
+
+# The installation step is copying files needed at runtime into CMAKE_INSTALL_PREFIX
+# DO NOT forget to install all macros needed to run Grid jobs or any files that are
+# needed as input.
+#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
+
+# Library installation into $CMAKE_INSTALL_PREFIX/lib
+install(TARGETS ${MODULE}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
+# Header installation into $CMAKE_INSTALL_PREFIX/include
+install(FILES ${HDRS} DESTINATION include)
+
+# Macros installation
+install(DIRECTORY macros DESTINATION ${MODULE})
