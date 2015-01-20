@@ -553,9 +553,15 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTTrigg
       iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
       //HLTDebug("task %s: reqired output size %d", GetName(), iOutputDataSize);
       }
+      if (iNofTrial == 0 && fpDataBuffer->GetMaxBufferSize() < iOutputDataSize) {
+        //If the estimated buffer size exceeds the maximum buffer size of AliHLTRawBuffer, decrease the buffer size.
+        //The estimation is often quite high, and GetMaxBufferSize should usually return a size that is sufficient.
+        HLTImportant("Reducing estimated output buffer size of %d to maximum output buffer size\n", iOutputDataSize);
+        iOutputDataSize = fpDataBuffer->GetMaxBufferSize();
+      }
       if (iNofTrial>0) {
 	// dont process again if the buffer size is the same
-	if (iLastOutputDataSize==iOutputDataSize) break;
+	if (iLastOutputDataSize>=iOutputDataSize) break;
 	HLTImportant("processing event %d again with buffer size %d", eventNo, iOutputDataSize);
       }
       AliHLTUInt8_t* pTgtBuffer=NULL;

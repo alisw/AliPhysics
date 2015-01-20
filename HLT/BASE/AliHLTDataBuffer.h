@@ -146,6 +146,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @return: pointer to target buffer if 
    */
   AliHLTUInt8_t* GetTargetBuffer(int iMinSize);
+  static unsigned int GetMaxBufferSize();
 
   /**
    * Set the segments for the data buffer.
@@ -416,6 +417,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     static int GlobalClean();
     /** adjust global page size */
     static void SetGlobalPageSize(AliHLTUInt32_t size) {fgGlobalPageSize=size;}
+    static AliHLTUInt32_t GetGlobalPageSize() {return fgGlobalPageSize;}
     /** find next page after prev, or first page */
     static AliHLTRawPage* NextPage(const AliHLTRawPage* prev=NULL);
 
