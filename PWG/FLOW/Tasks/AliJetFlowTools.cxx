@@ -19,9 +19,9 @@
 // Tools class for Jet Flow Analysis, replaces 'extractJetFlow.C' macro
 //
 // The task uses input from two analysis tasks:
-// - $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
+// - $ALICE_PHYSICS/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
 //   used to retrieve jet spectra and delta pt distributions
-// - $ALICE_ROOT/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
+// - $ALICE_PHYSICS/PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
 //   used to construct the detector response function
 // and unfolds jet spectra with respect to the event plane. The user can choose
 // different alrogithms for unfolding which are available in (ali)root. RooUnfold 
@@ -34,7 +34,7 @@
 // can forgo the PrepareForUnfolding method, and supply necessary input information via the 
 // SetRawInput() method
 //
-// to see an example of how to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlowTools.C
+// to see an example of how to use this class, see $ALICE_PHYSICS/PWGCF/FLOW/macros/jetFlowTools.C
 
 // root includes
 #include "TH1.h"

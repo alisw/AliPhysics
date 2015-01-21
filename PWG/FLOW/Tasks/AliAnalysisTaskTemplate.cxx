@@ -20,7 +20,7 @@
 //
 // template task for flow analysis in the flow package
 // can be used as a basis for a general flow analysis task
-// see corresponding task in $ALICE_ROOT/PWG/FLOW/Base/
+// see corresponding task in $ALICE_PHYSICS/PWG/FLOW/Base/
 
 // aliroot include
 #include "AliFlowEventSimple.h"

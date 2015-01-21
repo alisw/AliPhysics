@@ -1837,7 +1837,7 @@ void AliAnalysisTaskVnV0::Terminate(Option_t *)
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskVnV0::OpenInfoCalbration(Int_t run){
-    TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
+    TString oadbfilename = "$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root";
     TFile *foadb = TFile::Open(oadbfilename.Data());
 
     if(!foadb){
