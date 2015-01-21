@@ -84,7 +84,7 @@ AliAnalysisTaskEMCALCaloTrackCorr *AddTaskEmcalCaloTrackCorr(
   }
  
   if(fDataType == "ESD"){ 
-   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
    esdTrackCuts->SetEtaRange(-0.8,0.8);
   }

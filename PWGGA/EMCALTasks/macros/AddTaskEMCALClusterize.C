@@ -170,14 +170,16 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   //-------------------------------------------------------
 
   AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros
+  
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  
   ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
   // Alignment matrices
   //-------------------------------------------------------
 
-  //clusterize->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"); // done automatically, set here to force
+  //clusterize->SetImportGeometryFromFile(kTRUE,"$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root"); // done automatically, set here to force
 
   clusterize->SwitchOnLoadOwnGeometryMatrices();
   

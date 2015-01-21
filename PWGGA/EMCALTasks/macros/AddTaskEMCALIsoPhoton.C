@@ -33,7 +33,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetTriggerBit(trigbitname);
   ana->SetMcMode(isMC);
   ana->SetPathStringSelect(pathstrsel.Data());
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
   AliESDtrackCuts *cutscomp = new AliESDtrackCuts;
   if(trackSelType == "standard"){
