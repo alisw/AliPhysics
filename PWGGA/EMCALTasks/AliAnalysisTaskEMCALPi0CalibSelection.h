@@ -111,7 +111,7 @@ private:
   TString             fTriggerName;     //  Trigger name must contain this name
     
   AliEMCALRecoUtils * fRecoUtils;       //  Access to reconstruction utilities
-  TString             fOADBFilePath ;   //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
+  TString             fOADBFilePath ;   //  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change
   Bool_t              fCorrectClusters; //  Correct clusters energy, position etc.
 
 
