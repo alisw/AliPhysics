@@ -294,7 +294,7 @@ void AliAnalysisTaskFlowEPCascade::UserCreateOutputObjects()
     = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
-  TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
+  TString oadbfilename = "$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root";
   fOADB = TFile::Open(oadbfilename.Data());
 
   if(!fOADB){

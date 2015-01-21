@@ -658,7 +658,7 @@ void AliAnalysisTaskPIDconfig::CheckCentrality(AliVEvent* event, Bool_t &central
 //______________________________________________________________________________
 void AliAnalysisTaskPIDconfig::GetPIDContours()
 {
-    fContoursFile = new TFile(Form("$ALICE_ROOT/PWGCF/FLOW/database/PIDCutContours_%i-%i.root",fCentralityPercentileMin,fCentralityPercentileMax));
+    fContoursFile = new TFile(Form("$ALICE_PHYSICS/PWGCF/FLOW/database/PIDCutContours_%i-%i.root",fCentralityPercentileMin,fCentralityPercentileMax));
     
     fCutContourList=(TDirectory*)fContoursFile->Get("Filterbit1");
     if(!fCutContourList){printf("The contour file is empty"); return;}
