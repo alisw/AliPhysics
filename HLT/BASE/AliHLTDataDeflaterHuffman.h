@@ -37,6 +37,12 @@ public:
   /// init list of decoders
   int InitDecoders(TList* decoderlist);
 
+  /// Stop the encoding
+  virtual void StartEncoder();
+
+  /// Stop the encoding
+  virtual int StopEncoder();
+
   /// inherited from AliHLTDataDeflater: write bit pattern according to configuration
   virtual bool OutputParameterBits( int parameterId, AliHLTUInt64_t const & value );
 
@@ -88,6 +94,9 @@ private:
   TList* fHuffmanCoderList; //! list of huffman coders
 
   bool fTrainingMode; //! indicate training mode
+
+  int  fClusterCount;   //! internal cluster counter
+  vector<unsigned> fBitCount; // bit count for every parameter
 
   ClassDef(AliHLTDataDeflaterHuffman, 0)
 };

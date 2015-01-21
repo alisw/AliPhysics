@@ -40,6 +40,8 @@ AliHLTDataDeflaterHuffman::AliHLTDataDeflaterHuffman(bool bTrainingMode)
   , fHuffmanCoders()
   , fHuffmanCoderList(NULL)
   , fTrainingMode(bTrainingMode)
+  , fClusterCount(0)
+  , fBitCount()
 {
   // see header file for class documentation
   // or
@@ -84,8 +86,9 @@ int AliHLTDataDeflaterHuffman::AddParameterDefinition(const char* name, unsigned
     return -EPERM;
   }
 
-  fReferenceLength.push_back(refLength);
+  fReferenceLength.push_back(refLength>0?refLength:bitLength);
   fHuffmanCoders.push_back(pHuffman);
+  fBitCount.push_back(0);
 
   int memberId=fHuffmanCoders.size()-1;
   if (DoStatistics()) {
@@ -134,6 +137,8 @@ bool AliHLTDataDeflaterHuffman::OutputParameterBits( int memberId, AliHLTUInt64_
     return false;
   }
 
+  if (memberId==0) fClusterCount++;
+
   AliHLTUInt64_t length = 0;
   const std::bitset<64>& v=fHuffmanCoders[memberId]->Encode((value>fHuffmanCoders[memberId]->GetMaxValue())?fHuffmanCoders[memberId]->GetMaxValue():value, length);
   //cout << fHuffmanCoders[memberId]->GetName() << " value " << value << ": code lenght " << length << " " << v << endl;
@@ -146,7 +151,8 @@ bool AliHLTDataDeflaterHuffman::OutputParameterBits( int memberId, AliHLTUInt64_
       weight=length;
       weight/=parameterLength;
     }
-    FillStatistics(memberId, value, length, weight);
+    FillStatistics(memberId, value, 0, -1.0);
+    fBitCount[memberId]+=length;
   }
 
   if (length>0) {
@@ -302,6 +308,30 @@ void AliHLTDataDeflaterHuffman::SaveAs(const char *filename, Option_t *option) c
   }
 
   return AliHLTDataDeflater::SaveAs(filename, remainingOptions);
+}
+
+void AliHLTDataDeflaterHuffman::StartEncoder()
+{
+  fClusterCount=0;
+  for (vector<unsigned>::iterator it = fBitCount.begin(); it!=fBitCount.end(); it++) {
+    *it=0;
+  }
+}
+
+int AliHLTDataDeflaterHuffman::StopEncoder()
+{
+  int memberId=0;
+  if (fClusterCount==0) return 0;
+  for (vector<unsigned>::iterator it = fBitCount.begin(); it!=fBitCount.end(); it++) {
+    UInt_t outputByteCount = (*it+7)/8;
+
+    float weight=outputByteCount*8.0;
+    weight/=fClusterCount*fReferenceLength[memberId];
+    UInt_t parameterSize=weight*fReferenceLength[memberId];
+    FillStatistics(memberId, ~(AliHLTUInt64_t)0, parameterSize, weight);
+
+    memberId++;
+  }
 }
 
 ostream& operator<<(ostream &out, const AliHLTDataDeflaterHuffman& me)
