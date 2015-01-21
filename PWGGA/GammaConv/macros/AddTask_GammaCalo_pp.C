@@ -1,10 +1,12 @@
 void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cuts
-                              Bool_t isMC   = kFALSE, //run MC
-                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAClusterTask = 0, // enable additional QA task
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              TString cutnumberAODBranch = "0000000060084000001500000" // cutnumber for AOD branch
-							) {
+							Bool_t isMC   = kFALSE, //run MC
+							Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
+							Int_t enableQAClusterTask = 0, // enable additional QA task
+							TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
+                            TString cutnumberAODBranch = "0000000060084001001500000",
+							TString periodname = "LHC12f1x", 							// period name
+							Bool_t doWeighting = kFALSE									// enables weighting
+) {
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore");  
@@ -146,6 +148,9 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 		eventCutArray[ 3] = "0009511"; clusterCutArray[3] = "10000040032030000"; mesonCutArray[3] = "01631031000000"; // EMCEJ2, 
 		eventCutArray[ 4] = "0000011"; clusterCutArray[4] = "10000040032030000"; mesonCutArray[4] = "01631031000000"; // INT7
 		eventCutArray[ 5] = "0005211"; clusterCutArray[5] = "10000040032030000"; mesonCutArray[5] = "01631031000000"; // EMC7
+	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
+		eventCutArray[ 0] = "0000312"; clusterCutArray[0] = "10000040032030000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
+		eventCutArray[ 1] = "0005112"; clusterCutArray[1] = "10000040032030000"; mesonCutArray[1] = "01631031000000"; // 400 MeV cluster min energy
 
 	// ************************************* PHOS cuts ****************************************************
 	} else if (trainConfig == 31) { //PHOS clusters
@@ -164,7 +169,45 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 	TList *ClusterCutList = new TList();
 	TList *MesonCutList = new TList();
 
-
+	TList *HeaderList = new TList();
+	if (periodname.Contains("LHC12i3")){	
+		TObjString *Header2 = new TObjString("BOX");
+		HeaderList->Add(Header2);
+	} else if (periodname.CompareTo("LHC14e2b")==0){
+		TObjString *Header2 = new TObjString("pi0_1");
+		HeaderList->Add(Header2);
+		TObjString *Header3 = new TObjString("eta_2");
+		HeaderList->Add(Header3);
+	}	
+	
+	TString energy = "";
+	TString mcName = "";
+	TString mcNameAdd = "";
+	if (periodname.Contains("WOSDD")){
+		mcNameAdd = "_WOSDD";
+	} else if (periodname.Contains("WSDD")){
+		mcNameAdd = "_WSDD";
+	} 	
+	if (periodname.Contains("LHC12i3")){
+		energy = "2760GeV";
+		mcName = "Pythia8_LHC12i3";
+	} else if (periodname.Contains("LHC12f1a")){	
+		energy = "2760GeV";
+		mcName = "Pythia8_LHC12f1a";	
+	} else if (periodname.Contains("LHC12f1b")){	
+		energy = "2760GeV";
+		mcName = "Phojet_LHC12f1b";			
+	} else if (periodname.Contains("LHC14e2a")){	
+		energy = "8TeV";
+		mcName = "Pythia8_LHC14e2a";			
+	} else if (periodname.Contains("LHC14e2b")){	
+		energy = "8TeV";
+		mcName = "Pythia8_LHC14e2b";				
+	} else if (periodname.Contains("LHC14e2c")){		
+		energy = "8TeV";
+		mcName = "Phojet_LHC14e2c";					
+	}	
+	
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ClusterCutList->SetOwner(kTRUE);
@@ -174,6 +217,23 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();   
+		
+		// definition of weighting input
+		TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
+		TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
+		Bool_t fAddedSignal = eventCutArray[i].EndsWith("2");
+		TString mcInputNamePi0 = "";
+		TString mcInputNameEta = "";
+		if (fAddedSignal && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
+			mcInputNamePi0 = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		} else {
+			mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+			mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+		}	
+		
+		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -187,6 +247,7 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
+		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 	}
 	task->SetEventCutList(numberOfCuts,EventCutList);
 	task->SetCaloCutList(numberOfCuts,ClusterCutList);
