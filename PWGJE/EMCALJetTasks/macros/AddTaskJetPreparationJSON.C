@@ -54,7 +54,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMakerJSON.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMakerJSON.C");
     AliEMCALConfiguration emctriggerconf("triggerMakerConf");
     emctriggerconf.AddParam("doQA", new AliJSONBool(doTriggerQA));
     AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMakerJSON(emctriggerconf.CreateJSONString());
@@ -62,7 +62,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   }
 
   //----------------------- Track Matching tasks -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMatchingChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMatchingChain.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
 								  clusterColName,
 								  trackeff,doAODTrackProp,
@@ -76,14 +76,14 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data());
   if(makePicoTracks) {
     //----------------------- Produce PicoTracks -----------------------------------------------------
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
     //    pTrackTask->SetTrackEfficiency(trackeff); //now done in Esd/AodFilter
     pTrackTask->SelectCollisionCandidates(pSel);
   }
 
   //----------------------- Hadronic Correction -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C"); 
   AliHadCorrTask *hCorr = AddTaskHadCorr(emctracks,emcclusters,outClusName,hadcorr,
 					 minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
@@ -94,7 +94,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   // Produce MC particles
   if(particleColName != "") {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName, kFALSE, kFALSE);
     mcPartTask->SelectCollisionCandidates(pSel);
   }

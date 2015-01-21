@@ -40,14 +40,14 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
   if (dType == "ESD") {
     inputTracks = "ESDFilterTracks";
     TString trackCuts(Form("Hybrid_%s", period.Data()));   
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
     AliEmcalEsdTrackFilterTask *esdfilter = AddTaskEmcalEsdTrackFilter(inputTracks,trackCuts);
     esdfilter->SetDoPropagation(kTRUE);
     esdfilter->SetDist(edist);
     esdfilter->SelectCollisionCandidates(pSel);
     esdfilter->SetTrackEfficiency(trackeff);
   } else if (dType == "AOD") {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
     AliEmcalAodTrackFilterTask *aodfilter = AddTaskEmcalAodTrackFilter(inputTracks,"tracks",period);
     if (doAODTrackProp) {
       aodfilter->SetDist(edist);
@@ -63,12 +63,12 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
   TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
   TString emcclusters = Form("EmcalClusters_%s",inputClus.Data());
   Printf("emctracks: %s  inputTracks: %s",emctracks.Data(),inputTracks.Data());
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
   AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(inputTracks,inputClus,emctracks,emcclusters);
   emcalParts->SelectCollisionCandidates(pSel);
   emcalParts->SetNCentBins(nCentBins);
   //----------------------- Cluster-Track matching -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,doHistos);
   emcalClus->SelectCollisionCandidates(pSel);
   emcalClus->SetNCentBins(nCentBins);

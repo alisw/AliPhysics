@@ -121,7 +121,7 @@ void runEMCalJetAnalysis(
 
   // Physics selection task
   if(!isMC) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
     AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, pSel, 5, 5, 10, kTRUE, -1, -1, -1, -1);
     if (!physSelTask) {
       cout << "no physSelTask but running on data" << endl; 
@@ -131,24 +131,24 @@ void runEMCalJetAnalysis(
 
   // Centrality task
   if (usedData == "ESD") {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kTRUE);
   }
 
   // Compatibility task, only needed for skimmed ESD
   if (usedData == "sESD") {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalCompat.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCompat.C");
     AliEmcalCompatTask *comptask = AddTaskEmcalCompat();
   }
 
   // Setup task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
   AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
-  setupTask->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
+  setupTask->SetGeoPath("$ALICE_PHYSICS/OADB/EMCAL");
   
   // Tender Supplies
   if (useTender) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
     //adjust pass when running locally. On grid give empty string, will be picked up automatically from path to ESD/AOD file
     AliAnalysisTaskSE *clusm = AddTaskEmcalPreparation(runPeriod,"pass1"); 
   }
@@ -161,13 +161,13 @@ void runEMCalJetAnalysis(
   TString rhoName = "";
 
   // ################# Now: Call jet preparation macro (picotracks, hadronic corrected caloclusters, ...) 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
   TString particlesMCName = "";
   if(isMC) particlesMCName = "MCParticlesSelected";
   AddTaskJetPreparation(runPeriod, tracksName, particlesMCName.Data(), clustersName, clustersCorrName);
 
   // ################# Now: Add jet finders+analyzers
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName, clustersCorrName, kANTIKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
 
   if (doBkg) {
@@ -175,14 +175,14 @@ void runEMCalJetAnalysis(
     AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(tracksName, clustersCorrName, kKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
 
     TString kTpcKtJetsName = jetFinderTaskKT->GetName();
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
     rhotask = (AliAnalysisTaskRho*) AddTaskRho(kTpcKtJetsName, tracksName, clustersCorrName, rhoName, 0.2, "TPC", 0.01, 0, 0, 2, kTRUE);
     //rhotask__->SetScaleFunction(sfunc);
     //rhotask->SelectCollisionCandidates(kPhysSel);
     rhotask->SetHistoBins(100,0,250);
   }
   // Here you can put in your AddTaskMacro for your task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
   AliAnalysisTaskEmcalJetSample* anaTask = 0;
   AddTaskEmcalJetSample(tracksName, clustersCorrName, jetFinderTask->GetName(), rhoName, 4);
 
@@ -222,12 +222,12 @@ void runEMCalJetAnalysis(
     TChain* chain = 0;
     if (usedData == "AOD") 
     {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateAODChain.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
       chain = CreateAODChain(localFiles.Data(), numLocalFiles);
     }
     else
     {  // ESD or skimmed ESD
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateESDChain.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
       chain = CreateESDChain(localFiles.Data(), numLocalFiles);
     }
     
@@ -313,12 +313,6 @@ void LoadLibs()
 //  gSystem->Load("libFASTJETAN");
   gSystem->Load("libPWGJEEMCALJetTasks");
 
-
-  // include paths
-  gSystem->AddIncludePath("-Wno-deprecated");
-  gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
 }
 
 AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir, const char* gridMode, const char* runNumbers, 

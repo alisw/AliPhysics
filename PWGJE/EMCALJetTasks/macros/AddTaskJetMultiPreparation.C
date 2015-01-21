@@ -103,7 +103,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
 
     if (0)
     {
-        gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
         AliEmcalTrackPropagatorTask *proptask = AddTaskEmcalTrackPropagator();
         proptask->SelectCollisionCandidates(pSel);
     }
@@ -121,7 +121,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
             AliEmcalEsdTrackFilterTask *esdFilter = mgr->GetTask(sESDTrackFilterName.Data());
             if (!esdFilter)
             {
-                gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
+                gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
                 AliEmcalEsdTrackFilterTask *esdFilter = AddTaskEmcalEsdTrackFilter(inputTracks.Data(),trackCuts.Data());
                 esdFilter->SetDoPropagation(kTRUE);
                 esdFilter->SetDist(edist);
@@ -134,7 +134,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
             AliEmcalAodTrackFilterTask *aodFilter = mgr->GetTask(sAODTrackPropagatorName.Data());
             if (!aodFilter)
             {
-                gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
+                gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
                 AliEmcalAodTrackFilterTask *aodFilter = AddTaskEmcalAodTrackFilter(inputTracks.Data(),"tracks",period.Data());
                 aodFilter->SetDist(edist);
                 aodFilter->SelectCollisionCandidates(pSel);
@@ -149,7 +149,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
         AliEmcalPicoTrackMaker *pTrackTask = mgr->GetTask(sEmcalPicoTrackMakerName.Data());
         if (!pTrackTask)
         {
-            gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
+            gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
             pTrackTask = AddTaskEmcalPicoTrackMaker(sPicoTracks.Data(), inputTracks.Data(),0,1000,-10,10,-10,10,trackEff,sEmcalPicoTrackMakerName.Data());
             pTrackTask->SelectCollisionCandidates(pSel);
         }
@@ -161,7 +161,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
         AliEmcalTriggerMaker *emcalTriggers = mgr->GetTask(sEmcalTriggerMakerName.Data());
         if (!emcalTriggers)
         {
-            gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
+            gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
             emcalTriggers = AddTaskEmcalTriggerMaker(sEmcalTriggers.Data(),sEmcalTriggerMakerSetupOutName.Data(),0,0,sEmcalTriggerMakerName.Data(),0,0,0,0,0,0);
             emcalTriggers->SelectCollisionCandidates(pSel);
         }
@@ -171,12 +171,12 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
     AliEmcalParticleMaker *emcalParts = mgr->GetTask(sEmcalParticleMakerName.Data());
     if (!emcalParts)
     {
-        gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
         emcalParts = AddTaskEmcalParticleMaker(sPicoTracks.Data(),clusterColName.Data(),sEmcalTracks.Data(),sEmcalClusters.Data(),sEmcalParticleMakerName.Data());
         emcalParts->SelectCollisionCandidates(pSel);
 
         // Relate tracks and clusters
-        gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
         AliEmcalClusTrackMatcherTask *emcalClus = AddTaskEmcalClusTrackMatcher(sEmcalTracks.Data(),sEmcalClusters.Data(),0.1,doHistos);
         emcalClus->SetModifyObjs(kFALSE);
         emcalClus->SelectCollisionCandidates(pSel);
@@ -187,7 +187,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
     }
 
     // Make Corrected CaloClusters
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C");
     AliHadCorrTask *hCorr = AddTaskHadCorr(sEmcalTracks.Data(),sEmcalClusters.Data(),sCaloClustersCorr.Data(),hadCorr,minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
     hCorr->SelectCollisionCandidates(pSel);
     if (isEmcalTrain)
@@ -204,7 +204,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
         AliEmcalMCTrackSelector *mcPartTask = mgr->GetTask(sMCTrackSelectorName.Data());
         if (!mcPartTask)
         {
-            gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
+            gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
             AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName.Data(), kFALSE, kFALSE);
             mcPartTask->SelectCollisionCandidates(pSel);
         }

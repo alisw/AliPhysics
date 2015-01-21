@@ -131,7 +131,7 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliEmcalEsdTrackFilterTask *eTask = new AliEmcalEsdTrackFilterTask(taskName); // default is no cut
   if ((dataSet == kLHC11c && cutsType == kHybrid) ||
       (dataSet == kLHC11d && cutsType == kHybrid) ||

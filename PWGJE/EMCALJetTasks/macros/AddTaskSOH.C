@@ -28,7 +28,7 @@ AliAnalysisTaskSOH* AddTaskSOH()
   AliESDtrackCuts *esdTrackCuts = 0x0;
   AliESDtrackCuts *hybridTrackCuts1 = 0x0;
   AliESDtrackCuts *hybridTrackCuts2 = 0x0;
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
 
   esdTrackCuts = CreateTrackCutsPWGJE(10001006);
   hybridTrackCuts1 = CreateTrackCutsPWGJE(1006);

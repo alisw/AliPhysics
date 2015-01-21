@@ -50,7 +50,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
     timeMax = 1e6;
   }
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
   AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus,
 						 fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
 						 cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
@@ -59,13 +59,13 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   clusterizer    = AliEMCALRecParam::kClusterizerv2;
   remExoticCell  = kTRUE;
   TString tmpClusters = "tmpCaloClusters";
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
   AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","",tmpClusters.Data(),clusterizer,cellthresh,seedthresh,
 									       timeMin,timeMax,timeCut,remExoticCell,distBC,
 									       AliAnalysisTaskEMCALClusterizeFast::kFEEData);
   
   //----------------------- Add cluster maker -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity, 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity, 
   UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
   if(isMC) {
     if(period == "lhc12a15a") 
