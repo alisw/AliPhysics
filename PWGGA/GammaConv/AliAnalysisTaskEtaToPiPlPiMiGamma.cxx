@@ -848,6 +848,12 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTruePhotonCandidates(AliAODConver
 	TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(MCStack);
 	TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(MCStack);
 
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
+	
 	if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
 	if(posDaughter->GetMother(0) != negDaughter->GetMother(0)){  // Not Same Mother == Combinatorial Bck
 		return;
@@ -867,15 +873,15 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTruePhotonCandidates(AliAODConver
 	// True Photon
 	
 	Int_t labelGamma = TruePhotonCandidate->GetMCParticleLabel(MCStack);
-	
-	if( labelGamma < MCStack->GetNprimary() ){
+	Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelGamma, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+	if( gammaIsPrimary ){
 		if( fIsFromMBHeader ){
-		fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+			fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		}
 	}
 	
 	if( IsEtaPiPlPiMiGammaDaughter(labelGamma) == kTRUE ) {
-		if( labelGamma < MCStack->GetNprimary() ) {
+		if( gammaIsPrimary ) {
 			if( fIsFromMBHeader ){
 				fHistoTrueConvGammaFromEtaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 				
@@ -921,18 +927,20 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessPionCandidates(){
 		fHistoNegPionPt[fiCut]->Fill(negPionCandidate->Pt());
 		fHistoNegPionPhi[fiCut]->Fill(negPionCandidate->Phi());
 		if( fMCEvent ) {
+			const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+			Double_t mcProdVtxX 	= primVtxMC->GetX();
+			Double_t mcProdVtxY 	= primVtxMC->GetY();
+			Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 			Int_t labelNegPion = TMath::Abs( negPionCandidate->GetLabel() );
-			if( labelNegPion < fMCStack->GetNtrack() ){
+			Bool_t negPionIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelNegPion, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+			if( negPionIsPrimary ){
 				TParticle* negPion = fMCStack->Particle(labelNegPion);
 				if( negPion->GetPdgCode() ==  -211 ){
-					if( labelNegPion < fMCStack->GetNprimary() ){
-						fHistoTrueNegPionPt[fiCut]->Fill(negPionCandidate->Pt());    //primary negPion
-					}		
+					fHistoTrueNegPionPt[fiCut]->Fill(negPionCandidate->Pt());    //primary negPion
 					if( IsEtaPiPlPiMiGammaDaughter(labelNegPion) == kTRUE ) {
-						if( labelNegPion < fMCStack->GetNprimary() ) {
-							fHistoTrueNegPionFromEtaPt[fiCut]->Fill(negPionCandidate->Pt());
+						fHistoTrueNegPionFromEtaPt[fiCut]->Fill(negPionCandidate->Pt());
 // 							if (fIsGammaEtaCand) cout << "pi- rec" << labelNegPion << "\t" << negPionCandidate->Pt()<< endl;
-						} 
 					}	
 				}
 			}
@@ -947,18 +955,20 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessPionCandidates(){
 		fHistoPosPionPhi[fiCut]->Fill( posPionCandidate->Phi() );
 		
 		if( fMCEvent ) {
+			const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+			Double_t mcProdVtxX 	= primVtxMC->GetX();
+			Double_t mcProdVtxY 	= primVtxMC->GetY();
+			Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 			Int_t labelPosPion = TMath::Abs( posPionCandidate->GetLabel() );
-			if( labelPosPion < fMCStack->GetNtrack() ) {
+			Bool_t posPionIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelPosPion, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+			if( posPionIsPrimary ) {
 				TParticle* posPion = fMCStack->Particle(labelPosPion);
 				if( posPion->GetPdgCode() ==  211 ){
-					if( labelPosPion < fMCStack->GetNprimary() ){
-						fHistoTruePosPionPt[fiCut]->Fill(posPionCandidate->Pt());
-					} 
+					fHistoTruePosPionPt[fiCut]->Fill(posPionCandidate->Pt());
 					if( IsEtaPiPlPiMiGammaDaughter(labelPosPion) == kTRUE ) {
-						if( labelPosPion < fMCStack->GetNprimary() ){
-							fHistoTruePosPionFromEtaPt[fiCut]->Fill(posPionCandidate->Pt());
+						fHistoTruePosPionFromEtaPt[fiCut]->Fill(posPionCandidate->Pt());
 // 							if (fIsGammaEtaCand) cout << "pi+ rec" << labelPosPion << "\t" << posPionCandidate->Pt()<< endl;
-						} 
 					}
 				}
 			}
@@ -1016,102 +1026,114 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessMCParticles(){
 
 	// Loop over all primary MC particle
 
-	for(Int_t i = 0; i < fMCStack->GetNprimary(); i++) {
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+	
+	
+	for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
+		if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
+			TParticle* particle = (TParticle *)fMCStack->Particle(i);
+			if (!particle) continue;
 
-		TParticle* particle = (TParticle *)fMCStack->Particle(i);
-		if (!particle) continue;
-
-		Int_t isMCFromMBHeader = -1;
-		if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-			isMCFromMBHeader
-				= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent);
-			if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
-		}
-
-		if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
-			
-			if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
-				fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
-				if(particle->GetMother(0) >-1){
-					if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==221 && fMCStack->Particle(particle->GetMother(0))->GetNDaughters()==3 ) fHistoMCGammaFromEtaPt[fiCut]->Fill(particle->Pt()); // All pos from eta
-				}	
+			Int_t isMCFromMBHeader = -1;
+			if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+				isMCFromMBHeader
+					= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent);
+				if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
 			}
-			
-			if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kTRUE)){
-				fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt());
-			} // Converted MC Gamma
-			
-			if(((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(i,fMCStack)){
-				if( particle->GetPdgCode() == 211){
-					fHistoMCAllPosPionsPt[fiCut]->Fill(particle->Pt()); // All pos pions
+
+			if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
+				
+				if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
+					fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
 					if(particle->GetMother(0) >-1){
-						if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==221) fHistoMCPosPionsFromEtaPt[fiCut]->Fill(particle->Pt()); // All pos from eta
-					}	
-				}	
-				if( particle->GetPdgCode() == -211){
-					fHistoMCAllNegPionsPt[fiCut]->Fill(particle->Pt()); // All neg pions
-					if(particle->GetMother(0) >-1){
-						if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==221) fHistoMCNegPionsFromEtaPt[fiCut]->Fill(particle->Pt()); // All pos from eta
+						if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==221 && fMCStack->Particle(particle->GetMother(0))->GetNDaughters()==3 ) fHistoMCGammaFromEtaPt[fiCut]->Fill(particle->Pt()); // All pos from eta
 					}	
 				}
-			}
-			
-			// \eta -> \gamma \gamma 
-			
-			if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC( particle,fMCStack,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift() ) ){
-				Float_t weighted= 1;
-				if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
-					if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
-						if (particle->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
-						}
+				
+				if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kTRUE)){
+					fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt());
+				} // Converted MC Gamma
+				
+				if(((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(i,fMCStack)){
+					if( particle->GetPdgCode() == 211){
+						fHistoMCAllPosPionsPt[fiCut]->Fill(particle->Pt()); // All pos pions
+						if(particle->GetMother(0) >-1){
+							if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==221) fHistoMCPosPionsFromEtaPt[fiCut]->Fill(particle->Pt()); // All pos from eta
+						}	
+					}	
+					if( particle->GetPdgCode() == -211){
+						fHistoMCAllNegPionsPt[fiCut]->Fill(particle->Pt()); // All neg pions
+						if(particle->GetMother(0) >-1){
+							if (fMCStack->Particle(particle->GetMother(0))->GetPdgCode() ==221) fHistoMCNegPionsFromEtaPt[fiCut]->Fill(particle->Pt()); // All pos from eta
+						}	
 					}
 				}
-				if(particle->GetPdgCode() == 221)fHistoMCEtaGGPt[fiCut]->Fill( particle->Pt() , weighted); // All MC Eta GG decay
-			}
-			
-			// \eta -> e+ e- \gamma 
-			Int_t labelgamma 	  = -1;
-			Int_t labelelectron = -1;
-			Int_t labelpositron = -1;
+				
+				// \eta -> \gamma \gamma 
+				
+				if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC( particle,fMCStack,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift() ) ){
+					Float_t weighted= 1;
+					if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
+						if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
+							if (particle->Pt()>0.005){
+								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+							}
+						}
+					}
+					if(particle->GetPdgCode() == 221)fHistoMCEtaGGPt[fiCut]->Fill( particle->Pt() , weighted); // All MC Eta GG decay
+				}
+				
+				// \eta -> e+ e- \gamma 
+				Int_t labelgamma 	  = -1;
+				Int_t labelelectron = -1;
+				Int_t labelpositron = -1;
 
-			if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMCDalitz(particle,fMCStack,labelelectron,labelpositron,labelgamma,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-				Float_t weighted= 1;
-				if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
-					if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
-						if (particle->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+				if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMCDalitz(particle,fMCStack,labelelectron,labelpositron,labelgamma,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+					Float_t weighted= 1;
+					if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
+						if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
+							if (particle->Pt()>0.005){
+								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+							}
 						}
 					}
-				}
-				if(particle->GetPdgCode() == 221)fHistoMCEtaDalitzPt[fiCut]->Fill(particle->Pt(), weighted); // All MC Eta
-			}		
-			
-			
-			// \eta -> pi+ pi- \gamma 
-			Int_t labelGamma3Body 	  = -1;
-			Int_t labelNegPion = -1;
-			Int_t labelPosPion = -1;
+					if(particle->GetPdgCode() == 221)fHistoMCEtaDalitzPt[fiCut]->Fill(particle->Pt(), weighted); // All MC Eta
+				}		
+				
+				
+				// \eta -> pi+ pi- \gamma 
+				Int_t labelGamma3Body 	  = -1;
+				Int_t labelNegPion = -1;
+				Int_t labelPosPion = -1;
 
-			if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMCEtaPiPlPiMiGamma(particle,fMCStack,labelNegPion,labelPosPion,labelGamma3Body,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){	
-				Float_t weighted= 1;
-				if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
-					if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
-						if (particle->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+				if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMCEtaPiPlPiMiGamma(particle,fMCStack,labelNegPion,labelPosPion,labelGamma3Body,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){	
+					Float_t weighted= 1;
+					if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
+						if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
+							if (particle->Pt()>0.005){
+								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+							}
 						}
 					}
+					if(particle->GetPdgCode() == 221)fHistoMCEtaPiPlPiMiGammaPt[fiCut]->Fill(particle->Pt(), weighted); // All MC Eta
+			
+					TParticle *gamma    = fMCStack->Particle(labelGamma3Body);
+					Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelGamma3Body, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+					Bool_t negPionIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelNegPion, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+					Bool_t posPionIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelPosPion, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+					
+					if( gammaIsPrimary && negPionIsPrimary && posPionIsPrimary &&
+						((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma,fMCStack,kFALSE) &&
+						((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCStack) &&
+						((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCStack) ) {
+						if(particle->GetPdgCode() == 221)fHistoMCEtaPiPlPiMiGammaInAccPt[fiCut]->Fill(particle->Pt(), weighted ); // MC EtaDalitz with gamma and e+e- in acc
+					}				
 				}
-				if(particle->GetPdgCode() == 221)fHistoMCEtaPiPlPiMiGammaPt[fiCut]->Fill(particle->Pt(), weighted); // All MC Eta
-		
-				TParticle *gamma    = fMCStack->Particle(labelGamma3Body);
-				if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma,fMCStack,kFALSE) &&
-				((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCStack) &&
-				((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCStack) ) {
-					if(particle->GetPdgCode() == 221)fHistoMCEtaPiPlPiMiGammaInAccPt[fiCut]->Fill(particle->Pt(), weighted ); // MC EtaDalitz with gamma and e+e- in acc
-				}				
 			}
-		}
+		}	
 	}
 }
 

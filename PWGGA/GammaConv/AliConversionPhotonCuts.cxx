@@ -520,10 +520,11 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
 		if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
 			return kFALSE; // no photon as mothers!
 		}
-
-		if(particle->GetMother(0) >= fMCStack->GetNprimary()){
-			return kFALSE; // the gamma has a mother, and it is not a primary particle
-		}
+		
+		// removed, decision on primary and secondary taken in main task
+// 		if(particle->GetMother(0) >= fMCStack->GetNprimary()){
+// 			return kFALSE; // the gamma has a mother, and it is not a primary particle
+// 		}
 
 		if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 

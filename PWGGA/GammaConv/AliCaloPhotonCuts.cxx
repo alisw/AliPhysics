@@ -477,9 +477,10 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCS
 		if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
 			return kFALSE; // no photon as mothers!
 		}
-		if(particle->GetMother(0) >= fMCStack->GetNprimary()){
-			return kFALSE; // the gamma has a mother, and it is not a primary particle
-		}
+		// decision on prim/sec moved to main task
+// 		if(particle->GetMother(0) >= fMCStack->GetNprimary()){
+// 			return kFALSE; // the gamma has a mother, and it is not a primary particle
+// 		}
 		return kTRUE;
 	}
 	return kFALSE;

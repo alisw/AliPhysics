@@ -352,9 +352,16 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 		fKind = 9;	
 		
 		if(fMCEvent){
+			
 // 			cout << "generating MC stack"<< endl;
 			AliStack *fMCStack = fMCEvent->Stack();
 			if (!fMCStack) continue;
+			
+			const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+			Double_t mcProdVtxX 	= primVtxMC->GetX();
+			Double_t mcProdVtxY 	= primVtxMC->GetY();
+			Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 			TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
 			TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
 // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
@@ -410,12 +417,13 @@ void AliAnalysisTaskMaterial::ProcessPhotons(){
 				else if ( !(pdgCodeNeg==pdgCodePos)){
 					TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
 					Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
+					Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 					if(pdgCode == 111) 
 						fKind = 3; // pi0 Dalitz
 					else if (pdgCode == 221) 
 						fKind = 4; // eta Dalitz
 					else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
-						if(pdgCode == 22 && motherLabelPhoton < fMCStack->GetNprimary()){
+						if(pdgCode == 22 && gammaIsPrimary){
 							fKind = 0; // primary photons
 						} else if (pdgCode == 22){
 							fKind = 5; //secondary photons
