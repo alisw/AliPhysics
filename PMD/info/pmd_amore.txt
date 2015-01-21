@@ -55,36 +55,40 @@ https://aliceinfo.cern.ch/DAQ/node/739
 
 (Please send me info to edit it if needed)
 
-Now Amore is working on aldaqacr58 pc (PMD ACR PC). 
-It could be run by simply typing
+==== to start GUI
 
-amore -d EVE -m GenericGui
+From any ACR machine, you can connect to a dqm node by doing
 
-Detailed step to start the gui :
+shdqm PMDQA
 
-1. On ACR machine type :
+- another terminal you open 
 
    amore -d EVE -m GenericGui
 
 it will pop up with amore screen.
 
-2. PMD agent is now visible in the tree and locate the objects
+- PMD agent is now visible in the tree and locate the objects
 
-3. Optionally, to see only PMD agent in the tree, type PMD in the filter field
+- Optionally, to see only PMD agent in the tree, type PMD in the filter field
 
-4. Select EDep of corresponding SMs or XY histos by double clicking corresponding name from amore tree.
+- Select the histos by double clicking corresponding name from amore tree.
 
-In this no way to flush the memory being processed by central QA server.
+NOTE: By default, it will pick data from amoreAgent PMDShifter. 
+Which is link to DQM QA checkers. But instantaneously we can 
+launch our own agent. it will not crash with earlier one. 
+if want to do so, then do following before lunching GUI.
 
-NOTE: Default it will pick data from amoreAgentPMDShifter. Which is link to DQM QA 
-checkers. But instantaneously we can launch our own agent. it will not crash with 
-earlier one. if so do following before lunching GUI.
+To start the agent (this is for expert plots):
 
-To start the agent :
-1. connect to DQM server
-2. Type :amoreAgent -a amoreAgentPMDQA
+1. connect to DQM server 
+2. Type :amoreAgent -a PMDQA
+3. keep it running
+4. follow the above steps GUI. 
 
-Then follow the above steps GUI. 
+
+Don't Use it!! Experts only
+to see the all amore agents running
+dumpAmoreDbs | grep PMD
 
 ++++++++++++++++++++++++++
 During Operation at P@2
