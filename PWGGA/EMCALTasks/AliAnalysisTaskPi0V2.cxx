@@ -64,7 +64,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) :
   hdifout_EPV0A(0), hdifout_EPV0C(0), 
   hCv2EMC_EPV0A(0), hCv2EMC_EPV0C(0), hCv2ful_EPV0A(0), hCv2ful_EPV0C(0), hCv2out_EPV0A(0), hCv2out_EPV0C(0),
   hclusDif_EPV0A(0), hclusDif_EPV0C(0), hclusv2_EPV0A(0), hclusv2_EPV0C(0),
-  fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
+  fEPcalibFileName("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
   fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
   fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0),
   fHEPV0AM2(0x0), fHEPV0CM2(0x0), fHEPTPCM2(0x0)
@@ -103,7 +103,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() :
   hdifout_EPV0A(0), hdifout_EPV0C(0), 
   hCv2EMC_EPV0A(0), hCv2EMC_EPV0C(0), hCv2ful_EPV0A(0), hCv2ful_EPV0C(0), hCv2out_EPV0A(0), hCv2out_EPV0C(0),
   hclusDif_EPV0A(0), hclusDif_EPV0C(0), hclusv2_EPV0A(0), hclusv2_EPV0C(0),
-  fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
+  fEPcalibFileName("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root"), fTPCFlat(0x0), fV0AFlat(0x0),  fV0CFlat(0x0),
   fClusterPbV0(0), fClusterPbV0A(0), fClusterPbV0C(0), fClusterPbTPC(0),    
   fHEPV0A(0x0), fHEPV0C(0x0), fHEPTPC(0x0),
   fHEPV0AM2(0x0), fHEPV0CM2(0x0), fHEPTPCM2(0x0)

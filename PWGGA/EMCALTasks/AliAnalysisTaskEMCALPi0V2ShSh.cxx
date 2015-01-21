@@ -218,7 +218,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fAODClusters = new TObjArray();
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   fOADBContainer = new AliOADBContainer("AliEMCALgeo");
-  fOADBContainer->InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
+  fOADBContainer->InitFromFile(Form("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
 
   fOutputList = new TList();
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging)   

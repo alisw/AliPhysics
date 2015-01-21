@@ -536,7 +536,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
     
-    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;
+    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;
     
     emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
     

@@ -119,7 +119,7 @@ private:
   
   Bool_t            fOADBSet ;        //  AODB parameters already set
   Bool_t            fAccessOADB ;     //  Get calibration from OADB for EMCAL
-  TString           fOADBFilePath ;   //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
+  TString           fOADBFilePath ;   //  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change
   
   Int_t             fBitEGA;          //  fBitEGA
   Int_t             fBitEJE;          //  fBitEJE

@@ -1057,7 +1057,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
   if(fDebug >=0) (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
 
   fOADBSet           = kFALSE;
-  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;          
+  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;          
   
   fBranchNames       = "ESD:AliESDHeader.,EMCALCells.";
   
@@ -1194,10 +1194,10 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       {
         // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
         if     (runnumber <  140000 &&
-                runnumber >= 100000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2010.root";
+                runnumber >= 100000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
         if     (runnumber >= 140000 &&
-                runnumber <  171000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root";
-        else                         fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+                runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+        else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
       }
       
       AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));

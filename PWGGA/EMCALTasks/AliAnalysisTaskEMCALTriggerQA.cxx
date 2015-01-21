@@ -116,7 +116,7 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
   //Set it only once
   if(fOADBSet) return ;
   
-  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;
+  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;
   
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
   
