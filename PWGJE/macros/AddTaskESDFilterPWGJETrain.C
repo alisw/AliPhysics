@@ -159,7 +159,7 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   // ITSrefit and use only primaries...
   
   // ITS cuts for new jet analysis 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWGJE(10001006);
   
   // throw out tracks with too low number of clusters in

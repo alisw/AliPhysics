@@ -27,7 +27,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   gSystem->Load("libPWGJE");
 
   // Use AliRoot includes to compile our task
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/JETAN -I$ALICE_ROOT/PWG4/JetTasks");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/JETAN -I$ALICE_PHYSICS/PWG4/JetTasks");
 
   // Create and configure the alien handler plugin
   AliAnalysisGrid *alienHandler = CreateAlienHandler(mode);  
@@ -51,22 +51,22 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   mgr->SetCommonFileName("AnalysisResult.root");
 
   // Only for ESD?
-  //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   //AddTaskPhysicsSelection(kFALSE, kTRUE);
 
 
-  // gROOT->Macro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C"); // Only for ESD
+  // gROOT->Macro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C"); // Only for ESD
 
   gROOT->Macro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/ConfigLegoTrainPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/ConfigLegoTrainPWGJE.C");
   ConfigLegoTrainPWGJE(1108); // For DeltaAODName; LHC11h settings
 
   const Int_t kHighPtFilterMask = 768;  // LHC11h
   const Int_t kHighPtFilterMaskBest = 256; // LHC11h
   const Float_t kR = 0.3;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJetCluster.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJetCluster.C");
   jetclu = AddTaskJetCluster("AOD","",kHighPtFilterMask,AliVEvent::kAny,"ANTIKT",kR,0,kTRUE, AliAnalysisManager::GetGlobalStr("kJetDeltaAODName",gDebug),0.15,0.9,10,0);
 
   jetclu->SetEventSelection(kTRUE); 
@@ -90,7 +90,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA|AliVEvent::kEMC1);
 
   Int_t kRpar = Int_t(10*kR + 0.001);
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJetBackgroundSubtract.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJetBackgroundSubtract.C");
   jetbkg = AddTaskJetBackgroundSubtract(TString(Form("clustersAOD_ANTIKT%02d_B0_Filter%05d_Cut00150_Skip00",kRpar,kHighPtFilterMask)),2);
   jetbkg->SetBackgroundBranch(Form("jeteventbackground_clustersAOD_KT%02d_B0_Filter%05d_Cut00150_Skip00",kRpar,kHighPtFilterMask));
   jetbkg->SelectCollisionCandidates(AliAnalysisManager::GetGlobalInt("kPhysicsSelectionFlag", gDebug));
@@ -99,7 +99,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   //jetbkg->SetDebugLevel(1);
 
   // Looking for input dir: clustersAOD_ANTIKT03_B2_Filter00768_Cut00150_Skip00
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskFragmentationFunction.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskFragmentationFunction.C");
   Int_t kEvtClass = 1; // Central events
 
   // Need to add 'type = AOD' as third argument -- only for MC...
@@ -171,7 +171,7 @@ AliAnalysisGrid* CreateAlienHandler(const Char_t *mode)
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    plugin->SetAdditionalLibs("libCORRFW.so libJETAN.so libCGAL.so libfastjet.so libSISConePlugin.so libFASTJETAN.so libPWGTools.so libPWGJE.so");
-   plugin->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/PWGJE");
+   plugin->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_PHYSICS/PWGJE");
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
    //   plugin->SetOutputFiles("Pt.ESD.1.root");

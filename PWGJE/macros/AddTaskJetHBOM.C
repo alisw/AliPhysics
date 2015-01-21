@@ -1,4 +1,4 @@
-AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 272, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,TString effLoc = "$ALICE_ROOT/OADB/PWGJE/HBOM/fastMCInput_LHC10h_110719a.root",Int_t fNHBOM = 0, Int_t constCone = kFALSE, Float_t constConePhi = 0, Float_t constConeEta = 0);
+AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 272, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,TString effLoc = "$ALICE_PHYSICS/OADB/PWGJE/HBOM/fastMCInput_LHC10h_110719a.root",Int_t fNHBOM = 0, Int_t constCone = kFALSE, Float_t constConePhi = 0, Float_t constConeEta = 0);
 
 Int_t kBackgroundModeCl = 0;
 Float_t kPtTrackCutCl = 0.15;
