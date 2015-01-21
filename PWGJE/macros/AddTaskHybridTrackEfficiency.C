@@ -185,7 +185,7 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   // Creates HighPtSpectra analysis task and adds it to the analysis manager.
   
   //Load common track cut class
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
 
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================

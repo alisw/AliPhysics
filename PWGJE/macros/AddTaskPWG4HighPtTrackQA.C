@@ -18,7 +18,7 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
   }
   else if(iAODanalysis==1) { //run on AODs
     if(doEfficiency==1){
-      gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_ROOT/PWGJE/macros/AddTaskHybridTrackEfficiency.C"));
+      gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGJE/macros/AddTaskHybridTrackEfficiency.C"));
       AddTaskHybridTrackEfficiencyQA_AOD_train(prodType.Data(),isPbPb,AliVEvent::kMB,kTRUE,kFALSE);
     }
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
@@ -353,7 +353,7 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
    */
 
   //Load common track cut class
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
 
   // Creates HighPtTrackQA analysis task and adds it to the analysis manager.
   

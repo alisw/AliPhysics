@@ -21,7 +21,7 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trac
   //           2: TPConly constrained tracks
 
   //Load common track cut class
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================

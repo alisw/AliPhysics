@@ -37,8 +37,8 @@ Printf("%s \n>>> Setting style",(char*)__FILE__);
 
  gROOT->ForceStyle();
 
- // Printf("Adding include path $ALICE_ROOT/PWG4/JetTasks");
- gInterpreter->AddIncludePath("$ALICE_ROOT/PWG4/JetTasks");
+ // Printf("Adding include path $ALICE_PHYSICS/PWG4/JetTasks");
+ gInterpreter->AddIncludePath("$ALICE_PHYSICS/PWG4/JetTasks");
  gInterpreter->AddIncludePath("$ALICE_ROOT/include");
  gInterpreter->AddIncludePath("$HOME/root");
 
