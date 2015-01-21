@@ -477,6 +477,6 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   HLTInfo( "ITS SAP Tracker: output %d tracks;  input %d clusters, VertexTracks: %s",
 	   nAddedTracks, nClTotal, vtxOK ? "OK" : "Found" );
 
-  HLTInfo(fBenchmark.GetStatistics());
+  HLTBenchmark(fBenchmark.GetStatistics());
   return iResult;
 }
