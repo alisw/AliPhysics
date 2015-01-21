@@ -25,11 +25,11 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
 {
   AliGenerator *genGen = NULL;
   if(genType==0) { //PYTHIA Perugia 2011
-    gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/train/AddMCGenPythia.C");
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenPythia.C");
     genGen = AddMCGenPythia(ecms, ptHardMin, ptHardMax, kTune,kColorReco,ptWeight);
   }
   else if(genType==1 || genType==2) { //QPYTHIA and PYQUEN
-    gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/train/AddMCGenQuench.C");
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenQuench.C");
     genGen = AddMCGenQuench(ecms, ptHardMin, ptHardMax, genType,kQuench,kAnglePyquen,ptWeight);
   }
   if(!genGen)   {
