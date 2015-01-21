@@ -200,6 +200,48 @@ void AliADDataDCS::Init(){
 		fHv[iAlias]->GetXaxis()->SetTitle("Hv");
 		iAlias++;
   }
+  // CCIU Parameters
+	
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBAThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBCThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/BGAThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/BGCThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBAForBGThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBCForBGThreshold";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADAThrLow";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADAThrHigh";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADCThrLow";
+  fAliasNames[iAlias++] = "AD0/FEE/CCIU/MultADCThrHigh";
+  for(int i=1;i<=5;i++) {
+    	fAliasNames[iAlias] = "AD0/FEE/CCIU/TriggerSelect";
+    	fAliasNames[iAlias++] += Form("%d",i);
+  }
+  //Trigger parameters
+  for(int iCIU = 0; iCIU<2 ; iCIU++){
+  		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/Clk1Win1",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/Clk1Win2",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/Clk2Win1",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/Clk2Win2",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DelayClk1Win1",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DelayClk1Win2",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DelayClk2Win1",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/DelayClk2Win2",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/LatchWin1",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/LatchWin2",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/ResetWin1",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/ResetWin2",iCIU);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/PedestalSubtraction",iCIU);
+  }
+  for(int iCIU = 0; iCIU<2 ; iCIU++){
+	  for(int iCh=1;iCh<=8;iCh++){
+	    	fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/EnableCharge%d",iCIU,iCh);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/EnableTiming%d",iCIU,iCh);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/PedEven%d",iCIU,iCh);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/PedOdd%d",iCIU,iCh);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/PedCutEven%d",iCIU,iCh);
+		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/PedCutOdd%d",iCIU,iCh);
+	  }
+  }
  // Time Resolution Parameters	
   for(int iCIU = 0; iCIU<2 ; iCIU++){
 		fAliasNames[iAlias++] = Form("AD0/FEE/CIU%d/TimeResolution",iCIU);

@@ -21,6 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/AD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${AliRoot_SOURCE_DIR}/AD/ADbase
+		    ${AliRoot_SOURCE_DIR}/AD/ADsim
                     ${AliRoot_SOURCE_DIR}/RAW/dateStream
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec

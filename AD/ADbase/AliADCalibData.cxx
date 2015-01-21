@@ -43,10 +43,10 @@ AliADCalibData::AliADCalibData():
   fBGCThreshold(0) ,  
   fBBAForBGThreshold(0) ,  
   fBBCForBGThreshold(0) ,   
-  fMultV0AThrLow(0) ,  
-  fMultV0AThrHigh(0) , 
-  fMultV0CThrLow(0) ,  
-  fMultV0CThrHigh(0)
+  fMultADAThrLow(0) ,  
+  fMultADAThrHigh(0) , 
+  fMultADCThrLow(0) ,  
+  fMultADCThrHigh(0)
 {
   // default constructor
   
@@ -106,10 +106,10 @@ AliADCalibData::AliADCalibData(const char* name) :
   fBGCThreshold(0) ,  
   fBBAForBGThreshold(0) ,  
   fBBCForBGThreshold(0) ,   
-  fMultV0AThrLow(0) ,  
-  fMultV0AThrHigh(0) , 
-  fMultV0CThrLow(0) ,  
-  fMultV0CThrHigh(0)
+  fMultADAThrLow(0) ,  
+  fMultADAThrHigh(0) , 
+  fMultADCThrLow(0) ,  
+  fMultADCThrHigh(0)
 {
   // Constructor
    TString namst = "Calib_";
@@ -411,10 +411,10 @@ void AliADCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("BGCThreshold")) SetBGCThreshold((UShort_t) val);
 	else if(name.Contains("BBAForBGThreshold")) SetBBAForBGThreshold((UShort_t) val);
 	else if(name.Contains("BBCForBGThreshold")) SetBBCForBGThreshold((UShort_t) val);
-	else if(name.Contains("MultV0AThrLow")) SetMultV0AThrLow((UShort_t) val);
-	else if(name.Contains("MultV0AThrHigh")) SetMultV0AThrHigh((UShort_t) val);
-	else if(name.Contains("MultV0CThrLow")) SetMultV0CThrLow((UShort_t) val);
-	else if(name.Contains("MultV0CThrHigh")) SetMultV0CThrHigh((UShort_t) val);
+	else if(name.Contains("MultADAThrLow")) SetMultADAThrLow((UShort_t) val);
+	else if(name.Contains("MultADAThrHigh")) SetMultADAThrHigh((UShort_t) val);
+	else if(name.Contains("MultADCThrLow")) SetMultADCThrLow((UShort_t) val);
+	else if(name.Contains("MultADCThrHigh")) SetMultADCThrHigh((UShort_t) val);
 	else if(name.Contains("TriggerSelect")) SetTriggerSelected((UShort_t) val, iChannel-1 );
 	else if(name.Contains("EnableCharge")) SetEnableCharge((Bool_t) val, iBoard , iChannel-1);
 	else if(name.Contains("EnableTiming")) SetEnableTiming((Bool_t) val, iBoard , iChannel-1);

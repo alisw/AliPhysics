@@ -20,7 +20,7 @@ class TH1F;
 
 class AliADDataDCS : public TObject {
 public:
-  enum {kNAliases=60,kNGraphs=16,kNHvChannel=16,kNLvChannel=4,kNCIUBoards = 2};
+  enum {kNAliases=197,kNGraphs=16,kNHvChannel=16,kNLvChannel=4,kNCIUBoards = 2};
   enum {kHvMin=0, kHvMax=3000};
   
   AliADDataDCS();
@@ -80,7 +80,7 @@ private:
   Float_t fMeanHV[kNHvChannel];            // High Voltage mean values
   Float_t fWidthHV[kNHvChannel];           // High Voltage widths
   Bool_t  fDeadChannel[kNHvChannel];       // Dead Map 
-  TMap * fFEEParameters;  // TMap holding the FEE parameters of Time Resolution
+  TMap * fFEEParameters;  // TMap holding the FEE parameters
     
   Bool_t fIsProcessed;                   // bool to know processing status
   

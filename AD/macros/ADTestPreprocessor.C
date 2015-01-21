@@ -11,7 +11,7 @@
 void ADTestPreprocessor()
 {
   // load library
-  gSystem->Load("libTestShuttle");
+  gSystem->Load("$ALICE_ROOT/src/SHUTTLE/TestShuttle/libTestShuttle");
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
@@ -19,8 +19,8 @@ void ADTestPreprocessor()
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB");
-  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/src/OCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/src/OCDB");
 
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
