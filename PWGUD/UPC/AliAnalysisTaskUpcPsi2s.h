@@ -89,7 +89,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   
   UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
-  Double_t fZDCAenergy, fZDCCenergy;
+  Double_t fZNAenergy, fZNCenergy;
+  Double_t fZPAenergy, fZPCenergy;
   Double_t fZDCAtime, fZDCCtime;
   Int_t fV0Adecision, fV0Cdecision;
   //input data
