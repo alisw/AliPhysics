@@ -4385,7 +4385,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 
         // sum of v2 plus epsilon times correlated error minus hypothesis (0)
         // also the numerator of equation 3 of phenix paper
-        Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb, 2);
+        Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb-gPwrtTo, 2);
 
         // modified denominator of equation 3 of phenix paper
         Double_t denominator = e*e;
@@ -4408,11 +4408,11 @@ Double_t AliJetFlowTools::ConstructFunctionnd(Double_t *x, Double_t *par)
     return AliJetFlowTools::PhenixChi2nd(x);
 }
 //_____________________________________________________________________________
-TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
+TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p, Double_t p_wrt_to)
 {
     // return the fitting function, pass the p-value w.r.t. 0 by reference
     const Int_t DOF(4);
-    TF2 *f1 = new TF2("ndhist",AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
+    TF2 *f1 = new TF2("ndhist", AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
     printf(" > locating minima < \n");
     Double_t x(0), y(0);
     f1->GetMinimumXY(x, y);
