@@ -1227,9 +1227,9 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     if(!fChi3A) fChi3A = cuts->GetChi3A();
     if(!fChi3C) fChi3C = cuts->GetChi3C();
  
-   TFile *foadb = TFile::Open("$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root");
+   TFile *foadb = TFile::Open("$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root");
     if(!foadb){
-	printf("OADB file $ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root cannot be opened, CALIBRATION FAILED !");
+	printf("OADB file $ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root cannot be opened, CALIBRATION FAILED !");
 	return;
     }
 
