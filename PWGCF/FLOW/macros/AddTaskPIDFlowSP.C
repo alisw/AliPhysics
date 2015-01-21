@@ -122,7 +122,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         AliFlowTrackCuts  *SP_POI[ncentr];
         //half window for POIs
         //=======================SP POI Cuts
-        SP_POI[icentr] = DefinePOIcuts(icentr);
+        SP_POI[icentr] = DefinePOIcuts();
         
         SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
         if(!isAOD){
@@ -366,12 +366,12 @@ AliFlowEventCuts* DefinecutsEvent(Int_t icentr){
     AliFlowEventCuts* cutsEvent = new AliFlowEventCuts(Form("eventcuts_%d",icentr));
     return cutsEvent;
 }
-AliFlowTrackCuts* DefineRPcuts(Int_t icentr){
-    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts"RP_%d");
+AliFlowTrackCuts* DefineRPcuts(){
+    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts"RP");
     return cutsRP;
 }
-AliFlowTrackCuts* DefinePOIcuts(Int_t    icentr){
-    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI_%d");
+AliFlowTrackCuts* DefinePOIcuts(){
+    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI");
     return cutsPOI;
 }
 
