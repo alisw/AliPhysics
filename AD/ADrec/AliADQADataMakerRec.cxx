@@ -502,7 +502,8 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		   
   
       // Fill HPTDC Time Histograms
-      timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
+      //timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
+      timeCorr[offlineCh] = time[offlineCh];
 
       //const Float_t p1 = 2.50; // photostatistics term in the time resolution
       //const Float_t p2 = 3.00; // sleewing related term in the time resolution
