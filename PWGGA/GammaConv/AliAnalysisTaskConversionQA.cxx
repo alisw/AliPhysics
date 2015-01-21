@@ -773,6 +773,12 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 	Int_t pdgCodeNeg = 0; 
 	Int_t pdgCode = 0; 
 
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
+	
 	if(posDaughter == NULL || negDaughter == NULL) {
 		kind = 9;
 		//		return kFALSE; // One particle does not exist
@@ -795,6 +801,7 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 		pdgCodePos=posDaughter->GetPdgCode();
 		pdgCodeNeg=negDaughter->GetPdgCode();
 		motherLabelPhoton= Photon->GetMother(0);
+		Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 		if ( TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode(); 
 
 		if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) return 2; // true from hadronic decays
@@ -802,7 +809,7 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 			if(pdgCode == 111) return 3; // pi0 Dalitz
 			else if (pdgCode == 221) return 4; // eta Dalitz
 			else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
-				if(pdgCode == 22 && motherLabelPhoton < fMCStack->GetNprimary()){
+				if(pdgCode == 22 && gammaIsPrimary){
 					return 0; // primary photons
 				} else if (pdgCode == 22){
 					return 5; //secondary photons

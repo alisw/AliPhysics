@@ -270,7 +270,7 @@ Bool_t AliPrimaryPionCuts::InitPIDResponse(){
 Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliStack *fMCStack){
 	
 	if( labelParticle < 0 || labelParticle >= fMCStack->GetNtrack() ) return kFALSE;
-	if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; 
+// 	if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
 	TParticle* particle = fMCStack->Particle(labelParticle);
 
