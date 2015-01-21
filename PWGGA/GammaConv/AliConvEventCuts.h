@@ -95,7 +95,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		void 		SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, 
 															Bool_t etareweight=kFALSE, 
 															Bool_t k0sreweight=kFALSE, 
-															TString path="$ALICE_ROOT/PWGGA/GammaConv/MCSpectraInput.root", 
+                                                            TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
 															TString histoNamePi0 = "", 
 															TString histoNameEta = "", 
 															TString histoNameK0s = "",

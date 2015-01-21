@@ -91,18 +91,18 @@ void AddTask_GammaConvV1(TString mode){
       AddTaskPIDResponse(isMC);
    }//========= Add PID Reponse to ANALYSIS manager ====
    
-   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
 
    AliCentralitySelectionTask *taskCentrality;
-   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
    taskCentrality = AddTaskCentrality();
    if (isMC){
       taskCentrality->SetMCInput();
       Info("AddTask_tender_CentralitySelection", "This task has MC.");
    }
    
-   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/GammaConv/macros/AddTask_GammaConvV1_PbPb.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_GammaConvV1_PbPb.C");
    
    cout<<"Connecting to Alien..."<<endl;
    TGrid::Connect("alien://");
