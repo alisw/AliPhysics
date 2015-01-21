@@ -50,7 +50,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   
   AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
   
   ConfigureEMCALRecoUtils(reco,
                           simu,                             

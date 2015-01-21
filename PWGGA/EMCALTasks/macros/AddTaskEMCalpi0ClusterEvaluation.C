@@ -57,9 +57,9 @@ void AddTaskEMCalpi0ClusterEvaluation( UInt_t triggerMaskPbPb = AliVEvent::kEMCE
     load_libraries();
 
     // Use AliRoot includes to compile our task
-    gROOT->ProcessLine(".include $ALICE_ROOT");
-    gROOT->ProcessLine(".include $ALICE_ROOT/include");
-    gROOT->ProcessLine(".include $ALICE_ROOT/PWG/FLOW/Base");
+    gROOT->ProcessLine(".include $ALICE_PHYSICS");
+    gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
+    gROOT->ProcessLine(".include $ALICE_PHYSICS/PWG/FLOW/Base");
 
 
 

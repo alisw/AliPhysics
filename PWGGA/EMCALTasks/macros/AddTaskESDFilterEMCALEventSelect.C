@@ -59,7 +59,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterEMCALEventSelect(Float_t energyCut = 1
   reco->SwitchOnRejectExoticCluster();
   
   // Pass the bad channels, need to access run number
-  TString fileName="$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root";
+  TString fileName="$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root";
   AliOADBContainer *contBC=new AliOADBContainer("");
   contBC->InitFromFile((char*)fileName.Data(),"AliEMCALBadChannels"); 
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runNumber); 
@@ -168,7 +168,7 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter)
   // ITSrefit and use only primaries...
   
   // ITS cuts for new jet analysis 
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   //  AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWGJE(10001006);
   
   AliESDtrackCuts *jetCuts1006 = new AliESDtrackCuts("AliESDtrackCuts"); 

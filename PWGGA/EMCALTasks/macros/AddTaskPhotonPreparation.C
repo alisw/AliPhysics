@@ -43,7 +43,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
     clusterColName = "CaloClusters";
 
   if (0) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
 
     cout<<"AddTaskEmcalTrackPropagator"<<endl;
     AliEmcalTrackPropagatorTask *proptask = AddTaskEmcalTrackPropagator();
@@ -52,7 +52,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
 
   //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
     AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers");
 
     cout<<"AddTaskEmcalTriggerMaker"<<endl;
@@ -60,7 +60,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
   }
 
   //----------------------- Track Matching tasks -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMatchingChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMatchingChain.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
 								  clusterColName,
 								  trackeff,doAODTrackProp,
@@ -75,7 +75,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
   Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data());
   if(makePicoTracks) {
     //----------------------- Produce PicoTracks -----------------------------------------------------
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
     pTrackTask->SelectCollisionCandidates(pSel);
   }
@@ -87,7 +87,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
     myContName = Form("Photon_Preperation");
  
 
- gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALPhotonIsolation.C"); 
+ gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALPhotonIsolation.C"); 
 
  AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(emctracks,emcclusters,kTRUE, iOutput,kFALSE);
      task->SelectCollisionCandidates(pSel);

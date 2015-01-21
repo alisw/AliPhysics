@@ -113,7 +113,7 @@ void emcalReclusterize(Int_t mode=mLocal)
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); 
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C");
     
     Bool_t kMC = kFALSE; // extra checks in case of MC analysis
     Bool_t outAOD = kFALSE ; // Generate output AOD with new clusters
@@ -254,11 +254,11 @@ void SetupPar(char* pararchivename)
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
   if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_PHYSICS")) ;
     TString processline(Form(".! make %s", parpar.Data())) ; 
     gROOT->ProcessLine(processline.Data()) ;
     gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
+    processline = Form(".! mv $ALICE_PHYSICS/%s .", parpar.Data()) ;
     gROOT->ProcessLine(processline.Data()) ;
   } 
   if ( gSystem->AccessPathName(pararchivename) ) {  
@@ -305,7 +305,7 @@ void CreateChain(const anaModes mode, TChain * chain){
   //-----------------------------------------------------------
   if(mode ==mPROOF || mode ==mLocalCAF){
     // Chain from CAF
-    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
     // The second parameter is the number of input files in the chain
     chain = CreateESDChain("ESD12001.txt", 5);  
   }
