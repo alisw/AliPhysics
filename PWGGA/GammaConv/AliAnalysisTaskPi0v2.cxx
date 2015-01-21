@@ -1522,7 +1522,7 @@ void AliAnalysisTaskPi0v2::LoadVZEROCalibration(Int_t run){
 
 	// VZERO Phi Weights and Recentering
 	if (fPeriod.CompareTo("LHC10h")==0){
-		TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
+        TString oadbfilename = "$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root";
 		TFile *foadb = TFile::Open(oadbfilename.Data());
 
 		if(!foadb){

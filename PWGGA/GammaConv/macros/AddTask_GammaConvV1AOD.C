@@ -87,7 +87,7 @@ void AddTask_GammaConvV1AOD(TString mode){
       AddTaskPIDResponse(isMC);
    }//========= Add PID Reponse to ANALYSIS manager ====
       
-   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/GammaConv/macros/AddTask_GammaConvV1_PbPb.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_GammaConvV1_PbPb.C");
    
    cout<<"Connecting to Alien..."<<endl;
    TGrid::Connect("alien://");

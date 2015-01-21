@@ -195,7 +195,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
    Int_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
    void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent);
-   void SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, Bool_t etareweight=kFALSE, Bool_t k0sreweight=kFALSE, TString path="$ALICE_ROOT/PWGGA/GammaConv/MCSpectraInput.root", 
+   void SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, Bool_t etareweight=kFALSE, Bool_t k0sreweight=kFALSE, TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
                                                 TString histoNamePi0 = "", TString histoNameEta = "", TString histoNameK0s = "",
                                                 TString fitNamePi0 = "", TString fitNameEta = "", TString fitNameK0s ="" ) {
       AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
