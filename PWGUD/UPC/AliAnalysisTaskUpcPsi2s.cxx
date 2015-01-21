@@ -70,7 +70,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZDCAenergy(0),fZDCCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
+    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
@@ -93,7 +93,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZDCAenergy(0),fZDCCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
+    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
@@ -233,8 +233,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
   fJPsiTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
-  fJPsiTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
-  fJPsiTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
+  fJPsiTree ->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/D");
+  fJPsiTree ->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/D");
+  fJPsiTree ->Branch("fZPAenergy", &fZPAenergy, "fZPAenergy/D");
+  fJPsiTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/D");
   fJPsiTree ->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/D");
   fJPsiTree ->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/D");
   fJPsiTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
@@ -295,8 +297,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
   fPsi2sTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
   
-  fPsi2sTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
-  fPsi2sTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
+  fPsi2sTree ->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/D");
+  fPsi2sTree ->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/D");
+  fPsi2sTree ->Branch("fZPAenergy", &fZPAenergy, "fZPAenergy/D");
+  fPsi2sTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/D");
   fPsi2sTree ->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/D");
   fPsi2sTree ->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/D");
   fPsi2sTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
@@ -525,10 +529,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
-  if(trigger.Contains("CINT1")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  if(trigger.Contains("CINT1-B")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
   
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  if(trigger.Contains("CINT1") && (fL0inputs & (1 << 3))) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //0TVX triggers in CINT1 events
+  if(trigger.Contains("CINT1-B") && (fL0inputs & (1 << 3))) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //0TVX triggers in CINT1 events
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -603,10 +607,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   fHistNeventsJPsi->Fill(4);
   fHistNeventsPsi2s->Fill(4);
   
-  fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
 
-  if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
+  if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
   
   fHistNeventsJPsi->Fill(5);
   fHistNeventsPsi2s->Fill(5); 
@@ -872,9 +876,11 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
-  fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  fZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
+  fZPCenergy = fZDCdata->GetZPCTowerEnergy()[0];  
   fZDCAtime = fZDCdata->GetZNATime();
   fZDCCtime = fZDCdata->GetZNCTime();
   
@@ -1239,9 +1245,9 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   fV0Cdecision = fV0data->GetV0CDecision();
   if(fV0Adecision != AliESDVZERO::kV0Empty || fV0Cdecision != AliESDVZERO::kV0Empty) return;
   
-  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
-  if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0]; 
+  if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
   
   fHistNeventsJPsi->Fill(4);
   fHistNeventsPsi2s->Fill(4);
@@ -1466,9 +1472,11 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
-  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
-
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  fZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
+  fZPCenergy = fZDCdata->GetZPCTowerEnergy()[0]; 
+  
   fNLooseTracks = 0;
   
   //Track loop - loose cuts
