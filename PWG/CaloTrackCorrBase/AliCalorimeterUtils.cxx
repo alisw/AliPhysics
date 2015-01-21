@@ -320,7 +320,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     if(fRemoveBadChannels)
     {
       AliOADBContainer badmapContainer(Form("phosBadMap"));
-      TString fileName="$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root";
+      TString fileName="$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root";
       badmapContainer.InitFromFile(Form("%s/PHOSBadMaps.root",fOADBFilePathPHOS.Data()),"phosBadMap");
       
       //Use a fixed run number from year 2010, this year not available yet.
@@ -1231,8 +1231,8 @@ void AliCalorimeterUtils::InitParameters()
   fOADBForEMCAL = kTRUE ;            
   fOADBForPHOS  = kFALSE;
   
-  fOADBFilePathEMCAL = "$ALICE_ROOT/OADB/EMCAL" ;          
-  fOADBFilePathPHOS  = "$ALICE_ROOT/OADB/PHOS"  ;     
+  fOADBFilePathEMCAL = "$ALICE_PHYSICS/OADB/EMCAL" ;
+  fOADBFilePathPHOS  = "$ALICE_PHYSICS/OADB/PHOS"  ;
   
   fImportGeometryFromFile = kTRUE;
   fImportGeometryFilePath = "";
@@ -1323,10 +1323,10 @@ void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
     {
       // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
       if     (runnumber <  140000 &&
-              runnumber >= 100000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2010.root";
+              runnumber >= 100000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
       if     (runnumber >= 140000 &&
-              runnumber <  171000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root";
-      else                         fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+              runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+      else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
       
     }
     

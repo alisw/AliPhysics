@@ -347,8 +347,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fOADBSet ;              //  AODB parameters already set
   Bool_t             fOADBForEMCAL ;         //  Get calibration from OADB for EMCAL
   Bool_t             fOADBForPHOS ;          //  Get calibration from OADB for PHOS
-  TString            fOADBFilePathEMCAL ;    //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
-  TString            fOADBFilePathPHOS ;     //  Default path $ALICE_ROOT/OADB/PHOS, if needed change
+  TString            fOADBFilePathEMCAL ;    //  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change
+  TString            fOADBFilePathPHOS ;     //  Default path $ALICE_PHYSICS/OADB/PHOS, if needed change
   Bool_t             fImportGeometryFromFile;// Import geometry settings in geometry.root file
   TString            fImportGeometryFilePath;// path fo geometry.root file
 
