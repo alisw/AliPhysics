@@ -329,10 +329,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      ktm = aniter*cKt/*8*/ + ikt;
 	      ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 	      
-	      
               cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
-	      //cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);//??
-	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
+
+	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);//add kT bins
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);// add CF histos
 
 
 	      if (run3d) {
