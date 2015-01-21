@@ -282,19 +282,20 @@ void Load() {
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
+  
+    gSystem->Load("libEMCALUtils.so");
+    gSystem->Load("libPHOSUtils.so");
 
-    gSystem->Load("libEMCALUtils");
-    gSystem->Load("libPHOSUtils");
-    gSystem->Load("libCGAL");
-    gSystem->Load("libfastjet");
-    gSystem->Load("libsiscone");
-    gSystem->Load("libSISConePlugin");
+    //fastjet 3.0.3 
+    gSystem->Load("libCGAL.so");
+    gSystem->Load("libfastjet.so");
+    gSystem->Load("libsiscone.so");
+    gSystem->Load("libsiscone_spherical.so");
+    gSystem->Load("libfastjetplugins.so");
+    gSystem->Load("libfastjetcontribfragile.so");
 
-    gSystem->Load("libCORRFW");
-    gSystem->Load("libPWGTools");
-    gSystem->Load("libJETAN");
-    gSystem->Load("libFASTJETAN");
-    gSystem->Load("libPWGJE");
+    gSystem->Load("libJETAN.so");
+    gSystem->Load("libFASTJETAN.so");
 
     // include paths, necessary for compilation
     gSystem->AddIncludePath("-Wno-deprecated");

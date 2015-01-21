@@ -70,6 +70,7 @@ class AliJetFlowTools {
         void            SetOffsetStart(Int_t g)         {gOffsetStop            = g;}
         void            SetOffsetStop(Int_t g)          {gOffsetStart           = g;}
         void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
+        void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
             fInputList          = list;
@@ -264,7 +265,7 @@ class AliJetFlowTools {
         static void     MinimizeChi2nd();
         static Double_t PhenixChi2nd(const Double_t *xx );
         static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
-        static TF2*     ReturnFunctionnd(Double_t &p);
+        static TF2*     ReturnFunctionnd(Double_t &p, Double_t p_wrt_to = 0.);
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -498,6 +499,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         static Int_t            gOffsetStart;           // see initialization below
         static Int_t            gOffsetStop;            // see initialization below
         static Float_t          gReductionFactor;       // multiply shape uncertainty by this factor
+        static Float_t          gPwrtTo;                // p-value will be evaluated wrt y = gPwrtTo
 
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
@@ -511,7 +513,8 @@ TArrayD* AliJetFlowTools::gShape        = new TArrayD(6);       // then used in 
 TArrayD* AliJetFlowTools::gCorr         = new TArrayD(6);       // to calculate the significance of the results
 Int_t    AliJetFlowTools::gOffsetStart  =  1;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Int_t    AliJetFlowTools::gOffsetStop   = -1;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
-Float_t  AliJetFlowTools::gReductionFactor      = .5;   // multiply shape uncertainty by this factor
+Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
+Float_t  AliJetFlowTools::gPwrtTo               = 0.;   // p-value will be evaluated wrt y = gPwrtTo
 
 #endif
 //_____________________________________________________________________________
