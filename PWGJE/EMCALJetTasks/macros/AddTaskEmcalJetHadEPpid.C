@@ -138,7 +138,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   // for manually doing Track Cuts
   // ESD track quality cuts
   AliESDtrackCuts *esdTrackCuts = 0x0;
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   esdTrackCuts = CreateTrackCutsPWGJE(esdcuts);
   correlationtask->SetTrackCuts(esdTrackCuts);
 

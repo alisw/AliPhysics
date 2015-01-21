@@ -48,7 +48,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
     }
 
   // #### Add necessary jet finder tasks
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
   if(tag2.IsNull()) tag2=tag1;
 
@@ -208,7 +208,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   kPeriod.ToLower();
 
   // Add kt jet finder and rho task in case we want background subtraction
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");  
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");  
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),1.);
@@ -216,7 +216,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
     jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),0.);
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
     TF1 *fScale = new TF1("fScale","1.42",0.,100.); //scale factor for pPb
     AliAnalysisTaskRhoSparse *rhoTaskSparse = AddTaskRhoSparse(
 			       jetFinderKt->GetName(),
@@ -241,7 +241,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   else if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h") ) {
     jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),0.1);
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
     TF1* sfunc = new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
     sfunc->SetParameter(2,1.76458);
     sfunc->SetParameter(1,-0.0111656);

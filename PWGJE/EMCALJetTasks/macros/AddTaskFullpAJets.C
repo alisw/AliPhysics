@@ -43,7 +43,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     TString tmpTaskName("");
     AliEmcalJetTask* jetFinderTask = NULL;
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
     
     // Add User Task
     AliAnalysisTaskFullpAJets *task = new AliAnalysisTaskFullpAJets(taskName);

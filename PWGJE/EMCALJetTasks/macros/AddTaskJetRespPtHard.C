@@ -28,7 +28,7 @@ AliJetResponseMaker* AddTaskJetRespPtHard(
 {
   TCollection *funct = gROOT->GetListOfGlobalFunctions();
   if (!funct->Contains("AddTaskJetResponseMaker"))
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
   else
     Printf("Function AddTaskJetResponseMaker already loaded, will not load again...");
 

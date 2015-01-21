@@ -53,7 +53,7 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
     myContName = Form("QualityAssurancePA_R0%2.0f_%s",jetRadius*100,triggerName.Data());
 
   // #### Add necessary jet finder tasks
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300);// anti-kt
 
   // #### Define analysis task

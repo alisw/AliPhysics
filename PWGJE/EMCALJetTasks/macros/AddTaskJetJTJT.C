@@ -62,7 +62,7 @@ AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
   TString rhoName = "";
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName,clustersCorrName,1,0.4,1,0.15,0.300); // anti-kt
 
   ntracks = tracksName;

@@ -15,7 +15,7 @@ AliAnalysisTaskFullppJet *AddTaskAliAnalysisTaskFullppJet(const char *name = "Ba
       return NULL;
     }
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts *esdTrackCuts = 0x0;
   AliESDtrackCuts *hybridTrackCuts1 = 0x0;
   AliESDtrackCuts *hybridTrackCuts2 = 0x0;

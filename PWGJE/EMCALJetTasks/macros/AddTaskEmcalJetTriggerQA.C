@@ -39,7 +39,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
     }
 
   // #### Add necessary jet finder tasks
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
   AliEmcalJetTask* jetFinderTask1;
   AliEmcalJetTask* jetFinderTask2;
@@ -152,7 +152,7 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
   jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
   if(kBeamType == "pPb") {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
     TF1 *fScale = new TF1("fScale","1.28",0.,100.); //scale factor for pPb
     AliAnalysisTaskRhoSparse *rhoTaskSparse = AddTaskRhoSparse(
 			       jetFinderKt->GetName(),
@@ -175,7 +175,7 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTaskSparse;
   }
   else if(kBeamType=="PbPb") {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
 
     TF1* sfunc = new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
     sfunc->SetParameter(2,1.76458);

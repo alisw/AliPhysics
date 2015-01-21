@@ -18,7 +18,7 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
     return NULL;
   }
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");
 
   Bool_t distBC         = kTRUE;   //distance to bad channel
   Bool_t recalibClus    = kTRUE;   //recalibrate cluster energy

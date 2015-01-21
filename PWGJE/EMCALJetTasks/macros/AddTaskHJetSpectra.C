@@ -63,7 +63,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
 
    if(jetRadius < 0.1 || jetRadiusBg < 0.1) return NULL;
  
-   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
    AliEmcalJetTask* jetFinderTask   = AddTaskEmcalJet(usedTracks,"",kANTIKT,jetRadius,  kCHARGEDJETS,0.150,0.300); //FK//
    AliEmcalJetTask* jetFinderTaskBg = AddTaskEmcalJet(usedTracks,"",kANTIKT,jetRadiusBg,kCHARGEDJETS,0.150,0.300); //FK//excl from bg
 
@@ -73,7 +73,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"", kKT,     0.4, kCHARGEDJETS,0.150,0.300); // kt
    jetFinderRhoKT->SetMinJetPt(0);
 
-   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
    AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), 
                                                         jetFinderRho->GetName(), 
                                                         usedTracks,   //pico trakcs

@@ -45,7 +45,7 @@ void AddTaskJetPreparationWrapper(const char *configstring){
          modifyMatchObjects = (static_cast<AliJSONBool *>(combinedConfig.GetValue("modifyMatchObjects")))->GetValue(),
          doTriggerQA = (static_cast<AliJSONBool *>(combinedConfig.GetValue("doTriggerQA")))->GetValue();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCLAJetTasks/macros/AddTaskJetPreparation.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCLAJetTasks/macros/AddTaskJetPreparation.C");
   AddTaskJetPreparation(periodstr.Data(), pTracksName.Data(), usedMCParticles.Data(), usedClusters.Data(), outClusName.Data(),
       hadcorr, Eexcl, phiMatch, etaMatch, minPtEt, pSel, trackclus, doHistos, makePicoTracks, makeTrigger, isEMCALTrain, trackeff,
       doAODTrackProp, modifyMatchObjects, doTriggerQA);

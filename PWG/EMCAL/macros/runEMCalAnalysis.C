@@ -119,7 +119,7 @@ void runEMCalAnalysis(
   // ################# Now: Add some basic tasks
 
   // Physics selection task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, pSel, 5, 5, 10, kTRUE, -1, -1, -1, -1);
 
   if (!physSelTask) 
@@ -130,24 +130,24 @@ void runEMCalAnalysis(
 
   // Centrality task
   if (usedData == "ESD") {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kTRUE);
   }
 
   // Compatibility task, only needed for skimmed ESD
   if (usedData == "sESD") {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalCompat.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCompat.C");
     AliEmcalCompatTask *comptask = AddTaskEmcalCompat();
   }
 
   // Setup task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
   AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
-  setupTask->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
+  setupTask->SetGeoPath("$ALICE_PHYSICS/OADB/EMCAL");
   
   // Tender Supplies
   if (useTender) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
     //adjust pass when running locally. On grid give empty string, will be picked up automatically from path to ESD/AOD file
     AliAnalysisTaskSE *clusm = AddTaskEmcalPreparation(runPeriod,"pass1"); 
   }
@@ -158,14 +158,14 @@ void runEMCalAnalysis(
   TString clustersName = "EmcCaloClusters";
 
   // ################# Now: Call jet preparation macro (picotracks, hadronic corrected caloclusters, ...) 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMatchingChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMatchingChain.C");
   AddTaskMatchingChain(runPeriod,pSel,
 		       clustersName,1.,kTRUE,
 		       0.1,kTRUE,kTRUE);
   
   // ################# Now: Add analysis task
   // Here you can put in your AddTaskMacro for your task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSample.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSample.C");
   AliAnalysisTaskEmcalSample* anaTask = AddTaskEmcalSample(tracksName, clustersName, 4);
 
   // Set the physics selection for all given tasks
@@ -204,12 +204,12 @@ void runEMCalAnalysis(
     TChain* chain = 0;
     if (usedData == "AOD") 
     {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateAODChain.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
       chain = CreateAODChain(localFiles.Data(), numLocalFiles);
     }
     else
     {  // ESD or skimmed ESD
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateESDChain.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
       chain = CreateESDChain(localFiles.Data(), numLocalFiles);
     }
     
@@ -280,9 +280,9 @@ void LoadLibs()
   gSystem->Load("libPWGCFCorrelationsDPhi");
 
   // include paths
-  gSystem->AddIncludePath("-Wno-deprecated");
-  gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");
+//gSystem->AddIncludePath("-Wno-deprecated");
+  //gSystem->AddIncludePath("-I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/EMCAL");
+  //gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGDQ/dielectron -I$ALICE_PHYSICS/PWGHF/hfe");
 }
 
 AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir, const char* gridMode, const char* runNumbers, 
