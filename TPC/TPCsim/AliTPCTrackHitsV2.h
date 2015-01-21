@@ -103,7 +103,7 @@ public:
   Float_t Eta() const;
 
  private:
-  Int_t fTrackID; // ID of the trac©k
+  Int_t fTrackID; // ID of the track
   Short_t fVolumeID;// volume ID
   Float_t fR;  //radius
   Float_t fZ;  //z position
