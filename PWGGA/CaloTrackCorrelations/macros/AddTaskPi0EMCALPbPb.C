@@ -141,9 +141,6 @@ AliCaloTrackReader * ConfigureReader(TString kData,TString kInputDataType, TStri
   
   // Tracks
   reader->SwitchOffCTS();
-  //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C"); 
-  //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10011004); 
-  //reader->SetTrackCuts(esdTrackCuts);
   
   // Calorimeter
   

@@ -271,7 +271,7 @@ else
   
   if(inputDataType=="ESD")
   {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
     //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
     //reader->SetTrackCuts(esdTrackCuts);
     //reader->SwitchOnConstrainTrackToVertex();
@@ -384,7 +384,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   cu->SwitchOffRecalibration();
   cu->SwitchOffRunDepCorrection();
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simu,
                           exotic,
