@@ -23,8 +23,8 @@ class AliJetFastSimulation : public AliAnalysisTaskEmcal {
   void                   SetNTrackClasses(Int_t i)                { fNTrackClasses   = i;    }
   void                   SetFixedTrackEfficiency(Double_t eff)    { fEfficiencyFixed = eff ; }
 
-  void                   SetUseTrResolutionFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Resolution/PtResol_LHCh_Cent0-10_v1.root") {fUseTrPtResolutionFromOADB = b; fPathTrPtResolution=path;}
-  void                   SetUseTrEfficiencyFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Efficiency/Efficiency_LHC11a2aj_Cent0_v1.root") {fUseTrEfficiencyFromOADB = b; fPathTrEfficiency=path;}
+  void                   SetUseTrResolutionFromOADB(Bool_t b=kTRUE, TString path="$ALICE_PHYSICS/OADB/PWGJE/Resolution/PtResol_LHCh_Cent0-10_v1.root") {fUseTrPtResolutionFromOADB = b; fPathTrPtResolution=path;}
+  void                   SetUseTrEfficiencyFromOADB(Bool_t b=kTRUE, TString path="$ALICE_PHYSICS/OADB/PWGJE/Efficiency/Efficiency_LHC11a2aj_Cent0_v1.root") {fUseTrEfficiencyFromOADB = b; fPathTrEfficiency=path;}
   void                   SetSmearResolution(Bool_t b)                               { fUseTrPtResolutionSmearing = b ;}
   void                   SetDiceEfficiency(Int_t b)                                 { fUseDiceEfficiency         = b ;}
   void                   SetDiceEfficiencyMinPt(Double_t pt)                        { fDiceEfficiencyMinPt       = pt;}

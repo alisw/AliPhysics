@@ -26,8 +26,8 @@ ClassImp(AliEmcalSetupTask)
 AliEmcalSetupTask::AliEmcalSetupTask() : 
   AliAnalysisTaskSE(),
   fOcdbPath("uselocal"),
-  fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
-  fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
+  fOadbPath("$ALICE_PHYSICS/OADB/EMCAL"),
+  fGeoPath("$ALICE_PHYSICS/OADB/EMCAL"),
   fObjs("GRP ITS TPC TRD EMCAL"),
   fNoOCDB(kFALSE),
   fIsInit(kFALSE),
@@ -41,8 +41,8 @@ AliEmcalSetupTask::AliEmcalSetupTask() :
 AliEmcalSetupTask::AliEmcalSetupTask(const char *name) : 
   AliAnalysisTaskSE(name),
   fOcdbPath("uselocal"),
-  fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
-  fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
+  fOadbPath("$ALICE_PHYSICS/OADB/EMCAL"),
+  fGeoPath("$ALICE_PHYSICS/OADB/EMCAL"),
   fObjs("GRP ITS TPC TRD EMCAL"),
   fNoOCDB(kFALSE),
   fIsInit(kFALSE),
@@ -202,7 +202,7 @@ void AliEmcalSetupTask::Setup(Int_t runno)
 	  }
 	}
 	gSystem->MakeDirectory(fLocalOcdb);
-	TString filename(Form("$ALICE_ROOT/PWG/EMCAL/data/%d.dat",year));
+	TString filename(Form("$ALICE_PHYSICS/PWG/EMCAL/data/%d.dat",year));
 	TString cmd(Form("cd %s && tar -xf %s",fLocalOcdb.Data(),filename.Data()));
 	Int_t ret = gSystem->Exec(cmd);
 	if (ret==0) {
