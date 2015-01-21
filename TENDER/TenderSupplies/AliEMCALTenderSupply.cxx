@@ -857,7 +857,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   if (fMisalignSurvey == kdefault)
   { //take default alignment corresponding to run no
     AliOADBContainer emcalgeoCont(Form("emcal"));
-    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+    emcalgeoCont.InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(runGM,"EmcalMatrices");
   }
   
@@ -865,13 +865,13 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   { //take alignment at sector level
     if (runGM <= 140000) { //2010 data
       AliOADBContainer emcalgeoCont(Form("emcal2010"));
-      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      emcalgeoCont.InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
       mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
     } 
     else if (runGM>140000)
     { // 2011 LHC11a pass1 data
       AliOADBContainer emcalgeoCont(Form("emcal2011"));
-      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      emcalgeoCont.InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
       mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");      
     }
   }
@@ -880,13 +880,13 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   { //take alignment at module level
     if (runGM <= 140000) { //2010 data
       AliOADBContainer emcalgeoCont(Form("emcal2010"));
-      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      emcalgeoCont.InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
       mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
     } 
     else if (runGM>140000) 
     { // 2011 LHC11a pass1 data
       AliOADBContainer emcalgeoCont(Form("emcal2011"));
-      emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+      emcalgeoCont.InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
       mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");      
     }
   }
@@ -942,19 +942,19 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");    
   } 
   else 
-  { // Else choose the one in the $ALICE_ROOT directory
-    if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from $ALICE_ROOT/OADB/EMCAL");
+  { // Else choose the one in the $ALICE_PHYSICS directory
+    if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","read");
+    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","read");
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root was not found");
       return 0;
     }  
       
     if (fbad) delete fbad;
     
-    contBC->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels"); 
+    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels"); 
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
@@ -1019,19 +1019,19 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
   }
   else
-  { // Else choose the one in the $ALICE_ROOT directory
-    if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+  { // Else choose the one in the $ALICE_PHYSICS directory
+    if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","read");
+    TFile *fRecalib= new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALRecalib.root","read");
     if (!fRecalib || fRecalib->IsZombie()) 
     {
-      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found");
+      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALRecalib.root was not found");
       return 0;
     }
     
     if (fRecalib) delete fRecalib;
       
-    contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
+    contRF->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
   }
 
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
@@ -1111,19 +1111,19 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
     contRF->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fBasePath.Data()),"AliEMCALRunDepTempCalibCorrections");
   }
   else
-  { // Else choose the one in the $ALICE_ROOT directory
-    if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+  { // Else choose the one in the $ALICE_PHYSICS directory
+    if (fDebugLevel>0)  AliInfo("Loading Recalib OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fRunDepRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALTemperatureCorrCalib.root","read");
+    TFile *fRunDepRecalib= new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTemperatureCorrCalib.root","read");
     if (!fRunDepRecalib || fRunDepRecalib->IsZombie()) 
     {
-      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALTemperatureCorrCalib.root was not found");
+      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTemperatureCorrCalib.root was not found");
       return 0;
     }
     
     if (fRunDepRecalib) delete fRunDepRecalib;
     
-    contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALTemperatureCorrCalib.root","AliEMCALRunDepTempCalibCorrections");     
+    contRF->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTemperatureCorrCalib.root","AliEMCALRunDepTempCalibCorrections");     
   }
   
   TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);
@@ -1209,19 +1209,19 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
     contBC->InitFromFile(Form("%s/EMCALTimeCalib.root",fBasePath.Data()),"AliEMCALTimeCalib");    
   } 
   else 
-  { // Else choose the one in the $ALICE_ROOT directory
-    if (fDebugLevel>0) AliInfo("Loading time calibration OADB from $ALICE_ROOT/OADB/EMCAL");
+  { // Else choose the one in the $ALICE_PHYSICS directory
+    if (fDebugLevel>0) AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALTimeCalib.root","read");
+    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root","read");
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALTimeCalib.root was not found");
+      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root was not found");
       return 0;
     }  
       
     if (fbad) delete fbad;
     
-    contBC->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALTimeCalib.root","AliEMCALTimeCalib"); 
+    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root","AliEMCALTimeCalib"); 
   }
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
