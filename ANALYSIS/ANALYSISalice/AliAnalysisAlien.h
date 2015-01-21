@@ -87,6 +87,8 @@ public:
    const char         *GetROOTVersion() const                            {return fROOTVersion;}
    virtual void        SetAliROOTVersion(const char *version)            {fAliROOTVersion=version;}
    const char         *GetAliROOTVersion() const                         {return fAliROOTVersion;}
+   virtual void        SetAliPhysicsVersion(const char *version)         {fAliPhysicsVersion=version;}
+   const char         *GetAliPhysicsVersion() const                      {return fAliPhysicsVersion;}
    virtual void        SetUser(const char *user)                         {fUser = user;}
    const char         *GetUser() const                                   {return fUser;}
    virtual void        SetTTL(Int_t ttl=30000)                           {fTTL = ttl;}
@@ -268,6 +270,7 @@ private:
    TString          fAPIVersion;      // API version
    TString          fROOTVersion;     // ROOT version
    TString          fAliROOTVersion;  // AliROOT version
+   TString          fAliPhysicsVersion; // AliPhysics version
    TString          fExternalPackages; // External packages
    TString          fUser;            // AliEn user name
    TString          fGridWorkingDir;  // AliEn directory containing the input packages
@@ -305,6 +308,6 @@ private:
    TString          fFriendLibs;      // List of libs (separated by blacs) needed for friends processing
    TString          fTreeName;        // Name of the tree to be analyzed
 
-   ClassDef(AliAnalysisAlien, 26)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 27)   // Class providing some AliEn utilities
 };
 #endif

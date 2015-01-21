@@ -112,6 +112,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fAPIVersion(),
                   fROOTVersion(),
                   fAliROOTVersion(),
+                  fAliPhysicsVersion(),
                   fExternalPackages(),
                   fUser(),
                   fGridWorkingDir(),
@@ -194,6 +195,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fAPIVersion(),
                   fROOTVersion(),
                   fAliROOTVersion(),
+                  fAliPhysicsVersion(),
                   fExternalPackages(),
                   fUser(),
                   fGridWorkingDir(),
@@ -276,6 +278,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fAPIVersion(other.fAPIVersion),
                   fROOTVersion(other.fROOTVersion),
                   fAliROOTVersion(other.fAliROOTVersion),
+                  fAliPhysicsVersion(other.fAliPhysicsVersion),
                   fExternalPackages(other.fExternalPackages),
                   fUser(other.fUser),
                   fGridWorkingDir(other.fGridWorkingDir),
@@ -400,6 +403,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fAPIVersion              = other.fAPIVersion;
       fROOTVersion             = other.fROOTVersion;
       fAliROOTVersion          = other.fAliROOTVersion;
+      fAliPhysicsVersion       = other.fAliPhysicsVersion;
       fExternalPackages        = other.fExternalPackages;
       fUser                    = other.fUser;
       fGridWorkingDir          = other.fGridWorkingDir;
@@ -1750,6 +1754,10 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->AddToPackages("AliRoot", fAliROOTVersion,"VO_ALICE", "List of requested packages");
          fMergingJDL->AddToPackages("AliRoot", fAliROOTVersion, "VO_ALICE", "List of requested packages");
       }   
+      if (!fAliPhysicsVersion.IsNull()) {
+         fGridJDL->AddToPackages("AliPhysics", fAliPhysicsVersion,"VO_ALICE", "List of requested packages");
+         fMergingJDL->AddToPackages("AliPhysics", fAliPhysicsVersion, "VO_ALICE", "List of requested packages");
+      }   
       if (!fROOTVersion.IsNull()) {
          fGridJDL->AddToPackages("ROOT", fROOTVersion);
          fMergingJDL->AddToPackages("ROOT", fROOTVersion);
@@ -2553,6 +2561,7 @@ void AliAnalysisAlien::Print(Option_t *) const
       else
       printf("=   ROOT version requested________________________ default\n");
       printf("=   AliRoot version requested_____________________ %s\n", fAliROOTVersion.Data());
+      printf("=   AliPhysics version requested__________________ %s\n", fAliPhysicsVersion.Data());
       if (!fAliRootMode.IsNull())
       printf("=   Requested AliRoot mode________________________ %s\n", fAliRootMode.Data());  
       if (fNproofWorkers)
@@ -2586,6 +2595,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   Version of API requested: ____________________ %s\n", fAPIVersion.Data());
    printf("=   Version of ROOT requested: ___________________ %s\n", fROOTVersion.Data());
    printf("=   Version of AliRoot requested: ________________ %s\n", fAliROOTVersion.Data());
+   printf("=   Version of AliPhysics requested: _____________ %s\n", fAliPhysicsVersion.Data());
    if (fUser.Length()) 
    printf("=   User running the plugin: _____________________ %s\n", fUser.Data());
    printf("=   Grid workdir relative to user $HOME: _________ %s\n", fGridWorkingDir.Data());
@@ -2691,6 +2701,7 @@ void AliAnalysisAlien::SetDefaults()
    fAPIVersion                 = "";
    fROOTVersion                = "";
    fAliROOTVersion             = "";
+   fAliPhysicsVersion          = "";
    fUser                       = "";  // Your alien user name
    fGridWorkingDir             = "";
    fGridDataDir                = "";  // Can be like: /alice/sim/PDC_08a/LHC08c9/
@@ -3475,6 +3486,13 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
              if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)%p, kTRUE);", 
                                          fAliROOTVersion.Data(), &optionsList))) {
                 Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
+                return kFALSE;
+             }
+           }
+           if ( ! fAliPhysicsVersion.IsNull() ) {
+             if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliPhysics::%s\", (TList*)%p, kTRUE);", 
+                                         fAliPhysicsVersion.Data(), &optionsList))) {
+                Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliPhysics::%s", fAliPhysicsVersion.Data());
                 return kFALSE;
              }
            }
