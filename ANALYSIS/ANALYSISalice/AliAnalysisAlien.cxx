@@ -3412,7 +3412,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          // Check the additional libs to be loaded
          TString extraLibs;
          Bool_t parMode = kFALSE;
-         if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:OADB:ANALYSISalice";
+         if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:ANALYSISalice:OADB";
          // Parse the extra libs for .so or .dylib
          if (fAdditionalLibs.Length()) {
             TString additionalLibs = fAdditionalLibs;
@@ -4144,8 +4144,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   gSystem->Load(\"libAOD\");" << endl;
          }   
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
-         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
       } else {
          TIter next(fPackages);
@@ -4177,10 +4177,10 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          else out << "   if (!" << setupPar << "(\"AOD\")) return;" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
-         if (!hasOADB)  out << "   gSystem->Load(\"libOADB\");" << endl;
-         else out << "   if (!" << setupPar << "(\"OADB\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSISalice\")) return;" << endl;
+         if (!hasOADB)  out << "   gSystem->Load(\"libOADB\");" << endl;
+         else out << "   if (!" << setupPar << "(\"OADB\")) return;" << endl;
          if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
          else out << "   if (!" << setupPar << "(\"CORRFW\")) return;" << endl << endl;
          out << "// Compile other par packages" << endl;
@@ -4547,8 +4547,8 @@ void AliAnalysisAlien::WriteMergingMacro()
             out << "   gSystem->Load(\"libAOD\");" << endl;
          }
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
-         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
       } else {
          TIter next(fPackages);
@@ -4582,10 +4582,10 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "   gSystem->Load(\"libOADB\");" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
-         if (!hasOADB)  out << "   gSystem->Load(\"libOADB\");" << endl;
-         else out << "   if (!" << setupPar << "(\"OADB\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSISalice\")) return;" << endl;
+         if (!hasOADB)  out << "   gSystem->Load(\"libOADB\");" << endl;
+         else out << "   if (!" << setupPar << "(\"OADB\")) return;" << endl;
          if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
          else out << "   if (!" << setupPar << "(\"CORRFW\")) return;" << endl << endl;
          out << "// Compile other par packages" << endl;
