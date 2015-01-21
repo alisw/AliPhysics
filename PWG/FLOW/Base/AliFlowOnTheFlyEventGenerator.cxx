@@ -19,7 +19,7 @@
   Create events with realstic spectra and v_n values
   store as AliFlowEventSimple
   
-  usage: see $ALICE_ROOT/PWGCF/FLOW/macros/GenerateOnTheFlyEvents.C
+  usage: see $ALICE_PHYSICS/PWGCF/FLOW/macros/GenerateOnTheFlyEvents.C
 
   origin:       Redmer Alexander Bertens, rbertens@cern.ch, rbertens@nikhef.nl, rbertens@uu.nl
                 Carlos Eugenio Perez Lara
