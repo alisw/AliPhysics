@@ -134,7 +134,8 @@ void  LoadLibraries()
   
   // needed for plugin?
   gSystem->AddIncludePath("-I$ALICE_ROOT");
-  gSystem->AddIncludePath("-I./");     
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS");
+  gSystem->AddIncludePath("-I./");
   
 }
 

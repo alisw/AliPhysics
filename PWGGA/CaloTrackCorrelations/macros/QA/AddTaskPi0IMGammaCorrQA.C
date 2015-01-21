@@ -181,7 +181,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   
   if(inputDataType=="ESD")
   {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
 //    if(year > 2010)
 //    {
       //Hybrids 2011
@@ -268,7 +268,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   cu->SwitchOffRecalibration(); // Check the reader if it is taken into account during filtering
   cu->SwitchOffRunDepCorrection();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simulation,
                           kTRUE,//kExotic,

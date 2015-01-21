@@ -227,14 +227,14 @@ void ana(Int_t mode=mGRID)
   // Physics selection
   if(kInputData=="ESD" && !kMC)
   {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C"); 
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); 
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC); 
   }
   
   // Centrality
   if(kCollision=="PbPb" && kInputData=="ESD")
   {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
   }
   
@@ -249,7 +249,7 @@ void ana(Int_t mode=mGRID)
   
   // Simple event counting tasks
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
 
   AliAnalysisTask* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
   AliAnalysisTask* countmb  = AddTaskCounter("MB"); // Min Bias
@@ -281,7 +281,7 @@ void ana(Int_t mode=mGRID)
   if(kInputData=="ESD"){
     printf("* Configure photon conversion analysis in macro \n");
     TString arguments = "-run-on-train -use-own-xyz  -force-aod -mc-off ";
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/GammaConversion/macros/ConfigGammaConversion.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConversion/macros/ConfigGammaConversion.C");
     AliAnalysisTaskGammaConversion * taskGammaConversion = 
     ConfigGammaConversion(arguments,mgr->GetCommonInputContainer());
     taskGammaConversion->SelectCollisionCandidates();
@@ -297,13 +297,13 @@ void ana(Int_t mode=mGRID)
   
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
-  gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWGGA/EMCALTasks/macros  
+  gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); // $ALICE_PHYSICS/PWGGA/EMCALTasks/macros  
   
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
   //AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
   
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");  
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALTriggerQA.C");  
   //AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
   
   // Calibration, bad map ...
@@ -620,7 +620,8 @@ void  LoadLibraries(Int_t mode)
   
   // needed for plugin?
   gSystem->AddIncludePath("-I$ALICE_ROOT");
-  gSystem->AddIncludePath("-I./");     
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS");
+  gSystem->AddIncludePath("-I./");
   
 }
 

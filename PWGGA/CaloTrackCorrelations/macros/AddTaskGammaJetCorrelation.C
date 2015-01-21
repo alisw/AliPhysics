@@ -328,6 +328,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 
   if(inputDataType=="ESD")
   {
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
     //Hybrids 2011
     AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
     reader->SetTrackCuts(esdTrackCuts);
@@ -493,7 +494,7 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
     
     cu->SwitchOnEMCALOADB();//FIX ME!!!
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
     ConfigureEMCALRecoUtils(recou,
 			    simulation,                             
 			    exotic,

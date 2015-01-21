@@ -104,7 +104,7 @@ void ana(Int_t mode=mLocal)
     
     if(kInputData=="ESD" && !kMC)
     {
-      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     
@@ -149,7 +149,7 @@ void ana(Int_t mode=mLocal)
     
     // QA task
     
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
     if(!kMC)
     {
       AliAnalysisTaskCaloTrackCorrelation *taskQAEMC = AddTaskCalorimeterQA("EMC",kMC,"",2012);
@@ -295,11 +295,11 @@ void SetupPar(char* pararchivename)
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
   if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_PHYSICS")) ;
     TString processline(Form(".! make %s", parpar.Data())) ; 
     gROOT->ProcessLine(processline.Data()) ;
     gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv $ALICE_ROOT/%s .", parpar.Data()) ;
+    processline = Form(".! mv $ALICE_PHYSICS/%s .", parpar.Data()) ;
     gROOT->ProcessLine(processline.Data()) ;
   } 
   if ( gSystem->AccessPathName(pararchivename) ) {  
@@ -346,7 +346,7 @@ void CreateChain(const anaModes mode, TChain * chain){
   //-----------------------------------------------------------
   if(mode ==mPROOF || mode ==mLocalCAF){
     // Chain from CAF
-    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/CreateESDChain.C");
     // The second parameter is the number of input files in the chain
     chain = CreateESDChain("ESD12001.txt", 5);  
   }
