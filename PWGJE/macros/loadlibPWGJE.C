@@ -28,6 +28,11 @@ void loadlibPWGJE()
   gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
 
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libOADB");
+  gSystem->Load("libPWGEMCAL");
+
   gSystem->Load("libPWGJE");
   gSystem->Load("libPWGJEStrangenessInJets");
 
@@ -35,17 +40,12 @@ void loadlibPWGJE()
   // EMCAL jet framework
   //  if you only need the EMCAL jet framework, use $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/loadlibPWGJEEMCAL.C
   gSystem->Load("libTender");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGTools");
-  gSystem->Load("libCDB");
-  gSystem->Load("libProof");
+
   gSystem->Load("libsiscone");
   gSystem->Load("libsiscone_spherical");
   gSystem->Load("libfastjetplugins");
   gSystem->Load("libfastjettools");
   gSystem->Load("libfastjetcontribfragile");
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libPWGEMCAL");
+ 
   gSystem->Load("libPWGJEEMCALJetTasks");
 }
