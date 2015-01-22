@@ -638,8 +638,11 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
     Double_t nsigmaprotonTOF=999.,nsigmakaonTOF=999.,nsigmapionTOF=999.;
     Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
   
+
     Bool_t fHasTOFPID;
   
+  if( nsigmaelectron  < 3.0  &&  nsigmapion  > 3.0  && nsigmakaon  > 3.0  && nsigmaproton > 3.0 )  return;
+
     if(track->GetStatus() & AliVTrack::kTOFpid){
  
      fHasTOFPID=kTRUE;
