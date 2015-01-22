@@ -191,9 +191,10 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  									//change differ
         eventCutArray[ 3] = "0009511"; photonCutArray[ 3] = "002000093270008250400000"; clusterCutArray[3] = "10000043032030000"; mesonCutArray[3] = "01631031000000"; // EMCEJ2,
         eventCutArray[ 4] = "0000011"; photonCutArray[ 4] = "002000093270008250400000"; clusterCutArray[4] = "10000043032030000"; mesonCutArray[4] = "01631031000000"; // INT7
         eventCutArray[ 5] = "0005211"; photonCutArray[ 5] = "002000093270008250400000"; clusterCutArray[5] = "10000043032030000"; mesonCutArray[5] = "01631031000000"; // EMC7
-	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) added signals
-        eventCutArray[ 0] = "0000312"; photonCutArray[ 0] = "002000093270008250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
-        eventCutArray[ 1] = "0005112"; photonCutArray[ 1] = "002000093270008250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; // 400 MeV cluster min energy
+	// LHC11a	
+	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD without and with added signals
+        eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002000093270008250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
+        eventCutArray[ 1] = "0000312"; photonCutArray[ 1] = "002000093270008250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; // 400 MeV cluster min energy
 		
 	// ************************************* PHOS cuts ****************************************************
 	// LHC11a	
@@ -212,6 +213,10 @@ void AddTask_GammaConvCalo_pp(  Int_t trainConfig = 1,  									//change differ
         eventCutArray[ 3] = "0006211"; photonCutArray[ 3] = "002000093270008250400000"; clusterCutArray[3] = "20000047033200000"; mesonCutArray[3] = "01631031000000";
         eventCutArray[ 4] = "0006211"; photonCutArray[ 4] = "002000093270008250400000"; clusterCutArray[4] = "20000048033200000"; mesonCutArray[4] = "01631031000000";
         eventCutArray[ 5] = "0006211"; photonCutArray[ 5] = "002000093270008250400000"; clusterCutArray[5] = "20000049033200000"; mesonCutArray[5] = "01631031000000";
+	// LHC11a
+	} else if (trainConfig == 33) { //PHOS clusters without and with added signals
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002000093270008250400000"; clusterCutArray[0] = "20000047033200000"; mesonCutArray[0] = "01631031000000";
+		eventCutArray[ 1] = "0000312"; photonCutArray[ 1] = "002000093270008250400000"; clusterCutArray[1] = "20000047033200000"; mesonCutArray[1] = "01631031000000";
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

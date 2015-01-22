@@ -148,9 +148,9 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 		eventCutArray[ 3] = "0009511"; clusterCutArray[3] = "10000040032030000"; mesonCutArray[3] = "01631031000000"; // EMCEJ2, 
 		eventCutArray[ 4] = "0000011"; clusterCutArray[4] = "10000040032030000"; mesonCutArray[4] = "01631031000000"; // INT7
 		eventCutArray[ 5] = "0005211"; clusterCutArray[5] = "10000040032030000"; mesonCutArray[5] = "01631031000000"; // EMC7
-	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-		eventCutArray[ 0] = "0000312"; clusterCutArray[0] = "10000040032030000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
-		eventCutArray[ 1] = "0005112"; clusterCutArray[1] = "10000040032030000"; mesonCutArray[1] = "01631031000000"; // 400 MeV cluster min energy
+	} else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0) without and with added signals
+		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "10000040032030000"; mesonCutArray[0] = "01631031000000"; // 400 MeV cluster min energy
+		eventCutArray[ 1] = "0000312"; clusterCutArray[1] = "10000040032030000"; mesonCutArray[1] = "01631031000000"; // 400 MeV cluster min energy
 
 	// ************************************* PHOS cuts ****************************************************
 	} else if (trainConfig == 31) { //PHOS clusters
@@ -160,6 +160,9 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 		eventCutArray[ 3] = "0006211"; clusterCutArray[3] = "20000040033200000"; mesonCutArray[3] = "01631031000000"; //pp LHC11a PHI7
 	} else if (trainConfig == 32){ // Validation PHOS
 		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "20000040033200000"; mesonCutArray[0] = "01630031009000"; 		
+	} else if (trainConfig == 33){ // PHOS clusters, without and with added signals
+		eventCutArray[ 0] = "0000311"; clusterCutArray[0] = "20000040033200000"; mesonCutArray[0] = "01630031009000"; 		
+		eventCutArray[ 1] = "0000312"; clusterCutArray[1] = "20000040033200000"; mesonCutArray[1] = "01630031009000"; 		
 	} else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
