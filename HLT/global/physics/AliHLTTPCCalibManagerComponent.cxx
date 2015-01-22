@@ -254,7 +254,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   AliVfriendEvent* vFriend=NULL;
   iResult = ReadInput(vEvent,vFriend);
 
-  if (!vEvent)
+  if (!vEvent) return -1;
 
   if (vEvent) {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
   if(vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}

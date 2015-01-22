@@ -153,12 +153,12 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Double_t M() const {return 0.;}
   virtual Double_t Eta() const {return 0.;}
   virtual Double_t Y() const {return 0.;}
-  virtual Short_t Charge() const {return 0.;}
-  virtual Int_t GetLabel() const {return 0.;}
-  virtual Int_t PdgCode() const {return 0.;}
+  virtual Short_t Charge() const {return 0;}
+  virtual Int_t GetLabel() const {return 0;}
+  virtual Int_t PdgCode() const {return 0;}
   virtual const Double_t* PID() const {return NULL;} 
-  virtual Int_t    GetID() const {return 0.;}
-  virtual UChar_t  GetITSClusterMap() const {return 0.;}
+  virtual Int_t    GetID() const {return 0;}
+  virtual UChar_t  GetITSClusterMap() const {return 0;}
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]){}; return kFALSE;}
   virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]){}; return kFALSE;}
 
