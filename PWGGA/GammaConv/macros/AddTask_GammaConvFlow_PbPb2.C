@@ -58,12 +58,6 @@ void AddTask_GammaConvFlow_PbPb2(
     // ================== GetInputEventHandler =============================
     AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     
-    //========= Add PID Reponse to ANALYSIS manager ====
-    if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-        AddTaskPIDResponse(isMC);
-    }
-    
     //=========  Set Cutnumber for V0Reader ================================
     TString cutnumberPhoton = "000000084001001500000000";
     TString cutnumberEvent = "1000000";

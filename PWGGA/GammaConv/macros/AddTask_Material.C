@@ -2,7 +2,7 @@ void AddTask_Material(	TString V0ReaderEventCutNumber 		= "0000000",
 						TString V0ReaderPhotonCutNumber 	= "060000084001001500000000",
 						TString TaskEventCutnumber 			= "0000000",
 						TString TaskPhotonCutnumber 		= "090000092663743800000000",
-						Bool_t IsMC = kFALSE, 
+						Bool_t isMC = kFALSE, 
 						Int_t IsHeavyIon = 0, 
 						TString cutnumberAODBranch = "0000000060084001001500000",
 						Bool_t doEtaShiftV0Reader = kFALSE 
@@ -111,7 +111,7 @@ void AddTask_Material(	TString V0ReaderEventCutNumber 		= "0000000",
 	AliAnalysisTaskMaterial *fMaterial= new AliAnalysisTaskMaterial(Form("%s_%s_Material",(analysisEventCuts->GetCutNumber()).Data(),(analysisCuts->GetCutNumber()).Data()));
 	fMaterial->SetEventCuts(analysisEventCuts,IsHeavyIon);
 	fMaterial->SetConversionCuts(analysisCuts,IsHeavyIon);
-	fMaterial->SetIsMC(IsMC);
+	fMaterial->SetisMC(isMC);
 	mgr->AddTask(fMaterial);
 	
 	AliAnalysisDataContainer *coutput1 =

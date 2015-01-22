@@ -2,7 +2,7 @@ void AddTask_PhotonQA(	TString V0ReaderEventCutNumber 	= "0000000",
 						TString V0ReaderPhotonCutNumber = "060000084001001500000000", 
 						TString TaskEventCutnumber 		= "0000000",
 						TString TaskPhotonCutnumber 	= "090000092663743800000000",
-						Bool_t IsMC = kFALSE,
+						Bool_t isMC = kFALSE,
 						Int_t IsHeavyIon = 0,
 						Bool_t kHistograms = kTRUE, 
 						Bool_t kTree = kTRUE,
@@ -116,7 +116,7 @@ void AddTask_PhotonQA(	TString V0ReaderEventCutNumber 	= "0000000",
 	fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
 	fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
 	fQA->FillType(kTree,kHistograms);
-	fQA->SetIsMC(IsMC);
+	fQA->SetisMC(isMC);
 	mgr->AddTask(fQA);
 
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
