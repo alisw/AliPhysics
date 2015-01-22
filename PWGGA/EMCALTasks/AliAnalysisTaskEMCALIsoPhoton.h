@@ -48,6 +48,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
+  bool                   IsMcPi0(Int_t mclabel);
   void                   LoopOnCells();
   bool                   IsExotic(AliVCluster *c);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
