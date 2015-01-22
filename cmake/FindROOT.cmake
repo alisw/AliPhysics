@@ -83,7 +83,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT features : ${error}")
     else()
-        message(STATUS "ROOT was build with the following features: ${ROOT_FEATURES}")
+        message(STATUS "ROOT was built with the following features: ${ROOT_FEATURES}")
     endif(error)
     string(STRIP "${ROOT_FEATURES}" ROOT_FEATURES)
 
@@ -138,40 +138,40 @@ if(ROOTSYS)
     # If AliEn support is enabled we need to point to AliEn
     execute_process(COMMAND ${ROOT_CONFIG} --has-alien OUTPUT_VARIABLE ROOT_HASALIEN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was build with AliEn support: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with AliEn support: ${error}")
     endif(error)
     
     #if defined
     if(ROOT_HASALIEN)
         string(STRIP "${ROOT_HASALIEN}" ROOT_HASALIEN)
         if(ROOT_HASALIEN STREQUAL "yes")
-    	    if(ALIEN)
-        	add_definitions(-DWITHALIEN)
-        	
-        	# AliEn might bring some system libraries, we need to use them
-        	if(EXISTS "${ALIEN}/lib")
-        	    link_directories(${ALIEN}/lib)
-        	endif()
-        	
-        	# api/lib should always exists
-        	if(EXISTS "${ALIEN}/api/lib")
-        	    link_directories(${ALIEN}/api/lib)
-        	endif()
-        	
-        	# include for AliEn
-        	if(EXISTS "${ALIEN}/include")
-        	    include_directories(SYSTEM ${ALIEN}/include)
-        	endif()
-        	
-        	# api/include always exists
-        	if(EXISTS "${ALIEN}/api/include")
-        	    include_directories(SYSTEM ${ALIEN}/api/include)
-        	endif()
-        	
-        	set(ROOT_HASALIEN TRUE)
-    	    else(ALIEN)
-    		message(FATAL_ERROR "ROOT was build with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
-    	    endif(ALIEN)
+            if(ALIEN)
+            add_definitions(-DWITHALIEN)
+
+            # AliEn might bring some system libraries, we need to use them
+            if(EXISTS "${ALIEN}/lib")
+                link_directories(${ALIEN}/lib)
+            endif()
+
+            # api/lib should always exists
+            if(EXISTS "${ALIEN}/api/lib")
+                link_directories(${ALIEN}/api/lib)
+            endif()
+
+            # include for AliEn
+            if(EXISTS "${ALIEN}/include")
+                include_directories(SYSTEM ${ALIEN}/include)
+            endif()
+
+            # api/include always exists
+            if(EXISTS "${ALIEN}/api/include")
+                include_directories(SYSTEM ${ALIEN}/api/include)
+            endif()
+
+            set(ROOT_HASALIEN TRUE)
+            else(ALIEN)
+            message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+            endif(ALIEN)
         else()
             set(ROOT_HASALIEN FALSE)
         endif()
@@ -180,7 +180,7 @@ if(ROOTSYS)
     # Checking for xml support
     execute_process(COMMAND ${ROOT_CONFIG} --has-xml OUTPUT_VARIABLE ROOT_HASXML ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was build with xml support: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with xml support: ${error}")
     endif(error)
     
     # if defined
@@ -197,7 +197,7 @@ if(ROOTSYS)
     # Checking for OpenGL support
     execute_process(COMMAND ${ROOT_CONFIG} --has-opengl OUTPUT_VARIABLE ROOT_HASOPENGL ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was build with OpenGL support: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with OpenGL support: ${error}")
     endif(error)
     
     if(ROOT_HASOPENGL)
@@ -228,7 +228,7 @@ if(ROOTSYS)
     if(ALIROOT_STATIC)
         message(WARNING "AliRoot static build enabled! libRootExtra.a will be created.\nPlease remove when ROOT https://sft.its.cern.ch/jira/browse/ROOT-6904 issue is fixed")
 
-        # ROOT needs xml2 but it is not build with the static version so we have to add it
+        # ROOT needs xml2 but it is not built with the static version so we have to add it
         find_package(LibXml2)
 
         if(LIBXML2_FOUND)
