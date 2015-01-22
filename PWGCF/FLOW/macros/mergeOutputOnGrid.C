@@ -29,6 +29,7 @@ void mergeOutputOnGrid(const char* gridPath = "/alice/cern.ch/user/a/abilandz/si
  // Load needed flow libraries:
  gSystem->AddIncludePath("-I$ROOTSYS/include");
  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+ gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
  gSystem->Load("libPWGflowBase");
  //cerr<<"Library \"libPWGflowBase\" loaded ...."<<endl;
  // Connect to the GRID:
