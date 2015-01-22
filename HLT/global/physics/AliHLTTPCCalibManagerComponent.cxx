@@ -96,7 +96,7 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fAnalysisManager(NULL),
   fInputHandler(NULL),
   fTPCcalibConfigString("TPCCalib:CalibTimeDrift"),
-  fAddTaskMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
+  fAddTaskMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
   fWriteAnalysisToFile(kFALSE),
   fEnableDebug(kFALSE),
   fResetAfterPush(kTRUE)
