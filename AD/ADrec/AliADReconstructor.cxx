@@ -160,7 +160,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	AliError("NO AD ESD branch found!");
 	return;
 }
-  fESDAD->SetADBitCell(ADHits);
+  //fESDAD->SetADBitCell(ADHits);
 
   if (esd)
     {
