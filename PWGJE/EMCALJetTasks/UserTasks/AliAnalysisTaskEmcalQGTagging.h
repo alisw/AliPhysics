@@ -52,7 +52,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetPtTriggerSelections(Float_t minpT, Float_t maxpT) { fminpTTrig = minpT; fmaxpTTrig = maxpT; }
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
-  
+  Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
+  Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
