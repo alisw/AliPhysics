@@ -111,7 +111,7 @@ void AddTask_Material(	TString V0ReaderEventCutNumber 		= "0000000",
 	AliAnalysisTaskMaterial *fMaterial= new AliAnalysisTaskMaterial(Form("%s_%s_Material",(analysisEventCuts->GetCutNumber()).Data(),(analysisCuts->GetCutNumber()).Data()));
 	fMaterial->SetEventCuts(analysisEventCuts,IsHeavyIon);
 	fMaterial->SetConversionCuts(analysisCuts,IsHeavyIon);
-	fMaterial->SetisMC(isMC);
+	fMaterial->SetIsMC(isMC);
 	mgr->AddTask(fMaterial);
 	
 	AliAnalysisDataContainer *coutput1 =
