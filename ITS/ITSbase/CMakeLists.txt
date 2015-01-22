@@ -129,7 +129,6 @@ set(SRCS
     AliITStrackV2.cxx
     AliITStrackerSA.cxx
     AliITStrackerV2.cxx
-    AliITSTrackleterSPDEff.cxx
     AliITSTransientDigit.cxx
     AliITSTriggerAlgorithmConditions.cxx
     AliITSTriggerConditions.cxx
