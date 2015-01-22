@@ -75,7 +75,7 @@ void runBatch() {
       exit(0);
     }
   }
-  
+
   //____________________________________________________//
   //_____________Setting up PWG2femtoscopy.par__________//
   //____________________________________________________//
@@ -92,7 +92,7 @@ void runBatch() {
       exit(0);
     }
   }
-  
+
   //____________________________________________________//
   //_____________Setting up PWG2femtoscopyUser.par______//
   //____________________________________________________//
@@ -109,10 +109,10 @@ void runBatch() {
       exit(0);
     }
   }
-  
+
   //ANALYSIS PART
   const char *collectionfile="wn.xml";
-  
+
   //____________________________________________//
   //Usage of event tags
   // AliTagAnalysis *analysis = new AliTagAnalysis();
@@ -122,9 +122,9 @@ void runBatch() {
   TChain *chain = new TChain("aodTree");;
   //  gROOT->LoadMacro("CreateESDChain.C");
 //  const char *collectionfile="/home/akisiel/LHC10h.esds.txt";
-  
+
   ifstream *istr = new ifstream(collectionfile);
-  
+
   char fname[2000];
   char pname[2000];
   while (!istr->eof()) {
@@ -133,14 +133,14 @@ void runBatch() {
     if (strlen(fname) > 10) {
       sprintf(pname, "alien://%s", fname);
       chain->Add(pname);
-      
+
     }
   }
-  
+
 //  chain->Add("data/AliAOD.root");
 
   //  chain->Add("Data121040/AliESDs.root");
-  
+
 //   chain->Add("alien:///alice/sim/LHC10g1a/130844/001/AliESDs.root");
 //   chain->Add("alien:///alice/sim/LHC10g1a/130844/002/AliESDs.root");
 //   chain->Add("alien:///alice/sim/LHC10g1a/130844/003/AliESDs.root");
@@ -170,7 +170,7 @@ void runBatch() {
 //  esdH->SetInactiveBranches("FMD CaloCluster");
 //   esdH->SetReadFriends(kFALSE);
   AliAODInputHandler *aodH = new AliAODInputHandler;
-  //  mgr->SetInputEventHandler(esdH);  
+  //  mgr->SetInputEventHandler(esdH);
   mgr->SetInputEventHandler(aodH);
 
 //  AliMCEventHandler *mcH = new AliMCEventHandler;
@@ -186,12 +186,12 @@ void runBatch() {
 //   //aodHandler->SetFillAOD(kFALSE);
 //   aodHandler->SetFillAODforRun(kFALSE);
 //   mgr->SetOutputEventHandler(aodHandler);
-  
+
 //   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
 //   centralityTask->SetPass(2);
 //   mgr->AddTask(centralityTask);
 //   mgr->ConnectInput(centralityTask, 0, mgr->GetCommonInputContainer());
-  
+
 //   AliAnalysisDataContainer *outputCentrality =  mgr->CreateContainer("outputCentrality", TList::Class(),
 //   AliAnalysisManager::kOutputContainer, "CentralityOutput.root");
 //   mgr->ConnectOutput(centralityTask, 1, outputCentrality);
@@ -202,7 +202,7 @@ void runBatch() {
   //  AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kFALSE,  kFALSE, kFALSE, kTRUE, kTRUE);
 
   //AddTaskPIDResponse
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse();
 
   //____________________________________________//
@@ -249,7 +249,7 @@ Int_t setupPar(const char* pararchivename) {
       printf("*******************************\n");
       gROOT->Macro("PROOF-INF/SETUP.C");
     }
-    
+
     gSystem->ChangeDirectory("../");
   }
 
