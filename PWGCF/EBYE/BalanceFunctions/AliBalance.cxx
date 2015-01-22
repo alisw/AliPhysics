@@ -894,8 +894,8 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   // else : Data single distributions are normalized to give single particle efficiency of MC
   TFile *fEfficiencyMatrix = NULL;
   if(correctWithEfficiency || correctWithMixed){
-    if(correctWithAcceptanceOnly) fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/accOnlyFromConvolutionAllCent.root");
-    else  fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
+    if(correctWithAcceptanceOnly) fEfficiencyMatrix = TFile::Open("$ALICE_PHYSICS/PWGCF/EBYE/macros/accOnlyFromConvolutionAllCent.root");
+    else  fEfficiencyMatrix = TFile::Open("$ALICE_PHYSICS/PWGCF/EBYE/macros/effFromConvolutionAllCent.root");
     if(!fEfficiencyMatrix){
       AliError("Efficiency histogram file not found");
       return NULL;

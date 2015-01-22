@@ -215,7 +215,7 @@ void runBalanceFunctionPsi(
     AliVZEROEPSelectionTask* epSelTask = AddTaskVZEROEPSelection();
 
     //Add the BF task (all centralities)
-    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
 
     AliAnalysisTaskBFPsi *taskBF = AddTaskBalancePsiCentralityTrain(0, 500, kFALSE, kTRUE, kFALSE, "V0M", 10, -1, -1, 0.2, 20.0, -0.8, 0.8, -1, -1, kUsePID, kFALSE, kTRUE, 0.02, kFALSE, 0.04, kTRUE, 0.1, 128, 1, "AnalysisResults","TE","Multiplicity","AOD",kTRUE, kNSigmaElectronRejection);
     //taskBF->SetDebugLevel();

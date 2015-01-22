@@ -66,8 +66,8 @@ void runBalanceFunction(
     // additional
 
     //compile standalone stuff
-    //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/BalanceFunction/AliBalance.cxx++g");
-    //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/BalanceFunction/AliAnalysisTaskBF.cxx++g");
+    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunction/AliBalance.cxx++g");
+    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunction/AliAnalysisTaskBF.cxx++g");
 
     // add aliroot indlude path
     //gROOT->ProcessLine(".include $PWD/.");

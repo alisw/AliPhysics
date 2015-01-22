@@ -75,7 +75,7 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
   AliAnalysisDataContainer *cout3[8];
   AliAnalysisDataContainer *cout4[8];
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
   AliESDtrackCuts *cuts[8];
 
   for (Int_t iEta = 0; iEta < 8; iEta++ ) {

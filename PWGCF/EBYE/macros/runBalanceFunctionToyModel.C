@@ -97,7 +97,7 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10,
   gSystem->Load("libPWGCFebye");
 
   //configure the bf objects
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
   AliBalancePsi *bf  = GetBalanceFunctionObject("MC","",0,100,kRunShuffling,bResonancesCut,bHBTcut,bConversionCut,bMomentumDifferenceCut,fArgEventClass,deltaEtaMax,bVertexBinning);
   AliBalancePsi *bfm = 0x0;
   if(kRunMixing) 

@@ -95,7 +95,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(TString analysisType = "ESD",
 
   // for local changed BF configuration
   //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf  = 0;  // Balance Function object
   AliBalance *bfs = 0;  // shuffled Balance function objects
 

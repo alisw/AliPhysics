@@ -897,7 +897,13 @@ void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
   else if (i == 17) 
     { fIsNu = 1; fIsPhy = 1; fIsRatio = 1;
       fIsPer = 1; fIsSub = 1; fIsBS = 1; }  
-  else {
+else if (i == 18)
+    { fIsPhy   = 1; fIsQa  = 1;
+      fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;}
+else if (i == 19)
+    { fIsPhy   = 1; fIsQa  = 1;
+      fIsSub = 1; fIsBS  = 1; fIsPer = 1;}
+else {
     fIsPhy   = 0; fIsEff = 0; fIsDca = 0; fIsQa  = 0; 
     fIsRatio = 0; fIsSub = 0; fIsBS  = 0; fIsPer = 0;
   }
