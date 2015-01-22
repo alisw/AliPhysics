@@ -21,10 +21,10 @@ void runBatch() {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
 
-   Bool_t useParFiles   = kFALSE;  
+   Bool_t useParFiles   = kFALSE;
    Bool_t useTenderPars = kFALSE;
    Bool_t usePWGCFParFiles = kFALSE;
-   
+
    Bool_t useMC = kFALSE;
 
    TString format = "aod";
@@ -77,7 +77,7 @@ void runBatch() {
     cout << "Cannot load libANALYSISalice.so . Exiting" << endl;
     exit(0);
   }
-  
+
 
   //____________________________________________________//
   //_____________Setting up PWGCFAOD.par_________________//
@@ -107,22 +107,22 @@ void runBatch() {
 
 
 
-   cout <<"_____GetDynamicPath______\n " <<gSystem->GetDynamicPath() <<endl;  
+   cout <<"_____GetDynamicPath______\n " <<gSystem->GetDynamicPath() <<endl;
 
 
 //____________ include path
-   gSystem->AddIncludePath(Form("-I\"%s/include\"", gSystem->Getenv("ALICE_ROOT")));
-   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
+   gSystem->AddIncludePath(Form("-I\"%s/include\"", gSystem->Getenv("ALICE_PHYSICS")));
+   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_PHYSICS")));
 
 
 
 
-  
-  //_________________________________________________ 
+
+  //_________________________________________________
   //_______Create chain for Alien data collection __________
-  
+
    const char *collectionfile="wn.xml";
-  
+
   //____________________________________________//
   //Usage of event tags
   // AliTagAnalysis *analysis = new AliTagAnalysis();
@@ -147,13 +147,13 @@ void runBatch() {
       chain->Add(pname);
     }
     }
-  
+
 
 /*
 //__________________________________________________
 //___________Create chain for Local data files ____________
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("files.txt", 2);
 */
 
@@ -170,22 +170,22 @@ void runBatch() {
 
   //AliESDInputHandler* esdH = new AliESDInputHandler;
   //mgr->SetInputEventHandler(esdH);
-  
+
   //______ Set MC EventHandler
   //AliMCEventHandler *mcH = new AliMCEventHandler;
   //mgr->SetMCtruthEventHandler(mcH);
 
   //______ Set Print Debug Level
   mgr->SetDebugLevel(0);  //0, 1, 2, 3 ...
-  
-  
+
+
 
   //AddTaskPIDResponse
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse(kTRUE,kFALSE);
 
-                                                                           
-   //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+
+   //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
    //AliCentralitySelectionTask *centrality = AddTaskCentrality();
 
   //________AddTaskFemto_______________
@@ -236,7 +236,7 @@ Int_t setupPar(const char* pararchivename) {
       printf("*******************************\n");
       gROOT->Macro("PROOF-INF/SETUP.C");
     }
-    
+
     gSystem->ChangeDirectory("../");
   }
 

@@ -30,7 +30,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName="ConfigFemtoAnalysis.
 
   // C. Create the task, add it to manager.
   //===========================================================================
-//  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
+//  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_PHYSICS/include");
 
   if (TProofMgr::GetListOfManagers()->GetEntries()) {
 //     if (dynamic_cast<TProofLite *> gProof) {
@@ -43,7 +43,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName="ConfigFemtoAnalysis.
   }  
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,Form("\"%s\"",configMacroParameters));
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,Form("\"%s\"",configMacroParameters));
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
