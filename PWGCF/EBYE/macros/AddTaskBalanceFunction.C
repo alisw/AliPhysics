@@ -15,7 +15,7 @@ AliAnalysisTaskBF *AddTaskBalanceFunction() {
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf = 0;
   if (type=="ESD") bf = GetBalanceFunctionObject("ESD");
   else if (type=="AOD") bf = GetBalanceFunctionObject("AOD");

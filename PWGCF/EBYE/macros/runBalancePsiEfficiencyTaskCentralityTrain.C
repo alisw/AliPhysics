@@ -97,7 +97,7 @@ void runBalancePsiEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA
   }
 
   // Load the analysis task:
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiEfficiency.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/AddTaskBalancePsiEfficiency.C");
   
   for (Int_t i=binfirst; i<binlast+1; i++) {
     //for (Int_t i = 0; i < 9; i++) {

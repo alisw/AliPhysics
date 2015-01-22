@@ -92,7 +92,7 @@ AliAnalysisTaskEventMixingBF *AddTaskBalanceEventMixing(Double_t centrMin=0.,
 
   // for local changed EventMixingBF configuration
   //gROOT->LoadMacro("./configBalanceFunctionAnalysisEventMixing.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysisEventMixing.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/configBalanceFunctionAnalysisEventMixing.C");
   AliBalanceEventMixing *bf  = 0;  // Balance Function object
   AliBalanceEventMixing *bfs = 0;  // shuffled Balance function object
 

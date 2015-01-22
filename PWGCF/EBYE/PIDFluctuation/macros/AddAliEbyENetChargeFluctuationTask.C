@@ -77,7 +77,7 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
   task->SetDca(dcaxy,dcaz);
   
   if (!isModeAOD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
     // gROOT->LoadMacro("./configureNetChargeTrackCut.C"); 
     AliESDtrackCuts *cuts = configureNetChargeTrackCut(taskname,cuttype,10001006, gEta, 5.,5.); 
      task->SetAnalysisCutObject(cuts);
