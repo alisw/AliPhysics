@@ -84,7 +84,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
       return 0x0;
    }
    if(EP3sub&&debug) { // don't use this on train ! this is why it's only enabled in macro debug mode
-         gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskVZERO.C");
+         gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskVZERO.C");
          AddTaskVZERO(0,0,0,0);
    }
    // create the main task

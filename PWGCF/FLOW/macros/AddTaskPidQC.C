@@ -1,5 +1,5 @@
 AddTaskPidQC(Int_t centralityselection=AliVEvent::kAny,Float_t etamin=-0.8,Float_t etamax=0.8){
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDQC.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDQC.C");
 
   const Int_t ncentr = 9;
   Int_t cmin[ncentr]={0,5,10,20,30,40,50,60,70};

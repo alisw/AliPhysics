@@ -188,7 +188,7 @@ void runTaskFlowHigherOrdersAllPID(
     // For this case, comment out the task->SelectCol.... line, 
     // and see AliBasicTask.cxx UserExec() function for details on this.
 
-    //gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+    //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(bMCphyssel);
     //if(!physSelTask) { Printf("no physSelTask"); return; }
     //AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
@@ -198,19 +198,19 @@ void runTaskFlowHigherOrdersAllPID(
     //Add the centrality determination task and the physics selection 
     // (only on ESD level, in AODs centrality is already in header and events are selected)
 //    if((!bAOD)&&(!bMCtruth)){
-//      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+//      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
 //      AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
       // Add physics selection task (NOT needed for AODs)
-//      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+//      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
 //      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(bMCphyssel);
 //    }
 /////////////////////////////////////////
     //Add flow centrality bayesian 
 
       gROOT->LoadMacro("AddTaskFlowHigherOrdersAllPID.C");
-      //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowHigherOrdersAllPID.C");
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowCentralityBayesian.C");
+      //gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowHigherOrdersAllPID.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowCentralityBayesian.C");
   //  gROOT->LoadMacro("~/Desktop/work/PhD/flow/AddTaskFlowCentralityBayesian.C");
       AliAnalysisTaskFlowEvent* FlowTask = AddTaskFlowHigherOrdersAllPID(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,0.,80.,"AnalysisResults",kTRUE,768,768,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,kFALSE,-0.8,0.8,"");
 /////////////////////////////////////////
@@ -226,7 +226,7 @@ void runTaskFlowHigherOrdersAllPID(
 //    AliVZEROEPSelectionTask* epSelTask = AddTaskVZEROEPSelection();
 
     //Add the BF task (all centralities)
- //   gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
+ //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
 
 //    AliAnalysisTaskBFPsi *taskBF = AddTaskBalancePsiCentralityTrain(0, 500, kFALSE, kTRUE, kFALSE, "V0M", 10, -1, -1, 0.2, 20.0, -0.8, 0.8, -1, -1, kUsePID, kFALSE, kTRUE, 0.02, kFALSE, 0.04, kTRUE, 0.1, 128, 1, "AnalysisResults","TE","Multiplicity","AOD",kTRUE, kNSigmaElectronRejection);
     //taskBF->SetDebugLevel();

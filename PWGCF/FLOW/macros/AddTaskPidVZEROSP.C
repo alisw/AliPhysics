@@ -1,5 +1,5 @@
 AddTaskPidVZEROSP(Int_t centralityselection=AliVEvent::kAny,Float_t etamin=-0.8,Float_t etamax=0.8,Int_t side=0,Int_t filterbit=1,Bool_t TOFbeta=kFALSE){
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDSP.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDSP.C");
 
   const Int_t ncentr = 5;
   Int_t cmin[ncentr]={0,5,10,20,40};

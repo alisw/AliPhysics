@@ -64,11 +64,11 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   }
 
   // Task to check the offline trigger:
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
   if (DATA) centSelTask->SetPass(1);
@@ -77,7 +77,7 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   if (useTender)
   {
     //Add the tenders
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/macros/AddTaskTenderFlow.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/FLOW/macros/AddTaskTenderFlow.C");
     AddTaskTenderFlow();
   }
 
