@@ -209,6 +209,7 @@ public:
   }
   static TVectorD * GetBetheBlochParamNa49();
   static TVectorD * GetBetheBlochParamAlice();
+  static TVectorD * GetBetheBlochParamAliceMC();
   static void RegisterBBParam(TVectorD* param, Int_t position);
   //
   //set electronivc parameters  
@@ -545,7 +546,7 @@ protected :
 
   void CleanGeoMatrices();
 
-  ClassDef(AliTPCParam,8)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,10)  //parameter  object for set:TPC
 };
 
  

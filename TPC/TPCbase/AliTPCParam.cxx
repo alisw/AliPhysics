@@ -517,7 +517,7 @@ void AliTPCParam::SetDefault()
   SetComposition(0.9,0.,0.1,0.,0.,0.);// Ne-CO2 90/10
   //
   SetBetheBloch(GetBetheBlochParamAlice());
-  SetBetheBlochMC(GetBetheBlochParamAlice());
+  SetBetheBlochMC(GetBetheBlochParamAliceMC());
   //
   //set electronivc parameters  
   //
@@ -1017,6 +1017,20 @@ TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
   v[2] = 2.6558e-05;
   v[3] = 2.32742;
   v[4] = 1.83039;
+  return new TVectorD(v);
+}
+
+TVectorD * AliTPCParam::GetBetheBlochParamAliceMC(){
+  //
+  //
+  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  //  dNdx parameterization
+  TVectorD v(5);
+  v[0] =0.0816056; 
+  v[1] =10.0163 ;
+  v[2] =9.43982e-05; 
+  v[3] =2.0425;
+  v[4] =1.64609; 
   return new TVectorD(v);
 }
 
