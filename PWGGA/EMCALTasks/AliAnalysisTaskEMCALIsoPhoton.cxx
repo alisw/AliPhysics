@@ -1357,6 +1357,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FollowGamma()
   if(!fStack && !fAODMCParticles)
     return;
   Int_t selfid = 6;
+  Int_t daug0f=-1, daug0l=-1, nd0=0;
   //ESD
   if(fStack){  
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(selfid));
@@ -1367,9 +1368,9 @@ void AliAnalysisTaskEMCALIsoPhoton::FollowGamma()
       if(!mcp)
 	return;
     }  
-    Int_t daug0f =  mcp->GetFirstDaughter();
-    Int_t daug0l =  mcp->GetLastDaughter();
-    Int_t nd0 = daug0l - daug0f;
+    daug0f =  mcp->GetFirstDaughter();
+    daug0l =  mcp->GetLastDaughter();
+    nd0 = daug0l - daug0f;
     if(fDebug)
       printf("\n\tGenerated gamma (%d) eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, n-daug=%d\n",selfid,mcp->Eta(),mcp->Phi(),mcp->Energy(),mcp->GetPdgCode(),nd0+1);
     fMcIdFamily = Form("%d,",selfid);
@@ -1393,9 +1394,9 @@ void AliAnalysisTaskEMCALIsoPhoton::FollowGamma()
       if(!mcp)
 	return;
     }  
-    Int_t daug0f =  mcp->GetDaughter(0);
-    Int_t daug0l =  mcp->GetDaughter(mcp->GetNDaughters()-1);
-    Int_t nd0 = daug0l - daug0f;
+    daug0f =  mcp->GetDaughter(0);
+    daug0l =  mcp->GetDaughter(mcp->GetNDaughters()-1);
+    nd0 = daug0l - daug0f;
     if(fDebug)
       printf("\n\tGenerated gamma (%d) eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, n-daug=%d\n",selfid,mcp->Eta(),mcp->Phi(),mcp->E(),mcp->GetPdgCode(),nd0+1);
     fMcIdFamily = Form("%d,",selfid);
@@ -1548,6 +1549,42 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     }
   }
   return ptsum;
+}
+//________________________________________________________________________
+bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
+{
+  bool foundpi0=false;
+  if(!fStack && !fAODMCParticles)
+    return false;
+  int imother=label+1;
+  int nmcp=0;
+  //ESD
+  if(fStack){
+    nmcp = fStack->GetNtrack();
+    if(label<0 || label>nmcp)
+      return false;
+    TParticle *mcp = static_cast<TParticle*>(fStack->Particle(label));  
+    if(!mcp)
+      return false;
+    if(mcp->GetPdgCode()==111)
+      foundpi0=true;
+    imother = mcp->GetMother(0);
+    foundpi0 = IsMcPi0(imother);
+  }
+  //AOD
+  if(fAODMCParticles){
+    nmcp = fAODMCParticles->GetEntriesFast();
+    if(label<0 || label>nmcp)
+      return false;
+    AliAODMCParticle *mcp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(label));
+    if(!mcp)
+      return false;
+    if(mcp->GetPdgCode()==111)
+      foundpi0 = true;
+    imother = mcp->GetMother();
+    foundpi0 = IsMcPi0(imother);
+  }
+  return foundpi0;
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::FillQA() 
