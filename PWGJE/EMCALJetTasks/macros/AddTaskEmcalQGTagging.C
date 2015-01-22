@@ -15,7 +15,10 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     TString     tag            = "",
 						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
-						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection) {
+						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection,
+                                                     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
+ 
+
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -43,7 +46,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
   task->SetJetSelection(jetSelection);
-  
+  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
+
   TString thename(njetsBase);
   //if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
   //task->SetVzRange(-10.,10.);
@@ -154,7 +158,11 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kDerivSub) contName1 += "_DerivSub";
   
   if (jetSelection == AliAnalysisTaskEmcalQGTagging::kInclusive) contName1 += "_Incl";
-  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) contName1 += "_Recoil";
+  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) {
+  TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
+  contName1 += recoilTriggerString;
+  }
+
 
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
