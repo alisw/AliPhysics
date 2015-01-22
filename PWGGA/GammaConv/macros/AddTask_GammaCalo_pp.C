@@ -50,7 +50,7 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "060000084001001500000000";
+	TString cutnumberPhoton = "000000084001001500000000";
 	TString cutnumberEvent = "0000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
