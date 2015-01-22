@@ -8,5 +8,7 @@ void AliPMDPutHot()
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBId id("PMD/Calib/Hot",0,AliCDBRunRange::Infinity());
   AliCDBMetaData *md=new AliCDBMetaData();
+  md->SetResponsible("Satyajit Jena");
+  md->SetComment("Hot Cell Maps");
   man->GetDefaultStorage()->Put(hotda,id,md);
 }
