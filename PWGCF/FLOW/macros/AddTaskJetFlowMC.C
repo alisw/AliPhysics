@@ -92,7 +92,7 @@ namespace TaskJetFlowMC {
 
     AliJetEmbeddingFromGenTask* EmbedGeneratedJets(AliGenerator* gen, const char* outputTracks) {
         // generate pythia evnets on the fly and embed them to the event
-        gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromGen.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromGen.C");
         return AddTaskJetEmbeddingFromGen(
                 gen,                            // generator
                 outputTracks,                   // tracks name

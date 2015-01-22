@@ -27,7 +27,7 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mLocal,
   // Chains:
   if(mode == mLocal)
   {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGUD/macros/CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGUD/macros/CreateESDChain.C");
     TChain* chain = CreateESDChain(dataDir, nEvents, offset);
     //TChain* chain = CreateAODChain(dataDir, nEvents, offset);
   }
@@ -51,11 +51,11 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mLocal,
   }
 
   // Task to check the offline trigger:
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
 

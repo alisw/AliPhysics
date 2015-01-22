@@ -66,7 +66,7 @@ void runTaskFlowOnMC(Int_t harmonic = 2,
   
   if (useTender) {
     //Add the tenders
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderFlow.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskTenderFlow.C");
     AddTaskTenderFlow();
   }
 

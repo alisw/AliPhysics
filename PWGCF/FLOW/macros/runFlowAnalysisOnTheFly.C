@@ -531,7 +531,7 @@ void SetupPar(char* pararchivename)
   TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
   TString parpar(Form("%s.par", pararchivename)) ; 
   if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_PHYSICS")) ;
     TString processline(Form(".! make %s", parpar.Data())) ; 
     gROOT->ProcessLine(processline.Data()) ;
     gSystem->ChangeDirectory(cdir) ; 

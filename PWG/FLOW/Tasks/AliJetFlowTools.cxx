@@ -4383,7 +4383,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         // quadratic sum of statistical and uncorrelated systematic error
         Double_t e = gStat->At(i);;
 
-        // sum of v2 plus epsilon times correlated error minus hypothesis (0)
+        // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
         // also the numerator of equation 3 of phenix paper
         Double_t numerator = TMath::Power(gV2->At(i)+epsc*gCorr->At(i)+epsb-gPwrtTo, 2);
 
@@ -4422,7 +4422,7 @@ TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p, Double_t p_wrt_to)
 
     printf(" ===============================================================================\n");
     printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i should be ok ... ) \n", x, y, f1->Eval(x, y));
-    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  so the probability of finding data at least as imcompatible with " << gPwrtTo << " as the actually" << endl;
     cout << "  observed data is " << TMath::Prob(f1->Eval(x, y), DOF) << endl; 
     printf(" ===============================================================================\n");
 
