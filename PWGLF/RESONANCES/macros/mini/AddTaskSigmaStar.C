@@ -62,7 +62,8 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
  Float_t     maxDiffMultMix = 10.0,
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
- TString     outNameSuffix = "Sigma1385"
+ TString     outNameSuffix = "Sigma1385",
+   Int_t       centr = 0
  )
 {  
   
@@ -136,8 +137,8 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
   //-------------------------------------------
 
   Int_t       nmix = 0;
-  Float_t     maxDiffVzMix = 1.0;
-  Float_t     maxDiffMultMix = 10.0;
+  //  Float_t     maxDiffVzMix = 1.0;
+  //  Float_t     maxDiffMultMix = 10.0;
   
   if (mixingConfigID == eventMixConfig::kMixDefault) {
     nmix = 10;
@@ -178,16 +179,27 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    }
 
      if(collSyst==kPPb)  task->UseESDTriggerMask(triggerMask);
-     else if(collSyst==kPbPb) task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); 
-
+     else if(collSyst==kPbPb) {
+       if (centr == 1) { task->UseESDTriggerMask(AliVEvent::kCentral); }
+       else  if (centr == 2) {  task->UseESDTriggerMask(AliVEvent::kSemiCentral);}
+       else  if (centr == 3) {  task->UseESDTriggerMask(AliVEvent::kMB); }
+       else { task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+     }
 
    if(collSyst==kPPb) 
      task->SelectCollisionCandidates(triggerMask); //
    else if ( collSyst == kPP ) 
      task->SelectCollisionCandidates(AliVEvent::kMB); //
-   else
-     task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  
+   else {
+     if (centr == 1) { 
+       task->SelectCollisionCandidates(AliVEvent::kCentral); }
+     if (centr == 2) { 
+       task->SelectCollisionCandidates(AliVEvent::kSemiCentral); }
+     if (centr == 3) { 
+       task->SelectCollisionCandidates(AliVEvent::kMB); }
+     else { 
+       task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+   }
  
 
    if ( collSyst == kPP ) 
