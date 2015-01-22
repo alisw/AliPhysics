@@ -2,7 +2,7 @@ void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
 							TString V0ReaderPhotonCutNumber = "060000084001001500000000",
 							TString TaskEventCutnumber 		= "8000011",
 							TString TaskPhotonCutnumber 	= "092000092170008260400000",
-							Bool_t IsMC = kTRUE, 
+							Bool_t isMC = kTRUE, 
 							Int_t IsHeavyIon = 0, 
 							TString cutnumberAODBranch = "0000000060084001001500000",
 							Bool_t doEtaShiftV0Reader = kFALSE 
@@ -113,7 +113,7 @@ void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
 	AliAnalysisTaskResolution *fResolution= new AliAnalysisTaskResolution(Form("%s_%s_Resolution",(analysisEventCuts->GetCutNumber()).Data(), (analysisCuts->GetCutNumber()).Data()));
 	fResolution->SetEventCuts(analysisEventCuts,IsHeavyIon);	
 	fResolution->SetConversionCuts(analysisCuts,IsHeavyIon);
-	fResolution->SetIsMC(IsMC);
+	fResolution->SetisMC(isMC);
 	mgr->AddTask(fResolution);
 	
 	AliAnalysisDataContainer *coutput1 =
