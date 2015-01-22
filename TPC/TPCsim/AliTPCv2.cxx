@@ -2515,7 +2515,7 @@ void AliTPCv2::StepManager()
     //       {
     
     betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-    TVectorD *bbpar = fTPCParam->GetBetheBlochParameters(); //get parametrization from OCDB
+    TVectorD *bbpar = fTPCParam->GetBetheBlochParametersMC(); //get parametrization from OCDB
     pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));         
     //     }
   
