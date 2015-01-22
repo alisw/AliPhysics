@@ -1688,6 +1688,8 @@ void LoadLibrariesCFR(const libModes analysisMode) {
     
     // for AliRoot
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
+
     gSystem->Load("libANALYSIS");
     gSystem->Load("libPWGflowBase");
     //cerr<<"libPWGflowBase loaded ..."<<endl;

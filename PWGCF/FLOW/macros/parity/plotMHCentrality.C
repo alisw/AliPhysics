@@ -28,6 +28,7 @@ void plotMHCentrality(const char* filename = "AnalysisResults.root",
   gSystem->Load("libPhysics");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWGflowBase");
