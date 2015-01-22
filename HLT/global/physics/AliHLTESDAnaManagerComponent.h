@@ -225,6 +225,6 @@ private:
 
   AliHLTVEventInputHandler *fInputHandler;    // input handler
 
-  ClassDef(AliHLTESDAnaManagerComponent, 0)
+  ClassDef(AliHLTESDAnaManagerComponent, 1)
 };
 #endif

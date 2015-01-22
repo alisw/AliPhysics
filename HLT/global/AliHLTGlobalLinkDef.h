@@ -40,5 +40,7 @@
 #pragma link C++ class AliFlatESDFriend+;
 #pragma link C++ class AliFlatESDTrack+;
 #pragma link C++ class AliHLTGlobalFlatEsdTestComponent+;
-#pragma link C++ class AliHLTAnaManagerComponent+;
+#pragma link C++ class AliHLTTPCCalibManagerComponent+;
+#pragma link C++ class AliHLTESDAnaManagerComponent+;
+#pragma link C++ class AliHLTAnalysisManager+;
 #endif // __CINT__
