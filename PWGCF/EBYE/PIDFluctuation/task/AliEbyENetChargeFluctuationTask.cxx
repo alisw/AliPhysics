@@ -312,7 +312,7 @@ void AliEbyENetChargeFluctuationTask::UserExec( Option_t * ){
   } 
   //-- -  - - -  - - ---- -- - --- -- --- -- - --
   else if(fSystemType == 2) { 
-    if (fIsPhy) ExecAA(); 
+    if (fIsPhy || fIsQa) ExecAA(); 
     if (fIsMC && fIsEff) CalEC();
     if (fIsDca) CalED();
   } 
@@ -536,23 +536,24 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
   }
   
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
-  FillBasicHistos(0,0);
-  FillBasicHistos(0,1);
- if (fIsRatio) {
-   FillRatioHistos(0,0);
-   if(fIsPer)  FillRatioHistos(0,1);
-  }
-  if (fIsSub) {
-    FillGroupHistos("PhyBinSS",fSubSampleIdx,kFALSE,0);
-    if(fIsPer) FillGroupHistos("PhyPerSS",fSubSampleIdx,kFALSE,1);
-  }
-  if (fIsBS)  {
-    for (Int_t i = 0; i < fNSubSamples; ++i)  {
-      FillGroupHistos("PhyBinBS",fRan->Integer(fNSubSamples),kFALSE,0);
-      if(fIsPer)  FillGroupHistos("PhyPerBS",fRan->Integer(fNSubSamples),kFALSE,1);
+  if(fIsPhy) {
+    FillBasicHistos(0,0);
+    FillBasicHistos(0,1);
+    if (fIsRatio) {
+      FillRatioHistos(0,0);
+      if(fIsPer)  FillRatioHistos(0,1);
+    }
+    if (fIsSub) {
+      FillGroupHistos("PhyBinSS",fSubSampleIdx,kFALSE,0);
+      if(fIsPer) FillGroupHistos("PhyPerSS",fSubSampleIdx,kFALSE,1);
+    }
+    if (fIsBS)  {
+      for (Int_t i = 0; i < fNSubSamples; ++i)  {
+	FillGroupHistos("PhyBinBS",fRan->Integer(fNSubSamples),kFALSE,0);
+	if(fIsPer)  FillGroupHistos("PhyPerBS",fRan->Integer(fNSubSamples),kFALSE,1);
+      }
     }
   }
-
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
   if (fIsMC) {
     if (fIsAOD) {
@@ -606,20 +607,22 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
     }
     
     //---- - -- - - - - -   -  -- - - - ---- - - - --- 
-    FillBasicHistos(kTRUE,0);
-    FillBasicHistos(kTRUE,1);
-    if (fIsRatio) {
-      FillRatioHistos(kTRUE,0);
-      if(fIsPer)  FillRatioHistos(kTRUE,1);
-    }
-    if (fIsSub) {
-      FillGroupHistos("MCBinSS",fSubSampleIdx,kFALSE,0);
-      if(fIsPer) FillGroupHistos("MCPerSS",fSubSampleIdx,kFALSE,1);
-    }
-    if (fIsBS)  {
-      for (Int_t i = 0; i < fNSubSamples; ++i)  {
-	FillGroupHistos("MCBinBS",fRan->Integer(fNSubSamples),kFALSE,0);
-	if(fIsPer)  FillGroupHistos("MCPerBS",fRan->Integer(fNSubSamples),kFALSE,1);
+    if (fIsPhy) {
+      FillBasicHistos(kTRUE,0);
+      FillBasicHistos(kTRUE,1);
+      if (fIsRatio) {
+	FillRatioHistos(kTRUE,0);
+	if(fIsPer)  FillRatioHistos(kTRUE,1);
+      }
+      if (fIsSub) {
+	FillGroupHistos("MCBinSS",fSubSampleIdx,kFALSE,0);
+	if(fIsPer) FillGroupHistos("MCPerSS",fSubSampleIdx,kFALSE,1);
+      }
+      if (fIsBS)  {
+	for (Int_t i = 0; i < fNSubSamples; ++i)  {
+	  FillGroupHistos("MCBinBS",fRan->Integer(fNSubSamples),kFALSE,0);
+	  if(fIsPer)  FillGroupHistos("MCPerBS",fRan->Integer(fNSubSamples),kFALSE,1);
+	}
       }
     }
     //---- - -- - - - - -   -  -- - - - ---- - - - --- 
@@ -852,62 +855,28 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
 
 //----------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
-  if      (i == 0 )   
-    fIsQa  = 1; 
-  else if (i == 1 )   
-    fIsDca  = 1; 
-  else if (i == 2 )   
-    fIsEff = 1; 
-  else if (i == 3 )
-    { fIsPhy = 1; fIsRatio = 1; }   
-  else if (i == 4 )   
-    { fIsPhy = 1; fIsRatio = 1; fIsPer = 1; }
-  else if (i == 5 )
-    { fIsPhy = 1; fIsSub = 1; }
-  else if (i == 6 )  
-    {  fIsPhy = 1; fIsSub = 1; fIsPer = 1; } 
-  else if (i == 7 ) 
-    {  fIsPhy = 1; 
-      fIsBS = 1; fIsPer = 1;}  
-  else if (i == 8 )  
-    { fIsPhy = 1; 
-      fIsSub = 1; fIsBS = 1; }
-  else if (i == 9 )   
-    { fIsPhy = 1; 
-      fIsSub = 1; fIsBS = 1; fIsPer = 1;}
-  else if (i == 10) 
-    {   fIsPhy   = 1;
-    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; }  
-  else if (i == 11)   
-    { fIsPhy   = 1;
-    fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;}
-  else if (i == 12) 
-    { fIsPhy   = 1; fIsEff = 1; fIsDca = 1; fIsQa  = 1; 
-      fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;}  
-  else if (i == 13) 
-    { fIsDca  = 1;  fIsEff = 1; }  
-  else if (i == 14)  
-    {    fIsQa  = 1; fIsDca  = 1;  fIsEff = 1;} 
-  else if (i == 15) 
-    { fIsNu    = 1; fIsPhy   = 1;
-      fIsRatio = 1; fIsSub = 1; fIsBS  = 1; }  
-  else if (i == 16) 
-    { fIsNu    = 1; fIsPhy   = 1;
-      fIsPer = 1; fIsSub = 1; fIsBS  = 1; }  
-  else if (i == 17) 
-    { fIsNu = 1; fIsPhy = 1; fIsRatio = 1;
-      fIsPer = 1; fIsSub = 1; fIsBS = 1; }  
-else if (i == 18)
-    { fIsPhy   = 1; fIsQa  = 1;
-      fIsRatio = 1; fIsSub = 1; fIsBS  = 1; fIsPer = 1;}
-else if (i == 19)
-    { fIsPhy   = 1; fIsQa  = 1;
-      fIsSub = 1; fIsBS  = 1; fIsPer = 1;}
-else {
-    fIsPhy   = 0; fIsEff = 0; fIsDca = 0; fIsQa  = 0; 
-    fIsRatio = 0; fIsSub = 0; fIsBS  = 0; fIsPer = 0;
-  }
-  
+
+  if      (i == 0 ) { fIsQa  = 1; }
+  else if (i == 1 ) { fIsDca = 1; }
+  else if (i == 2 ) { fIsEff = 1; } 
+  else if (i == 3 ) { fIsDca = 1; fIsEff  = 1; }  
+  else if (i == 4 ) { fIsPhy = 1; fIsRatio= 1; } 
+  else if (i == 5 ) { fIsPhy = 1; fIsRatio= 1; fIsPer = 1;}   
+  else if (i == 6 ) { fIsPhy = 1; fIsSub  = 1; }
+  else if (i == 7 ) { fIsPhy = 1; fIsSub  = 1; fIsPer = 1;}
+  else if (i == 8 ) { fIsPhy = 1; fIsBS   = 1; }   
+  else if (i == 9 ) { fIsPhy = 1; fIsBS   = 1; fIsPer = 1;}    
+  else if (i == 10) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;}    
+  else if (i == 11) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsPer = 1;}    
+  else if (i == 12) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; }    
+  else if (i == 13) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; fIsPer = 1; }    
+  else if (i == 14) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; fIsPer = 1; fIsRatio = 1;}    
+  else if (i == 15) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; }     
+  else if (i == 16) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsPer = 1; }     
+  else if (i == 17) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1;}     
+  else if (i == 18) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1; fIsPer = 1;}     
+  else {fIsPhy= 0;    fIsEff = 0; fIsDca  = 0; fIsQa  = 0; fIsSub = 0; fIsBS    = 0; fIsPer = 0; fIsRatio = 0;}
+   
   Printf(" >>> %d %d %d %d %d %d %d %d %d %d", 
 	 i, fIsPhy, fIsEff, fIsDca, fIsQa, 
 	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu);
