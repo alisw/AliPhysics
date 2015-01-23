@@ -54,6 +54,7 @@ AliESDtrackCuts *configureNetChargeTrackCut(const Char_t *tname = "sjenaTracksCf
      trackCuts->SetEtaRange(-0.8,0.8);
     
      tag += " Track Cut Used: Initial Cuts used for Net-Charge PRL";
+
   } else if ( imode == 6) { // wide DCA cut
     trackCuts->SetMinNClustersTPC(80);
     trackCuts->SetMinNClustersITS(2);
@@ -111,7 +112,7 @@ AliESDtrackCuts *configureNetChargeTrackCut(const Char_t *tname = "sjenaTracksCf
 
     tag += " Track Cut Used: My Standard Cut for TPC";                                                                
 
-  } else if (imode == 9) { /*** for Correction ***/
+  } else if (imode == 9) { /*** for Correction jochen ***/
     trackCuts->SetMinNCrossedRowsTPC(70);                                            
     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);                   
     trackCuts->SetMaxChi2PerClusterTPC(4);                                           
