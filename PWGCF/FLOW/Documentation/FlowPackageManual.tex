@@ -1912,7 +1912,7 @@ There is no specific information on the implementation here, for details the rea
 
  Essentially, you have to do two things: 
 	\begin{lstlisting}[language=C, numbers=left]
-cp $ALICE_ROOT/PWGCF/FLOW/macros/runFlowAnalysisOnTheFly.C .
+cp $ALICE_PHYSICS/PWGCF/FLOW/macros/runFlowAnalysisOnTheFly.C .
 aliroot runFlowAnalysisOnTheFly.C \end{lstlisting}
 
  In the analysis on-the-fly particles are sampled from hardwired Fourier-like p.d.f, so input vn harmonics are completely under control. Please have a look at the steering macro runFlowAnalysisOnTheFly.C and corresponding class AliFlowEventSimpleMakerOnTheFly.cxx in the FLOW package, which are easily written (no fancy C++ features in my code!), and well documented. 

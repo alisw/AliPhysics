@@ -4,7 +4,7 @@ void runFlowOnDataExample() {
     //
     // all steps are explained in detail in
     // chapter 3.4.3 of the flow package manual
-    // $ALICE_ROOT/PWGCF/FLOW/Documentation/FlowPackageManual.pdf
+    // $ALICE_PHYSICS/PWGCF/FLOW/Documentation/FlowPackageManual.pdf
     // which is also available on the twiki page
     // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FlowPAGFlowPackageManual
     //

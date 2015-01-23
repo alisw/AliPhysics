@@ -9,15 +9,6 @@ void runTTreeFilter() {
     // see source of these classes for more details
 
     // load libraries
-    gSystem->Load("libCore");
-    gSystem->Load("libGeom");
-    gSystem->Load("libVMC");
-    gSystem->Load("libPhysics");
-    gSystem->Load("libTree");
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
 
     // create the analysis manager
@@ -44,9 +35,7 @@ void runTTreeFilter() {
 
     // include paths, necessary for compilation
     gSystem->AddIncludePath("-Wno-deprecated");
-    gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL");
-    gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");
-    gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
+    gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
 
     gROOT->LoadMacro("../objects/AliFlowTTreeEvent.cxx+");
     gROOT->LoadMacro("../objects/AliFlowTTreeTrack.cxx+");

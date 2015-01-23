@@ -2,9 +2,9 @@
   //load libraries
  gSystem->Load("libPWGGlauber");
  //  gSystem->SetBuildDir("/tmp");
- //  gROOT->LoadMacro("$ALICE_ROOT/PWG/Glauber/AliGlauberNucleon.cxx+");
- //  gROOT->LoadMacro("$ALICE_ROOT/PWG/Glauber/AliGlauberNucleus.cxx+");
- //  gROOT->LoadMacro("$ALICE_ROOT/PWG/Glauber/AliGlauberMC.cxx+");
+ //  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/Glauber/AliGlauberNucleon.cxx+");
+ //  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/Glauber/AliGlauberNucleus.cxx+");
+ //  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/Glauber/AliGlauberMC.cxx+");
 
   //set the random seed from current time
   TTimeStamp time;

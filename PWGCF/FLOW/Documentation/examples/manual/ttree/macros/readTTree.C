@@ -8,14 +8,9 @@ void readTTree()
     // compile the relevant classes
     // include paths, necessary for compilation
     gSystem->AddIncludePath("-Wno-deprecated");
-    gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include");
+    gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
  
     // load libraries
-    gSystem->Load("libCore");
-    gSystem->Load("libGeom");
-    gSystem->Load("libVMC");
-    gSystem->Load("libPhysics");
-    gSystem->Load("libTree");
     gSystem->Load("libPWGflowBase");
 
     // comile the encapsulated classes
