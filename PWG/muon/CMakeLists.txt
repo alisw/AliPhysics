@@ -79,6 +79,9 @@ set(SRCS
   AliAnalysisMuMuMinv.cxx
   AliAnalysisMuMuNch.cxx
   AliAnalysisTaskNorm.cxx
+  AAFStageAndFilter.cxx
+  FILTER_AODMUONWITHTRACKLETS.cxx
+  FILTER_RAWMUON.cxx
   )
 
 # Headers from sources

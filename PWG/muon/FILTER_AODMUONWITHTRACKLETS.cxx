@@ -5,8 +5,10 @@
 #include "TChain.h"
 #include "Riostream.h"
 
+namespace AAF {
+  
 //
-// Macro to convert a full (std) AOD to a muon only AOD
+// Convert a full (std) AOD to a muon only AOD
 //
 //
 
@@ -42,4 +44,6 @@ void FILTER_AODMUONWITHTRACKLETS(const char* from, const char* to)
   chain->Add(from);
   
   mgr->StartAnalysis("local",chain);
+}
+
 }
