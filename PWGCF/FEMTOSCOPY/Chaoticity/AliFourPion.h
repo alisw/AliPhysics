@@ -42,7 +42,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   AliFourPion(const AliFourPion &obj); 
   AliFourPion &operator=(const AliFourPion &obj);
   
-
+  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -66,13 +66,14 @@ class AliFourPion : public AliAnalysisTaskSE {
   static const Int_t fCentBins = 10;// 0-50%
   static const Int_t fMbinsMixing = 10;// 5% widths
   static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
-
+  
 
   Int_t GetNumKtBins() const {return AliFourPion::fKbinsT;}
   Int_t GetNumRValues() const {return AliFourPion::fRVALUES;}
   Int_t GetNumCentBins() const {return AliFourPion::fCentBins;}
   Int_t GetNumEDBins() const {return AliFourPion::fEDbins;}
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
+  
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
@@ -293,7 +294,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t fTriggerType;
   Int_t fEventCounter;
   Int_t fEventsToMix;
-  Int_t fZvertexBins;
+  Int_t fEventMixingEDbins;
   Int_t fMultLimits[kMultBinspp+1];
   Float_t fMinPt;
   Float_t fMaxPt;
@@ -385,8 +386,9 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH1D *fFSIss[13];
   TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
+  TH3F *fNormWeight2[fKbinsT][fCentBins];
   TF1 *ExchangeAmp[7][50][2];
-
+  
   ClassDef(AliFourPion, 1); 
 };
 
