@@ -1026,11 +1026,12 @@ TVectorD * AliTPCParam::GetBetheBlochParamAliceMC(){
   //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
   //  dNdx parameterization
   TVectorD v(5);
-  v[0] =0.0816056; 
-  v[1] =10.0163 ;
-  v[2] =9.43982e-05; 
-  v[3] =2.0425;
-  v[4] =1.64609; 
+  v[0] =0.0820172 ;
+  v[1] =9.94795 ;
+  v[2] =8.97292e-05; 
+  v[3] =2.05873 ;
+  v[4] =1.65272 ;
+
   return new TVectorD(v);
 }
 
@@ -1044,7 +1045,7 @@ Double_t  AliTPCParam::BetheBlochAleph(Double_t bg, Int_t type){
     AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
     if (param) paramBB=param->GetBetheBlochParameters();
   } 
-  if (type>0){
+  if (type==1){
     paramBB = (TVectorD*)fBBParam->At(type);
   }
   if (!paramBB) return 0;
