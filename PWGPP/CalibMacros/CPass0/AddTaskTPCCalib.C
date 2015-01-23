@@ -31,7 +31,7 @@ Bool_t isOptionSelected(const char* optionstr, const char* optionsstr, const cha
 }
 
 //_____________________________________________________________________________
-AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber, const char* options="ALL")
+AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL")
 {
   //
   // add calibration task
