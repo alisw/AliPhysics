@@ -60,21 +60,6 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
-# ROOT configuration mandatory
-if(ROOTSYS)
-    find_package(ROOT REQUIRED)
-
-    # ROOT must be build with XML2 support
-    if(NOT ROOT_HASXML)
-        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
-    endif(NOT ROOT_HASXML)
-else()
-    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
-endif(ROOTSYS)
-
-# ROOT dictionaries and maps
-include(CMakeALICE)
-
 # Checking first for DIM, DATE, AMORE and daqDA 
 # in case ROOT Extra static library needs to be enabled
 
@@ -142,6 +127,24 @@ if(MDCRPM)
     message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
 endif(MDCRPM)
 
+# ROOT configuration mandatory
+# FindRoot has to be after the enabling of DA due to libRootExtra
+# Do not put it above DA
+if(ROOTSYS)
+    find_package(ROOT REQUIRED)
+
+    # ROOT must be build with XML2 support
+    if(NOT ROOT_HASXML)
+        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+    endif(NOT ROOT_HASXML)
+else()
+    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
+endif(ROOTSYS)
+
+# ROOT dictionaries and maps
+include(CMakeALICE)
+
+
 # If no Fortran, i.e on Windows
 # We need to specify ROOT fortran
 # (f95 comes before gfortran in default module)
@@ -169,33 +172,6 @@ if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
 else()
     message(STATUS "Doxygen and Graphviz not found. Disabling support for documentation generation")
 endif(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
-
-# DATE
-if(DATE_CONFIG)
-    find_package(DATE)
-endif(DATE_CONFIG)
-
-# daqDA
-if(daqDA)
-    find_package(daqDA)
-endif(daqDA)
-
-# DA is enabled
-if(DA)
-    if(NOT DATE_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\"")
-    endif()
-    
-    if(NOT daqDA_FOUND)
-        set(DA FALSE)
-        message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
-    endif()
-    
-    # Enable static libraries
-    set(ALIROOT_STATIC TRUE)
-    message(STATUS "DAs enabled")
-endif(DA)
 
 # FastJet
 find_package(FASTJET)
