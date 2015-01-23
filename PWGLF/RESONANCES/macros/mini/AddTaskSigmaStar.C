@@ -296,7 +296,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigSigmaStar.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigmaStar.C");
    if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
        

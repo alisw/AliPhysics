@@ -7,7 +7,7 @@ Bool_t RunALICE(TString anSrc = "grid",
                 TString dsName="",
                 TString alirsnliteManagers ="AddAMRsn",
                 Bool_t useMultiHandler=kFALSE,
-                TString alirsnlitesrc ="$ALICE_ROOT",
+                TString alirsnlitesrc ="$ALICE_PHYSICS",
                 TString alirsnlitetasks =""
                ) {
 

@@ -109,10 +109,10 @@ AliRsnMiniAnalysisTask * AddTaskDeltaPP7TeV
    
    
       if (useDelta) {
-         gROOT->LoadMacro("${ALICE_ROOT}/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV.C");
+         gROOT->LoadMacro("${ALICE_PHYSICS}/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV.C");
          ConfigDeltaPP7TeV(task, isMC, "", cutsPair);
      if (isMC) {
-         gROOT->LoadMacro("${ALICE_ROOT}/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV_MC.C");
+         gROOT->LoadMacro("${ALICE_PHYSICS}/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV_MC.C");
          ConfigDeltaPP7TeV_MC(task, isPP, "", cutsPair);
         }
       }

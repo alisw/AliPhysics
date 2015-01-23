@@ -101,7 +101,7 @@ Bool_t ConfigPhiRAApPb
       Int_t icut14 = task->AddTrackCuts(cutSet14);
 
       Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
       AddMonitorOutput(isMC, cutSet->GetMonitorOutput());
 
    //

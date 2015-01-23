@@ -118,7 +118,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar_pA
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTOFanalysisKStar.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigTOFanalysisKStar.C");
    if (isMC) {
      if (((Int_t)cutPiCandidate<4) && ((Int_t)cutKaCandidate<4))
        Printf("========================== MC analysis - no PID used for efficiency estimation");

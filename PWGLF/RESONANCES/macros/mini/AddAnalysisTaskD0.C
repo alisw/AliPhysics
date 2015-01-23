@@ -254,7 +254,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
 
    if (isMC) {
        Printf("========================== MC analysis - PID cuts used");

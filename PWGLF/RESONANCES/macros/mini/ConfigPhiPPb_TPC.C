@@ -157,7 +157,7 @@ Bool_t ConfigPhiPPb_TPC(
   
   if(enableMonitor){
     Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetKaon->GetMonitorOutput());
   }  
   // -- Values ------------------------------------------------------------------------------------
