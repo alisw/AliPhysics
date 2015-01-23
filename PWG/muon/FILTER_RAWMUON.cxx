@@ -6,7 +6,10 @@
 #include "TLeaf.h"
 #include "TError.h"
 #include "TFile.h"
+#include "Riostream.h"
 
+namespace AAF {
+  
 void DisableBranches(TTree* tree)
 {
   TObjArray* list = tree->GetListOfLeaves();
@@ -59,6 +62,8 @@ void DisableBranches(TTree* tree)
 
 int FILTER_RAWMUON(const char* from, const char* to)
 {
+  std::cout << "FILTER_RAWMUON(" << from << "," << to << ")" << std::endl;
+  
   TString sinputfile(from);
   
   if (sinputfile.BeginsWith("alien://"))
@@ -75,6 +80,12 @@ int FILTER_RAWMUON(const char* from, const char* to)
   }
   
   TFile* rawFile = TFile::Open(from);
+  
+  if (!rawFile || !rawFile->IsOpen())
+  {
+    Error("FILTER_RAWMUON","Cannot open input file %s",from);
+    return -3;
+  }
   
   TTree *rawTree=(TTree *)rawFile->Get("RAW");
   if(!rawTree)
@@ -102,4 +113,6 @@ int FILTER_RAWMUON(const char* from, const char* to)
   delete rawFile;
   
   return 0;
+}
+
 }
