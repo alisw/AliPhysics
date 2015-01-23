@@ -950,7 +950,10 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       error.SetErrorFlags(fTRMTDCError->GetErrorFlags());
       error.SetTDCID(fTRMTDCError->GetTDCID());
       //fill TDC error buffer
-      fTDCErrorBuffer->Add(error);
+      if (fTDCErrorBuffer) fTDCErrorBuffer->Add(error);
+      else {
+	AliError("fTDCErrorBuffer is 0: no chain header was detected");	
+      }
       if (fVerbose)
 	AliInfo(Form("  %02x - 0x%08x \t  TDC error",decoderStatus,*rawData));
       break;
