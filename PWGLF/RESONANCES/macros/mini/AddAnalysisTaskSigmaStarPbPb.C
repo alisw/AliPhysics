@@ -123,7 +123,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskSigmaStarPbPb
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigSigmaStarPbPb.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigmaStarPbPb.C");
    if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
        

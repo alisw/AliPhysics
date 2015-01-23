@@ -54,7 +54,7 @@ Bool_t ConfigKStarPP7TeV
   
   if (enableMonitor){
     Printf("======== Cut monitoring enabled");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
     AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput()), monitorOpt.Data();

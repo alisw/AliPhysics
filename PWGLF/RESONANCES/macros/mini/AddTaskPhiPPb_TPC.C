@@ -137,7 +137,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPb_TPC
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigPhiPPb_TPC.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPPb_TPC.C");
    if (!ConfigPhiPPb_TPC(task, isMC, isPP, "", cutsPair, type1, nsigmaKa, enableMonitor,optSy)) return 0x0;
 
    //

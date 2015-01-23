@@ -118,7 +118,7 @@ TString Setup
 
    if (isESD) {
       ::Info("AnalysisSetup", "Add physics selection by default on ESD analysis");
-      gROOT->LoadMacro("$(ALICE_ROOT)/OADB/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$(ALICE_PHYSICS)/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
       if (noV0) {
          ::Info("AnalysisSetup", "Skip of V0 info is required");
@@ -132,7 +132,7 @@ TString Setup
 
    if (isESD && !(collSyst==kPP) ) {
      ::Info("AnalysisSetup", "Add centrality and event plane computation tasks");
-      gROOT->LoadMacro("$(ALICE_ROOT)/OADB/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$(ALICE_PHYSICS)/OADB/macros/AddTaskCentrality.C");
       gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskEventplane.C");
       AliCentralitySelectionTask* taskCentrality = (AliCentralitySelectionTask*)AddTaskCentrality();
       if (isMC) {

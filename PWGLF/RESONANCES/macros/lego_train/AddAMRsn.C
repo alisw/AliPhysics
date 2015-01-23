@@ -7,7 +7,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
    Bool_t usePrivateTrain = kFALSE;
    usePrivateTrain = kTRUE;
 
-   TString legoTrainPath = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
+   TString legoTrainPath = "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/lego_train";
 //   legoTrainPath = "/home/mvala/git/AliRsn/PWGLF/RESONANCES/macros/lego_train";
    AliAnalysisManager::SetGlobalStr("RsnLegoTrainPath",legoTrainPath.Data());
 
@@ -126,7 +126,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
 
       if (physSel>0) {
          if (!input.CompareTo("esd")) {
-            gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+            gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
             Bool_t physSelBigOut = kTRUE;
 //            physSelBigOut = kFALSE;
 
@@ -134,7 +134,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
             if (physSelBigOut) mrg->SetSpecialOutputLocation("root://aaa//aaa/");
          }
 
-         // maybe we can put it in $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C
+         // maybe we can put it in $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C
          if (multiInputHandler) {
             AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
             ih->SetEventSelection(multiInputHandler->GetEventSelection());
@@ -142,7 +142,7 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
       }
 
       if (useCentralityTask) {
-         gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
          AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kFALSE);
       }
 
@@ -192,7 +192,7 @@ Bool_t RsnLoadMacro(TString macro,TString path="") {
 
    Bool_t valid;
    TString lego_path = AliAnalysisManager::GetGlobalStr("RsnLegoTrainPath",valid);
-   if (!valid) lego_path = "$ALICE_ROOT/PWG2/RESONANCES/macros/lego_train";
+   if (!valid) lego_path = "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/lego_train";
 
    if (!gSystem->AccessPathName(macro.Data())) {
       gROOT->LoadMacro(macro.Data());

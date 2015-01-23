@@ -127,11 +127,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    if(!isMC){
-     gROOT->LoadMacro("ConfigTPCanalysisKStar.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStar.C");
      if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0;
    }
    else {
-     gROOT->LoadMacro("ConfigTPCanalysisKStarMC.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarMC.C");
      if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
      if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
    }

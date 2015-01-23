@@ -145,7 +145,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskLStar
    
    //for systematic checks
      {
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
    if (!ConfigLStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, signedPdg,monitorOpt,useCrossedRows,yaxisVar ,useMixLS)) 
 return 0x0;  
      }

@@ -124,7 +124,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarTrkSyst
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigKStarTrkSyst.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarTrkSyst.C");
    if (!ConfigKStarTrkSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar, enableTrkSyst, dcaxymax, dcazmax, minNcls, maxX2cls)) return 0x0;
    
    //
