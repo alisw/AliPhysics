@@ -36,7 +36,7 @@
 /// the installation of AliRoot:
 /// 
 /// <pre> 
-///.L $ALICE_ROOT/MUON/UpdateCDBCTPConfig.C+
+///.L $ALICE_ROOT/MUON/macros/UpdateCDBCTPConfig.C+
 /// UpdateCDBCTPConfig(1);    // just checking
 /// UpdateCDBCTPConfig();     // update the GRP/CDB entry
 /// </pre>
@@ -91,7 +91,7 @@ void UpdateCDBCTPConfig(Bool_t check = false) {
   // construct the CTP configuration starting from GRP/CTP/<CTPcfg>.cfg file
 
   // Config.C detector configuration
-  TString cfgFile(Form("%s/MUON/Config.C",alice));
+  TString cfgFile(Form("%s/MUON/macros/Config.C",alice));
 
   // MUON.cfg trigger configuration
   TString cfgCTP(Form("%s/GRP/CTP/MUON.cfg",alice));

@@ -43,7 +43,7 @@
 #endif
 
 void gen(Int_t nev = 1, 
-         const char* genConfig = "$ALICE_ROOT/MUON/genTestConfig.C")
+         const char* genConfig = "$ALICE_ROOT/MUON/macros/genTestConfig.C")
 {
   // Load libraries
   // gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT");

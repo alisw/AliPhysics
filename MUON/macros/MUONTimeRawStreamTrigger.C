@@ -25,7 +25,7 @@
 /// decoder. It can be invoked as follows:
 /// 
 ///  $ aliroot
-/// .L $ALICE_ROOT/MUON/MUONTimeRawStreamTrigger.C+
+/// .L $ALICE_ROOT/MUON/macros/MUONTimeRawStreamTrigger.C+
 ///  MUONTimeRawStreamTrigger(filename, maxEvent);
 ///
 /// where \em filename is the name of a file containing the raw data, or alternatively

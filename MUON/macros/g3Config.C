@@ -28,7 +28,7 @@ void Config(const char* directory="",
 
   // AliRoot setup
   //
-  gROOT->LoadMacro("$ALICE_ROOT/MUON/commonConfig.C");
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/macros/commonConfig.C");
   commonConfig(directory, digitstore, forEmbedding);
 
   // Load Geant3 + Geant3 VMC libraries
@@ -44,12 +44,12 @@ void Config(const char* directory="",
   // AliRoot event generator
   // (it has to be created after MC, as it may use decayer via VMC)
   //
-  gROOT->LoadMacro("$ALICE_ROOT/MUON/genTestConfig.C");
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/macros/genTestConfig.C");
   genConfig(option);
 
   // From external file
   //
-  //gROOT->LoadMacro("$ALICE_ROOT/MUON/genExtFileConfig.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/MUON/macros/genExtFileConfig.C");
   //genConfig();
 
 

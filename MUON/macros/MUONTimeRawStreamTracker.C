@@ -24,7 +24,7 @@
 /// decoder for the tracker DDLs. It can be invoked as follows:
 /// 
 ///  $ aliroot
-/// .L $ALICE_ROOT/MUON/MUONTimeRawStreamTracker.C+
+/// .L $ALICE_ROOT/MUON/macros/MUONTimeRawStreamTracker.C+
 ///  MUONTimeRawStreamTracker(filename, maxEvent);
 ///
 /// where \em filename is the name of a file containing the raw data, or alternatively

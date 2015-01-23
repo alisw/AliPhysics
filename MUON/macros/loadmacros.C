@@ -74,7 +74,7 @@ void loadmacro(const TString& macroName)
 {
 /// Load the macro with given name
 
-  TString path = "$ALICE_ROOT/MUON/";
+  TString path = "$ALICE_ROOT/MUON/macros/";
   path += macroName;
   path += ".C++";
   gROOT->LoadMacro(path.Data());

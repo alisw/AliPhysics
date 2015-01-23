@@ -20,7 +20,7 @@
 /// \brief Macro for generation SDigits from raw data for merging 
 /// \author Indranil Das, HEP Division, SINP (indra.das@saha.ac.in, indra.ehep@gmail.com)
 ///
-/// Usage : To run this code one should have $ALICE_ROOT/MUON/rootlogon.C 
+/// Usage : To run this code one should have $ALICE_ROOT/MUON/macros/rootlogon.C 
 ///         in the current working directory. Then run it from command line as,
 /// <pre>aliroot MakeSDigits.C\(\""reconstructed galicefile"\",\""rawdatafile"\",\""OCDB path"\",run-numer\)
 ///
@@ -42,7 +42,7 @@
 /// Follow the merging procedure as specified in the \ref README_sim page, with 
 /// <pre>MuonSim.MergeWith("recodir_that_has_MUON.SDigits.root_from_rawdata/galice.root",nofBackground)
 /// </pre>
-/// in the $ALICE_ROOT/MUON/runSimulation.C
+/// in the $ALICE_ROOT/MUON/macros/runSimulation.C
 
 /**********************************************************************
  Created on : 11/01/2010
