@@ -13,21 +13,12 @@ void runTTreeFilterOnGrid() {
     // from which this macro is launched
 
     // load libraries
-    gSystem->Load("libCore");        
-    gSystem->Load("libGeom");
-    gSystem->Load("libVMC");
-    gSystem->Load("libPhysics");
-    gSystem->Load("libTree");
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
 
     // create and customize the alien plugin
     AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
-    alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWG/FLOW/Base -I$ALICE_ROOT/PWG/FLOW/Tasks -g");
-    alienHandler->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTPCbase.so libTOFbase.so libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so libT0rec.so libTender.so libTenderSupplies.so libPWGflowBase.so libPWGflowTasks.so AliFlowTTreeEvent.cxx AliFlowTTreeTrack.cxx AliAnalysisTaskTTreeFilter.cxx AliFlowTTreeEvent.h AliFlowTTreeTrack.h AliAnalysisTaskTTreeFilter.h");
+    alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
+    alienHandler->SetAdditionalLibs("libANALYSISalice AliFlowTTreeEvent.cxx AliFlowTTreeTrack.cxx AliAnalysisTaskTTreeFilter.cxx AliFlowTTreeEvent.h AliFlowTTreeTrack.h AliAnalysisTaskTTreeFilter.h");
     alienHandler->SetAnalysisSource("AliFlowTTreeEvent.cxx AliFlowTTreeTrack.cxx AliAnalysisTaskTTreeFilter.cxx");
     alienHandler->SetOverwriteMode();
     alienHandler->SetRunMode("full");
@@ -75,9 +66,7 @@ void runTTreeFilterOnGrid() {
 
     // compile the relevant classes
     gSystem->AddIncludePath("-Wno-deprecated");
-    gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/EMCAL");
-    gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");
-    gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
+    gSystem->AddIncludePath("-I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
 
     gROOT->LoadMacro("AliFlowTTreeEvent.cxx+");
     gROOT->LoadMacro("AliFlowTTreeTrack.cxx+");

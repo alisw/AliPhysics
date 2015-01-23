@@ -22,7 +22,7 @@
   author:   Redmer Alexander Bertens (rbertens@cern.ch)
 
   based on code from Mikolaj, see
-  $ALICE_ROOT/PWG/FLOW/Base/AliFlowEventStar.cxx
+  $ALICE_PHYSICS/PWG/FLOW/Base/AliFlowEventStar.cxx
 */
 
 // root includes

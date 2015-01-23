@@ -27,7 +27,7 @@ void runFlowTaskCentralityKinkTrain( Int_t mode = mLocal,
   // Chains:
   if(mode == mLocal)
   {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGUD/macros/CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGUD/macros/CreateESDChain.C");
     TChain* chain = CreateESDChain(dataDir, nEvents, offset);
     //TChain* chain = CreateAODChain(dataDir, nEvents, offset);
   }
@@ -51,11 +51,11 @@ void runFlowTaskCentralityKinkTrain( Int_t mode = mLocal,
   }
 
   // Task to check the offline trigger:
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(!DATA);
 
   //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
 
@@ -64,11 +64,11 @@ void runFlowTaskCentralityKinkTrain( Int_t mode = mLocal,
   AliAnalysisTaskPIDResponse* pidresponsetask = AddTaskPIDResponse(!DATA);
 
   //Add the TOF tender
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskTenderTOF.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskTenderTOF.C");
   //AddTaskTenderTOF();
 
   // Setup kink analysis per centrality bin:
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/Kinks/AddTaskFlowCentralityKink.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/Kinks/AddTaskFlowCentralityKink.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
   {
     Float_t lowCentralityBinEdge = centralityArray[i];
@@ -100,7 +100,7 @@ void runFlowTaskCentralityKinkTrain( Int_t mode = mLocal,
   } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
   // Setup kaon analysis per centrality bin:
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/Kinks/AddTaskFlowCentralityPID.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/Kinks/AddTaskFlowCentralityPID.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
   {
     Float_t lowCentralityBinEdge = centralityArray[i];
@@ -132,7 +132,7 @@ void runFlowTaskCentralityKinkTrain( Int_t mode = mLocal,
   } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
   // Setup He3 analysis per centrality bin:
-  gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/Kinks/AddTaskFlowCentralityPID.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/Kinks/AddTaskFlowCentralityPID.C");
   for (Int_t i=binfirst; i<binlast+1; i++)
   {
     Float_t lowCentralityBinEdge = centralityArray[i];
