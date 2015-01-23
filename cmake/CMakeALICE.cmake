@@ -177,23 +177,23 @@ macro(generateDA DETECTOR ALGORITHM STATIC_DEPENDENCIES)
     setDAflags()
 
     # Generating the DA executable
-    add_executable(${DETECTOR}${ALGORITHM}da ${DETECTOR}${ALGORITHM}da.cxx) #
+    add_executable(${DETECTOR}${ALGORITHM}da.exe ${DETECTOR}${ALGORITHM}da.cxx) #
 
     # DA flags and linking information
     set(MODULE_COMPILE_FLAGS)
     set(MODULE_LINK_FLAGS)
 
-    target_link_libraries(${DETECTOR}${ALGORITHM}da ${STATIC_DEPENDENCIES} ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
+    target_link_libraries(${DETECTOR}${ALGORITHM}da.exe ${STATIC_DEPENDENCIES} ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
 
     # different flags
     set(MODULE_COMPILE_FLAGS "  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
     set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
 
-    set_target_properties(${DETECTOR}${ALGORITHM}da PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-    set_target_properties(${DETECTOR}${ALGORITHM}da PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+    set_target_properties(${DETECTOR}${ALGORITHM}da.exe PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+    set_target_properties(${DETECTOR}${ALGORITHM}da.exe PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
     # Installation
-    install(TARGETS ${DETECTOR}${ALGORITHM}da RUNTIME DESTINATION bin)
+    install(TARGETS ${DETECTOR}${ALGORITHM}da.exe RUNTIME DESTINATION bin)
     
     if(DARPM)
         createDArpm("${DETECTOR}" "${ALGORITHM}")
@@ -204,7 +204,7 @@ endmacro()
 macro(createDArpm DETECTOR ALGORITHM)
     getDAdescription("${DETECTOR}" "${ALGORITHM}")
 
-    set(DA_EXECUTABLE "${DETECTOR}${ALGORITHM}da")
+    set(DA_EXECUTABLE "${DETECTOR}${ALGORITHM}da.exe")
     set(DETECTOR "${DETECTOR}")
     set(ALGORITHM "${ALGORITHM}")
     set(RPM_DESCRIPTION ${RPM_DESCRIPTION})
@@ -221,9 +221,9 @@ macro(createDArpm DETECTOR ALGORITHM)
 
     configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${_ALGORITHM}-da.spec" @ONLY)
 
-    add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da POST_BUILD
+    add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da.exe POST_BUILD
                        COMMAND mkdir ARGS -p da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
-                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da.exe da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
                        COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm/root" -bb ${_ALGORITHM}-da.spec
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                        COMMENT "RPM creation for ${DETECTOR}-${_ALGORITHM}"
