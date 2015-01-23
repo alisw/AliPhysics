@@ -12,7 +12,7 @@
 */
 
 // function to set TPC OCDB parameters
-void ConfigOCDB(Int_t crun);
+void ConfigOCDB();
 
 Int_t debugLevel=0;
 Int_t streamLevel=0;
@@ -31,7 +31,7 @@ Bool_t isOptionSelected(const char* optionstr, const char* optionsstr, const cha
 }
 
 //_____________________________________________________________________________
-AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber, const char* options="ALL")
+AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL")
 {
   //
   // add calibration task
@@ -49,7 +49,7 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber, const char* options="ALL")
   }  
 
   // set TPC OCDB parameters
-  ConfigOCDB(runNumber);
+  ConfigOCDB();
 
   AliTPCAnalysisTaskcalib *task=NULL;
   
@@ -381,13 +381,11 @@ void SetupCalibTaskTrainCluster(TObject* task, const char* options="ALL"){
 }
 
 //_____________________________________________________________________________
-void ConfigOCDB(Int_t run){
+void ConfigOCDB(){
   //
   // Configure TPC OCDB
   //
-  printf("SETUP OCBD for TPC\n");
-  printf("SETUP OCBD for TPC\n");
-  printf("SETUP OCBD for TPC Run =%d\n", run);
+  printf("SETUP OCDB for TPC\n");
   //
   //
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
@@ -478,8 +476,4 @@ void ConfigOCDB(Int_t run){
   //
   tpcRecoParam->SetUseAlignmentTime(kFALSE);
   tpcRecoParam->SetUseComposedCorrection(kTRUE);
-
-  // ===| Initialise AliTPCcalibDB |============================================
-  //
-  AliTPCcalibDB::Instance()->SetRun(run);
 }
