@@ -121,5 +121,6 @@
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskHJetSpectra+;
+#pragma link C++ class AliHighPtReconstructionEfficiency+;
 #endif
 #endif
