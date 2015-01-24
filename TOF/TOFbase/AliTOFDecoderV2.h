@@ -90,6 +90,10 @@
 			     ((a & 0xff000000) >> 24) )
 
 
+#define TRM_ERROR_STATUS      (DRM_BIT|TRM_BIT)
+#define CHAIN_A_TDCERROR_STATUS  (DRM_BIT|TRM_BIT|CHAIN_A_BIT)
+#define CHAIN_B_TDCERROR_STATUS  (DRM_BIT|TRM_BIT|CHAIN_B_BIT)
+
 #include "TObject.h"
 #include "AliRawReader.h"
 #include "AliTOFTDCHit.h"
