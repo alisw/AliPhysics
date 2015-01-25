@@ -55,7 +55,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    Int_t rapiditySlice=kdefault) {
 
 
-  gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
