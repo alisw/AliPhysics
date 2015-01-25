@@ -132,6 +132,7 @@ install(FILES
             AliAODRecoDecayHF.h
             AliAODRecoDecayHF2Prong.h
             AddD2HTrain.C
+	    AddGoodRuns.C
             ConfigVertexingHF.C
             ConfigVertexingHF_highmult.C
         DESTINATION 
