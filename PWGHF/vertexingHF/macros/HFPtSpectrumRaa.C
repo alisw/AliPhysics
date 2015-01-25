@@ -108,7 +108,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
 {
 
-  gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //
   // Defining the TAB values for the given centrality class
