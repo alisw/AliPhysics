@@ -264,7 +264,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
     AliInputEventHandler *inEvMain = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
     // physics selection
-    UInt_t maskIsSelected = inEvMain->IsEventSelected();
+    AliBits maskIsSelected = inEvMain->IsEventSelected();
    // 2010 data trigger selection
     //Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
    // 2011 data trigger selection

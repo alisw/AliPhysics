@@ -232,7 +232,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent()
   }
 
   //Trigger
-  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(fTriggerMask != AliVEvent::kAny && !(isSelected&fTriggerMask)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);

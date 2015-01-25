@@ -60,9 +60,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
 
-  void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
+  void SetTriggerMask(AliBits mask=AliBits()) {fTriggerMask=mask;}
   void SetUseOnlyOneTrigger(Bool_t onlyOne) {fUseOnlyOneTrigger=onlyOne;}
-  ULong64_t GetTriggerMask() {return fTriggerMask;}
+  AliBits GetTriggerMask() {return fTriggerMask;}
   Bool_t GetUseOnlyOneTrigger() {return fUseOnlyOneTrigger;}
 
   void SetUseAnyTrigger() {fTriggerMask=AliVEvent::kAny;}
@@ -369,7 +369,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxRedChi2; // maximum chi2/ndf
   Float_t fMaxVtxZ; // maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; // SPD multiplicity
-  ULong64_t fTriggerMask; // trigger mask
+  AliBits fTriggerMask; // trigger mask
   Bool_t fUseOnlyOneTrigger; // flag to select one trigger only
   TString  fTriggerClass[2]; // trigger class
   // quality cuts on the daughter tracks

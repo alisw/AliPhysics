@@ -150,7 +150,7 @@ void AliAnalysisTaskDielectronSE::UserExec(Option_t *)
   }
 
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler){
   if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();

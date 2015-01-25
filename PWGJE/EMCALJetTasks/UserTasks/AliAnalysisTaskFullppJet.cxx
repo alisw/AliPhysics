@@ -981,7 +981,7 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
     }
 
   // Centrality, vertex, other event variables...
-  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if (trigger==0)  return; 
   if(fCheckTPCOnlyVtx) CheckTPCOnlyVtx(trigger);
   if(!fIsMC)
@@ -3019,7 +3019,7 @@ Bool_t AliAnalysisTaskFullppJet::IsTPCOnlyVtx() const
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskFullppJet::CheckTPCOnlyVtx(const UInt_t trigger)
+void AliAnalysisTaskFullppJet::CheckTPCOnlyVtx(const AliBits trigger)
 {
   //
   // Check the fraction of accepted events that have only TPC vertex

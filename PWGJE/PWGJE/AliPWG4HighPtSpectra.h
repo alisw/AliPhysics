@@ -22,7 +22,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliCFManager.h"
-
+#include "AliBits.h"
 class TH1I;
 class TH1F;
 class TH1D;
@@ -73,7 +73,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   //Setters
   void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
   void SetCentralityClass(int cent)        {fCentClass=cent;}
-  void SetTriggerMask(UInt_t t)             {fTriggerMask=t;}
+  void SetTriggerMask(AliBits t)             {fTriggerMask=t;}
  
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void     SetCFManagerPos(const AliCFManager* io1) {fCFManagerPos = io1;}   // global correction manager 
@@ -124,7 +124,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
 
   const AliVVertex   *fVtx;     //! vertex object
 
-  UInt_t      fTriggerMask;          // Trigger mask to select events 
+  AliBits     fTriggerMask;          // Trigger mask to select events 
   Bool_t      fIsPbPb;               // kTRUE if PbPb
   Int_t       fCentClass;            // Select only events from predefined centrality class
 
@@ -161,7 +161,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TH2F *fPtRelUncertainty1PtPrim;              //! Pt vs relUncertainty1Pt for primary particles
   TH2F *fPtRelUncertainty1PtSec;               //! Pt vs relUncertainty1Pt for secondary particles
 
-  ClassDef(AliPWG4HighPtSpectra,5);
+  ClassDef(AliPWG4HighPtSpectra,6);
 };
 
 #endif

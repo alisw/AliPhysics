@@ -2,7 +2,7 @@
 /*  last modified by fbellini   on 11/11/2011 */
 
 AliAnalysisTaskSE * AddTaskTOFQA(Bool_t flagEnableAdvancedCheck=kFALSE, 
-				 UInt_t triggerMask = AliVEvent::kAnyINT,
+				 AliBits triggerMask = AliVEvent::kAnyINT,
 				 Int_t trackCutSetTOFqa = 0,
 				 TString cutName = "") 
 {

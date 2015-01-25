@@ -5,7 +5,7 @@
 AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt[], Float_t minc[], Float_t maxc[] )
 {
   // Creates a pid task and adds it to the analysis manager
-  
+
   // Get the pointer to the existing analysis manager via the static
   //access method
   //=========================================================================

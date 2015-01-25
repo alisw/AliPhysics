@@ -89,7 +89,7 @@ void AliFakeTrackTask::UserExec(Option_t *)
 		Printf("ERROR: fESD not available");
 		return;
 	}
-	//UInt_t isSelected=0;
+	//AliBits isSelected;
 /*	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
 		isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
      	if(!(isSelected&AliVEvent::kMB))

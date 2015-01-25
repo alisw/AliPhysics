@@ -1742,10 +1742,12 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   // online and offline trigger maps
   values[AliDielectronVarManager::kTriggerInclONL]     = event->GetTriggerMask();
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  UInt_t maskOff = ((AliInputEventHandler*)man->GetInputEventHandler())->IsEventSelected();
-  values[AliDielectronVarManager::kTriggerInclOFF]     = maskOff;
+  AliBits maskOff = ((AliInputEventHandler*)man->GetInputEventHandler())->IsEventSelected();
+  // ---> EK: conversion from AliBits to double not supported
+  //values[AliDielectronVarManager::kTriggerInclOFF]     = maskOff;
+  // <--- EK
   values[AliDielectronVarManager::kTriggerExclOFF]        = -1;
-  for(Int_t i=0; i<30; i++) { if(maskOff==BIT(i)) values[AliDielectronVarManager::kTriggerExclOFF]=i; }
+  for(Int_t i=0; i<30; i++) { if(maskOff==AliBits(i)) values[AliDielectronVarManager::kTriggerExclOFF]=i; }
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);

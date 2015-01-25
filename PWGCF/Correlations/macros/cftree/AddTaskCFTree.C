@@ -1,6 +1,6 @@
 AliAnalysisTaskCFTree *AddTaskCFTree(
     Int_t analysisMode = 0,
-    UInt_t selectionBit = AliVEvent::kMB,
+    AliBits selectionBit = AliVEvent::kMB,
     Double_t zVtxMax = 10,
     Double_t etaMax = 1,
     Double_t ptMin = 0.15,

@@ -81,7 +81,7 @@ public AliAnalysisTaskSE
   AliESDtrackCuts *fTrackCuts; // track cuts
   AliESDpid *fESDpid; // ESD PID
   Bool_t fIsCollisionCandidate; // is collision candidate
-  UInt_t fIsEventSelected; // is event selected
+  AliBits fIsEventSelected; // is event selected
   Bool_t fIsPileupFromSPD; // is pile-up from SPD
   Bool_t fHasVertex; // has vertex
   Float_t fVertexZ; // vertex z

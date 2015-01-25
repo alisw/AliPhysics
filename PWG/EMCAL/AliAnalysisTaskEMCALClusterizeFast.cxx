@@ -209,7 +209,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
 
   LoadBranches();
 
-  UInt_t offtrigger = 0;
+  AliBits offtrigger;
   if (fEsd) {
     UInt_t mask1 = fEsd->GetESDRun()->GetDetectorsInDAQ();
     UInt_t mask2 = fEsd->GetESDRun()->GetDetectorsInReco();

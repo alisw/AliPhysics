@@ -31,7 +31,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliUEHist.h"
-
+#include "AliBits.h"
 class AliAODEvent;
 class AliAnalyseLeadingTrackUE;
 class AliInputEventHandler;
@@ -80,7 +80,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     void   SetTrackEtaCut(Double_t val)       { fTrackEtaCut = val; }
     void   SetLeadingTrackEtaCut( Double_t val )    { fLeadingTrackEtaCut = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
-    void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
+    void   SetEventSelectionBit(AliBits val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     
   protected:
@@ -131,13 +131,13 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     Double_t            fTrackEtaCut;          // Eta cut on inclusive tracks
     Double_t      	fLeadingTrackEtaCut;   // Eta cut on leading track
     UInt_t         	fFilterBit;            // Select tracks from an specific track cut (default 0xFF all track selected)
-    UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+    AliBits         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     
     // MC cross-section 
     Double_t      	fAvgTrials;        // average trials used to fill the fh1Trials histogram in case we do not have trials on a event by event basis
 
-    ClassDef( AliAnalysisTaskLeadingTrackUE, 1); // Analysis task for Underlying Event analysis w.r.t. leading track
+    ClassDef( AliAnalysisTaskLeadingTrackUE, 2); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
 
 #endif

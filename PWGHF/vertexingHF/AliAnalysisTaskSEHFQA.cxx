@@ -1383,7 +1383,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   
-  UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Double_t centrality=fCuts->GetCentrality(aod);
   AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
   if(!header) AliFatal("Not a standard AOD");

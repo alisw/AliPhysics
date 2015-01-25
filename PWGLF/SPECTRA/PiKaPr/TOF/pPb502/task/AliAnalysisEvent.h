@@ -31,7 +31,7 @@ public TObject
   Float_t GetMCTimeZero() const {return fMCTimeZero;}; // getter
 
   void SetIsCollisionCandidate(Bool_t value) {fIsCollisionCandidate = value;}; // setter
-  void SetIsEventSelected(UInt_t value) {fIsEventSelected = value;}; // setter
+  void SetIsEventSelected(AliBits value) {fIsEventSelected = value;}; // setter
   void SetIsPileupFromSPD(Bool_t value) {fIsPileupFromSPD = value;}; // setter
   void SetHasVertex(Bool_t value) {fHasVertex = value;}; // setter
   void SetVertexZ(Float_t value) {fVertexZ = value;}; // setter
@@ -91,7 +91,7 @@ public TObject
 
   /*** global event info ***/
   Bool_t fIsCollisionCandidate; // is collision candidate
-  UInt_t fIsEventSelected; // is event selected
+  AliBits fIsEventSelected; // is event selected
   Bool_t fIsPileupFromSPD; // is pile-up from SPD
   Bool_t fHasVertex; // has vertex
   Float_t fVertexZ; // vertex z
@@ -131,7 +131,7 @@ public TObject
   static Double_t fgTimeZeroTOFCentCorrParams[3];
   static TF1 *fgTimeZeroTOFCentCorrFunc;
 
-  ClassDef(AliAnalysisEvent, 6);
+  ClassDef(AliAnalysisEvent, 7);
 };
 
 #endif /* ALIANALYSISEVENT_H */

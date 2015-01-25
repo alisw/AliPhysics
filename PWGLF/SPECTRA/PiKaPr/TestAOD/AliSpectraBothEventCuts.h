@@ -59,8 +59,8 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   void 	SetUseSDDPatchforLHC11a(Int_t useSDDPatchforLHC11a) {fUseSDDPatchforLHC11a=useSDDPatchforLHC11a;} ;  
   Int_t GetUseSDDPatchforLHC11a() {return fUseSDDPatchforLHC11a;};   
 
-   void   SetTriggerSettings(UInt_t triggerSettings = AliVEvent::kMB) {fTriggerSettings = triggerSettings;};
-   UInt_t   GetTriggerSettings() {return fTriggerSettings;};
+   void   SetTriggerSettings(AliBits triggerSettings = AliVEvent::kMB) {fTriggerSettings = triggerSettings;};
+   AliBits  GetTriggerSettings() {return fTriggerSettings;};
 
 
 
@@ -154,7 +154,7 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   TString          fCentEstimator;// name of centrality estimator
   Bool_t          fUseCentPatchAOD049;// Patch for centrality selection on AOD049
   Int_t          fUseSDDPatchforLHC11a; // if true will check for ALLNOTRD  in fired trigger class 
-  UInt_t fTriggerSettings;     // triger configuration 
+  AliBits fTriggerSettings;     // triger configuration 
   AliSpectraBothTrackCuts     *fTrackCuts;             //! track cuts
   Bool_t          fIsSelected;        // True if cuts are selected
   Float_t         fCentralityCutMin;     // minimum centrality percentile
@@ -201,7 +201,6 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
 
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
-  
   
   ClassDef(AliSpectraBothEventCuts, 15);
   

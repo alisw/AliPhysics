@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB){
+AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",AliBits triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB){
   
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -35,7 +35,7 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
 //   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
  
   // trigger selection
-  ULong64_t triggerSets[]={AliVEvent::kEMCEGA ,AliVEvent::kEMCEJE,AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB};
+  AliBits triggerSets[]={AliVEvent::kEMCEGA ,AliVEvent::kEMCEJE,AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB};
   const char* triggerNames[]={"EMCEGA","EMCEJE","Central","SemiCentral","MB"};
 
   // find out the configured triggers

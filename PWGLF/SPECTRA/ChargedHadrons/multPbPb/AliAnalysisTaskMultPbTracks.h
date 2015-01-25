@@ -40,7 +40,7 @@ public:
   Bool_t IsPhysicalPrimaryAndTransportBit(Int_t ipart) ;
   Bool_t IsElectron(AliESDtrack *  esdTrack);
   void RejectElectrons(Bool_t rejElectron) { fRejectElectrons = rejElectron;}
-  void SetOfflineTrigger(UInt_t mask) { fOfflineTrigger = mask; }
+  void SetOfflineTrigger(AliBits mask) { fOfflineTrigger = mask; }
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -59,7 +59,7 @@ private:
   // TString fCentralityEstimator; // Name of the centrality estimator, for AliESDCentrality
   AliESDtrackCuts * fTrackCuts; // track cuts
   AliESDtrackCuts * fTrackCutsNoDCA; // copy of the previous one, but with no DCA cuts
-  UInt_t fOfflineTrigger ; // offline trigger mask
+  AliBits fOfflineTrigger ; // offline trigger mask
   Bool_t fIsMC; // true if processing montecarlo
   Bool_t fIsTPCOnly; // if you only want to use TPC tracks
   AliTriggerAnalysis * fTriggerAnalysis; // for offline triggers
@@ -68,7 +68,7 @@ private:
 
   AliAnalysisTaskMultPbTracks& operator=(const AliAnalysisTaskMultPbTracks& task);
   
-  ClassDef(AliAnalysisTaskMultPbTracks, 3)
+  ClassDef(AliAnalysisTaskMultPbTracks, 4)
 
 
 };

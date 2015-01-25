@@ -106,9 +106,9 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
   AliVEvent *event        = InputEvent();
   AliAnalysisManager *am  = AliAnalysisManager::GetAnalysisManager();
 
-  UInt_t trig = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+  AliBits trig = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
   for (Int_t i=0;i<31;++i) {
-    if (trig & (1<<i))
+    if (trig & AliBits(1<<i))
       fHists[0]->Fill(i);
   }
 
@@ -483,7 +483,9 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   AliVEvent *event        = InputEvent();
   AliAnalysisManager *am  = AliAnalysisManager::GetAnalysisManager();
 
-  fNtupCumInfo->fTrig     = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+  // ---> EK: incompatible with AliBits 
+  //  fNtupCumInfo->fTrig     = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+  // <--- EK:
   fNtupCumInfo->fRun      = event->GetRunNumber();
   fNtupCumInfo->fVz       = event->GetPrimaryVertex()->GetZ();
   fNtupCumInfo->fIsFEC    = anau.IsFirstEventInChunk(event);

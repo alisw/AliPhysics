@@ -99,7 +99,9 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
           header->SetActiveTriggerInputs(name,i+48);
       }
     }
-    header->SetUniqueID(((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected());
+    // ---> EK: Can we propagate physics selection decisions in a different way?
+    // header->SetUniqueID(((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected());
+    // <--- EK
     if (am->GetInputEventHandler()) {
       TTree *tree = am->GetInputEventHandler()->GetTree();
       if (tree) {

@@ -26,7 +26,7 @@ class AliAnalysisTaskPPJetSpectra : public AliAnalysisTaskSE
 
     void                SetVertexCuts(Int_t, Double_t, Double_t);
     void                SetTrackFilter(UInt_t i) {nTrackFilter = i;}
-    void                SetEventSelectionMask(UInt_t i) {fEvtSelectionMask = i;}
+    void                SetEventSelectionMask(AliBits i) {fEvtSelectionMask = i;}
     void                SetEventClass(Float_t i) {fEventClass = i;}
     void                SetTrackCuts(Double_t,Double_t,Double_t);
     void                SetJetCuts(Double_t, Double_t, Double_t);
@@ -67,7 +67,7 @@ class AliAnalysisTaskPPJetSpectra : public AliAnalysisTaskSE
     Int_t               fDebug;
     Bool_t              fUseMC;
 
-    UInt_t              fEvtSelectionMask;
+    AliBits             fEvtSelectionMask;
     Float_t             fEventClass;
     Int_t               nVtxContCut;
     Double_t            fVtxZcut;
@@ -127,7 +127,7 @@ class AliAnalysisTaskPPJetSpectra : public AliAnalysisTaskSE
     Bool_t 		kDoUEanalysis;
     Int_t               fRejectPileUp;
 
-    ClassDef(AliAnalysisTaskPPJetSpectra, 2);
+    ClassDef(AliAnalysisTaskPPJetSpectra, 3);
 };
 
 #endif

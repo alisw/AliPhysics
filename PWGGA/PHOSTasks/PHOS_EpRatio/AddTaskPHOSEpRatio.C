@@ -1,7 +1,7 @@
 AliAnalysisTaskEpRatio* AddTaskPHOSEpRatio (Bool_t kMC = kFALSE,
 					    const char* name = "PHOSEpRatio",
 					    const char* options = "",
-					    UInt_t offlineTriggerMask = AliVEvent::kINT7 )
+					    AliBits offlineTriggerMask = AliVEvent::kINT7 )
 {
   //Add a task AliAnalysisTaskEpRatio to the analysis train.
   //Author: Boris Polishchuk.

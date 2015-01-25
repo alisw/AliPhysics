@@ -856,8 +856,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   fHistEventQA->Fill(1); // All Events that get entered
 
   // check and fill a Event Selection QA histogram for different trigger selections
-  UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(trig == 0) fHistEventSelectionQA->Fill(1);
+  AliBits trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(trig & AliBits()) fHistEventSelectionQA->Fill(1);
   if(trig & AliVEvent::kAny) fHistEventSelectionQA->Fill(2);
   if(trig & AliVEvent::kAnyINT) fHistEventSelectionQA->Fill(3);
   if(trig & AliVEvent::kMB) fHistEventSelectionQA->Fill(4);
@@ -1560,9 +1560,9 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
     // mix jets from triggered events with tracks from MB events
     // get the trigger bit, need to change trigger bits between different runs
-    UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     // if event was not selected (triggered) for any reseason (should never happen) then return
-    if (trigger==0)  return kTRUE;
+    if (!trigger)  return kTRUE;
 
     // initialize event pools
     AliEventPool* pool = 0x0;

@@ -144,7 +144,7 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   void    SwitchOnAcceptAllMBEvent()              { fAcceptAllMBEvent = kTRUE   ; }
   void    SwitchOffAcceptAllMBEvent()             { fAcceptAllMBEvent = kFALSE  ; }
 
-  void    SetMBTriggerMask(UInt_t mask)           { fMBTriggerMask    = mask    ; }
+  void    SetMBTriggerMask(AliBits mask)          { fMBTriggerMask    = mask    ; }
   
   void    SetEMCALRecoUtils(AliEMCALRecoUtils* ru){ fEMCALRecoUtils = ru        ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()   const  { return fEMCALRecoUtils      ; }
@@ -176,7 +176,7 @@ private:
   Int_t               fCaloFilter;        ///<  Calorimeter to filter: kBoth, kEMCAL, kPHOS.
   Bool_t              fEventSelection[3]; ///<  Define which detector is used to select the event: {EMCAL,PHOS,Tracks}.
   Bool_t              fAcceptAllMBEvent;  ///<  Do not select the MB events with same Event selection cuts as other triggers.
-  UInt_t              fMBTriggerMask;     ///<  Define the mask for MB events, it should be kMB, but not always defined, use kAnyINT instead.
+  AliBits             fMBTriggerMask;     ///<  Define the mask for MB events, it should be kMB, but not always defined, use kAnyINT instead.
   Int_t               fCorrect;           ///<  Recalibrate or recalculate different cluster parameters, only for EMCal.
   
   //EMCAL specific

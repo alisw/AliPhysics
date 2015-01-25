@@ -5,7 +5,7 @@ class AliFlowTrackCuts;
 class AliFlowEventCuts;
 
 
-void AddTaskPIDFlowQC(Int_t triggerSelectionString=AliVEvent::kMB,
+void AddTaskPIDFlowQC(AliBits triggerSelectionString=AliVEvent::kMB,
                                    Int_t uptoWhichHarmonics = 2, // 2 --> v2 only, 3 --> v2 and v3, and so on
                                    Float_t etamin=-0.8,
                                    Float_t etamax=0.8,

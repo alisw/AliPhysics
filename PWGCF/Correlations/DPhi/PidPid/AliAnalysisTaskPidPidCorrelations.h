@@ -92,7 +92,7 @@ class AliAnalysisTaskPidPidCorrelations : public AliAnalysisTaskSE { //
 
   // Setters/Getters
   void 	SetMaxVertexZ(Double_t maxVertexZ) { fVzMax = maxVertexZ; }
-  void	SetTriggerMask(Int_t triggerType)   { fTriggerType = triggerType; }  
+  void	SetTriggerMask(AliBits triggerType)   { fTriggerType = triggerType; }  
 //   void	SetFilterBit(Int_t fbit)		{ fFilterBit = fbit; }
   void	SetCentralityEstimator(const Char_t* centralityestimator) { fCentralityEstimator = centralityestimator; }
   void 	SetCentralityRange(Float_t min, Float_t max)    { fCentralityPercentileMin = min; fCentralityPercentileMax = max; }
@@ -216,7 +216,7 @@ class AliAnalysisTaskPidPidCorrelations : public AliAnalysisTaskSE { //
 //   TTree* 	fVariablesTreeCorr;
 //   Float_t*	fCorrVariables;
   
-  Int_t 		fTriggerType; 	//  sets trigger -> AliVEvent::kMB, AliVEvent::kHighMult
+  AliBits 		fTriggerType; 	//  sets trigger -> AliVEvent::kMB, AliVEvent::kHighMult
   Int_t		fMyMcType ;//
 //   Int_t 		fFilterBit; 		// track selection cuts
   UInt_t  	fFilterType;    // filter type 0 = all, 1 = ITSTPC, 2 = TPC
@@ -418,7 +418,7 @@ class AliPidPidCorrelationReducedTrack : public AliVParticle // TObject
   Double_t	fPtReduced;      	// pT
   Short_t	fChargeReduced;  	// charge
 
-  ClassDef(AliPidPidCorrelationReducedTrack, 1); // reduced track class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+  ClassDef(AliPidPidCorrelationReducedTrack, 2); // reduced track class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 #endif

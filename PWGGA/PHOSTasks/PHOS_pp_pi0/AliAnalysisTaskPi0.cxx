@@ -329,7 +329,7 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
 
   //Skip events from fast cluster
 
-  // UInt_t triggerMask = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+  // AliBits triggerMask = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
   // if(triggerMask& AliVEvent::kFastOnly) return; // reject events in the fast cluster only
   // if(!(triggerMask& AliVEvent::kMB)) return; // check the trigger mask as usual
 

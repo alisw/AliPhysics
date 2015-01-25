@@ -37,8 +37,8 @@ public:
     
   void SetFillTRDfriendPH(Bool_t fill=kTRUE) {fFillTRDfriendPH = fill;}
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
-  void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
-  UInt_t GetTriggerMask() const { return fTriggerMask; }
+  void SetTriggerMask(AliBits mask) {fTriggerMask=mask;}
+  AliBits GetTriggerMask() const { return fTriggerMask; }
   void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
   
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
@@ -62,7 +62,7 @@ protected:
   TList            fHistogramList;    // histogram list from the manager
 
   Bool_t           fSelectPhysics;    // Whether to use physics selection
-  UInt_t           fTriggerMask;      // Event trigger mask
+  AliBits          fTriggerMask;      // Event trigger mask
   Bool_t           fRejectPileup;     // pileup rejection wanted
   Bool_t           fFillTRDfriendPH;  // use the task to fill a TRD tracklet PH container
 
@@ -87,6 +87,6 @@ protected:
   AliAnalysisTaskSingleParticle(const AliAnalysisTaskSingleParticle &c);
   AliAnalysisTaskSingleParticle& operator= (const AliAnalysisTaskSingleParticle &c);
   
-  ClassDef(AliAnalysisTaskSingleParticle, 2); //Analysis Task handling single particle cuts
+  ClassDef(AliAnalysisTaskSingleParticle, 3); //Analysis Task handling single particle cuts
 };
 #endif

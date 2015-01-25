@@ -14,7 +14,7 @@ UInt_t dif(UInt_t stop, UInt_t start);
 
 
 Double_t mu(Int_t run=120072, char* className = "CINT1B-ABCE-NOPF-ALL", char* emptyClassName = "CBEAMB-ABCE-NOPF-ALL"){
-//void mu(Int_t run=196310, char* className = "CINT7-B-NOPF-ALLNOTRD", char* emptyClassName = NULL){
+//Double_t mu(Int_t run=196310, char* className = "CINT7-B-NOPF-ALLNOTRD", char* emptyClassName = NULL){
   if (!TGrid::Connect("alien://")) return -1.;
 
   AliCDBManager* man = AliCDBManager::Instance();

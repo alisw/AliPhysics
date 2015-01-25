@@ -46,7 +46,7 @@ Float_t AliAnalysisEvent::fgTimeZeroT0_C_sigma = 9.73209262235003933e+01;
 AliAnalysisEvent::AliAnalysisEvent() :
   TObject(),
   fIsCollisionCandidate(kFALSE),
-  fIsEventSelected(0),
+  fIsEventSelected(),
   fIsPileupFromSPD(kFALSE),
   fHasVertex(kFALSE),
   fVertexZ(0.),
@@ -165,7 +165,7 @@ AliAnalysisEvent::Reset()
    */
 
   fIsCollisionCandidate = kFALSE;
-  fIsEventSelected = 0;
+  fIsEventSelected = AliBits();
   fIsPileupFromSPD = kFALSE;
   fHasVertex = 0.;
   fVertexZ = 0.;

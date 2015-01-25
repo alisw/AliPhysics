@@ -1209,7 +1209,7 @@ Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
     if( fDebug >= 2 )
         AliInfo( Form("Event passed offline phos trigger test: %s ", fEvent->GetFiredTriggerClasses().Data() ) );
 
-    const Int_t physSelMask = fEventHandler->IsEventSelected();
+    const AliBits physSelMask = fEventHandler->IsEventSelected();
 
     Bool_t isAny            = physSelMask & AliVEvent::kAny;            // to accept any trigger
 

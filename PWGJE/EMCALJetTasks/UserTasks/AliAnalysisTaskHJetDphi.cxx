@@ -579,7 +579,7 @@ void AliAnalysisTaskHJetDphi::UserExec(Option_t *)
     }
 
   // physics selection
-  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(fOfflineTrgMask==AliVEvent::kAny) fTriggerType = 0;
   else
     {
@@ -1346,7 +1346,7 @@ void AliAnalysisTaskHJetDphi::PrintConfig()
   printf("Input event type: %s - %s\n",fCollisionSystem.Data(),fPeriod.Data());
   printf("Is this MC data: %s\n",decision[fIsMC]);
   printf("Run on particle level: %s\n",decision[fAnalyzeMCTruth]);
-  printf("Event type selection: %d\n",fOfflineTrgMask);
+  printf("Event type selection: %s\n",fOfflineTrgMask.GetBitString().Data());
   printf("Is embedding? %s\n",decision[fIsEmbedding]);
   printf("Track filter mask: %d\n",fFilterMask);
   printf("Require track to have ITS refit? %s\n",decision[fRequireITSRefit]);

@@ -63,7 +63,7 @@ public:
    virtual void  SetRndTrials(Int_t nt){ fnTrials = nt;}
    virtual void  SetFreeAreaFrac(Float_t frac){ fJetFreeAreaFrac = frac;}
    virtual void  SetBgConeR(Float_t cr){ fBgConeR = cr; } 
-   virtual void  SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; } 
+   virtual void  SetOfflineTrgMask(AliBits mask) { fOfflineTrgMask = mask; } 
    virtual void  SetMinContribVtx(Int_t n) { fMinContribVtx = n; } 
    virtual void  SetVtxZMin(Float_t z) { fVtxZMin = z; }
    virtual void  SetVtxZMax(Float_t z) { fVtxZMax = z; } 
@@ -128,7 +128,7 @@ private:
    Float_t fBgJetParamR;   // jet cone resolution (radius) R of jet to be removed from bg
    Float_t fBgMaxJetPt;    // max pt of jets accepted in bg 
    Float_t fBgConeR;       //perp cone R used to assess bg
-   AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline trigs 
+   AliBits fOfflineTrgMask; // mask of offline trigs 
    Int_t   fMinContribVtx; // min numb of trk contrib for prim vertex 
    Float_t fVtxZMin;	   // lower bound on vertex z 
    Float_t fVtxZMax;	   // upper bound on vertex z 
@@ -295,7 +295,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 17);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 18);  //has to end with number larger than 0
 };
 
 #endif

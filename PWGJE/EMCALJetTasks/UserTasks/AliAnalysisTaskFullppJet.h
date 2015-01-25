@@ -180,7 +180,7 @@ protected:
   void         AnalyzeSecondaryContribution(AliFJWrapper *jetFinder, const Int_t r, const Int_t etaCut);
   void         AnalyzeSecondaryContributionViaMatching(AliFJWrapper *jetFinder, const Int_t r, const Int_t type, const Int_t etaCut);
   void         GetSecondaryPtFraction(TParticle *particle, Double_t &chPt, Double_t &reGenPt, Double_t &reRecPt);
-  void         CheckTPCOnlyVtx(const UInt_t trigger);
+  void         CheckTPCOnlyVtx(const AliBits trigger);
   Bool_t       IsGoodJet(fastjet::PseudoJet jet, Double_t radius);
   Bool_t       IsGoodJet(AliAODJet *jet, Double_t radius);
   Double_t     GetLeadingZ(const Int_t jetIndex, AliFJWrapper *jetFinder);

@@ -443,7 +443,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   }
 
   // see if event is selected
-  UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
   for (Int_t ijet = 0; ijet < Njets; ijet++){    
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
@@ -585,7 +585,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     //    FillCorrelations(). Also nMix should be passed in, so a weight
     //    of 1./nMix can be applied.
 
-    UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     // if event was not selected (triggered) for any reseason (should never happen) then return
     if (trigger==0)  return kTRUE;
 

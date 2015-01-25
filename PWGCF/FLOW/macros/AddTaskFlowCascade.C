@@ -1,4 +1,4 @@
-void AddTaskFlowCascade(int trigger, int centrMin, int centrMax, int cut=1, int harmonic=2) {
+void AddTaskFlowCascade(AliBits trigger, int centrMin, int centrMax, int cut=1, int harmonic=2) {
   AddTaskFlowCascade(trigger, centrMin, centrMax, "Xi", 
 		     Form("Xi%d%dcut%d", centrMin, centrMax, cut), 0, cut, "V0M", "VZESP", harmonic);
 
@@ -6,7 +6,7 @@ void AddTaskFlowCascade(int trigger, int centrMin, int centrMax, int cut=1, int 
 		     Form("Omega%d%dcut%d", centrMin,centrMax, cut), 1, cut, "V0M", "VZESP", harmonic);
 }
 
-void AddTaskFlowCascade(int trigger, float centrMin, float centrMax, 
+void AddTaskFlowCascade(AliBits trigger, float centrMin, float centrMax, 
 			TString folderName="myFolder", TString suffixName="mySuffix", 
 			int specie=0, int cuts=1, char* MULT="V0M", 
 			TString method="VZESP QC TPCSP", int harmonic=2) {

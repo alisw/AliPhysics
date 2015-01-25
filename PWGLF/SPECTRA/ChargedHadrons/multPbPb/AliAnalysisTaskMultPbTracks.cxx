@@ -30,7 +30,7 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
 {
   // constructor
 
@@ -44,7 +44,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
 {
   //
   // Standard constructur which should be used
@@ -60,7 +60,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0),fRejectElectrons(0)
 {
   //copy ctor
   fESD = obj.fESD ;

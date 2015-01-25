@@ -213,6 +213,7 @@ TString bitNames[NBITS] = {
   }
   
   for (Int_t j=1;j<=h->GetNbinsY();j++){
+    printf("Bin %i\n",j);
     TString label = h->GetYaxis()->GetBinLabel(j);
     // skip background triggers
     // TODO introduce identifier to filter-out background triggers
@@ -253,7 +254,7 @@ TString bitNames[NBITS] = {
     alias_reconstructed[ibit] = Int_t(h->GetBinContent(1             ,j));
     alias_accepted[ibit]      = Int_t(h->GetBinContent(h->GetNbinsX(),j));
     
-//    printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
+    printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
     array = classList.Tokenize(",");
@@ -283,6 +284,7 @@ TString bitNames[NBITS] = {
     array->Delete();
     delete array;
 
+    if (!alias_recorded[ibit]) alias_recorded[ibit] = alias_reconstructed[ibit];
     // Fill run QA histograms
     const char* bitName = bitNames[ibit].Data();
     TH2F* hAD           = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistAD"          ,label.Data()));

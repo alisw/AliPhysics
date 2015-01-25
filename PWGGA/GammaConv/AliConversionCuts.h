@@ -109,11 +109,11 @@ class AliConversionCuts : public AliAnalysisCuts {
 
 
    Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
-   void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
+   void SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kAny) {
       fOfflineTriggerMask = offlineTriggerMask;
       fTriggerSelectedManually = kTRUE;
    }
-   void SelectSpecialTrigger(UInt_t offlineTriggerMask = AliVEvent::kAny, TString TriggerClassName = "AliVEvent::kAny" ) {
+   void SelectSpecialTrigger(AliBits offlineTriggerMask = AliVEvent::kAny, TString TriggerClassName = "AliVEvent::kAny" ) {
       fOfflineTriggerMask = offlineTriggerMask;
       fSpecialTriggerName = TriggerClassName;
       cout << fSpecialTriggerName.Data() << endl;
@@ -369,7 +369,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t fDoSharedElecCut; //
    Bool_t fDoPhotonQualitySelectionCut; //
    Int_t fPhotonQualityCut; //
-   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+   AliBits fOfflineTriggerMask;   //  Task processes collision candidates only
    Bool_t fHasV0AND; // V0AND Offline Trigger
    Bool_t fIsSDDFired; // SDD FIRED to select with SDD events
    TRandom3 fRandom; //
@@ -440,7 +440,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fNSpecialSubTriggerOptions;
 private:
 
-   ClassDef(AliConversionCuts,9)
+   ClassDef(AliConversionCuts,10)
 };
 
 

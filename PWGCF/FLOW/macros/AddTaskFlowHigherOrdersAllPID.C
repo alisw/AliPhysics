@@ -1,4 +1,4 @@
-void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+void AddTaskFlowHigherOrdersAllPID(AliBits triggerSelectionString=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
                                    Float_t centrMin=0.,
                                    Float_t centrMax=100.,
                                    Float_t etamin=-0.8,

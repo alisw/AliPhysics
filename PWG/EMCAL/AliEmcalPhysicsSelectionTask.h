@@ -21,7 +21,7 @@ class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {
   Int_t          GetNCalled() const         { return fNCalled;    }
   Int_t          GetNAccepted() const       { return fNAccepted;  }
   void           SetDoWriteHistos(Bool_t b) { fDoWriteHistos = b; }
-  void           SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) 
+  void           SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kMB) 
                   { static_cast<AliEmcalPhysicsSelection*>(fPhysicsSelection)->SetTriggers(offlineTriggerMask); }
 
  protected:

@@ -447,7 +447,7 @@ Bool_t AliAnalysisTaskDijetHadron::FillHistograms()
 
   //trigger
   Int_t fTriggerType =-1;
-  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
       if (trigger & AliVEvent::kAnyINT)      { fTriggerType=0; }
       else if (trigger & AliVEvent::kCentral)     { fTriggerType=0; }

@@ -167,11 +167,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TClonesArray* 	GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
 		
 		Bool_t 		InitializeCutsFromCutString(const TString analysisCutSelection);
-		void 		SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
+		void 		SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kAny) {
 			fOfflineTriggerMask = offlineTriggerMask;
 			fTriggerSelectedManually = kTRUE;
 		}
-		void 		SelectSpecialTrigger(UInt_t offlineTriggerMask = AliVEvent::kAny, 
+		void 		SelectSpecialTrigger(AliBits offlineTriggerMask = AliVEvent::kAny, 
 										 TString TriggerClassName = "AliVEvent::kAny" ) {
 			fOfflineTriggerMask = offlineTriggerMask;
 			fSpecialTriggerName = TriggerClassName;
@@ -236,7 +236,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Int_t 						fSpecialSubTrigger;						// flag
 		Bool_t 						fRemovePileUp;							// flag
 		Int_t 						fRejectExtraSignals;					//
-		UInt_t 						fOfflineTriggerMask;   					// Task processes collision candidates only
+		AliBits 						fOfflineTriggerMask;   					// Task processes collision candidates only
 		Bool_t 						fHasV0AND; 								// V0AND Offline Trigger
 		Bool_t 						fIsSDDFired; 							// SDD FIRED to select with SDD events
 		TRandom3				 	fRandom; 								//

@@ -156,7 +156,7 @@ public:
       fRailway->LoadLibrary("PWGHFvertexingHF");
       seTask = 
 	CoupleSECar("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
-      seTask->SelectCollisionCandidates(0);
+      seTask->SelectCollisionCandidates(AliBits());
       mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
     }
 
@@ -164,7 +164,7 @@ public:
       fRailway->LoadLibrary("PWGDQdielectron");
       seTask = 
 	CoupleSECar("$ALICE_PHYSICS/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
-      seTask->SelectCollisionCandidates(0);
+      seTask->SelectCollisionCandidates(AliBits());
       mgr->RegisterExtraFile("AliAOD.Dielectron.root");
     }
   

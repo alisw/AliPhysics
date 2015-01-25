@@ -2097,7 +2097,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
 	if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ6")))->Fill(zVertex);
 
 	TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses(); // trigger class
-	ULong64_t fTriggerMask=AliVEvent::kAnyINT;
+	AliBits fTriggerMask=AliVEvent::kAnyINT;
 	Bool_t check1 = kFALSE;
 	if ( !fUseMCInfo && // don't do for MC...
 	     (aodEvent->GetRunNumber()<136851 || aodEvent->GetRunNumber()>139517) ) { // ...and for PbPb 2010 data
@@ -2167,7 +2167,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelectionWithCandidates(AliAODEve
   Float_t zVertex = fVtx1->GetZ();
   TString titleVtx=fVtx1->GetTitle();
   TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses(); // trigger class
-  ULong64_t fTriggerMask=AliVEvent::kAnyINT;
+  AliBits fTriggerMask=AliVEvent::kAnyINT;
 
   ((TH1F*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(6);
   if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ6a")))->Fill(zVertex);

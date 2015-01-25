@@ -80,8 +80,8 @@ public:
   void SetMergeTHnSparse(Bool_t mergethnsparse)  { fMergeTHnSparse = mergethnsparse; }
   Bool_t GetMergeTHnSparse() const { return fMergeTHnSparse; }
 
-  void SetTriggerMask(UInt_t triggermask)  { fTriggerMask = triggermask; }
-  UInt_t GetTriggerMask()  { return fTriggerMask; }
+  void SetTriggerMask(AliBits triggermask)  { fTriggerMask = triggermask; }
+  AliBits GetTriggerMask()  { return fTriggerMask; }
 
 
 protected:
@@ -111,9 +111,9 @@ private:
   Bool_t fAnalyseOutput;  // call Analyse() function in the FinishTaskOutput
   Bool_t fMergeTHnSparse; // merge THnSparse histograms in Merge() function
 
-  UInt_t fTriggerMask;    // trigger mask
+  AliBits fTriggerMask;    // trigger mask
 
-  ClassDef(AlidNdPt,6);
+  ClassDef(AlidNdPt,7);
 };
 
 #endif

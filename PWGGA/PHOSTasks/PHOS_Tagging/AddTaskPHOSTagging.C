@@ -1,6 +1,6 @@
 AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTagging",
 					    const char* options = "",
-					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
+					    AliBits offlineTriggerMask = AliVEvent::kCentral,
 					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
 {
   //Add a task AliAnalysisTaskTaggedPhotons to the analysis train

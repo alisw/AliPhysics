@@ -36,7 +36,7 @@ public:
    virtual ~AliRsnMiniAnalysisTask();
 
    void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}
-   void                UseESDTriggerMask(UInt_t trgMask)     {fTriggerMask = trgMask;}
+   void                UseESDTriggerMask(AliBits trgMask) {fTriggerMask = trgMask;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
    void                SetUseCentralityPatchPbPb2011(Int_t centralityPatchPbPb2011) {fUseCentralityPatchPbPb2011 = centralityPatchPbPb2011;}
@@ -91,7 +91,7 @@ private:
 
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
-   UInt_t               fTriggerMask;   //trigger mask
+   AliBits              fTriggerMask;   //trigger mask
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
    Bool_t               fUseAOD049CentralityPatch; //flag to enable AOD049 centrality patch
@@ -134,7 +134,7 @@ private:
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
 
-   ClassDef(AliRsnMiniAnalysisTask, 11);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 12);   // AliRsnMiniAnalysisTask
 };
 
 

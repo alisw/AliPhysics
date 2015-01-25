@@ -61,7 +61,7 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fTriggerPtCut(0.7),
     fAssociatePtCut(0.4),
     fMode(0),
-    fTriggerType(1),
+    fTriggerType(AliVEvent::kMB),
     fFilterBit(128),
     fVertexZCut(10.),
     fEtaCut(0.9),

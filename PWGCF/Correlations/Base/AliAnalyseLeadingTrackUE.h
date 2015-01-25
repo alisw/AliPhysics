@@ -12,7 +12,7 @@
 
 // --- ROOT system ---
 #include <TObject.h> 
-
+#include "AliBits.h"
 class AliAODEvent;
 class AliAODInputHandler;
 class AliESDEvent;
@@ -48,7 +48,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
 										             fTrackEtaCutMin = etacutMin;     
 										             fTrackPtMin = ptMin;}
 
-  void SetEventSelection(UInt_t bits) { fEventSelection = bits; }
+  void SetEventSelection(AliBits bits) { fEventSelection = bits; }
   void  SetDebug(Int_t debug) { fDebug = debug; } 
   Bool_t         ApplyCuts(TObject* track);                       // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
   void           DefineESDCuts(Int_t filterbit);                                 // Emulate filterbit
@@ -93,7 +93,7 @@ private:
   Double_t       fTrackPhiCutEvPlMin;   // Minimum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
   Double_t       fTrackPhiCutEvPlMax;   // Maximum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
   Double_t       fTrackPtMin;        // pt limit for selecting particles
-  UInt_t         fEventSelection;    // bit for physics selection
+  AliBits        fEventSelection;    // bit for physics selection
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
   Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
   Int_t		 fCrossedRowsCut;   // cut on crossed rows (only for AOD)
@@ -105,6 +105,6 @@ private:
   AliHelperPID   *fHelperPID;    // PID Helper object
   UInt_t fEventCounter;		  //! processed events (counter)
   
-  ClassDef(AliAnalyseLeadingTrackUE,0)
+  ClassDef(AliAnalyseLeadingTrackUE,1)
 };
 #endif

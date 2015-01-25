@@ -64,7 +64,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   fPeriod(0),
   fOrbit(),
   fBc(),
-  fSelectMask(0),
+  fSelectMask(),
   fIsPileupSPD(0),
   fIsPileupMV(0),
   fSelectBit(AliVEvent::kAny),
@@ -121,7 +121,7 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   fTree->Branch("period",&fPeriod);
   fTree->Branch("orbit",&fOrbit);
   fTree->Branch("bc",&fBc);
-  fTree->Branch("mask",&fSelectMask);
+//  fTree->Branch("mask",&fSelectMask);
   fTree->Branch("pileupspd",&fIsPileupSPD);
   fTree->Branch("pileupmv",&fIsPileupMV);
   if (fTracks)      fTree->Branch("tracks",&fTracks);

@@ -77,13 +77,15 @@ void AliEmcalCompatTask::UserExec(Option_t *)
     AliError(Form("%s: Title should encode offline trigger, returning!", GetName()));
     return;
   } else {
-    UInt_t off = header->GetUniqueID();
-    off &= 0x4FFFFFFF;
-    UInt_t res     = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected(); 
-    res &= 0x4FFFFFFF;
-    if (off!=res) {
-      AliWarning(Form("Stored offline trigger not equal computed: %ud %ud", off, res));
-    }
+    //---> EK: What it does?
+    //UInt_t off = header->GetUniqueID();
+    //off &= 0x4FFFFFFF;
+    //UInt_t res     = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected(); 
+    //res &= 0x4FFFFFFF;
+    //if (off!=res) {
+    //  AliWarning(Form("Stored offline trigger not equal computed: %ud %ud", off, res));
+    //}
+    //<---
   }
 
   if (fDoCent) {

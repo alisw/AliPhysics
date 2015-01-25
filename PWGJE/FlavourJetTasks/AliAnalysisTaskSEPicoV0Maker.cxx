@@ -74,7 +74,7 @@ fCentInfo(0),
 fRespoPID(0),
 fAnaUtils(0),
 fEventAcptMask(0),
-fTriggerMask(0),
+fTriggerMask(),
 fCollisionType(0),
 fCentEst(""),
 fIsAnaInfoMC(kFALSE),
@@ -128,7 +128,7 @@ fCentInfo(0),
 fRespoPID(0),
 fAnaUtils(0),
 fEventAcptMask(0),
-fTriggerMask(0),
+fTriggerMask(),
 fCollisionType(AliPicoHeaderCJ::kPP),
 fCentEst("V0M"),
 fIsAnaInfoMC(bIsMC),
@@ -1398,7 +1398,7 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotAcpt()
   }
 //=============================================================================
 
-  UInt_t wMask = fInputHandler->IsEventSelected();
+  AliBits wMask = fInputHandler->IsEventSelected();
   if ((wMask & fTriggerMask) != fTriggerMask) return (fEventAcptMask==0);
   if (fIsSkipFastOnly) if ((wMask & AliVEvent::kFastOnly) == AliVEvent::kFastOnly) return (fEventAcptMask==0);
 

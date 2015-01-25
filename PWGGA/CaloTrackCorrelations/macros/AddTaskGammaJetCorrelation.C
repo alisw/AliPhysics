@@ -182,7 +182,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
     
   if(!mix)
   {    
-    UInt_t mask =  SetTriggerMaskFromName(trigger);
+    AliBits mask =  SetTriggerMaskFromName(trigger);
     task->SelectCollisionCandidates(mask);
   } 
   
@@ -430,7 +430,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   if(mix)
   {
     reader->SwitchOffEventTriggerAtSE();
-    UInt_t mask =  SetTriggerMaskFromName(trigger);
+    AliBits mask =  SetTriggerMaskFromName(trigger);
     reader->SetEventTriggerMaks(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
     //reader->SetMixEventTriggerMaks(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
     reader->SetMixEventTriggerMaks(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
@@ -877,7 +877,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,TString calorimeter 
 /// Set the trigger requested for the analysis,
 /// depending on a string given
 ///
-UInt_t SetTriggerMaskFromName(TString trigger)
+AliBits SetTriggerMaskFromName(TString trigger)
 {
   if(trigger=="EMC7")
   {
@@ -954,7 +954,7 @@ UInt_t SetTriggerMaskFromName(TString trigger)
       printf("CaloTrackCorr trigger SemiCentral Or Central Or AnyINT\n");
       return (AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kAnyINT);
     }
-
+  return AliBits();
 }
 
 ///

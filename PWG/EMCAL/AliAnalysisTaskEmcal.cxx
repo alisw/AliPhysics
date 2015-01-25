@@ -788,7 +788,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   // Check if event is selected
 
   if (fOffTrigger != AliVEvent::kAny) {
-    UInt_t res = 0;
+    AliBits res = AliBits();
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
     if (eev) {
       res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();

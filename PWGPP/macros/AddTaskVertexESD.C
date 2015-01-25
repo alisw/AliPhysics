@@ -1,4 +1,4 @@
-AliAnalysisTaskVertexESD *AddTaskVertexESD(Bool_t readMC=kFALSE, AliVEvent::EOfflineTriggerTypes triggerType = AliVEvent::kMB) 
+AliAnalysisTaskVertexESD *AddTaskVertexESD(Bool_t readMC=kFALSE, AliBits triggerType = AliVEvent::kMB) 
 {
   //
   // Task for validation of the primary vertices (SPD,TPC,ITS+TPC)

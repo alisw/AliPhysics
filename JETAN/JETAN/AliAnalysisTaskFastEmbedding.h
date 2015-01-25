@@ -55,7 +55,7 @@ public:
    void SetAODEntriesSum(Int_t i){ fAODEntriesSum = i;}
    void SetAODEntriesMax(Int_t i){ fAODEntriesMax = i;}
    
-   virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
+   virtual void     SetOfflineTrgMask(AliBits mask) { fOfflineTrgMask = mask; }
    virtual void     SetMinContribVtx(Int_t n) { fMinContribVtx = n; }
    virtual void     SetVtxZMin(Float_t z) { fVtxZMin = z; }
    virtual void     SetVtxZMax(Float_t z) { fVtxZMax = z; }
@@ -201,7 +201,7 @@ private:
    Int_t      fAODEntriesSum;   // sum of all entries of AODs
    Int_t      fAODEntriesMax;   // maximum entries of AODs
 
-   AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
+   AliBits fOfflineTrgMask; // mask of offline triggers to accept
    Int_t   fMinContribVtx; // minimum number of track contributors for primary vertex
    Float_t fVtxZMin;	      // lower bound on vertex z
    Float_t fVtxZMax;	      // upper bound on vertex z

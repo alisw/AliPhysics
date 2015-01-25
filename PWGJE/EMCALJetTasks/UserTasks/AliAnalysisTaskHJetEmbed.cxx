@@ -330,7 +330,7 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
   fileName.Remove(fileName.Index("/"));
   fPtHardBin = fileName.Atoi();
   fhEventStat->Fill(0.5);
-  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
   if(fPeriod.Contains("lhc11h",TString::kIgnoreCase))
     {

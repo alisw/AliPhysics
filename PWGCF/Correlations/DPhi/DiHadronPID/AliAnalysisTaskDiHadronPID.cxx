@@ -816,7 +816,7 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 }
 
 // -----------------------------------------------------------------------
-void AliAnalysisTaskDiHadronPID::SelectCollisionCandidates(UInt_t offlineTriggerMask) {
+void AliAnalysisTaskDiHadronPID::SelectCollisionCandidates(AliBits offlineTriggerMask) {
 
 	// Overrides the method defined in AliAnalysisTaskSE. This is needed because
 	// the event selection is not done in the task, but in the AliAODEventCutsDiHadronPID class.

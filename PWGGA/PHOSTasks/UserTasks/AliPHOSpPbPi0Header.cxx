@@ -54,7 +54,7 @@ Double_t AliPHOSpPbPi0Header::fgCuts[3]        = { 10., 0., 100. };
 
 //_____________________________________________________________________________
 AliPHOSpPbPi0Header::AliPHOSpPbPi0Header() :
-  TNamed(), fFiredTriggerClass(), fSelMask(0), fIsVertexOK(kFALSE), fIsPileup(kFALSE), fCentrality(0.)
+  TNamed(), fFiredTriggerClass(), fSelMask(), fIsVertexOK(kFALSE), fIsPileup(kFALSE), fCentrality(0.)
 {
   //
   // default constructor

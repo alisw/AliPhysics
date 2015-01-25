@@ -1,4 +1,4 @@
-void AddTask_dNdPtpPb(UInt_t uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb", Float_t fEta = -10. )
+void AddTask_dNdPtpPb(AliBits uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb", Float_t fEta = -10. )
 {
 /*
 CheckLoadLibrary("libPWG0base");

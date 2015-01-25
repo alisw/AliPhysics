@@ -40,7 +40,7 @@ public:
    virtual Int_t      GetPtHardBin(Double_t ptHard);
    virtual Double_t   GetPt(AliAODJet* j, Int_t mode);
 
-   virtual AliVEvent::EOfflineTriggerTypes GetOfflineTrgMask() const { return fOfflineTrgMask; }
+   virtual AliBits  GetOfflineTrgMask() const { return fOfflineTrgMask; }
    virtual void     GetBranchNames(TString &branch1, TString &branch2) const { branch1 = fJetBranchName[0]; branch2 = fJetBranchName[1]; }
    virtual Bool_t   GetIsPbPb() const { return fIsPbPb; }
    virtual Int_t    GetMinContribVtx() const { return fMinContribVtx; };
@@ -62,7 +62,7 @@ public:
    virtual void     SetBackgroundBranch(TString &branch) { fBackgroundBranch = branch;}
    virtual void     SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void     SetIsPbPb(Bool_t b=kTRUE) { fIsPbPb = b; }
-   virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
+   virtual void     SetOfflineTrgMask(AliBits mask) { fOfflineTrgMask = mask; }
    virtual void     SetMinContribVtx(Int_t n) { fMinContribVtx = n; }
    virtual void     SetVtxZMin(Float_t z) { fVtxZMin = z; }
    virtual void     SetVtxZMax(Float_t z) { fVtxZMax = z; }
@@ -108,7 +108,7 @@ private:
 
     // event selection
    Bool_t fIsPbPb;         // is Pb-Pb (fast embedding) or p-p (detector response)
-   AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
+   AliBits fOfflineTrgMask; // mask of offline triggers to accept
    Int_t   fMinContribVtx; // minimum number of track contributors for primary vertex
    Float_t fVtxZMin;	  // lower bound on vertex z
    Float_t fVtxZMax;	  // upper bound on vertex z
@@ -161,7 +161,7 @@ private:
    AliAnalysisTaskJetResponseV2(const AliAnalysisTaskJetResponseV2&); // not implemented
    AliAnalysisTaskJetResponseV2& operator=(const AliAnalysisTaskJetResponseV2&); // not implemented
 
-   ClassDef(AliAnalysisTaskJetResponseV2, 6);
+   ClassDef(AliAnalysisTaskJetResponseV2, 7);
 };
 
 #endif

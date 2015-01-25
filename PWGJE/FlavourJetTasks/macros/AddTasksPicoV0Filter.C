@@ -4,7 +4,7 @@ const Bool_t bIsPhysSel     = kFALSE;
 const Bool_t bIsCentSel     = kFALSE;
 const Bool_t bIsEvPnSel     = kFALSE;
 const Bool_t bIsRespPID     = kTRUE;
-const UInt_t wTriggerMask   = AliVEvent::kINT7;
+const AliBits wTriggerMask   = AliVEvent::kINT7;
 const UInt_t wCollisionType = AliPicoHeaderCJ::kPA;
 
 const TString sCentEsti     = "V0A";  // "V0M"; "V0A"; "V0C"

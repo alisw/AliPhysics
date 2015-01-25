@@ -353,7 +353,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
   // physics selection: this is now redundant, all should appear as accepted after service task selection
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
+  std::cout<<inputHandler->IsEventSelected().GetBitString().Data()<<" "<<fOfflineTrgMask.GetBitString().Data()<<std::endl;
   if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
     if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
     fHistEvtSelection->Fill(2);

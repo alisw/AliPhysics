@@ -1,6 +1,6 @@
 AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMCHijing (const char* name = "PHOSPi0pPbMCHijing",
 					    const char* options = "",
-					       UInt_t offlineTriggerMask = AliVEvent::kINT7,
+					       AliBits offlineTriggerMask = AliVEvent::kINT7,
 					       const char* centrality = "V0M",
 					       const Int_t nCentBins = 5,
 					       const Int_t centEdge0 = 0,

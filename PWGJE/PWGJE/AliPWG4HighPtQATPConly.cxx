@@ -860,7 +860,7 @@ Bool_t AliPWG4HighPtQATPConly::SelectEvent() {
   }
 
   //Trigger
-  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);

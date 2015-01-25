@@ -42,10 +42,10 @@ public:
 //   virtual void NotifyRun(){AliDielectronPID::SetCorrVal((Double_t)fCurrentRunNumber);}
   
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
-  void SetTriggerMask(ULong64_t mask) {fTriggerMask=mask;}
-  UInt_t GetTriggerMask() const { return fTriggerMask; }
-  void SetExcludeTriggerMask(ULong64_t mask) {fExcludeTriggerMask=mask;}
-  UInt_t GetExcludeTriggerMask() const { return fExcludeTriggerMask; }
+  void SetTriggerMask(AliBits mask) {fTriggerMask=mask;}
+  AliBits GetTriggerMask() const { return fTriggerMask; }
+  void SetExcludeTriggerMask(AliBits mask) {fExcludeTriggerMask=mask;}
+  AliBits GetExcludeTriggerMask() const { return fExcludeTriggerMask; }
   void SetTriggerLogic(ETriggerLogig log) {fTriggerLogic=log;}
   ETriggerLogig GetTriggerLogic() const {return fTriggerLogic;}
   void SetFiredTriggerName(const char* select, Bool_t exclude=kFALSE) {fFiredTrigger=select; fFiredExclude=exclude;}
@@ -65,8 +65,8 @@ protected:
   TList fListCF;                     //! List with CF Managers
 
   Bool_t fSelectPhysics;             // Whether to use physics selection
-  UInt_t fTriggerMask;               // Event trigger mask
-  UInt_t fExcludeTriggerMask;        // Triggers to exclude from the analysis
+  AliBits fTriggerMask;              // Event trigger mask
+  AliBits fExcludeTriggerMask;       // Triggers to exclude from the analysis
   Bool_t fTriggerOnV0AND;            // if to trigger on V0and
   TString fFiredTrigger;             // online trigger class name
   Bool_t fFiredExclude;              // cut logic: select(default) or exclude
@@ -85,6 +85,6 @@ protected:
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);
   
-  ClassDef(AliAnalysisTaskMultiDielectron, 4); //Analysis Task handling multiple instances of AliDielectron
+  ClassDef(AliAnalysisTaskMultiDielectron, 5); //Analysis Task handling multiple instances of AliDielectron
 };
 #endif

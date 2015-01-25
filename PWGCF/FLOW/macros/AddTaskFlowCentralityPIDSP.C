@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
+void AddTaskFlowCentralityPIDSP(AliBits centralitysel,
                                Float_t centrMin=10.,
                                Float_t centrMax=20.,
                                TString fileNameBase="output",

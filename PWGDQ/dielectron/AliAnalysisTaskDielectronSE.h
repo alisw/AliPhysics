@@ -32,8 +32,8 @@ public:
   virtual void  UserCreateOutputObjects();
   
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
-  void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
-  UInt_t GetTriggerMask() const { return fTriggerMask; }
+  void SetTriggerMask(AliBits mask) {fTriggerMask=mask;}
+  AliBits GetTriggerMask() const { return fTriggerMask; }
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   void SetTriggerOnV0AND(Bool_t v0and=kTRUE)    { fTriggerOnV0AND=v0and;    }
@@ -47,7 +47,7 @@ private:
   AliDielectron *fDielectron;             // Dielectron framework object
 
   Bool_t fSelectPhysics;             // Whether to use physics selection
-  UInt_t fTriggerMask;               // Event trigger mask
+  AliBits fTriggerMask;              // Event trigger mask
   Bool_t fTriggerOnV0AND;            // if to trigger on V0and
   Bool_t fRejectPileup;              // pileup rejection wanted
 
@@ -60,6 +60,6 @@ private:
   AliAnalysisTaskDielectronSE(const AliAnalysisTaskDielectronSE &c);
   AliAnalysisTaskDielectronSE& operator= (const AliAnalysisTaskDielectronSE &c);
   
-  ClassDef(AliAnalysisTaskDielectronSE, 1);
+  ClassDef(AliAnalysisTaskDielectronSE, 2);
 };
 #endif

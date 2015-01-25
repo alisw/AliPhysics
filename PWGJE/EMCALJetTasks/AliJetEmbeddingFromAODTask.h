@@ -33,7 +33,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   void           SetAODCellsName(const char *n)                    { fAODCellsName       = n     ; }
   void           SetAODMCParticlesName(const char *n)              { fAODMCParticlesName = n     ; }
   void           SetCentralityRange(Double_t min, Double_t max)    { fMinCentrality      = min   ; fMaxCentrality    = max ; }
-  void           SetTriggerMask(UInt_t mask)                       { fTriggerMask        = mask  ; }
+  void           SetTriggerMask(AliBits mask)                      { fTriggerMask        = mask  ; }
   void           SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)      { fAODfilterBits[0]   = b0    ; fAODfilterBits[1] = b1  ; }
   void           SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS       = f     ; }
   void           SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4) { fCutMaxFractionSharedTPCClusters  = c ; }
@@ -76,7 +76,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   TString        fAODMCParticlesName  ;//  Name of the cell collection branch in the AOD tree
   Double_t       fMinCentrality       ;//  Minimum centrality
   Double_t       fMaxCentrality       ;//  Maximum centrality
-  UInt_t         fTriggerMask         ;//  Trigger selection mask
+  AliBits        fTriggerMask         ;//  Trigger selection mask
   Double_t       fZVertexCut          ;//  Z vertex cut
   Double_t       fMaxVertexDist       ;//  Maximum distance allowed between the vertices of the current and the embedded events
   Double_t       fJetMinPt            ;//  Select events with a minimum jet pt
@@ -128,6 +128,6 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented
   AliJetEmbeddingFromAODTask &operator=(const AliJetEmbeddingFromAODTask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromAODTask, 13) // Jet embedding from AOD task
+  ClassDef(AliJetEmbeddingFromAODTask, 14) // Jet embedding from AOD task
 };
 #endif

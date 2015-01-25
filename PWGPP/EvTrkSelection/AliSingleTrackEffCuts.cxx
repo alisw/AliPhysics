@@ -427,7 +427,7 @@ Bool_t AliSingleTrackEffCuts::IsRecoEventSelected(TObject* obj)
   Bool_t isSelected = kTRUE;
 
   // Check if event is accepted by the Physics selection
-  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isEvtSelected = (trigFired & fTriggerMask);
   if(!isEvtSelected) isSelected = kFALSE;
 

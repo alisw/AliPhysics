@@ -50,7 +50,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fListCF(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
-  fExcludeTriggerMask(0),
+  fExcludeTriggerMask(),
   fTriggerOnV0AND(kFALSE),
   fFiredTrigger(""),
   fFiredExclude(kFALSE),
@@ -76,7 +76,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fListCF(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
-  fExcludeTriggerMask(0),
+  fExcludeTriggerMask(),
   fTriggerOnV0AND(kFALSE),
   fFiredTrigger(""),
   fFiredExclude(kFALSE),
@@ -200,17 +200,19 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   }
   
   // Was event selected ?
-  ULong64_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   Bool_t isRejected = kFALSE;
   if( fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
       if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
       if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
-      else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
-   
-      TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
-      if(!fFiredTrigger.IsNull()) isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+      // ---> EK: isSelected defined as AliBits. Conversion to bool should be avoided
+      //else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+      //
+      //TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
+      //if(!fFiredTrigger.IsNull()) isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+      // <--- EK
     }
    }
  

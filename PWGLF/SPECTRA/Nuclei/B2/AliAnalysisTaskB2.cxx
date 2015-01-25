@@ -339,7 +339,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		return;
 	}
 	
-	UInt_t triggerBits = eventH->IsEventSelected();
+	AliBits triggerBits = eventH->IsEventSelected();
 	
 	if(fHeavyIons)
 	{
@@ -952,7 +952,7 @@ Bool_t AliAnalysisTaskB2::IsV0AND() const
 	                 fTrigAna->IsOfflineTriggerFired(fESDevent, AliTriggerAnalysis::kV0C) );
 }
 
-Bool_t AliAnalysisTaskB2::IsFastOnly(UInt_t triggerBits) const
+Bool_t AliAnalysisTaskB2::IsFastOnly(AliBits triggerBits) const
 {
 //
 // kFastOnly trigger
@@ -960,7 +960,7 @@ Bool_t AliAnalysisTaskB2::IsFastOnly(UInt_t triggerBits) const
 	return ( (triggerBits&AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
 }
 
-Bool_t AliAnalysisTaskB2::IsMB(UInt_t triggerBits) const
+Bool_t AliAnalysisTaskB2::IsMB(AliBits triggerBits) const
 {
 //
 // MB event

@@ -44,8 +44,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual void            SetMixingTracks(Int_t tracks)            { fMixingTracks = tracks; }
 
   // event trigger/mixed selection - setters
-  virtual void            SetTrigType(UInt_t te)       { fTriggerEventType = te; }
-  virtual void            SetMixType(UInt_t me)        { fMixingEventType = me; }
+  virtual void            SetTrigType(AliBits te)      { fTriggerEventType = te; }
+  virtual void            SetMixType(AliBits me)       { fMixingEventType = me; }
   virtual void            SetNMixedTracks(Int_t nmt)   { fNMIXtracks = nmt; }
   virtual void            SetNMixedEvents(Int_t nme)   { fNMIXevents = nme; }
 
@@ -85,8 +85,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
 
   // event selection types
-  UInt_t         fTriggerEventType;
-  UInt_t         fMixingEventType;
+  AliBits        fTriggerEventType;
+  AliBits        fMixingEventType;
 
   // efficiency correction
   Int_t          fDoEffCorrection;
@@ -124,6 +124,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 10); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 11); 
 };
 #endif

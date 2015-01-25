@@ -468,7 +468,7 @@ void AliAnalysisTaskLukeV0::UserExec(Option_t *)
 	Double_t radius;
 	
 	// physics selection
-	UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+	AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	if(!maskIsSelected)
     {
 		//printf("Event failed physics selection\n");

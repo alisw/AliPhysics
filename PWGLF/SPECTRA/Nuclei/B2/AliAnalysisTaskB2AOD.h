@@ -79,9 +79,9 @@ class AliAnalysisTaskB2AOD: public AliAnalysisTaskSE
 	Int_t GetParticles();
 	Int_t GetTracks();
 	
-	Bool_t IsV0AND(UInt_t triggerBits) const;
-	Bool_t IsFastOnly(UInt_t triggerBits) const;
-	Bool_t IsMB(UInt_t triggerBits) const;
+	Bool_t IsV0AND(AliBits triggerBits) const;
+	Bool_t IsFastOnly(AliBits triggerBits) const;
+	Bool_t IsMB(AliBits triggerBits) const;
 	
 	AliAODMCParticle* GetParticle(const AliAODTrack* trk) const;
 	

@@ -525,7 +525,7 @@ void AliAnalysisTaskMultiDielectronNewTaku::UserExec(Option_t *)
 
 
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
     isSelected&=fTriggerMask;

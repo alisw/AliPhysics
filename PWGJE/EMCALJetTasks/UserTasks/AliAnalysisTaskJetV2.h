@@ -159,7 +159,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
         static TH1F*            GetEventPlaneWeights(TH1F* hist, Int_t c);
-        static void             PrintTriggerSummary(UInt_t trigger);
+        static void             PrintTriggerSummary(AliBits trigger);
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
@@ -222,7 +222,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    FillWeightedJetHistograms(Double_t psi2);
         void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
         void                    FillWeightedQAHistograms(AliVEvent* vevent);
-        void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger);
+        void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, AliBits trigger);
         void                    FillAnalysisSummaryHistogram() const;
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file

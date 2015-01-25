@@ -190,7 +190,7 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
   Int_t run = fInputEvent->GetRunNumber();
 
   // Derive trigger 
-  UInt_t trigger = fInputHandler->IsEventSelected();
+  AliBits trigger = fInputHandler->IsEventSelected();
   Bool_t isMBTrigger = trigger & AliVEvent::kMB;
   Bool_t isCentralTrigger = trigger & AliVEvent::kCentral;
   Bool_t isSemicentralTrigger = trigger & AliVEvent::kSemiCentral;

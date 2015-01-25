@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void AddTaskFlowCentralityPIDMH(Int_t centralitysel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+void AddTaskFlowCentralityPIDMH(AliBits centralitysel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
 				Float_t centrMin=10.,
 				Float_t centrMax=20.,
 				Bool_t isPID = kTRUE,

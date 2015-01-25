@@ -1,4 +1,4 @@
-AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral , 
+AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( AliBits uTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral , 
 						Double_t dNCrossedRowsTPC = 100,
 						Int_t iFilterBit = AliAODTrack::kTrkGlobal,
 						char *contName = "dNdPtPbPbAOD",

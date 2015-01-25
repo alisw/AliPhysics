@@ -198,7 +198,7 @@ else
   mgr->ConnectOutput (task, 2, cout_cuts);
 
   // Set the trigger selection
-  UInt_t mask =  SetTriggerMaskFromName(trigger);
+  AliBits mask =  SetTriggerMaskFromName(trigger);
   task->SelectCollisionCandidates(mask);
   
   return task;
@@ -853,7 +853,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
 ///
 /// Configure the task doing the trigger cluster-jet correlation
 ///
-UInt_t SetTriggerMaskFromName(TString trigger)
+AliBits SetTriggerMaskFromName(TString trigger)
 {
   if(trigger=="EMC7")
   {
@@ -925,6 +925,7 @@ UInt_t SetTriggerMaskFromName(TString trigger)
     printf("CaloTrackCorr trigger SemiCentral Or Central\n");
     return (AliVEvent::kSemiCentral | AliVEvent::kCentral  | AliVEvent::kMB);
   }
+  return AliBits();
 }
 
 

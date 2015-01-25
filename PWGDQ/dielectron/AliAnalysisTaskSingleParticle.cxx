@@ -269,7 +269,7 @@ void AliAnalysisTaskSingleParticle::UserExec(Option_t *)
     AliFatal("This task needs the PID response attached to the input event handler!");   
   } 
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
     isSelected&=fTriggerMask;

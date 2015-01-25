@@ -47,7 +47,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    AliAnalysisTaskSE(),
    fUseMC(kFALSE),
    fEvNum(0),
-   fTriggerMask(0),
+   fTriggerMask(),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fUseAOD049CentralityPatch(kFALSE),

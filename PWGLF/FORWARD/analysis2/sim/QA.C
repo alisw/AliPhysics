@@ -24,8 +24,8 @@
  * needs
  */
 // Trigger mask.
-UInt_t kTriggerInt        = AliVEvent::kAnyINT;
-UInt_t kTriggerMuonAll    = (AliVEvent::kMUL7       | 
+AliBits kTriggerInt        = AliVEvent::kAnyINT;
+AliBits kTriggerMuonAll    = (AliVEvent::kMUL7       | 
 			     AliVEvent::kMUSH7      | 
 			     AliVEvent::kMUU7       |
 			     AliVEvent::kMUS7       |
@@ -33,13 +33,13 @@ UInt_t kTriggerMuonAll    = (AliVEvent::kMUL7       |
 			     AliVEvent::kMUSHPB     |
 			     AliVEvent::kMuonLikePB | 
 			     AliVEvent::kMuonUnlikePB);
-UInt_t kTriggerMuonBarell = AliVEvent::kMUU7;
-UInt_t kTriggerEMC        = (AliVEvent::kEMC7   | 
+AliBits kTriggerMuonBarell = AliVEvent::kMUU7;
+AliBits kTriggerEMC        = (AliVEvent::kEMC7   | 
 			     AliVEvent::kEMC8   | 
 			     AliVEvent::kEMCEJE | 
 			     AliVEvent::kEMCEGA);
-UInt_t kTriggerHM         = AliVEvent::kHighMult;
-UInt_t kTriggerMask       = kTriggerInt;
+AliBits kTriggerHM         = AliVEvent::kHighMult;
+AliBits kTriggerMask       = kTriggerInt;
 
 /**
  * Interface (pure virtual) that all configuration classes must

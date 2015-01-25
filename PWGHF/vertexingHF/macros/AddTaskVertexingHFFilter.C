@@ -18,7 +18,7 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFFilter(TString configPWG3d2h="$A
   if (!taskvertexingHF) ::Warning("AddTaskVertexingHFFilter", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
   
   if(registerFile) mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
-  taskvertexingHF->SelectCollisionCandidates(0);
+  taskvertexingHF->SelectCollisionCandidates(AliBits());
 
   mgr->AddTask(taskvertexingHF);
 

@@ -625,7 +625,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     Int_t  iCl = GetEventClass(aod);
     AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
     Bool_t cand = ((AliVAODHeader*)aod->GetHeader())->GetOfflineTrigger()&fPhysicsSelectionFlag;
-    if(fDebug)Printf("%s:%d AOD selection %d %d",(char*)__FILE__,__LINE__,cand,((AliVAODHeader*)aod->GetHeader())->GetOfflineTrigger());
+    
+    if(fDebug)Printf("%s:%d AOD selection %d %s",(char*)__FILE__,__LINE__,cand,((AliVAODHeader*)aod->GetHeader())->GetOfflineTrigger().GetBitString().Data());
+    
     fh2TriggerCount->Fill(0.,kAllTriggered); 
     fh2TriggerCount->Fill(iCl,kAllTriggered); 
     if(cand){
@@ -1243,16 +1245,16 @@ void AliAnalysisTaskJetServices::SetNTrigger(Int_t n){
       delete [] fTriggerName;
       fTriggerName = new TString [fNTrigger];
       delete [] fTriggerBit;fTriggerBit = 0;
-      fTriggerBit = new UInt_t [fNTrigger];
+      fTriggerBit = new AliBits[fNTrigger];
   }
   else{
     fNTrigger = 0;
   }
 }
 
-void AliAnalysisTaskJetServices::SetTrigger(Int_t i,UInt_t it,const char* c){
+void AliAnalysisTaskJetServices::SetTrigger(Int_t i,AliBits it,const char* c){
   if(i<fNTrigger){
-    Printf("%d",it);
+    Printf("%s",it.GetBitString().Data());
     Printf("%p",c);
     Printf("%s",c);    
     Printf("%p",&fTriggerName[i]);

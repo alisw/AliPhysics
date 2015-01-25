@@ -6,16 +6,14 @@
 class AliEmcalPhysicsSelection: public AliPhysicsSelection
 {
  public:
-  enum EOfflineEmcalTypes { 
-    kEmcalHC = BIT(28), //=true when EMCAL cell above given Et found
-    kEmcalHT = BIT(29), //=true when EMCAL cluster above given Et found
-    kEmcalOk = BIT(31), //=true when EMCAL good event criteria are found
-  };
+  static const AliBits kEmcalHC; //=true when EMCAL cell above given Et found
+  static const AliBits kEmcalHT; //=true when EMCAL cluster above given Et found
+  static const AliBits kEmcalOk; //=true when EMCAL good event criteria are found
 
   AliEmcalPhysicsSelection();
   virtual ~AliEmcalPhysicsSelection() {;}
 
-  virtual UInt_t GetSelectionMask(const TObject* obj);
+  virtual AliBits GetSelectionBits(const TObject* obj);
 
   void           SetCellMinE(Double_t e)       { fCellMinE     = e; }
   void           SetCentRange(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; }
@@ -26,7 +24,7 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   void           SetSkipFastOnly(Bool_t b)     { fSkipFastOnly = b; }
   void           SetSkipLedEvent(Bool_t b)     { fSkipLedEvent = b; }
   void           SetTrackMinPt(Double_t p)     { fTrackMinPt   = p; }
-  void           SetTriggers(UInt_t t)         { fTriggers     = t; }
+  void           SetTriggers(AliBits t)        { fTriggers     = t; }
   void           SetZVertex(Double_t z=10)     { fZvertex      = z; }
   void           SetCellTrackScale(Double_t min, Double_t max) { fMinCellTrackScale = min; fMaxCellTrackScale = max; }
  
@@ -45,7 +43,7 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   Double_t       fCellMinE;          //minimum cell energy (<0 -> do not compute)
   Double_t       fClusMinE;          //minimum clus energy (<0 -> do not compute)
   Double_t       fTrackMinPt;        //minimum track pt    (<0 -> do not compute)
-  UInt_t         fTriggers;          //if not zero only process given trigges
+  AliBits        fTriggers;          //if not zero only process given trigges
   Double_t       fZvertex;           //primary vertex z cut (-1 none)
   Bool_t         fZvertexDiff;       //=true then select on PRI minus SPD z-vertex 
   Double_t       fCentMin;           //minimum centrality required (V0M)
@@ -59,6 +57,6 @@ class AliEmcalPhysicsSelection: public AliPhysicsSelection
   Double_t       fClusMaxE;          //!maximum clus energy in event
   Double_t       fTrackMaxPt;        //!maximum track pt in event
 
-  ClassDef(AliEmcalPhysicsSelection, 5); // Emcal physics selection
+  ClassDef(AliEmcalPhysicsSelection, 6); // Emcal physics selection
 };
 #endif

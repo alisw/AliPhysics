@@ -35,9 +35,9 @@ AliAnalysisTaskSE *AddRsnTask(TString rsnPart,TString rsnCut,TString postfix="")
    }
 
    postfix.Append(TString::Format("_%s_%s",rsnPart.Data(),rsnCut.Data()).Data());
-
-   if (physSelBit>=0) task->SelectCollisionCandidates((AliVEvent::EOfflineTriggerTypes)physSelBit);
-
+   // ---> EK: conversion from int to AliBits not supported
+   // if (physSelBit>=0) task->SelectCollisionCandidates(physSelBit);
+   // <--- EK
    AliRsnInputHandler *rsnIH=0;
    // TODO this is tmp hack
    if (!rsnIH) rsnIH = new AliRsnInputHandler();

@@ -61,7 +61,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
 
   Int_t GetTrackFilterBit(){return fFilterBit;}
   void SetTrackFilterBit(Int_t bit){fFilterBit=bit;}
-  void SetEventSelectionBit( UInt_t val ) {fSelectBit = val;}
+  void SetEventSelectionBit( AliBits val ) {fSelectBit = val;}
   void SetIsLHC10h(Bool_t val) {bIsLHC10h = val;}
   void SetMinSepPair(Double_t eta,Double_t phi){fMinSepPairEta = eta; fMinSepPairPhi = phi;}
   void SetMinQinv(Double_t min){fQinvMin = min;}
@@ -109,7 +109,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   AliSpectraAODTrackCuts* fTrackCuts;
 
   Int_t          fFilterBit;         // track selection cuts
-  UInt_t         fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+  AliBits        fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
   Bool_t         bIsLHC10h;
   Int_t fEventCounter;
   Int_t fMixingTracks;
@@ -225,7 +225,7 @@ class AliAnalysisTaskFemtoESE : public AliAnalysisTaskSE {
   TH1F* hcentbins;
   TH1F* hepbins;
 
-  ClassDef(AliAnalysisTaskFemtoESE, 1);
+  ClassDef(AliAnalysisTaskFemtoESE, 2);
 };
 
 

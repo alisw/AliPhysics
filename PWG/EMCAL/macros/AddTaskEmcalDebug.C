@@ -38,7 +38,7 @@ AliEmcalDebugTask* AddTaskEmcalDebug(
   dtask->SetId(tid);
   if (fnametest) 
     dtask->SetFileTest(fnametest);
-  dtask->SelectCollisionCandidates(0);
+  dtask->SelectCollisionCandidates(AliBits());
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

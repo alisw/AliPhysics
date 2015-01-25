@@ -193,7 +193,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fDoSharedElecCut(kFALSE),
    fDoPhotonQualitySelectionCut(kFALSE),
    fPhotonQualityCut(0),
-   fOfflineTriggerMask(0),
+   fOfflineTriggerMask(),
    fHasV0AND(kTRUE),
    fIsSDDFired(kTRUE),
    fRandom(0),

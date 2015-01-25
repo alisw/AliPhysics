@@ -48,7 +48,7 @@ AliAnalysisTaskTOFSpectraPbPb::AliAnalysisTaskTOFSpectraPbPb() :
   fTrackCuts(NULL),
   fESDpid(new AliESDpid()),
   fIsCollisionCandidate(kFALSE),
-  fIsEventSelected(0),
+  fIsEventSelected(),
   fIsPileupFromSPD(kFALSE),
   fHasVertex(kFALSE),
   fVertexZ(0.),

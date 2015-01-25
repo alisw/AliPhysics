@@ -246,7 +246,7 @@ void AliAnalysisTaskCPQA::LoopESD()
       else if(fESD->IsTriggerClassFired("CINT1C-ABCE-NOPF-ALL"))  TrType=2;
       else if(fESD->IsTriggerClassFired("CINT1-E-NOPF-ALL"))      TrType=3;
 
-      UInt_t mask =  ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      AliBits mask =  ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
       fkIsPhysSel=(mask & AliVEvent::kMB) ? 1 : 0; // check if minimum bias trigger class fired
  
 

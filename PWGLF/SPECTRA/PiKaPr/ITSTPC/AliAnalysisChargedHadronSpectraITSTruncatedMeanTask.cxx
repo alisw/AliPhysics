@@ -794,7 +794,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	fHistStats->Fill(0);
 	//Event selection 
 	//if( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()==0)	
-	  UInt_t isSelected = 0;
+	  AliBits isSelected;
 	 if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
 	  	isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	//Printf("Mask_selection %u %u", isSelected,AliVEvent::kMB);  

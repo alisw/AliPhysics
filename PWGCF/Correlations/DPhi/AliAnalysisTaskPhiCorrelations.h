@@ -31,6 +31,7 @@
 #include "TString.h"
 #include "AliVParticle.h"
 #include "AliLog.h"
+#include "AliBits.h"
 #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
 class AliAODEvent;
@@ -107,7 +108,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // track cuts
     void   SetTrackletDphiCut( Double_t val )    { fTrackletDphiCut = val; }
 
-    void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
+    void   SetEventSelectionBit( AliBits val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     void   SetSelectParticleSpecies( Int_t trigger, Int_t associated ) { fParticleSpeciesTrigger = trigger; fParticleSpeciesAssociated = associated; }
     void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
@@ -223,7 +224,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Double_t	 	fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
-    UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+    AliBits         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     Int_t               fParticleSpeciesTrigger; // Select which particle to use for the trigger [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
     Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]

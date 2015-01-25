@@ -2,7 +2,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   const char*         containerSuffix         = "",
   Double_t            jetRadius               = 0.4,
   const char*         centralityType          = "V0A",
-  Int_t               trigger                 = AliVEvent::kINT7,
+  AliBits             trigger                 = AliVEvent::kINT7,
   Bool_t              isPA                    = kTRUE,
   Bool_t              isMC                    = kFALSE,
   Bool_t              doJetProfileAnalysis    = kFALSE,
@@ -24,7 +24,9 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
 {
   cout << " ############ MACRO EXECUTION STARTED ############\n";
   // #### Detect the demanded trigger with its readable name
-  TString triggerName(Form("Trigger_%i", trigger));
+   
+  TString triggerName(Form("Trigger_%s", trigger.GetBitString().Data()));
+  TString triggerName;
   if (trigger == AliVEvent::kAnyINT)
     triggerName = "kAnyINT";
   else if (trigger == AliVEvent::kAny)

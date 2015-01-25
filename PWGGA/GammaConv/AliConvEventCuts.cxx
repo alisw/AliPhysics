@@ -84,7 +84,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fSpecialSubTrigger(0),
 	fRemovePileUp(kFALSE),
 	fRejectExtraSignals(0),
-	fOfflineTriggerMask(0),
+	fOfflineTriggerMask(),
 	fHasV0AND(kTRUE),
 	fIsSDDFired(kTRUE),
 	fRandom(0),

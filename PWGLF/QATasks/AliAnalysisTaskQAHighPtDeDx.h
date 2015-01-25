@@ -52,7 +52,7 @@ class AliAnalysisTaskQAHighPtDeDx : public AliAnalysisTaskSE {
   //Double_t GetMinPt() { return fMinPt; }   
   //Int_t    GetTreeOption() { return fTreeOption; }  
 
-  virtual void  SetTrigger(UInt_t ktriggerInt) {ftrigBit = ktriggerInt;}
+  virtual void  SetTrigger(AliBits ktriggerInt) {ftrigBit = ktriggerInt;}
   virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
   virtual void  SetCentralityEstimator(const char * centEst) {fCentEst = centEst;}
@@ -109,7 +109,7 @@ class AliAnalysisTaskQAHighPtDeDx : public AliAnalysisTaskSE {
   TString       fAnalysisType;        //  "ESD" or "AOD"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
-  UInt_t       ftrigBit;
+  AliBits       ftrigBit;
   TRandom*      fRandom;              //! random number generator
   Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
  
@@ -184,7 +184,7 @@ class AliAnalysisTaskQAHighPtDeDx : public AliAnalysisTaskSE {
 
   //TTree*        fTree;              //! Debug tree 
 
-  ClassDef(AliAnalysisTaskQAHighPtDeDx, 1);    //Analysis task for high pt analysis 
+  ClassDef(AliAnalysisTaskQAHighPtDeDx, 2);    //Analysis task for high pt analysis 
 };
 
 #endif

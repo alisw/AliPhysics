@@ -1573,7 +1573,7 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
 
   
   // Physics selection                                                                                                                                      
-  UInt_t maskIsSelected = inputHandler->IsEventSelected();
+  AliBits maskIsSelected = inputHandler->IsEventSelected();
   //		Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
   Bool_t isSelected = (maskIsSelected);
   //		Bool_t isSelected = (maskIsSelected & !(AliVEvent::kOnlyFast) );

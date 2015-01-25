@@ -508,7 +508,7 @@ void AliAnalysisTaskNorm::UserExec(Option_t *)
 
   //Get Phys Sel.
   Bool_t physSel = kFALSE;
-  UInt_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+  AliBits isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
   if (isSelected) physSel = kTRUE;
 
   //Get out-of-bunch pile-up

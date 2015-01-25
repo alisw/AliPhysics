@@ -586,7 +586,7 @@ Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
   AliInputEventHandler *inputHandler =
     (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 
-  AliVEvent::EOfflineTriggerTypes physSel = (AliVEvent::EOfflineTriggerTypes) inputHandler->IsEventSelected();
+  AliBits physSel = inputHandler->IsEventSelected();
   TString trgClasses = InputEvent()->GetFiredTriggerClasses();
 
   fTrdTrg.CalcTriggers(InputEvent());

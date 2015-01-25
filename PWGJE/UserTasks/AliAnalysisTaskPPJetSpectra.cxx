@@ -28,7 +28,7 @@ AliAnalysisTaskPPJetSpectra::AliAnalysisTaskPPJetSpectra()
   ,fNonStdFile("")
   ,fDebug(0)
   ,fUseMC(kFALSE)
-  ,fEvtSelectionMask(0)
+  ,fEvtSelectionMask()
   ,fEventClass(-1)
   ,nVtxContCut(2)
   ,fVtxZcut(10)
@@ -90,7 +90,7 @@ AliAnalysisTaskPPJetSpectra::AliAnalysisTaskPPJetSpectra(const char* name):AliAn
   ,fNonStdFile("")
   ,fDebug(0)
   ,fUseMC(kFALSE)
-  ,fEvtSelectionMask(0)
+  ,fEvtSelectionMask()
   ,fEventClass(-1)
   ,nVtxContCut(2)
   ,fVtxZcut(10)
@@ -477,8 +477,7 @@ Bool_t AliAnalysisTaskPPJetSpectra::EventSelection(Double_t evtContainer[6]) {
   // Trigger selection
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(fDebug > 2 ) 
-    printf("IsEventSelected: %d eventSelectionMask: %d\n", (Int_t)inputHandler->IsEventSelected(), (Int_t)fEvtSelectionMask);
-
+    printf("IsEventSelected: %s eventSelectionMask: %s\n", inputHandler->IsEventSelected().GetBitString().Data(), fEvtSelectionMask.GetBitString().Data());
   Bool_t isTriggerSelected = inputHandler->IsEventSelected() & fEvtSelectionMask;
   evtContainer[0] = (Int_t)isTriggerSelected;
 

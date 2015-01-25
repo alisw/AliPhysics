@@ -190,7 +190,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *option)
   fFlowTrackCuts->SetEvent(InputEvent());
   
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if(fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
@@ -273,7 +273,7 @@ void AliAnalysisTaskCorrelationTree::FillEventInfo()
   Bool_t isAOD = (event->IsA()==AliAODEvent::Class());
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if(inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();

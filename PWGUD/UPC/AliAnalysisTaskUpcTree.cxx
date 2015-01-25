@@ -42,6 +42,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliTriggerIR.h"
+#include "AliTrackerBase.h"
 ClassImp(AliAnalysisTaskUpcTree)
 
 //-----------------------------------------------------------------------------
@@ -50,7 +51,6 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fIsMC(0),
   fIsAOD(0),
   fMuonTrackCuts(new AliMuonTrackCuts),
-  fTrackFilter(NULL),
   fListOfHistos(NULL),
   fEventStatistics(NULL),
   fTriggersPerRun(NULL),
@@ -91,6 +91,11 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fVtxX(-1000),
   fVtxY(-1000),
   fVtxZ(-1000),
+  fVtxContributors(-1),
+  fSpdVtxX(-1000),
+  fSpdVtxY(-1000),
+  fSpdVtxZ(-1000),
+  fSpdVtxContributors(-1),
   fVtxTPC(kFALSE),
   fIR1(),
   fIR2(),
@@ -126,7 +131,6 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
 //-----------------------------------------------------------------------------
 void AliAnalysisTaskUpcTree::NotifyRun(){
   if (fMuonTrackCuts) fMuonTrackCuts->SetRun(fInputHandler); 
-  fInputHandler->SetNeedField();
 }
 //-----------------------------------------------------------------------------
 
@@ -193,7 +197,12 @@ void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
   fTree->Branch("fVtxX",&fVtxX);
   fTree->Branch("fVtxY",&fVtxY);
   fTree->Branch("fVtxZ",&fVtxZ);
+  fTree->Branch("fVtxContributors",&fVtxContributors);
   fTree->Branch("fVtxTPC",&fVtxTPC);
+  fTree->Branch("fSpdVtxX",&fSpdVtxX);
+  fTree->Branch("fSpdVtxY",&fSpdVtxY);
+  fTree->Branch("fSpdVtxZ",&fSpdVtxZ);
+  fTree->Branch("fSpdVtxContributors",&fSpdVtxContributors);
   fTree->Branch("fTPCtracks",&fTPCtracks);
   fTree->Branch("fMUONtracks",&fMUONtracks);
   fTree->Branch("fNofITSClusters",&fNofITSClusters,"fNofITSClusters[6]/I");
@@ -224,8 +233,8 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fTriggerFired[ 2] = trigger.Contains("CMUP5-B");
   fTriggerFired[ 3] = trigger.Contains("CMUP7-B");
   fTriggerFired[ 4] = trigger.Contains("CMUP9-B");
-  fTriggerFired[ 5] = trigger.Contains("CMSL7-B-NOPF-MUON");
-  fTriggerFired[ 6] = trigger.Contains("CMSL7-B-NOPF-ALLNOTRD");
+//  fTriggerFired[ 5] = trigger.Contains("CMSL7-B-NOPF-MUON");
+//  fTriggerFired[ 6] = trigger.Contains("CMSL7-B-NOPF-ALLNOTRD");
 
   fRunNumber  = fInputEvent->GetRunNumber();
   Bool_t isTrigger=0;
@@ -237,7 +246,10 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   }
   if (!isTrigger && !fIsMC) { PostData(1,fListOfHistos); return; }
   fEventStatistics->Fill("after trigger check",1);
+//  printf("%s\n",trigger.Data());
 
+  fNofTracklets = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+//  printf("fNofTracklets=%i\n",fNofTracklets);
 
   if (fNofTracklets>1 && fTriggerFired[5]) { PostData(1,fListOfHistos); return; }
   if (fNofTracklets>1 && fTriggerFired[6]) { PostData(1,fListOfHistos); return; }
@@ -251,8 +263,9 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fL1inputs     = fInputEvent->GetHeader()->GetL1TriggerInputs();
   fIR1          = fInputEvent->GetHeader()->GetIRInt1InteractionMap();
   fIR2          = fInputEvent->GetHeader()->GetIRInt2InteractionMap();
-  fNofTracklets = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
-  
+//  for (Int_t i=0;i<181;i++) { printf("%i",fIR1.TestBitNumber(i)); } printf("\n");
+//  for (Int_t i=0;i<181;i++) { printf("%i",fIR2.TestBitNumber(i)); } printf("\n");
+
   for (Int_t i=0;i<6;i++) fNofITSClusters[i] = fInputEvent->GetNumberOfITSClusters(i);
   
   AliVVZERO* vzero = fInputEvent->GetVZEROData();
@@ -302,28 +315,36 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fZPCtdc  = kFALSE;
   fZNAtdc  = kFALSE;
   fZPAtdc  = kFALSE;
-  if (!fIsAOD) {
-    AliESDZDC* esdzdc = (AliESDZDC*) zdc;
-    for(Int_t i=0;i<4;i++) {
-      if (esdzdc->GetZDCTDCData( 8,i)) fZEM1tdc = kTRUE;
-      if (esdzdc->GetZDCTDCData( 9,i)) fZEM2tdc = kTRUE;
-      if (esdzdc->GetZDCTDCData(10,i)) fZNCtdc  = kTRUE;
-      if (esdzdc->GetZDCTDCData(11,i)) fZPCtdc  = kTRUE;
-      if (esdzdc->GetZDCTDCData(12,i)) fZNAtdc  = kTRUE;
-      if (esdzdc->GetZDCTDCData(13,i)) fZPAtdc  = kTRUE;
-    }
-  }
 
   const AliVVertex* vertex  = fInputEvent->GetPrimaryVertex();
   fVtxX   = vertex->GetX();
   fVtxY   = vertex->GetY();
   fVtxZ   = vertex->GetZ();
+  fVtxContributors = vertex->GetNContributors();
   fVtxTPC = TString(vertex->GetName()).CompareTo("PrimaryVertex") && TString(vertex->GetName()).CompareTo("SPDVertex");
   
+//  printf("%s %4i %7.4f %7.4f %5.2f\n",vertex->GetTitle(),fVtxContributors,fVtxX,fVtxY,fVtxZ);
+
   AliESDEvent* esd = !fIsAOD ? (AliESDEvent*) fInputEvent : 0;
-//  AliAODEvent* aod =  fIsAOD ? (AliAODEvent*) fInputEvent : 0;
 
   if (!esd) return; // AOD not yet implemented
+
+  const AliESDVertex* spdVertex = esd->GetPrimaryVertexSPD();
+  fSpdVtxX = spdVertex->GetX();
+  fSpdVtxY = spdVertex->GetY();
+  fSpdVtxZ = spdVertex->GetZ();
+  fSpdVtxContributors = spdVertex->GetNContributors();
+//  printf("%s %4i %7.4f %7.4f %5.2f\n",spdVertex->GetTitle(),fSpdVtxContributors,fSpdVtxX,fSpdVtxY,fSpdVtxZ);
+
+  AliESDZDC* esdzdc = (AliESDZDC*) zdc;
+  for(Int_t i=0;i<4;i++) {
+    if (esdzdc->GetZDCTDCData( 8,i)) fZEM1tdc = kTRUE;
+    if (esdzdc->GetZDCTDCData( 9,i)) fZEM2tdc = kTRUE;
+    if (esdzdc->GetZDCTDCData(10,i)) fZNCtdc  = kTRUE;
+    if (esdzdc->GetZDCTDCData(11,i)) fZPCtdc  = kTRUE;
+    if (esdzdc->GetZDCTDCData(12,i)) fZNAtdc  = kTRUE;
+    if (esdzdc->GetZDCTDCData(13,i)) fZPAtdc  = kTRUE;
+  }
   
   fEventInFile = esd->GetHeader()->GetEventNumberInFile();
   fChunkFileName->SetString(((TTree*) GetInputData(0))->GetCurrentFile()->GetName());
@@ -331,18 +352,18 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fFOmap = esd->GetMultiplicity()->GetFastOrFiredChips();
   fFiredChipMap = esd->GetMultiplicity()->GetFiredChipMap();
   
+  Double_t x[3];
+  Double_t b[3];
+  Double_t dz[2];
+  Double_t cov[3];
   for (Int_t itr=0;itr<esd->GetNumberOfTracks();itr++){
     AliESDtrack* track = (AliESDtrack*) esd->GetTrack(itr);
     Float_t pt   = track->Pt();
     Float_t eta  = track->Eta();
     Float_t phi  = track->Phi();
     Short_t charge = track->Charge();
-    UInt_t mask = 0;//track->GetFilterMap();
-    
-    if (!fTrackFilter) AliFatal("Track filter undefined");
-    mask |= fTrackFilter->IsSelected(track);
+    UInt_t mask = 0;
 
-    if (!mask) continue;
     UInt_t itsClusterMap      = track->GetITSClusterMap();
     Bool_t itsRefit           = track->GetStatus() & AliVTrack::kITSrefit;
     Bool_t tpcRefit           = track->GetStatus() & AliVTrack::kTPCrefit;
@@ -351,17 +372,21 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
     mask |= tpcRefit      << 21;
     mask |= kink          << 22;
     mask |= itsClusterMap << 23;
-    
-    AliUpcParticle* part = new ((*fTPCtracks)[fTPCtracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi,charge,mask,10);
+    if (!(itsClusterMap & 1<<0) && !(itsClusterMap & 1<<1)) continue; 
+    Float_t nClusters         = track->GetTPCncls();
+    if (nClusters==0) continue;
+    AliUpcParticle* part = new ((*fTPCtracks)[fTPCtracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi,charge,mask,14);
     Float_t dedx              = track->GetTPCsignal();
     Float_t nCrossedRaws      = track->GetTPCCrossedRows();
     Float_t nFindableClusters = track->GetTPCNclsF();
     Float_t nSharedClusters   = track->GetTPCnclsS();
-    Float_t nClusters         = track->GetTPCncls();
     Float_t chi2tpc           = track->GetTPCchi2();
     Float_t chi2its           = track->GetITSchi2();
-    Float_t chi2golden        = 0;//vertex ? track->GetChi2TPCConstrainedVsGlobal(vertex) : 0;
-    Float_t bxy,bz; 
+    track->GetXYZ(x);
+    AliTrackerBase::GetBxByBz(x,b);
+    AliESDtrack* clone = (AliESDtrack*) track->Clone();
+    clone->PropagateToDCABxByBz(spdVertex,b,3,dz,cov); 
+    Float_t bxy,bz;
     track->GetImpactParameters(bxy,bz);
     part->SetAt(dedx,0);
     part->SetAt(nCrossedRaws,1);
@@ -370,9 +395,17 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
     part->SetAt(nClusters,4);
     part->SetAt(chi2tpc,5);
     part->SetAt(chi2its,6);
-    part->SetAt(chi2golden,7);
-    part->SetAt(bxy,8);
-    part->SetAt(bz,9);
+    part->SetAt(bxy,7);
+    part->SetAt(bz,8);
+    part->SetAt(clone->Pt(),9);
+    part->SetAt(clone->Eta(),10);
+    part->SetAt(clone->Phi(),11);
+    part->SetAt(dz[0],12);
+    part->SetAt(dz[1],13);
+//    printf("%f %f %f\n",clone->Pt(),clone->Eta(),clone->Phi());
+//    printf("%f %f %f\n",pt,eta,phi);
+//    printf("%f %f\n",bxy,bz);
+//    printf("%f %f\n",dz[0],dz[1]);
   }
   
   for (Int_t itr=0;itr<esd->GetNumberOfMuonTracks();itr++){

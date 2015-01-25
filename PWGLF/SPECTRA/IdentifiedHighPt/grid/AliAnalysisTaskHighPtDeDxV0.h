@@ -37,8 +37,8 @@ class AliAnalysisTaskHighPtDeDxV0 : public AliAnalysisTaskSE {
   Double_t GetMinPt() { return fMinPt; }   
   Int_t    GetTreeOption() { return fTreeOption; }  
 
-  virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
-  virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
+  virtual void  SetTrigger1(AliBits ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
+  virtual void  SetTrigger2(AliBits ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
   virtual void  SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
@@ -97,8 +97,8 @@ class AliAnalysisTaskHighPtDeDxV0 : public AliAnalysisTaskSE {
   //
   // Cuts and options
   //
-  UInt_t       ftrigBit1;
-  UInt_t       ftrigBit2;
+  AliBits      ftrigBit1;
+  AliBits      ftrigBit2;
   Double_t     fVtxCut;             // Vtx cut on z position in cm
   Double_t     fEtaCut;             // Eta cut used to select particles
   Double_t     fMinPt;              // Min pt - for histogram limits
@@ -133,7 +133,7 @@ class AliAnalysisTaskHighPtDeDxV0 : public AliAnalysisTaskSE {
   TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
   TTree*        fTree;              //! Debug tree 
 
-  ClassDef(AliAnalysisTaskHighPtDeDxV0, 1);    //Analysis task for high pt v0 analysis 
+  ClassDef(AliAnalysisTaskHighPtDeDxV0, 2);    //Analysis task for high pt v0 analysis 
 };
 
 #endif

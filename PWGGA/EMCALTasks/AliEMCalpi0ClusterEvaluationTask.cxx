@@ -380,7 +380,7 @@ void AliEMCalpi0ClusterEvaluationTask::UserExec( Option_t* )
     }
     //888888888888888888888888888888888888888888888888888
 
-    const UInt_t Mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    const AliBits Mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
     // event characterization
     if(esd){
@@ -699,7 +699,7 @@ void AliEMCalpi0ClusterEvaluationTask::FillMixed( const TLorentzVector& p1, cons
 
 {
     //verification triggered classes that fired.
-    const UInt_t eventSelectionMask( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() );
+    const AliBits eventSelectionMask( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() );
     AliESDEvent* esd     = dynamic_cast<AliESDEvent*>(InputEvent());
     AliAODEvent* aod     =dynamic_cast< AliAODEvent*>(InputEvent());
     //AliVEvent  * event   = InputEvent();

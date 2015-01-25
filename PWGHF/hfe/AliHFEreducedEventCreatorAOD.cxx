@@ -250,7 +250,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
 
   // Derive trigger 
   AliDebug(1, "Get triggers\n");
-  UInt_t trigger = fInputHandler->IsEventSelected();
+  AliBits trigger = fInputHandler->IsEventSelected();
   if(trigger & AliVEvent::kMB) fHFEevent->SetMBTrigger();
   if(trigger & AliVEvent::kCentral) fHFEevent->SetCentralTrigger();
   if(trigger & AliVEvent::kSemiCentral) fHFEevent->SetCentralTrigger();

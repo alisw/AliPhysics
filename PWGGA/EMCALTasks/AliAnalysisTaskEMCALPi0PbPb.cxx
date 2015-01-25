@@ -581,7 +581,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   fEsdEv = dynamic_cast<AliESDEvent*>(InputEvent());
-  UInt_t offtrigger = 0;
+  AliBits offtrigger;
   if (fEsdEv) {
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
@@ -1629,7 +1629,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     fHeader->fL2             = aodheader->GetL2TriggerInputs();
     fHeader->fTrClassMask    = aodheader->GetTriggerMask();
     fHeader->fTrCluster      = aodheader->GetTriggerCluster();
-    fHeader->fOffTriggers    = aodheader->GetOfflineTrigger();
+    // ---> EK: fOffTriggers not compatible with AliBits
+    // fHeader->fOffTriggers    = aodheader->GetOfflineTrigger();
+    // <--- EK
     fHeader->fFiredTriggers  = aodheader->GetFiredTriggerClasses();
   } else {
     fHeader->fRun            = fEsdEv->GetRunNumber();
@@ -1641,7 +1643,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     fHeader->fL2             = fEsdEv->GetHeader()->GetL2TriggerInputs();
     fHeader->fTrClassMask    = fEsdEv->GetHeader()->GetTriggerMask();
     fHeader->fTrCluster      = fEsdEv->GetHeader()->GetTriggerCluster();
-    fHeader->fOffTriggers    = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+    // ---> EK: fOffTriggers not compatible with AliBits
+    // fHeader->fOffTriggers    = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+    // <--- EK
     fHeader->fFiredTriggers  = fEsdEv->GetFiredTriggerClasses();
     Float_t v0CorrR = 0;
     fHeader->fV0 = AliESDUtils::GetCorrV0(fEsdEv,v0CorrR);
@@ -1653,7 +1657,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     Bool_t v0B = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0C);
     Bool_t v0A = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0A);
     fHeader->fV0And        = v0A && v0B;
-    fHeader->fIsHT         = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
+    // ---> EK: fOffTriggers not compatible with AliBits
+    // fHeader->fIsHT         = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
+    // <--- EK
     am->LoadBranch("SPDPileupVertices");
     am->LoadBranch("TrkPileupVertices");
     fHeader->fIsPileup     = fEsdEv->IsPileupFromSPD(3,0.8);

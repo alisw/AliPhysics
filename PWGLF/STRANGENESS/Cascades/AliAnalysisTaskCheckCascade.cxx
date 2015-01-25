@@ -1699,7 +1699,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 
         // 2nd option - Presuppose the presence of AliPhysicsSelectionTask FIXME
         
-        UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+        AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
         Bool_t isSelected = 0;
         if(     fTriggerMaskType == "kMB")           isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
         else if(fTriggerMaskType == "kHighMult")     isSelected = (maskIsSelected & AliVEvent::kHighMult) == AliVEvent::kHighMult;

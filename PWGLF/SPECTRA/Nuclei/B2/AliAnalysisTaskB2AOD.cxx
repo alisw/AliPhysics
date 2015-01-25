@@ -242,7 +242,7 @@ void AliAnalysisTaskB2AOD::UserExec(Option_t* )
 		return;
 	}
 	
-	UInt_t triggerBits = eventH->IsEventSelected();
+	AliBits triggerBits = eventH->IsEventSelected();
 	
 	if(fHeavyIons)
 	{
@@ -847,7 +847,7 @@ void AliAnalysisTaskB2AOD::Terminate(Option_t* )
 
 }
 
-Bool_t AliAnalysisTaskB2AOD::IsV0AND(UInt_t /*triggerBits*/) const
+Bool_t AliAnalysisTaskB2AOD::IsV0AND(AliBits /*triggerBits*/) const
 {
 //
 // signals in both V0A and V0C
@@ -862,7 +862,7 @@ Bool_t AliAnalysisTaskB2AOD::IsV0AND(UInt_t /*triggerBits*/) const
 	return ( (vzero->GetV0ADecision() == AliVVZERO::kV0BB) && (vzero->GetV0CDecision() == AliVVZERO::kV0BB) );
 }
 
-Bool_t AliAnalysisTaskB2AOD::IsFastOnly(UInt_t triggerBits) const
+Bool_t AliAnalysisTaskB2AOD::IsFastOnly(AliBits triggerBits) const
 {
 //
 // kFastOnly trigger
@@ -870,7 +870,7 @@ Bool_t AliAnalysisTaskB2AOD::IsFastOnly(UInt_t triggerBits) const
 	return ( (triggerBits&AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
 }
 
-Bool_t AliAnalysisTaskB2AOD::IsMB(UInt_t triggerBits) const
+Bool_t AliAnalysisTaskB2AOD::IsMB(AliBits triggerBits) const
 {
 //
 // MB event

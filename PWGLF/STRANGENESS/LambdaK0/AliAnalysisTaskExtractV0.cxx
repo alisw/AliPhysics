@@ -906,7 +906,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
 //------------------------------------------------
 
     // new method
-    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
     Bool_t isSelectedExtra = kTRUE; //extra sel, default YES
     isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
@@ -941,6 +941,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
             return;
         }
     }
+
 
 //------------------------------------------------
 // After Trigger Selection

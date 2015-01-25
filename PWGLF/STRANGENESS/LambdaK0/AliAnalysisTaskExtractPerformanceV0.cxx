@@ -2463,7 +2463,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 // Physics Selection
 //------------------------------------------------
 
-    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
     Bool_t isSelectedExtra = kTRUE; //extra sel, default YES
     isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
@@ -2501,6 +2501,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 
     f2dHistMultiplicityVsTrueForTrigEvt->Fill ( lMultiplicity , lNumberOfCharged );
     fHistGenVertexZForTrigEvt->Fill( mcPrimaryVtx.At(2) );
+
 
 //------------------------------------------------
 // After Trigger Selection

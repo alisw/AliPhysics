@@ -33,9 +33,9 @@ class AliAnalysisTaskCMEv2A : public AliAnalysisTaskSE
   bool GetDoMC(){return doMC;}
   void SetDoMC(const bool x){doMC = x;}
   
-  ULong64_t trigger; // trigger selection
-  ULong64_t GetTrigger(){return trigger;}
-  void SetTrigger(const ULong64_t x){trigger = x;}
+  AliBits trigger; // trigger selection
+  AliBits GetTrigger(){return trigger;}
+  void SetTrigger(const AliBits x){trigger = x;}
   
   bool dopupcut; // dopupcut determines whether to apply pileup cuts
   bool GetDoPileupCut(){return dopupcut;}
@@ -639,7 +639,7 @@ class AliAnalysisTaskCMEv2A : public AliAnalysisTaskSE
   AliAnalysisTaskCMEv2A(const AliAnalysisTaskCMEv2A&); // copy constructor not implemented
   AliAnalysisTaskCMEv2A& operator=(const AliAnalysisTaskCMEv2A&); // assignment operator not implemented
   
-  ClassDef(AliAnalysisTaskCMEv2A, 1); // Add this class as ROOT class (inherit from TObject)
+  ClassDef(AliAnalysisTaskCMEv2A, 2); // Add this class as ROOT class (inherit from TObject)
 };
 
 #endif

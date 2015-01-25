@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_jbook_v2(TString prod="",
 				    Bool_t gridconf=kFALSE,
-				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
+				    AliBits triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

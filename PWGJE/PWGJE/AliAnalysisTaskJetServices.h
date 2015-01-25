@@ -60,7 +60,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetMCData(Bool_t b){fMC = b;}
     virtual void SetCollisionType(Int_t iType){fCollisionType = iType;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
-    virtual void SetPhysicsSelectionFlag(Int_t i){fPhysicsSelectionFlag = i;}
+    virtual void SetPhysicsSelectionFlag(AliBits i){fPhysicsSelectionFlag = i;}
     virtual void SetFilterAODCollisions(Bool_t b){fFilterAODCollisions = b;}
 
     virtual void SetNonStdFile(char *c){fNonStdFile = c;}
@@ -88,7 +88,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 			       TProfile *xc,TProfile *yc);
 
     virtual void SetNTrigger(Int_t n);
-    virtual void SetTrigger(Int_t i,UInt_t it,const char* c = "");
+    virtual void SetTrigger(Int_t i, AliBits it,const char* c = "");
 
 
     Bool_t   CalculateReactionPlaneAngleVZERO(AliAODEvent *aod);
@@ -129,7 +129,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
     Bool_t        fMC;                 // true for MC data to allow correct trigger slection
     Bool_t        fFilterAODCollisions; // filter out collision canditates to the AOD
-    UInt_t        fPhysicsSelectionFlag; // defines the glag for acceptance of events from physics selection
+    AliBits       fPhysicsSelectionFlag; // defines the glag for acceptance of events from physics selection
     UInt_t        fSelectionInfoESD;   // slection info bit mask
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
     UInt_t        fFilterMask;         // filter bit for slecected tracks
@@ -153,7 +153,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fRPAngle;            // ! RP angle of the reaction plane
     Float_t       fPsiVZEROA;          // ! RP angle from vzeroa
     Float_t       fPsiVZEROC;          // ! RP angle from vzeroc
-    UInt_t        *fTriggerBit  ;      //[fNTrigger]
+    AliBits       *fTriggerBit  ;      //[fNTrigger]
 
     TRandom3      *fRandomizer;        // ! randomizer
 
@@ -203,7 +203,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     static AliAODHeader*    fgAODHeader;        //! Header for replication
     static AliAODVZERO*    fgAODVZERO;        //! vzero for replication
     static TClonesArray*  fgAODVertices;        //! primary vertex for replication
-    ClassDef(AliAnalysisTaskJetServices,17)
+    ClassDef(AliAnalysisTaskJetServices,18)
 };
  
 #endif

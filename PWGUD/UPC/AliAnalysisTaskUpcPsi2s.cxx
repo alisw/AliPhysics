@@ -550,7 +550,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   
   //MB, Central and SemiCentral triggers
   AliCentrality *centrality = aod->GetCentrality();
-  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");
   //Double_t percentile = centrality->GetCentralityPercentile("V0M");
@@ -1231,7 +1231,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   
    //MB, Central and SemiCentral triggers
   AliCentrality *centrality = esd->GetCentrality();
-  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   //Double_t percentile = centrality->GetCentralityPercentile("V0M");
   Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");

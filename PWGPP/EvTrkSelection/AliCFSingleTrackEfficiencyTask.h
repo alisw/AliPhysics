@@ -61,7 +61,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void SetFilterBit (Bool_t flag=kTRUE) { fSetFilterBit=flag; }
   void SetFilterType (Int_t fbittype) { fbit=fbittype; }
   // select trigger event mask
-  void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
+  void SetTriggerMask(AliBits mask=AliBits()) { fTriggerMask=mask; }
   // set whether to evaluate centrality
   void SetUseCentrality(Bool_t flag, TString estimator=""){ fEvalCentrality=flag; fCentralityEstimator=estimator; }
     
@@ -75,7 +75,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   // analyze AOD:1 or ESD:0 data
   Bool_t IsReadAODData()   const { return fReadAODData; }
   // select trigger event mask
-  ULong64_t GetTriggerMask() { return fTriggerMask; }
+  AliBits GetTriggerMask() { return fTriggerMask; }
   // reconstructed track cuts
   AliESDtrackCuts *GetTrackCuts(){ return (AliESDtrackCuts*)fTrackCuts; } 
   // particle and event cuts 
@@ -103,7 +103,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
 
   AliESDtrackCuts *fTrackCuts;    // track cuts (reconstructed level) slot 4
   AliSingleTrackEffCuts *fMCCuts; // particle cuts used slot 5
-  ULong64_t fTriggerMask;         // event selection trigger mask
+  AliBits fTriggerMask;           // event selection trigger mask
 
   Bool_t fSetFilterBit; // flag to decide if applying filter-bit selection to tracks
   Int_t  fbit;          // filter-bit selection to tracks

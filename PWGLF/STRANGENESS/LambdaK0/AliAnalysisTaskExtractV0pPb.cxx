@@ -387,7 +387,7 @@ void AliAnalysisTaskExtractV0pPb::UserExec(Option_t *)
 //------------------------------------------------
   
   // new method
-  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
   isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
   

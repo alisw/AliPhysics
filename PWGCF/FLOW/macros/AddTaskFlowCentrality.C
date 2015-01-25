@@ -58,7 +58,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 //=============================================================================
 
-  UInt_t eventSelMask = AliVEvent::kMUSPB;
+  AliBits eventSelMask = AliVEvent::kMUSPB;
 //AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kTPCstandalone;
 //AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kV0;
   AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kSPDtracklet;

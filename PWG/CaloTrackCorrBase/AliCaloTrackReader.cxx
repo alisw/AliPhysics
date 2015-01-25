@@ -88,7 +88,7 @@ fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
 
-fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0),
+fEventTriggerMask(),         fMixEventTriggerMask(),          fEventTriggerAtSE(0),
 fEventTrigMinBias(0),        fEventTrigCentral(0),
 fEventTrigSemiCentral(0),    fEventTrigEMCALL0(0),
 fEventTrigEMCALL1Gamma1(0),  fEventTrigEMCALL1Gamma2(0),
@@ -246,14 +246,15 @@ Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
   if( nAccept <= 0 )
     return kTRUE ; // accept the event
   
-  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   for(Int_t ibit = 0; ibit < nAccept; ibit++)
   {
-    Bool_t accept = (trigFired & fAcceptEventsWithBit.At(ibit));
-    
+    // ---> EK: not compatible with AliBits
+    // Bool_t accept = (trigFired & fAcceptEventsWithBit.At(ibit));
     //printf("accept %d, ibit %d, bit %d \n",accept, ibit,fAcceptEventsWithBit.At(ibit));
-    if(accept) return kTRUE ; // accept the event
+    //if(accept) return kTRUE ; // accept the event
+    // <--- EK
   }
   
   return kFALSE ; // reject the event
@@ -272,14 +273,16 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
   if( nReject <= 0 )
     return kTRUE ; // accept the event
   
-  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   for(Int_t ibit = 0; ibit < nReject; ibit++)
   {
-    Bool_t reject = (trigFired & fRejectEventsWithBit.At(ibit));
-    
+    // ---> EK: not compatible with AliBits
+    //Bool_t reject = (trigFired & fRejectEventsWithBit.At(ibit));
+    //
     //printf("reject %d, ibit %d, bit %d \n",reject, ibit,fRejectEventsWithBit.At(ibit));
-    if(reject) return kFALSE ; // reject the event
+    //if(reject) return kFALSE ; // reject the event
+    //<--- EK
   }
   
   return kTRUE ; // accept the event
@@ -2565,10 +2568,8 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
-  
-  printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d \n",
-         fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
-  
+  printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %s; MB Trigger Mask for mixed %s \n",
+          fEventTriggerAtSE, fEventTriggerMask.GetBitString().Data(),fMixEventTriggerMask.GetBitString().Data());
   if(fComparePtHardAndClusterPt)
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
   
@@ -2686,10 +2687,8 @@ void AliCaloTrackReader::SetEventTriggerBit()
   fEventTrigEMCALL1Gamma2 = kFALSE;
   fEventTrigEMCALL1Jet1   = kFALSE;
   fEventTrigEMCALL1Jet2   = kFALSE;
-  
-  AliDebug(1,Form("Select trigger mask bit %d - Trigger Event %s - Select <%s>",
-                  fEventTriggerMask,GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
-  
+  AliDebug(1,Form("Select trigger mask bit %s - Trigger Event %s - Select <%s>",
+                  fEventTriggerMask.GetBitString().Data(),GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
   if(fEventTriggerMask <=0 )// in case no mask set
   {
     // EMC triggered event? Which type?

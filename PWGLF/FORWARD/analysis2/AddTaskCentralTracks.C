@@ -389,8 +389,8 @@ CentralMultTask::CheckEvent(const AliESDEvent& esd, Double_t& vz)
   }
 
   // Trigger mask 
-  UInt_t    mask     = ih->IsEventSelected();   
-  Bool_t   isMinBias = (mask == AliVEvent::kMB) ? 1 : 0;
+  AliBits   mask     = ih->IsEventSelected();   
+  Bool_t   isMinBias = (mask & AliVEvent::kMB) ? 1 : 0;
   UShort_t ret       = 0;
   if (isMinBias) ret |= kValidTrigger;
   

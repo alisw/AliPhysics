@@ -28,9 +28,10 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
       AliRsnAnalysisTask *taskRsn = new AliRsnAnalysisTask(Form("Rsn%s",postfix.Data()));
       task = (AliAnalysisTaskSE *) taskRsn;
    }
-
-   if (isPhysSel>=0) task->SelectCollisionCandidates((AliVEvent::EOfflineTriggerTypes)isPhysSel);
-
+   // ---> EK: conversion from int to AliBits not supported 
+   //if (isPhysSel>=0) task->SelectCollisionCandidates(isPhysSel);
+   // <---
+   
    // TODO this is tmp hack
    if (!rsnIH) rsnIH = new AliRsnInputHandler();
 

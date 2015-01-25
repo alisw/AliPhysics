@@ -9,7 +9,7 @@ const Bool_t bAnaJetR03 = kTRUE;
 const Bool_t bAnaJetR04 = kTRUE;
 const Bool_t bAnaInfoMC = kFALSE;
 
-const UInt_t wTriggerMask   = AliVEvent::kINT7;
+const AliBits wTriggerMask   = AliVEvent::kINT7;
 //=============================================================================
 
 const TString sPeriodIn = "LHC13b";

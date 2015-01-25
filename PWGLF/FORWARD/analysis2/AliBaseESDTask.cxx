@@ -461,7 +461,7 @@ AliBaseESDTask::Print(Option_t* option) const
 	    << std::setfill(' ') << std::endl;
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();
-  PF("Off-line trigger mask", "0x%0x", fOfflineTriggerMask);
+  PF("Off-line trigger mask", "%s", fOfflineTriggerMask.GetBitString().Data());
   if (GetManager()) GetManager()->Print(option);
   else  PF("No correction manager","");
 

@@ -533,7 +533,7 @@ void AliSpectraAODEventCuts::PrintCuts()
 {
   // print info about event cuts
   cout << "Event Stats" << endl;
-  cout << " > Trigger Selection: " << fSelectBit << endl;
+  cout << " > Trigger Selection: " << fSelectBit.GetBitString().Data() << endl;
   cout << " > Centrality estimator: " << fCentralityMethod << endl;
   cout << " > Number of accepted events: " << NumberOfEvents() << endl;
   cout << " > Number of processed events: " << NumberOfProcessedEvents() << endl;

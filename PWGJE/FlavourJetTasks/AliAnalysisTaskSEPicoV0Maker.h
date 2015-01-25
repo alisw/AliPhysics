@@ -37,7 +37,7 @@ class AliAnalysisTaskSEPicoV0Maker : public AliAnalysisTaskSE {
   virtual void NotifyRun();
 //=============================================================================
 
-  void SetTriggerMask(UInt_t w)       { fTriggerMask   = w; }
+  void SetTriggerMask(AliBits w)      { fTriggerMask   = w; }
   void SetCollitionType(UInt_t w)     { fCollisionType = w; }
   void SetVertexContributorN(Int_t i) {  fCutMinEventVtxContr = i; }
   void SetCentralityEstimator(TString s) { fCentEst = s; }
@@ -94,7 +94,7 @@ class AliAnalysisTaskSEPicoV0Maker : public AliAnalysisTaskSE {
   Double_t fPrimaryVtx[3];  //!
 //=============================================================================
 
-  UInt_t fTriggerMask;    //
+  AliBits fTriggerMask;    //
   UInt_t fCollisionType;  //
 
   TString fCentEst;  //
@@ -152,7 +152,7 @@ class AliAnalysisTaskSEPicoV0Maker : public AliAnalysisTaskSE {
   TList *fOutputListEH;  //!
   TList *fOutputListMC;  //!
 
-  ClassDef(AliAnalysisTaskSEPicoV0Maker, 5)
+  ClassDef(AliAnalysisTaskSEPicoV0Maker, 6)
 };
 
 #endif

@@ -32,7 +32,7 @@ public:
 	void SetIsPbPb(Bool_t ispbpb = kTRUE) {fIsPbPb = ispbpb;}
 	void SetIsMC(Bool_t ismc = kTRUE) {fIsMC = ismc;}
 
-	void SetTrigger(UInt_t trigger) {
+	void SetTrigger(AliBits trigger) {
 		fTrigger = trigger;
 		fTestTrigger = kTRUE;
 	}
@@ -69,7 +69,7 @@ public:
 // Getters
 	Bool_t GetIsPbPb() const {return fIsPbPb;} 
 	Bool_t GetIsMC() const {return fIsMC;}
-	UInt_t GetTrigger() const {return fTrigger;}
+	AliBits GetTrigger() const {return fTrigger;}
 	Float_t GetMinCentrality() const {return fMinCentrality;}
 	Float_t GetMaxCentrality() const {return fMaxCentrality;}
 	TString GetCentralityEstimator() const {return fCentralityEstimator;}
@@ -99,7 +99,7 @@ private:
 	Bool_t fIsMC;
 
 // Event Cuts.
-	UInt_t fTrigger;
+	AliBits fTrigger;
 	Float_t fMinCentrality;
 	Float_t fMaxCentrality;
 	TString fCentralityEstimator;
@@ -124,7 +124,7 @@ private:
 
 	Int_t fDebug;								// Debug flag.
 
-	ClassDef(AliAODEventCutsDiHadronPID,3);
+	ClassDef(AliAODEventCutsDiHadronPID,4);
 
 };
 

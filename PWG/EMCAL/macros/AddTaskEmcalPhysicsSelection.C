@@ -1,7 +1,7 @@
 AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Bool_t exFOnly, 
   Bool_t wHistos   = kTRUE,
-  UInt_t triggers  = 0,
+  AliBits triggers  = AliBits(),
   Double_t minE    = -1,
   Double_t minPt   = -1,
   Double_t vz      = -1,

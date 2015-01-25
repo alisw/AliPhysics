@@ -2,7 +2,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
 				    TString cfg="ConfigJpsi_jb_PbPb.C",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    ULong64_t triggers=AliVEvent::kAnyINT
+				    AliBits triggers=AliVEvent::kAnyINT
 				    ){
 
   //get the current analysis manager

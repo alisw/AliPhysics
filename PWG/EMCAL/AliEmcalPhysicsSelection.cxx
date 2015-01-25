@@ -11,6 +11,11 @@
 
 ClassImp(AliEmcalPhysicsSelection)
 
+const AliBits AliEmcalPhysicsSelection::kEmcalHC = AliBits(27); //=true when EMCAL cell above given Et found
+const AliBits AliEmcalPhysicsSelection::kEmcalHT = AliBits(29); //=true when EMCAL cluster above given Et found
+const AliBits AliEmcalPhysicsSelection::kEmcalOk = AliBits(31); //=true when EMCAL good event criteria are found
+
+
 AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() : 
   AliPhysicsSelection(), 
   fMarkFastOnly(0), 
@@ -20,7 +25,7 @@ AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() :
   fCellMinE(-1), 
   fClusMinE(-1),
   fTrackMinPt(-1), 
-  fTriggers(0),
+  fTriggers(),
   fZvertex(-1),
   fZvertexDiff(0),
   fCentMin(-1),
@@ -38,29 +43,33 @@ AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() :
 }
 
 //__________________________________________________________________________________________________
-UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj) 
+AliBits AliEmcalPhysicsSelection::GetSelectionBits(const TObject* obj) 
 { 
   // Calculate selection mask.
   
   const AliVEvent *ev   = dynamic_cast<const AliVEvent*>(obj);
   if (!ev)
-    return 0;
+    return AliBits();
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
 
-  UInt_t res = 0;
+  AliBits res;
   const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(obj);
   const AliAODEvent *aev = 0;
   if (eev) {
     am->LoadBranch("AliESDHeader.");
     am->LoadBranch("AliESDRun.");
     TString title(eev->GetHeader()->GetTitle());
-    if (1&&(title.Length()>0)) {
-      res = ((AliVAODHeader*)eev->GetHeader())->GetUniqueID();
-      res &= 0x4FFFFFFF;
-    } else {
-      res = IsCollisionCandidate(eev); 
-    }
+// ---> EK: what it does?
+//    if (1&&(title.Length()>0)) {
+//      res = ((AliVAODHeader*)eev->GetHeader())->GetUniqueID();
+//      res &= 0x4FFFFFFF;
+//    } else {
+//      res = IsCollisionCandidate(eev); 
+//    }
+// <--- EK
+    res = IsCollisionCandidate(eev); 
+
   } else {
     aev = dynamic_cast<const AliAODEvent*>(obj);
     res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
@@ -68,11 +77,11 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
 
   // return 0, if 0 found
   if (res==0)
-    return 0;
+    return AliBits();
 
   // return 0, if ptrs are not set
   if ((eev==0) && (aev==0))
-    return 0;
+    return AliBits();
 
   if (fTriggers) { // only process given triggers
     if ((res & fTriggers) == 0)
@@ -95,7 +104,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
       (res & AliVEvent::kEMCEGA))
     fIsGoodEvent = kTRUE;
   else {
-    return 0;
+    return AliBits();
   }
 
   if (fZvertexDiff || (fZvertex>0)) {
@@ -273,7 +282,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
 
   if ((fSkipLedEvent && fIsLedEvent) ||
       (fSkipFastOnly && fIsFastOnly))
-    res = 0;
+    res = AliBits();
 
   return res;
 }

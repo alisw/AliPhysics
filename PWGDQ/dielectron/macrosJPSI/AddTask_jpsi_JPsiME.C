@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_jpsi_JPsiME(TString prod="",
 				     Bool_t gridconf=kFALSE,
-				     ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
+				     AliBits triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,7 +49,7 @@ AliAnalysisTask *AddTask_jpsi_JPsiME(TString prod="",
   AliAnalysisTaskMultiDielectron *task;
 
   // trigger selection
-  ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
+  AliBits triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
 			   AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB};
   const char* triggerNames[]={"Central","SemiCentral","MB","MB+Cent+SemiCent"};
 

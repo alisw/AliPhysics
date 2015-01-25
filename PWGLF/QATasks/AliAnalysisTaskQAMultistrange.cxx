@@ -487,7 +487,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
   //------------------
   // Physics selection 
   //------------------
-  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
   if      (fCollidingSystem == "pp" || fCollidingSystem == "PbPb") isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
   else if (fCollidingSystem == "pPb")                              isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;

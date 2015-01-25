@@ -35,7 +35,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Double_t    NTPCcrratio = 0.8,
    Int_t       minSPDclt = 0,
    Double_t    minpt = 0.15,
-   TString     triggerMask = AliVEvent::kMB,
+   TString     triggerMask = "AliVEvent::kMB",
    Bool_t      useNTPCclt = kTRUE,   
    Bool_t      maxDCAcutFixed = kFALSE,
    Bool_t      ptdepPIDcut = kFALSE,
@@ -73,7 +73,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
   Int_t       aodN = 0;
  
   
-  UInt_t trigger = 0;
+  AliBits trigger;
   
   
   
@@ -96,8 +96,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
      task->SetUseCentralityPatch(aodN==49);
    }
-   
-   ::Info("AddAnalysisTaskD0", Form("TriggerMask: %i",trigger));
+   ::Info("AddAnalysisTaskD0", Form("TriggerMask: %s",trigger.GetBitString().Data()));
 
    task->SelectCollisionCandidates(trigger);
    task->SetMaxNDaughters(maxSisters);

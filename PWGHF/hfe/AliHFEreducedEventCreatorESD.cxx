@@ -239,7 +239,7 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
   fHFEevent->SetRunNumber(fInputEvent->GetRunNumber());
 
   // Derive trigger 
-  UInt_t trigger = fInputHandler->IsEventSelected();
+  AliBits trigger = fInputHandler->IsEventSelected();
   if(trigger & AliVEvent::kMB) fHFEevent->SetMBTrigger();
   if((trigger & AliVEvent::kINT7)||(trigger & AliVEvent::kINT8)) fHFEevent->SetINTTrigger();
   if(trigger & AliVEvent::kCentral) fHFEevent->SetCentralTrigger();

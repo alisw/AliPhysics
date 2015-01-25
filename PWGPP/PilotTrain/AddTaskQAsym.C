@@ -1,8 +1,8 @@
 AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber, 
-				    UInt_t maskMB,
-				    UInt_t maskHM,
-				    UInt_t maskEM,
-				    UInt_t maskMU)
+				    AliBits maskMB,
+				    AliBits maskHM,
+				    AliBits maskEM,
+				    AliBits maskMU)
 
 {
   // Creates a QA task exploiting simple symmetries phi, eta +/-, charge ...

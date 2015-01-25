@@ -19,7 +19,7 @@ bSelHijingParticles: kTRUE, select only particles from Hijing event. kFALSE, sel
 usePythiaxsec: kFALSE, do not use the Pythia cross section information file. This might reduce the number of errors and file opening issues. 
 */
 
-void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodType = "LHC11h", TString beamType = "PbPb", AliBits triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -39,7 +39,7 @@ void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodTyp
   }
 }
 
-void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType = "PbPb", AliBits triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   Int_t filterMask1; //standard global tracks
   Int_t filterMask2; //complementary tracks
@@ -160,7 +160,7 @@ void AddTaskHybridTrackEfficiencyQA_AOD_train(char *prodType = "LHC11h", TString
 }
 
 AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", TString beamType = "PbPb", Int_t centClass = 0, 
-						     Int_t trackType = 0, Int_t cuts = 0, UInt_t triggerMask = AliVEvent::kMB,
+						     Int_t trackType = 0, Int_t cuts = 0, AliBits triggerMask = AliVEvent::kMB,
 						     TString taskName, Bool_t bSelHijingParticles = kFALSE,
                                                      Bool_t usePythiaxsec = kTRUE, Int_t filterMask = 0)
 {

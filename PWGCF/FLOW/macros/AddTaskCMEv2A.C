@@ -2,8 +2,8 @@ AliAnalysisTaskCMEv2A *AddTaskCMEv2A
 (
  int debug = 0,
  bool doMC = true,
- /* ULong64_t trigger = AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral, */
- ULong64_t trigger = AliVEvent::kMB,
+ /* AliBits trigger = AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral, */
+ AliBits trigger = AliVEvent::kMB,
  bool dopupcut = true,
  bool doeffcorr = true,
  int centhandle = 1,

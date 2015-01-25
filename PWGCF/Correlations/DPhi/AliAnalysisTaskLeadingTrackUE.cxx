@@ -102,7 +102,7 @@ fZVertex(10.),
 fTrackEtaCut(0.8),
 fLeadingTrackEtaCut(0.8),
 fFilterBit(0xFF),
-fSelectBit(0),
+fSelectBit(),
 fUseChargeHadrons(kFALSE),
 //For MC weighting
 fAvgTrials(1)
@@ -293,7 +293,7 @@ void  AliAnalysisTaskLeadingTrackUE::AddSettingsTree()
   //Write settings to output list
   TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
-  settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
+  settingsTree->Branch("fSelectBit", &fSelectBit);
   settingsTree->Branch("fLeadingTrackEtaCut", &fLeadingTrackEtaCut, "LeadingTrackEtaCut/D");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);

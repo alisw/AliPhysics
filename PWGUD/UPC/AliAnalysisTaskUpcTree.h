@@ -30,7 +30,6 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   virtual void NotifyRun();
   void SetAOD(Bool_t aod) { fIsAOD = aod; }
   void SetMC(Bool_t mc)   { fIsMC  = mc; }
-  void SetTrackFilter(AliAnalysisFilter* filter) { fTrackFilter = filter; }
 
  protected:
   AliAnalysisTaskUpcTree(const  AliAnalysisTaskUpcTree &task);
@@ -39,7 +38,6 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   Bool_t fIsAOD;
   AliMuonTrackCuts* fMuonTrackCuts; //
-  AliAnalysisFilter* fTrackFilter;  //
   TList* fListOfHistos;             //! list of output histograms
   TH1I*  fEventStatistics;          //!
   TH2I*  fTriggersPerRun;           //!
@@ -91,6 +89,11 @@ class AliAnalysisTaskUpcTree : public AliAnalysisTaskSE {
   Float_t fVtxX;
   Float_t fVtxY;
   Float_t fVtxZ;
+  Int_t   fVtxContributors;
+  Float_t fSpdVtxX;
+  Float_t fSpdVtxY;
+  Float_t fSpdVtxZ;
+  Int_t   fSpdVtxContributors;
   Bool_t fVtxTPC;
   UInt_t fNofITSClusters[6];
   TBits fIR1;

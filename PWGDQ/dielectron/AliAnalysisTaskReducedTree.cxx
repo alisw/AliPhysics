@@ -233,7 +233,7 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *)
   }
 
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if(fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
@@ -364,7 +364,7 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   if(isAOD) aodEvent = static_cast<AliAODEvent*>(event);
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  UInt_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   if(inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();

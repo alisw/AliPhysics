@@ -346,7 +346,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   selected += t0PileUp ? "/t0pileup:yes" : "/t0pileup:no";
   selected += bgID ? "/bgID:yes" : "/bgID:no";
   selected += spdPileUp ? "/spdpileup:yes" : "/spdpileup:no";
-
+  
   // fill muon trigger cases
   UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
   for ( Int_t idx=0; idx < fMuonTrigIndex.GetSize(); idx++ ) {

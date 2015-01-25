@@ -203,7 +203,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   UseAODInputJets(Bool_t b) {fUseAODInputJets = b;}  
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
   virtual void   UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;}
-  virtual void   SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}
+  virtual void   SetEventSelectionMask(AliBits i){fEvtSelectionMask = i;}
   virtual void   SetEventClass(Int_t i){fEventClass = i;}
   virtual void   SetMaxVertexZ(Float_t z){fMaxVertexZ = z;}
   virtual void   SetJetMinArea(Float_t cut){ fJetMinArea = cut; }
@@ -331,7 +331,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Bool_t  fUseAODInputJets;     // take jets from in/output - only relevant if AOD event both in input AND output and we want to use output
   UInt_t  fFilterMask;	        // filter bit for selected tracks
   Bool_t  fUsePhysicsSelection; // switch for event selection
-  UInt_t  fEvtSelectionMask;    // trigger class selection
+  AliBits fEvtSelectionMask;    // trigger class selection
   Int_t   fEventClass;          // centrality class selection
   Float_t fMaxVertexZ;          // maximum abs(z) position of primiary vertex [cm]
   Bool_t  fRejectPileup;        // SPD pileup rejection
@@ -560,7 +560,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   TRandom3*                   fRandom;          // TRandom3 for background estimation 
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 12);
+  ClassDef(AliAnalysisTaskFragmentationFunction, 13);
 };
 
 #endif

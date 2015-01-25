@@ -847,7 +847,9 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   }
 
   // Event trigger bits
-  fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+  // ---> EK not compatible with AliBits
+  // fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+  // <---
   if(fUseOfflineTrigger)
     isSelectedMain = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   

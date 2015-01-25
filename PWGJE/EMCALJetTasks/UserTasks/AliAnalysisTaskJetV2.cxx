@@ -2213,7 +2213,7 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t iJets(fJets->GetEntriesFast());
-    UInt_t trigger(0);
+    AliBits trigger;
     if(fFillQAHistograms) {
         trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
@@ -2291,7 +2291,7 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent)
     }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger)
+void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, AliBits trigger)
 {
     // fill the trigger efficiency histograms
     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
@@ -2314,14 +2314,14 @@ void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UIn
     //    UInt_t(0 0 1) == UInt_t(1 0 1) returns false
     
     // preparing the combined trigger masks
-    UInt_t MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
-    UInt_t CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
-    UInt_t SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    UInt_t ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    UInt_t MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
-    UInt_t CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
-    UInt_t SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
-    UInt_t ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    AliBits MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
+    AliBits CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
+    AliBits SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    AliBits ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    AliBits MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
+    AliBits CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
+    AliBits SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    AliBits ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
     // actual routine
     if(IsInPlane(dPhi)) {
         // in plane bookkeeping of fired triggers. not 'exclusive' so no == necessary
@@ -2810,7 +2810,7 @@ TH1F* AliAnalysisTaskJetV2::GetEventPlaneWeights(TH1F* hist, Int_t c)
    return temp;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskJetV2::PrintTriggerSummary(UInt_t trigger)
+void AliAnalysisTaskJetV2::PrintTriggerSummary(AliBits trigger)
 {
     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
@@ -2849,21 +2849,21 @@ void AliAnalysisTaskJetV2::PrintTriggerSummary(UInt_t trigger)
         "kUserDefined",         // 27
         "kTRD"};                // 28 
     TString notTriggered = "not fired";
-    printf(" > trigger is %u \n ", trigger);
-
+    printf(" > trigger is %s \n ", trigger.GetBitString().Data());
+    
     // extract which triggers have been fired exactly and print summary of bits 
-    for (Int_t i(0); i < 29; i++) printf("[bit  %i]\t [%u] [%s]\n", i, (trigger & ((UInt_t)1 << i)) ? 1U : 0U, (trigger & ((UInt_t)1 << i)) ? triggerName[i].Data() : notTriggered.Data());
+    for (Int_t i(0); i < 29; i++) printf("[bit  %i]\t [%u] [%s]\n", i, (trigger & AliBits(i)) ? 1U : 0U, (trigger & AliBits(i)) ? triggerName[i].Data() : notTriggered.Data());
     
     // print accepted trigger combinations
     printf(" ====== accepted trigger combinations ======= \n");
-    UInt_t MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
-    UInt_t CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
-    UInt_t SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    UInt_t ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    UInt_t MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
-    UInt_t CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
-    UInt_t SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
-    UInt_t ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    AliBits MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
+    AliBits CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
+    AliBits SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    AliBits ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
+    AliBits MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
+    AliBits CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
+    AliBits SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    AliBits ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
     if(trigger == 0)                                printf("(trigger == 0)\n");
     if(trigger & AliVEvent::kAny)                   printf("(trigger & AliVEvent::kAny)\n");
     if(trigger & AliVEvent::kAnyINT)                printf("(trigger & AliVEvent::kAnyINT\n");

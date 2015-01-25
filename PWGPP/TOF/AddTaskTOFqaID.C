@@ -9,7 +9,7 @@
 // UInt_t kTriggerMask = kTriggerInt;
 
 AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE, 
-				   UInt_t  triggerMask = AliVEvent::kAnyINT, 
+				   AliBits triggerMask = AliVEvent::kAnyINT, 
 				   Int_t   trackCutSetTOFqa = 0, 
 				   Bool_t  flagEnableChargeSplit = kFALSE,
 				   TString cutName = "",

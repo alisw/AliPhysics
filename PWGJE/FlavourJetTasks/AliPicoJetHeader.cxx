@@ -15,7 +15,7 @@ ClassImp(AliPicoJetHeader)
 //_____________________________________________________________________________
 AliPicoJetHeader::AliPicoJetHeader() :
 TNamed(),
-fPhysSelMask(0),
+fPhysSelMask(),
 fFiredTriggerClass(""),
 fCentralityV0M(-1.),
 fCentralityV0A(-1.),
@@ -164,7 +164,7 @@ void AliPicoJetHeader::Reset()
 //  AliPicoJetHeader::Reset
 //
 
-  fPhysSelMask       = 0,
+  fPhysSelMask       = AliBits();
   fFiredTriggerClass = "";
 
   fCentralityV0M = -1.;

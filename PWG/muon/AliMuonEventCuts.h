@@ -73,7 +73,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   
   /// Set Physics selection mask
-  void SetPhysicsSelectionMask (UInt_t physicsSelectionMask ) { fPhysicsSelectionMask = physicsSelectionMask; }
+  void SetPhysicsSelectionMask (AliBits physicsSelectionMask ) { fPhysicsSelectionMask = physicsSelectionMask; }
   
   void SetPhysSelBits();
   
@@ -112,7 +112,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SetDefaultTrigClassPatterns();
   void SetTrigInputsMap ( TString trigInputsMap );
     
-  UInt_t fPhysicsSelectionMask; ///< Physics selection mask
+  AliBits fPhysicsSelectionMask; ///< Physics selection mask
   
   Int_t fVertexMinNContributors;  ///< Minimum number of SPD vertex contributors
   Double_t fVertexVzMin;          ///< SPD vertex Vz min
@@ -138,7 +138,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
   enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
-  ClassDef(AliMuonEventCuts, 8); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 9); // Class for muon event filters
 };
 
 #endif

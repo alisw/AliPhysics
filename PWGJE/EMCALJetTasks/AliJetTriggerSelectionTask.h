@@ -16,7 +16,7 @@ class AliJetTriggerSelectionTask : public AliAnalysisTaskEmcalJet {
 
   void                        SetMaxDistance(Double_t d) { fMaxDistance2    = d*d ; }
   void                        SetEnergyThreshold(TF1 *f) { fEnergyThreshold = f   ; }
-  void                        SetTriggerBits(UInt_t d)   { fTriggerBits     = d   ; }
+  void                        SetTriggerBits(AliBits d)  { fTriggerBits     = d   ; }
 
  protected:
   Bool_t                      Run();
@@ -28,7 +28,7 @@ class AliJetTriggerSelectionTask : public AliAnalysisTaskEmcalJet {
 
   TF1                        *fEnergyThreshold;                // energy threshold vs. centrality
   Double_t                    fMaxDistance2;                   // max distance square between trigger patch and jet
-  UInt_t                      fTriggerBits;                    // trigger bit to be set
+  AliBits                     fTriggerBits;                    // trigger bit to be set
 
   Bool_t                      fTaskSettingsOk;                 //!if false, don't execute task  
   Int_t                       fNTriggers;                      //!number of triggers in the current event
@@ -41,6 +41,6 @@ class AliJetTriggerSelectionTask : public AliAnalysisTaskEmcalJet {
   AliJetTriggerSelectionTask(const AliJetTriggerSelectionTask&);            // not implemented
   AliJetTriggerSelectionTask &operator=(const AliJetTriggerSelectionTask&); // not implemented
 
-  ClassDef(AliJetTriggerSelectionTask, 1) // jet trigger selection task
+  ClassDef(AliJetTriggerSelectionTask, 2) // jet trigger selection task
 };
 #endif

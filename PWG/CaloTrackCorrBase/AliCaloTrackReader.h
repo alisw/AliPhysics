@@ -296,11 +296,11 @@ public:
   
   // Event selection when mixed event is used
   
-  UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
-  void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
+  AliBits          GetEventTriggerMask()             const { return fEventTriggerMask        ; }
+  void             SetEventTriggerMask(AliBits evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
-  UInt_t           GetMixEventTriggerMask()          const { return fMixEventTriggerMask     ; }
-  void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT)
+  AliBits          GetMixEventTriggerMask()          const { return fMixEventTriggerMask     ; }
+  void             SetMixEventTriggerMask(AliBits evtTrig = AliVEvent::kAnyINT)
                                                            { fMixEventTriggerMask = evtTrig  ; }
 	Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
@@ -738,8 +738,8 @@ public:
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
   // Trigger bit
-  UInt_t           fEventTriggerMask ;             ///<  Select this triggerered event.
-  UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kAnyINT.
+  AliBits          fEventTriggerMask ;             ///<  Select this triggerered event.
+  AliBits          fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kAnyINT.
   Bool_t           fEventTriggerAtSE;              ///<  Select triggered event at SE base task or here.
   
   Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt.

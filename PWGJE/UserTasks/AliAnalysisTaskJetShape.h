@@ -328,7 +328,7 @@ ClassDef(AliAnalysisTaskJetShapeHM,1)   // tbd
   virtual void     SetBackgroundBranch(TString &branch1, TString &branch2) { fBackgroundBranch[0] = branch1;  fBackgroundBranch[1] = branch2;};
 
   virtual void     SetFilterMask(UInt_t i){fFilterMask = i;}
-  virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
+  virtual void     SetOfflineTrgMask(AliBits mask) { fOfflineTrgMask = mask; }
   virtual void     SetCentMin(Float_t cent) { fCentMin = cent; }
   virtual void     SetCentMax(Float_t cent) { fCentMax = cent; }
   virtual void     SetEvtClassMin(Int_t evtClass) { fEvtClassMin = evtClass; }
@@ -370,7 +370,7 @@ ClassDef(AliAnalysisTaskJetShapeHM,1)   // tbd
    Bool_t fkIsPhysSel;  //tbd
    TString       fNonStdFile; // delta AOD file
    UInt_t  fFilterMask;            // filter bit for slecected tracks
-   AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
+   AliBits fOfflineTrgMask; // mask of offline triggers to accept
    Float_t fCentMin;	  // lower bound on centrality
    Float_t fCentMax;	  // upper bound on centrality
    Int_t   fEvtClassMin;	  // lower bound on event class
@@ -426,7 +426,7 @@ ClassDef(AliAnalysisTaskJetShapeHM,1)   // tbd
   AliAnalysisTaskJetShape& operator=(const AliAnalysisTaskJetShape&); // not implemented
 
 
-  ClassDef(AliAnalysisTaskJetShape, 1)
+  ClassDef(AliAnalysisTaskJetShape, 2)
 };
 
 

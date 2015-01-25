@@ -513,7 +513,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
     
     for(Int_t i=0;i<32;i++) {
       Int_t bit=(1<<i);
-      if(inputHandler->IsEventSelected() & bit) htriggerbits[iBconf][0]->Fill(i);
+      if(inputHandler->IsEventSelected() & AliBits(bit)) htriggerbits[iBconf][0]->Fill(i);
     }
     if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerbits[iBconf][0]->Fill(35);
     if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerbits[iBconf][0]->Fill(36);

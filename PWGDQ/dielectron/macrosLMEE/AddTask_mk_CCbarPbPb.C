@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",ULong64_t triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE){
+AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",AliBits triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE){
   
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

@@ -72,7 +72,7 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG() :
   fQAElectron(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
-  fExcludeTriggerMask(0),
+  fExcludeTriggerMask(),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
   fTriggerLogic(kAny),
@@ -116,7 +116,7 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG(const char *n
   fQAElectron(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
-  fExcludeTriggerMask(0),
+  fExcludeTriggerMask(),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
   fTriggerLogic(kAny),
@@ -358,14 +358,16 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
   }
   
   // Was event selected ?
-  ULong64_t isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliVEvent::kAny;
   Bool_t isRejected = kFALSE;
   if( fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
       if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
       if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
-      else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+      // ---> EK: isSelected defined as AliBits. Conversion to bool should be avoided
+      // else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
+      // <--- EK
     }
    }
  

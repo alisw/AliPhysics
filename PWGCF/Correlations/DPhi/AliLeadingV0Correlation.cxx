@@ -661,8 +661,8 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	//------------------------------------------------
 	// Physics Selection
 	//------------------------------------------------ 
-	UInt_t maskIsSelected = inEvMain->IsEventSelected();
-	Bool_t isSelected = ((maskIsSelected & AliVEvent::kMB)== AliVEvent::kMB);
+	AliBits maskIsSelected = inEvMain->IsEventSelected();
+	Bool_t isSelected = maskIsSelected & AliVEvent::kMB;
     if (!isSelected) return;
 	
 	//------------------------------------------------

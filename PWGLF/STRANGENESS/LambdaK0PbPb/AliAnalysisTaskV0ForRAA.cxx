@@ -2364,8 +2364,8 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
     // select events with SDD
     //   TString trCl = fESD->GetFiredTriggerClasses();
     //if(!(trCl.Contains("ALLNOTRD")) && fSelSDD) return;
-    UInt_t maskSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    if(maskSel& AliVEvent::kFastOnly && fSelSDD) return;
+    AliBits maskSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    if((maskSel& AliVEvent::kFastOnly) && fSelSDD) return;
     if(!(maskSel& AliVEvent::kFastOnly) && fSelNoSDD) return;
 	 
 

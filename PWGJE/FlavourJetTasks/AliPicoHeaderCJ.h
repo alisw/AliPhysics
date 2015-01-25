@@ -3,7 +3,7 @@
 
 #include <TNamed.h>
 #include <TString.h>
-
+#include "AliBits.h"
 class TString;
 
 class AliInputEventHandler;
@@ -63,7 +63,7 @@ class AliPicoHeaderCJ : public TNamed {
   void Reset();
 //=============================================================================
 
-  UInt_t  PhysSelMask()       const { return fPhysSelMask; }
+  AliBits PhysSelMask()       const { return fPhysSelMask; }
   TString FiredTriggerClass() const { return fFiredTriggerClass; }
 
   void Vertex(Double_t d[3]) { for (Int_t i=3; i--;) d[i] = fVtx[i]; }
@@ -78,7 +78,7 @@ class AliPicoHeaderCJ : public TNamed {
 
  private :
 
-  UInt_t  fPhysSelMask;  //
+  AliBits fPhysSelMask;  //
   TString fFiredTriggerClass;  //
 
   Double_t fVtx[3];  //!
@@ -98,7 +98,7 @@ class AliPicoHeaderCJ : public TNamed {
   Double_t fBackgroundRhoMC03;  //
   Double_t fBackgroundRhoMC04;  //
 
-  ClassDef(AliPicoHeaderCJ, 4);
+  ClassDef(AliPicoHeaderCJ, 5);
 };
 
 

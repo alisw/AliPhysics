@@ -460,10 +460,10 @@ Bool_t AliJetEmbeddingFromAODTask::IsAODEventSelected()
 
     // Trigger selection
     if (fTriggerMask != 0) {
-      UInt_t offlineTrigger = aodHeader->GetOfflineTrigger();
+      AliBits offlineTrigger = aodHeader->GetOfflineTrigger();
       if ((offlineTrigger & fTriggerMask) == 0) {
-        AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.", 
-                        offlineTrigger, fTriggerMask));
+        AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %s, trigger mask selection: %s.", 
+                        offlineTrigger.GetBitString().Data(), fTriggerMask.GetBitString().Data()));
         return kFALSE;
       }
     }

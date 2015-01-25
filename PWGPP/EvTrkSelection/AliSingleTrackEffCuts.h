@@ -88,8 +88,8 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   void SetCutOnZVertexSPD(Int_t cut) { fCutOnZVertexSPD=cut; }
 
   // Select event trigger mask
-  void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
-  UInt_t GetTriggerMask(){ return fTriggerMask; }
+  void SetTriggerMask(AliBits mask=AliVEvent::kAny) { fTriggerMask=mask; }
+  AliBits GetTriggerMask(){ return fTriggerMask; }
 
   // Set minimum number of ITS, TPC, TOF or MUON clusters
   void SetNumberOfClusters(Int_t nITS, Int_t nTPC, Int_t nTOF, Int_t nMUON){
@@ -141,7 +141,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   Float_t fPtMax;    // maximum Pt cut
   Bool_t  fIsCharged; // check if particle is charged (MC level)
 
-  UInt_t  fTriggerMask;   // event trigger mask
+  AliBits fTriggerMask;   // event trigger mask
   Int_t   fMinVtxType;    // 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
   Int_t   fMinVtxContr;   // minimum vertex contributors
   Float_t fMaxVtxZ;       // maximum |z| of primary vertex
@@ -171,7 +171,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   Int_t 	fuseCombinPid;	  // Bayesiand PID (0=no, 1=maximum, 2=Threshold)
   Float_t	fThreshold;		  // Threshold for PID Combined
 
-  ClassDef(AliSingleTrackEffCuts,2)  // base class for cuts on single tracks
+  ClassDef(AliSingleTrackEffCuts,3)  // base class for cuts on single tracks
  };
 
 #endif

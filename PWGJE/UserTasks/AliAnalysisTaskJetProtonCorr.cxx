@@ -1120,8 +1120,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::DetectTriggers()
 {
   fTriggerMask = 0;
 
-  AliVEvent::EOfflineTriggerTypes physSel =
-    (AliVEvent::EOfflineTriggerTypes) ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits physSel = ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   // TString trgClasses = InputEvent()->GetFiredTriggerClasses();
 
   // physics selection

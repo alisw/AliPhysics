@@ -6,7 +6,7 @@ AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
     // Load Custom Configuration and parameters
     // override values with parameters
 	cout <<"AddTaskJCORRANFilter:: IsMC = "<< IsMC <<"\t beamtype = "<< beamtype <<endl;
-    UInt_t triggerSelection;
+    AliBits triggerSelection;
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 

@@ -86,7 +86,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
 
     virtual void SetNTrigger(Int_t n);
-    virtual void SetTrigger(Int_t i,UInt_t it,const char* c = "");
+    virtual void SetTrigger(Int_t i,AliBits it,const char* c = "");
 
 
     virtual void SetNAcceptance(Int_t n);
@@ -191,7 +191,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fNTrigger;              // number of triggers for selection
-    UInt_t        *fTriggerBit;            //[fNTrigger] trigger bits 
+    AliBits       *fTriggerBit;            //[fNTrigger] trigger bits 
     Int_t         fNAcceptance;            // number of triggers for selection
     Short_t       fNBinsLeadingTrackPt;   // number of bins leading track pt in sparse. Two options: 1 or 10
     Short_t       fNBinsMult;             // number of bins in multiplicity in sparse

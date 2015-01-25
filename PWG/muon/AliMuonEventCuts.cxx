@@ -50,7 +50,7 @@ ClassImp(AliMuonEventCuts) // Class implementation in ROOT context
 //________________________________________________________________________
 AliMuonEventCuts::AliMuonEventCuts() :
   AliAnalysisCuts(),
-  fPhysicsSelectionMask(0),
+  fPhysicsSelectionMask(),
   fVertexMinNContributors(0),
   fVertexVzMin(0.),
   fVertexVzMax(0.),
@@ -76,7 +76,7 @@ AliMuonEventCuts::AliMuonEventCuts() :
 //________________________________________________________________________
 AliMuonEventCuts::AliMuonEventCuts(const char* name, const char* title ) :
 AliAnalysisCuts(name, title),
-  fPhysicsSelectionMask(0),
+  fPhysicsSelectionMask(),
   fVertexMinNContributors(0),
   fVertexVzMin(0.),
   fVertexVzMax(0.),
@@ -1022,7 +1022,7 @@ void AliMuonEventCuts::Print(Option_t* option) const
   if ( sopt.Contains("mask") ) {
     printf(" *** Muon event filter mask: *** \n");
     printf("  0x%x\n", filterMask);
-    if ( filterMask & kPhysicsSelected ) printf("  Pass physics selection 0x%x\n", fPhysicsSelectionMask);
+    if ( filterMask & kPhysicsSelected ) printf("  Pass physics selection %s\n", fPhysicsSelectionMask.GetBitString().Data());
     if ( filterMask & kSelectedCentrality ) printf(  "%g < centrality (%s) < %g\n", fCentralityClasses->GetXmin(), GetCentralityEstimator().Data(), fCentralityClasses->GetXmax() );
     if ( filterMask & kSelectedTrig ) printf("  Has selected trigger classes\n");
     if ( filterMask & kGoodVertex ) printf("  SPD vertex with %i contributors && %g < Vz < %g\n", GetVertexMinNContributors(), GetVertexVzMin(), GetVertexVzMax());

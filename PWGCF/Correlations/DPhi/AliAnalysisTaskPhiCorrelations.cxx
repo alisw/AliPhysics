@@ -444,7 +444,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fCrossedRowsCut", &fCrossedRowsCut,"CrossedRowsCut/I");
   settingsTree->Branch("fFoundFractionCut", &fFoundFractionCut,"FoundFractionCut/D");
   settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
-  settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
+  settingsTree->Branch("fSelectBit", &fSelectBit);
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
   settingsTree->Branch("fParticleSpeciesTrigger", &fParticleSpeciesTrigger,"ParticleSpeciesTrigger/I");
   settingsTree->Branch("fParticleSpeciesAssociated", &fParticleSpeciesAssociated,"ParticleSpeciesAssociated/I");
@@ -731,8 +731,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
     pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateMC));
   }
-  
-//   Printf("trigger: %d", ((AliInputEventHandler*)fInputHandler)->IsEventSelected());
   
   // Trigger selection ************************************************
   if (!fFillOnlyStep0 && (fSkipTrigger || fAnalyseUE->TriggerSelection(fInputHandler)))

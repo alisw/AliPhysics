@@ -265,7 +265,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   
   if(!kMix)
   {    
-    UInt_t mask =  SetTriggerMaskFromName();
+    AliBits mask =  SetTriggerMaskFromName();
     task->SelectCollisionCandidates(mask);
   } 
   
@@ -484,7 +484,7 @@ AliCaloTrackReader * ConfigureReader()
   if(kMix)
   {
     reader->SwitchOffEventTriggerAtSE();
-    UInt_t mask =  SetTriggerMaskFromName();
+    AliBits mask =  SetTriggerMaskFromName();
     reader->SetEventTriggerMask(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
     //reader->SetMixEventTriggerMask(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
     reader->SetMixEventTriggerMask(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
@@ -1796,7 +1796,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
 /// Set the trigger requested for the analysis,
 /// depending on a string given
 ///
-UInt_t SetTriggerMaskFromName()
+AliBits SetTriggerMaskFromName()
 {
   if(kTrig=="EMC7")
   {
@@ -1868,5 +1868,6 @@ UInt_t SetTriggerMaskFromName()
     printf("CaloTrackCorr trigger SemiCentral Or Central\n");
     return (AliVEvent::kSemiCentral | AliVEvent::kCentral  | AliVEvent::kMB);
   }
+  return AliBits();
 }
 

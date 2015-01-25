@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void AddTaskFlowHigherOrdersPID(Int_t centralitysel,
+void AddTaskFlowHigherOrdersPID(AliBits centralitysel,
                                Float_t centrMin=0.,
                                Float_t centrMax=100.,
                                TString fileNameBase="output",

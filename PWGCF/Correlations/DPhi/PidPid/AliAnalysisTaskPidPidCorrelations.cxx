@@ -142,7 +142,7 @@ AliAnalysisTaskPidPidCorrelations::AliAnalysisTaskPidPidCorrelations() // All da
 //   , fVariablesTreeCorr ( 0x0 )
 //   , fCorrVariables ( 0 )
 
-  , fTriggerType ( 1 )
+  , fTriggerType (AliVEvent::kMB)
   , fMyMcType ( -1 )
 //   , fFilterBit ( 128 )
   , fFilterType ( 2 )
@@ -275,7 +275,7 @@ AliAnalysisTaskPidPidCorrelations::AliAnalysisTaskPidPidCorrelations(const char 
 //   , fVariablesTreeCorr ( 0x0 )
 //   , fCorrVariables ( 0 )
   
-  , fTriggerType ( 1 )
+  , fTriggerType ( AliVEvent::kMB )
   , fMyMcType ( -1 )
 //   , fFilterBit ( 128 )
   , fFilterType ( 2 )
@@ -509,7 +509,7 @@ void  AliAnalysisTaskPidPidCorrelations::AddSettingsTree()
   settingsTree->Branch("fTrackEtaMin", &fTrackEtaMin, "fTrackEtaMin/D");
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fTrackPtMin", &fTrackPtMin, "fTrackPtMin/D");
-  settingsTree->Branch("fTriggerType", &fTriggerType,"fTriggerType/I");
+  settingsTree->Branch("fTriggerType", &fTriggerType);
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fTriggerSelectCharge", &fTriggerSelectCharge,"TriggerSelectCharge/I");
   settingsTree->Branch("fAssociatedSelectCharge", &fAssociatedSelectCharge,"fAssociatedSelectCharge/I");  
@@ -534,8 +534,9 @@ void AliAnalysisTaskPidPidCorrelations::Analyse()
   fHistEventStat -> Fill("Total",1); // all events
 
   // store offline trigger bits
-  fHistTriggerStats -> Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());  
-  
+  // ---> EK not compatible with AliBits
+  // fHistTriggerStats -> Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());  
+  // <---
 //_________Trigger selection
   Bool_t isSelected = kTRUE; //Bool_t lTrigger = kTRUE;
   // instead of task->SelectCollisionCandidate(mask) in AddTask macro

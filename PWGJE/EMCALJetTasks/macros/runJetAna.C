@@ -113,7 +113,7 @@ void runJetAna(
   AliAnalysisTaskScale *scaleTask = AddTaskScale(tracksName, clusNameCorr);
   }
   if (1) {
-    UInt_t val = AliVEvent::kAny;
+    AliBits val = AliVEvent::kAny;
     //val = AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral;
     //val = AliVEvent::kEMCEGA;
     //val = AliVEvent::kEMCEJE;

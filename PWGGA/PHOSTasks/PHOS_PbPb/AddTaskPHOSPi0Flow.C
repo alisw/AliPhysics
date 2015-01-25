@@ -1,6 +1,6 @@
 AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
 					    const char* options = "",
-					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
+					    AliBits offlineTriggerMask = AliVEvent::kCentral,
 					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train

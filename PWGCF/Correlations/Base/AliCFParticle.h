@@ -58,6 +58,8 @@ class AliCFParticle : public AliVParticle, public TArrayF {
   virtual void SetCharge(Short_t charge) { fCharge = charge; }
   virtual void SetMask(Short_t mask)     { fMask   = mask;   }
  protected:
+//  AliCFParticle(const  AliCFParticle &part);
+//  AliCFParticle& operator=(const  AliCFParticle &part);
   Float_t fPt;
   Float_t fEta;
   Float_t fPhi;

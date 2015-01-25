@@ -143,9 +143,9 @@ class AliEmcalJet : public AliVParticle
   void              SetPtSubVect(Double_t ps)          { fPtSubVect      = ps;             }
 
   // Trigger
-  Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
-  void              SetTrigger(UInt_t trigger)                              { fTriggers  = trigger;                        }
-  void              AddTrigger(UInt_t trigger)                              { fTriggers |= trigger;                        }
+  Bool_t            IsTriggerJet(AliBits trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
+  void              SetTrigger(AliBits trigger)                              { fTriggers  = trigger;                        }
+  void              AddTrigger(AliBits trigger)                              { fTriggers |= trigger;                        }
 
   // Matching
   void              SetClosestJet(AliEmcalJet *j, Double_t d)       { fClosestJets[0] = j; fClosestJetsDist[0] = d    ; }
@@ -311,7 +311,7 @@ class AliEmcalJet : public AliVParticle
   Int_t             fTagStatus;           //!          status of tagging -1: NA 0: not tagged 1: tagged
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside)
   Double_t          fPtSubVect;           //!          background vector subtracted pt (not stored set from outside)
-  UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
+  AliBits           fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
   Double_t          fJetShapeMassFirstDer;         //!   result from shape derivatives for jet mass: 1st derivative
   Double_t          fJetShapeMassSecondDer;        //!   result from shape derivatives for jet mass: 2nd derivative

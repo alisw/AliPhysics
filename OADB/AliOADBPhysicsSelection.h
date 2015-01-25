@@ -28,7 +28,6 @@ class TObjArray;
 class TArrayI;
 
 
-#define NTRIGGERBITS   32
 #define NTRIGGERLOGICS 64
 
 class AliOADBPhysicsSelection : public TNamed {
@@ -55,8 +54,10 @@ class AliOADBPhysicsSelection : public TNamed {
   const TString  GetOfflineTrigger (UInt_t triggerLogic) const { return triggerLogic >= NTRIGGERLOGICS ? "" : fOfflineTrigger [triggerLogic].String(); }
   UInt_t GetNTriggerBits()  const { return fNtriggerBits; }
   // Setters 
-  void AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
-  void AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
+//  void AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
+//  void AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
+  void AddCollisionTriggerClass(AliBits triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
+  void AddBGTriggerClass       (AliBits triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
 
 
   void SetHardwareTrigger      (UInt_t triggerLogic, const char * trigger)  { fHardwareTrigger [triggerLogic].SetString(trigger);     }
@@ -66,8 +67,6 @@ class AliOADBPhysicsSelection : public TNamed {
   virtual Bool_t	IsFolder() const { return kTRUE; }
   void Browse(TBrowser *b);
   virtual void	Print(Option_t* option = "") const;
-
-  static UInt_t GetActiveBit(UInt_t mask) ;
 
 protected:
   void CleanKey(TString & str) ;

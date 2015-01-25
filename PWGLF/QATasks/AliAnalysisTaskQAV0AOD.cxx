@@ -331,7 +331,7 @@ void AliAnalysisTaskQAV0AOD::UserExec(Option_t *)
 //------------------------------------------------
 
 // new method        
-   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+   AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
    //kMB: default selection, also if fTriggerMask is something not understood...
    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;

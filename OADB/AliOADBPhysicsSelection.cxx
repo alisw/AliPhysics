@@ -14,13 +14,13 @@ ClassImp(AliOADBPhysicsSelection)
 
 
 AliOADBPhysicsSelection::AliOADBPhysicsSelection() : 
-TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
+TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(AliVEvent::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
 {
   // default ctor
-  
+
 }
 AliOADBPhysicsSelection::AliOADBPhysicsSelection(const char* name) : 
-  TNamed(name, "OADB object for the physics selection"), fNtriggerBits(NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
+      TNamed(name, "OADB object for the physics selection"), fNtriggerBits(AliVEvent::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
 {
   // ctor, better use this one
   Init();
@@ -34,7 +34,7 @@ void AliOADBPhysicsSelection::Init() {
     return;
   }
 
-  fNtriggerBits = NTRIGGERBITS;
+  fNtriggerBits = AliVEvent::NTRIGGERBITS;
   fCollTrigClasses = new TList*[fNtriggerBits];
   fBGTrigClasses   = new TList*[fNtriggerBits];
   fHardwareTrigger = new TObjString[fNtriggerLogics];
@@ -48,7 +48,7 @@ void AliOADBPhysicsSelection::Init() {
     fHardwareTrigger[ilogic] = "";
     fOfflineTrigger [ilogic] = "";
   }
-  
+
 
 }
 
@@ -57,9 +57,9 @@ AliOADBPhysicsSelection::~AliOADBPhysicsSelection(){
 
   if(fHardwareTrigger) delete [] fHardwareTrigger;
   if(fOfflineTrigger)  delete [] fOfflineTrigger ;
-  
-  for(Int_t ibit = 0; ibit < NTRIGGERBITS; ibit++){
-    
+
+  for(Int_t ibit = 0; ibit < AliVEvent::NTRIGGERBITS; ibit++){
+
     if(fCollTrigClasses)
       if(fCollTrigClasses[ibit]) delete fCollTrigClasses[ibit];
     if(fBGTrigClasses)
@@ -68,14 +68,14 @@ AliOADBPhysicsSelection::~AliOADBPhysicsSelection(){
 
 }
 
-AliOADBPhysicsSelection::AliOADBPhysicsSelection(const AliOADBPhysicsSelection& cont) :TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0) {
+AliOADBPhysicsSelection::AliOADBPhysicsSelection(const AliOADBPhysicsSelection& cont) :TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(AliVEvent::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0) {
   // Copy ctor
   fCollTrigClasses = cont.fCollTrigClasses;
   fBGTrigClasses = cont.fBGTrigClasses;
   fHardwareTrigger = cont.fHardwareTrigger;
   fOfflineTrigger = cont.fOfflineTrigger;
   fBeamSide = cont.fBeamSide;
-  
+
 }
 
 AliOADBPhysicsSelection& AliOADBPhysicsSelection::operator=(const AliOADBPhysicsSelection& other)  {
@@ -88,22 +88,26 @@ AliOADBPhysicsSelection& AliOADBPhysicsSelection::operator=(const AliOADBPhysics
   fHardwareTrigger = other.fHardwareTrigger;
   fOfflineTrigger = other.fOfflineTrigger;
   fBeamSide = other.fBeamSide;
-  
+
 
   return *this;
 }
- 
-void AliOADBPhysicsSelection::AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) {
+
+void AliOADBPhysicsSelection::AddCollisionTriggerClass(AliBits triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) {
+  //void AliOADBPhysicsSelection::AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) {
   // add collision trigger class
-  TObjString * tclass = new TObjString(Form("%s &%u *%u",ExpandTriggerString(className),triggerMask, triggerLogic));
-  fCollTrigClasses[GetActiveBit(triggerMask)]->Add(tclass); 
+  
+  TObjString * tclass = new TObjString(Form("%s &%u *%u",ExpandTriggerString(className),triggerMask.GetActiveBit(), triggerLogic));
+  fCollTrigClasses[triggerMask.GetActiveBit()]->Add(tclass); 
   SetBeamSide(tclass->String().Data(),beamSide);
 }
-void AliOADBPhysicsSelection::AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) 
+
+void AliOADBPhysicsSelection::AddBGTriggerClass       (AliBits triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) 
+//void AliOADBPhysicsSelection::AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) 
 { 
   // add bg trigger class
-  TObjString * tclass = new TObjString(Form("%s &%u *%u",ExpandTriggerString(className),triggerMask, triggerLogic));
-  fBGTrigClasses  [GetActiveBit(triggerMask)]->Add(tclass);
+  TObjString * tclass = new TObjString(Form("%s &%u *%u",ExpandTriggerString(className),triggerMask.GetActiveBit(), triggerLogic));
+  fBGTrigClasses  [triggerMask.GetActiveBit()]->Add(tclass);
   SetBeamSide(tclass->String().Data(),beamSide);
 }
 
@@ -112,13 +116,12 @@ const TString AliOADBPhysicsSelection::GetBeamSide (const char * trigger)  {
   TObjString * cname = new TObjString(trigger);
   CleanKey(cname->String());  
   static TString retValue="";
-  retValue = ((TObjString*)fBeamSide->GetValue(cname->String().Data())) ?  
-    ((TObjString*)fBeamSide->GetValue(cname->String().Data()))->String() : "" ;
+  retValue = ((TObjString*)fBeamSide->GetValue(cname->String().Data())) ?
+      ((TObjString*)fBeamSide->GetValue(cname->String().Data()))->String() : "" ;
   delete cname;
   return retValue;
 }
-void AliOADBPhysicsSelection::SetBeamSide (const char * className, const char * side)
-{ 
+void AliOADBPhysicsSelection::SetBeamSide (const char * className, const char * side){
   // return beam side
   TObjString * cname = new TObjString(className);
   CleanKey(cname->String());
@@ -127,8 +130,7 @@ void AliOADBPhysicsSelection::SetBeamSide (const char * className, const char * 
 }
 
 void AliOADBPhysicsSelection::CleanKey(TString & str) {
-
-  //  Remove all wite spaces and "goodies" of the trigger class string (bx ids, trigger logic...)
+  //  Remove all white spaces and "goodies" of the trigger class string (bx ids, trigger logic...)
   if(str.Index("*")>0)
     str.Remove(str.Index("*")); // keep only the class name (no bx, offline trigger...)   
   if(str.Index("#")>0)
@@ -136,9 +138,8 @@ void AliOADBPhysicsSelection::CleanKey(TString & str) {
   if(str.Index("&")>0)
     str.Remove(str.Index("&")); // keep only the class name (no bx, offline trigger...)   
   str.ReplaceAll(" ","");
-
 }
- 
+
 // Getters
 
 // FIXME: decide about these getters
@@ -163,7 +164,7 @@ void AliOADBPhysicsSelection::CleanKey(TString & str) {
 //       else AliError(Form("List %d not initialized?",ibit));
 //     }
 //   }
-  
+
 //   return list;
 // }
 
@@ -171,31 +172,28 @@ void AliOADBPhysicsSelection::Print(Option_t* option) const {
 
   for(UInt_t ibit = 0; ibit < fNtriggerBits; ibit++){
     cout << "Bit " << ibit << endl;
-    
+
     fCollTrigClasses[ibit]->Print(option);
     fBGTrigClasses[ibit]->Print(option);
     cout << "HW trig " << fHardwareTrigger[ibit].String().Data() << endl;
     cout << "Offline trig " << fHardwareTrigger[ibit].String().Data() << endl;
-    
+
   }
   cout << "Beams: " << endl;
   fBeamSide->Print();
-
 }
 
 
-void AliOADBPhysicsSelection::Browse(TBrowser *b)
-{
-   // Browse this object.
-   // If b=0, there is no Browse call TObject::Browse(0) instead.
-   //         This means TObject::Inspect() will be invoked indirectly
+void AliOADBPhysicsSelection::Browse(TBrowser *b){
+  // Browse this object.
+  // If b=0, there is no Browse call TObject::Browse(0) instead.
+  //         This means TObject::Inspect() will be invoked indirectly
   static TFolder  ** bitFolders = 0;
   if(!bitFolders) {
     bitFolders = new TFolder*[fNtriggerBits];
     for(UInt_t ibit = 0; ibit < fNtriggerBits; ibit++){
       bitFolders[ibit] = 0;
     }
-    
   }
 
   if (b) {
@@ -204,68 +202,41 @@ void AliOADBPhysicsSelection::Browse(TBrowser *b)
       bitFolders[ibit] = new TFolder (Form("Bit %2.2d", ibit), "Trigger bit folder");
       bitFolders[ibit]->SetOwner(); // Delete also the TObjString when deleting the folder
       for(UInt_t ilogic = 0; ilogic < fNtriggerLogics; ilogic++){
-	if(GetHardwareTrigger(ilogic) != "" || 	GetOfflineTrigger(ilogic) != "")  {
-	  bitFolders[ibit]->Add(new TObjString(Form("Hardware Trig    [*%d][%s]",ilogic,GetHardwareTrigger(ilogic).Data())));
-	  bitFolders[ibit]->Add(new TObjString(Form("Offline  Trig    [*%d][%s]",ilogic,GetOfflineTrigger(ilogic).Data())));      
-	}
+        if(GetHardwareTrigger(ilogic) != "" || 	GetOfflineTrigger(ilogic) != "")  {
+          bitFolders[ibit]->Add(new TObjString(Form("Hardware Trig    [*%d][%s]",ilogic,GetHardwareTrigger(ilogic).Data())));
+          bitFolders[ibit]->Add(new TObjString(Form("Offline  Trig    [*%d][%s]",ilogic,GetOfflineTrigger(ilogic).Data())));
+        }
       }
-      
+
       TIterator *itColl = fCollTrigClasses[ibit]->MakeIterator();
       TObjString * coll = 0;
 
       while ((coll = (TObjString*)itColl->Next())) {
-	bitFolders[ibit]->Add(new TObjString(Form("Collision Class  [%s] [%s]", coll->String().Data(), 
-						  GetBeamSide(coll->String().Data()).Data())));
+        bitFolders[ibit]->Add(new TObjString(Form("Collision Class  [%s] [%s]", coll->String().Data(),
+            GetBeamSide(coll->String().Data()).Data())));
       }
       delete itColl;
 
       TIterator *itBG = fBGTrigClasses[ibit]->MakeIterator();
       TObjString * bg = 0;
       while ((bg = (TObjString*)itBG->Next())) {
-	bitFolders[ibit]->Add(new TObjString(Form("Background Class [%s] [%s]", bg->String().Data(), 
-						  GetBeamSide(bg->String().Data()).Data())));
+        bitFolders[ibit]->Add(new TObjString(Form("Background Class [%s] [%s]", bg->String().Data(),
+            GetBeamSide(bg->String().Data()).Data())));
       }
       delete itBG;
 
       b->Add(bitFolders[ibit]);
-
-    }    
-  }     
-   else
-      TObject::Browse(b);
-}
-
-UInt_t AliOADBPhysicsSelection::GetActiveBit(UInt_t mask) {
-  // Returns the active bit index in the mask
-  // Assumes only one bit is on.
-  // If more than one bit is lit, prints an error and returns the first.
-  // If no bit is on, prints an error and returns 0
-
-  const Int_t kNBitsToCheck = 29;
-
-  //  Int_t nbit = sizeof(mask)*8;
-  Int_t nbit = kNBitsToCheck;
-  Int_t activeBit = -1;
-  for(Int_t ibit = 0; ibit < nbit; ibit++){
-    if ( mask & (0x1 << ibit) ) {
-      if (activeBit == -1) activeBit = ibit;
-      else Printf("ERROR (AliTriggerAnalysis::GetActiveBit): More than one bit is on in this mask 0x%x", mask);
     }
   }
-  if (activeBit == -1) {
-    Printf("ERROR (AliTriggerAnalysis::GetActiveBit): No bit is on");
-    activeBit=0;
-  }
-
-  return activeBit;
-
+  else
+    TObject::Browse(b);
 }
 
 const char* AliOADBPhysicsSelection::ExpandTriggerString(const char* className)
 {
   // expands [] syntax
   // E.g. +CVHN-B-[NOPF|PF]-[ALL|CENT]NOTRD goes to +CVHN-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD
-  
+
   static TString str;
   str = className;
   TObjArray* triggers = str.Tokenize(" ");
@@ -273,7 +244,7 @@ const char* AliOADBPhysicsSelection::ExpandTriggerString(const char* className)
   {
     str = triggers->At(j)->GetName();
     str = str(1, str.Length());
-    
+
     TList list;
     list.SetOwner();
 
@@ -281,55 +252,49 @@ const char* AliOADBPhysicsSelection::ExpandTriggerString(const char* className)
     for (Int_t k=0; k<triggers2->GetEntries(); k++)
       list.Add(new TObjString(triggers2->At(k)->GetName()));
     delete triggers2;
-    
-//     list.Print();
-    
-    while (1)
-    {
+
+    //     list.Print();
+
+    while (1) {
       Int_t i=0;
-      for (i=0; i<list.GetEntries(); i++)
-      {
-	str = list.At(i)->GetName();
-      
-	Int_t begin = str.Index("[");
-	Int_t end = str.Index("]");
-	if (begin >= 0 && end >= 0)
-	{
-	  TString before = str(0, begin);
-	  TString after = str(end+1, str.Length());
-	  TString tokens = str(begin+1, end-begin-1);
-  // 	Printf("%s %s %s", before.Data(), tokens.Data(), after.Data());
-	  Int_t pos = 0;
-	  while (tokens.Index("|", pos) >= 0)
-	  {
-	    list.Add(new TObjString(before + tokens(pos, tokens.Index("|", pos) - pos) + after));
-	    pos = tokens.Index("|", pos) + 1;
-	  }
-	  list.Add(new TObjString(before + tokens(pos, tokens.Length()) + after));
-	  delete list.RemoveAt(i);
-	  
-  // 	list.Print();
-	  i=-1;
-	}
+      for (i=0; i<list.GetEntries(); i++) {
+        str = list.At(i)->GetName();
+
+        Int_t begin = str.Index("[");
+        Int_t end = str.Index("]");
+        if (begin >= 0 && end >= 0) {
+          TString before = str(0, begin);
+          TString after = str(end+1, str.Length());
+          TString tokens = str(begin+1, end-begin-1);
+          // 	Printf("%s %s %s", before.Data(), tokens.Data(), after.Data());
+          Int_t pos = 0;
+          while (tokens.Index("|", pos) >= 0) {
+            list.Add(new TObjString(before + tokens(pos, tokens.Index("|", pos) - pos) + after));
+            pos = tokens.Index("|", pos) + 1;
+          }
+          list.Add(new TObjString(before + tokens(pos, tokens.Length()) + after));
+          delete list.RemoveAt(i);
+
+          // 	list.Print();
+          i=-1;
+        }
       }
 
       str = "";
-      for (i=0; i<list.GetEntries(); i++)
-      {
-	str += list.At(i)->GetName();
-	str += ",";
+      for (i=0; i<list.GetEntries(); i++)      {
+        str += list.At(i)->GetName();
+        str += ",";
       }
       str = str(0, str.Length() - 1);
       break;
     }
-      
+
     TString& target = ((TObjString*) triggers->At(j))->String();
     target.Form("%c%s", target[0], str.Data());
   }
-  
+
   str = "";
-  for (Int_t j=0; j<triggers->GetEntries(); j++)
-  {
+  for (Int_t j=0; j<triggers->GetEntries(); j++)  {
     str += triggers->At(j)->GetName();
     str += " ";
   }

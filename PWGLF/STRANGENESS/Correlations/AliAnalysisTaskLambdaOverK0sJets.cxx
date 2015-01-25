@@ -4422,7 +4422,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   // Physics selection
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *hdr=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  UInt_t maskIsSelected = hdr->IsEventSelected();
+  AliBits maskIsSelected = hdr->IsEventSelected();
   Bool_t isSelected = kFALSE;
 
   Bool_t isSelectedCentral     = kFALSE;

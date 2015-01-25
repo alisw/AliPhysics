@@ -2289,14 +2289,12 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   fHistCentDIFF->Fill(centTRK-centV0M);
 
   //ULong64_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  ULong64_t mask = handler->IsEventSelected();
-  ULong64_t amb = AliVEvent::kMB;
-  ULong64_t acn = AliVEvent::kCentral;
-  ULong64_t asc = AliVEvent::kSemiCentral;
-
-  if(debug>0) cout<<"trigger selection is "<<trigger<<endl;
-  if(debug>0) cout<<"trigger mask is "<<mask<<endl;
-
+  AliBits mask = handler->IsEventSelected();
+  AliBits amb = AliVEvent::kMB;
+  AliBits acn = AliVEvent::kCentral;
+  AliBits asc = AliVEvent::kSemiCentral;
+  if(debug>0) cout<<"trigger selection is "<<trigger.GetBitString().Data()<<endl;
+  if(debug>0) cout<<"trigger mask is "<<mask.GetBitString().Data()<<endl;
   if(mask&amb)
     {
       fHistCentTRKAVEkMB->Fill(centTRK);

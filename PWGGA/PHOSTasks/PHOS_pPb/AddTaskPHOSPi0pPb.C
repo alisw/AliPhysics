@@ -1,6 +1,6 @@
 AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
 					   const char* options = "LHC13",
-					   const UInt_t offlineTriggerMask = AliVEvent::kINT7,
+					   const AliBits offlineTriggerMask = AliVEvent::kINT7,
 					   const char* centrality = "V0M",
 					   const Int_t nCentBins = 5,
 					   const Int_t centEdge0 = 0,

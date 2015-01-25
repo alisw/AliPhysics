@@ -1813,7 +1813,7 @@ void AliAnalysisTaskJetSpectrum2::SetNTrigger(Int_t n){
     delete [] fTriggerName;
     fTriggerName = new TString [fNTrigger];
     delete [] fTriggerBit;fTriggerBit = 0;
-    fTriggerBit = new UInt_t [fNTrigger];
+    fTriggerBit = new AliBits [fNTrigger];
   }
   else{
     fNTrigger = 0;
@@ -1821,7 +1821,7 @@ void AliAnalysisTaskJetSpectrum2::SetNTrigger(Int_t n){
 }
 
 
-void AliAnalysisTaskJetSpectrum2::SetTrigger(Int_t i,UInt_t it,const char* c){
+void AliAnalysisTaskJetSpectrum2::SetTrigger(Int_t i,AliBits it,const char* c){
   //
   // set trigger bin
   //

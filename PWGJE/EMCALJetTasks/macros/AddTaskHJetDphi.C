@@ -1,6 +1,6 @@
 AliAnalysisTaskHJetDphi *AddTaskHJetDphi(const char *name = "HJetDphi", 
 					 const TString period = "lhc11h",
-					 const UInt_t pSel = AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+					 const AliBits pSel = AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral,
 					 const Bool_t isEmbed = kFALSE,
 					 const Bool_t ismc = kFALSE, 
 					 const Bool_t anaTruth = kFALSE,
@@ -44,7 +44,7 @@ AliAnalysisTaskHJetDphi *AddTaskHJetDphi(const char *name = "HJetDphi",
   if(period.Contains("lhc11a",TString::kIgnoreCase))
     pSel = AliVEvent::kMB | AliVEvent::kEMC1;
   if(period.Contains("lhc12a15e",TString::kIgnoreCase))
-    pSel = 0;
+    pSel = AliBits();
 
   char *tname = Form("%s_Charged_ANTIKT%02d_Filter%d_Cut%05d",name,(Int_t)(radius*10),filterMask,(Int_t)(ptTrk*1e3));
   AliAnalysisTaskHJetDphi *hJetTask = new AliAnalysisTaskHJetDphi(tname);

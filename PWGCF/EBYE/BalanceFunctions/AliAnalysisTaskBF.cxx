@@ -430,8 +430,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     }
 
     // store offline trigger bits
-    fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
-
+    // ---> EK not compatible with AliBits
+    // fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+    // <---
     AliCentrality *centrality = 0x0; 
     if(fUseCentrality) {
       //Centrality stuff
@@ -674,8 +675,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     if(!aodHeader) AliFatal("Not a standard AOD");
 
     // store offline trigger bits
-    fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
-
+    // ---> EK: not supported for AliBits
+    // fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
+    // <--- EK
     if(fUseCentrality) {
       fCentrality = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
     }
@@ -986,8 +988,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     }
 
     // store offline trigger bits
-    fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
-
+    // ---> EK: not compatible with AliBits
+    // fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+    // <---
     AliCentrality *centrality = 0x0; 
     if(fUseCentrality) {
 	centrality = gESD->GetCentrality();

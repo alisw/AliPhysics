@@ -1681,7 +1681,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
    Int_t    ncascadesAfterPhysicsSel          = -1; //number of cascades after physics selection
    Int_t    nTrackMultiplicityAfterPhysicsSel = -1; //number of tracks after physics selection
    // - Selection for ESD and AOD
-   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+   AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
    if      (fCollidingSystem == "pp" ) isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
    else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;

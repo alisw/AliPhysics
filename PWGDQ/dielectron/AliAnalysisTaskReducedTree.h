@@ -33,8 +33,8 @@ public:
   virtual void FinishTaskOutput();
   
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
-  void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
-  UInt_t GetTriggerMask() const { return fTriggerMask; }
+  void SetTriggerMask(AliBits mask) {fTriggerMask=mask;}
+  AliBits GetTriggerMask() const { return fTriggerMask; }
   void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
   
   // Cuts for selection of event to be written to tree
@@ -81,7 +81,7 @@ public:
   TList fListHistos;                 //! List of histogram managers in the dielectron framework classes
   
   Bool_t fSelectPhysics;             // Whether to use physics selection
-  UInt_t fTriggerMask;               // Event trigger mask
+  AliBits fTriggerMask;              // Event trigger mask
   Bool_t fRejectPileup;              // pileup rejection wanted
 
   Bool_t fFillTrackInfo;             // fill track information
@@ -137,6 +137,6 @@ public:
   AliAnalysisTaskReducedTree(const AliAnalysisTaskReducedTree &c);
   AliAnalysisTaskReducedTree& operator= (const AliAnalysisTaskReducedTree &c);
 
-  ClassDef(AliAnalysisTaskReducedTree, 3); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTree, 4); //Analysis Task for creating a reduced event information tree 
 };
 #endif

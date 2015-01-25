@@ -718,7 +718,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   } 
   fHistNEvents->Fill(-1);
   
-  UInt_t maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  AliBits maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   TString firedTriggerClasses=fESD->GetFiredTriggerClasses();
   //  if(!firedTriggerClasses.Contains("CINT1B")) return;
   if((maskPhysSel & AliVEvent::kMB)==0) return;

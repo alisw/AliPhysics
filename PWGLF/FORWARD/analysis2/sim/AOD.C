@@ -411,7 +411,7 @@ void AddAnalysisTasks(const char *cdb_location)
     else 
       mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
 
-    taskvertexingHF->SelectCollisionCandidates(0);
+    taskvertexingHF->SelectCollisionCandidates(AliBits());
   }
 
   // ---- PWG3 JPSI filtering (only pp) ------------------------------
@@ -426,7 +426,7 @@ void AddAnalysisTasks(const char *cdb_location)
     else 
       mgr->RegisterExtraFile("AliAOD.Dielectron.root");
 
-    taskJPSIfilter->SelectCollisionCandidates(0);
+    taskJPSIfilter->SelectCollisionCandidates(AliBits());
   }
 
   // --- PWG3 D2h ----------------------------------------------------

@@ -265,7 +265,7 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 	Bool_t select = kTRUE;
 	
 	// Test Trigger.
-	UInt_t trigger = InputHandler->IsEventSelected();	
+	AliBits trigger = InputHandler->IsEventSelected();	
 	Int_t triggerclass = -1;		// 0 = kMB, 1 = kCentral, 2 = kSemiCentral, 3 = Other.	
     if (fTestTrigger) {
 

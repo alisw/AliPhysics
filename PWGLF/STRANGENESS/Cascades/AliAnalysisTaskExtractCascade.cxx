@@ -1005,7 +1005,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     // Physics Selection
     //------------------------------------------------
     
-    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
     isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
     

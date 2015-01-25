@@ -968,9 +968,8 @@ void AliAnalysisTaskCaloFilter::PrintInfo()
   printf("\t Fill: AOD file? %d Tracks? %d; all Vertex? %d; v0s? %d; VZERO ? %d\n", 
          fFillAODFile,fFillTracks,fFillAllVertices, fFillv0s, fFillVZERO);
   
-  printf("\t Event Selection based : EMCAL?  %d, PHOS?  %d Tracks? %d - Accept all MB with mask %d? %d\n",
-         fEventSelection[0],fEventSelection[1],fEventSelection[2],fMBTriggerMask, fAcceptAllMBEvent);
-  
+  printf("\t Event Selection based : EMCAL?  %d, PHOS?  %d Tracks? %d - Accept all MB with mask %s? %d\n",
+         fEventSelection[0],fEventSelection[1],fEventSelection[2],fMBTriggerMask.GetBitString().Data(), fAcceptAllMBEvent);
   printf("\t \t EMCAL E > %2.2f, EMCAL nCells >= %d, PHOS E > %2.2f, PHOS nCells >= %d, Track pT > %2.2f, |vz| < %2.2f\n",
          fEMCALEnergyCut,fEMCALNcellsCut,fPHOSEnergyCut,fPHOSNcellsCut, fTrackPtCut,fVzCut);
 }

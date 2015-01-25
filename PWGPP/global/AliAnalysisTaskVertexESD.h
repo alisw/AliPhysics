@@ -45,7 +45,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   void           SetOnlyITSSATracks() {fOnlyITSSATracks=kTRUE;}
   void           SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}  
   void           SetFillNtupleBeamSpot(Bool_t fillBeamSpot=kFALSE){fFillTreeBeamSpot = fillBeamSpot;}
-  void           SetTriggerType(AliVEvent::EOfflineTriggerTypes triggerType) {fTriggerType = triggerType;}
+  void           SetTriggerType(AliBits triggerType) {fTriggerType = triggerType;}
 
  protected:
   Bool_t       fCheckEventType; // read only events of type 7
@@ -96,7 +96,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhSPDVertexDiffZPileDefault; //! output histo
   TH1F        *fhSPDContributorsPile; //! output histo
   TH2F        *fhSPDDispContributors; //! output histo
-  AliVEvent::EOfflineTriggerTypes    fTriggerType; //flag to set trigger type
+  AliBits     fTriggerType; //flag to set trigger type
 	
   TH2F        *fhntrksSPDvsSPDcls;//!  output histo correlation contributors vs number of clustrers spd 
   TH2F        *fhntrksZvsSPDcls; //! output histo correlation contributors vs number of clustrers spd
@@ -108,7 +108,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   AliESDVertex* ReconstructPrimaryVertexTPC(Bool_t constr=kFALSE) const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC(Bool_t constr=kFALSE,Int_t mode=0) const;
   
-  ClassDef(AliAnalysisTaskVertexESD,11); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,12); // primary vertex analysis
 };
 
 #endif

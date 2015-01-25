@@ -55,7 +55,7 @@ public:
 	void SetExtendPtAxis(Bool_t extendptaxis) {fExtendPtAxis = extendptaxis;}
 
 	// Overrides methods from AliAnalyisTaskSE.
-	void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
+	void SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kMB);
 	void SetDebugLevel(Int_t level);
 
 	// Getters.

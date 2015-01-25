@@ -96,8 +96,7 @@ public:
   }
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
-
-  void  SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
+  void  SetEventSelectionBit( AliBits val )        { fSelectBit = val;  }
   void  SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void  SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
   void  SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
@@ -113,7 +112,7 @@ public:
   void  SetQtrkbit (UInt_t val)  { fQtrkbit = val; }
 
 
-  UInt_t GetEventSelectionBit()   const           { return fSelectBit;}
+  AliBits GetEventSelectionBit()   const           { return fSelectBit;}
   TString GetCentralityMethod()   const           { return fCentralityMethod;}
   UInt_t GetTrackType()          const    { return fTrackBits;}
   Bool_t GetIsMC()                const           { return fIsMC;}
@@ -198,7 +197,7 @@ public:
 private:
 
   AliAODEvent     *fAOD;              //! AOD event
-  UInt_t           fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+  AliBits          fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
   TString          fCentralityMethod;     // Method to determine centrality
   UInt_t           fTrackBits;       // Type of track to be used in the Qvector calculation
   Bool_t          fIsMC; // true if processing MC
@@ -262,9 +261,15 @@ private:
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
+<<<<<<< HEAD
 
   ClassDef(AliSpectraAODEventCuts, 14);
 
+=======
+  
+  ClassDef(AliSpectraAODEventCuts, 11);
+  
+>>>>>>> All UInt_t physics selection masks replaced with AliBits
 };
 #endif
 

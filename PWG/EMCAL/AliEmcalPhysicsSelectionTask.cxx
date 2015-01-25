@@ -96,8 +96,8 @@ void AliEmcalPhysicsSelectionTask::UserExec(const Option_t *opt)
 
   ++fNCalled;
 
-  UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if (res>0) {
+  AliBits res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if (res) {
     ++fNAccepted;
     fHAcc->Fill(1);
   } else {
