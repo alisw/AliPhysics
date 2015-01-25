@@ -476,8 +476,8 @@ void AliFlowOnTheFlyEventGenerator::DoGeneratorQA(Bool_t v2, Bool_t v3)
         printf(" > saving QA histograms for sampled species %i <\n", gen->GetPDGCode());
         QAfile->mkdir(Form("fPDG_%i", gen->GetPDGCode()));        // create a directory in the output file
         QAfile->cd(Form("fPDG_%i", gen->GetPDGCode()));              // cd into this directory
-        if(!QApt->GetEntries()==0) { // only plot the pt fSpectrum if this guy was generated
-            if(!gen->GetPtSpectrum()->Integral(0,20)==0) {
+        if(QApt->GetEntries() != 0) { // only plot the pt fSpectrum if this guy was generated
+            if(gen->GetPtSpectrum()->Integral(0,20) != 0) {
                 QApt->Scale(gen->GetPtSpectrum()->Integral(0,20)/QApt->Integral(),"width");
                 QApt->Write();
             }
