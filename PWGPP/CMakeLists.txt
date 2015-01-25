@@ -280,5 +280,8 @@ install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
 install(DIRECTORY scripts DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/scripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
+install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
+	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
+	      DESTINATION PWGPP/EvTrkSelection)
 
 message(STATUS "PWGPP enabled")
