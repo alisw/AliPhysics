@@ -25,7 +25,7 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
   
   
   //analysis task 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECalSys.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFECalSys.C");
 
   AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat,QAhist);
   AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat,QAhist);

@@ -24,7 +24,7 @@ TH2D *GetCorrectionsJpsiWidth(TString map){
 }
 TF1* GetCentralityCorrection(TString listname="LHC11h"){
   
-  TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
+  TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
   
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
@@ -48,7 +48,7 @@ TF1* GetCentralityCorrection(TString listname="LHC11h"){
 }
 TF1* GetEtaCorrection(TString listname="LHC11h"){
   
-  TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
+  TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
   
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
@@ -72,7 +72,7 @@ TF1* GetEtaCorrection(TString listname="LHC11h"){
 }
 TF1* Getv2Contamination_30_40(){
   
-  TString v2Map="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_3040.root";
+  TString v2Map="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_3040.root";
   //TString v2Map="$TRAIN_ROOT/bailhach_backgroundhfe/raw_TF1_pi_v2_3040.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
@@ -91,7 +91,7 @@ TF1* Getv2Contamination_30_40(){
 
 TF1* Getv2Contamination_40_50(){
   
-  TString v2Map="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_4050.root";
+  TString v2Map="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_4050.root";
   //TString v2Map="$TRAIN_ROOT/bailhach_backgroundhfe/raw_TF1_pi_v2_4050.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
@@ -111,7 +111,7 @@ TF1* Getv2Contamination_40_50(){
 
 TF1* Getv2Contamination_20_30(){
   
-  TString v2Map="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_2030.root";
+  TString v2Map="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_2030.root";
   //TString v2Map="$TRAIN_ROOT/bailhach_backgroundhfe/raw_TF1_pi_v2_2030.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
@@ -268,8 +268,8 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
     AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
     // Jpsi
     if(variableMr==0) {
-      TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr2_2011.root");
-      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr2_2011.root");
+      TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr2_2011.root");
+      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr2_2011.root");
       //printf("Set\n");
       if(meanc && widthc) {
 	tpcpid->SetJpsiCorrections(meanc,widthc);
@@ -277,8 +277,8 @@ AliAnalysisTaskFlowTPCTOFEPSP* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appen
       }
     }
     if(variableMr==10) {
-      TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
-      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
+      TH2D *meanc = GetCorrectionsJpsiMean("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
+      TH2D *widthc = GetCorrectionsJpsiWidth("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/jpsietacentcorr3_2011.root");
       if(meanc && widthc) tpcpid->SetJpsiCorrections(meanc,widthc);
     }
     // Theo

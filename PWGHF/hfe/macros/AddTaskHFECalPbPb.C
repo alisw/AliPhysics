@@ -29,7 +29,7 @@ AliAnalysisTask *AddTaskHFECalPbPb(int TPCclust){
   //TString taskName=("AliAnalysisTaskHFE.cxx+");
   //===============================================
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECalstandard_PbPb.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFECalstandard_PbPb.C");
 
   //<--- task1 for EMCal trigger
   AliAnalysisTaskHFE *hfetask = ConfigHFECalstandard_PbPb(MCthere,TPCclust);

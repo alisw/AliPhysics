@@ -413,7 +413,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
 //_____________________________________________________________________________
 TF1* GetCentralityCorrectionEMCal(TString listname="LHC11h"){
     
-    TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
+    TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/CentCorrMapsTPC.root";
     
     if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
         Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
@@ -438,7 +438,7 @@ TF1* GetCentralityCorrectionEMCal(TString listname="LHC11h"){
 //_____________________________________________________________________________
 TF1* GetEtaCorrectionEMCal(TString listname="LHC11h"){
     
-    TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
+    TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
     
     if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
         Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());

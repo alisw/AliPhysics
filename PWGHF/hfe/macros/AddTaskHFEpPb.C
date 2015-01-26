@@ -202,7 +202,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   printf("Add macro appendix %s\n", appendix.Data());
   printf("Centrality estimator %s\n", cesti.Data());
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEpPb.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEpPb.C");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEpPb(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
@@ -248,7 +248,7 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
                   Bool_t withetacorrection = kTRUE,
                   Int_t TRDtrigger=0){
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEmbpPb.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEmbpPb.C");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEmbpPb(useMC, isAOD, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
@@ -326,7 +326,7 @@ AliAnalysisTask *RegisterTaskPID2mbTRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=
 				   tpcClsPID,itsCls,idcaxy,idcaz,itpcs,itofs,tofm,ipixelany,TRDtrigger,trdl,trde,detused.Data(),etacut));
   printf("Add macro appendix %s\n", appendix.Data());
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEmbpPbTRD.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEmbpPbTRD.C");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEmbpPbTRD(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
@@ -374,7 +374,7 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
 				     Int_t itshitpixel = AliHFEextraCuts::kBoth, Int_t icent=1,
 				     Int_t TRDtrigger=0,Int_t trdpidmethod=1, Int_t trdl=6, Int_t trde=4,TString detector){
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEpPbTRD.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEpPbTRD.C");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 

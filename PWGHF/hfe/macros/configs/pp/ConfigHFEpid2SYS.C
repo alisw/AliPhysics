@@ -1,6 +1,6 @@
 TF1* GetEtaCorrection(TString listname){
  
-  TString etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
+  TString etaMap="$ALICE_PHYSICS/PWGDQ/dielectron/files/EtaCorrMaps.root";
   
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigHFEpid2SYS","Eta map not found: %s",etaMap.Data());

@@ -46,8 +46,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t openingAngle = 0.1,
   mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
   //analysis task 
-//   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx++g");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
+//   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/AliAnalysisTaskFlowTPCEMCalEP.cxx++g");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
 
   AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);
   AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,openingAngle,invMass,nonHFEalgorithm);

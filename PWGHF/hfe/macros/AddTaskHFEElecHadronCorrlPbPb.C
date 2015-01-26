@@ -48,7 +48,7 @@ AliAnalysisTaskElecHadronCorrel *AddTaskHFEElecHadronCorrlPbPb(Bool_t EventTrigS
   }
 
   //analysis task 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecHadronCorrelPbPb.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecHadronCorrelPbPb.C");
   AliAnalysisTaskElecHadronCorrel *taskHFEeh = ConfigHFEElecHadronCorrelPbPb(MCthere,EventTrigSelMB,TrigSelCen,CentrMin,CentMax,TPCNsigMinE,TPCNsigMaxE,TPCNsigMinH,TPCNsigMaxH,SSM02Min,SSM02Max,SSM20Min,SSM20Max,Disp,EovPMin,EovPMax,InvM,CentralityMet, TPCNClsEle, TPCNClsHad, AssoEleITSref,AssoElecTPCNCls,TaskName);
 
   TString containerName = mgr->GetCommonFileName();

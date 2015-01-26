@@ -15,8 +15,8 @@ void ConfigWeightFactors(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE, Int_t c
     }
   }
   const Char_t *backNameMC[6] = {"pion","eta","omega","phi","etap","rho"};
-  printf("Take the weights from %s\n",Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
-  TFile *weightFile = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+  printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+  TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
   if(weightFile){
     if(syst){
       TH1F *hRelErr[2][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently

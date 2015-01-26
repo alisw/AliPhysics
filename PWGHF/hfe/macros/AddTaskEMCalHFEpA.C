@@ -26,7 +26,7 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //_______________________
         //Config Task
         //gROOT->LoadMacro("ConfigEMCalHFEpA.C");
-        gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
         AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould);
         
         //_______________________

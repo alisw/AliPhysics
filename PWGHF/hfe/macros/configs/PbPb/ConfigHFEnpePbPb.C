@@ -1,7 +1,7 @@
 TF1* GetEtaCorrection(){
   TString list=gSystem->Getenv("LIST");
 
-  TString etaMap="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
+  TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigPbPb2010_Cent","Eta map not found: %s",etaMap.Data());
     return 0;
@@ -24,7 +24,7 @@ TF1* GetEtaCorrection(){
 }
 
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
-  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));
+  TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));
   gROOT->cd();
   int isig = static_cast<int>(sigma * 100.);
   printf("Getting hadron background for the sigma cut: %d\n", isig);
@@ -144,7 +144,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   // the AOD analysis with the given filter//
   // bit. Not to be applied for AODS.      //
   // For pPb the cuts used are (bit 4)     //
-  // esdTrackCutsHG0 from file $ALICE_ROOT///
+  // esdTrackCutsHG0 from file $ALICE_PHYSICS///
   // ANALYSIS/macros/AddTaskESDFilter.C    //
   //***************************************//
   if(kApplyPreselection){

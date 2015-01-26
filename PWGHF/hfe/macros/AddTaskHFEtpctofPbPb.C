@@ -6,7 +6,7 @@ AliAnalysisTask *AddTaskHFEtpctofPbPb(Bool_t isaod, Bool_t isMC,Int_t aodfilter=
 
 
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
+  TString configFile("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
   //TString configFile("/d/alice12/bailhache/AliRootInstallations/07_10_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFEpbpb.C");
   TString checkconfig="ConfigHFEpbpb";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))

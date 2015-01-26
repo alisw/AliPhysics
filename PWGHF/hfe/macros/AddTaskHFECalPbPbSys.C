@@ -24,7 +24,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   }
   
   //analysis task 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
   AliAnalysisTaskHFECal *hfetask = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetask);
   // semi-central

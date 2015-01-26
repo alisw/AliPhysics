@@ -8,7 +8,7 @@ AliAnalysisTask *AddTaskHFEtpctof(Bool_t isMC,Bool_t kAnalyseTaggedTracks = kFAL
   AliLog::SetClassDebugLevel("AliCFParticleGenCuts",4);
 
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/pp/ConfigHFEpid2SYS.C");
+  TString configFile("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHFEpid2SYS.C");
   //TString configFile("/d/alice12/bailhache/AliRootInstallations/11_09_2012/AliRoot/PWGHF/hfe/macros/configs/pp/ConfigHFEpid2SYS.C");
   TString checkconfig="ConfigHFEpid2SYS";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
