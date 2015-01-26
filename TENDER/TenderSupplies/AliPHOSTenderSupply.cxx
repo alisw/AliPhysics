@@ -100,7 +100,7 @@ AliPHOSTenderSupply::~AliPHOSTenderSupply()
 
 //_____________________________________________________
 void AliPHOSTenderSupply::InitTender()
-{
+{   
   //
   // Initialise PHOS tender
   //
@@ -198,10 +198,11 @@ void AliPHOSTenderSupply::InitTender()
       //Init recalibration
       AliOADBContainer calibContainer("phosRecalibration");
       calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSMCCalibrations.root","phosRecalibration");
-      
-      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
+
+      AliInfo(Form("Reading PHOS MC recalibration object for production %s, run=%d", fMCProduction.Data(),runNumber)) ;      
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration",fMCProduction.Data());
       if(!recalib){
-        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+        AliFatal(Form("Can not read calibrations for run %d and name >%s<\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber,fMCProduction.Data())) ;
       }
       else{
 	//Now try to find object with proper name
