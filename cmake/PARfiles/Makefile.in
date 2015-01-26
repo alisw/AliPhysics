@@ -48,7 +48,7 @@ G__$(PAR_MODULE).h: G__$(PAR_MODULE).cxx
 
 G__$(PAR_MODULE).cxx: $(HDRS) $(DHDR)
 	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating dictionary
-	@rootcint -f $@ -c $(PAR_INCLUDES) $^
+	@rootcint -f $@ -c -p $(PAR_INCLUDES) $^
 
 # Delete all
 clean:
