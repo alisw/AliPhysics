@@ -17,7 +17,6 @@
 # ZeroMQ custom installation can be pointed using -DZEROMQ
 #       - ZEROMQ_INCLUDE_DIR - Where to find zeromq include sub-directory.
 #       - ZEROMQ_LIBRARIES   - List of libraries when using zeromq.
-#       - ZEROMQ_LIBRARIES_STATIC   - List of static libraries when using zeromq.
 #       - ZEROMQ_FOUND       - True if zeromq found.
 
 message(STATUS "Checking for ZeroMQ ${ZEROMQ}")
@@ -32,12 +31,6 @@ if(ZEROMQ)
                 DOC "Path to libzmq)"
             )
 
-    find_library(ZEROMQ_LIBRARIES_STATIC NAMES libzmq.a
-                PATHS ${ZEROMQ}/lib
-                NO_DEFAULT_PATH
-                DOC "Path to libzmq)"
-            )
-            
     find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq_utils.h zmq.hpp}
                 PATHS ${ZEROMQ}/include
                 NO_DEFAULT_PATH
@@ -46,10 +39,6 @@ if(ZEROMQ)
 else(ZEROMQ)
     # Check is the library is installed on the system
     find_library(ZEROMQ_LIBRARIES NAMES zmq
-                DOC "Path to libzmq)"
-            )
-
-    find_library(ZEROMQ_LIBRARIES_STATIC NAMES libzmq.a
                 DOC "Path to libzmq)"
             )
 
@@ -65,17 +54,12 @@ if(NOT ZEROMQ_LIBRARIES)
     set(ZEROMQ_DISABLED TRUE)
 endif()
 
-if(NOT ZEROMQ_LIBRARIES_STATIC AND NOT ZEROMQ_DISABLED)
-    message(STATUS "ZeroMQ static library not found. Disabling ZeroMQ support")
-    set(ZEROMQ_DISABLED TRUE)
-endif()
-
 if(NOT ZEROMQ_INCLUDE_DIR AND NOT ZEROMQ_DISABLED)
     message(STATUS "ZeroMQ headers not found. Please install development package + cppzmq interface. Disabling ZeroMQ support")
     set(ZEROMQ_DISABLED TRUE)
 endif()
 
-if(ZEROMQ_LIBRARIES AND ZEROMQ_LIBRARIES_STATIC AND ZEROMQ_INCLUDE_DIR)
+if(ZEROMQ_LIBRARIES AND ZEROMQ_INCLUDE_DIR)
     message(STATUS "Found ZeroMQ ${ZEROMQ_LIBRARIES}")
     set(ZEROMQ_FOUND TRUE)
 endif()
