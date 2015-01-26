@@ -515,7 +515,9 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
     {
 			nSigmaTPCpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
 			nSigmaTOFpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
-      probProton = fAnalCuts->GetProtonProbabilityTPCTOF(trk);
+			if(fAnalCuts->GetPidHF()->GetUseCombined()){
+				probProton = fAnalCuts->GetProtonProbabilityTPCTOF(trk);
+			}
       fCandidateVariables[16] = nSigmaTPCpr;
       fCandidateVariables[17] = nSigmaTOFpr;
       fCandidateVariables[18] = probProton;
