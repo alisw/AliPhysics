@@ -371,6 +371,7 @@ Double_t AliRDHFCutsLctopK0sfromAODtracks::GetProtonProbabilityTPCTOF(AliAODTrac
   //
   // Get Proton probability
   //
+	if(!fPidHF->GetUseCombined()) return -9999.;
   fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   Double_t prob1[AliPID::kSPECIES];
   UInt_t detUsed1 = fPidHF->GetPidCombined()->ComputeProbabilities(trk, fPidHF->GetPidResponse(), prob1);

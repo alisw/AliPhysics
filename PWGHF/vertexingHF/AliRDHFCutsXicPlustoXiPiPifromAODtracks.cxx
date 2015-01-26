@@ -443,6 +443,7 @@ Double_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::GetPionProbabilityTPCTOF(AliAO
   //  Get Pion Probablility
   //
   //fPidHF->GetPidCombined()->SetDefaultTPCPriors();
+	if(!fPidHF->GetUseCombined()) return -9999.;
   fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   Double_t prob1[AliPID::kSPECIES];
   UInt_t detUsed1 = fPidHF->GetPidCombined()->ComputeProbabilities(trk, fPidHF->GetPidResponse(), prob1);

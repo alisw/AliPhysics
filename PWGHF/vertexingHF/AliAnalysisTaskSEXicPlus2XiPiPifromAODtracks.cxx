@@ -652,8 +652,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 			nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
       fCandidateVariables[45] = nSigmaTOFpi2;
 
-      probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
-      probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+			if(fAnalCuts->GetPidHF()->GetUseCombined()){
+				probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
+				probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+			}
       fCandidateVariables[46] = probPion1;
       fCandidateVariables[47] = probPion2;
     }
