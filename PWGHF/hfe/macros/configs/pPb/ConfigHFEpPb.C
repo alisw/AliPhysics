@@ -1,5 +1,5 @@
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
-  TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+  TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
   gROOT->cd();
   int isig = static_cast<int>(sigma * 100.);
   printf("Getting hadron background for the sigma cut: %d\n", isig);
@@ -98,7 +98,7 @@ AliAnalysisTaskHFE* ConfigHFEpPb(Bool_t useMC, Bool_t isAOD, TString appendix,
   // the AOD analysis with the given filter//
   // bit. Not to be applied for AODS.      //
   // For pPb the cuts used are (bit 4)     //
-  // esdTrackCutsHG0 from file $ALICE_ROOT///
+  // esdTrackCutsHG0 from file $ALICE_PHYSICS///
   // ANALYSIS/macros/AddTaskESDFilter.C    //
   //***************************************//
   

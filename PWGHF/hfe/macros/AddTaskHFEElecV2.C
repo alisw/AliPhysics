@@ -44,8 +44,8 @@ AliAnalysisTask *AddTaskHFEElecV2()
   mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
   //analysis task 
-//   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/AliAnalysisTaskElecV2.cxx++g");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecV2.C");
+//   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/AliAnalysisTaskElecV2.cxx++g");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFEElecV2.C");
 
   AliAnalysisTaskElecV2 *taskMB = ConfigHFEElecV2(MCthere);
   AliAnalysisTaskElecV2 *taskTR = ConfigHFEElecV2(MCthere);

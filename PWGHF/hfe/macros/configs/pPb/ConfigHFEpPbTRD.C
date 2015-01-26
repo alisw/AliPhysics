@@ -1,5 +1,5 @@
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
-    TFile *in = TFile::Open(Form("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+    TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
   gROOT->cd();
   int isig = static_cast<int>(sigma * 100.);
   printf("Getting hadron background for the sigma cut: %d\n", isig);

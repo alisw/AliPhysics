@@ -27,7 +27,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   Double_t masscut = 0.05;
   if(!MassConst)masscut = 0.1;
   //analysis task 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
 
   AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,0.5,0.1,masscut,-5,1);
   AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,0.5,0.1,masscut,-5,1);
