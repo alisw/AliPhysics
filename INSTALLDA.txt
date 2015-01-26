@@ -134,17 +134,21 @@ A full configuration line that will enable DA build and rpm creation
         $ALIROOT_SRC
 
 4.4 Build individual or all DAs
-For invidual DA build it is enough to switch to the DetectorName/DA folder
+For buiding all the DAs it is enough to run make inside the build folder
+    $ make
+
+There are 2 options to build invidual DA.
+    - Inside build folder switch to detectors DA folder and run make
     Example
     $ cd MUON/DA
     $ make
 
-The "make" will create the DA executable inside the current folder.
+    - In the main build folder run the DA cmake target
+    $ make ${DETECTOR}${ALGORITHM}da.exe
 
-To trigger the build off all DA run make inside the root build folder
+The "make" will create the DA executable inside main build folder/DETECTOR/DA
 
 4.5 Install the DAs
 
 "make install" will install the DA execuable inside $CMAKE_INSTALL_PREFIX/bin
 and the rpms inside the $CMAKE_INSTALL_PREFIX/darpms
-
