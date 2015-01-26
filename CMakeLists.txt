@@ -55,6 +55,9 @@ include(CheckGitVersion)
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
 include(CheckCompiler)
 
+# Utility to generate PARfiles
+include(cmake/GenParFile.cmake)
+
 # Shared library suffix
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)

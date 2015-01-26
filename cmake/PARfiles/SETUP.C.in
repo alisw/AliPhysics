@@ -1,0 +1,3 @@
+Int_t SETUP() {
+  Printf("Hello world!");
+}

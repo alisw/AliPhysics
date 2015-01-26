@@ -1,0 +1,37 @@
+# Makefile for @PARMODULE@ -- automatically generated
+
+# From ROOT
+include Makefile.arch
+
+# Name of this module
+PAR_MODULE := @PARMODULE@
+
+# Get C++ flags from AliRoot's CMake, not ROOT -- append AliRoot/AliPhysics includes
+PAR_INCLUDES = -I. -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(ROOTSYS)/include
+PAR_CXXFLAGS = @CMAKE_CXX_FLAGS@ $(PAR_INCLUDES)
+
+# Get linker flags from AliRoot's CMake, not ROOT
+PAR_SOFLAGS = @CMAKE_SHARED_LINKER_FLAGS@
+
+SRCS = $(wildcard *.cxx)
+HDRS = $(SRCS:.cxx=.h)
+DHDR = @PARMODULE@LinkDef.h
+
+SRCS += G__@PARMODULE@.cxx
+OBJS = $(SRCS:.cxx=.o)
+
+# Compile sources into objects
+%.o: %.cxx %.h
+	@CMAKE_CXX_COMPILER@ $(PAR_CXXFLAGS) -c $< -o $@
+
+# Generate library from objects
+lib@PARMODULE@.so: $(OBJS)
+	@CMAKE_LINKER@ $(PAR_SOFLAGS) $^ -o $@ $(EXPLLINKLIBS)
+
+# Generate dictionary
+G__@PARMODULE@.cxx G__@PARMODULE@.h: $(HDRS) $(DHDR)
+	rootcint -f $@ -c $(PAR_INCLUDES) $^
+
+# Delete all
+clean:
+	rm -f $(OBJS) *.so G__@PARMODULE@.*
