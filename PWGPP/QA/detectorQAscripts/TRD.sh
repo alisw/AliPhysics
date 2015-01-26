@@ -9,7 +9,7 @@
 runLevelQA()
 {
   qaFile=$1
-  cp $ALICE_ROOT/PWGPP/TRD/macros/ProcessTRDRunQA.C .
+  cp $ALICE_PHYSICS/PWGPP/TRD/macros/ProcessTRDRunQA.C .
   aliroot -b -q -l "ProcessTRDRunQA.C(\"${qaFile}\",${runNumber},\"${dataType}\",${year},\"${period}\",\"${pass}\",\"${ocdbStorage}\")"
 }
 
@@ -17,6 +17,6 @@ periodLevelQA()
 {
   trendingFile=$1
 
-  cp $ALICE_ROOT/PWGPP/TRD/macros/DrawTrendingTRDQA.C .
+  cp $ALICE_PHYSICS/PWGPP/TRD/macros/DrawTrendingTRDQA.C .
   aliroot -b -q -l "DrawTrendingTRDQA.C(\"${trendingFile}\")"
 }

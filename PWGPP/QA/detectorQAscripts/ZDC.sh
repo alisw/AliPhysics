@@ -2,10 +2,10 @@ runLevelQA()
 {
   qaFile=$1
 
-  cp $ALICE_ROOT/PWGPP/ZDC/macros/MakeTrendZDC.C .
+  cp $ALICE_PHYSICS/PWGPP/ZDC/macros/MakeTrendZDC.C .
   aliroot -b -q -l "MakeTrendZDC.C(\"$qaFile\",$runNumber)" 
 
-  cp $ALICE_ROOT/PWGPP/ZDC/macros/DrawPerformanceZDCQAMatch.C .
+  cp $ALICE_PHYSICS/PWGPP/ZDC/macros/DrawPerformanceZDCQAMatch.C .
   aliroot -b -q -l "DrawPerformanceZDCQAMatch.C(\"trending.root\")"
   makeHTMLindexPerRun
 }
@@ -14,7 +14,7 @@ periodLevelQA()
 {
   trendingFile=$1
 
-  cp $ALICE_ROOT/PWGPP/ZDC/macros/DrawPerformanceZDCQAMatchTrends.C .
+  cp $ALICE_PHYSICS/PWGPP/ZDC/macros/DrawPerformanceZDCQAMatchTrends.C .
   aliroot -b -q -l "DrawPerformanceZDCQAMatchTrends.C(\"trending.root\")"
   makeHTMLindexPerPeriod
 }

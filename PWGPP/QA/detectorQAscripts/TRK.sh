@@ -11,10 +11,10 @@ runLevelHighPtTreeQA()
   highPtTreeFile=${1}
     
   #makePlots needs to compile it locally for now
-  cp $ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.h .
-  cp $ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx .
+  cp $ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.h .
+  cp $ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx .
 
-  aliroot -l -b -q "$ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/makePlots.C(\"$highPtTreeFile\")"
+  aliroot -l -b -q "$ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/makePlots.C(\"$highPtTreeFile\")"
 }
 
 periodLevelQA()
@@ -29,10 +29,10 @@ periodLevelQA()
     mv ${oldDir}/mergedGenericHistos_Bneg.root .
 
     #makePlots needs to compile it locally for now
-    cp $ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.h .
-    cp $ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx .
+    cp $ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.h .
+    cp $ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx .
 
-    aliroot -l -b -q "$ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/makePeriodPlots.C(\"mergedGenericHistos_Bneg.root\",\"${period}/${pass}\")"
+    aliroot -l -b -q "$ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/makePeriodPlots.C(\"mergedGenericHistos_Bneg.root\",\"${period}/${pass}\")"
     cd ${oldDir}
   fi
   if ls */genericHistos_Bpos.root&>/dev/null; then
@@ -42,13 +42,13 @@ periodLevelQA()
     cd outputBpos
 
     #makePlots needs to compile it locally for now
-    cp $ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.h .
-    cp $ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx .
+    cp $ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.h .
+    cp $ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx .
 
     mv ${oldDir}/mergedGenericHistos_Bpos.root .
-    aliroot -l -b -q "$ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/makePeriodPlots.C(\"mergedGenericHistos_Bpos.root\",\"${period}/${pass}\")"
+    aliroot -l -b -q "$ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/makePeriodPlots.C(\"mergedGenericHistos_Bpos.root\",\"${period}/${pass}\")"
     cd ${oldDir}
   fi
 
-  aliroot -l -b -q "$ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/makeTrendingPlots.C(\"${trendingFile}\")"
+  aliroot -l -b -q "$ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/makeTrendingPlots.C(\"${trendingFile}\")"
 }
