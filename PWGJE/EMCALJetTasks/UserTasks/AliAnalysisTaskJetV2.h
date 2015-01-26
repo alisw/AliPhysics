@@ -111,7 +111,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
                                                                                  fUserSuppliedR3 = r3; }
-        void                    SetEventPlaneWeights(TH1F* ep)                  {fEventPlaneWeights = ep; }
+        void                    SetEventPlaneWeights(TH1F* ep, Int_t c)         {fEventPlaneWeights[c] = ep; }
         void                    SetAcceptanceWeights(Bool_t w)                  {fAcceptanceWeights = w; }
         void                    SetNameRhoSmall(TString name)                   {fNameSmallRho = name; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
@@ -162,7 +162,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
-        static TH1F*            GetEventPlaneWeights(TH1F* hist);
+        static TH1F*            GetEventPlaneWeights(TH1F* hist, Int_t c);
         static void             PrintTriggerSummary(UInt_t trigger);
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
@@ -254,7 +254,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
-        TH1F*                   fEventPlaneWeights;     // weight histo for the event plane
+        TH1F*                   fEventPlaneWeights[10]; // weight histos for the event plane (centrality dependent)
         Bool_t                  fAcceptanceWeights;     // store centrality dependent acceptance weights
         Float_t                 fEventPlaneWeight;      //! the actual weight of an event
         AliParticleContainer*   fTracksCont;            //! tracks
