@@ -43,8 +43,10 @@ lib$(PAR_MODULE).so: $(OBJS)
 	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" building shared library
 	@$(LD) $(PAR_SOFLAGS) $^ -o $@ $(EXPLLINKLIBS)
 
-# Generate dictionary
-G__$(PAR_MODULE).cxx G__$(PAR_MODULE).h: $(HDRS) $(DHDR)
+# Generate dictionary (rule broken up to accommodate parallel builds)
+G__$(PAR_MODULE).h: G__$(PAR_MODULE).cxx
+
+G__$(PAR_MODULE).cxx: $(HDRS) $(DHDR)
 	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating dictionary
 	@rootcint -f $@ -c $(PAR_INCLUDES) $^
 

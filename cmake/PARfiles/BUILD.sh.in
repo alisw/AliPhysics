@@ -1,2 +1,16 @@
 #!/bin/sh
-exec make
+
+# Automatically generated BUILD.sh for @PARMODULE@
+
+npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null`
+if [ "$npar" == 0 ] ; then
+  npar=`sysctl hw.ncpu | cut -b10 2> /dev/null`
+fi
+if test "$npar" -gt 0 2> /dev/null ; then
+  let npar++
+  echo "Building PARfile using $npar parallel thread(s)"
+  exec make -j$npar
+else
+  echo "Building PARfile"
+  exec make
+fi
