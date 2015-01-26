@@ -36,8 +36,10 @@ logDirectory=${workingDirectory}/logs
 #OCDB storage
 ocdbStorage="raw://"
 #email to
-#MAILTO="fbellini@cern.ch"
-#MAILTO_TPC="mivanov@cern.ch"
+MAILTO=""
+MAILTO_TPC=""
+#mail a short status message to "MAILTO" when ready
+MAILshortSummary=""
 #attach full debug info
 MAILdebugInfo=1
 MAILproductionSummary=1
@@ -110,6 +112,7 @@ updateQA()
   mkdir -p $logDirectory
   [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && return 1
   logFile="$logDirectory/${0##*/}.${dateString}.log"
+  logFileShort="$logDirectory/${0##*/}.${dateString}.short.log"
   touch ${logFile}
   [[ ! -f ${logFile} ]] && echo "cannot write logFile $logFile" && return 1
   echo "logFile = $logFile"
@@ -125,12 +128,12 @@ updateQA()
   ################################################################
   #ze detector loop
   declare -A arrLogSummary
-  declare -A arrPlanB
+  declare -A arrDetectorStatus
   for detectorScript in $ALICE_PHYSICS/PWGPP/QA/detectorQAscripts/*; do
     echo
     echo "##############################################"
     echo $(date)
-    unset planB
+    detectorStatus="OK"
     [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
@@ -439,17 +442,18 @@ updateQA()
         echo "check and maybe manually do:"                          >> ${logSummary}
         echo " rm ${periodLevelLock}"                                >> ${logSummary}
         echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/"  >> ${logSummary}
-        planB=1
+        detectorStatus="planB"
       fi
 
     done #end of merging/trending loop
 
     cd ${workingDirectory}
 
-    #set the planB flag for the detector and proceed with cleanup
-    arrPlanB[${detector}]=${planB}
-    if [[ -z ${planB} ]]; then
+    #set the detectorStatus flag for the detector and proceed with cleanup
+    arrDetectorStatus[${detector}]="${detectorStatus}"
+    if [[ "${detectorStatus}" == "OK" ]]; then
       echo
+      echo "detectorStatus=${detectorStatus}"
       echo removing ${tmpDetectorRunDir}
       rm -rf ${tmpDetectorRunDir}
     fi
@@ -477,11 +481,18 @@ updateQA()
     echo "${detector}"
     logSummary="${arrLogSummary[${detector}]}"
     printLogStatistics "${logSummary}"
-    if [[ ${arrPlanB[${detector}]} == 1 ]]; then
+    if [[ ${arrDetectorStatus[${detector}]} != "OK" ]]; then
       executePlanB
     fi
+    echo "${detector} = ${arrDetectorStatus[${detector}]}" >> ${logFileShort}
   done
   
+  if [[ -n ${MAILTO} && -n ${MAILshortSummary} ]]; then
+    echo "mailing short summary to ${MAILTO}"
+    mail -s "QA ready" ${MAILTO} < ${logFileShort}
+  fi
+
+
   #remove lock
   rm -f ${lockFile}
   return 0
@@ -528,7 +539,7 @@ validate()
   logStatus=$?
   if [[ ${logStatus} -ne 0 ]]; then 
     echo "WARNING not validated: ${1}"
-    planB=1
+    detectorStatus="planB"
     return 1
   fi
   return 0
