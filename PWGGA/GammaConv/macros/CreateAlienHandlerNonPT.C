@@ -7,7 +7,7 @@ AliAnalysisGrid* CreateAlienHandler( TString mode )
 
    plugin->SetAPIVersion	("V1.1x");
    plugin->SetROOTVersion	("v5-34-08");
-   plugin->SetAliROOTVersion	("v5-05-11-AN");
+   plugin->SetAliROOTVersion	("vAN-20150120");
    //plugin->SetProductionMode	(1);
    plugin->SetAdditionalLibs("PWGGAGammaConv.par");
    plugin->SetAdditionalLibs("libTree.so libVMC.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libGeom.so libPhysics.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libPWGGAGammaConv.so");
