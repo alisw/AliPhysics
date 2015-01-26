@@ -82,18 +82,25 @@ AliFourPion *AddTaskFourPion(
     const Int_t cbins = cbins_temp;
 
     TH3F *weightHisto[ktbins][cbins];
+    TH3F *weightHisto2[ktbins][cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
-	TString name = "Weight_Kt_";
-	name += i;
-	name += "_Ky_0_M_";
-	name += j;
-	name += "_ED_0";
-	
-	weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
+	for(Int_t q2bin=0; q2bin<2; q2bin++){
+	  TString name = "Weight_Kt_";
+	  name += i;
+	  name += "_Ky_0_M_";
+	  name += j;
+	  name += "_ED_";
+	  name += q2bin;
+	  if(q2bin==0) {
+	    weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
+	  }else{
+	    weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
+	  }
+	}
       }
     }
-    FourPionTask->SetWeightArrays( kTRUE, weightHisto );
+    FourPionTask->SetWeightArrays( kTRUE, weightHisto, weightHisto2 );
     //
     //
     inputFileEA = TFile::Open(StEAName,"OLD");
