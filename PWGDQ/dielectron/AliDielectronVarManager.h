@@ -1751,23 +1751,19 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
   if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))
     values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
-  if(Req(kNaccTrcklts10) || Req(kNaccTrckltsCorr10))
+  if(Req(kNaccTrcklts10) || Req(kNaccTrcklts10Corr))
     values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event,1.0);
-  if(Req(kNaccTrcklts0916) || Req(kNaccTrckltsCorr0916))
+  if(Req(kNaccTrcklts0916))
     values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
 
   if(Req(kNaccTrckltsCorr))
   values[AliDielectronVarManager::kNaccTrckltsCorr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts],
-						 values[AliDielectronVarManager::kZvPrim]);
+						 values[AliDielectronVarManager::kZvPrim],2);
   if(Req(kNaccTrcklts10Corr))
   values[AliDielectronVarManager::kNaccTrcklts10Corr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts10],
-						 values[AliDielectronVarManager::kZvPrim]);
-  if(Req(kNaccTrcklts0916Corr))
-  values[AliDielectronVarManager::kNaccTrcklts0916Corr] =
-    AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts0916],
-						 values[AliDielectronVarManager::kZvPrim]);
+						 values[AliDielectronVarManager::kZvPrim],1);
 
 
   Double_t ptMaxEv    = -1., phiptMaxEv= -1.;
