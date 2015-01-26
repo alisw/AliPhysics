@@ -4,7 +4,7 @@ AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem
   TString appendixx("HFEQA");
   
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEQA.C");
+  TString configFile("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFEQA.C");
   TString checkconfig="ConfigHFEQA";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
