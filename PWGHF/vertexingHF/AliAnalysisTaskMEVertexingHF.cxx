@@ -68,7 +68,7 @@ void AliAnalysisTaskMEVertexingHF::Init()
  
   if(gROOT->LoadMacro("ConfigVertexingHF.C")) {
     printf("AnalysisTaskMEVertexingHF::Init() \n Using $ALICE_PHYSICS/PWG3/vertexingHF/ConfigVertexingHF.C\n");
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG3/vertexingHF/ConfigVertexingHF.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C");
   }
   fvHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
   fvHF->SetMixEventOn();
