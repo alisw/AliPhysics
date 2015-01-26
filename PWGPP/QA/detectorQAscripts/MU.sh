@@ -16,8 +16,8 @@ runLevelQA()
   fi
 
   # This is used only to extract the muon information
-  ln -s $ALICE_ROOT/PWGPP/MUON/lite/LoadLibsForMuonQA.C
-  ln -s $ALICE_ROOT/PWGPP/MUON/lite/MakeTrend.C
+  ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/LoadLibsForMuonQA.C
+  ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/MakeTrend.C
   aliroot -b -l <<EOF
 .x LoadLibsForMuonQA.C+("maketrend")
 .x MakeTrend.C("${qaFile}",${runNumber},$isMC)
@@ -82,7 +82,7 @@ periodLevelQA()
     triggerList="0x0"
   fi
 
-  ln -s $ALICE_ROOT/PWGPP/MUON/lite/LoadLibsForMuonQA.C
+  ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/LoadLibsForMuonQA.C
 
   # First run tracker (it merges the QAresults and we need it for
   # scaler trending in trigger
@@ -100,7 +100,7 @@ periodLevelQA()
     usePhysicsSelection=0
   fi
 
-  ln -s $ALICE_ROOT/PWGPP/MUON/lite/PlotMuonQA.C
+  ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/PlotMuonQA.C
 aliroot -b <<EOF
 .x LoadLibsForMuonQA.C+("tracktrend");
 .x PlotMuonQA.C+(".","${fileList}",${triggerList},${usePhysicsSelection},"muon_tracker","${mergedQAname}");
@@ -114,7 +114,7 @@ EOF
     runScalers="kTRUE";
   fi
 
-  ln -s $ALICE_ROOT/PWGPP/MUON/lite/trigEffQA.C
+  ln -s $ALICE_PHYSICS/PWGPP/MUON/lite/trigEffQA.C
   aliroot -b <<EOF
 .x LoadLibsForMuonQA.C+("trigtrend");
 .x trigEffQA.C+("${fileList}","QA_muon_trigger.root","${ocdbStorage}",$runScalers,"${mergedQAname}");

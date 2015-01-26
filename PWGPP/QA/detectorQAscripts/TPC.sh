@@ -10,10 +10,10 @@ runLevelQA()
 {
   qaFile=$1
 
-  cp $ALICE_ROOT/PWGPP/TPC/macros/MakeTrend.C .
+  cp $ALICE_PHYSICS/PWGPP/TPC/macros/MakeTrend.C .
   aliroot -b -q -l "MakeTrend.C(\"$qaFile\",$runNumber)" 
 
-  cp $ALICE_ROOT/PWGPP/TPC/macros/drawPerformanceTPCQAMatch.C .
+  cp $ALICE_PHYSICS/PWGPP/TPC/macros/drawPerformanceTPCQAMatch.C .
   aliroot -b -q -l "drawPerformanceTPCQAMatch.C(\"$qaFile\")"
   makeHTMLindexPerRun
 }
@@ -22,8 +22,8 @@ periodLevelQA()
 {
   trendingFile=$1
 
-  cp $ALICE_ROOT/PWGPP/TPC/macros/drawPerformanceTPCQAMatchTrends.C .
-  cp $ALICE_ROOT/PWGPP/TPC/macros/qaConfig.C .
+  cp $ALICE_PHYSICS/PWGPP/TPC/macros/drawPerformanceTPCQAMatchTrends.C .
+  cp $ALICE_PHYSICS/PWGPP/TPC/macros/qaConfig.C .
   aliroot -b -q -l "drawPerformanceTPCQAMatchTrends.C(\"trending.root\",\"PbPb\")"
   makeHTMLindexPerPeriod
 }

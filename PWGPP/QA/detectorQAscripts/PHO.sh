@@ -10,7 +10,7 @@ runLevelQA()
 {
   qaFile=$1
 
-  cp $ALICE_ROOT/PWGGA/PHOSTasks/AutoTrendQA/MakeTrendingPHOSQA.C .
+  cp $ALICE_PHYSICS/PWGGA/PHOSTasks/AutoTrendQA/MakeTrendingPHOSQA.C .
   aliroot -b -q -l "MakeTrendingPHOSQA.C(\"$qaFile\",${runNumber},kFALSE)" 
 }
 
@@ -18,6 +18,6 @@ periodLevelQA()
 {
   trendingFile=$1
 
-  cp $ALICE_ROOT/PWGGA/PHOSTasks/AutoTrendQA/DrawTrendingPHOSQA.C .
+  cp $ALICE_PHYSICS/PWGGA/PHOSTasks/AutoTrendQA/DrawTrendingPHOSQA.C .
   aliroot -b -q -l "DrawTrendingPHOSQA.C(\"trending.root\")"
 }
