@@ -1889,7 +1889,7 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 		break;
 	case 1:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMinPhiCut = 1.7; //OROC C08
+		fMinPhiCut = 1.7; //OROC C08 large cut
 		break;
 	case 2:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
@@ -1903,7 +1903,19 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
 		fMinPhiCut = 3.4; //EMCal tight
 		break;
-
+	case 5:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 2.0; //OROC C08 small cut 
+		break;
+	case 6:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 2.4; //OROC C08 medium cut
+		break;
+	case 7:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMinPhiCut = 2.2; //OROC C08 on top cut
+		break;
+		
 	default:
 		AliError(Form("MinPhiCut not defined %d",minPhiCut));
 		return kFALSE;
@@ -1923,7 +1935,7 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 		break;
 	case 1:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMaxPhiCut = 4.3; //OROC C08
+		fMaxPhiCut = 4.3; //OROC C08 large cut
 		break;
 	case 2:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
@@ -1937,7 +1949,19 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
 		fMaxPhiCut = 1.; //EMCal
 		break;
-
+	case 5:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 4.0; //OROC C08 medium cut 
+		break;
+	case 6:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 3.6; //OROC C08 small cut
+		break;
+	case 7:
+		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+		fMaxPhiCut = 3.8; //OROC C08 on top cut
+		break;
+		
 	default:
 		AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
 		return kFALSE;
