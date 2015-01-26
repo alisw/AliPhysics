@@ -78,7 +78,7 @@ gStyle->SetOptStat(0);
 	gSystem->Load("libPWGTools");
 	gSystem->Load("libPWGLFspectra");
   	
-  	gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/QAPlotsBoth.C");
+  	gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TestAOD/QAPlotsBoth.C");
 	Double_t mass[3];
 	mass[0]   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
 	mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
@@ -162,22 +162,73 @@ gStyle->SetOptStat(0);
 	// The option one will be alaways use.
 	
 	neventsmcall= ecutsmc->NumberOfProcessedEvents();
+	if(managermc->GetEventStatHist())
+	{
+		if(managermc->GetEventStatHist()->GetBinContent(1)!=neventsmcall)
+			cout<<"merging problem MC"<<endl;
+		neventsmcall=managermc->GetEventStatHist()->GetBinContent(1);	
+	}
+
+		
+
+
 	if(options&knormalizationtoeventspassingPhySel)
 	{
 		//neventsmcall= ecutsmc->NumberOfProcessedEvents();
 		 neventsdata=ecutsdata->NumberOfPhysSelEvents();
 		 neventsmc=ecutsmc->NumberOfPhysSelEvents();
+		 if(managerdata->GetEventStatHist())
+		 {
+			if(managerdata->GetEventStatHist()->GetBinContent(2)!=neventsdata)
+				cout<<"merging problem data"<<endl;
+			neventsdata=managerdata->GetEventStatHist()->GetBinContent(2);
+		 }	
+		 if(managermc->GetEventStatHist())
+		 {
+			if(managermc->GetEventStatHist()->GetBinContent(2)!=neventsmc)
+				cout<<"merging problem MC"<<endl;
+			neventsmc=managermc->GetEventStatHist()->GetBinContent(2);	
+		 }
+		
+
 	}
 	else if ((options&knormalizationwithbin0integralsdata)||(options&knormalizationwithbin0integralsMC))
 	{
 		neventsdata=Normaliztionwithbin0integrals(options);
 		neventsmc=ecutsmc->NumberOfPhysSelEvents();
+		if(managermc->GetEventStatHist())
+		{
+			if(managermc->GetEventStatHist()->GetBinContent(2)!=neventsmc)
+				cout<<"merging problem MC"<<endl;
+			neventsmc=managermc->GetEventStatHist()->GetBinContent(2);	
+		 }
+		
+
+
+
 	}
 	else
 	{
 		neventsdata=ecutsdata->NumberOfEvents(); //number of accepted events
 		 neventsmc=ecutsmc->NumberOfEvents();
 		neventsmcall= ecutsmc->NumberOfEvents();
+		if(managerdata->GetEventStatHist())
+		{
+			if(managerdata->GetEventStatHist()->GetBinContent(3)!=neventsdata)
+				cout<<"merging problem data"<<endl;
+			neventsdata=managerdata->GetEventStatHist()->GetBinContent(3);
+		}	
+		if(managermc->GetEventStatHist())
+		{
+			if(managermc->GetEventStatHist()->GetBinContent(3)!=neventsmc)
+				cout<<"merging problem MC"<<endl;
+			neventsmc=managermc->GetEventStatHist()->GetBinContent(3);
+			neventsmcall=managermc->GetEventStatHist()->GetBinContent(3);
+		}
+
+
+
+
 
 	}
 	GetMCTruth(MCTruth);
