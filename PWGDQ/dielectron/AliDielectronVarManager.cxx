@@ -390,6 +390,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NaccTrcklts",            "N_{acc. trkl} #cbar_{#||{#eta}<1.6}",                ""},
   {"NaccTrcklts10",          "N_{acc. trkl} #cbar_{#||{#eta}<1.0}",                ""},
   {"NaccTrcklts0916",        "N_{acc. trkl} #cbar_{-1.6<#eta<-0.9}^{0.9<#eta<1.6}",""},
+  {"NaccTrckltsCorr",        "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.6}",        ""},
+  {"NaccTrcklts10Corr",      "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.0}",        ""},
   
   {"NaccTrckltsEsd05",       "N_{acc. trkl} #cbar_{#||{#eta}<0.5} (SPD)",          ""},
   {"NaccTrckltsEsd10",       "N_{acc. trkl} #cbar_{#||{#eta}<1.0} (SPD)",          ""},

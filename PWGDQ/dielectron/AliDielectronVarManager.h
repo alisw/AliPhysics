@@ -395,9 +395,12 @@ public:
     kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
     kMatchEffITSTPC,         // ruff estimate on the ITS-TPC matching efficiceny
-    kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6        
-    kNaccTrcklts10,          // number of accepted SPD tracklets in |eta|<1.        
+    kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6
+    kNaccTrcklts10,          // number of accepted SPD tracklets in |eta|<1.
     kNaccTrcklts0916,        // number of accepted SPD tracklets in 0.9<|eta|<1.6
+    kNaccTrckltsCorr,        // number of accepted SPD tracklets in |eta|<1.6 (corrected)
+    kNaccTrcklts10Corr,      // number of accepted SPD tracklets in |eta|<1. (corrected)
+    kNaccTrcklts0916Corr,    // number of accepted SPD tracklets in 0.9<|eta|<1.6 (corrected)
     
     kNaccTrckltsEsd05,       // number of accepted SPD tracklets in |eta|<0.5 (AliESDEvent::EstimateMultiplicity())
     kNaccTrckltsEsd10,       // number of accepted SPD tracklets in |eta|<1.0 (AliESDEvent::EstimateMultiplicity())
@@ -1746,12 +1749,21 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
   if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
-  if(Req(kNaccTrcklts))     values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
-  if(Req(kNaccTrcklts10))   values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event,1.0);
-  if(Req(kNaccTrcklts0916)) values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
-  //  values[AliDielectronVarManager::kNaccTrcklts05]   = AliDielectronHelper::GetNaccTrcklts(event, 0.5); // AODHeader::fRefMultComb05
-  //  values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event, 1.0);
-  //  values[AliDielectronVarManager::kNaccTrckltsCorr] = AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts], values[AliDielectronVarManager::kZvPrim]);
+  if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))
+    values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
+  if(Req(kNaccTrcklts10) || Req(kNaccTrcklts10Corr))
+    values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event,1.0);
+  if(Req(kNaccTrcklts0916))
+    values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
+
+  if(Req(kNaccTrckltsCorr))
+  values[AliDielectronVarManager::kNaccTrckltsCorr] =
+    AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts],
+						 values[AliDielectronVarManager::kZvPrim],2);
+  if(Req(kNaccTrcklts10Corr))
+  values[AliDielectronVarManager::kNaccTrcklts10Corr] =
+    AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts10],
+						 values[AliDielectronVarManager::kZvPrim],1);
 
 
   Double_t ptMaxEv    = -1., phiptMaxEv= -1.;
