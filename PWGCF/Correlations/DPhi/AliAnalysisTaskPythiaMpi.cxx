@@ -41,13 +41,7 @@ ClassImp(AliAnalysisTaskPythiaMpi)
 AliAnalysisTaskPythiaMpi::AliAnalysisTaskPythiaMpi(): 
   fMcEvent(0x0),  
   fMcHandler(0x0),
-  fOutputList(0),
-  fHistEvents(0),
-  fHistPt(0),
-  fHistEta(0),
-  fHistMpi(0),
-  fHistMultMpi(0),
-  fHistdNdetaMpi(0)
+  fOutputList(0)
 {
   //
   // Default constructor
@@ -60,13 +54,7 @@ AliAnalysisTaskPythiaMpi::AliAnalysisTaskPythiaMpi(const char* name):
   AliAnalysisTaskSE(name),
   fMcEvent(0x0),  
   fMcHandler(0x0),
-  fOutputList(0),
-  fHistEvents(0),
-  fHistPt(0),
-  fHistEta(0),
-  fHistMpi(0),
-  fHistMultMpi(0),
-  fHistdNdetaMpi(0)
+  fOutputList(0)
 {
   //
   // Specific constructor. Initialization of Inputs and Outputs
@@ -87,12 +75,6 @@ AliAnalysisTaskPythiaMpi& AliAnalysisTaskPythiaMpi::operator=(const AliAnalysisT
     fMcEvent = c.fMcEvent;
     fMcHandler = c.fMcHandler;
     fOutputList = c.fOutputList;
-    fHistEvents = c.fHistEvents;
-    fHistPt = c.fHistPt;
-    fHistEta = c.fHistEta;
-    fHistMpi = c.fHistMpi;
-    fHistMultMpi = c.fHistMultMpi;
-    fHistdNdetaMpi = c.fHistdNdetaMpi;
 
   }
   return *this;
@@ -104,13 +86,7 @@ AliAnalysisTaskPythiaMpi::AliAnalysisTaskPythiaMpi(const AliAnalysisTaskPythiaMp
   AliAnalysisTaskSE(c),
   fMcEvent(c.fMcEvent),
   fMcHandler(c.fMcHandler), 
-  fOutputList(c.fOutputList),
-  fHistEvents(c.fHistEvents),
-  fHistPt(c.fHistPt),
-  fHistEta(c.fHistEta),
-  fHistMpi(c.fHistMpi),
-  fHistMultMpi(c.fHistMultMpi),
-  fHistdNdetaMpi(c.fHistdNdetaMpi)
+  fOutputList(c.fOutputList)
 {
   //Copy Constructor
 }
@@ -124,12 +100,6 @@ AliAnalysisTaskPythiaMpi::~AliAnalysisTaskPythiaMpi()
   //
   Info("~AliAnalysisTaskPythiaMpi","Calling Destructor");
   if(fOutputList) delete fOutputList;
-  if(fHistEvents) delete fHistEvents;
-  if(fHistPt) delete fHistPt;
-  if(fHistEta) delete fHistEta;
-  if(fHistMpi) delete fHistMpi;
-  if(fHistMultMpi) delete fHistMultMpi;
-  if(fHistdNdetaMpi) delete fHistdNdetaMpi;
   
 }
 
@@ -142,31 +112,31 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
  
-  fHistEvents = new TH1I("fHistNEvents","fHistNEvents",2,0,2);
+  TH1I *fHistEvents = new TH1I("fHistNEvents","fHistNEvents",2,0,2);
   fHistEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistEvents->GetXaxis()->SetBinLabel(2,"Events with |zVtx|<10cm");
 
-  fHistPt = new TH1F("fHistPt","p_{T} distribution",15,0.2,5.0);
+  TH1F *fHistPt = new TH1F("fHistPt","p_{T} distribution",15,0.2,5.0);
   fHistPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPt->GetYaxis()->SetTitle("dN/dp_{T} (GeV/c^{-1})");
   fHistPt->SetMarkerStyle(kFullCircle);
 
-  fHistEta = new TH1F("fHistEta","eta distribution",20,-1,1);
+  TH1F *fHistEta = new TH1F("fHistEta","eta distribution",20,-1,1);
   fHistEta->GetXaxis()->SetTitle("#eta");
   fHistEta->GetYaxis()->SetTitle("dN/d#eta");
   fHistEta->SetMarkerStyle(kFullCircle);
 
-  fHistMpi = new TH1F("fHistMpi","MPIs distribution",50,0,50);
+  TH1F *fHistMpi = new TH1F("fHistMpi","MPIs distribution",100,0,100);
   fHistMpi->GetXaxis()->SetTitle("#MPIs");
   fHistMpi->GetYaxis()->SetTitle("dN/dMPIs");
   fHistMpi->SetMarkerStyle(kFullCircle);
 
-  fHistMultMpi = new TH2F("fHistMultMpi","Multiplicity vs MPIs",50,0,50,100,0,1e4);
+  TH2F *fHistMultMpi = new TH2F("fHistMultMpi","Multiplicity vs MPIs",100,0,100,100,0,1e4);
   fHistMultMpi->GetXaxis()->SetTitle("#MPIs");
   fHistMultMpi->GetYaxis()->SetTitle("MC particles");
   fHistMultMpi->SetMarkerStyle(kFullDotSmall);
 
-  fHistdNdetaMpi = new TH2F("fHistdNdetaMpi","dN/d#etadMPIs",50,0,50,100,-5,5);
+  TH2F *fHistdNdetaMpi = new TH2F("fHistdNdetaMpi","dN/d#etadMPIs",100,0,100,100,-5,5);
   fHistdNdetaMpi->GetXaxis()->SetTitle("#MPIs");
   fHistdNdetaMpi->GetYaxis()->SetTitle("#eta");
   //fHistdNdetaMpi->SetMarkerStyle();
@@ -218,7 +188,10 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
    // Execute analysis for current event
    //
    Init();
+
+   TH1I* fHistEvents = (TH1I*) fOutputList->FindObject("fHistNEvents");
    fHistEvents->Fill(0.5);
+
    if(fMcHandler){
       fMcEvent = fMcHandler->MCEvent(); 
    }else{
@@ -237,14 +210,19 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
 
    Printf("MC particles: %d",fMCEvent->GetNumberOfTracks());
 
-
    //MPIs
+   TH1F* fHistMpi = (TH1F*) fOutputList->FindObject("fHistMpi");
    Double_t Nmpi = (AliPythia8::Instance())->GetNMPI();
    fHistMpi->Fill(Nmpi);
 
+   TH2F* fHistMultMpi = (TH2F*) fOutputList->FindObject("fHistMultMpi");
    fHistMultMpi->Fill(Nmpi,fMCEvent->GetNumberOfTracks());
 
    //loop over the tracks 
+
+   TH1F* fHistPt = (TH1F*) fOutputList->FindObject("fHistPt");
+   TH1F* fHistEta = (TH1F*) fOutputList->FindObject("fHistEta");
+   TH2F* fHistdNdetaMpi = (TH2F*) fOutputList->FindObject("fHistdNdetaMpi");
 
    for(Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++){
      AliVParticle* track = fMCEvent->GetTrack(iTracks);
@@ -252,13 +230,13 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
        Printf("ERROR: Could not receive track %d (mc loop)",iTracks);
        continue;
      }
+     
      fHistPt->Fill(track->Pt());
      fHistEta->Fill(track->Eta());
 
      fHistdNdetaMpi->Fill(Nmpi,track->Eta());
    }
    
-
    PostData(1, fOutputList);
    return; 
    

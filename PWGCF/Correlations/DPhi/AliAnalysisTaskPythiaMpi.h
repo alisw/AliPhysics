@@ -40,15 +40,9 @@ class AliAnalysisTaskPythiaMpi: public AliAnalysisTaskSE
     AliMCEvent*              fMcEvent;    //! MC event                    
     AliInputEventHandler*    fMcHandler;  //! MCEventHandler             
  
-    TList*        fOutputList;
-    TH1I*         fHistEvents;
-    TH1F*         fHistPt; //pT distribution
-    TH1F*         fHistEta; //eta distribution
-    TH1F*         fHistMpi; //MPIs distribution
-    TH2F*         fHistMultMpi; //Multiplicity distribution vs MPIs
-    TH2F*         fHistdNdetaMpi; //dNdEta vs MPIs
+    TList*        fOutputList; //! output list for histograms
 
-    ClassDef(AliAnalysisTaskPythiaMpi, 1) 
+    ClassDef(AliAnalysisTaskPythiaMpi, 2) 
 };
  
 #endif
