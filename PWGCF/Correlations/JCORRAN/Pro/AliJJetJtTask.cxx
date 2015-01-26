@@ -206,7 +206,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 
 	fJJetJtAnalysis->SetCentralityBin( cBin );
 	fJJetJtAnalysis->SetCentrality( fcent );
-	fJJetJtAnalysis->SetZVertexBin( cBin );
+	fJJetJtAnalysis->SetZVertexBin( zBin );
 	fJJetJtAnalysis->SetZVertex( zVert );
 
 

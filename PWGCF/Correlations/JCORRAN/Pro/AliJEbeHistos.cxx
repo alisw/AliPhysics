@@ -20,6 +20,13 @@ AliJEbeHistos::AliJEbeHistos(AliJCard* cardP):
 	fhistoList = new TList();
 	fTopDirectory = gDirectory;
 
+    for (int i=0; i<kMaxNoCentrBin; i++){
+        fhMultiCount[i] = 0x0;
+    }
+    for (int i=0; i<kNHarmonics; i++){
+       fhEPCosndPhi[i] = 0x0;
+       fhEPCosndPhi2[i] = 0x0;
+    }
 	//fhtyp[1] = "Real";
 	//fhtyp[2] = "Mixed";
 	//fhtyp[3] = "Rap. Gap";
@@ -36,6 +43,13 @@ AliJEbeHistos::AliJEbeHistos(const AliJEbeHistos& obj):
 	fTopDirectory(obj.fTopDirectory)
 {
 	// copy constructor
+    for (int i=0; i<kMaxNoCentrBin; i++){
+        fhMultiCount[i] = obj.fhMultiCount[i];
+    }
+    for (int i=0; i<kNHarmonics; i++){
+       fhEPCosndPhi[i] = obj.fhEPCosndPhi[i];
+       fhEPCosndPhi2[i] = obj.fhEPCosndPhi2[i];
+    }
 }
 
 //______________________________________________________________________________

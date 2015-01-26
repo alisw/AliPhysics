@@ -63,9 +63,9 @@ class AliJEventPool {
         AliJCard  *fcard;  // card
         AliJCorrelations *fcorrelations; // correlation object
         AliJHistos *fhistos;  // histos
-        AliJBaseTrack *ftk; // track
-        AliJBaseTrack *ftk1; // track
-        AliJBaseTrack *ftk2; // track
+        //AliJBaseTrack *ftk; // track
+        //AliJBaseTrack *ftk1; // track
+        //AliJBaseTrack *ftk2; // track
         particleType fthisPoolType; // pool type
 
         TClonesArray  *fpoolList;  // pool list

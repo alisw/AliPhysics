@@ -324,10 +324,10 @@ public:
   // PHENIX histograms
   //===================================================
   //==Run-by-Run calib ================================
-  TH1D *fTofPbSc[kMaxNoRuns]; TH1D *fTofPbGl[kMaxNoRuns]; // comment me
+  //TH1D *fTofPbSc[kMaxNoRuns]; TH1D *fTofPbGl[kMaxNoRuns]; // comment me
   //==Pt and FlipSlide Spectra=============================================
-  TH1D *fhCglPt3PC[kMaxNoCentrBin],    *fhCglPtFlip3PC[kMaxNoCentrBin]; // comment me
-  TH1D *fhCglPt32PC[kMaxNoCentrBin],   *fhCglPtFlip32PC[kMaxNoCentrBin]; // comment me
+  //TH1D *fhCglPt3PC[kMaxNoCentrBin],    *fhCglPtFlip3PC[kMaxNoCentrBin]; // comment me
+  //TH1D *fhCglPt32PC[kMaxNoCentrBin],   *fhCglPtFlip32PC[kMaxNoCentrBin]; // comment me
 
 
   AliJTH1D fhTrackSelection; // checking bit convention

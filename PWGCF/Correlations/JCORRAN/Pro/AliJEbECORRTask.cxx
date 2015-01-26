@@ -451,6 +451,8 @@ double AliJEbECORRTask::RunEbEFlowAnalysis(AliVEvent *event, TClonesArray* input
 		fEbeHistos->fhEPCosndPhi2[ih]->Reset();
 	}
 	AliEventplane *ep = event->GetEventplane();
+
+	for( int ih=firstH;ih<kNHarmonics;ih++ ) Psi[ih] = 0;
 	if(ep){
 		for( int ih=firstH;ih<kNHarmonics;ih++ ){
 			Psi[ih] = ep->CalculateVZEROEventPlane(event,10,ih,qxTot,qyTot);
@@ -512,12 +514,11 @@ double AliJEbECORRTask::RunEbEFlowAnalysis(AliVEvent *event, TClonesArray* input
 			if(track->Pt()>lowpTcut){
 				fEbeHistos->fhEPCosndPhi2[ih]->Fill( cos(ih*(track->Phi()-Psi[ih])) );
 			}
-			//fEbeHistos->hEPdNdPhi[id][ih]->Fill( track->Phi()-Psi[ih] );
-			fEbeHistos->fhCosndPhiPt[cBin][ih]->Fill(track->Pt(), cos(ih*(track->Phi()-Psi[ih])));
 			fEbeHistos->fhCounter[cBin][ih]->Fill(track->Pt(),1);
 		}
 	} // track loop
 
+    for(int ih = firstH ; ih < kNHarmonics ; ih++)  vobsalt[ih] = 0;
 	// calculating Vn obs
 	if(counterA > 1 && counterB > 1){
 

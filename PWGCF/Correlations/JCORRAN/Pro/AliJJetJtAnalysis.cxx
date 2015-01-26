@@ -35,68 +35,86 @@
 AliJJetJtAnalysis::AliJJetJtAnalysis():
 	fInputList(NULL)
 	, fJetList(NULL)
-	, fJetListOfList()
-	//, fJetBgList(NULL)
-	, fJetBgListOfList()
+	, fJetListOfList() // Jet finders container
+	//, fJetBgList(NULL) 
+	, fJetBgListOfList() // Bg jet list of list container
+    , fJetEtaCut() // Jet's eta cut
     , fJetTriggPtBorders(NULL)
     , fJetConstPtLowLimits(NULL)
     , fJetAssocPtBorders(NULL)
     , fDeltaRBorders(NULL)
-    , nJetContainer(0)
-	, fCard(NULL)
-	, fJJetAnalysis(NULL)
-    , fJetFinderName(0)
-    , fConeSizes(0)
-	, fEfficiency(0x0)
+    , nJetContainer(0) //number of Jets finders
+	, fCard(NULL) // pointer to AliJCard
+	, fJJetAnalysis(NULL) //pointer to AliJJetAnalysis
+    , fJetFinderName(0) // string array for jet finder tags
+    , fConeSizes(0)    //array of cone sizes of Jets finder
+	, fEfficiency(0x0) //pointer to tracking efficiency
 	, cBin(-1)
-	, fcent(-999)
+	, fcent(-999) // values for centrality
 	, zBin(-1)
 	, zVert(-999)
-    , fTracks(NULL)
+    , fTracks(NULL) //list of tracks
     , fHMG(NULL)
-    , fJetFinderBin()
-    , fJetTriggerBin()
-    , fTrkPtBin()
-    , fTrkLimPtBin()
-    , fdRBin()
-    , fiHist()
-    , fhNumber()
-    , fhKNumber()
-    , fhJetPt()
-    , fhJetPtBin()
-    , fhZ()
-    , fhZBin()
-    , fhJt()
-    , fhJtBin()
-    , fhJtWeightBin()
-    , fhLogJtWeightBin()
-    , fhJtWithPtCutWeightBinBin()
+    , fJetFinderBin() //histmanager axis
+    , fJetTriggerBin() //histmanager axis
+    , fTrkPtBin() //histmanager axis
+    , fTrkLimPtBin() //histmanager axis
+    , fdRBin() //histmanager axis
+    , fiHist() //histmanager axis
+    , fhNumber() // number of jets
+    , fhKNumber() // number of axis rotation
+    , fhJetPt() //Jet pt distribution
+    , fhJetPtBin() //Jet pt as a fn of jet pt 
+    , fhZ() // z dist
+    , fhZBin() // z dist as fn of jet pt
+    , fhJt() // jt dist
+    , fhJtBin() // jt as fn of jet pt
+    , fhJtWeightBin() // jt in P.S as fn of jet pt
+    , fhLogJtWeightBin() //log jt in P.S as fn of jet pt
+    , fhJtWithPtCutWeightBinBin() // jt in P.S as fns of jet pt, const pt
     , fhLogJtWithPtCutWeightBinBin()
-    , fhJtBinLimBin()
+    , fhJtBinLimBin() //jt with maximum const pt bin
     , fhJtWeightBinLimBin()
     , fhLogJtWeightBinLimBin()
     , fhJetBgPt()
     , fhJetBgPtBin()
-    , fhBgZ()
-    , fhBgZBin()
-    , fhBgJt()
-    , fhBgJtBin()
-    , fhBgJtWeightBin()
-    , fhBgLogJtWeightBin()
-    , fhBgJtWithPtCutWeightBinBin()
-    , fhBgLogJtWithPtCutWeightBinBin()
-    , fhBgJtWithPtCutWeightBinBinSmallerR()
+    , fhBgZ() //Bg Z 
+    , fhBgZBin() //Bg Z as fn of jet pt
+    , fhBgJt() //Bg jt 
+    , fhBgJtBin() //Bg jt as fn of jet pt
+    , fhBgJtWeightBin() //Bg jt in PS as fn of jet pt
+    , fhBgLogJtWeightBin() // log of Bg jt as fn of jet pt
+    // Bg jt as fns of jet pt, track pt
+    , fhBgJtWithPtCutWeightBinBin() 
+    // log of Bg jt in PS as fns of jet pt, track pt
+    , fhBgLogJtWithPtCutWeightBinBin() 
+    // Bg jt in PS as fns of jet pt, track pt
+    // if R = 0.6, all bg jts are filled for all R<0.6
+    , fhBgJtWithPtCutWeightBinBinSmallerR() 
     , fhBgLogJtWithPtCutWeightBinBinSmallerR()
+    // Bg jt in PS as fns of jet pt, track pt
+    // from new jet axis with present tracks
     , fhBgJtWithPtCutWeightBinBinDiffR()
     , fhBgLogJtWithPtCutWeightBinBinDiffR()
+    // Bg jt as a fn of jet pt 
+    // with maximum constituent's pT bin in a jet
     , fhBgJtBinLimBin()
     , fhBgJtWeightBinLimBin()
     , fhBgLogJtWeightBinLimBin()
+    // dE = E of charged jet - E of shared tracks of
+    // charged and full jets
     , fhdeltaE()
+    // dN = N of charged jet - N of shared tracks of
+    // charged and full jets
     , fhdeltaN()
+    // Fulljet E as a fn of charged jet E 
     , fhFullJetEChJetBin()
+    // dR between full and charged jet 
+    // as a fn of charged jet E
     , fhFullChdRChJetBin()
+    // x-axis: fulljet E, y: ch jet E when dN == 0
     , fh2DFullEvsChEdN0()
+    // x-axis: fulljet E, y: ch jet E when dN != 0
     , fh2DFullEvsChEdNnot0()
 {
 
@@ -106,8 +124,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
 	fInputList(NULL)
 	, fJetList(NULL)
 	, fJetListOfList()
-	//, fJetBgList(NULL)
 	, fJetBgListOfList()
+    , fJetEtaCut() 
     , fJetTriggPtBorders(NULL)
     , fJetConstPtLowLimits(NULL)
     , fJetAssocPtBorders(NULL)
@@ -178,6 +196,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
 	, fJetListOfList(ap.fJetListOfList)
 	//, fJetBgList(ap.fJetBgList)
 	, fJetBgListOfList(ap.fJetBgListOfList)
+    , fJetEtaCut(ap.fJetEtaCut) // Jet's eta cut
     , fJetTriggPtBorders(ap.fJetTriggPtBorders)
     , fJetConstPtLowLimits(ap.fJetConstPtLowLimits)
     , fJetAssocPtBorders(ap.fJetAssocPtBorders)
@@ -279,6 +298,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     fJetConstPtLowLimits = fCard->GetVector("JetConstPtLowLimits");
     fJetAssocPtBorders = fCard->GetVector("JetAssocPtBorders");
     fDeltaRBorders = fCard->GetVector("DeltaRBorders");
+    fJetEtaCut = fCard-> Get("JetEtaCut");
 
 	fEfficiency = new AliJEfficiency();
     // 0:NoEff, 1:Period 2:RunNum 3:Auto
@@ -525,12 +545,12 @@ void AliJJetJtAnalysis::UserExec(){
     //FillBgJtWithSmallerR(Bg jet finder array, old R, new R )
     //fJetBgListOfList[i] where {i=0-5;full0.4,full0.5,full0.6,Ch0.4,Ch0.5,Ch0.6}
     //Caution!! these array number should be changed WHEN jet finders change
-    this->FillBgJtWithSmallerR(fJetBgListOfList[1], 1, 0.4,0);
-    this->FillBgJtWithSmallerR(fJetBgListOfList[2], 2, 0.4,1);
-    this->FillBgJtWithSmallerR(fJetBgListOfList[2], 2, 0.5,2);
-    this->FillBgJtWithSmallerR(fJetBgListOfList[4], 4, 0.4,3);
-    this->FillBgJtWithSmallerR(fJetBgListOfList[5], 5, 0.4,4);
-    this->FillBgJtWithSmallerR(fJetBgListOfList[5], 5, 0.5,5);
+    this->FillBgJtWithSmallerR(fJetBgListOfList[1], 0.4,0);
+    this->FillBgJtWithSmallerR(fJetBgListOfList[2], 0.4,1);
+    this->FillBgJtWithSmallerR(fJetBgListOfList[2], 0.5,2);
+    this->FillBgJtWithSmallerR(fJetBgListOfList[4], 0.4,3);
+    this->FillBgJtWithSmallerR(fJetBgListOfList[5], 0.4,4);
+    this->FillBgJtWithSmallerR(fJetBgListOfList[5], 0.5,5);
    
     //Fill jt with diff cone axes (old axis iContainer, new axis, iHist) 
     this->FillBgJtWithDiffAxes(1, 0,0);
@@ -596,7 +616,7 @@ void AliJJetJtAnalysis::WriteHistograms(){
 }
 
 
-
+// Fill jt to  histograms and calculate bg jt and fill it into histograms
 void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
 {	
 
@@ -629,6 +649,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
     // iJet loop for an event
     for (int i = 0; i<Jets->GetEntries(); i++){
         AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
+        if (!jet) continue;
+        if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
         pT = jet->Pt();
         if (pT<(*fJetTriggPtBorders)[1]) continue;
         iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos
@@ -690,9 +712,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
 
         vOrtho.SetVect(jet->Vect().Orthogonal());
         vOrtho.SetE(jet->E());
-        //if (Log) cout<<"Before R caluation, R = "<<TMath::Sqrt(it->area()/TMath::Pi())<<endl;
-        //R_area = TMath::Sqrt(it->area()/TMath::Pi())*Rs[order]/R;
-        //if (Log )cout<<"Rs[order] = "<<Rs[order]<<" R = "<<R<<" Bg R area : "<<R_area<<endl;
+
+        k=0; // count number of rotations of the orthogonal axis of a jet. 
 
         //Background jet (iBgJet) will be produced. This background jet is orthogonal to the iJet.  
         //If there is another jJet, then iBgJet will be consecutevely moved not to 
@@ -702,6 +723,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
             for (int j = 0; j<Jets->GetEntries(); j++){
                 if (i == j) continue;
                 AliJJet *jet2 = dynamic_cast<AliJJet*>( Jets->At(j) );
+                if (!jet2) continue;
 
                 if (k>15) {
                     fhNumber[iContainer]->Fill(5.5);
@@ -800,21 +822,22 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
                         ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
                 }
             }
-            cout<<"check : trackN, contbgN = "<<  
-            fTracks->GetEntries() <<" "<<
-            jbg->GetConstituents()->GetEntries()<<endl;   
         }
 
 
     }
 }
 
-void AliJJetJtAnalysis::FillBgJtWithSmallerR(const TClonesArray &Jets,int iContainer, double nR, int iHist){
+// new Bg jt will be filled with a new cone size nR at histograms in iHist
+// cone size of Jets always shold be greather than nR 
+// to calcualte new bg jt with smaller cone size from Jets constituents with larger cone size
+void AliJJetJtAnalysis::FillBgJtWithSmallerR(const TClonesArray &Jets, double nR, int iHist){
     double iBin = -1, iptaBin = -1;
     double pT=-1, z=-1,jt=-1,  pta=-1;
     double effCorrection = -1;
     for (int i = 0; i<Jets.GetEntries(); i++){
         AliJJet *jet = dynamic_cast<AliJJet*>( Jets.At(i) );
+        if (!jet) continue;
         pT = jet->Pt();
         if (pT<(*fJetTriggPtBorders)[1]) continue;
         iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos
@@ -828,13 +851,7 @@ void AliJJetJtAnalysis::FillBgJtWithSmallerR(const TClonesArray &Jets,int iConta
             effCorrection = 1.0/con->GetTrackEff();
             iptaBin = GetBin(fJetAssocPtBorders, pta);
             if( iptaBin < 0 ) continue;
-            if (jet->DeltaR(*con)>nR){
-                cout<<" old Bg R  : "<<fConeSizes[iContainer]
-                    <<" jet con R : "<<jet->DeltaR(*con)
-                    <<endl;
-                continue;
-
-            }
+            if (jet->DeltaR(*con)>nR) continue;
             jt = (con->Vect()-z*jet->Vect()).Mag();
             fhBgJtWithPtCutWeightBinBinSmallerR[iHist][iBin][iptaBin]
                 ->Fill( jt, 1.0/jt * effCorrection );
@@ -848,7 +865,8 @@ void AliJJetJtAnalysis::FillBgJtWithSmallerR(const TClonesArray &Jets,int iConta
 
 }
 
-
+// bg jt is newly calculated by a jet axis of fJetBgListOfList[ian]
+// with bg constituents from fJetBgListOfList[iao]
 void AliJJetJtAnalysis::FillBgJtWithDiffAxes (
       int iao
     , int ian
@@ -864,17 +882,11 @@ void AliJJetJtAnalysis::FillBgJtWithDiffAxes (
      
     for (int io = 0; io<ao.GetEntries(); io++){
         AliJJet *jo = dynamic_cast<AliJJet*>( ao.At(io) );
+        if (!jo) continue;
         for (int in = 0; in<an.GetEntries(); in++){
             AliJJet *jn = dynamic_cast<AliJJet*>( an.At(in) );
-            if (jo->DeltaR(*jn) > fConeSizes[ian]) {
-                continue;
-            } else{
-                cout << "iao ian new axis delta R "
-                     << iao <<" "
-                     << ian <<" "
-                     << jo->DeltaR(*jn)
-                     <<endl;
-            }
+            if (!jn) continue;
+            if (jo->DeltaR(*jn) > fConeSizes[ian]) continue;
             pT = jn->Pt();
             if (pT<(*fJetTriggPtBorders)[1]) continue;
             iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos

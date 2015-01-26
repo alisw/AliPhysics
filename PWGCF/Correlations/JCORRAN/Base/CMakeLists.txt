@@ -14,10 +14,10 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGCFCorrelationsJCORRANPro)
+set (MODULE PWGCFCorrelationsJCORRAN)
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -31,18 +31,33 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-	AliJEbeHistos.cxx
-	AliJEbePercentile.cxx
-	AliJEbECORRTask.cxx
-	AliJJetTask.cxx
-	AliJDiJetAnalysis.cxx
-	AliJDiJetTask.cxx
-	AliJJetCORRAnalysis.cxx
-	AliJJetCORRTask.cxx
-	AliJJetJtAnalysis.cxx
-	AliJJetJtTask.cxx
-	AliJJetAnalysis.cxx
-)
+  AliJCORRAN.cxx
+  AliJTrackCounter.cxx
+  AliJCORRANTask.cxx
+  AliJEfficiencyTask.cxx
+  AliJDiHadronCorrTask.cxx
+  AliJFilter.cxx
+  AliJEfficiencyScanner.cxx
+  AliJBaseEventHeader.cxx
+  AliJBaseTrack.cxx
+  AliJEventHeader.cxx
+  AliJJet.cxx
+  AliJMCTrack.cxx
+  AliJPhoton.cxx
+  AliJPiZero.cxx
+  AliJRunHeader.cxx
+  AliJTrack.cxx
+  AliJHistManager.cxx
+  AliJCorrelations.cxx
+  AliJDataManager.cxx
+  AliJRunTable.cxx
+  AliJHistos.cxx
+  AliJEventPool.cxx
+  AliJEfficiency.cxx
+  AliJTrackCut.cxx
+  AliJBaseCard.cxx
+  AliJCard.cxx
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

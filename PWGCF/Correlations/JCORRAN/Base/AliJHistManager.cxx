@@ -858,11 +858,15 @@ TString Join( vector<TString>& ss , TString del){
     return s;
 }
 
+template class AliJTH1Derived<TH1D>;
+template class AliJTH1Derived<TH2D>;
+template class AliJTH1Derived<TProfile>;
+
 bool OutOf( int i, int x, int y ){ return ( i<x || i>y ); }
+
 #include <TFile.h>
 
-void testAliJArray(){
-    cout<<"START"<<endl;
+void ttestAliJArray(){
     AliJHistManager * fHMG;
     AliJBin fCentBin;
     AliJBin fVtxBin;

@@ -27,7 +27,7 @@ AliJEfficiency::AliJEfficiency():
   fInputRoot(NULL),
   fCentBin(0x0)
 {
-
+  for (int i=0; i<3; i++) fEffDir[i] = NULL;
 }
 
 AliJEfficiency::AliJEfficiency(const AliJEfficiency& obj) :
@@ -47,6 +47,7 @@ AliJEfficiency::AliJEfficiency(const AliJEfficiency& obj) :
 {
   // copy constructor TODO: handling of pointer members
   JUNUSED(obj);
+  for (int i=0; i<3; i++) fEffDir[i] = obj.fEffDir[i];
 }
 
 AliJEfficiency& AliJEfficiency::operator=(const AliJEfficiency& obj){
@@ -123,6 +124,7 @@ bool AliJEfficiency::Load(){
   if( !fInputRoot ) {
 	  cout<< "J_ERROR : "<<fInputRootName <<" is not exist"<<endl;
 	  gSystem->Exit(1);
+      return 0;
   }
 
   //fEffDir[0] = (TDirectory*)fInputRoot->Get("EffRE");
@@ -139,6 +141,7 @@ bool AliJEfficiency::Load(){
   if( !fCentBin ){
 	  cout<< "J_ERROR : No CentralityBin in directory"<<endl;
 	  gSystem->Exit(1);
+      return 0;
   }
 
 

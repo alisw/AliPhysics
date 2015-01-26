@@ -55,7 +55,7 @@ class AliJEbeHistos {
 
     public:
         AliJCard  *fcard; // comment me
-        char  fhname[40], fhtit[40]; // comment me
+        char  fhname[50], fhtit[50]; // comment me
         TString fhtyp[3]; // comment me
 
 

@@ -28,9 +28,9 @@ AliJEventPool::AliJEventPool(AliJCard *cardin, AliJHistos *histosin, AliJCorrela
   fcard(cardin),
   fcorrelations(coin),
   fhistos(histosin),
-  ftk(NULL),
-  ftk1(NULL),
-  ftk2(NULL),
+  //ftk(NULL),
+  //ftk1(NULL),
+  //ftk2(NULL),
   fthisPoolType(particle),
   fpoolList(NULL)
 {       
@@ -58,26 +58,26 @@ AliJEventPool::AliJEventPool(AliJCard *cardin, AliJHistos *histosin, AliJCorrela
     fnoMixCut[ic] = 0;
   }
 
-  ftk  = new AliJBaseTrack;
-  ftk1 = new AliJBaseTrack;
-  ftk2 = new AliJBaseTrack;
+  //ftk  = new AliJBaseTrack;
+  //ftk1 = new AliJBaseTrack;
+  //ftk2 = new AliJBaseTrack;
 
 }
 
 AliJEventPool::~AliJEventPool( ){
   // destructor
-  delete ftk;
-  delete ftk1;
-  delete ftk2;
+  //delete ftk;
+  //delete ftk1;
+  //delete ftk2;
 }  
 
 AliJEventPool::AliJEventPool(const AliJEventPool& obj) :
   fcard(obj.fcard),
   fcorrelations(obj.fcorrelations),
   fhistos(obj.fhistos),
-  ftk(obj.ftk),
-  ftk1(obj.ftk1),
-  ftk2(obj.ftk2),
+  //ftk(obj.ftk),
+  //ftk1(obj.ftk1),
+  //ftk2(obj.ftk2),
   fthisPoolType(obj.fthisPoolType),
   fpoolList(obj.fpoolList)
 {
@@ -101,6 +101,8 @@ void AliJEventPool::Mix( TClonesArray *triggList,
     int zBin = fcard->GetBin(kZVertType, Z);
     int noTrigg=triggList->GetEntriesFast();
     int noAssoc=0;
+
+    if ( cBin< 0 ) return;
    
 //     cout << "c: " << cBin << endl;
 
@@ -125,10 +127,10 @@ void AliJEventPool::Mix( TClonesArray *triggList,
             // try to use only one track from each fevent
             //=================================================
             for(int ii=0;ii<noTrigg;ii++){
-                ftk1 = (AliJBaseTrack*)triggList->At(ii);        
+                AliJBaseTrack *ftk1 = (AliJBaseTrack*)triggList->At(ii);        
                 //fhistos->fhTriggPtBin[kMixed][cBin][iptt]->Fill(ptt); //who needs that?
                 for(int jj=0;jj<noAssoc ;jj++){
-                    ftk2 = (AliJBaseTrack*)fpoolList->At(jj);
+                    AliJBaseTrack *ftk2 = (AliJBaseTrack*)fpoolList->At(jj);
                     fcorrelations->FillHisto(cFTyp,kMixed, cBin, zBin, ftk1, ftk2);
                 } //inner loop mixing
             }//outer loop mixing
@@ -143,6 +145,7 @@ void AliJEventPool::AcceptList(TClonesArray *inList, float cent, float Z, float 
     // mixing goes backwards 
     //////////////////////////////////////////////////////////////
     int cBin = fcard->GetBin(kCentrType, cent);
+    if (cBin <0 ) return;
     flastAccepted[cBin]++;
     fwhereToStore[cBin]++;
     if( flastAccepted[cBin] >= fcard->GetEventPoolDepth(cBin) ) flastAccepted[cBin] = fcard->GetEventPoolDepth(cBin)-1;

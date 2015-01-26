@@ -107,6 +107,7 @@ AliJDataManager::AliJDataManager() :
 }
 
 //______________________________________________________________________________
+/* prohibitted
 AliJDataManager::AliJDataManager(const AliJDataManager& obj) :
     fChain(obj.fChain), 
     fCard(obj.fCard), 
@@ -139,7 +140,7 @@ AliJDataManager& AliJDataManager::operator=(const AliJDataManager& obj){
   // equal sign TODO: contents
   JUNUSED(obj);
   return *this;
-}
+}*/
 
 
 //______________________________________________________________________________

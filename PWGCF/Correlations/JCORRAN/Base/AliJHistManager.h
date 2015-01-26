@@ -425,4 +425,5 @@ class AliJHistManager: public AliJNamed{
         std::vector<TString>        fHistNames;
         std::vector<TString>        fHistConfigs;
 };
+
 #endif
