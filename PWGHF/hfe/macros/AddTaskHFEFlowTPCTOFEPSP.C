@@ -70,7 +70,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Int_t trigger=0,Int_t aodfilter=16,Boo
   
 
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
+  TString configFile("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
   //TString configFile("/hera/alice/bailhach/AliRootInstallations/30_09_2013/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
   TString checkconfig="ConfigHFE_FLOW_TOFTPC";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))

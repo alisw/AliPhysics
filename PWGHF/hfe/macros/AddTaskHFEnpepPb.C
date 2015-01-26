@@ -146,7 +146,12 @@ AliAnalysisTask *AddTaskHFEnpepPb(Bool_t MCthere,
       // Reference
       RegisterTaskNPEpPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, 
 			  dEdxhmAOD, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl, 
+			 kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE, kWei, kd3weiData);
+
+      RegisterTaskNPEpPbTOFworkaround( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1,
+			  dEdxhmAOD, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl, 
 			  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE, kWei, kd3weiData);
+    
       }
   }
   
@@ -479,13 +484,141 @@ AliAnalysisTask *RegisterTaskNPEpPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   printf("Add macro appendix %s\n", appendix.Data());
 
  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
-     gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigWeightFactors.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigWeightFactors.C");
  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepPb")) 
-     gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEnpepPb.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEnpepPb.C");
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEnpepPb(useMC, isAOD, beauty, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
+					     tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, icent, etaIncMin, etaIncMax,
+					     phimi*TMath::Pi()/9., phima*TMath::Pi()/9., 
+					     assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus, 
+					     assTPCSplus,assITSpid,assTOFpid,
+					     useCat1Tracks, useCat2Tracks, weightlevelback, npeBeauty, ipCharge, isOpp, ipSys);
+
+  if(isAOD)
+    task->SetAODAnalysis();
+  else
+    task->SetESDAnalysis();
+
+  if (useMC)	task->SetHasMCData(kTRUE);
+  else		task->SetHasMCData(kFALSE);
+
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
+
+  if(useMC&&(beauty || (weightlevelback>=0))) {
+    ConfigWeightFactors(task,kFALSE,WhichWei);
+    if(WhichWei==8) {
+      ConfigWeightFactors(task,kTRUE,3);
+      task->SetNonHFEsystematics(kTRUE);
+    }
+  }
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":HFEtask";
+  containerName += appendix.Data();
+  printf("container name: %s\n", containerName.Data());
+
+  //create data containers
+  task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data() ));
+  task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data()));
+  mgr->ConnectInput(task,  0, cinput );
+
+  mgr->AddTask(task);
+
+  return NULL;
+}
+
+//===============================================================================
+AliAnalysisTask *RegisterTaskNPEpPbTOFworkaround(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
+               Int_t tpcCls=120, Int_t tpcClsPID=80, 
+               Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, 
+               Double_t *tpcdEdxcutlow=NULL, Double_t *tpcdEdxcuthigh=NULL, 
+               Double_t tofs=3., Int_t itshitpixel =AliHFEextraCuts::kBoth, 
+				    //Double_t phimi=-1., Double_t phima=-1.,
+	       Int_t icent=1,
+	       Int_t assITS=2, Int_t assTPCcl=100,
+               Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
+               Double_t *assTPCSminus = NULL, Double_t *assTPCSplus=NULL,
+               Double_t assITSpid = 3.0, Double_t assTOFpid = 0.0,
+               Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
+	       Int_t weightlevelback = -1, Int_t WhichWei = 0,
+               Bool_t npeBeauty = kFALSE, Bool_t ipCharge = kFALSE, Bool_t isOpp = kFALSE, Int_t ipSys = 0)
+{
+  // Fixed values
+  Double_t etaIncMin = -0.8; Double_t etaIncMax = 0.8;
+  Double_t phimi = -1.; Double_t phima = -1.;
+  Double_t assETAm=-0.8; Double_t assETAp=0.8;
+  Double_t assMinPt = 0.1;
+
+  //
+  // Cuts on the inclusive leg
+  //
+  Int_t idcaxy = (Int_t)(dcaxy*10.);
+  Int_t idcaz = (Int_t)(dcaz*10.);
+  Int_t tpclow = 0;
+  if(tpcdEdxcutlow) tpclow = (Int_t) (tpcdEdxcutlow[0]*1000.);
+  Int_t itofs = (Int_t)(tofs*10.);
+  Int_t ipixelany = itshitpixel;
+  TString phirange("");
+  if (phimi >= 0. && phima >= 0.){ 
+    phirange += "Phi";
+    phirange += phimi;
+    phirange += "-";
+    phirange += phima;
+  } 
+
+  //
+  // Cuts on the associated leg
+  //
+  Int_t iassDCAr = (Int_t)(assDCAr*10);
+  Int_t iassDCAz = (Int_t)(assDCAz*10);
+  Int_t iassTPCSminus = assTPCSplus ? (Int_t)(assTPCSplus[0]*1000.) : 0;
+  Int_t iassTOF = (Int_t)(assTOFpid*10);
+  Int_t iassITS = (Int_t)(assITSpid * 10.);
+  Int_t phoTrack = 0;
+  if (useCat1Tracks) phoTrack = 1;
+  if (useCat2Tracks) phoTrack = 2;
+
+  //printf("Argument passed to function to determine the centrality estimator %i\n", icent);
+  if (icent == 2) TString cesti("V0M");
+  else if (icent == 3) TString cesti("CL1");
+  else if (icent == 4) TString cesti("ZNA");
+  else TString cesti("V0A");
+  //printf("Centrality estimator %s\n", cesti.Data());
+
+  TString cweightsback("");
+  if(weightlevelback>=0) {
+    cweightsback += "Wa";
+    if (WhichWei>0){
+      cweightsback += WhichWei;
+      //cweightsback += weightlevelback;
+    }
+  }
+
+  if(beauty) {
+     if(ipCharge && isOpp) TString cbeauty("BeautyIPopp");
+     else if(ipCharge) TString cbeauty("BeautyIPcrg");
+     else if(!ipCharge) TString cbeauty("Beauty");
+     else TString cbeauty("BeautyWrong");
+     cbeauty = cbeauty+Form("ip%dwei%d",ipSys,WhichWei);
+  }
+  else TString cbeauty("");
+
+  TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dce%s%s%s",
+				   tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+				   iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cesti.Data(),cweightsback.Data(),cbeauty.Data()));
+
+  printf("Add macro appendix %s\n", appendix.Data());
+
+ if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigWeightFactors.C");
+ if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepPbTOFworkaround")) 
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEnpepPbTOFworkaround.C");
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisTaskHFE *task = ConfigHFEnpepPbTOFworkaround(useMC, isAOD, beauty, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
 					     tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, icent, etaIncMin, etaIncMax,
 					     phimi*TMath::Pi()/9., phima*TMath::Pi()/9., 
 					     assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus, 

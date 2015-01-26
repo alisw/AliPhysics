@@ -223,8 +223,8 @@ AliAnalysisTask *RegisterTaskNPEPbPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   
   printf("Add macro appendix %s\n", appendix.Data());
   
-  if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigWeightFactors.C");
-  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpePbPb"))gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFEnpePbPb.C");
+  if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigWeightFactors.C");
+  if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpePbPb"))gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFEnpePbPb.C");
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();

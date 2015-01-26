@@ -142,7 +142,10 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 
   const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
   if(!vtrack) return 0;
-  Bool_t hasTOFpid = vtrack->GetStatus() & AliESDtrack::kTOFpid;
+  //Bool_t hasTOFpid = vtrack->GetStatus() & AliESDtrack::kTOFpid;
+  AliPIDResponse::EDetPidStatus statuspidtof = fkPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,vtrack);
+  Bool_t hasTOFpid = kFALSE;
+  if(statuspidtof==AliPIDResponse::kDetPidOk) hasTOFpid = kTRUE;
   if(fUseOnlyIfAvailable && !hasTOFpid){
     AliDebug(2, "No TOF PID, but PID required only if available");
     return 11;   
@@ -151,7 +154,7 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
     return 0;
   }
   AliDebug(2, "Track Has TOF PID");
-
+  
   if(fRejectMismatch){
     if(IsMismatch(vtrack)) return 0;
   }
