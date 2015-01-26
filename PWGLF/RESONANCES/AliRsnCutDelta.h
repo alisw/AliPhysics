@@ -20,7 +20,7 @@ class AliRsnCutDelta : public AliRsnCut {
 
 public:
 
-   AliRsnCutDelta(const char *name = "", AliPID::EParticleType pid = AliPID::kPion, Bool_t TPCMethod=kFALSE);
+  AliRsnCutDelta(const char *name = "", AliPID::EParticleType pid = AliPID::kPion, Bool_t TPCMethod=kFALSE, Bool_t usePPb=0);
    virtual ~AliRsnCutDelta() { }
    void           SetPID(AliPID::EParticleType type) {fPID = type;}
    void           SetTPCNSigma       (Double_t v)    {fNSigmaTPC        = v;}
