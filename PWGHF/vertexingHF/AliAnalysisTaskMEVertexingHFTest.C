@@ -7,7 +7,7 @@ void AliAnalysisTaskMEVertexingHFTest()
 
   Bool_t useParFiles=kFALSE;
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
   // Local files 

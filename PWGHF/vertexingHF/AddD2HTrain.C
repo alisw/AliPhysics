@@ -15,7 +15,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   //
   // They all use AOD+AOD.VertexingHF as input. 
   // They need to read the cuts from the macro 
-  // $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C (trunk version).
+  // $ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C (trunk version).
   // This macro is loaded in the Init(), so it should be enough to have it 
   // in the local dir when the train is launched with the alien plugin.
   // They all produce only histos in the output. 
@@ -23,7 +23,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   // andrea.dainese@pd.infn.it
   //
 
-  TString taskName="",loadMacroPath="$ALICE_ROOT/PWGHF/vertexingHF/macros/";
+  TString taskName="",loadMacroPath="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/";
   Int_t ntasks=0;
 
   //taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
