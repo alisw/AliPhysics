@@ -151,7 +151,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetChi2VZEROC(TArrayD* a)                       { fChi2C = a;}
         void                    SetChi3VZEROA(TArrayD* a)                       { fChi3A = a;}
         void                    SetChi3VZEROC(TArrayD* a)                       { fChi3C = a;}
-
+        void                    SetUseChiWeightForVZERO(Bool_t w)               { fUseChiWeightForVZERO = w; }
         // getters 
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
@@ -236,6 +236,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH1F*                   CorrectForResolutionInt(TH1F* v, detectorType detector, TArrayD* cen, Int_t h = 2);
         TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);
         void                    ReadVZEROCalibration2010h();
+        void                    ReadVZEROCalibration2011h();
         Int_t                   GetVZEROCentralityBin() const;
     private:
         // analysis flags and settings
@@ -411,13 +412,14 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TArrayD*                fChi2C;                         // chi vs cent for vzero C ep_2
         TArrayD*                fChi3A;                         // chi vs cent for vzero A ep_3
         TArrayD*                fChi3C;                         // chi vs cent for vzero C ep_3
+        Bool_t                  fUseChiWeightForVZERO;          // use chi weight for vzero
         TFile*                  fOADB;                          //! fOADB
 
 
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 4);
+        ClassDef(AliAnalysisTaskJetV2, 5);
 };
 
 #endif
