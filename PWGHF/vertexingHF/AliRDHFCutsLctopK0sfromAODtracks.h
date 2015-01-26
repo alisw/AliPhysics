@@ -76,12 +76,6 @@ class AliRDHFCutsLctopK0sfromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   
-  void  SetNCuts(Int_t ncuts){fnCuts=ncuts;}
-  Int_t GetNCutsArray(){return fnCuts;}
-  void  SetCutsArray(Int_t nCuts, Int_t nVars,Int_t nPtBins,Float_t ***cutsRD);
-  void  SetCutsArray(Int_t nTotBins,Float_t *cutsRD);
-  void  SetCutsFromArray(Int_t nCuts);
-  Int_t GetCutArrayID(Int_t ic,Int_t iv,Int_t ip);
 
  protected:
 	
@@ -104,11 +98,8 @@ class AliRDHFCutsLctopK0sfromAODtracks : public AliRDHFCuts
   Double_t fProdRoughMassTol;       //Mass cut for Lc used before object creation
   Double_t fProdRoughPtMin;         //pT cut for Lc used before object creation
   
-  Int_t fnCuts;               //Number of Cuts defined 
-  Int_t fnTotalCutBins;       // fnCuts *fnVars * fnPtBins
-  Float_t *fCutsArray;        //[fnTotalCutBins]
 
-  ClassDef(AliRDHFCutsLctopK0sfromAODtracks,1);
+  ClassDef(AliRDHFCutsLctopK0sfromAODtracks,2);
 };
 
 #endif

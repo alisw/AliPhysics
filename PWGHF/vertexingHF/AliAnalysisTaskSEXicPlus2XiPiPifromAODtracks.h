@@ -38,7 +38,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
 {
  public:
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
-  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts2, Bool_t writeVariableTree=kTRUE);
+  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE);
   virtual ~AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
 
   // Implementation of interface methods  
@@ -56,13 +56,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
   
-  void   SetIspp(Bool_t a) { fIspp=a; }
-  Bool_t GetIspp() { return fIspp; }
-  void   SetIspA(Bool_t a) { fIspA=a; }
-  Bool_t GetIspA() { return fIspA; }
-  void   SetIsAA(Bool_t a) { fIsAA=a; }
-  Bool_t GetIsAA() { return fIsAA; }
-  
+  void   SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
   void SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags);
   void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
   Bool_t SelectLikeSign(AliAODTrack *trk1, AliAODTrack *trk2);
@@ -89,14 +83,11 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;             // Histogram to check selected events
   TH1F *fHTrigger;            //Histograms to check trigger
   TH1F *fHCentrality;         //histogram to check centrality
-  AliRDHFCutsXicPlustoXiPiPifromAODtracks *fProdCuts;      // Cuts - sent to output slot 2
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      // Cuts - sent to output slot 2
   Bool_t fIsEventSelected;           // flag for event selected
   Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 4
-  Bool_t fIspp;            //is pp run
-  Bool_t fIspA;            //is pA run
-  Bool_t fIsAA;            //is AA run
+  Bool_t fReconstructPrimVert;            //Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;            //Is MB event
   Bool_t fIsSemi;          //is semi-central trigger event
   Bool_t fIsCent;          //is central trigger event
@@ -110,7 +101,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;           // Trigger information
   
   //--------------------- My histograms ------------------
-  std::vector<THnSparse* > fHistoXicMass;        //! xic mass spectra
+  THnSparse*  fHistoXicMass;        //! xic mass spectra
   
   TH1F*  fHistoDcaPi1Pi2;                    //!  DCA between pions
   TH1F*  fHistoDcaPiCasc;                    //! DCA between pi and cascade
@@ -134,7 +125,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistonSigmaTOFpi;                  //! nSigma of TOF pion
   TH1F*  fHistoProbPion;                     //! Probability to be pion
   
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,1); // class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,2); // class for Xic->Xipipi
 };
 #endif
 

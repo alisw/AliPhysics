@@ -1,6 +1,7 @@
 AliAnalysisTaskSELc2pK0sfromAODtracks *AddTaskLc2pK0sfromAODtracks(TString finname="",
 								   Bool_t theMCon=kFALSE,
-								   Bool_t writeVariableTree=kFALSE,
+								   Bool_t writeVariableTree=kTRUE,
+									 Bool_t reconstructPrimVert=kFALSE,
 								   Int_t nTour=0
 								   )
 
@@ -23,17 +24,6 @@ AliAnalysisTaskSELc2pK0sfromAODtracks *AddTaskLc2pK0sfromAODtracks(TString finna
     }
   }
 
-  AliRDHFCutsLctopK0sfromAODtracks* RDHFCutsLc2pK0sprod = new AliRDHFCutsLctopK0sfromAODtracks();
-  if (stdcuts) RDHFCutsLc2pK0sprod->SetStandardCutsPP2010();
-  else RDHFCutsLc2pK0sprod = (AliRDHFCutsLctopK0sfromAODtracks*)filecuts->Get("LcProductionCuts");
-  RDHFCutsLc2pK0sprod->SetName("LcProductionCuts");
-  RDHFCutsLc2pK0sprod->SetMinPtCandidate(-1.);
-  RDHFCutsLc2pK0sprod->SetMaxPtCandidate(10000.);
-  if (!RDHFCutsLc2pK0sprod) {
-    cout << "Specific AliRDHFCutsLc2pK0sprod not found\n";
-    return;
-  }
-  
   AliRDHFCutsLctopK0sfromAODtracks* RDHFCutsLc2pK0sanal = new AliRDHFCutsLctopK0sfromAODtracks();
   if (stdcuts) RDHFCutsLc2pK0sanal->SetStandardCutsPP2010();
   else RDHFCutsLc2pK0sanal = (AliRDHFCutsLctopK0sfromAODtracks*)filecuts->Get("LcAnalysisCuts");
@@ -49,13 +39,10 @@ AliAnalysisTaskSELc2pK0sfromAODtracks *AddTaskLc2pK0sfromAODtracks(TString finna
   //CREATE THE TASK
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2pK0sfromAODtracks *task = new AliAnalysisTaskSELc2pK0sfromAODtracks("AliAnalysisTaskSELc2pK0sfromAODtracks",RDHFCutsLc2pK0sprod,RDHFCutsLc2pK0sanal,writeVariableTree);
-  task->SetIspp(kFALSE);
-  task->SetIspA(kFALSE);
-  task->SetIsAA(kTRUE);
+  AliAnalysisTaskSELc2pK0sfromAODtracks *task = new AliAnalysisTaskSELc2pK0sfromAODtracks("AliAnalysisTaskSELc2pK0sfromAODtracks",RDHFCutsLc2pK0sanal,writeVariableTree);
   task->SetMC(theMCon);
   task->SetDebugLevel(1);
-
+  task->SetReconstructPrimVert(reconstructPrimVert);
 
   mgr->AddTask(task);
 

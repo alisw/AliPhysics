@@ -63,10 +63,7 @@ AliRDHFCuts(name),
   fProdV0DaughterPtMin(0.0),
   fProdV0DaughterTPCClusterMin(70),
 fProdRoughMassTol(0.25),
-fProdRoughPtMin(0.0),
-fnCuts(0),
-  fnTotalCutBins(1),
-  fCutsArray(0)
+fProdRoughPtMin(0.0)
 {
   //
   // Default Constructor
@@ -122,15 +119,11 @@ AliRDHFCutsLctopK0sfromAODtracks::AliRDHFCutsLctopK0sfromAODtracks(const AliRDHF
   fProdV0DaughterPtMin(source.fProdV0DaughterPtMin),
   fProdV0DaughterTPCClusterMin(source.fProdV0DaughterTPCClusterMin),
   fProdRoughMassTol(source.fProdRoughMassTol),
-  fProdRoughPtMin(source.fProdRoughPtMin),
-  fnCuts(source.fnCuts),
-  fnTotalCutBins(source.fnTotalCutBins),
-  fCutsArray(0)
+  fProdRoughPtMin(source.fProdRoughPtMin)
 {
   //
   // Copy constructor
   //
-  if(source.fCutsArray) SetCutsArray(source.fnTotalCutBins,source.fCutsArray);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopK0sfromAODtracks &AliRDHFCutsLctopK0sfromAODtracks::operator=(const AliRDHFCutsLctopK0sfromAODtracks &source)
@@ -159,9 +152,6 @@ AliRDHFCutsLctopK0sfromAODtracks &AliRDHFCutsLctopK0sfromAODtracks::operator=(co
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
   
-  if(source.fnCuts) fnCuts = source.fnCuts;
-  if(source.fnTotalCutBins) fnTotalCutBins = source.fnCuts;
-  if(source.fCutsArray) SetCutsArray(source.fnTotalCutBins,source.fCutsArray);
   
   return *this;
 }
@@ -172,7 +162,6 @@ AliRDHFCutsLctopK0sfromAODtracks::~AliRDHFCutsLctopK0sfromAODtracks() {
   //  Default Destructor
   //
   
-  if(fCutsArray) delete[] fCutsArray;
 }
 
 //---------------------------------------------------------------------------
@@ -496,98 +485,4 @@ Bool_t AliRDHFCutsLctopK0sfromAODtracks::SelectWithRoughCuts(AliAODv0 *v0, AliAO
   if(sqrt(pxlc_init*pxlc_init+pylc_init*pylc_init)<fProdRoughPtMin) return kFALSE;
 
   return kTRUE;
-}
-
-//________________________________________________________________________
-void AliRDHFCutsLctopK0sfromAODtracks::SetCutsArray(Int_t nCuts, Int_t nVars, Int_t nPtBins, Float_t ***cutsArray) 
-{
-  //
-  // store the cuts
-  //
-  if (nVars!=fnVars) {
-    AliError(" wrong number of variables\n");
-    return;
-  }
-  if (nCuts!=fnCuts) {
-    AliError(" wrong number of cuts\n");
-    return;
-  }
-  if (nPtBins!=fnPtBins) {
-    AliError(" wrong number of pT bin\n");
-    return;
-  }
-
-  if(!fCutsArray)
-    {
-      fnTotalCutBins = nCuts * nVars * nPtBins;
-      fCutsArray = new Float_t[fnTotalCutBins];
-    }
-
-  for(Int_t icuts=0;icuts<nCuts;icuts++){
-    for(Int_t iv=0;iv<nVars;iv++){
-      for(Int_t ip=0;ip<nPtBins;ip++){
-	Int_t gid = GetCutArrayID(icuts,iv,ip);
-	fCutsArray[gid] = cutsArray[icuts][iv][ip];
-      }
-    }
-  }
-  return;
-}
-
-//________________________________________________________________________
-void AliRDHFCutsLctopK0sfromAODtracks::SetCutsArray(Int_t nTotBins, Float_t *cutsArray) 
-{
-  //
-  // store the cuts
-  //
-
-  if (nTotBins!=fnVars*fnPtBins*fnCuts) {
-    AliError(" wrong number of variables\n");
-    return;
-  }
-
-  if(!fCutsArray)
-    {
-      fnTotalCutBins = fnCuts * fnVars * fnPtBins;
-      fCutsArray = new Float_t[fnTotalCutBins];
-    }
-
-  for(Int_t i=0;i<nTotBins;i++){
-    fCutsArray[i] = cutsArray[i];
-  }
-
-  return;
-}
-
-//________________________________________________________________________
-void AliRDHFCutsLctopK0sfromAODtracks::SetCutsFromArray(Int_t iCuts) 
-{
-  //
-  // Read Cuts from fCutsArray and update fCutsRD
-  //
-  Float_t** cutsarray;
-  cutsarray=new Float_t*[fnVars];
-  for(Int_t ic=0;ic<fnVars;ic++){cutsarray[ic]=new Float_t[fnPtBins];}
-
-  for(Int_t i=0;i<fnVars;i++){
-    for(Int_t j=0;j<fnPtBins;j++){
-      Int_t gid = GetCutArrayID(iCuts,i,j);
-      cutsarray[i][j] = fCutsArray[gid];
-    }
-  }
-  SetCuts(fnVars,fnPtBins,cutsarray);
-
-  for(Int_t ic=0;ic<fnVars;ic++){
-    delete[] cutsarray[ic];
-  }
-  delete[] cutsarray;
-}
-
-//________________________________________________________________________
-Int_t AliRDHFCutsLctopK0sfromAODtracks::GetCutArrayID(Int_t ic, Int_t iv, Int_t ip) 
-{
-  //
-  // Global index of fCutsArray
-  //
-  return ic*fnVars*fnPtBins+iv*fnPtBins+ip;
 }
