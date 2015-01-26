@@ -1,6 +1,7 @@
 AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks(TString finname="",
 										 Bool_t theMCon=kFALSE,
-										 Bool_t writeVariableTree=kFALSE,
+										 Bool_t writeVariableTree=kTRUE,
+										 Bool_t reconstructPrimVert=kFALSE,
 										 Int_t nTour=0
 										 )
 
@@ -22,17 +23,6 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
       AliFatal("Input file not found : check your cut object");
     }
   }
-  AliRDHFCutsXicPlustoXiPiPifromAODtracks* RDHFCutsXic2PiPiprod = new AliRDHFCutsXicPlustoXiPiPifromAODtracks();
-  if (stdcuts) RDHFCutsXic2PiPiprod->SetStandardCutsPP2010();
-  else RDHFCutsXic2PiPiprod = (AliRDHFCutsXicPlustoXiPiPifromAODtracks*)filecuts->Get("XicPlusProductionCuts");
-  RDHFCutsXic2PiPiprod->SetName("XicPlusProductionCuts");
-  RDHFCutsXic2PiPiprod->SetMinPtCandidate(2.);
-  RDHFCutsXic2PiPiprod->SetMaxPtCandidate(10000.);
-
-  if (!RDHFCutsXic2PiPiprod) {
-    cout << "Specific AliRDHFCutsXic2PiPiprod not found\n";
-    return;
-  }
   
   AliRDHFCutsXicPlustoXiPiPifromAODtracks* RDHFCutsXic2PiPianal = new AliRDHFCutsXicPlustoXiPiPifromAODtracks();
   if (stdcuts) RDHFCutsXic2PiPianal->SetStandardCutsPP2010();
@@ -52,12 +42,10 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   //CREATE THE TASK
   
   printf("CREATE TASK\n");
-  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *task = new AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks("AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks",RDHFCutsXic2PiPiprod,RDHFCutsXic2PiPianal,writeVariableTree);
-  task->SetIspp(kFALSE);
-  task->SetIspA(kFALSE);
-  task->SetIsAA(kTRUE);
+  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *task = new AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks("AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks",RDHFCutsXic2PiPianal,writeVariableTree);
   task->SetMC(theMCon);
   task->SetDebugLevel(1);
+	task->SetReconstructPrimVert(reconstructPrimVert);
   
   mgr->AddTask(task);
   

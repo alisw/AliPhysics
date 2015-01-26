@@ -36,7 +36,7 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
 {
  public:
   AliAnalysisTaskSELc2pK0sfromAODtracks();
-  AliAnalysisTaskSELc2pK0sfromAODtracks(const Char_t* name, AliRDHFCutsLctopK0sfromAODtracks* cuts, AliRDHFCutsLctopK0sfromAODtracks* cuts2, Bool_t writeVariableTree=kTRUE);
+  AliAnalysisTaskSELc2pK0sfromAODtracks(const Char_t* name, AliRDHFCutsLctopK0sfromAODtracks* cuts, Bool_t writeVariableTree=kTRUE);
   virtual ~AliAnalysisTaskSELc2pK0sfromAODtracks();
 
   // Implementation of interface methods  
@@ -54,12 +54,7 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
 
-  void SetIspp(Bool_t a) { fIspp=a; }
-  Bool_t GetIspp() { return fIspp; }
-  void SetIspA(Bool_t a) { fIspA=a; }
-  Bool_t GetIspA() { return fIspA; }
-  void SetIsAA(Bool_t a) { fIsAA=a; }
-  Bool_t GetIsAA() { return fIsAA; }
+  void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
   AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod);
@@ -84,14 +79,11 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;                    //! Histogram to check selected events
   TH1F *fHTrigger;                   //! Histogram to check Trigger
   TH1F *fHCentrality;                //! Histogram to check Centrality
-  AliRDHFCutsLctopK0sfromAODtracks *fProdCuts;// Cuts - sent to output slot 2
   AliRDHFCutsLctopK0sfromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;          // flag for event selected
   Bool_t    fWriteVariableTree;     // flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;         //! tree of the candidate variables after track selection on output slot 4
-  Bool_t fIspp;       //ispp event 
-  Bool_t fIspA;       //ispA event 
-  Bool_t fIsAA;       //isAA event 
+  Bool_t fReconstructPrimVert;       //Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       //MB trigger event
   Bool_t fIsSemi;     //SemiCentral trigger event
   Bool_t fIsCent;     //Central trigger event
@@ -105,7 +97,7 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         //Stores trigger information
 
   //--------------------- My histograms ------------------
-  std::vector<THnSparse*> fHistoLcK0SpMass;         //Lc mass spectra
+  THnSparse* fHistoLcK0SpMass;         //Lc mass spectra
 
   TH1F* fHistoBachPt;      //! Bachelor pT histogram
   TH1F* fHistod0Bach;      //! Bachelor d0 histogram
@@ -117,7 +109,7 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoK0SMass;     //! K0s mass histogram
 
 
-  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,1); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,2); // class for Lc->p K0
 };
 #endif
 

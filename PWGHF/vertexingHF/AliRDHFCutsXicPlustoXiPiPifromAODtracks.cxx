@@ -62,10 +62,7 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdRfidMaxXi(100.0),
   fProdLikeSignDcaMax(2.0),
   fProdRoughMassTol(0.25),
-  fProdRoughPtMin(0.0),
-  fnCuts(0),
-  fnTotalCutBins(1),
-  fCutsArray(0)
+  fProdRoughPtMin(0.0)
 {
   //
   // Default Constructor
@@ -139,15 +136,11 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdRfidMaxXi(source.fProdRfidMaxXi),
   fProdLikeSignDcaMax(source.fProdLikeSignDcaMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
-  fProdRoughPtMin(source.fProdRoughPtMin),
-  fnCuts(source.fnCuts),
-  fnTotalCutBins(source.fnTotalCutBins),
-  fCutsArray(0)
+  fProdRoughPtMin(source.fProdRoughPtMin)
 {
   //
   // Copy constructor
   //
-  if(source.fCutsArray) SetCutsArray(source.fnTotalCutBins,source.fCutsArray);
 }
 
 //--------------------------------------------------------------------------
@@ -175,9 +168,6 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks &AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdLikeSignDcaMax = source.fProdLikeSignDcaMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
-  fnCuts = source.fnCuts;
-  fnTotalCutBins = source.fnCuts;
-  if(source.fCutsArray) SetCutsArray(source.fnTotalCutBins,source.fCutsArray);
 
   return *this;
 }
@@ -187,7 +177,6 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::~AliRDHFCutsXicPlustoXiPiPifromAODtrack
   //
   //  Default Destructor
   //
-  if(fCutsArray) delete[] fCutsArray;
 }
 
 //---------------------------------------------------------------------------
@@ -563,96 +552,3 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SelectWithRoughCuts(AliAODcascad
   return kTRUE;
 }
 
-//________________________________________________________________________
-void AliRDHFCutsXicPlustoXiPiPifromAODtracks::SetCutsArray(Int_t nCuts, Int_t nVars, Int_t nPtBins, Float_t ***cutsArray) 
-{
-  //
-  // store the cuts
-  //
-  if (nVars!=fnVars) {
-    AliError(" wrong number of variables\n");
-    return;
-  }
-  if (nCuts!=fnCuts) {
-    AliError(" wrong number of cuts\n");
-    return;
-  }
-  if (nPtBins!=fnPtBins) {
-    AliError(" wrong number of pT bins\n");
-    return;
-  }
-
-  if(!fCutsArray)
-    {
-      fnTotalCutBins = nCuts * nVars * nPtBins;
-      fCutsArray = new Float_t[fnTotalCutBins];
-    }
-
-  for(Int_t icuts=0;icuts<nCuts;icuts++){
-    for(Int_t iv=0;iv<nVars;iv++){
-      for(Int_t ip=0;ip<nPtBins;ip++){
-	Int_t gid = GetCutArrayID(icuts,iv,ip);
-	fCutsArray[gid] = cutsArray[icuts][iv][ip];
-      }
-    }
-  }
-  return;
-}
-
-//________________________________________________________________________
-void AliRDHFCutsXicPlustoXiPiPifromAODtracks::SetCutsArray(Int_t nTotBins, Float_t *cutsArray) 
-{
-  //
-  // store the cuts
-  //
-  if (nTotBins!=fnVars*fnPtBins*fnCuts) {
-    AliError(" wrong number of variables\n");
-    return;
-  }
-
-  if(!fCutsArray)
-    {
-      fnTotalCutBins = fnCuts * fnVars * fnPtBins;
-      fCutsArray = new Float_t[fnTotalCutBins];
-    }
-
-  for(Int_t i=0;i<nTotBins;i++){
-    fCutsArray[i] = cutsArray[i];
-  }
-
-  return;
-}
-
-//________________________________________________________________________
-void AliRDHFCutsXicPlustoXiPiPifromAODtracks::SetCutsFromArray(Int_t iCuts) 
-{
-  //
-  //  Update fCutsRD
-  //
-
-  Float_t** cutsarray;
-  cutsarray=new Float_t*[fnVars];
-  for(Int_t ic=0;ic<fnVars;ic++){cutsarray[ic]=new Float_t[fnPtBins];}
-
-  for(Int_t i=0;i<fnVars;i++){
-    for(Int_t j=0;j<fnPtBins;j++){
-      Int_t gid = GetCutArrayID(iCuts,i,j);
-      cutsarray[i][j] = fCutsArray[gid];
-    }
-  }
-  SetCuts(fnVars,fnPtBins,cutsarray);
-
-  for(Int_t ic=0;ic<fnVars;ic++){
-    delete[] cutsarray[ic];
-  }
-  delete[] cutsarray;
-}
-
-//________________________________________________________________________
-Int_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::GetCutArrayID(Int_t ic, Int_t iv, Int_t ip) 
-{
-  //
-  //  Get GlobalIndex of fCutsArray
-  //
-  return ic*fnVars*fnPtBins+iv*fnPtBins+ip;
-}

@@ -96,14 +96,11 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks() :
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
-  fProdCuts(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
-  fIspp(kFALSE),
-  fIspA(kFALSE),
-  fIsAA(kFALSE),
+  fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
   fIsCent(kFALSE),
@@ -115,7 +112,7 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks() :
   fBzkG(0),
   fCentrality(0),
   fTriggerCheck(0),
-  fHistoLcK0SpMass(),
+  fHistoLcK0SpMass(0),
   fHistoBachPt(0),
   fHistod0Bach(0),
   fHistod0V0(0),
@@ -132,7 +129,6 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks() :
 
 //___________________________________________________________________________
 AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks(const Char_t* name,
-									     AliRDHFCutsLctopK0sfromAODtracks* prodCuts, 
 									     AliRDHFCutsLctopK0sfromAODtracks* analCuts, 
 									     Bool_t writeVariableTree) :
   AliAnalysisTaskSE(name),
@@ -143,14 +139,11 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks(con
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
-  fProdCuts(prodCuts),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
   fVariablesTree(0),
-  fIspp(kFALSE),
-  fIspA(kFALSE),
-  fIsAA(kFALSE),
+  fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
   fIsCent(kFALSE),
@@ -162,7 +155,7 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks(con
   fBzkG(0),
   fCentrality(0),
   fTriggerCheck(0),
-  fHistoLcK0SpMass(),
+  fHistoLcK0SpMass(0),
   fHistoBachPt(0),
   fHistod0Bach(0),
   fHistod0V0(0),
@@ -209,11 +202,6 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::~AliAnalysisTaskSELc2pK0sfromAODtracks() 
   }
 
 
-  if (fProdCuts) {
-    delete fProdCuts;
-    fProdCuts = 0;
-  }
-
   if (fAnalCuts) {
     delete fAnalCuts;
     fAnalCuts = 0;
@@ -240,7 +228,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::Init() {
   fListCuts = new TList();
   fListCuts->SetOwner();
   fListCuts->SetName("ListCuts");
-  fListCuts->Add(new AliRDHFCutsLctopK0sfromAODtracks(*fProdCuts));
   fListCuts->Add(new AliRDHFCutsLctopK0sfromAODtracks(*fAnalCuts));
   PostData(2,fListCuts);
 
@@ -283,29 +270,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(2);
 
   //------------------------------------------------
-  // Event selection setting
-  //------------------------------------------------
-  if (fUseMCInfo)
-    fAnalCuts->SetTriggerClass("");
-
-  if ( !fUseMCInfo && fIspp) {
-    fAnalCuts->SetUsePhysicsSelection(kTRUE);
-    fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kMB);
-  }
-
-  if ( !fUseMCInfo && fIspA) {
-    fAnalCuts->SetUsePhysicsSelection(kTRUE);
-    fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kINT7);
-  }
-  if ( !fUseMCInfo && fIsAA) {
-    fAnalCuts->SetUsePhysicsSelection(kTRUE);
-    fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
-  }
-
-  //------------------------------------------------
   // Event selection 
   //------------------------------------------------
   Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
@@ -334,10 +298,8 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserExec(Option_t *)
   if(fIsMB&fIsCent) fHTrigger->Fill(11);
   if(fIsINT7&fIsEMC7) fHTrigger->Fill(12);
 
-  if ( !fUseMCInfo && (fIsAA || fIspA)) {
-    AliCentrality *cent = aodEvent->GetCentrality();
-    fCentrality = cent->GetCentralityPercentile("V0M");
-  }
+  AliCentrality *cent = aodEvent->GetCentrality();
+  fCentrality = cent->GetCentralityPercentile("V0M");
   fHCentrality->Fill(fCentrality);
 
   //------------------------------------------------
@@ -480,7 +442,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
   for (Int_t iv0 = 0; iv0<nV0s; iv0++) {
     AliAODv0 *v0 = aodEvent->GetV0(iv0);
     if(!v0) continue;
-    if(!fProdCuts->SingleV0Cuts(v0,fVtx1)) continue;
+    if(!fAnalCuts->SingleV0Cuts(v0,fVtx1)) continue;
 
     AliAODTrack *cptrack =  (AliAODTrack*)(v0->GetDaughter(0));
     AliAODTrack *cntrack =  (AliAODTrack*)(v0->GetDaughter(1));
@@ -491,14 +453,14 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
     for (Int_t itrk = 0; itrk<nTracks; itrk++) {
       AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
       if(trk->GetID()<0) continue;
-      if(!fProdCuts->SingleTrkCuts(trk)) continue;
+      if(!fAnalCuts->SingleTrkCuts(trk)) continue;
 
       Int_t cpid = cptrack->GetID();
       Int_t cnid = cntrack->GetID();
       Int_t lpid = trk->GetID();
       if((cpid==lpid)||(cnid==lpid)) continue;
 
-      if(!fProdCuts->SelectWithRoughCuts(v0,trk)) continue;
+      if(!fAnalCuts->SelectWithRoughCuts(v0,trk)) continue;
 
       AliAODVertex *secVert = ReconstructSecondaryVertex(v0,trk,aodEvent);
       if(!secVert) continue;
@@ -551,8 +513,8 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
   Double_t probProton=-9999.;
   if(fAnalCuts->GetIsUsePID())
     {
-      fAnalCuts->GetPidHF()->GetnSigmaTPC(trk,4,nSigmaTPCpr);
-      fAnalCuts->GetPidHF()->GetnSigmaTOF(trk,4,nSigmaTOFpr);
+			nSigmaTPCpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
+			nSigmaTOFpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
       probProton = fAnalCuts->GetProtonProbabilityTPCTOF(trk);
       fCandidateVariables[16] = nSigmaTPCpr;
       fCandidateVariables[17] = nSigmaTOFpr;
@@ -562,26 +524,23 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
   else{
-    for(Int_t ic=0;ic < fAnalCuts->GetNCutsArray(); ic++)
-      {
-	fAnalCuts->SetCutsFromArray(ic);
 	if(fAnalCuts->IsSelected(lcobj,AliRDHFCuts::kCandidate))
 	  {
 	    Double_t cont[3];
 	    cont[0] = lcobj->InvMassLctoK0sP();
 	    cont[1] = lcobj->Pt();
 	    cont[2] = fCentrality;
-	    fHistoLcK0SpMass[ic]->Fill(cont);
+	    fHistoLcK0SpMass->Fill(cont);
+
+      fHistoBachPt->Fill(trk->Pt());
+      fHistod0Bach->Fill(lcobj->Getd0Prong(0));
+      fHistod0V0->Fill(lcobj->Getd0Prong(1));
+      fHistod0d0->Fill(lcobj->Getd0Prong(0)*lcobj->Getd0Prong(1));
+      fHistoV0CosPA->Fill(lcobj->CosV0PointingAngle());
+      fHistoProbProton->Fill(probProton);
+      fHistoDecayLength->Fill(lcobj->DecayLengthXY());
+      fHistoK0SMass->Fill(v0->MassK0Short());
 	  }
-      }
-    fHistoBachPt->Fill(trk->Pt());
-    fHistod0Bach->Fill(lcobj->Getd0Prong(0));
-    fHistod0V0->Fill(lcobj->Getd0Prong(1));
-    fHistod0d0->Fill(lcobj->Getd0Prong(0)*lcobj->Getd0Prong(1));
-    fHistoV0CosPA->Fill(lcobj->CosV0PointingAngle());
-    fHistoProbProton->Fill(probProton);
-    fHistoDecayLength->Fill(lcobj->DecayLengthXY());
-    fHistoK0SMass->Fill(v0->MassK0Short());
   }
   return;
 }
@@ -691,12 +650,9 @@ void  AliAnalysisTaskSELc2pK0sfromAODtracks::DefineAnalysisHistograms()
   Int_t bins_base[3]=		{80				,20		,10};
   Double_t xmin_base[3]={2.286-0.2,0		,0.00};
   Double_t xmax_base[3]={2.286+0.2,20.	,100};
+  fHistoLcK0SpMass = new THnSparseF("fHistoLcK0SpMass","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoLcK0SpMass);
 
-  for(Int_t i=0;i<fAnalCuts->GetNCutsArray();i++)
-    {
-      fHistoLcK0SpMass.push_back(new THnSparseF(Form("fHistoLcK0SpMass_Cut%d",i),Form("Cut%d",i),3,bins_base,xmin_base,xmax_base));
-      fOutputAll->Add(fHistoLcK0SpMass[i]);
-    }
 
   //------------------------------------------------
   // checking histograms
@@ -737,7 +693,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAOD
   //------------------------------------------------
   AliAODVertex *primVertexAOD;
   Bool_t unsetvtx = kFALSE;
-  if(fIspp){
+  if(fReconstructPrimVert){
     primVertexAOD = CallPrimaryVertex(v0,part,aod);
     if(!primVertexAOD){
       primVertexAOD = fVtx1;
@@ -979,7 +935,7 @@ AliAODVertex* AliAnalysisTaskSELc2pK0sfromAODtracks::ReconstructSecondaryVertex(
   //------------------------------------------------
   AliAODVertex *primVertexAOD;
   Bool_t unsetvtx = kFALSE;
-  if(fIspp){
+  if(fReconstructPrimVert){
     primVertexAOD = CallPrimaryVertex(v0,part,aod);
     if(!primVertexAOD){
       primVertexAOD = fVtx1;

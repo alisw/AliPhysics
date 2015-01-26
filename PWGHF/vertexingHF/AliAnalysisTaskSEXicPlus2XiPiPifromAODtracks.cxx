@@ -92,14 +92,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
-  fProdCuts(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
-  fIspp(kFALSE),
-  fIspA(kFALSE),
-  fIsAA(kFALSE),
+  fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
   fIsCent(kFALSE),
@@ -111,7 +108,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fBzkG(0),
   fCentrality(0),
   fTriggerCheck(0),
-  fHistoXicMass(),
+  fHistoXicMass(0),
   fHistoDcaPi1Pi2(0),
   fHistoDcaPiCasc(0),
   fHistoLikeDecayLength(0),
@@ -139,7 +136,6 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
 
 //___________________________________________________________________________
 AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name,
-											   AliRDHFCutsXicPlustoXiPiPifromAODtracks* prodCuts,
 											   AliRDHFCutsXicPlustoXiPiPifromAODtracks* analCuts, 
 											   Bool_t writeVariableTree) :
   AliAnalysisTaskSE(name),
@@ -150,14 +146,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
-  fProdCuts(prodCuts),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
   fVariablesTree(0),
-  fIspp(kFALSE),
-  fIspA(kFALSE),
-  fIsAA(kFALSE),
+  fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
   fIsCent(kFALSE),
@@ -169,7 +162,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fBzkG(0),
   fCentrality(0),
   fTriggerCheck(0),
-  fHistoXicMass(),
+  fHistoXicMass(0),
   fHistoDcaPi1Pi2(0),
   fHistoDcaPiCasc(0),
   fHistoLikeDecayLength(0),
@@ -233,11 +226,6 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
     fAnalCuts = 0;
   }
 
-  if (fProdCuts) {
-    delete fProdCuts;
-    fProdCuts = 0;
-  }
-  
   if (fVariablesTree) {
     delete fVariablesTree;
     fVariablesTree = 0;
@@ -266,7 +254,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::Init() {
   fListCuts = new TList();
   fListCuts->SetOwner();
   fListCuts->SetName("ListCuts");
-  fListCuts->Add(new AliRDHFCutsXicPlustoXiPiPifromAODtracks(*fProdCuts));
   fListCuts->Add(new AliRDHFCutsXicPlustoXiPiPifromAODtracks(*fAnalCuts));
   PostData(2,fListCuts);
 
@@ -308,34 +295,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(2);
   
   //------------------------------------------------
-  // Event selection setting 
-  //------------------------------------------------
-  if (fUseMCInfo)
-    fAnalCuts->SetTriggerClass("");
-  
-  if ( !fUseMCInfo && fIspp) {
-    fAnalCuts->SetUsePhysicsSelection(kTRUE);
-    fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kMB);
-  }
-  
-  if ( !fUseMCInfo && fIspA) {
-    fAnalCuts->SetUsePhysicsSelection(kTRUE);
-    fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kINT7);
-  }
-  if ( !fUseMCInfo && fIsAA) {
-    fAnalCuts->SetUsePhysicsSelection(kTRUE);
-    fAnalCuts->SetTriggerClass("");
-    fAnalCuts->SetTriggerMask(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
-  }
-  
-  //------------------------------------------------
   // Event selection 
   //------------------------------------------------
   Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
   if(!fIsTriggerNotOK) fCEvents->Fill(3);
-  
   
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); 
   if(!fIsEventSelected) {
@@ -365,10 +328,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   if(fIsMB&fIsCent) fHTrigger->Fill(11);
   if(fIsINT7&fIsEMC7) fHTrigger->Fill(12);
   
-  if ( !fUseMCInfo && (fIsAA || fIspA)) {
-    AliCentrality *cent = aodEvent->GetCentrality();
-    fCentrality = cent->GetCentralityPercentile("V0M");
-  }
+  AliCentrality *cent = aodEvent->GetCentrality();
+  fCentrality = cent->GetCentralityPercentile("V0M");
   fHCentrality->Fill(fCentrality);
   
   //------------------------------------------------
@@ -378,8 +339,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   Int_t nselecasc = 0.;
   for(Int_t ic=0;ic<ncasc;ic++){
     AliAODcascade *casc = aodEvent->GetCascade(ic);
-    if(!fProdCuts) continue;
-    if(fProdCuts->SingleCascadeCuts(casc)) nselecasc++;
+    if(!fAnalCuts) continue;
+    if(fAnalCuts->SingleCascadeCuts(casc)) nselecasc++;
   }
   
   if(nselecasc==0){
@@ -586,7 +547,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	//------------------------------------------------
 	// Roughly select good candidates to speed up
 	//------------------------------------------------
-	if(!fProdCuts->SelectWithRoughCuts(casc,trk1,trk2)) continue;
+	if(!fAnalCuts->SelectWithRoughCuts(casc,trk1,trk2)) continue;
 
 	//------------------------------------------------
 	// Secondary vertex calculation
@@ -682,13 +643,13 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 
   if(fAnalCuts->GetIsUsePID())
     {
-      fAnalCuts->GetPidHF()->GetnSigmaTPC(part1,2,nSigmaTPCpi1);
+			nSigmaTPCpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part1,AliPID::kPion);
       fCandidateVariables[42] = nSigmaTPCpi1;
-      fAnalCuts->GetPidHF()->GetnSigmaTPC(part2,2,nSigmaTPCpi2);
+			nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
       fCandidateVariables[43] = nSigmaTPCpi2;
-      fAnalCuts->GetPidHF()->GetnSigmaTOF(part1,2,nSigmaTOFpi1);
+			nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);
       fCandidateVariables[44] = nSigmaTOFpi1;
-      fAnalCuts->GetPidHF()->GetnSigmaTOF(part2,2,nSigmaTOFpi2);
+			nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
       fCandidateVariables[45] = nSigmaTOFpi2;
 
       probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
@@ -700,43 +661,40 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   if(fWriteVariableTree)
     fVariablesTree->Fill();
   else{
-    for(Int_t ic=0;ic < fAnalCuts->GetNCutsArray(); ic++)
-      {
-	fAnalCuts->SetCutsFromArray(ic);
-	if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate))
+	  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate))
 	  {
 	    Double_t cont[3];
 	    cont[0] = xicobj->InvMassPiXiPi();
 	    cont[1] = xicobj->Pt();
 	    cont[2] = fCentrality;
-	    fHistoXicMass[ic]->Fill(cont);
+	    fHistoXicMass->Fill(cont);
+
+      fHistoDcaPi1Pi2->Fill(dca[2]);
+      fHistoDcaPiCasc->Fill(dca[0]);
+      fHistoDcaPiCasc->Fill(dca[1]);
+      fHistoLikeDecayLength->Fill(xicobj->DecayLength());
+      fHistoLikeDecayLengthXY->Fill(xicobj->DecayLengthXY());
+      fHistoXicCosPAXY->Fill(xicobj->XicCosPointingAngle());
+      fHistoXiMass->Fill(xicobj->CascMassXi());
+      fHistoCascDcaXiDaughters->Fill(xicobj->CascDcaXiDaughters());
+      fHistoCascDcaV0Daughters->Fill(xicobj->CascDcaV0Daughters());
+      fHistoCascDcaV0ToPrimVertex->Fill(xicobj->CascDcaV0ToPrimVertex());
+      fHistoCascDcaPosToPrimVertex->Fill(xicobj->CascDcaPosToPrimVertex());
+      fHistoCascDcaNegToPrimVertex->Fill(xicobj->CascDcaNegToPrimVertex());
+      fHistoCascDcaBachToPrimVertex->Fill(xicobj->CascDcaBachToPrimVertex());
+      fHistoCascCosPAXiPrim->Fill(xicobj->CascCosPointingAngle());
+      fHistoXiPt->Fill(xicobj->PtProng(1));
+      fHistoPiPt->Fill(xicobj->PtProng(0));
+      fHistoPiPt->Fill(xicobj->PtProng(2));
+      fHistoPid0->Fill(xicobj->Getd0Prong(0));
+      fHistoPid0->Fill(xicobj->Getd0Prong(2));
+      fHistonSigmaTPCpi->Fill(nSigmaTPCpi1);
+      fHistonSigmaTPCpi->Fill(nSigmaTPCpi2);
+      fHistonSigmaTOFpi->Fill(nSigmaTOFpi1);
+      fHistonSigmaTOFpi->Fill(nSigmaTOFpi2);
+      fHistoProbPion->Fill(probPion1);
+      fHistoProbPion->Fill(probPion2);
 	  }
-      }
-    fHistoDcaPi1Pi2->Fill(dca[2]);
-    fHistoDcaPiCasc->Fill(dca[0]);
-    fHistoDcaPiCasc->Fill(dca[1]);
-    fHistoLikeDecayLength->Fill(xicobj->DecayLength());
-    fHistoLikeDecayLengthXY->Fill(xicobj->DecayLengthXY());
-    fHistoXicCosPAXY->Fill(xicobj->XicCosPointingAngle());
-    fHistoXiMass->Fill(xicobj->CascMassXi());
-    fHistoCascDcaXiDaughters->Fill(xicobj->CascDcaXiDaughters());
-    fHistoCascDcaV0Daughters->Fill(xicobj->CascDcaV0Daughters());
-    fHistoCascDcaV0ToPrimVertex->Fill(xicobj->CascDcaV0ToPrimVertex());
-    fHistoCascDcaPosToPrimVertex->Fill(xicobj->CascDcaPosToPrimVertex());
-    fHistoCascDcaNegToPrimVertex->Fill(xicobj->CascDcaNegToPrimVertex());
-    fHistoCascDcaBachToPrimVertex->Fill(xicobj->CascDcaBachToPrimVertex());
-    fHistoCascCosPAXiPrim->Fill(xicobj->CascCosPointingAngle());
-    fHistoXiPt->Fill(xicobj->PtProng(1));
-    fHistoPiPt->Fill(xicobj->PtProng(0));
-    fHistoPiPt->Fill(xicobj->PtProng(2));
-    fHistoPid0->Fill(xicobj->Getd0Prong(0));
-    fHistoPid0->Fill(xicobj->Getd0Prong(2));
-    fHistonSigmaTPCpi->Fill(nSigmaTPCpi1);
-    fHistonSigmaTPCpi->Fill(nSigmaTPCpi2);
-    fHistonSigmaTOFpi->Fill(nSigmaTOFpi1);
-    fHistonSigmaTOFpi->Fill(nSigmaTOFpi2);
-    fHistoProbPion->Fill(probPion1);
-    fHistoProbPion->Fill(probPion2);
 	
   }
   return;
@@ -883,13 +841,8 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineAnalysisHistograms()
   Int_t bins_base[3]=		{80				,20		,10};
   Double_t xmin_base[3]={2.468-0.2,0		,0.00};
   Double_t xmax_base[3]={2.468+0.2,20.	,100};
-  
-  for(Int_t i=0;i<fAnalCuts->GetNCutsArray();i++)
-    {
-      fHistoXicMass.push_back(new THnSparseF(Form("fHistoXicMass_Cut%d",i),Form("Cut%d",i),3,bins_base,xmin_base,xmax_base));
-      fOutputAll->Add(fHistoXicMass[i]);
-      
-    }
+  fHistoXicMass = new THnSparseF("fHistoXicMass","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoXicMass);
   
   //------------------------------------------------
   // Checking histograms
@@ -940,7 +893,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineAnalysisHistograms()
 void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags)
 {
   //
-  // Select good tracks using fProdCuts (AliRDHFCuts object) and return the array of their ids
+  // Select good tracks using fAnalCuts (AliRDHFCuts object) and return the array of their ids
   //
   
   //const Int_t entries = event->GetNumberOfTracks();
@@ -959,8 +912,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent 
     
     AliAODTrack *aodt = (AliAODTrack*)track;
 
-    if(!fProdCuts) continue;
-    if(fProdCuts->SingleTrkCuts(aodt)){
+    if(!fAnalCuts) continue;
+    if(fAnalCuts->SingleTrkCuts(aodt)){
       seleFlags[i]=kTRUE;
       nSeleTrks++;
     }
@@ -971,7 +924,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent 
 void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags)
 {
   //
-  // Select good cascade using fProdCuts (AliRDHFCuts object) and return the array of their ids
+  // Select good cascade using fAnalCuts (AliRDHFCuts object) and return the array of their ids
   //
 
   nSeleCasc = 0;
@@ -980,8 +933,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectCascade( const AliVEven
       seleCascFlags[icasc] = kFALSE;
       AliAODcascade *casc = ((AliAODEvent*)event)->GetCascade(icasc);
 
-      if(!fProdCuts) continue;
-      if(fProdCuts->SingleCascadeCuts(casc)){
+      if(!fAnalCuts) continue;
+      if(fAnalCuts->SingleCascadeCuts(casc)){
 	seleCascFlags[icasc] = kTRUE;
 	nSeleCasc++;
       }
@@ -1050,8 +1003,13 @@ AliAODVertex* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CallReconstructSecon
   AliESDtrack *cptrk2 = new AliESDtrack((AliVTrack*)trk2);
   trkArray->AddAt(cptrk2,1);
   
-  AliAODVertex *secvertex;
-  secvertex = ReconstructSecondaryVertex(trkArray,dispersion);
+  Double_t xdummy, ydummy;
+  Double_t dcap1p2 = cptrk1->GetDCA(cptrk2,fBzkG,xdummy,ydummy);
+
+  AliAODVertex *secvertex=0;
+	if(dcap1p2<fAnalCuts->GetProdLikeSignDcaMax()){
+		secvertex = ReconstructSecondaryVertex(trkArray,dispersion);
+	}
   
   for(Int_t i=0;i<2;i++)
     {
@@ -1238,7 +1196,7 @@ AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCas
   //------------------------------------------------
   AliAODVertex *primVertexAOD;
   Bool_t unsetvtx = kFALSE;
-  if(fIspp){
+  if(fReconstructPrimVert){
     primVertexAOD = CallPrimaryVertex(casc,part1,part2,aod);
     if(!primVertexAOD){
       primVertexAOD = fVtx1;
@@ -1270,14 +1228,6 @@ AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCas
 
   Double_t xdummy, ydummy;
   Double_t dcap1p2 = esdtrack1->GetDCA(esdtrack2,fBzkG,xdummy,ydummy);
-  if(fabs(dcap1p2)>fProdCuts->GetProdLikeSignDcaMax())
-    {
-      if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
-      if(esdtrack1) delete esdtrack1;
-      if(esdtrack2) delete esdtrack2;
-      if(trackCasc) delete trackCasc;
-      return 0x0;
-    }
   Double_t dcap1casc = esdtrack1->GetDCA(trackCasc,fBzkG,xdummy,ydummy);
   Double_t dcap2casc = esdtrack2->GetDCA(trackCasc,fBzkG,xdummy,ydummy);
   Double_t dca[3]={dcap1casc,dcap2casc,dcap1p2};
