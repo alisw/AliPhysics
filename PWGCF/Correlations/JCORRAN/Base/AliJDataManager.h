@@ -44,8 +44,6 @@ public:
 
   virtual ~AliJDataManager();                        //destructor
   AliJDataManager();
-  AliJDataManager(const AliJDataManager& obj);
-  AliJDataManager& operator=(const AliJDataManager& obj);
 
   void ChainInputStream(const char* infileList);
   Double_t LoadEvent( int ievt );
@@ -126,7 +124,9 @@ public:
 
   AliJTrackCut * fTrackCut; // Trigg selection class
 
-
+  private:
+  AliJDataManager(const AliJDataManager& obj) ;
+  AliJDataManager& operator=(const AliJDataManager& obj) {return *this;};
 
 };
 

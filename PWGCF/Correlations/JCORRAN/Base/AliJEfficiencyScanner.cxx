@@ -71,6 +71,12 @@ AliJEfficiencyScanner::AliJEfficiencyScanner() :
         }
     }
 
+    for(int i=0; i<AliJTrackCut::kJNTrackCuts; i++){
+        fh2MultGenRawPrimary[i] = 0x0;
+        fh2MultGenRawAll[i] = 0x0;
+    }
+        
+
 }
 
 //______________________________________________________________________________
@@ -114,6 +120,10 @@ AliJEfficiencyScanner::AliJEfficiencyScanner(const char *name):
             }
         }
     }
+    for(int i=0; i<AliJTrackCut::kJNTrackCuts; i++){
+        fh2MultGenRawPrimary[i] = 0x0;
+        fh2MultGenRawAll[i] = 0x0;
+    }
 }
 
 //____________________________________________________________________________
@@ -156,6 +166,10 @@ AliJEfficiencyScanner::AliJEfficiencyScanner(const AliJEfficiencyScanner& ap) :
                 }
             }
         }
+    }
+    for(int i=0; i<AliJTrackCut::kJNTrackCuts; i++){
+        fh2MultGenRawPrimary[i] = ap.fh2MultGenRawPrimary[i];
+        fh2MultGenRawAll[i] = ap.fh2MultGenRawAll[i];
     }
 
 }

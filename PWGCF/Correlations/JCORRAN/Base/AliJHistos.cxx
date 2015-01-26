@@ -236,7 +236,7 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
     ftriggFiducCut =  fCard->Get("TriggerFiducialEtaCut"); //FK// Fiduc cut 
     fmaxTriggEtaRange =  fmaxEtaRange - ftriggFiducCut; //FK// Trigger range
 
-    fHMG = new AliJHistManager( "HistManager");
+    fHMG = new AliJHistManager( "HistManager","AliJHistos");
     //for (int hiklong = 0; hiklong < fCard->GetNoOfBins(kLongType); hiklong++)
     //kRGapType kEtaGapType
     fCentBin   .Set("Cent",   "C", "Cend:%2.0f-%2.0f%%" ).SetBin( fCard->GetVector("CentBinBorders"));
@@ -523,6 +523,9 @@ AliJHistos& AliJHistos::operator=(const AliJHistos& obj){
 AliJHistos::~AliJHistos() {
 	delete fHMG;
 	delete fHmgInclusive;
+    delete []fJanFiete;
+    delete []fPttJacek;
+    delete []fEta;
 }
 
 //______________________________________________________________________________
@@ -1242,6 +1245,7 @@ void AliJHistos::ReadInclusiveHistos(const char *inclusFileName){
     if( ncol > 1 ) dir = (TDirectory*)( inclusFile->Get(sep[1]));
     if( !dir ) {
 		cout << " ReadInclusiveHistos wrong file name or dirname !!!!" << endl;
+        return;
 	}
 
      cout<<inclusFileName<<"\t"<<filename<<"\t";

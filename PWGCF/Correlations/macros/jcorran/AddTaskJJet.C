@@ -38,7 +38,7 @@ AliJJetTask* AddTaskJJet(
     TString rhoName = "";
 
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
     const int nJetFinder=6;	
     AliEmcalJetTask* jetFinderTask[nJetFinder];

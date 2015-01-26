@@ -14,6 +14,11 @@
 # **************************************************************************/
 
 #Module for JCORRAN
-include ( CMakeListsJCORRAN.cfg )
+#include ( CMakeListsJCORRAN.cfg )
 #Module for JCORRANPro
-include ( CMakeListsJCORRANPro.cfg )
+#include ( CMakeListsJCORRANPro.cfg )
+
+
+add_subdirectory(Base)
+add_subdirectory(Pro)
+

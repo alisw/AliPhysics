@@ -67,7 +67,7 @@ class AliJJetJtAnalysis{
         void ClearBeforeEvent();
         void FillJtHistogram( TObjArray *Jets, int iContainer );
 
-        void FillBgJtWithSmallerR(const TClonesArray &Jets,int iContainer, 
+        void FillBgJtWithSmallerR(const TClonesArray &Jets, 
             double nR, int iHist);
 
         void FillBgJtWithDiffAxes (int iao, int ia, int iHist);
@@ -102,9 +102,8 @@ class AliJJetJtAnalysis{
         TObjArray * fInputList; // comment needed
         TObjArray * fJetList; // comment needed
         TObjArray fJetListOfList; // !comment needed
-        //TObjArray * fJetBgList; // comment needed
-        //TObjArray fJetBgListOfList; // !comment needed
         vector<TClonesArray>      fJetBgListOfList;
+        double fJetEtaCut;
 
         TVector  *fJetTriggPtBorders;
         TVector  *fJetConstPtLowLimits;

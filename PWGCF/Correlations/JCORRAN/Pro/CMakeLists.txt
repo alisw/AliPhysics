@@ -14,44 +14,37 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGCFCorrelationsJCORRAN)
+set (MODULE PWGCFCorrelationsJCORRANPro)
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Pro
+)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+                    ${AliPhysics_SOURCE_DIR}/OADB
   )
 
 # Sources - alphabetical order
 set(SRCS
-  AliJCORRAN.cxx
-  AliJTrackCounter.cxx
-  AliJCORRANTask.cxx
-  AliJEfficiencyTask.cxx
-  AliJDiHadronCorrTask.cxx
-  AliJFilter.cxx
-  AliJEfficiencyScanner.cxx
-  AliJBaseEventHeader.cxx
-  AliJBaseTrack.cxx
-  AliJEventHeader.cxx
-  AliJJet.cxx
-  AliJMCTrack.cxx
-  AliJPhoton.cxx
-  AliJPiZero.cxx
-  AliJRunHeader.cxx
-  AliJTrack.cxx
-  AliJHistManager.cxx
-  AliJCorrelations.cxx
-  AliJDataManager.cxx
-  AliJRunTable.cxx
-  AliJHistos.cxx
-  AliJEventPool.cxx
-  AliJEfficiency.cxx
-  AliJTrackCut.cxx
-  AliJBaseCard.cxx
-  AliJCard.cxx
-  )
+	AliJEbeHistos.cxx
+	AliJEbePercentile.cxx
+	AliJEbECORRTask.cxx
+	AliJJetTask.cxx
+	AliJDiJetAnalysis.cxx
+	AliJDiJetTask.cxx
+	AliJJetCORRAnalysis.cxx
+	AliJJetCORRTask.cxx
+	AliJJetJtAnalysis.cxx
+	AliJJetJtTask.cxx
+	AliJJetAnalysis.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -66,7 +59,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW EMCALUtils PHOSUtils)
+set(LIBDEPS ANALYSISalice CORRFW EMCALUtils PHOSUtils PWGCFCorrelationsJCORRAN )
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
