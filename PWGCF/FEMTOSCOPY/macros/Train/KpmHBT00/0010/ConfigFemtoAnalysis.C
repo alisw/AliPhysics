@@ -157,13 +157,14 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //    AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
   //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
   //AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];//Dhevan's dphi* cut
-  AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
+  //
+  //AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
   AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[20*10];//20->20*10 due to kT
-  AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
+  //AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
   AliFemtoKTPairCut             *ktpcuts[20*8];
-  AliFemtoCorrFctnDirectYlm     *cylmkttpc[20*8];
+  //AliFemtoCorrFctnDirectYlm     *cylmkttpc[20*8];
   AliFemtoQinvCorrFctn          *cqinvkttpc[20*8];
-  AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
+  //AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
   AliFemtoCorrFctnTPCNcls       *cqinvnclstpc[20];
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
@@ -222,7 +223,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
          // new cuts to remove electron (do not take into analysis if 400<p<500) 
 	 dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	 dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(1.);//cut on e+e- orig(2.0);
+	 dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(0.);//cut on e+e- orig(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(0.);//cut on e+e- orig(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);  
 	 // new cuts are stronger, better separation of pion in TOF 
@@ -237,7 +238,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	 dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	 dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.);//cut on e+e- orig(2.0);
+	 dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(0.);//cut on e+e- orig(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(0.);//cut on e+e- orig(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);    
 	 // new cuts are stronger, better separation of pion in TOF 
@@ -270,22 +271,27 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	 dtc2etaphitpc[aniter]->SetMaxImpactZ(DCAz);  
 	  
 	  //K+
-	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[ichg], imult), 0.493677);
-	  cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%i", chrgs[ichg], imult), 0.493677);
+	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[0], imult), 0.493677);
+	  cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%i", chrgs[0], imult), 0.493677);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
-	    //K- 
-	  cutPass2YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass2%stpcM%i", chrgs[ichg], imult), 0.493677);
-	  cutFail2YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail2%stpcM%i", chrgs[ichg], imult), 0.493677);
-	  dtc2etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
+	  //K- 
+	  cutPass2YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass2%stpcM%i", chrgs[1], imult), 0.493677);
+	  cutFail2YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail2%stpcM%i", chrgs[1], imult), 0.493677);
+	  dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2YPtetaphitpc[aniter], cutFail2YPtetaphitpc[aniter]);
 	  
 	  //K+
-	  cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[ichg], imult),1);
-	  cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[ichg], imult),1);
+	  cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[0], imult),1);
+	  cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[0], imult),1);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
 
+	  //K-
+	  cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass2%stpcM%i", chrgs[1], imult),1);
+	  cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail2%stpcM%i", chrgs[1], imult),1);
+	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass2PIDetaphitpc[aniter], cutFail2PIDetaphitpc[aniter]);
+
 	  
-	 // sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
-	//  sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
+	  // sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
+	  //  sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
 	  
           //if (ichg < 2) {
 	    //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();//AliFemto dphi* cut
@@ -335,12 +341,12 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);// add CF histos
 
 
-	      if (run3d) {
-		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
-//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
-		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
-	      }
+	      //if (run3d) {
+	      //cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
+	      //		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
+	      //cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      //anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
+	      //}
 	    }
 	  }
 	  
