@@ -377,12 +377,9 @@ AliVEvent::EDataLayoutType AliFlatESDEvent::GetDataLayoutType() const
   return AliVEvent::kFlat;
 }
 
-
 void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const 
 {
   // Fill flat ESD event to ALiESDEvent
-
-  // not yet fully implemented!!! SG!!
 
   if( !esd ) return;  
   
@@ -414,9 +411,9 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
   // fill primary vertices
   {
     AliESDVertex v;
-    if( GetPrimaryVertexSPD( v ) > 0 ) esd->SetPrimaryVertexSPD( &v );
-    if( GetPrimaryVertexTPC( v ) > 0 ) esd->SetPrimaryVertexTPC( &v );
-    if( GetPrimaryVertexTracks( v ) > 0 ) esd->SetPrimaryVertexTracks( &v );
+    if( GetPrimaryVertexSPD( v ) >= 0 ) esd->SetPrimaryVertexSPD( &v );
+    if( GetPrimaryVertexTPC( v ) >= 0 ) esd->SetPrimaryVertexTPC( &v );
+    if( GetPrimaryVertexTracks( v ) >= 0 ) esd->SetPrimaryVertexTracks( &v );
   }
 
    // fill tracks 
@@ -430,18 +427,20 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
     }
   }
  
-  /* SG!!! TO DO
-
-
   // fill V0s
   {
     const AliFlatESDV0 *flatV0 = GetV0s();
     for( int i=0; i<GetNumberOfV0s(); i++ ){
-      AliESDv0 esdV0;
-      flatV0->FillToESDv0( & esdV0 );
-      flatV0 = flatV0->GetNextV0();
-      esd->AddV0( &esdV0 );
+      Int_t negID = flatV0->GetNegTrackID();
+      Int_t posID = flatV0->GetPosTrackID();
+      const AliESDtrack *negTr = esd->GetTrack( negID );
+      const AliESDtrack *posTr = esd->GetTrack( posID );
+      if( negTr && posTr ){
+	AliESDv0 esdV0( *negTr, negID, *posTr, posID );
+	esd->AddV0( &esdV0 );
+      }
+      flatV0 = flatV0->GetNextV0();  
     }
   }  
-  */
+  
 }
