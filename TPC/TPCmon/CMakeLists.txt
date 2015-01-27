@@ -59,7 +59,6 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS STEERBase ESD RAWDatabase RAWDatarec RAWDatarecOnline Core Gpad Graf Gui Hist RIO)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} STEERBase ESD RAWDatabase RAWDatarec RAWDatarecOnline Core Gpad Graf Gui Hist RIO)
@@ -71,9 +70,6 @@ if(DATE_FOUND)
     set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
     set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
 endif(DATE_FOUND)
-
-# Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

@@ -56,6 +56,11 @@ if(DIMDIR AND ODIR)
     add_definitions(-DALI_DIM)
 endif()
 
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
+endif(DATE_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -76,13 +81,14 @@ if(DIMDIR AND ODIR)
     target_link_libraries(${MODULE} dim)
 endif()
 
-# Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
-
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Additional compilation and linking flags
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
 install(TARGETS ${MODULE}

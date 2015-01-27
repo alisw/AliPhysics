@@ -145,7 +145,8 @@ set(SRCS
 if (DATE_FOUND)
     set (SRCS ${SRCS} "AliITSHandleDaSSD.cxx")
     # set the definitions per folder to be passed to ROOT
-    add_definitions(-DALI_DATE)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
 endif (DATE_FOUND)
 
 # Headers from sources
@@ -173,25 +174,22 @@ add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
-# Setting the correct headers for the object as gathered from the dependencies
-target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
-
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-set(MODULE_COMPILE_FLAGS " ")
-if(DATE_FOUND)
-    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS} ${MODULE_COMPILE_FLAGS}")
-endif(DATE_FOUND)
-
-# Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
-
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Aditional compile and link flags
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Setting the correct headers for the object as gathered from the dependencies
+# After all compilation flags are set
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Installation
 install(TARGETS ${MODULE}

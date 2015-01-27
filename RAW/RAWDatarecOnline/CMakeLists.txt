@@ -58,10 +58,6 @@ add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatarecOnline-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
-# Setting the correct headers for the object as gathered from the dependencies
-target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
-
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
@@ -74,9 +70,6 @@ if(DATE_FOUND)
     set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
 endif(DATE_FOUND)
 
-# Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
-
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
     set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
@@ -85,6 +78,10 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 # Setting target compile and linking flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Installation
 install(TARGETS ${MODULE}

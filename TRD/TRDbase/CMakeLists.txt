@@ -129,6 +129,12 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Setting compile and link flags in case of date
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
+endif(DATE_FOUND)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -156,12 +162,9 @@ target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-# Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
-
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set_target_properties(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Check if CRS support was enabled
@@ -176,6 +179,15 @@ if(TRD_RAW_DEBUG)
     add_definitions(-DTRD_RAW_DEBUG)
 endif(TRD_RAW_DEBUG)
 
+# Setting the correct headers for the object as gathered from the dependencies
+# Additional compilation flags
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Setting the correct headers for the object as gathered from the dependencies
+# This has to be added after all the compile definitions
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Installation
 install(TARGETS ${MODULE}
