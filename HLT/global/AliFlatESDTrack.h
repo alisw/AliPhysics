@@ -54,8 +54,25 @@ class AliFlatESDTrack :public AliVTrack {
 
   void SetNumberOfTPCClusters( Int_t nCl ) { fNTPCClusters = nCl; } 
   void SetNumberOfITSClusters( Int_t nCl ) { fNITSClusters = nCl; } 
-  void SetImpactParameters( Float_t p[6] ) { for( int i=0; i<6; i++ ) fImp[i] = p[i]; }
-  void SetImpactParametersTPC( Float_t p[6] ) { for( int i=0; i<6; i++ ) fImpTPC[i] = p[i]; }
+
+  void SetImpactParameters( const Float_t p[2], const Float_t cov[3], const Float_t chi2 ){
+    fImp[0] = p[0];
+    fImp[1] = p[2];
+    fImp[2] = cov[0];
+    fImp[3] = cov[1];
+    fImp[4] = cov[2];
+    fImp[5] = chi2; 
+  }
+
+  void SetImpactParametersTPC( const Float_t p[2], const Float_t cov[3], const Float_t chi2){
+    fImpTPC[0] = p[0];
+    fImpTPC[1] = p[2];
+    fImpTPC[2] = cov[0];
+    fImpTPC[3] = cov[1];
+    fImpTPC[4] = cov[2];
+    fImpTPC[5] = chi2; 
+  }
+
   
   // --------------------------------------------------------------------------------
   // -- Getter methods

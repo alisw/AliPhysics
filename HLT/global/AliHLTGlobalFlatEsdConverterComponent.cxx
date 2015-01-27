@@ -531,7 +531,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       
       const AliExternalTrackParam *tpcConstrained=0;       
       const AliExternalTrackParam *tpcInner=tpcTrack;       
-      float impPar[6];
+      float impPar[6] = {0.,0.,0.,0.,0.,0.};
 
       AliESDtrack esdTrack;
       if( primaryVertexTracks ){
@@ -558,7 +558,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained );
       flatTrack->SetNumberOfTPCClusters( nClustersTPC );
       flatTrack->SetNumberOfITSClusters( nClustersITS );
-      flatTrack->SetImpactParameters( impPar );
+      flatTrack->SetImpactParameters( impPar, impPar+2,impPar[5] );
 
       trackSize += flatTrack->GetSize();
       freeSpace -= flatTrack->GetSize();
