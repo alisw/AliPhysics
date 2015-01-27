@@ -47,6 +47,7 @@ protected:
   void InitForRun(Int_t run) ; //read trigger bad map for this run from OADB. Should be called once per run
   Bool_t TestBadMap(Int_t mod, Int_t ix,Int_t iz) ; //Check if trigger is in good/active region
   Int_t FindBranch(Int_t nX, Int_t nZ) ; //Calculate number of PHOS branch
+  Double_t TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t module) ; //Parameterization of turn-on curve in LHC13bcdef
   
   
 private:
