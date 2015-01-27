@@ -48,7 +48,7 @@ ClassImp(AliFITRawReader)
   
   fRawReader->Reset();
   fRawReader->Select("FIT"); 
-  for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+  for ( Int_t k=0; k<720; k++)   fAllData[k] = -1;
  
 }
 //_____________________________________________________________________________
@@ -81,7 +81,7 @@ Bool_t  AliFITRawReader::Next()
   Bool_t correct=kTRUE;
   Int_t header;
   
-  for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+  for ( Int_t k=0; k<1000; k++)   fAllData[k] = -1;
   
   
   do {

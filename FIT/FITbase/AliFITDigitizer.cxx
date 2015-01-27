@@ -142,19 +142,20 @@ void AliFITDigitizer::Digitize(Option_t* /*option*/)
 void AliFITDigitizer::DigitizeHits()
 {
 
-   Int_t hit, nhits;
-  Float_t time[160], besttime[160];
-  Int_t countE[160];
+  Int_t hit, nhits;
+  Float_t time[240], besttime[240];
+  Int_t countE[240];
   Int_t timeCFD, timeLED, timeQT1, timeQT0;
 
   Int_t threshold = 0; //photoelectrons
   Float_t channelWidth = 24.4 ; 
   Int_t pmt, mcp, volume, qt; 
   //eqailized distance from IP
-  Float_t zdetC = 82;
-  Float_t zdetA = 375.;
+  Float_t zdetC = 84;
+  Float_t zdetA = 335.;
   Float_t c = 0.0299792458; // cm/ps
   Float_t eqdistance = (zdetA - zdetC) /c;
+  Float_t ph2Mip = 318; 
   
   AliFITHits  *startHit;
   TBranch *brHits=0;
@@ -166,7 +167,7 @@ void AliFITDigitizer::DigitizeHits()
       continue;
      }
 
-  for (Int_t i0=0; i0<160; i0++)
+  for (Int_t i0=0; i0<240; i0++)
       {
 	time[i0]=besttime[i0]=999999; countE[i0]=0;
       }
@@ -198,31 +199,34 @@ void AliFITDigitizer::DigitizeHits()
 	  AliError("The unchecked hit doesn't exist");
 	  break;
 	}
+	Float_t ipart = startHit->Particle();
+	if (ipart<49) continue;
 	pmt = startHit->Pmt();
 	mcp = startHit->MCP();
 	volume = startHit->Volume();
-	numpmt= volume*80 +4*(mcp) + (pmt-1);
+	if(volume==2) continue;
+	numpmt= 4*mcp + pmt;
 	besttime[numpmt] = startHit->Time();
 	if(besttime[numpmt]<time[numpmt]) time[numpmt]=besttime[numpmt];
 	countE[numpmt]++;
       } //hits loop
   } //track loop
   
-  for (Int_t ipmt=0; ipmt<160; ipmt++)
+  for (Int_t ipmt=0; ipmt<240; ipmt++)
     {
       if (countE[ipmt]>threshold && time[ipmt]<50000 && time[ipmt]>0 ) {
 	//fill ADC
 	// QTC procedure:
-	// 1MIP ->200phe  ;
-	  qt= countE[ipmt] /*/ph2Mip*/;  // 50mv/Mip amp in mV 
-	  //  fill TDC
-	  if (ipmt<80) time[ipmt] = time[ipmt] + eqdistance;
- 	  timeCFD = Int_t (gRandom->Gaus(time[ipmt], 50)/channelWidth ); 
-	  timeLED =  Int_t (time[ipmt]/channelWidth );
-	  timeQT0 = 0;
-	  timeQT1 = Int_t (qt ) ;
-	  AliDebug(1,Form("Digits:::::  numpmt %i  time CFD %i QTC  %i :: counts %i \n ",  ipmt, timeCFD, timeQT1,  countE[ipmt]) );
-	  fFIT-> AddDigit(ipmt,   timeCFD, timeLED, timeQT0,  timeQT1, 0);
+	// 1MIP ->318phe  ;
+	qt= 1000* countE[ipmt] /ph2Mip;  // 318 ph/Mip 
+	//  fill TDC
+	if (ipmt>100) time[ipmt] = time[ipmt] + eqdistance;
+	timeCFD = Int_t (gRandom->Gaus(time[ipmt], 50)/channelWidth ); 
+	timeLED =  Int_t (time[ipmt]/channelWidth );
+	timeQT0 = 0;
+	timeQT1 = qt ;
+	AliDebug(1,Form("Digits:::::  numpmt %i  time CFD %i QTC  %i :: counts %i \n ",  ipmt, timeCFD, timeQT1,  countE[ipmt]) );
+	fFIT-> AddDigit(ipmt,   timeCFD, timeLED, timeQT0,  timeQT1, 0);
       } //hitted PMTs
     } //pmt loop
   fitLoader->UnloadHits();
@@ -231,7 +235,7 @@ void AliFITDigitizer::DigitizeHits()
 }
 
 //____________________________________________________________________________
-void AliFITDigitizer::AddSDigit(Int_t npmt,  
+void AliFITDigitizer::AddDigit(Int_t npmt,  
 				Int_t timeCFD, Int_t timeLED, Int_t timeQT0, 
 				Int_t timeQT1) 
  { 

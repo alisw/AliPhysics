@@ -54,7 +54,7 @@ class AliFITRawData : public TObject {
   Int_t fIndex;             //number of 32 words to be stored into the output file
   Int_t fEventNumber;       // current event number
   Int_t fDataHeaderPos;
-   Int_t fAllData[500];
+  Int_t fAllData[1000];
   AliFstream* fFile;        //logical name of the I/O file
  
   ClassDef(AliFITRawData,1)             //  FIT raw data class

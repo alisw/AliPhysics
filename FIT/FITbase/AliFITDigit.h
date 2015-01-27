@@ -27,7 +27,7 @@ class AliFITDigit: public AliDigit {
   Int_t fTimeLED;    // array's LED
   Int_t fTimeQT0;    // array's QT0 start QTC amplitude
   Int_t fTimeQT1;    // array's QT1 stop QTC amplitude
- Int_t fNPMT;       // number of channel [0,79] C side; [80,159] Aside
+  Int_t fNPMT;       // number of channel [0,79] C side; [80,159] Aside
  
   AliFITDigit( const AliFITDigit& );
   AliFITDigit& operator=(const AliFITDigit&); 

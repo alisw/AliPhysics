@@ -78,7 +78,7 @@ ClassImp(AliFITRawData)
   if (runloader) {
     fEventNumber = runloader->GetEventNumber();
   }
-   for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+   for ( Int_t k=0; k<1000; k++)   fAllData[k] = -1;
 
 }
 
@@ -97,7 +97,7 @@ AliFITRawData::AliFITRawData(const AliFITRawData &r):TObject(),
   //
   
   ((AliFITRawData &) r).Copy(*this);
-  for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+  for ( Int_t k=0; k<1000; k++)   fAllData[k] = -1;
 
   
 }
@@ -134,14 +134,14 @@ void AliFITRawData::GetDigits()
   Int_t ndigits = fFITdigitArray->GetEntries();
   AliDebug(2, Form(" Number of read digits = %d",ndigits));
   AliFITDigit *digs;
-  for(Int_t i=0; i<500; i++) fAllData[i]=-1;
+  for(Int_t i=0; i<1000; i++) fAllData[i]=-1;
   // loop on FIT digits
   for (digit=0; digit<ndigits; digit++) {
     digs = (AliFITDigit*)fFITdigitArray->UncheckedAt(digit);
     Int_t pmt = digs->NPMT();
     fAllData[pmt] = digs->TimeCFD();
-    fAllData[pmt+160] = digs->TimeQT0();
-    fAllData[pmt+320] = digs->TimeQT1();
+    fAllData[pmt+240] = digs->TimeQT0();
+    fAllData[pmt+480] = digs->TimeQT1();
   }
   //  Int_t error=0;
   
@@ -193,7 +193,8 @@ Int_t AliFITRawData::RawDataFIT(TBranch* branch)
 	  fIndex++;
 	  iTDC = det / 4;
 	  channel = ch[det - iTDC*4];
-	  AliDebug(2, Form("det %i  alldata %i trm %i chain %i tdc %i channel %i \n",det, det + itrm*120 + chain*60, itrm, chain, iTDC, det - iTDC*4) );
+	  //	  AliDebug(2, Form("det %i  alldata %i trm %i chain %i tdc %i channel %i \n",det, det + itrm*120 + chain*60, itrm, chain, iTDC, det - iTDC*4) );
+	  printf("det %i  alldata %i trm %i chain %i tdc %i channel %i \n",det, det + itrm*120 + chain*60, itrm, chain, iTDC, det - iTDC*4);
 	  FillTime(channel,iTDC, time);
 	}
       } 
