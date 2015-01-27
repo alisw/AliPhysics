@@ -37,6 +37,8 @@ AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask() :
   fGen(0),
   fMassless(kFALSE),
   fChargedOnly(kFALSE),
+  fToyModelFragmentation(kFALSE),
+  fToyModelFraction(0.9),
   fHistPt(0),
   fHistEtaPhi(0),
   fHistTrials(0),
@@ -53,6 +55,8 @@ AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask(const char *name, Bool_t 
   fGen(0),
   fMassless(kFALSE),
   fChargedOnly(kFALSE),
+  fToyModelFragmentation(kFALSE),
+  fToyModelFraction(0.9),
   fHistPt(0),
   fHistEtaPhi(0),
   fHistTrials(0),
@@ -194,6 +198,7 @@ void AliJetEmbeddingFromGenTask::Run()
       continue;
     Double_t mass = part->GetMass();
     if(fMassless) mass = 0.;
+    if(fToyModelFragmentation) pt=pt*fToyModelFraction;
     fHistPt->Fill(pt);
     fHistEtaPhi->Fill(eta,phi);
     AddTrack(pt, eta, phi,0,0,0,0,0,0,c,mass);
