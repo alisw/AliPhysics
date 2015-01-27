@@ -6,10 +6,11 @@ Int_t SETUP()
   const char *wd = gSystem->WorkingDirectory();
 
   // Set include path for CINT (PARfile is unpacked as a subfolder of current workdir)
+  // TODO: prepend path instead of appending (not currently supported by ROOT!)
   buf.Form(".include %s", wd);
   gROOT->ProcessLine(buf.Data());
 
-  // Prepend include path for other stuff
+  // Prepend include path for compiled code
   buf.Form("-I%s %s", wd, gSystem->GetIncludePath());
   gSystem->SetIncludePath(buf.Data());
 
@@ -17,18 +18,13 @@ Int_t SETUP()
   buf.Form("%s:%s", wd, gSystem->GetDynamicPath());
   gSystem->SetDynamicPath(buf.Data());
 
-  // Load library
-  if ( gSystem->Load("lib@PARMODULE@") < 0 ) {
-    // Error loading
-    return -1;
-  }
+  // Add our rootmap
+  // TODO: disabled because it triggers actual library loading wherever it finds nested classes!
+  // buf.Form("%s/lib@PARMODULE@.rootmap", wd);
+  // gInterpreter->UnloadLibraryMap("lib@PARMODULE@");
+  // gInterpreter->LoadLibraryMap(buf.Data());
 
-  // Set our location, so that other packages can find us
-  //gSystem->Setenv("@PARMODULE@_INCLUDE", "@PARMODULE@");
-
-  // Set our lib coordinates, so that other packages can link to us
-  //buf.Form("-L%s -l@PARMODULE@", wd);
-  //gSystem->Setenv("@PARMODULE@_LIBS", buf.Data());
+  // Note: there is no need to actually load the library thanks to the rootmap
 
   return 0;
 }

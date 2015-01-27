@@ -1,11 +1,19 @@
-macro(add_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF)
+macro(add_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
 
   message(STATUS "PARfile generation: ${PARMODULE}")
-  message(STATUS "--> Module: ${PARMODULE}")
-  message(STATUS "--> Sources: ${PARSOURCES}")
+
+  # Libraries
+  foreach(THISLIB ${PARLIBDEPS})
+    set(_PARLIBDEPS "${_PARLIBDEPS} lib${THISLIB}")
+  endforeach()
+  string(STRIP "${_PARLIBDEPS}" PARLIBDEPS)
 
   # Export variable
   set(PARMODULE "${PARMODULE}")
+
+  message(STATUS "--> Module: ${PARMODULE}")
+  message(STATUS "--> Sources: ${PARSOURCES}")
+  message(STATUS "--> Deps: ${PARLIBDEPS}")
 
   foreach(LOOPVAR ${PARSOURCES})
     message(STATUS "----> ${LOOPVAR}")

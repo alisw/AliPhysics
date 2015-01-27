@@ -6,6 +6,9 @@ include Makefile.arch
 # Name of this module
 PAR_MODULE := @PARMODULE@
 
+# This module depends on the following libraries
+PAR_LIBDEPS := @PARLIBDEPS@
+
 # Include paths
 PAR_INCLUDES = -I. -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(ROOTSYS)/include
 
@@ -30,7 +33,7 @@ COLG := \033[32m
 COLZ := \033[m
 
 # Default rule (it's the first one, "all" is just a convention)
-all: lib$(PAR_MODULE).so
+all: lib$(PAR_MODULE).rootmap lib$(PAR_MODULE).so
 	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)] $(COLG)PARfile built successfully$(COLZ)"
 
 # Abstract rule to compile classes to objects
@@ -50,6 +53,11 @@ G__$(PAR_MODULE).cxx: $(HDRS) $(DHDR)
 	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating dictionary
 	@rootcint -f $@ -c -p $(PAR_INCLUDES) $^
 
+# Generate rootmap (for automatic loading of libraries)
+lib$(PAR_MODULE).rootmap: lib$(PAR_MODULE).so
+	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating rootmap
+	@rlibmap -o $@ -l lib$(PAR_MODULE) -d $(PAR_LIBDEPS) -c $(DHDR)
+
 # Delete all
 clean:
-	rm -f $(OBJS) *.so G__$(PAR_MODULE).*
+	rm -f $(OBJS) *.so G__$(PAR_MODULE).* *.rootmap
