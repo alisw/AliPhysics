@@ -363,6 +363,11 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       fOutputContainer->Add(new TH2F("hMCRecK0sVtx","Secondary K0s",100,0.,10.,600,0.,600.)) ;
       fOutputContainer->Add(new TH2F("hMCRecK0lVtx","Secondary K0l",100,0.,10.,600,0.,600.)) ;
       fOutputContainer->Add(new TH2F("hMCGammaPi0MisConvR","Converted photons",400,0.,40.,600,0.,600.)) ;
+      
+      for(Int_t mod=1; mod<5; mod++){
+        fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhot%d",mod),"MinBias photons",500,0.,50.)) ;
+        fOutputContainer->Add(new TH1F(Form("hMCTrigPhot%d",mod),"Triggered photons",500,0.,50.)) ;
+      }
  
   for(Int_t ipart=0; ipart<11; ipart++){  
     fOutputContainer->Add(new TH2F(Form("hMC%s_ptrap",partName[ipart]),"Spectrum of primary photons",100,0.,10.,200,-1.,1.)) ;
@@ -563,7 +568,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
 
   //Prepare PHOS trigger utils if necessary
-  if(!fIsMB)
+  if(!fIsMB || fIsMC)
    fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ; 
   
   
@@ -789,8 +794,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetFiducialArea(fidArea) ;
 
     //Mark photons fired trigger
-    if(!fIsMB) 
-      p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;       
+    if(!fIsMB && !fIsMC) 
+      p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
+    if(fIsMC)
+      p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)) ;    
 
     if(fIsMB || !fIsMB && p->IsTrig()){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
@@ -804,6 +811,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     }
     
     if(fIsMC){    
+       //Check trigger efficiency
+       FillHistogram(Form("hMCMinBiasPhot%d",mod),clu->E()) ;
+       if(p->IsTrig())
+          FillHistogram(Form("hMCTrigPhot%d",mod),clu->E()) ;
        //Look for MC particle entered PHOS
        FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),clu->E(),float(clu->GetNLabels())) ;
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
