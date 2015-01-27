@@ -296,13 +296,13 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F *hRawQT1[24]; TH1F *hRawQT0[24];
   TH1F* hRawNhits[24];
   for(Int_t i=0; i<24; i++){
-      timename ="hRawCFD";
-      ledname = "hRawLED";
-      qtcname = "hRawQTC";
-      qt0name = "hRawQT0_";
-      qt1name = "hRawQT1_";
-      ampname = "hRawLEDminCFD";
-      nhits = "hRawNhits";
+      timename ="CFD/hRawCFD";
+      ledname = "LED/hRawLED";
+      qtcname = "QTC/hRawQTC";
+      qt0name = "QTC/start/hRawQT0_";
+      qt1name = "QTC/stop/hRawQT1_";
+      ampname = "LEDminCFD/hRawLEDminCFD";
+      nhits = "Hits/hRawNhits";
       timename += i+1;
       ampname += i+1;
       qtcname += i+1;
@@ -331,16 +331,15 @@ void AliT0QADataMakerRec::InitRaws()
       Add2RawsList( hRawNhits[i],176+i, expert, !image, !saveCorr);
     }
       //new QTC
-    Int_t ihist=0;
+  Int_t ihist=0;
   TH1F* hallhist[220];
   TString namech[4]=   {"00", "01", "10", "11"};
   TString namehist;
   for (Int_t i=0; i<12; i++)
     {      
-       for (Int_t ih=0; ih<4; ih++) {
-	 namehist = Form("hnewRawQT%s_C%i",namech[ih].Data(),i+1);
+      for (Int_t ih=0; ih<4; ih++) {
+	 namehist = Form("newQT/StartStop/hnewRawQT%s_C%i",namech[ih].Data(),i+1);
 	 hallhist[ihist]=new TH1F(namehist.Data(),  Form("%s; #channels;Events",namehist.Data()),1000, 0, 30000);
-	 cout<<ihist<<" "<<namehist.Data()<<endl;
 	 Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
 	 ihist++;
        }
@@ -348,9 +347,8 @@ void AliT0QADataMakerRec::InitRaws()
   for (Int_t i=12; i<24; i++)
     {      
       for (Int_t ih=0; ih<4; ih++) {
-	namehist = Form("hnewRawQT%s_A%i",namech[ih].Data(),i+1-12);
+	namehist = Form("newQT/StartStop/hnewRawQT%s_A%i",namech[ih].Data(),i+1-12);
 	 hallhist[ihist]=new TH1F(namehist.Data(),  Form("%s; #channels;Events",namehist.Data()),1000, 0, 30000);
-	 cout<<ihist<<" "<<namehist.Data()<<endl;
 	 Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
 	 ihist++;
       }
@@ -358,15 +356,13 @@ void AliT0QADataMakerRec::InitRaws()
 
   for (Int_t i=0; i<24; i++)
     {      
-      hallhist[ihist] = new TH1F(Form("hnewRawQTC0_%i_diff",i+1),  Form("hRawQTC new %s - %s ch %i ;#channels;Events",namech[0].Data(), namech[1].Data(),i+1),1200, -100, 1100);
-      cout<<ihist<<Form("  hnewRawQTC0_%i_diff",i+1)<<endl;
-	Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
+      hallhist[ihist] = new TH1F(Form("newQT/hnewRawQTC0_%i_diff",i+1),  Form("hRawQTC new %s - %s ch %i ;#channels;Events",namech[0].Data(), namech[1].Data(),i+1),1200, -100, 1100);
+ 	Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
 	ihist++;
     }
   for (Int_t i=0; i<24; i++)
     {      
-	hallhist[ihist] = new TH1F(Form("hnewRawQTC1_%i_diff",i+1),  Form("hRawQTC new %s - %s ch  %i ;#channels;Events",namech[2].Data(), namech[3].Data(),i+1),1200, -100, 1100);
-	cout<<ihist<<Form("  hnewRawQTC1_%i_diff",i+1)<<endl;
+	hallhist[ihist] = new TH1F(Form("newQT/hnewRawQTC1_%i_diff",i+1),  Form("hRawQTC new %s - %s ch  %i ;#channels;Events",namech[2].Data(), namech[3].Data(),i+1),1200, -100, 1100);
 	Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
 	ihist++;
     }
@@ -374,23 +370,20 @@ void AliT0QADataMakerRec::InitRaws()
   // new mult QTC
   TString namediff[4] = {"C_00min01","C_10min11", "A_00min01", "A_10min11"};  
   for (Int_t i=0; i<4; i++) {
-    hallhist[ihist]  = new TH1F(Form("hnewRawMultC_%s",namech[i].Data()),  Form("new C sum mult %s; #channels;Events",namech[i].Data()), 1000, 0, 30000);
-    cout<<ihist<<Form("  hnewRawMultC_%s",namech[i].Data())<<endl;
+    hallhist[ihist]  = new TH1F(Form("newMPD/hnewRawMultC_%s",namech[i].Data()),  Form("new C sum mult %s; #channels;Events",namech[i].Data()), 1000, 0, 30000);
     Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
     ihist++;
   }
   for (Int_t i=0; i<4; i++) {
-    hallhist[ihist] = new TH1F(Form("hnewRawMultA_%s",namech[i].Data()), Form("new A sum mult %s; #channels;Events",namech[i].Data()), 1000, 0, 30000);
+    hallhist[ihist] = new TH1F(Form("newMPD/hnewRawMultA_%s",namech[i].Data()), Form("new A sum mult %s; #channels;Events",namech[i].Data()), 1000, 0, 30000);
     Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
-    cout<<ihist<<Form("  hnewRawMultA_%s",namech[i].Data())<<endl;
     ihist++;
   }
   
   for (Int_t i=0; i<4; i++) {
-    TString namempd=Form("hnewRawMPD_%s_diff",namediff[i].Data());
+    TString namempd=Form("newMPD/hnewRawMPD_%s_diff",namediff[i].Data());
     hallhist[ihist] =  new TH1F ( namempd.Data(),  namempd.Data(),
 				  1200, -100, 1100) ; 
-    cout<<ihist<<Form(" hnewRawMPD_%s_diff",namediff[i].Data())<<endl;
     Add2RawsList(hallhist[ihist],250+ihist, expert, !image, !saveCorr);
     ihist++;
   }
@@ -399,39 +392,39 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* hRawTrigger = new TH1F("hRawTrigger"," triggers;Trigger ;Counts",6,0,6);
   for (Int_t itr=0; itr<6; itr++) hRawTrigger->Fill(triggers[itr], 0); // RS Modified to allow cloning (no fNumTriggers member anymore)
   Add2RawsList(hRawTrigger ,169, !expert, image, !saveCorr);
-  TH1F* hRawMean = new TH1F("hRawMean","online timer mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
+  TH1F* hRawMean = new TH1F("Triggers/hRawMean","online timer mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
   Add2RawsList( hRawMean,170, expert, !image, !saveCorr);
 
-  TH1F* hRawVertex = new TH1F("hRawVertex","online 0TVX vertex signal; counts",Int_t((high[171]-low[171])/4),low[171],high[171]);
+  TH1F* hRawVertex = new TH1F("Triggers/hRawVertex","online 0TVX vertex signal; counts",Int_t((high[171]-low[171])/4),low[171],high[171]);
   Add2RawsList( hRawVertex,171, expert, !image, !saveCorr);//FK
 
-  TH1F* hRawORA = new TH1F("hRawORA","online OR A; counts",Int_t((high[172]-low[172])/4),low[172],high[172]);
+  TH1F* hRawORA = new TH1F("Triggers/hRawORA","online OR A; counts",Int_t((high[172]-low[172])/4),low[172],high[172]);
   Add2RawsList( hRawORA,172, expert, !image, !saveCorr);
-  TH1F* hRawORC = new TH1F("hRawORC","online OR C;counts",Int_t(( high[173]-low[173])/4),low[173],high[173]);
+  TH1F* hRawORC = new TH1F("Triggers/hRawORC","online OR C;counts",Int_t(( high[173]-low[173])/4),low[173],high[173]);
   Add2RawsList( hRawORC,173, expert, !image, !saveCorr);
-  TH1F* hMultCentr = new TH1F("hMultCentr","online trigger Central;counts ",Int_t(( high[174]-low[174])/4),low[174],high[174]);
+  TH1F* hMultCentr = new TH1F("Triggers/hMultCentr","online trigger Central;counts ",Int_t(( high[174]-low[174])/4),low[174],high[174]);
   Add2RawsList( hMultCentr,174, expert, !image, !saveCorr);
-  TH1F* hMultSeCentr = new TH1F("hMultSemiCentr","online trigger SemiCentral;counts ",Int_t(( high[175]-low[175])/4),low[175],high[175]);
+  TH1F* hMultSeCentr = new TH1F("Triggers/hMultSemiCentr","online trigger SemiCentral;counts ",Int_t(( high[175]-low[175])/4),low[175],high[175]);
   Add2RawsList( hMultSeCentr,175, expert, !image, !saveCorr);
 
-  TH1F* hMultA = new TH1F("hMultA","full mulltiplicity A side;Multiplicity;Entries", Int_t((high[201]-low[201])/4) ,low[201],high[201]);
+  TH1F* hMultA = new TH1F("Triggers/hMultA","full mulltiplicity A side;Multiplicity;Entries", Int_t((high[201]-low[201])/4) ,low[201],high[201]);
   Add2RawsList( hMultA,201, expert, !image, !saveCorr );//FK
   
-  TH1F* hMultAS = new TH1F("hMultASemi","full multiplicity with semi-central trigger A side ;Multiplicity;Entries",
+  TH1F* hMultAS = new TH1F("Triggers/hMultASemi","full multiplicity with semi-central trigger A side ;Multiplicity;Entries",
 			    Int_t((high[202]-low[202])/4),low[202],high[202] );
   Add2RawsList( hMultAS, 202, expert, !image, !saveCorr);
-  TH1F* hMultAC = new TH1F("hMultACentr","full multiplicity with central trigger;Multiplicity;Entries", 
+  TH1F* hMultAC = new TH1F("Triggers/hMultACentr","full multiplicity with central trigger;Multiplicity;Entries", 
 			    Int_t((high[203]-low[203])/4),low[203],high[203]);
   Add2RawsList( hMultAC, 203, expert, !image, !saveCorr);
   
   
   //side C
-   TH1F* hMultC = new TH1F("hMultC","full mulltiplicity C side;Multiplicity;Entries", Int_t(high[204]-low[204]/4) ,low[204],high[204]);
+   TH1F* hMultC = new TH1F("Triggers/hMultC","full mulltiplicity C side;Multiplicity;Entries", Int_t(high[204]-low[204]/4) ,low[204],high[204]);
   Add2RawsList( hMultC,204, expert, !image, !saveCorr );//FK
-  TH1F* hMultCS = new TH1F("hMultCSemi","full multiplicity with semi-central trigger C side;Multiplicity;Entries",
+  TH1F* hMultCS = new TH1F("Triggers/hMultCSemi","full multiplicity with semi-central trigger C side;Multiplicity;Entries",
 			    Int_t((high[205]-low[205])/4),low[205],high[205] );
   Add2RawsList( hMultCS,205, expert, !image, !saveCorr);
-  TH1F* hMultCC = new TH1F("hMultCCentr","full multiplicity with central trigger C side;Multiplicity;Entries", 
+  TH1F* hMultCC = new TH1F("Triggers/hMultCCentr","full multiplicity with central trigger C side;Multiplicity;Entries", 
 			    Int_t((high[206]-low[206])/4),low[206],high[206]);
   Add2RawsList( hMultCC,206, expert, !image, !saveCorr);
   
@@ -482,43 +475,43 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList(hHitsOrC ,216, expert, !image, !saveCorr);
   
   
-  TH1F* hOrCminOrA= new TH1F("hOrCminOrA","T0_OR C - T0_OR A [cm]",10000,-5000,5000);
+  TH1F* hOrCminOrA= new TH1F("Beam/hOrCminOrA","T0_OR C - T0_OR A [cm]",10000,-5000,5000);
   Add2RawsList( hOrCminOrA,219, expert, !image, !saveCorr); //FK
 
-  TH1F* hOrCminOrATvdcOn= new TH1F("hOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on [cm]",10000,-5000,5000);
+  TH1F* hOrCminOrATvdcOn= new TH1F("Beam/hOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on [cm]",10000,-5000,5000);
   Add2RawsList( hOrCminOrATvdcOn,217, expert, !image, !saveCorr);//FK
   
 
-  TH1F* hOrCminOrATvdcOff= new TH1F("hOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off [cm]",10000,-5000,5000);
+  TH1F* hOrCminOrATvdcOff= new TH1F("Beam/hOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off [cm]",10000,-5000,5000);
   Add2RawsList( hOrCminOrATvdcOff,218, expert, !image, !saveCorr);//FK
 
    //satellite  & beam background
-  TH2F* hBeam = new TH2F("hBeam", "Mean vs Vertex from 1st hit", 120, -30, 30, 120, -30, 30);
+  TH2F* hBeam = new TH2F("Beam/hBeam", "Mean vs Vertex from 1st hit", 120, -30, 30, 120, -30, 30);
   hBeam->SetOption("COLZ");
   hBeam->GetXaxis()->SetTitle("(T0C-T0A)/2, ns from 1st"); //vtx
   hBeam->GetYaxis()->SetTitle("(T0C+T0A)/2, ns"); //time
   Add2RawsList( hBeam,220, !expert, image, !saveCorr);
 
-  TH2F* hBeamTVDCon = new TH2F("hBeamTVDCon", "Mean vs Vertex TVDC on from 1st hit",50, -5, 5, 50, -5, 5);//FK
+  TH2F* hBeamTVDCon = new TH2F("Beam/hBeamTVDCon", "Mean vs Vertex TVDC on from 1st hit",50, -5, 5, 50, -5, 5);//FK
   hBeamTVDCon->SetOption("COLZ");
   hBeamTVDCon->GetXaxis()->SetTitle("(T0C-T0A)/2, ns from 1st hit");
   hBeamTVDCon->GetYaxis()->SetTitle("(T0C+T0A)/2, ns");
   Add2RawsList( hBeamTVDCon,221, expert, image, !saveCorr);
 
-  TH2F* hBeamTVDCoff = new TH2F("hBeamTVDCoff", "Mean vs Vertex TVDC off from 1st hit", 120, -30, 30, 120, -30, 30);
+  TH2F* hBeamTVDCoff = new TH2F("Beam/hBeamTVDCoff", "Mean vs Vertex TVDC off from 1st hit", 120, -30, 30, 120, -30, 30);
   hBeamTVDCoff->GetXaxis()->SetTitle("(T0C-T0A)/2, ns from 1st hit");
   hBeamTVDCoff->GetYaxis()->SetTitle("(T0C+T0A)/2, ns");
   hBeamTVDCoff->SetOption("COLZ");
   Add2RawsList( hBeamTVDCoff,222, expert, image, !saveCorr);
 
   //vertex 1st
-  TH1F* hVertex1stTVDCon = new TH1F("hVertex1stTVDCon", "(T0A-T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000); //FK
+  TH1F* hVertex1stTVDCon = new TH1F("Beam/hVertex1stTVDCon", "(T0A-T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000); //FK
   Add2RawsList(hVertex1stTVDCon ,223, !expert, image, !saveCorr);
-  TH1F* hVertex1stTVDCoff = new TH1F("hVertex1stTVDCoff", "(T0A-T0C)/2, ps, from 1st hit TVDC off", 500, -2000, 2000);//FK
+  TH1F* hVertex1stTVDCoff = new TH1F("Beam/hVertex1stTVDCoff", "(T0A-T0C)/2, ps, from 1st hit TVDC off", 500, -2000, 2000);//FK
   Add2RawsList( hVertex1stTVDCoff,225, !expert, image, !saveCorr);
-  TH1F* hMean1stTVDCon  = new TH1F("hMean1stTVDCon", "(T0A+T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000);//FK
+  TH1F* hMean1stTVDCon  = new TH1F("Beam/hMean1stTVDCon", "(T0A+T0C)/2, ps, from 1st hit TVDC on", 200, -2000, 2000);//FK
   Add2RawsList( hMean1stTVDCon,  226, !expert, image, !saveCorr);
-  TH1F* hMean1stTVDCoff = new TH1F("hMean1stTVDCoff", "(T0A+T0C)/2, ps, from 1st hit TVDC off", 200, -2000, 2000);//FK
+  TH1F* hMean1stTVDCoff = new TH1F("Beam/hMean1stTVDCoff", "(T0A+T0C)/2, ps, from 1st hit TVDC off", 200, -2000, 2000);//FK
   Add2RawsList( hMean1stTVDCoff, 227, !expert, image, !saveCorr);
 
    
@@ -541,13 +534,13 @@ void AliT0QADataMakerRec::InitRaws()
   hQTCSubtrMean->SetOption("p");
   Add2RawsList( hQTCSubtrMean,233, expert, image, !saveCorr);//fk filled in Checker
  
-  TH2F* hDiffOrCVersusDiffOrATvdcOn= new TH2F("hDiffOrCVersusDiffOrATvdcOn","ORC-meanORC versus ORA-meanORA (TVDC on)",50,-200,200,50,-200,200);
+  TH2F* hDiffOrCVersusDiffOrATvdcOn= new TH2F("Beam/hDiffOrCVersusDiffOrATvdcOn","ORC-meanORC versus ORA-meanORA (TVDC on)",50,-200,200,50,-200,200);
   hDiffOrCVersusDiffOrATvdcOn->SetOption("COLZ");
   hDiffOrCVersusDiffOrATvdcOn->GetXaxis()->SetTitle("ORA - mean ORA [channel]");
   hDiffOrCVersusDiffOrATvdcOn->GetYaxis()->SetTitle("ORC - mean ORC [channel]");
   Add2RawsList(hDiffOrCVersusDiffOrATvdcOn, 234, expert, image, !saveCorr);//FK
   
-  TH2F* hDiffOrCVersusDiffOrATvdcOff= new TH2F("hDiffOrCVersusDiffOrATvdcOff","ORC-meanORC vetsus ORA-meanORA (TVDC off)",50,-200,200,50,-200,200);
+  TH2F* hDiffOrCVersusDiffOrATvdcOff= new TH2F("Beam/hDiffOrCVersusDiffOrATvdcOff","ORC-meanORC vetsus ORA-meanORA (TVDC off)",50,-200,200,50,-200,200);
   hDiffOrCVersusDiffOrATvdcOff->SetOption("COLZ");
   hDiffOrCVersusDiffOrATvdcOff->GetXaxis()->SetTitle("ORA - mean ORA [channel]");
   hDiffOrCVersusDiffOrATvdcOff->GetYaxis()->SetTitle("ORC - mean ORC [channel]");
