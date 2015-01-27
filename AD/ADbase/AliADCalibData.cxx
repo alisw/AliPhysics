@@ -51,7 +51,7 @@ AliADCalibData::AliADCalibData():
   // default constructor
   
     for(int t=0; t<16; t++) {
-        fMeanHV[t]      = 100.0;
+        fMeanHV[t]      = 1600.0;
         fWidthHV[t]     = 0.0; 
 	fTimeOffset[t]  = 0.0;
         fTimeGain[t]    = 1.0;
@@ -59,8 +59,8 @@ AliADCalibData::AliADCalibData():
 	fDiscriThr[t]  = 2.5;
     }
     for(int t=0; t<32; t++) {
-        fPedestal[t]    = 0.0;     
-        fSigma[t]       = 100.0;        
+        fPedestal[t]    = 3.0;     
+        fSigma[t]       = 1.0;        
         fADCmean[t]     = 0.0;      
         fADCsigma[t]    = 0.0;
     }

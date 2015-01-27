@@ -202,7 +202,7 @@ void AliADTriggerSimulator::LoadClockOffset()
     fClockOffset[board] = (((Float_t)calibdata->GetRollOver(board)-
 			    (Float_t)calibdata->GetTriggerCountOffset(board))*25.0-
 			   l1Delay+
-			   kV0Offset);
+			   kADOffset);
     AliDebug(1,Form("Board %d Offset %f",board,fClockOffset[board]));
   }
 }

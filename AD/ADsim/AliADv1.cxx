@@ -297,7 +297,7 @@ void AliADv1::CreateAD()
   Ri += 0.63*tga;
   Ro  = Ri + d/ca;
   shVSR0->DefineSection(5,        14.0 ,      Ri, Ro);
-  printf("  Ro: %8.2f\n", Ro);
+  //printf("  Ro: %8.2f\n", Ro);
   // Make holes 
   new TGeoBBox("shHoleBody"    , 0.15, 0.60, 0.3);
   new TGeoTube("shHoleEnd", 0.  , 0.15, 0.3);
@@ -322,7 +322,7 @@ void AliADv1::CreateAD()
    (new TGeoRotation(Form("rSec%d",i), 30. * i, 0. , 0.))->RegisterYourself();
    strSh+=Form("+ shVSRsec:rSec%d",i);
   }
-  printf("%s\n", strSh.Data());
+  //printf("%s\n", strSh.Data());
   TGeoCompositeShape * shVSR = new TGeoCompositeShape("shVSR", strSh.Data());
   // Now assembly the sector to form VSR RF transition tube !
   TGeoVolume * voVSR = new TGeoVolume("voVSR", shVSR, kMedAlu);
@@ -339,7 +339,7 @@ void AliADv1::CreateAD()
   // Double_t Delta = TMath::Sqrt( L*L + 4.*(H-d)*H );
   Double_t R = TMath::Sqrt((H-d)*(H-d) + L*L);
   alpha = TMath::ASin(d/R) + TMath::ASin((H-d)/R);
-  printf("alpha: %8.2f \n", alpha * TMath::RadToDeg());
+  //printf("alpha: %8.2f \n", alpha * TMath::RadToDeg());
   sa = TMath::Sin(alpha);
   ca = TMath::Cos(alpha);
   x = d*sa;
@@ -451,7 +451,7 @@ void AliADv1::CreateAD()
   Double_t aRi[nsec] = {5.0, 5.0  , 5.685,  5.685,  5.0  ,  5.0};
   for (Int_t i=0; i<nsec; i++) {
    z=az[i]; Ri = aRi[i]; Ro = 5.7;
-   printf("  i: %2d  z: %8.2f  Ri: %8.2f  Ro: %8.2f\n", i, z, Ri, Ro );
+   //printf("  i: %2d  z: %8.2f  Ri: %8.2f  Ro: %8.2f\n", i, z, Ri, Ro );
    shVBUcent ->DefineSection( i, z, Ri, Ro);
   }
 
@@ -466,7 +466,7 @@ void AliADv1::CreateAD()
   TGeoPcon * shVBUrotFlg  = new TGeoPcon("shVBUrotFlg" , 0., 360., nsec2);
   for (Int_t i=0; i<nsec2; i++) {
    z=az2[i]; Ri = aRi2[i]; Ro = 6.02;
-   printf("  i: %2d  z: %8.2f  Ri: %8.2f  Ro: %8.2f\n", i, z, Ri, Ro );
+   //printf("  i: %2d  z: %8.2f  Ri: %8.2f  Ro: %8.2f\n", i, z, Ri, Ro );
    shVBUrotFlg ->DefineSection( i, z, Ri, Ro);
   }
   TGeoVolume * voVBUrotFlg = new TGeoVolume("voVBUrotFlg", shVBUrotFlg, kMedAlu);
@@ -1040,8 +1040,8 @@ void AliADv1::StepManager()
    
    static Bool_t fOnlyOnce = kTRUE;
    if (fOnlyOnce) {
-     printf("  gMC->VolId(\"ADApad\" ) = %3d\n", idADA);
-     printf("  gMC->VolId(\"ADCpad\" ) = %3d\n", idADC);
+     //printf("  gMC->VolId(\"ADApad\" ) = %3d\n", idADA);
+     //printf("  gMC->VolId(\"ADCpad\" ) = %3d\n", idADC);
      // printf("  gMC->VolId(\"ADCpadH\") = %3d\n", idADCh);
      fOnlyOnce = kFALSE;
    }
@@ -1077,7 +1077,7 @@ void AliADv1::StepManager()
    // Set detector type: ADA or ADC
    Int_t ADlayer = (current_volid == idADC ) ? 0 : 2;
 
-   printf("CurVolID: %d | sect: %2d | detc: %2d\n", current_volid, sect, detc); 
+   //printf("CurVolID: %d | sect: %2d | detc: %2d\n", current_volid, sect, detc); 
 
    sect--;          //     sector within layer [0-3]
    detc--;          //     detector copy       [0-1]
@@ -1089,7 +1089,7 @@ void AliADv1::StepManager()
    // ADC 1  =   4- 7
    // ADA 2  =   8-11
    // ADA 3  =  12-15
-   printf("\n ADsector: %2d | ADlayer: %2d | sect: %2d | x: %8.2f | y: %8.2f | z: %8.2f\n", ADsector, ADlayer, sect, x[0], x[1], x[2]); // Debug ECV
+   //printf("\n ADsector: %2d | ADlayer: %2d | sect: %2d | x: %8.2f | y: %8.2f | z: %8.2f\n", ADsector, ADlayer, sect, x[0], x[1], x[2]); // Debug ECV
    
    Double_t lightYield_ad;
    Double_t photoCathodeEfficiency;
