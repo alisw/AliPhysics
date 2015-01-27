@@ -1,6 +1,6 @@
 void CleanOADB(const TString& dest="tmp.root")
 {
-  const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
+  const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward")) {
     Info("", "Loading libraries");
     gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));

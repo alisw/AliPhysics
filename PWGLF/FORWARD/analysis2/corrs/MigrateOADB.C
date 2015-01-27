@@ -188,7 +188,7 @@ struct Extractor
    * 
    * @return number of converted objects 
    */
-  virtual Int_t Extract(const char* prefix="$ALICE_ROOT/PWGLF/FORWARD/corrections")
+  virtual Int_t Extract(const char* prefix="$ALICE_PHYSICS/PWGLF/FORWARD/corrections")
   {
     Scanner s;
     TString dir = TString::Format("%s/%s",
@@ -414,7 +414,7 @@ struct NormExtractor : public Extractor
   virtual Int_t ExtractNorm(AliOADBForward& db, const char* fileName)
   {
     Scanner s;
-    TString dir = TString::Format("$ALICE_ROOT/PWGLF/FORWARD/corrections/%s",
+    TString dir = TString::Format("$ALICE_PHYSICS/PWGLF/FORWARD/corrections/%s",
 				  fDirName.Data());
     TList* l = s.Scan(dir, fCorrName);
     if (!l) {
@@ -606,7 +606,7 @@ MakeSPDExtractor(const char* dir, const char* name)
 void
 MigrateOADB(Int_t what=0x3)
 {
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   if (what & 0x1) {
     Extractor*  ee[] = {

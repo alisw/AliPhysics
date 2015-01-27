@@ -19,7 +19,7 @@ LoadPars(Int_t nWorkers=4)
   const char** pkg = pkgs;
   Bool_t ret = true;
   while (*pkg) { 
-    if (gProof->UploadPackage(Form("${ALICE_ROOT}/%s.par",*pkg)) < 0) {
+    if (gProof->UploadPackage(Form("${ALICE_PHYSICS}/%s.par",*pkg)) < 0) {
       Error("LoadPars", "Failed to upload package %s", *pkg);
       ret = false;
       continue;

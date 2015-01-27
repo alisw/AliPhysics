@@ -4,10 +4,10 @@ TObject* Browse(Bool_t fmd=true, Bool_t rw=false)
     Error("", "Cannot run Forward OADB browser in batch mode");
     return;
   }
-  const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
+  const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward"))
     gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-  gSystem->AddIncludePath(Form("-I%s -I$ALICE_ROOT/include", fwd));
+  gSystem->AddIncludePath(Form("-I%s -I$ALICE_PHYSICS/include", fwd));
   TString macro = Form("%s/corrs/ForwardOADBGui.C+", fwd);
   Info("", "Loading macro %s", macro.Data());
   gROOT->LoadMacro(macro);

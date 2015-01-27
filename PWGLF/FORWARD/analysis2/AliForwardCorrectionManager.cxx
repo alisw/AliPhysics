@@ -31,7 +31,7 @@ const char* AliForwardCorrectionManager::fgkMergingEffSkel   = "merging";
 const char* AliForwardCorrectionManager::fgkAcceptanceSkel   = "acceptance";
 const char* AliForwardCorrectionManager::fgkNoiseGainSkel    = "noisegain";
 
-#define PREFIX  "$(ALICE_ROOT)/OADB/PWGLF/FORWARD/CORRECTIONS/data/"
+#define PREFIX  "$(ALICE_PHYSICS)/OADB/PWGLF/FORWARD/CORRECTIONS/data/"
 #define DB_NAME "fmd_corrections.root"
 
 //____________________________________________________________________

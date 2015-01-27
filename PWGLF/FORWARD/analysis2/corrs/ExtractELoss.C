@@ -28,8 +28,10 @@ ExtractELoss(const char* fname = "forward_eloss.root",
 	     Short_t  fld=999,
 	     Bool_t   sat=false)
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  gSystem->AddIncludePath(Form("-I%s -I$ALICE_ROOT/include", fwd));
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+  gSystem->AddIncludePath(Form("-I%s "
+			       "-I$ALICE_ROOT/include "
+			       "-I$ALICE_PHYSICS/include ", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrExtractor.C++g", fwd));
   

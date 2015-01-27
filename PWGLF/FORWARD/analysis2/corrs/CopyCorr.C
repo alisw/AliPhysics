@@ -11,7 +11,7 @@ CopyCorr(Bool_t      fmd,
 	 Short_t     srcFld,
 	 Bool_t      mc)
 {
-  const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
+  const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward"))
     gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 

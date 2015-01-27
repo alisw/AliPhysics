@@ -18,8 +18,8 @@ CompareVtxBias(const char* fn1,   const char* fn2,
 
   // --- Load Utilities ----------------------------------------------
   if (load) {
-    gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/CompareCorrs.C");
+    gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/CompareCorrs.C");
   }
 
   // --- Get Objects -------------------------------------------------

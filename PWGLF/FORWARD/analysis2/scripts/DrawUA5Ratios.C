@@ -351,7 +351,7 @@ TH1D*
 GetUA5Data(UShort_t type, TH1*& p, TH1*& n,
 	   Double_t& xlow, Double_t& xhigh)
 {
-  gROOT->SetMacroPath(Form(".:$ALICE_ROOT.trunk/PWGLF/FORWARD/analysis2/:%s",
+  gROOT->SetMacroPath(Form(".:$ALICE_PHYSICS.trunk/PWGLF/FORWARD/analysis2/:%s",
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("OtherData.C");
 

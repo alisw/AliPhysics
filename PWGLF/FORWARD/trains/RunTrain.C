@@ -52,8 +52,9 @@ BuildRailways(Bool_t verbose, Bool_t force, Bool_t debug,
 	     Bool_t all=false)
 {
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGLF/FORWARD/trains/");
-  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/trains",
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGLF/FORWARD/trains/");
+  gROOT->SetMacroPath(Form("%s:$ALICE_PHYSICS/PWGLF/FORWARD/trains",
 			   gROOT->GetMacroPath()));
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");

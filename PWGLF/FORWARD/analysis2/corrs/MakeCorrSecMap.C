@@ -89,7 +89,7 @@ MakeCorrSecMap(const char* filename,
 	       Short_t     field=+5)
 {
   // --- Load code ---------------------------------------------------
-  // gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  // gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
 
   // --- Get the file ------------------------------------------------

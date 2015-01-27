@@ -34,6 +34,23 @@ class Railway;
  */
 struct ParUtilities
 {
+  static Bool_t DoFind(const TString& what, TString& src)
+  {
+    src = "";
+    if (what.IsNull()) return false;
+    
+    TString search = Form(".:..:%s:%s",
+ 	         	  gSystem->ExpandPathName("$ALICE_PHYSICS"),
+ 	          	  gSystem->ExpandPathName("$ALICE_ROOT"));
+    char* found = gSystem->Which(search.Data(), what.Data());
+    if (!found || found[0] == '\0') {
+      Error("ParUtilities::Find", "PAR file %s not found in %s",
+	    what.Data(), search.Data());
+      return false;
+    }
+    src = found;
+    return true;
+  }
   /** 
    * Find PAR file (either in current or parent directory or directly 
    * in $ALICE_ROOT), and link it here
@@ -44,36 +61,17 @@ struct ParUtilities
    */
   static Bool_t Find(const TString& what)
   {
-    if (what.IsNull()) return false;
-    
     TString parFile(what);
     if (!parFile.EndsWith(".par")) parFile.Append(".par");
-    if (gSystem->AccessPathName(parFile.Data())) { 
-      // If not found
-      TString src;
-      if (gSystem->AccessPathName(Form("../%s", parFile.Data())) == 0) 
-	src.Form("../%s", parFile.Data());
-      else {
-	// If not found 
-	TString aliParFile = 
-	  gSystem->ExpandPathName(Form("$(ALICE_ROOT)/%s", parFile.Data()));
-	if (gSystem->AccessPathName(aliParFile.Data()) == 0) 
-	  src = aliParFile;
-      }
-      if (src.IsNull()) {
-	Error("ParUtilities::Find", 
-	      "PAR file %s not found in current or parent "
-	      "directory nor in $(ALICE_ROOT)", parFile.Data());
-	return false;
-      }
-      // Copy to current directory 
-      // TFile::Copy(aliParFile, parFile);
-      Info("", "Found PAR %s at %s", what.Data(), src.Data());
-      if (gSystem->Exec(Form("ln -s %s %s", src.Data(), parFile.Data())) != 0){
-	Error("ParUtilities::Find", "Failed to symlink %s to %s", 
+    TString src;
+    if (!DoFind(parFile, src)) return false;
+    // Copy to current directory 
+    // TFile::Copy(aliParFile, parFile);
+    Info("", "Found PAR %s at %s", what.Data(), src.Data());
+    if (gSystem->Exec(Form("ln -s %s %s", src.Data(), parFile.Data())) != 0){
+      Error("ParUtilities::Find", "Failed to symlink %s to %s", 
 	      src.Data(), parFile.Data());
-	return false;
-      }
+      return false;
     }
     return true;
   }
@@ -95,30 +93,19 @@ struct ParUtilities
     // Load par library 
     TString fn(name);
     Info("ParUtilities::LoadLibrary", "Uploading %s", name.Data());
+
+    TString parFile(name);
+    if (!parFile.EndsWith(".par")) parFile.Append(".par");
+    TString src;
+    if (!DoFind(parFile, src)) return false;
     
     // First check in current directory
-    Int_t ret = gProof->UploadPackage(fn, TProof::kRemoveOld);
-    
-    if (ret < 0)  {
-      // IF not found there, then check parent directory 
-      fn.Prepend("../");
-      gSystem->ExpandPathName(fn);
-      ret = gProof->UploadPackage(fn);
-    }
-
-    if (ret < 0) {	
-      // If not found in current or parent directory, try the 
-      // the ALICE_ROOT directory 
-      fn  = Form("$ALICE_ROOT/%s.par", name.Data());
-      gSystem->ExpandPathName(fn);
-      ret = gProof->UploadPackage(fn);
-    }
+    Int_t ret = gProof->UploadPackage(src, TProof::kRemoveOld);
     
     if (ret < 0) {
       // IF not found, bark 
       Error("ParUtilities::Load", 
-	    "Could not find module %s.par in current or parent directory "
-	    "nor in $ALICE_ROOT", name.Data());
+	    "Could not upload module %s.par", name.Data());
       return false;
     }
     
@@ -349,11 +336,10 @@ struct ParUtilities
     }
     out << "#!/bin/sh\n"
 	<< "if test x$ALICE_ROOT != x ; then\n"
-	<< "  if test x$ALICE_TARGET = x ; then\n"
-	<< "    export ALICE_TARGET=`$ROOTSYS/bin/root-config --arch`\n"
-	<< "  fi\n"
-	<< "  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"
-	<< "${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}\n"
+	<< "  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${ALICE_ROOT}/lib\n"
+	<< "fi\n"
+	<< "if test x$ALICE_PHYSICS != x ; then\n"
+	<< "  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${ALICE_PHYSICS}/lib\n"
 	<< "fi\n"
 	<< "# printenv | sort -u\n"
 	<< "echo BUILD.sh@`hostname`: Building " << base << "\n"
@@ -440,6 +426,13 @@ struct ParUtilities
 	<< "  TString val(gSystem->Getenv(\"ALICE_ROOT\"));\n"
 	<< "  if (val.IsNull())\n"
 	<< "    Warning(\"Add\",\"ALICE_ROOT not defined\");\n"
+	<< "  else\n"
+	<< "    gSystem->AddIncludePath(Form(\"-I%s/include\",val.Data()));\n"
+	<< "}\n\n"
+	<< "void AddAliPhysics() {\n"
+	<< "  TString val(gSystem->Getenv(\"ALICE_PHYSICS\"));\n"
+	<< "  if (val.IsNull())\n"
+	<< "    Warning(\"Add\",\"ALICE_PHYSICS not defined\");\n"
 	<< "  else\n"
 	<< "    gSystem->AddIncludePath(Form(\"-I%s/include\",val.Data()));\n"
 	<< "}\n\n"

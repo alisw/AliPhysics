@@ -21,8 +21,8 @@
  void
  Run(Bool_t proof=true, Long64_t maxEvents=-1)
  {
-   const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
-   gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+   const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
+   gSystem->AddIncludePath("-I${ALICE_PHYSICS}/include");
    gROOT->Macro(Form("%s/scripts/LoadLibs.C"));
    gROOT->LoadMacro(Form("%s/TupleSelector.C++g",fwd));
 
@@ -1339,7 +1339,7 @@ struct TupleSelector : public TSelector
     TProof::Reset("lite:///?workers=8");
     TProof::Open("lite:///?workers=8");
     gProof->ClearCache();
-    TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
+    TString ali = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
     TString fwd = ali + "/PWGLF/FORWARD/analysis2";
     gProof->AddIncludePath(Form("%s/include", ali.Data()));
     gProof->Load(Form("%s/scripts/LoadLibs.C",fwd.Data()), true);

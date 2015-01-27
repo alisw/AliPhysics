@@ -58,7 +58,7 @@ protected:
     // fRailway->LoadLibrary("PWGLFforwardhit");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
@@ -157,7 +157,7 @@ protected:
       << "void Summarize(const char* filename=\"forward_mctracks.root\",\n"
       << "               UShort_t what=0x10F)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/scripts/SummaryMCTrackDrawer.C+g\",fwd));\n"
       << "  SummaryMCTrackDrawer smd;\n"
       << "  smd.Run(filename,what);\n"
@@ -233,8 +233,8 @@ protected:
       << "                   Long64_t max=-1,\n"
       << "                   const char* opt=\"\")\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
-      << "  gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
+      << "  gSystem->AddIncludePath(\"-I${ALICE_PHYSICS}/include\");\n"
       << "  gROOT->Macro(Form(\"%s/scripts/LoadLibs.C\",fwd));\n"
       << "  gROOT->LoadMacro(Form(\"%s/scripts/TupleSelector.C+%s\",\n"
       << "                        fwd, opt));\n"
@@ -258,7 +258,7 @@ protected:
       << "void ReFit(Bool_t      force=false,\n"
       << "           const char* filename=\"forward_mctracks.root\")\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/corrs/RerunTrackELoss.C\",fwd));\n"
       << "  RerunTrackELoss(force,filename);\n"
       << "}\n"

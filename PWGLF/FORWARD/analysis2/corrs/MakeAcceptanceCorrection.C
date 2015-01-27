@@ -124,7 +124,7 @@ void ExtractAcceptance(Int_t   runNo=121526,
   if(kGridOnline)
     cdb->SetDefaultStorage("alien://Folder=/alice/data/2012/OCDB");
   else
-    cdb->SetDefaultStorage("local://$(ALICE_ROOT)/OCDB");
+    cdb->SetDefaultStorage("local://$(ALICE_PHYSICS)/OCDB");
   cdb->SetRun(runNo);
   
   // Get the geometry 

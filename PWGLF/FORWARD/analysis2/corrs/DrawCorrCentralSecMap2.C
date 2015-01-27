@@ -31,7 +31,7 @@ LoadLibraries()
 {
   const char* test = gSystem->GetLibraries("PWGLFforward2","D",false);
   if (test && test[0] != '\0') return;
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 }
 
 /** 

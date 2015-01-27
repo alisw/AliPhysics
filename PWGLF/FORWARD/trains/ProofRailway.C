@@ -223,11 +223,30 @@ struct ProofRailway : public Railway
     if (!LoadLibrary("ESD"))           return false;
     if (!LoadLibrary("AOD"))           return false;
     if (!LoadLibrary("ANALYSIS"))      return false;
-    if (!LoadLibrary("OADB"))          return false;
     if (!LoadLibrary("ANALYSISalice")) return false;
     fUsePars = tmp;
 
     return CreateAliROOTPar();
+  }
+  /** 
+   * Set-up to load the AliPHYSICS libraries 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t LoadAliPhysics()
+  {
+    if (!gSystem->Getenv("ALICE_PHYSICS")) { 
+      Error("ProofRailway::LoadAliPhysics",
+	    "Local AliPhysics not available");
+      return false;
+    }
+
+    Bool_t tmp = fUsePars;
+    fUsePars   = fBasePars;
+    if (!LoadLibrary("OADB"))          return false;
+    fUsePars = tmp;
+
+    return CreateAliPhysicsPar();
   }
   /** 
    * Get the name of the AliROOT par file to use 
@@ -238,6 +257,159 @@ struct ProofRailway : public Railway
   {
     return "ALIROOT";
   }
+  /** 
+   * Get the name of the AliPHYSICS par file to use 
+   * 
+   * @return String 
+   */
+  virtual const char* AliPhysicsParName() const
+  {
+    return "ALIPHYSICS";
+  }
+  /** 
+   * Create an AliROOT/AliPhysics par file from the executing AliROOT.
+   * This PAR file basically uses the environment of the client - that
+   * is, we assume that the used AliROOT is accessible on the slaves -
+   * e.g., via an NFS export.
+   * 
+   * Note, the SETUP.C script take one argument - a TList of TNamed
+   * parameters.  Parameters processed are	
+   *
+   * - ALIROOT_MODE=[default,aliroot,rec,sim,train]
+   *   - default: Load base analysis libraries 
+   *   - aliroot: Load $ALICE_ROOT/macros/loadlibs.C
+   *   - rec:     Load $ALICE_ROOT/macros/loadlibsrec.C
+   *   - sim:     Load $ALICE_ROOT/macros/loadlibssim.C
+   * - ALIROOT_EXTRA_LIBS Colon separated list of additional (Ali)ROOT
+   *   libraries to load on the slaves.
+   * 
+   * The generated PAR file is uploaded but not enabled until we have 
+   * populated fExtraLibs.  The enabling takes place at the end of the 
+   * set-up. 
+   * 
+   * @return true on success, false otherwise.     */
+  virtual Bool_t CreatePseudoPar(const TString& parName,
+				 const TString& env,
+				 const TString& setup)
+
+  {
+    if (fBasePars) return true;
+
+    TString parFile(Form("%s.par", parName.Data()));
+
+    // --- Check if we have the drirectory already -------------------
+    if (gSystem->AccessPathName(parName.Data()) == 0) { 
+      // Let's remove it to get a clean slate 
+      if (gSystem->Exec(Form("rm -rf %s", parName.Data())) != 0) {
+	Error("ProofRailway", "Failed to remove %s", parName.Data());
+	return false;
+      }
+    }
+    // --- Check if the PAR file is there, and remove it if so -------
+    if (gSystem->AccessPathName(parFile.Data()) == 0) { 
+      if (gSystem->Unlink(parFile.Data()) != 0) { 
+	Error("ProofRailway::CreatePseudoPar", "Failed to remove %s", 
+	      parFile.Data());
+	return false;
+      }
+    }
+      
+
+    // Set-up directories 
+    if (gSystem->MakeDirectory(parName) < 0) {
+      Error("ProofRailway::CreatePseudoPar", "Could not make directory '%s'", 
+	    parName.Data());
+      return false;
+    }
+    
+    if (gSystem->MakeDirectory(Form("%s/PROOF-INF", parName.Data()))) {
+      Error("ProofRailway::CreatePseudoPar", 
+	    "Could not make directory %s/PROOF-INF", 
+	    parName.Data());
+      return false;
+    }
+
+    // --- Build script does nothing ---------------------------------
+    std::ofstream b(Form("%s/PROOF-INF/BUILD.sh",parName.Data()));
+    if (!b) { 
+      Error("ProofRailway::CreatePseudoPar", 
+	    "Failed to make BUILD.sh shell script");
+      return false;
+    }
+    b << "#!/bin/sh\n\n"
+      << "# echo Nothing to do\n"
+      << "exit 0\n"
+      << std::endl;
+    b.close();
+    gSystem->Exec(Form("chmod a+x %s/PROOF-INF/BUILD.sh",parName.Data()));
+
+    // --- Possible environment script -------------------------------
+    TString envScript = env;
+    if (!envScript.EndsWith(".C"))
+      envScript = "";
+    if (!envScript.IsNull()) {
+      // If an environment script was specified, copy that to the par
+      if (gSystem->AccessPathName(envScript.Data()) == 0) { 
+	// Copy script 
+	if (gSystem->Exec(Form("cp %s %s/PROOF-INF/", envScript.Data(), 
+			       parName.Data())) != 0) {
+	  Error("ProofRailway", "Failed to copy %s", envScript.Data());
+	  return false;
+	}
+      }
+      else {
+	Warning("CreateALIROOTPar", "Couldn't read %s", envScript.Data());
+	envScript = "";
+      }
+    }
+    // --- Write SETUP script ----------------------------------------
+    std::ofstream s(Form("%s/PROOF-INF/SETUP.C", parName.Data()));
+    if (!s) { 
+      Error("ProofRailway::CreatePseudoPar", 
+	    "Failed to make SETUP.C ROOT script");
+      return false;
+    }
+    s << "void SETUP(TList* opts) {\n";
+    if (envScript.IsNull()) {
+      s << env << std::endl;
+    }
+    else { 
+      s << "  gROOT->Macro(\"PROOF-INF/" << gSystem->BaseName(envScript.Data())
+	<< "\");\n";
+    }
+    s  << setup << "}\n"
+      << std::endl;
+    s.close();
+
+    // --- TAR up everything -----------------------------------------
+    Int_t ret = gSystem->Exec(Form("tar -czf %s %s",
+				   parFile.Data(), parName.Data()));
+    if (ret != 0) { 
+      Error("ProofRailway::CreatePseudoPar", "Failed to pack up PAR file %s",
+	    parFile.Data());
+      return false;
+    }
+
+    // --- And upload the package ------------------------------------
+    ret = gProof->UploadPackage(parFile.Data(),TProof::kRemoveOld);
+    if (ret != 0) { 
+      Error("ProofRailway::CreatePseudoPar", 
+	    "Failed to upload the AliROOT PAR file");
+      return false;
+    }
+    // Note, the PAR isn't enabled until much later when we've
+    // collected all the needed libraries in fExtraLibs
+    return true;
+  }
+  static void ExportEnvVar(TString& out, const TString& name)
+  {
+    TString env(gSystem->Getenv(name.Data()));
+    if (env.IsNull()) return;
+
+    out.Append(Form("  gSystem->SetEnv(\"%s\",\"%\");\n",
+		    name.Data(), env.Data()));
+  }
+		
   /** 
    * Create an AliROOT par file from the executing AliROOT.  This PAR
    * file basically uses the environment of the client - that is, we
@@ -262,169 +434,111 @@ struct ProofRailway : public Railway
    * @return true on success, false otherwise.     */
   virtual Bool_t CreateAliROOTPar()
   {
-    if (fBasePars) return true;
-
     TString parName(AliROOTParName());
-    TString parFile(Form("%s.par", parName.Data()));
-
-    // --- Check if we have the drirectory already -------------------
-    if (gSystem->AccessPathName(parName.Data()) == 0) { 
-      // Let's remove it to get a clean slate 
-      if (gSystem->Exec(Form("rm -rf %s", parName.Data())) != 0) {
-	Error("ProofRailway", "Failed to remove %s", parName.Data());
-	return false;
-      }
-    }
-    // --- Check if the PAR file is there, and remove it if so -------
-    if (gSystem->AccessPathName(parFile.Data()) == 0) { 
-      if (gSystem->Unlink(parFile.Data()) != 0) { 
-	Error("ProofRailway::CreateAliROOTPar", "Failed to remove %s", 
-	      parFile.Data());
-	return false;
-      }
-    }
-      
-
-    // Set-up directories 
-    if (gSystem->MakeDirectory(parName) < 0) {
-      Error("ProofRailway::CreateAliROOTPar", "Could not make directory '%s'", 
-	    parName.Data());
-      return false;
-    }
-    
-    if (gSystem->MakeDirectory(Form("%s/PROOF-INF", parName.Data()))) {
-      Error("ProofRailway::CreateAliROOTPar", 
-	    "Could not make directory %s/PROOF-INF", 
-	    parName.Data());
-      return false;
-    }
-
-    std::ofstream b(Form("%s/PROOF-INF/BUILD.sh",parName.Data()));
-    if (!b) { 
-      Error("ProofRailway::CreateAliROOTPar", 
-	    "Failed to make BUILD.sh shell script");
-      return false;
-    }
-    b << "#!/bin/sh\n\n"
-      << "# echo Nothing to do\n"
-      << "exit 0\n"
-      << std::endl;
-    b.close();
-    gSystem->Exec(Form("chmod a+x %s/PROOF-INF/BUILD.sh",parName.Data()));
-
     TString envScript = fOptions.Get("env");
-    if (envScript.EqualTo("-none-", TString::kIgnoreCase)) 
+    if (envScript.EqualTo("-none-", TString::kIgnoreCase) ||
+	!envScript.EndsWith(".C"))
       envScript = "";
-    if (!envScript.IsNull()) { 
-      // If an environment script was specified, copy that to the par
-      if (gSystem->AccessPathName(envScript.Data()) == 0) { 
-	// Copy script 
-	if (gSystem->Exec(Form("cp %s %s/PROOF-INF/", envScript.Data(), 
-			       parName.Data())) != 0) {
-	  Error("ProofRailway", "Failed to copy %s", envScript.Data());
-	  return false;
-	}
-      }
-      else {
-	Warning("CreateALIROOTPar", "Couldn't read %s", envScript.Data());
-	envScript = "";
-      }
-    }
-    std::ofstream s(Form("%s/PROOF-INF/SETUP.C", parName.Data()));
-    if (!s) { 
-      Error("ProofRailway::CreateAliROOTPar", 
-	    "Failed to make SETUP.C ROOT script");
-      return false;
-    }
-    s << "void SETUP(TList* opts) {\n";
-    if (envScript.IsNull()) {
-      s << "  gSystem->Setenv(\"ALICE\",\"" 
-      << gSystem->Getenv("ALICE") << "\");\n"
-      << "  gSystem->Setenv(\"ALICE_ROOT\",\"" 
-      << gSystem->Getenv("ALICE_ROOT") << "\");\n"
-      << "  gSystem->Setenv(\"ALICE_TARGET\",\"" 
-	<< gSystem->Getenv("ALICE_TARGET") << "\");\n";
-    if (gSystem->Getenv("OADB_PATH")) 
-      s << "  gSystem->Setenv(\"OADB_PATH\",\"" 
-	<< gSystem->Getenv("OADB_PATH") << "\");\n";
-    }
-    else { 
-      s << "  gROOT->Macro(\"PROOF-INF/" << gSystem->BaseName(envScript.Data())
-	<< "\");\n";
-    }
-    s  	<< "  gSystem->AddDynamicPath("
-	<< "\"$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)\");\n";
-    s << "  \n"
-      << "  // Info(\"SETUP\",\"Loading ROOT libraries\");\n"
-      << "  gSystem->Load(\"libTree\");\n"
-      << "  gSystem->Load(\"libGeom\");\n"
-      << "  gSystem->Load(\"libVMC\");\n"
-      << "  gSystem->Load(\"libPhysics\");\n"
-      << "  gSystem->Load(\"libMinuit\");\n"
-      << "  \n";
-    s << "  // Info(\"SETUP\",\"Parameter list:\");\n"
-      << "  if (!opts) return;\n"
-      << "  //opts->ls();\n"
-      << "  \n";
-    s << "  TObject* par = opts->FindObject(\"ALIROOT_MODE\");\n"
-      << "  if (par) {\n"
-      << "    // Info(\"SETUP\",\"ALIROOT mode: %s\", par->GetTitle());\n"
-      << "    TString mode(par->GetTitle());\n"
-      << "    if (mode.EqualTo(\"default\",TString::kIgnoreCase)) {\n"
-      << "      gSystem->Load(\"libSTEERBase\");\n"
-      << "      gSystem->Load(\"libESD\");\n"
-      << "      gSystem->Load(\"libAOD\");\n"
-      << "      gSystem->Load(\"libANALYSIS\");\n"
-      << "      gSystem->Load(\"libOADB\");\n"
-      << "      gSystem->Load(\"libANALYSISalice\");\n"
-      << "    }\n"
-      << "    else if (mode.EqualTo(\"aliroot\",TString::kIgnoreCase)) \n"
-      << "      gROOT->Macro(\"$ALICE_ROOT/macros/loadlibs.C\");\n"
-      << "    else if (mode.EqualTo(\"rec\",TString::kIgnoreCase)) \n"
-      << "      gROOT->Macro(\"$ALICE_ROOT/macros/loadlibsrec.C\");\n"
-      << "    else if (mode.EqualTo(\"sim\",TString::kIgnoreCase)) \n"
-      << "      gROOT->Macro(\"$ALICE_ROOT/macros/loadlibssim.C\");\n"
-      << "    else if (mode.EqualTo(\"train\",TString::kIgnoreCase)) \n"
-      << "      gROOT->Macro(\"$ALICE_ROOT/macros/loadlibstrain.C\");\n"
-      << "    else if (mode.EqualTo(\"custom\",TString::kIgnoreCase)) \n"
-      << "      gROOT->Macro(\"$ALICE_ROOT/macros/loadlibstrain.C\");\n"
-      << "  }\n"
-      << "  \n";
-    s << "  par = opts->FindObject(\"ALIROOT_EXTRA_LIBS\");\n"
-      << "  if (par) {\n"
-      << "    Info(\"SETUP\",\"Libaries to load: %s\\n\",par->GetTitle());\n"
-      << "    TString tit(par->GetTitle());\n"
-      << "    TObjArray* tokens = tit.Tokenize(\":\");\n"
-      << "    TObject*   lib    = 0;\n"
-      << "    TIter      next(tokens);\n"
-      << "    while ((lib = next())) {\n"
-      << "      TString libName(lib->GetName());\n"
-      << "      if (!libName.BeginsWith(\"lib\")) libName.Prepend(\"lib\");\n"
-      << "      // Info(\"SETUP\",\"Loading %s ...\",libName.Data());\n"
-      << "      gSystem->Load(libName.Data());\n"
-      << "    }\n"
-      << "  }\n"
-      << "}\n"
-      << std::endl;
-    s.close();
 
-    Int_t ret = gSystem->Exec(Form("tar -czf %s %s",
-				   parFile.Data(), parName.Data()));
-    if (ret != 0) { 
-      Error("ProofRailway::CreateAliROOTPar", "Failed to pack up PAR file %s",
-	    parFile.Data());
-      return false;
-    }
-
-    ret = gProof->UploadPackage(parFile.Data(),TProof::kRemoveOld);
-    if (ret != 0) { 
-      Error("ProofRailway::CreateAliROOTPar", 
-	    "Failed to upload the AliROOT PAR file");
-      return false;
-    }
+    TString env       = "";
+    ExportEnvVar(env, "ALICE");
+    ExportEnvVar(env, "ALICE_ROOT");
+    
+    TString setup("gSystem->AddDynamicPath(\"$(ALICE_ROOT)/lib\");\n"
+		  "// Info(\"SETUP\",\"Loading ROOT libraries\");\n"
+		  "gSystem->Load(\"libTree\");\n"
+		  "gSystem->Load(\"libGeom\");\n"
+		  "gSystem->Load(\"libVMC\");\n"
+		  "gSystem->Load(\"libPhysics\");\n"
+		  "gSystem->Load(\"libMinuit\");\n"
+		  "\n"
+		  "// Info(\"SETUP\",\"Parameter list:\");\n"
+		  "if (!opts) return;\n"
+		  "//opts->ls();\n"
+		  "\n"
+		  "TObject* par = opts->FindObject(\"ALIROOT_MODE\");\n"
+		  "if (par) {\n"
+		  " //Info(\"SETUP\",\"ALIROOT mode: %s\",par->GetTitle());\n"
+		  "  TString mode(par->GetTitle());mode.ToLower();\n"
+		  "  if (mode.EqualTo(\"default\")) {\n"
+		  "    gSystem->Load(\"libSTEERBase\");\n"
+		  "    gSystem->Load(\"libESD\");\n"
+		  "    gSystem->Load(\"libAOD\");\n"
+		  "    gSystem->Load(\"libANALYSIS\");\n"
+		  "    gSystem->Load(\"libANALYSISalice\");\n"
+		  "  }\n"
+		  "  else if (mode.EqualTo(\"aliroot\")) \n"
+		  "    gROOT->Macro(\"$ALICE_ROOT/macros/loadlibs.C\");\n"
+		  "  else if (mode.EqualTo(\"rec\")) \n"
+		  "    gROOT->Macro(\"$ALICE_ROOT/macros/loadlibsrec.C\");\n"
+		  "  else if (mode.EqualTo(\"sim\")) \n"
+		  "    gROOT->Macro(\"$ALICE_ROOT/macros/loadlibssim.C\");\n"
+		  "  else if (mode.EqualTo(\"train\")) \n"
+		  "   gROOT->Macro(\"$ALICE_ROOT/macros/loadlibstrain.C\");\n"
+		  "  else if (mode.EqualTo(\"custom\")) \n"
+		  "   gROOT->Macro(\"$ALICE_ROOT/macros/loadlibstrain.C\");\n"
+		  "}\n"
+		  "\n"
+		  "par = opts->FindObject(\"ALIROOT_EXTRA_LIBS\");\n"
+		  "if (par) {\n"
+		  "  Info(\"SETUP\",\"Libaries to load: %s\\n\",\n"
+		  "       par->GetTitle());\n"
+		  "  TString tit(par->GetTitle());\n"
+		  "  TObjArray* tokens = tit.Tokenize(\":\");\n"
+		  "  TObject*   lib    = 0;\n"
+		  "  TIter      next(tokens);\n"
+		  "  while ((lib = next())) {\n"
+		  "    TString libName(lib->GetName());\n"
+		  "    if (!libName.BeginsWith(\"lib\"))\n"
+		  "      libName.Prepend(\"lib\");\n"
+		  "    // Info(\"SETUP\",\"Loading %s ...\",libName.Data());\n"
+		  "    gSystem->Load(libName.Data());\n"
+		  "  }\n"
+		  "}");
     // Note, the PAR isn't enabled until much later when we've
     // collected all the needed libraries in fExtraLibs
-    return true;
+    return CreatePseudoPar(parName,envScript.IsNull() ? env : envScript,setup);
+  }
+  virtual Bool_t CreateAliPhysicsPar()
+  {
+    TString parName(AliPhysicsParName());
+    TString env       = "";
+    ExportEnvVar(env, "ALICE_PHYSICS");
+    ExportEnvVar(env, "OADB_PATH");
+    
+    TString setup("gSystem->AddDynamicPath(\"$(ALICE_PHYSICS)/lib\");\n"
+		  "// Info(\"SETUP\",\"Parameter list:\");\n"
+		  "if (!opts) return;\n"
+		  "//opts->ls();\n"
+		  "\n"
+		  "TObject* par = opts->FindObject(\"ALIPHYSICS_MODE\");\n"
+		  "if (par) {\n"
+		  " //Info(\"SETUP\",\"ALIPHYSICS mode:%s\",par->GetTitle());\n"
+		  "  TString mode(par->GetTitle());mode.ToLower();\n"
+		  "  if (mode.EqualTo(\"default\")) {\n"
+		  "    gSystem->Load(\"libOADB\");\n"
+		  "  }\n"
+		  "}\n"
+		  "\n"
+		  "par = opts->FindObject(\"ALIPHYSICS_EXTRA_LIBS\");\n"
+		  "if (par) {\n"
+		  "  Info(\"SETUP\",\"Libaries to load: %s\\n\",\n"
+		  "       par->GetTitle());\n"
+		  "  TString tit(par->GetTitle());\n"
+		  "  TObjArray* tokens = tit.Tokenize(\":\");\n"
+		  "  TObject*   lib    = 0;\n"
+		  "  TIter      next(tokens);\n"
+		  "  while ((lib = next())) {\n"
+		  "    TString libName(lib->GetName());\n"
+		  "    if (!libName.BeginsWith(\"lib\"))\n"
+		  "      libName.Prepend(\"lib\");\n"
+		  "    // Info(\"SETUP\",\"Loading %s ...\",libName.Data());\n"
+		  "    gSystem->Load(libName.Data());\n"
+		  "  }\n"
+		  "}");
+    // Note, the PAR isn't enabled until much later when we've
+    // collected all the needed libraries in fExtraLibs
+    return CreatePseudoPar(parName,env,setup);
   }
   /** 
    * Get the mode identifier 
@@ -449,8 +563,9 @@ struct ProofRailway : public Railway
     // --- Add ALICE_ROOT directory to search path for packages ----
     // Info("ProofRailway::PreSetup", "Set location of packages");
     gEnv->SetValue("Proof.GlobalPackageDirs", 
-		   Form("%s:%s", 
-			gEnv->GetValue("Proof.GlobalPackageDirs", "."), 
+		   Form("%s:%s:%s", 
+			gEnv->GetValue("Proof.GlobalPackageDirs", "."),
+			gSystem->Getenv("ALICE_PHYSICS"),
 			gSystem->Getenv("ALICE_ROOT")));
 
     // --- Forming the URI we use to connect with --------------------
@@ -575,6 +690,21 @@ struct ProofRailway : public Railway
 	      AliROOTParName());
 	return false;
       }
+
+      params = new TList;
+      params->SetOwner(true);
+      params->Add(new TNamed("ALIPHYSICS_EXTRA_LIBS", tmp.Data()));
+      if (fOptions.Has("mode"))
+	params->Add(new TNamed("ALIPHYSICS_MODE", fOptions.Get("mode").Data()));
+      else
+	params->Add(new TNamed("ALIPHYSICS_MODE", "default"));
+      ret = gProof->EnablePackage(AliPhysicsParName(), params, true);
+      if (ret < 0) {
+	Error("ProofRailway::EnableAliPhysics",
+	      "Failed to enable AliPhysics PAR %s", 
+	      AliPhysicsParName());
+	return false;
+      }
     }
 
     // --- Make PAR file of Aux Files --------------------------------
@@ -611,7 +741,7 @@ struct ProofRailway : public Railway
     while ((obj = next())) { 
       Int_t ret = gProof->Load(Form("%s++g", obj->GetName()), true);
       if (ret < 0) { 
-	Error("ProofRailway::PostSetup", "Failed to compile %s", obj->GetName());
+	Error("ProofRailway::PostSetup", "Failed to compile %s",obj->GetName());
 	return false;
       }
     }
@@ -826,7 +956,8 @@ struct ProofRailway : public Railway
    */
   virtual const Char_t* UrlHelp() const 
   {
-    return "proof://<host>[:<port>]/[<dataset>|<path>][?<options>][#<treeName>]";
+    return
+      "proof://<host>[:<port>]/[<dataset>|<path>][?<options>][#<treeName>]";
   }
   /** 
    * @return Short description 

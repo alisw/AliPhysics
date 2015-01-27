@@ -83,7 +83,7 @@ void RerunTrackELoss(Bool_t forceSet=false,
 		     Bool_t shift=true,
 		     const TString& output="")
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 
   TFile*  inFile  = 0;

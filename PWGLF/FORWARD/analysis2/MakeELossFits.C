@@ -21,7 +21,7 @@ void MakeELossFits(TString     name       = "aod",
 	           TString     url        = "help",
 	           TString     options    = "help")
 {
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/trains/MakeTrain.C");
 
   MakeTrain(name, "MakeFMDELossTrain", url, options);
 }

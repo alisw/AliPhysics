@@ -183,6 +183,20 @@ struct Railway
     return true;
   }
   /** 
+   * Set-up to load the AliROOT libraries 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t LoadAliPhysics()
+  {
+    if (!gSystem->Getenv("ALICE_PHYSICS")) { 
+      Error("Railway::LoadAliPhysics", "Local AliPhysics not available");
+      return false;
+    }
+    if (!LoadLibrary("OADB"))          return false;
+    return true;
+  }
+  /** 
    * Get the execution mode 
    * 
    * @return Execution mode set in set-up URL

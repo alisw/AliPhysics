@@ -8,7 +8,7 @@
 #  $period       e.g. LHC13g
 #  $runNumber    e.g. 169123
 #  $pass         e.g. cpass1,pass1,passMC
-fwd=${ALICE_ROOT}/PWGLF/FORWARD/analysis2
+fwd=${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2
 # fwd=$ANA_SRC
 
 runLevelQA()

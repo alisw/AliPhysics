@@ -193,7 +193,7 @@ Bool_t LoadLibrary(const char *module)
 Bool_t LoadCommonLibraries()
 {
   // Load common analysis libraries.
-  if (!gSystem->Getenv("ALICE_ROOT")) {
+  if (!gSystem->Getenv("ALICE_PHYSICS")) {
     ::Error("AnalysisTrainNew.C::LoadCommonLibraries", 
 	    "Analysis train requires that analysis libraries are "
 	    "compiled with a local AliRoot");
@@ -210,7 +210,7 @@ Bool_t LoadCommonLibraries()
   success &= LoadLibrary("libANALYSISalice.so");
   success &= LoadLibrary("libESDfilter.so");
   success &= LoadLibrary("libCORRFW.so");
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
   if (success) {
     ::Info("AnalysisTrainNew.C::LoadCommodLibraries", 
 	   "Load common libraries:    SUCCESS");
@@ -292,7 +292,7 @@ void AddAnalysisTasks(const char *cdb_location)
   // === Add all analysis task wagons to the train ===================
   // 
   // --- Some constants ----------------------------------------------
-  TString ali   = "$(ALICE_ROOT)";
+  TString ali   = "$(ALICE_PHYSICS)";
   TString ana   = ali + "/ANALYSIS";
   TString oadb  = ali + "/OADB";
   TString pwghf = ali + "/PWGHF";

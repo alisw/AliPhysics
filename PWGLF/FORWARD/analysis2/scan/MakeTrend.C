@@ -1,6 +1,6 @@
 void MakeTrend()
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   gROOT->SetMacroPath(Form("%s:%s:%s/scripts:$(ANA_SRC)/scan", 
 			   gROOT->GetMacroPath(), 
 			   fwd, fwd));

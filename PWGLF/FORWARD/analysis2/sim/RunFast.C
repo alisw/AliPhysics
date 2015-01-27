@@ -2,10 +2,11 @@ void
 RunFast(const char* url="local:///", 
 	const char* opt="")
 {
-  TString ali = gSystem->ExpandPathName("${ALICE_ROOT}");
+  TString ali = gSystem->ExpandPathName("${ALICE_PHYSICS}");
   // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
   TString fwd = ali + "/PWGLF/FORWARD/analysis2";
-  gSystem->AddIncludePath(Form("-I%s/include", ali.Data()));
+  gSystem->AddIncludePath(Form("-I$(ALICE_ROOT)/include -I%s/include",
+			       ali.Data()));
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
 
   // Remember to copy changes to FastSim.C(FastSim::ProofLoadLibs)

@@ -63,7 +63,7 @@ protected:
     fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
@@ -128,7 +128,7 @@ protected:
       << "void Extract(Bool_t mc=" << HasMCHandler() << ",\n"
       << "             const char* file=\"forward_eloss.root\")\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/corrs/ExtractELoss.C\",fwd));\n"
       << "  ExtractELoss(file,mc);\n" 
       << "}\n"
@@ -148,7 +148,7 @@ protected:
       << "void Summarize(Bool_t mc=" << HasMCHandler() << ",\n"
       << "               const char* filename=\"forward_eloss.root\")\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/corrs/DrawCorrELoss.C\",fwd));\n"
       << "  DrawCorrELoss(mc,filename);\n"
       << "}\n"
@@ -171,7 +171,7 @@ protected:
       << "           Bool_t      shift=true,\n"
       << "           const char* filename=\"forward_eloss.root\")\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/corrs/RerunELossFits.C\",fwd));\n"
       << "  RerunELossFits(force,filename);\n"
       << "}\n"

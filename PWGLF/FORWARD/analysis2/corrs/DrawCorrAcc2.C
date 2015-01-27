@@ -44,7 +44,7 @@ DrawCorrAcc2(const char* fname, const char* option="colz")
 {
   //__________________________________________________________________
   // Load libraries and object 
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   TFile* file = TFile::Open(fname, "READ");
   if (!file) { 

@@ -36,7 +36,7 @@ while test $# -gt 0 ; do
 done 
 
 # --- Run aliroot ----------------------------------------------------
-scr=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/DrawQA.C 
+scr=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/qa/DrawQA.C 
 
 root -l -b -q ${scr}\(\"$file\"\)
 

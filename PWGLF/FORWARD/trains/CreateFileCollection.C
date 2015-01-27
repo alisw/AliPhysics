@@ -17,7 +17,7 @@ CreateFileCollection(const TString& dir="/data/alice/data/ppb/LHC12g/pass1/18835
 		     Bool_t recursive=false)
 )
 {
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/trains/ChainBuilder.C+");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/trains/ChainBuilder.C+");
   
   UShort_t flags = 0;
   if (recursive) flags |= ChainBuilder::kRecursive;

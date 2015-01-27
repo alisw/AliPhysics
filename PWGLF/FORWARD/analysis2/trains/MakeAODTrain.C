@@ -62,7 +62,7 @@ protected:
     fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
 			     gROOT->GetMacroPath()));
@@ -231,7 +231,7 @@ protected:
     uopts.Store(s, "", "&", false, true);
     outUrl.SetOptions(s.str().c_str());
       
-    const char* defConfig="$ALICE_ROOT/PWGLF/FORWARD/analysis2/dNdetaConfig.C";
+    const char* defConfig="$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dNdetaConfig.C";
     opts.Set("url", outUrl.GetUrl());
     opts.Set("type", "AOD");
     opts.Set("forward-config",defConfig);
@@ -293,7 +293,7 @@ protected:
       << "void Summarize(const char* filename=\"forward.root\",\n"
       << "               UShort_t what=0x1FF)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawAODSummary.C\",fwd));\n"
       << "  DrawAODSummary(filename,what);\n"
       << "}\n"

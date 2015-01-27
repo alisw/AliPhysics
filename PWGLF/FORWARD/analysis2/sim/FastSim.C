@@ -1216,7 +1216,7 @@ struct FastSim : public TSelector
     TProof::Open(url.GetUrl());
     gProof->ClearCache();
 
-    TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
+    TString ali = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
     // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
     TString fwd = ali + "/PWGLF/FORWARD/analysis2";
 

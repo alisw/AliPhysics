@@ -29,7 +29,7 @@ ReadFCM()
 void 
 TestFCM(bool write=true)
 {
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   if (write) WriteFCM();
   else       ReadFCM();

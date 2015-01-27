@@ -4,7 +4,7 @@
  * Forward directory 
  * 
  */
-const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
 
 const char* url = "https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=sb&p_rsob=l.run&p_rsob_dir=DESC&ptcf_rtc=%2CExactly%2CFMD%3B%2CAt+least&prsf_rtype=PHYSICS%2C&p_rspn=1&prsf_rn=";
 
@@ -16,7 +16,7 @@ void
 ExtractNoiseGain(Long_t runNo=0) 
 {
 
-  gSystem->AddIncludePath(Form("-I%s -I$ALICE_ROOT/include", fwd));
+  gSystem->AddIncludePath(Form("-I%s -I$ALICE_PHYSICS/include", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gROOT->LoadMacro("ExtractNG.C+");
 

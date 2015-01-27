@@ -7,7 +7,7 @@
 
 # --- Some aux files -------------------------------------------------
 if test "X$QA_FWD" = "X" ; then 
-    QA_FWD=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+    QA_FWD=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/qa
 fi 
 style=${QA_FWD}/style.css 
 favicon=${QA_FWD}/fmd_favicon.png
