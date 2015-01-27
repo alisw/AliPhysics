@@ -35,6 +35,8 @@ excludeDetectors="EXAMPLE"
 logDirectory=${workingDirectory}/logs
 #OCDB storage
 ocdbStorage="raw://"
+#send email as:
+MAILFROM=""
 #email to
 MAILTO=""
 MAILTO_TPC=""
@@ -528,6 +530,7 @@ executePlanB()
     file="${logFile}"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
+  [[ -n ${MAILFROM} ]] && mailoptions+=" -r ${MAILFROM}"
   printLogStatistics ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailoptions} ${mailTo}
   
   return 0
