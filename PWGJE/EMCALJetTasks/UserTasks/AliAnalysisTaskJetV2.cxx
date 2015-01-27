@@ -2582,9 +2582,9 @@ void AliAnalysisTaskJetV2::ReadVZEROCalibration2010h()
     if(!fChi3A) fChi3A = new TArrayD(9, chiA3);
     if(!fChi3C) fChi3C = new TArrayD(9, chiC3);
 
-    // 2) open database file
-    fOADB = TFile::Open("$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root");
-    if(fOADB->IsZombie()){
+    // 2) check if the database file is open, if not, open it
+    if(!fOADB || fOADB->IsZombie()) fOADB = TFile::Open("$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root");
+    if(fOADB->IsZombie()) {
 	printf("OADB file $ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root cannot be opened, CALIBRATION FAILED !");
 	return;
     }
