@@ -127,6 +127,8 @@ AliTRDcalibDB::AliTRDcalibDB()
   // TODO invalid calibration data to be used.
   //
 
+  fRun = AliCDBManager::Instance()->GetRun();
+
   for (Int_t i = 0; i < kCDBCacheSize; ++i) {
     fCDBCache[i]   = 0;
     fCDBEntries[i] = 0;
