@@ -35,6 +35,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char
 
   // C. Create the task, add it to manager.
   //===========================================================================
+//  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_PHYSICS/include");
 //  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
 
   if (TProofMgr::GetListOfManagers()->GetEntries()) {
@@ -52,14 +53,15 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char
   //  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,kFALSE);
   //March 2013:
   //to check localy before new tag I did symbolic link on my laplot
-  //in $ALICE_ROOT/PWGCF/FEMTOSCOPY/macros/Train/
+  //in $ALICE_ROOTALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
   //local------>
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
   //local------<
   //train::::::::::::::::::::::::::::>
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   //train::::::::::::::::::::::::::::<
   //10-90% only two triggers: SemiCentral and MB
   taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
