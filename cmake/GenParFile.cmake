@@ -1,4 +1,20 @@
-macro(add_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
+# This CMake macro generates a target that, in turn, will generate a PARfile for the given library.
+#
+# Usage: in the CMakeLists.txt, for a given library, add the following:
+#   add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+#
+# Arguments are, in order:
+#  - library's name: for libBLAHBLAH it will generate a target BLAHBLAH.par
+#  - source files: classes to include in the PARfile, they must be exactly the ones used to generate
+#    the library
+#  - headers
+#  - the LinkDef used by ROOT
+#  - dependent libraries: used to generate the rootmap
+#
+# To generate a parfile, if enabled in its CMakeLists.txt, go to the build directory and run:
+#   make BLAHBLAH.par
+
+macro(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
 
   message(STATUS "PARfile generation: ${PARMODULE}")
 
