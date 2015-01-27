@@ -274,7 +274,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
           
           if(fraction<fMinFractionShared) continue;
-          InputEvent()->Print();
+          //InputEvent()->Print();
           partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
           if(!partonsInfo) return 0;
           
