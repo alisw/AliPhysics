@@ -1057,7 +1057,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
             Double_t QA3[] = {-999., -999.};
             Double_t QC2[] = {-999., -999.};
             Double_t QC3[] = {-999., -999.};
-            CalculateQvectorVZERO(QA2, QA3, QC2, QC3);
+            CalculateQvectorVZERO(QA2, QC2, QA3, QC3);
             vzero[0][0] = .5*TMath::ATan2(QA2[1], QA2[0]);
             vzero[1][0] = .5*TMath::ATan2(QC2[1], QC2[0]);
             vzero[0][1] = (1./3.)*TMath::ATan2(QA3[1], QA3[0]);
@@ -1302,7 +1302,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_
     Double_t QA3[] = {-999., -999.};
     Double_t QC2[] = {-999., -999.};
     Double_t QC3[] = {-999., -999.};
-    CalculateQvectorVZERO(QA2, QA3, QC2, QC3);
+    CalculateQvectorVZERO(QA2, QC2, QA3, QC3);
 
     // get cache index and retrieve the chi weights for this centrality
     Int_t VZEROcentralityBin(GetVZEROCentralityBin());
@@ -1315,7 +1315,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_
     Q2[0] = chi2A*chi2A*QA2[0]+chi2C*chi2C*QC2[0];
     Q2[1] = chi2A*chi2A*QA2[1]+chi2C*chi2C*QC2[1];
     Q3[0] = chi3A*chi3A*QA3[0]+chi3C*chi3C*QC3[0];
-    Q3[1] = chi3A*chi3A*QC3[1]+chi3C*chi3C*QC3[1];
+    Q3[1] = chi3A*chi3A*QA3[1]+chi3C*chi3C*QC3[1];
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, 
