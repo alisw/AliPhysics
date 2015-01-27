@@ -187,8 +187,26 @@ struct PluginRailway : public Railway
     if (!LoadLibrary("ESD"))           return false;
     if (!LoadLibrary("AOD"))           return false;
     if (!LoadLibrary("ANALYSIS"))      return false;
-    if (!LoadLibrary("OADB"))          return false;
     if (!LoadLibrary("ANALYSISalice")) return false;
+    fUsePars = tmp;
+
+    return true;
+  }
+  /** 
+   * Set-up to load the AliPHYSICS libraries 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t LoadAliPhysics()
+  {
+    if (!gSystem->Getenv("ALICE_PHYSICS")) { 
+      Error("PluginRailway::LoadAliPhysics", "Local AliPhysics not available");
+      return false;
+    }
+    Bool_t tmp = fUsePars;
+    fUsePars   = false;
+    
+    if (!LoadLibrary("OADB"))          return false;
     fUsePars = tmp;
 
     return true;
@@ -205,10 +223,13 @@ struct PluginRailway : public Railway
 
     TString aliroot("last");
     TString root("last");
-    if (fOptions.Has("aliroot")) aliroot = fOptions.Get("aliroot");
-    if (fOptions.Has("root"))    root    = fOptions.Get("root");
+    TString aliphysics("last");
+    if (fOptions.Has("aliroot"))    aliroot    = fOptions.Get("aliroot");
+    if (fOptions.Has("aliphysics")) aliphysics = fOptions.Get("aliphysics");
+    if (fOptions.Has("root"))       root       = fOptions.Get("root");
 
-    AvailableSoftware::Check(aliroot, root);
+    AvailableSoftware::Check(aliphysics, aliroot, root);
+    fOptions.Set("aliphysics", aliphysics);
     fOptions.Set("aliroot", aliroot);
     fOptions.Set("root", root);
 
@@ -217,6 +238,7 @@ struct PluginRailway : public Railway
 
     fHandler->SetROOTVersion(root);
     fHandler->SetAliROOTVersion(aliroot);
+    fHandler->SetAliPhysicsVersion(aliphysics);
     // Execute through interpreter until patch is applied
     fHandler->SetDropToShell(false);
     if (fOptions.Has("mode"))

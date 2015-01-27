@@ -328,7 +328,7 @@ struct Unfolder
 
     // Load other data 
     TString savPath(gROOT->GetMacroPath());
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/scripts",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2/scripts",
                              gROOT->GetMacroPath()));
     // Always recompile 
     if (!gROOT->GetClass("OtherPNch"))
@@ -479,7 +479,7 @@ struct Unfolder
     std::ofstream f("SummarizeUnfold.C");
     f << "void SummarizeUnfold(const char* file=\"forward_unfolded.root\")\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawUnfoldedSummary.C\",fwd));\n"
       << "  DrawUnfoldedSummary(file);\n"
       << "}\n"

@@ -476,7 +476,7 @@ struct ForwardOADBGUI
     TGFileInfo fi;
     TString iniDir(gSystem->ExpandPathName("$(OADB_PATH)"));
     if (iniDir.IsNull()) 
-      iniDir = gSystem->ExpandPathName("$(ALICE_ROOT)/OADB");
+      iniDir = gSystem->ExpandPathName("$(ALICE_PHYSICS)/OADB");
     iniDir.Append("/PWGLF/FORWARD/CORRECTIONS/data");
     char* ini = new char[iniDir.Length()+1];
     for (int i = 0; i < iniDir.Length(); i++) ini[i] = iniDir[i];
@@ -711,8 +711,8 @@ struct ForwardOADBGUI
   void LoadCorrDraw()
   {
     const char* opt = "++g";
-    const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-    gSystem->AddIncludePath(Form("-I$ALICE_ROOT/include -I%s -I%s/scripts",
+    const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+    gSystem->AddIncludePath(Form("-I$ALICE_PHYSICS/include -I%s -I%s/scripts",
 				 fwd, fwd));
     Info("CorrDraw", "Loading SummaryDrawer.C%s", opt);
     gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C%s", fwd, opt));
@@ -884,7 +884,7 @@ struct ForwardOADBGUI
 
 TGMainFrame* ForwardOADBGui(AliOADBForward* db=0)
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward")) 
     // gSystem->Load("libGui");
     gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));

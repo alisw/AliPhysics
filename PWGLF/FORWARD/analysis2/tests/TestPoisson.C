@@ -30,7 +30,7 @@ MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
 void
 TestPoisson(Double_t o=.3, bool useWeights=false, bool correct=true)
 {
-  const char* load = "$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C";
+  const char* load = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C";
   if (!gROOT->GetClass("AliAODForwardMult")) {
     gROOT->Macro(load);
     gROOT->GetInterpreter()->UnloadFile(gSystem->ExpandPathName(load));

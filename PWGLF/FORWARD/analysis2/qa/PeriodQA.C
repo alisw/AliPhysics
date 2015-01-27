@@ -50,7 +50,7 @@ PeriodQA(const char* input,
   else { 
     fwd = gSystem->Getenv("ANA_SRC");
     if (fwd.IsNull()) 
-      fwd = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2";
+      fwd = "$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2";
     mac.Prepend(Form(".:%s/qa:%s/corrs:",fwd.Data(), fwd.Data()));
     gSystem->AddIncludePath(Form("-I%s/qa", fwd.Data()));
   }

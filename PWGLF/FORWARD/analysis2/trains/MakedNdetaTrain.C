@@ -60,7 +60,7 @@ protected:
     fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Get parameters --------------------------------------------
@@ -156,7 +156,7 @@ protected:
       << "void Summarize(const char* filename=\"forward_dndeta.root\",\n"
       << "               UShort_t what=0x10F)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawdNdetaSummary.C\",fwd));\n"
       << "  DrawdNdetaSummary(filename,what & 0x3FF);\n"
       << "\n"
@@ -182,7 +182,7 @@ protected:
     o << "// Created by " << ClassName() << "\n"
       << "Bool_t SetupDrawer(const TString& title, Bool_t old)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C+\",fwd));\n"
       << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
       << "    if (old)\n"

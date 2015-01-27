@@ -31,8 +31,8 @@ DrawCorrAcc(ULong_t runNo, UShort_t sys, UShort_t sNN,
 {
   //__________________________________________________________________
   // Load libraries and object 
-  // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  // const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));

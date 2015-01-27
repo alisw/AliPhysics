@@ -10,15 +10,10 @@ ifndef PACKCXXFLAGS
    PACKCXXFLAGS = $(CXXFLAGS)
 endif
 
-ALIARCH := $(shell $(RC) --arch)
-PARPATH := $(shell pwd)
-
-ALICEINC = -I.
-ALICEINC += -I$(PACKAGE) -I$(PACKAGE)/RESONANCES
-
-# ALIPARLIBS = -L$(ROOTLIBDIR) -lMinuit -lTree -lXMLParser -lVMC -lMinuit -lEG -lGeom
-ALIPARLIBS = 
-# ALICELIBS += -L$(ALICE_ROOT)/lib/tgt_$(shell $(RC) --arch) 
+PARPATH 	:= $(shell pwd)
+ALICEINC 	= -I.
+ALICEINC 	+= -I$(PACKAGE) -I$(PACKAGE)/RESONANCES
+ALIPARLIBS 	= 
 
 ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE)
@@ -61,6 +56,17 @@ else
      ALICELIBS += -lANALYSIS
    else
      ALIPARLIBS += -L$(PARPATH) -lANALYSIS
+   endif
+endif
+
+ifneq ($(OADB_INCLUDE),)
+   ALICEINC += -I../$(OADB_INCLUDE)
+   ALIPARLIBS += $(OADB_LIBS)
+else
+   ifneq ($(PACKAGE),OADB)
+     ALICELIBS += -lOADB
+   else
+     ALIPARLIBS += -L$(PARPATH) -lOADB
    endif
 endif
 
@@ -112,31 +118,35 @@ endif
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
-    ALIPARLIBS += -L$(ALICE_ROOT)/lib/tgt_$(ALIARCH) $(ALICELIBS)
+    ALIPARLIBS += -L$(ALICE_ROOT)/lib $(ALICELIBS)
+  endif
+  ifneq ($(ALICE_PHYSICS),)
+    ALICEINC += -I$(ALICE_PHYSICS)/include
+    ALIPARLIBS += -L$(ALICE_PHYSICS)/lib $(ALICELIBS)
   endif
 endif
 
-ALICEINC += -I$(ALICE_ROOT)/include
-ALIPARLIBS += -L$(ALICE_ROOT)/lib/tgt_$(ALIARCH) $(ALICELIBS)
+ALICEINC 	+= -I$(ALICE_ROOT)/include -I${ALICE_PHYSICS}/include
+ALIPARLIBS 	+= -L$(ALICE_ROOT)/lib $(ALICELIBS) \
+	      	   -L${ALICE_PHYSICS}/lib 
 
-# ifeq ($(PLATFORM),macosx)
-ROOTLIBDIR     := $(shell $(RC) --libdir)
-# ALIROOTLIBDIR  := $(ALICE_ROOT)/lib/tgt_$(shell $(RC) --arch)
+ROOTLIBDIR    	:= $(shell $(RC) --libdir)
+PACKLDFLAGS 	:= $(ALIPARLIBS) -L$(ROOTLIBDIR) \
+		   -lMinuit -lTree -lXMLParser -lVMC -lMinuit -lEG -lGeom
+CXXFLAGS 	+= $(ALICEINC) -g
 
-PACKLDFLAGS := $(ALIPARLIBS) -L$(ROOTLIBDIR) -lMinuit -lTree -lXMLParser -lVMC -lMinuit -lEG -lGeom
-
-CXXFLAGS += $(ALICEINC) -g
-
-SRCS         += G__$(PACKAGE).cxx
-OBJS          = $(SRCS:.cxx=.o)
+SRCS         	+= G__$(PACKAGE).cxx
+OBJS          	=  $(SRCS:.cxx=.o)
 
 lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(PLATFORM),macosx)
-	$(LD) $(SOFLAGS) -flat_namespace -undefined suppress $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+	$(LD) $(SOFLAGS) -flat_namespace -undefined suppress $(LDFLAGS) \
+		$^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
 else
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ \
+		$(PACKLDFLAGS) $(EXPLLINKLIBS)
 endif
 	@chmod a+x $@
 	@echo "done"

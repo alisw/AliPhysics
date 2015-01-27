@@ -26,14 +26,14 @@ Compile(const char* script, Option_t* option="g")
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWGLFforward2");
   TString macroPath(gROOT->GetMacroPath());
-  macroPath.Append(":${ALICE_ROOT}/PWGLF/FORWARD/analysis2");
-  macroPath.Append(":${ALICE_ROOT}/PWGLF/FORWARD/analysis2/scripts");
+  macroPath.Append(":${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2");
+  macroPath.Append(":${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2/scripts");
   gROOT->SetMacroPath(macroPath.Data());
   gSystem->SetIncludePath("-I`root-config --incdir` "
-			  "-I${ALICE_ROOT} " 
-			  "-I${ALICE_ROOT}/include " 
-			  "-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 "
-			  "-I${ALICE_ROOT}/PWGLF/FORWARD/analysis2 ");
+			  "-I${ALICE_PHYSICS} " 
+			  "-I${ALICE_PHYSICS}/include " 
+			  "-I${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2 "
+			  "-I${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2 ");
   Long_t ret = gROOT->ProcessLine(Form(".L %s+%s", script, option));
   return ret == 0;
 }

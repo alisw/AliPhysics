@@ -21,8 +21,8 @@ void
 DrawQA(const char* file, bool full=false)
 {
 
-  gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
-			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
+  gROOT->SetMacroPath(Form(".:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2/qa:"
+			   "$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2/corrs:%s",
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("DrawBeforeAfter.C+g");
   gROOT->LoadMacro("DrawELossPoisson.C+g");

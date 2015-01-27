@@ -27,8 +27,8 @@ void MakeTrain(TString     name       = "aod",
 {
   if (cls.IsNull())  Fatal("MakeTrain", "Must specify a class name");
   if (name.IsNull()) Fatal(cls, "Must specify a name");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/trains/RunTrain.C");
-  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains",
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/trains/RunTrain.C");
+  gROOT->SetMacroPath(Form("%s:$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/trains",
 			   gROOT->GetMacroPath()));
 
   RunTrain(name, cls, uri, options);

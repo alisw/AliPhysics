@@ -69,7 +69,8 @@ struct Deferred : public TTimer
   Bool_t Notify()
   {
     // gSystem->RemoveTimer(this);
-    //Info("Notify","Will run train setup: %s (%s)",fName.Data(),fClass.Data());
+    // Info("Notify","Will run train setup: %s (%s)",
+    //      fName.Data(),fClass.Data());
     return TrainSetup::Main(fName, fClass, fOptions, true, fSpawn);
   }
   TString fName;
@@ -228,9 +229,11 @@ main(int argc, char** argv)
 
   // --- Setup script path -------------------------------------------
   const char* aliPath  = gSystem->ExpandPathName("$ALICE_ROOT");
-  const char* fwdPath  = gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD");
+  const char* phyPath  = gSystem->ExpandPathName("$ALICE_PHYSICS");
+  const char* fwdPath  = Form("%s/PWGLF/FORWARD",phyPath);
   AppendPath(aliPath);
   AppendPath(Form("%s/include",          aliPath));
+  AppendPath(Form("%s/include",          phyPath));
   AppendPath(Form("%s/trains",           fwdPath));
   AppendPath(Form("%s/analysis2",        fwdPath));
   AppendPath(Form("%s/analysis2/trains", fwdPath));

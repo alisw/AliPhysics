@@ -60,8 +60,8 @@ AliBaseAODTask::Configure(const char* macro)
 {
   // --- Configure the task ------------------------------------------
   TString macroPath(gROOT->GetMacroPath());
-  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
-    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
+  if (!macroPath.Contains("$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2");
     gROOT->SetMacroPath(macroPath);
   }
   TString mac(macro);

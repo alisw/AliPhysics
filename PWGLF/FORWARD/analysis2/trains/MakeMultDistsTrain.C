@@ -50,7 +50,7 @@ protected:
     fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Get parameters --------------------------------------------
@@ -121,7 +121,7 @@ protected:
       << "    gSystem->AddDynamicPath(Form(\"%s\", rooUnfold));\n"
       << "  }\n"
       << "  gSystem->Load(\"libRooUnfold\");\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/scripts/UnfoldMultDists.C++g\",fwd));\n"
       << "  UnfoldMultDists(\"bayes\",regP,here,other);\n"
       << "}\n"
@@ -149,7 +149,7 @@ protected:
       << "void Summarize(const char* filename=\"forward_multdists.root\",\n"
       << "               UShort_t what=0xF)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawMultDistsSummary.C\",fwd));\n"
       << "  DrawMultDistsSummary(filename,what);\n"
       << "}\n"
@@ -176,7 +176,7 @@ protected:
       << "void Draw(const char* filename=\"forward_unfolded.root\",\n"
       << "               UShort_t what=0xF)\n"
       << "{\n"
-      << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawUnfoldedSummary.C\",fwd));\n"
       << "  DrawUnfoldedSummary(filename);\n"
       << "}\n"

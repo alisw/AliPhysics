@@ -1456,7 +1456,7 @@ protected:
   {
     if (!check.IsNull() && gROOT->GetClass(check)) return;
 
-    TString fwd =gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD/analysis2");
+    TString fwd =gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
     TString macPath(gROOT->GetMacroPath());
     TString incPath(gSystem->GetIncludePath());
     if (!macPath.Contains(fwd)) macPath.Append(Form(":%s", fwd.Data()));

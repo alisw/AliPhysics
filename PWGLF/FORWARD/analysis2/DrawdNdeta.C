@@ -619,7 +619,7 @@ struct dNdetaDrawer
 
     // --- Set the macro pathand load other data script --------------
     TString savPath(gROOT->GetMacroPath());
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
     // Always recompile 
     if (!gROOT->GetClass("RefData"))
@@ -1749,7 +1749,7 @@ struct dNdetaDrawer
     // --- Put logo on the plot --------------------------------------
     if (fOptions & kLogo) {
       TString savPath(gROOT->GetMacroPath());
-      TString fwd("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
+      TString fwd("$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2");
       gROOT->SetMacroPath(Form("%s:%s/scripts",
 			       gROOT->GetMacroPath(), fwd.Data()));
       // Always recompile 

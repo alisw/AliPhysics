@@ -9,7 +9,7 @@ CopyELoss(ULong_t     tgtRun,
 	  Short_t     srcFld,
 	  Bool_t      mc)
 {
-  const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
+  const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
   gROOT->LoadMacro(Form("%s/corrs/CopyCorr.C", fwd));
 
   CopyCorr(true, "elossfits", 

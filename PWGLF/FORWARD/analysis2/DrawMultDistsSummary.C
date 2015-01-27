@@ -11,7 +11,7 @@
 void DrawMultDistsSummary(const char* fname="forward_multdists.root",
 		       UShort_t what=0xf)
 {
-  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts",
+  gROOT->SetMacroPath(Form("%s:$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts",
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("SummaryMultDistsDrawer.C+g");
   

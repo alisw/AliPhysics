@@ -10,7 +10,7 @@ CopySec(Bool_t      fmd=true,
 	Short_t     srcFld=+5)
 {
 
-  const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
+  const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
   gROOT->LoadMacro(Form("%s/corrs/CopyCorr.C", fwd));
 
   CopyCorr(fmd, "secondary", 

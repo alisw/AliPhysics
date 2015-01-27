@@ -90,14 +90,15 @@ public:
     }
 
     if (fOptions.Has("sys-info")) mgr->SetNSysInfo(100);
-    
+
+    const char* aliPhys = "$(ALICE_PHYSICS)";
     // AliAnalysisTask*   task = 0;
     AliAnalysisTaskSE* seTask = 0;
 
     AliAnalysisManager::SetCommonFileName("AODQA.root");
     if (tender) 
-      CoupleCar("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C",
-	      Form("%d", fOptions.Has("v0-tender")));
+      CoupleCar(Form("%s/TENDER/TenderSupplies/AddTaskTender.C", aliPhys),
+		Form("%d", fOptions.Has("v0-tender")));
     
     if (fOptions.Has("pid-response")) 
       CoupleCar("AddTaskPIDResponse.C");
@@ -116,7 +117,7 @@ public:
       fRailway->LoadLibrary("libPWGPP");
 
       // CoupleCar("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
       gROOT->ProcessLine(Form("AddTaskCDBconnect(%d)", fOptions.AsInt("run")));
       gROOT->ProcessLine("AliCDBManager* cdb = AliCDBManager::Instance();"
 			 "cdb->SetDefaultStorage(\"raw://\");");
@@ -142,7 +143,7 @@ public:
     Bool_t vertexing = fOptions.Has("vertexing");
     Bool_t d0Decay   = fOptions.Has("d0-decay");
     if (vertexing || d0Decay) {
-      TString src = "$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C";
+      TString src = "$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C";
       if (fOptions.AsInt("collision") == 1) 
 	src.ReplaceAll(".C", "highmult.C");
       TFile::Cp(src, "ConfigVertexingHF.C");
@@ -154,7 +155,7 @@ public:
       fRailway->LoadLibrary("PWGflowTasks");
       fRailway->LoadLibrary("PWGHFvertexingHF");
       seTask = 
-	CoupleSECar("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
+	CoupleSECar("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
       seTask->SelectCollisionCandidates(0);
       mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
     }
@@ -162,13 +163,13 @@ public:
     if (fOptions.Has("jpsi-filtering")) { 
       fRailway->LoadLibrary("PWGDQdielectron");
       seTask = 
-	CoupleSECar("$ALICE_ROOT/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
+	CoupleSECar("$ALICE_PHYSICS/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
       seTask->SelectCollisionCandidates(0);
       mgr->RegisterExtraFile("AliAOD.Dielectron.root");
     }
   
     if (d0Decay) 
-      CoupleCar("$ALICE_ROOT/PWGHF/vertexingHF/AddD2HTrain.C",
+      CoupleCar("$ALICE_PHYSICS/PWGHF/vertexingHF/AddD2HTrain.C",
 	      "kFALSE, 1,0,0,0,0,0,0,0,0,0,0");
   
     if (fOptions.Has("jetan")) {
@@ -277,7 +278,7 @@ public:
       Bool_t fwdMC = (mgr->GetMCtruthEventHandler() != 0 && 
 		      fOptions.Has("track-refs"));
     
-      CoupleCar("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C",
+      CoupleCar("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C",
 	      Form("%d", fwdMC));
     }
   }

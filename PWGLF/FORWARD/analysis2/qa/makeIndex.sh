@@ -152,7 +152,7 @@ frame=0
 size=0
 base=$QA_FWD
 if test "X$base" = "X" ; then 
-    base=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+    base=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/qa
 fi 
 verb=0
 

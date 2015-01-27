@@ -70,7 +70,7 @@ struct RefData
     if (!f && !gSystem->AccessPathName("other.root")) 
       f = TFile::Open("other.root", mode);
     if (!f) 
-      f = TFile::Open("$ALICE_ROOT/PWGLF/FORWARD/analysis2/other.root",mode);
+      f = TFile::Open("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/other.root",mode);
     if (!f) 
       ::Error("", "Failed to open file");
     return f;

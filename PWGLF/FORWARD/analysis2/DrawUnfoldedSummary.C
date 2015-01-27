@@ -10,7 +10,7 @@
 //____________________________________________________________________
 void DrawUnfoldedSummary(const char* fname="forward_unfolded.root")
 {
-  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts",
+  gROOT->SetMacroPath(Form("%s:$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts",
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("SummaryUnfoldedDrawer.C++g");
   

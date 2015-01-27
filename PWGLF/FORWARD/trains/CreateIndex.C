@@ -1,10 +1,10 @@
 void
 CreateIndex(const TString& dir, const TString& tree="esdTree")
 {
-  gROOT->SetMacroPath(Form("$ALICE_ROOT/PWGLF/FORWARD/trains:%s", 
+  gROOT->SetMacroPath(Form("$ALICE_PHYSICS/PWGLF/FORWARD/trains:%s", 
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("ChainBuilder.C+");
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
   
   Bool_t mc = false;
   if (tree.BeginsWith("mc")) { 

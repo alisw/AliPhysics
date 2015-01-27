@@ -92,7 +92,7 @@ protected:
     fRailway->LoadLibrary("PWGLFforward2");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
 			     gROOT->GetMacroPath()));
@@ -288,7 +288,7 @@ protected:
     if (sys == 3) { 
       Warning("CreatePhysicsSelection", 
 	      "Special setup for pPb pilot run September, 2012");
-      gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
+      gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/ANALYSIS/macros",
 			       gROOT->GetMacroPath()));
       gROOT->LoadMacro("PhysicsSelectionOADB_CINT5_pA.C");
       gROOT->ProcessLine(Form("((AliPhysicsSelection*)%p)"

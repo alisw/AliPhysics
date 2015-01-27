@@ -571,7 +571,7 @@ struct VirtualTrain
   virtual Bool_t LoadBaseLibraries()
   {
     // Load common analysis libraries.
-    if (!gSystem->Getenv("ALICE_ROOT")) {
+    if (!gSystem->Getenv("ALICE_PHYSICS")) {
       ::Error("LoadBaseLibraries", 
 	      "Analysis trains requires that analysis libraries are "
 	      "compiled with a local AliRoot");
@@ -589,7 +589,7 @@ struct VirtualTrain
     success &= LoadLibrary("libESDfilter.so");
     success &= LoadLibrary("libCORRFW.so");
     success &= LoadLibrary("libPWGPP.so");
-    gROOT->ProcessLine(".include $ALICE_ROOT/include");
+    gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
     if (success) {
       ::Info("LoadBaseLibraries", 
 	     "Load common libraries:    SUCCESS");

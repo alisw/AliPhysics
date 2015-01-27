@@ -167,7 +167,7 @@ install(FILES ${HDRS} DESTINATION include)
 add_executable(runTrain
   trains/trainMain.cxx
   )
-target_link_libraries(runTrain ANALYSIS ANALYSISalice Core Rint)
+target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint)
 install(TARGETS runTrain 
   RUNTIME DESTINATION bin)
 
@@ -192,11 +192,7 @@ add_custom_command( OUTPUT doc/html/index.html
 add_custom_target( PWGLFforward-doc DEPENDS doc/alice-int-2012-040.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS doc/html/index.html )
 
-add_custom_target( install-PWGLFforward2.par 
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
-  COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
-  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par
-  DEPENDS test-${PACKAGE}.par)
+generate_par("..")
 
 # --------------------------------------------------------------------
 # Extra installation targets 

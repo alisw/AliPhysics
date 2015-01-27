@@ -1,6 +1,6 @@
 #!/bin/sh
 if test "X$QA_FWD" = "X" ; then 
-    QA_FWD=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+    QA_FWD=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/qa
 fi 
 
 # 1: file
