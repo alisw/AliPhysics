@@ -160,9 +160,9 @@ void AliPHOSTenderSupply::InitTender()
   if(!fPHOSGeo){
     AliOADBContainer geomContainer("phosGeo");
     if(fIsMC) //use excatly the same geometry as in simulation
-      geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
+      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
     else //Use best approaximation to real geometry
-      geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
@@ -176,7 +176,7 @@ void AliPHOSTenderSupply::InitTender()
   //Init Bad channels map
   if(!fUsePrivateBadMap){
    AliOADBContainer badmapContainer(Form("phosBadMap"));
-    badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+    badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
     TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosBadMap");
     if(!maps){
       AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",runNumber)) ;    
@@ -197,7 +197,7 @@ void AliPHOSTenderSupply::InitTender()
     if(fIsMC){ //re/de-calibration for MC productions
       //Init recalibration
       AliOADBContainer calibContainer("phosRecalibration");
-      calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSMCCalibrations.root","phosRecalibration");
+      calibContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCCalibrations.root","phosRecalibration");
 
       AliInfo(Form("Reading PHOS MC recalibration object for production %s, run=%d", fMCProduction.Data(),runNumber)) ;      
       TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration",fMCProduction.Data());
@@ -223,7 +223,7 @@ void AliPHOSTenderSupply::InitTender()
       //Init recalibration
       //Check the pass1-pass2-pass3 reconstruction
       AliOADBContainer calibContainer("phosRecalibration");
-      calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
+      calibContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
       TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
       if(!recalib){
         AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
