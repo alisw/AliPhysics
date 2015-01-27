@@ -95,6 +95,7 @@ void AliTRDCalChamberStatus::SetStatus(Int_t det, Char_t status)
       SETBIT(fStatus[det], kBadCalibrated);
       break;
     case AliTRDCalChamberStatus::kNotCalibrated:
+      CLRBIT(fStatus[det], kGood);
       SETBIT(fStatus[det], kNotCalibrated);
       //CLRBIT(fStatus[det], kBadCalibrated);
       break;
