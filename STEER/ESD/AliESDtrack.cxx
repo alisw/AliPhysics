@@ -3536,3 +3536,29 @@ Double_t AliESDtrack::GetdEdxInfoTRD(Int_t method, Double_t p0, Double_t p1, Dou
   }
   return 0;
 }
+
+void AliESDtrack::SetImpactParameters( const Float_t p[2], const Float_t cov[3], const Float_t chi2, const AliExternalTrackParam *cParam)
+{
+  // set impact parameters
+  
+  fD = p[0];
+  fZ = p[1];  
+  fCdd = cov[0];
+  fCdz = cov[1];
+  fCzz = cov[2];
+  fCchi2=chi2;
+  delete fCp;
+  if( cParam ) fCp=new AliExternalTrackParam(*cParam);  
+}
+
+void AliESDtrack::SetImpactParametersTPC( const Float_t p[2], const Float_t cov[3], const Float_t chi2 )
+{
+  // set impact parameters TPC
+  
+  fdTPC = p[0];
+  fzTPC = p[1];  
+  fCddTPC = cov[0];
+  fCdzTPC = cov[1];
+  fCzzTPC = cov[2];
+  fCchi2TPC = chi2;
+}

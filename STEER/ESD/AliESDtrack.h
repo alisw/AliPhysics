@@ -436,6 +436,10 @@ public:
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
+
+  void SetImpactParameters( const Float_t p[2], const Float_t cov[3], const Float_t chi2, const AliExternalTrackParam *cParam );
+  void SetImpactParametersTPC( const Float_t p[2], const Float_t cov[3], const Float_t chi2);
+
   virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
   const AliTOFHeader* GetTOFHeader() const;
