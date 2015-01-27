@@ -192,8 +192,6 @@ add_custom_command( OUTPUT doc/html/index.html
 add_custom_target( PWGLFforward-doc DEPENDS doc/alice-int-2012-040.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS doc/html/index.html )
 
-generate_par("..")
-
 # --------------------------------------------------------------------
 # Extra installation targets 
 #
