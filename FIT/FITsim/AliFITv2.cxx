@@ -104,16 +104,16 @@ void AliFITv2::CreateGeometry()
   //
 
   Int_t *idtmed = fIdtmed->GetArray();
-  Float_t zdetC = 85;
-  Float_t zdetA = 333;
+  Float_t zdetC = 84.;
+  Float_t zdetA = 335;
   
   Int_t idrotm[999];
   Double_t x,y,z;
   Float_t pstartC[3] = {6., 20 ,4.5};
-  Float_t pstartA[3] = {2.55, 20 ,5};
+  Float_t pstartA[3] = {2.55, 20 ,4.5};
   // Float_t pinstart[3] = {3.2,3.2,3.9};
   Float_t pinstart[3] = {3.2,3.2,4.};
-  Float_t  pmcp[3] = {3.19, 3.19, 2.8}; //MCP
+  Float_t pmcp[3] = {3.19, 3.19, 2.8}; //MCP
   Float_t ptop[3] = {1.324, 1.324, 1.};//cherenkov radiator
   Float_t preg[3] = {1.324, 1.324, 0.05};//photcathode 
 
@@ -127,12 +127,7 @@ void AliFITv2::CreateGeometry()
   //-------------------------------------------------------------------
   //  T0 volume 
   //-------------------------------------------------------------------
-  //C side
-
-   Float_t zc[36] = {2,0, 2,0, 2,0, 2,0, 2,2, 2,2, 2,2, 2,2, 0,0,0,0};
-   Float_t za[25] = {2,0, 2,0, 2,2, 0,2, 0,2, 2,0, 2,0, 0,0, 0,0,0,0};
-  
-   
+    
   TGeoVolumeAssembly * stlinA = new TGeoVolumeAssembly("0STL");  // A side mother 
   TGeoVolumeAssembly * stlinC = new TGeoVolumeAssembly("0STR");  // C side mother 
  //T0 interior
@@ -148,9 +143,9 @@ void AliFITv2::CreateGeometry()
   for (Int_t itrx=0; itrx<5; itrx++) {
     for (Int_t itry=0; itry<5; itry++) {
       nameTr = Form("0TR%i",itr+1);
-      z=-pstartA[2]+pinstart[2]/* +za[itr]*/;
+      z=-pstartA[2]+pinstart[2];
       if(itr !=12){
-	if(TMath::Abs(xa)<10 && TMath::Abs(ya)<10) z= z+2;
+	//	if(TMath::Abs(xa)<10 && TMath::Abs(ya)<10) z= z+2;
 	tr[itr] = new TGeoTranslation(nameTr.Data(),xa,ya, z );
 	tr[itr]->RegisterYourself();
 	stlinA->AddNode(ins,itr,tr[itr]);
@@ -168,10 +163,10 @@ void AliFITv2::CreateGeometry()
   for (Int_t itrx=0; itrx<6; itrx++) {
     for (Int_t itry=0; itry<6; itry++) {
       nameTr = Form("0TR%i",itr+1);
-      z=-pstartC[2]+pinstart[2] /*+ zc[itr] */;
+      z=-pstartC[2]+pinstart[2];
       if (itr!=25 && itr!=30 && itr!=60 && itr!=55 
 	  && itr!=39 && itr!=40 && itr!=45 &&itr!=46) {
-	if( TMath::Abs(xc)<10 &&  TMath::Abs(yc)<10) z= z+2;
+	//	if( TMath::Abs(xc)<10 &&  TMath::Abs(yc)<10) z= z+2;
 	tr[itr] = new TGeoTranslation(nameTr.Data(),xc,yc, z );
 	tr[itr]->RegisterYourself();
 	stlinC->AddNode(ins,itr,tr[itr]);
@@ -429,12 +424,13 @@ void AliFITv2::StepManager()
       hits[5]=ttime*1e12;
       if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
 	{
-	  //	  if(RegisterPhotoE(vol[1]-1,hits[3])) {
 	  if(RegisterPhotoE(hits[3])) {
 	    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
 	    // Create a track reference at the exit of photocatode
 	  }	    
 	}
+     if ( TVirtualMC::GetMC()->TrackCharge() )
+	    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
       
       //charge particle 
       if ( TVirtualMC::GetMC()->TrackCharge() )
