@@ -48,7 +48,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Do not forget to add dependencies to the object in case they appear
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:AliHLTHOMER-object>)
-target_link_libraries(${MODULE} Core)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")

@@ -74,13 +74,13 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB HLTbase AliHLTUtil EveHLT PHOSbase PHOSUtils EMCALUtils EveBase EveDet AliHLTTPC AliHLTMUON AliHLTITS AliHLTTRD ITSbase MUONcore MUONbase MUONraw MUONrec TRDrec)
+# TODO: circular dependency with EveHLT -> omitted for now
+set(LIBDEPS STEERBase STEER ESD CDB HLTbase AliHLTUtil PHOSbase PHOSUtils EMCALUtils EveBase EveDet AliHLTTPC AliHLTMUON AliHLTITS AliHLTTRD ITSbase MUONcore MUONbase MUONraw MUONrec TRDrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-# Remember to add  EveBase EveDet EveHLT 
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB HLTbase AliHLTUtil PHOSbase PHOSUtils EMCALUtils AliHLTTPC AliHLTMUON AliHLTITS AliHLTTRD ITSbase MUONcore MUONbase MUONraw MUONrec TRDrec EveDet)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

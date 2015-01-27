@@ -99,14 +99,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTMUON AliHLTTRD TRDbase TRDrec TPCcalib MUONraw GenVector Gpad Graf Smatrix)
+if(FASTJET_FOUND)
+    set(LIBDEPS ${LIBDEPS} ${FASTJET_LIBS})
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTMUON AliHLTTRD TRDbase TRDrec TPCcalib MUONraw GenVector Gpad Graf Smatrix)
-if(FASTJET_FOUND)
-    target_link_libraries(${MODULE} ${FASTJET_LIBS})
-endif(FASTJET_FOUND)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

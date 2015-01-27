@@ -53,7 +53,6 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD RAWDatabase RAWDatarec RAWDatasim Core Hist MathCore RIO Tree)
 
 # Additional compilation flags
 set(MODULE_COMPILE_FLAGS "")
