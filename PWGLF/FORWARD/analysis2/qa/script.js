@@ -139,6 +139,17 @@ function closeDisplay() {
     frm.style.visibility = "hidden";
 }
 
+function browseRootFile(filename) {
+    var jsRoot = document.location.origin + "/jsRoot/";
+    var path   = document.location.origin + document.location.pathname;
+    path.replace(/index.html/,"");
+    if (path[path.lenght-1] != '/') path += "/";
+    path += filename;
+
+    window.open(jsRoot + "?url=" + path, "_blank", 
+		"location=no,menubar=no,status=no,titlebar=no");
+}
+	
 //
 // EOF
 //
