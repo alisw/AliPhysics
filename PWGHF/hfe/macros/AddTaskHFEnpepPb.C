@@ -148,9 +148,6 @@ AliAnalysisTask *AddTaskHFEnpepPb(Bool_t MCthere,
 			  dEdxhmAOD, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl, 
 			 kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE, kWei, kd3weiData);
 
-      RegisterTaskNPEpPbTOFworkaround( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1,
-			  dEdxhmAOD, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl, 
-			  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE, kWei, kd3weiData);
     
       }
   }
@@ -171,6 +168,10 @@ AliAnalysisTask *AddTaskHFEnpepPb(Bool_t MCthere,
 	RegisterTaskNPEpPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, 
 			    dEdxhm, 0., AliHFEextraCuts::kBoth, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl, 
 			    kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE);
+	RegisterTaskNPEpPbTOFworkaround( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1,
+			  dEdxhmAOD, kDefTOFs, AliHFEextraCuts::kBoth, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl, 
+			  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE, kWei, kd3weiData);
+
       }
   }
   
