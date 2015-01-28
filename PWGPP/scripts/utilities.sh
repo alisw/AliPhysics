@@ -261,9 +261,23 @@ hostInfo(){
         echo
         echo ALIROOTINFO
         echo 
-        echo ALIROOTINFO ALIROOT"        "`which aliroot`
-        echo ALIROOTINFO VERSION"        "`echo $ALICE_LEVEL`
-        echo ALIROOTINFO TARGET"         "`echo $ALICE_TARGET`
+        echo "ALICE_ROOT=$ALICE_ROOT"
+        echo "which aliroot: "$(which aliroot)
+        echo "git describe:"
+        echo "  "$(git -C $ALICE_ROOT/../src/ describe)
+        echo 
+        echo --------------------------------------
+
+#
+# ALIPHYSICS info
+#
+        echo --------------------------------------
+        echo
+        echo "ALIPHYSICSINFO"
+        echo 
+        echo "ALICE_PHYSICS=$ALICE_PHYSICS"
+        echo "git describe:"
+        echo "  "$(git -C $ALICE_PHYSICS/../src/ describe)
         echo 
         echo --------------------------------------
 
