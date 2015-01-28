@@ -66,8 +66,9 @@ macro(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
 
   # Target for creating PARfile (would stop after the first failed COMMAND)
   add_custom_target("${PARMODULE}.par"
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && cp ${PARSOURCES} ${PARHEADERS} ${PARLINKDEF} ${PARDIR}/
+    COMMAND rsync --relative ${PARSOURCES} ${PARHEADERS} ${PARLINKDEF} ${PARDIR}/
     COMMAND tar -C ${PARDIR}/.. -czf ${PARDIR}/../${PARMODULE}.par ${PARMODULE}/
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
 endmacro()
