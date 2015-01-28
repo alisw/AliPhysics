@@ -1,4 +1,5 @@
-# This CMake macro generates a target that, in turn, will generate a PARfile for the given library.
+# This CMake function generates a target that, in turn, will generate a PARfile for the given
+# library.
 #
 # Usage: in the CMakeLists.txt, for a given library, add the following:
 #   add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
@@ -14,26 +15,22 @@
 # To generate a parfile, if enabled in its CMakeLists.txt, go to the build directory and run:
 #   make BLAHBLAH.par
 
-macro(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
+function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
 
-  message(STATUS "PARfile generation: ${PARMODULE}")
-
-  # Libraries
-  foreach(THISLIB ${PARLIBDEPS})
-    set(_PARLIBDEPS "${_PARLIBDEPS} lib${THISLIB}")
+  # Libraries: result is a space-separated string
+  foreach(_THISLIB ${PARLIBDEPS})
+    set(_PARLIBDEPS "${_PARLIBDEPS} lib${_THISLIB}")
   endforeach()
   string(STRIP "${_PARLIBDEPS}" PARLIBDEPS)
 
-  # Export variable
+  # Export variables: used in configure_file()
   set(PARMODULE "${PARMODULE}")
+  string(REPLACE ";" " " PARSOURCES_FLAT "${PARSOURCES}")
 
-  message(STATUS "--> Module: ${PARMODULE}")
-  message(STATUS "--> Sources: ${PARSOURCES}")
-  message(STATUS "--> Deps: ${PARLIBDEPS}")
+  #message(STATUS "[add_target_parfile] Library (space-separated): ${PARMODULE}")
+  #message(STATUS "[add_target_parfile] Sources (list): ${PARSOURCES}")
+  #message(STATUS "[add_target_parfile] Dependencies (space-separated): ${PARLIBDEPS}")
 
-  foreach(LOOPVAR ${PARSOURCES})
-    message(STATUS "----> ${LOOPVAR}")
-  endforeach()
 
   # PARfile output directory (the one we will tar)
   set(PARDIR ${CMAKE_CURRENT_BINARY_DIR}/PARfiles/${PARMODULE})
@@ -71,4 +68,4 @@ macro(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
-endmacro()
+endfunction()
