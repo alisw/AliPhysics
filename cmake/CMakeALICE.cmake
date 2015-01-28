@@ -239,6 +239,17 @@ macro(createDArpm DETECTOR ALGORITHM)
 endmacro()
 
 
+# Prepend prefix to every element in the list. Note: this function modifies the input variable: this
+# does not work for macros in CMake, only for functions. Also note that it does NOT automatically
+# add a / between prefix and list item as it does not assume that we are dealing with directories
+function(prepend_prefix INLIST PREFIX)
+    foreach(_ITEM ${${INLIST}})
+        list(APPEND _OUTLIST ${PREFIX}${_ITEM})
+    endforeach()
+    set(${INLIST} ${_OUTLIST} PARENT_SCOPE)
+endfunction()
+
+
 # This function is a drop-in replacement for the following CMake command:
 #
 #   install(FILES ... DESTINATION ... [OTHER_ARGS])
