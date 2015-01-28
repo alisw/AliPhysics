@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTaskHighPtReconstructionEfficiency(){
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-	AliHighPtReconstructionEfficiency *efficiencyTask = new AliHighPtReconstructionEfficiency("MarkusParticlesInJets");
+	HighPtTracks::AliHighPtReconstructionEfficiency *efficiencyTask = new HighPtTracks::AliHighPtReconstructionEfficiency("MarkusParticlesInJets");
 	mgr->AddTask(efficiencyTask);
 
 	TString outputcontname = mgr->GetCommonFileName();

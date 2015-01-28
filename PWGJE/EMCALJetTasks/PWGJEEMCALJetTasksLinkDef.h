@@ -121,6 +121,11 @@
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskHJetSpectra+;
-#pragma link C++ class AliHighPtReconstructionEfficiency+;
+#pragma link C++ namespace HighPtTracks+;
+#pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
+#pragma link C++ class HighPtTracks::AliReducedJetEvent+;
+#pragma link C++ class HighPtTracks::AliReducedJetInfo+;
+#pragma link C++ class HighPtTracks::AliReducedJetParticle+;
+#pragma link C++ class HighPtTracks::AliReducedJetConstituent+;
 #endif
 #endif

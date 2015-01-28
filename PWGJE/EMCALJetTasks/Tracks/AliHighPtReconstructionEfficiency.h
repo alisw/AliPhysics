@@ -1,4 +1,4 @@
-/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 // Author: Markus Fasel
@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <fastjet/PseudoJet.hh>
+#include "AliParticleMap.h"
 
 class AliESDtrackCuts;
 class AliVParticle;
@@ -20,68 +21,10 @@ class TNtuple;
 //namespace fastjet{
 //	class PseudoJet;
 //};
+namespace HighPtTracks {
 
-class AliReconstructedParticlePair{
-public:
-	AliReconstructedParticlePair():
-		fTrueParticle(NULL),
-		fRecParticle(NULL)
-	{}
-	AliReconstructedParticlePair(const AliReconstructedParticlePair &ref):
-		fTrueParticle(ref.fTrueParticle),
-		fRecParticle(ref.fRecParticle)
-	{}
-	AliReconstructedParticlePair &operator=(const AliReconstructedParticlePair &ref){
-		if(this != &ref){
-			fTrueParticle = ref.fTrueParticle;
-			fRecParticle = ref.fRecParticle;
-		}
-		return *this;
-	}
-	~AliReconstructedParticlePair(){}
-
-	const AliVParticle *GetMCTrueParticle() const { return fTrueParticle; }
-	const AliVTrack *GetRecTrack() const { return fRecParticle; }
-
-	void SetMCTrueParticle(const AliVParticle *const part) { fTrueParticle = part; }
-	void SetRecParticle(const AliVTrack *const track) { fRecParticle = track; }
-
-private:
-	const AliVParticle 			*fTrueParticle;
-	const AliVTrack 			*fRecParticle;
-};
-
-class AliParticleList{
-public:
-	AliParticleList():
-		fParticles()
-	{}
-	~AliParticleList(){}
-
-	void AddParticle(AliVTrack *track) { fParticles.push_back(track); }
-	AliVTrack *GetParticle(int itrack) const { return fParticles[itrack]; }
-	int GetNumberOfParticles() const { return fParticles.size(); }
-
-private:
-	std::vector<AliVTrack *> 			fParticles;
-};
-
-class AliParticleMap{
-public:
-	AliParticleMap():
-		fParticles()
-	{}
-	~AliParticleMap();
-
-	void AddParticle(AliVTrack *track);
-	AliParticleList *GetParticles(int label) const;
-	int GetNumberOfParticles() const { return fParticles.size(); }
-
-	void Print() const;
-
-private:
-	std::map<int, AliParticleList *> 				fParticles;
-};
+class AliReducedJetEvent;
+class AliReducedJetInfo;
 
 class AliHighPtReconstructionEfficiency : public AliAnalysisTaskSE {
 public:
@@ -106,12 +49,12 @@ protected:
 	bool IsTrueSelected(const AliVParticle *const track) const;
 	void SelectParticlesForJetfinding(TList &particles) const;
 	void CreateRectrackLookup();
-	std::vector<fastjet::PseudoJet> FindJets(const TList &inputparticles) const;
 	std::vector<AliReconstructedParticlePair> SelectParticles() const;
 	double GetDR(const fastjet::PseudoJet &recjet, const AliVParticle *const inputtrack) const;
 	AliVTrack *FindReconstructedParticle(int label) const;
 	AliVTrack *FindReconstructedParticleFast(int label) const;
-	void ProcessJet(const fastjet::PseudoJet &recjet, const std::vector<AliReconstructedParticlePair> &particles);
+	void ProcessJet(AliReducedJetInfo *const jet, const std::vector<AliReconstructedParticlePair> &particles) const;
+	void ConvertConstituents(AliReducedJetInfo * const recjet, const fastjet::PseudoJet &inputjet);
 	bool IsPhysicalPrimary(const AliVParticle *const part) const;
 	bool PythiaInfoFromFile(const char* currFile, double &fXsec, double &fTrials, int &pthard) const ;
 
@@ -120,8 +63,11 @@ private:
 	AliHighPtReconstructionEfficiency &operator=(const AliHighPtReconstructionEfficiency &);
 
 	AliESDtrackCuts					*fTrackCuts;				//!
-	TNtuple							*fResults;					//!
 	AliParticleMap					*fParticleMap;				//!
+
+	// Output objects
+	TTree							*fJetTree;
+	AliReducedJetEvent				*fJetEvent;
 
 	double 							fMaxEtaJets;
 	double							fMaxEtaParticles;
@@ -137,4 +83,5 @@ private:
 	ClassDef(AliHighPtReconstructionEfficiency, 1);
 };
 
+}
 #endif /* ALIHIGHPTRECONSTRUCTIONEFFICIENCY_H */
