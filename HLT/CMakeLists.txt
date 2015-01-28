@@ -65,4 +65,7 @@ install(DIRECTORY macros DESTINATION HLT)
 #install macros
 install(DIRECTORY exa DESTINATION HLT)
 
+#install macros
+install(DIRECTORY exa DESTINATION HLT)
+
 message(STATUS "HLT enabled")
