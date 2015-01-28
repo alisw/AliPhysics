@@ -62,4 +62,7 @@ add_subdirectory(sim)
 include("CMakehltdoc.conf")
 install(DIRECTORY macros DESTINATION HLT)
 
+#install macros
+install(DIRECTORY exa DESTINATION HLT)
+
 message(STATUS "HLT enabled")
