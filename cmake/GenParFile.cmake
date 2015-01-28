@@ -67,7 +67,6 @@ macro(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
   # Target for creating PARfile (would stop after the first failed COMMAND)
   add_custom_target("${PARMODULE}.par"
     COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && cp ${PARSOURCES} ${PARHEADERS} ${PARLINKDEF} ${PARDIR}/
-    COMMAND cmake -E copy ${ROOT_ETCDIR}/Makefile.arch ${PARDIR}/
     COMMAND tar -C ${PARDIR}/.. -czf ${PARDIR}/../${PARMODULE}.par ${PARMODULE}/
   )
 

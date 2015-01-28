@@ -1,7 +1,7 @@
 # Makefile for @PARMODULE@ -- automatically generated
 
-# From ROOT
-include Makefile.arch
+# Include this file from the ROOT installed on the system where we are using the PARfile
+include $(shell root-config --etcdir)/Makefile.arch
 
 # Name of this module
 PAR_MODULE := @PARMODULE@
@@ -10,7 +10,7 @@ PAR_MODULE := @PARMODULE@
 PAR_LIBDEPS := @PARLIBDEPS@
 
 # Include paths
-PAR_INCLUDES = -I. -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(ROOTSYS)/include
+PAR_INCLUDES = -I. -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
 
 # Get C++ flags form ROOT
 PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)
