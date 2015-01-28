@@ -46,7 +46,6 @@ public:
   void CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun,AliCDBStorage* ocdbStorage=0x0);
   AliCDBEntry* CreateDriftCDBentryObject(Int_t ustartRun, Int_t uendRun);
   void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, AliCDBStorage* storage);
-  void TakeOwnershipDriftCDBEntry();
 
   void GetRunRange(AliTPCcalibTime* const timeDrift);
   void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift, Int_t minEntries);
@@ -56,7 +55,6 @@ public:
   void MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray);
   void SetMaxVDriftCorr(Double_t maxVDriftCorr=0.03) {fMaxVdriftCorr=maxVDriftCorr;};
   Bool_t ValidateTimeDrift();
-  AliCDBEntry* GetDriftCDBentry() const { return fDriftCDBentry; }
   
   //
   // Gain part
