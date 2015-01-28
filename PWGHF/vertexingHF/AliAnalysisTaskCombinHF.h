@@ -107,7 +107,7 @@ public:
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
   void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
   void FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
-  void FillGenHistos(TClonesArray* arrayMC);
+  void FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel);
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
   void ResetPool(Int_t poolIndex);
@@ -134,6 +134,7 @@ private:
   TH3F *fPtVsYVsMultGenLargeAcc; //! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
   TH3F *fPtVsYVsMultGenLimAcc;  //! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
   TH3F *fPtVsYVsMultGenAcc;     //! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSel; //! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultReco;       //! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fMassVsPtVsY;     //! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //! hist. of Y vs. Pt vs. Mass (rotations)
@@ -206,7 +207,7 @@ private:
   Double_t fMaxMultiplicity; // upper limit for multiplcities in MC histos
   TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
-  ClassDef(AliAnalysisTaskCombinHF,10); // D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,11); // D0D+ task from AOD tracks
 };
 
 #endif

@@ -57,6 +57,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPtVsYVsMultGenLargeAcc(0x0),
   fPtVsYVsMultGenLimAcc(0x0),
   fPtVsYVsMultGenAcc(0x0),
+  fPtVsYVsMultGenAccEvSel(0x0),
   fPtVsYVsMultReco(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
@@ -141,6 +142,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPtVsYVsMultGenLargeAcc(0x0),
   fPtVsYVsMultGenLimAcc(0x0),
   fPtVsYVsMultGenAcc(0x0),
+  fPtVsYVsMultGenAccEvSel(0x0),
   fPtVsYVsMultReco(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
@@ -231,6 +233,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fPtVsYVsMultGenLargeAcc;
     delete fPtVsYVsMultGenLimAcc;
     delete fPtVsYVsMultGenAcc;
+    delete fPtVsYVsMultGenAccEvSel;
     delete fPtVsYVsMultReco;
     delete fMassVsPtVsY;
     delete fMassVsPtVsYLSpp;
@@ -377,6 +380,11 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fPtVsYVsMultGenAcc->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenAcc);
     
+    fPtVsYVsMultGenAccEvSel= new TH3F("hPtVsYVsMultGenAccEvSel","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
+    fPtVsYVsMultGenAccEvSel->Sumw2();
+    fPtVsYVsMultGenAccEvSel->SetMinimum(0);
+    fOutput->Add(fPtVsYVsMultGenAccEvSel);
+ 
     fPtVsYVsMultReco= new TH3F("hPtVsYVsMultReco","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
     fPtVsYVsMultReco->Sumw2();
     fPtVsYVsMultReco->SetMinimum(0);
@@ -570,7 +578,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
     if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
-      FillGenHistos(arrayMC);
+      FillGenHistos(arrayMC,isEvSel);
     }
   }
 
@@ -759,7 +767,7 @@ void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
+void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel){
   // Fill histos with generated quantities
   Int_t totPart=arrayMC->GetEntriesFast();
   Int_t thePDG=411;
@@ -802,6 +810,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
 	  fPtVsYVsMultGen->Fill(ptgen,ygen,fMultiplicity);
 	  if(TMath::Abs(ygen)<0.5) fPtVsYVsMultGenLimAcc->Fill(ptgen,ygen,fMultiplicity);
 	  if(isInAcc) fPtVsYVsMultGenAcc->Fill(ptgen,ygen,fMultiplicity);
+	  if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSel->Fill(ptgen,ygen,fMultiplicity);
 	}
         if(TMath::Abs(ygen)<0.9) fPtVsYVsMultGenLargeAcc->Fill(ptgen,ygen,fMultiplicity);
       }
