@@ -62,6 +62,7 @@ public:
     kStreamFindMultiMC        =0x10000,    // flag: stream MC infomation about the multiple find track (ONLY for MC data)
     kStreamFindCurling        =0x20000,    // flag: stream track infroamtion in the FindCurling tracks method
     kStreamFindKinks          =0x40000,    // flag: stream track infroamtion in the FindKinks method
+    kStreamSeeddEdx           =0x80000     // flag: stream TPC dEdx intermediate information  AliTPCseed::CookdEdxNorm (to check and validate methods used in calibration)
   };
   AliTPCtracker();
   AliTPCtracker(const AliTPCParam *par); 

@@ -56,13 +56,16 @@
 #include "AliTPCcalibDB.h"
 #include "AliTracker.h"
 #include "AliMagF.h"
+#include "TTreeStream.h"
 
 ClassImp(AliTPCReconstructor)
 
 
-Int_t    AliTPCReconstructor::fgStreamLevel     = 0;        // stream (debug) level
+Int_t    AliTPCReconstructor::fgStreamLevel     = 0;             // stream (debug) level
 AliTPCAltroEmulator *  AliTPCReconstructor::fAltroEmulator=0;    // ALTRO emulator
+TTreeSRedirector    *  AliTPCReconstructor::fgDebugStreamer=0;                          // NOTE -  AliTPCReconstructor is not an owner of the streamer
 
+ 
 AliTPCReconstructor::AliTPCReconstructor():
 AliReconstructor(),
 fClusterer(NULL),

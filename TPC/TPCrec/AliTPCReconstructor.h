@@ -13,6 +13,7 @@ class AliTPCclusterer;
 class AliTPCtracker;
 class AliTPCAltroEmulator;
 class TObjArray;
+class TTreeSRedirector;
 
 class AliTPCReconstructor: public AliReconstructor {
 public:
@@ -41,14 +42,16 @@ public:
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
   static void  SetAltroEmulator(AliTPCAltroEmulator *altro) { fAltroEmulator=altro;}
   static AliTPCAltroEmulator *  GetAltroEmulator() { return fAltroEmulator;}
-
+  static TTreeSRedirector    *GetDebugStreamer(){return fgDebugStreamer;}
+  static TTreeSRedirector    *SetDebugStreamer(TTreeSRedirector    *debugStreamer){fgDebugStreamer=debugStreamer;}
   void ParseOptions(AliTPCtracker* tracker) const;
-
+  
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
   AliTPCReconstructor& operator=(const AliTPCReconstructor&); //Not implemented
   AliTPCParam*         GetTPCParam() const;
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
+  static TTreeSRedirector    *fgDebugStreamer; // pointer to the streamer
   AliTPCclusterer*           fClusterer;   // TPC clusterer
   static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
 

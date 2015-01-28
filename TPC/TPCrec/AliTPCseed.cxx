@@ -27,6 +27,7 @@
 #include "TGraphErrors.h"
 #include "AliTPCseed.h"
 #include "AliTPCReconstructor.h"
+#include "AliTPCtracker.h"
 #include "AliTPCClusterParam.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
@@ -1311,11 +1312,13 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     zres0 *=parcl->GetQnormCorr(ipad, type,1);
     Float_t effLength=parcl->GetQnormCorr(ipad, type,4)*0.5;
     Float_t effDiff  =(parcl->GetQnormCorr(ipad, type,2)+parcl->GetQnormCorr(ipad, type,3))*0.5;
+    Float_t corrThr=0;
+    Float_t corrThrMax=0;
     //
     if (type==1) {
-      corrPos = parcl->GetQnormCorr(ipad, type,5)*
-	parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
-			      cluster->GetTimeBin(),ty,tz,yres0,zres0,effLength,effDiff);
+      corrThr =	parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+				      cluster->GetTimeBin(),ty,tz,yres0,zres0,effLength,effDiff);
+      corrPos= parcl->GetQnormCorr(ipad, type,5)*corrThr;
       Float_t drm   = 0.5-TMath::Abs(cluster->GetZ()/250.);
       corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,0)*drm);
       corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,1)*ty*ty);
@@ -1323,10 +1326,9 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       //
     }
     if (type==0) {
-      corrPos = parcl->GetQnormCorr(ipad, type,5)*
-	parcl->QtotCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
-			      cluster->GetTimeBin(),ty,tz,yres0,zres0,cluster->GetQ(),2.5,effLength,effDiff);
-      
+      corrThr = parcl->QtotCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+				      cluster->GetTimeBin(),ty,tz,yres0,zres0,cluster->GetQ(),2.5,effLength,effDiff);
+      corrPos=parcl->GetQnormCorr(ipad, type,5)*corrThr;      
       Float_t drm   = 0.5-TMath::Abs(cluster->GetZ()/250.);
       corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,0)*drm);
       corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,1)*ty*ty);
@@ -1360,6 +1362,46 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     //
     Double_t correctionHVandPT = AliTPCcalibDB::Instance()->GetGainCorrectionHVandPT(time, runNumber,cluster->GetDetector(), 5 , recoParam->GetGainCorrectionHVandPTMode());
     //
+    if ((AliTPCReconstructor::StreamLevel()&AliTPCtracker::kStreamSeeddEdx)){  // this part of the code is for the test purposes only  
+      TTreeSRedirector *pcstream = AliTPCReconstructor:: GetDebugStreamer();
+      TVectorF vecDEDX(9,fDEDX);
+      TVectorF vecSDEDX(4,fSDEDX);
+      TVectorF vecRDEDX(4);
+      corrThrMax = parcl->QmaxCorrection(cluster->GetDetector(), cluster->GetRow(),cluster->GetPad(), 
+					 cluster->GetTimeBin(),ty,tz,yres0,zres0,effLength,effDiff);
+
+      for (Int_t i=0; i<4; i++) vecRDEDX[i]=(fNCDEDXInclThres[i]>0)?Float_t(fNCDEDX[i])/Float_t(fNCDEDXInclThres[i]):0;
+      if (pcstream){
+	(*pcstream)<<"dEdxCorrDump"<<    // streamer to check dEdx correction calibration
+	  //
+	  "cl.="<<cluster<<
+	  "ipad="<<ipad<<
+	  "time="<<time<<
+	  "runNumber="<<runNumber<<
+	  "vecDEDX.="<<&vecDEDX<<
+	  "vecSDEDX.="<<&vecSDEDX<<
+	  "vecRDEDX.="<<&vecRDEDX<<
+	  "ty="<<ty<<
+	  "tz="<<tz<<
+	  "yres0="<<yres0<<
+	  "zres0="<<zres0<<
+	  "qpt="<<fP[4]<<
+	  "type="<<type<<
+	  "effLength="<<effLength<<
+	  "effDiff="<<effDiff<<
+	  "corrThr="<<corrThr<<
+	  "corrThrMax="<<corrThrMax<<
+	  "gainGG="<<gainGG<<
+	  "correctionHVandPT="<<correctionHVandPT<<
+	  "gainPad="<<gainPad<<
+	  "corrPos="<<corrPos<<
+	  "gainEqualPadRegion="<<gainEqualPadRegion<<
+	  "gainChamber="<<gainChamber<<
+	  "corrDipAngle="<<corrDipAngle<<
+	  "corrDipAngleAbs="<<corrDipAngleAbs<<
+	  "\n";
+      }
+    }
     amp[ncl]=charge;
     amp[ncl]/=gainGG;               // nominal gas gain
     amp[ncl]/=correctionHVandPT;    // correction for the HV and P/T - time dependent
