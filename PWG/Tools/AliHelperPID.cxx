@@ -45,7 +45,11 @@ const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
 ClassImp(AliHelperPID)
 
 AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDType(kNSigmaTPCTOF), fNSigmaPID(3), fBayesCut(0.8), fPIDResponse(0x0), fPIDCombined(0x0),fOutputList(0x0),fRequestTOFPID(1),fRemoveTracksT0Fill(0),fUseExclusiveNSigma(0),fPtTOFPID(.6),fHasTOFPID(0){
-  
+
+  // Fixing Leaks 
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+
   for(Int_t ipart=0;ipart<kNSpecies;ipart++)
     for(Int_t ipid=0;ipid<=kNSigmaPIDType;ipid++)
       fnsigmas[ipart][ipid]=999.;
@@ -142,6 +146,8 @@ AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDT
     fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
     fOutputList->Add(fHistoPID);
   }
+ TH1::AddDirectory(oldStatus);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -48,15 +48,23 @@
 #include <fastjet/JetDefinition.hh>
 #include <fastjet/ClusterSequence.hh>
 
+#include "AliReducedJetConstituent.h"
+#include "AliReducedJetEvent.h"
+#include "AliReducedJetInfo.h"
+#include "AliReducedJetParticle.h"
+
 #include "AliHighPtReconstructionEfficiency.h"
 
-ClassImp(AliHighPtReconstructionEfficiency)
+ClassImp(HighPtTracks::AliHighPtReconstructionEfficiency)
+
+namespace HighPtTracks {
 
 AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency() :
 	AliAnalysisTaskSE(),
 	fTrackCuts(NULL),
-	fResults(NULL),
 	fParticleMap(NULL),
+	fJetTree(NULL),
+	fJetEvent(NULL),
 	fMaxEtaJets(0.5),
 	fMaxEtaParticles(0.8),
 	fMinPtParticles(0.15),
@@ -71,8 +79,9 @@ AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency() :
 AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency(const char* name):
 	AliAnalysisTaskSE(name),
 	fTrackCuts(NULL),
-	fResults(NULL),
 	fParticleMap(NULL),
+	fJetTree(NULL),
+	fJetEvent(NULL),
 	fMaxEtaJets(0.5),
 	fMaxEtaParticles(0.8),
 	fMinPtParticles(0.15),
@@ -91,9 +100,14 @@ AliHighPtReconstructionEfficiency::~AliHighPtReconstructionEfficiency() {
 }
 
 void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
+	/*
+	 * Prepare output objects and track selection
+	 */
 	OpenFile(1);
 
-	fResults = new TNtuple("ParticlesInCone", "Particles related to a jet cone", "px:py:pz:energy:pdgcodee:conedist:jetpt:isreconstructed:crosssection:trials:pthardbin");
+	fJetTree = new TTree("JetEvent","A tree with jet information");
+	fJetEvent = new AliReducedJetEvent();
+	fJetTree->Branch("JetEvent", "AliReducedJetEvent", fJetEvent, 128000,0);
 
 	// Create std track cuts
 	fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
@@ -101,7 +115,7 @@ void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
 	fTrackCuts->SetMinNCrossedRowsTPC(120);
 	fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
-	PostData(1, fResults);
+	PostData(1, fJetTree);
 }
 
 bool AliHighPtReconstructionEfficiency::UserNotify(){
@@ -125,10 +139,33 @@ bool AliHighPtReconstructionEfficiency::UserNotify(){
 }
 
 void AliHighPtReconstructionEfficiency::UserExec(Option_t*) {
+	/*
+	 * Event loop:
+	 * 1. Filter particles used for the jet finding
+	 * 2. Filter MC-true particles and create lookup of particles with matching reconstructed particle,
+	 *    based on the MC label
+	 * 3. Find jets
+	 * 4. Create Output event structure with output jets, and match the pre-filtered particles to the jet,
+	 *    select only those with a distance smaller than the distance cut
+	 * 5. Write out the event into a TTree
+	 */
 	TList listforjets;
 	SelectParticlesForJetfinding(listforjets);
-	std::vector<fastjet::PseudoJet> recjets = FindJets(listforjets);
+
+	// Find Jets
+	AliVParticle *part(NULL);
+	TIter partIter(&listforjets);
+	std::vector<fastjet::PseudoJet> inputjets;
+	while((part = dynamic_cast<AliVParticle *>(partIter()))){
+		fastjet::PseudoJet inputpart(part->Px(), part->Py(), part->Pz(), part->E());
+		inputpart.set_user_index(part->GetLabel());
+		inputjets.push_back(inputpart);
+	}
+	fastjet::ClusterSequence jetfinder(inputjets, fastjet::JetDefinition(fastjet::antikt_algorithm, 0.4));
+	std::vector<fastjet::PseudoJet> recjets = fastjet::sorted_by_pt(jetfinder.inclusive_jets());
 	CreateRectrackLookup();
+
+	new(fJetEvent) AliReducedJetEvent(fCrossSection, fNtrials, fPtHardBin);
 
 	std::vector<AliReconstructedParticlePair> selectedParticles = SelectParticles();
 
@@ -145,14 +182,22 @@ void AliHighPtReconstructionEfficiency::UserExec(Option_t*) {
 		AliDebug(1, Form("Among %d selected particles we find %d reconstructed particles.", nparticlesGen, nparticlesRec));
 	}
 
+	AliReducedJetInfo *recjet(NULL);
 	for(std::vector<fastjet::PseudoJet>::iterator jetiter = recjets.begin(); jetiter != recjets.end(); ++jetiter){
 		if(TMath::Abs(jetiter->eta()) > fMaxEtaJets) continue;
-		ProcessJet(*jetiter, selectedParticles);
+		recjet = new AliReducedJetInfo(jetiter->px(), jetiter->py(), jetiter->pz(), jetiter->E());
+		ProcessJet(recjet, selectedParticles);
+		ConvertConstituents(recjet, *jetiter);
+		fJetEvent->AddReconstructedJet(recjet);
 	}
-	PostData(1, fResults);
+	fJetTree->Fill();
+	PostData(1, fJetTree);
 }
 
 bool AliHighPtReconstructionEfficiency::IsSelected(const AliVTrack* const track) const {
+	/*
+	 * Select reconstructed particle by applying track cuts
+	 */
 	const AliESDtrack *inputtrack = dynamic_cast<const AliESDtrack *>(track);
 	if(inputtrack){
 		return fTrackCuts->AcceptTrack(inputtrack);
@@ -164,6 +209,9 @@ bool AliHighPtReconstructionEfficiency::IsSelected(const AliVTrack* const track)
 }
 
 bool AliHighPtReconstructionEfficiency::IsTrueSelected(const AliVParticle* const track) const {
+	/*
+	 * Accept particle as MC-true particle
+	 */
 	if(TMath::Abs(track->Eta()) > fMaxEtaParticles) return false;
 	if(TMath::Abs(track->Pt()) < fMinPtParticles) return false;
 	if(!track->Charge()) return false;
@@ -171,6 +219,9 @@ bool AliHighPtReconstructionEfficiency::IsTrueSelected(const AliVParticle* const
 }
 
 void AliHighPtReconstructionEfficiency::SelectParticlesForJetfinding(TList& particles) const {
+	/*
+	 * Pre-fileter particles for the jet reconstruction
+	 */
 	AliVParticle *part = 0;
 	particles.Clear();
 	for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
@@ -182,18 +233,10 @@ void AliHighPtReconstructionEfficiency::SelectParticlesForJetfinding(TList& part
 	}
 }
 
-std::vector<fastjet::PseudoJet> AliHighPtReconstructionEfficiency::FindJets(const TList& inputparticles) const {
-	AliVParticle *part(NULL);
-	TIter partIter(&inputparticles);
-	std::vector<fastjet::PseudoJet> inputjets;
-	while((part = dynamic_cast<AliVParticle *>(partIter()))){
-		inputjets.push_back(fastjet::PseudoJet(part->Px(), part->Py(), part->Pz(), part->E()));
-	}
-	fastjet::ClusterSequence jetfinder(inputjets, fastjet::JetDefinition(fastjet::antikt_algorithm, 0.4));
-	return fastjet::sorted_by_pt(jetfinder.inclusive_jets());
-}
-
 std::vector<AliReconstructedParticlePair> AliHighPtReconstructionEfficiency::SelectParticles() const {
+	/*
+	 * Select particles to be matched with the reconstructed jet
+	 */
 	const AliVParticle *part(NULL);
 	AliVTrack *track(NULL);
 	std::vector<AliReconstructedParticlePair> result;
@@ -221,10 +264,16 @@ std::vector<AliReconstructedParticlePair> AliHighPtReconstructionEfficiency::Sel
 }
 
 double AliHighPtReconstructionEfficiency::GetDR(const fastjet::PseudoJet& recjet, const AliVParticle* const inputtrack) const {
+	/*
+	 * Calculte distance to the main jet axis
+	 */
 	return recjet.delta_R(fastjet::PseudoJet(inputtrack->Px(), inputtrack->Py(), inputtrack->Pz(), inputtrack->E()));
 }
 
 AliVTrack* AliHighPtReconstructionEfficiency::FindReconstructedParticle(int label) const {
+	/*
+	 * Find matching reconstructed particle for a given MC label (slow version)
+	 */
 	AliVTrack *selected(NULL), *tmp(NULL);
 	for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++){
 		tmp = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
@@ -238,19 +287,36 @@ AliVTrack* AliHighPtReconstructionEfficiency::FindReconstructedParticle(int labe
 	return selected;
 }
 
-void AliHighPtReconstructionEfficiency::ProcessJet(const fastjet::PseudoJet& recjet, const std::vector<AliReconstructedParticlePair>& particles) {
+void AliHighPtReconstructionEfficiency::ProcessJet(
+		AliReducedJetInfo * const recjet,
+		const std::vector<AliReconstructedParticlePair>& particles
+		) const
+{
+	/*
+	 * Select particles with radius to the jet less than the maximum allowed radius and adds them to the reconstructed jet info
+	 */
+	double pvec[4];
+	recjet->GetPxPyPxE(pvec[0], pvec[1], pvec[2], pvec[3]);
+	fastjet::PseudoJet frecjet(pvec[0], pvec[1], pvec[2], pvec[3]);		// For distance to the main jet axis
 	const AliVParticle *mcpart(NULL);
 	const AliVTrack *rectrack(NULL);
 	for(std::vector<AliReconstructedParticlePair>::const_iterator partiter = particles.begin(); partiter != particles.end(); ++partiter){
 		mcpart = partiter->GetMCTrueParticle();
 		rectrack = partiter->GetRecTrack();
-		double dr = GetDR(recjet, mcpart);
-		if(dr < fMaxDR)
-			fResults->Fill(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), mcpart->PdgCode(),dr,recjet.pt(), rectrack ? 1 : 0, fCrossSection, fNtrials, fPtHardBin);
+		double dr = GetDR(frecjet, mcpart);
+		if(dr < fMaxDR){
+			// Create new Particle and add it to the jet reconstructed jet
+			AliReducedJetParticle * part = new AliReducedJetParticle(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), mcpart->PdgCode(),rectrack ? true : false);
+			part->SetDistanceToMainJetAxis(dr);
+			recjet->AddParticleInCone(part);
+		}
 	}
 }
 
 void AliHighPtReconstructionEfficiency::CreateRectrackLookup() {
+	/*
+	 * Create lookup table of particles and reconstructed tracks according to the MC label
+	 */
 	if(fParticleMap) delete fParticleMap;
 	fParticleMap = new AliParticleMap;
 	for(int ipart = 0; ipart < fInputEvent->GetNumberOfTracks(); ipart++){
@@ -261,22 +327,41 @@ void AliHighPtReconstructionEfficiency::CreateRectrackLookup() {
 }
 
 AliVTrack* AliHighPtReconstructionEfficiency::FindReconstructedParticleFast(int label) const {
+	/*
+	 * Find reconstructed particle for a given MC label using the lookup table (fast version)
+	 */
 	AliParticleList *particles = fParticleMap->GetParticles(label);
 	if(!particles) return NULL;
 	return particles->GetParticle(0);			// Always return the first occurrence
 }
 
 bool AliHighPtReconstructionEfficiency::IsPhysicalPrimary(const AliVParticle* const part) const {
+	/*
+	 * Method checking whether particle is physical primary, blind to ESD and AOD particles
+	 */
 	const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(part);
 	if(aodpart) return aodpart->IsPhysicalPrimary();	// AOD MC particle
 	else if (dynamic_cast<const AliMCParticle *>(part)) return fMCEvent->IsPhysicalPrimary(part->GetLabel());		// ESD MC particle
 	return false;
 }
 
+void AliHighPtReconstructionEfficiency::ConvertConstituents(
+		AliReducedJetInfo* const recjet, const fastjet::PseudoJet& inputjet) {
+	/*
+	 * Convert jet constituents into reduced format
+	 */
+	std::vector<fastjet::PseudoJet> constituents = inputjet.constituents();
+	for(std::vector<fastjet::PseudoJet>::const_iterator citer = constituents.begin(); citer != constituents.end(); ++citer){
+		AliVParticle *mcpart = fMCEvent->GetTrack(citer->user_index());
+		AliReducedJetConstituent *jetconst = new AliReducedJetConstituent(citer->px(), citer->py(), citer->px(), citer->E(), mcpart->PdgCode());
+		recjet->AddConstituent(jetconst);
+	}
+}
+
 bool AliHighPtReconstructionEfficiency::PythiaInfoFromFile(const char* currFile, double &fXsec, double &fTrials, int &pthard) const {
-	//
-	// From AliAnalysisTaskEmcal
-	//
+	/*
+	 * From AliAnalysisTaskEmcal: Get Pythia Hard information
+	 */
 
 	TString file(currFile);
 	fXsec = 0;
@@ -345,37 +430,4 @@ bool AliHighPtReconstructionEfficiency::PythiaInfoFromFile(const char* currFile,
 	return kTRUE;
  }
 
-AliParticleMap::~AliParticleMap() {
-	// Clean up all particle lists
-	for(std::map<int, AliParticleList *>::iterator it = fParticles.begin(); it != fParticles.end(); ++it){
-		delete it->second;
-	}
-}
-
-void AliParticleMap::AddParticle(AliVTrack *track){
-	int label = TMath::Abs(track->GetLabel());
-	std::map<int, AliParticleList *>::iterator it = fParticles.find(label);
-	if(it == fParticles.end()){			// not existing
-		AliParticleList *nextparticle = new AliParticleList;
-		nextparticle->AddParticle(track);
-		fParticles.insert(std::pair<int, AliParticleList *>(label, nextparticle));
-	} else {
-		AliParticleList *mylist = it->second;
-		mylist->AddParticle(track);
-	}
-}
-
-AliParticleList* AliParticleMap::GetParticles(int label) const {
-	AliParticleList *result = NULL, *content = NULL;
-	std::map<int, AliParticleList *>::const_iterator found = fParticles.find(label);
-	if(found != fParticles.end()){
-		result = found->second;
-	}
-	return result;
-}
-
-void AliParticleMap::Print() const {
-	for(std::map<int, AliParticleList *>::const_iterator it = fParticles.begin(); it != fParticles.end(); ++it){
-		std::cout << "Particle with label " << it->first << ", number of reconstructed assigned: " << it->second->GetNumberOfParticles() << std::endl;
-	}
 }

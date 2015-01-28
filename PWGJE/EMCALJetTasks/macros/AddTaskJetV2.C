@@ -92,10 +92,14 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   jetTask->SetModulationFitMinMaxP(.01, 1);
   // if centralities haven't been specified use defaults
   if(!centralities) {
-     Double_t c[] = {0., 10., 30., 50., 70., 90.};
-     jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
-  }
-  else jetTask->SetCentralityClasses(centralities);
+      if(LHC10h) {
+          Double_t c[] = {0., 10., 30., 50., 70., 90.};
+          jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
+      } else {
+          Double_t c[] = {0., 2., 4., 6., 8., 10., 30., 50., 90.};
+          jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
+      }
+  }  else jetTask->SetCentralityClasses(centralities);
   // if a randomized hasn't specified use a safe default 
   if(!randomizer) jetTask->SetRandomSeed(new TRandom3(0));
 
