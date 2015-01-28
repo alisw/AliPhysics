@@ -139,7 +139,12 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        Tracks/AliParticleMap.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
+        Tracks/AliReducedJetEvent.cxx
+        Tracks/AliReducedJetInfo.cxx
+        Tracks/AliReducedJetParticle.cxx
+        Tracks/AliReducedJetConstituent.cxx
        )
 
     include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper

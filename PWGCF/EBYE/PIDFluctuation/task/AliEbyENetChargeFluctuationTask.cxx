@@ -132,6 +132,7 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fIsEff(kFALSE),
   fDebug(kFALSE),
   fIsQa(kFALSE),
+  fNeedQa(kFALSE),
   fIsPhy(kFALSE),
   fIsDca(kFALSE),
   fIsNu(kFALSE),
@@ -197,8 +198,8 @@ const Float_t fGRngSign[]  = {-0.5, 1.5};
 
 //---------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
-  //Bool_t oldStatus = TH1::AddDirectoryStatus();
-  //TH1::AddDirectory(kFALSE);
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
   
   fQaList = new TList();
   fQaList->SetOwner(kTRUE);
@@ -242,20 +243,20 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   fRanIdx = new TRandom3();
   fRanIdx->SetSeed();
   
-  Printf(" >>>%d %d %d %d %d %d %d %d %d %d", 
+  Printf(" >>>%d %d %d %d %d %d %d %d %d %d %d", 
 	 fIsAOD, fIsMC, fIsPhy, fIsEff, 
-	 fIsDca, fIsQa, 
+	 fIsDca, fIsQa, fNeedQa,
 	 fIsRatio, fIsSub, fIsBS, fIsPer);
   
-  CreateBasicQA();
-  if (fIsQa)  CreateQA();
+  if (fNeedQa) CreateBasicQA();
+  if (fIsQa && fNeedQa)  CreateQA();
   if (fIsPhy) InitPhy();
   if (fIsMC && fIsEff) CreateCE();  
   if (fIsMC && fIsDca) CreateDEM();  
   if (fIsDca) CreateDED();  
 
   //  if (fIsQa) if (fESDtrackCuts) fQaList->Add(fESDtrackCuts);
-
+  TH1::AddDirectory(oldStatus);
   PostData(1, fPhyList); 
   PostData(2, fQaList);
   PostData(3, fDcaList);
@@ -958,6 +959,24 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *title, Bo
   centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
   centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
 
+  fQaList->Add(new TH1F(Form("h%s%sEventsNch",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+
+  fQaList->Add(new TH1F(Form("h%s%sEventsNpi",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+  
+  fQaList->Add(new TH1F(Form("h%s%sEventsNka",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+  
+  fQaList->Add(new TH1F(Form("h%s%sEventsNpr",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+  
+  
+ 
 
   if (!fIsNu) {
     for (Int_t iPid = 0; iPid < 4; ++iPid) {
@@ -1092,6 +1111,11 @@ void AliEbyENetChargeFluctuationTask::FillBasicHistos(Bool_t isMC, Bool_t isPer)
   
   Float_t centralityBin = (isPer) ? (fCentralityPercentile + 1) : (fCentralityBin + 1);
   TList *list = static_cast<TList*>(fPhyList->FindObject(Form("f%s",name.Data())));
+  
+  if (isZeroPid[0]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNch",nmc.Data(), name.Data()))))->Fill(centralityBin);
+  if (isZeroPid[1]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNpi",nmc.Data(), name.Data()))))->Fill(centralityBin);
+  if (isZeroPid[2]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNka",nmc.Data(), name.Data()))))->Fill(centralityBin);
+  if (isZeroPid[3]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNpr",nmc.Data(), name.Data()))))->Fill(centralityBin);
   
   if (!fIsNu) {
     for (Int_t iPid = 0; iPid < 4; ++iPid) {
@@ -1548,7 +1572,7 @@ Bool_t AliEbyENetChargeFluctuationTask::TriggeredEvents() {
   for (Int_t ii=0; ii<fNTriggers; ++ii) {
     if(aTriggerFired[ii]) {
       isTriggered = kTRUE;
-      (static_cast<TH1F*>(fQaList->FindObject(Form("hTriggerStat"))))->Fill(ii);
+      if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hTriggerStat"))))->Fill(ii);
     }
   }
   
@@ -1583,41 +1607,53 @@ Bool_t AliEbyENetChargeFluctuationTask::RejectedEvent() {
 
   ++iStep;
   if (vtxESD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxESD->GetX());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxESD->GetX());
     if(TMath::Abs(vtxESD->GetX()) > fVxMax)  aEventCuts[iStep] = 1;  //3
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxESD->GetX());
+    else { 
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxESD->GetX());
+    }
   }
   else if(vtxAOD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
     if(TMath::Abs(vtxAOD->GetX()) > fVxMax) aEventCuts[iStep] = 1;    //3
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
+    else { 
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
+    }
   }
   else aEventCuts[iStep] = 1; //3
   
   ++iStep;
   if (vtxESD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxESD->GetY());
+   if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxESD->GetY());
     if(TMath::Abs(vtxESD->GetY()) > fVyMax) aEventCuts[iStep] = 1; //4
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxESD->GetY());
+    else { 
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxESD->GetY());
+    }  
   }
   else if(vtxAOD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
+    if (fNeedQa) if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
     if(TMath::Abs(vtxAOD->GetY()) > fVyMax) aEventCuts[iStep] = 1; //4
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
+    else {
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
+    }
   }
   else aEventCuts[iStep] = 1; //4
 
 
  ++iStep;
   if (vtxESD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
     if(TMath::Abs(vtxESD->GetZ()) > fVzMax) aEventCuts[iStep] = 1;  //5
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
+    else {
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
+    }
   }
   else if(vtxAOD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
     if(TMath::Abs(vtxAOD->GetZ()) > fVzMax) aEventCuts[iStep] = 1; //5
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
+    else {
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
+    }
   }
   else aEventCuts[iStep] = 1; //5
 
@@ -1646,20 +1682,21 @@ Bool_t AliEbyENetChargeFluctuationTask::IsEventStats(Int_t *aEventCuts) {
   for (Int_t idx = 0; idx < fHEventStatMax ; ++idx) {
     if (aEventCuts[idx])
       isRejected = kTRUE;
-    else
-      (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->Fill(idx);
+    else {
+      if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->Fill(idx);
+    }
   }
   for (Int_t idx = 0; idx < fHEventStatMax; ++idx) {
     if (aEventCuts[idx])
       break;
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->Fill(idx);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->Fill(idx);
   }
   if (!isRejected) {
 
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->Fill(fCentralityBin);
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAccepted"))))->Fill(fCentralityPercentile);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->Fill(fCentralityBin);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAccepted"))))->Fill(fCentralityPercentile);
   }
-  (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAll"))))->Fill(fCentralityPercentile);
+  if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAll"))))->Fill(fCentralityPercentile);
   return isRejected;
 }
 

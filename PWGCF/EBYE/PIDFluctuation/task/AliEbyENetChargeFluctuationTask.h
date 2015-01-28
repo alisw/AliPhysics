@@ -60,6 +60,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void SetIsMC() {fIsMC = kTRUE;}
   void SetNSubSamples(Int_t i) {fNSubSamples = i;}
   void Debug() {fDebug = kTRUE;}
+  void DoBasicQA() {fNeedQa = kTRUE;}
   void SetIsAOD() {fIsAOD = kTRUE;}
   void SetAnal(Int_t i);// {fAnalType = i; };
   void SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -197,11 +198,12 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t     fIsBS;                         // analysis mode BS
   Bool_t     fIsPer;                        // analysis mode PER
   Bool_t     fIsEff;                        // analysis mode Eff
-  Bool_t     fDebug;                        // Check for QA
+  Bool_t     fDebug;                        // Debug
   Bool_t     fIsQa;                         // Check for QA
-  Bool_t     fIsPhy;                        // Check for QA
-  Bool_t     fIsDca;                        // Check for QA
-  Bool_t     fIsNu;                         // Check for QA
+  Bool_t     fNeedQa;                       // All QA When Needed
+  Bool_t     fIsPhy;                        // Check for Phy
+  Bool_t     fIsDca;                        // Check for Dca
+  Bool_t     fIsNu;                         // Check for Nu
 
   TRandom3  *fRan;                          // Radom Number BS
   TRandom3  *fRanIdx;                       // Random Number SS
