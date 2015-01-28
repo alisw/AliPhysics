@@ -682,7 +682,7 @@ void AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
    // then, if the reference time or TOF signal are meaningless
    // even if the 'isTOF' flag is true, switch it to false
    if (isTOF) {
-      track->GetIntegratedTimes(times);
+      track->GetIntegratedTimes(times,10);
       tofTime  = (Double_t)track->GetTOFsignal();
       tofSigma = fTOFmaker->GetExpectedSigma(mom, times[AliPID::kPion], AliPID::ParticleMass(AliPID::kPion));
       tofRef   = times[AliPID::kPion];
@@ -709,7 +709,7 @@ void AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
       if (fCheckTOF) {
          if (isTOF) {
             // TOF can be checked only when track is matched there
-            track->GetIntegratedTimes(times);
+            track->GetIntegratedTimes(times,10);
             tofTime  = (Double_t)track->GetTOFsignal();
             tofSigma = fTOFmaker->GetExpectedSigma(mom, times[AliPID::kPion], AliPID::ParticleMass(AliPID::kPion));
             tofRef   = times[AliPID::kPion];
