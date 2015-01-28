@@ -10,7 +10,8 @@ PAR_MODULE := @PARMODULE@
 PAR_LIBDEPS := @PARLIBDEPS@
 
 # Include paths
-PAR_INCLUDES = -I. -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
+PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
+PAR_INCLUDES = -I. $(addprefix -I./,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
 
 # Get C++ flags form ROOT
 PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)

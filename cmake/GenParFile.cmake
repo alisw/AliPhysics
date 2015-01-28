@@ -2,7 +2,7 @@
 # library.
 #
 # Usage: in the CMakeLists.txt, for a given library, add the following:
-#   add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+#   add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" ["extrainclude1 extrainclude2..."])
 #
 # Arguments are, in order:
 #  - library's name: for libBLAHBLAH it will generate a target BLAHBLAH.par
@@ -11,6 +11,7 @@
 #  - headers
 #  - the LinkDef used by ROOT
 #  - dependent libraries: used to generate the rootmap
+#  - extra include paths (optional): passed during compilation
 #
 # To generate a parfile, if enabled in its CMakeLists.txt, go to the build directory and run:
 #   make BLAHBLAH.par
@@ -31,6 +32,11 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
   #message(STATUS "[add_target_parfile] Sources (list): ${PARSOURCES}")
   #message(STATUS "[add_target_parfile] Dependencies (space-separated): ${PARLIBDEPS}")
 
+  if(NOT "${ARGV5}" STREQUAL "")
+    # Optional: extra includes, space-separated
+    set(PAREXTRAINCLUDES "${ARGV5}")
+    #message(STATUS "[add_target_parfile] Extra Includes (space-separated): ${PAREXTRAINCLUDES}")
+  endif()
 
   # PARfile output directory (the one we will tar)
   set(PARDIR ${CMAKE_CURRENT_BINARY_DIR}/PARfiles/${PARMODULE})
