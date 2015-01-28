@@ -39,7 +39,7 @@ namespace AliOnlineReconstructionUtil
 // return full path to the server configuration file
 	inline const char* GetPathToServerConf()
 	{
-		return Form("%s/MONITOR/alionlinereco/%s",
+		return Form("%s/../src/MONITOR/alionlinereco/%s",
 			    gSystem->Getenv("ALICE_ROOT"),
 			    ALIEVENTSERVER_CONF);
 	}
