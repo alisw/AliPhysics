@@ -18,6 +18,10 @@ PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)
 # Get linker flags from ROOT
 PAR_SOFLAGS = $(SOFLAGS) $(LDFLAGS)
 
+# Get some ROOT build flags from the current installation
+ROOT_DEFINES += $(shell root-config --features | grep -q xml && echo '-DWITHXML')
+ROOT_DEFINES += $(shell root-config --features | grep -q alien && echo '-DWITHALIEN')
+
 # Exclude generated dictionaries from the list of sources
 SRCS := $(filter-out $(wildcard G__*.cxx),$(wildcard *.cxx))
 
@@ -51,7 +55,7 @@ G__$(PAR_MODULE).h: G__$(PAR_MODULE).cxx
 
 G__$(PAR_MODULE).cxx: $(HDRS) $(DHDR)
 	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating dictionary
-	@rootcint -f $@ -c -p $(PAR_INCLUDES) $^
+	@rootcint -f $@ -c -p $(ROOT_DEFINES) $(PAR_INCLUDES) $^
 
 # Generate rootmap (for automatic loading of libraries)
 lib$(PAR_MODULE).rootmap: lib$(PAR_MODULE).so
