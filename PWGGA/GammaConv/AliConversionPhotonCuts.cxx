@@ -1199,7 +1199,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 		if(hTOFbefore){
 			Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
 			Double_t  times[AliPID::kSPECIESC];
-			fCurrentTrack->GetIntegratedTimes(times);
+			fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
 			Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
 			Double_t dT = TOFsignal - t0 - times[0];
 			hTOFbefore->Fill(fCurrentTrack->P(),dT);

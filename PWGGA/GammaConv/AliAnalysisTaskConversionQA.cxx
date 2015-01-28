@@ -606,7 +606,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
 	if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
 		Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
 		Double_t timesPos[9];
-		posTrack->GetIntegratedTimes(timesPos);
+		posTrack->GetIntegratedTimes(timesPos,9);
 		Double_t TOFsignalPos =	posTrack->GetTOFsignal();
 		Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
 		fDaughterProp(4) =  dTpos;
@@ -618,7 +618,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
 	if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
 		Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
 		Double_t timesNeg[9];
-		negTrack->GetIntegratedTimes(timesNeg);
+		negTrack->GetIntegratedTimes(timesNeg,9);
 		Double_t TOFsignalNeg =	negTrack->GetTOFsignal();
 		Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
 		fDaughterProp(11) =  dTneg;
@@ -685,7 +685,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
 	if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
 		Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
 		Double_t timesNeg[9];
-		negTrack->GetIntegratedTimes(timesNeg);
+		negTrack->GetIntegratedTimes(timesNeg,9);
 		Double_t TOFsignalNeg = negTrack->GetTOFsignal();
 		Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
 		hElectronTOFP->Fill(negTrack->P() ,dTneg);
@@ -694,7 +694,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
 	if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
 		Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
 		Double_t timesPos[9];
-		posTrack->GetIntegratedTimes(timesPos);
+		posTrack->GetIntegratedTimes(timesPos,9);
 		Double_t TOFsignalPos = posTrack->GetTOFsignal();
 		Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
 		hPositronTOFP->Fill(posTrack->P() ,dTpos);

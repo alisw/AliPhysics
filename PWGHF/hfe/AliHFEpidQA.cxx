@@ -924,7 +924,7 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	// time of flight QA
 	// - distribution of (time - t0 - pion_time)
 	Double_t times[AliPID::kSPECIESC];
-	esdTrack->GetIntegratedTimes(times);
+	esdTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
 	Double_t tItrackL = esdTrack->GetIntegratedLength();
 	Double_t tTOFsignal = esdTrack->GetTOFsignal();
 	Double_t dT = tTOFsignal - t0 - times[2];
