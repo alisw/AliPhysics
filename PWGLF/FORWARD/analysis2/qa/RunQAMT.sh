@@ -210,13 +210,14 @@ get_filelist()
 	post=
     fi
     passid=${paid}
-    if test $mc -gt 0 ; then passid="passMC" ; fi 
+    local spass="${passpre}${paid}${post}"
+    if test $mc -gt 0 ; then passid="passMC" ; spass= ; fi 
 
     search=
     if test "x$path" = "x" ; then 
 	# Assume official productions 
 	path=/alice/${datd}/${year}/${prodfull}/
-	search="${esdd}${passpre}${paid}${post}"
+	search="${esdd}${spass}"
     else
 	search="*"
     fi
@@ -302,14 +303,15 @@ analyse_file()
     fi
 
     
-    mess 3 "runQA.sh '$inp' '$type' '$prodyear' '$prodfull' '$passid' '$r'"
+    mess 3 "runQA.sh '$inp' '$type' '$prodyear' '$prodfull' '$passfull' '$r'"
+    # mess 3 "runQA.sh '$inp' '$type' '$prodyear' '$prodfull' '$passid' '$r'"
     (cd $dir 
 	for i in QABase QAPlotter QARing QAStructs QATrender ; do 
 	    rm -f ${i}*
 	    ln -s ../${i}* . 
 	done 
 	${QA_FWD}/runQA.sh \
-	    "$inp" "$type" $prodyear "$prodfull" "$passid" "$r" > runQA.log 2>&1
+	    "$inp" "$type" $prodyear "$prodfull" "$passfull" "$r" > runQA.log 2>&1
 	ret=$? ) 
     if test ! -f $dir/trending.root ; then ret=1 ; fi
     mess 2 " -> $ret"
@@ -565,7 +567,7 @@ while test $# -gt 0 ; do
     shift
 done
 # === Initial setup ==================================================
-# --- Check for AliEn token ------------------------------------------
+# --- Check f AliEn token ------------------------------------------
 check_token
 
 # --- Check settings -------------------------------------------------
@@ -576,10 +578,19 @@ fi
 if test "x$prodpost" = "x" && test "x$passfull" = "x" ; then 
     err "No pass specified for non-MC production"
     exit 1
-elif test "x$passfull" = "x" || test "x$passfull" = "xpassMC"; then 
-    warn "No pass specified, assuming MC"
-    passfull=
-    mc=1
+else 
+    case x$passfull in
+	x)
+	    warn "No pass specified, assuming MC"
+	    passfull="passMC"
+	    mc=1 
+	    ;;
+	xpassMC*) 
+	    warn "MC pass specified"
+	    mc=1
+	    ;;
+	*)  : ;;
+    esac
 fi 
 
 # --- Construct output -----------------------------------------------
@@ -589,23 +600,25 @@ store=
 year=20${prodyear}
 if test $mc -gt 0 ; then 
     proddir=${prodfull}
-    passdir=passMC
+    passdir=$passfull
     store=sim
 else 
     proddir=LHC${prodyear}${prodletter}
     store=data
     if test "x$passno" = "x" ; then 
 	err "No pass number"
-    fi 
-    if test "x$passpre" != "x" ; then 
-	passdir=${passpre}
-    fi
-    passdir=${passdir}pass${passno}
-    if test "x$passpost" != "x" ; then 
-	passdir=${passdir}_${passpost}
-    fi
-    if test "x$remainder" != "x" ; then 
-	passdir=${passdir}/${remainder}
+	passdir=$passfull
+    else 
+	if test "x$passpre" != "x" ; then 
+	    passdir=${passpre}
+	fi
+	passdir=${passdir}pass${passno}
+	if test "x$passpost" != "x" ; then 
+	    passdir=${passdir}_${passpost}
+	fi
+	if test "x$remainder" != "x" ; then 
+	    passdir=${passdir}/${remainder}
+	fi
     fi
 fi 
 store=${store}/${year}/${proddir}/${passdir}

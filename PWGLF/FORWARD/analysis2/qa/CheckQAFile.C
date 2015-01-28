@@ -24,14 +24,20 @@ void CheckQAFile(const char* filename, const char* type="")
   }
   TString check    = Form("Forward%s",type);
   TString check2;
+  TString check3;
   TObject* forward1 = file->Get(check);
   if (!forward1) {
     check2    = Form("Forward%sSums",type);
     forward1 = file->Get(Form("Forward%sSums",type));
     if (!forward1) {
-      Error("CheckQAFile", "No %s or %s object found in %s", 
-	    check.Data(),check2.Data(), filename);
-      ret |= 2;
+      check3 = "ForwardSums";
+      forward1 = file->Get(check3);
+      if (!forward1) { 
+	Error("CheckQAFile", "No %s, %s, or %s object found in %s", 
+	      check.Data(),check2.Data(), 
+	      check3.Data(), filename);
+	ret |= 2;
+      }
     }
   } 
   check = Form("Forward%sResults", type);
@@ -40,10 +46,15 @@ void CheckQAFile(const char* filename, const char* type="")
     check2   = Form("forward%sResults",type);
     forward2 = file->Get(check2);
     if (!forward2) { 
-      Error("CheckQAFile", "No %s or %s object found in %s", 
-	    check.Data(), check2.Data(), filename);
-      file->ls();
-      ret |= 4;
+      check3 = "ForwardResults";
+      forward2 = file->Get(check3);
+      if (!forward2) { 
+	Error("CheckQAFile", "No %s, %s, or %s object found in %s", 
+	      check.Data(), check2.Data(), 
+	      check3.Data(), filename);
+	file->ls();
+	ret |= 4;
+      }
     }
   } 
   file->Close();
