@@ -35,10 +35,19 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Compile and link flags
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+endif(DATE_FOUND)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
 # Setting the dependencies
 set(ROOT_DEPENDENCIES Core)
@@ -61,14 +70,6 @@ target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-# Compile and link flags
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-if(DATE_FOUND)
-    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
-endif(DATE_FOUND)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

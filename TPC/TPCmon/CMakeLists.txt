@@ -44,7 +44,11 @@ set(SRCS
 # Check for DATE
 if(DATE_FOUND)
     set(SRCS ${SRCS} AliTPCMonitorDateMonitor.cxx)
+
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
 endif(DATE_FOUND)
+
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -52,7 +56,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
 # Generate the ROOT map
 # Dependecies
@@ -63,13 +67,6 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ${LIBDEPS})
 
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-if(DATE_FOUND)
-    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
-endif(DATE_FOUND)
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

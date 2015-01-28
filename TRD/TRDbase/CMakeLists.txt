@@ -135,10 +135,22 @@ if(DATE_FOUND)
     set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
 endif(DATE_FOUND)
 
+# Check if CRS support was enabled
+if(TRD_RAW_CRC)
+    message(STATUS "CRC support for AliTRDrawStream enabled")
+    set(MODULE_COMPILE_FLAGS "-DTRD_RAW_CRC ${MODULE_COMPILE_FLAGS}")
+endif(TRD_RAW_CRC)
+
+# Check if RAW debug enabled
+if(TRD_RAW_DEBUG)
+    message(STATUS "Debug support for AliTRDrawStream enabled")
+    set(MODULE_COMPILE_FLAGS "-DTRD_RAW_DEBUG ${MODULE_COMPILE_FLAGS}")
+endif(TRD_RAW_DEBUG)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
 set(ROOT_DEPENDENCIES Core GenVector Geom Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree VMC XMLParser)
 set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB RAWDatabase RAWDatarec)
@@ -167,17 +179,6 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
     set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
-# Check if CRS support was enabled
-if(TRD_RAW_CRC)
-    message(STATUS "CRC support for AliTRDrawStream enabled")
-    add_definitions(-DTRD_RAW_CRC)
-endif(TRD_RAW_CRC)
-
-# Check if RAW debug enabled
-if(TRD_RAW_DEBUG)
-    message(STATUS "Debug support for AliTRDrawStream enabled")
-    add_definitions(-DTRD_RAW_DEBUG)
-endif(TRD_RAW_DEBUG)
 
 # Setting the correct headers for the object as gathered from the dependencies
 # Additional compilation flags
