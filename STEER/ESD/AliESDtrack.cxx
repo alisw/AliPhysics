@@ -1887,8 +1887,11 @@ void AliESDtrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const
   if(fTrackTime)
     for (int i=nspec; i--;) times[i]=fTrackTime[i];
   else
-    for (int i=AliPID::kSPECIESC; i--;) times[i]=0.0;
-  //
+// The line below is wrong since it does not honor the nspec value
+// The "times" array may have only AliPID::kSPECIES size, as called by:
+// AliESDpidCuts::AcceptTrack()
+//    for (int i=AliPID::kSPECIESC; i--;) times[i]=0.0;
+    for (int i=nspec; i--;) times[i]=0.0;
 }
 //_______________________________________________________________________
 Double_t AliESDtrack::GetIntegratedLength() const{

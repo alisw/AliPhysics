@@ -71,7 +71,7 @@ TestTOFPID(const Char_t *filename, Bool_t calibrateESD = kTRUE, Bool_t correctTE
       /* get TOF time */
       time = track->GetTOFsignal();
       /* get expected times */
-      track->GetIntegratedTimes(timei);
+      track->GetIntegratedTimes(timei, AliPID::kSPECIESC);
 
       /* fill PID histos */
       for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++){

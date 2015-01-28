@@ -441,7 +441,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
          track->GetDZ(xv,yv,zv,esd->GetMagneticField(),dz);
          if (dz[1]<3.) {
 	   Double_t times[AliPID::kSPECIESC];
-	   track->GetIntegratedTimes(times);
+	   track->GetIntegratedTimes(times, AliPID::kSPECIESC);
 	   Double_t tof=track->GetTOFsignal()/*-847055 -1771207*/;
 	   FillESDsData(kPid2,times[AliPID::kPion]-tof);
 	 }
