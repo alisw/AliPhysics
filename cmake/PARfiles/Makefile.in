@@ -23,7 +23,7 @@ ROOT_DEFINES += $(shell root-config --features | grep -q xml && echo '-DWITHXML'
 ROOT_DEFINES += $(shell root-config --features | grep -q alien && echo '-DWITHALIEN')
 
 # Exclude generated dictionaries from the list of sources
-SRCS := $(filter-out $(wildcard G__*.cxx),$(wildcard *.cxx))
+SRCS := @PARSOURCES_FLAT@
 
 HDRS := $(SRCS:.cxx=.h)
 DHDR := $(PAR_MODULE)LinkDef.h
