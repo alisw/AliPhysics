@@ -52,7 +52,7 @@ RunQA(const char* input,
   else { 
     fwd = gSystem->Getenv("ANA_SRC");
     if (fwd.IsNull()) 
-      fwd = "$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2";
+      fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
     mac.Prepend(Form(".:%s/qa:%s/corrs:",fwd.Data(), fwd.Data()));
     gSystem->AddIncludePath(Form("-I%s/qa", fwd.Data()));
   }
@@ -60,9 +60,12 @@ RunQA(const char* input,
   gSystem->Load("libGpad");
   gSystem->Load("libTree");
 
+  TString inp(input);
+  if (inp.Contains("#QA_results")) inp.ReplaceAll("#QA_results", "trending");
+  
   gROOT->LoadMacro("QATrender.C+g");
   QATrender t(keep, type, year, period, pass, runNo);
-  t.AddFile(input);
+  t.AddFile(inp);
   // t.SetOutputName("trending.root");
   if (!t.Run()) exit(1);
 }
