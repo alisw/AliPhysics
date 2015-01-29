@@ -78,6 +78,8 @@ set(SRCS
   AliFemtoCorrFctnPairFractions.cxx
   AliAnalysisTaskParticleEfficiency.cxx
   AliFemtoPairOriginMonitor.cxx
+  AliFemtoPairCutAntiGammaAlpha.cxx
+  AliFemtoCorrFctnGammaMonitorAlpha.cxx
   )
 
 # Headers from sources
@@ -108,7 +110,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
