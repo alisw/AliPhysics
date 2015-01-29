@@ -25,6 +25,9 @@ PAR_SOFLAGS = $(SOFLAGS) $(LDFLAGS)
 # Get some ROOT build flags from the current installation
 ROOT_DEFINES += $(shell root-config --features | grep -q xml && echo '-DWITHXML')
 ROOT_DEFINES += $(shell root-config --features | grep -q alien && echo '-DWITHALIEN')
+ifneq ($(FASTJET),)
+	ROOT_DEFINES += -DHAVE_FASTJET
+endif
 
 # Exclude generated dictionaries from the list of sources
 SRCS := @PARSOURCES_FLAT@
