@@ -88,6 +88,12 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 set(LIBDEPS AliPythia8 ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGLFspectra)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Generate a PARfile target for this library. Note: the extra path has a variable that is NOT
+# substituted by CMake (it has rounded and not curly braces). The $(VARIABLE) in this format will be
+# properly substituted by make with the correct path in the remote location. So, rounded braces
+# here are not an error!
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "$(ALICE_ROOT)/include/pythia")
+
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 
