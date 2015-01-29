@@ -308,29 +308,17 @@ void AliADDigitizer::DigitizeHits()
 	   Float_t t = dt_scintillator + hit->GetTof();
 	   //t += fHptdcOffset[pmt];
 	   
-	   
-	   Int_t nPhE;
-	   Float_t prob = fCalibData->GetLightYields(pmt)*kPhotoCathodeEfficiency; // Optical losses included!
-	   if (nPhot > 100)
-	     nPhE = (Int_t)gRandom->Gaus(prob*Float_t(nPhot)+0.5,
-					 sqrt(Float_t(nPhot)*prob*(1.-prob)));
-	   else
-	     nPhE = gRandom->Binomial(nPhot,prob);
-	   Float_t charge = TMath::Qe()*fPmGain[pmt]*fBinSize[pmt]/integral;
-	   
-	   for (Int_t iPhE = 0; iPhE < nPhE; ++iPhE) {	     
-	     Float_t tPhE = t + fSignalShape->GetRandom(0,fBinSize[pmt]*Float_t(fNBins[pmt]));
+	   Float_t charge = nPhot*fPmGain[pmt]*fBinSize[pmt]/integral;
 	     
-	     Float_t gainVar = fSinglePhESpectrum->GetRandom(0,20)/meansPhE;
+	     Float_t tPhE = t + fSignalShape->GetRandom(0,fBinSize[pmt]*Float_t(fNBins[pmt]));
 	     
 	     Int_t firstBin = TMath::Max(0,(Int_t)((tPhE-kPMRespTime)/fBinSize[pmt]));
 	     Int_t lastBin = TMath::Min(fNBins[pmt]-1,(Int_t)((tPhE+2.*kPMRespTime)/fBinSize[pmt]));
 	     
 	     for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
 	       Float_t tempT = fBinSize[pmt]*(0.5+iBin)-tPhE;
-	       fTime[pmt][iBin] += gainVar*charge*fPMResponse->Eval(tempT);
+	       fTime[pmt][iBin] += charge*fPMResponse->Eval(tempT);
 	     }
-	   }         // ph.e. loop
          }           // hit loop
      }               // track loop
      loader->UnloadHits();

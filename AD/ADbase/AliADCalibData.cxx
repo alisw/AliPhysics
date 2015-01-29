@@ -51,7 +51,7 @@ AliADCalibData::AliADCalibData():
   // default constructor
   
     for(int t=0; t<16; t++) {
-        fMeanHV[t]      = 1600.0;
+        fMeanHV[t]      = 1500.0;
         fWidthHV[t]     = 0.0; 
 	fTimeOffset[t]  = 0.0;
         fTimeGain[t]    = 1.0;
@@ -314,7 +314,8 @@ Float_t AliADCalibData::GetGain(Int_t channel)
   Float_t hv = fMeanHV[channel];
   Float_t gain = 0;
   if (hv>0)
-    gain = TMath::Exp(fPMGainsA[channel]+fPMGainsB[channel]*TMath::Log(hv));
+    //gain = TMath::Exp(fPMGainsA[channel]+fPMGainsB[channel]*TMath::Log(hv));
+    gain = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel])*kChargePerADC/kNPhotonsPerMIP;
   return gain;
 }
 
