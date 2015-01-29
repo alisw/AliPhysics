@@ -115,6 +115,28 @@ set(LIBDEPS ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 # End Generating the ROOT map
 
+# Generate a PARfile target for this library
+#  - This command tells CMake to generate a target that, in turn, will generate a PARfile
+#  - With a PARfile it's possible to override an AliRoot/AliPhysics library with our modified
+#    version
+#  - This "hotpatching" is useful if we want to test local modifications e.g. on the Grid without
+#    pushing our commits
+#  - There is a 1:1 correspondence between a library (e.g. libMODULE.so) and a PARfile
+#    (e.g. MODULE.par): if we load remotely a PARfile for a certain library, we are going to
+#    override only that library
+#  - This command only generates a target: PARfiles are not generated automatically. If a library
+#    is PARfile-enabled (condition achieved by using the command below), then the PARfile can be
+#    created by:
+#      cd <aliroot_build_dir>  # e.g. cd $ALICE_ROOT/../build
+#      make MODULE.par
+#      make install
+#    The file MODULE.par will be found in $ALICE_ROOT/PARfiles/MODULE.par
+#  - It is also possible to specify another string after "${LIBDEPS}", an optional parameter to tell
+#    the PARfile that extra include paths (both relative to the current directory and absolute) are
+#    needed in order to build the corresponding library
+#add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+# End Generate a PARfile target for this library
+
 ############################################################################
 # END GENERAL SETTINGS                                                     #
 ############################################################################
