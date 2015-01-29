@@ -109,12 +109,6 @@ void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
 	fJetEvent = new AliReducedJetEvent();
 	fJetTree->Branch("JetEvent", "AliReducedJetEvent", fJetEvent, 128000,0);
 
-	// Create std track cuts
-	fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
-	fTrackCuts->SetName("Standard Track cuts");
-	fTrackCuts->SetMinNCrossedRowsTPC(120);
-	fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-
 	PostData(1, fJetTree);
 }
 
