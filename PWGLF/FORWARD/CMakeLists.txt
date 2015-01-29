@@ -152,6 +152,9 @@ endif((DEFINED ALIROOT_SVN_BRANCH))
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+
 # Add a shared library
 add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
