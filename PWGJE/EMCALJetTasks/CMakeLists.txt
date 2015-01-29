@@ -160,13 +160,8 @@ endif(FASTJET_FOUND)
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 if(FASTJET_FOUND)
-  set(HDRS ${HDRS}
-      FJ_includes.h
-     )
+  list(APPEND HDRS FJ_includes.h AliJetShape.h)
 endif(FASTJET_FOUND)
-
-# Additional headers, with no corresponding sources
-list(APPEND HDRS "AliJetShape.h")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
