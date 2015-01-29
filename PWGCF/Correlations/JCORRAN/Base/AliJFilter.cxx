@@ -327,7 +327,7 @@ void AliJFilter::UserExec(Option_t* /*option*/)
 
 
 	// pileup rejection
-	if( fAnaUtils->IsPileUpEvent( Event() ))
+	if( runh->IsPP() && fAnaUtils->IsPileUpEvent( Event() )) // Only APPLY for P+P
 		return;
 
 	//--------------------------------------------------------------- 
