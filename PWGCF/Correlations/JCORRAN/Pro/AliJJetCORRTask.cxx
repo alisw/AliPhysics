@@ -217,7 +217,7 @@ void AliJJetCORRTask::UserExec(Option_t* /*option*/)
 
 	fJJetCORRAnalysis->SetCentralityBin( cBin );
 	fJJetCORRAnalysis->SetCentrality( fcent );
-	fJJetCORRAnalysis->SetZVertexBin( cBin );
+	fJJetCORRAnalysis->SetZVertexBin( zBin );
 	fJJetCORRAnalysis->SetZVertex( zVert );
 	fJJetCORRAnalysis->SetTargetJetIndex( fTargetJetIndex );
 
