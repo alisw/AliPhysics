@@ -252,8 +252,8 @@ TH3F* AliAnalysisTaskJetMatching::BookTH3F(const char* name, const char* x, cons
 Bool_t AliAnalysisTaskJetMatching::Notify()
 {
     // for each file get the number of trials and pythia cross section
-    // see  $ALICE_ROOT/PWGJE/AliAnalysisTaskJetProperties.cxx
-    //      $ALICE_ROOT/PWG/Tools/AliAnalysisHelperJetTasks.cxx
+    // see  $ALICE_PHYSICS/PWGJE/AliAnalysisTaskJetProperties.cxx
+    //      $ALICE_PHYSICS/PWG/Tools/AliAnalysisHelperJetTasks.cxx
     // this function is implenented here temporarily to avoid introducing a dependency
     // later on this could just be a call to a static helper function
     #ifdef DEBUGTASK
