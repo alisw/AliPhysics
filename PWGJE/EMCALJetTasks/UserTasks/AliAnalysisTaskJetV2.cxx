@@ -1285,7 +1285,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
     Qa3[0] = (Qa3[0] - Qx3amean)/Qx3arms;
     Qa3[1] = (Qa3[1] - Qy3amean)/Qy3arms;
     Qc3[0] = (Qc3[0] - Qx3cmean)/Qx3crms;
-    Qc3[1] = (Qc3[0] - Qy3cmean)/Qy3crms;
+    Qc3[1] = (Qc3[1] - Qy3cmean)/Qy3crms;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_t Q3[2]) const
