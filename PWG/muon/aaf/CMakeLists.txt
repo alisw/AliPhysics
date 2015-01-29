@@ -13,76 +13,22 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************/
 
-
 #Module
-set (MODULE PWGmuon)
-
-add_subdirectory(aaf)
-message(STATUS "PWG muon aaf enabled")
+set(MODULE PWGmuonaaf)
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon/aaf)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/OADB
-  )
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    )
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskMuMu.cxx 
-  AliHistogramCollection.cxx
-  AliAnalysisTaskAOD2MuonAOD.cxx
-  AliAnalysisTaskESDMuonFilter.cxx 
-  AliAnalysisTaskMuonAODfromGeneral.cxx 
-  AliAnalysisTaskFromStandardToMuonAOD.cxx 
-  AliAnalysisTaskSingleMu.cxx 
-  AliAnalysisTaskLUT.cxx 
-  AliAnalysisTaskLinkToMC.cxx 
-  AliAODEventInfo.cxx 
-  AliESDMuonTrackCuts.cxx 
-  AliAnalysisTaskSingleMuESD.cxx 
-  AliCFMuonResTask1.cxx 
-  AliCFMuonSingleTask1.cxx 
-  AliEventPoolMuon.cxx 
-  AliAnalysisTaskCreateMixedDimuons.cxx 
-  AliAnalysisTaskMuonAODCreation.cxx 
-  AliAnalysisTaskMuonDistributions.cxx 
-  AliMuonInfoStoreRD.cxx 
-  AliDimuInfoStoreRD.cxx 
-  AliMuonInfoStoreMC.cxx 
-  AliDimuInfoStoreMC.cxx 
-  AliMuonsHFHeader.cxx 
-  AliAnalysisTaskSEMuonsHF.cxx 
-  AliAnalysisTaskDimuonCFContainerBuilder.cxx 
-  AliAnalysisTaskMuonTreeBuilder.cxx 
-  AliAODMuonReplicator.cxx 
-  AliAnalysisTaskMuonCollisionMultiplicity.cxx 
-  AliCFMuonResUpsilon.cxx 
-  AliMuonEventCuts.cxx 
-  AliMuonTrackCuts.cxx 
-  AliMuonPairCuts.cxx 
-  AliVAnalysisMuon.cxx 
-  AliAnalysisTaskFlowSingleMu.cxx 
-  AliAnalysisMuonUtility.cxx
-  AliUtilityMuonAncestor.cxx
-  AliOADBMuonTrackCutsParam.cxx
-  AliAnalysisMuMuBinning.cxx
-  AliAnalysisNonMuonTrackCuts.cxx
-  AliAnalysisNonPrimaryVertices.cxx
-  AliAnalysisTaskAOD2MuonAOD.cxx
-  AliAnalysisTaskMuMu.cxx
-  AliAnalysisMuMuBase.cxx
-  AliAnalysisMuMuGlobal.cxx
-  AliAnalysisMuMuCutRegistry.cxx
-  AliAnalysisMuMuCutElement.cxx
-  AliAnalysisMuMuEventCutter.cxx
-  AliAnalysisMuMuCutCombination.cxx
-  AliAnalysisMuMuSingle.cxx
-  AliAnalysisMuMuMinv.cxx
-  AliAnalysisMuMuNch.cxx
-  AliAnalysisTaskNorm.cxx
+  StageAndFilter.cxx
+  FILTER_AODMUONWITHTRACKLETS.cxx
+  FILTER_RAWMUON.cxx
   )
 
 # Headers from sources
@@ -96,13 +42,18 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Add a shared library
 add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
+set(EXE aaf-stage-and-filter)
+
+add_executable(${EXE} ${EXE}.cxx)
+
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice AOD CORRFW OADB STEERBase)
+set(LIBDEPS PWGmuon)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${EXE} ${MODULE} Core)
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
@@ -116,10 +67,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE} 
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
+
 install(FILES ${HDRS} DESTINATION include)
 
-# Installing the macros
-install(DIRECTORY . DESTINATION PWG/muon FILES_MATCHING PATTERN "*.C")
-
-
-
+install(TARGETS ${EXE} RUNTIME DESTINATION bin)

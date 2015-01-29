@@ -9,17 +9,30 @@
 
 namespace AAF {
   
-Int_t StageAndFilter(TString from, const TString& to,
-                     TString filterName)
+Int_t StageAndFilter(const TString& from, const TString& to,
+                     const TString& filterName, Int_t verboseLevel)
 {
   ///
   /// Copy one file from url "from" into url "to", while filtering it at the same time.
   ///
   
-  std::cout << "CpMacroWithFilter from : " << from.Data() << std::endl << " to : " << to.Data() << std::endl
-	    << " with filter " << filterName.Data() << std::endl;
+	if ( verboseLevel > 0 )
+	{
+		std::cout << "StageAndFilter from : " << from.Data() << std::endl << " to : " << to.Data() << std::endl
+				<< " with filter " << filterName.Data() << std::endl;
+	}
 
-  if (from.IsNull() || to.IsNull()) return -1;
+  if (from.IsNull())
+  {
+	  std::cerr << "StageAndFilter : cannot stage from a null source..." << std::endl;
+	  return -1;
+  }
+
+  if (to.IsNull())
+  {
+	  std::cerr << "StageAndFilter : cannot stage to a null destination..." << std::endl;
+	  return -2;
+  }
 
   if (from.Contains("alien://"))
   {
@@ -28,7 +41,7 @@ Int_t StageAndFilter(TString from, const TString& to,
       if (!gGrid)
       {
         std::cerr << "Cannot get gGrid !" << std::endl;
-        return -2;
+        return -3;
       }
   }
 
@@ -44,7 +57,7 @@ Int_t StageAndFilter(TString from, const TString& to,
     {
       std::cerr << "I don't know this function : AAF::FILTER_" << filterName.Data()
       << std::endl;
-      return -3;
+      return -4;
     }
     
     char** files = new char*[2];
@@ -58,7 +71,10 @@ Int_t StageAndFilter(TString from, const TString& to,
     strcpy(files[0],from.Data());
     strcpy(files[1],to.Data());
 
-    std::cout << Form("Will execute filter %s(\"%s\",\"%s\")",mc.GetMethodName(),from.Data(),to.Data()) << std::endl;
+    if  (verboseLevel > 0 )
+    {
+    	std::cout << Form("Will execute filter %s(\"%s\",\"%s\")",mc.GetMethodName(),from.Data(),to.Data()) << std::endl;
+    }
     
     mc.SetParamPtrs(files);
     
