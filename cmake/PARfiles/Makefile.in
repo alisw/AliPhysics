@@ -11,7 +11,10 @@ PAR_LIBDEPS := @PARLIBDEPS@
 
 # Include paths
 PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
-PAR_INCLUDES = -I. $(addprefix -I./,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
+PAR_INCLUDES = -I. $(addprefix -I,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
+ifneq ($(FASTJET),)
+	PAR_INCLUDES += -I$(FASTJET)/include
+endif
 
 # Get C++ flags form ROOT
 PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)
@@ -22,11 +25,13 @@ PAR_SOFLAGS = $(SOFLAGS) $(LDFLAGS)
 # Get some ROOT build flags from the current installation
 ROOT_DEFINES += $(shell root-config --features | grep -q xml && echo '-DWITHXML')
 ROOT_DEFINES += $(shell root-config --features | grep -q alien && echo '-DWITHALIEN')
+ifneq ($(FASTJET),)
+	ROOT_DEFINES += -DHAVE_FASTJET
+endif
 
-# Exclude generated dictionaries from the list of sources
 SRCS := @PARSOURCES_FLAT@
+HDRS := @PARHEADERS_FLAT@
 
-HDRS := $(SRCS:.cxx=.h)
 DHDR := $(PAR_MODULE)LinkDef.h
 
 SRCS += G__$(PAR_MODULE).cxx
