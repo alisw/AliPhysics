@@ -74,6 +74,9 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 set(LIBDEPS EG Physics Hist MathCore RIO Core)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 
