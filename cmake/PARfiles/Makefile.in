@@ -29,10 +29,9 @@ ifneq ($(FASTJET),)
 	ROOT_DEFINES += -DHAVE_FASTJET
 endif
 
-# Exclude generated dictionaries from the list of sources
 SRCS := @PARSOURCES_FLAT@
+HDRS := @PARHEADERS_FLAT@
 
-HDRS := $(SRCS:.cxx=.h)
 DHDR := $(PAR_MODULE)LinkDef.h
 
 SRCS += G__$(PAR_MODULE).cxx
