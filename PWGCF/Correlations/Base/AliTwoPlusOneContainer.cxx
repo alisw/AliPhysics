@@ -380,7 +380,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	    continue;
 	  
 	  vars[6] = found_particle[l]->Pt();
-	  track_hist->Fill(vars, stepUEHist+1, weight);//step +1 is the AS to the NS plot of step
+	  track_hist->Fill(vars, stepUEHist, weight);//fill NS for all AS triggers
 	}
     }
 
