@@ -171,7 +171,7 @@ Bool_t AliADDigitizer::Init()
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
 
-  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeDelays");
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
   if (!entry2) AliFatal("AD time delays are not found in OCDB !");
   TH1F *delays = (TH1F*)entry2->GetObject();
 
@@ -198,13 +198,9 @@ Bool_t AliADDigitizer::Init()
     fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
 			      fCalibData->GetTimeResolution(board));
     fBinSize[i] = fCalibData->GetTimeResolution(board);
-    fHptdcOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
-			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0+
-		       fCalibData->GetTimeOffset(i)-
-		       l1Delay-
-		       phase->GetMeanPhase()+
-		       delays->GetBinContent(i+1)+
-		       kADOffset);
+
+    fHptdcOffset[i] =  delays->GetBinContent(i+1);
+		       
     fClockOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
 			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0+
 		       fCalibData->GetTimeOffset(i)-
@@ -311,6 +307,8 @@ void AliADDigitizer::DigitizeHits()
 	   Float_t dt_scintillator = gRandom->Gaus(0,kIntTimeRes);
 	   Float_t t = dt_scintillator + hit->GetTof();
 	   //t += fHptdcOffset[pmt];
+	   
+	   
 	   Int_t nPhE;
 	   Float_t prob = fCalibData->GetLightYields(pmt)*kPhotoCathodeEfficiency; // Optical losses included!
 	   if (nPhot > 100)
@@ -322,7 +320,9 @@ void AliADDigitizer::DigitizeHits()
 	   
 	   for (Int_t iPhE = 0; iPhE < nPhE; ++iPhE) {	     
 	     Float_t tPhE = t + fSignalShape->GetRandom(0,fBinSize[pmt]*Float_t(fNBins[pmt]));
+	     
 	     Float_t gainVar = fSinglePhESpectrum->GetRandom(0,20)/meansPhE;
+	     
 	     Int_t firstBin = TMath::Max(0,(Int_t)((tPhE-kPMRespTime)/fBinSize[pmt]));
 	     Int_t lastBin = TMath::Min(fNBins[pmt]-1,(Int_t)((tPhE+2.*kPMRespTime)/fBinSize[pmt]));
 	     
@@ -567,20 +567,26 @@ void AliADDigitizer::ResetDigits()
 AliADCalibData* AliADDigitizer::GetCalibData() const
 
 {
-/*/
-  AliCDBManager *man = AliCDBManager::Instance();
+AliCDBManager *man = AliCDBManager::Instance();
 
   AliCDBEntry *entry=0;
 
   entry = man->Get("AD/Calib/Data");
+  if(!entry){
+    AliWarning("Load of calibration data from default storage failed!");
+    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
+	
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetRun(1);
+    entry = man->Get("AD/Calib/Data");
+  }
+  // Retrieval of data in directory AD/Calib/Data:
 
   AliADCalibData *calibdata = 0;
 
   if (entry) calibdata = (AliADCalibData*) entry->GetObject();
   if (!calibdata)  AliFatal("No calibration data from calibration database !");
-/*/
-  AliADCalibData *calibdata = new AliADCalibData();
-  
+
   return calibdata;
 
 }

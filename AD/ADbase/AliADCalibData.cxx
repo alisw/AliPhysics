@@ -274,7 +274,7 @@ void  AliADCalibData::InitLightYields()
   // Read from a separate OCDB entry
   if (fLightYields) return;
 
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/LightYields");
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("AD/Calib/LightYields");
   if (!entry) AliFatal("AD light yields are not found in OCDB !");
   TH1F *yields = (TH1F*)entry->GetObject();
 
@@ -291,8 +291,8 @@ void  AliADCalibData::InitPMGains()
   // Read from a separate OCDB entry
   if (fPMGainsA) return;
 
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/PMGains");
-  if (!entry) AliFatal("VZERO PM gains are not found in OCDB !");
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("AD/Calib/PMGains");
+  if (!entry) AliFatal("AD PM gains are not found in OCDB !");
   TH2F *gains = (TH2F*)entry->GetObject();
 
   fPMGainsA = new Float_t[16];
