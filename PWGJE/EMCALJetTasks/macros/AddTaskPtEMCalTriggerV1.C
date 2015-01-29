@@ -29,7 +29,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *njetcontainerMC = "",
     const char *ntriggerContainer = "",
     double jetradius = 0.5,
-    const char *ntrackcuts = "standard"
+    const char *ntrackcuts = "standard",
+	const char *components = "particles:clusters:tracks:mcjets:recjets"
 )
 {
   //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
@@ -43,6 +44,19 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskPtEMCalTrigger", "This task requires an input event handler");
     return NULL;
+  }
+
+  // Decode components
+  bool doClusters(false), doMCParticles(false), doTracks(false), doMCJets(false), doRecJets(false);
+  TObjArray *compsplit = TString(components).Tokenize(":");
+  TIter tokenIter(compsplit);
+  TObjString *compstring(NULL);
+  while((compstring = (TObjString *)tokenIter())){
+	  if(!compstring->String().CompareTo("clusters")) doClusters = true;
+	  if(!compstring->String().CompareTo("particles")) doMCParticles = true;
+	  if(!compstring->String().CompareTo("tracks")) doClusters = true;
+	  if(!compstring->String().CompareTo("mcjets")) doClusters = true;
+	  if(!compstring->String().CompareTo("recjets")) doClusters = true;
   }
 
   bool isSwapEta = TString(period).CompareTo("LHC13f") ? kFALSE : kTRUE;
@@ -75,16 +89,16 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   defaultselect->SetKineCuts(kineCuts);
   AddEventCounterComponent(defaultselect, isMC);
   if(isMC){
-    AddMCParticleComponent(defaultselect);
-    AddMCJetComponent(defaultselect, 20.);
+    if(doMCParticles) AddMCParticleComponent(defaultselect);
+    if(doMCJets) AddMCJetComponent(defaultselect, 20.);
     /*
     for(int ijpt = 0; ijpt < 4; ijpt++)
       AddMCJetComponent(defaultselect, jetpt[ijpt]);
     */
   }
-  AddClusterComponent(defaultselect, isMC);
-  AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts), isMC, isSwapEta);
-  AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), 20., isMC, isSwapEta);
+  if(doClusters) 	AddClusterComponent(defaultselect, isMC);
+  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts), isMC, isSwapEta);
+  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), 20., isMC, isSwapEta);
   /*
    * for(int ijpt = 0; ijpt < 4; ijpt++)
        AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), jetpt[ijpt], isMC, isSwapEta);
