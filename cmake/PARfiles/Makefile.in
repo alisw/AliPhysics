@@ -11,7 +11,7 @@ PAR_LIBDEPS := @PARLIBDEPS@
 
 # Include paths
 PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
-PAR_INCLUDES = -I. $(addprefix -I./,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
+PAR_INCLUDES = -I. $(addprefix -I,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
 ifneq ($(FASTJET),)
 	PAR_INCLUDES += -I$(FASTJET)/include
 endif
