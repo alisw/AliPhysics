@@ -5,6 +5,7 @@
 ///
 
 AliAnalysisTask* AddTaskMuMuMinvLowPt(const char* outputname,
+
                                    const char     * triggerClassesToConsider,
                                    const char     * triggerInputsToUse,
                                    const char     * beamYear,

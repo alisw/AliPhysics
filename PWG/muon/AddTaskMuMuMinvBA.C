@@ -156,6 +156,17 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
     binning->AddBin("psi","y",-3.25,-3,"BENJ");
     binning->AddBin("psi","y",-3,-2.75,"BENJ");
     binning->AddBin("psi","y",-2.75,-2.5,"BENJ");
+
+     // phi binning
+   binning->AddBin("psi","phi",0,0.4,"BENJ");
+   binning->AddBin("psi","phi",0.4,0.8,"BENJ");
+   binning->AddBin("psi","phi",0.8,1.2,"BENJ");
+   binning->AddBin("psi","phi",1.2,1.6,"BENJ");
+   binning->AddBin("psi","phi",1.6,2,"BENJ");
+   binning->AddBin("psi","phi",2,2.4,"BENJ");
+   binning->AddBin("psi","phi",2.4,2.8,"BENJ");
+   binning->AddBin("psi","phi",2.4,2.8,"BENJ");
+   binning->AddBin("psi","phi",2.8,3.14,"BENJ");
   }
   // v0 centrality binning
   binning->AddBin("centrality","V0M",0.,90.);
