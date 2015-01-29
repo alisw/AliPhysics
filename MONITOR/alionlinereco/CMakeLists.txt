@@ -61,5 +61,6 @@ endif(PYTHIA6)
 
 # Installation
 install(TARGETS alionlinereco RUNTIME DESTINATION bin)
+install(FILES onlinereco.conf DESTINATION MONITOR/alionlinereco)
 
 
