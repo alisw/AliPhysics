@@ -74,4 +74,7 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
+  # Install target
+  install(FILES ${PARDIR}/../${PARMODULE}.par DESTINATION PARfiles OPTIONAL)
+
 endfunction()
