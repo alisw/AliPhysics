@@ -61,7 +61,7 @@ RunQA(const char* input,
   gSystem->Load("libTree");
 
   TString inp(input);
-  if (inp.Contains("#QA_results")) inp.ReplaceAll("#QA_results", "trending");
+  if (inp.Contains("#QA_results")) inp.ReplaceAll("#QA_results", "#trending");
   
   gROOT->LoadMacro("QATrender.C+g");
   QATrender t(keep, type, year, period, pass, runNo);
