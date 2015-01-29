@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 	if ( argc < 6 )
 	{
 		std::cout << "Usage : " << argv[0] << " --from alien://source --to destination --filter filterName [--verbose [level]]" << std::endl;
-		exit(1);
+		return 1;
 	}
 
 	TString from;
@@ -37,5 +37,5 @@ int main(int argc, char** argv)
 
 	Int_t rv = AAF::StageAndFilter(from,to,filter,verboseLevel);
 
-	exit(rv);
+	return rv;
 }
