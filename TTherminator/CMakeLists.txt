@@ -59,6 +59,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS STEERBase STEER EVGEN Html TreePlayer XMLParser)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Generate a PARfile target for this library
+# NOTE: TTherminator requires the "extra include" option of add_target_parfile() to be used, as some
+# header files are found in a subdirectory
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Therminator")
+
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${FSRCS})
 
@@ -77,6 +82,8 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
-install(FILES ${HDRS} DESTINATION include)
+
+# This custom command installs headers preserving their relative subdirectories
+install_relative(FILES ${HDRS} DESTINATION include)
 
 message(STATUS "${MODULE} enabled")

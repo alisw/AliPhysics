@@ -25,6 +25,7 @@
 # - ROOT_LIBMAP - path to rlibmap executable
 # - ROOT_FEATURES - list of build features for ROOT
 # - ROOT_LIBDIR - full path to ROOT library folder
+# - ROOT_ETCDIR - full path to the ROOT's configuration directory
 # - ROOT_LIBRARIES - libraries needed for the package to be used
 # - ROOT_GLIBRARIES - regular + GUI ROOT libraries + path to be used during linking
 # - ROOT_INCLUDE_DIR - full path to ROOT include folder
@@ -93,6 +94,13 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
     string(STRIP "${ROOT_LIBDIR}" ROOT_LIBDIR)
+
+    # Checking for ROOT etcdir
+    execute_process(COMMAND ${ROOT_CONFIG} --etcdir OUTPUT_VARIABLE ROOT_ETCDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(error)
+        message(FATAL_ERROR "Error retrieving ROOT etcdir: ${error}")
+    endif(error)
+    string(STRIP "${ROOT_ETCDIR}" ROOT_ETCDIR)
 
     # Checking for ROOT libs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --libs OUTPUT_VARIABLE ROOT_LIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
