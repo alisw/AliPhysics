@@ -27,9 +27,11 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
   # Export variables: used in configure_file()
   set(PARMODULE "${PARMODULE}")
   string(REPLACE ";" " " PARSOURCES_FLAT "${PARSOURCES}")
+  string(REPLACE ";" " " PARHEADERS_FLAT "${PARHEADERS}")
 
   #message(STATUS "[add_target_parfile] Library (space-separated): ${PARMODULE}")
   #message(STATUS "[add_target_parfile] Sources (list): ${PARSOURCES}")
+  #message(STATUS "[add_target_parfile] Headers (list): ${PARHEADERS}")
   #message(STATUS "[add_target_parfile] Dependencies (space-separated): ${PARLIBDEPS}")
 
   if(NOT "${ARGV5}" STREQUAL "")
