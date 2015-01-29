@@ -20,11 +20,15 @@ Int_t SETUP()
 
   // Add our rootmap
   // TODO: disabled because it triggers actual library loading wherever it finds nested classes!
+  // (this is a ROOT bug)
   // buf.Form("%s/lib@PARMODULE@.rootmap", wd);
   // gInterpreter->UnloadLibraryMap("lib@PARMODULE@");
   // gInterpreter->LoadLibraryMap(buf.Data());
 
-  // Note: there is no need to actually load the library thanks to the rootmap
+  // Here we load the library, but beware: if using multiple PARfiles for overriding multiple
+  // AliRoot libraries, they must be loaded in the correct order. With the autoloading, it might
+  // happen that the *wrong* library gets loaded as a dependency
+  gSystem->Load("lib@PARMODULE@");
 
   return 0;
 }
