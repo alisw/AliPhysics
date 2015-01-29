@@ -1242,7 +1242,6 @@ void AliSHILv3::CreateGeometry()
 //
 //    Add Saa3 to Saa and Saa to top volume
 //
-      printf("zcSaa3: %8.2f\n", zcSaa3);
       voSaa->AddNode(voSaa3,       1, new TGeoTranslation(0., 0., zcSaa3));
       
 
