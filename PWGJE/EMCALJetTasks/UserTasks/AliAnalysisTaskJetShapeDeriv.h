@@ -6,7 +6,6 @@ class TH2;
 class TH3;
 class THnSparse;
 class TF1;
-class TClonesArray;
 class TArrayI;
 class TTree;
 class TLorentzVector;
@@ -19,8 +18,12 @@ class AliJetContainer;
 class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
  public:
   enum JetMassVarType {
-    kMass   = 0,  //jet mass
+    kMass   = 0,   //jet mass
     kRatMPt = 1    //ratio mass/pt jet
+  };
+  enum ResponseReference {
+    kDet    = 0,   //detector level
+    kPart   = 1    //particle level
   };
 
   AliAnalysisTaskJetShapeDeriv();
@@ -38,6 +41,8 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
+  void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
+
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
 
  protected:
@@ -54,6 +59,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
   JetMassVarType                      fJetMassVarType;             // observable to use
+  ResponseReference                   fResponseReference;          // true axis of response matrix
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
 
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
@@ -92,7 +98,7 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 6)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 7)
 };
 #endif
 

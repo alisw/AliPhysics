@@ -6,7 +6,6 @@ class TH2;
 class TH3;
 class THnSparse;
 class TF1;
-class TClonesArray;
 class TArrayI;
 class TTree;
 class TLorentzVector;
@@ -21,6 +20,10 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   enum JetMassVarType {
     kMass   = 0,  //jet mass
     kRatMPt = 1    //ratio mass/pt jet
+  };
+  enum ResponseReference {
+    kDet    = 0,   //detector level
+    kPart   = 1    //particle level
   };
 
   AliAnalysisTaskJetShapeConst();
@@ -39,6 +42,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b)                        { fSingleTrackEmb    = b   ; }
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
+  void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
 
  protected:
@@ -56,6 +60,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
   JetMassVarType                      fJetMassVarType;             // observable to use
+  ResponseReference                   fResponseReference;          // true axis of response matrix
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
 
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
@@ -82,7 +87,7 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 6)
+  ClassDef(AliAnalysisTaskJetShapeConst, 7)
 };
 #endif
 

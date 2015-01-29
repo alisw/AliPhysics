@@ -46,6 +46,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
   fJetMassVarType(kMass),
+  fResponseReference(kDet),
   fUseSumw2(0),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
@@ -103,6 +104,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
   fJetMassVarType(kMass),
+  fResponseReference(kDet),
   fUseSumw2(0),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
@@ -297,9 +299,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 
   AliEmcalJet* jet1  = NULL; //AA jet
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
-  //  AliEmcalJet *jet1T = NULL; //tagged AA jet
-  //  AliEmcalJet *jet2T = NULL; //tagged Pythia jet
+  AliEmcalJet *jetR  = NULL; //true jet for response matrix
   AliEmcalJet *jetS = NULL;  //subtracted jet
+
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   AliJetContainer *jetContS = GetJetContainer(fContainerSub);
 
@@ -321,7 +323,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       for(Int_t i = 0; i<jetContS->GetNJets(); i++) {
 	//if(ifound==1) continue;
 	jetS = jetContS->GetJet(i);
-	if(jetS->GetLabel()==jet1->GetLabel()) { // && jetS->Pt()>0.) {
+	if(jetS->GetLabel()==jet1->GetLabel()) {
 	  ifound++;
 	  if(ifound==1) ilab = i;
 	}
@@ -358,6 +360,12 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	  if(fraction>fMinFractionShared) {
 	    fJet2Vec->SetPxPyPzE(jet2->Px(),jet2->Py(),jet2->Pz(),jet2->E());
 	    fMatch = 1;
+
+            //choose jet type for true axis of response matrix
+            if(fResponseReference==kDet) 
+              jetR = jet2;
+            else if(fResponseReference==kPart)
+              jetR = jet2->GetTaggedJet();
 	  } else
 	    fMatch = 0;
 	}
@@ -371,16 +379,16 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 	Double_t drToLJ = -1.;
 	if(jetL) drToLJ = jet1->DeltaR(jetL);
 	fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
-	if(jet2) {
-	  Double_t var2 = jet2->M();
+	if(jetR) {
+	  Double_t var2 = jetR->M();
 	  if(fJetMassVarType==kRatMPt) {
-	    if(jet2->Pt()>0. || jet2->Pt()<0.) var2 = jet2->M()/jet2->Pt();
+	    if(jetR->Pt()>0. || jetR->Pt()<0.) var2 = jetR->M()/jetR->Pt();
 	  }
-          fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,jet2->Pt(),jet1->MaxTrackPt());
-          fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,jet2->Pt(),jet1->MaxTrackPt());
-          fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(jet2->Pt(),var-var2,jet1->MaxTrackPt());
-          if(jet2->M()>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(jet2->Pt(),(var-var2)/var2,jet1->MaxTrackPt());
-	  Double_t varsp[5] = {var,var2,ptjet1,jet2->Pt(),jet1->MaxTrackPt()};
+          fh3MSubPtTrueLeadPt[fCentBin]->Fill(var,jetR->Pt(),jet1->MaxTrackPt());
+          fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,jetR->Pt(),jet1->MaxTrackPt());
+          fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(jetR->Pt(),var-var2,jet1->MaxTrackPt());
+          if(jetR->M()>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(jetR->Pt(),(var-var2)/var2,jet1->MaxTrackPt());
+	  Double_t varsp[5] = {var,var2,ptjet1,jetR->Pt(),jet1->MaxTrackPt()};
 	  fhnMassResponse[fCentBin]->Fill(varsp);
 	}
       }
