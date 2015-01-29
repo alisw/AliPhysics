@@ -3,35 +3,15 @@
 //
 // Author: M.Verweij
 
-#include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <THnSparse.h>
-#include <TList.h>
-#include <TLorentzVector.h>
-#include <TProfile.h>
-#include <TChain.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include <TKey.h>
 
-#include "AliVCluster.h"
-#include "AliVTrack.h"
 #include "AliEmcalJet.h"
-#include "AliRhoParameter.h"
 #include "AliLog.h"
-#include "AliEmcalParticle.h"
-#include "AliMCEvent.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliAODMCHeader.h"
-#include "AliMCEvent.h"
-#include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
-
-#include "AliAODEvent.h"
-#include "AliESDEvent.h"
 
 #include "AliAnalysisTaskEmcalJetTagger.h"
 
@@ -232,8 +212,6 @@ Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 
   MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,3);
 
-  //  if(fJetTaggingMethod==kFraction)
-
   return kTRUE;
 }
 
@@ -291,7 +269,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
       dPhi += TMath::TwoPi();  
     
     fh3PtJet1VsDeltaEtaDeltaPhi[fCentBin]->Fill(ptJet1,jet1->Eta()-jet2->Eta(),dPhi);
-    fh2PtJet1VsDeltaR[fCentBin]->Fill(ptJet1,GetDeltaR(jet1,jet2));
+    fh2PtJet1VsDeltaR[fCentBin]->Fill(ptJet1,jet1->DeltaR(jet2));
   }
   return kTRUE;
 }
@@ -353,7 +331,6 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
   }
   iFlag.Reset(0);
 
-
   AliJetContainer *cont1 = GetJetContainer(c1);
   AliJetContainer *cont2 = GetJetContainer(c2);
   if(type==1)
@@ -381,7 +358,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       AliEmcalJet *jet2 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(j, c2));
       if(!jet2) continue;
 
-      Double_t dR = jet1->DeltaR(jet2);//GetDeltaR(jet1,jet2);
+      Double_t dR = jet1->DeltaR(jet2);
       if(dR<dist && dR<maxDist){
 	faMatchIndex2[i]=j;
 	dist = dR;
@@ -391,9 +368,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       iFlag[i*nJets2+faMatchIndex2[i]]+=1;//j closest to i
       if(iDebug>10) Printf("Full Distance (%d)--(%d) %3.3f flag[%d] = %d",i,faMatchIndex2[i],dist,i*nJets2+faMatchIndex2[i],iFlag[i*nJets2+faMatchIndex2[i]]);
     }
-  
   }//i jet loop
-
 
   // other way around
   for(int j = 0;j<nJets2;j++){
@@ -406,7 +381,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       AliEmcalJet *jet1 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(i, c1));
       if(!jet1)	continue;
 
-      Double_t dR = jet1->DeltaR(jet2);//GetDeltaR(jet1,jet2); 
+      Double_t dR = jet1->DeltaR(jet2);
       if(dR<dist && dR<maxDist){
 	faMatchIndex1[j]=i;
         dist = dR;
@@ -416,7 +391,6 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       iFlag[faMatchIndex1[j]*nJets2+j]+=2;//i closest to j
       if(iDebug>10) Printf("Other way Distance (%d)--(%d) %3.3f flag[%d] = %d",faMatchIndex1[j],j,dist,faMatchIndex1[j]*nJets2+j,iFlag[faMatchIndex1[j]*nJets2+j]);
     }
-
   }
     
   // check for "true" correlations
@@ -427,9 +401,8 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       AliDebug(11,Form("%s: Flag[%d][%d] %d ",GetName(),i,j,iFlag[i*nJets2+j]));
       
       // we have a uniqe correlation
-      if(iFlag[i*nJets2+j]==3){
-	
-	Double_t dR = jet1->DeltaR(jet2);//GetDeltaR(jet1,jet2); 
+      if(iFlag[i*nJets2+j]==3) {
+        Double_t dR = jet1->DeltaR(jet2);
 	if(iDebug>1) Printf("closest jets %d  %d  dR =  %f",j,i,dR);
 	
 	if(fJetTaggingType==kTag) {
@@ -450,29 +423,11 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaR(const AliEmcalJet* jet1, const AliEmcalJet* jet2) const {
-  //
-  // Helper function to calculate the distance between two jets
-  //
-
-  Double_t dPhi = jet1->Phi() - jet2->Phi();
-  if(dPhi>TMath::Pi())
-    dPhi -= TMath::TwoPi();
-  if(dPhi<(-1.*TMath::Pi()))
-    dPhi += TMath::TwoPi();
-  Double_t dEta = jet1->Eta() - jet2->Eta();
-  Double_t dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
-  return dR;
-}
-
-//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaPhi(const AliEmcalJet* jet1, const AliEmcalJet* jet2) {
   //
   // Calculate azimuthal angle between the axises of the jets
   //
-
   return GetDeltaPhi(jet1->Phi(),jet2->Phi());
-
 }
 
 //________________________________________________________________________
@@ -480,9 +435,7 @@ Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaPhi(Double_t phi1,Double_t phi2)
   //
   // Calculate azimuthal angle between the axises of the jets
   //
-
   Double_t dPhi = phi1-phi2;
-
   if(dPhi <-0.5*TMath::Pi())  dPhi += TMath::TwoPi();
   if(dPhi > 1.5*TMath::Pi())  dPhi -= TMath::TwoPi();
 
@@ -490,51 +443,14 @@ Double_t AliAnalysisTaskEmcalJetTagger::GetDeltaPhi(Double_t phi1,Double_t phi2)
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetTagger::GetFractionSharedPt(const AliEmcalJet *jet1, const AliEmcalJet *jet2) const
-{
-  //
-  // Get fraction of shared pT between matched full and charged jet
-  // Uses charged jet pT as baseline: fraction = \Sum_{const,full jet} pT,const,i / pT,jet,ch
-  //
-
-  Double_t fraction = 0.;
-  Double_t jetPt2 = jet2->Pt();
- 
-  if(jetPt2>0) {
-
-    AliDebug(2,Form("%s: nConstituents_jet1: %d, nConstituents_jet2: %d, tracks_jet1: %d  tracks_jet2: %d clusters_jet1: %d clusters_jet2: %d",GetName(),jet1->GetNumberOfConstituents(),jet2->GetNumberOfConstituents(),jet1->GetNumberOfTracks(),jet2->GetNumberOfTracks(),jet1->GetNumberOfClusters(),jet2->GetNumberOfClusters()));
-    
-    Double_t sumPt = 0.;
-    AliVParticle *vpf = 0x0;
-    Int_t iFound = 0;
-    for(Int_t icc=0; icc<jet2->GetNumberOfTracks(); icc++) {
-      Int_t idx = (Int_t)jet2->TrackAt(icc);
-      iFound = 0;
-      for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
-	if(idx == jet1->TrackAt(icf) && iFound==0 ) {
-	  iFound=1;
-	  vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fTracks));
-	  if(vpf) sumPt += vpf->Pt();
-	  continue;
-	}
-      }
-    }
-    fraction = sumPt/jetPt2;
-  } else fraction = -1.;
-  return fraction;
-}
-
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetTagger::RetrieveEventObjects() {
   //
   // retrieve event objects
   //
-
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   return kTRUE;
-
 }
 
 //_______________________________________________________________________
