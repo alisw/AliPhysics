@@ -169,6 +169,9 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   //Fill Correlations fills the UEHist fTwoPlusOne with the 2+1 correlation
   //the input variables centrality and zVtx are the centrality and the z vertex of the event
   //the 4 lists triggerNear, triggerAway, assocNear and assocAway are four lists of particles. For the same event analysis all for lists are identical. For the mixed event analysis assocNear and assocAway are from different events as the trigger lists and for the mixed combinatorics triggerNear and assocNear are from one event and triggerAway and assocAway are from another event.
+  //several booleans in this container change the behaviour of the container:
+  //fUseLeadingPt: decides if a particle is only accepted as trigger particle if it has the highest pT within an circle with the radius of alpha
+  //fUseAllT1: in case multiple trigger 2 are accepted, the near side yield is filled for each found away side yield
   AliCFContainer* track_hist = fTwoPlusOne->GetTrackHist(AliUEHist::kToward);
   AliCFContainer* event_hist = fTwoPlusOne->GetEventHist();
   AliUEHist::CFStep stepUEHist = static_cast<AliUEHist::CFStep>(step);
