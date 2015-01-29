@@ -39,6 +39,9 @@ include(CheckGitVersion)
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
 include(CheckCompiler)
 
+# Utility to generate PARfiles
+include(cmake/GenParFile.cmake)
+
 # Shared library suffix
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
@@ -99,6 +102,9 @@ find_package(ZeroMQ)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
+# List of modules for which PARfiles are enabled -- use the cache as global scope and clean it
+set(ALIPARFILES "" CACHE INTERNAL "ALIPARFILES" FORCE)
+
 # AliRoot modules
 add_subdirectory(CORRFW)
 if(ZeroMQ_FOUND)
@@ -120,3 +126,7 @@ add_subdirectory(PWGJE)
 add_subdirectory(PWGLF)
 add_subdirectory(PWGPP)
 add_subdirectory(PWGUD)
+
+# List modules with PARfiles
+string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
+message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
