@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAODEventInfo+;
-#pragma link C++ class AliAnalysisTaskAOD2MuonAOD+;
 #pragma link C++ class AliAnalysisTaskMuonAODfromGeneral+;
 #pragma link C++ class AliAnalysisTaskFromStandardToMuonAOD+;
 #pragma link C++ class AliAnalysisTaskSingleMu+;
@@ -62,12 +61,6 @@
 #pragma link C++ class AliAnalysisMuMuNch+;
 #pragma link C++ class AliAnalysisTaskNorm+;
 //#pragma link C++ class AliAnalysisMuMuMeanPt+;
-
-#pragma link C++ namespace AAF;
-
-#pragma link C++ function AAF::FILTER_RAWMUON;
-#pragma link C++ function AAF::FILTER_AODMUONWITHTRACKLETS;
-#pragma link C++ function AAF::StageAndFilter;
 
 #endif
 
