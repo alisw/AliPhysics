@@ -31,6 +31,7 @@
 
 #include "AliHLTReadoutList.h"
 #include "AliHLTDAQ.h"
+#include "AliDAQ.h"
 #include "Riostream.h"
 #include "TString.h"
 #include "TObjString.h"
@@ -300,12 +301,12 @@ bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitInd
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
     wordIndex = 29;
     break;
-  case 20: // AD
+  case 21: // AD
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
     // 1 word for AD, 1 DDL
     wordIndex = 30;
     break;
-  case 31: // HLT
+  case 30: // HLT
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
     // the HLT bitfield is in the last word
     wordIndex = 31;
@@ -314,7 +315,7 @@ bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitInd
     return false;
   }
   
-  if (ddlNum >= AliHLTDAQ::NumberOfDdls(detNum == 31 ? 20 : detNum)) return false;
+  if (ddlNum >= AliHLTDAQ::NumberOfDdls(detNum == AliDAQ::kHLTId ? AliDAQ::kNDetectors-1 : detNum)) return false;
   
   // The bit index within the word indicated by wordIndex.
   bitIndex = ddlNum % 32;

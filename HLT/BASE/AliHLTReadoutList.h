@@ -62,8 +62,8 @@ class AliHLTReadoutList : public TNamed
     kTRG = 0x1 << 17,      /// ID for TRG detector
     kEMCAL = 0x1 << 18,    /// ID for EMCAL detector
     kDAQTEST = 0x1 << 19,  /// ID for DAQ_TEST detector
-    kAD = 0x1 << 20,       /// ID for AD detector
-    kHLT = 0x1 << 31,      /// ID for HLT detector
+    kAD = 0x1 << 21,       /// ID for AD detector
+    kHLT = 0x1 << 30,      /// ID for HLT detector
     // kALLDET sets readout for all detectors except DAQ_TEST
     kALLDET = (kITSSPD | kITSSDD | kITSSSD | kTPC | kTRD | kTOF | kHMPID | kPHOS
                | kCPV | kPMD | kMUONTRK | kMUONTRG | kFMD | kT0 | kV0 | kZDC
