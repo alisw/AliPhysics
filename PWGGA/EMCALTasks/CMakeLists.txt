@@ -45,6 +45,7 @@ set(SRCS
     AliAnalysisTaskSDMGammaMC.cxx
     AliAnalysisTaskTrgContam.cxx
     AliEMCalpi0ClusterEvaluationTask.cxx
+    AliAnalysisTaskEMCALPi0Gamma.cxx
     AliStaObjects.cxx
    )
 
