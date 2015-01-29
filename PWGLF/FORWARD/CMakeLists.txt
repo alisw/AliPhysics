@@ -25,12 +25,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
   )
 
-# Sources - alphabetical order
-set(SRCS
-  # ZDC tasks
-  GEO/AliAnalysisTaskZDCPbPb.cxx
-  GEO/AliAnalysisTaskZDCTreeMaker.cxx
-  GEO/AliAnalysisTaskZDCpAcalib.cxx
+# Sources under analysis2/ - alphabetical order
+set(SRCS_analysis2
   # AOD objects
   analysis2/AliAODCentralMult.cxx
   analysis2/AliAODForwardEP.cxx
@@ -104,22 +100,40 @@ set(SRCS
   analysis2/AliFMDMCTrackELoss.cxx
   analysis2/AliFMDMCTrackInspector.cxx 
   analysis2/AliFMDMCTrackInspectorTask.cxx 
+)
+
+# Sources under GEO/ - alphabetical order
+set(SRCS_GEO
+  # ZDC tasks
+  GEO/AliAnalysisTaskZDCPbPb.cxx
+  GEO/AliAnalysisTaskZDCTreeMaker.cxx
+  GEO/AliAnalysisTaskZDCpAcalib.cxx
+)
+
+# Sources under photons/ - alphabetical order
+set(SRCS_photons
   # Photons 
   photons/AliAnalysisTaskPMD.cxx
   photons/AliAnalysisTaskPMDSim.cxx
-  )
+)
+
+# Putting all sources together
+set(SRCS ${SRCS_analysis2} ${SRCS_GEO} ${SRCS_photons})
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-# Additional headers
-set ( HDRS ${HDRS} 
+# Additional headers for analysis2/
+set(HDRS_analysis2
   analysis2/AliFMDStripIndex.h 
   analysis2/AliFMDEncodedEdx.h 
   analysis2/AliLandauGaus.h 
   analysis2/AliLandauGausFitter.h 
   analysis2/AliFMDCorrNoiseGain.h
-  )
+)
+
+# Add additional headers to the common list of headers
+list(APPEND HDRS ${HDRS_analysis2})
 
 # Additional definitions
 if((DEFINED ALIROOT_SVN_REVISION)) 
