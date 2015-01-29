@@ -77,4 +77,8 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
   # Install target
   install(FILES ${PARDIR}/../${PARMODULE}.par DESTINATION PARfiles OPTIONAL)
 
+  # Add this module to the list of generated PARfiles
+  list(APPEND ALIPARFILES ${PARMODULE})
+  set(ALIPARFILES ${ALIPARFILES} CACHE INTERNAL "ALIPARFILES")
+
 endfunction()
