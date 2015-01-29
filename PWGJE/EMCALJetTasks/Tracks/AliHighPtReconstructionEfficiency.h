@@ -41,6 +41,7 @@ public:
 	void SetMaxEtaJets(double maxeta) { fMaxEtaJets = maxeta; }
 	void SetMinPtTracks(double minpt) { fMinPtParticles = minpt; }
 	void SetMaxDR(double maxdr) { fMaxDR = maxdr; }
+	void SetTrackCuts(AliESDtrackCuts *const cuts) { fTrackCuts = cuts; }
 
 	void SetTaskDebugMode() { fTaskDebugMode = true; }
 
@@ -62,7 +63,7 @@ private:
 	AliHighPtReconstructionEfficiency(const AliHighPtReconstructionEfficiency &);
 	AliHighPtReconstructionEfficiency &operator=(const AliHighPtReconstructionEfficiency &);
 
-	AliESDtrackCuts					*fTrackCuts;				//!
+	AliESDtrackCuts					*fTrackCuts;				//
 	AliParticleMap					*fParticleMap;				//!
 
 	// Output objects
