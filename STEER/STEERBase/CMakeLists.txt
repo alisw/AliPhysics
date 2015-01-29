@@ -104,6 +104,7 @@ set(SRCS
     AliTRDTKDInterpolator.cxx
     AliTriggerScalers.cxx
     AliTriggerScalersRecord.cxx
+    AliVAD.cxx
     AliVAODHeader.cxx
     AliVCaloCells.cxx
     AliVCaloTrigger.cxx

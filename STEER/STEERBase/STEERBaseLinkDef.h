@@ -25,6 +25,7 @@
 #pragma link C++ class AliVCuts+;
 #pragma link C++ class AliVVZERO+;
 #pragma link C++ class AliVZDC+;
+#pragma link C++ class AliVAD+;
 #pragma link C++ class AliCentrality+;
 #pragma link C++ class AliEventplane+;
 

@@ -28,6 +28,7 @@ set(SRCS
     AliCascadeVertexer.cxx
     AliESDACORDE.cxx
     AliESDAD.cxx
+    AliESDADfriend.cxx
     AliESDCaloCells.cxx
     AliESDCaloCluster.cxx
     AliESDCaloTrigger.cxx
