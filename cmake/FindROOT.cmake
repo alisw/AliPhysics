@@ -49,6 +49,7 @@ if(ROOTSYS)
     if(NOT ROOT_CONFIG)
         message(FATAL_ERROR "Could not find root-config script.")
     endif(NOT ROOT_CONFIG)
+    mark_as_advanced(ROOT_CONFIG)
 
     # Check for rlibmap
     find_program(ROOT_LIBMAP NAMES rlibmap rootcling PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
@@ -57,6 +58,7 @@ if(ROOTSYS)
     else()
         message(FATAL_ERROR "Could not find rlibmap executable.")
     endif(ROOT_LIBMAP)
+    mark_as_advanced(ROOT_LIBMAP)
 
     # Check for rootcint
     find_program(ROOT_CINT NAMES rootcint PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
@@ -65,6 +67,7 @@ if(ROOTSYS)
     else()
         message(FATAL_ERROR "Could not find rootcint executable.")
     endif(ROOT_CINT)
+    mark_as_advanced(ROOT_CINT)
 
     # Checking ROOT version
     execute_process(COMMAND ${ROOT_CONFIG} --version OUTPUT_VARIABLE ROOT_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )

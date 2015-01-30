@@ -68,6 +68,10 @@ endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
 # DATE
 # date-config needs DIMDIR and ODIR set
+# Setting variables in cache to be accesible by ccmake
+set(DATE_CONFIG CACHE STRING "date-config script location")
+set(DIMDIT CACHE STRING "dim installation folder")
+set(ODIR CACHE STRING "dim plaform, usually \"linux\"")
 if(DATE_CONFIG)
     if(DIMDIR AND ODIR)
         find_package(DATE)
@@ -77,11 +81,15 @@ if(DATE_CONFIG)
 endif()
 
 # daqDA
+# Setting variables in cache to be accesible by ccmake
+set(daqDA CACHE STRING "daqDA library folder installation")
 if(daqDA)
     find_package(daqDA)
 endif(daqDA)
 
 # AMORE
+# Setting variables in cache to be accesible by ccmake
+set(AMORE_CONFIG CACHE STRING "amore-config script location")
 if(AMORE_CONFIG)
     if(ROOTSYS)
         find_package(AMORE)
@@ -91,6 +99,9 @@ if(AMORE_CONFIG)
 endif(AMORE_CONFIG)
 
 # id DARPM we enable DA if it is not set
+# Setting variables in cache to be accesible by ccmake
+set(DARPM CACHE STRING "Enable DARPM: ON")
+set(DA CACHE STRING "Enable DA: ON")
 if(DARPM)
     if(NOT DA)
         set(DA ON)
@@ -98,6 +109,8 @@ if(DARPM)
 endif(DARPM)
 
 # DA is enabled
+# Setting variables in cache to be accesible by ccmake
+set(ALIROOT_STATIC CACHE STRING "ENABLE static building of AliRoot: ON")
 if(DA)
     if(NOT DIMDIR AND NOT ODIR)
         set(DA FALSE)
@@ -125,6 +138,8 @@ if(DA)
 endif(DA)
 
 # MDC rpm creation enables the static build
+# Setting variables in cache to be accesible by ccmake
+set(MDCRPM CACHE STRING "Enable mdc rpm build")
 if(MDCRPM)
     set(ALIROOT_STATIC TRUE)
     message(STATUS "AliMDC RPM enabled. AliRoot static build enabled")
@@ -133,6 +148,8 @@ endif(MDCRPM)
 # ROOT configuration mandatory
 # FindRoot has to be after the enabling of DA due to libRootExtra
 # Do not put it above DA
+# Setting variables in cache to be accesible by ccmake
+set(ROOTSYS CACHE STRING "ROOT installation folder")
 if(ROOTSYS)
     find_package(ROOT REQUIRED)
 
@@ -266,6 +283,8 @@ add_subdirectory(QAref)
 
 # Enable SHUTTLE compilation
 # Check if DIMDIR and ODIR are set
+# # Setting variables in cache to be accesible by ccmake
+set(SHUTTLE CACHE STRING "Enable SHUTTLE build : ON")
 if(SHUTTLE)
     if(ROOT_HASALIEN STREQUAL "no")
 	message(FATAL_ERROR "Shuttle needs ROOT build with AliEn support. Please build ROOT with AliEn support. Do not forget to set ALIEN to your AliEn installation")
