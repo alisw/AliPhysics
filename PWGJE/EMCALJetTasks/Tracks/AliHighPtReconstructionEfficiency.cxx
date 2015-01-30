@@ -302,6 +302,10 @@ void AliHighPtReconstructionEfficiency::ProcessJet(
 			// Create new Particle and add it to the jet reconstructed jet
 			AliReducedJetParticle * part = new AliReducedJetParticle(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), mcpart->PdgCode(),rectrack ? true : false);
 			part->SetDistanceToMainJetAxis(dr);
+			if(rectrack){
+				part->SetDeltaPt(TMath::Abs(mcpart->Pt()) - TMath::Abs(rectrack->Pt()));
+				part->SetNumberOfClustersTPC(static_cast<unsigned char>(rectrack->GetTPCNcls()));
+			}
 			recjet->AddParticleInCone(part);
 		}
 	}
