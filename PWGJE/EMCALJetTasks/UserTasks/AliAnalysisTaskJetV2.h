@@ -349,12 +349,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistTriggerQAIn[10];   //! trigger qa in plane
         TH2F*                   fHistTriggerQAOut[10];  //! trigger qa out of plane
         // qa event planes
-        TProfile*               fHistPsiControl;        //! event plane control histogram
-        TProfile*               fHistPsiSpread;         //! event plane spread histogram
-        TH1F*                   fHistPsiVZEROA;         //! psi 2 from vzero a
-        TH1F*                   fHistPsiVZEROC;         //! psi 2 from vzero c
-        TH1F*                   fHistPsiVZERO;          //! psi 2 from combined vzero
-        TH1F*                   fHistPsiTPC;            //! psi 2 from tpc
         TH2F*                   fHistPsiVZEROAV0M;      //! psi 2 from vzero a
         TH2F*                   fHistPsiVZEROCV0M;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROVV0M;      //! psi 2 from combined vzero
