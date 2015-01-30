@@ -30,7 +30,7 @@ AliDielectron* ConfigJpsi2ee(Int_t cutDefinition)
   diele->SetUseKF(kFALSE);
   // estimators filename
   //NOTE: what does this mean?: estimator for pp multiplicity, not needed for instance for my pA-purpose(mwinn 16.1.2012)..
-  //diele->SetEstimatorFilename("$ALICE_ROOT/PWGDQ/dielectron/files/estimators.root");
+  //diele->SetEstimatorFilename("$ALICE_PHYSICS/PWGDQ/dielectron/files/estimators.root");
   //diele->SetEstimatorFilename("TRAIN_ROOT/mwinn_jpsiCorr/estimators_pPb.root");
   //  diele->SetEstimatorFilename("$TRAIN_ROOT/mwinn_jpsiCorr/estimators_pPb.root");
   //cout <<"TRAIN_ROOT" << TRAIN_ROOT << endl;

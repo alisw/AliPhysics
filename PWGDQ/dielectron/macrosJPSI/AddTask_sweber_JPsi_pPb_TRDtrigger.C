@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_sweber_JPsi_pPb_TRDtrigger(){
   
   //set config file name
   // TString configFile("$TRAIN_ROOT/mwinn_jpsiCorr/ConfigJpsi2eeData.C");
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_sweber_pPb_TRDtrigger.C");
+  TString configFile("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_sweber_pPb_TRDtrigger.C");
   //TString configFile("$TRAIN_ROOT/jpsi_JPSI/ConfigJpsiStandard.C");
   // if ( trainConfig.Contains("PbPb") ) configFile="$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eePbPb.C";
   

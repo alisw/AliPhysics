@@ -36,7 +36,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
 
   // the different paths
   TString alienPath("alien:///alice/cern.ch/user/p/pdillens/PWGDQ/dielectron/macrosJPSI/");
-  TString alirootPath("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/");
+  TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/");
 
   ////////// >>>>>>>>>> alien config
   if(gridconf) {

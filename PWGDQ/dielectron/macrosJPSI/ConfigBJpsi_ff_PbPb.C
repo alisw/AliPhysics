@@ -101,7 +101,7 @@ AliDielectron* ConfigBJpsi_ff_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
     // trd tables
     TString pidTab="$TRAIN_ROOT/util/dielectron/dielectron/TRDpidEff_eleProb07_TRDntr4_6.root";
     TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-    if (trainRoot.IsNull()) pidTab="$ALICE_ROOT/PWGDQ/dielectron/files/TRDpidEff_eleProb07_TRDntr4_6.root";
+    if (trainRoot.IsNull()) pidTab="$ALICE_PHYSICS/PWGDQ/dielectron/files/TRDpidEff_eleProb07_TRDntr4_6.root";
 
     if (gSystem->AccessPathName(gSystem->ExpandPathName(pidTab.Data())))
       Error("ConfigPbPb","PID table not found: %s",pidTab.Data());
@@ -600,7 +600,7 @@ void SetEtaCorrection()
 
   TString etaMap="$TRAIN_ROOT/jpsi_JPSI/EtaCorrMaps.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-  if (trainRoot.IsNull()) etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
+  if (trainRoot.IsNull()) etaMap="$ALICE_PHYSICS/PWGDQ/dielectron/files/EtaCorrMaps.root";
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigPbPb","Eta map not found: %s",etaMap.Data());
     return;
