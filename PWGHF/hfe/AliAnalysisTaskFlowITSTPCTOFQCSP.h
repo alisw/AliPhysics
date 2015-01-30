@@ -57,7 +57,7 @@ public:
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
     void                                 SetTPCS(Int_t sig) {fTPCS = sig;};
     void                                 SetVz(Int_t ver) {fVz = ver;};
-//    void                                 SetQAPIDSparse(Bool_t qapidsparse) {fQAPIDSparse = qapidsparse;};
+    //    void                                 SetQAPIDSparse(Bool_t qapidsparse) {fQAPIDSparse = qapidsparse;};
     void                                 SetOpeningAngleflag(Bool_t opang){fOP_angle = opang;};
     void                                 SetOpeningAngleCut(Double_t opanglecut) {fOpeningAngleCut = opanglecut;};
     template <typename T> void           PlotVZeroMultiplcities(const T* event) const;
@@ -76,14 +76,17 @@ public:
     void                                 SetAssoITSRefit(Bool_t itsref) {fAssoITSRefit = itsref;};
     void                                 SetAssoTPCCluster(Int_t tpc_clust) {fAssoTPCCluster = tpc_clust;};
     void                                 SetPhiCut(Bool_t phicut){fPhiCut = phicut;};
-
+    
     void                                 SetHistoForEPFlattWeights(TH1D *h);
     Double_t                             GiveMeWeight(Double_t EP);
     void                                 SetEPWeight(Bool_t epw){EPweights = epw;};
-
+    
     void                                 SetTPCPID(AliHFEpidTPC *pidcorr){ftpcpid = pidcorr;};
     void                                 SetMultCorrectionTheo(Bool_t mulcorr){multCorrection = mulcorr;}
-
+    
+    void                                 SetEtaMinPos(Double_t minetapos){fEtaMinimumPositive = minetapos;}
+    void                                 SetEtaMinNeg(Double_t minetaneg){fEtaMinimumNegative = minetaneg;}
+    
     
     AliHFEpid *GetPID() const { return fPID; };
     
@@ -153,7 +156,7 @@ private:
     Double_t             fmaxTPCnsigmaLowpT;  //ID cuts tpc
     Double_t             fminTPCnsigmaHighpT;  //ID cuts tpc
     Double_t             fmaxTPCnsigmaHighpT;  //ID cuts tpc
-   // Bool_t               fQAPIDSparse;       //QAPIDSPARSE
+    // Bool_t               fQAPIDSparse;       //QAPIDSPARSE
     Double_t             fminTOFnSigma;  //ID cuts tof
     Double_t             fmaxTOFnSigma;//ID cuts tof
     THnSparseF           *fQAPidSparse;             //! v2 analysis of EP-V0
@@ -195,12 +198,14 @@ private:
     Int_t                 fAssoTPCCluster;//asso tpc cluster
     Bool_t                fAssoITSRefit;//asso its refit
     Bool_t                fPhiCut;//Phi cut to simulate emcal acc
-
+    
     TH1D                 *fHistEPDistrWeight;// isto for Centr Flat
     Bool_t               EPweights;//for mult correlationcut
     TH1D                 *EPVzAftW;//!v0cep
     
     Bool_t                multCorrection;//Flag to activate mult/etacorrection
+    Double_t              fEtaMinimumPositive;//for reso
+    Double_t              fEtaMinimumNegative;//for reso
 
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
