@@ -97,6 +97,7 @@ AliRsnMiniAnalysisTask * AddTaskDelta
     ::Info("AddAnalysisTaskTOFDelta", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
     ::Info("AddAnalysisTaskTOFDelta", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
     //add event utils cuts
+    eventCuts->AddCut(cutVertex);
     eventCuts->AddCut(cutEventUtils);
     //define cut scheme
     eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
