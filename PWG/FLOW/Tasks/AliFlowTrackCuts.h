@@ -94,7 +94,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    kTPCbayesian, //bayesian cutTPC
 		   kTPCNuclei,   // added by Natasha for Nuclei
                    kTPCTOFNsigma, // simple cut on combined tpc tof nsigma
-                   kTPCTOFNsigmaPuritybased // purity>0.7 cut on combined tpc tof nsigma
+                   kTPCTOFNsigmaPurity // purity>0.8 cut on combined tpc tof nsigma
                    };
 
   //setters (interface to AliESDtrackCuts)
@@ -343,7 +343,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
   Bool_t PassesTPCTOFNsigmaCut(const AliAODTrack* track); 
   Bool_t PassesTPCTOFNsigmaCut(const AliESDtrack* track);
-  Bool_t PassesTPCTOFNsigmaCutPuritybased(const AliAODTrack* track);
+  Bool_t PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track);
   Bool_t TPCTOFagree(const AliVTrack *track);
   // end part added by F. Noferini
     

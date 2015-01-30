@@ -1255,6 +1255,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
 {
   //check cuts for AOD
   Bool_t pass = passedFid;
+  AliAODPid *pidObj = track->GetDetPid();
 
   if (fCutNClustersTPC)
   {
@@ -1291,25 +1292,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     {
       if (!PassesAODpidCut(track)) pass=kFALSE;
     }
-/*
-  if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid)) ) {
-     Double_t c = TMath::C()*1.E-9;
-     Double_t length = -999., beta =-999, tofTime = -999., tof = -999.;
-     tofTime = track->GetTOFsignal();//in ps
-     length = track->GetIntegratedLength();
-        
-     tof = tofTime*1E-3; // ns
-     if (tof > 0 && length > 0){
-        length = length*0.01; // in meters
-         tof = tof*c;
-         beta = length/tof;
-         if (fQA){
-             QAbefore(18)->Fill(track->P()*track->Charge(),beta);
-             if(pass) QAafter(18)->Fill(track->P()*track->Charge(),beta);
-         }
-     }
-  }*/
- 
+
   if (fQA) {
     // changed 04062014 used to be filled before possible PID cut
     Double_t momTPC = track->GetTPCmomentum();
@@ -1331,10 +1314,6 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
     QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
-      
-    //QAbefore(19)->Fill(track->P()*track->Charge(),track->GetDetPid()->GetTPCsignal());
-    //if(pass) QAafter(19)->Fill(track->P()*track->Charge(),track->GetDetPid()->GetTPCsignal());
-      
   }
 
 
@@ -2557,13 +2536,7 @@ void AliFlowTrackCuts::DefineHistograms()
 
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
-   /*
-  before->Add(new TH2F("Pionbeta",";p_{t}[GeV/c];#beta",kNbinsP,binsP,1000,0,1000 ));//18
-  after->Add(new TH2F("Pionbeta",";p_{t}[GeV/c];#beta",kNbinsP,binsP,1000,0,1000 ));//18
-    
-  before->Add(new TH2F("PiondEdX",";p_{t}[GeV/c];dE/dX",kNbinsP,binsP,1000,0,1000 ));//19
-  after->Add(new TH2F("PiondEdX",";p_{t}[GeV/c];dE/dX",kNbinsP,binsP,1000,0,1000 ));//19
-*/
+
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -2721,8 +2694,8 @@ Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
   case kTPCTOFNsigma:
       if (!PassesTPCTOFNsigmaCut(track)) pass = kFALSE;
       break;
-  case kTPCTOFNsigmaPuritybased:
-      if(!PassesTPCTOFNsigmaCutPuritybased(track)) pass = kFALSE;
+  case kTPCTOFNsigmaPurity:
+      if(!PassesTPCTOFNsigmaPurityCut(track)) pass = kFALSE;
       break;
   default:
     return kTRUE;
@@ -3673,73 +3646,40 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliESDtrack* track)
 
 }
 //-----------------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCutPuritybased(const AliAODTrack* track)
+Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track)
 {
-    // do a combined cut on the n sigma from tpc and tof based on purity of the identified particle. (Particle is selected if Purity>0.8)
+    // do a combined cut on the n sigma from tpc and tof based on purity of the identified particle. (Particle is selected if Purity>0.8 & nsigma|<3)
     // with information of the pid response object (needs pid response task)
 
     if(!fPIDResponse) return kFALSE;
     if(!track) return kFALSE;
     if(!fUseTPCTOFNsigmaCutContours) return kFALSE;
 
-    
-    Bool_t pWithinRange = kFALSE;
-    Int_t p_bin = -999;
-    Double_t pBins[50];
-    for(int b=0;b<50;b++){pBins[b] = 0.1*b;}
-    for(int i=0;i<49;i++){      // fixed from <50 14012015 to avoid out-of-bounds RAB
-        if(track->P()>pBins[i] && track->P()<(pBins[i+1])){
-            p_bin = i;
-        }
+    Int_t p_int = -999;
+    Double_t pInterval=0;
+    for(int i=0;i<50;i++){
+        pInterval=0.1*i;
+        if(track->P()>pInterval && track->P()<pInterval+0.1){p_int = i;}
     }
-    Int_t ispecie = 0;
-    switch (fParticleID)
-    {
-        case AliPID::kPion:
-            ispecie=0;
-            break;
-        case AliPID::kKaon:
-            ispecie=1;
-            break;
-        case AliPID::kProton:
-            ispecie=2;
-            break;
-        default:
-            return kFALSE;
-    }
+    Double_t LowPtPIDTPCnsigLow_Pion[2] = {-3,-3};
+    Double_t LowPtPIDTPCnsigLow_Kaon[2] = {-3,-2};
+    Double_t LowPtPIDTPCnsigHigh_Pion[2] ={2.4,3};
+    Double_t LowPtPIDTPCnsigHigh_Kaon[2] ={3,2.2};
     
-    Double_t LowPtPIDTPCnsigLow_Pion[6] = {-3,-3,-3,-3,-3,-3};
-    Double_t LowPtPIDTPCnsigLow_Kaon[6] = {-3,-2,0,-1.8,-1.2,-0.8}; //for0.4<Pt<0.5 the purity is lower than 0.7
-    Double_t LowPtPIDTPCnsigHigh_Pion[6] ={2.4,3,3,3,2,1.4};
-    Double_t LowPtPIDTPCnsigHigh_Kaon[6] ={3,2.2,0,-0.2,1,1.8}; //for 0.4<Pt<0.5 he purity is lower than 0.7
-    
-    Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
-    Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
-
+    Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
+    Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
     
     if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid))){
-        if(p_bin<0) return kFALSE;
-        if(!fCutContour[p_bin]) cout<<"fCutContour[p_bin] does not exist"<<endl;
-        
-        if(p_bin==4 || p_bin>7){
-            if(fCutContour[p_bin]->IsInside(nSigmaTOF,nSigmaTPC)){
-                return kTRUE;
-            }
-            else{
-                return kFALSE;
-            }
+        if(p_int<2) return kFALSE;
+        if(!fCutContour[p_int]){ cout<<"fCutContour[p_int] does not exist"<<endl; return kFALSE;}
+        if(p_int>3){if(fCutContour[p_int]->IsInside(nsigmaTOF,nsigmaTPC)){return kTRUE;}}
+        if(p_int<4){
+            if(fParticleID==AliPID::kKaon && nsigmaTPC>LowPtPIDTPCnsigLow_Kaon[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Kaon[p_int-2]){return kTRUE;}
+            if(fParticleID==AliPID::kPion && nsigmaTPC>LowPtPIDTPCnsigLow_Pion[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Pion[p_int-2]){return kTRUE;}
+            if(fParticleID==AliPID::kProton && nsigmaTPC>-3 && nsigmaTPC<3){return kTRUE;}
         }
         
-        if(p_bin<8 && p_bin!=4){
-            if(fParticleID==AliPID::kPion && nSigmaTPC>LowPtPIDTPCnsigLow_Pion[p_bin-2] && nSigmaTPC<LowPtPIDTPCnsigHigh_Pion[p_bin-2]){
-                return kTRUE;
-            }
-            if(fParticleID==AliPID::kKaon && nSigmaTPC>LowPtPIDTPCnsigLow_Kaon[p_bin-2] && nSigmaTPC<LowPtPIDTPCnsigHigh_Kaon[p_bin-2]){return kTRUE;}
-            
-            if(fParticleID==AliPID::kProton && nSigmaTPC>-3 && nSigmaTPC<3){return kTRUE;}
-        }
     }
-    
     return kFALSE;
 }
 //-----------------------------------------------------------------------
@@ -4880,8 +4820,8 @@ const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
       return "TPCnuclei";
     case kTPCTOFNsigma:
       return "TPCTOFNsigma";
-    case kTPCTOFNsigmaPuritybased:
-      return "TPCTOFNsigmaPuritybased";
+    case kTPCTOFNsigmaPurity:
+      return "TPCTOFNsigmaPurity";
     default:
       return "NOPID";
   }
@@ -5106,7 +5046,7 @@ void AliFlowTrackCuts::GetTPCTOFPIDContours()
             return;
         }
     }
-    Int_t iParticle = 0;
+    Int_t iParticle = -999;
 
     switch (fParticleID)
     {
@@ -5122,21 +5062,16 @@ void AliFlowTrackCuts::GetTPCTOFPIDContours()
         default:
             return;
     }
-
-    
-    for(int i=0;i<50;i++){
  
+    for(int i=0;i<50;i++){
         TString Graph_Name = "contourlines_";
         Graph_Name += species[iParticle];
         Graph_Name += Form("%.f%.f-%i%icent",pBinning[i],pBinning[i]+1,fCentralityPercentileMin,fCentralityPercentileMax);
         fCutGraph[i] = (TGraph*)Species_contours[iParticle]->FindObject(Graph_Name);
         
         if(!fCutGraph[i]){cout<<"Contour Graph does not exist"<<endl; continue;}
-        
         fCutContour[i] = new TCutG(Graph_Name.Data(),fCutGraph[i]->GetN(),fCutGraph[i]->GetX(),fCutGraph[i]->GetY());
-        
     }
-    
 }
 //__________________
 Int_t AliFlowTrackCuts::MaxSharedITSClusterCuts(Int_t maxITSclusterShared, AliESDtrack* track){
