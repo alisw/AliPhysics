@@ -87,95 +87,6 @@ AliAODRecoCascadeHF3Prong::~AliAODRecoCascadeHF3Prong()
   //
 }
 
-//----------------------------------------------------------------------------
-//Int_t AliAODRecoCascadeHF3Prong::MatchToMC(Int_t pdgabs,Int_t pdgabs3prong,
-//                                     Int_t *pdgDg,Int_t *pdgDg3prong,
-//				     TClonesArray *mcArray, Bool_t isV0) const
-//{
-//  //
-//  // Check if this candidate is matched to a MC signal
-//  // If no, return -1
-//  // If yes, return label (>=0) of the AliAODMCParticle
-//  // 
-//
-//  Int_t ndg=GetNDaughters();
-//  if(ndg==0) {
-//    AliError("No daughters available");
-//    return -1;
-//  }
-//
-//  if ( isV0 &&
-//       ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
-//	 (pdgDg[1]==211 && pdgDg[0]==3122) ) ) {
-//    AliWarning(Form("Please, pay attention: first element in AliAODRecoCascadeHF3Prong object must be the bachelor and second one V0. Skipping! (pdgDg[0] = %d, (pdgDg[1] = %d)", pdgDg[0], pdgDg[1]));
-//    return -1;
-//  }
-//
-//  Int_t lab3Prong = -1;
-//
-//  if (!isV0) {
-//    AliAODRecoDecayHF2Prong *the2Prong = Get2Prong();
-//    lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
-//  } else {
-//    AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
-//    lab2Prong = theV0->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong); // the V0
-//  }
-//
-//  if(lab2Prong<0) return -1;
-//
-//  Int_t dgLabels[10]={0,0,0,0,0,0,0,0,0,0};
-//
-//  if (!isV0) {
-//    // loop on daughters and write labels
-//    for(Int_t i=0; i<ndg; i++) {
-//      AliVTrack *trk = dynamic_cast<AliVTrack*>(GetDaughter(i));
-//      if(!trk) continue;
-//      Int_t lab = trk->GetLabel();
-//      if(lab==-1) { // this daughter is the 2prong
-//	lab=lab2Prong;
-//      } else if(lab<-1) continue;
-//      dgLabels[i] = lab;
-//    }
-//  } else {
-//    AliVTrack *trk = dynamic_cast<AliVTrack*>(GetBachelor()); // the bachelor
-//    if (!trk) return -1;
-//    dgLabels[0] = trk->GetLabel();//TMath::Abs(trk->GetLabel());
-//    dgLabels[1] = lab2Prong;
-//  }
-//
-//  Int_t finalLabel = AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,2,2,pdgDg);
-//
-//  if (finalLabel>=0){
-//    // debug printouts for Lc->V0 bachelor case
-//
-//    if ( isV0 && (dgLabels[0]!=-1 && dgLabels[1]!=-1) ) {
-//      AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
-//      Bool_t onTheFly = theV0->GetOnFlyStatus();
-//      if (pdgDg[0]==2212 && pdgDg[1]==310) {
-//	AliAODMCParticle*k0s = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
-//	if(k0s){
-//	  Int_t labK0 = k0s->GetMother();	
-//	  AliAODMCParticle*k0bar = dynamic_cast<AliAODMCParticle*>(mcArray->At(labK0));
-//	  if(k0bar){
-//	    AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d) -> LabelK0S=%d (%d -> %d %d)",onTheFly,labK0,k0bar->GetPdgCode(),lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
-//	    AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
-//			    finalLabel,pdgabs,
-//			    dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
-//	  }
-//	}
-//      } else if (pdgDg[0]==211 && pdgDg[1]==3122) {
-//	AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d -> %d %d)",onTheFly,lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
-//	AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
-//			finalLabel,pdgabs,
-//		      dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
-//      }
-//
-//    }
-//  }
-//
-//  return finalLabel;
-//
-//}
 
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaXiDaughters() const
@@ -378,4 +289,187 @@ Double_t AliAODRecoCascadeHF3Prong::XicCosPointingAngle() const
     return (px*dx+py*dy)/pt/dl; 
   else
     return -9999.;
+}
+//----------------------------------------------------------------------------
+Int_t AliAODRecoCascadeHF3Prong::MatchToMC(Int_t pdgabs,Int_t pdgabscasc,
+                                     Int_t *pdgDg,Int_t *pdgDgcasc,Int_t *pdgDgv0
+				     ,TClonesArray *mcArray) const
+{
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+
+  Int_t ndg=GetNDaughters();
+  if(ndg==0) {
+    AliError("No daughters available");
+    return -1;
+  }
+
+  if ( pdgabs!=4232 || pdgDg[0]!=211 || pdgDg[1]!=3312 || pdgDg[2]!=211 ) 
+	{
+    AliWarning(Form("Please, pay attention: Only pi Xi pi decay is supported now"));
+    return -1;
+  }
+
+  AliAODcascade *theCascade = dynamic_cast<AliAODcascade*>(GetCascade());
+	if(!theCascade) return -1;
+  AliAODTrack *trk1 = dynamic_cast<AliAODTrack*>(GetBachelor1()); // the bachelor
+  if (!trk1) return -1;
+  AliAODTrack *trk2 = dynamic_cast<AliAODTrack*>(GetBachelor2()); // the bachelor
+  if (!trk2) return -1;
+
+  Int_t labcasc = MatchToMCCascade(theCascade,pdgabscasc,pdgDgcasc,pdgDgv0,mcArray); // the cascade
+  if(labcasc<0) return -1;
+	Int_t labtrk1 = trk1->GetLabel();
+	if(labtrk1<0) return -1;
+	Int_t labtrk2 = trk2->GetLabel();
+	if(labtrk2<0) return -1;
+
+  Int_t dgLabels[10]={0,0,0,0,0,0,0,0,0,0};
+
+  dgLabels[0] = labtrk1;
+  dgLabels[1] = labcasc;
+  dgLabels[2] = labtrk2;
+
+  Int_t finalLabel = MatchToMCXicPlus(pdgabs,mcArray,dgLabels,3,3,pdgDg);
+
+  return finalLabel;
+
+}
+//________________________________________________________________________
+Int_t AliAODRecoCascadeHF3Prong::MatchToMCCascade(AliAODcascade *theCascade, Int_t pdgabscasc, Int_t *pdgDgcasc, Int_t *pdgDgv0, TClonesArray *mcArray) const // the cascade
+{
+
+	AliAODTrack *cptrack = (AliAODTrack*) theCascade->GetDaughter(0);
+	if(!cptrack) return -1;
+	Int_t label_p = cptrack->GetLabel();
+	if(label_p<0) return -1;
+	AliAODTrack *cntrack = (AliAODTrack*) theCascade->GetDaughter(1);
+	if(!cntrack) return -1;
+	Int_t label_n = cntrack->GetLabel();
+	if(label_n<0) return -1;
+	Int_t labv0 = theCascade->MatchToMC(pdgDgcasc[1],mcArray,2,pdgDgv0);
+	if(labv0<0) return -1;
+	AliAODMCParticle *mcpartv0= (AliAODMCParticle*) mcArray->At(labv0);
+
+	AliAODTrack *cbtrack = (AliAODTrack*) theCascade->GetDecayVertexXi()->GetDaughter(0);
+	if(!cbtrack) return -1;
+
+	Int_t label_b = cbtrack->GetLabel();
+	if(label_b<0) return -1;
+
+	AliAODMCParticle *mcpartb= (AliAODMCParticle*) mcArray->At(label_b);
+	Int_t pdgb = TMath::Abs(mcpartb->GetPdgCode());
+	if(pdgb!=pdgDgcasc[0]) return -1;
+
+	AliAODMCParticle *mcmotherv0=mcpartv0;
+	Bool_t isFromXiv0 = kFALSE;
+	Int_t labxiv0 = mcmotherv0->GetMother();
+	if(labxiv0<0) return -1;
+	mcmotherv0 =  (AliAODMCParticle*) mcArray->At(labxiv0);
+	if(mcmotherv0){
+		Int_t pdg = TMath::Abs(mcmotherv0 ->GetPdgCode());
+		if(pdg==pdgabscasc){
+			isFromXiv0 = kTRUE;
+		}
+	}
+	if(!isFromXiv0) return -1;
+
+	AliAODMCParticle *mcmotherb=mcpartb;
+	Bool_t isFromXib = kFALSE;
+	Int_t labxib = mcmotherb->GetMother();
+	if(labxib<0) return -1;
+	mcmotherb =  (AliAODMCParticle*) mcArray->At(labxib);
+	if(mcmotherb){
+		Int_t pdg = TMath::Abs(mcmotherb ->GetPdgCode());
+		if(pdg==pdgabscasc){
+			isFromXib = kTRUE;
+		}
+	}
+	if(!isFromXib) return -1;
+
+	if(labxiv0!=labxib) return -1;//Bachelor and V0 should come from the same Xi
+
+	return labxib;
+}
+//----------------------------------------------------------------------------
+Int_t AliAODRecoCascadeHF3Prong::MatchToMCXicPlus(Int_t pdgabs,TClonesArray *mcArray,
+				 Int_t dgLabels[10],Int_t ndg,
+				 Int_t ndgCk, const Int_t *pdgDg) const
+{
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+	//
+
+  Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
+  Int_t i,j,lab,labMother,pdgMother,pdgPart;
+  AliAODMCParticle *part=0;
+  AliAODMCParticle *mother=0;
+  Bool_t pdgUsed[10]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+
+  // loop on daughter labels
+  for(i=0; i<ndg; i++) {
+    labMom[i]=-1;
+    lab = TMath::Abs(dgLabels[i]);
+    if(lab<0) {
+      printf("daughter with negative label %d\n",lab);
+      return -1;
+    }
+    part = (AliAODMCParticle*)mcArray->At(lab);
+    if(!part) { 
+      printf("no MC particle\n");
+      return -1;
+    }
+
+    // check the PDG of the daughter, if requested
+    if(ndgCk>0) {
+      pdgPart=TMath::Abs(part->GetPdgCode());
+      for(j=0; j<ndg; j++) {
+	if(!pdgUsed[j] && pdgPart==pdgDg[j]) {
+	  pdgUsed[j]=kTRUE;
+	  break;
+	}
+      }
+    }
+
+    mother = part;
+    while(mother->GetMother()>=0) {
+      labMother=mother->GetMother();
+      mother = (AliAODMCParticle*)mcArray->At(labMother);
+      if(!mother) {
+	printf("no MC mother particle\n");
+	break;
+      }
+      pdgMother = TMath::Abs(mother->GetPdgCode());
+      if(pdgMother==pdgabs) {
+	labMom[i]=labMother;
+	break;
+      } else if(pdgMother>pdgabs || pdgMother<10) {
+	break;
+      }
+    }
+    if(labMom[i]==-1) return -1; // mother PDG not ok for this daughter
+  } // end loop on daughters
+
+  // check if the candidate is signal
+  labMother=labMom[0];
+  // all labels have to be the same and !=-1
+  for(i=0; i<ndg; i++) {
+    if(labMom[i]==-1)        return -1;
+    if(labMom[i]!=labMother) return -1;
+  }
+
+  // check that all daughter PDGs are matched
+  if(ndgCk>0) {
+    for(i=0; i<ndg; i++) {
+      if(pdgUsed[i]==kFALSE) return -1;
+    }
+  }
+ 
+  return labMother;
 }

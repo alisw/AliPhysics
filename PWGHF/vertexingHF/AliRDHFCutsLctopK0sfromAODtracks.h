@@ -76,6 +76,7 @@ class AliRDHFCutsLctopK0sfromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   
+  Double_t CalculateLcCosPAXY(AliAODRecoDecayHF *obj);
 
  protected:
 	

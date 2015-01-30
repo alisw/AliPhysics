@@ -289,7 +289,8 @@ Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TObject* obj, Int_t selection
       {
 	okcand = kFALSE;
       }
-    if(d->DecayLengthXY() < fCutsRD[GetGlobalIndex(6,ptbin)])
+    Double_t lccospaxy = CalculateLcCosPAXY(d);
+    if(d->DecayLengthXY() * lccospaxy < fCutsRD[GetGlobalIndex(6,ptbin)])
       {
 	okcand = kFALSE;
       }
@@ -411,7 +412,23 @@ Bool_t AliRDHFCutsLctopK0sfromAODtracks::SingleTrkCuts(AliAODTrack *trk)
 
   return kTRUE;
 }
-
+//________________________________________________________________________
+Double_t AliRDHFCutsLctopK0sfromAODtracks::CalculateLcCosPAXY(AliAODRecoDecayHF *d) 
+{
+  AliAODRecoCascadeHF* lcobj=(AliAODRecoCascadeHF*)d;
+  if(!lcobj){
+    AliError("No AliAODRecoCascadeHF object found\n");
+    return -9999.;
+  }
+  Double_t dvertx = lcobj->GetSecondaryVtx()->GetX()-lcobj->GetOwnPrimaryVtx()->GetX();
+  Double_t dverty = lcobj->GetSecondaryVtx()->GetY()-lcobj->GetOwnPrimaryVtx()->GetY();
+  Double_t px = lcobj->Px();
+  Double_t py = lcobj->Py();
+  if(TMath::Sqrt(dvertx*dvertx+dverty*dverty)==0) return -9999.;
+  if(TMath::Sqrt(px*px+py*py)==0) return -9999.;
+  Double_t cospaxy = (dvertx*px+dverty*py)/TMath::Sqrt(dvertx*dvertx+dverty*dverty)/TMath::Sqrt(px*px+py*py);
+  return (Float_t)cospaxy;
+}
 //________________________________________________________________________
 Bool_t AliRDHFCutsLctopK0sfromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODVertex *primVert)
 {
