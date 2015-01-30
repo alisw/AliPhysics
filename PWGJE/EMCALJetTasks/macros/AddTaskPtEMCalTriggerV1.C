@@ -210,17 +210,16 @@ void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 
 }
 
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD){
-  AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
-  standardTrackCuts->SetName("Standard Track cuts");
-  standardTrackCuts->SetMinNCrossedRowsTPC(120);
-  standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-  if(isAOD)			// Switch of chi2 constrained cut in case of AOD analysis
-	  standardTrackCuts->SetMaxChi2TPCConstrainedGlobal(1e10);
   EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
   if(isAOD){
-	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD(standardTrackCuts);
-	  (static_cast<EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *>(trackSelection))->AddFilterBit(AliAODTrack::kTrkGlobal);
+	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+	  aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
+	  trackSelection = aodsel;
   } else {
+	  AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
+	  standardTrackCuts->SetName("Standard Track cuts");
+	  standardTrackCuts->SetMinNCrossedRowsTPC(120);
+	  standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
@@ -229,6 +228,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD){
   EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
   if(isAOD){
+	  // Purely use filter bits
 	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD(NULL);
 	  aodsel->AddFilterBit(256);
 	  aodsel->AddFilterBit(512);

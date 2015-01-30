@@ -32,7 +32,7 @@ public:
   void SetTrackSelection(AliEMCalPtTaskVTrackSelection *trackSel) { fTrackSelection = trackSel; }
 
 protected:
-  AliVParticle *IsMCTrueTrack(const AliVTrack *const trk, const AliMCEvent *evnt) const;
+  const AliVParticle *IsMCTrueTrack(const AliVTrack *const trk, const AliMCEvent *evnt) const;
   void FillHistogram(const TString &histname, const AliVTrack *const trk, const AliVParticle *assocMC, const AliVEvent * const recev, Bool_t useMCkine);
 
   AliEMCalPtTaskVTrackSelection *   fTrackSelection;          // Track selection cuts used in the analysis

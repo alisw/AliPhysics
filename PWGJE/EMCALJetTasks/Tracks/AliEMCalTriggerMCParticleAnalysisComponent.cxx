@@ -21,6 +21,7 @@
 #include <TAxis.h>
 #include <TMath.h>
 
+#include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliVParticle.h"
 #include "AliVEvent.h"
@@ -77,6 +78,9 @@ void AliEMCalTriggerMCParticleAnalysisComponent::CreateHistos() {
 
 //______________________________________________________________________________
 void AliEMCalTriggerMCParticleAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
+  /*
+   * Run event loop
+   */
   AliMCEvent *mc = data->GetMCEvent();
   if(!mc) return;
   AliVEvent *rec = data->GetRecEvent();
@@ -84,7 +88,7 @@ void AliEMCalTriggerMCParticleAnalysisComponent::Process(const AliEMCalTriggerEv
   for(int itrk = 0; itrk < mc->GetNumberOfTracks(); itrk++){
     AliVParticle *track = mc->GetTrack(itrk);
     if(!track->Charge()) continue;
-    if(!mc->IsPhysicalPrimary(itrk)) continue;
+    if(!IsPhysicalPrimary(track, mc)) continue;
     if(!fKineCuts->IsSelected(track)) continue;
 
     values[0] = TMath::Abs(track->Pt());
@@ -93,6 +97,18 @@ void AliEMCalTriggerMCParticleAnalysisComponent::Process(const AliEMCalTriggerEv
     values[3] = rec->GetPrimaryVertex()->GetZ();
     fHistos->FillTHnSparse("hMCtrueParticles", values);
   }
+}
+
+//______________________________________________________________________________
+bool AliEMCalTriggerMCParticleAnalysisComponent::IsPhysicalPrimary(const AliVParticle* const part, const AliMCEvent* const mcev) const {
+	/*
+	 * Transparent access to Physical primary information
+	 */
+	const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(part);
+	if(aodpart){
+		return aodpart->IsPhysicalPrimary();
+	}
+	return mcev->IsPhysicalPrimary(TMath::Abs(part->GetLabel()));
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

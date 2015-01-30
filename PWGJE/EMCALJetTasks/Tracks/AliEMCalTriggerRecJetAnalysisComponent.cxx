@@ -23,6 +23,7 @@
 #include <TMath.h>
 #include <TString.h>
 
+#include "AliAODMCParticle.h"
 #include "AliCentrality.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -164,7 +165,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   AliJetContainer *cont = data->GetJetContainerData();
   AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
   AliVTrack *foundtrack(NULL);
-  AliVParticle *assocMC(NULL);
+  const AliVParticle *assocMC(NULL);
   AliCentrality *centralityHandler = data->GetRecEvent()->GetCentrality();
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
@@ -191,7 +192,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
 }
 
 //______________________________________________________________________________
-AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
+const AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
     const AliVTrack* const trk, const AliMCEvent* evnt) const {
   /*
    * Check according to the associated MC information whether the track is a MC true track,
@@ -203,9 +204,13 @@ AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
    * @return: the associated MC particle (NULL if not MC true)
    */
   int label = TMath::Abs(trk->GetLabel());
-  AliVParticle *mcpart = evnt->GetTrack(label);
+  const AliVParticle *mcpart = evnt->GetTrack(label);
   if(!mcpart) return NULL;
-  if(!evnt->IsPhysicalPrimary(label)) return NULL;
+  const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(mcpart);
+  if(aodpart)
+    if(!aodpart->IsPhysicalPrimary()) return NULL;
+  else
+    if(!evnt->IsPhysicalPrimary(label)) return NULL;
   return mcpart;
 }
 

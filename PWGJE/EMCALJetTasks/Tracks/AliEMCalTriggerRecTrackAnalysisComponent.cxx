@@ -27,6 +27,7 @@
 #include <TMath.h>
 #include <TString.h>
 
+#include "AliAODMCParticle.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliPicoTrack.h"
@@ -148,7 +149,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
   this->GetMachingTriggerNames(triggernames, fUsePatches);
 
   AliVTrack *track(NULL);
-  AliVParticle *assocMC(NULL);
+  const AliVParticle *assocMC(NULL);
   TIter trackIter(data->GetMatchedTrackContainer());
   while((track = dynamic_cast<AliVTrack *>(trackIter()))){
     // Apply track selection
@@ -179,7 +180,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
 }
 
 //______________________________________________________________________________
-AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
+const AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
     const AliVTrack* const trk, const AliMCEvent* evnt) const {
   /*
    * Check according to the associated MC information whether the track is a MC true track,
@@ -191,9 +192,13 @@ AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
    * @return: the associated MC particle (NULL if not MC true)
    */
   int label = TMath::Abs(trk->GetLabel());
-  AliVParticle *mcpart = evnt->GetTrack(label);
+  const AliVParticle *mcpart = evnt->GetTrack(label);
   if(!mcpart) return NULL;
-  if(!evnt->IsPhysicalPrimary(label)) return NULL;
+  const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(mcpart);
+  if(aodpart)
+    if(!aodpart->IsPhysicalPrimary()) return NULL;
+  else
+    if(!evnt->IsPhysicalPrimary(label)) return NULL;
   return mcpart;
 }
 
