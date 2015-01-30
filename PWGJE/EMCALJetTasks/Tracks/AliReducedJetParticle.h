@@ -48,7 +48,7 @@ private:
 	float			fDeltaPt;
 	unsigned char	fNumberOfClustersTPC;
 
-	ClassDef(AliReducedJetParticle, 1);
+	ClassDef(AliReducedJetParticle, 2);
 };
 
 } /* namespace HighPtTracks */
