@@ -12,6 +12,7 @@
 #include "TLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliVParticle.h"
+#include <TF1.h>
 
 #include "AliEmcalJetByJetCorrection.h"
 
@@ -28,6 +29,8 @@ TNamed(),
   fInitialized(kFALSE),
   fEfficiencyFixed(1.),
   fhEfficiency(0),
+  fhSmoothEfficiency(0),
+  fCorrectpTtrack(0),
   fpAppliedEfficiency(0)
 {
   // Dummy constructor.
@@ -45,6 +48,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fInitialized(kFALSE),
   fEfficiencyFixed(1.),
   fhEfficiency(0),
+  fhSmoothEfficiency(0),
+  fCorrectpTtrack(0),
   fpAppliedEfficiency(0)
 {
   // Default constructor.
@@ -73,6 +78,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fInitialized(other.fInitialized),
   fEfficiencyFixed(other.fEfficiencyFixed),
   fhEfficiency(other.fhEfficiency),
+  fhSmoothEfficiency(other.fhSmoothEfficiency),
+  fCorrectpTtrack(other.fCorrectpTtrack),
   fpAppliedEfficiency(other.fpAppliedEfficiency)
 {
   // Copy constructor.
@@ -92,6 +99,8 @@ AliEmcalJetByJetCorrection& AliEmcalJetByJetCorrection::operator=(const AliEmcal
   fInitialized       = other.fInitialized;
   fEfficiencyFixed   = other.fEfficiencyFixed;
   fhEfficiency       = other.fhEfficiency;
+  fhSmoothEfficiency = other.fhSmoothEfficiency;
+  fCorrectpTtrack    = other.fCorrectpTtrack;
   fpAppliedEfficiency= other.fpAppliedEfficiency;
 
   return *this;
@@ -146,7 +155,48 @@ void AliEmcalJetByJetCorrection::Init() {
     fInitialized = kFALSE;
     return;
   }
-
+  if(!fhEfficiency){
+     Printf("%s fhEfficiency not known",GetName());
+     fInitialized = kFALSE;
+     return;
+     
+  }
+ 
+  fhSmoothEfficiency = (TH1D*) fh3JetPtDRTrackPt->ProjectionZ("fhSmoothEfficiency"); //copy the binning of the pTtrack axis
+  Int_t nBinsEf = fhEfficiency->GetXaxis()->GetNbins();
+  Int_t nBinsEfSmth = fhSmoothEfficiency->GetXaxis()->GetNbins();
+  Double_t smallBinW = 0.9;
+  Double_t pTFitRange[2]={6,100}; //reset in the loop, silent warning
+  for(Int_t ibeff=0;ibeff<nBinsEf;ibeff++){
+     Double_t bw = fhEfficiency->GetBinWidth(ibeff+1);
+     if(bw>smallBinW){
+     	pTFitRange[0] = fhEfficiency->GetBinLowEdge(ibeff);     	 
+     	break;
+     }
+  }
+  pTFitRange[1] = fhEfficiency->GetBinLowEdge(nBinsEf+1);
+  
+  TF1* fitfuncEff = new TF1("fitfuncEff", "[0]+x*[1]", pTFitRange[0], pTFitRange[1]);
+  //fit function in the high pT region to smooth out fluctuations
+  fhEfficiency->Fit("fitfuncEff", "R0");
+  
+  for(Int_t i=0;i<nBinsEfSmth;i++){
+     Double_t binCentreT=fhSmoothEfficiency->GetBinCenter(i+1);
+     Int_t bin = fhEfficiency->FindBin(binCentreT);
+     Double_t binEff = fhEfficiency->GetBinContent(bin);
+     
+     //fill histogram fhSmoothEfficiency by interpolation or function
+     if(fhEfficiency->GetBinWidth(bin) > smallBinW){
+     	fhSmoothEfficiency->SetBinContent(i+1,fitfuncEff->Eval(binCentreT));      
+     } else {
+     	Double_t effInterp = fhEfficiency->Interpolate(binCentreT);
+     	fhSmoothEfficiency ->SetBinContent(i+1,effInterp);
+     	fhSmoothEfficiency ->SetBinError(i+1,0.);
+     	
+     }
+  }
+   
+   
   if(fJetPtMax>fh3JetPtDRTrackPt->GetXaxis()->GetXmax())
     fJetPtMax = fh3JetPtDRTrackPt->GetXaxis()->GetXmax();
 
@@ -161,8 +211,25 @@ void AliEmcalJetByJetCorrection::Init() {
     //    Printf("%d bins: %d - %d -> %f - %f",counter,binMin,binMax,fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax));
 
     fh3JetPtDRTrackPt->GetXaxis()->SetRange(binMin,binMax);
+    Int_t nBinspTtr = fh3JetPtDRTrackPt->GetZaxis()->GetNbins();
+    Int_t nBinsr = fh3JetPtDRTrackPt->GetYaxis()->GetNbins();
     TH2D *h2 = dynamic_cast<TH2D*>(fh3JetPtDRTrackPt->Project3D("zy"));
-    if(h2) h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
+    if(h2){
+       h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
+       //Printf("Check what it X axis: %s and Y axis: %s", h2->GetXaxis()->GetTitle(), h2->GetYaxis()->GetTitle());
+       if(fCorrectpTtrack) {
+       	  //apply efficiency correction to pTtrack
+       	  for(Int_t ipTtr=0;ipTtr<nBinspTtr;ipTtr++){
+       	     for(Int_t ir=0;ir<nBinsr;ir++){
+       	     	Double_t uncorr = h2->GetBinContent(ir+1,ipTtr+1);
+       	     	Double_t corr = uncorr/GetEfficiency(h2->GetYaxis()->GetBinCenter(ipTtr+1));
+       	     	h2->SetBinContent(ir+1, ipTtr+1, corr);
+       	     }
+       	  
+       	  }
+       
+       }
+    }
     fCollTemplates.Add(h2);
     counter++;
   }
@@ -188,9 +255,10 @@ Int_t AliEmcalJetByJetCorrection::GetJetPtBin(const Double_t jetpt) const {
 Double_t AliEmcalJetByJetCorrection::GetEfficiency(const Double_t pt) const {
   Double_t eff = 1.;
   if(fEfficiencyFixed<1.) return fEfficiencyFixed;
-  else if(fhEfficiency) {
-    Int_t bin = fhEfficiency->GetXaxis()->FindBin(pt);
-    eff = fhEfficiency->GetBinContent(bin);
+  else if(fhSmoothEfficiency) {
+    Int_t bin = fhSmoothEfficiency->GetXaxis()->FindBin(pt);
+    eff = fhSmoothEfficiency->GetBinContent(bin);
+    //Printf("Efficiency (pT = %.2f, bin %d) = %.2f", pt, bin, eff);
   }
   return eff;
 }
