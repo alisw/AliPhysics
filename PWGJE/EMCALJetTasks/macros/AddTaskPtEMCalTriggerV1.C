@@ -9,15 +9,15 @@
 #endif
 
 void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC);
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliESDtrackCuts *trackcuts, bool isMC, bool isSwapEta);
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, bool isMC, bool isSwapEta);
 void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
 void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC);
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt);
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliESDtrackCuts *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
 void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task);
-AliESDtrackCuts *CreateDefaultTrackCuts();
-AliESDtrackCuts *CreateHybridTrackCuts();
-AliESDtrackCuts *TrackCutsFactory(const char *trackCutsName);
+EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD);
+EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
+EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char *trackCutsName, bool isAOD);
 
 AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     bool isMC,
@@ -30,7 +30,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *ntriggerContainer = "",
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
-	const char *components = "particles:clusters:tracks:mcjets:recjets"
+	const char *components = "particles:clusters:tracks:mcjets:recjets:triggers"
 )
 {
   //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
@@ -45,19 +45,30 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     ::Error("AddTaskPtEMCalTrigger", "This task requires an input event handler");
     return NULL;
   }
+  bool isAOD = (mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class());
 
   // Decode components
-  bool doClusters(false), doMCParticles(false), doTracks(false), doMCJets(false), doRecJets(false);
+  bool doClusters(false), doMCParticles(false), doTracks(false), doMCJets(false), doRecJets(false), doTriggers(false);
   TObjArray *compsplit = TString(components).Tokenize(":");
   TIter tokenIter(compsplit);
   TObjString *compstring(NULL);
   while((compstring = (TObjString *)tokenIter())){
 	  if(!compstring->String().CompareTo("clusters")) doClusters = true;
 	  if(!compstring->String().CompareTo("particles")) doMCParticles = true;
-	  if(!compstring->String().CompareTo("tracks")) doClusters = true;
-	  if(!compstring->String().CompareTo("mcjets")) doClusters = true;
-	  if(!compstring->String().CompareTo("recjets")) doClusters = true;
+	  if(!compstring->String().CompareTo("tracks")) doTracks = true;
+	  if(!compstring->String().CompareTo("mcjets")) doMCJets = true;
+	  if(!compstring->String().CompareTo("recjets")) doRecJets = true;
+	  if(!compstring->String().CompareTo("triggers")) doTriggers = true;
   }
+
+  std::cout << "Track task configuration:" << std::endl;
+  std::cout << "==================================" << std::endl;
+  std::cout << "Monte-Carlo particles:      " << (doMCParticles ? "ON" : "OFF") << std::endl;
+  std::cout << "Monte-Carlo jets:           " << (doMCJets ? "ON" : "OFF") << std::endl;
+  std::cout << "Trigger Patch QA:           " << (doTriggers ? "ON" : "OFF") << std::endl;
+  std::cout << "Tracks:                     " << (doTracks ? "ON" : "OFF") << std::endl;
+  std::cout << "EMCAL clusters:             " << (doClusters ? "ON" : "OFF") << std::endl;
+  std::cout << "Reconstructed jets:         " << (doRecJets ? "ON" : "OFF") << std::endl;
 
   bool isSwapEta = TString(period).CompareTo("LHC13f") ? kFALSE : kTRUE;
   EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1(Form("ptemcaltriggertask%s", ntrackcuts));
@@ -72,7 +83,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   }
 
   // Add components
-  if(strlen(ntriggerContainer)){
+  if(doTriggers && strlen(ntriggerContainer)){
     pttriggertask->SetCaloTriggerPatchInfoName(ntriggerContainer);
     EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *noselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("noselect");
     noselect->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis"));
@@ -97,8 +108,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     */
   }
   if(doClusters) 	AddClusterComponent(defaultselect, isMC);
-  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts), isMC, isSwapEta);
-  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), 20., isMC, isSwapEta);
+  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), isMC, isSwapEta);
+  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), 20., isMC, isSwapEta);
   /*
    * for(int ijpt = 0; ijpt < 4; ijpt++)
        AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), jetpt[ijpt], isMC, isSwapEta);
@@ -153,11 +164,11 @@ void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group
   group->AddAnalysisComponent(clusteranalysis);
 }
 
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliESDtrackCuts * trackcuts, bool isMC, bool isSwapEta){
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
   group->AddAnalysisComponent(trackanalysis);
   // Create charged hadrons pPb standard track cuts
-  trackanalysis->SetTrackSelection(new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(trackcuts));
+  trackanalysis->SetTrackSelection(trackcuts);
 
   if(isMC){
     trackanalysis->SetRequestMCtrueTracks();
@@ -183,11 +194,11 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
   group->AddAnalysisComponent(jetana);
 }
 
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliESDtrackCuts *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
   jetana->SetUsePatches();
-  jetana->SetSingleTrackCuts(new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(trackcuts));
+  jetana->SetSingleTrackCuts(trackcuts);
   group->AddAnalysisComponent(jetana);
 }
 
@@ -198,27 +209,45 @@ void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 
   task->SetBinning("jetpt", binlimits);
 }
 
-AliESDtrackCuts *CreateDefaultTrackCuts(){
+EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD){
   AliESDtrackCuts *standardTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
   standardTrackCuts->SetName("Standard Track cuts");
   standardTrackCuts->SetMinNCrossedRowsTPC(120);
   standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-  return standardTrackCuts;
+  if(isAOD)			// Switch of chi2 constrained cut in case of AOD analysis
+	  standardTrackCuts->SetMaxChi2TPCConstrainedGlobal(1e10);
+  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+  if(isAOD){
+	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD(standardTrackCuts);
+	  (static_cast<EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *>(trackSelection))->AddFilterBit(AliAODTrack::kTrkGlobal);
+  } else {
+	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+  }
+  return trackSelection;
 }
 
-AliESDtrackCuts *CreateHybridTrackCuts(){
-  AliESDtrackCuts* hybridTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-  hybridTrackCuts->SetName("Global Hybrid tracks, loose DCA");
-  hybridTrackCuts->SetMaxDCAToVertexXY(2.4);
-  hybridTrackCuts->SetMaxDCAToVertexZ(3.2);
-  hybridTrackCuts->SetDCAToVertex2D(kTRUE);
-  hybridTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-  hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-  return hybridTrackCuts;
+EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD){
+  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+  if(isAOD){
+	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD(NULL);
+	  aodsel->AddFilterBit(256);
+	  aodsel->AddFilterBit(512);
+	  trackSelection = aodsel;
+  } else {
+	  AliESDtrackCuts* hybridTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+	  hybridTrackCuts->SetName("Global Hybrid tracks, loose DCA");
+	  hybridTrackCuts->SetMaxDCAToVertexXY(2.4);
+	  hybridTrackCuts->SetMaxDCAToVertexZ(3.2);
+	  hybridTrackCuts->SetDCAToVertex2D(kTRUE);
+	  hybridTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+	  hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(hybridTrackCuts);
+  }
+  return trackSelection;
 }
 
-AliESDtrackCuts* TrackCutsFactory(const char* trackCutsName) {
-  if(!strcmp(trackCutsName, "standard")) return CreateDefaultTrackCuts();
-  else if(!strcmp(trackCutsName, "hybrid")) return CreateHybridTrackCuts();
+EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char* trackCutsName, bool isAOD) {
+  if(!strcmp(trackCutsName, "standard")) return CreateDefaultTrackCuts(isAOD);
+  else if(!strcmp(trackCutsName, "hybrid")) return CreateHybridTrackCuts(isAOD);
   return NULL;
 }
