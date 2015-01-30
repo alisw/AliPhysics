@@ -302,3 +302,13 @@ add_subdirectory(ALIROOT)
 # List modules with PARfiles
 string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
 message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
+
+# Install Find macros for common packages to be further used by AliPhysics
+install(FILES 
+	    cmake/CMakeALICE.cmake
+	    cmake/FindROOT.cmake
+	    cmake/FindFASTJET.cmake
+	    cmake/FindZeroMQ.cmake
+	    cmake/GetGitRevisionDescription.cmake
+	    cmake/GetGitRevisionDescription.cmake.in
+	DESTINATION cmake)
