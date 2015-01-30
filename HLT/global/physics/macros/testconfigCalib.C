@@ -1,7 +1,7 @@
 void testconfigCalib(const char* parent = "GLOBAL-esd-converter", const char* tpcConfig="fTPCcalibConfigString='TPCCalib TPCAlign' ")
 {
   //load the libraries needed by the calib code
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   // set up HLT system to enable configuration registration
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
 
