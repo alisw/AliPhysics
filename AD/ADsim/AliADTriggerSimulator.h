@@ -64,6 +64,7 @@ public:
 	void SetBeamGas()		{ (fTriggerWord += 0x1<<15);};
 	
 	void Run();
+	void FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t time[16]);
 	virtual void Print(Option_t* /* opt */) const;
 	
 private:
@@ -91,9 +92,9 @@ private:
 	TTree* fDigitsTree; //Pointer to AD digit tree
 	TClonesArray* fDigits; //Pointer to AD digit array
 	
-	Bool_t fBBFlags[64]; // Individual BB Flags
-	Bool_t fBGFlags[64]; // Individual BG Flags
-	Float_t  fCharges[64]; // Individual Charge
+	Bool_t fBBFlags[16]; // Individual BB Flags
+	Bool_t fBGFlags[16]; // Individual BG Flags
+	Float_t  fCharges[16]; // Individual Charge
 	
 	UShort_t fTriggerWord; // Word holding the 16 triggers return by the FEE
 		

@@ -51,9 +51,9 @@ AliADCalibData::AliADCalibData():
   // default constructor
   
     for(int t=0; t<16; t++) {
-        fMeanHV[t]      = 1500.0;
+        fMeanHV[t]      = 1400.0;
         fWidthHV[t]     = 0.0; 
-	fTimeOffset[t]  = 0.0;
+	fTimeOffset[t]  = 230.0;
         fTimeGain[t]    = 1.0;
 	fDeadChannel[t]= kFALSE;
 	fDiscriThr[t]  = 2.5;
@@ -67,9 +67,9 @@ AliADCalibData::AliADCalibData():
     for(int i=0; i<kNCIUBoards ;i++) {
 	fTimeResolution[i]  = 25./256.;     // Default time resolution
 	fWidthResolution[i] = 25./64.;     // Default time width resolution
-	fMatchWindow[i] = 4;
+	fMatchWindow[i] = 16;
 	fSearchWindow[i] = 16;
-	fTriggerCountOffset[i] = 3247;
+	fTriggerCountOffset[i] = 3553;
 	fRollOver[i] = 3563;
     }
     for(int i=0; i<kNCIUBoards ;i++) {
@@ -82,7 +82,8 @@ AliADCalibData::AliADCalibData():
 	fPedestalSubtraction[i] = kFALSE;
 	}
     for(Int_t j = 0; j < 16; ++j) {
-	fEnableCharge[j] = fEnableTiming[j] = kFALSE;
+	fEnableCharge[j] = kFALSE;
+	fEnableTiming[j] = kTRUE;
 	fPedestalOdd[j] = fPedestalEven[j] = 0;
 	fPedestalCutOdd[j] = fPedestalCutEven[j] = 0;
 	}
@@ -117,7 +118,7 @@ AliADCalibData::AliADCalibData(const char* name) :
    SetName(namst.Data());
    SetTitle(namst.Data());
    for(int t=0; t<16; t++) {
-       fMeanHV[t]      = 100.0;
+       fMeanHV[t]      = 1500.0;
        fWidthHV[t]     = 0.0; 
        fTimeOffset[t]  = 5.0;
        fTimeGain[t]    = 1.0;
@@ -148,7 +149,8 @@ AliADCalibData::AliADCalibData(const char* name) :
 	fPedestalSubtraction[i] = kFALSE;
 	}
     for(Int_t j = 0; j < 16; ++j) {
-	fEnableCharge[j] = fEnableTiming[j] = kFALSE;
+	fEnableCharge[j] = kFALSE;
+	fEnableTiming[j] = kTRUE;
 	fPedestalOdd[j] = fPedestalEven[j] = 0;
 	fPedestalCutOdd[j] = fPedestalCutEven[j] = 0;
 	}

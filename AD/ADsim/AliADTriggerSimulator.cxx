@@ -200,16 +200,28 @@ void AliADTriggerSimulator::LoadClockOffset()
 
   for(Int_t board = 0; board < kNCIUBoards; ++board) {
     fClockOffset[board] = (((Float_t)calibdata->GetRollOver(board)-
-			    (Float_t)calibdata->GetTriggerCountOffset(board))*25.0-
-			   l1Delay+
-			   kADOffset);
+			    (Float_t)calibdata->GetTriggerCountOffset(board))*25.0
+			      );
+		             //-l1Delay+
+		             //+kADOffset);
     AliDebug(1,Form("Board %d Offset %f",board,fClockOffset[board]));
   }
 }
+//_____________________________________________________________________________
+void AliADTriggerSimulator::FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t time[16]){
 
+  for(Int_t i = 0; i<16; i++){
+  	Int_t board   = AliADCalibData::GetBoardNumber(i);
+  	Float_t temptime = time[i] - fClockOffset[board];
+  	bbFlag[i] = fCalibData->GetEnableTiming(i) && fBBGate[board]->IsInCoincidence(temptime);
+	bgFlag[i] = fCalibData->GetEnableTiming(i) && fBGGate[board]->IsInCoincidence(temptime);
+	//AliInfo(Form("Ch %d BB=%d BG=%d",i,bbFlag[i],bgFlag[i] ));
+  	}
+}
 //_____________________________________________________________________________
 void AliADTriggerSimulator::Run() {
-	//AliInfo("Generating AD Triggers");
+//	AliInfo("Generating AD Triggers");
+//	Print("");
 	
 	// Loop over AD entries
 	Int_t nEntries = (Int_t)fDigitsTree->GetEntries();
@@ -246,15 +258,15 @@ void AliADTriggerSimulator::Run() {
 					 digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
 					 digit->ChargeADC(11),digit->ChargeADC(12),digit->ChargeADC(13),
 					 digit->ChargeADC(14),digit->ChargeADC(15)));
+			//for(Int_t i=0; i<21; i++) std::cout<<digit->ChargeADC(i)<<" ";
+			//std::cout<<std::endl;
+			//std::cout<<"Time - Offset = "<<time<<std::endl;
 			AliDebug(10,Form(" PM nb : %d ; TDC= %f(%f)  Enable Time %d charge %d inCoin %d charge %f",
 					 pmNumber,time,digit->Time(),
 					 fCalibData->GetEnableTiming(pmNumber),fCalibData->GetEnableCharge(pmNumber),
 					 fBBGate[board]->IsInCoincidence(time),fCharges[pmNumber]));
 			fBBFlags[pmNumber] = fCalibData->GetEnableTiming(pmNumber) && fBBGate[board]->IsInCoincidence(time);
 			fBGFlags[pmNumber] = fCalibData->GetEnableTiming(pmNumber) && fBGGate[board]->IsInCoincidence(time);
-			// Store the BB and BG flags in the digits tree
-			digit->SetBBflag(fBBFlags[pmNumber]);
-			digit->SetBGflag(fBGFlags[pmNumber]);
 			
 		} // end of loop over digits
 	} // end of loop over events in digits tree

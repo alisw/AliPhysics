@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 
 const Float_t kIntTimeRes = 0.39; // intrinsic time resolution of the scintillator
-const Float_t kADOffset = -1338.6; // general V0 offset between the TDCs and the trigger
+const Float_t kADOffset = -1488.6; // general AD offset between the TDCs and the trigger
 const Int_t   kNClocks = 21; // Number of ADC clocks that are read out
 const Float_t kChargePerADC = 0.6e-12; // Charge per ADC
 const Int_t   kNPhotonsPerMIP = 30000;// Number of photons per MIP

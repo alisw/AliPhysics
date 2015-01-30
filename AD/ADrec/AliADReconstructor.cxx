@@ -264,11 +264,11 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetBGFlag(aBGflag);
   //fESDAD->SetBit(AliESDAD::kCorrectedForSaturation,kTRUE);
 
-  /*/ now fill the V0 decision and channel flags
+  /*/ now fill the AD decision and channel flags
   {
-    AliADTriggerMask triggerMask;
-    triggerMask.SetRecoParam(GetRecoParam());
-    triggerMask.FillMasks(fESDAD, fCalibData, fTimeSlewing);
+    AliADDecision offlineDecision;
+    offlineDecision.SetRecoParam(GetRecoParam());
+    offlineDecision.FillDecisions(fESDAD, fCalibData, fTimeSlewing);
   }/*/
 
   if (esd) { 
@@ -278,7 +278,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
      AliESDfriend *fr = (AliESDfriend*)esd->FindListObject("AliESDfriend");
      if (fr) {
         AliDebug(1, Form("Writing AD friend data to ESD tree"));
-        //fr->SetADfriend(fESDADfriend);
+        fr->SetADfriend(fESDADfriend);
     }
   }
 

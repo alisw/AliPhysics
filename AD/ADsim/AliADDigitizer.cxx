@@ -53,6 +53,7 @@
 #include "AliADdigit.h"
 #include "AliADDigitizer.h"
 #include "AliADSDigit.h"
+#include "AliADTriggerSimulator.h"
 
 ClassImp(AliADDigitizer)
 
@@ -198,22 +199,26 @@ Bool_t AliADDigitizer::Init()
     fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
 			      fCalibData->GetTimeResolution(board));
     fBinSize[i] = fCalibData->GetTimeResolution(board);
-
-    fHptdcOffset[i] =  delays->GetBinContent(i+1);
+    
+    fHptdcOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
+			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0
+		       //+fCalibData->GetTimeOffset(i)
+		       +delays->GetBinContent(16-i) - 250);
+		       //-l1Delay-
+		       //-phase->GetMeanPhase()
+		       //+kADOffset);
 		       
     fClockOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
-			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0+
-		       fCalibData->GetTimeOffset(i)-
-		       l1Delay+
-		       kADOffset);
+			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0
+		       +fCalibData->GetTimeOffset(i) - 250);
+		       //-l1Delay
+		       //+kADOffset);
 
     fTime[i] = new Float_t[fNBins[i]];
     memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
-    
-   // AliWarning(Form("PMT %d,PM gain %f, fNBins %d, TimeBinSize %f,",i, fPmGain[i], fNBins[i],fBinSize[i]));
-    
+      
   }
-
+  //std::cout<<"AD: "<<" fNBins = "<<fNBins[0]<<" fNBinsLT = "<<fNBinsLT[0]<<" fHptdcOffset = "<<fHptdcOffset[0]<<" fClockOffset = "<<fClockOffset[0]<<std::endl;
   return kTRUE;
 
 }
@@ -306,7 +311,7 @@ void AliADDigitizer::DigitizeHits()
 	   }
 	   Float_t dt_scintillator = gRandom->Gaus(0,kIntTimeRes);
 	   Float_t t = dt_scintillator + hit->GetTof();
-	   //t += fHptdcOffset[pmt];
+	   t += fHptdcOffset[pmt];
 	   
 	   Float_t charge = nPhot*fPmGain[pmt]*fBinSize[pmt]/integral;
 	     
@@ -314,6 +319,8 @@ void AliADDigitizer::DigitizeHits()
 	     
 	     Int_t firstBin = TMath::Max(0,(Int_t)((tPhE-kPMRespTime)/fBinSize[pmt]));
 	     Int_t lastBin = TMath::Min(fNBins[pmt]-1,(Int_t)((tPhE+2.*kPMRespTime)/fBinSize[pmt]));
+	     //std::cout<<"Bins: "<<firstBin*fBinSize[pmt]<<" - "<<lastBin*fBinSize[pmt]<<std::endl;
+	     //std::cout<<"Bins: "<<firstBin<<" - "<<lastBin<<std::endl;
 	     
 	     for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
 	       Float_t tempT = fBinSize[pmt]*(0.5+iBin)-tPhE;
@@ -356,8 +363,7 @@ void AliADDigitizer::DigitizeSDigits()
 	  }
 	}
       }
-      //Float_t tadc = t - fClockOffset[ipmt];
-      Float_t tadc = t;
+      Float_t tadc = t - fClockOffset[ipmt];
       Int_t clock = kNClocks/2 - Int_t(tadc/25.0);
       if (clock >= 0 && clock < kNClocks)
 	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
@@ -382,7 +388,10 @@ void AliADDigitizer::DigitizeSDigits()
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
   }
-	
+  //Fill BB and BG flags in trigger simulator
+  AliADTriggerSimulator * triggerSimulator = new AliADTriggerSimulator();
+  triggerSimulator->FillFlags(fBBFlag,fBGFlag,fLeadingTime);
+ 	
 }
 
 //____________________________________________________________________________ 
@@ -473,7 +482,6 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
   TTree* treeD  = loader->TreeD();
   DigitsArray();
   treeD->Branch("ADDigit", &fDigits); 
-  //fAD->MakeBranchInTree(treeD,"AD",&fDigits,1000,"");
   
   Short_t *chargeADC = new Short_t[kNClocks];
   for (Int_t i=0; i<16; i++) {      
@@ -482,7 +490,7 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
       if (tempadc > 1023) tempadc = 1023;
       chargeADC[j] = tempadc;
     }
-    AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+fEvenOrOdd)%2), chargeADC, fLabels[i]);
+    AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+fEvenOrOdd)%2), chargeADC, fBBFlag[i], fBGFlag[i], fLabels[i]);
   }
   delete [] chargeADC;
 
@@ -520,14 +528,14 @@ void AliADDigitizer::WriteSDigits(AliLoader *loader)
 
 
 //____________________________________________________________________________
-void AliADDigitizer::AddDigit(Int_t pmnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels) 
+void AliADDigitizer::AddDigit(Int_t pmnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Bool_t bbFlag, Bool_t bgFlag, Int_t *labels) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
 	 
-  new(ldigits[fNdigits++]) AliADdigit(pmnumber,time,width,integrator,chargeADC,labels);
+  new(ldigits[fNdigits++]) AliADdigit(pmnumber,time,width,integrator,chargeADC,bbFlag,bgFlag,labels);
 	 
 }
 //____________________________________________________________________________

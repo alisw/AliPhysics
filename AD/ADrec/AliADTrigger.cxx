@@ -63,8 +63,8 @@ void AliADTrigger::CreateInputs()
    fInputs.AddLast( new AliTriggerInput( "AD_CTA2_OR_CTC2",   "AD", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "AD_MTA_AND_MTC",   "AD", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "AD_MTA_OR_MTC",   "AD", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "0ADA",   "AD", 0 ) );
-   fInputs.AddLast( new AliTriggerInput( "0ADC",   "AD", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0ABA",   "AD", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "0ABC",   "AD", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "AD_BGA_OR_BGC",   "AD", 0 ) );
    fInputs.AddLast( new AliTriggerInput( "AD_BEAMGAS",   "AD", 0 ) );
 }
