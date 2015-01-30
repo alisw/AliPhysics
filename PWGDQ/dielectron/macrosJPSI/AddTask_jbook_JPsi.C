@@ -37,7 +37,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   // the different paths
   TString gsiPath("$TRAIN_ROOT/jbook_jpsi/");
   TString alienPath("alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/");
-  TString alirootPath("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/");
+  TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/");
 
   ////////// >>>>>>>>>> gsi config
   if (!trainRoot.IsNull())  configFile=gsiPath.Data();
