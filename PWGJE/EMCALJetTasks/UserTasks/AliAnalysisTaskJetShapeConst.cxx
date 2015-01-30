@@ -331,6 +331,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
       if(ifound==0) jetS = 0x0;
       else jetS = jetContS->GetJet(ilab);
+      if(!jetS) continue;
 
       Double_t mjetS = jetS->M();
       Double_t ptjet1 = jet1->Pt()-jetCont->GetRhoVal()*jet1->Area();
