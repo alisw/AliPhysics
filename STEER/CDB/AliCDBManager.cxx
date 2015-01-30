@@ -1339,7 +1339,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
   if(fLock && query.GetFirstRun() != fRun)
     AliFatal("Lock is ON: cannot use different run number than the internal one!");
 
-  AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
+  AliCDBParam *aPar = SelectSpecificStorage(query.GetPath());
 
   AliCDBStorage *aStorage;
   if(aPar) {
@@ -1370,11 +1370,23 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
       AliCDBStorage *chkStorage = GetStorage(chkPar);
       AliDebug(2, Form("Found specific storage! %s", chkPar->GetURI().Data()));
 
-      AliCDBEntry *newEntry=0;
       chkId.SetRunRange(query.GetFirstRun(), query.GetLastRun());
-      chkId.SetVersion(query.GetVersion());
-      chkId.SetSubVersion(query.GetSubVersion());
+      UInt_t uId = chkPar->GetUniqueID();
+      Int_t version = -1, subVersion = -1;
+      version = Int_t(uId&0xffff) - 1;
+      subVersion = Int_t(uId>>16) - 1;
+      if(version!=-1){
+        chkId.SetVersion(version);
+      }else{
+        chkId.SetVersion(query.GetVersion());
+      }
+      if(subVersion!=-1){
+        chkId.SetSubVersion(subVersion);
+      }else{
+        chkId.SetSubVersion(query.GetSubVersion());
+      }
 
+      AliCDBEntry *newEntry=0;
       if(chkStorage) newEntry = chkStorage->Get(chkId);
       if(!newEntry) continue;
 
