@@ -58,9 +58,9 @@ class AliAODRecoCascadeHF3Prong : public AliAODRecoDecayHF3Prong {
     UInt_t pdg[3]={211,3312,211}; return InvMass(3,pdg);
   }
 
-  //  Int_t MatchToMC(Int_t pdgabs,Int_t pdgabs3prong,
-  //                  Int_t *pdgDg,Int_t *pdgDg3prong,
-  //                  TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
+  Int_t MatchToMC(Int_t pdgabs,Int_t pdgabscasc, Int_t *pdgDg,Int_t *pdgDgcasc, Int_t *pdgDgv0,TClonesArray *mcArray) const;
+  Int_t MatchToMCCascade(AliAODcascade *casc, Int_t pdgabscasc, Int_t *pdgDgcasc,Int_t *pdgDgv0, TClonesArray *mcArray) const;
+	Int_t MatchToMCXicPlus(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10],Int_t ndg,Int_t ndgCk, const Int_t *pdgDg) const;
 
   Double_t CascDcaXiDaughters() const;
   Double_t CascDcaV0Daughters() const;
