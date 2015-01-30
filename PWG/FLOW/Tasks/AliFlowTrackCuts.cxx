@@ -3669,10 +3669,14 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track)
     Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
     Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
     
-    if ( (track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFpid))){
+    if ( (track->IsOn(AliAODTrack::kITSin))){
         if(p_int<2) return kFALSE;
         if(!fCutContour[p_int]){ cout<<"fCutContour[p_int] does not exist"<<endl; return kFALSE;}
-        if(p_int>3){if(fCutContour[p_int]->IsInside(nsigmaTOF,nsigmaTPC)){return kTRUE;}}
+        if(p_int>3){
+            if((track->IsOn(AliAODTrack::kTOFpid))){
+                if(fCutContour[p_int]->IsInside(nsigmaTOF,nsigmaTPC)){return kTRUE;}
+            }
+        }
         if(p_int<4){
             if(fParticleID==AliPID::kKaon && nsigmaTPC>LowPtPIDTPCnsigLow_Kaon[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Kaon[p_int-2]){return kTRUE;}
             if(fParticleID==AliPID::kPion && nsigmaTPC>LowPtPIDTPCnsigLow_Pion[p_int-2] && nsigmaTPC<LowPtPIDTPCnsigHigh_Pion[p_int-2]){return kTRUE;}
