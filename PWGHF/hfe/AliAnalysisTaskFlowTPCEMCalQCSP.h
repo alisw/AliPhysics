@@ -83,9 +83,14 @@ public:
     
     void                                 SetTPCPID(AliHFEpidTPC *pidcorr){ftpcpid = pidcorr;};
     void                                 SetMultCorrectionTheo(Bool_t mulcorr){multCorrection = mulcorr;}
-
+    
     void                                 SetPtMinAssoCut(Double_t ptminimumasso) {fptminAsso = ptminimumasso;};
+    
+    
+    void                                 SetEtaMinPos(Double_t minetapos){fEtaMinimumPositive = minetapos;}
+    void                                 SetEtaMinNeg(Double_t minetaneg){fEtaMinimumNegative = minetaneg;}
 
+    
     AliHFEpid *GetPID() const { return fPID; };
     
 private:
@@ -189,11 +194,14 @@ private:
     TH1D                 *fHistEPDistrWeight;// isto for Centr Flat
     Bool_t               EPweights;//for mult correlationcut
     TH1D                 *EPVzAftW;//!v0cep
-
+    
     Bool_t                multCorrection;//Flag to activate mult/etacorrection
     Double_t              fptminAsso;//minassopt
-
     
+    Double_t              fEtaMinimumPositive;//for reso
+    Double_t              fEtaMinimumNegative;//for reso
+    
+
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalQCSP& operator=(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented
     

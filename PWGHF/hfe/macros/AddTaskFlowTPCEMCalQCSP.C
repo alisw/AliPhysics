@@ -33,12 +33,13 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           AliHFEextraCuts::ITSPixel_t pixel,
                                                           Bool_t Weight = kFALSE,
                                                           Bool_t withmultetacorrection=kFALSE,
+                                                          Double etaminpos = 0,
+                                                          Double etaminneg = 0,
                                                           Bool_t NUA = kTRUE,
                                                           Bool_t PhotonicElectronDCA = kFALSE,
                                                           Int_t TPCClusterforAsso = 80,
                                                           Bool_t AssoITSref = kTRUE,
                                                           Double_t ptminassocut = 0.3,
-                                                          Bool_t purity = kTRUE,
                                                           Bool_t SideBandsFlow = kFALSE,
                                                           Bool_t Phi_minus_psi = kFALSE,
                                                           const char *Cent = "V0M",
@@ -50,8 +51,9 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Bool_t shrinkSP = kTRUE,
                                                           Bool_t debug = kFALSE,
                                                           Int_t RPFilterBit = 1,
-                                                          Bool_t op_ang = kFALSE,
-                                                          Double_t op_angle_cut=3.
+                                                          //Bool_t purity = kTRUE,
+                                                          //Bool_t op_ang = kFALSE,
+                                                          //Double_t op_angle_cut=3.
                                                           )
 
 {
@@ -83,7 +85,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     }
     taskHFE->SetTrigger(Trigger);
     taskHFE->SetEPWeight(Weight);
-
+    
     
     TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root";
     if(Trigger==0 || Trigger==4){
@@ -102,7 +104,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
         taskHFE->SetHistoForEPFlattWeights(hEPfl);
     }
     
-
+    
     
     // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
     taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
@@ -110,16 +112,19 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     taskHFE->SetIDCuts(minTPC, maxTPC, minEovP, maxEovP, minM20, maxM20, minM02, maxM02, Dispersion);
     taskHFE->SetFlowSideBands(SideBandsFlow);
     taskHFE->Setphiminuspsi(Phi_minus_psi);
-    taskHFE->SetPurity(purity);
+    taskHFE->SetPurity(kTRUE);
     taskHFE->SetpTCuttrack(pTCut);
     taskHFE->SelectPhotonicElectronMethod(PhotonicElectronDCA);
-    taskHFE->SetOpeningAngleflag(op_ang);
-    taskHFE->SetOpeningAngleCut(op_angle_cut);
+    taskHFE->SetOpeningAngleflag(kFALSE);
+    taskHFE->SetOpeningAngleCut(3);
     taskHFE->SetAssoTPCCluster(TPCClusterforAsso);
     taskHFE->SetAssoITSRefit(AssoITSref);
     taskHFE->SetMultCorrelationCut(multCorrcut);
     taskHFE->SetPtMinAssoCut(ptminassocut);
+    taskHFE->SetEtaMinPos(etaminpos); //0.2
+    taskHFE->SetEtaMinNeg(etaminneg);//-0.2
 
+    
     //set RP cuts for flow package analysis
     cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
     if(!cutsRP) {
@@ -397,7 +402,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCuls
         task->SetTPCPID(tpcpid);
     }
     
-
+    
     
     
     printf("*************************************\n");

@@ -143,27 +143,50 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb0100RapScan0104();
   void InitDstartoD0pi2013pPb0100RapScan0408();
     
-    
   void InitD0toKpi2013pPb020V0A();
   void InitD0toKpi2013pPb2040V0A();
   void InitD0toKpi2013pPb4060V0A();
   void InitD0toKpi2013pPb60100V0A();
-    
+  
   void InitD0toKpi2013pPb020ZNA();
   void InitD0toKpi2013pPb2040ZNA();
   void InitD0toKpi2013pPb4060ZNA();
   void InitD0toKpi2013pPb60100ZNA();
-    
+  
+  void InitD0toKpi2013pPb020CL1();
+  void InitD0toKpi2013pPb2040CL1();
+  void InitD0toKpi2013pPb4060CL1();
+  void InitD0toKpi2013pPb60100CL1();
+  
   void InitDstartoD0pi2013pPb020V0A();
   void InitDstartoD0pi2013pPb2040V0A();
   void InitDstartoD0pi2013pPb4060V0A();
   void InitDstartoD0pi2013pPb60100V0A();
-    
+  
   void InitDstartoD0pi2013pPb020ZNA();
   void InitDstartoD0pi2013pPb2040ZNA();
   void InitDstartoD0pi2013pPb4060ZNA();
   void InitDstartoD0pi2013pPb60100ZNA();
+  
+  void InitDstartoD0pi2013pPb020CL1();
+  void InitDstartoD0pi2013pPb2040CL1();
+  void InitDstartoD0pi2013pPb4060CL1();
+  void InitDstartoD0pi2013pPb60100CL1();
 
+  void InitDplustoKpipi2013pPb020V0A();
+  void InitDplustoKpipi2013pPb2040V0A();
+  void InitDplustoKpipi2013pPb4060V0A();
+  void InitDplustoKpipi2013pPb60100V0A();
+  
+  void InitDplustoKpipi2013pPb020ZNA();
+  void InitDplustoKpipi2013pPb2040ZNA();
+  void InitDplustoKpipi2013pPb4060ZNA();
+  void InitDplustoKpipi2013pPb60100ZNA();
+  
+  void InitDplustoKpipi2013pPb020CL1();
+  void InitDplustoKpipi2013pPb2040CL1();
+  void InitDplustoKpipi2013pPb4060CL1();
+  void InitDplustoKpipi2013pPb60100CL1();
     
 
  private:
