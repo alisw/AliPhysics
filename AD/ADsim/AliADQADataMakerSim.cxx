@@ -121,17 +121,14 @@ void AliADQADataMakerSim::InitSDigits()
   TH1I *fhSDigCharge[16]; 
 
   // create SDigits histograms in SDigits subdir
-  TH1I * h0 = new TH1I("hSDigitMultiplicity", "SDigits multiplicity distribution in AD;# of Digits;Entries", 100, 0, 99) ; 
+  TH1I * h0 = new TH1I("hSDigitMultiplicity", "SDigits multiplicity distribution in AD;# of Digits;Entries", 17,-0.5,16.5) ; 
   h0->Sumw2() ;
   Add2SDigitsList(h0, 0, !expert, image) ;
   
-  for (Int_t i=0; i<16; i++)
-    {
-       fhSDigCharge[i] = new TH1I(Form("hSDigitCharge%d", i),Form("SDigit charges in cell %d; Time;Entries",i),1700,0.,1700);
-       
-       Add2SDigitsList(fhSDigCharge[i],i+1, !expert, image);
-       
-     }   
+  TH2D * h1 = new TH2D("hSDigitChargePerPM", "SDigits total amplified charge per PM in AD;PM number;Charge [C]", 16, 0, 16, 1000,1e-13, 1e-9); 
+  h1->Sumw2() ;
+  Add2SDigitsList(h1, 1, !expert, image) ;
+  
   //
   ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
@@ -146,7 +143,7 @@ void AliADQADataMakerSim::InitDigits()
   const Bool_t image    = kTRUE ; 
 
   // create Digits histograms in Digits subdir
-  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in AD;# of Digits;Entries", 100, 0, 99) ; 
+  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in AD;# of Digits;Entries", 17,-0.5,16.5) ; 
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
      
@@ -297,8 +294,12 @@ void AliADQADataMakerSim::MakeSDigits()
   TIter next(fSDigitsArray) ; 
     AliADSDigit *ADSDigit ; 
     while ( (ADSDigit = dynamic_cast<AliADSDigit *>(next())) ) {
-         Int_t   PMNumber  = ADSDigit->PMNumber();       
-         FillSDigitsData(PMNumber +1, ADSDigit->GetNBins()) ;
+         Int_t   PMNumber  = ADSDigit->PMNumber();
+	 Int_t   Nbins = ADSDigit->GetNBins();
+	 Double_t totCharge = 0;
+	 //Double_t *Charges = 
+	 for(Int_t i = 0; i<Nbins; i++)totCharge += ADSDigit->GetCharges()[i];       
+         FillSDigitsData(1, PMNumber, totCharge) ;
     }  
 }
 
