@@ -1115,11 +1115,11 @@ if(!fOnlyZEM){
   TVirtualMC::GetMC()->Gspos("QTDG4", 1, "Q13TM", -3.8, -boxpar[1]-fTDIApertureNeg, zjaw3+boxpar[2], 0, "ONLY");  
   //Ch. debug
   printf("   TDI 3rd jaw (graphite): %f < z < %f\n", zjaw3, zjaw3+2*boxpar[2]);
-  //  
+  //
   printf("  AliZDCv5 -> TDI apertures +%1.2f/-%1.2f cm\n", fTDIAperturePos, fTDIApertureNeg);
+  printf("\t AliZDCv5 -> Initializing TDI configuration %d\n\n",fTDIConfiguration);
   
   if(fTDIConfiguration==0){ // no aperture! Only 2 vertical plates at x_TDI = +/- 5.5
-    printf("\t AliZDCv5 -> Initializing TDI configuration 0\n\n");
     //
     boxpar[0] = 0.2/2.;
     boxpar[1] = (fTDIAperturePos+fTDIApertureNeg)/2.;
@@ -1144,8 +1144,6 @@ if(!fOnlyZEM){
     
   }
   else if (fTDIConfiguration==1){ // ~4 murad at TDI end aperture = (5.5+6) cm = 11.5 cm
-    printf("\t AliZDCv5 -> Initializing TDI configuration 1\n\n");
-    //
     // -> Only tubs (elliptic screens) definitions 
     // 1st jaw / 1st section 
     tubspar[0] = 6.0;
@@ -1212,8 +1210,6 @@ if(!fOnlyZEM){
     TVirtualMC::GetMC()->Gspos("QTD11", 1, "Q13TM", -3.8+5.5, 0., zjaw3+boxpar[2], 0, "ONLY"); 
   }
   else if (fTDIConfiguration==2){ // 6 murad at TDI (as for RUN1, only TDI geometry is different!)
-    printf("\t AliZDCv5 -> Initializing TDI configuration 2\n\n");
-    //
     // -> ~elliptic screen definitions + horizontal plates (5 cm)
     // 1st jaw / 1st section 
     boxpar[0] = 5.1/2.;
