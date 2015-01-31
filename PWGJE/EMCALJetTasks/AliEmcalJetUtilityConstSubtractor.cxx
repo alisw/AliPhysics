@@ -171,7 +171,7 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
   for (UInt_t ijet = 0, jetCount = 0; ijet < jets_sub.size(); ++ijet) {
     //Only storing 4-vector and jet area of unsubtracted jet
     if(jets_sub[ijet].E()>0.) {
-      AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount])
+      AliEmcalJet *jet_sub = new ((*fJetsSub)[ijet])
         AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
       jet_sub->SetLabel(ijet);
       

@@ -209,6 +209,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,EPVzAftW(0)
 ,multCorrection(0)
 ,fptminAsso(0)
+,fEtaMinimumPositive(0)
+,fEtaMinimumNegative(0)
 {
     //Named constructor
     
@@ -328,6 +330,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,EPVzAftW(0)
 ,multCorrection(0)
 ,fptminAsso(0)
+,fEtaMinimumPositive(0)
+,fEtaMinimumNegative(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -374,7 +378,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
-
+    
     if (!fAOD)
     {
         printf("ERROR: fAOD not available\n");
@@ -405,7 +409,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
         
         if ( ! ( firedTriggerClasses.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || firedTriggerClasses.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || firedTriggerClasses.Contains("CSEMI_R1-B-NOPF-ALLNOTRD") ) ) return;
-                
+        
     }
     if(fTrigger==2){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMCEGA)) return;
@@ -419,7 +423,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     if(fTrigger==5){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) return;
     }
-
+    
     
     //---------------CENTRALITY AND EVENT SELECTION-----------------------
     Int_t fNOtrks =  fAOD->GetNumberOfTracks();
@@ -510,12 +514,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
             continue;
         
         
-        if(aodTrack->Eta()>0 && aodTrack->Eta()<0.8){
+        if(aodTrack->Eta()>fEtaMinimumPositive && aodTrack->Eta()<0.8){
             
             Qx2p += TMath::Cos(2*aodTrack->Phi());
             Qy2p += TMath::Sin(2*aodTrack->Phi());
         }
-        if(aodTrack->Eta()<0 && aodTrack->Eta()> -0.8){
+        if(aodTrack->Eta()<fEtaMinimumNegative && aodTrack->Eta()> -0.8){
             
             Qx2n += TMath::Cos(2*aodTrack->Phi());
             Qy2n += TMath::Sin(2*aodTrack->Phi());
@@ -549,7 +553,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         EPVzAftW->Fill(evPlAngV0,weightEP);
         
     }
-
+    
     
     fSubEventDPhiv2->Fill(0.5, TMath::Cos(2.*(evPlAngV0A-evPlAngTPC))); // vzeroa - tpc
     fSubEventDPhiv2->Fill(1.5, TMath::Cos(2.*(evPlAngV0A-evPlAngV0C))); // vzeroa - vzeroc
@@ -567,7 +571,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         fSubEventDPhiv2new->Fill(2.5, TMath::Cos(2.*(evPlAngTPCp-evPlAngTPCn))); // tpcp - tpcn
     }
     //====================================================================================================================
-
+    
     
     
     AliAODTrack *track = NULL;
@@ -621,18 +625,18 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         // dEdx = track->GetTPCsignal();
         fEovP = fClsE/p;
         fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
-
+        
         
         Double_t CorrectTPCNSigma;
         Double_t mult = fVevent->GetNumberOfESDTracks()/8;
-
+        
         if(multCorrection){
             CorrectTPCNSigma = ftpcpid->GetCorrectedTPCnSigma(track->Eta(), mult, fTPCnSigma);
             // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
             fTPCnSigma = CorrectTPCNSigma;
             // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
         }
-
+        
         
         Double_t m20 =cluster->GetM20();
         Double_t m02 =cluster->GetM02();
@@ -698,12 +702,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                         if(fDebug) printf(" was in RP set");
                         //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
                         iRPCont->SetForRPSelection(kFALSE);
-                      //  fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
+                        //  fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
                     }
                 } //end of for loop on RPs
                 fFlowEventCont->InsertTrack(((AliFlowTrack*) sTrackCont));
                 fFlowEventCont->SetNumberOfPOIs(fFlowEventCont->GetNumberOfPOIs()+1);
-
+                
             }
         }
         //==========================================================================================================
@@ -727,7 +731,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         if(EPweights) fV2Phivzerotot->Fill(v2PhiV0tot,weightEP);
         if(!EPweights) fV2Phivzerotot->Fill(v2PhiV0tot);
         
-
+        
         
         //=========================================================================================================
         fTPCnsigmaAft->Fill(p,fTPCnSigma);
@@ -752,7 +756,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 if(fDebug) printf(" was in RP set");
                 //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
                 iRP->SetForRPSelection(kFALSE);
-               // fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
+                // fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
             }
         } //end of for loop on RPs
         fFlowEvent->InsertTrack(((AliFlowTrack*) sTrack));
@@ -856,7 +860,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
         if(ptAsso <fptminAsso) continue;
         nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
-
+        
         Double_t CorrectTPCNSigma;
         if(multCorrection){
             CorrectTPCNSigma = ftpcpid->GetCorrectedTPCnSigma(trackAsso->Eta(), multev, nsigma);
@@ -893,22 +897,22 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         if(fFlagLS) fInvmassLS1->Fill(mass);
         if(fFlagULS) fInvmassULS1->Fill(mass);
         
-	if(fFlagULS){
-	Double_t MassSparseULS[3] = {
-		track->Pt(),
+        if(fFlagULS){
+            Double_t MassSparseULS[3] = {
+                track->Pt(),
                 mass
-		}; 
- 		fSparseMassULS->Fill(MassSparseULS);  
-	 }
-	if(fFlagLS){
-	Double_t MassSparseLS[3] = {
-		track->Pt(),
+            };
+            fSparseMassULS->Fill(MassSparseULS);
+        }
+        if(fFlagLS){
+            Double_t MassSparseLS[3] = {
+                track->Pt(),
                 mass
-		}; 
- 		fSparseMassLS->Fill(MassSparseLS);  
-	 }	
-	
-	
+            };
+            fSparseMassLS->Fill(MassSparseLS);
+        }
+        
+        
         if(ptcutonmasshighpt >= 8.){
             if(fFlagLS) fInvmassLS1highpt->Fill(mass);
             if(fFlagULS) fInvmassULS1highpt->Fill(mass);
@@ -923,30 +927,30 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         
         
         Double_t phi = track->Phi();
-	Float_t DeltaPhi_eEP = TVector2::Phi_0_2pi(phi - evPlAngV0);
-	if(DeltaPhi_eEP > TMath::Pi()) {DeltaPhi_eEP = DeltaPhi_eEP - TMath::Pi();}
-
-
- if(mass<fInvmassCut){
- 	if(fFlagULS){
-		Double_t ulsSparse[3] = {
-		track->Pt(),
-        fEovP,
-		DeltaPhi_eEP
-		}; 
-        if(EPweights) fSparsephipsiULS->Fill(ulsSparse,weightEPflat);
-        if(!EPweights) fSparsephipsiULS->Fill(ulsSparse);
-		}
-	if(fFlagLS){
-		Double_t lsSparse[3] = {
-		track->Pt(),
-        fEovP,
-		DeltaPhi_eEP
-		}; 
-        if(EPweights) fSparsephipsiLS->Fill(lsSparse,weightEPflat);
-        if(!EPweights)fSparsephipsiLS->Fill(lsSparse);
+        Float_t DeltaPhi_eEP = TVector2::Phi_0_2pi(phi - evPlAngV0);
+        if(DeltaPhi_eEP > TMath::Pi()) {DeltaPhi_eEP = DeltaPhi_eEP - TMath::Pi();}
+        
+        
+        if(mass<fInvmassCut){
+            if(fFlagULS){
+                Double_t ulsSparse[3] = {
+                    track->Pt(),
+                    fEovP,
+                    DeltaPhi_eEP
+                };
+                if(EPweights) fSparsephipsiULS->Fill(ulsSparse,weightEPflat);
+                if(!EPweights) fSparsephipsiULS->Fill(ulsSparse);
+            }
+            if(fFlagLS){
+                Double_t lsSparse[3] = {
+                    track->Pt(),
+                    fEovP,
+                    DeltaPhi_eEP
+                };
+                if(EPweights) fSparsephipsiLS->Fill(lsSparse,weightEPflat);
+                if(!EPweights)fSparsephipsiLS->Fill(lsSparse);
+            }
         }
-	}
         
         
         
@@ -1074,7 +1078,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fCentralityAfterVZTRK = new TH1F("fCentralityAfterVZTRK", "fCentralityAfterVZTRK Pass", 101, -1, 100);
     fOutputList->Add(fCentralityAfterVZTRK);
-
+    
     fCentralityAfterCorrCut = new TH1F("fCentralityAfterCorrCut", "fCentralityAfterCorrCut Pass", 101, -1, 100);
     fOutputList->Add(fCentralityAfterCorrCut);
     
@@ -1186,7 +1190,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fV2Phivzerotot->GetAxis(0)->SetTitle("v_{2} (V0)");
     fV2Phivzerotot->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
     fV2Phivzerotot->Sumw2();
-
+    
     fOutputList->Add(fV2Phivzerotot);
     
     
@@ -1232,7 +1236,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fSparsephipsiULS->GetAxis(2)->SetTitle("DeltaPhiULS");
     fSparsephipsiULS->Sumw2();
     fOutputList->Add(fSparsephipsiULS);
- 
+    
     fSparsephipsiLS = new THnSparseF("fSparsephipsiLS", "pt:eop:DeltaPhiLS", 3, binsphipsi, xminphipsi, xmaxphipsi);
     fSparsephipsiLS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparsephipsiLS->GetAxis(1)->SetTitle("eop");
@@ -1247,7 +1251,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fSparseMassULS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparseMassULS->GetAxis(1)->SetTitle("mass");
     fOutputList->Add(fSparseMassULS);
- 
+    
     fSparseMassLS = new THnSparseF("fSparseMassLS", "pt:mass (GeV/c^{2})", 2, binsmass, xminmass, xmaxmass);
     fSparseMassLS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparseMassLS->GetAxis(1)->SetTitle("mass");
@@ -1257,7 +1261,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     fOutputList->Add(EPVzAftW);
     
     fOutputList->Add(fHistEPDistrWeight);
-
+    
     
     PostData(1,fOutputList);
     // create and post flowevent

@@ -39,7 +39,7 @@
 //
 
 enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
-enum centestimator{ kV0M, kV0A, kZNA };
+enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
@@ -161,6 +161,18 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       tab = 0.0459; tabUnc = 0.003162;
     }
   }
+  else if( ccestimator == kCL1 ){
+    if ( cc == kpPb020 ) {
+      tab = 0.19; tabUnc = 0.007;
+    } else if ( cc == kpPb2040 ) {
+      tab = 0.136; tabUnc = 0.005;
+    } else if ( cc == kpPb4060 ) {
+      tab = 0.088; tabUnc = 0.005;
+    } else if ( cc == kpPb60100 ) {
+      tab = 0.0369; tabUnc = 0.0085;
+    }
+  }
+
 
   tab *= 1e-9; // to pass from mb^{-1} to pb^{-1}
   tabUnc *= 1e-9;
@@ -427,6 +439,11 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       else if(cc == kpPb2040) systematics->SetCentrality("2040ZNA");
       else if(cc == kpPb4060) systematics->SetCentrality("4060ZNA");
       else if(cc == kpPb60100) systematics->SetCentrality("60100ZNA");
+    } else if (ccestimator==kCL1) {
+      if(cc == kpPb020) systematics->SetCentrality("020CL1");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040CL1");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060CL1");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100CL1");
     } else {
       if(!(cc == kpPb0100)) {
 	cout <<" Error on the pPb options"<<endl;
