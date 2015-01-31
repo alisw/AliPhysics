@@ -114,7 +114,7 @@ void AliGenEMCocktail::CreateCocktail()
 			//fNPart/0.925: increase number of particles so that we have the chosen number of particles in the chosen eta range
 	// 	genpizero = new AliGenParam(fNPart/0.925, new AliGenEMlib(), AliGenEMlib::kPizero, "DUMMY");
 			//fYMin/0.925: increase eta range, so that the electron yield is constant (<5% change) over the chosen eta range
-		genpizero->SetYRange(fYMin/0.925, fYMax/0.925);
+		// genpizero->SetYRange(fYMin/0.925, fYMax/0.925);
 		
 		// NOTE Theo: fNPart/0.925: increase number of particles so that we have the chosen number of particles in the chosen eta range
 		// NOTE Theo: fYMin/0.925: increase eta range, so that the electron yield is constant (<5% change) over the chosen eta range
