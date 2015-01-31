@@ -48,7 +48,7 @@ public:
   virtual void SetTDIApertureNeg(Float_t aperture) 
   	{if(aperture<=6.) fTDIApertureNeg = aperture;
 	 else printf("\n\n AliZDCv5: WARNING! TDI neg. aperture set to max. value: -6.0 cm\n\n");}
-  virtual void SetTDIConfiguration(Int_t configuration) {fTDIConfiguration=configuration}
+  virtual void SetTDIConfiguration(Int_t configuration) {fTDIConfiguration=configuration;}
 
   void SetLumiLength(Float_t length) {fLumiLength = length;}
   
