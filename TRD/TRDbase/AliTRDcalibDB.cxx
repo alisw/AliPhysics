@@ -1100,7 +1100,7 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
 
     TString tableName = "";
     for (Int_t i = 0; i < 540; i++) {
-      const AliTRDCalDCSFEEv2 *calDCSFEEv2 = calDCSv2->GetCalDCSFEEObj(0);
+      const AliTRDCalDCSFEEv2 *calDCSFEEv2 = calDCSv2->GetCalDCSFEEObj(i);
       tableName = calDCSFEEv2->GetGainTableName();
       if (tableName.Length() > 0) {
         break;
