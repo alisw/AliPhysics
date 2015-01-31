@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
-//  		AliZDCv4 --- new ZDC geometry		     	     //
+//  		AliZDCv5 --- new ZDC geometry		     	     //
 //  	    with both ZDC arms geometry implemented 		     //
 //                                                                   //  
 ///////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@
 #include "AliConst.h"
 #include "AliMagF.h"
 #include "AliRun.h"
-#include "AliZDCv4.h"
+#include "AliZDCv5.h"
 #include "AliMC.h"
 #include "AliMCParticle.h"
  
@@ -53,10 +53,10 @@ class  AliPDG;
 class  AliDetector;
  
  
-ClassImp(AliZDCv4)
+ClassImp(AliZDCv5)
 
 //_____________________________________________________________________________
-AliZDCv4::AliZDCv4() : 
+AliZDCv5::AliZDCv5() : 
   AliZDC(),
   fMedSensF1(0),
   fMedSensF2(0),
@@ -91,6 +91,7 @@ AliZDCv4::AliZDCv4() :
   fTCDDApertureNeg(2.0),
   fTDIAperturePos(5.5),
   fTDIApertureNeg(5.5),
+  fTDIConfiguration(2),
   fLumiLength(15.)
 {
   //
@@ -104,7 +105,7 @@ AliZDCv4::AliZDCv4() :
 }
  
 //_____________________________________________________________________________
-AliZDCv4::AliZDCv4(const char *name, const char *title) : 
+AliZDCv5::AliZDCv5(const char *name, const char *title) : 
   AliZDC(name,title),
   fMedSensF1(0),
   fMedSensF2(0),
@@ -139,6 +140,7 @@ AliZDCv4::AliZDCv4(const char *name, const char *title) :
   fTCDDApertureNeg(2.0),
   fTDIAperturePos(5.5),
   fTDIApertureNeg(5.5),
+  fTDIConfiguration(2),
   fLumiLength(15.)  
 {
   //
@@ -213,7 +215,7 @@ AliZDCv4::AliZDCv4(const char *name, const char *title) :
 }
  
 //_____________________________________________________________________________
-void AliZDCv4::CreateGeometry()
+void AliZDCv5::CreateGeometry()
 {
   //
   // Create the geometry for the Zero Degree Calorimeter version 2
@@ -225,15 +227,17 @@ void AliZDCv4::CreateGeometry()
 }
   
 //_____________________________________________________________________________
-void AliZDCv4::CreateBeamLine()
+void AliZDCv5::CreateBeamLine()
 {
   //
   // Create the beam line elements
   //
   if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
   
-  Double_t zd1, zd2, zCorrDip, zInnTrip, zD1;
-  Double_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
+  Double_t zd1=0., zd2=0., zCorrDip=0., zInnTrip=0., zD1=0.;
+  Double_t tubpar[3]={0.,0.,0}, boxpar[3]={0.,0.,0};
+  Double_t tubspar[5]={0.,0.,0.,0.,0.};
+  Double_t conpar[9]={0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
   //-- rotation matrices for the legs
   Int_t irotpipe1, irotpipe2;
@@ -369,7 +373,7 @@ if(!fOnlyZEM){
     boxpar[1] = (3.5-fVCollSideCAperture-fVCollSideCCentreY-0.7)/2.;
     if(boxpar[1]<0.) boxpar[1]=0.;
     boxpar[2] = 124.4/2.;
-    printf("  AliZDCv4 -> C side injection collimator jaws: apertures +%1.2f/-%1.2f center %1.2f [cm]\n", 
+    printf("  AliZDCv5 -> C side injection collimator jaws: apertures +%1.2f/-%1.2f center %1.2f [cm]\n", 
     	fVCollSideCAperture, fVCollSideCApertureNeg,fVCollSideCCentreY);
     TVirtualMC::GetMC()->Gsvolu("QCVC" , "BOX ", idtmed[13], boxpar, 3); 
     TVirtualMC::GetMC()->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollSideCAperture+fVCollSideCCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
@@ -958,7 +962,7 @@ if(!fOnlyZEM){
   // positioning  TCDD elements in ZDCA, (inside TCDD volume)
   TVirtualMC::GetMC()->Gspos("Q08T", 1, "ZDCA", 0., fTCDDAperturePos, -100.+zd2, 0, "ONLY");  
   TVirtualMC::GetMC()->Gspos("Q10T", 1, "ZDCA", 0., -fTCDDApertureNeg, -100.+zd2, 0, "ONLY");  
-  printf("  AliZDCv4 -> TCDD apertures +%1.2f/-%1.2f cm\n", 
+  printf("  AliZDCv5 -> TCDD apertures +%1.2f/-%1.2f cm\n", 
     	fTCDDAperturePos, fTCDDApertureNeg);
     
   // RF screen 
@@ -1037,63 +1041,276 @@ if(!fOnlyZEM){
   TVirtualMC::GetMC()->Gsvolu("QA10", "CONE", idtmed[7], conpar, 5);
   TVirtualMC::GetMC()->Gspos("QA10", 1, "ZDCA", -1.66, 0., conpar[0]+0.73+zd2, irotpipe4, "ONLY");
   // Ch.debug  
-  //printf("	QA10 skewed CONE from z = %1.2f to z= %1.2f\n",zd2,2*conpar[0]+0.73+1.13+zd2);
+  printf("	QA10 skewed CONE from z = %1.2f to z= %1.2f\n",zd2,2*conpar[0]+0.73+1.13+zd2);
 
   zd2 += 2.*conpar[0]+0.73+1.13;
       
   // Vacuum chamber containing TDI  
   tubpar[0] = 0.;
   tubpar[1] = 54.6/2.;
-  tubpar[2] = 540.0/2.;
+  tubpar[2] = 810.0/2.;
   TVirtualMC::GetMC()->Gsvolu("Q13TM", "TUBE", idtmed[10], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("Q13TM", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   tubpar[0] = 54.0/2.;
   tubpar[1] = 54.6/2.;
-  tubpar[2] = 540.0/2.;
+  tubpar[2] = 810.0/2.;
   TVirtualMC::GetMC()->Gsvolu("Q13T", "TUBE", idtmed[7], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("Q13T", 1, "Q13TM", 0., 0., 0., 0, "ONLY");
   // Ch.debug
-  //printf("	Q13T TUBE from z = %1.2f to z= %1.2f (TDI vacuum chamber)\n",zd2,2*tubpar[2]+zd2);
-
-  zd2 += 2.*tubpar[2];
+  printf("	Q13T TUBE from z = %1.2f to z= %1.2f (TDI vacuum chamber)\n",zd2,2*tubpar[2]+zd2);
   
   //---------------- INSERT TDI INSIDE Q13T -----------------------------------    
+  //  *** First jaw - first section: Cu (53.3% of 1st jaw length)
+  // First section of 1st jaw begins 50 cm after vacuum chamber begin NB-> w.r.t Q13T center!!!
+  Float_t zjaw11 = -tubpar[2]+50.; 
+  // 1st section is displaced in x axis by offset
+  Double_t offset = 0.2;
   boxpar[0] = 11.0/2.;
   boxpar[1] = 9.0/2.;
-  boxpar[2] = 418.5/2.;
-  TVirtualMC::GetMC()->Gsvolu("QTD1", "BOX ", idtmed[7], boxpar, 3);
-  TVirtualMC::GetMC()->Gspos("QTD1", 1, "Q13TM", -3.8, boxpar[1]+fTDIAperturePos,  0., 0, "ONLY");
-  boxpar[0] = 11.0/2.;
-  boxpar[1] = 9.0/2.;
-  boxpar[2] = 418.5/2.;
-  TVirtualMC::GetMC()->Gsvolu("QTD2", "BOX ", idtmed[7], boxpar, 3);
-  TVirtualMC::GetMC()->Gspos("QTD2", 1, "Q13TM", -3.8, -boxpar[1]-fTDIApertureNeg,  0., 0, "ONLY");  
-  boxpar[0] = 5.1/2.;
-  boxpar[1] = 0.2/2.;
-  boxpar[2] = 418.5/2.;
-  TVirtualMC::GetMC()->Gsvolu("QTD3", "BOX ", idtmed[7], boxpar, 3);
-  TVirtualMC::GetMC()->Gspos("QTD3", 1, "Q13TM", -3.8+5.5+boxpar[0], fTDIAperturePos,  0., 0, "ONLY");  
-  TVirtualMC::GetMC()->Gspos("QTD3", 2, "Q13TM", -3.8+5.5+boxpar[0], -fTDIApertureNeg,  0., 0, "ONLY"); 
-  TVirtualMC::GetMC()->Gspos("QTD3", 3, "Q13TM", -3.8-5.5-boxpar[0], fTDIAperturePos,  0., 0, "ONLY");  
-  TVirtualMC::GetMC()->Gspos("QTD3", 4, "Q13TM", -3.8-5.5-boxpar[0], -fTDIApertureNeg,  0., 0, "ONLY");  
-  printf("  AliZDCv4 -> TDI apertures +%1.2f/-%1.2f cm\n", 
-    	fTDIAperturePos, fTDIApertureNeg);
+  boxpar[2] = 92.0/2.;
+  TVirtualMC::GetMC()->Gsvolu("QTDCU1", "BOX ", idtmed[6], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDCU1", 1, "Q13TM", -3.8-offset, boxpar[1]+fTDIAperturePos,  zjaw11+boxpar[2], 0, "ONLY");
   //
-  tubspar[0] = 12.0/2.;
-  tubspar[1] = 12.4/2.;
-  tubspar[2] = 418.5/2.;
-  tubspar[3] = 90.;
-  tubspar[4] = 270.;  
-  TVirtualMC::GetMC()->Gsvolu("QTD4", "TUBS", idtmed[6], tubspar, 5);
-  TVirtualMC::GetMC()->Gspos("QTD4", 1, "Q13TM", -3.8-10.6, 0.,  0., 0, "ONLY");
-  tubspar[0] = 12.0/2.;
-  tubspar[1] = 12.4/2.;
-  tubspar[2] = 418.5/2.;
-  tubspar[3] = -90.;
-  tubspar[4] = 90.;  
-  TVirtualMC::GetMC()->Gsvolu("QTD5", "TUBS", idtmed[6], tubspar, 5);
-  TVirtualMC::GetMC()->Gspos("QTD5", 1, "Q13TM", -3.8+10.6, 0.,  0., 0, "ONLY"); 
+  TVirtualMC::GetMC()->Gsvolu("QTDCU2", "BOX ", idtmed[6], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDCU2", 1, "Q13TM", -3.8-offset, -boxpar[1]-fTDIApertureNeg, zjaw11+boxpar[2], 0, "ONLY");
+  //Ch. debug
+  printf("   TDI 1st TDI jaw/1st section (Cu): %f < z < %f cm\n", zjaw11, zjaw11+2.*boxpar[2]);  
+  //
+  //  *** First jaw - second section: Al (46.2% of 1st jaw length)
+  // 2nd section of 1st jaw begins at the end of 1st section
+  Float_t zjaw12 = zjaw11+2*boxpar[2]; 
+  boxpar[0] = 11.0/2.;
+  boxpar[1] = 9.0/2.;
+  boxpar[2] = 78.0/2.;
+  TVirtualMC::GetMC()->Gsvolu("QTDAL1", "BOX ", idtmed[14], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDAL1", 1, "Q13TM", -4., boxpar[1]+fTDIAperturePos, zjaw12+boxpar[2], 0, "ONLY");
+  //
+  TVirtualMC::GetMC()->Gsvolu("QTDAL2", "BOX ", idtmed[14], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDAL2", 1, "Q13TM", -4., -boxpar[1]-fTDIApertureNeg, zjaw12+boxpar[2], 0, "ONLY");  
+  //Ch. debug
+  printf("   TDI 1st TDI jaw/2nd section (Al): %f < z < %f cm\n", zjaw12, zjaw12+2.*boxpar[2]);  
+  //
+  //  *** Second jaw 
+  Float_t zjaw2 = zjaw12+2.*boxpar[2]+100.; // 2nd jaw begins 1 m after end of 1st jaw
+  boxpar[0] = 11.0/2.;
+  boxpar[1] = 9.0/2.;
+  boxpar[2] = 170.0/2.;
+  TVirtualMC::GetMC()->Gsvolu("QTDG1", "BOX ", idtmed[15], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDG1", 1, "Q13TM", -3.8, boxpar[1]+fTDIAperturePos,  zjaw2+boxpar[2], 0, "ONLY");
+  //
+  TVirtualMC::GetMC()->Gsvolu("QTDG2", "BOX ", idtmed[15], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDG2", 1, "Q13TM", -3.8, -boxpar[1]-fTDIApertureNeg,  zjaw2+boxpar[2], 0, "ONLY");  
+  //Ch. debug
+  printf("   TDI 2nd jaw (graphite): %f < z < %f\n", zjaw2, zjaw2+2*boxpar[2]);  
+  //
+  //  *** Third jaw 
+  Float_t zjaw3 = zjaw2+2.*boxpar[2]+100.; // 3rd jaw begins 1 m after end of 2nd jaw
+  boxpar[0] = 11.0/2.;
+  boxpar[1] = 9.0/2.;
+  boxpar[2] = 170.0/2.;
+  TVirtualMC::GetMC()->Gsvolu("QTDG3", "BOX ", idtmed[15], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDG3", 1, "Q13TM", -3.8, boxpar[1]+fTDIAperturePos,  zjaw3+boxpar[2], 0, "ONLY");
+  //
+  TVirtualMC::GetMC()->Gsvolu("QTDG4", "BOX ", idtmed[15], boxpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTDG4", 1, "Q13TM", -3.8, -boxpar[1]-fTDIApertureNeg, zjaw3+boxpar[2], 0, "ONLY");  
+  //Ch. debug
+  printf("   TDI 3rd jaw (graphite): %f < z < %f\n", zjaw3, zjaw3+2*boxpar[2]);
+  //  
+  printf("  AliZDCv5 -> TDI apertures +%1.2f/-%1.2f cm\n", fTDIAperturePos, fTDIApertureNeg);
+  
+  if(fTDIConfiguration==0){ // no aperture! Only 2 vertical plates at x_TDI = +/- 5.5
+    printf("\t AliZDCv5 -> Initializing TDI configuration 0\n\n");
+    //
+    boxpar[0] = 0.2/2.;
+    boxpar[1] = (fTDIAperturePos+fTDIApertureNeg)/2.;
+    boxpar[2] = 92.0/2.;
+    TVirtualMC::GetMC()->Gsvolu("QTDS11", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS11", 1, "Q13TM", -3.8-offset+5.5+boxpar[0], 0.,  zjaw11+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS11", 1, "Q13TM", -3.8-offset-5.5-boxpar[0], 0.,  zjaw11+boxpar[2], 0, "ONLY");
+    //
+    boxpar[2] = 78.0/2.;
+    TVirtualMC::GetMC()->Gsvolu("QTDS12", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS12", 1, "Q13TM", -3.8-offset+5.5+boxpar[0], 0.,  zjaw12+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS12", 1, "Q13TM", -3.8-offset-5.5-boxpar[0], 0.,  zjaw12+boxpar[2], 0, "ONLY");
+    //
+    boxpar[2] = 170.0/2.;
+    TVirtualMC::GetMC()->Gsvolu("QTDS2", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8+5.5+boxpar[0], 0.,  zjaw2+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8-5.5-boxpar[0], 0.,  zjaw2+boxpar[2], 0, "ONLY");
+    //
+    TVirtualMC::GetMC()->Gsvolu("QTDS3", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS3", 1, "Q13TM", -3.8+5.5+boxpar[0], 0.,  zjaw3+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS3", 1, "Q13TM", -3.8-5.5-boxpar[0], 0.,  zjaw3+boxpar[2], 0, "ONLY");
+    
+  }
+  else if (fTDIConfiguration==1){ // ~4 murad at TDI end aperture = (5.5+6) cm = 11.5 cm
+    printf("\t AliZDCv5 -> Initializing TDI configuration 1\n\n");
+    //
+    // -> Only tubs (elliptic screens) definitions 
+    // 1st jaw / 1st section 
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 92.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD4", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD4", 1, "Q13TM", -3.8-offset-5.5, 0., zjaw11+boxpar[2], 0, "ONLY");
+    //
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 92.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD5", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD5", 1, "Q13TM", -3.8-offset+5.5, 0., zjaw11+boxpar[2], 0, "ONLY"); 
+    // 1st jaw / 2nd section
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 78.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD6", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD6", 1, "Q13TM", -3.8-offset-5.5, 0., zjaw12+boxpar[2], 0, "ONLY");
+    tubspar[0] = 12.0/2.;
+    tubspar[1] = 12.4/2.;
+    tubspar[2] = 78.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD7", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD7", 1, "Q13TM", -3.8-offset+5.5, 0., zjaw12+boxpar[2], 0, "ONLY"); 
+    //
+    // 2nd jaw 
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD8", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD8", 1, "Q13TM", -3.8-5.5, 0., zjaw2+boxpar[2], 0, "ONLY");
+    tubspar[0] = 12.0/2.;
+    tubspar[1] = 12.4/2.;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD9", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD9", 1, "Q13TM", -3.8+5.5, 0., zjaw2+boxpar[2], 0, "ONLY"); 
+    //
+    // 3rd jaw 
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD10", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD10", 1, "Q13TM", -3.8-5.5, 0., zjaw3+boxpar[2], 0, "ONLY");
+    tubspar[0] = 12.0/2.;
+    tubspar[1] = 12.4/2.;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD11", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD11", 1, "Q13TM", -3.8+5.5, 0., zjaw3+boxpar[2], 0, "ONLY"); 
+  }
+  else if (fTDIConfiguration==2){ // 6 murad at TDI (as for RUN1, only TDI geometry is different!)
+    printf("\t AliZDCv5 -> Initializing TDI configuration 2\n\n");
+    //
+    // -> ~elliptic screen definitions + horizontal plates (5 cm)
+    // 1st jaw / 1st section 
+    boxpar[0] = 5.1/2.;
+    boxpar[1] = 0.2/2.;
+    boxpar[2] = 92.0/2.;
+    TVirtualMC::GetMC()->Gsvolu("QTDS11", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS11", 1, "Q13TM", -3.8-offset+5.5+boxpar[0], fTDIAperturePos,  zjaw11+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS11", 1, "Q13TM", -3.8-offset+5.5+boxpar[0], -fTDIApertureNeg, zjaw11+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS11", 1, "Q13TM", -3.8-offset-5.5-boxpar[0], fTDIAperturePos,  zjaw11+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS11", 1, "Q13TM", -3.8-offset-5.5-boxpar[0], -fTDIApertureNeg, zjaw11+boxpar[2], 0, "ONLY");
+    //
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 92.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD4", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD4", 1, "Q13TM", -3.8-offset-10.6, 0., zjaw11+boxpar[2], 0, "ONLY");
+    //
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 92.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD5", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD5", 1, "Q13TM", -3.8-offset+10.6, 0., zjaw11+boxpar[2], 0, "ONLY"); 
+    // 1st jaw / 2nd section
+    boxpar[2] = 78.0/2.;
+    TVirtualMC::GetMC()->Gsvolu("QTDS12", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS12", 1, "Q13TM", -3.8-offset+5.5+boxpar[0], fTDIAperturePos,  zjaw12+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS12", 1, "Q13TM", -3.8-offset+5.5+boxpar[0], -fTDIApertureNeg, zjaw12+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS12", 1, "Q13TM", -3.8-offset-5.5-boxpar[0], fTDIAperturePos,  zjaw12+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS12", 1, "Q13TM", -3.8-offset-5.5-boxpar[0], -fTDIApertureNeg, zjaw12+boxpar[2], 0, "ONLY");
+    //
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 78.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD6", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD6", 1, "Q13TM", -3.8-offset-10.6, 0., zjaw12+boxpar[2], 0, "ONLY");
+    tubspar[0] = 12.0/2.;
+    tubspar[1] = 12.4/2.;
+    tubspar[2] = 78.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD7", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD7", 1, "Q13TM", -3.8-offset+10.6, 0., zjaw12+boxpar[2], 0, "ONLY"); 
+    //
+    // 2nd jaw 
+    boxpar[2] = 170.0/2.;
+    TVirtualMC::GetMC()->Gsvolu("QTDS2", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8+5.5+boxpar[0], fTDIAperturePos,  zjaw2+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8+5.5+boxpar[0], -fTDIApertureNeg, zjaw2+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8-5.5-boxpar[0], fTDIAperturePos,  zjaw2+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8-5.5-boxpar[0], -fTDIApertureNeg, zjaw2+boxpar[2], 0, "ONLY");
+    //
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD8", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD8", 1, "Q13TM", -3.8-10.6, 0., zjaw2+boxpar[2], 0, "ONLY");
+    tubspar[0] = 12.0/2.;
+    tubspar[1] = 12.4/2.;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD9", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD9", 1, "Q13TM", -3.8+10.6, 0., zjaw2+boxpar[2], 0, "ONLY"); 
+    //
+    // 3rd jaw 
+    TVirtualMC::GetMC()->Gsvolu("QTDS3", "BOX ", idtmed[6], boxpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTDS3", 1, "Q13TM", -3.8+5.5+boxpar[0], fTDIAperturePos,  zjaw3+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS3", 1, "Q13TM", -3.8+5.5+boxpar[0], -fTDIApertureNeg, zjaw3+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8-5.5-boxpar[0], fTDIAperturePos,  zjaw3+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTDS2", 1, "Q13TM", -3.8-5.5-boxpar[0], -fTDIApertureNeg, zjaw3+boxpar[2], 0, "ONLY");
+    //
+    tubspar[0] = 6.0;
+    tubspar[1] = 6.2;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = 90.;
+    tubspar[4] = 270.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD10", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD10", 1, "Q13TM", -3.8-10.6, 0., zjaw3+boxpar[2], 0, "ONLY");
+    tubspar[0] = 12.0/2.;
+    tubspar[1] = 12.4/2.;
+    tubspar[2] = 170.0/2.;
+    tubspar[3] = -90.;
+    tubspar[4] = 90.;  
+    TVirtualMC::GetMC()->Gsvolu("QTD11", "TUBS", idtmed[6], tubspar, 5);
+    TVirtualMC::GetMC()->Gspos("QTD11", 1, "Q13TM", -3.8+10.6, 0., zjaw3+boxpar[2], 0, "ONLY"); 
+  }
   //---------------- END DEFINING TDI INSIDE Q13T -------------------------------
+
+  zd2 += 2.*tubpar[2];
   
   // VCTCG skewed transition piece (ID=332 mm to 212.7 mm) (after TDI)
   conpar[0] = (50.0-2.92-1.89)/2.;
@@ -1140,9 +1357,10 @@ if(!fOnlyZEM){
   //            4 x VCDGA (4 x 4272 mm) + 
   //            the first part of VCTCR (850 mm)
   // updated according to 2012 ZDC installation
+  // Jan 2015: large vacuum chamber 2.7 m shorter due to longer TDI
   tubpar[0] = 79.7/2.;
   tubpar[1] = 81.3/2.;
-  tubpar[2] = (2221.-136.)/2.;
+  tubpar[2] = (2221.-136.-270.)/2.;
   TVirtualMC::GetMC()->Gsvolu("QA14", "TUBE", idtmed[7], tubpar, 3);
   TVirtualMC::GetMC()->Gspos("QA14", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug  
@@ -1719,7 +1937,7 @@ if(!fOnlyZEM){
 }
   
 //_____________________________________________________________________________
-void AliZDCv4::CreateZDC()
+void AliZDCv5::CreateZDC()
 {
  //
  // Create the various ZDCs (ZN + ZP)
@@ -1935,7 +2153,7 @@ if(!fOnlyZEM){
 }
  
 //_____________________________________________________________________________
-void AliZDCv4::CreateMaterials()
+void AliZDCv5::CreateMaterials()
 {
   //
   // Create Materials for the Zero Degree Calorimeter
@@ -1982,23 +2200,25 @@ void AliZDCv4::CreateMaterials()
 
   // --- Copper (energy loss taken into account)
   ubuf[0] = 1.10;
-  AliMaterial(6, "COPP0", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
+  AliMaterial(6, "COPP0", 63.54, 29., 8.96, 1.43, 0., ubuf, 1);
 
   // --- Copper 
-  ubuf[0] = 1.10;
-  AliMaterial(9, "COPP1", 63.54, 29., 8.96, 1.4, 0., ubuf, 1);
+  AliMaterial(9, "COPP1", 63.54, 29., 8.96, 1.43, 0., ubuf, 1);
   
   // --- Iron (energy loss taken into account)
-  ubuf[0] = 1.1;
   AliMaterial(7, "IRON0", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // --- Iron (no energy loss)
-  ubuf[0] = 1.1;
   AliMaterial(8, "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
-  // --- Tatalum 
-  ubuf[0] = 1.1;
+  // --- Tantalum 
   AliMaterial(13, "TANT", 183.84, 74., 19.3, 0.35, 0., ubuf, 1);
+  
+  // --- Aluminum 
+  AliMaterial(14, "ALUM", 26.98, 13., 2.7, 8.9, 0., ubuf, 1);
+  
+  // --- Carbon 
+  AliMaterial(15, "GRAP", 12.011, 6., 2.2, 18.8, 0., ubuf, 1);
     
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
@@ -2049,7 +2269,7 @@ void AliZDCv4::CreateMaterials()
   Int_t isvol = 0;         // ISVOL =0 -> not sensitive volume
   Int_t isvolActive = 1;   // ISVOL =1 -> sensitive volume
   Int_t inofld = 0;        // IFIELD=0 -> no magnetic field
-  Int_t ifield = 2;        // IFIELD=2 -> magnetic field defined in AliMagFC.h
+  Int_t ifield =2;         // IFIELD=2 -> magnetic field defined in AliMagFC.h
   // *****************************************************
   
   AliMedium(1, "ZWALL", 1, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
@@ -2057,20 +2277,22 @@ void AliZDCv4::CreateMaterials()
   AliMedium(3, "ZSIO2", 3, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(4, "ZQUAR", 3, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(5, "ZLEAD", 5, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(6, "ZCOPP", 6, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(7, "ZIRON", 7, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(8, "ZIRONN",8, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(9, "ZCOPL", 6, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(10,"ZVOID",10, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(11,"ZVOIM",11, isvol, 	ifield, fieldm,   tmaxfdv,stemax, deemax, epsil, stmin);
+  AliMedium(6, "ZCOPP", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(7, "ZIRON", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "ZIRONN",8, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9, "ZCOPL", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfdv, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(13,"ZTANT",13, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(14,"ZIRONT",7, isvol, 	inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(14,"ZALUM",14, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15,"ZALUM",15, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16,"ZIRONT",7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
 
 } 
 
 //_____________________________________________________________________________
-void AliZDCv4::AddAlignableVolumes() const
+void AliZDCv5::AddAlignableVolumes() const
 {
  //
  // Create entries for alignable volumes associating the symbolic volume
@@ -2105,7 +2327,7 @@ void AliZDCv4::AddAlignableVolumes() const
 
 
 //_____________________________________________________________________________
-void AliZDCv4::Init()
+void AliZDCv5::Init()
 {
  InitTables();
   Int_t *idtmed = fIdtmed->GetArray();  
@@ -2123,7 +2345,7 @@ void AliZDCv4::Init()
 }
 
 //_____________________________________________________________________________
-void AliZDCv4::InitTables()
+void AliZDCv5::InitTables()
 {
  //
  // Read light tables for Cerenkov light production parameterization 
@@ -2258,7 +2480,7 @@ void AliZDCv4::InitTables()
 
 }
 //_____________________________________________________________________________
-void AliZDCv4::StepManager()
+void AliZDCv5::StepManager()
 {
   //
   // Routine called at every step in the Zero Degree Calorimeters

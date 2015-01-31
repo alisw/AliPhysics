@@ -44,6 +44,7 @@ set(SRCS
     AliZDCTriggerProcessor.cxx
     AliZDCv3.cxx
     AliZDCv4.cxx
+    AliZDCv5.cxx
    )
 
 # Headers from sources

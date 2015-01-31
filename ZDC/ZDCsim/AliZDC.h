@@ -60,6 +60,7 @@ public:
   
   virtual void SetTDIAperturePos(Float_t /*aperture*/) {}
   virtual void SetTDIApertureNeg(Float_t /*aperture*/) {}
+  virtual void SetTDIConfiguration(Int_t /*configuration*/) {}
   
   virtual void SetLumiLength(Float_t /*length*/) {}
   
