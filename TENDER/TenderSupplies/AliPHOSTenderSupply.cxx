@@ -325,7 +325,14 @@ void AliPHOSTenderSupply::ProcessEvent()
       AliESDCaloCluster *clu = esd->GetCaloCluster(i);    
       if ( !clu->IsPHOS()) continue;
       
-    
+      //remove clusters from bad modules without re-calibration
+      Int_t relid[4] ;
+      fPHOSGeo->AbsToRelNumbering(clu->GetCellAbsId(0), relid) ; //shold be at lease one digit
+      if(!fPHOSBadMap[relid[0]]){
+        clu->SetE(0) ;
+	continue ;
+      }
+     
       //Apply re-Calibreation
       AliPHOSEsdCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
