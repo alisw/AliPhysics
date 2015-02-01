@@ -136,8 +136,12 @@ void AliPHOSv0::CreateGeometry()
   // Create a PHOS module.
   
   TVirtualMC::GetMC()->Gsvolu("PHOS", "TRD1", idtmed[798], geom->GetPHOSParams(), 4) ;        
+  if(strstr(GetTitle(),"4")!=0 ){
+    TVirtualMC::GetMC()->Gsvolu("PHOH", "TRD1", idtmed[798], geom->GetPHOSParams(), 4) ;        
+  }
   
   this->CreateGeometryforEMC() ; 
+  //Should we create 4-th module
 
   if (strstr(fTitle.Data(),"noCPV") == 0) 
     this->CreateGeometryforCPV() ;
@@ -166,8 +170,14 @@ void AliPHOSv0::CreateGeometry()
     Float_t pos[3];
     for (iXYZ=0; iXYZ<3; iXYZ++)
       pos[iXYZ] = geom->GetModuleCenter(iModule,iXYZ);
-    TVirtualMC::GetMC()->Gspos("PHOS", iModule+1, "ALIC", pos[0], pos[1], pos[2],
+    if(iModule!=3)
+       TVirtualMC::GetMC()->Gspos("PHOS", iModule+1, "ALIC", pos[0], pos[1], pos[2],
 	       idrotm[iModule], "ONLY") ;
+    else{
+       TVirtualMC::GetMC()->Gspos("PHOH", iModule+1, "ALIC", pos[0], pos[1], pos[2],
+	       idrotm[iModule], "ONLY") ;
+printf("Added PHOS module 4.... \n") ;	       
+    }
   }
   if(!anyModuleCreated)
     AliError("No one PHOS module was created") ;
@@ -202,11 +212,16 @@ void AliPHOSv0::CreateGeometryforEMC()
   Float_t par[4];
   Int_t  ipar;
 
+  Bool_t makeHalfMod=kFALSE ;
+  if(strstr(GetTitle(),"4")!=0 ){
+    makeHalfMod=kTRUE; 
+  }  
+  
   // ======= Define the strip ===============
 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetStripHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PSTR", "BOX ", idtmed[716], par, 3) ;  //Made of steel
-   
+
   // --- define steel volume (cell of the strip unit)
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetAirCellHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PCEL", "BOX ", idtmed[798], par, 3);
@@ -224,7 +239,7 @@ void AliPHOSv0::CreateGeometryforEMC()
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetCrystalHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PXTL", "BOX ", idtmed[699], par, 3) ;
   TVirtualMC::GetMC()->Gspos("PXTL", 1, "PWRA", 0.0, 0.0, 0.0, 0, "ONLY") ;
-      
+  
   // --- define APD/PIN preamp and put it into AirCell
  
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetAPDHalfSize() + ipar);
@@ -270,6 +285,10 @@ void AliPHOSv0::CreateGeometryforEMC()
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetInnerThermoHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PTII", "BOX ", idtmed[706], par, 3) ;     
   
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gsvolu("PTIH", "BOX ", idtmed[706], par, 3) ;     
+    
+  
   const Float_t * inthermo = emcg->GetInnerThermoHalfSize() ;
   const Float_t * strip    = emcg->GetStripHalfSize() ;
   y = inthermo[1] - strip[1] ;
@@ -285,28 +304,50 @@ void AliPHOSv0::CreateGeometryforEMC()
       nr++ ;
     }
   }
-  
+  if(makeHalfMod){
+    nr = 1 ;
+    for(irow = 0; irow < emcg->GetNStripX(); irow ++){
+      Float_t x = (2*irow + 1 - emcg->GetNStripX())* strip[0] ;
+      for(icol = 0; icol < emcg->GetNStripZ(); icol ++){
+        z = (2*icol + 1 - emcg->GetNStripZ()) * strip[2] ;
+	if(irow>emcg->GetNStripX()/2)
+          TVirtualMC::GetMC()->Gspos("PSTR", nr, "PTIH", x, y, z, 0, "ONLY") ;
+        nr++ ;
+      }
+    }
+  }
   
   // ------- define the air gap between thermoinsulation and cooler
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetAirGapHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PAGA", "BOX ", idtmed[798], par, 3) ;   
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gsvolu("PAGH", "BOX ", idtmed[798], par, 3) ;   
   const Float_t * agap = emcg->GetAirGapHalfSize() ;
   y = agap[1] - inthermo[1]  ;
   
   TVirtualMC::GetMC()->Gspos("PTII", 1, "PAGA", 0.0, y, 0.0, 0, "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PTIH", 1, "PAGH", 0.0, y, 0.0, 0, "ONLY") ;
 
 
   // ------- define the Al passive cooler 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetCoolerHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PCOR", "BOX ", idtmed[701], par, 3) ;   
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gsvolu("PCOH", "BOX ", idtmed[701], par, 3) ;   
+
   const Float_t * cooler = emcg->GetCoolerHalfSize() ;
   y = cooler[1] - agap[1]  ;
   
   TVirtualMC::GetMC()->Gspos("PAGA", 1, "PCOR", 0.0, y, 0.0, 0, "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PAGH", 1, "PCOH", 0.0, y, 0.0, 0, "ONLY") ;
   
   // ------- define the outer thermoinsulating cover
   for (ipar=0; ipar<4; ipar++) par[ipar] = *(emcg->GetOuterThermoParams() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PTIO", "TRD1", idtmed[706], par, 4) ;        
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gsvolu("PIOH", "TRD1", idtmed[706], par, 4) ;        
   const Float_t * outparams = emcg->GetOuterThermoParams() ; 
   
   Int_t idrotm[99] ;
@@ -315,19 +356,28 @@ void AliPHOSv0::CreateGeometryforEMC()
   
   z = outparams[3] - cooler[1] ;
   TVirtualMC::GetMC()->Gspos("PCOR", 1, "PTIO", 0., 0.0, z, idrotm[1], "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PCOH", 1, "PIOH", 0., 0.0, z, idrotm[1], "ONLY") ;
   
   // -------- Define the outer Aluminium cover -----
   for (ipar=0; ipar<4; ipar++) par[ipar] = *(emcg->GetAlCoverParams() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PCOL", "TRD1", idtmed[701], par, 4) ;        
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gsvolu("PCLH", "TRD1", idtmed[701], par, 4) ;        
+
   const Float_t * covparams = emcg->GetAlCoverParams() ; 
-  z = covparams[3] - outparams[3] ;
+  z = covparams[3] - outparams[3] ;  
   TVirtualMC::GetMC()->Gspos("PTIO", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PIOH", 1, "PCLH", 0., 0.0, z, 0, "ONLY") ;
 
   // --------- Define front fiberglass cover -----------
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFiberGlassHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PFGC", "BOX ", idtmed[717], par, 3) ;  
   z = - outparams[3] ;
   TVirtualMC::GetMC()->Gspos("PFGC", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PFGC", 1, "PCLH", 0., 0.0, z, 0, "ONLY") ;
 
   //=============This is all with cold section==============
   
@@ -376,7 +426,6 @@ void AliPHOSv0::CreateGeometryforEMC()
   z = -warmthermo[2] + 2*cbox[2] + cbox2[2];
   TVirtualMC::GetMC()->Gspos("PCA2", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
   
-  
   // --- Define frame ---
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFrameXHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PFRX", "BOX ", idtmed[716], par, 3) ; 
@@ -396,46 +445,51 @@ void AliPHOSv0::CreateGeometryforEMC()
   const Float_t * posit3 = emcg->GetFGupXPosition() ;
   TVirtualMC::GetMC()->Gspos("PFG1", 1, "PWTI", posit3[0],  posit3[1], posit3[2], 0, "ONLY") ;
   TVirtualMC::GetMC()->Gspos("PFG1", 2, "PWTI", posit3[0], -posit3[1], posit3[2], 0, "ONLY") ;
-
+  
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGupZHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PFG2", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit4 = emcg->GetFGupZPosition();
   TVirtualMC::GetMC()->Gspos("PFG2", 1, "PWTI",  posit4[0], posit4[1], posit4[2], 0, "ONLY") ;
   TVirtualMC::GetMC()->Gspos("PFG2", 2, "PWTI", -posit4[0], posit4[1], posit4[2], 0, "ONLY") ;
-
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGlowXHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PFG3", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit5 = emcg->GetFGlowXPosition() ;
   TVirtualMC::GetMC()->Gspos("PFG3", 1, "PWTI", posit5[0],  posit5[1], posit5[2], 0, "ONLY") ;
   TVirtualMC::GetMC()->Gspos("PFG3", 2, "PWTI", posit5[0], -posit5[1], posit5[2], 0, "ONLY") ;
-
+    
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGlowZHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PFG4", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit6 = emcg->GetFGlowZPosition() ;
   TVirtualMC::GetMC()->Gspos("PFG4", 1, "PWTI",  posit6[0], posit6[1], posit6[2], 0, "ONLY") ;
   TVirtualMC::GetMC()->Gspos("PFG4", 2, "PWTI", -posit6[0], posit6[1], posit6[2], 0, "ONLY") ;
 
-  // --- Define Air Gap for FEE electronics ----- 
-  
+  // --- Define Air Gap for FEE electronics -----   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFEEAirHalfSize() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PAFE", "BOX ", idtmed[798], par, 3) ; 
   const Float_t * posit7 = emcg->GetFEEAirPosition() ;
   TVirtualMC::GetMC()->Gspos("PAFE", 1, "PWTI",  posit7[0], posit7[1], posit7[2], 0, "ONLY") ;
   
-  // Define the EMC module volume and combine Cool and Warm sections
-  
+  // Define the EMC module volume and combine Cool and Warm sections  
   for (ipar=0; ipar<4; ipar++) par[ipar] = *(emcg->GetEMCParams() + ipar);
   TVirtualMC::GetMC()->Gsvolu("PEMC", "TRD1", idtmed[798], par, 4) ;        
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gsvolu("PEMH", "TRD1", idtmed[798], par, 4) ;        
   z =  - warmcov[2] ;
   TVirtualMC::GetMC()->Gspos("PCOL", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PCLH", 1, "PEMH",  0., 0., z, 0, "ONLY") ;
   z = covparams[3] ;
   TVirtualMC::GetMC()->Gspos("PWAR", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PWAR", 1, "PEMH",  0., 0., z, 0, "ONLY") ;
   
   
   // Put created EMC geometry into PHOS volume
   
   z = geom->GetCPVBoxSize(1) / 2. ;
   TVirtualMC::GetMC()->Gspos("PEMC", 1, "PHOS", 0., 0., z, 0, "ONLY") ; 
+  if(makeHalfMod)
+    TVirtualMC::GetMC()->Gspos("PEMH", 1, "PHOH", 0., 0., z, 0, "ONLY") ; 
   
 }
 
@@ -731,6 +785,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   AliGeomManager::ELayerID idPHOS2 = AliGeomManager::kPHOS2;
   Int_t modUID, modnum = 0;
   TString physModulePath="/ALIC_1/PHOS_";
+  TString physModulePath2="/ALIC_1/PHOH_";
   TString symbModuleName="PHOS/Module";
   Int_t nModules = GetGeometry()->GetNModules();
   
@@ -740,7 +795,10 @@ void AliPHOSv0::AddAlignableVolumes() const
     modUID = AliGeomManager::LayerToVolUID(idPHOS1,modnum++);
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
       continue ;
-    volpath = physModulePath;
+    if(iModule!=4)
+      volpath = physModulePath;
+    else
+      volpath = physModulePath2;
     volpath += iModule;
     //    volpath += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
  
@@ -837,6 +895,8 @@ void AliPHOSv0::AddAlignableVolumes() const
     gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
   }
 
+  
+/*  
   //Physical strip path is a combination of: physModulePath + module number + 
   //physStripPath + strip number == ALIC_1/PHOS_N/..../PSTR_M
   const Int_t nStripsX = GetGeometry()->GetEMCAGeometry()->GetNStripX();
@@ -862,7 +922,10 @@ void AliPHOSv0::AddAlignableVolumes() const
 
     partialPhysStripName  = physModulePath;
     partialPhysStripName += module;
-    partialPhysStripName += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_";
+    if(module!=4)
+      partialPhysStripName += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_";
+    else
+      partialPhysStripName += "/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1/PSTR_";
 
     partialSymbStripName  = symbModuleName;
     partialSymbStripName += module;
@@ -905,7 +968,7 @@ void AliPHOSv0::AddAlignableVolumes() const
          Double_t rot[9]={1.,0.,0.,  0.,1.,0., 0.,0.,1.} ;
          matTtoL->SetRotation(rot) ;
          alignableEntry->SetMatrix(matTtoL);
-
+*/
 /*
   //Check poisition of corner cell of the strip
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
@@ -933,9 +996,9 @@ printf("Geometry: x=%f, z=%f \n",xG,zG) ;
   matTtoL->MasterToLocal(pos,posC);
 printf("Matrix:   x=%f, z=%f, y=%f \n",posC[0],posC[2],posC[1]) ;
 */
-      }
-    }
-  }
+//      }
+//    }
+//  }
 }
 
 //____________________________________________________________________________

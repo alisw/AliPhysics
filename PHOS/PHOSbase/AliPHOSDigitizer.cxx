@@ -283,14 +283,14 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   TString volpath ;
   Int_t nmod=0 ;
   for(Int_t i=0; i<5; i++){
-    volpath = "/ALIC_1/PHOS_";
-    volpath += i+1;
-    if (gGeoManager->CheckPath(volpath.Data())) {
+    isPresent[i]=0 ;
+    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOS_%d",i+1))) {
       isPresent[i]=1 ;
       nmod++ ;
     }
-    else{
-      isPresent[i]=0 ;
+    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOH_%d",i+1))) {
+      isPresent[i]=1 ;
+      nmod++ ;
     }
   }
 
@@ -576,8 +576,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   for(Int_t i = 0 ; i <digits->GetEntriesFast(); i++){
     digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
     geom->AbsToRelNumbering(digit->GetId(),relId);
-    if(relId[1] == 0) // Emc
+    if(relId[1] == 0){ // Emc
       if(fcdb->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
+    }
   }
 
   //remove digits below thresholds
