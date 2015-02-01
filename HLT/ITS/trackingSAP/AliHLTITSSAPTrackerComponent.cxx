@@ -271,7 +271,7 @@ int AliHLTITSSAPTrackerComponent::Configure( const char* cdbEntry, const char* c
   // Configure the component
   // There are few levels of configuration,
   // parameters which are set on one step can be overwritten on the next step
-
+  HLTInfo("cdbEnty: %s chaindId: %s commandLine: %s",cdbEntry,chainId,commandLine);
   //* read hard-coded values
 
   SetDefaultConfiguration();
@@ -289,7 +289,7 @@ int AliHLTITSSAPTrackerComponent::Configure( const char* cdbEntry, const char* c
   int iResult3 = 0;
 
   if ( commandLine && commandLine[0] != '\0' ) {
-    HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
+    //    HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
     iResult3 = ReadConfigurationString( commandLine );
   }
 
@@ -353,8 +353,9 @@ int AliHLTITSSAPTrackerComponent::DoInit( int argc, const char** argv )
     else fSkipSDD = 0;
   }
   //
-  if (fMaxTrackletsToRun<0 && param) {
-    fMaxTrackletsToRun = param->GetMaxSPDcontrForSAToUseAllClusters();
+  if (fMaxTrackletsToRun<0) {
+    if (param) fMaxTrackletsToRun = param->GetMaxSPDcontrForSAToUseAllClusters();
+    else fMaxTrackletsToRun = 99999;
   }
   HLTInfo("Max N SPD tracklets to run tracking: %d",fMaxTrackletsToRun);
   //
@@ -400,7 +401,6 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //* process event
-
   AliHLTUInt32_t maxBufferSize = size;
   size = 0; // output size
   
