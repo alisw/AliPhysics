@@ -98,6 +98,7 @@ AliITSSAPTracker::AliITSSAPTracker() :
   ,fMissChi2Penalty(3)
   ,fMaxMissedLayers(1)
   ,fNTracks(0)
+  ,fMaxTrackletsToRunTracking(99999)
   ,fTracks()
   ,fTrackVertex()
   ,fFitVertex(kTRUE)
@@ -190,6 +191,8 @@ void AliITSSAPTracker::ProcessEvent()
   //
   fNTracks = 0;  
   FindTracklets();
+  //
+  if (GetNTracklets()>fMaxTrackletsToRunTracking) return;
   //
 #ifdef _TIMING_
   fSW[kSWTracklets].Stop();
@@ -537,7 +540,7 @@ void AliITSSAPTracker::CalcAuxTracking()
   double thMin =-1e9;
   double thMax = 1e9;
   for (int ilA=kNLrActive-1;ilA>kALrSPD2;ilA--) {
-    if (!IsObligatoryLayer(ilA)) continue;
+    if (GetSkipLayer(ilA)) continue;
     int ilr=fgkActiveLrITS[ilA];
     double r   = fgkRLayITS[ilr] - fgkRSpanITS[ilr];
     double dz = fgkZSpanITS[ilr]+ztolerEdge+fDThetaTrackletSc*r;

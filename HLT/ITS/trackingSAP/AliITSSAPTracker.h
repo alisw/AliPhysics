@@ -77,6 +77,8 @@ class AliITSSAPTracker : public TObject
   void SetSigThetaTracklet(float v=0.025)           {fSigThetaTracklet = v;}
   void SetSigPhiTracklet(float v=0.08)              {fSigPhiTracklet = v;}
   void SetChi2CutTracklet(float v=1.5)              {fChi2CutTracklet = v;}
+  void SetMaxTrackletsToRunTracking(int n=9999)     {fMaxTrackletsToRunTracking = n;}
+  Int_t GetMaxTrackletsToRunTracking() const        {return fMaxTrackletsToRunTracking;}
   //
   Double_t GetClSystYErr2(Int_t lr)    const        {return fgkClSystYErr2[lr];}
   Double_t GetClSystZErr2(Int_t lr)    const        {return fgkClSystZErr2[lr];}
@@ -103,7 +105,8 @@ class AliITSSAPTracker : public TObject
   void    CookLabel(AliITSSAPTracker::ITStrack_t& track);
   void    CookLabel(AliITSSAPTracker::SPDtracklet_t& tracklet);
   void    PrintTrack(const AliITSSAPTracker::ITStrack_t& track) const;
-  Bool_t  IsObligatoryLayer(int lr)    const        {return !fSkipLayer[lr];}
+  Bool_t  GetSkipLayer(int lr)                    const  {return fSkipLayer[lr];}
+  void    SetSkipLayer(int lr, Bool_t v=kTRUE)           {fSkipLayer[lr] = v;}
   Bool_t  IsAcceptableTrack(const AliITSSAPTracker::ITStrack_t& track) const;
   void    PrintTracks()                const;
   Int_t   GetTrackletMCTruth(AliITSSAPTracker::SPDtracklet_t& trlet) const;
@@ -163,9 +166,10 @@ class AliITSSAPTracker : public TObject
   Float_t  fMSPhi[kNLrActive];                    //! dphi due to the MS for 1 GeV particle
   Float_t  fTolPhiCrude[kNLrActive];              //! tolerance in dphi for particle of unknown momentum
   Float_t  fTolZCrude[kNLrActive];                //! tolerance in Z for particle of unknown momentum
-  Float_t fMissChi2Penalty;                          //! penalize missed clusters
-  Int_t     fMaxMissedLayers;                        //! allow to miss at most this number of layers
-  Int_t     fNTracks;                                        //! n found tracks
+  Float_t fMissChi2Penalty;                       //! penalize missed clusters
+  Int_t     fMaxMissedLayers;                     //! allow to miss at most this number of layers
+  Int_t     fNTracks;                             //! n found tracks
+  Int_t     fMaxTrackletsToRunTracking;           //! skip tracking if too many SPD tracklets
   std::vector<ITStrack_t> fTracks;                //! found tracks container
   AliESDVertex fTrackVertex;                      //! fitted track vertex
   Bool_t    fFitVertex;                           //! fit vertex with tracks
