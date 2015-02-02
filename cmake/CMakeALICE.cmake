@@ -311,7 +311,11 @@ function(install_relative)
     # Prepare a distinct install command for each file, depending on its path
     foreach(_FILE ${_FILES})
 
-        get_filename_component(_FILEPREFIX ${_FILE} DIRECTORY)
+        if(CMAKE_VERSION VERSION_GREATER "2.8.11")
+            get_filename_component(_FILEPREFIX ${_FILE} DIRECTORY)
+        else()
+            get_filename_component(_FILEPREFIX ${_FILE} PATH)
+        endif()
         #message(STATUS "[install_relative] ${_FILE} --> ${_FILEPREFIX}")
 
         string(SUBSTRING ${_FILE} 0 1 _FILE_FIRST)

@@ -118,7 +118,7 @@ set(ALIROOT_STATIC CACHE STRING "ENABLE static building of AliRoot: ON")
 if(DA)
     if(NOT DIMDIR AND NOT ODIR)
         set(DA FALSE)
-        message(FATAL_ERROR "Das enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
+        message(FATAL_ERROR "DAs enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
     endif()
 
     if(NOT DATE_FOUND)
