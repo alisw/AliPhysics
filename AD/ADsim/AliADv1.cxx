@@ -187,7 +187,7 @@ TGeoCompositeShape * AliADv1::MakeShapeADCpadH(const Double_t W, const Double_t 
 //_____________________________________________________________________________
 void AliADv1::CreateAD()
 {
-  printf("===> AliADv1::CreateAD(): ver=[Feb 1st, 2015]; contact=[ecalvovi@cern.ch]\n");
+  printf("===> AliADv1::CreateAD(): ver=[Feb 2st, 2015]; contact=[ecalvovi@cern.ch]\n");
   //
   // Define Rotations used
   //
