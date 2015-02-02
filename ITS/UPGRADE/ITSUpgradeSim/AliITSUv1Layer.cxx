@@ -108,7 +108,7 @@ const Double_t AliITSUv1Layer::fgkOBSpaceFrameZLen[2] = { 900.0*fgkmm,
 const Int_t    AliITSUv1Layer::fgkOBSpaceFrameNUnits[2]= { 23, 39};
 const Double_t AliITSUv1Layer::fgkOBSpaceFrameUnitLen =  39.1  *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBSpaceFrameWidth   =  42.44 *fgkmm;
-const Double_t AliITSUv1Layer::fgkOBSpaceFrameHigh    =  36.45 *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSpaceFrameHeight  =  36.45 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBSpaceFrameTopVL   =   4.0  *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBSpaceFrameTopVH   =   0.35 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBSpaceFrameSideVL  =   4.5  *fgkmm;
@@ -119,6 +119,12 @@ const Double_t AliITSUv1Layer::fgkOBSFrameBaseRibDiam =   1.33 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBSFrameBaseRibPhi  =  54.0; // deg
 const Double_t AliITSUv1Layer::fgkOBSFrameSideRibDiam =   1.25 *fgkmm;
 const Double_t AliITSUv1Layer::fgkOBSFrameSideRibPhi  =  70.0; // deg
+const Double_t AliITSUv1Layer::fgkOBSFrameULegLen     =  14.2  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameULegWidth   =   1.5  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameULegHeight1 =   2.7  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameULegHeight2 =   5.0  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameULegThick   =   0.3  *fgkmm;
+const Double_t AliITSUv1Layer::fgkOBSFrameULegXPos    =  12.9  *fgkmm;
 
 
 ClassImp(AliITSUv1Layer)
@@ -532,9 +538,8 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
       fHierarchy[kHalfStave] = 2; // RS 
       mechStaveVol = CreateSpaceFrameOuterB();
       if (mechStaveVol) {
-	ypos = ((TGeoBBox*)hstaveVol->GetShape())->GetDY();
 	staveVol->AddNode(mechStaveVol, 1,
-			  new TGeoCombiTrans(0, -2*ypos, 0,
+			  new TGeoCombiTrans(0, -fgkOBSFrameULegHeight1, 0,
 					     new TGeoRotation("", 180, 0, 0)));
       }
     } // if (fStaveModel)
@@ -2887,18 +2892,21 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 // Updated:      18 Feb 2014  Mario Sitta
 // Updated:      12 Mar 2014  Mario Sitta
 // Updated:      15 Dec 2014  Mario Sitta
+// Updated:      28 Jan 2014  Mario Sitta  Change frame shape to avoid overlaps
 //
 
 
   // Materials defined in AliITSUv1
   TGeoMedium *medCarbon       = mgr->GetMedium("ITS_M55J6K$");
+  TGeoMedium *medF6151B05M    = mgr->GetMedium("ITS_F6151B05M$");
   TGeoMedium *medAir          = mgr->GetMedium("ITS_AIR$");
 
 
   // Local parameters
   Double_t halfFrameWidth  = fgkOBSpaceFrameWidth/2;
-  Double_t triangleHeight  = fgkOBSpaceFrameHigh;
-  Double_t sframeHeight    = triangleHeight + fgkOBSFrameBaseRibDiam;
+  Double_t triangleHeight  = fgkOBSpaceFrameHeight;
+  Double_t sframeHeight    = triangleHeight + fgkOBSFrameBaseRibDiam
+                                            + fgkOBSFrameULegHeight2*2;
   Double_t staveLa         = fgkOBSpaceFrameTopVL;
   Double_t staveHa         = fgkOBSpaceFrameTopVH;
   Double_t staveLb         = fgkOBSpaceFrameSideVL;
@@ -2912,10 +2920,17 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   Double_t baseRibRadius   = fgkOBSFrameBaseRibDiam/2;
   Double_t basePhiDeg      = fgkOBSFrameBaseRibPhi;
   Double_t basePhiRad      = basePhiDeg*TMath::DegToRad();
+  Double_t ulegHalfLen     = fgkOBSFrameULegLen/2;
+  Double_t ulegHalfWidth   = fgkOBSFrameULegWidth;
+  Double_t ulegHigh1       = fgkOBSFrameULegHeight1;
+  Double_t ulegHigh2       = fgkOBSFrameULegHeight2;
+  Double_t ulegThick       = fgkOBSFrameULegThick;
 
   Double_t xlen, zlen;
   Double_t xpos, ypos, zpos;
   Double_t unitlen;
+  Double_t xtru[22], ytru[22];
+  char volname[30];
 
 
   zlen = fgkOBSpaceFrameZLen[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
@@ -2923,22 +2938,70 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 
   xlen = halfFrameWidth + sideRibRadius;
 
+  // We need a properly shaped Xtru to accomodate the ribs avoiding
+  // overlaps with the HalfStave cooling tubes
+  xtru[ 0] = fgkOBSFrameULegXPos - ulegHalfLen;
+  ytru[ 0] = -(triangleHeight/2 + baseRibRadius);
+  xtru[ 1] = xtru[0];
+  ytru[ 1] = ytru[0] - ulegHigh1;
+  xtru[ 2] = xtru[1] + ulegThick;
+  ytru[ 2] = ytru[1];
+  xtru[ 3] = xtru[2];
+  ytru[ 3] = ytru[0] - ulegThick;
+  xtru[ 7] = fgkOBSFrameULegXPos + ulegHalfLen;
+  ytru[ 7] = ytru[0];
+  xtru[ 6] = xtru[7];
+  ytru[ 6] = ytru[1];
+  xtru[ 5] = xtru[6] - ulegThick;
+  ytru[ 5] = ytru[6];
+  xtru[ 4] = xtru[5];
+  ytru[ 4] = ytru[3];
+  xtru[ 8] = xlen;
+  ytru[ 8] = ytru[7];
+  xtru[ 9] = xtru[8];
+  ytru[ 9] = 0.9*ytru[8];
+  xtru[10] = 0.3*xtru[8];
+  ytru[10] = triangleHeight/2;
+  for (Int_t i=0; i<11; i++) { // Reflect on the X negative side
+    xtru[i+11] = -xtru[10-i];
+    ytru[i+11] =  ytru[10-i];
+  }
+  ytru[15] = ytru[0] - ulegHigh2; // U-legs on negative X are longer
+  ytru[16] = ytru[15];
+  ytru[19] = ytru[15];
+  ytru[20] = ytru[15];
+
+
   // The space frame container and a single unit
   // We need two units because the base ribs are alternately oriented
   // The end units are slightly different
-  TGeoBBox *spaceFrame = new TGeoBBox(xlen, sframeHeight/2, zlen/2);
-  TGeoBBox *frameUnit  = new TGeoBBox(xlen, sframeHeight/2, unitlen/2);
-  TGeoBBox *endUnit    = new TGeoBBox(xlen, sframeHeight/2, unitlen/2);
+  TGeoXtru *spaceFrame = new TGeoXtru(2);
+  spaceFrame->DefinePolygon(22, xtru, ytru);
+  spaceFrame->DefineSection(0,-zlen/2);
+  spaceFrame->DefineSection(1, zlen/2);
 
-  TGeoVolume *spaceFrameVol = new TGeoVolume("CarbonFrameVolume",
-					     spaceFrame, medAir);
+  TGeoXtru *frameUnit  = new TGeoXtru(2);
+  frameUnit->DefinePolygon(22, xtru, ytru);
+  frameUnit->DefineSection(0,-unitlen/2);
+  frameUnit->DefineSection(1, unitlen/2);
+
+  TGeoXtru *endUnit    = new TGeoXtru(2);
+  endUnit->DefinePolygon(22, xtru, ytru);
+  endUnit->DefineSection(0,-unitlen/2);
+  endUnit->DefineSection(1, unitlen/2);
+
+
+  snprintf(volname, 30, "SpaceFrameVolumeLay%d", fLayerNumber);
+  TGeoVolume *spaceFrameVol = new TGeoVolume(volname, spaceFrame, medAir);
   spaceFrameVol->SetVisibility(kFALSE);
 
   TGeoVolume *unitVol[2];
   unitVol[0] = new TGeoVolume("SpaceFrameUnit0", frameUnit, medAir);
   unitVol[1] = new TGeoVolume("SpaceFrameUnit1", frameUnit, medAir);
 
-  TGeoVolume *endVol  = new TGeoVolume("SpaceFrameEndUnit", endUnit, medAir);
+  TGeoVolume *endVol[2];
+  endVol[0]  = new TGeoVolume("SpaceFrameEndUnit0", endUnit, medAir);
+  endVol[1]  = new TGeoVolume("SpaceFrameEndUnit1", endUnit, medAir);
 
   // The actual volumes
 
@@ -2956,7 +3019,10 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   unitVol[1]->AddNode(cfStavTopVol, 1,
 		      new TGeoTranslation(0, triangleHeight/2, 0));
   
-  endVol->AddNode(cfStavTopVol, 1,
+  endVol[0]->AddNode(cfStavTopVol, 1,
+		      new TGeoTranslation(0, triangleHeight/2, 0));
+
+  endVol[1]->AddNode(cfStavTopVol, 1,
 		      new TGeoTranslation(0, triangleHeight/2, 0));
   
   //--- The two side V's
@@ -2979,9 +3045,15 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
 					 new TGeoRotation("",90,180,-90)));
 
-  endVol->AddNode(cfStavSideVol, 1,
+  endVol[0]->AddNode(cfStavSideVol, 1,
 		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
-  endVol->AddNode(cfStavSideVol, 2,
+  endVol[0]->AddNode(cfStavSideVol, 2,
+		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
+					 new TGeoRotation("",90,180,-90)));
+
+  endVol[1]->AddNode(cfStavSideVol, 1,
+		   new TGeoTranslation( halfFrameWidth, -triangleHeight/2, 0));
+  endVol[1]->AddNode(cfStavSideVol, 2,
 		   new TGeoCombiTrans( -halfFrameWidth, -triangleHeight/2, 0,
 					 new TGeoRotation("",90,180,-90)));
 
@@ -3027,10 +3099,15 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   unitVol[1]->AddNode(sideRibVol, 3, sideTransf[2]);
   unitVol[1]->AddNode(sideRibVol, 4, sideTransf[3]);
 
-  endVol->AddNode(sideRibVol, 1, sideTransf[0]);
-  endVol->AddNode(sideRibVol, 2, sideTransf[1]);
-  endVol->AddNode(sideRibVol, 3, sideTransf[2]);
-  endVol->AddNode(sideRibVol, 4, sideTransf[3]);
+  endVol[0]->AddNode(sideRibVol, 1, sideTransf[0]);
+  endVol[0]->AddNode(sideRibVol, 2, sideTransf[1]);
+  endVol[0]->AddNode(sideRibVol, 3, sideTransf[2]);
+  endVol[0]->AddNode(sideRibVol, 4, sideTransf[3]);
+
+  endVol[1]->AddNode(sideRibVol, 1, sideTransf[0]);
+  endVol[1]->AddNode(sideRibVol, 2, sideTransf[1]);
+  endVol[1]->AddNode(sideRibVol, 3, sideTransf[2]);
+  endVol[1]->AddNode(sideRibVol, 4, sideTransf[3]);
 
 
   // Ribs on the bottom
@@ -3055,8 +3132,8 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 					     baseEndRib, medCarbon);
   baseEndRibVol->SetLineColor(35);
 
-  TGeoCombiTrans *baseTransf[5];
-  ypos = sframeHeight/2 - baseRibRadius;
+  TGeoCombiTrans *baseTransf[6];
+  ypos = triangleHeight/2;
   zpos = unitlen/2;
 
   baseTransf[0] = new TGeoCombiTrans("", 0, -ypos, -zpos,
@@ -3070,6 +3147,8 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   zpos -= baseEndRib->GetRmax();
   baseTransf[4] = new TGeoCombiTrans("", 0, -ypos, -zpos,
 				     new TGeoRotation("", 90, 90,  90));
+  baseTransf[5] = new TGeoCombiTrans("", 0, -ypos,  zpos,
+				     new TGeoRotation("", 90, 90,  90));
 
   unitVol[0]->AddNode(baseRib2Vol, 1, baseTransf[0]);
   unitVol[0]->AddNode(baseRib2Vol, 2, baseTransf[1]);
@@ -3079,16 +3158,124 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   unitVol[1]->AddNode(baseRib2Vol, 2, baseTransf[1]);
   unitVol[1]->AddNode(baseRib1Vol, 1, baseTransf[3]);
 
-  endVol->AddNode(baseEndRibVol, 1, baseTransf[4]);
-  endVol->AddNode(baseRib2Vol,   1, baseTransf[1]);
-  endVol->AddNode(baseRib1Vol,   1, baseTransf[2]);
+  endVol[0]->AddNode(baseEndRibVol, 1, baseTransf[4]);
+  endVol[0]->AddNode(baseRib2Vol,   1, baseTransf[1]);
+  endVol[0]->AddNode(baseRib1Vol,   1, baseTransf[2]);
+
+  endVol[1]->AddNode(baseEndRibVol, 1, baseTransf[5]);
+  endVol[1]->AddNode(baseRib2Vol,   1, baseTransf[0]);
+  endVol[1]->AddNode(baseRib1Vol,   1, baseTransf[2]);
+
+
+  // U-Legs
+  // The shorter
+  xtru[0] = ulegHalfLen;
+  ytru[0] = 0;
+  xtru[1] = xtru[0];
+  ytru[1] = -ulegHigh1;
+  xtru[2] = xtru[1] - ulegThick;
+  ytru[2] = ytru[1];
+  xtru[3] = xtru[2];
+  ytru[3] = ytru[0] - ulegThick;
+  for (Int_t i=0; i<4; i++) { // Reflect on the X negative side
+    xtru[i+4] = -xtru[3-i];
+    ytru[i+4] =  ytru[3-i];
+  }
+
+  TGeoXtru *uleg1full = new TGeoXtru(2);  // This will go in the end units
+  uleg1full->DefinePolygon(8, xtru, ytru);
+  uleg1full->DefineSection(0,-ulegHalfWidth);
+  uleg1full->DefineSection(1, ulegHalfWidth);
+
+  TGeoXtru *uleg1half = new TGeoXtru(2);  // This will go in the middle unitys
+  uleg1half->DefinePolygon(8, xtru, ytru);
+  uleg1half->DefineSection(0,-ulegHalfWidth/2);
+  uleg1half->DefineSection(1, ulegHalfWidth/2);
+
+  TGeoVolume *uleg1fullVol = new TGeoVolume("CFstavULeg1FullVol",
+					    uleg1full, medF6151B05M);
+  uleg1fullVol->SetLineColor(35);
+
+  TGeoVolume *uleg1halfVol = new TGeoVolume("CFstavULeg1HalfVol",
+					    uleg1half, medF6151B05M);
+  uleg1halfVol->SetLineColor(35);
+
+  // The longer
+  ytru[1] = -ulegHigh2;
+  ytru[2] = -ulegHigh2;
+  ytru[5] = -ulegHigh2;
+  ytru[6] = -ulegHigh2;
+
+  TGeoXtru *uleg2full = new TGeoXtru(2);  // This will go in the end units
+  uleg2full->DefinePolygon(8, xtru, ytru);
+  uleg2full->DefineSection(0,-ulegHalfWidth);
+  uleg2full->DefineSection(1, ulegHalfWidth);
+
+  TGeoXtru *uleg2half = new TGeoXtru(2);  // This will go in the middle unitys
+  uleg2half->DefinePolygon(8, xtru, ytru);
+  uleg2half->DefineSection(0,-ulegHalfWidth/2);
+  uleg2half->DefineSection(1, ulegHalfWidth/2);
+
+  TGeoVolume *uleg2fullVol = new TGeoVolume("CFstavULeg2FullVol",
+					    uleg2full, medF6151B05M);
+  uleg2fullVol->SetLineColor(35);
+
+  TGeoVolume *uleg2halfVol = new TGeoVolume("CFstavULeg2HalfVol",
+					    uleg2half, medF6151B05M);
+  uleg2halfVol->SetLineColor(35);
+
+
+  xpos = fgkOBSFrameULegXPos;
+  ypos = triangleHeight/2 + baseRibRadius;
+  zpos = unitlen/2 - uleg1half->GetZ(1);
+
+  unitVol[0]->AddNode(uleg1halfVol, 1,  // Shorter on +X
+		      new TGeoTranslation(  xpos, -ypos, -zpos));
+  unitVol[0]->AddNode(uleg1halfVol, 2,
+		      new TGeoTranslation(  xpos, -ypos,  zpos));
+
+  unitVol[1]->AddNode(uleg1halfVol, 1,
+		      new TGeoTranslation(  xpos, -ypos, -zpos));
+  unitVol[1]->AddNode(uleg1halfVol, 2,
+		      new TGeoTranslation(  xpos, -ypos,  zpos));
+
+  unitVol[0]->AddNode(uleg2halfVol, 1,  // Longer on -X
+		      new TGeoTranslation( -xpos, -ypos, -zpos));
+  unitVol[0]->AddNode(uleg2halfVol, 2,
+		      new TGeoTranslation( -xpos, -ypos,  zpos));
+
+  unitVol[1]->AddNode(uleg2halfVol, 1,
+		      new TGeoTranslation( -xpos, -ypos, -zpos));
+  unitVol[1]->AddNode(uleg2halfVol, 2,
+		      new TGeoTranslation( -xpos, -ypos,  zpos));
+
+  endVol[0]->AddNode(uleg1halfVol, 1,
+		  new TGeoTranslation(  xpos, -ypos,  zpos));
+  endVol[0]->AddNode(uleg2halfVol, 1,
+		  new TGeoTranslation( -xpos, -ypos,  zpos));
+
+  endVol[1]->AddNode(uleg1halfVol, 1,
+		  new TGeoTranslation(  xpos, -ypos, -zpos));
+  endVol[1]->AddNode(uleg2halfVol, 1,
+		  new TGeoTranslation( -xpos, -ypos, -zpos));
+
+  zpos = unitlen/2 - uleg1full->GetZ(1);
+  endVol[0]->AddNode(uleg1fullVol, 1,
+		  new TGeoTranslation(  xpos, -ypos, -zpos));
+  endVol[0]->AddNode(uleg2fullVol, 1,
+		  new TGeoTranslation( -xpos, -ypos, -zpos));
+
+  endVol[1]->AddNode(uleg1fullVol, 1,
+		  new TGeoTranslation(  xpos, -ypos,  zpos));
+  endVol[1]->AddNode(uleg2fullVol, 1,
+		  new TGeoTranslation( -xpos, -ypos,  zpos));
 
 
   // Finally build up the space frame
   Int_t nUnits = fgkOBSpaceFrameNUnits[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
 
   zpos = -spaceFrame->GetDZ() + endUnit->GetDZ();
-  spaceFrameVol->AddNode(endVol, 1, new TGeoTranslation(0, 0, zpos));
+  spaceFrameVol->AddNode(endVol[0], 1, new TGeoTranslation(0, 0, zpos));
 
   for(Int_t i=1; i<nUnits-1; i++){
     zpos = -spaceFrame->GetDZ() + (1 + 2*i)*frameUnit->GetDZ();
@@ -3098,8 +3285,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   }
 
   zpos = -spaceFrame->GetDZ() + (2*nUnits - 1)*endUnit->GetDZ();
-  spaceFrameVol->AddNode(endVol, 2, new TGeoCombiTrans(0, 0, zpos,
-					   new TGeoRotation("", 90,180,-90)));
+  spaceFrameVol->AddNode(endVol[1], 1, new TGeoTranslation(0, 0, zpos));
 
 
   // Done, return the space frame structure

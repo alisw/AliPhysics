@@ -196,7 +196,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Int_t    fgkOBSpaceFrameNUnits[2];//OB Number of SF Units
     static const Double_t fgkOBSpaceFrameUnitLen;// OB Space Frame Unit length
     static const Double_t fgkOBSpaceFrameWidth;  // OB Space Frame Width
-    static const Double_t fgkOBSpaceFrameHigh;   // OB Space Frame Height
+    static const Double_t fgkOBSpaceFrameHeight; // OB Space Frame Height
     static const Double_t fgkOBSpaceFrameTopVL;  // Parameters defining...
     static const Double_t fgkOBSpaceFrameTopVH;  // ...the Top V shape
     static const Double_t fgkOBSpaceFrameSideVL; // Parameters defining...
@@ -207,6 +207,12 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkOBSFrameBaseRibPhi; // OB SF base beam angle
     static const Double_t fgkOBSFrameSideRibDiam;// OB SFrame Side Rib Diam
     static const Double_t fgkOBSFrameSideRibPhi; // OB SF side beam angle
+    static const Double_t fgkOBSFrameULegLen;    // OB SF U-Leg length
+    static const Double_t fgkOBSFrameULegWidth;  // OB SF U-Leg width
+    static const Double_t fgkOBSFrameULegHeight1;// OB SF U-Leg height
+    static const Double_t fgkOBSFrameULegHeight2;// OB SF U-Leg height
+    static const Double_t fgkOBSFrameULegThick;  // OB SF U-Leg thickness
+    static const Double_t fgkOBSFrameULegXPos;   // OB SF U-Leg X position
 
 
   ClassDef(AliITSUv1Layer,0) // ITS Upgrade v1 geometry
