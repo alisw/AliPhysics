@@ -185,7 +185,7 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
   // Does the QA checking
   ResetEventTrigClasses();
   //
-  AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
+  
   
   if(task == AliQAv1::kRAWS){
     TTimeStamp currentTime;
@@ -199,6 +199,7 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     } else if (task == AliQAv1::kESDS) {
     }
   }
+  AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
 }
 
 //____________________________________________________________________________ 
@@ -206,37 +207,33 @@ void AliADQADataMakerRec::InitESDs()
 {
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-	
-  TH2F * h2d;
-  TH1I * h1i;
-  TH1F * h1d;
-		
-  h1i = new TH1I("H1I_Cell_Multiplicity_ADA", "Cell Multiplicity in ADA;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
-  Add2ESDsList(h1i, kCellMultiADA, !expert, image)  ;  
+
+  TH1I * h0 = new TH1I("H1I_Cell_Multiplicity_ADA", "Cell Multiplicity in ADA;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
+  Add2ESDsList(h0, kCellMultiADA, !expert, image)  ;  
                                                                                                         
-  h1i = new TH1I("H1I_Cell_Multiplicity_ADC", "Cell Multiplicity in AD;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
-  Add2ESDsList(h1i, kCellMultiADC, !expert, image)  ;  
+  TH1I * h1 = new TH1I("H1I_Cell_Multiplicity_ADC", "Cell Multiplicity in AD;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
+  Add2ESDsList(h1, kCellMultiADC, !expert, image)  ;  
   
-  h1d = new TH1F("H1D_BBFlag_Counters", "BB Flag Counters;Channel;Counts",64, 0, 64) ;  
-  Add2ESDsList(h1d, kBBFlag, !expert, image)  ;  
+  TH1F * h2 = new TH1F("H1D_BBFlag_Counters", "BB Flag Counters;Channel;Counts",16, 0, 16) ;  
+  Add2ESDsList(h2, kBBFlag, !expert, image)  ;  
   
-  h1d = new TH1F("H1D_BGFlag_Counters", "BG Flag Counters;Channel;Counts",64, 0, 64) ;  
-  Add2ESDsList(h1d, kBGFlag, !expert, image)  ;  
+  TH1F * h3 = new TH1F("H1D_BGFlag_Counters", "BG Flag Counters;Channel;Counts",16, 0, 16) ;  
+  Add2ESDsList(h3, kBGFlag, !expert, image)  ;  
   
-  h2d = new TH2F("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",64, 0, 64, 1024, 0, 1024) ;  
-  Add2ESDsList(h2d, kChargeChannel, !expert, image)  ;  
+  TH2F * h4 = new TH2F("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",16, 0, 16, 1024, 0, 1024) ;  
+  Add2ESDsList(h4, kChargeChannel, !expert, image)  ;  
   
-  h2d = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",64, 0, 64, 400, -100, 100) ;  
-  Add2ESDsList(h2d, kTimeChannel, !expert, image)  ;  
+  TH2F * h5 = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",16, 0, 16, 400, -100, 100) ;  
+  Add2ESDsList(h5, kTimeChannel, !expert, image)  ;  
   
-  h1d = new TH1F("H1D_ADA_Time", "Mean ADA Time;Time (ns);Counts",1000, -100., 100.);
-  Add2ESDsList(h1d,kESDADATime, !expert, image); 
+  TH1F * h6 = new TH1F("H1D_ADA_Time", "Mean ADA Time;Time (ns);Counts",1000, -100., 100.);
+  Add2ESDsList(h6,kESDADATime, !expert, image); 
   
-  h1d = new TH1F("H1D_ADC_Time", "Mean ADC Time;Time (ns);Counts",1000, -100., 100.);
-  Add2ESDsList(h1d,kESDADCTime, !expert, image); 
+  TH1F * h7 = new TH1F("H1D_ADC_Time", "Mean ADC Time;Time (ns);Counts",1000, -100., 100.);
+  Add2ESDsList(h7,kESDADCTime, !expert, image); 
   
-  h1d = new TH1F("H1D_Diff_Time", "Diff Time ADA - ADC;Diff Time ADA - ADC (ns);Counts",1000, -200., 200.);
-  Add2ESDsList(h1d,kESDDiffTime, !expert, image); 
+  TH1F * h8 = new TH1F("H1D_Diff_Time", "Diff Time ADA - ADC;Diff Time ADA - ADC (ns);Counts",1000, -200., 200.);
+  Add2ESDsList(h8,kESDDiffTime, !expert, image); 
   //
   ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line	
 }
@@ -303,7 +300,6 @@ void AliADQADataMakerRec::MakeDigits()
     while ( (ADDigit = dynamic_cast<AliADdigit *>(next())) ) {
          Int_t totCharge = 0;
          Int_t   PMNumber  = ADDigit->PMNumber();
-
 	 if(PMNumber<8 && ADDigit->GetBBflag()) nBBflagsADA++;
 	 if(PMNumber>7 && ADDigit->GetBBflag()) nBBflagsADC++;
 	 

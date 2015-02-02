@@ -53,7 +53,7 @@ AliADCalibData::AliADCalibData():
     for(int t=0; t<16; t++) {
         fMeanHV[t]      = 1400.0;
         fWidthHV[t]     = 0.0; 
-	fTimeOffset[t]  = 230.0;
+	fTimeOffset[t]  = 250.0;
         fTimeGain[t]    = 1.0;
 	fDeadChannel[t]= kFALSE;
 	fDiscriThr[t]  = 2.5;
@@ -370,6 +370,19 @@ void AliADCalibData::FillDCSData(AliADDataDCS * data){
   	SetDeadMap(data->GetDeadMap());
 
 }
+//_____________________________________________________________________________
+void AliADCalibData::SetADCperMIP(Int_t nADCperMIP){
+	//Sets HV in a way to have uniform gains on PM according  
+	//to number of ADC per MIP 
+	if (!fPMGainsA) InitPMGains();
+	Double_t hv = 0;
+	for(Int_t channel = 0; channel<16; channel++){
+		hv = TMath::Power(nADCperMIP,1/fPMGainsB[channel])*fPMGainsA[channel];
+		SetMeanHV(hv,channel);
+		AliInfo(Form("HV on channel %d set to %f V",channel,hv));
+		}
+}
+
 //_____________________________________________________________________________
 void AliADCalibData::SetParameter(TString name, Int_t val){
 	// Set given parameter
