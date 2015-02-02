@@ -87,6 +87,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fHistos = new AliTwoPlusOneContainer("AliTwoPlusOneContainer", fCustomBinning, fAlpha);
   fHistos->GetData()->SetTrackEtaCut(fTrackEtaCut);
   fHistos->SetUseLeadingPt(fUseLeadingPt);
+  fHistos->SetUseAllT1(fUseAllT1);
 
   fListOfHistos->Add(fHistos);
 

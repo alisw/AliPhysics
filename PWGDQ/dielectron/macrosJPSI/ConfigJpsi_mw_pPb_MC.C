@@ -31,7 +31,7 @@ AliDielectron* ConfigJpsi_mw_pPb_MC(Int_t cutDefinition)
   
   // estimators filename
   //NOTE: what does this mean?: estimator for pp multiplicity, not needed for instance for my pA-purpose(mwinn 16.1.2012)..
-  diele->SetEstimatorFilename("$ALICE_ROOT/PWGDQ/dielectron/files/estimators.root");
+  diele->SetEstimatorFilename("$ALICE_PHYSICS/PWGDQ/dielectron/files/estimators.root");
   //diele->SetEstimatorFilename("estimators.root");
   // cut setup
   SetupTrackCutsDieleData(diele, cutDefinition);

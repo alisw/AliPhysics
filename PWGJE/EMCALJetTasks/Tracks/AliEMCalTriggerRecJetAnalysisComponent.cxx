@@ -23,6 +23,8 @@
 #include <TMath.h>
 #include <TString.h>
 
+#include "AliAODMCParticle.h"
+#include "AliCentrality.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
 #include "AliMCParticle.h"
@@ -111,7 +113,8 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
       *jetptbinning = fBinning->GetBinning("jetpt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
-      *vertexbinning = fBinning->GetBinning("zvertex");
+      *vertexbinning = fBinning->GetBinning("zvertex"),
+	  *centralitybinning = fBinning->GetBinning("centrality");
 
   const TAxis *trackaxes[6] = {
       DefineAxis("trackpt", ptbinning),
@@ -120,6 +123,14 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
       DefineAxis("phi", phibinning),
       DefineAxis("zvertex", vertexbinning),
       DefineAxis("mbtrigger", 2, -0.5, 1.5)
+  };
+
+  const TAxis *trackaxes1[5] = {
+		  DefineAxis("trackpt", ptbinning),
+		  DefineAxis("jetpt", jetptbinning),
+		  DefineAxis("eta", etabinning),
+		  DefineAxis("centrality", centralitybinning),
+		  DefineAxis("dR", 20, 0., 0.5),
   };
 
   const TAxis *jetaxes[4] = {
@@ -133,6 +144,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
   for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
     const std::string name = it->first, &title = it->second;
     fHistos->CreateTHnSparse(Form("hTrackJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events", title.c_str()), 6, trackaxes, "s");
+    fHistos->CreateTHnSparse(Form("hTrackJetCentralityHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based histogram for tracks in jets in %s events and centrality", title.c_str()), 5, trackaxes1, "s");
     fHistos->CreateTHnSparse(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Track-based data for tracks in jets in %s events with MC kinematics", title.c_str()), 6, trackaxes, "s");
     fHistos->CreateTHnSparse(Form("hRecJetHist%s%s", jetptstring.Data(), name.c_str()), Form("Reconstructed jets in %s-triggered events", name.c_str()), 4, jetaxes);
   }
@@ -153,7 +165,8 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   AliJetContainer *cont = data->GetJetContainerData();
   AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
   AliVTrack *foundtrack(NULL);
-  AliVParticle *assocMC(NULL);
+  const AliVParticle *assocMC(NULL);
+  AliCentrality *centralityHandler = data->GetRecEvent()->GetCentrality();
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
       for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name)
@@ -167,6 +180,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
         // track selected, fill histogram
         for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name){
           FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+          FillTrackHistogramCentrality(Form("hTrackJetCentralityHist%s%s", jetptstring.Data(), name->c_str()), foundtrack, reconstructedJet, centralityHandler->GetCentralityPercentile("V0A"));
           if(assocMC){
             FillHistogram(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name->c_str()), assocMC, reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
           }
@@ -178,7 +192,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
 }
 
 //______________________________________________________________________________
-AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
+const AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
     const AliVTrack* const trk, const AliMCEvent* evnt) const {
   /*
    * Check according to the associated MC information whether the track is a MC true track,
@@ -190,9 +204,13 @@ AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
    * @return: the associated MC particle (NULL if not MC true)
    */
   int label = TMath::Abs(trk->GetLabel());
-  AliVParticle *mcpart = evnt->GetTrack(label);
+  const AliVParticle *mcpart = evnt->GetTrack(label);
   if(!mcpart) return NULL;
-  if(!evnt->IsPhysicalPrimary(label)) return NULL;
+  const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(mcpart);
+  if(aodpart)
+    if(!aodpart->IsPhysicalPrimary()) return NULL;
+  else
+    if(!evnt->IsPhysicalPrimary(label)) return NULL;
   return mcpart;
 }
 
@@ -216,6 +234,21 @@ void AliEMCalTriggerRecJetAnalysisComponent::FillJetHistogram(
    */
   double data[4] = {TMath::Abs(recjet->Pt()), (fSwapEta ? -1. : 1.) * recjet->Eta(), recjet->Phi(), vz};
   fHistos->FillTHnSparse(histname.Data(), data);
+}
+
+//______________________________________________________________________________
+void AliEMCalTriggerRecJetAnalysisComponent::FillTrackHistogramCentrality(
+		const TString& histname, const AliVTrack* const trk, const AliEmcalJet* jet, double centpercent) {
+	/*
+	 * Fill Histogram for tracks with:
+	 * - Track pt
+	 * - Jet pt
+	 * - Track eta
+	 * - distance to the main jet axis
+	 * - centrality percentile
+	 */
+	double data[5] = { TMath::Abs(trk->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * trk->Eta(), jet->DeltaR(trk), centpercent};
+	fHistos->FillTHnSparse(histname.Data(), data);
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

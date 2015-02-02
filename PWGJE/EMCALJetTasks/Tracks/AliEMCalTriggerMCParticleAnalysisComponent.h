@@ -25,6 +25,8 @@ public:
 
 protected:
 
+  bool IsPhysicalPrimary(const AliVParticle *const part, const AliMCEvent *const ev) const;
+
   ClassDef(AliEMCalTriggerMCParticleAnalysisComponent, 1);
 };
 

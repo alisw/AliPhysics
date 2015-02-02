@@ -68,7 +68,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetV2)
 
 AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetV2", kTRUE), 
-    fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROgainEqualizationPerRing(kFALSE), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
+    fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fRunNumberCaliInfo(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistRunnumbersCaliInfo(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROApol(0), fVZEROCpol(0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
 {
     for(Int_t i(0); i < 10; i++) {
         fEventPlaneWeights[i] = 0;
@@ -122,16 +122,11 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
            }
        }
    }
-   for(Int_t i(0); i < 4; i++) {
-       fVZEROApol[i] = 0.;
-       fVZEROCpol[i] = 0.;
-   }
-   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
    // default constructor
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROgainEqualizationPerRing(kFALSE), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
+  fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fRunNumberCaliInfo(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistRunnumbersCaliInfo(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROApol(0), fVZEROCpol(0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
 {
     for(Int_t i(0); i < 10; i++) {
         fEventPlaneWeights[i] = 0;
@@ -185,11 +180,6 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
            }
        }
    }
-   for(Int_t i(0); i < 4; i++) {
-       fVZEROApol[i] = 0.;
-       fVZEROCpol[i] = 0.;
-   }
-   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
 
     // constructor
     DefineInput(0, TChain::Class());
@@ -572,30 +562,6 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
 
     if(fFillQAHistograms) {
         // event plane estimates and quality
-        fHistPsiControl =           new TProfile("fHistPsiControl", "fHistPsiControl", 10, 0, 10);
-        fHistPsiControl->Sumw2();
-        fHistPsiSpread =            new TProfile("fHistPsiSpread", "fHistPsiSpread", 4, 0, 4);
-        fHistPsiSpread->Sumw2();
-        fHistPsiControl->GetXaxis()->SetBinLabel(1, "<#Psi_{2, VZEROA}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(2, "<#Psi_{2, VZEROC}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(3, "<#Psi_{2, TPC}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(4, "<#Psi_{2, TPC, #eta < 0}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(5, "<#Psi_{2, TPC, #eta > 0}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(6, "<#Psi_{3, VZEROA}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(7, "<#Psi_{3, VZEROC}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(8, "<#Psi_{3, TPC}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(9, "<#Psi_{3, TPC, #eta < 0}>");
-        fHistPsiControl->GetXaxis()->SetBinLabel(10, "<#Psi_{3, TPC, #eta > 0}>");
-        fHistPsiSpread->GetXaxis()->SetBinLabel(1, "<#Psi_{2, VZEROA} - #Psi_{2, VZEROC}>");
-        fHistPsiSpread->GetXaxis()->SetBinLabel(2, "<#Psi_{2, VZEROC} - #Psi_{2, TPC}>");
-        fHistPsiSpread->GetXaxis()->SetBinLabel(3, "<#Psi_{2, VZEROC} - #Psi_{2, TPC}>");
-        fHistPsiSpread->GetXaxis()->SetBinLabel(4, "<#Psi_{2, TPC, #eta < 0} - #Psi_{2, TPC, #eta > 0}>");
-        fOutputList->Add(fHistPsiControl);
-        fOutputList->Add(fHistPsiSpread);
-        fHistPsiVZEROA =            BookTH1F("fHistPsiVZEROA", "#Psi_{VZEROA}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZEROC =            BookTH1F("fHistPsiVZEROC", "#Psi_{VZEROC}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZERO =             BookTH1F("fHistPsiVZERO", "#Psi_{VZERO}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiTPC =               BookTH1F("fHistPsiTPC", "#Psi_{TPC}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
         fHistPsiVZEROAV0M =         BookTH2F("fHistPsiVZEROAV0M", "V0M", "#Psi_{2, VZEROA}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
         fHistPsiVZEROCV0M =         BookTH2F("fHistPsiVZEROCV0M", "V0M", "#Psi_{2, VZEROC}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
         fHistPsiVZEROVV0M =         BookTH2F("fHistPsiVZEROV0M", "V0M", "#Psi_{2, VZERO}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
@@ -714,6 +680,15 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         }
         fHistRunnumbersPhi->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
         fHistRunnumbersEta->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
+        if(fCollisionType == kPbPb10h) {
+            // control histo to see if the calibration was properly kickstarted
+            fHistRunnumbersCaliInfo = new TH1I("fHistRunnumbersCaliInfo", "fHistRunnumbersCaliInfo", fExpectedRuns->GetSize()+1, -.5, fExpectedRuns->GetSize()+.5);
+            fOutputList->Add(fHistRunnumbersCaliInfo);
+            for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) { 
+                fHistRunnumbersCaliInfo->GetXaxis()->SetBinLabel(i+1, Form("%i", fExpectedRuns->At(i)));
+            }
+            fHistRunnumbersCaliInfo->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
+        }
     }
     fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 54, -0.5, 54.5);
     fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
@@ -1221,8 +1196,8 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
     #ifdef DEBUGTASK
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    // placeholders for geometric information
-    Double_t phi(-999.), weight(-999.); 
+    // placeholders 
+    Double_t phi(-999.), mult(-999.); 
     // reset placeholders for Q-vector components
     Qa2[0] = 0.;    Qc2[0] = 0.;    Qa3[0] = 0.;    Qc3[0] = 0.;
     Qa2[1] = 0.;    Qc2[1] = 0.;    Qa3[1] = 0.;    Qc3[1] = 0.;
@@ -1230,28 +1205,21 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
     for(Int_t i(0); i < 64; i++) {
         // loop over all scintillators, construct Q-vectors in the same loop
         phi     = TMath::PiOver4()*(0.5+i%8);
-        weight  = 0.;
+        mult    = InputEvent()->GetVZEROData()->GetMultiplicity(i);
         // note that disabled rings have already been excluded in ReadVZEROCalibration2010h
-        if(i<32) {    // v0c side
-            if(i < 8) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROCpol[0]/fVZEROgainEqualization->GetBinContent(1+i);
-            else if (i < 16 ) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROCpol[1]/fVZEROgainEqualization->GetBinContent(1+i);
-            else if (i < 24 ) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROCpol[2]/fVZEROgainEqualization->GetBinContent(1+i);
-            else if (i < 32 ) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROCpol[3]/fVZEROgainEqualization->GetBinContent(1+i);
+        if(i < 32) {    // v0c side
             // fill Q-vectors for v0c side
-            Qc2[0]+=weight*TMath::Cos(2.*phi);
-            Qc3[0]+=weight*TMath::Cos(3.*phi);
-            Qc2[1]+=weight*TMath::Sin(2.*phi);
-            Qc3[1]+=weight*TMath::Sin(3.*phi);
+            Qc2[0] += mult*TMath::Cos(2.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
+            Qc3[0] += mult*TMath::Cos(3.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
+            Qc2[1] += mult*TMath::Sin(2.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
+            Qc3[1] += mult*TMath::Sin(3.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
         } else {       // v0a side
-            if( i < 40) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROApol[0]/fVZEROgainEqualization->GetBinContent(1+i);
-            else if ( i < 48 ) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROApol[1]/fVZEROgainEqualization->GetBinContent(1+i);
-            else if ( i < 56 ) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROApol[2]/fVZEROgainEqualization->GetBinContent(1+i);
-            else if ( i < 64 ) weight = InputEvent()->GetVZEROData()->GetMultiplicity(i)*fVZEROApol[3]/fVZEROgainEqualization->GetBinContent(1+i);
             // fill Q-vectors for v0a side
-            Qa2[0]+=weight*TMath::Cos(2.*phi);
-            Qa3[0]+=weight*TMath::Cos(3.*phi);
-            Qa2[1]+=weight*TMath::Sin(2.*phi);
-            Qa3[1]+=weight*TMath::Sin(3.*phi);
+            Qa2[0] += mult*TMath::Cos(2.*phi)*fVZEROApol/fVZEROgainEqualization->GetBinContent(1+i);
+            Qa3[0] += mult*TMath::Cos(3.*phi)*fVZEROApol/fVZEROgainEqualization->GetBinContent(1+i);
+            Qa2[1] += mult*TMath::Sin(2.*phi)*fVZEROApol/fVZEROgainEqualization->GetBinContent(1+i);
+            Qa3[1] += mult*TMath::Sin(3.*phi)*fVZEROApol/fVZEROgainEqualization->GetBinContent(1+i);
+
         }
     }
     // get the cache index and read the correction terms from the cache
@@ -1285,7 +1253,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
     Qa3[0] = (Qa3[0] - Qx3amean)/Qx3arms;
     Qa3[1] = (Qa3[1] - Qy3amean)/Qy3arms;
     Qc3[0] = (Qc3[0] - Qx3cmean)/Qx3crms;
-    Qc3[1] = (Qc3[0] - Qy3cmean)/Qy3crms;
+    Qc3[1] = (Qc3[1] - Qy3cmean)/Qy3crms;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_t Q3[2]) const
@@ -1989,7 +1957,7 @@ Bool_t AliAnalysisTaskJetV2::PassesCuts(AliVEvent* event)
             break;
         }
     } 
-    if(fInCentralitySelection<0) return kFALSE;     // should be null op
+    if(fInCentralitySelection < 0) return kFALSE;
     // see if input containers are filled
     if(fTracks->GetEntries() < 1) return kFALSE;
     if(fRho->GetVal() <= 0 ) return kFALSE;
@@ -2099,20 +2067,6 @@ void AliAnalysisTaskJetV2::FillWeightedEventPlaneHistograms(Double_t vzero[2][2]
     #ifdef DEBUGTASK
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    fHistPsiControl->Fill(0.5, vzero[0][0], fEventPlaneWeight);    // vzero a psi2
-    fHistPsiControl->Fill(1.5, vzero[1][0], fEventPlaneWeight);    // vzero c psi2
-    fHistPsiControl->Fill(2.5, tpc[0], fEventPlaneWeight);         // tpc psi 2
-    fHistPsiControl->Fill(5.5, vzero[0][1], fEventPlaneWeight);    // vzero a psi3
-    fHistPsiControl->Fill(6.5, vzero[1][1], fEventPlaneWeight);    // vzero b psi3
-    fHistPsiControl->Fill(7.5, tpc[1], fEventPlaneWeight);         // tpc psi 3
-    fHistPsiVZEROA->Fill(vzero[0][0], fEventPlaneWeight);
-    fHistPsiVZEROC->Fill(vzero[1][0], fEventPlaneWeight);
-    fHistPsiVZERO->Fill(vzeroComb[0], fEventPlaneWeight);
-    fHistPsiTPC->Fill(tpc[0], fEventPlaneWeight);
-    fHistPsiSpread->Fill(0.5, TMath::Abs(vzero[0][0]-vzero[1][0]), fEventPlaneWeight);
-    fHistPsiSpread->Fill(1.5, TMath::Abs(vzero[0][0]-tpc[0]), fEventPlaneWeight);
-    fHistPsiSpread->Fill(2.5, TMath::Abs(vzero[1][0]-tpc[0]), fEventPlaneWeight);
-    // event plane vs centrality QA histo's to check recentering
     Double_t TRK(InputEvent()->GetCentrality()->GetCentralityPercentile("TRK"));
     Double_t V0M(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
     fHistPsiVZEROAV0M->Fill(V0M, vzero[0][0], fEventPlaneWeight);
@@ -2264,9 +2218,15 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent)
     for(fMappedRunNumber = 0; fMappedRunNumber < fExpectedRuns->GetSize(); fMappedRunNumber++) {
         if(fExpectedRuns->At(fMappedRunNumber) == runNumber) return;
     }
-      #ifdef DEBUGTASK
-          printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
-      #endif
+    #ifdef DEBUGTASK
+        printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
+    #endif
+    if(fHistRunnumbersCaliInfo) {
+        // check if cabration was kickstarted properly. this comes down to seeing if there's a difference between the
+        // current runnumber and the runnumber as used by the calibration. if there's a difference, flag the offending 
+        // runnumber
+        if(runNumber!=fRunNumberCaliInfo) fHistRunnumbersCaliInfo->Fill(fMappedRunNumber);
+    }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger)
@@ -2608,36 +2568,11 @@ void AliAnalysisTaskJetV2::ReadVZEROCalibration2010h()
         return;
     }
 
-    TF1* fpol0 = new TF1("fpol0","pol0"); 
-    if(fVZEROgainEqualizationPerRing) {
-        // do the calibration per ring
-        // start with the vzero c rings (segments 0 through 31)
-        fVZEROgainEqualization->Fit(fpol0, "", "", 0, 8);
-        (fUseVZERORing[0]) ? SetVZEROCpol(0, fpol0->GetParameter(0)) : SetVZEROCpol(0, 0.);
-        fVZEROgainEqualization->Fit(fpol0, "", "", 8, 16);
-        (fUseVZERORing[1]) ? SetVZEROCpol(1, fpol0->GetParameter(0)) : SetVZEROCpol(1, 0.);
-        fVZEROgainEqualization->Fit(fpol0, "", "", 16, 24);
-        (fUseVZERORing[2]) ? SetVZEROCpol(2, fpol0->GetParameter(0)) : SetVZEROCpol(2, 0.);
-        fVZEROgainEqualization->Fit(fpol0, "", "", 24, 32);
-        (fUseVZERORing[3]) ? SetVZEROCpol(3, fpol0->GetParameter(0)) : SetVZEROCpol(3, 0.);
-        // same thing for vero A
-        fVZEROgainEqualization->Fit(fpol0, "", "", 32, 40);
-        (fUseVZERORing[4]) ? SetVZEROApol(0, fpol0->GetParameter(0)) : SetVZEROApol(0, 0.);
-        fVZEROgainEqualization->Fit(fpol0, "", "", 40, 48);
-        (fUseVZERORing[5]) ? SetVZEROApol(1, fpol0->GetParameter(0)) : SetVZEROApol(1, 0.);
-        fVZEROgainEqualization->Fit(fpol0, "", "", 48, 56);
-        (fUseVZERORing[6]) ? SetVZEROApol(2, fpol0->GetParameter(0)) : SetVZEROApol(2, 0.);
-        fVZEROgainEqualization->Fit(fpol0, "", "", 56, 64);
-        (fUseVZERORing[7]) ? SetVZEROApol(3, fpol0->GetParameter(0)) : SetVZEROApol(3, 0.);
-    } else {
-        // do the calibration in one go. the calibration will still be 
-        // stored per ring, but each ring has the same weight now
-        // this should be the default for the analysis as the database is tuned to this configuration
-       fVZEROgainEqualization->Fit(fpol0,"","",0,31);
-       for(Int_t i(0); i < 4; i++) SetVZEROCpol(i, fpol0->GetParameter(0));
-       fVZEROgainEqualization->Fit(fpol0,"","",32,64);
-       for(Int_t i(0); i < 4; i++) SetVZEROApol(i, fpol0->GetParameter(0));
-    }
+    TF1* fpol0 = new TF1("fpol0","pol0");
+    fVZEROgainEqualization->Fit(fpol0, "N0", "", 0, 31);
+    fVZEROCpol = fpol0->GetParameter(0);
+    fVZEROgainEqualization->Fit(fpol0, "N0", "", 32, 64);
+    fVZEROApol = fpol0->GetParameter(0);
 
     // step 4) extract the information to re-weight the q-vectors 
     for(Int_t iside=0;iside<2;iside++){
@@ -2696,6 +2631,8 @@ void AliAnalysisTaskJetV2::ReadVZEROCalibration2010h()
     }
     // cleanup. the opened file is closed in the destructor, otherwise fVZEROgainEqualization is no longer available
     delete fpol0;
+    // for qa store the runnumber that is currently used for calibration purposes
+    fRunNumberCaliInfo = run;
 }
 //_____________________________________________________________________________i
 void AliAnalysisTaskJetV2::ReadVZEROCalibration2011h()

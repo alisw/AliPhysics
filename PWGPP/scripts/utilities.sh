@@ -20,27 +20,33 @@ PWGPP_runMap="
 
 parseConfig()
 {
-  #parse command line arguments, they have to be in the form
+  # parse command line arguments, they have to be in the form
   #  option=value
-  #they are then set in the environment
+  # they are then set in the environment
+  # additionally another variable named: parseConfig__ORIGINAL__${option}
+  # is set to have a fallback.
+  # The prefix can be changed by specifying the
+  # option originalOptionPrefix="some_prefix". Set to "" to switch off.
   #
-  #optionally a config file can be specified in the arguments:
+  # optionally a config file can be specified in the arguments:
   #  configFile=<someFile>
-  #config file sets variables: option=value
-  #command line options override config file
+  # config file sets variables: option=value
+  # command line options override config file
   #
-  #recommended way of using (at the beginning of your funcion/script):
+  # recommended way of using (at the beginning of your funcion/script):
   #  if ! parseConfig "${@}"; then return; fi
   
   local args=("$@")
   local opt=""
+  local originalOptionPrefix="parseConfig__ORIGINAL__"
   
   #first check if we will need to decode spaces
   local encodedSpaces=""
   for opt in "${args[@]}"; do
     [[ "${opt}" =~ encodedSpaces=.* ]] \
-      && encodedSpaces=1 \
-      && break
+      && encodedSpaces=1
+    [[ "${opt}" =~ originalOptionPrefix=.* ]] \
+      && originalOptionPrefix="${opt#*=}"
   done
 
   #then look for a configFile (if any)
@@ -67,6 +73,7 @@ parseConfig()
     local value="${opt#*=}"
     #echo "${var}=${value}"
     export ${var}="${value}"
+    [[ -n ${originalOptionPrefix} ]] && export ${originalOptionPrefix}${var}="${value}"
   done
   return 0
 }

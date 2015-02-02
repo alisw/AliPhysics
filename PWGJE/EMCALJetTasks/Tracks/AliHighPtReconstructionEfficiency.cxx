@@ -109,12 +109,6 @@ void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
 	fJetEvent = new AliReducedJetEvent();
 	fJetTree->Branch("JetEvent", "AliReducedJetEvent", fJetEvent, 128000,0);
 
-	// Create std track cuts
-	fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
-	fTrackCuts->SetName("Standard Track cuts");
-	fTrackCuts->SetMinNCrossedRowsTPC(120);
-	fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-
 	PostData(1, fJetTree);
 }
 
@@ -308,6 +302,10 @@ void AliHighPtReconstructionEfficiency::ProcessJet(
 			// Create new Particle and add it to the jet reconstructed jet
 			AliReducedJetParticle * part = new AliReducedJetParticle(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), mcpart->PdgCode(),rectrack ? true : false);
 			part->SetDistanceToMainJetAxis(dr);
+			if(rectrack){
+				part->SetDeltaPt(TMath::Abs(mcpart->Pt()) - TMath::Abs(rectrack->Pt()));
+				part->SetNumberOfClustersTPC(static_cast<unsigned char>(rectrack->GetTPCNcls()));
+			}
 			recjet->AddParticleInCone(part);
 		}
 	}

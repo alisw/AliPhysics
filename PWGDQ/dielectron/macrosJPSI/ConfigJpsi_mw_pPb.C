@@ -28,7 +28,7 @@ AliDielectron* ConfigJpsi_mw_pPb(Int_t cutDefinition, Bool_t isAOD=kFALSE/*must 
   
   // estimators filename
   //NOTE: what does this mean?: estimator for pp multiplicity, not needed for instance for my pA-purpose(mwinn 16.1.2012)..
-  diele->SetEstimatorFilename("$ALICE_ROOT/PWGDQ/dielectron/files/estimators.root");
+  diele->SetEstimatorFilename("$ALICE_PHYSICS/PWGDQ/dielectron/files/estimators.root");
   //diele->SetEstimatorFilename("estimators.root");
   // cut setup
   SetupTrackCutsDieleData(diele, cutDefinition, isAOD);

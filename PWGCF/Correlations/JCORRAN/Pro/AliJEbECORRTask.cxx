@@ -189,10 +189,10 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 	fHistos = new AliJHistos(fCard);
 	fHistos->CreateEventTrackHistos();
 	fHistos->CreateAzimuthCorrHistos();
-	fHistos->CreateIAAMoons();
-	fHistos->CreateXEHistos();
+	//fHistos->CreateIAAMoons();
+	//fHistos->CreateXEHistos();
 	fHistos->CreateXtHistos();
-	fHistos->CreatePairPtCosThetaStar();
+	//fHistos->CreatePairPtCosThetaStar();
 
 	fHistos->fHMG->Print();
 	// E-b-E
@@ -333,7 +333,6 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 		double etat = track->Eta();
 		double effCorr = 1.0/track->GetTrackEff();
 
-		fHistos->fhChargedPtNoCorr[cBin]->Fill(ptt);
 		fHistos->fhChargedEta->Fill(etat);
 		fHistos->fhChargedPt[cBin]->Fill(ptt, effCorr );
 		fHistos->fhChargedPtNoCorr[cBin]->Fill( ptt );

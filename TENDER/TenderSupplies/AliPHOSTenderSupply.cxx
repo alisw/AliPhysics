@@ -65,7 +65,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
 	// default ctor
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
-   for(Int_t mod=0;mod<5;mod++)fPHOSBadMap[mod]=0x0 ;
+   for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
 }
 
 //_____________________________________________________
@@ -86,7 +86,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
 	// named ctor
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
-   for(Int_t mod=0;mod<5;mod++)fPHOSBadMap[mod]=0x0 ;
+   for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
 }
 
 //_____________________________________________________
@@ -104,6 +104,18 @@ void AliPHOSTenderSupply::InitTender()
   //
   // Initialise PHOS tender
   //
+  AliESDEvent *esd = 0x0 ; 
+  AliAODEvent *aod = 0x0 ;
+  if(fTender){
+    esd = fTender->GetEvent();
+  }
+  else{
+    if(fTask){
+      esd = dynamic_cast<AliESDEvent*>(fTask->InputEvent()) ;
+      aod = dynamic_cast<AliAODEvent*>(fTask->InputEvent()) ;
+    }
+  }     
+  
   Int_t runNumber = 0;
   if(fTender)
     runNumber = fTender->GetRun();
@@ -112,11 +124,9 @@ void AliPHOSTenderSupply::InitTender()
       AliError("Neither Tender not Taks was not set") ;
       return ;
     }
-    AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fTask->InputEvent()) ;
     if(aod)
       runNumber = aod->GetRunNumber() ;
     else{
-      AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fTask->InputEvent()) ;
       if(esd)
         runNumber = esd->GetRunNumber() ;
       else{
@@ -158,19 +168,40 @@ void AliPHOSTenderSupply::InitTender()
    
   //Init geometry 
   if(!fPHOSGeo){
-    AliOADBContainer geomContainer("phosGeo");
-    if(fIsMC) //use excatly the same geometry as in simulation
-      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
-    else //Use best approaximation to real geometry
-      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
-    for(Int_t mod=0; mod<5; mod++) {
-      if(!matrixes->At(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
-      printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
-      ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
-    } 
+    AliOADBContainer geomContainer("phosGeo");
+    if(fIsMC){ //use excatly the same geometry as in simulation, stored in esd
+      if(esd){
+        for(Int_t mod=0; mod<6; mod++) {
+           const TGeoHMatrix * m = esd->GetPHOSMatrix(mod) ;
+           if(m){
+             fPHOSGeo->SetMisalMatrix(m,mod) ;
+             printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+             m->Print() ;
+	   }
+	}
+      } 
+      if(aod){ //To be fixed
+        geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
+        TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
+        for(Int_t mod=0; mod<6; mod++) {
+          if(!matrixes->At(mod)) continue;
+          fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+          printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+          ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
+        } 
+      }
+    }
+    else{ //Use best approaximation to real geometry
+      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+      TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
+      for(Int_t mod=0; mod<6; mod++) {
+        if(!matrixes->At(mod)) continue;
+        fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+        printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+        ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
+      } 
+    }
   }
   
   //Init Bad channels map
@@ -183,7 +214,7 @@ void AliPHOSTenderSupply::InitTender()
     }
     else{
       AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
-      for(Int_t mod=0; mod<5;mod++){
+      for(Int_t mod=0; mod<6;mod++){
         if(fPHOSBadMap[mod]) 
           delete fPHOSBadMap[mod] ;
         TH2I * h = (TH2I*)maps->At(mod) ;      
@@ -261,7 +292,7 @@ void AliPHOSTenderSupply::ProcessEvent()
     aod = dynamic_cast<AliAODEvent*>(fTask->InputEvent()) ;
     if(!esd && !aod)
       return ;
-  }
+  }     
     
   if(!fPHOSCalibData 
     || (fTender && fTender->RunChanged())){ //In case of Task init called automatically
@@ -294,7 +325,14 @@ void AliPHOSTenderSupply::ProcessEvent()
       AliESDCaloCluster *clu = esd->GetCaloCluster(i);    
       if ( !clu->IsPHOS()) continue;
       
-    
+      //remove clusters from bad modules without re-calibration
+      Int_t relid[4] ;
+      fPHOSGeo->AbsToRelNumbering(clu->GetCellAbsId(0), relid) ; //shold be at lease one digit
+      if(!fPHOSBadMap[relid[0]]){
+        clu->SetE(0) ;
+	continue ;
+      }
+     
       //Apply re-Calibreation
       AliPHOSEsdCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
@@ -653,13 +691,9 @@ Bool_t AliPHOSTenderSupply::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz)
 {
   //Check if this channel belogs to the good ones
   
-  if(mod>4 || mod<1){
-//    AliError(Form("No bad map for PHOS module %d ",mod)) ;
-    return kTRUE ;
-  }
   if(!fPHOSBadMap[mod]){
-//     AliError(Form("No Bad map for PHOS module %d",mod)) ;
-     return kTRUE ;
+     AliError(Form("No Bad map for PHOS module %d",mod)) ;
+     return kFALSE ;
   }
   if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
     return kFALSE ;
@@ -676,7 +710,7 @@ void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
   }
   gROOT->cd() ;
   char key[55] ;
-  for(Int_t mod=1;mod<4; mod++){
+  for(Int_t mod=1;mod<6; mod++){
     snprintf(key,55,"PHOS_BadMap_mod%d",mod) ;
     TH2I * h = (TH2I*)fbm->Get(key) ;
     if(h)
@@ -957,7 +991,7 @@ void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Dou
   Float_t x=0.,z=0.;
   for(Int_t ix=xmin;ix<=xmax;ix++){
     for(Int_t iz=zmin;iz<=zmax;iz++){
-      if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0){ //Bad channel
+      if(fPHOSBadMap[mod] && fPHOSBadMap[mod]->GetBinContent(ix,iz)>0){ //Bad channel
         Int_t relidBC[4]={mod,0,ix,iz} ;
         fPHOSGeo->RelPosInModule(relidBC,x,z); 
         Double_t dist = TMath::Sqrt((x-locPos->X())*(x-locPos->X()) + (z-locPos->Z())*(z-locPos->Z()));

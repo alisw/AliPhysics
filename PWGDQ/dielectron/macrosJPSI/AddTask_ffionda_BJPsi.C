@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_ffionda_BJPsi(Bool_t isMC=kFALSE){
   //set config file name
   TString configFile("$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                                   
-  if (trainRoot.IsNull()) configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPb.C";
+  if (trainRoot.IsNull()) configFile="$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPb.C";
 
   
   //create task and add it to the manager

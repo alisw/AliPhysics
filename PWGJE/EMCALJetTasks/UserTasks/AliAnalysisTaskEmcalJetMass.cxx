@@ -449,8 +449,9 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
       Double_t maxTrackPt = jet1->MaxTrackPt();
       Double_t mJet1 = GetJetMass(jet1);
+      Double_t eJet1 = jet1->E();
       Double_t rat = -1.;
-      if(ptJet1<0. || ptJet1>0.) rat = mJet1/ptJet1;
+      if(eJet1<0. || eJet1>0.) rat = mJet1/eJet1;
       Double_t ep = jet1->Phi() - fEPV0;
       while (ep < 0) ep += TMath::Pi();
       while (ep >= TMath::Pi()) ep -= TMath::Pi();
