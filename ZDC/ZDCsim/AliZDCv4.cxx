@@ -233,8 +233,7 @@ void AliZDCv4::CreateBeamLine()
   if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
   
   Double_t zd1, zd2, zCorrDip, zInnTrip, zD1;
-  Double_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
-
+  Double_t conpar[15], tubpar[3], tubspar[5], boxpar[3];
   //-- rotation matrices for the legs
   Int_t irotpipe1, irotpipe2;
   TVirtualMC::GetMC()->Matrix(irotpipe1,90.-1.0027,0.,90.,90.,1.0027,180.);      
@@ -256,18 +255,27 @@ void AliZDCv4::CreateBeamLine()
   
 if(!fOnlyZEM){  
   // -- Mother of the ZDCs (Vacuum PCON)
-  zd1 = 1921.6;
-  
-  conpar[0] = 0.;
-  conpar[1] = 360.;
-  conpar[2] = 2.;
-  conpar[3] = -13500.;
-  conpar[4] = 0.;
-  conpar[5] = 55.;
-  conpar[6] = -zd1;
-  conpar[7] = 0.;
-  conpar[8] = 55.;
-  TVirtualMC::GetMC()->Gsvolu("ZDCC", "PCON", idtmed[10], conpar, 9);
+  zd1 = 1947.2;
+  // zd1 = 1921.6;
+  // const Double_t kZComDip = -1972.5;
+  const Double_t kZComDip = -1974.0;
+  conpar[ 0] = 0.;
+  conpar[ 1] = 360.;
+  conpar[ 2] = 4.;      // Num radius specifications: 4
+  conpar[ 3] = -13500.; // (1) end of mother vol
+  conpar[ 4] = 0.;
+  conpar[ 5] = 55.;
+  conpar[ 6] = kZComDip; // (2) Beginning of Compensator Dipole
+  conpar[ 7] = 0.;
+  conpar[ 8] = 55.;
+  conpar[ 9] = kZComDip; // (3) Reducing radii of ZDCC to beam pipe radius
+  conpar[10] = 0.;
+  conpar[11] = 6.7/2.;
+  conpar[12] = -zd1;    // (4) Beginning of ZDCC mother volume
+  // conpar[12] = -1947.2;    // (4) Beginning of ZDCC mother volume
+  conpar[13] = 0.;
+  conpar[14] = 6.7/2.; 
+  TVirtualMC::GetMC()->Gsvolu("ZDCC", "PCON", idtmed[10], conpar, 15);
   TVirtualMC::GetMC()->Gspos("ZDCC", 1, "ALIC", 0., 0., 0., 0, "ONLY");
   
 
@@ -1455,15 +1463,13 @@ if(!fOnlyZEM){
   tubpar[1] = 3.14;
   tubpar[2] = 153./2.;
   TVirtualMC::GetMC()->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
-
+  TVirtualMC::GetMC()->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
   // --  YOKE 
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
-  tubpar[2] = 153./2.;
+  tubpar[2] = 150./2.;
   TVirtualMC::GetMC()->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
-
-  TVirtualMC::GetMC()->Gspos("MBXW", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
-  TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -tubpar[2]-zCorrDip, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("YMBX", 1, "ZDCC", 0., 0., -1.5-tubpar[2]-zCorrDip, 0, "ONLY");
   
   
   // -- INNER TRIPLET 
