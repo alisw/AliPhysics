@@ -26,13 +26,17 @@ message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
 message(STATUS "Source folder: ${AliRoot_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
-# You can change the build type using 
+# CMake supports different build types by default. We want the DEBUG build type
+# to have "-g -O0" flags: by default it only has "-g"
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+
+# You can change the build type using
 # cmake -DCMAKE_BUILD_TYPE=DEBUG | RELEASE | RELWITHDEBINFO | MINSIZEREL ...
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 endif(NOT CMAKE_BUILD_TYPE)
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE} (${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}})")
 
 if(CMAKE_INSTALL_PREFIX STREQUAL "${AliRoot_SOURCE_DIR}")
     message(FATAL_ERROR "Please choose a different installation point than the source tree!")
