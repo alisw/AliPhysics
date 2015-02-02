@@ -47,9 +47,9 @@ xEBorders		0.0 0.2 0.4 0.6  1.0
 PairInvariantMassBins   20 30
 UpperPairPtCut          1.5 15
 EtaRange                0.8
-EtaGapThresholds        0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6
-RGapThresholds        0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 2.3
-EtaGapSignalBin         2  #signal histos to R<0.6
+EtaGapThresholds        0 0.8 1.0 1.2 1.4 1.6
+RGapThresholds        0 0.8 1.0 1.2 1.4 1.6 2.3
+EtaGapSignalBin         1  #signal histos to R<0.6
 EtaBoost                -0.465 0
 
 DPhiUERegion            0.325 0.475

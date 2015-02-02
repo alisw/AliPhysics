@@ -189,10 +189,10 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 	fHistos = new AliJHistos(fCard);
 	fHistos->CreateEventTrackHistos();
 	fHistos->CreateAzimuthCorrHistos();
-	fHistos->CreateIAAMoons();
-	fHistos->CreateXEHistos();
+	//fHistos->CreateIAAMoons();
+	//fHistos->CreateXEHistos();
 	fHistos->CreateXtHistos();
-	fHistos->CreatePairPtCosThetaStar();
+	//fHistos->CreatePairPtCosThetaStar();
 
 	fHistos->fHMG->Print();
 	// E-b-E
