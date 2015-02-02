@@ -35,6 +35,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     Bool_t GetTenderSwitch() {return fUseTender;};
     void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
 
+    void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
+    void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
+
   private:
     enum{
       kAODanalysis = BIT(20),
@@ -47,6 +50,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
 
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
+
+    Bool_t	 fEMCEG1;//!EMcal Threshold EG1
+    Bool_t	 fEMCEG2;//!EMcal Threshold EG2
     
     TClonesArray  *fTracks_tender;
     TClonesArray  *fCaloClusters_tender;
@@ -66,8 +72,6 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     //TH1F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoCalCell;//! No of cells per cluster
-    TH2F        *fHistoCalTime;
-    TH2F        *fHistoCalCellTime;
     TH1F        *fNegTrkIDPt;//!neg track ID
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta
