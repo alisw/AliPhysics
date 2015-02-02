@@ -265,6 +265,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
   //pushes once every n seconds if
   //configured with -pushback-period=n
+  //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
   PushAndReset(fAnalysisManager->GetOutputs()); 
 
   return iResult;
