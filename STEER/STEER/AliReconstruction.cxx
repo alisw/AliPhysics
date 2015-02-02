@@ -822,9 +822,9 @@ void AliReconstruction::InitCDB()
 
 //_____________________________________________________________________________
 void AliReconstruction::SetCDBSnapshotMode(const char* snapshotFileName) {
-    fCDBSnapshotMode = kTRUE;
     if (!AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName))
-      AliFatal("OCDB snapshot setting failed");
+      AliFatal("Setting CDB snapshot mode failed.");
+    fCDBSnapshotMode = kTRUE;
 }
 
 //_____________________________________________________________________________
