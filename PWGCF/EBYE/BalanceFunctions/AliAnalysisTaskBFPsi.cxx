@@ -79,6 +79,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistVx(0),
   fHistVy(0),
   fHistVz(0),
+  fHistMixEvents(0),
+  fHistMixTracks(0),
   fHistTPCvsVZEROMultiplicity(0),
   fHistVZEROSignal(0),
   fHistEventPlane(0),
@@ -335,6 +337,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistVy);
   fHistVz = new TH2F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Centrality percentile;Entries",100,-20.,20.,220,-5,105);
   fList->Add(fHistVz);
+
+  // Event Mixing
+  fHistMixEvents = new TH2F("fHistMixEvents","Number of mixed events;Centrality percentile;N_{mix,evts}",101, 0, 101, 200, 0, 200);
+  fList->Add(fHistMixEvents);
+  fHistMixTracks = new TH2F("fHistMixTracks","Number of mixed tracks;Centrality percentile;N_{mix,trks}",101, 0, 101, 200, 0, fMixingTracks * 1.5);
+  fList->Add(fHistMixTracks);
 
   //TPC vs VZERO multiplicity
   fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",10001,-0.5,10000.5,4001,-0.5,4000.5);
@@ -777,11 +785,9 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	  Int_t nMix = pool->GetCurrentNEvents();
 	  //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
 	  
-	  //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
-	  //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-	  //if (pool->IsReady())
-	  //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
-	  
+	  fHistMixEvents->Fill(lMultiplicityVar, nMix);
+	  fHistMixTracks->Fill(lMultiplicityVar, pool->NTracksInPool());
+
 	  // Fill mixed-event histos here  
 	  for (Int_t jMix=0; jMix<nMix; jMix++) 
 	    {
