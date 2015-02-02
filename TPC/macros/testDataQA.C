@@ -22,7 +22,6 @@ void testDataQA(Char_t *fileName, Int_t maxevent=10)
    while (rawReader->NextEvent()){
      calib->ProcessEvent(rawReader);
      rawReader->Reset();
-     calibFast->ProcessEventFast(rawReader);
      event++;
      // if you wann to check the handling of Analyse updates uncomment this
 //      if(gRandom->Rndm()<0.3) {
