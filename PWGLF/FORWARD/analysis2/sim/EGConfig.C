@@ -66,7 +66,7 @@ protected:
     else if (t.BeginsWith("hijing"))          g=Hijing(b1, b2, asym, 
 							grp->IsAA(), 0);
     else if (t.BeginsWith("ampthf"))          g=HFCocktail(rt,b1,b2);
-    else if (t.BeginsWith("ampt"))            g=Ampt(b1, b2);
+    else if (t.BeginsWith("ampt"))            g=Ampt(b1, b2, rt);
     else if (t.BeginsWith("dpmjet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("phojet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("hydjet"))          g=Hydjet(b1, b2);
@@ -351,7 +351,7 @@ protected:
    * 
    * @return Generator 
    */
-  AliGenerator* Ampt(Float_t minB, Float_t maxB)
+  AliGenerator* Ampt(Float_t minB, Float_t maxB, const TString& rt)
   {
     LoadAmpt();
     AliGenAmpt *genHi = new AliGenAmpt(-1);
@@ -370,6 +370,29 @@ protected:
     genHi->SetSpectators(0);   // track spectators 
     genHi->KeepFullEvent();
     genHi->SetSelectAll(0);
+
+    // -- Process tunes ----------------------------------------------
+    TString opt(rt);
+    opt.ToLower();
+    opt.Remove(0,4); // Remove AMPT prefix 
+    if (opt.Contains("decay")) {
+      // Add a decayer here
+      hftype = 1;
+      genHi->SetDecayer(CreateDecayer("hijing2000hf"));
+    }
+    // Enable string melting
+    if (opt.Contains("melt")) genHi->SetIsoft(4);
+    // parton screening mass in fm^(-1) (D=3.2264d0)
+    if (opt.Contains("screen")) genHi->SetXmu(3.2264);
+    // Enable Jet quenching 
+    if (opt.Contains("quench")) genHi->SetJetQuenching(1);
+    // Enable Jet quenching 
+    if (opt.Contains("noshadow")) genHi->SetShadowing(0);
+    // Enable spectators 
+    if (opt.Contains("spectators")) genHi->SetShadowing(0);
+
+      
+	
     return genHi;
   }
   /** 
