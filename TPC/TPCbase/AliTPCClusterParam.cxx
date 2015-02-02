@@ -1915,7 +1915,7 @@ void AliTPCClusterParam::SetWaveCorrectionMap( THnBase *Map)
     fWaveCorrectionMap = dynamic_cast<THnBase*>( Map->Clone(Map->GetName()));
     if( fWaveCorrectionMap ){
       fWaveCorrectionMirroredPad   = ( fWaveCorrectionMap->GetAxis(3)->FindFixBin(0.5)<=1 );   // Pad axis is mirrored at 0.5
-      fWaveCorrectionMirroredZ     = ( fWaveCorrectionMap->GetAxis(1)->FindFixBin(0)<=1); // Z axis is mirrored at 0
+      fWaveCorrectionMirroredZ     = ( fWaveCorrectionMap->GetAxis(1)->FindFixBin(0.0)<=1); // Z axis is mirrored at 0
       fWaveCorrectionMirroredAngle = ( fWaveCorrectionMap->GetAxis(4)->FindFixBin(0.0)<=1 );   // Angle axis is mirrored at 0
     }
   }
