@@ -21,6 +21,8 @@ public:
 	double GetDistanceToJetMainAxis() const { return fDr; }
 	int GetPdgCode() const { return fPdgCode; }
 	bool IsReconstructed() const { return fIsReconstructed; }
+	float GetDeltaPt() const { return fDeltaPt; }
+	unsigned char GetNumberOfClustersTPC() const { return fNumberOfClustersTPC; }
 
 	void SetKine(double px, double py, double pz, double e){
 		fPx = px;
@@ -32,6 +34,9 @@ public:
 	void SetPdgCode(int pdg) { fPdgCode = pdg; }
 	void SetReconstructed(bool rec) { fIsReconstructed = rec; }
 
+	void SetDeltaPt(float deltaPt) { fDeltaPt = deltaPt; }
+	void SetNumberOfClustersTPC(int ncls) { int fNumberOfClustersTPC = ncls; }
+
 private:
 	double 			fPx;
 	double 			fPy;
@@ -40,8 +45,10 @@ private:
 	double			fDr;
 	int				fPdgCode;
 	bool 			fIsReconstructed;
+	float			fDeltaPt;
+	unsigned char	fNumberOfClustersTPC;
 
-	ClassDef(AliReducedJetParticle, 1);
+	ClassDef(AliReducedJetParticle, 2);
 };
 
 } /* namespace HighPtTracks */

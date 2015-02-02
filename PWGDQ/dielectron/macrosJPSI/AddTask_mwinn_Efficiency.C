@@ -22,7 +22,7 @@ AliAnalysisTask *AddTask_mwinn_Efficiency(){
   mgr->AddTask(task);
   
   //load dielectron configuration file
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_EffpPb.C");
+  TString configFile("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_EffpPb.C");
   gROOT->LoadMacro(configFile.Data());
   
   //add dielectron analysis with different cuts to the task

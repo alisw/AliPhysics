@@ -503,7 +503,7 @@ Bool_t AliEmcalJetTask::DoInit()
   fFastJetWrapper.SetR(fRadius);
   fFastJetWrapper.SetAlgorithm(jalgo);
   fFastJetWrapper.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
-  fFastJetWrapper.SetMaxRap(fEtaMax);
+  fFastJetWrapper.SetMaxRap(TMath::Max(TMath::Abs(fEtaMin),TMath::Abs(fEtaMax)));
 
   // setting legacy mode
   if (fLegacyMode) {

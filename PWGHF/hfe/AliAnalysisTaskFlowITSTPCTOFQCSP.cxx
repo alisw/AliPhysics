@@ -215,6 +215,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,EPweights(0)
 ,EPVzAftW(0)
 ,multCorrection(0)
+,fEtaMinimumPositive(0)
+,fEtaMinimumNegative(0)
 {
     //Named constructor
     
@@ -340,6 +342,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,EPweights(0)
 ,EPVzAftW(0)
 ,multCorrection(0)
+,fEtaMinimumPositive(0)
+,fEtaMinimumNegative(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -380,7 +384,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
-
+    
     
     if (!fAOD)
     {
@@ -407,7 +411,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral)) return;
     }
     if(fTrigger==1){
-    
+        
         if ( !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny) ) return;
         
         TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
@@ -427,7 +431,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) return;
     }
     
- 
+    
     
     
     //---------------CENTRALITY AND EVENT SELECTION-----------------------
@@ -463,7 +467,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
     
     SetNullCuts(fAOD);
     PrepareFlowEvent(fAOD->GetNumberOfTracks(),fFlowEvent);    //Calculate event plane Qvector and EP resolution for inclusive
-
+    
     AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
     if(!pidResponse)
     {
@@ -521,12 +525,12 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
             continue;
         
         
-        if(aodTrack->Eta()>0 && aodTrack->Eta()<0.8){
+        if(aodTrack->Eta()>fEtaMinimumPositive && aodTrack->Eta()<0.8){
             
             Qx2p += TMath::Cos(2*aodTrack->Phi());
             Qy2p += TMath::Sin(2*aodTrack->Phi());
         }
-        if(aodTrack->Eta()<0 && aodTrack->Eta()> -0.8){
+        if(aodTrack->Eta()<fEtaMinimumNegative && aodTrack->Eta()> -0.8){
             
             Qx2n += TMath::Cos(2*aodTrack->Phi());
             Qy2n += TMath::Sin(2*aodTrack->Phi());
@@ -561,7 +565,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         EPVzAftW->Fill(evPlAngV0,weightEP);
         
     }
-
+    
     
     
     fSubEventDPhiv2->Fill(0.5, TMath::Cos(2.*(evPlAngV0A-evPlAngTPC))); // vzeroa - tpc
@@ -586,8 +590,8 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
     // Track loop
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++)
     {
-         track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
-         if(!track) AliFatal("Not a standard AOD");
+        track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+        if(!track) AliFatal("Not a standard AOD");
         if (!track)
         {
             printf("ERROR: Could not receive track %d\n", iTracks);
@@ -626,7 +630,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         if(fPhiCut){
             if(phi<1.4 || phi >3.14)continue; //to have same EMCal phi acceptance
         }
-
+        
         
         
         Double_t pt = track->Pt();         //pt track after cuts
@@ -641,14 +645,14 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         
         Double_t CorrectTPCNSigma;
         Double_t mult = fVevent->GetNumberOfESDTracks()/8;
-
+        
         if(multCorrection){
             CorrectTPCNSigma = ftpcpid->GetCorrectedTPCnSigma(eta, mult, fTPCnSigma);
-           // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
+            // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
             fTPCnSigma = CorrectTPCNSigma;
-           // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
+            // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
         }
-
+        
         
         
         fITSnsigma->Fill(track->P(),fITSnSigma);
@@ -661,7 +665,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         if( pt >= 0.3){
             if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
         }//cuts on nsigma tof full pt range
-
+        
         fITSnsigmaAftTOF->Fill(track->P(),fITSnSigma);
         fTPCnsigmaAftTOF->Fill(track->P(),fTPCnSigma);
         fTPCvsITSafterTOF->Fill(fTPCnSigma,fITSnSigma);
@@ -699,7 +703,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         Float_t intLength = 2.99792458e-2* timeElec;
         Double_t beta = 0.1;
         if ((intLength > 0) && (timeTOF > 0))
-        beta = intLength/2.99792458e-2/timeTOF;
+            beta = intLength/2.99792458e-2/timeTOF;
         
         //     if(fQAPIDSparse){
         //         Double_t valPid[4] = {
@@ -718,7 +722,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         fTOFBetaAft->Fill(track->P(),beta);
         fInclusiveElecPt->Fill(pt);
         fPhi->Fill(phi);
-         fEta->Fill(eta);
+        fEta->Fill(eta);
         //=========================================================================================================
         //----------------------Flow of Inclusive Electrons--------------------------------------------------------
         AliFlowTrack *sTrack = new AliFlowTrack();
@@ -756,7 +760,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         Double_t v2PhiV0tot[2] = {
             v2PhiVz,
             pt};
-    
+        
         if(EPweights) fV2Phivzerotot->Fill(v2PhiV0tot,weightEP);
         if(!EPweights) fV2Phivzerotot->Fill(v2PhiV0tot);
         
@@ -766,56 +770,56 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         
         
         if(fDCA){
-         fNonHFE = new AliSelectNonHFE();
-         fNonHFE->SetAODanalysis(kTRUE);
-         fNonHFE->SetInvariantMassCut(fInvmassCut);
-         if(fOP_angle) fNonHFE->SetOpeningAngleCut(fOpeningAngleCut);
-         //fNonHFE->SetChi2OverNDFCut(fChi2Cut);
-         //if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
-         fNonHFE->SetAlgorithm("DCA"); //KF
-         fNonHFE->SetPIDresponse(pidResponse);
-         fNonHFE->SetTrackCuts(-3,3);
-         
-         fNonHFE->SetHistAngleBack(fOpeningAngleLS);
-         fNonHFE->SetHistAngle(fOpeningAngleULS);
-         //fNonHFE->SetHistDCABack(fDCABack);
-         //fNonHFE->SetHistDCA(fDCA);
-         fNonHFE->SetHistMassBack(fInvmassLS1);
-         fNonHFE->SetHistMass(fInvmassULS1);
-         
-         fNonHFE->FindNonHFE(iTracks,track,fAOD);
-         
-         // Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
-         // Int_t *fLsPartner = fNonHFE->GetPartnersLS();
-         // Bool_t fUlsIsPartner = kFALSE;
-         // Bool_t fLsIsPartner = kFALSE;
-         if(fNonHFE->IsULS()){
-         for(Int_t kULS =0; kULS < fNonHFE->GetNULS(); kULS++){
-         fULSElecPt->Fill(track->Pt());
-         }
-         }
-         
-         if(fNonHFE->IsLS()){
-         for(Int_t kLS =0; kLS < fNonHFE->GetNLS(); kLS++){
-         fLSElecPt->Fill(track->Pt());
-         }
-         }
-         }
+            fNonHFE = new AliSelectNonHFE();
+            fNonHFE->SetAODanalysis(kTRUE);
+            fNonHFE->SetInvariantMassCut(fInvmassCut);
+            if(fOP_angle) fNonHFE->SetOpeningAngleCut(fOpeningAngleCut);
+            //fNonHFE->SetChi2OverNDFCut(fChi2Cut);
+            //if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
+            fNonHFE->SetAlgorithm("DCA"); //KF
+            fNonHFE->SetPIDresponse(pidResponse);
+            fNonHFE->SetTrackCuts(-3,3);
+            
+            fNonHFE->SetHistAngleBack(fOpeningAngleLS);
+            fNonHFE->SetHistAngle(fOpeningAngleULS);
+            //fNonHFE->SetHistDCABack(fDCABack);
+            //fNonHFE->SetHistDCA(fDCA);
+            fNonHFE->SetHistMassBack(fInvmassLS1);
+            fNonHFE->SetHistMass(fInvmassULS1);
+            
+            fNonHFE->FindNonHFE(iTracks,track,fAOD);
+            
+            // Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
+            // Int_t *fLsPartner = fNonHFE->GetPartnersLS();
+            // Bool_t fUlsIsPartner = kFALSE;
+            // Bool_t fLsIsPartner = kFALSE;
+            if(fNonHFE->IsULS()){
+                for(Int_t kULS =0; kULS < fNonHFE->GetNULS(); kULS++){
+                    fULSElecPt->Fill(track->Pt());
+                }
+            }
+            
+            if(fNonHFE->IsLS()){
+                for(Int_t kLS =0; kLS < fNonHFE->GetNLS(); kLS++){
+                    fLSElecPt->Fill(track->Pt());
+                }
+            }
+        }
         if(!fDCA){
-        //=========================================================================================================
-        //----------------------Selection and Flow of Photonic Electrons-----------------------------
-        Bool_t fFlagPhotonicElec = kFALSE;
-        SelectPhotonicElectron(iTracks,track,fTPCnSigma,evPlAngV0,fFlagPhotonicElec,weightEP,mult);
-        if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
-              // Semi inclusive electron
-        if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
+            //=========================================================================================================
+            //----------------------Selection and Flow of Photonic Electrons-----------------------------
+            Bool_t fFlagPhotonicElec = kFALSE;
+            SelectPhotonicElectron(iTracks,track,fTPCnSigma,evPlAngV0,fFlagPhotonicElec,weightEP,mult);
+            if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
+            // Semi inclusive electron
+            if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
         }
         //-------------------------------------------------------------------------------------------
         
     }//end loop on track
     PostData(1, fOutputList);
     PostData(2, fFlowEvent);
-
+    
     //----------hfe end---------
 }
 //_________________________________________
@@ -834,14 +838,14 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         }
         //  if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;  // TESTBIT FOR AOD double Counting
         if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-  
-	    if(fAssoITSRefit){
+        
+        if(fAssoITSRefit){
             if(!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
         }
         
         if(!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
-	
-//	if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        
+        //	if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         
         if(jTracks == itrack) continue;
@@ -857,7 +861,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         // nsigma = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
         if(ptAsso < fptminAsso) continue;
-
+        
         nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
         
         
@@ -866,7 +870,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
             CorrectTPCNSigma = ftpcpid->GetCorrectedTPCnSigma(trackAsso->Eta(), multev, nsigma);
             nsigma = CorrectTPCNSigma;
         }
-
+        
         
         
         //if(trackAsso->GetTPCNcls() < 80) continue;
@@ -899,7 +903,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         if(fFlagLS) fInvmassLS1->Fill(mass);
         if(fFlagULS) fInvmassULS1->Fill(mass);
         
-	   if(fFlagULS){
+        if(fFlagULS){
             Double_t MassSparseULS[3] = {
                 track->Pt(),
                 mass
@@ -910,11 +914,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
             Double_t MassSparseLS[3] = {
                 track->Pt(),
                 mass
-            }; 
-            fSparseMassLS->Fill(MassSparseLS);  
-        }	
-	
-	
+            };
+            fSparseMassLS->Fill(MassSparseLS);
+        }
+        
+        
         if(mass<fInvmassCut){
             if(fFlagULS){fULSElecPt->Fill(track->Pt());}
             if(fFlagLS){fLSElecPt->Fill(track->Pt());}
@@ -922,30 +926,30 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         
         
         Double_t phi = track->Phi();
-	Float_t DeltaPhi_eEP = TVector2::Phi_0_2pi(phi - evPlAngV0);
-	if(DeltaPhi_eEP > TMath::Pi()) {DeltaPhi_eEP = DeltaPhi_eEP - TMath::Pi();}
-
-
-	if(mass<fInvmassCut){
- 	if(fFlagULS){
-		Double_t ulsSparse[3] = {
-		track->Pt(),
-        fTPCnSigma,
-		DeltaPhi_eEP
-		}; 
- 		if(EPweights) fSparsephipsiULS->Fill(ulsSparse,weightEPflat);
-        if(!EPweights) fSparsephipsiULS->Fill(ulsSparse);
-		}
-	if(fFlagLS){
-		Double_t lsSparse[3] = {
-		track->Pt(),
-        fTPCnSigma,
-		DeltaPhi_eEP
-		}; 
- 		if(EPweights) fSparsephipsiLS->Fill(lsSparse,weightEPflat);
-        if(!EPweights)fSparsephipsiLS->Fill(lsSparse);
-		}
-	}
+        Float_t DeltaPhi_eEP = TVector2::Phi_0_2pi(phi - evPlAngV0);
+        if(DeltaPhi_eEP > TMath::Pi()) {DeltaPhi_eEP = DeltaPhi_eEP - TMath::Pi();}
+        
+        
+        if(mass<fInvmassCut){
+            if(fFlagULS){
+                Double_t ulsSparse[3] = {
+                    track->Pt(),
+                    fTPCnSigma,
+                    DeltaPhi_eEP
+                };
+                if(EPweights) fSparsephipsiULS->Fill(ulsSparse,weightEPflat);
+                if(!EPweights) fSparsephipsiULS->Fill(ulsSparse);
+            }
+            if(fFlagLS){
+                Double_t lsSparse[3] = {
+                    track->Pt(),
+                    fTPCnSigma,
+                    DeltaPhi_eEP
+                };
+                if(EPweights) fSparsephipsiLS->Fill(lsSparse,weightEPflat);
+                if(!EPweights)fSparsephipsiLS->Fill(lsSparse);
+            }
+        }
         
         
         
@@ -1223,22 +1227,22 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     fV2Phivzerotot->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
     fV2Phivzerotot->Sumw2();
     fOutputList->Add(fV2Phivzerotot);
-
     
-   
+    
+    
     //----------------------------------------------------------------------------
     //----------------------------------------------------------------------------
- //   if(fQAPIDSparse){
- //       Int_t    binsQA[4] = { 150,  100,  120,    3};
- //       Double_t xminQA[4] = { 0.,    50,   0, -1.5};
- //       Double_t xmaxQA[4] = { 15.,  150, 1.2,  1.5};
- //       fQAPid = new THnSparseF("fQAPid", "p:dEdx:beta:ch", 4, binsQA, xminQA, xmaxQA);
- //       fQAPid->GetAxis(0)->SetTitle("p (Gev/c");
- //       fQAPid->GetAxis(1)->SetTitle("dE/dx");
-//        fQAPid->GetAxis(2)->SetTitle("#beta (TOF)");
-//        fQAPid->GetAxis(3)->SetTitle("charge");
-//        fOutputList->Add(fQAPid);
-//    }
+    //   if(fQAPIDSparse){
+    //       Int_t    binsQA[4] = { 150,  100,  120,    3};
+    //       Double_t xminQA[4] = { 0.,    50,   0, -1.5};
+    //       Double_t xmaxQA[4] = { 15.,  150, 1.2,  1.5};
+    //       fQAPid = new THnSparseF("fQAPid", "p:dEdx:beta:ch", 4, binsQA, xminQA, xmaxQA);
+    //       fQAPid->GetAxis(0)->SetTitle("p (Gev/c");
+    //       fQAPid->GetAxis(1)->SetTitle("dE/dx");
+    //        fQAPid->GetAxis(2)->SetTitle("#beta (TOF)");
+    //        fQAPid->GetAxis(3)->SetTitle("charge");
+    //        fOutputList->Add(fQAPid);
+    //    }
     //===========================================================================
     Int_t    binsQA2[3] = { 100,  40, 150/*,  60*/};
     Double_t xminQA2[3] = { 0.,   -2, -15/*,  -3*/};
@@ -1261,7 +1265,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     fSparsephipsiULS->GetAxis(2)->SetTitle("DeltaPhiULS");
     fSparsephipsiULS->Sumw2();
     fOutputList->Add(fSparsephipsiULS);
- 
+    
     fSparsephipsiLS = new THnSparseF("fSparsephipsiLS", "pt:tpcnsigma:DeltaPhiLS", 3, binsphipsi, xminphipsi, xmaxphipsi);
     fSparsephipsiLS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparsephipsiLS->GetAxis(1)->SetTitle("tpcnsigma");
@@ -1282,11 +1286,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     fSparseMassLS->GetAxis(0)->SetTitle("pt (Gev/c)");
     fSparseMassLS->GetAxis(1)->SetTitle("mass");
     fOutputList->Add(fSparseMassLS);
-
+    
     
     EPVzAftW = new TH1D("EPVzAftW", "EPVzAftW",60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputList->Add(EPVzAftW);
-
+    
     
     fOutputList->Add(fHistEPDistrWeight);
     
@@ -1295,7 +1299,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     // create and post flowevent
     fFlowEvent = new AliFlowEvent(10000);
     PostData(2, fFlowEvent);
-   
+    
 }
 //________________________________________________________________________
 void AliAnalysisTaskFlowITSTPCTOFQCSP::Terminate(Option_t *)
@@ -1456,7 +1460,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SetIDCuts(Double_t minTOFnSigma, Double_t
     fmaxTPCnsigmaLowpT = maxTPCnsigmalowpt;
     fminTPCnsigmaHighpT = minTPCnsigmahighpt;
     fmaxTPCnsigmaHighpT = maxTPCnsigmahighpt;
-
+    
 }
 //_____________________________________________________________________________
 //_____________________________________________________________________________

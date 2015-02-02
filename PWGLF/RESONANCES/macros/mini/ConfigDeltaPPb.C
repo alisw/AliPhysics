@@ -22,7 +22,7 @@ Bool_t ConfigDeltaPPb
 
 
    // integrated pion cut TOF
-   AliRsnCutDelta *cutPiTOF = new AliRsnCutDelta("cutPionTOF",AliPID::kPion, kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF = new AliRsnCutDelta("cutPionTOF", AliPID::kPion, kFALSE, kTRUE);
    // cut set TOF
    AliRsnCutSet *cutSetPiTOF = new AliRsnCutSet("setPionForDeltaTOF", AliRsnTarget::kDaughter);
    cutSetPiTOF->AddCut(cutPiTOF);
@@ -31,7 +31,7 @@ Bool_t ConfigDeltaPPb
    Int_t iCutPiTOF = task->AddTrackCuts(cutSetPiTOF);
    
    // integrated proton cut TOF
-   AliRsnCutDelta *cutPTOF = new AliRsnCutDelta("cutProtonTOF",AliPID::kProton, kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF = new AliRsnCutDelta("cutProtonTOF",AliPID::kProton, kFALSE, kTRUE);
    // cut set TOF
    AliRsnCutSet *cutSetPTOF = new AliRsnCutSet("setProtonForDeltaTOF", AliRsnTarget::kDaughter);
    cutSetPTOF->AddCut(cutPTOF);
@@ -41,7 +41,7 @@ Bool_t ConfigDeltaPPb
 
 /////////////////////////////////////////////////////SYSTEMATICS
  
-   AliRsnCutDelta *cutPiTOF1 = new AliRsnCutDelta("cutPionTOF1",AliPID::kPion,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF1 = new AliRsnCutDelta("cutPionTOF1",AliPID::kPion,kFALSE, kTRUE);
    cutPiTOF1->SetTPCNSigmaProton(2.0);
    cutPiTOF1->SetTPCNSigmaPion(3.0);
    cutPiTOF1->SetTOFNSigmaProton(2.0);
@@ -51,7 +51,7 @@ Bool_t ConfigDeltaPPb
    cutSetPiTOF1->SetCutScheme(cutPiTOF1->GetName());
    Int_t iCutPiTOF1 = task->AddTrackCuts(cutSetPiTOF1);
 
-   AliRsnCutDelta *cutPTOF1 = new AliRsnCutDelta("cutProtonTOF1",AliPID::kProton,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF1 = new AliRsnCutDelta("cutProtonTOF1",AliPID::kProton,kFALSE, kTRUE);
    cutPTOF1->SetTPCNSigmaProton(2.0);
    cutPTOF1->SetTPCNSigmaPion(3.0);
    cutPTOF1->SetTOFNSigmaProton(2.0);
@@ -61,7 +61,7 @@ Bool_t ConfigDeltaPPb
    cutSetPTOF1->SetCutScheme(cutPTOF1->GetName());
    Int_t iCutPTOF1 = task->AddTrackCuts(cutSetPTOF1);
 
-   AliRsnCutDelta *cutPiTOF2 = new AliRsnCutDelta("cutPionTOF2",AliPID::kPion,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF2 = new AliRsnCutDelta("cutPionTOF2",AliPID::kPion,kFALSE, kTRUE);
    cutPiTOF2->SetTPCNSigmaProton(3.0);
    cutPiTOF2->SetTPCNSigmaPion(2.0);
    cutPiTOF2->SetTOFNSigmaProton(3.0);
@@ -71,7 +71,7 @@ Bool_t ConfigDeltaPPb
    cutSetPiTOF2->SetCutScheme(cutPiTOF2->GetName());
    Int_t iCutPiTOF2 = task->AddTrackCuts(cutSetPiTOF2);
 
-   AliRsnCutDelta *cutPTOF2 = new AliRsnCutDelta("cutProtonTOF2",AliPID::kProton,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF2 = new AliRsnCutDelta("cutProtonTOF2",AliPID::kProton,kFALSE, kTRUE);
    cutPTOF2->SetTPCNSigmaProton(3.0);
    cutPTOF2->SetTPCNSigmaPion(2.0);
    cutPTOF2->SetTOFNSigmaProton(3.0);
@@ -81,7 +81,7 @@ Bool_t ConfigDeltaPPb
    cutSetPTOF2->SetCutScheme(cutPTOF2->GetName());
    Int_t iCutPTOF2 = task->AddTrackCuts(cutSetPTOF2); 
 
-   AliRsnCutDelta *cutPiTOF3 = new AliRsnCutDelta("cutPionTOF3",AliPID::kPion,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF3 = new AliRsnCutDelta("cutPionTOF3",AliPID::kPion,kFALSE, kTRUE);
    cutPiTOF3->SetTPCNSigmaProton(4.0);
    cutPiTOF3->SetTPCNSigmaPion(3.0);
    cutPiTOF3->SetTOFNSigmaProton(4.0);
@@ -91,7 +91,7 @@ Bool_t ConfigDeltaPPb
    cutSetPiTOF3->SetCutScheme(cutPiTOF3->GetName());
    Int_t iCutPiTOF3 = task->AddTrackCuts(cutSetPiTOF3);
 
-   AliRsnCutDelta *cutPTOF3 = new AliRsnCutDelta("cutProtonTOF3",AliPID::kProton,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF3 = new AliRsnCutDelta("cutProtonTOF3",AliPID::kProton,kFALSE, kTRUE);
    cutPiTOF3->SetTPCNSigmaProton(4.0);
    cutPiTOF3->SetTPCNSigmaPion(3.0);
    cutPiTOF3->SetTOFNSigmaProton(4.0);
@@ -101,7 +101,7 @@ Bool_t ConfigDeltaPPb
    cutSetPTOF3->SetCutScheme(cutPTOF3->GetName());
    Int_t iCutPTOF3 = task->AddTrackCuts(cutSetPTOF3); 
 
-   AliRsnCutDelta *cutPiTOF4 = new AliRsnCutDelta("cutPionTOF4",AliPID::kPion,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF4 = new AliRsnCutDelta("cutPionTOF4",AliPID::kPion,kFALSE, kTRUE);
    cutPiTOF4->SetTPCNSigmaProton(3.0);
    cutPiTOF4->SetTPCNSigmaPion(4.0);
    cutPiTOF4->SetTOFNSigmaProton(3.0);
@@ -111,7 +111,7 @@ Bool_t ConfigDeltaPPb
    cutSetPiTOF4->SetCutScheme(cutPiTOF4->GetName());
    Int_t iCutPiTOF4 = task->AddTrackCuts(cutSetPiTOF4);
 
-   AliRsnCutDelta *cutPTOF4 = new AliRsnCutDelta("cutProtonTOF4",AliPID::kProton,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF4 = new AliRsnCutDelta("cutProtonTOF4",AliPID::kProton,kFALSE, kTRUE);
    cutPTOF4->SetTPCNSigmaProton(3.0);
    cutPTOF4->SetTPCNSigmaPion(4.0);
    cutPTOF4->SetTOFNSigmaProton(3.0);
@@ -121,28 +121,28 @@ Bool_t ConfigDeltaPPb
    cutSetPTOF4->SetCutScheme(cutPTOF4->GetName());
    Int_t iCutPTOF4 = task->AddTrackCuts(cutSetPTOF4);
 
-   AliRsnCutDelta *cutPiTOF5 = new AliRsnCutDelta("cutPionTOF5",AliPID::kPion,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF5 = new AliRsnCutDelta("cutPionTOF5",AliPID::kPion,kFALSE, kTRUE);
    cutPiTOF5->SetTOFMomProton(2.3);
    AliRsnCutSet *cutSetPiTOF5 = new AliRsnCutSet("setPionForDeltaTOF5", AliRsnTarget::kDaughter);
    cutSetPiTOF5->AddCut(cutPiTOF5);
    cutSetPiTOF5->SetCutScheme(cutPiTOF5->GetName());
    Int_t iCutPiTOF5 = task->AddTrackCuts(cutSetPiTOF5);
 
-   AliRsnCutDelta *cutPTOF5 = new AliRsnCutDelta("cutProtonTOF5",AliPID::kProton,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF5 = new AliRsnCutDelta("cutProtonTOF5",AliPID::kProton,kFALSE, kTRUE);
    cutPTOF5->SetTOFMomProton(2.3);
    AliRsnCutSet *cutSetPTOF5 = new AliRsnCutSet("setProtonForDeltaTOF5", AliRsnTarget::kDaughter);
    cutSetPTOF5->AddCut(cutPTOF5);
    cutSetPTOF5->SetCutScheme(cutPTOF5->GetName());
    Int_t iCutPTOF5 = task->AddTrackCuts(cutSetPTOF5);
 
-   AliRsnCutDelta *cutPiTOF6 = new AliRsnCutDelta("cutPionTOF6",AliPID::kPion,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPiTOF6 = new AliRsnCutDelta("cutPionTOF6",AliPID::kPion,kFALSE, kTRUE);
    cutPiTOF6->SetTOFMomProton(2.7);
    AliRsnCutSet *cutSetPiTOF6 = new AliRsnCutSet("setPionForDeltaTOF6", AliRsnTarget::kDaughter);
    cutSetPiTOF6->AddCut(cutPiTOF6);
    cutSetPiTOF6->SetCutScheme(cutPiTOF6->GetName());
    Int_t iCutPiTOF6 = task->AddTrackCuts(cutSetPiTOF6);
 
-   AliRsnCutDelta *cutPTOF6 = new AliRsnCutDelta("cutProtonTOF6",AliPID::kProton,kFALSE, kTRUE, kTRUE);
+   AliRsnCutDelta *cutPTOF6 = new AliRsnCutDelta("cutProtonTOF6",AliPID::kProton,kFALSE, kTRUE);
    cutPTOF6->SetTOFMomProton(2.7);
    AliRsnCutSet *cutSetPTOF6 = new AliRsnCutSet("setProtonForDeltaTOF6", AliRsnTarget::kDaughter);
    cutSetPTOF6->AddCut(cutPTOF6);

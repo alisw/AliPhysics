@@ -20,6 +20,7 @@
 #include <TLorentzVector.h>
 
 #include  "AliJConst.h"
+#include  "AliJHistManager.h"
 
 
 class AliJCard;
@@ -29,55 +30,61 @@ using namespace std;
 class AliJEbeHistos {
 
     public:
+        AliJEbeHistos(); //constructor
         AliJEbeHistos(AliJCard* cardP); //constructor
-        virtual ~AliJEbeHistos(){delete fhistoList;}    //destructor
+        virtual ~AliJEbeHistos();    //destructor
       AliJEbeHistos(const AliJEbeHistos& obj);
       AliJEbeHistos& operator=(const AliJEbeHistos& obj);
 
         // create histograms 
-	void CreateUnfoldingHistos();
-        TList *GetHistoList() { return fhistoList; }
+      void CreateUnfoldingHistos();
+      //TList *GetHistoList() { return fhistoList; }
 
-        void UseDirectory(bool b) { fUseDirectory=b; }
-        bool UseDrectory(){ return fUseDirectory; }
+      void UseDirectory(bool b) { fUseDirectory=b; }
+      bool UseDrectory(){ return fUseDirectory; }
 
-        TDirectory * MakeDirectory(TString name){
-            JumpToDefalutDirectory();
-            TDirectory * dir = gDirectory->GetDirectory(name);
-            if( !dir ) dir = gDirectory->mkdir(name);
-            dir->cd();
-            return dir;
-        }
-        TDirectory * JumpToDefalutDirectory(){
-            fTopDirectory->cd();
-            return gDirectory;
-        }
+      TDirectory * MakeDirectory(TString name){
+          JumpToDefalutDirectory();
+          TDirectory * dir = gDirectory->GetDirectory(name);
+          if( !dir ) dir = gDirectory->mkdir(name);
+          dir->cd();
+          return dir;
+      }
+      TDirectory * JumpToDefalutDirectory(){
+          fTopDirectory->cd();
+          return gDirectory;
+      }
 
     public:
         AliJCard  *fcard; // comment me
         char  fhname[50], fhtit[50]; // comment me
         TString fhtyp[3]; // comment me
 
+        
+        AliJHistManager * fHMG; // Histogram manager
+        AliJBin  fCentBin;
+        AliJBin  fHarmonicBin;
+
 
 		//Unfolding
-		TH1D* fhVnObsVector[kMaxNoCentrBin][kNHarmonics];
-		TH2D* fhResponseDist[kMaxNoCentrBin][kNHarmonics];
-		TH1D* fhMultiCount[kMaxNoCentrBin];
-		TH1D* fhVnObsEP[kMaxNoCentrBin][kNHarmonics];
-		TH1D* fhCosndPhiPt[kMaxNoCentrBin][kNHarmonics];
-		TH1D* fheCosndPhiPt[kMaxNoCentrBin][kNHarmonics];
-		TH1D* fhCounter[kMaxNoCentrBin][kNHarmonics];
-		TH1D* fhEventPlane[kMaxNoCentrBin][kNHarmonics];
-		TH1D *fhEPCosndPhi[kNHarmonics];
-		TH1D *fhEPCosndPhi2[kNHarmonics];
+		AliJTH1D  fhVnObsVector;
+		AliJTH2D  fhResponseDist;
+		AliJTH1D  fhMultiCount;
+		AliJTH1D  fhVnObsEP;
+		AliJTH1D  fhCosndPhiPt;
+		AliJTH1D  fheCosndPhiPt;
+		AliJTH1D  fhCounter;
+		AliJTH1D  fhEventPlane;
+		AliJTH1D  fhEPCosndPhi;
+		AliJTH1D  fhEPCosndPhi2;
 
-		TH1D *fhQvectorV0[kMaxNoCentrBin][kNHarmonics];
-		TH1D *fhQvectorV0A[kMaxNoCentrBin][kNHarmonics];
-		TH1D *fhQvectorV0C[kMaxNoCentrBin][kNHarmonics];
-		TH2D *fhQvectorCorrelation[kMaxNoCentrBin][kNHarmonics];
-		TH2D *fhVnObsVsQvectorCorrelation[kMaxNoCentrBin][kNHarmonics];
+		AliJTH1D  fhQvectorV0;
+		AliJTH1D  fhQvectorV0A;
+		AliJTH1D  fhQvectorV0C;
+		AliJTH2D  fhQvectorCorrelation;
+		AliJTH2D  fhVnObsVsQvectorCorrelation;
 
-		TH1D *fhResolution[kMaxNoCentrBin][kNHarmonics];
+		AliJTH1D  fhResolution;
 		
 
 
@@ -86,7 +93,7 @@ class AliJEbeHistos {
 		double fmaxTriggEtaRange;                  // should be the same as above. Use for GeoAccCorr
 		double ftriggFiducCut;                     // fiducial cut for the trigger part in eta. Not in use I think (Jan) 
 
-		TList *fhistoList; // comment me
+		//TList *fhistoList; // comment me
 		bool   fUseDirectory;
 		TDirectory * fTopDirectory;
 

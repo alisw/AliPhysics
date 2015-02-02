@@ -116,7 +116,7 @@ void AddTask_PhotonQA(	TString V0ReaderEventCutNumber 	= "0000000",
 	fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
 	fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
 	fQA->FillType(kTree,kHistograms);
-	fQA->SetisMC(isMC);
+	fQA->SetIsMC(isMC);
 	mgr->AddTask(fQA);
 
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();

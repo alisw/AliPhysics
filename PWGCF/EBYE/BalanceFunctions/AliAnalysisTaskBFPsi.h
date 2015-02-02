@@ -232,6 +232,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
 
+  TH2F *fHistMixEvents; //number of events that is mixed with in the current pool
+  TH2F *fHistMixTracks; //number of tracks that is mixed with in the current pool
+
   TH2F *fHistTPCvsVZEROMultiplicity; //VZERO vs TPC reference multiplicity
   TH2F *fHistVZEROSignal; //VZERO channel vs signal
 

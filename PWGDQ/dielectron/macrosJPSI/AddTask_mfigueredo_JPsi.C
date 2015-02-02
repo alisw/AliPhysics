@@ -27,7 +27,7 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
   if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/mfiguere/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C ."))
     configFile=Form("%s/ConfigJpsi_mf_PbPb.C",gSystem->pwd());                        // alien config                                                                                            
   else
-    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C"; // aliroot config                                               
+    configFile="$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mf_PbPb.C"; // aliroot config                                               
   
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 

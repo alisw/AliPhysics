@@ -35,7 +35,7 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="",
     configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());                        // alien config
 
   if(!gridconf)
-    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
+    configFile="$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task;

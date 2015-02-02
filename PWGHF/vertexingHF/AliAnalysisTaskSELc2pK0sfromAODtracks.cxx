@@ -507,6 +507,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
   fCandidateVariables[13] = fVtx1->GetZ();
   fCandidateVariables[14] = fCentrality;
   fCandidateVariables[15] = lcobj->DecayLengthXY();
+  fCandidateVariables[16] = (Float_t) fAnalCuts->CalculateLcCosPAXY(lcobj);
 
   Double_t nSigmaTPCpr=-9999.;
   Double_t nSigmaTOFpr=-9999.;
@@ -518,9 +519,9 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
 			if(fAnalCuts->GetPidHF()->GetUseCombined()){
 				probProton = fAnalCuts->GetProtonProbabilityTPCTOF(trk);
 			}
-      fCandidateVariables[16] = nSigmaTPCpr;
-      fCandidateVariables[17] = nSigmaTOFpr;
-      fCandidateVariables[18] = probProton;
+      fCandidateVariables[17] = nSigmaTPCpr;
+      fCandidateVariables[18] = nSigmaTOFpr;
+      fCandidateVariables[19] = probProton;
     }
 
   if(fWriteVariableTree)
@@ -540,7 +541,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
       fHistod0d0->Fill(lcobj->Getd0Prong(0)*lcobj->Getd0Prong(1));
       fHistoV0CosPA->Fill(lcobj->CosV0PointingAngle());
       fHistoProbProton->Fill(probProton);
-      fHistoDecayLength->Fill(lcobj->DecayLengthXY());
+      fHistoDecayLength->Fill(lcobj->DecayLengthXY()*(fAnalCuts->CalculateLcCosPAXY(lcobj)));
       fHistoK0SMass->Fill(v0->MassK0Short());
 	  }
   }
@@ -556,7 +557,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 19;
+  Int_t nVar = 20;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -576,9 +577,10 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[13]="PrimVertz";
   fCandidateVariableNames[14]="Centrality";
   fCandidateVariableNames[15]="DecayLengthXY";
-  fCandidateVariableNames[16]="nSigmaTPCpr";
-  fCandidateVariableNames[17]="nSigmaTOFpr";
-  fCandidateVariableNames[18]="probProton";
+  fCandidateVariableNames[16]="LcCosPAXY";
+  fCandidateVariableNames[17]="nSigmaTPCpr";
+  fCandidateVariableNames[18]="nSigmaTOFpr";
+  fCandidateVariableNames[19]="probProton";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));

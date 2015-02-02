@@ -34,7 +34,9 @@ AliReducedJetParticle::AliReducedJetParticle() :
 	fE(0),
 	fDr(0),
 	fPdgCode(0),
-	fIsReconstructed(false)
+	fIsReconstructed(false),
+	fDeltaPt(0),
+	fNumberOfClustersTPC(0)
 {
 }
 
@@ -46,7 +48,9 @@ AliReducedJetParticle::AliReducedJetParticle(double px, double py, double pz, do
 	fE(e),
 	fDr(0),
 	fPdgCode(pdgcode),
-	fIsReconstructed(rec)
+	fIsReconstructed(rec),
+	fDeltaPt(0),
+	fNumberOfClustersTPC(0)
 {
 }
 

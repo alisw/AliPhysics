@@ -353,41 +353,41 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   //------------------------------------------------
   // MC analysis setting
   //------------------------------------------------
-  //  TClonesArray *mcArray = 0;
-  //  AliAODMCHeader *mcHeader=0;
-  //  if (fUseMCInfo) {
-  //    // MC array need for maching
-  //    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  //    if (!mcArray) {
-  //      AliError("Could not find Monte-Carlo in AOD");
-  //      delete fV1;
-  //      return;
-  //    }
-  //    fCEvents->Fill(6); // in case of MC events
-  //    
-  //    // load MC header
-  //    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  //    if (!mcHeader) {
-  //      AliError("AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec: MC header branch not found!\n");
-  //      delete fV1;
-  //      return;
-  //    }
-  //    fCEvents->Fill(7); // in case of MC events
-  //    
-  //    Double_t zMCVertex = mcHeader->GetVtxZ();
-  //    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
-  //      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
-  //      delete fV1;
-  //      return;
-  //    } else {
-  //      fCEvents->Fill(17); // in case of MC events
-  //    }
-  //  }
+  TClonesArray *mcArray = 0;
+  AliAODMCHeader *mcHeader=0;
+  if (fUseMCInfo) {
+    // MC array need for maching
+    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!mcArray) {
+      AliError("Could not find Monte-Carlo in AOD");
+      delete fV1;
+      return;
+    }
+    fCEvents->Fill(6); // in case of MC events
+    
+    // load MC header
+    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!mcHeader) {
+      AliError("AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec: MC header branch not found!\n");
+      delete fV1;
+      return;
+    }
+    fCEvents->Fill(7); // in case of MC events
+    
+    Double_t zMCVertex = mcHeader->GetVtxZ();
+    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
+      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
+      delete fV1;
+      return;
+    } else {
+      fCEvents->Fill(17); // in case of MC events
+    }
+  }
   
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
-  MakeAnalysis(aodEvent);
+  MakeAnalysis(aodEvent, mcArray);
   
   PostData(1,fOutput);
   if(fWriteVariableTree){
@@ -465,7 +465,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 (
- AliAODEvent *aodEvent
+ AliAODEvent *aodEvent, TClonesArray *mcArray
  )
 {
   //
@@ -490,6 +490,13 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
   Bool_t  seleCascFlags[nCascades];
   Int_t     nSeleCasc=0;
   SelectCascade(aodEvent,nCascades,nSeleCasc,seleCascFlags);
+
+	Int_t usedmclab[20];//Used Xic Label: Assuming there are less than 20 Xic/evt
+	Int_t nusedmclab[20];//Number of times the Xic label is used: Assuming there are less than 20 Xic/evt
+	for(Int_t i=0;i<20;i++) {
+		usedmclab[i]=-9999;
+		nusedmclab[i]=0;
+	}
   
   //------------------------------------------------
   // Cascade loop 
@@ -561,8 +568,43 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	  delete secVert;
 	  continue;
 	}
+	AliAODMCParticle *mcxic = 0;
+	AliAODMCParticle *mcdaughter1 = 0;
+	AliAODMCParticle *mcdaughter2 = 0;
+	Int_t mclabxic = 0;
+	Int_t nmclabxic = 0;
+	if(fUseMCInfo)
+	{
+		Int_t pdgDg[3]={211,3312,211};
+		Int_t pdgDgcasc[2]={211,3122};
+		Int_t pdgDgv0[2]={2212,211};
+		mclabxic = xicobj->MatchToMC(4232,pdgDg[1],pdgDg,pdgDgcasc,pdgDgv0,mcArray);
+		if(mclabxic>-1){
+			mcxic = (AliAODMCParticle*) mcArray->At(mclabxic);
+			for(Int_t ia=0;ia<20;ia++){
+				if(usedmclab[ia]==mclabxic){
+					nusedmclab[ia]++;
+					nmclabxic = nusedmclab[ia];
+					break;
+				}
+				if(usedmclab[ia]==-9999){
+					usedmclab[ia]=mclabxic;
+					nusedmclab[ia]++;
+					nmclabxic = nusedmclab[ia];
+					break;
+				}
+			}
 
-	FillROOTObjects(xicobj);
+			Int_t mcdaughterlabel1 = mcxic->GetDaughter(0);
+			if(mcdaughterlabel1>=0)
+				mcdaughter1=(AliAODMCParticle*) mcArray->At(mcdaughterlabel1);
+			Int_t mcdaughterlabel2 = mcxic->GetDaughter(1);
+			if(mcdaughterlabel2>=0)
+				mcdaughter2=(AliAODMCParticle*) mcArray->At(mcdaughterlabel2);
+		}
+	}
+
+	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,nmclabxic);
 
 	xicobj->GetSecondaryVtx()->RemoveDaughters();
 	xicobj->UnsetOwnPrimaryVtx();
@@ -575,7 +617,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj) 
+void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, Int_t mcnused) 
 {
   //
   // Fill histogram or Tree depending on fWriteVariableTree flag
@@ -659,6 +701,37 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[46] = probPion1;
       fCandidateVariables[47] = probPion2;
     }
+	fCandidateVariables[48] = -9999;
+	fCandidateVariables[49] = -9999;
+	fCandidateVariables[50] = -9999;
+	fCandidateVariables[51] = -9999;
+	fCandidateVariables[52] = -9999;
+	fCandidateVariables[53] = -9999;
+	fCandidateVariables[54] = -9999;
+	if(fUseMCInfo){
+		if(mcpart){
+			fCandidateVariables[48] = mcpart->Label();
+			fCandidateVariables[49] = mcnused;
+			fCandidateVariables[50] = mcpart->GetPdgCode();
+			Double_t mcprimvertx = mcpart->Xv();
+			Double_t mcprimverty = mcpart->Yv();
+			Double_t mcsecvertx = mcdaughter1->Xv();
+			Double_t mcsecverty = mcdaughter1->Yv();
+			Double_t recosecvertx = xicobj->GetSecondaryVtx()->GetX();
+			Double_t recosecverty = xicobj->GetSecondaryVtx()->GetY();
+			fCandidateVariables[51] = TMath::Sqrt((mcsecvertx-mcprimvertx)*(mcsecvertx-mcprimvertx)+(mcsecverty-mcprimverty)*(mcsecverty-mcprimverty));
+			fCandidateVariables[52] = TMath::Sqrt((recosecvertx-mcprimvertx)*(recosecvertx-mcprimvertx)+(recosecverty-mcprimverty)*(recosecverty-mcprimverty));
+			Double_t vecx_vert = recosecvertx-mcprimvertx;
+			Double_t vecy_vert = recosecverty-mcprimverty;
+			Double_t vecl_vert = TMath::Sqrt(vecx_vert*vecx_vert+vecy_vert*vecy_vert);
+			Double_t vecx_mom = xicobj->Px();
+			Double_t vecy_mom = xicobj->Py();
+			Double_t vecl_mom = xicobj->Pt();
+			if(vecl_vert>0.&&vecl_mom>0.)
+				fCandidateVariables[53] = (vecx_vert*vecx_mom+vecy_vert*vecy_mom)/vecl_vert/vecl_mom;
+			fCandidateVariables[54] = mcpart->Pt();
+		}
+	}
 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
@@ -710,7 +783,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 48;
+  Int_t nVar = 55;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -768,6 +841,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[45]="nSigmaTOFpi2";
   fCandidateVariableNames[46]="probPion1";
   fCandidateVariableNames[47]="probPion2";
+
+  fCandidateVariableNames[48]="mcxicID";
+  fCandidateVariableNames[49]="mcnused";
+  fCandidateVariableNames[50]="mcpdgcode";
+  fCandidateVariableNames[51]="mcdecaylength";
+  fCandidateVariableNames[52]="mcdecaylength_secsmear";
+  fCandidateVariableNames[53]="mcxiccospaxy";
+  fCandidateVariableNames[54]="mcxicpt";
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {

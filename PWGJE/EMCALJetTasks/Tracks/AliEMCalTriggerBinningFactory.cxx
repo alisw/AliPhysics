@@ -59,6 +59,10 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
     CreateDefaultZVertexBinning(binLimits);
     data->SetBinning("zvertex", binLimits);
   }
+  if(!data->GetBinning("centrality")){
+	CreateLinearBinning(binLimits, 50, 0., 100.);
+	data->SetBinning("centrality", binLimits);
+  }
 }
 
 //______________________________________________________________________________

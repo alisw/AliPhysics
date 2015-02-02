@@ -14,7 +14,7 @@ AliAnalysisTask *AddTask_mwinn_JPsiMCcontrol(){
   TString trainConfig=gSystem->Getenv("CONFIG_FILE");
   
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pPb_MC.C");
+  TString configFile("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_mw_pPb_MC.C");
   //TString configFile("$TRAIN_ROOT/jpsi_JPSI/ConfigJpsiStandard.C");
   if ( trainConfig.Contains("PbPb") ) configFile="$TRAIN_ROOT/jpsi_JPSI/ConfigJpsi2eePbPb.C";
   
