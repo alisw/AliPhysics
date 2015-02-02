@@ -1152,7 +1152,7 @@ if(!fOnlyZEM){
     tubspar[3] = 90.;
     tubspar[4] = 270.;  
     TVirtualMC::GetMC()->Gsvolu("QTD4", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD4", 1, "Q13TM", -3.8-offset-5.5, 0., zjaw11+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTD4", 1, "Q13TM", -3.8-offset-5.5, 0., zjaw11+tubspar[2], 0, "ONLY");
     //
     tubspar[0] = 6.0;
     tubspar[1] = 6.2;
@@ -1160,7 +1160,7 @@ if(!fOnlyZEM){
     tubspar[3] = -90.;
     tubspar[4] = 90.;  
     TVirtualMC::GetMC()->Gsvolu("QTD5", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD5", 1, "Q13TM", -3.8-offset+5.5, 0., zjaw11+boxpar[2], 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("QTD5", 1, "Q13TM", -3.8-offset+5.5, 0., zjaw11+tubspar[2], 0, "ONLY"); 
     // 1st jaw / 2nd section
     tubspar[0] = 6.0;
     tubspar[1] = 6.2;
@@ -1168,14 +1168,14 @@ if(!fOnlyZEM){
     tubspar[3] = 90.;
     tubspar[4] = 270.;  
     TVirtualMC::GetMC()->Gsvolu("QTD6", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD6", 1, "Q13TM", -3.8-offset-5.5, 0., zjaw12+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTD6", 1, "Q13TM", -3.8-offset-5.5, 0., zjaw12+tubspar[2], 0, "ONLY");
     tubspar[0] = 12.0/2.;
     tubspar[1] = 12.4/2.;
     tubspar[2] = 78.0/2.;
     tubspar[3] = -90.;
     tubspar[4] = 90.;  
     TVirtualMC::GetMC()->Gsvolu("QTD7", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD7", 1, "Q13TM", -3.8-offset+5.5, 0., zjaw12+boxpar[2], 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("QTD7", 1, "Q13TM", -3.8-offset+5.5, 0., zjaw12+tubspar[2], 0, "ONLY"); 
     //
     // 2nd jaw 
     tubspar[0] = 6.0;
@@ -1184,14 +1184,14 @@ if(!fOnlyZEM){
     tubspar[3] = 90.;
     tubspar[4] = 270.;  
     TVirtualMC::GetMC()->Gsvolu("QTD8", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD8", 1, "Q13TM", -3.8-5.5, 0., zjaw2+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTD8", 1, "Q13TM", -3.8-5.5, 0., zjaw2+tubspar[2], 0, "ONLY");
     tubspar[0] = 12.0/2.;
     tubspar[1] = 12.4/2.;
     tubspar[2] = 170.0/2.;
     tubspar[3] = -90.;
     tubspar[4] = 90.;  
     TVirtualMC::GetMC()->Gsvolu("QTD9", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD9", 1, "Q13TM", -3.8+5.5, 0., zjaw2+boxpar[2], 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("QTD9", 1, "Q13TM", -3.8+5.5, 0., zjaw2+tubspar[2], 0, "ONLY"); 
     //
     // 3rd jaw 
     tubspar[0] = 6.0;
@@ -1200,14 +1200,14 @@ if(!fOnlyZEM){
     tubspar[3] = 90.;
     tubspar[4] = 270.;  
     TVirtualMC::GetMC()->Gsvolu("QTD10", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD10", 1, "Q13TM", -3.8-5.5, 0., zjaw3+boxpar[2], 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QTD10", 1, "Q13TM", -3.8-5.5, 0., zjaw3+tubspar[2], 0, "ONLY");
     tubspar[0] = 12.0/2.;
     tubspar[1] = 12.4/2.;
     tubspar[2] = 170.0/2.;
     tubspar[3] = -90.;
     tubspar[4] = 90.;  
     TVirtualMC::GetMC()->Gsvolu("QTD11", "TUBS", idtmed[6], tubspar, 5);
-    TVirtualMC::GetMC()->Gspos("QTD11", 1, "Q13TM", -3.8+5.5, 0., zjaw3+boxpar[2], 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("QTD11", 1, "Q13TM", -3.8+5.5, 0., zjaw3+tubspar[2], 0, "ONLY"); 
   }
   else if (fTDIConfiguration==2){ // 6 murad at TDI (as for RUN1, only TDI geometry is different!)
     // -> ~elliptic screen definitions + horizontal plates (5 cm)
