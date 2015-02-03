@@ -20,7 +20,8 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/${MODULE}
                    )
 
 # Additional include folders in alphabetical order
-include_directories(${AliRoot_SOURCE_DIR}
+include_directories(${ROOT_INCLUDE_DIR}
+                              ${AliRoot_SOURCE_DIR}
                    )
 
 if(DATE_FOUND)

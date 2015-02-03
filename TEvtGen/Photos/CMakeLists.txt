@@ -20,7 +20,7 @@ set (MODULE Photos)
 include_directories(${AliRoot_SOURCE_DIR}/TEvtGen/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/TEvtGen
                     ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/photosCInterfaces
                     ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/utilities

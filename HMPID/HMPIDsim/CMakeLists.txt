@@ -20,7 +20,7 @@ set(MODULE HMPIDsim)
 include_directories(${AliRoot_SOURCE_DIR}/HMPID/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/HMPID/HMPIDbase
                     ${AliRoot_SOURCE_DIR}/HMPID/HMPIDrec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase

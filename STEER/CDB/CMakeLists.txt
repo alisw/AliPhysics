@@ -20,7 +20,7 @@ set(MODULE CDB)
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${CMAKE_BINARY_DIR}/version/
                    )

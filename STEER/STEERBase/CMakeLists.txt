@@ -20,7 +20,7 @@ set (MODULE STEERBase)
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_BINARY_DIR}/version
                    )
 

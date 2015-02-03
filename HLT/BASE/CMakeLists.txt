@@ -24,7 +24,8 @@ add_subdirectory(util)
 set(MODULE HLTbase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
+include_directories(${ROOT_INCLUDE_DIR}
+                              ${AliRoot_SOURCE_DIR}/HLT/BASE
                    )
 
 # Additional include folders in alphabetical order except ROOT

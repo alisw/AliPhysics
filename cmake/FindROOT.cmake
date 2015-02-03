@@ -254,7 +254,7 @@ if(ROOTSYS)
 
     # adding the libraries and the inc dir
     link_directories(${ROOT_LIBDIR})
-    include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+#    include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
     set(ROOT_FOUND TRUE)
 
     # Workaround misssing XML, VMC, Minuit from ROOT static library

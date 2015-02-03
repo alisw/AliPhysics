@@ -20,7 +20,7 @@ set(MODULE STAT)
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional include directories in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 # Sources in alphabetical order
