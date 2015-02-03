@@ -1961,7 +1961,7 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   AliRawVEvent *event = NULL;
   currTree->SetBranchAddress("rawevent",&event);
   currTree->GetEntry(entry);
-  fRawReader = new AliRawReaderRoot(event);
+  fRawReader = new AliRawReaderRoot(event,entry);
   // check if process has enough resources 
   if (!HasEnoughResources(entry)) return kFALSE;
   fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());
@@ -1969,6 +1969,8 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   fRawReader = NULL;
   delete event;
 
+  if (!fStatus) Abort("ProcessEvent",TSelector::kAbortFile);  
+  CleanProcessedEvent();
   return fStatus;
 }
 
