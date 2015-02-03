@@ -159,10 +159,12 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
 
 // _______________________________________________________________________________________________________
 Bool_t AliFlatESDTrack::GetXYZ(Double_t *p) const {
+  //return the global track position
   const AliFlatExternalTrackParam *f = GetFlatTrackParam();
   if (!f) { return kFALSE; }
+
   p[0]=f->GetX();
   p[1]=f->GetY();
   p[2]=f->GetZ();
-  return kTRUE;
+  return Local2GlobalPosition(p,f->GetAlpha());
 }
