@@ -86,13 +86,13 @@ class AliCalorimeterUtils : public TObject {
   AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo             ; }
   TString       EMCALGeometryName()                  const { return fEMCALGeoName         ; }  
   void          SetEMCALGeometryName(TString name)         { fEMCALGeoName = name         ; }
-  void          InitEMCALGeometry(Int_t runnumber = 180000) ; 
+  void          InitEMCALGeometry() ;
   Bool_t        IsEMCALGeoMatrixSet()                const { return fEMCALGeoMatrixSet    ; }
 	
   AliPHOSGeoUtils * GetPHOSGeometry()                const { return fPHOSGeo              ; }	
   TString       PHOSGeometryName()                   const { return fPHOSGeoName          ; }  
   void          SetPHOSGeometryName(TString name)          { fPHOSGeoName = name          ; }
-  void          InitPHOSGeometry(Int_t runnumber = 180000) ; 
+  void          InitPHOSGeometry() ;
   Bool_t        IsPHOSGeoMatrixSet()                 const { return fPHOSGeoMatrixSet     ; }
 
   void          AccessGeometry(AliVEvent* inputEvent) ;
@@ -307,8 +307,14 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALOADBFilePath(TString path)              { fOADBFilePathEMCAL  = path    ; }
   void          SetPHOSOADBFilePath (TString path)              { fOADBFilePathPHOS   = path    ; }
 
+  // Other settings
+  
   void          SetNumberOfSuperModulesUsed(Int_t nSM)          { fNSuperModulesUsed  = nSM     ; }
   Int_t         GetNumberOfSuperModulesUsed()             const { return fNSuperModulesUsed     ; }
+
+  void          SetRunNumber(Int_t run)                         { fRunNumber  = run             ; }
+  Int_t         GetRunNumber()                            const { return fRunNumber             ; }
+
   
   enum detector { kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
   
@@ -354,14 +360,16 @@ class AliCalorimeterUtils : public TObject {
 
   Int_t              fNSuperModulesUsed;     // Number of supermodules to be used in analysis, can be different than the real geo,
                                              // to be used at initialization of histograms
+  Int_t              fRunNumber;             // Run number of the data, take it from data itself unless set by user
 
   Bool_t             fMCECellClusFracCorrOn; // Correct or not the weight of cells in cluster
   Float_t            fMCECellClusFracCorrParam[4]; // Parameters for the function correcting the weight of the cells in the cluster
   
+  
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,17)
+  ClassDef(AliCalorimeterUtils,18)
 } ;
 
 
