@@ -1,33 +1,25 @@
-/*
-TPC DA for online calibration
-
-Contact: Haavard.Helstrup@cern.ch
-Link: 
-Run Type: PHYSICS STANDALONE DAQ
-DA Type: MON
-Number of events needed: 500
-Input Files: 
-Output Files: tpcCE.root, to be exported to the DAQ FXS
-fileId:   CEnew
-Trigger types used: PHYSICS_EVENT
-
-*/
-
-/*
-
-TPCCEda.cxx - calibration algorithm for TPC Central Electrode events
-
-10/06/2007  sylvain.chapeland@cern.ch :  first version - clean skeleton based on DAQ DA case1
-06/12/2007  haavard.helstrup@cern.ch  :  created CE DA based on pulser code
-19/09/2008  J.Wiechula@gsi.de:           Added support for configuration files.
-
-contact: marian.ivanov@cern.ch
-
-
-This process reads RAW data from the files provided as command line arguments
-and save results in a file (named from RESULT_FILE define - see below).
-
-*/
+/// \class TPCCEnewda
+/// \brief TPC DA for online calibration
+///
+/// Link:
+/// Run Type: PHYSICS STANDALONE DAQ
+/// DA Type: MON
+/// Number of events needed: 500
+/// Input Files:
+/// Output Files: tpcCE.root, to be exported to the DAQ FXS
+/// fileId:   CEnew
+/// Trigger types used: PHYSICS_EVENT
+///
+/// TPCCEda.cxx - calibration algorithm for TPC Central Electrode events
+///
+/// 10/06/2007  sylvain.chapeland@cern.ch :  first version - clean skeleton based on DAQ DA case1
+/// 06/12/2007  haavard.helstrup@cern.ch  :  created CE DA based on pulser code
+/// 19/09/2008  J.Wiechula@gsi.de:           Added support for configuration files.
+///
+/// This process reads RAW data from the files provided as command line arguments
+/// and save results in a file (named from RESULT_FILE define - see below).
+///
+/// \author marian.ivanov@cern.ch
 
 #define RESULT_FILE "tpcCEnew.root"
 #define FILE_ID "CEnew"
@@ -83,11 +75,11 @@ void SendToAmoreDB(AliTPCCalibCE &calibCE, unsigned long32 runNb);
 //for threaded processing
 
 
-/* Main routine
-      Arguments: list of DATE raw data files
-*/
 int main(int argc, char **argv) {
-  /* log start of process */
+  /// Main routine
+  /// Arguments: list of DATE raw data files
+
+  // log start of process
   printf("TPCCEda: DA started - %s\n",__FILE__);
   
   if (argc<2) {

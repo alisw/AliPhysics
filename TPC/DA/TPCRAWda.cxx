@@ -1,31 +1,25 @@
-/*
-TPC DA for online calibration
-
-Contact: Jens.Wiechula@cern.ch
-Link:
-Run Type: PHYSICS STANDALONE
-DA Type: MON
-Number of events needed: 200
-Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
-Output Files: tpcCalibRaw.root, to be exported to the DAQ FXS
-fileId:   tpcCalibRaw
-Trigger types used: PHYSICS_EVENT
-
-*/
-
-/*
-
-TPCRAWda.cxx - calibration algorithm for L1 phase monitoring and drift velocity from last time bin determination
-
-30/07/2009  Jens.Wiechula@cern.ch:     First implementation.
-10/09/2009  Jens.Wiechula@cern.ch:     Add configuration file support. Export object to AMOREdb
-                                       after a defined update interval for QA
-26/01/2010  Jens.Wiechula@cern.ch:     Exclude laser triggers when running in a global partition
-
-This process reads RAW data from the files provided as command line arguments
-and save results in a file (named from RESULT_FILE define - see below).
-
-*/
+/// \file TPCRAWda.cxx
+/// \brief calibration algorithm for L1 phase monitoring and drift velocity from last time bin determination
+/// 
+/// TPC DA for online calibration
+/// 
+/// Contact: Jens.Wiechula@cern.ch
+/// Link:
+/// Run Type: PHYSICS STANDALONE
+/// DA Type: MON
+/// Number of events needed: 200
+/// Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
+/// Output Files: tpcCalibRaw.root, to be exported to the DAQ FXS
+/// fileId:   tpcCalibRaw
+/// Trigger types used: PHYSICS_EVENT
+/// 
+/// 30/07/2009  Jens.Wiechula@cern.ch:     First implementation.
+/// 10/09/2009  Jens.Wiechula@cern.ch:     Add configuration file support. Export object to AMOREdb
+///                                        after a defined update interval for QA
+/// 26/01/2010  Jens.Wiechula@cern.ch:     Exclude laser triggers when running in a global partition
+/// 
+/// This process reads RAW data from the files provided as command line arguments
+/// and save results in a file (named from RESULT_FILE define - see below).
 
 #define RESULT_FILE "tpcCalibRaw.root"
 #define FILE_ID "tpcCalibRaw"
@@ -79,11 +73,11 @@ and save results in a file (named from RESULT_FILE define - see below).
 //functions, implementation below
 void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
-/* Main routine
-      Arguments: list of DATE raw data files
-*/
 int main(int argc, char **argv) {
-  /* log start of process */
+  /// Main routine
+  /// Arguments: list of DATE raw data files
+
+  // log start of process
   printf("TPCRAWda: DA started - %s\n",__FILE__);
 
   if (argc<2) {

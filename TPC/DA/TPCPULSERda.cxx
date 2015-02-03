@@ -1,37 +1,30 @@
-/*
-TPC DA for online calibration
-
-Contact: Haavard.Helstrup@cern.ch
-Link:
-Run Type: CALIBRATION_PULSER
-DA Type: LDC
-Number of events needed: 100
-Input Files: 
-Output Files: tpcPulser.root, to be exported to the DAQ FXS
-fileId:   pulser
-Trigger types used: CALIBRATION_EVENT
-
-*/
-
-/*
-
-TPCda_pulser.cxx - calibration algorithm for TPC pulser events
-
-10/06/2007  sylvain.chapeland@cern.ch  :  first version - clean skeleton based on DAQ DA case1
-30/09/2007  haavard.helstrup@cern.ch   :  created pulser DA based on pedestal code
-19/09/2008  J.Wiechula@gsi.de:            Added export of the calibration data to the AMORE data base.
-                                          Added support for configuration files.
-23/04/2011  Christian.Lippmann@cern.ch :  Added output of acsii files for online
-26/09/2014  Christian.Lippmann@cern.ch :  CHange for new DAQ setup with one CRORC per LDC
-26/09/2014  Jens.Wiechula@cern.ch      :  comment out obsolete AliTPCRawStream
-
- contact: marian.ivanov@cern.ch
-
-
-This process reads RAW data from the files provided as command line arguments
-and save results in a file (named from RESULT_FILE define - see below).
-
-*/
+/// \file TPCPULSERda.cxx
+/// \brief TPC DA for online calibration
+/// 
+/// Contact: Haavard.Helstrup@cern.ch
+/// Link:
+/// Run Type: CALIBRATION_PULSER
+/// DA Type: LDC
+/// Number of events needed: 100
+/// Input Files: 
+/// Output Files: tpcPulser.root, to be exported to the DAQ FXS
+/// fileId:   pulser
+/// Trigger types used: CALIBRATION_EVENT
+/// 
+/// TPCda_pulser.cxx - calibration algorithm for TPC pulser events
+/// 
+/// 10/06/2007  sylvain.chapeland@cern.ch  :  first version - clean skeleton based on DAQ DA case1
+/// 30/09/2007  haavard.helstrup@cern.ch   :  created pulser DA based on pedestal code
+/// 19/09/2008  J.Wiechula@gsi.de:            Added export of the calibration data to the AMORE data base.
+///                                           Added support for configuration files.
+/// 23/04/2011  Christian.Lippmann@cern.ch :  Added output of acsii files for online
+/// 26/09/2014  Christian.Lippmann@cern.ch :  CHange for new DAQ setup with one CRORC per LDC
+/// 26/09/2014  Jens.Wiechula@cern.ch      :  comment out obsolete AliTPCRawStream
+/// 
+/// \author marian.ivanov@cern.ch
+/// 
+/// This process reads RAW data from the files provided as command line arguments
+/// and save results in a file (named from RESULT_FILE define - see below).
 
 #define RESULT_FILE "tpcPulser.root"
 #define FILE_ID "pulser"
@@ -49,9 +42,8 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include <stdlib.h>
 #include <fstream>
 
-//
-//Root includes
-//
+// Root includes
+
 #include <TFile.h>
 #include "TROOT.h"
 #include "TPluginManager.h"
@@ -82,11 +74,11 @@ and save results in a file (named from RESULT_FILE define - see below).
 //
 #include "AliTPCCalibPulser.h"
 
-/* Main routine
-      Arguments: list of DATE raw data files
-*/
 int main(int argc, char **argv) {
-  /* log start of process */
+  /// Main routine
+  /// Arguments: list of DATE raw data files
+
+  // log start of process
   printf("TPC Pulser DA started - %s\n",__FILE__);
 
   if (argc<2) {
