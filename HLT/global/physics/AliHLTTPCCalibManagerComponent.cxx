@@ -23,6 +23,7 @@
 #include "TMap.h"
 #include "TSystem.h"
 #include "TTimeStamp.h"
+#include "TStopwatch.h"
 #include "TObjString.h"
 #include "TH1F.h"
 #include "TList.h"
@@ -152,8 +153,8 @@ AliHLTComponentDataType AliHLTTPCCalibManagerComponent::GetOutputDataType() {
 // #################################################################################
 void AliHLTTPCCalibManagerComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 100000;
-  inputMultiplier = 0.5;
+  constBase = 150000; //fixed size output objects
+  inputMultiplier = 0; //do not scale with the input size
 }
 
 // #################################################################################
