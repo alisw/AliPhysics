@@ -20,7 +20,7 @@ set(MODULE AliHLTPHOS)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/PHOS)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HLT/BASE

@@ -20,7 +20,7 @@ set(MODULE AMPT)
 include_directories(${AliRoot_SOURCE_DIR}/TAmpt/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order

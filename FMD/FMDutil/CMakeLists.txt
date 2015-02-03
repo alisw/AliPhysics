@@ -20,7 +20,7 @@ set(MODULE FMDutil)
 include_directories(${AliRoot_SOURCE_DIR}/FMD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/FMD/FMDbase
                     ${AliRoot_SOURCE_DIR}/FMD/FMDrec
                     ${AliRoot_SOURCE_DIR}/FMD/FMDsim

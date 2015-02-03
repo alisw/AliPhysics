@@ -23,7 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf5.5.1
                    )
 
 # Additional include folders in alphabetical order
-include_directories(
+include_directories(${ROOT_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order

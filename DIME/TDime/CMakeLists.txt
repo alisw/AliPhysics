@@ -20,7 +20,7 @@ set (MODULE TDime)
 include_directories(${AliRoot_SOURCE_DIR}/DIME/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${ROOT_INCLUDE_DIR})
 
 # Sources - alphabetical order
 set(SRCS
