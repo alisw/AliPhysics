@@ -55,7 +55,37 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQAINT7_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
   mgr->ConnectInput(hfecalqa7, 0, cinput);
   mgr->ConnectOutput(hfecalqa7, 1, coutput1); 
+ 
+  // EMCal L0
+  // + kEMC7
+  AliAnalysisTaskHFEemcQA *hfecalqaL07 = new AliAnalysisTaskHFEemcQA("emcqa");
+  mgr->AddTask(hfecalqaL07);
+  hfecalqaL07->SelectCollisionCandidates(AliVEvent::kEMC7);
+  hfecalqaL07->SetElecIDsparse(FillElecSparse);
+  hfecalqaL07->SetTenderSwitch(UseTender);
   
+  TString containerNameL07 = mgr->GetCommonFileName();
+  containerNameL07 += ":PWGHF_hfeHFEemcQAEMC7";
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQAEMC7_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerNameL07.Data());
+  mgr->ConnectInput(hfecalqaL07, 0, cinput);
+  mgr->ConnectOutput(hfecalqaL07, 1, coutput1); 
+
+  // + kEMC8
+  AliAnalysisTaskHFEemcQA *hfecalqaL08 = new AliAnalysisTaskHFEemcQA("emcqa");
+  mgr->AddTask(hfecalqaL08);
+  hfecalqaL08->SelectCollisionCandidates(AliVEvent::kEMC8);
+  hfecalqaL08->SetElecIDsparse(FillElecSparse);
+  hfecalqaL08->SetTenderSwitch(UseTender);
+  
+  TString containerNameL08 = mgr->GetCommonFileName();
+  containerNameL08 += ":PWGHF_hfeHFEemcQAEMC8";
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQAEMC8_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerNameL08.Data());
+  mgr->ConnectInput(hfecalqaL08, 0, cinput);
+  mgr->ConnectOutput(hfecalqaL08, 1, coutput1); 
+ 
+
   // EMCal EGA
   if(ispPb)
     {
