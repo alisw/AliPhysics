@@ -512,6 +512,9 @@ public:
       if (fTPCInner) delete fTPCInner;
       fTPCInner=new AliExternalTrackParam(*p);
       }
+  Int_t GetNumberOfITSClusters() const { return fITSncls;}
+  Int_t GetNumberOfTPCClusters() const { return fTPCncls;}
+  Int_t GetNumberOfTRDClusters() const { return fTRDncls;}
 
 protected:
   
