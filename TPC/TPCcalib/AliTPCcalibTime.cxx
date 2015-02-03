@@ -1562,7 +1562,6 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   //
   // 0. Apply standard cuts
   // 
-  Int_t dummycl[1000];
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
   if (!track->IsOn(AliVTrack::kTPCrefit)) return;
 
@@ -1602,7 +1601,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   for (Int_t i=0; i<ntracks; i++){
     AliVTrack * trackITS = event->GetVTrack(i);
     if (!trackITS) continue;
-    if (trackITS->GetITSclusters(dummycl)<kMinITS) continue;  // minimal amount of clusters
+    if (trackITS->GetNumberOfITSClusters()<kMinITS) continue;  // minimal amount of clusters
     itsfriendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
     if (!itsfriendTrack) continue;
 
@@ -1621,7 +1620,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
     hasAlone=kTRUE;
   }
   if (!hasAlone) {
-    if (track->GetITSclusters(dummycl)<kMinITS) return;
+    if (track->GetNumberOfITSClusters()<kMinITS) return;
     pITS=pITS2;  // use combined track if it has ITS
   }
   //
