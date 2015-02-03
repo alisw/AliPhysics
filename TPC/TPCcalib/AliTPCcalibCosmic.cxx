@@ -579,10 +579,10 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
       //
       Float_t dmax = TMath::Max(TMath::Abs(d0),TMath::Abs(d1));
       AliExternalTrackParam param0;
-      param0.CopyFromVTrack(track0);
+      track0->GetTrackParam(param0);
 
       AliExternalTrackParam param1;
-      param1.CopyFromVTrack(track1);
+      track1->GetTrackParam(param1);
       //
       // Propagate using Magnetic field and correct fo material budget
       //
