@@ -1,6 +1,6 @@
 /// \file AliL1Delay.C
 /// \brief Macro that measures the time delay of L1 trigger in TPC
-/// 
+///
 /// It reads the ESD tracks and fills histograms with the distance
 /// between the primary vertex and the Z position
 /// of the point of closest approach between the track and the beam axis.
@@ -13,7 +13,7 @@
 /// alone.
 /// The propagation to the vertex can be done either with or without
 /// TGeoManager.
-/// 
+///
 /// \author Cvetan Cheshkov <Cvetan.Cheshkov@cern.ch>
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -263,10 +263,9 @@ void AliL1Delay(const Char_t *esdfilename = "./AliESDs.root", const Char_t *gali
 }
 
 Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
-  //--------------------------------------------------------------------
-  // Correction for the material between the TPC and the ITS
-  // (should it belong to the TPC code ?)
-  //--------------------------------------------------------------------
+  /// Correction for the material between the TPC and the ITS
+  /// (should it belong to the TPC code ?)
+
   Double_t riw=80., diw=0.0053, x0iw=30; // TPC inner wall ? 
   Double_t rcd=61., dcd=0.0053, x0cd=30; // TPC "central drum" ?
   Double_t yr=12.8, dr=0.03; // rods ?
@@ -298,7 +297,8 @@ Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
 
 Bool_t PropagateToVertex(AliESDtrack *track, Float_t *vtxXYZ)
 {
-  // Make an ITS track and propagate it to the vertex
+  /// Make an ITS track and propagate it to the vertex
+
   AliITStrackV2 itstrack(*track);
   if (CorrectForDeadZoneMaterial(&itstrack) != 0) return 0;
   if (!itstrack.PropagateTo(3.,0.0028,65.19)) return 0;
@@ -311,7 +311,8 @@ Bool_t PropagateToVertex(AliESDtrack *track, Float_t *vtxXYZ)
 
 Bool_t PropagateToVertexG(AliESDtrack *track, Float_t *vtxXYZ)
 {
-  // Make an ITS track and propagate it to the vertex using TGeoManager
+  /// Make an ITS track and propagate it to the vertex using TGeoManager
+
   AliITStrackV2 itstrack(*track);
   AliExternalTrackParam etrack(itstrack);
   Double_t r = 3.;

@@ -1,8 +1,9 @@
 /// \file ClassTree.C
 /// \brief Macro generated from canvas: ClassTree
 ///
-/// \author ROOT version 2.21/07
 /// \date Tue Jun 1 17:01:38 1999
+///
+/// ROOT version 2.21/07
 
 void ClassTree()
 {

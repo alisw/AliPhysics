@@ -13,8 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// \class TestTPCTrackHits
 /// Macro to compare TClonesArray hits with interpolated hits
-/// ConvertHits1 read 
+/// ConvertHits1 read
 ///
 /// \author MI
 
@@ -95,7 +96,8 @@ void ConvertHits(const char * benchmark, Bool_t debug)
 
 void CompareHits(const char * benchmark, Bool_t debug)
 {        
-  //compare persistent hits
+  /// compare persistent hits
+
   TFile f2("treeh.root");
   TTree * treeh2 = (TTree*)f2.Get("TreeTPCH");
   AliTPCTrackHits *  myhits = new AliTPCTrackHits ; 
@@ -128,7 +130,8 @@ void CompareHits(const char * benchmark, Bool_t debug)
 
 void CompareHitsG(const char * benchmark, Bool_t debug)
 {        
-  //compare persistent hits
+  /// compare persistent hits
+
   TFile f2("galice.root");
   TTree * treeh2 = (TTree*)f2.Get("TreeH0");
   AliTPCTrackHits *  myhits = new AliTPCTrackHits ; 
@@ -172,8 +175,8 @@ void CompareHitsG(const char * benchmark, Bool_t debug)
    
 AliTPCTrackHits * MakeTrack(TClonesArray * arr, TClonesArray * arrp, AliTPCTrackHits *myhits)  
 {
-  //
-  //make track wit hits  according 
+  /// make track wit hits  according
+
   AliTPChit * hit;
   //  AliTPCTrackHits * myhits= new AliTPCTrackHits;
   myhits->SetHitPrecision(0.002);
@@ -207,9 +210,9 @@ AliTPCTrackHits * MakeTrack(TClonesArray * arr, TClonesArray * arrp, AliTPCTrack
 
 void CompareHits(TClonesArray * arr, AliTPCTrackHits * myhits, Bool_t debug, TClonesArray *arrd)
 {     
-  //
-  // if debug option  kTRUE
-  // compare hits and write result  to the stdoutput
+  /// if debug option  kTRUE
+  /// compare hits and write result  to the stdoutput
+
   AliTPChit * hit, *hit2;
   if (arrd) arrd->Clear();
 
@@ -306,8 +309,8 @@ void   Fit2(Double_t fSumY, Double_t fSumYX, Double_t fSumYX2,
 	    Double_t fSumX4, Int_t n,
 	    Double_t &a, Double_t &b, Double_t &c)
 {
-  //
-  //recalc parameters not fixing origin point
+  /// recalc parameters not fixing origin point
+
   Double_t det = 
     n* (fSumX2*fSumX4-fSumX3*fSumX3) -
     fSumX*      (fSumX*fSumX4-fSumX3*fSumX2)+

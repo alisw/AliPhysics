@@ -1,3 +1,5 @@
+/// \file TestSimDigits.C
+
 void TestSimDigits() {
 AliSimDigits dig;
 dig.Allocate(10,10);

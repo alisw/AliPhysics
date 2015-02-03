@@ -1,5 +1,5 @@
 /// \file AnalyzeESDtracks.C
-/// 
+///
 /// \brief Process ESD tracks - extract TPC tracks - write them to tree
 
 /*
@@ -92,8 +92,7 @@ void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mea
 void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t tmax, Float_t fraction=0.7);
 
 void AnalyzeESDtracks(Int_t run){
-  //
-  // output redirect 
+  // output redirect
   TTreeSRedirector *  pcstream = new TTreeSRedirector("TPCtracks.root");
   TTreeSRedirector &cstream = *pcstream;
   //
@@ -296,9 +295,8 @@ void FitSignals(TTree * treeB, TCut cut, Int_t max){
 
 
 void LaserCalib(TTreeSRedirector & cstream, TTree * chain, Float_t tmin, Float_t tmax, Float_t fraction){
-  //
-  //
-  //
+  ///
+
   const Double_t kMaxDelta=10;
   AliTPCParamSR param;
   param.Update();

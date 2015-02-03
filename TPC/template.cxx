@@ -1,3 +1,5 @@
+/// \class template
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -59,11 +61,10 @@ static int Rotate(TVector &x, Double_t fX, Double_t alpha) {
 static int templ(TVector par, Double_t x, Double_t dy, Double_t dz, 
                     const AliTPCSector *sec, int s, int rf=0) 
 {
-  //-----------------------------------------------------------------
-  // This function tries to find a track prolongation.
-  //
-  // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
-  //-----------------------------------------------------------------
+  /// This function tries to find a track prolongation.
+  ///
+  /// Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+
   int accepted=0;
   const int ROWS_TO_SKIP=100;
   int try_again=ROWS_TO_SKIP;

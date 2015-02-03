@@ -7,13 +7,14 @@
 #include "TPad.h"
 #include "TCanvas.h"
 
+/// \file LandauTest.C
 
 class TLandauMean: public TObject {
 public:
   void Init(Int_t n, Float_t mean, Float_t sigma);  // initial parameters
   void Gener();          // gener sample 
 
-  // void Anal();
+  //void Anal();
 
   Int_t fNSample;      // number of samples
   Float_t fLMean;        // landau mean
@@ -35,7 +36,9 @@ private:
   ClassDef(TLandauMean,1)
 };
 
+/// \cond CLASSIMP
 ClassImp(TLandauMean)
+/// \endcond
 
 void TLandauMean::Init(Int_t n, Float_t mean, Float_t sigma)
 {
@@ -191,14 +194,12 @@ void GenerLandau(Int_t nsamples)
 
 TH1F *  LandauTest(Float_t meano,  Float_t sigma, Float_t meanlog0, Int_t n,Float_t ratio)
 { 
-  //
-  // test for different approach of de dx resolution
-  // meano, sigma  - mean value of Landau distribution and sigma
-  // meanlog0      - scaling factor for logarithmic mean value
-  // n             - number of used layers
-  // ratio         - ratio of used amplitudes for truncated mean
-  //
-  
+  /// test for different approach of de dx resolution
+  /// meano, sigma  - mean value of Landau distribution and sigma
+  /// meanlog0      - scaling factor for logarithmic mean value
+  /// n             - number of used layers
+  /// ratio         - ratio of used amplitudes for truncated mean
+
 
   TCanvas * pad = new TCanvas("Landau test");
   pad->Divide(2,2);

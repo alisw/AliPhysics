@@ -1,22 +1,16 @@
-/****************************************************************************
- *           Origin: M.Ivanov marian.ivanov@cern.ch                         *
- ****************************************************************************/
-
-/*
-
-  macro to create array of clusters from TPC digits
-  input files - galice.root 
-                digits.root - file with digits - usualy use link to galice.root
-		            - in splitted mode - neccesary to create link to proper file
-			    
-   output file - AliTPCclusters.root
-               - to be used by AliTPCTrackFinderMI.C
-
-  Warning - if cluster file AliTPCclusters.root already exist - macro exit and don't produce anything
-	       
- 
-*/
-
+/// \file AliTPCFindClusters.C
+///
+/// \author M.Ivanov marian.ivanov@cern.ch
+///
+/// macro to create array of clusters from TPC digits
+/// input files - galice.root
+///              digits.root - file with digits - usualy use link to galice.root
+///      	            - in splitted mode - neccesary to create link to proper file
+///
+/// output file - AliTPCclusters.root
+///             - to be used by AliTPCTrackFinderMI.C
+///
+/// Warning - if cluster file AliTPCclusters.root already exist - macro exit and don't produce anything
 
 #ifndef __CINT__
 #include <iostream.h>

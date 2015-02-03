@@ -14,9 +14,9 @@
  **************************************************************************/
 
 /// \class AliTPCCombinedTrackfit
-/// 
+///
 /// Combine cosmic track pairs (upper, lower) and do track fitting
-/// 
+///
 /// \author Xianguo Lu <lu@physi.uni-heidelberg.de>
 
 #include <TAxis.h>

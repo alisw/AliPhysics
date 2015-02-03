@@ -15,7 +15,7 @@
 
 /// \class AliTPCCombinedTrackfit
 /// \brief Combine cosmic track pairs (upper, lower) and do track fitting.
-/// 
+///
 /// Usage
 /// -----
 ///
@@ -27,9 +27,9 @@
 /// const Bool_t kfit = fCombinedTrackfit->CombineESDtracks(esdtrack0, esdtrack1);
 ///
 /// //status = 0 for good fit (i.e. kfit=kTRUE), non-0 for bad fit (i.e. kfit=kFALSE), see "enum CombineStatus" definition in header file
-/// const Int_t status = fCombinedTrackfit->GetStatus(); 
+/// const Int_t status = fCombinedTrackfit->GetStatus();
 ///
-/// //in Analysis Task write when terminate 
+/// //in Analysis Task write when terminate
 /// fCombinedTrackfit->GetStreamer()->GetFile()->Write();
 /// ~~~
 ///
@@ -46,9 +46,9 @@
 ///     "icup.="<<&fInnerClusterUp<<    //TVector3 position of the innermost cluster of the upper track
 ///     "iclow.="<<&fInnerClusterLow<<
 ///     "leverarm="<<fLeverArm<<
-///     "ncl="<<fFitNcls<<              //number of clusters used in successful propagation  
+///     "ncl="<<fFitNcls<<              //number of clusters used in successful propagation
 ///     "nmiss="<<fMissNcls<<           //number of clusters failed in propagation, should always be 0 in this case.
-///     "chi2="<<fPreChi2<<             //chi2/nfit  
+///     "chi2="<<fPreChi2<<             //chi2/nfit
 ///     "momup="<<  momup <<            //momentum at uppermost cluster with upward propagation
 ///     "momlow="<< momlow <<           //momentum at lowermost cluster with downward propagation
 ///     "ptup="<<   ptup <<
@@ -62,7 +62,7 @@
 /// ----------
 ///
 /// For 2011 Feb. cosmic data nch=2 events, the kfit and status look like:
-/// 
+///
 /// ~~~{.cxx}
 /// kfit,status (  0,   1):   68939 / 2611959 =   2.639%          //kFailGetTPCseeds
 /// kfit,status (  0,   2):   14886 / 2611959 =   0.570%          //not both tracks have ncl > AliTPCCosmicUtils::fgkNclsMin
@@ -72,7 +72,7 @@
 /// kfit,status (  0,   7):   19994 / 2611959 =   0.765%          //chi2/nfit > fgkMaxChi2
 /// kfit,status (  1,   0): 2402181 / 2611959 =  91.969%          //i.e. 92% of nch=2 events are successfully fitted.
 /// ~~~
-/// 
+///
 /// Resolution
 /// ----------
 ///

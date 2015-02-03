@@ -1,3 +1,7 @@
+/// \class AliTPChitD
+/// \brief Macro to compare TClonesArray hits with interpolated hits
+/// \author MI
+
 #ifndef TESTTPCTRACKHITS_H
 #define TESTTPCTRACKHITS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -5,10 +9,6 @@
 
 void ConvertHits(const char * benchmark="0", Bool_t debug=kFALSE);
 void CompareHits(const char * benchmark="1", Bool_t debug=kFALSE);
-
-/// \class AliTPChitD
-/// \brief Macro to compare TClonesArray hits with interpolated hits
-/// \author MI
 
 class AliTPChitD : public AliTPChit {
 public:

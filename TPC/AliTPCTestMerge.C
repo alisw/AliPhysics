@@ -34,11 +34,11 @@
 ///    - only the amplitude should be different - by factor of sqrt
 ///
 /// \author Marian Ivanov
-      
+
 void testmerge()
 {
   /// merge two example events
-  /// 
+  ///
   /// it merge two events -one from current directory -second from directory ev2
 
   if(gAlice) delete gAlice;
