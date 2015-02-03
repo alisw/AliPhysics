@@ -1,18 +1,13 @@
-/*
-
-  Macro to generate random tracks and clusters.
-  Fast MC - Geant equivalent used
-
-
-*/
+/// \file simul.C
+/// Macro to generate random tracks and clusters.
+/// Fast MC - Geant equivalent used
 
 Int_t  kmarkes[5]={20,21,24,25,23};
 Int_t  kcolors[5]={1,2,4,3,6};
 
 void simul(Int_t npoints, Double_t diffFactor){ 
-  //
-  // simulation submit script
-  //
+  /// simulation submit script
+
   printf("Hallo world\n");
   gRandom->SetSeed(0);
   gROOT->LoadMacro("$mcPath/AliTPCclusterFast.cxx+");
@@ -28,9 +23,8 @@ void simul(Int_t npoints, Double_t diffFactor){
 
 
 void Merge(){
-  //
-  //
-  //
+  ///
+
   TString objfile;
   AliTPCtrackFast track0;
   track0.MakeHisto();
@@ -57,9 +51,8 @@ void Merge(){
 
 
 void DrawdEdxResolExample(){
-  //
-  // Example analysis to make an space point resolution study
-  //
+  /// Example analysis to make an space point resolution study
+
   TChain * chain  = AliXRDPROOFtoolkit::MakeChain("trackerSimul.list", "simulTrack",0,100); 
   chain->SetCacheSize(10000000000);
 
@@ -78,6 +71,3 @@ void DrawdEdxResolExample(){
   chain->Draw("tr.CookdEdxDtot(0,0.99,1,0,1,0)/tr.fMNprim:tr.fMNprim>>profQtot100(10,10,50)","","profsame",10000);
 
 }
-
-
-
