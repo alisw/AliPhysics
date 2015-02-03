@@ -7,8 +7,10 @@ cd "${ALICE_ROOT}"/../src/
 # TPC
 #Files=$( find TPC/ -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
 #Files=$( find TPC/Attic/ -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
-
-Files=( 'TPC/Attic/AliTPCPid.cxx' )
+#Files=$( find TPC/Base/test -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
+#Files=$( find TPC/Cal -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
+#Files=$( find TPC/Calib -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
+Files=$( find TPC/CalibMacros -maxdepth 1 -name '*.h' -or -name '*.cxx' -or -name '*.C' )
 
 while [[ $# -gt 0 ]] ; do
   case "$1" in
@@ -29,7 +31,8 @@ for F in ${Files[@]} ; do
     r=$?
   fi
   if [[ $RestoreOnly != 1 ]] ; then
-    ./thtml2doxy.py $Stdout $Debug $( cat debug/includes.txt ) "$F"
+    #./thtml2doxy.py $Stdout $Debug $( cat debug/includes.txt ) "$F"
+    ./thtml2doxy.py $Stdout $Debug -I$ALICE_ROOT/include "$F"
     r=$?
   fi
   if [[ $r != 0 ]] ; then
@@ -43,7 +46,7 @@ for F in ${Files[@]} ; do
       AliRootLen=${#ALICE_ROOT}
       FNorm=${FNorm:$AliRootLen}
       echo -e "\033[35mFile \033[34m${FNorm}\033[m"
-      echo -e -n "\033[35mWhat to do? \033[34medit, stage, continue\033[m \033[35m> \033[m"
+      echo -e -n "\033[35mWhat to do? \033[34medit, stage, parts, continue, restore\033[m \033[35m> \033[m"
       read ans
       case "$ans" in
         edit)
@@ -53,7 +56,16 @@ for F in ${Files[@]} ; do
           git add "$F" || exit 1
           break
         ;;
+        parts)
+          git add -p "$F" || exit 1
+          git checkout "$F" || exit 1
+          break
+        ;;
         continue)
+          break
+        ;;
+        restore)
+          git checkout "$F" || exit 1
           break
         ;;
       esac
