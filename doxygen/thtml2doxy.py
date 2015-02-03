@@ -95,9 +95,10 @@ class Comment(object):
 ## Prepend comment.
 class PrependComment(Comment):
 
-  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
+  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func, \
+    append_empty=False):
     super(PrependComment, self).__init__( \
-      lines, first_line, first_col, last_line, last_col, indent, func, False)
+      lines, first_line, first_col, last_line, last_col, indent, func, append_empty)
 
 
 ## A data member comment.
@@ -325,7 +326,8 @@ def comment_datamember(cursor, comments):
 #
 #  @param filename Name of the current file
 #  @param comments Array of comments: new ones will be appended there
-def comment_classdesc(filename, comments):
+#  @param look_no_further_than_line Stop before reaching this line when looking for class comment
+def comment_classdesc(filename, comments, look_no_further_than_line):
 
   recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
 
@@ -351,6 +353,11 @@ def comment_classdesc(filename, comments):
     for raw in fp:
 
       line_num = line_num + 1
+
+      if look_no_further_than_line is not None and line_num == look_no_further_than_line:
+        logging.debug('Stopping at line %d while looking for class/file description' % \
+          look_no_further_than_line)
+        break
 
       if raw.strip() == '' and start_line > 0:
         # Skip empty lines
@@ -413,13 +420,16 @@ def comment_classdesc(filename, comments):
     else:
       assert False, 'Regexp unable to extract classname from file'
 
+  # Macro or class?
+  if is_macro:
+    file_class_line = '\\file ' + class_name_doxy + '.C'
+  else:
+    file_class_line = '\\class ' + class_name_doxy
+
   if start_line > 0:
 
     # Prepend \class or \file specifier (and an empty line)
-    if is_macro:
-      comment_lines[:0] = [ '\\file ' + class_name_doxy + '.C' ]
-    else:
-      comment_lines[:0] = [ '\\class ' + class_name_doxy ]
+    comment_lines[:0] = [ file_class_line ]
     comment_lines.append('')
 
     # Append author and date if they exist
@@ -439,7 +449,14 @@ def comment_classdesc(filename, comments):
 
   else:
 
-    logging.warning('No comment found for class %s' % Colt(class_name_doxy).magenta())
+    logging.warning('No comment found for class %s: creating a dummy entry at the beginning' % \
+      Colt(class_name_doxy).magenta())
+
+    comments.append(PrependComment(
+      [ file_class_line ],
+      1, 1, 1, 1,
+      0, class_name_doxy, append_empty=True
+    ))
 
 
 ## Looks for a special ROOT ClassImp() entry.
@@ -542,7 +559,10 @@ def comment_classimp(filename, comments):
 #  @param comments  Array of comments: new ones will be appended there
 #  @param recursion Current recursion depth
 #  @param in_func   True if we are inside a function or method
-def traverse_ast(cursor, filename, comments, recursion=0, in_func=False):
+#  @param classdesc_line_limit  Do not look for comments after this line
+#
+#  @return A tuple containing the classdesc_line_limit as first item
+def traverse_ast(cursor, filename, comments, recursion=0, in_func=False, classdesc_line_limit=None):
 
   # libclang traverses included files as well: we do not want this behavior
   if cursor.location.file is not None and str(cursor.location.file) != filename:
@@ -561,6 +581,9 @@ def traverse_ast(cursor, filename, comments, recursion=0, in_func=False):
   if cursor.kind in [ clang.cindex.CursorKind.CXX_METHOD, clang.cindex.CursorKind.CONSTRUCTOR,
     clang.cindex.CursorKind.DESTRUCTOR, clang.cindex.CursorKind.FUNCTION_DECL ]:
 
+    if classdesc_line_limit is None:
+      classdesc_line_limit = cursor.location.line
+
     # cursor ran into a C++ method
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
@@ -568,6 +591,9 @@ def traverse_ast(cursor, filename, comments, recursion=0, in_func=False):
 
   elif not is_macro and not in_func and \
     cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
+
+    if classdesc_line_limit is None:
+      classdesc_line_limit = cursor.location.line
 
     # cursor ran into a data member declaration
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
@@ -578,11 +604,13 @@ def traverse_ast(cursor, filename, comments, recursion=0, in_func=False):
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, kind, text) )
 
   for child_cursor in cursor.get_children():
-    traverse_ast(child_cursor, filename, comments, recursion+1, in_func)
+    classdesc_line_limit = traverse_ast(child_cursor, filename, comments, recursion+1, in_func, classdesc_line_limit)
 
   if recursion == 0:
     comment_classimp(filename, comments)
-    comment_classdesc(filename, comments)
+    comment_classdesc(filename, comments, classdesc_line_limit)
+
+  return classdesc_line_limit
 
 
 ## Strip some HTML tags from the given string. Returns clean string.
