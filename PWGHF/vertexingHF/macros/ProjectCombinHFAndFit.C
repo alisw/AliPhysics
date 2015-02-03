@@ -18,6 +18,8 @@
 #include "AliNormalizationCounter.h"
 #endif
 
+enum Method{kME,kRot,kLS,kSB};
+
 // input files and pt binning
 TString fileName="AnalysisResults_train543544.root";
 TString suffix="c3SigPID_Pt400_EM1";
@@ -61,6 +63,7 @@ Bool_t fixBackParFromFirstFit=kFALSE; // if kTRUE, in the case refitWithSignal=k
 Double_t nsigmaSubBackFit=2.5;      // defines the mass window for excluding the signal region for the side-band fit
 Int_t nDegreeBackPol=4;             // degree of polynomial function describing the background
 
+// SMEARING PART
 
 void WriteFitInfo(AliHFMassFitter *fitter, TH1D* histo);
 
@@ -208,6 +211,47 @@ TH1F* GetResidualsAndPulls(TH1 *h,TF1 *f,Double_t minrange=0,Double_t maxrange=-
   delete arval;
   return hout;
 }
+void SetStyleHisto(TH1 *h,Int_t method,Int_t isXpt=-1){
+  if(isXpt==1)h->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");// just for convenience, most of the time it's pt :)
+
+  if(method==kRot){
+    h->SetMarkerStyle(21);    
+    h->GetYaxis()->SetTitleOffset(1.8);
+    h->SetMarkerColor(kBlack);
+    h->SetMarkerSize(1.0);
+    h->SetLineColor(kBlack);
+    return;
+  }
+
+  if(method==kME){
+    h->SetMarkerStyle(25);    
+    h->GetYaxis()->SetTitleOffset(1.8);
+    h->SetMarkerColor(4);
+    h->SetMarkerSize(1.0);
+    h->SetLineColor(4);
+    return;
+  }
+
+  if(method==kLS){
+    h->SetMarkerStyle(22);    
+    h->GetYaxis()->SetTitleOffset(1.8);
+    h->SetMarkerColor(kGreen+2);
+    h->SetMarkerSize(1.0);
+    h->SetLineColor(kGreen+2);
+    return;
+  }
+  
+  if(method==kSB){
+    h->SetMarkerStyle(27);    
+    h->GetYaxis()->SetTitleOffset(1.8);
+    h->SetMarkerColor(6);
+    h->SetMarkerSize(1.0);
+    h->SetLineColor(6);
+    return;
+  }
+
+  return;
+}
 
 void DivideCanvas(TCanvas *c,Int_t ndivisions){
   if(ndivisions>1){
@@ -246,7 +290,7 @@ void DivideCanvas(TCanvas *c,Int_t ndivisions){
 TF1 *GausPlusLine(Double_t minRange=1.72,Double_t maxRange=2.05){
   TF1 *f=new TF1("GausPlusLine","[0]*1./(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))+[3]+[4]*x",minRange,maxRange);
 
-  f->SetParameter(1,1.865);
+  f->SetParameter(1,massD);
   f->SetParLimits(0,0.,1.e+7);
   f->SetParLimits(1,1.8,1.92);
   f->SetParameter(2,0.010);
@@ -298,7 +342,7 @@ TH1D* FitBackgroundAndSubtract(TH1 *h,Int_t binNumber,Int_t binID=-1){
   for(Int_t j=1;j<=h->GetNbinsX();j++){
     Double_t binCenter=h->GetBinCenter(j);
     Int_t j2=h2->FindBin(binCenter);
-    if(binCenter>(1.865-nsigmaSubBackFit*sigmas[binNumber]) && binCenter<(1.865+nsigmaSubBackFit*sigmas[binNumber])){
+    if(binCenter>(massD-nsigmaSubBackFit*sigmas[binNumber]) && binCenter<(massD+nsigmaSubBackFit*sigmas[binNumber])){
       h3->SetBinContent(j2,0);
       h3->SetBinError(j2,0);
     }
@@ -433,16 +477,16 @@ Bool_t DirectFit(TH1D *hUnSubtracted, Int_t iptbin, TH1F* hRawYieldSBfit){
     
     
     // fast bin counting to initialize fit param
-    Int_t binlbc=hSubtractedSB->FindBin(1.865-3.*sigmas[iptbin]);
-    Int_t binrbc=hSubtractedSB->FindBin(1.865+3.*sigmas[iptbin]);
+    Int_t binlbc=hSubtractedSB->FindBin(massD-3.*sigmas[iptbin]);
+    Int_t binrbc=hSubtractedSB->FindBin(massD+3.*sigmas[iptbin]);
     Double_t backest=fback->Integral(hSubtractedSB->GetBinLowEdge(binlbc),hSubtractedSB->GetBinLowEdge(binrbc+1))/hSubtractedSB->GetBinWidth(1);
     Double_t fastbcestimate=(hSubtractedSB->Integral(binlbc,binrbc)-backest)*hSubtractedSB->GetBinWidth(1);
     fFitSB[iptbin]->SetParameter(nparback,fastbcestimate);
     fFitSB[iptbin]->SetParLimits(nparback,0.1*fastbcestimate,fastbcestimate*10.);    
     if(fixSigma)fFitSB[iptbin]->FixParameter(2+nparback,sigmas[iptbin]);
     else fFitSB[iptbin]->SetParameter(2+nparback,sigmas[iptbin]);
-    if(fixMean)fFitSB[iptbin]->FixParameter(1+nparback,1.865);
-    else fFitSB[iptbin]->SetParameter(1+nparback,1.865);    
+    if(fixMean)fFitSB[iptbin]->FixParameter(1+nparback,massD);
+    else fFitSB[iptbin]->SetParameter(1+nparback,massD);    
     fFitSB[iptbin]->FixParameter(3+nparback,0);// These are the linear terms in GausPlusLine
     fFitSB[iptbin]->FixParameter(4+nparback,0);
   }
@@ -451,8 +495,8 @@ Bool_t DirectFit(TH1D *hUnSubtracted, Int_t iptbin, TH1F* hRawYieldSBfit){
     fFitSB[iptbin]->SetName(Form("fFitSB%d",iptbin));
     if(fixSigma)fFitSB[iptbin]->FixParameter(2,sigmas[iptbin]);
     else fFitSB[iptbin]->SetParameter(2,sigmas[iptbin]);
-    if(fixMean)fFitSB[iptbin]->FixParameter(1+nparback,1.865);
-    else fFitSB[iptbin]->SetParameter(1+nparback,1.865);
+    if(fixMean)fFitSB[iptbin]->FixParameter(1+nparback,massD);
+    else fFitSB[iptbin]->SetParameter(1+nparback,massD);
   }
   fFitSB[iptbin]->SetRange(fitrangelow[iptbin],fitrangeup[iptbin]);
   if(refitWithSignal){
@@ -548,8 +592,8 @@ Bool_t DirectFit(TH1D *hUnSubtracted, Int_t iptbin, TH1F* hRawYieldSBfit){
   hRawYieldSBfit->SetBinError(iptbin+1,errsignal);
   
   // background values
-  binMinTot=hUnSubtracted->FindBin(1.834*1.00001);// 1.864 -3x10 MeV
-  binMaxTot=hUnSubtracted->FindBin(1.894*0.9999);// 1.864 +3x10 MeV
+  //  binMinTot=hUnSubtracted->FindBin((massD-3.*sigmas[iptbin])*1.00001);// the 1.00001 is useless...
+  //  binMaxTot=hUnSubtracted->FindBin((massD+3.*sigmas[iptbin])*0.9999);// same for hte 0.9999
   //    Printf("Min bin and max bin are: ");
   //hTotYieldSignalRegion->SetBinContent(ib+1,hUnSubtracted->Integral(binMinTot,binMaxTot));// this is not backfit, I simply do not need more variables
   //  if(hTotYieldSignalRegion->GetBinContent(ib+1)>0.){
@@ -731,6 +775,10 @@ void ProjectCombinHFAndFit(){
   c4residualTrend->Divide(3,2);
   TCanvas* c4pullTrend=new TCanvas("c4pullTrend","Mass-Bkg EM pull trend vs. mass",1200,800);
   c4pullTrend->Divide(3,2);
+
+  TCanvas *cCompareResidualTrends=new TCanvas("cCompareResidualTrends","cCompareResidualTrends",1200,800);
+  DivideCanvas(cCompareResidualTrends,nPtBins);  
+
 
   AliHFMassFitter* fitterRot[nPtBins];
   AliHFMassFitter* fitterLS[nPtBins];
@@ -978,6 +1026,10 @@ void ProjectCombinHFAndFit(){
 	cResidualsDirect->cd(iPtBin+1);
 	hResiduals->Draw();
 	
+	SetStyleHisto(hResidualTrend,kSB);
+	cCompareResidualTrends->cd(iPtBin+1);
+	hResidualTrend->Draw();
+
 	cResidualDirectTrendVsMass->cd(iPtBin+1);
 	hResidualTrend->Draw();
 	
@@ -1012,8 +1064,12 @@ void ProjectCombinHFAndFit(){
       c2residuals->cd(iPtBin+1);
       hResiduals->Draw();
 
+      SetStyleHisto(hResidualTrend,kRot);
       c2residualTrend->cd(iPtBin+1);
       hResidualTrend->Draw();
+      cCompareResidualTrends->cd(iPtBin+1);
+      if(out4)hResidualTrend->Draw("same");
+      else hResidualTrend->Draw();
 
       c2pullTrend->cd(iPtBin+1);
       hPullsTrend->Draw();
@@ -1045,8 +1101,13 @@ void ProjectCombinHFAndFit(){
       c3residuals->cd(iPtBin+1);
       hResiduals->Draw();
 
+      SetStyleHisto(hResidualTrend,kLS);
       c3residualTrend->cd(iPtBin+1);
       hResidualTrend->Draw();
+      
+      cCompareResidualTrends->cd(iPtBin+1);
+      if(out4||out1)hResidualTrend->Draw("same");
+      else hResidualTrend->Draw();
 
       c3pullTrend->cd(iPtBin+1);
       hPullsTrend->Draw();
@@ -1076,8 +1137,13 @@ void ProjectCombinHFAndFit(){
       c4residuals->cd(iPtBin+1);
       hResiduals->Draw();
 
+      SetStyleHisto(hResidualTrend,kME);
       c4residualTrend->cd(iPtBin+1);
       hResidualTrend->Draw();
+
+      cCompareResidualTrends->cd(iPtBin+1);
+      if(out4||out1||out2)hResidualTrend->Draw("same");
+      else hResidualTrend->Draw();
 
       c4pullTrend->cd(iPtBin+1);
       hPullsTrend->Draw();
@@ -1085,6 +1151,12 @@ void ProjectCombinHFAndFit(){
     else hMassSubME->Draw("");
 
   }
+  TString path(gSystem->pwd());
+  path.Append("/figures");
+  if(gSystem->AccessPathName(path.Data())){ 
+    gROOT->ProcessLine(Form(".!mkdir -p %s",path.Data()));  
+  }
+
   c2->SaveAs(Form("figures/InvMassSpectra_%s_Rot.eps",suffix.Data()));
   c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.eps",suffix.Data()));
   c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.eps",suffix.Data()));
@@ -1184,6 +1256,13 @@ void ProjectCombinHFAndFit(){
   cry->SaveAs(Form("figures/RawYield_%s.eps",suffix.Data()));
   cry->SaveAs(Form("figures/RawYield_%s.root",suffix.Data()));
 
+  cCompareResidualTrends->cd(1);
+  TLegend *legRT=new TLegend(*legry);
+  legRT->SetX1NDC(0.12);
+  legRT->SetY1NDC(0.7);
+  legRT->SetX2NDC(0.3);
+  legRT->SetY2NDC(0.9);
+  legRT->Draw();
 
   // NOW COMPARE YIELDS OBTAINED WITH BC FROM DIFFERENT APPROACHES
   TCanvas* cryBC=new TCanvas("cryBC","RawYield with BC",800,700);
