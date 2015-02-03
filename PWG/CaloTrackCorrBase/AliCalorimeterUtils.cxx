@@ -1306,12 +1306,10 @@ void AliCalorimeterUtils::InitEMCALGeometry()
   
   if(fEMCALGeoName=="")
   {
-    if     (fRunNumber <  140000 &&
-            fRunNumber >= 100000)   fEMCALGeoName = "EMCAL_FIRSTYEARV1";
-    else if(fRunNumber >= 140000 &&
-            fRunNumber <  171000)   fEMCALGeoName = "EMCAL_COMPLETEV1";
-    else if(fRunNumber <  198000)   fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
-    else                            fEMCALGeoName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+    if     (fRunNumber <  140000) fEMCALGeoName = "EMCAL_FIRSTYEARV1";
+    else if(fRunNumber <  171000) fEMCALGeoName = "EMCAL_COMPLETEV1";
+    else if(fRunNumber <  198000) fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
+    else                          fEMCALGeoName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
   }
   
   AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fEMCALGeoName.Data(),fRunNumber));
@@ -1324,12 +1322,10 @@ void AliCalorimeterUtils::InitEMCALGeometry()
     if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
     {
       // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-      if     (fRunNumber <  140000 &&
-              fRunNumber >= 100000)   fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-      else if(fRunNumber >= 140000 &&
-              fRunNumber <  171000)   fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-      else if(fRunNumber <  198000)   fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-      else                            fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
+      if     (fRunNumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+      else if(fRunNumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+      else if(fRunNumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+      else                          fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
     }
     
     AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
