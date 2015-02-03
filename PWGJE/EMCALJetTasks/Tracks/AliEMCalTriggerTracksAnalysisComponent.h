@@ -30,16 +30,20 @@ public:
   void SetBinning(const AliEMCalTriggerBinningComponent * const binning) { fBinning = binning; }
   void SetKineCuts(const AliEMCalTriggerKineCuts * const cuts) { fKineCuts = cuts; }
   void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger) { fTriggerDecision = trigger; }
+  void SetComponentDebugLevel(int debuglevel) { fComponentDebugLevel = debuglevel; }
 
 protected:
   TAxis *DefineAxis(const char *name, const AliEMCalTriggerBinningDimension *binning);
   TAxis *DefineAxis(const char *name, int nbins, double min, double max);
   void GetMachingTriggerNames(std::vector<std::string> &triggernames, Bool_t usePatches);
+  void PrintTriggerNames(const std::vector<std::string> &, const std::string &componentName) const;
 
   AliEMCalHistoContainer                      *fHistos;
   const AliEMCalTriggerBinningComponent       *fBinning;
   const AliEMCalTriggerKineCuts               *fKineCuts;
   const AliEMCalTriggerAnaTriggerDecision     *fTriggerDecision;
+
+  Int_t                                         fComponentDebugLevel;
 
   ClassDef(AliEMCalTriggerTracksAnalysisComponent, 1)
 };
