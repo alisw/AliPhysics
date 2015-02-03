@@ -178,7 +178,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   if(fNhits==0){
       // First hit -> setting flag for primary or secondary particle
-      /*TParticle * p = gAlice->GetMCApp()->Particle(track);
+      TParticle * p = gAlice->GetMCApp()->Particle(track);
       Int_t imo = p->GetFirstMother();
       //
       if(track != imo){
@@ -186,7 +186,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       }
       else if(track == imo){
         newquad->SetSFlag(0);  // PRIMARY particle entering the ZDC
-      }*/
+      }
       //  
       sFlag 	 = newquad->GetSFlag();
       primKinEn  = newquad->GetPrimKinEn();
@@ -196,6 +196,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       motPDGcode = newquad->GetMotherPDGCode();
       trackTime  = newquad->GetTrackTOF();
       trackEta   = newquad->GetTrackEta();
+
    }
    else{       
       newquad->SetPrimKinEn(primKinEn);
@@ -207,7 +208,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       newquad->SetTrackTOF(trackTime);
       newquad->SetTrackEta(trackEta);
    }
- 
+  
   Int_t j;
   for(j=0; j<fNhits; j++){
     // If hits are equal (same track, same volume), sum them.
@@ -222,6 +223,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 	return;
      } 
   }
+  //printf( "PDG from hits[10] = %f\n", hits[10]);
 
     //Otherwise create a new hit
     new(lhits[fNhits]) AliZDCHit(*newquad);
