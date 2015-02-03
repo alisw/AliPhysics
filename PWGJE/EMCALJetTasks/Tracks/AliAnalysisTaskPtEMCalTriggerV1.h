@@ -31,6 +31,7 @@ public:
   void SetBinning(const char *dimname, int nbins, double *binning);
   void SetBinning(const char *dimname, const TArrayD &binning);
   void SetSwapThresholds(Bool_t doSwap = kTRUE) { fSwapTriggerThresholds = kTRUE; }
+  void SetTriggerDebug(Bool_t doDebug = kTRUE) { fDoTriggerDebug = doDebug; }
 
 protected:
   AliEMCalTriggerEventData *BuildEvent() const;
@@ -40,6 +41,7 @@ protected:
   TString                              fMCJetContainer;     // Name of the Monte-Carlo jet container
   TString                              fDataJetContainer;   // Data jet container name
   Bool_t                               fSwapTriggerThresholds;    // Swap thresholds of the low and high threshold trigger
+  Bool_t                               fDoTriggerDebug;     // Debug trigger decision creator
 
 private:
   AliAnalysisTaskPtEMCalTriggerV1(const AliAnalysisTaskPtEMCalTriggerV1 &);
