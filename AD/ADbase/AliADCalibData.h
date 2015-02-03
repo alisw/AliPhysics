@@ -164,6 +164,8 @@ class AliADCalibData: public TNamed {
 
   void     SetDiscriThr(Float_t thr, Int_t board, Int_t channel);
   void     SetDiscriThr(const Float_t* thresholds);
+  
+  void	   SetADCperMIP(Int_t nADCperMIP);
 
   void SetClk1Win1(UShort_t* clks);
   void SetClk1Win1(UShort_t clk, Int_t board);

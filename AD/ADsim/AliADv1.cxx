@@ -39,6 +39,7 @@
 #include <TGeoPcon.h>
 #include <TGeoCone.h>
 #include <TGeoShape.h>
+#include <TGeoXtru.h>
 #include <TTree.h>
 #include <TSystem.h>
 // #include <TGeoCompositeShape.h> // included in .h
@@ -186,13 +187,7 @@ TGeoCompositeShape * AliADv1::MakeShapeADCpadH(const Double_t W, const Double_t 
 //_____________________________________________________________________________
 void AliADv1::CreateAD()
 {
-  //
-  // Read fADCPosition from environment and assign it three possible values:
-  //   fADCPosition = kADCInTunnel;
-  //   fADCPosition = kADCInCavern;
-  //   fADCPosition = kADCInBoth;
-  //
-  // ReadADCFromEnv(); 
+  printf("===> AliADv1::CreateAD(): ver=[Feb 2st, 2015]; contact=[ecalvovi@cern.ch]\n");
   //
   // Define Rotations used
   //
@@ -203,7 +198,7 @@ void AliADv1::CreateAD()
   Rz180 = new TGeoRotation("Rz180", 180.,   0.,   0.) ;  // --------------->  x  
   Ry180 = new TGeoRotation("Ry180", 180., 180.,   0.) ;  //   3    |   2
   Ry90m = new TGeoRotation("Ry90m",  90., -90., -90.) ;
-
+  // Get Mediums needed.
   TGeoMedium * kMedAlu       = gGeoManager->GetMedium("AD_Alum");   // Aluminium 
   TGeoMedium * kMedSteelSh   = gGeoManager->GetMedium("AD_ST_C0");  // Stainless Steel 
   TGeoMedium * kMedVacuum    = gGeoManager->GetMedium("AD_VA_C0");  // Stainless Steel 
@@ -225,7 +220,6 @@ void AliADv1::CreateAD()
   // BODY 1 PORTS
   //
   (new TGeoCombiTrans("ctPumpVB2", 0., -13./2., 6.8-11.5/2., Rx90))->RegisterYourself();
-  // Rx90->RegisterYourself();
   new TGeoTube("shIonPumpVB1o",  0.0, 10.3 /2., 11.5/2.   );
   new TGeoTube("shIonPumpVB2o",  0.0,  7.0 /2., 13.0/2.   );
   new TGeoTube("shIonPumpVB1i",  0.0, 10.0 /2., 11.5/2.+2.);
@@ -297,7 +291,7 @@ void AliADv1::CreateAD()
   Ri += 0.63*tga;
   Ro  = Ri + d/ca;
   shVSR0->DefineSection(5,        14.0 ,      Ri, Ro);
-  //printf("  Ro: %8.2f\n", Ro);
+  // printf("  Ro: %8.2f\n", Ro);
   // Make holes 
   new TGeoBBox("shHoleBody"    , 0.15, 0.60, 0.3);
   new TGeoTube("shHoleEnd", 0.  , 0.15, 0.3);
@@ -322,7 +316,7 @@ void AliADv1::CreateAD()
    (new TGeoRotation(Form("rSec%d",i), 30. * i, 0. , 0.))->RegisterYourself();
    strSh+=Form("+ shVSRsec:rSec%d",i);
   }
-  //printf("%s\n", strSh.Data());
+  // printf("%s\n", strSh.Data());
   TGeoCompositeShape * shVSR = new TGeoCompositeShape("shVSR", strSh.Data());
   // Now assembly the sector to form VSR RF transition tube !
   TGeoVolume * voVSR = new TGeoVolume("voVSR", shVSR, kMedAlu);
@@ -723,7 +717,49 @@ void AliADv1::CreateAD()
                new TGeoTranslation(0.,0.,0.) );
   voMoVMAOI->AddNode( voVBUflg, 2, 
                new TGeoCombiTrans(0.,0.,28., Ry180) );
-  
+  // ==========================================================================
+  //
+  // AD Support structure by Pieter Ijzerman
+  // ecalvovi@cern.ch
+  // ==========================================================================
+  Int_t nvertices=0;
+  // Cover plate_______________________________________________________________
+  TGeoXtru * shADcoverplate = new TGeoXtru(2);
+  shADcoverplate->SetNameTitle("shADcoverplate","shADcoverplate");
+  Double_t y1[] = {  0.0, 18.50, 18.50, 22.50, 22.50, 18.50, 18.50, 22.50, 22.50, 18.50, 18.50,   .00 ,  .00, 15.25, 15.25,  .00 }; 
+  Double_t x1[] = {  0.0,   .00,  5.15,  5.15, 17.15, 17.15, 24.25, 24.25, 36.25, 36.25, 41.40, 41.40 ,35.70, 35.70,  5.70, 5.70 }; 
+  nvertices = sizeof(x1)/sizeof(Double_t);
+  shADcoverplate->DefinePolygon(nvertices,x1,y1);
+  shADcoverplate->DefineSection(0, -0.1, -20.7, 0.0, 1.0); // Z position, offset and scale for first section
+  shADcoverplate->DefineSection(1,  0.1, -20.7, 0.0, 1.0); // -''- secons section
+
+  // Horizontal side___________________________________________________________
+  TGeoXtru * shADhorizontalside = new TGeoXtru(2);
+  shADhorizontalside->SetNameTitle("shADhorizontalside","shADhorizontalside");
+  Double_t x2[] = {  0.0,  .00, 4.80, 4.80, 7.20, 7.20, 12.00, 12.00 };
+  Double_t y2[] = {  0.0, 5.66, 5.66, 1.16, 1.16, 5.66,  5.66,   .00 };
+  nvertices = sizeof(x2)/sizeof(Double_t);
+  shADhorizontalside->DefinePolygon(nvertices,x2,y2);
+  shADhorizontalside->DefineSection(0, -0.4, -6.0, 0.0, 1.0); // Z position, offset and scale for first section
+  shADhorizontalside->DefineSection(1, +0.4, -6.0, 0.0, 1.0); // -''- secons section
+
+  TGeoBBox * shADsidebox = new TGeoBBox("shADsidebox", 0.4, 18.55/2., 5.66/2.);
+  TGeoVolume * voADsidebox = new TGeoVolume("voADsidebox", shADsidebox, kMedAlu);
+
+
+// Define a TNode where this example resides in the TGeometry
+// Draw the TGeometry
+  TGeoVolume * voADhorizontalside = new TGeoVolume("voADhorizontalside", shADhorizontalside, kMedAlu);
+  TGeoVolume * voADcoverplate = new TGeoVolume("voADcoverplate", shADcoverplate, kMedAlu);
+  //
+  TGeoVolume *voADsupport = new TGeoVolumeAssembly("voADsupport"); 
+  voADsupport->AddNode(voADcoverplate,  1, new TGeoTranslation( 0., 0., -5.66/2.-0.1));
+  voADsupport->AddNode(voADcoverplate,  2, new TGeoTranslation( 0., 0., +5.66/2.+0.1));
+  voADsupport->AddNode(voADhorizontalside,  1, new TGeoCombiTrans( -6.0 - 7.1/2., 22.5-0.4, -5.66/2., Rx90));
+  voADsupport->AddNode(voADhorizontalside,  2, new TGeoCombiTrans( +6.0 + 7.1/2., 22.5-0.4, -5.66/2., Rx90));
+  voADsupport->AddNode(voADsidebox,  1, new TGeoTranslation( -20.7 +0.4, 18.55/2., 0.));
+  voADsupport->AddNode(voADsidebox,  2, new TGeoTranslation( +20.7 -0.4, 18.55/2., 0.));
+
   // ==========================================================================
   //
   // Define ADA
@@ -733,35 +769,35 @@ void AliADv1::CreateAD()
   TGeoVolume *ad = new TGeoVolumeAssembly("AD");
   
   // Get medium for ADA
-  TGeoMedium * medADASci     = gGeoManager->GetMedium("AD_NE102"); // AD Scin. 
-  // TGeoMedium * medADALG	     = gGeoManager->GetMedium("AD_PMMA");  // lightGuide
+  TGeoMedium * medADASci        = gGeoManager->GetMedium("AD_BC404"); // AD Scin.
+  // TGeoMedium * medADALG      = gGeoManager->GetMedium("AD_PMMA");  // lightGuide
   // TGeoMedium * medADAPMGlass = gGeoManager->GetMedium("AD_Glass"); // Glass for Aluminium simulation
   // TGeoMedium * medADAPMAlum  = gGeoManager->GetMedium("AD_Alum");
   
   // Get Medium for ADC 
-  TGeoMedium * medADCSci     = gGeoManager->GetMedium("AD_NE102");
+  TGeoMedium * medADCSci     = gGeoManager->GetMedium("AD_BC404");
   // TGeoMedium * medADCLG      = gGeoManager->GetMedium("AD_PMMA");
   // TGeoMedium * medADCPMGlass = gGeoManager->GetMedium("AD_Glass");
   // TGeoMedium * medADCPMAlum  = gGeoManager->GetMedium("AD_Alum");
   
   // ADA Scintillator Pad 
-  const Double_t kADACellSideY = 21.7;
-  const Double_t kADACellSideX = 18.2;
+  const Double_t kADACellSideY = 21.6;
+  const Double_t kADACellSideX = 18.1;
   // ADC Scintillator Pad 
-  const Double_t kADCCellSideY = 21.7;
-  const Double_t kADCCellSideX = 18.2;
+  const Double_t kADCCellSideY = 21.6;
+  const Double_t kADCCellSideX = 18.1;
   // WLS bar          :  0.40 cm ( 4.0 mm )
   // Wrapping         :  0.20 cm ( 2.0 mm )
   // Aluminnized Mylar:  0.01 cm ( 0.1 mm )
   // Fishing line     :  0.04 cm ( 0.4 mm )
   // total shift on X :  0.65 cm
   // total shift on Y :  0.21 cm
-  const Double_t kShiftX       =  0.65;
-  const Double_t kShiftY       =  0.20;
+  const Double_t kShiftX       =  0.54;
+  const Double_t kShiftY       =  0.10;
   const Double_t kADACelldz    =  2.50;
   const Double_t kADCCelldz    =  2.50;
-  const Double_t kADABeamPipeR =  6.20; // Radius of beam pipe hole for ADA (Diameter  7 cm)
-  const Double_t kADCBeamPipeR =  3.70; // Radius of beam pipe hole for ADC (Diameter 12 cm)
+  const Double_t kADABeamPipeR =  6.20; // Radius of beam pipe hole for ADA (Diameter  12.4 cm)
+  const Double_t kADCBeamPipeR =  3.70; // Radius of beam pipe hole for ADC (Diameter   7.4 cm)
   const Int_t    kColorADA     = kGreen;
   const Int_t    kColorADC     = kGreen;
   Double_t X = kShiftX + kADACellSideX * 0.5;
@@ -772,7 +808,7 @@ void AliADv1::CreateAD()
   Double_t WLS_SideC_Long_dy  = 24.20; // 24.2;
   Double_t WLS_SideA_Short_dy = 18.20; // 18.41; 
   Double_t WLS_SideC_Short_dy = 20.70; // 20.91; 
-  // Creating ADA WLS bars
+  // Creating ADA WLS bars_____________________________________________________
   TGeoVolume * vADA_WLS_s = new TGeoVolume( "ADAWLSshort", 
       new TGeoBBox( "shADAWLSbarShort" , WLS_dx/2.0, WLS_SideA_Short_dy/2.0, WLS_dz/2.0),
       medADASci);      
@@ -781,7 +817,7 @@ void AliADv1::CreateAD()
       medADASci);      
   vADA_WLS_l->SetLineColor( kRed );
   vADA_WLS_s->SetLineColor( kRed );
-  // Creating ADC WLS bars
+  // Creating ADC WLS bars_____________________________________________________
   TGeoVolume * vADC_WLS_s = new TGeoVolume( "ADCWLSshort", 
       new TGeoBBox( "shADCWLSbarShort" , WLS_dx/2.0, WLS_SideC_Short_dy/2.0, WLS_dz/2.0),
       medADCSci);      
@@ -790,7 +826,7 @@ void AliADv1::CreateAD()
       medADCSci);      
   vADC_WLS_l->SetLineColor(kRed);
   vADC_WLS_s->SetLineColor(kRed);
-  // Make ADA scintillator pad
+  // Make ADA scintillator pad_________________________________________________
   new TGeoBBox( "shADAbox" , kADACellSideX/2.0, kADACellSideY/2.0, kADACelldz/2.0 );
   new TGeoTube( "shADAHole",               0. , kADABeamPipeR    , kADACelldz     );
   ( new TGeoTranslation("trADAbox", X, Y, 0.)) -> RegisterYourself();
@@ -803,8 +839,7 @@ void AliADv1::CreateAD()
   // Add PAD
   secADA->AddNode( vADA1, 1, 0); 
   secADA->AddNode( vADA_WLS_s, 1, 
-      new TGeoTranslation(0.21 + WLS_dx/2.0, kADABeamPipeR + WLS_SideA_Short_dy/2.0, 0.0) ); 
-      // new TGeoTranslation(0.21 + WLS_dx/2.0, kADABeamPipeR + kShiftY + WLS_SideA_Short_dy/2.0, 0.0) ); 
+      new TGeoTranslation(0.1 + WLS_dx/2.0, kADABeamPipeR + WLS_SideA_Short_dy/2.0, 0.0) ); 
   secADA->AddNode( vADA_WLS_l, 1, 
       new TGeoTranslation(kShiftX + WLS_dx/2.0 + kADACellSideX + 0.04, kShiftY + WLS_SideA_Long_dy/2.0, 0.0) ); 
 
@@ -815,27 +850,23 @@ void AliADv1::CreateAD()
   vADAarray->AddNode( secADA, 3, Rz180 );                                   // --------------->  x     
   vADAarray->AddNode( secADA, 4, Rx180 );                                   //   3    |   4
   //                                                                        //        |
-  // TGeoRotation *rotADA90 = new TGeoRotation("adarot",0,0,0); <--Delete this  
   // Add ADA layer 2 and 3 to AD volume
-  const Float_t kPosAD2 = 1695.0;
-  const Float_t kPosAD3 = 1700.0;
-  ad->AddNode(vADAarray,1, new TGeoTranslation(0., 0., kPosAD2)); 
-  ad->AddNode(vADAarray,2, new TGeoTranslation(0., 0., kPosAD3));
-  
-  // if (GetADATwoInstalled())
-  // {
-  // 	const Float_t kPosADA2 = kPosADA - 5.0;
-  // 	ad->AddNode(vADAarray,2, new TGeoCombiTrans("ada",0,0,kPosADA2,rotADA90));
-  // }
+  // const Float_t kPosAD2 = 1695.0;
+  // const Float_t kPosAD3 = 1700.0;
+  // ad->AddNode(vADAarray,1, new TGeoTranslation(0., 0., kPosAD2)); 
+  // ad->AddNode(vADAarray,2, new TGeoTranslation(0., 0., kPosAD3));
+  const Float_t kPosADA = 1695.0;
+  ad->AddNode(vADAarray,    1, new TGeoTranslation(0., 0., kPosADA - kADACelldz/2. -0.1)); 
+  ad->AddNode(vADAarray,    2, new TGeoTranslation(0., 0., kPosADA + kADACelldz/2. +0.1));
+  ad->AddNode(voADsupport,  1, new TGeoTranslation( 0., 0., kPosADA));
+  ad->AddNode(voADsupport,  2, new TGeoCombiTrans ( 0., 0., kPosADA, Rz180));
 
   // ==========================================================================
   //
-  // Define ADC (2014, Aug 20)
+  // Define ADC (2014, May 4) Updated 2015, Jan 22
   //
   // ==========================================================================
 
-  /// Creation of assembly of one ADC sector
-  
   /////////////////////////////////////////////////////////////////////////////
   /// ADC in the tunnel                                                     ///
   /////////////////////////////////////////////////////////////////////////////
@@ -855,8 +886,7 @@ void AliADv1::CreateAD()
   voADC->AddNode( vADCpad, 1, 0);
   // Add ADC WLS Short bar
   voADC->AddNode( vADC_WLS_s, 1, 
-      new TGeoTranslation( 0.21 + WLS_dx/2.0, kADCBeamPipeR + WLS_SideC_Short_dy/2.0, 0.0) ); 
-      // new TGeoTranslation( 0.21 + WLS_dx/2.0, kADCBeamPipeR + kShiftY + WLS_SideC_Short_dy/2.0, 0.0) ); 
+      new TGeoTranslation( 0.1 + WLS_dx/2.0, kADCBeamPipeR + WLS_SideC_Short_dy/2.0, 0.0) ); 
   // Add ADC WLS Long  bar
   voADC->AddNode( vADC_WLS_l, 1, 
       new TGeoTranslation( 0.04 + WLS_dx/2.0 + kADCCellSideX + kShiftX, kShiftY + WLS_SideC_Long_dy/2.0, 0.0) ); 
@@ -886,15 +916,24 @@ void AliADv1::CreateAD()
   //
   // ==========================================================================
   
+  // *  ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kZendADC2 + kADCCelldz/2.)); // Tunnel
+  // *  ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kZbegADC1 - kADCCelldz/2.)); // Tunnel
+  // *  const Float_t kZbegADC1 = -kZbegFrontBar-2.
+  // *  const Float_t kZendADC2 = -1959.0;            // (ecalvovi@cern.ch) 
   
-
   switch (fADCPosition ) {
     case kADCInTunnel:
       {
-        const Float_t kZbegADC1 = -kZbegFrontBar-2.;  // (ecalvovi@cern.ch) 
-        const Float_t kZendADC2 = -1959.0;            // (ecalvovi@cern.ch) 
-        ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kZendADC2 + kADCCelldz/2.)); // Tunnel
-        ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kZbegADC1 - kADCCelldz/2.)); // Tunnel
+        // const Float_t kZbegADC1 = -kZbegFrontBar-2.;  // (ecalvovi@cern.ch) 
+        // const Float_t kZendADC2 = -1959.0;            // (ecalvovi@cern.ch) 
+        // ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kZendADC2 + kADCCelldz/2.)); // Tunnel
+        // ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kZbegADC1 - kADCCelldz/2.)); // Tunnel
+        const Float_t kPosADC = -kZbegFrontBar-2.-3.0-0.3;  // 3.0 = (5.6 + 0.2 + 0.2)/2. // (ecalvovi@cern.ch) 
+        printf("CreateAD: kPosADC=%8.2f\n", kPosADC);
+        ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kPosADC - kADCCelldz/2. - 0.1)); // Tunnel // ADC1
+        ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kPosADC + kADCCelldz/2. + 0.1)); // Tunnel // ADC2
+        ad -> AddNode(voADsupport, 3, new TGeoTranslation( 0., 0., kPosADC));
+        ad -> AddNode(voADsupport, 4, new TGeoCombiTrans ( 0., 0., kPosADC, Rz180));
         break;
       }
     case kADCInCavern:
@@ -922,7 +961,7 @@ void AliADv1::CreateAD()
 
   // ==========================================================================
   // 
-  // Add volumes to Top volume
+  // Add structure volumes to top volume
   //
   // ==========================================================================
 
@@ -950,15 +989,16 @@ void AliADv1::CreateAD()
   top->AddNode(voLatBar, 1, new TGeoTranslation(  31.9, 0., z));
   top->AddNode(voLatBar, 2, new TGeoTranslation( -31.9, 0., z));
   //
-  // Add Everything to ALICE
+  // Add structures (top) to AD node
   //
-  TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
-  // Add structures to AD
   if (fADCstruct) {
     ad->AddNode(top,1, Ry180);
   }
 
-  // Add AD to ALICE
+  //
+  // Add Everything to ALICE
+  //
+  TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(ad, 1);
   
 

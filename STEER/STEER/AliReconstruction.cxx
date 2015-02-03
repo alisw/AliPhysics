@@ -822,8 +822,9 @@ void AliReconstruction::InitCDB()
 
 //_____________________________________________________________________________
 void AliReconstruction::SetCDBSnapshotMode(const char* snapshotFileName) {
+    if (!AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName))
+      AliFatal("Setting CDB snapshot mode failed.");
     fCDBSnapshotMode = kTRUE;
-    AliCDBManager::Instance()->SetSnapshotMode(snapshotFileName);
 }
 
 //_____________________________________________________________________________
@@ -1960,7 +1961,7 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   AliRawVEvent *event = NULL;
   currTree->SetBranchAddress("rawevent",&event);
   currTree->GetEntry(entry);
-  fRawReader = new AliRawReaderRoot(event);
+  fRawReader = new AliRawReaderRoot(event,entry);
   // check if process has enough resources 
   if (!HasEnoughResources(entry)) return kFALSE;
   fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());
@@ -1968,6 +1969,8 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   fRawReader = NULL;
   delete event;
 
+  if (!fStatus) Abort("ProcessEvent",TSelector::kAbortFile);  
+  CleanProcessedEvent();
   return fStatus;
 }
 

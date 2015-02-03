@@ -54,7 +54,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
-	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset);
+	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase);
 	}
       else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
 	{
@@ -65,7 +65,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
 	  Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	  Int_t ndf = last - first - 1; // nsamples - 2
-	  return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
+	  return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase,
 				    timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	} // ampcut
     } // bunch index    

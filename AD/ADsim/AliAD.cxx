@@ -219,14 +219,50 @@ void AliAD::CreateMaterials()
    //    Photons/MeV: 2.5 x 10^4 
    //
    // H                // C 
+   // as[0] = 1.00794;    as[1] = 12.011;
+   // zs[0] = 1.;         zs[1] = 6.;
+   // ws[0] = 5.23;       ws[1] = 4.74;
+   // density = 1.032;
+   // id      = 1;
+   // AliMixture( id, "NE102", as, zs, density, -2, ws );
+   // AliMedium( id, "NE102", id, 1, fieldType, maxField, maxBending, maxStepSize,
+   //            maxEnergyLoss, precision, minStepSize );
+
+   // ecalvovi@cern.ch
+   // Parameters  for AD scintillator: BC404
+   //
+   // NE-102, has the following properties : (from internet, need better reference)
+   //    Density : ca. 1.032 g/cm3
+   //    Electrons/cm3: 3.37 x 10^23
+   //    H atoms/cm3: 5.21 x 10^22
+   //    C atoms/cm3: 4.74 x 10^22
+   //    Ratio of H to C : 1.100 
+   //    wavelength of emission : 408 nm.
+   //    Decay time : 1.8 ns.
+   //    Luminescent efficiency : typically 18% of NaI(Tl)
+   //    Photons/MeV: ??
+   //
+   // H                // C 
    as[0] = 1.00794;    as[1] = 12.011;
    zs[0] = 1.;         zs[1] = 6.;
-   ws[0] = 5.23;       ws[1] = 4.74;
+   ws[0] = 5.21;       ws[1] = 4.74;
    density = 1.032;
    id      = 1;
-   AliMixture( id, "NE102", as, zs, density, -2, ws );
-   AliMedium( id, "NE102", id, 1, fieldType, maxField, maxBending, maxStepSize,
+   AliMixture( id, "BC404", as, zs, density, -2, ws );
+   AliMedium ( id, "BC404", id, 1, fieldType, maxField, maxBending, maxStepSize,
               maxEnergyLoss, precision, minStepSize );
+   // parameters AliMedium: numed  name   nmat   isvol  ifield fieldm tmaxfd stemax deemax epsil  stmin  
+   // ... 
+   // isvol       sensitive volume if isvol!=0
+   // ifield      magnetic field flag (see below)
+   // fieldm      maximum magnetic field
+   // ...
+   // ifield =  0       no magnetic field
+   //        = -1       user decision in guswim
+   //        =  1       tracking performed with Runge Kutta
+   //        =  2       tracking performed with helix
+   //        =  3       constant magnetic field along z
+
 
    //
    // Parameters for lightGuide:  

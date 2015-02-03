@@ -297,7 +297,7 @@ void AliADQADataMakerSim::MakeSDigits()
          Int_t   PMNumber  = ADSDigit->PMNumber();
 	 Int_t   Nbins = ADSDigit->GetNBins();
 	 Double_t totCharge = 0;
-	 //Double_t *Charges = 
+	
 	 for(Int_t i = 0; i<Nbins; i++)totCharge += ADSDigit->GetCharges()[i];       
          FillSDigitsData(1, PMNumber, totCharge) ;
     }  
