@@ -2,7 +2,7 @@
 
 # Automatically generated BUILD.sh for @PARMODULE@
 
-npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null`
+npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null || echo 0`
 if [ "$npar" == 0 ] ; then
   npar=`sysctl hw.ncpu | cut -b10 2> /dev/null`
 fi
