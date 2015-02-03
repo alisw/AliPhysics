@@ -9,6 +9,9 @@ PAR_MODULE := @PARMODULE@
 # This module depends on the following libraries
 PAR_LIBDEPS := @PARLIBDEPS@
 
+# Current OS
+OS := $(shell uname)
+
 # Include paths
 PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
 PAR_INCLUDES = -I. $(addprefix -I,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
@@ -21,6 +24,10 @@ PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)
 
 # Get linker flags from ROOT
 PAR_SOFLAGS = $(SOFLAGS) $(LDFLAGS)
+ifeq ($(OS),Darwin)
+	# Only on OS X
+	PAR_SOFLAGS += -undefined dynamic_lookup
+endif
 
 # Get some ROOT build flags from the current installation
 ROOT_DEFINES += $(shell root-config --features | grep -q xml && echo '-DWITHXML')
