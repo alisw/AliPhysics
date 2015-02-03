@@ -1,47 +1,47 @@
-/*
-  marian.ivanov@cern.ch
-  //
-  Register primitive corrections: base functions for minimization:
-  Id numbers are associated to given primitive corrections.
-  See comments in the function headers. 
-  Used only for residuals minimization not in the reconstruction.
-  File with all primitives expected to be in the current directory:
-  filenames:  
-  TPCCorrectionPrimitives.root                  - Alignment, Quadrants, 2D symentrid and rod misalingment
-  TPCCorrectionPrimitivesROC.root               - ExB distortion due to the common ROC misalignment
-  TPCCorrectionPrimitivesSector.root            - ExB distortion due to the one sector misalingment (sector 0)
-  TPCCorrectionPrimitivesFieldCage.root         - ExB distortion due to the Field cage missalignment
-  //      
-
-  RegisterCorrection();                         - Reserved id's  0 -999
-  //
-  RegisterAliTPCFCVoltError3D();                - Reserved id's  0 -99
-  RegisterAliTPCBoundaryVoltError();            - Reserved id's  100-199
-  RegisterAliTPCCalibGlobalMisalignment();      - Reserved id's  200-499
-  RegisterAliTPCExBBShape();                    - Reserved id's  500-600
-  RegisterAliTPCExBTwist();                     - Reserved id's  600-700
-  RegisterAliTPCROCVoltError3D()                - Reserved id's  700-800
-  RegisterAliTPCROCVoltError3DSector()          - Reserved id's  800-900
-  .x ~/rootlogon.C
-  .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
-  RegisterCorrection();
-
-*/
-
-/*
- Example use: 
- .x ~/rootlogon.C
- .L $ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C
- ConfigCalibTrain(119037,"local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB/")
-
- .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
- RegisterCorrection(0);
-
- //See example usage of correction primitive/derivatives in file
-
-
-*/
-
+/// \file RegisterCorrection.C
+///
+/// \author marian.ivanov@cern.ch
+///
+/// Register primitive corrections: base functions for minimization:
+/// Id numbers are associated to given primitive corrections.
+/// See comments in the function headers. 
+/// Used only for residuals minimization not in the reconstruction.
+/// File with all primitives expected to be in the current directory:
+/// filenames:  
+/// TPCCorrectionPrimitives.root                  - Alignment, Quadrants, 2D symentrid and rod misalingment
+/// TPCCorrectionPrimitivesROC.root               - ExB distortion due to the common ROC misalignment
+/// TPCCorrectionPrimitivesSector.root            - ExB distortion due to the one sector misalingment (sector 0)
+/// TPCCorrectionPrimitivesFieldCage.root         - ExB distortion due to the Field cage missalignment
+///
+///
+/// RegisterCorrection();                         - Reserved id's  0 -999
+///
+/// RegisterAliTPCFCVoltError3D();                - Reserved id's  0 -99
+/// RegisterAliTPCBoundaryVoltError();            - Reserved id's  100-199
+/// RegisterAliTPCCalibGlobalMisalignment();      - Reserved id's  200-499
+/// RegisterAliTPCExBBShape();                    - Reserved id's  500-600
+/// RegisterAliTPCExBTwist();                     - Reserved id's  600-700
+/// RegisterAliTPCROCVoltError3D()                - Reserved id's  700-800
+/// RegisterAliTPCROCVoltError3DSector()          - Reserved id's  800-900
+///
+/// ~~~
+/// .x ~/rootlogon.C
+/// .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
+/// RegisterCorrection();
+/// ~~~
+///
+/// Example use: 
+///
+/// ~~~
+/// .x ~/rootlogon.C
+/// .L $ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C
+/// ConfigCalibTrain(119037,"local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB/")
+///
+/// .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
+/// RegisterCorrection(0);
+/// ~~~
+///
+/// See example usage of correction primitive/derivatives in file
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
@@ -176,14 +176,10 @@ void RegisterAliTPCFCVoltError3DRodFCSideRadiusType();
 //
 
 void RegisterCorrection(Int_t type=0){
-  //
-  //
-  //
-  // check the presence of corrections in file
-  //
-  //gROOT->Macro("ConfigCalibTrain.C(119037)");
-  //
-  //
+  /// check the presence of corrections in file
+  ///
+  /// gROOT->Macro("ConfigCalibTrain.C(119037)");
+
   if (type==1) return RegisterAliTPCROCVoltError3D();            // 3D distortion due misalignemnt of FC ....
   if (type==2) return RegisterAliTPCROCVoltError3DSector();      // 3D distortion due misalingment of Sectors
   if (type==4) return RegisterAliTPCFCVoltError3DRodFCSideRadiusType(); 
@@ -222,25 +218,24 @@ void RegisterCorrection(Int_t type=0){
 
 
 void RegisterAliTPCFCVoltError3D(){
-  //
-  // Load the models from the file
-  // Or create it
-  // Register functions with following IDs:
-  // IMPORTANT: The nominal shift is in mm 
-  //
-  //  rotOFC  - 0 
-  //  rodOFC1 - 1
-  //  rodOFC2 - 2 
-  //  rotIFC  - 3 
-  //  rodIFC1 - 4 
-  //  rodIFC2 - 5 
-  //  rodIFCShift - 6 
-  //  rodIFCSin   - 7 
-  //  rodIFCCos   - 8 
-  //  rodOFCShift - 9 
-  //  rodOFCSin   - 10 
-  //  rodOFCCos   - 11 
-  //
+  /// Load the models from the file
+  /// Or create it
+  /// Register functions with following IDs:
+  /// IMPORTANT: The nominal shift is in mm
+  ///
+  ///  rotOFC  - 0
+  ///  rodOFC1 - 1
+  ///  rodOFC2 - 2
+  ///  rotIFC  - 3
+  ///  rodIFC1 - 4
+  ///  rodIFC2 - 5
+  ///  rodIFCShift - 6
+  ///  rodIFCSin   - 7
+  ///  rodIFCCos   - 8
+  ///  rodOFCShift - 9
+  ///  rodOFCSin   - 10
+  ///  rodOFCCos   - 11
+
   printf("RegisterAliTPCFCVoltError3D()");
   Int_t volt = 40; // 40 V ~  1mm
   AliTPCComposedCorrection *corrField3D = (AliTPCComposedCorrection*) fCorrections->Get("TPCFCVoltError3D");    
@@ -389,15 +384,14 @@ void RegisterAliTPCFCVoltError3D(){
 
 
 void RegisterAliTPCFCVoltError3DRodFCSideRadiusType(){
-  //
-  // Load the models from the file
-  // Or create it
-  // Register functions with following IDs:
-  // IMPORTANT: The nominal shift is in mm 
-  //
-  // naming convention:
-  // rodFCSide%dRadius%dType%d  
-  //
+  /// Load the models from the file
+  /// Or create it
+  /// Register functions with following IDs:
+  /// IMPORTANT: The nominal shift is in mm
+  ///
+  /// naming convention:
+  /// rodFCSide%dRadius%dType%d
+
   ::Info("RegisterAliTPCFCVoltError3DRodFCSideRadiusType()","Start");
   Int_t volt = 40; // 40 V ~  1mm
   TFile * fCorrectionsRodFCSideRadiusType = TFile::Open("TPCCorrectionPrimitivesFieldCage.root","update");
@@ -465,18 +459,17 @@ void RegisterAliTPCFCVoltError3DRodFCSideRadiusType(){
 
 
 void RegisterAliTPCCalibGlobalMisalignment(){
-  //
-  // Register primitive alignment components.
-  // Linear conbination of primitev forulas used for fit
-  // The nominal delta 1 mm in shift and 1 mrad in rotation
-  // Primitive formulas registeren in AliTPCCoreection::AddvisualCorrection
-  // 20 - deltaX 
-  // 21 - deltaY
-  // 22 - deltaZ
-  // 23 - rot0 (phi)
-  // 24 - rot1 (theta)
-  // 25 - rot2 
-  //
+  /// Register primitive alignment components.
+  /// Linear conbination of primitev forulas used for fit
+  /// The nominal delta 1 mm in shift and 1 mrad in rotation
+  /// Primitive formulas registeren in AliTPCCoreection::AddvisualCorrection
+  /// 20 - deltaX
+  /// 21 - deltaY
+  /// 22 - deltaZ
+  /// 23 - rot0 (phi)
+  /// 24 - rot1 (theta)
+  /// 25 - rot2
+
   printf("RegisterAliTPCCalibGlobalMisalignment()\n");
   TGeoHMatrix matrixX;
   TGeoHMatrix matrixY;
@@ -601,15 +594,14 @@ void RegisterAliTPCCalibGlobalMisalignment(){
 
 
 void RegisterAliTPCBoundaryVoltError(){
-  //
-  // Register phi symetric E filed distortions
-  // 100-108 - A side 0 Field  
-  // 110-118 - C side 0 Field  
-  // 120-128 - A side +0.5 Field  
-  // 130-138 - C side +0.5 Field  
-  // 140-148 - A side -0.5 Field  
-  // 150-158 - C side -0.5 Field  
-  //
+  /// Register phi symetric E filed distortions
+  /// 100-108 - A side 0 Field
+  /// 110-118 - C side 0 Field
+  /// 120-128 - A side +0.5 Field
+  /// 130-138 - C side +0.5 Field
+  /// 140-148 - A side -0.5 Field
+  /// 150-158 - C side -0.5 Field
+
   Double_t vdrift = 2.64; // [cm/us]   // to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t T1 = 1.0;
@@ -704,9 +696,8 @@ void RegisterAliTPCBoundaryVoltError(){
 
 
 void RegisterAliTPCExBShape(){
-  //
-  //
-  // 
+  ///
+
   AliMagF *magF = new AliMagF("mag","mag");
 
   exbShape             = new AliTPCExBBShape;
@@ -734,9 +725,8 @@ void RegisterAliTPCExBShape(){
 
 
 void RegisterAliTPCExBTwist(){
-  //
-  //
-  //
+  ///
+
   twistX    = new  AliTPCExBTwist;
   twistY    = new  AliTPCExBTwist;
   twistX->SetXTwist(0.001);  // 1 mrad twist in x
@@ -752,9 +742,8 @@ void RegisterAliTPCExBTwist(){
 }
 
 void RegisterAliTPCCorrectionDrift(){
-  //
-  // Drift distortion/correction
-  //
+  /// Drift distortion/correction
+
   for (Int_t idrift=0; idrift<7; idrift++) {
     calibDrift[idrift]=new AliTPCCorrectionDrift;
   }
@@ -788,11 +777,11 @@ void RegisterAliTPCCorrectionDrift(){
 
 
 void RegisterAliTPCROCVoltError3D(){
-  //
-  // ROC rotation transformation
-  //       700 -709 - 0 field
-  //       710 -719 - +0.5 field
-  //       720 -729 - -0.5 field
+  /// ROC rotation transformation
+  ///       700 -709 - 0 field
+  ///       710 -719 - +0.5 field
+  ///       720 -729 - -0.5 field
+
   Double_t vdrift = 2.64; // [cm/us]   // to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t T1 = 1.0;
@@ -1155,11 +1144,10 @@ void RegisterAliTPCROCVoltError3D(){
 
 
 void RegisterAliTPCROCVoltError3DSector(){
-  //
-  // ROC rotation and shift transformation
-  // 800-819 -   0.0 Field
-  // 820-839 -  +0.5 Field
-  // 840-859 -  +0.5 Field
+  /// ROC rotation and shift transformation
+  /// 800-819 -   0.0 Field
+  /// 820-839 -  +0.5 Field
+  /// 840-859 -  +0.5 Field
 
   rocShiftIROCA0=0;      // IROC shift A0 side
   rocRotIROCA0=0;        // IROC rot   A0 side
@@ -1364,9 +1352,8 @@ void RegisterAliTPCROCVoltError3DSector(){
 
 
 AliTPCComposedCorrection * MakeComposedCorrectionExB(){
-  //
-  // make composed corection for ExB scanning
-  //
+  /// make composed corection for ExB scanning
+
   RegisterCorrection();
   //
    //
@@ -1482,9 +1469,8 @@ AliTPCComposedCorrection * MakeComposedCorrectionExB(){
 
 
 AliTPCComposedCorrection * GetCorrectionFromFile(){
-  //
-  // Getthe appropariate correction form the closest file
-  //
+  /// Getthe appropariate correction form the closest file
+
   TFile * fexb= TFile::Open("RegisterCorrectionExB.root");
   if (!fexb)  fexb= TFile::Open("../RegisterCorrectionExB.root");
   if (!fexb)  fexb= TFile::Open("../../RegisterCorrectionExB.root");
@@ -1522,11 +1508,11 @@ AliTPCComposedCorrection * GetCorrectionFromFile(){
 }
 
 void TestParExample(){
-  //
-  // dz shift example: AliTPCCorrection::AddVisualCorrection(rocDzIROCA,705); 
-  // => parabolic fit and helix fit agrees - once significant ammount of points used
-  //    160 point - agreement  ~2%; 
-  //     80 points - agreement ~5%
+  /// dz shift example: AliTPCCorrection::AddVisualCorrection(rocDzIROCA,705);
+  /// => parabolic fit and helix fit agrees - once significant ammount of points used
+  ///    160 point - agreement  ~2%;
+  ///     80 points - agreement ~5%
+
   AliTPCCorrection* corr = AliTPCCorrection::GetVisualCorrection(705);  
   corr->SetOmegaTauT1T2(0.33,1,1);
   TF1 f705Par("f705","AliTPCCorrectionFit::EvalAtPar(0,0,85, x,0.1,705,0,80)",0,360);
@@ -1541,9 +1527,8 @@ void TestParExample(){
 
 
 void TestFitSpeed(Int_t nEvals){
-  //
-  //  test speed of helix fit/ resp. parabolic fir
-  //
+  ///  test speed of helix fit/ resp. parabolic fir
+
   TStopwatch timerh; 
   ::Info("TestFitSpeed","Helix fit");
   for (Int_t i=0;i<nEvals; i++) AliTPCCorrectionFit::EvalAtPar(0,0,85,gRandom->Rndm(),0.1,705,0,80); 

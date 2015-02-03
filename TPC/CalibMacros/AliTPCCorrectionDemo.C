@@ -1,7 +1,9 @@
-/*
- gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STAT");
+/// \file AliTPCCorrectionDemo.C
+///
+/// ~~~{.cpp}
+/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STAT");
+/// ~~~
 
- */
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "THnSparse.h"
 #include "TLatex.h"
@@ -44,23 +46,21 @@
 
 void AliTPCCorrectionDemo() {
 
-  //
-  // This is a Demo function of the general class AliTPCCorrection, which is used for 
-  // general space point correction due to different effects.
-  // The effects used in this Demo are:
-  //   1. ExB twist - general offset of the TPC axis in comparison to the B field axis
-  //   2. GG error (Gating Grid volt. error) - not perfectly aligned GG voltage (in terms of voltage)
-  //   3. ExBBShape - B field shape correction of the secound order
-  //
-  // See class descriptions for further details 
-  //
-  // Authors: Magnus Mager, Stefan Rossegger, Jim Thomas
-  //
-  //
-  // omegaTau (wt) of the langevin equation
-  // This is a function of the drift vel., the magnetic and electric field
-  // e.g. vd=2.6 cm/usc; Ez=400 V/cm; Bz=0.5 T
-  // wt =  -10.0*(Bz*10)*vd/Ez = -0.325 
+  /// This is a Demo function of the general class AliTPCCorrection, which is used for
+  /// general space point correction due to different effects.
+  /// The effects used in this Demo are:
+  ///   1. ExB twist - general offset of the TPC axis in comparison to the B field axis
+  ///   2. GG error (Gating Grid volt. error) - not perfectly aligned GG voltage (in terms of voltage)
+  ///   3. ExBBShape - B field shape correction of the secound order
+  ///
+  /// See class descriptions for further details
+  ///
+  /// Authors: Magnus Mager, Stefan Rossegger, Jim Thomas
+  ///
+  /// omegaTau (wt) of the langevin equation
+  /// This is a function of the drift vel., the magnetic and electric field
+  /// e.g. vd=2.6 cm/usc; Ez=400 V/cm; Bz=0.5 T
+  /// wt =  -10.0*(Bz*10)*vd/Ez = -0.325
 
   Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
   Double_t bzField = -0.5; // [Tesla] // to be updated: per run
@@ -107,9 +107,8 @@ void AliTPCCorrectionDemo() {
 
 
 void MakeDistortionMap(){
-  //
-  // make distortiona map example for specific transformation 
-  //
+  /// make distortiona map example for specific transformation
+
   Int_t run=0;
   TTreeSRedirector *pcstream =  new TTreeSRedirector("distort.root");
   Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
@@ -172,9 +171,8 @@ void MakeDistortionMap(){
 }
 
 void DrawDistortionMap(){
-  //
-  // Example -drawing of distortion maps
-  //
+  /// Example -drawing of distortion maps
+
   TFile f("distort.root");
   TTree *   fitDistorttwistX001= (TTree*)f.Get("fitDistorttwistX001");
   TTree *   fitDistortggoffsetA50C50=(TTree*)f.Get("fitDistortggoffsetA50C50");
@@ -212,9 +210,7 @@ void DrawDistortionMap(){
 
 
 void TestVertex(){
-  //
-  //
-  //  .x ConfigCalibTrain.C(120829)
+  ///  .x ConfigCalibTrain.C(120829)
 
   AliTPCComposedCorrection * corrC = ( AliTPCComposedCorrection *)AliTPCcalibDB::Instance()->GetTPCComposedCorrection(0.5);
   AliTPCCorrection * corrT = (AliTPCCorrection *)corrC->GetCorrections()->FindObject("exb_twist");

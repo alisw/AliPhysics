@@ -1,45 +1,48 @@
- 
-/* 
-   //
-   // 0. Make a calibration
-   // 1. Make a laser scan list
-   //    e.g in TPC workscape 
-   find `pwd`/*/laserMean.root >laserScan.txt
-   // 2. Define a reference data 
-   rrunA=84469/; for a in `cat laserScan.txt`; do echo `pwd`/$rrunA/laserMean.root; done >laserScanRefA.txt
-   rrunC=84469; for a in `cat laserScan.txt`; do echo `pwd`/$rrunC/laserMean.root; done >laserScanRefC.txt
-   rrun=84469; for a in `cat laserScan.txt`; do echo `pwd`/$rrun/laserMean.root; done >laserScanRef.txt
-										  // 
-   //
-   .x ~/rootlogon.C
-   gSystem->Load("libANALYSIS");
-   gSystem->Load("libTPCcalib"); 
-   gSystem->Load("libSTAT");
-
-   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-   .L $ALICE_ROOT/TPC/CalibMacros/CalibLaserVscan.C+
-
-   AliXRDPROOFtoolkit tool;
-   chain = tool.MakeChainRandom("laserScan.txt","Mean",0,10200);
-   chain->Lookup();
-   chainRef = tool.MakeChain("laserScanRef.txt","Mean",0,10200);
-   chain->AddFriend(chainRef,"R") 
-   chainRefA = tool.MakeChain("laserScanRefA.txt","Mean",0,10200);
-   chain->AddFriend(chainRefA,"RA") 
-   chainRefC = tool.MakeChain("laserScanRefC.txt","Mean",0,10200);
-   chain->AddFriend(chainRefC,"RC") 
-   //
-   // MakeMeanBundle();
-   // SaveResult();   
-   //
-   ReadRunSetup();
-   ReadResult();
-   
-   MakeAnalysisBeam();
-   TFile fbundle("scanDeltaBeam.root");
-   chain->Draw("mphi:GetValueBundle(id,1)","isOK&&GetValueBundle(id,0)>3&&LTr.fSide==0","")
-*/
+/// \file CalibLaserVscan.C
+///
+/// 0. Make a calibration
+/// 1. Make a laser scan list
+///    e.g in TPC workscape
+///
+/// ~~~
+/// find `pwd`/*/laserMean.root >laserScan.txt
+/// ~~~
+///
+/// ~~~{.cpp}
+/// // 2. Define a reference data 
+/// rrunA=84469/; for a in `cat laserScan.txt`; do echo `pwd`/$rrunA/laserMean.root; done >laserScanRefA.txt
+/// rrunC=84469; for a in `cat laserScan.txt`; do echo `pwd`/$rrunC/laserMean.root; done >laserScanRefC.txt
+/// rrun=84469; for a in `cat laserScan.txt`; do echo `pwd`/$rrun/laserMean.root; done >laserScanRef.txt
+///   									  // 
+/// .x ~/rootlogon.C
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib"); 
+/// gSystem->Load("libSTAT");
+///
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+/// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibLaserVscan.C+
+///
+/// AliXRDPROOFtoolkit tool;
+/// chain = tool.MakeChainRandom("laserScan.txt","Mean",0,10200);
+/// chain->Lookup();
+/// chainRef = tool.MakeChain("laserScanRef.txt","Mean",0,10200);
+/// chain->AddFriend(chainRef,"R") 
+/// chainRefA = tool.MakeChain("laserScanRefA.txt","Mean",0,10200);
+/// chain->AddFriend(chainRefA,"RA") 
+/// chainRefC = tool.MakeChain("laserScanRefC.txt","Mean",0,10200);
+/// chain->AddFriend(chainRefC,"RC") 
+/// //
+/// // MakeMeanBundle();
+/// // SaveResult();   
+/// //
+/// ReadRunSetup();
+/// ReadResult();
+/// 
+/// MakeAnalysisBeam();
+/// TFile fbundle("scanDeltaBeam.root");
+/// chain->Draw("mphi:GetValueBundle(id,1)","isOK&&GetValueBundle(id,0)>3&&LTr.fSide==0","")
+/// ~~~
 
 #include <fstream>
 #include "TFile.h"
@@ -98,8 +101,8 @@ TCut cC="eY.fElements<0.01&&RA.eY.fElements<0.01&&X.fElements>10&&RA.X.fElements
 
 
 Double_t GetValueBundle(Int_t id, Int_t type){
-  //
-  //
+  ///
+
   return matrixMeanBundle(id,type);
 }
 
@@ -119,14 +122,14 @@ Double_t GetDyBundle(Int_t id){
 }
 
 Double_t GetRMSBundle(Int_t id, Int_t type){
-  //
-  //
+  ///
+
   return matrixRMSBundle(id,type);
 }
 Int_t GetVoltage(Int_t run, Int_t type){
-  //
-  // Get the voltage
-  // run#  -0 ggA 1- ggC 2- coA 3-coC 4-skA 5-skC
+  /// Get the voltage
+  /// run#  -0 ggA 1- ggC 2- coA 3-coC 4-skA 5-skC
+
   TVectorD *runVoltage = mapRunVoltage[run];
   if (!runVoltage) return -1;
   return (*runVoltage)[type];
@@ -280,9 +283,8 @@ void MakeAnalysisBeam(){
 
 
 void MakeMeanBundle(){  
-  //
-  // 
-  //
+  ///
+
   AliTPCLaserTrack::LoadTracks();
   AliTPCLaserTrack *ltrack;
   TF1 * fp1 = 0;
@@ -375,9 +377,8 @@ void MakeMeanBundle(){
 
 
 void MakeGraphsdY(){
-  //
-  // Make delta Y pictures from voltage scan
-  //
+  /// Make delta Y pictures from voltage scan
+
   TObjArray *aprofY = new TObjArray(14);
   for (Int_t ib=0;ib<14;ib++){
     TProfile *profY = new TProfile("py","py",100,0,150);
@@ -409,9 +410,8 @@ void MakeGraphsdY(){
 }
 
 void MakeGraphsdP2(){
-  //
-  // Make delta Y pictures from voltage scan
-  //
+  /// Make delta Y pictures from voltage scan
+
   TObjArray *aprofP2 = new TObjArray(14);
   for (Int_t ib=0;ib<14;ib++){
     TProfile *profP2 = new TProfile("pyP","pyP",100,0,150);
@@ -446,9 +446,8 @@ void MakeGraphsdP2(){
 
 
 void MakeGraphsP4(){
-  //
-  // Make delta Y pictures from voltage scan
-  //
+  /// Make delta Y pictures from voltage scan
+
   TObjArray *aprofP4 = new TObjArray(14);
   for (Int_t ib=0;ib<14;ib++){
     TProfile *profP4 = new TProfile("pp4","pp4",100,0,150);
@@ -481,9 +480,8 @@ void MakeGraphsP4(){
 
 
 void MakePlotsP2GG(TCut ucut){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   TGraph *graph[4];
@@ -525,9 +523,8 @@ void MakePlotsP2GG(TCut ucut){
 
 
 void MakePlotsP2Cover(TCut ucut){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   TGraph *graph[4];
@@ -565,9 +562,8 @@ void MakePlotsP2Cover(TCut ucut){
 }
 
 void MakePlotsP2Skirt(TCut ucut){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   TGraph *graph[4];
@@ -608,9 +604,8 @@ void MakePlotsP2Skirt(TCut ucut){
 
 
 void MakePlotsdYGG(){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   TGraph *graph[4];
@@ -643,9 +638,8 @@ void MakePlotsdYGG(){
 
 
 void MakePlotsdYCover(TCut ucut){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   TGraph *graph[4];
@@ -677,9 +671,8 @@ void MakePlotsdYCover(TCut ucut){
 }
 
 void MakePlotsdYSkirt(TCut ucut){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   TGraph *graph[4];
@@ -713,9 +706,8 @@ void MakePlotsdYSkirt(TCut ucut){
 
 
 void GetOptimalSetting(){
-  //
-  //
-  //
+  ///
+
   TFile fbundle("scanDeltaBeam.root");
   TTree * treeScan = (TTree*)fbundle.Get("vScanBeam");
   //
@@ -768,9 +760,8 @@ void GetOptimalSetting(){
 
 
 void MakeAliases(){
-  //
-  // use table
-  //
+  /// use table
+
   chain->SetAlias("VggA","GetVoltage(run,0)");
   chain->SetAlias("VggC","GetVoltage(run,1)");
   chain->SetAlias("VcoA","GetVoltage(run,2)");
@@ -808,9 +799,8 @@ void MakeAliases(){
 
 
 void MakeAliasesBoth(){
-  //
-  // cuts - slect good tracks
-  //
+  /// cuts - slect good tracks
+
   chain->SetAlias("TisOK","mdEdx>5&&entries>400");
   chain->SetAlias("ATisOK","(LTr.fSide==0)*(RA.mdEdx>5&&RA.entries>500)");
   chain->SetAlias("CTisOK","(LTr.fSide==1)*(RC.mdEdx>5&&RC.entries>500)");

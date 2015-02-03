@@ -1,45 +1,38 @@
-/*
-  marian.ivanov@cern.ch
-  Macro to create  alignment/distortion maps
-  As a input output of AliTPCcalibAlign and AliTPCcalibTime is used.
-  distortion lookup tables are used.
-
-  Input file mean.root with distortion tree expected to be in directory:
-  ../mergeField0/mean.root
-
-
-  The ouput file fitAlignCombined.root contains:
-  1. Resulting (residual) AliTPCCalibMisalignment 
-  2. QA fit plots
-
-  Functions documented inside:
-
-  RegisterAlignFunction();
-  MakeAlignFunctionGlobal();
-  MakeAlignFunctionSector();
-
-*/
-
-
-/*
-  Example usage:
-  //
-  .x ~/NimStyle.C
-  gROOT->Macro("~/rootlogon.C");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libSTAT");
-  gSystem->Load("libTPCcalib");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros -I$ALICE_ROOT/TPC/TPC -I$ALICE_ROOT/STAT");
-  .L $ALICE_ROOT/TPC/CalibMacros/FitAlignCombined.C+
-  .x ConfigCalibTrain.C(119047)
-  //
-  //
-  FitAlignCombinedCorr();
-
-
-*/
-
-
+/// \file FitAlignCombined.C
+///
+/// \author marian.ivanov@cern.ch
+///
+/// Macro to create  alignment/distortion maps
+/// As a input output of AliTPCcalibAlign and AliTPCcalibTime is used.
+/// distortion lookup tables are used.
+/// 
+/// Input file mean.root with distortion tree expected to be in directory:
+/// ../mergeField0/mean.root
+/// 
+/// The ouput file fitAlignCombined.root contains:
+/// 1. Resulting (residual) AliTPCCalibMisalignment 
+/// 2. QA fit plots
+/// 
+/// Functions documented inside:
+/// 
+/// RegisterAlignFunction();
+/// MakeAlignFunctionGlobal();
+/// MakeAlignFunctionSector();
+/// 
+/// Example usage:
+///
+/// ~~~ 
+/// .x ~/NimStyle.C
+/// gROOT->Macro("~/rootlogon.C");
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libSTAT");
+/// gSystem->Load("libTPCcalib");
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros -I$ALICE_ROOT/TPC/TPC -I$ALICE_ROOT/STAT");
+/// .L $ALICE_ROOT/TPC/CalibMacros/FitAlignCombined.C+
+/// .x ConfigCalibTrain.C(119047)
+///
+/// FitAlignCombinedCorr();
+/// ~~~
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TH1D.h"
@@ -119,17 +112,17 @@ TCut cutS="entries>1000&&abs(snp)<0.2&&abs(theta)<1.";
 
 
 void RegisterAlignFunction(){
-  //
-  // Register primitive alignment components.
-  // Linear conbination of primitev forulas used for fit
-  // The nominal delta 1 mm in shift and 1 mrad in rotation
-  // Primitive formulas registeren in AliTPCCoreection::AddvisualCorrection
-  // 0 - deltaX 
-  // 1 - deltaY
-  // 2 - deltaZ
-  // 3 - rot0 (phi)
-  // 4 - rot1 (theta)
-  // 5 - rot2 
+  /// Register primitive alignment components.
+  /// Linear conbination of primitev forulas used for fit
+  /// The nominal delta 1 mm in shift and 1 mrad in rotation
+  /// Primitive formulas registeren in AliTPCCoreection::AddvisualCorrection
+  /// 0 - deltaX
+  /// 1 - deltaY
+  /// 2 - deltaZ
+  /// 3 - rot0 (phi)
+  /// 4 - rot1 (theta)
+  /// 5 - rot2
+
   TGeoHMatrix matrixX;
   TGeoHMatrix matrixY;
   TGeoHMatrix matrixZ;
@@ -176,12 +169,11 @@ void RegisterAlignFunction(){
 }
 
 AliTPCCalibGlobalMisalignment * MakeAlignFunctionGlobal(TVectorD paramYGlobal){
-  //
-  // Take a fit parameters and make a combined correction
-  // 1. Take the common part  
-  // 3. Make combined AliTPCCalibGlobalMisalignment - register it
-  // 4. Compare the aliases with fit values - IT is OK
-  //  
+  /// Take a fit parameters and make a combined correction
+  /// 1. Take the common part
+  /// 3. Make combined AliTPCCalibGlobalMisalignment - register it
+  /// 4. Compare the aliases with fit values - IT is OK
+
   AliTPCCalibGlobalMisalignment *alignGlobal  =new  AliTPCCalibGlobalMisalignment;
   TGeoHMatrix matGlobal; // global parameters
   TGeoHMatrix matDelta;  // delta A side - C side
@@ -226,14 +218,13 @@ AliTPCCalibGlobalMisalignment * MakeAlignFunctionGlobal(TVectorD paramYGlobal){
 
 
 AliTPCCalibGlobalMisalignment * MakeAlignFunctionSector(TVectorD paramYLocal){
-  //
-  // Take a fit parameters and make a combined correction:
-  // Only delta local Y and delta phi are fitted - not sensityvity for other parameters
-  // Algorithm:
-  //   1. Loop over sectors
-  //   2. Make combined AliTPCCalibGlobalMisalignment - register it
-  //   3. Compare the aliases with fit values - IT is OK
-  //  
+  /// Take a fit parameters and make a combined correction:
+  /// Only delta local Y and delta phi are fitted - not sensityvity for other parameters
+  /// Algorithm:
+  ///   1. Loop over sectors
+  ///   2. Make combined AliTPCCalibGlobalMisalignment - register it
+  ///   3. Compare the aliases with fit values - IT is OK
+
   AliTPCCalibGlobalMisalignment *alignLocal  =new  AliTPCCalibGlobalMisalignment;
   TGeoHMatrix matrixX;
   TGeoHMatrix matrixY;
@@ -318,13 +309,12 @@ AliTPCCalibGlobalMisalignment * MakeAlignFunctionSector(TVectorD paramYLocal){
 
 
 void LoadTrees(){
-  //
-  // make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
-  // Combined information is used, mean residuals are minimized:
-  //
-  // 1. TPC-ITS alignment
-  // 2. TPC vertex alignment 
-  //
+  /// make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
+  /// Combined information is used, mean residuals are minimized:
+  ///
+  /// 1. TPC-ITS alignment
+  /// 2. TPC vertex alignment
+
   TFile *f0 = new TFile("../mergeField0/mean.root");
   TFile *fP= new TFile("../mergePlus/mean.root");
   TFile *fM= new TFile("../mergeMinus/mean.root");
@@ -390,9 +380,8 @@ void LoadTrees(){
 
 
 void FitAlignCombinedCorr(){
-  //
-  // Fit Global X and globalY shift at vertex and at ITS
-  // 
+  /// Fit Global X and globalY shift at vertex and at ITS
+
   RegisterAlignFunction();
   LoadTrees();
   combAlignOCDBOld = AliTPCCalibGlobalMisalignment::CreateOCDBAlign();
@@ -535,12 +524,8 @@ void FitAlignCombinedCorr(){
 }
 
 void DrawFitQA(){
-  //
-  //
-  //
- //
-  // MakeQA plot 1D
-  //
+ /// MakeQA plot 1D
+
   TCanvas c;
   c.SetLeftMargin(0.15);
   chain->Draw("1000*(mean-deltaG)>>his(100,-1.5,1.5)",cutS+"type==2&&refX==0","");
@@ -652,10 +637,8 @@ void DrawFitQA(){
 
 
 void FitAlignCombined0(){
-  //
-  // Fit Global X and globalY shift at vertex and at ITS
-  // 
-  
+  /// Fit Global X and globalY shift at vertex and at ITS
+
   TTreeSRedirector *pcstream= new TTreeSRedirector("fitAlignCombined.root"); 
 
   TStatToolkit toolkit;
@@ -850,14 +833,13 @@ void FitAlignCombined0(){
 }
 
 void FitAlignCombined(){
-  //
-  // 
-  // make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
-  // Combined information is used, mean residuals are minimized:
-  //
-  // 1. TPC-TPC sector alignment
-  // 2. TPC-ITS alignment
-  // 3. TPC vertex alignment 
+  /// make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
+  /// Combined information is used, mean residuals are minimized:
+  ///
+  /// 1. TPC-TPC sector alignment
+  /// 2. TPC-ITS alignment
+  /// 3. TPC vertex alignment
+
   TFile fcalib("../mergeField0/TPCAlignObjects.root");
   AliTPCcalibAlign * align = ( AliTPCcalibAlign *)fcalib.Get("alignTPC");
 
@@ -1100,13 +1082,12 @@ void FitAlignCombined(){
 
 
 void UpdateOCDBAlign(){
-  //
-  // Store resulting OCDB entry
-  // 0. Setup OCDB to get necccessary old entries - not done here
-  // 1. Get old OCDB entry
-  // 2. Get delta alignment
-  // 3. Add delta alignment
-  // 4. Store new alignment in 
+  /// Store resulting OCDB entry
+  /// 0. Setup OCDB to get necccessary old entries - not done here
+  /// 1. Get old OCDB entry
+  /// 2. Get delta alignment
+  /// 3. Add delta alignment
+  /// 4. Store new alignment in
 
   AliCDBEntry * entry = AliCDBManager::Instance()->Get("TPC/Align/Data");
   TClonesArray * array = (TClonesArray*)entry->GetObject();
@@ -1165,13 +1146,12 @@ void UpdateOCDBAlign(){
 
 
 void UpdateOCDBAlign0(){
-  //
-  // Store resulting OCDB entry
-  // 0. Setup OCDB to get necccessary old entries - not done here
-  // 1. Get old OCDB entry
-  // 2. Get delta alignment
-  // 3. Add delta alignment
-  // 4. Store new alignment in 
+  /// Store resulting OCDB entry
+  /// 0. Setup OCDB to get necccessary old entries - not done here
+  /// 1. Get old OCDB entry
+  /// 2. Get delta alignment
+  /// 3. Add delta alignment
+  /// 4. Store new alignment in
 
   AliCDBEntry * entry = AliCDBManager::Instance()->Get("TPC/Align/Data");
   TClonesArray * array = (TClonesArray*)entry->GetObject();

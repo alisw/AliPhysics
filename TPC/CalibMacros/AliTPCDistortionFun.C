@@ -1,53 +1,47 @@
-/*
-  Simple compiled macro for declaration of static distortion function
-  on top of the AliTPCDistortion class.
-  Why:
-  1. Use static function in the fitting procedure
-  2. Usage in TFormual, TF1, Tf2 ... for visualization.
-  3. Usage in  tree->Draw() for visualization
-  4. Simple visualization of fit residuals in multidemension - using tree Draw functionality
-
-
-  
-  Usage:
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-  .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortions.cxx+
-  .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortionFun.C+
- 
-  Example:
-  //
-  // Draw integrated distortion in local x
-  //
-  TF2 fdistIFCXvZX("fdistIFCXvZX","GetIFCDistortion(y,0,x,0)*sign(x)",-250,250,80,250);
-  fdistIFCXvZX.SetNpx(200);
-  fdistIFCXvZX.SetNpy(200);  
-  fdistIFCXvZX.GetXaxis()->SetTitle("Z (cm)");
-  fdistIFCXvZX.GetYaxis()->SetTitle("local X (cm)");  
-  fdistIFCXvZX->Draw("colz");
-  //
-  // Draw local distortion angle dx/dz  in mrad
-  //
-  TF2 fangleIFCXvZX("fangleIFCXvZX","1000*(GetIFCDistortion(y,0,x,0)-GetIFCDistortion(y,0,x-1,0))",-250,250,85,245);
-  fangleIFCXvZX.SetNpx(200);
-  fangleIFCXvZX.SetNpy(200);
-  fangleIFCXvZX.GetXaxis()->SetTitle("Z (cm)");
-  fangleIFCXvZX.GetYaxis()->SetTitle("local X (cm)");  
-  fangleIFCXvZX->Draw("colz");
-
-  //
-  //
-  //
-  TF2 fangleGGXvZX("fangleGGXvZX","1000*(GetGGDistortion(y,0,x,0,1*400,1*400)-GetGGDistortion(y,0,x-1,0,1*400,1*400))*sign(x)",-250,250,85,245);
-  fangleGGXvZX.SetNpx(200);
-  fangleGGXvZX.SetNpy(200);
-  fangleGGXvZX.GetXaxis()->SetTitle("Z (cm)");
-  fangleGGXvZX.GetYaxis()->SetTitle("local X (cm)");  
-  fangleGGXvZX->Draw("colz");
-  
-
-
-*/
-
+/// \file AliTPCDistortionFun.C
+///
+/// Simple compiled macro for declaration of static distortion function
+/// on top of the AliTPCDistortion class.
+/// Why:
+/// 1. Use static function in the fitting procedure
+/// 2. Usage in TFormual, TF1, Tf2 ... for visualization.
+/// 3. Usage in  tree->Draw() for visualization
+/// 4. Simple visualization of fit residuals in multidemension - using tree Draw functionality
+///
+/// Usage:
+/// ~~~
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
+/// .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortions.cxx+
+/// .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortionFun.C+
+/// ~~~
+///
+/// Example:
+///
+/// ~~~{.cpp}
+/// // Draw integrated distortion in local x
+///
+/// TF2 fdistIFCXvZX("fdistIFCXvZX","GetIFCDistortion(y,0,x,0)*sign(x)",-250,250,80,250);
+/// fdistIFCXvZX.SetNpx(200);
+/// fdistIFCXvZX.SetNpy(200);
+/// fdistIFCXvZX.GetXaxis()->SetTitle("Z (cm)");
+/// fdistIFCXvZX.GetYaxis()->SetTitle("local X (cm)");
+/// fdistIFCXvZX->Draw("colz");
+///
+/// // Draw local distortion angle dx/dz  in mrad
+/// TF2 fangleIFCXvZX("fangleIFCXvZX","1000*(GetIFCDistortion(y,0,x,0)-GetIFCDistortion(y,0,x-1,0))",-250,250,85,245);
+/// fangleIFCXvZX.SetNpx(200);
+/// fangleIFCXvZX.SetNpy(200);
+/// fangleIFCXvZX.GetXaxis()->SetTitle("Z (cm)");
+/// fangleIFCXvZX.GetYaxis()->SetTitle("local X (cm)");
+/// fangleIFCXvZX->Draw("colz");
+///
+/// TF2 fangleGGXvZX("fangleGGXvZX","1000*(GetGGDistortion(y,0,x,0,1*400,1*400)-GetGGDistortion(y,0,x-1,0,1*400,1*400))*sign(x)",-250,250,85,245);
+/// fangleGGXvZX.SetNpx(200);
+/// fangleGGXvZX.SetNpy(200);
+/// fangleGGXvZX.GetXaxis()->SetTitle("Z (cm)");
+/// fangleGGXvZX.GetYaxis()->SetTitle("local X (cm)");
+/// fangleGGXvZX->Draw("colz");
+/// ~~~
 
 #include "TCanvas.h"
 #include "TF1.h"
@@ -57,7 +51,8 @@
 TObjArray *arrayPic=new TObjArray;
 
 Double_t GetIFCDistortion(Double_t lx, Double_t ly, Double_t lz, Int_t icoord, Double_t shift=1.){
-  //
+  ///
+
   static AliTPCDistortions transform;
   static Bool_t doInit=kTRUE;
   if (doInit){
@@ -79,9 +74,8 @@ Double_t GetIFCDistortion(Double_t lx, Double_t ly, Double_t lz, Int_t icoord, D
 
 
 Double_t GetGGDistortion(Double_t lx, Double_t ly, Double_t lz, Int_t icoord, Double_t deltaVGGA=1., Double_t deltaVGGC=1.){
-  //
-  // GG distortion induced distortions 
-  //
+  /// GG distortion induced distortions
+
   static AliTPCDistortions transform;
   static Bool_t doInit=kTRUE;
   if (doInit){
@@ -104,9 +98,8 @@ Double_t GetGGDistortion(Double_t lx, Double_t ly, Double_t lz, Int_t icoord, Do
 
 
 void MakePicIFCDX(){
-  //
-  // 
-  //
+  ///
+
   TCanvas *canvasIFC1D= new TCanvas("IFC radial shift", "IFC radial shift");
   TLegend *legend = new TLegend(0.1,0.60,0.5,0.9, "Radial distortion due IFC shift 1 mm ");
 
@@ -126,9 +119,8 @@ void MakePicIFCDX(){
 }
 
 void MakePicIFCDXangle(){
-  //
-  // 
-  //
+  ///
+
   TCanvas *canvasIFC1D= new TCanvas("IFC radial shift - angle", "IFC radial shift angle");
   TLegend *legend = new TLegend(0.1,0.60,0.9,0.9, "Radial distortion due IFC shift 1 mm ");
 

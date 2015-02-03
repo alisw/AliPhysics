@@ -1,13 +1,13 @@
-//
-// This is an example macro for drawing of the distortion maps which were created during the CPass0
-// respectivally,  CPass1
-//
-// Macro to be extended - resulting QA plots to be published on the web page
-//
+/// \file distortionMapDraw.C
+///
+/// This is an example macro for drawing of the distortion maps which were created during the CPass0
+/// respectivally,  CPass1
+///
+/// Macro to be extended - resulting QA plots to be published on the web page
+
 void distortionMapDraw(){
-  //
-  // 1.) connect the grid 
-  //
+  // 1.) connect the grid
+
   TGrid::Connect("alien");
   //
   // 2.) Open calibration of interest. e.g

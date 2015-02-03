@@ -1,27 +1,28 @@
-/*
-  
- gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
- gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
- gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
-
- gROOT->LoadMacro("$ALICE_ROOT/TPC/CalibMacros/CalibAlignKalman.C+");
-
- AliTPCTransformation::BuildBasicFormulas();
-
- AliXRDPROOFtoolkit tool;
- chainPoints = tool.MakeChainRandom("align.txt","trackPoints",0,50000);
- chainPoints->Lookup();
- //
- chainMS = tool.MakeChainRandom("kalmanFit.list","kf",0,50000);
- chainMS->Lookup();
-
- chainFP = tool.MakeChainRandom("kalmanFit.list","filter",0,50000);
- chainFP->Lookup();
-
-// CalibAlignKalmanFit(40000,1);
-// kalmanFit0->DumpCorelation(0.8);
-// TFile f("kalmanfitTPC.root");
-*/
+/// \file CalibAlignKalman.C
+///
+/// ~~~{.cpp}
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+/// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
+///
+/// gROOT->LoadMacro("$ALICE_ROOT/TPC/CalibMacros/CalibAlignKalman.C+");
+///
+/// AliTPCTransformation::BuildBasicFormulas();
+///
+/// AliXRDPROOFtoolkit tool;
+/// chainPoints = tool.MakeChainRandom("align.txt","trackPoints",0,50000);
+/// chainPoints->Lookup();
+///
+/// chainMS = tool.MakeChainRandom("kalmanFit.list","kf",0,50000);
+/// chainMS->Lookup();
+///
+/// chainFP = tool.MakeChainRandom("kalmanFit.list","filter",0,50000);
+/// chainFP->Lookup();
+///
+/// CalibAlignKalmanFit(40000,1);
+/// kalmanFit0->DumpCorelation(0.8);
+/// TFile f("kalmanfitTPC.root");
+/// ~~~
 
 
 #ifdef __CINT__
@@ -135,9 +136,8 @@ AliTrackPointArray *SkipPoints(AliTrackPointArray &points, Int_t nskip, Int_t ns
 AliTPCkalmanFit *   FitPointsLinear(Int_t maxTracks, Int_t trackDump);
 
 void CalibAlignKalman(Int_t npoints, Int_t maxFiles, Int_t startFile, Int_t trackDump, Int_t nSkipTrack, Int_t nSkipTrackOffset, Int_t nSkip, Int_t nSkipOffset, Int_t bfilterTest){
-  //
-  //
-  //
+  ///
+
   AliTPCTransformation::BuildBasicFormulas();
   toSkip=nSkip;
   toSkipOffset= nSkipOffset;
@@ -170,9 +170,8 @@ void CalibAlignKalman(Int_t npoints, Int_t maxFiles, Int_t startFile, Int_t trac
 
 
 AliTPCkalmanFit *  CalibAlignKalmanFit(Int_t maxTracks, Int_t trackDump){
-  //
-  // Fitting procedure
-  //
+  /// Fitting procedure
+
   AliTPCTransformation::BuildBasicFormulas();
   FilterTracks();
   kalmanFitNew     = SetupFit();  
@@ -185,7 +184,8 @@ AliTPCkalmanFit *  CalibAlignKalmanFit(Int_t maxTracks, Int_t trackDump){
 
 
 AliTPCkalmanFit * SetupFit(){
-  //
+  ///
+
   AliTPCkalmanFit *kalmanFit =  new AliTPCkalmanFit;
   AddFitFieldCage(kalmanFit); 
   AddPhiScaling(kalmanFit);
@@ -202,9 +202,7 @@ AliTPCkalmanFit * SetupFit(){
 
 
 void FilterTracks(){
-  //
-  //
-  //
+  ///
 
   cSide[0] = new TCut("cutAA","p0In.fP[1]>0&&p1In.fP[1]>0");
   cSide[1] = new TCut("cutCC","p0In.fP[1]<0&&p1In.fP[1]<0");
@@ -302,10 +300,8 @@ void FilterTracks(){
 
 
 AliTPCkalmanFit * FitPointsLinear(Int_t maxTracks, Int_t trackDump){
-  //
-  //
-  //
-  // create debug streeamers
+  // create debug streamers
+
   TTreeSRedirector *pcstream      = new TTreeSRedirector("kalmanfitTPC.root");  
   TTreeSRedirector *pcstreamOrig = new TTreeSRedirector("kalmanfitTPCOrig.root");  
   pcstream->GetFile()->cd();
@@ -393,10 +389,9 @@ AliTPCkalmanFit * FitPointsLinear(Int_t maxTracks, Int_t trackDump){
 }
 
 void  QAPointsLinear(Int_t maxTracks, Int_t trackDump){
-  //
-  // check  the consistency of kalman fit
-  // Apply transformation
-  //
+  /// check  the consistency of kalman fit
+  /// Apply transformation
+
   // create debug streeamers
   TTreeSRedirector *pcstreamNonCalib      = new TTreeSRedirector("kalmanfitTPCQANonCalib.root");
   TTreeSRedirector *pcstreamCalib         = new TTreeSRedirector("kalmanfitTPCQACalib.root");
@@ -405,7 +400,6 @@ void  QAPointsLinear(Int_t maxTracks, Int_t trackDump){
   for (Int_t i=0;i<6;i++){
     kalmanFitters[i]=SetupFit();
   }
-  //
   //
   AliTrackPointArray *points=0;
   AliExternalTrackParam *param0=0;
@@ -461,11 +455,11 @@ void  QAPointsLinear(Int_t maxTracks, Int_t trackDump){
 
 
 void  TestScattering(Int_t maxTracks, Int_t trackDump){
-  //
-  // test Multiple scattering algorithm
-  // Apply transformation
-  //
-  // create debug streeamers
+  /// test Multiple scattering algorithm
+  /// Apply transformation
+  ///
+  /// create debug streeamers
+
   TTreeSRedirector *pcstream      = new TTreeSRedirector("kalmanfitTPCMS.root");
   //
   //
@@ -502,9 +496,8 @@ void  TestScattering(Int_t maxTracks, Int_t trackDump){
 
 
 AliTrackPointArray *SkipPoints(AliTrackPointArray &points, Int_t nskip, Int_t nskipOffset){
-  //
-  // create new array with skipped points
-  //
+  /// create new array with skipped points
+
   Int_t npoints = points.GetNPoints();
   Int_t npointsF = (npoints-nskipOffset-1)/nskip;
   AliTrackPoint point;
@@ -523,10 +516,8 @@ AliTrackPointArray *SkipPoints(AliTrackPointArray &points, Int_t nskip, Int_t ns
 
 
 AliTrackPointArray *FilterPoints(AliTrackPointArray &points, Int_t dir, TTreeSRedirector *pcstream){
-  //
-  //  Filter points - input points for KalmanFilter
-  //                
-  //
+  ///  Filter points - input points for KalmanFilter
+
   TLinearFitter lfitY(2,"pol1");
   TLinearFitter lfitZ(2,"pol1");
   TVectorD vecZ(2);
@@ -613,12 +604,10 @@ AliTrackPointArray *FilterPoints(AliTrackPointArray &points, Int_t dir, TTreeSRe
 
 
 AliTrackPointArray * SortPoints(AliTrackPointArray &points){
-  //
-  //Creates the array  - points sorted according radius - neccessay for kalman fit
-  // 
-  //
-  // 0. choose the frame - rotation angle
-  //
+  /// Creates the array  - points sorted according radius - neccessay for kalman fit
+  ///
+  /// 0. choose the frame - rotation angle
+
   Int_t npoints = points.GetNPoints();
   if (npoints<1) return 0;
   Double_t currentAlpha = TMath::ATan2(points.GetY()[npoints-1]-points.GetY()[0], points.GetX()[npoints-1]-points.GetX()[0]);  
@@ -645,9 +634,8 @@ AliTrackPointArray * SortPoints(AliTrackPointArray &points){
 }
 
 TVectorD *  EstimateScatteringKalmanLinear(AliTrackPointArray &points, AliExternalTrackParam &p0, AliExternalTrackParam &p1 , TTreeSRedirector *pcstream){
-  //
-  // Algorithm - 0. Fit the track forward and backward
-  //           - 1. Store the current parameters in each point
+  /// Algorithm - 0. Fit the track forward and backward
+  ///           - 1. Store the current parameters in each point
 
   const Int_t kMinPoints= 70;
   const Double_t kResY  = 0.1;
@@ -868,9 +856,8 @@ TVectorD *  EstimateScatteringKalmanLinear(AliTrackPointArray &points, AliExtern
 
 
 void  AddFitFieldCage(AliTPCkalmanFit *kalmanFit){
-  //
-  // Add radial scaling due field cage
-  //
+  /// Add radial scaling due field cage
+
   TVectorD fpar(10);
   AliTPCTransformation * transformation=0;
   char tname[100];
@@ -917,11 +904,10 @@ void  AddFitFieldCage(AliTPCkalmanFit *kalmanFit){
 
 
 void AddPhiScaling(AliTPCkalmanFit *kalmanFit){
-  //
-  // Add linear local phi scaling - 
-  // separate IROC/OROC  - A side/C side
-  //    "tscalingLocalPhiIROC"                     
-  //    "tscalingLocalPhiOROC"                     
+  /// Add linear local phi scaling -
+  /// separate IROC/OROC  - A side/C side
+  ///    "tscalingLocalPhiIROC"
+  ///    "tscalingLocalPhiOROC"
 
   TBits maskInner(72);
   TBits maskOuter(72);
@@ -946,9 +932,8 @@ void AddPhiScaling(AliTPCkalmanFit *kalmanFit){
 }
 
 void AddDrift(AliTPCkalmanFit *kalmanFit){
-  //
-  // Add drift velocity transformation
-  //
+  /// Add drift velocity transformation
+
   TVectorD fpar(10);
   AliTPCTransformation * transformation=0;
   fpar[0]=1;
@@ -965,9 +950,8 @@ void AddDrift(AliTPCkalmanFit *kalmanFit){
 
 
 void  AddZShift(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin){
-  //
-  //
-  // 
+  ///
+
   TVectorD fpar(10);
   fpar[0]=0; fpar[1]=0; fpar[2]=0;
   char tname[1000];
@@ -1039,10 +1023,8 @@ void  AddZShift(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin){
 
 
 void AddZTilting(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin){
-  //
-  // z tilting absolute (sector) and relative (IROC-OROC)
-  //
-  //
+  /// z tilting absolute (sector) and relative (IROC-OROC)
+
   TVectorD fpar(10);
   fpar[0]=0; fpar[1]=0; fpar[2]=0;
   char tname[1000];
@@ -1112,9 +1094,8 @@ void AddZTilting(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin){
 
 
 void  AddLocalXYMisalignment(AliTPCkalmanFit *kalmanFit){
-  //
-  //
-  //
+  ///
+
   TVectorD fpar(10);
   AliTPCTransformation * transformation=0;
   TBits maskInnerA(72);
@@ -1143,9 +1124,8 @@ void  AddLocalXYMisalignment(AliTPCkalmanFit *kalmanFit){
 }
 
 void  AddLocalXYMisalignmentSector(AliTPCkalmanFit *kalmanFit){
-  //
-  //
-  //
+  ///
+
   TVectorD fpar(10);
   AliTPCTransformation * transformation=0;
   Int_t fixSector =4;
@@ -1200,9 +1180,8 @@ void  AddLocalXYMisalignmentSector(AliTPCkalmanFit *kalmanFit){
 
 
 void  AddAlignOROCIROCFourier(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin){
-  //
-  //
-  //
+  ///
+
   TVectorD fpar(10);
   AliTPCTransformation * transformation=0;
 
@@ -1294,9 +1273,8 @@ void  AddAlignOROCIROCFourier(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin
 }
 
 void  AddAlignSectorFourier(AliTPCkalmanFit *kalmanFit, Int_t ncos, Int_t nsin){
-  //
-  //
-  //
+  ///
+
   TVectorD fpar(10);
   AliTPCTransformation * transformation=0;
 
@@ -1432,9 +1410,8 @@ void SelectNonPixelC(){
 
 
 void DumpQA1D(  TObjArray &arrayOut){
-  //
-  // 
-  // 
+  ///
+
   TF1 fg("fg","gaus");
   TMatrixD sideARMS(8,2);
   TMatrixD sideCRMS(8,2);
@@ -1507,9 +1484,8 @@ void DumpQA1D(  TObjArray &arrayOut){
 }
 
 void MakeFolders(TObjArray * arrayOut){
-  //
-  //
-  //
+  ///
+
   TFolder *folderBase = new TFolder("TPC align","TPC align");
   //
   //
@@ -1527,9 +1503,8 @@ void MakeFolders(TObjArray * arrayOut){
 
 
 void MergeKalman(const char * list = "kalmanFit.list"){
-  //
-  //
-  //
+  ///
+
   ifstream in;
   in.open(list);
   TString currentFile;

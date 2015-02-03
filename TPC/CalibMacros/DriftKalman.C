@@ -1,6 +1,7 @@
 
-// See http://en.wikipedia.org/wiki/Kalman_filter
-//
+/// \file DriftKalman.C
+/// See http://en.wikipedia.org/wiki/Kalman_filter
+
 /*
 .x ~/UliStyle.C
 gSystem->AddIncludePath("-I$ALICE_ROOT/STAT");

@@ -1,40 +1,34 @@
-/*
-
-This macro creates a gain map for the TPC based on the results of the Krypton calibration.
-The main steps are the following:
-
-1. Define outlier-pads where the krypton calibration was not succesful
-2. A parabolic fit for the whole chamber is performed
-3. replace outliers with fitted values
-4. normalize separately IROCs and OROCs
-
-For more details see below.
-
-
-
-example usage:
-==============
-
-TFile f("calibKr.root")
-AliTPCCalPad * kryptonRaw = new AliTPCCalPad(*fitMean)
-AliTPCCalPad * kryptonMean = new AliTPCCalPad(*spectrMean)
-AliTPCCalPad * kryptonChi2 = new AliTPCCalPad(*fitNormChi2)
-AliTPCCalPad * kryptonRMS = new AliTPCCalPad(*fitRMS)
-
-.L CreateGainMap.C
-AliTPCCalPad * final = CreateGainMap(kryptonRaw, kryptonRMS)
-
-TFile *h = new TFile("GainMap.root", "RECREATE")
-final.Write()
-
-*/
-
+/// \file CreateGainMap.C
+/// This macro creates a gain map for the TPC based on the results of the Krypton calibration.
+/// The main steps are the following:
+///
+/// 1. Define outlier-pads where the krypton calibration was not succesful
+/// 2. A parabolic fit for the whole chamber is performed
+/// 3. replace outliers with fitted values
+/// 4. normalize separately IROCs and OROCs
+/// 
+/// For more details see below.
+/// 
+/// ~~~{.cpp}
+/// TFile f("calibKr.root")
+/// AliTPCCalPad * kryptonRaw = new AliTPCCalPad(*fitMean)
+/// AliTPCCalPad * kryptonMean = new AliTPCCalPad(*spectrMean)
+/// AliTPCCalPad * kryptonChi2 = new AliTPCCalPad(*fitNormChi2)
+/// AliTPCCalPad * kryptonRMS = new AliTPCCalPad(*fitRMS)
+/// 
+/// .L CreateGainMap.C
+/// AliTPCCalPad * final = CreateGainMap(kryptonRaw, kryptonRMS)
+/// 
+/// TFile *h = new TFile("GainMap.root", "RECREATE")
+/// final.Write()
+/// ~~~
 
 AliTPCCalPad * CreateGainMap(AliTPCCalPad *krypFitMean, AliTPCCalPad *krypFitRMS, AliTPCCalPad *noiseMap = 0, AliTPCCalPad *krypSpectrMean = 0, 
 			     AliTPCCalPad *krypChi2 = 0, AliTPCCalPad *pulser = 0, AliTPCCalPad *electrode = 0) {
 
   
   // Draw input map
+
   TCanvas *test3 = new TCanvas("ASIDE3", "Aoriginal");
   krypFitMean->MakeHisto2D()->Draw("colz");
   TCanvas *test4 = new TCanvas("CSIDE4", "Coriginal");
@@ -191,9 +185,7 @@ AliTPCCalPad * CreateGainMap(AliTPCCalPad *krypFitMean, AliTPCCalPad *krypFitRMS
 
 
 void MakeCalibTree(char * inputKr="calibKr.root", char * inputCE ="fitCE.root", char * inputPulser=0){
-  //
-  //
-  //
+
    AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
    TFile f(inputKr);
    TFile fce(inputCE);
@@ -228,9 +220,8 @@ AliTPCCalibViewerGUI*viewer =0;
 TTree * tree =0;
 
 void LoadViewer(){
-  //
-  // Load calib Viewer
-  //
+  /// Load calib Viewer
+
   TObjArray * array = AliTPCCalibViewerGUI::ShowGUI("gainTree.root");
   AliTPCCalibViewerGUI* viewer = (AliTPCCalibViewerGUI*)array->At(0);
   makePad = viewer->GetViewer();
