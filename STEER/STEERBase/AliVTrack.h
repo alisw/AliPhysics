@@ -191,6 +191,10 @@ public:
   virtual void  ResetTrackParamOp       ( const AliExternalTrackParam* ) {;}
   virtual void  ResetTrackParamTPCInner ( const AliExternalTrackParam* ) {;}
 
+  virtual Int_t GetNumberOfTPCClusters() const { return 0; } 
+  virtual Int_t GetNumberOfITSClusters() const { return 0; } 
+  virtual Int_t GetNumberOfTRDClusters() const { return 0; } 
+
   virtual Int_t             GetKinkIndex(Int_t /*i*/) const { return 0;}
   virtual Double_t          GetSigned1Pt()         const { return 0;}
   virtual Bool_t            IsOn(Int_t /*mask*/) const {return 0;}
