@@ -1,13 +1,12 @@
-void MakeTPCRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult) {
-//========================================================================
-//
-// Steering macro for TPC reconstruction parameters
-//
-// Author: M.Ivanov
-// Contact: marian.ivanov@cern.ch
-//
-//========================================================================
+/// \file MakeTPCRecoParam.C
+///
+/// Steering macro for TPC reconstruction parameters
+///
+/// Contact: marian.ivanov@cern.ch
+///
+/// \author M.Ivanov
 
+void MakeTPCRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult) {
 
   const char* macroname = "MakeTPCRecoParam.C";
 
