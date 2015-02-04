@@ -671,7 +671,7 @@ ZDC  9	 1e-3  1e-3  1e-2  1e-2
 * Fe with energy loss and high thresholds (beam pipe)
 ZDC  7	 .1  .1  1.  1.
 * Fe with energy loss and low threshold (recombination chamber)
-ZDC  14	 1e-3  1e-3  1e-2  1e-2
+ZDC  16	 1e-3  1e-3  1e-2  1e-2
 * W
 ZDC  13	 .1  .1  1.  1.
 * Si02 (I)
