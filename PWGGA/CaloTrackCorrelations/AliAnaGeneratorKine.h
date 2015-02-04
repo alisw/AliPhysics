@@ -113,9 +113,16 @@ private:
   TH2F      * fhPtJetPtHard;                //! pt of jet divided to pt hard, trigger is photon 
   TH2F      * fhPtJetPtParton;              //! pt of parton divided to pt parton, trigger is photon 
 
-  TH1F      * fhPt      [fgkNmcPrimTypes];  //! Input particle
-  TH2F      * fhPtOrigin[fgkNmcPrimTypes];  //! Input particle vs particle type originating it (if meson decay, its mother)
+  TH1F      * fhPt      [fgkNmcPrimTypes];  //! Input particle pt
+  TH2F      * fhPtOrigin[fgkNmcPrimTypes];  //! Input particle pt vs particle type originating it (if meson decay, its mother)
   TH2F      * fhPtOtherDecayMesonId;        //! Decay photons, not originating from pi0 or eta, ID of the particle
+  
+  TH1F      * fhPhi      [fgkNmcPrimTypes]; //! Input particle phi
+  TH1F      * fhEta      [fgkNmcPrimTypes]; //! Input particle eta
+  TH2F      * fhEtaPhi   [fgkNmcPrimTypes]; //! Input particle eta vs phi
+
+  TH2F      * fhPhiStatus[fgkNmcPrimTypes]; //! Input particle phi vs status
+  TH2F      * fhEtaStatus[fgkNmcPrimTypes]; //! Input particle eta vs status
   
   TH2F      * fhPtPi0Status;                //! Input pi0 status
   TH2F      * fhPtEtaStatus;                //! Input eta status
