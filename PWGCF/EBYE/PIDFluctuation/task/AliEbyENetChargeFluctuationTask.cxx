@@ -243,8 +243,8 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   
   fRanIdx = new TRandom3();
   fRanIdx->SetSeed();
-  
-  Printf(" >>>%d %d %d %d %d %d %d %d %d %d %d", 
+
+  Printf(" >>>A%d M%d P%d E%d D%d Q%d N%d R%d S%d B%d PR%d", 
 	 fIsAOD, fIsMC, fIsPhy, fIsEff, 
 	 fIsDca, fIsQa, fNeedQa,
 	 fIsRatio, fIsSub, fIsBS, fIsPer);
@@ -495,20 +495,20 @@ void AliEbyENetChargeFluctuationTask::FillQAThnRec(AliVTrack *track, Int_t gPid,
   Double_t  rapp = (gPid == 0) ? track->Eta() : rap;
   Double_t rec[5] = {fCentralityBin,charge,rapp,track->Phi(),track->Pt()};
   
-  if (gPid == 0) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNchTrackUnCorr")))->Fill(rec);
-  else if (gPid == 1) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNpiTrackUnCorr")))->Fill(rec);
-  else if (gPid == 2) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNkaTrackUnCorr")))->Fill(rec);
-  else if (gPid == 3) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNprTrackUnCorr")))->Fill(rec);
+  if (gPid == 0) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNchTrackUnCorr")))->Fill(rec);
+  else if (gPid == 1) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNpiTrackUnCorr")))->Fill(rec);
+  else if (gPid == 2) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNkaTrackUnCorr")))->Fill(rec);
+  else if (gPid == 3) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNprTrackUnCorr")))->Fill(rec);
 }
 
 void AliEbyENetChargeFluctuationTask::FillQAThnMc(AliVParticle *particle, Int_t gPid, Double_t rap) {
   Double_t charge = (particle->PdgCode() < 0) ? 0. : 1.;
   Double_t  rapp = (gPid == 0) ? particle->Eta() : rap;
   Double_t rec[5] = {fCentralityBin,charge,rapp,particle->Phi(),particle->Pt()};
-  if (gPid == 0) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNchTrackMc")))->Fill(fCurRec);
-  else if (gPid == 1) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNpiTrackMc")))->Fill(rec);
-  else if (gPid == 2) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNkaTrackMc")))->Fill(rec);
-  else if (gPid == 3) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNprTrackMc")))->Fill(rec);
+  if (gPid == 0) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNchTrackMc")))->Fill(rec);
+  else if (gPid == 1) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNpiTrackMc")))->Fill(rec);
+  else if (gPid == 2) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNkaTrackMc")))->Fill(rec);
+  else if (gPid == 3) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNprTrackMc")))->Fill(rec);
 }
 
 //----------------------------------------------------------------------------------
@@ -770,14 +770,14 @@ void AliEbyENetChargeFluctuationTask::CreateQA() {
   Double_t mxhuc[5] = {fGRngCent[1],fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
   const Char_t *ctname = "cent:sign:y:phi:pt";
 			     
-  fQaList->Add(new THnSparseD("fHnNpiTrackUnCorr",ctname,  5, bhuc, mnhuc, mxhuc));
-  fQaList->Add(new THnSparseD("fHnNkaTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
-  fQaList->Add(new THnSparseD("fHnNprTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNpiTrackUnCorr",ctname,  5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNkaTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNprTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
 
   if (fIsMC) {
-    fQaList->Add(new THnSparseD("fHnNpiTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
-    fQaList->Add(new THnSparseD("fHnNkaTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
-    fQaList->Add(new THnSparseD("fHnNprTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNpiTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNkaTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNprTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
 
   }
 
@@ -786,9 +786,9 @@ void AliEbyENetChargeFluctuationTask::CreateQA() {
   mnhuc[2] = fGRngEta[0];
   mxhuc[2] = fGRngEta[1]; 
   
-  fQaList->Add(new THnSparseD("fHnNchTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNchTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
   if (fIsMC) {
-    fQaList->Add(new THnSparseD("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
   }
 }
 
@@ -880,9 +880,9 @@ void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
   else if (i == 19) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1; fIsRatio = 1;              }    
   else {fIsPhy= 0;    fIsEff = 0; fIsDca  = 0; fIsQa  = 0; fIsSub = 0; fIsBS    = 0; fIsPer = 0; fIsRatio = 0;}
    
-  Printf(" >>> %d %d %d %d %d %d %d %d %d %d", 
+  Printf(" >>> I%d PH%d EF%d DC%d QA%d RA%d SS%d BS%d PE%d NU%d NQ%d", 
 	 i, fIsPhy, fIsEff, fIsDca, fIsQa, 
-	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu);
+	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu, fNeedQa);
   if (fIsEff || fIsDca) {fPtMin = 0.2; fPtMax = 3.3;}  
  
 }
