@@ -71,3 +71,5 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
+# Install the macros
+install(DIRECTORY macros DESTINATION PWGCF/Correlations/ThreePart)
