@@ -53,6 +53,7 @@ class EmcHit {
   
 public:
   //virtual ~EmcHit();
+  EmcHit();
   friend class EmcEvent;
   friend class AliAnalysisTaskEMCALPi0Gamma;
   
@@ -62,8 +63,9 @@ public:
 // class to store v0 hits
 class V0Hit {
   TLorentzVector thishit;
-  
+
 public:
+  V0Hit();
   friend class V0Event;
   friend class AliAnalysisTaskEMCALPi0Gamma;
 };
@@ -186,7 +188,9 @@ protected:
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
   Int_t        GetModuleNumber(AliVCluster * cluster)                                                     const;
   Double_t     PrivateEnergyRecal(Double_t energy, Int_t iCalib);
-  
+  // spectral shape
+  Double_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
+
   // input members
   TString                fCentVar;                // variable for centrality determination
   Double_t               fCentFrom;               // min centrality (def=0)
@@ -350,6 +354,7 @@ protected:
   TH1                   * fHConversionPoint;   //!histo for conversion position in XY
   
   // histograms for MC
+  TH1                   *fHWgt;         //!histo for weight of particles
   TH1                   *fHPionTruthPt;       //!histo for pT from MC pion
   TH1                   *fHPionTruthPtIn;    //!histo for pT for MC pion in eta range
   TH1                   *fHPionTruthPtAcc;    //!histo for pT for MC pion in acceptance
@@ -415,15 +420,12 @@ protected:
   EmcEvent EmcEventList[nMulClass][nZClass][nPtClass][nEvt];
   
   EmcEvent thisEvent;
+
+
+
 private:
-  // energy correction function
-  TF1* fcorrect;
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
-  
-  // spectral shape
-  TF1* fPi0DnDpt;
-  TF1* fPi0Eta;
   
   ClassDef(AliAnalysisTaskEMCALPi0Gamma, 13) // Analysis task for neutral pions in Pb+Pb
 };
