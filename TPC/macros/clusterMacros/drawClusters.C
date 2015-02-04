@@ -1,57 +1,49 @@
-/* 
-   // -------------------------------------------------------------------------------
-   Macro to draw clusters TPC clusters 
-   out of THnSparse which have been created with 
-
-   > readClusters.C
-   
-   Used for the HLT-TPC cluster verification
-
-   // -------------------------------------------------------------------------------
-
-   Usage :
-   
-   aliroot -b -l -q drawClusters.C'("<FileName in results>", "<Simulation Id>", "<Simulation Version>", "<PADGROUP>",<SCALE>)'
-
-     - PADGROUP : 
-        > -1 : all pads
-        >  0 : inner pad region
-        >  1 : middle pad region
-        >  2 : outter pad region
-    
-     - SCALE :
-        >  0 : 
-        >  1 :
-
-   Example :	
-   aliroot -b -l -q drawClusters.C'("results_recPoints_Pythia_20a.root","Pythia","20a")'
-
-   -> Will read : 
-      $CWD/results/results_friends_Pythia_20a.root
-
-   -> Will write : 
-      $CWD/results/images/xyz_Pythia_20a_all_scaled.png
-      $CWD/results/images/param_Pythia_20a_all_scaled.png
-      $CWD/results/rootfiles/xyz_Pythia_20a_all_scaled.root
-      $CWD/results/rootfiles/param_Pythia_20a_all_scaled.root
-
-
-   // -------------------------------------------------------------------------------
-   
-   Author : Jochen Thaeder <jochen@thaeder.de>
-   
-   // -------------------------------------------------------------------------------
-*/
+/// \file drawClusters.C
+/// \brief Macro to draw clusters TPC clusters out of THnSparse which have been created with readClusters.C
+///
+/// Used for the HLT-TPC cluster verification
+///
+/// Usage:
+///
+/// ~~~
+/// aliroot -b -l -q drawClusters.C'("<FileName in results>", "<Simulation Id>", "<Simulation Version>", "<PADGROUP>",<SCALE>)'
+/// ~~~
+///
+/// * PADGROUP:
+///   * -1: all pads
+///   * 0: inner pad region
+///   * 1: middle pad region
+///   * 2: outter pad region
+///
+/// * SCALE:
+///   * 0:
+///   * 1:
+///
+/// Example:
+/// ~~~
+/// aliroot -b -l -q drawClusters.C'("results_recPoints_Pythia_20a.root","Pythia","20a")'
+/// ~~~
+///
+/// Will read:
+///  * $CWD/results/results_friends_Pythia_20a.root
+///
+/// Will write:
+///  * $CWD/results/images/xyz_Pythia_20a_all_scaled.png
+///  * $CWD/results/images/param_Pythia_20a_all_scaled.png
+///  * $CWD/results/rootfiles/xyz_Pythia_20a_all_scaled.root
+///  * $CWD/results/rootfiles/param_Pythia_20a_all_scaled.root
+///
+/// \author Jochen Thaeder <jochen@thaeder.de>
 
 // ==================================================================================
 void drawClusters( Char_t *file = "results_recPoints_20000.root",
-		   Char_t *type = "Pythia", Char_t *version = "8", 
+		   Char_t *type = "Pythia", Char_t *version = "8",
 		   Int_t padGroup = -1, Bool_t bScale = kTRUE) {
 
-  // --------------------------------------------------------
-  // -- Setup
-  // --------------------------------------------------------
-  
+  /// --------------------------------------------------------
+  /// -- Setup
+  /// --------------------------------------------------------
+
   // -- Setup style
   SetupStyle();
 
@@ -83,7 +75,7 @@ void drawClusters( Char_t *file = "results_recPoints_20000.root",
   // --------------------------------------------------------
 
   TFile* results = TFile::Open(Form("results/%s",file));
-  
+
   THnSparseF* spo    = static_cast<THnSparseF*>(results->Get("spo"));
   THnSparseF* sphhw  = static_cast<THnSparseF*>(results->Get("sphhw"));
   THnSparseF* sphhwR = static_cast<THnSparseF*>(results->Get("sphhwR"));
@@ -169,13 +161,13 @@ void drawClusters( Char_t *file = "results_recPoints_20000.root",
   gSystem->Exec("if [ ! -d ./results/rootfiles ] ; then mkdir -p results/rootfiles ; fi");
 
   TString name(Form("%s_%s",type, version));
-  
-  if (padGroup == -1)  
+
+  if (padGroup == -1)
     name += "_all";
-  else                 
+  else
     name += Form("_pad%d", padGroup);
-  
-  if (bScale == kTRUE) 
+
+  if (bScale == kTRUE)
     name += "_scaled";
 
   cs0->SaveAs(Form("results/images/xyz_%s.png",   name.Data()));
@@ -190,7 +182,7 @@ void drawClusters( Char_t *file = "results_recPoints_20000.root",
 // -----------------------------------------------
 void PrintHist(THnSparseF* spo, THnSparseF* sphhw, THnSparseF* sphhwR,
 	       Int_t proj, const Char_t *title, Bool_t bScale) {
-  
+
   TH1D *hh1 = sphhw->Projection(proj);
   if (hh1) {
     if (bScale) hh1->Scale(1./hh1->Integral());
@@ -206,7 +198,7 @@ void PrintHist(THnSparseF* spo, THnSparseF* sphhw, THnSparseF* sphhwR,
     hh0->SetLineColor(kBlack);
     hh0->DrawCopy("same");
   }
-  
+
   if (hh1)
     hh1->DrawCopy("same");
 
@@ -230,7 +222,7 @@ void PrintHist(THnSparseF* spo, THnSparseF* sphhw, THnSparseF* sphhwR,
   hhh = sphhwR->Projection(4,3);
   hhh->SetLineColor(kRed);
   hhh->DrawCopy("same");
-  
+
   hhh = spo->Projection(5,3);
   hhh->SetTitle("Global X vs Global Y");
   hhh->DrawCopy();
@@ -240,7 +232,7 @@ void PrintHist(THnSparseF* spo, THnSparseF* sphhw, THnSparseF* sphhwR,
   hhh = sphhwR->Projection(5,3);
   hhh->SetLineColor(kRed);
   hhh->DrawCopy("same");
-  
+
   hhh = spo->Projection(5,4);
   hhh->SetTitle("Global Y vs Global Z");
   hhh->DrawCopy();
@@ -255,14 +247,14 @@ void PrintHist(THnSparseF* spo, THnSparseF* sphhw, THnSparseF* sphhwR,
 
 // ==================================================================================
 void SetupStyle() {
-  // -- setup style
-  
+  /// -- setup style
+
   gROOT->SetStyle("Plain");
 
   gStyle->SetHatchesSpacing(0.8);
   gStyle->SetHatchesLineWidth(1);
 
-  gStyle->SetCanvasBorderMode(0);  
+  gStyle->SetCanvasBorderMode(0);
   gStyle->SetCanvasColor(10);
 
   gStyle->SetPadBorderMode(0);
@@ -296,23 +288,23 @@ void SetupStyle() {
   gStyle->SetEndErrorSize(3);
 
   gStyle->SetLabelSize(0.04,"xyz");
-  gStyle->SetLabelFont(font,"xyz"); 
+  gStyle->SetLabelFont(font,"xyz");
   gStyle->SetLabelOffset(0.01,"xyz");
 
-  gStyle->SetTitleFont(font,"xyz");  
-  gStyle->SetTitleOffset(1.3,"xyz");  
-  gStyle->SetTitleSize(0.04,"xyz");  
-  gStyle->SetTitleSize(0.04);  
+  gStyle->SetTitleFont(font,"xyz");
+  gStyle->SetTitleOffset(1.3,"xyz");
+  gStyle->SetTitleSize(0.04,"xyz");
+  gStyle->SetTitleSize(0.04);
 
-  gStyle->SetMarkerSize(1.2); 
-  gStyle->SetPalette(1,0); 
+  gStyle->SetMarkerSize(1.2);
+  gStyle->SetPalette(1,0);
 
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1);
-  
+
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  
+
   gStyle->SetLineWidth(1);
 
   return;
