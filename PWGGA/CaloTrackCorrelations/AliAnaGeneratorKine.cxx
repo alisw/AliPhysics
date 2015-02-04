@@ -67,6 +67,12 @@ fhPtPi0Not2Gamma(0),   fhPtEtaNot2Gamma(0)
   {
     fhPt      [p] = 0;
     fhPtOrigin[p] = 0;
+    fhPhi     [p] = 0;
+    fhEta     [p] = 0;
+    fhEtaPhi  [p] = 0;
+
+    fhPhiStatus[p] = 0;
+    fhEtaStatus[p] = 0;
     
     for(Int_t i = 0; i < fgkNIso; i++)
     {
@@ -379,6 +385,36 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     fhPt[p]  = new TH1F(Form("h%sPt",particle[p].Data()),Form("Input %s p_{T}",partTitl[p].Data()),nptbins,ptmin,ptmax);
     fhPt[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPt[p]);
+
+    fhPhi[p]  = new TH1F(Form("h%sPhi",particle[p].Data()),Form("Input %s #phi with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),180,0,TMath::TwoPi());
+    fhPhi[p]->SetXTitle("#phi (rad)");
+    outputContainer->Add(fhPhi[p]);
+
+    fhEta[p]  = new TH1F(Form("h%sEta",particle[p].Data()),Form("Input %s #eta with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),200,-2,2);
+    fhEta[p]->SetXTitle("#eta");
+    outputContainer->Add(fhEta[p]);
+
+    fhEtaPhi[p]  = new TH2F(Form("h%sEtaPhi",particle[p].Data()),
+                            Form("Input %s #eta vs #phi with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
+                            200,-2,2,180,0,TMath::TwoPi());
+    fhEtaPhi[p]->SetXTitle("#eta");
+    fhEtaPhi[p]->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhi[p]);
+
+    fhPhiStatus[p]  = new TH2F(Form("h%sPhiStatus",particle[p].Data()),
+                               Form("Input %s #phi vs status code with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
+                               180,0,TMath::TwoPi(),101,-50,50);
+    fhPhiStatus[p]->SetXTitle("#phi (rad)");
+    fhPhiStatus[p]->SetYTitle("status code");
+    outputContainer->Add(fhPhiStatus[p]);
+    
+    fhEtaStatus[p]  = new TH2F(Form("h%sEtaStatus",particle[p].Data()),
+                               Form("Input %s #eta vs status code with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
+                               200,-2,2,101,-50,50);
+    fhEtaStatus[p]->SetXTitle("#eta");
+    fhEtaStatus[p]->SetYTitle("status code");
+    outputContainer->Add(fhEtaStatus[p]);
+
     
     fhPtOrigin[p]     = new TH2F(Form("h%sPtOrigin",particle[p].Data()),Form("Input %s p_{T} vs origin",partTitl[p].Data()),nptbins,ptmin,ptmax,11,0,11) ;
     fhPtOrigin[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1196,9 +1232,6 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     
     if( ptTrig < GetMinPt() ) continue ;
 
-    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
-    if(! in )  continue ;
-
     // Identify the particle to fill appropriate histogram
     Int_t partType = -1;
     
@@ -1228,33 +1261,14 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
         else if(momPdg == 111 )
         {
           partType = kmcPrimPi0Decay;
-          
-          fhPtPi0DecayStatus  ->Fill(ptTrig,momStatus);
-          
-          if(momNDaugh!=2) fhPtGammaFromPi0Not2Gamma->Fill(ptTrig);
         }
         else if(momPdg == 221 )
         {
           partType = kmcPrimEtaDecay;
-          
-          fhPtEtaDecayStatus  ->Fill(ptTrig,momStatus);
-          
-          if(momNDaugh!=2) fhPtGammaFromEtaNot2Gamma->Fill(ptTrig);
         }
-        else if(momStatus > 0 )
+        else if(TMath::Abs(momStatus) > 0 )
         {
           partType = kmcPrimOtherDecay ;
-          
-          fhPtOtherDecayStatus->Fill(ptTrig,momStatus);
-          
-          if     (momPdg     > 2100  && momPdg   < 2210) fhPtOtherDecayMesonId->Fill(ptTrig,0.5);// resonances
-          else if(momPdg    == 221) fhPtOtherDecayMesonId->Fill(ptTrig,5.5);//eta
-          else if(momPdg    == 331) fhPtOtherDecayMesonId->Fill(ptTrig,6.5);//eta prime
-          else if(momPdg    == 213) fhPtOtherDecayMesonId->Fill(ptTrig,1.5);//rho
-          else if(momPdg    == 223) fhPtOtherDecayMesonId->Fill(ptTrig,2.5);//omega
-          else if(momPdg    >= 310   && momPdg    <= 323) fhPtOtherDecayMesonId->Fill(ptTrig,3.5);//k0S, k+-,k*
-          else if(momPdg    == 130) fhPtOtherDecayMesonId->Fill(ptTrig,3.5);//k0L
-          else                      fhPtOtherDecayMesonId->Fill(ptTrig,4.5);//other?
         }
       }
     }
@@ -1273,19 +1287,50 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       
       if( pdg0 == 22 && pdg1== 22 )
       {
-        if     ( pdgTrig==111 ) { partType = kmcPrimPi0; fhPtPi0Status->Fill(ptTrig,statusTrig); }
-      
-        else if( pdgTrig==221 ) { partType = kmcPrimEta; fhPtEtaStatus->Fill(ptTrig,statusTrig); }
+        if     ( pdgTrig==111 ) partType = kmcPrimPi0;
+        else if( pdgTrig==221 ) partType = kmcPrimEta;
       }
     }
-    else  if( (pdgTrig==111 || pdgTrig==221) )
+    else if( (pdgTrig==111 || pdgTrig==221) )
     {
+      Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
+      if(! in )  continue ;
+      
       if(pdgTrig==111) fhPtPi0Not2Gamma->Fill(ptTrig);
       if(pdgTrig==221) fhPtEtaNot2Gamma->Fill(ptTrig);
     }
     
     if(partType < 0 ) continue ;
 
+    //
+    // Fill particle acceptance histograms
+    //
+    Float_t eta = fTrigger.Eta();
+    Float_t phi = fTrigger.Phi();
+    if(phi < 0) phi+=TMath::TwoPi();
+    
+    fhPhi   [partType]->Fill(phi);
+    fhEta   [partType]->Fill(eta);
+    fhEtaPhi[partType]->Fill(eta,phi);
+    
+    if(partType < 4 &&  partType!=0)
+    {
+      fhPhiStatus[partType]->Fill(phi,momStatus);
+      fhEtaStatus[partType]->Fill(eta,momStatus);
+    }
+    else
+    {
+      fhPhiStatus[partType]->Fill(phi,statusTrig);
+      fhEtaStatus[partType]->Fill(eta,statusTrig);
+    }
+    
+    //
+    // Select particles in trigger detector acceptance
+    //
+    Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(eta,phi,fTriggerDetector) ;
+    if(! in )  continue ;
+
+    
     AliDebug(1,Form("Select trigger particle %d: pdg %d, type %d, status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
                     ipr, pdgTrig, partType, statusTrig, imother, ptTrig, fTrigger.Eta(), fTrigger.Phi()*TMath::RadToDeg()));
     
@@ -1294,11 +1339,46 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     //      printf("\t pi0 daughters %d, %d\n", particle->GetDaughter(0), particle->GetDaughter(1));
     //    }
 
+    //
     // Fill histograms do analysis
+    //
     
     fhPt[partType]->Fill(ptTrig);
     
-    
+    if     (partType==kmcPrimPi0)
+    {
+      fhPtPi0Status->Fill(ptTrig,statusTrig);
+    }
+    else if(partType==kmcPrimEta)
+    {
+      fhPtEtaStatus->Fill(ptTrig,statusTrig);
+    }
+    else if(partType == kmcPrimPi0Decay )
+    {
+      fhPtPi0DecayStatus  ->Fill(ptTrig,momStatus);
+      
+      if(momNDaugh!=2) fhPtGammaFromPi0Not2Gamma->Fill(ptTrig);
+    }
+    else if(partType == kmcPrimEtaDecay )
+    {
+      fhPtEtaDecayStatus  ->Fill(ptTrig,momStatus);
+      
+      if(momNDaugh!=2) fhPtGammaFromEtaNot2Gamma->Fill(ptTrig);
+    }
+    else if(partType == kmcPrimOtherDecay)
+    {
+      fhPtOtherDecayStatus->Fill(ptTrig,momStatus);
+      
+      if     (momPdg     > 2100  && momPdg   < 2210) fhPtOtherDecayMesonId->Fill(ptTrig,0.5);// resonances
+      else if(momPdg    == 221) fhPtOtherDecayMesonId->Fill(ptTrig,5.5);//eta
+      else if(momPdg    == 331) fhPtOtherDecayMesonId->Fill(ptTrig,6.5);//eta prime
+      else if(momPdg    == 213) fhPtOtherDecayMesonId->Fill(ptTrig,1.5);//rho
+      else if(momPdg    == 223) fhPtOtherDecayMesonId->Fill(ptTrig,2.5);//omega
+      else if(momPdg    >= 310   && momPdg    <= 323) fhPtOtherDecayMesonId->Fill(ptTrig,3.5);//k0S, k+-,k*
+      else if(momPdg    == 130) fhPtOtherDecayMesonId->Fill(ptTrig,3.5);//k0L
+      else                      fhPtOtherDecayMesonId->Fill(ptTrig,4.5);//other?
+    }
+
     // Origin
     Int_t momOrgPdg    = -1;
     Int_t momOrgStatus = -1;
