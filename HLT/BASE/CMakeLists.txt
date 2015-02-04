@@ -164,7 +164,7 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} DESTINATION include)
+install(FILES ${HDRS} AliHLTIndexGrid.h DESTINATION include)
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)
