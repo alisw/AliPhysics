@@ -318,8 +318,8 @@ void AliADQADataMakerSim::MakeDigits()
          Int_t totCharge = 0;
          Int_t   PMNumber  = ADDigit->PMNumber();
 
-	 if(PMNumber<8 && ADDigit->GetBBflag()) nBBflagsADA++;
-	 if(PMNumber>7 && ADDigit->GetBBflag()) nBBflagsADC++;
+	 if(PMNumber<8 && ADDigit->GetBBflag()) nBBflagsADC++;
+	 if(PMNumber>7 && ADDigit->GetBBflag()) nBBflagsADA++;
 	 
 	 Short_t adc[21];
 	 for(Int_t iClock=0; iClock<21; iClock++) { 

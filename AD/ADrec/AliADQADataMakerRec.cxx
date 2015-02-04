@@ -300,8 +300,8 @@ void AliADQADataMakerRec::MakeDigits()
     while ( (ADDigit = dynamic_cast<AliADdigit *>(next())) ) {
          Int_t totCharge = 0;
          Int_t   PMNumber  = ADDigit->PMNumber();
-	 if(PMNumber<8 && ADDigit->GetBBflag()) nBBflagsADA++;
-	 if(PMNumber>7 && ADDigit->GetBBflag()) nBBflagsADC++;
+	 if(PMNumber<8 && ADDigit->GetBBflag()) nBBflagsADC++;
+	 if(PMNumber>7 && ADDigit->GetBBflag()) nBBflagsADA++;
 	 
 	 Short_t adc[21];
 	 for(Int_t iClock=0; iClock<21; iClock++) { 
@@ -365,12 +365,12 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
     for(Int_t i=0;i<16;i++) {
       FillESDsData(kChargeChannel,(Float_t) i,(Float_t) esdAD->GetAdc(i));
       if (i < 8) {
-	if(esdAD->BBTriggerADA(i)) FillESDsData(kBBFlag,(Float_t) i);
-	if(esdAD->BGTriggerADA(i)) FillESDsData(kBGFlag,(Float_t) i);
+	if(esdAD->BBTriggerADC(i)) FillESDsData(kBBFlag,(Float_t) i);
+	if(esdAD->BGTriggerADC(i)) FillESDsData(kBGFlag,(Float_t) i);
       }
       else {
-	if(esdAD->BBTriggerADC(i-8)) FillESDsData(kBBFlag,(Float_t) i);  
-	if(esdAD->BGTriggerADC(i-8)) FillESDsData(kBGFlag,(Float_t) i);
+	if(esdAD->BBTriggerADA(i-8)) FillESDsData(kBBFlag,(Float_t) i);  
+	if(esdAD->BGTriggerADA(i-8)) FillESDsData(kBGFlag,(Float_t) i);
       }		  	
       Float_t time = (Float_t) esdAD->GetTime(i);
       FillESDsData(kTimeChannel,(Float_t) i,time);
