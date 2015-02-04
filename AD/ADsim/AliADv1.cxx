@@ -187,7 +187,7 @@ TGeoCompositeShape * AliADv1::MakeShapeADCpadH(const Double_t W, const Double_t 
 //_____________________________________________________________________________
 void AliADv1::CreateAD()
 {
-  printf("===> AliADv1::CreateAD(): ver=[Feb 2st, 2015]; contact=[ecalvovi@cern.ch]\n");
+  printf("===> AliADv1::CreateAD(): ver=[Feb 3st, 2015]; contact=[ecalvovi@cern.ch]\n");
   //
   // Define Rotations used
   //
@@ -930,8 +930,8 @@ void AliADv1::CreateAD()
         // ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kZbegADC1 - kADCCelldz/2.)); // Tunnel
         const Float_t kPosADC = -kZbegFrontBar-2.-3.0-0.3;  // 3.0 = (5.6 + 0.2 + 0.2)/2. // (ecalvovi@cern.ch) 
         printf("CreateAD: kPosADC=%8.2f\n", kPosADC);
-        ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kPosADC - kADCCelldz/2. - 0.1)); // Tunnel // ADC1
-        ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kPosADC + kADCCelldz/2. + 0.1)); // Tunnel // ADC2
+        ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kPosADC - kADCCelldz/2. - 0.165)); // Tunnel // ADC1
+        ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kPosADC + kADCCelldz/2. + 0.165)); // Tunnel // ADC2
         ad -> AddNode(voADsupport, 3, new TGeoTranslation( 0., 0., kPosADC));
         ad -> AddNode(voADsupport, 4, new TGeoCombiTrans ( 0., 0., kPosADC, Rz180));
         break;
@@ -1009,6 +1009,7 @@ void AliADv1::CreateAD()
   // alice->Draw("ogl");
 
   return; 
+  printf("<=== AliADv1::CreateAD(): ver=[Feb 3st, 2015]; contact=[ecalvovi@cern.ch]\n");
 }
 
 //_____________________________________________________________________________
