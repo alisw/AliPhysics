@@ -1,9 +1,10 @@
+/// \file compGen.C
+
 void compGen()
 {
 
-  //
-  // Run gen info maker  
-  //
+  /// Run gen info maker
+
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");

@@ -1,8 +1,11 @@
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"ConfigPPR.C++")
+/// \file ConfigPP.C
+/// One can use the configuration macro in compiled mode by
+/// ~~~
+/// root [0] gSystem->Load("libgeant321");
+/// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+///                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+/// root [0] .x grun.C(1,"ConfigPPR.C++")
+/// ~~~
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -134,8 +137,8 @@ void ProcessEnvironmentVars();
 
 void Config()
 {
-    // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
-    // Theta range given through pseudorapidity limits 22/6/2001
+    /// ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
+    /// Theta range given through pseudorapidity limits 22/6/2001
 
     // Get settings from environment variables
     ProcessEnvironmentVars();
@@ -1530,7 +1533,8 @@ AliGenGeVSim* GeVSimStandard(Float_t mult, Float_t vn)
 
 void ProcessEnvironmentVars()
 {
-    // Run type
+    /// Run type
+
     if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
       for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
 	if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {

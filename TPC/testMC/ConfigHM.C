@@ -1,8 +1,11 @@
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"Config.C++")
+/// \file ConfigHM.C
+/// One can use the configuration macro in compiled mode by
+/// ~~~
+/// root [0] gSystem->Load("libgeant321");
+/// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+///                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+/// root [0] .x grun.C(1,"Config.C++")
+/// ~~~
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -45,8 +48,8 @@ Float_t EtaToTheta(Float_t arg);
 
 void Config()
 {
-    // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
-    // Theta range given through pseudorapidity limits 22/6/2001
+    /// ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
+    /// Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
   gRandom->SetSeed(0); // Set 0 to use the currecnt time

@@ -772,7 +772,8 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC/scripts \
                          @CMAKE_SOURCE_DIR@/TPC/scripts/OCDBscan \
                          @CMAKE_SOURCE_DIR@/TPC/scripts/OCDBscan/jdl \
-                         @CMAKE_SOURCE_DIR@/TPC/stressTest/testSparse/
+                         @CMAKE_SOURCE_DIR@/TPC/stressTest/testSparse \
+                         @CMAKE_SOURCE_DIR@/TPC/testMC
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
