@@ -1,3 +1,5 @@
+/// \file startGUI.C
+
 TObjArray *arrGUI=0x0;
 TTree *calPads=0x0;
 TTree *calPads2=0x0;

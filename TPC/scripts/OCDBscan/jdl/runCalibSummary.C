@@ -1,14 +1,11 @@
-/*
-
-
-  runCalibSummary.C
-  Macro to extract TPC calibration summary information
- 
-  Example:
-  .L runCalibSummary.C
-  runCalibSummary(119037);
-
-*/
+/// \file runCalibSummary.C
+/// \brief Macro to extract TPC calibration summary information
+///
+/// Example:
+/// ~~~{.cpp}
+/// .L runCalibSummary.C
+/// runCalibSummary(119037);
+/// ~~~
 
 void runCalibSummary(TString runNumberString ="0")
 {
@@ -21,12 +18,12 @@ void runCalibSummary(TString runNumberString ="0")
 
   // Configure OCDB
   gROOT->LoadMacro("ConfigOCDB.C");
-  ConfigOCDB(irun); 
- 
+  ConfigOCDB(irun);
+
   // run extraction of the calibration summary ...
   AliTPCcalibSummary *calibSummary = new AliTPCcalibSummary;
   calibSummary->ProcessRun(irun);
   delete calibSummary;
-  
+
   return;
 }

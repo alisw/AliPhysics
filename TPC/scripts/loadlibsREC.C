@@ -1,3 +1,5 @@
+/// \file loadlibsREC.C
+
 void loadlibsREC ()
 {
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TPC/CalibMacros -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD ");
