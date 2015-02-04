@@ -25,7 +25,7 @@ SET (CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
 
 If($ENV{ctest_model} MATCHES Nightly)
 
-Set (CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-DCMAKE_BUILD_TYPE=NIGHTLY\" \"-G${CTEST_CMAKE_GENERATOR}\" \"${CTEST_SOURCE_DIRECTORY}\" \"-DROOTSYS=${CTEST_ROOTSYS_DIRECTORY}"  ")
+Set (CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-DCMAKE_BUILD_TYPE=NIGHTLY\" \"-G${CTEST_CMAKE_GENERATOR}\" \"${CTEST_SOURCE_DIRECTORY}\" \"-DROOTSYS=${CTEST_ROOTSYS_DIRECTORY}\"  ")
 
   # get the information about conflicting or localy modified files
   # from svn, extract the relavant information about the file name
