@@ -113,7 +113,20 @@ private:
   TH2F      * fhPtJetPtHard;                //! pt of jet divided to pt hard, trigger is photon 
   TH2F      * fhPtJetPtParton;              //! pt of parton divided to pt parton, trigger is photon 
 
-  TH1F      * fhPt[fgkNmcPrimTypes];        //! Input particle
+  TH1F      * fhPt      [fgkNmcPrimTypes];  //! Input particle
+  TH2F      * fhPtOrigin[fgkNmcPrimTypes];  //! Input particle vs particle type originating it (if meson decay, its mother)
+  TH2F      * fhPtOtherDecayMesonId;        //! Decay photons, not originating from pi0 or eta, ID of the particle
+  
+  TH2F      * fhPtPi0Status;                //! Input pi0 status
+  TH2F      * fhPtEtaStatus;                //! Input eta status
+  TH2F      * fhPtPi0DecayStatus;           //! Input pi0 decay meson status
+  TH2F      * fhPtEtaDecayStatus;           //! Input eta decay meson status
+  TH2F      * fhPtOtherDecayStatus;         //! Input other decay particle status
+
+  TH1F      * fhPtPi0Not2Gamma;             //! Input pi0 not 2 gamma decay
+  TH1F      * fhPtEtaNot2Gamma;             //! Input eta not 2 gamma decay
+  TH1F      * fhPtGammaFromPi0Not2Gamma;    //! Input gamma from pi0 not 2 gamma decay
+  TH1F      * fhPtGammaFromEtaNot2Gamma;    //! Input gamma from eta not 2 gamma decay
   
   // Histograms arrays for 4 isolation options and 2 options on leading or not leading particle
 
@@ -158,7 +171,7 @@ private:
   AliAnaGeneratorKine              (const AliAnaGeneratorKine & gk) ; // cpy ctor
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; // cpy assignment
   
-  ClassDef(AliAnaGeneratorKine,6)
+  ClassDef(AliAnaGeneratorKine,7)
   
 } ;
 
