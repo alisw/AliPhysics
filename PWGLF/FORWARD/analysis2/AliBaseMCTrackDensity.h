@@ -1,7 +1,15 @@
 #ifndef ALIBaseMCTRACKDENSITY_MC
 #define ALIBaseMCTRACKDENSITY_MC
+/**
+ * @file   AliBaseMCTrackDensity.h
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Feb  4 00:49:03 2015
+ * 
+ * @brief  
+ * 
+ * 
+ */
 #include <TNamed.h>
-#include "AliForwardFlowWeights.h"
 class TList;
 class TH1D;
 class TH2D;
@@ -11,6 +19,7 @@ class AliMCEvent;
 class AliMCParticle;
 class AliTrackReference;
 class AliStack;
+class AliBaseMCWeights;
 
 /**
  * A class to calculate the particle density from track references.
@@ -73,9 +82,12 @@ public:
   /** 
    * Whether to `after-burn' the particles with flow 
    * 
+   * Backward-compatibility member function 
+   *
    * @param use 
+   * @deprecated Use SetWeights instead. 
    */  
-  void SetUseFlowWeights(Bool_t use) { fUseFlowWeights = use; }
+  void SetUseFlowWeights(Bool_t use);
   /** 
    * Set whether to print debug messages.  Please note this will
    * produce a lot of output. 
@@ -95,6 +107,12 @@ public:
    * @param option Not used
    */
   virtual void Print(Option_t* option="") const;
+  /*
+   * Set wieghts to use 
+   * 
+   * @param weights Weights object to use 
+   */	
+  void SetWeights(AliBaseMCWeights* weights);
 protected:
   /** 
    * Loops over all the particles in the passed event.  If @a primary
@@ -212,19 +230,18 @@ protected:
   Double_t CalculateWeight(Double_t eta, Double_t pt, 
 			   Double_t phi, Int_t id) const;
 
-  Bool_t   fUseOnlyPrimary;       // Only use primaries 
-  Bool_t   fUseFlowWeights;       // Wether to use flow weights 
-  TH2D*    fBinFlow;              // eta,phi bin flow 
-  TH2D*    fEtaBinFlow;           // dEta vs eta of strip
-  TH2D*    fPhiBinFlow;           // dPhi vs phi of strip
-  TH1D*    fNRefs;                // Number of track-references per track
-  AliForwardFlowWeights fWeights; // Flow weights
-  Double_t fVz;                   // IP z-coordinate of this event
-  Double_t fB;                    // Impact parameter of this event
-  Double_t fPhiR;                 // Reaction plane  of this event
-  Bool_t   fDebug;                // Debug flag
+  Bool_t            fUseOnlyPrimary; // Only use primaries 
+  TH2D*             fBinFlow;        // eta,phi bin flow 
+  TH2D*             fEtaBinFlow;     // dEta vs eta of strip
+  TH2D*             fPhiBinFlow;     // dPhi vs phi of strip
+  TH1D*             fNRefs;          // Number of track-references per track
+  AliBaseMCWeights* fWeights;        // MC weights
+  Double_t          fVz;             // IP z-coordinate of this event
+  Double_t          fB;              // Impact parameter of this event
+  Double_t          fPhiR;           // Reaction plane  of this event
+  Bool_t            fDebug;          // Debug flag
 
-  ClassDef(AliBaseMCTrackDensity,3); // Calculate track-ref density
+  ClassDef(AliBaseMCTrackDensity,4); // Calculate track-ref density
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "AliBaseMCTrackDensity.h"
+#include "AliForwardFlowWeights.h"
 #include <AliMCEvent.h>
 #include <AliTrackReference.h>
 #include <AliStack.h>
@@ -19,12 +20,11 @@
 AliBaseMCTrackDensity::AliBaseMCTrackDensity()
   : TNamed(), 
     fUseOnlyPrimary(false), 
-    fUseFlowWeights(false),
     fBinFlow(0), 
     fEtaBinFlow(0),
     fPhiBinFlow(0),
     fNRefs(0),
-    fWeights(),
+    fWeights(0),
     fVz(0), 
     fB(0),
     fPhiR(0),
@@ -38,12 +38,11 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity()
 AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
   : TNamed(name,"mcTrackDensity"), 
     fUseOnlyPrimary(false), 
-    fUseFlowWeights(false),
     fBinFlow(0), 
     fEtaBinFlow(0),
     fPhiBinFlow(0),
     fNRefs(0),
-    fWeights(),
+    fWeights(0),
     fVz(0), 
     fB(0),
     fPhiR(0),
@@ -57,7 +56,6 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
 AliBaseMCTrackDensity::AliBaseMCTrackDensity(const AliBaseMCTrackDensity& o)
   : TNamed(o),
     fUseOnlyPrimary(o.fUseOnlyPrimary), 
-    fUseFlowWeights(o.fUseFlowWeights),
     fBinFlow(o.fBinFlow), 
     fEtaBinFlow(o.fEtaBinFlow),
     fPhiBinFlow(o.fPhiBinFlow),
@@ -86,7 +84,6 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
   fPhiBinFlow           = o.fPhiBinFlow;
   fNRefs                = o.fNRefs;
   fDebug                = o.fDebug;
-  fUseFlowWeights       = o.fUseFlowWeights;
   fWeights              = o.fWeights;
   fVz                   = o.fVz;
   fB                    = o.fB;
@@ -94,6 +91,24 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
   return *this;
 }
 
+//____________________________________________________________________
+void
+AliBaseMCTrackDensity::SetWeights(AliBaseMCWeights* w)
+{
+  if (fWeights) {
+    delete fWeights;
+    fWeights = 0;
+  }
+  fWeights = w;
+}
+//____________________________________________________________________
+void
+AliBaseMCTrackDensity::SetUseFlowWeights(Bool_t use)
+{
+  if (!use) return;
+
+  SetWeights(new AliForwardFlowWeights());
+}
 //____________________________________________________________________
 void
 AliBaseMCTrackDensity::CreateOutputObjects(TList* l)
@@ -134,8 +149,8 @@ AliBaseMCTrackDensity::CreateOutputObjects(TList* l)
   fNRefs->SetFillStyle(3001);
   fNRefs->SetDirectory(0);
   ll->Add(fNRefs);
-  
-  fWeights.Init(ll);
+
+  if(fWeights)  fWeights->Init(ll);
 }
 
 
@@ -150,7 +165,7 @@ AliBaseMCTrackDensity::StoreParticle(AliMCParticle*       particle,
   if (!ref) return 0;
 
   Double_t weight = 1;
-  if (fUseFlowWeights) {
+  if (fWeights) {
     Double_t phi = (mother ? mother->Phi() : particle->Phi());
     Double_t eta = (mother ? mother->Eta() : particle->Eta());
     Double_t pt  = (mother ? mother->Pt() : particle->Pt());
@@ -181,7 +196,6 @@ AliBaseMCTrackDensity::StoreParticle(AliMCParticle*       particle,
   fBinFlow->Fill(dEta, dPhi);
   fEtaBinFlow->Fill(etaR, dEta);
   fPhiBinFlow->Fill(phiR, dPhi);
-
   return weight;
 }
 
@@ -331,7 +345,7 @@ Double_t
 AliBaseMCTrackDensity::CalculateWeight(Double_t eta, Double_t pt, 
 				       Double_t phi, Int_t id) const
 {
-  return fWeights.CalcWeight(eta, pt, phi, id, fPhiR, fB);
+  return fWeights->CalcWeight(eta, pt, phi, id, fPhiR, fB);
 }
 
 #define PF(N,V,...)					\
@@ -348,14 +362,14 @@ AliBaseMCTrackDensity::CalculateWeight(Double_t eta, Double_t pt,
 
 //____________________________________________________________________
 void
-AliBaseMCTrackDensity::Print(Option_t* /*option*/) const 
+AliBaseMCTrackDensity::Print(Option_t* option) const 
 {
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();  
   PFB("Only primary tracks", fUseOnlyPrimary);
-  PFB("Use flow after burner", fUseFlowWeights);
-  gROOT->DecreaseDirLevel();
-  
+  PFB("Use weights", fWeights);
+  if (fWeights) fWeights->Print(option);
+  gROOT->DecreaseDirLevel();  
 }
 
 //____________________________________________________________________

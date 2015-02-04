@@ -5,7 +5,7 @@ RunFast(const char* url="local:///",
   TString ali = gSystem->ExpandPathName("${ALICE_PHYSICS}");
   // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
   TString fwd = ali + "/PWGLF/FORWARD/analysis2";
-  gSystem->AddIncludePath(Form("-I$(ALICE_ROOT)/include -I%s/include",
+  gSystem->AddIncludePath(Form("-I${ALICE_ROOT}/include -I%s/include",
 			       ali.Data()));
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
 
