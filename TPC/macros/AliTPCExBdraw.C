@@ -1,23 +1,21 @@
-/* 
-char *storage = "local://OCDBres"
-  Int_t RunNumber=0;
-  AliCDBManager::Instance()->SetDefaultStorage(storage);
-  AliCDBManager::Instance()->SetRun(RunNumber) 
-  AliTPCExBFirst * exb = AliTPCcalibDB::Instance()->GetExB();
-  //
-  // See example macro $ALICE_ROOT/TPC/macros/AliTPCExBdraw.C 
-  //
-  .L $ALICE_ROOT/TPC/macros/AliTPCExBdraw.C 
-  DrawPrim(0)
-  DrawLaser(0)
-*/
-
+/// \file AliTPCExBdraw.C
+//////
+/// ~~~{.cpp}
+/// char *storage = "local://OCDBres"
+/// Int_t RunNumber=0;
+/// AliCDBManager::Instance()->SetDefaultStorage(storage);
+/// AliCDBManager::Instance()->SetRun(RunNumber) 
+/// AliTPCExBFirst * exb = AliTPCcalibDB::Instance()->GetExB();
+/// // See example macro $ALICE_ROOT/TPC/macros/AliTPCExBdraw.C
+/// .L $ALICE_ROOT/TPC/macros/AliTPCExBdraw.C 
+/// DrawPrim(0)
+/// DrawLaser(0)
+/// ~~~
 
 void DrawPrim(Double_t theta,Float_t magf=5){
-  //
-  // Draw  "primary track distortion"
-  //
-  //Double_t theta=0.5;
+  /// Draw  "primary track distortion"
+  ///
+  /// Double_t theta=0.5;
 
   TF1 *fdrfi_rpi0=new TF1("fdrfi_rpi0",Form("AliTPCExB::GetDrphi(x,0*pi/2,%f*x)",theta),20,250);
   TF1 *fdrfi_rpi1=new TF1("fdrfi_rpi1",Form("AliTPCExB::GetDrphi(x,1*pi/2,%f*x)",theta),20,250);
@@ -65,10 +63,9 @@ void DrawPrim(Double_t theta,Float_t magf=5){
 
 
 void DrawLaser(Double_t fipi2,Float_t magf=5){
-  //
-  // Draw  "primary track distortion"
-  //
-  //Double_t fipi2=0.5;
+  /// Draw  "primary track distortion"
+  ///
+  /// Double_t fipi2=0.5;
 
   TF2 *fdistout = new TF1("fdistout","[0]+[1]*(x-250)+[2]*(x-250)*(x-250)",90,250);
 
@@ -118,8 +115,6 @@ void DrawLaser(Double_t fipi2,Float_t magf=5){
 
 
 void DrawDpt(Float_t d1pt, Float_t ptmin, Float_t ptmax){
-  //
-  //
-  //
-  
+  ///
+
 }

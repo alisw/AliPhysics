@@ -1,21 +1,23 @@
-//
-// Macro to Setup OCDB  
-// This is just example macro
-// Responsible: marian.ivanov@cern.ch
-// To be used:
-// 1. Before invocation of the calibration - in the calibration trains
-// 2. To setup calibration viewer.
-//  
-// ConfigOCDB  - setup default and specific data storage
-// SetupCustom - user sepcific configuration 
-//             - Values in local cache of OCDB are overwritten
+/// \file ConfigOCDB.C
+///
+/// Macro to Setup OCDB
+/// This is just example macro
+/// \author marian.ivanov@cern.ch
+/// To be used:
+/// 1. Before invocation of the calibration - in the calibration trains
+/// 2. To setup calibration viewer.
+///
+/// ConfigOCDB  - setup default and specific data storage
+/// SetupCustom - user sepcific configuration
+///             - Values in local cache of OCDB are overwritten
 
 
 
 void SetupCustom(Int_t run);
 
 void ConfigOCDB(Int_t crun=-1){
-  // 
+  ///
+
   printf("SETUP OCBD for TPC\n");
   //
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -34,13 +36,10 @@ void ConfigOCDB(Int_t crun=-1){
 
 
 void SetupCustom(Int_t run){
-  //
-  //
-  // Custom part - to be empty once we are happy with the calibration
-  //
-  //
-  // Setup magnetic field
-  //
+  /// Custom part - to be empty once we are happy with the calibration
+  ///
+  /// Setup magnetic field
+
   AliGRPObject *grp = AliTPCcalibDB::GetGRP(run);
   Float_t current = 0;
   Float_t bz      = 0;

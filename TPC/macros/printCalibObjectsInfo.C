@@ -1,3 +1,5 @@
+/// \file printCalibObjectsInfo.C
+
 printCalibObjectsInfo(const char* filename="CalibObjects.root")
 {
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");

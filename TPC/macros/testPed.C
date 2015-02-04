@@ -1,11 +1,7 @@
-/*
-  Simple macro to make pedstal calibration
-  and visualize calibration data
-
-*/
-
-
-
+/// \file testPed.C
+///
+/// Simple macro to make pedstal calibration
+/// and visualize calibration data
 
 void testPed(Char_t *fileName)
 {
@@ -23,7 +19,7 @@ void testPed(Char_t *fileName)
    calib->DumpToFile("PedestalData.root");
    delete rawReader;
    delete calib;
-   
+
    //
    TFile f("PedestalData.root");
    AliTPCCalibPedestal* ped = (AliTPCCalibPedestal*)f.Get("AliTPCCalibPedestal");
@@ -42,20 +38,19 @@ void testPed(Char_t *fileName)
 
 void testPed0(Char_t *fileName)
 {
-  //
-  //
-  //
+  ///
+
   AliRawReaderRoot *rawReader = new AliRawReaderRoot(fileName);
   if ( !rawReader ) return;
-  AliTPCCalibPedestal *calib = new AliTPCCalibPedestal; 
+  AliTPCCalibPedestal *calib = new AliTPCCalibPedestal;
   printf("Processing data\n");
   Int_t event=0;
   while (rawReader->NextEvent()){
-    calib->ProcessEvent(rawReader); 
+    calib->ProcessEvent(rawReader);
     printf("Processing event\t%d\n",event);
     event++;
   }
-  calib->Analyse();   
+  calib->Analyse();
   //
   AliTPCCalPad * pad0 = new AliTPCCalPad(calib->GetCalPadRMS());
   AliTPCCalPad * pad1 = new AliTPCCalPad(calib->GetCalPadPedestal());

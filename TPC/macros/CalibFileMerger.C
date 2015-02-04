@@ -1,20 +1,19 @@
-/*
-  // Macro for merging of the calibration classes:
-//   marain.ivanov@cern.ch
-//   //
-//   //
-//   Example usage:
-//   1. Make a list of the calibration files
-//   2. Load libraries
-//   3. Merge - the output is stored in the current directory
-//   //
-//   
-   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC")
-   gSystem->Load("libANALYSIS");
-   gSystem->Load("libTPCcalib");
-   .L $ALICE_ROOT/TPC/macros/CalibFileMerger.C+g 
-//   CalibFileMerger();
-*/
+/// \file CalibFileMerger.C
+/// Macro for merging of the calibration classes:
+/// \author marain.ivanov@cern.ch
+///
+///   Example usage:
+///   1. Make a list of the calibration files
+///   2. Load libraries
+///   3. Merge - the output is stored in the current directory
+///
+/// ~~~{.cpp}
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC")
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib");
+/// .L $ALICE_ROOT/TPC/macros/CalibFileMerger.C+g 
+///  CalibFileMerger();
+/// ~~~
 
 #include <fstream>
 #include "TSystem.h"

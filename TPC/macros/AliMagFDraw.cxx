@@ -1,59 +1,56 @@
-/*
+/// \class AliMagFDraw
+///
+/// ~~~{.cpp}
+/// .L $ALICE_ROOT/TPC/macros/AliMagFDraw.cxx+
+/// AliMagFDraw draw;
+/// draw.RegisterField(0,new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG));
+/// draw.RegisterField(1,new AliMagFMaps("Maps","Maps", 2, 1., 10., 2));
+///
+/// TF2 fbz_rz_0pi("fbz_rz_0pi","AliMagFDraw::GetBz(x,0*pi,y)",0,250,-250,250);
+/// fbz_rz_0pi->Draw("surf2");
+/// 
+/// TF1 fbz_z_90_00pi("fbz_z_90_00pi","AliMagFDraw::GetBz(90,0*pi,x)",-250,250);
+/// TF1 fbz_z_90_05pi("fbz_z_90_05pi","AliMagFDraw::GetBz(90,0.5*pi,x)",-250,250);
+/// TF1 fbz_z_90_10pi("fbz_z_90_10pi","AliMagFDraw::GetBz(90,1.0*pi,x)",-250,250);
+/// TF1 fbz_z_90_15pi("fbz_z_90_15pi","AliMagFDraw::GetBz(90,1.5*pi,x)",-250,250);
+/// fbz_z_90_00pi->SetLineColor(2);
+/// fbz_z_90_05pi->SetLineColor(3);
+/// fbz_z_90_10pi->SetLineColor(4);
+/// fbz_z_90_15pi->SetLineColor(5);
+/// fbz_z_90_00pi->Draw()
+/// fbz_z_90_05pi->Draw("same")
+/// fbz_z_90_15pi->Draw("same")
+/// fbz_z_90_10pi->Draw("same")
+/// 
+/// TF1 fbr_z_90_00pi("fbz_z_90_00pi","AliMagFDraw::GetBr(90,0*pi,x)",-250,250);
+/// TF1 fbr_z_90_05pi("fbz_z_90_05pi","AliMagFDraw::GetBr(90,0.5*pi,x)",-250,250);
+/// TF1 fbr_z_90_10pi("fbz_z_90_10pi","AliMagFDraw::GetBr(90,1.0*pi,x)",-250,250);
+/// TF1 fbr_z_90_15pi("fbz_z_90_15pi","AliMagFDraw::GetBr(90,1.5*pi,x)",-250,250);
+/// fbr_z_90_00pi->SetLineColor(2);
+/// fbr_z_90_05pi->SetLineColor(3);
+/// fbr_z_90_10pi->SetLineColor(4);
+/// fbr_z_90_15pi->SetLineColor(5);
+/// fbr_z_90_00pi->Draw()
+/// fbr_z_90_05pi->Draw("same")
+/// fbr_z_90_15pi->Draw("same")
+/// fbr_z_90_10pi->Draw("same")
+///
+/// TF2 fbz_xy_0z("fbz_xy_0z","AliMagFDraw::GetBz(sqrt(x^2+y^2),atan2(y,x),0)",-250,250,-250,250);
+/// fbz_xy_0z.SetNpy(100);
+/// fbz_xy_0z.SetNpx(100);
+/// fbz_xy_0z->Draw("colz");
+///
+/// TF2 fbz_xy_250z("fbz_xy_250z","AliMagFDraw::GetBz(sqrt(x^2+y^2),atan2(y,x),250)",-250,250,-250,250);
+/// fbz_xy_250z.SetNpy(100);
+/// fbz_xy_250z.SetNpx(100)
+/// fbz_xy_250z->Draw("colz");
+///
+///  TF2 fbz_xy_m250z("fbz_xy_m250z","AliMagFDraw::GetBz(sqrt(x^2+y^2),atan2(y,x),-250)",-250,250,-250,250);
+/// fbz_xy_m250z.SetNpy(100);
+/// fbz_xy_m250z.SetNpx(100)
+/// fbz_xy_m250z->Draw("colz");
+/// ~~~
 
-  .L $ALICE_ROOT/TPC/macros/AliMagFDraw.cxx+
-  AliMagFDraw draw;
-  draw.RegisterField(0,new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG));
-  draw.RegisterField(1,new AliMagFMaps("Maps","Maps", 2, 1., 10., 2));
-
-  TF2 fbz_rz_0pi("fbz_rz_0pi","AliMagFDraw::GetBz(x,0*pi,y)",0,250,-250,250);
-  fbz_rz_0pi->Draw("surf2");
-  
-  TF1 fbz_z_90_00pi("fbz_z_90_00pi","AliMagFDraw::GetBz(90,0*pi,x)",-250,250);
-  TF1 fbz_z_90_05pi("fbz_z_90_05pi","AliMagFDraw::GetBz(90,0.5*pi,x)",-250,250);
-  TF1 fbz_z_90_10pi("fbz_z_90_10pi","AliMagFDraw::GetBz(90,1.0*pi,x)",-250,250);
-  TF1 fbz_z_90_15pi("fbz_z_90_15pi","AliMagFDraw::GetBz(90,1.5*pi,x)",-250,250);
-  fbz_z_90_00pi->SetLineColor(2);
-  fbz_z_90_05pi->SetLineColor(3);
-  fbz_z_90_10pi->SetLineColor(4);
-  fbz_z_90_15pi->SetLineColor(5);
-  fbz_z_90_00pi->Draw()
-  fbz_z_90_05pi->Draw("same")
-  fbz_z_90_15pi->Draw("same")
-  fbz_z_90_10pi->Draw("same")
-  
-
-  TF1 fbr_z_90_00pi("fbz_z_90_00pi","AliMagFDraw::GetBr(90,0*pi,x)",-250,250);
-  TF1 fbr_z_90_05pi("fbz_z_90_05pi","AliMagFDraw::GetBr(90,0.5*pi,x)",-250,250);
-  TF1 fbr_z_90_10pi("fbz_z_90_10pi","AliMagFDraw::GetBr(90,1.0*pi,x)",-250,250);
-  TF1 fbr_z_90_15pi("fbz_z_90_15pi","AliMagFDraw::GetBr(90,1.5*pi,x)",-250,250);
-  fbr_z_90_00pi->SetLineColor(2);
-  fbr_z_90_05pi->SetLineColor(3);
-  fbr_z_90_10pi->SetLineColor(4);
-  fbr_z_90_15pi->SetLineColor(5);
-  fbr_z_90_00pi->Draw()
-  fbr_z_90_05pi->Draw("same")
-  fbr_z_90_15pi->Draw("same")
-  fbr_z_90_10pi->Draw("same")
-
-  //
-  TF2 fbz_xy_0z("fbz_xy_0z","AliMagFDraw::GetBz(sqrt(x^2+y^2),atan2(y,x),0)",-250,250,-250,250);
-  fbz_xy_0z.SetNpy(100);
-  fbz_xy_0z.SetNpx(100);
-  fbz_xy_0z->Draw("colz");
-  //
-  TF2 fbz_xy_250z("fbz_xy_250z","AliMagFDraw::GetBz(sqrt(x^2+y^2),atan2(y,x),250)",-250,250,-250,250);
-  fbz_xy_250z.SetNpy(100);
-  fbz_xy_250z.SetNpx(100)
-  fbz_xy_250z->Draw("colz");
-  //
-   TF2 fbz_xy_m250z("fbz_xy_m250z","AliMagFDraw::GetBz(sqrt(x^2+y^2),atan2(y,x),-250)",-250,250,-250,250);
-  fbz_xy_m250z.SetNpy(100);
-  fbz_xy_m250z.SetNpx(100)
-  fbz_xy_m250z->Draw("colz");
-  //
-
-
-*/
 #include "TObjArray.h"
 #include "TMath.h"
 #include "AliMagF.h"
@@ -79,22 +76,22 @@ public:
 };
 
 
+/// \cond CLASSIMP
 ClassImp(AliMagFDraw)
+/// \endcond
 
 
 TObjArray   AliMagFDraw::fgArray;
 
 void AliMagFDraw::RegisterField(Int_t index, AliMagF * magf){
-  //
-  // add the filed to the list
-  //
+  /// add the filed to the list
+
   fgArray.AddAt(magf,index);
 }
 
 Double_t AliMagFDraw::GetBz(Double_t r, Double_t phi, Double_t z,Int_t index){
-  //
-  // 
-  //
+  ///
+
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
   Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
@@ -105,9 +102,8 @@ Double_t AliMagFDraw::GetBz(Double_t r, Double_t phi, Double_t z,Int_t index){
 }  
 
 Double_t AliMagFDraw::GetBy(Double_t r, Double_t phi, Double_t z,Int_t index){
-  //
-  // 
-  //
+  ///
+
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
   Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
@@ -119,9 +115,8 @@ Double_t AliMagFDraw::GetBy(Double_t r, Double_t phi, Double_t z,Int_t index){
 
 
 Double_t AliMagFDraw::GetBx(Double_t r, Double_t phi, Double_t z,Int_t index){
-  //
-  // 
-  //
+  ///
+
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
   Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
@@ -135,9 +130,8 @@ Double_t AliMagFDraw::GetBx(Double_t r, Double_t phi, Double_t z,Int_t index){
 
 
 Double_t AliMagFDraw::GetBr(Double_t r, Double_t phi, Double_t z,Int_t index){
-  //
-  // 
-  //
+  ///
+
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
   Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
@@ -150,9 +144,8 @@ Double_t AliMagFDraw::GetBr(Double_t r, Double_t phi, Double_t z,Int_t index){
 }  
 
 Double_t AliMagFDraw::GetBrfi(Double_t r, Double_t phi, Double_t z,Int_t index){
-  //
-  // 
-  //
+  ///
+
   AliMagF *mag = (AliMagF*)fgArray.At(index);
   if (!mag) return 0;
   Float_t xyz[3]={r*TMath::Cos(phi),r*TMath::Sin(phi),z};
@@ -166,12 +159,8 @@ Double_t AliMagFDraw::GetBrfi(Double_t r, Double_t phi, Double_t z,Int_t index){
 
 
 TObjArray * AliMagFDraw::Fit(const char *formula, Int_t index){
-  //
-  /*
-    formula="1++x+x^2++cos(y)++cos(y)^2++z++z^2"
-    index=0
-  */
-  //
+  /// formula=`1++x+x^2++cos(y)++cos(y)^2++z++z^2`
+  /// index=0
   TObjArray *fstrings = TString(formula).Tokenize("++");
   Int_t ndim = fstrings->GetEntries();
   TObjArray *formulas = new TObjArray(ndim);

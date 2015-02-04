@@ -1,25 +1,24 @@
-/*
+/// \file AliEveTree.C
+///
+/// ~~~{.cpp}
+/// .L $ALICE_ROOT/TPC/macros/AliEveTree.C+
+/// MakeEveTree();
+/// 
+/// TFile fesd("AliESDs.root");
+/// TTree * treeESD = (TTree*)fesd.Get("esdTree");
+///
+/// TFile ftpc("TPCdebug.root");
+/// TFile fits("ITSdebug.root");
+/// TTree * treeTPC = (TTree*)ftpc.Get("Transform");
+/// TTree * treeITS = (TTree*)fits.Get("Clusters");
+///   
+/// treeTPC->Draw("gx2/sqrt(gx0^2+gx1^2):sqrt(gx0^2+gx1^2)>>his(100,0,200,100,-1,1)","event==4","")
+/// treeITS->Draw("gz/sqrt(gx^2+gy^2):sqrt(gx^2+gy^2)>>his(100,0,200,100,-1,1)","event==4","same")
+/// 
+/// treeTPC->Draw("atan2(gx1,gx0):sqrt(gx0^2+gx1^2)>>his(100,0,200,100,-1,1)","event==4","*")
+/// treeITS->Draw("atan2(gy,gx):sqrt(gx^2+gy^2)>>his(100,0,200,100,-1,1)","event==4","same*");
+/// ~~~
 
-  .L $ALICE_ROOT/TPC/macros/AliEveTree.C+
-  MakeEveTree();
-  
-  TFile fesd("AliESDs.root");
-  TTree * treeESD = (TTree*)fesd.Get("esdTree");
-
-
-
-  TFile ftpc("TPCdebug.root");
-  TFile fits("ITSdebug.root");
-  TTree * treeTPC = (TTree*)ftpc.Get("Transform");
-  TTree * treeITS = (TTree*)fits.Get("Clusters");
-    
-  treeTPC->Draw("gx2/sqrt(gx0^2+gx1^2):sqrt(gx0^2+gx1^2)>>his(100,0,200,100,-1,1)","event==4","")
-  treeITS->Draw("gz/sqrt(gx^2+gy^2):sqrt(gx^2+gy^2)>>his(100,0,200,100,-1,1)","event==4","same")
-  
-  treeTPC->Draw("atan2(gx1,gx0):sqrt(gx0^2+gx1^2)>>his(100,0,200,100,-1,1)","event==4","*")
-  treeITS->Draw("atan2(gy,gx):sqrt(gx^2+gy^2)>>his(100,0,200,100,-1,1)","event==4","same*");
-
-*/
 #include "TFile.h"
 #include "TTree.h"
 #include "TTreeStream.h"
@@ -53,9 +52,8 @@ void MakeEveTree(){
 
 
 void MakeESDTree(AliESDEvent*esd, TTreeSRedirector &cstream){
-  //
-  //
-  //
+  ///
+
   Float_t bz = esd->GetMagneticField();
   //AliTPCseed dummyTPC;
   //AliTPCseed dummyTRD;
@@ -118,9 +116,8 @@ void MakeESDTree(AliESDEvent*esd, TTreeSRedirector &cstream){
 
 
 AliTrackPointArray *MakeArray(TPolyMarker3D *pol){
-  //
-  // Make a aray of  points with errors
-  //
+  /// Make a aray of  points with errors
+
   Int_t entries = pol->GetN();
   AliTrackPointArray * array = new AliTrackPointArray(entries);
   for (Int_t i=0;i<entries;i++){

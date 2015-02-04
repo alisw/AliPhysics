@@ -1,16 +1,18 @@
-/*
-  .L  $ALICE_ROOT/TPC/macros//MakeOCDBDiff.C
-*/
+/// \file MakeOCDBDiff.C
+///
+/// ~~~{.cpp}
+/// .L  $ALICE_ROOT/TPC/macros//MakeOCDBDiff.C
+/// ~~~
 
 Bool_t  MakeOCDBDiff(const char *ocdb1, const char *ocdb2){
-  //
-  // Compare by by byte the content of the OCDB entry
-  // Input parameters:
-  //   ocdb1 - path to the OCDB file1
-  //   ocdb2 - path to the OCDB file2
-  // Return value:
-  //   kTRUE - in case the content of the OCDB object (persistent part) is exactly the same 
-  //   kFALSE - othewise
+  /// Compare by by byte the content of the OCDB entry
+  /// Input parameters:
+  ///   ocdb1 - path to the OCDB file1
+  ///   ocdb2 - path to the OCDB file2
+  /// Return value:
+  ///   kTRUE - in case the content of the OCDB object (persistent part) is exactly the same
+  ///   kFALSE - othewise
+
   /* 
      ocdb1="Run188720_192738_v2_s0.root"
      ocdb1="Run0_188719_v2_s0.root"
