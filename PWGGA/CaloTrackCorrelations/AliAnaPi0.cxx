@@ -106,10 +106,12 @@ fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningA
 fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
+fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
 fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),            fhMCOrgDeltaPhi(),
 fhMCPi0MassPtRec(),          fhMCPi0MassPtTrue(),          fhMCPi0PtTruePtRec(),
 fhMCEtaMassPtRec(),          fhMCEtaMassPtTrue(),          fhMCEtaPtTruePtRec(),
 fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0),
+fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
 fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
@@ -902,6 +904,27 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
       outputContainer->Add(fhPrimPi0PtOrigin) ;
       
+      fhPrimNotResonancePi0PtOrigin     = new TH2F("hPrimNotResonancePi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhPrimNotResonancePi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimNotResonancePi0PtOrigin->SetYTitle("Origin");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      outputContainer->Add(fhPrimNotResonancePi0PtOrigin) ;
+      
+      fhPrimPi0PtStatus     = new TH2F("hPrimPi0PtStatus","Primary #pi^{0} #it{p}_{T} vs status",nptbins,ptmin,ptmax,101,-50,50) ;
+      fhPrimPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtStatus->SetYTitle("Status");
+      outputContainer->Add(fhPrimPi0PtStatus) ;
+
+      
       fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
@@ -916,6 +939,27 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
       outputContainer->Add(fhMCPi0PtOrigin) ;
+      
+      fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhMCNotResonancePi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCNotResonancePi0PtOrigin->SetYTitle("Origin");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+      fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      outputContainer->Add(fhMCNotResonancePi0PtOrigin) ;
+      
+      fhMCPi0PtStatus     = new TH2F("hMCPi0PtStatus","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs status",nptbins,ptmin,ptmax,101,-50,50) ;
+      fhMCPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCPi0PtStatus->SetYTitle("Status");
+      outputContainer->Add(fhMCPi0PtStatus) ;
+
       
       //Eta
       fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
@@ -1400,6 +1444,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       Int_t momindex  = -1;
       Int_t mompdg    = -1;
       Int_t momstatus = -1;
+      Int_t status    = -1;
       Float_t momR    =  0;
       if(GetReader()->ReadStack())          momindex = primStack->GetFirstMother();
       if(GetReader()->ReadAODMCParticles()) momindex = primAOD  ->GetMother();
@@ -1408,6 +1453,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       {
         if(GetReader()->ReadStack())
         {
+          status = primStack->GetStatusCode();
           TParticle* mother = stack->Particle(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatusCode();
@@ -1416,6 +1462,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
         
         if(GetReader()->ReadAODMCParticles())
         {
+          status = primAOD->GetStatus();
           AliAODMCParticle* mother = (AliAODMCParticle*) mcparticles->At(momindex);
           mompdg    = TMath::Abs(mother->GetPdgCode());
           momstatus = mother->GetStatus();
@@ -1424,6 +1471,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
         
         if(pdg == 111)
         {
+          fhPrimPi0ProdVertex->Fill(mesonPt,momR);
+          fhPrimPi0PtStatus  ->Fill(mesonPt,status);
+
+          
           if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(mesonPt,0.5);//parton
           else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(mesonPt,1.5);//quark
           else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(mesonPt,2.5);// resonances
@@ -1439,7 +1490,20 @@ void AliAnaPi0::FillAcceptanceHistograms()
           //printf("Prim Pi0: index %d, pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
           //                   momindex, mesonPt,mother->R(),mompdg,momstatus,mother->GetUniqueID());
           
-          fhPrimPi0ProdVertex->Fill(mesonPt,momR);
+          if(status!=11)
+          {
+            if     (momstatus  == 21)fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,0.5);//parton
+            else if(mompdg     < 22 ) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,1.5);//quark
+            else if(mompdg     > 2100  && mompdg   < 2210) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,2.5);// resonances
+            else if(mompdg    == 221) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,8.5);//eta
+            else if(mompdg    == 331) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,9.5);//eta prime
+            else if(mompdg    == 213) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,4.5);//rho
+            else if(mompdg    == 223) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,5.5);//omega
+            else if(mompdg    >= 310   && mompdg    <= 323) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,6.5);//k0S, k+-,k*
+            else if(mompdg    == 130) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,6.5);//k0L
+            else if(momstatus == 11 || momstatus  == 12 ) fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,3.5);//resonances
+            else                      fhPrimNotResonancePi0PtOrigin->Fill(mesonPt,7.5);//other?
+          }
           
         }//pi0
         else
@@ -1691,7 +1755,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Int_t momindex  = -1;
   Int_t mompdg    = -1;
   Int_t momstatus = -1;
-  
+  Int_t status    = -1;
   Float_t prodR = -1;
   Int_t mcIndex = -1;
   
@@ -1744,6 +1808,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
           if(GetReader()->ReadStack())
           {
             TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+            status = ancestor->GetStatusCode();
             momindex  = ancestor->GetFirstMother();
             if(momindex < 0) return;
             TParticle* mother = GetMCStack()->Particle(momindex);
@@ -1756,6 +1821,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
           {
             TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
             AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+            status = ancestor->GetStatus();
             momindex  = ancestor->GetMother();
             if(momindex < 0) return;
             AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
@@ -1769,6 +1835,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
           //                   pt,prodR,mompdg,momstatus,uniqueId);
           
           fhMCPi0ProdVertex->Fill(pt,prodR);
+          fhMCPi0PtStatus  ->Fill(pt,status);
           
           if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
           else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
@@ -1782,6 +1849,20 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
           else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances
           else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
           
+          if(status!=11)
+          {
+            if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt,0.5);//parton
+            else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt,1.5);//quark
+            else if(mompdg     > 2100  && mompdg   < 2210) fhMCNotResonancePi0PtOrigin->Fill(pt,2.5);// resonances
+            else if(mompdg    == 221) fhMCNotResonancePi0PtOrigin->Fill(pt,8.5);//eta
+            else if(mompdg    == 331) fhMCNotResonancePi0PtOrigin->Fill(pt,9.5);//eta prime
+            else if(mompdg    == 213) fhMCNotResonancePi0PtOrigin->Fill(pt,4.5);//rho
+            else if(mompdg    == 223) fhMCNotResonancePi0PtOrigin->Fill(pt,5.5);//omega
+            else if(mompdg    >= 310   && mompdg    <= 323) fhMCNotResonancePi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+            else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt,6.5);//k0L
+            else if(momstatus == 11 || momstatus  == 12 ) fhMCNotResonancePi0PtOrigin->Fill(pt,3.5);//resonances
+            else                      fhMCNotResonancePi0PtOrigin->Fill(pt,7.5);//other?
+          }
           
         }//pi0 mass region
       }
