@@ -68,3 +68,5 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install( FILES DECAY.DEC evt.pdl DESTINATION TEvtGen/EvtGen )
+install( DIRECTORY DecayTable DESTINATION TEvtGen/EvtGen )
