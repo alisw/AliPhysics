@@ -13,15 +13,15 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-add_subdirectory(ADbase)
-add_subdirectory(ADrec)
-add_subdirectory(ADsim)
+# Module include folder
+include_directories(${AliRoot_SOURCE_DIR}/AD/DA)
 
-# Installing the macros
-install(DIRECTORY macros DESTINATION AD)
-
-message(STATUS "AD enabled")
-
-if(DA)
-   add_subdirectory(DA)
-endif(DA)
+# Additional include folders in alphabetical order
+include_directories(
+		)
+		   
+set(STATIC_DEPENDENCIES RAWDatarec-static STEERBase-static ADbase-static)
+# Generate the DA using DetectorName, Algortihm
+# The DA file has to be named DetectorNameAlgortihmda.cxx
+# generateDA("DetectorName" "Algorithm" "${STATIC_DEPENDENCIES}")
+generateDA("AD" "PEDESTAL" "${STATIC_DEPENDENCIES}")

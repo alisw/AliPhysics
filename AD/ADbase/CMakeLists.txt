@@ -20,19 +20,23 @@ set(MODULE ADbase)
 include_directories(${AliRoot_SOURCE_DIR}/AD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${AliRoot_SOURCE_DIR}/STEER/CDB
+include_directories(${AliRoot_SOURCE_DIR}/RAW/dateStream
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+		    ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliADDataDCS.cxx
-    AliADLoader.cxx
-    AliADdigit.cxx
-    AliADSDigit.cxx
     AliADCalibData.cxx
+    AliADDataDCS.cxx
+    AliADdigit.cxx
+    AliADLoader.cxx
     AliADPreprocessor.cxx
+    AliADRawStream.cxx
+    AliADSDigit.cxx  
    )
 
 # Headers from sources
@@ -46,19 +50,34 @@ set(HDRS ${HDRS}
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+set(ROOT_DEPENDENCIES Core Gpad Graf Hist MathCore RIO Tree)
+set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB RAWDatabase RAWDatarec)
+
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase STEER CDB)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Follow headers dependencies
+add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:ADbase-object>)
+
+# Linking
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
+
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
-
-# Linking the library
-target_link_libraries(${MODULE} ${LIBDEPS})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -71,3 +90,23 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version if DA enabled
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:ADbase-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
+    
+    # Public include folders that will be propagated to the dependecies
+    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
+    
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)
