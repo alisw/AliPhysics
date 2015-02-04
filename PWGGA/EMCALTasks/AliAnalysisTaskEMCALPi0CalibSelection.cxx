@@ -50,7 +50,7 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
 AliAnalysisTaskSE(name),  
 fEMCALGeo(0x0),           fLoadMatrices(0),
-fEMCALGeoName("EMCAL_COMPLETE12SMV1"), 
+fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(new AliEMCALRecoUtils), 
 fOADBFilePath(""),        fCorrectClusters(kFALSE), 

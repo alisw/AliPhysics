@@ -293,6 +293,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TProfile*               fHistCentralityPercOut; //! centrality versus perc out
         TProfile*               fHistCentralityPercLost;//! centrality versus perc lost
         TH1F*                   fHistVertexz;           //! accepted verte
+        TH2F*                   fHistMultCorAfterCuts;      //! QA profile global and tpc multiplicity after outlier cut
+        TH2F*                   fHistMultvsCentr;           //! QA profile of centralty vs multiplicity
         TH2F*                   fHistRunnumbersPhi;     //! run numbers averaged phi
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
         TH1I*                   fHistRunnumbersCaliInfo;//! calibration info per runnumber

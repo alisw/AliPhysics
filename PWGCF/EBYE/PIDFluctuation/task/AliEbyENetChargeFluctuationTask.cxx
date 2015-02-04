@@ -21,6 +21,7 @@
 //            Version 1:  PbPb Added with AliVTrack (30/11/2014)           //
 //            Version 2:  pp Added with AliVTrack   (1/12/2014) - fixme    //            
 //            Version 3:  pA Added with AliVTrack   (2/12/2014) - fixme    //    
+//            Version 4:  Array Bug Fix | reduced THn-Bins 11/01/2015      //    
 //=========================================================================//
 
 #include "TChain.h"
@@ -857,25 +858,26 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
 //----------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
 
-  if      (i == 0 ) { fIsQa  = 1; }
-  else if (i == 1 ) { fIsDca = 1; }
-  else if (i == 2 ) { fIsEff = 1; } 
-  else if (i == 3 ) { fIsDca = 1; fIsEff  = 1; }  
-  else if (i == 4 ) { fIsPhy = 1; fIsRatio= 1; } 
-  else if (i == 5 ) { fIsPhy = 1; fIsRatio= 1; fIsPer = 1;}   
-  else if (i == 6 ) { fIsPhy = 1; fIsSub  = 1; }
-  else if (i == 7 ) { fIsPhy = 1; fIsSub  = 1; fIsPer = 1;}
-  else if (i == 8 ) { fIsPhy = 1; fIsBS   = 1; }   
-  else if (i == 9 ) { fIsPhy = 1; fIsBS   = 1; fIsPer = 1;}    
-  else if (i == 10) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;}    
-  else if (i == 11) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsPer = 1;}    
-  else if (i == 12) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; }    
-  else if (i == 13) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; fIsPer = 1; }    
-  else if (i == 14) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; fIsPer = 1; fIsRatio = 1;}    
-  else if (i == 15) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; }     
-  else if (i == 16) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsPer = 1; }     
-  else if (i == 17) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1;}     
-  else if (i == 18) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1; fIsPer = 1;}     
+  if      (i == 0 ) { fIsQa  = 1;                                                                 }
+  else if (i == 1 ) { fIsDca = 1;                                                                 }
+  else if (i == 2 ) { fIsEff = 1;                                                                 } 
+  else if (i == 3 ) { fIsDca = 1; fIsEff  = 1;                                                    }  
+  else if (i == 4 ) { fIsPhy = 1; fIsRatio= 1;                                                    } 
+  else if (i == 5 ) { fIsPhy = 1; fIsRatio= 1; fIsPer = 1;                                        }   
+  else if (i == 6 ) { fIsPhy = 1; fIsSub  = 1;                                                    }
+  else if (i == 7 ) { fIsPhy = 1; fIsSub  = 1; fIsPer = 1;                                        }
+  else if (i == 8 ) { fIsPhy = 1; fIsBS   = 1;                                                    }   
+  else if (i == 9 ) { fIsPhy = 1; fIsBS   = 1; fIsPer = 1;                                        }    
+  else if (i == 10) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;                                        }    
+  else if (i == 11) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1;                            }    
+  else if (i == 12) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsQa  = 1;                            }    
+  else if (i == 13) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsQa  = 1; fIsPer   = 1;              }    
+  else if (i == 14) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsQa  = 1; fIsPer   = 1; fIsRatio = 1;}    
+  else if (i == 15) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1;                            }     
+  else if (i == 16) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsPer   = 1;              }     
+  else if (i == 17) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1;              }     
+  else if (i == 18) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1; fIsPer = 1;  }     
+  else if (i == 19) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1; fIsRatio = 1;              }    
   else {fIsPhy= 0;    fIsEff = 0; fIsDca  = 0; fIsQa  = 0; fIsSub = 0; fIsBS    = 0; fIsPer = 0; fIsRatio = 0;}
    
   Printf(" >>> %d %d %d %d %d %d %d %d %d %d", 

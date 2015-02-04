@@ -17,6 +17,7 @@
  *
  *   Author: Markus Fasel
  */
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -162,6 +163,14 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   this->GetMachingTriggerNames(triggernames, fUsePatches);
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
+  // Debugging:
+  if(fComponentDebugLevel > 1){
+    PrintTriggerNames(triggernames, "RecJets");
+    fTriggerDecision->Print();
+    if(!fTriggerDecision->CheckConsistency())
+      std::cout << "Decision from patches and from strings do not match" << std::endl;
+  }
+
   AliJetContainer *cont = data->GetJetContainerData();
   AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
   AliVTrack *foundtrack(NULL);
@@ -247,7 +256,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::FillTrackHistogramCentrality(
 	 * - distance to the main jet axis
 	 * - centrality percentile
 	 */
-	double data[5] = { TMath::Abs(trk->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * trk->Eta(), jet->DeltaR(trk), centpercent};
+	double data[5] = { TMath::Abs(trk->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * trk->Eta(), centpercent, jet->DeltaR(trk)};
 	fHistos->FillTHnSparse(histname.Data(), data);
 }
 

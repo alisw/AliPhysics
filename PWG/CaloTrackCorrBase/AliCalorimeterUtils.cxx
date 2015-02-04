@@ -74,7 +74,7 @@ ClassImp(AliCalorimeterUtils)
     fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
     fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
     fImportGeometryFromFile(0),       fImportGeometryFilePath(""),
-    fNSuperModulesUsed(0),
+    fNSuperModulesUsed(0),            fRunNumber(0),
     fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
 {
   //Ctor
@@ -118,13 +118,13 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
   //Set it only once
   if(fOADBSet) return ; 
   
-  Int_t   runnumber = event->GetRunNumber() ;
+  if(fRunNumber <= 0) fRunNumber = event->GetRunNumber() ; // take the run number from the event itself
   TString pass      = GetPass();
   
   // EMCAL
   if(fOADBForEMCAL)
   {
-    AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d, and <%s>",fOADBFilePathEMCAL.Data(),runnumber,pass.Data()));
+    AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d, and <%s>",fOADBFilePathEMCAL.Data(),fRunNumber,pass.Data()));
     
     Int_t nSM = fEMCALGeo->GetNumberOfSuperModules();
     
@@ -134,7 +134,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       AliOADBContainer *contBC=new AliOADBContainer("");
       contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePathEMCAL.Data()),"AliEMCALBadChannels"); 
       
-      TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+      TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
       
       if(arrayBC)
       {
@@ -170,7 +170,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRecalib");
       
-      TObjArray *recal=(TObjArray*)contRF->GetObject(runnumber); 
+      TObjArray *recal=(TObjArray*)contRF->GetObject(fRunNumber); 
       
       if(recal)
       {
@@ -207,7 +207,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
       
       // once set, apply run dependent corrections if requested
-      //fEMCALRecoUtils->SetRunDependentCorrections(runnumber);
+      //fEMCALRecoUtils->SetRunDependentCorrections(fRunNumber);
             
     } // Recalibration on
     
@@ -218,25 +218,25 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRunDepTempCalibCorrections");
       
-      TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
+      TH1S *htd=(TH1S*)contRFTD->GetObject(fRunNumber); 
       
       //If it did not exist for this run, get closes one
       if (!htd)
       {
-        AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runnumber));
-        // let's get the closest runnumber instead then..
+        AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",fRunNumber));
+        // let's get the closest fRunNumber instead then..
         Int_t lower = 0;
         Int_t ic = 0;
         Int_t maxEntry = contRFTD->GetNumberOfEntries();
         
-        while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < runnumber) ) {
+        while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < fRunNumber) ) {
           lower = ic;
           ic++;
         }
         
         Int_t closest = lower;
         if ( (ic<maxEntry) &&
-            (contRFTD->LowerLimit(ic)-runnumber) < (runnumber - contRFTD->UpperLimit(lower)) ) {
+            (contRFTD->LowerLimit(ic)-fRunNumber) < (fRunNumber - contRFTD->UpperLimit(lower)) ) {
           closest = ic;
         }
         
@@ -274,7 +274,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeCalib");
       
-      TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
+      TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRunNumber); 
       
       if(trecal)
       {
@@ -314,7 +314,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
   // PHOS
   if(fOADBForPHOS)
   {
-    AliInfo(Form("Get AODB parameters from PHOS in %s for run %d, and <%s>",fOADBFilePathPHOS.Data(),runnumber,pass.Data()));
+    AliInfo(Form("Get AODB parameters from PHOS in %s for run %d, and <%s>",fOADBFilePathPHOS.Data(),fRunNumber,pass.Data()));
     
     // Bad map
     if(fRemoveBadChannels)
@@ -327,7 +327,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       TObjArray *maps = (TObjArray*)badmapContainer.GetObject(139000,"phosBadMap");
       if(!maps)
       {
-        AliInfo(Form("Can not read PHOS bad map for run %d",runnumber)) ;
+        AliInfo(Form("Can not read PHOS bad map for run %d",fRunNumber)) ;
       }
       else
       {
@@ -361,9 +361,9 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
   //Set the calorimeters transformation matrices and init geometry
   
   // First init the geometry, a priory not done before
-  Int_t runnumber = inputEvent->GetRunNumber() ;
-  InitPHOSGeometry (runnumber);
-  InitEMCALGeometry(runnumber);
+  if(fRunNumber <=0 ) fRunNumber = inputEvent->GetRunNumber() ;
+  InitPHOSGeometry ();
+  InitEMCALGeometry();
   
   //Get the EMCAL transformation geometry matrices from ESD 
   if(!fEMCALGeoMatrixSet && fEMCALGeo)
@@ -375,7 +375,7 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
       // OADB if available
       AliOADBContainer emcGeoMat("AliEMCALgeo");
       emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePathEMCAL.Data()),"AliEMCALgeo");
-      TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+      TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(fRunNumber,"EmcalMatrices");
       
       for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
       {
@@ -1296,24 +1296,24 @@ void AliCalorimeterUtils::InitPHOSRecalibrationFactors()
 
 
 //__________________________________________________________
-void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
+void AliCalorimeterUtils::InitEMCALGeometry()
 {
   //Initialize EMCAL geometry if it did not exist previously
   
   if (fEMCALGeo) return;
   
-  AliDebug(1,Form(" for run=%d",runnumber));
+  AliDebug(1,Form(" for run=%d",fRunNumber));
   
   if(fEMCALGeoName=="")
   {
-    if     (runnumber <  140000 &&
-            runnumber >= 100000)   fEMCALGeoName = "EMCAL_FIRSTYEARV1";
-    else if(runnumber >= 140000 &&
-            runnumber <  171000)   fEMCALGeoName = "EMCAL_COMPLETEV1";
-    else                           fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
-    AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fEMCALGeoName.Data(),runnumber));
+    if     (fRunNumber <  140000) fEMCALGeoName = "EMCAL_FIRSTYEARV1";
+    else if(fRunNumber <  171000) fEMCALGeoName = "EMCAL_COMPLETEV1";
+    else if(fRunNumber <  198000) fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
+    else                          fEMCALGeoName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
   }
   
+  AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fEMCALGeoName.Data(),fRunNumber));
+
   fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
   
   // Init geometry, I do not like much to do it like this ...
@@ -1322,30 +1322,28 @@ void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
     if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
     {
       // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-      if     (runnumber <  140000 &&
-              runnumber >= 100000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-      if     (runnumber >= 140000 &&
-              runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-      else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-      
+      if     (fRunNumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+      else if(fRunNumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+      else if(fRunNumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+      else                          fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
     }
     
     AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
+    
     TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
   }
   else if (!gGeoManager) AliInfo("Careful!, gGeoManager not loaded, load misalign matrices");
 		
-  
 }
 
 //_________________________________________________________
-void AliCalorimeterUtils::InitPHOSGeometry(Int_t runnumber)
+void AliCalorimeterUtils::InitPHOSGeometry()
 {
 	//Initialize PHOS geometry if it did not exist previously
   
   if (fPHOSGeo) return;
   
-  AliDebug(1,Form(" for run=%d",runnumber));
+  AliDebug(1,Form(" for run=%d",fRunNumber));
   
   if(fPHOSGeoName=="") fPHOSGeoName = "PHOSgeo";
   
