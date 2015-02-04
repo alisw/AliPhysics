@@ -18,6 +18,8 @@
  *
  *   Author: Markus Fasel
  */
+#include <iostream>
+
 #include <TAxis.h>
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 #include "AliEMCalTriggerBinningComponent.h"
@@ -33,7 +35,8 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent()
   fHistos(NULL),
   fBinning(NULL),
   fKineCuts(NULL),
-  fTriggerDecision(NULL)
+  fTriggerDecision(NULL),
+  fComponentDebugLevel(0)
 {
   /*
    * Dummy (I/O) constructor
@@ -54,7 +57,8 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(c
   fHistos(NULL),
   fBinning(NULL),
   fKineCuts(NULL),
-  fTriggerDecision(NULL)
+  fTriggerDecision(NULL),
+  fComponentDebugLevel(0)
 {
   /*
    * Main constructor, to be called by the user
@@ -138,6 +142,22 @@ void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<
     if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, usePatches))
       triggernames.push_back("EMCLowGammaOnly");
   }
+}
+
+void EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent::PrintTriggerNames(
+    const std::vector<std::string>& triggernames, const std::string& componentName) const {
+
+    std::cout << componentName << ", Triggers found: " << std::endl;
+    std::cout << "==========================================" << std::endl;
+    if(!triggernames.size()) return;
+    std::vector<std::string>::const_iterator trgiter = triggernames.begin();
+    std::cout << trgiter->c_str();
+    trgiter++;
+    while(trgiter != triggernames.end()){
+      std::cout << ", " << trgiter->c_str();
+      trgiter++;
+    }
+    std::cout << std::endl;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

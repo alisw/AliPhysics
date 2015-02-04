@@ -76,20 +76,22 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
   if(isMC) pttriggertask->SetSwapThresholds();
   CreateJetPtBinning(pttriggertask);
+  //pttriggertask->SetTriggerDebug(kTRUE);
 
   mgr->AddTask(pttriggertask);
   if(usePythiaHard){
     pttriggertask->SetIsPythia(kTRUE);
   }
 
-  // Add components
-  if(doTriggers && strlen(ntriggerContainer)){
+  if(strlen(ntriggerContainer)){
     pttriggertask->SetCaloTriggerPatchInfoName(ntriggerContainer);
+  }
+
+  // Add components
+  if(doTriggers){
     EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *noselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("noselect");
     noselect->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis"));
     pttriggertask->AddAnalysisGroup(noselect);
-  } else {
-    pttriggertask->SetCaloTriggerPatchInfoName("");
   }
 
   double jetpt[4] = {40., 60., 80., 100.};
@@ -197,8 +199,9 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
 void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
-  jetana->SetUsePatches();
+  jetana->SetUsePatches(isMC);
   jetana->SetSingleTrackCuts(trackcuts);
+  //jetana->SetComponentDebugLevel(2);
   group->AddAnalysisComponent(jetana);
 }
 

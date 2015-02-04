@@ -269,7 +269,7 @@ Int_t GetEffIndex ( Int_t iel, Int_t icount, Int_t ich = -1 )
 }
 
 //_____________________________________________________________________________
-TList* GetOCDBList ( )
+TList* GetOCDBList ( TString ocdbDirs )
 {
   /// Get list of CDB objetcs
   TString storageType = AliCDBManager::Instance()->GetDefaultStorage()->GetType();
@@ -278,18 +278,20 @@ TList* GetOCDBList ( )
   
   TList* outList = new TList();
   outList->SetOwner();
-  TString dirName[3] = {"GlobalTriggerCrateConfig", "RegionalTriggerConfig", "LocalTriggerBoardMasks"};
-  for ( Int_t idir=0; idir<3; idir++ ) {
+  TObjArray* dirNameList = ocdbDirs.Tokenize(",");
+  for ( Int_t idir=0; idir<dirNameList->GetEntries(); idir++ ) {
+    TString fullPath = Form("%s/%s",baseFolder.Data(),dirNameList->At(idir)->GetName());
     if ( isGrid ) {
-      TGridResult *res = gGrid->Ls(Form("%s/MUON/Calib/%s", baseFolder.Data(), dirName[idir].Data()));
+      TGridResult *res = gGrid->Ls(fullPath.Data());
       if (!res) return 0x0;
       for ( Int_t ires=0; ires<res->GetEntries(); ires++ ) {
         TString currFile = static_cast<TMap*>(res->At(ires))->GetValue("name")->GetName();
         outList->Add(new TObjString(currFile));
       }
+      delete res;
     }
     else {
-      TString fileListStr = gSystem->GetFromPipe(Form("ls %s/MUON/Calib/%s", baseFolder.Data(), dirName[idir].Data()));
+      TString fileListStr = gSystem->GetFromPipe(Form("ls %s",fullPath.Data()));
       TObjArray* fileList = fileListStr.Tokenize("\n");
       for ( Int_t ires=0; ires<fileList->GetEntries(); ires++ ) {
         TString currFile = fileList->At(ires)->GetName();
@@ -298,7 +300,66 @@ TList* GetOCDBList ( )
       delete fileList;
     }
   }
+  delete dirNameList;
   return outList;
+}
+
+//_____________________________________________________________________________
+Bool_t SetAndCheckOCDB ( TString defaultStorage )
+{
+  /// Set the default storage and check if it is ok
+  if ( defaultStorage.IsNull() ) {
+    printf("Default storage not specified. Nothing done\n");
+    return kFALSE;
+  }
+
+  if ( AliCDBManager::Instance()->IsDefaultStorageSet() ) {
+    printf("Default storage already set: nothing done\n");
+    return kTRUE;
+  }
+
+  if ( defaultStorage.Contains("alien://") || defaultStorage.Contains("raw://") ) {
+    if ( ! gGrid ) TGrid::Connect("alien://");
+    if ( ! gGrid ) {
+      printf("Error: Problem connetting to grid: default storage not set\n");
+      return kFALSE;
+    }
+  }
+
+  AliCDBManager::Instance()->SetDefaultStorage(defaultStorage.Data());
+
+  if ( defaultStorage.Contains("raw://") ) return kTRUE;
+
+  Bool_t isOk = kTRUE;
+
+  if ( AliCDBManager::Instance()->IsDefaultStorageSet() ) {
+    TString searchDir = "MUON/Calib/MappingData";
+    TString fullPath = Form("%s/%s",defaultStorage.Data(),searchDir.Data());
+    TList* ocdbList = GetOCDBList(searchDir);
+    if ( ocdbList->GetEntries() == 0 ) {
+      printf("No entries in %s\n",fullPath.Data());
+      isOk = kFALSE;
+    }
+    else {
+      TString checkFile = Form("%s/%s",fullPath.Data(),ocdbList->At(0)->GetName());
+      checkFile.ReplaceAll("local://","");
+      TFile* file = TFile::Open(checkFile.Data());
+      if ( ! file ) {
+        printf("Cannot access test file: %s\n", checkFile.Data());
+        isOk = kFALSE;
+      }
+      delete file;
+    }
+    delete ocdbList;
+  }
+  else {
+    printf("Tried to set the default storage, but something went wrong.\n");
+    isOk = kFALSE;
+  }
+
+  if ( ! isOk ) printf("Please check path %s\n",defaultStorage.Data());
+
+  return  isOk;
 }
 
 //_____________________________________________________________________________
@@ -521,14 +582,8 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
 void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCanList, TList& outList )
 {
   /// Get the masks vs. run number
-  if ( defaultStorage.Contains("alien://") || defaultStorage.Contains("raw://") ) {
-    if ( ! gGrid ) TGrid::Connect("alien://");
-    if ( ! gGrid ) {
-      printf("Error: Problem connetting to grid: nothing done");
-      return;
-    }
-  }
   
+  if ( ! SetAndCheckOCDB(defaultStorage) ) return;
   
   TObjArray maskedList(8);
   TObjArray auxList(8);
@@ -553,8 +608,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
     xyPatternAll[icath].Set(kNch);
     xyPatternAll[icath].Reset(0xFFFF);
   }
-  
-  if ( ! AliCDBManager::Instance()->IsDefaultStorageSet() ) AliCDBManager::Instance()->SetDefaultStorage(defaultStorage.Data());
+
   TList* ocdbFileList = 0x0;
   Int_t previousRun = -1;
   AliMUONDigitMaker* digitMaker = 0x0;
@@ -577,7 +631,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
         }
       }
       
-      if ( ! ocdbFileList ) ocdbFileList = GetOCDBList();
+      if ( ! ocdbFileList ) ocdbFileList = GetOCDBList("MUON/Calib/GlobalTriggerCrateConfig,MUON/Calib/RegionalTriggerConfig,MUON/Calib/LocalTriggerBoardMasks");
   
       delete calibData;
       calibData = new AliMUONCalibrationData (runNumber);
@@ -680,15 +734,7 @@ TString FindCorrespondingTrigger ( TString checkTrigger, TObjArray* triggerArray
 void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString defaultStorage, TList& outCanList, TList& outList )
 {
   /// Get the scalers vs. run number
-  if ( defaultStorage.Contains("alien://") || defaultStorage.Contains("raw://") ) {
-    if ( ! gGrid ) TGrid::Connect("alien://");
-    if ( ! gGrid ) {
-      printf("Error: Problem connetting to grid: nothing done");
-      return;
-    }
-  }
-  
-  if ( ! AliCDBManager::Instance()->IsDefaultStorageSet() ) AliCDBManager::Instance()->SetDefaultStorage(defaultStorage.Data());
+  if ( ! SetAndCheckOCDB(defaultStorage) ) return;
 
   //trigger count from ESDs
   TFile *file = TFile::Open(mergedFileName.Data());
@@ -949,13 +995,15 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
   
   TList outCanList, outList;
   TrigEffTrending(runNumArray, *finalFileNameArray, outCanList, outList);
-  if ( ! defaultStorage.IsNull() ) MaskTrending(runNumArray, defaultStorage, outCanList, outList);
-  if ( ! defaultStorage.IsNull() && doScalers ) {
-    if ( gSystem->AccessPathName(trackerQAmergedOut.Data()) ) {
-      printf("Warning: cannot perform scaler trending:\n merged QA from tracker\n  %s\n  does not exist\n",trackerQAmergedOut.Data());
-    }
-    else {
-      ScalerTrending(runNumArray, trackerQAmergedOut, defaultStorage, outCanList, outList);
+  if ( SetAndCheckOCDB(defaultStorage) ) {
+    MaskTrending(runNumArray, defaultStorage, outCanList, outList);
+    if ( doScalers ) {
+      if ( gSystem->AccessPathName(trackerQAmergedOut.Data()) ) {
+        printf("Warning: cannot perform scaler trending:\n merged QA from tracker\n  %s\n  does not exist\n",trackerQAmergedOut.Data());
+      }
+      else {
+        ScalerTrending(runNumArray, trackerQAmergedOut, defaultStorage, outCanList, outList);
+      }
     }
   }
   
