@@ -4,7 +4,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 						char *contName = "dNdPtPbPbAOD",
 						Double_t dNClustersTPC = 0,
 						Bool_t bDoCutTPCLength = kTRUE,
-						Double_t dPrefactorLengthInTPC = 0.85
+						Double_t dPrefactorLengthInTPC = 0.85,
+						char *centEstimator = "V0M"
 											  )
 {
   // Creates, configures and attaches to the train a cascades check task.
@@ -31,6 +32,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   //   triggerMask |= AliVEvent::kSemiCentral;
   
   task->SelectCollisionCandidates(uTriggerMask);
+  
+  task->SetCentralityEstimator(centEstimator);
   
   task->SetEventplaneSelector("Q");
   
