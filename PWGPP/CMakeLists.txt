@@ -284,5 +284,24 @@ install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIO
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
 	      DESTINATION PWGPP/EvTrkSelection)
+install(FILES CalibMacros/CPass0/LoadLibraries.C
+	      CalibMacros/CPass0/ConfigCalibTrain.C
+	      CalibMacros/CPass0/AddTaskTPCCalib.C
+	      CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C
+	      CalibMacros/CPass0/AddTaskT0Calib.C
+	      CalibMacros/CPass0/AddTaskMeanVertexCalib.C
+	      CalibMacros/CPass0/AddTaskSDDCalib.C
+	      DESTINATION PWGPP/CalibMacros/CPass0)
+install(FILES CalibMacros/CPass1/LoadLibraries.C
+	      CalibMacros/CPass1/ConfigCalibTrain.C
+	      CalibMacros/CPass1/AddTaskTPCCalib.C
+	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
+	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
+	      CalibMacros/CPass1/AddTaskT0Calib.C
+	      CalibMacros/CPass1/AddTaskT0Analysis.C	      
+	      CalibMacros/CPass1/AddTaskSDDCalib.C
+	      DESTINATION PWGPP/CalibMacros/CPass1)
+install(FILES CalibMacros/commonMacros/CleanGeom.C
+	      DESTINATION PWGPP/CalibMacros/commonMacros)
 
 message(STATUS "PWGPP enabled")
