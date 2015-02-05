@@ -65,6 +65,7 @@ fhPtPi0Not2Gamma(0),   fhPtEtaNot2Gamma(0)
   {
     fhPt      [p] = 0;
     fhPtOrigin[p] = 0;
+    fhPtOriginNotFinal[p] = 0;
     fhPhi     [p] = 0;
     fhEta     [p] = 0;
     fhEtaPhi  [p] = 0;
@@ -427,6 +428,21 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     fhPtOrigin[p]->GetYaxis()->SetBinLabel(10 ,"#eta prime");
     outputContainer->Add(fhPtOrigin[p]) ;
 
+    fhPtOriginNotFinal[p]     = new TH2F(Form("h%sPtOriginNotFinal",particle[p].Data()),Form("Input %s p_{T} vs origin, status 0",partTitl[p].Data()),nptbins,ptmin,ptmax,11,0,11) ;
+    fhPtOriginNotFinal[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhPtOriginNotFinal[p]->SetYTitle("Origin");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(3 ,"qq Resonances ");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(5 ,"#rho");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(6 ,"#omega");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(7 ,"K");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(8 ,"Other");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(9 ,"#eta");
+    fhPtOriginNotFinal[p]->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+    outputContainer->Add(fhPtOriginNotFinal[p]) ;
+    
     for(Int_t i = 0; i < fgkNIso; i++)
     {
       // Pt
@@ -1429,6 +1445,24 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     else if(momOrgStatus == 11 || momOrgStatus  == 12 ) fhPtOrigin[partType]->Fill(ptTrig,3.5);//resonances
     else                         fhPtOrigin[partType]->Fill(ptTrig,7.5);//other?
 
+    
+   if(statusTrig == 0)
+   {
+     // Histogram will not be filled for photons, leave it like this for now
+     // in case we leave not final photons in the future
+     if     (momOrgStatus  == 21) fhPtOriginNotFinal[partType]->Fill(ptTrig,0.5);//parton
+     else if(momOrgPdg     < 22 ) fhPtOriginNotFinal[partType]->Fill(ptTrig,1.5);//quark
+     else if(momOrgPdg     > 2100  && momOrgPdg   < 2210) fhPtOriginNotFinal[partType]->Fill(ptTrig,2.5);// resonances
+     else if(momOrgPdg    == 221) fhPtOriginNotFinal[partType]->Fill(ptTrig,8.5);//eta
+     else if(momOrgPdg    == 331) fhPtOriginNotFinal[partType]->Fill(ptTrig,9.5);//eta prime
+     else if(momOrgPdg    == 213) fhPtOriginNotFinal[partType]->Fill(ptTrig,4.5);//rho
+     else if(momOrgPdg    == 223) fhPtOriginNotFinal[partType]->Fill(ptTrig,5.5);//omega
+     else if(momOrgPdg    >= 310   && momOrgPdg    <= 323) fhPtOriginNotFinal[partType]->Fill(ptTrig,6.5);//k0S, k+-,k*
+     else if(momOrgPdg    == 130) fhPtOriginNotFinal[partType]->Fill(ptTrig,6.5);//k0L
+     else if(momOrgStatus == 11 || momOrgStatus  == 12 ) fhPtOriginNotFinal[partType]->Fill(ptTrig,3.5);//resonances
+     else                         fhPtOriginNotFinal[partType]->Fill(ptTrig,7.5);//other?
+   }
+    
     //
     // Check if it is leading or isolated
     //
