@@ -906,9 +906,32 @@ def rewrite_comments(fhin, fhout, comments):
     # Find current comment
     prev_comm = comm
     comm = None
+    comm_list = []
     for c in comments:
       if c.has_comment(line_num):
         comm = c
+        comm_list.append(c)
+
+    if len(comm_list) > 1:
+
+      merged = True
+
+      if len(comm_list) == 2:
+        c1,c2 = comm_list
+        if isinstance(c1, Comment) and isinstance(c2, Comment):
+          c1.lines = c1.lines + c2.lines  # list merge
+          comm = c1
+          logging.debug('Two adjacent comments merged. Result: {%s}' % Colt(comm).cyan())
+        else:
+          merged = False
+      else:
+        merged = False
+
+      if merged == False:
+        logging.warning('Too many unmergeable comments on the same line (%d), picking the last one' % len(comm_list))
+        for c in comm_list:
+          logging.warning('>> %s' % c)
+          comm = c  # considering the last one
 
     if comm:
 
