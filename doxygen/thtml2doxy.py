@@ -1094,6 +1094,16 @@ def rewrite_comments(fhin, fhout, comments):
       else:
         fhout.write( line_out + '\n' )
 
+  # Is there some comment left here?
+  if restore_lines is not None:
+    dump_comment_block(comm, restore_lines)
+
+  # Is there some other comment beyond the last line?
+  for c in comments:
+    if c.has_comment(line_num+1):
+      dump_comment_block(c, None)
+      break
+
 
 ## The main function.
 #
