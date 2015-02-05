@@ -31,10 +31,6 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-if(DIMDIR AND ODIR)
-    link_directories(${DIMDIR}/${ODIR})
-endif()
-
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} ${SRCS})
 target_link_libraries(${MODULE} MONITOR Rint)

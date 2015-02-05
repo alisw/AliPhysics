@@ -27,10 +27,6 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
 
 add_definitions(-DZMQ)
 
-if(DIMDIR AND ODIR)
-    link_directories(${DIMDIR}/${ODIR})
-endif()
-
 # alistorage executable
 add_executable(alionlinereco onlinereco.cxx)
 target_link_libraries(alionlinereco MONITOR MONITORzmq STEERBase STEER)

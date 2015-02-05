@@ -35,12 +35,11 @@ set(SRCS
     AliTestChildProc.cxx
    )
 
-if(DIMDIR AND ODIR)
+if(DIM_FOUND)
     set(SRCS ${SRCS}
         SORNotifier.cxx
        )
-    include_directories(${DIMDIR}/dim)
-    link_directories(${DIMDIR}/${ODIR})
+    include_directories(${DIM_INCLUDE_DIR})
     add_definitions(-DALI_DIM)
 endif()
 
@@ -55,8 +54,8 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase Core Gpad Graf Gui Hist RIO Thread)
-if(DIMDIR AND ODIR)
-    set(LIBDEPS ${LIBDEPS} dim)
+if(DIM_FOUND)
+    set(LIBDEPS ${LIBDEPS} ${DIM_LIBRARIES})
 endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
