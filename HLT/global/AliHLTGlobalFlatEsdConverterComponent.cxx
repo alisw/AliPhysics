@@ -543,7 +543,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	esdTrack.RelateToVertexTPC( primaryVertexTracks, GetBz(), 1000 );
 	tpcConstrained = esdTrack.GetConstrainedParam();	
 	tpcInner = esdTrack.GetTPCInnerParam();
-	esdTrack.GetImpactParameters(impPar, impPar+2 );
+	esdTrack.GetImpactParametersTPC(impPar, impPar+2 );
 	impPar[5] = esdTrack.GetConstrainedChi2();
       }
 	
