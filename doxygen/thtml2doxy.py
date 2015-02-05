@@ -472,7 +472,7 @@ def comment_classimp(filename, comments):
   recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
 
   line_num = 0
-  reclassimp = r'^(\s*)ClassImp\((.*?)\)\s*;?\s*$'
+  reclassimp = r'^(\s*)Class(Imp|Def)\((.*?)\).*$'
 
   in_classimp_cond = False
   restartcond = r'^\s*///\s*\\cond\s+CLASSIMP\s*$'
@@ -497,10 +497,11 @@ def comment_classimp(filename, comments):
         classimp_indent = len( mclassimp.group(1) )
 
         line_classimp = line_num
-        classimp_class = mclassimp.group(2)
+        classimp_class = mclassimp.group(3)
+        imp_or_def = mclassimp.group(2)
         logging.debug(
           'Comment found for ' +
-          Colt( 'ClassImp(' ).magenta() +
+          Colt( 'Class%s(' % imp_or_def ).magenta() +
           Colt( classimp_class ).cyan() +
           Colt( ')' ).magenta() )
 
@@ -527,28 +528,28 @@ def comment_classimp(filename, comments):
       comments.append(Comment(
         ['\cond CLASSIMP'],
         line_startcond, 1, line_startcond, 1,
-        classimp_indent, 'ClassImp(%s)' % classimp_class,
+        classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
         append_empty=False
       ))
     else:
       comments.append(PrependComment(
         ['\cond CLASSIMP'],
         line_classimp, 1, line_classimp, 1,
-        classimp_indent, 'ClassImp(%s)' % classimp_class
+        classimp_indent, 'ClassImp/Def(%s)' % classimp_class
       ))
 
     if line_endcond != -1:
       comments.append(Comment(
         ['\endcond'],
         line_endcond, 1, line_endcond, 1,
-        classimp_indent, 'ClassImp(%s)' % classimp_class,
+        classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
         append_empty=False
       ))
     else:
       comments.append(PrependComment(
         ['\endcond'],
         line_classimp+1, 1, line_classimp+1, 1,
-        classimp_indent, 'ClassImp(%s)' % classimp_class
+        classimp_indent, 'ClassImp/Def(%s)' % classimp_class
       ))
 
 
