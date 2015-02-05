@@ -2374,22 +2374,22 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
   }
 
   // 0-10% centrality: Semi-Good Runs
-  Double_t p0_10SG[17] = {9.15846e-01, 7.54031e-02, 1.11627e+00, -2.35529e-02, 8.03415e-01, 9.43327e-03, -3.29811e-04, 1.66757e+00, 4.64069e-02, 1.84170e-01, -2.09091e-01, 9.56263e-01, 3.55602e-01, -5.75471e-01, 1.12262e+00, 1.96927e-03, 4.23474e-01}; 
+  Double_t p0_10SG[17] = {0.906767, 0.0754127, 1.11638, -0.0233078, 0.795454, 0.00935385, -0.000327857, 1.08903, 0.0107272, 0.443252, -0.143411, 0.965822, 0.359156, -0.581221, 1.0739, 0.00632828, 0.706356};
   // 10-30% centrality: Semi-Good Runs
-  Double_t p10_30SG[17] = {9.27764e-01, 7.69155e-02, 1.11896e+00, -2.55034e-02, 7.57674e-01, 3.68652e-02, -3.75523e-03, 1.64452e+00, 4.49358e-02, 1.92339e-01, -1.99106e-01, 9.59782e-01, 3.50657e-01, -6.07217e-01, 1.09027e+00, 1.58922e-03, 4.57454e-01}; 
+  Double_t p10_30SG[17] = {0.908011, 0.0769254, 1.11912, -0.0249449, 0.741488, 0.0361252, -0.00367954, 1.10424, 0.011472, 0.452059, -0.133282, 0.980633, 0.358222, -0.620256, 1.06871, 0.00564449, 0.753168};
   // 30-50% centrality: Semi-Good Runs
-  Double_t p30_50SG[17] = {9.99833e-01, 8.31729e-02, 1.21066e+00, -2.99180e-02, 8.89407e-01, 2.72632e-02, -6.47995e-03, 1.07181e+00, 3.52573e-03, 3.02167e-01, -8.80560e-02, 9.08866e-01, 3.02663e-01, -5.85203e-01, 9.99932e-01, 2.11319e-03, 5.17128e-01}; 
+  Double_t p30_50SG[17] = {0.958708, 0.0799197, 1.10817, -0.0357678, 0.75051, 0.0607808, -0.00929713, 0.998801, 0.00692244, 0.615452, -0.0480328, 0.968431, 0.321634, -0.619066, 1.03412, 0.00656201, 0.798666};
   // 50-90% centrality: Semi-Good Runs
-  Double_t p50_90SG[17] = {9.99962e-01, 8.44121e-02, 1.24631e+00, -2.54355e-02, 7.28692e-01, 8.89584e-02, -1.02253e-02, 1.10620e+00, 3.80133e-03, 2.74054e-01, -9.15362e-02, 9.04696e-01, 2.84234e-01, -5.67995e-01, 9.99870e-01, 1.89310e-03, 4.91358e-01};
+  Double_t p50_90SG[17] = {0.944565, 0.0807258, 1.12709, -0.0324746, 0.666452, 0.0842476, -0.00963837, 1.02829, 0.00666852, 0.549625, -0.0603107, 0.981374, 0.309374, -0.619181, 1.05367, 0.005925, 0.744887};
 
   // 0-10% centrality: Good Runs
-  Double_t p0_10G[17] = {9.41769e-01, 7.67433e-02, 1.13335e+00, -2.66193e-02, 8.30263e-01, 5.19029e-03, 3.89549e-05, 1.64552e+00, 3.71978e-02, 1.92558e-01, -2.14009e-01, 9.49016e-01, 1.98726e-01, -2.77058e-01, 1.09062e+00, 1.90219e-03, 4.25480e-01}; 
+  Double_t p0_10G[17] = {0.971679, 0.0767571, 1.13355, -0.0274484, 0.856652, 0.00536795, 3.90795e-05, 1.06889, 0.011007, 0.447046, -0.146626, 0.919777, 0.192601, -0.268515, 1.00243, 0.00620849, 0.709477};
   // 10-30% centrality: Good Runs
-  Double_t p10_30G[17] = {9.60095e-01, 7.75887e-02, 1.12192e+00, -2.94920e-02, 8.28189e-01, 1.31810e-02, -1.20607e-03, 1.61751e+00, 3.60181e-02, 2.00906e-01, -1.99320e-01, 9.49605e-01, 1.77662e-01, -2.72506e-01, 1.05439e+00, 1.63010e-03, 4.66318e-01}; 
+  Double_t p10_30G[17] = {0.97929, 0.0776039, 1.12213, -0.0300645, 0.844722, 0.0134788, -0.0012333, 1.07955, 0.0116835, 0.456608, -0.132743, 0.930964, 0.174175, -0.267154, 0.993118, 0.00574892, 0.765256};
   // 30-50% centrality: Good Runs
-  Double_t p30_50G[17] = {9.54634e-01, 8.21353e-02, 1.15674e+00, -3.30327e-02, 6.89883e-01, 8.50469e-02, -1.11555e-02, 1.23933e+00, 4.23219e-03, 2.80843e-01, -1.11685e-01, 9.88261e-01, 1.01834e-01, -1.91367e-01, 1.09119e+00, 1.63848e-03, 4.36947e-01}; 
+  Double_t p30_50G[17] = {0.997696, 0.0816769, 1.14341, -0.0353734, 0.752151, 0.0744259, -0.0102926, 1.01561, 0.00713274, 0.57203, -0.0640248, 0.947747, 0.102007, -0.194698, 0.999164, 0.00568476, 0.7237};
   // 50-90% centrality: Good Runs
-  Double_t p50_90G[17] = {9.70498e-01, 8.25935e-02, 1.15688e+00, -3.46965e-02, 7.25662e-01, 6.58188e-02, -7.40451e-03, 1.31635e+00, 5.30976e-03, 2.37158e-01, -1.21794e-01, 9.74182e-01, 1.08888e-01, -2.14606e-01, 1.07135e+00, 1.67715e-03, 4.47729e-01};
+  Double_t p50_90G[17] = {0.97041, 0.0813559, 1.12151, -0.0368797, 0.709327, 0.0701501, -0.00784043, 1.06276, 0.00676173, 0.53607, -0.0703117, 0.982534, 0.0947881, -0.18073, 1.03229, 0.00580109, 0.737801};
 
   // set up a switch for different parameter values...
   switch(effSwitch) {
@@ -2401,28 +2401,28 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
     case 2 :
       // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-10%):
       ptaxis = (x<2.9)*(p0_10SG[0]*exp(-pow(p0_10SG[1]/x,p0_10SG[2])) + p0_10SG[3]*x) + (x>=2.9)*(p0_10SG[4] + p0_10SG[5]*x + p0_10SG[6]*x*x);
-      etaaxis = (y<0.0)*(p0_10SG[7]*exp(-pow(p0_10SG[8]/TMath::Abs(y+0.9),p0_10SG[9])) + p0_10SG[10]*y) + (y>=0.0 && y<=0.4)*(p0_10SG[11] + p0_10SG[12]*y + p0_10SG[13]*y*y) + (y>0.4)*(p0_10SG[14]*exp(-pow(p0_10SG[15]/TMath::Abs(-y+0.9),p0_10SG[16])));
+      etaaxis = (y<-0.07)*(p0_10SG[7]*exp(-pow(p0_10SG[8]/TMath::Abs(y+0.91),p0_10SG[9])) + p0_10SG[10]*y) + (y>=-0.07 && y<=0.4)*(p0_10SG[11] + p0_10SG[12]*y + p0_10SG[13]*y*y) + (y>0.4)*(p0_10SG[14]*exp(-pow(p0_10SG[15]/TMath::Abs(-y+0.91),p0_10SG[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
     case 3 :
       // Parameter values for Semi-GOOD TPC (LHC11h) runs (10-30%):
       ptaxis = (x<2.9)*(p10_30SG[0]*exp(-pow(p10_30SG[1]/x,p10_30SG[2])) + p10_30SG[3]*x) + (x>=2.9)*(p10_30SG[4] + p10_30SG[5]*x + p10_30SG[6]*x*x);
-      etaaxis = (y<0.0)*(p10_30SG[7]*exp(-pow(p10_30SG[8]/TMath::Abs(y+0.9),p10_30SG[9])) + p10_30SG[10]*y) + (y>=0.0 && y<=0.4)*(p10_30SG[11] + p10_30SG[12]*y + p10_30SG[13]*y*y) + (y>0.4)*(p10_30SG[14]*exp(-pow(p10_30SG[15]/TMath::Abs(-y+0.9),p10_30SG[16])));
+      etaaxis = (y<-0.07)*(p10_30SG[7]*exp(-pow(p10_30SG[8]/TMath::Abs(y+0.91),p10_30SG[9])) + p10_30SG[10]*y) + (y>=-0.07 && y<=0.4)*(p10_30SG[11] + p10_30SG[12]*y + p10_30SG[13]*y*y) + (y>0.4)*(p10_30SG[14]*exp(-pow(p10_30SG[15]/TMath::Abs(-y+0.91),p10_30SG[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
     case 4 :
       // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-50%):
       ptaxis = (x<2.9)*(p30_50SG[0]*exp(-pow(p30_50SG[1]/x,p30_50SG[2])) + p30_50SG[3]*x) + (x>=2.9)*(p30_50SG[4] + p30_50SG[5]*x + p30_50SG[6]*x*x);
-      etaaxis = (y<0.0)*(p30_50SG[7]*exp(-pow(p30_50SG[8]/TMath::Abs(y+0.9),p30_50SG[9])) + p30_50SG[10]*y) + (y>=0.0 && y<=0.4)*(p30_50SG[11] + p30_50SG[12]*y + p30_50SG[13]*y*y) + (y>0.4)*(p30_50SG[14]*exp(-pow(p30_50SG[15]/TMath::Abs(-y+0.9),p30_50SG[16])));
+      etaaxis = (y<-0.07)*(p30_50SG[7]*exp(-pow(p30_50SG[8]/TMath::Abs(y+0.91),p30_50SG[9])) + p30_50SG[10]*y) + (y>=-0.07 && y<=0.4)*(p30_50SG[11] + p30_50SG[12]*y + p30_50SG[13]*y*y) + (y>0.4)*(p30_50SG[14]*exp(-pow(p30_50SG[15]/TMath::Abs(-y+0.91),p30_50SG[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
     case 5 :
       // Parameter values for Semi-GOOD TPC (LHC11h) runs (50-90%):
       ptaxis = (x<2.9)*(p50_90SG[0]*exp(-pow(p50_90SG[1]/x,p50_90SG[2])) + p50_90SG[3]*x) + (x>=2.9)*(p50_90SG[4] + p50_90SG[5]*x + p50_90SG[6]*x*x);
-      etaaxis = (y<0.0)*(p50_90SG[7]*exp(-pow(p50_90SG[8]/TMath::Abs(y+0.9),p50_90SG[9])) + p50_90SG[10]*y) + (y>=0.0 && y<=0.4)*(p50_90SG[11] + p50_90SG[12]*y + p50_90SG[13]*y*y) + (y>0.4)*(p50_90SG[14]*exp(-pow(p50_90SG[15]/TMath::Abs(-y+0.9),p50_90SG[16])));
+      etaaxis = (y<-0.07)*(p50_90SG[7]*exp(-pow(p50_90SG[8]/TMath::Abs(y+0.91),p50_90SG[9])) + p50_90SG[10]*y) + (y>=-0.07 && y<=0.4)*(p50_90SG[11] + p50_90SG[12]*y + p50_90SG[13]*y*y) + (y>0.4)*(p50_90SG[14]*exp(-pow(p50_90SG[15]/TMath::Abs(-y+0.91),p50_90SG[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
@@ -2430,28 +2430,28 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
       // Parameter values for GOOD TPC (LHC11h) runs (0-10%):
       //TRefficiency = ((x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x)) + ((x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x)) * ((y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.9),p0_10G[9])) + p0_10G[10]*y)) + ((y>=0.0 && y<0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y)) + ((y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.9),p0_10G[16]))));
       ptaxis = (x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x) + (x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x);
-      etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.9),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.9),p0_10G[16])));
+      etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.91),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.91),p0_10G[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
     case 7 :
       // Parameter values for GOOD TPC (LHC11h) runs (10-30%):
       ptaxis = (x<2.9)*(p10_30G[0]*exp(-pow(p10_30G[1]/x,p10_30G[2])) + p10_30G[3]*x) + (x>=2.9)*(p10_30G[4] + p10_30G[5]*x + p10_30G[6]*x*x);
-      etaaxis = (y<0.0)*(p10_30G[7]*exp(-pow(p10_30G[8]/TMath::Abs(y+0.9),p10_30G[9])) + p10_30G[10]*y) + (y>=0.0 && y<=0.4)*(p10_30G[11] + p10_30G[12]*y + p10_30G[13]*y*y) + (y>0.4)*(p10_30G[14]*exp(-pow(p10_30G[15]/TMath::Abs(-y+0.9),p10_30G[16])));
+      etaaxis = (y<0.0)*(p10_30G[7]*exp(-pow(p10_30G[8]/TMath::Abs(y+0.91),p10_30G[9])) + p10_30G[10]*y) + (y>=0.0 && y<=0.4)*(p10_30G[11] + p10_30G[12]*y + p10_30G[13]*y*y) + (y>0.4)*(p10_30G[14]*exp(-pow(p10_30G[15]/TMath::Abs(-y+0.91),p10_30G[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
     case 8 :
       // Parameter values for GOOD TPC (LHC11h) runs (30-50%):
       ptaxis = (x<2.9)*(p30_50G[0]*exp(-pow(p30_50G[1]/x,p30_50G[2])) + p30_50G[3]*x) + (x>=2.9)*(p30_50G[4] + p30_50G[5]*x + p30_50G[6]*x*x);
-      etaaxis = (y<0.0)*(p30_50G[7]*exp(-pow(p30_50G[8]/TMath::Abs(y+0.9),p30_50G[9])) + p30_50G[10]*y) + (y>=0.0 && y<=0.4)*(p30_50G[11] + p30_50G[12]*y + p30_50G[13]*y*y) + (y>0.4)*(p30_50G[14]*exp(-pow(p30_50G[15]/TMath::Abs(-y+0.9),p30_50G[16])));
+      etaaxis = (y<0.0)*(p30_50G[7]*exp(-pow(p30_50G[8]/TMath::Abs(y+0.91),p30_50G[9])) + p30_50G[10]*y) + (y>=0.0 && y<=0.4)*(p30_50G[11] + p30_50G[12]*y + p30_50G[13]*y*y) + (y>0.4)*(p30_50G[14]*exp(-pow(p30_50G[15]/TMath::Abs(-y+0.91),p30_50G[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
     case 9 :
       // Parameter values for GOOD TPC (LHC11h) runs (50-90%):
       ptaxis = (x<2.9)*(p50_90G[0]*exp(-pow(p50_90G[1]/x,p50_90G[2])) + p50_90G[3]*x) + (x>=2.9)*(p50_90G[4] + p50_90G[5]*x + p50_90G[6]*x*x);
-      etaaxis = (y<0.0)*(p50_90G[7]*exp(-pow(p50_90G[8]/TMath::Abs(y+0.9),p50_90G[9])) + p50_90G[10]*y) + (y>=0.0 && y<=0.4)*(p50_90G[11] + p50_90G[12]*y + p50_90G[13]*y*y) + (y>0.4)*(p50_90G[14]*exp(-pow(p50_90G[15]/TMath::Abs(-y+0.9),p50_90G[16])));
+      etaaxis = (y<0.0)*(p50_90G[7]*exp(-pow(p50_90G[8]/TMath::Abs(y+0.91),p50_90G[9])) + p50_90G[10]*y) + (y>=0.0 && y<=0.4)*(p50_90G[11] + p50_90G[12]*y + p50_90G[13]*y*y) + (y>0.4)*(p50_90G[14]*exp(-pow(p50_90G[15]/TMath::Abs(-y+0.91),p50_90G[16])));
       TRefficiency = ptaxis*etaaxis;
       break;
 
@@ -2462,7 +2462,7 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
   }
 
   //if(TRefficiency < 0.1) cout<<"pt: "<<x<<"  eta: "<<y<<"  cent: "<<fCent<<"  Eff: "<<TRefficiency<<"   Ptaxis: "<<ptaxis<<"   etaaxis: "<<etaaxis<<endl;
-  //if(TRefficiency > 0.86) cout<<"pt: "<<x<<"  eta: "<<y<<"  cent: "<<fCent<<"  Eff: "<<TRefficiency<<"   Ptaxis: "<<ptaxis<<"   etaaxis: "<<etaaxis<<endl;
+  //if(TRefficiency > 0.90) cout<<"pt: "<<x<<"  eta: "<<y<<"  cent: "<<fCent<<"  Eff: "<<TRefficiency<<"   Ptaxis: "<<ptaxis<<"   etaaxis: "<<etaaxis<<endl;
 
   return TRefficiency;
 }
