@@ -49,33 +49,35 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		AliJCard *GetCard() { return fCard; }
 		void SetCard( AliJCard *c ) { fCard = c; }
 		void SetEbePercentileInputFileName(TString name) { ebePercentileInputFileName = name; };
-/*
-		TString MemoryStatus(){
-			int pid = getpid();
-			TString key;
-			TString v1;
-			ifstream ins(Form("/proc/%d/status",pid ));
-			double VmSwap= 0.;
-			double VmSize= 0.;
-			double VmPeak= 0.;
-			double nom = TMath::Power( 2, 20 );
-			TPMERegexp split("\\s+");
-			TString line;
-			while( ins.good() ){
-				line.ReadLine(ins);
-				split.Split(line);
-				if( split.NMatches() < 2 ) continue;
-				key = split[0];
-				v1 = split[1];
-				if( key == "VmSwap:" ) VmSwap = v1.Atof()/nom;
-				if( key == "VmSize:" ) VmSize = v1.Atof()/nom;
-				if( key.BeginsWith("VmPeak") ) VmPeak = v1.Atof()/nom;
-			}
-			TString res = Form("VmPeak:%10.2f VmSize:%10.2f VmSwap:%10.2f", VmPeak, VmSize, VmSwap);
-			ins.close();
-			return res;
-		};
-*/
+		void SetIsMC( Bool_t ismc){ IsMC = ismc; cout << "Settint IsMC = " << ismc << endl; };
+		void SetEnableCORR( Bool_t runCORR ){ fenableCORR = runCORR; cout << "Settint enableCORR = " << fenableCORR << endl; };
+		/*
+		   TString MemoryStatus(){
+		   int pid = getpid();
+		   TString key;
+		   TString v1;
+		   ifstream ins(Form("/proc/%d/status",pid ));
+		   double VmSwap= 0.;
+		   double VmSize= 0.;
+		   double VmPeak= 0.;
+		   double nom = TMath::Power( 2, 20 );
+		   TPMERegexp split("\\s+");
+		   TString line;
+		   while( ins.good() ){
+		   line.ReadLine(ins);
+		   split.Split(line);
+		   if( split.NMatches() < 2 ) continue;
+		   key = split[0];
+		   v1 = split[1];
+		   if( key == "VmSwap:" ) VmSwap = v1.Atof()/nom;
+		   if( key == "VmSize:" ) VmSize = v1.Atof()/nom;
+		   if( key.BeginsWith("VmPeak") ) VmPeak = v1.Atof()/nom;
+		   }
+		   TString res = Form("VmPeak:%10.2f VmSize:%10.2f VmSwap:%10.2f", VmPeak, VmSize, VmSwap);
+		   ins.close();
+		   return res;
+		   };
+		   */
 
 	private:
 		TDirectory           *fOutput;     // Output
@@ -110,6 +112,8 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		AliJRunTable *fRunTable; // 
 
 		TRandom *fRandom;
+		Bool_t IsMC;
+		Bool_t fenableCORR;
 
 		ClassDef(AliJEbECORRTask, 1); // example of analysis
 };
