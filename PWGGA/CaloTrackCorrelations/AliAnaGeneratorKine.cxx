@@ -60,8 +60,6 @@ fhPtPi0Not2Gamma(0),   fhPtEtaNot2Gamma(0)
   
   //Initialize parameters
   InitParameters();
-  
- 
 
   for(Int_t p = 0; p < fgkNmcPrimTypes; p++)
   {
@@ -125,7 +123,6 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   //
   // Get the index of the mother
   //
-  
   if(fStack) // ESD
   {
     iparton =  (fStack->Particle(indexTrig))->GetFirstMother();
@@ -168,7 +165,6 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
   //
   // Get the kinematics
   //
-  
   Float_t  ptTrig  = fTrigger.Pt();
   Float_t phiTrig  = fTrigger.Phi();
   Float_t etaTrig  = fTrigger.Eta();
@@ -718,7 +714,6 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
                                 Bool_t  isolated[fgkNIso],
                                 Int_t   iparton)
 {
-
   // Calculate the real XE and the UE XE
 
   AliDebug(1,"Start");
@@ -861,8 +856,8 @@ void AliAnaGeneratorKine::GetXE(Int_t   indexTrig,
 //________________________________________
 void AliAnaGeneratorKine::InitParameters()
 {
-  
   //Initialize the parameters of the analysis.
+  
   AddToHistogramsName("AnaGenKine_");
   
   fTriggerDetector = kEMCAL;
@@ -1220,19 +1215,30 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       fTrigger.SetPxPyPzE(particle->Px(),particle->Py(),particle->Pz(),particle->E());
     }
     
-    // Select final state photons or pi0s or eta's
+    //
+    // Select final state photons, pi0s or eta's (mesons not final state)
+    //
+    // Final state particles have status code 1
+    // pi0 and etas can have status code 0, (not decayed by pythia but geant?)
+    // In the current code photons are always final state with status code 1,
+    // avoid complications with conversions although pi0 with status code 0
+    // generate photons with status code 0
     
     if( pdgTrig == 22 && statusTrig != 1 ) continue ;
     
     if( pdgTrig != 111 && pdgTrig != 22 && pdgTrig !=221 ) continue ;
     
-    // Acceptance and kinematical cuts
-    
+    //
+    // Pt cut
+    //
     Float_t ptTrig  = fTrigger.Pt();
     
     if( ptTrig < GetMinPt() ) continue ;
 
-    // Identify the particle to fill appropriate histogram
+    //
+    // Select and tag the particles being, direct photon (prompt, fragmentation or isr)
+    // decay photon from pi0, eta or other, and pi0 or eta
+    //
     Int_t partType = -1;
     
     if     (pdgTrig==22 )
@@ -1293,6 +1299,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     }
     else if( (pdgTrig==111 || pdgTrig==221) )
     {
+      // Fill histogram to see how many pi0/eta decay other than 2 photons in trigger detector acceptance
       Bool_t in = GetFiducialCutForTrigger()->IsInFiducialCut(fTrigger.Eta(),fTrigger.Phi(),fTriggerDetector) ;
       if(! in )  continue ;
       
@@ -1334,13 +1341,8 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     AliDebug(1,Form("Select trigger particle %d: pdg %d, type %d, status %d, mother index %d, pT %2.2f, eta %2.2f, phi %2.2f",
                     ipr, pdgTrig, partType, statusTrig, imother, ptTrig, fTrigger.Eta(), fTrigger.Phi()*TMath::RadToDeg()));
     
-    //    if(pdgTrig==111)
-    //    {
-    //      printf("\t pi0 daughters %d, %d\n", particle->GetDaughter(0), particle->GetDaughter(1));
-    //    }
-
     //
-    // Fill histograms do analysis
+    // Fill particle pT histograms, check also status
     //
     
     fhPt[partType]->Fill(ptTrig);
@@ -1369,6 +1371,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     {
       fhPtOtherDecayStatus->Fill(ptTrig,momStatus);
       
+      //Fill histogram with origin of this kind of photon
       if     (momPdg     > 2100  && momPdg   < 2210) fhPtOtherDecayMesonId->Fill(ptTrig,0.5);// resonances
       else if(momPdg    == 221) fhPtOtherDecayMesonId->Fill(ptTrig,5.5);//eta
       else if(momPdg    == 331) fhPtOtherDecayMesonId->Fill(ptTrig,6.5);//eta prime
@@ -1379,7 +1382,10 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       else                      fhPtOtherDecayMesonId->Fill(ptTrig,4.5);//other?
     }
 
-    // Origin
+    //
+    // Origin of particle, which mother of the pi0 or eta or
+    // the eta or pi0 or other meson at the origin of the decay photon
+    //
     Int_t momOrgPdg    = -1;
     Int_t momOrgStatus = -1;
     if(fStack)
@@ -1423,16 +1429,24 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     else if(momOrgStatus == 11 || momOrgStatus  == 12 ) fhPtOrigin[partType]->Fill(ptTrig,3.5);//resonances
     else                         fhPtOrigin[partType]->Fill(ptTrig,7.5);//other?
 
-    // Check if it is leading
+    //
+    // Check if it is leading or isolated
+    //
     Bool_t leading [fgkNIso] ;
     Bool_t isolated[fgkNIso] ;
 
     IsLeadingAndIsolated(ipr, partType, leading, isolated);
     
+    //
+    // Correlate trigger particle with partons or jets
+    //
     Int_t iparton = -1;
     Int_t ok = CorrelateWithPartonOrJet(ipr, partType, leading, isolated, iparton);
     if(!ok) continue;
     
+    //
+    // Correlate trigger particle with hadrons
+    //
     GetXE(ipr,partType,leading,isolated,iparton) ;
     
   }
