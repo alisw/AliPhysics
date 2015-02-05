@@ -334,7 +334,7 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
   reclass_doxy = r'(?i)^\s*\\(class|file):?\s*([^.]*)'
   class_name_doxy = None
 
-  reauthor = r'(?i)^\s*\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
+  reauthor = r'(?i)^\s*\\?(authors?|origin):?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
   redate = r'(?i)^\s*\\?date:?\s*([0-9./-]+)\s*$'
   author = None
   date = None
@@ -392,10 +392,10 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
         else:
           mauthor = re.search(reauthor, mcomm.group(1))
           if mauthor:
-            author = mauthor.group(1)
+            author = mauthor.group(2)
             if date is None:
               # Date specified in the standalone \date field has priority
-              date = mauthor.group(3)
+              date = mauthor.group(4)
             append = False
           else:
             mdate = re.search(redate, mcomm.group(1))
