@@ -668,7 +668,7 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
         current_macro = []
 
         # Insert image
-        new_comment.append( '![Picture from ROOT macro](%s)' % (outimg) )
+        new_comment.append( '![Picture from ROOT macro](%s)' % (os.path.basename(outimg)) )
 
         logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
 
