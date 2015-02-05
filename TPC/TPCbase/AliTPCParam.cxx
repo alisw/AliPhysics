@@ -591,6 +591,8 @@ Bool_t AliTPCParam::Update()
     fRotAngle[j+1] =  fRotAngle[i+1];
     fRotAngle[i+2] =angle;
     fRotAngle[j+2] =angle;    
+    fRotAngle[i+3] =angle;
+    fRotAngle[j+3] =angle;    
   }
   angle = fOuterAngleShift; 
   j=(fNInnerSector+fNOuterSector/2)*4;
@@ -601,6 +603,8 @@ Bool_t AliTPCParam::Update()
     fRotAngle[j+1] =  fRotAngle[i+1];
     fRotAngle[i+2] =angle;
     fRotAngle[j+2] =angle;    
+    fRotAngle[i+3] =angle;
+    fRotAngle[j+3] =angle;    
   }
 
   fZWidth = fTSample*fDriftV;  
