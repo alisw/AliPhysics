@@ -5,10 +5,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class generaol Alice segment digits
-//  segment is for example one pad row in TPC //
-////////////////////////////////////////////////
+/// \class AliSimDigits
+///
+///  Manager class generaol Alice segment digits
+///  segment is for example one pad row in TPC
+
 #include <TError.h>
 #include <TArrayI.h>
 #include <TClonesArray.h>
@@ -45,27 +46,30 @@ private:
   void  ExpandTrackBuffer2(); //comress track according algorithm 2 (track ID comression according  digit compression)
   void  CompresTrackBuffer2(); //comress track according algorithm 2 (track ID comression according  digit compression)
 
-  TArrayI * fTracks;     //buffer of track index 
-  TArrayI * fTrIndex;    //index position of column
-  Int_t       fNlevel;   //number of tracks etries  for one digit
-  Int_t       fTrBufType;  //buffer type of the tracks
+  TArrayI * fTracks;     ///< buffer of track index
+  TArrayI * fTrIndex;    ///< index position of column
+  Int_t       fNlevel;   ///< number of tracks etries  for one digit
+  Int_t       fTrBufType;  ///< buffer type of the tracks
   // Bool_t      ClassError( ); //signalize class error 
+  /// \cond CLASSIMP
   ClassDef(AliSimDigits,3) 
+  /// \endcond
 };
 
 
 
 inline Int_t AliSimDigits::GetTrackIDFast(Int_t row, Int_t column,Int_t level)
 {
-  //
-  //return track ID  at given row and column
-  //  return fTracks[level].At(fTrIndex[level][column]+row); 
+  /// return track ID  at given row and column
+  ///  return fTracks[level].At(fTrIndex[level][column]+row);
+
   return fTracks->At(level*fNrows*fNcols+fNrows*column+row); 
 }
  
 inline void AliSimDigits::SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int_t level)
 {
-  //
+  ///
+
   value+=2;
   //set ID track at given row and collumn
   //  fTracks[level][fTrIndex[level][column]+row]=value; 

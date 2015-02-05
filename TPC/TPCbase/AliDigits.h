@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class generaol Alice segment digits
-//  segment is for example one pad row in TPC //
-////////////////////////////////////////////////
+/// \class AliDigits
+///
+///  Manager class generaol Alice segment digits
+///  segment is for example one pad row in TPC
 
 #include   <TArrayI.h>
 #include   <TArrayS.h>
@@ -60,26 +60,29 @@ protected:
   Bool_t Next1();//next for the buffer type 1
   Short_t  GetDigit1(Int_t row, Int_t column); //return digit for given row and column
  
-  Int_t     fNrows;   //number of rows in Segment
-  Int_t     fNcols; //number of collumns in Segment 
+  Int_t     fNrows;   ///< number of rows in Segment
+  Int_t     fNcols; ///< number of collumns in Segment
 private:
-  TArrayS *fElements;  //buffer of 2 bytes integers for digits
-  TArrayI *fIndex;  //index position of column
-  Int_t     fBufType; //type of the buffer - define compression algorithm  
-  Int_t     fThreshold; //treshold for zero suppresion
-  Int_t     fNelems;  //total number of elements 
-  Int_t fCurrentRow;   //!current row  iteration
-  Int_t fCurrentCol;   //!current column iteration
-  Int_t fCurrentIndex; //!current index in field
+  TArrayS *fElements;  ///< buffer of 2 bytes integers for digits
+  TArrayI *fIndex;  ///< index position of column
+  Int_t     fBufType; ///< type of the buffer - define compression algorithm
+  Int_t     fThreshold; ///< treshold for zero suppresion
+  Int_t     fNelems;  ///< total number of elements
+  Int_t fCurrentRow;   //!< current row  iteration
+  Int_t fCurrentCol;   //!< current column iteration
+  Int_t fCurrentIndex; //!< current index in field
  
+  /// \cond CLASSIMP
   ClassDef(AliDigits,2) 
+  /// \endcond
 };
  
 
 
 inline Bool_t AliDigits::BoundsOK(const char *where, Int_t row, Int_t col) 
 {
-  //Check If Bound Ok
+  /// Check If Bound Ok
+
   if ( (col>=fNcols) || (col<0) ) return OutOfBoundsError(where,row,col);
   Int_t index =(*fIndex).At(col)+row;
   if ( (index<0) || (index>fNelems)) return OutOfBoundsError(where,row,col);
@@ -88,35 +91,31 @@ inline Bool_t AliDigits::BoundsOK(const char *where, Int_t row, Int_t col)
 
 inline Short_t AliDigits::GetDigitFast(Int_t row, Int_t column)
 {
-  //
-  //return digit from  fDigits array
-  //if out of range return dummy value  ( value at row = 0, collumn = 0)
-  //
+  /// return digit from  fDigits array
+  /// if out of range return dummy value  ( value at row = 0, collumn = 0)
+
   return fElements->At(fIndex->At(column)+row); 
 }
 
 inline Short_t AliDigits::GetDigitUnchecked(Int_t row, Int_t column)
 {
-  //
-  //return digit from  fDigits array
-  //if out of range return dummy value  ( value at row = 0, collumn = 0)
-  //
+  /// return digit from  fDigits array
+  /// if out of range return dummy value  ( value at row = 0, collumn = 0)
+
   return fElements->fArray[fIndex->fArray[column]+row]; 
 }
 
 inline Short_t * AliDigits::GetDigitsColumn(Int_t column){
-  //
-  //return row  pointer to the array digits
-  //
+  /// return row  pointer to the array digits
+
   return &(fElements->fArray[fIndex->fArray[column]]);
 }
 
 
 inline void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
 {
-  //
-  //set  digit 
-  //
+  /// set  digit
+
   if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNcols) ) 
        Error("AliDigits::SetDigitFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08lx)", 
 	     row, column, fNrows, fNcols, (ULong_t)this);

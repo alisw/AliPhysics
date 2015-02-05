@@ -13,24 +13,22 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------
-//          Implementation of the TPC cluster debug information
-//
-//   Origin: Marian Ivanov   Marian.Ivanov@cern.ch
-//   
-//   Additional cluster information to monitor clustering performance
-//   and to extract a features of detector response
-//   Information attached to the default cluster
-//   ONLY in DEBUG MODE
-//    
-//-------------------------------------------------------
-
-/* $Id$ */
+/// \class AliTPCclusterInfo
+/// \brief Implementation of the TPC cluster debug information
+///
+///   Additional cluster information to monitor clustering performance
+///   and to extract a features of detector response
+///   Information attached to the default cluster
+///   ONLY in DEBUG MODE
+///
+/// \author Marian Ivanov   Marian.Ivanov@cern.ch
 
 #include "AliTPCclusterInfo.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCclusterInfo)
+/// \endcond
 
 
 AliTPCclusterInfo::AliTPCclusterInfo():
@@ -41,9 +39,9 @@ AliTPCclusterInfo::AliTPCclusterInfo():
 {
   //
   // default constructor
-  //  
+  //
   for (Int_t i=0; i<25;i++){
-    fMatrix[i] = i; 
+    fMatrix[i] = i;
   }
 }
 
@@ -52,14 +50,13 @@ AliTPCclusterInfo::AliTPCclusterInfo(const  AliTPCclusterInfo & info):
   fNPads(info.fNPads),
   fNTimeBins(info.fNTimeBins),
   fNBins(info.fNBins),
-  fGraph(0)    
+  fGraph(0)
 {
-  //
-  // copy constructor
-  //
-  //  AliInfo("Copy constructor\n");
+  /// copy constructor
+
+  // AliInfo("Copy constructor\n");
   for (Int_t i=0; i<25;i++){
-    fMatrix[i] = info.fMatrix[i]; 
+    fMatrix[i] = info.fMatrix[i];
   }
   if (info.fGraph) {
     fGraph = new Float_t[fNBins];
@@ -76,11 +73,10 @@ AliTPCclusterInfo::AliTPCclusterInfo(Bool_t extend):
   fNBins(0),
   fGraph(0)
 {
-  //
-  // allocate dummy graph - neccessary for IO part to use automatic branching
-  //  
+  /// allocate dummy graph - neccessary for IO part to use automatic branching
+
   for (Int_t i=0; i<25;i++){
-    fMatrix[i] = i; 
+    fMatrix[i] = i;
   }
   if (extend){
     fNBins = 1;
@@ -95,9 +91,8 @@ AliTPCclusterInfo::AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* grap
   fNBins(0),
   fGraph(0)
 {
-  //
-  // constructor of the info
-  //
+  /// constructor of the info
+
   for (Int_t i=0;i<25;i++){
     fMatrix[i]=matrix[i];
   }
@@ -117,12 +112,11 @@ AliTPCclusterInfo::AliTPCclusterInfo(Float_t *matrix, Int_t nbins, Float_t* grap
 }
 
 AliTPCclusterInfo& AliTPCclusterInfo::operator=(const AliTPCclusterInfo& info){
-  //
-  // assignment operator
-  // 
+  /// assignment operator
+
   if (this == &info) return (*this);
   for (Int_t i=0; i<25;i++){
-    fMatrix[i] = info.fMatrix[i]; 
+    fMatrix[i] = info.fMatrix[i];
   }
   if (info.fGraph) {
     if (fGraph) delete []fGraph;
@@ -130,24 +124,23 @@ AliTPCclusterInfo& AliTPCclusterInfo::operator=(const AliTPCclusterInfo& info){
     for (Int_t i=0;i<fNBins; i++){
       fGraph[i] = info.fGraph[i];
     }
-  }  
+  }
   return *this;
 }
 
 
-UChar_t AliTPCclusterInfo::GetNPads(Float_t threshold) const { 
-  //
-  //
+UChar_t AliTPCclusterInfo::GetNPads(Float_t threshold) const {
+  ///
+
   Int_t nPads=0;
   Int_t center = 5+5+2;
   for (Int_t i=-2; i<=2;i++) if (fMatrix[center+i*5]>threshold) nPads++;
   return nPads;
 }
 
-UChar_t AliTPCclusterInfo::GetNTimeBins(Float_t threshold) const { 
-  //
-  //
-  //
+UChar_t AliTPCclusterInfo::GetNTimeBins(Float_t threshold) const {
+  ///
+
   Int_t nTimeBins=0;
   Int_t center = 5+5+2;
   for (Int_t i=-2; i<=2;i++) if (fMatrix[center+i]>threshold) nTimeBins++;
@@ -158,9 +151,8 @@ UChar_t AliTPCclusterInfo::GetNTimeBins(Float_t threshold) const {
 
 
 AliTPCclusterInfo::~AliTPCclusterInfo(){
-  //
-  // destructor
-  //
+  /// destructor
+
   if (fGraph)  delete [] fGraph;
 }
 

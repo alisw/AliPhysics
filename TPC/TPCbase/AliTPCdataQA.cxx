@@ -13,86 +13,84 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-/* $Id$ */
-
-/*
-  July 2011:
-
-  Changes to accomodate updates of general DQM/QA changes to have per trigger
-  histograms (for a given event specie).
-
-  AliTPCdataQA has a new flag for only keeping DQM info event by
-  event!
-  The expert/DA functionality has been kept exactly the same!
-  
-
-  June 2010
-
-  This update should solve two problems mainly:
-  * The vs event histograms have been limited to a fixed size for the
-  DQM. The 500k seemed to be a big size but is no longer so, so we
-  need to dynamically expand the range. The non-trivial point is that
-  we also have to do it for the copy owned by AliTPCQADataMakerRec.
-  * The amoreGui now remembers the x-range of the first visualization so
-  the trick of setting the relevant event range as the histogram is
-  filled no longer works.
-
-  The fix is a bit crude but avoids creating a new histogram. Instead
-  the range is expanded (max events and events per bin is doubled) but
-  the number of bins is kept constant! In this way we can change just
-  double the max of the X-axis of the hist and rebin the data. The
-  same can easily be done for the copy owned by AliTPCQADataMakerRec.
-
-  CAUTION:
-  If we change the number of bins we could crash the whole system
-  because ROOT does not create space for extra bins! (but we do not do
-  this). In that way it is a crude solution.
-  The rebinning in the code only works for an even number of bins.
-
-  In addition to the above a bug in the reading of the config file was
-  also found and corrected. fAdcMax was set instead of fEventsPerBin.
-
-  Finally cout was changes to AliInfo.
-
-  February 2008
-
-  The code has been heavily modified so that now the RAW data is
-  "expanded" for each sector and stored in a big signal array. Then a
-  simple version of the code in AliTPCclusterer is used to identify
-  the local maxima and these are then used for QA. This gives a better
-  estimate of the charge (both max and total) and also limits the
-  effect of noise.
-
-  Implementation:
-
-  In Update the RAW signals >= 3 ADC channels are stored in the arrays.
-  
-  There are 3 arrays:
-  Float_t** fAllBins       2d array [row][bin(pad, time)] ADC signal
-  Int_t**   fAllSigBins    2d array [row][signal#] bin(with signal)
-  Int_t*    fAllNSigBins;  1d array [row] Nsignals
-
-  This is done sector by sector.
-
-  When data from a new sector is encountered, the method
-  FindLocalMaxima is called on the data from the previous sector, and
-  the calibration/data objects are updated with the "cluster"
-  info. Finally the arrays are cleared.
-
-  The requirements for a local maxima is:
-  Charge in bin is >= 5 ADC channels.
-  Charge in bin is larger than all the 8 neighboring bins.
-  At least one of the two pad neighbors has a signal.
-  At least one of the two time neighbors has a signal.
-
-  Before accessing the data it is expected that the Analyse method is
-  called. This normalizes some of the data objects to per event or per
-  cluster. 
-  If more data is passed to the class after Analyse has been called
-  the normalization is reversed and Analyse has to be called again.
-*/
-
+/// \class AliTPCdataQA
+///
+/// July 2011:
+///
+/// Changes to accomodate updates of general DQM/QA changes to have per trigger
+/// histograms (for a given event specie).
+///
+/// AliTPCdataQA has a new flag for only keeping DQM info event by
+/// event!
+/// The expert/DA functionality has been kept exactly the same!
+///
+///
+/// June 2010
+///
+/// This update should solve two problems mainly:
+/// * The vs event histograms have been limited to a fixed size for the
+/// DQM. The 500k seemed to be a big size but is no longer so, so we
+/// need to dynamically expand the range. The non-trivial point is that
+/// we also have to do it for the copy owned by AliTPCQADataMakerRec.
+/// * The amoreGui now remembers the x-range of the first visualization so
+/// the trick of setting the relevant event range as the histogram is
+/// filled no longer works.
+///
+/// The fix is a bit crude but avoids creating a new histogram. Instead
+/// the range is expanded (max events and events per bin is doubled) but
+/// the number of bins is kept constant! In this way we can change just
+/// double the max of the X-axis of the hist and rebin the data. The
+/// same can easily be done for the copy owned by AliTPCQADataMakerRec.
+///
+/// CAUTION:
+/// If we change the number of bins we could crash the whole system
+/// because ROOT does not create space for extra bins! (but we do not do
+/// this). In that way it is a crude solution.
+/// The rebinning in the code only works for an even number of bins.
+///
+/// In addition to the above a bug in the reading of the config file was
+/// also found and corrected. fAdcMax was set instead of fEventsPerBin.
+///
+/// Finally cout was changes to AliInfo.
+///
+/// February 2008
+///
+/// The code has been heavily modified so that now the RAW data is
+/// "expanded" for each sector and stored in a big signal array. Then a
+/// simple version of the code in AliTPCclusterer is used to identify
+/// the local maxima and these are then used for QA. This gives a better
+/// estimate of the charge (both max and total) and also limits the
+/// effect of noise.
+///
+/// Implementation:
+///
+/// In Update the RAW signals >= 3 ADC channels are stored in the arrays.
+/// There are 3 arrays:
+///
+/// ~~~{.cpp}
+/// Float_t** fAllBins       2d array [row][bin(pad, time)] ADC signal
+/// Int_t**   fAllSigBins    2d array [row][signal#] bin(with signal)
+/// Int_t*    fAllNSigBins;  1d array [row] Nsignals
+/// ~~~
+///
+/// This is done sector by sector.
+///
+/// When data from a new sector is encountered, the method
+/// FindLocalMaxima is called on the data from the previous sector, and
+/// the calibration/data objects are updated with the "cluster"
+/// info. Finally the arrays are cleared.
+///
+/// The requirements for a local maxima is:
+/// Charge in bin is >= 5 ADC channels.
+/// Charge in bin is larger than all the 8 neighboring bins.
+/// At least one of the two pad neighbors has a signal.
+/// At least one of the two time neighbors has a signal.
+///
+/// Before accessing the data it is expected that the Analyse method is
+/// called. This normalizes some of the data objects to per event or per
+/// cluster.
+/// If more data is passed to the class after Analyse has been called
+/// the normalization is reversed and Analyse has to be called again.
 
 //Root includes
 #include <TH1F.h>
@@ -124,9 +122,11 @@
 #include "AliLog.h"
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCdataQA)
+/// \endcond
 
-AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/  
+AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fFirstTimeBin(60),
   fLastTimeBin(1000),
   fAdcMin(3),
@@ -233,9 +233,8 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fOccVecFine(0x0),
   fOccMaxVecFine(0x0)
 {
-  //
-  // copy constructor
-  //
+  /// copy constructor
+
   if(ped.GetNLocalMaxima())
     fNLocalMaxima  = new AliTPCCalPad(*ped.GetNLocalMaxima());
   if(ped.GetMaxCharge())
@@ -283,7 +282,7 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
 }
 
 //_____________________________________________________________________
-AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/  
+AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   TH1F("TPCRAW","TPCRAW",100,0,100),
   fFirstTimeBin(60),
   fLastTimeBin(1000),
@@ -333,9 +332,8 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   fOccVecFine(0x0),
   fOccMaxVecFine(0x0)
 {
-  //
-  // default constructor
-  //
+  /// default constructor
+
   if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
   if (config->GetValue("LastTimeBin"))  fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
   if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
@@ -350,9 +348,8 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
 //_____________________________________________________________________
 AliTPCdataQA& AliTPCdataQA::operator = (const  AliTPCdataQA &source)
 {
-  //
-  // assignment operator
-  //
+  /// assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCdataQA(source);
 
@@ -363,9 +360,7 @@ AliTPCdataQA& AliTPCdataQA::operator = (const  AliTPCdataQA &source)
 //_____________________________________________________________________
 AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
 {
-  //
-  // destructor
-  //
+  /// destructor
 
   // do not delete fMapping, because we do not own it.
   // do not delete fMapping, because we do not own it.
@@ -397,11 +392,11 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
   delete fOccMaxVec;
   delete fOccVecFine;
   delete fOccMaxVecFine;
-  
+
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     delete [] fAllBins[iRow];
     delete [] fAllSigBins[iRow];
-  }  
+  }
   delete [] fAllBins;
   delete [] fAllSigBins;
   delete [] fAllNSigBins;
@@ -410,54 +405,53 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
 //_____________________________________________________________________
 TH1F* AliTPCdataQA::GetHistOccupancyVsEvent()
 {
-  //
-  // Create Occupancy vs event histogram
-  // (we create this histogram differently then the other histograms
-  //  because this we want to be able to access and copy
-  //  from AliTPCQAMakerRec before it normally would be created)
-  //
+  /// Create Occupancy vs event histogram
+  /// (we create this histogram differently then the other histograms
+  ///  because this we want to be able to access and copy
+  ///  from AliTPCQAMakerRec before it normally would be created)
+
   if(!fHistOccupancyVsEvent) {
 
     Int_t nBins = fMaxEvents/fEventsPerBin;
     fHistOccupancyVsEvent = new TH1F("hOccupancyVsEvent", "Occupancy vs event number (~time); Event number; Occupancy", nBins, 0, nBins*fEventsPerBin);
     fHistOccupancyVsEvent->SetDirectory(0);
   }
-  
+
   return fHistOccupancyVsEvent;
 }
 
 //_____________________________________________________________________
 TH1F* AliTPCdataQA::GetHistNclustersVsEvent()
 {
-  //
-  // Create Nclusters vs event histogram
-  // (we create this histogram differently then the other histograms
-  //  because this we want to be able to access and copy
-  //  from AliTPCQAMakerRec before it normally would be created)
-  //
+  /// Create Nclusters vs event histogram
+  /// (we create this histogram differently then the other histograms
+  ///  because this we want to be able to access and copy
+  ///  from AliTPCQAMakerRec before it normally would be created)
+
   if(!fHistNclustersVsEvent) {
 
     Int_t nBins = fMaxEvents/fEventsPerBin;
     fHistNclustersVsEvent = new TH1F("hNclustersVsEvent", "Nclusters vs event number (~time); Event number; Nclusters per event", nBins, 0, nBins*fEventsPerBin);
     fHistNclustersVsEvent->SetDirectory(0);
   }
-  
+
   return fHistNclustersVsEvent;
 }
 
 //_____________________________________________________________________
 void AliTPCdataQA::UpdateEventHistograms()
 {
-  // Update histograms that display occupancy and 
-  // number of clusters as a function of number of 
-  // events
+  /// Update histograms that display occupancy and
+  /// number of clusters as a function of number of
+  /// events
+
   if (!fHistOccupancyVsEvent)
     GetHistOccupancyVsEvent();
   if (!fHistNclustersVsEvent)
     GetHistNclustersVsEvent();
-  
+
   if(fEventCounter > fMaxEvents) {
-    
+
     // we have to expand the histogram to handle the larger number of
     // events. The way it is done now is to double the range and the
     // number of events per bin (so the number of histogram bins stays
@@ -476,19 +470,19 @@ void AliTPCdataQA::UpdateEventHistograms()
       Int_t newBin = TMath::Nint(Float_t(bin+1)/2.0);
       Float_t newContent = (fHistOccupancyVsEvent->GetBinContent(bin)+
 			    fHistOccupancyVsEvent->GetBinContent(bin+1))/2.0;
-      fHistOccupancyVsEvent->SetBinContent(newBin, newContent); 
+      fHistOccupancyVsEvent->SetBinContent(newBin, newContent);
 
       newContent = (fHistNclustersVsEvent->GetBinContent(bin)+
 		    fHistNclustersVsEvent->GetBinContent(bin+1))/2.0;
-      fHistNclustersVsEvent->SetBinContent(newBin, newContent); 
+      fHistNclustersVsEvent->SetBinContent(newBin, newContent);
     }
 
     // Set the remaining bins to 0
     Int_t lastHalf = nBins/2 +1;
     for(Int_t bin = lastHalf; bin <= nBins; bin++) {
 
-      fHistOccupancyVsEvent->SetBinContent(bin, 0); 
-      fHistNclustersVsEvent->SetBinContent(bin, 0); 
+      fHistOccupancyVsEvent->SetBinContent(bin, 0);
+      fHistNclustersVsEvent->SetBinContent(bin, 0);
     }
 
     // In this case we should nut update but wait untill the new
@@ -503,7 +497,7 @@ void AliTPCdataQA::UpdateEventHistograms()
     / 570132.0; // 570,132 is number of pads
   fHistOccupancyVsEvent->SetBinContent(bin, averageOccupancy);
   fSignalCounter = 0;
-  
+
   Float_t averageNclusters =
     Float_t(fClusterCounter)/fEventsPerBin;
   fHistNclustersVsEvent->SetBinContent(bin, averageNclusters);
@@ -513,19 +507,18 @@ void AliTPCdataQA::UpdateEventHistograms()
 //_____________________________________________________________________
 Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
 {
-  //
-  // Event Processing loop - AliTPCRawStreamV3
-  //
+  /// Event Processing loop - AliTPCRawStreamV3
+
   Bool_t withInput = kFALSE;
   Int_t nSignals = 0;
   Int_t lastSector = -1;
 
   Init();
-  
+
   while ( rawStreamV3->NextDDL() ){
 
     while ( rawStreamV3->NextChannel() ){
-    
+
       Int_t iSector = rawStreamV3->GetSector(); //  current sector
       Int_t iRow    = rawStreamV3->GetRow();    //  current row
       Int_t iPad    = rawStreamV3->GetPad();    //  current pad
@@ -534,21 +527,21 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
       if (iRow<0 || iPad<0) continue;
       // Call local maxima finder if the data is in a new sector
       if(iSector != lastSector) {
-        
+
         if(nSignals>0)
           FindLocalMaxima(lastSector);
-        
+
         CleanArrays();
         lastSector = iSector;
         nSignals = 0;
       }
-      
+
       while ( rawStreamV3->NextBunch() ){
 
         Int_t  startTbin    = (Int_t)rawStreamV3->GetStartTimeBin();
         Int_t  bunchlength  = (Int_t)rawStreamV3->GetBunchLength();
         const UShort_t *sig = rawStreamV3->GetSignals();
-        
+
         for (Int_t iTimeBin = 0; iTimeBin<bunchlength; iTimeBin++){
           Float_t signal=(Float_t)sig[iTimeBin];
           nSignals += Update(iSector,iRow,iPad,startTbin--,signal, iPatch, iBranch);
@@ -557,27 +550,26 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
       }
     }
   }
-    
-  if (lastSector>=0&&nSignals>0)  
+
+  if (lastSector>=0&&nSignals>0)
     FindLocalMaxima(lastSector);
 
   CleanArrays();
-  
+
   return withInput;
 }
 
 //_____________________________________________________________________
 Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *const rawReader)
 {
-  //
-  //  Event processing loop - AliRawReader
-  //
+  /// Event processing loop - AliRawReader
+
   AliTPCRawStreamV3 rawStreamV3(rawReader,(AliAltroMapping**)fMapping);
   Bool_t res=ProcessEvent(&rawStreamV3);
   if(res) {
     fEventCounter++; // only increment event counter if there is TPC data
 
-    if(fEventCounter%fEventsPerBin==0) 
+    if(fEventCounter%fEventsPerBin==0)
       UpdateEventHistograms();
   }
   return res;
@@ -586,9 +578,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *const rawReader)
 //_____________________________________________________________________
 Bool_t AliTPCdataQA::ProcessEvent(eventHeaderStruct *const event)
 {
-  //
-  //  process date event
-  //
+  /// process date event
 
   AliRawReaderDate rawReader((void*)event);
   Bool_t result=ProcessEvent(&rawReader);
@@ -600,9 +590,7 @@ Bool_t AliTPCdataQA::ProcessEvent(eventHeaderStruct *const event)
 //_____________________________________________________________________
 void AliTPCdataQA::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append) /*FOLD00*/
 {
-  //
-  //  Write class to file
-  //
+  /// Write class to file
 
   TString sDir(dir);
   TString option;
@@ -635,17 +623,15 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
 			   const Int_t iPatch,
 			   const Int_t iBranch)
 {
-  //
-  // Signal filling method
-  //
-  
+  /// Signal filling method
+
   if (!fActiveChambers[iSector]) return 0;
   //
   // TimeBin cut
   //
   if (iTimeBin<fFirstTimeBin) return 0;
   if (iTimeBin>fLastTimeBin) return 0;
-  
+
   // if pedestal calibrations are loaded subtract pedestals
   if(fPedestal) {
 
@@ -655,7 +641,7 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
       return 0;
     signal -= ped;
   }
-  
+
   if(fIsDQM) {
 
     fOccVec->GetArray()[iSector] += 1.0;
@@ -674,9 +660,9 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
 
   // if noise calibrations are loaded require at least 3*sigmaNoise
   if(fNoise) {
-    
+
     Float_t noise = fNoise->GetCalROC(iSector)->GetValue(iRow, iPad);
-    
+
     if(signal < noise*3.0)
       return 0;
   }
@@ -688,25 +674,23 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   SetExpandDigit(iRow, iPad, iTimeBin, signal);
 
   fSignalCounter++;
-  
+
   return 1; // signal was accepted
 }
 
 //_____________________________________________________________________
 void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
 {
-  //
-  // This method is called after the data from each sector has been
-  // exapanded into an array
-  // Loop over the signals and identify local maxima and fill the
-  // calibration objects with the information
-  //
+  /// This method is called after the data from each sector has been
+  /// exapanded into an array
+  /// Loop over the signals and identify local maxima and fill the
+  /// calibration objects with the information
 
   if (!fActiveChambers[iSector]) return;
-  
+
   Int_t nLocalMaxima = 0;
-  const Int_t maxTimeBin = fTimeBinsMax+4; // Used to step between neighboring pads 
-                                           // Because we have tha pad-time data in a 
+  const Int_t maxTimeBin = fTimeBinsMax+4; // Used to step between neighboring pads
+                                           // Because we have tha pad-time data in a
                                            // 1d array
 
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
@@ -714,7 +698,7 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
     Float_t* allBins = fAllBins[iRow];
     Int_t* sigBins   = fAllSigBins[iRow];
     const Int_t nSigBins   = fAllNSigBins[iRow];
-    
+
     for (Int_t iSig = 0; iSig < nSigBins; iSig++) {
 
       Int_t bin  = sigBins[iSig];
@@ -727,30 +711,30 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
       Float_t qMax = b[0];
 
       // First check that the charge is bigger than the threshold
-      if (qMax<fMinQMax) 
+      if (qMax<fMinQMax)
 	continue;
-      
+
       // Require at least one neighboring pad with signal
       if (fRequireNeighbouringPad && (b[-maxTimeBin]+b[maxTimeBin]<=0) ) continue;
 
       // Require at least one neighboring time bin with signal
       if (b[-1]+b[1]<=0) continue;
-      
+
       //
       // Check that this is a local maximum
       // Note that the checking is done so that if 2 charges has the same
-      // qMax then only 1 cluster is generated 
+      // qMax then only 1 cluster is generated
       // (that is why there is BOTH > and >=)
       //
       if (b[-maxTimeBin]   >= qMax) continue;
-      if (b[-1  ]          >= qMax) continue; 
-      if (b[+maxTimeBin]   > qMax)  continue; 
-      if (b[+1  ]          > qMax)  continue; 
+      if (b[-1  ]          >= qMax) continue;
+      if (b[+maxTimeBin]   > qMax)  continue;
+      if (b[+1  ]          > qMax)  continue;
       if (b[-maxTimeBin-1] >= qMax) continue;
-      if (b[+maxTimeBin-1] >= qMax) continue; 
-      if (b[+maxTimeBin+1] > qMax)  continue; 
+      if (b[+maxTimeBin-1] >= qMax) continue;
+      if (b[+maxTimeBin+1] > qMax)  continue;
       if (b[-maxTimeBin+1] >= qMax) continue;
-      
+
       //
       // Now we accept the local maximum and fill the calibration/data objects
       //
@@ -758,17 +742,17 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
 
       Int_t iPad, iTimeBin;
       GetPadAndTimeBin(bin, iPad, iTimeBin);
-      
+
       if(!fIsDQM) {
 	Float_t count = fNLocalMaxima->GetCalROC(iSector)->GetValue(iRow, iPad);
 	fNLocalMaxima->GetCalROC(iSector)->SetValue(iRow, iPad, count+1);
-	
+
 	count = fTimePosition->GetCalROC(iSector)->GetValue(iRow, iPad);
 	fTimePosition->GetCalROC(iSector)->SetValue(iRow, iPad, count+iTimeBin);
-      
+
 	Float_t charge = fMaxCharge->GetCalROC(iSector)->GetValue(iRow, iPad);
 	fMaxCharge->GetCalROC(iSector)->SetValue(iRow, iPad, charge + qMax);
-	
+
 	if(qMax>=10) {
 	  count = fOverThreshold10->GetCalROC(iSector)->GetValue(iRow, iPad);
 	  fOverThreshold10->GetCalROC(iSector)->SetValue(iRow, iPad, count+1);
@@ -801,86 +785,84 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
       Float_t qTot = qMax;
       for(Int_t i = -1; i<=1; i++) {
 	for(Int_t j = -1; j<=1; j++) {
-	  
+
 	  if(i==0 && j==0)
 	    continue;
-	  
+
 	  Float_t charge1 = GetQ(b, i, j, maxTimeBin, minT, maxT, minP, maxP);
 	  qTot += charge1;
 	  if(charge1>0) {
 	    // see if the next neighbor is also above threshold
 	    if(i*j==0) {
-	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 
+	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP);
 	    } else {
 	      // we are in a diagonal corner
-	      qTot += GetQ(b,   i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 
-	      qTot += GetQ(b, 2*i,   j, maxTimeBin, minT, maxT, minP, maxP); 
-	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP); 
+	      qTot += GetQ(b,   i, 2*j, maxTimeBin, minT, maxT, minP, maxP);
+	      qTot += GetQ(b, 2*i,   j, maxTimeBin, minT, maxT, minP, maxP);
+	      qTot += GetQ(b, 2*i, 2*j, maxTimeBin, minT, maxT, minP, maxP);
 	    }
 	  }
 	}
       }
-      
+
       if(fIsDQM) {
 	fHistQVsSector->Fill(iSector, qTot);
 	fHistQmaxVsSector->Fill(iSector, qMax);
       } else {
 	Float_t charge = fMeanCharge->GetCalROC(iSector)->GetValue(iRow, iPad);
 	fMeanCharge->GetCalROC(iSector)->SetValue(iRow, iPad, charge + qTot);
-	
+
 	Float_t count = fNTimeBins->GetCalROC(iSector)->GetValue(iRow, iPad);
 	fNTimeBins->GetCalROC(iSector)->SetValue(iRow, iPad, count + maxT-minT+1);
-	
+
 	count = fNPads->GetCalROC(iSector)->GetValue(iRow, iPad);
 	fNPads->GetCalROC(iSector)->SetValue(iRow, iPad, count + maxP-minP+1);
-      
+
 	if((iSector%36)<18) { // A side
 	  fHistQVsTimeSideA->Fill(iTimeBin, qTot);
 	  fHistQMaxVsTimeSideA->Fill(iTimeBin, qMax);
 	} else {
 	  fHistQVsTimeSideC->Fill(iTimeBin, qTot);
-	  fHistQMaxVsTimeSideC->Fill(iTimeBin, qMax);      
+	  fHistQMaxVsTimeSideC->Fill(iTimeBin, qMax);
 	}
       }
     } // end loop over signals
   } // end loop over rows
-  
+
   fClusterCounter += nLocalMaxima;
 }
 
 //_____________________________________________________________________
 void AliTPCdataQA::Analyse()
 {
-  //
-  //  Calculate calibration constants
-  //
-  
+  /// Calculate calibration constants
+
   AliInfo("Analyse called");
 
   if(fIsDQM == kTRUE) {
-    
+
     AliInfo("DQM flas is set -> No 2d information to analyze");
     return;
   }
 
   if(fIsAnalysed == kTRUE) {
-    
+
     AliInfo("No new data since Analyse was called last time");
     return;
   }
 
   if(fEventCounter==0) {
-    
+
       AliInfo("EventCounter == 0, Cannot analyse");
     return;
   }
-  
+
   Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
   AliInfo(Form("EventCounter: %d , TimeBins: %d", fEventCounter, nTimeBins));
 
   Float_t normalization = 1.0 / Float_t(fEventCounter * nTimeBins);
-  fNoThreshold->Multiply(normalization);  
-  
+  fNoThreshold->Multiply(normalization);
+
   fMeanCharge->Divide(fNLocalMaxima);
   fMaxCharge->Divide(fNLocalMaxima);
   fNTimeBins->Divide(fNLocalMaxima);
@@ -893,15 +875,14 @@ void AliTPCdataQA::Analyse()
 
 //_____________________________________________________________________
 void AliTPCdataQA::MakeTree(const char *fname) const {
-  //
-  // Export result to the tree -located in the file
-  // This file can be analyzed using AliTPCCalibViewer
-  // 
+  /// Export result to the tree -located in the file
+  /// This file can be analyzed using AliTPCCalibViewer
+
   AliTPCPreprocessorOnline preprocesor;
 
   if (fNLocalMaxima) preprocesor.AddComponent(fNLocalMaxima);
-  if (fMaxCharge) preprocesor.AddComponent(fMaxCharge);  
-  if (fMeanCharge) preprocesor.AddComponent(fMeanCharge);  
+  if (fMaxCharge) preprocesor.AddComponent(fMaxCharge);
+  if (fMeanCharge) preprocesor.AddComponent(fMeanCharge);
   if (fNoThreshold) preprocesor.AddComponent(fNoThreshold);
   if (fNTimeBins) preprocesor.AddComponent(fNTimeBins);
   if (fNPads) preprocesor.AddComponent(fNPads);
@@ -910,39 +891,38 @@ void AliTPCdataQA::MakeTree(const char *fname) const {
   if (fOverThreshold20) preprocesor.AddComponent(fOverThreshold20);
   if (fOverThreshold30) preprocesor.AddComponent(fOverThreshold30);
 
-  preprocesor.DumpToFile(fname);  
+  preprocesor.DumpToFile(fname);
 }
 
 
 //_____________________________________________________________________
 void AliTPCdataQA::MakeArrays(){
-  //
-  // The arrays for expanding the raw data are defined and 
-  // som parameters are intialised
-  //
+  /// The arrays for expanding the raw data are defined and
+  /// som parameters are intialised
+
   AliTPCROC * roc = AliTPCROC::Instance();
   //
-  // To make the array big enough for all sectors we take 
+  // To make the array big enough for all sectors we take
   // the dimensions from the outer row of an OROC (the last sector)
   //
   fRowsMax     = roc->GetNRows(roc->GetNSector()-1);
   fPadsMax     = roc->GetNPads(roc->GetNSector()-1,fRowsMax-1);
-  fTimeBinsMax = fLastTimeBin - fFirstTimeBin +1; 
+  fTimeBinsMax = fLastTimeBin - fFirstTimeBin +1;
 
   //
-  // Since we have added 2 pads (TimeBins) before and after the real pads (TimeBins) 
-  // to make sure that we can always query the exanded table even when the 
+  // Since we have added 2 pads (TimeBins) before and after the real pads (TimeBins)
+  // to make sure that we can always query the exanded table even when the
   // max is on the edge
   //
 
- 
+
   fAllBins = new Float_t*[fRowsMax];
   fAllSigBins = new Int_t*[fRowsMax];
   fAllNSigBins = new Int_t[fRowsMax];
 
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     //
-    Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4);  
+    Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4);
     fAllBins[iRow] = new Float_t[maxBin];
     memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin); // set all values to 0
     fAllSigBins[iRow] = new Int_t[maxBin];
@@ -953,9 +933,7 @@ void AliTPCdataQA::MakeArrays(){
 
 //_____________________________________________________________________
 void AliTPCdataQA::CleanArrays(){
-  //
-  //
-  //
+  ///
 
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
 
@@ -964,15 +942,15 @@ void AliTPCdataQA::CleanArrays(){
     // memset is only called if there is more than 1000 signals for a
     // row (of the order 1% occupancy)
     if(fAllNSigBins[iRow]<1000) {
-      
+
       Float_t* allBins = fAllBins[iRow];
       Int_t* sigBins   = fAllSigBins[iRow];
       const Int_t nSignals = fAllNSigBins[iRow];
       for(Int_t i = 0; i < nSignals; i++)
-	allBins[sigBins[i]]=0;      
+	allBins[sigBins[i]]=0;
     } else {
 
-      Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4); 
+      Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4);
       memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
     }
 
@@ -982,10 +960,8 @@ void AliTPCdataQA::CleanArrays(){
 
 //_____________________________________________________________________
 void AliTPCdataQA::GetPadAndTimeBin(Int_t bin, Int_t& iPad, Int_t& iTimeBin){
-  //
-  // Return pad and timebin for a given bin
-  //
-  
+  /// Return pad and timebin for a given bin
+
   //  Int_t bin = iPad*(fTimeBinsMax+4)+iTimeBin;
   iTimeBin  = bin%(fTimeBinsMax+4);
   iPad      = (bin-iTimeBin)/(fTimeBinsMax+4);
@@ -999,20 +975,19 @@ void AliTPCdataQA::GetPadAndTimeBin(Int_t bin, Int_t& iPad, Int_t& iTimeBin){
 }
 
 //_____________________________________________________________________
-void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad, 
-				  Int_t iTimeBin, const Float_t signal) 
+void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad,
+				  Int_t iTimeBin, const Float_t signal)
 {
-  //
-  // 
-  //
+  ///
+
   R__ASSERT(iRow>=0 && iRow<fRowsMax);
   R__ASSERT(iPad>=0 && iPad<=fPadsMax);
   R__ASSERT(iTimeBin>=fFirstTimeBin && iTimeBin<=fLastTimeBin);
-  
+
   iTimeBin -= fFirstTimeBin;
   iPad     += 2;
   iTimeBin += 2;
-  
+
   Int_t bin = iPad*(fTimeBinsMax+4)+iTimeBin;
   fAllBins[iRow][bin] = signal;
   fAllSigBins[iRow][fAllNSigBins[iRow]] = bin;
@@ -1020,30 +995,29 @@ void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad,
 }
 
 //______________________________________________________________________________
-Float_t AliTPCdataQA::GetQ(const Float_t* adcArray, const Int_t time, 
-			   const Int_t pad, const Int_t maxTimeBins, 
-			   Int_t& timeMin, Int_t& timeMax, 
+Float_t AliTPCdataQA::GetQ(const Float_t* adcArray, const Int_t time,
+			   const Int_t pad, const Int_t maxTimeBins,
+			   Int_t& timeMin, Int_t& timeMax,
 			   Int_t& padMin,  Int_t& padMax) const
 {
-  //
-  // This methods return the charge in the bin time+pad*maxTimeBins
-  // If the charge is above 0 it also updates the padMin, padMax, timeMin
-  // and timeMax if necessary
-  //
+  /// This methods return the charge in the bin time+pad*maxTimeBins
+  /// If the charge is above 0 it also updates the padMin, padMax, timeMin
+  /// and timeMax if necessary
+
   Float_t charge = adcArray[time + pad*maxTimeBins];
   if(charge > 0) {
     timeMin = TMath::Min(time, timeMin); timeMax = TMath::Max(time, timeMax);
     padMin = TMath::Min(pad, padMin); padMax = TMath::Max(pad, padMax);
   }
-  return charge; 
+  return charge;
 }
 
 //______________________________________________________________________________
 void AliTPCdataQA::Streamer(TBuffer &xRuub)
 {
-  // Automatic schema evolution was first used from revision 4
-  // Code based on:
-  // http://root.cern.ch/root/roottalk/roottalk02/3207.html
+  /// Automatic schema evolution was first used from revision 4
+  /// Code based on:
+  /// http://root.cern.ch/root/roottalk/roottalk02/3207.html
 
    UInt_t xRuus, xRuuc;
    if (xRuub.IsReading()) {
@@ -1077,10 +1051,11 @@ void AliTPCdataQA::Streamer(TBuffer &xRuub)
 //____________________________________________________________________________________________
 void AliTPCdataQA::FillOccupancyProfile()
 {
-  // This has to be filled at the end of the loop over data
-  if(!fIsDQM) 
+  /// This has to be filled at the end of the loop over data
+
+  if(!fIsDQM)
     AliInfo("Method only meaningful for DQM");
-  
+
   for(Int_t i = 0; i < 72; i++) {
 
     fOccVec->GetArray()[i] /= fOccMaxVec->GetArray()[i];
@@ -1106,9 +1081,9 @@ void AliTPCdataQA::FillOccupancyProfile()
 //____________________________________________________________________________________________
 void AliTPCdataQA::ResetProfiles()
 {
-  if(!fIsDQM) 
+  if(!fIsDQM)
     AliInfo("Method only meaningful for DQM");
-  
+
   if(fHistQVsSector)
     fHistQVsSector->Reset();
   if(fHistQmaxVsSector)
@@ -1129,13 +1104,12 @@ void AliTPCdataQA::ResetProfiles()
 //____________________________________________________________________________________________
 void AliTPCdataQA::Init()
 {
-  //
-  // Define the calibration objects the first time Update is called
-  // NB! This has to be done first even if the data is rejected by the time
-  // cut to make sure that the objects are available in Analyse
-  //
+  /// Define the calibration objects the first time Update is called
+  /// NB! This has to be done first even if the data is rejected by the time
+  /// cut to make sure that the objects are available in Analyse
+
   if(!fIsDQM) {
-    
+
     if (!fNLocalMaxima){
       TObjArray configArr(72);
       fNLocalMaxima = new AliTPCCalPad(ConfigArrRocs(&configArr,"NLocalMaxima"));
@@ -1215,10 +1189,10 @@ void AliTPCdataQA::Init()
     }
   }
   // Make the arrays for expanding the data
-  
+
   if (!fAllBins)
     MakeArrays();
-  
+
   //
   // If Analyse has been previously called we need now to denormalize the data
   // as more data is coming
@@ -1241,11 +1215,10 @@ void AliTPCdataQA::Init()
 //____________________________________________________________________________________________
 void AliTPCdataQA::ResetData()
 {
-  //
-  // reset all data
-  //
+  /// reset all data
+
   if(!fIsDQM) {
-    
+
     if (fNLocalMaxima){
       fNoThreshold->Reset();
       fNLocalMaxima->Reset();
@@ -1257,26 +1230,24 @@ void AliTPCdataQA::ResetData()
       fOverThreshold10->Reset();
       fOverThreshold20->Reset();
       fOverThreshold30->Reset();
-      
+
       fHistQVsTimeSideA->Reset();
       fHistQVsTimeSideC->Reset();
       fHistQMaxVsTimeSideA->Reset();
       fHistQMaxVsTimeSideC->Reset();
 
       fIsAnalysed = kFALSE;
-      
+
     }
   }
-  
+
   fEventCounter=0;
   fClusterCounter=0;
 }
 
 TObjArray *AliTPCdataQA::ConfigArrRocs(TObjArray *arr, const Text_t* name)
 {
-  //
-  // GetArray with confiured ROCs
-  //
+  /// GetArray with confiured ROCs
 
   arr->Clear();
   arr->SetName(name);

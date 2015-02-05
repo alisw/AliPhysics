@@ -4,12 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCExBEffective class                                                   //
-// date: 02/05/2010                                                       //
-// Authors: Maarian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger                    //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCExBEffective
+///
+/// \author Maarian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger
+/// \date 02/05/2010
 
 #include "AliTPCCorrection.h"
 
@@ -37,16 +35,18 @@ public:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:
-  Double_t fC0;                // coefficient C0 (compare Jim Thomas's notes for definitions)
-  Double_t fC1;                // coefficient C1 (compare Jim Thomas's notes for definitions)
-  TMatrixD *fPolynomA;         // correction polynoms A
-  TMatrixD *fPolynomC;         // correction polynoms C
-  TMatrixD *fPolynomValA;      // correction polynoms coefficient A
-  TMatrixD *fPolynomValC;      //  correction polynoms coefficient C
+  Double_t fC0;                ///< coefficient C0 (compare Jim Thomas's notes for definitions)
+  Double_t fC1;                ///< coefficient C1 (compare Jim Thomas's notes for definitions)
+  TMatrixD *fPolynomA;         ///< correction polynoms A
+  TMatrixD *fPolynomC;         ///< correction polynoms C
+  TMatrixD *fPolynomValA;      ///< correction polynoms coefficient A
+  TMatrixD *fPolynomValC;      ///< correction polynoms coefficient C
 
   AliTPCExBEffective(const AliTPCExBEffective&);
   AliTPCExBEffective &operator=(const AliTPCExBEffective&);
+  /// \cond CLASSIMP
   ClassDef(AliTPCExBEffective,1);
+  /// \endcond
 };
 
 #endif

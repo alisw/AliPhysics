@@ -12,18 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
- 
+
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Time Projection Chamber AliTPCClusterRow  objects
-//  -   clusters for given segment of TPC                                //
-//
-//  Origin: Marian Ivanov , GSI Darmstadt
-//                                                                           //
-//                                                                          //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCClustersRow
+/// \brief Time Projection Chamber AliTPCClusterRow  objects
+///
+/// -   clusters for given segment of TPC
+///
+/// \author Marian Ivanov , GSI Darmstadt
+
 #include <TClass.h>
 #include "AliClusters.h"
 #include "AliTPCclusterMI.h"
@@ -32,17 +30,19 @@
 #include <TClonesArray.h>
 
 
-const Int_t kDefSize = 1;  //defalut size
+const Int_t kDefSize = 1;  ///< defalut size
 
 
-ClassImp(AliTPCClustersRow) 
+/// \cond CLASSIMP
+ClassImp(AliTPCClustersRow)
+/// \endcond
 
 
 //*****************************************************************************
 //
 //_____________________________________________________________________________
-AliTPCClustersRow::AliTPCClustersRow() 
-{  
+AliTPCClustersRow::AliTPCClustersRow()
+{
   //
   //default constructor
   fNclusters=0;
@@ -51,16 +51,16 @@ AliTPCClustersRow::AliTPCClustersRow()
 //____________________________________________________________________________
 AliTPCClustersRow::AliTPCClustersRow(const char *classname) : AliClusters(classname)
 {
- // special constructor
+ /// special constructor
+
  fNclusters=0;
 }
 
 //_____________________________________________________________________________
-TObject *AliTPCClustersRow::InsertCluster(const TObject *c) 
-{    
-  //
-  // Add a simulated cluster copy to the list
-  //
+TObject *AliTPCClustersRow::InsertCluster(const TObject *c)
+{
+  /// Add a simulated cluster copy to the list
+
   if (fClass==0) {
     Error("AliClusters", "class type not specified");
     return 0;
@@ -73,7 +73,8 @@ TObject *AliTPCClustersRow::InsertCluster(const TObject *c)
 
 
 TObject *AliTPCClustersRow::Append(){
- //create new object return pointer to this object
+ /// create new object return pointer to this object
+
  return fClusters->operator[](fClusters->GetEntriesFast());
 }
 

@@ -13,27 +13,26 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//
-// AliTPCmapper
-// Authors: Christian.Lippmann@cern.ch, J.Wiechula@gsi.de
-// Class to map detector coordinates (row, pad, sector, ...) to
-// hardware coordinates (RCU, Branch, FEC, Altro, channel, Equipment ID, ...)
-// 
-// There are two different ways to number padrows:
-// 1) local padrow: for each ROC, 0 ... 62 for an IROC, 0 ... 95 for an OROC,
-// 2) global padrow: for each sector, from 0 ... 158.
-// If the global numbering is used, it is denoted by the variable name
-// globalpadrow in this class.
-//
-// There are two different ways to number sectors:
-// 1) Sectors contain one IROC and one OROC and are counted from 0 to 17 on
-//    each of the two sides (A=0 and C=1),
-// 2) ROCs are numbered from 0 to 71 where the ROCs 0 ... 35 are IROCS and
-//    ROCs 36 ... 71 are OROCs. A ROC is often named "sector" in aliroot,
-//    which can be very confusing!
-//
-//-------------------------------------------------------------------------
+/// \class AliTPCmapper
+/// \brief AliTPCmapper
+///
+/// Class to map detector coordinates (row, pad, sector, ...) to
+/// hardware coordinates (RCU, Branch, FEC, Altro, channel, Equipment ID, ...)
+///
+/// There are two different ways to number padrows:
+/// 1) local padrow: for each ROC, 0 ... 62 for an IROC, 0 ... 95 for an OROC,
+/// 2) global padrow: for each sector, from 0 ... 158.
+/// If the global numbering is used, it is denoted by the variable name
+/// globalpadrow in this class.
+///
+/// There are two different ways to number sectors:
+/// 1) Sectors contain one IROC and one OROC and are counted from 0 to 17 on
+///   each of the two sides (A=0 and C=1),
+/// 2) ROCs are numbered from 0 to 71 where the ROCs 0 ... 35 are IROCS and
+///   ROCs 36 ... 71 are OROCs. A ROC is often named "sector" in aliroot,
+///   which can be very confusing!
+///
+/// \author Christian.Lippmann@cern.ch, J.Wiechula@gsi.de
 
 #include <TMath.h>
 #include <TSystem.h>
@@ -45,7 +44,9 @@
 #include "AliLog.h"
 #include "AliDAQ.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCmapper)
+/// \endcond
 //______________________________________________________________
 AliTPCmapper::AliTPCmapper() :
   fNside(0),
@@ -78,18 +79,17 @@ AliTPCmapper::AliTPCmapper(const char * dirname) :
   fNpadrowOROC(0),
   fTpcDdlOffset(0)
 {
-  //
-  // Constructor
-  //
-  // dirname - specify the directory with the ascii Altro mapping files
-  //
+  /// Constructor
+  ///
+  /// dirname - specify the directory with the ascii Altro mapping files
+
   Init(dirname);
 }
 
 //______________________________________________________________
 AliTPCmapper::~AliTPCmapper()
 {
-  // Destructor
+  /// Destructor
 
   for ( Int_t i = 0; i < fNrcu; i++ ) {
     delete fMapping[i];
@@ -112,7 +112,8 @@ AliTPCmapper::AliTPCmapper(const AliTPCmapper& mapper) :
   fNpadrowOROC(mapper.fNpadrowOROC),
   fTpcDdlOffset(mapper.fTpcDdlOffset)
 {
-  // Copy Constructor
+  /// Copy Constructor
+
   for ( Int_t i = 0; i < 6; i++ )  fMapping[i]=0;
   for ( Int_t i = 0; i < fNrcu; i++ ) fMapping[i] = mapper.fMapping[i];
 }
@@ -120,7 +121,7 @@ AliTPCmapper::AliTPCmapper(const AliTPCmapper& mapper) :
 //_____________________________________________________________________________
 AliTPCmapper& AliTPCmapper::operator = (const AliTPCmapper& mapper)
 {
-  // Assignment operator
+  /// Assignment operator
 
   if(&mapper == this) return *this;
   ((TObject *)this)->operator=(mapper);
@@ -144,7 +145,8 @@ AliTPCmapper& AliTPCmapper::operator = (const AliTPCmapper& mapper)
 //______________________________________________________________
 void AliTPCmapper::Init(const char *dirname)
 {
-  // Initialize all
+  /// Initialize all
+
   fNside    = 2;
   fNsector  = 18;
   fNrcu     = 6;
@@ -186,7 +188,8 @@ void AliTPCmapper::Init(const char *dirname)
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetHWAddress(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get the hardware address from pad coordinates for a given ROC
+  /// Get the hardware address from pad coordinates for a given ROC
+
   Int_t patch = GetPatch(roc, padrow, pad);
   if ( (patch >= fNrcu) || (patch < 0) ) return -1;
   return fMapping[patch]->GetHWAddress(padrow, pad, roc);
@@ -196,7 +199,8 @@ Int_t AliTPCmapper::GetHWAddress(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetHWAddressSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get the hardware address from pad coordinates
+  /// Get the hardware address from pad coordinates
+
   Int_t patch = 0;
   Int_t hwAddress=-1;
   if ( globalpadrow < fNpadrowIROC   ) {
@@ -218,8 +222,9 @@ Int_t AliTPCmapper::GetHWAddressSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetRcu(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get the patch (rcu) index from the pad coordinates. The Roc index is
-  // needed as well to determine if it is IROC or OROC. 
+  /// Get the patch (rcu) index from the pad coordinates. The Roc index is
+  /// needed as well to determine if it is IROC or OROC.
+
   return GetPatch(roc, padrow, pad);
 }
 
@@ -227,8 +232,8 @@ Int_t AliTPCmapper::GetRcu(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetPatch(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get the patch (rcu) index from the pad coordinates. The Roc index is
-  // needed as well to determine if it is IROC or OROC. 
+  /// Get the patch (rcu) index from the pad coordinates. The Roc index is
+  /// needed as well to determine if it is IROC or OROC.
 
   if ( (padrow < 0) || (pad < 0) || (roc < 0) ) {
     AliWarning(Form("Pad coordinates outside range (padrow %d, pad %d, roc %d) !", padrow, pad, roc));
@@ -280,7 +285,8 @@ Int_t AliTPCmapper::GetPatch(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetRcuSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get the patch (rcu) index from the pad coordinates for a sector
+  /// Get the patch (rcu) index from the pad coordinates for a sector
+
   return GetPatchSector(globalpadrow, pad);
 }
 
@@ -288,7 +294,8 @@ Int_t AliTPCmapper::GetRcuSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetPatchSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get the patch (rcu) index from the pad coordinates for a sector
+  /// Get the patch (rcu) index from the pad coordinates for a sector
+
   if ( globalpadrow >= fNpadrow ) {
     AliWarning(Form("Padrow outside range (globalpadrow %d) !", globalpadrow));
     return -1;
@@ -301,7 +308,8 @@ Int_t AliTPCmapper::GetPatchSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetPadRow(Int_t patch, Int_t hwAddress) const
 {
-  // Get Pad Row (for a ROC) from the hardware address
+  /// Get Pad Row (for a ROC) from the hardware address
+
   if ( (patch >= fNrcu) || (patch < 0) ) {
     AliWarning(Form("Patch index outside range (patch %d) !", patch));
     return -1;
@@ -313,7 +321,8 @@ Int_t AliTPCmapper::GetPadRow(Int_t patch, Int_t hwAddress) const
 //_____________________________________________________________________________
   Int_t AliTPCmapper::GetGlobalPadRow(Int_t patch, Int_t hwAddress) const
 {
-  // Get Pad Row (for full sector) from the hardware address
+  /// Get Pad Row (for full sector) from the hardware address
+
   if ( patch < 2 ) return GetPadRow(patch, hwAddress);
   else             return GetPadRow(patch, hwAddress) + fNpadrowIROC;
 }
@@ -322,7 +331,8 @@ Int_t AliTPCmapper::GetPadRow(Int_t patch, Int_t hwAddress) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetPad(Int_t patch, Int_t hwAddress) const
 {
-  // Get Pad index from the hardware address
+  /// Get Pad index from the hardware address
+
   if ( (patch >= fNrcu) || (patch < 0) ) {
     AliWarning(Form("Patch index outside range (patch %d) !", patch));
     return -1;
@@ -335,7 +345,8 @@ Int_t AliTPCmapper::GetPad(Int_t patch, Int_t hwAddress) const
 Int_t AliTPCmapper::GetPadRow(Int_t patch, Int_t branch, Int_t fec, Int_t chip,
 			      Int_t channel) const
 {
-  // Get pad row (for a ROC) from hardware coordinates
+  /// Get pad row (for a ROC) from hardware coordinates
+
   if ( (patch >= fNrcu) || (branch >= fNbranch) || (chip >= fNaltro) || (channel >= fNchannel)
        || (patch < 0) || (branch < 0) || (chip < 0) || (channel < 0) ) {
     AliWarning(Form("Coordinates outside range (patch %d, branch %d, fec %d, chip %d, channel %d)) !",
@@ -350,7 +361,8 @@ Int_t AliTPCmapper::GetPadRow(Int_t patch, Int_t branch, Int_t fec, Int_t chip,
 Int_t AliTPCmapper::GetGlobalPadRow(Int_t patch, Int_t branch, Int_t fec, Int_t chip,
 				    Int_t channel) const
 {
-  // Get Pad Row (for full sector) from the hardware address
+  /// Get Pad Row (for full sector) from the hardware address
+
   if ( (patch >= fNrcu) || (branch >= fNbranch) || (chip >= fNaltro) || (channel >= fNchannel)
        || (patch < 0) || (branch < 0) || (chip < 0) || (channel < 0) ) {
     AliWarning(Form("Coordinates outside range (patch %d, branch %d, fec %d, chip %d, channel %d)) !",
@@ -365,7 +377,8 @@ Int_t AliTPCmapper::GetGlobalPadRow(Int_t patch, Int_t branch, Int_t fec, Int_t 
 //_____________________________________________________________________________
   Int_t AliTPCmapper::GetPad(Int_t patch, Int_t branch, Int_t fec, Int_t chip, Int_t channel) const
 {
-  // Get pad from hardware coordinates
+  /// Get pad from hardware coordinates
+
   if ( (patch >= fNrcu) || (branch >= fNbranch) || (chip >= fNaltro) || (channel >= fNchannel)
        || (patch < 0) || (branch < 0) || (chip < 0) || (channel < 0) ) {
     AliWarning(Form("Coordinates outside range (patch %d, branch %d, fec %d, chip %d, channel %d)) !",
@@ -379,9 +392,10 @@ Int_t AliTPCmapper::GetGlobalPadRow(Int_t patch, Int_t branch, Int_t fec, Int_t 
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetBranch(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get the branch to which this pad is connected. The FECs connected to
-  // one RCU are divided into two branches: A(=0) and B(=1). This information
-  // can be extracted from the hardware address.
+  /// Get the branch to which this pad is connected. The FECs connected to
+  /// one RCU are divided into two branches: A(=0) and B(=1). This information
+  /// can be extracted from the hardware address.
+
   return DecodedHWAddressBranch(GetHWAddress(roc, padrow, pad));
 }
 
@@ -389,8 +403,9 @@ Int_t AliTPCmapper::GetBranch(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetBranchSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get Branch from pad coordinates, where globalpadrow is counted
-  // for a full sector (0 ... 158)
+  /// Get Branch from pad coordinates, where globalpadrow is counted
+  /// for a full sector (0 ... 158)
+
   return DecodedHWAddressBranch(GetHWAddressSector(globalpadrow, pad));
 }
 
@@ -398,10 +413,11 @@ Int_t AliTPCmapper::GetBranchSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetFEChw(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get the FEC number in hardware numbering. The FECs are numbered from 0 (in the
-  // center of the partition) to 8 (partition 3, 4, 5), 9 (partition 0, 2), 11
-  // (partition 1, branch A) or 12 (partition 1, branch B). This information
-  // can be extracted from the hardware address.
+  /// Get the FEC number in hardware numbering. The FECs are numbered from 0 (in the
+  /// center of the partition) to 8 (partition 3, 4, 5), 9 (partition 0, 2), 11
+  /// (partition 1, branch A) or 12 (partition 1, branch B). This information
+  /// can be extracted from the hardware address.
+
   return DecodedHWAddressFECaddr(GetHWAddress(roc, padrow, pad));
 }
 
@@ -409,8 +425,9 @@ Int_t AliTPCmapper::GetFEChw(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetFEChwSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get the FEC number in hardware numbering from pad coordinates, where 
-  // globalpadrow is counted for a full sector (0 ... 158)
+  /// Get the FEC number in hardware numbering from pad coordinates, where
+  /// globalpadrow is counted for a full sector (0 ... 158)
+
   return DecodedHWAddressFECaddr(GetHWAddressSector(globalpadrow, pad));
 }
 
@@ -418,8 +435,9 @@ Int_t AliTPCmapper::GetFEChwSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetFEC(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get the FEC number in offline-oriented numbering. The FECs are numbered from 0
-  // 17 (partition 3, 4, 5), 19 (partition 0, 2) or 24 (partition 1).
+  /// Get the FEC number in offline-oriented numbering. The FECs are numbered from 0
+  /// 17 (partition 3, 4, 5), 19 (partition 0, 2) or 24 (partition 1).
+
   Int_t patch  = GetPatch(roc, padrow, pad);
   Int_t fec    = DecodedHWAddressFECaddr(GetHWAddress(roc, padrow, pad));
   Int_t branch = DecodedHWAddressBranch(GetHWAddress(roc, padrow, pad));
@@ -431,8 +449,9 @@ Int_t AliTPCmapper::GetFEC(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetFECSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get the FEC number in offline-oriented numbering. globalpadrow is
-  // counted for a full sector (0 ... 158)
+  /// Get the FEC number in offline-oriented numbering. globalpadrow is
+  /// counted for a full sector (0 ... 158)
+
   Int_t patch  = GetPatchSector(globalpadrow, pad);
   Int_t fec    = DecodedHWAddressFECaddr(GetHWAddressSector(globalpadrow, pad));
   Int_t branch = DecodedHWAddressBranch(GetHWAddressSector(globalpadrow, pad));
@@ -444,7 +463,8 @@ Int_t AliTPCmapper::GetFECSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetChip(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get Chip (ALTRO) index (0 ... 7) from pad coordinates
+  /// Get Chip (ALTRO) index (0 ... 7) from pad coordinates
+
   return DecodedHWAddressChipaddr(GetHWAddress(roc, padrow, pad));
 }
 
@@ -452,8 +472,9 @@ Int_t AliTPCmapper::GetChip(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetChipSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get Chip (ALTRO) index (0 ... 7) from pad coordinates, where 
-  // globalpadrow is counted for a full sector (0 ... 158)
+  /// Get Chip (ALTRO) index (0 ... 7) from pad coordinates, where
+  /// globalpadrow is counted for a full sector (0 ... 158)
+
   return DecodedHWAddressChipaddr(GetHWAddressSector(globalpadrow, pad));
 }
 
@@ -461,7 +482,8 @@ Int_t AliTPCmapper::GetChipSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetChannel(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get Channel index (0 ... 15) from pad coordinates
+  /// Get Channel index (0 ... 15) from pad coordinates
+
   return DecodedHWAddressChanneladdr(GetHWAddress(roc, padrow, pad));
 }
 
@@ -469,8 +491,9 @@ Int_t AliTPCmapper::GetChannel(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetChannelSector(Int_t globalpadrow, Int_t pad) const
 {
-  // Get Channel index (0 ... 15) from pad coordinates, where 
-  // globalpadrow is counted for a full sector (0 ... 158)
+  /// Get Channel index (0 ... 15) from pad coordinates, where
+  /// globalpadrow is counted for a full sector (0 ... 158)
+
   return DecodedHWAddressChanneladdr(GetHWAddressSector(globalpadrow, pad));
 }
 
@@ -478,7 +501,8 @@ Int_t AliTPCmapper::GetChannelSector(Int_t globalpadrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::CodeHWAddress(Int_t branch, Int_t fec, Int_t chip, Int_t channel) const
 {
-  // Get Hardware address from channel, altro, fec and branch coordinates
+  /// Get Hardware address from channel, altro, fec and branch coordinates
+
   return ((branch&1)<<11) + ((fec&0xf)<<7) + ((chip&0x7)<<4) + (channel&0xf);
 }
 
@@ -486,7 +510,8 @@ Int_t AliTPCmapper::CodeHWAddress(Int_t branch, Int_t fec, Int_t chip, Int_t cha
 //_____________________________________________________________________________
 Int_t AliTPCmapper::DecodedHWAddressBranch(Int_t hwAddress) const
 {
-  // Get branch index (0, 1) from hardware address
+  /// Get branch index (0, 1) from hardware address
+
   if ( hwAddress < 0 ) return -1;
   return ((hwAddress>>11)&1);
 }
@@ -495,7 +520,8 @@ Int_t AliTPCmapper::DecodedHWAddressBranch(Int_t hwAddress) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::DecodedHWAddressFECaddr(Int_t hwAddress) const
 {
-  // Get FEC index (0 ... 12) from hardware address
+  /// Get FEC index (0 ... 12) from hardware address
+
   if ( hwAddress < 0 ) return -1;
   return ((hwAddress>>7)&0xf);
 }
@@ -504,7 +530,8 @@ Int_t AliTPCmapper::DecodedHWAddressFECaddr(Int_t hwAddress) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::DecodedHWAddressChipaddr(Int_t hwAddress) const
 {
-  // Get ALTRO index (0 ... 7) from hardware address
+  /// Get ALTRO index (0 ... 7) from hardware address
+
   if ( hwAddress < 0 ) return -1;
   return ((hwAddress>>4)&0x7);
 }
@@ -513,7 +540,8 @@ Int_t AliTPCmapper::DecodedHWAddressChipaddr(Int_t hwAddress) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::DecodedHWAddressChanneladdr(Int_t hwAddress) const
 {
-  // Get channel index (0 ... 15) from hardware address
+  /// Get channel index (0 ... 15) from hardware address
+
   if ( hwAddress < 0 ) return -1;
   return ((hwAddress&0xf));
 }
@@ -521,7 +549,8 @@ Int_t AliTPCmapper::DecodedHWAddressChanneladdr(Int_t hwAddress) const
 
 //______________________________________________________________
 Int_t AliTPCmapper::GetNpads(Int_t roc, Int_t padrow) const{
-  // Get number of pads in padrow for this ROC.
+  /// Get number of pads in padrow for this ROC.
+
   AliTPCROC *fROC = AliTPCROC::Instance();
   Int_t retval = fROC->GetNPads((UInt_t)roc, (UInt_t)padrow);
   return retval;
@@ -530,7 +559,7 @@ Int_t AliTPCmapper::GetNpads(Int_t roc, Int_t padrow) const{
 
 //______________________________________________________________
 Int_t AliTPCmapper::GetNpads(Int_t globalpadrow) const{
-  // Get number of pads in padrow, where globalpadrow is counted for a full sector (0 ... 158)
+  /// Get number of pads in padrow, where globalpadrow is counted for a full sector (0 ... 158)
 
   if ( globalpadrow >= fNpadrow ) {
     AliWarning(Form("Padrow outside range (globalpadrow %d) !", globalpadrow));
@@ -546,7 +575,8 @@ Int_t AliTPCmapper::GetNpads(Int_t globalpadrow) const{
 //______________________________________________________________
 Int_t AliTPCmapper::GetNpadrows(Int_t roc) const
 {
-  // Get number of padrows
+  /// Get number of padrows
+
   if      (roc < 36) return fNpadrowIROC;
   else if (roc < 72) return fNpadrowOROC;
   return -1;
@@ -687,7 +717,8 @@ Double_t AliTPCmapper::GetPadLength(Int_t globalpadrow) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetNfec(Int_t patch) const
 {
-  // Get size of readout partition (number of FECs) for this rcu (patch) index (0 ... 5)
+  /// Get size of readout partition (number of FECs) for this rcu (patch) index (0 ... 5)
+
   Int_t retval = 0;
   switch(patch){
   case(0):
@@ -716,7 +747,8 @@ Int_t AliTPCmapper::GetNfec(Int_t patch) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetNfec(Int_t patch, Int_t branch) const
 {
-  // Get size of readout partition (number of FECs) for this branch
+  /// Get size of readout partition (number of FECs) for this branch
+
   Int_t retval = 0;
   switch(patch){
   case(0):
@@ -738,7 +770,7 @@ Int_t AliTPCmapper::GetNfec(Int_t patch, Int_t branch) const
     retval = 10;
     break;
   };
-  
+
   if( (branch == 1) && (patch == 1) ){
     retval = 12;
   }
@@ -750,7 +782,7 @@ Int_t AliTPCmapper::GetNfec(Int_t patch, Int_t branch) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::OfflineToHwFec(Int_t patch, Int_t fec) const
 {
-  // Convert FEC position in offline-like numbering to hardware numbering (fec).
+  /// Convert FEC position in offline-like numbering to hardware numbering (fec).
 
   if ( (patch < 0) || (fec < 0) ) {
     AliWarning(Form("Patch (%d) or Fec number (%d) outside range !", patch, fec));
@@ -774,7 +806,7 @@ Int_t AliTPCmapper::OfflineToHwFec(Int_t patch, Int_t fec) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::OfflineToHwBranch(Int_t patch, Int_t fec) const
 {
-  // Convert fec position in offline-like numbering to hardware numbering (branch).
+  /// Convert fec position in offline-like numbering to hardware numbering (branch).
 
   if ( (patch < 0) || (fec < 0) ) {
     AliWarning(Form("Patch (%d) or Fec number (%d) outside range !", patch, fec));
@@ -794,7 +826,7 @@ Int_t AliTPCmapper::OfflineToHwBranch(Int_t patch, Int_t fec) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::HwToOffline(Int_t patch, Int_t branch, Int_t fec) const
 {
-  // Convert hardware FEC position (branch, fec) to the offline-oriented numbering
+  /// Convert hardware FEC position (branch, fec) to the offline-oriented numbering
 
   if ( (patch < 0) || (fec < 0) || (branch < 0) ) {
     AliWarning(Form("Patch (%d), branch (%d) or Fec number (%d) outside range !", patch, branch, fec));
@@ -817,8 +849,8 @@ Int_t AliTPCmapper::HwToOffline(Int_t patch, Int_t branch, Int_t fec) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetEquipmentID(Int_t roc, Int_t padrow, Int_t pad) const
 {
-  // Get EqID from pad coordinate. The Roc index is
-  // needed as well to determine if it is IROC or OROC. 
+  /// Get EqID from pad coordinate. The Roc index is
+  /// needed as well to determine if it is IROC or OROC.
 
   Int_t side = GetSideFromRoc(roc);
   if ( side < 0 ) return -1;
@@ -833,7 +865,8 @@ Int_t AliTPCmapper::GetEquipmentID(Int_t roc, Int_t padrow, Int_t pad) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetEquipmentIDsector(Int_t side, Int_t sector, Int_t globalpadrow, Int_t pad) const
 {
-  // Get EqID from pad coordinate, where padrow is counted for a full sector (0 ... 158)
+  /// Get EqID from pad coordinate, where padrow is counted for a full sector (0 ... 158)
+
   Int_t patch = GetPatchSector(globalpadrow, pad);
   if ( patch < 0 ) return -1;
   Int_t roc = GetRocFromPatch(side, sector, patch);
@@ -849,7 +882,7 @@ Int_t AliTPCmapper::GetEquipmentIDsector(Int_t side, Int_t sector, Int_t globalp
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetEquipmentIDfromPatch(Int_t side, Int_t sector, Int_t patch) const
 {
-  // Get EqID from patch (rcu).
+  /// Get EqID from patch (rcu).
 
   Int_t roc = GetRocFromPatch(side, sector, patch);
   Int_t ddl = 0;
@@ -865,7 +898,8 @@ Int_t AliTPCmapper::GetEquipmentIDfromPatch(Int_t side, Int_t sector, Int_t patc
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetPatchFromEquipmentID(Int_t equipmentID) const
 {
-  // Get rcu (patch) index (0 ... 5) from equipment ID
+  /// Get rcu (patch) index (0 ... 5) from equipment ID
+
   Int_t retval = 0;
 
   if ( (equipmentID < fTpcDdlOffset) || (equipmentID > 983) ) {
@@ -881,7 +915,8 @@ Int_t AliTPCmapper::GetPatchFromEquipmentID(Int_t equipmentID) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetSideFromEquipmentID(Int_t equipmentID) const
 {
-  // Get side from Eq ID
+  /// Get side from Eq ID
+
   if ( equipmentID < fTpcDdlOffset ) {
     AliWarning(Form("Equipment ID (%d) outside range !", equipmentID));
     return -1;
@@ -900,7 +935,8 @@ Int_t AliTPCmapper::GetSideFromEquipmentID(Int_t equipmentID) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetSectorFromEquipmentID(Int_t equipmentID) const
 {
-  // Get sector index (0 ... 17) from equipment ID
+  /// Get sector index (0 ... 17) from equipment ID
+
   Int_t retval = 0;
   if ( (equipmentID < fTpcDdlOffset) || (equipmentID >= fTpcDdlOffset+216) ) {
     AliWarning(Form("Equipment ID (%d) outside range !", equipmentID));
@@ -923,7 +959,8 @@ Int_t AliTPCmapper::GetSectorFromEquipmentID(Int_t equipmentID) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetRocFromEquipmentID(Int_t equipmentID) const
 {
-  // Get ROC index (0 ... 71) from equipment ID
+  /// Get ROC index (0 ... 71) from equipment ID
+
   Int_t side   = GetSideFromEquipmentID(equipmentID);
   if ( side < 0 ) return -1;
   Int_t sector = GetSectorFromEquipmentID(equipmentID);
@@ -938,7 +975,7 @@ Int_t AliTPCmapper::GetRocFromEquipmentID(Int_t equipmentID) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetSectorFromRoc(Int_t roc) const
 {
-  // get the sector number (0 ... 17) from the roc number (0 ... 71)
+  /// get the sector number (0 ... 17) from the roc number (0 ... 71)
 
   if ( roc < 0 ) {
     AliWarning(Form("Roc outside range (roc %d) !", roc));
@@ -961,7 +998,7 @@ Int_t AliTPCmapper::GetSectorFromRoc(Int_t roc) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetSideFromRoc(Int_t roc) const
 {
-  // get the side (0, 1) from the roc number (0 ... 71)
+  /// get the side (0, 1) from the roc number (0 ... 71)
 
   if ( roc < 0 ) {
     AliWarning(Form("Roc outside range (roc %d) !", roc));
@@ -974,17 +1011,17 @@ Int_t AliTPCmapper::GetSideFromRoc(Int_t roc) const
     return 0;
   } else if ( roc < 72 ) {   // outer sector, C side
     return 1;
-  } else { 
+  } else {
     AliWarning(Form("Roc outside range (roc %d) !", roc));
     return -1;
-  } 
+  }
 }
 
 
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetRocFromPatch(Int_t side, Int_t sector, Int_t patch) const
 {
-  // Get Roc (0 ... 71) from side (0, 1), sector (0 ... 17) and patch (0 ... 5)
+  /// Get Roc (0 ... 71) from side (0, 1), sector (0 ... 17) and patch (0 ... 5)
 
   if ( (side < 0) || (side >= fNside) ) {
     AliWarning(Form("Side outside range (side %d) !", side));
@@ -1012,7 +1049,7 @@ Int_t AliTPCmapper::GetRocFromPatch(Int_t side, Int_t sector, Int_t patch) const
 //_____________________________________________________________________________
 Int_t AliTPCmapper::GetRoc(Int_t side, Int_t sector, Int_t globalpadrow, Int_t pad) const
 {
-  // Get Roc (0 ... 71) from side (0, 1), sector (0 ... 17) and pad coordinates
+  /// Get Roc (0 ... 71) from side (0, 1), sector (0 ... 17) and pad coordinates
 
   Int_t patch = GetPatchSector(globalpadrow, pad);
   if ( patch < 0 ) return -1;
@@ -1023,7 +1060,8 @@ Int_t AliTPCmapper::GetRoc(Int_t side, Int_t sector, Int_t globalpadrow, Int_t p
 //_____________________________________________________________________________
   Bool_t AliTPCmapper::IsIROC(Int_t roc) const
 {
-  // Is this ROC an IROC?
+  /// Is this ROC an IROC?
+
   if ( roc < 0 ) {
     AliWarning(Form("Roc outside range (roc %d) !", roc));
     return -1;
@@ -1041,7 +1079,8 @@ Int_t AliTPCmapper::GetRoc(Int_t side, Int_t sector, Int_t globalpadrow, Int_t p
 //_____________________________________________________________________________
   Bool_t AliTPCmapper::IsOROC(Int_t roc) const
 {
-  // Is this ROC an OROC?
+  /// Is this ROC an OROC?
+
   if ( roc < 0 ) {
     AliWarning(Form("Roc outside range (roc %d) !", roc));
     return -1;

@@ -13,15 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTPCCalibRawBase.cxx */
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                     //
-//          Base class for the calibration algorithms using raw data as input          //
-//                                                                                     //
-//   Origin: Jens Wiechula   J.Wiechula@gsi.de                                         //
-//                                                                                     //
-/////////////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibRawBase
+/// \brief Base class for the calibration algorithms using raw data as input
+///
+/// \author Jens Wiechula   J.Wiechula@gsi.de
 
 //Root includes
 #include <TDirectory.h>
@@ -41,7 +36,9 @@
 
 #include "AliTPCCalibRawBase.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibRawBase)
+/// \endcond
 
 AliTPCCalibRawBase::AliTPCCalibRawBase() :
   TNamed(),
@@ -97,25 +94,21 @@ AliTPCCalibRawBase::AliTPCCalibRawBase(const AliTPCCalibRawBase &calib) :
   fMapping(0x0),
   fROC(AliTPCROC::Instance())
 {
-    //
-    // copy ctor
-    //
-  
+    /// copy ctor
+
 }
 //_____________________________________________________________________
 AliTPCCalibRawBase::~AliTPCCalibRawBase()
 {
-  //
-  // dtor
-  //
+  /// dtor
+
   if (fDebugStreamer) delete fDebugStreamer;
 }
 //_____________________________________________________________________
   AliTPCCalibRawBase& AliTPCCalibRawBase::operator = (const  AliTPCCalibRawBase &source)
   {
-    //
-    // assignment operator
-    //
+    /// assignment operator
+
     if (&source == this) return *this;
     new (this) AliTPCCalibRawBase(source);
     
@@ -124,9 +117,8 @@ AliTPCCalibRawBase::~AliTPCCalibRawBase()
 //_____________________________________________________________________
 Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 * const rawStreamV3)
 {
-  //
-  // Event Processing loop - AliTPCRawStreamV3
-  //
+  /// Event Processing loop - AliTPCRawStreamV3
+
   ResetEvent();
   Bool_t withInput = kFALSE;
   fAltroL1Phase=0;
@@ -173,9 +165,8 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 * const rawStreamV3)
 //_____________________________________________________________________
 Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader * const rawReader)
 {
-  //
-  //  Event processing loop - AliRawReader
-  //
+  ///  Event processing loop - AliRawReader
+
   AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
   if (eventHeader){
     fTimeStamp   = eventHeader->Get("Timestamp");
@@ -195,9 +186,7 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader * const rawReader)
 //_____________________________________________________________________
 Bool_t AliTPCCalibRawBase::ProcessEvent(eventHeaderStruct * const event)
 {
-  //
-  //  Event processing loop - date event
-  //
+  ///  Event processing loop - date event
 
   fRunNumber=event->eventRunNb;
   fTimeStamp=event->eventTimestamp;
@@ -215,10 +204,8 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(eventHeaderStruct * const event)
 //_____________________________________________________________________
 void AliTPCCalibRawBase::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append)
 {
-    //
-    //  Write class to file
-    //
-  
+    ///  Write class to file
+
   TString sDir(dir);
   TString option;
   
@@ -241,10 +228,9 @@ void AliTPCCalibRawBase::DumpToFile(const Char_t *filename, const Char_t *dir, B
 }
 //_____________________________________________________________________
 TTreeSRedirector *AliTPCCalibRawBase::GetDebugStreamer(){
-  //
-  // Get Debug streamer
-  // In case debug streamer not yet initialized and StreamLevel>0 create new one
-  //
+  /// Get Debug streamer
+  /// In case debug streamer not yet initialized and StreamLevel>0 create new one
+
   if (fStreamLevel==0) return 0;
   if (fDebugStreamer) return fDebugStreamer;
   TString dsName;
@@ -257,9 +243,8 @@ TTreeSRedirector *AliTPCCalibRawBase::GetDebugStreamer(){
 //_____________________________________________________________________
 void AliTPCCalibRawBase::MergeBase(const AliTPCCalibRawBase *calib)
 {
-  //
-  // merge this with base
-  //
+  /// merge this with base
+
   if (calib->fFirstTimeStamp<fFirstTimeStamp) fFirstTimeStamp=calib->fFirstTimeStamp;
   if (calib->fLastTimeStamp>fLastTimeStamp)   fLastTimeStamp =calib->fLastTimeStamp;
 }

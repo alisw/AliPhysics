@@ -3,11 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                     //
-//                  Raw data processing base class                                     //
-//                                                                                     //
-/////////////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibRawBase
+/// \brief Raw data processing base class
 
 #include <TNamed.h>
 
@@ -31,7 +28,7 @@ public:
   AliTPCCalibRawBase& operator = (const  AliTPCCalibRawBase &source);
 
   virtual ~AliTPCCalibRawBase();
-  
+
   //uses the new decoder which is compatible with the new altro format
   Bool_t ProcessEvent(AliTPCRawStreamV3   * const rawStreamV3);
   Bool_t ProcessEvent(AliRawReader        * const rawReader);
@@ -43,10 +40,10 @@ public:
   virtual void ProcessBunch(const Int_t /*sector*/, const Int_t /*row*/, const Int_t /*pad*/,
                             const Int_t /*length*/, const UInt_t /*startTimeBin*/, const UShort_t* /*signal*/) {return; }
   virtual void Analyse(){ return; }
-  
+
   virtual Long64_t Merge(TCollection * /*list*/) {return 0;}
   void MergeBase(const AliTPCCalibRawBase *calib);
-  
+
   //Setters
   void  SetRangeTime (Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBin=firstTimeBin;   fLastTimeBin=lastTimeBin;  } //Set range in which the signal is expected
   void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; }
@@ -86,41 +83,41 @@ public:
   Int_t      GetDebugLevel() const {return fDebugLevel;}
 
 protected:
-  Int_t fFirstTimeBin;                //  First Time bin used for analysis
-  Int_t fLastTimeBin;                 //  Last Time bin used for analysis
-  
-  Int_t fNevents;                     //  Number of processed events 
-  
-  Int_t fDebugLevel;                  //! debug level
-  Int_t fStreamLevel;                 //! level of streamer output
-  //
-  UInt_t fRunNumber;                  // current run number from event header
-  UInt_t fFirstTimeStamp;             // First event time stamp
-  UInt_t fLastTimeStamp;              // Last event time stamp
-  UInt_t fTimeStamp;                  //! time stamp from event header
-  UInt_t fEventType;                  //! current event Type from event header
-  //
-  Double_t fAltroL1Phase;             //! L1 Phase
-  Float_t  fAltroL1PhaseTB;           //! L1 Phase in time bins
-  Int_t    fCurrRCUId;                //! Current RCU Id
-  Int_t    fPrevRCUId;                //! Previous RCU Id
-  Int_t    fCurrDDLNum;               //! Current DDL number
-  Int_t    fPrevDDLNum;               //! Current DDL number
-  Bool_t   fUseL1Phase;               //  use L1 Phase information?
-  //
-  TTreeSRedirector *fDebugStreamer;   //! debug streamer
-  //
-  AliAltroRawStream *fAltroRawStream; //! pointer to the altro object
-  AliTPCAltroMapping **fMapping;      //! Altro Mapping object
+  Int_t fFirstTimeBin;                ///< First Time bin used for analysis
+  Int_t fLastTimeBin;                 ///< Last Time bin used for analysis
 
-  AliTPCROC *fROC;                    //! ROC information
-    
+  Int_t fNevents;                     ///< Number of processed events
+
+  Int_t fDebugLevel;                  //!< debug level
+  Int_t fStreamLevel;                 //!< level of streamer output
+  //
+  UInt_t fRunNumber;                  ///< current run number from event header
+  UInt_t fFirstTimeStamp;             ///< First event time stamp
+  UInt_t fLastTimeStamp;              ///< Last event time stamp
+  UInt_t fTimeStamp;                  //!< time stamp from event header
+  UInt_t fEventType;                  //!< current event Type from event header
+  //
+  Double_t fAltroL1Phase;             //!< L1 Phase
+  Float_t  fAltroL1PhaseTB;           //!< L1 Phase in time bins
+  Int_t    fCurrRCUId;                //!< Current RCU Id
+  Int_t    fPrevRCUId;                //!< Previous RCU Id
+  Int_t    fCurrDDLNum;               //!< Current DDL number
+  Int_t    fPrevDDLNum;               //!< Current DDL number
+  Bool_t   fUseL1Phase;               ///< use L1 Phase information?
+  //
+  TTreeSRedirector *fDebugStreamer;   //!< debug streamer
+  //
+  AliAltroRawStream *fAltroRawStream; //!< pointer to the altro object
+  AliTPCAltroMapping **fMapping;      //!< Altro Mapping object
+
+  AliTPCROC *fROC;                    //!< ROC information
+
   virtual void EndEvent() {++fNevents; return; } //fNevents should be updated in the derived classes in a proper place
   virtual void ResetEvent(){ return; }           //Reset Event counters
-  
-  
+
+  /// \cond CLASSIMP
   ClassDef(AliTPCCalibRawBase,3)      //  Calibration base class for raw data processing
-    
+  /// \endcond
 };
 
 

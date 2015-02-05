@@ -4,10 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-// AliTPCFCVoltError3D class                                              //
-// Authors: Jim Thomas, Stefan Rossegger                                  //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCFCVoltError3D
+/// \brief AliTPCFCVoltError3D class
+///
+/// \author Jim Thomas, Stefan Rossegger
 
 #include "AliTPCCorrection.h"
 
@@ -31,7 +31,7 @@ public:
   Float_t GetC0() const {return fC0;}
   Float_t GetC1() const {return fC1;}
 
-  // setters and getters 
+  // setters and getters
 
   // Set rod shift in Voltage equivalents (40V ~ 1mm)
   // rod numbers: 0-17 (IFC), 18-35 (OFC)
@@ -72,62 +72,64 @@ private:
   AliTPCFCVoltError3D(const AliTPCFCVoltError3D &);               // not implemented
   AliTPCFCVoltError3D &operator=(const AliTPCFCVoltError3D &);    // not implemented
 
-  Float_t fC0; // coefficient C0           (compare Jim Thomas's notes for definitions)
-  Float_t fC1; // coefficient C1           (compare Jim Thomas's notes for definitions)
-  Float_t fRodVoltShiftA[36];      // Rod (&strips) shift in Volt (40V~1mm) 
-  Float_t fRodVoltShiftC[36];      // Rod (&strips) shift in Volt (40V~1mm) 
-  Float_t fRotatedClipVoltA[2];    // rotated clips at HV rod
-  Float_t fRotatedClipVoltC[2];    // rotated clips at HV rod
-  Float_t fCopperRodShiftA[36];    // only Rod shift 
-  Float_t fCopperRodShiftC[36];    // only Rod shift 
+  Float_t fC0; ///< coefficient C0           (compare Jim Thomas's notes for definitions)
+  Float_t fC1; ///< coefficient C1           (compare Jim Thomas's notes for definitions)
+  Float_t fRodVoltShiftA[36];      ///< Rod (&strips) shift in Volt (40V~1mm)
+  Float_t fRodVoltShiftC[36];      ///< Rod (&strips) shift in Volt (40V~1mm)
+  Float_t fRotatedClipVoltA[2];    ///< rotated clips at HV rod
+  Float_t fRotatedClipVoltC[2];    ///< rotated clips at HV rod
+  Float_t fCopperRodShiftA[36];    ///< only Rod shift
+  Float_t fCopperRodShiftC[36];    ///< only Rod shift
 
-  Bool_t fInitLookUp;           // flag to check if the Look Up table was created (SUM)
-  Bool_t fInitLookUpBasic[6];   // ! flag if the basic lookup was created (shifted Rod (IFC,OFC) or rotated clip (IFC,OFC))
+  Bool_t fInitLookUp;           ///< flag to check if the Look Up table was created (SUM)
+  Bool_t fInitLookUpBasic[6];   //!< flag if the basic lookup was created (shifted Rod (IFC,OFC) or rotated clip (IFC,OFC))
 
 
-  TMatrixF *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
-  TMatrixF *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
-  TMatrixF *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpErOverEz[kNPhi];   ///< Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpEphiOverEz[kNPhi]; ///< Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpDeltaEz[kNPhi];    ///< Array to store electric field integral (int Er/Ez)
 
   // basic numbers for the poisson relaxation //can be set individually in each class
   enum {kRows   =257}; // grid size in r direction used in the poisson relaxation // ( 2**n + 1 ) eg. 65, 129, 257 etc.
   enum {kColumns=129}; // grid size in z direction used in the poisson relaxation // ( 2**m + 1 ) eg. 65, 129, 257 etc.
   enum {kPhiSlicesPerSector = 10 }; // number of points in phi slices
   enum {kPhiSlices = 1+kPhiSlicesPerSector*3 };      // number of points in phi for the basic lookup tables
-  enum {kIterations=100}; // Number of iterations within the poisson relaxation 
+  enum {kIterations=100}; // Number of iterations within the poisson relaxation
 
   // ugly way to store "partial" look up tables
   // needed for the faster calculation of the final distortion table
 
   // for Rod and Strip shift
-  TMatrixD *fLookUpBasic1ErOverEz[kPhiSlices];   // ! Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpBasic1EphiOverEz[kPhiSlices]; // ! Array to store electric field integral (int Ephi/Ez)
-  TMatrixD *fLookUpBasic1DeltaEz[kPhiSlices];    // ! Array to store electric field integral (int Ez)
+  TMatrixD *fLookUpBasic1ErOverEz[kPhiSlices];   //!< Array to store electric field integral (int Er/Ez)
+  TMatrixD *fLookUpBasic1EphiOverEz[kPhiSlices]; //!< Array to store electric field integral (int Ephi/Ez)
+  TMatrixD *fLookUpBasic1DeltaEz[kPhiSlices];    //!< Array to store electric field integral (int Ez)
 
-  TMatrixD *fLookUpBasic2ErOverEz[kPhiSlices];   // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic2EphiOverEz[kPhiSlices]; // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic2DeltaEz[kPhiSlices];    // ! Array to store electric field integral 
+  TMatrixD *fLookUpBasic2ErOverEz[kPhiSlices];   //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic2EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic2DeltaEz[kPhiSlices];    //!< Array to store electric field integral
 
   // for rotated clips
-  TMatrixD *fLookUpBasic3ErOverEz[kPhiSlices];   // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic3EphiOverEz[kPhiSlices]; // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic3DeltaEz[kPhiSlices];    // ! Array to store electric field integral 
+  TMatrixD *fLookUpBasic3ErOverEz[kPhiSlices];   //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic3EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic3DeltaEz[kPhiSlices];    //!< Array to store electric field integral
 
-  TMatrixD *fLookUpBasic4ErOverEz[kPhiSlices];   // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic4EphiOverEz[kPhiSlices]; // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic4DeltaEz[kPhiSlices];    // ! Array to store electric field integral 
+  TMatrixD *fLookUpBasic4ErOverEz[kPhiSlices];   //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic4EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic4DeltaEz[kPhiSlices];    //!< Array to store electric field integral
 
   // for (only rod) shift (copper rods)
-  TMatrixD *fLookUpBasic5ErOverEz[kPhiSlices];   // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic5EphiOverEz[kPhiSlices]; // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic5DeltaEz[kPhiSlices];    // ! Array to store electric field integral 
+  TMatrixD *fLookUpBasic5ErOverEz[kPhiSlices];   //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic5EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic5DeltaEz[kPhiSlices];    //!< Array to store electric field integral
 
-  TMatrixD *fLookUpBasic6ErOverEz[kPhiSlices];   // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic6EphiOverEz[kPhiSlices]; // ! Array to store electric field integral 
-  TMatrixD *fLookUpBasic6DeltaEz[kPhiSlices];    // ! Array to store electric field integral 
+  TMatrixD *fLookUpBasic6ErOverEz[kPhiSlices];   //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic6EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic6DeltaEz[kPhiSlices];    //!< Array to store electric field integral
 
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCFCVoltError3D,3); //
+  /// \endcond
 };
 
 #endif

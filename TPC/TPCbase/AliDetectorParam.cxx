@@ -13,14 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-///////////////////////////////////////////////////////////////////////
-//  Paramter class for AliDetector                                   //
-//                                                                   //
-//  Origin:  Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk // 
-//                                                                   //  
-///////////////////////////////////////////////////////////////////////
+/// \class AliDetectorParam
+///
+/// Paramter class for AliDetector
+///
+/// \author Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk
 
 #include <TMath.h>
 #include <TObject.h>
@@ -34,23 +31,22 @@ AliDetectorParam::AliDetectorParam()
                     fNPrimLoss(0.),
                     fNTotalLoss(0.)
 {
-  //
-  //  default constructor
-  //
+  ///  default constructor
+
 }
 
 Float_t * AliDetectorParam::GetAnglesAccMomentum(Float_t *x, Int_t * /*index*/, Float_t *momentum, Float_t *angle)
 {
-  //
-  //calculates deflection angle of particle with longitudinal
-  //longitudinal  momentum[0] and transversal momentum momentum[1]
-  //at position (x,y,z) = (x[0],x[1],x[2]) 
-  //angle[0] - deep angle
-  //angle[1] - magnetic deflection angle 
+  /// calculates deflection angle of particle with longitudinal
+  /// longitudinal  momentum[0] and transversal momentum momentum[1]
+  /// at position (x,y,z) = (x[0],x[1],x[2])
+  /// angle[0] - deep angle
+  /// angle[1] - magnetic deflection angle
+
   if (momentum==0) {
     Float_t rtotal =TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
     if (rtotal==0) angle[0]=0;
-    else    
+    else
       angle[0] = TMath::ATan(x[2]/rtotal);
     angle[1]=0;
     return angle;
@@ -66,13 +62,9 @@ Float_t * AliDetectorParam::GetAnglesAccMomentum(Float_t *x, Int_t * /*index*/, 
   Float_t radius2 = 1000*mtotal/(3*fBField);
   if (radius1<radius2)
     angle[1]= TMath::ASin(radius1/radius2);
-  else 
+  else
     angle[1]=0;
   return angle;
-} 
+}
 
-
-
-
-
-ClassImp(AliDetectorParam)
+ClassImp(AliDetectorParam);

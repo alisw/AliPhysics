@@ -14,22 +14,16 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  GUI for the AliTPCCalibViewer                                            //
-//  used for the calibration monitor                                         //
-//  All functionalities of the AliTPCCalibViewer are here available
-//  
-//  Example usage:                                                           //
-/*
-  aliroot
-  AliTPCCalibViewerGUI::ShowGUI("CalibTree.root")
-  
-*/
-//                         //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+/// \class AliTPCCalibViewerGUI
+/// \brief GUI for the AliTPCCalibViewer
+///  used for the calibration monitor
+///  All functionalities of the AliTPCCalibViewer are here available
+///
+/// Example usage:
+/// ~~~
+/// aliroot
+/// AliTPCCalibViewerGUI::ShowGUI("CalibTree.root")
+/// ~~~
 
 #include "AliTPCCalibViewerGUI.h"
 #include "AliTPCCalPad.h"
@@ -68,7 +62,9 @@
 
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibViewerGUI)
+/// \endcond
 
 AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h, char* fileName)
   : TGCompositeFrame(p, w, h),
@@ -215,13 +211,10 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
 
 
 void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
-   // 
-   // draw the GUI
-   // 
-   // ======================================================================   
+   /// draw the GUI
+
    // ************************* Display everything *************************
-   // ======================================================================
-   
+
    SetCleanup(kDeepCleanup);
 
    // *****************************************************************************
@@ -897,9 +890,8 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
 
 
 void AliTPCCalibViewerGUI::SetInitialValues() {
-   // 
-   // Set the default button states
-   // 
+   /// Set the default button states
+
    fChkAuto->SetState(kButtonUp);
    fRadioPredefined->SetState(kButtonDown);
    fRadioRaw->SetState(kButtonDown);
@@ -1192,24 +1184,21 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fTxtRefName(0),
     fInitialized(0)
 {
-  //
-  // dummy AliTPCCalibViewerGUI copy constructor
-  //
+  /// dummy AliTPCCalibViewerGUI copy constructor
+
 }
 
 
 AliTPCCalibViewerGUI & AliTPCCalibViewerGUI::operator =(const AliTPCCalibViewerGUI & /*param*/) {
-   //
-   // dummy assignment operator
-   //
+   /// dummy assignment operator
+
    return (*this);
 }
 
 
 AliTPCCalibViewerGUI::~AliTPCCalibViewerGUI() {
-   // 
-   // Destructor
-   // 
+   /// Destructor
+
    if (fCanvMain && fCanvMain->GetCanvas()) {
       for (Int_t i = 0; i < fCanvMain->GetCanvas()->GetListOfPrimitives()->GetEntries(); i++) {
          if (strcmp(fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->ClassName(), "TFrame") != 0)
@@ -1230,10 +1219,8 @@ void AliTPCCalibViewerGUI::CloseWindow() {
 
 
 void AliTPCCalibViewerGUI::Initialize(const char* fileName, const char* treeName) {
-   // 
-   // initialize the GUI with a calibrationTree from fileName
-   // 
-   
+   /// initialize the GUI with a calibrationTree from fileName
+
    // create AliTPCCalibViewer object, which will be used for generating all drawings
    if (fViewer) delete fViewer;
    fViewer = new AliTPCCalibViewer(fileName, treeName);
@@ -1242,10 +1229,8 @@ void AliTPCCalibViewerGUI::Initialize(const char* fileName, const char* treeName
 
 
 void AliTPCCalibViewerGUI::Initialize(AliTPCCalibViewer *viewer) {
-   //
-   // initializes the GUI with default settings and opens tree for drawing
-   //
-   
+   /// initializes the GUI with default settings and opens tree for drawing
+
    fViewer = viewer;
    TString selectedVariable("");
    TString selectedNormalization("");
@@ -1319,9 +1304,8 @@ void AliTPCCalibViewerGUI::Initialize(AliTPCCalibViewer *viewer) {
 }
 
 void AliTPCCalibViewerGUI::Reset(){
-  //
-  // reset variables, delete calib viewer
-  //
+  /// reset variables, delete calib viewer
+
   if (fViewer) delete fViewer;
   fListVariables->RemoveAll();
   fListNormalization->RemoveAll();
@@ -1329,10 +1313,9 @@ void AliTPCCalibViewerGUI::Reset(){
 }
 
 void AliTPCCalibViewerGUI::HandleButtonsGeneral(Int_t id) {
-   //
-   // handles mutual radio button exclusions
-   // for general Tab
-   //
+   /// handles mutual radio button exclusions
+   /// for general Tab
+
    if (id == -1) {
       TGButton *btn = (TGButton *) gTQSender;
       id = btn->WidgetId();
@@ -1385,11 +1368,9 @@ void AliTPCCalibViewerGUI::HandleButtonsGeneral(Int_t id) {
 
 
 void AliTPCCalibViewerGUI::HandleButtons1D(Int_t id) {
-   //
-   // handles mutual radio button exclusions
-   // 1D-Tab buttons
-   //
-   
+   /// handles mutual radio button exclusions
+   /// 1D-Tab buttons
+
    if (id == -1) {
       TGButton *btn = (TGButton *) gTQSender;
       id = btn->WidgetId();
@@ -1425,12 +1406,11 @@ void AliTPCCalibViewerGUI::HandleButtons1D(Int_t id) {
 
 
 void AliTPCCalibViewerGUI::HandleButtonsStat(Int_t id) {
-   // 
-   // handles statistic check boxes 
-   // checks each checkbox if checked
-   // if the checkbox is checked, appends 'n' for name, 'e' for entries, ...
-   // to a TString, passes this TString to gStyle->SetOptStat(...)
-   // 
+   /// handles statistic check boxes
+   /// checks each checkbox if checked
+   /// if the checkbox is checked, appends 'n' for name, 'e' for entries, ...
+   /// to a TString, passes this TString to gStyle->SetOptStat(...)
+
    if (id == -1) {
       TGButton *btn = (TGButton *) gTQSender;
       id = btn->WidgetId();
@@ -1456,10 +1436,9 @@ void AliTPCCalibViewerGUI::HandleButtonsStat(Int_t id) {
 
 
 void AliTPCCalibViewerGUI::HandleButtonsCuts(Int_t id) {
-   //
-   // handles mutual radio button exclusions
-   // right side buttons
-   //
+   /// handles mutual radio button exclusions
+   /// right side buttons
+
     if (id == -1) {
       TGButton *btn = (TGButton *) gTQSender;
       id = btn->WidgetId();
@@ -1505,10 +1484,9 @@ void AliTPCCalibViewerGUI::HandleButtonsCuts(Int_t id) {
 
 
 void AliTPCCalibViewerGUI::HandleButtonsNoRedraw(Int_t id) {
-   //
-   // handles label & scaling checkboxes 
-   // without redrawing (not necessary, faster like this)
-   //
+   /// handles label & scaling checkboxes
+   /// without redrawing (not necessary, faster like this)
+
     if (id == -1) {
       TGButton *btn = (TGButton *) gTQSender;
       id = btn->WidgetId();
@@ -1536,9 +1514,8 @@ void AliTPCCalibViewerGUI::HandleButtonsNoRedraw(Int_t id) {
 
 void AliTPCCalibViewerGUI::ReplacePlaceHolders(TString &str)
 {
-    //
-    // replace the defined placeholders in the custom draw string and cut string
-    //
+    /// replace the defined placeholders in the custom draw string and cut string
+
     TString drawPlaceHolder("#draw#");
     TString normPlaceHolder("#norm#");
 
@@ -1563,18 +1540,15 @@ void AliTPCCalibViewerGUI::ReplacePlaceHolders(TString &str)
 }
 
 void AliTPCCalibViewerGUI::DoNewSelection() {
-   //
-   // decides whether to redraw if user makes another selection
-   //
+   /// decides whether to redraw if user makes another selection
+
    if (fChkAuto->GetState() == kButtonDown) DoDraw();
 }
 
 
 TString* AliTPCCalibViewerGUI::GetDrawString() {
-   // 
-   // create the draw string out of selection
-   // 
-   
+   /// create the draw string out of selection
+
    // specify data to plot
    TString desiredData("");
    if (!fListVariables->GetSelectedEntry()) return 0;
@@ -1657,9 +1631,7 @@ TString* AliTPCCalibViewerGUI::GetDrawString() {
 
   
 TString* AliTPCCalibViewerGUI::GetSectorString() {
-   // 
-   // create the sector string out of selection
-   // 
+   /// create the sector string out of selection
 
    TString sectorStr("");
    if (fRadioTPC->GetState() == kButtonDown)
@@ -1682,10 +1654,8 @@ TString* AliTPCCalibViewerGUI::GetSectorString() {
   
  
  TString* AliTPCCalibViewerGUI::GetCutString() {
-   // 
-   // create the cut string out of selection
-   // 
-  
+   /// create the cut string out of selection
+
    TString cutsStr("");
    if (fChkCutZero->GetState() == kButtonDown) {
       TString cutZerosStr(GetDrawString()->Data());
@@ -1713,10 +1683,8 @@ TString* AliTPCCalibViewerGUI::GetSectorString() {
 
 
 void AliTPCCalibViewerGUI::DoDraw() {
-   //
-   // main method for drawing according to user selection
-   //
-   
+   /// main method for drawing according to user selection
+
    // specify data to plot:
   if (!GetDrawString()) return;
    TString desiredData(GetDrawString()->Data());
@@ -1772,10 +1740,8 @@ void AliTPCCalibViewerGUI::DoDraw() {
 
 
 void AliTPCCalibViewerGUI::DoFit() {
-   //
-   // main method for fitting
-   //
-   
+   /// main method for fitting
+
    Double_t chi2 = 0;
    TVectorD fitParam(0);
    TMatrixD covMatrix(0,0);
@@ -1830,9 +1796,8 @@ void AliTPCCalibViewerGUI::DoFit() {
 
 
 void AliTPCCalibViewerGUI::DoExport() {
-   //
-   // function to export a CalPad to Cint
-   //
+   /// function to export a CalPad to Cint
+
    if ( fRadio2D->GetState() != kButtonDown){
       Error("ExportCalPad", "Export of AliTPCCalPad to CINT works only in 2D mode.");
       return;
@@ -1853,10 +1818,8 @@ void AliTPCCalibViewerGUI::DoExport() {
 
 
 void AliTPCCalibViewerGUI::DoExportNorm() {
-   //
-   // function to export a CalPad to Cint
-   //
-   
+   /// function to export a CalPad to Cint
+
    if ( fRadio2D->GetState() != kButtonDown){
       Error("ExportCalPad", "Adding an AliTPCCalPad to the normalization works only in 2D mode.");
       return;
@@ -1885,9 +1848,8 @@ void AliTPCCalibViewerGUI::DoExportNorm() {
 
 
 void AliTPCCalibViewerGUI::GetMinMax() {
-   //
-   // Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
-   //
+   /// Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
+
    if (fChkGetMinMaxAuto->GetState() == kButtonUp) return;
    TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
    TObject* ptr = 0;
@@ -1919,11 +1881,9 @@ void AliTPCCalibViewerGUI::GetMinMax() {
 
 
 void AliTPCCalibViewerGUI::SetMinMaxLabel() {
-   // 
-   // Set Minimum, Maximum and labels without redrawing the plot
-   // (faster)
-   // 
-   
+   /// Set Minimum, Maximum and labels without redrawing the plot
+   /// (faster)
+
    // search for histogram
    TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
    TObject* ptr = 0;
@@ -1986,10 +1946,9 @@ void AliTPCCalibViewerGUI::SetMinMaxLabel() {
    
    
 void AliTPCCalibViewerGUI::ChangeSector(){
-   // 
-   // function that is called, when the number of the sector is changed
-   // to change the sector label
-   //
+   /// function that is called, when the number of the sector is changed
+   /// to change the sector label
+
    if ( fRadioROC->GetState()!=kButtonDown && fRadioSector->GetState()!=kButtonDown ){
        fLblSector->SetText("not used");
        return;
@@ -2018,17 +1977,15 @@ void AliTPCCalibViewerGUI::ChangeSector(){
 
 
 void AliTPCCalibViewerGUI::AddFitFunction() const { 
-   //
-   // adds the last fit function to the normalization list
-   // 
+   /// adds the last fit function to the normalization list
+
    std::cout << "Not yet implemented." << std::endl;
 }
 
 
 void AliTPCCalibViewerGUI::UnchekAllStat() {
-   // 
-   // Disable all statistical legend entries, no statistical legend.
-   // 
+   /// Disable all statistical legend entries, no statistical legend.
+
    fChkStatName->SetState(kButtonUp);
    fChkStatEntries->SetState(kButtonUp);
    fChkStatMean->SetState(kButtonUp);
@@ -2048,10 +2005,9 @@ void AliTPCCalibViewerGUI::UnchekAllStat() {
 
 
 void AliTPCCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *selectedObject) { 
-   //
-   // mouse move
-   // zoom to sector works ONLY in 2D mode, if one side is specified
-   // 
+   /// mouse move
+   /// zoom to sector works ONLY in 2D mode, if one side is specified
+
    Double_t pi = TMath::Pi();
    if (event != kButton1Double )
       return;
@@ -2117,29 +2073,28 @@ void AliTPCCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *sel
 
 
 void AliTPCCalibViewerGUI::SavePicture() {
-   // 
-   // saves the current picture
-   // 
-   // use the following combination of file type and save options:
-   // (see also TCanvas::Print)
-   // 
-   //       "ps"  - Postscript file is produced (see special cases below)
-   //    "Portrait" - Postscript file is produced (Portrait)
-   // "Landscape" - Postscript file is produced (Landscape)
-   //       "eps" - an Encapsulated Postscript file is produced
-   //    "Preview" - an Encapsulated Postscript file with preview is produced.
-   //       "pdf" - a PDF file is produced
-   //       "svg" - a SVG file is produced
-   //       "gif" - a GIF file is produced
-   //       "gif+NN" - an animated GIF file is produced, where NN is delay in 10ms units
-   //       "xpm" - a XPM file is produced
-   //       "png" - a PNG file is produced
-   //       "jpg" - a JPEG file is produced
-   //       "tiff" - a TIFF file is produced
-   //       "cxx" - a C++ macro file is produced
-   //       "xml" - a XML file
-   //       "root" - a ROOT binary file
-   
+   /// saves the current picture
+   ///
+   /// use the following combination of file type and save options:
+   /// (see also TCanvas::Print)
+   ///
+   ///       "ps"  - Postscript file is produced (see special cases below)
+   ///    "Portrait" - Postscript file is produced (Portrait)
+   /// "Landscape" - Postscript file is produced (Landscape)
+   ///       "eps" - an Encapsulated Postscript file is produced
+   ///    "Preview" - an Encapsulated Postscript file with preview is produced.
+   ///       "pdf" - a PDF file is produced
+   ///       "svg" - a SVG file is produced
+   ///       "gif" - a GIF file is produced
+   ///       "gif+NN" - an animated GIF file is produced, where NN is delay in 10ms units
+   ///       "xpm" - a XPM file is produced
+   ///       "png" - a PNG file is produced
+   ///       "jpg" - a JPEG file is produced
+   ///       "tiff" - a TIFF file is produced
+   ///       "cxx" - a C++ macro file is produced
+   ///       "xml" - a XML file
+   ///       "root" - a ROOT binary file
+
    const char *kSaveAsTypes[] = {
       "Postscript",  "*.ps",
       "Encapsulated Postscript",   "*.eps",
@@ -2185,11 +2140,10 @@ void AliTPCCalibViewerGUI::SavePicture() {
    
 
 void AliTPCCalibViewerGUI::DoDumpToFile() {
-   // 
-   // This function is called, when the "Dump to File" button is pressed. 
-   // All the exported CalPads will be written into an new CalibTree, 
-   // a Save File dialog will appear to specify the filename
-   // 
+   /// This function is called, when the "Dump to File" button is pressed.
+   /// All the exported CalPads will be written into an new CalibTree,
+   /// a Save File dialog will appear to specify the filename
+
    const char *kSaveAsTypes[] = {
       "ROOT file",   "*.root",
        0,              0
@@ -2208,9 +2162,8 @@ void AliTPCCalibViewerGUI::DoDumpToFile() {
 
 
 void AliTPCCalibViewerGUI::DoLoadTree() {
-   // function to load a new calib tree
-   // 
-   // 
+   /// function to load a new calib tree
+
    const char *kFileTypes[] = {
       "ROOT file",   "*.root",
        0,              0

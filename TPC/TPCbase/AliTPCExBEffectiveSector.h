@@ -4,12 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCExBEffectiveSector class                                                   //
-// date: 02/05/2010                                                       //
-// Authors: Maarian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger                    //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCExBEffectiveSector
+///
+/// \author Maarian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger
+/// \date 02/05/2010
 
 #include "AliTPCCorrection.h"
 class TH3F;
@@ -35,15 +33,17 @@ public:
 public:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 public:
-  Double_t fC0;                // coefficient C0 (compare Jim Thomas's notes for definitions)
-  Double_t fC1;                // coefficient C1 (compare Jim Thomas's notes for definitions)
-  TH3F *fCorrectionR;        // radial correction
-  TH3F *fCorrectionRPhi;     // r-phi correction
-  TH3F *fCorrectionZ;        // z correction
+  Double_t fC0;                ///< coefficient C0 (compare Jim Thomas's notes for definitions)
+  Double_t fC1;                ///< coefficient C1 (compare Jim Thomas's notes for definitions)
+  TH3F *fCorrectionR;        ///< radial correction
+  TH3F *fCorrectionRPhi;     ///< r-phi correction
+  TH3F *fCorrectionZ;        ///< z correction
 private:
   AliTPCExBEffectiveSector(const AliTPCExBEffectiveSector&);
   AliTPCExBEffectiveSector &operator=(const AliTPCExBEffectiveSector&);
+  /// \cond CLASSIMP
   ClassDef(AliTPCExBEffectiveSector,2);
+  /// \endcond
 };
 
 #endif

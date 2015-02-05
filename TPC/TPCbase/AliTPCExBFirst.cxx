@@ -13,25 +13,26 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//
-// This implementation AliTPCExB is using an aproximate calculation of the ExB
-// effect. Therefore the drift ODE is Taylor expanded and only the first
-// order part is taken.
-//
-// 
-// The ExB correction map is stored in the calib DB
-// To test current version:
-/*
-  char *storage = "local://OCDBres"
-  Int_t RunNumber=0;
-  AliCDBManager::Instance()->SetDefaultStorage(storage);
-  AliCDBManager::Instance()->SetRun(RunNumber) 
-  AliTPCExBFirst * exb = AliTPCcalibDB::Instance()->GetExB();
-
-  //  exb->TestExB("exb.root");
-  // TFile f("exb.root");
-  //positions->Draw("drphi");
-*/
+/// \class AliTPCExBFirst
+/// \brief This implementation AliTPCExB is using an aproximate calculation of the ExB effect
+///
+/// Therefore the drift ODE is Taylor expanded and only the first
+/// order part is taken.
+///
+/// The ExB correction map is stored in the calib DB
+/// To test current version:
+///
+/// ~~~
+/// char *storage = "local://OCDBres"
+/// Int_t RunNumber=0;
+/// AliCDBManager::Instance()->SetDefaultStorage(storage);
+/// AliCDBManager::Instance()->SetRun(RunNumber)
+/// AliTPCExBFirst * exb = AliTPCcalibDB::Instance()->GetExB();
+///
+/// //  exb->TestExB("exb.root");
+/// // TFile f("exb.root");
+/// //positions->Draw("drphi");
+/// ~~~
 
 
 
@@ -41,7 +42,9 @@
 #include "TTreeStream.h"
 #include "AliTPCExBFirst.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCExBFirst)
+/// \endcond
 
 const Double_t AliTPCExBFirst::fgkEM=1.602176487e-19/9.10938215e-31;
 const Double_t AliTPCExBFirst::fgkDriftField=-40.e3;
@@ -53,9 +56,8 @@ AliTPCExBFirst::AliTPCExBFirst()
     fkZMin(-250.),fkZMax(250.),
     fkNMean(0),
     fkMeanBx(0),fkMeanBy(0),fkMeanBz(0.) {
-  //
-  // purely for I/O
-  //
+  /// purely for I/O
+
   SetInstance(this);
 }
 
@@ -68,19 +70,19 @@ AliTPCExBFirst::AliTPCExBFirst(const AliMagF *bField,
     fkZMin(-250.),fkZMax(250.),
     fkNMean(0),
     fkMeanBx(0),fkMeanBy(0),fkMeanBz(0.) {
-  //
-  // The constructor. One has to supply a magnetic field and an (initial)
-  // drift velocity. Since some kind of lookuptable is created the
-  // number of its meshpoints can be supplied.
-  //
-  //  ConstructCommon(0,bField);
+  /// The constructor. One has to supply a magnetic field and an (initial)
+  /// drift velocity. Since some kind of lookuptable is created the
+  /// number of its meshpoints can be supplied.
+  ///
+  ///  ConstructCommon(0,bField);
+
   ConstructCommon(bField);
   SetInstance(this);
 }
 
 /*
 AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
-			       Double_t driftVelocity) 
+			       Double_t driftVelocity)
   : fDriftVelocity(driftVelocity),
     fkNX(0),fkNY(0),fkNZ(0),
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
@@ -119,18 +121,16 @@ AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
 }
 */
 
-AliTPCExBFirst::~AliTPCExBFirst() { 
-  //
-  // destruct the poor object.
-  //
+AliTPCExBFirst::~AliTPCExBFirst() {
+  /// destruct the poor object.
+
   delete[] fkMeanBx;
   delete[] fkMeanBy;
 }
 
 void AliTPCExBFirst::Correct(const Double_t *position,Double_t *corrected) {
-  //
-  // correct for the distortion
-  //
+  /// correct for the distortion
+
   Double_t bx,by;
   GetMeanFields(position[0],position[1],position[2],&bx,&by);
   if (position[2]>0.) {
@@ -145,13 +145,13 @@ void AliTPCExBFirst::Correct(const Double_t *position,Double_t *corrected) {
       by=bye;
     }
   }
-  
+
   Double_t mu=fDriftVelocity/fgkDriftField;
   Double_t wt=mu*fkMeanBz;
-  
+
   corrected[0]=mu*(wt*bx-by)/(1.+wt*wt);
   corrected[1]=mu*(wt*by+bx)/(1.+wt*wt);
-  
+
   if (position[2]>0.) {
     corrected[0]*=(250.-position[2]);
     corrected[1]*=(250.-position[2]);
@@ -167,9 +167,8 @@ void AliTPCExBFirst::Correct(const Double_t *position,Double_t *corrected) {
 }
 
 void AliTPCExBFirst::TestThisBeautifulObject(const char* fileName) {
-  //
-  // well, as the name sais...
-  //
+  /// well, as the name sais...
+
   TTreeSRedirector ts(fileName);
   Double_t x[3];
   for (x[0]=-250.;x[0]<=250.;x[0]+=10.)
@@ -207,9 +206,8 @@ void AliTPCExBFirst::TestThisBeautifulObject(const char* fileName) {
 
 void AliTPCExBFirst::ConstructCommon(//const AliFieldMap *bFieldMap,
 				     const AliMagF *bField) {
-  //
-  // THIS IS PRIVATE! (a helper for the constructor)
-  //
+  /// THIS IS PRIVATE! (a helper for the constructor)
+
   fkNMean=fkNX*fkNY*fkNZ;
   fkMeanBx=new Double_t[fkNMean];
   fkMeanBy=new Double_t[fkNMean];
@@ -232,7 +230,7 @@ void AliTPCExBFirst::ConstructCommon(//const AliFieldMap *bFieldMap,
 	// that happens due to the lack of a sophisticated class design:
 	//	if (bFieldMap!=0)
 	//	  bFieldMap->Field(xt,b);
-	//	else 
+	//	else
 	((AliMagF*)bField)->Field(xt,b);
 	bx+=b[0]/10.;
 	by+=b[1]/10.;
@@ -251,9 +249,8 @@ void AliTPCExBFirst::ConstructCommon(//const AliFieldMap *bFieldMap,
 
 void AliTPCExBFirst::GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
 				   Double_t *Bx,Double_t *By) const {
-  //
-  // THIS IS PRIVATE! (calculates the mean field utilising a lookup table)
-  //
+  /// THIS IS PRIVATE! (calculates the mean field utilising a lookup table)
+
   Double_t x=(fkNX-1)*(rx-fkXMin)/(fkXMax-fkXMin);
   Int_t xi1=static_cast<Int_t>(x);
   xi1=TMath::Max(TMath::Min(xi1,fkNX-2),0);
@@ -267,7 +264,7 @@ void AliTPCExBFirst::GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
   Int_t yi2=yi1+1;
   Double_t dy=(y-yi1);
   Double_t dy1=(yi2-y);
-  
+
   Double_t z=(fkNZ-1)*(rz-fkZMin)/(fkZMax-fkZMin);
   Int_t zi1=static_cast<Int_t>(z);
   zi1=TMath::Max(TMath::Min(zi1,fkNZ-2),0);

@@ -4,15 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTPCCalibViewerGUI.h,v */
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  GUI for displaying calibration entires over time                         //
-//  Calibration Trees are created using the macro TPC/CalibMacros/CalibEnv.C //
-//  used for the calibration monitor                                         //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibViewerGUItime
+///
+/// \brief GUI for displaying calibration entires over time
+///  Calibration Trees are created using the macro TPC/CalibMacros/CalibEnv.C
+///  used for the calibration monitor
 
 
 #ifndef ROOT_TGButton
@@ -96,76 +92,76 @@ public:
   void UpdateAliasList();
   TCanvas * GetCanvas(){ return fCanvMain->GetCanvas();}
  private:
-  TFile*  fFile;                          //file that keeps the tree
-  TChain*  fTree;                         //internal tree
-  AliTPCCalibViewerGUI *fCalibViewerGUI;  //calib viewer gui used to display verbose information for one run
-  TGTabElement *fCalibViewerGUItab;       //tab the calib view gui redies in
-  TH1*    fCurrentHist;                   //histogram currently drawn in main canvas
-  TGraph* fCurrentGraph;                  //current graph
-  Int_t   fCurrentRunDetails;             //run number for wich details are currently shown
-  TString fOutputCacheDir;                //output cache diretory for AliTPCCalibViewerGUI trees, created on the fly
-  TString fDrawString;                    //current draw string
-  TString fConfigFile;                    //configuration file keeping active branches and branch descriptions
-  AliTPCConfigParser *fConfigParser;      //configuration parser
-  Bool_t  fIsCustomDraw;                  //if custom draw string is selected
-  TVectorD fRunNumbers;                   //run numbers of current selection
-  TVectorD fTimeStamps;                   //timr stamps of current selection
-  TVectorD fValuesX;                      //values of current selection
-  TVectorD fValuesY;                      //values of current selection
+  TFile*  fFile;                          ///< file that keeps the tree
+  TChain*  fTree;                         ///< internal tree
+  AliTPCCalibViewerGUI *fCalibViewerGUI;  ///< calib viewer gui used to display verbose information for one run
+  TGTabElement *fCalibViewerGUItab;       ///< tab the calib view gui redies in
+  TH1*    fCurrentHist;                   ///< histogram currently drawn in main canvas
+  TGraph* fCurrentGraph;                  ///< current graph
+  Int_t   fCurrentRunDetails;             ///< run number for wich details are currently shown
+  TString fOutputCacheDir;                ///< output cache diretory for AliTPCCalibViewerGUI trees, created on the fly
+  TString fDrawString;                    ///< current draw string
+  TString fConfigFile;                    ///< configuration file keeping active branches and branch descriptions
+  AliTPCConfigParser *fConfigParser;      ///< configuration parser
+  Bool_t  fIsCustomDraw;                  ///< if custom draw string is selected
+  TVectorD fRunNumbers;                   ///< run numbers of current selection
+  TVectorD fTimeStamps;                   ///< timr stamps of current selection
+  TVectorD fValuesX;                      ///< values of current selection
+  TVectorD fValuesY;                      ///< values of current selection
   //
-  Bool_t  fNoGraph;                       //Whether to create a graph
-  Long64_t fGraphLimitEntries;            //limit in number of entries in the chain for producing a graph
+  Bool_t  fNoGraph;                       ///< Whether to create a graph
+  Long64_t fGraphLimitEntries;            ///< limit in number of entries in the chain for producing a graph
   //
-  TMap *fMapRefTrees;                      //map of reference trees for the CalibViewer
+  TMap *fMapRefTrees;                      ///< map of reference trees for the CalibViewer
   //GUI elements
   //main canvas Top part, bottom part
-  TGCompositeFrame    *fContTopBottom;      // container for all GUI elements, vertical divided
+  TGCompositeFrame    *fContTopBottom;      ///< container for all GUI elements, vertical divided
   //top left, centre, right
-  TGCompositeFrame    *fContLCR;            // container for all GUI elements, horizontal divided
+  TGCompositeFrame    *fContLCR;            ///< container for all GUI elements, horizontal divided
   //content left
-  TGCompositeFrame    *fContLeft;           // container for GUI elements on left side
-  TGGroupFrame        *fContDrawOpt;        // Subgroup for draw selection
-  TGCheckButton       *fChkDrawOptSame;     // draw option 'same'
-  TGCheckButton       *fChkDrawOptSparse;   // draw option 'sparse'
-  TGComboBox          *fComboAddDrawOpt;    // additional draw options combo box
-  TGGroupFrame        *fContDrawSel;        // Subgroup for draw selection
-  TGCompositeFrame    *fContDrawSelSubRunTime; //Radio button subframe
-  TGRadioButton       *fRadioXhist;         // Radio button x-variable: show only 1D distribution
-  TGRadioButton       *fRadioXrun;          // Radio button x-variable: run
-  TGRadioButton       *fRadioXtime;         // Radio button x-variable: time
-  TGListBox           *fListVariables;      // listbox with possible variables
-  TGComboBox          *fComboRunType;       // run type selection box
-  TGLabel             *fLblRunType;         // run type label
-  TGNumberEntry       *fNmbPar;             // parameter number
-  TGLabel             *fLblPar;             // parameter name
-  TGListBox           *fListCalibType;      // calibration type selection box
-  TGGroupFrame        *fContCalibType;      // calibration type label
+  TGCompositeFrame    *fContLeft;           ///< container for GUI elements on left side
+  TGGroupFrame        *fContDrawOpt;        ///< Subgroup for draw selection
+  TGCheckButton       *fChkDrawOptSame;     ///< draw option 'same'
+  TGCheckButton       *fChkDrawOptSparse;   ///< draw option 'sparse'
+  TGComboBox          *fComboAddDrawOpt;    ///< additional draw options combo box
+  TGGroupFrame        *fContDrawSel;        ///< Subgroup for draw selection
+  TGCompositeFrame    *fContDrawSelSubRunTime; ///< Radio button subframe
+  TGRadioButton       *fRadioXhist;         ///< Radio button x-variable: show only 1D distribution
+  TGRadioButton       *fRadioXrun;          ///< Radio button x-variable: run
+  TGRadioButton       *fRadioXtime;         ///< Radio button x-variable: time
+  TGListBox           *fListVariables;      ///< listbox with possible variables
+  TGComboBox          *fComboRunType;       ///< run type selection box
+  TGLabel             *fLblRunType;         ///< run type label
+  TGNumberEntry       *fNmbPar;             ///< parameter number
+  TGLabel             *fLblPar;             ///< parameter name
+  TGListBox           *fListCalibType;      ///< calibration type selection box
+  TGGroupFrame        *fContCalibType;      ///< calibration type label
   //content centre
-  TGCompositeFrame    *fContCenter;         // container for GUI elements at the center
-  TRootEmbeddedCanvas *fCanvMain;           // main drawing canvas
+  TGCompositeFrame    *fContCenter;         ///< container for GUI elements at the center
+  TRootEmbeddedCanvas *fCanvMain;           ///< main drawing canvas
   //content right 
-  TGCompositeFrame    *fContRight;          // container for GUI elements on right side
-  TGGroupFrame        *fContValues;         // container to keep data point information
-  TGLabel             *fLblRunNumber;       // run number label
-  TGLabel             *fLblRunTime;         // time stamp label
-  TGLabel             *fLblValueX;          // value label
-  TGLabel             *fLblValueY;          // value label
-  TGLabel             *fLblRunNumberVal;    // run number of the data point hoovered
-  TGLabel             *fLblRunTimeVal;      // time stamp of the data point hoovered
-  TGLabel             *fLblValueXVal;       // value of the data point hoovered
-  TGLabel             *fLblValueYVal;       // value of the data point hoovered
-  TGTextButton        *fBtnDumpRuns;        // draw button
-  TGGroupFrame        *fContAliases;         // container to keep data point information
-  TGListBox           *fListAliases;        // list of aliases
+  TGCompositeFrame    *fContRight;          ///< container for GUI elements on right side
+  TGGroupFrame        *fContValues;         ///< container to keep data point information
+  TGLabel             *fLblRunNumber;       ///< run number label
+  TGLabel             *fLblRunTime;         ///< time stamp label
+  TGLabel             *fLblValueX;          ///< value label
+  TGLabel             *fLblValueY;          ///< value label
+  TGLabel             *fLblRunNumberVal;    ///< run number of the data point hoovered
+  TGLabel             *fLblRunTimeVal;      ///< time stamp of the data point hoovered
+  TGLabel             *fLblValueXVal;       ///< value of the data point hoovered
+  TGLabel             *fLblValueYVal;       ///< value of the data point hoovered
+  TGTextButton        *fBtnDumpRuns;        ///< draw button
+  TGGroupFrame        *fContAliases;         ///< container to keep data point information
+  TGListBox           *fListAliases;        ///< list of aliases
   //content bottom
-  TGCompositeFrame    *fContCustom;         // container for custom draw command GUI elements
-  TGCompositeFrame    *fContCustomCuts;     // container for custom cut options GUI elements
-  TGLabel             *fLblCustomDraw;      // label for custom draw string
-  TGLabel             *fLblCustomCuts;      // label for custom cuts string
-  TGComboBox          *fComboCustomDraw;    // combo box custom draw string
-  TGComboBox          *fComboCustomCuts;    // combo box custom cuts string
+  TGCompositeFrame    *fContCustom;         ///< container for custom draw command GUI elements
+  TGCompositeFrame    *fContCustomCuts;     ///< container for custom cut options GUI elements
+  TGLabel             *fLblCustomDraw;      ///< label for custom draw string
+  TGLabel             *fLblCustomCuts;      ///< label for custom cuts string
+  TGComboBox          *fComboCustomDraw;    ///< combo box custom draw string
+  TGComboBox          *fComboCustomCuts;    ///< combo box custom cuts string
   //
-  TObjArray *fTrashBox;                   //graphics objects to be deleted (histograms, graphs,...)
+  TObjArray *fTrashBox;                   ///< graphics objects to be deleted (histograms, graphs,...)
   
   enum { kRadioXhist=10, kRadioXrun=11, kRadioXtime=12 };
   enum { kBranchOnOff=0, kBranchTitle=1, kCalibType=2, kParamNames=3 };
@@ -208,15 +204,17 @@ public:
   
 
 private:
-  TGTransientFrame    *fMain;           //Main frame
-  TGTextEntry         *fTxt1, *fTxt2;   //text input
+  TGTransientFrame    *fMain;           ///< Main frame
+  TGTextEntry         *fTxt1, *fTxt2;   ///< text input
 
-  AliTPCCalibViewerGUItime *fGUI;       //pointer to mother process
+  AliTPCCalibViewerGUItime *fGUI;       ///< pointer to mother process
 
   AliTPCCalibViewerGUItimeAddAliasFrame(const AliTPCCalibViewerGUItimeAddAliasFrame &r);
   AliTPCCalibViewerGUItimeAddAliasFrame &operator = (const AliTPCCalibViewerGUItimeAddAliasFrame &r);
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCCalibViewerGUItimeAddAliasFrame,0)
+  /// \endcond
 };
 
 #endif

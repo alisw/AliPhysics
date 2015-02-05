@@ -4,11 +4,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////
-// AliTPCBoundaryVoltError class                                          //
-// date: 01/06/2010                                                       //
-// Authors: Jim Thomas, Stefan Rossegger                                  //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCBoundaryVoltError
+///
+/// AliTPCBoundaryVoltError class
+///
+/// \author Jim Thomas, Stefan Rossegger
+/// \date 01/06/2010
 
 #include "AliTPCCorrection.h"
 
@@ -52,23 +53,25 @@ protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:
-  Float_t fC0; // coefficient C0                 (compare Jim Thomas's notes for definitions)
-  Float_t fC1; // coefficient C1                 (compare Jim Thomas's notes for definitions)
-  Float_t  fBoundariesA[8];            // Boundary values on the A side (see Setter function)
-  Float_t  fBoundariesC[8];            // Boundary values on the C side (see Setter function)
+  Float_t fC0; ///< coefficient C0                 (compare Jim Thomas's notes for definitions)
+  Float_t fC1; ///< coefficient C1                 (compare Jim Thomas's notes for definitions)
+  Float_t  fBoundariesA[8];            ///< Boundary values on the A side (see Setter function)
+  Float_t  fBoundariesC[8];            ///< Boundary values on the C side (see Setter function)
 
-  Bool_t fROCdisplacement;      // flag for ROC displacement (important for z distortions)
-  Bool_t fInitLookUp;           // flag to check it the Look Up table was created
+  Bool_t fROCdisplacement;      ///< flag for ROC displacement (important for z distortions)
+  Bool_t fInitLookUp;           ///< flag to check it the Look Up table was created
 
-  Double_t fLookUpErOverEz[kNZ][kNR];  // Array to store electric field integral (int Er/Ez)
-  Double_t fLookUpDeltaEz[kNZ][kNR];   // Array to store electric field integral (int Delta Ez)
+  Double_t fLookUpErOverEz[kNZ][kNR];  ///< Array to store electric field integral (int Er/Ez)
+  Double_t fLookUpDeltaEz[kNZ][kNR];   ///< Array to store electric field integral (int Delta Ez)
 
   // basic numbers for the poisson relaxation //can be set individually in each class
   enum {kRows   =257}; // grid size in r direction used in the poisson relaxation // ( 2**n + 1 ) eg. 65, 129, 257 etc.
   enum {kColumns=257}; // grid size in r direction used in the poisson relaxation // ( 2**m + 1 ) eg. 65, 129, 257 etc.
   enum {kIterations=100}; // Number of iterations within the poisson relaxation 
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCBoundaryVoltError,1); 
+  /// \endcond
 };
 
 #endif

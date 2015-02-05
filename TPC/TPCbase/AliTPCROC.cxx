@@ -14,16 +14,15 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Geometry        class for a single ROC                                   //
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCROC
+/// \brief Geometry class for a single ROC
+
 #include "AliTPCROC.h"
 #include "TMath.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCROC)
+/// \endcond
 
 
 AliTPCROC* AliTPCROC::fgInstance = 0;
@@ -34,13 +33,12 @@ AliTPCROC* AliTPCROC::fgInstance = 0;
 //_ singleton implementation __________________________________________________
 AliTPCROC* AliTPCROC::Instance()
 {
-  //
-  // Singleton implementation
-  // Returns an instance of this class, it is created if neccessary
-  //
+  /// Singleton implementation
+  /// Returns an instance of this class, it is created if neccessary
+
   if (fgInstance == 0){
     fgInstance = new AliTPCROC();
-    fgInstance->Init();    
+    fgInstance->Init();
   }
   return fgInstance;
 }
@@ -49,9 +47,8 @@ AliTPCROC* AliTPCROC::Instance()
 
 
 void AliTPCROC::Init(){
-  //
-  // initialize static variables
-  //
+  /// initialize static variables
+
   if (AliTPCROC::fNSectorsAll>0) return;
   fNSectorsAll =72;
   fNSectors[0] =36;
@@ -62,7 +59,7 @@ void AliTPCROC::Init(){
   //
   // number of pads in padrow
   fNPads[0] = new UInt_t[fNRows[0]];
-  fNPads[1] = new UInt_t[fNRows[1]];  
+  fNPads[1] = new UInt_t[fNRows[1]];
   //
   // padrow index in array
   //
@@ -83,8 +80,8 @@ void AliTPCROC::Init(){
   index =0;
   Double_t k1 = 10.*TMath::Tan(10*TMath::DegToRad())/6.;
   Double_t k2 = 15.*TMath::Tan(10*TMath::DegToRad())/6.;
-  for (UInt_t irow=0; irow<fNRows[1];irow++){    
-    UInt_t npads = (irow<64) ? 
+  for (UInt_t irow=0; irow<fNRows[1];irow++){
+    UInt_t npads = (irow<64) ?
       2*Int_t(k1*Double_t(irow)+37.75):
       2*Int_t(k2*Double_t(irow-64)+56.66);
     fNPads[1][irow] = npads;
@@ -100,9 +97,8 @@ void AliTPCROC::Init(){
 
 void AliTPCROC::SetGeometry()
 {
-  //
-  //set ROC geometry parameters
-  //
+  /// set ROC geometry parameters
+
   const  Float_t kInnerRadiusLow = 83.65;
   const  Float_t kInnerRadiusUp  = 133.3;
   const  Float_t kOuterRadiusLow = 133.5;
@@ -120,7 +116,7 @@ void AliTPCROC::SetGeometry()
   const  Float_t kOuterAngle = 20; // 20 degrees
   //
   //  pad     parameters
-  // 
+  //
   const Float_t  kInnerPadPitchLength = 0.75;
   const Float_t  kInnerPadPitchWidth = 0.40;
   const Float_t  kInnerPadLength = 0.75;
@@ -130,7 +126,7 @@ void AliTPCROC::SetGeometry()
   const Float_t  kOuter1PadLength = 1.0;
   const Float_t  kOuterPadWidth = 0.6;
   const Float_t  kOuter2PadPitchLength = 1.5;
-  const Float_t  kOuter2PadLength = 1.5;  
+  const Float_t  kOuter2PadLength = 1.5;
 
   //
   //wires default parameters
@@ -143,7 +139,7 @@ void AliTPCROC::SetGeometry()
 //   const Float_t  kInnerOffWire = 0.5;
 //   const UInt_t    kNOuter1WiresPerPad = 4;
 //   const UInt_t    kNOuter2WiresPerPad = 6;
-//   const Float_t  kOuterWWPitch = 0.25;  
+//   const Float_t  kOuterWWPitch = 0.25;
 //   const Float_t  kROuterFirstWire = 134.225;
 //   const Float_t  kROuterLastWire = 246.975;
 //   const UInt_t    kOuterDummyWire = 2;
@@ -154,7 +150,7 @@ void AliTPCROC::SetGeometry()
   fInnerRadiusLow = kInnerRadiusLow;
   fOuterRadiusLow = kOuterRadiusLow;
   fInnerRadiusUp  = kInnerRadiusUp;
-  fOuterRadiusUp  = kOuterRadiusUp;  
+  fOuterRadiusUp  = kOuterRadiusUp;
   fInnerFrameSpace = kInnerFrameSpace;
   fOuterFrameSpace = kOuterFrameSpace;
   fInnerWireMount  = kInnerWireMount;
@@ -174,12 +170,12 @@ void AliTPCROC::SetGeometry()
   fInnerPadPitchWidth  = kInnerPadPitchWidth;
   fInnerPadLength      = kInnerPadLength;
   fInnerPadWidth       = kInnerPadWidth;
-  fOuter1PadPitchLength = kOuter1PadPitchLength; 
+  fOuter1PadPitchLength = kOuter1PadPitchLength;
   fOuter2PadPitchLength = kOuter2PadPitchLength;
   fOuterPadPitchWidth   = kOuterPadPitchWidth;
   fOuter1PadLength      = kOuter1PadLength;
   fOuter2PadLength      = kOuter2PadLength;
-  fOuterPadWidth        = kOuterPadWidth; 
+  fOuterPadWidth        = kOuterPadWidth;
 
   //
   //set wire parameters
@@ -196,28 +192,28 @@ void AliTPCROC::SetGeometry()
   //   SetRInnerLastWire(kRInnerLastWire);
   //   SetOuterWWPitch(kOuterWWPitch);
   //   SetROuterFirstWire(kROuterFirstWire);
-  //   SetROuterLastWire(kROuterLastWire);  
+  //   SetROuterLastWire(kROuterLastWire);
 
   UInt_t i=0;
-  Float_t firstrow = fInnerRadiusLow + 1.575;   
+  Float_t firstrow = fInnerRadiusLow + 1.575;
   for( i= 0;i<fNRowLow;i++)
     {
-      Float_t x = firstrow + fInnerPadPitchLength*(Float_t)i;  
+      Float_t x = firstrow + fInnerPadPitchLength*(Float_t)i;
       fPadRowLow[i]=x;
       fYInner[i+1]  = x*TMath::Tan(fInnerAngle/2.)-fInnerWireMount;
-      fNPadsLow[i] = GetNPads(0,i) ;     // ROC implement     
+      fNPadsLow[i] = GetNPads(0,i) ;     // ROC implement
     }
   // cross talk rows
   fYInner[0]=(fPadRowLow[0]-fInnerPadPitchLength)*TMath::Tan(fInnerAngle/2.)-fInnerWireMount;
-  fYInner[fNRowLow+1]=(fPadRowLow[fNRowLow-1]+fInnerPadPitchLength)*TMath::Tan(fInnerAngle/2.)-fInnerWireMount; 
+  fYInner[fNRowLow+1]=(fPadRowLow[fNRowLow-1]+fInnerPadPitchLength)*TMath::Tan(fInnerAngle/2.)-fInnerWireMount;
   firstrow = fOuterRadiusLow + 1.6;
   for(i=0;i<fNRowUp;i++)
     {
       if(i<fNRowUp1){
-	Float_t x = firstrow + fOuter1PadPitchLength*(Float_t)i; 
+	Float_t x = firstrow + fOuter1PadPitchLength*(Float_t)i;
 	fPadRowUp[i]=x;
 	fYOuter[i+1]= x*TMath::Tan(fOuterAngle/2.)-fOuterWireMount;
-	fNPadsUp[i] =  GetNPads(36,i) ;     // ROC implement      
+	fNPadsUp[i] =  GetNPads(36,i) ;     // ROC implement
 	if(i==fNRowUp1-1) {
 	  fLastWireUp1=fPadRowUp[i] +0.625;
 	  firstrow = fPadRowUp[i] + 0.5*(fOuter1PadPitchLength+fOuter2PadPitchLength);
@@ -231,17 +227,17 @@ void AliTPCROC::SetGeometry()
 	}
       fYOuter[i+1]  = fPadRowUp[i]*TMath::Tan(fOuterAngle/2.)-fOuterWireMount;
     }
-  
 
 
-} 
+
+}
 
 
 
 
 //_____________________________________________________________________________
 AliTPCROC::AliTPCROC()
-          :TObject(), 
+          :TObject(),
            fNSectorsAll(0),
 	   fInnerRadiusLow(0.),
 	   fInnerRadiusUp(0.),
@@ -284,8 +280,8 @@ AliTPCROC::AliTPCROC()
 	   fNRowUp(0),
 	   fNtRows(0)
 {
-  //
-  // Default constructor
+  /// Default constructor
+
   for (UInt_t i=0;i<2;i++){
     fNSectors[i]  = 0;
     fNRows[i]     = 0;
@@ -293,7 +289,7 @@ AliTPCROC::AliTPCROC()
     fNPads[i]     = 0;
     fRowPosIndex[i]= 0;
   }
-  
+
   for (UInt_t i=0;i<100;++i){
     fPadRowLow[i]=0.;
     fPadRowUp[i]=0.;
@@ -351,9 +347,8 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc)
 	   fNtRows(0)
 
 {
-  //
-  // AliTPCROC copy constructor
-  //
+  /// AliTPCROC copy constructor
+
   fNSectorsAll = roc.fNSectorsAll;
   fNSectors[0] = roc.fNSectors[0];
   fNSectors[1] = roc.fNSectors[1];
@@ -364,7 +359,7 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc)
   //
   // number of pads in padrow
   fNPads[0] = new UInt_t[fNRows[0]];
-  fNPads[1] = new UInt_t[fNRows[1]];  
+  fNPads[1] = new UInt_t[fNRows[1]];
   //
   // padrow index in array
   //
@@ -379,7 +374,7 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc)
     fNPads[1][irow]       = roc.fNPads[1][irow];
     fRowPosIndex[1][irow] = roc.fRowPosIndex[1][irow];
   }
-  
+
   for (UInt_t i=0;i<100;++i){
     fPadRowLow[i]=roc.fPadRowLow[i];
     fPadRowUp[i]=roc.fPadRowUp[i];
@@ -393,9 +388,8 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc)
 //____________________________________________________________________________
 AliTPCROC & AliTPCROC::operator =(const AliTPCROC & roc)
 {
-  //
-  // assignment operator - dummy
-  //
+  /// assignment operator - dummy
+
   if (this == &roc) return (*this);
 
   fZLength = roc.fZLength;
@@ -404,31 +398,29 @@ AliTPCROC & AliTPCROC::operator =(const AliTPCROC & roc)
 //_____________________________________________________________________________
 AliTPCROC::~AliTPCROC()
 {
-  //
-  // AliTPCROC destructor
-  //
+  /// AliTPCROC destructor
+
   delete [] fNPads[0];
   delete [] fNPads[1];
   delete [] fRowPosIndex[0];
   delete [] fRowPosIndex[1];
   fgInstance = 0x0;
-  
+
 }
 
 
 
 
 void AliTPCROC::GetPositionLocal(UInt_t sector, UInt_t row, UInt_t pad, Float_t *pos){
-  //
-  // get position of center of pad - ideal frame used
-  //
+  /// get position of center of pad - ideal frame used
+
   pos[2]=fZLength;
   if (sector<36){
    pos[0] = fPadRowLow[row];
    pos[1] = fInnerPadPitchWidth*(Int_t(pad)+0.5-Int_t(fNPads[0][row])/2);
   }else{
     pos[0] = fPadRowUp[row];
-    pos[1] = fOuterPadPitchWidth*(Int_t(pad)+0.5-Int_t(fNPads[1][row])/2);    
+    pos[1] = fOuterPadPitchWidth*(Int_t(pad)+0.5-Int_t(fNPads[1][row])/2);
   }
   if ((sector%36)>=18){
     pos[2] *= -1.;
@@ -438,9 +430,8 @@ void AliTPCROC::GetPositionLocal(UInt_t sector, UInt_t row, UInt_t pad, Float_t 
 
 
 void AliTPCROC::GetPositionGlobal(UInt_t sector, UInt_t row, UInt_t pad, Float_t *pos){
-  //
-  // get position of center of pad - ideal frame used 
-  //
+  /// get position of center of pad - ideal frame used
+
   GetPositionLocal(sector,row,pad,pos);
   Double_t alpha = TMath::DegToRad()*(10.+20.*(sector%18));
   Float_t gx = pos[0]*TMath::Cos(alpha)-pos[1]*TMath::Sin(alpha);

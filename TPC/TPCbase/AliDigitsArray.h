@@ -5,9 +5,9 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class for AliDigitsArray        //
-////////////////////////////////////////////////
+/// \class AliDigitsArray
+///
+///  Manager class for AliDigitsArray
 
 #include "AliSegmentArray.h"
 class AliDetectorParam;
@@ -22,7 +22,7 @@ public:
   const AliDetectorParam *  GetParam() {return fParam;} 
   virtual Bool_t SetParam(AliDetectorParam * param);
 protected:  
-  AliDetectorParam * fParam;      //pointer to detector parameters 
+  AliDetectorParam * fParam;      ///< pointer to detector parameters
   ClassDef(AliDigitsArray,1) // Digits manager  
 };
   

@@ -13,19 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Class for Parsing simple text configuration files                        //
-//  It produces a TMap for the Key=>Value pairs found in the                 //
-//  Configutation file.                                                      //
-//                                                                           //
-// The configuration file has a simple structure:                            //
-// * Lines starting with a # or empty lines are ignored                      //
-// * Key and Value are separated either by a <tab> or <space>es              //
-//                                                                           //
-//  Currently the class is used in the TPC DAs to allow an adjustment of     //
-//  the most relevant parameters without recompiling the DAs                 //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCConfigDA
+/// \brief  Class for Parsing simple text configuration files
+///
+/// It produces a TMap for the Key=>Value pairs found in the
+/// Configutation file.
+///
+/// The configuration file has a simple structure:
+/// * Lines starting with a # or empty lines are ignored
+/// * Key and Value are separated either by a <tab> or <space>es
+///
+/// Currently the class is used in the TPC DAs to allow an adjustment of
+/// the most relevant parameters without recompiling the DAs
 
 
 #include <fstream>
@@ -46,19 +45,17 @@ AliTPCConfigDA::AliTPCConfigDA() :
   TObject(),
   fConfigMap(new TMap)
 {
- //
- // default constructor
- //
+ /// default constructor
+
  fConfigMap->SetOwnerKeyValue();
-} 
+}
 //_____________________________________________________________________
 AliTPCConfigDA::AliTPCConfigDA(const AliTPCConfigDA &cfg) :
   TObject(),
   fConfigMap((TMap*)cfg.fConfigMap->Clone())
 {
-  //
-  // copy constructor
-  //
+  /// copy constructor
+
   fConfigMap->SetOwnerKeyValue();
 }
 
@@ -67,9 +64,8 @@ AliTPCConfigDA::AliTPCConfigDA(const char* cfgfile) :
   TObject(),
   fConfigMap(new TMap)
 {
-  //
-  // default constructor using the config file name as input parameter
-  //
+  /// default constructor using the config file name as input parameter
+
   fConfigMap->SetOwnerKeyValue();
   if ( !cfgfile ) return;
   ParseConfigFileTxt(cfgfile);
@@ -77,9 +73,8 @@ AliTPCConfigDA::AliTPCConfigDA(const char* cfgfile) :
 //_____________________________________________________________________
 AliTPCConfigDA& AliTPCConfigDA::operator = (const  AliTPCConfigDA &source)
 {
-  //
-  // assignment operator
-  //
+  /// assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCConfigDA(source);
 
@@ -88,34 +83,31 @@ AliTPCConfigDA& AliTPCConfigDA::operator = (const  AliTPCConfigDA &source)
 //_____________________________________________________________________
 AliTPCConfigDA::~AliTPCConfigDA()
 {
- //
- // dtor
- //   
+ /// dtor
+
   delete fConfigMap;
 }
 //_____________________________________________________________________
 Int_t AliTPCConfigDA::ParseConfigFileTxt(const char* cfgfile)
 {
- //
- // Function to parse a configuration file
- //
+ /// Function to parse a configuration file
 
  ifstream file(cfgfile);
  if ( !file.is_open() ){
   Error("ParseConfigFileTxt","File %s could not be opened!", cfgfile);
   return 1;
- } 
+ }
  TString strFile;
  strFile.ReadFile(file);
  TObjArray *arr=strFile.Tokenize("\n");
  if ( !arr ) {
-   file.close(); 
+   file.close();
    return 2;
  }
  TIter nextLine(arr);
  while (TObject *l=nextLine()){
   TString line(((TObjString*)l)->GetString());
-  //remove whitespcaces 
+  //remove whitespcaces
   line.Remove(TString::kBoth,' ');
   line.Remove(TString::kBoth,'\t');
   if ( line.BeginsWith("#") || line=="" ) continue;
@@ -127,8 +119,8 @@ Int_t AliTPCConfigDA::ParseConfigFileTxt(const char* cfgfile)
     continue;
   }
   fConfigMap->Add(arrValues->At(0)->Clone(),arrValues->At(1)->Clone());
-  delete arrValues; 
- } 
+  delete arrValues;
+ }
 
  delete arr;
  return 0;
@@ -136,19 +128,17 @@ Int_t AliTPCConfigDA::ParseConfigFileTxt(const char* cfgfile)
 //_____________________________________________________________________
 Float_t AliTPCConfigDA::GetValue(const char *key) const
 {
-  //
-  //Get value for the speciefied key
-  //
+  /// Get value for the speciefied key
+
   TObject *val=fConfigMap->GetValue(key);
   if ( !val ) return -999.;
   TString sval(((TObjString*)val)->GetString());
-  return sval.Atof(); 
+  return sval.Atof();
 }
 //_____________________________________________________________________
 void AliTPCConfigDA::ResetMap()
 {
-  //
-  // Reset the map with the configuration values
-  //
+  /// Reset the map with the configuration values
+
   fConfigMap->DeleteAll();
 }

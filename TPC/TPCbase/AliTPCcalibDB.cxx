@@ -13,68 +13,60 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class providing the calibration parameters by accessing the CDB           //
-//                                                                           //
-// Request an instance with AliTPCcalibDB::Instance()                        //
-// If a new event is processed set the event number with SetRun              //
-// Then request the calibration data                                         ////
-//
-//
-// Calibration data:
-// 0.)  Altro mapping
-//          Simulation      - not yet 
-//          Reconstruction  - AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
-//
-// 1.)  pad by pad calibration -  AliTPCCalPad
-//      
-//      a.) fPadGainFactor
-//          Simulation: AliTPCDigitizer::ExecFast - Multiply by gain
-//          Reconstruction : AliTPCclusterer::Digits2Clusters - Divide by gain  
-//
-//      b.) fPadNoise -
-//          Simulation:        AliTPCDigitizer::ExecFast
-//          Reconstruction:    AliTPCclusterer::FindClusters(AliTPCCalROC * noiseROC)
-//                             Noise depending cut on clusters charge (n sigma)
-//      c.) fPedestal:
-//          Simulation:     Not used yet - To be impleneted - Rounding to the nearest integer
-//          Reconstruction: Used in AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader) 
-//                          if data taken without zero suppression  
-//                          Currently switch in  fRecoParam->GetCalcPedestal();
-//      
-//      d.) fPadTime0
-//          Simulation:      applied in the AliTPC::MakeSector - adding offset
-//          Reconstruction:  AliTPCTransform::Transform() - remove offset
-//                           AliTPCTransform::Transform() - to be called
-//                           in AliTPCtracker::Transform()      
-//
-// 
-// 2.)  Space points transformation:
-//
-//      a.) General coordinate tranformation - AliTPCtransform (see $ALICE_ROOT/TPC/AliTPCtransform.cxx)
-//          Created on fly - use the other calibration components
-//                 Unisochronity  - (substract time0 - pad by pad)
-//                 Drift velocity - Currently common drift velocity - functionality of AliTPCParam
-//                 ExB effect    
-//          Simulation     - Not used directly (the effects are applied one by one (see AliTPC::MakeSector)
-//          Reconstruction - 
-//                           AliTPCclusterer::AddCluster
-//                           AliTPCtracker::Transform
-//      b.) ExB effect calibration - 
-//             classes (base class AliTPCExB, implementation- AliTPCExBExact.h  AliTPCExBFirst.h)
-//             a.a) Simulation:   applied in the AliTPC::MakeSector - 
-//                                calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-//             a.b) Reconstruction -  
-//                  
-//                  in AliTPCtransform::Correct() - called calib->GetExB()->Correct(dxyz0,dxyz1)
-//
-//  3.)   cluster error, shape and Q parameterization
-//
-//
-//
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCcalibDB
+/// \brief Class providing the calibration parameters by accessing the CDB
+///
+/// Request an instance with AliTPCcalibDB::Instance()
+/// If a new event is processed set the event number with SetRun
+/// Then request the calibration data
+///
+/// Calibration data:
+/// 0.)  Altro mapping
+///          Simulation      - not yet
+///          Reconstruction  - AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
+///
+/// 1.)  pad by pad calibration -  AliTPCCalPad
+///
+///      a.) fPadGainFactor
+///          Simulation: AliTPCDigitizer::ExecFast - Multiply by gain
+///          Reconstruction : AliTPCclusterer::Digits2Clusters - Divide by gain
+///
+///      b.) fPadNoise -
+///          Simulation:        AliTPCDigitizer::ExecFast
+///          Reconstruction:    AliTPCclusterer::FindClusters(AliTPCCalROC * noiseROC)
+///                             Noise depending cut on clusters charge (n sigma)
+///      c.) fPedestal:
+///          Simulation:     Not used yet - To be impleneted - Rounding to the nearest integer
+///          Reconstruction: Used in AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
+///                          if data taken without zero suppression
+///                          Currently switch in  fRecoParam->GetCalcPedestal();
+///
+///      d.) fPadTime0
+///          Simulation:      applied in the AliTPC::MakeSector - adding offset
+///          Reconstruction:  AliTPCTransform::Transform() - remove offset
+///                           AliTPCTransform::Transform() - to be called
+///                           in AliTPCtracker::Transform()
+///
+/// 2.)  Space points transformation:
+///
+///      a.) General coordinate tranformation - AliTPCtransform (see $ALICE_ROOT/TPC/AliTPCtransform.cxx)
+///          Created on fly - use the other calibration components
+///                 Unisochronity  - (substract time0 - pad by pad)
+///                 Drift velocity - Currently common drift velocity - functionality of AliTPCParam
+///                 ExB effect
+///          Simulation     - Not used directly (the effects are applied one by one (see AliTPC::MakeSector)
+///          Reconstruction -
+///                           AliTPCclusterer::AddCluster
+///                           AliTPCtracker::Transform
+///      b.) ExB effect calibration -
+///             classes (base class AliTPCExB, implementation- AliTPCExBExact.h  AliTPCExBFirst.h)
+///             a.a) Simulation:   applied in the AliTPC::MakeSector -
+///                                calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+///             a.b) Reconstruction -
+///
+///                  in AliTPCtransform::Correct() - called calib->GetExB()->Correct(dxyz0,dxyz1)
+///
+///  3.)   cluster error, shape and Q parameterization
 
 #include <iostream>
 #include <fstream>
@@ -133,21 +125,21 @@ class AliTPCCalDet;
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCcalibDB)
+/// \endcond
 
 AliTPCcalibDB* AliTPCcalibDB::fgInstance = 0;
 Bool_t AliTPCcalibDB::fgTerminated = kFALSE;
-TObjArray    AliTPCcalibDB::fgExBArray;    // array of ExB corrections
+TObjArray    AliTPCcalibDB::fgExBArray;    ///< array of ExB corrections
 
 
 //_ singleton implementation __________________________________________________
 AliTPCcalibDB* AliTPCcalibDB::Instance()
 {
-  //
-  // Singleton implementation
-  // Returns an instance of this class, it is created if necessary
-  //
-  
+  /// Singleton implementation
+  /// Returns an instance of this class, it is created if necessary
+
   if (fgTerminated != kFALSE)
     return 0;
 
@@ -159,12 +151,10 @@ AliTPCcalibDB* AliTPCcalibDB::Instance()
 
 void AliTPCcalibDB::Terminate()
 {
-  //
-  // Singleton implementation
-  // Deletes the instance of this class and sets the terminated flag, instances cannot be requested anymore
-  // This function can be called several times.
-  //
-  
+  /// Singleton implementation
+  /// Deletes the instance of this class and sets the terminated flag, instances cannot be requested anymore
+  /// This function can be called several times.
+
   fgTerminated = kTRUE;
   
   if (fgInstance != 0)
@@ -217,10 +207,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fCTPTimeParams(0),
   fMode(-1)
 {
-  //
-  // constructor
-  //  
-  //
+  /// constructor
+
   fgInstance=this;
   for (Int_t i=0;i<72;++i){
     fChamberHVStatus[i]=kTRUE;
@@ -281,9 +269,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fCTPTimeParams(0),
   fMode(-1)
 {
-  //
-  // Copy constructor invalid -- singleton implementation
-  //
+  /// Copy constructor invalid -- singleton implementation
+
   Error("copy constructor","invalid -- singleton implementation");
   for (Int_t i=0;i<72;++i){
     fChamberHVStatus[i]=kTRUE;
@@ -303,9 +290,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
 
 AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& )
 {
-//
-// Singleton implementation - no assignment operator
-//
+/// Singleton implementation - no assignment operator
+
   Error("operator =", "assignment operator not implemented");
   return *this;
 }
@@ -315,19 +301,18 @@ AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& )
 //_____________________________________________________________________________
 AliTPCcalibDB::~AliTPCcalibDB() 
 {
-  //
-  // destructor
-  //
-  //delete fIonTailArray; 
+  /// destructor
+  ///
+  /// delete fIonTailArray;
+
   delete fActiveChannelMap;
   delete fGrRunState;
   fgInstance = 0;
 }
 
 AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
-  //
-  // get distortion map - due E field distortions
-  //
+  /// get distortion map - due E field distortions
+
   return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;
 }
 
@@ -338,9 +323,8 @@ AliTPCRecoParam* AliTPCcalibDB::GetRecoParam(Int_t i) const {
 //_____________________________________________________________________________
 AliCDBEntry* AliTPCcalibDB::GetCDBEntry(const char* cdbPath)
 {
-  // 
-  // Retrieves an entry with path <cdbPath> from the CDB.
-  //
+  /// Retrieves an entry with path <cdbPath> from the CDB.
+
   char chinfo[1000];
     
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, fRun); 
@@ -357,9 +341,8 @@ AliCDBEntry* AliTPCcalibDB::GetCDBEntry(const char* cdbPath)
 //_____________________________________________________________________________
 void AliTPCcalibDB::SetRun(Long64_t run)
 {
-  //
-  // Sets current run number. Calibration data is read from the corresponding file. 
-  //  
+  /// Sets current run number. Calibration data is read from the corresponding file.
+
   if (fRun == run)
     return;  
 	fRun = run;
@@ -369,10 +352,8 @@ void AliTPCcalibDB::SetRun(Long64_t run)
 
 
 void AliTPCcalibDB::Update(){
-  //
-  // cache the OCDB entries for simulation, reconstruction, calibration
-  //  
-  //
+  /// cache the OCDB entries for simulation, reconstruction, calibration
+
   AliCDBEntry * entry=0;
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
@@ -575,11 +556,11 @@ void AliTPCcalibDB::Update(){
 }
 
 void AliTPCcalibDB::UpdateNonRec(){
-  //
-  // Update/Load the parameters which are important for QA studies
-  // and not used yet for the reconstruction
-  //
-   //RAW calibration data
+  /// Update/Load the parameters which are important for QA studies
+  /// and not used yet for the reconstruction
+  ///
+  /// RAW calibration data
+
   AliCDBEntry * entry=0;
   entry          = GetCDBEntry("TPC/Calib/Raw");
   if (entry){
@@ -606,11 +587,9 @@ void AliTPCcalibDB::UpdateNonRec(){
 
 Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs){
  
-// 
-//   Read OCDB entry object of Iontail (TObjArray of TGraphErrors of TRFs)
-//   Naming of the TRF objects is: "gr_<chamber_type>_<voltage>_<laser_track_angle>_<distance_to_COG>" --> "gr_iroc_1240_1_1" 
-//   
-  
+///   Read OCDB entry object of Iontail (TObjArray of TGraphErrors of TRFs)
+///   Naming of the TRF objects is: "gr_<chamber_type>_<voltage>_<laser_track_angle>_<distance_to_COG>" --> "gr_iroc_1240_1_1"
+
   //Int_t run = fTransform->GetCurrentRunNumber();
   //SetRun(run);
   //Float_t rocVoltage = GetChamberHighVoltage(run,sector, -1);      // Get the voltage from OCDB with a getter (old function)
@@ -720,9 +699,8 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
 
 void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObjects)
 {
-//
-// Create calibration objects and read contents from OCDB
-//
+/// Create calibration objects and read contents from OCDB
+
    if ( calibObjects == 0x0 ) return;
    ifstream in;
    in.open(filename);
@@ -813,11 +791,11 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
 }
 
 Int_t AliTPCcalibDB::InitDeadMap() {
-  // Initialize DeadChannel Map 
-  // Source of information:
-  // -  HV (see UpdateChamberHighVoltageData())
-  // -  Altro disabled channels. Noisy channels.
-  // -  DDL list
+  /// Initialize DeadChannel Map
+  /// Source of information:
+  /// -  HV (see UpdateChamberHighVoltageData())
+  /// -  Altro disabled channels. Noisy channels.
+  /// -  DDL list
 
   // check necessary information
   const Int_t run=GetRun();
@@ -894,12 +872,11 @@ Int_t AliTPCcalibDB::InitDeadMap() {
 }
 
 void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
-  //
-  // Write a tree with all available information
-  // if mapFileName is specified, the Map information are also written to the tree
-  // pads specified in outlierPad are not used for calculating statistics
-  //  - the same function as AliTPCCalPad::MakeTree - 
-  //
+  /// Write a tree with all available information
+  /// if mapFileName is specified, the Map information are also written to the tree
+  /// pads specified in outlierPad are not used for calculating statistics
+  ///  - the same function as AliTPCCalPad::MakeTree -
+
    AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
    TObjArray* mapIROCs = 0;
@@ -1103,9 +1080,8 @@ void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const cha
 
 Int_t AliTPCcalibDB::GetRCUTriggerConfig() const
 {
-  //
-  // return the RCU trigger configuration register
-  //
+  /// return the RCU trigger configuration register
+
   TMap *map=GetRCUconfig();
   if (!map) return -1;
   TVectorF *v=(TVectorF*)map->GetValue("TRGCONF_TRG_MODE");
@@ -1122,27 +1098,24 @@ Int_t AliTPCcalibDB::GetRCUTriggerConfig() const
 
 Bool_t AliTPCcalibDB::IsTrgL0() 
 {
-  //
-  // return if the FEE readout was triggered on L0
-  //
+  /// return if the FEE readout was triggered on L0
+
   if (fMode<0) return kFALSE;
   return (fMode==1);
 }
 
 Bool_t AliTPCcalibDB::IsTrgL1()
 {
-  //
-  // return if the FEE readout was triggered on L1
-  //
+  /// return if the FEE readout was triggered on L1
+
   if (fMode<0) return kFALSE;
   return (fMode==0);
 }
 
 void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
-  //
-  // Register static ExB correction map
-  // index - registration index - used for visualization
-  // bz    - bz field in kGaus
+  /// Register static ExB correction map
+  /// index - registration index - used for visualization
+  /// bz    - bz field in kGaus
 
   //  Float_t factor =  bz/(-5.);  // default b filed in Cheb with minus sign
   Float_t factor =  bz/(5.);  // default b filed in Cheb with minus sign
@@ -1164,11 +1137,10 @@ void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
 
 
 AliTPCExB*    AliTPCcalibDB::GetExB(Float_t bz, Bool_t deleteB) {
-  //
-  // bz filed in KGaus not in tesla
-  // Get ExB correction map
-  // if doesn't exist - create it
-  //
+  /// bz filed in KGaus not in tesla
+  /// Get ExB correction map
+  /// if doesn't exist - create it
+
   Int_t index = TMath::Nint(5+bz);
   if (index>fgExBArray.GetEntries()) fgExBArray.Expand((index+1)*2+11);
   if (!fgExBArray.At(index)) AliTPCcalibDB::RegisterExB(index,bz,deleteB);
@@ -1177,16 +1149,14 @@ AliTPCExB*    AliTPCcalibDB::GetExB(Float_t bz, Bool_t deleteB) {
 
 
 void  AliTPCcalibDB::SetExBField(Float_t bz){
-  //
-  // Set magnetic filed for ExB correction
-  //
+  /// Set magnetic filed for ExB correction
+
   fExB = GetExB(bz,kFALSE);
 }
 
 void  AliTPCcalibDB::SetExBField(const AliMagF*   bmap){
-  //
-  // Set magnetic field for ExB correction
-  //
+  /// Set magnetic field for ExB correction
+
   AliTPCExBFirst *exb  = new  AliTPCExBFirst(bmap,0.88*2.6400e+04,50,50,50);
   AliTPCExB::SetInstance(exb);
   fExB=exb;
@@ -1195,9 +1165,8 @@ void  AliTPCcalibDB::SetExBField(const AliMagF*   bmap){
 
 
 void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
-  //
-  // - > Don't use it for reconstruction - Only for Calibration studies
-  //
+  /// - > Don't use it for reconstruction - Only for Calibration studies
+
   if (run<=0) return;
   TObjString runstr(Form("%i",run));
   fRun=run;
@@ -1303,27 +1272,24 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
 
 
 Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
-  //
-  // Get Gain factor for given pad
-  //
+  /// Get Gain factor for given pad
+
   AliTPCCalPad *calPad = Instance()->fDedxGainFactor;;
   if (!calPad) return 0;
   return calPad->GetCalROC(sector)->GetValue(row,pad);
 }
 
 AliSplineFit* AliTPCcalibDB::GetVdriftSplineFit(const char* name, Int_t run){
-  //
-  // GetDrift velocity spline fit
-  //
+  /// GetDrift velocity spline fit
+
   TObjArray *arr=GetTimeVdriftSplineRun(run);
   if (!arr) return 0;
   return dynamic_cast<AliSplineFit*>(arr->FindObject(name));
 }
 
 AliSplineFit* AliTPCcalibDB::CreateVdriftSplineFit(const char* graphName, Int_t run){
-  //
-  // create spline fit from the drift time graph in TimeDrift
-  //
+  /// create spline fit from the drift time graph in TimeDrift
+
   TObjArray *arr=GetTimeVdriftSplineRun(run);
   if (!arr) return 0;
   TGraph *graph=dynamic_cast<TGraph*>(arr->FindObject(graphName));
@@ -1337,9 +1303,8 @@ AliSplineFit* AliTPCcalibDB::CreateVdriftSplineFit(const char* graphName, Int_t 
 }
 
 AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
-  //
-  // Get GRP object for given run 
-  //
+  /// Get GRP object for given run
+
   AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>((Instance()->fGRPArray).GetValue(Form("%i",run)));
   if (!grpRun) {
     Instance()->UpdateRunInformations(run);
@@ -1350,9 +1315,8 @@ AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
 }
 
 TMap *  AliTPCcalibDB::GetGRPMap(Int_t run){
-  //
-  // Get GRP map for given run
-  //
+  /// Get GRP map for given run
+
   TMap * grpRun = dynamic_cast<TMap *>((Instance()->fGRPMaps).GetValue(Form("%i",run)));
   if (!grpRun) {
     Instance()->UpdateRunInformations(run);
@@ -1364,13 +1328,11 @@ TMap *  AliTPCcalibDB::GetGRPMap(Int_t run){
 
 
 AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
-  //
-  // Get Pressure sensor
-  // run  = run number
-  // type = 0 - Cavern pressure
-  //        1 - Suface pressure
-  // First try to get if trom map - if existing  (Old format of data storing)
-  //
+  /// Get Pressure sensor
+  /// run  = run number
+  /// type = 0 - Cavern pressure
+  ///        1 - Suface pressure
+  /// First try to get if trom map - if existing  (Old format of data storing)
 
 
   TMap *map = GetGRPMap(run);  
@@ -1397,9 +1359,8 @@ AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
 }
 
 AliTPCSensorTempArray * AliTPCcalibDB::GetTemperatureSensor(Int_t run){
-  //
-  // Get temperature sensor array
-  //
+  /// Get temperature sensor array
+
   AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)fTemperatureArray.GetValue(Form("%i",run));
   if (!tempArray) {
     UpdateRunInformations(run);
@@ -1410,9 +1371,8 @@ AliTPCSensorTempArray * AliTPCcalibDB::GetTemperatureSensor(Int_t run){
 
 
 TObjArray * AliTPCcalibDB::GetTimeGainSplinesRun(Int_t run){
-  //
-  // Get temperature sensor array
-  //
+  /// Get temperature sensor array
+
   TObjArray * gainSplines = (TObjArray *)fTimeGainSplinesArray.GetValue(Form("%i",run));
   if (!gainSplines) {
     UpdateRunInformations(run);
@@ -1422,9 +1382,8 @@ TObjArray * AliTPCcalibDB::GetTimeGainSplinesRun(Int_t run){
 }
 
 TObjArray * AliTPCcalibDB::GetTimeVdriftSplineRun(Int_t run){
-  //
-  // Get drift spline array
-  //
+  /// Get drift spline array
+
   TObjArray * driftSplines = (TObjArray *)fDriftCorrectionArray.GetValue(Form("%i",run));
   if (!driftSplines) {
     UpdateRunInformations(run);
@@ -1434,9 +1393,8 @@ TObjArray * AliTPCcalibDB::GetTimeVdriftSplineRun(Int_t run){
 }
 
 AliDCSSensorArray * AliTPCcalibDB::GetVoltageSensors(Int_t run){
-  //
-  // Get temperature sensor array
-  //
+  /// Get temperature sensor array
+
   AliDCSSensorArray * voltageArray = (AliDCSSensorArray *)fVoltageArray.GetValue(Form("%i",run));
   if (!voltageArray) {
     UpdateRunInformations(run);
@@ -1446,9 +1404,8 @@ AliDCSSensorArray * AliTPCcalibDB::GetVoltageSensors(Int_t run){
 }
 
 AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
-  //
-  // Get temperature sensor array
-  //
+  /// Get temperature sensor array
+
   AliDCSSensorArray * goofieArray = (AliDCSSensorArray *)fGoofieArray.GetValue(Form("%i",run));
   if (!goofieArray) {
     UpdateRunInformations(run);
@@ -1460,9 +1417,8 @@ AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
 
 
 AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
-  //
-  // Get the interface to the the vdrift 
-  //
+  /// Get the interface to the the vdrift
+
   AliTPCCalibVdrift  * vdrift = (AliTPCCalibVdrift*)fVdriftArray.GetValue(Form("%i",run));
   if (!vdrift) {
     UpdateRunInformations(run);
@@ -1473,12 +1429,11 @@ AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
 
 Float_t AliTPCcalibDB::GetCEdriftTime(Int_t run, Int_t sector, Double_t timeStamp, Int_t *entries)
 {
-  //
-  // GetCE drift time information for 'sector'
-  // sector 72 is the mean drift time of the A-Side
-  // sector 73 is the mean drift time of the C-Side
-  // it timestamp==-1 return mean value
-  //
+  /// GetCE drift time information for 'sector'
+  /// sector 72 is the mean drift time of the A-Side
+  /// sector 73 is the mean drift time of the C-Side
+  /// it timestamp==-1 return mean value
+
   AliTPCcalibDB::Instance()->SetRun(run);
   TGraph *gr=AliTPCcalibDB::Instance()->GetCErocTgraph(sector);
   if (!gr||sector<0||sector>73) {
@@ -1502,10 +1457,9 @@ Float_t AliTPCcalibDB::GetCEdriftTime(Int_t run, Int_t sector, Double_t timeStam
   
 Float_t AliTPCcalibDB::GetCEchargeTime(Int_t run, Int_t sector, Double_t timeStamp, Int_t *entries)
 {
-  //
-  // GetCE mean charge for 'sector'
-  // it timestamp==-1 return mean value
-  //
+  /// GetCE mean charge for 'sector'
+  /// it timestamp==-1 return mean value
+
   AliTPCcalibDB::Instance()->SetRun(run);
   TGraph *gr=AliTPCcalibDB::Instance()->GetCErocQgraph(sector);
   if (!gr||sector<0||sector>71) {
@@ -1529,9 +1483,8 @@ Float_t AliTPCcalibDB::GetCEchargeTime(Int_t run, Int_t sector, Double_t timeSta
 
 Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp, const char * sensorName, Int_t sigDigits)
 {
-  //
-  // Get Value for a DCS sensor 'sensorName', run 'run' at time 'timeStamp'
-  //
+  /// Get Value for a DCS sensor 'sensorName', run 'run' at time 'timeStamp'
+
   Float_t val=0;
   const TString sensorNameString(sensorName);
   AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
@@ -1578,9 +1531,8 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
 
 Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char * sensorName, Int_t sigDigits)
 {
-  //
-  // Get mean Value for a DCS sensor 'sensorName' during run 'run'
-  //
+  /// Get mean Value for a DCS sensor 'sensorName' during run 'run'
+
   Float_t val=0;
   const TString sensorNameString(sensorName);
   AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
@@ -1630,13 +1582,11 @@ Bool_t AliTPCcalibDB::IsDataTakingActive(time_t timeStamp)
 
 void AliTPCcalibDB::UpdateChamberHighVoltageData()
 {
-  //
-  // set chamber high voltage data
-  // 1. Robust median (sampling the hv graphs over time)
-  // 2. Current nominal voltages (nominal voltage corrected for common HV offset)
-  // 3. Fraction of good HV values over time (deviation from robust median)
-  // 4. HV status, based on the above
-  //
+  /// set chamber high voltage data
+  /// 1. Robust median (sampling the hv graphs over time)
+  /// 2. Current nominal voltages (nominal voltage corrected for common HV offset)
+  /// 3. Fraction of good HV values over time (deviation from robust median)
+  /// 4. HV status, based on the above
 
   // start and end time of the run
   const Int_t run=GetRun();
@@ -1822,10 +1772,9 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
 }
 
 Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits, Bool_t current) {
-  //
-  // return the chamber HV for given run and time: 0-35 IROC, 36-72 OROC
-  // if timeStamp==-1 return mean value
-  //
+  /// return the chamber HV for given run and time: 0-35 IROC, 36-72 OROC
+  /// if timeStamp==-1 return mean value
+
   Float_t val=0;
   TString sensorName="";
   TTimeStamp stamp(timeStamp);
@@ -1859,11 +1808,10 @@ Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t time
 }
 Float_t AliTPCcalibDB::GetSkirtVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
 {
-  //
-  // Get the skirt voltage for 'run' at 'timeStamp' and 'sector': 0-35 IROC, 36-72 OROC
-  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
-  // if timeStamp==-1 return the mean value for the run
-  //
+  /// Get the skirt voltage for 'run' at 'timeStamp' and 'sector': 0-35 IROC, 36-72 OROC
+  /// type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  /// if timeStamp==-1 return the mean value for the run
+
   Float_t val=0;
   TString sensorName="";
   TTimeStamp stamp(timeStamp);
@@ -1882,11 +1830,10 @@ Float_t AliTPCcalibDB::GetSkirtVoltage(Int_t run, Int_t sector, Int_t timeStamp,
 
 Float_t AliTPCcalibDB::GetCoverVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
 {
-  //
-  // Get the cover voltage for run 'run' at time 'timeStamp'
-  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
-  // if timeStamp==-1 return the mean value for the run
-  //
+  /// Get the cover voltage for run 'run' at time 'timeStamp'
+  /// type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  /// if timeStamp==-1 return the mean value for the run
+
   Float_t val=0;
   TString sensorName="";
   TTimeStamp stamp(timeStamp);
@@ -1911,11 +1858,10 @@ Float_t AliTPCcalibDB::GetCoverVoltage(Int_t run, Int_t sector, Int_t timeStamp,
 
 Float_t AliTPCcalibDB::GetGGoffsetVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
 {
-  //
-  // Get the GG offset voltage for run 'run' at time 'timeStamp'
-  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
-  // if timeStamp==-1 return the mean value for the run
-  //
+  /// Get the GG offset voltage for run 'run' at time 'timeStamp'
+  /// type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  /// if timeStamp==-1 return the mean value for the run
+
   Float_t val=0;
   TString sensorName="";
   TTimeStamp stamp(timeStamp);
@@ -1940,11 +1886,10 @@ Float_t AliTPCcalibDB::GetGGoffsetVoltage(Int_t run, Int_t sector, Int_t timeSta
 
 Float_t AliTPCcalibDB::GetGGnegVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
 {
-  //
-  // Get the GG offset voltage for run 'run' at time 'timeStamp'
-  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
-  // if timeStamp==-1 return the mean value for the run
-  //
+  /// Get the GG offset voltage for run 'run' at time 'timeStamp'
+  /// type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  /// if timeStamp==-1 return the mean value for the run
+
   Float_t val=0;
   TString sensorName="";
   TTimeStamp stamp(timeStamp);
@@ -1969,11 +1914,10 @@ Float_t AliTPCcalibDB::GetGGnegVoltage(Int_t run, Int_t sector, Int_t timeStamp,
 
 Float_t AliTPCcalibDB::GetGGposVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits)
 {
-  //
-  // Get the GG offset voltage for run 'run' at time 'timeStamp'
-  // type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
-  // if timeStamp==-1 return the mean value for the run
-  //
+  /// Get the GG offset voltage for run 'run' at time 'timeStamp'
+  /// type corresponds to the following: 0 - IROC A-Side; 1 - IROC C-Side; 2 - OROC A-Side; 3 - OROC C-Side
+  /// if timeStamp==-1 return the mean value for the run
+
   Float_t val=0;
   TString sensorName="";
   TTimeStamp stamp(timeStamp);
@@ -1997,9 +1941,8 @@ Float_t AliTPCcalibDB::GetGGposVoltage(Int_t run, Int_t sector, Int_t timeStamp,
 }
 
 Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){
-  //
-  // GetPressure for given time stamp and runt
-  //
+  /// GetPressure for given time stamp and runt
+
   TTimeStamp stamp(timeStamp);
   AliDCSSensor * sensor = Instance()->GetPressureSensor(run,type);
   if (!sensor) return 0;
@@ -2007,10 +1950,9 @@ Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){
 }
 
 Float_t AliTPCcalibDB::GetL3Current(Int_t run, Int_t statType){
-  //
-  // return L3 current
-  // stat type is: AliGRPObject::Stats: kMean = 0, kTruncMean = 1, kMedian = 2, kSDMean = 3, kSDMedian = 4
-  //
+  /// return L3 current
+  /// stat type is: AliGRPObject::Stats: kMean = 0, kTruncMean = 1, kMedian = 2, kSDMean = 3, kSDMedian = 4
+
   Float_t current=-1;
   AliGRPObject *grp=AliTPCcalibDB::GetGRP(run);
   if (grp) current=grp->GetL3Current((AliGRPObject::Stats)statType);
@@ -2018,9 +1960,8 @@ Float_t AliTPCcalibDB::GetL3Current(Int_t run, Int_t statType){
 }
 
 Float_t AliTPCcalibDB::GetBz(Int_t run){
-  //
-  // calculate BZ in T from L3 current
-  //
+  /// calculate BZ in T from L3 current
+
   Float_t bz=-1;
   Float_t current=AliTPCcalibDB::GetL3Current(run);
   if (current>-1) bz=5*current/30000.*.1;
@@ -2028,9 +1969,8 @@ Float_t AliTPCcalibDB::GetBz(Int_t run){
 }
 
 Char_t  AliTPCcalibDB::GetL3Polarity(Int_t run) {
-  //
-  // get l3 polarity from GRP
-  //
+  /// get l3 polarity from GRP
+
   Char_t pol=-100;
   AliGRPObject *grp=AliTPCcalibDB::GetGRP(run);
   if (grp) pol=grp->GetL3Polarity();
@@ -2038,9 +1978,7 @@ Char_t  AliTPCcalibDB::GetL3Polarity(Int_t run) {
 }
 
 TString AliTPCcalibDB::GetRunType(Int_t run){
-  //
-  // return run type from grp
-  //
+  /// return run type from grp
 
 //   TString type("UNKNOWN");
   AliGRPObject *grp=AliTPCcalibDB::GetGRP(run);
@@ -2049,9 +1987,8 @@ TString AliTPCcalibDB::GetRunType(Int_t run){
 }
 
 Float_t AliTPCcalibDB::GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type){
-  //
-  // GetPressure for given time stamp and runt
-  //
+  /// GetPressure for given time stamp and runt
+
   TTimeStamp stamp(timeStamp);
   AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(run);
   if (!goofieArray) return 0;
@@ -2065,9 +2002,8 @@ Float_t AliTPCcalibDB::GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type){
 
 
 Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,TVectorD& fit){
-  //
-  // GetTmeparature fit at parameter for given time stamp
-  //
+  /// GetTmeparature fit at parameter for given time stamp
+
   TTimeStamp tstamp(timeStamp);
   AliTPCSensorTempArray* tempArray  = Instance()->GetTemperatureSensor(run);
   if (! tempArray) return kFALSE;
@@ -2084,9 +2020,8 @@ Bool_t  AliTPCcalibDB::GetTemperatureFit(Int_t timeStamp, Int_t run, Int_t side,
 }
 
 Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
-  //
-  // Get mean temperature
-  // 
+  /// Get mean temperature
+
   TVectorD vec(5);
   if (side==0) {
     GetTemperatureFit(timeStamp,run,0,vec);
@@ -2101,21 +2036,21 @@ Float_t AliTPCcalibDB::GetTemperature(Int_t timeStamp, Int_t run, Int_t side){
 
 
 Double_t AliTPCcalibDB::GetPTRelative(UInt_t timeSec, Int_t run, Int_t side){
-  //
-  // Get relative P/T 
-  // time - absolute time
-  // run  - run number
-  // side - 0 - A side   1-C side
+  /// Get relative P/T
+  /// time - absolute time
+  /// run  - run number
+  /// side - 0 - A side   1-C side
+
   AliTPCCalibVdrift * vdrift =  Instance()->GetVdrift(run);
   if (!vdrift) return 0;
   return vdrift->GetPTRelative(timeSec,side);
 }
 
 AliGRPObject * AliTPCcalibDB::MakeGRPObjectFromMap(TMap *map){
-  //
-  // Function to covert old GRP run information from TMap to GRPObject
-  //
-  //  TMap * map = AliTPCcalibDB::GetGRPMap(52406);
+  /// Function to covert old GRP run information from TMap to GRPObject
+  ///
+  ///  TMap * map = AliTPCcalibDB::GetGRPMap(52406);
+
   if (!map) return 0;
   AliDCSSensor * sensor = 0;
   TObject *osensor=0;
@@ -2145,9 +2080,7 @@ AliGRPObject * AliTPCcalibDB::MakeGRPObjectFromMap(TMap *map){
 
 Bool_t AliTPCcalibDB::CreateGUITree(Int_t run, const char* filename)
 {
-  //
-  // Create a gui tree for run number 'run'
-  //
+  /// Create a gui tree for run number 'run'
 
   if (!AliCDBManager::Instance()->GetDefaultStorage()){
     AliLog::Message(AliLog::kError, "Default Storage not set. Cannot create Calibration Tree!",
@@ -2163,9 +2096,8 @@ Bool_t AliTPCcalibDB::CreateGUITree(Int_t run, const char* filename)
 }
 
 Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
-  //
-  //
-  //
+  ///
+
   if (!AliCDBManager::Instance()->GetDefaultStorage()){
     AliError("Default Storage not set. Cannot create calibration Tree!");
     return kFALSE;
@@ -2222,10 +2154,8 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
 
 Bool_t AliTPCcalibDB::CreateRefFile(Int_t run, const char* filename)
 {
-  //
-  // Create a gui tree for run number 'run'
-  //
-  
+  /// Create a gui tree for run number 'run'
+
   if (!AliCDBManager::Instance()->GetDefaultStorage()){
     AliLog::Message(AliLog::kError, "Default Storage not set. Cannot create Calibration Tree!",
                     MODULENAME(), "AliTPCcalibDB", FUNCTIONNAME(), __FILE__, __LINE__);
@@ -2266,17 +2196,16 @@ Bool_t AliTPCcalibDB::CreateRefFile(Int_t run, const char* filename)
 
 
 Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t /*side*/, Int_t mode){
-  //
-  // Get time dependent drift velocity correction
-  // multiplication factor        vd = vdnom *(1+vdriftcorr)
-  // Arguments:
-  // mode determines the algorith how to combine the Laser Track, LaserCE and physics tracks
-  // timestamp - timestamp
-  // run       - run number
-  // side      - the drift velocity per side (possible for laser and CE)
-  //
-  // Notice - Extrapolation outside of calibration range  - using constant function
-  //
+  /// Get time dependent drift velocity correction
+  /// multiplication factor        vd = vdnom *(1+vdriftcorr)
+  /// Arguments:
+  /// mode determines the algorith how to combine the Laser Track, LaserCE and physics tracks
+  /// timestamp - timestamp
+  /// run       - run number
+  /// side      - the drift velocity per side (possible for laser and CE)
+  ///
+  /// Notice - Extrapolation outside of calibration range  - using constant function
+
   Double_t result=0;
   // mode 1  automatic mode - according to the distance to the valid calibration
   //                        -  
@@ -2319,18 +2248,17 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
 }
 
 Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t /*side*/, Int_t mode){
-  //
-  // Get time dependent time 0 (trigger delay in cm) correction
-  // additive correction        time0 = time0+ GetTime0CorrectionTime
-  // Value etracted combining the vdrift correction using laser tracks and CE and the physics track matchin
-  // Arguments:
-  // mode determines the algorith how to combine the Laser Track and physics tracks
-  // timestamp - timestamp
-  // run       - run number
-  // side      - the drift velocity per side (possible for laser and CE)
-  //
-  // Notice - Extrapolation outside of calibration range  - using constant function
-  //
+  /// Get time dependent time 0 (trigger delay in cm) correction
+  /// additive correction        time0 = time0+ GetTime0CorrectionTime
+  /// Value etracted combining the vdrift correction using laser tracks and CE and the physics track matchin
+  /// Arguments:
+  /// mode determines the algorith how to combine the Laser Track and physics tracks
+  /// timestamp - timestamp
+  /// run       - run number
+  /// side      - the drift velocity per side (possible for laser and CE)
+  ///
+  /// Notice - Extrapolation outside of calibration range  - using constant function
+
   Double_t result=0;
   if (mode==2) {
     // TPC-TPC mode
@@ -2350,18 +2278,17 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
 
 
 Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t side, Int_t /*mode*/){
-  //
-  // Get global y correction drift velocity correction factor
-  // additive factor        vd = vdnom*(1+GetVDriftCorrectionGy *gy)
-  // Value etracted combining the vdrift correction using laser tracks and CE or TPC-ITS
-  // Arguments:
-  // mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
-  // timestamp - timestamp
-  // run       - run number
-  // side      - the drift velocity gy correction per side (CE and Laser tracks)
-  //
-  // Notice - Extrapolation outside of calibration range  - using constant function
-  // 
+  /// Get global y correction drift velocity correction factor
+  /// additive factor        vd = vdnom*(1+GetVDriftCorrectionGy *gy)
+  /// Value etracted combining the vdrift correction using laser tracks and CE or TPC-ITS
+  /// Arguments:
+  /// mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
+  /// timestamp - timestamp
+  /// run       - run number
+  /// side      - the drift velocity gy correction per side (CE and Laser tracks)
+  ///
+  /// Notice - Extrapolation outside of calibration range  - using constant function
+
   if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
   UpdateRunInformations(run,kFALSE);
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
@@ -2402,10 +2329,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
 
 
 Double_t AliTPCcalibDB::GetVDriftCorrectionDeltaZ(Int_t /*timeStamp*/, Int_t run, Int_t /*side*/, Int_t /*mode*/){
-  //
-  // Get deltaZ run/by/run  correction - as fitted together with drift velocity
-  // Value extracted  form the TPC-ITS, mean value is used
-  
+  /// Get deltaZ run/by/run  correction - as fitted together with drift velocity
+  /// Value extracted  form the TPC-ITS, mean value is used
+
   // Arguments:
   // mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
   // timestamp - not used
@@ -2430,14 +2356,13 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionDeltaZ(Int_t /*timeStamp*/, Int_t run
 
 
 AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMappingFile) {
-//
-//   Read list of active DDLs from OCDB entry
-//   Generate and return AliTPCCalPad containing 1 for all pads in active DDLs,
-//   0 for all pads in non-active DDLs. 
-//   For DDLs with missing status information (no DCS input point to Shuttle),
-//     the value of the AliTPCCalPad entry is determined by the parameter
-//     notInMap (default value 1)
-//
+///   Read list of active DDLs from OCDB entry
+///   Generate and return AliTPCCalPad containing 1 for all pads in active DDLs,
+///   0 for all pads in non-active DDLs.
+///   For DDLs with missing status information (no DCS input point to Shuttle),
+///     the value of the AliTPCCalPad entry is determined by the parameter
+///     notInMap (default value 1)
+
   char chinfo[1000];
    
   TFile *fileMapping = new TFile(nameMappingFile, "read");
@@ -2510,11 +2435,11 @@ AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMapp
 
 
 AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrection(Float_t field) const{
-  //
-  // GetComposed correction for given field setting
-  // If not specific correction for field used return correction for all field
-  //        - Complication needed to gaurantee OCDB back compatibility 
-  //        - Not neeeded for the new space point correction 
+  /// GetComposed correction for given field setting
+  /// If not specific correction for field used return correction for all field
+  ///        - Complication needed to gaurantee OCDB back compatibility
+  ///        - Not neeeded for the new space point correction
+
   if (!fComposedCorrectionArray) return 0;
   if (field>0.1 && fComposedCorrectionArray->At(1)) {   
     return (AliTPCCorrection *)fComposedCorrectionArray->At(1);
@@ -2528,10 +2453,9 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrection(Float_t field) const{
 
 
 AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
-  //
-  // GetComposedCorrection delta
-  // Delta is time dependent - taken form the CalibTime OCDB entry
-  //
+  /// GetComposedCorrection delta
+  /// Delta is time dependent - taken form the CalibTime OCDB entry
+
   if (!fComposedCorrectionArray) return 0;
   if (fRun<0) return 0;
   if (fDriftCorrectionArray.GetValue(Form("%i",fRun))==0) return 0;
@@ -2548,25 +2472,24 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
 }
 
 Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache, Int_t mode){
-  //
-  // Correction for  changes of gain caused by change of the HV and by relative change of the gas density
-  // Function is slow some kind of caching needed
-  // Cache implemented using the static TVectorD
-  //
-  // Input paremeters:
-  //  deltaCache - maximal time differnce above which the cache is recaclulated
-  //  mode       - mode==0 by default return combined correction 
-  //                       actual HV and Pt correction has to be present in the run calibration otherwise it is ignored.
-  //                       (retrun value differnt than 1 only in case calibration present in the OCDB entry CalibTimeGain
-  //               mode==1 return combined correction ( important for calibration pass)
-  //                       (in case thereis  no calibration in  CalibTimeGain, default value from the AliTPCParam (Parameters) is used
-  //                       this mode is used in the CPass0
-  //               mode==2 return HV correction
-  //               mode==3 return P/T correction
-  //  Usage in the simulation/reconstruction
-  //  MC:     Qcorr  = Qorig*GetGainCorrectionHVandPT   ( in AliTPC.cxx ) 
-  //  Rec:    dEdx   = dEdx/GetGainCorrectionHVandPT    ( in aliTPCseed.cxx )
-  //
+  /// Correction for  changes of gain caused by change of the HV and by relative change of the gas density
+  /// Function is slow some kind of caching needed
+  /// Cache implemented using the static TVectorD
+  ///
+  /// Input paremeters:
+  ///  deltaCache - maximal time differnce above which the cache is recaclulated
+  ///  mode       - mode==0 by default return combined correction
+  ///                       actual HV and Pt correction has to be present in the run calibration otherwise it is ignored.
+  ///                       (retrun value differnt than 1 only in case calibration present in the OCDB entry CalibTimeGain
+  ///               mode==1 return combined correction ( important for calibration pass)
+  ///                       (in case thereis  no calibration in  CalibTimeGain, default value from the AliTPCParam (Parameters) is used
+  ///                       this mode is used in the CPass0
+  ///               mode==2 return HV correction
+  ///               mode==3 return P/T correction
+  ///  Usage in the simulation/reconstruction
+  ///  MC:     Qcorr  = Qorig*GetGainCorrectionHVandPT   ( in AliTPC.cxx )
+  ///  Rec:    dEdx   = dEdx/GetGainCorrectionHVandPT    ( in aliTPCseed.cxx )
+
   static Float_t gGainCorrection[72];
   static Float_t gGainCorrectionPT[72];
   static Float_t gGainCorrectionHV[72];

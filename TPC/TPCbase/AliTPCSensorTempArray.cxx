@@ -14,12 +14,10 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TPC calibration class for parameters which saved per pad                 //
-//  Authors: Marian Ivanov and Haavard Helstrup                              //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCSensorTempArray
+/// \brief TPC calibration class for parameters which saved per pad
+///
+/// \author Marian Ivanov and Haavard Helstrup
 
 #include "AliTPCSensorTempArray.h"
 #include "TLinearFitter.h"
@@ -28,7 +26,9 @@
 
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCSensorTempArray)
+/// \endcond
 
 
 //_____________________________________________________________________________
@@ -37,18 +37,16 @@ AliTPCSensorTempArray::AliTPCSensorTempArray():AliDCSSensorArray()
   //
   // AliTPCSensorTempArray default constructor
   //
- 
+
 }
 //_____________________________________________________________________________
-AliTPCSensorTempArray::AliTPCSensorTempArray(Int_t run) : AliDCSSensorArray() 
+AliTPCSensorTempArray::AliTPCSensorTempArray(Int_t run) : AliDCSSensorArray()
 {
-  //
-  // Read configuration from OCDB
-  //
+  /// Read configuration from OCDB
 
-     
+
   AliCDBEntry *entry =
-            AliCDBManager::Instance()->Get("TPC/Config/Temperature",run); 
+            AliCDBManager::Instance()->Get("TPC/Config/Temperature",run);
   if (entry) {
     TTree *tree = (TTree*) entry->GetObject();
     fSensors = AliTPCSensorTemp::ReadTree(tree);
@@ -60,10 +58,9 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(UInt_t startTime, UInt_t endTime,
                        TTree* confTree, const TString& amandaString)
              :AliDCSSensorArray()
 {
-  //
-  // AliTPCSensorTempArray constructor for Shuttle preprocessor 
-  //  (confTree read from OCDB)
-  //
+  /// AliTPCSensorTempArray constructor for Shuttle preprocessor
+  ///  (confTree read from OCDB)
+
   fSensors = AliTPCSensorTemp::ReadTree(confTree,amandaString);
   fSensors->BypassStreamer(kFALSE);
   fStartTime = TTimeStamp((time_t)startTime,0);
@@ -75,9 +72,8 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname,
                                           const TString& amandaString) :
                                                   AliDCSSensorArray()
 {
-  //
-  // AliTPCSensorTempArray constructor
-  //
+  /// AliTPCSensorTempArray constructor
+
   fSensors = AliTPCSensorTemp::ReadList(fname,amandaString);
   fSensors->BypassStreamer(kFALSE);
 }
@@ -87,26 +83,22 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname,
 AliTPCSensorTempArray::AliTPCSensorTempArray(const AliTPCSensorTempArray &c):
   AliDCSSensorArray(c)
 {
-  //
-  // AliTPCSensorTempArray copy constructor
-  //
+  /// AliTPCSensorTempArray copy constructor
 
 }
 
 ///_____________________________________________________________________________
 AliTPCSensorTempArray::~AliTPCSensorTempArray()
 {
-  //
-  // AliTPCSensorTempArray destructor
-  //
+  /// AliTPCSensorTempArray destructor
+
 }
 
 //_____________________________________________________________________________
 AliTPCSensorTempArray &AliTPCSensorTempArray::operator=(const AliTPCSensorTempArray &c)
 {
-  //
-  // Assignment operator
-  //
+  /// Assignment operator
+
   if (this != &c) {
      fSensors->Delete();
      new (this) AliTPCSensorTempArray(c);
@@ -119,25 +111,23 @@ AliTPCSensorTempArray &AliTPCSensorTempArray::operator=(const AliTPCSensorTempAr
 //_____________________________________________________________________________
 void AliTPCSensorTempArray::ReadSensors(const char *dbEntry)
 {
-  //
-  // Read list of temperature sensors from text file
-  //
+  /// Read list of temperature sensors from text file
+
   AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry);
   if (!entry) {
      AliWarning(Form("No OCDB entry  %s available\n",dbEntry));
      return;
-  }        
+  }
   TTree *tree = (TTree*) entry->GetObject();
   if (tree) fSensors = AliTPCSensorTemp::ReadTree(tree);
 
-}  
+}
 
 //_____________________________________________________________________________
-AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t type, Int_t side, Int_t sector, Int_t num) 
+AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t type, Int_t side, Int_t sector, Int_t num)
 {
- //
- //  Return sensor information for sensor specified by type, side, sector and num
- //
+ /// Return sensor information for sensor specified by type, side, sector and num
+
  Int_t nsensors = fSensors->GetEntries();
  for (Int_t isensor=0; isensor<nsensors; isensor++) {
    AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fSensors->At(isensor);
@@ -161,15 +151,13 @@ AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Double_t x, Double_t y, Doubl
 //_____________________________________________________________________________
 
 Double_t AliTPCSensorTempArray::GetTempGradientY(UInt_t timeSec, Int_t side){
- //
- // Extract Linear Vertical Temperature Gradient [K/cm] within the TPC on
- // Shaft Side(A): 0
- // Muon  Side(C): 1
- // Values based on TemperatureSensors within the TPC (type: 3(TPC))
- //
- // FIXME: Also return residual-distribution, covariance Matrix
- //        or simply chi2 for validity check?
- //
+ /// Extract Linear Vertical Temperature Gradient [K/cm] within the TPC on
+ /// Shaft Side(A): 0
+ /// Muon  Side(C): 1
+ /// Values based on TemperatureSensors within the TPC (type: 3(TPC))
+ ///
+ /// FIXME: Also return residual-distribution, covariance Matrix
+ ///        or simply chi2 for validity check?
 
  TLinearFitter fitter(3,"x0++x1++x2");
  TVectorD param(3);

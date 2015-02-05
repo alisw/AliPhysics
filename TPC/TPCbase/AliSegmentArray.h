@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class general Alice segment 
-//  segment is for example one pad row in TPC //
-////////////////////////////////////////////////
+/// \class AliSegmentArray
+///
+///  Manager class general Alice segment
+///  segment is for example one pad row in TPC
 
 #include "TNamed.h"
 #include "TError.h"
@@ -52,24 +52,27 @@ public:
 protected:
   AliSegmentArray(const AliSegmentArray &segment); //copy constructor
   AliSegmentArray &operator = (const AliSegmentArray & segment); //assignment operator
-  TObjArray  * fSegment;  //!pointer to array of pointers to segment
-  TArrayI    * fTreeIndex; //!pointers(index) table in tree
-  Int_t      fNSegment; //number of alocated segments   
-  TTree    * fTree;   //!tree with segment objects
-  Bool_t   fTreeOwner;// flag determing the ownership of the fTree
-  TBranch  * fBranch; //!total branch
+  TObjArray  * fSegment;  //!< pointer to array of pointers to segment
+  TArrayI    * fTreeIndex; //!< pointers(index) table in tree
+  Int_t      fNSegment; ///< number of alocated segments
+  TTree    * fTree;   //!< tree with segment objects
+  Bool_t   fTreeOwner;///< flag determing the ownership of the fTree
+  TBranch  * fBranch; //!< total branch
 private: 
-  TClass  *   fClass;    //!class type of included objects 
-  ClassDef(AliSegmentArray,3) 
+  TClass  *   fClass;    //!< class type of included objects
+
+  /// \cond CLASSIMP
+  ClassDef(AliSegmentArray,3)
+  /// \endcond
+
 };
 
 
 
 inline const AliSegmentID*  AliSegmentArray::operator[](Int_t i)
 {
-  //
-  //return segment with given index
-  //
+  /// return segment with given index
+
   if ( (i<0) || (i>=fNSegment)) return 0; 
   return (AliSegmentID *)(fSegment->At(i));
   
@@ -77,9 +80,8 @@ inline const AliSegmentID*  AliSegmentArray::operator[](Int_t i)
 
 inline const AliSegmentID*  AliSegmentArray::At(Int_t i)
 {
-  //
-  //return segment with given index
-  //
+  /// return segment with given index
+
   if ( (i<0) || (i>=fNSegment)) return 0; 
   return (AliSegmentID *)(fSegment->At(i));
 }

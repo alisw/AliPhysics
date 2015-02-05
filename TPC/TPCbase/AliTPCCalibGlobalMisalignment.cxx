@@ -14,18 +14,17 @@
  **************************************************************************/
 
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCCalibGlobalMisalignment class                                        //
-// The class calculates the space point distortions due to simple         // 
-// misalignments like shifts in caresian coordinates or a rotation        //
-// of the TPC read out planes (A and C side)                              //
-// Optionaly possible to use it for visualization of the alignemnt form the Alignment OCDB //
-// fUseGeoManager has to be set to kTRUE to enable this option
-//                                                                        //
-// date: 06/05/2010                                                       //
-// Authors: Stefan Rossegger, Jim Thomas, Magnus Mager                    //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibGlobalMisalignment
+///
+/// AliTPCCalibGlobalMisalignment class
+/// The class calculates the space point distortions due to simple
+/// misalignments like shifts in caresian coordinates or a rotation
+/// of the TPC read out planes (A and C side)
+/// Optionaly possible to use it for visualization of the alignemnt form the Alignment OCDB
+/// fUseGeoManager has to be set to kTRUE to enable this option
+///
+/// \author Stefan Rossegger, Jim Thomas, Magnus Mager
+/// \date 06/05/2010
 
 #include "AliTPCCalibGlobalMisalignment.h"
 #include "TMath.h"
@@ -56,15 +55,13 @@ AliTPCCalibGlobalMisalignment::AliTPCCalibGlobalMisalignment()
     fMatrixGlobalDelta(0), // global Alignment Delta A side-c side
     fArraySector(0)   // fArraySector
 {
-  //
-  // default constructor
-  //
+  /// default constructor
+
 }
 
 AliTPCCalibGlobalMisalignment::~AliTPCCalibGlobalMisalignment() {
-  //
-  // destructor
-  //
+  /// destructor
+
   delete fQuadrantQ0;   //OROC medium pads -delta ly+ - ly - shift
   delete fQuadrantRQ0;  //OROC medium pads -delta ly+ - ly - rotation 
   delete fQuadrantQ1;   //OROC long   pads -delta ly+ - ly - shift
@@ -79,11 +76,11 @@ AliTPCCalibGlobalMisalignment::~AliTPCCalibGlobalMisalignment() {
 
 
 Bool_t AliTPCCalibGlobalMisalignment::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
-  //
-  // Add correction  and make them compact
-  // Assumptions:
-  //  - origin of distortion/correction are additive
-  //  - only correction ot the same type supported ()
+  /// Add correction  and make them compact
+  /// Assumptions:
+  ///  - origin of distortion/correction are additive
+  ///  - only correction ot the same type supported ()
+
   if (corr==NULL) {
     //AliError("Zerro pointer - correction");
     return kFALSE;
@@ -202,10 +199,9 @@ Bool_t AliTPCCalibGlobalMisalignment::AddCorrectionCompact(AliTPCCorrection* cor
 
 
 void AliTPCCalibGlobalMisalignment::SetQuadranAlign(const TVectorD *quadrantQ0, const TVectorD *quadrantRQ0, const TVectorD *quadrantQ1,const TVectorD *quadrantRQ1,  const TVectorD *quadrantQ2,  const TVectorD *quadrantRQ2){
-  //
-  // Set quadrant alignment
-  // 6 vectors for 36 (super) sectors
-  //
+  /// Set quadrant alignment
+  /// 6 vectors for 36 (super) sectors
+
   if (quadrantQ0) fQuadrantQ0   = new TVectorD(*quadrantQ0);
   if (quadrantRQ0) fQuadrantRQ0 = new TVectorD(*quadrantRQ0);
   //
@@ -218,30 +214,27 @@ void AliTPCCalibGlobalMisalignment::SetQuadranAlign(const TVectorD *quadrantQ0, 
 
 
 void AliTPCCalibGlobalMisalignment::SetAlignGlobal(const TGeoMatrix * matrixGlobal){
-  //
-  // Set global misalignment
-  // Object is OWNER 
-  // 
+  /// Set global misalignment
+  /// Object is OWNER
+
   if (fMatrixGlobal) delete fMatrixGlobal;
   fMatrixGlobal=0;
   if (matrixGlobal) fMatrixGlobal = new TGeoHMatrix(*matrixGlobal);
 }
 
 void AliTPCCalibGlobalMisalignment::SetAlignGlobalDelta(const TGeoMatrix * matrixGlobalDelta){
-  //
-  // Set global misalignment
-  // Object is OWNER 
-  // 
+  /// Set global misalignment
+  /// Object is OWNER
+
   if (fMatrixGlobalDelta) delete fMatrixGlobalDelta;
   fMatrixGlobalDelta=0;
   if (matrixGlobalDelta) fMatrixGlobalDelta = new TGeoHMatrix(*matrixGlobalDelta);
 }
 
 void AliTPCCalibGlobalMisalignment::SetAlignSectors(const TObjArray *arraySector){
-  //
-  // Set misalignment TObjArray of TGeoMatrices  - for each sector
-  // Object is OWNER
-  // 
+  /// Set misalignment TObjArray of TGeoMatrices  - for each sector
+  /// Object is OWNER
+
   if (fArraySector) delete fArraySector;
   fArraySector=0;
   if (arraySector) fArraySector = (TObjArray*)arraySector->Clone();
@@ -269,9 +262,8 @@ void AliTPCCalibGlobalMisalignment::SetAlignSectors(const TObjArray *arraySector
 
 
 void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Calculates the simple correction due to a shift (in x,y,z) or an rotation of the TPC (around z)
-  //  
+  /// Calculates the simple correction due to a shift (in x,y,z) or an rotation of the TPC (around z)
+
   static AliTPCROC *tpcRoc =AliTPCROC::Instance();  
   Double_t xref  = ( tpcRoc->GetPadRowRadii(0,0)+tpcRoc->GetPadRowRadii(36,tpcRoc->GetNRows(36)-1))*0.5;
   Double_t xquadrant  = tpcRoc->GetPadRowRadii(36,53); // row 53 from uli
@@ -378,9 +370,8 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
 }
 
 void AliTPCCalibGlobalMisalignment::Print(Option_t* option )  const{
-  //
-  // Print function to check the settings 
-  //
+  /// Print function to check the settings
+
   printf("%s",GetTitle());  
   printf(" - Trivial Misalignments for calibration purposes: \n");
   printf(" - X-Shift: %1.3f cm, Y-Shift: %1.3f cm, Z-Shift: %1.3f cm \n",fXShift,fYShift,fZShift);
@@ -404,9 +395,8 @@ void AliTPCCalibGlobalMisalignment::Print(Option_t* option )  const{
 }
 
 void AliTPCCalibGlobalMisalignment::AddAlign(const  AliTPCCalibGlobalMisalignment & add){
-  //
-  // Add the alignmnet to current object
-  //
+  /// Add the alignmnet to current object
+
   fXShift+=add.fXShift;               // Shift in global X [cm]
   fYShift+=add.fYShift;               // Shift in global Y [cm]
   fZShift+=add.fZShift;               // Shift in global Z [cm]
@@ -465,11 +455,10 @@ void AliTPCCalibGlobalMisalignment::AddAlign(const  AliTPCCalibGlobalMisalignmen
 
 
 AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateOCDBAlign(){
-  //
-  // Create  AliTPCCalibGlobalMisalignment from OCDB Alignment entry
-  // OCDB has to be initialized before in user code
-  // All storages (defualt and specific)  and run number 
-  //
+  /// Create  AliTPCCalibGlobalMisalignment from OCDB Alignment entry
+  /// OCDB has to be initialized before in user code
+  /// All storages (defualt and specific)  and run number
+
   AliCDBEntry * entry = AliCDBManager::Instance()->Get("TPC/Align/Data");
   if (!entry){
     printf("Missing alignmnet entry. OCDB not initialized?\n");
@@ -508,13 +497,12 @@ AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateOCDBAlign(
 
 
 AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateMeanAlign(const AliTPCCalibGlobalMisalignment *alignIn){
-  //
-  // Create new object, disantangle common mean alignmnet and sector alignment
-  //
-  // 1. Try to get mean alignment
-  // 2. Remove mean alignment from sector alignment
-  // 3. Create new object
-  //
+  /// Create new object, disantangle common mean alignmnet and sector alignment
+  ///
+  /// 1. Try to get mean alignment
+  /// 2. Remove mean alignment from sector alignment
+  /// 3. Create new object
+
   TObjArray * array = alignIn->GetAlignSectors();
   TObjArray * arrayNew = new TObjArray(72);
   //
@@ -583,9 +571,8 @@ AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateMeanAlign(
 
 
 void AliTPCCalibGlobalMisalignment::DumpAlignment( AliTPCCalibGlobalMisalignment* align, TTreeSRedirector *pcstream, const char *name){
-  //
-  // Dump alignment per sector into tree
-  //
+  /// Dump alignment per sector into tree
+
   TObjArray * array = align->GetAlignSectors();
   if (!array) return;
   //

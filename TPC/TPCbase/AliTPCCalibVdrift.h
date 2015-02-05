@@ -3,9 +3,7 @@
 /* Copyright(c) 2006-07, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////
-//              Class AliTPCCalibVdrift
-////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibVdrift
 
 
 class TObject;
@@ -41,16 +39,18 @@ public:
 
 protected:
   //
-  AliTPCSensorTempArray *fSensTemp;   // Temperature sensors 
-  AliDCSSensor          *fSensPres;   // pressure sensor (cavernpress in GRP)
-  AliTPCTempMap         *fTempMap;    // Temperature Map
-  TObject *fSensGasComp;      // placeholder for GasConzentration infos  
+  AliTPCSensorTempArray *fSensTemp;   ///< Temperature sensors
+  AliDCSSensor          *fSensPres;   ///< pressure sensor (cavernpress in GRP)
+  AliTPCTempMap         *fTempMap;    ///< Temperature Map
+  TObject *fSensGasComp;      ///< placeholder for GasConzentration infos
   //
   // Nominal values
   //
-  Float_t               fNominalTemp;    // nominal temperature in Kelvin
-  Float_t               fNominalPress;    // nominal pressure    in mbar 
+  Float_t               fNominalTemp;    ///< nominal temperature in Kelvin
+  Float_t               fNominalPress;    ///< nominal pressure    in mbar
+  /// \cond CLASSIMP
   ClassDef(AliTPCCalibVdrift,1);
+  /// \endcond
 
 };
 #endif

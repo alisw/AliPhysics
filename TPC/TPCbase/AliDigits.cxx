@@ -23,13 +23,9 @@
           -- for Marek -I had it in my code  
 */ 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//   Alice  digits array  object  AliDigits                                  //
-//                                                                           //
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliDigits
+///
+///   Alice  digits array  object  AliDigits
 
 
 #include "TClass.h"
@@ -46,7 +42,9 @@
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 //_____________________________________________________________________________
+/// \cond CLASSIMP
 ClassImp(AliDigits)
+/// \endcond
 
 
  AliDigits::AliDigits()
@@ -81,9 +79,8 @@ AliDigits::AliDigits(const AliDigits& digits)
             fCurrentCol(0),
             fCurrentIndex(0)
 {
-  //
-  //copy constructor
-  //
+  /// copy constructor
+
   fNrows = digits.fNrows;
   fNcols = digits.fNcols;
   fElements = new TArrayS(*(digits.fElements));
@@ -95,7 +92,8 @@ AliDigits::AliDigits(const AliDigits& digits)
 
 AliDigits & AliDigits::operator =(const AliDigits & digits)
 {
-  //assignment operator
+  /// assignment operator
+
   if (this == &digits) return (*this); 
 
   fNrows = digits.fNrows;
@@ -112,8 +110,8 @@ AliDigits & AliDigits::operator =(const AliDigits & digits)
 
 AliDigits::~AliDigits()
 {
-  //
-  //default destructor
+  /// default destructor
+
   if (fIndex !=0 ) {
     delete fIndex;
   }
@@ -127,7 +125,8 @@ AliDigits::~AliDigits()
 
 Bool_t AliDigits::OutOfBoundsError(const char *where, Int_t row, Int_t column) 
 {
-   // Generate an out-of-bounds error. Always returns false.
+   /// Generate an out-of-bounds error. Always returns false.
+
    ::Error(where, "row %d  col %d out of bounds (size: %d x %d, this: 0x%08lx)", 
 	   row, column, fNrows, fNcols, (ULong_t) this);
    return kFALSE;
@@ -136,8 +135,8 @@ Bool_t AliDigits::OutOfBoundsError(const char *where, Int_t row, Int_t column)
 
 void AliDigits::Invalidate() 
 { 
-  //
-  //set default (invalid parameters)
+  /// set default (invalid parameters)
+
   if (fIndex != 0)  delete  fIndex;
   fIndex = new TArrayI;
   
@@ -153,8 +152,8 @@ void AliDigits::Invalidate()
 
 void AliDigits::Allocate(Int_t rows, Int_t columns)
 {
-  //
-  //construct empty buffer fDigits with size rows x columns
+  /// construct empty buffer fDigits with size rows x columns
+
   Invalidate();
   if (rows <= 0) {
       Error("Allocate", "no of rows has to be positive");
@@ -177,10 +176,10 @@ void AliDigits::Allocate(Int_t rows, Int_t columns)
 
 Int_t AliDigits::GetSize()
 {
-  //
-  //return size of object as represented in the memory
-  //
-  //  Int_t size = sizeof(this);
+  /// return size of object as represented in the memory
+  ///
+  ///  Int_t size = sizeof(this);
+
   Int_t size = 0;   // COVERITY consider the previous statment as bug 
                     // 
   if (fIndex!=0) size+= sizeof(fIndex)+fIndex->GetSize()*sizeof(Int_t);
@@ -190,18 +189,16 @@ Int_t AliDigits::GetSize()
 
 Int_t AliDigits::GetDigitSize() //return total size of pure digit
 {
-  //
-  //return size of PURE DIGITS
-  //
+  /// return size of PURE DIGITS
+
   if (fElements==0) return 0;
   else return sizeof(fElements)+fElements->GetSize()*sizeof(Short_t);
 }
 
 Int_t AliDigits::GetOverTh(Float_t threshold,Float_t x1, Float_t x2, Float_t y1, Float_t y2)
 {
-  //
-  //return number of digits over threshold
-  // 
+  /// return number of digits over threshold
+
  if ( (fElements==0) || (fElements->GetSize()<=0)) return 0;
  
  if (x1<=x2) {
@@ -226,8 +223,8 @@ Int_t AliDigits::GetOverTh(Float_t threshold,Float_t x1, Float_t x2, Float_t y1,
 
 Short_t AliDigits::GetDigit(Int_t row, Int_t column)
 {
-  //
-  // return digit for given row and collumn
+  /// return digit for given row and collumn
+
   if (fBufType ==0) return GetDigitFast(row,column);
   if (fBufType ==1) return GetDigit1(row,column);
 
@@ -237,8 +234,8 @@ Short_t AliDigits::GetDigit(Int_t row, Int_t column)
 
 void AliDigits::ExpandBuffer()
 {  
-  //
-  //expand buffer to two dimensional array
+  /// expand buffer to two dimensional array
+
   if (fBufType<0)  {
     Error("ExpandBuffer", "buffer doesn't exist");
     return;
@@ -253,8 +250,8 @@ void AliDigits::ExpandBuffer()
 
 void AliDigits::CompresBuffer(Int_t bufferType,Int_t threshold)
 {
-  //
-  //compres buffer according buffertype algorithm
+  /// compres buffer according buffertype algorithm
+
   if (fBufType<0)  {
     Error("CompressBuffer", "buffer doesn't exist");
     return;
@@ -273,7 +270,8 @@ void AliDigits::CompresBuffer(Int_t bufferType,Int_t threshold)
 
 Bool_t AliDigits::First()
 {
-  //adjust  first valid current digit
+  /// adjust  first valid current digit
+
   if (fBufType ==0) return First0();
   if (fBufType ==1) return First1();
   return kFALSE;
@@ -281,7 +279,8 @@ Bool_t AliDigits::First()
 
 Bool_t  AliDigits::Next()
 {
-  //addjust next valid current digit
+  /// addjust next valid current digit
+
   if (fBufType ==0) return Next0();
   if (fBufType ==1) return Next1();
   return kFALSE;
@@ -289,9 +288,9 @@ Bool_t  AliDigits::Next()
  
 void AliDigits::AcceptHisto(AliH2F * his)
 {
-  //
-  //make digits buffer with value according histograms values
-  //for testing purpose  
+  /// make digits buffer with value according histograms values
+  /// for testing purpose
+
   Int_t idim =his->GetNbinsX();
   Int_t jdim =his->GetNbinsY();
   if ( (idim<1)|| (jdim<1)) {
@@ -310,8 +309,8 @@ void AliDigits::AcceptHisto(AliH2F * his)
 
 AliH2F *  AliDigits::GenerHisto()
 {
-  //
-  //make digits histo 
+  /// make digits histo
+
   char ch[30];
   snprintf(ch,30, "Segment_%d ",GetID());
   if ( (fNrows<1)|| (fNcols<1)) {
@@ -328,9 +327,8 @@ AliH2F *  AliDigits::GenerHisto()
 
 AliH2F *AliDigits::DrawDigits(const char *option,Float_t x1, Float_t x2, Float_t y1, Float_t y2)
 {
-  //
-  //draw digits in given array
-  //
+  /// draw digits in given array
+
   AliH2F *h2f = GenerHisto();
   if (x1>=0) {
       AliH2F *h2fsub = h2f->GetSubrange2d(x1,x2,y1,y2);
@@ -345,8 +343,8 @@ AliH2F *AliDigits::DrawDigits(const char *option,Float_t x1, Float_t x2, Float_t
 
 void AliDigits::ExpandBuffer1()
 {
-  //
-  //expand buffer of type to twodimensional array
+  /// expand buffer of type to twodimensional array
+
   Int_t i,k;
   fNelems = fNrows*fNcols;
   Short_t * buf = new Short_t[fNelems];
@@ -378,9 +376,8 @@ void AliDigits::ExpandBuffer1()
 
 void AliDigits::CompresBuffer1()
 {
-  //
-  //compres buffer according  algorithm 1
-  //
+  /// compres buffer according  algorithm 1
+
   TArrayS  buf;  //lets have the nearly the "worst case"
   buf.Set(fNelems);
   TArrayI  index;
@@ -430,8 +427,8 @@ void AliDigits::CompresBuffer1()
 
 Bool_t AliDigits::First0()
 {
-  //
-  //first for the buffer type 0
+  /// first for the buffer type 0
+
   fCurrentRow = -1;
   fCurrentCol = -1;
   fCurrentIndex = -1;
@@ -446,9 +443,8 @@ Bool_t AliDigits::First0()
 
 Bool_t AliDigits::Next0()
 {
-  //
-  //next for the buffer type 0
-  //
+  /// next for the buffer type 0
+
   if (fCurrentIndex<0) return kFALSE;  // if we didn't adjust first 
   Int_t i;
   for (i=fCurrentIndex+1; ( (i<fNelems) && (fElements->At(i)<=fThreshold) ) ;i++) {}
@@ -464,8 +460,8 @@ Bool_t AliDigits::Next0()
 
 Bool_t AliDigits::First1()
 {
-  //
-  //first for the buffer type 1
+  /// first for the buffer type 1
+
   fCurrentRow = -1;
   fCurrentCol = 0;
   fCurrentIndex = -1;
@@ -489,8 +485,8 @@ Bool_t AliDigits::First1()
 
 Bool_t AliDigits::Next1()
 {
-  //
-  //next for the buffer type 1
+  /// next for the buffer type 1
+
   if (fCurrentIndex<0) return kFALSE;  // if we didn't adjust first 
   Int_t i;
   for (i=fCurrentIndex+1; i<fNelems;i++){
@@ -512,10 +508,9 @@ Bool_t AliDigits::Next1()
 
 Short_t AliDigits::GetDigit1(Int_t row, Int_t column)
 {
-  //
-  //return digit for given row and column  the buffer type 1
-  //no control performed
-  
+  /// return digit for given row and column  the buffer type 1
+  /// no control performed
+
   Int_t i,n2;
   if ( (column+1)>=fNcols) n2 = fNelems;
   else

@@ -5,14 +5,13 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class for TPC digits                   //
-////////////////////////////////////////////////
+/// \class AliTPCDigitsArray
+/// \brief Manager class for TPC digits
 
 
-#include "AliDigits.h" 
+#include "AliDigits.h"
 #include "AliDigitsArray.h"
-#include "AliTPCParam.h" 
+#include "AliTPCParam.h"
 
 class AliDigits;
 class AliDetectorParam;
@@ -26,15 +25,17 @@ public:
   AliDigits *  LoadRow(Int_t sector,Int_t row);
   Bool_t StoreRow(Int_t sector,Int_t row);
   Bool_t ClearRow(Int_t sector,Int_t row);
-  Bool_t Setup(AliDetectorParam *param);  
-  
+  Bool_t Setup(AliDetectorParam *param);
+
   Bool_t IsSimulated(){return fBSim;}
-  Bool_t  Update(); 
-private:  
-  Bool_t fBSim;             //signalize if we have digits with track ID
-  Int_t  fCompression;      //default compression for AliDigits - used in storing
-  Int_t  fTrackLevel;        //default level for track ID storing
+  Bool_t  Update();
+private:
+  Bool_t fBSim;             ///< signalize if we have digits with track ID
+  Int_t  fCompression;      ///< default compression for AliDigits - used in storing
+  Int_t  fTrackLevel;        ///< default level for track ID storing
+  /// \cond CLASSIMP
   ClassDef(AliTPCDigitsArray,1) // TPC digits manager
+  /// \endcond
 };
-  
+
 #endif //ALITPCCLUSTERSARRAY_H

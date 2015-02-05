@@ -5,12 +5,10 @@
 
 /* $Id: AliTPCPreprocessorOnline.h,v */
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  Preprocessor class for HLT and DAQ                                        //
-//  Possible usage: preprocess TPC calibration data                           //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCPreprocessorOnline
+/// \brief Preprocessor class for HLT and DAQ
+///
+/// Possible usage: preprocess TPC calibration data
 
 
 class AliTPCCalPad;
@@ -25,17 +23,19 @@ public:
    AliTPCPreprocessorOnline(TMap *map);
    AliTPCPreprocessorOnline &operator = (const AliTPCPreprocessorOnline & param);
    virtual ~AliTPCPreprocessorOnline();
-   
+
    void AddComponent(TObject *obj);
    void DumpToFile(const char* fileName);
-   
+
    TMap *GetMap() {return fMap; } // for debugging
-   
-         
+
+
 protected:
-   TMap *fMap;       // Map of the AliTPCCalPads
-   
+   TMap *fMap;       ///< Map of the AliTPCCalPads
+
+   /// \cond CLASSIMP
    ClassDef(AliTPCPreprocessorOnline,1)    //  TPC preprocessor class
+   /// \endcond
 };
 
 #endif

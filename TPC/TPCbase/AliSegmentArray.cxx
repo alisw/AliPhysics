@@ -15,11 +15,10 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Alice segment manager object                                             //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliSegmentArray
+///
+///  Alice segment manager object
+
 #include <Riostream.h>
 
 #include <TTree.h>
@@ -40,7 +39,9 @@
 using std::endl;
 using std::cout;
 //_____________________________________________________________________________
+/// \cond CLASSIMP
 ClassImp(AliSegmentArray)
+/// \endcond
   
   AliSegmentArray::AliSegmentArray()
                   :TNamed(),
@@ -68,13 +69,12 @@ AliSegmentArray::AliSegmentArray(const char *classname, Int_t n)
                  fBranch(0),
                  fClass(0) 
 {
-  //
-  //constructor which 
-  // 
-  //  Create an array of objects of classname. The class must inherit from
-  //  AliSegmentID .  The second argument adjust number of entries in 
-  //  the array.
- 
+  /// constructor which
+  ///
+  ///  Create an array of objects of classname. The class must inherit from
+  ///  AliSegmentID .  The second argument adjust number of entries in
+  ///  the array.
+
 
   SetClass(classname);
   if (MakeArray(n)==kFALSE){
@@ -94,22 +94,23 @@ AliSegmentArray::AliSegmentArray(const AliSegmentArray &segment)
                  fClass(0)                                      
                
 {
-  //
-  //copy constructor
-  // to be later implemented
+  /// copy constructor
+  /// to be later implemented
+
 }
 
 AliSegmentArray &AliSegmentArray::operator = (const AliSegmentArray & /*segment*/)
 {
-  //assignment operator
-  //to be later implemented
+  /// assignment operator
+  /// to be later implemented
+
   return (*this);
 }
 
 AliSegmentArray::~AliSegmentArray()
 {
-  //
-  // default destructor
+  /// default destructor
+
   if (fNSegment>0){
     fSegment->Delete();
     delete fSegment;
@@ -125,8 +126,8 @@ AliSegmentArray::~AliSegmentArray()
 
 Bool_t AliSegmentArray::SetClass(const char *classname)
 {
-  //
-  //set class of stored object
+  /// set class of stored object
+
   if ( fClass !=0 ) {
     //delete fClass; not ower of fClass
     fClass = 0;
@@ -164,8 +165,8 @@ Bool_t AliSegmentArray::SetClass(const char *classname)
 
 AliSegmentID * AliSegmentArray::NewSegment()
 {
-  //
-  //create object according class information
+  /// create object according class information
+
   if (fClass==0) return 0;
   AliSegmentID * segment = (AliSegmentID * )fClass->New();
   if (segment == 0) return 0;
@@ -175,9 +176,8 @@ AliSegmentID * AliSegmentArray::NewSegment()
 
 Bool_t AliSegmentArray::AddSegment(AliSegmentID *segment)
 {
-  //
-  // add segment to array
-  //
+  /// add segment to array
+
   if (segment==0) return kFALSE;
   if (fSegment==0) return kFALSE;
   if (fClass==0) return kFALSE;
@@ -193,9 +193,8 @@ Bool_t AliSegmentArray::AddSegment(AliSegmentID *segment)
 
 AliSegmentID * AliSegmentArray::AddSegment(Int_t index)
 {
-  //
-  // add segment to array
-  //
+  /// add segment to array
+
   if (fSegment==0) return 0;
   if (fClass==0) return 0;
   AliSegmentID * segment = NewSegment();
@@ -209,10 +208,10 @@ AliSegmentID * AliSegmentArray::AddSegment(Int_t index)
 
 void AliSegmentArray::ClearSegment(Int_t index)
 {
-  //
-  //remove segment from active memory    
-  //
-  //PH  if ((*fSegment)[index]){
+  /// remove segment from active memory
+  ///
+  /// PH  if ((*fSegment)[index]){
+
   if (fSegment->At(index)){
     //    (*fSegment)[index]->Delete(); //not working for TClonesArray
     //PH    delete (*fSegment)[index]; //because problem with deleting TClonesArray
@@ -224,9 +223,8 @@ void AliSegmentArray::ClearSegment(Int_t index)
 
 Bool_t AliSegmentArray::MakeArray(Int_t n)
 {
-  //
-  //make array of pointers to Segments
-  //
+  /// make array of pointers to Segments
+
   if (fSegment) {
     fSegment->Delete();
     delete fSegment;
@@ -238,7 +236,8 @@ Bool_t AliSegmentArray::MakeArray(Int_t n)
 }
 void AliSegmentArray::MakeTree(TTree* tree)
 {
-             //Make tree with the name
+             /// Make tree with the name
+
   AliSegmentID * psegment = NewSegment();  
   fTree = tree;
   //PH  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
@@ -248,7 +247,8 @@ void AliSegmentArray::MakeTree(TTree* tree)
 
 void AliSegmentArray::MakeTree(char *file)
 {
-  //  AliSegmentID  segment;
+  ///  AliSegmentID  segment;
+
   AliSegmentID * psegment = NewSegment();  
   if (fTree) {
     if (fTreeOwner) 
@@ -286,9 +286,8 @@ void AliSegmentArray::MakeTree(char *file)
 
 Bool_t  AliSegmentArray::MakeDictionary(Int_t size)
 {
-  //
-  //create index table for tree
-  //  
+  /// create index table for tree
+
   if (size<1) return kFALSE;
   if (fTreeIndex) delete fTreeIndex;
   fTreeIndex = new TArrayI(); 
@@ -323,7 +322,8 @@ Bool_t AliSegmentArray::ConnectTree(TTree* tree)
 
 Bool_t AliSegmentArray::ConnectTree(const char * treeName)
 {
-  //connect tree from current directory  
+  /// connect tree from current directory
+
   if (fTree){
    if (fTreeOwner) 
     {
@@ -345,10 +345,8 @@ Bool_t AliSegmentArray::ConnectTree(const char * treeName)
 
 AliSegmentID *AliSegmentArray::LoadSegment(Int_t index)
 {
-  //
-  //load segment with index to the memory
-  //
-  //
+  /// load segment with index to the memory
+
   if (fTreeIndex ==0 ) MakeDictionary(3000);
   //firstly try to load dictionary 
   if (fTreeIndex ==0 ) return 0;
@@ -377,10 +375,8 @@ AliSegmentID *AliSegmentArray::LoadSegment(Int_t index)
 }
 AliSegmentID *AliSegmentArray::LoadEntry(Int_t index)
 {
-  //
-  //load segment at position inex in tree  to the memory
-  //
-  //
+  /// load segment at position inex in tree  to the memory
+
   if (fBranch==0) return 0;
   if (index>fTree->GetEntries()) return 0;
   AliSegmentID * s =  NewSegment();
@@ -400,9 +396,8 @@ AliSegmentID *AliSegmentArray::LoadEntry(Int_t index)
 
 void AliSegmentArray::StoreSegment(Int_t index)
 {
-  //
-  //make segment persistent 
-  //
+  /// make segment persistent
+
   const AliSegmentID *  ksegment = (*this)[index];
   if (ksegment == 0 ) return;
   if (fTree==0) MakeTree();

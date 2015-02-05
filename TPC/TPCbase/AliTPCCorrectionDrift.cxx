@@ -13,12 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCCorrectionDrift class  
-// linear drift corrections                                               //
-//  
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCorrectionDrift
+/// \brief Linear drift corrections
+
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
 #include "AliTPCcalibDB.h"
@@ -28,7 +25,9 @@
 #include "TMath.h"
 #include "AliTPCROC.h"
 #include "AliTPCCorrectionDrift.h"
+/// \cond CLASSIMP
 ClassImp(AliTPCCorrectionDrift)
+/// \endcond
 
 AliTPCCorrectionDrift::AliTPCCorrectionDrift()
   : AliTPCCorrection("CorrectionDrift","CorrectionDrift") ,
@@ -47,35 +46,29 @@ AliTPCCorrectionDrift::AliTPCCorrectionDrift()
 }
 
 AliTPCCorrectionDrift::~AliTPCCorrectionDrift() {
-  //
-  // default destructor
-  //
+  /// default destructor
+
 }
 
 
 
 void AliTPCCorrectionDrift::Init() {
-  //
-  // Initialization funtion
-  //
-  
+  /// Initialization funtion
+
 
 
 }
 
 void AliTPCCorrectionDrift::Update(const TTimeStamp &/*timeStamp*/) {
-  //
-  // Update function 
-  //
+  /// Update function
 
 }
 
 
 
 void AliTPCCorrectionDrift::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Calculates the correction due conical shape
-  //   
+  /// Calculates the correction due conical shape
+
   AliTPCROC * calROC = AliTPCROC::Instance();
   //const Double_t kRTPC0  =calROC->GetPadRowRadii(0,0);
   const Double_t kRTPC1  =calROC->GetPadRowRadii(36,calROC->GetNRows(36)-1);
@@ -103,20 +96,17 @@ void AliTPCCorrectionDrift::GetCorrection(const Float_t x[],const Short_t roc,Fl
 
 
 void AliTPCCorrectionDrift::Print(const Option_t* option) const {
-  //
-  // Print function to check the settings (e.g. the twist in the X direction)
-  // 
-  //
+  /// Print function to check the settings (e.g. the twist in the X direction)
 
   TString opt = option; opt.ToLower();
   printf("%s\t%s\n",GetName(),GetTitle());
-  
+
   if (opt.Contains("a")) { // Print all details
     printf(" - T0A: %1.4f, T0C: %1.4f (cm)\n",fZ0Aside,fZ0Cside);
     printf(" - Scale0: %1.4f, ScaleR: %1.4f \n",fVScale0,fVScaleR);
     printf(" - ScaleX: %1.4f, ScaleY: %1.4f \n",fVScaleX,fVScaleY);
 
-  }    
- 
- 
+  }
+
+
 }
