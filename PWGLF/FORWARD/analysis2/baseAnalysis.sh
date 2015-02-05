@@ -4,7 +4,7 @@
 #
 
 # === Variables ======================================================
-fwd_dir=$ALICE_ROOT/PWGLF/FORWARD/analysis2
+fwd_dir=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2
 dotconf=.config
 here=${PWD}
 name=
@@ -262,7 +262,7 @@ _setup()
 	cat <<-EOF > ${corrdir}/Browse.C
 	TObject* Browse()
 	{
-	  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+	  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
 	  if (!gROOT->GetClass("AliOADBForward"))
 	    gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 	  gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGui.C", fwd));
@@ -464,7 +464,7 @@ train_opts()
 	0|2|3) opts="$opts --cent" ;; 
 	1)                         ;;
     esac
-    opts="${opts} --include=$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains"
+    opts="${opts} --include=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/trains"
     opts="${opts} --date=${now} --class=$cl --name=$nme --verbose=0"
 }
 

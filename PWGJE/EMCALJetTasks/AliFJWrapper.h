@@ -96,7 +96,11 @@ class AliFJWrapper
   fastjet::GhostedAreaSpec              *fGhostedAreaSpec;    //!
   fastjet::JetDefinition                *fJetDef;             //!
   fastjet::JetDefinition::Plugin        *fPlugin;             //!
+#ifndef FASTJET_VERSION
   fastjet::RangeDefinition              *fRange;              //!
+#else
+  fastjet::Selector                     *fRange;              //!
+#endif
   fastjet::ClusterSequenceArea          *fClustSeq;           //!
   fastjet::Strategy                      fStrategy;           //!
   fastjet::JetAlgorithm                  fAlgor;              //!
@@ -450,7 +454,11 @@ Int_t AliFJWrapper::Run()
   }
   
   // this is acceptable by fastjet:
+#ifndef FASTJET_VERSION
   fRange = new fj::RangeDefinition(fMaxRap - 0.95 * fR);
+#else
+  fRange = new fj::Selector(fj::SelectorAbsRapMax(fMaxRap - 0.95 * fR));
+#endif
 
   if (fAlgor == fj::plugin_algorithm) {
     if (fPluginAlgor == 0) {

@@ -57,7 +57,7 @@ protected:
     fRailway->LoadLibrary("PWGLFforwardhit");
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------

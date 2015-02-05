@@ -219,12 +219,13 @@ void AliJCORRAN::UserCreateOutputObjects(){
     fIsolationR = fcard->Get("IsolationR");
 
     fhistos = new AliJHistos( fcard );          
+	fhistos->Set2DHistoCreate(false);
     fhistos->CreateEventTrackHistos();
     fhistos->CreateAzimuthCorrHistos();
-    fhistos->CreateIAAMoons();
+    //fhistos->CreateIAAMoons();
     fhistos->CreateXEHistos();
     fhistos->CreateXtHistos();
-    fhistos->CreatePairPtCosThetaStar();
+    //fhistos->CreatePairPtCosThetaStar();
 
     fhistos->fHMG->Print();
 

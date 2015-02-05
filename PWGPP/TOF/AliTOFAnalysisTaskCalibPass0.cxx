@@ -336,7 +336,7 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
     fHistoMatchedTracksEtaPt->Fill(eta, pt);
     /* get TOF info */
     time = track->GetTOFsignal();
-    track->GetIntegratedTimes(timei);
+    track->GetIntegratedTimes(timei,AliPID::kSPECIESC);
     deltat = time - timei[AliPID::kPion];
     deltaz = track->GetTOFsignalDz();
     

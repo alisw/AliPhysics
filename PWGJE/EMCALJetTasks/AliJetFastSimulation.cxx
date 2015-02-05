@@ -54,6 +54,7 @@ AliAnalysisTaskEmcal("AliJetFastSimulation",kTRUE),
   fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
   fDiceEfficiencyMinPt(-1.),
+  fUncertEfficiency(1),
   fUseTrPtResolutionFromOADB(kFALSE),
   fUseTrEfficiencyFromOADB(kFALSE),
   fPathTrPtResolution(""),
@@ -87,6 +88,7 @@ AliJetFastSimulation::AliJetFastSimulation(const char *name) :
   fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
   fDiceEfficiencyMinPt(-1.),
+  fUncertEfficiency(1),
   fUseTrPtResolutionFromOADB(kFALSE),
   fUseTrEfficiencyFromOADB(kFALSE),
   fPathTrPtResolution(""),
@@ -245,6 +247,7 @@ Bool_t AliJetFastSimulation::DiceEfficiency(AliPicoTrack *vp, Double_t eff[3], D
 
     sumEff = eff[0]+eff[1]+eff[2];
   }
+  if(fUncertEfficiency!=1) sumEff=sumEff+fUncertEfficiency;
   fp1Efficiency->Fill(vp->Pt(),sumEff);
   if(rnd>sumEff && pT > fDiceEfficiencyMinPt) return kFALSE;
   return kTRUE;

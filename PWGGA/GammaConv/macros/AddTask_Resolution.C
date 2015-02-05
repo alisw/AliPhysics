@@ -113,7 +113,7 @@ void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
 	AliAnalysisTaskResolution *fResolution= new AliAnalysisTaskResolution(Form("%s_%s_Resolution",(analysisEventCuts->GetCutNumber()).Data(), (analysisCuts->GetCutNumber()).Data()));
 	fResolution->SetEventCuts(analysisEventCuts,IsHeavyIon);	
 	fResolution->SetConversionCuts(analysisCuts,IsHeavyIon);
-	fResolution->SetisMC(isMC);
+	fResolution->SetIsMC(isMC);
 	mgr->AddTask(fResolution);
 	
 	AliAnalysisDataContainer *coutput1 =

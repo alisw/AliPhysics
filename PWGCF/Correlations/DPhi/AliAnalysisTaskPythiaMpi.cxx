@@ -126,21 +126,24 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fHistEta->GetYaxis()->SetTitle("dN/d#eta");
   fHistEta->SetMarkerStyle(kFullCircle);
 
-  TH1F *fHistMpi = new TH1F("fHistMpi","MPIs distribution",100,0,100);
+  TH1F *fHistMpi = new TH1F("fHistMpi","MPIs distribution",100,-0.5,99.5);
   fHistMpi->GetXaxis()->SetTitle("#MPIs");
   fHistMpi->GetYaxis()->SetTitle("dN/dMPIs");
   fHistMpi->SetMarkerStyle(kFullCircle);
 
-  TH2F *fHistMultMpi = new TH2F("fHistMultMpi","Multiplicity vs MPIs",100,0,100,100,0,1e4);
+  TH2F *fHistMultMpi = new TH2F("fHistMultMpi","Multiplicity vs MPIs",100,-0.5,99.5,100,0,1e4);
   fHistMultMpi->GetXaxis()->SetTitle("#MPIs");
   fHistMultMpi->GetYaxis()->SetTitle("MC particles");
   fHistMultMpi->SetMarkerStyle(kFullDotSmall);
 
-  TH2F *fHistdNdetaMpi = new TH2F("fHistdNdetaMpi","dN/d#etadMPIs",100,0,100,100,-5,5);
+  TH2F *fHistdNdetaMpi = new TH2F("fHistdNdetaMpi","dN/d#etadMPIs",100,-0.5,99.5,100,-5,5);
   fHistdNdetaMpi->GetXaxis()->SetTitle("#MPIs");
   fHistdNdetaMpi->GetYaxis()->SetTitle("#eta");
   //fHistdNdetaMpi->SetMarkerStyle();
 
+  TH2F *fHistPtMpi = new TH2F("fHistPtMpi","fHistPtMpi",100,-0.5,99.5,15,0.2,5.0);
+  fHistPtMpi->GetXaxis()->SetTitle("#MPIs");
+  fHistPtMpi->GetYaxis()->SetTitle("p_{T} (GeV/c)");
 
   fOutputList->Add(fHistEvents);
   fOutputList->Add(fHistPt);
@@ -148,6 +151,7 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fOutputList->Add(fHistMpi);
   fOutputList->Add(fHistMultMpi);
   fOutputList->Add(fHistdNdetaMpi);
+  fOutputList->Add(fHistPtMpi);
 
   PostData(1,fOutputList);
 
@@ -223,6 +227,7 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
    TH1F* fHistPt = (TH1F*) fOutputList->FindObject("fHistPt");
    TH1F* fHistEta = (TH1F*) fOutputList->FindObject("fHistEta");
    TH2F* fHistdNdetaMpi = (TH2F*) fOutputList->FindObject("fHistdNdetaMpi");
+   TH2F* fHistPtMpi = (TH2F*) fOutputList->FindObject("fHistPtMpi");
 
    for(Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++){
      AliVParticle* track = fMCEvent->GetTrack(iTracks);
@@ -235,6 +240,7 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
      fHistEta->Fill(track->Eta());
 
      fHistdNdetaMpi->Fill(Nmpi,track->Eta());
+     fHistPtMpi->Fill(Nmpi,track->Pt());
    }
    
    PostData(1, fOutputList);

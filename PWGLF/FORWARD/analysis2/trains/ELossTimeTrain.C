@@ -99,7 +99,7 @@ public:
       << "void Draw(const char* fileName=\"AnalysisResults.root\")\n"
       << "{\n"
       << "  gSystem->AddIncludePath(\"-DNO_TRAIN -DSUMMARY\");\n"
-      << "  const char* fwd = \"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
+      << "  const char* fwd = \"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gSystem->AddIncludePath(Form(\"-I%s/scripts\", fwd));\n"
       << "  gROOT->SetMacroPath(Form(\"%s/trains:%s\", fwd,\n"
       << "                           gROOT->GetMacroPath()));\n"

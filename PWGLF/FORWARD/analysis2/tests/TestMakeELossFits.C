@@ -21,9 +21,9 @@ class TH1;
  * Run like					
  *
  * @verbatim 
- * gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
- * gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/Compile.C");
- * Compile("$ALICE_ROOT/PWGLF/FORWARD/analysis2/MakeELossFit.C"); 
+ * gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+ * gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/Compile.C");
+ * Compile("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/MakeELossFit.C"); 
  * MakeELossFit mef(sys, cms, field, mc, "AnalysisResults.root"); 
  * mef.Run();
  * @endverbatim 
@@ -41,7 +41,7 @@ class TH1;
  * @endverbatim 
  * in the working directory. This file can be moved to 
  * @verbatim
- * $(ALICE_ROOT)/PWGLF/FORWARD/corrections/ELossFits
+ * $(ALICE_PHYSICS)/PWGLF/FORWARD/corrections/ELossFits
  * @endverbatim 
  * and stored in SVN for later use. 
  *

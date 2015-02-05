@@ -173,8 +173,8 @@ void LoadLibraries()
 			"-I$ALICE_ROOT " 
 			"-I$ALICE_ROOT/ITS " 
 			"-I$ALICE_ROOT/TRD " 
-			"-I$ALICE_ROOT/PWGPP " 
-			"-I$ALICE_ROOT/PWGPP/TRD");
+			"-I$ALICE_PHYSICS/PWGPP " 
+			"-I$ALICE_PHYSICS/PWGPP/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libOADB");
@@ -220,8 +220,8 @@ void AddAnalysisTasks(const char *cdb_location)
 
   Bool_t is10h = grp->period.EqualTo("LHC10h",TString::kIgnoreCase);
   // --- Some short-hands --------------------------------------------
-  TString ali   = "$ALICE_ROOT";
-  TString ana   = ali + "/ANALYSIS";
+  TString ali   = "$ALICE_PHYSICS";
+  TString ana   = "$ALICE_ROOT/ANALYSIS";
   TString oadb  = ali + "/OADB";
   TString pwghf = ali + "/PWGHF";
   TString pwglf = ali + "/PWGLF";

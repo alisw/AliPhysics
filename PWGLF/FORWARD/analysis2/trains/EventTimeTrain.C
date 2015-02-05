@@ -83,7 +83,7 @@ public:
       << "          const char* outName=\"map.root\",\n"
       << "          const char* treeName=\"T\")\n"
       << "{\n"
-      << "  gSystem->AddIncludePath(\"-DNO_TASK -I$ALICE_ROOT/include\");\n"
+      << "  gSystem->AddIncludePath(\"-DNO_TASK -I$ALICE_PHYSICS/include\");\n"
       << "  TString mac(\"EventTimeTask/EventTimeTask.C+g\");\n"
       << "  if (prefix && prefix[0] != '\\0') mac.Prepend(prefix);\n"
       << "  gROOT->LoadMacro(mac);\n"

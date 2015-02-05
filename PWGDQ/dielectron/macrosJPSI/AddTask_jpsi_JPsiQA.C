@@ -43,7 +43,7 @@ AliAnalysisTask *AddTask_jpsi_JPsiQA(TString prod="",
 
   // using aliroot config
   if(!gridconf)
-    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C"; // forced aliroot config
+    configFile="$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jpsi_PbPb.C"; // forced aliroot config
 
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task;

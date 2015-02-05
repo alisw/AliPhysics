@@ -25,12 +25,14 @@ class AliEmcalJetByJetCorrection : public TNamed
   void SetJetPtRange(Double_t min, Double_t max) {fJetPtMin = min; fJetPtMax = max;}
   void SetFixedTrackEfficiency(Double_t eff) { fEfficiencyFixed = eff; }
   void SetEfficiencyHist(TH1 *h)             { fhEfficiency     = h  ; }
+  void SetCorrectTemplateTrackpT(Bool_t correct=kTRUE) {fCorrectpTtrack = correct;}
 
   Int_t        GetJetPtBin(const Double_t jetpt) const;
   Double_t     GetEfficiency(const Double_t pt) const;
   Double_t     GetMeanPtConstituents(const AliEmcalJet *jet, TClonesArray *fTracks) const;
 
   TProfile    *GetAppliedEfficiency() const {return fpAppliedEfficiency;}
+  Bool_t       GetCorrectTemplateTrackpT() const {return fCorrectpTtrack;}
 
   void         Init();
   AliEmcalJet *Eval(const AliEmcalJet *jet, TClonesArray *fTracks);
@@ -44,11 +46,13 @@ class AliEmcalJetByJetCorrection : public TNamed
   Bool_t    fInitialized;                      // status of initialization
   Double_t  fEfficiencyFixed;                  // fixed efficiency for all pT and all types of tracks
   TH1      *fhEfficiency;                      // single particle efficiency
+  TH1D     *fhSmoothEfficiency;                // single particle efficiency smooth (see Init())
+  Bool_t   fCorrectpTtrack;                    // if true the templates are corrected by track efficiency
 
   //book-keeping object filled inside Eval()
   TProfile *fpAppliedEfficiency;               // Control profile efficiency
 
  private:
-  ClassDef(AliEmcalJetByJetCorrection, 2) // jet-by-jet correction class
+  ClassDef(AliEmcalJetByJetCorrection, 3) // jet-by-jet correction class
 };
 #endif

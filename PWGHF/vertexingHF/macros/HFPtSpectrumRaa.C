@@ -51,7 +51,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
-enum centestimator{ kV0M, kV0A, kZNA };
+enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
@@ -185,6 +185,17 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Tab = 0.0459; TabSyst = 0.003162;
     }
   }
+  else if( ccestimator == kCL1 ){
+    if ( cc == kpPb020 ) {
+      Tab = 0.19; TabSyst = 0.007;
+    } else if ( cc == kpPb2040 ) {
+      Tab = 0.136; TabSyst = 0.005;
+    } else if ( cc == kpPb4060 ) {
+      Tab = 0.088; TabSyst = 0.005;
+    } else if ( cc == kpPb60100 ) {
+      Tab = 0.0369; TabSyst = 0.0085;
+    }
+  }
 
   //
   // Reading the pp file 
@@ -277,7 +288,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
       else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
       else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
-    } else {
+    } else if (ccestimator==kCL1) {
+      if(cc == kpPb020) systematicsAB->SetCentrality("020CL1");
+      else if(cc == kpPb2040) systematicsAB->SetCentrality("2040CL1");
+      else if(cc == kpPb4060) systematicsAB->SetCentrality("4060CL1");
+      else if(cc == kpPb60100) systematicsAB->SetCentrality("60100CL1");
+    }else {
       if(!(cc == kpPb0100)) {
 	cout <<" Error on the pPb options"<<endl;
 	return;
@@ -670,7 +686,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	hYieldABvsPt->SetBinContent( hRABbin, sigmaAB/sigmaABCINT1B );
 	hYieldABvsPt->SetBinError( hRABbin, statUncSigmaAB/sigmaABCINT1B );
 	
-	cout << "pt="<< pt<< " Raa " << RaaCharm << " stat unc. "<<
+	cout << "pt="<< pt<< " Raa " << RaaCharm << " stat unc. "<< stat <<
 	  " sigma-pp "<< sigmapp <<" sigma-AB "<< sigmaAB<<endl;
 	if(printout && TMath::Abs(ptprintout-pt)<0.1) {
 	  cout << " Raa " << RaaCharm << " stat unc. "<< stat << " is "<< stat/RaaCharm * 100. <<

@@ -76,7 +76,7 @@ fRunList()
   
   SetPackages("VO_ALICE@AliRoot::v5-04-Rev-20");
   
-  TString basedir = gSystem->ExpandPathName("$ALICE_ROOT/PWG/muondep");
+  TString basedir = gSystem->ExpandPathName("$ALICE_PHYSICS/PWG/muondep");
   
   TString dir;
   dir.Form("%s/%sTemplates",basedir.Data(),JobTypeName(jobType).Data());

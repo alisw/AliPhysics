@@ -23,6 +23,7 @@
 class TFile;
 class TF1;
 class TH1F;
+class TH1I;
 class TH2F;
 class TH3F;
 class TProfile;
@@ -136,17 +137,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
-        // setters specific to the vzero calibration for 10h data        
-        void                    SetVZEROApol(Int_t ring, Float_t f)             {fVZEROApol[ring]=f;}
-        void                    SetVZEROCpol(Int_t ring, Float_t f)             {fVZEROCpol[ring]=f;}
-        void                    SetVZEROgainEqualizationPerRing(Bool_t s)       {fVZEROgainEqualizationPerRing = s;}
-        void                    SetUseVZERORing(Int_t i, Bool_t u) {
-            // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
-            // 0 corresponds to segment ID 0 through 7, etc
-            fUseVZERORing[i] = u;
-            fVZEROgainEqualizationPerRing = kTRUE;       // must be true for this option
-        }
-
         void                    SetChi2VZEROA(TArrayD* a)                       { fChi2A = a;}
         void                    SetChi2VZEROC(TArrayD* a)                       { fChi2C = a;}
         void                    SetChi3VZEROA(TArrayD* a)                       { fChi3A = a;}
@@ -279,6 +269,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         collisionType           fCollisionType;         // collision type
         TRandom3*               fRandom;                //-> dont use gRandom to not interfere with other tasks
         Int_t                   fRunNumber;             //! current runnumber (for QA and jet, track selection)
+        Int_t                   fRunNumberCaliInfo;     //! runnumber of the cached calibration info
         Int_t                   fMappedRunNumber;       //! mapped runnumer (for QA)
         Int_t                   fInCentralitySelection; //! centrality bin
         TF1*                    fFitModulation;         //-> modulation fit for rho
@@ -302,8 +293,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TProfile*               fHistCentralityPercOut; //! centrality versus perc out
         TProfile*               fHistCentralityPercLost;//! centrality versus perc lost
         TH1F*                   fHistVertexz;           //! accepted verte
+        TH2F*                   fHistMultCorAfterCuts;      //! QA profile global and tpc multiplicity after outlier cut
+        TH2F*                   fHistMultvsCentr;           //! QA profile of centralty vs multiplicity
         TH2F*                   fHistRunnumbersPhi;     //! run numbers averaged phi
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
+        TH1I*                   fHistRunnumbersCaliInfo;//! calibration info per runnumber
         TH1F*                   fHistPvalueCDFROOT;     //! pdf value of chisquare p
         TH2F*                   fHistPvalueCDFROOTCent; //! p value versus centrlaity from root
         TH2F*                   fHistChi2ROOTCent;      //! reduced chi2 from ROOT, centrality correlation
@@ -349,12 +343,6 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistTriggerQAIn[10];   //! trigger qa in plane
         TH2F*                   fHistTriggerQAOut[10];  //! trigger qa out of plane
         // qa event planes
-        TProfile*               fHistPsiControl;        //! event plane control histogram
-        TProfile*               fHistPsiSpread;         //! event plane spread histogram
-        TH1F*                   fHistPsiVZEROA;         //! psi 2 from vzero a
-        TH1F*                   fHistPsiVZEROC;         //! psi 2 from vzero c
-        TH1F*                   fHistPsiVZERO;          //! psi 2 from combined vzero
-        TH1F*                   fHistPsiTPC;            //! psi 2 from tpc
         TH2F*                   fHistPsiVZEROAV0M;      //! psi 2 from vzero a
         TH2F*                   fHistPsiVZEROCV0M;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROVV0M;      //! psi 2 from combined vzero
@@ -404,10 +392,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Float_t                 fMeanQv3[9][2][2];              //! recentering
         Float_t                 fWidthQv3[9][2][2];             //! recentering
         TH1*                    fVZEROgainEqualization;         //! equalization histo
-        Bool_t                  fVZEROgainEqualizationPerRing;  // per ring vzero gain calibration
-        Float_t                 fVZEROApol[4];                  //! calibration info per ring
-        Float_t                 fVZEROCpol[4];                  //! calibration info per ring
-        Bool_t                  fUseVZERORing[8];               // kTRUE means the ring is included
+        Float_t                 fVZEROApol;                     //! calibration info per disc
+        Float_t                 fVZEROCpol;                     //! calibration info per disc
         TArrayD*                fChi2A;                         // chi vs cent for vzero A ep_2
         TArrayD*                fChi2C;                         // chi vs cent for vzero C ep_2
         TArrayD*                fChi3A;                         // chi vs cent for vzero A ep_3

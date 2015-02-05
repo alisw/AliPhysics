@@ -74,6 +74,9 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
 {
   // Initialize the analysis.
 
+  AliAnalysisTaskEmcal::ExecOnce();
+  if(!fInitialized) return;
+
   if (fParticleCollArray.GetEntriesFast()<2) {
     AliError(Form("Wrong number of particle collections (%d), required 2",fParticleCollArray.GetEntriesFast()));
     return;
@@ -106,7 +109,6 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
     delete arr;
   }
 
-  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //________________________________________________________________________

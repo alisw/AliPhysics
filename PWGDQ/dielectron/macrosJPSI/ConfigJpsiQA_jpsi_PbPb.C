@@ -779,7 +779,7 @@ void SetEtaCorrection()
   
   TString etaMap="$TRAIN_ROOT/jpsi_JPSI/EtaCorrMaps.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-  if (trainRoot.IsNull()) etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
+  if (trainRoot.IsNull()) etaMap="$ALICE_PHYSICS/PWGDQ/dielectron/files/EtaCorrMaps.root";
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
     Error("ConfigPbPb","Eta map not found: %s",etaMap.Data());
     return;

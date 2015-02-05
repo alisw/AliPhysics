@@ -206,7 +206,7 @@ AliCorrectionManagerBase::Append(const TString& addition,
     return false;
   }
   if (destination.BeginsWith("$OADB_PATH") ||
-      destination.BeginsWith("$ALICE_ROOT"))
+      destination.BeginsWith("$ALICE_PHYSICS"))
     AliInfoF("Now commit %s to git", destination.Data());
   return true;
 }

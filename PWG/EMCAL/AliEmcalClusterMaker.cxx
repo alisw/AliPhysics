@@ -100,7 +100,7 @@ void AliEmcalClusterMaker::ExecOnce()
 
   // Do base class initializations and if it fails -> bail out
   AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized) 
+  if (!fInitialized)
     return;
 
   if (dynamic_cast<AliAODEvent*>(InputEvent())) 

@@ -80,11 +80,11 @@
 # to Christian Holm Christensen <cholm@nbi.dk>
 # 
 # END_MANUAL
-if test ! -f $ALICE_ROOT/PWGLF/FORWARD/analysis2/baseAnalysis.sh  ; then 
+if test ! -f $ALICE_PHYSICS/PWGLF/FORWARD/analysis2/baseAnalysis.sh  ; then 
     echo "baseAnalysis not found!" > /dev/stderr 
     exit 1
 fi
-. $ALICE_ROOT/PWGLF/FORWARD/analysis2/baseAnalysis.sh 
+. $ALICE_PHYSICS/PWGLF/FORWARD/analysis2/baseAnalysis.sh 
 
 run=
 real_dir=
@@ -282,7 +282,7 @@ index()
 	n="&mc"
     fi
     aliroot -l -b <<EOF
-.L $ALICE_ROOT/PWGLF/FORWARD/trains/ChainBuilder.C++
+.L $ALICE_PHYSICS/PWGLF/FORWARD/trains/ChainBuilder.C++
 ChainBuilder::CreateCollection("${o}", "file://${d}?recursive&scan&pattern=${p}${n}#esdTree");
 .q
 EOF

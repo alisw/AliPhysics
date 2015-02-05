@@ -74,7 +74,7 @@ private:
   TString fNonlinearityVersion;              // Version of non-linearity correction to aaply
   AliPHOSGeometry   *fPHOSGeo;               // PHOS geometry
   Double_t fNonlinearityParams[10] ;         // Parameters for non-linearity calculation
-  TH2I * fPHOSBadMap[5] ;                    // Bad channels map
+  TH2I * fPHOSBadMap[6] ;                    // Bad channels map
   Int_t fRecoPass ;                          // Reconstruction pass
   Bool_t fUsePrivateBadMap ;
   Bool_t fUsePrivateCalib ;
@@ -85,7 +85,7 @@ private:
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
  
-  ClassDef(AliPHOSTenderSupply, 2); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 3); // PHOS tender task
 };
 
 

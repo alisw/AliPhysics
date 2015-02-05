@@ -309,7 +309,7 @@ void AliRsnAnalysisPhi900GeV::ProcessESD
          if (mom <= 0.26)
             okTOF = kTRUE;
          else {
-            track->GetIntegratedTimes(times);
+            track->GetIntegratedTimes(times,10);
             tofTime = (Double_t)track->GetTOFsignal() - time0;
             tofRef  = times[AliPID::kKaon];
             tofRel  = (tofTime - tofRef) / tofRef;

@@ -53,7 +53,7 @@ AliAnalysisAlien* CreateAlienHandler()
   plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
 
   plugin->AddIncludePath("-I.");
-  plugin->AddIncludePath("-I$ALICE_ROOT/PWGPP/MUON/lite");
+  plugin->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/MUON/lite");
 
   return plugin;
 }
@@ -103,14 +103,14 @@ void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE,
 #ifndef COMPILEMACRO
 
   if ( mask & trigQA ) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
     AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(isMC);
     TString physSelName = "PhysSelPass";
     if ( isMC ) physSelName += ",PhysSelReject";
     trigChEffTask->SetTerminateOptions(physSelName,"ANY","-5_105",Form("FORCEBATCH NoSelMatchApt FromTrg %s?%s?ANY?-5_105?NoSelMatchAptFromTrg",trigOutName.Data(),physSelName.Data()));
   }
   if ( mask & trackQA ) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
     Bool_t selectPhysics = ( isMC ) ? kFALSE : kTRUE;
     AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA(selectPhysics);
   }

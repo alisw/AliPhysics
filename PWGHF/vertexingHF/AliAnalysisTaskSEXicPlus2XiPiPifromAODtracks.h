@@ -33,6 +33,7 @@ class AliAODRecoCascadeHF3Prong;
 class AliAODPidHF;
 class AliESDtrackCuts;
 class AliESDVertex;
+class AliAODMCParticle;
 
 class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE 
 {
@@ -48,8 +49,8 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj);
-  void MakeAnalysis(AliAODEvent *aod);
+  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, Int_t mcnused);
+  void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   
   // set MC usage
@@ -125,7 +126,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistonSigmaTOFpi;                  //! nSigma of TOF pion
   TH1F*  fHistoProbPion;                     //! Probability to be pion
   
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,2); // class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,3); // class for Xic->Xipipi
 };
 #endif
 

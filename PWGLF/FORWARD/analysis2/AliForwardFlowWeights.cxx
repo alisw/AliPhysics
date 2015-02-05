@@ -3,6 +3,9 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
+#include "AliForwardUtil.h"
+#include <TROOT.h>
+#include <iostream>
 
 //____________________________________________________________________
 AliForwardFlowWeights::AliForwardFlowWeights()
@@ -15,7 +18,7 @@ AliForwardFlowWeights::AliForwardFlowWeights()
 
 //____________________________________________________________________
 AliForwardFlowWeights::AliForwardFlowWeights(const AliForwardFlowWeights& o)
-  : TObject(o),
+  : AliBaseMCWeights (o),
     fV22Pt(o.fV22Pt),
     fV24Pt(o.fV24Pt),
     fV24AltPt(o.fV24AltPt),
@@ -251,6 +254,26 @@ AliForwardFlowWeights::FromList(TList* l)
   ret->fV2C      = static_cast<TGraph*>(c);
   
   return ret;
+}
+
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
+//____________________________________________________________________
+void AliForwardFlowWeights::Print(Option_t* option) const
+{
+  PFV("MC Weights", "For flow");
+  gROOT->IncreaseDirLevel();
+  gROOT->DecreaseDirLevel();
 }
 
 //____________________________________________________________________

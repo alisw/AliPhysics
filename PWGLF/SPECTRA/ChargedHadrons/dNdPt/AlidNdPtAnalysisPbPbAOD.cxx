@@ -92,6 +92,7 @@ fCrossCheckFilterBitPhiCent(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
+fCentEstimator("V0M"),
 // event cut variables
 fCutMaxZVertex(10.),  
 // track kinematic cut variables
@@ -839,7 +840,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   }
   
   AliCentrality* aCentrality = eventAOD->GetCentrality();
-  Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
+//   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
+  Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
   
   if( dCentrality < 0 ) return;
   

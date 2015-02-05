@@ -611,7 +611,7 @@ struct GridRailway : public PluginRailway
       if (!srcs.IsNull()) srcs.Append(" ");
       srcs.Append(src->String());
     }
-    TString macDir("$ALICE_ROOT/PWGLF/FORWARD/trains");
+    TString macDir("$ALICE_PHYSICS/PWGLF/FORWARD/trains");
     std::ofstream t("Terminate.C");
     if (!t) { 
       Error("GridRailway::AuxSave", "Failed to make terminate ROOT script");
@@ -628,6 +628,7 @@ struct GridRailway : public PluginRailway
       << "  gSystem->Load(\"libANALYSIS\");\n"
       << "  gSystem->Load(\"libANALYSISalice\");\n"
       << "  gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");\n\n"
+      << "  gSystem->AddIncludePath(\"-I$ALICE_PHYSICS/include\");\n\n"
       << "  gROOT->LoadMacro(\"" << macDir << "/GridTerminate.C+g\");\n\n"
       << "  return GridTerminate(name,libs,pars,srcs,localMerge);\n"
       << "}\n"

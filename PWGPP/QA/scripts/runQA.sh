@@ -35,15 +35,19 @@ excludeDetectors="EXAMPLE"
 logDirectory=${workingDirectory}/logs
 #OCDB storage
 ocdbStorage="raw://"
+#arbitrary id
+productionID="default"
+#send email as:
+MAILFROM=""
 #email to
 MAILTO=""
 MAILTO_TPC=""
 #mail a short status message to "MAILTO" when ready
 MAILshortSummary=""
-#attach full debug info
+#attach debug info
 MAILdebugInfo=1
-MAILproductionSummary=1
-productionID="default"
+MAILfullProductionLog=1
+MAILcompressLogs=""
 
 main()
 {
@@ -140,6 +144,12 @@ updateQA()
     #by default we expect the container in the QA root file to de named like
     #the detector
     detectorQAcontainerName=${detector}
+
+    #reset to the default value the options which can be overridden
+    #by the detectors in their scripts
+    MAILdebugInfo=${parseConfig__ORIGINAL__MAILdebugInfo}
+    MAILcompressLogs=${parseConfig__ORIGINAL__MAILcompressLogs}
+    MAILfullProductionLog=${parseConfig__ORIGINAL__MAILfullProductionLog}
     
     #skip if excluded
     if [[ "${excludeDetectors}" =~ ${detector} ]]; then
@@ -487,6 +497,7 @@ updateQA()
     echo "${detector} = ${arrDetectorStatus[${detector}]}" >> ${logFileShort}
   done
   
+  #one email to the responsible - every time with a short summary
   if [[ -n ${MAILTO} && -n ${MAILshortSummary} ]]; then
     echo "mailing short summary to ${MAILTO}"
     mail -s "QA ready" ${MAILTO} < ${logFileShort}
@@ -512,22 +523,38 @@ executePlanB()
   
   echo
   echo "trouble detected, sending email to ${mailTo}"
-  local mailoptions=" -a ${logSummary}"
+  local mailoptions=""
   local file=""
-  if [[ "${MAILdebugInfo}" == 1 ]]; then
+  
+  #attach the log summary
+  file="${logSummary}"
+  [[ ${MAILcompressLogs} == 1 && -f ${file} ]] && tar czf ${file}.tgz ${file} && file+=".tgz"
+  [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+    
+  #attach the crash plots
+  file="${logDirectory}/stacktrace-log-${dateString}.png"
+  [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+  file="${logDirectory}/stacktrace-core-${dateString}.png"
+  [[ -f ${file} ]] && mailoptions+=" -a ${file}"
+  
+  #attach the full debug info
+  if [[ -n "${MAILdebugInfo}" ]]; then
     file="${logDirectory}/stacktrace-log-${dateString}.tree"
-    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
-    file="${logDirectory}/stacktrace-log-${dateString}.png"
+    [[ ${MAILcompressLogs} == 1 && -f ${file} ]] && tar czf ${file}.tgz ${file} && file+=".tgz"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
     file="${logDirectory}/stacktrace-core-${dateString}.tree"
-    [[ -f ${file} ]] && mailoptions+=" -a ${file}"
-    file="${logDirectory}/stacktrace-core-${dateString}.png"
+    [[ ${MAILcompressLogs} == 1 && -f ${file} ]] && tar czf ${file}.tgz ${file} && file+=".tgz"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
-  if [[ "${MAILproductionSummary}" == 1 ]]; then
+
+  #attach the full production log
+  if [[ -n "${MAILfullProductionLog}" ]]; then
     file="${logFile}"
+    [[ ${MAILcompressLogs} == 1 && -f ${file} ]] && tar czf ${file}.tgz ${file} && file+=".tgz"
     [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   fi
+  [[ -n ${MAILFROM} ]] && mailoptions+=" -r ${MAILFROM}"
+
   printLogStatistics ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailoptions} ${mailTo}
   
   return 0

@@ -54,6 +54,7 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fPtAssocMax(0),
   fAlpha(alpha),
   fUseLeadingPt(1),
+  fUseAllT1(1),
   fMergeCount(0)
 {
   // Constructor
@@ -106,6 +107,8 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c) 
   fPtAssocMin(0),
   fPtAssocMax(0),
   fAlpha(0.2),
+  fUseLeadingPt(1),
+  fUseAllT1(1),
   fMergeCount(0)
 {
   //
@@ -166,7 +169,9 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   //Fill Correlations fills the UEHist fTwoPlusOne with the 2+1 correlation
   //the input variables centrality and zVtx are the centrality and the z vertex of the event
   //the 4 lists triggerNear, triggerAway, assocNear and assocAway are four lists of particles. For the same event analysis all for lists are identical. For the mixed event analysis assocNear and assocAway are from different events as the trigger lists and for the mixed combinatorics triggerNear and assocNear are from one event and triggerAway and assocAway are from another event.
-
+  //several booleans in this container change the behaviour of the container:
+  //fUseLeadingPt: decides if a particle is only accepted as trigger particle if it has the highest pT within an circle with the radius of alpha
+  //fUseAllT1: in case multiple trigger 2 are accepted, the near side yield is filled for each found away side yield
   AliCFContainer* track_hist = fTwoPlusOne->GetTrackHist(AliUEHist::kToward);
   AliCFContainer* event_hist = fTwoPlusOne->GetEventHist();
   AliUEHist::CFStep stepUEHist = static_cast<AliUEHist::CFStep>(step);
@@ -174,12 +179,13 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   //in case of the computation of the background in the same event there are two possible positions: delta phi = +/- pi/2
   //both positions are used so the results could only be weighted with 0.5*weight
   if(isBackgroundSame)
-    weight *= 0.5;
+     fAlpha*= 0.5;
 
   for (Int_t i=0; i<triggerNear->GetEntriesFast(); i++){
     AliVParticle* part = (AliVParticle*) triggerNear->UncheckedAt(i);
     
     Double_t part_pt = part->Pt();
+
     if(part_pt<fTriggerPt1Min || part_pt>fTriggerPt1Max)
       continue;
 
@@ -263,7 +269,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	  continue;
 
 	//check if pT of trigger 2 is too high
-	if(part2_pt>fTriggerPt2Max || part2_pt>part_pt){
+	if(part2_pt>fTriggerPt2Max || part2_pt>=part_pt){
 	  //pt of trigger 2 needs to be smaller than the pt of trigger 1 (to have an ordering if both pt are close to each other)
 	  if(fUseLeadingPt){
 	    do_not_use_T1 = true;
@@ -276,7 +282,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	if(ind_max_found_pt==-1 || part2_pt>found_particle[ind_max_found_pt]->Pt()) ind_max_found_pt = ind_found;
 	ind_found++;
       }//end loop to search for the second trigger particle
-    }
+    }//end if for 1+1 
 
     //if there is a particle with higher energy than T1 or max(T2) within Delta phi = pi +/- alpha to T1, do not use this T1
     if(do_not_use_T1)
@@ -304,15 +310,19 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       vars[3] = found_particle[ind_max_found_pt]->Pt();
       if(is1plus1)
 	vars[3] = (fTriggerPt2Max+fTriggerPt2Min)/2;
-      
-      event_hist->Fill(vars, stepUEHist, weight);//near side
-      
+
+      if(is1plus1||!fUseAllT1)
+	event_hist->Fill(vars, stepUEHist, weight);//near side (one times)
+
       if(!is1plus1)
 	for(Int_t k=0; k< ind_found; k++){
 	  vars[3] = found_particle[k]->Pt();
 	  event_hist->Fill(vars, stepUEHist+1, weight);//away side
+
+	  if(fUseAllT1)
+	    event_hist->Fill(vars, stepUEHist, weight);//near side (for every away side)
 	}
-	
+
       //fill fTriggerPt only once, choosed kSameNS
       if(step==AliTwoPlusOneContainer::kSameNS)
 	for(Int_t k=0; k< ind_found; k++)
@@ -343,10 +353,6 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       if(part==part3)
 	continue;
 
-      //do not add the trigger 2 particle
-      if(found_particle[ind_max_found_pt]==part3)
-	continue;
-
       Double_t dphi_near = part_phi-part3->Phi(); 
       if(dphi_near>1.5*TMath::Pi()) dphi_near -= TMath::TwoPi();
       else if(dphi_near<-0.5*TMath::Pi()) dphi_near += TMath::TwoPi();
@@ -364,7 +370,21 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       if(is1plus1)
 	vars[6] = (fTriggerPt2Max+fTriggerPt2Min)/2;
 
-      track_hist->Fill(vars, stepUEHist, weight);
+      if(is1plus1||!fUseAllT1){
+	//do not add the trigger 2 particle with the highest pT
+	if(found_particle[ind_max_found_pt]==part3)
+	  continue;
+
+	track_hist->Fill(vars, stepUEHist, weight);
+      }else
+	for(int l=0; l<ind_found; l++){
+	  //do not add the trigger 2 particle
+	  if(found_particle[l]==part3)
+	    continue;
+	  
+	  vars[6] = found_particle[l]->Pt();
+	  track_hist->Fill(vars, stepUEHist, weight);//fill NS for all AS triggers
+	}
     }
 
     //search only for the distribution of the 2nd trigger particle
@@ -407,6 +427,10 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       }
     }
   }//end loop to search for the first trigger particle
+
+  //put fAlpha back on the old value in case this is for background same
+  if(isBackgroundSame)
+     fAlpha*= 2;
 }
 
 //____________________________________________________________________

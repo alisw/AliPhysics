@@ -125,7 +125,7 @@ void ExtractAcceptance(Int_t   runNo=121526,
 		       Float_t vtxLow=-10, 
 		       Float_t vtxHigh=10)
 {  
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   gSystem->AddIncludePath(Form("-I%s", fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
 
@@ -160,7 +160,7 @@ void ExtractAcceptance(Int_t   runNo=121526,
     // cdb->SetDefaultStorage(Form("alien://Folder=/alice/data/%4d/OCDB", year));
   }
   else
-    cdb->SetDefaultStorage("local://$(ALICE_ROOT)/OCDB");
+    cdb->SetDefaultStorage("local://$(ALICE_PHYSICS)/OCDB");
   cdb->SetRun(runNo);
   
   // Get the geometry 

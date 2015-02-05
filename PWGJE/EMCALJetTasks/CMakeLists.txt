@@ -139,7 +139,12 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        Tracks/AliParticleMap.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
+        Tracks/AliReducedJetEvent.cxx
+        Tracks/AliReducedJetInfo.cxx
+        Tracks/AliReducedJetParticle.cxx
+        Tracks/AliReducedJetConstituent.cxx
        )
 
     include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
@@ -155,9 +160,7 @@ endif(FASTJET_FOUND)
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 if(FASTJET_FOUND)
-  set(HDRS ${HDRS}
-      FJ_includes.h
-     )
+  list(APPEND HDRS FJ_includes.h AliJetShape.h)
 endif(FASTJET_FOUND)
 
 # Generate the dictionary
@@ -166,7 +169,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS)
+set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCAL)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)
@@ -175,6 +178,9 @@ endif(FASTJET_FOUND)
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice
