@@ -24,7 +24,11 @@ base=${1%.*}
 ext='png'
 
 aliroot -b "$1" <<EOF
-gPad->Print("$base.$ext");
+TVirtualPad *topPad = gPad;
+while (topPad->GetMother() != topPad) {
+  topPad = topPad->GetMother();
+}
+topPad->Print("$base.$ext");
 EOF
 
 if [[ ! -e "${base}.${ext}" ]] ; then
