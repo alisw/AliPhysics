@@ -54,7 +54,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   if (TOFs>0.){
     usetof = 1;
     printf("CONFIGURATION FILE: TOF is used \n");
-    hfecuts->SetTOFPIDStep(kTRUE);
+    //hfecuts->SetTOFPIDStep(kTRUE);
     printf("CONFIGURATION FILE: TOF PID step is requested !!!! \n");
     if (TOFmis>0){
       kTOFmis = kTRUE;
