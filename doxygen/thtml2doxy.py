@@ -1024,6 +1024,7 @@ def rewrite_comments(fhin, fhout, comments):
         if isinstance(comm, PrependComment):
           # Prepare array of lines to dump right after the comment
           restore_lines = [ line.rstrip('\n') ]
+          logging.debug('Commencing lines to restore: {%s}' % Colt(restore_lines[0]).cyan())
         else:
           # Extract the non-comment part and print it if it exists
           non_comment = line[ 0:comm.first_col-1 ].rstrip()
@@ -1035,6 +1036,7 @@ def rewrite_comments(fhin, fhout, comments):
         if restore_lines is not None:
           # From the 2nd line on of comment to prepend
           restore_lines.append( line.rstrip('\n') )
+          logging.debug('Appending lines to restore. All lines: {%s}' % Colt(restore_lines).cyan())
 
       else:
         assert False, 'Unhandled parser state: line=%d comm={%s} prev_comm={%s}' % \
