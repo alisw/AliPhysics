@@ -233,12 +233,14 @@ void AliAnalysisTaskJetV2::ExecOnce()
     #ifdef DEBUGTASK
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
-    if(fAttachToEvent) {
-        if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
-            InputEvent()->AddObject(fLocalRho);
-        } else {
-            AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), fLocalRho->GetName()));
+    if(!fLocalRho) {
+        fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
+        if(fAttachToEvent) {
+           if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
+                InputEvent()->AddObject(fLocalRho);
+            } else {
+                AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), fLocalRho->GetName()));
+            }
         }
     }
     AliAnalysisTaskEmcalJet::ExecOnce();        // init the base class
@@ -939,8 +941,9 @@ void AliAnalysisTaskJetV2::Exec(Option_t* c)
             AliAnalysisTaskJetV2::Run();
         } break;
         case kPbPb10h : {
-            // forego emcal framework stuff which is tuned to 2011 and higher
-            if(!fLocalRho) AliAnalysisTaskJetV2::ExecOnce();
+            // bypass framework event selection. additional check for fTracks 
+            // to avoid the situation where base classes are never initialized
+            if(!fLocalRho || !fTracks) AliAnalysisTaskJetV2::ExecOnce();
             AliAnalysisTaskJetV2::Run();
         } break;
         default : {
