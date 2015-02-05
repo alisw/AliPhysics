@@ -115,6 +115,7 @@ private:
 
   TH1F      * fhPt      [fgkNmcPrimTypes];  //! Input particle pt
   TH2F      * fhPtOrigin[fgkNmcPrimTypes];  //! Input particle pt vs particle type originating it (if meson decay, its mother)
+  TH2F      * fhPtOriginNotFinal[fgkNmcPrimTypes];  //! Input particle pt vs particle type originating it (if meson decay, its mother) if trigger is not final state
   TH2F      * fhPtOtherDecayMesonId;        //! Decay photons, not originating from pi0 or eta, ID of the particle
   
   TH1F      * fhPhi      [fgkNmcPrimTypes]; //! Input particle phi
