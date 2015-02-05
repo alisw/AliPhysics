@@ -49,7 +49,7 @@ for F in ${Files[@]} ; do
       AliRootLen=${#ALICE_ROOT}
       FNorm=${FNorm:$AliRootLen}
       echo -e "\033[35mFile \033[34m${FNorm}\033[m"
-      echo -e -n "\033[35mWhat to do? \033[34medit, stage, parts, continue, restore\033[m \033[35m> \033[m"
+      echo -e -n "\033[35mWhat to do? \033[34medit, stage, parts, continue, restore, restorequit\033[m \033[35m> \033[m"
       read ans
       case "$ans" in
         edit)
@@ -72,6 +72,10 @@ for F in ${Files[@]} ; do
         restore)
           git checkout "$F" || exit 1
           break
+        ;;
+        restorequit)
+          git checkout "$F" || exit 1
+          exit 0
         ;;
       esac
     done
