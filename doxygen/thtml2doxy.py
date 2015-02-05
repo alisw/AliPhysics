@@ -480,13 +480,14 @@ def comment_classimp(filename, comments):
 
   with open(filename, 'r') as fp:
 
-    line_classimp = -1
-    line_startcond = -1
-    line_endcond = -1
-    classimp_class = None
-    classimp_indent = None
-
     for line in fp:
+
+      # Reset to nothing found
+      line_classimp = -1
+      line_startcond = -1
+      line_endcond = -1
+      classimp_class = None
+      classimp_indent = None
 
       line_num = line_num + 1
 
@@ -521,36 +522,36 @@ def comment_classimp(filename, comments):
             in_classimp_cond = False
             line_endcond = line_num
 
-  # Did we find something?
-  if line_classimp != -1:
+      # Did we find something?
+      if line_classimp != -1:
 
-    if line_startcond != -1:
-      comments.append(Comment(
-        ['\cond CLASSIMP'],
-        line_startcond, 1, line_startcond, 1,
-        classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
-        append_empty=False
-      ))
-    else:
-      comments.append(PrependComment(
-        ['\cond CLASSIMP'],
-        line_classimp, 1, line_classimp, 1,
-        classimp_indent, 'ClassImp/Def(%s)' % classimp_class
-      ))
+        if line_startcond != -1:
+          comments.append(Comment(
+            ['\cond CLASSIMP'],
+            line_startcond, 1, line_startcond, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+            append_empty=False
+          ))
+        else:
+          comments.append(PrependComment(
+            ['\cond CLASSIMP'],
+            line_classimp, 1, line_classimp, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+          ))
 
-    if line_endcond != -1:
-      comments.append(Comment(
-        ['\endcond'],
-        line_endcond, 1, line_endcond, 1,
-        classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
-        append_empty=False
-      ))
-    else:
-      comments.append(PrependComment(
-        ['\endcond'],
-        line_classimp+1, 1, line_classimp+1, 1,
-        classimp_indent, 'ClassImp/Def(%s)' % classimp_class
-      ))
+        if line_endcond != -1:
+          comments.append(Comment(
+            ['\endcond'],
+            line_endcond, 1, line_endcond, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+            append_empty=False
+          ))
+        else:
+          comments.append(PrependComment(
+            ['\endcond'],
+            line_classimp+1, 1, line_classimp+1, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+          ))
 
 
 ## Traverse the AST recursively starting from the current cursor.
