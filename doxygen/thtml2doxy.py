@@ -627,8 +627,8 @@ def strip_html(s):
 #  @param comment An array containing the lines of the original comment
 def refactor_comment(comment, do_strip_html=True, infilename=None):
 
+  recomm = r'^(/{2,}|/\*)? ?(\s*)(.*?)\s*((/{2,})?\s*|\*/)$'
   regarbage = r'^(?i)\s*([\s*=_#-]+|(Begin|End)_Html)\s*$'
-  recomm = r'^(/{2,}|/\*)? ?(\s*.*?)\s*((/{2,})?\s*|\*/)$'
 
   # Support for LaTeX blocks spanning on multiple lines
   relatex = r'(?i)^((.*?)\s+)?(BEGIN|END)_LATEX([.,;:\s]+.*)?$'
@@ -645,6 +645,12 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
   in_macro = False
   current_macro = []
   remacro = r'(?i)^\s*(BEGIN|END)_MACRO(\((.*?)\))?\s*$'
+
+  # Minimum indent level: scale back everything
+  lowest_indent_level = None
+
+  # Indentation threshold: if too much indented, don't indent at all
+  indent_level_threshold = 15
 
   new_comment = []
   insert_blank = False
@@ -680,8 +686,19 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
 
     mcomm = re.search( recomm, line_comment )
     if mcomm:
-      new_line_comment = mcomm.group(2)
+      new_line_comment = mcomm.group(2) + mcomm.group(3)  # indent + comm
+
       mgarbage = re.search( regarbage, new_line_comment )
+
+      if mgarbage is None and not mcomm.group(3).startswith('\\') and mcomm.group(3) != '':
+        # not a special command line: count indent
+        indent_level = len( mcomm.group(2) )
+        if lowest_indent_level is None or indent_level < lowest_indent_level:
+          lowest_indent_level = indent_level
+
+        # if indentation level is too much, consider it zero
+        if indent_level > indent_level_threshold:
+          new_line_comment = mcomm.group(3)  # remove ALL indentation
 
       if new_line_comment == '' or mgarbage is not None:
         insert_blank = True
@@ -777,6 +794,23 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
 
     else:
       assert False, 'Comment regexp does not match'
+
+  # Fixing indentation level
+  if lowest_indent_level is not None:
+    logging.debug('Lowest indentation level found: %d' % lowest_indent_level)
+
+    new_comment_indent = []
+    reblankstart = r'^\s+'
+    for line in new_comment:
+      if re.search(reblankstart, line):
+        new_comment_indent.append( line[lowest_indent_level:] )
+      else:
+        new_comment_indent.append( line )
+
+    new_comment = new_comment_indent
+
+  else:
+    logging.debug('No indentation scaling applied')
 
   return new_comment
 
