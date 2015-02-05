@@ -25,12 +25,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
   )
 
-# Sources - alphabetical order
-set(SRCS
-  # ZDC tasks
-  GEO/AliAnalysisTaskZDCPbPb.cxx
-  GEO/AliAnalysisTaskZDCTreeMaker.cxx
-  GEO/AliAnalysisTaskZDCpAcalib.cxx
+# Sources under analysis2/ - alphabetical order
+set(SRCS_analysis2
   # AOD objects
   analysis2/AliAODCentralMult.cxx
   analysis2/AliAODForwardEP.cxx
@@ -58,7 +54,6 @@ set(SRCS
   analysis2/AliPoissonCalculator.cxx
   analysis2/AliMCAuxHandler.cxx
   # Forward Aux
-  analysis2/AliForwardFlowWeights.cxx
   analysis2/AliForwardUtil.cxx
   analysis2/AliFMDMultCuts.cxx
   # FMD corrections
@@ -103,23 +98,45 @@ set(SRCS
   # MC investigations 
   analysis2/AliFMDMCTrackELoss.cxx
   analysis2/AliFMDMCTrackInspector.cxx 
-  analysis2/AliFMDMCTrackInspectorTask.cxx 
+  analysis2/AliFMDMCTrackInspectorTask.cxx
+  # MC Weights
+  analysis2/AliBaseMCWeights.cxx	
+  analysis2/AliForwardFlowWeights.cxx
+  analysis2/AliSimplePidWeights.cxx	
+)
+
+# Sources under GEO/ - alphabetical order
+set(SRCS_GEO
+  # ZDC tasks
+  GEO/AliAnalysisTaskZDCPbPb.cxx
+  GEO/AliAnalysisTaskZDCTreeMaker.cxx
+  GEO/AliAnalysisTaskZDCpAcalib.cxx
+)
+
+# Sources under photons/ - alphabetical order
+set(SRCS_photons
   # Photons 
   photons/AliAnalysisTaskPMD.cxx
   photons/AliAnalysisTaskPMDSim.cxx
-  )
+)
+
+# Putting all sources together
+set(SRCS ${SRCS_analysis2} ${SRCS_GEO} ${SRCS_photons})
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-# Additional headers
-set ( HDRS ${HDRS} 
+# Additional headers for analysis2/
+set(HDRS_analysis2
   analysis2/AliFMDStripIndex.h 
   analysis2/AliFMDEncodedEdx.h 
   analysis2/AliLandauGaus.h 
   analysis2/AliLandauGausFitter.h 
   analysis2/AliFMDCorrNoiseGain.h
-  )
+)
+
+# Add additional headers to the common list of headers
+list(APPEND HDRS ${HDRS_analysis2})
 
 # Additional definitions
 if((DEFINED ALIROOT_SVN_REVISION)) 
@@ -138,12 +155,19 @@ endif((DEFINED ALIROOT_SVN_BRANCH))
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE}
+  "${SRCS}"
+  "${HDRS}"
+  "${MODULE}LinkDef.h"
+  "${LIBDEPS}")
+
 # Add a shared library
 add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice)
+set(LIBDEPS ANALYSISalice OADB)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -151,6 +175,7 @@ target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
+
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -167,7 +192,7 @@ install(FILES ${HDRS} DESTINATION include)
 add_executable(runTrain
   trains/trainMain.cxx
   )
-target_link_libraries(runTrain ANALYSIS ANALYSISalice Core Rint)
+target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint)
 install(TARGETS runTrain 
   RUNTIME DESTINATION bin)
 
@@ -191,12 +216,6 @@ add_custom_command( OUTPUT doc/html/index.html
 
 add_custom_target( PWGLFforward-doc DEPENDS doc/alice-int-2012-040.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS doc/html/index.html )
-
-add_custom_target( install-PWGLFforward2.par 
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
-  COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
-  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par
-  DEPENDS test-${PACKAGE}.par)
 
 # --------------------------------------------------------------------
 # Extra installation targets 

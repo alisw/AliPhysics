@@ -30,7 +30,8 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
 					
 					Double_t vz         = 10.,
 					Int_t nSample       = 25,
-					Int_t analType      = 1) {
+					Int_t analType      = 1,
+					Bool_t isBasic      = 0) {
 
   Double_t vx = 3.; Double_t vy = 3.; 
  
@@ -75,7 +76,7 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
   task->SetKinematicsCuts(ptl,pth,gEta,gRap);
   task->SetNSubSamples(nSample);
   task->SetDca(dcaxy,dcaz);
-  
+  if(isBasic) task->DoBasicQA(); 
   if (!isModeAOD) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
     // gROOT->LoadMacro("./configureNetChargeTrackCut.C"); 

@@ -34,6 +34,11 @@ public:
   void Reset();
 
   Bool_t IsMinBias() const { return fIsMinBias; }
+  void Print(Option_t * opt = NULL) const;
+
+  void SetDebugMode(Bool_t doDebug = true) { fDoDebug = doDebug; }
+
+  bool CheckConsistency() const;
 
 protected:
   void MakeDecisionFromString(const TString &triggerstring);
@@ -43,6 +48,8 @@ protected:
   Bool_t fIsMinBias;
   Bool_t fDecisionFromPatches[4];
   Bool_t fDecisionFromString[4];
+
+  Bool_t fDoDebug;
 
   ClassDef(AliEMCalTriggerAnaTriggerDecision, 1);     // EMCal trigger decision
 };

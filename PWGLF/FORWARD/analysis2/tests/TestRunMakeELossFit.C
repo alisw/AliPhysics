@@ -22,13 +22,13 @@ TestRunMakeELossFit(UShort_t    sys,
 		    const char* filename="forward_eloss.root")
 {
   std::cout << "Loading libraries ..." << std::endl;
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   std::cout << "Loading compile script ..." << std::endl;
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/Compile.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/Compile.C");
  
   std::cout << "Compiling MakeELossFit.C script ..." << std::endl;
-  Compile("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/TestMakeELossFit.C"); 
+  Compile("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/TestMakeELossFit.C"); 
 
   std::cout << "Making MakeELossFit object (sys=" << sys 
 	    << ", cms=" << cms << ", field=" << field << ", mc=" << mc 

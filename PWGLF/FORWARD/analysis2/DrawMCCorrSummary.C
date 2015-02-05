@@ -11,7 +11,7 @@
 void DrawMCCorrSummary(const char* fname="forward_mccorr.root", 
 		       UShort_t what=0x20F)
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   gROOT->SetMacroPath(Form("%s:%s/scripts",
 			   gROOT->GetMacroPath(), fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));

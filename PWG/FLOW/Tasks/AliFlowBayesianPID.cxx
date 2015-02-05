@@ -662,7 +662,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
     fWTofMism = mismfrac*mismweight;
 
     Double_t inttimes[9];
-    t->GetIntegratedTimes(inttimes);
+    t->GetIntegratedTimes(inttimes,9);
     inttimes[5] = inttimes[0] / p * fMass[5] * TMath::Sqrt(1+p*p/fMass[5]/fMass[5]);
     inttimes[6] = inttimes[0] / p * fMass[6] * TMath::Sqrt(1+p*p/fMass[6]/fMass[6]);
     inttimes[7] = inttimes[0] / p * fMass[7] * TMath::Sqrt(1+p*p/fMass[7]/fMass[7]);
@@ -814,7 +814,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,const AliAODEvent *
     fWTofMism = mismfrac*mismweight;
 
     Double_t inttimes[9];
-    t->GetIntegratedTimes(inttimes);
+    t->GetIntegratedTimes(inttimes,9);
     inttimes[5] = inttimes[0] / p * fMass[5] * TMath::Sqrt(1+p*p/fMass[5]/fMass[5]);
     inttimes[6] = inttimes[0] / p * fMass[6] * TMath::Sqrt(1+p*p/fMass[6]/fMass[6]);
     inttimes[7] = inttimes[0] / p * fMass[7] * TMath::Sqrt(1+p*p/fMass[7]/fMass[7]);

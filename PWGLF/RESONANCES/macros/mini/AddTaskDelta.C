@@ -1,19 +1,18 @@
 //
-// General macro to configure the RSN analysis task.
+// General macro to configure the Delta++ analysis with RSN analysis package.
 // It calls all configs desired by the user, by means
 // of the boolean switches defined in the first lines.
 // ---
 // Inputs:
 //  1) flag to know if running on MC or data
-//  2) path where all configs are stored
+//  2) flag to know if running on pp or AA data
+//  3) number of events in the mixing-event pool
+//  4) flag to enable systematics
 // ---
 // Returns:
 //  kTRUE  --> initialization successful
 //  kFALSE --> initialization failed (some config gave errors)
 //
-
-Bool_t useDelta = 1;
-
 
 //set to kTRUE if using data AOD049 - needed to enable centrality patch
 Bool_t isAOD049 = 0;
@@ -22,7 +21,6 @@ AliRsnMiniAnalysisTask * AddTaskDelta
 (
  Bool_t      isMC,
  Bool_t      isPP,
- const char *path,
  Int_t       nmix,
  Bool_t      enableSyst = 0
  )
@@ -70,17 +68,21 @@ AliRsnMiniAnalysisTask * AddTaskDelta
   Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
+  // define the event cut set
+  AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent); 
   // cut on primary vertex:
   // - 2nd argument --> |Vz| range
   // - 3rd argument --> minimum required number of contributors
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
-   
-  // set the check for pileup
-  if (isPP) cutVertex->SetCheckPileUp(kTRUE);
-  else {
-   
-    AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
+  AliRsnCutEventUtils *cutEventUtils = 0x0;
+  if (isPP) { 
+    cutVertex->SetCheckPileUp(kTRUE);
+    eventCuts->AddCut(cutVertex);
+    eventCuts->SetCutScheme(Form("%s", cutVertex->GetName()));
+  } else {
+    //cutEventUtils configured and used only for pA
+    cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
     cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA);
     ::Info("AddAnalysisTaskTOFDelta", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
     if (useMVPileUpSelection){
@@ -94,14 +96,13 @@ AliRsnMiniAnalysisTask * AddTaskDelta
     }
     ::Info("AddAnalysisTaskTOFDelta", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
     ::Info("AddAnalysisTaskTOFDelta", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
-   
-  }
-   
-  // define and fill cut set for event cut
-  AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-  eventCuts->AddCut(cutEventUtils);
-  eventCuts->AddCut(cutVertex);
-  eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
+    //add event utils cuts
+    eventCuts->AddCut(cutVertex);
+    eventCuts->AddCut(cutEventUtils);
+    //define cut scheme
+    eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
+  } 
+  
   // set cuts in task
   task->SetEventCuts(eventCuts);
    
@@ -148,18 +149,21 @@ AliRsnMiniAnalysisTask * AddTaskDelta
   // -- CONFIGS -----------------------------------------------------------------------------------
   //
   
-  if (isMC) {
-    gROOT->LoadMacro("ConfigDeltaPP7TeV_MC.C");
-    ConfigDeltaPP7TeV_MC(task, isPP, "", cutsPair);
+  if (isPP){
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV.C");
+    ConfigDeltaPP7TeV(task, isMC, "", cutsPair);
+    if (isMC) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV_MC.C");
+      ConfigDeltaPP7TeV_MC(task, isPP, "", cutsPair);
+    } 
   } else {
-    if (isPP){
-      gROOT->LoadMacro("ConfigDeltaPP7TeV.C");
-      ConfigDeltaPP7TeV(task, isMC, "", cutsPair);
-    } else {
-      gROOT->LoadMacro("ConfigDeltaPPb.C");
-      ConfigDeltaPPb(task, isMC, "", cutsPair);
-    }
-  }
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigDeltaPPb.C");
+    ConfigDeltaPPb(task, isMC, "", cutsPair); 
+    if (isMC) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigDeltaPP7TeV_MC.C");
+      ConfigDeltaPP7TeV_MC(task, isPP, "", cutsPair);
+    } 
+  } 
   //
   // -- CONTAINERS --------------------------------------------------------------------------------
   //

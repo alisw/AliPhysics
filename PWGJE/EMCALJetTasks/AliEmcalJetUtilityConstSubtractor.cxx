@@ -170,23 +170,23 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
   AliDebug(1,Form("%d constituent subtracted jets found", (Int_t)jets_sub.size()));
   for (UInt_t ijet = 0, jetCount = 0; ijet < jets_sub.size(); ++ijet) {
     //Only storing 4-vector and jet area of unsubtracted jet
-    AliEmcalJet *jet_sub = new ((*fJetsSub)[jetCount])
-      AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
-    jet_sub->SetLabel(ijet);
-
-    fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
-    jet_sub->SetArea(area.perp());
-    jet_sub->SetAreaEta(area.eta());
-    jet_sub->SetAreaPhi(area.phi());
-    jet_sub->SetAreaEmc(area.perp());
-
-    // Fill constituent info
-    std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
-    std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
-    fJetTask->FillJetConstituents(jet_sub, constituents_sub, fJetTask->GetTracks(), fJetTask->GetClusters(), constituents_unsub, 1, fParticlesSub);
-    jet_sub->SetNumberOfTracks(constituents_sub.size());
-    //    jet_sub->SetNumberOfTracks(constituents_unsub.size());  MV: leave committed. Cannot have gaps in case both tracks + clusters go into same array. Final decision pending
-    jetCount++;
+    if(jets_sub[ijet].E()>0.) {
+      AliEmcalJet *jet_sub = new ((*fJetsSub)[ijet])
+        AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
+      jet_sub->SetLabel(ijet);
+      
+      fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
+      jet_sub->SetArea(area.perp());
+      jet_sub->SetAreaEta(area.eta());
+      jet_sub->SetAreaPhi(area.phi());
+      jet_sub->SetAreaEmc(area.perp());
+      
+      // Fill constituent info
+      std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
+      std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
+      fJetTask->FillJetConstituents(jet_sub, constituents_sub, fJetTask->GetTracks(), fJetTask->GetClusters(), constituents_unsub, 1, fParticlesSub);
+      jetCount++;
+    }
   }
 
 #endif

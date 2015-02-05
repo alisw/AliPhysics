@@ -8,8 +8,15 @@ Float_t gVertex = 6.9;
 Float_t gZVtxRange = -1;
 Float_t gAxis = 0;
 Float_t gBasisSize = 350;
-Float_t g_phi_bin = 0.32;//0.32;//bins of 0.174532  //maximum is pi/4, because max(delta phi) + 2 alpha < pi/2 (because at Delta phi = pi/2 the number of background triggers are measured)
-Float_t g_eta_bin = 0.39;//bins of 0.2
+Float_t g_phi_bin = 0.51;//0.85;//0.68;//0.32;//bins of 0.174532  //maximum is pi/4, because max(delta phi) + 2 alpha < pi/2 (because at Delta phi = pi/2 the number of background triggers are measured)
+Float_t g_eta_bin = 0.59;//0.79;//0.59;//bins of 0.2
+
+Float_t gSubtractFlow_start = 0.81;//variable in eta
+Float_t gSubtractFlow_end = 1.29;
+
+Float_t gSubtractBaseline_start = 0.699;//variable in phi
+Float_t gSubtractBaseline_end = 1.396;
+
 //char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne";//before 1091
 //char* path = "PWGCF_TwoPlusOne/addedEvents_";
 char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_lowPt";//1095
@@ -19,15 +26,20 @@ char* path = "PWGCF_TwoPlusOne/histosTwoPlusOne_lowPt";//1095
 //Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.75, 1.5, 2.5, 3.5, 5.0, 7.0, 9.0};
 //Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.25, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0};
 
-static const int pt_assoc_bins_number = 6;
-Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 1.0, 2.0, 3.0, 4.0, 6.0};
-Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.75, 1.5, 2.5, 3.5, 5.0};
-Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.25, 0.5, 0.5, 0.5, 1.0};
+//static const int pt_assoc_bins_number = 6;
+//Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 1.0, 2.0, 3.0, 4.0, 6.0};
+//Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.75, 1.5, 2.5, 3.5, 5.0};
+//Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.25, 0.5, 0.5, 0.5, 1.0};
 
 //static const int pt_assoc_bins_number = 12;
 //Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 0.75, 1.0, 1.25, 1.50, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0};
 //Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.625, 0.875, 1.125, 1.375, 1.75, 2.25, 2.75, 3.25, 3.75, 4.5, 5.5};
 //Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.125, 0.125, 0.125, 0.125, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5};
+
+static const int pt_assoc_bins_number = 8;
+Double_t pt_assoc_bins[pt_assoc_bins_number] = {0.5, 1.0, 1.50, 2.0, 2.5, 3.0, 4.0, 6.0};
+Double_t pt_assoc_bin_center[pt_assoc_bins_number-1] = {0.75, 1.25, 1.75, 2.25, 2.75, 3.5, 5.0};
+Double_t pt_assoc_bin_error[pt_assoc_bins_number-1] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 1.0};
 
 void loadlibs()
 {
@@ -134,21 +146,19 @@ void* showEvents(const char* fileName, int twoPlusOne = 1)
 //flow from 1.0 > |eta| > 1.6 is subtracted from the rest of the histogram
 //the flow in the TH2 is subtracted
 void subtractFlow(TH2* etaPhi){
-  int firstbin = etaPhi->GetYaxis()->FindBin(1.01);
-  int lastbin = etaPhi->GetYaxis()->FindBin(1.39);
+  int firstbin = etaPhi->GetYaxis()->FindBin(gSubtractFlow_start);
+  int lastbin = etaPhi->GetYaxis()->FindBin(gSubtractFlow_end);
 
   TH1D* etaPhi_proj = etaPhi->ProjectionX("_px", firstbin, lastbin);
   int usedBins = lastbin - firstbin + 1;
 
-  firstbin = etaPhi->GetYaxis()->FindBin(-1.39);
-  lastbin = etaPhi->GetYaxis()->FindBin(-1.01);
+  firstbin = etaPhi->GetYaxis()->FindBin(-1.0*gSubtractFlow_end);
+  lastbin = etaPhi->GetYaxis()->FindBin(-1.0*gSubtractFlow_start);
   TH1D* signal2 = etaPhi->ProjectionX("_px2", firstbin, lastbin);
   usedBins += lastbin - firstbin + 1;
   etaPhi_proj->Add(signal2, 1.0);
 
   etaPhi_proj->Scale(1.0/usedBins);
-
-  etaPhi->GetYaxis()->SetRangeUser(-1.0, 1.0);
 
   for(int i=0;i<=etaPhi->GetNbinsX();i++){
     double subtract = etaPhi_proj->GetBinContent(i);
@@ -163,12 +173,16 @@ void subtractFlow(TH2* etaPhi){
   //use fit method to subtract the baseline if the subtractFlow method doesn't work because of poor statistics
 Double_t subtractBaseline(TH1D* h1_phi){
   
-  TF1* fit = new TF1("fit", "[0]", -TMath::Pi()/2+0.01, TMath::Pi()/2-0.01);
+  //do not use information inside the cone to subtract the background
+  if(g_phi_bin > gSubtractBaseline_start) 
+    gSubtractBaseline_start = g_phi_bin;
+
+  TF1* fit = new TF1("fit", "[0]", -1.0*gSubtractBaseline_end, -1.0*gSubtractBaseline_start);
 
   h1_phi->Fit("fit", "N", "", -TMath::Pi()/2+0.01, -1.0);
   Double_t par0 = fit->GetParameter(0);
  
-  h1_phi->Fit("fit", "N", "", 1.0, TMath::Pi()/2-0.01);
+  h1_phi->Fit("fit", "N", "", gSubtractBaseline_start, gSubtractBaseline_end);
   Double_t par1 = fit->GetParameter(0);
 
   //this is done so that the fit is not drawn
@@ -320,7 +334,7 @@ void showAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
   TH1D* h1_phi = projectToTH1D(h2_etaPhi, "fully corrected", firstbin, lastbin, 1.0);//last number is triggers
   */
   leg->AddEntry(near->Clone(), "near side", "l");
-  if(true) return;
+
   TH1* away = getAnalysis(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, 6.9, multBinBegin, multBinEnd, 1, 2, 1, showPlots, subtractMixedComb, subtractFlow);
   leg->AddEntry(away, "away side", "l");
 
@@ -356,6 +370,8 @@ void peakDifference_side(const char* fileName, double pt1Min = 4.0, double pt1Ma
 //mode 1 central and semi central (near side in top and away side in bottom row)
 void peakDifference(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t side = 0, Int_t yPos = 0, Int_t mode = 0,  Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t draw = 0){
 
+  Double_t z_vtx = 8.9;
+
   Double_t near_content[pt_assoc_bins_number-1];
   Double_t away_content[pt_assoc_bins_number-1];
   Double_t onePlusOne_content[pt_assoc_bins_number-1];
@@ -370,16 +386,16 @@ void peakDifference(const char* fileName, double pt1Min = 4.0, double pt1Max = 1
     TCanvas* can;
 
     if(mode==0){
-      near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, multBinBegin, multBinEnd, 0, 1, 1, 0, subtractMixedComb, subtractFlow)->Clone();
-      away = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, multBinBegin, multBinEnd, 1, 2, 1, 0, subtractMixedComb, subtractFlow)->Clone();
+      near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], z_vtx, multBinBegin, multBinEnd, 0, 1, 1, 0, subtractMixedComb, subtractFlow)->Clone();
+      away = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], z_vtx, multBinBegin, multBinEnd, 1, 2, 1, 0, subtractMixedComb, subtractFlow)->Clone();
       onePlusOne = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, multBinBegin, multBinEnd, 6, 2, 1, 0, subtractMixedComb, subtractFlow);
 	//onePlusOne = (TH1*)getAnalysis(fileName, pt2Min, pt1Min, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, multBinBegin, multBinEnd, 6, 2, 1, 0, subtractMixedComb, subtractFlow);
 
       can = new TCanvas(Form(" %i, mult %i-%i ", i, multBinBegin, multBinEnd), Form(" %i, mult %i-%i ", i, multBinBegin, multBinEnd), i*gBasisSize+100, yPos*(gBasisSize+50), gBasisSize, gBasisSize);
       
     }else if(mode==1){
-      near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, 1, 5, side, 1, 1, 0, subtractMixedComb, subtractFlow)->Clone();
-      away = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, 9, 10, side, 2, 1, 0, subtractMixedComb, subtractFlow);
+      near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], z_vtx, 1, 5, side, 1, 1, 0, subtractMixedComb, subtractFlow)->Clone();
+      away = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], z_vtx, 9, 10, side, 2, 1, 0, subtractMixedComb, subtractFlow);
 
       can = new TCanvas(Form(" %i, side %i ", i, side), Form(" %i, side %i ", i, side), i*gBasisSize+50, yPos*(gBasisSize+50), gBasisSize, gBasisSize);
     }else{
@@ -522,29 +538,49 @@ void peakDifference(const char* fileName, double pt1Min = 4.0, double pt1Max = 1
 
 void create_peakDifference_pictures(const char* fileName){
 
+  Int_t subtractMixedComb = 1;
+  Int_t subtractFlow = 1;
+
   gROOT->SetBatch(kTRUE);
   
   Printf("peakDifference_draw(fileName, 6, 8, 4, 1, 1, 1");
-  peakDifference_draw(fileName, 6, 8, 4, 1, 1, 1);
-  
+  peakDifference_draw(fileName, 6, 8, 4, 1, subtractMixedComb, subtractFlow);
   Printf("peakDifference_draw(fileName, 6, 8, 6, 1, 1, 1");
-  peakDifference_draw(fileName, 6, 8, 6, 1, 1, 1);
+  peakDifference_draw(fileName, 6, 8, 6, 1, subtractMixedComb, subtractFlow);
   Printf("peakDifference_draw(fileName, 8, 10, 4, 1, 1, 1");
-  peakDifference_draw(fileName, 8, 10, 4, 1, 1, 1);
+  peakDifference_draw(fileName, 8, 10, 4, 1, subtractMixedComb, subtractFlow);
   Printf("peakDifference_draw(fileName, 8, 10, 6, 1, 1, 1");
-  peakDifference_draw(fileName, 8, 10, 6, 1, 1, 1);
+  peakDifference_draw(fileName, 8, 10, 6, 1, subtractMixedComb, subtractFlow);
   Printf("peakDifference_draw(fileName, 10, 12, 4, 1, 1, 1");
-  peakDifference_draw(fileName, 10, 12, 4, 1, 1, 1);
+  peakDifference_draw(fileName, 10, 12, 4, 1, subtractMixedComb, subtractFlow);
   Printf("peakDifference_draw(fileName, 10, 12, 6, 1, 1, 1");
-  peakDifference_draw(fileName, 10, 12, 6, 1, 1, 1);
-    
-
+  peakDifference_draw(fileName, 10, 12, 6, 1, subtractMixedComb, subtractFlow);
+  
   TCanvas* can = new TCanvas("can_filename", "can_filename");
   TH1F* mixedDist = getMixedDist(fileName);
   mixedDist->SetTitle(fileName);
   mixedDist->Draw("colz");
+
   can->SaveAs("pt_spectra/filename.eps");
   
+  TCanvas* info_can = new TCanvas("run info", "run info");
+  TLatex * name = new TLatex(0.35,0.945,fileName);
+  name->SetTextFont(62);
+  name->SetTextSize(0.05);
+  name->Draw();
+  
+
+  TLatex * phi = new TLatex(0.65,0.645,Form("|\\Delta \\varphi| < %.2f", g_phi_bin, g_eta_bin));
+  phi->SetTextFont(62);
+  phi->SetTextSize(0.05);
+  phi->Draw();
+
+  TLatex * eta = new TLatex(0.65,0.545,Form("|\\Delta \\eta| < %.2f", g_eta_bin));
+  eta->SetTextFont(62);
+  eta->SetTextSize(0.05);
+  eta->Draw("same");
+
+  info_can->SaveAs("pt_spectra/run_info.eps");
 }
 
 
@@ -552,33 +588,90 @@ void create_peakDifference_pictures(const char* fileName){
 
 void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t yPos = 0,  Int_t subtractMixedComb = 1, Int_t subtractFlow = 1){
 
-  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 0, yPos, subtractMixedComb, subtractFlow)->Clone());
-  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow)->Clone());
+  Int_t trigger_central_near = 0;
+  Int_t trigger_central_away = 0;
+  Int_t trigger_semi_near = 0;
+  Int_t trigger_semi_away = 0;
 
-  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 0, yPos, subtractMixedComb, subtractFlow)->Clone());
-  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 1, yPos, subtractMixedComb, subtractFlow)->Clone());
+  Int_t trigger_bg_central_near = 0;
+  Int_t trigger_bg_central_away = 0;
+  Int_t trigger_bg_semi_near = 0;
+  Int_t trigger_bg_semi_away = 0;
+  
+  /*
+  //away side over pure background
+  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+
+  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 1, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Max, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  */
+  
+    //standard
+  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 0, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 1, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+
+  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 0, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 1, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  
+
+  /*
+    //pure background
+  TGraphErrors* graph_central_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_near, &trigger_bg_central_near)->Clone());
+  TGraphErrors* graph_central_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 1, 5, 6, yPos, subtractMixedComb, subtractFlow, &trigger_central_away, &trigger_bg_central_away)->Clone());
+
+  TGraphErrors* graph_semi_near = (TGraphErrors*)(peakDifference_graph(fileName, pt1Min, pt1Max, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_near, &trigger_bg_semi_near)->Clone());
+  TGraphErrors* graph_semi_away = (TGraphErrors*)(peakDifference_graph(fileName, pt2Min, pt1Min, pt2Min, 9, 10, 6, yPos, subtractMixedComb, subtractFlow, &trigger_semi_away, &trigger_bg_semi_away)->Clone());
+  */
+
+  //write out trigger info
+  TCanvas* trigger_info = new TCanvas(Form("trigger info for %.1f > p\\_{T,1} > %.1f,  p\\_{T,12} > %.1f ", pt1Min, pt1Max, pt2Min), Form("trigger info for %.1f > p\\_{T,1} > %.1f,  p\\_{T,12} > %.1f ", pt1Min, pt1Max, pt2Min));
+  TLatex * trigger_value_central_near = new TLatex(0.05,0.90, Form("central near: %i, background: %i ", trigger_central_near, trigger_bg_central_near));
+  trigger_value_central_near->SetTextFont(62);
+  trigger_value_central_near->SetTextSize(0.05);
+  trigger_value_central_near->Draw();
+  TLatex * trigger_value_central_away = new TLatex(0.05,0.80, Form("central away: %i, background: %i ", trigger_central_away, trigger_bg_central_away));
+  trigger_value_central_away->SetTextFont(62);
+  trigger_value_central_away->SetTextSize(0.05);
+  trigger_value_central_away->Draw();
+  TLatex * trigger_value_semi_near = new TLatex(0.05,0.60, Form("semi central near: %i, background: %i ", trigger_semi_near, trigger_bg_semi_near));
+  trigger_value_semi_near->SetTextFont(62);
+  trigger_value_semi_near->SetTextSize(0.05);
+  trigger_value_semi_near->Draw();
+  TLatex * trigger_value_semi_away = new TLatex(0.05,0.50, Form("semi central away: %i, background: %i ", trigger_semi_away, trigger_bg_semi_away));
+  trigger_value_semi_away->SetTextFont(62);
+  trigger_value_semi_away->SetTextSize(0.05);
+  trigger_value_semi_away->Draw();
+  trigger_info->SaveAs(Form("pt_spectra/trigger_info_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
+  //trigger info is saved
+
 
   TCanvas* can_graph = new TCanvas(Form("result %i", yPos), Form("result %i", yPos), gBasisSize+50, yPos*(gBasisSize+50), gBasisSize, gBasisSize);
 
-  Int_t elements = 7;
+  Int_t elements = pt_assoc_bins_number;
   
-  Double_t maximum = TMath::MaxElement(elements, graph_central_near->GetY());
-  Printf("maximum of central near is %f ", maximum);
-  Double_t max  = TMath::MaxElement(elements, graph_central_away->GetY());
+  Double_t maximum = 0;
+  Double_t max_hard = 1000000000;
+  Double_t max  = TMath::MaxElement(elements, graph_central_near->GetY());
+  if(max>maximum && max<max_hard) maximum = max;
+  Printf("maximum of central near is %f ", max);
+  max  = TMath::MaxElement(elements, graph_central_away->GetY());
   Printf("maximum of central away is %f ", max);
-  if(max>maximum) maximum = max;
+  if(max>maximum && max<max_hard) maximum = max;
   max = TMath::MaxElement(elements, graph_semi_near->GetY());
   Printf("maximum of semi near is %f ", max);
-  if(max>maximum) maximum = max;
+  if(max>maximum && max<max_hard) maximum = max;
   max = TMath::MaxElement(elements, graph_semi_away->GetY());
   Printf("maximum of semi away is %f ", max);
-  if(max>maximum) maximum = max;
+  if(max>maximum && max<max_hard) maximum = max;
   graph_central_near->SetMaximum(maximum*1.25);
   
-  Double_t minimum = TMath::MinElement(elements, graph_central_near->GetY());
-  //if(minimum==0) minimum = maximum;
+  Double_t minimum = maximum;
+
+  Double_t min = TMath::MinElement(elements, graph_central_near->GetY());
   Printf("minimum of central near is %f ", minimum);
-  Double_t min = TMath::MinElement(elements, graph_central_away->GetY());
+  if(min>0 && min<minimum) minimum = min;
+  min = TMath::MinElement(elements, graph_central_away->GetY());
   Printf("minimum of central away is %f ", min);
   if(min>0 && min<minimum) minimum = min;
   min = TMath::MinElement(elements, graph_semi_near->GetY());
@@ -587,7 +680,10 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   min = TMath::MinElement(elements, graph_semi_away->GetY());
   Printf("minimum of semi away is %f ", min);
   if(min>0 && min<minimum) minimum = min;
-  graph_central_near->SetMinimum(minimum/1.30);
+
+  minimum = 0.002;
+
+  graph_central_near->SetMinimum((double)minimum/1.30);
   
     
   graph_central_near->SetTitle(Form("p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min));
@@ -615,13 +711,13 @@ void peakDifference_draw(const char* fileName, double pt1Min = 4.0, double pt1Ma
   leg->Draw("same");
 
   can_graph->SaveAs(Form("pt_spectra/pt_spectrum_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
-  /*
+  
   save_graph_ratio(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near over away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/centralANDsemi_near_away_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min), "central", "semi central");
 
   save_graph_ratio(graph_central_near, graph_semi_near, graph_central_away, graph_semi_away, elements, Form("near and semi central over semi p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/nearANDaway_central_semi_ratio_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min), "near", "away");
 
   save_graph_difference(graph_central_near, graph_central_away, graph_semi_near, graph_semi_away, elements, Form("central and semi near minus away p_{T,assoc} spectrum for %.1f < p_{T,1} < %.1f and %.1f < p_{T,2} < p_{T,1}", pt1Min, pt1Max, pt2Min), Form("pt_spectra/centralANDsemi_near_away_diff_%.0f_%.0f_%.0f.eps", pt1Min, pt1Max, pt2Min));
-  */
+  
 }
 
 
@@ -675,8 +771,22 @@ void save_graph_difference(TGraphErrors* first, TGraphErrors* second, TGraphErro
 void save_graph(TGraphErrors* first, TGraphErrors* second, char* name, int mode, TLegend *leg){
   TCanvas* can_graph_ratio = new TCanvas("can_saveGraph", "can_saveGraph", gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
   if(mode==0){
-    first->SetMinimum(0.4);
-    first->SetMaximum(1.6);
+    //first->SetMinimum(0.4);
+    //first->SetMaximum(1.6);
+
+    first->SetMinimum(0);
+    first->SetMaximum(3);
+
+    //first->SetMinimum(0.2);
+    //first->SetMaximum(1.8);
+  }else if(mode==1){
+
+    //first->SetMinimum(-0.9);
+    //first->SetMaximum(0.5);
+
+    first->SetMinimum(-0.4);
+    first->SetMaximum(0.3);
+
   }
   first->SetMarkerSize(1);
   first->SetLineWidth(3);
@@ -750,12 +860,12 @@ TGraphErrors* save_graph_compute(TGraphErrors* first, TGraphErrors* second, cons
 }
 
 
-TGraphErrors* peakDifference_graph(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t side = 0, Int_t yPos = 0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t draw = 0){
+TGraphErrors* peakDifference_graph(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t side = 0, Int_t yPos = 0, Int_t subtractMixedComb = 1, Int_t subtractFlow = 1, Int_t* trigger = NULL, Int_t* triggerBackground = NULL){
   Double_t content[pt_assoc_bins_number-1];
   Double_t error[pt_assoc_bins_number-1];
 
   for(int i=0; i<pt_assoc_bins_number-1; i++){
-    TH1* near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 6.9, multBinBegin, multBinEnd, side, 1, 1, 0, subtractMixedComb, subtractFlow)->Clone();
+    TH1* near = (TH1*)getAnalysis(fileName, pt1Min, pt1Max, pt2Min, pt_assoc_bins[i], pt_assoc_bins[i+1], 8.9, multBinBegin, multBinEnd, side, 1, 1, 0, subtractMixedComb, subtractFlow, trigger, triggerBackground)->Clone();
     
     Int_t bin_start = near->FindBin(-1*g_phi_bin);
     Int_t bin_end = near->FindBin(g_phi_bin);
@@ -902,7 +1012,7 @@ void show1plus1(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0,
 //does the reading out of the results
 //divides the same event by the mixed events
 //subtracts the mixed combinatorics
-TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t posX = 1, Int_t posY = 1, Int_t showPlots = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0, Int_t* trigger = NULL)
+TH2D* getAnalysis_2D(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0, Int_t* trigger = NULL, Int_t* triggerBackgroundSame = NULL)
 {
   loadlibs();
   //to guarantee to pick only the bins from the choosen pt on
@@ -935,121 +1045,61 @@ TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
   //TH2D* h2_etaPhi2;
   //TH2D* h2_etaPhi_mixedComb2;
 
-  TH1D* h1_phi_cloneProject;
-
   if(step>=2||!subtractMixedComb){
     Int_t trigger_etaPhi;
     if(step!=6)
-      h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_mixed, &trigger_etaPhi);
+      h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_etaPhi);
     else  if(step==6)
-      h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kTRUE, step_1plus1_mixed, &trigger_etaPhi);
+      h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_etaPhi);
 
     if(trigger!=NULL)
       *trigger = (Int_t)trigger_etaPhi;
   }else if(step<2 && subtractMixedComb){
     Int_t trigger_same;
     Int_t trigger_mixed_comb;
-    Int_t trigger_background_same;
+    Int_t trigger_background;
 
-    //h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_same);
-    h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_same);
-    TH2D* h2_etaPhi_clone = h2_etaPhi->Clone();
-    if(subtractFlow)
-      subtractFlow(h2_etaPhi_clone);
-    h2_etaPhi_clone->Scale(1.0/trigger_same);
+    h2_etaPhi = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_same);
 
     //don't need to use getMixedComb_scaled_backgroundSame, see compareScaledMixedComb which shows that both methods are identical but here getSumOfRatios is used which makes it easier (and safer against errors)
     //the 1+1 analysis can only be used if the full analysis was done within the same pt bins
-    
-    
-    if(step==0)
+    if(step==0){
       h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_mixed_comb);
-    else if(step==1)
-      h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Min, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_mixed_comb);
-    else //this is never used, it's the old method of getting the background
+    }else if(step==1){
+      if(pt1Min>pt2Min)
+	h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Min, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_mixed_comb);
+      else
+	h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_1plus1_mixed, &trigger_mixed_comb);
+	//h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt2Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
+    }else{ //this is never used, it's the old method of getting the background
+      Printf("#########################");
+      Printf("USE OLD BACKGROUND METHOD, step %i", step);
+      Printf("#########################");
       h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
+    }
 
-    h2_etaPhi_backgroundSame = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_backgroundSame, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_background_same);
+    Int_t correctTrigger = getNumberOfTrigger(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd);
+    trigger_background = trigger_same - correctTrigger;
 
     //trigger_background_same *= 2;//error in the plots for runs 968 and 973
-    double trigger_ratio = (double)trigger_background_same;
+    double trigger_ratio = (double)trigger_background;
     if(trigger_mixed_comb>0)
       trigger_ratio /= trigger_mixed_comb;
-    Printf("trigger mixed comb: %i, trigger background same %i, ratio %f", trigger_mixed_comb, trigger_background_same, trigger_ratio);
     h2_etaPhi_mixedComb->Scale(trigger_ratio);
-    trigger_mixed_comb = trigger_background_same;
-    Printf("trigger same: %i, trigger mixed comb %i ", trigger_same, trigger_mixed_comb);
+    Printf("trigger same: %i, trigger background %i, trigger ratio ", trigger_same, trigger_background, trigger_ratio);
+     
+    h2_etaPhi->Add(h2_etaPhi_mixedComb, -1);
+    //h2_etaPhi->Add(h2_etaPhi_backgroundSame, -1);
+    
+    h2_etaPhi_mixedComb->Scale(1.0/(double)trigger_background);
 
-    int firstbin = h2_etaPhi->GetYaxis()->FindBin(-1*g_eta_bin);
-    int lastbin = h2_etaPhi->GetYaxis()->FindBin(g_eta_bin);
+    if(correctTrigger>0)
+      h2_etaPhi->Scale(1.0/correctTrigger);
 
-    if(showPlots==1){
-      TCanvas* can_1 = new TCanvas("sameEvent near side", "sameEvent near side", 100, 50, gBasisSize, gBasisSize);
-      h2_etaPhi->DrawCopy("surf1");
-    
-      //TH1D* h1_phi_1 = projectToTH1D(h2_etaPhi, "same near", firstbin, lastbin, trigger_same);
-      TH1D* h1_phi_1 = projectToTH1D(h2_etaPhi, "same near", firstbin, lastbin, 1.0);
-      h1_phi_1->SetLineColor(kRed);
-      //h1_phi_1->DrawCopy();
-      
-      TLegend *leg  = getLegend();
-      leg->AddEntry(h1_phi_1,"same event","l");
-    
-      TCanvas* can_2 = new TCanvas("sameEvent mixed comb", "sameEvent mixed comb", gBasisSize+100, 50, gBasisSize, gBasisSize);
-      h2_etaPhi_mixedComb->DrawCopy("surf1");
-      //TH1D* h1_phi_2 = projectToTH1D(h2_etaPhi_mixedComb, "mixedComb near", firstbin, lastbin, trigger_mixed_comb);
-      TH1D* h1_phi_2 = projectToTH1D(h2_etaPhi_mixedComb, "mixedComb near", firstbin, lastbin, 1.0);
-      Printf(Form("trigger mixed_comb", trigger_mixed_comb));
-      //h1_phi_2->DrawCopy();
-      leg->AddEntry(h1_phi_2->Clone(),"mixed comb","l");
-      //leg->Draw("same");
-      //if(true) return;
-      TCanvas* can_2 = new TCanvas("sameEvent flow subtracted", "sameEvent flow subtracted", 100, 2*(gBasisSize+50), gBasisSize, gBasisSize);
-      //TH2D* h2_etaPhi_clone = h2_etaPhi->Clone(); // is already cloned earlier
-      //subtractFlow(h2_etaPhi_clone);
-      
-      h1_phi_cloneProject = projectToTH1D(h2_etaPhi_clone, "same flow subtracted", firstbin, lastbin, trigger_same);
-      h1_phi_cloneProject->DrawCopy();
-    
-      TCanvas* can_3 = new TCanvas("mixed comb subtracted", "mixed comb subtracted", 2*gBasisSize+100, 2*(gBasisSize+50), gBasisSize, gBasisSize);
-      h2_etaPhi->Add(h2_etaPhi_mixedComb, -1);
-      //h2_etaPhi2->Add(h2_etaPhi_mixedComb2, -1);
-    
-      if(trigger_same-trigger_mixed_comb>0)
-	h2_etaPhi->Scale(1.0/(trigger_same-trigger_mixed_comb));
-      //h2_etaPhi2->Scale(1.0/(trigger_same2-trigger_mixed_comb2));
-
-      //h2_etaPhi->DrawCopy("surf1");
-      h1_phi_3 = projectToTH1D(h2_etaPhi, "same minus mixedComb", firstbin, lastbin, 1.0);
-      //h1_phi_3_b = projectToTH1D(h2_etaPhi2, "same minus mixedComb away", firstbin, lastbin, 1.0);
-      h1_phi_3->SetLineColor(kRed);
-      h1_phi_3->DrawCopy();
-      //h1_phi_3_b->DrawCopy("same");
-    
-      TLegend* leg2 = getLegend();
-      leg2->AddEntry(h1_phi_3, "near side", "l");
-      //leg2->AddEntry(h1_phi_3_b, "away side", "l");
-      leg2->Draw("same");
-    }else{
-      
-       h2_etaPhi->Add(h2_etaPhi_mixedComb, -1);
-    
-      if(trigger_same-trigger_mixed_comb>0)
-	h2_etaPhi->Scale(1.0/(trigger_same-trigger_mixed_comb));
-      //using backgroundSame as correction, can only be used if the used phi and eta bins of the associated particles are very close to the trigger particles
-      /*
-      h2_etaPhi->Add(h2_etaPhi_backgroundSame, -1);
-      h2_etaPhi->Scale(1.0/(trigger_same-trigger_background_same));
-      */
-
-      if(subtractFlow)
-	subtractFlow(h2_etaPhi_mixedComb);
-      if(trigger_mixed_comb>0)
-	h2_etaPhi_mixedComb->Scale(1.0/trigger_mixed_comb);
-    }
-    
     if(trigger!=NULL)
-      *trigger = (Int_t)trigger_same-trigger_mixed_comb;
+      *trigger = correctTrigger;
+    if(triggerBackgroundSame!=NULL)
+      *triggerBackgroundSame = trigger_background;
 
   }else{
     Printf("cannot subtract mixed combinatorics from step %i ", step);
@@ -1057,30 +1107,82 @@ TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
   }
 
   if(subtractFlow)
-    subtractFlow(h2_etaPhi);
+      subtractFlow(h2_etaPhi);
+
   h2_etaPhi->GetYaxis()->SetRangeUser(-1.6, 1.6);//corresponds to the really used eta range
  
+  //h2_etaPhi->Rebin2D(2,2);
+
+  return h2_etaPhi;
+
+}
+
+
+Int_t getNumberOfTrigger(const char* fileName, Double_t pt1Min, Double_t pt1Max, Double_t pt2Min, Double_t ptAssocMin, Double_t ptAssocMax, Double_t setVertex, Int_t multBinBegin, Int_t multBinEnd)
+{
+
+  AliTwoPlusOneContainer* twoPlusOne = (AliTwoPlusOneContainer*) GetTwoPlusOne(fileName);
+
+  twoPlusOne->GetData()->SetPtRange(ptAssocMin, ptAssocMax);
+  twoPlusOne->GetData()->SetPt2Min(pt2Min);
+  twoPlusOne->GetData()->SetZVtxRange(-1*setVertex, setVertex);
+
+  AliUEHist::CFStep step_same = (AliUEHist::CFStep) AliTwoPlusOneContainer::kSameAS;
+  AliUEHist::CFStep step_mixed = (AliUEHist::CFStep) AliTwoPlusOneContainer::kMixedAS;
+  AliUEHist::CFStep step_backgroundSame = (AliUEHist::CFStep) AliTwoPlusOneContainer::kBackgroundSameAS;
+
+  Int_t trigger_same = 0;
+  Int_t trigger_background_same = 0;
+
+  twoPlusOne->GetData()->GetSumOfRatios2(twoPlusOne->GetData(), step_same, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_same);
+  twoPlusOne->GetData()->GetSumOfRatios2(twoPlusOne->GetData(), step_backgroundSame, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_background_same);
+
+  return trigger_same-trigger_background_same;
+
+}
+
+
+
+//does the reading out of the results
+//divides the same event by the mixed events
+//subtracts the mixed combinatorics
+TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t posX = 1, Int_t posY = 1, Int_t showPlots = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0, Int_t* trigger = NULL, Int_t* triggerBackground = NULL)
+{
+
+  TH2D* h2_etaPhi = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, subtractMixedComb, subtractFlow, trigger, triggerBackground);
+
+
   int firstbin = h2_etaPhi->GetYaxis()->FindBin(-1*g_eta_bin);
   int lastbin = h2_etaPhi->GetYaxis()->FindBin(g_eta_bin);
 
   TH1D* h1_phi = projectToTH1D(h2_etaPhi, "fully corrected", firstbin, lastbin, 1.0);
   //TH1D* h1_phi = projectToTH1D(h2_etaPhi_mixedComb, "fully corrected", firstbin, lastbin, 1.0);//shows background distributions
 
-  if(showPlots>0){
-    TLegend *leg  = getLegend();
-    
-    TCanvas* can_4 = new TCanvas(Form("fully corrected, %i, %i ", posX, posY), Form("fully corrected, %i, %i ", posX, posY), posX*gBasisSize+100, 50, gBasisSize, gBasisSize);
-    h2_etaPhi->GetYaxis()->SetRangeUser(-1.4, 1.4);
+  if(showPlots>0){ 
+    TCanvas* can_4 = new TCanvas(Form("2dim fully corrected, %i, %i ", posX, posY), Form("2dim fully corrected, %i, %i ", posX, posY), posX*gBasisSize+100, 50, gBasisSize, gBasisSize);
+    h2_etaPhi->GetYaxis()->SetRangeUser(-1.6, 1.6);
     h2_etaPhi->DrawCopy("surf1");
+
+    TCanvas* can_4b = new TCanvas(Form("1dim phi fully corrected, %i, %i ", posX, posY), Form("1dim phi fully corrected, %i, %i ", posX, posY), posX*gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
     //h2_etaPhi_mixedComb->DrawCopy("surf1");
-    //h1_phi->DrawCopy();
-    //h1_phi_cloneProject->SetLineColor(kRed);
-    //h1_phi_cloneProject->DrawCopy("same");
+    h1_phi->DrawCopy();
 
-    leg->AddEntry(h1_phi,"with mixed comb","l");
-    leg->AddEntry(h1_phi_cloneProject,"without mixed comb","l");
+   
+    Int_t bin_start = h1_phi->FindBin(-1*g_phi_bin);
+    Int_t bin_end = h1_phi->FindBin(g_phi_bin);
 
-    //leg->Draw("same");
+
+    Double_t error;
+    Double_t content = h1_phi->IntegralAndError(bin_start, bin_end, error);
+    Printf("found Integral: %f +/- %f", content, error);
+
+
+    TCanvas* can_4c = new TCanvas(Form("1dim eta fully corrected, %i, %i ", posX, posY), Form("1dim eta fully corrected, %i, %i ", posX, posY), (posX+1)*gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
+    int firstbin_eta = h2_etaPhi->GetXaxis()->FindBin(-1*g_phi_bin);
+    int lastbin_eta = h2_etaPhi->GetXaxis()->FindBin(g_phi_bin);
+    TH1D* h1_eta = projectToTH1D_eta(h2_etaPhi, "fully corrected", firstbin_eta, lastbin_eta, 1.0);
+    h1_eta->DrawCopy();
+
   }
 
   if(showPlots==2){
@@ -1101,6 +1203,178 @@ TH1D* getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.
   }
 
   return h1_phi;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void show_steps_of_getAnalysis(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0)
+{
+  if(step>1){
+    Printf("choose step between 0 and 1!");
+  }
+
+  TCanvas* can1 = new TCanvas("sameEvent near side", "sameEvent near side", 100, 50, gBasisSize, gBasisSize);
+  Int_t trigger = 0;
+  TH2D* h2_etaPhi = (TH2D*)(getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, 0, subtractFlow, &trigger))->Clone();
+  h2_etaPhi->DrawCopy("surf1");
+
+  int firstbin = h2_etaPhi->GetYaxis()->FindBin(-1*g_eta_bin);
+  int lastbin = h2_etaPhi->GetYaxis()->FindBin(g_eta_bin);
+
+  TH1D* h1_phi = (projectToTH1D(h2_etaPhi, "same near", firstbin, lastbin, trigger))->Clone();
+  h1_phi->SetLineColor(kRed);
+  TCanvas* can_1 = new TCanvas("sameEvent near side projection", "sameEvent near side projection", 100, gBasisSize+50, gBasisSize, gBasisSize);
+  h1_phi->DrawCopy();
+
+  TCanvas* can2 = new TCanvas("sameEvent mixed comb", "sameEvent mixed comb", gBasisSize+100, 50, gBasisSize, gBasisSize);
+  Int_t trigger_mixed_comb = 0;
+  TH2D* h2_etaPhi_mixedComb = (TH2D*)(getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step+4, 0, subtractFlow, &trigger_mixed_comb))->Clone();
+
+  Printf("#####################################################################");
+  Printf("trigger same: %i, trigger mixed comb: %i", trigger, trigger_mixed_comb);
+  Printf("#####################################################################");
+
+  h2_etaPhi_mixedComb->DrawCopy("surf1");
+  TH1D* h1_phi_mixedComb = (projectToTH1D(h2_etaPhi_mixedComb, "mixedComb near", firstbin, lastbin, trigger_mixed_comb))->Clone();
+  Printf(Form("trigger mixed_comb", trigger_mixed_comb));
+  TCanvas* can_2 = new TCanvas("sameEvent mixed comb projection", "sameEvent mixed comb projection", gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
+  h1_phi_mixedComb->DrawCopy();
+
+  TCanvas* can2b = new TCanvas("1+1", "1+1", 2*gBasisSize+100, 50, gBasisSize, gBasisSize);
+  Int_t trigger_1plus1 = 0;
+  TH2D* h2_etaPhi_1plus1 = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, 1, subtractFlow, &trigger_1plus1);
+  h2_etaPhi_1plus1->DrawCopy("surf1");
+  TH1D* h1_phi_1plus1 = (projectToTH1D(h2_etaPhi_1plus1, "1plus1 phi", firstbin, lastbin, trigger_1plus1))->Clone();
+  TCanvas* can_2b = new TCanvas("1+1 projection", "1+1 projection", 2*gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
+  h1_phi_1plus1->DrawCopy();
+
+
+
+  TCanvas* can3 = new TCanvas("mixed comb subtracted", "mixed comb subtracted", 3*gBasisSize+100, 50, gBasisSize, gBasisSize);
+  Int_t trigger2 = 0;
+  TH2D* h2_etaPhi_subtracted = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, 1, subtractFlow, &trigger2);
+  h2_etaPhi_subtracted->DrawCopy("surf1");
+  TH1D* h1_phi_subtracted = (projectToTH1D(h2_etaPhi_subtracted, "mixedComb near", firstbin, lastbin, 1.0))->Clone();
+  TCanvas* can_3 = new TCanvas("mixed comb subtracted projection", "mixed comb subtracted projection", 3*gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
+  h1_phi_subtracted->DrawCopy();
+
+  TCanvas* can_3_2 = new TCanvas("mixed comb subtracted 2 projection", "mixed comb subtracted 2 projection", 3*gBasisSize+100, 2*gBasisSize+50, gBasisSize, gBasisSize);
+  h1_phi->Add(h1_phi_1plus1, -1);
+  h1_phi->DrawCopy();
+
+  h2_etaPhi->Add(h2_etaPhi_mixedComb, -1);
+  if(trigger-trigger_mixed_comb>0)
+    h2_etaPhi->Scale(1.0/(trigger-trigger_mixed_comb));
+  TCanvas* can4 = new TCanvas("mixed comb subtracted reproduced", "mixed comb subtracted reproduced", 4*gBasisSize+100, 50, gBasisSize, gBasisSize);
+  h2_etaPhi->DrawCopy("surf1");
+  TH1D* h1_phi_reproduced = (projectToTH1D(h2_etaPhi, "same near reproduced", firstbin, lastbin, 1.0))->Clone();
+  TCanvas* can_4 = new TCanvas("mixed comb subtracted reproduced projection", "mixed comb subtracted reproduced projection", 4*gBasisSize+100, gBasisSize+50, gBasisSize, gBasisSize);
+  h1_phi_reproduced->DrawCopy();
+
+
+  Printf("trigger same: %i, trigger mixed comb: %i", trigger, trigger_mixed_comb);
+
+}
+
+
+void show_steps_of_getAnalysis_projection(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0, Int_t subtractMixedComb = 0, Int_t subtractFlow =0)
+{
+  if(step>1){
+    Printf("choose step between 0 and 1!");
+  }
+
+  Int_t trigger = 0;
+  TH2D* h2_etaPhi = (TH2D*)(getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, 0, subtractFlow, &trigger))->Clone();
+
+  int firstbin = h2_etaPhi->GetYaxis()->FindBin(-1*g_eta_bin);
+  int lastbin = h2_etaPhi->GetYaxis()->FindBin(g_eta_bin);
+
+  TH1D* h1_phi = (projectToTH1D(h2_etaPhi, "same near", firstbin, lastbin, trigger))->Clone();
+  h1_phi->SetLineColor(kRed);
+
+  Int_t trigger_mixed_comb = 0;
+  TH2D* h2_etaPhi_mixedComb = (TH2D*)(getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step+4, 0, subtractFlow, &trigger_mixed_comb))->Clone();
+  TH1D* h1_phi_mixedComb = (projectToTH1D(h2_etaPhi_mixedComb, "mixedComb near", firstbin, lastbin, trigger_mixed_comb))->Clone();
+  h1_phi_mixedComb->SetLineColor(kOrange);
+
+  Printf("#####################################################################");
+  Printf("trigger same: %i, trigger mixed comb: %i", trigger, trigger_mixed_comb);
+  Printf("#####################################################################");
+
+  Int_t trigger_1plus1 = 0;
+  TH2D* h2_etaPhi_1plus1;
+  if(step==0)
+    h2_etaPhi_1plus1 = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, 1, subtractFlow, &trigger_1plus1);
+  else
+    h2_etaPhi_1plus1 = getAnalysis_2D(fileName, pt2Min, pt1Min, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, 6, 1, subtractFlow, &trigger_1plus1); 
+  TH1D* h1_phi_1plus1 = (projectToTH1D(h2_etaPhi_1plus1, "1plus1 phi", firstbin, lastbin, trigger_1plus1))->Clone();
+  h1_phi_1plus1->SetLineColor(kGreen);
+  //h1_phi_1plus1->SetLineWidth(4.0);
+
+  Int_t trigger2 = 0;
+  TH2D* h2_etaPhi_subtracted = getAnalysis_2D(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, setVertex, multBinBegin, multBinEnd, step, 1, subtractFlow, &trigger2);
+  TH1D* h1_phi_subtracted = (projectToTH1D(h2_etaPhi_subtracted, "mixedComb near", firstbin, lastbin, 1.0))->Clone();
+  h1_phi_subtracted->SetLineColor(kBlue);
+
+  h2_etaPhi->Add(h2_etaPhi_1plus1, -1.0);
+  TH1D* h1_phi_2 = (projectToTH1D(h2_etaPhi, "same near", firstbin, lastbin, 1.0))->Clone();
+  h1_phi_2->SetLineColor(kCyan);
+
+  TCanvas* can = new TCanvas("can", "can", gBasisSize+100, gBasisSize+50, 2*gBasisSize, 2*gBasisSize);
+  h1_phi->DrawCopy();
+  //h1_phi_mixedComb->DrawCopy("same");
+  h1_phi_1plus1->DrawCopy("same");
+  h1_phi_subtracted->DrawCopy("same");
+  //h1_phi_2->DrawCopy("same");
+
+  TLegend *leg  = getLegend();
+  leg->SetTextSize(gStyle->GetTextSize()*0.8);
+  leg->AddEntry(h1_phi,"same event raw","l");
+  leg->AddEntry(h1_phi_1plus1,"1+1 correlations","l");
+  leg->AddEntry(h1_phi_subtracted,"same event corrected","l");
+
+  leg->Draw("same");
+
+  Printf("trigger same: %i, trigger mixed comb: %i", trigger, trigger_mixed_comb);
+
+}
+
+
+
+
+
+
+
+
+
+
+TH1D* projectToTH1D_eta(TH2D* etaPhi, char* name, int firstbin, int lastbin, int trigger){
+  //  Printf(Form("name %s", name));
+
+  TH1D* h1_phi_1 = etaPhi->ProjectionY(Form("px_%s", name), firstbin, lastbin);
+  h1_phi_1->SetLineWidth(3);
+  h1_phi_1->SetStats(kFALSE);
+  h1_phi_1->Scale(1.0/trigger);
+  h1_phi_1->Scale(1.0/(double)(lastbin-firstbin+1));
+  h1_phi_1->Scale(etaPhi->GetXaxis()->GetBinWidth(firstbin));//scale with phi bin width 
+  //h1_phi_1->GetXaxis()->SetRangeUser(-TMath::Pi()/2+0.01, TMath::Pi()/2-0.01);
+  //h1_phi_1->GetXaxis()->SetRangeUser(-TMath::Pi()/2+0.01, 3*TMath::Pi()/2-0.01);
+  h1_phi_1->SetYTitle("1/N \\ dN/(d \\Delta \\eta)");
+
+  symmetrize(h1_phi_1);
+  //subtractBaseline(h1_phi_1);
+
+  return h1_phi_1;
 }
 
 
@@ -1219,117 +1493,6 @@ void compareMixedComb_sides(const char* fileName, double pt1Min = 4.0, double pt
 }
 
 
-
-
-//calculates the mixed comb by scaling it up to the amount of trigger in same background
-//this method can probably not be used because the statistics is too smal
-//within one vertex and multiplicity bin there are 12 to 30 trigger combinations -> the error on the correction factor is too high.
-TH2D* getMixedComb_scaled_backgroundSame(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 4.0, double ptAssocMin = 2.0, double ptAssocMax = 4.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Double_t setVertex = 7, Int_t step = 4, Int_t* trigger = NULL){
-
- loadlibs();
-
-  printf("#############################");
-  printf(Form("step %i", step));
-  printf("#############################");
-  AliTwoPlusOneContainer* h = (AliTwoPlusOneContainer*) GetTwoPlusOne(fileName);
-  h->GetData()->SetPtRange(ptAssocMin, ptAssocMax);
-  h->GetData()->SetPt2Min(pt2Min);
-
-  TH2D* return_mixed_comb = 0;
-  
-  if(step!=4 && step!=5){
-    Printf("#############################");
-    Printf("ERROR wrong step in getMixedComb_scaled_backgroundSame");
-    Printf("#############################");
-    return return_mixed_comb;
-  }
-
-  THnBase* trackMixedCombAll = 0;
-  TH2* eventMixedCombAll = 0;
-  h->GetData()->GetHistsZVtxMult((AliUEHist::CFStep)step, AliUEHist::kToward, pt1Min, pt1Max, &trackMixedCombAll, &eventMixedCombAll);
-  
-  THnBase* trackBackgroundSameAll = 0;
-  TH2* eventBackgroundSameAll = 0;
-  h->GetData()->GetHistsZVtxMult((AliUEHist::CFStep)(step+3), AliUEHist::kToward, pt1Min, pt1Max, &trackBackgroundSameAll, &eventBackgroundSameAll);
-  
-  TAxis* vertexAxis = trackMixedCombAll->GetAxis(2);
-  Int_t vertexBinBegin = vertexAxis->FindBin(-1*setVertex);
-  Int_t vertexBinEnd = vertexAxis->FindBin(setVertex);
-  
-  Printf(Form("vertex bin begin %i, end %i ", vertexBinBegin, vertexBinEnd));
-
-  for(Int_t multBin=multBinBegin; multBin<=multBinEnd; multBin++){
-    for(Int_t vertexBin=vertexBinBegin; vertexBin<=vertexBinEnd; vertexBin++){
-      Printf(" multBin %i, vertexBin %i ", multBin, vertexBin);
-
-      trackMixedCombAll->GetAxis(3)->SetRange(multBin, multBin);
-      trackMixedCombAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
-
-      trackBackgroundSameAll->GetAxis(3)->SetRange(multBin, multBin);
-      trackBackgroundSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
-
-      TH2D* tracks_mixedComb = trackMixedCombAll->Projection(1, 0, "E");
-      Int_t trigger_mixed_comb = eventMixedCombAll->Integral(vertexBin, vertexBin, multBin, multBin);
-
-      TH2D* tracks_background_same = trackBackgroundSameAll->Projection(1, 0, "E");
-      Int_t trigger_background_same = eventBackgroundSameAll->Integral(vertexBin, vertexBin, multBin, multBin);
- 
-      //this has to be done because of a bug in the AliRoot code
-      //because of an absolute cast in the dphi computation only half of this background is considered
-      //wrong runs are 968 and 973
-      //trigger_background_same *= 2;
-
-      Double_t trigger_ratio = 0;
-      if(trigger_background_same>0)
-	trigger_ratio = (Double_t)trigger_background_same/trigger_mixed_comb;
-      Printf("(getMixedComb_scaled_backgroundSame) Triggers: mixed comb %i, background same %i, trigger ratio %f ", trigger_mixed_comb, trigger_background_same, trigger_ratio);
-      
-      double b1 = tracks_mixedComb->GetBinContent(tracks_mixedComb->FindBin(0.001,0.001));
-      double b2 = tracks_mixedComb->GetBinContent(tracks_mixedComb->FindBin(0.001,-0.001));
-      double b3 = tracks_mixedComb->GetBinContent(tracks_mixedComb->FindBin(-0.001,0.001));
-      double b4 = tracks_mixedComb->GetBinContent(tracks_mixedComb->FindBin(-0.001,-0.001));
-
-      double b1_bsame = tracks_background_same->GetBinContent(tracks_background_same->FindBin(0.001,0.001));
-      double b2_bsame = tracks_background_same->GetBinContent(tracks_background_same->FindBin(0.001,-0.001));
-      double b3_bsame = tracks_background_same->GetBinContent(tracks_background_same->FindBin(-0.001,0.001));
-      double b4_bsame = tracks_background_same->GetBinContent(tracks_background_same->FindBin(-0.001,-0.001));
-
-      Double_t content_ratio = 0;
-      if(b1 + b2 + b3 + b4 > 0)
-	content_ratio = (b1_bsame + b2_bsame + b3_bsame + b4_bsame)/(b1 + b2 + b3 + b4);
-      Printf(" trigger_ratio %f, content_ratio %f", trigger_ratio, content_ratio);
-      
-      //Printf("Maximum: mixed comb %f, background same %f, normalization ratio %f ", content_mixed_comb, content_background_same, content_ratio);
-      
-      tracks_mixedComb->Scale(trigger_ratio);
-      //tracks_mixedComb->Scale(content_ratio);
-
-      //correct event with mixed event
-      TH2D* mixedEvent =  getMixedEvent(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, multBin, multBin, vertexBin, vertexBin, (AliUEHist::CFStep)(step-2), 0);
-      //TH2D* mixedEvent =  getMixedEvent(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, multBin, multBin, vertexBinBegin, vertexBinEnd, (AliUEHist::CFStep)(step-2), 1);
-      tracks_mixedComb->Divide(mixedEvent);
-
-      //TCanvas* can_1 = new TCanvas("mixed comb", "mixed comb", 100, 50, gBasisSize, gBasisSize);
-      //tracks_mixedComb->DrawCopy("surf1");
-      //TCanvas* can_2 = new TCanvas("mixed", "mixed", gBasisSize+100, 50, gBasisSize, gBasisSize);
-      //mixedEvent->DrawCopy("surf1");
-
-      if(!return_mixed_comb)
-	return_mixed_comb = (TH2D*) tracks_mixedComb->Clone("total tracks");
-      else
-	return_mixed_comb->Add(tracks_mixedComb);
-
-      if(trigger!=NULL)
-	*trigger += trigger_background_same ;
-    }
-  }
-
-  // normalizate to dphi widht
-  Float_t normalization = return_mixed_comb->GetXaxis()->GetBinWidth(1);
-  return_mixed_comb->Scale(1.0 / normalization);
-
-  return return_mixed_comb;
-}
 
 
 //shows alpha dependent significance of the signal, signal/background for different centralities
@@ -1475,144 +1638,6 @@ void showResult(TH2* h2_etaPhi, Int_t posX, Int_t posY, Int_t alpha_bins, Double
 }
 
 
-//this method is not further maintained after the copy into this file
-//it was used to compare the different kind of background distributions
-//this method compares the expected amount of background trigger combinations for 3 methods:
-//1. get background from the arithmetical average between delta phi = pi/3 and 2pi/3
-//2. mixed combinatorics (they are lacking some combinations because the buffers have to be filled first)
-//3. background same, search at delta phi = pi/2 for trigger particles the same way as it is done in mixed comb
-void printBackground2plus1(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 2.0, Double_t ptAssocMax = 4.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0){
-
-  loadlibs();
-  TFile::Open(fileName);
-
-  //to guarantee to pick only the bins from the choosen pt on
-  pt1Min += 0.01;
-  pt1Max -= 0.01;
-  pt2Min += 0.01;
-  ptAssocMin += 0.01;
-  ptAssocMax -= 0.01;
-
-  Double_t alpha_radius = 0.393;// =pi/8 //0.2;//use radius which was used by the mixed comb and background same method in the loaded file
-
-  AliTwoPlusOneContainer* h = (AliTwoPlusOneContainer*) GetTwoPlusOne(fileName);
-  AliUEHist::CFStep step_1plus1 = (AliUEHist::CFStep) AliTwoPlusOneContainer::k1plus1;
-  AliUEHist::CFStep step_mixed = (AliUEHist::CFStep) AliTwoPlusOneContainer::kMixedAS;
-  AliUEHist::CFStep step_mixedComb = (AliUEHist::CFStep) AliTwoPlusOneContainer::kMixedCombAS;
-  AliUEHist::CFStep step_backgroundSame = (AliUEHist::CFStep) AliTwoPlusOneContainer::kBackgroundSameAS;
-
-  //get error from the 1+1 correlation
-  
-  THnBase* trackSameAll = 0;
-  TH2* eventSameAll = 0;
-  //h->GetData()->SetPtRange(pt2Min, pt1Max);
-  h->GetData()->SetPtRange(ptAssocMin, ptAssocMax);
-  //h->GetData()->SetPtRange(6, 10);
-  h->GetData()->SetPt2Min(pt2Min);
-  h->GetData()->SetZVtxRange(-1*setVertex, setVertex);
-  /*
-  h->GetData()->GetHistsZVtxMult(step_1plus1, AliUEHist::kToward, pt1Min, pt1Max, &trackSameAll, &eventSameAll);
-  trackSameAll->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
-
-  TAxis* vertexAxis = trackSameAll->GetAxis(2);
-  Int_t vertexBinBegin = vertexAxis->FindBin(-1*setVertex);
-  Int_t vertexBinEnd = vertexAxis->FindBin(setVertex);
-
-  trackSameAll->GetAxis(2)->SetRange(vertexBinBegin, vertexBinEnd);
-
-  TH2* tracksSame = trackSameAll->Projection(1, 0, "E");
-  TH1D* h1_phi = tracksSame->ProjectionX();
-  h1_phi->Scale(1/h1_phi->GetXaxis()->GetBinWidth(1));
-  
-  */
-  
-  TH2* h2_etaPhi = h->GetData()->GetSumOfRatios2(h->GetData(), step_1plus1, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed);
-
-  int firstbin = -1;//h2_etaPhi->GetYaxis()->FindBin(-0.99);
-  int lastbin = -1;//h2_etaPhi->GetYaxis()->FindBin(0.99);
-  TH1D* h1_phi = h2_etaPhi->ProjectionX("px", firstbin, lastbin);
-  
-
-  //undo phi normalization
-  //h1_phi->Scale(h1_phi->GetXaxis()->GetBinWidth(1));
-  /*
-  TF1* fit = new TF1("fit", "[0]", 1.01, 1.99);
-  h1_phi->Fit("fit", "N", "", 1.01, 1.99);
-  Double_t par0 = fit->GetParameter(0);
-  Double_t err0 = fit->GetParError(0);
-  */
-  Int_t bin_start = h1_phi->FindBin(TMath::Pi()/3+0.01);
-  Int_t bin_end = h1_phi->FindBin(2*TMath::Pi()/3-0.01);
-  //Int_t bin_start = h1_phi->FindBin(1.37);
-  //Int_t bin_end = h1_phi->FindBin(1.57);
-  Double_t sum = 0;
-  Double_t err = 0;
-
-  for(int i=bin_start; i<=bin_end; i++){
-    sum += h1_phi->GetBinContent(i);
-    err += h1_phi->GetBinError(i);
-  }
-  Printf("bin start %i, bin end %i, sum %f ", bin_start, bin_end, sum);
-  sum /= (bin_end - bin_start + 1);
-  err /= (bin_end - bin_start + 1);
-  Printf(" sum %f ", sum);  
-
-  Printf("sum %f, bin width %f ", sum, h1_phi->GetBinWidth(bin_start));
-
-  double background = 2*alpha_radius*sum;//the plot is already normalized for the bin_width by getting it from getSumOfRatios2
-  double background_err = 2*alpha_radius*err;
-
-  //TCanvas* can = new TCanvas();
-  //h1_phi->DrawCopy();
-
-  //get error from mixed combinatorics
-  Int_t trigger_mixed_comb;
-
-
-
-
-  //TH2* h2_etaPhi_mixedComb = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
-  h2_etaPhi_mixedComb = getMixedComb_scaled_backgroundSame(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, multBinBegin, multBinEnd, setVertex, step_mixedComb, &trigger_mixed_comb);
-
-  int firstbin_eta = h2_etaPhi_mixedComb->GetYaxis()->FindBin(-0.39);
-  int lastbin_eta = h2_etaPhi_mixedComb->GetYaxis()->FindBin(0.39);
-  TH1* h1_phi_mixedComb = h2_etaPhi_mixedComb->ProjectionX("mixedComb_px", firstbin_eta, lastbin_eta);
-
-  //get error from mixed combinatorics
-  Int_t trigger_backgroundSame;
-  
-  TH2* h2_etaPhi_backgroundSame = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_backgroundSame, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_backgroundSame);
-  TH1* h1_phi_backgroundSame = h2_etaPhi_backgroundSame->ProjectionX("backgroundSame_px", firstbin_eta, lastbin_eta);
-
-  
-  TCanvas* can = new TCanvas("can", "can",  gBasisSize+50, gBasisSize+50, 2*gBasisSize, 2*gBasisSize);
-  h1_phi_mixedComb->SetLineWidth(3);
-  h1_phi_mixedComb->SetStats(kFALSE);
-  h1_phi_mixedComb->DrawCopy();
-  h1_phi_backgroundSame->SetLineWidth(3);
-  h1_phi_backgroundSame->SetLineColor(kRed);
-  h1_phi_backgroundSame->DrawCopy("same");
-
-  TLegend *leg  = getLegend();
-  leg->AddEntry(h1_phi_mixedComb, "mixed combinatorics","l");
-  leg->AddEntry(h1_phi_backgroundSame, "background same","l");
-  leg->Draw("same");
-  
-  Printf("expect from 1+1 %f +/- %f", background, background_err);
-  Printf("expect from trigger_mixed_comb %i ", trigger_mixed_comb);
-  Printf("expect from trigger_backgroundSame %i ", trigger_backgroundSame); 
-}
-
-
-
-
-
-
-
-
-
-
-
 void symmetrize(TH1D* tracks)
 {
   int bins = tracks->FindBin(TMath::Pi()/2-0.01);
@@ -1622,11 +1647,6 @@ void symmetrize(TH1D* tracks)
     tracks->SetBinContent(bins-i+1, tmp);
   }
 }
-
-
-
-
-
 
 
 
@@ -1682,7 +1702,7 @@ TH2D* getMixedEvent(const char* fileName, double pt1Min = 4.0, double pt1Max = 1
 
 
 
-//old method with an double cache
+//old method with a double cache
 //used to compare results but very difficult to read
 const char* lastFileName_corStep = 0;
 double lastPt1Min = 0;
@@ -1784,6 +1804,26 @@ TH2D* getCorrelationStep(const char* fileName, double pt1Min = 4.0, double pt1Ma
   return tracksMixed;
 }
 
+void trivial1plus1Division(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, double pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t vertexBinBegin = 1, Int_t vertexBinEnd = 5, Int_t step = 1, Int_t* trigger = NULL){
+
+  TH2D* tracksSame = getCorrelationStep(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, multBinBegin, multBinEnd, vertexBinBegin, vertexBinEnd, 6, trigger);
+
+  TH2D* tracksMixed = getCorrelationStep(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, multBinBegin, multBinEnd, vertexBinBegin, vertexBinEnd, 9, trigger);
+
+  TCanvas* c1 = new TCanvas("sameEvent", "sameEvent", gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
+  tracksSame->DrawCopy("surf1");
+
+  TCanvas* c1 = new TCanvas("mixedEvent", "mixedEvent", 2*gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
+  tracksMixed->DrawCopy("surf1");
+
+  TCanvas* c1 = new TCanvas("dividedEvent", "dividedEvent", 3*gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
+  tracksSame->Divide(tracksMixed);
+  tracksSame->DrawCopy("surf1");
+
+}
+
+
+
 
 void showMixedDist(const char* fileName){
   loadlibs();
@@ -1804,69 +1844,6 @@ TH1F* getMixedDist(const char* fileName){
   return mixedDist;
 }
 
-
-
-void compareScaledMixedComb(const char* fileName, double pt1Min = 4.0, double pt1Max = 14.0, Double_t pt2Min = 2.0, Double_t ptAssocMin = 0.5, Double_t ptAssocMax = 8.0, Double_t setVertex = 7, Int_t multBinBegin = 1, Int_t multBinEnd = 5, Int_t step = 0){
-
-  loadlibs();
-
-  //to guarantee to pick only the bins from the choosen pt on
-  pt1Min += 0.01;
-  pt1Max -= 0.01;
-  pt2Min += 0.01;
-  ptAssocMin += 0.01;
-  ptAssocMax -= 0.01;
-  
-  AliTwoPlusOneContainer* h = (AliTwoPlusOneContainer*) GetTwoPlusOne(fileName);
-
-  AliUEHist::CFStep step_same = step;//(AliUEHist::CFStep) AliTwoPlusOneContainer::kSameNS;
-  AliUEHist::CFStep step_mixed = step+2;//(AliUEHist::CFStep) AliTwoPlusOneContainer::kMixedNS;
-  AliUEHist::CFStep step_mixedComb = step+4;//(AliUEHist::CStep) AliTwoPlusOneContainer::kMixedCombNS;
-  AliUEHist::CFStep step_backgroundSame = step+7;//(AliUEHist::CStep) AliTwoPlusOneContainer::kBackgroundSameNS;
-
-  h->GetData()->SetPtRange(ptAssocMin, ptAssocMax);
-  h->GetData()->SetPt2Min(pt2Min);
-  h->GetData()->SetZVtxRange(-1*setVertex, setVertex);
- 
-  //GetSumOfRatios2(mixed, step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, normalizePerTrigger, stepForMixed)
-  TH2D* h2_etaPhi;
-  TH2D* h2_etaPhi_mixedComb;
-  TH2D* h2_etaPhi_backgroundSame;
-
-
-    Int_t trigger_same;
-    Int_t trigger_mixed_comb;
-    Int_t trigger_mixed_comb_method;
-    Int_t trigger_background_same;
-
-
-    h2_etaPhi_mixedComb_sumOfRatios = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_mixedComb, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_mixed_comb);
-    h2_etaPhi_backgroundSame_sumOfRatios = (TH2D*) h->GetData()->GetSumOfRatios2(h->GetData(), step_backgroundSame, 0, pt1Min, pt1Max, multBinBegin, multBinEnd, kFALSE, step_mixed, &trigger_background_same);
-    //trigger_background_same *= 2;//error in the plots for run 968 and 973
-    double trigger_ratio = (double)trigger_background_same/trigger_mixed_comb;
-    Printf("trigger mixed comb: %i, trigger background same %i, ratio %f", trigger_mixed_comb, trigger_background_same, trigger_ratio);
-    h2_etaPhi_mixedComb_sumOfRatios->Scale(trigger_ratio);
-    trigger_mixed_comb = trigger_background_same;
-      
-    h2_etaPhi_mixedComb_method = getMixedComb_scaled_backgroundSame(fileName, pt1Min, pt1Max, pt2Min, ptAssocMin, ptAssocMax, multBinBegin, multBinEnd, setVertex, step_mixedComb, &trigger_mixed_comb_method);
-
-    
-    TCanvas* can = new TCanvas("can", "can",  gBasisSize+50, gBasisSize+50, gBasisSize, gBasisSize);
-    h2_etaPhi_mixedComb_sumOfRatios->DrawCopy("surf1");
-
-    TCanvas* can2 = new TCanvas("can2", "can2",  gBasisSize+50, 2*(gBasisSize+50), gBasisSize, gBasisSize);
-    h2_etaPhi_mixedComb_method->DrawCopy("surf1");
-
-   TCanvas* can3 = new TCanvas("can3", "can3",  gBasisSize+50, 3*(gBasisSize+50), gBasisSize, gBasisSize);
-   h2_etaPhi_mixedComb_sumOfRatios->Add(h2_etaPhi_mixedComb_method, -1);
-   h2_etaPhi_mixedComb_sumOfRatios->Divide(h2_etaPhi_mixedComb_method);
-   h2_etaPhi_mixedComb_sumOfRatios->GetYaxis()->SetRangeUser(-1.5, 1.5);
-   h2_etaPhi_mixedComb_sumOfRatios->DrawCopy("surf1");
-
-    Printf("mixed comb sumofratios %i, method %i", trigger_mixed_comb, h2_etaPhi_mixedComb_sumOfRatios);
-
-
-}
 
 
 void Plot_oneAxis(const char* fileName, int project)
@@ -1924,6 +1901,22 @@ void test(const char* fileName, double pt1Min, double pt1Max, double pt2Min, dou
 
  TCanvas* c1 = new TCanvas("can1", "can1", 1200, 800);
  h2_etaPhi_mixedComb->DrawCopy("surf1");
+}
+
+void showEvents_2D(const char* fileName){
+  loadlibs();
+  
+  AliUEHist::CFStep step = (AliUEHist::CFStep) AliTwoPlusOneContainer::kMixedCombAS;
+
+  AliTwoPlusOneContainer* twoPlusOne = (AliTwoPlusOneContainer*) GetTwoPlusOne(fileName);
+
+  THnBase* trackAll = 0;
+  TH2* eventAll = 0;
+
+  twoPlusOne->GetData()->GetHistsZVtxMult((AliUEHist::CFStep)step, AliUEHist::kToward, 6, 8, &trackAll, &eventAll);
+
+  TCanvas* c1 = new TCanvas("can1", "can1", 1200, 800);
+  eventAll->Draw("surf1");
 }
 
 void showAsymmetry(const char* fileName, Int_t mixed){

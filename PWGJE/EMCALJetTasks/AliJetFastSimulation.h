@@ -28,7 +28,7 @@ class AliJetFastSimulation : public AliAnalysisTaskEmcal {
   void                   SetSmearResolution(Bool_t b)                               { fUseTrPtResolutionSmearing = b ;}
   void                   SetDiceEfficiency(Int_t b)                                 { fUseDiceEfficiency         = b ;}
   void                   SetDiceEfficiencyMinPt(Double_t pt)                        { fDiceEfficiencyMinPt       = pt;}
-
+  void                   SetUncertEfficiency(Double_t uncerteff)                   { fUncertEfficiency           =uncerteff;}      
  protected:
   void                   ExecOnce();
   Bool_t                 Run();
@@ -60,6 +60,7 @@ class AliJetFastSimulation : public AliAnalysisTaskEmcal {
   Bool_t    fUseTrPtResolutionSmearing;        // Apply momentum smearing on track level
   Int_t     fUseDiceEfficiency;                // Flag to apply efficiency on track level by dicing 0: no dicing; 1: dicing wrt to input branch;
   Double_t  fDiceEfficiencyMinPt;              // Only do efficiency dicing for tracks above this pt
+  Double_t  fUncertEfficiency;                  //tracking efficiency uncertainty, usually +-0.4%
   Bool_t    fUseTrPtResolutionFromOADB;        // Load track pt resolution root file from OADB path
   Bool_t    fUseTrEfficiencyFromOADB;          // Load tracking efficiency root file from OADB path
   TString   fPathTrPtResolution;               // OADB path to root file

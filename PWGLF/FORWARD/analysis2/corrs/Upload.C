@@ -11,7 +11,7 @@ TString MakeDest(const TString& dest, const TString& fname)
 
 void Upload(const TString& dest="")
 {
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
   
   const char* fmdFile = "fmd_corrections.root";
   TString fdest = MakeDest(dest, fmdFile);

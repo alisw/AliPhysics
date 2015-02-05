@@ -26,9 +26,9 @@ AliAnalysisTask *AddTaskJPSIFilter(TString period="", Bool_t storeLS = kFALSE, B
 
 
 
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
   AliDielectron *jpsi=ConfigJpsi_nano_PbPb(0,hasMC,period);
   
   if(isAOD) {

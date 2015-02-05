@@ -7,7 +7,7 @@ PATH=$PATH
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 ROOTSYS=$ROOTSYS
 `which root`
-ALICE_ROOT=$ALICE_ROOT
+ALICE_PHYSICS=$ALICE_PHYSICS
 `which aliroot`
 `ulimit -a`
 `free -m`

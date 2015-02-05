@@ -166,3 +166,21 @@ Bool_t AliRsnCutDelta::IsSelected(TObject *obj)
   } //else tpcmethod
   return kTRUE;
 }
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnCutDelta::MatchTOF(const AliVTrack *vtrack)
+{
+//
+// Checks if the track has matched the TOF detector
+//
+
+   if (!vtrack) {
+      AliWarning("NULL argument: impossible to check status");
+      return kFALSE;
+   }
+
+   Bool_t isTOFout = ((vtrack->GetStatus() & AliESDtrack::kTOFout) != 0);
+   Bool_t isTIME   = ((vtrack->GetStatus() & AliESDtrack::kTIME) != 0);
+
+   return (isTOFout && isTIME);
+}

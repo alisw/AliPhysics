@@ -26,7 +26,7 @@ EOF
 }
 
 # --- Source library -------------------------------------------------
-. $ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/libGridDownload.s
+. $ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/libGridDownload.s
 
 # --- Parse production information -----------------------------------
 parse_prod()
@@ -169,7 +169,7 @@ check_file()
     esac
 	    
     root -l -b  <<EOF >> ${redir} 2>&1 
-.L $ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/CheckQAFile.C
+.L $ALICE_PHYSICS/PWGLF/FORWARD/analysis2/qa/CheckQAFile.C
 CheckQAFile("$1");
 .q
 EOF

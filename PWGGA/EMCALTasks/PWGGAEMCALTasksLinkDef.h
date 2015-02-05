@@ -34,4 +34,5 @@
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDM+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDMpPb+;
 #pragma link C++ class AliAnalysisTaskSDMGammaMC+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0Gamma+;
 #endif

@@ -171,6 +171,9 @@ struct TrainSetup
     // --- Load AliROOT libraries ------------------------------------
     if (!fRailway->LoadAliROOT()) return false;
 
+    // --- Load AliROOT libraries ------------------------------------
+    if (!fRailway->LoadAliPhysics()) return false;
+
     // --- Create analysis manager -----------------------------------
     AliAnalysisManager *mgr  = CreateAnalysisManager(fEscapedName);
 
@@ -194,7 +197,8 @@ struct TrainSetup
     if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
 
     // --- Include analysis macro path in search path ----------------
-    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
+    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros:"
+			     "$ALICE_PHYSICS/OADB/macros",
 			     cwd.Data(), gROOT->GetMacroPath()));
 
     // --- Physics selction - only for ESD ---------------------------
@@ -921,7 +925,7 @@ protected:
     }
     elements->Delete();
     o << ");\n"
-      << "  path.Append(\"$ALICE_ROOT/PWGLF/FORWARD/trains\");\n"
+      << "  path.Append(\"$ALICE_PHYSICS/PWGLF/FORWARD/trains\");\n"
       << "  gROOT->SetMacroPath(path);\n\n"
       << "  gROOT->LoadMacro(\"RunTrain.C\");\n\n"
       << "  return RunTrain(name, cls, uri, opts);\n"

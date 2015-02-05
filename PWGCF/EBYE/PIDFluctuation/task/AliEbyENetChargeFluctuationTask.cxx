@@ -21,6 +21,7 @@
 //            Version 1:  PbPb Added with AliVTrack (30/11/2014)           //
 //            Version 2:  pp Added with AliVTrack   (1/12/2014) - fixme    //            
 //            Version 3:  pA Added with AliVTrack   (2/12/2014) - fixme    //    
+//            Version 4:  Array Bug Fix | reduced THn-Bins 11/01/2015      //    
 //=========================================================================//
 
 #include "TChain.h"
@@ -132,6 +133,7 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fIsEff(kFALSE),
   fDebug(kFALSE),
   fIsQa(kFALSE),
+  fNeedQa(kFALSE),
   fIsPhy(kFALSE),
   fIsDca(kFALSE),
   fIsNu(kFALSE),
@@ -197,8 +199,8 @@ const Float_t fGRngSign[]  = {-0.5, 1.5};
 
 //---------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
-  //Bool_t oldStatus = TH1::AddDirectoryStatus();
-  //TH1::AddDirectory(kFALSE);
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
   
   fQaList = new TList();
   fQaList->SetOwner(kTRUE);
@@ -241,21 +243,21 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   
   fRanIdx = new TRandom3();
   fRanIdx->SetSeed();
-  
-  Printf(" >>>%d %d %d %d %d %d %d %d %d %d", 
+
+  Printf(" >>>A%d M%d P%d E%d D%d Q%d N%d R%d S%d B%d PR%d", 
 	 fIsAOD, fIsMC, fIsPhy, fIsEff, 
-	 fIsDca, fIsQa, 
+	 fIsDca, fIsQa, fNeedQa,
 	 fIsRatio, fIsSub, fIsBS, fIsPer);
   
-  CreateBasicQA();
-  if (fIsQa)  CreateQA();
+  if (fNeedQa) CreateBasicQA();
+  if (fIsQa && fNeedQa)  CreateQA();
   if (fIsPhy) InitPhy();
   if (fIsMC && fIsEff) CreateCE();  
   if (fIsMC && fIsDca) CreateDEM();  
   if (fIsDca) CreateDED();  
 
   //  if (fIsQa) if (fESDtrackCuts) fQaList->Add(fESDtrackCuts);
-
+  TH1::AddDirectory(oldStatus);
   PostData(1, fPhyList); 
   PostData(2, fQaList);
   PostData(3, fDcaList);
@@ -493,20 +495,20 @@ void AliEbyENetChargeFluctuationTask::FillQAThnRec(AliVTrack *track, Int_t gPid,
   Double_t  rapp = (gPid == 0) ? track->Eta() : rap;
   Double_t rec[5] = {fCentralityBin,charge,rapp,track->Phi(),track->Pt()};
   
-  if (gPid == 0) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNchTrackUnCorr")))->Fill(rec);
-  else if (gPid == 1) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNpiTrackUnCorr")))->Fill(rec);
-  else if (gPid == 2) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNkaTrackUnCorr")))->Fill(rec);
-  else if (gPid == 3) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNprTrackUnCorr")))->Fill(rec);
+  if (gPid == 0) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNchTrackUnCorr")))->Fill(rec);
+  else if (gPid == 1) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNpiTrackUnCorr")))->Fill(rec);
+  else if (gPid == 2) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNkaTrackUnCorr")))->Fill(rec);
+  else if (gPid == 3) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNprTrackUnCorr")))->Fill(rec);
 }
 
 void AliEbyENetChargeFluctuationTask::FillQAThnMc(AliVParticle *particle, Int_t gPid, Double_t rap) {
   Double_t charge = (particle->PdgCode() < 0) ? 0. : 1.;
   Double_t  rapp = (gPid == 0) ? particle->Eta() : rap;
   Double_t rec[5] = {fCentralityBin,charge,rapp,particle->Phi(),particle->Pt()};
-  if (gPid == 0) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNchTrackMc")))->Fill(fCurRec);
-  else if (gPid == 1) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNpiTrackMc")))->Fill(rec);
-  else if (gPid == 2) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNkaTrackMc")))->Fill(rec);
-  else if (gPid == 3) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNprTrackMc")))->Fill(rec);
+  if (gPid == 0) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNchTrackMc")))->Fill(rec);
+  else if (gPid == 1) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNpiTrackMc")))->Fill(rec);
+  else if (gPid == 2) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNkaTrackMc")))->Fill(rec);
+  else if (gPid == 3) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNprTrackMc")))->Fill(rec);
 }
 
 //----------------------------------------------------------------------------------
@@ -768,14 +770,14 @@ void AliEbyENetChargeFluctuationTask::CreateQA() {
   Double_t mxhuc[5] = {fGRngCent[1],fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
   const Char_t *ctname = "cent:sign:y:phi:pt";
 			     
-  fQaList->Add(new THnSparseD("fHnNpiTrackUnCorr",ctname,  5, bhuc, mnhuc, mxhuc));
-  fQaList->Add(new THnSparseD("fHnNkaTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
-  fQaList->Add(new THnSparseD("fHnNprTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNpiTrackUnCorr",ctname,  5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNkaTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNprTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
 
   if (fIsMC) {
-    fQaList->Add(new THnSparseD("fHnNpiTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
-    fQaList->Add(new THnSparseD("fHnNkaTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
-    fQaList->Add(new THnSparseD("fHnNprTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNpiTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNkaTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNprTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
 
   }
 
@@ -784,9 +786,9 @@ void AliEbyENetChargeFluctuationTask::CreateQA() {
   mnhuc[2] = fGRngEta[0];
   mxhuc[2] = fGRngEta[1]; 
   
-  fQaList->Add(new THnSparseD("fHnNchTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNchTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
   if (fIsMC) {
-    fQaList->Add(new THnSparseD("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
   }
 }
 
@@ -856,30 +858,31 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
 //----------------------------------------------------------------------------------
 void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
 
-  if      (i == 0 ) { fIsQa  = 1; }
-  else if (i == 1 ) { fIsDca = 1; }
-  else if (i == 2 ) { fIsEff = 1; } 
-  else if (i == 3 ) { fIsDca = 1; fIsEff  = 1; }  
-  else if (i == 4 ) { fIsPhy = 1; fIsRatio= 1; } 
-  else if (i == 5 ) { fIsPhy = 1; fIsRatio= 1; fIsPer = 1;}   
-  else if (i == 6 ) { fIsPhy = 1; fIsSub  = 1; }
-  else if (i == 7 ) { fIsPhy = 1; fIsSub  = 1; fIsPer = 1;}
-  else if (i == 8 ) { fIsPhy = 1; fIsBS   = 1; }   
-  else if (i == 9 ) { fIsPhy = 1; fIsBS   = 1; fIsPer = 1;}    
-  else if (i == 10) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;}    
-  else if (i == 11) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsPer = 1;}    
-  else if (i == 12) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; }    
-  else if (i == 13) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; fIsPer = 1; }    
-  else if (i == 14) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;fIsQa = 1; fIsPer = 1; fIsRatio = 1;}    
-  else if (i == 15) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; }     
-  else if (i == 16) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsPer = 1; }     
-  else if (i == 17) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1;}     
-  else if (i == 18) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1; fIsPer = 1;}     
+  if      (i == 0 ) { fIsQa  = 1;                                                                 }
+  else if (i == 1 ) { fIsDca = 1;                                                                 }
+  else if (i == 2 ) { fIsEff = 1;                                                                 } 
+  else if (i == 3 ) { fIsDca = 1; fIsEff  = 1;                                                    }  
+  else if (i == 4 ) { fIsPhy = 1; fIsRatio= 1;                                                    } 
+  else if (i == 5 ) { fIsPhy = 1; fIsRatio= 1; fIsPer = 1;                                        }   
+  else if (i == 6 ) { fIsPhy = 1; fIsSub  = 1;                                                    }
+  else if (i == 7 ) { fIsPhy = 1; fIsSub  = 1; fIsPer = 1;                                        }
+  else if (i == 8 ) { fIsPhy = 1; fIsBS   = 1;                                                    }   
+  else if (i == 9 ) { fIsPhy = 1; fIsBS   = 1; fIsPer = 1;                                        }    
+  else if (i == 10) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1;                                        }    
+  else if (i == 11) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1;                            }    
+  else if (i == 12) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsQa  = 1;                            }    
+  else if (i == 13) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsQa  = 1; fIsPer   = 1;              }    
+  else if (i == 14) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsQa  = 1; fIsPer   = 1; fIsRatio = 1;}    
+  else if (i == 15) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1;                            }     
+  else if (i == 16) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsPer   = 1;              }     
+  else if (i == 17) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1;              }     
+  else if (i == 18) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1; fIsPer = 1;  }     
+  else if (i == 19) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1; fIsRatio = 1;              }    
   else {fIsPhy= 0;    fIsEff = 0; fIsDca  = 0; fIsQa  = 0; fIsSub = 0; fIsBS    = 0; fIsPer = 0; fIsRatio = 0;}
    
-  Printf(" >>> %d %d %d %d %d %d %d %d %d %d", 
+  Printf(" >>> I%d PH%d EF%d DC%d QA%d RA%d SS%d BS%d PE%d NU%d NQ%d", 
 	 i, fIsPhy, fIsEff, fIsDca, fIsQa, 
-	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu);
+	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu, fNeedQa);
   if (fIsEff || fIsDca) {fPtMin = 0.2; fPtMax = 3.3;}  
  
 }
@@ -958,6 +961,24 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *title, Bo
   centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
   centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
 
+  fQaList->Add(new TH1F(Form("h%s%sEventsNch",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+
+  fQaList->Add(new TH1F(Form("h%s%sEventsNpi",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+  
+  fQaList->Add(new TH1F(Form("h%s%sEventsNka",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+  
+  fQaList->Add(new TH1F(Form("h%s%sEventsNpr",nmc.Data(), name.Data()),
+			"EventStat;Centrality Bins;Events",
+			nBinsCent,centBinRange[0],centBinRange[1]));
+  
+  
+ 
 
   if (!fIsNu) {
     for (Int_t iPid = 0; iPid < 4; ++iPid) {
@@ -1092,6 +1113,11 @@ void AliEbyENetChargeFluctuationTask::FillBasicHistos(Bool_t isMC, Bool_t isPer)
   
   Float_t centralityBin = (isPer) ? (fCentralityPercentile + 1) : (fCentralityBin + 1);
   TList *list = static_cast<TList*>(fPhyList->FindObject(Form("f%s",name.Data())));
+  
+  if (isZeroPid[0]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNch",nmc.Data(), name.Data()))))->Fill(centralityBin);
+  if (isZeroPid[1]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNpi",nmc.Data(), name.Data()))))->Fill(centralityBin);
+  if (isZeroPid[2]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNka",nmc.Data(), name.Data()))))->Fill(centralityBin);
+  if (isZeroPid[3]) (static_cast<TH1F*>(fQaList->FindObject(Form("h%s%sEventsNpr",nmc.Data(), name.Data()))))->Fill(centralityBin);
   
   if (!fIsNu) {
     for (Int_t iPid = 0; iPid < 4; ++iPid) {
@@ -1548,7 +1574,7 @@ Bool_t AliEbyENetChargeFluctuationTask::TriggeredEvents() {
   for (Int_t ii=0; ii<fNTriggers; ++ii) {
     if(aTriggerFired[ii]) {
       isTriggered = kTRUE;
-      (static_cast<TH1F*>(fQaList->FindObject(Form("hTriggerStat"))))->Fill(ii);
+      if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hTriggerStat"))))->Fill(ii);
     }
   }
   
@@ -1583,41 +1609,53 @@ Bool_t AliEbyENetChargeFluctuationTask::RejectedEvent() {
 
   ++iStep;
   if (vtxESD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxESD->GetX());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxESD->GetX());
     if(TMath::Abs(vtxESD->GetX()) > fVxMax)  aEventCuts[iStep] = 1;  //3
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxESD->GetX());
+    else { 
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxESD->GetX());
+    }
   }
   else if(vtxAOD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvx"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
     if(TMath::Abs(vtxAOD->GetX()) > fVxMax) aEventCuts[iStep] = 1;    //3
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
+    else { 
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvxA"))))->Fill(fCentralityPercentile,vtxAOD->GetX());
+    }
   }
   else aEventCuts[iStep] = 1; //3
   
   ++iStep;
   if (vtxESD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxESD->GetY());
+   if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxESD->GetY());
     if(TMath::Abs(vtxESD->GetY()) > fVyMax) aEventCuts[iStep] = 1; //4
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxESD->GetY());
+    else { 
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxESD->GetY());
+    }  
   }
   else if(vtxAOD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
+    if (fNeedQa) if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvy"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
     if(TMath::Abs(vtxAOD->GetY()) > fVyMax) aEventCuts[iStep] = 1; //4
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
+    else {
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvyA"))))->Fill(fCentralityPercentile,vtxAOD->GetY());
+    }
   }
   else aEventCuts[iStep] = 1; //4
 
 
  ++iStep;
   if (vtxESD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
     if(TMath::Abs(vtxESD->GetZ()) > fVzMax) aEventCuts[iStep] = 1;  //5
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
+    else {
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxESD->GetZ());
+    }
   }
   else if(vtxAOD){
-    (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
+    if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvz"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
     if(TMath::Abs(vtxAOD->GetZ()) > fVzMax) aEventCuts[iStep] = 1; //5
-    else (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
+    else {
+      if (fNeedQa) (static_cast<TH2F*>(fQaList->FindObject(Form("fHistQAvzA"))))->Fill(fCentralityPercentile,vtxAOD->GetZ());
+    }
   }
   else aEventCuts[iStep] = 1; //5
 
@@ -1646,20 +1684,21 @@ Bool_t AliEbyENetChargeFluctuationTask::IsEventStats(Int_t *aEventCuts) {
   for (Int_t idx = 0; idx < fHEventStatMax ; ++idx) {
     if (aEventCuts[idx])
       isRejected = kTRUE;
-    else
-      (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->Fill(idx);
+    else {
+      if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->Fill(idx);
+    }
   }
   for (Int_t idx = 0; idx < fHEventStatMax; ++idx) {
     if (aEventCuts[idx])
       break;
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->Fill(idx);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->Fill(idx);
   }
   if (!isRejected) {
 
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->Fill(fCentralityBin);
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAccepted"))))->Fill(fCentralityPercentile);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->Fill(fCentralityBin);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAccepted"))))->Fill(fCentralityPercentile);
   }
-  (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAll"))))->Fill(fCentralityPercentile);
+  if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAll"))))->Fill(fCentralityPercentile);
   return isRejected;
 }
 

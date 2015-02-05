@@ -27,7 +27,6 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
   if (!mgr->GetInputEventHandler())     return 0x0;
 
   AliAnalysisTaskJetMatching* jetTask = new AliAnalysisTaskJetMatching(name);
-  jetTask->SetDebugMode(-1);
   jetTask->SetMatchConstituents(matchConstituents);
   jetTask->SetMinFracRecoveredConstituents(minFrReCon);
   jetTask->SetMinFracRecoveredConstituentPt(minFrReConPt);

@@ -4,11 +4,6 @@
 class TH1;
 class TH2;
 class TH3;
-class TH3F;
-class THnSparse;
-class TClonesArray;
-class TArrayI;
-class AliAnalysisManager;
 class AliJetContainer;
 
 #include "AliAnalysisTaskEmcalJet.h"
@@ -43,18 +38,13 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
 
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2 = b;}
 
-  //Getters
-  Double_t GetFractionSharedPt(const AliEmcalJet *jet1, const AliEmcalJet *jet2) const;
-
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
 
-
   Double_t GetDeltaPhi(const AliEmcalJet* jet1, const AliEmcalJet* jet2);
   Double_t GetDeltaPhi(Double_t phi1,Double_t phi2);
-  Double_t GetDeltaR(const AliEmcalJet* jet1, const AliEmcalJet* jet2) const;
 
   void     MatchJetsGeo(Int_t c1 = -1, Int_t c2 = -1, Int_t iDebug = 0, Float_t maxDist = 0.3, Int_t type = 2, Bool_t bReset = kTRUE);
   void     ResetTagging(const Int_t c);

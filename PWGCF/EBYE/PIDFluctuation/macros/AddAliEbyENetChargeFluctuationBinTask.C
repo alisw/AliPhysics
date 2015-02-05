@@ -52,6 +52,8 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
 
 
   AliHelperPID* help = new AliHelperPID();
+help->SetNameTitle(taskname,taskname);
+help->Print();
   help->SetNSigmaCut(nSigmaCut);
   help->SetPIDType(pidtype); // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
   if (requestTofPid) {
@@ -80,7 +82,7 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
 
   for (Int_t iEta = 0; iEta < 8; iEta++ ) {
 
-    TString taskname_ctr = Form("E%d",iEta);
+    TString taskname_ctr = Form("%s_E%d",taskname,iEta);
 
     Double_t eEta = 0.1 + iEta * 0.1;
 
@@ -107,6 +109,7 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
     task[iEta]->SetKinematicsCuts(ptl,pth,eEta,gRap);
     task[iEta]->SetNSubSamples(nSample);
     task[iEta]->SetDca(dcaxy,dcaz);
+    if (iEta == 7)  task[iEta]->DoBasicQA();
     
     if (!isModeAOD) {
         cuts[iEta] = configureNetChargeTrackCut(taskname_ctr.Data(),cuttype,10001006, eEta, 5.,5.); 

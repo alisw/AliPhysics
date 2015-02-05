@@ -207,6 +207,20 @@ struct QABase
 	   << "  <link rel='stylesheet' href='style.css'>\n" 
 	   << "  <link rel='shortcut icon' href='fmd_favicon.png' "
 	   << "type='image/x-png'>\n"
+	   << "  <script>\n"
+	   << "  function browseRootFile(file) {\n"
+           << "   var o = document.location.origin;\n"
+	   << "   var b = o;\n"
+           << "   if (b.search(/aliqafmd.web.cern.ch/)) b += '/aliqafmd/';\n"
+           << "   b += 'jsRoot/';\n"
+	   << "   var p = o + document.location.pathname;\n"
+	   << "   p=p.replace(/" << base << ".html/,'');\n"
+	   << "   if (p[p.lenght-1] != '/') p += '/';\n"
+	   << "   var u=encodeURIComponent(p+file)+'&menu=no';\n"
+	   << "   window.open(b + '?url=' + u, '_blank',\n"
+	   << "               'location=no,menubar=no,status=no,titlebar=no');\n"
+	   << "  }\n"
+	   << "  </script>\n"
 	   << " </head>\n"
 	   << "<body>\n" 
 	   << " <h1>" << title << "</h1>\n"
@@ -415,10 +429,13 @@ struct QABase
    */
   virtual void WriteLinks() 
   {
+    const char* jsRoot = "http://cern.ch/aliqafmd/jsRoot/";
     *fHtml << "<h3>Collection of plots</h3>\n" 
 	   << "<ul>\n"
 	   << "  <li><a href='" << fTeXName << ".pdf'>PDF</a></li>\n"
-	   << "  <li><a href='" << fTeXName << ".root'>ROOT</a></li>\n"
+	   << "  <li><a href='" << fTeXName << ".root'>ROOT</a>\n"
+	   << "    <button onclick='browseRootFile(\"" 
+	   << fTeXName << ".root\")'>browse online</button></li>\n"
 	   << "</ul>" << std::endl;
     if (fPeriod.IsNull()) return;
     Bool_t isMC = (fDataType.EqualTo("sim", TString::kIgnoreCase) || 
@@ -426,7 +443,7 @@ struct QABase
     *fHtml << "<ul>\n"
 	   << " <li><a href='https://alimonitor.cern.ch/" 
 	   <<  (isMC ? "job_details.jsp" : "production/raw.jsp") 
-	   << "?jt_field1=" << fPeriod << "'>Producion(s)</a></li>\n"
+	   << "?jt_field1=" << fPeriod << "'>Production(s)</a></li>\n"
 	   << "</ul>" << std::endl;
   }
   /** 

@@ -11,7 +11,7 @@
 void DrawdNdetaSummary(const char* fname="forward_dndeta.root",
 		       UShort_t what=0xf)
 {
-  gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts",
+  gROOT->SetMacroPath(Form("%s:$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts",
 			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("SummarydNdetaDrawer.C+g");
   

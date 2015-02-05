@@ -252,7 +252,7 @@ struct FastMonitor : public TObject, public TQObject
    */
   Bool_t HandleTimer(TTimer*)
   {
-    Info("HandleTimer", "Selector=%p", fSelector);
+    // Info("HandleTimer", "Selector=%p", fSelector);
     if (!fSelector) return false;
     Feedback(fSelector->GetOutputList());
     return true;
@@ -360,7 +360,7 @@ struct FastSim : public TSelector
    */
   Bool_t SetupOutput()
   {
-    Info("SetupOutput", "First the file");
+    // Info("SetupOutput", "First the file");
     Bool_t isProof = false;
     if (fInput && fInput->FindObject("PROOF_Ordinal"))
       isProof = true;
@@ -374,7 +374,7 @@ struct FastSim : public TSelector
     else
       fFile = TFile::Open(FileName(), "RECREATE");
 
-    Info("SetupOutput", "Making our tree");
+    // Info("SetupOutput", "Making our tree");
     fTree      = new TTree("T", "T");
     fParticles = new TClonesArray("TParticle");
     fTree->Branch("header", &fShortHead,
@@ -401,7 +401,7 @@ struct FastSim : public TSelector
     fTree->SetAlias("gamma",   "(1./sqrt(1-beta*beta))");
     fTree->SetAlias("npart",   "(header.ntgt+header.nproj)");
 
-    Info("SetupOutput", "Making histograms");
+    // Info("SetupOutput", "Making histograms");
     Double_t maxEta = 10;
     Double_t dEta   = 10./200;
     fHEta = new TH1D("dNdeta", "Charged particle pseudo-rapidity density",
@@ -473,7 +473,7 @@ struct FastSim : public TSelector
     fList->Add(fHPhiR);
     fList->Add(fHTime);
 
-    Info("SetupOutput", "Adding list ot outputs");
+    // Info("SetupOutput", "Adding list ot outputs");
     fOutput->Add(fList);
 
     return true;
@@ -501,7 +501,7 @@ struct FastSim : public TSelector
     }
 
     // --- Load our settings -----------------------------------------
-    Info("SetupGen", "Loading scripts");
+    // Info("SetupGen", "Loading scripts");
     gROOT->Macro(Form("GRP.C(%d)", fRunNo));
     gROOT->Macro("BaseConfig.C");
     gROOT->Macro("EGConfig.C");
@@ -509,12 +509,12 @@ struct FastSim : public TSelector
     gROOT->ProcessLine(Form("VirtualEGCfg::LoadGen(\"%s\")",fEGName.Data()));
 
     // --- Make our generator ----------------------------------------
-    Info("SetupGen", "Creating generator");
+    // Info("SetupGen", "Creating generator");
     TString egMk = Form("egCfg->MakeGenerator(\"%s\",%f,%f)",
 			fEGName.Data(), fBMin, fBMax);
     Long64_t egPtr = gROOT->ProcessLine(egMk);
     if (egPtr == 0) {
-      Error("Setup", "Failed to make generator");
+      Error("SetupGen", "Failed to make generator");
       return false;
     }
     fGenerator = reinterpret_cast<AliGenerator*>(egPtr);
@@ -522,11 +522,14 @@ struct FastSim : public TSelector
     Int_t   tgtA=0, tgtZ=0, projA=0, projZ=0;
     fGenerator->GetTarget(tgt, tgtA, tgtZ);
     fGenerator->GetProjectile(proj, projA, projZ);
-    fIsTgtA  = (tgtA  == tgtZ  && tgtA == 1);
-    fIsProjA = (projA == projZ && projZ == 1);
+    fIsTgtA  = !(tgtA  == tgtZ  && tgtA == 1);
+    fIsProjA = !(projA == projZ && projZ == 1);
+    // Info("SetupGen", "tgt=%s (%3d,%2d) proj=%s (%3d,%2d) CMS=%fGeV",
+    //      tgt.Data(), tgtA, tgtZ, proj.Data(), projA, projZ,
+    //      fGenerator->GetEnergyCMS());
 
     if (fFileName.IsNull()) FileName();
-    Info("SetupRun", "File name is '%s'", fFileName.Data());
+    // Info("SetupRun", "File name is '%s'", fFileName.Data());
 
     return true;
   }    
@@ -545,7 +548,7 @@ struct FastSim : public TSelector
 
     Long64_t nev = (fNEvents <= 0 ? 0xFFFFFFFF : fNEvents);
     // --- Run-loader, stack, etc  -----------------------------------
-    Info("SetupRun", "Set-up run Loader");    
+    // Info("SetupRun", "Set-up run Loader");    
     fRunLoader = AliRunLoader::Open("galice.root", "FASTRUN", "RECREATE");
     fRunLoader->SetCompressionLevel(2);
     fRunLoader->SetNumberOfEventsPerFile(nev);
@@ -557,7 +560,7 @@ struct FastSim : public TSelector
     fHeader = fRunLoader->GetHeader();
 
     // --- Initialize generator --------------------------------------
-    Info("SetupRun", "Initializing generator");
+    // Info("SetupRun", "Initializing generator");
     fGenerator->Init();
     fGenerator->SetStack(fStack);
 
@@ -609,13 +612,13 @@ struct FastSim : public TSelector
   void Begin(TTree*)
   {
     // Make a monitor
-    Info("Begin", "gProof=%p Nomonitor=%p",
-	 gProof, (gProof ? gProof->GetParameter("NOMONITOR") : 0));
+    // Info("Begin", "gProof=%p Nomonitor=%p",
+    //      gProof, (gProof ? gProof->GetParameter("NOMONITOR") : 0));
 
     if (gProof && !gProof->GetParameter("NOMONITOR")) { 
       new FastMonitor;
       gProof->AddFeedback("histograms");
-      Info("Begin", "Adding monitoring");
+      // Info("Begin", "Adding monitoring");
     }
     gROOT->Macro(Form("GRP.C(%d)", fRunNo));
     if (ReadGRPLine()) {
@@ -784,6 +787,8 @@ struct FastSim : public TSelector
     Float_t  nc = -1;
     Double_t c  = -1;
     Double_t b  = fShortHead.fB;
+    // Info("ProcessHeader", "b=%f isProjA=%d isTgtA=%d cms=%f",
+    //      b, fIsProjA, fIsTgtA, fGenerator->GetEnergyCMS());
     if (b >= 0 && fIsProjA && fIsTgtA &&
 	TMath::Abs(fGenerator->GetEnergyCMS()-2760) < 10) {
       // PbPb @ 2.76TeV only 
@@ -856,6 +861,7 @@ struct FastSim : public TSelector
       if (sd) fHType->Fill(2);
       if (!dd && !sd) fHType->Fill(1);
       fHCent->Fill(c);
+      // fShortHead.Print();
     }
     return selected;
   }
@@ -1106,6 +1112,19 @@ struct FastSim : public TSelector
     Double_t fB;
     Double_t fC;
     Double_t fPhiR;
+
+    void Print()
+    {
+      Printf(" Run #/Event:          %9d/%9d", fRunNo, fEventId);
+      Printf(" Participants/binary:  %4d/%4d/%3d", fNtgt, fNproj, fNbin);
+      Printf(" Event type:           %7s%12s",(fType==1?"Non":
+					       fType==2?"Single":
+					       "Double"), "-diffractive");
+      Printf(" IP:                   (%-5.1f,%-5.1f,%-5.1f)",fIpX,fIpY,fIpZ);
+      Printf(" Impact par./cent.:    (%13f/%-3d)", fB, Int_t(fC));
+      Printf(" Reaction plane:       %19f", fPhiR);
+    }
+	      
   } fShortHead;
 #endif
   /** 
@@ -1137,7 +1156,7 @@ struct FastSim : public TSelector
       timer = new TTimer(1000);
       timer->Connect("Timeout()","FastMonitor",
 		     new FastMonitor(sim), "Handle()");
-      ::Info("Run", "Turning on monitoring");
+      // ::Info("Run", "Turning on monitoring");
       timer->Start(-1,false);
     }
       
@@ -1216,11 +1235,13 @@ struct FastSim : public TSelector
     TProof::Open(url.GetUrl());
     gProof->ClearCache();
 
+    TString phy = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
     TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
     // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
-    TString fwd = ali + "/PWGLF/FORWARD/analysis2";
+    TString fwd = phy + "/PWGLF/FORWARD/analysis2";
 
     gProof->AddIncludePath(Form("%s/include", ali.Data()));
+    gProof->AddIncludePath(Form("%s/include", phy.Data()));
     ProofLoadLibs();
     gProof->Load(Form("%s/sim/GRP.C",fwd.Data()), true);
     gProof->Load(Form("%s/sim/BaseConfig.C",fwd.Data()), true);
@@ -1293,6 +1314,7 @@ struct FastSim : public TSelector
    */
   static Bool_t Run(const char*  url, const char* opt="")
   {
+    Printf("Will run fast simulation with:\n\n\t%s\n\n",url);
     Long64_t     nev     = 10000;
     UInt_t       run     = 0;
     TString      eg      = "default";

@@ -113,6 +113,7 @@ fhMCOtherDecayPt(0),
 fhMassPairMCPi0(0),                 fhMassPairMCEta(0),
 fhAnglePairMCPi0(0),                fhAnglePairMCEta(0),
 fhMCPi0PtOrigin(0x0),               fhMCEtaPtOrigin(0x0),
+fhMCNotResonancePi0PtOrigin(0),     fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),               fhMCEtaProdVertex(0),
 
 // Weight studies
@@ -1721,7 +1722,27 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
     fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
     outputContainer->Add(fhMCPi0PtOrigin) ;
-    
+
+    fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+    fhMCNotResonancePi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCNotResonancePi0PtOrigin->SetYTitle("Origin");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+    fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+    outputContainer->Add(fhMCNotResonancePi0PtOrigin) ;
+
+    fhMCPi0PtStatus     = new TH2F("hMCPi0PtStatus","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs status",nptbins,ptmin,ptmax,101,-50,50) ;
+    fhMCPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCPi0PtStatus->SetYTitle("Status");
+    outputContainer->Add(fhMCPi0PtStatus) ;
+
     fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
     fhMCEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhMCEtaPtOrigin->SetYTitle("Origin");
@@ -3427,9 +3448,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     else                indexMax = 2 ;
     fhMassPtLocMax[indexMax]->Fill(fMomentum.Pt(),mass);
     
-    Int_t   mcIndex   =-1;
-    Int_t   noverlaps = 0;
-    Float_t ptprim    = 0;
+    Int_t   mcIndex    = -1;
+    Int_t   noverlaps  =  0;
+    Float_t ptprim     =  0;
+    Int_t   mesonLabel = -1;
+
     if(IsDataMC())
     {
       mcIndex = GetMCIndex(tag);
@@ -3439,7 +3462,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       
       fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel,GetReader(),ok);
       
-      Int_t mesonLabel = -1;
       
       if(mcIndex == kmcPi0 || mcIndex == kmcEta)
       {
@@ -3632,7 +3654,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Create AOD for analysis
     
     AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(fMomentum);
-    aodpi0.SetLabel(calo->GetLabel());
+    aodpi0.SetLabel(mesonLabel);
     
     //Set the indeces of the original caloclusters
     aodpi0.SetCaloLabel(calo->GetID(),-1);
@@ -3785,10 +3807,11 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         Int_t   momindex  = -1;
         Int_t   mompdg    = -1;
         Int_t   momstatus = -1;
-
+        Int_t status      = -1;
         if(GetReader()->ReadStack())
         {
           TParticle* ancestor = GetMCStack()->Particle(label);
+          status = ancestor->GetStatusCode();
           momindex  = ancestor->GetFirstMother();
           if(momindex < 0) return;
           TParticle* mother = GetMCStack()->Particle(momindex);
@@ -3800,6 +3823,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         {
           TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
           AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(label);
+          status = ancestor->GetStatus();
           momindex  = ancestor->GetMother();
           if(momindex < 0) return;
           AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
@@ -3811,6 +3835,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         if( mcIndex==kmcPi0 )
         {
           fhMCPi0ProdVertex->Fill(pt,prodR);
+          fhMCPi0PtStatus  ->Fill(pt,status);
           
           if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
           else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
@@ -3823,6 +3848,22 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
           else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
           else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances
           else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
+          
+          if(status != 11)
+          {
+            if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt,0.5);//parton
+            else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt,1.5);//quark
+            else if(mompdg     > 2100  && mompdg   < 2210) fhMCNotResonancePi0PtOrigin->Fill(pt,2.5);// resonances
+            else if(mompdg    == 221) fhMCNotResonancePi0PtOrigin->Fill(pt,8.5);//eta
+            else if(mompdg    == 331) fhMCNotResonancePi0PtOrigin->Fill(pt,9.5);//eta prime
+            else if(mompdg    == 213) fhMCNotResonancePi0PtOrigin->Fill(pt,4.5);//rho
+            else if(mompdg    == 223) fhMCNotResonancePi0PtOrigin->Fill(pt,5.5);//omega
+            else if(mompdg    >= 310   && mompdg    <= 323) fhMCNotResonancePi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+            else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt,6.5);//k0L
+            else if(momstatus == 11 || momstatus  == 12 ) fhMCNotResonancePi0PtOrigin->Fill(pt,3.5);//resonances
+            else                      fhMCNotResonancePi0PtOrigin->Fill(pt,7.5);//other?
+          }
+          
         }
         else if (mcIndex==kmcEta )
         {

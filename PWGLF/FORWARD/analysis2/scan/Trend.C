@@ -771,7 +771,7 @@ struct Trend : public SummaryDrawer
     // Always recompile 
     if (!gROOT->GetClass("RefData")) {
       TString savPath(gROOT->GetMacroPath());
-      gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
+      gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			       gROOT->GetMacroPath()));
       gROOT->LoadMacro("OtherData.C++");
       gROOT->SetMacroPath(savPath);

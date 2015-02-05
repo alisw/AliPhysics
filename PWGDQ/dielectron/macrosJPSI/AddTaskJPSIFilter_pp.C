@@ -37,7 +37,7 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
 
   // the different paths
   TString alienPath("alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI");
-  TString alirootPath("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/");
+  TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/");
 
   ////////// >>>>>>>>>> alien config
   if(gridconf && !gSystem->Exec(Form("alien_cp %s/%s .",alienPath.Data(),cfg.Data()))) {
@@ -55,9 +55,9 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
   configFile+=cfg.Data();
 
 
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
 
   //load dielectron configuration file (only once)
   //  TString checkconfig="ConfigJpsi_jb_PbPb";

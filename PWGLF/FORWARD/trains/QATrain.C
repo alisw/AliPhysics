@@ -151,7 +151,7 @@ protected:
     // 
     // Optionally highMult axis can be used by setting the 3st
     // argument to true (for PbPb)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/TPC/macros",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGPP/TPC/macros",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskPerformanceTPCdEdxQA.C",
 					"kFALSE,kTRUE,kFALSE");
@@ -198,13 +198,13 @@ protected:
   void CreateTRD()
   {
     // TRD (Alex Bercuci, M. Fasel) 
-    gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGPP/TRD");
+    gSystem->AddIncludePath("-I${ALICE_PHYSICS}/PWGPP/TRD");
     CoupleCar("AddTrainPerformanceTRD.C","\"ESD DET EFF RES PID\""); 
   }
   void CreateZDC()
   {
     // ZDC (Chiara Oppedisano)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/ZDC",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGPP/ZDC",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskZDCQA.C");
   }
@@ -216,7 +216,7 @@ protected:
     LoadLibrary("PWG4PartCorrBase", mode, par, true);
     LoadLibrary("PWG4PartCorrDep", mode, par, true);
     
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG4/macros/QA",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWG4/macros/QA",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskCalorimeterQA.C",
 					"\"ESD\",20011,false,false)");
@@ -237,7 +237,7 @@ protected:
   }
   void CreateMUONEff()
   {
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG3/muondep",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWG3/muondep",
 			     gROOT->GetMacroPath()));
     CoupleCar("AddTaskMUONTrackingEfficiency.C");
   }
@@ -261,14 +261,14 @@ protected:
     LoadLibrary("PWG3base", mode, par, true);
     LoadLibrary("PWG3muon", mode, par, true);
     LoadLibrary("PWG3muondep", mode, par, true);
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG3/muon",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWG3/muon",
 			     gROOT->GetMacroPath()));
     CoupleCar("AddTaskMuonQA.C");
   }
   void CreateTOF()
   {
     // TOF (Francesca Bellini)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/TOF",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGPP/TOF",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskTOFQA.C");
   }
@@ -286,14 +286,14 @@ protected:
   void CreateHMPID()
   {
     // HMPID QA (Giacomo Volpe)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/HMPID",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGPP/HMPID",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskHmpidQA.C");
   }
   void CreateT0()
   {
     // T0 QA (Alla Mayevskaya)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/T0",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGPP/T0",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskT0QA.C");
   }
@@ -325,8 +325,8 @@ protected:
     LoadLibrary("PWG0selectors", mode, par);
     LoadLibrary("PWGPP", mode, par);    
 
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/PilotTrain"
-			     ":$(ALICE_ROOT)/PWGPP/macros",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGPP/PilotTrain"
+			     ":$(ALICE_PHYSICS)/PWGPP/macros",
 			     gROOT->GetMacroPath()));   
  
     mgr->AddStatisticsTask(fTriggerMask);

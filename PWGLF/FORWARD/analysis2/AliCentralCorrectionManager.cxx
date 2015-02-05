@@ -21,7 +21,7 @@ AliCentralCorrectionManager* AliCentralCorrectionManager::fgInstance= 0;
 const char* AliCentralCorrectionManager::fgkSecondaryMapSkel = "secondary";
 const char* AliCentralCorrectionManager::fgkAcceptanceSkel   = "acceptance";
 
-#define PREFIX  "$(ALICE_ROOT)/OADB/PWGLF/FORWARD/CORRECTIONS/data/"
+#define PREFIX  "$(ALICE_PHYSICS)/OADB/PWGLF/FORWARD/CORRECTIONS/data/"
 #define DB_NAME "spd_corrections.root"
 
 //____________________________________________________________________

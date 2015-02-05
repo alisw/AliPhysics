@@ -274,7 +274,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           cout<<"hey a jet"<<fraction<<" "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
           
           if(fraction<fMinFractionShared) continue;
-          InputEvent()->Print();
+          //InputEvent()->Print();
           partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
           if(!partonsInfo) return 0;
           
@@ -285,12 +285,11 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(!partonsInfo) return 0;
         }
         
-        Double_t jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi6());
+        Double_t jp1=RelativePhi(jet2->Phi(),partonsInfo->GetPartonPhi6());
         Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
         kWeight=partonsInfo->GetPythiaEventWeight();
         fh2ResponseW->Fill(jet1->Pt(),jet2->Pt(),kWeight);
-        if (jp1< -1*TMath::Pi()) jp1 = (-2*TMath::Pi())-jp1;
-        else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
+      
         Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
         fEtaJetCorr6->Fill(jet2->Eta(), partonsInfo->GetPartonEta6());
         fPhiJetCorr6->Fill(jet2->Phi(), partonsInfo->GetPartonPhi6());
@@ -299,10 +298,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jet2->Pt());
         }
         else {
-          jp1=(jet2->Phi())-(partonsInfo->GetPartonPhi7());
+          jp1=RelativePhi(jet2->Phi(),partonsInfo->GetPartonPhi7());
           detap1=(jet2->Eta())-(partonsInfo->GetPartonEta7());
-          if (jp1< -1*TMath::Pi()) jp1= (-2*TMath::Pi())-jp1;
-          else if (jp1 > TMath::Pi()) jp1 = (2*TMath::Pi())-jp1;
           dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
           fEtaJetCorr7->Fill(jet2->Eta(), partonsInfo->GetPartonEta7());
           fPhiJetCorr7->Fill(jet2->Phi(), partonsInfo->GetPartonPhi7());
@@ -414,9 +411,7 @@ Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet, Int_t jetCon
     AliVParticle *vp1 = 0x0;
     for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
       vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));  
-      Double_t dphi = vp1->Phi()-jet->Phi();
-      if(dphi<-1.*TMath::Pi()) dphi+=TMath::TwoPi();
-      if(dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+      Double_t dphi = RelativePhi(vp1->Phi(),jet->Phi());
       Double_t dr2 = (vp1->Eta()-jet->Eta())*(vp1->Eta()-jet->Eta()) + dphi*dphi;
       Double_t dr = TMath::Sqrt(dr2);
       num=num+vp1->Pt()*dr;
@@ -614,13 +609,12 @@ Float_t AliAnalysisTaskEmcalQGTagging::Sigma2(AliEmcalJet *jet, Int_t jetContNb=
      for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
        vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));  
        Double_t ppt=vp1->Pt();
-       Double_t dphi = vp1->Phi()-jet->Phi();
-       if(dphi<-1.*TMath::Pi()) dphi+=TMath::TwoPi();
-       if(dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+       Double_t dphi = RelativePhi(vp1->Phi(),jet->Phi());
+     
        Double_t deta = vp1->Eta()-jet->Eta();
        mxx += ppt*ppt*deta*deta;
        myy += ppt*ppt*dphi*dphi;
-       mxy -= ppt*ppt*deta*dphi;
+       mxy -= ppt*ppt*deta*TMath::Abs(dphi);
        nc++;
        sump2 += ppt*ppt;
        

@@ -36,16 +36,12 @@ public:
    void           SetTPCNCluster     (Int_t    v)    {fTPCNCluster      = v;}
    void           SetPtDepDCASigma   (Double_t v)    {fPtDepDCASigma    = v;}
    
-
-
-   
    virtual Bool_t IsSelected(TObject *obj);
-   
    AliRsnCutTrackQuality *CutQuality() {return &fCutQuality;}
+   Bool_t MatchTOF(const AliVTrack *vtrack);
 
    private:
 
-   Bool_t MatchTOF(const AliVTrack *vtrack);
 
    AliPID::EParticleType fPID;            // PID for track
    Double_t              fNSigmaTPC;      // TPC: nsigma cut below limit

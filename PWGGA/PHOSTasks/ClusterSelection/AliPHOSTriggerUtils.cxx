@@ -1,4 +1,5 @@
 #include "TNamed.h"
+#include "TRandom.h"
 
 #include "AliPHOSTriggerUtils.h"
 #include "AliVEvent.h"
@@ -78,7 +79,6 @@ void AliPHOSTriggerUtils::SetEvent(AliVEvent * event){
           fPHOSBadMap[mod]=new TH2I(*h) ;
       }
     }    
-    
   }
   
   
@@ -146,6 +146,42 @@ Bool_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){
     return kFALSE ;
 }
 //-----------------------------------------------------------------------  
+Bool_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
+   //Estimate probability to fire PHOS trigger 
+  
+   if(!fEvent)
+     return kFALSE ;
+  
+   //Maximum energy tower
+   Int_t maxId, relid[4];
+   Double_t eMax = -111;
+     
+   AliVCaloCells * phsCells=fEvent->GetPHOSCells() ;
+   
+   for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++){
+      Int_t cellAbsId1 = clu->GetCellAbsId(iDig);
+      Double_t eCell = phsCells->GetCellAmplitude(cellAbsId1)*clu->GetCellAmplitudeFraction(iDig);
+      if(eCell>eMax) 
+        {
+          eMax = eCell;
+          maxId = cellAbsId1;
+        }
+    }
+    
+    fGeom->AbsToRelNumbering(maxId, relid);
+    Int_t mod= relid[0] ;
+    Int_t ix = relid[2];
+    Int_t iz = relid[3];
+        
+    if(!TestBadMap(mod,ix,iz))
+      return kFALSE ;
+  
+  
+    //Now etimate probability from the parameterization
+    return (gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) ;
+
+}
+//-----------------------------------------------------------------------  
 Int_t AliPHOSTriggerUtils::FindBranch(Int_t nX, Int_t nZ) {
   //Calculate branch number from column and raw of a cell 
   
@@ -176,11 +212,48 @@ Bool_t AliPHOSTriggerUtils::TestBadMap(Int_t mod, Int_t ix,Int_t iz){
   
   
 }
-    
-    
-    
-    
-    
-    
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t module){
+  //Parameterization provided by Yu. and V. Riabov
   
+  if (module!=1 && module!=3) return 0;
+
+  //Parameterization of efficiency function
+  const Double_t ar[4][7]={0.,0.,0.,0.,0.,0.,0.,
+   7.10000e-001,3.75156e+007,1.76476e+007,3.77306e+007,1.61226e+006, 3.76983e+007,9.02358e+000,
+   0.,0.,0.,0.,0.,0.,0.,
+   1.00000e+000, 1.15962e+008,1.04148e+008,9.06092e+000,1.37488e+008,2.25460e+011,1.28279e+001} ;
+   
+  //tabulated depence for low E part 
+  const Int_t num[4]={0,22,0,24} ;
+  const Double_t ent[4]={0.,6.83333,0.,7.5} ;
+  const Double_t en[4][30]={
+  0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 
+  0.0000, 0.1667, 0.5000, 0.8333, 1.1667, 1.5000, 1.8333, 2.1667, 2.5000, 2.8333, 3.1667, 3.5000, 3.8333, 4.1667, 4.5000, 4.8333, 5.1667, 5.5000, 5.8333, 6.1667, 6.5000, 6.8333, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 
+  0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 
+  0.0000, 0.1667, 0.5000, 0.8333, 1.1667, 1.5000, 1.8333, 2.1667, 2.5000, 2.8333, 3.1667, 3.5000, 3.8333, 4.1667, 4.5000, 4.8333, 5.1667, 5.5000, 5.8333, 6.1667, 6.5000, 6.8333, 7.1667, 7.5000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000 } ;
+
+  const Double_t eff[4][30]={
+  0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 
+  0.0000, 0.0001, 0.0002, 0.0006, 0.0020, 0.0056, 0.0112, 0.0201, 0.0314, 0.0442, 0.0580, 0.0748, 0.0959, 0.1154, 0.1371, 0.1498, 0.1705, 0.1844, 0.2194, 0.2465, 0.2798, 0.3366, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 
+  0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 
+  0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0001, 0.0001, 0.0003, 0.0007, 0.0023, 0.0086, 0.0229, 0.0404, 0.0561, 0.0701, 0.0734, 0.0831, 0.1090, 0.1279, 0.1529, 0.1950, 0.2313, 0.3302, 0.4269, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000 } ; 
+
+
+  if (eClu >= ent[module]){
+    Double_t denom= ar[module][1]*TMath::Power(eClu,-ar[module][2]) + ar[module][3]*TMath::Power(eClu,-ar[module][4]) + ar[module][5]*TMath::Power(eClu,-ar[module][6]) ;
+    if(denom>0)
+      return ar[module][0]/denom ;
+    else
+      return 0. ;
+  }
+  else {
+    for (Int_t i=1; i<num[module]; i++) {
+      if (eClu <= en[module][i]) {
+	return eff[module][i-1]+(eClu - en[module][i-1])*(eff[module][i]-eff[module][i-1])/(en[module][i]-en[module][i-1]);
+      }
+    }
+  }
+  return 0 ;  
   
+}

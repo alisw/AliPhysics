@@ -67,6 +67,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   
   void   SetAlpha(Double_t val){fAlpha = val; }
   void   SetUseLeadingPt(Bool_t flag) { fUseLeadingPt = flag; }
+  void   SetUseAllT1(Bool_t flag) { fUseAllT1 = flag; }
 
  private:
   void            AddSettingsTree();                                  // add list of settings to output list
@@ -113,12 +114,13 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Double_t fAlpha;            //sets the alpha parameter in the container
     Bool_t fUseLeadingPt;        //decides if all particles of a cone are used as trigger particles or only the leading particles within alpha (apply this on near and away side)
+    Bool_t fUseAllT1;            //decides if the near side yield is filled for all away side yields or only for the highest one
     
     AliAnalysisTaskTwoPlusOne(const AliAnalysisTaskTwoPlusOne&); // not implemented
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-  ClassDef(AliAnalysisTaskTwoPlusOne, 2); // two plus one analysis with two trigger particles and particle correlations to these triggers
+  ClassDef(AliAnalysisTaskTwoPlusOne, 3); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif

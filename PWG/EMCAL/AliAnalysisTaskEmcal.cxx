@@ -806,6 +806,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
+    
     TObjArray *arr = fTrigClass.Tokenize("|");
     if (!arr) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
@@ -816,9 +817,28 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       TObject *obj = arr->At(i);
       if (!obj)
         continue;
-      if (fired.Contains(obj->GetName())) {
-        match = 1;
-        break;
+
+      //Check if requested trigger was fired, relevant for data sets with 2 emcal trigger thresholds
+      TString objStr = obj->GetName();
+      if(objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2")) {
+        TString trigType1 = "J1";
+        TString trigType2 = "J2";
+        if(objStr.Contains("G")) {
+          trigType1 = "G1";
+          trigType2 = "G2";
+        }
+        if(objStr.Contains(trigType2) && fired.Contains(trigType1.Data()) && fired.Contains(trigType2.Data())) { //low threshold + overlap
+          match = 1;
+          break;
+        } else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
+          match = 1;
+          break;
+        }
+      } else {
+        if (fired.Contains(obj->GetName())) {
+          match = 1;
+          break;
+        }
       }
     }
     delete arr;

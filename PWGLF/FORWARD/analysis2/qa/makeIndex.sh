@@ -42,14 +42,20 @@ loopDir()
 
     # --- Check that we want to process this dir ----------------------
     if test $level -ge $maxCol ; then return ; fi
-    if test "X`basename $here`" = "Xqa" ; then return ; fi
-    msg 0 "Processing @ level $level: $here" 
+    local basehere=`basename $here`
+    case x$basehere in 
+	xqa|xjsRoot*) return ;; 
+    esac
+    
+    msg 0 "Processing @ level $level: $here ($basehere)" 
 
     # --- Loop 1st pass ----------------------------------------------
     local subid=1
     for sub in ${here}/* ; do 
 	msg 1 "Processing $sub @ level $level" 
-
+	case $sub in 
+	     *jsRoot*) continue ;; 
+	esac
 	# --- If this is not a sub-directory, go on ------------------
 	if test ! -d $sub ; then continue ; fi 
 	
@@ -152,7 +158,7 @@ frame=0
 size=0
 base=$QA_FWD
 if test "X$base" = "X" ; then 
-    base=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa
+    base=$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/qa
 fi 
 verb=0
 

@@ -13,47 +13,49 @@ class AliAnalysisDataContainer;
 class AliHFEextraCuts;
 
 AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
-                                                     TString uniqueID = "",
-                                                     Float_t centrMin ,
-                                                     Float_t centrMax ,
-                                                     Double_t InvmassCut,
-                                                     Int_t Trigger,
-                                                     Bool_t multCorrcut,
-                                                     Double_t pTCutmin,
-                                                     Double_t pTCutmax,
-                                                     Double_t minTOFnSigma,
-                                                     Double_t maxTOFnSigma,
-                                                     Double_t minITSnsigmaLowpT,
-                                                     Double_t maxITSnsigmaLowpT,
-                                                     Double_t minITSnsigmaHighpT,
-                                                     Double_t maxITSnsigmaHighpT,
-                                                     Double_t minTPCnsigmaLowpT,
-                                                     Double_t maxTPCnsigmaLowpT,
-                                                     Double_t minTPCnsigmaHighpT,
-                                                     Double_t maxTPCnsigmaHighpT,
-                                                     Int_t minTPCCluster,
-                                                     Int_t TPCS,
-                                                     AliHFEextraCuts::ITSPixel_t pixel,
-                                                     Int_t TPCClusterforAsso = 80,
-                                                     Bool_t AssoITSref = kTRUE,
-                                                     Double_t ptminassocut = 0.0,
-                                                     Bool_t Weight = kFALSE,
-                                                     Bool_t withmultetacorrection=kFALSE,
-                                                     Bool_t PhiCut = kFALSE,
-                                                     Bool_t PhotonicElectronDCA = kFALSE,
-                                                    // Bool_t QaPidSparse = kFALSE,
-                                                     const char *Cent = "V0M",
-                                                     Bool_t QC = kTRUE, // use qc2 and qc4
-                                                     Bool_t SP_TPC = kTRUE, //use tpc sp method
-                                                     Bool_t VZERO_SP = kFALSE, // use vzero sp method
-                                                     Int_t harmonic = 2,
-                                                     Bool_t shrinkSP = kTRUE,
-                                                     Bool_t debug = kFALSE,
-                                                     Int_t RPFilterBit = 1,
-                                                     Bool_t op_ang = kFALSE,
-                                                     Int_t Vz = 10,
-                                                     Double_t op_angle_cut = 3.
-                                                     )
+                                                           TString uniqueID = "",
+                                                           Float_t centrMin ,
+                                                           Float_t centrMax ,
+                                                           Double_t InvmassCut,
+                                                           Int_t Trigger,
+                                                           Bool_t multCorrcut,
+                                                           Double_t pTCutmin,
+                                                           Double_t pTCutmax,
+                                                           Double_t minTOFnSigma,
+                                                           Double_t maxTOFnSigma,
+                                                           Double_t minITSnsigmaLowpT,
+                                                           Double_t maxITSnsigmaLowpT,
+                                                           Double_t minITSnsigmaHighpT,
+                                                           Double_t maxITSnsigmaHighpT,
+                                                           Double_t minTPCnsigmaLowpT,
+                                                           Double_t maxTPCnsigmaLowpT,
+                                                           Double_t minTPCnsigmaHighpT,
+                                                           Double_t maxTPCnsigmaHighpT,
+                                                           Int_t minTPCCluster,
+                                                           Int_t TPCS,
+                                                           AliHFEextraCuts::ITSPixel_t pixel,
+                                                           Int_t TPCClusterforAsso = 80,
+                                                           Bool_t AssoITSref = kTRUE,
+                                                           Double_t ptminassocut = 0.0,
+                                                           Bool_t Weight = kFALSE,
+                                                           Bool_t withmultetacorrection=kFALSE,
+                                                           Double_t etaminpos = 0,
+                                                           Double_t etaminneg = 0,
+                                                           Bool_t PhiCut = kFALSE,
+                                                           Bool_t PhotonicElectronDCA = kFALSE,
+                                                           // Bool_t QaPidSparse = kFALSE,
+                                                           const char *Cent = "V0M",
+                                                           Bool_t QC = kTRUE, // use qc2 and qc4
+                                                           Bool_t SP_TPC = kTRUE, //use tpc sp method
+                                                           Bool_t VZERO_SP = kFALSE, // use vzero sp method
+                                                           Int_t harmonic = 2,
+                                                           Bool_t shrinkSP = kTRUE,
+                                                           Bool_t debug = kFALSE,
+                                                           Int_t RPFilterBit = 1
+                                                           //Bool_t op_ang = kFALSE
+                                                           //Int_t Vz = 10,
+                                                           //Double_t op_angle_cut = 3.
+                                                           )
 
 {
     
@@ -84,7 +86,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     }
     taskHFE->SetTrigger(Trigger);
     taskHFE->SetEPWeight(Weight);
-
+    
     
     TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root";
     if(Trigger==0 || Trigger==4){
@@ -108,18 +110,19 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     taskHFE->SetInvariantMassCut(InvmassCut);
     taskHFE->SetpTCuttrack(pTCutmin, pTCutmax);
     taskHFE->SetTPCS(TPCS);
-    taskHFE->SetVz(Vz);
+    taskHFE->SetVz(10);
     taskHFE->SetIDCuts(minTOFnSigma, maxTOFnSigma, minITSnsigmaLowpT, maxITSnsigmaLowpT, minITSnsigmaHighpT, maxITSnsigmaHighpT, minTPCnsigmaLowpT, maxTPCnsigmaLowpT, minTPCnsigmaHighpT, maxTPCnsigmaHighpT);
-  //  taskHFE->SetQAPIDSparse(QaPidSparse);
+    //  taskHFE->SetQAPIDSparse(QaPidSparse);
     taskHFE->SelectPhotonicElectronMethod(PhotonicElectronDCA);
-    taskHFE->SetOpeningAngleflag(op_ang);
-    taskHFE->SetOpeningAngleCut(op_angle_cut);
+    taskHFE->SetOpeningAngleflag(kFALSE);
+    taskHFE->SetOpeningAngleCut(3);
     taskHFE->SetMultCorrelationCut(multCorrcut);
     taskHFE->SetPtMinAssoCut(ptminassocut);
     taskHFE->SetAssoTPCCluster(TPCClusterforAsso);
     taskHFE->SetAssoITSRefit(AssoITSref);
     taskHFE->SetPhiCut(PhiCut);
-
+    taskHFE->SetEtaMinPos(etaminpos); //0.2
+    taskHFE->SetEtaMinNeg(etaminneg);//-0.2
     
     
     
@@ -211,7 +214,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(taskHFE, 2, flowEvent);
     if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
-  
+    
     
     mgr->AddTask(taskHFE);
     
@@ -282,12 +285,12 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* ConfigHFEStandardCuts(Bool_t useMC,Int_t minTP
     //  task->SetRemovePileUp(kTRUE);
     
     // Define PID
-       AliHFEpid *pid = task->GetPID();
-       if(useMC) pid->SetHasMCData(kTRUE);
+    AliHFEpid *pid = task->GetPID();
+    if(useMC) pid->SetHasMCData(kTRUE);
     pid->AddDetector("ITS", 0);
     pid->AddDetector("TOF", 1);
     pid->AddDetector("TPC", 2);
-
+    
     
     if(withmultetacorrection1) {
         AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
@@ -308,13 +311,13 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* ConfigHFEStandardCuts(Bool_t useMC,Int_t minTP
         task->SetMultCorrectionTheo(withmultetacorrection1);
         task->SetTPCPID(tpcpid);
     }
-
     
-       printf("*************************************\n");
-       printf("Configuring standard Task:\n");
+    
+    printf("*************************************\n");
+    printf("Configuring standard Task:\n");
     //  task->PrintStatus();
-      pid->PrintStatus();
-      printf("*************************************\n");
+    pid->PrintStatus();
+    printf("*************************************\n");
     return task;
     
     

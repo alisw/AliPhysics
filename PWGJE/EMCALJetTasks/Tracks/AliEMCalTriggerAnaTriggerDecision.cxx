@@ -18,6 +18,7 @@
  * Author:
  *    Markus Fasel
  */
+#include <iostream>
 #include <TClonesArray.h>
 #include <TString.h>
 #include "AliVEvent.h"
@@ -32,7 +33,8 @@ namespace EMCalTriggerPtAnalysis {
 //______________________________________________________________________________
 AliEMCalTriggerAnaTriggerDecision::AliEMCalTriggerAnaTriggerDecision() :
     fSwapThresholds(kFALSE),
-    fIsMinBias(kFALSE)
+    fIsMinBias(kFALSE),
+    fDoDebug(kFALSE)
 {
   /*
    * Main constructor
@@ -74,6 +76,20 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromString(const TString& tr
 }
 
 //______________________________________________________________________________
+bool AliEMCalTriggerAnaTriggerDecision::CheckConsistency() const{
+  /*
+   * Check whether the trigger decision from the trigger strings and the trigger patches are the same
+   *
+   * @return: result of the comparison
+   */
+  bool result = true;
+  for(int icls = 0; icls < 4; icls++){
+    if(fDecisionFromString[icls] != fDecisionFromPatches[icls]) result = false;
+  }
+  return result;
+}
+
+//______________________________________________________________________________
 void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArray& listOfPatches) {
   /*
    * Create trigger decision from trigger patches. In case swap thresholds is requested, the low threshold
@@ -83,12 +99,54 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
    */
   TIter patchIter(&listOfPatches);
   AliEmcalTriggerPatchInfo *mypatch(NULL);
+  if(fDoDebug)
+    std::cout << "Generating trigger decision from found patches: " << listOfPatches.GetEntries() << std::endl;
+  int foundpatches[4] = {0,0,0,0};
+  int index = -1;
   while((mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-    if(mypatch->IsJetHigh()) fDecisionFromPatches[fSwapThresholds ? kTAEMCJLow : kTAEMCJHigh] = kTRUE;
-    if(mypatch->IsJetLow()) fDecisionFromPatches[fSwapThresholds ? kTAEMCJHigh : kTAEMCJLow] = kTRUE;
-    if(mypatch->IsGammaHigh()) fDecisionFromPatches[fSwapThresholds ? kTAEMCGLow : kTAEMCGHigh] = kTRUE;
-    if(mypatch->IsGammaLow()) fDecisionFromPatches[fSwapThresholds ? kTAEMCGHigh : kTAEMCJLow] = kTRUE;
+    if(mypatch->IsJetHigh()){
+      index = fSwapThresholds ? kTAEMCJLow : kTAEMCJHigh;
+      fDecisionFromPatches[index] = kTRUE;
+      foundpatches[index]++;
+    }
+    if(mypatch->IsJetLow()){
+      index = fSwapThresholds ? kTAEMCJHigh : kTAEMCJLow;
+      fDecisionFromPatches[index] = kTRUE;
+      foundpatches[index]++;
+    }
+    if(mypatch->IsGammaHigh()){
+      index = fSwapThresholds ? kTAEMCGLow : kTAEMCGHigh;
+      fDecisionFromPatches[index] = kTRUE;
+      foundpatches[index]++;
+    }
+    if(mypatch->IsGammaLow()){
+      index = fSwapThresholds ? kTAEMCGHigh : kTAEMCGLow;
+      fDecisionFromPatches[index] = kTRUE;
+      foundpatches[index]++;
+    }
+  }
+  if(fDoDebug){
+    std::cout << "Found patches:" << std::endl;
+    std::cout << "Jet high:    " << foundpatches[kTAEMCJHigh] << std::endl;
+    std::cout << "Jet low:     " << foundpatches[kTAEMCJLow] << std::endl;
+    std::cout << "Gamma high:  " << foundpatches[kTAEMCGHigh] << std::endl;
+    std::cout << "Gamma low:   " << foundpatches[kTAEMCGLow] << std::endl;
   }
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
+
+//______________________________________________________________________________
+void EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
+  /*
+   * Print status of the trigger decision
+   */
+  std::cout << "Trigger decision" << std::endl;
+  std::cout << "===============================" << std::endl;
+  std::cout << "MinBias:                   " << (fIsMinBias ? "yes" : "no") << std::endl;
+  std::string triggertitles[4] = {"Jet High", "Jet Low", "Gamma High", "Gamma Low"};
+  for(int icase = 0; icase < 4; icase++){
+    std::cout << triggertitles[icase] << ": String[" << (fDecisionFromString[icase] ? "yes" : "no")
+        << "], Patches[" << (fDecisionFromPatches[icase] ? "yes" : "no") << "]" << std::endl;
+  }
+}

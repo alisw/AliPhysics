@@ -108,6 +108,9 @@ void AliEMCalTriggerEventCounterAnalysisComponent::Process(const AliEMCalTrigger
   double vz = data->GetRecEvent()->GetPrimaryVertex()->GetZ();
   double triggerCorrelation[5]; memset(triggerCorrelation, 0, sizeof(double) * 5);
 
+  if(fComponentDebugLevel > 2)
+    fTriggerDecision->Print();
+
   if(fTriggerDecision->IsMinBias()){
     triggerCorrelation[0] = 1.;
     fHistos->FillTH1("hEventHistMinBias", vz);

@@ -1,9 +1,10 @@
 void
 TestAuxPAR()
 {
-  gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
   gSystem->Load("libProof");
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+  gSystem->AddIncludePath("-I${ALICE_PHYSICS}/include");
 
   gROOT->LoadMacro("Railway.C++");
   gROOT->LoadMacro("ParUtilities.C++");

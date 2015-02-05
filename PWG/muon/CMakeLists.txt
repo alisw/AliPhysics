@@ -13,8 +13,12 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************/
 
+
 #Module
 set (MODULE PWGmuon)
+
+add_subdirectory(aaf)
+message(STATUS "PWG muon aaf enabled")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon)
@@ -94,8 +98,11 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice AOD CORRFW STEERBase)
+set(LIBDEPS ANALYSISalice AOD CORRFW OADB STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
@@ -116,3 +123,6 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY . DESTINATION PWG/muon FILES_MATCHING PATTERN "*.C")
+
+
+
