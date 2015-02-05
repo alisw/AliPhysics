@@ -681,7 +681,7 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
   lowest_indent_level = None
 
   # Indentation threshold: if too much indented, don't indent at all
-  indent_level_threshold = 15
+  indent_level_threshold = 7
 
   new_comment = []
   insert_blank = False
