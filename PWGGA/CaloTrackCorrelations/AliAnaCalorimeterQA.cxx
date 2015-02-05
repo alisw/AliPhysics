@@ -2824,8 +2824,11 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   // Monte Carlo Histograms
   
-  TString particleName[] = { "Photon","PhotonConv","Pi0", "Eta", "Electron", "NeutralHadron", "ChargedHadron" };
-  
+  TString particleName[] = {
+    "Photon",        "Pi0",         "Eta",
+    "Electron",      "PhotonConv",
+    "NeutralHadron", "ChargedHadron"      };
+
   if(IsDataMC())
   {
     for(Int_t iPart = 0; iPart < 7; iPart++)
