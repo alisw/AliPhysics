@@ -35,6 +35,7 @@
 # - ROOT_HASALIEN - ROOT was built with AliEn support
 # - ROOT_HASOPENGL - ROOT was built with OpenGL support
 # - ROOT_HASXML - ROOT was built with XML support
+# - ROOT_HASMONALISA - ROOT was built with MonAlisa support - needed by SHUTTLE
 # - ROOT_FORTRAN - fortran compiler
 
 set(ROOT_FOUND FALSE)
@@ -229,6 +230,22 @@ if(ROOTSYS)
             set(ROOT_HASXML FALSE)
         endif()
     endif(ROOT_HASXML)
+
+    # Checking for monalisa support
+    execute_process(COMMAND ${ROOT_CONFIG} --has-monalisa OUTPUT_VARIABLE ROOT_HASMONALISA ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error checking if ROOT was built with monalisa support: ${error}")
+    endif(error)
+    
+    # if defined
+    if(ROOT_HASMONALISA)
+        string(STRIP "${ROOT_HASMONALISA}" ROOT_HASMONALISA)
+        if(ROOT_HASMONALISA STREQUAL "yes")
+            set(ROOT_HASMONALISA TRUE)
+        else()
+            set(ROOT_HASMONALISA FALSE)
+        endif()
+    endif(ROOT_HASMONALISA)
 
     # Checking for OpenGL support
     execute_process(COMMAND ${ROOT_CONFIG} --has-opengl OUTPUT_VARIABLE ROOT_HASOPENGL ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )

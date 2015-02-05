@@ -27,6 +27,9 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/CDB
 # DIM include folder and libraries folder
 include_directories(${DIM_INCLUDE_DIR})
 
+# Include ApMon.h needed by ROOT monalisa interface
+include_directories(${ApMon_INCLUDE_DIR})
+
 # Sources in alphabetical order
 set(SRCS
     AliEmptyPreprocessor.cxx
@@ -51,9 +54,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase CDB Core Eve Gui Hist Minuit2 Minuit Net ProofPlayer RIO Spectrum Thread TMVA)
-if(DIM_FOUND)
-    set(LIBDEPS ${LIBDEPS} ${DIM_LIBRARIES})
-endif()
+set(LIBDEPS ${LIBDEPS} ${DIM_LIBRARIES})
 
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 

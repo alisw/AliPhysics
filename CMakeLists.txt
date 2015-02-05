@@ -118,10 +118,12 @@ else()
     find_package(DIM)
   endif()
 
-  if(DIM_FOUND)
-    find_package(DATE)
-  else()
-    message(FATAL_ERROR "DATE enabled but no DIMDIR and ODIR set. Please set DIMDIR and ODIR")
+  if(DATE_CONFIG)
+    if(DIM_FOUND)
+      find_package(DATE)
+    else()
+      message(FATAL_ERROR "DATE enabled but no DIMDIR and ODIR set. Please set DIMDIR and ODIR")
+    endif()
   endif()
 
   # daqDA
@@ -131,7 +133,7 @@ else()
     find_package(daqDA)
   endif(daqDA)
 
-  # AMORE
+  # AMORE -> requires ROOT to be installed
   # Setting variables in cache to be accesible by ccmake
   set(AMORE_CONFIG CACHE STRING "amore-config script location")
   if(AMORE_CONFIG)
@@ -152,33 +154,33 @@ else()
     endif(NOT DA)
   endif(DARPM)
 
-    # DA is enabled
-    # Setting variables in cache to be accesible by ccmake
-    set(ALIROOT_STATIC CACHE STRING "ENABLE static building of AliRoot: ON")
-    if(DA)
-        if(NOT DIM_FOUND)
-            set(DA FALSE)
-            message(FATAL_ERROR "DAs enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
-        endif()
+  # DA is enabled
+  # Setting variables in cache to be accesible by ccmake
+  set(ALIROOT_STATIC CACHE STRING "ENABLE static building of AliRoot: ON")
+  if(DA)
+    if(NOT DIM_FOUND)
+      set(DA FALSE)
+      message(FATAL_ERROR "DAs enabled but no DIMDIR and ODIR set. Please set DIMDIR to DIM installation and ODIR to platform (default linux)")
+    endif()
 
-        if(NOT DATE_FOUND)
-            set(DA FALSE)
-            message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" variable")
-        endif()
+    if(NOT DATE_FOUND)
+      set(DA FALSE)
+      message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" variable")
+    endif()
 
-        if(NOT daqDA_FOUND)
-            set(DA FALSE)
-            message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
-        endif()
+    if(NOT daqDA_FOUND)
+      set(DA FALSE)
+      message(FATAL_ERROR "DAs enabled but no daqDA support found. Please point to your daqDA installation using \"daqDA\" variable")
+    endif()
 
-        if(NOT AMORE_FOUND)
-            set(DA FALSE)
-            message(FATAL_ERROR "DAs enabled but no AMORE support found. Please point to your AMORE installation using \"AMORE_CONFIG\" variable")
-        endif()
+    if(NOT AMORE_FOUND)
+      set(DA FALSE)
+      message(FATAL_ERROR "DAs enabled but no AMORE support found. Please point to your AMORE installation using \"AMORE_CONFIG\" variable")
+    endif()
       
-        # Enable static libraries
-        set(ALIROOT_STATIC TRUE)
-        message(STATUS "DAs enabled")
+    # Enable static libraries
+    set(ALIROOT_STATIC TRUE)
+    message(STATUS "DAs enabled")
   endif(DA)
 
   # MDC rpm creation enables the static build
@@ -319,6 +321,12 @@ else()
   # # Setting variables in cache to be accesible by ccmake
   set(SHUTTLE CACHE STRING "Enable SHUTTLE build : ON")
   if(SHUTTLE)
+    if(NOT ROOT_HASMONALISA)
+        message(FATAL_ERROR "ROOT was not build with MonAlisa support")
+    endif()
+
+    find_package(ApMon)
+
     if(ROOT_HASALIEN STREQUAL "no")
       message(FATAL_ERROR "Shuttle needs ROOT build with AliEn support. Please build ROOT with AliEn support. Do not forget to set ALIEN to your AliEn installation")
     endif()
