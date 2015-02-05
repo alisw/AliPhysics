@@ -282,7 +282,7 @@ def comment_datamember(cursor, comments):
 
   assert found, 'A line that should exist was not found in file' % cursor.location.file
 
-  recomm = r'(//(!|\|\||->)|///?)(\[([0-9,]+)\])?<?\s*(.*?)\s*$'
+  recomm = r'(//(!|\|\||->)|///?)(\[(.+?)\])?<?\s*(.*?)\s*$'
   recomm_prevline = r'^\s*///\s*(.*?)\s*$'
 
   mcomm = re.search(recomm, raw)
