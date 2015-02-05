@@ -468,7 +468,9 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
           break
         comm_idx = comm_idx + 1
       if brief is not None:
-        comment_lines = [ comment_lines[0], '\\brief ' + brief ] + comment_lines[1:comm_idx] + comment_lines[comm_idx+1:]
+        comment_lines = refactor_comment(
+          [ comment_lines[0], '\\brief ' + brief ] + comment_lines[1:comm_idx] + comment_lines[comm_idx+1:],
+          do_strip_html=False, infilename=filename)
 
     logging.debug('Comment found for class %s' % Colt(class_name_doxy).magenta())
     comments.append(Comment(
