@@ -913,8 +913,12 @@ def rewrite_comments(fhin, fhout, comments):
     if comm:
 
       # First thing to check: are we in the same comment as before?
-      if comm is not prev_comm and isinstance(comm, Comment) and isinstance(prev_comm, Comment) \
-        and not isinstance(prev_comm, RemoveComment):
+      if comm is not prev_comm and \
+         isinstance(comm, Comment) and \
+         isinstance(prev_comm, Comment) and \
+         not isinstance(prev_comm, RemoveComment):
+
+        # We are NOT in the same comment as before, and this comment is dumpable
 
         skip_empty = dump_comment_block(prev_comm, restore_lines)
         in_comment = False
@@ -1009,7 +1013,7 @@ def rewrite_comments(fhin, fhout, comments):
           restore_lines.append( line.rstrip('\n') )
 
       else:
-        assert False, 'Unhandled parser state. line=%d comm=%s prev_comm=%s' % \
+        assert False, 'Unhandled parser state: line=%d comm={%s} prev_comm={%s}' % \
           (line_num, comm, prev_comm)
 
     else:
