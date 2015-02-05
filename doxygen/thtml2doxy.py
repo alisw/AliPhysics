@@ -336,8 +336,11 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
 
   reauthor = r'(?i)^\s*\\?(authors?|origin):?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
   redate = r'(?i)^\s*\\?date:?\s*([0-9./-]+)\s*$'
+  rebrief = r'(?i)^\s*\\brief\s*(.*)\s*$'
   author = None
   date = None
+  brief = None
+  brief_len_threshold = 80
 
   comment_lines = []
 
@@ -402,6 +405,11 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
             if mdate:
               date = mdate.group(1)
               append = False
+            else:
+              mbrief = re.search(rebrief, mcomm.group(1))
+              if mbrief:
+                brief = mbrief.group(1)
+                append = False
 
         if append:
           comment_lines.append( mcomm.group(1) )
@@ -428,9 +436,16 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
 
   if start_line > 0:
 
-    # Prepend \class or \file specifier (and an empty line)
-    comment_lines[:0] = [ file_class_line ]
-    comment_lines.append('')
+    prepend_to_comment = []
+
+    # Prepend \class or \file specifier, then the \brief, then an empty line
+    prepend_to_comment.append( file_class_line )
+
+    if brief is not None:
+      prepend_to_comment.append( '\\brief ' + brief )
+    prepend_to_comment.append( '' )
+
+    comment_lines = prepend_to_comment + comment_lines  # join lists
 
     # Append author and date if they exist
     if author is not None:
@@ -440,6 +455,21 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
       comment_lines.append( '\\date ' + date )
 
     comment_lines = refactor_comment(comment_lines, do_strip_html=False, infilename=filename)
+
+    # Now we look for a possible \brief
+    if brief is None:
+      comm_idx = 0
+      for comm in comment_lines:
+        if comm.startswith('\\class') or comm.startswith('\\file') or comm == '':
+          pass
+        else:
+          if len(comm) <= brief_len_threshold:
+            brief = comm
+          break
+        comm_idx = comm_idx + 1
+      if brief is not None:
+        comment_lines = [ comment_lines[0], '\\brief ' + brief ] + comment_lines[1:comm_idx] + comment_lines[comm_idx+1:]
+
     logging.debug('Comment found for class %s' % Colt(class_name_doxy).magenta())
     comments.append(Comment(
       comment_lines,
