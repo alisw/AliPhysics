@@ -992,7 +992,7 @@ def rewrite_comments(fhin, fhout, comments):
           in_comment = False
           restore_lines = None
 
-      elif prev_comm is None:
+      elif restore_lines is None:
 
         # Beginning of a new comment block of type Comment or PrependComment
         in_comment = True
