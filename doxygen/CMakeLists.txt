@@ -30,4 +30,7 @@ if(CAN_GENERATE_DOC)
         VERBATIM
     )
 
+    # install the helper script to generate images from ROOT macros
+    install(PROGRAMS alidoxyimg.sh DESTINATION bin)
+
 endif(CAN_GENERATE_DOC)
