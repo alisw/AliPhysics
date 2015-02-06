@@ -109,6 +109,7 @@ AliReducedJetInfo& AliReducedJetInfo::operator=(const AliReducedJetInfo& ref) {
 
 AliReducedJetInfo::~AliReducedJetInfo() {
 	delete fParticlesInCone;
+	delete fConstituents;
 }
 
 void AliReducedJetInfo::AddParticleInCone(AliReducedJetParticle* part) {
