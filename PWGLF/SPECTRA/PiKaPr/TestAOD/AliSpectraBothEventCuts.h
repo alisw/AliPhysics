@@ -129,7 +129,7 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
  Int_t  GetNMCProcessType() const { return fNMCProcessType;}
  Bool_t  GetEventMCProcessTypeIncluded() const {return fEventMCProcessTypeIncluded;}
  Bool_t  GetCheckTypeofVeretx() const {return fchecktypeofveretxbytitle;}
- Int_t  SetVertexSelection(Int_t flag)const {return fvertexselection;} 
+ Int_t  GetVertexSelection()const {return fvertexselection;} 
  
 
 
