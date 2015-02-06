@@ -1034,7 +1034,7 @@ Int_t AliDhcTask::Correlate(const MiniEvent &evt1, const MiniEvent &evt2, Int_t 
     if (!IsTrigger(etaa,pta))
       continue;
 
-    Int_t abin = fHPtAss->FindBin(pta);
+    Int_t abin = fHPtTrg->FindBin(pta);
 
     // efficiency weighting
     Double_t effWtT = 1.0;
