@@ -380,7 +380,7 @@ Bool_t AliSpectraBothEventCuts::CheckVtx()
    		}
 	
 	}
-	if(fvertexselection>-1&&(vertexflag!=fvertexselection))
+	if(fvertexselection>0&&((vertexflag&fvertexselection)==0))
 		return kFALSE;
 
 
