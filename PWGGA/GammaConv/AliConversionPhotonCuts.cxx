@@ -63,27 +63,29 @@ const char* AliConversionPhotonCuts::fgkCutNames[AliConversionPhotonCuts::kNCuts
 	"V0FinderType",				// 0
 	"EtaCut",					// 1
 	"MinRCut",					// 2
-	"EtaForPhiCut",				// 3
-	"MinPhiCut",				// 4
-	"MaxPhiCut",				// 5
-	"SinglePtCut",				// 3
-	"ClsTPCCut", 				// 4
-	"ededxSigmaCut",			// 5
-	"pidedxSigmaCut",			// 6
-	"piMomdedxSigmaCut",		// 7
-	"piMaxMomdedxSigmaCut",		// 8
-	"LowPRejectionSigmaCut",	// 9
-	"TOFelectronPID",			// 10
-	"QtMaxCut",					// 11
-	"Chi2GammaCut", 			// 12
-	"PsiPair", 					// 13
-	"DoPhotonAsymmetryCut",		// 14
-	"CosinePointingAngle", 		// 15
-	"SharedElectronCuts", 		// 16
-	"RejectToCloseV0s", 		// 17
-	"DcaRPrimVtx", 				// 18
-	"DcaZPrimVtx", 				// 19
-	"EvetPlane" 				// 20
+    "EtaForPhiCut",				// 3
+    "MinPhiCut",				// 4
+    "MaxPhiCut",				// 5
+    "SinglePtCut",				// 6
+    "ClsTPCCut", 				// 7
+    "ededxSigmaCut",			// 8
+    "pidedxSigmaCut",			// 9
+    "piMomdedxSigmaCut",		// 10
+    "piMaxMomdedxSigmaCut",		// 11
+    "LowPRejectionSigmaCut",	// 12
+    "TOFelectronPID",			// 13
+    "ITSelectronPID",			// 14 -- new ITS PID
+	"TRDelectronPID",			// 15 -- new TRD PID
+    "QtMaxCut",					// 16
+    "Chi2GammaCut", 			// 17
+    "PsiPair", 					// 18
+    "DoPhotonAsymmetryCut",		// 19
+    "CosinePointingAngle", 		// 20
+    "SharedElectronCuts", 		// 21
+    "RejectToCloseV0s", 		// 22
+    "DcaRPrimVtx", 				// 23
+    "DcaZPrimVtx", 				// 24
+    "EvetPlane" 				// 25
 };
 
 
@@ -133,7 +135,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 	fPIDnSigmaAtLowPAroundPionLine(0),
 	fPIDMinPKaonRejectionLowP(1.5),
 	fPIDMinPProtonRejectionLowP(2),
-	fPIDMinPPionRejectionLowP(0),
+	fPIDMinPPionRejectionLowP(0),	
+	fTRDPIDAboveCut(100),
+	fTRDPIDBelowCut(-100),
 	fDoQtGammaSelection(kTRUE),
 	fDo2DQt(kFALSE),
 	fQtMax(100),
@@ -175,6 +179,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 	hTOFbefore(NULL),
 	hTOFSigbefore(NULL),
 	hTOFSigafter(NULL),
+	hITSSigbefore(NULL),
+	hITSSigafter(NULL),
 	hPsiPairDeltaPhiafter(NULL),
 	hTrackCuts(NULL),
 	hPhotonCuts(NULL),
@@ -185,7 +191,12 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 	hAcceptanceCuts(NULL),
 	hCutIndex(NULL),
 	hEventPlanePhi(NULL),
-	fPreSelCut(kFALSE)
+	fPreSelCut(kFALSE),
+	fUseITSpid(kFALSE),
+	fITSPIDnSigmaAboveElectronLine(100),
+	fITSPIDnSigmaBelowElectronLine(-100),
+    fMaxPtPIDITS(1.5)
+	
 {
 	InitPIDResponse();
 	for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -241,6 +252,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
 	fPIDMinPKaonRejectionLowP(ref.fPIDMinPKaonRejectionLowP),
 	fPIDMinPProtonRejectionLowP(ref.fPIDMinPProtonRejectionLowP),
 	fPIDMinPPionRejectionLowP(ref.fPIDMinPPionRejectionLowP),
+	fTRDPIDAboveCut(ref.fTRDPIDAboveCut),
+	fTRDPIDBelowCut(ref.fTRDPIDBelowCut),
 	fDoQtGammaSelection(ref.fDoQtGammaSelection),
 	fDo2DQt(ref.fDo2DQt),
 	fQtMax(ref.fQtMax),
@@ -282,6 +295,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
 	hTOFbefore(NULL),
 	hTOFSigbefore(NULL),
 	hTOFSigafter(NULL),
+	hITSSigbefore(NULL),
+	hITSSigafter(NULL),
 	hPsiPairDeltaPhiafter(NULL),
 	hTrackCuts(NULL),
 	hPhotonCuts(NULL),
@@ -292,7 +307,11 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
 	hAcceptanceCuts(NULL),
 	hCutIndex(NULL),
 	hEventPlanePhi(NULL),
-	fPreSelCut(ref.fPreSelCut)
+	fPreSelCut(ref.fPreSelCut),
+	fUseITSpid(ref.fUseITSpid),
+	fITSPIDnSigmaAboveElectronLine(ref.fITSPIDnSigmaAboveElectronLine),
+	fITSPIDnSigmaBelowElectronLine(ref.fITSPIDnSigmaBelowElectronLine),
+    fMaxPtPIDITS(ref.fMaxPtPIDITS)
 {
 	// Copy Constructor
 	for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -406,7 +425,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 	fHistograms->Add(hAcceptanceCuts);
 
 	// dEdx Cuts
-	hdEdxCuts=new TH1F(Form("dEdxCuts %s",GetCutNumber().Data()),"dEdxCuts",10,-0.5,9.5);
+	hdEdxCuts=new TH1F(Form("dEdxCuts %s",GetCutNumber().Data()),"dEdxCuts",11,-0.5,10.5);
 	hdEdxCuts->GetXaxis()->SetBinLabel(1,"in");
 	hdEdxCuts->GetXaxis()->SetBinLabel(2,"TPCelectron");
 	hdEdxCuts->GetXaxis()->SetBinLabel(3,"TPCpion");
@@ -415,14 +434,16 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 	hdEdxCuts->GetXaxis()->SetBinLabel(6,"TPCprotonlowprej");
 	hdEdxCuts->GetXaxis()->SetBinLabel(7,"TPCpionlowprej");
 	hdEdxCuts->GetXaxis()->SetBinLabel(8,"TOFelectron");
-	hdEdxCuts->GetXaxis()->SetBinLabel(9,"TRDelectron");
-	hdEdxCuts->GetXaxis()->SetBinLabel(10,"out");
+	hdEdxCuts->GetXaxis()->SetBinLabel(9,"ITSelectron");
+	hdEdxCuts->GetXaxis()->SetBinLabel(10,"TRDelectron");
+	hdEdxCuts->GetXaxis()->SetBinLabel(11,"out");
 	fHistograms->Add(hdEdxCuts);
 
 	TAxis *AxisBeforedEdx = NULL;
 	TAxis *AxisBeforedEdxSig = NULL;
 	TAxis *AxisBeforeTOF = NULL;
 	TAxis *AxisBeforeTOFSig = NULL;
+	TAxis *AxisBeforeITSSig = NULL;
 	if(preCut){
 		hTPCdEdxbefore=new TH2F(Form("Gamma_dEdx_before %s",GetCutNumber().Data()),"dEdx Gamma before" ,150,0.03,20,800,0,200);
 		fHistograms->Add(hTPCdEdxbefore);
@@ -437,6 +458,12 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 		hTOFSigbefore=new TH2F(Form("Gamma_TOFSig_before %s",GetCutNumber().Data()),"TOF Sigma Gamma before" ,150,0.03,20,400,-6,10);
 		fHistograms->Add(hTOFSigbefore);
 		AxisBeforeTOFSig = hTOFSigbefore->GetXaxis();
+		
+		hITSSigbefore=new TH2F(Form("Gamma_ITSSig_before %s",GetCutNumber().Data()),"ITS Sigma Gamma before" ,150,0.03,20,400,-10,10);
+		fHistograms->Add(hITSSigbefore);
+		AxisBeforeITSSig = hITSSigbefore->GetXaxis();
+		
+
 
 	}
 	hTPCdEdxSigafter=new TH2F(Form("Gamma_dEdxSig_after %s",GetCutNumber().Data()),"dEdx Sigma Gamma after" ,150,0.03,20,400, -10,10);
@@ -448,11 +475,16 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 	hTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
 	fHistograms->Add(hTOFSigafter);
 
+	hITSSigafter=new TH2F(Form("Gamma_ITSSig_after %s",GetCutNumber().Data()),"ITS Sigma Gamma after" ,150,0.03,20,400,-10,10);
+    fHistograms->Add(hITSSigafter);
+	
 	hEtaDistV0sAfterdEdxCuts = new TH1F(Form("Eta_afterdEdx %s",GetCutNumber().Data()),"Eta_afterdEdx",2000,-2,2);
 	fHistograms->Add(hEtaDistV0sAfterdEdxCuts);
 
 	hPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
 	fHistograms->Add(hPsiPairDeltaPhiafter);
+	
+	
 
 	TAxis *AxisAfter = hTPCdEdxSigafter->GetXaxis();
 	Int_t bins = AxisAfter->GetNbins();
@@ -467,11 +499,14 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 	AxisAfter->Set(bins, newBins);
 	AxisAfter = hTPCdEdxafter->GetXaxis();
 	AxisAfter->Set(bins, newBins);
+	AxisAfter = hITSSigafter->GetXaxis();
+	AxisAfter->Set(bins, newBins);
 	if(preCut){
 		AxisBeforedEdx->Set(bins, newBins);
 		AxisBeforeTOF->Set(bins, newBins);
 		AxisBeforedEdxSig->Set(bins, newBins);
 		AxisBeforeTOFSig->Set(bins, newBins);
+		AxisBeforeITSSig->Set(bins, newBins);
 	}
 	delete [] newBins;
 
@@ -1215,6 +1250,21 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 		if(hTOFSigafter)hTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
 	}
 	cutIndex++;
+	
+    if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)){
+		if(hITSSigbefore) hITSSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+		if(fUseITSpid){
+			if(fCurrentTrack->Pt()<=fMaxPtPIDITS){
+				if(fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)>fITSPIDnSigmaAboveElectronLine || fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)<fITSPIDnSigmaBelowElectronLine ){
+					if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			}
+			if(hITSSigafter)hITSSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+        }
+    }
+    cutIndex++;
+	
 	// Apply TRD PID
 	if(fDoTRDPID){
 		if(!fPIDResponse->IdentifiedAsElectronTRD(fCurrentTrack,fPIDTRDEfficiency)){
@@ -1621,7 +1671,21 @@ Bool_t AliConversionPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
+			
+		case kITSelectronPID:
+		if( SetITSElectronPIDCut(value)) {
+			fCuts[kITSelectronPID] = value;
+			UpdateCutString();
+			return kTRUE;
+		} else return kFALSE;
 
+		case kTRDelectronPID:
+		if( SetTRDElectronPIDCut(value)) {
+			fCuts[kTRDelectronPID] = value;
+			UpdateCutString();
+			return kTRUE;
+		} else return kFALSE;
+		
 		case kNCuts:
 			AliError("Cut id out of range");
 			return kFALSE;
@@ -1663,6 +1727,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
 	if (fDoKaonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundKaonLine, fPIDnSigmaAtLowPAroundKaonLine );
 	if (fDoProtonRejectionLowP) printf("\t reject: -%3.2f < n sigma_{K,TPC} < %3.2f\n", fPIDnSigmaAtLowPAroundProtonLine, fPIDnSigmaAtLowPAroundProtonLine );
 	if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
+    if (fUseITSpid) printf("\t accept: %3.2f < n sigma_{e,ITS} < %3.2f\n -- up to pT %3.2f", fITSPIDnSigmaBelowElectronLine, fITSPIDnSigmaAboveElectronLine, fMaxPtPIDITS);
 	
 	printf("Photon cuts: \n");
 	if (fUseOnFlyV0Finder) printf("\t using Onfly V0 finder \n");
@@ -1905,15 +1970,15 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 		break;
 	case 5:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMinPhiCut = 2.0; //OROC C08 small cut 
+		fMinPhiCut = 2.0; //OROC C08 medium cut 
 		break;
 	case 6:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMinPhiCut = 2.4; //OROC C08 medium cut
+		fMinPhiCut = 2.2; //OROC C08 small cut
 		break;
 	case 7:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMinPhiCut = 2.2; //OROC C08 on top cut
+		fMinPhiCut = 2.4; //OROC C08 tightest cut
 		break;
 		
 	default:
@@ -1955,11 +2020,11 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 		break;
 	case 6:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMaxPhiCut = 3.6; //OROC C08 small cut
+		fMaxPhiCut = 3.8; //OROC C08 small cut
 		break;
 	case 7:
 		if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
-		fMaxPhiCut = 3.8; //OROC C08 on top cut
+		fMaxPhiCut = 3.6; //OROC C08 tighest cut
 		break;
 		
 	default:
@@ -2339,6 +2404,94 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
 	}
 	return kTRUE;
 }
+
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::SetITSElectronPIDCut(Int_t ITSelectronPID){
+    // Set Cut
+    switch(ITSelectronPID){
+        case 0: // no cut
+            fUseITSpid = kFALSE;
+            fITSPIDnSigmaBelowElectronLine=-100;
+            fITSPIDnSigmaAboveElectronLine=100;
+            fMaxPtPIDITS = 1.5;
+            break;
+        case 1: // -3,3
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-3;
+            fITSPIDnSigmaAboveElectronLine=3;
+            fMaxPtPIDITS = 1.5;
+            break;
+        case 2: // -2,2
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-2;
+            fITSPIDnSigmaAboveElectronLine=2;
+            fMaxPtPIDITS = 1.5;
+            break;
+        case 3: // -1,1
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-1;
+            fITSPIDnSigmaAboveElectronLine=1;
+            fMaxPtPIDITS = 1.5;
+            break;
+        case 4: // -3,5
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-3;
+            fITSPIDnSigmaAboveElectronLine=5;
+            fMaxPtPIDITS = 1.5;
+            break;
+        case 5: // -5,5
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-5;
+            fITSPIDnSigmaAboveElectronLine=5;
+            fMaxPtPIDITS = 1.5;
+            break;
+        case 6: // -3,3
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-3;
+            fITSPIDnSigmaAboveElectronLine=3;
+            fMaxPtPIDITS = 2;
+            break;
+        case 7: // -2,2
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-2;
+            fITSPIDnSigmaAboveElectronLine=2;
+            fMaxPtPIDITS = 2;
+            break;
+        case 8: // -1,1
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-1;
+            fITSPIDnSigmaAboveElectronLine=1;
+            fMaxPtPIDITS = 2;
+            break;
+        case 9: // -3,5
+            fUseITSpid = kTRUE;
+            fITSPIDnSigmaBelowElectronLine=-3;
+            fITSPIDnSigmaAboveElectronLine=5;
+            fMaxPtPIDITS = 2;
+            break;
+        default:
+            AliError(Form("ITSelectronPID not defined %d",ITSelectronPID));
+            return kFALSE;
+    }
+    return kTRUE;
+}
+
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::SetTRDElectronPIDCut(Int_t TRDelectronPID){
+    // Set Cut
+    switch(TRDelectronPID){
+        case 0: // no cut
+            fDoTRDPID = kFALSE;
+            fTRDPIDBelowCut=-100;
+            fTRDPIDAboveCut=100;
+            break;
+        default:
+            AliError(Form("TRDelectronPID not defined %d",TRDelectronPID));
+            return kFALSE;
+    }
+    return kTRUE;
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::SetQtMaxCut(Int_t QtMaxCut)

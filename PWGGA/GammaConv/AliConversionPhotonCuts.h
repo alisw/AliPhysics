@@ -53,7 +53,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 			kpiMomdedxSigmaCut,        
 			kpiMaxMomdedxSigmaCut,        
 			kLowPRejectionSigmaCut,       
-			kTOFelectronPID,              
+			kTOFelectronPID, 
+			kITSelectronPID,
+			kTRDelectronPID,
 			kQtMaxCut,                    
 			kchi2GammaCut,                
 			kPsiPair, 
@@ -187,7 +189,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Bool_t SetInPlaneOutOfPlane(Int_t inOutPlane);
 		void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
 		Int_t GetFirstTPCRow(Double_t radius);
-
+		
+	    Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
+		Bool_t SetTRDElectronPIDCut(Int_t TRDelectronPID);
+		
 		// Request Flags
 		Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
 		Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
@@ -271,6 +276,16 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Float_t 		fConversionPointZArray; 				// Array with conversion Point z
 		TObjString 		*fCutString; 							// cut number used for analysis
 		Int_t			fIsHeavyIon;							// flag for pp (0), PbPb (1), pPb (2)
+		Bool_t 			fUseITSpid; 							// flag to use tof pid		
+	    Double_t 		fITSPIDnSigmaAboveElectronLine;			// sigma cut RRnewTOF
+		Double_t 		fITSPIDnSigmaBelowElectronLine;			// sigma cut RRnewTOF
+	    Double_t        fMaxPtPIDITS;                           //max pt for ITS PID
+
+		
+	    Double_t 		fTRDPIDBelowCut;						// TRD cut range
+		Double_t 		fTRDPIDAboveCut;						// TRD cut range
+
+
 		
 		// Histograms
 		TH1F			*hEtaDistV0s; 							// eta-distribution of all V0s after Finder selection
@@ -294,6 +309,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		TH1F 			*hCutIndex; 							// bookkeeping for cuts
 		TH1F 			*hEventPlanePhi; 						// EventPlaneAngle Minus Photon Angle
 		Bool_t 			fPreSelCut; 							// Flag for preselection cut used in V0Reader
+		
+	    TH2F		 	*hITSSigbefore; 						// ITS Sigma before cuts
+		TH2F 			*hITSSigafter; 							// ITS Sigma after cuts
 
 	private:
 	
