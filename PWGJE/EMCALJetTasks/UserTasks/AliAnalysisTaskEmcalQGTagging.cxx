@@ -307,7 +307,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
             fShapesVar[0] = partonsInfo->GetPartonFlag7();
             fPtJetCorr->Fill(partonsInfo->GetPartonPt7(), jet2->Pt());
           }
-          else continue;
+          else fShapesVar[0]=0;
         }
       }
       else
