@@ -2314,8 +2314,7 @@ void AliFourPion::UserExec(Option_t *)
   //
   if(fq2Binning){// bin in q2
     if(qVect2[fq2Index] < fq2CutLow) fEDbin = 0;
-    else if (qVect2[fq2Index] > fq2CutHigh) fEDbin = 1;
-    else return;
+    else fEDbin = 1;
   }
   Int_t Inq1=0, Inq2=0;
   if(qVect1[fq2Index] > 0.5 && qVect1[fq2Index] < 1.5) Inq1=1;
@@ -2969,7 +2968,7 @@ void AliFourPion::UserExec(Option_t *)
 	      }// MC case
 	      
 		
-
+	      
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
 		if(en3==0) {
@@ -3104,7 +3103,7 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		}
 		
-		// r3 denominator
+		// C3 Building
 		if(ENsum==6 && ch1==ch2 && ch1==ch3 && fCollisionType==0){
 		  Positive1stTripletWeights = kTRUE;
 		  //
@@ -3219,7 +3218,7 @@ void AliFourPion::UserExec(Option_t *)
 		    
 		  }// 1st r3 den check
 		  
-		}// r3 den
+		}// C3 Building section end
 		
 	      
 		if(ch1==ch2 && ch1==ch3){
@@ -3355,7 +3354,7 @@ void AliFourPion::UserExec(Option_t *)
 		
 		
 		
-
+	
 		/////////////////////////////////////////////////////////////
 		for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
 		  if(en4==0){
@@ -3481,7 +3480,7 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  /////////////////////////////////////////////////////////////
 		  // C4 building
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 ){
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 && !fMCcase){
 		    if(fCollisionType==0){
 		      Positive2ndTripletWeights=kTRUE;
 		      //
