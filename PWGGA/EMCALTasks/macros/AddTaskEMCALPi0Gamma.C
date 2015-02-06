@@ -9,10 +9,13 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       Bool_t qf = 0, 
 				      Double_t asym1 = 0.3, 
                                       Double_t asym2 = 0.7, 
-                                      Double_t minE = 0.3, 
+                                      Double_t minE = 0.4, 
                                       Double_t minecc = -10, 
                                       Int_t ncells = 2, 
-                                      Bool_t bunfold = 0)
+                                      Bool_t bunfold = 0,
+				      Double_t cutm02 = 100,
+				      Double_t cutchi2 = -1,
+				      Bool_t dotrmsmpl = 0)
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -66,6 +69,9 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetMcMode(mcmode);
   task->SetAddedSignal(addsig);
   task->SetFillNtuple(0);
+  task->SetM02Cut(cutm02);
+  task->SetMinEcc(cutchi2);
+  task->SetTrackMatchSimple(dotrmsmpl);
   mgr->AddTask(task);
   
   char name[256];
