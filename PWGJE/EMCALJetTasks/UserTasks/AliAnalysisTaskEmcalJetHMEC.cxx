@@ -827,7 +827,7 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* track
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Double_t trackPT, Int_t effSwitch) const {
+Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t trackPT, Int_t effSwitch) const {
   // default (current) parameters
   // x-variable = track pt, y-variable = track eta
   Double_t x = trackPT;
