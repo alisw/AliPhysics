@@ -683,7 +683,7 @@ Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::Pseudo
 {
   for (UInt_t ii = 0; ii < constituents_unsub.size(); ii++) {
     Double_t phi_unsub = constituents_unsub[ii].phi();
-    if (phi_sub == phi_unsub) return constituents_unsub[ii].user_index();
+    if (TMath::Abs(phi_sub-phi_unsub)<0.6) return constituents_unsub[ii].user_index();
   }
 
   return -1;
