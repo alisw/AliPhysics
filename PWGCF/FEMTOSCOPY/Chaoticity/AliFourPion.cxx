@@ -114,6 +114,7 @@ AliAnalysisTaskSE(),
   fQmean(),
   fDampStart(0),
   fDampStep(0),
+  fChargeSelection(kFALSE),
   fq2Binning(0),
   fq2Index(0),
   fq2CutLow(0.1),
@@ -317,6 +318,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fQmean(),
   fDampStart(0),
   fDampStep(0),
+  fChargeSelection(kFALSE),
   fq2Binning(0),
   fq2Index(0),
   fq2CutLow(0.1),
@@ -525,6 +527,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fQmean(),
     fDampStart(obj.fDampStart),
     fDampStep(obj.fDampStep),
+    fChargeSelection(obj.fChargeSelection),
     fq2Binning(obj.fq2Binning),
     fq2Index(obj.fq2Index),
     fq2CutLow(obj.fq2CutLow),
@@ -669,6 +672,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fQstepWeights = obj.fQstepWeights;
   fDampStart = obj.fDampStart;
   fDampStep = obj.fDampStep;
+  fChargeSelection = obj.fChargeSelection;
   fq2Binning = obj.fq2Binning;
   fq2Index = obj.fq2Index;
   fq2CutLow = obj.fq2CutLow;
@@ -2287,7 +2291,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t qVect2[4]={0};
   Float_t Psi2[4]={0};
   for(Int_t i=0; i<myTracks; i++){
-    if(fTempStruct[i].fCharge !=+1) continue;
+    if(fChargeSelection && fTempStruct[i].fCharge !=-1) continue;
 
     if(fTempStruct[i].fPt < 0.28) qindex=0;
     else if(fTempStruct[i].fPt < 0.4) qindex=1;
@@ -2534,6 +2538,7 @@ void AliFourPion::UserExec(Option_t *)
 	  }
 	  /////////////////////////////////////////////////////
 	  if(fTabulatePairs && en1==0 && en2<=1 && bin1==bin2){
+	    if(fChargeSelection && (fEvt+en1)->fTracks[i].fCharge !=-1) continue;
 	    Float_t kY = 0;
 	    Int_t kTbin=-1, kYbin=-1;
 	    Bool_t PairToReject=kFALSE;
@@ -2550,7 +2555,6 @@ void AliFourPion::UserExec(Option_t *)
 		KT[kTbin].KY[kYbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
 	      }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	    }
-	   
 	  }
 	  
 	  //////////////////////////////////////////////////////////////////////////////
