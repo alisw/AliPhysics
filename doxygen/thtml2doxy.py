@@ -329,7 +329,7 @@ def comment_datamember(cursor, comments):
 #  @param look_no_further_than_line Stop before reaching this line when looking for class comment
 def comment_classdesc(filename, comments, look_no_further_than_line):
 
-  recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
+  recomm = r'^\s*///?(\s*(.*?))\s*/*\s*$'
 
   reclass_doxy = r'(?i)^\s*\\(class|file):?\s*([^.]*)'
   class_name_doxy = None
@@ -367,8 +367,33 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
         continue
 
       stripped = strip_html(raw)
-      mcomm = re.search(recomm, stripped)
-      if mcomm:
+      mcomm = None
+      this_comment = None
+
+      if not in_mlcomm:
+        mcomm = re.search(recomm, stripped)
+
+      if last_comm_line_num == 0 or last_comm_line_num == line_num-1:
+
+        if mcomm and not mcomm.group(2).startswith('#'):
+          # Single-line comment
+          this_comment = mcomm.group(1)
+        elif start_line > -1:
+          # Not a single-line comment. But it cannot be the first.
+          if in_mlcomm == False:
+            mmlcomm = re.search(remlcomm_in, stripped)
+            if mmlcomm:
+              in_mlcomm = True
+              this_comment = ''
+          else:
+            mmlcomm = re.search(remlcomm_out, stripped)
+            if mmlcomm:
+              in_mlcomm = False
+              this_comment = ''
+            else:
+              this_comment = stripped
+
+      if this_comment is not None:
 
         if start_line == -1:
 
