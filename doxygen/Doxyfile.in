@@ -773,7 +773,8 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC/scripts/OCDBscan \
                          @CMAKE_SOURCE_DIR@/TPC/scripts/OCDBscan/jdl \
                          @CMAKE_SOURCE_DIR@/TPC/stressTest/testSparse \
-                         @CMAKE_SOURCE_DIR@/TPC/testMC
+                         @CMAKE_SOURCE_DIR@/TPC/testMC \
+                         @CMAKE_SOURCE_DIR@/TPC/TPCbase
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -865,7 +866,8 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = @CMAKE_SOURCE_DIR@/picts
+IMAGE_PATH             = @CMAKE_SOURCE_DIR@/picts \
+                         @CMAKE_SOURCE_DIR@/TPC/TPCbase/imgdoc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
