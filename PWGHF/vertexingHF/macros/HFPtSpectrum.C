@@ -43,6 +43,7 @@ enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
+enum particularity{ knone, kLowPt };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
@@ -52,7 +53,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false,
 		    Int_t ccestimator = kV0M,
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
-		    Int_t rapiditySlice=kdefault) {
+		    Int_t rapiditySlice=kdefault, Int_t analysisSpeciality=knone) {
 
 
   gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -172,7 +173,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       tab = 0.0369; tabUnc = 0.0085;
     }
   }
-
 
   tab *= 1e-9; // to pass from mb^{-1} to pb^{-1}
   tabUnc *= 1e-9;
@@ -305,7 +305,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TFile * recofile = new TFile(recofilename,"read");
   hRECpt = (TH1D*)recofile->Get(recohistoname);
   hRECpt->SetNameTitle("hRECpt","Reconstructed spectra");
-
   //
   // Read the file of the EP resolution correction
   TFile *EPf=0;
@@ -411,7 +410,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if ( (cc != kpp7) && (cc != kpp276) ) {
     spectra->SetTabParameter(tab,tabUnc);
   }
-
+  if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+    spectra->SetCollisionType(2);
+  } else if ( !( cc==kpp7 || cc==kpp276 ) ) {
+    spectra->SetCollisionType(1);
+  }
+  
   // Do the calculations
   cout << " Doing the calculation... "<< endl;
   Double_t deltaY = 1.0;
@@ -475,8 +479,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       return;
     }
   } else { systematics->SetCollisionType(0); }
+  if(analysisSpeciality==kLowPt){
+    systematics->SetIsLowPtAnalysis(true);
+  }
   //
   systematics->Init(decay);
+
   spectra->ComputeSystUncertainties(systematics,combineFeedDown);
 
   //
