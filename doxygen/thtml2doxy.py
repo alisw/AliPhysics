@@ -321,15 +321,26 @@ def comment_datamember(cursor, comments):
 #  before any other comment found so far in the file (the comments array is inspected to ensure
 #  this).
 #
-#  Multi-line comments (/* ... */) are not considered as they are commonly used to display
-#  copyright notice.
+#  Multi-line comments (/* ... */) that *immediately* follow a series of single-line comments
+#  (*i.e.* without empty lines in-between) are also considered. A class description can eventually
+#  be a series of single-line and multi-line comments, with no blank spaces between them, and always
+#  starting with a single-line sequence.
+#
+#  The reason why they cannot start with a multi-line sequence is that those are commonly used to
+#  display a copyright notice.
 #
 #  @param filename Name of the current file
 #  @param comments Array of comments: new ones will be appended there
 #  @param look_no_further_than_line Stop before reaching this line when looking for class comment
 def comment_classdesc(filename, comments, look_no_further_than_line):
 
+  # Single-line comment
   recomm = r'^\s*///?(\s*(.*?))\s*/*\s*$'
+
+  # Multi-line comment (only either /* or */ on a single line)
+  remlcomm_in = r'^\s*/\*\s*$'
+  remlcomm_out = r'^\s*\*/\s*$'
+  in_mlcomm = False
 
   reclass_doxy = r'(?i)^\s*\\(class|file):?\s*([^.]*)'
   class_name_doxy = None
@@ -348,6 +359,7 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
   end_line = -1
 
   line_num = 0
+  last_comm_line_num = 0
 
   is_macro = filename.endswith('.C')
 
@@ -362,7 +374,7 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
           look_no_further_than_line)
         break
 
-      if raw.strip() == '' and start_line > 0:
+      if in_mlcomm == False and raw.strip() == '' and start_line > 0:
         # Skip empty lines
         continue
 
@@ -413,12 +425,12 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
         end_line = line_num
         append = True
 
-        mclass_doxy = re.search(reclass_doxy, mcomm.group(1))
+        mclass_doxy = re.search(reclass_doxy, this_comment)
         if mclass_doxy:
           class_name_doxy = mclass_doxy.group(2)
           append = False
         else:
-          mauthor = re.search(reauthor, mcomm.group(1))
+          mauthor = re.search(reauthor, this_comment)
           if mauthor:
             author = mauthor.group(2)
             if date is None:
@@ -426,22 +438,25 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
               date = mauthor.group(4)
             append = False
           else:
-            mdate = re.search(redate, mcomm.group(1))
+            mdate = re.search(redate, this_comment)
             if mdate:
               date = mdate.group(1)
               append = False
             else:
-              mbrief = re.search(rebrief, mcomm.group(1))
+              mbrief = re.search(rebrief, this_comment)
               if mbrief:
                 brief = mbrief.group(1)
                 append = False
 
         if append:
-          comment_lines.append( mcomm.group(1) )
+          comment_lines.append( this_comment )
 
       else:
         if start_line > 0:
           break
+
+      # This line had a valid comment
+      last_comm_line_num = line_num
 
   if class_name_doxy is None:
 
@@ -478,6 +493,19 @@ def comment_classdesc(filename, comments, look_no_further_than_line):
 
     if date is not None:
       comment_lines.append( '\\date ' + date )
+
+    # We should erase the "dumb" comments, such as "<class_name> class"
+    comm_idx = 0
+    regac = r'\s*%s\s+class\.?\s*' % class_name_doxy
+    mgac = None
+    for comm in comment_lines:
+      mgac = re.search(regac, comm)
+      if mgac:
+        break
+      comm_idx = comm_idx + 1
+    if mgac:
+      logging.debug('Removing dumb comment line: {%s}' % Colt(comment_lines[comm_idx]).magenta())
+      del comment_lines[comm_idx]
 
     comment_lines = refactor_comment(comment_lines, do_strip_html=False, infilename=filename)
 
