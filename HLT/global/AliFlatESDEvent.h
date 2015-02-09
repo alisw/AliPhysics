@@ -92,7 +92,8 @@ class AliFlatESDEvent :public AliVEvent {
   
   Int_t  SetPrimaryVertexTracks( const AliESDVertex *v, size_t allocatedVtxMemory );
   Int_t  SetPrimaryVertexSPD( const AliESDVertex *v, size_t allocatedVtxMemory  );
-
+  Int_t  SetPrimaryVertexTPC( const AliESDVertex *v, size_t allocatedVtxMemory );
+ 
   AliFlatESDTrigger *SetTriggersStart();
   void SetTriggersEnd( Int_t nTriggerClasses, size_t triggersSize );
 
@@ -107,6 +108,7 @@ class AliFlatESDEvent :public AliVEvent {
 
   const AliFlatESDVertex* GetFlatPrimaryVertexSPD() const ;
   const AliFlatESDVertex* GetFlatPrimaryVertexTracks() const ;
+  const AliFlatESDVertex* GetFlatPrimaryVertexTPC() const ;
 
   Int_t GetNumberOfTriggerClasses() const { return fNTriggerClasses; }
    
@@ -180,7 +182,6 @@ class AliFlatESDEvent :public AliVEvent {
   ULong64_t  fTriggerMaskNext50;      // Trigger mask, next 50 bits
 
   UInt_t  fNTriggerClasses;  // N trigger classes
-  UInt_t  fNPrimaryVertices; // Number of primary vertices in array
   UInt_t  fNTracks;          // Number of tracks in array
   UInt_t  fNV0s;             // Number of v0's
   
@@ -188,6 +189,7 @@ class AliFlatESDEvent :public AliVEvent {
   
   size_t fTriggerPointer;        // position of the first trigger description in fContent
   size_t fPrimaryVertexTracksPointer; // position of primary vertex tracks in fContent
+  size_t fPrimaryVertexTPCPointer; // position of primary vertex TPC in fContent
   size_t fPrimaryVertexSPDPointer;  // position of primary vertex SPD in fContent
   size_t fTrackTablePointer;     // position of the first track pointer in fContent
   size_t fTracksPointer;         // position of the first track in fContent
@@ -279,6 +281,11 @@ inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexSPD() const
   return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexSPDPointer) : NULL;
 } 
 
+inline const AliFlatESDVertex* AliFlatESDEvent::GetFlatPrimaryVertexTPC() const 
+{ 
+  return (fPrimaryVertexMask & 0x4) ? (reinterpret_cast<const AliFlatESDVertex*>(fContent + fPrimaryVertexTPCPointer)  ) : NULL;
+} 
+
 inline Int_t AliFlatESDEvent::GetPrimaryVertexSPD( AliESDVertex &v ) const 
 {
   const AliFlatESDVertex* flatVertex = GetFlatPrimaryVertexSPD();
@@ -295,14 +302,18 @@ inline Int_t AliFlatESDEvent::GetPrimaryVertexTracks( AliESDVertex &v ) const
   return 0;
 }
 
-inline Int_t AliFlatESDEvent::GetPrimaryVertexTPC( AliESDVertex &/*v*/ ) const 
+inline Int_t AliFlatESDEvent::GetPrimaryVertexTPC( AliESDVertex &v ) const 
 {
-  return -1;
+  const AliFlatESDVertex* flatVertex = GetFlatPrimaryVertexTPC();
+  if( !flatVertex ) return -1;
+  flatVertex->GetESDVertex( v );
+  return 0;
 }
 
 inline Int_t AliFlatESDEvent::GetPrimaryVertex( AliESDVertex &v ) const 
 {
   int ret = GetPrimaryVertexTracks( v );
+  if( ret<0 ) ret = GetPrimaryVertexTPC( v );
   if( ret<0 ) ret = GetPrimaryVertexSPD( v );
   return ret;
 }

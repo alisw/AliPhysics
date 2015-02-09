@@ -81,11 +81,11 @@ AliFlatESDEvent::AliFlatESDEvent()
   fTriggerMask(0),
   fTriggerMaskNext50(0),
   fNTriggerClasses(0),
-  fNPrimaryVertices(0),
   fNTracks(0),
   fNV0s(0),
   fTriggerPointer(0),
   fPrimaryVertexTracksPointer(0),
+  fPrimaryVertexTPCPointer(0),
   fPrimaryVertexSPDPointer(0),
   fTrackTablePointer(0),
   fTracksPointer(0),
@@ -121,6 +121,10 @@ AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ )
   if( fPrimaryVertexMask & 0x2 ){
     AliFlatESDVertex *vtxTracks = reinterpret_cast<AliFlatESDVertex*>(fContent + fPrimaryVertexTracksPointer);
     vtxTracks->Reinitialize();
+  }
+  if( fPrimaryVertexMask & 0x4 ){
+    AliFlatESDVertex *vtxTPC = reinterpret_cast<AliFlatESDVertex*>(fContent + fPrimaryVertexTPCPointer);
+    vtxTPC->Reinitialize();
   }
 
   // Reinitialise tracks 
@@ -178,11 +182,11 @@ void AliFlatESDEvent::Reset()
   fTriggerMask = 0;
   fTriggerMaskNext50 = 0;
   fNTriggerClasses = 0;
-  fNPrimaryVertices = 0;
   fNTracks = 0;
   fNV0s = 0;
   fTriggerPointer = 0;
   fPrimaryVertexTracksPointer = 0;
+  fPrimaryVertexTPCPointer = 0;
   fPrimaryVertexSPDPointer = 0;
   fTrackTablePointer = 0;
   fTracksPointer = 0;
@@ -226,6 +230,20 @@ Int_t AliFlatESDEvent::SetPrimaryVertexSPD( const AliESDVertex *vtx, size_t allo
   if( allocatedVtxMemory < sizeof(AliFlatESDVertex) ) return -1;
   fPrimaryVertexMask |= 0x2;
   fPrimaryVertexSPDPointer = fContentSize;
+  AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
+  flatVtx->SetFromESDVertex( *vtx );
+  fContentSize += flatVtx->GetSize();
+  return 0;
+}
+
+Int_t AliFlatESDEvent::SetPrimaryVertexTPC( const AliESDVertex *vtx, size_t allocatedVtxMemory )
+{
+  // fill primary vertex tracks
+  if( !vtx ) return 0;
+  if(!vtx->GetStatus()) return 0;
+  if( allocatedVtxMemory < sizeof(AliFlatESDVertex) ) return -1;
+  fPrimaryVertexMask |= 0x4;
+  fPrimaryVertexTPCPointer = fContentSize;
   AliFlatESDVertex *flatVtx = reinterpret_cast<AliFlatESDVertex*> (fContent + fContentSize);
   flatVtx->SetFromESDVertex( *vtx );
   fContentSize += flatVtx->GetSize();
@@ -287,6 +305,10 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
   // fill primary vertices
 
   err = SetPrimaryVertexTracks( esd->GetPrimaryVertexTracks(), freeSpace );
+  if( err!=0 ) return err;
+  freeSpace = allocatedMemorySize - GetSize();
+
+  err = SetPrimaryVertexTPC( esd->GetPrimaryVertexTPC(), freeSpace );
   if( err!=0 ) return err;
   freeSpace = allocatedMemorySize - GetSize();
 
