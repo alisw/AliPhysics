@@ -140,7 +140,26 @@ bool AliStorageDatabase::UpdateEventPath(struct eventStruct event,const char *ne
 
 vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct list)
 {
-	TSQLResult *result = fServer->Query(Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') ORDER BY run_number,event_number;",
+  cout<<"LIST:"<< list.runNumber[0]<<"\t"<<list.runNumber[1]<<"\t"<<list.eventNumber[0]<<"\t"<<list.eventNumber[1]<<"\t"<< list.multiplicity[0]<<"\t"<< list.multiplicity[1]<<"\t"<<list.marked[0]<<"\t"<< list.marked[1]<<"\t"<<list.system[0]<<"\t"<<list.system[1]<<endl;
+
+
+  cout<<"QUERY:"<<Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') ORDER BY run_number,event_number;",
+						 fTable.c_str(),
+						 list.runNumber[0],
+						 list.runNumber[1],
+						 list.eventNumber[0],
+						 list.eventNumber[1],
+						 list.multiplicity[0],
+						 list.multiplicity[1],
+						 list.marked[0],
+						 list.marked[1],
+						 list.system[0],
+		       list.system[1])<<endl;
+
+  TThread::Lock();
+  TSQLResult *result = NULL;
+
+  result =  fServer->Query(Form("SELECT * FROM %s WHERE run_number >= %d AND run_number <= %d AND event_number >= %d AND event_number <= %d AND multiplicity >= %d AND multiplicity <= %d AND (permanent = %d OR permanent = %d) AND (system = '%s' OR system = '%s') ORDER BY run_number,event_number;",
 						 fTable.c_str(),
 						 list.runNumber[0],
 						 list.runNumber[1],
@@ -153,7 +172,7 @@ vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct li
 						 list.system[0],
 						 list.system[1]));
 
-	
+	TThread::UnLock();
 	TSQLRow *row;
 	vector<serverListStruct> eventsVector;
 	

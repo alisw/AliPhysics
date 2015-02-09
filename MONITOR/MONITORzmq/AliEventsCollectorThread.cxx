@@ -15,7 +15,7 @@ fCurrentFile(0),
 fDatabase(0),
 fFinished(false)
 {
-    fDatabase = new AliStorageDatabase();
+  fDatabase = new AliStorageDatabase();
     
     CheckCurrentStorageSize();
     
@@ -120,10 +120,12 @@ void AliEventsCollectorThread::CollectorHandle()
                 }
                 for(unsigned int i=0;i<eventsToUpdate.size();i++)
                 {
+		  TThread::Lock();
                     fDatabase->UpdateEventPath(eventsToUpdate[i],Form("%s/run%d/chunk%d.root",
                                                     fManager->fStoragePath.c_str(),
                                                     event->GetRunNumber(),
                                                     chunkNumber-1));
+		    TThread::UnLock();
                 }
                 eventsToUpdate.clear();
                 
@@ -185,6 +187,7 @@ void AliEventsCollectorThread::CollectorHandle()
             {
                 eventFile->Close();
                 delete eventFile;
+		TThread::Lock();
                 fDatabase->InsertEvent(event->GetRunNumber(),
                                        event->GetEventNumberInFile(),
                                        (char*)event->GetBeamType(),
@@ -192,7 +195,7 @@ void AliEventsCollectorThread::CollectorHandle()
                                        Form("%s/run%d/event%d.root",fManager->fStoragePath.c_str(),
                                             event->GetRunNumber(),
                                             eventsInChunk));
-                
+		TThread::UnLock();
                 currentEvent.runNumber = event->GetRunNumber();
                 currentEvent.eventNumber = event->GetEventNumberInFile();
                 eventsToUpdate.push_back(currentEvent);
@@ -274,13 +277,16 @@ void AliEventsCollectorThread::CheckCurrentStorageSize()
     {
         while(GetSizeOfAllChunks() > (float)fManager->fRemoveEventsPercentage/100. * fManager->fMaximumStorageSize)
         {
+	  TThread::Lock();
             struct eventStruct oldestEvent = fDatabase->GetOldestEvent();
             string oldestEventPath = fDatabase->GetFilePath(oldestEvent);
-            
+	    TThread::UnLock();
             //remove oldest event
             cout<<"CLIENT -- Removing old events:"<<oldestEventPath<<endl;
             gSystem->Exec(Form("rm -f %s",oldestEventPath.c_str()));
+	    TThread::Lock();
             fDatabase->RemoveEventsWithPath(oldestEventPath);
+	    TThread::UnLock();
         }
     }
 }

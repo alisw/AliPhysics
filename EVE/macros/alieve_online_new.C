@@ -22,8 +22,13 @@ void alieve_online_new()
         gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
     }
     
-    AliEveEventManager::SetCdbUri("local://$ALICE_ROOT/OCDB");
-    
+    //AliEveEventManager::SetCdbUri("local://$ALICE_ROOT/OCDB");
+    //AliEveEventManager::SetCdbUri("local:///local/OCDB/2013");
+    AliEveEventManager::SetCdbUri("local:///local/cdb");
+    AliEveEventManager::SetSpecificCdbUri("GRP/GRP/Data","local:///local/reco");
+ 
+
+    //AliEveEventManager::SetCdbUri("raw://");
     Info("alieve_init", "Adding standard macros.");
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     alieve_init_import_macros();

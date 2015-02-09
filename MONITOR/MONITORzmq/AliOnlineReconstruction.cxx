@@ -83,11 +83,11 @@ void AliOnlineReconstruction::StartOfRun()
       return;
     }
   gSystem->cd(recoBaseDir.Data());
-  // gSystem->cd("/");
+  
   cout<<"\n\nRetriving GRP\n\n"<<endl;
   TString gdcs;
   if (RetrieveGRP(gdcs) <= 0 || gdcs.IsNull()){return;}
-  //gSystem->cd(recoBaseDir.Data());
+  
   gSystem->Exec(Form("rm -fr run%d;mkdir run%d",fRun,fRun));
   gSystem->cd(Form("run%d",fRun));
 
@@ -107,6 +107,8 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 	TString cdbPath = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
 
 	cdbPath = Form("local://%s",gSystem->pwd());
+
+	gSystem->Exec(Form("rm -fr %s/GRP",cdbPath));
 	cout<<"CDB path for GRP:"<<cdbPath<<endl;
 
 	Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fRun, dbHost.Data(),
@@ -127,23 +129,33 @@ void AliOnlineReconstruction::SetupReco()
 
 	/* Settings CDB */
 	cout<<"\n\nSetting CDB manager parameters\n\n"<<endl;
-	fCDBmanager->SetRun(fRun);
+	//fCDBmanager->SetRun(fRun);
 	cout<<"Set default storage"<<endl;
 
-	fCDBmanager->SetDefaultStorage(fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
+       	fCDBmanager->SetDefaultStorage(fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
 
 	fCDBmanager->Print();
-	cout<<"Set specific storage 1"<<endl;
+		cout<<"Set specific storage 1"<<endl;
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath1", DEFAULT_CDB_SPEC_STORAGE_PATH1),  
-				    fSettings.GetValue( "cdb.specificStorageValue1", DEFAULT_CDB_SPEC_STORAGE_VALUE1));
+					    fSettings.GetValue( "cdb.specificStorageValue1", DEFAULT_CDB_SPEC_STORAGE_VALUE1));
 	fCDBmanager->Print();
-	cout<<"Set specific storage 2"<<endl;
+cout<<"Set specific storage 2"<<endl;
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath2", DEFAULT_CDB_SPEC_STORAGE_PATH2),  
 				    fSettings.GetValue( "cdb.specificStorageValue2", DEFAULT_CDB_SPEC_STORAGE_VALUE2));
 	fCDBmanager->Print();
-	cout<<"Set specific storage 3"<<endl;
-	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath3", DEFAULT_CDB_SPEC_STORAGE_PATH3),  
-				    fSettings.GetValue( "cdb.specificStorageValue3", DEFAULT_CDB_SPEC_STORAGE_VALUE3));
+//	cout<<"Set specific storage 3"<<endl;
+//	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath3", DEFAULT_CDB_SPEC_STORAGE_PATH3),  
+//				    fSettings.GetValue( "cdb.specificStorageValue3", DEFAULT_CDB_SPEC_STORAGE_VALUE3));
+
+
+	//fCDBmanager->SetSpecificStorage("TPC/Calib//PreprocStatus","local:///local/cdb");
+	//fCDBmanager->SetSpecificStorage("TPC/Calib//HighVoltage","local:///local/cdb");
+	//fCDBmanager->SetSpecificStorage("TPC/Calib//Goofie","local:///local/cdb");
+	//fCDBmanager->SetSpecificStorage("GRP/CTP/LTUConfig","local:///local/cdb");
+
+
+	//fCDBmanager->SetSpecificStorage("GRP/CTP/Scalers","local:///local/cdb");
+
 	fCDBmanager->Print();
 
 	/* Reconstruction settings */  
@@ -165,6 +177,7 @@ void AliOnlineReconstruction::SetupReco()
 	fAliReco->SetCleanESD(fSettings.GetValue( "reco.cleanESD",DEFAULT_RECO_CLEAN_ESD));
 	fCDBmanager->Print();
 	// init reco for given run
+	//fAliReco->SetOption("TPC","useHLTorRAW");
  	fAliReco->InitRun(fDataSource.Data());
 }
 
@@ -209,7 +222,7 @@ void AliOnlineReconstruction::ReconstructionLoop()
 	      if (status){
 		event = fAliReco->GetESDEvent();
 		eventManager->Send(event,EVENTS_SERVER_PUB);
-		eventManager->SendAsXml(event,XML_PUB);
+		//eventManager->SendAsXml(event,XML_PUB);
 
 		// sending RecPoints:
 		/*

@@ -25,8 +25,6 @@ private:
 	
 	static AliStorageAdministratorPanelListEvents *fInstance;
 	
-    
-    
 	//gui components and methods
 	TGLabel *fStatusLabel;
 	TGNumberEntry *fRunMinEntry;
@@ -41,7 +39,7 @@ private:
 	TGCheckButton *fTemporaryCheckbox;
 	TGCheckButton *fPermanentCheckbox;
 	
-	TGTextButton *fCloseButton;
+	//	TGTextButton *fCloseButton;
 	TGTextButton *fGetListButton;
 	TGTextButton *fMarkButton;
 	TGTextButton *fLoadButton;
