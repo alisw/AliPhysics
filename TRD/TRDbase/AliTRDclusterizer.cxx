@@ -402,6 +402,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   Int_t nRecPoints = RecPoints()->GetEntriesFast();
   if(!nRecPoints) return kTRUE;
 
+  const AliTRDrecoParam *const recoParam = fReconstructor->GetRecoParam();
+
   TObjArray *ioArray = new TObjArray(400);
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
   if (!branch) {
@@ -417,7 +419,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     }
     fClusterTree->Fill();
     ioArray->Clear();
-  } else {
+  } 
+  else {
     if(!(c = (AliTRDcluster*)RecPoints()->UncheckedAt(0))){
       AliError("Missing first cluster.");
       delete ioArray;
@@ -427,6 +430,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     ioArray->AddLast(c);
     for (Int_t i(1); i<nRecPoints; i++) {
       if(!(c = (AliTRDcluster *) RecPoints()->UncheckedAt(i))) continue;
+      // Check on total cluster charge
+      if (c->GetQ() < recoParam->GetClusterQmin()) continue;
       if(c->GetDetector() != detOld){
         nw += ioArray->GetEntriesFast();
         // fill & clear previously detector set of clusters
