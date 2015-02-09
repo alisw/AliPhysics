@@ -58,7 +58,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-
+		fV0ReaderV1->SetProduceV0FindingEfficiency(kTRUE);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;
