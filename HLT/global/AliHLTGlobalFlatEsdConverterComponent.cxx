@@ -838,10 +838,12 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	if( sector>=36 ) j+=AliHLTTPCTransform::GetNRowLow();
 	if( j<0 || j>=160 || clustersSet[j] ) continue;
 	
-	//Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-	//AliHLTTPCTransform::Local2Raw( padtime, sector, row);
-	//cl.SetPad( (Int_t) padtime[1] );
-	//cl.SetTimeBin( (Int_t) padtime[2] );
+	//TODO: these are just approximate coordinates! if agreed we need to use the
+  //proper numbers from "TPC-HWCFDecoder" component.
+  Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
+	AliHLTTPCTransform::Local2Raw( padtime, sector, row);
+	cl.SetPad( (Int_t) padtime[1] );
+	cl.SetTimeBin( (Int_t) padtime[2] );
 	  	  	  
 	tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );
 	Double_t angle2 = tpcTrack->GetSnp()*tpcTrack->GetSnp();
