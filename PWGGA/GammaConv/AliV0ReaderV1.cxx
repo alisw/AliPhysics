@@ -102,7 +102,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fHistoMCGammaPtvsEta(NULL),
 	fHistoMCGammaRvsPhi(NULL),
 	fHistoMCGammaRvsEta(NULL),
-	fHistoMCGammaPhivsEta(NULL)
+	fHistoMCGammaPhivsEta(NULL),
 	fHistoRecMCGammaPtvsR(NULL),
 	fHistoRecMCGammaPtvsPhi(NULL),
 	fHistoRecMCGammaPtvsEta(NULL),
