@@ -108,7 +108,7 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 
 	cdbPath = Form("local://%s",gSystem->pwd());
 
-	gSystem->Exec(Form("rm -fr %s/GRP",cdbPath));
+	gSystem->Exec(Form("rm -fr %s/GRP",cdbPath.Data()));
 	cout<<"CDB path for GRP:"<<cdbPath<<endl;
 
 	Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fRun, dbHost.Data(),
