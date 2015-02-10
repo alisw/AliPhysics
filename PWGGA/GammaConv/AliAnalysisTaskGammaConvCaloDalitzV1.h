@@ -93,11 +93,10 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		
 		// BG HandlerSettings
 		void CalculateBackground();
-		void CalculateBackgroundRP();
+		//void CalculateBackgroundRP();
 		void RotateParticle(AliAODConversionPhoton *gamma);
 		void RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP);
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-		void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
 		void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 		void UpdateEventByEventData();
 		
@@ -114,19 +113,11 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
 		AliDalitzElectronSelector				*fElecSelector;							// basic electron Selection			
-		AliGammaConversionAODBGHandler 		**fBGHandler;						// BG handler for Conversion 
-		AliConversionAODBGHandlerRP    		**fBGHandlerRP;						// BG handler for Conversion (possibility to mix with respect to RP)
 		AliGammaConversionAODBGHandler 		**fBGClusHandler;					// BG handler for Cluster
 		AliConversionAODBGHandlerRP    		**fBGClusHandlerRP;  				// BG handler for Cluster (possibility to mix with respect to RP)
 		AliVEvent 							*fInputEvent;						// current event
 		AliMCEvent 							*fMCEvent;							// corresponding MC event
 		AliStack 							*fMCStack;							// stack belonging to MC event
-// 		AliESDEvent							*fEsdEv;							//!pointer to input esd event
-// 		AliAODEvent							*fAodEv;							//!pointer to input aod event
-// 		TObjArray							*fEsdClusters;						//!pointer to esd clusters
-// 		AliESDCaloCells						*fEsdCells;							//!pointer to esd cells
-// 		TObjArray							*fAodClusters;						//!pointer to aod clusters
-// 		AliAODCaloCells						*fAodCells;							//!pointer to aod cells
 		TList 								**fCutFolder;						// Array of lists for containers belonging to cut
 		TList 								**fESDList;							// Array of lists with histograms with reconstructed properties   
 		TList 								**fBackList;						// Array of lists with BG THnSparseF
@@ -161,7 +152,6 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F								**fHistoDalitzPositronPt;			//! histogram dalitz positron candidate Pt
 		TH1F								**fHistoDalitzElectronPhi;			//! histogram dalitz electron candidate Phi
 		TH1F								**fHistoDalitzPositronPhi;			//! histogram dalitz positron candidate Phi
-		TTree 								**fTreeConvGammaPtDcazCat;			//! tree with dca for conversions
 		Float_t 							fPtGamma;							//! pt of conversion for tree
 		Float_t 							fDCAzPhoton;						//! dcaz of conversion for tree
 		Float_t 							fRConvPhoton;						//! R of conversion for tree
@@ -231,10 +221,6 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCK0sPt;				//! array of histos with weighted K0s, pT
 		TH1F 								**fHistoMCK0sWOWeightPt;			//! array of histos with unweighted K0s, pT
 		TH2F 								**fHistoMCK0sPtY;				//! array of histos with weighted K0s, pT, Y
-		TH2F 								**fHistoMCSecPi0PtvsSource;			//! array of histos with secondary pi0, pT, source
-		TH1F	 							**fHistoMCSecPi0Source;				//! array of histos with secondary pi0, source
-		TH1F 								**fHistoMCSecEtaPt;				//! array of histos with secondary eta, pT
-		TH1F 								**fHistoMCSecEtaSource;				//! array of histos with secondary eta, source
 		// MC validated reconstructed quantities mesons
 		TH2F 								**fHistoTruePi0InvMassPt;						//! array of histos with validated pi0, invMass, pt
 		TH2F 								**fHistoTrueEtaInvMassPt;						//! array of histos with validated eta, invMass, pt
@@ -293,7 +279,6 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F								**fHistoTruePi0DalitzElectronPt;					//! array of histos with validated electron from pi0 Dalitz, pT
 		TH1F								**fHistoTruePi0DalitzSecPositronPt;					//! array of histos with validated sec positron from pi0 Dalitz, pT
 		TH1F								**fHistoTruePi0DalitzSecElectronPt;					//! array of histos with validated sec electron from pi0 Dalitz, pT
-		TH2F 								**fHistoCombinatorialPt;						//! array of histos with combinatorial BG, pt, source
 		TH1F 								**fHistoTruePrimaryConvGammaPt;					//! array of histos with validated primary conversion photon, pt  
 		TH2F	 							**fHistoTruePrimaryConvGammaESDPtMCPt;			//! array of histos with validated primary conversion photon, rec pt, mc pt  
 		TH1F 								**fHistoTrueSecondaryConvGammaPt;				//! array of histos with validated secondary conversion photon, pt  
@@ -360,6 +345,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
+		Bool_t 								fDoTHnSparse;                 // flag for THnSparse
 
 		
 	private:
