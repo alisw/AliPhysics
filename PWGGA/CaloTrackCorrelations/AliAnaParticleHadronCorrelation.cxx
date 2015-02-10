@@ -191,10 +191,10 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPtTriggerMC[i] = 0;
     fhXEChargedMC[i] = 0;
     fhDeltaPhiChargedMC[i] = 0;
-    for(Int_t ib = 0; ib < 4; ib++)  fhPtDecayTriggerMC[ib][i] = 0;
+    for(Int_t ib = 0; ib < AliNeutralMesonSelection::fgkMaxNDecayBits; ib++)  fhPtDecayTriggerMC[ib][i] = 0;
   }
 
-  for(Int_t ib = 0; ib < 4; ib++)  fhPtDecayTrigger[ib] = 0;
+  for(Int_t ib = 0; ib < AliNeutralMesonSelection::fgkMaxNDecayBits; ib++)  fhPtDecayTrigger[ib] = 0;
 
   for(Int_t i = 0; i < 7; i++)
   {
@@ -376,7 +376,9 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
     
     if(fDecayTrigger && decayTag > 0 && fNDecayBits > 0 &&
        GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
-      fhDeltaPhiDecayChargedAssocPtBin[bin]->Fill(ptTrig, deltaPhi);      
+    {
+      fhDeltaPhiDecayChargedAssocPtBin[bin]->Fill(ptTrig, deltaPhi);
+    }
     
     if(fHMPIDCorrelation)
     {
@@ -3039,8 +3041,12 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fNDecayBits = 1;
   fDecayBits[0] = AliNeutralMesonSelection::kPi0;
   fDecayBits[1] = AliNeutralMesonSelection::kEta;
-  fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
-  fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
+  fDecayBits[2] = AliNeutralMesonSelection::kPi0RightSide;
+  fDecayBits[3] = AliNeutralMesonSelection::kEtaRightSide;
+  fDecayBits[4] = AliNeutralMesonSelection::kEtaLeftSide ;
+  fDecayBits[5] = AliNeutralMesonSelection::kEtaBothSides;
+  fDecayBits[6] = AliNeutralMesonSelection::kPi0LeftSide ; // Leave it last since likely not used
+  fDecayBits[7] = AliNeutralMesonSelection::kPi0BothSides; // Leave it last since likely not used
 }
 
 //_________________________________________________________________________
@@ -3238,7 +3244,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(pt < GetMinPt() || pt > GetMaxPt() ) continue ;
 
     fhPtTriggerInput->Fill(pt);
-    
+
     //
     // check if it was a calorimeter cluster
     // and if the shower shape cut was requested apply it.

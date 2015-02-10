@@ -157,6 +157,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fTreeVariableNSigmasPosPion(0),
 	fTreeVariableNSigmasNegProton(0),
 	fTreeVariableNSigmasNegPion(0),
+	fTreeVariableNegTransvMomentumMC(0), 
+	fTreeVariablePosTransvMomentumMC(0), 
 
 	fTreeVariableDistOverTotMom(0),
 	fTreeVariableLeastNbrCrossedRows(0),
@@ -208,6 +210,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fTreeCascVarPosNSigmaProton(0),
 	fTreeCascVarBachNSigmaPion(0),
 	fTreeCascVarBachNSigmaKaon(0),
+	fTreeCascVarNegTransvMomentumMC(0), 
+	fTreeCascVarPosTransvMomentumMC(0), 
 	fTreeCascVarCentV0M(0),
 	fTreeCascVarCentV0MEq(0),
 	fTreeCascVarCustomCentV0M(0),
@@ -365,6 +369,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fTreeVariableNSigmasPosPion(0),
 	fTreeVariableNSigmasNegProton(0),
 	fTreeVariableNSigmasNegPion(0),
+	fTreeVariableNegTransvMomentumMC(0), 
+	fTreeVariablePosTransvMomentumMC(0), 
 
 	fTreeVariableDistOverTotMom(0),
 	fTreeVariableLeastNbrCrossedRows(0),
@@ -416,6 +422,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
 	fTreeCascVarPosNSigmaProton(0),
 	fTreeCascVarBachNSigmaPion(0),
 	fTreeCascVarBachNSigmaKaon(0),
+	fTreeCascVarNegTransvMomentumMC(0), 
+	fTreeCascVarPosTransvMomentumMC(0), 
 	fTreeCascVarCentV0M(0),
 	fTreeCascVarCentV0MEq(0),
   fTreeCascVarCustomCentV0M(0),
@@ -662,6 +670,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeV0->Branch("fTreeVariableNSigmasPosPion",&fTreeVariableNSigmasPosPion,"fTreeVariableNSigmasPosPion/F");
   fTreeV0->Branch("fTreeVariableNSigmasNegProton",&fTreeVariableNSigmasNegProton,"fTreeVariableNSigmasNegProton/F");
   fTreeV0->Branch("fTreeVariableNSigmasNegPion",&fTreeVariableNSigmasNegPion,"fTreeVariableNSigmasNegPion/F");
+
+  fTreeV0->Branch("fTreeVariableNegTransvMomentumMC",&fTreeVariableNegTransvMomentumMC,"fTreeVariableNegTransvMomentumMC/F");
+  fTreeV0->Branch("fTreeVariablePosTransvMomentumMC",&fTreeVariablePosTransvMomentumMC,"fTreeVariablePosTransvMomentumMC/F");
+
   fTreeV0->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
   fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
 //-----------MULTIPLICITY-INFO--------------------
@@ -739,6 +751,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
   fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
 
+  fTreeCascade->Branch("fTreeCascVarNegTransvMomentumMC",&fTreeCascVarNegTransvMomentumMC,"fTreeCascVarNegTransvMomentumMC/F");
+  fTreeCascade->Branch("fTreeCascVarPosTransvMomentumMC",&fTreeCascVarPosTransvMomentumMC,"fTreeCascVarPosTransvMomentumMC/F");
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -1620,6 +1634,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
       fTreeVariablePrimaryStatus = 0; 
       fTreeVariablePrimaryStatusMother = 0; 
+
+			fTreeVariablePosTransvMomentumMC = -1; 
+			fTreeVariableNegTransvMomentumMC = -1; 
     
       Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrack->GetLabel() );
       Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrack->GetLabel() );
@@ -1629,6 +1646,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 	    
       Int_t lPIDPositive = mcPosV0Dghter -> GetPdgCode();
       Int_t lPIDNegative = mcNegV0Dghter -> GetPdgCode();
+
+			fTreeVariablePosTransvMomentumMC = mcPosV0Dghter->Pt(); 
+			fTreeVariableNegTransvMomentumMC = mcNegV0Dghter->Pt(); 
 
       fTreeVariablePIDPositive = lPIDPositive;
       fTreeVariablePIDNegative = lPIDNegative;
@@ -2043,6 +2063,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 	Int_t lPID_NegMother = 0;
 	Int_t lPID_PosMother = 0;
   fTreeCascVarIsPhysicalPrimary = 0; // 0: not defined, any candidate may have this
+	fTreeCascVarPosTransvMomentumMC = -1; 
+  fTreeCascVarNegTransvMomentumMC = -1; 
 
 	if(fDebug > 5)
 		cout 	<< "MC EventNumber : " << lMCevent->Header()->GetEvent() 
@@ -2061,8 +2083,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 	  TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
 	  TParticle* mcBach        = lMCstack->Particle( lblBach );
       
-    //fTreeCascVarPosTransMomMC = mcPosV0Dghter->Pt();
-    //fTreeCascVarNegTransMomMC = mcNegV0Dghter->Pt();
+    fTreeCascVarPosTransvMomentumMC = mcPosV0Dghter->Pt();
+    fTreeCascVarNegTransvMomentumMC = mcNegV0Dghter->Pt();
 
 	  //fTreeCascVarPIDPositive = mcPosV0Dghter -> GetPdgCode();
 	  //fTreeCascVarPIDNegative = mcNegV0Dghter -> GetPdgCode();

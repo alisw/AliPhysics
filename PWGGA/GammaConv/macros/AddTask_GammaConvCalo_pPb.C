@@ -5,7 +5,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               Int_t doWeightingPart = 0,  //enable Weighting
                               TString generatorName = "DPMJET",
-                              TString cutnumberAODBranch = "8000000060084000001500000", // cutnumber for AOD branch
+                              TString cutnumberAODBranch = "800000006008400000001500000", // cutnumber for AOD branch
                               Bool_t enableExtendedMatching = kFALSE, //enable or disable extended matching histograms for conversion electrons <-> cluster
                               Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
 							) {
@@ -52,7 +52,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "000000084001001500000000";
+	TString cutnumberPhoton = "00000008400100001500000000";
 	TString cutnumberEvent = "8000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -133,72 +133,72 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 	
 	//************************************************ EMCAL clusters **********************************************************
 	if (trainConfig == 1){ // min energy = 0.3 GeV/c
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
-        eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
+        eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
 	} else if (trainConfig == 2){  // min energy = 0.3 GeV/c
-        eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kEMCEGA based on INT7
-        eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMCEG1 based on INT7
-        eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
-        eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000043022030000"; mesonCutArray[3] = "01631031000000"; //standard cut, kEMCEJE based on INT7
-        eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10000043022030000"; mesonCutArray[4] = "01631031000000"; //standard cut, kEMCEJ1 based on INT7
-        eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "002000093270028250400000"; clusterCutArray[5] = "10000043022030000"; mesonCutArray[5] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
+        eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kEMCEGA based on INT7
+        eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMCEG1 based on INT7
+        eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043022030000"; mesonCutArray[2] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
+        eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043022030000"; mesonCutArray[3] = "01631031000000"; //standard cut, kEMCEJE based on INT7
+        eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "00200009327002008250400000"; clusterCutArray[4] = "10000043022030000"; mesonCutArray[4] = "01631031000000"; //standard cut, kEMCEJ1 based on INT7
+        eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "00200009327002008250400000"; clusterCutArray[5] = "10000043022030000"; mesonCutArray[5] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
 	} else if (trainConfig == 3){ // min energy = 0.4 GeV/c
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
-        eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
+        eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
 	} else if (trainConfig == 4){ // min energy = 0.4 GeV/c
-        eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kEMCEGA based on INT7
-        eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMCEG1 based on INT7
-        eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
-        eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000043032030000"; mesonCutArray[3] = "01631031000000"; //standard cut, kEMCEJE based on INT7
-        eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10000043032030000"; mesonCutArray[4] = "01631031000000"; //standard cut, kEMCEJ1 based on INT7
-        eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "002000093270028250400000"; clusterCutArray[5] = "10000043032030000"; mesonCutArray[5] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
+        eventCutArray[ 0] = "8008101"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; //standart cut, kEMCEGA based on INT7
+        eventCutArray[ 1] = "8008301"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMCEG1 based on INT7
+        eventCutArray[ 2] = "8008501"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
+        eventCutArray[ 3] = "8009101"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043032030000"; mesonCutArray[3] = "01631031000000"; //standard cut, kEMCEJE based on INT7
+        eventCutArray[ 4] = "8009301"; photonCutArray[ 4] = "00200009327002008250400000"; clusterCutArray[4] = "10000043032030000"; mesonCutArray[4] = "01631031000000"; //standard cut, kEMCEJ1 based on INT7
+        eventCutArray[ 5] = "8009501"; photonCutArray[ 5] = "00200009327002008250400000"; clusterCutArray[5] = "10000043032030000"; mesonCutArray[5] = "01631031000000"; //standard cut, kEMCEG2 based on INT7
 	} else if (trainConfig == 5){ //EMCAL variation of track matching
-		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000041032030000"; mesonCutArray[0] = "01631031000000"; // 
-		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; 
-		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; 
-		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000044032030000"; mesonCutArray[3] = "01631031000000"; 
-		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10000045032030000"; mesonCutArray[4] = "01631031000000"; 
-        eventCutArray[ 5] = "8000001"; photonCutArray[ 5] = "002000093270028250400000"; clusterCutArray[5] = "10000046032030000"; mesonCutArray[5] = "01631031000000";
+		eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000041032030000"; mesonCutArray[0] = "01631031000000"; // 
+		eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; 
+		eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; 
+		eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10000044032030000"; mesonCutArray[3] = "01631031000000"; 
+		eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "00200009327002008250400000"; clusterCutArray[4] = "10000045032030000"; mesonCutArray[4] = "01631031000000"; 
+        eventCutArray[ 5] = "8000001"; photonCutArray[ 5] = "00200009327002008250400000"; clusterCutArray[5] = "10000046032030000"; mesonCutArray[5] = "01631031000000";
 	} else if (trainConfig == 6){ //EMCAL added signal
-		eventCutArray[ 0] = "8000002"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000041032030000"; mesonCutArray[0] = "01631031000000"; 
-		eventCutArray[ 1] = "8000002"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; 
-		eventCutArray[ 2] = "8000002"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; 
-		eventCutArray[ 3] = "8000002"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000044032030000"; mesonCutArray[3] = "01631031000000"; 
-		eventCutArray[ 4] = "8000002"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10000045032030000"; mesonCutArray[4] = "01631031000000"; 
-        eventCutArray[ 5] = "8000002"; photonCutArray[ 5] = "002000093270028250400000"; clusterCutArray[5] = "10000046032030000"; mesonCutArray[5] = "01631031000000";
+		eventCutArray[ 0] = "8000002"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000041032030000"; mesonCutArray[0] = "01631031000000"; 
+		eventCutArray[ 1] = "8000002"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000042032030000"; mesonCutArray[1] = "01631031000000"; 
+		eventCutArray[ 2] = "8000002"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; 
+		eventCutArray[ 3] = "8000002"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10000044032030000"; mesonCutArray[3] = "01631031000000"; 
+		eventCutArray[ 4] = "8000002"; photonCutArray[ 4] = "00200009327002008250400000"; clusterCutArray[4] = "10000045032030000"; mesonCutArray[4] = "01631031000000"; 
+        eventCutArray[ 5] = "8000002"; photonCutArray[ 5] = "00200009327002008250400000"; clusterCutArray[5] = "10000046032030000"; mesonCutArray[5] = "01631031000000";
 	} else if (trainConfig == 7){ //EMCAL minEnergy variation
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043012030000"; mesonCutArray[0] = "01631031000000"; //0.2 GeV/c
-        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[1] = "01631031000000"; //0.3 GeV/c
-        eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; //0.4 GeV/c default
-        eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000043042030000"; mesonCutArray[3] = "01631031000000"; //0.5 GeV/c
-        eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10000043052030000"; mesonCutArray[4] = "01631031000000"; //0.6 GeV/c
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043012030000"; mesonCutArray[0] = "01631031000000"; //0.2 GeV/c
+        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; mesonCutArray[1] = "01631031000000"; //0.3 GeV/c
+        eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043032030000"; mesonCutArray[2] = "01631031000000"; //0.4 GeV/c default
+        eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043042030000"; mesonCutArray[3] = "01631031000000"; //0.5 GeV/c
+        eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "00200009327002008250400000"; clusterCutArray[4] = "10000043052030000"; mesonCutArray[4] = "01631031000000"; //0.6 GeV/c
 	} else if (trainConfig == 8){ //EMCAL minNCells variation
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043031030000"; mesonCutArray[0] = "01631031000000"; //n cells >= 1
-        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043033030000"; mesonCutArray[1] = "01631031000000"; //n cells >= 3
-        eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043032000000"; mesonCutArray[2] = "01631031000000"; //no M02 cut
-        eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10021043032030000"; mesonCutArray[3] = "01631031000000"; //only modules with TRD infront
-        eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "002000093270028250400000"; clusterCutArray[4] = "10013043032030000"; mesonCutArray[4] = "01631031000000"; //no modules with TRD infront
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043031030000"; mesonCutArray[0] = "01631031000000"; //n cells >= 1
+        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043033030000"; mesonCutArray[1] = "01631031000000"; //n cells >= 3
+        eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043032000000"; mesonCutArray[2] = "01631031000000"; //no M02 cut
+        eventCutArray[ 3] = "8000001"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10021043032030000"; mesonCutArray[3] = "01631031000000"; //only modules with TRD infront
+        eventCutArray[ 4] = "8000001"; photonCutArray[ 4] = "00200009327002008250400000"; clusterCutArray[4] = "10013043032030000"; mesonCutArray[4] = "01631031000000"; //no modules with TRD infront
 	} else if (trainConfig == 9){ //PCM restriction in acceptance 
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002022093270028250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; // PCM photons pointing to EMCAL loose
-        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002044093270028250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; // PCM photons pointing to EMCAL tight
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00202209327002008250400000"; clusterCutArray[0] = "10000043032030000"; mesonCutArray[0] = "01631031000000"; // PCM photons pointing to EMCAL loose
+        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "00204409327002008250400000"; clusterCutArray[1] = "10000043032030000"; mesonCutArray[1] = "01631031000000"; // PCM photons pointing to EMCAL tight
 	} else if (trainConfig == 10){ 
-        eventCutArray[ 0] = "8005201"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "10000043062030000"; mesonCutArray[0] = "01631031000000";
-        eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "10000043072030000"; mesonCutArray[1] = "01631031000000";
-        eventCutArray[ 2] = "8005201"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "10000043082030000"; mesonCutArray[2] = "01631031000000";
-        eventCutArray[ 3] = "8005201"; photonCutArray[ 3] = "002000093270028250400000"; clusterCutArray[3] = "10000043092030000"; mesonCutArray[3] = "01631031000000";
+        eventCutArray[ 0] = "8005201"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043062030000"; mesonCutArray[0] = "01631031000000";
+        eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043072030000"; mesonCutArray[1] = "01631031000000";
+        eventCutArray[ 2] = "8005201"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043082030000"; mesonCutArray[2] = "01631031000000";
+        eventCutArray[ 3] = "8005201"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043092030000"; mesonCutArray[3] = "01631031000000";
 		
 	//************************************************ PHOS clusters **********************************************************	
 	} else if (trainConfig == 31) {	// min energy = 0.3 GeV/c
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "20000048033200000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
-        eventCutArray[ 1] = "8006201"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "20000048033200000"; mesonCutArray[1] = "01631031000000"; //standard cut, kPHI7
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
+        eventCutArray[ 1] = "8006201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; mesonCutArray[1] = "01631031000000"; //standard cut, kPHI7
 	} else if (trainConfig == 32) { //PHOS
-        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "20000047033200000"; mesonCutArray[0] = "01631031000000";
-        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "20000048033200000"; mesonCutArray[1] = "01631031000000";
-        eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "20000049033200000"; mesonCutArray[2] = "01631031000000";
+        eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "20000047033200000"; mesonCutArray[0] = "01631031000000";
+        eventCutArray[ 1] = "8000001"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; mesonCutArray[1] = "01631031000000";
+        eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "20000049033200000"; mesonCutArray[2] = "01631031000000";
 	} else if (trainConfig == 33) { //PHOS
-        eventCutArray[ 0] = "8000002"; photonCutArray[ 0] = "002000093270028250400000"; clusterCutArray[0] = "20000047033200000"; mesonCutArray[0] = "01631031000000";
-        eventCutArray[ 1] = "8000002"; photonCutArray[ 1] = "002000093270028250400000"; clusterCutArray[1] = "20000048033200000"; mesonCutArray[1] = "01631031000000";
-        eventCutArray[ 2] = "8000002"; photonCutArray[ 2] = "002000093270028250400000"; clusterCutArray[2] = "20000049033200000"; mesonCutArray[2] = "01631031000000";
+        eventCutArray[ 0] = "8000002"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "20000047033200000"; mesonCutArray[0] = "01631031000000";
+        eventCutArray[ 1] = "8000002"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; mesonCutArray[1] = "01631031000000";
+        eventCutArray[ 2] = "8000002"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "20000049033200000"; mesonCutArray[2] = "01631031000000";
 	} else {
 		Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

@@ -489,10 +489,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       Bool_t isFromLMdecay = IsPi0EtaFromLMdecay(particle,stack);
       Bool_t isFromHFdecay = IsPi0EtaFromHFdecay(particle,stack);
 
-      if (!isMotherPrimary || isFromHFdecay || isFromLMdecay) continue;
-
-      if(fPDG==111) fPi0Pt[iCent]->Fill(pTMC); //pi0
-      if(fPDG==221) fEtaPt[iCent]->Fill(pTMC); //eta
+      if (isMotherPrimary && !isFromHFdecay && !isFromLMdecay){
+        if(fPDG==111) fPi0Pt[iCent]->Fill(pTMC); //pi0
+        if(fPDG==221) fEtaPt[iCent]->Fill(pTMC); //eta
+     }
     }
   }//MC
 
@@ -512,9 +512,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     }
 
     AliESDtrack *track = dynamic_cast<AliESDtrack*>(vparticle);
-
+     
     if(!track) continue;
-
+    
     if (TMath::Abs(track->Eta())>0.7) continue;
  
     fTrackPtBefTrkCuts->Fill(track->Pt());
@@ -588,13 +588,13 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       if(fTPCnSigma < -1 || fTPCnSigma > 3) continue;
       Int_t label = track->GetLabel();
       if(label!=0){
-        TParticle *particle = stack->Particle(label);	
+        TParticle *particle = stack->Particle(TMath::Abs(label));	
         if(particle){
           partPDG = particle->GetPdgCode();
           partPt = particle->Pt();
           if (TMath::Abs(partPDG)!=11) continue;
 
-          MChijing = fMC->IsFromBGEvent(label);
+          MChijing = fMC->IsFromBGEvent(TMath::Abs(label));
           int iHijing = 1;
           if(!MChijing) iHijing = 0; // 0 if enhanced sample
 
@@ -1010,14 +1010,9 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaPrimary(TParticle *particle, AliSt
   Bool_t isprimary = kFALSE;
   Int_t partPDG = particle->GetPdgCode();
 
-  if (TMath::Abs(partPDG)!=111 || TMath::Abs(partPDG)!=221) return isprimary; // particle is not pi0 or eta
-
-
   Bool_t pi0etaprimary = particle->IsPrimary();
-  Int_t idMother = particle->GetFirstMother();
-
-  if (pi0etaprimary && idMother<=0) isprimary = kTRUE;
-    
+  if (pi0etaprimary) isprimary = kTRUE;  
+  
   return isprimary;
 }
 //_________________________________________

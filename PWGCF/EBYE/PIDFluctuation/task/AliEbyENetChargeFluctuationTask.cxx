@@ -214,41 +214,54 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   fDcaList = new TList();
   fDcaList->SetOwner(kTRUE);
   
+  Printf(" >>>================================================================");
   if (!fIsAOD) {
     if(!fESDtrackCuts)
       fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     else 
       Printf(" >>>>  User Track Cuts <<<< ");
     fESDtrackCuts->Print();
-
-    Printf(" >>> DCAxy -- [%8.4f:%8.4f]", 
+    
+    Printf(" >>> DCAxy in TC [%8.4f:%8.4f]", 
 	   fESDtrackCuts->GetMinDCAToVertexXY(), fESDtrackCuts->GetMaxDCAToVertexXY());
-    Printf(" >>> DCAz -- [%8.4f:%8.4f]", 
+    Printf(" >>> DCAz in TC  [%8.4f:%8.4f]", 
 	   fESDtrackCuts->GetMinDCAToVertexZ(), fESDtrackCuts->GetMaxDCAToVertexZ());
 	       
     Float_t r1,r2;
     fESDtrackCuts->GetPtRange(r1,r2);
-    Printf(" >>>> Pt Range [%10.4f:%10.4f]",r1,r2);
+    Printf(" >>> Pt in TC  [%10.4f:%10.4f]",r1,r2);
 
     fESDtrackCuts->GetRapRange(r1,r2);
-    Printf(" >>>> Rapidty Range [%10.4f:%10.4f]",r1,r2);
+    Printf(" >>> Rap in TC [%10.4f:%10.4f]",r1,r2);
 
     fESDtrackCuts->GetEtaRange(r1,r2);
-    Printf(" >>>> Eta Range [%10.4f:%10.4f]",r1,r2);
+    Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
   }     
-
 
   fRan = new TRandom3();
   fRan->SetSeed();
   
   fRanIdx = new TRandom3();
   fRanIdx->SetSeed();
-
-  Printf(" >>>A%d M%d P%d E%d D%d Q%d N%d R%d S%d B%d PR%d", 
-	 fIsAOD, fIsMC, fIsPhy, fIsEff, 
-	 fIsDca, fIsQa, fNeedQa,
-	 fIsRatio, fIsSub, fIsBS, fIsPer);
+ 
+  Printf(" >>> MC%d RA%d AO%d SS%d BS%d PE%d EF%d DB%d QA%d NQ%d PY%d DC%d NU%d TE%d", 
+	 fIsMC,  fIsRatio, fIsAOD,  fIsSub, fIsBS, fIsPer, fIsEff, fDebug,   
+	 fIsQa,  fNeedQa,  fIsPhy,  fIsDca, fIsNu, fIsTen);
   
+  Printf(" >>> Centrality: %s System Type %d ",fCentralityEstimator.Data(),fSystemType); 
+  Printf(" >>> Vx %.1f Vy %.1f Vz %.1f",fVxMax, fVyMax, fVzMax);
+  Printf(" >>> Phi Range [%.2f:%.2f]",fPhiMin,fPhiMax);   
+  Printf(" >>> Pt  Range [%.2f:%.2f]",fPtMin,fPtMax);   
+  Printf(" >>> Eta Range [%.2f:%.2f]",fEtaMin,fEtaMax);   
+  Printf(" >>> Rap Range [%.2f:%.2f]",fRapMin,fRapMax);   
+  Printf(" >>> DCA Range [%.2f:%.2f]",fDcaXy,fDcaZ);   
+  Printf(" >>> CBin:Cper [%.2f:%.2f]",fCentralityBin,fCentralityPercentile);   
+  Printf(" >>> TLengthMC:%10.5f TrackN:%d TrackBit:%d Trigg:%d",
+	 fMinTrackLengthMC, fNTracks, fAODtrackCutBit,fNTriggers);
+  Printf(" >>> N.Samples:%d SsIdx:%d Order:%d",fNSubSamples,fSubSampleIdx,fOrder);
+  Printf(" >>> EventStatBin:%d CentralityBin:%d CentBinMax:%d BWCbin:%d",
+	 fHEventStatMax,fNCentralityBins,fCentralityBinMax, fNbwcBin);
+
   if (fNeedQa) CreateBasicQA();
   if (fIsQa && fNeedQa)  CreateQA();
   if (fIsPhy) InitPhy();

@@ -114,6 +114,7 @@ AliAnalysisTaskSE(),
   fQmean(),
   fDampStart(0),
   fDampStep(0),
+  fChargeSelection(kFALSE),
   fq2Binning(0),
   fq2Index(0),
   fq2CutLow(0.1),
@@ -317,6 +318,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fQmean(),
   fDampStart(0),
   fDampStep(0),
+  fChargeSelection(kFALSE),
   fq2Binning(0),
   fq2Index(0),
   fq2CutLow(0.1),
@@ -525,6 +527,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fQmean(),
     fDampStart(obj.fDampStart),
     fDampStep(obj.fDampStep),
+    fChargeSelection(obj.fChargeSelection),
     fq2Binning(obj.fq2Binning),
     fq2Index(obj.fq2Index),
     fq2CutLow(obj.fq2CutLow),
@@ -669,6 +672,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fQstepWeights = obj.fQstepWeights;
   fDampStart = obj.fDampStart;
   fDampStep = obj.fDampStep;
+  fChargeSelection = obj.fChargeSelection;
   fq2Binning = obj.fq2Binning;
   fq2Index = obj.fq2Index;
   fq2CutLow = obj.fq2CutLow;
@@ -2287,7 +2291,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t qVect2[4]={0};
   Float_t Psi2[4]={0};
   for(Int_t i=0; i<myTracks; i++){
-    if(fTempStruct[i].fCharge !=+1) continue;
+    if(fChargeSelection && fTempStruct[i].fCharge !=-1) continue;
 
     if(fTempStruct[i].fPt < 0.28) qindex=0;
     else if(fTempStruct[i].fPt < 0.4) qindex=1;
@@ -2314,8 +2318,7 @@ void AliFourPion::UserExec(Option_t *)
   //
   if(fq2Binning){// bin in q2
     if(qVect2[fq2Index] < fq2CutLow) fEDbin = 0;
-    else if (qVect2[fq2Index] > fq2CutHigh) fEDbin = 1;
-    else return;
+    else fEDbin = 1;
   }
   Int_t Inq1=0, Inq2=0;
   if(qVect1[fq2Index] > 0.5 && qVect1[fq2Index] < 1.5) Inq1=1;
@@ -2535,6 +2538,7 @@ void AliFourPion::UserExec(Option_t *)
 	  }
 	  /////////////////////////////////////////////////////
 	  if(fTabulatePairs && en1==0 && en2<=1 && bin1==bin2){
+	    if(fChargeSelection && (fEvt+en1)->fTracks[i].fCharge !=-1) continue;
 	    Float_t kY = 0;
 	    Int_t kTbin=-1, kYbin=-1;
 	    Bool_t PairToReject=kFALSE;
@@ -2551,7 +2555,6 @@ void AliFourPion::UserExec(Option_t *)
 		KT[kTbin].KY[kYbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
 	      }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[fEDbin].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	    }
-	   
 	  }
 	  
 	  //////////////////////////////////////////////////////////////////////////////
@@ -2969,7 +2972,7 @@ void AliFourPion::UserExec(Option_t *)
 	      }// MC case
 	      
 		
-
+	      
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
 		if(en3==0) {
@@ -3104,7 +3107,7 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		}
 		
-		// r3 denominator
+		// C3 Building
 		if(ENsum==6 && ch1==ch2 && ch1==ch3 && fCollisionType==0){
 		  Positive1stTripletWeights = kTRUE;
 		  //
@@ -3219,7 +3222,7 @@ void AliFourPion::UserExec(Option_t *)
 		    
 		  }// 1st r3 den check
 		  
-		}// r3 den
+		}// C3 Building section end
 		
 	      
 		if(ch1==ch2 && ch1==ch3){
@@ -3355,7 +3358,7 @@ void AliFourPion::UserExec(Option_t *)
 		
 		
 		
-
+	
 		/////////////////////////////////////////////////////////////
 		for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
 		  if(en4==0){
@@ -3481,7 +3484,7 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  /////////////////////////////////////////////////////////////
 		  // C4 building
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 ){
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 && !fMCcase){
 		    if(fCollisionType==0){
 		      Positive2ndTripletWeights=kTRUE;
 		      //

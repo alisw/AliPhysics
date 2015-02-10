@@ -238,7 +238,7 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     }
   }
   
-  for(Int_t ibit =0; ibit < 4; ibit++)
+  for(Int_t ibit =0; ibit < AliNeutralMesonSelection::fgkMaxNDecayBits; ibit++)
   {
     for(Int_t iso =0; iso < 2; iso++)
     {
@@ -1195,7 +1195,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   Int_t  nMaxima   = pCandidate->GetNLM();
   Int_t  mcTag     = pCandidate->GetTag() ;
   Bool_t isolated  = pCandidate->IsIsolated();
-  
+
   if ( clusterID < 0 )
   {
     AliWarning(Form("ID of cluster = %d, not possible!", clusterID));
@@ -1222,8 +1222,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       if(fFillSSHisto) fhPtLambda0Decay[isolated][ibit]->Fill(pt,m02);
       
       // In case it was not done on the trigger selection task
-      // apply here a shower shape cut, not too strong, to select photons
-      if( m02 < fDecayTagsM02Cut ) continue;
+      // apply here a shower shape cut to select photons
+      if( m02 > fDecayTagsM02Cut ) continue;
       
       fhPtDecay    [isolated][ibit]->Fill(pt);
       fhEtaPhiDecay[isolated][ibit]->Fill(eta,phi);
@@ -3911,8 +3911,13 @@ void AliAnaParticleIsolation::InitParameters()
   fNDecayBits = 1;
   fDecayBits[0] = AliNeutralMesonSelection::kPi0;
   fDecayBits[1] = AliNeutralMesonSelection::kEta;
-  fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
-  fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
+  fDecayBits[2] = AliNeutralMesonSelection::kPi0RightSide;
+  fDecayBits[3] = AliNeutralMesonSelection::kEtaRightSide;
+  fDecayBits[4] = AliNeutralMesonSelection::kEtaLeftSide;
+  fDecayBits[5] = AliNeutralMesonSelection::kEtaBothSides;
+  fDecayBits[6] = AliNeutralMesonSelection::kPi0LeftSide ; // Leave it last since likely not used
+  fDecayBits[7] = AliNeutralMesonSelection::kPi0BothSides; // Leave it last since likely not used
+
   fDecayTagsM02Cut = 0.27;
   
   fNBkgBin = 11;
@@ -4162,6 +4167,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
   //Loop on stored AOD
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
+  
   AliDebug(1,Form("Histo aod branch entries %d", naod));
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)

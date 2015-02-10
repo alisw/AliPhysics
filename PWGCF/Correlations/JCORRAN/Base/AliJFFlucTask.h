@@ -63,7 +63,8 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t* opt=""  );
 
   //msong added memeber
-  TClonesArray * ReadAODTracks( AliAODEvent* aod );
+  //TClonesArray * ReadAODTracks( AliAODEvent* aod );
+  void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList);
   void SetDebugLevel(int debuglevel){fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;};
   float ReadAODCentrality( AliAODEvent* aod, TString Trig );
   Bool_t IsGoodEvent( AliAODEvent* aod);

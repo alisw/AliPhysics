@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-	if ( argc < 6 )
+	if ( argc < 4 )
 	{
 		std::cout << "Usage : " << argv[0] << " --from alien://source --to destination --filter filterName [--verbose [level]]" << std::endl;
 		return 1;
