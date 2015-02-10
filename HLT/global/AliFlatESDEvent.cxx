@@ -35,14 +35,15 @@
  *
  *  ...
  *  AliESDEvent* esd = ....;
- *  Bool_t useESDFriends = kTRUE;
+ *  Bool_t fillV0s = kTRUE;
  *
  *  // -- Book memory for AliFlatESDEvent
- *  Byte_t *mem = new Byte_t[AliFlatESDEvent::EstimateSize(esd, useESDFriends)];
+ *  Int_t memSize = AliFlatESDEvent::EstimateSize(esd, fillV0s);
+ *  Byte_t *mem = new Byte_t[memSize];
  *  AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(mem);
  *
  *  // -- Fill AliFlatESDEvent
- *  flatEsd->Fill(esd, useESDFriends);  
+ *  flatEsd->SetFromESD(memSize, esd, fillV0s);
  *  ...
  *
  **************************************************************************/
