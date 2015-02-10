@@ -39,6 +39,11 @@ for F in ${Files[@]} ; do
     #./thtml2doxy.py $Stdout $Debug $( cat debug/includes.txt ) "$F"
     ./thtml2doxy.py $Stdout $Debug -I$ALICE_ROOT/include "$F"
     r=$?
+
+    # Remove the $Id$ line
+    cat "$F" | sed -e '/\$Id.*\$/d' > "$F".0
+    mv "$F".0 "$F"
+
   fi
   if [[ $r != 0 ]] ; then
     echo -e "\033[31mFatal error at ${F}: stopping here\033[m"
