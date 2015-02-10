@@ -4,11 +4,12 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "PWGPP/TRD/AliTRDpwgppHelper.h"
-#include "PWGPP/TRD/AliTRDcheckPID.h"
-#include "PWGPP/TRD/AliTRDpidRefMaker.h"
-#include "PWGPP/TRD/AliTRDpidRefMakerNN.h"
-#include "PWGPP/TRD/AliTRDpidRefMakerLQ.h"
+
+#include "AliTRDpwgppHelper.h"
+#include "AliTRDcheckPID.h"
+#include "AliTRDpidRefMaker.h"
+#include "AliTRDpidRefMakerNN.h"
+#include "AliTRDpidRefMakerLQ.h"
 #endif
 
 void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co)

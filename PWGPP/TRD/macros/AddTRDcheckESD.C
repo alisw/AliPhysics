@@ -5,7 +5,8 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
-#include "PWGPP/TRD/AliTRDcheckESD.h"
+
+#include "AliTRDcheckESD.h"
 #endif
 
 AliESDtrackCuts* SetupESDcuts();
