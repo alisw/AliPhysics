@@ -92,4 +92,7 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
+# Calib maps
+install(DIRECTORY maps DESTINATION TPC/${MODULE})
+
 install(FILES ${HDRS} DESTINATION include)

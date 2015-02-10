@@ -5,9 +5,8 @@
  * See cxx source for full Copyright notice                               */
 
 
-////////////////////////////////////////////////////////////////////////////////
-// AliTPCCorrection class                                                     //
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCorrection
+/// \brief AliTPCCorrection class
 
 
 #include <TNamed.h>
@@ -41,7 +40,7 @@ public:
 
   virtual void GetCorrectionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
   virtual void GetCorrectionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
-  
+
   // functions to distort a space point
           void DistortPoint (      Float_t x[], Short_t roc);
           void DistortPointLocal(Float_t x[], Short_t roc);
@@ -50,7 +49,7 @@ public:
 
   virtual void GetDistortionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
   virtual void GetDistortionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
-  
+
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
@@ -58,10 +57,10 @@ public:
   // map scaling
   virtual void    SetCorrScaleFactor(Float_t /*val*/) { ; }
   virtual Float_t GetCorrScaleFactor() const { return 1.; }
-  
+
   // convenience functions
   virtual void Print(Option_t* option="") const;
- 
+
   TH2F* CreateHistoDRinXY   (Float_t z=10.,Int_t nx=100,Int_t ny=100);
   TH2F* CreateHistoDRPhiinXY(Float_t z=10.,Int_t nx=100,Int_t nphi=100);
   TH2F* CreateHistoDZinXY   (Float_t z=10.,Int_t nx=100,Int_t ny=100);
@@ -90,7 +89,7 @@ public:
   static AliTPCCorrection*  GetVisualCorrection(Int_t position);
   static AliTPCCorrection*  GetVisualCorrection(const char *corName){return (fgVisualCorrection==NULL) ? 0: ( AliTPCCorrection*) fgVisualCorrection->FindObject(corName);}
   static TObjArray*  GetVisualCorrections() { return fgVisualCorrection;}
-  
+
   static Double_t GetCorrSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType=0);
   static Double_t GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0);
   //
@@ -101,94 +100,96 @@ public:
   //
   static Double_t GetDistXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
   static Double_t GetDistXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
-  
+
 
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
 		   const char *xlabel,const char *ylabel,const char *zlabel,
 		   Int_t nbinsx,Double_t xlow,Double_t xup,
 		   Int_t nbinsy,Double_t ylow,Double_t yup);
- 
-  static const Double_t fgkTPCZ0;       // nominal gating grid position 
-  static const Double_t fgkIFCRadius;   // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
-  static const Double_t fgkOFCRadius;   // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
-  static const Double_t fgkZOffSet;     // Offset from CE: calculate all distortions closer to CE as if at this point
-  static const Double_t fgkCathodeV;    // Cathode Voltage (volts)
-  static const Double_t fgkGG;          // Gating Grid voltage (volts)
-  static const Double_t fgkdvdE;        // [cm/V] drift velocity dependency on the E field (from Magboltz for NeCO2N2 at standard environment)
-  static const Double_t fgkEM;          // charge/mass in [C/kg]
-  static const Double_t fgke0;          // vacuum permittivity [A·s/(V·m)]
+
+  static const Double_t fgkTPCZ0;       ///< nominal gating grid position
+  static const Double_t fgkIFCRadius;   ///< Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
+  static const Double_t fgkOFCRadius;   ///< Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
+  static const Double_t fgkZOffSet;     ///< Offset from CE: calculate all distortions closer to CE as if at this point
+  static const Double_t fgkCathodeV;    ///< Cathode Voltage (volts)
+  static const Double_t fgkGG;          ///< Gating Grid voltage (volts)
+  static const Double_t fgkdvdE;        ///< [cm/V] drift velocity dependency on the E field (from Magboltz for NeCO2N2 at standard environment)
+  static const Double_t fgkEM;          ///< charge/mass in [C/kg]
+  static const Double_t fgke0;          ///< vacuum permittivity [A·s/(V·m)]
 
 
   enum {kNR=   72  };     // Number of R points in the table for interpolating distortion data
-  enum {kNPhi= 18*10+1};  // Number of Phi points in the table for interpolating distortion data ( plus one extra for 360 == 0 ) 
+  enum {kNPhi= 18*10+1};  // Number of Phi points in the table for interpolating distortion data ( plus one extra for 360 == 0 )
   enum {kNZ=   166};      // Number of Z points in the table for interpolating distortion data
 
-  Double_t fgkRList[kNR]; // points in the radial direction (for the lookup table)
-  Double_t fgkPhiList[kNPhi]; // points in the phi direction (for the lookup table)
-  Double_t fgkZList[kNZ]; // points in the z direction (for the lookup table)
+  Double_t fgkRList[kNR]; ///< points in the radial direction (for the lookup table)
+  Double_t fgkPhiList[kNPhi]; ///< points in the phi direction (for the lookup table)
+  Double_t fgkZList[kNZ]; ///< points in the z direction (for the lookup table)
 
   // Simple Interpolation functions: e.g. with tricubic interpolation (not yet in TH3)
-  Int_t fILow, fJLow, fKLow;          // variable to help in the interpolation 
+  Int_t fILow, fJLow, fKLow;          ///< variable to help in the interpolation
   // Double_t versions
-  void Interpolate2DEdistortion( Int_t order, Double_t r, Double_t z, 
+  void Interpolate2DEdistortion( Int_t order, Double_t r, Double_t z,
 				 const Double_t er[kNZ][kNR], Double_t &erValue );
-  void Interpolate3DEdistortion( Int_t order, Double_t r, Float_t phi, Double_t z, 
-				 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], 
+  void Interpolate3DEdistortion( Int_t order, Double_t r, Float_t phi, Double_t z,
+				 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR],
 				 const Double_t ez[kNZ][kNPhi][kNR],
 				 Double_t &erValue, Double_t &ephiValue, Double_t &ezValue);
   // TMatrixD versions (for e.g. Poisson relaxation)
-  Double_t Interpolate2DTable( Int_t order, Double_t x, Double_t y, 
-			      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[], 
+  Double_t Interpolate2DTable( Int_t order, Double_t x, Double_t y,
+			      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[],
 			      const TMatrixD &array );
   Double_t Interpolate3DTable( Int_t order, Double_t x,   Double_t y,   Double_t z,
 			      Int_t  nx,    Int_t  ny,    Int_t  nz,
 			      const Double_t xv[], const Double_t yv[], const Double_t zv[],
 			      TMatrixD **arrayofArrays );
-  Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
+  Double_t Interpolate( const Double_t xArray[], const Double_t yArray[],
 			Int_t order, Double_t x );
   void Search( Int_t n, const Double_t xArray[], Double_t x, Int_t &low );
- 
+
   // TMatrixF versions (smaller size, e.g. for final look up table)
-  Float_t Interpolate2DTable( Int_t order, Double_t x, Double_t y, 
-			      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[], 
+  Float_t Interpolate2DTable( Int_t order, Double_t x, Double_t y,
+			      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[],
 			      const TMatrixF &array );
   Float_t Interpolate3DTable( Int_t order, Double_t x,   Double_t y,   Double_t z,
 			      Int_t  nx,    Int_t  ny,    Int_t  nz,
 			      const Double_t xv[], const Double_t yv[], const Double_t zv[],
-			       TMatrixF **arrayofArrays ); 
-  Float_t Interpolate( const Double_t xArray[], const Float_t yArray[], 
+			       TMatrixF **arrayofArrays );
+  Float_t Interpolate( const Double_t xArray[], const Float_t yArray[],
 			Int_t order, Double_t x );
 
   virtual Int_t IsPowerOfTwo ( Int_t i ) const  ;
 
-  
- 
-  // Algorithms to solve the laplace or poisson equation 
-  void PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDensity, 
+
+
+  // Algorithms to solve the laplace or poisson equation
+  void PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDensity,
 			   TMatrixD &arrayErOverEz, TMatrixD &arrayDeltaEz,
 			   Int_t rows, Int_t columns, Int_t iterations,
 			   Bool_t rocDisplacement = kTRUE);
 
-  void PoissonRelaxation3D( TMatrixD **arrayofArrayV, TMatrixD **arrayofChargeDensities, 
+  void PoissonRelaxation3D( TMatrixD **arrayofArrayV, TMatrixD **arrayofChargeDensities,
 			    TMatrixD **arrayofEroverEz, TMatrixD **arrayofEPhioverEz, TMatrixD **arrayofEz,
-			    Int_t rows, Int_t columns,  Int_t phislices, 
+			    Int_t rows, Int_t columns,  Int_t phislices,
 			    Float_t deltaphi, Int_t iterations, Int_t summetry,
-			    Bool_t rocDisplacement = kTRUE); 
+			    Bool_t rocDisplacement = kTRUE);
   void   SetIsLocal(Bool_t isLocal){fIsLocal=isLocal;}
   Bool_t IsLocal() const  { return fIsLocal;}
 protected:
-  Double_t fT1;         // tensor term of wt - T1
-  Double_t fT2;         // tensor term of wt - T2
-  Bool_t fIsLocal;      // switch to indicate that the distortion is a local vector drphi/dz, dr/dz
-  static TObjArray *fgVisualCorrection;  // array of orrection for visualization
+  Double_t fT1;         ///< tensor term of wt - T1
+  Double_t fT2;         ///< tensor term of wt - T2
+  Bool_t fIsLocal;      ///< switch to indicate that the distortion is a local vector drphi/dz, dr/dz
+  static TObjArray *fgVisualCorrection;  ///< array of orrection for visualization
 private:
   AliTPCCorrection(const AliTPCCorrection &);               // not implemented
   AliTPCCorrection &operator=(const AliTPCCorrection &);    // not implemented
 
   void InitLookUpfulcrums();   // to initialize the grid of the look up table
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCCorrection,5);
+  /// \endcond
 };
 
 #endif

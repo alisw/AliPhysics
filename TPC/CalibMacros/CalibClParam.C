@@ -1,12 +1,10 @@
-//
-// Procedures to create a cluster parametererization
-// Currently only pseudo code - once will be stable - to be updated as a "normal" macro
-//
+/// \file CalibClParam.C
+///
+/// Procedures to create a cluster parametererization
+/// Currently only pseudo code - once will be stable - to be updated as a "normal" macro
 
 void PseudoCode(){
-  //
-  // That rough sequence to update  a Cluster param calibration using debug streamers
-  //
+  /// That rough sequence to update  a Cluster param calibration using debug streamers
 
   //
   //0. Load libraries
@@ -72,9 +70,8 @@ void PseudoCode(){
 
 
 void UpdateParam(){
-  //
-  // Pseudo code -to update cluster params
-  //
+  /// Pseudo code -to update cluster params
+
   .L $ALICE_ROOT/TPC/Cal/AliTPCCreateDummyCDB.C
   TFile f2("paramout.root");
   AliTPCClusterParam *param2 = (AliTPCClusterParam*)f2.Get("clusterParam");  
@@ -87,9 +84,8 @@ void UpdateParam(){
 
 
 void TestChainCosmicDedx(){
-  //
-  // pseudo cose
-  //
+  /// pseudo cose
+
   gSystem->Load("libANALYSIS");
   gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");

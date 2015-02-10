@@ -1,54 +1,53 @@
-/*
-  marian.ivanov@cern.ch, Stefan.Rossegger@cern.ch
-
-  Macro to fit  alignment/E field distortion maps
-  As a input output cluster distortion maps (produced by  AliTPCcalibAling class)
-  are used. Cluster distrotion maps granularity (180 *phi x44 *theta x 53 R)
-
-  In total 440 parameters to fit using global fit:
-
-  1. Rotation and translation for each sector (72x2)
-  2. Rotation and translation for each quadrant of OROC (36x4x2)
-  3. Rod/strip shifts in IFC and OFC (18 sectors x 2 sides x 2 ) 
-  4. Rotated clips in IFC and OFC 
-
-
-  Input file mean.root with distortion tree expected to be in directory:
-  ../mergeField0/clusterDY.root
-  The ouput file fitRodShift.root contains:
-  1. Resulting (residual) AliTPCCalibMisalignment  and AliTPCFCVoltError3D classes
-  2. All important temporary results are stored in the workspace (TTreeSRedirector)  associated
-     with the file - fitrodShift
-     2.a  Fit parameters with errors
-     2.b  QA default graphs
-     2.c  QA defualt histograms
-
-
-
-  Functions:
-  1. LoadModels()                   - load models to fit - Rod shift (10,20)
-  2. RegisterAlignFunction()        - register align functions (10-16)
-  3. LoadTrees                      - load trees and make aliases
-  4. PrintFit                       - helper function to print substring of the fit 
-  5. DeltaLookup                    - function to calulate the distortion for given distortion cunction
-                                    -
-  6. MakeAliases                    - Make tree aliases shortcuts for the fitting function
-  //
-  7. MakeAlignCorrection            - Crete alignment entry to be stored in the OCDB
-                                    - Dump fit parameters and errors
-  8. MakeQuadrantCorrection         - 
-                                    - Dump fit parameters and errors
-
-  9. FitRodShifts                   - main minimization function
-
-
-  .x ~/rootlogon.C
-  .x ~/NimStyle.C
-  .L $ALICE_ROOT/TPC/CalibMacros/FitRodShift.C+
-  FitRodShift(kFALSE);
-  //
-
-*/
+/// \file FitRodShift.C
+///
+/// \author marian.ivanov@cern.ch, Stefan.Rossegger@cern.ch
+///
+/// Macro to fit  alignment/E field distortion maps
+/// As a input output cluster distortion maps (produced by  AliTPCcalibAling class)
+/// are used. Cluster distrotion maps granularity (180 *phi x44 *theta x 53 R)
+///
+/// In total 440 parameters to fit using global fit:
+///
+/// 1. Rotation and translation for each sector (72x2)
+/// 2. Rotation and translation for each quadrant of OROC (36x4x2)
+/// 3. Rod/strip shifts in IFC and OFC (18 sectors x 2 sides x 2 ) 
+/// 4. Rotated clips in IFC and OFC 
+///
+///
+/// Input file mean.root with distortion tree expected to be in directory:
+/// ../mergeField0/clusterDY.root
+/// The ouput file fitRodShift.root contains:
+/// 1. Resulting (residual) AliTPCCalibMisalignment  and AliTPCFCVoltError3D classes
+/// 2. All important temporary results are stored in the workspace (TTreeSRedirector)  associated
+///    with the file - fitrodShift
+///    2.a  Fit parameters with errors
+///    2.b  QA default graphs
+///    2.c  QA defualt histograms
+///
+///
+///
+/// Functions:
+/// 1. LoadModels()                   - load models to fit - Rod shift (10,20)
+/// 2. RegisterAlignFunction()        - register align functions (10-16)
+/// 3. LoadTrees                      - load trees and make aliases
+/// 4. PrintFit                       - helper function to print substring of the fit 
+/// 5. DeltaLookup                    - function to calulate the distortion for given distortion cunction
+///                                   -
+/// 6. MakeAliases                    - Make tree aliases shortcuts for the fitting function
+///
+/// 7. MakeAlignCorrection            - Crete alignment entry to be stored in the OCDB
+///                                   - Dump fit parameters and errors
+/// 8. MakeQuadrantCorrection         - 
+///                                   - Dump fit parameters and errors
+///
+/// 9. FitRodShifts                   - main minimization function
+///
+/// ~~~
+/// .x ~/rootlogon.C
+/// .x ~/NimStyle.C
+/// .L $ALICE_ROOT/TPC/CalibMacros/FitRodShift.C+
+/// FitRodShift(kFALSE);
+/// ~~~
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
@@ -96,11 +95,10 @@ void MakeQA();
 void DrawAlignParam();
 
 void PrintFit(TString fitString, TString filter){
-  //
-  // helper function to print substring of the fit
-  // TString fitString =*strFitGA;
-  // TString filter="rot";
-  //
+  /// helper function to print substring of the fit
+  /// TString fitString =*strFitGA;
+  /// TString filter="rot";
+
   TObjArray *arr = fitString.Tokenize("++");
   Int_t entries=arr->GetEntries();
   for (Int_t i=0; i<entries; i++){
@@ -113,10 +111,9 @@ void PrintFit(TString fitString, TString filter){
 
 
 void LoadModels(){
-  //
-  // Load the models from the file
-  // Or create it
-  //
+  /// Load the models from the file
+  /// Or create it
+
   Int_t volt = 1;
   TFile f("OCDB-RodShifts.root");
   AliCDBEntry *entry = (AliCDBEntry*) f.Get("AliCDBEntry");
@@ -223,18 +220,17 @@ void LoadModels(){
 
 
 void RegisterAlignFunction(){
-  //
-  // Register primitive alignment components.
-  // Linear conbination of primitev forulas used for fit
-  // The nominal delta 1 mm in shift and 1 mrad in rotation
-  // Primitive formulas registeren in AliTPCCoreection::AddvisualCorrection
-  // 10 - deltaX 
-  // 11 - deltaY
-  // 12 - deltaZ
-  // 13 - rot0 (phi)
-  // 14 - rot1 (theta)
-  // 15 - rot2 
-  //
+  /// Register primitive alignment components.
+  /// Linear conbination of primitev forulas used for fit
+  /// The nominal delta 1 mm in shift and 1 mrad in rotation
+  /// Primitive formulas registeren in AliTPCCoreection::AddvisualCorrection
+  /// 10 - deltaX
+  /// 11 - deltaY
+  /// 12 - deltaZ
+  /// 13 - rot0 (phi)
+  /// 14 - rot1 (theta)
+  /// 15 - rot2
+
   TGeoHMatrix matrixX;
   TGeoHMatrix matrixY;
   TGeoHMatrix matrixZ;
@@ -282,11 +278,10 @@ void RegisterAlignFunction(){
 
 
 void LoadTrees(){
-  //
-  // 1. Load trees
-  // 2. Make standard cuts - filter the tree
-  // 3. makeStandard aliases
-  //
+  /// 1. Load trees
+  /// 2. Make standard cuts - filter the tree
+  /// 3. makeStandard aliases
+
   TFile *fy = new TFile("clusterDY.root");
   TFile *fz = new TFile("clusterDZ.root");
   treeDY= (TTree*)fy->Get("delta");
@@ -322,20 +317,18 @@ void LoadTrees(){
 }
 
 Double_t DeltaLookup(Double_t sector, Double_t localX, Double_t kZ, Double_t xref, Int_t value, Int_t corr){
-  //
-  // Distortion maps are calculated relative to the reference X plane
-  // The same procedure applied for given correction
-  // fd(sector, localX, kZ) ==>  fd(sector, localX, kZ)-fd(sector, xref, kZ)*localX/xref
-  //
+  /// Distortion maps are calculated relative to the reference X plane
+  /// The same procedure applied for given correction
+  /// fd(sector, localX, kZ) ==>  fd(sector, localX, kZ)-fd(sector, xref, kZ)*localX/xref
+
   Double_t distortion    = AliTPCCorrection::GetCorrSector(sector,localX,kZ,value,corr);
   Double_t distortionRef = AliTPCCorrection::GetCorrSector(sector,xref,kZ,value,corr)*localX/xref;
   return distortion-distortionRef;
 }
 
 void MakeAliases(){
-  //
-  // make alias names
-  //
+  /// make alias names
+
   AliTPCROC * roc = AliTPCROC::Instance();
   Double_t xref  = ( roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
   treeDY->SetAlias("iroc","(localX<134)");  // IROC
@@ -391,16 +384,15 @@ void MakeAliases(){
 }
 
 AliTPCCalibGlobalMisalignment *MakeAlignCorrection(TVectorD paramA, TVectorD paramC,  TMatrixD covar, Double_t chi2){
-  //
-  // Make a global alignmnet 
-  // Take a fit parameters and make a combined correction:
-  // Only delta local Y and delta phi are fitted - not sensitivity for other parameters
-  // GX and GY shift extracted per side.
-  //
-  // Algorithm:
-  //   1. Loop over sectors
-  //   2. Make combined AliTPCCalibGlobalMisalignment
-  //  
+  /// Make a global alignmnet
+  /// Take a fit parameters and make a combined correction:
+  /// Only delta local Y and delta phi are fitted - not sensitivity for other parameters
+  /// GX and GY shift extracted per side.
+  ///
+  /// Algorithm:
+  ///   1. Loop over sectors
+  ///   2. Make combined AliTPCCalibGlobalMisalignment
+
   AliTPCCalibGlobalMisalignment *alignLocal  =new  AliTPCCalibGlobalMisalignment;  
   Int_t offset=3;
   AliTPCROC * roc = AliTPCROC::Instance();
@@ -498,18 +490,17 @@ AliTPCCalibGlobalMisalignment *MakeAlignCorrection(TVectorD paramA, TVectorD par
 }
 
 AliTPCCalibGlobalMisalignment *MakeQuadrantCorrection(TVectorD paramA, TVectorD paramC, TMatrixD covar, Double_t chi2){
-  //
-  // Make a global alignmnet 
-  // side= 1 - A side
-  // side=-1 - C side
-  // Take a fit parameters and make a combined correction:
-  // Only delta local Y and delta phi are fitted - not sensitivity for other parameters
-  // GX and GY shift extracted per side.
-  //
-  // Algorithm:
-  //   1. Loop over sectors
-  //   2. Make combined AliTPCCalibGlobalMisalignment
-  //  
+  /// Make a global alignmnet
+  /// side= 1 - A side
+  /// side=-1 - C side
+  /// Take a fit parameters and make a combined correction:
+  /// Only delta local Y and delta phi are fitted - not sensitivity for other parameters
+  /// GX and GY shift extracted per side.
+  ///
+  /// Algorithm:
+  ///   1. Loop over sectors
+  ///   2. Make combined AliTPCCalibGlobalMisalignment
+
   AliTPCCalibGlobalMisalignment *alignLocalQuadrant  =new  AliTPCCalibGlobalMisalignment;  
   //
   Int_t offset=3+3*18;
@@ -579,17 +570,16 @@ AliTPCCalibGlobalMisalignment *MakeQuadrantCorrection(TVectorD paramA, TVectorD 
 }
 
 AliTPCFCVoltError3D* MakeEfieldCorrection(TVectorD paramA, TVectorD paramC, TMatrixD covar, Double_t chi2){
-  //
-  // Make a global  AliTPCFCVoltError3D object
-  //
-  // Take a fit parameters and make a combined correction:
-  // Only delta local Y and delta phi are fitted - not sensitivity for other parameters
-  // GX and GY shift extracted per side.
-  //
-  // Algorithm:
-  //   1. Loop over sectors
-  //   2. Make combined AliTPCCalibGlobalMisalignment
-  //
+  /// Make a global  AliTPCFCVoltError3D object
+  ///
+  /// Take a fit parameters and make a combined correction:
+  /// Only delta local Y and delta phi are fitted - not sensitivity for other parameters
+  /// GX and GY shift extracted per side.
+  ///
+  /// Algorithm:
+  ///   1. Loop over sectors
+  ///   2. Make combined AliTPCCalibGlobalMisalignment
+
   Int_t offset=3+9*18;
   //
   AliTPCFCVoltError3D* corrField = new AliTPCFCVoltError3D;
@@ -649,14 +639,13 @@ AliTPCFCVoltError3D* MakeEfieldCorrection(TVectorD paramA, TVectorD paramC, TMat
 
 
 void FitRodShift(Bool_t flagIFCcopper = kTRUE) {
-  //
-  // Main fit function
-  // In total 440 parameters to fit using global fit:
-  //   1. Rotation and translation for each sector (72x2)
-  //   2. Rotation and translation for each quadrant of OROC (36x4x2)
-  //   3. Rod/strip shifts in IFC and OFC (18 sectors x 2 sides x 2 ) 
-  //   4. Rotated clips in IFC and OFC 
-  //
+  /// Main fit function
+  /// In total 440 parameters to fit using global fit:
+  ///   1. Rotation and translation for each sector (72x2)
+  ///   2. Rotation and translation for each quadrant of OROC (36x4x2)
+  ///   3. Rod/strip shifts in IFC and OFC (18 sectors x 2 sides x 2 )
+  ///   4. Rotated clips in IFC and OFC
+
   LoadTrees();
   LoadModels();
   RegisterAlignFunction();
@@ -844,9 +833,8 @@ void MakeQA(){
 }
 
 void FitFunctionQA(){
-  //
-  //
-  //
+  ///
+
   TH1 *his=0;
   TCanvas *canvasDist= new TCanvas("FitQA","fitQA",1200,800);
   canvasDist->Divide(2,2);
@@ -892,9 +880,8 @@ void FitFunctionQA(){
 }
 
 void DrawAlignParam(){
-  //
-  //
-  //
+  ///
+
   TFile f("fitAlignLookup.root");
   TTree * treeAlign=(TTree*)f.Get("align");
   TTree * treeQuadrant=(TTree*)f.Get("quadrant");

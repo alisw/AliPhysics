@@ -13,60 +13,40 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// _________________________________________________________________
-//
-// Begin_Html
-//   <h2>AliTPCFCVoltError3D class   </h2>       
-//   The class calculates the space point distortions due to residual voltage errors 
-//   on the Field Cage (FC) boundaries (rods and strips) of the TPC in 3D. It uses 
-//   the Poisson relaxation technique in three dimension as implemented in the parent class. 
-//   <p>
-//   Although the calculation is performed in 3D, the calculation time was significantly 
-//   reduced by using certain symmetry conditions within the calculation.
-//   <p>
-//   The input parameters can be set via the functions (e.g.) SetRodVoltShift(rod,dV) where 
-//   rod is the number of the rod on which the voltage offset dV is set. The corresponding 
-//   shift in z direction would be $dz=dV/40$ with an opposite sign for the C side. The 
-//   rods are numbered in anti-clock-wise direction starting at $\phi=0$. Rods in the IFC 
-//   are from 0 to 17, rods on the OFC go from 18 to 35. <br>
-//   This convention is following the offline numbering scheme of the ROCs.
-//   <p>
-//   Different misalignment scenarios can be modeled: 
-//   <ul>
-//   <li> A rotated clip scenario is only possible at two positions (Rod 11 at IFC, rod 3(+18) at OFC) 
-//        and can be set via SetRotatedClipVolt. The key feature is that at the mentioned positions,
-//        the strip-ends were combined. At these positions, a systematic offset of one strip-end in
-//        respect to the other is possible. 
-//   <li> A normal rod offset, where the strips follow the movement of the rod, can be set via 
-//        SetRodVoltShift. It has a anti-mirrored signature in terms of distortions when compared 
-//        to the rotated clip. This misalignment is possible at each single rod of the FC.
-//   <li> A simple rod offset, where the strips do not follow the shift, results in an even more 
-//        localized distortion close to the rod. The difference to a rod shift, where the strips follow,
-//        is more dominant on the OFC. This effect can be set via the function SetCopperRodShift.
-//   </ul>
-// End_Html
-//
-// Begin_Macro(source)
-//   {
-//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("cAliTPCVoltError3D","cAliTPCVoltError3D",500,450); 
-//   AliTPCFCVoltError3D fc;
-//   fc.SetOmegaTauT1T2(0,1,1); 
-//   fc.SetRotatedClipVoltA(0,40);
-//   fc.SetRodVoltShiftA(3,40); 
-//   fc.SetCopperRodShiftA(7+18,40);
-//   fc.SetRodVoltShiftA(15+18,40); 
-//   fc.CreateHistoDRPhiinXY(10)->Draw("cont4z");
-//   return c2;
-//   } 
-// End_Macro
-//
-// Begin_Html
-//   <p>
-//   Date: 08/08/2010  <br>
-//   Authors: Jim Thomas, Stefan Rossegger  
-// End_Html 
-// _________________________________________________________________
+/// \class AliTPCFCVoltError3D
+/// \brief AliTPCFCVoltError3D class
+///
+/// The class calculates the space point distortions due to residual voltage errors
+/// on the Field Cage (FC) boundaries (rods and strips) of the TPC in 3D. It uses
+/// the Poisson relaxation technique in three dimension as implemented in the parent class.
+///
+/// Although the calculation is performed in 3D, the calculation time was significantly
+/// reduced by using certain symmetry conditions within the calculation.
+///
+/// The input parameters can be set via the functions (e.g.) SetRodVoltShift(rod,dV) where
+/// rod is the number of the rod on which the voltage offset dV is set. The corresponding
+/// shift in z direction would be $dz=dV/40$ with an opposite sign for the C side. The
+/// rods are numbered in anti-clock-wise direction starting at $\phi=0$. Rods in the IFC
+/// are from 0 to 17, rods on the OFC go from 18 to 35.
+/// This convention is following the offline numbering scheme of the ROCs.
+///
+/// Different misalignment scenarios can be modeled:
+/// <ul>
+/// <li> A rotated clip scenario is only possible at two positions (Rod 11 at IFC, rod 3(+18) at OFC)
+///     and can be set via SetRotatedClipVolt. The key feature is that at the mentioned positions,
+///     the strip-ends were combined. At these positions, a systematic offset of one strip-end in
+///     respect to the other is possible.
+/// <li> A normal rod offset, where the strips follow the movement of the rod, can be set via
+///     SetRodVoltShift. It has a anti-mirrored signature in terms of distortions when compared
+///     to the rotated clip. This misalignment is possible at each single rod of the FC.
+/// <li> A simple rod offset, where the strips do not follow the shift, results in an even more
+///     localized distortion close to the rod. The difference to a rod shift, where the strips follow,
+///     is more dominant on the OFC. This effect can be set via the function SetCopperRodShift.
+/// </ul>
+/// ![Picture from ROOT macro](AliTPCFCVoltError3D_cxx_ee7b060.png)
+///
+/// \author Jim Thomas, Stefan Rossegger
+/// \date 08/08/2010
 
 
 #include "AliMagF.h"
@@ -81,7 +61,9 @@
 #include "AliTPCROC.h"
 #include "AliTPCFCVoltError3D.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCFCVoltError3D)
+/// \endcond
 
 AliTPCFCVoltError3D::AliTPCFCVoltError3D()
   : AliTPCCorrection("FieldCageVoltErrors","FieldCage (Rods) Voltage Errors"),
@@ -94,66 +76,64 @@ AliTPCFCVoltError3D::AliTPCFCVoltError3D()
 
   // flags for filled 'basic lookup tables'
   for (Int_t i=0; i<6; i++){
-    fInitLookUpBasic[i]= kFALSE;  
+    fInitLookUpBasic[i]= kFALSE;
   }
 
-  // Boundary settings 
+  // Boundary settings
   for (Int_t i=0; i<36; i++){
-    fRodVoltShiftA[i] = 0;  
-    fRodVoltShiftC[i] = 0;  
+    fRodVoltShiftA[i] = 0;
+    fRodVoltShiftC[i] = 0;
   }
   for (Int_t i=0; i<2; i++){
-    fRotatedClipVoltA[i] = 0;  
-    fRotatedClipVoltC[i] = 0;  
+    fRotatedClipVoltA[i] = 0;
+    fRotatedClipVoltC[i] = 0;
   }
-  // 
+  //
   for (Int_t i=0; i<36; i++){
-    fCopperRodShiftA[i] = 0;  
-    fCopperRodShiftC[i] = 0;  
+    fCopperRodShiftA[i] = 0;
+    fCopperRodShiftC[i] = 0;
   }
 
   // Array which will contain the solution according to the setted boundary conditions
   // it represents a sum up of the 4 basic look up tables (created individually)
   // see InitFCVoltError3D() function
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
-    fLookUpErOverEz[k]   =  new TMatrixF(kNR,kNZ);  
+    fLookUpErOverEz[k]   =  new TMatrixF(kNR,kNZ);
     fLookUpEphiOverEz[k] =  new TMatrixF(kNR,kNZ);
-    fLookUpDeltaEz[k]    =  new TMatrixF(kNR,kNZ);   
+    fLookUpDeltaEz[k]    =  new TMatrixF(kNR,kNZ);
   }
-  
+
   for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
     fLookUpBasic1ErOverEz[k]   = 0;
-    fLookUpBasic1EphiOverEz[k] = 0; 
+    fLookUpBasic1EphiOverEz[k] = 0;
     fLookUpBasic1DeltaEz[k]    = 0;
 
     fLookUpBasic2ErOverEz[k]   = 0;
-    fLookUpBasic2EphiOverEz[k] = 0; 
+    fLookUpBasic2EphiOverEz[k] = 0;
     fLookUpBasic2DeltaEz[k]    = 0;
 
     fLookUpBasic3ErOverEz[k]   = 0;
-    fLookUpBasic3EphiOverEz[k] = 0; 
+    fLookUpBasic3EphiOverEz[k] = 0;
     fLookUpBasic3DeltaEz[k]    = 0;
 
     fLookUpBasic4ErOverEz[k]   = 0;
-    fLookUpBasic4EphiOverEz[k] = 0; 
+    fLookUpBasic4EphiOverEz[k] = 0;
     fLookUpBasic4DeltaEz[k]    = 0;
-    
+
     fLookUpBasic5ErOverEz[k]   = 0;
-    fLookUpBasic5EphiOverEz[k] = 0; 
+    fLookUpBasic5EphiOverEz[k] = 0;
     fLookUpBasic5DeltaEz[k]    = 0;
 
     fLookUpBasic6ErOverEz[k]   = 0;
-    fLookUpBasic6EphiOverEz[k] = 0; 
+    fLookUpBasic6EphiOverEz[k] = 0;
     fLookUpBasic6DeltaEz[k]    = 0;
   }
 
 }
 
 AliTPCFCVoltError3D::~AliTPCFCVoltError3D() {
-  //
-  // destructor
-  //
-  
+  /// destructor
+
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
     delete fLookUpErOverEz[k];
     delete fLookUpEphiOverEz[k];
@@ -162,43 +142,43 @@ AliTPCFCVoltError3D::~AliTPCFCVoltError3D() {
 
   for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
     delete fLookUpBasic1ErOverEz[k];  // does nothing if pointer is zero!
-    delete fLookUpBasic1EphiOverEz[k]; 
-    delete fLookUpBasic1DeltaEz[k]; 
+    delete fLookUpBasic1EphiOverEz[k];
+    delete fLookUpBasic1DeltaEz[k];
 
     delete fLookUpBasic2ErOverEz[k];  // does nothing if pointer is zero!
-    delete fLookUpBasic2EphiOverEz[k]; 
-    delete fLookUpBasic2DeltaEz[k]; 
-    
+    delete fLookUpBasic2EphiOverEz[k];
+    delete fLookUpBasic2DeltaEz[k];
+
     delete fLookUpBasic3ErOverEz[k];  // does nothing if pointer is zero!
-    delete fLookUpBasic3EphiOverEz[k]; 
-    delete fLookUpBasic3DeltaEz[k]; 
+    delete fLookUpBasic3EphiOverEz[k];
+    delete fLookUpBasic3DeltaEz[k];
 
     delete fLookUpBasic4ErOverEz[k];  // does nothing if pointer is zero!
-    delete fLookUpBasic4EphiOverEz[k]; 
-    delete fLookUpBasic4DeltaEz[k]; 
+    delete fLookUpBasic4EphiOverEz[k];
+    delete fLookUpBasic4DeltaEz[k];
 
     delete fLookUpBasic5ErOverEz[k];  // does nothing if pointer is zero!
-    delete fLookUpBasic5EphiOverEz[k]; 
-    delete fLookUpBasic5DeltaEz[k]; 
+    delete fLookUpBasic5EphiOverEz[k];
+    delete fLookUpBasic5DeltaEz[k];
 
     delete fLookUpBasic6ErOverEz[k];  // does nothing if pointer is zero!
-    delete fLookUpBasic6EphiOverEz[k]; 
-    delete fLookUpBasic6DeltaEz[k]; 
+    delete fLookUpBasic6EphiOverEz[k];
+    delete fLookUpBasic6DeltaEz[k];
 
   }
 }
 
 
 Bool_t AliTPCFCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
-  //
-  // Add correction  and make them compact
-  // Assumptions:
-  //  - origin of distortion/correction are additive
-  //  - only correction ot the same type supported ()
+  /// Add correction  and make them compact
+  /// Assumptions:
+  ///  - origin of distortion/correction are additive
+  ///  - only correction ot the same type supported ()
+
   if (corr==NULL) {
     AliError("Zerro pointer - correction");
     return kFALSE;
-  }  
+  }
   AliTPCFCVoltError3D * corrC = dynamic_cast<AliTPCFCVoltError3D *>(corr);
   if (corrC == NULL)  {
     AliError(TString::Format("Inconsistent class types: %s\%s",IsA()->GetName(),corr->IsA()->GetName()).Data());
@@ -206,12 +186,12 @@ Bool_t AliTPCFCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double_
   }
   //
   for (Int_t isec=0; isec<36; isec++){
-    fRodVoltShiftA[isec]+= weight*corrC->fRodVoltShiftA[isec];      // Rod (&strips) shift in Volt (40V~1mm) 
-    fRodVoltShiftC[isec]+=weight*corrC->fRodVoltShiftC[isec];      // Rod (&strips) shift in Volt (40V~1mm) 
-    fCopperRodShiftA[isec]+=weight*corrC->fCopperRodShiftA[isec];    // only Rod shift 
-    fCopperRodShiftC[isec]+=weight*corrC->fCopperRodShiftC[isec];    // only Rod shift 
+    fRodVoltShiftA[isec]+= weight*corrC->fRodVoltShiftA[isec];      // Rod (&strips) shift in Volt (40V~1mm)
+    fRodVoltShiftC[isec]+=weight*corrC->fRodVoltShiftC[isec];      // Rod (&strips) shift in Volt (40V~1mm)
+    fCopperRodShiftA[isec]+=weight*corrC->fCopperRodShiftA[isec];    // only Rod shift
+    fCopperRodShiftC[isec]+=weight*corrC->fCopperRodShiftC[isec];    // only Rod shift
   }
-  for (Int_t isec=0; isec<2; isec++){  
+  for (Int_t isec=0; isec<2; isec++){
     fRotatedClipVoltA[isec]+= weight*corrC->fRotatedClipVoltA[isec];    // rotated clips at HV rod
     fRotatedClipVoltC[isec]+= weight*corrC-> fRotatedClipVoltC[isec];    // rotated clips at HV rod
   }
@@ -222,10 +202,8 @@ Bool_t AliTPCFCVoltError3D::AddCorrectionCompact(AliTPCCorrection* corr, Double_
 
 
 void AliTPCFCVoltError3D::Init() {
-  //
-  // Initialization funtion
-  //
-  
+  /// Initialization funtion
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bzField = magF->SolenoidField()/10.; //field in T
@@ -233,7 +211,7 @@ void AliTPCFCVoltError3D::Init() {
   if (!param) AliError("Parameters - not initialized");
   Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
-  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 
@@ -241,9 +219,8 @@ void AliTPCFCVoltError3D::Init() {
 }
 
 void AliTPCFCVoltError3D::Update(const TTimeStamp &/*timeStamp*/) {
-  //
-  // Update function 
-  //
+  /// Update function
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bzField = magF->SolenoidField()/10.; //field in T
@@ -251,7 +228,7 @@ void AliTPCFCVoltError3D::Update(const TTimeStamp &/*timeStamp*/) {
   if (!param) AliError("Parameters - not initialized");
   Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]  // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
-  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 
@@ -261,9 +238,8 @@ void AliTPCFCVoltError3D::Update(const TTimeStamp &/*timeStamp*/) {
 
 
 void AliTPCFCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Calculates the correction due e.g. residual voltage errors on the TPC boundaries
-  //   
+  /// Calculates the correction due e.g. residual voltage errors on the TPC boundaries
+
   const Double_t kEpsilon=Double_t(FLT_MIN);
 
   if (!fInitLookUp) {
@@ -280,7 +256,7 @@ void AliTPCFCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Floa
   }
 
 
-  Int_t   order     = 1 ;               // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
+  Int_t   order     = 1 ;               // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2
                                         // note that the poisson solution was linearly mirroed on this grid!
   Float_t intEr, intEphi, intDeltaEz;
   Float_t r, phi, z ;
@@ -296,59 +272,57 @@ void AliTPCFCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Floa
   } else {
     sign = -1;       // (TPC C side)
   }
-  
+
   if ( sign==1  && z <  fgkZOffSet ) z =  fgkZOffSet;    // Protect against discontinuity at CE
   if ( sign==-1 && z > -fgkZOffSet ) z = -fgkZOffSet;    // Protect against discontinuity at CE
-  
+
 
   if ( (sign==1 && z<0) || (sign==-1 && z>0) ) // just a consistency check
     AliError("ROC number does not correspond to z coordinate! Calculation of distortions is most likely wrong!");
 
-  // Get the Er and Ephi field integrals plus the integral over DeltaEz 
-  intEr      = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi, 
+  // Get the Er and Ephi field integrals plus the integral over DeltaEz
+  intEr      = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi,
 				  fgkRList, fgkZList, fgkPhiList, fLookUpErOverEz  );
-  intEphi    = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi, 
+  intEphi    = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi,
 				  fgkRList, fgkZList, fgkPhiList, fLookUpEphiOverEz  );
-  intDeltaEz = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi, 
+  intDeltaEz = Interpolate3DTable(order, r, z, phi, kNR, kNZ, kNPhi,
 				  fgkRList, fgkZList, fgkPhiList, fLookUpDeltaEz  );
 
   //  printf("%lf %lf %lf\n",intEr,intEphi,intDeltaEz);
 
   // Calculate distorted position
   if ( r > 0.0 ) {
-    phi =  phi + ( fC0*intEphi - fC1*intEr ) / r;      
-    r   =  r   + ( fC0*intEr   + fC1*intEphi );  
+    phi =  phi + ( fC0*intEphi - fC1*intEr ) / r;
+    r   =  r   + ( fC0*intEr   + fC1*intEphi );
   }
-  
+
   // Calculate correction in cartesian coordinates
   dx[0] = r * TMath::Cos(phi) - x[0];
-  dx[1] = r * TMath::Sin(phi) - x[1]; 
-  dx[2] = intDeltaEz;  // z distortion - (internally scaled with driftvelocity dependency 
+  dx[1] = r * TMath::Sin(phi) - x[1];
+  dx[2] = intDeltaEz;  // z distortion - (internally scaled with driftvelocity dependency
                        // on the Ez field plus the actual ROC misalignment (if set TRUE)
 
 }
 
 void AliTPCFCVoltError3D::InitFCVoltError3D() {
-  //
-  // Initialization of the Lookup table which contains the solutions of the 
-  // Dirichlet boundary problem
-  // Calculation of the single 3D-Poisson solver is done just if needed
-  // (see basic lookup tables in header file)
-  //
+  /// Initialization of the Lookup table which contains the solutions of the
+  /// Dirichlet boundary problem
+  /// Calculation of the single 3D-Poisson solver is done just if needed
+  /// (see basic lookup tables in header file)
 
-  const Int_t   order       =    1  ;  // Linear interpolation = 1, Quadratic = 2  
+  const Int_t   order       =    1  ;  // Linear interpolation = 1, Quadratic = 2
   const Float_t gridSizeR   =  (fgkOFCRadius-fgkIFCRadius) / (kRows-1) ;
   const Float_t gridSizeZ   =  fgkTPCZ0 / (kColumns-1) ;
   const Float_t gridSizePhi =  TMath::TwoPi() / ( 18.0 * kPhiSlicesPerSector);
 
   // temporary arrays to create the boundary conditions
-  TMatrixD *arrayofArrayV[kPhiSlices], *arrayofCharge[kPhiSlices] ; 
+  TMatrixD *arrayofArrayV[kPhiSlices], *arrayofCharge[kPhiSlices] ;
   for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
     arrayofArrayV[k]     =   new TMatrixD(kRows,kColumns) ;
     arrayofCharge[k]     =   new TMatrixD(kRows,kColumns) ;
   }
   Double_t  innerList[kPhiSlices], outerList[kPhiSlices] ;
-  
+
   // list of point as used in the poisson relation and the interpolation (during sum up)
   Double_t  rlist[kRows], zedlist[kColumns] , philist[kPhiSlices];
   for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
@@ -364,7 +338,7 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
   // ==========================================================================
   // Solve Poisson's equation in 3D cylindrical coordinates by relaxation technique
   // Allow for different size grid spacing in R and Z directions
-  
+
   const Int_t   symmetry[6] =    {1,1,-1,-1,1,1}; // shifted rod (2x), rotated clip (2x), only rod shift on OFC (1x)
 
   // check which lookup tables are needed ---------------------------------
@@ -383,13 +357,13 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
   // Rotated clips
   if (fRotatedClipVoltA[0]!=0 || fRotatedClipVoltC[0]!=0) needTable[2]=kTRUE;
   if (fRotatedClipVoltA[1]!=0 || fRotatedClipVoltC[1]!=0) needTable[3]=kTRUE;
- 
-  // shifted Copper rods 
+
+  // shifted Copper rods
   for ( Int_t rod = 0 ; rod < 18 ; rod++ ) {
     if (fCopperRodShiftA[rod]!=0) needTable[4]=kTRUE;
     if (fCopperRodShiftC[rod]!=0) needTable[4]=kTRUE;
   }
-  // shifted Copper rods 
+  // shifted Copper rods
   for ( Int_t rod = 18; rod < 36 ; rod++ ) {
     if (fCopperRodShiftA[rod]!=0) needTable[5]=kTRUE;
     if (fCopperRodShiftC[rod]!=0) needTable[5]=kTRUE;
@@ -445,48 +419,48 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
       // will be deleted in destructor
     }
   }
- 
+
   // Set bondaries and solve Poisson's equation --------------------------
- 
+
   for (Int_t look=0; look<6; look++) {
-   
-    Float_t inner18[18] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;  
-    Float_t outer18[18] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ; 
-  
+
+    Float_t inner18[18] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;
+    Float_t outer18[18] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;
+
     if (needTable[look] && !fInitLookUpBasic[look]) {
 
       // Specify which rod is the reference; other distortions calculated by summing over multiple rotations of refrence
       // Note: the interpolation later on depends on it!! Do not change if not really needed!
       if (look==0) {
 	AliInfo(Form("IFC - ROD&Strip shift : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
-	inner18[0] = 1;  
+	inner18[0] = 1;
       } else if (look==1) {
 	AliInfo(Form("OFC - ROD&Strip shift : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
-	outer18[0] = 1;  
+	outer18[0] = 1;
       } else if (look==2) {
 	AliInfo(Form("IFC - Clip rot. : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
-	inner18[0] = 1; 
+	inner18[0] = 1;
       } else if (look==3) {
 	AliInfo(Form("OFC - Clip rot. : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
-	outer18[0] = 1;  
+	outer18[0] = 1;
       } else if (look==4) {
 	AliInfo(Form("IFC - CopperRod shift : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
-	inner18[0] = 1;  
+	inner18[0] = 1;
       } else if (look==5) {
 	AliInfo(Form("OFC - CopperRod shift : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
-	outer18[0] = 1;  
+	outer18[0] = 1;
       }
       // Build potentials on boundary stripes for a rotated clip (SYMMETRY==-1) or a shifted rod (SYMMETRY==1)
       if (look<4) {
 	// in these cases, the strips follow the actual rod shift (linear interpolation between the rods)
 	for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
 	  Int_t slices = kPhiSlicesPerSector ;
-	  Int_t ipoint = k/slices  ;  
+	  Int_t ipoint = k/slices  ;
 	  innerList[k] = (((ipoint+1)*slices-k)*inner18[ipoint]-(k-ipoint*slices)*inner18[ipoint+1])/slices ;
 	  outerList[k] = (((ipoint+1)*slices-k)*outer18[ipoint]-(k-ipoint*slices)*outer18[ipoint+1])/slices ;
-	  if ( (k%slices) == 0 && symmetry[look] == -1 ) { innerList[k] = 0.0 ; outerList[k] = 0.0 ; } 
+	  if ( (k%slices) == 0 && symmetry[look] == -1 ) { innerList[k] = 0.0 ; outerList[k] = 0.0 ; }
 	  // above, force Zero if Anti-Sym
-	} 
+	}
       } else if (look==4){
 	// in this case, we assume that the strips stay at the correct position, but the rods move
 	// the distortion is then much more localized around the rod (indicated by real data)
@@ -509,59 +483,59 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	TMatrixD &charge    =  *arrayofCharge[k] ;
        	for ( Int_t i = 0 ; i < kRows ; i++ )    {
 	  for ( Int_t j = 0 ; j < kColumns ; j++ ) { // Fill Vmatrix with Boundary Conditions
-	    arrayV(i,j) = 0.0 ; 
+	    arrayV(i,j) = 0.0 ;
 	    charge(i,j) = 0.0 ;
-	    if ( i == 0 )       arrayV(i,j) = innerList[k] ; 
-	    if ( i == kRows-1 ) arrayV(i,j) = outerList[k] ; 
+	    if ( i == 0 )       arrayV(i,j) = innerList[k] ;
+	    if ( i == kRows-1 ) arrayV(i,j) = outerList[k] ;
 	  }
-	}      
+	}
 	// no charge in the volume
-	for ( Int_t i = 1 ; i < kRows-1 ; i++ )  { 
+	for ( Int_t i = 1 ; i < kRows-1 ; i++ )  {
 	  for ( Int_t j = 1 ; j < kColumns-1 ; j++ ) {
 	    charge(i,j)  =  0.0 ;
 	  }
 	}
-      }      
-     
+      }
+
       // Solve Poisson's equation in 3D cylindrical coordinates by relaxation technique
       // Allow for different size grid spacing in R and Z directions
       if (look==0) {
-	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			     fLookUpBasic1ErOverEz, fLookUpBasic1EphiOverEz, fLookUpBasic1DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[0]) ;
 	AliInfo("IFC - ROD&Strip shift : done ");
       } else if (look==1) {
-	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			     fLookUpBasic2ErOverEz, fLookUpBasic2EphiOverEz, fLookUpBasic2DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[1]) ;
-	
+
 	AliInfo("OFC - ROD&Strip shift : done ");
       } else if (look==2) {
-	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			     fLookUpBasic3ErOverEz, fLookUpBasic3EphiOverEz, fLookUpBasic3DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[2]) ;
 	AliInfo("IFC - Clip rot. : done ");
       } else if (look==3) {
-	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			     fLookUpBasic4ErOverEz, fLookUpBasic4EphiOverEz, fLookUpBasic4DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[3]) ;
 	AliInfo("OFC - Clip rot. : done ");
       } else if (look==4) {
-	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			     fLookUpBasic5ErOverEz, fLookUpBasic5EphiOverEz, fLookUpBasic5DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[4]) ;
 	AliInfo("IFC - CopperRod shift : done ");
       } else if (look==5) {
-	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			     fLookUpBasic6ErOverEz, fLookUpBasic6EphiOverEz, fLookUpBasic6DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[5]) ;
 	AliInfo("OFC - CopperRod shift : done ");
       }
-      
+
       fInitLookUpBasic[look] = kTRUE;
     }
   }
-  
+
 
   // =============================================================================
   // Create the final lookup table with corresponding ROD shifts or clip rotations
@@ -589,53 +563,53 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 
     for ( Int_t i = 0 ; i < kNZ ; i++ ) {
       z = TMath::Abs(fgkZList[i]) ;  // Symmetric solution in Z that depends only on ABS(Z)
-      for ( Int_t j = 0 ; j < kNR ; j++ ) { 
+      for ( Int_t j = 0 ; j < kNR ; j++ ) {
 	r = fgkRList[j] ;
 	// Interpolate basicLookup tables; once for each rod, then sum the results
-	
+
 	erIntegralSum   = 0.0 ;
 	ephiIntegralSum = 0.0 ;
 	ezIntegralSum   = 0.0 ;
- 
+
 	// SHIFTED RODS =========================================================
 
 	// IFC ROD SHIFTS +++++++++++++++++++++++++++++
 	for ( Int_t rod = 0 ; rod < 18 ; rod++ ) {
-	  
+
 	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
-	  
+
 	  if ( fRodVoltShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
 	  if ( fRodVoltShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
+	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;
 
-	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi
 
 	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic1ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic1EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic1DeltaEz   );
-	    
+
 	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
-	    
+
 	    phiPrime     = TMath::TwoPi() - phiPrime ;
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic1ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic1EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic1DeltaEz   );
-	    
+
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[0] ==  1 ) ephiIntegral *= -1  ;    
-	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[0] == -1 ) erIntegral   *= -1  ;    
+	    if ( symmetry[0] ==  1 ) ephiIntegral *= -1  ;
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions
+	    if ( symmetry[0] == -1 ) erIntegral   *= -1  ;
 
 	  }
 
@@ -654,39 +628,39 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	for ( Int_t rod = 18 ; rod < 36 ; rod++ ) {
 
 	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
-	  
+
 	  if ( fRodVoltShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
 	  if ( fRodVoltShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - (rod-18)*kPhiSlicesPerSector*gridSizePhi ;  
-		  
-	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
+	  phiPrime =  phi - (rod-18)*kPhiSlicesPerSector*gridSizePhi ;
+
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi
 
 	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic2ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic2EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic2DeltaEz   );
-	    
+
 	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
-	    
+
 	    phiPrime     = TMath::TwoPi() - phiPrime ;
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic2ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic2EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic2DeltaEz   );
-	    
+
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[1] ==  1 ) ephiIntegral *= -1  ;    
-	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[1] == -1 ) erIntegral   *= -1  ;    
+	    if ( symmetry[1] ==  1 ) ephiIntegral *= -1  ;
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions
+	    if ( symmetry[1] == -1 ) erIntegral   *= -1  ;
 
 	  }
 
@@ -717,37 +691,37 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	  if ( fRotatedClipVoltC[0] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
-	  
-	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
-	  
+	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;
+
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi
+
 	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic3ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic3EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic3DeltaEz   );
-	    
+
 	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
-	    
+
 	    phiPrime     = TMath::TwoPi() - phiPrime ;
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic3ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic3EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic3DeltaEz   );
-	    
+
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[2] ==  1 ) ephiIntegral *= -1  ;    
-	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[2] == -1 ) erIntegral   *= -1  ;    
-	    
+	    if ( symmetry[2] ==  1 ) ephiIntegral *= -1  ;
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions
+	    if ( symmetry[2] == -1 ) erIntegral   *= -1  ;
+
 	  }
-	  
+
 	  if ( fgkZList[i] > 0 ) {
 	    erIntegralSum   += fRotatedClipVoltA[0]*erIntegral   ;
 	    ephiIntegralSum += fRotatedClipVoltA[0]*ephiIntegral ;
@@ -761,45 +735,45 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 
 	// OFC: ROTATED CLIP  +++++++++++++++++++++++++++++
 	for ( Int_t rod = rodOFC ; rod < rodOFC+1 ; rod++ ) { // loop over 1 to keep the "ignore"-functionality
-	  
+
 	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
-	  
+
 	  if ( fRotatedClipVoltA[1] == 0 && fgkZList[i] > 0) continue ;
 	  if ( fRotatedClipVoltC[1] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
-	  
-	  
-	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
-	  
+	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;
+
+
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi
+
 	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic4ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic4EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic4DeltaEz   );
-	    
+
 	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
-	    
+
 	    phiPrime     = TMath::TwoPi() - phiPrime ;
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic4ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic4EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic4DeltaEz   );
-	    
+
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[3] ==  1 ) ephiIntegral *= -1  ;    
-	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[3] == -1 ) erIntegral   *= -1  ;    
-	    
+	    if ( symmetry[3] ==  1 ) ephiIntegral *= -1  ;
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions
+	    if ( symmetry[3] == -1 ) erIntegral   *= -1  ;
+
 	  }
-	  
+
 	  if ( fgkZList[i] > 0 ) {
 	    erIntegralSum   += fRotatedClipVoltA[1]*erIntegral   ;
 	    ephiIntegralSum += fRotatedClipVoltA[1]*ephiIntegral ;
@@ -813,41 +787,41 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 
 	// IFC Cooper rod shift  +++++++++++++++++++++++++++++
 	for ( Int_t rod = 0 ; rod < 18 ; rod++ ) {
-	  
+
 	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
-	  
+
 	  if ( fCopperRodShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
 	  if ( fCopperRodShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
+	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;
 
-	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi
 
 	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic5ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic5EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic5DeltaEz   );
-	    
+
 	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
-	    
+
 	    phiPrime     = TMath::TwoPi() - phiPrime ;
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic5ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic5EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic5DeltaEz   );
-	    
+
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[4] ==  1 ) ephiIntegral *= -1  ;    
-	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[4] == -1 ) erIntegral   *= -1  ;    
+	    if ( symmetry[4] ==  1 ) ephiIntegral *= -1  ;
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions
+	    if ( symmetry[4] == -1 ) erIntegral   *= -1  ;
 
 	  }
 
@@ -864,41 +838,41 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 
 	// OFC Cooper rod shift  +++++++++++++++++++++++++++++
 	for ( Int_t rod = 18 ; rod < 36 ; rod++ ) {
-	  
+
 	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
-	  
+
 	  if ( fCopperRodShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
 	  if ( fCopperRodShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - (rod-18)*kPhiSlicesPerSector*gridSizePhi ;  
+	  phiPrime =  phi - (rod-18)*kPhiSlicesPerSector*gridSizePhi ;
 
-	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi
 
 	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic6ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic6EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic6DeltaEz   );
-	    
+
 	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
-	    
+
 	    phiPrime     = TMath::TwoPi() - phiPrime ;
-	    
-	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic6ErOverEz  );
 	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic6EphiOverEz);
 	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
 					      rlist, zedlist, philist, fLookUpBasic6DeltaEz   );
-	    
+
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[5] ==  1 ) ephiIntegral *= -1  ;    
-	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[5] == -1 ) erIntegral   *= -1  ;    
+	    if ( symmetry[5] ==  1 ) ephiIntegral *= -1  ;
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions
+	    if ( symmetry[5] == -1 ) erIntegral   *= -1  ;
 
 	  }
 
@@ -917,9 +891,9 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	erOverEz(j,i)   =  erIntegralSum;
 	ephiOverEz(j,i) =  ephiIntegralSum;
 	deltaEz(j,i)    =  ezIntegralSum;
-	
+
 	//	if (j==1) printf("%lf %lf %lf: %lf %lf %lf\n",r, phi, z, erIntegralSum,ephiIntegralSum,ezIntegralSum);
- 
+
       } // endo r loop
     } // end of z loop
   } // end of phi loop
@@ -930,85 +904,83 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
     delete arrayofArrayV[k];
     delete arrayofCharge[k];
   }
- 
+
   AliInfo(" done");
   fInitLookUp = kTRUE;
 
 }
 
 void AliTPCFCVoltError3D::Print(const Option_t* option) const {
-  //
-  // Print function to check the settings of the Rod shifts and the rotated clips
-  // option=="a" prints the C0 and C1 coefficents for calibration purposes
-  //
+  /// Print function to check the settings of the Rod shifts and the rotated clips
+  /// option=="a" prints the C0 and C1 coefficents for calibration purposes
 
   TString opt = option; opt.ToLower();
   printf("%s\n",GetTitle());
   printf(" - ROD shifts  (residual voltage settings): 40V correspond to 1mm of shift\n");
   Int_t count = 0;
-  printf("  : A-side - (Rod & Strips) \n     "); 
+  printf("  : A-side - (Rod & Strips) \n     ");
   for (Int_t i=0; i<36;i++) {
     if (fRodVoltShiftA[i]!=0) {
       printf("Rod%2d:%3.1fV ",i,fRodVoltShiftA[i]);
       count++;
     }
-    if (count==0&&i==35) 
+    if (count==0&&i==35)
       printf("-> all at 0 V\n");
     else if (i==35){
       printf("\n");
       count=0;
     }
-  } 
-  printf("  : C-side - (Rod & Strips) \n     "); 
+  }
+  printf("  : C-side - (Rod & Strips) \n     ");
   for (Int_t i=0; i<36;i++) {
     if (fRodVoltShiftC[i]!=0) {
       printf("Rod%2d:%3.1fV ",i,fRodVoltShiftC[i]);
       count++;
     }
-    if (count==0&&i==35) 
+    if (count==0&&i==35)
       printf("-> all at 0 V\n");
     else if (i==35){
       printf("\n");
       count=0;
     }
-  } 
- 
+  }
+
   printf(" - Rotated clips (residual voltage settings): 40V correspond to 1mm of 'offset'\n");
   if (fRotatedClipVoltA[0]!=0) {   printf("     A side (IFC): HV Rod: %3.1f V \n",fRotatedClipVoltA[0]); count++; }
   if (fRotatedClipVoltA[1]!=0) {   printf("     A side (OFC): HV Rod: %3.1f V \n",fRotatedClipVoltA[1]); count++; }
   if (fRotatedClipVoltC[0]!=0) {   printf("     C side (IFC): HV Rod: %3.1f V \n",fRotatedClipVoltC[0]); count++; }
   if (fRotatedClipVoltC[1]!=0) {   printf("     C side (OFC): HV Rod: %3.1f V \n",fRotatedClipVoltC[1]); count++; }
-  if (count==0) 
+  if (count==0)
     printf("     -> no rotated clips \n");
 
   count=0;
   printf(" - Copper ROD shifts (without strips):\n");
-  printf("  : A-side - (Copper Rod shift) \n     "); 
+  printf("  : A-side - (Copper Rod shift) \n     ");
   for (Int_t i=0; i<36;i++) {
     if (fCopperRodShiftA[i]!=0) {
       printf("Rod%2d:%3.1fV ",i,fCopperRodShiftA[i]);
       count++;
     }
-    if (count==0&&i==35) 
+    if (count==0&&i==35)
       printf("-> all at 0 V\n");
     else if (i==35){
       printf("\n");
       count=0;
     }
-  } 
-  printf("  : C-side - (Copper Rod shift) \n     "); 
+  }
+  printf("  : C-side - (Copper Rod shift) \n     ");
   for (Int_t i=0; i<36;i++) {
     if (fCopperRodShiftC[i]!=0) {
       printf("Rod%2d:%3.1fV ",i,fCopperRodShiftC[i]);
       count++;
     }
-    if (count==0&&i==35) 
+    if (count==0&&i==35)
       printf("-> all at 0 V\n");
     else if (i==35){
       printf("\n");
       count=0;
     }
-  } 
+  }
 
   if (opt.Contains("a")) { // Print all details
     printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);

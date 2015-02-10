@@ -1,3 +1,5 @@
+/// \file TestAliTPCDigitsArray.C
+
 TFile f("pokus.root","recreate")
 arr.MakeTree()
 TBrowser b;

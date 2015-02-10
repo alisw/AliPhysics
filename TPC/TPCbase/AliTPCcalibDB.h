@@ -3,11 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class providing the calibration parameters by accessing the CDB           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCcalibDB
+/// \brief Class providing the calibration parameters by accessing the CDB
 
 
 class AliTPCTransform;
@@ -199,76 +196,78 @@ protected:
   void         UpdateChamberHighVoltageData();
   Int_t        InitDeadMap();
 
-  Int_t        fRun;         // current run number
-  AliTPCTransform *fTransform;      // object responsible for spacial corrections
-  AliTPCExB *fExB;              // ExB correction factor
+  Int_t        fRun;         ///< current run number
+  AliTPCTransform *fTransform;      ///< object responsible for spacial corrections
+  AliTPCExB *fExB;              ///< ExB correction factor
 //  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
   //
   // calibration parameters per pad
   //
-  AliTPCCalPad* fPadGainFactor;   // Gain calibration entry
-  AliTPCCalPad* fActiveChannelMap; // Map of active channels calculated on the fly
-  AliTPCCalPad* fDedxGainFactor;   // Gain calibration entry - for dEdx
-  AliTPCCalPad* fPadTime0;        // Time0 calibration entry
-  TObjArray   *fDistortionMap;    // distortion map
-  AliTPCCorrection *fComposedCorrection;  // general space point corrections
-  TObjArray *      fComposedCorrectionArray; //space point corrections for different field setting
-  AliTPCCalPad* fPadNoise;        // Noise calibration entry
-  AliTPCCalPad* fPedestals;       // Pedestal calibration entry
-  AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry
-  AliTPCdataQA  *fDataQA;         // qa object
-  TObjArray *fALTROConfigData;    // ALTRO configuration data
-  TObjArray * fIonTailArray;      // array of graphs with the ion tail 
-  TObjArray *fPulserData;         // Calibration Pulser data
-  TObjArray *fCEData;             // CE data
+  AliTPCCalPad* fPadGainFactor;   ///< Gain calibration entry
+  AliTPCCalPad* fActiveChannelMap; ///< Map of active channels calculated on the fly
+  AliTPCCalPad* fDedxGainFactor;   ///< Gain calibration entry - for dEdx
+  AliTPCCalPad* fPadTime0;        ///< Time0 calibration entry
+  TObjArray   *fDistortionMap;    ///< distortion map
+  AliTPCCorrection *fComposedCorrection;  ///< general space point corrections
+  TObjArray *      fComposedCorrectionArray; ///< space point corrections for different field setting
+  AliTPCCalPad* fPadNoise;        ///< Noise calibration entry
+  AliTPCCalPad* fPedestals;       ///< Pedestal calibration entry
+  AliTPCCalibRaw *fCalibRaw;      ///< raw data calibration entry
+  AliTPCdataQA  *fDataQA;         ///< qa object
+  TObjArray *fALTROConfigData;    ///< ALTRO configuration data
+  TObjArray * fIonTailArray;      ///< array of graphs with the ion tail
+  TObjArray *fPulserData;         ///< Calibration Pulser data
+  TObjArray *fCEData;             ///< CE data
   //
   // Chamber HV info
   //
-  Bool_t  fChamberHVStatus[72];       // Status of the Chamber, HV wise (on/off)
-  Float_t fChamberHVmedian[72];       // median chamber high voltage
-  Float_t fCurrentNominalVoltage[72]; // current nominal voltages
-  Float_t fChamberHVgoodFraction[72]; // fraction of time the chamber has a good HV (wrt. robust median)
-  AliDCSSensor *fHVsensors[72];       // HV sensors
-  TGraph *fGrRunState;                // store information if run is active or paused
+  Bool_t  fChamberHVStatus[72];       ///< Status of the Chamber, HV wise (on/off)
+  Float_t fChamberHVmedian[72];       ///< median chamber high voltage
+  Float_t fCurrentNominalVoltage[72]; ///< current nominal voltages
+  Float_t fChamberHVgoodFraction[72]; ///< fraction of time the chamber has a good HV (wrt. robust median)
+  AliDCSSensor *fHVsensors[72];       ///< HV sensors
+  TGraph *fGrRunState;                ///< store information if run is active or paused
   //
   //
   //
-  AliTPCSensorTempArray* fTemperature; // Temperature calibration entry
-  AliTPCAltroMapping **fMapping;   // Altro mapping   
+  AliTPCSensorTempArray* fTemperature; ///< Temperature calibration entry
+  AliTPCAltroMapping **fMapping;   ///< Altro mapping
   //
   //
-  AliTPCParam * fParam;                // TPC parameters
-  AliTPCClusterParam * fClusterParam;  // TPC cluster error, shape and Q parameterization
-  TObjArray * fRecoParamList;          // List of TPC reco param objects
-  TObjArray * fTimeGainSplines;        // Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
+  AliTPCParam * fParam;                ///< TPC parameters
+  AliTPCClusterParam * fClusterParam;  ///< TPC cluster error, shape and Q parameterization
+  TObjArray * fRecoParamList;          ///< List of TPC reco param objects
+  TObjArray * fTimeGainSplines;        ///< Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
   //
   // Get the corssrun information
   //
-  TMap      fTimeGainSplinesArray; //! array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
-  TMap      fGRPArray;							//! array of GRPs  -  per run
-  TMap      fGRPMaps;							//! array of GRPs maps  -  per run - old data  
-  TMap      fGoofieArray;					//! array of GOOFIE values -per run
-  TMap      fVoltageArray;					//! array of Chamber HV values -per run
-  TMap      fTemperatureArray;			//! array of temperature sensors - per run
-  TMap      fVdriftArray;					//! array of v drift interfaces
-  TMap      fDriftCorrectionArray;                //! array of drift correction
+  TMap      fTimeGainSplinesArray; //!< array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
+  TMap      fGRPArray;							//!< array of GRPs  -  per run
+  TMap      fGRPMaps;							//!< array of GRPs maps  -  per run - old data
+  TMap      fGoofieArray;					//!< array of GOOFIE values -per run
+  TMap      fVoltageArray;					//!< array of Chamber HV values -per run
+  TMap      fTemperatureArray;			//!< array of temperature sensors - per run
+  TMap      fVdriftArray;					//!< array of v drift interfaces
+  TMap      fDriftCorrectionArray;                //!< array of drift correction
 
-  TArrayI        fRunList;							//! run list - indicates try to get the run param
-  Bool_t         fBHasAlignmentOCDB;                // Flag - alignment from the Transformation class
+  TArrayI        fRunList;							//!< run list - indicates try to get the run param
+  Bool_t         fBHasAlignmentOCDB;                ///< Flag - alignment from the Transformation class
   //
-  static AliTPCcalibDB* fgInstance;  // singleton control
-  static Bool_t       fgTerminated;  // termination control 
-  static TObjArray    fgExBArray;    // array of ExB corrections
-  AliTPCcalibDButil   *fDButil;       // utility class
+  static AliTPCcalibDB* fgInstance;  ///< singleton control
+  static Bool_t       fgTerminated;  ///< termination control
+  static TObjArray    fgExBArray;    ///< array of ExB corrections
+  AliTPCcalibDButil   *fDButil;       ///< utility class
   //ctp info
-  AliCTPTimeParams *fCTPTimeParams;   //CTP timing parameters
-  Int_t            fMode;             //RCU trigger config mode
+  AliCTPTimeParams *fCTPTimeParams;   ///< CTP timing parameters
+  Int_t            fMode;             ///< RCU trigger config mode
 
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );
    AliTPCcalibDB& operator= (const AliTPCcalibDB& );
   
+   /// \cond CLASSIMP
    ClassDef(AliTPCcalibDB, 1)
+   /// \endcond
 };
 
 #endif

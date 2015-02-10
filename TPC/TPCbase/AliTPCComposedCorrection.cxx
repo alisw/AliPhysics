@@ -14,48 +14,48 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliTPCComposedCorrection class                                             //
-//                                                                            //
-// This class is creating a correction that is composed out of smaller        //
-// corrections.                                                               //
-// There are two ways the sub-corrections can be combined into this one:      //
-// 1. kParallel: All corrections are applied at the given position x and      //
-//    the dx terms are summed up (this commutes).                             //
-// 2. kQueue: The corrections are called in order. The first one at the       //
-//    given position x resulting in dx1, the second one is called at          //
-//    the corrected position (x+dx1) resulting in dx2, the third one          //
-//    is then called at position (x+dx1+dx2) and so forth. dx=dx1+dx2+...     //
-//    is returned.                                                            //
-// 3. kQueueResidual: like kQueue with the exception that in case of          //
-//    a positive weight the 'Distortion' is called and in case of a negative  //
-//    weight the 'Correction' is called, where the absolute of the weight     //
-//    will be applied to the correction
-// For the inverse of the correction this is taken into account by reversing  //
-// the order the corrections are applied in the kQueue case (no issue for     //
-// kParallel).                                                                //
-//                                                                            //
-// date: 27/04/2010                                                           //
-// Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                       //
-//                                                                            //
-// Example usage:                                                             //
-//                                                                            //
-//  AliMagF mag("mag","mag");                                                 //
-//  AliTPCExBBShape exb;             // B field shape distortions             //
-//  exb.SetBField(&mag);                                                      //
-//                                                                            //
-//  AliTPCExBTwist twist;            // ExB Twist distortions                 //
-//  twist.SetXTwist(0.001);                                                   //
-//                                                                            //
-//   TObjArray cs;  cs.Add(&exb); cs.Add(&twist);                             //
-//                                                                            //
-//  AliTPCComposedCorrection cc;                                              //
-//  cc.SetCorrections(&cs);                                                   //
-//  cc.SetOmegaTauT1T2(wt,T1,T2);                                             //
-//  cc.Print("DA");                                                           //               
-//  cc.CreateHistoDRPhiinZR(0,100,100)->Draw("surf2");                        //
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCComposedCorrection
+/// \brief AliTPCComposedCorrection class
+///
+/// This class is creating a correction that is composed out of smaller
+/// corrections.
+/// There are two ways the sub-corrections can be combined into this one:
+/// 1. kParallel: All corrections are applied at the given position x and
+///   the dx terms are summed up (this commutes).
+/// 2. kQueue: The corrections are called in order. The first one at the
+///   given position x resulting in dx1, the second one is called at
+///   the corrected position (x+dx1) resulting in dx2, the third one
+///   is then called at position (x+dx1+dx2) and so forth. dx=dx1+dx2+...
+///   is returned.
+/// 3. kQueueResidual: like kQueue with the exception that in case of
+///   a positive weight the 'Distortion' is called and in case of a negative
+///   weight the 'Correction' is called, where the absolute of the weight
+///   will be applied to the correction
+/// For the inverse of the correction this is taken into account by reversing
+/// the order the corrections are applied in the kQueue case (no issue for
+/// kParallel).
+///
+/// Example usage:
+///
+/// ~~~{.cpp}
+/// AliMagF mag("mag","mag");
+/// AliTPCExBBShape exb;             // B field shape distortions
+/// exb.SetBField(&mag);
+///
+/// AliTPCExBTwist twist;            // ExB Twist distortions
+/// twist.SetXTwist(0.001);
+///
+/// TObjArray cs;  cs.Add(&exb); cs.Add(&twist);
+///
+/// AliTPCComposedCorrection cc;
+/// cc.SetCorrections(&cs);
+/// cc.SetOmegaTauT1T2(wt,T1,T2);
+/// cc.Print("DA");
+/// cc.CreateHistoDRPhiinZR(0,100,100)->Draw("surf2");
+/// ~~~
+///
+/// \author Magnus Mager, Stefan Rossegger, Jim Thomas
+/// \date 27/04/2010
 
 
 #include <TCollection.h>
@@ -67,16 +67,15 @@
 #include "AliTPCComposedCorrection.h"
 
 
-AliTPCComposedCorrection::AliTPCComposedCorrection() 
+AliTPCComposedCorrection::AliTPCComposedCorrection()
   : AliTPCCorrection("composed_correction",
 		     "composition of corrections"),
     fCorrections(0),
     fMode(kParallel),
     fWeights(0)  // weights of corrections
 {
-  //
-  // default constructor
-  //
+  /// default constructor
+
 }
 
 AliTPCComposedCorrection::AliTPCComposedCorrection(TCollection *corrections,
@@ -87,15 +86,13 @@ AliTPCComposedCorrection::AliTPCComposedCorrection(TCollection *corrections,
     fMode(mode),
     fWeights(0) //weights of correction
 {
-  //
-  // Constructor that defines the set of corrections, this one is composed of.
-  //
+  /// Constructor that defines the set of corrections, this one is composed of.
+
 }
 
 AliTPCComposedCorrection::~AliTPCComposedCorrection() {
-  // 
-  // destructor
-  //
+  /// destructor
+
   if (!fCorrections) {
     AliInfo("No Correction-models were set: can not delete them");
   } else {
@@ -111,13 +108,13 @@ AliTPCComposedCorrection::~AliTPCComposedCorrection() {
 
 
 Bool_t AliTPCComposedCorrection::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
-  //
-  // Add correction  - better name needed (left/right) - for the moment I assumme they commute
-  // Why not to just use array of corrections - CPU consideration
-  // Assumptions:
-  //  - origin of distortion/correction are additive
-  //  - corrections/distortion are small   and they commute
-  //  - only correction ot the same type supported 
+  /// Add correction  - better name needed (left/right) - for the moment I assumme they commute
+  /// Why not to just use array of corrections - CPU consideration
+  /// Assumptions:
+  ///  - origin of distortion/correction are additive
+  ///  - corrections/distortion are small   and they commute
+  ///  - only correction ot the same type supported
+
   const Int_t knCorr=100;
   if (corr==NULL) {
     AliError("Zerro pointer - correction");
@@ -142,28 +139,26 @@ Bool_t AliTPCComposedCorrection::AddCorrectionCompact(AliTPCCorrection* corr, Do
     if (GetSubCorrection(icorr)==NULL)  continue;
     if (GetSubCorrection(icorr)->IsA()==corr->IsA())  toAdd=GetSubCorrection(icorr);
   }
-  // 3.) create of givent type  if does not exist 
+  // 3.) create of givent type  if does not exist
   if (toAdd==NULL){
     toAdd= (AliTPCCorrection*)((corr->IsA())->New());
     fCorrections->Add(toAdd);
   }
-  // 4.) add to object of given type 
+  // 4.) add to object of given type
   return toAdd->AddCorrectionCompact(corr, weight);
 }
 
 
 AliTPCCorrection * AliTPCComposedCorrection::GetSubCorrection(Int_t ipos){
-  //
-  //
-  //
+  ///
+
   TObjArray *arr = (TObjArray*)fCorrections;
   return (AliTPCCorrection *)arr->At(ipos);
 }
 
 AliTPCCorrection * AliTPCComposedCorrection::GetSubCorrection(const char *cname){
-  //
-  //
-  //
+  ///
+
   TCollection *arr = fCorrections;
   return (AliTPCCorrection *)arr->FindObject(cname);
 }
@@ -171,10 +166,8 @@ AliTPCCorrection * AliTPCComposedCorrection::GetSubCorrection(const char *cname)
 
 
 void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // This applies all correction and the specified manner (see general
-  // class description for details).
-  //
+  /// This applies all correction and the specified manner (see general
+  /// class description for details).
 
   if (!fCorrections) {
     AliInfo("No Corrections-models were set: can not calculate distortions");
@@ -216,21 +209,19 @@ void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc
 }
 
 void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // This applies all distortions and the specified manner (see general
-  // class descxiption for details).
-  //
+  /// This applies all distortions and the specified manner (see general
+  /// class descxiption for details).
 
   if (!fCorrections) {
     AliInfo("No Corrections-models were set: can not calculate distortions");
     return;
   }
-  
+
   if (fMode==kQueueResidual && !fWeights) {
     AliInfo("kQueueResidual mode was selected but no weights were given. Switching to kQueue instead.");
     fMode=kQueue;
   }
-  
+
   TIterator *i=fCorrections->MakeReverseIterator();
   AliTPCCorrection *c;
   Int_t weightIndex=0;
@@ -273,11 +264,9 @@ void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc
 
 
 void AliTPCComposedCorrection::Print(Option_t* option) const {
-  //
-  // Print function to check which correction classes are used 
-  // option=="d" prints details regarding the setted magnitude 
-  // option=="a" prints the C0 and C1 coefficents for calibration purposes
-  //
+  /// Print function to check which correction classes are used
+  /// option=="d" prints details regarding the setted magnitude
+  /// option=="a" prints the C0 and C1 coefficents for calibration purposes
 
   printf("Composed TPC spacepoint correction \"%s\" -- composed of:\n",GetTitle());
   TString opt = option; opt.ToLower();
@@ -304,25 +293,23 @@ void AliTPCComposedCorrection::Print(Option_t* option) const {
 
 
 void AliTPCComposedCorrection::Init() {
-  //
-  // Initialization funtion (not used at the moment)
-  //
+  /// Initialization funtion (not used at the moment)
+
   if (!fCorrections) {
     AliInfo("No Correction-models were set");
     return;
   }
   TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
-  while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) 
+  while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next())))
     c->Init();
   delete i;
-  
+
 }
 
 void AliTPCComposedCorrection::Update(const TTimeStamp &timeStamp) {
-  //
-  // Update function 
-  //
+  /// Update function
+
   if (!fCorrections) {
     AliInfo("No Correction-models were set");
     return;
@@ -330,26 +317,24 @@ void AliTPCComposedCorrection::Update(const TTimeStamp &timeStamp) {
 
   TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
-  while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) 
+  while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next())))
     c->Update(timeStamp);
   delete i;
- 
+
 }
 
 
 
 void AliTPCComposedCorrection::SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
-  //
-  // Gives the possibility to set the OmegaTau plus Tensor corrections T1 and T2 (effective omega Tau)
-  // to each subcorrection (since they might become event specific due to changing drift velocity)
-  //
-  // The omegaTau comes idealy from the Database, since it is a function of drift velocity, B and E field 
-  // e.g. omegaTau  = -10.0 * Bz * vdrift / Ez ; // with Bz in kG and Ez in V/cm
-  //      omegaTau  = -0.325 for Bz=5kG, Ez=400V/cm and vdrift = 2.6cm/muSec
-  // The T1 and T2 tensors were measured in a dedicated calibration run
-  //
-  // Note: overwrites previously set values!
-  // 
+  /// Gives the possibility to set the OmegaTau plus Tensor corrections T1 and T2 (effective omega Tau)
+  /// to each subcorrection (since they might become event specific due to changing drift velocity)
+  ///
+  /// The omegaTau comes idealy from the Database, since it is a function of drift velocity, B and E field
+  /// e.g. omegaTau  = -10.0 * Bz * vdrift / Ez ; // with Bz in kG and Ez in V/cm
+  ///      omegaTau  = -0.325 for Bz=5kG, Ez=400V/cm and vdrift = 2.6cm/muSec
+  /// The T1 and T2 tensors were measured in a dedicated calibration run
+  ///
+  /// Note: overwrites previously set values!
 
   if (!fCorrections) {
     AliInfo("No Correction-models were set");
@@ -364,4 +349,6 @@ void AliTPCComposedCorrection::SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float
   delete i;
 }
 
+/// \cond CLASSIMP
 ClassImp(AliTPCComposedCorrection)
+/// \endcond

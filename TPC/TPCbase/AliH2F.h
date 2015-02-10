@@ -5,7 +5,8 @@
 
 /* $Id$ */
 
-// include files and class forward declarations
+/// \class AliH2F
+/// include files and class forward declarations
 
 #include "TH2.h" 
 
@@ -47,7 +48,9 @@ protected:
 
 private:
  
+  /// \cond CLASSIMP
   ClassDef(AliH2F,1)
+  /// \endcond
 };
 
 #endif /*TH2FSMOOTH_H */

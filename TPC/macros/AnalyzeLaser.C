@@ -1,3 +1,5 @@
+/// \file AnalyzeLaser.C
+
 
 gSystem->Load("libSTAT");
 TStatToolkit stat;

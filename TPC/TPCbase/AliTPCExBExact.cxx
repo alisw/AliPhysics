@@ -13,20 +13,22 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////
-// This implementation AliTPCExB is using an "exact" calculation of the ExB
-// effect. That is, it uses the drift ODE to calculate the distortion
-// without any further assumption.
-// Due to the numerical integration of the ODE, there are some numerical
-// uncertencies involed.
-////
+/// \class AliTPCExBExact
+/// \brief This implementation AliTPCExB is using an "exact" calculation of the ExB effect.
+///
+/// That is, it uses the drift ODE to calculate the distortion
+/// without any further assumption.
+/// Due to the numerical integration of the ODE, there are some numerical
+/// uncertencies involed.
 
 #include "TMath.h"
 #include "TTreeStream.h"
 #include "AliMagF.h"
 #include "AliTPCExBExact.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCExBExact)
+/// \endcond
 
 const Double_t AliTPCExBExact::fgkEM=1.602176487e-19/9.10938215e-31;
 const Double_t AliTPCExBExact::fgkDriftField=-40.e3;
@@ -39,9 +41,8 @@ AliTPCExBExact::AliTPCExBExact()
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
     fkZMin(-250.),fkZMax(250.),
     fkNLook(0),fkLook(0) {
-  //
-  // purely for I/O
-  //
+  /// purely for I/O
+
 }
 
 AliTPCExBExact::AliTPCExBExact(const AliMagF *bField,
@@ -54,21 +55,20 @@ AliTPCExBExact::AliTPCExBExact(const AliMagF *bField,
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
     fkZMin(-250.),fkZMax(250.),
     fkNLook(0),fkLook(0) {
-  //
-  // The constructor. One has to supply a magnetic field and an (initial)
-  // drift velocity. Since some kind of lookuptable is created the
-  // number of its meshpoints can be supplied.
-  // n sets the number of integration steps to be used when integrating
-  // over the full drift length.
-  //
+  /// The constructor. One has to supply a magnetic field and an (initial)
+  /// drift velocity. Since some kind of lookuptable is created the
+  /// number of its meshpoints can be supplied.
+  /// n sets the number of integration steps to be used when integrating
+  /// over the full drift length.
+
   CreateLookupTable();
 }
 
 /*
 AliTPCExBExact::AliTPCExBExact(const AliFieldMap *bFieldMap,
-			       Double_t driftVelocity,Int_t n) 
+			       Double_t driftVelocity,Int_t n)
   : fDriftVelocity(driftVelocity),
-    fkMap(bFieldMap),fkField(0),fkN(n), 
+    fkMap(bFieldMap),fkField(0),fkN(n),
     fkNX(0),fkNY(0),fkNZ(0),
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
     fkZMin(-250.),fkZMax(250.),
@@ -106,30 +106,28 @@ AliTPCExBExact::AliTPCExBExact(const AliFieldMap *bFieldMap,
 */
 
 AliTPCExBExact::~AliTPCExBExact() {
-  //
-  // destruct the poor object.
-  //
+  /// destruct the poor object.
+
   delete[] fkLook;
 }
 
 void AliTPCExBExact::Correct(const Double_t *position, Double_t *corrected) {
-  //
-  // correct for the distortion
-  //
+  /// correct for the distortion
+
   Double_t x=(position[0]-fkXMin)/(fkXMax-fkXMin)*(fkNX-1);
   Int_t xi1=static_cast<Int_t>(x);
   xi1=TMath::Max(TMath::Min(xi1,fkNX-2),0);
   Int_t xi2=xi1+1;
   Double_t dx=(x-xi1);
   Double_t dx1=(xi2-x);
-  
+
   Double_t y=(position[1]-fkYMin)/(fkYMax-fkYMin)*(fkNY-1);
   Int_t yi1=static_cast<Int_t>(y);
   yi1=TMath::Max(TMath::Min(yi1,fkNY-2),0);
   Int_t yi2=yi1+1;
   Double_t dy=(y-yi1);
   Double_t dy1=(yi2-y);
-  
+
   Double_t z=position[2]/fkZMax*(fkNZ-1);
   Int_t side;
   if (z>0) {
@@ -144,7 +142,7 @@ void AliTPCExBExact::Correct(const Double_t *position, Double_t *corrected) {
   Int_t zi2=zi1+1;
   Double_t dz=(z-zi1);
   Double_t dz1=(zi2-z);
-  
+
   for (int i=0;i<3;++i)
     corrected[i]
       =fkLook[(((xi1*fkNY+yi1)*fkNZ+zi1)*2+side)*3+i]*dx1*dy1*dz1
@@ -172,18 +170,16 @@ void AliTPCExBExact::TestThisBeautifulObject(const AliFieldMap *bFieldMap,
 
 void AliTPCExBExact::TestThisBeautifulObject(const AliMagF *bField,
 					     const char* fileName) {
-  //
-  // Have a look at the common part "TestThisBeautifulObjectGeneric".
-  //
+  /// Have a look at the common part "TestThisBeautifulObjectGeneric".
+
   fkField=bField;
   //fkMap=0;
   TestThisBeautifulObjectGeneric(fileName);
 }
 
 void AliTPCExBExact::TestThisBeautifulObjectGeneric(const char* fileName) {
-  //
-  // Well, as the name sais... it tests the object.
-  //
+  /// Well, as the name sais... it tests the object.
+
   TTreeSRedirector ts(fileName);
   Double_t x[3];
   for (x[0]=-250.;x[0]<=250.;x[0]+=10.)
@@ -232,9 +228,8 @@ void AliTPCExBExact::TestThisBeautifulObjectGeneric(const char* fileName) {
 }
 
 void AliTPCExBExact::CreateLookupTable() {
-  //
-  // Helper function to fill the lookup table.
-  //
+  /// Helper function to fill the lookup table.
+
   fkNLook=fkNX*fkNY*fkNZ*2*3;
   fkLook=new Double_t[fkNLook];
   Double_t x[3];
@@ -254,20 +249,18 @@ void AliTPCExBExact::CreateLookupTable() {
 }
 
 void AliTPCExBExact::GetE(Double_t *e,const Double_t *x) const {
-  //
-  // Helper function returning the E field in SI units (V/m).
-  //
+  /// Helper function returning the E field in SI units (V/m).
+
   e[0]=0.;
   e[1]=0.;
   e[2]=(x[2]<0.?-1.:1.)*fgkDriftField; // in V/m
 }
 
 void AliTPCExBExact::GetB(Double_t *b,const Double_t *x) const {
-  //
-  // Helper function returning the B field in SI units (T).
-  //
+  /// Helper function returning the B field in SI units (T).
+
   Double_t xm[3];
-  // the beautiful m to cm (and the ugly "const_cast") and Double_t 
+  // the beautiful m to cm (and the ugly "const_cast") and Double_t
   // to Float_t read the NRs introduction!:
   for (int i=0;i<3;++i) xm[i]=x[i]*100.;
   Double_t bf[3];
@@ -280,9 +273,8 @@ void AliTPCExBExact::GetB(Double_t *b,const Double_t *x) const {
 
 void AliTPCExBExact::Motion(const Double_t *x,Double_t,
 			    Double_t *dxdt) const {
-  //
-  // The differential equation of motion of the electrons.
-  //
+  /// The differential equation of motion of the electrons.
+
   Double_t tau=fDriftVelocity/fgkDriftField/fgkEM;
   Double_t tau2=tau*tau;
   Double_t e[3];
@@ -307,10 +299,9 @@ void AliTPCExBExact::Motion(const Double_t *x,Double_t,
 
 void AliTPCExBExact::CalculateDistortion(const Double_t *x0,
 					 Double_t *dist) const {
-  //
-  // Helper function that calculates one distortion by integration
-  // (only used to fill the lookup table).
-  //
+  /// Helper function that calculates one distortion by integration
+  /// (only used to fill the lookup table).
+
   Double_t h=0.01*250./fDriftVelocity/fkN;
   Double_t t=0.;
   Double_t xt[3];
@@ -342,10 +333,9 @@ void AliTPCExBExact::CalculateDistortion(const Double_t *x0,
 }
 
 void AliTPCExBExact::DGLStep(Double_t *x,Double_t t,Double_t h) const {
-  //
-  // An elementary integration step.
-  // (simple Euler Method)
-  //
+  /// An elementary integration step.
+  /// (simple Euler Method)
+
   Double_t dxdt[3];
   Motion(x,t,dxdt);
   for (int i=0;i<3;++i)

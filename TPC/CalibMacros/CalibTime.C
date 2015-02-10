@@ -1,19 +1,27 @@
-
+/// \file CalibTime.C
+///
+/// Macro to visualize and analyze time dependent variables
+///
+/// ~~~
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibTime.C
+///
+/// // 1. Init - Load libraries tools 
+/// Init()
+///
+/// // 2. Load debug streamers 
+/// InitChains()
+/// ~~~
 
 gSystem->Load("libANALYSIS");
 gSystem->Load("libSTAT");
 gSystem->Load("libTPCcalib");
 
-
 TFile f("CalibObjects.root");
 AliTPCcalibTime *calibTime = (AliTPCcalibTime *)f->Get("TPCCalib")->FindObject("calibTime");
-
 
 TPair * addPair= calibTime->GetMapDz()->FindObject(" D0SCO ");
 THnSparse* addHist=dynamic_cast<THnSparseF*>(addPair->Value());
 
-
-//
 TGraph * gr = AliTPCcalibBase::FitSlices(addHist,2,0,100,100);
 gr->SetMarkerColor(2);
 gr->Draw("same*");
@@ -30,29 +38,6 @@ gr->SetMarkerStyle(25);
 grfit->SetLineColor(2);
 grfit->Draw("lu");
 
-
-
-
-
-
-
-
-
-
-/*
-  
-  Macro to visualize and analyze time dependent variables
-  //
-  .L $ALICE_ROOT/TPC/CalibMacros/CalibTime.C
-  //
-  // 1. Init - Load libraries tools 
-  Init()
-  // 2. Load debug streamers 
-  InitChains()
-
-*/
-
-
 //
 // Chain Based analysis
 //
@@ -61,7 +46,8 @@ grfit->Draw("lu");
 TChain * chainLaser=0, *chainDz=0, *chaindEdx=0; 
 
 void Init(){  
-  // Load neccesary libraries
+  /// Load neccesary libraries
+
   gSystem->Load("libANALYSIS");
   gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");
@@ -96,7 +82,8 @@ void InitChains(){
 
 
 void MakeTglFitCosmic(){
-  // Fit the z correction factor
+  /// Fit the z correction factor
+
   TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;
@@ -135,9 +122,8 @@ void MakeTglFitCosmic(){
 
 
 void MakeTglFitCosmic(){
-  //
-  //
-  //
+  ///
+
   TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;

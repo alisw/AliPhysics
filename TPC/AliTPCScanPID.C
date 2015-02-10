@@ -1,11 +1,13 @@
 /// \file AliTPCScanPID.C
 /// \brief Test macro for AliTPCtracksPid.root file
 ///
-/// \author JINR Dubna Aug 2002
+/// \author JINR Dubna
+/// \date Aug 2002
 
 void
 AliTPCScanPID(Int_t evNumber2=3) {
   //................. Prepare histogramms ................
+
      TH2F *qplot =  new TH2F("Qtrm","Qtrm vs Pmom",100,0,1300,100,0,13);
      TH2F *qplotP=  new TH2F("Qtrm1","Qtrm vs Pmom",100,0,1300,100,0,13); 
      TH2F *qplotKa= new TH2F("Qtrm2","Qtrm vs Pmom",100,0,1300,100,0,13);

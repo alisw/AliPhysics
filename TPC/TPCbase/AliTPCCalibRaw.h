@@ -3,11 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                    //
-//                        TPC ALTRO Header analysis                                   //
-//                                                                                    //
-////////////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibRaw
+/// \brief TPC ALTRO Header analysis
 
 #include <TVectorF.h>
 #include <TObjArray.h>
@@ -77,44 +74,44 @@ public:
   virtual Long64_t Merge(TCollection * const list);
   
 private:
-  Int_t   fPeakDetMinus;             //  Consecutive timebins on rising edge to be regarded as a signal
-  Int_t   fPeakDetPlus;              //  Consecutive timebins on falling edge to be regarded as a signal
-  UInt_t  fNFailL1Phase;             //Number of failures in L1 phase
-  UInt_t  fNFailL1PhaseEvent;        //Number of events with L1 phase failures
+  Int_t   fPeakDetMinus;             ///< Consecutive timebins on rising edge to be regarded as a signal
+  Int_t   fPeakDetPlus;              ///< Consecutive timebins on falling edge to be regarded as a signal
+  UInt_t  fNFailL1Phase;             ///< Number of failures in L1 phase
+  UInt_t  fNFailL1PhaseEvent;        ///< Number of events with L1 phase failures
   //binning dv hist
-  UInt_t  fNSecTime;                 //Number of seconds per bin in time
-  UInt_t  fNBinsTime;                //Number of bin in time
+  UInt_t  fNSecTime;                 ///< Number of seconds per bin in time
+  UInt_t  fNBinsTime;                ///< Number of bin in time
   //processing information
-  Bool_t    fPadProcessed;           //! if last pead has already been filled for the current pad
-  Int_t     fCurrentChannel;         //! current channel processed
-  Int_t     fCurrentSector;          //! current sector processed
-  Int_t     fLastSector;             //! current sector processed
-  Int_t     fCurrentRow;             //! current row processed
-  Int_t     fCurrentPad;             //! current pad processed
-  Int_t     fLastTimeBinProc;        //! last time bin processed
-  Int_t     fPeakTimeBin;            //! time bin with local maximum
-  Int_t     fLastSignal;             //! last signal processed
-  Int_t     fNOkPlus;                //! number of processed time bins fullfilling peak criteria
-  Int_t     fNOkMinus;               //! number of processed time bins fullfilling peak criteria
-  Int_t     fNanoSec;                //! current nano seconds stamp
+  Bool_t    fPadProcessed;           //!< if last pead has already been filled for the current pad
+  Int_t     fCurrentChannel;         //!< current channel processed
+  Int_t     fCurrentSector;          //!< current sector processed
+  Int_t     fLastSector;             //!< current sector processed
+  Int_t     fCurrentRow;             //!< current row processed
+  Int_t     fCurrentPad;             //!< current pad processed
+  Int_t     fLastTimeBinProc;        //!< last time bin processed
+  Int_t     fPeakTimeBin;            //!< time bin with local maximum
+  Int_t     fLastSignal;             //!< last signal processed
+  Int_t     fNOkPlus;                //!< number of processed time bins fullfilling peak criteria
+  Int_t     fNOkMinus;               //!< number of processed time bins fullfilling peak criteria
+  Int_t     fNanoSec;                //!< current nano seconds stamp
 //
   //L1 phase stuff
-  TVectorF fArrCurrentPhaseDist;       //!Phase distribution of the current event
-  TVectorF fArrCurrentPhase;           //!Current phase of all RCUs
-  TVectorF fArrFailEventNumber;        //event numbers of failed events;
-  TVectorF fArrALTROL1Phase;           //Array of L1 phases on an event bases;
-  TObjArray fArrALTROL1PhaseEvent;     //L1 phase for each RCU and event
-  TObjArray fArrALTROL1PhaseFailEvent; //L1 failure for each RCU and event
+  TVectorF fArrCurrentPhaseDist;       //!< Phase distribution of the current event
+  TVectorF fArrCurrentPhase;           //!< Current phase of all RCUs
+  TVectorF fArrFailEventNumber;        ///< event numbers of failed events;
+  TVectorF fArrALTROL1Phase;           ///< Array of L1 phases on an event bases;
+  TObjArray fArrALTROL1PhaseEvent;     ///< L1 phase for each RCU and event
+  TObjArray fArrALTROL1PhaseFailEvent; ///< L1 failure for each RCU and event
   //drift velocity stuff
   enum {kHnBinsDV=3};
-  THnSparseI *fHnDrift;                //Histogram last time bin vs. ROC, Time
+  THnSparseI *fHnDrift;                ///< Histogram last time bin vs. ROC, Time
   //occupancy
-  TVectorF fVOccupancyEvent;           //occupancy per event (number of samples above threshold)
-  TVectorF fVSignalSumEvent;           //occupancy per event (sum of all adc values)
-  TVectorF fVOccupancySenEvent;        //occupancy per event (number of samples abouve threshold) in sensitive regions
-  TVectorF fVSignalSumSenEvent;        //occupancy per event (sum of all adc values) in sensitive regions
-  TVectorF fVNfiredPadsSenEvent;       //number of pads with a signal above threshold in sensitive regions
-  TVectorF fVTimeStampEvent;           //timestamp for all events
+  TVectorF fVOccupancyEvent;           ///< occupancy per event (number of samples above threshold)
+  TVectorF fVSignalSumEvent;           ///< occupancy per event (sum of all adc values)
+  TVectorF fVOccupancySenEvent;        ///< occupancy per event (number of samples abouve threshold) in sensitive regions
+  TVectorF fVSignalSumSenEvent;        ///< occupancy per event (sum of all adc values) in sensitive regions
+  TVectorF fVNfiredPadsSenEvent;       ///< number of pads with a signal above threshold in sensitive regions
+  TVectorF fVTimeStampEvent;           ///< timestamp for all events
   
   TVectorF *MakeArrL1PhaseRCU(Int_t rcu, Bool_t force=kFALSE);
   TVectorF *MakeArrL1PhaseFailRCU(Int_t rcu, Bool_t force=kFALSE);
@@ -125,7 +122,9 @@ private:
   AliTPCCalibRaw(const AliTPCCalibRaw &calib);
   AliTPCCalibRaw& operator = (const  AliTPCCalibRaw &source);
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCCalibRaw,4) //  Analysis of the Altro header information
+  /// \endcond
 };
 
 //----------------------
@@ -153,9 +152,8 @@ inline TVectorF *AliTPCCalibRaw::MakeArrL1PhaseFailRCU(Int_t rcu, Bool_t force)
 //_____________________________________________________________________
 inline Bool_t AliTPCCalibRaw::IsEdgePad(Int_t sector, Int_t row, Int_t pad) const
 {
-  //
-  // return true if pad is on the edge of a row
-  //
+  /// return true if pad is on the edge of a row
+
   Int_t edge1   = 0;
   if ( pad == edge1 ) return kTRUE;
   Int_t edge2   = fROC->GetNPads(sector,row)-1;

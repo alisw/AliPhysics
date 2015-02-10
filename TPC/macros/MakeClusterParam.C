@@ -1,10 +1,8 @@
-/*  
-  Example macro to build AliTPCClusterParam
-  postprocessing the output of the calibration using tracks
-  In the future this macro will be part of the Preprocesor
-  ..
+/// \file MakeClusterParam.C
+/// Example macro to build AliTPCClusterParam
+/// postprocessing the output of the calibration using tracks
+/// In the future this macro will be part of the Preprocesor
 
-*/
 void StoreObject(AliTPCClusterParam *param);
 
 void MakeClusterParam(const char *fnresolc="Output.root", const char *fnresolg="Output.root"){
@@ -43,9 +41,8 @@ void MakeClusterParam(const char *fnresolc="Output.root", const char *fnresolg="
  
 void StoreObject(AliTPCClusterParam *clParam)
 { 
-  //
-  //
-  //
+  ///
+
   Int_t gkDummyRun = 0;
   char *gCDBpath   = "local://$ALICE_ROOT/OCDB";
   AliCDBMetaData *md1= new AliCDBMetaData(); 

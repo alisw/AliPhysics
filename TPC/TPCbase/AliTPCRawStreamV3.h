@@ -3,11 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///////////////////////////////////////////////////////////////////////////////
-///
-/// This class provides access to TPC digits in raw data.
-///
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCRawStreamV3
+/// \brief This class provides access to TPC digits in raw data.
 
 #include "AliAltroRawStreamV3.h"
 
@@ -22,7 +19,7 @@ class AliTPCRawStreamV3: public AliAltroRawStreamV3 {
     virtual void             Reset();
     virtual Bool_t           NextChannel();
     virtual Bool_t           NextDDL();
-  
+
     inline Int_t GetSector()     const { return fSector; }     // Provide index of current sector
     inline Int_t GetPrevSector() const { return fPrevSector; } // Provide index of previous sector
     inline Bool_t  IsNewSector() const {return fSector != fPrevSector;};
@@ -41,18 +38,20 @@ class AliTPCRawStreamV3: public AliAltroRawStreamV3 {
 
     virtual void ApplyAltroMapping();
 
-    Int_t            fSector;       // index of current sector
-    Int_t            fPrevSector;   // index of previous sector
-    Int_t            fRow;          // index of current row
-    Int_t            fPrevRow;      // index of previous row
-    Int_t            fPad;          // index of current pad
-    Int_t            fPrevPad;      // index of previous pad
-    Int_t            fPatchIndex;   // current patch
+    Int_t            fSector;       ///< index of current sector
+    Int_t            fPrevSector;   ///< index of previous sector
+    Int_t            fRow;          ///< index of current row
+    Int_t            fPrevRow;      ///< index of previous row
+    Int_t            fPad;          ///< index of current pad
+    Int_t            fPrevPad;      ///< index of previous pad
+    Int_t            fPatchIndex;   ///< current patch
 
-    AliAltroMapping *fMapping[6];   // Pointers to ALTRO mapping
-    Bool_t           fIsMapOwner;   // does object own its mappings?
+    AliAltroMapping *fMapping[6];   ///< Pointers to ALTRO mapping
+    Bool_t           fIsMapOwner;   ///< does object own its mappings?
 
+    /// \cond CLASSIMP
     ClassDef(AliTPCRawStreamV3, 0)    // base class for reading TPC raw digits using the fast algorithm
+    /// \endcond
 };
 
 #endif

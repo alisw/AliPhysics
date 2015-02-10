@@ -1,12 +1,14 @@
-/*
-  Make default plotsfrom AliTPCdataQA components:
-
-  aliroot -b -q  $ALICE_ROOT/TPC/CalibMacros/CalibQA.C\(121694\);
-  
-  .L $ALICE_ROOT/TPC/CalibMacros/CalibQA.C
-  Int_t run=121694;
-  CalibQA(run);
-*/
+/// \file CalibQA.C
+///
+/// Make default plotsfrom AliTPCdataQA components:
+///
+/// ~~~
+/// aliroot -b -q  $ALICE_ROOT/TPC/CalibMacros/CalibQA.C\(121694\);
+/// 
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibQA.C
+/// Int_t run=121694;
+/// CalibQA(run);
+/// ~~~
 
 TCut cutNoise="PadNoise.fElements<1.5&&abs(PadNoise.fElements/PadNoise_Median-1)<0.5";
 TCut cutTime="abs(TimePosition.fElements-TimePosition_Median)<100";
@@ -41,9 +43,8 @@ void InitOCDB(Int_t run){
 }
 
 void MakeTree(){
-  //
-  // make summary tree
-  //
+  /// make summary tree
+
   AliTPCcalibDB::Instance()->UpdateNonRec();
   AliTPCdataQA* dataQA =   AliTPCcalibDB::Instance()->GetDataQA();
   AliTPCCalPad* gain   =   AliTPCcalibDB::Instance()->GetDedxGainFactor();
@@ -103,9 +104,8 @@ TCanvas * DrawOccupancy(){
 }
 
 TCanvas * DrawGain(){
-  //
-  // Compare the amplitude with krypton gain amplitude
-  // Similar filtering as in occupancy plot
-  //						
+  /// Compare the amplitude with krypton gain amplitude
+  /// Similar filtering as in occupancy plot
+
   return 0;
 }

@@ -13,34 +13,31 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliTPCExBEffectiveSector class                                                   //
-// Correct for the rest of ExB effect which are not covered yet by physical models
-//
-// Motivation:
-//   ExB correction: 
-//      dr    =  c0* integral(Er/Ez) + c1* integral(Erphi/Ez)
-//      drphi = -c1* integral(Er/Ez) + c0* integral(Erphi/Ez)
-//   Where:      
-//   wt = Bz*(k*vdrift/E)           ~ 0.3 at B=0.5 T 
-//   c0 = 1/(1+T2*T2*wt*wt) 
-//   c1 = T1*wt/(1+T1*T1*wt*wt)
-//   
-//  
-//  3 correction maps 0 implemented as histogram used
-//  R-Phi correction map obtained minimizing residuals betwee the track
-//        and space points (AliTPCcalibAlign class). Track is defined using
-//        the points from the refernce plain at the middle of the TPC
-//        and vertex
-//        Corrected primar tracks straight pointing to the primary vertex
-//
-//  R distortion - obtained using the cluster residuals in the setup with
-//                 plus and minus field 
-//                 Only high momenta tracks used for this calibration (1 GeV threshold)
-//     drphi_plus-drphi_minus=-2*c1 integral(Er/Ez)
-//               - Erphi/Ez cancels   
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCExBEffectiveSector
+/// \brief Correct for the rest of ExB effect which are not covered yet by physical models
+///
+/// Motivation:
+///  ExB correction:
+///     dr    =  c0* integral(Er/Ez) + c1* integral(Erphi/Ez)
+///     drphi = -c1* integral(Er/Ez) + c0* integral(Erphi/Ez)
+///  Where:
+///  wt = Bz*(k*vdrift/E)           ~ 0.3 at B=0.5 T
+///  c0 = 1/(1+T2*T2*wt*wt)
+///  c1 = T1*wt/(1+T1*T1*wt*wt)
+///
+/// 3 correction maps 0 implemented as histogram used
+/// R-Phi correction map obtained minimizing residuals betwee the track
+///       and space points (AliTPCcalibAlign class). Track is defined using
+///       the points from the refernce plain at the middle of the TPC
+///       and vertex
+///       Corrected primar tracks straight pointing to the primary vertex
+///
+/// R distortion - obtained using the cluster residuals in the setup with
+/// plus and minus field
+/// Only high momenta tracks used for this calibration (1 GeV threshold)
+///    drphi_plus-drphi_minus=-2*c1 integral(Er/Ez)
+/// - Erphi/Ez cancels
+
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
 #include "AliTPCcalibDB.h"
@@ -60,11 +57,13 @@
 #include "TH3F.h"
 #include "TROOT.h"
 #include "AliTPCExBEffectiveSector.h"
+/// \cond CLASSIMP
 ClassImp(AliTPCExBEffectiveSector)
+/// \endcond
 
 AliTPCExBEffectiveSector::AliTPCExBEffectiveSector()
   : AliTPCCorrection("ExB_effectiveSector","ExB effective sector"),
-    fC0(1.),fC1(0.), 
+    fC0(1.),fC1(0.),
     fCorrectionR(0),        // radial correction
     fCorrectionRPhi(0),     // r-phi correction
     fCorrectionZ(0)        // z correction
@@ -75,9 +74,8 @@ AliTPCExBEffectiveSector::AliTPCExBEffectiveSector()
 }
 
 AliTPCExBEffectiveSector::~AliTPCExBEffectiveSector() {
-  //
-  // default destructor
-  //
+  /// default destructor
+
   delete fCorrectionR;        // radial correction
   delete fCorrectionRPhi;     // r-phi correction
   delete fCorrectionZ;        // z correction
@@ -86,10 +84,8 @@ AliTPCExBEffectiveSector::~AliTPCExBEffectiveSector() {
 
 
 void AliTPCExBEffectiveSector::Init() {
-  //
-  // Initialization funtion
-  //
-  
+  /// Initialization funtion
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bzField = magF->SolenoidField()/10.; //field in T
@@ -97,15 +93,14 @@ void AliTPCExBEffectiveSector::Init() {
   if (!param) AliError("Parameters - not initialized");
   Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
-  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 }
 
 void AliTPCExBEffectiveSector::Update(const TTimeStamp &/*timeStamp*/) {
-  //
-  // Update function 
-  //
+  /// Update function
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bzField = magF->SolenoidField()/10.; //field in T
@@ -113,7 +108,7 @@ void AliTPCExBEffectiveSector::Update(const TTimeStamp &/*timeStamp*/) {
   if (!param) AliError("Parameters - not initialized");
   Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
-  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 }
@@ -121,10 +116,9 @@ void AliTPCExBEffectiveSector::Update(const TTimeStamp &/*timeStamp*/) {
 
 
 void AliTPCExBEffectiveSector::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Calculates the correction using the lookup table (histogram) of distortion
-  // The histogram is created as poscl - postrack
-  //   
+  /// Calculates the correction using the lookup table (histogram) of distortion
+  /// The histogram is created as poscl - postrack
+
   dx[0]=0;
   dx[1]=0;
   dx[2]=0;
@@ -141,7 +135,7 @@ void AliTPCExBEffectiveSector::GetCorrection(const Float_t x[],const Short_t roc
   if (roc%36>=18) kZ=-TMath::Abs(kZ);
   if (TMath::Abs(kZ)<0.15){
     kZ = (roc%36<18) ? 0.15:-0.15;
-  }  
+  }
   //
   Double_t dlR=0;
   Double_t dlRPhi=0;
@@ -151,7 +145,7 @@ void AliTPCExBEffectiveSector::GetCorrection(const Float_t x[],const Short_t roc
   Double_t kZZ=TMath::Max(kZ,fCorrectionRPhi->GetZaxis()->GetXmin()+0.001);
   kZZ=TMath::Min(kZZ,fCorrectionRPhi->GetZaxis()->GetXmax()-0.001);
 
-  if (fCorrectionRPhi) {  
+  if (fCorrectionRPhi) {
     //    dlRPhi= -fCorrectionRPhi->Interpolate(sector,rr,kZZ);
     dlRPhi= -fCorrectionRPhi->GetBinContent(fCorrectionRPhi->FindBin(sector,rr,kZZ));
   }
@@ -173,21 +167,19 @@ void AliTPCExBEffectiveSector::GetCorrection(const Float_t x[],const Short_t roc
   // Calculate correction in cartesian coordinates
   dx[0] = r * TMath::Cos(phi) - x[0];
   dx[1] = r * TMath::Sin(phi) - x[1];
-  dx[2] = dlZ; 
+  dx[2] = dlZ;
 
 }
 
 void AliTPCExBEffectiveSector::Print(const Option_t* option) const {
-  //
-  // Print function to check the settings (e.g. the twist in the X direction)
-  // option=="a" prints the C0 and C1 coefficents for calibration purposes
-  //
+  /// Print function to check the settings (e.g. the twist in the X direction)
+  /// option=="a" prints the C0 and C1 coefficents for calibration purposes
 
   TString opt = option; opt.ToLower();
-  printf("%s\t%s\n",GetName(),GetTitle());  
+  printf("%s\t%s\n",GetName(),GetTitle());
   if (opt.Contains("a")) { // Print all details
     printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);
     printf(" - C0: %1.4f, C1: %1.4f \n",fC0,fC1);
-  }    
+  }
 }
 

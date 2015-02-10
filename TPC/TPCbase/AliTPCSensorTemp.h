@@ -4,9 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 
-////////////////////////////////////////////////////////////////////////////
-//              Container class for temperature sensor positions            
-////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCSensorTemp
+/// \brief Container class for temperature sensor positions
 
 
 #include "TMath.h"
@@ -37,7 +36,7 @@ public:
   AliTPCSensorTemp(const AliTPCSensorTemp& source);
   virtual ~AliTPCSensorTemp(){}
   AliTPCSensorTemp& operator=(const AliTPCSensorTemp& source);
-  
+
   Int_t       GetType()   const {return fType;   }
   Int_t       GetSide()   const {return fSide;	 }
   Int_t       GetSector() const {return fSector;	 }
@@ -51,24 +50,26 @@ public:
 
   static TClonesArray * ReadList(const char *fname,
                                  const TString& amandaString = kAmandaStringTPC);
-  static TClonesArray * ReadTree(TTree *tree, 
+  static TClonesArray * ReadTree(TTree *tree,
                                  const TString& amandaString = kAmandaStringTPC);
 
 protected:
-  Int_t fType;      // Position of sensors on fieldcage
+  Int_t fType;      ///< Position of sensors on fieldcage
                     //  (0=ROC,1=OFC,2=IFC,3=TPC,4=ELM,5=TS,6=COOL)
-  Int_t fSide;      // TPC side; 0:Shaft Side (A) -- 1:Muon Side (C)
-  Int_t fSector;    // Number of sector             (0-17)
-  Int_t fNum;       // Position depands from type of sensor.
+  Int_t fSide;      ///< TPC side; 0:Shaft Side (A) -- 1:Muon Side (C)
+  Int_t fSector;    ///< Number of sector             (0-17)
+  Int_t fNum;       ///< Position depands from type of sensor.
                     //    fType=0(0-4) from inside to outside
                     //    fType=1(0-5) fom A side to C side
                     //    fType=2(0-5) fom A side to C side
-                    //    fType=3(0)   one per sector 
+                    //    fType=3(0)   one per sector
                     //    fType=4()
                     //    fType=5()
                     //	fType=6(0-1) 0:input -- 1:output
 
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCSensorTemp,1)
+  /// \endcond
 };
 #endif

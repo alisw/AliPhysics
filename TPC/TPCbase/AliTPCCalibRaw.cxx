@@ -15,50 +15,41 @@
 
 /* $Id:  $ */
 
-////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                    //
-//     Implementation of the TPC Raw drift velocity and Altro L1 Phase  calibration   //
-//                                                                                    //
-//               Origin: Jens Wiechula, J.Wiechula@gsi.de                             //
-//                                                                                    //
-////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-// *************************************************************************************
-// *                                Class Description                                  *
-// *************************************************************************************
-/*
-
-----example---
-TFile f("CalibAltro.root");
-AliTPCCalibRaw *al=(AliTPCCalibRaw*)f.Get(f.GetListOfKeys()->At(0)->GetName())
-{
-TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
-if (!c1) c1=new TCanvas("c1","c1");
-c1->Clear();
-
-TH2F h2f("h2","h2;RCU;fail",216,0,216,al->GetNevents(),0,al->GetNevents());
-Bool_t first=kTRUE;
-Int_t i,iev;
-for (i=0;i<216;++i) {
-  TVectorF *v=al->GetALTROL1PhaseFailEventsRCU(i);
-  if (!v) continue;
-  for (iev=0;iev<al->GetNevents();++iev) {
-    h2f->SetBinContent(i+1,iev+1,(*v)(iev));
-  }
-//   TH1F h(*v);
-//   h.SetLineColor(i/216.*50+50);
-//   ((TH1F*)h.Clone(Form("h%d",i)))->Draw(first?"":"same");
-//   c1->Modified();
-//   c1->Update();
-  first=kFALSE;
-}
-h2f->Draw("col");
-}
-
-*/
-
-
+/// \class AliTPCCalibRaw
+/// \brief Implementation of the TPC Raw drift velocity and Altro L1 Phase  calibration
+///
+/// \author Jens Wiechula, J.Wiechula@gsi.de
+///
+/// Class Description
+/// -----------------
+///
+/// ~~~{.cpp}
+/// TFile f("CalibAltro.root");
+/// AliTPCCalibRaw *al=(AliTPCCalibRaw*)f.Get(f.GetListOfKeys()->At(0)->GetName())
+/// {
+/// TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
+/// if (!c1) c1=new TCanvas("c1","c1");
+/// c1->Clear();
+///
+/// TH2F h2f("h2","h2;RCU;fail",216,0,216,al->GetNevents(),0,al->GetNevents());
+/// Bool_t first=kTRUE;
+/// Int_t i,iev;
+/// for (i=0;i<216;++i) {
+///   TVectorF *v=al->GetALTROL1PhaseFailEventsRCU(i);
+///   if (!v) continue;
+///   for (iev=0;iev<al->GetNevents();++iev) {
+///     h2f->SetBinContent(i+1,iev+1,(*v)(iev));
+///   }
+/// //   TH1F h(*v);
+/// //   h.SetLineColor(i/216.*50+50);
+/// //   ((TH1F*)h.Clone(Form("h%d",i)))->Draw(first?"":"same");
+/// //   c1->Modified();
+/// //   c1->Update();
+///   first=kFALSE;
+/// }
+/// h2f->Draw("col");
+/// }
+/// ~~~
 
 //Root includes
 #include <TROOT.h>
@@ -76,7 +67,9 @@ h2f->Draw("col");
 //class header
 #include "AliTPCCalibRaw.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibRaw)
+/// \endcond
 
 AliTPCCalibRaw::AliTPCCalibRaw() :
   AliTPCCalibRawBase(),
@@ -156,9 +149,8 @@ fVSignalSumSenEvent(100000),
 fVNfiredPadsSenEvent(100000),
 fVTimeStampEvent(100000)
 {
-  //
-  // Default ctor
-  //
+  /// Default ctor
+
   SetNameTitle("AliTPCCalibRaw","AliTPCCalibRaw");
   CreateDVhist();
   for (Int_t ircu=0;ircu<kNRCU;++ircu) fArrCurrentPhase.GetMatrixArray()[ircu]=-1;
@@ -172,10 +164,9 @@ fVTimeStampEvent(100000)
 //_____________________________________________________________________
 AliTPCCalibRaw::~AliTPCCalibRaw()
 {
-  //
-  // dtor
-  //
-  delete fHnDrift;  
+  /// dtor
+
+  delete fHnDrift;
 }
 //_____________________________________________________________________
 // AliTPCCalibRaw& AliTPCCalibRaw::operator = (const  AliTPCCalibRaw &source)
@@ -185,7 +176,7 @@ AliTPCCalibRaw::~AliTPCCalibRaw()
 //   //
 //   if (&source == this) return *this;
 //   new (this) AliTPCCalibRaw(source);
-//   
+//
 //   return *this;
 // }
 
@@ -193,9 +184,8 @@ AliTPCCalibRaw::~AliTPCCalibRaw()
 Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
              const Int_t iTimeBin, const Float_t signal)
 {
-  //
-  // Data filling method
-  //
+  /// Data filling method
+
   if (iRow<0) return 0;
   if (iPad<0) return 0;
   if (iTimeBin<0) return 0;
@@ -243,7 +233,7 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
   }
 //   Double_t x2[kHnBinsDV]={2,isector,0};
 //   fHnDrift->Fill(x2);
-  
+
 
   if (signal>fLastSignal) ++fNOkPlus;
   else if(signal<fLastSignal && fNOkPlus>=fPeakDetPlus){
@@ -252,7 +242,7 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
     if ( fNOkMinus>=fPeakDetMinus ) {
       Double_t x[kHnBinsDV]={static_cast<Double_t>(fPeakTimeBin),static_cast<Double_t>(isector),static_cast<Double_t>((fTimeStamp-fFirstTimeStamp)/fNSecTime)};
       fHnDrift->Fill(x);
-    } 
+    }
   } else {
     fNOkPlus=0;
     fNOkMinus=0;
@@ -267,10 +257,8 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
 }
 //_____________________________________________________________________
 void AliTPCCalibRaw::UpdateDDL(){
-  //
-  // fill ALTRO L1 information
-  //
-  
+  /// fill ALTRO L1 information
+
   //set nanoseconds
   if (!fNanoSec) {
     TTimeStamp s;
@@ -282,14 +270,12 @@ void AliTPCCalibRaw::UpdateDDL(){
   fArrCurrentPhase.GetMatrixArray()[fCurrDDLNum]=phase;
   //increase phase counter
   ++((fArrCurrentPhaseDist.GetMatrixArray())[phase]);
-  
+
 }
 //_____________________________________________________________________
 void AliTPCCalibRaw::ResetEvent()
 {
-  //
-  // Reset event counters
-  //
+  /// Reset event counters
 
   fCurrentChannel=-1;
   fCurrentRow=-1;
@@ -299,11 +285,9 @@ void AliTPCCalibRaw::ResetEvent()
 //_____________________________________________________________________
 void AliTPCCalibRaw::EndEvent()
 {
-  //
-  // End event analysis
-  //
+  /// End event analysis
 
-  
+
   //find phase of the current event
   Int_t phaseMaxEntries=-1;
   Int_t maxEntries=0;
@@ -318,7 +302,7 @@ void AliTPCCalibRaw::EndEvent()
   if (fArrALTROL1Phase.GetNrows()-1<=GetNevents())
     fArrALTROL1Phase.ResizeTo(GetNevents()+10000);
   (fArrALTROL1Phase.GetMatrixArray())[GetNevents()]=phaseMaxEntries;
-  
+
   //loop over RCUs and test failures
   UInt_t fail=0;
   for (Int_t ircu=0;ircu<kNRCU;++ircu){
@@ -356,10 +340,10 @@ void AliTPCCalibRaw::EndEvent()
 //_____________________________________________________________________
 TH2C *AliTPCCalibRaw::MakeHistL1RCUEvents(Int_t type)
 {
-  // Create a 2D histo RCU:Events indicating the there was a deviation
-  // from the mean L1 phase of the event
-  //
-  //type: 0=Failures, 1=Phases
+  /// Create a 2D histo RCU:Events indicating the there was a deviation
+  /// from the mean L1 phase of the event
+  ///
+  /// type: 0=Failures, 1=Phases
 
   //number of relavant events, depending on version
   Int_t nevents=GetNevents();
@@ -404,9 +388,8 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEvents(Int_t type)
 //_____________________________________________________________________
 TH1F *AliTPCCalibRaw::MakeHistL1PhaseDist()
 {
-  //
-  // L1 phase distribution. Should be flat in ideal case
-  //
+  /// L1 phase distribution. Should be flat in ideal case
+
   TH1F *h=new TH1F("L1phaseDist","Normalized L1 phase distribution;phase;fraction of events",4,0,4);
   h->Sumw2();
   for (Int_t iev=0;iev<GetNevents();++iev) h->Fill(fArrALTROL1Phase.GetMatrixArray()[iev]);
@@ -418,9 +401,8 @@ TH1F *AliTPCCalibRaw::MakeHistL1PhaseDist()
 //_____________________________________________________________________
 TVectorF *AliTPCCalibRaw::MakeVectL1PhaseDist()
 {
-  //
-  // L1 phase distribution. Should be flat in ideal case
-  //
+  /// L1 phase distribution. Should be flat in ideal case
+
   TVectorF *v=new TVectorF(4);
   for (Int_t iev=0;iev<GetNevents();++iev) {
     Int_t phase=(Int_t)fArrALTROL1Phase.GetMatrixArray()[iev];
@@ -431,10 +413,9 @@ TVectorF *AliTPCCalibRaw::MakeVectL1PhaseDist()
 //_____________________________________________________________________
 TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsIROC(Int_t type)
 {
-  //
-  // Create a 2D histo RCU:Events indicating the there was a deviation
-  // from the mean L1 phase of the event
-  //
+  /// Create a 2D histo RCU:Events indicating the there was a deviation
+  /// from the mean L1 phase of the event
+
   TH2C *h2 = new TH2C("hL1FailRCUEventsIROC","L1 Failures IROCs;RCU;Event",72,0,36,GetNevents(),0,GetNevents());
   for (Int_t ircu=0;ircu<72;++ircu) {
     const TVectorF *v=0;
@@ -450,10 +431,9 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsIROC(Int_t type)
 //_____________________________________________________________________
 TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsOROC(Int_t type)
 {
-  //
-  // Create a 2D histo RCU:Events indicating the there was a deviation
-  // from the mean L1 phase of the event
-  //
+  /// Create a 2D histo RCU:Events indicating the there was a deviation
+  /// from the mean L1 phase of the event
+
   TH2C *h2 = new TH2C("hL1FailRCUEventsOROC","L1 Failures OROCs;RCU;Event",144,0,36,GetNevents(),0,GetNevents());
   for (Int_t ircu=72;ircu<kNRCU;++ircu) {
     const TVectorF *v=0;
@@ -469,9 +449,8 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsOROC(Int_t type)
 //_____________________________________________________________________
 void AliTPCCalibRaw::CreateDVhist()
 {
-  //
-  // Setup the HnSparse for the drift velocity determination
-  //
+  /// Setup the HnSparse for the drift velocity determination
+
   if (fHnDrift) return;
   //HnSparse bins
   //time bin, roc, time
@@ -479,14 +458,12 @@ void AliTPCCalibRaw::CreateDVhist()
   Double_t xmin[kHnBinsDV] = {static_cast<Double_t>(fFirstTimeBin),0,0};
   Double_t xmax[kHnBinsDV] = {static_cast<Double_t>(fLastTimeBin),72,static_cast<Double_t>(fNBinsTime)};
   fHnDrift=new THnSparseI("fHnDrift",Form("Drift velocity using last time bin;time bin[#times 100ns];ROC;Time bin [#times %us]",fNSecTime),kHnBinsDV, bins, xmin, xmax);
-    
+
 }
 //_____________________________________________________________________
 void AliTPCCalibRaw::Analyse()
 {
-  //
-  // Analyse Data
-  //
+  /// Analyse Data
 
   //resize arrays
   fArrALTROL1Phase.ResizeTo(GetNevents());
@@ -515,33 +492,31 @@ void AliTPCCalibRaw::Analyse()
     fVTimeStampEvent.ResizeTo(0);
   }
   //Analyse drift velocity TODO
-  
+
 }
 //_____________________________________________________________________
 TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
 {
-  //
-  // create occupancy graph (of samples abouve threshold)
-  // type=0:   number of samples
-  // type=1:   mean data volume (ADC counts/sample)
-  // type=2:   data volume (ADC counts)
-  // type=3:   samples per ADC count
-  // type=4:   sample occupancy
-  //
-  // type=5: number of sample sensitive / number of samples
-  //
-  // same in sensitive regions:
-  // type=10:  number of samples
-  // type=11:  mean data volume (ADC counts/sample)
-  // type=12:  data volume (ADC counts)
-  // type=13:  samples per ADC count
-  // type=14:  sample occupancy
-  //
-  // type=16: number of samples sensitive / number of pads sensitive
-  // type=17: pad occupancy in sensitive regions
-  // xType=0:  vs. time stamp
-  // xType=1:  vs. event counter
-  //
+  /// create occupancy graph (of samples abouve threshold)
+  /// type=0:   number of samples
+  /// type=1:   mean data volume (ADC counts/sample)
+  /// type=2:   data volume (ADC counts)
+  /// type=3:   samples per ADC count
+  /// type=4:   sample occupancy
+  ///
+  /// type=5: number of sample sensitive / number of samples
+  ///
+  /// same in sensitive regions:
+  /// type=10:  number of samples
+  /// type=11:  mean data volume (ADC counts/sample)
+  /// type=12:  data volume (ADC counts)
+  /// type=13:  samples per ADC count
+  /// type=14:  sample occupancy
+  ///
+  /// type=16: number of samples sensitive / number of pads sensitive
+  /// type=17: pad occupancy in sensitive regions
+  /// xType=0:  vs. time stamp
+  /// xType=1:  vs. event counter
 
   TString title("Event occupancy");
   TString xTitle("Time");
@@ -564,7 +539,7 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   }
   for (Int_t i=0;i<GetNevents(); ++i){
     Double_t nAboveThreshold=vOcc->GetMatrixArray()[i];
-    
+
     Double_t nSumADC        =1;
     Double_t timestamp      =1;
     Double_t nPads          =1;
@@ -611,18 +586,16 @@ TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
   //
   // Not implemented for the moment
   //
-//   return 0;  
+//   return 0;
 // }
 //_____________________________________________________________________
 TCanvas* AliTPCCalibRaw::MakeCanvasOccupancy(const Int_t xType, Bool_t sen)
 {
-  //
-  // Create a canvas with occupancy information of all 'type's (see MakeGraphOccupancy)
-  // xType=0: vs. timestamp
-  // xType=1: vs. event number
-  //
-  // sen=kTRUE: for sensitive regions
-  //
+  /// Create a canvas with occupancy information of all 'type's (see MakeGraphOccupancy)
+  /// xType=0: vs. timestamp
+  /// xType=1: vs. event number
+  ///
+  /// sen=kTRUE: for sensitive regions
 
   TString name("RawOccupancy_");
   TString title("Raw Occupancy vs. ");
@@ -652,9 +625,7 @@ TCanvas* AliTPCCalibRaw::MakeCanvasOccupancy(const Int_t xType, Bool_t sen)
 //_____________________________________________________________________
 void AliTPCCalibRaw::Merge(AliTPCCalibRaw * const sig)
 {
-  //
-  // Merge sig with this instance
-  //
+  /// Merge sig with this instance
 
   if (!sig) return;
   MergeBase(sig);
@@ -662,22 +633,20 @@ void AliTPCCalibRaw::Merge(AliTPCCalibRaw * const sig)
   fHnDrift->Add(sig->fHnDrift);
 
   //Add occupancy data
-  
+
 }
 
 //_____________________________________________________________________
 Long64_t AliTPCCalibRaw::Merge(TCollection * const list)
 {
-  //
-  // Merge all objects of this type in list
-  //
-  
+  /// Merge all objects of this type in list
+
   Long64_t nmerged=1;
-  
+
   TIter next(list);
   AliTPCCalibRaw *ce=0;
   TObject *o=0;
-  
+
   while ( (o=next()) ){
     ce=dynamic_cast<AliTPCCalibRaw*>(o);
     if (ce){
@@ -685,7 +654,7 @@ Long64_t AliTPCCalibRaw::Merge(TCollection * const list)
       ++nmerged;
     }
   }
-  
+
   return nmerged;
 }
 

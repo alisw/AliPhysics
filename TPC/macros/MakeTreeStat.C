@@ -1,28 +1,40 @@
-/****************************************************************************
-  Macro to get the size of the Tree
-  As a improvment to  tree->Print() function, this algorithm
-  gives the size of all of the branchces and in addition print them 
-  sorted according total tree size (MEMORY USAGE if one event in tree)
-  or zip size (THE storage size on disk 
+/// \file MakeTreeStat.C
+///
+/// Macro to get the size of the Tree
+/// As a improvment to  tree->Print() function, this algorithm
+/// gives the size of all of the branchces and in addition print them 
+/// sorted according total tree size (MEMORY USAGE if one event in tree)
+/// or zip size (THE storage size on disk)
+///
+/// Printed statistic:
+/// 1. Order
+/// 2. TotSize (in memory) + fraction of total size
+/// 3. ZipSize (in memory) + fraction of zip size
+/// 4. Compression ratio 
+/// 
+/// Usage:
+///
+/// 1. Enable macro
+///
+/// ~~~ 
+/// .L $ALICE_ROOT/TPC/macros/MakeTreeStat.C+
+/// ~~~
+///
+/// 2. Open the tree (eg.)
+///
+/// ~~~{.cpp}
+/// TFile f("AliESDs.root");
+/// TTree * tree = (TTree*)f.Get("esdTree");
+/// ~~~
+///
+/// 3. Print statistic (sorting according secon argument - either zip Bytes (kTRUE or TotSize (kFALSE)
+///
+/// ~~~{.cpp}
+/// MakeStat(tree, kTRUE);
+/// ~~~
+/// 
+/// \author M.Ivanov, GSI, m.ivanov@gsi.de
 
-  Printed statistic:
-  1. Order
-  2. TotSize (in memory) + fraction of total size
-  3. ZipSize (in memory) + fraction of zip size
-  4. Compression ratio 
-
-  Usage:
-  //  1. Enable macro
-  .L $ALICE_ROOT/TPC/macros/MakeTreeStat.C+
-  // 2. Open the tree (eg.)
-  TFile f("AliESDs.root");
-  TTree * tree = (TTree*)f.Get("esdTree");
-  // 3. Print statistic (sorting according secon argument - either zip Bytes (kTRUE or TotSize (kFALSE)
-  MakeStat(tree, kTRUE);
-
-  Origin: M.Ivanov, GSI, m.ivanov@gsi.de
-
-****************************************************************************/
 
 
 
@@ -51,9 +63,8 @@ void MakeStat(TTree *tree, Bool_t zipSort);
 
 
 void PrintSorted(Bool_t zipSort){
-  //
-  //print statistic
-  //
+  /// print statistic
+
   Int_t entries   = aReport.GetEntries();
   Int_t* indexes  = new Int_t[entries];
   if (zipSort) TMath::Sort(entries,zipSize.GetArray(),indexes,kTRUE);
@@ -82,9 +93,8 @@ void PrintSorted(Bool_t zipSort){
 
 
 void AddToReport(const char *prefix,const char * name, Float_t size[2], Float_t ratio){
-  //
-  // add branch info to array
-  //
+  /// add branch info to array
+
   char fullname[10000];
   sprintf(fullname,"%s.%s",prefix,name);
   aReport.AddLast(new TObjString(fullname));
@@ -108,9 +118,8 @@ void MakeStat(const char *prefix, TBranch * branch, Float_t* size, Float_t mrati
 
 
 void MakeStat(TTree *tree, Bool_t zipSort){
-  //
-  // make recursve loop over tree branches
-  //
+  /// make recursve loop over tree branches
+
   fTree= tree;
   aReport.Clear();
   TObjArray * array = tree->GetListOfBranches(); 
@@ -129,10 +138,9 @@ void MakeStat(TTree *tree, Bool_t zipSort){
 
 
 void MakeStat(const char *prefix, TBranch * branch, Float_t *size, Float_t mratio){
-  //
-  // Recursive function to get size of the branches
-  // and ratios
-  //
+  /// Recursive function to get size of the branches
+  /// and ratios
+
   TObjArray * array = branch->GetListOfBranches();
   Float_t bsizeSum[2]={0,0};
 

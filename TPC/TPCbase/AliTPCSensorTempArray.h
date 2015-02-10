@@ -4,11 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TPC calibration class for temperature sensors                            //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCSensorTempArray
+/// \brief TPC calibration class for temperature sensors
 
 #include "TSystem.h"
 
@@ -44,7 +41,9 @@ class AliTPCSensorTempArray : public AliDCSSensorArray {
 
  protected:
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCSensorTempArray,1)       //  TPC calibration class for parameters which are saved per pad
+  /// \endcond
 
 };
 

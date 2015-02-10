@@ -3,14 +3,13 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
-/* $Id: $ */
-
-/*
-  Checks implemented a la AliMUONQAChecker.
-  Checks the quality assurance by very simple checks on histogram content.
-  P. Christiansen, Lund, September 2009.
-*/
+/// \class AliTPCQAChecker
+/// \brief Checks implemented a la AliMUONQAChecker.
+///
+/// Checks the quality assurance by very simple checks on histogram content.
+///
+/// \author P. Christiansen, Lund
+/// \date September 2009.
 
 // --- ROOT header files ---
 #include <TObjArray.h>
@@ -20,30 +19,32 @@
 #include "AliDetectorRecoParam.h"
 
 class AliTPCQAChecker: public AliQACheckerBase {
-  
+
  public:
  AliTPCQAChecker() : AliQACheckerBase("TPC","TPC Quality Assurance Checker"), fDebug(0) {;}          // ctor
- AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fDebug(qac.GetDebugLevel()) {;} // cpy ctor   
+ AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fDebug(qac.GetDebugLevel()) {;} // cpy ctor
   AliTPCQAChecker& operator = (const AliTPCQAChecker &checker); // assignment
   virtual ~AliTPCQAChecker() {;} // dtor
-  
-  virtual void Check(Double_t *  test, AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam); 
-  void Init(const AliQAv1::DETECTORINDEX_t det); 
+
+  virtual void Check(Double_t *  test, AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam);
+  void Init(const AliQAv1::DETECTORINDEX_t det);
   void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;
 
   Int_t GetDebugLevel() const {return fDebug;}
   void  SetDebugLevel(Int_t value) {fDebug = value;}
-  
+
 private:
-  
+
   Double_t CheckRAW(Int_t specie, TObjArray* list);
   Double_t CheckSIM(Int_t specie, TObjArray* list);
   Double_t CheckREC(Int_t specie, TObjArray* list);
   Double_t CheckESD(Int_t specie, TObjArray* list);
 
   Int_t fDebug;
-  
+
+  /// \cond CLASSIMP
   ClassDef(AliTPCQAChecker,2)  // TPC Quality Assurance Checker
+  /// \endcond
 
 };
 

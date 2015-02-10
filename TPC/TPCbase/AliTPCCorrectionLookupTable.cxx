@@ -1,3 +1,5 @@
+/// \class AliTPCCorrectionLookupTable
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -31,7 +33,9 @@
 
 #include "AliTPCCorrectionLookupTable.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCorrectionLookupTable)
+/// \endcond
 
 //_________________________________________________________________________________________
 AliTPCCorrectionLookupTable::AliTPCCorrectionLookupTable()
@@ -58,27 +62,22 @@ AliTPCCorrectionLookupTable::AliTPCCorrectionLookupTable()
 //_________________________________________________________________________________________
 AliTPCCorrectionLookupTable::~AliTPCCorrectionLookupTable()
 {
-  //
-  // dtor
-  //
+  /// dtor
 
   ResetTables();
 }
 
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Get interpolated Distortion
-  //
+  /// Get interpolated Distortion
 
   GetInterpolation(x,roc,dx,fLookUpDxDist,fLookUpDyDist,fLookUpDzDist);
 }
 
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Get interplolated correction
-  //
+  /// Get interplolated correction
+
   GetInterpolation(x,roc,dx,fLookUpDxCorr,fLookUpDyCorr,fLookUpDzCorr);
 
   if (fCorrScaleFactor>0) {
@@ -92,38 +91,36 @@ void AliTPCCorrectionLookupTable::GetCorrection(const Float_t x[],const Short_t 
 void AliTPCCorrectionLookupTable::GetInterpolation(const Float_t x[],const Short_t roc,Float_t dx[],
                                                    TMatrixF **mDx, TMatrixF **mDy, TMatrixF **mDz)
 {
-  //
-  // Calculates the correction/distotring from a lookup table
-  // type: 0 = correction
-  //       1 = distortion
-  //
+  /// Calculates the correction/distotring from a lookup table
+  /// type: 0 = correction
+  ///       1 = distortion
 
 //   Float_t typeSign=-1;
 //   if (type==1) typeSign=1;
-  
+
   Int_t   order     = 1 ;    // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2
-  
+
   Double_t r, phi, z ;
   Int_t    sign;
-  
+
   r      =  TMath::Sqrt( x[0]*x[0] + x[1]*x[1] ) ;
   phi    =  TMath::ATan2(x[1],x[0]) ;
   if ( phi < 0 ) phi += TMath::TwoPi() ;                   // Table uses phi from 0 to 2*Pi
   z      =  x[2] ;                                         // Create temporary copy of x[2]
-  
+
   if ( (roc%36) < 18 ) {
     sign =  1;       // (TPC A side)
   } else {
     sign = -1;       // (TPC C side)
   }
-  
+
   if ( sign==1  && z <  fgkZOffSet ) z =  fgkZOffSet;    // Protect against discontinuity at CE
   if ( sign==-1 && z > -fgkZOffSet ) z = -fgkZOffSet;    // Protect against discontinuity at CE
 
 
   if ( (sign==1 && z<0) || (sign==-1 && z>0) ) // just a consistency check
     AliError("ROC number does not correspond to z coordinate! Calculation of distortions is most likely wrong!");
-  
+
   // Get the Er and Ephi field integrals plus the integral over Z
     dx[0] = Interpolate3DTable(order, r, z, phi,
                                fNR, fNZ, fNPhi,
@@ -148,9 +145,7 @@ void AliTPCCorrectionLookupTable::GetInterpolation(const Float_t x[],const Short
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, Float_t stepSize/*=5.*/)
 {
-  //
-  // create lookup table for all phi,r,z bins
-  //
+  /// create lookup table for all phi,r,z bins
 
   if (fNR==0) {
     AliError("Limits are not set yet. Please use one of the Set..Limits functions first");
@@ -158,10 +153,10 @@ void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, F
   }
 
   TStopwatch s;
-  
+
   ResetTables();
   InitTables();
-  
+
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
     CreateLookupTablePhiBin(tpcCorr,iPhi,stepSize);
   }
@@ -173,17 +168,15 @@ void AliTPCCorrectionLookupTable::CreateLookupTable(AliTPCCorrection &tpcCorr, F
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::CreateLookupTableSinglePhi(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize)
 {
-  //
-  // Lookup table for only one phi bin. Can be used for parallel processing
-  //
-  
+  /// Lookup table for only one phi bin. Can be used for parallel processing
+
   if (fNR==0) {
     AliError("Limits are not set yet. Please use one of the Set..Limits functions first");
     return;
   }
 
   TStopwatch s;
-  
+
   ResetTables();
   InitTableArrays();
   InitTablesPhiBin(iPhi);
@@ -196,12 +189,10 @@ void AliTPCCorrectionLookupTable::CreateLookupTableSinglePhi(AliTPCCorrection &t
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::CreateLookupTablePhiBin(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize)
 {
-  //
-  //
-  //
+  ///
 
   if (iPhi<0||iPhi>=fNPhi) return;
-  
+
   const Float_t delta=stepSize; // 5cm
   Float_t x[3]={0.,0.,0.};
   Float_t dx[3]={0.,0.,0.};
@@ -215,12 +206,12 @@ void AliTPCCorrectionLookupTable::CreateLookupTablePhiBin(AliTPCCorrection &tpcC
   TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
   TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
   TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
-  
+
   for (Int_t ir=0; ir<fNR; ++ir){
     Double_t r=fLimitsR(ir);
     x[0]=r * TMath::Cos(phi);
     x[1]=r * TMath::Sin(phi);
-    
+
     for (Int_t iz=0; iz<fNZ; ++iz){
       Double_t z=fLimitsZ(iz);
       x[2]=z;
@@ -228,7 +219,7 @@ void AliTPCCorrectionLookupTable::CreateLookupTablePhiBin(AliTPCCorrection &tpcC
       Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
       if (r>133.) roc+=36;
       if (z<0)    roc+=18;
-      
+
       if (delta>0)
         tpcCorr.GetDistortionIntegralDz(x,roc,dx,delta);
       else
@@ -248,15 +239,13 @@ void AliTPCCorrectionLookupTable::CreateLookupTablePhiBin(AliTPCCorrection &tpcC
       }
     }
   }
-  
+
 }
 
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::InitTables()
 {
-  //
-  // Init all tables
-  //
+  /// Init all tables
 
   InitTableArrays();
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
@@ -267,20 +256,19 @@ void AliTPCCorrectionLookupTable::InitTables()
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::CreateLookupTableFromResidualDistortion(THn &resDist)
 {
-  //
-  // create lookup table from residual distortions stored in a 3d histogram
-  // assume dimensions are r, phi, z
-  //
+  /// create lookup table from residual distortions stored in a 3d histogram
+  /// assume dimensions are r, phi, z
+
   if (fNR==0) {
     AliError("Limits are not set yet. Please use one of the Set..Limits functions first");
     return;
   }
-  
+
   ResetTables();
   InitTables();
 
   Double_t x[3]={0.,0.,0.};
-  
+
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
     const Double_t phi=fLimitsPhi(iPhi);
     x[1]=phi;
@@ -292,18 +280,18 @@ void AliTPCCorrectionLookupTable::CreateLookupTableFromResidualDistortion(THn &r
     TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
     TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
     TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
-    
+
     for (Int_t ir=0; ir<fNR; ++ir){
       const Double_t r=fLimitsR(ir);
       x[0]=r;
-      
+
       for (Int_t iz=0; iz<fNZ; ++iz){
         const Double_t z=fLimitsZ(iz);
         x[2]=z;
 
         const Double_t drphi = resDist.GetBinContent(resDist.GetBin(x));
         Double_t dx[3]={0.,drphi,0.};
-        
+
         // transform rphi distortions (local y, so dy') to a global distortion
         // assume no radial distortion (dx' = 0)
         // assume no residual distortion in z for the moment
@@ -325,15 +313,13 @@ void AliTPCCorrectionLookupTable::CreateLookupTableFromResidualDistortion(THn &r
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, AliTPCCorrection* correction)
 {
-  //
-  // create lookup table from residual distortions calculated from distorted - correction
-  //
-  
+  /// create lookup table from residual distortions calculated from distorted - correction
+
   ResetTables();
   InitTables();
-  
+
   Float_t x[3]={0.,0.,0.};
-  
+
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
     const Double_t phi=fLimitsPhi(iPhi);
     //
@@ -344,19 +330,19 @@ void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, A
     TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
     TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
     TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
-    
+
     for (Int_t ir=0; ir<fNR; ++ir){
       const Double_t r=fLimitsR(ir);
       x[0]=r * TMath::Cos(phi);
       x[1]=r * TMath::Sin(phi);
-      
+
       for (Int_t iz=0; iz<fNZ; ++iz){
         const Double_t z=fLimitsZ(iz);
         x[2]=z;
 
         //original point
         Float_t xdc[3]={x[0], x[1], x[2]};
-        
+
         Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
         if (r>133.) roc+=36;
         if (z<0)    roc+=18;
@@ -365,11 +351,11 @@ void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, A
         distortion->DistortPoint(xdc, roc);
         correction->CorrectPoint(xdc, roc);
         Float_t dx[3]={xdc[0]-x[0], xdc[1]-x[1], xdc[2]-x[2]};
-        
+
         mDxDist(ir,iz)=dx[0];
         mDyDist(ir,iz)=dx[1];
         mDzDist(ir,iz)=dx[2];
-        
+
         mDxCorr(ir,iz)=-dx[0];
         mDyCorr(ir,iz)=-dx[1];
         mDzCorr(ir,iz)=-dx[2];
@@ -381,37 +367,33 @@ void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, A
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::InitTablesPhiBin(Int_t iPhi)
 {
-  //
-  //
-  //
+  ///
 
   // check if already initialised
   if (iPhi<0||iPhi>=fNPhi) return;
   if (fLookUpDxCorr[iPhi]) return;
-  
+
   fLookUpDxCorr[iPhi] = new TMatrixF(fNR,fNZ);
   fLookUpDyCorr[iPhi] = new TMatrixF(fNR,fNZ);
   fLookUpDzCorr[iPhi] = new TMatrixF(fNR,fNZ);
-  
+
   fLookUpDxDist[iPhi] = new TMatrixF(fNR,fNZ);
   fLookUpDyDist[iPhi] = new TMatrixF(fNR,fNZ);
   fLookUpDzDist[iPhi] = new TMatrixF(fNR,fNZ);
-  
+
 }
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::InitTableArrays()
 {
-  //
-  //
-  //
+  ///
 
   // needs to be before the table creation to set the limits
   SetupDefaultLimits();
-  
+
   fLookUpDxCorr = new TMatrixF*[fNPhi];
   fLookUpDyCorr = new TMatrixF*[fNPhi];
   fLookUpDzCorr = new TMatrixF*[fNPhi];
-  
+
   fLookUpDxDist = new TMatrixF*[fNPhi];
   fLookUpDyDist = new TMatrixF*[fNPhi];
   fLookUpDzDist = new TMatrixF*[fNPhi];
@@ -420,7 +402,7 @@ void AliTPCCorrectionLookupTable::InitTableArrays()
     fLookUpDxCorr[iPhi] = 0x0;
     fLookUpDyCorr[iPhi] = 0x0;
     fLookUpDzCorr[iPhi] = 0x0;
-    
+
     fLookUpDxDist[iPhi] = 0x0;
     fLookUpDyDist[iPhi] = 0x0;
     fLookUpDzDist[iPhi] = 0x0;
@@ -430,12 +412,10 @@ void AliTPCCorrectionLookupTable::InitTableArrays()
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::ResetTables()
 {
-  //
-  // Reset the lookup tables
-  //
+  /// Reset the lookup tables
 
   if (!fLookUpDxCorr) return;
-  
+
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
     delete fLookUpDxCorr[iPhi];
     delete fLookUpDyCorr[iPhi];
@@ -449,15 +429,15 @@ void AliTPCCorrectionLookupTable::ResetTables()
   delete [] fLookUpDxCorr;
   delete [] fLookUpDyCorr;
   delete [] fLookUpDzCorr;
-  
+
   delete [] fLookUpDxDist;
   delete [] fLookUpDyDist;
   delete [] fLookUpDzDist;
-  
+
   fLookUpDxCorr   = 0x0;
   fLookUpDyCorr = 0x0;
   fLookUpDzCorr    = 0x0;
-  
+
   fLookUpDxDist   = 0x0;
   fLookUpDyDist = 0x0;
   fLookUpDzDist    = 0x0;
@@ -466,9 +446,7 @@ void AliTPCCorrectionLookupTable::ResetTables()
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::SetupDefaultLimits()
 {
-  //
-  // Set default limits for tables
-  //
+  /// Set default limits for tables
 
   fNR   = kNR;
   fNPhi = kNPhi;
@@ -496,14 +474,12 @@ void AliTPCCorrectionLookupTable::ResetLimits()
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::MergePhiTables(const char* files)
 {
-  //
-  // merge all lookup tables stored in 'files' with this one
-  // assume that each lookup table in each file has only one phi bin
-  //
+  /// merge all lookup tables stored in 'files' with this one
+  /// assume that each lookup table in each file has only one phi bin
 
   ResetTables();
   ResetLimits(); // use limits from the first file assuming they are all the same
-  
+
   TString sfiles=gSystem->GetFromPipe(Form("ls %s",files));
   TObjArray *arrFiles=sfiles.Tokenize("\n");
 
@@ -555,18 +531,16 @@ void AliTPCCorrectionLookupTable::MergePhiTables(const char* files)
       AliFatal(Form("Phi bin '%d' not initialised from files!",iPhi));
     }
   }
-  
+
   delete arrFiles;
 }
 
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::BuildExactInverse()
 {
-  //
-  // this method build the exact inverse of the standard distortion map
-  // for the the distortion man first needs to be calculated
-  // then the correction map will be overwritten
-  //
+  /// this method build the exact inverse of the standard distortion map
+  /// for the the distortion man first needs to be calculated
+  /// then the correction map will be overwritten
 
   Float_t x[3]    = {0.,0.,0.};
   Float_t x2[3]   = {0.,0.,0.};
@@ -579,7 +553,7 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
     TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
     TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
     TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
-    
+
     for (Int_t ir=0; ir<fNR; ++ir){
       for (Int_t iz=0; iz<fNZ; ++iz){
         mDxCorr(ir,iz) = -1000.;
@@ -588,14 +562,14 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
       }
     }
   }
-  
+
   // get interplolated corrections on standard grid
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
     Double_t phi=fLimitsPhi(iPhi);
     TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
     TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
     TMatrixF &mDzDist   = *fLookUpDzDist[iPhi];
-    
+
     for (Int_t ir=0; ir<fNR; ++ir){
       Double_t r=fLimitsR(ir);
       x[0]=r * TMath::Cos(phi);
@@ -604,7 +578,7 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
       for (Int_t iz=0; iz<fNZ; ++iz){
         Double_t z=fLimitsZ(iz);
         x[2]=z;
-        
+
         //TODO: change hardcoded value for r>133.?
         Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
         if (r>133.) roc+=36;
@@ -623,11 +597,11 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
         const Double_t zd   = xd[2];
 
         Int_t ilow = 0, jlow = 0, klow = 0 ;
-        
+
         Search( fLimitsR.GetNrows(),   fLimitsR.GetMatrixArray(),   rd,   ilow   ) ;
         Search( fLimitsZ.GetNrows(),   fLimitsZ.GetMatrixArray(),   zd,   jlow   ) ;
         Search( fLimitsPhi.GetNrows(), fLimitsPhi.GetMatrixArray(), phid, klow   ) ;
-        
+
         if ( ilow < 0 ) ilow = 0 ;   // check if out of range
         if ( jlow < 0 ) jlow = 0 ;
         if ( klow < 0 ) klow = 0 ;
@@ -638,16 +612,16 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
         const Double_t phiRef = fLimitsPhi[klow];
         const Double_t rRef   = fLimitsR[ilow];
         const Double_t zRef   = fLimitsZ[jlow];
-        
+
         TMatrixF &mDxCorr   = *fLookUpDxCorr[klow];
         if ( mDxCorr(ilow, jlow) > -1000. ) continue;
         TMatrixF &mDyCorr   = *fLookUpDyCorr[klow];
         TMatrixF &mDzCorr   = *fLookUpDzCorr[klow];
-        
+
         xref[0]= rRef * TMath::Cos(phiRef);
         xref[1]= rRef * TMath::Sin(phiRef);
         xref[2]= zRef;
-        
+
         FindClosestPosition(ir,iz,iPhi, xref, x2);
 
         GetDistortion(x2,roc,dx);
@@ -675,11 +649,11 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
   TMatrixF &mDxCorr   = *fLookUpDxCorr[0];
   TMatrixF &mDyCorr   = *fLookUpDyCorr[0];
   TMatrixF &mDzCorr   = *fLookUpDzCorr[0];
-  
+
   TMatrixF &mDxCorr2  = *fLookUpDxCorr[fNPhi-1];
   TMatrixF &mDyCorr2  = *fLookUpDyCorr[fNPhi-1];
   TMatrixF &mDzCorr2  = *fLookUpDzCorr[fNPhi-1];
-  
+
   for (Int_t ir=0; ir<fNR; ++ir){
     for (Int_t iz=0; iz<fNZ; ++iz){
       mDxCorr2(ir,iz) = mDxCorr(ir,iz);
@@ -693,7 +667,7 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
     TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
     TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
     TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
-    
+
     Double_t phi=fLimitsPhi(iPhi);
     for (Int_t ir=0; ir<fNR; ++ir){
       Double_t r=fLimitsR(ir);
@@ -705,17 +679,17 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
 
         Double_t z=fLimitsZ(iz);
         x[2]=z;
-        
+
         //TODO: change hardcoded value for r>133.?
         Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
         if (r>133.) roc+=36;
         if (z<0)    roc+=18;
-        
+
         // get last point
         dx[0] = mDxCorr(ir,iz-1);
         dx[1] = mDyCorr(ir,iz-1);
         dx[2] = mDzCorr(ir,iz-1);
-        
+
         xd[0] = x[0]+dx[0];
         xd[1] = x[1]+dx[1];
         xd[2] = x[2]+dx[2];
@@ -724,40 +698,38 @@ void AliTPCCorrectionLookupTable::BuildExactInverse()
         const Double_t phid = TVector2::Phi_0_2pi(TMath::ATan2(xd[1],xd[0]));
         const Double_t rd   = TMath::Sqrt(xd[0]*xd[0] + xd[1]*xd[1]);
         const Double_t zd   = xd[2];
-        
+
         Int_t ilow = 0, jlow = 0, klow = 0 ;
-        
+
         Search( fLimitsR.GetNrows(),   fLimitsR.GetMatrixArray(),   rd,   ilow   ) ;
         Search( fLimitsZ.GetNrows(),   fLimitsZ.GetMatrixArray(),   zd,   jlow   ) ;
         Search( fLimitsPhi.GetNrows(), fLimitsPhi.GetMatrixArray(), phid, klow   ) ;
-        
+
         if ( ilow < 0 ) ilow = 0 ;   // check if out of range
         if ( jlow < 0 ) jlow = 0 ;
         if ( klow < 0 ) klow = 0 ;
         if ( ilow >= fLimitsR.GetNrows())   ilow = fLimitsR.GetNrows() - 1;
         if ( jlow >= fLimitsZ.GetNrows())   jlow = fLimitsZ.GetNrows() - 1;
         if ( klow >= fLimitsPhi.GetNrows()) klow = fLimitsPhi.GetNrows() - 1;
-        
+
         FindClosestPosition(ilow,jlow,klow, x, x2);
-        
+
         GetDistortion(x2,roc,dx);
-        
+
         mDxCorr(ir, iz) = -dx[0];
         mDyCorr(ir, iz) = -dx[1];
         mDzCorr(ir, iz) = -dx[2];
       }
     }
   }
-  
+
 }
 
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::FindClosestPosition(const Int_t binR, const Int_t binZ, const Int_t binPhi,
                                                       const Float_t xref[3], Float_t xret[3])
 {
-  //
-  //
-  //
+  ///
 
 //   static TLinearFitter fitx(2,"pol2");
 //   static TLinearFitter fity(2,"pol2");
@@ -789,30 +761,30 @@ void AliTPCCorrectionLookupTable::FindClosestPosition(const Int_t binR, const In
   while (rMax>=fNR) {--rMin; --rMax;}
   while (zMax>=fNZ) {--zMin; --zMax;}
   while (phiMax>=fNPhi) {--phiMin; --phiMax;}
-  
+
   Float_t  x[3]    = {0.,0.,0.};
   Double_t xd[3]   = {0.,0.,0.};
   Float_t  dx[3]   = {0.,0.,0.};
-  
+
   for (Int_t iPhi=phiMin; iPhi<phiMax; ++iPhi) {
     TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
     TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
     TMatrixF &mDzDist   = *fLookUpDzDist[iPhi];
-    
+
     Double_t phi=fLimitsPhi(iPhi);
     for (Int_t ir=rMin; ir<rMax; ++ir){
       Double_t r=fLimitsR(ir);
       x[0]=r * TMath::Cos(phi);
       x[1]=r * TMath::Sin(phi);
-      
+
       for (Int_t iz=zMin; iz<zMax; ++iz){
         Double_t z=fLimitsZ(iz);
         x[2]=z;
-        
+
         dx[0] = mDxDist(ir,iz);
         dx[1] = mDyDist(ir,iz);
         dx[2] = mDzDist(ir,iz);
-        
+
         xd[0] = x[0]+dx[0];
         xd[1] = x[1]+dx[1];
         xd[2] = x[2]+dx[2];

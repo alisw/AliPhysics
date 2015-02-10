@@ -14,10 +14,7 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibViewerGUItime
 
 
 #include <iostream>
@@ -155,22 +152,18 @@ TGCompositeFrame(p,w,h),
 }
 //______________________________________________________________________________
 AliTPCCalibViewerGUItime::~AliTPCCalibViewerGUItime(){
-  //
-  // dtor
-  //
+  /// dtor
+
   delete fConfigParser;
   delete fTrashBox;
   delete fMapRefTrees;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
-   //
-   // draw the GUI
-   //
-   // ======================================================================
-   // ************************* Display everything *************************
-   // ======================================================================
-  
+   /// draw the GUI
+   ///
+   /// ************************* Display everything *************************
+
   SetCleanup(kDeepCleanup);
   
    // *****************************************************************************
@@ -449,18 +442,16 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::SetInitialValues(){
-  //
-  // Set inital selections of the gui
-  //
+  /// Set inital selections of the gui
+
   fRadioXrun->SetState(kButtonDown);
   fRadioXtime->SetState(kButtonUp);
 }
 
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UseFile(const char* fileName, const char* treeName) {
-  //
-  // retrieve tree from file
-  //
+  /// retrieve tree from file
+
   TObjArray *arr=0x0;
   TString file(fileName);
   if (file.Contains("://")) {
@@ -493,9 +484,8 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName, const char* treeNam
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UseChain(TChain *const chain  = 0)
 {
-  //
-  //
-  //
+  ///
+
   fTree=chain;
   if (!CheckChain()) return;
   //set configuration file
@@ -505,10 +495,9 @@ void AliTPCCalibViewerGUItime::UseChain(TChain *const chain  = 0)
 //______________________________________________________________________________
 Bool_t AliTPCCalibViewerGUItime::CheckChain()
 {
-  //
-  // check whether cahin has entries
-  // decide whether to draw graphs in 2D
-  //
+  /// check whether cahin has entries
+  /// decide whether to draw graphs in 2D
+
   if (!fTree) return kFALSE;
   fTree->Lookup();
   Long64_t entries=fTree->GetEntries();
@@ -523,9 +512,8 @@ Bool_t AliTPCCalibViewerGUItime::CheckChain()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UseConfigFile(const char* file)
 {
-  //
-  // Use 'file' as configuration file
-  //
+  /// Use 'file' as configuration file
+
   fConfigFile=file;
   fConfigParser->ParseConfigFileTxt(fConfigFile.Data());
   FillCalibTypes();
@@ -533,9 +521,8 @@ void AliTPCCalibViewerGUItime::UseConfigFile(const char* file)
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::FillRunTypes()
 {
-  //
-  //Loop over the tree entries and fill the run types
-  //
+  /// Loop over the tree entries and fill the run types
+
   if (!fTree) return;
   Int_t id=0;
   fComboRunType->RemoveAll();
@@ -558,9 +545,8 @@ void AliTPCCalibViewerGUItime::FillRunTypes()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::FillCalibTypes()
 {
-  //
-  // loop over configuration and fill calibration types
-  //
+  /// loop over configuration and fill calibration types
+
   Int_t id=0;
   fListCalibType->RemoveAll();
   TObject *o=0x0;
@@ -588,10 +574,9 @@ void AliTPCCalibViewerGUItime::FillCalibTypes()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::CheckDrawGraph()
 {
-  //
-  // Check whether to draw graphs in 2D mode based on the number of entries in the chain
-  // GetEstimate() returns the maximum size of the arrays stored in GetV1()...
-  //
+  /// Check whether to draw graphs in 2D mode based on the number of entries in the chain
+  /// GetEstimate() returns the maximum size of the arrays stored in GetV1()...
+
   if (!fTree) return;
   fNoGraph=kTRUE;
   if (fTree->GetEntries()<fTree->GetEstimate()) fNoGraph=kFALSE;
@@ -599,9 +584,7 @@ void AliTPCCalibViewerGUItime::CheckDrawGraph()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::Reload(Int_t first)
 {
-  //
-  // reload the gui contents, this is needed after the input tree has changed
-  //
+  /// reload the gui contents, this is needed after the input tree has changed
 
   if ( !fTree ) return;
   //in case of the first call create run type and calibration type entries
@@ -669,18 +652,15 @@ void AliTPCCalibViewerGUItime::Reload(Int_t first)
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::AddReferenceTree(const char* treeFileName, const char* refName)
 {
-  //
-  // map of reference trees that should always be attached to the CalibViewerGUI
-  //
+  /// map of reference trees that should always be attached to the CalibViewerGUI
+
   fMapRefTrees->Add(new TObjString(refName), new TObjString(treeFileName));
 
 }
 //______________________________________________________________________________
 const TString AliTPCCalibViewerGUItime::GetDrawString(){
-  //
-  // create draw string for ttree by combining the user requestsa
-  //
-  
+  /// create draw string for ttree by combining the user requestsa
+
   TString selectedVariable="";
   Int_t id=-1;
   if (!fListVariables->GetSelectedEntry()) return "";
@@ -706,9 +686,8 @@ const TString AliTPCCalibViewerGUItime::GetDrawString(){
 }
 //______________________________________________________________________________
 const TString AliTPCCalibViewerGUItime::GetDrawOptionString(){
-  //
-  // get user selected draw options
-  //
+  /// get user selected draw options
+
   TString drawOpt;
   if (fComboAddDrawOpt->GetSelectedEntry()) drawOpt=fComboAddDrawOpt->GetSelectedEntry()->GetTitle();
   if (fChkDrawOptSame->GetState()==kButtonDown && !drawOpt.Contains("same",TString::kIgnoreCase))
@@ -717,9 +696,8 @@ const TString AliTPCCalibViewerGUItime::GetDrawOptionString(){
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::GetCutString(TString &cutStr){
-  //
-  // create cut string
-  //
+  /// create cut string
+
   TCut cuts(fComboCustomCuts->GetTextEntry()->GetText());
   TString runType="";
   if (fComboRunType->GetSelectedEntry()) runType=fComboRunType->GetSelectedEntry()->GetTitle();
@@ -729,9 +707,8 @@ void AliTPCCalibViewerGUItime::GetCutString(TString &cutStr){
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph, const Double_t *xArr)
 {
-  //
-  //
-  //
+  ///
+
   if (!withGraph){
     fValuesX.ResizeTo(1);
     fValuesY.ResizeTo(1);
@@ -794,9 +771,7 @@ void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph, const Double_
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::GetHistogramTitle(TString &title)
 {
-  //
-  // Create string for histogram title
-  //
+  /// Create string for histogram title
 
   title=fDrawString;
   Int_t pos=title.First(">>");
@@ -856,9 +831,8 @@ void AliTPCCalibViewerGUItime::GetHistogramTitle(TString &title)
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::AdjustYRange()
 {
-  //
-  //
-  //
+  ///
+
   TIter nextGraphicObject(fTrashBox);
   TObject *o=0x0;
   Float_t min=1,max=0;
@@ -885,9 +859,8 @@ void AliTPCCalibViewerGUItime::AdjustYRange()
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoDraw() {
-  //
-  // Draw graphics
-  //
+  /// Draw graphics
+
   TString drawString=fDrawString;
   TString cutString;
   GetCutString(cutString);
@@ -1030,9 +1003,8 @@ void AliTPCCalibViewerGUItime::DoDraw() {
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoDumpRuns()
 {
-  //
-  // Dump the current run numbers to stdout
-  //
+  /// Dump the current run numbers to stdout
+
   Int_t npoints=fRunNumbers.GetNrows();
   Int_t    *sortIndex = new Int_t[npoints];
   TMath::Sort(npoints,fRunNumbers.GetMatrixArray(),sortIndex,kFALSE);
@@ -1048,17 +1020,15 @@ void AliTPCCalibViewerGUItime::DoDumpRuns()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoParLimitChange()
 {
-  //
-  //
-  //
+  ///
+
   UpdateParName();
   DoDraw();
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoNewSelection() {
-   //
-   // decides whether to redraw if user makes another selection
-   //
+   /// decides whether to redraw if user makes another selection
+
   UpdateParLimits();
   fDrawString=GetDrawString();
   fIsCustomDraw=kFALSE;
@@ -1067,9 +1037,8 @@ void AliTPCCalibViewerGUItime::DoNewSelection() {
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoCustomDraw()
 {
-  //
-  //
-  //
+  ///
+
   fDrawString=fComboCustomDraw->GetTextEntry()->GetText();
 //   if (fDrawString.Contains(">>")){
 //     Warning("DoCustomDraw","Currently no user defined histograms allowed!");
@@ -1082,9 +1051,8 @@ void AliTPCCalibViewerGUItime::DoCustomDraw()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoCustomCutsDraw()
 {
-  //
-  //
-  //
+  ///
+
   if (fIsCustomDraw) DoCustomDraw();
   else {
     fDrawString=GetDrawString();
@@ -1095,9 +1063,7 @@ void AliTPCCalibViewerGUItime::DoCustomCutsDraw()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::HandleButtonsDrawSel(Int_t id)
 {
-  //
-  // Draw selection button handling (x-variable)
-  //
+  /// Draw selection button handling (x-variable)
 
   if (id == -1) {
     TGButton *btn = (TGButton *) gTQSender;
@@ -1141,10 +1107,8 @@ void AliTPCCalibViewerGUItime::HandleButtonsDrawSel(Int_t id)
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UpdateParName()
 {
-  //
-  // change parameter name
-  //
-  
+  /// change parameter name
+
   Int_t par = (Int_t)(fNmbPar->GetNumber());
   TString parName="";
   Int_t id=fListVariables->GetSelectedEntry()->EntryId();
@@ -1158,9 +1122,8 @@ void AliTPCCalibViewerGUItime::UpdateParName()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UpdateParLimits()
 {
-  //
-  // Adjust limits for TVectorT based variables
-  //
+  /// Adjust limits for TVectorT based variables
+
   if (!fTree) return;
   TString selectedVariableTitle="";
   Int_t id=-1;
@@ -1213,9 +1176,8 @@ void AliTPCCalibViewerGUItime::UpdateParLimits()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/)
 {
-  //
-  // handle mouse events in the draw canvas
-  //
+  /// handle mouse events in the draw canvas
+
   UInt_t dd=0,mm=0,yy=0,HH=0,MM=0,SS=0,run=0;
   Double_t valx=0.,valy=0.;
   if (!fCurrentGraph) {
@@ -1276,11 +1238,9 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
 {
-  //
-  // create the AliTPCCalibViewerGUI tree for run
-  // cache tree in directory fOutputCacheDir
-  // retrieve file from this directory if it already exists
-  //
+  /// create the AliTPCCalibViewerGUI tree for run
+  /// cache tree in directory fOutputCacheDir
+  /// retrieve file from this directory if it already exists
 
   //
   //Create and set GUI tree  
@@ -1331,9 +1291,8 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::SubstituteUnderscores(TString &s)
 {
-  //
-  //
-  //
+  ///
+
   s.ReplaceAll("_{","|{");
   s.ReplaceAll("_"," ");
   s.ReplaceAll("|{","_{");
@@ -1342,9 +1301,8 @@ void AliTPCCalibViewerGUItime::SubstituteUnderscores(TString &s)
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoNewSelectionAliases()
 {
-  //
-  //
-  //
+  ///
+
   if (!fTree) return;
   TList *l=fTree->GetListOfAliases();
   if (!l) return;
@@ -1358,17 +1316,15 @@ void AliTPCCalibViewerGUItime::DoNewSelectionAliases()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoAddAlias()
 {
-  //
-  //
-  //
+  ///
+
   new AliTPCCalibViewerGUItimeAddAliasFrame(gClient->GetRoot(), fContTopBottom, 400, 200, kVerticalFrame, this);
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoDelAlias()
 {
-  //
-  //
-  //
+  ///
+
   if (!fTree) return;
   TList *l=fTree->GetListOfAliases();
   if (!l) return;
@@ -1382,9 +1338,8 @@ void AliTPCCalibViewerGUItime::DoDelAlias()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UpdateAliasList()
 {
-  //
-  //
-  //
+  ///
+
   printf("UpdateAliasList\n");
   if (!fTree) return;
   TList *l=fTree->GetListOfAliases();
@@ -1401,10 +1356,9 @@ void AliTPCCalibViewerGUItime::UpdateAliasList()
 }
 //______________________________________________________________________________
 TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName, const char* treeName) {
-   //
-   // Initialize and show GUI for presentation for demonstration purposes
-   // or for fast standalone use
-   //
+   /// Initialize and show GUI for presentation for demonstration purposes
+   /// or for fast standalone use
+
   TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
   frmMain->SetWindowName("AliTPCCalibViewer GUItime");
   frmMain->SetCleanup(kDeepCleanup);
@@ -1439,10 +1393,9 @@ TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName, const char* t
 
 //______________________________________________________________________________
 TObjArray* AliTPCCalibViewerGUItime::ShowGUI(TChain *chain) {
-   //
-   // Initialize and show GUI for presentation for demonstration purposes
-   // or for fast standalone use
-   //
+   /// Initialize and show GUI for presentation for demonstration purposes
+   /// or for fast standalone use
+
   TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
   frmMain->SetWindowName("AliTPCCalibViewer GUItime");
   frmMain->SetCleanup(kDeepCleanup);
@@ -1474,7 +1427,9 @@ TObjArray* AliTPCCalibViewerGUItime::ShowGUI(TChain *chain) {
 ////////////////////////////////////////////////////////////////////////
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibViewerGUItimeAddAliasFrame)
+/// \endcond
 
 AliTPCCalibViewerGUItimeAddAliasFrame::AliTPCCalibViewerGUItimeAddAliasFrame(const TGWindow *p, const TGWindow *main,
                                                                              UInt_t w, UInt_t h, UInt_t options,
@@ -1566,17 +1521,15 @@ AliTPCCalibViewerGUItimeAddAliasFrame::AliTPCCalibViewerGUItimeAddAliasFrame(con
 //______________________________________________________________________________
 AliTPCCalibViewerGUItimeAddAliasFrame::~AliTPCCalibViewerGUItimeAddAliasFrame()
 {
-  //
-  //
-  //
+  ///
+
   fMain->DeleteWindow();  // deletes fMain
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItimeAddAliasFrame::DoOK()
 {
-  //
-  //
-  //
+  ///
+
   TString aliasName=fTxt1->GetText();
   TString alias=fTxt2->GetText();
   if (!aliasName.IsNull()&&!alias.IsNull()){
@@ -1591,9 +1544,8 @@ void AliTPCCalibViewerGUItimeAddAliasFrame::DoOK()
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItimeAddAliasFrame::DoCancel()
 {
-  //
-  //
-  //
+  ///
+
   delete this;
 }
 

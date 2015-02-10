@@ -3,13 +3,13 @@
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//////////////////////////////////////////////////////////
-// Class used to setup the mapping of hardware adresses //
-// in ALTRO to pad-rows and pad indeces.                //
-// The mapping is defined in an external mapping files  //
-// separately. The class derives from the base altro    //
-// mapping class defined in the RAW package.            //
-//////////////////////////////////////////////////////////
+/// \class AliTPCAltroMapping
+///
+/// Class used to setup the mapping of hardware adresses
+/// in ALTRO to pad-rows and pad indeces.
+/// The mapping is defined in an external mapping files
+/// separately. The class derives from the base altro
+/// mapping class defined in the RAW package.
 
 #include "AliAltroMapping.h"
 
@@ -28,10 +28,10 @@ class AliTPCAltroMapping: public AliAltroMapping {
   virtual Bool_t ReadMapping();
   virtual Bool_t CreateInvMapping();
 
-  Int_t     fMinPadRow;        // Minimum Index of pad-row
-  Int_t     fMaxPadRow;        // Maximum Index of pad-row
-  Int_t     fMaxPad;           // Maximum Index of pad inside row
-  Short_t  *fInvMapping;       //! Inverse of fMapping
+  Int_t     fMinPadRow;        ///< Minimum Index of pad-row
+  Int_t     fMaxPadRow;        ///< Maximum Index of pad-row
+  Int_t     fMaxPad;           ///< Maximum Index of pad inside row
+  Short_t  *fInvMapping;       //!< Inverse of fMapping
 
  private:
 

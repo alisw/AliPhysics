@@ -1,38 +1,27 @@
-
-/*
-  
-
-
-  gSystem->Load("libSTAT");
-  .x ~/NimStyle.C
- 
- .L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterFast.cxx+
- //
- AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
- AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
- AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
- AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);
-
- //
- AliTPCtrackFast::Simul("trackerSimul.root",100); 
-// AliTPCclusterFast::Simul("cluterSimul.root",20000); 
-*/
-
-
-
-
-/*
-  Modifications to add:
-  1.) modigy mode ==> dEdxMode
-  2.) Create hardware setup class 
-      (fNoise, fGain, fBRounding, fBAddpedestal, ....)
-  3.) Create arrays of registered hardware setups
-  4.) Extend on the fly functions to use registered hardware setups, identified by ID.
-      hwMode 
-
- */
-
-
+/// \class AliTPCclusterFast
+///
+/// ~~~
+/// gSystem->Load("libSTAT");
+/// .x ~/NimStyle.C
+///
+/// .L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterFast.cxx+
+///
+/// AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
+/// AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
+/// AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
+/// AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);
+///
+/// AliTPCtrackFast::Simul("trackerSimul.root",100);
+/// // AliTPCclusterFast::Simul("cluterSimul.root",20000);
+/// ~~~
+///
+///  Modifications to add:
+///  1. modigy mode ==> dEdxMode
+///  2. Create hardware setup class
+///     (fNoise, fGain, fBRounding, fBAddpedestal, ....)
+///  3. Create arrays of registered hardware setups
+///  4. Extend on the fly functions to use registered hardware setups, identified by ID.
+///      hwMode
 
 #include "TObject.h"
 #include "TF1.h"
@@ -66,34 +55,34 @@ public:
   static Double_t GaussGamma4(Double_t x, Double_t s0, Double_t p1);
   static Double_t Gamma4(Double_t x, Double_t p0, Double_t p1);
 public:
-  Float_t fMNprim;     // mean number of primary electrons
+  Float_t fMNprim;     ///< mean number of primary electrons
   //                   //electrons part input
-  Int_t   fNprim;      // mean number of primary electrons
-  Int_t   fNtot;       // total number of  electrons
-  Float_t fQtot;       // total charge - Gas gain flucuation taken into account
+  Int_t   fNprim;      ///< mean number of primary electrons
+  Int_t   fNtot;       ///< total number of  electrons
+  Float_t fQtot;       ///< total charge - Gas gain flucuation taken into account
   //
-  Float_t fDiff;       // diffusion sigma
-  Float_t fDiffLong;       // diffusion sigma longitudinal direction
-  Float_t fY;          // y position 
-  Float_t fZ;          // z postion 
-  Float_t fAngleY;     // y angle - tan(y)
-  Float_t fAngleZ;     // z angle - tan z
+  Float_t fDiff;       ///< diffusion sigma
+  Float_t fDiffLong;       ///< diffusion sigma longitudinal direction
+  Float_t fY;          ///< y position
+  Float_t fZ;          ///< z postion
+  Float_t fAngleY;     ///< y angle - tan(y)
+  Float_t fAngleZ;     ///< z angle - tan z
   //
   //
   //                   // electron part simul
-  TVectorD fSec;       //! number of secondary electrons
-  TVectorD fPosY;      //! position y for each electron
-  TVectorD fPosZ;      //! position z for each electron
-  TVectorD fGain;      //! gg for each electron
+  TVectorD fSec;       //!< number of secondary electrons
+  TVectorD fPosY;      //!< position y for each electron
+  TVectorD fPosZ;      //!< position z for each electron
+  TVectorD fGain;      //!< gg for each electron
   //
-  TVectorD fStatY;     //!stat Y  
-  TVectorD fStatZ;     //!stat Y
+  TVectorD fStatY;     //!< stat Y
+  TVectorD fStatZ;     //!< stat Y
   //
   // digitization part
   //
-  TMatrixD fDigits;    // response matrix
-  static TF1* fPRF;    // Pad response
-  static TF1* fTRF;    // Time response function 
+  TMatrixD fDigits;    ///< response matrix
+  static TF1* fPRF;    ///< Pad response
+  static TF1* fTRF;    ///< Time response function
   ClassDef(AliTPCclusterFast,1)  // container for
 };
 
@@ -114,28 +103,25 @@ public:
   //
   Double_t  CookdEdx(Int_t npoints, Double_t *amp, Double_t f0,Float_t f1, Int_t dEdxMode);
   //
-  Float_t fMNprim;     // mean number of primary electrons
-  Float_t fAngleY;     // y angle - tan(y)
-  Float_t fAngleZ;     // z angle - tan z
-  Float_t fDiff;       // diffusion
-  Float_t fDiffLong;       // diffusion sigma longitudinal direction
-  Int_t   fN;          // number of clusters
-  TClonesArray *fCl;   // array of clusters  
+  Float_t fMNprim;     ///< mean number of primary electrons
+  Float_t fAngleY;     ///< y angle - tan(y)
+  Float_t fAngleZ;     ///< z angle - tan z
+  Float_t fDiff;       ///< diffusion
+  Float_t fDiffLong;       ///< diffusion sigma longitudinal direction
+  Int_t   fN;          ///< number of clusters
+  TClonesArray *fCl;   ///< array of clusters
   //
-  Bool_t   fInit;      // initialization flag
-  //
-  //
-  ClassDef(AliTPCtrackFast,2)  // container for
+  Bool_t   fInit;      ///< initialization flag
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCtrackFast,2)
+  /// \endcond
 };
 
-
-
+/// \cond CLASSIMP
 ClassImp(AliTPCclusterFast)
 ClassImp(AliTPCtrackFast)
-
-
-
-
+/// \endcond
 
 TF1 *AliTPCclusterFast::fPRF=0;
 TF1 *AliTPCclusterFast::fTRF=0;
@@ -150,9 +136,8 @@ AliTPCtrackFast::AliTPCtrackFast():
   fCl(0),
   fInit(kFALSE)
 {
-  //
-  //
-  //
+  ///
+
 }
 
 void AliTPCtrackFast::Add(AliTPCtrackFast &track2){
@@ -163,9 +148,8 @@ void AliTPCtrackFast::Add(AliTPCtrackFast &track2){
 
 
 void AliTPCtrackFast::MakeTrack(){
-  //
-  //
-  //
+  ///
+
   if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",160);
   //
   // 0.) Init data structure
@@ -203,9 +187,8 @@ void AliTPCtrackFast::MakeTrack(){
 }
 
 Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
-  //
-  //    Double_t  CookdEdxNtot(Double_t f0,Float_t f1);   //  dEdx_{hit}  reconstructed meen number of  electrons
-  //
+  ///    Double_t  CookdEdxNtot(Double_t f0,Float_t f1);   //  dEdx_{hit}  reconstructed meen number of  electrons
+
   Double_t amp[160];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
@@ -215,9 +198,8 @@ Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
 }
 
 Double_t  AliTPCtrackFast::CookdEdxQtot(Double_t f0,Float_t f1){
-  //
-  //     dEdx_{Q} reconstructed mean number of electronsxGain
-  //
+  ///     dEdx_{Q} reconstructed mean number of electronsxGain
+
   Double_t amp[160];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
@@ -228,11 +210,10 @@ Double_t  AliTPCtrackFast::CookdEdxQtot(Double_t f0,Float_t f1){
 
 
 Double_t  AliTPCtrackFast::CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t dEdxMode){
-  //
-  //   dEdx_{hit}  reconstructed mean number of  electrons 
-  //     thr  = threshold in terms of the number of electrons
-  //     dEdxMode = algorithm to deal with trhesold values replacing
-  //
+  ///   dEdx_{hit}  reconstructed mean number of  electrons
+  ///     thr  = threshold in terms of the number of electrons
+  ///     dEdxMode = algorithm to deal with trhesold values replacing
+
   Double_t amp[160];
   Int_t nBellow=0;
   //
@@ -274,12 +255,9 @@ Double_t  AliTPCtrackFast::CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr,
 
 
 Double_t  AliTPCtrackFast::CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t dEdxMode){
-  //
-  //
-  //   dEdx_{Q}  reconstructed mean number of  electrons xgain
-  //     thr  = threshold in terms of the number of electrons
-  //     dEdxMode = algorithm to deal with trhesold values replacing
-  //
+  ///   dEdx_{Q}  reconstructed mean number of  electrons xgain
+  ///     thr  = threshold in terms of the number of electrons
+  ///     dEdxMode = algorithm to deal with trhesold values replacing
 
   //
   Double_t amp[160];
@@ -325,10 +303,9 @@ Double_t  AliTPCtrackFast::CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr,
 
 
 Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr, Int_t dEdxMode){
-  //
-  // total charge in the cluster (sum of the pad x time matrix ), hits were digitized before, but additional 
-  // actions can be specified by switches  // dEdx_{Qtot}
-  //
+  /// total charge in the cluster (sum of the pad x time matrix ), hits were digitized before, but additional
+  /// actions can be specified by switches  // dEdx_{Qtot}
+
   Double_t amp[160];
   Double_t minAmp=-1;
   //
@@ -355,10 +332,9 @@ Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Fl
 
 
 Double_t   AliTPCtrackFast::CookdEdxDmax(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr, Int_t dEdxMode){
-  //
-  // maximal charge in the cluster (maximal amplitude in the digit matrix), hits were digitized before, 
-  // but additional actions can be specified by switches  
-  //
+  /// maximal charge in the cluster (maximal amplitude in the digit matrix), hits were digitized before,
+  /// but additional actions can be specified by switches
+
   Double_t amp[160];
   Double_t minAmp=-1;
   //
@@ -384,18 +360,16 @@ Double_t   AliTPCtrackFast::CookdEdxDmax(Double_t f0,Float_t f1, Float_t gain,Fl
 
 
 Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Float_t f1, Int_t dEdxMode){
-  //
-  // Calculate truncated mean
-  //   npoints   - number of points in array
-  //   amp       - array with points
-  //   f0-f1     - truncation range
-  //   dEdxMode      - specify handling of the 0 clusters, actual handling - filling of amplitude defiend in algorithm above
-  //      dEdxMode =  0     - accept everything
-  //      dEdxMode =  1     - do not count 0 amplitudes
-  //      dEdxMode =  2     - use 0 amplitude as it is 
-  //      dEdxMode =  3     - use amplitude as it is (in above function amp. replace by the thr)
-  //      dEdxMode =  4     - use amplitude as it is (in above function amp. replace by the minimal amplitude)
-  //
+  /// Calculate truncated mean
+  ///   npoints   - number of points in array
+  ///   amp       - array with points
+  ///   f0-f1     - truncation range
+  ///   dEdxMode      - specify handling of the 0 clusters, actual handling - filling of amplitude defiend in algorithm above
+  ///      dEdxMode =  0     - accept everything
+  ///      dEdxMode =  1     - do not count 0 amplitudes
+  ///      dEdxMode =  2     - use 0 amplitude as it is
+  ///      dEdxMode =  3     - use amplitude as it is (in above function amp. replace by the thr)
+  ///      dEdxMode =  4     - use amplitude as it is (in above function amp. replace by the minimal amplitude)
 
   //
   // 0. sorted the array of amplitudes
@@ -428,9 +402,8 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
 }
 
 void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFactor){
-  //
-  // 
-  //
+  ///
+
   AliTPCtrackFast fast;
   TTreeSRedirector *pcstream = new TTreeSRedirector(fname,"recreate");
   for (Int_t itr=0; itr<ntracks; itr++){
@@ -458,15 +431,14 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
 
 
 AliTPCclusterFast::AliTPCclusterFast(){
-  //
-  //
+  ///
+
   fDigits.ResizeTo(5,7);
 }
 
 void AliTPCclusterFast::Init(){
-  //
-  // reset all counters  
-  //
+  /// reset all counters
+
   const Int_t knMax=10000;
   fMNprim=0;     // mean number of primary electrons
   //                   //electrons part input
@@ -495,17 +467,16 @@ AliTPCclusterFast::~AliTPCclusterFast(){
 
 
 void AliTPCclusterFast::SetParam(Float_t mnprim, Float_t diff,  Float_t diffL,Float_t y, Float_t z, Float_t ky, Float_t kz){
-  //
-  //
+  ///
+
   fMNprim = mnprim; fDiff = diff; fDiffLong=diffL;
   fY=y; fZ=z; 
   fAngleY=ky; fAngleZ=kz;
 }
 Double_t AliTPCclusterFast::GetNsec(){
-  //
-  // Generate number of secondary electrons
-  // copy of procedure implemented in geant
-  //
+  /// Generate number of secondary electrons
+  /// copy of procedure implemented in geant
+
   const Double_t FPOT=20.77E-9, EEND=10E-6, EEXPO=2.2; // EEND1=1E-6;
   const Double_t XEXPO=-EEXPO+1, YEXPO=1/XEXPO;
   const Double_t W=20.77E-9;
@@ -517,10 +488,8 @@ Double_t AliTPCclusterFast::GetNsec(){
 }
 
 void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast *clm, AliTPCclusterFast *clp){
-  //
-  //
-  //
-  //
+  ///
+
   const Int_t knMax=1000;
   cl0->fNprim = gRandom->Poisson(cl0->fMNprim);  //number of primary electrons
   // cl0->fNtot=0; //total number of electrons
@@ -580,10 +549,8 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
 }
 
 void AliTPCclusterFast::Digitize(){
-  //
-  //
-  //
-  // 1. Clear digits
+  /// 1. Clear digits
+
   for (Int_t i=0; i<5;i++)
     for (Int_t j=0; j<7;j++){
       fDigits(i,j)=0;
@@ -631,9 +598,8 @@ void AliTPCclusterFast::Digitize(){
 
 
 Double_t AliTPCclusterFast::GetQtot(Float_t gain, Float_t thr, Float_t noise, Bool_t brounding, Bool_t baddPedestal){
-  //
-  //
-  //
+  ///
+
   Float_t sum =0;
   for (Int_t ip=0;ip<5;ip++){
     Float_t pedestal=gRandom->Rndm()-0.5; //pedestal offset different for each pad
@@ -648,9 +614,8 @@ Double_t AliTPCclusterFast::GetQtot(Float_t gain, Float_t thr, Float_t noise, Bo
 }
 
 Double_t AliTPCclusterFast::GetQmax(Float_t gain, Float_t thr, Float_t noise, Bool_t brounding, Bool_t baddPedestal){
-  //
-  //
-  //
+  ///
+
   Float_t max =0;
   for (Int_t ip=0;ip<5;ip++){
     Float_t pedestal=gRandom->Rndm()-0.5; //pedestal offset different for each pad
@@ -667,14 +632,11 @@ Double_t AliTPCclusterFast::GetQmax(Float_t gain, Float_t thr, Float_t noise, Bo
 
 
 Double_t  AliTPCclusterFast::GetQmaxCorr(Float_t rmsy0, Float_t rmsz0){
-  //
-  // Gaus distribution convolueted with rectangular
-  // Gaus width sy and sz is determined by RF width and diffusion 
-  // Integral of Q is equal 1
-  // Q max is calculated at position fY,fX 
-  //          
-  //  
-  //  
+  /// Gaus distribution convolueted with rectangular
+  /// Gaus width sy and sz is determined by RF width and diffusion
+  /// Integral of Q is equal 1
+  /// Q max is calculated at position fY,fX
+
   Double_t sy = TMath::Sqrt(rmsy0*rmsy0+fDiff*fDiff);
   Double_t sz = TMath::Sqrt(rmsz0*rmsz0+fDiff*fDiff); 
   return GaussConvolution(fY,fZ, fAngleY,fAngleZ,sy,sz);
@@ -682,10 +644,9 @@ Double_t  AliTPCclusterFast::GetQmaxCorr(Float_t rmsy0, Float_t rmsz0){
 
 
 Double_t  AliTPCclusterFast::GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t gain, Float_t thr){
-  //
-  //  Calculates the fraction of the charge over threshol to total charge
-  //  The response function
-  //
+  ///  Calculates the fraction of the charge over threshol to total charge
+  ///  The response function
+
   Double_t sy = TMath::Sqrt(rmsy0*rmsy0+fDiff*fDiff);
   Double_t sz = TMath::Sqrt(rmsz0*rmsz0+fDiff*fDiff);
   Double_t sumAll=0,sumThr=0;
@@ -716,14 +677,13 @@ Double_t  AliTPCclusterFast::GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t g
 
 
 Double_t  AliTPCclusterFast::GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1){
-  //
-  // 2 D gaus convoluted with angular effect
-  // See in mathematica: 
-  //Simplify[Integrate[Exp[-(x0-k0*xd)*(x0-k0*xd)/(2*s0*s0)-(x1-k1*xd)*(x1-k1*xd)/(2*s1*s1)]/(s0*s1),{xd,-1/2,1/2}]]
-  // 
-  //TF1 f1("f1","AliTPCclusterFast::GaussConvolution(x,0,1,0,0.1,0.1)",-2,2)
-  //TF2 f2("f2","AliTPCclusterFast::GaussConvolution(x,y,1,1,0.1,0.1)",-2,2,-2,2)
-  //
+  /// 2 D gaus convoluted with angular effect
+  /// See in mathematica:
+  /// Simplify[Integrate[Exp[-(x0-k0*xd)*(x0-k0*xd)/(2*s0*s0)-(x1-k1*xd)*(x1-k1*xd)/(2*s1*s1)]/(s0*s1),{xd,-1/2,1/2}]]
+  ///
+  /// TF1 f1("f1","AliTPCclusterFast::GaussConvolution(x,0,1,0,0.1,0.1)",-2,2)
+  /// TF2 f2("f2","AliTPCclusterFast::GaussConvolution(x,y,1,1,0.1,0.1)",-2,2,-2,2)
+
   const Float_t kEpsilon = 0.0001;
   if ((TMath::Abs(k0)+TMath::Abs(k1))<kEpsilon*(s0+s1)){
     // small angular effect
@@ -746,12 +706,12 @@ Double_t  AliTPCclusterFast::GaussConvolution(Double_t x0, Double_t x1, Double_t
 
 
 Double_t  AliTPCclusterFast::GaussExpConvolution(Double_t x0, Double_t s0,Double_t t1){
- //
-  // 2 D gaus convoluted with exponential
-  // Integral nomalized to 1
-  // See in mathematica: 
-  //Simplify[Integrate[Exp[-(x0-x1)*(x0-x1)/(2*s0*s0)]*Exp[-x1*t1],{x1,0,Infinity}]]
-  // TF1 fgexp("fgexp","AliTPCclusterFast::GaussExpConvolution(x,0.5,1)",-2,2)
+ /// 2 D gaus convoluted with exponential
+ /// Integral nomalized to 1
+ /// See in mathematica:
+ /// Simplify[Integrate[Exp[-(x0-x1)*(x0-x1)/(2*s0*s0)]*Exp[-x1*t1],{x1,0,Infinity}]]
+ /// TF1 fgexp("fgexp","AliTPCclusterFast::GaussExpConvolution(x,0.5,1)",-2,2)
+
   Double_t exp1 = (s0*s0*t1-2*x0)*t1/2.;
   exp1 = TMath::Exp(exp1);
   Double_t erf = 1+TMath::Erf((-s0*s0*t1+x0)/(s0*TMath::Sqrt(2.)));
@@ -763,9 +723,8 @@ Double_t  AliTPCclusterFast::GaussExpConvolution(Double_t x0, Double_t s0,Double
 
 
 Double_t  AliTPCclusterFast::Gamma4(Double_t x, Double_t p0, Double_t p1){
-  //
-  // Gamma 4 Time response function of ALTRO
-  //
+  /// Gamma 4 Time response function of ALTRO
+
   if (x<0) return 0;
   Double_t g1 = TMath::Exp(-4.*x/p1);
   Double_t g2 = TMath::Power(x/p1,4);
@@ -775,10 +734,9 @@ Double_t  AliTPCclusterFast::Gamma4(Double_t x, Double_t p0, Double_t p1){
 
 
 Double_t  AliTPCclusterFast::GaussGamma4(Double_t x, Double_t s0, Double_t p1){
-  //
-  // Gamma 4 Time response function of ALTRO convoluted with Gauss
-  // Simplify[Integrate[Exp[-(x0-x1)*(x0-x1)/(2*s0*s0)]*Exp[-4*x1/p1]*(x/p1)^4/s0,{x1,0,Infinity}]]
-  //TF1 fgg4("fgg4","AliTPCclusterFast::GaussGamma4(x,0.5,0.5)",-2,2)
+  /// Gamma 4 Time response function of ALTRO convoluted with Gauss
+  /// Simplify[Integrate[Exp[-(x0-x1)*(x0-x1)/(2*s0*s0)]*Exp[-4*x1/p1]*(x/p1)^4/s0,{x1,0,Infinity}]]
+  /// TF1 fgg4("fgg4","AliTPCclusterFast::GaussGamma4(x,0.5,0.5)",-2,2)
 
   Double_t exp1 = (8*s0*s0-4.*p1*x)/(p1*p1);
   exp1 = TMath::Exp(exp1);

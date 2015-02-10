@@ -1,16 +1,16 @@
 /// \file recTPC.C
 /// \brief Example macro for reconstruction of the TPC raw data
-/// 
+///
 /// The path to the Calibration parameters is for the moment hard-wired in the code
 /// Taken from /afs
 
 void recTPC(Int_t type, const char *filename="data.root")
 {
-  //
-  // Set path to calibration data
-  //
-  // type variable = 0 - cosmic test
-  //               = 1 - laser test   
+  /// Set path to calibration data
+  ///
+  /// type variable = 0 - cosmic test
+  ///               = 1 - laser test
+
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   //man->SetRun(0);
@@ -48,9 +48,8 @@ void recTPC(Int_t type, const char *filename="data.root")
 
 void recTracking(Int_t type, const char *filename="data.root")
 {
-  //
-  // Set path to calibration data
-  //
+  /// Set path to calibration data
+
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetRun(0);

@@ -13,18 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//
-// Class to determine the particle ID for TPC tracks
-// More comments and a description of the class will be added here
-// missing description
-// as above
-// as above
+/// \class AliTPCtrackPid
+/// \brief Class to determine the particle ID for TPC tracks
+///
+/// More comments and a description of the class will be added here.
 
 #include "AliTPCtrackPid.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCtrackPid)
+/// \endcond
 
 AliTPCtrackPid::AliTPCtrackPid()
   :TObject(),

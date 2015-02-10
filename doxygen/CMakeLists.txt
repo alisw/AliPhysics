@@ -26,8 +26,17 @@ if(CAN_GENERATE_DOC)
     add_custom_target(doxygen
         ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating AliRoot reference manual using Doxygen"
-        VERBATIM
+        COMMENT "Generating AliRoot Core reference manual using Doxygen"
     )
+
+    # install documentation in the installation directory if requested
+    add_custom_target(install-doxygen
+        rsync -a --delete @CMAKE_CURRENT_BINARY_DIR@/html/ @CMAKE_INSTALL_PREFIX@/doxygen/
+        DEPENDS doxygen
+        COMMENT "Installing AliRoot Core reference manual"
+    )
+
+    # install the helper script to generate images from ROOT macros
+    install(PROGRAMS alidoxyimg.sh DESTINATION bin)
 
 endif(CAN_GENERATE_DOC)

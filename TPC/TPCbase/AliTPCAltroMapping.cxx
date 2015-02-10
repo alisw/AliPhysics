@@ -13,9 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// This class handles the mapping of the Altro channels in the TPC
-// The mapping is read from an external mapping files
-// Author: C.Cheshkov
+/// \class AliTPCAltroMapping
+/// This class handles the mapping of the Altro channels in the TPC
+/// The mapping is read from an external mapping files
+///
+/// \author C.Cheshkov
 
 #include "AliTPCAltroMapping.h"
 #include "AliLog.h"
@@ -23,7 +25,9 @@
 //#include <stdlib.h>
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCAltroMapping)
+/// \endcond
 
 //_____________________________________________________________________________
 AliTPCAltroMapping::AliTPCAltroMapping():
@@ -44,7 +48,8 @@ AliTPCAltroMapping::AliTPCAltroMapping(const char *mappingFile):
   fMaxPad(0),
   fInvMapping(NULL)
 {
-  // Constructor
+  /// Constructor
+
   ReadMapping();
   CloseMappingFile();
 }
@@ -52,16 +57,18 @@ AliTPCAltroMapping::AliTPCAltroMapping(const char *mappingFile):
 //_____________________________________________________________________________
 AliTPCAltroMapping::~AliTPCAltroMapping()
 {
-  // destructor
+  /// destructor
+
   if (fInvMapping) delete [] fInvMapping;
 }
 
 //_____________________________________________________________________________
 Bool_t AliTPCAltroMapping::ReadMapping()
 {
-  // Initalizes the ALTRO mapping from a file
-  // Look at the TPC module for the format of
-  // the mapping file
+  /// Initalizes the ALTRO mapping from a file
+  /// Look at the TPC module for the format of
+  /// the mapping file
+
   if (!fIn) {
     AliFatal("Mapping file has not been opened !");
     return kFALSE;
@@ -106,9 +113,10 @@ Bool_t AliTPCAltroMapping::ReadMapping()
 //_____________________________________________________________________________
 Bool_t AliTPCAltroMapping::CreateInvMapping()
 {
-  // Create the inverse mapping
-  // needed for the simulation of
-  // raw data
+  /// Create the inverse mapping
+  /// needed for the simulation of
+  /// raw data
+
   if (fInvMapping) return kTRUE;
 
   if (!fMapping) {
@@ -138,9 +146,10 @@ Bool_t AliTPCAltroMapping::CreateInvMapping()
 //_____________________________________________________________________________
 Int_t AliTPCAltroMapping::GetHWAddress(Int_t padrow, Int_t pad, Int_t /* sector */)
 {
-  // Get the content of the mapping array
-  // return -1 in case there is no hardware
-  // adress defined for these pad-row and pad
+  /// Get the content of the mapping array
+  /// return -1 in case there is no hardware
+  /// adress defined for these pad-row and pad
+
   if (!fInvMapping) {
     if (!CreateInvMapping()) return -1;
   }

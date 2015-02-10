@@ -1,3 +1,5 @@
+/// \file AliTPCHits2Digits.C
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
 
@@ -12,7 +14,8 @@
 extern AliRun *gAlice;
 
 Int_t AliTPCHits2Digits(Int_t nev=5) {
-  // Connect the Root Galice file containing Geometry, Kine and Hits
+  /// Connect the Root Galice file containing Geometry, Kine and Hits
+
   if (gAlice) { 
      delete AliRunLoader::Instance();
      delete gAlice;//if everything was OK here it is already NULL

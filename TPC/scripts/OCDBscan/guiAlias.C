@@ -1,22 +1,30 @@
-/*
-  //Make default Aliases for guiTime:
-  // 1. Run the guiTime
-  //  guiTime
-  // 2. Define aliases
-  .L $ALICE_ROOT/TPC/CalibMacros/guiAlias.C
-  guiAlias();
-  // 3. Use aliases inside the guiTime
-  //    You can use them as custom cuts
-  //
-  // browse special streamers
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-  AliXRDPROOFtoolkit tool;
-  TChain * chainDCS = tool.MakeChainRandom("time.txt","dcs",0,10000);
-  TChain * chainCTP = tool.MakeChainRandom("time.txt","ctp",0,10000);
-  TChain * chainAlign = tool.MakeChainRandom("time.txt","align",0,10000);
+/// \file guiAlias.C
 
-*/
+/// Make default Aliases for guiTime:
+///
+/// 1. Run the guiTime
+/// ~~~
+/// guiTime
+/// ~~~
+///
+/// 2. Define aliases
+/// ~~~{.cpp}
+/// .L $ALICE_ROOT/TPC/CalibMacros/guiAlias.C
+/// guiAlias();
+/// ~~~
+///
+/// 3. Use aliases inside the guiTime
+/// You can use them as custom cuts
+///
+/// ~~~{.cpp}
+/// // browse special streamers
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+/// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+/// AliXRDPROOFtoolkit tool;
+/// TChain * chainDCS = tool.MakeChainRandom("time.txt","dcs",0,10000);
+/// TChain * chainCTP = tool.MakeChainRandom("time.txt","ctp",0,10000);
+/// TChain * chainAlign = tool.MakeChainRandom("time.txt","align",0,10000);
+/// ~~~
 
 TObjArray *picArray = new TObjArray;  
 
@@ -42,9 +50,8 @@ void SetStyle(){
 }
 
 void MakeAliasCE(Double_t deltaT){
-  //
-  // Aliases cuts for CE
-  //
+  /// Aliases cuts for CE
+
   guiTree->SetAlias("ceCut0", "tdriftCE.fElements[72]>100 && tdriftCE.fElements[73]>100");
   guiTree->SetAlias("dceCutTime", Form("sqrt(dcea^2+dcec^2)<%f",deltaT*3600));
   guiTree->SetAlias("ceCut","dceCutTime&&ceCut0");
@@ -61,9 +68,8 @@ void MakeAliasCosmic(Double_t deltaT){
 
 
 void SetGoofieAlias(){
-  //
-  // goofie aliases
-  //
+  /// goofie aliases
+
   guiTree->SetAlias("ptrelG","(goofie.fElements[17]/0.3426-1)");
   guiTree->SetAlias("vdriftGN","goofie.fElements[3]/(1+ptrelG)");
   guiTree->SetAlias("goCut","goofie.fElements[3]>0");
@@ -75,9 +81,8 @@ void SetGoofieAlias(){
 
 
 void DrawLaserDrift(){
-  //
-  // laser calibration default picture
-  // Data are filtered 
+  /// laser calibration default picture
+  /// Data are filtered
 
   //
   // draw laser residuals A side -C side - when it is defined
@@ -142,9 +147,8 @@ void DrawLaserDrift(){
 
 
 void DrawITSVD(){
-  //
-  // ITS/TPC drift velocity correction
-  //
+  /// ITS/TPC drift velocity correction
+
   guiTree->Draw("100*(ALIGN_ITSP_TPC_DRIFTVD-ALIGN_ITSM_TPC_DRIFTVD)","abs(dits)<3000&&ALIGN_ITSM_TPC_DRIFTVD!=0");
   his=(TH1*)htemp->Clone();
   his->SetDirectory(0);
@@ -187,9 +191,8 @@ void DrawITSVD(){
 
 
 void CEdrift(){
-  //
-  //
-  //
+  ///
+
   guiTree->SetAlias("vdriftCE0","250/CEgrDriftA");
   guiTree->SetAlias("vdriftCE1","vdriftCE0/(1+ptrel0)");
 }

@@ -13,20 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 
-//-----------------------------------------------------------------------------
-//
-//
-//
-//  Origin:   Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk
-//
-//  Declaration of class AliTPCRF1D
-//
-//-----------------------------------------------------------------------------
-
-//
+/// \class AliTPCRF1D
+/// \brief Declaration of class AliTPCRF1D
+///
+/// \author Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk
 
 #include <RVersion.h>
 #include <Riostream.h>
@@ -41,26 +33,29 @@
 
 #include "AliTPCRF1D.h"
 
-extern TStyle * gStyle; 
+extern TStyle * gStyle;
 
-Int_t   AliTPCRF1D::fgNRF=100;  //default  number of interpolation points
-Float_t AliTPCRF1D::fgRFDSTEP=0.01; //default step in cm
+Int_t   AliTPCRF1D::fgNRF=100;  ///< default  number of interpolation points
+Float_t AliTPCRF1D::fgRFDSTEP=0.01; ///< default step in cm
 
 static Double_t funGauss(Double_t *x, Double_t * par)
 {
-  //Gauss function  -needde by the generic function object 
+  /// Gauss function  -needde by the generic function object
+
   return TMath::Exp(-(x[0]*x[0])/(2*par[0]*par[0]));
 }
 
 static Double_t funCosh(Double_t *x, Double_t * par)
 {
-  //Cosh function  -needde by the generic function object 
-  return 1/TMath::CosH(3.14159*x[0]/(2*par[0]));  
-}    
+  /// Cosh function  -needde by the generic function object
+
+  return 1/TMath::CosH(3.14159*x[0]/(2*par[0]));
+}
 
 static Double_t funGati(Double_t *x, Double_t * par)
 {
-  //Gati function  -needde by the generic function object 
+  /// Gati function  -needde by the generic function object
+
   Float_t k3=par[1];
   Float_t k3R=TMath::Sqrt(k3);
   Float_t k2=(TMath::Pi()/2)*(1-k3R/2.);
@@ -68,14 +63,16 @@ static Double_t funGati(Double_t *x, Double_t * par)
   Float_t l=x[0]/par[0];
   Float_t tan2=TMath::TanH(k2*l);
   tan2*=tan2;
-  Float_t res = k1*(1-tan2)/(1+k3*tan2);  
-  return res;  
-}    
+  Float_t res = k1*(1-tan2)/(1+k3*tan2);
+  return res;
+}
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
+/// \cond CLASSIMP
 ClassImp(AliTPCRF1D)
+/// \endcond
 
 
 AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
@@ -104,7 +101,7 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
     funParam[i]=0.;
     fType[i]=0;
   }
-  
+
 }
 
 AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
@@ -176,28 +173,28 @@ AliTPCRF1D::~AliTPCRF1D()
 Float_t AliTPCRF1D::GetRF(Float_t xin)
 {
   //function which return response
-  //for the charge in distance xin 
+  //for the charge in distance xin
   //return linear aproximation of RF
   Float_t x = (xin-fOffset)*fDSTEPM1+fNRF/2;
   Int_t i1=Int_t(x);
   if (x<0) i1-=1;
   Float_t res=0;
   if (i1+1<fNRF &&i1>0)
-    res = fcharge[i1]*(Float_t(i1+1)-x)+fcharge[i1+1]*(x-Float_t(i1));    
+    res = fcharge[i1]*(Float_t(i1+1)-x)+fcharge[i1+1]*(x-Float_t(i1));
   return res;
 }
 
 Float_t  AliTPCRF1D::GetGRF(Float_t xin)
-{  
+{
   //function which returnoriginal charge distribution
   //this function is just normalised for fKnorm
-  if (fGRF != 0 ) 
+  if (fGRF != 0 )
     return fkNorm*fGRF->Eval(xin)/fInteg;
       else
     return 0.;
 }
 
-   
+
 void AliTPCRF1D::SetParam( TF1 * GRF,Float_t padwidth,
 		       Float_t kNorm, Float_t sigma)
 {
@@ -208,17 +205,17 @@ void AliTPCRF1D::SetParam( TF1 * GRF,Float_t padwidth,
    fkNorm = kNorm;
    if (sigma==0) sigma= fpadWidth/TMath::Sqrt(12.);
    forigsigma=sigma;
-   fDSTEPM1 = 10/TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
+   fDSTEPM1 = 10/TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12);
    //sprintf(fType,"User");
    snprintf(fType,5,"User");
-   //   Update();   
+   //   Update();
 }
-  
+
 
 void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
 		      Float_t kNorm)
 {
-  // 
+  //
   // set parameters for Gauss generic charge distribution
   //
   fpadWidth = padWidth;
@@ -228,8 +225,8 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
   funParam[0]=sigma;
   forigsigma=sigma;
   fGRF->SetParameters(funParam);
-   fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
-  //by default I set the step as one tenth of sigma  
+   fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12);
+  //by default I set the step as one tenth of sigma
   //sprintf(fType,"Gauss");
    snprintf(fType,5,"Gauss");
 }
@@ -237,17 +234,17 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
 void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
 		     Float_t kNorm)
 {
-  // 
+  //
   // set parameters for Cosh generic charge distribution
   //
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF1("funCosh",	funCosh, -5.,5.,2);   
+  fGRF = new TF1("funCosh",	funCosh, -5.,5.,2);
   funParam[0]=sigma;
   fGRF->SetParameters(funParam);
   forigsigma=sigma;
-  fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
+  fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12);
   //by default I set the step as one tenth of sigma
   //sprintf(fType,"Cosh");
   snprintf(fType,5,"Cosh");
@@ -256,18 +253,18 @@ void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
 void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
 		     Float_t kNorm)
 {
-  // 
+  //
   // set parameters for Gati generic charge distribution
   //
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF1("funGati",	funGati, -5.,5.,2);   
+  fGRF = new TF1("funGati",	funGati, -5.,5.,2);
   funParam[0]=padDistance;
-  funParam[1]=K3;  
+  funParam[1]=K3;
   fGRF->SetParameters(funParam);
   forigsigma=padDistance;
-  fDSTEPM1 = 10./TMath::Sqrt(padDistance*padDistance+fpadWidth*fpadWidth/12); 
+  fDSTEPM1 = 10./TMath::Sqrt(padDistance*padDistance+fpadWidth*fpadWidth/12);
   //by default I set the step as one tenth of sigma
   //sprintf(fType,"Gati");
   snprintf(fType,5,"Gati");
@@ -276,7 +273,7 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
 
 
 void AliTPCRF1D::DrawRF(Float_t x1,Float_t x2,Int_t N)
-{ 
+{
   //
   //Draw prf in selected region <x1,x2> with nuber of diviision = n
   //
@@ -289,13 +286,13 @@ void AliTPCRF1D::DrawRF(Float_t x1,Float_t x2,Int_t N)
   pad2->Draw();
 
   //sprintf(s,"RF response function for %1.2f cm pad width",
-  //	  fpadWidth); 
-  snprintf(s,60,"RF response function for %1.2f cm pad width",fpadWidth); 
+  //	  fpadWidth);
+  snprintf(s,60,"RF response function for %1.2f cm pad width",fpadWidth);
   pad1->cd();
   TH1F * hRFo = new TH1F("hRFo","Original charge distribution",N+1,x1,x2);
   pad2->cd();
    gStyle->SetOptFit(1);
-   gStyle->SetOptStat(0); 
+   gStyle->SetOptStat(0);
   TH1F * hRFc = new TH1F("hRFc",s,N+1,x1,x2);
   Float_t x=x1;
   Float_t y1;
@@ -307,7 +304,7 @@ void AliTPCRF1D::DrawRF(Float_t x1,Float_t x2,Int_t N)
       y1 = GetRF(x);
       hRFc->Fill(x,y1);
       y2 = GetGRF(x);
-      hRFo->Fill(x,y2);      
+      hRFo->Fill(x,y2);
     };
   pad1->cd();
   hRFo->Fit("gaus");
@@ -324,7 +321,7 @@ void AliTPCRF1D::Update()
   //at the begining initialize to 0
   for (Int_t i =0; i<fNRF;i++)  fcharge[i] = 0;
   if ( fGRF == 0 ) return;
-  // This form is no longer available 
+  // This form is no longer available
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
   fInteg  = fGRF->Integral(-5*forigsigma,5*forigsigma,funParam,0.00001);
 #else
@@ -332,7 +329,7 @@ void AliTPCRF1D::Update()
   fGRF->SetParameters(funParam);
   fInteg  = fGRF->Integral(-5*forigsigma,5*forigsigma,0.00001);
 #endif
-  if ( fInteg == 0 ) fInteg = 1; 
+  if ( fInteg == 0 ) fInteg = 1;
   if (fDirect==kFALSE){
   //integrate charge over pad for different distance of pad
   for (Int_t i =0; i<fNRF;i++)
@@ -345,30 +342,30 @@ void AliTPCRF1D::Update()
 #else
       fcharge[i] = fkNorm*fGRF->Integral(x1,x2,0.0001)/fInteg;
 #endif
-    };   
+    };
   }
   else{
     for (Int_t i =0; i<fNRF;i++)
       {      //x in cm fpadWidth in cm
 	Float_t x = (Float_t)(i-fNRF/2)/fDSTEPM1;
 	fcharge[i] = fkNorm*fGRF->Eval(x);
-      };   
-  }  
-  fSigma = 0; 
+      };
+  }
+  fSigma = 0;
   Float_t sum =0;
   Float_t mean=0;
   for (Float_t  x =-fNRF/fDSTEPM1; x<fNRF/fDSTEPM1;x+=1/fDSTEPM1)
     {      //x in cm fpadWidth in cm
       Float_t weight = GetRF(x+fOffset);
-      fSigma+=x*x*weight; 
+      fSigma+=x*x*weight;
       mean+=x*weight;
       sum+=weight;
-    };  
+    };
   if (sum>0){
     mean/=sum;
-    fSigma = TMath::Sqrt(fSigma/sum-mean*mean);   
+    fSigma = TMath::Sqrt(fSigma/sum-mean*mean);
   }
-  else fSigma=0; 
+  else fSigma=0;
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
   fGRF->SetParameters(savParam.GetArray());
 #endif
@@ -380,11 +377,11 @@ void AliTPCRF1D::Streamer(TBuffer &R__b)
    if (R__b.IsReading()) {
       AliTPCRF1D::Class()->ReadBuffer(R__b, this);
       //read functions
- 
+
       if (strncmp(fType,"Gauss",3)==0) {delete fGRF; fGRF = new TF1("funGauss",funGauss,-5.,5.,4);}
       if (strncmp(fType,"Cosh",3)==0)  {delete fGRF; fGRF = new TF1("funCosh",funCosh,-5.,5.,4);}
-      if (strncmp(fType,"Gati",3)==0)  {delete fGRF; fGRF = new TF1("funGati",funGati,-5.,5.,4);}  
-      if (fGRF) fGRF->SetParameters(funParam);     
+      if (strncmp(fType,"Gati",3)==0)  {delete fGRF; fGRF = new TF1("funGati",funGati,-5.,5.,4);}
+      if (fGRF) fGRF->SetParameters(funParam);
 
    } else {
       AliTPCRF1D::Class()->WriteBuffer(R__b, this);
@@ -401,4 +398,4 @@ Double_t  AliTPCRF1D::Gamma4(Double_t x, Double_t p0, Double_t p1){
   Double_t g2 = TMath::Power(x/p1,4);
   return p0*g1*g2;
 }
- 
+

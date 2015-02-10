@@ -13,155 +13,154 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                     //
-//                  Implementation of the TPC pulser calibration                       //
-//                                                                                     //
-//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch   //
-//                                                                                     //
-/////////////////////////////////////////////////////////////////////////////////////////
-/***************************************************************************
- *                      Class Description                                  *
- ***************************************************************************
-
- The AliTPCCalibPulser class is used to get calibration data concerning the FEE using
- runs performed with the calibration pulser.
-
- The information retrieved is
- - Time0 differences
- - Signal width differences
- - Amplification variations
-
- the seen differences arise from the manufacturing tolerances of the PASAs and are very small within
- one chip and somewhat large between different chips.
-
- Histograms:
-   For each ROC three TH2S histos 'Reference Histograms'  (ROC channel vs. [Time0, signal width, Q sum]) is created when
-   it is filled for the first time (GetHisto[T0,RMS,Q](ROC,kTRUE)). The histos are stored in the
-   TObjArrays fHistoT0Array, fHistoRMSArray and fHistoQArray.
-
-
- Working principle:
- ------------------
- Raw calibration pulser data is processed by calling one of the ProcessEvent(...) functions
- (see below). These in the end call the Update(...) function.
-
- - the Update(...) function:
-   In this function the array fPadSignal is filled with the adc signals between the specified range
-   fFirstTimeBin and fLastTimeBin for the current pad.
-   before going to the next pad the ProcessPad() function is called, which analyses the data for one pad
-   stored in fPadSignal.
-
-   - the ProcessPad() function:
-     Find Pedestal and Noise information
-     - use database information which has to be set by calling
-       SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC)
-     - if no information from the pedestal data base
-       is available the informaion is calculated on the fly ( see FindPedestal() function )
-
-     Find the Pulser signal information
-     - calculate  mean = T0, RMS = signal width and Q sum in a range of -2+7 timebins around Q max
-       the Q sum is scaled by pad area
-       (see FindPulserSignal(...) function)
-
-     Fill a temprary array for the T0 information (GetPadTimesEvent(fCurrentSector,kTRUE)) (why see below)
-     Fill the Q sum and RMS values in the histograms (GetHisto[RMS,Q](ROC,kTRUE)),
-
- At the end of each event the EndEvent() function is called
-
- - the EndEvent() function:
-   calculate the mean T0 for each ROC and fill the Time0 histogram with Time0-<Time0 for ROC>
-   This is done to overcome syncronisation problems between the trigger and the fec clock.
-
- After accumulating the desired statistics the Analyse() function has to be called.
- - the Analyse() function
-   Whithin this function the mean values of T0, RMS, Q are calculated for each pad, using
-   the AliMathBase::GetCOG(...) function, and the calibration
-   storage classes (AliTPCCalROC) are filled for each ROC.
-   The calibration information is stored in the TObjArrays fCalRocArrayT0, fCalRocArrayRMS and
-   fCalRocArrayQ;
-
-
-
- User interface for filling data:
- --------------------------------
-
- To Fill information one of the following functions can be used:
-
- Bool_t ProcessEvent(eventHeaderStruct *event);
-   - process Date event
-   - use AliTPCRawReaderDate and call ProcessEvent(AliRawReader *rawReader)
-
- Bool_t ProcessEvent(AliRawReader *rawReader);
-   - process AliRawReader event
-   - use AliTPCRawStreamV3 to loop over data and call ProcessEvent(AliTPCRawStreamV3 *rawStream)
-
- Bool_t ProcessEvent(AliTPCRawStreamV3 *rawStream);
-   - process event from AliTPCRawStreamV3
-   - call Update function for signal filling
-
- Int_t Update(const Int_t isector, const Int_t iRow, const Int_t
-              iPad,  const Int_t iTimeBin, const Float_t signal);
-   - directly  fill signal information (sector, row, pad, time bin, pad)
-     to the reference histograms
-
- It is also possible to merge two independently taken calibrations using the function
-
- void Merge(AliTPCCalibPulser *sig)
-   - copy histograms in 'sig' if the do not exist in this instance
-   - Add histograms in 'sig' to the histograms in this instance if the allready exist
-   - After merging call Analyse again!
-
-
-
- -- example: filling data using root raw data:
- void fillSignal(Char_t *filename)
- {
-    rawReader = new AliRawReaderRoot(fileName);
-    if ( !rawReader ) return;
-    AliTPCCalibPulser *calib = new AliTPCCalibPulser;
-    while (rawReader->NextEvent()){
-      calib->ProcessEvent(rawReader);
-    }
-    calib->Analyse();
-    calib->DumpToFile("SignalData.root");
-    delete rawReader;
-    delete calib;
- }
-
-
- What kind of information is stored and how to retrieve them:
- ------------------------------------------------------------
-
- - Accessing the 'Reference Histograms' (Time0, signal width and Q sum information pad by pad):
-
-   TH2F *GetHistoT0(Int_t sector);
-   TH2F *GetHistoRMS(Int_t sector);
-   TH2F *GetHistoQ(Int_t sector);
-
- - Accessing the calibration storage objects:
-
-   AliTPCCalROC *GetCalRocT0(Int_t sector);   // for the Time0 values
-   AliTPCCalROC *GetCalRocRMS(Int_t sector);  // for the signal width values
-   AliTPCCalROC *GetCalRocQ(Int_t sector);    // for the Q sum values
-
-   example for visualisation:
-   if the file "SignalData.root" was created using the above example one could do the following:
-
-   TFile fileSignal("SignalData.root")
-   AliTPCCalibPulser *sig = (AliTPCCalibPulser*)fileSignal->Get("AliTPCCalibPulser");
-   sig->GetCalRocT0(0)->Draw("colz");
-   sig->GetCalRocRMS(0)->Draw("colz");
-
-   or use the AliTPCCalPad functionality:
-   AliTPCCalPad padT0(ped->GetCalPadT0());
-   AliTPCCalPad padSigWidth(ped->GetCalPadRMS());
-   padT0->MakeHisto2D()->Draw("colz");       //Draw A-Side Time0 Information
-   padSigWidth->MakeHisto2D()->Draw("colz"); //Draw A-Side signal width Information
-*/
-
+/// \class AliTPCCalibPulser
+/// \brief Implementation of the TPC pulser calibration
+///
+/// \author Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch
+///
+/// Class Description
+/// -----------------
+///
+///  The AliTPCCalibPulser class is used to get calibration data concerning the FEE using
+///  runs performed with the calibration pulser.
+///
+///  The information retrieved is
+///  - Time0 differences
+///  - Signal width differences
+///  - Amplification variations
+///
+///  the seen differences arise from the manufacturing tolerances of the PASAs and are very small within
+///  one chip and somewhat large between different chips.
+///
+///  Histograms:
+///    For each ROC three TH2S histos 'Reference Histograms'  (ROC channel vs. [Time0, signal width, Q sum]) is created when
+///    it is filled for the first time (GetHisto[T0,RMS,Q](ROC,kTRUE)). The histos are stored in the
+///    TObjArrays fHistoT0Array, fHistoRMSArray and fHistoQArray.
+///
+///
+///  Working principle:
+///  ------------------
+///  Raw calibration pulser data is processed by calling one of the ProcessEvent(...) functions
+///  (see below). These in the end call the Update(...) function.
+///
+///  - the Update(...) function:
+///    In this function the array fPadSignal is filled with the adc signals between the specified range
+///    fFirstTimeBin and fLastTimeBin for the current pad.
+///    before going to the next pad the ProcessPad() function is called, which analyses the data for one pad
+///    stored in fPadSignal.
+///
+///    - the ProcessPad() function:
+///      Find Pedestal and Noise information
+///      - use database information which has to be set by calling
+///        SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC)
+///      - if no information from the pedestal data base
+///        is available the informaion is calculated on the fly ( see FindPedestal() function )
+///
+///      Find the Pulser signal information
+///      - calculate  mean = T0, RMS = signal width and Q sum in a range of -2+7 timebins around Q max
+///        the Q sum is scaled by pad area
+///        (see FindPulserSignal(...) function)
+///
+///      Fill a temprary array for the T0 information (GetPadTimesEvent(fCurrentSector,kTRUE)) (why see below)
+///      Fill the Q sum and RMS values in the histograms (GetHisto[RMS,Q](ROC,kTRUE)),
+///
+///  At the end of each event the EndEvent() function is called
+///
+///  - the EndEvent() function:
+///    calculate the mean T0 for each ROC and fill the Time0 histogram with Time0-<Time0 for ROC>
+///    This is done to overcome syncronisation problems between the trigger and the fec clock.
+///
+///  After accumulating the desired statistics the Analyse() function has to be called.
+///  - the Analyse() function
+///    Whithin this function the mean values of T0, RMS, Q are calculated for each pad, using
+///    the AliMathBase::GetCOG(...) function, and the calibration
+///    storage classes (AliTPCCalROC) are filled for each ROC.
+///    The calibration information is stored in the TObjArrays fCalRocArrayT0, fCalRocArrayRMS and
+///    fCalRocArrayQ;
+///
+///
+///
+///  User interface for filling data:
+///  --------------------------------
+///
+///  To Fill information one of the following functions can be used:
+///
+///  Bool_t ProcessEvent(eventHeaderStruct *event);
+///    - process Date event
+///    - use AliTPCRawReaderDate and call ProcessEvent(AliRawReader *rawReader)
+///
+///  Bool_t ProcessEvent(AliRawReader *rawReader);
+///    - process AliRawReader event
+///    - use AliTPCRawStreamV3 to loop over data and call ProcessEvent(AliTPCRawStreamV3 *rawStream)
+///
+///  Bool_t ProcessEvent(AliTPCRawStreamV3 *rawStream);
+///    - process event from AliTPCRawStreamV3
+///    - call Update function for signal filling
+///
+///  Int_t Update(const Int_t isector, const Int_t iRow, const Int_t
+///               iPad,  const Int_t iTimeBin, const Float_t signal);
+///    - directly  fill signal information (sector, row, pad, time bin, pad)
+///      to the reference histograms
+///
+///  It is also possible to merge two independently taken calibrations using the function
+///
+///  void Merge(AliTPCCalibPulser *sig)
+///    - copy histograms in 'sig' if the do not exist in this instance
+///    - Add histograms in 'sig' to the histograms in this instance if the allready exist
+///    - After merging call Analyse again!
+///
+///
+///
+///  -- example: filling data using root raw data:
+/// ~~~{.cpp}
+///  void fillSignal(Char_t *filename)
+///  {
+///     rawReader = new AliRawReaderRoot(fileName);
+///     if ( !rawReader ) return;
+///     AliTPCCalibPulser *calib = new AliTPCCalibPulser;
+///     while (rawReader->NextEvent()){
+///       calib->ProcessEvent(rawReader);
+///     }
+///     calib->Analyse();
+///     calib->DumpToFile("SignalData.root");
+///     delete rawReader;
+///     delete calib;
+///  }
+/// ~~~
+///
+///  What kind of information is stored and how to retrieve them:
+///  ------------------------------------------------------------
+///
+///  - Accessing the 'Reference Histograms' (Time0, signal width and Q sum information pad by pad):
+///
+///    TH2F *GetHistoT0(Int_t sector);
+///    TH2F *GetHistoRMS(Int_t sector);
+///    TH2F *GetHistoQ(Int_t sector);
+///
+///  - Accessing the calibration storage objects:
+///
+///    AliTPCCalROC *GetCalRocT0(Int_t sector);   // for the Time0 values
+///    AliTPCCalROC *GetCalRocRMS(Int_t sector);  // for the signal width values
+///    AliTPCCalROC *GetCalRocQ(Int_t sector);    // for the Q sum values
+///
+///    example for visualisation:
+///    if the file "SignalData.root" was created using the above example one could do the following:
+///
+/// ~~~{.cpp}
+/// TFile fileSignal("SignalData.root")
+/// AliTPCCalibPulser *sig = (AliTPCCalibPulser*)fileSignal->Get("AliTPCCalibPulser");
+/// sig->GetCalRocT0(0)->Draw("colz");
+/// sig->GetCalRocRMS(0)->Draw("colz");
+/// ~~~
+///
+/// or use the AliTPCCalPad functionality:
+///
+/// ~~~{.cpp}
+/// AliTPCCalPad padT0(ped->GetCalPadT0());
+/// AliTPCCalPad padSigWidth(ped->GetCalPadRMS());
+/// padT0->MakeHisto2D()->Draw("colz");       //Draw A-Side Time0 Information
+/// padSigWidth->MakeHisto2D()->Draw("colz"); //Draw A-Side signal width Information
+/// ~~~
 
 //Root includes
 #include <TObjArray.h>
@@ -197,7 +196,9 @@
 
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibPulser)
+/// \endcond
 
 AliTPCCalibPulser::AliTPCCalibPulser() :
 AliTPCCalibRawBase(),
@@ -300,25 +301,23 @@ fPadNoise(0),
 fVTime0Offset(72),
 fVTime0OffsetCounter(72)
 {
-  //
-  // AliTPCSignal default constructor
-  //
-  
+  /// AliTPCSignal default constructor
+
   for (Int_t iSec = 0; iSec < 72; ++iSec){
     const AliTPCCalROC *calQ   = (AliTPCCalROC*)sig.fCalRocArrayQ.UncheckedAt(iSec);
     const AliTPCCalROC *calT0  = (AliTPCCalROC*)sig.fCalRocArrayT0.UncheckedAt(iSec);
     const AliTPCCalROC *calRMS = (AliTPCCalROC*)sig.fCalRocArrayRMS.UncheckedAt(iSec);
     const AliTPCCalROC *calOut = (AliTPCCalROC*)sig.fCalRocArrayOutliers.UncheckedAt(iSec);
-    
+
     const TH2S *hQ   = (TH2S*)sig.fHistoQArray.UncheckedAt(iSec);
     const TH2S *hT0  = (TH2S*)sig.fHistoT0Array.UncheckedAt(iSec);
     const TH2S *hRMS = (TH2S*)sig.fHistoRMSArray.UncheckedAt(iSec);
-    
+
     if ( calQ   != 0x0 ) fCalRocArrayQ.AddAt(new AliTPCCalROC(*calQ), iSec);
     if ( calT0  != 0x0 ) fCalRocArrayT0.AddAt(new AliTPCCalROC(*calT0), iSec);
     if ( calRMS != 0x0 ) fCalRocArrayRMS.AddAt(new AliTPCCalROC(*calRMS), iSec);
     if ( calOut != 0x0 ) fCalRocArrayOutliers.AddAt(new AliTPCCalROC(*calOut), iSec);
-    
+
     if ( hQ != 0x0 ){
       TH2S *hNew = new TH2S(*hQ);
       hNew->SetDirectory(0);
@@ -336,7 +335,7 @@ fVTime0OffsetCounter(72)
     }
     fVMeanTimeSector[iSec]=sig.fVMeanTimeSector[iSec];
   }
-  
+
   if ( sig.fHMeanTimeSector ) fHMeanTimeSector=(TH2F*)sig.fHMeanTimeSector->Clone();
   fParam->Update();
 }
@@ -386,9 +385,8 @@ fPadNoise(0),
 fVTime0Offset(72),
 fVTime0OffsetCounter(72)
 {
-  //
-  // This constructor uses a TMap for setting some parametes
-  //
+  /// This constructor uses a TMap for setting some parametes
+
   SetNameTitle("AliTPCCalibPulser","AliTPCCalibPulser");
   fFirstTimeBin=60;
   fLastTimeBin=900;
@@ -406,49 +404,45 @@ fVTime0OffsetCounter(72)
   if (config->GetValue("PeakIntMinus")) fPeakIntMinus = (Int_t)((TObjString*)config->GetValue("PeakIntMinus"))->GetString().Atof();
   if (config->GetValue("PeakIntPlus")) fPeakIntPlus = (Int_t)((TObjString*)config->GetValue("PeakIntPlus"))->GetString().Atof();
   if (config->GetValue("IsZeroSuppressed")) fIsZeroSuppressed = (Bool_t)((TObjString*)config->GetValue("IsZeroSuppressed"))->GetString().Atoi();
-  
+
   fParam->Update();
 }
 //_____________________________________________________________________
 AliTPCCalibPulser& AliTPCCalibPulser::operator = (const  AliTPCCalibPulser &source)
 {
-  //
-  // assignment operator
-  //
+  /// assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCCalibPulser(source);
-  
+
   return *this;
 }
 //_____________________________________________________________________
 AliTPCCalibPulser::~AliTPCCalibPulser()
 {
-  //
-  // destructor
-  //
-  
+  /// destructor
+
   Reset();
   delete fParam;
 }
 void AliTPCCalibPulser::Reset()
 {
-  //
-  // Delete all information: Arrays, Histograms, CalRoc objects
-  //
+  /// Delete all information: Arrays, Histograms, CalRoc objects
+
   fCalRocArrayT0.Delete();
   fCalRocArrayQ.Delete();
   fCalRocArrayRMS.Delete();
   fCalRocArrayOutliers.Delete();
-  
+
   fHistoQArray.Delete();
   fHistoT0Array.Delete();
   fHistoRMSArray.Delete();
-  
+
   fPadTimesArrayEvent.Delete();
   fPadQArrayEvent.Delete();
   fPadRMSArrayEvent.Delete();
   fPadPedestalArrayEvent.Delete();
-  
+
   if (fHMeanTimeSector) delete fHMeanTimeSector;
 }
 //_____________________________________________________________________
@@ -458,24 +452,22 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
                                 const Int_t icTimeBin,
                                 const Float_t csignal)
 {
-    //
-    // Signal filling methode on the fly pedestal and time offset correction if necessary.
-    // no extra analysis necessary. Assumes knowledge of the signal shape!
-    // assumes that it is looped over consecutive time bins of one pad
-    //
-  
+    /// Signal filling methode on the fly pedestal and time offset correction if necessary.
+    /// no extra analysis necessary. Assumes knowledge of the signal shape!
+    /// assumes that it is looped over consecutive time bins of one pad
+
   if (icRow<0) return 0;
   if (icPad<0) return 0;
   if (icTimeBin<0) return 0;
   if ( (icTimeBin>fLastTimeBin) || (icTimeBin<fFirstTimeBin)   ) return 0;
-  
+
   if ( icRow<0 || icPad<0 ){
     AliWarning("Wrong Pad or Row number, skipping!");
     return 0;
   }
-  
+
   Int_t iChannel  = fROC->GetRowIndexes(icsector)[icRow]+icPad; //  global pad position in sector
-  
+
     //init first pad and sector in this event
   if ( fCurrentChannel == -1 ) {
     fCurrentChannel = iChannel;
@@ -483,7 +475,7 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
     fCurrentRow     = icRow;
     fCurrentPad     = icPad;
   }
-  
+
     //process last pad if we change to a new one
   if ( iChannel != fCurrentChannel ){
     ProcessPad();
@@ -493,7 +485,7 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
     fCurrentRow     = icRow;
     fCurrentPad     = icPad;
   }
-  
+
     //fill signals for current pad
   fPadSignal[icTimeBin]=csignal;
   if ( csignal > fMaxPadSignal ){
@@ -505,10 +497,9 @@ Int_t AliTPCCalibPulser::Update(const Int_t icsector,
 //_____________________________________________________________________
 void AliTPCCalibPulser::FindPedestal(Float_t part)
 {
-    //
-    // find pedestal and noise for the current pad. Use either database or
-    // truncated mean with part*100%
-    //
+    /// find pedestal and noise for the current pad. Use either database or
+    /// truncated mean with part*100%
+
   Bool_t noPedestal = kTRUE;;
   if (fPedestalTPC&&fPadNoiseTPC){
         //use pedestal database
@@ -517,15 +508,15 @@ void AliTPCCalibPulser::FindPedestal(Float_t part)
       fPedestalROC = fPedestalTPC->GetCalROC(fCurrentSector);
       fPadNoiseROC = fPadNoiseTPC->GetCalROC(fCurrentSector);
     }
-    
+
     if ( fPedestalROC&&fPadNoiseROC ){
       fPadPedestal = fPedestalROC->GetValue(fCurrentChannel);
       fPadNoise    = fPadNoiseROC->GetValue(fCurrentChannel);
       noPedestal   = kFALSE;
     }
-    
+
   }
-  
+
     //if we are not running with pedestal database, or for the current sector there is no information
     //available, calculate the pedestal and noise on the fly
   if ( noPedestal ) {
@@ -539,7 +530,7 @@ void AliTPCCalibPulser::FindPedestal(Float_t part)
         //
     UShort_t histo[kPedMax];
     memset(histo,0,kPedMax*sizeof(UShort_t));
-    
+
     for (Int_t i=fFirstTimeBin; i<=fLastTimeBin; ++i){
       padSignal = fPadSignal.GetMatrixArray()[i];
       if (padSignal<=0) continue;
@@ -586,12 +577,10 @@ void AliTPCCalibPulser::FindPedestal(Float_t part)
 //_____________________________________________________________________
 void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
 {
-//
-    //  Find position, signal width and height of the CE signal (last signal)
-    //  param[0] = Qmax, param[1] = mean time, param[2] = rms;
-    //  maxima: array of local maxima of the pad signal use the one closest to the mean CE position
-    //
-  
+///  Find position, signal width and height of the CE signal (last signal)
+///  param[0] = Qmax, param[1] = mean time, param[2] = rms;
+///  maxima: array of local maxima of the pad signal use the one closest to the mean CE position
+
   Float_t ceQmax  =0, ceQsum=0, ceTime=0, ceRMS=0;
   Int_t   cemaxpos       = fMaxTimeBin;
   Float_t ceSumThreshold = 10.*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal sum
@@ -602,7 +591,7 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
   param[1] = ceTime;
   param[2] = ceRMS;
   qSum     = ceQsum;
-  
+
   if (cemaxpos>0){
     ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
     if ( ceQmax<ceMaxThreshold ) return;
@@ -633,7 +622,7 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
         fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
       }
     }
-    
+
   //Normalise Q to the 'cell-size': The wire density is the same in the IROC and OROC, therefore the
   //                                the pick-up signal should scale with the pad area. In addition
   //                                the signal should decrease with the wire distance (4mm in IROC, 6mm in OROC),
@@ -641,7 +630,7 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
   //                                to the OROC signal (factor 2/3 for the IROCs).
     Float_t norm = fParam->GetPadPitchWidth(fCurrentSector)*fParam->GetPadPitchLength(fCurrentSector,fCurrentRow)*100;
     if ( fCurrentSector<fParam->GetNInnerSector() ) norm*=3./2.;
-    
+
     ceQsum/=norm;
   } else {
     ceQmax=0;
@@ -657,30 +646,28 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
 //_____________________________________________________________________
 void AliTPCCalibPulser::ProcessPad()
 {
-  //
-  //  Process data of current pad
-  //
-  
+  ///  Process data of current pad
+
   FindPedestal();
   TVectorD param(3);
   Float_t  qSum;
   FindPulserSignal(param, qSum);
-  
+
   Double_t meanT  = param[1];
   Double_t sigmaT = param[2];
-  
-  
+
+
   //Fill Event T0 counter
   (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
-  
+
   //Fill Q histogram
 //   GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(qSum), fCurrentChannel ); //use linear scale, needs also a change in the Analyse funciton.
   GetHistoQ(fCurrentSector,kTRUE)->Fill( qSum, fCurrentChannel );
-  
+
   //Fill RMS histogram
   GetHistoRMS(fCurrentSector,kTRUE)->Fill( sigmaT, fCurrentChannel );
-  
-  
+
+
     //Fill debugging info
   if ( GetStreamLevel()>0 ){
     TTreeSRedirector *streamer=GetDebugStreamer();
@@ -710,13 +697,11 @@ void AliTPCCalibPulser::ProcessPad()
 //_____________________________________________________________________
 void AliTPCCalibPulser::EndEvent()
 {
-    //
-    //  Process data of current event
-    //
-  
+    ///  Process data of current event
+
     //check if last pad has allready been processed, if not do so
   if ( fMaxTimeBin>-1 ) ProcessPad();
-  
+
     //loop over all ROCs, fill Time0 histogram corrected for the mean Time0 of each ROC
   for ( Int_t iSec = 0; iSec<72; ++iSec ){
     TVectorF *vTimes = GetPadTimesEvent(iSec);
@@ -724,11 +709,11 @@ void AliTPCCalibPulser::EndEvent()
     Float_t time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
     for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
       Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
-      
+
       GetHistoT0(iSec,kTRUE)->Fill( time-time0,iChannel );
             //GetHistoT0(iSec,kTRUE)->Fill( time,iChannel );
-      
-      
+
+
       //Debug start
       if ( GetStreamLevel()>1 ){
         TTreeSRedirector *streamer=GetDebugStreamer();
@@ -736,17 +721,17 @@ void AliTPCCalibPulser::EndEvent()
           Int_t row=0;
           Int_t pad=0;
           Int_t padc=0;
-          
+
           Float_t q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
           Float_t rms = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
-          
+
           UInt_t channel=iChannel;
           Int_t sector=iSec;
-          
+
           while ( channel > (fROC->GetRowIndexes(sector)[row]+fROC->GetNPads(sector,row)-1) ) row++;
           pad = channel-fROC->GetRowIndexes(sector)[row];
           padc = pad-(fROC->GetNPads(sector,row)/2);
-          
+
           (*streamer) << "DataPad" <<
     		    "Event=" << fNevents <<
             "Sector="<< sector <<
@@ -771,13 +756,12 @@ TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr,
                                   Int_t nbinsY, Float_t ymin, Float_t ymax,
                                   const Char_t *type, Bool_t force)
 {
-    //
-    // return pointer to Q histogram
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to Q histogram
+    /// if force is true create a new histogram if it doesn't exist allready
+
   if ( !force || arr->UncheckedAt(sector) )
     return (TH2S*)arr->UncheckedAt(sector);
-  
+
   // if we are forced and histogram doesn't yes exist create it
   // new histogram with Q calib information. One value for each pad!
   TH2S* hist = new TH2S(Form("hCalib%s%.2d",type,sector),Form("%s calibration histogram sector %.2d",type,sector),
@@ -790,40 +774,36 @@ TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr,
 //_____________________________________________________________________
 TH2S* AliTPCCalibPulser::GetHistoT0(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to T0 histogram
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to T0 histogram
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fHistoT0Array;
   return GetHisto(sector, arr, fNbinsT0, fXminT0, fXmaxT0, "T0", force);
 }
 //_____________________________________________________________________
 TH2S* AliTPCCalibPulser::GetHistoQ(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Q histogram
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to Q histogram
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fHistoQArray;
   return GetHisto(sector, arr, fNbinsQ, fXminQ, fXmaxQ, "Q", force);
 }
 //_____________________________________________________________________
 TH2S* AliTPCCalibPulser::GetHistoRMS(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Q histogram
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to Q histogram
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fHistoRMSArray;
   return GetHisto(sector, arr, fNbinsRMS, fXminRMS, fXmaxRMS, "RMS", force);
 }
 //_____________________________________________________________________
 TH2F* AliTPCCalibPulser::GetHistoTSec()
 {
-    //
-    // return the pointer to the abs time distribution per sector
-    // create it if it does not exist
-    //
+    /// return the pointer to the abs time distribution per sector
+    /// create it if it does not exist
+
   if ( !fHMeanTimeSector )   //!!!if you change the binning here, you should also change it in the Analyse Function!!
     fHMeanTimeSector = new TH2F("fHMeanTimeSector","Abs mean time per sector",
                                 20*(fLastTimeBin-fFirstTimeBin), fFirstTimeBin, fLastTimeBin,
@@ -833,13 +813,12 @@ TH2F* AliTPCCalibPulser::GetHistoTSec()
 //_____________________________________________________________________
 TVectorF* AliTPCCalibPulser::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t force)
 {
-    //
-    // return pointer to Pad Info from 'arr' for the current event and sector
-    // if force is true create it if it doesn't exist allready
-    //
+    /// return pointer to Pad Info from 'arr' for the current event and sector
+    /// if force is true create it if it doesn't exist allready
+
   if ( !force || arr->UncheckedAt(sector) )
     return (TVectorF*)arr->UncheckedAt(sector);
-  
+
   TVectorF *vect = new TVectorF(fROC->GetNChannels(sector));
   arr->AddAt(vect,sector);
   return vect;
@@ -847,59 +826,53 @@ TVectorF* AliTPCCalibPulser::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_
 //_____________________________________________________________________
 TVectorF* AliTPCCalibPulser::GetPadTimesEvent(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Pad Times Array for the current event and sector
-    // if force is true create it if it doesn't exist allready
-    //
+    /// return pointer to Pad Times Array for the current event and sector
+    /// if force is true create it if it doesn't exist allready
+
   TObjArray *arr = &fPadTimesArrayEvent;
   return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
 TVectorF* AliTPCCalibPulser::GetPadQEvent(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Pad Q Array for the current event and sector
-    // if force is true create it if it doesn't exist allready
-    // for debugging purposes only
-    //
-  
+    /// return pointer to Pad Q Array for the current event and sector
+    /// if force is true create it if it doesn't exist allready
+    /// for debugging purposes only
+
   TObjArray *arr = &fPadQArrayEvent;
   return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
 TVectorF* AliTPCCalibPulser::GetPadRMSEvent(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Pad RMS Array for the current event and sector
-    // if force is true create it if it doesn't exist allready
-    // for debugging purposes only
-    //
+    /// return pointer to Pad RMS Array for the current event and sector
+    /// if force is true create it if it doesn't exist allready
+    /// for debugging purposes only
+
   TObjArray *arr = &fPadRMSArrayEvent;
   return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
 TVectorF* AliTPCCalibPulser::GetPadPedestalEvent(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Pad RMS Array for the current event and sector
-    // if force is true create it if it doesn't exist allready
-    // for debugging purposes only
-    //
+    /// return pointer to Pad RMS Array for the current event and sector
+    /// if force is true create it if it doesn't exist allready
+    /// for debugging purposes only
+
   TObjArray *arr = &fPadPedestalArrayEvent;
   return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
 AliTPCCalROC* AliTPCCalibPulser::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) const
 {
-    //
-    // return pointer to ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to ROC Calibration
+    /// if force is true create a new histogram if it doesn't exist allready
+
   if ( !force || arr->UncheckedAt(sector) )
     return (AliTPCCalROC*)arr->UncheckedAt(sector);
-  
+
     // if we are forced and histogram doesn't yes exist create it
-  
+
     // new AliTPCCalROC for T0 information. One value for each pad!
   AliTPCCalROC *croc = new AliTPCCalROC(sector);
   arr->AddAt(croc,sector);
@@ -908,63 +881,58 @@ AliTPCCalROC* AliTPCCalibPulser::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t 
 //_____________________________________________________________________
 AliTPCCalROC* AliTPCCalibPulser::GetCalRocT0(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Carge ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to Carge ROC Calibration
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fCalRocArrayT0;
   return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
 AliTPCCalROC* AliTPCCalibPulser::GetCalRocQ(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to T0 ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to T0 ROC Calibration
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fCalRocArrayQ;
   return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
 AliTPCCalROC* AliTPCCalibPulser::GetCalRocRMS(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to signal width ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to signal width ROC Calibration
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fCalRocArrayRMS;
   return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
 AliTPCCalROC* AliTPCCalibPulser::GetCalRocOutliers(Int_t sector, Bool_t force)
 {
-    //
-    // return pointer to Outliers
-    // if force is true create a new histogram if it doesn't exist allready
-    //
+    /// return pointer to Outliers
+    /// if force is true create a new histogram if it doesn't exist allready
+
   TObjArray *arr = &fCalRocArrayOutliers;
   return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::ResetEvent()
 {
-    //
-    //  Reset global counters  -- Should be called before each event is processed
-    //
+    ///  Reset global counters  -- Should be called before each event is processed
+
   fLastSector=-1;
   fCurrentSector=-1;
   fCurrentRow=-1;
   fCurrentPad=-1;
   fCurrentChannel=-1;
-  
+
   ResetPad();
-  
+
   fPadTimesArrayEvent.Delete();
-  
+
   fPadQArrayEvent.Delete();
   fPadRMSArrayEvent.Delete();
   fPadPedestalArrayEvent.Delete();
-  
+
   for ( Int_t i=0; i<72; ++i ){
     fVTime0Offset[i]=0;
     fVTime0OffsetCounter[i]=0;
@@ -973,9 +941,8 @@ void AliTPCCalibPulser::ResetEvent()
 //_____________________________________________________________________
 void AliTPCCalibPulser::ResetPad()
 {
-    //
-    //  Reset pad infos -- Should be called after a pad has been processed
-    //
+    ///  Reset pad infos -- Should be called after a pad has been processed
+
   for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; ++i)
     fPadSignal[i] = 0;
   fMaxTimeBin = -1;
@@ -986,21 +953,18 @@ void AliTPCCalibPulser::ResetPad()
 //_____________________________________________________________________
 Bool_t AliTPCCalibPulser::IsEdgePad(Int_t sector, Int_t row, Int_t pad)
 {
-    //
-    // return true if pad is on the edge of a row
-    //
+    /// return true if pad is on the edge of a row
+
   Int_t edge1   = 0;
   Int_t edge2   = fROC->GetNPads(sector,row)-1;
   if ( pad == edge1 || pad == edge2 ) return kTRUE;
-  
+
   return kFALSE;
 }
 //_____________________________________________________________________
 void AliTPCCalibPulser::Merge(AliTPCCalibPulser * const sig)
 {
-  //
-  //  Merge reference histograms of sig to the current AliTPCCalibPulser
-  //
+  ///  Merge reference histograms of sig to the current AliTPCCalibPulser
 
   MergeBase(sig);
   //merge histograms
@@ -1008,8 +972,8 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser * const sig)
     TH2S *hRefQmerge   = sig->GetHistoQ(iSec);
     TH2S *hRefT0merge  = sig->GetHistoT0(iSec);
     TH2S *hRefRMSmerge = sig->GetHistoRMS(iSec);
-    
-    
+
+
     if ( hRefQmerge ){
       TDirectory *dir = hRefQmerge->GetDirectory(); hRefQmerge->SetDirectory(0);
       TH2S *hRefQ   = GetHistoQ(iSec);
@@ -1043,7 +1007,7 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser * const sig)
       }
       hRefRMSmerge->SetDirectory(dir);
     }
-    
+
   }
   if ( sig->fHMeanTimeSector ){
     TDirectory *dir = sig->fHMeanTimeSector->GetDirectory(); sig->fHMeanTimeSector->SetDirectory(0);
@@ -1060,16 +1024,14 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser * const sig)
 //_____________________________________________________________________
 Long64_t AliTPCCalibPulser::Merge(TCollection * const list)
 {
-  //
-  // Merge all objects of this type in list
-  //
-  
+  /// Merge all objects of this type in list
+
   Long64_t nmerged=1;
-  
+
   TIter next(list);
   AliTPCCalibPulser *ce=0;
   TObject *o=0;
-  
+
   while ( (o=next()) ){
     ce=dynamic_cast<AliTPCCalibPulser*>(o);
     if (ce){
@@ -1077,17 +1039,15 @@ Long64_t AliTPCCalibPulser::Merge(TCollection * const list)
       ++nmerged;
     }
   }
-  
+
   return nmerged;
 }
 
 //_____________________________________________________________________
 void AliTPCCalibPulser::Analyse()
 {
-  //
-  //  Calculate calibration constants
-  //
-  
+  ///  Calculate calibration constants
+
   TVectorD paramQ(3);
   TVectorD paramT0(3);
   TVectorD paramRMS(3);
@@ -1095,7 +1055,7 @@ void AliTPCCalibPulser::Analyse()
   //calculate mean time for each sector and mean time for each side
   TH1F hMeanTsec("hMeanTsec","hMeanTsec",20*(fLastTimeBin-fFirstTimeBin),fFirstTimeBin,fLastTimeBin);
   fVMeanTimeSector.Zero();
-  
+
   for (Int_t iSec=0; iSec<72; ++iSec){
     TH2S *hT0 = GetHistoT0(iSec);
     if (!hT0 ) continue;
@@ -1113,35 +1073,35 @@ void AliTPCCalibPulser::Analyse()
       if ( entries>0 ) AliMathBase::TruncatedMean(&hMeanTsec,&paramT0,0.05,.95);
       fVMeanTimeSector[iSec]=paramT0[1];
     }
-    
+
     AliTPCCalROC *rocQ   = GetCalRocQ  (iSec,kTRUE);
     AliTPCCalROC *rocT0  = GetCalRocT0 (iSec,kTRUE);
     AliTPCCalROC *rocRMS = GetCalRocRMS(iSec,kTRUE);
     AliTPCCalROC *rocOut = GetCalRocOutliers(iSec,kTRUE);
-    
+
     TH2S *hQ   = GetHistoQ(iSec);
     TH2S *hRMS = GetHistoRMS(iSec);
-    
+
     Short_t *arrayhQ   = hQ->GetArray();
     Short_t *arrayhT0  = hT0->GetArray();
     Short_t *arrayhRMS = hRMS->GetArray();
-    
+
     UInt_t nChannels = fROC->GetNChannels(iSec);
     Float_t meanTsec = fVMeanTimeSector[iSec];
-    
+
   //debug
     Int_t row=0;
     Int_t pad=0;
     Int_t padc=0;
   //! debug
-    
+
     for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
-      
+
       Float_t cogTime0 = -1000;
       Float_t cogQ     = -1000;
       Float_t cogRMS   = -1000;
       Float_t cogOut   = 0;
-      
+
       Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
       Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
       Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
@@ -1156,7 +1116,7 @@ void AliTPCCalibPulser::Analyse()
       cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
       cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
       cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
-      
+
       /*
       if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
     cogOut = 1;
@@ -1177,7 +1137,7 @@ void AliTPCCalibPulser::Analyse()
         rocT0->SetValue(iChannel, 0); //offset by mean time of the sector
         rocRMS->SetValue(iChannel, 0);
       }
-      
+
       //debug
       if ( GetStreamLevel() > 2 ){
         TTreeSRedirector *streamer=GetDebugStreamer();
@@ -1185,7 +1145,7 @@ void AliTPCCalibPulser::Analyse()
           while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
           pad = iChannel-fROC->GetRowIndexes(iSec)[row];
           padc = pad-(fROC->GetNPads(iSec,row)/2);
-          
+
           (*streamer) << "DataEnd" <<
             "Sector="  << iSec      <<
             "Pad="     << pad       <<
@@ -1200,8 +1160,8 @@ void AliTPCCalibPulser::Analyse()
       }
       //! debug
     }
-    
-    
+
+
   }
 }
 //_____________________________________________________________________
@@ -1209,19 +1169,18 @@ void AliTPCCalibPulser::Analyse()
 //_____________________________________________________________________
 TObjArray* AliTPCCalibPulser::TestBinning()
 {
-  //
-  //  Function to test the binning of the reference histograms
-  //  type: T0, Q or RMS
-  //  mode: 0 - number of filled bins per channel
-  //        1 - number of empty bins between filled bins in one ROC
-  //  returns TObjArray with the test histograms type*2+mode:
-  //  position 0 = T0,0 ; 1 = T0,1 ; 2 = Q,0 ...
-  
-  
+  ///  Function to test the binning of the reference histograms
+  ///  type: T0, Q or RMS
+  ///  mode: 0 - number of filled bins per channel
+  ///        1 - number of empty bins between filled bins in one ROC
+  ///  returns TObjArray with the test histograms type*2+mode:
+  ///  position 0 = T0,0 ; 1 = T0,1 ; 2 = Q,0 ...
+
+
   TObjArray *histArray = new TObjArray(6);
   const Char_t *type[] = {"T0","Q","RMS"};
   Int_t fNbins[3] = {fNbinsT0,fNbinsQ,fNbinsRMS};
-  
+
   for (Int_t itype = 0; itype<3; ++itype){
     for (Int_t imode=0; imode<2; ++imode){
       Int_t icount = itype*2+imode;
@@ -1231,8 +1190,8 @@ TObjArray* AliTPCCalibPulser::TestBinning()
                        icount);
     }
   }
-  
-  
+
+
   TH2S *hRef=0x0;
   Short_t *array=0x0;
   for (Int_t itype = 0; itype<3; ++itype){
@@ -1243,7 +1202,7 @@ TObjArray* AliTPCCalibPulser::TestBinning()
       if ( hRef == 0x0 ) continue;
       array = (hRef->GetArray());
       UInt_t nChannels = fROC->GetNChannels(iSec);
-      
+
       Int_t nempty=0;
       for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
         Int_t nfilled=0;
@@ -1257,7 +1216,7 @@ TObjArray* AliTPCCalibPulser::TestBinning()
             else c1 = 1;
           }
           else if ( c1 ) c2 = 1;
-          
+
         }
         ((TH1F*)histArray->At(itype*2))->Fill(nfilled);
       }

@@ -67,9 +67,11 @@ class Colt(str):
 
 
 ## Comment.
-class Comment:
+class Comment(object):
 
-  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func):
+  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func, \
+    append_empty=True):
+
     assert first_line > 0 and last_line >= first_line, 'Wrong line numbers'
     self.lines = lines
     self.first_line = first_line
@@ -78,12 +80,25 @@ class Comment:
     self.last_col = last_col
     self.indent = indent
     self.func = func
+    self.append_empty = append_empty
 
   def has_comment(self, line):
     return line >= self.first_line and line <= self.last_line
 
   def __str__(self):
-    return "<Comment for %s: [%d,%d:%d,%d] %s>" % (self.func, self.first_line, self.first_col, self.last_line, self.last_col, self.lines)
+    return "<%s for %s: [%d,%d:%d,%d] %s>" % ( \
+      self.__class__.__name__, self.func,
+      self.first_line, self.first_col, self.last_line, self.last_col,
+      self.lines)
+
+
+## Prepend comment.
+class PrependComment(Comment):
+
+  def __init__(self, lines, first_line, first_col, last_line, last_col, indent, func, \
+    append_empty=False):
+    super(PrependComment, self).__init__( \
+      lines, first_line, first_col, last_line, last_col, indent, func, append_empty)
 
 
 ## A data member comment.
@@ -267,7 +282,7 @@ def comment_datamember(cursor, comments):
 
   assert found, 'A line that should exist was not found in file' % cursor.location.file
 
-  recomm = r'(//(!|\|\||->)|///?)(\[([0-9,]+)\])?<?\s*(.*?)\s*$'
+  recomm = r'(//(!|\|\||->)|///?)(\[(.+?)\])?<?\s*(.*?)\s*$'
   recomm_prevline = r'^\s*///\s*(.*?)\s*$'
 
   mcomm = re.search(recomm, raw)
@@ -306,22 +321,37 @@ def comment_datamember(cursor, comments):
 #  before any other comment found so far in the file (the comments array is inspected to ensure
 #  this).
 #
-#  Multi-line comments (/* ... */) are not considered as they are commonly used to display
-#  copyright notice.
+#  Multi-line comments (/* ... */) that *immediately* follow a series of single-line comments
+#  (*i.e.* without empty lines in-between) are also considered. A class description can eventually
+#  be a series of single-line and multi-line comments, with no blank spaces between them, and always
+#  starting with a single-line sequence.
+#
+#  The reason why they cannot start with a multi-line sequence is that those are commonly used to
+#  display a copyright notice.
 #
 #  @param filename Name of the current file
 #  @param comments Array of comments: new ones will be appended there
-def comment_classdesc(filename, comments):
+#  @param look_no_further_than_line Stop before reaching this line when looking for class comment
+def comment_classdesc(filename, comments, look_no_further_than_line):
 
-  recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
+  # Single-line comment
+  recomm = r'^\s*///?(\s*(.*?))\s*/*\s*$'
+
+  # Multi-line comment (only either /* or */ on a single line)
+  remlcomm_in = r'^\s*/\*\s*$'
+  remlcomm_out = r'^\s*\*/\s*$'
+  in_mlcomm = False
 
   reclass_doxy = r'(?i)^\s*\\(class|file):?\s*([^.]*)'
   class_name_doxy = None
 
-  reauthor = r'(?i)^\s*\\?authors?:?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
+  reauthor = r'(?i)^\s*\\?(authors?|origin):?\s*(.*?)\s*(,?\s*([0-9./-]+))?\s*$'
   redate = r'(?i)^\s*\\?date:?\s*([0-9./-]+)\s*$'
+  rebrief = r'(?i)^\s*\\brief\s*(.*)\s*$'
   author = None
   date = None
+  brief = None
+  brief_len_threshold = 80
 
   comment_lines = []
 
@@ -329,6 +359,7 @@ def comment_classdesc(filename, comments):
   end_line = -1
 
   line_num = 0
+  last_comm_line_num = 0
 
   is_macro = filename.endswith('.C')
 
@@ -338,13 +369,43 @@ def comment_classdesc(filename, comments):
 
       line_num = line_num + 1
 
-      if raw.strip() == '' and start_line > 0:
+      if look_no_further_than_line is not None and line_num == look_no_further_than_line:
+        logging.debug('Stopping at line %d while looking for class/file description' % \
+          look_no_further_than_line)
+        break
+
+      if in_mlcomm == False and raw.strip() == '' and start_line > 0:
         # Skip empty lines
         continue
 
       stripped = strip_html(raw)
-      mcomm = re.search(recomm, stripped)
-      if mcomm:
+      mcomm = None
+      this_comment = None
+
+      if not in_mlcomm:
+        mcomm = re.search(recomm, stripped)
+
+      if last_comm_line_num == 0 or last_comm_line_num == line_num-1:
+
+        if mcomm and not mcomm.group(2).startswith('#'):
+          # Single-line comment
+          this_comment = mcomm.group(1)
+        elif start_line > -1:
+          # Not a single-line comment. But it cannot be the first.
+          if in_mlcomm == False:
+            mmlcomm = re.search(remlcomm_in, stripped)
+            if mmlcomm:
+              in_mlcomm = True
+              this_comment = ''
+          else:
+            mmlcomm = re.search(remlcomm_out, stripped)
+            if mmlcomm:
+              in_mlcomm = False
+              this_comment = ''
+            else:
+              this_comment = stripped
+
+      if this_comment is not None:
 
         if start_line == -1:
 
@@ -364,30 +425,38 @@ def comment_classdesc(filename, comments):
         end_line = line_num
         append = True
 
-        mclass_doxy = re.search(reclass_doxy, mcomm.group(1))
+        mclass_doxy = re.search(reclass_doxy, this_comment)
         if mclass_doxy:
           class_name_doxy = mclass_doxy.group(2)
           append = False
         else:
-          mauthor = re.search(reauthor, mcomm.group(1))
+          mauthor = re.search(reauthor, this_comment)
           if mauthor:
-            author = mauthor.group(1)
+            author = mauthor.group(2)
             if date is None:
               # Date specified in the standalone \date field has priority
-              date = mauthor.group(3)
+              date = mauthor.group(4)
             append = False
           else:
-            mdate = re.search(redate, mcomm.group(1))
+            mdate = re.search(redate, this_comment)
             if mdate:
               date = mdate.group(1)
               append = False
+            else:
+              mbrief = re.search(rebrief, this_comment)
+              if mbrief:
+                brief = mbrief.group(1)
+                append = False
 
         if append:
-          comment_lines.append( mcomm.group(1) )
+          comment_lines.append( this_comment )
 
       else:
         if start_line > 0:
           break
+
+      # This line had a valid comment
+      last_comm_line_num = line_num
 
   if class_name_doxy is None:
 
@@ -399,24 +468,63 @@ def comment_classdesc(filename, comments):
     else:
       assert False, 'Regexp unable to extract classname from file'
 
+  # Macro or class?
+  if is_macro:
+    file_class_line = '\\file ' + class_name_doxy + '.C'
+  else:
+    file_class_line = '\\class ' + class_name_doxy
+
   if start_line > 0:
 
-    # Prepend \class or \file specifier (and an empty line)
-    if is_macro:
-      comment_lines[:0] = [ '\\file ' + class_name_doxy + '.C' ]
-    else:
-      comment_lines[:0] = [ '\\class ' + class_name_doxy ]
+    prepend_to_comment = []
+
+    # Prepend \class or \file specifier, then the \brief, then an empty line
+    prepend_to_comment.append( file_class_line )
+
+    if brief is not None:
+      prepend_to_comment.append( '\\brief ' + brief )
+    prepend_to_comment.append( '' )
+
+    comment_lines = prepend_to_comment + comment_lines  # join lists
 
     # Append author and date if they exist
-    comment_lines.append('')
-
     if author is not None:
       comment_lines.append( '\\author ' + author )
 
     if date is not None:
       comment_lines.append( '\\date ' + date )
 
+    # We should erase the "dumb" comments, such as "<class_name> class"
+    comm_idx = 0
+    regac = r'\s*%s\s+class\.?\s*' % class_name_doxy
+    mgac = None
+    for comm in comment_lines:
+      mgac = re.search(regac, comm)
+      if mgac:
+        break
+      comm_idx = comm_idx + 1
+    if mgac:
+      logging.debug('Removing dumb comment line: {%s}' % Colt(comment_lines[comm_idx]).magenta())
+      del comment_lines[comm_idx]
+
     comment_lines = refactor_comment(comment_lines, do_strip_html=False, infilename=filename)
+
+    # Now we look for a possible \brief
+    if brief is None:
+      comm_idx = 0
+      for comm in comment_lines:
+        if comm.startswith('\\class') or comm.startswith('\\file') or comm == '':
+          pass
+        else:
+          if len(comm) <= brief_len_threshold:
+            brief = comm
+          break
+        comm_idx = comm_idx + 1
+      if brief is not None:
+        comment_lines = refactor_comment(
+          [ comment_lines[0], '\\brief ' + brief ] + comment_lines[1:comm_idx] + comment_lines[comm_idx+1:],
+          do_strip_html=False, infilename=filename)
+
     logging.debug('Comment found for class %s' % Colt(class_name_doxy).magenta())
     comments.append(Comment(
       comment_lines,
@@ -426,7 +534,109 @@ def comment_classdesc(filename, comments):
 
   else:
 
-    logging.warning('No comment found for class %s' % Colt(class_name_doxy).magenta())
+    logging.warning('No comment found for class %s: creating a dummy entry at the beginning' % \
+      Colt(class_name_doxy).magenta())
+
+    comments.append(PrependComment(
+      [ file_class_line ],
+      1, 1, 1, 1,
+      0, class_name_doxy, append_empty=True
+    ))
+
+
+## Looks for a special ROOT ClassImp() entry.
+#
+#  Doxygen might get confused by `ClassImp()` entries as they are macros normally written without
+#  the ending `;`: this function wraps the definition inside a condition in order to make Doxygen
+#  ignore it.
+#
+#  @param filename Name of the current file
+#  @param comments Array of comments: new ones will be appended there
+def comment_classimp(filename, comments):
+
+  recomm = r'^\s*///?(\s*.*?)\s*/*\s*$'
+
+  line_num = 0
+  reclassimp = r'^(\s*)Class(Imp|Def)\((.*?)\).*$'
+
+  in_classimp_cond = False
+  restartcond = r'^\s*///\s*\\cond\s+CLASSIMP\s*$'
+  reendcond = r'^\s*///\s*\\endcond\s*$'
+
+  with open(filename, 'r') as fp:
+
+    for line in fp:
+
+      # Reset to nothing found
+      line_classimp = -1
+      line_startcond = -1
+      line_endcond = -1
+      classimp_class = None
+      classimp_indent = None
+
+      line_num = line_num + 1
+
+      mclassimp = re.search(reclassimp, line)
+      if mclassimp:
+
+        # Adjust indent
+        classimp_indent = len( mclassimp.group(1) )
+
+        line_classimp = line_num
+        classimp_class = mclassimp.group(3)
+        imp_or_def = mclassimp.group(2)
+        logging.debug(
+          'Comment found for ' +
+          Colt( 'Class%s(' % imp_or_def ).magenta() +
+          Colt( classimp_class ).cyan() +
+          Colt( ')' ).magenta() )
+
+      else:
+
+        mstartcond = re.search(restartcond, line)
+        if mstartcond:
+          logging.debug('Found Doxygen opening condition for ClassImp in {%s}' % line)
+          in_classimp_cond = True
+          line_startcond = line_num
+
+        elif in_classimp_cond:
+
+          mendcond = re.search(reendcond, line)
+          if mendcond:
+            logging.debug('Found Doxygen closing condition for ClassImp')
+            in_classimp_cond = False
+            line_endcond = line_num
+
+      # Did we find something?
+      if line_classimp != -1:
+
+        if line_startcond != -1:
+          comments.append(Comment(
+            ['\cond CLASSIMP'],
+            line_startcond, 1, line_startcond, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+            append_empty=False
+          ))
+        else:
+          comments.append(PrependComment(
+            ['\cond CLASSIMP'],
+            line_classimp, 1, line_classimp, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+          ))
+
+        if line_endcond != -1:
+          comments.append(Comment(
+            ['\endcond'],
+            line_endcond, 1, line_endcond, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+            append_empty=False
+          ))
+        else:
+          comments.append(PrependComment(
+            ['\endcond'],
+            line_classimp+1, 1, line_classimp+1, 1,
+            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+          ))
 
 
 ## Traverse the AST recursively starting from the current cursor.
@@ -435,7 +645,11 @@ def comment_classdesc(filename, comments):
 #  @param filename  Name of the current file
 #  @param comments  Array of comments: new ones will be appended there
 #  @param recursion Current recursion depth
-def traverse_ast(cursor, filename, comments, recursion=0):
+#  @param in_func   True if we are inside a function or method
+#  @param classdesc_line_limit  Do not look for comments after this line
+#
+#  @return A tuple containing the classdesc_line_limit as first item
+def traverse_ast(cursor, filename, comments, recursion=0, in_func=False, classdesc_line_limit=None):
 
   # libclang traverses included files as well: we do not want this behavior
   if cursor.location.file is not None and str(cursor.location.file) != filename:
@@ -454,11 +668,19 @@ def traverse_ast(cursor, filename, comments, recursion=0):
   if cursor.kind in [ clang.cindex.CursorKind.CXX_METHOD, clang.cindex.CursorKind.CONSTRUCTOR,
     clang.cindex.CursorKind.DESTRUCTOR, clang.cindex.CursorKind.FUNCTION_DECL ]:
 
+    if classdesc_line_limit is None:
+      classdesc_line_limit = cursor.location.line
+
     # cursor ran into a C++ method
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
     comment_method(cursor, comments)
+    in_func = True
 
-  elif not is_macro and cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
+  elif not is_macro and not in_func and \
+    cursor.kind in [ clang.cindex.CursorKind.FIELD_DECL, clang.cindex.CursorKind.VAR_DECL ]:
+
+    if classdesc_line_limit is None:
+      classdesc_line_limit = cursor.location.line
 
     # cursor ran into a data member declaration
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, Colt(kind).magenta(), Colt(text).blue()) )
@@ -469,10 +691,13 @@ def traverse_ast(cursor, filename, comments, recursion=0):
     logging.debug( "%5d %s%s(%s)" % (cursor.location.line, indent, kind, text) )
 
   for child_cursor in cursor.get_children():
-    traverse_ast(child_cursor, filename, comments, recursion+1)
+    classdesc_line_limit = traverse_ast(child_cursor, filename, comments, recursion+1, in_func, classdesc_line_limit)
 
   if recursion == 0:
-    comment_classdesc(filename, comments)
+    comment_classimp(filename, comments)
+    comment_classdesc(filename, comments, classdesc_line_limit)
+
+  return classdesc_line_limit
 
 
 ## Strip some HTML tags from the given string. Returns clean string.
@@ -488,8 +713,8 @@ def strip_html(s):
 #  @param comment An array containing the lines of the original comment
 def refactor_comment(comment, do_strip_html=True, infilename=None):
 
-  recomm = r'^(/{2,}|/\*)? ?(\s*.*?)\s*((/{2,})?\s*|\*/)$'
-  regarbage = r'^(?i)\s*([\s*=-_#]+|(Begin|End)_Html)\s*$'
+  recomm = r'^(/{2,}|/\*)? ?(\s*)(.*?)\s*((/{2,})?\s*|\*/)$'
+  regarbage = r'^(?i)\s*([\s*=_#-]+|(Begin|End)_Html)\s*$'
 
   # Support for LaTeX blocks spanning on multiple lines
   relatex = r'(?i)^((.*?)\s+)?(BEGIN|END)_LATEX([.,;:\s]+.*)?$'
@@ -507,6 +732,12 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
   current_macro = []
   remacro = r'(?i)^\s*(BEGIN|END)_MACRO(\((.*?)\))?\s*$'
 
+  # Minimum indent level: scale back everything
+  lowest_indent_level = None
+
+  # Indentation threshold: if too much indented, don't indent at all
+  indent_level_threshold = 7
+
   new_comment = []
   insert_blank = False
   wait_first_non_blank = True
@@ -523,7 +754,7 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
         current_macro = []
 
         # Insert image
-        new_comment.append( '![Picture from ROOT macro](%s)' % (outimg) )
+        new_comment.append( '![Picture from ROOT macro](%s)' % (os.path.basename(outimg)) )
 
         logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
 
@@ -541,8 +772,19 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
 
     mcomm = re.search( recomm, line_comment )
     if mcomm:
-      new_line_comment = mcomm.group(2)
+      new_line_comment = mcomm.group(2) + mcomm.group(3)  # indent + comm
+
       mgarbage = re.search( regarbage, new_line_comment )
+
+      if mgarbage is None and not mcomm.group(3).startswith('\\') and mcomm.group(3) != '':
+        # not a special command line: count indent
+        indent_level = len( mcomm.group(2) )
+        if lowest_indent_level is None or indent_level < lowest_indent_level:
+          lowest_indent_level = indent_level
+
+        # if indentation level is too much, consider it zero
+        if indent_level > indent_level_threshold:
+          new_line_comment = mcomm.group(3)  # remove ALL indentation
 
       if new_line_comment == '' or mgarbage is not None:
         insert_blank = True
@@ -639,6 +881,23 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
     else:
       assert False, 'Comment regexp does not match'
 
+  # Fixing indentation level
+  if lowest_indent_level is not None:
+    logging.debug('Lowest indentation level found: %d' % lowest_indent_level)
+
+    new_comment_indent = []
+    reblankstart = r'^\s+'
+    for line in new_comment:
+      if re.search(reblankstart, line):
+        new_comment_indent.append( line[lowest_indent_level:] )
+      else:
+        new_comment_indent.append( line )
+
+    new_comment = new_comment_indent
+
+  else:
+    logging.debug('No indentation scaling applied')
+
   return new_comment
 
 
@@ -692,18 +951,38 @@ def rewrite_comments(fhin, fhout, comments):
   skip_empty = False
   comm = None
   prev_comm = None
+  restore_lines = None
 
   rindent = r'^(\s*)'
 
+  def dump_comment_block(cmt, restore=None):
+    text_indent = ''
+    ask_skip_empty = False
 
-  def dump_comment_block(cmt):
-   text_indent = ''
-   for i in range(0, cmt.indent):
-     text_indent = text_indent + ' '
+    for i in range(0, cmt.indent):
+      text_indent = text_indent + ' '
 
-   for lc in cmt.lines:
-     fhout.write( "%s/// %s\n" % (text_indent, lc) );
-   fhout.write('\n')
+    for lc in cmt.lines:
+      fhout.write('%s///' % text_indent )
+      lc = lc.rstrip()
+      if len(lc) != 0:
+        fhout.write(' ')
+        fhout.write(lc)
+      fhout.write('\n')
+
+    # Empty new line at the end of the comment
+    if cmt.append_empty:
+      fhout.write('\n')
+      ask_skip_empty = True
+
+    # Restore lines if possible
+    if restore:
+      for lr in restore:
+        fhout.write(lr)
+        fhout.write('\n')
+
+    # Tell the caller whether it should skip the next empty line found
+    return ask_skip_empty
 
 
   for line in fhin:
@@ -713,18 +992,59 @@ def rewrite_comments(fhin, fhout, comments):
     # Find current comment
     prev_comm = comm
     comm = None
+    comm_list = []
     for c in comments:
       if c.has_comment(line_num):
         comm = c
+        comm_list.append(c)
+
+    if len(comm_list) > 1:
+
+      merged = True
+
+      if len(comm_list) == 2:
+        c1,c2 = comm_list
+        if isinstance(c1, Comment) and isinstance(c2, Comment):
+          c1.lines = c1.lines + c2.lines  # list merge
+          comm = c1
+          logging.debug('Two adjacent comments merged. Result: {%s}' % Colt(comm).cyan())
+        else:
+          merged = False
+      else:
+        merged = False
+
+      if merged == False:
+        logging.warning('Too many unmergeable comments on the same line (%d), picking the last one' % len(comm_list))
+        for c in comm_list:
+          logging.warning('>> %s' % c)
+          comm = c  # considering the last one
 
     if comm:
+
+      # First thing to check: are we in the same comment as before?
+      if comm is not prev_comm and \
+         isinstance(comm, Comment) and \
+         isinstance(prev_comm, Comment) and \
+         not isinstance(prev_comm, RemoveComment):
+
+        # We are NOT in the same comment as before, and this comment is dumpable
+
+        skip_empty = dump_comment_block(prev_comm, restore_lines)
+        in_comment = False
+        restore_lines = None
+        prev_comm = None  # we have just dumped it: pretend it never existed in this loop
+
+      #
+      # Check type of comment and react accordingly
+      #
 
       if isinstance(comm, MemberComment):
 
         # end comment block
         if in_comment:
-          dump_comment_block(prev_comm)
+          skip_empty = dump_comment_block(prev_comm, restore_lines)
           in_comment = False
+          restore_lines = None
 
         non_comment = line[ 0:comm.first_col-1 ]
 
@@ -777,28 +1097,48 @@ def rewrite_comments(fhin, fhout, comments):
       elif isinstance(comm, RemoveComment):
         # End comment block and skip this line
         if in_comment:
-          dump_comment_block(prev_comm)
+          skip_empty = dump_comment_block(prev_comm, restore_lines)
           in_comment = False
+          restore_lines = None
 
-      elif prev_comm is None:
+      elif restore_lines is None:
 
-        # Beginning of a new comment block of type Comment
+        # Beginning of a new comment block of type Comment or PrependComment
         in_comment = True
 
-        # Extract the non-comment part and print it if it exists
-        non_comment = line[ 0:comm.first_col-1 ].rstrip()
-        if non_comment != '':
-          fhout.write( non_comment + '\n' )
+        if isinstance(comm, PrependComment):
+          # Prepare array of lines to dump right after the comment
+          restore_lines = [ line.rstrip('\n') ]
+          logging.debug('Commencing lines to restore: {%s}' % Colt(restore_lines[0]).cyan())
+        else:
+          # Extract the non-comment part and print it if it exists
+          non_comment = line[ 0:comm.first_col-1 ].rstrip()
+          if non_comment != '':
+            fhout.write( non_comment + '\n' )
+
+      elif isinstance(comm, Comment):
+
+        if restore_lines is not None:
+          # From the 2nd line on of comment to prepend
+          restore_lines.append( line.rstrip('\n') )
+          logging.debug('Appending lines to restore. All lines: {%s}' % Colt(restore_lines).cyan())
+
+      else:
+        assert False, 'Unhandled parser state: line=%d comm={%s} prev_comm={%s}' % \
+          (line_num, comm, prev_comm)
 
     else:
+
+      # Not a comment line
 
       if in_comment:
 
         # We have just exited a comment block of type Comment
-        dump_comment_block(prev_comm)
+        skip_empty = dump_comment_block(prev_comm, restore_lines)
         in_comment = False
-        skip_empty = True
+        restore_lines = None
 
+      # Dump the non-comment line
       line_out = line.rstrip('\n')
       if skip_empty:
         skip_empty = False
@@ -806,6 +1146,16 @@ def rewrite_comments(fhin, fhout, comments):
           fhout.write( line_out + '\n' )
       else:
         fhout.write( line_out + '\n' )
+
+  # Is there some comment left here?
+  if restore_lines is not None:
+    dump_comment_block(comm, restore_lines)
+
+  # Is there some other comment beyond the last line?
+  for c in comments:
+    if c.has_comment(line_num+1):
+      dump_comment_block(c, None)
+      break
 
 
 ## The main function.

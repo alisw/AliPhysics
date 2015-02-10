@@ -1,21 +1,17 @@
-//
-// Make lookup of distortion TPC distortion +(ITS and TRD) 
-// Input: Residual histograms obtained in the AliTPCcalibTime
-
-// Residual histograms:  
-//   1. TPC-ITS  - entrance of the TPC  
-//   2. TPC-ITS  - at the vertex
-//   3. TPC-TRD  - outer wall of the TPC 
-
-// Histogram binning:
-//   1. Theta    - fP3
-//   2. Phi      - global phi at the entrance (case 1,2) and at the outer wall of TPC (case 3)
-//   3. snp(phi) - fP2 - local inclination angle at reference X 
-              
-// Output value:
-//   Mean residuals, rms and number of entries in each bing
-// 
-// 
+/// \file MakeLookup.C
+///
+/// Make lookup of distortion TPC distortion +(ITS and TRD)
+/// Input: Residual histograms obtained in the AliTPCcalibTime
+/// Residual histograms:
+///   1. TPC-ITS  - entrance of the TPC
+///   2. TPC-ITS  - at the vertex
+///   3. TPC-TRD  - outer wall of the TPC
+/// Histogram binning:
+///   1. Theta    - fP3
+///   2. Phi      - global phi at the entrance (case 1,2) and at the outer wall of TPC (case 3)
+///   3. snp(phi) - fP2 - local inclination angle at reference X
+/// Output value:
+///   Mean residuals, rms and number of entries in each bing
 
  
 /* 
@@ -94,10 +90,10 @@ void MakeLaserTree();
 void AddEffectiveCorrection(AliTPCComposedCorrection* comp);
 
 void MakeLookup(Int_t run, Int_t mode){
-  //
-  // make a lookup tree with mean values
-  // 5. make laser tree
-  // 4. 
+  /// make a lookup tree with mean values
+  /// 5. make laser tree
+  /// 4.
+
   gSystem->AddIncludePath("-I$ALICE_ROOT/STAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
@@ -158,10 +154,9 @@ void MakeLookup(Int_t run, Int_t mode){
 
 
 void MakeFits(Int_t run){
-  //
-  // Make the fits of distortion
-  //   store fit results and QA pictures in the file distortFit.root 
-  //
+  /// Make the fits of distortion
+  ///   store fit results and QA pictures in the file distortFit.root
+
   TCut cut="entries>50&&rms>0";
   TTreeSRedirector *pcstream = new TTreeSRedirector("distortFit.root");
   AliXRDPROOFtoolkit tool;
@@ -227,7 +222,8 @@ void MakeFits(Int_t run){
 
 
 void FitLookup(TChain *chainIn, const char *prefix, TVectorD &vecA, TVectorD &vecC, TVectorD& vecStatA, TVectorD &vecStatC,  TCut cut, TObjArray *picArray){ 
-  //  TCut cut="entries>100&&rms>0";
+  ///  TCut cut="entries>100&&rms>0";
+
   vecStatA.ResizeTo(6);
   vecStatC.ResizeTo(6);
   vecA.ResizeTo(10);
@@ -313,9 +309,8 @@ void FitLookup(TChain *chainIn, const char *prefix, TVectorD &vecA, TVectorD &ve
 
 
 void DrawDistortionDy(TCut cutUser, Double_t ymin, Double_t ymax){
-  //
-  //
-  //
+  ///
+
   TFile fplus("meanBplus.root");
   TFile fminus("meanBminus.root");
   TTree * titsDyPlus=  (TTree*)fplus.Get("ITSdy");
@@ -459,12 +454,9 @@ void DrawDistortionDy(TCut cutUser, Double_t ymin, Double_t ymax){
 
 
 void MakeFitTree(){
-  //
-  // 1. Initialize ocdb e.g 
-  //     .x $ALICE_ROOT/ANALYSIS/CalibMacros/Pass0/ConfigCalibTrain.C(114972,)  
-  //     .x $ALICE_ROOT/ANALYSIS/CalibMacros/Pass0/ConfigCalibTrain.C(114972,"local:///lustre/alice/alien/alice/data/2010/OCDB")
-  //
-  //
+  /// 1. Initialize ocdb e.g
+  ///     .x $ALICE_ROOT/ANALYSIS/CalibMacros/Pass0/ConfigCalibTrain.C(114972,)
+  ///     .x $ALICE_ROOT/ANALYSIS/CalibMacros/Pass0/ConfigCalibTrain.C(114972,"local:///lustre/alice/alien/alice/data/2010/OCDB")
 
   AliTPCComposedCorrection *cc= MakeComposedCorrection();
   TObjArray * corr = (TObjArray*)(cc->GetCorrections());
@@ -566,11 +558,9 @@ void MakeGlobalFit(){
 
 
 void MakeGlobalFitRelative(Int_t highFrequency=0){
-  //
-  // Make a global fit of ExB
-  // To get rid of the misalignment errors -
-  //   Use relative change of deltas for 2 different filed settings
-  //    
+  /// Make a global fit of ExB
+  /// To get rid of the misalignment errors -
+  ///   Use relative change of deltas for 2 different filed settings
 
   AliXRDPROOFtoolkit tool;
   //  TChain *chain         = tool.MakeChain("distortion.txt","fit",0,100000);
@@ -771,9 +761,8 @@ void DrawDistortionMaps(const char *fname){
 
 
 TCanvas * DrawDistortionMaps(TTree * treedy, TTree * treedsnp, TTree* treed1pt, const char * name, const char *title){
-  //
-  //
-  //
+  ///
+
   TH1::AddDirectory(0);
   TCanvas *cdist = new TCanvas(name,name,1200,800); 
   cdist->Divide(3,2);
@@ -841,7 +830,8 @@ TCanvas * DrawDistortionMaps(TTree * treedy, TTree * treedsnp, TTree* treed1pt, 
 
 AliTPCComposedCorrection * MakeComposedCorrection(){
 
-  //
+  ///
+
   Double_t bzField=AliTrackerBase::GetBz();    
   AliMagF* magF= (AliMagF*)(TGeoGlobalMagField::Instance()->GetField());
   Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
@@ -914,9 +904,8 @@ AliTPCComposedCorrection * MakeComposedCorrection(){
 
 
 void AddEffectiveCorrection(AliTPCComposedCorrection* comp){
-  //
-  //
-  //
+  ///
+
   TMatrixD polA(18,4);
   TMatrixD polC(18,4);
   TMatrixD valA(18,1);
@@ -962,9 +951,8 @@ void AddEffectiveCorrection(AliTPCComposedCorrection* comp){
 
 
 void MakeLaserTree(){
-  //
-  //
-  //
+  ///
+
   AliTPCComposedCorrection *cc= MakeComposedCorrection();
   TObjArray * corr = (TObjArray*)(cc->GetCorrections());
   //  corr->AddLast(cc);

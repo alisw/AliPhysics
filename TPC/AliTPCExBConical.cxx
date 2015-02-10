@@ -14,16 +14,16 @@
  **************************************************************************/
 
 /// \class AliTPCExBConical
-/// 
+///
 /// Calculates the space point distortions due to the conical shape of ALICE TPC.
-/// 
+///
 /// Becasue of mechanical deformation ALICE TPC, chambers are misaligned in z direction
 /// TPC has roughly conical shape
-/// 
+///
 /// For the moment ONLY efective correction used - NOT EDGE EFFECT calcualted
-/// 
+///
 /// The class allows "effective Omega Tau" corrections.
-/// 
+///
 /// Example usage:
 ///
 /// ~~~{.cxx}
@@ -33,7 +33,7 @@
 /// // plot dRPhi distortions ...
 /// conical.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");
 /// ~~~
-/// 
+///
 /// \author Marian Ivanov, Jim Thomas, Magnus Mager, Stefan Rossegger
 /// \date 02/05/2010
 
@@ -46,7 +46,9 @@
 #include "TMath.h"
 #include "AliTPCROC.h"
 #include "AliTPCExBConical.h"
+/// \cond CLASSIMP
 ClassImp(AliTPCExBConical)
+/// \endcond
 
 AliTPCExBConical::AliTPCExBConical()
   : AliTPCCorrection("exb_conical","ExB conical"),

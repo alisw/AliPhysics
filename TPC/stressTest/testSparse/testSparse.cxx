@@ -1,30 +1,30 @@
-/*
-   Test to check THnSparse - Layout example for TPC calibration
-   
-   Tests categories:
-   1. CPU and memory consumption - using AliSysInfo class
-   2. Filling, reading and merging
-   3. Correctness of filling, and merging
+/// \class testSparse
+/// \brief Test to check THnSparse - Layout example for TPC calibration
+/// 
+/// Tests categories:
+/// 1. CPU and memory consumption - using AliSysInfo class
+/// 2. Filling, reading and merging
+/// 3. Correctness of filling, and merging
+/// 
+/// 
+/// Functions:
+/// 
+/// 1. TestSparse(niter,nsize) - 
+///          Fill the THnSparse in niter chunks
+///          for each chunks nsize entries filled
+///          The THnSparse is saved after each chunk
+///          Current momory and CPU information dumped to the text file
+/// 2. testRead(niter)
+///          Read THnSparses from disk
+///          Current momory and CPU information dumped to the text file
+/// 
+/// 3. testMerge(niter)
+///          Read THnSpares from disk
+///          Merge histograms
+///          Current momory and CPU information dumped to the text file            
 
 
-   Functions:
-   
-   1. TestSparse(niter,nsize) - 
-            Fill the THnSparse in niter chunks
-            for each chunks nsize entries filled
-            The THnSparse is saved after each chunk
-            Current momory and CPU information dumped to the text file
-   2. testRead(niter)
-            Read THnSparses from disk
-            Current momory and CPU information dumped to the text file
 
-   3. testMerge(niter)
-            Read THnSpares from disk
-            Merge histograms
-            Current momory and CPU information dumped to the text file            
-
-
-*/
 
 #include "THnSparse.h"
 #include "TRandom.h"
@@ -36,9 +36,8 @@
 #include "TMath.h"
 
 void testSparse(Int_t niter, Int_t nsize){
-  //
-  //
-  //
+  ///
+
   Double_t xminTrack[9], xmaxTrack[9];
   Int_t    binsTrack[9];
   TString  axisName[9],axisTitle[9];
@@ -99,9 +98,8 @@ void testSparse(Int_t niter, Int_t nsize){
 }
 
 void testRead(Int_t nmax=100000){
-  //
-  // test read of THnSparse
-  //
+  /// test read of THnSparse
+
   AliSysInfo::AddStamp("start", 0,0,0);
   for (Int_t i=0; i<nmax; i++){
     TFile f(Form("testSparse_%d.root",i));
@@ -126,9 +124,8 @@ void testRead(Int_t nmax=100000){
 }
 
 void testMerge(Int_t nmax,Int_t nmerge=1){
-  //
-  // test read of THnSparse
-  //
+  /// test read of THnSparse
+
   THnSparse * hisM=0;
   THnSparse * hisA[nmerge];
   AliSysInfo::AddStamp("start", 0,0,0);
@@ -164,9 +161,8 @@ void testMerge(Int_t nmax,Int_t nmerge=1){
 
 
 void DrawDiff(){
-  //
-  //
-  //
+  ///
+
   TTree * treeNew =AliSysInfo::MakeTree("testSparseNew/syswatch.log");
   TTree * treeOld =AliSysInfo::MakeTree("testSparse/syswatch.log");
   treeNew->SetMarkerStyle(25);

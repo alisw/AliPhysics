@@ -1,11 +1,14 @@
-/*
-  .x ~/rootlogon.C
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib");
-  
-  .L $ALICE_ROOT/TPC/CalibMacros/CalibKalman.C+
-  
-*/
+/// \file CalibKalman.C
+///
+/// ~~~
+/// .x ~/rootlogon.C
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib");
+/// 
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibKalman.C+
+/// ~~~
+
+
 
 #include "TTreeStream.h"
 #include "TFile.h"

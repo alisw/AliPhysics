@@ -1,37 +1,34 @@
-/*
-//
-// 0. Load libraries
-//
-gSystem->Load("libSTAT");
-.x ~/NimStyle.C
-.L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterFast.cxx+
-.L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterAnalysis.C
-//
-// 1. load tree
-//
-LoadTree();
-LoadTrack();
-//
-//
-//
+/// \file AliTPCclusterAnalysis.C
+///
+/// 0. Load libraries
+/// ~~~
+/// gSystem->Load("libSTAT");
+/// .x ~/NimStyle.C
+/// .L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterFast.cxx+
+/// .L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterAnalysis.C
+/// ~~~
+///
+/// 1. load tree
+///
+/// ~~~
+/// LoadTree();
+/// LoadTrack();
+/// ~~~
 
-*/
 TChain * treeCluster=0;
 TChain * treeTrack=0;
 AliTPCfastTrack * track =0;
 
 void LoadTree(const char* fname="cluterSimul.root"){
-  //
-  //
-  //
+  ///
+
   treeCluster = new TChain("simul","simul");
   treeCluster->AddFile(fname);
 }
 
 void LoadTrack(const char* fname="trackerSimul.root"){
-  //
-  //
-  //
+  ///
+
   treeTrack = new TChain("simulTrack","simulTrack");
   treeTrack->AddFile(fname);
   TFile f(fname);
@@ -44,10 +41,8 @@ void LoadTrack(const char* fname="trackerSimul.root"){
 
 
 void MakeQNormalization(Int_t maxPoints){
-  //
-  // Normalize Q to the diffusion and angular effect 
-  //
-  
+  /// Normalize Q to the diffusion and angular effect
+
   TStatToolkit toolkit;
   Double_t chi2;
   TVectorD fitParam;

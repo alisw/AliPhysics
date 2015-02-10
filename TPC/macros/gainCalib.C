@@ -1,17 +1,16 @@
-/*
- Small macro to show perforamance of the gain calibration
- tHe list of the  files with tpc calib tracks is supposed to be in cosmic.txt file 
- Supposing the 
-
-
- gSystem->Load("libSTAT")
- .x ~/rootlogon.C
- .L $ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+
- AliXRDPROOFtoolkit tool;
- //gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient");
- //TProof * proof = TProof::Open("miranov@lxgrid2.gsi.de");
-
-*/
+/// \file gainCalib.C
+/// \brief Small macro to show perforamance of the gain calibration
+///
+/// The list of the  files with tpc calib tracks is supposed to be in cosmic.txt file 
+///
+/// ~~~{.cpp}
+/// gSystem->Load("libSTAT")
+/// .x ~/rootlogon.C
+/// .L $ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+
+/// AliXRDPROOFtoolkit tool;
+/// gSystem->Load("/usr/local/grid/XRootd/GSI/lib/libXrdClient");
+/// TProof * proof = TProof::Open("miranov@lxgrid2.gsi.de");
+/// ~~~
 
 TChain * chain = 0;
 TChain * chaing = 0;
@@ -92,9 +91,8 @@ void MakePlotsQS(){
   
 
 void MakePlotsTY(){
-  //
-  //
-  //
+  ///
+
   chain->Draw("dedxQ.fElements[2]:ty>>hisQ_ty(20,0,1.5)","IPad==0&&P>1","prof*",1000000);
   chain->Draw("dedxQ.fElements[2]/corrg:ty>>hisQ_ty_corrg(20,0,1.5)","IPad==0&&P>1","prof*",1000000);
   chain->Draw("dedxQ.fElements[2]/AliTPCClusterParam::SQnorm(0,0,dr,ty,tz):ty>>hisQ_ty_corrcal(20,0,1.5)","IPad==0&&P>1","prof*",1000000);
@@ -121,9 +119,8 @@ void MakePlotsTY(){
 
 
 void MakePlotsTZ(){
-  //
-  //
-  //
+  ///
+
   chain->Draw("dedxQ.fElements[2]:tz>>hisQ_tz(20,0,1.5)","IPad==0&&P>1","prof*",1000000);
   chain->Draw("dedxQ.fElements[2]/corrg:tz>>hisQ_tz_corrg(20,0,1.5)","IPad==0&&P>1","prof*",1000000);
   chain->Draw("dedxQ.fElements[2]/AliTPCClusterParam::SQnorm(0,0,dr,ty,tz):tz>>hisQ_tz_corrcal(20,0,1.5)","IPad==0&&P>1","prof*",1000000);
@@ -149,9 +146,8 @@ void MakePlotsTZ(){
 }
 
 void MakePlotsDR(){
-  //
-  //
-  //
+  ///
+
   chain->Draw("dedxQ.fElements[2]:dr>>hisQ_dr(20,0,1.)","IPad==0&&P>1","prof*",1000000);
   chain->Draw("dedxQ.fElements[2]/corrg:dr>>hisQ_dr_corrg(20,0,1.)","IPad==0&&P>1","prof*",1000000);
   chain->Draw("dedxQ.fElements[2]/AliTPCClusterParam::SQnorm(0,0,dr,ty,dr):dr>>hisQ_dr_corrcal(20,0,1.)","IPad==0&&P>1","prof*",1000000);
@@ -179,10 +175,8 @@ void MakePlotsDR(){
 
 
 void MakePlotsQ(){
-  //
-  //
-  //
-  //
+  ///
+
   chaing->Draw("Track.fdEdx>>his0dedx(100,0,200)","Track.fN>100&&abs(Track.P()-15)<3","",20000);
   chaing->Draw("Track.CookdEdxNorm(0.02,0.6,0,0,160)/3.71>>his0dedxnormQ(100,0,200)","Track.fN>100&&abs(Track.P()-15)<3","",20000);
   TH1F * his0dedx = gROOT->FindObject("his0dedx");

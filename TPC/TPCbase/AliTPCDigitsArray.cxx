@@ -15,25 +15,21 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Time Projection Chamber clusters objects                                //
-//
-//  Origin: Marian Ivanov , GSI Darmstadt
-//                                                                           //
-//                                                                           //
-//                                                                          //
-///////////////////////////////////////////////////////////////////////////////
-#include "AliTPCParam.h" 
+/// \class AliTPCDigitsArray
+/// \brief Time Projection Chamber clusters objects
+///
+/// \author Marian Ivanov , GSI Darmstadt
+
+#include "AliTPCParam.h"
 #include "AliTPCPRF2D.h"
 
 #include "TObjArray.h"
-#include "AliSegmentID.h" 
-#include "AliSegmentArray.h" 
+#include "AliSegmentID.h"
+#include "AliSegmentArray.h"
 
 #include "AliDigits.h"
 #include "AliSimDigits.h"
-#include "AliDigitsArray.h" 
+#include "AliDigitsArray.h"
 #include "AliTPCDigitsArray.h"
 #include <TDirectory.h>
 
@@ -41,7 +37,9 @@
 
 //_____________________________________________________________________________
 
-ClassImp(AliTPCDigitsArray) 
+/// \cond CLASSIMP
+ClassImp(AliTPCDigitsArray)
+/// \endcond
 
 AliTPCDigitsArray::AliTPCDigitsArray(Bool_t sim)
                   :AliDigitsArray(),
@@ -58,32 +56,32 @@ AliTPCDigitsArray::AliTPCDigitsArray(Bool_t sim)
     SetClass("AliDigits");
   fParam = 0;
   //  fPRF   = 0;
-  //fRF    = 0;  
+  //fRF    = 0;
   fCompression = 1;
   fTrackLevel = 3;
 }
 
 AliTPCDigitsArray::~AliTPCDigitsArray()
 {
-  //
-  
+  ///
+
   //
 }
 
 AliDigits *  AliTPCDigitsArray::CreateRow(Int_t sector, Int_t row)
 {
-  //
-  //create digits row  
-  //
-  //if row just exist - delete it
+  /// create digits row
+  ///
+  /// if row just exist - delete it
+
   AliTPCParam * param = (AliTPCParam*)fParam;
-  Int_t index = param->GetIndex(sector,row);  
+  Int_t index = param->GetIndex(sector,row);
   AliDigits * dig = (AliDigits *)(*this)[index];
   if (dig !=0) delete dig;
 
   dig = (AliDigits *) AddSegment(index);
   if (dig == 0) return 0;
-  dig->Allocate(param->GetMaxTBin(),param->GetNPads(sector,row));  
+  dig->Allocate(param->GetMaxTBin(),param->GetNPads(sector,row));
   if (fBSim == kTRUE) ((AliSimDigits*) dig)->AllocateTrack(fTrackLevel);
   return dig;
 }
@@ -91,32 +89,29 @@ AliDigits *  AliTPCDigitsArray::CreateRow(Int_t sector, Int_t row)
 
 AliDigits * AliTPCDigitsArray::GetRow(Int_t sector,Int_t row)
 {
-  //
-  //return clusters ((AliTPCDigitsRow *) per given sector and padrow
-  //
+  /// return clusters ((AliTPCDigitsRow *) per given sector and padrow
+
   if (fParam==0) return 0;
-  Int_t index = ((AliTPCParam*)fParam)->GetIndex(sector,row);  
+  Int_t index = ((AliTPCParam*)fParam)->GetIndex(sector,row);
   return (AliDigits *)(*this)[index];
 }
 
 AliDigits * AliTPCDigitsArray::LoadRow(Int_t sector,Int_t row)
 {
-  //
-  //return clusters ((AliTPCDigitsRow *) per given sector and padrow
-  //
+  /// return clusters ((AliTPCDigitsRow *) per given sector and padrow
+
   if (fParam==0) return 0;
-  Int_t index = ((AliTPCParam*)fParam)->GetIndex(sector,row);  
+  Int_t index = ((AliTPCParam*)fParam)->GetIndex(sector,row);
   return (AliDigits *)LoadSegment(index);
 }
 
 Bool_t  AliTPCDigitsArray::StoreRow(Int_t sector,Int_t row)
 {
-  //
-  //return clusters ((AliTPCDigitsRow *) per given sector and padrow
-  //
+  /// return clusters ((AliTPCDigitsRow *) per given sector and padrow
+
   AliTPCParam * param = (AliTPCParam*)fParam;
   if (fParam==0) return 0;
-  Int_t index = param->GetIndex(sector,row);  
+  Int_t index = param->GetIndex(sector,row);
   ( (AliDigits *)At(index))->CompresBuffer(fCompression,param->GetZeroSup());
   if (fBSim == kTRUE) ( (AliSimDigits *)At(index))->CompresTrackBuffer(1);
   StoreSegment(index);
@@ -125,11 +120,10 @@ Bool_t  AliTPCDigitsArray::StoreRow(Int_t sector,Int_t row)
 
 Bool_t  AliTPCDigitsArray::ClearRow(Int_t sector,Int_t row)
 {
-  //
-  //return clusters ((AliTPCDigitsRow *) per given sector and padrow
-  //
+  /// return clusters ((AliTPCDigitsRow *) per given sector and padrow
+
   if (fParam==0) return 0;
-  Int_t index = ((AliTPCParam*)fParam)->GetIndex(sector,row);  
+  Int_t index = ((AliTPCParam*)fParam)->GetIndex(sector,row);
   ClearSegment(index);
   return kTRUE;
 }
@@ -138,9 +132,8 @@ Bool_t  AliTPCDigitsArray::ClearRow(Int_t sector,Int_t row)
 
 Bool_t AliTPCDigitsArray::Setup(AliDetectorParam *param)
 {
-  //
-  //setup  function to adjust array parameters
-  //
+  /// setup  function to adjust array parameters
+
   if (param==0) return kFALSE;
   if (fParam !=0) delete fParam;
   //  fParam = new AliTPCParam((AliTPCParam&)(*param));
@@ -150,9 +143,8 @@ Bool_t AliTPCDigitsArray::Setup(AliDetectorParam *param)
 
 Bool_t AliTPCDigitsArray::Update()
 {
-  //
-  //setup  function to adjust array parameters
-  //
+  /// setup  function to adjust array parameters
+
   if (fParam ==0 ) return kFALSE;
   if (fTree!=0) return MakeDictionary( ((AliTPCParam*)fParam)->GetNRowsTotal()) ;
   ((AliTPCParam*)fParam)->Update();

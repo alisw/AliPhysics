@@ -7,9 +7,8 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
   
 
-  //
-  // remove Altro warnings
-  //
+  /// remove Altro warnings
+
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
@@ -145,8 +144,8 @@ Int_t FindKrClustersRaw(const char *fileName="data.root"){
 
 
 Int_t FindKrClusterCheck(const char *fileName){
-  //
-  //
+  ///
+
   gSystem->Load("$ROOTSYS/lib/libGui");
   gSystem->Load("$ROOTSYS/lib/libTree");
   gSystem->Load("$MEMSTAT/libMemStat");

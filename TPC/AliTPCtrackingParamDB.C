@@ -1,3 +1,5 @@
+/// \file AliTPCtrackingParamDB.C
+
 /****************************************************************************
  * This macro is used to create a DataBase for the TPC tracking             *
  * parameterization.                                                        * 
@@ -55,9 +57,7 @@ void BuildDataBase(const Int_t coll,const Double_t Bfield);
 
 //_____________________________________________________________________________
 Int_t TPCParamTracks(const Int_t coll,Int_t firstEvent,Int_t lastEvent) {
-//
-// Ordinary TPC tracking parameterization
-//
+/// Ordinary TPC tracking parameterization
 
    /**** Initialization of the NewIO *******/
 
@@ -146,9 +146,8 @@ Int_t TPCParamTracks(const Int_t coll,Int_t firstEvent,Int_t lastEvent) {
 }
 //_____________________________________________________________________________
 void CreateAllGeantTracks(const Int_t coll,Int_t nev) {
-//
-// Get all tracks at TPC 1st hit w/o selection and smearing
-//
+/// Get all tracks at TPC 1st hit w/o selection and smearing
+
   cerr<<"\n*******************************************************************\n";
 
   const Char_t *name="CreateAllGeantTracks";
@@ -174,9 +173,8 @@ void CreateAllGeantTracks(const Int_t coll,Int_t nev) {
 }
 //_____________________________________________________________________________
 void TrackCompare(const Int_t coll,const Double_t Bfield,Int_t n) {
-//
-// Compare Kalman tracks with tracks at TPC 1st hit
-//
+/// Compare Kalman tracks with tracks at TPC 1st hit
+
   cerr<<"\n*******************************************************************\n";
 
   const Char_t *name="TrackCompare";
@@ -193,9 +191,8 @@ void TrackCompare(const Int_t coll,const Double_t Bfield,Int_t n) {
 }
 //_____________________________________________________________________________
 void BuildDataBase(const Int_t coll,const Double_t Bfield) {
-//
-//
-//
+///
+
   cerr<<"\n*******************************************************************\n";
 
   AliTPCtrackerParam tracker(coll,Bfield);

@@ -1,14 +1,10 @@
-/*
-  Create refernce map
-
-*/
+/// \file CreateRefMap.C
+/// Create reference map
 
 void CreateRefMap(){
-  // aliroot -b -q $ALICE_ROOT/TPC/CalibMacros/CreateRefMap.C
-  //
-  //cdb storage - output stored in the working directory
-  //
+  /// aliroot -b -q $ALICE_ROOT/TPC/CalibMacros/CreateRefMap.C
 
+  // cdb storage - output stored in the working directory
   TString storage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   //set reference run numbers for the various ocdb entries
   Int_t pedestalRun=121642;

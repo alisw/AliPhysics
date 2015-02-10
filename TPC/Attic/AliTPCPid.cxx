@@ -13,11 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/// \class AliTPCPid
 
 #include "AliTPCPid.h"
 #include "TMath.h"
 //#include <TVector.h>
+
 #include <TF1.h>
 #include <TClonesArray.h>
 //#include "AliITSIOTrack.h"
@@ -27,7 +28,9 @@
 
 using std::cout;
 using std::endl;
+/// \cond CLASSIMP
 ClassImp(AliTPCPid)
+/// \endcond
 // Correction 13.01.2003 Z.S.,Dubna
 //            22.01.2003
 //------------------------------------------------------------
@@ -59,9 +62,8 @@ AliTPCPid::AliTPCPid( const AliTPCPid& r):TObject(r),
 }
 Float_t AliTPCPid::Qcorr(Float_t xc)
 {
-  //
-  // charge correction
-  //
+  /// charge correction
+
     assert(0);
   Float_t fcorr;
   fcorr=( 0.766 +0.9692*xc -1.267*xc*xc )*( 1.-TMath::Exp(-xc*64.75) );
@@ -71,9 +73,8 @@ return fqtot/fcorr;
 //__________________________________________________________
 AliTPCPid & AliTPCPid::operator =(const AliTPCPid & param)
 {
-  //
-  // assignment operator - dummy
-  //
+  /// assignment operator - dummy
+
   if(this!=&param){
      fSigmin=param.fSigmin;
   }
@@ -82,9 +83,8 @@ AliTPCPid & AliTPCPid::operator =(const AliTPCPid & param)
 //-----------------------------------------------------------
 Float_t AliTPCPid::Qtrm(Int_t track) const
 {
-  //
-  // dummy comment (Boris!!!)
-  //
+  /// dummy comment (Boris!!!)
+
     TVector q(*( this->GetVec(track)  ));
     Int_t ml=(Int_t)q(0);
     if(ml<1)return 0.;
@@ -112,7 +112,8 @@ Float_t AliTPCPid::Qtrm(Int_t track) const
 
 Float_t AliTPCPid::Qtrm(Float_t qarr[6],Int_t narr)
 {
-  //..................
+  /// ..................
+
   Float_t q[6],qm,qmin;
   Int_t nl,ml;
   if(narr>0&&narr<7){ml=narr;}else{return 0;};
@@ -137,9 +138,8 @@ Float_t AliTPCPid::Qtrm(Float_t qarr[6],Int_t narr)
 
 Int_t	AliTPCPid::Wpik(Int_t nc,Float_t q)
 {
-  //
-  //  pi-k
-  //
+  ///  pi-k
+
     Float_t qmpi,qmk,sigpi,sigk,dpi,dk,ppi,pk;
     Float_t appi,apk;
     qmpi =fcut[nc][1];
@@ -172,9 +172,8 @@ Int_t	AliTPCPid::Wpik(Int_t nc,Float_t q)
 //-----------------------------------------------------------
 Int_t	AliTPCPid::Wpikp(Int_t nc,Float_t q)
 {
-  //
-  // pi-k-p
-  //
+  /// pi-k-p
+
    Float_t qmpi,qmk,qmp,sigpi,sigk,sigp,ppi,pk,pp;
    Float_t appi,apk,app;
 
@@ -211,17 +210,15 @@ cout<<" ppi,pk,pp="<<ppi<<"  "<<pk<<"  "<<pp<<endl;
 //-----------------------------------------------------------
 Int_t	AliTPCPid::GetPcode(TClonesArray* /*rps*/,Float_t /*pm*/) const
 {
-  //
-  // dummy ???
-  //
+  /// dummy ???
+
     return 0;    
 }
 //-----------------------------------------------------------
 Int_t   AliTPCPid::GetPcode(AliTPCtrack *track)
 {
-  //
-  // get particle code
-  //
+  /// get particle code
+
       Double_t xk,par[5]; track->GetExternalParameters(xk,par);
       Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
       if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
@@ -260,9 +257,8 @@ return pcode?pcode:211;
 //-----------------------------------------------------------
 Int_t	AliTPCPid::GetPcode(Float_t q,Float_t pm)
 {
-  //
-  // get particle code
-  //
+  /// get particle code
+
     fWpi=fWk=fWp=0.;     fPcode=0;
 //1)---------------------- 0-120 MeV/c --------------
     if ( pm<=fcut[1][0] )
@@ -324,9 +320,8 @@ Int_t	AliTPCPid::GetPcode(Float_t q,Float_t pm)
 void	AliTPCPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
 			Float_t klo,Float_t khi,Float_t plo,Float_t phi)
 {
-  //
-  // set cuts
-  //
+  /// set cuts
+
     fcut[n][0]=pm;
     fcut[n][1]=pilo;
     fcut[n][2]=pihi;
@@ -339,27 +334,24 @@ void	AliTPCPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
 //------------------------------------------------------------
 void AliTPCPid::SetVec(Int_t ntrack,TVector info) const
 {
-  //
-  // new track vector
-  //
+  /// new track vector
+
 TClonesArray& arr=*trs;
     new( arr[ntrack] ) TVector(info);
 }
 //-----------------------------------------------------------
 TVector* AliTPCPid::GetVec(Int_t ntrack) const
 {
-  //
-  // get track vector
-  //
+  /// get track vector
+
 TClonesArray& arr=*trs;
     return (TVector*)arr[ntrack];
 }
 //-----------------------------------------------------------
 void AliTPCPid::SetEdep(Int_t track,Float_t Edep)
 {
-  //
-  // energy deposit
-  //
+  /// energy deposit
+
     TVector xx(0,11);
     if( ((TVector*)trs->At(track))->IsValid() )
 	{TVector yy( *((TVector*)trs->At(track)) );xx=yy; }
@@ -371,9 +363,8 @@ void AliTPCPid::SetEdep(Int_t track,Float_t Edep)
 //-----------------------------------------------------------
 void AliTPCPid::SetPmom(Int_t track,Float_t Pmom)
 {
-  //
-  // set part. momentum
-  //
+  /// set part. momentum
+
     TVector xx(0,11);
     if( ((TVector*)trs->At(track))->IsValid() )
 	{TVector yy( *((TVector*)trs->At(track)) );xx=yy; }
@@ -384,9 +375,8 @@ void AliTPCPid::SetPmom(Int_t track,Float_t Pmom)
 //-----------------------------------------------------------
 void AliTPCPid::SetPcod(Int_t track,Int_t partcode)
 {
-  //
-  // set part. code
-  //
+  /// set part. code
+
     TVector xx(0,11);
     if( ((TVector*)trs->At(track))->IsValid() )
 	{TVector yy( *((TVector*)trs->At(track)) );xx=yy; }
@@ -399,9 +389,8 @@ void AliTPCPid::SetPcod(Int_t track,Int_t partcode)
 //-----------------------------------------------------------
 void AliTPCPid::PrintPID(Int_t track)
 {
-  //
-  // control print
-  //
+  /// control print
+
 cout<<fmxtrs<<" tracks in AliITSPid obj."<<endl;
     if( ((TVector*)trs->At(track))->IsValid() )
 	{TVector xx( *((TVector*)trs->At(track)) );
@@ -413,9 +402,8 @@ cout<<fmxtrs<<" tracks in AliITSPid obj."<<endl;
 //-----------------------------------------------------------
 void AliTPCPid::Tab(void)
 {
-  //
-  // fill table
-  //
+  /// fill table
+
 if(trs->GetEntries()==0){cout<<"No entries in TAB"<<endl;return;}
 cout<<"------------------------------------------------------------------------"<<endl;
 cout<<"Nq"<<"   q1  "<<"   q2  "<<"   q3  "<<"   q4  "<<"   q5   "<<
@@ -457,9 +445,8 @@ for(Int_t i=0;i<trs->GetEntries();i++)
 }
 void AliTPCPid::Reset(void)
 {
-  //
-  // reset
-  //
+  /// reset
+
   for(Int_t i=0;i<trs->GetEntries();i++){
     TVector xx(0,11);
     TClonesArray &arr=*trs;

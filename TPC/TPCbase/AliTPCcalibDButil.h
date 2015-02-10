@@ -4,12 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class providing the calculation of derived quantities (mean,rms,fits,...) //
-//       of calibration entries                                              //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCcalibDButil
+/// \brief Class providing the calculation of derived quantities (mean,rms,fits,...) of calibration entries
 
 #include <TObject.h>
 #include <TArrayI.h>
@@ -185,67 +181,67 @@ public:
   static  TTree* ConnectCalPadTrees(TString baseDir, TString pattern,  TTree *tMain, Bool_t checkAliases);
 
 private:
-  AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
-  AliTPCCalPad  *fPadNoise;           //noise information
-  AliTPCCalPad  *fPedestals;          //pedestal information
-  AliTPCCalPad  *fPulserTmean;        //pulser mean time information 
-  AliTPCCalPad  *fPulserTrms;         //pulser rms time information
-  AliTPCCalPad  *fPulserQmean;        //pulser mean q information
-  AliTPCCalPad  *fPulserOutlier;      //pulser outlier map
-  AliTPCCalPad  *fCETmean;            //central electrode mean time information
-  AliTPCCalPad  *fCETrms;             //central electrode rms time information
-  AliTPCCalPad  *fCEQmean;            //central electrode mean q information
-  AliTPCCalPad  *fALTROMasked;        //ALTRO masked channels information
+  AliTPCcalibDB *fCalibDB;            ///< pointer to calibDB object
+  AliTPCCalPad  *fPadNoise;           ///< noise information
+  AliTPCCalPad  *fPedestals;          ///< pedestal information
+  AliTPCCalPad  *fPulserTmean;        ///< pulser mean time information
+  AliTPCCalPad  *fPulserTrms;         ///< pulser rms time information
+  AliTPCCalPad  *fPulserQmean;        ///< pulser mean q information
+  AliTPCCalPad  *fPulserOutlier;      ///< pulser outlier map
+  AliTPCCalPad  *fCETmean;            ///< central electrode mean time information
+  AliTPCCalPad  *fCETrms;             ///< central electrode rms time information
+  AliTPCCalPad  *fCEQmean;            ///< central electrode mean q information
+  AliTPCCalPad  *fALTROMasked;        ///< ALTRO masked channels information
   //
-  AliTPCCalibRaw *fCalibRaw;          //raw calibration object
+  AliTPCCalibRaw *fCalibRaw;          ///< raw calibration object
   //
-  AliTPCdataQA   *fDataQA;            //data qa
+  AliTPCdataQA   *fDataQA;            ///< data qa
   //reference data
-  TMap *fRefMap;                        // latest map to reference information
-  TMap *fCurrentRefMap;                 // reference data map of entries currently loaded
-  TString fRefValidity;                 // validity range of reference data
+  TMap *fRefMap;                        ///< latest map to reference information
+  TMap *fCurrentRefMap;                 ///< reference data map of entries currently loaded
+  TString fRefValidity;                 ///< validity range of reference data
   //  
-  AliTPCCalPad  *fRefPadNoise;           //Reference noise information
-  AliTPCCalPad  *fRefPedestals;          //Reference pedestal information
-  AliTPCCalPad  *fRefPedestalMasked;     //Reference masked channels in pedestal run
-  AliTPCCalPad  *fRefPulserTmean;        //Reference pulser mean time information
-  AliTPCCalPad  *fRefPulserTrms;         //Reference pulser rms time information
-  AliTPCCalPad  *fRefPulserQmean;        //Reference pulser mean q information
-  AliTPCCalPad  *fRefPulserOutlier;      //Reference pulser outlier map
-  AliTPCCalPad  *fRefPulserMasked;       //Reference masked channels in pulser run
-  AliTPCCalPad  *fRefCETmean;            //Reference central electrode mean time information
-  AliTPCCalPad  *fRefCETrms;             //Reference central electrode rms time information
-  AliTPCCalPad  *fRefCEQmean;            //Reference central electrode mean q information
-  AliTPCCalPad  *fRefCEMasked;           //Reference masked channels in laser run
-  AliTPCCalPad  *fRefALTROFPED;          //Reference fixed pedestal value
-  AliTPCCalPad  *fRefALTROZsThr;         //Reference zero suppression threshol
-  AliTPCCalPad  *fRefALTROAcqStart;      //Reference accquistion start time bin
-  AliTPCCalPad  *fRefALTROAcqStop;       //Reference accquistion stop time bin
-  AliTPCCalPad  *fRefALTROMasked;        //Reference ALTRO masked channels information
+  AliTPCCalPad  *fRefPadNoise;           ///< Reference noise information
+  AliTPCCalPad  *fRefPedestals;          ///< Reference pedestal information
+  AliTPCCalPad  *fRefPedestalMasked;     ///< Reference masked channels in pedestal run
+  AliTPCCalPad  *fRefPulserTmean;        ///< Reference pulser mean time information
+  AliTPCCalPad  *fRefPulserTrms;         ///< Reference pulser rms time information
+  AliTPCCalPad  *fRefPulserQmean;        ///< Reference pulser mean q information
+  AliTPCCalPad  *fRefPulserOutlier;      ///< Reference pulser outlier map
+  AliTPCCalPad  *fRefPulserMasked;       ///< Reference masked channels in pulser run
+  AliTPCCalPad  *fRefCETmean;            ///< Reference central electrode mean time information
+  AliTPCCalPad  *fRefCETrms;             ///< Reference central electrode rms time information
+  AliTPCCalPad  *fRefCEQmean;            ///< Reference central electrode mean q information
+  AliTPCCalPad  *fRefCEMasked;           ///< Reference masked channels in laser run
+  AliTPCCalPad  *fRefALTROFPED;          ///< Reference fixed pedestal value
+  AliTPCCalPad  *fRefALTROZsThr;         ///< Reference zero suppression threshol
+  AliTPCCalPad  *fRefALTROAcqStart;      ///< Reference accquistion start time bin
+  AliTPCCalPad  *fRefALTROAcqStop;       ///< Reference accquistion stop time bin
+  AliTPCCalPad  *fRefALTROMasked;        ///< Reference ALTRO masked channels information
   //
-  AliTPCCalibRaw *fRefCalibRaw;          //Reference raw calibration object
+  AliTPCCalibRaw *fRefCalibRaw;          ///< Reference raw calibration object
   //
-  AliTPCdataQA   *fRefDataQA;            //Reference data QA
+  AliTPCdataQA   *fRefDataQA;            ///< Reference data QA
   //
-  AliDCSSensorArray* fGoofieArray;    //Goofie Data
+  AliDCSSensorArray* fGoofieArray;    ///< Goofie Data
   //
-  AliTPCmapper  *fMapper;             //TPC mapping handler
-  Int_t fNpulserOutliers;             //number of outliers from Pulser calibration
+  AliTPCmapper  *fMapper;             ///< TPC mapping handler
+  Int_t fNpulserOutliers;             ///< number of outliers from Pulser calibration
   
-  Float_t fIrocTimeOffset;               //timing offset between IROC and OROC in timebins
-  Float_t fCETmaxLimitAbs;               //maximum variation in CE data before pads will be treated as outliers
-  Float_t fPulTmaxLimitAbs;              //maximum variation of Pulser Signals (time) before pads will be treated as outliers
-  Float_t fPulQmaxLimitAbs;              //maximum variation of Pulser Signals (charge) before pads will be treated as outliers
-  Float_t fPulQminLimit;                 //minimum charge value for Pulser Signals before pads will be treated as outliers
+  Float_t fIrocTimeOffset;               ///< timing offset between IROC and OROC in timebins
+  Float_t fCETmaxLimitAbs;               ///< maximum variation in CE data before pads will be treated as outliers
+  Float_t fPulTmaxLimitAbs;              ///< maximum variation of Pulser Signals (time) before pads will be treated as outliers
+  Float_t fPulQmaxLimitAbs;              ///< maximum variation of Pulser Signals (charge) before pads will be treated as outliers
+  Float_t fPulQminLimit;                 ///< minimum charge value for Pulser Signals before pads will be treated as outliers
 
   //
   // helpers to get the run number for given time stamps
   //
   // filters  
   
-  TArrayI fRuns;                         // run list with OCDB info
-  TArrayI fRunsStart;                    // start time for given run
-  TArrayI fRunsStop;                     // stop time for given run
+  TArrayI fRuns;                         ///< run list with OCDB info
+  TArrayI fRunsStart;                    ///< start time for given run
+  TArrayI fRunsStop;                     ///< stop time for given run
   
   AliTPCcalibDButil (const AliTPCcalibDButil& );
   AliTPCcalibDButil& operator= (const AliTPCcalibDButil& );
@@ -254,7 +250,9 @@ private:
   static Double_t  GetVDriftTPCLaserTracksCommon(Double_t &dist, Int_t timeStamp, Double_t deltaT, Int_t side, TObjArray * const array);
   
   
+  /// \cond CLASSIMP
   ClassDef(AliTPCcalibDButil,0)
+  /// \endcond
 };
 
 

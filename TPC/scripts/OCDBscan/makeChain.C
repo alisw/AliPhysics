@@ -1,7 +1,10 @@
-// Make a summary tree
-// Use guiTime with summary file  - it is faster as with chain
-// guiTime calibTimeSummary.root 
-
+/// \file makeChain.C
+/// \brief Make a summary tree
+///
+/// Use guiTime with summary file  - it is faster as with chain
+/// ~~~
+/// guiTime calibTimeSummary.root
+/// ~~~
 
 void MakeChain(const char *prefix){
   gSystem->Exec(Form("find %s |grep calibTree | grep root > calib.list",prefix));

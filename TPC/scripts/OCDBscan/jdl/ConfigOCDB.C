@@ -1,14 +1,15 @@
-//
-//
-// Macro to Setup OCDB for calibration scan
-// By default - all entries taken from the AliEn OCDB storage 
-// This is just example macro
-// Responsible: marian.ivanov@cern.ch
+/// \file ConfigOCDB.C
+/// \brief Macro to Setup OCDB for calibration scan
+///
+/// By default - all entries taken from the AliEn OCDB storage
+/// This is just example macro
+/// \author marian.ivanov@cern.ch
 
  
 
 void ConfigOCDB(Int_t run=-1){
-  // 
+  ///
+
   printf("SETUP OCBD for TPC\n");
   //
   AliCDBManager::Instance()->SetDefaultStorage("raw://");  

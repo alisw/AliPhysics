@@ -1,28 +1,31 @@
-/*
-Draw result of perfomance test:
-
-aliroot -b -q  $ALICE_ROOT/TPC/scripts/loadTPCcalib.C $ALICE_ROOT/TPC/CalibMacros/CalibCosmic.C
-
-  //gROOT->Macro("~/NimStyle.C"); 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/STAT")
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC")
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros")
-
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib");
-  .L $ALICE_ROOT/TPC/CalibMacros/CalibCosmic.C
-  // init
-  Init();
-  SetDefaultCut();  // check defualt cut 
-  //
-  MakeDefaultPlots();
-
-  gROOT->Macro("~/NimStyle.C");
-  TFile f("cosmicPlots.root");
-  TBrowser b
-  b.Add(CosmicPlots,"CosmicPlot");
-
-*/  
+/// \file CalibCosmic.C
+///
+/// Draw result of perfomance test:
+///
+/// ~~~
+/// aliroot -b -q  $ALICE_ROOT/TPC/scripts/loadTPCcalib.C $ALICE_ROOT/TPC/CalibMacros/CalibCosmic.C
+/// ~~~
+///
+/// ~~~{.cpp}
+/// // gROOT->Macro("~/NimStyle.C");
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/STAT")
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC")
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros")
+///
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib");
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibCosmic.C
+/// // init
+/// Init();
+/// SetDefaultCut();  // check defualt cut 
+/// //
+/// MakeDefaultPlots();
+///
+/// gROOT->Macro("~/NimStyle.C");
+/// TFile f("cosmicPlots.root");
+/// TBrowser b
+/// b.Add(CosmicPlots,"CosmicPlot");
+/// ~~~
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "THnSparse.h"
@@ -67,7 +70,8 @@ void  MakeDefaultPlots();
 
 
 void CalibCosmic(){
-  // init
+  /// init
+
   Init();
   SetDefaultCut(); 
   //
@@ -75,8 +79,8 @@ void CalibCosmic(){
 }
 
 void Init(){
-  //
-  //
+  ///
+
   TH1::AddDirectory(0);
   TFile fcalib("TPCCosmicObjects.root");
   cosmicScan = ( AliTPCcalibCosmic *)fcalib.Get("cosmicTPC");
@@ -185,9 +189,8 @@ TH1 * GetPull(Int_t type){
 
 
 void DrawResoldEdx(){
-  //
-  //
-  //
+  ///
+
   Int_t kmicolors[10]={1,2,3,6,7,8,9,10,11,12};
   Int_t kmimarkers[10]={21,22,23,24,25,26,27,28,29,30};
   TH2 *htemp;
@@ -248,9 +251,8 @@ void DrawResoldEdx(){
 }
 
 void DrawStat(Int_t coord, TObjArray *array=0){
-  //
-  //
-  //
+  ///
+
   TCanvas *cStat = new TCanvas(Form("Cosmic stat%d",coord), Form("CosmicStat%d",coord),1000,800);
   Float_t mx0=0.2, mx1=0.05, my0=0.15, my1=0.1;
   cStat->SetMargin(mx0,mx1,my0,my1);
@@ -271,8 +273,8 @@ void SetStylePad(TVirtualPad *pad){
 }
 
 void MakePlotPt(TObjArray * array){
-  //
-  //
+  ///
+
   TCanvas *cptRes = new TCanvas("TPCPtResol","TPCPtResol",900,600);
   cptRes->Divide(2,1);
   SetStylePad(cptRes->cd(1));
@@ -322,8 +324,8 @@ void MakePlotPt(TObjArray * array){
 
 
 void MakePlotP4(TObjArray * array){
-  //
-  //
+  ///
+
   TCanvas *cptRes = new TCanvas("TPCP4Resol","TPCP4Resol",900,600);
   cptRes->Divide(2,1);
   SetStylePad(cptRes->cd(1));
@@ -378,8 +380,8 @@ void MakePlotP4(TObjArray * array){
 
 
 void MakePlotPosY(TObjArray * array){
-  //
-  //
+  ///
+
   TCanvas *cptRes = new TCanvas("TPCPosResolY","TPCPosResolY",900,600);
   cptRes->Divide(2,1);
   SetStylePad(cptRes->cd(1));
@@ -430,8 +432,8 @@ void MakePlotPosY(TObjArray * array){
 }
 
 void MakePlotSnp(TObjArray * array){
-  //
-  //
+  ///
+
   TCanvas *cptRes = new TCanvas("TPCSnp","TPCSnp",900,600);
   cptRes->Divide(2,1);
   SetStylePad(cptRes->cd(1));
@@ -479,8 +481,8 @@ void MakePlotSnp(TObjArray * array){
   if (array) array->AddLast(cptRes);
 }
 void MakePlotTgl(TObjArray * array){
-  //
-  //
+  ///
+
   TCanvas *cptRes = new TCanvas("TPCtgl","TPCtgl",900,600);
   cptRes->Divide(2,1);
   SetStylePad(cptRes->cd(1));
@@ -529,8 +531,8 @@ void MakePlotTgl(TObjArray * array){
 }
 
 void MakePlotPosZ(TObjArray * array){
-  //
-  //
+  ///
+
   TCanvas *cptRes = new TCanvas("TPCPosResolZ","TPCPosResolZ",900,600);
   cptRes->Divide(2,1);
   SetStylePad(cptRes->cd(1));
@@ -583,9 +585,8 @@ void MakePlotPosZ(TObjArray * array){
 
 
 void  MakeDefaultPlots(){
-  //
-  //
-  //
+  ///
+
   gStyle->SetOptStat(1100);
   DrawStat(0,picArray);
   gStyle->SetOptStat(0);

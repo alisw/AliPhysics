@@ -4,11 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TPC calibration class for temperature maps and tendencies                //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCTempMap
+/// \brief TPC calibration class for temperature maps and tendencies
 
 #include "TSystem.h"
 
@@ -22,7 +19,7 @@ class TTimeStamp;
 class AliTPCTempMap : public TNamed  {
  public:
   AliTPCTempMap(AliTPCSensorTempArray *SensorsDCS);
-  AliTPCTempMap(const AliTPCTempMap &c);   
+  AliTPCTempMap(const AliTPCTempMap &c);
   virtual ~AliTPCTempMap();
   AliTPCTempMap &operator=(const AliTPCTempMap &c);
   virtual void Copy (TObject &c) const;
@@ -37,16 +34,17 @@ class AliTPCTempMap : public TNamed  {
   Double_t GetTemperature(Double_t x, Double_t y, Double_t z, TTimeStamp &stamp);
   Bool_t  IsOK(Float_t value);
  protected:
-  
-  AliTPCSensorTempArray *fTempArray;   // Array of Sensors (initialized in Constructor)
-  TString fStringFEsimulation; // Placeholder for file of FiniteElement 
-                               // Simulation under ideal conditions - not existing yet
+
+  AliTPCSensorTempArray *fTempArray;   ///< Array of Sensors (initialized in Constructor)
+  TString fStringFEsimulation; ///< Placeholder for file of FiniteElement Simulation under ideal conditions - not existing yet
 
  private:
 
   AliTPCTempMap(const char *fname);
 
-  ClassDef(AliTPCTempMap,2)      //  
+  /// \cond CLASSIMP
+  ClassDef(AliTPCTempMap,2)      //
+  /// \endcond
 
 };
 

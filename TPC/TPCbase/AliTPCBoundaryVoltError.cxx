@@ -13,58 +13,35 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// _________________________________________________________________
-//
-// Begin_Html
-//   <h2> AliTPCBoundaryVoltError class   </h2>       
-//   This class calculates the space point distortions due to residual voltage errors on 
-//   the main boundaries of the TPC. For example, the inner vessel of the TPC is shifted 
-//   by a certain amount, whereas the ROCs on the A side and the C side follow this mechanical 
-//   shift (at the inner vessel) in z direction. This example can be named "conical deformation"
-//   of the TPC field cage (see example below).                    
-//   <p>
-//   The boundary conditions can be set via two arrays (A and C side) which contain the 
-//   residual voltage setting modeling a possible shift or an inhomogeneity on the TPC field 
-//   cage. In order to avoid that the user splits the Central Electrode (CE), the settings for 
-//   the C side is taken from the array on the A side (points: A.6 and A.7). The region betweem
-//    the points is interpolated linearly onto the boundaries.
-//   <p>
-//   The class uses the PoissonRelaxation2D (see AliTPCCorrection) to calculate the resulting 
-//   electrical field inhomogeneities in the (r,z)-plane. Then, the Langevin-integral formalism 
-//   is used to calculate the space point distortions. <br>
-//   Note: This class assumes a homogeneous magnetic field. 
-//   <p>
-//   One has two possibilities when calculating the $dz$ distortions. The resulting distortions 
-//   are purely due to the change of the drift velocity (along with the change of the drift field) 
-//   when the SetROCDisplacement is FALSE. This emulates for example a Gating-Grid Voltage offset 
-//   without moving the ROCs. When the flag is set to TRUE, the ROCs are assumed to be misaligned 
-//   and the corresponding offset in z is added.
-// End_Html
-//
-// Begin_Macro(source)
-//   {
-//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("cAliTPCBoundaryVoltError","cAliTPCBoundaryVoltError",500,300); 
-//   AliTPCBoundaryVoltError bve;     
-//   Float_t val = 40;// [Volt]; 40V corresponds to 1mm
-//   /* IFC shift, CE follows, ROC follows by factor half */
-//   Float_t boundA[8] = { val, val, val,0,0,0,0,val}; // voltages A-side
-//   Float_t boundC[6] = {-val,-val,-val,0,0,0};       // voltages C-side  
-//   bve.SetBoundariesA(boundA);                                        
-//   bve.SetBoundariesC(boundC);                                        
-//   bve.SetOmegaTauT1T2(-0.32,1,1);
-//   bve.SetROCDisplacement(kTRUE); // include the chamber offset in z when calculating the dz distortions
-//   bve.CreateHistoDRinZR(0)->Draw("surf2"); 
-//   return c2;
-//   } 
-// End_Macro
-//
-// Begin_Html
-//   <p>
-// Date: 01/06/2010 <br>
-// Authors: Jim Thomas, Stefan Rossegger      
-// End_Html 
-// _________________________________________________________________
+/// \class AliTPCBoundaryVoltError
+///
+///   <h2> AliTPCBoundaryVoltError class   </h2>
+///   This class calculates the space point distortions due to residual voltage errors on
+///   the main boundaries of the TPC. For example, the inner vessel of the TPC is shifted
+///   by a certain amount, whereas the ROCs on the A side and the C side follow this mechanical
+///   shift (at the inner vessel) in z direction. This example can be named "conical deformation"
+///   of the TPC field cage (see example below).
+///
+///   The boundary conditions can be set via two arrays (A and C side) which contain the
+///   residual voltage setting modeling a possible shift or an inhomogeneity on the TPC field
+///   cage. In order to avoid that the user splits the Central Electrode (CE), the settings for
+///   the C side is taken from the array on the A side (points: A.6 and A.7). The region betweem
+///    the points is interpolated linearly onto the boundaries.
+///
+///   The class uses the PoissonRelaxation2D (see AliTPCCorrection) to calculate the resulting
+///   electrical field inhomogeneities in the (r,z)-plane. Then, the Langevin-integral formalism
+///   is used to calculate the space point distortions.
+///   Note: This class assumes a homogeneous magnetic field.
+///
+///   One has two possibilities when calculating the $dz$ distortions. The resulting distortions
+///   are purely due to the change of the drift velocity (along with the change of the drift field)
+///   when the SetROCDisplacement is FALSE. This emulates for example a Gating-Grid Voltage offset
+///   without moving the ROCs. When the flag is set to TRUE, the ROCs are assumed to be misaligned
+///   and the corresponding offset in z is added.
+/// ![Picture from ROOT macro](AliTPCBoundaryVoltError_cxx_1511bb7.png)
+///
+/// \author Jim Thomas, Stefan Rossegger
+/// \date 01/06/2010
 
 
 #include "AliMagF.h"
@@ -78,7 +55,9 @@
 #include "AliTPCROC.h"
 #include "AliTPCBoundaryVoltError.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCBoundaryVoltError)
+/// \endcond
 
 AliTPCBoundaryVoltError::AliTPCBoundaryVoltError()
   : AliTPCCorrection("BoundaryVoltError","Boundary Voltage Error"),
@@ -96,20 +75,19 @@ AliTPCBoundaryVoltError::AliTPCBoundaryVoltError()
 }
 
 AliTPCBoundaryVoltError::~AliTPCBoundaryVoltError() {
-  //
-  // default destructor
-  //
+  /// default destructor
+
 }
 
 
 
 
 Bool_t AliTPCBoundaryVoltError::AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight){
-  //
-  // Add correction  and make them compact
-  // Assumptions:
-  //  - origin of distortion/correction are additive
-  //  - only correction ot the same type supported ()
+  /// Add correction  and make them compact
+  /// Assumptions:
+  ///  - origin of distortion/correction are additive
+  ///  - only correction ot the same type supported ()
+
   if (corr==NULL) {
     AliError("Zerro pointer - correction");
     return kFALSE;
@@ -135,10 +113,8 @@ Bool_t AliTPCBoundaryVoltError::AddCorrectionCompact(AliTPCCorrection* corr, Dou
 
 
 void AliTPCBoundaryVoltError::Init() {
-  //
-  // Initialization funtion
-  //
-  
+  /// Initialization funtion
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bzField = magF->SolenoidField()/10.; //field in T
@@ -154,9 +130,8 @@ void AliTPCBoundaryVoltError::Init() {
 }
 
 void AliTPCBoundaryVoltError::Update(const TTimeStamp &/*timeStamp*/) {
-  //
-  // Update function 
-  //
+  /// Update function
+
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
   Double_t bzField = magF->SolenoidField()/10.; //field in T
@@ -173,9 +148,7 @@ void AliTPCBoundaryVoltError::Update(const TTimeStamp &/*timeStamp*/) {
 
 
 void AliTPCBoundaryVoltError::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
-  //
-  // Calculates the correction due e.g. residual voltage errors on the TPC boundaries
-  //   
+  /// Calculates the correction due e.g. residual voltage errors on the TPC boundaries
 
   if (!fInitLookUp) {
     AliInfo("Lookup table was not initialized!  Perform the inizialisation now ...");
@@ -229,10 +202,8 @@ void AliTPCBoundaryVoltError::GetCorrection(const Float_t x[],const Short_t roc,
 }
 
 void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
-  //
-  // Initialization of the Lookup table which contains the solutions of the 
-  // Dirichlet boundary problem
-  //
+  /// Initialization of the Lookup table which contains the solutions of the
+  /// Dirichlet boundary problem
 
   const Float_t  gridSizeR   =  (fgkOFCRadius-fgkIFCRadius) / (kRows-1) ;
   const Float_t  gridSizeZ   =  fgkTPCZ0 / (kColumns-1) ;
@@ -409,10 +380,8 @@ void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
 }
 
 void AliTPCBoundaryVoltError::Print(const Option_t* option) const {
-  //
-  // Print function to check the settings of the boundary vectors
-  // option=="a" prints the C0 and C1 coefficents for calibration purposes
-  //
+  /// Print function to check the settings of the boundary vectors
+  /// option=="a" prints the C0 and C1 coefficents for calibration purposes
 
   TString opt = option; opt.ToLower();
   printf("%s\n",GetTitle());
@@ -448,18 +417,17 @@ void AliTPCBoundaryVoltError::Print(const Option_t* option) const {
 
 
 void AliTPCBoundaryVoltError::SetBoundariesA(Float_t boundariesA[8]){
-  //
-  // set voltage errors on the TPC boundaries - A side 
-  //
-  // Start at IFC at the Central electrode and work anti-clockwise (clockwise for C side) through 
-  // IFC, ROC, OFC, and CE. The boundary conditions are currently defined to be a linear 
-  // interpolation between pairs of numbers in the Boundary (e.g. fBoundariesA) vector.  
-  // The first pair of numbers represent the beginning and end of the Inner Field cage, etc.
-  // The unit of the error potential vector is [Volt], whereas 1mm shift of the IFC would 
-  // correspond to ~ 40 V
-  // 
-  // Note: The setting for the CE will be passed to the C side!
-  
+  /// set voltage errors on the TPC boundaries - A side
+  ///
+  /// Start at IFC at the Central electrode and work anti-clockwise (clockwise for C side) through
+  /// IFC, ROC, OFC, and CE. The boundary conditions are currently defined to be a linear
+  /// interpolation between pairs of numbers in the Boundary (e.g. fBoundariesA) vector.
+  /// The first pair of numbers represent the beginning and end of the Inner Field cage, etc.
+  /// The unit of the error potential vector is [Volt], whereas 1mm shift of the IFC would
+  /// correspond to ~ 40 V
+  ///
+  /// Note: The setting for the CE will be passed to the C side!
+
   for (Int_t i=0; i<8; i++) {
     fBoundariesA[i]= boundariesA[i];  
     if (i>5) fBoundariesC[i]= -boundariesA[i]; // setting for the CE is passed to C side
@@ -467,17 +435,16 @@ void AliTPCBoundaryVoltError::SetBoundariesA(Float_t boundariesA[8]){
   fInitLookUp=kFALSE;
 }
 void AliTPCBoundaryVoltError::SetBoundariesC(Float_t boundariesC[6]){
-  //
-  // set voltage errors on the TPC boundaries - C side 
-  //
-  // Start at IFC at the Central electrode and work clockwise (for C side) through 
-  // IFC, ROC and OFC. The boundary conditions are currently defined to be a linear 
-  // interpolation between pairs of numbers in the Boundary (e.g. fBoundariesC) vector.  
-  // The first pair of numbers represent the beginning and end of the Inner Field cage, etc.
-  // The unit of the error potential vector is [Volt], whereas 1mm shift of the IFC would 
-  // correspond to ~ 40 V
-  // 
-  // Note: The setting for the CE will be taken from the A side (pos 6 and 7)!
+  /// set voltage errors on the TPC boundaries - C side
+  ///
+  /// Start at IFC at the Central electrode and work clockwise (for C side) through
+  /// IFC, ROC and OFC. The boundary conditions are currently defined to be a linear
+  /// interpolation between pairs of numbers in the Boundary (e.g. fBoundariesC) vector.
+  /// The first pair of numbers represent the beginning and end of the Inner Field cage, etc.
+  /// The unit of the error potential vector is [Volt], whereas 1mm shift of the IFC would
+  /// correspond to ~ 40 V
+  ///
+  /// Note: The setting for the CE will be taken from the A side (pos 6 and 7)!
 
   for (Int_t i=0; i<6; i++) {
     fBoundariesC[i]= boundariesC[i];  

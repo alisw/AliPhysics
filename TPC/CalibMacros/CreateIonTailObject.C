@@ -1,17 +1,19 @@
-/* CreateIonTailObject
- * Generic script in order to create a IonTail object
- *
- * Usage : aliroot -b -q CreateIonTailObject.C
- *
- *
- *   Read object :
- *
- *   TFile* f = TFile::Open("/tmp/ocdb/TPC/Calib/IonTail/Run0_999999999_v0_s0.root")
- *   AliCDBEntry* entry = static_cast<AliCDBEntry*>(f.Get("AliCDBEntry"))
- *   TObjArray * arr = entry->GetObject();
- *   arr->ls()
- *
- */
+/// \file CreateIonTailObject.C
+/// 
+/// CreateIonTailObject
+/// Generic script in order to create a IonTail object
+/// 
+/// Usage: `aliroot -b -q CreateIonTailObject.C`
+///
+/// Read object:
+///
+/// ~~~{.cpp} 
+/// TFile* f = TFile::Open("/tmp/ocdb/TPC/Calib/IonTail/Run0_999999999_v0_s0.root")
+/// AliCDBEntry* entry = static_cast<AliCDBEntry*>(f.Get("AliCDBEntry"))
+/// TObjArray * arr = entry->GetObject();
+/// arr->ls();
+/// ~~~
+
 void CreateIonTailObject( const Char_t* objectPath = "/u/marsland/MAF/OCDBimp/AllResponseFunctions.root",
 			  const Int_t minRun = 0, 
 			  const Int_t maxRun = AliCDBRunRange::Infinity(),
@@ -20,8 +22,7 @@ void CreateIonTailObject( const Char_t* objectPath = "/u/marsland/MAF/OCDBimp/Al
 			  const Char_t *comment = "Create new IonTail object",
 			  const Char_t* alirootVersion = "05-02-Rev-35") {
   
-  // -- Get Input 
-  // -------------------------------------------------------------------
+  // Get Input
   TFile* inFile = TFile::Open(objectPath);
   if (!inFile) {
     printf("File %s could not be found!\n", objectPath);

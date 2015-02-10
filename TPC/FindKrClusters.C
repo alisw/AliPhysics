@@ -3,7 +3,7 @@
 ///
 /// Input files:
 ///
-/// * galice.root 
+/// * galice.root
 /// * digits.root: file with digits - usualy use link to galice.root
 ///   in splitted mode - neccesary to create link to proper file
 ///
@@ -29,9 +29,7 @@
 
 Int_t FindKrClusters(){
 
-  //
-  //Load DataBase
-  //
+  // Load DataBase
   //char *ocdbpath ="local:///afs/cern.ch/alice/tpctest/OCDB";
   //char *ocdbpath ="local:///home/matyja/baza/OCDB";
   char *ocdbpath ="local:///data/baza/OCDB";

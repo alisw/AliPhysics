@@ -63,7 +63,8 @@ Bool_t enableSign=kFALSE;
 Bool_t useEff0=kFALSE;
 Bool_t useEffD=kFALSE;
 Bool_t useEffR=kFALSE;
-//
+/// \file MakeGlobalFit.C
+
 TChain *chain    = 0;
 TChain *chainRef = 0;
 Bool_t printMatrix=kFALSE;
@@ -105,9 +106,8 @@ void MakeAliases(){
 
 
 void MakeGlobalFit(){
-  //
-  //
-  //
+  ///
+
   gROOT->Macro("~/rootlogon.C");
   //gROOT->Macro("NimStyle.C");
   gSystem->AddIncludePath("-I$ALICE_ROOT/STAT");
@@ -218,8 +218,8 @@ void MakeGlobalFit(){
 }
 
 void MakeChain(){
-  //
-  //
+  ///
+
   TH1::AddDirectory(0);
   TFile * f0 =0;      // file 0 field
   TFile * fp =0;      // file plus
@@ -267,9 +267,8 @@ void MakeChain(){
 
 
 void MakeCuts(){
-  //
-  //
-  //
+  ///
+
   TCut cutS="((rms>0&&R.rms>0&&entries>0&&R.entries>0))";         // statistic cuts
   TCut cutType="((dtype==R.dtype)&&(ptype==R.ptype))";            // corresponding types
   TCut cutOut="(ptype==0)*abs(mdelta)<(0.3+rms)||(ptype==0&&abs(mdelta*85)<(0.3+rms*85))";            // corresponding types
@@ -284,9 +283,8 @@ void MakeCuts(){
 
 
 TMatrixD * MakeCorrelation(TMatrixD &matrix){
-  //
-  //
-  //
+  ///
+
   Int_t nrows = matrix.GetNrows();
   TMatrixD * mat = new TMatrixD(nrows,nrows);
   for (Int_t irow=0; irow<nrows; irow++)
@@ -400,9 +398,8 @@ void MakeFit(TCut cutCustom){
 
 
 void PrintMatch(){
-  //
-  // Print detector matching info
-  //
+  /// Print detector matching info
+
   for (Int_t ipar=0; ipar<5; ipar++){      
     for (Int_t idet=0; idet<5; idet++){
       Double_t mean0,rms0,mean1,rms1;
@@ -430,9 +427,8 @@ void PrintMatch(){
 
 
 TCanvas* DrawFitITS(const char *name){
-  //
-  //
-  //
+  ///
+
   TLegend *legend=0;
   TCanvas *canvas = new TCanvas(name,name,800,800);
   canvas->Divide(1,2);
@@ -494,9 +490,8 @@ TCanvas* DrawFitITS(const char *name){
 
 
 TCanvas*  DrawFitLaser(const char *cname){
-  //
-  //
-  //
+  ///
+
   TH1::AddDirectory(0);
   TCut cutLaser=cut+"isLaser&&bz<0";
   TCanvas *canvas= new TCanvas(cname, cname,800,800);
@@ -555,9 +550,8 @@ TCanvas*  DrawFitLaser(const char *cname){
 
 
 TCanvas* DrawFitVertex(const char *name){
-  //
-  //
-  //
+  ///
+
   TLegend *legend=0;
   TCanvas *canvas = new TCanvas(name,name,800,800);
   canvas->Divide(1,2);
@@ -811,9 +805,8 @@ TCanvas * DrawCorrdSnp(){
 
  
 TCanvas * DrawFitdY(const char *name){
-  //
-  //
-  //
+  ///
+
   TH1::AddDirectory(0);
   TCanvas *canvas = new TCanvas(name,name,800,800);
   canvas->Divide(3,5);
@@ -843,9 +836,8 @@ TCanvas * DrawFitdY(const char *name){
 }
 
 TCanvas * DrawFitdSnp(const char *name){
-  //
-  //
-  //
+  ///
+
   TH1::AddDirectory(0);
   TCanvas *canvas = new TCanvas(name,name,800,800);
   canvas->Divide(3,5);
@@ -1121,14 +1113,12 @@ TCanvas * MakeComposedCorrection(const char *name){
 
 
 void MakeOCDBEntry(Int_t refRun){
-  //
-  // make a Correction OCDB entry
-  // take the fit values writen in config file
-  //
-  //
-  // 1. Read previous value used in calibration
-  //    OCDB has to be initialized before
-  
+  /// make a Correction OCDB entry
+  /// take the fit values writen in config file
+  ///
+  /// 1. Read previous value used in calibration
+  ///    OCDB has to be initialized before
+
   gROOT->Macro(Form("ConfigCalibTrain.C(%d)",refRun));  // configuring calib db
   gROOT->LoadMacro("AddTaskTPCCalib.C");
   gROOT->ProcessLine(Form("ConfigOCDB(%d);",refRun));

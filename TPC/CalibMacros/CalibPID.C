@@ -1,45 +1,44 @@
-/*
+/// \file CalibPID.C
+///
+/// 1. dump information to the tree
+///
+/// ~~~{.cpp}
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib");
+/// gSystem->Load("libSTAT");
+///
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
+/// .x ../ConfigOCDB.C
+/// paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
+/// Init("calibPID06");
+/// LookupHisto() // change SetRange in LookupHisto if needed !, check with pid->GetHistQtot()->Projection(0,1)->Draw("colz")
+/// ~~~
+///
+/// exit aliroot
+///
+/// 2. update the OCDB
+///
+/// ~~~{.cpp}
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib");
+/// gSystem->Load("libSTAT");
+///
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
+/// .x ../ConfigOCDB.C
+/// paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
+///
+/// TFile fff("lookupdEdx.root")
+/// TTree * treeDump =0;
+/// TObjArray fitArr;
+/// treeDump = (TTree*)fff.Get("dumpdEdx");
+///
+/// TCut cutAll = "meangTot>0.0&&sumMax>150&&sumTot>150&&rmsgMax/rmsMax<1.5&&abs(p3)<1&&isOK";
+/// treeDump->Draw("meanTotP:ipad","meangTot>0&&isOK"+cutAll,"*")
+///
+/// FitFit(kTRUE)
+/// StoreParam("local:///lustre/alice/akalweit/OCDBforMC") // specify corresponding location before !!
+/// ~~~
 
-//
-// 1. dump information to the tree
-//
-gSystem->Load("libANALYSIS");
-gSystem->Load("libTPCcalib");
-gSystem->Load("libSTAT");
-
-.L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
-.x ../ConfigOCDB.C
-paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
-Init("calibPID06");
-LookupHisto() // change SetRange in LookupHisto if needed !, check with pid->GetHistQtot()->Projection(0,1)->Draw("colz")
-
-// exit aliroot
-
-//
-// 2. update the OCDB
-//
-
-gSystem->Load("libANALYSIS");
-gSystem->Load("libTPCcalib");
-gSystem->Load("libSTAT");
-
-.L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
-.x ../ConfigOCDB.C
-paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
-
-TFile fff("lookupdEdx.root")
-TTree * treeDump =0;
-TObjArray fitArr;
-treeDump = (TTree*)fff.Get("dumpdEdx");
-
-TCut cutAll = "meangTot>0.0&&sumMax>150&&sumTot>150&&rmsgMax/rmsMax<1.5&&abs(p3)<1&&isOK";
-treeDump->Draw("meanTotP:ipad","meangTot>0&&isOK"+cutAll,"*")
-
-FitFit(kTRUE)
-StoreParam("local:///lustre/alice/akalweit/OCDBforMC") // specify corresponding location before !!
-
-
-*/  
 #include "TMath.h"
 #include "TString.h"
 #include "TFile.h"
@@ -82,8 +81,8 @@ Int_t kmimarkers[10]={21,22,23,24,25,26,27,28,29,30};
 //Int_t binsQA[7]    = {150, 10,  10,    10,   50, 50,  8};
 
 void Init(char* name="calibPID06"){
-  //
-  //
+  ///
+
   TFile fcalib("CalibObjectsTrain2.root");
   //TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib"); // old interface
   pid = ( AliTPCcalibPID *) fcalib.Get(name);
@@ -172,9 +171,8 @@ void ReadTrees(){
 
 
 void Fit(Bool_t updateParam=kFALSE){
-  //
-  // align pads
-  //
+  /// align pads
+
   TStatToolkit toolkit;
   Double_t chi2;
   TVectorD paramTot[5], paramMax[5];

@@ -1,11 +1,12 @@
+/// \file AliTPCCompareTracks.C
+
 #ifndef __CINT__
 #include "alles.h"
 #include "AliComplexCluster.h"
 //#include "AliTPCclusterM.h"
+
 #include "AliTPCclusterMI.h"
 #endif
-
-/// \file AliTPCCompareTracks.C
 
 Int_t AliTPCCompareTracks(Int_t eventn, Bool_t all = kFALSE) {
    cerr<<"Comparing tracks...\n";

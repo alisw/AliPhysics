@@ -5,10 +5,8 @@
 /* Copyright(c) 2007-08, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                             */
 
-///////////////////////////////////////////////////////////////////////////////
-//                        Class AliTPCCalibTCF                               //
-// Class for Extraction and test of TCF parameters needed by the ALTRO chip  //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibTCF
+/// \brief Extraction and test of TCF parameters needed by the ALTRO chip
 
 #include "TSystem.h"
 #include <exception>
@@ -61,13 +59,13 @@ public:
 private:
   
   // tresholds for proper pulse finder (Analyze functions)
-  Int_t fGateWidth;     // expected Gate fluctuation length
-  Int_t fSample;        // expected usefull signal length
-  Int_t fPulseLength;   // needed pulselength for TC characterisation
-  Int_t fLowPulseLim;   // lower pulse height limit
-  Int_t fUpPulseLim;    // upper pulse height limit
-  Double_t fRMSLim;     // signal RMS limit
-  Double_t fRatioIntLim;// ratio of signal-integral/pulse-integral limit
+  Int_t fGateWidth;     ///< expected Gate fluctuation length
+  Int_t fSample;        ///< expected usefull signal length
+  Int_t fPulseLength;   ///< needed pulselength for TC characterisation
+  Int_t fLowPulseLim;   ///< lower pulse height limit
+  Int_t fUpPulseLim;    ///< upper pulse height limit
+  Double_t fRMSLim;     ///< signal RMS limit
+  Double_t fRatioIntLim;///< ratio of signal-integral/pulse-integral limit
 
   Int_t FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP);
   static void FitFcn(Int_t &nPar, Double_t *grad, Double_t &f, Double_t * const par, Int_t iflag);

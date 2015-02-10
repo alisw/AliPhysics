@@ -13,17 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTPCRawStreamV3.cxx 22777 2007-12-05 17:37:33Z marian $ */
 
-///////////////////////////////////////////////////////////////////////////////
-///
-/// This class provides access to TPC digits in raw data.
+/// \class AliTPCRawStreamV3
+/// \brief This class provides access to TPC digits in raw data.
 ///
 /// It loops over all TPC digits in the raw data given by the AliRawReader.
 /// The NextChannel method loads the data for the next pad. If there is no pad left
 /// it returns kFALSE.
-///
-///////////////////////////////////////////////////////////////////////////////
 
 #include <TSystem.h>
 
@@ -32,7 +28,9 @@
 #include "AliLog.h"
 #include "AliTPCAltroMapping.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCRawStreamV3)
+/// \endcond
 
 //_____________________________________________________________________________
 AliTPCRawStreamV3::AliTPCRawStreamV3(AliRawReader* rawReader, AliAltroMapping **mapping) :
@@ -107,7 +105,7 @@ Bool_t AliTPCRawStreamV3::NextChannel()
   else
     return kFALSE;
   */
-  
+
   fPrevRow = fRow;
   fPrevPad = fPad;
   fRow = -1;
@@ -131,7 +129,7 @@ Bool_t AliTPCRawStreamV3::NextDDL()
   fPrevSector = fSector;
   fSector     = -1;
   if (!AliAltroRawStreamV3::NextDDL()) return kFALSE;
-  
+
   Int_t ddlNumber = GetDDLNumber();
   if (ddlNumber < 72) {
     fSector = ddlNumber / 2;
@@ -156,11 +154,11 @@ void AliTPCRawStreamV3::ApplyAltroMapping()
     fSector = (ddlNumber - 72) / 4 + 36;
     patchIndex = (ddlNumber - 72) % 4 + 2;
   }
-  
+
   Short_t hwAddress = GetHWAddress();
   fRow = fMapping[patchIndex]->GetPadRow(hwAddress);
   fPad = fMapping[patchIndex]->GetPad(hwAddress);
-  
+
 
 //  if ((fRow < 0) || (fPad < 0))
 //    AddMappingErrorLog(Form("hw=%d",hwAddress));

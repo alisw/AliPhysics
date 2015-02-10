@@ -1,13 +1,13 @@
 /// \file AliBarrelRec_TPCparam.C
 /// \brief Macro to create AliESDs.root using parametrized TPC tracking and AliITStrackerSA (MI + SA)
-/// 
+///
 /// Input files:
 /// - galice.root
 /// - Kinematics.root
 /// - TrackReferences.root
 /// - ITS.RecPoints.root (use AliRecontruction class)
 /// - ITS.Vertex.root (use $ALICE_ROOT/ITS/AliITSVertexerZTest.C)
-/// 
+///
 /// \author A. Dainese - INFN Legnaro
 
 void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {

@@ -1,3 +1,5 @@
+/// \file sim.C
+
 void sim(char * configPath, char * tpcDbpath, Int_t nevents){
   //
   //

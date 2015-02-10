@@ -1,9 +1,9 @@
+/// \file recMag5.C
+
 void recMag5(const char *filename="data.root")
 {
-  /////////////////////////////////////////////////////////////////////////////////////////
-  //
-  // First version of the reconstruction
-  // script for the FDR'08
+  /// First version of the reconstruction
+  /// script for the FDR'08
 
   // Set the CDB storage location
   // AliLog::SetModuleDebugLevel("STEER",2);

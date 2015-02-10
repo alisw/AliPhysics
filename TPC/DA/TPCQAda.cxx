@@ -1,35 +1,29 @@
-/*
-TPC DA for online calibration
-
-Contact: Haavard.Helstrup@cern.ch, peter.christiansen@hep.lu.se
-Link: 
-Run Type: PHYSICS STANDALONE DAQ
-DA Type: MON
-Number of events needed: 500
-Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
-Output Files: tpcQA.root, to be exported to the DAQ FXS
-fileId:   QA
-Trigger types used: PHYSICS_EVENT
-
-*/
-
-/*
-
-TPCQAda.cxx - algorithm for TPC RAW QA
-
-10/06/2007  sylvain.chapeland@cern.ch :  first version - clean skeleton based on DAQ DA case1
-06/12/2007  haavard.helstrup@cern.ch  :  created CE DA based on pulser code
-09/06/2008  peter.christiansen@hep.lu.se and haavard.helstrup@cern.ch  :  created QA DA based on AliTPCdataQA code
-
-10/09/2009  Jens.Wiechula@cern.ch:     Export object to AMOREdb after a defined update interval for QA
-26/01/2010  Jens.Wiechula@cern.ch:     Exclude laser triggers when running in a global partition
-
-contact: marian.ivanov@cern.ch, peter.christiansen@hep.lu.se
-
-This process reads RAW data from the files provided as command line arguments
-and save results in a file (named from RESULT_FILE define - see below).
-
-*/
+/// \file TPCQAda.cxx
+/// \brief algorithm for TPC RAW QA
+/// 
+/// TPC DA for online calibration
+/// 
+/// Contact: Haavard.Helstrup@cern.ch, peter.christiansen@hep.lu.se
+/// Link: 
+/// Run Type: PHYSICS STANDALONE DAQ
+/// DA Type: MON
+/// Number of events needed: 500
+/// Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
+/// Output Files: tpcQA.root, to be exported to the DAQ FXS
+/// fileId:   QA
+/// Trigger types used: PHYSICS_EVENT
+/// 
+/// 10/06/2007  sylvain.chapeland@cern.ch :  first version - clean skeleton based on DAQ DA case1
+/// 06/12/2007  haavard.helstrup@cern.ch  :  created CE DA based on pulser code
+/// 09/06/2008  peter.christiansen@hep.lu.se and haavard.helstrup@cern.ch  :  created QA DA based on AliTPCdataQA code
+/// 
+/// 10/09/2009  Jens.Wiechula@cern.ch:     Export object to AMOREdb after a defined update interval for QA
+/// 26/01/2010  Jens.Wiechula@cern.ch:     Exclude laser triggers when running in a global partition
+/// 
+/// \author marian.ivanov@cern.ch, peter.christiansen@hep.lu.se
+/// 
+/// This process reads RAW data from the files provided as command line arguments
+/// and save results in a file (named from RESULT_FILE define - see below).
 
 #define RESULT_FILE "tpcQA.root"
 #define FILE_ID "QA"
@@ -77,11 +71,11 @@ and save results in a file (named from RESULT_FILE define - see below).
 //functios, implementation below
 void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
-/* Main routine
-      Arguments: list of DATE raw data files
-*/
 int main(int argc, char **argv) {
-  /* log start of process */
+  /// Main routine
+  /// Arguments: list of DATE raw data files
+
+  // log start of process
   printf("TPCQAda: DA started - %s\n",__FILE__);
   
   if (argc<2) {

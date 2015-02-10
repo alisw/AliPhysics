@@ -1,3 +1,9 @@
+/// \file testRawReaderFastDDL.C
+///
+/// compare old and new AltroRawStream algorithms for each pad and timebin
+///
+/// check if bins are filled twice (which should not be the case!!!)
+
 #include <stdio.h>
 #include <TString.h>
 #include <TROOT.h>
@@ -12,11 +18,6 @@
 #include "AliAltroRawStreamFast.h"
 #include "AliAltroRawStream.h"
 
-/*
- compare old and new AltroRawStream algorithms for each pad and timebin
-
- check if bins are filled twice (which should not be the case!!!)
-*/
 
 void testRawReaderFastDDL(const Char_t *file="/data.local/data/06000002142000.1A.root")
 {

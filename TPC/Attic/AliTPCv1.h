@@ -5,9 +5,9 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Version 1 for TPC                         //
-////////////////////////////////////////////////
+/// \class AliTPCv1
+///
+///  Version 1 for TPC
 
  
 #include "AliTPC.h"
@@ -25,7 +25,7 @@ public:
   virtual void  StepManager();
 
 protected:
-  Int_t fIdSens;    //Sensitive volume identifier
+  Int_t fIdSens;    ///< Sensitive volume identifier
 
   
   ClassDef(AliTPCv1,1)  // Time Projection Chamber version 1
