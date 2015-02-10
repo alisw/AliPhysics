@@ -132,7 +132,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
-  void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < 4) fDecayBits[i] = bit ; }
+  void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits)
+                                                       fDecayBits[i] = bit           ; }
   void         SetM02CutForTaggedDecays(Float_t m02) { fDecayTagsM02Cut        = m02 ; }
   
   void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
@@ -179,7 +180,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillTaggedDecayHistograms;            // Fill histograms for clusters tagged as decay
   Int_t    fNDecayBits ;                          // in case of study of decay triggers, select the decay bit
-  UInt_t   fDecayBits[4] ;                        // in case of study of decay triggers, select the decay bit
+  UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; // in case of study of decay triggers, select the decay bit
   Float_t  fDecayTagsM02Cut ;                     // Apply a m02 cut to clusters tagged as decay
   
   Bool_t   fFillNLMHistograms;                    // Fill NLM histograms
@@ -227,9 +228,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhENoIso ;                             //! Number of not isolated leading particles vs Energy
   TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles vs pT
   TH2F *   fhPtNLocMaxNoIso ;                     //! Number of not isolated particles vs NLM in cluster
-  TH1F *   fhPtDecay[2][4] ;                      //! Number of (non) isolated Pi0 decay particles (invariant mass tag)
-  TH2F *   fhEtaPhiDecay[2][4] ;                  //! eta vs phi of (not) isolated leading Pi0 decay particles
-  TH2F *   fhPtLambda0Decay[2][4];                //! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously)
+  TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //! Number of (non) isolated Pi0 decay particles (invariant mass tag)
+  TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //! eta vs phi of (not) isolated leading Pi0 decay particles
+  TH2F *   fhPtLambda0Decay[2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously)
 
   TH2F *   fhPtInCone ;                           //! Cluster/track Pt in the cone
   TH2F *   fhPtClusterInCone ;                    //! Cluster Pt in the cone
@@ -409,7 +410,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiIsoMC   [fgkNmcTypes];            //! Phi of isolated mcTypes particle
   TH2F *   fhEtaIsoMC   [fgkNmcTypes];            //! eta of isolated mcTypes particle
   
-  TH1F *   fhPtDecayMC  [2][4][fgkNmcTypes] ;     //! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
+  TH1F *   fhPtDecayMC  [2][AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes] ;     //! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle
   
   TH2F *   fhPtLambda0MC   [fgkNmcTypes][2];      //! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously)
  

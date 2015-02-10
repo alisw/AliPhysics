@@ -4,19 +4,16 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
 				 Bool_t kNPERefTPConly = kFALSE
 ){
 
- // Default settings (TOF-TPC pPb)
+  // Default settings (TOF-TPC pp)
+  // ESD analysis of LHC10d pass2
+ 
   const int	kDefTPCcl	= 120;
   const int	kDefTPCclPID	=  80;
   const int	kDefITScl	=   4;
   const double	kDefDCAr	=   1.;
   const double	kDefDCAz	=   2.;
   const double	kDefTOFs	=   3.;
-  const double  kDefEtaIncMin   = -0.8;
-  const double  kDefEtaIncMax   =  0.8;
-  const double  kDefPhiMin      = -1.; // by default no phi cut, otherwise units of 2.*TMath::Pi()/18.
-  const double  kDefPhiMax      = -1.; // by default no phi cut
- 
-
+  
   // TPC PID Cuts Inclusive leg:
   // General, if mean=0 and sigma=1: 
   // Above 3 sigma we neglect 0.13%
@@ -24,12 +21,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
   // -1 (84%), -0.75 (77.2%), -0.5 (69%), -0.25 (59.7%), -0.129 (55%)
   //  0 (49.9%), 0.122 (45%), 0.25 (40%), 0.5 (30.7%)
 
-  // ESDs: mean 0.06, sigma 1    --> -0.94, -0.69, -0.44,  -0.19, -0.009 ,0.06, 0.182, 0.31, 0.56
-  // AODs: mean 0.09, sigma 1    --> -0.91, -0.66, -0.41,  -0.16, -0.039 ,0.09, 0.212, 0.34, 0.59
-  // AODs: mean 0.09, sigma 1.03 --> -0.94, -0.68, -0.425, -0.17, -0.043 ,0.09, 0.216, 0.35, 0.60
-
   // On ESD:
-  // mean is actually 0.06 (abs(eta)<0.6)
   Double_t dEdxhm[12] = {3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2};  // Above 3 sigma we neglect 0.13%
   Double_t tpcl0[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  // 50%
   Double_t tpcl1[12]  = {0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04};  // 48.34%
@@ -43,23 +35,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
   Double_t tpcl9[12]  = {-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2};  // 57.9%
   Double_t tpcl10[12]  = {-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25,-0.25};  // 59.8%
 
-
-  /*
-  Double_t dEdxhm[12] = {3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06,3.06};  // Above 3 sigma we neglect 0.13%
-  Double_t tpcl0[12]  = {-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94,-0.94};  // 84%
-  Double_t tpcl1[12]  = {-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44,-0.44};  // 69%
-  Double_t tpcl2[12]  = {0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06};  // 50%
-  Double_t tpcl3[12]  = {-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69,-0.69};  // 77.2%
-  Double_t tpcl4[12]  = {-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19,-0.19};  // 59.7%
-  Double_t tpcl5[12]  = {0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186,0.186};  // 45%
-  Double_t tpcl6[12]  = {0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31,0.31};  // 40%
-  Double_t tpcl7[12]  = {0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56,0.56};  // 30.7%
-  */
-
   // Default setting for the associated electron for the NonPhotonic Analysis
-  const double	kassETAm        = -0.8;
-  const double	kassETAp        =  0.8;
-  const double  kassMinPt       =  0.1;
   const int	kassITS		=    2;
   const int	kassTPCcl	=   60;
   const int	kassTPCPIDcl	=   60;
@@ -69,7 +45,7 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
   const double	kassTPCSplus	=  3.0;
   const double  kassITSpid      =  3.0;
   const double  kassTOFpid      =  0.0;
-  
+
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -94,26 +70,13 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
   Int_t kWei = -1;
   if (MCthere) kWei = 0;
   enum {
-    kWeiLHC10f6a = 10,  // weights for published pp @ 7 TeV: LHC10f6a, Pythia low-pt (Perugia0)
-    kWeiLHC10f6 = 11,  // weights for published pp @ 7 TeV: LHC10f6, Pythia low-pt (Perugia0)
-    kWeiLHC10f7a_d = 12,  // weights for published pp @ 7 TeV: LHC10f7a_d, Pythia low-pt (Perugia0)
+    kWeiLHC10f6a = 10,    // weights for published pp @ 7 TeV: LHC10f6a, Pythia 
+    kWeiLHC10f6 = 11,     // weights for published pp @ 7 TeV: LHC10f6, Phojet
+    kWeiLHC10f7a_d = 12,  // weights for published pp @ 7 TeV: LHC10f7a_d, Pythia hf enhanced
   };
   int kWeiData; 
   kWeiData = kWeiLHC10f6a;
-  /*
-  TString list = gSystem->Getenv("LIST");
-  if(list.Contains("LHC10f6a")){
-	kWeiData = kWeiLHC10f6a;
-  } else if (list.Contains("LHC10f6")){
-	kWeiData = kWeiLHC10f6;
-  } else if (list.Contains("LHC10f7a_d")){
-	kWeiData = kWeiLHC10f7a_d;
-  } else {
-	kWei = -1;
-  	printf("no weighting found");
-  } 
-  */
-
+ 
   if(kNPERef){
     // **************************************************************
     // 
@@ -121,26 +84,25 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
     //
     // **************************************************************
     if(isAOD==1){ 
+
       // Reference
       RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
 			 dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
 			 kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+
     }
     else {
+
       // Reference
       RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
 			 dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
 			 kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
-     
-      // different re-weighting (only for MC)
-      if (MCthere){
-	RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
-			   dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
-			   kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC10f6);
-	RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
-			   dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
-			   kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC10f7a_d);
-      }
+
+      // Test
+      RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
+			 dEdxhm, 30., AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
+			 kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+      
     }
   }
   
@@ -155,6 +117,8 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
       RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
 			 dEdxhm, 0., AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
 			 kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+      
+      
     }
     else
       { 
@@ -162,16 +126,6 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
 	RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
 			   dEdxhm, 0., AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
 			   kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
-	
-	// different re-weighting (only for MC)
-	if (MCthere){
-	  RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
-			     dEdxhm, 0., AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
-			     kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC10f6);
-	  RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0, 
-			     dEdxhm, 0., AliHFEextraCuts::kFirst, 1, kassITS, kassTPCcl, kassTPCPIDcl, 
-			     kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC10f7a_d);
-	}
 	
       }
   }
@@ -196,7 +150,6 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
 {
   // Fixed values
   Double_t etaIncMin = -0.8; Double_t etaIncMax = 0.8;
-  Double_t phimi = -1.; Double_t phima = -1.;
   Double_t assETAm=-0.8; Double_t assETAp=0.8;
   Double_t assMinPt = 0.1;
 
@@ -209,13 +162,6 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
   if(tpcdEdxcutlow) tpclow = (Int_t) (tpcdEdxcutlow[0]*1000.);
   Int_t itofs = (Int_t)(tofs*10.);
   Int_t ipixelany = itshitpixel;
-  TString phirange("");
-  if (phimi >= 0. && phima >= 0.){ 
-    phirange += "Phi";
-    phirange += phimi;
-    phirange += "-";
-    phirange += phima;
-  } 
 
   //
   // Cuts on the associated leg
@@ -254,7 +200,6 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
   //mgr->AddClassDebug("AliHFENonPhotonicElectron", 1);
   AliAnalysisTaskHFE *task = ConfigHFEnpepp(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, 
 					    tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itshitpixel, iKink,etaIncMin, etaIncMax,
-					    phimi*TMath::Pi()/9., phima*TMath::Pi()/9., 
 					    assETAm, assETAp, assMinPt, assITS, assTPCcl, assTPCPIDcl, assDCAr, assDCAz, assTPCSminus, 
 					    assTPCSplus,assITSpid,assTOFpid,
 					    useCat1Tracks, useCat2Tracks, weightlevelback);

@@ -540,8 +540,10 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
   for (UInt_t ic = 0; ic < constituents.size(); ++ic) {
 
     if (flag == 0) uid = constituents[ic].user_index();
-    else uid = GetIndexSub(constituents[ic].phi(), constituents_unsub);
-
+    else{if(constituents[ic].perp()<1.e-10) uid=-1;
+           else uid = GetIndexSub(constituents[ic].phi(), constituents_unsub);
+           if(uid==0) {AliError("correspondence between un/subtracted constituent not found");
+	     continue;}}
     AliDebug(3,Form("Processing constituent %d", uid));
     if (uid == -1) { //ghost particle
       ++gall;
@@ -681,10 +683,14 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 //______________________________________________________________________________________
 Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub) 
 {
+  Double_t dphi=0;
   for (UInt_t ii = 0; ii < constituents_unsub.size(); ii++) {
-    Double_t phi_unsub = constituents_unsub[ii].phi();
-    if (phi_sub == phi_unsub) return constituents_unsub[ii].user_index();
+  Double_t phi_unsub = constituents_unsub[ii].phi();
+  dphi=phi_unsub-phi_sub;
+  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
+  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
+  if (TMath::Abs(dphi)<0.1 && constituents_unsub[ii].user_index()!=-1)  return constituents_unsub[ii].user_index();
   }
 
-  return -1;
+  return 0;
 }

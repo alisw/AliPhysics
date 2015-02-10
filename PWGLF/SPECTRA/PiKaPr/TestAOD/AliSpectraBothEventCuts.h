@@ -127,9 +127,9 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
    AliAnalysisUtils* GetAnalysisUtils() const {return fAnalysisUtils; }
 Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;} 
  Int_t  GetNMCProcessType() const { return fNMCProcessType;}
- Bool_t  GetEventMCProcessTypeIncluded(Bool_t flag) const {return flag;}
- Bool_t  GetCheckTypeofVeretx(Bool_t flag) const {return flag;}
- Int_t  SetVertexSelection(Int_t flag)const {return fvertexselection;} 
+ Bool_t  GetEventMCProcessTypeIncluded() const {return fEventMCProcessTypeIncluded;}
+ Bool_t  GetCheckTypeofVeretx() const {return fchecktypeofveretxbytitle;}
+ Int_t  GetVertexSelection()const {return fvertexselection;} 
  
 
 

@@ -10,7 +10,7 @@ runLevelQA()
 {
   qaFile=$1
 
-  cp $ALICE_PHYSICS/T0/MakeTrendT0.C .
+  cp $ALICE_PHYSICS/PWGPP/T0/MakeTrendT0.C .
   aliroot -b -q -l "MakeTrendT0.C(\"$qaFile\",${runNumber},\"${ocdbStorage}\")" 
 }
 
@@ -18,6 +18,6 @@ periodLevelQA()
 {
   trendingFile=$1
 
-  cp $ALICE_PHYSICS/T0/drawPerformanceT0QATrends.C .
+  cp $ALICE_PHYSICS/PWGPP/T0/drawPerformanceT0QATrends.C .
   aliroot -b -q -l "drawPerformanceT0QATrends.C(\"$trendingFile\")"
 }
