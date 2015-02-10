@@ -121,6 +121,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 																  Double_t rMax, 
 																  Double_t zMax);
 		void 							CreatePureMCHistosForV0FinderEffiESD();	
+		void 							FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0);
+		Bool_t 							CheckIfContainedInString(TString input, Int_t tobechecked);
+		Bool_t 							CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked);
+
 		
 	protected:
 		// Reconstruct Gammas
@@ -177,19 +181,23 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		Int_t				*fMCPhotonLabelArray;		// array of MC photon labels found by V0Reader
 		Int_t				fNMCRecPhotons;				// number of real reconstructed photons
 		TList				*fHistograms;				// list of histograms for V0 finding efficiency
-		TH2F				*fHistoMCGammaPtvsR;		// histograms with all converted gammas vs Pt and R
-		TH2F				*fHistoMCGammaPtvsPhi;		// histograms with all converted gammas vs Pt and Phi
-		TH2F				*fHistoMCGammaPtvsEta;		// histograms with all converted gammas vs Pt and Eta
-		TH2F				*fHistoMCGammaRvsPhi;		// histograms with all converted gammas vs R and Phi
-		TH2F				*fHistoMCGammaRvsEta;		// histograms with all converted gammas vs R and Eta
-		TH2F				*fHistoMCGammaPhivsEta;		// histograms with all converted gammas vs Phi and Eta
-		TH2F				*fHistoRecMCGammaPtvsR;		// histograms with all reconstructed converted gammas vs Pt and R
-		TH2F				*fHistoRecMCGammaPtvsPhi;	// histograms with all reconstructed converted gammas vs Pt and Phi
-		TH2F				*fHistoRecMCGammaPtvsEta;	// histograms with all reconstructed converted gammas vs Pt and Eta
-		TH2F				*fHistoRecMCGammaRvsPhi;	// histograms with all reconstructed converted gammas vs R and Phi
-		TH2F				*fHistoRecMCGammaRvsEta;	// histograms with all reconstructed converted gammas vs R and Eta
-		TH2F				*fHistoRecMCGammaPhivsEta;	// histograms with all reconstructed converted gammas vs Phi and Eta
-		
+		TH2F				*fHistoMCGammaPtvsR;		// histogram with all converted gammas vs Pt and R (eta < 0.9)
+		TH2F				*fHistoMCGammaPtvsPhi;		// histogram with all converted gammas vs Pt and Phi (eta < 0.9)
+		TH2F				*fHistoMCGammaPtvsEta;		// histogram with all converted gammas vs Pt and Eta
+		TH2F				*fHistoMCGammaRvsPhi;		// histogram with all converted gammas vs R and Phi (eta < 0.9)
+		TH2F				*fHistoMCGammaRvsEta;		// histogram with all converted gammas vs R and Eta
+		TH2F				*fHistoMCGammaPhivsEta;		// histogram with all converted gammas vs Phi and Eta
+		TH2F				*fHistoRecMCGammaPtvsR;		// histogram with all reconstructed converted gammas vs Pt and R (eta < 0.9)
+		TH2F				*fHistoRecMCGammaPtvsPhi;	// histogram with all reconstructed converted gammas vs Pt and Phi (eta < 0.9)
+		TH2F				*fHistoRecMCGammaPtvsEta;	// histogram with all reconstructed converted gammas vs Pt and Eta
+		TH2F				*fHistoRecMCGammaRvsPhi;	// histogram with all reconstructed converted gammas vs R and Phi (eta < 0.9)
+		TH2F				*fHistoRecMCGammaRvsEta;	// histogram with all reconstructed converted gammas vs R and Eta
+		TH2F				*fHistoRecMCGammaPhivsEta;	// histogram with all reconstructed converted gammas vs Phi and Eta
+		TH1F				*fHistoRecMCGammaMultiPt;	// histogram with all at least double counted photons vs Pt (eta < 0.9) 
+		TH2F				*fHistoRecMCGammaMultiPtvsEta;	// histogram with all at least double counted photons vs Pt vs Eta
+		TH1F				*fHistoRecMCGammaMultiR;	// histogram with all at least double counted photons vs R (eta < 0.9)
+		TH1F				*fHistoRecMCGammaMultiPhi;	// histogram with all at least double counted photons vs Phi (eta < 0.9)
+		TString 			fStrFoundGammas;			// string with found MC labels of gammas
 	private:
 		AliV0ReaderV1(AliV0ReaderV1 &original);
 		AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
