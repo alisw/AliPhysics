@@ -409,7 +409,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       else if(es&AliRecoParam::kHighMult){ s="HighMult"; h->Fill(1);}
       else if(es&AliRecoParam::kCosmic){ s="Cosmic"; h->Fill(2);}
       else if(es&AliRecoParam::kCalib){ s="Calib"; h->Fill(3);}
-      else {s="Unknown"; h->Fill(4);}
+      else s="Unknown";
       AliDebug(2, Form("  Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
       break;
     }
@@ -872,15 +872,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   h->Fill(Float_t(kKinkMC), nKinkMC);
   h->Fill(Float_t(kBarrelFriend), nBarrelFriend);
   h->Fill(Float_t(kSAFriend), nSAFriend);
-
-  PostData(AliTRDpwgppHelper::kTracksBarrel, fTracksBarrel);
-  PostData(AliTRDpwgppHelper::kTracksITS, fTracksITS);
-  PostData(AliTRDpwgppHelper::kTracksSA,     fTracksSA);
-  PostData(AliTRDpwgppHelper::kTracksKink,   fTracksKink);
-  PostData(AliTRDpwgppHelper::kEventInfo,    fEventInfo);
-  PostData(AliTRDpwgppHelper::kV0List,       fV0List);
-  PostData(AliTRDpwgppHelper::kClusters,     fClusters);
-  PostData(AliTRDpwgppHelper::kMonitor,      fContainer);
 }
 
 
