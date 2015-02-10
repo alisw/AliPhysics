@@ -51,7 +51,8 @@ const TString kPulserRunType = "PULSER";     // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kCosmicRunType = "COSMIC";     // cosmic run identifier
 const TString kLaserRunType = "LASER";       // laser run identifier
-const TString kDaqRunType = "DAQ"; // DAQ run identifier
+const TString kDaqRunType = "DAQ"; 	     // DAQ run identifier
+const TString kStandaloneRunType = "STANDALONE";  // STANDALONE run identifier
 const TString kAmandaTemp = "TPC_PT_%d_TEMPERATURE"; // Amanda string for temperature entries
 const TString kAmandaDDL = "DDL%d";   // Amanda string for list of active DDLs
 const Int_t  kNumDDL = 216;           // number of TPC DDLs
@@ -90,6 +91,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AddRunType(kCosmicRunType);
   AddRunType(kLaserRunType);
   AddRunType(kDaqRunType);
+  AddRunType(kStandaloneRunType);
   
 }
 //______________________________________________________________________________________________
@@ -337,7 +339,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     // Pressure values
 
     if( runType == kPhysicsRunType || 
-      runType == kLaserRunType ) {    
+      runType == kLaserRunType || runType == kStandaloneRunType ) {    
 
       TString pressureConf = fConfEnv->GetValue("Pressure","ON");
       pressureConf.ToUpper();
@@ -451,7 +453,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
    if (altroConf != "TRY" ) result+=altroResult;
    status = new TParameter<int>("altroResult",altroResult);
    resultArray->Add(status);
- }
+  }
 
 
   // Central Electrode processing
