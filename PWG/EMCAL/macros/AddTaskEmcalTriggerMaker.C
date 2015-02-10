@@ -12,6 +12,12 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   int jetHighA                    = 0,
   int jetHighB                    = 0,
   int jetHighC                    = 0,
+  int gammaLowA                  = 0,
+  int gammaLowB                  = 0,
+  int gammaLowC                  = 0,
+  int gammaHighA                  = 0,
+  int gammaHighB                  = 0,
+  int gammaHighC                  = 0,
   bool useOldBitConfig            = kFALSE,
   bool doQA                       = kFALSE
 )
@@ -32,6 +38,10 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
     ::Error("AddTaskEmcalTriggerMaker", "This task requires an input event handler");
     return NULL;
   }
+
+  // Check if the task already exists, if yes only return the pointer
+  AliEmcalTriggerMaker *eTask(NULL);
+  if((eTask = dynamic_cast<AliEmcalTriggerMaker *>(mgr->GetTask(taskName)))) return eTask;
 
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
@@ -73,7 +83,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliEmcalTriggerMaker *eTask = new AliEmcalTriggerMaker(taskName, doQA);
+  eTask = new AliEmcalTriggerMaker(taskName, doQA);
   eTask->SetCaloTriggersName(strTriggersName.Data());
   eTask->SetCaloTriggersOutName(triggersOutName);
   eTask->SetCaloTriggerSetupOutName(triggerSetupOutName);
@@ -81,6 +91,8 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   eTask->SetV0InName(v0Name);
   eTask->SetTriggerThresholdJetLow( jetLowA, jetLowB, jetLowC );
   eTask->SetTriggerThresholdJetHigh( jetHighA, jetHighB, jetHighC );
+  eTask->SetTriggerThresholdGammaLow( gammaLowA, gammaLowB, gammaLowC );
+  eTask->SetTriggerThresholdGammaHigh( gammaHighA, gammaHighB, gammaHighC );
   if (useOldBitConfig)
     eTask->SetUseTriggerBitConfig(AliEmcalTriggerMaker::kOldConfig);
 

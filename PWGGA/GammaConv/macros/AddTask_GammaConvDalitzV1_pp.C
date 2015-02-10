@@ -44,7 +44,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    
 		        
    //TString cutnumber = "00000000000840010015000000"; 
-   TString cutnumberPhoton = "002000084000002200000000";
+   TString cutnumberPhoton = "00200008400000002200000000";
    TString cutnumberEvent  = "0000000"; 
 		
    
@@ -171,16 +171,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
    if(trainConfig == 1){
      //TOF PID															     				
-     eventCutArray[0]="0000011"; photonCutArray[0] = "002000093663027800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     eventCutArray[1]="0000011"; photonCutArray[1] = "002000093663027800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     eventCutArray[0]="0000011"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     eventCutArray[1]="0000011"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else if (trainConfig == 2) {
      //TOF PID
-     eventCutArray[0]="0000011"; photonCutArray[0] = "002000093663027800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     eventCutArray[1]="0000011"; photonCutArray[1] = "002000093663027800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     eventCutArray[0]="0000011"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     eventCutArray[1]="0000011"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else if (trainConfig == 3) {
      //TOF PID
-     eventCutArray[0]="0000011"; photonCutArray[0] = "002000093663027800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     eventCutArray[1]="0000011"; photonCutArray[1] = "002000093663027800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     eventCutArray[0]="0000011"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "01631031009000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     eventCutArray[1]="0000011"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "01631031009000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else {
       Error(Form("GammaConvDalitzV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
