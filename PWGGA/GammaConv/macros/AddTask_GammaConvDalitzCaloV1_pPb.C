@@ -178,10 +178,10 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	//************************************************ EMCAL clusters **********************************************************
 	if (trainConfig == 1){ // min energy = 0.3 GeV/c
         
-	    eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
-	    eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "01631031000000"; //standard cut, kEMC7
-	    eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "01631031000000"; //standart cut, kINT7
-	    eventCutArray[ 3] = "8006201"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[1] = "01631031000000"; //standard cut, kPHI7
+	    eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[ 1] = "8005201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
+	    eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623710"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[ 3] = "8006201"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "20000048033200000"; electronCutArray[3] = "90475400233102623710"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
 	
 	    
 	
@@ -277,7 +277,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
-        //task->SetUseTHnSparse(isUsingTHnSparse);
+        task->SetUseTHnSparse(isUsingTHnSparse);
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
