@@ -2,11 +2,10 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-
-#include "AliTRDinfoGen.h"
-#include "AliTRDpwgppHelper.h"
-#include "AliTRDeventInfo.h"
-#include "AliTRDeventCuts.h"
+#include "PWGPP/TRD/AliTRDinfoGen.h"
+#include "PWGPP/TRD/AliTRDpwgppHelper.h"
+#include "PWGPP/TRD/info/AliTRDeventInfo.h"
+#include "PWGPP/TRD/info/AliTRDeventCuts.h"
 #endif
 
 void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)

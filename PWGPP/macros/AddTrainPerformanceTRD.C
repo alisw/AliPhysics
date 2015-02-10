@@ -75,7 +75,7 @@
 
 TString opt("");
 const Char_t* Translate(Bool_t doCheckESD=kTRUE, Bool_t doCheckDET=kTRUE, Bool_t doEffic=kTRUE, Bool_t doResolution=kTRUE, Bool_t doCheckPID=kTRUE, Bool_t doV0Monitor=kTRUE);
-Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$ALICE_PHYSICS/PWGPP/TRD/macros")
+Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$ALICE_ROOT/PWGPP/TRD/macros")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) { 

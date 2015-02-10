@@ -3,7 +3,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTask.h"
-#include "AliTRDonlineTrackletQA.h"
+#include "PWGPP/TRD/AliTRDonlineTrackletQA.h"
 #endif
 
 AliAnalysisTask *AddTRDonlineTrackletQA(AliAnalysisManager *mgr)
