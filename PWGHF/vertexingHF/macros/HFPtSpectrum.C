@@ -43,7 +43,7 @@ enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
-enum particularity{ knone, kLowPt };
+enum particularity{ kTopological, kLowPt };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
@@ -53,10 +53,11 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false,
 		    Int_t ccestimator = kV0M,
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
-		    Int_t rapiditySlice=kdefault, Int_t analysisSpeciality=knone) {
+		    Int_t rapiditySlice=kdefault,
+		    Int_t analysisSpeciality=kTopological) {
 
 
-  gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
+  //  gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
