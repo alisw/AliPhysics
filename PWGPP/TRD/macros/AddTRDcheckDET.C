@@ -3,9 +3,10 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "PWGPP/TRD/AliTRDpwgppHelper.h"
-#include "PWGPP/TRD/AliTRDcheckDET.h"
-#include "PWGPP/TRD/AliTRDcalibration.h"
+
+#include "AliTRDpwgppHelper.h"
+#include "AliTRDcheckDET.h"
+#include "AliTRDcalibration.h"
 #endif
 
 void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)

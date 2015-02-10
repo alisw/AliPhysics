@@ -6,7 +6,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliTRDtrackerV1.h"
 #include "AliTRDtransform.h"
-#include "PWGPP/TRD/AliTRDcheckTRK.h"
+#include "AliTRDcheckTRK.h"
 #endif
 
 void AddTRDcheckTRK(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)

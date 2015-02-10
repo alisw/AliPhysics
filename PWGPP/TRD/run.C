@@ -108,7 +108,7 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
   if(gSystem->Load("libTender")<0) return;
   if(gSystem->Load("libCORRFW")<0) return;
   if(gSystem->Load("libPWGPP")<0) return;
-  if(gSystem->Load("libPWGmuon")<0) return;
+  //if(gSystem->Load("libPWGmuon")<0) return;
 
   Bool_t fHasMCdata = UseMC(optList);
   Bool_t fHasFriends = UseFriends(optList);
@@ -143,13 +143,13 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
 
   // add CDB task
   if(run>=0){
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect("raw://", run);
     if (!taskCDB) return;
-    taskCDB->SetRunNumber(run);
+    //taskCDB->SetRunNumber(run);
   } else Warning("run.C", "OCDB connection via AliTRDinfoGen.");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
   if(!AddTrainPerformanceTRD(optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
