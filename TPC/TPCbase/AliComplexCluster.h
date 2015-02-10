@@ -10,7 +10,6 @@
 #include "TObject.h"
 #include "TMath.h"
 #include "AliTPCclusterMI.h"
-//
 
 class AliComplexCluster : public TObject {
 public:
@@ -41,7 +40,10 @@ private:
   Float_t   fArea;     ///< area of cluster
   Float_t   fMax;     ///< amplitude at maximum
 
-  ClassDef(AliComplexCluster,1)
+  /// \cond CLASSIMP
+  ClassDef(AliComplexCluster, 1);
+  /// \endcond
+
     // Cluster manager
 };
 
@@ -100,7 +102,9 @@ class AliTPCTrackerPoint  {
   UShort_t  fErrY;       ///< y error estimate - in  mm - 50 mum precision
   Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
 
-  ClassDef(AliTPCTrackerPoint,2)  
+  /// \cond CLASSIMP
+  ClassDef(AliTPCTrackerPoint, 2);
+  /// \endcond  
 };
 
 class AliTPCClusterPoint  {
@@ -139,8 +143,9 @@ class AliTPCClusterPoint  {
   UShort_t fMax;      ///< charge at maximum
   Char_t   fCType;    ///< type of the cluster
 
-  //
-  ClassDef(AliTPCClusterPoint,1)  
+  /// \cond CLASSIMP
+  ClassDef(AliTPCClusterPoint, 1);
+  /// \endcond  
 };
 
 
@@ -168,7 +173,10 @@ class AliTPCExactPoint : public TObject{
   Int_t   fTrackID;  ///< id of the track
   Int_t   fRow;      ///< row
   Int_t   fSec;      ///< sector
-  ClassDef(AliTPCExactPoint,1)  
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCExactPoint, 1);
+  /// \endcond 
 };
 
 
@@ -186,8 +194,9 @@ class AliTPCTrackPoint: public TObject{
   //Char_t fIsShared;
   AliTPCTrackerPoint fTPoint;  ///< track point
   AliTPCclusterMI    fCPoint;  ///< cluster point
+
   /// \cond CLASSIMP
-  ClassDef(AliTPCTrackPoint,1)  
+  ClassDef(AliTPCTrackPoint, 1);
   /// \endcond
 };
 
@@ -226,11 +235,10 @@ class AliTPCTrackPoint2: public AliTPCTrackPoint{
   //
   Int_t   fID;            ///< id of the corresponding track
   Int_t   fLab;           ///< MC label of the track
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCTrackPoint2, 1);
+  /// \endcond
 };
-
-
-
-
-
 
 #endif //ALICOMPLEXCLUSTER_H

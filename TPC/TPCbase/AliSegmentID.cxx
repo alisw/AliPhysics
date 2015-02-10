@@ -13,14 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 /// \class AliSegmentID
-///
-///  Alice  AliSementID   object
-
+/// \brief AliSegmentID object
 
 #include "AliSegmentID.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliSegmentID)
+/// \endcond

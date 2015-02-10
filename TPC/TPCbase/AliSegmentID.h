@@ -21,6 +21,7 @@ public:
 protected:
   Int_t fSegmentID;   ///< identification number of Segment
   /// \cond CLASSIMP
+  ClassDef(AliSegmentID,1);
   /// \endcond
 };
    
