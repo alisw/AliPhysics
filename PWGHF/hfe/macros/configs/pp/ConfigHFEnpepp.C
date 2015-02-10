@@ -3,14 +3,17 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
                 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000., 
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
                 Double_t TOFs=3., Int_t TOFmis=0, 
-                Int_t itshitpixel = 0, Int_t ikink = 0,
+                Int_t itshitpixel = 0, 
+	        Int_t ikink = 0,
 		Double_t etami=-0.8, Double_t etama=0.8,
+		Double_t phimi=-1., Double_t phima=-1.,
 		Double_t assETAm=-0.8, Double_t assETAp=0.8,
 		Double_t assMinPt=0.2, Int_t assITS=2, 
                 Int_t assTPCcl=100, Int_t assTPCPIDcl=80, 
                 Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
-                Double_t assITSpid=-3., Double_t assTOFs=3.,
+                Double_t assITSpid=-3., 
+		Double_t assTOFs=3.,
                 Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1)
 {
 
@@ -21,8 +24,6 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts for pPb");
   //hfecuts->SetQAOn();
   hfecuts->CreateStandardCuts();
-  if(isAOD) hfecuts->SetAODFilterBit(4);
-
   hfecuts->SetMinNClustersTPC(TPCcl);
   hfecuts->SetMinNClustersTPCPID(TPCclPID);
   hfecuts->SetMinNClustersITS(ITScl);
@@ -31,12 +32,17 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetEtaRange(etami,etama);
+  if(phimi >= 0. && phima >= 0) hfecuts->SetPhiRange(phimi,phima);
   hfecuts->SetRejectKinkDaughters();
   if (ikink == 0){
     hfecuts->SetRejectKinkMothers();
   } else {
     hfecuts->SetAcceptKinkMothers();
   }
+  if(isAOD) hfecuts->SetAODFilterBit(4);
+  
+  //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
+ 
   hfecuts->SetMaxImpactParam(DCAxy,DCAz);
   hfecuts->SetUseMixedVertex(kTRUE);
   hfecuts->SetVertexRange(10.);
@@ -67,6 +73,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   task->SetRemovePileUp(kTRUE);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+  //task->SetRejectKinkMother(kFALSE);
+
+
+ 
+
 
   //***************************************//
   //          Variable manager             //
@@ -140,22 +151,35 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   char *cutmodel;
 
   //  if(useMC){ // constant (default) cut for MC
-  cutmodel="pol0(0)";
-  Double_t params[1];
-  params[0]=paramsTPCdEdxcutlow[0];
-  pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
-  /*    
-	} else { // correct for mean shift in data
-	cutmodel="min(pol1(0),pol0(2))";
-	Double_t params[3];
-	//params[0]=-0.12; params[1]=0.14; params[2]=0.09;
-	params[0]=-0.21 + paramsTPCdEdxcutlow[0];
-	params[1]=0.14;
-	params[2]=paramsTPCdEdxcutlow[0];
-	pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
+      cutmodel="pol0(0)";
+      Double_t params[1];
+      params[0]=paramsTPCdEdxcutlow[0];
+      pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
+      /*    
+  } else { // correct for mean shift in data
+      cutmodel="min(pol1(0),pol0(2))";
+      Double_t params[3];
+      //params[0]=-0.12; params[1]=0.14; params[2]=0.09;
+      params[0]=-0.21 + paramsTPCdEdxcutlow[0];
+      params[1]=0.14;
+      params[2]=paramsTPCdEdxcutlow[0];
+      pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
         }
+      */
+  /*
+  char *cutmodel;
+  cutmodel="pol0";
+
+  for(Int_t a=0;a<11;a++){
+    // Not necessary anymore, since the pPb case is handled similarly to the pp case
+    //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
+    Double_t tpcparamlow[1]={paramsTPCdEdxcutlow[a]};
+    Float_t tpcparamhigh=paramsTPCdEdxcuthigh[a];
+    pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
+  }
+  pid->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
   */
-  
+
   // Configure TOF PID
   if (usetof){
     pid->ConfigureTOF(TOFs);
@@ -176,8 +200,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   //***************************************//
 
   AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendix.Data()),"Background subtraction");  //appendix
-  //Setting the Cuts for the Associated electron-pool
+    //Setting the Cuts for the Associated electron-pool
   AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
+  //  hfeBackgroundCuts->SetEtaRange(assETA);
   hfeBackgroundCuts->SetEtaRange(assETAm,assETAp);
   hfeBackgroundCuts->SetPtRange(assMinPt,20.);
 
@@ -249,7 +274,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
   }
   
   task->SetHFEBackgroundSubtraction(backe);
+
   task->SetWeightHist(); 
+
  
   // QA
   printf("task %p\n", task);

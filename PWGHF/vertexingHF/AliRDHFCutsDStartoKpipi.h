@@ -61,17 +61,13 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
      {fTrackCutsSoftPi=new AliESDtrackCuts(*cuts); return;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return fTrackCutsSoftPi;}
 
-  Double_t GetCircRadius() { return fCircRadius; }
-  void SetCircRadius(Double_t radius) { fCircRadius = radius; }
-
  protected:
 
   AliESDtrackCuts *fTrackCutsSoftPi; // cuts for soft pion (AOD converted to ESD on the flight!)
   Float_t fMaxPtPid; // maximum Dstar Pt for using PID
   Float_t fTPCflag;   // 
-  Double_t fCircRadius; // Radius for circular PID nsigma cut
 
-  ClassDef(AliRDHFCutsDStartoKpipi,7);  // class for cuts on AOD reconstructed D0->Kpipi
+  ClassDef(AliRDHFCutsDStartoKpipi,6);  // class for cuts on AOD reconstructed D0->Kpipi
 };
 
 #endif

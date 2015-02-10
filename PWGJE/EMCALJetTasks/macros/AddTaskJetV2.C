@@ -21,8 +21,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   TRandom3   *randomizer        = 0x0,
   Double_t   trackptcut         = .15,
   Bool_t     LHC10h             = kFALSE,
-  Bool_t     addEPweights       = kFALSE,
-  Bool_t     baseClassHistos    = kTRUE
+  Bool_t     addEPweights       = kFALSE
   )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -63,7 +62,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
     name += "_USER";
 
   // create instance of the object
-  AliAnalysisTaskJetV2* jetTask = new AliAnalysisTaskJetV2(name, runMode, baseClassHistos);
+  AliAnalysisTaskJetV2* jetTask = new AliAnalysisTaskJetV2(name, runMode);
   
   // create and connect data containers
   AliParticleContainer* partCont = jetTask->AddParticleContainer(ntracks);
@@ -118,10 +117,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   (LHC10h) ? jetTask->SetExpectedSemiGoodRuns(0x0) : jetTask->SetExpectedSemiGoodRuns(new TArrayI(sizeof(semiGoodRuns)/sizeof(semiGoodRuns[0]), semiGoodRuns));
 
   // and if 10h, pass this info to the task so acceptance isn't changed
-  if(LHC10h) {
-      jetTask->SetCollisionType(AliAnalysisTaskJetV2::kPbPb10h);
-      jetTask->SetNeedEmcalGeom(kFALSE);
-  }
+  if(LHC10h) jetTask->SetCollisionType(AliAnalysisTaskJetV2::kPbPb10h);
 
   if(addEPweights) {
      // add a set of default event plane weights, FIXME should be more elegant
@@ -356,7 +352,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-  jetTask->SetVzRange(-10., 10.);
+  
   mgr->AddTask(jetTask);
   
   // Create containers for input/output
@@ -364,17 +360,10 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   TString contname(name);
   contname+="_PWGJE";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
-          TList::Class(),AliAnalysisManager::kOutputContainer,
-	  Form("%s", AliAnalysisManager::GetCommonFileName()));
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (jetTask, 0,  cinput1 );
-  if(baseClassHistos) {
-      contname+="BaseClassHistograms";
-      AliAnalysisDataContainer *coutputBase = mgr->CreateContainer(contname.Data(), 
-	  TList::Class(),AliAnalysisManager::kOutputContainer,
-	  Form("%s", AliAnalysisManager::GetCommonFileName()));
-      mgr->ConnectOutput(jetTask, 1, coutputBase);
-  }
-  mgr->ConnectOutput(jetTask, (baseClassHistos) ? 2 : 1, coutput1);
+  mgr->ConnectOutput (jetTask, 1, coutput1 );
 
   switch (runMode) {
       case AliAnalysisTaskJetV2::kLocal : {
@@ -385,8 +374,8 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
           AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("bad_fits_%s", name.Data()),
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							     Form("%s", AliAnalysisManager::GetCommonFileName()));
-          mgr->ConnectOutput (jetTask, (baseClassHistos) ? 3 : 2, coutput2);
-          mgr->ConnectOutput (jetTask, (baseClassHistos) ? 4 : 3, coutput3);
+          mgr->ConnectOutput (jetTask, 2, coutput2);
+          mgr->ConnectOutput (jetTask, 3, coutput3);
       } break;
       default: break;
   }

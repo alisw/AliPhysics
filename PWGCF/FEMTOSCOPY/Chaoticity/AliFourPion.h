@@ -106,7 +106,6 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetNormLow(Float_t nl) {fNormQcutLow = nl;}
   void SetNormHigh(Float_t nh) {fNormQcutHigh = nh;}
   void SetFSIindexSmallSystem(Int_t ind) {fFSIindexSmallSystem = ind;}
-  void SetChargeSelection(Bool_t cs) {fChargeSelection = cs;}
   void Setq2Binning(Bool_t qb) {fq2Binning = qb;}
   void Setq2Index(Int_t q2i) {fq2Index = q2i;}
   void Setq2CutLow(Float_t q2l) {fq2CutLow = q2l;}
@@ -324,7 +323,6 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fQmean[kQbinsWeights];
   Float_t fDampStart;
   Float_t fDampStep;
-  Bool_t fChargeSelection;
   Bool_t fq2Binning;
   Int_t fq2Index;
   Float_t fq2CutLow;

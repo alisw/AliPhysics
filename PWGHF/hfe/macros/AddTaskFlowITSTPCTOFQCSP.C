@@ -96,12 +96,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
     }
     
-    TString histoflatnameEP;
-   if(centrMax == 10.) histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
-   if(centrMax == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero05_Smart.root";
-   if(centrMin == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero510_Smart.root";
-
-    
+    TString histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
     if(Weight){
         TFile *fFlatEP=TFile::Open(histoflatnameEP,"READ");
         TCanvas *cEP=fFlatEP->Get("c1_n7");

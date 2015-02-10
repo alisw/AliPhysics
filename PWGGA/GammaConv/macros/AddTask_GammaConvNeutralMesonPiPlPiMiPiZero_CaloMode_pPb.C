@@ -5,7 +5,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
 										TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
 										Bool_t doWeighting = kFALSE,  //enable Weighting
 										TString generatorName = "HIJING",				
-										TString cutnumberAODBranch = "000000006008400001001500000"
+										TString cutnumberAODBranch = "0000000060084001001500000"
 										) {
 
 	// ================= Load Librariers =================================
@@ -49,7 +49,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "06000008400100001500000000";
+	TString cutnumberPhoton = "060000084001001500000000";
 	TString cutnumberEvent = "8000000";
 	TString PionCuts      = "000000200";            //Electron Cuts
 	

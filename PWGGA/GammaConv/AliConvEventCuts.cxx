@@ -286,9 +286,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
    fHistograms->Add(hCentrality);
    hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
    fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
-   hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
-   fHistograms->Add(hVertexZ);
-   
+
    // Event Cuts and Info
    if(preCut){
       fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
@@ -951,7 +949,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 		case 3: // kCentral - both
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
-			fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
+			fSpecialSubTriggerName="CVHN|CCENT";
 			cout << "kCentral both" << endl;
 			break;
 		case 4: // kSemiCentral - no vertex restriction
@@ -984,12 +982,6 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fSpecialSubTriggerName="CPBI2_|CPBI2-";
 			cout << "kMB 2" << endl;
 			break;			
-		case 9: // kMB
-			fSpecialSubTrigger=1; 
-			fNSpecialSubTriggerOptions=1;
-			fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
-			cout << "kMB both" << endl;
-			break;	
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
 			return 0;
@@ -1579,25 +1571,21 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 				}
 				//if for specif centrality trigger selection 
 				if(fSpecialSubTrigger == 1){
-					if(fSpecialSubTriggerName.Contains("|")  && GetCentrality(fInputEvent) <= 10.){
+					if(fSpecialSubTriggerName.Contains("|")){
 						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("|");
 						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
 							TObjString *NameClass = (TObjString*)ClassesList->At(i);
 							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
+// 							cout << "|||||||| \t" << NameClass->GetString() << "\t ||||||||" << endl;
 						}
 					} else if(fSpecialSubTriggerName.Contains("%")){
 						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("%");
 						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
 							TObjString *NameClass = (TObjString*)ClassesList->At(i);
 							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
-						}
-					} else if(fSpecialSubTriggerName.Contains("@")){
-						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("@");
-						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
-							TObjString *NameClass = (TObjString*)ClassesList->At(i);
-							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
+// 							cout << "|||||||| \t" << NameClass->GetString() << "\t ||||||||" << endl;
 						}	
-					} else if(fSpecialSubTriggerName.Contains("&")){ //logic AND of two classes
+					} else if(fSpecialSubTriggerName.Contains("&")){
 						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("&");
 						TString CheckClass = "";
 						for (Int_t i=0; i<ClassesList->GetEntriesFast(); i++){
@@ -1606,6 +1594,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 							else CheckClass+="0";
 						}
 						if(CheckClass.Contains("0")) isSelected = 0;
+// 						cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
 					}	
 					else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
 				}

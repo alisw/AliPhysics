@@ -44,10 +44,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
     ::Error("AddTaskThreePartTracks", "This task requires an input event handler");
     return NULL;
   }
-  const char* fname = Form("%s_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
-  const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
-
-  AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), options);
+  AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", name), options);
 
   task->SetCentralityEstimator(centrality);
   task->SetTrigger(AliAnalysisTaskCorrelation3p::tracks);
@@ -95,8 +92,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   
-  TString cname(Form("%sCoutput1", tname));
-  TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), fname));
+  TString cname(Form("%sCoutput1", name));
+  TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name));
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectOutput(task, 1, coutput1);
 

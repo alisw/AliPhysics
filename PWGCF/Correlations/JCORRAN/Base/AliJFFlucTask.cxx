@@ -95,8 +95,7 @@ AliJFFlucTask::~AliJFFlucTask()
 {
 		// destructor 
 		delete fFFlucAna;
-		delete fInputList;
-		delete fOutput;
+
 }
 
 //________________________________________________________________________
@@ -138,7 +137,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 	// load current event and save track, event info 
 	AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 
-	ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
+	fInputList = 	ReadAODTracks( currentEvent ) ; // read tracklist
 	fCent = 		ReadAODCentrality( currentEvent, "V0M"  ) ; 
 
 	// 
@@ -172,13 +171,15 @@ void AliJFFlucTask::Init()
 //
 }
 //______________________________________________________________________________
-void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
+TClonesArray * AliJFFlucTask::ReadAODTracks( AliAODEvent *aod )
 {
+	TClonesArray *TrackList = new TClonesArray( "AliJBaseTrack" , 2500);
+
 		//aod->Print();
 	if( IsMC == kTRUE ){  // how to get a flag to check  MC or not ! 
 
 		TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
-		if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
+		if(!mcArray){ Printf("Error not a proper MC event"); return NULL;};  // check mc array
 		
 		Int_t nt = mcArray->GetEntriesFast();
 		Int_t ntrack =0;
@@ -222,6 +223,7 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				}
 		}
 	} //read aod reco track done.
+	return TrackList; 
 }
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){

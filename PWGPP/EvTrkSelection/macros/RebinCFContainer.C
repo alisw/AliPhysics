@@ -23,20 +23,6 @@
 //   steps to project (1:GenAcc/LimAcc, 2: RecCuts/GenAcc, 3: RecPID/GenAcc, 4: Rec/GenAcc, 5: RecAcc/GenAcc)
 //   container directory suffix
 //
-const Double_t etamin = -0.9;
-const Double_t etamax =  0.9;
-const Double_t ptmin = 0.0;
-const Double_t ptmax = 24.0;
-const Double_t phimin = -2*TMath::Pi();
-const Double_t phimax = 2*TMath::Pi();
-const Double_t thetamin = 0;
-const Double_t thetamax = TMath::Pi();
-const Double_t zvtxmin = -10.0;
-const Double_t zvtxmax =  10.0;
-const Double_t multmin = 0;
-const Double_t multmax = 102;
-const Double_t centmin = 0;
-const Double_t centmax = 100;
 
 void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0, Int_t myEff=3, const char * name="Nch"){
 
@@ -57,43 +43,16 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   TFile* file = TFile::Open(infile,"read");
   
   TDirectoryFile *d = 0;
-  AliCFContainer *dataIni = 0;
+  AliCFContainer *data = 0;
   d = (TDirectoryFile*)file->Get(Form("PWGPP_CFSingleTrack%s",name));
   if(!d) {
     cout<<" no directory "<<endl;
     return;
   }
-  dataIni = (AliCFContainer*) (d->Get("container"));
-  if(!dataIni){
+  data = (AliCFContainer*) (d->Get("container"));
+  if(!data){
     cout <<" no container"<<endl;
   }
-  //
-  // Do an slice of the container to make sure to remove outliers
-  //
-  const UInt_t ipt = 0;
-  const UInt_t ieta  = 1;
-  const UInt_t iphi = 2;
-  const UInt_t itheta = 3;
-  const UInt_t izvtx = 4;
-  const UInt_t imult = 5;
-  const UInt_t icent = 6;
-  Int_t nvars = 7;
-  Int_t* ivarSlice = new Int_t[nvars];
-  ivarSlice[0]= ipt;    ivarSlice[1] = ieta;   ivarSlice[2] = iphi;  ivarSlice[3] = itheta;
-  ivarSlice[4]= izvtx;  ivarSlice[5] = imult;  ivarSlice[6] = icent;
-  Double_t *mins = new Double_t[nvars];
-  Double_t *maxs = new Double_t[nvars];
-  mins[ipt] = ptmin;        maxs[ipt] = ptmax;
-  mins[ieta] = etamin;      maxs[ieta] = etamax;
-  mins[iphi] = phimin;      maxs[iphi] = phimax;
-  mins[itheta] = thetamin;  maxs[itheta] = thetamax;
-  mins[izvtx] = zvtxmin;    maxs[izvtx] = zvtxmax;
-  mins[imult] = multmin;    maxs[imult] = multmax;
-  mins[icent] = centmin;    maxs[icent] = centmax;
-  AliCFContainer *data = (AliCFContainer*)dataIni->MakeSlice(nvars,ivarSlice,mins,maxs);
-  cout<< "  ... slice done"<<endl;
-  cout<< "  the new container has "<< data->GetNStep() << " steps"<<endl;
-  
 
   //
   // *********** NUMERATOR
@@ -115,31 +74,26 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
 
   Int_t nLimits=0;
   Double_t* newLimits =0;
-  TString varname="";
   if(rebinVar==0) {
-    varname="pt";
-    nLimits = 17;
+    nLimits = 15;
     newLimits = new Double_t[nLimits+1];
     newLimits[0]=0;
-    newLimits[1]=0.25;
-    newLimits[2]=0.5;
-    newLimits[3]=0.75;
-    newLimits[4]=1;
-    newLimits[5]=1.5;
-    newLimits[6]=2;
-    newLimits[7]=2.5;
-    newLimits[8]=3;
-    newLimits[9]=4;
-    newLimits[10]=5;
-    newLimits[11]=6;
-    newLimits[12]=7;
-    newLimits[13]=8;
-    newLimits[14]=10;
-    newLimits[15]=12;
-    newLimits[16]=14;
-    newLimits[17]=16;
+    newLimits[1]=0.5;
+    newLimits[2]=1;
+    newLimits[3]=1.5;
+    newLimits[4]=2;
+    newLimits[5]=2.5;
+    newLimits[6]=3;
+    newLimits[7]=4;
+    newLimits[8]=5;
+    newLimits[9]=6;
+    newLimits[10]=7;
+    newLimits[11]=8;
+    newLimits[12]=10;
+    newLimits[13]=12;
+    newLimits[14]=14;
+    newLimits[15]=16;
   } else if (rebinVar==1) {
-    varname="eta";
     nLimits = 9;
     newLimits = new Double_t[nLimits+1];
     newLimits[0]=-0.9;
@@ -152,12 +106,6 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
     newLimits[7]=0.5;
     newLimits[8]=0.7;
     newLimits[9]=0.9;
-  } else if (rebinVar==2) {
-    varname="phi";
-    nLimits = 9;
-    newLimits = new Double_t[nLimits+1];
-    for(Int_t i=0; i<=nLimits; i++) newLimits[i]=(Double_t)phimin + (phimax-phimin)/nLimits*(Double_t)i ;
-    
   }
   const Int_t nnewLimits = nLimits;
   
@@ -234,39 +182,39 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   TFile* fout = NULL;
   if( myEff == 1 ) {
     fout = new TFile(Form("efficiency_STE_GenAcc_over_LimAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
-    heff->Write(Form("h_%s_effCFLimAccGenAcc",varname.Data()));
-    h2num->Write(Form("h_%s_LimAcc",varname.Data()));
-    h2->Write(Form("h_%s_GenAcc",varname.Data()));
+    heff->Write("hpteffCFLimAccGenAcc");
+    h2num->Write("hptLimAcc");
+    h2->Write("hptGenAcc");
   }
   else if( myEff == 2 ) {
     fout = new TFile(Form("efficiency_STE_RecPPR_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
-    heff->Write(Form("h_%s_effCFRecPPRGenAcc",varname.Data()));
-    h2num->Write(Form("h_%s_RecPPR",varname.Data()));
-    h2->Write(Form("h_%s_GenAcc",varname.Data()));
+    heff->Write("hpteffCFRecPPRGenAcc");
+    h2num->Write("hptRecPPR");
+    h2->Write("hptGenAcc");
   }
   else if( myEff == 3 ) {
     fout = new TFile(Form("efficiency_STE_RecPID_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
-    heff->Write(Form("h_%s_effCFRecPIDGenAcc",varname.Data()));
-    h2num->Write(Form("h_%s_RecPID",varname.Data()));
-    h2->Write(Form("h_%s_GenAcc",varname.Data()));
+    heff->Write("hpteffCFRecPIDGenAcc");
+    h2num->Write("hptRecPID");
+    h2->Write("hptGenAcc");
   }
   else if( myEff == 4 ) {
     fout = new TFile(Form("efficiency_STE_Rec_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
-    heff->Write(Form("h_%s_effCFRecGenAcc",varname.Data()));
-    h2num->Write(Form("h_%s_Rec",varname.Data()));
-    h2->Write(Form("h_%s_GenAcc",varname.Data()));
+    heff->Write("hpteffCFRecGenAcc");
+    h2num->Write("hptRec");
+    h2->Write("hptGenAcc");
   }
   else if( myEff == 5 ) {
     fout = new TFile(Form("efficiency_STE_RecAcc_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
-    heff->Write(Form("h_%s_effCFRecAccGenAcc",varname.Data()));
-    h2num->Write(Form("h_%s_RecAcc",varname.Data()));
-    h2->Write(Form("h_%s_GenAcc",varname.Data()));
+    heff->Write("hpteffCFRecAccGenAcc");
+    h2num->Write("hptRecAcc");
+    h2->Write("hptGenAcc");
   }
   else if( myEff == 6 ) {
     fout = new TFile(Form("efficiency_STE_RecPPRKine_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
-    heff->Write(Form("h_%s_effCFRecPPRKineGenAcc",varname.Data()));
-    h2num->Write(Form("h_%s_RecPPRKine",varname.Data()));
-    h2->Write(Form("h_%s_GenAcc",varname.Data()));
+    heff->Write("hpteffCFRecPPRKineGenAcc");
+    h2num->Write("hptRecPPRKine");
+    h2->Write("hptGenAcc");
   }
   fout->Close();
 

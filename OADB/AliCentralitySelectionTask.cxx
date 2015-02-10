@@ -129,47 +129,47 @@ AliAnalysisTaskSE(),
   fCSEMI(0),
   fCCENTbit(0),
   fCSEMIbit(0),
-  fCentV0M(-1),
-  fCentV0A(-1),
-  fCentV0A0(-1),
-  fCentV0A123(-1),
-  fCentV0C(-1),
-  fCentV0A23(-1),
-  fCentV0C01(-1),
-  fCentV0S(-1),
-  fCentV0MEq(-1),
-  fCentV0AEq(-1),
-  fCentV0CEq(-1),
-  fCentFMD(-1),
-  fCentTRK(-1),
-  fCentTKL(-1),
-  fCentCL0(-1),
-  fCentCL1(-1),
-  fCentCND(-1),
-  fCentZNA(-1),
-  fCentZNC(-1),
-  fCentZPA(-1),
-  fCentZPC(-1),
-  fCentNPA(-1),
-  fCentV0MvsFMD(-1),
-  fCentTKLvsV0M(-1),
-  fCentZEMvsZDC(-1),
-  fCentV0Mtrue(-1),
-  fCentV0Atrue(-1),
-  fCentV0Ctrue(-1),
-  fCentV0MEqtrue(-1),
-  fCentV0AEqtrue(-1),
-  fCentV0CEqtrue(-1),
-  fCentFMDtrue(-1),
-  fCentTRKtrue(-1),
-  fCentTKLtrue(-1),
-  fCentCL0true(-1),
-  fCentCL1true(-1),
-  fCentCNDtrue(-1),
-  fCentZNAtrue(-1),
-  fCentZNCtrue(-1),
-  fCentZPAtrue(-1),
-  fCentZPCtrue(-1),
+  fCentV0M(0),
+  fCentV0A(0),
+  fCentV0A0(0),
+  fCentV0A123(0),
+  fCentV0C(0),
+  fCentV0A23(0),
+  fCentV0C01(0),
+  fCentV0S(0),
+  fCentV0MEq(0),
+  fCentV0AEq(0),
+  fCentV0CEq(0),
+  fCentFMD(0),
+  fCentTRK(0),
+  fCentTKL(0),
+  fCentCL0(0),
+  fCentCL1(0),
+  fCentCND(0),
+  fCentZNA(0),
+  fCentZNC(0),
+  fCentZPA(0),
+  fCentZPC(0),
+  fCentNPA(0),
+  fCentV0MvsFMD(0),
+  fCentTKLvsV0M(0),
+  fCentZEMvsZDC(0),
+  fCentV0Mtrue(0),
+  fCentV0Atrue(0),
+  fCentV0Ctrue(0),
+  fCentV0MEqtrue(0),
+  fCentV0AEqtrue(0),
+  fCentV0CEqtrue(0),
+  fCentFMDtrue(0),
+  fCentTRKtrue(0),
+  fCentTKLtrue(0),
+  fCentCL0true(0),
+  fCentCL1true(0),
+  fCentCNDtrue(0),
+  fCentZNAtrue(0),
+  fCentZNCtrue(0),
+  fCentZPAtrue(0),
+  fCentZPCtrue(0),
   fHtempV0M(0),
   fHtempV0A(0),
   fHtempV0A0(0),
@@ -399,47 +399,47 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCSEMI(0),
   fCCENTbit(0),
   fCSEMIbit(0),
-  fCentV0M(-1),
-  fCentV0A(-1),
-  fCentV0A0(-1),
-  fCentV0A123(-1),
-  fCentV0C(-1),
-  fCentV0A23(-1),
-  fCentV0C01(-1),
-  fCentV0S(-1),
-  fCentV0MEq(-1),
-  fCentV0AEq(-1),
-  fCentV0CEq(-1),
-  fCentFMD(-1),
-  fCentTRK(-1),
-  fCentTKL(-1),
-  fCentCL0(-1),
-  fCentCL1(-1),
-  fCentCND(-1),
-  fCentZNA(-1),
-  fCentZNC(-1),
-  fCentZPA(-1),
-  fCentZPC(-1),
-  fCentNPA(-1),
-  fCentV0MvsFMD(-1),
-  fCentTKLvsV0M(-1),
-  fCentZEMvsZDC(-1),
-  fCentV0Mtrue(-1),
-  fCentV0Atrue(-1),
-  fCentV0Ctrue(-1),
-  fCentV0MEqtrue(-1),
-  fCentV0AEqtrue(-1),
-  fCentV0CEqtrue(-1),
-  fCentFMDtrue(-1),
-  fCentTRKtrue(-1),
-  fCentTKLtrue(-1),
-  fCentCL0true(-1),
-  fCentCL1true(-1),
-  fCentCNDtrue(-1),
-  fCentZNAtrue(-1),
-  fCentZNCtrue(-1),
-  fCentZPAtrue(-1),
-  fCentZPCtrue(-1),
+  fCentV0M(0),
+  fCentV0A(0),
+  fCentV0A0(0),
+  fCentV0A123(0),
+  fCentV0C(0),
+  fCentV0A23(0),
+  fCentV0C01(0),
+  fCentV0S(0),
+  fCentV0MEq(0),
+  fCentV0AEq(0),
+  fCentV0CEq(0),
+  fCentFMD(0),
+  fCentTRK(0),
+  fCentTKL(0),
+  fCentCL0(0),
+  fCentCL1(0),
+  fCentCND(0),
+  fCentZNA(0),
+  fCentZNC(0),
+  fCentZPA(0),
+  fCentZPC(0),
+  fCentNPA(0),
+  fCentV0MvsFMD(0),
+  fCentTKLvsV0M(0),
+  fCentZEMvsZDC(0),
+  fCentV0Mtrue(0),
+  fCentV0Atrue(0),
+  fCentV0Ctrue(0),
+  fCentV0MEqtrue(0),
+  fCentV0AEqtrue(0),
+  fCentV0CEqtrue(0),
+  fCentFMDtrue(0),
+  fCentTRKtrue(0),
+  fCentTKLtrue(0),
+  fCentCL0true(0),
+  fCentCL1true(0),
+  fCentCNDtrue(0),
+  fCentZNAtrue(0),
+  fCentZNCtrue(0),
+  fCentZPAtrue(0),
+  fCentZPCtrue(0),
   fHtempV0M(0),
   fHtempV0A(0),
   fHtempV0A0(0),
@@ -1250,49 +1250,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Float_t zvtxT0 =0;                // z-vertex T0
 
   Int_t Npart =0;                   // N. of participants (true MC)
-
-  // init all centrality to 0
-  fCentV0M =0;
-  fCentV0A =0;
-  fCentV0A0 =0;
-  fCentV0A123 =0;
-  fCentV0C =0;
-  fCentV0A23 =0;
-  fCentV0C01 =0;
-  fCentV0S =0;
-  fCentV0MEq =0;
-  fCentV0AEq =0;
-  fCentV0CEq =0;
-  fCentFMD =0;
-  fCentTRK =0;
-  fCentTKL =0;
-  fCentCL0 =0;
-  fCentCL1 =0;
-  fCentCND =0;
-  fCentZNA =0;
-  fCentZNC =0;
-  fCentZPA =0;
-  fCentZPC =0;
-  fCentNPA =0;
-  fCentV0MvsFMD =0;
-  fCentTKLvsV0M =0;
-  fCentZEMvsZDC =0;
-  fCentV0Mtrue =0;
-  fCentV0Atrue =0;
-  fCentV0Ctrue =0;
-  fCentV0MEqtrue =0;
-  fCentV0AEqtrue =0;
-  fCentV0CEqtrue =0;
-  fCentFMDtrue =0;
-  fCentTRKtrue =0;
-  fCentTKLtrue =0;
-  fCentCL0true =0;
-  fCentCL1true =0;
-  fCentCNDtrue =0;
-  fCentZNAtrue =0;
-  fCentZNCtrue =0;
-  fCentZPAtrue =0;
-  fCentZPCtrue =0; 
 
   AliCentrality *esdCent = 0;
 

@@ -177,8 +177,6 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
 	Float_t fTreeVariableNSigmasPosPion; //! 
 	Float_t fTreeVariableNSigmasNegProton; //!
 	Float_t fTreeVariableNSigmasNegPion; //! 
-	Float_t fTreeVariableNegTransvMomentumMC; //!
-	Float_t fTreeVariablePosTransvMomentumMC; //!
 	
 	Float_t fTreeVariableDistOverTotMom;//!
 	Int_t   fTreeVariableLeastNbrCrossedRows;//!
@@ -241,8 +239,6 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Float_t fTreeCascVarPosNSigmaProton; //! 
   Float_t fTreeCascVarBachNSigmaPion;  //! 
   Float_t fTreeCascVarBachNSigmaKaon;  //! 
-	Float_t fTreeCascVarNegTransvMomentumMC; //!
-	Float_t fTreeCascVarPosTransvMomentumMC; //!
 
   //Event Multiplicity Variables 
   Float_t fTreeCascVarCentV0M;    //!
