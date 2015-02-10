@@ -444,3 +444,35 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
   }  
   
 }
+
+//_____________________________________________________________________________
+//example static conversion functions, use with care!
+//
+AliESDEvent* AliFlatESDEvent::MakeESDevent(AliFlatESDEvent* flatEvent)
+{
+  //produce an AliESDEvent from a AliFlatESDEvent
+  //caller then owns the object
+  AliESDEvent* esdEvent = new AliESDEvent();
+  flatEvent->GetESDEvent(esdEvent);
+  return esdEvent;
+}
+
+AliFlatESDEvent* AliFlatESDEvent::MakeFlatEvent(AliESDEvent* esdEvent,Bool_t fillV0s)
+{
+  //produce an AliFlatESDEvent from en AliESDEvent
+  //caller then owns the object
+  //object has to be destroyed using DestroyFlatEvent
+  Int_t flatEventSize = AliFlatESDEvent::EstimateSize(esdEvent,fillV0s);
+  Byte_t *flatEventBuffer = new Byte_t[flatEventSize];
+  AliFlatESDEvent *flatEvent = reinterpret_cast<AliFlatESDEvent*>(flatEventBuffer);
+  Int_t err = flatEvent->SetFromESD(flatEventSize, esdEvent, fillV0s);
+  if (err!=0) { delete [] flatEventBuffer; return NULL; }
+  return flatEvent;
+}
+
+void AliFlatESDEvent::DestroyFlatEvent(AliFlatESDEvent* flatEvent)
+{
+  //destroy the object created with MakeFlatEvent
+  delete [] reinterpret_cast<Byte_t*>(flatEvent);
+}
+
