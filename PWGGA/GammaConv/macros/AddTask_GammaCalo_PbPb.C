@@ -4,7 +4,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t trainConfig = 1,  //change different set 
 									Int_t enableQAClusterTask = 0, // enable additional QA task
 									TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
 									Int_t headerSelectionInt = 0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-									TString cutnumberAODBranch = "100000006008400000001500000",
+									TString cutnumberAODBranch = "1000000060084000001500000",
 									TString periodName = "LHC13d2",  //name of the period for added signals and weighting
                                     Bool_t doWeighting = kFALSE,  //enable Weighting
                                     Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
@@ -50,7 +50,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t trainConfig = 1,  //change different set 
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "00000008400100001500000000";
+	TString cutnumberPhoton = "000000084001001500000000";
 	TString cutnumberEvent = "1000000";
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 

@@ -5,12 +5,8 @@
 #ifndef AliAnalysisTaskJetV2_H
 #define AliAnalysisTaskJetV2_H
 
-// uncomment or define externally to enable debug information
-// 
-// flag for global and e-by-e debug info
-//#define ALIANALYSISTASKJETV2_DEBUG_FLAG_1
-// flag for debug statements that may be repeated multiple times per event
-//#define ALIANALYSISTASKJETV2_DEBUG_FLAG_2
+// uncomment to compile with debug information
+//#define DEBUGTASK
 
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
@@ -48,10 +44,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
                                 AliAnalysisTaskJetV2();
-                                AliAnalysisTaskJetV2(
-                                        const char *name,               // task name
-                                        runModeType type,               // grid or local mode
-                                        Bool_t baseClassHistos = kFALSE);       // book framework histos
+                                AliAnalysisTaskJetV2(const char *name, runModeType type);
         virtual                 ~AliAnalysisTaskJetV2();
         // setting up the task and technical aspects
         void                    ExecOnce();
@@ -138,6 +131,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             if(!fUsePtWeight) fUsePtWeightErrorPropagation = kFALSE; }
         void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
+        void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetMaxNoRandomCones(Int_t m)                    {fMaxCones = m; }
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
@@ -291,6 +285,8 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Double_t                fSemiGoodJetMaxPhi;     // max phi for semi good tpc runs
         Double_t                fSemiGoodTrackMinPhi;   // min phi for semi good tpc runs
         Double_t                fSemiGoodTrackMaxPhi;   // max phi for semi good tpc runs
+        // event cuts
+        Float_t                 fAbsVertexZ;            // cut on zvertex
         // general qa histograms
         TH1F*                   fHistCentrality;        //! accepted centrality
         TProfile*               fHistCentralityPercIn;  //! centrality versus perc in

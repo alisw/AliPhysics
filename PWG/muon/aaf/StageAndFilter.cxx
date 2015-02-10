@@ -86,11 +86,7 @@ Int_t StageAndFilter(const TString& from, const TString& to,
     delete[] files[1];
     delete[] files;
   }
-  else
-  {
-     // no filter => plain copy
-	  TFile::Cp(from.Data(),to.Data());
-  }
+
   // we assume the function is successfull if the output file is present
   // and can be opened as a TFile ...
   

@@ -68,7 +68,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 // Histograms
 		enum{kH0, kH1, kH2, kH3, kH4, kH5, kNH}; //harmonics
-		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
+		enum{kK0, kK1, kK2, kK3, kK4, kK5, kK6, kK7, kK8, nKL}; // order
 		double fEta_min;
 		double fEta_max;
 
@@ -86,11 +86,6 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_ntracks; // for number of tracks dist
 		AliJTH1D fh_vn;  // single vn^k  array [ih][ik][iCent]
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
-
-		AliJTH1D fh_vn_real;
-		AliJTH1D fh_vn_abs;
-		AliJTH1D fh_vn_vn_real;
-		AliJTH1D fh_vn_vn_abs;
 
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis

@@ -3,7 +3,7 @@ void AddTask_GammaConvV1_pp2(  Int_t trainConfig = 1,  //change different set of
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              TString cutnumberAODBranch = "000000006008400001001500000" 
+                              TString cutnumberAODBranch = "0000000060084001001500000" 
                            ) {
 
 	// ================= Load Librariers =================================
@@ -46,7 +46,7 @@ void AddTask_GammaConvV1_pp2(  Int_t trainConfig = 1,  //change different set of
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-		TString cutnumberPhoton = "00200008400000002200000000";
+		TString cutnumberPhoton = "002000084000002200000000";
 		TString cutnumberEvent = "0000000"; 
 		AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
@@ -113,39 +113,39 @@ void AddTask_GammaConvV1_pp2(  Int_t trainConfig = 1,  //change different set of
 	TString *mesonCutArray = new TString[numberOfCuts];
 
 	if (trainConfig == 1){ 
-		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
 	} else if (trainConfig == 2) { 
-		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
 	} else if (trainConfig == 3) { 
-		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009326000003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "002000093260003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
 	} else if (trainConfig == 4) { 
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
 	} else if (trainConfig == 5) { 
-		eventCutArray[ 0] = "0001011"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+		eventCutArray[ 0] = "0001011"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
 	} else if (trainConfig == 6) { 
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009326000003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Gamma pp 2-76TeV
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000093260003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Gamma pp 2-76TeV
 	} else if (trainConfig == 7) {    
-		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
 	} else if (trainConfig == 8) {    
-		eventCutArray[ 0] = "0001311"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
+		eventCutArray[ 0] = "0001311"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
 	} else if (trainConfig == 9) {    
-		eventCutArray[ 0] = "0000312"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+		eventCutArray[ 0] = "0000312"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
 	} else if (trainConfig == 10) { 
-		eventCutArray[ 0] = "0001312"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
+		eventCutArray[ 0] = "0001312"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
 	} else if (trainConfig == 11) { 
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
 	} else if (trainConfig == 12) { 
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00700009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "007000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
 	} else if (trainConfig == 13) { 
-		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "002000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
 	} else if (trainConfig == 14) { 
-		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "00700009366300003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
+		eventCutArray[ 0] = "0000311"; photonCutArray[ 0] = "007000093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
 	} else if (trainConfig == 15) { 
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092970028250400000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
 	} else if (trainConfig == 16) { 
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "01521065000000"; //standard cut pp 8 TeV		
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092570028250400000"; mesonCutArray[0] = "01521065000000"; //standard cut pp 8 TeV		
 	} else if (trainConfig == 17){
-		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis 8 TeV
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "002000092273028250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis 8 TeV
 		
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

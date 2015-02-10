@@ -311,38 +311,38 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserExec(Option_t *)
   //------------------------------------------------
   // MC analysis setting
   //------------------------------------------------
-  TClonesArray *mcArray = 0;
-  AliAODMCHeader *mcHeader=0;
-  if (fUseMCInfo) {
-    // MC array need for maching
-    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find Monte-Carlo in AOD");
-      return;
-    }
-    fCEvents->Fill(6); // in case of MC events
-  
-    // load MC header
-    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("AliAnalysisTaskSELc2pK0sfromAODtracks::UserExec: MC header branch not found!\n");
-      return;
-    }
-    fCEvents->Fill(7); // in case of MC events
-  
-    Double_t zMCVertex = mcHeader->GetVtxZ();
-    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
-      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
-      return;
-    } else {
-      fCEvents->Fill(17); // in case of MC events
-    }
-  }
+  //  TClonesArray *mcArray = 0;
+  //  AliAODMCHeader *mcHeader=0;
+  //  if (fUseMCInfo) {
+  //    // MC array need for maching
+  //    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  //    if (!mcArray) {
+  //      AliError("Could not find Monte-Carlo in AOD");
+  //      return;
+  //    }
+  //    fCEvents->Fill(6); // in case of MC events
+  //
+  //    // load MC header
+  //    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  //    if (!mcHeader) {
+  //      AliError("AliAnalysisTaskSELc2pK0sfromAODtracks::UserExec: MC header branch not found!\n");
+  //      return;
+  //    }
+  //    fCEvents->Fill(7); // in case of MC events
+  //
+  //    Double_t zMCVertex = mcHeader->GetVtxZ();
+  //    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
+  //      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
+  //      return;
+  //    } else {
+  //      fCEvents->Fill(17); // in case of MC events
+  //    }
+  //	}
 
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
-  MakeAnalysis(aodEvent,mcArray);
+  MakeAnalysis(aodEvent);
 
 
   PostData(1,fOutput);
@@ -420,7 +420,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserCreateOutputObjects()
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
 (
- AliAODEvent *aodEvent, TClonesArray *mcArray
+ AliAODEvent *aodEvent
  )
 {
   //
@@ -435,16 +435,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
   if (nTracks==0) {
     return;
   }
-
-  //------------------------------------------------
-  // Arrays to store MC matching information
-  //------------------------------------------------
-	Int_t usedmclab[20];//Used Lc Label: Assuming there are less than 20 Lc/evt
-	Int_t nusedmclab[20];//Number of times the Lc label is used: Assuming there are less than 20 Lc/evt
-	for(Int_t i=0;i<20;i++) {
-		usedmclab[i]=-9999;
-		nusedmclab[i]=0;
-	}
 
   //------------------------------------------------
   // V0 loop 
@@ -480,41 +470,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
 	continue;
       }
 
-      AliAODMCParticle *mclc = 0;
-      AliAODMCParticle *mcproton = 0;
-      AliAODMCParticle *mck0s = 0;
-      Int_t mclablc = 0;
-      Int_t nmclablc = 0;
-      if(fUseMCInfo)
-      {
-        Int_t pdgDg[2]={2212,310};
-        Int_t pdgDgv0[2]={211,211};
-        mclablc = lcobj->MatchToMC(4122,pdgDg[1],pdgDg,pdgDgv0,mcArray,kTRUE);
-        if(mclablc>-1){
-          mclc = (AliAODMCParticle*) mcArray->At(mclablc);
-          for(Int_t ia=0;ia<20;ia++){
-            if(usedmclab[ia]==mclablc){
-              nusedmclab[ia]++;
-              nmclablc = nusedmclab[ia];
-              break;
-            }
-            if(usedmclab[ia]==-9999){
-              usedmclab[ia]=mclablc;
-              nusedmclab[ia]++;
-              nmclablc = nusedmclab[ia];
-              break;
-            }
-          }
-          Int_t mcprotonlabel = mclc->GetDaughter(0);
-          if(mcprotonlabel>=0)
-            mcproton=(AliAODMCParticle*) mcArray->At(mcprotonlabel);
-          Int_t mck0slabel = mclc->GetDaughter(1);
-          if(mck0slabel>=0)
-            mck0s=(AliAODMCParticle*) mcArray->At(mck0slabel);
-        }
-      }
-
-      FillROOTObjects(lcobj,mclc,mcproton,mck0s,nmclablc);
+      FillROOTObjects(lcobj);
 
       lcobj->GetSecondaryVtx()->RemoveDaughters();
       lcobj->UnsetOwnPrimaryVtx();
@@ -526,7 +482,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcproton, AliAODMCParticle *mck0s, Int_t mcnused) 
+void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *lcobj) 
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
@@ -568,38 +524,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
       fCandidateVariables[19] = probProton;
     }
 
-	fCandidateVariables[20] = -9999;
-	fCandidateVariables[21] = -9999;
-	fCandidateVariables[22] = -9999;
-	fCandidateVariables[23] = -9999;
-	fCandidateVariables[24] = -9999;
-	fCandidateVariables[25] = -9999;
-	fCandidateVariables[26] = -9999;
-	if(fUseMCInfo){
-		if(mcpart){
-			fCandidateVariables[20] = mcpart->Label();
-			fCandidateVariables[21] = mcnused;
-			fCandidateVariables[22] = mcpart->GetPdgCode();
-			Double_t mcprimvertx = mcpart->Xv();
-			Double_t mcprimverty = mcpart->Yv();
-			Double_t mcsecvertx = mcproton->Xv();
-			Double_t mcsecverty = mcproton->Yv();
-			Double_t recosecvertx = lcobj->GetSecondaryVtx()->GetX();
-			Double_t recosecverty = lcobj->GetSecondaryVtx()->GetY();
-			fCandidateVariables[23] = TMath::Sqrt((mcsecvertx-mcprimvertx)*(mcsecvertx-mcprimvertx)+(mcsecverty-mcprimverty)*(mcsecverty-mcprimverty));
-			fCandidateVariables[24] = TMath::Sqrt((recosecvertx-mcprimvertx)*(recosecvertx-mcprimvertx)+(recosecverty-mcprimverty)*(recosecverty-mcprimverty));
-			Double_t vecx_vert = recosecvertx-mcprimvertx;
-			Double_t vecy_vert = recosecverty-mcprimverty;
-			Double_t vecl_vert = TMath::Sqrt(vecx_vert*vecx_vert+vecy_vert*vecy_vert);
-			Double_t vecx_mom = lcobj->Px();
-			Double_t vecy_mom = lcobj->Py();
-			Double_t vecl_mom = lcobj->Pt();
-			if(vecl_vert>0.&&vecl_mom>0.)
-				fCandidateVariables[25] = (vecx_vert*vecx_mom+vecy_vert*vecy_mom)/vecl_vert/vecl_mom;
-			fCandidateVariables[26] = mcpart->Pt();
-		}
-	}
-
   if(fWriteVariableTree)
     fVariablesTree->Fill();
   else{
@@ -633,7 +557,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 27;
+  Int_t nVar = 20;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -657,13 +581,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[17]="nSigmaTPCpr";
   fCandidateVariableNames[18]="nSigmaTOFpr";
   fCandidateVariableNames[19]="probProton";
-  fCandidateVariableNames[20]="mclcID";
-  fCandidateVariableNames[21]="mcnused";
-  fCandidateVariableNames[22]="mcpdgcode";
-  fCandidateVariableNames[23]="mcdecaylength";
-  fCandidateVariableNames[24]="mcdecaylength_secsmear";
-  fCandidateVariableNames[25]="mclccospaxy";
-  fCandidateVariableNames[26]="mclcpt";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));

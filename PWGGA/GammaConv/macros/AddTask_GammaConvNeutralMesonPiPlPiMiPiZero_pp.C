@@ -5,7 +5,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_pp(
 										TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
 										Bool_t doWeighting = kFALSE,  								// enable Weighting
 										TString generatorName = "Pythia",				
-										TString cutnumberAODBranch = "000000006008400001001500000"
+										TString cutnumberAODBranch = "0000000060084001001500000"
 										) {
 
 	// ================= Load Librariers =================================
@@ -48,7 +48,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_pp(
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "06000008400100001500000000";
+	TString cutnumberPhoton = "060000084001001500000000";
 	TString cutnumberEvent = "0000000";
 	TString PionCuts      = "000000200";            //Electron Cuts
 		
@@ -161,21 +161,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_pp(
 	stringShift = "pPb";
 
 	if( trainConfig == 1 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "000000400"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "000000400"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 2 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002000700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002000700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 3 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 4 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035030000000"; MesonCutarray[0] = "01035030000000"; 
 	} else if( trainConfig == 5 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035031000000"; MesonCutarray[0] = "01035030000000"; 	
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035031000000"; MesonCutarray[0] = "01035030000000"; 	
 	} else if( trainConfig == 6 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035032000000"; MesonCutarray[0] = "01035030000000"; 	
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035032000000"; MesonCutarray[0] = "01035030000000"; 	
 	} else if( trainConfig == 7 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 	
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002006700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 	
 	} else if( trainConfig == 8 ) {
-		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "00200009117000008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 			
+		eventCutArray[ 0] = "0000010"; ConvCutarray[0] = "002000091170008260400000"; PionCutarray[0] = "002003700"; NeutralPionCutarray[0] = "01035033000000"; MesonCutarray[0] = "01035030000000"; 			
 	}
 	
 	TList *EventCutList = new TList();

@@ -85,11 +85,8 @@ class AliNeutralMesonSelection : public TObject {
   
   
   // Decay photon bit setting
-  static const Int_t fgkMaxNDecayBits = 8;
   
-  enum decayTypes { kPi0          = 0, kEta          = 1,
-                    kPi0RightSide = 2, kEtaRightSide = 3, kEtaLeftSide  = 4,
-                    kPi0LeftSide  = 5, kEtaBothSides = 6, kPi0BothSides = 7 } ;
+  enum decayTypes { kPi0, kEta, kPi0Side, kEtaSide} ;
 
   UInt_t    GetDecayBit()                         const { return fDecayBit               ; }
   
@@ -169,8 +166,7 @@ class AliNeutralMesonSelection : public TObject {
   Bool_t   fKeepNeutralMesonHistos ;      // Keep neutral meson selection histograms
   
   TString  fParticle ;                    // neutral meson name (Pi0, Eta, +SideBand)
-  UInt_t   fDecayBit;                     // Decay type flag, set while selecting, depending on fParticle and side range
-                                          // see enum decayTypes for possible bits
+  UInt_t   fDecayBit;                     // Decay type flag, set when fParticle is set
 
   //Histograms
   TH2F *   fhAnglePairNoCut ;             //! Aperture angle of decay photons, no cuts

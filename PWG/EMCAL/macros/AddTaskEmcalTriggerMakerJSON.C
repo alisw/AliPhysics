@@ -19,10 +19,6 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMakerJSON(const char *configurationStri
     return NULL;
   }
 
-  // Check if the task already exists, if yes only return the pointer
-  AliEmcalTriggerMaker *eTask(NULL);
-  if((eTask = dynamic_cast<AliEmcalTriggerMaker *>(mgr->GetTask(taskName)))) return eTask;
-
   // Handle wagon configuration
   // Definition of possible parameters
   AliEMCALConfiguration defaultConfiguration("triggerMakerDefault");
@@ -37,12 +33,6 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMakerJSON(const char *configurationStri
   defaultConfiguration.AddParam("jetHighA", new AliJSONInt(0));
   defaultConfiguration.AddParam("jetHighB", new AliJSONInt(0));
   defaultConfiguration.AddParam("jetHighC", new AliJSONInt(0));
-  defaultConfiguration.AddParam("gammaLowA", new AliJSONInt(0));
-  defaultConfiguration.AddParam("gammaLowB", new AliJSONInt(0));
-  defaultConfiguration.AddParam("gammaLowC", new AliJSONInt(0));
-  defaultConfiguration.AddParam("gammaHighA", new AliJSONInt(0));
-  defaultConfiguration.AddParam("gammaHighB", new AliJSONInt(0));
-  defaultConfiguration.AddParam("gammaHighC", new AliJSONInt(0));
   defaultConfiguration.AddParam("doQA", new AliJSONBool(kFALSE));
   AliEMCALConfiguration userConfiguration("userConfig");
   userConfiguration.Build(configurationString);
@@ -93,7 +83,7 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMakerJSON(const char *configurationStri
   AliJSONBool *doQA = static_cast<AliJSONBool *>(combinedConfiguration.GetValue("doQA"));
   TString taskname = (static_cast<AliJSONString *>(combinedConfiguration.GetValue("taskName")))->GetValue();
 
-  eTask = new AliEmcalTriggerMaker(taskname.Data(), doQA->GetValue());
+  AliEmcalTriggerMaker *eTask = new AliEmcalTriggerMaker(taskname.Data(), doQA->GetValue());
   eTask->SetCaloTriggersName(strTriggersName.Data());
   eTask->SetCaloTriggersOutName((static_cast<AliJSONString *>(combinedConfiguration.GetValue("triggersOutName")))->GetValue());
   eTask->SetCaloTriggerSetupOutName((static_cast<AliJSONString *>(combinedConfiguration.GetValue("triggerSetupOutName")))->GetValue());
@@ -104,17 +94,9 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMakerJSON(const char *configurationStri
   				*jetLowC = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("jetLowC")),
   				*jetHighA = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("jetHighA")),
   				*jetHighB = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("jetHighB")),
-  				*jetHighC = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("jetHighC")),
-  				*gammaLowA = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("gammaLowA")),
-  				*gammaLowB = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("gammaLowB")),
-  				*gammaLowC = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("gammaLowC")),
-  				*gammaHighA = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("gammaHighA")),
-  				*gammaHighB = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("gammaHighB")),
-  				*gammaHighC = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("gammaHighC"));
+  				*jetHighC = static_cast<AliJSONInt *>(combinedConfiguration.GetValue("jetHighC"));
   eTask->SetTriggerThresholdJetLow( jetLowA->GetValue(), jetLowB->GetValue(), jetLowC->GetValue() );
   eTask->SetTriggerThresholdJetHigh( jetHighA->GetValue(), jetHighB->GetValue(), jetHighC->GetValue() );
-  eTask->SetTriggerThresholdJetLow( gammaLowA->GetValue(), gammaLowB->GetValue(), gammaLowC->GetValue() );
-  eTask->SetTriggerThresholdJetHigh( gammaHighA->GetValue(), gammaHighB->GetValue(), gammaHighC->GetValue() );
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

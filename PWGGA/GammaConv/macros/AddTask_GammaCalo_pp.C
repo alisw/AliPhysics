@@ -3,7 +3,7 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 							Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
 							Int_t enableQAClusterTask = 0, // enable additional QA task
 							TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
-                            TString cutnumberAODBranch = "000000006008400001001500000",
+                            TString cutnumberAODBranch = "0000000060084001001500000",
 							TString periodname = "LHC12f1x", 							// period name
 							Bool_t doWeighting = kFALSE									// enables weighting
 ) {
@@ -50,7 +50,7 @@ void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cu
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton = "00000008400100001500000000";
+	TString cutnumberPhoton = "000000084001001500000000";
 	TString cutnumberEvent = "0000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();

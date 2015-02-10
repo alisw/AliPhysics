@@ -3,8 +3,8 @@
 # Shell script to compare content of the OCDB entries.
 # Usage:
 # 1) source functios 
-# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh 
-
+# source $ALICE_ROOT/PWGPP/CalibMacros/AliOCDBtoolkit.sh
+#
 # ocdbMakeTable() 
 #       Usage: bash $inputFile $flag $outputFile
 # dumpObject()
@@ -13,11 +13,8 @@
 #       Usage: bash $inputFile1 $inputFile2 $object_name $dump_type [XML/MI] $outfile
 # Example usage:  see example functions below
 
-#  ocdbMakeTable AliESDs.root "ESD" OCDBRec.log
-# (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMapInfo )
-
 # Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
- 
+
 
 ocdbMakeTable(){
 #
@@ -180,19 +177,8 @@ dumpOCDBDiffTable(){
     done
 }
 
-ocdbMapInfo(){
-    #
-    # Dump basic AliRoot session information
-    # Tag values which are considered to be writtent to the OCDB metadata
-    # (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMapInfo )
-    echo DATE":"`date`
-    echo USER":"$USER
-    echo HOSTNAME":"$HOSTNAME
-    echo WorkingDirectory":"`pwd`
-    echo ROOTVERSION":"`root-config --version`
-    echo ALICE_ROOT":"$(git -C $ALICE_ROOT/../src/ describe)
-    echo ALICE_PHYSICS":"$(git -C $ALICE_PHYSICS/../src/ describe)
-}
+
+
 
 
 #

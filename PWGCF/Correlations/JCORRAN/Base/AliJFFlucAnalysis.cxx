@@ -8,7 +8,6 @@
 #include <TVector.h>
 #include <TVector3.h>
 #include <TVectorT.h>
-#include <TComplex.h>
 #include "AliJBaseTrack.h"
 #include "AliJFFlucAnalysis.h"
 //#include "AliJCorrelations.h"
@@ -52,11 +51,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_eta(),
 	fh_ntracks(),
 	fh_vn(),
-	fh_vn_vn(),
-	fh_vn_real(),
-	fh_vn_abs(),
-	fh_vn_vn_real(),
-	fh_vn_vn_abs()	
+	fh_vn_vn()	
 {
  
 	const int NCent = 7;
@@ -101,11 +96,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_eta(),
 	fh_ntracks(),
 	fh_vn(),
-	fh_vn_vn(),
-	fh_vn_real(),
-	fh_vn_abs(),
-	fh_vn_vn_real(),
-	fh_vn_vn_abs()
+	fh_vn_vn()
 {
  
 	const int NCent = 7;
@@ -151,11 +142,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fh_eta(a.fh_eta),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
-	fh_vn_vn(a.fh_vn_vn),
-	fh_vn_real(a.fh_vn_real),
-	fh_vn_abs(a.fh_vn_abs),
-	fh_vn_vn_real(a.fh_vn_vn_real),
-	fh_vn_vn_abs(a.fh_vn_vn_abs)
+	fh_vn_vn(a.fh_vn_vn)
 {
 	//copy constructor
 //	DefineOutput(1, TList::Class() ); 
@@ -220,34 +207,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
  	 	<< fBin_hh << fBin_kk
  	 	<< fHistCentBin
  	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
-	fh_vn_real 
- 		<< TH1D("hvn_real","hvn", 5096, 0, 0.3) 
- 		<< fBin_h << fBin_k 
- 		<< fHistCentBin
- 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent] 
-	fh_vn_vn_real
-	  	<< TH1D("hvn_vn_real", "hvn_vn", 5096, 0, 0.3)
-  		<< fBin_h << fBin_k 
- 	 	<< fBin_hh << fBin_kk
- 	 	<< fHistCentBin
- 	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
-	fh_vn_abs
- 		<< TH1D("hvn_abs","hvn", 5096, 0, 0.3) 
- 		<< fBin_h << fBin_k 
- 		<< fHistCentBin
- 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent] 
-	fh_vn_vn_abs
-	  	<< TH1D("hvn_vn_abs", "hvn_vn", 5096, 0, 0.3)
-  		<< fBin_h << fBin_k 
- 	 	<< fBin_hh << fBin_kk
- 	 	<< fHistCentBin
- 	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
-
-
-
-
-
-
 	//AliJTH1D set done.
 	
 	fHMG->Print();
@@ -274,118 +233,113 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	for(int iCbin=0; iCbin<fNCent; iCbin++){
 		if( inputCent >= fCentBin[iCbin] && inputCent < fCentBin[iCbin+1] ){fCBin = iCbin;};
 	}
-	if(fCBin == -1){return;};
 	int trk_number = fInputList->GetEntriesFast();
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
 	fh_cent->Fill( inputCent ) ; 
 
 
 
-	enum{kSubA, kSubB, kNSub};
+	enum{kSub1, kSub2, kNSub};
 	enum{kReal, kImg, kNPhase};
 	double Eta_config[kNSub][2];
-	Eta_config[kSubA][0] = fEta_min;
-	Eta_config[kSubA][1] = fEta_max;
-	Eta_config[kSubB][0] = -1*fEta_max;
-	Eta_config[kSubB][1] = -1*fEta_min; 
+	Eta_config[kSub1][0] = fEta_min;
+	Eta_config[kSub1][1] = fEta_max;
+	Eta_config[kSub2][0] = -1*fEta_max;
+	Eta_config[kSub2][1] = -1*fEta_min; 
 	
-
-	// use complex variable instead of doulbe Qn // 
-	TComplex QnA[kNH];
-	TComplex QnB[kNH];
-	TComplex QnB_star[kNH];
+	double Qn[kNH][kNSub][kNPhase]; // Qn for 2nd harmonics
 
 	//---------------- Do initialize here -----------
 	for(int ih=2; ih<kNH; ih++){
-			QnA[ih]= TComplex(0,0);
-			QnB[ih]= TComplex(0,0);
-			QnB_star[ih] = TComplex(0,0);			
-
+			for(int isub=0; isub<kNSub; isub++){
+					for(int iphase=0; iphase < kNPhase; iphase++){
+							Qn[ih][isub][iphase] =0; // init
+					}
+			}
 	}
 	//--------------- Calculate Qn--------------------
 	for(int ih=2; ih<kNH; ih++){
-					double QAReal = Get_Qn_Real( Eta_config[kSubA][0], Eta_config[kSubA][1], ih );
-					double QAImag = Get_Qn_Img(  Eta_config[kSubA][0], Eta_config[kSubA][1], ih );
-					QnA[ih]= TComplex(QAReal, QAImag);
-
-					double QBReal = Get_Qn_Real( Eta_config[kSubB][0], Eta_config[kSubB][1], ih );
-					double QBImag = Get_Qn_Img(  Eta_config[kSubB][0], Eta_config[kSubB][1], ih );
-					QnB[ih]= TComplex(QBReal, QBImag);
-					QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
-					
+			for(int isub=0; isub<kNSub; isub++){
+					Qn[ih][isub][kReal] = Get_Qn_Real( Eta_config[isub][0], Eta_config[isub][1], ih );
+					Qn[ih][isub][kImg]  = Get_Qn_Img(  Eta_config[isub][0], Eta_config[isub][1], ih );
+			}
 	}
+
 	//-------------- Fill histos with below Values ----
-	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
-	// use k=0 for check v2, v3 only
-	//
-	double vn2[kNH][nKL]; 
-	double vn2_vn2[kNH][nKL][kNH][nKL];
-	double vn2_real[kNH][nKL]; 
-	double vn2_abs[kNH][nKL]; 
-	double vn2_vn2_real[kNH][nKL][kNH][nKL];
-	double vn2_vn2_abs[kNH][nKL][kNH][nKL];
+	double vn[kNH][nKL]; 
+	double vn_vn[kNH][nKL][kNH][nKL];
 	//initiation
 	for(int ih=0; ih<kNH; ih++){
 		for(int ik=0; ik<nKL ; ik++){
-				vn2[ih][ik] = -999;
-				vn2_real[ih][ik] = -999;
-				vn2_abs[ih][ik] = -999;
+				vn[ih][ik] = -999;
 			for(int ihh=0; ihh<kNH; ihh++){
 				for(int ikk=0; ikk<nKL; ikk++){
-					vn2_vn2[ih][ik][ihh][ikk] = -999;
-					vn2_vn2_real[ih][ik][ihh][ikk] = -999;
-					vn2_vn2_abs[ih][ik][ihh][ikk] = -999;
+					vn_vn[ih][ik][ihh][ikk] = -999;
 				}
 			}
 		}
 	}
 
+
 	// calculate hvn	
 	for( int ih=2; ih<kNH; ih++){
-		for(int ik=0; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-				if(ik==0) vn2[ih][ik] = TMath::Sqrt( ( TComplex::Abs( QnA[ih] * QnB_star[ih] )) ) ;
-				if(ik!=0) vn2_abs[ih][ik] = TComplex::Abs(  TComplex::Power( QnA[ih]*QnB_star[ih], ik )   );
-				if(ik!=0) vn2_real[ih][ik] = (TComplex::Power( QnA[ih] * QnB_star[ih], ik)).Re();
+		for(int ik=1; ik<nKL; ik++){
+			if(ik==1) vn[ih][ik] = Get_QC_Vn( Qn[ih][kSub1][kReal], Qn[ih][kSub1][kImg], Qn[ih][kSub2][kReal], Qn[ih][kSub2][kImg]);
+			else{
+				vn[ih][ik] = TMath::Power( vn[ih][1] , ik ); 
+			}
 		}		
 	}
-	// vn^2k calcualted for n.... k....
+	// vn^k calcualted for n.... k....
 
 	// calculate hvn_vn (2 combination of vn) 
 	for( int ih=2; ih<kNH; ih++){ 
 		for( int ik=1; ik<nKL; ik++){
 			for( int ihh=2; ihh<kNH; ihh++){ 
 				for(int ikk=1; ikk<nKL; ikk++){
-					vn2_vn2_abs[ih][ik][ihh][ikk] = 
-						TComplex::Abs(    
-							TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) 
-						);
-					vn2_vn2_real[ih][ik][ihh][ikk] = (  
-							TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
+					vn_vn[ih][ik][ihh][ikk] = vn[ih][ik] * vn[ihh][ikk]; 
 				}
 			}
 		}
 	}
 	//************************************************************************
 	// doing this 
-	//Fill the Histos here
+	// check it when ik = 2, ikk=2  DO NOT BELIEVE LINE 290~309 (may be wrong )
 	//
-	for(int ih=2; ih< kNH; ih++){
-		fh_vn[ih][0][fCBin]->Fill( vn2[ih][0] );
-		fh_vn_real[ih][0][fCBin]->Fill( vn2[ih][0] );
-		fh_vn_abs[ih][0][fCBin]->Fill( vn2[ih][0] );
-		for(int ik=1; ik<nKL; ik++){
-			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik]  ); // Fill hvn
-			fh_vn_real[ih][ik][fCBin]->Fill( vn2_real[ih][ik] ) ;
-			fh_vn_abs[ih][ik][fCBin]->Fill(vn2_abs[ih][ik] ) ;
-		}
+	for(int ih=2; ih<kNH; ih++){
+				double Qn_Qn_real = Complex_product_real( Qn[ih][kSub1][kReal], Qn[ih][kSub1][kImg], Qn[ih][kSub2][kReal], -1*Qn[ih][kSub2][kImg]) ;
+				double Qn_Qn_img = Complex_product_img( Qn[ih][kSub1][kReal], Qn[ih][kSub1][kImg], Qn[ih][kSub2][kReal], -1*Qn[ih][kSub2][kImg]) ;
+
+				//vn[ih][2] = Complex_abs( Qn_Qn_real, Qn_Qn_img );
+				vn[ih][2] = Qn_Qn_real;
+				//vn[ih][4] = Complex_abs( Complex_sqr_real(Qn_Qn_real, Qn_Qn_img),Complex_sqr_img(Qn_Qn_real, Qn_Qn_img));
+				vn[ih][4] = Complex_sqr_real(Qn_Qn_real, Qn_Qn_img) ;
+
 	}
+
+	for( int ih=2; ih<kNH; ih++){ 
+			for( int ihh=2; ihh<kNH; ihh++){  // <v2v3> = < Q2 Q2* Q3 Q3* >
+					double Qn_Qn_real = Complex_product_real( Qn[ih][kSub1][kReal], Qn[ih][kSub1][kImg], Qn[ih][kSub2][kReal], -1* Qn[ih][kSub2][kImg]) ;
+					double Qn_Qn_img = Complex_product_img( Qn[ih][kSub1][kReal], Qn[ih][kSub1][kImg], Qn[ih][kSub2][kReal], -1* Qn[ih][kSub2][kImg]) ;
+					double Qm_Qm_real = Complex_product_real( Qn[ihh][kSub1][kReal], Qn[ihh][kSub1][kImg], Qn[ihh][kSub2][kReal], -1* Qn[ihh][kSub2][kImg]) ;
+					double Qm_Qm_img = Complex_product_img( Qn[ihh][kSub1][kReal], Qn[ihh][kSub1][kImg], Qn[ihh][kSub2][kReal], -1 * Qn[ihh][kSub2][kImg]) ;
+
+					double QnQm_real = Complex_product_real( Qn_Qn_real, Qn_Qn_img, Qm_Qm_real, Qm_Qm_img ) ;
+					double QnQm_img = Complex_product_img( Qn_Qn_real, Qn_Qn_img, Qm_Qm_real, Qm_Qm_img ) ;
+					//vn_vn[ih][2][ihh][2] =  Complex_abs( QnQm_real, QnQm_img) ; 
+					vn_vn[ih][2][ihh][2] =  QnQm_real ; 
+
+				}
+			}
+	//************************************************************************
+
+	//Fill the Histos here
 	for( int ih=2; ih<kNH; ih++){ 
 		for( int ik=1; ik<nKL; ik++){
+			fh_vn[ih][ik][fCBin]->Fill( vn[ih][ik]  ); // Fill hvn
 			for( int ihh=2; ihh<kNH; ihh++){ 
 				for(int ikk=1; ikk<nKL; ikk++){
-					 fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
-					 fh_vn_vn_real[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2_real[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
-					 fh_vn_vn_abs[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2_abs[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
+					 fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn_vn[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
 				}
 			}
 		}

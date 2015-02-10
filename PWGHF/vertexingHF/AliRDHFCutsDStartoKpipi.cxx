@@ -48,8 +48,7 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
   AliRDHFCuts(name),
   fTrackCutsSoftPi(0),
   fMaxPtPid(9999.),
-  fTPCflag(999.),
-  fCircRadius(0.)
+  fTPCflag(999.)
 {
   //
   // Default Constructor
@@ -118,8 +117,7 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &
   AliRDHFCuts(source),
   fTrackCutsSoftPi(0),
   fMaxPtPid(9999.),
-  fTPCflag(999.),
-  fCircRadius(0.)
+  fTPCflag(999.)
 {
   //
   // Copy constructor
@@ -530,14 +528,6 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* obj)
     if(!SelectPID(neg,2)) return 0;//pion-
   }
 
-  if ((fPidHF->GetMatch() == 10 || fPidHF->GetMatch() == 11) && fPidHF->GetITS()) { //ITS n sigma band
-    AliAODTrack *softPion = (AliAODTrack*) dstar->GetBachelor();
-
-    if (fPidHF->CheckBands(AliPID::kPion, AliPIDResponse::kITS, softPion) == -1) {
-      return 0;
-    }
-  }
-
   return 3;
 }
 
@@ -548,9 +538,8 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
   //  here the PID
     
   Bool_t isParticle=kTRUE;
-  Int_t match = fPidHF->GetMatch();
 
-  if(match == 1){//n-sigma
+  if(fPidHF->GetMatch()==1){//n-sigma
     Bool_t TPCon=TMath::Abs(2)>1e-4?kTRUE:kFALSE;
     Bool_t TOFon=TMath::Abs(3)>1e-4?kTRUE:kFALSE;
     
@@ -579,7 +568,7 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
     isParticle = isTPC&&isTOF;
   }
   
-  if(match == 2){//bayesian
+  if(fPidHF->GetMatch()==2){//bayesian
     //Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
     Double_t prob[5]={1.,1.,1.,1.,1.};
     
@@ -593,42 +582,7 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
     }
     isParticle = Bool_t(k==type);
   }
-
-  if (match == 10 || match == 11) { //Assymetric PID using histograms
-    Int_t checkTPC = fPidHF->CheckBands((AliPID::EParticleType) type, AliPIDResponse::kTPC, track);
-    Int_t checkTOF = fPidHF->CheckBands((AliPID::EParticleType) type, AliPIDResponse::kTOF, track);
-
-    isParticle = checkTPC >= 0 && checkTOF >= 0 ? kTRUE : kFALSE; //Standard: both at least compatible
-    if (match == 11) { //Extra requirement: at least one identified
-      isParticle = isParticle && checkTPC+checkTOF >= 1 ? kTRUE : kFALSE;
-    }
-  }
   
-  if (match == 12) { //Circular cut
-    Double_t nSigmaTOF = 0;
-    Double_t nSigmaTPC = 0;
-
-    Double_t radius = fCircRadius;
-
-    isParticle = kTRUE;
-    if (radius > 0) {
-      Int_t TPCok = fPidHF->GetnSigmaTPC(track, type, nSigmaTPC);
-      Int_t TOFok = fPidHF->GetnSigmaTOF(track, type, nSigmaTOF);
-      if (TPCok != -1 && TOFok != -1) {
-        //Both detectors gave PID information
-        isParticle = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) <= radius ? kTRUE : kFALSE;
-      }
-      else {
-        //Maximum one detector gave PID information
-        if (TPCok != -1) {
-          isParticle = nSigmaTPC <= radius ? kTRUE : kFALSE;
-        }
-        if (TOFok != -1) {
-          isParticle = nSigmaTOF <= radius ? kTRUE : kFALSE;
-        }
-      }
-    }
-  }
 
   return isParticle;
   
