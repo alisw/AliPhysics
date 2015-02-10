@@ -88,7 +88,8 @@ fNminCells(1),
 fMinE(0.100),
 fM02(100),
 fMinErat(0),
-fMinEcc(0),
+fMinEcc(-1),
+fDoTrMtSmpl(0),
 fDoManualRecal(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
@@ -287,7 +288,8 @@ fNminCells(1),
 fMinE(0.100),
 fM02(100),
 fMinErat(0),
-fMinEcc(0),
+fMinEcc(-1),
+fDoTrMtSmpl(0),
 fDoManualRecal(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
@@ -508,6 +510,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
   cout << " fMinE:          " << fMinE << endl;
   cout << " fMinErat:       " << fMinErat << endl;
   cout << " fMinEcc:        " << fMinEcc << endl;
+  cout << " fM02:           " << fM02 << endl;
   cout << " fGeoName:       \"" << fGeoName << "\"" << endl;
   cout << " fMinNClusPerTr: " << fMinNClusPerTr << endl;
   cout << " fIsoDist:       " << fIsoDist << endl;
@@ -632,7 +635,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHClustAccEvt = new TH1F("hClustAccEvt","",2000,0,2000);
     fHClustAccEvt->SetXTitle("# Clusters");
     fOutput->Add(fHClustAccEvt);
-    fHClustEccentricity = new TH1F("hClustEccentricity","",100,-0.1,1.1);
+    fHClustEccentricity = new TH1F("hClustEccentricity","",200,-1.1,1.1);
     fHClustEccentricity->SetXTitle("#epsilon_{C}");
     fOutput->Add(fHClustEccentricity);
     fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,100*nsm,phimin,phimax);
@@ -1851,9 +1854,14 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     if (GetMaxCellEnergy(clus)/clus->E()<fMinErat)
       continue;
     if (clus->Chi2()<fMinEcc) // eccentricity cut
-      continue;
+          continue;
     if(clus->GetM02()>fM02)
       continue;
+    // if(fDoTrMtSmpl){
+    //   if(!clus->GetNTracksMatched()==0){
+    // 	continue;
+    //   }
+    // }
 
     TLorentzVector clusterVec;
     clus->GetMomentum(clusterVec,vertex);
@@ -1886,10 +1894,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       
       TLorentzVector clusterVecCorr1(clusterVec.Px(),clusterVec.Py(),clusterVec.Pz(),En);
 
-      thisEvent.hit[i].thishit=clusterVecCorr1;
-      thisEvent.hit[i].hittype=100;
-      thisEvent.hit[i].weight=1.;
-      thisEvent.hit[i].imo=1;
+      thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
+      thisEvent.hit[nclusters-1].hittype=100;
+      thisEvent.hit[nclusters-1].weight=1.;
+      thisEvent.hit[nclusters-1].imo=1;
     }
     // go through MC information of clusters
     else{
@@ -2197,17 +2205,17 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           
         }
         if(1){
-          thisEvent.hit[i].thishit=clusterVecCorr1;
-          thisEvent.hit[i].imo=ipart;
-          thisEvent.hit[i].pid=mcP->PdgCode();
+          thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
+          thisEvent.hit[nclusters-1].imo=ipart;
+          thisEvent.hit[nclusters-1].pid=mcP->PdgCode();
           if(!bGen){
-            thisEvent.hit[i].weight = wgt;
+            thisEvent.hit[nclusters-1].weight = wgt;
           }
           else{
-            thisEvent.hit[i].weight = 1.;
+            thisEvent.hit[nclusters-1].weight = 1.;
           }
           
-          thisEvent.hit[i].hittype=-1;
+          thisEvent.hit[nclusters-1].hittype=-1;
           if(bGen){
             // use hittype to flag particle history
             // if it is not from a pi0, flag 100
@@ -2216,17 +2224,17 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
             // from K0, flag 103
             // from material, flag 104
             
-            thisEvent.hit[i].hittype=tmpflag;
+            thisEvent.hit[nclusters-1].hittype=tmpflag;
           }
           else{
             if(bAddPi0){
-              thisEvent.hit[i].hittype=1;
+              thisEvent.hit[nclusters-1].hittype=1;
             }
             else if(bAddEta){
-              thisEvent.hit[i].hittype=2;
+              thisEvent.hit[nclusters-1].hittype=2;
             }
           }
-          thisEvent.hit[i].bclean = bcl;
+          thisEvent.hit[nclusters-1].bclean = bcl;
         }
       } // end ilabel
     } // end fmcmode
@@ -2414,7 +2422,7 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     
     // kinematic cuts
     Double_t pt = mcP->Pt() ;
-    if (pt<0.3)
+    if (pt<0.1)
       continue;
     Double_t eta = mcP->Eta();
     if (eta<-1.0||eta>1.0)
