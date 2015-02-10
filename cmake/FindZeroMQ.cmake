@@ -64,6 +64,8 @@ if(ZEROMQ_LIBRARIES AND ZEROMQ_INCLUDE_DIR)
     set(ZEROMQ_FOUND TRUE)
 endif()
 
-
+if(ZEROMQ_FOUND)
+    add_definitions(-DZMQ)
+ENDIF(ZEROMQ_FOUND)
 
 
