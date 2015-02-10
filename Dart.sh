@@ -16,12 +16,10 @@ echo "# This can be usefull if one can use a distributed build system  #"
 echo "# like icecream.                                                 #"
 echo "# For example                                                    #"
 echo "#!/bin/bash                                                      #"
-echo "#export LINUX_FLAVOUR=Ubuntu14.x                                 #"
+echo "#export LINUX_FLAVOUR=Your_System                                #"
 echo "#export ROOTSYS=Path_to_ROOTSYS                                  #"
-echo "#export ALFAPATH=<path_to_installation_of_external_packages>     #"
-echo "#export BUILDDIR=/tmp/AliceO2/build_cdash                        #"
-echo "#export SOURCEDIR=~/AliceO2                                      #"
-echo "#export NCPU=8                                                   #"
+echo "#export BUILDDIR=Path_To_Build_dir                               #"
+echo "#export SOURCEDIR=Path_To_Source_dir                             #"
 echo "##################################################################"
 }
 
@@ -74,7 +72,7 @@ else
   GCC_VERSION=$($CXX -dumpversion)
 fi
 
-export LABEL1=${LINUX_FLAVOUR}-$SYSTEM-$COMPILER$GCC_VERSION-aliroot_$GIT_BRANCH
+export LABEL1=${LINUX_FLAVOUR}-$SYSTEM-$COMPILER$GCC_VERSION
 export LABEL=$(echo $LABEL1 | sed -e 's#/#_#g')
 
 # get the number of processors
