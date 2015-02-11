@@ -216,10 +216,11 @@ const AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
   const AliVParticle *mcpart = evnt->GetTrack(label);
   if(!mcpart) return NULL;
   const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(mcpart);
-  if(aodpart)
+  if(aodpart) {
     if(!aodpart->IsPhysicalPrimary()) return NULL;
-  else
+  } else {
     if(!evnt->IsPhysicalPrimary(label)) return NULL;
+  }
   return mcpart;
 }
 
