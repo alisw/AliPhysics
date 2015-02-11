@@ -29,6 +29,7 @@ set(SRCS
   StageAndFilter.cxx
   FILTER_AODMUONWITHTRACKLETS.cxx
   FILTER_RAWMUON.cxx
+  FILTER_ESDMUON.cxx
   )
 
 # Headers from sources
