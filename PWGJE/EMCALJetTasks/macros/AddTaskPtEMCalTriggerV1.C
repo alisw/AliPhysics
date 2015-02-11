@@ -30,7 +30,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *ntriggerContainer = "",
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
-	const char *components = "particles:clusters:tracks:mcjets:recjets:triggers"
+	const char *components = "particles:clusters:tracks:mcjets:recjets:triggers",
+	bool useOfflinePatches = kFALSE
 )
 {
   //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
@@ -74,7 +75,12 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1(Form("ptemcaltriggertask%s", ntrackcuts));
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
-  if(isMC) pttriggertask->SetSwapThresholds();
+
+  EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
+  if(isMC) trgconf->SetSwapThresholds();
+  trgconf->SetUseOfflinePatches(useOfflinePatches);
+  pttriggertask->SetTriggerDecisionConfig(trgconf);
+
   CreateJetPtBinning(pttriggertask);
   //pttriggertask->SetTriggerDebug(kTRUE);
 
