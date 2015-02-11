@@ -1555,7 +1555,7 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
 //         !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid ) || //removes light nuclei, so it is out for the moment
         !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
-        !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
+        //!((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) || // not valid any longer with new TOF structure
         !((status & AliVTrack::kTIME    ) == AliVTrack::kTIME    ) ) continue;
 
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
