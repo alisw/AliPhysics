@@ -868,16 +868,16 @@ void AliFourPion::ParInit()
 {
   cout<<"AliFourPion MyInit() call"<<endl;
   cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  CollisionType:"<<fCollisionType<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RMax:"<<fRMax<<"  fc^2:"<<ffcSq<<"  FB:"<<fFilterBit<<"  MaxChi2/NDF:"<<fMaxChi2NDF<<"  MinTPCncls:"<<fMinTPCncls<<"  MinPairSepEta:"<<fMinSepPairEta<<"  MinPairSepPhi:"<<fMinSepPairPhi<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
-
+  
   fRandomNumber = new TRandom3();
   fRandomNumber->SetSeed(0);
-    
+  
   //
   fEventCounter=0;
   fEventsToMix=3;
   fEventMixingEDbins=81;// was 2 Z-vertex bins by default
-  //if(fq2Binning) fEventMixingEDbins=81;// was 6 q2 bins
-
+  if(fMCcase) fEventMixingEDbins=2;
+  
   fTPCTOFboundry = 0.6;// TPC pid used below this momentum, TOF above but below TOF_boundry
   fTOFboundry = 2.1;// TOF pid used below this momentum
   
@@ -1249,6 +1249,7 @@ void AliFourPion::UserCreateOutputObjects()
     if(fCollisionType==0) {if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;}
     
     for(Int_t edB=0; edB<fEDbins; edB++){
+      
       for(Int_t c1=0; c1<2; c1++){
 	for(Int_t c2=0; c2<2; c2++){
 	  for(Int_t term=0; term<2; term++){
@@ -2327,8 +2328,9 @@ void AliFourPion::UserExec(Option_t *)
   if(qVect2[fq2Index] > 0.5 && qVect2[fq2Index] < 1.5) Inq2=1;
   else Inq2=2;
   //
-  mixingEDbin = (Inq1*3*3*3) + int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)*3*3 + (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);
+  if(!fMCcase) mixingEDbin = (Inq1*3*3*3) + int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)*3*3 + (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);
   //cout<<mixingEDbin<<"     "<<Inq1<<"  "<<int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)<<"      "<<Inq2<<"  "<<int(Psi2[fq2Index]/(PI/6.) - 0.000001)<<endl;
+  
   //////////////////////////////////////////////////////////////////////////
   
 
