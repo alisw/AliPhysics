@@ -391,6 +391,11 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
     fResetAfterPush=(value.Contains("0")?kFALSE:kTRUE);
     HLTInfo("fResetAfterPush=%i\n",fResetAfterPush?1:0);
   }
+  else if (option.Contains("EnableDebug"))
+  {
+    fEnableDebug=value.Contains("1");
+    HLTInfo("fEnableDebug=%s",fEnableDebug?"1":"0");
+  }
   return 1; 
 }
 
