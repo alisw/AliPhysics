@@ -34,12 +34,14 @@ namespace EMCalTriggerPtAnalysis {
 AliEMCalTriggerAnaTriggerDecision::AliEMCalTriggerAnaTriggerDecision() :
     fSwapThresholds(kFALSE),
     fIsMinBias(kFALSE),
+	fUseOfflinePatches(kFALSE),
     fDoDebug(kFALSE)
 {
   /*
    * Main constructor
    */
   Reset();
+  memset(fEnergyThresholds, 0, sizeof(double) * 4);
 }
 
 //______________________________________________________________________________
@@ -104,26 +106,12 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
   int foundpatches[4] = {0,0,0,0};
   int index = -1;
   while((mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-    if(mypatch->IsJetHigh()){
-      index = fSwapThresholds ? kTAEMCJLow : kTAEMCJHigh;
-      fDecisionFromPatches[index] = kTRUE;
-      foundpatches[index]++;
-    }
-    if(mypatch->IsJetLow()){
-      index = fSwapThresholds ? kTAEMCJHigh : kTAEMCJLow;
-      fDecisionFromPatches[index] = kTRUE;
-      foundpatches[index]++;
-    }
-    if(mypatch->IsGammaHigh()){
-      index = fSwapThresholds ? kTAEMCGLow : kTAEMCGHigh;
-      fDecisionFromPatches[index] = kTRUE;
-      foundpatches[index]++;
-    }
-    if(mypatch->IsGammaLow()){
-      index = fSwapThresholds ? kTAEMCGHigh : kTAEMCGLow;
-      fDecisionFromPatches[index] = kTRUE;
-      foundpatches[index]++;
-    }
+	for(int icase = 0; icase < 4; icase++){
+	  if(SelectTriggerPatch(ETATriggerType(icase), mypatch)){
+		fDecisionFromPatches[icase] = kTRUE;
+        foundpatches[icase]++;
+	  }
+	}
   }
   if(fDoDebug){
     std::cout << "Found patches:" << std::endl;
@@ -134,10 +122,40 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
   }
 }
 
-} /* namespace EMCalTriggerPtAnalysis */
+//______________________________________________________________________________
+Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trigger, const AliEmcalTriggerPatchInfo* const recpatch) const {
+	/*
+	 *
+	 */
+	bool selectPatchType = kFALSE;
+	if(fUseOfflinePatches){
+		switch(trigger){
+		case kTAEMCJHigh: selectPatchType = fSwapThresholds ? recpatch->IsJetLowSimple() :  recpatch->IsJetHighSimple(); break;
+		case kTAEMCJLow: selectPatchType = fSwapThresholds ? recpatch->IsJetHighSimple() :  recpatch->IsJetLowSimple(); break;
+		case kTAEMCGHigh: selectPatchType = fSwapThresholds ? recpatch->IsGammaLowSimple() :  recpatch->IsGammaHighSimple(); break;
+		case kTAEMCGLow: selectPatchType = fSwapThresholds ? recpatch->IsGammaHighSimple() :  recpatch->IsGammaLowSimple(); break;
+		};
+	} else {
+		switch(trigger){
+		case kTAEMCJHigh: selectPatchType = fSwapThresholds ? recpatch->IsJetLow() :  recpatch->IsJetHigh(); break;
+		case kTAEMCJLow: selectPatchType = fSwapThresholds ? recpatch->IsJetHigh() :  recpatch->IsJetLow(); break;
+		case kTAEMCGHigh: selectPatchType = fSwapThresholds ? recpatch->IsGammaLow() :  recpatch->IsGammaHigh(); break;
+		case kTAEMCGLow: selectPatchType = fSwapThresholds ? recpatch->IsGammaHigh() :  recpatch->IsGammaLow(); break;
+		};
+	}
+
+	if(!selectPatchType) return kFALSE;
+
+	if(fEnergyThresholds[trigger]){
+		// Additional threshold on energy requested to select the patch
+		return recpatch->GetPatchE() > fEnergyThresholds[trigger];
+	}
+	return kTRUE;
+}
+
 
 //______________________________________________________________________________
-void EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
+void AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
   /*
    * Print status of the trigger decision
    */
@@ -150,3 +168,6 @@ void EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision::Print(Option_t*)
         << "], Patches[" << (fDecisionFromPatches[icase] ? "yes" : "no") << "]" << std::endl;
   }
 }
+
+} /* namespace EMCalTriggerPtAnalysis */
+

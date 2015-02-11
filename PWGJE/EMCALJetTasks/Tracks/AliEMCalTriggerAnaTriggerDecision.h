@@ -8,6 +8,7 @@
 
 class TClonesArray;
 class TString;
+class AliEmcalTriggerPatchInfo;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -31,6 +32,10 @@ public:
   }
   void SetSwapThresholds(Bool_t doSwap = kTRUE) { fSwapThresholds = doSwap; }
   void SetIsMinBias(Bool_t isMB = kTRUE) { fIsMinBias = isMB; }
+  void SetUseOfflinePatches(bool useOffline = kTRUE) { fUseOfflinePatches = useOffline; }
+  void SetOfflineEnergyThreshold(ETATriggerType triggerClass, double threshold){
+	  fEnergyThresholds[triggerClass] = threshold;
+  }
   void Reset();
 
   Bool_t IsMinBias() const { return fIsMinBias; }
@@ -44,10 +49,15 @@ protected:
   void MakeDecisionFromString(const TString &triggerstring);
   void MakeDecisionFromPatches(const TClonesArray &listOfPatches);
 
+  Bool_t SelectTriggerPatch(ETATriggerType trigger, const AliEmcalTriggerPatchInfo * const recpatch) const;
+
   Bool_t fSwapThresholds;
   Bool_t fIsMinBias;
+  Bool_t fUseOfflinePatches;
   Bool_t fDecisionFromPatches[4];
   Bool_t fDecisionFromString[4];
+
+  Double_t fEnergyThresholds[4];
 
   Bool_t fDoDebug;
 
