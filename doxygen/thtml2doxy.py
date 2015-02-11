@@ -565,19 +565,29 @@ def comment_classimp(filename, comments):
 
   with open(filename, 'r') as fp:
 
-    for line in fp:
+    # Array of tuples: classimp, startcond, endcond
+    found_classimp = []
 
-      # Reset to nothing found
-      line_classimp = -1
-      line_startcond = -1
-      line_endcond = -1
-      classimp_class = None
-      classimp_indent = None
+    # Reset to nothing found
+    line_classimp = -1
+    line_startcond = -1
+    line_endcond = -1
+    classimp_class = None
+    classimp_indent = None
+
+    for line in fp:
 
       line_num = line_num + 1
 
       mclassimp = re.search(reclassimp, line)
       if mclassimp:
+
+        # Dump previous one if appropriate, and reset
+        if line_classimp != -1:
+          found_classimp.append( (line_classimp, line_startcond, line_endcond) )
+          line_classimp = -1
+          line_startcond = -1
+          line_endcond = -1
 
         # Adjust indent
         classimp_indent = len( mclassimp.group(1) )
@@ -595,7 +605,15 @@ def comment_classimp(filename, comments):
 
         mstartcond = re.search(restartcond, line)
         if mstartcond:
-          logging.debug('Found Doxygen opening condition for ClassImp in {%s}' % line)
+
+          # Dump previous one if appropriate, and reset
+          if line_classimp != -1:
+            found_classimp.append( (line_classimp, line_startcond, line_endcond) )
+            line_classimp = -1
+            line_startcond = -1
+            line_endcond = -1
+
+          logging.debug('Found Doxygen opening condition for ClassImp')
           in_classimp_cond = True
           line_startcond = line_num
 
@@ -607,36 +625,46 @@ def comment_classimp(filename, comments):
             in_classimp_cond = False
             line_endcond = line_num
 
-      # Did we find something?
-      if line_classimp != -1:
+    # Dump previous one if appropriate, and reset (out of the loop)
+    if line_classimp != -1:
+      found_classimp.append( (line_classimp, line_startcond, line_endcond) )
+      line_classimp = -1
+      line_startcond = -1
+      line_endcond = -1
 
-        if line_startcond != -1:
-          comments.append(Comment(
-            ['\cond CLASSIMP'],
-            line_startcond, 1, line_startcond, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
-            append_empty=False
-          ))
-        else:
-          comments.append(PrependComment(
-            ['\cond CLASSIMP'],
-            line_classimp, 1, line_classimp, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
-          ))
+    for line_classimp,line_startcond,line_endcond in found_classimp:
 
-        if line_endcond != -1:
-          comments.append(Comment(
-            ['\endcond'],
-            line_endcond, 1, line_endcond, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
-            append_empty=False
-          ))
-        else:
-          comments.append(PrependComment(
-            ['\endcond'],
-            line_classimp+1, 1, line_classimp+1, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
-          ))
+      # Loop over the ClassImp conditions we've found
+
+      if line_startcond != -1:
+        logging.debug('Looks like we are in a condition here %d,%d,%d' % (line_classimp, line_startcond, line_endcond))
+        comments.append(Comment(
+          ['\cond CLASSIMP'],
+          line_startcond, 1, line_startcond, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+          append_empty=False
+        ))
+      else:
+        logging.debug('Looks like we are  NOT NOT  in a condition here %d,%d,%d' % (line_classimp, line_startcond, line_endcond))
+        comments.append(PrependComment(
+          ['\cond CLASSIMP'],
+          line_classimp, 1, line_classimp, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+        ))
+
+      if line_endcond != -1:
+        comments.append(Comment(
+          ['\endcond'],
+          line_endcond, 1, line_endcond, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+          append_empty=False
+        ))
+      else:
+        comments.append(PrependComment(
+          ['\endcond'],
+          line_classimp+1, 1, line_classimp+1, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+        ))
 
 
 ## Traverse the AST recursively starting from the current cursor.
@@ -743,29 +771,6 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
   wait_first_non_blank = True
   for line_comment in comment:
 
-    # Check if we are in a macro block
-    mmacro = re.search(remacro, line_comment)
-    if mmacro:
-      if in_macro:
-        in_macro = False
-
-        # Dump macro
-        outimg = write_macro(infilename, current_macro) + '.png'
-        current_macro = []
-
-        # Insert image
-        new_comment.append( '![Picture from ROOT macro](%s)' % (os.path.basename(outimg)) )
-
-        logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
-
-      else:
-        in_macro = True
-
-      continue
-    elif in_macro:
-      current_macro.append( line_comment )
-      continue
-
     # Strip some HTML tags
     if do_strip_html:
       line_comment = strip_html(line_comment)
@@ -773,6 +778,29 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
     mcomm = re.search( recomm, line_comment )
     if mcomm:
       new_line_comment = mcomm.group(2) + mcomm.group(3)  # indent + comm
+
+      # Check if we are in a macro block
+      mmacro = re.search(remacro, new_line_comment)
+      if mmacro:
+        if in_macro:
+          in_macro = False
+
+          # Dump macro
+          outimg = write_macro(infilename, current_macro) + '.png'
+          current_macro = []
+
+          # Insert image
+          new_comment.append( '![Picture from ROOT macro](%s)' % (os.path.basename(outimg)) )
+
+          logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
+
+        else:
+          in_macro = True
+
+        continue
+      elif in_macro:
+        current_macro.append( new_line_comment )
+        continue
 
       mgarbage = re.search( regarbage, new_line_comment )
 
@@ -915,7 +943,10 @@ def write_macro(infilename, macro_lines):
     digh.update('\n')
   short_digest = digh.hexdigest()[0:7]
 
-  outdir = '%s/imgdoc' % os.path.dirname(infilename)
+  infiledir = os.path.dirname(infilename)
+  if infiledir == '':
+    infiledir = '.'
+  outdir = '%s/imgdoc' % infiledir
   outprefix = '%s/%s_%s' % (
     outdir,
     os.path.basename(infilename).replace('.', '_'),
@@ -1111,10 +1142,12 @@ def rewrite_comments(fhin, fhout, comments):
           restore_lines = [ line.rstrip('\n') ]
           logging.debug('Commencing lines to restore: {%s}' % Colt(restore_lines[0]).cyan())
         else:
-          # Extract the non-comment part and print it if it exists
-          non_comment = line[ 0:comm.first_col-1 ].rstrip()
-          if non_comment != '':
-            fhout.write( non_comment + '\n' )
+          # Extract the non-comment part and print it if it exists. If this is the first line of a
+          # comment, it might happen something like `valid_code;  // this is a comment`.
+          if comm.first_line == line_num:
+            non_comment = line[ 0:comm.first_col-1 ].rstrip()
+            if non_comment != '':
+              fhout.write( non_comment + '\n' )
 
       elif isinstance(comm, Comment):
 
