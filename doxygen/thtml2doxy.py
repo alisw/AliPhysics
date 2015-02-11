@@ -915,7 +915,10 @@ def write_macro(infilename, macro_lines):
     digh.update('\n')
   short_digest = digh.hexdigest()[0:7]
 
-  outdir = '%s/imgdoc' % os.path.dirname(infilename)
+  infiledir = os.path.dirname(infilename)
+  if infiledir == '':
+    infiledir = '.'
+  outdir = '%s/imgdoc' % infiledir
   outprefix = '%s/%s_%s' % (
     outdir,
     os.path.basename(infilename).replace('.', '_'),
