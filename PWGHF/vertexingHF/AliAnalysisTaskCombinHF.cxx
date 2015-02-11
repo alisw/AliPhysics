@@ -48,7 +48,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   AliAnalysisTaskSE(),
   fOutput(0x0),
   fHistNEvents(0x0),
+  fHistEventMultZv(0x0),
+  fHistEventMultZvEvSel(0x0),
   fHistTrackStatus(0x0),
+  fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginSel(0x0),
   fHistCheckDecChan(0x0),
@@ -133,7 +136,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   AliAnalysisTaskSE("DmesonCombin"),
   fOutput(0x0),
   fHistNEvents(0x0),
+  fHistEventMultZv(0x0),
+  fHistEventMultZvEvSel(0x0),
   fHistTrackStatus(0x0),
+  fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginSel(0x0),
   fHistCheckDecChan(0x0),
@@ -224,7 +230,10 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistEventMultZv;
+    delete fHistEventMultZvEvSel;
     delete fHistTrackStatus;
+    delete fHistTrackEtaMultZv;
     delete fHistCheckOrigin;
     delete fHistCheckOriginSel;
     delete fHistCheckDecChan;
@@ -321,6 +330,12 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
   
+  fHistEventMultZv = new TH2F("hEventMultZv","",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fOutput->Add(fHistEventMultZv);
+
+  fHistEventMultZvEvSel = new TH2F("hEventMultZvEvSel","",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fOutput->Add(fHistEventMultZvEvSel);
+
   fHistTrackStatus  = new TH1F("hTrackStatus", "",8,-0.5,7.5);
   fHistTrackStatus->GetXaxis()->SetBinLabel(1,"Not OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(2,"Track OK");
@@ -335,6 +350,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);
   
+  fHistTrackEtaMultZv = new TH3F("hTrackEtaMultZv","",40,-1.,1.,30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fOutput->Add(fHistTrackEtaMultZv);
+
   Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
   Double_t maxPt=fPtBinWidth*nPtBins;
 
@@ -580,6 +598,11 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
       FillGenHistos(arrayMC,isEvSel);
     }
+    fHistEventMultZv->Fill(zMCVertex,fMultiplicity);
+    if(isEvSel) fHistEventMultZvEvSel->Fill(zMCVertex,fMultiplicity);
+  }else{
+    fHistEventMultZv->Fill(fVtxZ,fMultiplicity);
+    if(isEvSel) fHistEventMultZvEvSel->Fill(fVtxZ,fMultiplicity);
   }
 
   
@@ -621,6 +644,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     
     fHistTrackStatus->Fill(status[iTr]);
+    fHistTrackEtaMultZv->Fill(track->Eta(),fVtxZ,fMultiplicity);
   }
   
   // build the combinatorics
