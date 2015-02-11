@@ -125,7 +125,10 @@ private:
   
   TList   *fOutput; //! list send on output slot 0
   TH1F *fHistNEvents;         //!hist. for No. of events
+  TH2F *fHistEventMultZv;       //!hist. of evnt Mult vs. Zv for all events
+  TH2F *fHistEventMultZvEvSel;  //!hist. of evnt Mult vs. Zv for selected ev
   TH1F *fHistTrackStatus;     //!hist. of status of tracks
+  TH3F* fHistTrackEtaMultZv;  // track distribution vs. era z vertex and mult
   TH1F *fHistCheckOrigin;     //!hist. of origin (c/b) of D meson
   TH1F *fHistCheckOriginSel;  //!hist. of origin (c/b) of D meson
   TH1F *fHistCheckDecChan;    //!hist. of decay channel of D meson
@@ -207,7 +210,9 @@ private:
   Double_t fMaxMultiplicity; // upper limit for multiplcities in MC histos
   TObjArray* fKaonTracks; // array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; // array of pion-compatible tracks (TLorentzVectors)  
-  ClassDef(AliAnalysisTaskCombinHF,11); // D0D+ task from AOD tracks
+
+
+  ClassDef(AliAnalysisTaskCombinHF,12); // D0D+ task from AOD tracks
 };
 
 #endif
