@@ -279,7 +279,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       if(trecal)
       {
         TString passM = pass;
-        if(pass=="spc_calo") passM = "pass1";
+        if(pass=="spc_calo") passM = "pass3";
         TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
         
         if(trecalpass)
