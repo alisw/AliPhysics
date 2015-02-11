@@ -743,29 +743,6 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
   wait_first_non_blank = True
   for line_comment in comment:
 
-    # Check if we are in a macro block
-    mmacro = re.search(remacro, line_comment)
-    if mmacro:
-      if in_macro:
-        in_macro = False
-
-        # Dump macro
-        outimg = write_macro(infilename, current_macro) + '.png'
-        current_macro = []
-
-        # Insert image
-        new_comment.append( '![Picture from ROOT macro](%s)' % (os.path.basename(outimg)) )
-
-        logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
-
-      else:
-        in_macro = True
-
-      continue
-    elif in_macro:
-      current_macro.append( line_comment )
-      continue
-
     # Strip some HTML tags
     if do_strip_html:
       line_comment = strip_html(line_comment)
@@ -773,6 +750,29 @@ def refactor_comment(comment, do_strip_html=True, infilename=None):
     mcomm = re.search( recomm, line_comment )
     if mcomm:
       new_line_comment = mcomm.group(2) + mcomm.group(3)  # indent + comm
+
+      # Check if we are in a macro block
+      mmacro = re.search(remacro, new_line_comment)
+      if mmacro:
+        if in_macro:
+          in_macro = False
+
+          # Dump macro
+          outimg = write_macro(infilename, current_macro) + '.png'
+          current_macro = []
+
+          # Insert image
+          new_comment.append( '![Picture from ROOT macro](%s)' % (os.path.basename(outimg)) )
+
+          logging.debug( 'Found macro for generating image %s' % Colt(outimg).magenta() )
+
+        else:
+          in_macro = True
+
+        continue
+      elif in_macro:
+        current_macro.append( new_line_comment )
+        continue
 
       mgarbage = re.search( regarbage, new_line_comment )
 
