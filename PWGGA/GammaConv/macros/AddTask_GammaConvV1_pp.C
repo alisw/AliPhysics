@@ -109,7 +109,7 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 4;
-	if ( trainConfig == 60) numberOfCuts = 2;
+	if ( trainConfig == 70) numberOfCuts = 2;
 	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
@@ -411,6 +411,56 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "01521065000000"; //pion 1-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
 		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009287302008250400000"; mesonCutArray[3] = "01521065000000"; //pion 2-sigma cut for 0.4GeV<p<3.5GeV above   1-sigma
 	} else if (trainConfig == 60) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "01521075000000"; //variation alpha 0.85
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200049227302008250400000"; mesonCutArray[2] = "01521035000000"; //variation single pt 0.075
+		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200019227302008250400000"; mesonCutArray[3] = "01521035000000"; //variation single pt 0.1
+	} else if (trainConfig == 61) {//added signals
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "01521075000000"; //variation alpha 0.85
+		eventCutArray[ 2] = "0000012"; photonCutArray[ 2] = "00200049227302008250400000"; mesonCutArray[2] = "01521035000000"; //variation single pt 0.075
+		eventCutArray[ 3] = "0000012"; photonCutArray[ 3] = "00200019227302008250400000"; mesonCutArray[3] = "01521035000000"; //variation single pt 0.1
+	} else if (trainConfig == 62) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200006227302008250400000"; mesonCutArray[0] = "01521035000000"; //variation 70% TPC Cluster
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00200008227302008250400000"; mesonCutArray[1] = "01521035000000"; //variation 35% TPC Cluster
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009327302008250400000"; mesonCutArray[2] = "01521035000000"; //variation dE/dx e -4<sigma<5
+		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009627302008250400000"; mesonCutArray[3] = "01521035000000"; //variation dE/dx e -2.5<sigma<4
+	} else if (trainConfig == 63) {//added signals
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200006227302008250400000"; mesonCutArray[0] = "01521035000000"; //variation 70% TPC Cluster
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "00200008227302008250400000"; mesonCutArray[1] = "01521035000000"; //variation 35% TPC Cluster
+		eventCutArray[ 2] = "0000012"; photonCutArray[ 2] = "00200009327302008250400000"; mesonCutArray[2] = "01521035000000"; //variation dE/dx e -4<sigma<5
+		eventCutArray[ 3] = "0000012"; photonCutArray[ 3] = "00200009627302008250400000"; mesonCutArray[3] = "01521035000000"; //variation dE/dx e -2.5<sigma<4
+	} else if (trainConfig == 64) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009225302008250400000"; mesonCutArray[0] = "01521035000000"; //variation min p 0.3GeV pion line
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00200009220302008250400000"; mesonCutArray[1] = "01521035000000"; //variation min p 0.5GeV pion line
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009227102008250400000"; mesonCutArray[2] = "01521035000000"; //variation max p 5GeV pion line
+		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009217302008250400000"; mesonCutArray[3] = "01521035000000"; //variation nsigma>0 pion line
+	} else if (trainConfig == 65) {//added signals
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009225302008250400000"; mesonCutArray[0] = "01521035000000"; //variation min p 0.3GeV pion line
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "00200009220302008250400000"; mesonCutArray[1] = "01521035000000"; //variation min p 0.5GeV pion line
+		eventCutArray[ 2] = "0000012"; photonCutArray[ 2] = "00200009227102008250400000"; mesonCutArray[2] = "01521035000000"; //variation max p 5GeV pion line
+		eventCutArray[ 3] = "0000012"; photonCutArray[ 3] = "00200009217302008250400000"; mesonCutArray[3] = "01521035000000"; //variation nsigma>0 pion line
+	} else if (trainConfig == 66) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009257302008250400000"; mesonCutArray[0] = "01521035000000"; //variation nsigma>2 pion line
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00200009227302002250400000"; mesonCutArray[1] = "01521035000000"; //variation max qt 0.07 1D
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009227302009250400000"; mesonCutArray[2] = "01521035000000"; //variation max qt 0.03 2D
+		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009227302003250400000"; mesonCutArray[3] = "01521035000000"; //variation max qt 0.05 1D
+	} else if (trainConfig == 67) {//added signals
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009257302008250400000"; mesonCutArray[0] = "01521035000000"; //variation nsigma>2 pion line
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "00200009227302002250400000"; mesonCutArray[1] = "01521035000000"; //variation max qt 0.07 1D
+		eventCutArray[ 2] = "0000012"; photonCutArray[ 2] = "00200009227302009250400000"; mesonCutArray[2] = "01521035000000"; //variation max qt 0.03 2D
+		eventCutArray[ 3] = "0000012"; photonCutArray[ 3] = "00200009227302003250400000"; mesonCutArray[3] = "01521035000000"; //variation max qt 0.05 1D
+	} else if (trainConfig == 68) {
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008180400000"; mesonCutArray[0] = "01521035000000"; //variation chi2 50 psi pair 0.2 2D
+		eventCutArray[ 1] = "0000011"; photonCutArray[ 1] = "00200009227302008210400000"; mesonCutArray[1] = "01521035000000"; //variation chi2 30 psi pair 0.1 1D
+		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009227302008860400000"; mesonCutArray[2] = "01521035000000"; //variation chi2 20 psi pair 0.05 2D
+		eventCutArray[ 3] = "0000011"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "02521035000000"; //variation BG scheme track mult
+	} else if (trainConfig == 69) {//added signals
+		eventCutArray[ 0] = "0000012"; photonCutArray[ 0] = "00200009227302008180400000"; mesonCutArray[0] = "01521035000000"; //variation chi2 50 psi pair 0.2 2D
+		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "00200009227302008210400000"; mesonCutArray[1] = "01521035000000"; //variation chi2 30 psi pair 0.1 1D
+		eventCutArray[ 2] = "0000012"; photonCutArray[ 2] = "00200009227302008860400000"; mesonCutArray[2] = "01521035000000"; //variation chi2 20 psi pair 0.05 2D
+		eventCutArray[ 3] = "0000012"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "02521035000000"; //variation BG scheme track mult
+	} else if (trainConfig == 70) {
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "01521035000000"; //New standard cut for eta analysis
 		eventCutArray[ 1] = "0000012"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "01521035000000"; //New standard cut for eta analysis
 	} else {
