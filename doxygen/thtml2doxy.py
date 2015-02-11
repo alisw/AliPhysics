@@ -1111,10 +1111,12 @@ def rewrite_comments(fhin, fhout, comments):
           restore_lines = [ line.rstrip('\n') ]
           logging.debug('Commencing lines to restore: {%s}' % Colt(restore_lines[0]).cyan())
         else:
-          # Extract the non-comment part and print it if it exists
-          non_comment = line[ 0:comm.first_col-1 ].rstrip()
-          if non_comment != '':
-            fhout.write( non_comment + '\n' )
+          # Extract the non-comment part and print it if it exists. If this is the first line of a
+          # comment, it might happen something like `valid_code;  // this is a comment`.
+          if comm.first_line == line_num:
+            non_comment = line[ 0:comm.first_col-1 ].rstrip()
+            if non_comment != '':
+              fhout.write( non_comment + '\n' )
 
       elif isinstance(comm, Comment):
 
