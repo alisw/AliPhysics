@@ -1,11 +1,11 @@
-void AddTask_GammaCalo_pp(  Int_t trainConfig = 1,  //change different set of cuts
-							Bool_t isMC   = kFALSE, //run MC
-							Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-							Int_t enableQAClusterTask = 0, // enable additional QA task
-							TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
-                            TString cutnumberAODBranch = "000000006008400001001500000",
-							TString periodname = "LHC12f1x", 							// period name
-							Bool_t doWeighting = kFALSE									// enables weighting
+void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change different set of cuts
+							Bool_t 		isMC   						= kFALSE, 							// run MC
+							Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+							Int_t 		enableQAClusterTask 		= 0, 								// enable additional QA task
+							TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+                            TString 	cutnumberAODBranch 			= "000000006008400001001500000",
+							TString 	periodname 					= "LHC12f1x", 						// period name
+							Bool_t 		doWeighting 				= kFALSE							// enables weighting
 ) {
 
 	// ================= Load Librariers =================================

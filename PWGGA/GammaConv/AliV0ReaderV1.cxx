@@ -485,7 +485,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 		return 0x0;
 	}
 
-	if (fMCEvent) FillRecMCHistosForV0FinderEffiESD(fCurrentV0);
+	if (fMCEvent && fProduceV0findingEffi ) FillRecMCHistosForV0FinderEffiESD(fCurrentV0);
 	
 	// TrackLabels
 	Int_t currentTrackLabels[2]={-1,-1};

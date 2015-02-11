@@ -1,14 +1,15 @@
-void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set of cuts
-                              Bool_t isMC   = kFALSE, //run MC
-                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAPhotonTask = 0, // enable additional QA task
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Int_t doWeightingPart = 0,  //enable Weighting
-                              TString generatorName = "DPMJET",
-                              TString cutnumberAODBranch = "800000006008400000001500000", // cutnumber for AOD branch
-                              Bool_t enableExtendedMatching = kFALSE, //enable or disable extended matching histograms for conversion electrons <-> cluster
-                              Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
-							) {
+void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// change different set of cuts
+									Bool_t 		isMC   						= kFALSE, 							// run MC
+									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+									Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
+									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+									Int_t 		doWeightingPart 			= 0,  								// enable Weighting
+									TString 	generatorName 				= "DPMJET",							// generator Name	
+									TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
+									Bool_t 		enableExtendedMatching 		= kFALSE, 							// enable or disable extended matching histograms for conversion electrons <-> cluster
+									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
+									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+) {
 
 	// ================= Load Librariers =================================
 	gSystem->Load("libCore");  
@@ -64,6 +65,7 @@ void AddTask_GammaConvCalo_pPb(  Int_t trainConfig = 1,  //change different set 
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
