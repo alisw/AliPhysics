@@ -379,6 +379,11 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 	// Set Magnetic Field
 	AliKFParticle::SetField(fInputEvent->GetMagneticField());
 	
+	if(fInputEvent->IsA()==AliAODEvent::Class() && fProduceV0findingEffi){
+		fProduceV0findingEffi = kFALSE;
+		AliWarning("V0finding effi cannot be run on AODs ");
+	}	
+	
 	if(fProduceV0findingEffi){
 		CreatePureMCHistosForV0FinderEffiESD();
 		fStrFoundGammas = "";
