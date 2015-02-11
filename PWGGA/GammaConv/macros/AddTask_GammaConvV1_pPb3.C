@@ -50,7 +50,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 
 	//=========  Set Cutnumber for V0Reader ================================
 	//offline V0Finder
-	TString cutnumberPhoton = "160000084001001500000000";
+	TString cutnumberPhoton = "16000008400100001500000000";
 	TString cutnumberEvent = "8000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
