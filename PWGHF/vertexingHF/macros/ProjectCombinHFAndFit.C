@@ -28,6 +28,10 @@ const Int_t nPtBins=6;
 Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,6.,8.};
 Double_t sigmas[nPtBins]={0.0075,0.008,0.009,0.009,0.010,0.012};//,0.012,0.015,0.017};// MC values up to 8
 
+// outputfiles
+Bool_t saveCanvasAsRoot=kTRUE;
+Int_t saveCanvasAsEps=2;   //0=none, 1=main ones, 2=all
+
 // fit configuration
 Int_t rebin=5;
 Bool_t fixSigma=kTRUE;
@@ -1157,62 +1161,69 @@ void ProjectCombinHFAndFit(){
     gROOT->ProcessLine(Form(".!mkdir -p %s",path.Data()));  
   }
 
-  c2->SaveAs(Form("figures/InvMassSpectra_%s_Rot.eps",suffix.Data()));
-  c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.eps",suffix.Data()));
-  c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.eps",suffix.Data()));
+  if(saveCanvasAsEps>0){
+    c2->SaveAs(Form("figures/InvMassSpectra_%s_Rot.eps",suffix.Data()));
+    c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.eps",suffix.Data()));
+    c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.eps",suffix.Data()));
+    if(tryDirectFit) cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
 
-  c2residuals->SaveAs(Form("figures/ResidualDistribution_%s_Rot.eps",suffix.Data()));
-  c3residuals->SaveAs(Form("figures/ResidualDistribution_%s_LS.eps",suffix.Data()));
-  c4residuals->SaveAs(Form("figures/ResidualDistribution_%s_EM.eps",suffix.Data()));
+    if(saveCanvasAsEps>1){
+      c2residuals->SaveAs(Form("figures/ResidualDistribution_%s_Rot.eps",suffix.Data()));
+      c3residuals->SaveAs(Form("figures/ResidualDistribution_%s_LS.eps",suffix.Data()));
+      c4residuals->SaveAs(Form("figures/ResidualDistribution_%s_EM.eps",suffix.Data()));
 
-  c2residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_Rot.eps",suffix.Data()));
-  c3residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_LS.eps",suffix.Data()));
-  c4residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_EM.eps",suffix.Data()));
+      c2residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_Rot.eps",suffix.Data()));
+      c3residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_LS.eps",suffix.Data()));
+      c4residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_EM.eps",suffix.Data()));
 
-  c2pulls->SaveAs(Form("figures/PullDistribution_%s_Rot.eps",suffix.Data()));
-  c3pulls->SaveAs(Form("figures/PullDistribution_%s_LS.eps",suffix.Data()));
-  c4pulls->SaveAs(Form("figures/PullDistribution_%s_EM.eps",suffix.Data()));
+      c2pulls->SaveAs(Form("figures/PullDistribution_%s_Rot.eps",suffix.Data()));
+      c3pulls->SaveAs(Form("figures/PullDistribution_%s_LS.eps",suffix.Data()));
+      c4pulls->SaveAs(Form("figures/PullDistribution_%s_EM.eps",suffix.Data()));
 
-  c2pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_Rot.eps",suffix.Data()));
-  c3pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_LS.eps",suffix.Data()));
-  c4pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_EM.eps",suffix.Data()));
+      c2pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_Rot.eps",suffix.Data()));
+      c3pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_LS.eps",suffix.Data()));
+      c4pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_EM.eps",suffix.Data()));
 
+      if(tryDirectFit){
+	cResidualsDirect->SaveAs(Form("figures/ResidualDistribution_%s_SB.eps",suffix.Data()));
+	cResidualDirectTrendVsMass->SaveAs(Form("figures/residualTrendvsMass_%s_SB.eps",suffix.Data()));
+	cPullsDirect->SaveAs(Form("figures/PullDistribution_%s_SB.eps",suffix.Data()));
+	cPullsDirectTrendVsMass->SaveAs(Form("figures/pullTrendvsMass_%s_SB.eps",suffix.Data()));
+      }
+    }
+  }
 
   // save also .root
-  c2->SaveAs(Form("figures/InvMassSpectra_%s_Rot.root",suffix.Data()));
-  c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.root",suffix.Data()));
-  c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.root",suffix.Data()));
+  if(saveCanvasAsRoot){
+    c2->SaveAs(Form("figures/InvMassSpectra_%s_Rot.root",suffix.Data()));
+    c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.root",suffix.Data()));
+    c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.root",suffix.Data()));
 
-  c2residuals->SaveAs(Form("figures/ResidualDistribution_%s_Rot.root",suffix.Data()));
-  c3residuals->SaveAs(Form("figures/ResidualDistribution_%s_LS.root",suffix.Data()));
-  c4residuals->SaveAs(Form("figures/ResidualDistribution_%s_EM.root",suffix.Data()));
+    c2residuals->SaveAs(Form("figures/ResidualDistribution_%s_Rot.root",suffix.Data()));
+    c3residuals->SaveAs(Form("figures/ResidualDistribution_%s_LS.root",suffix.Data()));
+    c4residuals->SaveAs(Form("figures/ResidualDistribution_%s_EM.root",suffix.Data()));
 
-  c2residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_Rot.root",suffix.Data()));
-  c3residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_LS.root",suffix.Data()));
-  c4residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_EM.root",suffix.Data()));
+    c2residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_Rot.root",suffix.Data()));
+    c3residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_LS.root",suffix.Data()));
+    c4residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_EM.root",suffix.Data()));
 
-  c2pulls->SaveAs(Form("figures/PullDistribution_%s_Rot.root",suffix.Data()));
-  c3pulls->SaveAs(Form("figures/PullDistribution_%s_LS.root",suffix.Data()));
-  c4pulls->SaveAs(Form("figures/PullDistribution_%s_EM.root",suffix.Data()));
+    c2pulls->SaveAs(Form("figures/PullDistribution_%s_Rot.root",suffix.Data()));
+    c3pulls->SaveAs(Form("figures/PullDistribution_%s_LS.root",suffix.Data()));
+    c4pulls->SaveAs(Form("figures/PullDistribution_%s_EM.root",suffix.Data()));
 
-  c2pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_Rot.root",suffix.Data()));
-  c3pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_LS.root",suffix.Data()));
-  c4pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_EM.root",suffix.Data()));
+    c2pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_Rot.root",suffix.Data()));
+    c3pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_LS.root",suffix.Data()));
+    c4pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_EM.root",suffix.Data()));
 
-
-  if(tryDirectFit){
-    cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
-    cResidualsDirect->SaveAs(Form("figures/ResidualDistribution_%s_SB.eps",suffix.Data()));
-    cResidualDirectTrendVsMass->SaveAs(Form("figures/residualTrendvsMass_%s_SB.eps",suffix.Data()));
-    cPullsDirect->SaveAs(Form("figures/PullDistribution_%s_SB.eps",suffix.Data()));
-    cPullsDirectTrendVsMass->SaveAs(Form("figures/pullTrendvsMass_%s_SB.eps",suffix.Data()));
-
-    cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.root",suffix.Data()));
-    cResidualsDirect->SaveAs(Form("figures/ResidualDistribution_%s_SB.root",suffix.Data()));
-    cResidualDirectTrendVsMass->SaveAs(Form("figures/residualTrendvsMass_%s_SB.root",suffix.Data()));
-    cPullsDirect->SaveAs(Form("figures/PullDistribution_%s_SB.root",suffix.Data()));
-    cPullsDirectTrendVsMass->SaveAs(Form("figures/pullTrendvsMass_%s_SB.root",suffix.Data()));
+    if(tryDirectFit){
+      cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.root",suffix.Data()));
+      cResidualsDirect->SaveAs(Form("figures/ResidualDistribution_%s_SB.root",suffix.Data()));
+      cResidualDirectTrendVsMass->SaveAs(Form("figures/residualTrendvsMass_%s_SB.root",suffix.Data()));
+      cPullsDirect->SaveAs(Form("figures/PullDistribution_%s_SB.root",suffix.Data()));
+      cPullsDirectTrendVsMass->SaveAs(Form("figures/pullTrendvsMass_%s_SB.root",suffix.Data()));
+    }
   }
+
   TCanvas* cry=new TCanvas("cry","RawYield",800,700);
   cry->SetLeftMargin(0.15);
   hRawYieldRot->SetMarkerStyle(21);
@@ -1253,8 +1264,8 @@ void ProjectCombinHFAndFit(){
     legry->AddEntry(hRawYieldSBfit,"Direct Fit","PL")->SetTextColor(6);
   }
   legry->Draw();
-  cry->SaveAs(Form("figures/RawYield_%s.eps",suffix.Data()));
-  cry->SaveAs(Form("figures/RawYield_%s.root",suffix.Data()));
+  if(saveCanvasAsEps>0) cry->SaveAs(Form("figures/RawYield_%s.eps",suffix.Data()));
+  if(saveCanvasAsRoot) cry->SaveAs(Form("figures/RawYield_%s.root",suffix.Data()));
 
   cCompareResidualTrends->cd(1);
   TLegend *legRT=new TLegend(*legry);
@@ -1320,8 +1331,8 @@ void ProjectCombinHFAndFit(){
     legryBC->AddEntry(hRawYieldSBfitBC,"Direct Fit BC","PL")->SetTextColor(6);
   }
   legryBC->Draw();
-  cryBC->SaveAs(Form("figures/RawYieldBC_%s.eps",suffix.Data()));
-  cryBC->SaveAs(Form("figures/RawYieldBC_%s.root",suffix.Data()));
+  if(saveCanvasAsEps>0) cryBC->SaveAs(Form("figures/RawYieldBC_%s.eps",suffix.Data()));
+  if(saveCanvasAsRoot) cryBC->SaveAs(Form("figures/RawYieldBC_%s.root",suffix.Data()));
 
 
 
