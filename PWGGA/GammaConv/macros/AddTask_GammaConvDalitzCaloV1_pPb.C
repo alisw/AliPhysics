@@ -53,16 +53,17 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	
 	//=========  Set Cutnumber for V0Reader ================================
 	TString cutnumberPhoton 	= "00000008400100001500000000";
-					  
-					   
 	TString cutnumberEvent 		= "8000000";
 	TString cutnumberElectron     	= "90005400000002000000";            //Electron Cuts
+	
+	
 	
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
+	  
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
 		
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
