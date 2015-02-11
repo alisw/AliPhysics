@@ -163,6 +163,11 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hESDTrueConvGammaRMC(NULL),
 	hESDTrueConvGammaEta(NULL),
 	hESDCombinatorialPt(NULL),
+	hESDCombinatorialPtDeltaPhi_ek(NULL),
+	hESDCombinatorialPtDeltaPhi_ep(NULL),
+	hESDCombinatorialPtDeltaPhi_epi(NULL),
+	hESDCombinatorialPtDeltaPhi_pik(NULL),
+	hESDCombinatorialPtDeltaPhi_pip(NULL),
 	hESDTruePrimaryConvGammaPt(NULL),
 	hESDTruePrimaryConvGammaESDPtMCPt(NULL),
 	hESDTrueSecondaryConvGammaPt(NULL),
@@ -315,6 +320,11 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hESDTrueConvGammaRMC(NULL),
 	hESDTrueConvGammaEta(NULL),
 	hESDCombinatorialPt(NULL),
+	hESDCombinatorialPtDeltaPhi_ek(NULL),
+	hESDCombinatorialPtDeltaPhi_ep(NULL),
+	hESDCombinatorialPtDeltaPhi_epi(NULL),
+	hESDCombinatorialPtDeltaPhi_pik(NULL),
+	hESDCombinatorialPtDeltaPhi_pip(NULL),
 	hESDTruePrimaryConvGammaPt(NULL),
 	hESDTruePrimaryConvGammaESDPtMCPt(NULL),
 	hESDTrueSecondaryConvGammaPt(NULL),
@@ -667,6 +677,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hESDTrueConvGammaPt = new TH1F*[fnCuts];
 
 		hESDCombinatorialPt = new TH2F*[fnCuts];
+		if (fDoPhotonQA > 0){
+			hESDCombinatorialPtDeltaPhi_ek = new TH2F*[fnCuts];
+			hESDCombinatorialPtDeltaPhi_ep = new TH2F*[fnCuts];
+			hESDCombinatorialPtDeltaPhi_epi = new TH2F*[fnCuts];
+			hESDCombinatorialPtDeltaPhi_pik = new TH2F*[fnCuts];
+			hESDCombinatorialPtDeltaPhi_pip = new TH2F*[fnCuts];
+		}
 		hESDTruePrimaryConvGammaPt = new TH1F*[fnCuts];
 		hESDTruePrimaryConvGammaESDPtMCPt = new TH2F*[fnCuts];
 		hESDTrueSecondaryConvGammaPt = new TH1F*[fnCuts];
@@ -864,6 +881,19 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hESDTrueSecondaryConvGammaPt[iCut] = new TH1F("ESD_TrueSecondaryConvGamma_Pt","ESD_TrueSecondaryConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(hESDTrueSecondaryConvGammaPt[iCut]);
 
+			if(fDoPhotonQA > 0){
+				hESDCombinatorialPtDeltaPhi_ek[iCut] = new TH2F("ESD_TrueCombinatorial_Pt_DeltaPhi_ek","ESD_TrueCombinatorial_Pt_DeltaPhi_ek",250,0,25,90,-0.5*TMath::Pi(),0.5*TMath::Pi());
+				fTrueList[iCut]->Add(hESDCombinatorialPtDeltaPhi_ek[iCut]);
+				hESDCombinatorialPtDeltaPhi_ep[iCut] = new TH2F("ESD_TrueCombinatorial_Pt_DeltaPhi_ep","ESD_TrueCombinatorial_Pt_DeltaPhi_ep",250,0,25,90,-0.5*TMath::Pi(),0.5*TMath::Pi());
+				fTrueList[iCut]->Add(hESDCombinatorialPtDeltaPhi_ep[iCut]);
+				hESDCombinatorialPtDeltaPhi_epi[iCut] = new TH2F("ESD_TrueCombinatorial_Pt_DeltaPhi_epi","ESD_TrueCombinatorial_Pt_DeltaPhi_epi",250,0,25,90,-0.5*TMath::Pi(),0.5*TMath::Pi());
+				fTrueList[iCut]->Add(hESDCombinatorialPtDeltaPhi_epi[iCut]);
+				hESDCombinatorialPtDeltaPhi_pik[iCut] = new TH2F("ESD_TrueCombinatorial_Pt_DeltaPhi_pik","ESD_TrueCombinatorial_Pt_DeltaPhi_pik",250,0,25,90,-0.5*TMath::Pi(),0.5*TMath::Pi());
+				fTrueList[iCut]->Add(hESDCombinatorialPtDeltaPhi_pik[iCut]);
+				hESDCombinatorialPtDeltaPhi_pip[iCut] = new TH2F("ESD_TrueCombinatorial_Pt_DeltaPhi_pip","ESD_TrueCombinatorial_Pt_DeltaPhi_pip",250,0,25,90,-0.5*TMath::Pi(),0.5*TMath::Pi());
+				fTrueList[iCut]->Add(hESDCombinatorialPtDeltaPhi_pip[iCut]);
+			}
+			
 			hESDTrueSecondaryConvGammaFromXFromK0sPt[iCut]
 				= new TH1F("ESD_TrueSecondaryConvGammaFromXFromK0s_Pt", "ESD_TrueSecondaryConvGammaFromXFromK0s_Pt",250,0,25);
 			fTrueList[iCut]->Add(hESDTrueSecondaryConvGammaFromXFromK0sPt[iCut]);
@@ -884,7 +914,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 		
 			if (fDoPhotonQA > 0){
-
 				hESDTrueConvGammaEta[iCut] = new TH1F("ESD_TrueConvGamma_Eta","ESD_TrueConvGamma_Eta",2000,-2,2);
 				fTrueList[iCut]->Add(hESDTrueConvGammaEta[iCut]);
 				hESDTrueConvGammaR[iCut] = new TH1F("ESD_TrueConvGamma_R","ESD_TrueConvGamma_R",800,0,200);
@@ -1369,14 +1398,16 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 		
 		if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
 		Int_t pdgCode[2] = {abs(posDaughter->GetPdgCode()),abs(negDaughter->GetPdgCode())};
+		
+		Double_t PhiParticle[2] = {posDaughter->Phi(),negDaughter->Phi()};
 
 		if(posDaughter->GetMother() != negDaughter->GetMother()){
-			FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode);
+			FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode, fDoPhotonQA, PhiParticle);
 			iPhotonMCInfo = 1;
 			return;
 		}
 		else if(posDaughter->GetMother() == -1){
-			FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode);
+			FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode, fDoPhotonQA, PhiParticle);
 			iPhotonMCInfo = 1;
 			return;
 		}
@@ -1479,12 +1510,15 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 	
 	if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
 	Int_t pdgCode[2] = {abs(posDaughter->GetPdgCode()),abs(negDaughter->GetPdgCode())};
+	
+	Double_t PhiParticle[2] = {posDaughter->Phi(),negDaughter->Phi()};
+	
 	iPhotonMCInfo = 1;
 	if(posDaughter->GetMother(0) != negDaughter->GetMother(0)){
-		FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode);
+		FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode, fDoPhotonQA, PhiParticle);
 		return;
 	} else if(posDaughter->GetMother(0) == -1){
-		FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode);
+		FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode, fDoPhotonQA, PhiParticle);
 		return;
 	}
 
@@ -2599,9 +2633,9 @@ void AliAnalysisTaskGammaConvV1::UpdateEventByEventData(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvV1::FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[])
+void AliAnalysisTaskGammaConvV1::FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Int_t fDoPhotonQA, Double_t PhiParticle[])
 {
-	// Combinatorial Bck = 0 ee, 1 ep,i 2 ek, 3 ep, 4 emu, 5 pipi, 6 pik, 7 pip, 8 pimu, 9 kk, 10 kp, 11 kmu, 12 pp, 13 pmu, 14 mumu, 15 Rest
+	// Combinatorial Bck = 0 ee, 1 epi, 2 ek, 3 ep, 4 emu, 5 pipi, 6 pik, 7 pip, 8 pimu, 9 kk, 10 kp, 11 kmu, 12 pp, 13 pmu, 14 mumu, 15 Rest
 	if(pdgCode[0]==11   && pdgCode[1]==11){if(fIsFromMBHeader)hESDCombinatorialPt[fiCut]->Fill(TruePhotonCandidate->Pt(),0);}
 	else if( (pdgCode[0]==11   && pdgCode[1]==211) || (pdgCode[0]==211  && pdgCode[1]==11) )
 		{if(fIsFromMBHeader)hESDCombinatorialPt[fiCut]->Fill(TruePhotonCandidate->Pt(),1);}
@@ -2628,6 +2662,31 @@ void AliAnalysisTaskGammaConvV1::FillPhotonCombinatorialBackgroundHist(AliAODCon
 		{if(fIsFromMBHeader)hESDCombinatorialPt[fiCut]->Fill(TruePhotonCandidate->Pt(),13);}
 	else if(  pdgCode[0]==13   && pdgCode[1]==13  ){if(fIsFromMBHeader)hESDCombinatorialPt[fiCut]->Fill(TruePhotonCandidate->Pt(),14);}
 	else {if(fIsFromMBHeader)hESDCombinatorialPt[fiCut]->Fill(TruePhotonCandidate->Pt(),15);}
+	
+	if(fDoPhotonQA > 0){
+		
+		if( (pdgCode[0]==11   && pdgCode[1]==211) || (pdgCode[0]==211  && pdgCode[1]==11) ){
+			if(pdgCode[0]==11){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_epi[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[1])));}
+			else if(pdgCode[0]==211){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_epi[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[0])));}
+		}
+		else if( (pdgCode[0]==11   && pdgCode[1]==321) || (pdgCode[0]==321  && pdgCode[1]==11) ){
+			if(pdgCode[0]==11){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_ek[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[1])));}
+			else if(pdgCode[0]==321){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_ek[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[0])));}
+		}
+		else if( (pdgCode[0]==11   && pdgCode[1]==2212) || (pdgCode[0]==2212 && pdgCode[1]==11) ){
+			if(pdgCode[0]==11){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_ep[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[1])));}
+			else if(pdgCode[0]==2212){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_ep[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[0])));}
+		}
+		else if( (pdgCode[0]==211  && pdgCode[1]==321) || (pdgCode[0]==321  && pdgCode[1]==211) ){
+			if(pdgCode[0]==211){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_pik[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[1])));}
+			else if(pdgCode[0]==321){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_pik[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[0])));}
+		}
+		else if( (pdgCode[0]==211  && pdgCode[1]==2212) || (pdgCode[0]==2212 && pdgCode[1]==211) ){
+			if(pdgCode[0]==211){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_pip[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[1])));}
+			else if(pdgCode[0]==2212){if(fIsFromMBHeader)hESDCombinatorialPtDeltaPhi_pip[fiCut]->Fill(TruePhotonCandidate->Pt(),TMath::Abs((TruePhotonCandidate->Phi() - PhiParticle[0])));}
+		}
+		
+	}
 }
 
 //________________________________________________________________________
