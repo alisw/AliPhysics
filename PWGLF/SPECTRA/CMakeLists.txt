@@ -26,6 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
   )
 
 # Sources - alphabetical order
@@ -63,6 +64,8 @@ set(SRCS
   PiKaPr/TestAOD/AliAnalysisTaskV2AllChAOD.cxx
   Kinks/AliAnalysisKinkESDat.cxx
   Kinks/AliAnalysisKinkESDMC.cxx
+  Kinks/AliESDkinkCuts.cxx
+  Kinks/AliAnalysisTaskKinksFilimon.cxx
   PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
@@ -99,7 +102,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGTools PWGUDbase)
+set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library

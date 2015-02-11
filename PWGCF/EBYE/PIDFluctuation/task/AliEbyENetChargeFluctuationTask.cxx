@@ -123,6 +123,7 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fNCentralityBins(11),
   fCentralityBinMax(11),
   fNTracks(0),
+  fNbwcBin(100),
 
   fIsMC(kFALSE),
   fIsRatio(kFALSE),
@@ -137,7 +138,8 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fIsPhy(kFALSE),
   fIsDca(kFALSE),
   fIsNu(kFALSE),
-  
+  fIsTen(kFALSE),
+
   fRan(0),             
   fRanIdx(0),                        
   fHelperPID(0x0) { 
@@ -180,8 +182,6 @@ AliEbyENetChargeFluctuationTask::~AliEbyENetChargeFluctuationTask() {
 //________________ Static Variables _____________________
 const Float_t fGBwRap     = 0.1;
 const Float_t fGBwPt      = 0.1; 
-const Int_t   fGNBinsCent = 11 ;
-const Float_t fGRngCent[] = {0.5, 11.5};
 const Float_t fGRngEta[]  = {-0.8, 0.8};
 const Int_t   fGNBinsEta  = Int_t((fGRngEta[1] - fGRngEta[0])/fGBwRap);
 
@@ -190,11 +190,11 @@ const Int_t   fGNBinsRap  = Int_t((fGRngRap[1] - fGRngRap[0])/fGBwRap);
 const Float_t fGRngPhi[]  = {0.0, 6.3};
 const Int_t   fGNBinsPhi  = 63;
 
-const Float_t fGRngPt[]    = {0.2, 3.3};
-const Int_t   fGNBinsPt    = Int_t((fGRngPt[1] - fGRngPt[0])/fGBwPt); 
+const Float_t fGRngPt[]   = {0.2, 3.3};
+const Int_t   fGNBinsPt   = Int_t((fGRngPt[1] - fGRngPt[0])/fGBwPt); 
 
-const Int_t   fGNBinsSign  =  2;
-const Float_t fGRngSign[]  = {-0.5, 1.5};
+const Int_t   fGNBinsSign =  2;
+const Float_t fGRngSign[] = {-0.5, 1.5};
 
 
 //---------------------------------------------------------------------------------
@@ -214,41 +214,54 @@ void AliEbyENetChargeFluctuationTask::UserCreateOutputObjects() {
   fDcaList = new TList();
   fDcaList->SetOwner(kTRUE);
   
+  Printf(" >>>================================================================");
   if (!fIsAOD) {
     if(!fESDtrackCuts)
       fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     else 
       Printf(" >>>>  User Track Cuts <<<< ");
     fESDtrackCuts->Print();
-
-    Printf(" >>> DCAxy -- [%8.4f:%8.4f]", 
+    
+    Printf(" >>> DCAxy in TC [%8.4f:%8.4f]", 
 	   fESDtrackCuts->GetMinDCAToVertexXY(), fESDtrackCuts->GetMaxDCAToVertexXY());
-    Printf(" >>> DCAz -- [%8.4f:%8.4f]", 
+    Printf(" >>> DCAz in TC  [%8.4f:%8.4f]", 
 	   fESDtrackCuts->GetMinDCAToVertexZ(), fESDtrackCuts->GetMaxDCAToVertexZ());
 	       
     Float_t r1,r2;
     fESDtrackCuts->GetPtRange(r1,r2);
-    Printf(" >>>> Pt Range [%10.4f:%10.4f]",r1,r2);
+    Printf(" >>> Pt in TC  [%10.4f:%10.4f]",r1,r2);
 
     fESDtrackCuts->GetRapRange(r1,r2);
-    Printf(" >>>> Rapidty Range [%10.4f:%10.4f]",r1,r2);
+    Printf(" >>> Rap in TC [%10.4f:%10.4f]",r1,r2);
 
     fESDtrackCuts->GetEtaRange(r1,r2);
-    Printf(" >>>> Eta Range [%10.4f:%10.4f]",r1,r2);
+    Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
   }     
-
 
   fRan = new TRandom3();
   fRan->SetSeed();
   
   fRanIdx = new TRandom3();
   fRanIdx->SetSeed();
+ 
+  Printf(" >>> MC%d RA%d AO%d SS%d BS%d PE%d EF%d DB%d QA%d NQ%d PY%d DC%d NU%d TE%d", 
+	 fIsMC,  fIsRatio, fIsAOD,  fIsSub, fIsBS, fIsPer, fIsEff, fDebug,   
+	 fIsQa,  fNeedQa,  fIsPhy,  fIsDca, fIsNu, fIsTen);
   
-  Printf(" >>>%d %d %d %d %d %d %d %d %d %d %d", 
-	 fIsAOD, fIsMC, fIsPhy, fIsEff, 
-	 fIsDca, fIsQa, fNeedQa,
-	 fIsRatio, fIsSub, fIsBS, fIsPer);
-  
+  Printf(" >>> Centrality: %s System Type %d ",fCentralityEstimator.Data(),fSystemType); 
+  Printf(" >>> Vx %.1f Vy %.1f Vz %.1f",fVxMax, fVyMax, fVzMax);
+  Printf(" >>> Phi Range [%.2f:%.2f]",fPhiMin,fPhiMax);   
+  Printf(" >>> Pt  Range [%.2f:%.2f]",fPtMin,fPtMax);   
+  Printf(" >>> Eta Range [%.2f:%.2f]",fEtaMin,fEtaMax);   
+  Printf(" >>> Rap Range [%.2f:%.2f]",fRapMin,fRapMax);   
+  Printf(" >>> DCA Range [%.2f:%.2f]",fDcaXy,fDcaZ);   
+  Printf(" >>> CBin:Cper [%.2f:%.2f]",fCentralityBin,fCentralityPercentile);   
+  Printf(" >>> TLengthMC:%10.5f TrackN:%d TrackBit:%d Trigg:%d",
+	 fMinTrackLengthMC, fNTracks, fAODtrackCutBit,fNTriggers);
+  Printf(" >>> N.Samples:%d SsIdx:%d Order:%d",fNSubSamples,fSubSampleIdx,fOrder);
+  Printf(" >>> EventStatBin:%d CentralityBin:%d CentBinMax:%d BWCbin:%d",
+	 fHEventStatMax,fNCentralityBins,fCentralityBinMax, fNbwcBin);
+
   if (fNeedQa) CreateBasicQA();
   if (fIsQa && fNeedQa)  CreateQA();
   if (fIsPhy) InitPhy();
@@ -493,22 +506,22 @@ void AliEbyENetChargeFluctuationTask::ExecpA(){
 void AliEbyENetChargeFluctuationTask::FillQAThnRec(AliVTrack *track, Int_t gPid, Double_t rap) {
   Double_t charge = track->Charge() < 0 ? 0. : 1.;
   Double_t  rapp = (gPid == 0) ? track->Eta() : rap;
-  Double_t rec[5] = {fCentralityBin,charge,rapp,track->Phi(),track->Pt()};
+  Double_t rec[5] = {fCentralityBin+1,charge,rapp,track->Phi(),track->Pt()};
   
-  if (gPid == 0) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNchTrackUnCorr")))->Fill(rec);
-  else if (gPid == 1) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNpiTrackUnCorr")))->Fill(rec);
-  else if (gPid == 2) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNkaTrackUnCorr")))->Fill(rec);
-  else if (gPid == 3) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNprTrackUnCorr")))->Fill(rec);
+  if (gPid == 0) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNchTrackUnCorr")))->Fill(rec);
+  else if (gPid == 1) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNpiTrackUnCorr")))->Fill(rec);
+  else if (gPid == 2) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNkaTrackUnCorr")))->Fill(rec);
+  else if (gPid == 3) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNprTrackUnCorr")))->Fill(rec);
 }
 
 void AliEbyENetChargeFluctuationTask::FillQAThnMc(AliVParticle *particle, Int_t gPid, Double_t rap) {
   Double_t charge = (particle->PdgCode() < 0) ? 0. : 1.;
   Double_t  rapp = (gPid == 0) ? particle->Eta() : rap;
-  Double_t rec[5] = {fCentralityBin,charge,rapp,particle->Phi(),particle->Pt()};
-  if (gPid == 0) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNchTrackMc")))->Fill(fCurRec);
-  else if (gPid == 1) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNpiTrackMc")))->Fill(rec);
-  else if (gPid == 2) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNkaTrackMc")))->Fill(rec);
-  else if (gPid == 3) (static_cast<THnSparseD*>(fQaList->FindObject("fHnNprTrackMc")))->Fill(rec);
+  Double_t rec[5] = {fCentralityBin+1,charge,rapp,particle->Phi(),particle->Pt()};
+  if (gPid == 0) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNchTrackMc")))->Fill(rec);
+  else if (gPid == 1) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNpiTrackMc")))->Fill(rec);
+  else if (gPid == 2) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNkaTrackMc")))->Fill(rec);
+  else if (gPid == 3) (static_cast<THnSparseF*>(fQaList->FindObject("fHnNprTrackMc")))->Fill(rec);
 }
 
 //----------------------------------------------------------------------------------
@@ -629,22 +642,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
     }
     //---- - -- - - - - -   -  -- - - - ---- - - - --- 
   }
-  //---- - -- - - - - -   -  -- - - - ---- - - - --- 
-  /*
-  Printf("%6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f",
-	 fNp[0][0],fNp[0][1],
-	 fNp[1][0],fNp[1][1],
-	 fNp[2][0],fNp[2][1],
-	 fNp[3][0],fNp[3][1]);
-
-Printf("%6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f",
-	 fMCNp[0][0],fMCNp[0][1],
-	 fMCNp[1][0],fMCNp[1][1],
-	 fMCNp[2][0],fMCNp[2][1],
-	 fMCNp[3][0],fMCNp[3][1]);
-  */
-
-}
+ }
 
 //___________________________________________________________
 void AliEbyENetChargeFluctuationTask::Terminate( Option_t * ){
@@ -759,25 +757,27 @@ Bool_t AliEbyENetChargeFluctuationTask::IsFindableInTPC(Int_t label) {
 
 const Char_t* fGEvtNames[] = {"All", "IsTriggered", "HasVertex", "Vx<Vx_{Max}", "Vy<Vy_{Max}", "Vz<Vz_{Max}", "Centrality [0,100]%", "Centrality [<0,>100]%"};
 const Char_t* fGCMxNames[] = {"5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
+const Char_t* fGCMxNames10[] = {"10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
 const Char_t* fGTrgNames[] = {"kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" }; 
 const Char_t* fGCntNames[] = {"0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
+const Char_t* fGCntNames10[] = {"0-10%", "10-20%", "20-30%", "30-40%", "40-50%","50-60%", "60-70%", "70-80%", "80-90%", "90-100%"};
 
 //________________________________________________________________________
 void AliEbyENetChargeFluctuationTask::CreateQA() {
  
-  Int_t    bhuc[5] = {fGNBinsCent, fGNBinsSign, fGNBinsRap,fGNBinsPhi,fGNBinsPt };      
-  Double_t mnhuc[5] = {fGRngCent[0],fGRngSign[0],fGRngRap[0],fGRngPhi[0],fGRngPt[0]};  
-  Double_t mxhuc[5] = {fGRngCent[1],fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
+  Int_t    bhuc[5]  = {fCentralityBinMax, fGNBinsSign, fGNBinsRap,fGNBinsPhi,fGNBinsPt };      
+  Double_t mnhuc[5] = {0.5,fGRngSign[0],fGRngRap[0],fGRngPhi[0],fGRngPt[0]};  
+  Double_t mxhuc[5] = {fCentralityBinMax+0.5,fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
   const Char_t *ctname = "cent:sign:y:phi:pt";
 			     
-  fQaList->Add(new THnSparseD("fHnNpiTrackUnCorr",ctname,  5, bhuc, mnhuc, mxhuc));
-  fQaList->Add(new THnSparseD("fHnNkaTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
-  fQaList->Add(new THnSparseD("fHnNprTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNpiTrackUnCorr",ctname,  5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNkaTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNprTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
 
   if (fIsMC) {
-    fQaList->Add(new THnSparseD("fHnNpiTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
-    fQaList->Add(new THnSparseD("fHnNkaTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
-    fQaList->Add(new THnSparseD("fHnNprTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNpiTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNkaTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNprTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
 
   }
 
@@ -786,9 +786,9 @@ void AliEbyENetChargeFluctuationTask::CreateQA() {
   mnhuc[2] = fGRngEta[0];
   mxhuc[2] = fGRngEta[1]; 
   
-  fQaList->Add(new THnSparseD("fHnNchTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
+  fQaList->Add(new THnSparseF("fHnNchTrackUnCorr", ctname, 5, bhuc, mnhuc, mxhuc));
   if (fIsMC) {
-    fQaList->Add(new THnSparseD("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
+    fQaList->Add(new THnSparseF("fHnNchTrackMc", ctname, 5, bhuc, mnhuc, mxhuc));
   }
 }
 
@@ -807,10 +807,14 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
     (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->GetXaxis()->SetBinLabel(ii+1, fGEvtNames[ii]);
     (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->GetXaxis()->SetBinLabel(ii+1, fGEvtNames[ii]);
   }
+  if (fIsTen) {
+    (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", fGCMxNames10[fCentralityBinMax-1]));
+    (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", fGCMxNames10[fCentralityBinMax-1]));
+  }  else {
+    (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", fGCMxNames[fCentralityBinMax-1]));
+    (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", fGCMxNames[fCentralityBinMax-1]));
+  }
 
-  (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat0"))))->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", fGCMxNames[fCentralityBinMax-1]));
-  (static_cast<TH1F*>(fQaList->FindObject(Form("hEventStat1"))))->GetXaxis()->SetBinLabel(fHEventStatMax, Form("Centrality [0-%s]%%", fGCMxNames[fCentralityBinMax-1]));
-  
   fQaList->Add(new TH1F("hTriggerStat","Trigger statistics;Trigger;Events", fNTriggers,-0.5,fNTriggers-0.5));
 
   for ( Int_t ii=0; ii < fNTriggers; ii++ ) {
@@ -820,27 +824,31 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
   
   // -- Initialize trigger statistics histograms
   
-  fQaList->Add(new TH1F("hCentralityStat","Centrality statistics;Centrality Bins;Events", 
-					   fNCentralityBins,-0.5,fNCentralityBins-0.5));
+  fQaList->Add(new TH1F("hCentralityStat",Form("Centrality statistics (%d);Centrality Bins;Events", fNCentralityBins),
+					   fNCentralityBins,0.5,fNCentralityBins+0.5));
   
   for ( Int_t ii=0; ii < fNCentralityBins; ii++ ) {
-    (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->GetXaxis()->SetBinLabel(ii+1, fGCntNames[ii]);
+    if (fIsTen) {
+      (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->GetXaxis()->SetBinLabel(ii+1, fGCntNames10[ii]);
+    } else {
+      (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->GetXaxis()->SetBinLabel(ii+1, fGCntNames[ii]);
+    }
   }
   
-  fQaList->Add(new TH1F("hCentralityPercentileAccepted","Centrality Percentile statistics;Centrality Bins;Events", 
-			100,-0.5,99.5));
+  fQaList->Add(new TH1F("hCentralityPercentileAccepted",Form("Centrality Percentile statistics (%d);Centrality Bins;Events",fNbwcBin), 
+			fNbwcBin,0.5,fNbwcBin + 0.5));
   
-  fQaList->Add(new TH1F("hCentralityPercentileAll","Centrality Percentile statistics;Centrality Bins;Events", 
-			100,-0.5,99.5));
+  fQaList->Add(new TH1F("hCentralityPercentileAll",Form("Centrality Percentile statistics (%d);Centrality Bins;Events",fNbwcBin), 
+			fNbwcBin,0.5,fNbwcBin + 0.5));
 
 
-  fQaList->Add(new TH2F("fHistQAvx",  "Histo Vx Selected;Centrality;Vx", 100,0,100, 5000, -5., 5.));
-  fQaList->Add(new TH2F("fHistQAvy",  "Histo Vy Selected;Centrality;Vy", 100,0,100, 5000, -5., 5.));
-  fQaList->Add(new TH2F("fHistQAvz",  "Histo Vz Selected;Centrality;Vz", 100,0,100, 5000, -25., 25.)); 
-  fQaList->Add(new TH2F("fHistQAvxA", "Histo Vx;Centrality;Vx", 100,0,100, 5000, -5., 5.));
-  fQaList->Add(new TH2F("fHistQAvyA", "Histo Vy;Centrality;Vy", 100,0,100, 5000, -5., 5.));
-  fQaList->Add(new TH2F("fHistQAvzA", "Histo Vz;Centrality;Vz", 100,0,100, 5000, -25., 25.));
-    
+  fQaList->Add(new TH2F("fHistQAvx",  Form("Histo Vx Selected;Centrality (%d);Vx",fNbwcBin), fNbwcBin,0.5,fNbwcBin + 0.5, 500, -5., 5.));
+  fQaList->Add(new TH2F("fHistQAvy",  Form("Histo Vy Selected;Centrality (%d);Vy",fNbwcBin), fNbwcBin,0.5,fNbwcBin + 0.5, 500, -5., 5.));
+  fQaList->Add(new TH2F("fHistQAvz",  Form("Histo Vz Selected;Centrality (%d);Vz",fNbwcBin), fNbwcBin,0.5,fNbwcBin + 0.5, 500, -25., 25.)); 
+  fQaList->Add(new TH2F("fHistQAvxA", Form("Histo Vx;Centrality (%d);Vx",fNbwcBin), fNbwcBin,0.5,fNbwcBin + 0.5, 500, -5., 5.));
+  fQaList->Add(new TH2F("fHistQAvyA", Form("Histo Vy;Centrality (%d);Vy",fNbwcBin), fNbwcBin,0.5,fNbwcBin + 0.5, 500, -5., 5.));
+  fQaList->Add(new TH2F("fHistQAvzA", Form("Histo Vz;Centrality (%d);Vz",fNbwcBin), fNbwcBin,0.5,fNbwcBin + 0.5, 500, -25., 25.));
+  
   if (fHelperPID) {
     fQaList->Add(new TList);
     TList *list =  static_cast<TList*>(fQaList->Last());
@@ -856,7 +864,7 @@ void AliEbyENetChargeFluctuationTask::CreateBasicQA() {
 
 
 //----------------------------------------------------------------------------------
-void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
+void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i, Int_t j){
 
   if      (i == 0 ) { fIsQa  = 1;                                                                 }
   else if (i == 1 ) { fIsDca = 1;                                                                 }
@@ -880,9 +888,36 @@ void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i){
   else if (i == 19) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1; fIsRatio = 1;              }    
   else {fIsPhy= 0;    fIsEff = 0; fIsDca  = 0; fIsQa  = 0; fIsSub = 0; fIsBS    = 0; fIsPer = 0; fIsRatio = 0;}
    
-  Printf(" >>> %d %d %d %d %d %d %d %d %d %d", 
-	 i, fIsPhy, fIsEff, fIsDca, fIsQa, 
-	 fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu);
+  if      (j ==  0) {fIsTen = 0; }
+  else if (j ==  1) {fIsTen = 0; fNbwcBin = 100;}
+  else if (j ==  2) {fIsTen = 0; fNbwcBin = 50; }
+  else if (j ==  3) {fIsTen = 0; fNbwcBin = 40; }
+  else if (j ==  4) {fIsTen = 0; fNbwcBin = 25; }
+  else if (j ==  5) {fIsTen = 0; fNbwcBin = 20; }
+  else if (j ==  6) {fIsTen = 1; fNbwcBin = 100;}
+  else if (j ==  7) {fIsTen = 1; fNbwcBin = 50; }
+  else if (j ==  8) {fIsTen = 1; fNbwcBin = 40; }
+  else if (j ==  9) {fIsTen = 1; fNbwcBin = 25; }
+  else if (j == 10) {fIsTen = 1; fNbwcBin = 20; }
+  else if (j == 11) {fIsTen = 0; fNbwcBin = 100;fNeedQa  = 1;}
+  else if (j == 12) {fIsTen = 0; fNbwcBin = 50; fNeedQa  = 1;}
+  else if (j == 13) {fIsTen = 0; fNbwcBin = 40; fNeedQa  = 1;}
+  else if (j == 14) {fIsTen = 0; fNbwcBin = 25; fNeedQa  = 1;}
+  else if (j == 15) {fIsTen = 0; fNbwcBin = 20; fNeedQa  = 1;}
+  else if (j == 16) {fIsTen = 1; fNbwcBin = 100;fNeedQa  = 1;}
+  else if (j == 17) {fIsTen = 1; fNbwcBin = 50; fNeedQa  = 1;}
+  else if (j == 18) {fIsTen = 1; fNbwcBin = 40; fNeedQa  = 1;}
+  else if (j == 19) {fIsTen = 1; fNbwcBin = 25; fNeedQa  = 1;}
+  else if (j == 20) {fIsTen = 1; fNbwcBin = 20; fNeedQa  = 1;}
+  
+  if (fIsTen) {
+    fNCentralityBins   = 10;
+    fCentralityBinMax  = 10;
+  } 
+
+
+  Printf(" >>> I%d PH%d EF%d DC%d QA%d RA%d SS%d BS%d PE%d NU%d NQ%d TE%d",i, 
+	 fIsPhy, fIsEff, fIsDca, fIsQa, fIsRatio, fIsSub, fIsBS, fIsPer, fIsNu, fNeedQa, fIsTen);
   if (fIsEff || fIsDca) {fPtMin = 0.2; fPtMax = 3.3;}  
  
 }
@@ -956,10 +991,10 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *title, Bo
   list->SetOwner(kTRUE);
   
 
-  Int_t nBinsCent         =  (isPer) ? 100 : fGNBinsCent;
+  Int_t nBinsCent  =  (isPer) ? fNbwcBin : fCentralityBinMax;
   Double_t centBinRange[2];  
-  centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
-  centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
+  centBinRange[0]  =  0.5;
+  centBinRange[1]  =  (isPer) ?  fNbwcBin + 0.5 : fCentralityBinMax+0.5;
 
   fQaList->Add(new TH1F(Form("h%s%sEventsNch",nmc.Data(), name.Data()),
 			"EventStat;Centrality Bins;Events",
@@ -986,29 +1021,29 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *title, Bo
       strTit = (iPid != 0 ) ? Form(" |y|<%.1f", fRapMax) : Form(" |#eta| < %.1f", etaRange[1]);
       
       list->Add(new TProfile(Form("fProfTot%sPlus%s", fgkPidName[iPid],name.Data()), 
-			     Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], 
-				  strTit.Data(), sNetTitle.Data()),
+			     Form("(%s) : %s;Centrality(%d);(%s)",fgkPidName[iPid], 
+				  strTit.Data(), nBinsCent,sNetTitle.Data()),
 			     nBinsCent, centBinRange[0], centBinRange[1]));
       
       list->Add(new TProfile(Form("fProfTot%sMinus%s", fgkPidName[iPid],name.Data()), 
-			     Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], 
-				  strTit.Data(), sNetTitle.Data()),
+			     Form("(%s) : %s;Centrality(%d);(%s)",fgkPidName[iPid], 
+				  strTit.Data(), nBinsCent,sNetTitle.Data()),
 			     nBinsCent, centBinRange[0], centBinRange[1]));
       
       
       
       for (Int_t idx = 1; idx <= fOrder; ++idx) {
 	list->Add(new TProfile(Form("fProf%s%sNet%dM", fgkPidName[iPid],name.Data(), idx), 
-			       Form("(%s)^{%d} : %s;Centrality(11);(%s)^{%d}", 
-				    sNetTitle.Data(), idx, strTit.Data(), sNetTitle.Data(), idx),
+			       Form("(%s)^{%d} : %s;Centrality(%d);(%s)^{%d}", 
+				    sNetTitle.Data(), idx, strTit.Data(), nBinsCent, sNetTitle.Data(), idx),
 			       nBinsCent, centBinRange[0], centBinRange[1]));
       }
       
       for (Int_t ii = 0; ii <= fOrder; ++ii) {
 	for (Int_t kk = 0; kk <= fOrder; ++kk) {
 	  list->Add(new TProfile(Form("fProf%s%sNetF%02d%02d", fgkPidName[iPid], name.Data(), ii, kk),
-				 Form("f_{%02d%02d} : %s;Centrality(11);f_{%02d%02d}", 
-				      ii, kk, strTit.Data(), ii, kk),
+				 Form("f_{%02d%02d} : %s;Centrality(%d);f_{%02d%02d}", 
+				      ii, kk, strTit.Data(), nBinsCent,ii, kk),
 				 nBinsCent, centBinRange[0], centBinRange[1]));
 	}
       }
@@ -1017,8 +1052,8 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *title, Bo
   
   for (Int_t iPhy = 0; iPhy < 58; ++iPhy) { 
     list->Add(new TProfile(Form("fProf%sNu%02d",name.Data(),iPhy),
-			   Form("Physics Variable for index %d | %s ; Centrality;",
-				iPhy,name.Data()),nBinsCent, 
+			   Form("Physics Variable for index %d | %s ; Centrality(%d);",
+				iPhy,name.Data(),nBinsCent),nBinsCent, 
 			   centBinRange[0], centBinRange[1]));
   }
   
@@ -1043,17 +1078,17 @@ void  AliEbyENetChargeFluctuationTask::CreateRatioHistos(const Char_t *title, Bo
   Int_t    nRbin  = 10000;
   Double_t mRat[] = {0,2.0};
     
-  Int_t nBinsCent         =  (isPer) ? 100 : fGNBinsCent;
+  Int_t nBinsCent  =  (isPer) ? fNbwcBin : fCentralityBinMax;
   Double_t centBinRange[2];  
-  centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
-  centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
+  centBinRange[0]  =  0.5;
+  centBinRange[1]  =  (isPer) ?  fNbwcBin + 0.5 : fCentralityBinMax+0.5;
 
   TString xyz = Form("|y| < %.1f | #eta [%3.1f-%3.1f]",fRapMax,fEtaMin,fEtaMax); 
 
   if (fIsNu) {
     for (Int_t i = 0; i < 22; i++) {
       list->Add(new TH2F(Form("fHist%sRatio%02d",name.Data(),i), 
-			 Form("(%s %s);Centrality;Ratio Idx %d", xyz.Data(), strTit.Data(),i),
+			 Form("(%s %s);Centrality(%d);Ratio Idx %d", xyz.Data(), strTit.Data(),nBinsCent,i),
 			 nBinsCent, centBinRange[0], centBinRange[1], nRbin,mRat[0],mRat[1]));
     }
   }
@@ -1070,9 +1105,9 @@ void  AliEbyENetChargeFluctuationTask::CreateRatioHistos(const Char_t *title, Bo
       
       list->Add(new TH2F(Form("fHist%sDist%s%s",name.Data(), fgkPidName[iPid], 
 			      fgkNetHistName[iNet]), 
-			 Form("(%s %s) : %s Distribution;Centrality;%s_{(%s)}", 
-			      xyz.Data(), strTit.Data(), 
-			      fgkPidShLatex[iPid],fgkPidShLatex[iPid],
+			 Form("(%s %s) : %s Distribution;Centrality(%d);%s_{(%s)}", 
+			      xyz.Data(), strTit.Data(),
+			      fgkPidShLatex[iPid], nBinsCent,fgkPidShLatex[iPid],
 			      fgkNetHistLatex[iNet]),
 			 nBinsCent, centBinRange[0], centBinRange[1], bn, blow,bup));    
     }
@@ -1308,11 +1343,11 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
   list->SetName(Form("f%s", name));
   list->SetOwner(kTRUE);
   
-  TString tname = Form("%s", name);
-  Int_t nBinsCent         =  (isPer) ? 100 : fGNBinsCent;
+  TString tname    = Form("%s", name);
+  Int_t nBinsCent  = (isPer) ? fNbwcBin : fCentralityBinMax;
   Double_t centBinRange[2];  
-  centBinRange[0]  =  (isPer) ?  0.5   : fGRngCent[0];
-  centBinRange[1]  =  (isPer) ?  100.5 : fGRngCent[1];
+  centBinRange[0]  = 0.5;
+  centBinRange[1]  = (isPer) ?  fNbwcBin + 0.5 : fCentralityBinMax+0.5;
  
   for (Int_t iSub = 0; iSub <= nSample; ++iSub) {
     
@@ -1327,13 +1362,13 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
 	strTit = (iPid != 0 ) ? Form("|y| < %.1f", fRapMax) : Form(" |#eta|<%.1f", etaRange[1]);
 	
 	listSub->Add(new TProfile(Form("fProfS%02dTot%sPlus%s", iSub, fgkPidName[iPid],tname.Data()), 
-				  Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], 
-				       strTit.Data(), sNetTitle.Data()),
+				  Form("(%s) : %s;Centrality(%d);(%s)",fgkPidName[iPid], 
+				       strTit.Data(), nBinsCent,sNetTitle.Data()),
 				  nBinsCent, centBinRange[0], centBinRange[1]));
 	
 	listSub->Add(new TProfile(Form("fProfS%02dTot%sMinus%s",iSub, fgkPidName[iPid],tname.Data()), 
-				  Form("(%s) : %s;Centrality(11);(%s)",fgkPidName[iPid], 
-				       strTit.Data(), sNetTitle.Data()),
+				  Form("(%s) : %s;Centrality(%d);(%s)",fgkPidName[iPid], 
+				       strTit.Data(),nBinsCent, sNetTitle.Data()),
 				  nBinsCent, centBinRange[0], centBinRange[1]));
 	
 	
@@ -1341,8 +1376,8 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
 	for (Int_t idx = 1; idx <= fOrder; ++idx) {
 	  listSub->Add(new TProfile(Form("fProfS%02d%s%sNet%dM",iSub, fgkPidName[iPid],
 					 tname.Data(), idx), 
-				    Form("(%s)^{%d} : %s;Centrality(11);(%s)^{%d}", 
-					 sNetTitle.Data(), idx, strTit.Data(), 
+				    Form("(%s)^{%d} : %s;Centrality(%d);(%s)^{%d}", 
+					 sNetTitle.Data(), idx, strTit.Data(), nBinsCent,
 					 sNetTitle.Data(), idx),
 				    nBinsCent, centBinRange[0], centBinRange[1]));
 	}
@@ -1351,8 +1386,8 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
 	  for (Int_t kk = 0; kk <= fOrder; ++kk) {
 	    listSub->Add(new TProfile(Form("fProfS%02d%s%sNetF%02d%02d",iSub, fgkPidName[iPid], 
 					   tname.Data(), ii, kk),
-				      Form("f_{%02d%02d} : %s;Centrality(11);f_{%02d%02d}", 
-					   ii, kk, strTit.Data(), ii, kk),
+				      Form("f_{%02d%02d} : %s;Centrality(%d);f_{%02d%02d}", 
+					   ii, kk, strTit.Data(),nBinsCent, ii, kk),
 				      nBinsCent, centBinRange[0], centBinRange[1]));
 	  }
 	}
@@ -1363,8 +1398,8 @@ void  AliEbyENetChargeFluctuationTask::CreateGroupHistos(const Char_t *name, con
     
     for (Int_t iPhy = 0; iPhy < 58; ++iPhy) { 
       listSub->Add(new TProfile(Form("fProfS%02d%sNu%02d",iSub,tname.Data(),iPhy),
-				Form("Physics Variable for index %d | %s | Sub S%02d; Centrality;",
-				     iPhy,tname.Data(), iSub),
+				Form("Physics Variable for index %d | %s | Sub S%02d; Centrality(%d);",
+				     iPhy,tname.Data(), iSub,nBinsCent),
 				nBinsCent, centBinRange[0], centBinRange[1]));
     }
     
@@ -1421,12 +1456,12 @@ void AliEbyENetChargeFluctuationTask::FillGroupHistos(const Char_t *name,Int_t i
 	  (static_cast<TProfile*>(listSub->FindObject(Form("fProfS%02d%s%sNet%dM",iSub, fgkPidName[iPid], tname.Data(), idxOrder))))->Fill(centralityBin, delta);
 	}
 	
-	for (Int_t idxOrder = 0; idxOrder <= fOrder; ++ idxOrder) {
+	for (Int_t idxOrder = 0; idxOrder <= fOrder; ++idxOrder) {
 	  fRedFactp[idxOrder][0]  = 1.;
 	  fRedFactp[idxOrder][1]  = 1.;
 	}
 	
-	for (Int_t idxOrder = 1; idxOrder <= fOrder; ++ idxOrder) {
+	for (Int_t idxOrder = 1; idxOrder <= fOrder; ++idxOrder) {
 	  fRedFactp[idxOrder][0]  = fRedFactp[idxOrder-1][0]  * Double_t(np[iPid][0]-(idxOrder-1));
 	  fRedFactp[idxOrder][1]  = fRedFactp[idxOrder-1][1]  * Double_t(np[iPid][1]-(idxOrder-1));
 	}
@@ -1545,15 +1580,24 @@ Int_t AliEbyENetChargeFluctuationTask::SetupEventCR(AliESDInputHandler *esdHandl
     return -1;
   }
   
-  Int_t centBin = centrality->GetCentralityClass10(fCentralityEstimator.Data());
-  if (centBin == 0) { fCentralityBin = centrality->GetCentralityClass5(fCentralityEstimator.Data()); }
-  else if (centBin == 11 || centBin == -1.)           { fCentralityBin = -1; }
-  else if (centBin > 0 && centBin < fNCentralityBins) { fCentralityBin = centBin + 1; }
-  else {  fCentralityBin = -2; }
-
+  if(fIsTen) {
+    Int_t centBin = centrality->GetCentralityClass10(fCentralityEstimator.Data());
+    if (centBin == 10 || centBin == -1.) { fCentralityBin = -1; }
+    else if (centBin >= 0 && centBin < fNCentralityBins) { fCentralityBin = centBin;}
+    else {  fCentralityBin = -2; }
+  } else {
+    Int_t centBin = centrality->GetCentralityClass10(fCentralityEstimator.Data());
+    if (centBin == 0) { fCentralityBin = centrality->GetCentralityClass5(fCentralityEstimator.Data()); }
+    else if (centBin == 11 || centBin == -1.)           { fCentralityBin = -1; }
+    else if (centBin > 0 && centBin < fNCentralityBins) { fCentralityBin = centBin + 1; }
+    else {  fCentralityBin = -2; }
+  }
+  
   if (fCentralityBin >= fCentralityBinMax) fCentralityBin = -2;
-
-  fCentralityPercentile = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+  
+  Float_t bf =  100./Float_t(fNbwcBin);
+  Int_t ai   = Int_t((centrality->GetCentralityPercentile(fCentralityEstimator.Data()))/bf);
+  fCentralityPercentile = Double_t(ai);
   
   return 0;
 }
@@ -1695,10 +1739,10 @@ Bool_t AliEbyENetChargeFluctuationTask::IsEventStats(Int_t *aEventCuts) {
   }
   if (!isRejected) {
 
-    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->Fill(fCentralityBin);
-    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAccepted"))))->Fill(fCentralityPercentile);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityStat"))))->Fill(fCentralityBin+1);
+    if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAccepted"))))->Fill(fCentralityPercentile+1);
   }
-  if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAll"))))->Fill(fCentralityPercentile);
+  if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hCentralityPercentileAll"))))->Fill(fCentralityPercentile+1);
   return isRejected;
 }
 
@@ -1751,9 +1795,9 @@ void AliEbyENetChargeFluctuationTask::FillRecDED(Int_t i) {
 
 void AliEbyENetChargeFluctuationTask::CreateCE() {
 
-  Int_t     bhepmc[8] = {fGNBinsCent,fGNBinsSign,2, 2, 2,fGNBinsRap,fGNBinsPhi,fGNBinsPt};
-  Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5,-0.5,-0.5,fGRngRap[0],fGRngPhi[0],fGRngPt[0]};  
-  Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1],1.5,1.5,1.5,fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
+  Int_t     bhepmc[8] = {fCentralityBinMax,fGNBinsSign,2, 2, 2,fGNBinsRap,fGNBinsPhi,fGNBinsPt};
+  Double_t mnhepmc[8] = {0.5,fGRngSign[0],-0.5,-0.5,-0.5,fGRngRap[0],fGRngPhi[0],fGRngPt[0]};  
+  Double_t mxhepmc[8] = {fCentralityBinMax+0.5,fGRngSign[1],1.5,1.5,1.5,fGRngRap[1],fGRngPhi[1],fGRngPt[1]};  
   
   TString titilemc        = "cent:signMC:findable:recStatus:pidStatus:yMC:phiMC:ptMC";
   TString tiltlelaxmc[8]  = {"Centrality", "sign", "findable","recStatus","recPid","#it{y}_{MC}", 
@@ -1779,9 +1823,9 @@ void AliEbyENetChargeFluctuationTask::CreateCE() {
 
   }
   
-  Int_t    binhnep[5] = {fGNBinsCent, fGNBinsSign, fGNBinsRap, fGNBinsPhi, fGNBinsPt};
-  Double_t minhnep[5] = {fGRngCent[0],fGRngSign[0],fGRngRap[0],fGRngPhi[0],fGRngPt[0]};
-  Double_t maxhnep[5] = {fGRngCent[1],fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};
+  Int_t    binhnep[5] = {fCentralityBinMax, fGNBinsSign, fGNBinsRap, fGNBinsPhi, fGNBinsPt};
+  Double_t minhnep[5] = {0.5,fGRngSign[0],fGRngRap[0],fGRngPhi[0],fGRngPt[0]};
+  Double_t maxhnep[5] = {fCentralityBinMax+0.5,fGRngSign[1],fGRngRap[1],fGRngPhi[1],fGRngPt[1]};
 
 
   TString titilerec        = "cent:signRec:yRec:phiRec:ptRec";
@@ -1819,9 +1863,9 @@ static_cast<THnSparseF*>(fEffList->FindObject("hmNchContRec"))->GetAxis(i)->SetT
   }  
 
   //----
-  Int_t    binHnCont[6] = {fGNBinsCent,fGNBinsSign, 5,fGNBinsRap,fGNBinsPhi, fGNBinsPt};  
-  Double_t minHnCont[6] = {fGRngCent[0],fGRngSign[0],-0.5,fGRngRap[0],fGRngPhi[0], fGRngPt[0]};
-  Double_t maxHnCont[6] = {fGRngCent[1],fGRngSign[1],4.5,fGRngRap[1],fGRngPhi[1], fGRngPt[1]};   
+  Int_t    binHnCont[6] = {fCentralityBinMax,fGNBinsSign, 5,fGNBinsRap,fGNBinsPhi, fGNBinsPt};  
+  Double_t minHnCont[6] = {0.5,fGRngSign[0],-0.5,fGRngRap[0],fGRngPhi[0], fGRngPt[0]};
+  Double_t maxHnCont[6] = {fCentralityBinMax+0.5,fGRngSign[1],4.5,fGRngRap[1],fGRngPhi[1], fGRngPt[1]};   
 
   TString titilecont     = "cent:signMC:contStatus:yMC:phiMC:ptMC";
   TString tiltlelaxcont[6] 
@@ -1943,12 +1987,12 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
     else
       fCurCont[2] = -1.;
     
-    fCurCont[0] = fCentralityBin;
+    fCurCont[0] = fCentralityBin+1;
     fCurCont[3] = particle->Y();
     fCurCont[4] = particle->Phi();
     fCurCont[5] = particle->Pt();
     FillCC(b);
-    fCurRec[0] = fCentralityBin;
+    fCurRec[0] = fCentralityBin+1;
     fCurRec[1] = track->Charge();
     fCurRec[2] = rap;
     fCurRec[3] = track->Phi();
@@ -2005,7 +2049,7 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
         if (track) {
 	  Double_t rap;
 	  TrackRapidity(track,rap,iPid);
-	  fCurRec[0] = fCentralityBin;
+	  fCurRec[0] = fCentralityBin+1;
 	  fCurRec[1] = track->Charge();
 	  fCurRec[2] = rap;
 	  fCurRec[3] = track->Phi();
@@ -2015,7 +2059,7 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
         break;
       }
     } 
-   fCurGen[0] = fCentralityBin;
+   fCurGen[0] = fCentralityBin+1;
    fCurGen[6] = particle->Phi();
    fCurGen[7] = particle->Pt();
 
@@ -2032,9 +2076,9 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
 
 void AliEbyENetChargeFluctuationTask::CreateDED() {
 
- Int_t      bhepmc[7] = {fGNBinsCent, fGNBinsSign,   2,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,   140};
-  Double_t mnhepmc[7] = {fGRngCent[0],fGRngSign[0],-0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0], -3.5};  
-  Double_t mxhepmc[7] = {fGRngCent[1],fGRngSign[1], 1.5, fGRngRap[1],fGRngPhi[1], fGRngPt[1], 3.5};  
+ Int_t      bhepmc[7] = {fCentralityBinMax, fGNBinsSign,   2,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,   140};
+  Double_t mnhepmc[7] = {0.5,fGRngSign[0],-0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0], -3.5};  
+  Double_t mxhepmc[7] = {fCentralityBinMax+0.5,fGRngSign[1], 1.5, fGRngRap[1],fGRngPhi[1], fGRngPt[1], 3.5};  
   TString titilemc        = "cent:sign:accepted:y:phi:pt:dcar";
 
   TString tiltlelaxmc[7]  = {"Centrality", "sign", "Is Accepted","#it{y}","#varphi (rad)","#it{p}_{T} (GeV/#it{c})", "DCAr"};
@@ -2059,9 +2103,9 @@ void AliEbyENetChargeFluctuationTask::CreateDED() {
 }
 void AliEbyENetChargeFluctuationTask::CreateDEM() {
 
-  Int_t     bhepmc[8] = {fGNBinsCent, fGNBinsSign,  2,   3,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,  140};
-  Double_t mnhepmc[8] = {fGRngCent[0],fGRngSign[0],-0.5, 0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-3.5};  
-  Double_t mxhepmc[8] = {fGRngCent[1],fGRngSign[1], 1.5, 3.5, fGRngRap[1],fGRngPhi[1],fGRngPt[1], 3.5};  
+  Int_t     bhepmc[8] = {fCentralityBinMax, fGNBinsSign,  2,   3,   fGNBinsRap, fGNBinsPhi, fGNBinsPt,  140};
+  Double_t mnhepmc[8] = {0.5,fGRngSign[0],-0.5, 0.5, fGRngRap[0],fGRngPhi[0],fGRngPt[0],-3.5};  
+  Double_t mxhepmc[8] = {fCentralityBinMax+0.5,fGRngSign[1], 1.5, 3.5, fGRngRap[1],fGRngPhi[1],fGRngPt[1], 3.5};  
   TString titilemc    = "cent:sign:cont:accepted:y:phi:pt:dcar";
   TString tiltlelaxmc[8]  = {"Centrality", "sign", "Is Accepted", "1 primary | 2 from WeakDecay | 3 p from Material",
 			     "#it{y}","#varphi (rad)","#it{p}_{T} (GeV/#it{c})", "DCAr"};
@@ -2125,7 +2169,7 @@ void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
     if ( TMath::Abs(dca[0]) <= fDcaXy ) fCurRecD[2] = 1.;   // 2
     else fCurRecD[2] = 0.;
     
-    fCurRecD[0] = fCentralityBin;                // 0
+    fCurRecD[0] = fCentralityBin+1;                // 0
     fCurRecD[4] = track->Phi();                  // 4
     fCurRecD[5] = track->Pt();                   // 5
     fCurRecD[6] = Double_t(dca[0]);              // 6
@@ -2204,7 +2248,7 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
     else if(isSecondaryFromWeakDecay) fCurGenD[3] = 2.;
     else if (isSecondaryFromMaterial) fCurGenD[3] = 3.;
     else fCurGenD[3] = -1.;
-    fCurGenD[0] = fCentralityBin;                    // 0
+    fCurGenD[0] = fCentralityBin+1;                    // 0
     fCurGenD[5] = track->Phi();                      // 5
     fCurGenD[6] = track->Pt();                       // 6
     

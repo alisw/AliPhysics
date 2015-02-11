@@ -173,6 +173,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
 	void SetEventplaneSelector(char *c) { fEPselector = c; }
 	TString GetEventplaneSelector() { return fEPselector; }
+	
+	void SetCentralityEstimator(char *c) { fCentEstimator = c; }
+	TString GetCentralityEstimator() { return fCentEstimator; }
     
   private :
     
@@ -241,6 +244,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Bool_t fIsMonteCarlo;
 	
 	TString fEPselector;
+	TString fCentEstimator;
     
     // event cut variables
     Double_t fCutMaxZVertex;

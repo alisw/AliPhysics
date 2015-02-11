@@ -31,6 +31,7 @@
 #pragma link C++ class AliAnalysisTaskConversionQA+;
 #pragma link C++ class AliAnalysisTaskMaterial+;
 #pragma link C++ class AliAnalysisTaskResolution+;
+#pragma link C++ class AliAnalysisTaskGammaConvCaloDalitzV1+;
 
 #pragma link C++ class AliAnaConvIsolation+;
 #pragma link C++ class AliAnaConvCorrBase+;

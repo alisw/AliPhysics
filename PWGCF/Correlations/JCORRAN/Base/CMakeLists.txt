@@ -57,15 +57,17 @@ set(SRCS
   AliJTrackCut.cxx
   AliJBaseCard.cxx
   AliJCard.cxx
+  AliJFFlucTask.cxx
+  AliJFFlucAnalysis.cxx
   )
 
 # Headers from sources
-string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+  string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+	generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
 add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
@@ -73,7 +75,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSISalice CORRFW EMCALUtils PHOSUtils)
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+	generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
@@ -83,11 +85,11 @@ target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+	set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+	install(TARGETS ${MODULE} 
+			ARCHIVE DESTINATION lib
+			LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

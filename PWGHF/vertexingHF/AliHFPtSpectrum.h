@@ -115,7 +115,9 @@ class AliHFPtSpectrum: public TNamed
     fTab[0] = tabvalue;
     fTab[1] = uncertainty;
   }
-
+  void SetCollisionType(Int_t ct){
+    fCollisionType=ct;
+  }
 
   //
   // Getters
@@ -289,7 +291,7 @@ class AliHFPtSpectrum: public TNamed
   //
   TNtuple *fnSigma;          // Ntuple of the calculation vs the Ratio(c/b eloss)
   TNtuple *fnHypothesis;     // Ntuple of the calculation vs the Ratio(c/b eloss)
-
+  Int_t fCollisionType;      // 0=pp, 1=Pb-Pb, 2=p-Pb
   //
   Int_t fFeedDownOption;            // feed-down correction flag: 0=none, 1=fc, 2=Nb 
   Bool_t fAsymUncertainties;        // flag: asymmetric uncertainties are (1) or not (0) considered
@@ -308,7 +310,7 @@ class AliHFPtSpectrum: public TNamed
   TH1D *fhStatUncEffcFD;          // Uncertainty on the feed-down correction due to the prompt efficiency statistical uncertainty
   TH1D *fhStatUncEffbFD;          // Uncertainty on the feed-down correction due to the feed-down efficiency statistical uncertainty
 
-  ClassDef(AliHFPtSpectrum,5) // Class for Heavy Flavor spectra corrections
+  ClassDef(AliHFPtSpectrum,6) // Class for Heavy Flavor spectra corrections
 };
 
 #endif

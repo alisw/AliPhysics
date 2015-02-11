@@ -95,6 +95,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t opti
   fgSigmaCorrConservative(NULL),
   fnSigma(NULL),
   fnHypothesis(NULL),
+  fCollisionType(0),
   fFeedDownOption(option),
   fAsymUncertainties(kTRUE),
   fPbPbElossHypothesis(kFALSE),
@@ -161,6 +162,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fgSigmaCorrConservative(rhs.fgSigmaCorrConservative),
   fnSigma(rhs.fnSigma),
   fnHypothesis(rhs.fnHypothesis),
+  fCollisionType(rhs.fCollisionType),
   fFeedDownOption(rhs.fFeedDownOption),
   fAsymUncertainties(rhs.fAsymUncertainties),
   fPbPbElossHypothesis(rhs.fPbPbElossHypothesis),
@@ -238,6 +240,7 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
   fgSigmaCorrConservative = source.fgSigmaCorrConservative;
   fnSigma = source.fnSigma;
   fnHypothesis = source.fnHypothesis;
+  fCollisionType = source.fCollisionType;
   fFeedDownOption = source.fFeedDownOption;
   fAsymUncertainties = source.fAsymUncertainties;
   fPbPbElossHypothesis = source.fPbPbElossHypothesis;
@@ -1446,7 +1449,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     correction=0; correctionMax=0.; correctionMin=0.;
     correctionUncStatEffc=0.; correctionUncStatEffb=0.;
 
-    if(fPbPbElossHypothesis) {
+    if(fPbPbElossHypothesis || fCollisionType>0) {
       frac = fTab[0]*fNevts;
       if(fIsEventPlane) frac = frac/2.0;
       errfrac = frac * TMath::Sqrt( (fTab[1]/fTab[0])*(fTab[1]/fTab[0]) + (1/fNevts) );
@@ -1454,11 +1457,12 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       frac = fLuminosity[0]; 
       errfrac = fLuminosity[1];
     }
-    
+    printf("Tab=%e  events=%d  frac=%f\n",fTab[0],(Int_t)fNevts,frac);
     value = ( fhRECpt->GetBinContent(ibin)>0. && fhRECpt->GetBinContent(ibin)!=0. && 
 	      fhFeedDownMCpt->GetBinContent(ibin)>0. && fhFeedDownEffpt->GetBinContent(ibin)>0. ) ?
       fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) )
       : 0. ;
+    printf("%d  raw=%f  after=%f \n",ibin,fhRECpt->GetBinContent(ibin),value);
     value /= fhRECpt->GetBinWidth(ibin);
     if (value<0.) value =0.;
 

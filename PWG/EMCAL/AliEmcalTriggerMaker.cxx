@@ -33,6 +33,8 @@
 #include "THistManager.h"
 #include "TString.h"
 
+#include <bitset>
+
 ClassImp(AliEmcalTriggerMaker)
 
 using namespace std;
@@ -389,6 +391,19 @@ Bool_t AliEmcalTriggerMaker::Run()
     }
   } // there are some triggers
 
+  // Diagnostics
+  int npatchOnline = 0;
+  for(TIter patchIter = TIter(fCaloTriggersOut).Begin(); patchIter != TIter::End(); ++patchIter){
+    AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(mypatch->IsOfflineSimple()) continue;
+    AliDebug(1,Form("Patch with bits: %s, types: JH[%s], JL[%s], GH[%s], GL[%s], L0[%s]",
+        std::bitset<sizeof(int)*4>(mypatch->GetTriggerBits()).to_string().c_str(),
+        (mypatch->IsJetHigh() ? "y" : "n"), (mypatch->IsJetLow() ? "y" : "n"),
+        (mypatch->IsGammaHigh() ? "y" : "n"), (mypatch->IsGammaLow() ? "y" : "n"),(mypatch->IsLevel0() ? "y" : "n")));
+    npatchOnline++;
+  }
+  AliDebug(1, Form("Number of online patches: %d", npatchOnline));
+
   return kTRUE;
 }
 
@@ -464,11 +479,11 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	    cmiRow += ca*(Float_t)j;
 	  }
 	  // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
-
 	  if(type == kTMEMCalLevel0){
 	    adcAmp += fPatchADC[globCol+i][globRow+j] * 4; // precision loss in case of global integer field
-	  } else
+	  } else {
 	    adcAmp += fPatchADC[globCol+i][globRow+j];
+	  }
 
 	  adcOfflineAmp += fPatchADCSimple[globCol+i][globRow+j];
     }

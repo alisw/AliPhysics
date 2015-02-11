@@ -88,7 +88,8 @@ fNminCells(1),
 fMinE(0.100),
 fM02(100),
 fMinErat(0),
-fMinEcc(0),
+fMinEcc(-1),
+fDoTrMtSmpl(0),
 fDoManualRecal(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
@@ -224,7 +225,35 @@ ipymax(0),
 ipi0min(0),
 ipi0max(0),
 ietamin(0),
-ietamax(0)
+ietamax(0),
+  fReaderGammas(0),
+  eventHeader(0),
+  pythiaHeader(0),
+  addedPi0Header(0),
+  addedEtaHeader(0),
+  fHPriPionInvMasses(0x0),
+  fHSecPionInvMasses(0x0),
+  fHK0PionInvMasses(0x0),
+  fHMatPionInvMasses(0x0),
+  fHMCpartfrac(0),
+  fHECluEMC(0x0),
+  fHECluEMCAddPi0(0x0),
+  fHECluEMCAddEta(0x0),
+  fHRecTrue(),
+  fHRecTrueAddPi0(),
+  fHRecTrueAddEta(),
+  fHECluEMCnofull(),
+  fHECluEMCnofullAdd(),
+  fHECluEMCelectron(),
+  fHECluEMCpion(),
+  fHECluEMCkaon(),
+  fHECluEMCother(),
+  fHECluEMCpi0single(),
+  fHCorrection(),
+  fHPionSm(),
+  evt(),
+  thisEvent(),
+  fHWgt(0)
 {
   for(int i=0;i<nMulClass;i++){
     for(int j=0;j<nZClass;j++){
@@ -236,15 +265,6 @@ ietamax(0)
       }
     }
   }
-  // energy correction function
-  fcorrect = new TF1("fcorrect","[0] + exp([1] + [2]*x)",0,100);
-  //  fcorrect->SetParameters(0.96968,-2.68720,-0.831607);
-  fcorrect->SetParameters(1,0,0);
-  fPi0DnDpt = new TF1("fPi0DnDpt","[0]*pow([1]/(([1]*exp(-[3]*x)+x)),[2])",0.6,12);
-  fPi0DnDpt->SetParameters(2.52684e08, 0.730803, 5.32059, 0.548711);
-
-  fPi0Eta = new TF1("fPi0Eta","pol2",-1.2,1.2);
-  fPi0Eta->SetParameters(7.93979e-01,1.31404e-03,4.96607e-01);
   // Constructor.
 }
 
@@ -268,7 +288,8 @@ fNminCells(1),
 fMinE(0.100),
 fM02(100),
 fMinErat(0),
-fMinEcc(0),
+fMinEcc(-1),
+fDoTrMtSmpl(0),
 fDoManualRecal(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
@@ -398,7 +419,41 @@ ipymax(0),
 ipi0min(0),
 ipi0max(0),
 ietamin(0),
-ietamax(0)
+ietamax(0),
+  fReaderGammas(0),
+  eventHeader(0),
+  pythiaHeader(0),
+  addedPi0Header(0),
+  addedEtaHeader(0),
+  fHPriPionInvMasses(0x0),
+  fHSecPionInvMasses(0x0),
+  fHK0PionInvMasses(0x0),
+  fHMatPionInvMasses(0x0),
+  fHMCpartfrac(0),
+  fHECluEMC(0x0),
+  fHECluEMCAddPi0(0x0),
+  fHECluEMCAddEta(0x0),
+  fHRecTrue(),
+  fHRecTrueAddPi0(),
+  fHRecTrueAddEta(),
+  fHECluEMCnofull(),
+  fHECluEMCnofullAdd(),
+  fHECluEMCelectron(),
+  fHECluEMCpion(),
+  fHECluEMCkaon(),
+  fHECluEMCother(),
+  fHECluEMCpi0single(),
+  fHCorrection(),
+  fHPionSm(),
+  evt(),
+  thisEvent(),
+  fHPionInvMassesGamAdd1(0x0),
+  fHPionInvMassesGamAdd1Sym(0x0),
+  fHPionInvMassesGamAdd1Asym(0x0),
+  fHPionInvMassesGamAdd1Mult(0x0),
+  fHPionInvMassesGamAdd1MultSym(0x0),
+  fHPionInvMassesGamAdd1MultAsym(0x0),
+  fHWgt(0)
 {
   // Constructor.
   for(int i=0;i<nMulClass;i++){
@@ -411,15 +466,6 @@ ietamax(0)
       }
     }
   }
-  // energy correction function
-  fcorrect = new TF1("fcorrect","[0] + exp([1] + [2]*x)",0,100);
-  //fcorrect->SetParameters(0.96968,-2.68720,-0.831607);
-  fcorrect->SetParameters(1,0,0);
-  fPi0DnDpt = new TF1("fPi0DnDpt","[0]*pow([1]/(([1]*exp(-[3]*x)+x)),[2])",0.6,12);
-  fPi0DnDpt->SetParameters(2.52684e08, 0.730803, 5.32059, 0.548711);
-  
-  fPi0Eta = new TF1("fPi0Eta","pol2",-1.2,1.2);
-  fPi0Eta->SetParameters(7.93979e-01,1.31404e-03,4.96607e-01);
 
   DefineOutput(1, TList::Class());
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks,EMCALTrigger.,SPDPileupVertices,TrkPileupVertices "
@@ -464,6 +510,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
   cout << " fMinE:          " << fMinE << endl;
   cout << " fMinErat:       " << fMinErat << endl;
   cout << " fMinEcc:        " << fMinEcc << endl;
+  cout << " fM02:           " << fM02 << endl;
   cout << " fGeoName:       \"" << fGeoName << "\"" << endl;
   cout << " fMinNClusPerTr: " << fMinNClusPerTr << endl;
   cout << " fIsoDist:       " << fIsoDist << endl;
@@ -493,7 +540,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fReco = new AliEMCALRecoUtils();
   fTrClassNamesArr = fTrClassNames.Tokenize(" ");
   fOutput = new TList();
-  fOutput->SetOwner(1);
+  fOutput->SetOwner();
   fSelTracks = new TObjArray;
   fSelPrimTracks = new TObjArray;
   if(fMcMode){
@@ -588,7 +635,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHClustAccEvt = new TH1F("hClustAccEvt","",2000,0,2000);
     fHClustAccEvt->SetXTitle("# Clusters");
     fOutput->Add(fHClustAccEvt);
-    fHClustEccentricity = new TH1F("hClustEccentricity","",100,-0.1,1.1);
+    fHClustEccentricity = new TH1F("hClustEccentricity","",200,-1.1,1.1);
     fHClustEccentricity->SetXTitle("#epsilon_{C}");
     fOutput->Add(fHClustEccentricity);
     fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,100*nsm,phimin,phimax);
@@ -871,6 +918,10 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHJPInvMasses->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHJPInvMasses);
     
+    // distribution of particle weights
+    fHWgt = new TH1F("hWgt","hWgt",100,0,10);
+    fOutput->Add(fHWgt);
+
     if(fMcMode){
       fHPrimPionInvMasses = new TH2F("hPrimPionInvMass","hPrimPionInvMass",massbins,0,massmax,nbins,0,ptmax);
       fHPrimPionInvMasses->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
@@ -1803,9 +1854,14 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     if (GetMaxCellEnergy(clus)/clus->E()<fMinErat)
       continue;
     if (clus->Chi2()<fMinEcc) // eccentricity cut
-      continue;
+          continue;
     if(clus->GetM02()>fM02)
       continue;
+    // if(fDoTrMtSmpl){
+    //   if(!clus->GetNTracksMatched()==0){
+    // 	continue;
+    //   }
+    // }
 
     TLorentzVector clusterVec;
     clus->GetMomentum(clusterVec,vertex);
@@ -1838,10 +1894,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       
       TLorentzVector clusterVecCorr1(clusterVec.Px(),clusterVec.Py(),clusterVec.Pz(),En);
 
-      thisEvent.hit[i].thishit=clusterVecCorr1;
-      thisEvent.hit[i].hittype=100;
-      thisEvent.hit[i].weight=1.;
-      thisEvent.hit[i].imo=1;
+      thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
+      thisEvent.hit[nclusters-1].hittype=100;
+      thisEvent.hit[nclusters-1].weight=1.;
+      thisEvent.hit[nclusters-1].imo=1;
     }
     // go through MC information of clusters
     else{
@@ -1903,7 +1959,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         Double_t mcPt = McMo->Pt();
         Double_t mcEta = McMo->Eta();
         
-        wgt = fPi0DnDpt->Eval(mcPt)*fPi0Eta->Eval(mcEta);
+	wgt = CalcWeight(mcPt,mcEta,1);
         
         // check if generated or added
         bool bGen = kTRUE;
@@ -1944,49 +2000,51 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         while(idmother != 111){
           AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ithispart));
           Int_t itmp = tmppart->GetMother();
+	  if(itmp < 1){
+	      bpi0 = 0;
+	      break;
+	  }
           AliMCParticle *tmppartmo = static_cast<AliMCParticle*>(mcEvent->GetTrack(itmp));
           idmother = tmppartmo->PdgCode();
           ithispart = itmp;
-          if(idmother == -1){
-            bpi0 = 0;
-            break;
-          }
         }
         // if it is not from a pi0, flag 100
         // from primary pi0, flag 101
         // from secondary pi0, flag 102
         // from K0, flag 103
         // from material, flag 104
-        if(bpi0 == 0){
-          tmpflag = 100;
+        // only for generator, not added signals
+	if(bGen){
+	  if(bpi0 == 0){
+	    tmpflag = 100;
+	  }
+	  else{
+	    AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ithispart));
+	    Int_t itmp = tmppart->GetMother();
+	    if(itmp<nPTracksMC){
+	      tmpflag = 101;
+	    }
+	    else{
+	      if( ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  310 ||
+		  ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -310  ){
+		tmpflag = 103;
+	      }
+	      else if(((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  2212 || //proton
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -2212 || //anti-proton
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  2112 || //neutron
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -2112 || //anti-neutron
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  321  || //K+
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -321  || //K-
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  211  || //pi+
+		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -211 ){    //pi-)
+		tmpflag = 104;
+	      }
+	      else{
+		tmpflag = 102;
+	      }
+	    }
+	  }
         }
-        else{
-          AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ithispart));
-          Int_t itmp = tmppart->GetMother();
-          if(itmp<nPTracksMC){
-            tmpflag = 101;
-          }
-          else{
-            if( ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  310 ||
-                ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -310  ){
-              tmpflag = 103;
-            }
-            else if(((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  2212 || //proton
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -2212 || //anti-proton
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  2112 || //neutron
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -2112 || //anti-neutron
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  321  || //K+
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -321  || //K-
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  211  || //pi+
-                  ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -211 ){    //pi-)
-              tmpflag = 104;
-            }
-            else{
-              tmpflag = 102;
-            }
-          }
-        }
-        
         // sum of energy of all MC particles in cluster
         Double_t esum = 0;
         for(int ip=0;ip<nl;ip++){
@@ -2147,17 +2205,17 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           
         }
         if(1){
-          thisEvent.hit[i].thishit=clusterVecCorr1;
-          thisEvent.hit[i].imo=ipart;
-          thisEvent.hit[i].pid=mcP->PdgCode();
+          thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
+          thisEvent.hit[nclusters-1].imo=ipart;
+          thisEvent.hit[nclusters-1].pid=mcP->PdgCode();
           if(!bGen){
-            thisEvent.hit[i].weight = wgt;
+            thisEvent.hit[nclusters-1].weight = wgt;
           }
           else{
-            thisEvent.hit[i].weight = 1.;
+            thisEvent.hit[nclusters-1].weight = 1.;
           }
           
-          thisEvent.hit[i].hittype=-1;
+          thisEvent.hit[nclusters-1].hittype=-1;
           if(bGen){
             // use hittype to flag particle history
             // if it is not from a pi0, flag 100
@@ -2166,17 +2224,17 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
             // from K0, flag 103
             // from material, flag 104
             
-            thisEvent.hit[i].hittype=tmpflag;
+            thisEvent.hit[nclusters-1].hittype=tmpflag;
           }
           else{
             if(bAddPi0){
-              thisEvent.hit[i].hittype=1;
+              thisEvent.hit[nclusters-1].hittype=1;
             }
             else if(bAddEta){
-              thisEvent.hit[i].hittype=2;
+              thisEvent.hit[nclusters-1].hittype=2;
             }
           }
-          thisEvent.hit[i].bclean = bcl;
+          thisEvent.hit[nclusters-1].bclean = bcl;
         }
       } // end ilabel
     } // end fmcmode
@@ -2320,10 +2378,9 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       }
     }
     
-    
-    Double_t mcPt = mcP->Pt();
-    Double_t mcEta = mcP->Eta();
-    Double_t wgt = 1.;
+    double mcPt = mcP->Pt();
+    double mcEta = mcP->Eta();
+    double wgt2 = 1.;
 
     if(bGen && !(bAddPi0 || bAddEta)){
       // fill truth histogram
@@ -2335,21 +2392,27 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
         fHEtaTruthPt->Fill(mcP->Pt());
       }
     }
-    
+
     // everything else should be secondary
-    
+
     if(bAddPi0 && !(bGen || bAddEta)){
       // fill truth histogram
-      wgt = fPi0DnDpt->Eval(mcPt)*fPi0Eta->Eval(mcEta);
+      wgt2 = CalcWeight(mcPt,mcEta,1);
+      fHWgt->Fill(wgt2);
       if(mcP->PdgCode() == 111){
-        fHPionTruthPtAdd->Fill(mcP->Pt(),wgt);
-        fHAddPionEtaPhi->Fill(mcP->Eta(),mcP->Phi(),wgt);
+        fHPionTruthPtAdd->Fill(mcP->Pt(),wgt2);
+        fHAddPionEtaPhi->Fill(mcP->Eta(),mcP->Phi(),wgt2);
       }
     }
     if(bAddEta && !(bGen || bAddPi0)){
-      wgt = fPi0DnDpt->Eval(mcPt)*fPi0Eta->Eval(mcEta);
+      if(mcPt > 0.01 && mcPt < 30 && mcEta > -2 && mcEta < 2){
+	wgt2 = CalcWeight(mcPt,mcEta,1);
+      }
+      else{
+	continue;
+      }
       if(mcP->PdgCode() == 221){
-        fHEtaTruthPtAdd->Fill(mcP->Pt());
+        fHEtaTruthPtAdd->Fill(mcP->Pt(),wgt2);
       }
     }
       
@@ -2359,7 +2422,7 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     
     // kinematic cuts
     Double_t pt = mcP->Pt() ;
-    if (pt<0.3)
+    if (pt<0.1)
       continue;
     Double_t eta = mcP->Eta();
     if (eta<-1.0||eta>1.0)
@@ -2396,17 +2459,27 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     }
     
     if(bAddPi0 && !bAddEta && !bGen){
-      wgt = fPi0DnDpt->Eval(mcPt)*fPi0Eta->Eval(mcEta);
+      if(mcPt > 0.01 && mcPt < 30 && mcEta > -2 && mcEta < 2){
+	wgt2 = CalcWeight(mcPt,mcEta,1);
+      }
+      else{
+	continue;
+      }
       // fill truth histogram for input
       if(mcP->PdgCode() == 111){
-        fHPionTruthPtInAdd->Fill(mcP->Pt(),wgt);
+        fHPionTruthPtInAdd->Fill(mcP->Pt(),wgt2);
       }
     }
     
     if(bAddEta && !bAddPi0 && !bGen){
       if(mcP->PdgCode() == 221){
-        wgt = fPi0DnDpt->Eval(mcPt)*fPi0Eta->Eval(mcEta);
-        fHEtaTruthPtInAdd->Fill(mcP->Pt(),wgt);
+      if(mcPt > 0.01 && mcPt < 30 && mcEta > -2 && mcEta < 2){
+	wgt2 = CalcWeight(mcPt,mcEta,1);
+      }
+      else{
+	continue;
+      }
+        fHEtaTruthPtInAdd->Fill(mcP->Pt(),wgt2);
       }
       
     }
@@ -2470,11 +2543,11 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       // if both photons are on EMCal
       if(binp){
         if(mcP->PdgCode() == 111 && bacc){
-          fHPionTruthPtAccAdd->Fill(mcP->Pt(),wgt);
+          fHPionTruthPtAccAdd->Fill(mcP->Pt(),wgt2);
         }
       
         if(mcP->PdgCode() == 111 && baccconv){
-          fHPionTruthPtConvAccAdd->Fill(mcP->Pt(),wgt);
+          fHPionTruthPtConvAccAdd->Fill(mcP->Pt(),wgt2);
         }
       }
     }
@@ -2484,10 +2557,10 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       // if both photons are on EMCal
       if(binp){
         if(mcP->PdgCode() == 221 && bacc){
-          fHEtaTruthPtAccAdd->Fill(mcP->Pt(),wgt);
+          fHEtaTruthPtAccAdd->Fill(mcP->Pt(),wgt2);
         }
         if(mcP->PdgCode() == 221 && baccconv){
-          fHEtaTruthPtConvAccAdd->Fill(mcP->Pt(),wgt);
+          fHEtaTruthPtConvAccAdd->Fill(mcP->Pt(),wgt2);
         }
       }
       
@@ -4134,9 +4207,10 @@ void AliAnalysisTaskEMCALPi0Gamma::AddMixEvent(const Int_t MulClass, const Int_t
   return;
 }
 
+//_____________________________________________________________________
 void AliAnalysisTaskEMCALPi0Gamma::SetDnDpT(Int_t i, Double_t par0, Double_t par1, Double_t par2, Double_t par3, Double_t par4)
 {
-  
+  /*
   // case 1: modified hagedorn
   if(i==1){
     fPi0DnDpt = new TF1("fPi0DnDpt","[0]*pow([1]/(([1]*exp(-[3]*x)+x)),[2])",0.6,12);
@@ -4153,9 +4227,25 @@ void AliAnalysisTaskEMCALPi0Gamma::SetDnDpT(Int_t i, Double_t par0, Double_t par
     par3+=0;
     par4+=0;
   }
+  */
   return;
-  
 }
+
+//_____________________________________________________________________
+Double_t AliAnalysisTaskEMCALPi0Gamma::CalcWeight(Double_t pt, Double_t eta, Int_t i){
+  Double_t weight = 1.;
+  if(i==1){
+    Double_t par0 = 2.52684e08;
+    Double_t par1 = 0.730803;
+    Double_t par2 = 5.32059;
+    Double_t par3 = 0.548711;
+
+    weight = (par0*pow(par1/((par1*exp(-par3*pt)+pt)),par2)) * (7.93979e-01 + eta*1.31404e-03 + eta*eta*4.96607e-01);
+  }
+
+  return weight;
+}
+
 //_____________________________________________________________________
 Int_t AliAnalysisTaskEMCALPi0Gamma::GetModuleNumber(AliVCluster * cluster) const
 {
@@ -4296,6 +4386,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::PrivateEnergyRecal(Double_t energy, Int_t
 
 //__________________________________________________________________________________________________
 EmcEvent::EmcEvent()
+: nHits(0),
+  nV0Hits(0),
+  TrigPhi(0),
+  TrigTheta(0)
 {
   nHits = 0;
   nV0Hits = 0;
@@ -4305,6 +4399,10 @@ EmcEvent::EmcEvent()
 
 //__________________________________________________________________________________________________
 EmcEvent::EmcEvent(const EmcEvent &obj)
+: nHits(0),
+  nV0Hits(0),
+  TrigPhi(0),
+  TrigTheta(0)
 {
   nHits = obj.nHits;
   nV0Hits = obj.nV0Hits;
@@ -4348,6 +4446,21 @@ void EmcEvent::Reset()
   //    fVtx = -9999;
 }
 
+//__________________________________________________________________________________________________
+EmcHit::EmcHit()
+: thishit(),
+  hittype(0),
+  imo(0),
+  pid(0),
+  weight(1),
+  bclean(1)
+{
+}  
 
+//__________________________________________________________________________________________________
+V0Hit::V0Hit()
+: thishit()
+{
+}
 
 
