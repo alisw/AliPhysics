@@ -44,6 +44,8 @@ Int_t typeb=2;
 Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
 Double_t massD;
 
+Int_t smoothLS=0;
+
 // objects and options related to side-band fit method
 Bool_t tryDirectFit=kTRUE;
 TCanvas *cDataSubtractedFit;
@@ -141,6 +143,31 @@ Double_t GetSignalBinCounting(TH1 *h,TF1 *fbackground,Double_t &err,Double_t nsi
   return sign; 
 }
 
+Bool_t QuadraticSmooth(TH1 *h,Int_t ntimes=1){// quadratic fit of 5 points
+  ntimes--;
+  TF1 *fp2=new TF1("fp2","pol2",h->GetXaxis()->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+  TH1D *htmp=(TH1D*)h->Clone("htmp");
+  for(Int_t i=3;i<=h->GetNbinsX()-3;i++){ // first intermediate bins
+    htmp->Fit(fp2,"RLEMN0","",h->GetXaxis()->GetBinLowEdge(i-2),h->GetXaxis()->GetBinUpEdge(i+2));
+    h->SetBinContent(i,(fp2->Integral(h->GetXaxis()->GetBinLowEdge(i),h->GetXaxis()->GetBinUpEdge(i)))/h->GetBinWidth(i));// change only content, errors unchanged
+  }
+  // now initial and final bins
+  htmp->Fit(fp2,"RLEMN0","",h->GetXaxis()->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(5));// 5 pts, asymmetric fit region
+  h->SetBinContent(2,(fp2->Integral(h->GetXaxis()->GetBinLowEdge(2),h->GetXaxis()->GetBinUpEdge(2)))/h->GetBinWidth(2));// change only content, errors unchanged
+
+  htmp->Fit(fp2,"RLEMN0","",h->GetXaxis()->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(4));//  use only 4 pts
+  h->SetBinContent(1,(fp2->Integral(h->GetXaxis()->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(1)))/h->GetBinWidth(1));// change only content, errors unchanged
+
+
+  htmp->Fit(fp2,"RLEMN0","",h->GetXaxis()->GetBinLowEdge(h->GetNbinsX()-4),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));// 5 pts, asymmetric fit region
+  h->SetBinContent(h->GetNbinsX()-1,(fp2->Integral(h->GetXaxis()->GetBinLowEdge(h->GetNbinsX()-1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()-1)))/h->GetBinWidth(h->GetNbinsX()-1));// change only content, errors unchanged
+
+  htmp->Fit(fp2,"RLEMN0","",h->GetXaxis()->GetBinLowEdge(h->GetNbinsX()-3),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+  h->SetBinContent(h->GetNbinsX(),(fp2->Integral(h->GetXaxis()->GetBinLowEdge(h->GetNbinsX()),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX())))/h->GetBinWidth(h->GetNbinsX()));// change only content, errors unchanged
+  if(ntimes>0)QuadraticSmooth(h,ntimes);
+  delete htmp;
+  return kTRUE; 
+}
 
 TH1F* GetResidualsAndPulls(TH1 *h,TF1 *f,Double_t minrange=0,Double_t maxrange=-1,TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0){
   Int_t binmi=1,binma=h->GetNbinsX();
@@ -840,6 +867,8 @@ void ProjectCombinHFAndFit(){
 	hMassPtBinls->SetBinContent(iBin,tt);
 	hMassPtBinls->SetBinError(iBin,ett);
       }
+      if(smoothLS<-0.5)hMassPtBinls->Smooth(-1*smoothLS);
+      else if(smoothLS>0.5)QuadraticSmooth(hMassPtBinls,smoothLS);
       hMassPtBinls->SetLineColor(kGreen+1);
     }
 
