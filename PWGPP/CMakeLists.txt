@@ -262,8 +262,12 @@ install(DIRECTORY macros DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY PilotTrain DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
+install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSIONS)
 install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
-install(FILES T0/AddTaskT0QA.C  DESTINATION PWGPP/T0)
+install(FILES T0/AddTaskT0QA.C
+	      T0/MakeTrendT0.C
+	      T0/drawPerformanceT0QATrends.C 
+	      DESTINATION PWGPP/T0)
 install(FILES TOF/AddTaskTOFQA.C
               TOF/AddTaskTOFqaID.C
         DESTINATION PWGPP/TOF)
@@ -283,5 +287,24 @@ install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIO
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
 	      DESTINATION PWGPP/EvTrkSelection)
+install(FILES CalibMacros/CPass0/LoadLibraries.C
+	      CalibMacros/CPass0/ConfigCalibTrain.C
+	      CalibMacros/CPass0/AddTaskTPCCalib.C
+	      CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C
+	      CalibMacros/CPass0/AddTaskT0Calib.C
+	      CalibMacros/CPass0/AddTaskMeanVertexCalib.C
+	      CalibMacros/CPass0/AddTaskSDDCalib.C
+	      DESTINATION PWGPP/CalibMacros/CPass0)
+install(FILES CalibMacros/CPass1/LoadLibraries.C
+	      CalibMacros/CPass1/ConfigCalibTrain.C
+	      CalibMacros/CPass1/AddTaskTPCCalib.C
+	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
+	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
+	      CalibMacros/CPass1/AddTaskT0Calib.C
+	      CalibMacros/CPass1/AddTaskT0Analysis.C	      
+	      CalibMacros/CPass1/AddTaskSDDCalib.C
+	      DESTINATION PWGPP/CalibMacros/CPass1)
+install(FILES CalibMacros/commonMacros/CleanGeom.C
+	      DESTINATION PWGPP/CalibMacros/commonMacros)
 
 message(STATUS "PWGPP enabled")

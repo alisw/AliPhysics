@@ -35,7 +35,7 @@ public:
 	void SetReconstructed(bool rec) { fIsReconstructed = rec; }
 
 	void SetDeltaPt(float deltaPt) { fDeltaPt = deltaPt; }
-	void SetNumberOfClustersTPC(int ncls) { int fNumberOfClustersTPC = ncls; }
+	void SetNumberOfClustersTPC(int ncls) { fNumberOfClustersTPC = static_cast<unsigned char>(ncls); }
 
 private:
 	double 			fPx;

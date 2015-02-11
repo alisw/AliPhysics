@@ -21,7 +21,8 @@
 #pragma link C++ class AliJRunHeader+;
 #pragma link C++ class AliJTrack+;
 #pragma link C++ class AliJHistManager+;
-
+#pragma link C++ class AliJFFlucTask+;
+#pragma link C++ class AliJFFlucAnalysis+;
 
 #pragma link C++ class AliJCard+;
 #pragma link C++ class AliJBaseCard+;

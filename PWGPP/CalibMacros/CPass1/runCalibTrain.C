@@ -18,20 +18,20 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //
   AliSysInfo::SetVerbose(kTRUE);
   AliLog::SetGlobalLogLevel(AliLog::kError); 
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
-  gSystem->SetIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS"); 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+  gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
+  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
 
   // detector tasks
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskTPCCalib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskTRDCalib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskT0Calib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskT0Analysis.C");
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskMeanVertexCalib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/AddTaskSDDCalib.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskTPCCalib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskTRDCalib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskT0Calib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskT0Analysis.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskMeanVertexCalib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskSDDCalib.C"); 
 
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);

@@ -62,7 +62,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void Debug() {fDebug = kTRUE;}
   void DoBasicQA() {fNeedQa = kTRUE;}
   void SetIsAOD() {fIsAOD = kTRUE;}
-  void SetAnal(Int_t i);// {fAnalType = i; };
+  void SetAnal(Int_t i, Int_t j);// {fAnalType = i; };
   void SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
   void SetDca(Double_t dcaxy,Double_t dcaz) { fDcaXy = dcaxy; fDcaZ = dcaz;}
  
@@ -190,6 +190,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Int_t      fNCentralityBins;              // N centrality bins used
   Int_t      fCentralityBinMax;             // Max Cent
   Int_t      fNTracks;                      // Number of Tracks of Current Events
+  Int_t      fNbwcBin;                      // FIXME
 
   Bool_t     fIsMC;                         // Is MC event - Auto set by Add Task
   Bool_t     fIsRatio;                      // Is Ratio
@@ -204,6 +205,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t     fIsPhy;                        // Check for Phy
   Bool_t     fIsDca;                        // Check for Dca
   Bool_t     fIsNu;                         // Check for Nu
+  Bool_t     fIsTen;                        // 10% bin 
 
   TRandom3  *fRan;                          // Radom Number BS
   TRandom3  *fRanIdx;                       // Random Number SS
