@@ -88,7 +88,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t zT,       Float_t hbpZT, 
                                                          Float_t deltaPhi);  
-    
+	
+	void         InvMassHisto(AliAODPWG4ParticleCorrelation * trigger, Int_t mcIndex);
+	
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   static const Int_t fgkNmcTypes = 10;
 
@@ -130,6 +132,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillLeadHadronHistograms() { fFillLeadHadOppositeHisto = kTRUE  ; }
   void         SwitchOffFillLeadHadronHistograms(){ fFillLeadHadOppositeHisto = kFALSE ; }
 
+	void         SwitchOnInvariantMassHistograms() { fFillInvMassHisto = kTRUE     ; }
+	void         SwitchOffInvariantMassHistograms(){ fFillInvMassHisto = kFALSE     ; }
+	
   // UE
   
   Double_t     GetUeDeltaPhiMaxCut()       const { return fUeDeltaPhiMaxCut      ; }
@@ -257,12 +262,15 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t       fFillEtaGapsHisto;              // Fill azimuthal correlation histograms in 2 eta gaps, |eta|>0.8 and |eta|<0.01
   Bool_t       fFillMomImbalancePtAssocBinsHisto; // momentum imbalance histograms in bins of pT associated
-  
+	
+	Bool_t       fFillInvMassHisto;              // Fill invariant mass histograms for trigger
+	
   Int_t        fMCGenTypeMin;                  // Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax
   Int_t        fMCGenTypeMax;                  // Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax
   
   TVector3       fTrackVector;                 //! track momentum vector
-  TLorentzVector fMomentum;                    //! trigger momentum
+	TLorentzVector fMomentum;                    //! trigger momentum
+	TLorentzVector fMomentumIM;                  //! cluster momentum from Invariant mass
   TLorentzVector fDecayMom1;                   //! decay particle momentum
   TLorentzVector fDecayMom2;                   //! decay particle momentum
   
@@ -295,7 +303,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtTriggerMixedBin;            //! pT distribution of trigger particles vs mixing bin
   TH2F *       fhPhiTriggerMixed;              //! phi distribution vs pT of trigger particles, used in mixing
   TH2F *       fhEtaTriggerMixed;              //! eta distribution vs pT of trigger particles, used in mixing  
-
+	
   // Leading hadron in the opposite side of the trigger
   TH2F *       fhPtLeadingOppositeHadron;        //! pT trigger : pT distribution of leading hadron oposite to trigger
   TH2F *       fhPtDiffPhiLeadingOppositeHadron; //! pT trigger : difference phi distribution of leading hadron oposite and trigger
@@ -498,7 +506,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH1I *       fhEventBin;                     //! Number of triggers in a particular event bin (cen,vz,rp)
   TH1I *       fhEventMixBin;                  //! Number of triggers mixed in a particular bin (cen,vz,rp)
   TH1I *       fhEventMBBin;                   //! Number of MB events in a particular bin (cen,vz,rp)
-  
+	
+	// Check invariant mass
+	TH2F *       fhMassPtTrigger;                //! Invariant mass of the trigger
+	TH2F *       fhMCMassPtTrigger[fgkNmcTypes]; //! Invariant mass of the trigger vs MC origin
+
+	
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
