@@ -65,10 +65,12 @@ struct ParUtilities
     if (!parFile.EndsWith(".par")) parFile.Append(".par");
     TString src;
     if (!DoFind(parFile, src)) return false;
+    
     // Copy to current directory 
     // TFile::Copy(aliParFile, parFile);
     Info("", "Found PAR %s at %s", what.Data(), src.Data());
     if (gSystem->Exec(Form("ln -s %s %s", src.Data(), parFile.Data())) != 0){
+      if (!gSystem->AccessPathName(parFile.Data())) return true;
       Error("ParUtilities::Find", "Failed to symlink %s to %s", 
 	      src.Data(), parFile.Data());
       return false;
@@ -379,7 +381,8 @@ struct ParUtilities
 	<< "  gSystem->AddIncludePath(\"-DBUILD_PAR=1\");\n"
 	<< "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
 	<< "  LoadROOTLibs();\n"
-	<< "  AddAliROOT();\n";
+	<< "  AddAliROOT();\n"
+	<< "  AddAliPhysics();\n";
     if (deps) {
       TIter       next(deps);
       TObject*    dep = 0;
@@ -421,22 +424,22 @@ struct ParUtilities
 	<< "  gSystem->Load(\"libTree\");\n"
 	<< "  gSystem->Load(\"libPhysics\");\n"
 	<< "  gSystem->Load(\"libMinuit\");\n"
-	<< "}\n\n"
-	<< "void AddAliROOT() {\n"
+	<< "}\n\n";
+    out << "void AddAliROOT() {\n"
 	<< "  TString val(gSystem->Getenv(\"ALICE_ROOT\"));\n"
 	<< "  if (val.IsNull())\n"
 	<< "    Warning(\"Add\",\"ALICE_ROOT not defined\");\n"
 	<< "  else\n"
 	<< "    gSystem->AddIncludePath(Form(\"-I%s/include\",val.Data()));\n"
-	<< "}\n\n"
-	<< "void AddAliPhysics() {\n"
+	<< "}\n\n";
+    out << "void AddAliPhysics() {\n"
 	<< "  TString val(gSystem->Getenv(\"ALICE_PHYSICS\"));\n"
 	<< "  if (val.IsNull())\n"
 	<< "    Warning(\"Add\",\"ALICE_PHYSICS not defined\");\n"
 	<< "  else\n"
 	<< "    gSystem->AddIncludePath(Form(\"-I%s/include\",val.Data()));\n"
-	<< "}\n\n"
-	<< "void AddDep(const char* env) {\n"
+	<< "}\n\n";
+    out << "void AddDep(const char* env) {\n"
 	<< "  TString val(gSystem->Getenv(Form(\"%s_INCLUDE\",env)));\n"
 	<< "  if (val.IsNull())\n"
 	<< "    Warning(\"Add\",\"%s_INCLUDE not defined\", env);\n"
@@ -448,8 +451,8 @@ struct ParUtilities
 	<< "    gSystem->SetIncludePath(incPath);\n"
 	<< "    // Printf(\"Include path: %s\",incPath.Data());\n"
 	<< "  }\n"
-	<< "}\n\n"
-	<< "void LoadDep(const char* name) {\n"
+	<< "}\n\n";
+    out << "void LoadDep(const char* name) {\n"
 	<< "  // Printf(\"Loading dependency \\\"%s\\\" ...\",name);\n"
 	<< "  // gSystem->AddDynamicPath(Form(\"../%s\",name));\n"
 	<< "  // Prepend to dynamic path\n"

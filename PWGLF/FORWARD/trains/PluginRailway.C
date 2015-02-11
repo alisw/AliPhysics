@@ -74,6 +74,7 @@ struct PluginRailway : public Railway
   {
     fHandler = new AliAnalysisAlien();
 
+    fOptions.Add("aliphysics", "VERSION", "AliPhysics version", "last");
     fOptions.Add("aliroot", "VERSION", "AliROOT version", "last");
     fOptions.Add("root",    "VERSION", "ROOT version", "last");
     fOptions.Add("par", "Use par files");
@@ -124,9 +125,10 @@ struct PluginRailway : public Railway
    * @return true on success 
    */
   virtual Bool_t LoadLibrary(const TString& name, 
-			     Bool_t slaves=true)
+			     Bool_t slaves=true,
+			     Bool_t forcePar=false)
   {
-    if (!fUsePars) {
+    if (!fUsePars && !forcePar) {
       TString fullName(MakeLibraryName(name));
       Int_t ret = gSystem->Load(fullName);
       if (ret < 0) return false;
@@ -224,8 +226,8 @@ struct PluginRailway : public Railway
     TString aliroot("last");
     TString root("last");
     TString aliphysics("last");
-    if (fOptions.Has("aliroot"))    aliroot    = fOptions.Get("aliroot");
     if (fOptions.Has("aliphysics")) aliphysics = fOptions.Get("aliphysics");
+    if (fOptions.Has("aliroot"))    aliroot    = fOptions.Get("aliroot");
     if (fOptions.Has("root"))       root       = fOptions.Get("root");
 
     AvailableSoftware::Check(aliphysics, aliroot, root);

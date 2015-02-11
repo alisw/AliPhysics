@@ -109,7 +109,7 @@ struct LocalRailway : public Railway
    * 
    * @return true on success
    */
-  virtual Bool_t LoadLibrary(const TString& name, Bool_t)
+  virtual Bool_t LoadLibrary(const TString& name, Bool_t, Bool_t)
   {
     Int_t ret = gSystem->Load(MakeLibraryName(name));
     return ret >= 0;
