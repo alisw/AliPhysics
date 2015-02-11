@@ -36,7 +36,7 @@ root.exe -l -b -q $ALICE_ROOT/ANALYSIS/macros/MakePIDqaReport.C'("PIDqa.root")'
 
 */
 
-void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.pdf")
+void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.pdf", TString dirInFile = "")
 {
   //
   // Make a pdf file with the efficiency report
@@ -50,10 +50,15 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
     printf("Could not open file '%s'\n",f.GetName());
     return;
   }
-
-  TList *qaList = (TList*) f.Get("PIDqa");
+  
+  TString listName = "PIDqa";
+  if (dirInFile != "")
+    listName = listName.Prepend(Form("%s/", dirInFile.Data()));
+  
+  printf("%s", listName.Data());
+  TList *qaList = (TList*) f.Get(listName.Data());
   if (!qaList){
-    printf("Could not fine list 'PIDqa' in file '%s'\n",f.GetName());
+    printf("Could not find list '%s' in file '%s'\n",listName.Data(), f.GetName());
     return;
   }
 
@@ -74,11 +79,18 @@ void MakePIDqaReport(const char* inputFile, const char* outputFile="PIDqaReport.
   PublishCanvas(qaList,"ITS","hNsigmaP_ITS_%s");
 
   // TPC PID
-  PublishCanvas(qaList,"TPC","hNsigmaP_TPC_%s");
-  //   if (man->GetCurrentPeriod()=="11h"){
-    //     PublishCanvas(qaList,"TPC","hNsigmaP_TPC_%s_Hybrid","Hybrid");
-  //     PublishCanvas(qaList,"TPC","hNsigmaP_TPC_%s_OROChigh","OROChigh");
-  //   }
+  TList *qaListTPC = (TList*)qaList->FindObject("TPC");
+  if (qaListTPC){
+    PublishCanvas(qaListTPC,"TPCBasic","hNsigmaP_TPC_Basic_%s");
+    PublishCanvas(qaListTPC,"TPCV0","hNsigmaP_TPC_V0_%s");
+    //   if (man->GetCurrentPeriod()=="11h"){
+      //     PublishCanvas(qaListTPC,"TPC","hNsigmaP_TPC_Basic_%s_Hybrid","Hybrid");
+    //     PublishCanvas(qaListTPC,"TPC","hNsigmaP_TPC_Basic_%s_OROChigh","OROChigh");
+    //   }
+  }
+  else {
+    printf("Could not find list '%s/TPC' in file '%s'\n", listName.Data(), f.GetName());
+  }
 
   // TPC PID after 3 sigma TOF cut
   PublishCanvas(qaList,"TPC_TOF","hNsigmaP_TPC_TOF_%s");
