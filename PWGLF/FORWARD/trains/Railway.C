@@ -118,7 +118,8 @@ struct Railway
    * @return true on success, false otherwise 
    */
   virtual Bool_t LoadLibrary(const TString& name, 
-			     Bool_t slave=true) = 0;
+			     Bool_t slave=true,
+			     Bool_t forcePar=false) = 0;
   /** 
    * Load a source file, and compile it 
    * 
