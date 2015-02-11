@@ -15,21 +15,21 @@
 
 
 /// \class AliTPCCalibViewer
+/// \brief  Class for viewing/visualizing TPC calibration data
 ///
-///  Class for viewing/visualizing TPC calibration data
-///  base on  TTree functionality for visualization
+/// base on  TTree functionality for visualization
 ///
-///  Create a list of AliTPCCalPads, arrange them in an TObjArray.
-///  Pass this TObjArray to MakeTree and create the calibration Tree
-///  While craating this tree some statistical information are calculated
-///  Open the viewer with this Tree: AliTPCCalibViewer v("CalibTree.root")
-///  Have fun!
-///  EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
+/// Create a list of AliTPCCalPads, arrange them in an TObjArray.
+/// Pass this TObjArray to MakeTree and create the calibration Tree
+/// While craating this tree some statistical information are calculated
+/// Open the viewer with this Tree: AliTPCCalibViewer v("CalibTree.root")
+/// Have fun!
+/// EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
 ///
-///  If you like to click, we recommand you the
-///    AliTPCCalibViewerGUI
+/// If you like to click, we recommand you the
+///   AliTPCCalibViewerGUI
 ///
-///    THE DOCUMENTATION IS STILL NOT COMPLETED !!!!
+///   THE DOCUMENTATION IS STILL NOT COMPLETED !!!!
 ///
 /// ROOT includes
 
@@ -309,14 +309,14 @@ const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDra
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
- /// easy drawing of data, use '~' for abbreviation of '.fElements'
- /// example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
- /// sector: sector-number - only the specified sector will be drwawn
- ///         'A'/'C' or 'a'/'c' - side A/C will be drawn
- ///         'ALL' - whole TPC will be drawn, projected on one side
- /// cuts: specifies cuts
- /// drawOptions: draw options like 'same'
- /// writeDrawCommand: write the command, that is passed to TTree::Draw
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - only the specified sector will be drwawn
+   /// 'A'/'C' or 'a'/'c' - side A/C will be drawn
+   /// 'ALL' - whole TPC will be drawn, projected on one side
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    TString drawStr(drawCommand);
    TString sectorStr(sector);
@@ -401,12 +401,12 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
 
 
 Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  /// easy drawing of data, use '~' for abbreviation of '.fElements'
-  /// example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
-  /// sector: sector-number - only the specified sector will be drwawn
-  /// cuts: specifies cuts
-  /// drawOptions: draw options like 'same'
-  /// writeDrawCommand: write the command, that is passed to TTree::Draw
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - only the specified sector will be drwawn
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    if (sector >= 0 && sector < 72) {
       return EasyDraw(drawCommand, Form("%i", sector), cuts, drawOptions, writeDrawCommand);
@@ -418,14 +418,14 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const c
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  /// easy drawing of data, use '~' for abbreviation of '.fElements'
-  /// example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
-  /// sector: sector-number - the specified sector will be drwawn
-  ///         'A'/'C' or 'a'/'c' - side A/C will be drawn
-  ///         'ALL' - whole TPC will be drawn, projected on one side
-  /// cuts: specifies cuts
-  /// drawOptions: draw options like 'same'
-  /// writeDrawCommand: write the command, that is passed to TTree::Draw
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - the specified sector will be drwawn
+   /// 'A'/'C' or 'a'/'c' - side A/C will be drawn
+   /// 'ALL' - whole TPC will be drawn, projected on one side
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    TString drawStr(drawCommand);
    TString sectorStr(sector);
@@ -478,12 +478,12 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
 
 
 Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  /// easy drawing of data, use '~' for abbreviation of '.fElements'
-  /// example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
-  /// sector: sector-number - the specified sector will be drwawn
-  /// cuts: specifies cuts
-  /// drawOptions: draw options like 'same'
-  /// writeDrawCommand: write the command, that is passed to TTree::Draw
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - the specified sector will be drwawn
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    if (sector >= 0 && sector < 72) {
       return EasyDraw1D(drawCommand, Form("%i",sector), cuts, drawOptions, writeDrawCommand);
@@ -872,11 +872,11 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, 
    /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
    /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    /// The actual work is done on the array.
+   ///
+   /// \f[
+   ///       f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
 
-   /* Begin_Latex
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex
-   */
    if (sector >= 0 && sector < 72) {
       return Integrate(drawCommand, Form("%i", sector), cuts, sigmaMax, plotMean, plotMedian, plotLTM, sigmas, sigmaStep);
    }
@@ -893,11 +893,11 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
    /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
    /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    /// The actual work is done on the array.
+   ///
+   /// \f[
+   ///       f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
 
-   /* Begin_Latex
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex
-   */
 
    Double_t ltmFraction = 0.8;
 
@@ -978,11 +978,10 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
    /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    /// The actual work is done on the array.
-
-   /* Begin_Latex
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex
-   */
+   ///
+   /// \f[
+   ///  f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
 
    Double_t ltmFraction = 0.8;
 
@@ -1190,11 +1189,10 @@ Int_t AliTPCCalibViewer::GetBin(Float_t value, Int_t nbins, Double_t binLow, Dou
    /// Returns the 'bin' for 'value'
    /// The interval between 'binLow' and 'binUp' is divided into 'nbins' equidistant bins
    /// avoid index out of bounds error: 'if (bin < binLow) bin = binLow' and vice versa
-
-   /* Begin_Latex
-         GetBin(value) = #frac{nbins - 1}{binUp - binLow} #upoint (value - binLow) +1
-      End_Latex
-   */
+   ///
+   /// \f[
+   ///  GetBin(value) = \frac{nbins - 1}{binUp - binLow} \upoint (value - binLow) +1
+   /// \f]
 
    Int_t bin =  TMath::Nint( (Float_t)(value - binLow) / (Float_t)(binUp - binLow) * (nbins-1) ) + 1;
    // avoid index out of bounds:
@@ -1206,7 +1204,7 @@ Int_t AliTPCCalibViewer::GetBin(Float_t value, Int_t nbins, Double_t binLow, Dou
 
 
 Double_t AliTPCCalibViewer::GetLTM(Int_t n, const Double_t *const array, Double_t *const sigma, Double_t fraction){
-   ///  returns the LTM and sigma
+   /// returns the LTM and sigma
 
    Double_t *ddata = new Double_t[n];
    Double_t mean = 0, lsigma = 0;
@@ -1231,45 +1229,13 @@ TH1F* AliTPCCalibViewer::SigmaCut(TH1F *const histogram, Float_t mean, Float_t s
    /// sigmaStep: the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    /// pm: Decide weather \f$t > 0\f$ (first case) or \f$t\f$ arbitrary (secound case)
    /// The actual work is done on the array.
-
-   /* Begin_Latex
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = (#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx) / (#int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx),    for  t > 0
-         or
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex
-      Begin_Macro(source)
-      {
-         Float_t mean = 0;
-         Float_t sigma = 1.5;
-         Float_t sigmaMax = 4;
-         gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distrib1", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
-         TRandom rand(23);
-         for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
-         Float_t *ar = distribution->GetArray();
-
-         TCanvas* macro_example_canvas = new TCanvas("cAliTPCCalibViewer1", "", 350, 350);
-         macro_example_canvas->Divide(0,3);
-         TVirtualPad *pad1 = macro_example_canvas->cd(1);
-         pad1->SetGridy();
-         pad1->SetGridx();
-         distribution->Draw();
-         TVirtualPad *pad2 = macro_example_canvas->cd(2);
-         pad2->SetGridy();
-         pad2->SetGridx();
-
-         TH1F *shist = AliTPCCalibViewer::SigmaCut(distribution, mean, sigma, sigmaMax);
-         shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
-         shist->Draw();
-         TVirtualPad *pad3 = macro_example_canvas->cd(3);
-         pad3->SetGridy();
-         pad3->SetGridx();
-         TH1F *shistPM = AliTPCCalibViewer::SigmaCut(distribution, mean, sigma, sigmaMax, -1, kTRUE);
-         shistPM->Draw();
-         return macro_example_canvas;
-      }
-      End_Macro
-   */
+   ///
+   /// \f[
+   ///      f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = (\int_{\mu}^{\mu + t \sigma} f(x, \mu, \sigma) dx + \int_{\mu}^{\mu - t \sigma} f(x, \mu, \sigma) dx) / (\int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx),    for  t > 0
+   ///      or
+   ///      f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{\mu}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+   /// ![Picture from ROOT macro](AliTPCCalibViewer_cxx_0eb126d.png)
 
    Float_t *array = histogram->GetArray();
    Int_t    nbins = histogram->GetXaxis()->GetNbins();
@@ -1368,37 +1334,10 @@ TH1F* AliTPCCalibViewer::Integrate(TH1F *const histogram, Float_t mean, Float_t 
    /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
    /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    /// The actual work is done on the array.
-
-   /* Begin_Latex
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex
-      Begin_Macro(source)
-      {
-         Float_t mean = 0;
-         Float_t sigma = 1.5;
-         Float_t sigmaMax = 4;
-         gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distrib2", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
-         TRandom rand(23);
-         for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
-         Float_t *ar = distribution->GetArray();
-
-         TCanvas* macro_example_canvas = new TCanvas("cAliTPCCalibViewer2", "", 350, 350);
-         macro_example_canvas->Divide(0,2);
-         TVirtualPad *pad1 = macro_example_canvas->cd(1);
-         pad1->SetGridy();
-         pad1->SetGridx();
-         distribution->Draw();
-         TVirtualPad *pad2 = macro_example_canvas->cd(2);
-         pad2->SetGridy();
-         pad2->SetGridx();
-         TH1F *shist = AliTPCCalibViewer::Integrate(distribution, mean, sigma, sigmaMax);
-         shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
-         shist->Draw();
-
-      }
-      End_Macro
-   */
+   /// \f[
+   ///      f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+   /// ![Picture from ROOT macro](AliTPCCalibViewer_cxx_f68daaf.png)
 
 
    Float_t *array = histogram->GetArray();
@@ -1479,10 +1418,10 @@ TH1F* AliTPCCalibViewer::Integrate(Int_t n, const Float_t *const array, Int_t nb
 
 //_____________________________________________________________________________
 AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, const char* cuts, const char* calPadName) const {
-  /// creates a AliTPCCalPad out of the 'desiredData'
-  /// the functionality of EasyDraw1D is used
-  /// calPadName specifies the name of the created AliTPCCalPad
-  ///  - this takes a while -
+   /// creates a AliTPCCalPad out of the 'desiredData'
+   /// the functionality of EasyDraw1D is used
+   /// calPadName specifies the name of the created AliTPCCalPad
+   ///  - this takes a while -
 
    TString drawStr(desiredData);
    drawStr.Append(":channel");
@@ -1504,10 +1443,10 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, const cha
 
 //_____________________________________________________________________________
 AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, const char* cuts, const char* calPadName) const {
-  /// creates a AliTPCCalPad out of the 'desiredData'
-  /// the functionality of EasyDraw1D is used
-  /// calPadName specifies the name of the created AliTPCCalPad
-  ///  - this takes a while -
+   /// creates a AliTPCCalPad out of the 'desiredData'
+   /// the functionality of EasyDraw1D is used
+   /// calPadName specifies the name of the created AliTPCCalPad
+   ///  - this takes a while -
 
    TString drawStr(desiredData);
    drawStr.Append(":channel.fElements:sector");
@@ -1536,9 +1475,9 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, const char* 
 
 //_____________________________________________________________________________
 AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t sector, const char* cuts) const {
-  /// creates a AliTPCCalROC out of the desiredData
-  /// the functionality of EasyDraw1D is used
-  /// sector specifies the sector of the created AliTPCCalROC
+   /// creates a AliTPCCalROC out of the desiredData
+   /// the functionality of EasyDraw1D is used
+   /// sector specifies the sector of the created AliTPCCalROC
 
    TString drawStr(desiredData);
    drawStr.Append(":channel");
@@ -1553,8 +1492,8 @@ AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t secto
 
 
 TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
-  /// scan the tree  - produces a list of available variables in the tree
-  /// printList: print the list to the screen, after the scan is done
+   /// scan the tree  - produces a list of available variables in the tree
+   /// printList: print the list to the screen, after the scan is done
 
    TObjArray* arr = new TObjArray();
    TObjString* str = 0;
@@ -1625,8 +1564,8 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
 
 
 TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) const{
-  /// produces a list of available variables for normalization in the tree
-  /// printList: print the list to the screen, after the scan is done
+   /// produces a list of available variables for normalization in the tree
+   /// printList: print the list to the screen, after the scan is done
 
    TObjArray* arr = new TObjArray();
    arr->Add(new TObjString("_Mean"));
@@ -1657,8 +1596,8 @@ TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) 
 
 
 TFriendElement* AliTPCCalibViewer::AddReferenceTree(const char* filename, const char* treename, const char* refname){
-  /// add a reference tree to the current tree
-  /// by default the treename is 'calPads' and the reference treename is 'R'
+   /// add a reference tree to the current tree
+   /// by default the treename is 'calPads' and the reference treename is 'R'
 
    TFile *file = new TFile(filename);
    fListOfObjectsToBeDeleted->Add(file);
@@ -1668,8 +1607,8 @@ TFriendElement* AliTPCCalibViewer::AddReferenceTree(const char* filename, const 
 
 
 TObjArray* AliTPCCalibViewer::GetArrayOfCalPads(){
-  /// Returns a TObjArray with all AliTPCCalPads that are stored in the tree
-  ///  - this takes a while -
+   /// Returns a TObjArray with all AliTPCCalPads that are stored in the tree
+   ///  - this takes a while -
 
    TObjArray *listOfCalPads = GetListOfVariables();
    TObjArray *calPadsArray = new TObjArray();
@@ -1766,10 +1705,10 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
 
 
 void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArray *const array, const char * mapFileName) {
-  /// Write tree with all available information
-  /// im mapFileName is speciefied, the Map information are also written to the tree
-  /// AliTPCCalPad-Objects are written directly to the tree, so that they can be accessd later on
-  /// (does not work!!!)
+   /// Write tree with all available information
+   /// im mapFileName is speciefied, the Map information are also written to the tree
+   /// AliTPCCalPad-Objects are written directly to the tree, so that they can be accessd later on
+   /// (does not work!!!)
 
    AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
@@ -2346,6 +2285,3 @@ void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *cali
    }
    delete arrFileLine;
 }
-
-
-

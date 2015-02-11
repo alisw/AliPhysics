@@ -41,30 +41,10 @@
 /// SetInputSpaceCharge map.
 /// In case given map is used 2 2D maps are ignored and  scaling functions  $\rho(r,z) = (A-B\,z)/r^2$,
 /// will not work
-
-
-// End_Html
-//
-// Begin_Macro(source)
-//   {
-//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("cAliTPCSpaceCharge3D","cAliTPCSpaceCharge3D",500,400);
-//   AliTPCSpaceCharge3D sc;
-//   sc.WriteChargeDistributionToFile("SC_zr2_GGleaks.root");
-//   sc.SetSCDataFileName("SC_zr2_GGleaks.root");
-//   sc.SetOmegaTauT1T2(0,1,1); // B=0
-//   sc.InitSpaceCharge3DDistortion();
-//   sc.CreateHistoDRinXY(15,300,300)->Draw("colz");
-//   return c2;
-//   }
-// End_Macro
-//
-// Begin_Html
-//   <p>
-//   Date: 19/06/2010  <br>
-//   Authors: Stefan Rossegger
-// End_Html
-// _________________________________________________________________
+/// ![Picture from ROOT macro](AliTPCSpaceCharge3D_cxx_2829f39.png)
+///
+/// \author Stefan Rossegger
+/// \date 19/06/2010
 
 
 #include "AliMagF.h"
