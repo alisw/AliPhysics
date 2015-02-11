@@ -76,7 +76,7 @@ AliHFMassFitter::AliHFMassFitter() :
   fSideBandl(0),
   fSideBandr(0),
   fcounter(0),
-  fFitOption("L,"),
+  fFitOption("L,E"),
   fContourGraph(0)
 {
   // default constructor
@@ -115,7 +115,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fSideBandl(0),
  fSideBandr(0),
  fcounter(0),
- fFitOption("L,"),
+ fFitOption("L,E"),
  fContourGraph(0)
 {
   // standard constructor
@@ -1067,7 +1067,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   //if only signal and reflection: skip
   if (!(ftypeOfFit4Bkg==3 && ftypeOfFit4Sgn==1)) {
     ftypeOfFit4Sgn=0;
-    fhistoInvMass->Fit(bkgname.Data(),Form("R,%sE,0",fFitOption.Data()));
+    fhistoInvMass->Fit(bkgname.Data(),Form("R,%s,0",fFitOption.Data()));
    
     for(Int_t i=0;i<bkgPar;i++){
       fFitPars[i]=funcbkg->GetParameter(i);
@@ -1150,7 +1150,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     //cout<<"Parameters set to: "<<0.5*(totInt-intbkg1)<<"\t"<<fMass<<"\t"<<ffactor*fSigmaSgn<<"\t"<<intbkg1<<"\t"<<slope1<<"\t"<<conc1<<"\t"<<endl;
     //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<bkgPar<<"\tgsidebands = "<<fSideBands<<endl;
 
-    Int_t status=fhistoInvMass->Fit(bkg1name.Data(),Form("R,%sE,+,0",fFitOption.Data()));
+    Int_t status=fhistoInvMass->Fit(bkg1name.Data(),Form("R,%s,+,0",fFitOption.Data()));
     if (status != 0){
       cout<<"Minuit returned "<<status<<endl;
       return kFALSE;
@@ -1265,7 +1265,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
   Int_t status;
 
-  status = fhistoInvMass->Fit(massname.Data(),Form("R,%sE,+,0",fFitOption.Data()));
+  status = fhistoInvMass->Fit(massname.Data(),Form("R,%s,+,0",fFitOption.Data()));
   if (status != 0){
     cout<<"Minuit returned "<<status<<endl;
     return kFALSE;
@@ -1418,7 +1418,7 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
   }
 
 
-  Int_t status=fhistoInvMass->Fit(bkgname.Data(),Form("R,%sE,+,0",fFitOption.Data()));
+  Int_t status=fhistoInvMass->Fit(bkgname.Data(),Form("R,%s,+,0",fFitOption.Data()));
   if (status != 0){
     cout<<"Minuit returned "<<status<<endl;
     return kFALSE;

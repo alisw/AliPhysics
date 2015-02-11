@@ -114,10 +114,10 @@ class AliHFMassFitter : public TNamed {
   TF1*     GetMassFunc(){
     return fhistoInvMass->GetFunction("funcmass");
   }
-  void SetUseLikelihoodFit(){fFitOption="L,";}
-  void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,";}
-  void SetUseChi2Fit(){fFitOption="";}
-
+  void SetUseLikelihoodFit(){fFitOption="L,E";}
+  void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
+  void SetUseChi2Fit(){fFitOption="E";}
+  void SetFitOption(TString opt){fFitOption=opt.Data();};
  private:
 
   void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1)const;
