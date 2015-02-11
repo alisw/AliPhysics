@@ -224,77 +224,78 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		TH1::AddDirectory(kFALSE);
 		if(fHistograms != NULL){
 			delete fHistograms;
-			fHistograms=NULL;
+			fHistograms 				= NULL;
 		}
 		if(fHistograms==NULL){
-			fHistograms=new TList();
+			fHistograms 				= new TList();
 			fHistograms->SetOwner(kTRUE);
 			fHistograms->SetName("V0FindingEfficiencyInput");
 		}
 
-		fHistoMCGammaPtvsR=new TH2F("MCconvGamma_Pt_R","MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
+		fHistoMCGammaPtvsR 				= new TH2F("MCconvGamma_Pt_R","MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
 		fHistoMCGammaPtvsR->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoMCGammaPtvsR->SetYTitle("R_{MC,conv} (cm)");
 		fHistograms->Add(fHistoMCGammaPtvsR);
-		fHistoMCGammaPtvsEta=new TH2F("MCconvGamma_Pt_Eta","MC converted gamma Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
+		fHistoMCGammaPtvsEta 			= new TH2F("MCconvGamma_Pt_Eta","MC converted gamma Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
 		fHistoMCGammaPtvsEta->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoMCGammaPtvsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoMCGammaPtvsEta);
-		fHistoMCGammaPtvsPhi=new TH2F("MCconvGamma_Pt_Phi","MC converted gamma Pt vs Phi (|eta| < 0.9) ",250,0.0,25,400,0,2*TMath::Pi());
+		fHistoMCGammaPtvsPhi 			= new TH2F("MCconvGamma_Pt_Phi","MC converted gamma Pt vs Phi (|eta| < 0.9) ",250,0.0,25,400,0,2*TMath::Pi());
 		fHistoMCGammaPtvsPhi->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoMCGammaPtvsPhi->SetYTitle("#varphi_{MC} (rad)");		
 		fHistograms->Add(fHistoMCGammaPtvsPhi);
-		fHistoMCGammaRvsPhi=new TH2F("MCconvGamma_R_Phi","MC converted gamma R vs Phi (|eta| < 0.9) ",400,0,200,400,0,2*TMath::Pi());
+		fHistoMCGammaRvsPhi 			= new TH2F("MCconvGamma_R_Phi","MC converted gamma R vs Phi (|eta| < 0.9) ",400,0,200,400,0,2*TMath::Pi());
 		fHistoMCGammaRvsPhi->SetXTitle("R_{MC,conv} (cm)");
 		fHistoMCGammaRvsPhi->SetYTitle("#varphi_{MC} (rad)");		
 		fHistograms->Add(fHistoMCGammaRvsPhi);
-		fHistoMCGammaRvsEta=new TH2F("MCconvGamma_R_Eta","MC converted gamma R vs Eta ",400,0,200,280,-1.4,1.4);
+		fHistoMCGammaRvsEta 			= new TH2F("MCconvGamma_R_Eta","MC converted gamma R vs Eta ",400,0,200,280,-1.4,1.4);
 		fHistoMCGammaRvsEta->SetXTitle("R_{MC,conv} (cm)");
 		fHistoMCGammaRvsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoMCGammaRvsEta);
-		fHistoMCGammaPhivsEta=new TH2F("MCconvGamma_Phi_Eta","MC converted gamma Phi vs Eta ",400,0,2*TMath::Pi(),280,-1.4,1.4);
+		fHistoMCGammaPhivsEta 			= new TH2F("MCconvGamma_Phi_Eta","MC converted gamma Phi vs Eta ",400,0,2*TMath::Pi(),280,-1.4,1.4);
 		fHistoMCGammaPhivsEta->SetXTitle("#phi_{MC} (rad)");
 		fHistoMCGammaPhivsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoMCGammaPhivsEta);
-		fHistoRecMCGammaPtvsR=new TH2F("RecMCconvGamma_Pt_R","rec MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
+		fHistoRecMCGammaPtvsR 			= new TH2F("RecMCconvGamma_Pt_R","rec MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
 		fHistoRecMCGammaPtvsR->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoRecMCGammaPtvsR->SetYTitle("R_{MC,conv} (cm)");
 		fHistograms->Add(fHistoRecMCGammaPtvsR);
-		fHistoRecMCGammaPtvsEta=new TH2F("RecMCconvGamma_Pt_Eta","rec MC converted gamma Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
+		fHistoRecMCGammaPtvsEta 		= new TH2F("RecMCconvGamma_Pt_Eta","rec MC converted gamma Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
 		fHistoRecMCGammaPtvsEta->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoRecMCGammaPtvsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoRecMCGammaPtvsEta);
-		fHistoRecMCGammaPtvsPhi=new TH2F("RecMCconvGamma_Pt_Phi","rec MC converted gamma Pt vs Phi (|eta| < 0.9) ",250,0.0,25,400,0,2*TMath::Pi());
+		fHistoRecMCGammaPtvsPhi 		= new TH2F("RecMCconvGamma_Pt_Phi","rec MC converted gamma Pt vs Phi (|eta| < 0.9) ",250,0.0,25,400,0,2*TMath::Pi());
 		fHistoRecMCGammaPtvsPhi->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoRecMCGammaPtvsPhi->SetYTitle("#varphi_{MC} (rad)");		
 		fHistograms->Add(fHistoRecMCGammaPtvsPhi);
-		fHistoRecMCGammaRvsPhi=new TH2F("RecMCconvGamma_R_Phi","rec MC converted gamma R vs Phi (|eta| < 0.9) ",400,0,200,400,0,2*TMath::Pi());
+		fHistoRecMCGammaRvsPhi 			= new TH2F("RecMCconvGamma_R_Phi","rec MC converted gamma R vs Phi (|eta| < 0.9) ",400,0,200,400,0,2*TMath::Pi());
 		fHistoRecMCGammaRvsPhi->SetXTitle("R_{MC,conv} (cm)");
 		fHistoRecMCGammaRvsPhi->SetYTitle("#varphi_{MC} (rad)");		
 		fHistograms->Add(fHistoRecMCGammaRvsPhi);
-		fHistoRecMCGammaRvsEta=new TH2F("RecMCconvGamma_R_Eta","rec MC converted gamma R vs Eta ",400,0,200,280,-1.4,1.4);
+		fHistoRecMCGammaRvsEta			= new TH2F("RecMCconvGamma_R_Eta","rec MC converted gamma R vs Eta ",400,0,200,280,-1.4,1.4);
 		fHistoRecMCGammaRvsEta->SetXTitle("R_{MC,conv} (cm)");
 		fHistoRecMCGammaRvsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoRecMCGammaRvsEta);
-		fHistoRecMCGammaPhivsEta=new TH2F("RecMCconvGamma_Phi_Eta","rec MC converted gamma Phi vs Eta ",400,0,2*TMath::Pi(),280,-1.4,1.4);
+		fHistoRecMCGammaPhivsEta 		= new TH2F("RecMCconvGamma_Phi_Eta","rec MC converted gamma Phi vs Eta ",400,0,2*TMath::Pi(),280,-1.4,1.4);
 		fHistoRecMCGammaPhivsEta->SetXTitle("#phi_{MC} (rad)");
 		fHistoRecMCGammaPhivsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoRecMCGammaPhivsEta);
 		
-		fHistoRecMCGammaMultiPtvsEta=new TH2F("RecMCconvGammaMulti_Pt_Eta","rec MC converted gamma (at least double counted) Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
+		fHistoRecMCGammaMultiPtvsEta 	= new TH2F("RecMCconvGammaMulti_Pt_Eta","rec MC converted gamma (at least double counted) Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
 		fHistoRecMCGammaMultiPtvsEta->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistoRecMCGammaMultiPtvsEta->SetYTitle("#eta_{MC}");		
 		fHistograms->Add(fHistoRecMCGammaMultiPtvsEta);
 
-		fHistoRecMCGammaMultiPt=new TH1F("RecMCconvGammaMulti_Pt","rec MC converted gamma (at least double counted) Pt (|eta| < 0.9)",250,0.0,25);
+		fHistoRecMCGammaMultiPt			= new TH1F("RecMCconvGammaMulti_Pt","rec MC converted gamma (at least double counted) Pt (|eta| < 0.9)",250,0.0,25);
 		fHistoRecMCGammaMultiPt->SetXTitle("p_{MC,T} (GeV/c)");
 		fHistograms->Add(fHistoRecMCGammaMultiPt);
-		fHistoRecMCGammaMultiR=new TH1F("RecMCconvGammaMulti_R","rec MC converted gamma (at least double counted) R (|eta| < 0.9)",400,0,200);
+		fHistoRecMCGammaMultiR			= new TH1F("RecMCconvGammaMulti_R","rec MC converted gamma (at least double counted) R (|eta| < 0.9)",400,0,200);
 		fHistoRecMCGammaMultiR->SetXTitle("R_{MC,conv} (cm)");
 		fHistograms->Add(fHistoRecMCGammaMultiR);
-		fHistoRecMCGammaMultiPhi=new TH1F("RecMCconvGammaMulti_Phi","rec MC converted gamma (at least double counted) Phi (|eta| < 0.9)",400,0,2*TMath::Pi());
+		fHistoRecMCGammaMultiPhi		= new TH1F("RecMCconvGammaMulti_Phi","rec MC converted gamma (at least double counted) Phi (|eta| < 0.9)",400,0,2*TMath::Pi());
 		fHistoRecMCGammaMultiPhi->SetXTitle("#phi_{MC} (rad)");
 		fHistograms->Add(fHistoRecMCGammaMultiPhi);
+		
 	}	
 
 }
