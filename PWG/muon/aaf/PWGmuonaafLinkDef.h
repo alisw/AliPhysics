@@ -6,6 +6,7 @@
 
 #pragma link C++ namespace AAF;
 
+#pragma link C++ function AAF::FILTER_ESDMUON;
 #pragma link C++ function AAF::FILTER_RAWMUON;
 #pragma link C++ function AAF::FILTER_AODMUONWITHTRACKLETS;
 #pragma link C++ function AAF::StageAndFilter;
