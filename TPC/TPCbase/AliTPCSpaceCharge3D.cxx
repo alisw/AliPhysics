@@ -102,15 +102,15 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
 
   // location of the precalculated look up tables
 
-  fSCLookUpPOCsFileName3D="$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_raw_18-18-26_17p-18p-25p-MN30.root"; // rough estimate
-  fSCLookUpPOCsFileNameRZ="$(ALICE_ROOT)/TPC/Calib/maps/sc_radSym_35-01-51_34p-01p-50p_MN60.root";
-  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-144-26_34p-18p-01p-MN30.root";
+  fSCLookUpPOCsFileName3D="$(ALICE_ROOT)/TPC/TPCcalib/maps/sc_3D_raw_18-18-26_17p-18p-25p-MN30.root"; // rough estimate
+  fSCLookUpPOCsFileNameRZ="$(ALICE_ROOT)/TPC/TPCcalib/maps/sc_radSym_35-01-51_34p-01p-50p_MN60.root";
+  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/TPCcalib/maps/sc_cChInZ_35-144-26_34p-18p-01p-MN30.root";
   //  fSCLookUpPOCsFileNameRPhi="$(ALICE_ROOT)/TPC/Calib/maps/sc_cChInZ_35-36-26_34p-18p-01p-MN40.root";
 
 
 
   // standard location of the space charge distibution ... can be changes
-  fSCDataFileName="$(ALICE_ROOT)/TPC/Calib/maps/sc_3D_distribution_Sim.root";
+  fSCDataFileName="$(ALICE_ROOT)/TPC/TPCcalib/maps/sc_3D_distribution_Sim.root";
 
   //  SetSCDataFileName(fSCDataFileName.Data()); // should be done by the user
 
