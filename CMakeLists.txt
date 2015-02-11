@@ -19,6 +19,18 @@
 
 cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
+### CMP0025   Compiler id for Apple Clang is now AppleClang.
+### CMP0042   MACOSX_RPATH is enabled by default.
+
+foreach(p
+  CMP0025 # CMake 3.0
+  CMP0042 # CMake 3.0
+  )
+  if(POLICY ${p})
+  cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
+
 project(AliRoot CXX C)
 
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
