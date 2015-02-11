@@ -1,13 +1,13 @@
 void AddTask_GammaCalo_pPb(  
-							Int_t trainConfig = 1,  //change different set of cuts
-							Bool_t isMC   = kFALSE, //run MC
-							Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-							Int_t enableQAClusterTask = 0, // enable additional QA task
-							TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-							Int_t doWeightingPart = 0,  //enable Weighting
-							TString generatorName = "DPMJET",
-                            TString cutnumberAODBranch = "800000006008400000001500000", // cutnumber for AOD branch
-                            Bool_t isUsingTHnSparse = kTRUE //enable or disable usage of THnSparses for background estimation
+							Int_t 		trainConfig 				= 1,  								// change different set of cuts
+							Bool_t 		isMC   						= kFALSE, 							// run MC
+							Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+							Int_t 		enableQAClusterTask 		= 0, 								// enable additional QA task
+							TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+							Int_t 		doWeightingPart 			= 0,  								// enable Weighting
+							TString 	generatorName 				= "DPMJET",
+                            TString 	cutnumberAODBranch 			= "800000006008400000001500000", 	// cutnumber for AOD branch
+                            Bool_t 		isUsingTHnSparse 			= kTRUE 							// enable or disable usage of THnSparses for background estimation
 						   ) {
 
 	// ================= Load Librariers =================================

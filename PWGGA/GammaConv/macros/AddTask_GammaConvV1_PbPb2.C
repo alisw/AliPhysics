@@ -1,10 +1,11 @@
-void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set of cuts
-                              Bool_t isMC   = kFALSE, //run MC 
-                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAPhotonTask = 0, // enable additional QA task
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Bool_t doWeighting = kFALSE,  //enable Weighting
-                              TString cutnumberAODBranch = "100000006008400000001500000" 
+void AddTask_GammaConvV1_PbPb2(  	Int_t 		trainConfig 				= 1,  								// change different set of cuts
+									Bool_t 		isMC   						= kFALSE, 							// run MC 
+									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+									Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
+									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+									Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
+									TString 	cutnumberAODBranch 			= "100000006008400000001500000", 	// cutnumber with which AODs have been filtered
+									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
                            ) {
 
 	// ================= Load Librariers =================================
@@ -57,7 +58,7 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;

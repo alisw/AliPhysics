@@ -1,11 +1,12 @@
-void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
-							TString V0ReaderPhotonCutNumber = "060000084001001500000000",
-							TString TaskEventCutnumber 		= "8000011",
-							TString TaskPhotonCutnumber 	= "092000092170008260400000",
-							Bool_t isMC = kTRUE, 
-							Int_t IsHeavyIon = 0, 
-							TString cutnumberAODBranch = "0000000060084001001500000",
-							Bool_t doEtaShiftV0Reader = kFALSE 
+void AddTask_Resolution(	TString 	V0ReaderEventCutNumber 	= "8000000",
+							TString 	V0ReaderPhotonCutNumber = "060000084001001500000000",
+							TString 	TaskEventCutnumber 		= "8000011",
+							TString 	TaskPhotonCutnumber 	= "092000092170008260400000",
+							Bool_t 		isMC 					= kTRUE, 
+							Int_t 		IsHeavyIon 				= 0, 
+							TString 	cutnumberAODBranch 		= "0000000060084001001500000",
+							Bool_t 		doEtaShiftV0Reader 		= kFALSE,
+							Bool_t 		enableV0findingEffi 	= kFALSE							// enables V0finding efficiency histograms
                        ){
 	
 	//get the current analysis manager
@@ -53,7 +54,7 @@ void AddTask_Resolution(	TString V0ReaderEventCutNumber 	= "8000000",
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;

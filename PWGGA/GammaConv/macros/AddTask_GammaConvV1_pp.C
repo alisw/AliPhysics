@@ -1,11 +1,12 @@
-void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change different set of cuts
-							  Bool_t isMC   = kFALSE, 										// run MC 
-							  Int_t enableQAMesonTask = 0, 									// enable meson QA in AliAnalysisTaskGammaConvV1
-							  Int_t enableQAPhotonTask = 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
-							  TString fileNameInputForWeighting = "MCSpectraInput.root", 	// path to file for weigting input
-							  TString cutnumberAODBranch = "000000006008400001001500000", 	// cutnumber for AOD branch
-							  TString periodname = "LHC12f1x", 								// period name
-							  Bool_t doWeighting = kFALSE									// enables weighting
+void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change different set of cuts
+							  Bool_t 	isMC   						= kFALSE, 							// run MC 
+							  Int_t 	enableQAMesonTask 			= 0, 								// enable meson QA in AliAnalysisTaskGammaConvV1
+							  Int_t 	enableQAPhotonTask 			= 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
+							  TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+							  TString 	cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber for AOD branch
+							  TString 	periodname 					= "LHC12f1x", 						// period name
+							  Bool_t 	doWeighting 				= kFALSE,							// enables weighting
+							  Bool_t 	enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
 							) {
 
 	// ================= Load Librariers =================================
@@ -58,7 +59,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  										// change differ
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-		fV0ReaderV1->SetProduceV0FindingEfficiency(kTRUE);
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;
