@@ -60,5 +60,6 @@
 #pragma link C++ class AliPHOSCpvRawStream+;
 #pragma link C++ class AliPHOSCpvParam+;
 #pragma link C++ class AliPHOSCpv3GConnection+;
+#pragma link C++ class AliPHOSCpvPedProducer+;
 
 #endif
