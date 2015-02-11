@@ -855,7 +855,7 @@ void AliADv1::CreateAD()
   // const Float_t kPosAD3 = 1700.0;
   // ad->AddNode(vADAarray,1, new TGeoTranslation(0., 0., kPosAD2)); 
   // ad->AddNode(vADAarray,2, new TGeoTranslation(0., 0., kPosAD3));
-  const Float_t kPosADA = 1695.0;
+  const Float_t kPosADA = 1699.7;
   ad->AddNode(vADAarray,    1, new TGeoTranslation(0., 0., kPosADA - kADACelldz/2. -0.1)); 
   ad->AddNode(vADAarray,    2, new TGeoTranslation(0., 0., kPosADA + kADACelldz/2. +0.1));
   ad->AddNode(voADsupport,  1, new TGeoTranslation( 0., 0., kPosADA));
