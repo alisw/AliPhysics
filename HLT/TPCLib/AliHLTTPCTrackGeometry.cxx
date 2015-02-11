@@ -27,7 +27,7 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCSpacePointContainer.h"
-#include "AliHLTTPCHWCFSpacePointContainer.h"
+#include "AliHLTTPCRawSpacePointContainer.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
@@ -469,8 +469,11 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 {
   // write associated clusters to buffer via deflater
   if (!pDeflater || !pSpacePoints) return -EINVAL;
-  AliHLTTPCHWCFSpacePointContainer* pTPCRawSpacePoints=dynamic_cast<AliHLTTPCHWCFSpacePointContainer*>(pSpacePoints);
-  if (!pTPCRawSpacePoints) return -EINVAL;
+  AliHLTTPCRawSpacePointContainer* pTPCRawSpacePoints=dynamic_cast<AliHLTTPCRawSpacePointContainer*>(pSpacePoints);
+  if (!pTPCRawSpacePoints) {
+    HLTError("invalid type of SpacePointContainer \"%s\", required AliHLTTPCRawSpacePointContainer", pSpacePoints->ClassName());
+    return -EINVAL;
+  }
   bool bReverse=true;
   bool bWriteSuccess=true;
   int writtenClusters=0;
