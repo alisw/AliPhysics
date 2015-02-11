@@ -69,10 +69,13 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
   };
 
   std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
+  std::string triggermodes[] = {"online", "offline"};
   for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-    fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-    fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-    fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes, "s");
+	for(std::string *triggermode = triggermodes; triggermode < triggermodes + sizeof(triggermodes)/sizeof(std::string); ++triggermode){
+	  fHistos->CreateTHnSparse(Form("Energy%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
+      fHistos->CreateTHnSparse(Form("EnergyRough%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Rough patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 4, patchenergyaxes, "s");
+      fHistos->CreateTHnSparse(Form("Amplitude%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch amplitude for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 4, patchampaxes, "s");
+	}
   }
 
 }
@@ -88,30 +91,53 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
     double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
     double triggerpatchinfoamp[4] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
     double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-    if(triggerpatch->IsJetHigh()){
-      fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeJetHigh", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughJetHigh", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsJetLow()){
-      fHistos->FillTHnSparse("EnergyJetLow", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeJetLow", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughJetLow", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsGammaHigh()){
-      fHistos->FillTHnSparse("EnergyGammaHigh", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeGammaHigh", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughGammaHigh", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsGammaLow()){
-      fHistos->FillTHnSparse("EnergyGammaLow", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeGammaLow", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughGammaLow", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsLevel0()){
-      fHistos->FillTHnSparse("EnergyLevel0", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeLevel0", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughLevel0", triggerpatchinfoer);
+    if(triggerpatch->IsOfflineSimple()){
+      if(triggerpatch->IsJetHighSimple()){
+        fHistos->FillTHnSparse("EnergyJetHighOffline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeJetHighOffline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughJetHighOffline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsJetLowSimple()){
+    	fHistos->FillTHnSparse("EnergyJetLowOffline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeJetLowOffline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughJetLowOffline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsGammaHighSimple()){
+        fHistos->FillTHnSparse("EnergyGammaHighOfffline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeGammaHighOffline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughGammaHighOffline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsGammaLowSimple()){
+        fHistos->FillTHnSparse("EnergyGammaLowOffline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeGammaLowOffline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughGammaLowOffline", triggerpatchinfoer);
+      }
+    } else{
+      if(triggerpatch->IsJetHigh()){
+        fHistos->FillTHnSparse("EnergyJetHighOnline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeJetHighOnline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughJetHighOnline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsJetLow()){
+    	fHistos->FillTHnSparse("EnergyJetLowOnline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeJetLowOnline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughJetLowOnline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsGammaHigh()){
+        fHistos->FillTHnSparse("EnergyGammaHighOnline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeGammaHighOnline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughGammaHighOnline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsGammaLow()){
+        fHistos->FillTHnSparse("EnergyGammaLowOnline", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeGammaLowOnline", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughGammaLowOnline", triggerpatchinfoer);
+      }
+      if(triggerpatch->IsLevel0()){
+        fHistos->FillTHnSparse("EnergyLevel0Online", triggerpatchinfo);
+        fHistos->FillTHnSparse("AmplitudeLevel0Online", triggerpatchinfoamp);
+        fHistos->FillTHnSparse("EnergyRoughLevel0Online", triggerpatchinfoer);
+      }
     }
   }
 }
