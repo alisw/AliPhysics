@@ -54,6 +54,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
+  void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
+  void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
+  void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -89,6 +92,10 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
 
+  Bool_t                              fCentSelectOn;                // switch on/off centrality selection
+  Float_t                             fCentMin;                     // min centrality value
+  Float_t                             fCentMax;                     // max centrality value
+  
   TH2F                                *fh2ResponseUW;
   TH2F                                *fh2ResponseW;
   TH2F                                *fPhiJetCorr6;
