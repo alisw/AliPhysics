@@ -565,19 +565,29 @@ def comment_classimp(filename, comments):
 
   with open(filename, 'r') as fp:
 
-    for line in fp:
+    # Array of tuples: classimp, startcond, endcond
+    found_classimp = []
 
-      # Reset to nothing found
-      line_classimp = -1
-      line_startcond = -1
-      line_endcond = -1
-      classimp_class = None
-      classimp_indent = None
+    # Reset to nothing found
+    line_classimp = -1
+    line_startcond = -1
+    line_endcond = -1
+    classimp_class = None
+    classimp_indent = None
+
+    for line in fp:
 
       line_num = line_num + 1
 
       mclassimp = re.search(reclassimp, line)
       if mclassimp:
+
+        # Dump previous one if appropriate, and reset
+        if line_classimp != -1:
+          found_classimp.append( (line_classimp, line_startcond, line_endcond) )
+          line_classimp = -1
+          line_startcond = -1
+          line_endcond = -1
 
         # Adjust indent
         classimp_indent = len( mclassimp.group(1) )
@@ -595,7 +605,15 @@ def comment_classimp(filename, comments):
 
         mstartcond = re.search(restartcond, line)
         if mstartcond:
-          logging.debug('Found Doxygen opening condition for ClassImp in {%s}' % line)
+
+          # Dump previous one if appropriate, and reset
+          if line_classimp != -1:
+            found_classimp.append( (line_classimp, line_startcond, line_endcond) )
+            line_classimp = -1
+            line_startcond = -1
+            line_endcond = -1
+
+          logging.debug('Found Doxygen opening condition for ClassImp')
           in_classimp_cond = True
           line_startcond = line_num
 
@@ -607,36 +625,46 @@ def comment_classimp(filename, comments):
             in_classimp_cond = False
             line_endcond = line_num
 
-      # Did we find something?
-      if line_classimp != -1:
+    # Dump previous one if appropriate, and reset (out of the loop)
+    if line_classimp != -1:
+      found_classimp.append( (line_classimp, line_startcond, line_endcond) )
+      line_classimp = -1
+      line_startcond = -1
+      line_endcond = -1
 
-        if line_startcond != -1:
-          comments.append(Comment(
-            ['\cond CLASSIMP'],
-            line_startcond, 1, line_startcond, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
-            append_empty=False
-          ))
-        else:
-          comments.append(PrependComment(
-            ['\cond CLASSIMP'],
-            line_classimp, 1, line_classimp, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
-          ))
+    for line_classimp,line_startcond,line_endcond in found_classimp:
 
-        if line_endcond != -1:
-          comments.append(Comment(
-            ['\endcond'],
-            line_endcond, 1, line_endcond, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
-            append_empty=False
-          ))
-        else:
-          comments.append(PrependComment(
-            ['\endcond'],
-            line_classimp+1, 1, line_classimp+1, 1,
-            classimp_indent, 'ClassImp/Def(%s)' % classimp_class
-          ))
+      # Loop over the ClassImp conditions we've found
+
+      if line_startcond != -1:
+        logging.debug('Looks like we are in a condition here %d,%d,%d' % (line_classimp, line_startcond, line_endcond))
+        comments.append(Comment(
+          ['\cond CLASSIMP'],
+          line_startcond, 1, line_startcond, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+          append_empty=False
+        ))
+      else:
+        logging.debug('Looks like we are  NOT NOT  in a condition here %d,%d,%d' % (line_classimp, line_startcond, line_endcond))
+        comments.append(PrependComment(
+          ['\cond CLASSIMP'],
+          line_classimp, 1, line_classimp, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+        ))
+
+      if line_endcond != -1:
+        comments.append(Comment(
+          ['\endcond'],
+          line_endcond, 1, line_endcond, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class,
+          append_empty=False
+        ))
+      else:
+        comments.append(PrependComment(
+          ['\endcond'],
+          line_classimp+1, 1, line_classimp+1, 1,
+          classimp_indent, 'ClassImp/Def(%s)' % classimp_class
+        ))
 
 
 ## Traverse the AST recursively starting from the current cursor.
