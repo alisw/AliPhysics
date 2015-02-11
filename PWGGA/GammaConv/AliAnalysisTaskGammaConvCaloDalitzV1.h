@@ -60,6 +60,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
+		void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		
 	    // Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -114,7 +115,6 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
 		AliDalitzElectronSelector				*fElecSelector;							// basic electron Selection			
 		AliGammaConversionAODBGHandler 		**fBGClusHandler;					// BG handler for Cluster
-		AliConversionAODBGHandlerRP    		**fBGClusHandlerRP;  				// BG handler for Cluster (possibility to mix with respect to RP)
 		AliVEvent 							*fInputEvent;						// current event
 		AliMCEvent 							*fMCEvent;							// corresponding MC event
 		AliStack 							*fMCStack;							// stack belonging to MC event
