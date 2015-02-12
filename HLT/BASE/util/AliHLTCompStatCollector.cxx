@@ -561,7 +561,7 @@ int AliHLTCompStatCollector::FillVariablesSorted(void* ptr, int size, AliHLTUInt
 	// archiving because the CRC id is related to a tag/level
 	//HLTWarning("level does not match for instance %s, expected %d", instance->second.Description().c_str(), pStat[*element].fLevel);
       }
-      fpLevelArray[i]=instance->second.GetTag();
+      fpLevelArray[i]=pStat[*element].fLevel;
       fpIdArray[i]=pStat[*element].fId;
       fpTimeArray[i]=pStat[*element].fTime;
       fpCTimeArray[i]=pStat[*element].fCTime;
