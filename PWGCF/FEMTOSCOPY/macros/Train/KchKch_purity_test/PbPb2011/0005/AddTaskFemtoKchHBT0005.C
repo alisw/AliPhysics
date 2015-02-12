@@ -11,7 +11,7 @@
 
 //this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 
-AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemtoKchHBT0005(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   
