@@ -68,6 +68,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t I
  fFilterBit = 0;
  fEta_min = 0;
  fEta_max = 0;
+ fTaskName = name;
 }
 
 //____________________________________________________________________________
@@ -102,7 +103,7 @@ AliJFFlucTask::~AliJFFlucTask()
 //________________________________________________________________________
 void AliJFFlucTask::UserCreateOutputObjects()
 { 
-  fFFlucAna =  new AliJFFlucAnalysis("AliJFFluc");
+  fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
   fFFlucAna->SetDebugLevel(fDebugLevel); 
   //=== create the jcorran outputs objects
 
@@ -188,7 +189,7 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				if( track->IsPhysicalPrimary() ){
 						// insert eta cut here // 
 						double track_abs_eta = TMath::Abs( track->Eta() );
-						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
+						//if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
 								//if( track->Pt() < 0.2 || track->Pt() > 5 ) continue ; // test pt cut
 								Int_t pdg = track->GetPdgCode();
 								Char_t ch = (Char_t) track->Charge();
@@ -198,7 +199,7 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 								itrack->SetParticleType( pdg);
 								itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 								itrack->SetCharge(ch) ;
-						};
+						//}; no eta cut in task file
 				}
 		}
 	} // read mc track done.
@@ -209,8 +210,8 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
 				if(track->TestFilterBit( fFilterBit )){ // hybrid cut
-						double track_abs_eta = TMath::Abs( track->Eta() );
-						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
+//						double track_abs_eta = TMath::Abs( track->Eta() );
+//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
 								AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack; 
 								//itrack->SetID( track->GetID() );
 								itrack->SetID( TrackList->GetEntriesFast() ) ;
@@ -218,7 +219,7 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 								itrack->SetParticleType(kJHadron);
 								itrack->SetCharge(track->Charge() );
 								itrack->SetStatus(track->GetStatus() );
-						}
+//						} no eta cut in task file
 				}
 		}
 	} //read aod reco track done.

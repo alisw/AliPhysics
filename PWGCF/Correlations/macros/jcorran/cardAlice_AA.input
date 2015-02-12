@@ -3,12 +3,12 @@ Helicity		0 # +1 same, -1 opposite, and 0 no helicity check
 EfficiencyMode          1 # 0:NoEff 1:Period 2:RunbyRun 3:Auto
 
 #events=========
-CentBinBorders         0 10 20 40 60 90
+CentBinBorders         0 5 10 20 40 60 80 90
 CentMultCutHigh         0.63,  99, 2.1   # hyperbola high cent x mult cut
 CentMultCutLow          0.71,  75, 1.0   # hyperbola  low cent x mult cut
 
-zVertBins               -10 10
-#zVertBins               -10 -8 -6 -4 -2 0 2 4 6 8 10
+#zVertBins               -10 10
+zVertBins               -10 -8 -6 -4 -2 0 2 4 6 8 10
 #maxAbsZVert             8  #(used to be 10)
 #maxMixDZ		1.0 #	cm, allowed maximum ZVert distance for mix (5 for QM)/ neg -> no test
 

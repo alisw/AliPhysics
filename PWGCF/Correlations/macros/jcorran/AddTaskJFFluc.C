@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFluc(Bool_t IsMC = kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, int debuglevel){
+AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, int debuglevel){
     // Load Custom Configuration and parameters
     // override values with parameters
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
@@ -22,9 +22,10 @@ AliAnalysisTask *AddTaskJFFluc(Bool_t IsMC = kFALSE, Int_t FilterBit = 768 , dou
 
     //==== JCORRAN TASK
     int CollisionCandidates = AliVEvent::kCentral;
-    AliJFFlucTask *FFtask = new AliJFFlucTask( "PWGCFFFluc", CollisionCandidates, IsMC );
+    AliJFFlucTask *FFtask = new AliJFFlucTask( taskName , CollisionCandidates, IsMC );
 
-	FFtask->SetIsMC( IsMC ) ;
+	FFtask->SetFFlucTaskName( taskName ) ;
+	FFtask->SetIsMC( IsMC );
 	FFtask->SetTestFilterBit( FilterBit ) ;
 	FFtask->SetEtaRange( eta_min, eta_max);
 	FFtask->SetDebugLevel( debuglevel ) ; 

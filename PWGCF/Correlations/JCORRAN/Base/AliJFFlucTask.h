@@ -72,9 +72,11 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl; };
   void SetEtaRange( double eta_min, double eta_max ){ fEta_min=eta_min; fEta_max=eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " << fEta_max << endl;};
   inline void DEBUG(int level, TString msg){ if(level < fDebugLevel){ std::cout<< level << "\t" << msg << endl;}};
- 
+  void SetFFlucTaskName(TString taskname){fTaskName = taskname;};
+  TString GetFFlucTaskName(){return fTaskName;};
 
  private:
+  TString fTaskName;
   int fDebugLevel;
   int fEvtNum;
   int fFilterBit; 

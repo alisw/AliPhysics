@@ -41,6 +41,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		double Get_Qn_Img(double eta1, double eta2, int harmonics); 
 		double Get_QC_Vn( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
 
+		void Fill_QA_plot(double eta1, double eta2 );
+
 		double Complex_product_real( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
 		double Complex_product_img( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
 		double Complex_abs( double real, double img);
@@ -87,10 +89,10 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_vn;  // single vn^k  array [ih][ik][iCent]
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 
-		AliJTH1D fh_vn_real;
-		AliJTH1D fh_vn_abs;
-		AliJTH1D fh_vn_vn_real;
-		AliJTH1D fh_vn_vn_abs;
+		AliJTH1D fh_vn_test1;
+		AliJTH1D fh_vn_test2;
+		AliJTH1D fh_vn_vn_test1;
+		AliJTH1D fh_vn_vn_test2;
 
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis
