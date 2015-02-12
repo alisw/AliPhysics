@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_miweber_LMEE_pp(){
+AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResult.root"){
 
 
   //get the current analysis manager
@@ -66,26 +66,26 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(){
     mgr->CreateContainer("miweber_LMEE_pp_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "AnalysisResults.root");
+                         outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer("miweber_LMEE_pp_out",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "AnalysisResults.root");
+                         outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("miweber_LMEE_pp_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "AnalysisResults.root");
+                         outputFileName.Data());
   //                         "miweber_LMEE_pp_CF.root");
   
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("miweber_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "AnalysisResults.root");
+                         outputFileName.Data());
   
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
