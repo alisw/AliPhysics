@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_mtrda Trigger DA
+\page README_mtrda MUON Trigger DA
  
 The detector algorithm is implemented for the Muon Trigger in the AliRoot 
 framework. The main code is located in MUONTRGda.cxx and it runs in the MUON 

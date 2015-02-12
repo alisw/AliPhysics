@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_raw Raw data
+\page README_raw MUON Raw data
  
 \section raw_s1 How to read & decode raw data 
 

@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_fast Fast simulation
+\page README_fast MUON Fast simulation
 
 
 The macro fastMUONGen.C allows to generate events using the 

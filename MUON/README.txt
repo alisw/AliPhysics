@@ -1,13 +1,6 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
 // $Id$
 
-/// \file Doxymain.h
-/// \brief The main page for code documenation
-
-
-/*! \mainpage MUON code documentation 
+/*! \page README_MUON_main MUON code documentation 
 
 This is the documentation for the MUON simulation and reconstruction code.
 It is a mix of general concepts and code implementation details.

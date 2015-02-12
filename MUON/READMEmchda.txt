@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_mchda Tracking DA
+\page README_mchda MUON Tracking DA
  
 The detector algorithms are implemented for the Muon Tracking in the AliRoot framework.
 We currently have 3 DAs for MCH :

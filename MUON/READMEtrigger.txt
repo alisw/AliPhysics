@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_trigger Trigger
+\page README_trigger MUON Trigger
 
 
 \section trigger_s1  How to reprocess trigger decision from already produced digits

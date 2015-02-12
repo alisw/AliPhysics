@@ -2,7 +2,7 @@
 
 /*!
 
-\page README_eve Event display
+\page README_eve MUON Event display
 
 This README file shows how to use both the old and new EVE event display for
 the MUON detector. The explained procedure is a complement to the visualisation

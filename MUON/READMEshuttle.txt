@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_shuttle Shuttle 
+\page README_shuttle MUON Shuttle
 
 How to test the Shuttle preprocessor(s) for MUON.
 
