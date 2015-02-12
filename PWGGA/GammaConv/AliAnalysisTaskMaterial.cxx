@@ -192,6 +192,12 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 // 		fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
 // 		fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
 // 	}
+	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+		if (fV0Reader->GetV0FindingEfficiencyHistograms())
+			fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+
 	
 	PostData(1, fOutputList);
    
@@ -200,7 +206,6 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskMaterial::UserExec(Option_t *){
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
 		if(eventQuality != 0){// Event Not Accepted
