@@ -839,6 +839,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     TObjArray *inConePairClEt =  (TObjArray*)fInConePairClEt.Tokenize(";");
     nInConePairs = inConeInvMassArr->GetEntriesFast();
     Int_t nInConePi0 = inConePairClEt->GetEntriesFast();
+    Double_t pairEt=0;
     if(nInConePairs != nInConePi0)
       printf("Inconsistent number of in cone pairs!!!\n");
     for(int ipair=0;ipair<nInConePairs;ipair++){
@@ -847,7 +848,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       TString smass = obs->GetString();
       TString spairEt = obet->GetString();
       Double_t pairmass = smass.Atof();
-      Double_t pairEt = spairEt.Atof();//this must be zero when inv mass outside pi0 range
+      pairEt = spairEt.Atof();//this must be zero when inv mass outside pi0 range
       if(0==ipair && nInConePairs==1)
 	onePairMass = pairmass;
       if(fDebug)
