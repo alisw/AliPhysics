@@ -8,12 +8,12 @@
 #include <cstring>
 #endif
 
-void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC);
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, bool isMC, bool isSwapEta);
+void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches);
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, bool isMC, bool usePatches, bool isSwapEta);
 void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
-void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC);
+void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches);
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt);
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool usePatches, bool isSwapEta);
 void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
@@ -31,6 +31,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
 	const char *components = "particles:clusters:tracks:mcjets:recjets:triggers",
+	bool usePatches = kFALSE,
 	bool useOfflinePatches = kFALSE
 )
 {
@@ -115,9 +116,9 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
       AddMCJetComponent(defaultselect, jetpt[ijpt]);
     */
   }
-  if(doClusters) 	AddClusterComponent(defaultselect, isMC);
-  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), isMC, isSwapEta);
-  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), 20., isMC, isSwapEta);
+  if(doClusters) 	AddClusterComponent(defaultselect, usePatches);
+  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), isMC, usePatches, isSwapEta);
+  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), 20., isMC, usePatches, isSwapEta);
   /*
    * for(int ijpt = 0; ijpt < 4; ijpt++)
        AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), jetpt[ijpt], isMC, isSwapEta);
@@ -165,29 +166,27 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   return pttriggertask;
 }
 
-void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool isMC){
+void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches){
   EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent *clusteranalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent("clusterAnalysis");
   clusteranalysis->SetEnergyRange(2., 100.);
-  if(isMC) clusteranalysis->SetUsePatches();
+  clusteranalysis->SetUsePatches(usePatches);
   group->AddAnalysisComponent(clusteranalysis);
 }
 
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool isSwapEta){
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool usePatches, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
   group->AddAnalysisComponent(trackanalysis);
   // Create charged hadrons pPb standard track cuts
   trackanalysis->SetTrackSelection(trackcuts);
 
-  if(isMC){
-    trackanalysis->SetRequestMCtrueTracks();
-    trackanalysis->SetUsePatches();
-  }
+  if(isMC) trackanalysis->SetRequestMCtrueTracks();
+  if(usePatches) trackanalysis->SetUsePatches();
   if(isSwapEta) trackanalysis->SetSwapEta();
 }
 
-void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, Bool_t isMC){
+void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, Bool_t usePatches){
   EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent * evcount = new EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent("eventCounter");
-  evcount->SetUsePatches(isMC);
+  evcount->SetUsePatches(usePatches);
   group->AddAnalysisComponent(evcount);
 }
 
@@ -202,10 +201,10 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
   group->AddAnalysisComponent(jetana);
 }
 
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool usePatches, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
-  jetana->SetUsePatches(isMC);
+  jetana->SetUsePatches(usePatches);
   jetana->SetSingleTrackCuts(trackcuts);
   //jetana->SetComponentDebugLevel(2);
   group->AddAnalysisComponent(jetana);
