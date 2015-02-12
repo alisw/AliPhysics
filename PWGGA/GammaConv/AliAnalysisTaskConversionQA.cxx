@@ -431,6 +431,11 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
 	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 	
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+		if (fV0Reader->GetV0FindingEfficiencyHistograms())
+			fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+	
 	PostData(1, fOutputList);
 }
 //_____________________________________________________________________________

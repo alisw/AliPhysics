@@ -1009,8 +1009,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 	
 	if (particle->GetPdgCode() == 22){
 		// check whether particle is within eta range
-		if( particle->Eta() > (etaMax) || particle->Eta() < (-etaMax) )
-			return kFALSE;
+		if( abs(particle->Eta()) > etaMax ) return kFALSE;
 		// check if particle doesn't have a photon as mother
 		if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
 			return kFALSE; // no photon as mothers!
@@ -1034,8 +1033,8 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 			return kFALSE;
 		}
 		// check if electrons are in correct eta window
-		if( ePos->Eta() > (etaMax) || ePos->Eta() < (-etaMax) ||
-			eNeg->Eta() > (etaMax) || eNeg->Eta() < (-etaMax) )
+		if( abs(ePos->Eta()) > etaMax ||
+			abs(eNeg->Eta()) > etaMax )
 			return kFALSE;
 
 		// check if photons have converted in reconstructable range
@@ -1049,6 +1048,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 			return kFALSE;  // outside material
 		}
 
+		
 		Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
 		Double_t lineCutZValue = 7.;
 		if( ePos->R() <= ((abs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
@@ -1057,6 +1057,10 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 		if( eNeg->R() <= ((abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
 			return kFALSE; // line cut to exclude regions where we do not reconstruct
 		}
+		if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){
+			return kFALSE;
+		}	
+
 		return kTRUE;
 	}
 	return kFALSE;
@@ -1117,8 +1121,8 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 	TParticle* posPart = (TParticle *)fMCStack->Particle(labelp);
 	
 	if ( negPart == NULL || posPart == NULL ) return;
-	if (!(negPart->GetPdgCode() == 11)) return;
-	if (!(posPart->GetPdgCode() == -11)) return;
+// 	if (!(negPart->GetPdgCode() == 11)) return;
+// 	if (!(posPart->GetPdgCode() == -11)) return;
 	Int_t motherlabelNeg = negPart->GetFirstMother();
 	Int_t motherlabelPos = posPart->GetFirstMother();
 	

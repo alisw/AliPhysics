@@ -1426,6 +1426,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
 				fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+		if (fV0Reader->GetV0FindingEfficiencyHistograms())
+			fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+
 			
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
