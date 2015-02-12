@@ -448,11 +448,12 @@ void AliJCORRAN::UserExec(){
 	//--    Check fcentrality outliers           ---
 	//--    and count enevents only here        ---
 	//---------------------------------------------
-	if(fRunTable->IsHeavyIon() && fCentMultLow->GetParameter(0) >0 ){
-		double logMult = noAllChargedTracks>0 ? log(noAllChargedTracks) : 0 ;
-		if( fcent<fCentMultLow->GetParameter(1) && logMult <fCentMultLow->Eval(fcent) ) return;
-		if( fCentMultHigh->Eval(fcent) < logMult) return;
-	}
+	// Need to cooperate with different parameters for different analysis cut !!!!! TODO
+	//if(fRunTable->IsHeavyIon() && fCentMultLow->GetParameter(0) >0 ){
+//		double logMult = noAllChargedTracks>0 ? log(noAllChargedTracks) : 0 ;
+//		if( fcent<fCentMultLow->GetParameter(1) && logMult <fCentMultLow->Eval(fcent) ) return;
+//		if( fCentMultHigh->Eval(fcent) < logMult) return;
+//	}
 	fhistos->fhChargedMultCut[cBin]->Fill(noAllChargedTracks);
 	fhistos->fhCentr->Fill(fcent);
 	fhistos->fhiCentr->Fill(cBin);
