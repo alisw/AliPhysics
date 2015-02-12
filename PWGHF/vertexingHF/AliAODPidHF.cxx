@@ -691,6 +691,51 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
   return -1;
   
 }
+
+//--------------------------------------------------------------
+Int_t AliAODPidHF::MatchTPCTOFMin(AliAODTrack *track, Int_t specie){
+  // combination of the PID info coming from TPC and TOF
+
+  Bool_t okTPC=CheckTPCPIDStatus(track);
+  Bool_t okTOF=CheckTOFPIDStatus(track);
+
+  if(fTPC && fTOF){
+    if(!okTPC && !okTOF) return 0;
+  }
+
+  Int_t pid=-1;
+  Double_t nsigmaTPC[5]={999.,999.,999.,999.,999.};
+  Double_t nsigmaTOF[5]={999.,999.,999.,999.,999.};
+  Double_t nsigmaMin=999.;
+  Double_t nsigma[5]={999.,999.,999.,999.,999.};
+
+  if(okTPC) {
+    for(Int_t ipart=0;ipart<5;ipart++){
+      if(GetnSigmaTPC(track,ipart,nsigmaTPC[ipart])<1) nsigmaTPC[ipart]=0.;
+    }
+  }else{
+    for(Int_t ipart=0;ipart<5;ipart++){nsigmaTPC[ipart]=0.;}
+  }
+
+  if(okTOF){
+    for(Int_t ipart=0;ipart<5;ipart++){
+      if(GetnSigmaTOF(track,ipart,nsigmaTOF[ipart])<1) nsigmaTOF[ipart]=0.;
+    }
+  }else{
+    for(Int_t ipart=0;ipart<5;ipart++){nsigmaTOF[ipart]=0.;}
+  }
+
+  for(Int_t ipart=0;ipart<5;ipart++){
+    nsigma[ipart]=TMath::Sqrt(nsigmaTPC[ipart]*nsigmaTPC[ipart]+nsigmaTOF[ipart]*nsigmaTOF[ipart]);
+    if(nsigma[ipart]<nsigmaMin) {nsigmaMin=nsigma[ipart];pid=ipart;}
+  }
+
+  if(pid==specie) return 1;
+
+  return 0;
+}
+
+
 //----------------------------------
 Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
   // general method to compute PID

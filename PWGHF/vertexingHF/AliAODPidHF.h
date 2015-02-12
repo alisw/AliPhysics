@@ -180,6 +180,8 @@ public:
   
   Bool_t TPCRawAsym(AliAODTrack* track,Int_t specie) const;
   Int_t MatchTPCTOF(AliAODTrack *track,Int_t specie);
+  //PID nSigma strategy closer to the Bayesian approach with Max. prob.
+  Int_t MatchTPCTOFMin(AliAODTrack *track, Int_t specie);
   
   Int_t MakeRawPid(AliAODTrack *track,Int_t specie); //general method to perform PID using raw signals
   
