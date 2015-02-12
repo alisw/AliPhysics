@@ -49,40 +49,6 @@
 // a.Run("test"); // will do everything but the submit
 // a.Submit(false); // actual submission
 //
-// (1) note that for this to work in the Root prompt you need to load (for instance
-// in your rootlogon.C) all the chain of libraries up to libPWGmuondep. As
-// the time of this writing (March 2014), this means :
-//
-// gSystem->Load("libVMC");
-// gSystem->Load("libTree");
-// gSystem->Load("libProofPlayer");
-// gSystem->Load("libPhysics");
-// gSystem->Load("libMatrix");
-// gSystem->Load("libMinuit");
-// gSystem->Load("libXMLParser");
-// gSystem->Load("libGui");
-// gSystem->Load("libSTEERBase");
-// gSystem->Load("libESD");
-// gSystem->Load("libAOD");
-// gSystem->Load("libANALYSIS");
-// gSystem->Load("libRAWDatabase");
-// gSystem->Load("libCDB");
-// gSystem->Load("libSTEER");
-// gSystem->Load("libANALYSISalice");
-// gSystem->Load("libCORRFW");
-// gSystem->Load("libPWGmuon");
-// gSystem->Load("libMUONcore");
-// gSystem->Load("libMUONmapping");
-// gSystem->Load("libMUONcalib");
-// gSystem->Load("libMUONgeometry");
-// gSystem->Load("libMUONtrigger");
-// gSystem->Load("libRAWDatabase");
-// gSystem->Load("libMUONraw");
-// gSystem->Load("libMUONbase");
-// gSystem->Load("libMUONshuttle");
-// gSystem->Load("libMUONrec");
-// gSystem->Load("libPWGmuondep");
-//
 // author: Laurent Aphecetche (Subatech)
 //
 
@@ -135,7 +101,7 @@ fUseAODMerging(kFALSE)
   // X.YY part of libpythia6.X.YY.so
   //
   
-  AddIncludePath("-I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PWG/muon -I$ALICE_ROOT/PWG/muondep -I$ALICE_ROOT/MUON -I$ALICE_ROOT/include -I$ALICE_ROOT/EVGEN -I$ALICE_ROOT/FASTSIM");
+  AddIncludePath("-I$ALICE_ROOT/include");
   
   TString ocdbPath("raw://");
   
@@ -203,14 +169,12 @@ fUseAODMerging(kFALSE)
   
   UseOCDBSnapshots(fUseOCDBSnapshots);
 
-  gSystem->Load("libEVGEN");
-
   SetVar("VAR_TRIGGER_CONFIGURATION","");
   
-  SetVar("VAR_PYTHIA8_INCLUDES","");
+  SetVar("VAR_PYTHIA8_INCLUDES","gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");");
   SetVar("VAR_PYTHIA8_SETENV","");
 
-  SetVar("VAR_PYTHIA6_INCLUDES","");
+  SetVar("VAR_PYTHIA6_INCLUDES","gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");");
   SetVar("VAR_PYTHIA6_SETENV","");
   
   SetVar("VAR_LHAPDF","liblhapdf");
@@ -224,17 +188,6 @@ fUseAODMerging(kFALSE)
     // add SPD tracklets to muon AODs.
     
     SetVar("VAR_USE_ITS_RECO","1");
-
-    if (gSystem->AccessPathName(gSystem->ExpandPathName(Form("$ALICE_ROOT/PYTHIA8/pythia%s",generatorVersion))))
-    {
-      AliError(Form("Directory -I$ALICE_ROOT/PYTHIA8/pythia%s/include not found",generatorVersion));
-      Invalidate();
-      return;
-    }
-    AddIncludePath(Form("-I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%s/include",generatorVersion));
-//    SetVar("VAR_PYTHIA8_VERSION",Form("\"%d\"",pythia8version));
-    
-    SetVar("VAR_PYTHIA8_INCLUDES",Form("gSystem->AddIncludePath(\"-I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%s/include\");\n",generatorVersion));
   
     TString p8env;
     
@@ -245,15 +198,7 @@ fUseAODMerging(kFALSE)
     p8env +=  "  gSystem->Setenv(\"LHAPATH\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF/PDFsets\"));\n";
     
     SetVar("VAR_PYTHIA8_SETENV",p8env.Data());
-    
-    gSystem->Load("libFASTSIM");
-    gSystem->Load("liblhapdf");      // Parton density functions
-    gSystem->Load("libEGPythia6");   // TGenerator interface
-//    gSystem->Load("libpythia6");     // Pythia 6.2
-    gSystem->Load("libAliPythia6");  // ALICE specific implementations
-    gSystem->Load("libpythia8");
-    gSystem->Load("libAliPythia8");
-    
+
     SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"\"");
     
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
@@ -266,14 +211,6 @@ fUseAODMerging(kFALSE)
     fCompactMode = 2; // keep AOD as for the time being the filtering driven from AODtrain.C cannot
     // add SPD tracklets to muon AODs.
 
-    gSystem->Load("libFASTSIM");
-    gSystem->Load("liblhapdf");      // Parton density functions
-    gSystem->Load("libEGPythia6");   // TGenerator interface
-    gSystem->Load(Form("libpythia6.%s",generatorVersion));
-    gSystem->Load("libAliPythia6");
-    
-    SetVar("VAR_PYTHIA6_INCLUDES","gSystem->AddIncludePath(\"-I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/FASTSIM\");");
-    
     TString p6env;
     
     p6env += Form("gSystem->Load(\"libpythia6.%s\");",generatorVersion);
@@ -832,9 +769,7 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
 Bool_t AliMuonAccEffSubmitter::SetGenerator(const char* generator)
 {
   // set the variable to select the generator macro in Config.C
-  
-  gSystem->Load("libEVGEN");
-  
+
   Invalidate();
   
   TString generatorFile(Form("%s/%s.C",TemplateDir().Data(),generator));

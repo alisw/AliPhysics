@@ -161,9 +161,6 @@ Bool_t AliMuonGridSubmitter::CheckCompilation(const char* file) const
   gSystem->Exec(Form("cp %s %s",file,tmpfile.Data()));
   
   ReplaceVars(tmpfile.Data());
-  
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/EVGEN");
 
   if (gROOT->LoadMacro(Form("%s++",tmpfile.Data())))
   {

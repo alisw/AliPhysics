@@ -1,5 +1,27 @@
 void sim(Int_t nev=VAR_EVENTS_PER_JOB)
 {
+
+#if defined(__CINT__)
+  gSystem->Load("VAR_LHAPDF");      // Parton density functions
+  if ( TString("VAR_GENERATOR").Contains("pythia6",TString::kIgnoreCase) )
+  {
+    std::cout << "Setting up Pythia6 required env. variables" << std::endl;
+    VAR_PYTHIA6_INCLUDES
+    VAR_PYTHIA6_SETENV
+  }
+  else  gSystem->Load("libpythia6");     // Pythia 6.2 (for decayer)
+
+  if ( TString("VAR_GENERATOR").Contains("pythia8",TString::kIgnoreCase) )
+  {
+    std::cout << "Setting up Pythia8 required libraries and env. variables" << std::endl;
+    //    gSystem->Load("libpythia8");
+    //    gSystem->Load("libAliPythia8");
+    VAR_PYTHIA8_INCLUDES
+    VAR_PYTHIA8_SETENV
+  }
+#endif
+
+
   if ( VAR_PURELY_LOCAL) {
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
   }
