@@ -42,6 +42,13 @@ if(USE_DLOPEN)
   message(STATUS "Using dlopen() for HLT component libs.")
 endif(USE_DLOPEN)
 
+option(HLT_COMPONENT_STATISTICS "Build HLT component statistics" OFF)
+
+if(HLT_COMPONENT_STATISTICS)
+  add_definitions(-DHLT_COMPONENT_STATISTICS)
+  message(STATUS "HLT component statistics enabled.")
+endif(HLT_COMPONENT_STATISTICS)
+
 # Sources in alphabetical order
 set(SRCS
     AliHLTBlockDataCollection.cxx
