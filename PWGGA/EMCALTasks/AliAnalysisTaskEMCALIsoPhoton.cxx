@@ -95,6 +95,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fDistToBadChan(0),
   fInConeInvMass(""),
   fInConePairClEt(""),
+  fNSigNeutMesonCut(2.0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -212,6 +213,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fDistToBadChan(0),
   fInConeInvMass(""),
   fInConePairClEt(""),
+  fNSigNeutMesonCut(2.0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -897,7 +899,9 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       ptmc = -0.1;
     outputValues[0] = Et;
     outputValues[1] = c->GetM02();
-    outputValues[2] = ceiso/*cecore*/-ceisoue;
+    if(Et>18)
+      pairEt = 0;
+    outputValues[2] = ceiso/*cecore*/-ceisoue - pairEt;
     outputValues[3] = triso-trisoue;
     outputValues[4] = alliso/*cecore*/-allisoue - trcore;
     outputValues[5] = ceiso;
@@ -957,7 +961,10 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     clusters = fAODClusters;
   if (!clusters)
     return;
-  
+  Double_t pi0mean =  0.1375; 
+  Double_t pi0sig = 0.0275;
+  Double_t etamean = 0.55;
+  Double_t etasig = 0.015;
   fInConeInvMass = "";
   fInConePairClEt="";
   const Int_t nclus = clusters->GetEntries();
@@ -1031,7 +1038,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 	lvec.SetPtEtaPhiM(EtCl,vec.Eta(),vec.Phi(),0);
 	TLorentzVector lpair = lv + lvec;
 	fInConeInvMass += Form("%f;",lpair.M());
-	if(lpair.M()>0.11 && lpair.M()<0.165){
+	if(lpair.M()>(pi0mean-pi0sig*fNSigNeutMesonCut) && lpair.M()<(pi0mean+pi0sig*fNSigNeutMesonCut)){
 	  fInConePairedClusEtVsCandEt->Fill(EtCl,Et);
 	  fInConePairClEt += Form("%f;",Et);
 	  //continue;
