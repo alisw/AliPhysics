@@ -90,6 +90,8 @@ AliJetFlowTools::AliJetFlowTools() :
     fCentralityArray    (0x0),
     fMergeBinsArray     (0x0),
     fCentralityWeights  (0x0),
+    fMergeWithList      (0x0),
+    fMergeWithCen       (-1),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -966,6 +968,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
         printf( " Merging with %s with weight %.4f \n", spectrumName.Data(), fCentralityWeights->At(i));
         fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())), fCentralityWeights->At(i));
     }
+    // if a second list is passed, merge this with the existing one
+    if(fMergeWithList) {
+        spectrumName = Form("fHistJetPsi2Pt_%i", fMergeWithCen);
+        printf( " Adding additional output %s \n", spectrumName.Data());
+        fJetPtDeltaPhi->Add(((TH2D*)fMergeWithList->FindObject(spectrumName.Data())));
+    }
 
     // in plane spectrum
     if(!fDphiUnfolding) {
@@ -1040,6 +1048,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
         deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
         printf(" Merging with %s with weight %.4f \n", deltaptName.Data(), fCentralityWeights->At(i));
         fDeltaPtDeltaPhi->Add((TH2D*)fInputList->FindObject(deltaptName.Data()), fCentralityWeights->At(i));
+    }
+    // if a second list is passed, merge this with the existing one
+    if(fMergeWithList) {
+        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fMergeWithCen) : Form("fHistDeltaPtDeltaPhi2_%i", fMergeWithCen);
+        printf(" Adding additional data %s \n", deltaptName.Data());
+        fDeltaPtDeltaPhi->Add((TH2D*)fMergeWithList->FindObject(deltaptName.Data()));
     }
 
     // in plane delta pt distribution
