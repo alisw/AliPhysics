@@ -105,6 +105,7 @@ class AliJetFlowTools {
             fCentralityWeights = weights;
             if(!fCentralityArray) printf(" > Warning: centrality weights set, but bins are not defined! \n");
         }
+        void            SetMergeWith(TList* l, Int_t c)         {fMergeWithList         = l; fMergeWithCen      = c;}
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
         void            SetBinsTrue(TArrayD* bins)              {fBinsTrue              = bins;}
@@ -436,6 +437,8 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TArrayI*                fCentralityArray;       // array of centrality bins that are merged
         TArrayI*                fMergeBinsArray;        // array of pt bins that are merged
         TArrayD*                fCentralityWeights;     // array of centrality weights
+        TList*                  fMergeWithList;         // additional input list
+        Int_t                   fMergeWithCen;          // centrality bin of additional input list
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
