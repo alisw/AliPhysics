@@ -774,7 +774,22 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC/scripts/OCDBscan/jdl \
                          @CMAKE_SOURCE_DIR@/TPC/stressTest/testSparse \
                          @CMAKE_SOURCE_DIR@/TPC/testMC \
-                         @CMAKE_SOURCE_DIR@/TPC/TPCbase
+                         @CMAKE_SOURCE_DIR@/TPC/TPCbase \
+                         @CMAKE_SOURCE_DIR@/MUON \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONgeometry \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONevaluation \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONcore \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONcalign \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONcalib \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONbase \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONraw \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONmpgraphics \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONmapping \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONgraphics \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONtrigger \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONsim \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONshuttle \
+                         @CMAKE_SOURCE_DIR@/MUON/MUONrec
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -797,7 +812,8 @@ INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
                          *.cxx \
                          *.C \
-                         *.md
+                         *.md \
+                         README*.txt
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
