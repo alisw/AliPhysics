@@ -69,10 +69,10 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
   };
 
   std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
-  std::string triggermodes[] = {"online", "offline"};
+  std::string triggermodes[] = {"Online", "Offline"};
   for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
 	for(std::string *triggermode = triggermodes; triggermode < triggermodes + sizeof(triggermodes)/sizeof(std::string); ++triggermode){
-	  fHistos->CreateTHnSparse(Form("Energy%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
+	  fHistos->CreateTHnSparse(Form("Energy%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 4, patchenergyaxes, "s");
       fHistos->CreateTHnSparse(Form("EnergyRough%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Rough patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 4, patchenergyaxes, "s");
       fHistos->CreateTHnSparse(Form("Amplitude%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch amplitude for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 4, patchampaxes, "s");
 	}
@@ -98,12 +98,12 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
         fHistos->FillTHnSparse("EnergyRoughJetHighOffline", triggerpatchinfoer);
       }
       if(triggerpatch->IsJetLowSimple()){
-    	fHistos->FillTHnSparse("EnergyJetLowOffline", triggerpatchinfo);
+    	  fHistos->FillTHnSparse("EnergyJetLowOffline", triggerpatchinfo);
         fHistos->FillTHnSparse("AmplitudeJetLowOffline", triggerpatchinfoamp);
         fHistos->FillTHnSparse("EnergyRoughJetLowOffline", triggerpatchinfoer);
       }
       if(triggerpatch->IsGammaHighSimple()){
-        fHistos->FillTHnSparse("EnergyGammaHighOfffline", triggerpatchinfo);
+        fHistos->FillTHnSparse("EnergyGammaHighOffline", triggerpatchinfo);
         fHistos->FillTHnSparse("AmplitudeGammaHighOffline", triggerpatchinfoamp);
         fHistos->FillTHnSparse("EnergyRoughGammaHighOffline", triggerpatchinfoer);
       }
