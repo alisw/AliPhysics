@@ -628,6 +628,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   trigger->SetTriggerBits(tBits);
   trigger->SetOffSet(offSet);
   trigger->SetEdgeCell(globCol*2, globRow*2); // from triggers to cells
+  //if(isOfflineSimple)trigger->SetOfflineSimple();
   if(fDoQA){
     fQAHistos->FillTH2(Form("RCPos%s", fgkTriggerTypeNames[type].Data()), globCol, globRow);
     fQAHistos->FillTH2(Form("EPCentPos%s", fgkTriggerTypeNames[type].Data()), centerGeo.Eta(), centerGeo.Phi());
@@ -677,6 +678,8 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   // run the trigger algo, stepping by 8 towers (= 4 trigger channels)
   Int_t maxCol = 48;
   Int_t maxRow = fGeom->GetNTotalTRU()*2;
+  Int_t isMC = MCEvent() ? 1 : 0;
+  Int_t bitOffSet = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
   for (Int_t i = 0; i < (maxCol-16); i += 4) {
     for (Int_t j = 0; j < (maxRow-16); j += 4) {
       Double_t tSumOffline  = 0;
@@ -704,9 +707,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
 
       // check thresholds
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetLowSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetHighSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
@@ -753,9 +756,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
 
       // check thresholds
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaLowSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaHighSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
