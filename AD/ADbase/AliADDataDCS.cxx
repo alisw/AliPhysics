@@ -18,6 +18,7 @@
 
 #include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliADConst.h"
 
 #include <TGraph.h>
 #include <TAxis.h>
@@ -157,17 +158,17 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 			
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
-				if(variation > 0.01) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
+				if(variation > 0.01) fDeadChannel[kOfflineChannel[iAlias]] = kTRUE;
 			}
 			fHv[iAlias]->Fill(values[iValue]);
-			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
+			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[kOfflineChannel[iAlias]]);
    			iValue++;
     	}      
     	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
 
   	// calculate mean and rms of the first two histos
 	// and convert index to aliroot channel
-	Int_t iChannel     = GetOfflineChannel(iAlias);	
+	Int_t iChannel	   = kOfflineChannel[iAlias];	
 	fMeanHV[iChannel]  = fHv[iAlias]->GetMean();
 	fWidthHV[iChannel] = fHv[iAlias]->GetRMS();
 

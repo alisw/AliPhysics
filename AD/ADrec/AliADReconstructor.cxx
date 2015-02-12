@@ -104,7 +104,7 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
   if (rawStream.Next()) { 
 
     for(Int_t iChannel=0; iChannel < 16; ++iChannel) {
-      Int_t offlineCh = rawStream.GetOfflineChannel(iChannel);
+      Int_t offlineCh = kOfflineChannel[iChannel];
       // ADC charge samples
       Short_t chargeADC[kNClocks];
       for(Int_t iClock=0; iClock < kNClocks; ++iClock) {

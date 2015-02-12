@@ -32,6 +32,7 @@
 #include "daqDA.h"
 
 //AliRoot
+#include <AliADConst.h>
 #include <AliADRawStream.h>
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
@@ -47,8 +48,6 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TMath.h>
-
-Int_t GetOfflineChannel(Int_t channel);
 
 /* Main routine --- Arguments: monitoring data source */
       
@@ -290,14 +289,14 @@ int main(int argc, char **argv) {
       fprintf(fpLocal," %.3f %.3f %.3f %.3f\n",pedMean[i],pedSigma[i],adcMean[i],adcSigma[i]);
       
       if (i < 16) {
-          Int_t j = GetOfflineChannel(i);     
+          Int_t j = kOfflineChannel[i];;     
           pedMeanOff[j]  = pedMean[i];
           pedSigmaOff[j] = pedSigma[i];
           adcMeanOff[j]  = adcMean[i];
           adcSigmaOff[j] = adcSigma[i]; 
 	  }
       else{
-          Int_t j = GetOfflineChannel(i-16);     
+          Int_t j = kOfflineChannel[i-16];     
           pedMeanOff[j+16]  = pedMean[i];
           pedSigmaOff[j+16] = pedSigma[i];
           adcMeanOff[j+16]  = adcMean[i];
@@ -345,12 +344,4 @@ int main(int argc, char **argv) {
       
   return status;
 }
-
- Int_t GetOfflineChannel(Int_t channel) {
-
-// Channel mapping Online - Offline:
- 
- Int_t fOfflineChannel[16] = {0,1,2,3,4,5,6,7,
-      			      8,9,10,11,12,13,14,15};
- return	fOfflineChannel[channel];		      
-}			      
+    

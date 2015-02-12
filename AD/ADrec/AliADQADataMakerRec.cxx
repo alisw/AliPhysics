@@ -579,7 +579,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     for(Int_t iChannel=0; iChannel<16; iChannel++) { // BEGIN : Loop over channels
 		   
-      offlineCh = rawStream->GetOfflineChannel(iChannel);
+      offlineCh = kOfflineChannel[iChannel];
 		   
       // Fill Pedestal histograms
 	   
@@ -730,7 +730,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }// END of Loop over channels
     
     for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs ADC
-    	offlineCh = rawStream->GetOfflineChannel(iChannel);
+    	offlineCh = kOfflineChannel[iChannel];
 	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);		
     	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ){ 
@@ -743,7 +743,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	iPair++;
 	}
     for(Int_t iChannel=8; iChannel<12; iChannel++) {//Loop over pairs ADA
-    	offlineCh = rawStream->GetOfflineChannel(iChannel);
+    	offlineCh = kOfflineChannel[iChannel];
 	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);
     	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ){ 

@@ -73,15 +73,6 @@ class AliADRawStream: public TObject {
     UShort_t          GetTriggerInputsMask() const
       { return fTriggerMask; }
 
-// Getter of Offline Channel number as used in aliroot (defined by aliroot 
-// numbering convention) from FEE channel (electronic channel number given 
-// by the V0 electronics readout) - See comment above - 
-
-    Int_t              GetOfflineChannel(Int_t channel)  const
-      { Int_t  fOfflineChannel[16] = {0,1,2,3,4,5,6,7,
-      				      8,9,10,11,12,13,14,15};
-               return fOfflineChannel[channel]; }	
-
     enum EADRawDataParams {
       kNChannels = 16, // number of electronic channels in AD (FEE numbering)
       kNEvOfInt  = 21, // number of events of interest

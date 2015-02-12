@@ -243,18 +243,6 @@ AliADCalibData::~AliADCalibData()
 }
 
 //________________________________________________________________
-Int_t AliADCalibData::GetBoardNumber(Int_t channel)
-{
-  // Get FEE board number
-  // from offline channel index
-  if (channel >= 0 && channel < 8) return (0);
-  if (channel >=8 && channel < 16) return (1);
-
-  AliErrorClass(Form("Wrong channel index: %d",channel));
-  return -1;
-}
-
-//________________________________________________________________
 Float_t AliADCalibData::GetLightYields(Int_t channel)
 {
   // Get the light yield efficiency
@@ -1116,7 +1104,7 @@ Int_t AliADCalibData::GetOfflineChannelNumber(Int_t board, Int_t channel)
     return -1;
   }
 
-  Int_t offCh = (board+1)*channel;
+  Int_t offCh = kOfflineChannel[(board+1)*channel];
 
   return offCh;
 }
@@ -1125,7 +1113,19 @@ Int_t AliADCalibData::GetFEEChannelNumber(Int_t channel)
 {
   // Get FEE channel number
   // from offline channel index
-  if (channel >= 0 && channel < 16) return ((channel % 8));
+  if (channel >= 0 && channel < 16) return ((kOfflineChannel[channel] % 8));
+
+  AliErrorClass(Form("Wrong channel index: %d",channel));
+  return -1;
+}
+//________________________________________________________________
+Int_t AliADCalibData::GetBoardNumber(Int_t channel)
+{
+  // Get FEE board number
+  // from offline channel index
+  Int_t OnChannel = kOfflineChannel[channel];
+  if (OnChannel >= 0 && OnChannel < 8) return (0);
+  if (OnChannel >= 8 && OnChannel < 16) return (1);
 
   AliErrorClass(Form("Wrong channel index: %d",channel));
   return -1;
