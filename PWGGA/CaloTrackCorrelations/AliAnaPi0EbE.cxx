@@ -136,7 +136,7 @@ fhPtNPileUpSPDVtx(0),               fhPtNPileUpTrkVtx(0),
 fhPtNPileUpSPDVtxTimeCut(0),        fhPtNPileUpTrkVtxTimeCut(0),
 fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
 {
-  //default ctor
+  // default ctor
   
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -261,7 +261,8 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
       fhSelectedLambda0PtLocMaxSM [inlm][iSM] = 0;
     }
   }
-  //Initialize parameters
+  
+  // Initialize parameters
   InitParameters();
   
 }
@@ -316,8 +317,7 @@ void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t ph
 void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * calo)
 {
   // Fill some histograms to understand pile-up
-  if(!IsPileUpAnalysisOn()) return;
-  
+	
   //printf("E %f, time %f\n",energy,time);
   AliVEvent * event = GetReader()->GetInputEvent();
   
@@ -338,7 +338,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
   
   AliVCaloCells* cells = 0;
   if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
-  else                        cells = GetPHOSCells();
+  else                           cells = GetPHOSCells();
 
   Float_t maxCellFraction = 0.;
   Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
@@ -347,7 +347,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
   GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
   tmax*=1.e9;
     
-  //Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
+  // Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
   if(cells->GetCellAmplitude(absIdMax) > 0.1 && TMath::Abs(tmax) < 30)
   {
     for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++)
@@ -424,12 +424,12 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
     nVtxSPD = esdEv->GetNumberOfPileupVerticesSPD();
     nVtxTrk = esdEv->GetNumberOfPileupVerticesTracks();
     
-  }//ESD
+  } // ESD
   else if (aodEv)
   {
     nVtxSPD = aodEv->GetNumberOfPileupVerticesSPD();
     nVtxTrk = aodEv->GetNumberOfPileupVerticesTracks();
-  }//AOD
+  } // AOD
   
   fhTimeNPileUpVertSPD  ->Fill(time,nVtxSPD);
   fhTimeNPileUpVertTrack->Fill(time,nVtxTrk);
@@ -473,7 +473,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
       z1=aodEv->GetPrimaryVertexSPD()->GetZ();
       z2=pv->GetZ();
       diamZ = aodEv->GetDiamondZ();
-    }// AOD
+    } // AOD
     
     Double_t distZ  = TMath::Abs(z2-z1);
     diamZ  = TMath::Abs(z2-diamZ);
@@ -482,7 +482,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
     fhTimePileUpMainVertexZDistance->Fill(time,distZ);
     fhTimePileUpMainVertexZDiamond ->Fill(time,diamZ);
     
-  }// vertex loop
+  } // vertex loop
 }
 
 
@@ -710,7 +710,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
         
       }  // MC
     }
-  }// Track matching histograms
+  } // Track matching histograms
   
   if(IsDataMC())
   {
@@ -748,9 +748,9 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
       fhMCDispEtaDispPhi[ptbin][mcIndex]->Fill(dEta,dPhi);
       fhMCLambda0DispEta[ptbin][mcIndex]->Fill(l0  ,dEta);
       fhMCLambda0DispPhi[ptbin][mcIndex]->Fill(l0  ,dPhi);
-    }// only SS simple?
+    } // only SS simple?
     
-  }//MC
+  } // MC
 
 }
 
@@ -773,7 +773,7 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
     
     Int_t id       = clus->GetCellsAbsId()[ipos];
     
-    //Recalibrate cell energy if needed
+    // Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
     GetCaloUtils()->RecalibrateCellAmplitude(amp,GetCalorimeter(), id);
     
@@ -793,12 +793,12 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
   fhEMaxCellClusterRatio   ->Fill(energy,ampMax/energy);
   fhEMaxCellClusterLogRatio->Fill(energy,TMath::Log(ampMax/energy));
   
-  //Get the ratio and log ratio to all cells in cluster
+  // Get the ratio and log ratio to all cells in cluster
   for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++)
   {
     Int_t id       = clus->GetCellsAbsId()[ipos];
     
-    //Recalibrate cell energy if needed
+    // Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
     GetCaloUtils()->RecalibrateCellAmplitude(amp,GetCalorimeter(), id);
     
@@ -806,7 +806,7 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
     fhECellClusterLogRatio->Fill(energy,TMath::Log(amp/energy));
   }
   
-  //Recalculate shower shape for different W0
+  // Recalculate shower shape for different W0
   if(GetCalorimeter()==kEMCAL){
     
     Float_t l0org = clus->GetM02();
@@ -828,14 +828,14 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
     clus->SetM20(l1org);
     clus->SetDispersion(dorg);
     
-  }// EMCAL
+  } // EMCAL
 }
 
 //__________________________________________
 TObjString * AliAnaPi0EbE::GetAnalysisCuts()
 {
-	//Save parameters used for analysis
-  TString parList ; //this will be list of parameters used for this analysis.
+	// Save parameters used for analysis
+  TString parList ; // this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
   
@@ -864,7 +864,8 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
     parList+=onePar ;
     snprintf(onePar,buffersize,"Time cut: %2.2f<t<%2.2f;",fTimeCutMin,fTimeCutMax) ;
     parList+=onePar ;
-    //Get parameters set in PID class.
+    
+    // Get parameters set in PID class.
     parList += GetCaloPID()->GetPIDParametersList() ;
   }
   else if(fAnaType == kIMCalo || fAnaType == kIMCaloTracks)
@@ -885,7 +886,7 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
     parList+=onePar ;
   }
   
-  //Get parameters set in base class.
+  // Get parameters set in base class.
   //parList += GetBaseParametersList() ;
   
   return new TObjString(parList) ;
@@ -896,6 +897,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
 {
   // Create histograms to be saved in output file and
   // store them in outputContainer
+  
   TList * outputContainer = new TList() ;
   outputContainer->SetName("Pi0EbEHistos") ;
   
@@ -2588,8 +2590,8 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
   }
   
-  //Keep neutral meson selection histograms if requiered
-  //Setting done in AliNeutralMesonSelection
+  // Keep neutral meson selection histograms if requiered
+  // Setting done in AliNeutralMesonSelection
   
   if(fAnaType!=kSSCalo && GetNeutralMesonSelection())
   {
@@ -2657,7 +2659,6 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
   // Check the labels of pair in case mother was same pi0 or eta
   // Set the new AOD accordingly
   
-  
   if(label1 < 0 || label2 < 0 || label1 == label2) return ;
   
   AliDebug(0,Form("Origin of: photon1 %d; photon2 %d",tag1, tag2));
@@ -2708,7 +2709,7 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
         //pdg2=mother2->GetPdgCode();
         ndaugh2 = mother2->GetNDaughters();
       }
-    }// AOD
+    } // AOD
     
     //printf("mother1 %d, mother2 %d\n",label1,label2);
     if( label1 == label2 && label1>=0  && ndaugh1==ndaugh2 && ndaugh1==2)
@@ -2748,8 +2749,8 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
 //____________________________________________________________________________
 void AliAnaPi0EbE::Init()
 {
-  //Init
-  //Do some checks
+  // Init
+  // Do some checks
   
   if       ( GetCalorimeter() == kPHOS  && !GetReader()->IsPHOSSwitchedOn()  && NewOutputAOD() )
     AliFatal("STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!");
@@ -2761,7 +2762,7 @@ void AliAnaPi0EbE::Init()
 //____________________________________________________________________________
 void AliAnaPi0EbE::InitParameters()
 {
-  //Initialize the parameters of the analysis.
+  // Initialize the parameters of the analysis.
   AddToHistogramsName("AnaPi0EbE_");
   
   fInputAODGammaConvName = "PhotonsCTS" ;
@@ -2782,7 +2783,7 @@ void AliAnaPi0EbE::InitParameters()
 //__________________________________________________________________
 void  AliAnaPi0EbE::MakeAnalysisFillAOD()
 {
-  //Do analysis and fill aods
+  // Do analysis and fill aods
   
   AliDebug(1,Form("Start analysis type %d",fAnaType));
   
@@ -2799,7 +2800,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
     case kIMCaloTracks:
       MakeInvMassInCalorimeterAndCTS();
       break;
-      
   }
   
   AliDebug(1,"End");
@@ -2809,10 +2809,10 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
 //____________________________________________
 void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
 {
-  //Do analysis and fill aods
-  //Search for the photon decay in calorimeters
-  //Read photon list from AOD, produced in class AliAnaPhoton
-  //Check if 2 photons have the mass of the pi0.
+  // Do analysis and fill aods
+  // Search for the photon decay in calorimeters
+  // Read photon list from AOD, produced in class AliAnaPhoton
+  // Check if 2 photons have the mass of the pi0.
   
   if(!GetInputAODBranch())
   {
@@ -2820,17 +2820,25 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     return; // coverity
   }
   
-  //Get shower shape information of clusters
+  // Create obj array of clusters in case it is requested
   TObjArray *clusters = 0;
-  if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
-  else if(GetCalorimeter()==kPHOS)  clusters = GetPHOSClusters() ;
+  if( ( fFillSelectClHisto|| IsPileUpAnalysisOn() )&&
+     GetReader()->GetDataType()!=AliCaloTrackReader::kMC )
+  {
+    if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
+    else if(GetCalorimeter()==kPHOS)  clusters = GetPHOSClusters() ;
+  }
+  
+  AliVCluster *cluster1 = 0;
+  AliVCluster *cluster2 = 0;
   
   Int_t nphoton = GetInputAODBranch()->GetEntriesFast();
-  for(Int_t iphoton = 0; iphoton < nphoton-1; iphoton++)
+  for( Int_t iphoton = 0; iphoton < nphoton-1; iphoton++ )
   {
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     
     // Vertex cut in case of mixed events
+    // Not really in use or tested recently, remove ...
     Int_t evtIndex1 = 0 ;
     if(GetMixedEvent())
     {
@@ -2838,19 +2846,27 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(TMath::Abs(GetVertex(evtIndex1)[2]) > GetZvertexCut()) continue ;  //vertex cut
     }
     
-    fMomentum1 = *(photon1->Momentum());
-    
-    //Get original cluster, to recover some information
+    // Get original cluster if requested
     Int_t iclus = -1;
-    AliVCluster *cluster1 = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);
-    
-    if(!cluster1)
+    if( ( fFillSelectClHisto || IsPileUpAnalysisOn() ) &&
+       GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
     {
-      AliWarning("First cluster not found");
-      return;
+      cluster1 = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);
+      
+      if(!cluster1) AliWarning("First cluster not found");
     }
     
-    for(Int_t jphoton = iphoton+1; jphoton < nphoton; jphoton++)
+    // Get kinematics and other parameters
+    fMomentum1 = *(photon1->Momentum());
+    
+    Float_t       e1 = photon1->E();
+    Float_t     tof1 = photon1->GetTime();
+    Int_t   nMaxima1 = photon1->GetNLM();
+    Int_t       lab1 = photon1->GetLabel();
+    Int_t       tag1 = photon1->GetTag();
+    Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
+    
+    for( Int_t jphoton = iphoton+1; jphoton < nphoton; jphoton++ )
     {
       AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(jphoton));
       
@@ -2858,12 +2874,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       // Run AliAnaParticleIsolation before
       if(fSelectIsolatedDecay)
       {
-        Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
         Bool_t isolated2 = ((AliAODPWG4ParticleCorrelation*) photon2)->IsIsolated();
         if(!isolated1 && !isolated2) continue;
       }
       
       // Vertex cut in case of mixed events
+      // Not really in use or tested recently, remove ...
       Int_t evtIndex2 = 0 ;
       if(GetMixedEvent())
       {
@@ -2875,44 +2891,33 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         if(TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) continue ;  //vertex cut
       }
       
+      // Get kinematics and other parameters
       fMomentum2 = *(photon2->Momentum());
       
-      //Get original cluster, to recover some information
-      Int_t iclus2 = -1;
-      AliVCluster *cluster2 = FindCluster(clusters,photon2->GetCaloLabel(0),iclus2,iclus+1);
-      // start new loop from iclus1+1 to gain some time
+      Float_t     e2 = photon2->E();
+      Float_t   tof2 = photon2->GetTime();
+      Int_t nMaxima2 = photon2->GetNLM();
       
-      if(!cluster2)
-      {
-        AliWarning("Second cluster not found");
-        return;
-      }
-      
-      Float_t e1    = photon1->E();
-      Float_t e2    = photon2->E();
-      
-      //Select clusters with good time window difference
-      Float_t tof1  = cluster1->GetTOF()*1e9;;
-      Float_t tof2  = cluster2->GetTOF()*1e9;;
+      // Select clusters with good time window difference
       Double_t t12diff = tof1-tof2;
       fhEPairDiffTime->Fill(e1+e2,    t12diff);
       if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
       
-      //Play with the MC stack if available
+      //
+      // Play with the MC stack if available
+      //
       Int_t mcIndex = kmcHadron;
       Int_t tag     = 0;
       Int_t label   =-1;
-      if(IsDataMC())
+      if( IsDataMC() )
       {
-        HasPairSameMCMother(photon1->GetLabel(), photon2->GetLabel(),
-                            photon1->GetTag()  , photon2->GetTag(),
+        HasPairSameMCMother(lab1, photon2->GetLabel(),
+                            tag1, photon2->GetTag(),
                             label, tag) ;
         mcIndex = GetMCIndex(tag);
       }
       
       // Check the invariant mass for different selection on the local maxima
-      Int_t nMaxima1 = photon1->GetNLM();
-      Int_t nMaxima2 = photon2->GetNLM();
       
       fMomentum = fMomentum1+fMomentum2;
       
@@ -2920,6 +2925,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       Double_t epair = fMomentum.E();
       Float_t ptpair = fMomentum.Pt();
       
+      //
+      // NLM dependent histograms
+      //
       if(fFillAllNLMHistograms)
       {
         if(nMaxima1==nMaxima2)
@@ -2937,14 +2945,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           fhMassPairLocMax[5]->Fill(epair,mass);
         
         // combinations with SS axis cut and NLM cut
-        if(nMaxima1 == 1 && cluster2->GetM02() > 0.3) fhMassPairLocMax[6]->Fill(epair,mass);
-        if(nMaxima2 == 1 && cluster1->GetM02() > 0.3) fhMassPairLocMax[6]->Fill(epair,mass);
-        if(nMaxima1 >  1 && cluster2->GetM02() < 0.3 && cluster2->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass);
-        if(nMaxima2 >  1 && cluster1->GetM02() < 0.3 && cluster1->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass);
+        if(nMaxima1 == 1 && photon2->GetM02() > 0.3) fhMassPairLocMax[6]->Fill(epair,mass);
+        if(nMaxima2 == 1 && photon1->GetM02() > 0.3) fhMassPairLocMax[6]->Fill(epair,mass);
+        if(nMaxima1 >  1 && photon2->GetM02() < 0.3 && photon2->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass);
+        if(nMaxima2 >  1 && photon1->GetM02() < 0.3 && photon1->GetM02()> 0.1 ) fhMassPairLocMax[7]->Fill(epair,mass);
       }
       
       //
-      // Skip events with too few or too many  NLM
+      // Skip pairs with too few or too many  NLM
       //
       if((nMaxima1 < fNLMCutMin || nMaxima1 > fNLMCutMax) || (nMaxima2 < fNLMCutMin || nMaxima2 > fNLMCutMax))
       {
@@ -2952,7 +2960,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         continue ;
       }
       
-      //Mass of all pairs
+      //
+      // Mass of all pairs before selection
+      //
       fhMass  ->Fill( epair,mass);
       fhMassPt->Fill(ptpair,mass);
       if(IsDataMC() && mcIndex < 2) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
@@ -2991,11 +3001,18 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         AliDebug(1,Form("\t Out %d", bit1));
         
         fhPtDecay->Fill(photon1->Pt());
-
-        //Fill some histograms about shower shape
-        if(fFillSelectClHisto && cluster1 && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
-          FillSelectedClusterHistograms(cluster1, fMomentum1.Pt(), nMaxima1, photon1->GetTag());
         
+        //
+        // Fill some histograms about shower shape
+        //
+        if(fFillSelectClHisto && cluster1 && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+        {
+          FillSelectedClusterHistograms(cluster1, fMomentum1.Pt(), nMaxima1, photon1->GetTag());
+        }
+        
+        //
+        // MC origin, lost pair
+        //
         if(IsDataMC())
         {
           Int_t mcIndex1 = GetMCIndex(photon1->GetTag());
@@ -3008,6 +3025,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         }
       }
       
+      //
+      // Histogram for cluster2 tagged as decay
+      //
       Int_t bit2 = photon2->DecayTag();
       if( bit2 < 0 ) bit2 = 0 ;
       if( !GetNeutralMesonSelection()->CheckDecayBit(bit2) )
@@ -3021,10 +3041,22 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         fhPtDecay->Fill(photon2->Pt());
         
-        //Fill some histograms about shower shape
-        if(fFillSelectClHisto && cluster2 && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
-          FillSelectedClusterHistograms(cluster2, fMomentum2.Pt(), nMaxima2, photon2->GetTag());
+        // Fill some histograms about shower shape
+        if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
+        {
+          // Get original cluster, to recover some information
+          
+          Int_t iclus2 = -1;
+          cluster2 = FindCluster(clusters,photon2->GetCaloLabel(0),iclus2,iclus+1);
+          // start new loop from iclus1+1 to gain some time
+          
+          if(!cluster2) AliWarning("Second cluster not found");
+          else          FillSelectedClusterHistograms(cluster2, fMomentum2.Pt(), nMaxima2, photon2->GetTag());
+        }
         
+        //
+        // MC origin, lost pair
+        //
         if(IsDataMC())
         {
           Int_t mcIndex2 = GetMCIndex(photon2->GetTag());
@@ -3037,16 +3069,20 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         }
       }
       
-      //Mass of selected pairs
+      //
+      // Mass of selected pairs
+      //
       fhSelectedMass  ->Fill( epair,mass);
       fhSelectedMassPt->Fill(ptpair,mass);
       if(IsDataMC()  && mcIndex < 2) fhMCSelectedMassPt[mcIndex]->Fill(ptpair,mass);
       
       // Fill histograms to undertand pile-up before other cuts applied
       // Remember to relax time cuts in the reader
-      FillPileUpHistograms(ptpair,((cluster1->GetTOF()+cluster2->GetTOF())*1e9)/2,cluster1);
+      if(cluster1 && IsPileUpAnalysisOn()) FillPileUpHistograms(ptpair,( photon1->GetTime() + photon2->GetTime() ) / 2, cluster1);
       
-      //Create AOD for analysis
+      //
+      // Create AOD for analysis
+      //
       AliAODPWG4Particle pi0 = AliAODPWG4Particle(fMomentum);
       
       if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
@@ -3079,10 +3115,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
 //__________________________________________________
 void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 {
-  //Do analysis and fill aods
-  //Search for the photon decay in calorimeters
-  //Read photon list from AOD, produced in class AliAnaPhoton and AliGammaConversion
-  //Check if 2 photons have the mass of the pi0.
+  // Do analysis and fill aods
+  // Search for the photon decay in calorimeters
+  // Read photon list from AOD, produced in class AliAnaPhoton and AliGammaConversion
+  // Check if 2 photons have the mass of the pi0.
   
   // Check calorimeter input
   if(!GetInputAODBranch())
@@ -3103,10 +3139,15 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     }
   }
   
-  //Get shower shape information of clusters
+  // Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
-  else if(GetCalorimeter()==kPHOS)  clusters = GetPHOSClusters() ;
+  if( fFillSelectClHisto || IsPileUpAnalysisOn() )
+  {
+    if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
+	   else if(GetCalorimeter()==kPHOS)  clusters = GetPHOSClusters() ;
+  }
+  
+  AliVCluster * cluster = 0;
   
   Int_t nCTS  = inputAODGammaConv->GetEntriesFast();
   Int_t nCalo = GetInputAODBranch()->GetEntriesFast();
@@ -3131,10 +3172,15 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
       if(!isolated1) continue;
     }
-
-    //Get original cluster, to recover some information
+    
+    // Get original cluster, to recover some information
     Int_t iclus = -1;
-    AliVCluster *cluster = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);
+    if( fFillSelectClHisto || IsPileUpAnalysisOn() )
+    {
+      cluster = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);
+      
+      if(!cluster) AliWarning("Cluster not found");
+    }
     
     for(Int_t jphoton = 0; jphoton < nCTS; jphoton++)
     {
@@ -3169,7 +3215,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         continue ;
       }
       
-      //Play with the MC stack if available
+      // Play with the MC stack if available
       Int_t mcIndex = kmcHadron;
       Int_t tag     = 0;
       Int_t label   =-1;
@@ -3184,11 +3230,11 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         mcIndex = GetMCIndex(tag);
       }
       
-      //Mass of selected pairs
+      // Mass of selected pairs
       fhMass  ->Fill( epair,mass);
       fhMassPt->Fill(ptpair,mass);
       if(IsDataMC() && mcIndex < 2 ) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
-
+      
       //
       // Select good pair (good phi, pt cuts, aperture and invariant mass)
       //
@@ -3209,7 +3255,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         
         fhPtDecay->Fill(photon1->Pt());
         
-        //Fill some histograms about shower shape
+        // Fill some histograms about shower shape
         if(fFillSelectClHisto && cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
           FillSelectedClusterHistograms(cluster, fMomentum1.Pt(), nMaxima, photon1->GetTag());
         
@@ -3233,17 +3279,20 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         photon2->SetDecayTag(bit2);
       }
       
-      //Mass of selected pairs
+      //
+      // Mass of selected pairs
+      //
       fhSelectedMass  ->Fill( epair,mass);
       fhSelectedMassPt->Fill(ptpair,mass);
       if(IsDataMC()  && mcIndex < 2) fhMCSelectedMassPt[mcIndex]->Fill(ptpair,mass);
       
       // Fill histograms to undertand pile-up before other cuts applied
       // Remember to relax time cuts in the reader
-      if(cluster) FillPileUpHistograms(fMomentum.Pt(),cluster->GetTOF()*1e9,cluster);
+      if( cluster && IsPileUpAnalysisOn() ) FillPileUpHistograms(fMomentum.Pt(),photon1->GetTime(),cluster);
       
-      //Create AOD for analysis
-      
+      //
+      // Create AOD for analysis
+      //
       AliAODPWG4Particle pi0 = AliAODPWG4Particle(fMomentum);
       
       if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
@@ -3253,13 +3302,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         AliWarning("Particle type declared in AliNeutralMeson not correct, do not add");
         return ;
       }
+      
       pi0.SetDetectorTag(photon1->GetDetectorTag());
       
       // MC
       pi0.SetLabel(label);
       pi0.SetTag(tag);
       
-      //Set the indeces of the original tracks or caloclusters
+      // Set the indeces of the original tracks or caloclusters
       pi0.SetCaloLabel (photon1->GetCaloLabel(0) , -1);
       pi0.SetTrackLabel(photon2->GetTrackLabel(0), photon2->GetTrackLabel(1));
       //pi0.SetInputFileIndex(input);
@@ -3277,11 +3327,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 //_________________________________________________
 void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 {
-  //Search for pi0 in GetCalorimeter() with shower shape analysis
+  // Search for pi0 in GetCalorimeter() with shower shape analysis
 
   TObjArray * pl        = 0x0;
   AliVCaloCells * cells = 0x0;
-  //Select the Calorimeter of the photon
+  
+  // Select the Calorimeter of the photon
   if      (GetCalorimeter() == kEMCAL )
   {
     pl    = GetEMCALClusters();
@@ -3313,21 +3364,21 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
     }
     
-    //Get Momentum vector,
+    // Get Momentum vector,
     Double_t vertex[]={0,0,0};
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     {
       calo->GetMomentum(fMomentum,GetVertex(evtIndex)) ;
-    }//Assume that come from vertex in straight line
+    } // Assume that come from vertex in straight line
     else
     {
       calo->GetMomentum(fMomentum,vertex) ;
     }
     
-    //If too small or big pt, skip it
+    // If too small or big pt, skip it
     if(fMomentum.E() < GetMinEnergy() || fMomentum.E() > GetMaxEnergy() ) continue ;
     
-    //Check acceptance selection
+    // Check acceptance selection
     if(IsFiducialCutOn())
     {
       Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
@@ -3336,8 +3387,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     AliDebug(1,Form("Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f",fMomentum.Pt(),fMomentum.Phi(),fMomentum.Eta()));
     
-    //Play with the MC stack if available
-    //Check origin of the candidates
+    // Play with the MC stack if available
+    // Check origin of the candidates
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
@@ -3348,17 +3399,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 
     //Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
     
-    //Check Distance to Bad channel, set bit.
+    // Check Distance to Bad channel, set bit.
     Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
     if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
-    if(distBad < fMinDist){ //In bad channel (PHOS cristal size 2.2x2.2 cm)
-      //FillRejectedClusterHistograms(tag,nMaxima);
+    if(distBad < fMinDist)
+    { 
+      // In bad channel (PHOS cristal size 2.2x2.2 cm)
+      // FillRejectedClusterHistograms(tag,nMaxima);
       continue ;
     }
  
     AliDebug(1,Form("Bad channel cut passed %4.2f",distBad));
     
-    //If too low number of cells, skip it
+    // If too low number of cells, skip it
     if ( calo->GetNCells() < GetCaloPID()->GetClusterSplittingMinNCells())
     {
       //FillRejectedClusterHistograms(tag,nMaxima);
@@ -3376,8 +3429,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       continue ;
     }
 
-    //Check PID
-    //PID selection or bit setting
+    // Check PID
+    // PID selection or bit setting
     Int_t    nMaxima  = 0;
     Double_t mass     = 0, angle    = 0;
     Int_t    absId1   =-1, absId2   =-1;
@@ -3406,7 +3459,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       continue ;
     }
     
-    //Skip events with too few or too many  NLM
+    // Skip events with too few or too many  NLM
     if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax)
     {
       //FillRejectedClusterHistograms(tag,nMaxima);
@@ -3415,7 +3468,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     AliDebug(1,Form("NLM %d accepted",nMaxima));
     
-    //Skip matched clusters with tracks
+    // Skip matched clusters with tracks
     if(fRejectTrackMatch && IsTrackMatched(calo, GetReader()->GetInputEvent()))
     {
       FillRejectedClusterHistograms(tag,nMaxima);
@@ -3429,7 +3482,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Float_t ptSplit = fMomentum12.Pt();
     Float_t  eSplit = e1+e2;
 
-    //mass of all clusters
+    // Mass of all clusters
     fhMass       ->Fill(fMomentum.E() ,mass);
     fhMassPt     ->Fill(fMomentum.Pt(),mass);
     fhMassSplitPt->Fill(ptSplit ,mass);
@@ -3540,7 +3593,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     AliDebug(1,Form("Pi0/Eta selection cuts passed: pT %3.2f, pdg %d",fMomentum.Pt(), idPartType));
         
-    //Mass and asymmetry of selected pairs
+    // Mass and asymmetry of selected pairs
     fhSelectedAsymmetry  ->Fill(fMomentum.E() ,asy );
     fhSelectedMass       ->Fill(fMomentum.E() ,mass);
     fhSelectedMassPt     ->Fill(fMomentum.Pt(),mass);
@@ -3598,7 +3651,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSplitPtEta    ->Fill(ptSplit,fMomentum.Eta());
     fhNLocMaxSplitPt->Fill(ptSplit ,nMaxima);
     
-    //Check split-clusters with good time window difference
+    // Check split-clusters with good time window difference
     Double_t tof1  = cells->GetCellTime(absId1);
     GetCaloUtils()->RecalibrateCellTime(tof1, GetCalorimeter(), absId1,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tof1*=1.e9;
@@ -3635,7 +3688,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(nMaxima == 2 && fNLMECutMin[1] > fMomentum.E()) continue;
     if(nMaxima >  2 && fNLMECutMin[2] > fMomentum.E()) continue;
 
-    //Fill some histograms about shower shape
+    // Fill some histograms about shower shape
     if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
     {
       FillSelectedClusterHistograms(calo, fMomentum.Pt(), nMaxima, tag, asy);
@@ -3645,18 +3698,18 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // Remember to relax time cuts in the reader
     Double_t tofcluster   = calo->GetTOF()*1e9;
     
-    FillPileUpHistograms(fMomentum.Pt(),tofcluster,calo);
+    if ( IsPileUpAnalysisOn() ) FillPileUpHistograms(fMomentum.Pt(),tofcluster,calo);
     
     if(fFillEMCALBCHistograms && GetCalorimeter()==kEMCAL)
       FillEMCALBCHistograms(fMomentum.E(), fMomentum.Eta(), fMomentum.Phi(), tofcluster);
     
-    //-----------------------
-    //Create AOD for analysis
+    //------------------------
+    // Create AOD for analysis
     
     AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(fMomentum);
     aodpi0.SetLabel(mesonLabel);
     
-    //Set the indeces of the original caloclusters
+    // Set the indeces of the original caloclusters
     aodpi0.SetCaloLabel(calo->GetID(),-1);
     aodpi0.SetDetectorTag(GetCalorimeter());
     
@@ -3675,10 +3728,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 
     aodpi0.SetTag(tag);
 
-    //Add AOD with pi0 object to aod branch
+    // Add AOD with pi0 object to aod branch
     AddAODParticle(aodpi0);
         
-  }//loop
+  } // loop
   
   AliDebug(1,"End fill AODs");
   
@@ -3687,7 +3740,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 //______________________________________________
 void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 {
-  //Do analysis and fill histograms
+  // Do analysis and fill histograms
   
   if(!GetOutputAODBranch())
   {
@@ -3695,7 +3748,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     return;
   }
   
-  //Loop on stored AOD pi0
+  // Loop on stored AOD pi0
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   
   AliDebug(1,Form("AOD branch entries %d", naod));
@@ -3710,7 +3763,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 	  
     if( ( pdg != AliCaloPID::kPi0 && pdg != AliCaloPID::kEta ) ) continue;
     
-    //Fill pi0 histograms
+    // Fill pi0 histograms
     Float_t ener  = pi0->E();
     Float_t pt    = pi0->Pt();
     Float_t phi   = pi0->Phi();
@@ -3883,7 +3936,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         }
       }
 
-    }//Histograms with MC
+    } // Histograms with MC
     
   }// aod loop
   
@@ -3894,7 +3947,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 //__________________________________________________________________
 void AliAnaPi0EbE::Print(const Option_t * opt) const
 {
-  //Print some relevant parameters set for the analysis
+  // Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
