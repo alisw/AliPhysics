@@ -18,31 +18,20 @@ Int_t MakeTrendingTOFQA(char * runlist,
 			Int_t trainId=0, 
 			Bool_t saveHisto=kTRUE,
 			Bool_t includeStartTime=kTRUE,
-			Bool_t drawAll=kTRUE)
+			Bool_t drawAll=kTRUE,
+			Bool_t IsOnGrid = kTRUE)
 {
+
+  if (IsOnGrid) TGrid::Connect("alien://");
+
   Int_t filesCounter=0; 
   if (!runlist) {
     printf("Invalid list of runs given as input: nothing done\n");
     return 1;
   }	
-  Int_t runNumber;
+  Int_t runNumber=-1;
   char infile[300]; 
-  
-  char trendFileName[100]; 
-  //Define trending output
-  if (trainId==0){
-    sprintf(trendFileName,"treeTOFQA_%s_%s.root",period,pass);  
-  } else {
-    sprintf(trendFileName,"treeTOFQA_QA%i_%s_%s.root",trainId,period,pass);
-  }
-  TFile * trendFile=new TFile(trendFileName,"recreate");
   FILE * files = fopen(runlist, "r") ; 
-  
-  //create chain of treePostQA     
-  Long64_t nentries=100000, firstentry=0; 
-  TChain *chainTree = 0;
-  chainTree=new TChain("trendTree");
-  
   while (fscanf(files,"%d",&runNumber)==1 ){
     
     //get QAtrain output
@@ -56,7 +45,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
     Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
     
     //run post-analysis
-    if (MakeTrendingTOFQAv2(infile,runNumber,isMC,drawAll,kTRUE,"raw://", saveHisto, includeStartTime)==0){
+    if (MakeTrendingTOFQAv2(infile,runNumber,isMC,drawAll,IsOnGrid,"raw://", saveHisto, includeStartTime)==0){
       filesCounter++;
     } else Printf("Post analysis not run on QA output %s", infile);
   }
@@ -95,10 +84,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   TGaxis::SetMaxDigits(3);
   gStyle->SetOptStat(10);
 
-  char defaultQAoutput[30]="QAresults.root";
   TString treePostFileName=Form("trending_%i.root",runNumber);
-  
-  if (IsOnGrid) TGrid::Connect("alien://");
   TFile * fin = TFile::Open(qafilename,"r");
   if (!fin) {
     Printf("ERROR: QA output not found. Exiting...\n");
@@ -124,12 +110,13 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   TList * generalList=(TList*)tofQAdir->Get(genListName);
   TList  *timeZeroList=(TList*)tofQAdir->Get(t0ListName);
   TList  *pidList=(TList*)tofQAdir->Get(pidListName);
- 
+  TList  *pidListT0=0x0;
+  TList  *tofPidListT0=0x0;
   if (!pidQAdir) {
     printf("WARNING: PIDqa histograms not available\n");
   } else {
-    TList  *pidListT0=(TList*)pidQAdir->Get(PIDqaListName);
-    TList  *tofPidListT0=(TList*)pidListT0->FindObject("TOF");
+    pidListT0=(TList*)pidQAdir->Get(PIDqaListName);
+    tofPidListT0=(TList*)pidListT0->FindObject("TOF");
   }
   TList  *trdList=(TList*)tofQAdir->Get(trdListName);
   TList  *trgList=(TList*)tofQAdir->Get(trgListName);
@@ -147,7 +134,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   
   Printf(":::: Getting post-analysis info for run %i",runNumber);
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
-
+  
   Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
     avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
     orphansRatio=-9999., avL=-9999., negLratio=-9999.,
@@ -723,8 +710,18 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   ttree->Write();
   trendFile->Close();
   
+  //close input file
+  fin->Close();
+
+  TCanvas *cTrackProperties = 0x0;
+  TCanvas* cProfile = 0x0;
+  TCanvas *cMatchingPerformance = 0x0;
+  TCanvas *cPidPerformance = 0x0;
+  TCanvas *cPidPerformance = 0x0;
+  TCanvas *cT0detector = 0x0;
+
   if (drawAll){
-    TCanvas *cTrackProperties= new TCanvas("cTrackProperties","summary of matched tracks properties", 1200, 500);
+    cTrackProperties= new TCanvas("cTrackProperties","summary of matched tracks properties", 1200, 500);
     cTrackProperties->Divide(3,1);
     cTrackProperties->cd(1);
     gPad->SetLogy();
@@ -735,7 +732,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     hTot->Draw("");
     tOrphans->Draw(); 
     cTrackProperties->cd(3);
-    gPad->SetLogy();
+    gPad->SetLogy(); 
     hL->Draw("");
     tLength->Draw(); 
     
@@ -754,7 +751,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     // // profDxNeg->SetLineColor(kBlue);
     // // profDxNeg->Draw("same"); 
    
-    TCanvas* cProfile = new TCanvas("cProfile","cProfile",50,50, 750,550);
+    cProfile = new TCanvas("cProfile","cProfile",50,50, 750,550);
     cProfile->cd();
     gPad->SetLogz();
     hTOFmatchedDzVsStrip->Draw("colz");
@@ -764,7 +761,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     hDzProfile->SetLineWidth(3);
     hDzProfile->Draw("same");
     
-    TCanvas *cMatchingPerformance= new TCanvas("cMatchingPerformance","summary of matching performance",1200,500);
+    cMatchingPerformance= new TCanvas("cMatchingPerformance","summary of matching performance",1200,500);
     cMatchingPerformance->Divide(3,1);
     cMatchingPerformance->cd(1);
     hMatchingVsPt->Draw();
@@ -773,7 +770,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     cMatchingPerformance->cd(3);
     hMatchingVsPhi->Draw();
     
-    TCanvas *cPidPerformance= new TCanvas("cPidPerformance","summary of pid performance", 900,500);
+    cPidPerformance= new TCanvas("cPidPerformance","summary of pid performance", 900,500);
     cPidPerformance->Divide(2,1);
     cPidPerformance->cd(1);
     gPad->SetLogz();
@@ -782,7 +779,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     gPad->SetLogy();
     hMass->Draw("HIST");
 
-    TCanvas *cPidPerformance2= new TCanvas("cPidPerformance2","summary of pid performance - expected times", 1200, 500);
+    cPidPerformance2= new TCanvas("cPidPerformance2","summary of pid performance - expected times", 1200, 500);
     cPidPerformance2->Divide(3,1);
     cPidPerformance2->cd(1);
     gPad->SetLogz();
@@ -794,7 +791,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     gPad->SetLogz();
     hDiffTimePro->Draw("colz");
 
-    TCanvas *cT0detector= new TCanvas("cT0detector","T0 detector",800,600);
+    cT0detector= new TCanvas("cT0detector","T0 detector",800,600);
     cT0detector->Divide(2,1);
     cT0detector->cd(1);
     gPad->SetGridx();
@@ -815,7 +812,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     //cPidPerformanceTh->Print(Form("%s/PID_theoreticalTimes.png",plotDir.Data()));
     //cResiduals->Print(Form("%s/%i_Residuals.png",plotDir.Data(), runNumber));
   }
-
   return  0;
 }
 
