@@ -5,10 +5,11 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliTRDgeometry.h"
-#include "PWGPP/TRD/AliTRDpwgppHelper.h"
-#include "PWGPP/TRD/AliTRDresolution.h"
-#include "PWGPP/TRD/AliTRDclusterResolution.h"
-#include "PWGPP/TRD/AliTRDalignmentTask.h"
+
+#include "AliTRDpwgppHelper.h"
+#include "AliTRDresolution.h"
+#include "AliTRDclusterResolution.h"
+#include "AliTRDalignmentTask.h"
 #endif
 
 void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci)

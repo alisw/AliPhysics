@@ -3,10 +3,10 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliLog.h"
-#include "PWGPP/TRD/AliTRDpwgppHelper.h"
-#include "PWGPP/TRD/AliTRDefficiency.h"
-#include "PWGPP/TRD/AliTRDefficiencyMC.h"
-#include "PWGPP/TRD/AliTRDmultiplicity.h"
+#include "AliTRDpwgppHelper.h"
+#include "AliTRDefficiency.h"
+#include "AliTRDefficiencyMC.h"
+#include "AliTRDmultiplicity.h"
 #endif
 
 void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
