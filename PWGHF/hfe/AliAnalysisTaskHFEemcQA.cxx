@@ -371,7 +371,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   Int_t bins[6]={8,500,200,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02
   Double_t xmin[6]={-0.5,0,-10,0,0,0};
   Double_t xmax[6]={7.5,25,10,2,2,2};
-  fSparseElectron = new THnSparseD ("Electron","Electron",6,bins,xmin,xmax);
+  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;",6,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
   PostData(1,fOutputList);
