@@ -79,7 +79,6 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetClusTDiff(Double_t diff)             { fClusTDiff          = diff;    }
   void                  SetPileUpRejSPD()                       { fPileUpRejSPD       = kTRUE;   }
   void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
-  void                  SetNSigmaNeutMesonCut(Double_t n)       { fNSigNeutMesonCut   = n;       }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -131,7 +130,6 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               fDistToBadChan;         // distance to bad channel
   TString                fInConeInvMass;         // string to hold the array of inv. mass values of the candidate with isolation clusters
   TString                fInConePairClEt;        // string to hold the array of Et of paired clusters in the pi0 mass (isolation clusters pairs only)
-  Double_t               fNSigNeutMesonCut;      // definition of the cut size on the neutral meson peaks to remove the additional dcy photon in isolation
   
  private:
   AliESDEvent *fESD;      //! ESD object
