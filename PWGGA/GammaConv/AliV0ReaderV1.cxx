@@ -219,7 +219,8 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		AddAODBranch("TClonesArray", &fConversionGammas, fDeltaAODFilename.Data());
 		AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFilename.Data());
 	}
-
+	
+	
 	if (fProduceV0findingEffi){
 		TH1::AddDirectory(kFALSE);
 		if(fHistograms != NULL){
@@ -229,7 +230,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		if(fHistograms==NULL){
 			fHistograms 				= new TList();
 			fHistograms->SetOwner(kTRUE);
-			fHistograms->SetName("V0FindingEfficiencyInput");
+			fHistograms->SetName(Form("V0FindingEfficiencyInput_%s",fEventCuts->GetCutNumber().Data()));
 		}
 
 		fHistoMCGammaPtvsR 				= new TH2F("MCconvGamma_Pt_R","MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
@@ -1077,7 +1078,7 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
 	
 	AliStack *fMCStack= fMCEvent->Stack();	
 	// Loop over all primary MC particle	
-	for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
+	for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
 		if (fEventCuts->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 			// fill primary histogram
 			TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -1123,12 +1124,12 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 	if ( negPart == NULL || posPart == NULL ) return;
 // 	if (!(negPart->GetPdgCode() == 11)) return;
 // 	if (!(posPart->GetPdgCode() == -11)) return;
-	Int_t motherlabelNeg = negPart->GetFirstMother();
-	Int_t motherlabelPos = posPart->GetFirstMother();
+	UInt_t motherlabelNeg = negPart->GetFirstMother();
+	UInt_t motherlabelPos = posPart->GetFirstMother();
 	
 // 	cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
-	if (motherlabelNeg == motherlabelPos){
-		if (fEventCuts->IsConversionPrimaryESD( fMCStack, motherlabelNeg, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
+	if (motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
+		if (fEventCuts->IsConversionPrimaryESD( fMCStack, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 			
 			TParticle* mother =  (TParticle *)fMCStack->Particle(motherlabelNeg);
 			if (mother->GetPdgCode() == 22 ){

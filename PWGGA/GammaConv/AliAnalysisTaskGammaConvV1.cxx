@@ -1736,7 +1736,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 // 	cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
 	
 	// Loop over all primary MC particle	
-	for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
+	for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
 		if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 			// fill primary histogram
 			TParticle* particle = (TParticle *)fMCStack->Particle(i);

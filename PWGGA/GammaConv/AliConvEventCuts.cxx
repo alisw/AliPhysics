@@ -2379,7 +2379,7 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 }
 
 //_________________________________________________________________________
-Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
+Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
 	
 	TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
 	if (!particle) return kFALSE; 
@@ -2395,6 +2395,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackp
 		Bool_t dalitzCand = kFALSE;
 		
 		TParticle* firstmother = (TParticle *)MCStack->Particle(particle->GetMother(0));
+		if (!firstmother) return kFALSE;
 		Int_t pdgCodeFirstMother 		= firstmother->GetPdgCode();			
 		Bool_t intDecay = kFALSE;
 		if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
@@ -2403,7 +2404,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackp
 // 			cout << "dalitz candidate found" << endl;
 		}
 	
-		Int_t source = particle->GetMother(0);
+		UInt_t source = particle->GetMother(0);
 		Bool_t foundExcludedPart = kFALSE;
 		Bool_t foundShower = kFALSE;		
 		Int_t pdgCodeMotherPrev = 0;
