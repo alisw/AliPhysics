@@ -2095,8 +2095,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtTrigBinPtLeadCone = new TH1F*[fNPtTrigBin];
       fhPtTrigBinSumPtCone  = new TH1F*[fNPtTrigBin];
       
-      fhPtTrigBinPtLeadConeDecay = new TH1F*[fNPtTrigBin];
-      fhPtTrigBinSumPtConeDecay  = new TH1F*[fNPtTrigBin];
+      fhPtTrigBinPtLeadConeDecay = new TH1F*[fNPtTrigBin*fNDecayBits];
+      fhPtTrigBinSumPtConeDecay  = new TH1F*[fNPtTrigBin*fNDecayBits];
       
       if(IsDataMC())
       {
