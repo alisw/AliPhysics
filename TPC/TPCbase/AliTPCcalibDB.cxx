@@ -790,12 +790,17 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
    delete arrFileLine;
 }
 
-Int_t AliTPCcalibDB::InitDeadMap() {
+Int_t AliTPCcalibDB::InitDeadMap()
+{
   /// Initialize DeadChannel Map
   /// Source of information:
   /// -  HV (see UpdateChamberHighVoltageData())
   /// -  Altro disabled channels. Noisy channels.
   /// -  DDL list
+  ///
+  /// List of required OCDB Entries (See also UpdateChamberHighVoltageData())
+  /// - TPC/Calib/AltroConfig
+  /// - TPC/Calib/HighVoltage
 
   // check necessary information
   const Int_t run=GetRun();
@@ -809,8 +814,12 @@ Int_t AliTPCcalibDB::InitDeadMap() {
 
   if (!voltageArray && !altroMap && !mapddl) {
     AliError("All necessary information to create the activate channel are map missing.");
+    AliError(" -> Check existance of the OCDB entries: 'TPC/Calib/AltroConfig', 'TPC/Calib/HighVoltage'");
     return 0;
   }
+
+  // mapping handler
+  AliTPCmapper map(gSystem->ExpandPathName("$ALICE_ROOT/TPC/mapping/"));
 
   //=============================================================
   // Setup DDL map
@@ -820,10 +829,17 @@ Int_t AliTPCcalibDB::InitDeadMap() {
   if (mapddl){
     TObjString *s = (TObjString*)mapddl->GetValue("DDLArray");
     if (s){
-      for (Int_t iddl=0; iddl<216; ++iddl) ddlMap[iddl]=TString(s->GetString()(iddl))!="0";
+      for (Int_t iddl=0; iddl<216; ++iddl) {
+        ddlMap[iddl]=TString(s->GetString()(iddl))!="0";
+        if (!ddlMap[iddl]) {
+          Int_t roc = map.GetRocFromEquipmentID(iddl+768);
+          AliWarning(Form("Inactive DDL (#%d, ROC %2d) detected based on the 'DDLArray' in 'TPC/Calib/AltroConfig'. This will deactivate many channels.", iddl, roc));
+        }
+      }
     }
   } else {
     AliError("DDL map missing. ActiveChannelMap can only be created with parts of the information.");
+    AliError(" -> Check existance of 'DDLArray' in the OCDB entry: 'TPC/Calib/AltroConfig'");
   }
   // Setup DDL map done
   // ============================================================
@@ -834,9 +850,10 @@ Int_t AliTPCcalibDB::InitDeadMap() {
 
   if (!fActiveChannelMap) fActiveChannelMap=new AliTPCCalPad("ActiveChannelMap","ActiveChannelMap");
 
-  AliTPCmapper map(gSystem->ExpandPathName("$ALICE_ROOT/TPC/mapping/"));
-
-  if (!altroMap) AliError("ALTRO dead channel map missing. ActiveChannelMap can only be created with parts of the information.");
+  if (!altroMap) {
+    AliError("ALTRO dead channel map missing. ActiveChannelMap can only be created with parts of the information.");
+    AliError(" -> Check existance of 'Masked' in the OCDB entry: 'TPC/Calib/AltroConfig'");
+  }
 
   for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
     AliTPCCalROC *roc=fActiveChannelMap->GetCalROC(iROC);
@@ -849,7 +866,8 @@ Int_t AliTPCcalibDB::InitDeadMap() {
     // see UpdateChamberHighVoltageData()
     if (!fChamberHVStatus[iROC]){
       roc->Multiply(0.);
-      AliInfo(Form("Turning off all channels of ROC %2d due to a bad HV status", iROC));
+      AliWarning(Form("Turning off all channels of ROC %2d due to a bad HV status", iROC));
+      AliWarning(" -> Check messages in UpdateChamberHighVoltageData()");
       continue;
     }
 
@@ -1573,7 +1591,14 @@ Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char 
 
 Bool_t AliTPCcalibDB::IsDataTakingActive(time_t timeStamp)
 {
-  if (!fGrRunState) return kFALSE;
+  //
+  // Check if the data taking is active.
+  // This information ist based on the trigger scalers and calculated in UpdateChamberHighVoltageData() below.
+  // in case there is no GRP object or no trigger scalers fGrRunState should be a NULL pointer
+  //   if this is the case we assume by default that the data taking is active
+  // NOTE: The logik changed. Before v5-06-03-79-gc804e5a we assumed by default the data taking is inactive
+  //
+  if (!fGrRunState) return kTRUE;
   Double_t time=Double_t(timeStamp);
   Int_t currentPoint=0;
   Bool_t currentVal=fGrRunState->GetY()[currentPoint]>0.5;
@@ -1598,6 +1623,16 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   /// 2. Current nominal voltages (nominal voltage corrected for common HV offset)
   /// 3. Fraction of good HV values over time (deviation from robust median)
   /// 4. HV status, based on the above
+  ///
+  /// List of required OCDB Entries
+  /// - GRP/GRP/Data
+  /// - GRP/CTP/Scalers
+  /// - TPC/Calib/HighVoltage
+  /// - TPC/Calib/Parameters
+
+  // reset active run state graph
+  delete fGrRunState;
+  fGrRunState=0x0;
 
   // start and end time of the run
   const Int_t run=GetRun();
@@ -1624,45 +1659,49 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   //
   // initialise graph with active running
   AliCDBEntry *entry = GetCDBEntry("GRP/CTP/Scalers");
-  if (!entry) return;
-  // entry->SetOwner(kTRUE);
-  AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
-  Int_t nchannels = sca->GetNumClasses(); // number of scaler channels (i.e. trigger classes)
-  Int_t npoints = sca->GetScalersRecords()->GetEntries(); // number of samples
+  if (entry) {
+    // entry->SetOwner(kTRUE);
+    AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
+    Int_t nchannels = sca->GetNumClasses(); // number of scaler channels (i.e. trigger classes)
+    Int_t npoints = sca->GetScalersRecords()->GetEntries(); // number of samples
 
-  delete fGrRunState;
-  fGrRunState=new TGraph;
-  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(startTimeGRP)-.001,0);
-  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(startTimeGRP),1);
-  ULong64_t lastSum=0;
-  Double_t timeLast=0.;
-  Bool_t active=kTRUE;
-  for (int i=0; i<npoints; i++) {
-    AliTriggerScalersRecord *rec = (AliTriggerScalersRecord *) sca->GetScalersRecord(i);
-    Double_t time = ((AliTimeStamp*) rec->GetTimeStamp())->GetSeconds();
-    // check if time is inside the grp times. For dummy scaler entries the time might be compatible with 0
-    if ( time<startTimeGRP || time>stopTimeGRP ){
-      AliWarning(Form("Time of scaler record %d: %.0f is outside the GRP times (%d, %d). Skipping this record.", i, time, startTimeGRP, stopTimeGRP));
-      continue;
+    // require at least two points from the scalers.
+    if (npoints>1) {
+      fGrRunState=new TGraph;
+      fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(startTimeGRP)-.001,0);
+      fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(startTimeGRP),1);
+      ULong64_t lastSum=0;
+      Double_t timeLast=Double_t(startTimeGRP);
+      Bool_t active=kTRUE;
+      for (int i=0; i<npoints; i++) {
+        AliTriggerScalersRecord *rec = (AliTriggerScalersRecord *) sca->GetScalersRecord(i);
+        Double_t time = ((AliTimeStamp*) rec->GetTimeStamp())->GetSeconds();
+        // check if time is inside the grp times. For dummy scaler entries the time might be compatible with 0
+        if ( time<startTimeGRP || time>stopTimeGRP ){
+          AliWarning(Form("Time of scaler record %d: %.0f is outside the GRP times (%d, %d). Skipping this record.", i, time, startTimeGRP, stopTimeGRP));
+          continue;
+        }
+        ULong64_t sum=0;
+        for (int j=0; j<nchannels; j++) sum += ((AliTriggerScalers*) rec->GetTriggerScalers()->At(j))->GetL2CA();
+        if (TMath::Abs(time-timeLast)<.001 && sum==lastSum ) continue;
+        if (active && sum==lastSum){
+          fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,1);
+          fGrRunState->SetPoint(fGrRunState->GetN(),timeLast,0);
+          active=kFALSE;
+        } else if (!active && sum>lastSum ){
+          fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,0);
+          fGrRunState->SetPoint(fGrRunState->GetN(),timeLast,1);
+          active=kTRUE;
+        }
+        lastSum=sum;
+        timeLast=time;
+      }
+      fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(stopTimeGRP),active);
+      fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(stopTimeGRP)+.001,0);
+    } else {
+      AliWarning("Only one entry found in the trigger scalers. Most probably this is a dummy entry. Scaler information will not be used!");
     }
-    ULong64_t sum=0;
-    for (int j=0; j<nchannels; j++) sum += ((AliTriggerScalers*) rec->GetTriggerScalers()->At(j))->GetL2CA();
-    if (TMath::Abs(time-timeLast)<.001 && sum==lastSum ) continue;
-    if (active && sum==lastSum){
-      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,1);
-      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast,0);
-      active=kFALSE;
-    } else if (!active && sum>lastSum ){
-      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,0);
-      fGrRunState->SetPoint(fGrRunState->GetN(),timeLast,1);
-      active=kTRUE;
-    }
-    lastSum=sum;
-    timeLast=time;
   }
-  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(stopTimeGRP),active);
-  fGrRunState->SetPoint(fGrRunState->GetN(),Double_t(stopTimeGRP)+.001,0);
-
 
 
   // reset all values
@@ -1676,6 +1715,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   AliDCSSensorArray* voltageArray = GetVoltageSensors(run);
   if (!voltageArray) {
     AliError("Voltage Array missing. Cannot calculate HV information!");
+    AliError(" -> Check OCDB entry: 'TPC/Calib/HighVoltage'");
     return;
   }
 
@@ -1778,19 +1818,25 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   Int_t nbad=0;
   for (Int_t iROC=0;iROC<72/*AliTPCCalPad::kNsec*/;++iROC){
     fChamberHVStatus[iROC]=kTRUE;
+    const Float_t averageDeviation=(iROC<36)?medianIROC:medianOROC;
 
     //a. Deviation of median from current nominal voltage
     //   allow larger than nominal voltages
     if (fCurrentNominalVoltage[iROC]-fChamberHVmedian[iROC] >  maxVdiff) {
-      AliInfo(Form("Low voltage detected for ROC %2d, current nominal voltage - median voltage: %.2f-%.2f>%.2f",
-                   iROC, fCurrentNominalVoltage[iROC],fChamberHVmedian[iROC],maxVdiff));
+      AliWarning(Form("Low voltage detected for ROC %2d",iROC));
+      AliWarning(Form(" -> Based on nominal voltage: %.2f + averge deviation: %.2f = current nominal voltage: %.2f - meadian HV: %.2f > max diff: %.2f",
+                      fParam->GetNominalVoltage(iROC), averageDeviation, fCurrentNominalVoltage[iROC], fChamberHVmedian[iROC],  maxVdiff));
+      AliWarning(" -> Check consistent usage of HV information in the OCDB entry: 'TPC/Calib/HighVoltage'");
+      AliWarning(" ->                 and the nominal voltages in the OCDB entry: 'TPC/Calib/Parameters'");
       fChamberHVStatus[iROC]=kFALSE;
     }
 
     //b. Fraction of bad hv values
     if ( 1.-fChamberHVgoodFraction[iROC] > maxFracHVbad ) {
-      AliInfo(Form("Large fraction of low HV readings detected in ROC %2d: %.2f > %.2f",
+      AliWarning(Form("Large fraction of low HV readings detected in ROC %2d: %.2f > %.2f",
                    iROC, 1.-fChamberHVgoodFraction[iROC], maxFracHVbad));
+      AliWarning(Form(" -> Based on HV information from OCDB entry: 'TPC/Calib/HighVoltage' with median voltage: %.2f", fChamberHVmedian[iROC]));
+      AliWarning(     " -> Check with experts if this chamber had HV problems in this run");
       fChamberHVStatus[iROC]=kFALSE;
     }
 
@@ -1801,7 +1847,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
 
   // check if all chamber are off
   if (nbad==72) {
-    AliFatal("Something went wrong in the chamber HV status calculation. All chambers would be deactivated!");
+    AliFatal("Something went wrong in the chamber HV status calculation. Check warning messages above. All chambers would be deactivated!");
   }
 }
 
