@@ -122,8 +122,6 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
         fHistoMotherEtaConvPhotonEtaPhi(NULL),
 	fHistoMotherInvMassECalib(NULL),
 	fHistoMotherInvMassECalibalpha(NULL),
-	fHistoPhotonPairPtconv(NULL),
-	fHistoPhotonPairMixedEventPtconv(NULL),
 	fHistoClusGammaPt(NULL),
 	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoMCHeaders(NULL),
@@ -343,8 +341,6 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
         fHistoMotherEtaConvPhotonEtaPhi(NULL),
 	fHistoMotherInvMassECalib(NULL),
 	fHistoMotherInvMassECalibalpha(NULL),
-	fHistoPhotonPairPtconv(NULL),
-	fHistoPhotonPairMixedEventPtconv(NULL),
 	fHistoClusGammaPt(NULL),
 	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoMCHeaders(NULL),
@@ -651,8 +647,6 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoMotherMatchedInvMassPt 		= new TH2F*[fnCuts];
 		fHistoMotherBackInvMassPt 		= new TH2F*[fnCuts];
 		fHistoMotherInvMassEalpha 		= new TH2F*[fnCuts];
-		fHistoPhotonPairPtconv 			= new TH2F*[fnCuts];
-		fHistoPhotonPairMixedEventPtconv 	= new TH2F*[fnCuts];
 		if (fDoMesonQA > 0){
 			fHistoMotherPi0PtY 		=  new TH2F*[fnCuts];
 			fHistoMotherEtaPtY 		=  new TH2F*[fnCuts];
@@ -814,18 +808,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 			fHistoMotherInvMassEalpha[iCut]->SetYTitle("p_{T,pair} (GeV/c)");
 			fESDList[iCut]->Add(fHistoMotherInvMassEalpha[iCut]);
 
-			fHistoPhotonPairPtconv[iCut] = new TH2F("ESD_Mother_InvMass_PtConv","",800,0,0.8,250,0,25);
-			fHistoPhotonPairPtconv[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
-			fHistoPhotonPairPtconv[iCut]->SetYTitle("#gamma^{conv} p_{T} (GeV/c)");
-			fESDList[iCut]->Add(fHistoPhotonPairPtconv[iCut]);
-
-			fHistoPhotonPairMixedEventPtconv[iCut] = new TH2F("ESD_Background_InvMass_PtConv","",800,0,0.8,250,0,25);
-			fHistoPhotonPairMixedEventPtconv[iCut]->SetXTitle("M_{inv,mixed} (GeV/c^{2})");
-			fHistoPhotonPairMixedEventPtconv[iCut]->SetYTitle("#gamma^{conv} p_{T} (GeV/c)");
-			fESDList[iCut]->Add(fHistoPhotonPairMixedEventPtconv[iCut]);
-
-			
-		}    
+	        }    
 	}
 	
 	if(fDoMesonAnalysis){
@@ -1885,7 +1868,15 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidates(AliAODCo
 		}
 	}
 
-	if(Photon->GetMother(0) <= fMCStack->GetNprimary()){
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();	
+	Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, TruePhotonCandidate->GetCaloPhotonMCLabel(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
+
+	
+	
+	if(isPrimary){
 		// Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
 		if(fIsFromMBHeader){
 			fHistoTruePrimaryClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
@@ -2115,9 +2106,19 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessAODMCParticles()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 {
+	
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 		= primVtxMC->GetX();
+	Double_t mcProdVtxY 		= primVtxMC->GetY();
+	Double_t mcProdVtxZ 		= primVtxMC->GetZ();
+    
+  
+  
 	// Loop over all primary MC particle
 	for(Int_t i = 0; i < fMCStack->GetNprimary(); i++) {
 	  
+	  if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
+		
 		TParticle* particle = (TParticle *)fMCStack->Particle(i);
 		if (!particle) continue;
 		
@@ -2242,10 +2243,16 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 			      TParticle *gamma    = fMCStack->Particle(labelgamma);
 			      TParticle *electron = fMCStack->Particle(labelelectron);
 			      TParticle *positron = fMCStack->Particle(labelpositron);
+			      
+			      Bool_t kDaughGammaIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelgamma,     mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+			      Bool_t kDaughElectIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelelectron,  mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+			      Bool_t kDaughPositIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelpositron,  mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+					
 			
 			
-			      if( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma,fMCStack,kFALSE) &&
-				  ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(gamma->Phi(),fEventPlaneAngle,kFALSE) &&
+			      if( kDaughElectIsPrim && kDaughElectIsPrim && kDaughPositIsPrim &&				
+				 ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma,fMCStack,kFALSE) &&
+				 ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(gamma->Phi(),fEventPlaneAngle,kFALSE) &&
 				 ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(labelelectron,fMCStack) &&
 				 ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(labelpositron,fMCStack) ) {
 				
@@ -2257,11 +2264,10 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 					
 				  }
 			  }	
-		   }
+		  }
 	    }
 	}
-  
-	
+   }
 }
 
 
@@ -2330,6 +2336,9 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculatePi0DalitzCandidates(){
 					      } else {
 						fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 						
+							if(pi0cand->GetAlpha()<0.1)
+							fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
+						
 						if( fDoTHnSparse ) {
 						    Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
 						    fSparseMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -2345,20 +2354,23 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculatePi0DalitzCandidates(){
 					      if (matched){
 						fHistoMotherMatchedInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 					      } else {
-						fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+						
+						    fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+						
+						    if( pi0cand->GetAlpha() < 0.1 )
+						    fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 					      
-						if ( fDoTHnSparse ) {
-						    Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
-						    fSparseMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
-						}
+						    if ( fDoTHnSparse ) {
+							Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
+							fSparseMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
+						    }
 						
-						if(fMCEvent){
+						    if(fMCEvent){
 							  ProcessTrueMesonCandidates(pi0cand,Vgamma,gamma,matched);
-						}
-						
-				      }				      
+						    }
+						}				      
 				      
-				   }
+				    }
 				}
 				delete pi0cand;
 				pi0cand=0x0;
@@ -2372,6 +2384,11 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConv
 {
 	// Process True Mesons
 	
+		const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+		Double_t mcProdVtxX 	= primVtxMC->GetX();
+		Double_t mcProdVtxY 	= primVtxMC->GetY();
+		Double_t mcProdVtxZ 	= primVtxMC->GetZ();	
+		
 		
 		Bool_t isTruePi0 = kFALSE;
 		Bool_t isTrueEta = kFALSE;
@@ -2480,8 +2497,11 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueMesonCandidates(AliAODConv
 				}
 				
 				if ( !matched ) {
+				  
+				    Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, gamma1MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
+				
 			
-				    if(virtualGammaMotherLabel >= fMCStack->GetNprimary()){ // Secondary Meson
+				    if(!isPrimary){ // Secondary Meson
 
 					Int_t secMotherLabel = ((TParticle*)fMCStack->Particle(virtualGammaMotherLabel))->GetMother(0);
 					Float_t weightedSec = 1;
@@ -3153,8 +3173,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculateBackground(){
 					  
 					  					  
 							    fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-							    fHistoPhotonPairMixedEventPtconv[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.Pt());
-						    
+							    
 							    if(fDoTHnSparse){
 								Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
 								fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -3201,9 +3220,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculateBackground(){
 					  
 						  
 							      fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
-							      fHistoPhotonPairMixedEventPtconv[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.Pt());
-							
-							
+							      							
 							      if(fDoTHnSparse){
 								Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
 								fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -3393,9 +3410,16 @@ Bool_t AliAnalysisTaskGammaConvCaloDalitzV1::CheckIfContainedInStringAndAppend(T
 void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTags (){
 
 	if (!fMCStack) return;
+	
+	const AliVVertex* 	primVtxMC = fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
 
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
+	  
 		AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+		
 		if (gamma0->IsTrueConvertedPhoton()){
 			Int_t gamma0MotherLabel = -1;
 			Int_t gamma0MCLabel = gamma0->GetMCParticleLabel(fMCStack);
@@ -3405,7 +3429,10 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTag
 				if (gamma0MotherLabel>-1){
 					if(((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 111){
 						if (!CheckIfContainedInStringAndAppend(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){ 
-							if (gamma0MotherLabel >= fMCStack->GetNprimary()){
+						  
+						        Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+													      
+							if (!isPrimary){
 								Int_t secMotherLabel = ((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetMother(0);
 								Float_t weightedSec= 1;
 								if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, fMCStack, fInputEvent) && fMCStack->Particle(secMotherLabel)->GetPdgCode()==310){
@@ -3437,7 +3464,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTag
 			} 	
 		}	
 	}	
-	return;
+	
 }
 
 //_________________________________________________________________________________
@@ -3497,12 +3524,20 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTag
 			} 	
 		}	
 	}	
+	
 	return;
 }	
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
 
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();	
+  
+  
+   
 	Double_t magField = fInputEvent->GetMagneticField();
 	
 
@@ -3549,16 +3584,19 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
 			
 			Int_t labelelectron = TMath::Abs( electronCandidate->GetLabel() );
 			
+			Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelelectron, mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
+				
+			
 			if( labelelectron >=0 && labelelectron < fMCStack->GetNtrack() ){
 				TParticle* electron = fMCStack->Particle(labelelectron);
 				if( electron->GetPdgCode() ==  11 ){
-					if( labelelectron < fMCStack->GetNprimary() ){
+					if( isPrimary ){
 						fHistoTrueElectronPt[fiCut]->Fill(electronCandidate->Pt());    //primary electron
 					} else {
 						fHistoTrueSecElectronPt[fiCut]->Fill(electronCandidate->Pt()); //secondary electron
 					}
 					if( IsPi0DalitzDaughter(labelelectron) == kTRUE ) {
-						if( labelelectron < fMCStack->GetNprimary() ) {
+						if( isPrimary ) {
 							fHistoTruePi0DalitzElectronPt[fiCut]->Fill(electronCandidate->Pt());
 						} else {
 							fHistoTruePi0DalitzSecElectronPt[fiCut]->Fill(electronCandidate->Pt());
@@ -3597,17 +3635,19 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
 			
 		if( fMCEvent ) {
 			Int_t labelpositron = TMath::Abs( positronCandidate->GetLabel() );
+			Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelpositron, mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
+			
 			
 			if( labelpositron >=0 && labelpositron < fMCStack->GetNtrack() ) {
 				TParticle* positron = fMCStack->Particle(labelpositron);
 				if( positron->GetPdgCode() ==  -11 ){
-					if( labelpositron < fMCStack->GetNprimary() ){
+					if( isPrimary ){
 						fHistoTruePositronPt[fiCut]->Fill(positronCandidate->Pt());
 					} else {
 						fHistoTrueSecPositronPt[fiCut]->Fill(positronCandidate->Pt());
 					}
 					if( IsPi0DalitzDaughter(labelpositron) == kTRUE ) {
-						if( labelpositron < fMCStack->GetNprimary() ){
+						if( isPrimary ){
 							fHistoTruePi0DalitzPositronPt[fiCut]->Fill(positronCandidate->Pt());
 						} else {
 							fHistoTruePi0DalitzSecPositronPt[fiCut]->Fill(positronCandidate->Pt());
@@ -3683,13 +3723,11 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
 			} else {
 				virtualPhoton = new AliKFConversionPhoton(electronCandidateKF,positronCandidateKF);
 				
-				//if( fSetProductionVertextoVGamma == kTRUE ){
 					AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
 					primaryVertexImproved+=*virtualPhoton;
 					virtualPhoton->SetProductionVertex(primaryVertexImproved);			
-				//}
-
-				vphoton= new AliAODConversionPhoton(virtualPhoton);
+				
+				        vphoton= new AliAODConversionPhoton(virtualPhoton);
 			}
 			vphoton->SetTrackLabels( lGoodPositronIndex[j], lGoodElectronIndex[i]);
 			
