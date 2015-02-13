@@ -1,4 +1,4 @@
-void MakePMDZeroMisAlignment(){
+/**************************************************************************
   // Create TClonesArray of zero misalignment objects for PMD
   //
   // Macro to randomly displace the 4 sectors of the PMD
@@ -12,12 +12,10 @@ void MakePMDZeroMisAlignment(){
   // The actual amount displacement will be provided
   // by the survey data and has to be converted into
   // displacement in x,y,z,theta, phi and psi 
-  
-  
+   
   // Now specify the path of the module to be misaligned
   // as followed in the PMD geant
-  
-  /*
+   
      _____________
     |    |        |
     | 1  |   3    |
@@ -32,8 +30,15 @@ void MakePMDZeroMisAlignment(){
     // and for the sectors 2 and 3
     // As these will be mounted on the same
     // Steel plate 
- */
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *         
 
+OCDB/PMD/Align/Data
+            
+ **************************************************************************/
+
+void MakePMDZeroMisAlignment(){
   const char* macroname = "MakePMDZeroMisAlignment.C";
 
   //Create a TClonesArray of Align Object to store displacement Angles
@@ -79,7 +84,7 @@ void MakePMDZeroMisAlignment(){
       return;
     }
     AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("");
+    md->SetResponsible("Satyajit Jena");
     md->SetComment("Zero misalignment for PMD");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PMD/Align/Data",0,AliCDBRunRange::Infinity());

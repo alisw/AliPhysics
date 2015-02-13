@@ -1,40 +1,43 @@
-void MakePMDFullMisAlignment(){
-  // Create TClonesArray of full misalignment objects for PMD
-  //
+/**************************************************************************
+ * To Create TClonesArray of full misalignment objects for PMD
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *                     
+ // Create TClonesArray of full misalignment objects for PMD
+ //
 
-  // Macro to randomly displace the 4 sectors of the PMD
-  // in each plane. Each sector (to be misaligned) 
-  // of PMD houses the following :
-  // (a) 6 modules of preshower plane
-  // (b) 6 modules of veto plane
-  // (c) The FEE boards on back plane of each module
-  // (d) 6 modules of convertor plates
-  // The clustering is done module-wise
-  // The actual amount displacement will be provided
-  // by the survey data and has to be converted into
-  // displacement in x,y,z,theta, phi and psi 
+ // Macro to randomly displace the 4 sectors of the PMD
+ // in each plane. Each sector (to be misaligned) 
+ // of PMD houses the following :
+ // (a) 6 modules of preshower plane
+ // (b) 6 modules of veto plane
+ // (c) The FEE boards on back plane of each module
+ // (d) 6 modules of convertor plates
+ // The clustering is done module-wise
+ // The actual amount displacement will be provided
+ // by the survey data and has to be converted into
+ // displacement in x,y,z,theta, phi and psi 
+ 
+ // Now specify the path of the module to be misaligned
+ // as followed in the PMD geant
+ *     _____________
+ *   |    |        |
+ *   | 1  |   3    |
+ *   |    |________|
+ *   |____|___|    |
+ *   |        | 2  |
+ *   |   4    |    |
+ *   |________|____|
+
+ // Misalignment Matrix is expected to be
+ // same for sectors 1 and 4 
+ // and for the sectors 2 and 3
+ // As these will be mounted on the same
+ // Steel plate 
+ **************************************************************************/
+
   
-  
-  // Now specify the path of the module to be misaligned
-  // as followed in the PMD geant
-  
-  /*
-     _____________
-    |    |        |
-    | 1  |   3    |
-    |    |________|
-    |____|___|    |
-    |        | 2  |
-    |   4    |    |
-    |________|____|
-    
-    // Misalignment Matrix is expected to be
-    // same for sectors 1 and 4 
-    // and for the sectors 2 and 3
-    // As these will be mounted on the same
-    // Steel plate 
- */
-  
+void MakePMDFullMisAlignment(){
   const char* macroname = "MakePMDFullMisAlignment.C";
 
   // Activate CDB storage and load geometry from CDB
@@ -141,7 +144,7 @@ void MakePMDFullMisAlignment(){
   }else{
   // save in CDB storage
     AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("");
+    md->SetResponsible("Satyajit Jena");
     md->SetComment("Full misalignment for PMD, produced with sigmatr=0.1 and sigmarot=0.1 in the local RS");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PMD/Align/Data",0,AliCDBRunRange::Infinity());

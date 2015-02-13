@@ -1,4 +1,10 @@
-void CreateDDLinfoCDB()
+/**************************************************************************
+ * To Convert Ascii DDL file into DDL-CDB object
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *                     
+ **************************************************************************/
+void MakePMDDDLinfoCDB()
 {
 
   AliCDBManager* man = AliCDBManager::Instance();

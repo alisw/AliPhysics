@@ -1,4 +1,4 @@
-void MakePMDResMisAlignment(){
+/**************************************************************************
   // Create TClonesArray of residual misalignment objects for PMD
   //
   // Macro to randomly displace the 4 sectors of the PMD
@@ -32,8 +32,15 @@ void MakePMDResMisAlignment(){
     // and for the sectors 2 and 3
     // As these will be mounted on the same
     // Steel plate 
- */
-  
+ 
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *   
+OCDB/PMD/Align/Data
+                  
+ **************************************************************************/
+
+void MakePMDResMisAlignment(){  
   const char* macroname = "MakePMDResMisAlignment.C";
 
   // Activate CDB storage and load geometry from CDB
@@ -140,7 +147,7 @@ void MakePMDResMisAlignment(){
   }else{
   // save in CDB storage
     AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("");
+    md->SetResponsible("Satyajit Jena");
     md->SetComment("Residual misalignment for PMD, produced with sigmatr=0.1 and sigmarot=0.1 in the local RS");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PMD/Align/Data",0,AliCDBRunRange::Infinity());

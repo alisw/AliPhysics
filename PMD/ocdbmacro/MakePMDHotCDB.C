@@ -1,8 +1,13 @@
+/**************************************************************************
+ * To Create PMD CDB object for Hot Cells
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *                     
+ **************************************************************************/
 //
 // This macro puts the gains in the database
 //
-void AliPMDPutHot()
-{
+void MakePMDHotCDB() {
   AliPMDHotData *hotda=new AliPMDHotData();
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");

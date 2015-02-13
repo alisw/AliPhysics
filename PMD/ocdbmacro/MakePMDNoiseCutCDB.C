@@ -1,5 +1,11 @@
-void CreateNoiseCut()
-{
+/**************************************************************************
+ * To Create PMD Noise map into the OCDB object
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *                     
+ **************************************************************************/
+
+void MakePMDNoiseCutCDB() {
 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");	
@@ -13,7 +19,7 @@ void CreateNoiseCut()
     }
 
   AliCDBMetaData *md= new AliCDBMetaData();
-  md->SetResponsible("Basanta Nandi");
+  md->SetResponsible("Satyajit Jena");
   md->SetComment("Noise cut for different modules of PMD");
 
   AliCDBId id("PMD/Calib/NoiseCut",0,AliCDBRunRange::Infinity());

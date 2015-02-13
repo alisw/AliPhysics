@@ -1,6 +1,12 @@
+/**************************************************************************
+ * Create PMD Calibration Object for Ideal calibration into CDB
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ * OCDB/PMD/Calib/RecoParam                 
+ **************************************************************************/
+
 void MakePMDRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult){
-  // Create PMD Calibration Object for Ideal calibration and 
-  // write it on CDB
+  
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 

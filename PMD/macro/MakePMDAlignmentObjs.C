@@ -1,3 +1,9 @@
+/**************************************************************************
+ * To Create PMD Alignment ObJect  using the class AliPMDMisAligner
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *                     
+ **************************************************************************/
 
 void MakePMDAlignmentObjs()
 {

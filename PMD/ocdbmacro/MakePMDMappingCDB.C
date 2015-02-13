@@ -1,5 +1,12 @@
-void CreateMappingCDB()
-{
+/**************************************************************************
+ * To Create PMD Mapping CDB 
+ * Input is taken from old ascii files
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ *                     
+ **************************************************************************/
+
+void MakePMDMappingCDB(){
 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");	

@@ -1,4 +1,11 @@
-void CreateGainCDB(TString type="IDEAL"){
+/**************************************************************************
+ * To Create PMD Default Gain Object. 
+ * sjena@cern.ch
+ * Mon Nov 22 19:54:27 CET 2010
+ * OCDB/PMD/Calib/Gain                    
+ **************************************************************************/
+
+void MakePMDGainCDB(TString type="IDEAL"){
 
 	AliCDBManager* man = AliCDBManager::Instance();
 	
@@ -47,7 +54,8 @@ void CreateGainCDB(TString type="IDEAL"){
 	
 	
 	AliCDBMetaData md;
-	
+	md.SetResponsible("Satyajit Jena");
+	md.SetComment("Default Gain CDB");
 	man->Put(calibda, id, &md);
 
 
