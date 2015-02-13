@@ -256,7 +256,7 @@ class AliJetShapeSigma2 : public fastjet::FunctionOfPseudoJet<Double32_t>{
       Double_t deta = constits[ic].eta()-jet.eta();
       mxx += ppt*ppt*deta*deta;
       myy += ppt*ppt*dphi*dphi;
-      mxy -= ppt*ppt*deta*dphi;
+      mxy -= ppt*ppt*deta*TMath::Abs(dphi);
       nc++;
       sump2 += ppt*ppt;
     }
