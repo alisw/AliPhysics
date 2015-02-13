@@ -719,7 +719,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 		else if(fIsHeavyIon == 2) fHistoNGoodESDTracksVsNGammaCanditates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",400,0,400,50,0,50);
 		else fHistoNGoodESDTracksVsNGammaCanditates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",200,0,200,50,0,50);
 		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->SetXTitle("# TPC tracks");
-		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->SetYTitle("# accepted $#gamma_{conv}");
+		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->SetYTitle("# accepted $#gamma_{calo}");
 		fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCanditates[iCut]);
     
 		
@@ -1683,8 +1683,8 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserExec(Option_t *)
 		ProcessPhotonCandidates(); 				// Process this cuts gammas
 		ProcessElectronCandidates();
 
-		//fHistoNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries());
-		//fHistoNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
+		fHistoNGammaCandidates[iCut]->Fill(fClusterCandidates->GetEntries());
+		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fClusterCandidates->GetEntries());
 		
 		if(fDoMesonAnalysis){ // Meson Analysis
 
@@ -2318,12 +2318,12 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculatePi0DalitzCandidates(){
 				      
 				      if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->BackgroundHandlerType() == 0){
 					
-					  zbin = fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+					    zbin = fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
 					  
 					  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 					    mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
 					  } else {
-					    mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+					    mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
 					  }
 				      } 
 				    }
@@ -3128,7 +3128,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::CalculateBackground(){
 	if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 		mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
 	} else {
-		mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+		mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
 	}
 	
 	
@@ -3268,11 +3268,11 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::MoveParticleAccordingToVertex(AliAODC
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCaloDalitzV1::UpdateEventByEventData(){
 	//see header file for documentation
-	if(fGammaCandidates->GetEntries() >0 && fClusterCandidates->GetEntries() > 0 ){
+	if( fClusterCandidates->GetEntries() > 0  ){
 		if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 			fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
 		} else { // means we use #V0s for multiplicity
-			fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGammaCandidates->GetEntries(),fEventPlaneAngle);
+			fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fClusterCandidates->GetEntries(),fEventPlaneAngle);
 		}
 	}
 }
