@@ -1,8 +1,7 @@
 /*
-
   FMD DA for online calibration of conditions
 
-  Contact:                 canute@nbi.dk
+  Contact:                 christian.holm.christensen@cern.ch
   Link:                    fmd.nbi.dk/fmd/offline
   Run Type:                PHYSICS
   DA Type:                 MON
@@ -59,8 +58,6 @@ int main(int argc, char **argv)
 
   AliFMDParameters::Instance()->Init(kFALSE,0);
   AliFMDParameters::Instance()->UseCompleteHeader(old);
-  struct eventHeaderStruct *event;
-  int status;
 
   Int_t  debugLevel = 0;
   Bool_t badOption  = false;
@@ -97,7 +94,7 @@ int main(int argc, char **argv)
     printf("%s: No data source specified\n", argv[0]);
     return -1;
   }
-  status=monitorSetDataSource(source);
+  int status=monitorSetDataSource(source);
   if (status!=0) {
     printf("monitorSetDataSource() failed for %s: %s\n",
 	   source, monitorDecodeError(status));
@@ -115,45 +112,46 @@ int main(int argc, char **argv)
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
 
-  AliRawReader *reader = 0;
-  AliFMDBaseDA baseDA;
-  Int_t  retval = 0;
-  Int_t iev = 0;
-  Bool_t SODread = kFALSE;
-  while(!SODread && iev<1000) {
+  AliRawReader* reader  = 0;
+  AliFMDBaseDA  baseDA;
+  Int_t         retval  = 0;
+  Int_t         iev     = 0;
+  Bool_t        sodSeen = kFALSE;
+  while(!sodSeen && iev<1000) {
     
     /* check shutdown condition */
-    if (daqDA_checkShutdown()) {break;}
+    if (daqDA_checkShutdown()) break;
     
     /* get next event (blocking call until timeout) */
-    status=monitorGetEventDynamic((void **)&event);
-    if (status==MON_ERR_EOF) {
+    struct eventHeaderStruct *event = 0;    
+    status = monitorGetEventDynamic((void **)&event);
+    if (status == MON_ERR_EOF) {
       printf ("End of File detected\n");
       break; /* end of monitoring file has been reached */
     }
     
-    if (status!=0) {
+    if (status != 0) {
       printf("monitorGetEventDynamic() failed : %s\n",
 	     monitorDecodeError(status));
       break;
     }
     
     /* retry if got no event */
-    if (event==NULL) {
-      continue;
-    }
+    if (!event) continue;
     
     iev++; 
     
-    switch (event->eventType){
-      
+    switch (event->eventType) {
     case START_OF_DATA:
+      std::cout << "Got START OF DATA event" << std::endl;
       reader = new AliRawReaderDate((void*)event);
-      baseDA.Run(reader);
-      SODread = kTRUE;
+      baseDA.Run(reader, true);
+      sodSeen = kTRUE;
+      std::cout << "Pushing to FXS" << std::endl;
       retval = 
 	daqDA_FES_storeFile("conditions.csv", 
-			    AliFMDParameters::Instance()->GetConditionsShuttleID());
+			    AliFMDParameters::Instance()
+			    ->GetConditionsShuttleID());
       if (retval != 0) std::cerr << "Base DA failed" << std::endl;
       
       break;
@@ -163,7 +161,10 @@ int main(int argc, char **argv)
     
     }
   }
- 
+  std::cout << "End of FMD-Base - return " << retval << std::endl;
    
   return retval;
 }
+//
+// EOF
+// 

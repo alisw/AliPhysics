@@ -28,6 +28,7 @@ int main(int argc, char **argv)
 #ifdef ALI_AMORE
   gainDA.SetMakeSummaries(kTRUE);
 #endif
+  std::cout << "Running Gain DA" << std::endl;
   r.Exec(gainDA);
 
   const char* files[] = { "conditions.csv", 
@@ -42,6 +43,7 @@ int main(int argc, char **argv)
 
   PostSummaries(gainDA, "gain", r.RunNumber());
 
+  std::cout << "End of FMD-Gain, return " << ret << std::endl;
   return ret;
 }
 //

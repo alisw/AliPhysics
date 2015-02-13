@@ -14,7 +14,7 @@
 # **************************************************************************
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/ACORDE/DA)
+include_directories(${AliRoot_SOURCE_DIR}/FMD/DA)
 
 # Additional include folders in alphabetical order
 include_directories(

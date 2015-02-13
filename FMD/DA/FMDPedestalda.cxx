@@ -12,8 +12,11 @@
 */
 #include <AliFMDPedestalDA.h>
 #include <AliFMDParameters.h>
+#include <TROOT.h>
+#include <TApplication.h>
 #include "FMDUtilda.h"
 #include <iostream>
+#include <unistd.h>
 
 int main(int argc, char **argv) 
 {
@@ -27,6 +30,7 @@ int main(int argc, char **argv)
 #ifdef ALI_AMORE
   pedDA.SetMakeSummaries(kTRUE);
 #endif
+  std::cout << "Eecuting pedestal DA" << std::endl;
   r.Exec(pedDA);
 
   const char* files[] = { "conditions.csv", 
@@ -40,7 +44,13 @@ int main(int argc, char **argv)
   if(ret > 0) std::cerr << "Pedestal DA failed" << std::endl;
 
   PostSummaries(pedDA, "ped", r.RunNumber());
-  
+
+  std::cout << "End of FMD-Gain, return " << ret << std::endl;
+  gROOT->SetMustClean(false);
+
+  std::cout << "Now calling _Exit(" << ret << ") to finish NOW!" << std::endl;
+  _exit(ret);
+
   return ret;
 }
 //

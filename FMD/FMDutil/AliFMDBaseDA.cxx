@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -54,7 +54,7 @@ ClassImp(AliFMDBaseDA)
 #endif
 
 //_____________________________________________________________________
-const char*
+TString
 AliFMDBaseDA::GetStripPath(UShort_t det, 
 			   Char_t   ring, 
 			   UShort_t sec, 
@@ -72,12 +72,12 @@ AliFMDBaseDA::GetStripPath(UShort_t det,
   // 
   // Return 
   //     The path
-  return Form("%s%sFMD%d%c[%02d,%03d]", 
-	      (full ? GetSectorPath(det, ring, sec, full) : ""), 
-	      (full ? "/" : ""), det, ring, sec, str);
+  return TString::Format("%s%sFMD%d%c[%02d,%03d]", 
+			 (full ? GetSectorPath(det, ring, sec, full).Data() : ""), 
+			 (full ? "/" : ""), det, ring, sec, str);
 }
 //_____________________________________________________________________
-const char*
+TString
 AliFMDBaseDA::GetSectorPath(UShort_t det, 
 			    Char_t   ring, 
 			    UShort_t sec, 
@@ -94,12 +94,12 @@ AliFMDBaseDA::GetSectorPath(UShort_t det,
   // 
   // Return 
   //     The path
-  return Form("%s%sFMD%d%c[%02d]", 
-	      (full ? GetRingPath(det, ring, full) : ""), 
-	      (full ? "/" : ""), det, ring, sec);
+  return TString::Format("%s%sFMD%d%c[%02d]", 
+			 (full ? GetRingPath(det, ring, full).Data() : ""), 
+			 (full ? "/" : ""), det, ring, sec);
 }
 //_____________________________________________________________________
-const char*
+TString
 AliFMDBaseDA::GetRingPath(UShort_t det, 
 			  Char_t   ring, 
 			  Bool_t   full) const
@@ -115,12 +115,12 @@ AliFMDBaseDA::GetRingPath(UShort_t det,
   // 
   // Return 
   //     The path
-  return Form("%s%sFMD%d%c", 
-	      (full ? GetDetectorPath(det, full) : ""), 
-	      (full ? "/" : ""), det, ring);
+  return TString::Format("%s%sFMD%d%c", 
+			 (full ? GetDetectorPath(det, full).Data() : ""), 
+			 (full ? "/" : ""), det, ring);
 }
 //_____________________________________________________________________
-const char*
+TString
 AliFMDBaseDA::GetDetectorPath(UShort_t det, 
 			      Bool_t   full) const
 {
@@ -135,9 +135,9 @@ AliFMDBaseDA::GetDetectorPath(UShort_t det,
   // 
   // Return 
   //     The path
-  return Form("%s%sFMD%d", 
-	      (full ? fDiagnosticsFilename.Data() : ""), 
-	      (full ? ":/" : ""), det);
+  return TString::Format("%s%sFMD%d", 
+			 (full ? fDiagnosticsFilename.Data() : ""), 
+			 (full ? ":/" : ""), det);
 }
 
 //_____________________________________________________________________
@@ -190,6 +190,10 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   }
 
   fDetectorArray.SetOwner();  
+  fDetectorArray.ResetBit(TObject::kMustCleanup);
+  fSummaries.ResetBit(TObject::kMustCleanup);
+  fDetectorArray.ResetBit(TObject::kIsOnHeap);
+  fSummaries.ResetBit(TObject::kIsOnHeap);
 }
 
 
@@ -197,6 +201,11 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
 AliFMDBaseDA::~AliFMDBaseDA() 
 {
   //destructor
+  // fDetectorArray.ls();
+  // fSummaries.ls();
+  // fDetectorArray.SetOwner(false);
+  // fSummaries.SetOwner(false);
+
 }
 
 //_____________________________________________________________________
@@ -231,7 +240,7 @@ UShort_t AliFMDBaseDA::GetProgress(Int_t nEvents) const
 }
 
 //_____________________________________________________________________
-void AliFMDBaseDA::Run(AliRawReader* reader) 
+void AliFMDBaseDA::Run(AliRawReader* reader, Bool_t isBase) 
 {
   //Run the FMD DA
   TFile* diagFile = 0;
@@ -259,12 +268,13 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
        eventType == AliRawEventHeaderBase::kFormatError) { 
       
       WriteConditionsData(fmdReader);
-      Init();
       sodread = kTRUE;
       break;
     }
   }
-  
+  if (isBase) return;
+
+  Init();
   InitContainer(diagFile);
   if (AliLog::GetDebugLevel("FMD","") >= 3) { 
     fDetectorArray.ls();
@@ -274,21 +284,21 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
     AliWarning("No SOD event detected!");
   
   int lastProgress = 0;
-  
+
   for(Int_t i = 0; i< 3;i++) fNEventsPerDetector[i] = 0;
 
   for(Int_t n = 1; !HaveEnough(n); n++) {
-    AliInfoF("Get the next event %d", n);
+    AliDebugF(1,"Get the next event %d", n);
     if(!reader->NextEvent()) { n--; continue; }
     UInt_t eventType = reader->GetType();
-    AliInfoF("Event type is %d", eventType);
+    AliDebugF(3, "Event type is %d", eventType);
     if(eventType != AliRawEventHeaderBase::kPhysicsEvent) { n--; continue; }
 
+    Bool_t seen[] = { false, false, false };
     SetCurrentEvent(n);
     digitArray->Clear();
     fmdReader->ReadAdcs(digitArray);
-    
-    Bool_t seen[] = { false, false, false };
+  
     for(Int_t i = 0; i<digitArray->GetEntriesFast();i++) {
       AliFMDDigit* digit = static_cast<AliFMDDigit*>(digitArray->At(i));
       UShort_t det = digit->Detector();
@@ -299,17 +309,16 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       if (Int_t(fNEventsPerDetector[det-1]) < GetRequiredEvents()) 
 	FillChannels(digit);
     }
-    
     for(Int_t i = 0; i< 3;i++) 
       if (seen[i]) (fNEventsPerDetector[i])++;
       
     FinishEvent();
     
     Int_t nReq = GetRequiredEvents();
-    AliInfoF("%9d: %6d/%6d %6d/%6d %6d/%6d", n, 
-	     fNEventsPerDetector[0], nReq,
-	     fNEventsPerDetector[1], nReq,
-	     fNEventsPerDetector[2], nReq);
+    AliDebugF(5, "%9d: %6d/%6d %6d/%6d %6d/%6d", n, 
+	      fNEventsPerDetector[0], nReq,
+	      fNEventsPerDetector[1], nReq,
+	      fNEventsPerDetector[2], nReq);
 
     int progress = GetProgress(n);
     if (progress <= lastProgress) continue;
@@ -375,10 +384,11 @@ void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
 {
   //Prepare container for diagnostics    
   TDirectory* savDir   = gDirectory;
+  Bool_t owners = true;
 
   for(UShort_t det=1;det<=3;det++) {
-    TObjArray* detArray = new TObjArray(det == 1 ? 1 : 2);
-    detArray->SetOwner();
+    Array* detArray = new Array(det == 1 ? 1 : 2);
+    detArray->SetOwner(owners);
     detArray->SetName(GetDetectorPath(det, false));
     fDetectorArray.AddAtAndExpand(detArray,det);
 
@@ -393,9 +403,10 @@ void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
       Char_t   ring = (ir == 0 ? 'O' : 'I');
       UShort_t nsec = (ir == 0 ? 40  : 20);
       UShort_t nstr = (ir == 0 ? 256 : 512);
-      TObjArray* ringArray = new TObjArray(nsec);
-      ringArray->SetOwner();
+      Array* ringArray = new Array(nsec);
+      ringArray->SetOwner(owners);
       ringArray->SetName(GetRingPath(det, ring, false));
+      ringArray->ResetBit(TObject::kMustCleanup);
       detArray->AddAtAndExpand(ringArray,ir);
 
 
@@ -407,9 +418,10 @@ void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
       
 
       for(UShort_t sec =0; sec < nsec;  sec++)  {
-	TObjArray* sectorArray = new TObjArray(nstr);
-	sectorArray->SetOwner();
+	Array* sectorArray = new Array(nstr);
+	sectorArray->SetOwner(owners);
 	sectorArray->SetName(GetSectorPath(det, ring, sec, false));
+	sectorArray->ResetBit(TObject::kMustCleanup);
 	ringArray->AddAtAndExpand(sectorArray,sec);
 
 
@@ -424,9 +436,10 @@ void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
 	    secDir->cd();
 	    secDir->mkdir(GetStripPath(det, ring, sec, strip, kFALSE));
 	  }
-	  TObjArray* stripArray = new TObjArray(0);
-	  stripArray->SetOwner(true);
+	  Array* stripArray = new Array(0);
+	  stripArray->SetOwner(owners);
 	  stripArray->SetName(GetStripPath(det, ring, sec, strip, false));
+	  stripArray->ResetBit(TObject::kMustCleanup);
 	  sectorArray->AddAtAndExpand(stripArray, strip);
 	  AddChannelContainer(stripArray, det, ring, sec, strip);
 	}
@@ -591,56 +604,56 @@ AliFMDBaseDA::MakeSummaryHistogram(const char* prefix, const char* title,
   Int_t nX = ((d == 1 || r == 'I' || r == 'i') ?  20 :  40);
   Int_t nY = ((d == 1 || r == 'I' || r == 'i') ? 512 : 256);
   
-  TH2* ret = new TH2F(Form("%sFMD%d%c", prefix, d, r), 
-		      Form("%s for FMD%d%c", title, d, r), 
-		      nX, -0.5, nX-0.5, nY, -0.5, nY-0.5);
+  TString n = TString::Format("%sFMD%d%c", prefix, d, r);
+  TString t = TString::Format("%s for FMD%d%c", title, d, r);
+  TH2* ret = new TH2F(n, t, nX, -0.5, nX-0.5, nY, -0.5, nY-0.5);
   ret->SetXTitle("Sector #");
   ret->SetYTitle("Strip #");
   ret->SetDirectory(0);
-  // if (!fSummaries) fSummaries = new TObjArray;
+  // if (!fSummaries) fSummaries = new Array;
   fSummaries.Add(ret);
   return ret;
 }
 
 //_____________________________________________________________________ 
-TObjArray*
+AliFMDBaseDA::Array*
 AliFMDBaseDA::GetDetectorArray(UShort_t det)
 {
   if (det < 1 || det > 3) { 
     AliErrorF("Detector index %d out of bounds", det);
     return 0;
   }
-  return static_cast<TObjArray*>(fDetectorArray.At(det));
+  return static_cast<Array*>(fDetectorArray.At(det));
 }
 //_____________________________________________________________________ 
-TObjArray*
+AliFMDBaseDA::Array*
 AliFMDBaseDA::GetRingArray(UShort_t det, Char_t ring)
 {
   Int_t idx = (ring == 'O' || ring == 'o' ? 0 : 1);
-  TObjArray* array = GetDetectorArray(det);
+  Array* array = GetDetectorArray(det);
   if (!array) return 0;
-  array = static_cast<TObjArray*>(array->At(idx));
+  array = static_cast<Array*>(array->At(idx));
   if (!array) AliErrorF("No ring array for FMD%d%c (%d)", det, ring, idx);
   return array;
 }
 //_____________________________________________________________________ 
-TObjArray*
+AliFMDBaseDA::Array*
 AliFMDBaseDA::GetSectorArray(UShort_t det, Char_t ring, UShort_t sector)
 {
-  TObjArray* array = GetRingArray(det,ring);
+  Array* array = GetRingArray(det,ring);
   if (!array) return 0;
-  array = static_cast<TObjArray*>(array->At(sector));
+  array = static_cast<Array*>(array->At(sector));
   if (!array) AliErrorF("No sector array for FMD%d%c[%02d]", det, ring, sector);
   return array;
 }
 //_____________________________________________________________________ 
-TObjArray*
+AliFMDBaseDA::Array*
 AliFMDBaseDA::GetStripArray(UShort_t det, Char_t ring, 
 			    UShort_t sector, UShort_t strip)
 {
-  TObjArray* array = GetSectorArray(det,ring,sector);
+  Array* array = GetSectorArray(det,ring,sector);
   if (!array) return 0;
-  array = static_cast<TObjArray*>(array->At(strip));
+  array = static_cast<Array*>(array->At(strip));
   if (!array) AliErrorF("No strip array for FMD%d%c[%02d,%03d]", 
 			det, ring, sector, strip);
   return array;
@@ -729,7 +742,7 @@ namespace {
 Int_t
 AliFMDBaseDA::Runner::Init(int argc, char** argv)
 {
-  AddHandlers();
+  // AddHandlers();
 
   // --- Process the command line ------------------------------------
   TString source;
@@ -844,33 +857,16 @@ AliFMDBaseDA::Runner::Exec(AliFMDBaseDA& da)
 
   timer.Stop();
   timer.Print();
-
-#ifdef ALI_AMORE
-  try { 
-    amore::da::AmoreDA myAmore(amore::da::AmoreDA::kSender);
-
-    for (UShort_t det = 1; det <= 3; det++) {
-      if (!da.HasSeenDetector(det)) continue;
-      TObject* runNo = new TObject;
-      runNo->SetUniqueID(fReader->GetRunNumber());
-      myAmore.Send(Form("gainRunNoFMD%d", det), runNo);
-    }
-    
-    TIter     next(&da.GetSummaries());
-    TObject*  obj = 0;
-    while ((obj = next())) 
-      myAmore.Send(obj->GetName(), obj);
-    
-  }
-  catch (exception& e) {
-    cerr << "Failed to make AMORE instance: " << e.what() << endl;
-  }
-			       
-#endif
 }
 
-
-  
+#if 0
+AliFMDBaseDA::_Array::~_Array()
+{
+  // Printf("Deleting %s (%p)", this->GetName(), this);
+  // SetOwner(false);
+  // Clear();
+}
+#endif
   
   
 //_____________________________________________________________________ 
@@ -879,3 +875,4 @@ AliFMDBaseDA::Runner::Exec(AliFMDBaseDA& da)
 //
 // EOF
 //
+ 

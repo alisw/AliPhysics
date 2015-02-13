@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file    AliFMDPedestalDA.cxx
+/** @file    AliMDPedestalDA.cxx
     @author  Hans Hjersing Dalsgaard <canute@nbi.dk>
     @date    Mon Mar 10 09:46:05 2008
     @brief   Derived class for the pedestal detector algorithm.
@@ -114,7 +114,7 @@ void AliFMDPedestalDA::Init()
 }
 
 //_____________________________________________________________________
-void AliFMDPedestalDA::AddChannelContainer(TObjArray* sampleArray, 
+void AliFMDPedestalDA::AddChannelContainer(Array* sampleArray, 
 					   UShort_t det, 
 					   Char_t   ring, 
 					   UShort_t sec, 
@@ -136,12 +136,13 @@ void AliFMDPedestalDA::AddChannelContainer(TObjArray* sampleArray,
     hSample->SetXTitle("ADC");
     hSample->SetYTitle("Events");
     hSample->SetDirectory(0);
+    hSample->ResetBit(TObject::kMustCleanup);
     sampleArray->AddAtAndExpand(hSample, sample);
   }
 }
 
 //_____________________________________________________________________
-void AliFMDPedestalDA::AddSectorSummary(TObjArray* sectorArray, 
+void AliFMDPedestalDA::AddSectorSummary(Array* sectorArray, 
 					UShort_t det, 
 					Char_t   ring, 
 					UShort_t sec, 
@@ -154,10 +155,12 @@ void AliFMDPedestalDA::AddSectorSummary(TObjArray* sectorArray,
   sumPed->SetXTitle("Strip");
   sumPed->SetYTitle("Pedestal [ADC]");
   sumPed->SetDirectory(0);
+  sumPed->ResetBit(TObject::kMustCleanup);
   
   TH1F* sumNoise = static_cast<TH1F*>(sumPed->Clone("Noise"));
   sumNoise->SetYTitle("Noise [ADC]");
   sumNoise->SetDirectory(0);
+  sumNoise->ResetBit(TObject::kMustCleanup);
   
   Int_t n = sectorArray->GetEntriesFast();
   sectorArray->AddAtAndExpand(sumPed,   n + kPedestalOffset - 1);
@@ -251,17 +254,9 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     }
     break;
   }
-#if 0
-  static bool first = true;
-  if (summary && first) { 
-    std::cout << "Filling summary " << summary->GetName() << std::endl;
-    first = false;
-  }
-#endif
-  // Float_t           factor   = pars->GetPedestalFactor();
-  UInt_t            samples  = pars->GetSampleRate(det, ring, sec, strip);
+
+  UInt_t samples  = pars->GetSampleRate(det, ring, sec, strip);
   for (UShort_t sample = 0; sample < samples; sample++) {
-  
     TH1S* hChannel = GetChannel(det, ring, sec, strip,sample);
     if(!hChannel || hChannel->GetEntries() == 0) {
       //AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
@@ -269,19 +264,18 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
       return;
     }
     
-    AliDebug(50, Form("Fitting FMD%d%c[%02d,%03d] with %d entries",
-		      det,ring,sec,strip, int(hChannel->GetEntries())));
-    TF1 fitFunc("fitFunc","gausn",0,300);
-    fitFunc.SetParameters(100,100,1);
-    hChannel->Fit("fitFunc","Q0+","",10,200);
+    AliDebugF(50, "Fitting FMD%d%c[%02d,%03d] with %d entries",
+	      det,ring,sec,strip, int(hChannel->GetEntries()));
+    TF1* fitFunc = new TF1("fitFunc","gausn",0,300);
+    fitFunc->ResetBit(TObject::kMustCleanup);
+    fitFunc->SetParameters(100,100,1);
+    hChannel->Fit(fitFunc,"Q0","",10,200);
+    hChannel->GetListOfFunctions()->Remove(fitFunc);
     
     Float_t mean = hChannel->GetMean();
     Float_t rms  = hChannel->GetRMS();
     
-    
-    
     hChannel->GetXaxis()->SetRangeUser(mean-5*rms,mean+5*rms);
-    
     mean = hChannel->GetMean();
     rms  = hChannel->GetRMS();
   
@@ -315,8 +309,8 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     Float_t chi2ndf = 0;
     
     
-    if(fitFunc.GetNDF())
-      chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
+    if(fitFunc->GetNDF())
+      chi2ndf = fitFunc->GetChisquare() / fitFunc->GetNDF();
     
     
     Int_t sampleToWrite = 2;
@@ -334,9 +328,11 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 		<< strip                       << ','
 		<< mean                        << ','
 		<< rms                         << ','
-		<< fitFunc.GetParameter(1)     << ','
-		<< fitFunc.GetParameter(2)     << ','
+		<< fitFunc->GetParameter(1)    << ','
+		<< fitFunc->GetParameter(2)    << ','
 		<< chi2ndf                     <<"\n";
+
+    delete fitFunc;
 
     if (summary) { 
       Int_t bin = summary->FindBin(sec, strip);
@@ -347,53 +343,13 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     if(fSaveHistograms  ) {
       TH1F* sumPed   = GetSectorSummary(det, ring, sec, true);
       TH1F* sumNoise = GetSectorSummary(det, ring, sec, false);
-#if 0
-      gDirectory->cd(GetSectorPath(det, ring, sec, kTRUE));
-      TH1F* sumPed   = dynamic_cast<TH1F*>(gDirectory->Get("Pedestals"));
-      TH1F* sumNoise = dynamic_cast<TH1F*>(gDirectory->Get("Noise"));
-      Int_t nStr = (ring == 'I' ? 512 : 256);
-      if (!sumPed) {
-	sumPed = new TH1F("Pedestals", 
-			  Form("Summary of pedestals in FMD%d%c[%02d]", 
-			       det, ring, sec), 
-			  nStr, -.5, nStr-.5);
-	sumPed->SetXTitle("Strip");
-	sumPed->SetYTitle("Pedestal [ADC]");
-	sumPed->SetDirectory(gDirectory);
-      }
-      if (!sumNoise) { 
-	sumNoise = new TH1F("Noise", 
-			    Form("Summary of noise in FMD%d%c[%02d]", 
-				 det, ring, sec), 
-			    nStr, -.5, nStr-.5);
-	sumNoise->SetXTitle("Strip");
-	sumNoise->SetYTitle("Noise [ADC]");
-	
-	sumNoise->SetDirectory(gDirectory);
-      }
-#endif
       sumPed->SetBinContent(strip+1, mean);
       sumPed->SetBinError(strip+1, rms);
       sumNoise->SetBinContent(strip+1, rms);
 
-#if 0
-      if(sumNoise->GetEntries() == nStr)
-	sumNoise->Write(sumNoise->GetName(),TObject::kOverwrite);
-      if(sumPed->GetEntries() == nStr)
-	sumPed->Write(sumPed->GetName(),TObject::kOverwrite);
-#endif
- 
       fPedSummary.SetBinContent(fCurrentChannel,mean);
-      
       fNoiseSummary.SetBinContent(fCurrentChannel,rms);
       fCurrentChannel++;
-
-#if 0      
-      gDirectory->cd(GetStripPath(det, ring, sec, strip, kTRUE));
-      hChannel->GetXaxis()->SetRange(1,1024);
-      
-      hChannel->Write();
-#endif
     }
   }
 }
@@ -439,8 +395,8 @@ void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t /*ddl*/)
       for (UShort_t channel = 0; channel < 16; channel++) { 
 	Int_t idx = HWIndex(ddl, *board, altro, channel);
 	if (idx < 0) { 
-	  AliWarning(Form("Invalid index for %4d/0x%02x/0x%x/0x%x: %d", 
-			  ddl, *board, altro, channel, idx));
+	  AliWarningF("Invalid index for %4d/0x%02x/0x%x/0x%x: %d", 
+		      ddl, *board, altro, channel, idx);
 	  continue;
 	}
 	Short_t min = fMinTimebin[idx];
@@ -525,7 +481,7 @@ TH1S* AliFMDPedestalDA::GetChannel(UShort_t det,
   //
   // Return:
   //     ADC spectra of a strip.
-  TObjArray* sampleArray = GetStripArray(det, ring, sec, strip);
+  Array* sampleArray = GetStripArray(det, ring, sec, strip);
   if (!sampleArray) return 0;
   TH1S*      hSample     = static_cast<TH1S*>(sampleArray->At(sample));
   if (!hSample) {
@@ -548,7 +504,7 @@ TH1F* AliFMDPedestalDA::GetSectorSummary(UShort_t det,
 					 UShort_t sec, 
 					 Bool_t   pedNotNoise) 
 {
-  TObjArray* secArray    = GetSectorArray(det, ring, sec);
+  Array*     secArray    = GetSectorArray(det, ring, sec);
   Int_t      n           = secArray->GetEntriesFast();
   Int_t      i           = n - (pedNotNoise ? kNoiseOffset : kPedestalOffset);
   return static_cast<TH1F*>(secArray->At(i));

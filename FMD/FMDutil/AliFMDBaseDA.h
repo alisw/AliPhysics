@@ -24,6 +24,7 @@
 #include "TObjArray.h"
 #include "TString.h"
 #include "TArrayS.h"
+#include "TList.h"
 #include <iosfwd>
 #include <fstream>
 class AliFMDDigit;
@@ -38,6 +39,29 @@ class TClonesArray;
 class AliFMDBaseDA: public TNamed 
 {
 public:
+#if 0
+  struct _Array : public TList 
+  {
+    _Array() : TList() {}
+    _Array(Int_t) : TList() {}
+    _Array(const _Array& a) : TList() {} 
+    ~_Array();
+    void AddAtAndExpand(TObject* o, Int_t idx) { AddAt(o,idx); }       
+    Int_t GetEntriesFast() { return GetEntries(); }
+  };
+  typedef _Array Array;
+#elif 0 
+  struct _Array : public TObjArray 
+  {
+    _Array() : TObjArray() {}
+    _Array(Int_t n) : TObjArray(n) {}
+    ~_Array();
+  };
+  typedef _Array Array;
+#else
+  typedef TObjArray Array;
+#endif
+
   /** 
    * Constructor 
    * 
@@ -60,8 +84,9 @@ public:
    * Run this DA
    * 
    * @param fmdReader Raw input reader
+   * @param isBase Terminate after reading SOD   
    */  
-  void Run(AliRawReader* fmdReader);
+  void Run(AliRawReader* fmdReader, Bool_t isBase=false);
   /** 
    * Set whether to save diagnostics 
    * 
@@ -104,7 +129,7 @@ public:
    *
    * @return Array of summary histograms or null if not defined 
    */
-  const TObjArray& GetSummaries() const { return fSummaries; }
+  const Array& GetSummaries() const { return fSummaries; }
   /** 
    * Check if we saw data for detector 
    * 
@@ -152,13 +177,13 @@ protected:
   /** 
    * Add a strip container 
    */
-  virtual void AddChannelContainer(TObjArray*, UShort_t, Char_t, 
+  virtual void AddChannelContainer(Array*, UShort_t, Char_t, 
 				   UShort_t, UShort_t )  {};
   /** 
    * Add summary(s) for sectors 
    * 
    */
-  virtual void AddSectorSummary(TObjArray*, UShort_t, Char_t, UShort_t, 
+  virtual void AddSectorSummary(Array*, UShort_t, Char_t, UShort_t, 
 				UShort_t) {}
   /** 
    * End of event
@@ -235,7 +260,7 @@ protected:
    * 
    * @return Path to detector
    */  
-  const char* GetDetectorPath(UShort_t det, Bool_t full=kTRUE) const;
+  TString GetDetectorPath(UShort_t det, Bool_t full=kTRUE) const;
   /** 
    * Get the ring path in diagnositcs file
    * 
@@ -245,7 +270,7 @@ protected:
    * 
    * @return Path to ring
    */  
-  const char* GetRingPath(UShort_t det, Char_t ring, Bool_t full=kTRUE) const;
+  TString GetRingPath(UShort_t det, Char_t ring, Bool_t full=kTRUE) const;
   /** 
    * Get the sector path in diagnositcs file
    * 
@@ -256,7 +281,7 @@ protected:
    * 
    * @return Path to sector
    */  
-  const char* GetSectorPath(UShort_t det, Char_t ring, UShort_t sec, 
+  TString GetSectorPath(UShort_t det, Char_t ring, UShort_t sec, 
 			    Bool_t full=kTRUE) const;
   /** 
    * Get the strip path in diagnositcs file
@@ -269,12 +294,12 @@ protected:
    * 
    * @return Path to strip
    */  
-  const char* GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
+  TString GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str, Bool_t full=kTRUE) const;
-  TObjArray* GetDetectorArray(UShort_t det);
-  TObjArray* GetRingArray(UShort_t det, Char_t ring);
-  TObjArray* GetSectorArray(UShort_t det, Char_t ring, UShort_t sector);
-  TObjArray* GetStripArray(UShort_t det, Char_t ring, 
+  Array* GetDetectorArray(UShort_t det);
+  Array* GetRingArray(UShort_t det, Char_t ring);
+  Array* GetSectorArray(UShort_t det, Char_t ring, UShort_t sector);
+  Array* GetStripArray(UShort_t det, Char_t ring, 
 			   UShort_t sector, UShort_t strip);
   /** 
    * Write conditions file 
@@ -313,8 +338,6 @@ protected:
   virtual Bool_t HaveEnough(Int_t nEvent) const;
   virtual UShort_t GetProgress(Int_t nEvent) const;
 
-
-
   static const UInt_t fgkBaseDDL = 3072;   // base FMD ddl
   //Char_t* fDiagnosticsFilename;
   TString       fDiagnosticsFilename;  // name of diagnostics file
@@ -322,7 +345,7 @@ protected:
   std::ofstream fConditionsFile;       // conditions file
   Bool_t        fSaveHistograms;       // save hists or not
   Bool_t        fMakeSummaries;        // save hists or not
-  TObjArray     fDetectorArray;        // array indiced by detector
+  Array         fDetectorArray;        // array indiced by detector
   TArrayS       fPulseSize;            // Pulse size for gain calib
   TArrayS       fPulseLength;          // Pulse length for gain calib
   Bool_t        fSeenDetectors[3];     // Detectors seen so far
@@ -330,7 +353,7 @@ protected:
   Int_t         fRequiredEvents;       // # events required for this calib
   Int_t         fCurrentEvent;         // the current event       
   UInt_t        fRunno;                // Current run number 
-  TObjArray     fSummaries;            // Summary histograms 
+  Array         fSummaries;            // Summary histograms 
   Bool_t        fAll;                  // Try to get data from all dets
   
   ClassDef(AliFMDBaseDA,0) // Base Detector algorithm for all run types
