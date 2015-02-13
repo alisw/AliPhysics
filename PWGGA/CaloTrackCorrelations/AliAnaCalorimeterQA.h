@@ -183,11 +183,13 @@ public:
   TH1F *   fhPt ;                             //! pT distribution, Reco
   TH1F *   fhPhi;                             //! phi distribution, Reco 
   TH1F *   fhEta;                             //! eta distribution, Reco 
+  TH2F *   fhEtaPhi;                          //! eta-phi distribution, Reco 
   TH3F *   fhEtaPhiE  ;                       //! eta vs phi vs E, Reco
   TH1F *   fhECharged  ;                      //! E distribution, Reco, matched with track
   TH1F *   fhPtCharged ;                      //! pT distribution, Reco, matched with track
   TH1F *   fhPhiCharged;                      //! phi distribution, Reco, matched with track 
-  TH1F *   fhEtaCharged;                      //! eta distribution, Reco, matched with track 
+  TH1F *   fhEtaCharged;                      //! eta-phi distribution, Reco, matched with track 
+  TH2F *   fhEtaPhiCharged;                   //! eta distribution, Reco, matched with track 
   TH3F *   fhEtaPhiECharged;                  //! eta vs phi vs E, Reco, matched with track 
     
   TH2F *   fhIM;                              //! cluster pairs invariant mass
@@ -437,7 +439,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,29)
+  ClassDef(AliAnaCalorimeterQA,30)
 } ;
 
 
