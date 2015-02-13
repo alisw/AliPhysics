@@ -477,15 +477,17 @@ AliAnalysisTaskEMCALPi0Gamma::~AliAnalysisTaskEMCALPi0Gamma()
 {
   // Destructor.
   
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutput; fOutput = 0;
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fOutput; 
+    //fOutput = 0;
   }
-  delete fPtRanges; fPtRanges = 0;
-  fGeom = 0; // do not delete geometry when using instance
-  delete fReco; fReco = 0;
-  delete fTrClassNamesArr;
-  delete fSelTracks;
-  delete fSelPrimTracks;
+  //delete fPtRanges; fPtRanges = 0;
+  //fGeom = 0; // do not delete geometry when using instance
+  //delete fReco;
+  //fReco = 0;
+  //delete fTrClassNamesArr;
+  //delete fSelTracks;
+  //delete fSelPrimTracks;
 }
 
 //________________________________________________________________________
@@ -1458,6 +1460,27 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
   if (fDoPSel && offtrigger==0)
     return;
   
+  // cut on certain events
+  if(fEsdEv){
+    const AliESDVertex* vtxESD = fEsdEv->GetPrimaryVertexTracks();
+    if( vtxESD->GetNContributors() < 1 )
+      {
+	return;
+      }
+    TString trigClasses = fEsdEv->GetFiredTriggerClasses();
+    // remove "fast cluster events": 
+    if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL"))
+      return;
+    if(!(fEsdEv->GetPrimaryVertex()->GetStatus()))   
+      return;
+  }
+  else if(fAodEv){
+    TString trigClasses = fAodEv->GetFiredTriggerClasses();
+    // remove "fast cluster events": 
+    if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL"))
+      return;
+  }
+
   fHCuts->Fill(cut++);
   
   
@@ -1824,14 +1847,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       continue;
     // emcal cluster?
     if (!clus->IsEMCAL()){
-      //      cout << "at " << i << " cluster not EMCAL" << endl;
       continue;
     }
-    //    Double_t ecorr = 1;
-    //Double_t ecorr = fcorrect->Eval(2.0*clusterVec.E());
-    //    fHCorrection->Fill(ecorr);
-    //    TLorentzVector clusterVecCorr(clusterVec.Px()*ecorr,clusterVec.Py()*ecorr,clusterVec.Pz()*ecorr,clusterVec.E()*ecorr);
-    //clusterVecCorr.SetPxPyPzE(clusterVec.Px()*ecorr,clusterVec.Py()*ecorr,clusterVec.Pz()*ecorr,clusterVec.E()*ecorr);
     Double_t maxAxis    = clus->GetTOF(); //sigma
     Double_t clusterEcc = clus->Chi2();   //eccentricity
     fHClustEccentricity->Fill(clusterEcc);
@@ -1844,7 +1861,6 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
      }
      */
     // fill clusters into this event
-
     
     // apply cluster cuts first
     if (clus->E()<fMinE)
@@ -1857,14 +1873,20 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           continue;
     if(clus->GetM02()>fM02)
       continue;
-    // if(fDoTrMtSmpl){
-    //   if(!clus->GetNTracksMatched()==0){
-    // 	continue;
-    //   }
-    // }
+    if(fDoTrMtSmpl){
+      if(!clus->GetNTracksMatched()==0){
+     	continue;
+      }
+    }
 
     TLorentzVector clusterVec;
     clus->GetMomentum(clusterVec,vertex);
+
+    if(bprint)
+      clusterVec.Print();
+    //  if(bDirGam){
+      
+    //}
 
     // fill cluster histograms
     fHClustEtaPhi->Fill(clusterVec.Eta(),clusterVec.Phi());
@@ -2241,7 +2263,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   } // end cluster loop
   fHClustAccEvt->Fill(nclusters);
   thisEvent.SetGlobalInfo(nclusters,0,max_phi,max_theta);
-  //cout << "this event size: " << thisEvent.evsize() << endl;
+  if(bprint){
+    thisEvent.Print();
+    cout << " " << endl;
+  }
   return 1;
   //  return max_pt;
 }
@@ -4428,6 +4453,14 @@ void EmcEvent::SetGlobalInfo(const Int_t& Size, const Int_t& V0Size, const Float
   nV0Hits = V0Size;
 	TrigPhi = phiTrig;
   TrigTheta = thetaTrig;
+}
+
+void EmcEvent::Print()
+{
+  Printf("%d hits, %d v0 hits",nHits,nV0Hits);
+  for(int i=0;i<nHits;i++){
+    hit[i].thishit.Print();
+  }
 }
 
 //__________________________________________________________________________________________________
