@@ -94,7 +94,7 @@ public:
   void SetGlobalInfo(const Int_t&, const Int_t&, const Float_t&, const Float_t&);
   int evsize() {return nHits;}
   void Reset();
-  void Print(){Printf("%d hits, %d v0 hits",nHits,nV0Hits); }
+  void Print();
   
   friend class AliAnalysisTaskEMCALPi0Gamma;
 };
