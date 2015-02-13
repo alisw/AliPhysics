@@ -1,10 +1,12 @@
 #ifndef ALITPCGETTER_H
 #define ALITPCGETTER_H
 
-//base class for loaders 
-//loader is common for reading data for all detectors
-//Each detector has a loader data member
-//loader is accessible via folder structure as well
+/// \class AliTPCLoader
+/// \brief base class for loaders
+///
+/// loader is common for reading data for all detectors
+/// Each detector has a loader data member
+/// loader is accessible via folder structure as well
 
 #include <AliLoader.h>
 
@@ -16,7 +18,7 @@ class AliTPCLoader: public AliLoader
     AliTPCLoader();
     AliTPCLoader(const Char_t *name,const Char_t *topfoldername);
     AliTPCLoader(const Char_t *name,TFolder *topfolder);
-    
+
     virtual ~AliTPCLoader(){};//-----------------
 
    protected:
@@ -28,10 +30,12 @@ class AliTPCLoader: public AliLoader
     static const TString fgkDefaultDigitsFileName;
     static const TString fgkDefaultRecPointsFileName;
     static const TString fgkDefaultTracksFileName;
-    
+
 
    public:
+     /// \cond CLASSIMP
      ClassDef(AliTPCLoader,1)
+     /// \endcond
  };
- 
+
 #endif

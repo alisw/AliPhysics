@@ -31,6 +31,7 @@
 
 #include "AliHLTReadoutList.h"
 #include "AliHLTDAQ.h"
+#include "AliDAQ.h"
 #include "Riostream.h"
 #include "TString.h"
 #include "TObjString.h"
@@ -66,6 +67,7 @@ const char* AliHLTReadoutList::DetectorIdToString(EDetectorId id)
   case kTRG:     return "kTRG";
   case kEMCAL:   return "kEMCAL";
   case kDAQTEST: return "kDAQTEST";
+  case kAD:      return "kAD";
   case kHLT:     return "kHLT";
   case kALLDET:  return "kALLDET";
   default:       return "UNKNOWN!";
@@ -137,6 +139,7 @@ AliHLTReadoutList::AliHLTReadoutList(const char* enabledList) :
     if (str == "TRG") enabledDetectors |= kTRG;
     if (str == "EMCAL") enabledDetectors |= kEMCAL;
     if (str == "DAQTEST") enabledDetectors |= kDAQTEST;
+    if (str == "AD") enabledDetectors |= kAD;
     if (str == "HLT") enabledDetectors |= kHLT;
     if (str == "ALL") enabledDetectors |= kALLDET;
   }
@@ -183,10 +186,19 @@ void AliHLTReadoutList::FillStruct(const AliHLTEventDDL& list)
   // the overlapping part of the list.
   if (list.fCount == (unsigned)gkAliHLTDDLListSizeV0)
   {
-    memcpy(&fReadoutList.fList[0], &list.fList[0], sizeof(AliHLTUInt32_t)*28);
-    memcpy(&fReadoutList.fList[29], &list.fList[28], sizeof(AliHLTUInt32_t)*2);
+    memcpy(&fReadoutList.fList[0], &list.fList[0], sizeof(AliHLTUInt32_t)*28); //up to EMCAL
+    //fReadoutList.fList[28] = 0x0; //by construction
+    fReadoutList.fList[29] = list.fList[28]; //DAQTEST
+    fReadoutList.fList[30] = 0x0; //AD
+    fReadoutList.fList[31] = list.fList[29]; //HLT
   }
   else if (list.fCount == (unsigned)gkAliHLTDDLListSizeV1)
+  {
+    memcpy(&fReadoutList.fList[0], &list.fList[0], sizeof(AliHLTUInt32_t)*30); //up to DAQTEST
+    fReadoutList.fList[31] = list.fList[30]; //HLT
+    fReadoutList.fList[30] = 0x0; //AD
+  }
+  else if (list.fCount == (unsigned)gkAliHLTDDLListSizeV2)
   {
     memcpy(&fReadoutList, &list, sizeof(AliHLTEventDDL));
   }
@@ -222,7 +234,7 @@ void AliHLTReadoutList::Clear(Option_t* /*option*/)
 
 #if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
   // Check if we need to convert to new format and do so.
-  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  if (fReadoutList.fCount != (unsigned)gkAliHLTDDLListSize)
   {
     fReadoutList.fCount = gkAliHLTDDLListSize;
   }
@@ -289,16 +301,21 @@ bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitInd
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
     wordIndex = 29;
     break;
+  case 21: // AD
+    if (ddlNum >= 32) return false; // only have 1 32-bit word.
+    // 1 word for AD, 1 DDL
+    wordIndex = 30;
+    break;
   case 30: // HLT
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
     // the HLT bitfield is in the last word
-    wordIndex = 30;
+    wordIndex = 31;
     break;
   default:
     return false;
   }
   
-  if (ddlNum >= AliHLTDAQ::NumberOfDdls(detNum == 30 ? 20 : detNum)) return false;
+  if (ddlNum >= AliHLTDAQ::NumberOfDdls(detNum == AliDAQ::kHLTId ? AliDAQ::kNDetectors-1 : detNum)) return false;
   
   // The bit index within the word indicated by wordIndex.
   bitIndex = ddlNum % 32;
@@ -330,6 +347,11 @@ Bool_t AliHLTReadoutList::GetDDLBit(Int_t ddlId) const
     {
       --wordIndex;
     }
+  }
+  else if ( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV1 )
+  {
+    if (wordIndex == 30) { return kFALSE; }  //there is no AD in V1
+    if (wordIndex == 31) { wordIndex = 30; } //HLT is at word 30 in V1
   }
 #endif
 
@@ -371,7 +393,7 @@ void AliHLTReadoutList::Enable(Int_t detector)
 
 #if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
   // Check if we need to convert to new format and do so.
-  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  if (fReadoutList.fCount != (unsigned)gkAliHLTDDLListSize)
   {
     AliHLTEventDDL copy = fReadoutList;
     FillStruct(copy);
@@ -418,7 +440,8 @@ void AliHLTReadoutList::Enable(Int_t detector)
     fReadoutList.fList[28] = 0x00003FFF;
   }
   if ((detector & kDAQTEST) != 0) fReadoutList.fList[29] = 0x00000001;
-  if ((detector & kHLT) != 0) fReadoutList.fList[30] = 0x0FFFFFFF;
+  if ((detector & kAD) != 0) fReadoutList.fList[30] = 0x00000001;
+  if ((detector & kHLT) != 0) fReadoutList.fList[31] = 0x0FFFFFFF;
 }
 
 
@@ -429,7 +452,7 @@ void AliHLTReadoutList::Disable(Int_t detector)
 
 #if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
   // Check if we need to convert to new format and do so.
-  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  if (fReadoutList.fCount != (unsigned)gkAliHLTDDLListSize)
   {
     AliHLTEventDDL copy = fReadoutList;
     FillStruct(copy);
@@ -476,7 +499,8 @@ void AliHLTReadoutList::Disable(Int_t detector)
     fReadoutList.fList[28] = 0x00000000;
   }
   if ((detector & kDAQTEST) != 0) fReadoutList.fList[29] = 0x00000000;
-  if ((detector & kHLT) != 0) fReadoutList.fList[30] = 0x00000000;
+  if ((detector & kAD) != 0) fReadoutList.fList[30] = 0x00000000;
+  if ((detector & kHLT) != 0) fReadoutList.fList[31] = 0x00000000;
 }
 
 
@@ -525,7 +549,17 @@ bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
     if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[28] == 0x00000001;
     if ((detector & kHLT) != 0) result &= fReadoutList.fList[29] == 0x000003FF;
   }
-  else
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV1)
+  {
+    if ((detector & kEMCAL) != 0)
+    {
+      result &= fReadoutList.fList[27] == 0xFFFFFFFF;
+      result &= fReadoutList.fList[28] == 0x00003FFF;
+    }
+    if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000001;
+    if ((detector & kHLT) != 0)     result &= fReadoutList.fList[30] == 0x0FFFFFFF;
+  }
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV2)
 #endif
   {
     if ((detector & kEMCAL) != 0)
@@ -534,7 +568,8 @@ bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
       result &= fReadoutList.fList[28] == 0x00003FFF;
     }
     if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000001;
-    if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x0FFFFFFF;
+    if ((detector & kAD) != 0)      result &= fReadoutList.fList[30] == 0x00000001;
+    if ((detector & kHLT) != 0)     result &= fReadoutList.fList[31] == 0x0FFFFFFF;
   }
   
   return result;
@@ -586,8 +621,7 @@ bool AliHLTReadoutList::DetectorDisabled(Int_t detector) const
     if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[28] == 0x00000000;
     if ((detector & kHLT) != 0) result &= fReadoutList.fList[29] == 0x00000000;
   }
-  else
-#endif
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV1)
   {
     if ((detector & kEMCAL) != 0)
     {
@@ -596,6 +630,18 @@ bool AliHLTReadoutList::DetectorDisabled(Int_t detector) const
     }
     if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000000;
     if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x00000000;
+  }
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV2)
+#endif
+  {
+    if ((detector & kEMCAL) != 0)
+    {
+      result &= fReadoutList.fList[27] == 0x00000000;
+      result &= fReadoutList.fList[28] == 0x00000000;
+    }
+    if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000000;
+    if ((detector & kAD) != 0)      result &= fReadoutList.fList[30] == 0x00000000;
+    if ((detector & kHLT) != 0) result &= fReadoutList.fList[31] == 0x00000000;
   }
   
   return result;
@@ -625,9 +671,10 @@ Int_t AliHLTReadoutList::GetFirstWord(EDetectorId detector)
   case kZDC:     return 24;
   case kACORDE:  return 25;
   case kTRG:     return 26;
-  case kEMCAL:   return 27;
-  case kDAQTEST: return 29;
-  case kHLT:     return 30;
+  case kEMCAL:   return 27; 
+  case kDAQTEST: return 29; //V0:28
+  case kAD:      return 30; 
+  case kHLT:     return 31; //V0:29 V1:30
   default:       return -1;
   }
 }
@@ -658,6 +705,7 @@ Int_t AliHLTReadoutList::GetWordCount(EDetectorId detector)
   case kTRG:     return 1;
   case kEMCAL:   return 2;
   case kDAQTEST: return 1;
+  case kAD:      return 1;
   case kHLT:     return 1;
   default:       return 0;
   }
@@ -699,7 +747,8 @@ AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetDetectorFromWord(Int_t word
   case 27: return kEMCAL;
   case 28: return kEMCAL;
   case 29: return kDAQTEST;
-  case 30: return kHLT;
+  case 30: return kAD;
+  case 31: return kHLT;
   default: return kNoDetector;
   }
 }
@@ -744,12 +793,19 @@ AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetFirstUsedDetector(EDetector
     if (startAfter < kDAQTEST and fReadoutList.fList[28] != 0x00000000) return kDAQTEST;
     if (startAfter < kHLT and fReadoutList.fList[29] != 0x00000000) return kHLT;
   }
-  else
-#endif
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV1)
   {
     if (startAfter < kEMCAL and fReadoutList.fList[28] != 0x00000000) return kEMCAL;
     if (startAfter < kDAQTEST and fReadoutList.fList[29] != 0x00000000) return kDAQTEST;
     if (startAfter < kHLT and fReadoutList.fList[30] != 0x00000000) return kHLT;
+  }
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV2)
+#endif
+  {
+    if (startAfter < kEMCAL and fReadoutList.fList[28] != 0x00000000) return kEMCAL;
+    if (startAfter < kDAQTEST and fReadoutList.fList[29] != 0x00000000) return kDAQTEST;
+    if (startAfter < kAD and fReadoutList.fList[30] != 0x00000000) return kAD;
+    if (startAfter < kHLT and fReadoutList.fList[31] != 0x00000000) return kHLT;
   }
   return kNoDetector;
 }
@@ -777,6 +833,12 @@ void AliHLTReadoutList::Print(Option_t* /*option*/) const
     if (nonefound) cout << " none";
     cout << endl;
   }
+  printf("readout list in hex:");
+  for (unsigned int i=0; i<fReadoutList.fCount; i++)
+  {
+    printf(" %x", fReadoutList.fList[i]);
+  }
+  printf("\n");
 }
 
 
@@ -928,15 +990,25 @@ AliHLTReadoutList AliHLTReadoutList::operator ~ () const
     readoutlist.fReadoutList.fList[27] = 0x00FFFFFF & (~fReadoutList.fList[27]);
     readoutlist.fReadoutList.fList[28] = 0x00000000;
     readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[28]);
-    readoutlist.fReadoutList.fList[30] = 0x000003FF & (~fReadoutList.fList[29]);
+    readoutlist.fReadoutList.fList[30] = 0x00000000;
+    readoutlist.fReadoutList.fList[31] = 0x000003FF & (~fReadoutList.fList[29]);
   }
-  else
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV1)
 #endif
   {
     readoutlist.fReadoutList.fList[27] = 0xFFFFFFFF & (~fReadoutList.fList[27]);
     readoutlist.fReadoutList.fList[28] = 0x00003FFF & (~fReadoutList.fList[28]);
     readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[29]);
+    readoutlist.fReadoutList.fList[30] = 0x00000000;
     readoutlist.fReadoutList.fList[30] = 0x0FFFFFFF & (~fReadoutList.fList[30]);
+  }
+  else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV2)
+  {
+    readoutlist.fReadoutList.fList[27] = 0xFFFFFFFF & (~fReadoutList.fList[27]);
+    readoutlist.fReadoutList.fList[28] = 0x00003FFF & (~fReadoutList.fList[28]);
+    readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[29]);
+    readoutlist.fReadoutList.fList[30] = 0x00000001 & (~fReadoutList.fList[30]);
+    readoutlist.fReadoutList.fList[31] = 0x0FFFFFFF & (~fReadoutList.fList[31]);
   }
   return readoutlist;
 }
@@ -951,10 +1023,16 @@ void AliHLTReadoutList::Streamer(TBuffer &R__b)
       // Convert old structure to new version if necessary.
       if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
       {
-        fReadoutList.fList[30] = fReadoutList.fList[29];
+        fReadoutList.fList[31] = fReadoutList.fList[29];
         fReadoutList.fList[29] = fReadoutList.fList[28];
-        fReadoutList.fList[28] = 0x0;
-        fReadoutList.fCount = gkAliHLTDDLListSizeV1;
+        fReadoutList.fList[30] = 0x0;
+        fReadoutList.fCount = gkAliHLTDDLListSizeV2;
+      }
+      else if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV1)
+      {
+        fReadoutList.fList[31] = fReadoutList.fList[30]; //move HLT from 30 to 31
+        fReadoutList.fList[30] = 0x0; //set AD to 0
+        fReadoutList.fCount = gkAliHLTDDLListSizeV2;
       }
    } else {
       R__b.WriteClassBuffer(AliHLTReadoutList::Class(),this);

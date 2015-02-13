@@ -12,12 +12,7 @@
 #pragma link C++ class  AliADCalibData+;
 #pragma link C++ class  AliADPreprocessor+;
 #pragma link C++ class  AliADDataDCS+;
-//#pragma link C++ class  AliADQAChecker+;
+#pragma link C++ class  AliADRawStream+;
 //#pragma link C++ class  AliADMisAligner+;
-//#pragma link C++ class  AliADLogicalSignal+;
-//#pragma link C++ class  AliADTrending+;
-//#pragma link C++ class  AliADDataFEE+;
-//#pragma link C++ class  AliADTriggerSimulator+;
-//#pragma link C++ class  AliADTriggerData+;
 
 #endif

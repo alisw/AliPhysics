@@ -54,8 +54,8 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
   /***********************************************************************/
 
   TFile *inkin = TFile::Open("rfio:galice.root");
-/// \file AliTPCComparison2.C
-///  if(gAlice)delete gAlice;   COMMENTED BECAUSE OF A BUG (IN COMPILED MODE)
+// \file AliTPCComparison2.C
+//  if(gAlice)delete gAlice;   COMMENTED BECAUSE OF A BUG (IN COMPILED MODE)
 
   gAlice = (AliRun*)inkin->Get("gAlice");
   cout<<"AliRun object found on file "<<gAlice<<endl;
@@ -78,7 +78,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
     digp= (AliTPCParam*)cf->Get("75x40_100x60_150x60");
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; return 2; }
   }
-  ///////////
+
   TObjArray tarray(MAX);
   AliTPCtrack *iotrack=0;
   Int_t nentr= 0;
@@ -378,7 +378,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
 
 
 Int_t good_tracks(GoodTrackTPC *gt, Int_t max, Int_t firstev, Int_t eventn) {
-  //eventn  - number of events in file
+  /// eventn  - number of events in file
 
   TFile *file=TFile::Open("galice.root");
   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}

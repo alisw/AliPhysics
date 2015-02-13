@@ -20,7 +20,7 @@ set(MODULE VZERObase)
 include_directories(${AliRoot_SOURCE_DIR}/VZERO/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/RAW/dateStream
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec

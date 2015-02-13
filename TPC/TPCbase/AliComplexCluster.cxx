@@ -13,61 +13,42 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9  2006/11/06 16:07:15  kowal2
-Eff C++
-
-Revision 1.8  2004/03/30 14:09:22  kowal2
-Changes due to the coding conventions
-
-Revision 1.7  2003/11/24 09:48:28  kowal2
-Changes to obey the coding conventions
-
-Revision 1.6  2003/11/24 09:43:03  kowal2
-Obsolete - removed
-
-Revision 1.5  2003/09/29 11:27:39  kowal2
-new classes added
-
-Revision 1.3  2002/11/15 14:27:45  hristov
-First version of the parallel TPC tracking (M.Ivanov)
-
-Revision 1.2  2001/02/05 14:43:13  hristov
-Compare() declared const
-
-Revision 1.1  2000/10/05 16:17:27  kowal2
-New class replacing AliCluster
-
-
-*/
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Time Projection Chamber clusters objects                                //
-//
-//  Origin: Marian Ivanov , GSI Darmstadt
-//                                                                           //
-//Begin_Html
-/*
-<img src="gif/AliTPCCluster.gif">
-*/
-//End_Html
-//                                                                           //
-//                                                                          //
-///////////////////////////////////////////////////////////////////////////////
-// **************
-//aaaaaaaaa
-//aaaaaaaaa
-//aaaaaaaaa
-//aaaaaaaa
-//aaaaaaaaaa
+/// \class AliComplexCluster
+///
+/// Time Projection Chamber clusters objects
+///
+/// \author Marian Ivanov, GSI Darmstadt
+///
+/// * Revision 1.9  2006/11/06 16:07:15  kowal2
+/// Eff C++
+///
+/// * Revision 1.8  2004/03/30 14:09:22  kowal2
+/// Changes due to the coding conventions
+///
+/// * Revision 1.7  2003/11/24 09:48:28  kowal2
+/// Changes to obey the coding conventions
+///
+/// * Revision 1.6  2003/11/24 09:43:03  kowal2
+/// Obsolete - removed
+///
+/// * Revision 1.5  2003/09/29 11:27:39  kowal2
+/// new classes added
+///
+/// * Revision 1.3  2002/11/15 14:27:45  hristov
+/// First version of the parallel TPC tracking (M.Ivanov)
+///
+/// * Revision 1.2  2001/02/05 14:43:13  hristov
+/// Compare() declared const
+///
+/// * Revision 1.1  2000/10/05 16:17:27  kowal2
+/// New class replacing AliCluster
 
 #include "AliComplexCluster.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliComplexCluster)
-  //__________________________________________________________________
+/// \endcond
+
   AliComplexCluster::AliComplexCluster()
                     :TObject(),
 		     fX(0.),
@@ -79,27 +60,25 @@ ClassImp(AliComplexCluster)
 		     fArea(0.),
 		     fMax(0.)
 {
-  //
-  // default constructor
-  //
+  /// default constructor
    fTracks[0]=fTracks[1]=fTracks[2]=0;
 }
 //_____________________________________________________________________________
 Int_t AliComplexCluster::Compare(const TObject * o) const
 {
-  //
-  // compare two clusters according y coordinata
+  /// compare two clusters according y coordinata
+
   AliComplexCluster *cl= (AliComplexCluster *)o;
   if (fY<cl->fY) return -1;
   if (fY==cl->fY) return 0;
-  return 1;  
+  return 1;
 }
 
 Bool_t AliComplexCluster::IsSortable() const
 {
-  //
-  //make AliComplexCluster sortabale
-  return kTRUE; 
+  /// make AliComplexCluster sortabale
+
+  return kTRUE;
 }
 
 ClassImp(AliTPCExactPoint)
@@ -122,7 +101,7 @@ AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
   return *this;
 }
 
+/// \cond CLASSIMP
 ClassImp(AliTPCTrackPoint)
 ClassImp(AliTPCTrackPoint2)
-  //_______________________________________________________________
-
+/// \endcond

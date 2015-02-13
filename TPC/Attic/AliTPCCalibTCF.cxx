@@ -14,14 +14,12 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class for Evaluation and Validation of the ALTRO Tail Cancelation Filter  //
-// (TCF) parameters out of TPC Raw data                                      //
-//                                                                           //
-// Author: Stefan Rossegger, Simon Feigl                                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibTCF
+///
+/// Class for Evaluation and Validation of the ALTRO Tail Cancelation Filter
+/// (TCF) parameters out of TPC Raw data
+///
+/// \author Stefan Rossegger, Simon Feigl
 
 #include "AliTPCCalibTCF.h"
 
@@ -48,7 +46,9 @@
 #include "AliTPCmapper.h"
 #include <fstream>
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibTCF)
+/// \endcond
   
 AliTPCCalibTCF::AliTPCCalibTCF() :
   TNamed(),
@@ -77,9 +77,8 @@ AliTPCCalibTCF::AliTPCCalibTCF(Int_t gateWidth, Int_t sample, Int_t pulseLength,
   fRMSLim(rmsLim),
   fRatioIntLim(ratioIntLim)
 {
-  //
-  //  AliTPCCalibTCF constructor with specific (non-standard) thresholds
-  //
+  ///  AliTPCCalibTCF constructor with specific (non-standard) thresholds
+
 }
   
 //_____________________________________________________________________________
@@ -93,19 +92,16 @@ AliTPCCalibTCF::AliTPCCalibTCF(const AliTPCCalibTCF &tcf) :
   fRMSLim(tcf.fRMSLim),
   fRatioIntLim(tcf.fRatioIntLim)
 {
-  //
-  //  AliTPCCalibTCF copy constructor
-  //
+  ///  AliTPCCalibTCF copy constructor
+
 }
 
 
 //_____________________________________________________________________________
 AliTPCCalibTCF& AliTPCCalibTCF::operator = (const AliTPCCalibTCF &source)
 {
-  //
-  // AliTPCCalibTCF assignment operator
-  //
- 
+  /// AliTPCCalibTCF assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCCalibTCF(source);
 
@@ -116,22 +112,19 @@ AliTPCCalibTCF& AliTPCCalibTCF::operator = (const AliTPCCalibTCF &source)
 //_____________________________________________________________________________
 AliTPCCalibTCF::~AliTPCCalibTCF()
 {
-  //
-  // AliTPCCalibTCF destructor
-  //
+  /// AliTPCCalibTCF destructor
+
 }
 
 
 //_____________________________________________________________________________
 void AliTPCCalibTCF::ProcessRawFileV3(const char *nameRawFile, const char *nameFileOut) {
-  //
-  // New RCU data format!: Standard middle of 2009 
-  //
-  // Loops over all events within one RawData file and collects proper pulses 
-  // (according to given tresholds) per pad
-  // Histograms per pad are stored in 'nameFileOut'
-  //
-  
+  /// New RCU data format!: Standard middle of 2009
+  ///
+  /// Loops over all events within one RawData file and collects proper pulses
+  /// (according to given tresholds) per pad
+  /// Histograms per pad are stored in 'nameFileOut'
+
   AliRawReader *rawReader = AliRawReader::Create(nameRawFile);
   if (!rawReader) {
     printf("Could not create a raw reader for %s\n",nameRawFile);
@@ -167,17 +160,15 @@ void AliTPCCalibTCF::ProcessRawFileV3(const char *nameRawFile, const char *nameF
 
 //_____________________________________________________________________________
 void AliTPCCalibTCF::ProcessRawEventV3( AliRawReader *rawReader, AliTPCRawStreamV3 *rawStream, const char *nameFileOut) {
-  //
-  // New RCU data format!: Standard middle of 2009 
-  //
-  // Extracts proper pulses (according the given tresholds) within one event
-  // and accumulates them into one histogram per pad. All histograms are
-  // saved in the file 'nameFileOut'. 
-  // The first bins of the histograms contain the following information:
-  //   bin 1: Number of accumulated pulses
-  //   bin 2;3;4: Sector; Row; Pad; 
-  // 
-  
+  /// New RCU data format!: Standard middle of 2009
+  ///
+  /// Extracts proper pulses (according the given tresholds) within one event
+  /// and accumulates them into one histogram per pad. All histograms are
+  /// saved in the file 'nameFileOut'.
+  /// The first bins of the histograms contain the following information:
+  ///   bin 1: Number of accumulated pulses
+  ///   bin 2;3;4: Sector; Row; Pad;
+
   TFile fileOut(nameFileOut,"UPDATE");
   fileOut.cd();  
   
@@ -339,19 +330,17 @@ void AliTPCCalibTCF::ProcessRawEventV3( AliRawReader *rawReader, AliTPCRawStream
 
 //____________________________________________________________________________
 void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
-  //
-  // Merges all histograms within one sector, calculates the TCF parameters
-  // of the 'histogram-per-sector' and stores (histo and parameters) into 
-  // seperated files ...
-  //
-  // note: first 4 timebins of a histogram hold specific informations
-  //       about number of collected pulses, sector, row and pad
-  //
-  // 'nameFileIn':  root file produced with Process function which holds
-  //                one histogram per pad (sum of signals of proper pulses)
-  // 'Sec+nameFileIn': root file with one histogram per sector
-  //                   (information of row and pad are set to -1)
-  //
+  /// Merges all histograms within one sector, calculates the TCF parameters
+  /// of the 'histogram-per-sector' and stores (histo and parameters) into
+  /// seperated files ...
+  ///
+  /// note: first 4 timebins of a histogram hold specific informations
+  ///       about number of collected pulses, sector, row and pad
+  ///
+  /// 'nameFileIn':  root file produced with Process function which holds
+  ///                one histogram per pad (sum of signals of proper pulses)
+  /// 'Sec+nameFileIn': root file with one histogram per sector
+  ///                   (information of row and pad are set to -1)
 
   TFile fileIn(nameFileIn,"READ");
   TH1F *hisPad = 0;
@@ -418,15 +407,13 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
 
 //____________________________________________________________________________
 void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, Int_t histStart, Int_t histEnd) {
-  //
-  // This function takes a prepeared root file (accumulated histograms: output
-  // of process function) and performs an analysis (fit and equalization) in 
-  // order to get the TCF parameters. These are stored in an TNtuple along with 
-  // the pad and creation infos. The tuple is written to the output file 
-  // "TCFparam+nameFileIn"
-  // To reduce the analysis time, the minimum number of accumulated pulses within 
-  // one histogram 'minNumPulse' (to perform the analysis on) can be set
-  //
+  /// This function takes a prepeared root file (accumulated histograms: output
+  /// of process function) and performs an analysis (fit and equalization) in
+  /// order to get the TCF parameters. These are stored in an TNtuple along with
+  /// the pad and creation infos. The tuple is written to the output file
+  /// "TCFparam+nameFileIn"
+  /// To reduce the analysis time, the minimum number of accumulated pulses within
+  /// one histogram 'minNumPulse' (to perform the analysis on) can be set
 
   TFile fileIn(nameFileIn,"READ");
   TH1F *hisIn;
@@ -487,11 +474,9 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
 
 //____________________________________________________________________________
 Int_t AliTPCCalibTCF::AnalyzePulse(TH1F * const hisIn, Double_t *coefZ, Double_t *coefP) {
-  //
-  // Performs the analysis on one specific pulse (histogram) by means of fitting
-  // the pulse and equalization of the pulseheight. The found TCF parameters 
-  // are stored in the arrays coefZ and coefP
-  //
+  /// Performs the analysis on one specific pulse (histogram) by means of fitting
+  /// the pulse and equalization of the pulseheight. The found TCF parameters
+  /// are stored in the arrays coefZ and coefP
 
   Int_t pulseLength = hisIn->GetNbinsX() -4; 
   // -4 because the first four timebins usually contain pad specific informations
@@ -556,15 +541,13 @@ Int_t AliTPCCalibTCF::AnalyzePulse(TH1F * const hisIn, Double_t *coefZ, Double_t
 //____________________________________________________________________________
 void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameFileTCF,  Int_t minNumPulse, Int_t plotFlag, Int_t lowKey, Int_t upKey)
 {
-  //
-  // Performs quality parameters evaluation of the calculated TCF parameters in 
-  // the file 'nameFileTCF' for every (accumulated) histogram within the 
-  // prepeared root file 'nameFileIn'. 
-  // The found quality parameters are stored in an TNtuple which will be saved
-  // in a Root file 'Quality-*'. 
-  // If the parameter for the given pulse (given pad) was not found, the pulse 
-  // is rejected.
-  //
+  /// Performs quality parameters evaluation of the calculated TCF parameters in
+  /// the file 'nameFileTCF' for every (accumulated) histogram within the
+  /// prepeared root file 'nameFileIn'.
+  /// The found quality parameters are stored in an TNtuple which will be saved
+  /// in a Root file 'Quality-*'.
+  /// If the parameter for the given pulse (given pad) was not found, the pulse
+  /// is rejected.
 
   TFile fileIn(nameFileIn,"READ");
 
@@ -629,14 +612,12 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
 
 //_____________________________________________________________________________
 void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameFileOut, const char *nameFileTCF, Int_t minNumPulse, Int_t plotFlag, bool bUseHLTOUT) {
-  //
-  // Performs quality parameters evaluation of the calculated TCF parameters in 
-  // the file 'nameFileTCF' for every proper pulse (according to given thresholds)
-  // within the RAW file 'nameRawFile'. 
-  // The found quality parameters are stored in a TNtuple which will be saved
-  // in the Root file 'nameFileOut'. If the parameter for the given pulse 
-  // (given pad) was not found, the pulse is rejected.
-  //
+  /// Performs quality parameters evaluation of the calculated TCF parameters in
+  /// the file 'nameFileTCF' for every proper pulse (according to given thresholds)
+  /// within the RAW file 'nameRawFile'.
+  /// The found quality parameters are stored in a TNtuple which will be saved
+  /// in the Root file 'nameFileOut'. If the parameter for the given pulse
+  /// (given pad) was not found, the pulse is rejected.
 
   //
   // Reads a RAW data file, extracts Pulses (according the given tresholds)
@@ -833,10 +814,8 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 
 //____________________________________________________________________________
 TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side) {
-  //
-  // Plots the number of summed pulses per pad on a given TPC side
-  // 'nameFileIn': root-file created with the Process function
-  //
+  /// Plots the number of summed pulses per pad on a given TPC side
+  /// 'nameFileIn': root-file created with the Process function
 
   TFile fileIn(nameFileIn,"READ");
   TH1F *his;
@@ -914,11 +893,9 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
 
 //____________________________________________________________________________
 void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nPulseMin) {
-  //
-  // Plots the number of summed pulses per pad above a given minimum at the 
-  // pad position at a given TPC side
-  // 'nameFile': root-file created with the Process function
-  //
+  /// Plots the number of summed pulses per pad above a given minimum at the
+  /// pad position at a given TPC side
+  /// 'nameFile': root-file created with the Process function
 
   TFile *file = new TFile(nameFile,"READ");
   TH1F *his;
@@ -998,21 +975,19 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
 //____________________________________________________________________________
 void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char *plotSpec, const char *cut, const char *pOpt)
 {
-  // 
-  // This function is an easy interface to load the QualityTuple (produced with
-  // the function 'TestOn%File' and plots them according to the plot specifications
-  // 'plotSpec' e.g. "widthRed:maxUndershot"
-  // One may also set cut and plot options ("cut","pOpt") 
-  //
-  // The stored quality parameters are ...
-  //   sec:row:pad:npulse: ... usual pad info
-  //   heightDev ... height deviation in percent
-  //   areaRed ... area reduction in percent
-  //   widthRed ... width reduction in percent
-  //   undershot ... mean undershot after the pulse in ADC
-  //   maxUndershot ... maximum of the undershot after the pulse in ADC
-  //   pulseRMS ... RMS of the pulse used to calculate the Quality parameters in ADC
-  //
+  /// This function is an easy interface to load the QualityTuple (produced with
+  /// the function 'TestOn%File' and plots them according to the plot specifications
+  /// 'plotSpec' e.g. "widthRed:maxUndershot"
+  /// One may also set cut and plot options ("cut","pOpt")
+  ///
+  /// The stored quality parameters are ...
+  ///   sec:row:pad:npulse: ... usual pad info
+  ///   heightDev ... height deviation in percent
+  ///   areaRed ... area reduction in percent
+  ///   widthRed ... width reduction in percent
+  ///   undershot ... mean undershot after the pulse in ADC
+  ///   maxUndershot ... maximum of the undershot after the pulse in ADC
+  ///   pulseRMS ... RMS of the pulse used to calculate the Quality parameters in ADC
 
   TFile file(nameFileQuality,"READ");
   TNtuple *qualityTuple = (TNtuple*)file.Get("TCFquality");
@@ -1043,10 +1018,8 @@ void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char 
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP) {
-  //
-  // function to fit one pulse and to calculate the according pole-zero parameters
-  //
- 
+  /// function to fit one pulse and to calculate the according pole-zero parameters
+
   // initialize TMinuit with a maximum of 8 params
   TMinuit *minuitFit = new TMinuit(8);
   minuitFit->mncler();                    // Reset Minuit's list of paramters
@@ -1130,10 +1103,8 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
 //____________________________________________________________________________
 void AliTPCCalibTCF::FitFcn(Int_t &/*nPar*/, Double_t */*grad*/, Double_t &f, Double_t * const par, Int_t /*iflag*/)
 {
-  //
-  // Minimization function needed for TMinuit with FitFunction included 
-  // Fit function: Sum of three convolution terms (IRF conv. with Exp.)
-  //
+  /// Minimization function needed for TMinuit with FitFunction included
+  /// Fit function: Sum of three convolution terms (IRF conv. with Exp.)
 
   // Get Data ...
   TNtuple *dataTuple = (TNtuple *) gMinuit->GetObjectFit();
@@ -1179,9 +1150,7 @@ void AliTPCCalibTCF::FitFcn(Int_t &/*nPar*/, Double_t */*grad*/, Double_t &f, Do
 
 //____________________________________________________________________________
 Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
-  //
-  // Calculation of Pole and Zero values out of fit parameters
-  //
+  /// Calculation of Pole and Zero values out of fit parameters
 
   Double_t vA1, vA2, vA3, vTT1, vTT2, vTT3, vTa, vTb;
   vA1 = 0;  vA2 = 0;  vA3 = 0;
@@ -1250,10 +1219,8 @@ Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
 
 //____________________________________________________________________________
 Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t *coefP) {
-  //
-  // calculates the 3rd set of TCF parameters (remaining 2 PZ values) in 
-  // order to restore the original pulse height and adds them to the passed arrays
-  //
+  /// calculates the 3rd set of TCF parameters (remaining 2 PZ values) in
+  /// order to restore the original pulse height and adds them to the passed arrays
 
   const Int_t kPulseLength = dataTuple->GetEntries();
 
@@ -1327,11 +1294,10 @@ Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t
 
 //____________________________________________________________________________
 Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F * const hisIn, const char *nameFileTCF, Double_t *coefZ, Double_t *coefP) {
-  //
-  // This function searches for the correct TCF parameters to the given
-  // histogram 'hisIn' within the file 'nameFileTCF' 
-  // If no parameters for this pad (padinfo within the histogram!) where found
-  // the function returns 0
+  /// This function searches for the correct TCF parameters to the given
+  /// histogram 'hisIn' within the file 'nameFileTCF'
+  /// If no parameters for this pad (padinfo within the histogram!) where found
+  /// the function returns 0
 
   //  Int_t numPulse = (Int_t)hisIn->GetBinContent(1); // number of pulses
   Int_t sector = (Int_t)hisIn->GetBinContent(2);
@@ -1393,16 +1359,15 @@ Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F * const hisIn, const char *nameFileTC
 
 //____________________________________________________________________________
 Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t *coefP, Int_t plotFlag) {
-  //
-  // This function evaluates the quality parameters of the given TCF parameters
-  // tested on the passed pulse (hisIn)
-  // The quality parameters are stored in an array. They are ...
-  //    height deviation [ADC]
-  //    area reduction [percent]
-  //    width reduction [percent]
-  //    mean undershot [ADC]
-  //    maximum of undershot after pulse [ADC]
-  //    Pulse RMS [ADC]
+  /// This function evaluates the quality parameters of the given TCF parameters
+  /// tested on the passed pulse (hisIn)
+  /// The quality parameters are stored in an array. They are ...
+  ///    height deviation [ADC]
+  ///    area reduction [percent]
+  ///    width reduction [percent]
+  ///    mean undershot [ADC]
+  ///    maximum of undershot after pulse [ADC]
+  ///    Pulse RMS [ADC]
 
   // perform ALTRO emulator
   TNtuple *pulseTuple = ApplyTCFilter(hisIn, coefZ, coefP, plotFlag); 
@@ -1552,10 +1517,8 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
 
 //____________________________________________________________________________
 TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F * const hisIn, Double_t * const coefZ, Double_t * const coefP, Int_t plotFlag) {
-  //
-  // Applies the given TCF parameters on the given pulse via the ALTRO emulator 
-  // class (discret values) and stores both pulses into a returned TNtuple
-  //
+  /// Applies the given TCF parameters on the given pulse via the ALTRO emulator
+  /// class (discret values) and stores both pulses into a returned TNtuple
 
   Int_t nbins = hisIn->GetNbinsX() -4; 
   // -1 because the first four timebins usually contain pad specific informations  
@@ -1640,9 +1603,7 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F * const hisIn, Double_t * const coef
 
 //____________________________________________________________________________
 void AliTPCCalibTCF::PrintPulseThresholds() {
-  //
-  // Prints the pulse threshold settings
-  //
+  /// Prints the pulse threshold settings
 
   printf("   %4.0d [ADC] ... expected Gate fluctuation length \n", fGateWidth);
   printf("   %4.0d [ADC] ... expected usefull signal length \n",  fSample);
@@ -1658,16 +1619,16 @@ void AliTPCCalibTCF::PrintPulseThresholds() {
 //____________________________________________________________________________
 void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileNameSum, Int_t mode)
 {
-  // Gets histograms from fileNameIn and adds contents to fileSum
-  //
-  // If fileSum doesn't exist, fileSum is created
-  //   mode = 0, just ONE BIG FILE ('fileSum') will be used
-  //   mode = 1, one file per sector ('fileSum-Sec#.root') will be used 
-  // mode=1 is much faster, but the additional function 'MergeToOneFile' has to be used in order to  
-  // get one big and complete collection file again ...
-  //
-  // !Make sure not to add the same file more than once!
-  
+  /// Gets histograms from fileNameIn and adds contents to fileSum
+  ///
+  /// If fileSum doesn't exist, fileSum is created
+  ///   mode = 0, just ONE BIG FILE ('fileSum') will be used
+  ///   mode = 1, one file per sector ('fileSum-Sec#.root') will be used
+  /// mode=1 is much faster, but the additional function 'MergeToOneFile' has to be used in order to
+  /// get one big and complete collection file again ...
+  ///
+  /// !Make sure not to add the same file more than once!
+
   TFile fileIn(fileNameIn,"READ");
   TH1F *hisIn;                             
   TKey *key;                                          
@@ -1742,9 +1703,9 @@ void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileN
 //____________________________________________________________________________
 void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
 
-  // Merges all Sec-files together ...
-  // this is an additional functionality for the function MergeHistsPerFile
-  // if for example mode=1
+  /// Merges all Sec-files together ...
+  /// this is an additional functionality for the function MergeHistsPerFile
+  /// if for example mode=1
 
   TH1F *hisIn;
   TKey *key;
@@ -1798,19 +1759,18 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
 
 //____________________________________________________________________________
 Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,const char *nameFileTCFPerSec, const char *nameMappingFile) {
-  //
-  // Writes TCF parameters per PAD to .data file
-  //
-  // from now on: "roc" refers to the offline sector numbering
-  //              "sector" refers to the 18 sectors per side
-  //
-  // Gets TCF parameters of single pads from nameFileTCFPerPad and writes them to
-  // the file 'tpcTCFparamPAD.data'
-  //
-  // If there are parameters for a pad missing, then the parameters of the roc,
-  // in which the pad is located, are used as the pad parameters. The parameters for
-  // the roc are retreived from nameFileTCFPerSec. If there are parameters for
-  // a roc missing, then the parameters are set to -1.  
+  /// Writes TCF parameters per PAD to .data file
+  ///
+  /// from now on: "roc" refers to the offline sector numbering
+  ///              "sector" refers to the 18 sectors per side
+  ///
+  /// Gets TCF parameters of single pads from nameFileTCFPerPad and writes them to
+  /// the file 'tpcTCFparamPAD.data'
+  ///
+  /// If there are parameters for a pad missing, then the parameters of the roc,
+  /// in which the pad is located, are used as the pad parameters. The parameters for
+  /// the roc are retreived from nameFileTCFPerSec. If there are parameters for
+  /// a roc missing, then the parameters are set to -1.
 
   Float_t k0 = -1, k1 = -1, k2 = -1, l0 = -1, l1 = -1, l2 = -1;
   Int_t roc, row, pad, side, sector, rcu, hwAddr; 
@@ -1952,17 +1912,16 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
 
 //____________________________________________________________________________
 Int_t AliTPCCalibTCF::DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec, const char *nameMappingFile) {
-  //
-  // Writes TCF parameters per SECTOR (=ROC) to .data file
-  //
-  // from now on: "roc" refers to the offline sector numbering
-  //              "sector" refers to the 18 sectors per side
-  //
-  // Gets TCF parameters of a roc from nameFileTCFPerSec and writes them to
-  // the file 'tpcTCFparamSector.data'
-  //
-  // If there are parameters for a roc missing, then the parameters are set to -1
-  
+  /// Writes TCF parameters per SECTOR (=ROC) to .data file
+  ///
+  /// from now on: "roc" refers to the offline sector numbering
+  ///              "sector" refers to the 18 sectors per side
+  ///
+  /// Gets TCF parameters of a roc from nameFileTCFPerSec and writes them to
+  /// the file 'tpcTCFparamSector.data'
+  ///
+  /// If there are parameters for a roc missing, then the parameters are set to -1
+
   Float_t k0 = -1, k1 = -1, k2 = -1, l0 = -1, l1 = -1, l2 = -1;
   Int_t entryNum = 0;
   Int_t validFlag = 0; // 1 if parameters for roc exist

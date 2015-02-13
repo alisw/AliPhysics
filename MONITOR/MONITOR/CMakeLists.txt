@@ -55,14 +55,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase Core Gpad Graf Gui Hist RIO Thread)
+if(DIMDIR AND ODIR)
+    set(LIBDEPS ${LIBDEPS} dim)
+endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase Core Gpad Graf Gui Hist RIO Thread)
-if(DIMDIR AND ODIR)
-    target_link_libraries(${MODULE} dim)
-endif()
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

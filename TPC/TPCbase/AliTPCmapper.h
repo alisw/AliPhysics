@@ -3,13 +3,10 @@
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////
-//
-// AliTPCmapper class
-// Class for all mapping functions (hardware coordinates <-> pad coordinates)
-// Author: Christian Lippmann
-//       
-/////////////////////////////////////////////////////////////////////////
+/// \class AliTPCmapper
+/// \brief Class for all mapping functions (hardware coordinates <-> pad coordinates)
+///
+/// \author Christian Lippmann
 
 #include <TObject.h>
 
@@ -101,27 +98,29 @@ public:
   Int_t  GetNfec(Int_t patch) const;
   Bool_t IsIROC(Int_t roc) const;
   Bool_t IsOROC(Int_t roc) const;
-  
+
   Int_t  GetTpcDdlOffset() const {return fTpcDdlOffset;}
   Int_t  GetNumDdl() const {return fNside*fNsector*fNrcu; }
 
  private:
 
-  Int_t fNside;        // TPC has 2 sides
-  Int_t fNsector;      // TPC side has 18 sectors
-  Int_t fNrcu;         // Sector has 6 RCUs (patches)
-  Int_t fNbranch;      // RCU has 2 branches
-  Int_t fNaltro;       // FEC has 8 ALTROs
-  Int_t fNchannel;     // ALTRO has 16 channels
-  Int_t fNpadrow;      // Sector has 159 padrows
-  Int_t fNpadrowIROC;  // IROC has 63 padrows
-  Int_t fNpadrowOROC;  // OROC has 96 padrows
+  Int_t fNside;        ///< TPC has 2 sides
+  Int_t fNsector;      ///< TPC side has 18 sectors
+  Int_t fNrcu;         ///< Sector has 6 RCUs (patches)
+  Int_t fNbranch;      ///< RCU has 2 branches
+  Int_t fNaltro;       ///< FEC has 8 ALTROs
+  Int_t fNchannel;     ///< ALTRO has 16 channels
+  Int_t fNpadrow;      ///< Sector has 159 padrows
+  Int_t fNpadrowIROC;  ///< IROC has 63 padrows
+  Int_t fNpadrowOROC;  ///< OROC has 96 padrows
 
-  Int_t fTpcDdlOffset; // DDL offset for TPC
+  Int_t fTpcDdlOffset; ///< DDL offset for TPC
 
-  AliTPCAltroMapping *fMapping[6];    // The ALTRO mapping for each patch (rcu)
+  AliTPCAltroMapping *fMapping[6];    ///< The ALTRO mapping for each patch (rcu)
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCmapper,2)
+  /// \endcond
 
 };
 

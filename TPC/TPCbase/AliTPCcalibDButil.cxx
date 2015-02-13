@@ -14,15 +14,8 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class providing the calculation of derived quantities (mean,rms,fits,...) //
-//       of calibration entries                                              //
-/*
-
-
-*/
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCcalibDButil
+/// \brief Class providing the calculation of derived quantities (mean,rms,fits,...) of calibration entries
 
 #include <TMath.h>
 #include <TVectorT.h>
@@ -61,7 +54,9 @@
 
 const Float_t kAlmost0=1.e-30;
 
+/// \cond CLASSIMP
 ClassImp(AliTPCcalibDButil)
+/// \endcond
 AliTPCcalibDButil::AliTPCcalibDButil() :
   TObject(),
   fCalibDB(0),
@@ -118,9 +113,8 @@ AliTPCcalibDButil::AliTPCcalibDButil() :
 //_____________________________________________________________________________________
 AliTPCcalibDButil::~AliTPCcalibDButil()
 {
-  //
-  // dtor
-  //
+  /// dtor
+
   delete fPulserOutlier;
   delete fRefPulserOutlier;
   delete fMapper;
@@ -146,9 +140,8 @@ AliTPCcalibDButil::~AliTPCcalibDButil()
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdateFromCalibDB()
 {
-  //
-  // Update pointers from calibDB
-  //
+  /// Update pointers from calibDB
+
   if (!fCalibDB) fCalibDB=AliTPCcalibDB::Instance();
   fCalibDB->UpdateNonRec();  // load all infromation now
   fPadNoise=fCalibDB->GetPadNoise();
@@ -171,13 +164,11 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
 void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
                                       Int_t &noutliersCE, Double_t & chi2A, Double_t &chi2C, AliTPCCalPad * const outCE)
 {
-  //
-  // Process the CE data for this run
-  // the return TVectorD arrays contian the results of the fit
-  // noutliersCE contains the number of pads marked as outliers,
-  //   not including masked and edge pads
-  //
-  
+  /// Process the CE data for this run
+  /// the return TVectorD arrays contian the results of the fit
+  /// noutliersCE contains the number of pads marked as outliers,
+  ///   not including masked and edge pads
+
   //retrieve CE and ALTRO data
   if (!fCETmean){
     TString fitString(fitFormula);
@@ -255,10 +246,8 @@ void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMea
                      TVectorD &vecQEntries, TVectorD &vecQMean, TVectorD &vecQRMS, TVectorD &vecQMedian,
                      Float_t &driftTimeA, Float_t &driftTimeC )
 {
-  //
-  // Calculate statistical information from the CE graphs for drift time and charge
-  //
-  
+  /// Calculate statistical information from the CE graphs for drift time and charge
+
   //reset arrays
   vecTEntries.ResizeTo(72);
   vecTMean.ResizeTo(72);
@@ -340,14 +329,12 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
                       TVectorD &vNoiseRMS, TVectorD &vNoiseRMSSenRegions,
                       Int_t &nonMaskedZero, Int_t &nNaN)
 {
-  //
-  // process noise data
-  // vNoiseMean/RMS contains the Mean/RMS noise of the complete TPC [0], IROCs only [1],
-  //    OROCs small pads [2] and OROCs large pads [3]
-  // vNoiseMean/RMSsenRegions constains the same information, but only for the sensitive regions (edge pads, corners, IROC spot)
-  // nonMaskedZero contains the number of pads which show zero noise and were not masked. This might indicate an error
-  //
-  
+  /// process noise data
+  /// vNoiseMean/RMS contains the Mean/RMS noise of the complete TPC [0], IROCs only [1],
+  ///    OROCs small pads [2] and OROCs large pads [3]
+  /// vNoiseMean/RMSsenRegions constains the same information, but only for the sensitive regions (edge pads, corners, IROC spot)
+  /// nonMaskedZero contains the number of pads which show zero noise and were not masked. This might indicate an error
+
   //set proper size and reset
   const UInt_t infoSize=4;
   vNoiseMean.ResizeTo(infoSize);
@@ -485,11 +472,9 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
 void AliTPCcalibDButil::ProcessQAData(TVectorD &vQaOcc, TVectorD &vQaQtot, 
 				      TVectorD &vQaQmax)
 {
-  //
-  // process QA data
-  //
-  // vQaOcc/Qtot/Qmax contains the Mean occupancy/Qtot/Qmax for each sector
-  //
+  /// process QA data
+  ///
+  /// vQaOcc/Qtot/Qmax contains the Mean occupancy/Qtot/Qmax for each sector
 
 
   const UInt_t infoSize = 72;
@@ -567,10 +552,8 @@ void AliTPCcalibDButil::ProcessQAData(TVectorD &vQaOcc, TVectorD &vQaQtot,
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessPulser(TVectorD &vMeanTime)
 {
-  //
-  // Process the Pulser information
-  // vMeanTime:     pulser mean time position in IROC-A, IROC-C, OROC-A, OROC-C
-  //
+  /// Process the Pulser information
+  /// vMeanTime:     pulser mean time position in IROC-A, IROC-C, OROC-A, OROC-C
 
   const UInt_t infoSize=4;
   //reset counters to error number
@@ -605,9 +588,8 @@ void AliTPCcalibDButil::ProcessPulser(TVectorD &vMeanTime)
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessALTROConfig(Int_t &nMasked)
 {
-  //
-  // Get Values from ALTRO configuration data
-  //
+  /// Get Values from ALTRO configuration data
+
   nMasked=-1;
   if (!fALTROMasked) return;
   nMasked=0;
@@ -621,9 +603,9 @@ void AliTPCcalibDButil::ProcessALTROConfig(Int_t &nMasked)
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS)
 {
-  //
-  // Proces Goofie values, return statistical information of the currently set goofieArray
-  // The meaning of the entries are given below
+  /// Proces Goofie values, return statistical information of the currently set goofieArray
+  /// The meaning of the entries are given below
+
   /*
   1       TPC_ANODE_I_A00_STAT
   2       TPC_DVM_CO2
@@ -691,10 +673,9 @@ void AliTPCcalibDButil::ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedia
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessPedestalVariations(TVectorF &pedestalDeviations)
 {
-  //
-  // check the variations of the pedestal data to the reference pedestal data
-  // thresholds are 0.5, 1.0, 1.5 and 2 timebins respectively.
-  //
+  /// check the variations of the pedestal data to the reference pedestal data
+  /// thresholds are 0.5, 1.0, 1.5 and 2 timebins respectively.
+
   const Int_t npar=4;
   TVectorF vThres(npar); //thresholds
   Int_t nActive=0;       //number of active channels
@@ -738,10 +719,9 @@ void AliTPCcalibDButil::ProcessPedestalVariations(TVectorF &pedestalDeviations)
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessNoiseVariations(TVectorF &noiseDeviations)
 {
-  //
-  // check the variations of the noise data to the reference noise data
-  // thresholds are 5, 10, 15 and 20 percent respectively.
-  //
+  /// check the variations of the noise data to the reference noise data
+  /// thresholds are 5, 10, 15 and 20 percent respectively.
+
   const Int_t npar=4;
   TVectorF vThres(npar); //thresholds
   Int_t nActive=0;       //number of active channels
@@ -787,11 +767,9 @@ void AliTPCcalibDButil::ProcessNoiseVariations(TVectorF &noiseDeviations)
 void AliTPCcalibDButil::ProcessPulserVariations(TVectorF &pulserQdeviations, Float_t &varQMean,
                                                 Int_t &npadsOutOneTB, Int_t &npadsOffAdd)
 {
-  //
-  // check the variations of the pulserQmean data to the reference pulserQmean data: pulserQdeviations
-  // thresholds are .5, 1, 5 and 10 percent respectively.
-  // 
-  //
+  /// check the variations of the pulserQmean data to the reference pulserQmean data: pulserQdeviations
+  /// thresholds are .5, 1, 5 and 10 percent respectively.
+
   const Int_t npar=4;
   TVectorF vThres(npar); //thresholds
   Int_t nActive=0;       //number of active channels
@@ -860,29 +838,26 @@ void AliTPCcalibDButil::ProcessPulserVariations(TVectorF &pulserQdeviations, Flo
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdatePulserOutlierMap()
 {
-  //
-  // Update the outlier map of the pulser data
-  //
+  /// Update the outlier map of the pulser data
+
   PulserOutlierMap(fPulserOutlier,fPulserTmean, fPulserQmean);
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdateRefPulserOutlierMap()
 {
-  //
-  // Update the outlier map of the pulser reference data
-  //
+  /// Update the outlier map of the pulser reference data
+
   PulserOutlierMap(fRefPulserOutlier,fRefPulserTmean, fRefPulserQmean);
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPad *pulT, const AliTPCCalPad *pulQ)
 {
-  //
-  // Create a map that contains outliers from the Pulser calibration data.
-  // The outliers include masked channels, edge pads and pads with
-  //   too large timing and charge variations.
-  // fNpulserOutliers is the number of outliers in the Pulser calibration data.
-  //   those do not contain masked and edge pads
-  //
+  /// Create a map that contains outliers from the Pulser calibration data.
+  /// The outliers include masked channels, edge pads and pads with
+  ///   too large timing and charge variations.
+  /// fNpulserOutliers is the number of outliers in the Pulser calibration data.
+  ///   those do not contain masked and edge pads
+
   if (!pulT||!pulQ) {
     //reset map
     pulOut->Multiply(0.);
@@ -931,14 +906,13 @@ void AliTPCcalibDButil::PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPa
 //_____________________________________________________________________________________
 AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model, Double_t &gyA, Double_t &gyC, Double_t &chi2A, Double_t &chi2C )
 {
-  //
-  // Create pad time0 object from pulser and/or CE data, depending on the selected model
-  // Model 0: normalise each readout chamber to its mean, outlier cutted, only Pulser
-  // Model 1: normalise IROCs/OROCs of each readout side to its mean, only Pulser
-  // Model 2: use CE data and a combination CE fit + pulser in the outlier regions.
-  //
-  // In case model 2 is invoked - gy arival time gradient is also returned
-  //
+  /// Create pad time0 object from pulser and/or CE data, depending on the selected model
+  /// Model 0: normalise each readout chamber to its mean, outlier cutted, only Pulser
+  /// Model 1: normalise IROCs/OROCs of each readout side to its mean, only Pulser
+  /// Model 2: use CE data and a combination CE fit + pulser in the outlier regions.
+  ///
+  /// In case model 2 is invoked - gy arival time gradient is also returned
+
   gyA=0;
   gyC=0;
   AliTPCCalPad *padTime0=new AliTPCCalPad("PadTime0",Form("PadTime0-Model_%d",model));
@@ -1026,9 +1000,8 @@ AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model, Double_t &gyA, Doub
 //_____________________________________________________________________________________
 Float_t AliTPCcalibDButil::GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC *const rocOut)
 {
-  //
-  // GetMeanAlto information
-  //
+  /// GetMeanAlto information
+
   if (roc==0) return 0.;
   const Int_t sector=roc->GetSector();
   AliTPCROC *tpcRoc=AliTPCROC::Instance();
@@ -1055,9 +1028,8 @@ Float_t AliTPCcalibDButil::GetMeanAltro(const AliTPCCalROC *roc, const Int_t row
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::SetRefFile(const char* filename)
 {
-  //
-  // load cal pad objects form the reference file
-  //
+  /// load cal pad objects form the reference file
+
   TDirectory *currDir=gDirectory;
   TFile f(filename);
   fRefPedestals=(AliTPCCalPad*)f.Get("Pedestals");
@@ -1082,9 +1054,8 @@ void AliTPCcalibDButil::SetRefFile(const char* filename)
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdateRefDataFromOCDB()
 {
-  //
-  // set reference data from OCDB Reference map
-  //
+  /// set reference data from OCDB Reference map
+
   if (!fRefMap) {
     AliWarning("Referenc map not set!");
     return;
@@ -1247,10 +1218,9 @@ void AliTPCcalibDButil::UpdateRefDataFromOCDB()
 //_____________________________________________________________________________________
 AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry, const char* objName)
 {
-  //
-  // TObjArray object type case
-  // find 'objName' in 'arr' cast is to a calPad and store it in 'pad'
-  //
+  /// TObjArray object type case
+  /// find 'objName' in 'arr' cast is to a calPad and store it in 'pad'
+
   AliTPCCalPad *pad=0x0;
   TObjArray *arr=(TObjArray*)entry->GetObject();
   if (!arr){
@@ -1267,10 +1237,9 @@ AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry, const char* ob
 //_____________________________________________________________________________________
 AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry)
 {
-  //
-  // AliTPCCalPad object type case
-  // cast object to a calPad and store it in 'pad'
-  //
+  /// AliTPCCalPad object type case
+  /// cast object to a calPad and store it in 'pad'
+
   AliTPCCalPad *pad=(AliTPCCalPad*)entry->GetObject();
   if (!pad) {
     AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
@@ -1282,9 +1251,8 @@ AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry)
 //_____________________________________________________________________________________
 AliTPCCalPad* AliTPCcalibDButil::GetAltroMasked(const char* cdbPath, const char* name)
 {
-  //
-  // set altro masked channel map for 'cdbPath'
-  //
+  /// set altro masked channel map for 'cdbPath'
+
   AliTPCCalPad* pad=0x0;
   const Int_t run=GetReferenceRun(cdbPath);
   if (run<0) {
@@ -1304,9 +1272,8 @@ AliTPCCalPad* AliTPCcalibDButil::GetAltroMasked(const char* cdbPath, const char*
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::SetReferenceRun(Int_t run){
-  //
-  // Get Reference map
-  //
+  /// Get Reference map
+
   if (run<0) run=fCalibDB->GetRun();
   TString cdbPath="TPC/Calib/Ref";
   AliCDBEntry *entry=AliCDBManager::Instance()->Get(cdbPath.Data(), run);
@@ -1323,9 +1290,8 @@ void AliTPCcalibDButil::SetReferenceRun(Int_t run){
 //_____________________________________________________________________________________
 Bool_t AliTPCcalibDButil::HasRefChanged(const char *cdbPath)
 {
-  //
-  // check whether a reference cdb entry has changed
-  //
+  /// check whether a reference cdb entry has changed
+
   if (!fCurrentRefMap) return kTRUE;
   if (GetReferenceRun(cdbPath)!=GetCurrentReferenceRun(cdbPath)) return kTRUE;
   return kFALSE;
@@ -1333,9 +1299,8 @@ Bool_t AliTPCcalibDButil::HasRefChanged(const char *cdbPath)
 //_____________________________________________________________________________________
 AliCDBEntry* AliTPCcalibDButil::GetRefEntry(const char* cdbPath)
 {
-  //
-  // get the reference AliCDBEntry for 'cdbPath'
-  //
+  /// get the reference AliCDBEntry for 'cdbPath'
+
   const Int_t run=GetReferenceRun(cdbPath);
   if (run<0) {
     AliError(Form("Could not get reference run number for object '%s'\nPlease check availability!!!",cdbPath));
@@ -1350,9 +1315,8 @@ AliCDBEntry* AliTPCcalibDButil::GetRefEntry(const char* cdbPath)
 }
 //_____________________________________________________________________________________
 Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type) const {
-  //
-  // Get reference run number for the specified OCDB path
-  //
+  /// Get reference run number for the specified OCDB path
+
   if (!fCurrentRefMap) return -2;
   TObjString *str=dynamic_cast<TObjString*>(fCurrentRefMap->GetValue(type));
   if (!str) return -2;
@@ -1360,9 +1324,8 @@ Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type) const {
 }
 //_____________________________________________________________________________________
 Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
-  //
-  // Get reference run number for the specified OCDB path
-  //
+  /// Get reference run number for the specified OCDB path
+
   if (!fRefMap) return -1;
   TObjString *str=dynamic_cast<TObjString*>(fRefMap->GetValue(type));
   if (!str) return -1;
@@ -1370,26 +1333,26 @@ Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
 }
 //_____________________________________________________________________________________
 AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPCCalPad * const ceOut, Float_t minSignal, Float_t cutTrmsMin,  Float_t cutTrmsMax, Float_t cutMaxDistT){
-  //
-  // Author:  marian.ivanov@cern.ch
-  //
-  // Create outlier map for CE study
-  // Parameters:
-  //  Return value - outlyer map
-  //  noutlyersCE  - number of outlyers
-  //  minSignal    - minimal total Q signal
-  //  cutRMSMin    - minimal width of the signal in respect to the median 
-  //  cutRMSMax    - maximal width of the signal in respect to the median 
-  //  cutMaxDistT  - maximal deviation from time median per chamber
-  //
-  // Outlyers criteria:
-  // 0. Exclude masked pads
-  // 1. Exclude first two rows in IROC and last two rows in OROC
-  // 2. Exclude edge pads
-  // 3. Exclude channels with too large variations
-  // 4. Exclude pads with too small signal
-  // 5. Exclude signal with outlyers RMS
-  // 6. Exclude channels to far from the chamber median	
+  /// Author:  marian.ivanov@cern.ch
+  ///
+  /// Create outlier map for CE study
+  /// Parameters:
+  ///  Return value - outlyer map
+  ///  noutlyersCE  - number of outlyers
+  ///  minSignal    - minimal total Q signal
+  ///  cutRMSMin    - minimal width of the signal in respect to the median
+  ///  cutRMSMax    - maximal width of the signal in respect to the median
+  ///  cutMaxDistT  - maximal deviation from time median per chamber
+  ///
+  /// Outlyers criteria:
+  /// 0. Exclude masked pads
+  /// 1. Exclude first two rows in IROC and last two rows in OROC
+  /// 2. Exclude edge pads
+  /// 3. Exclude channels with too large variations
+  /// 4. Exclude pads with too small signal
+  /// 5. Exclude signal with outlyers RMS
+  /// 6. Exclude channels to far from the chamber median
+
   noutliersCE=0;
   //create outlier map
   AliTPCCalPad *out=ceOut;
@@ -1476,21 +1439,21 @@ AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPC
 
 
 AliTPCCalPad *AliTPCcalibDButil::CreatePulserOutlyerMap(Int_t &noutliersPulser, AliTPCCalPad * const pulserOut,Float_t cutTime, Float_t cutnRMSQ, Float_t cutnRMSrms){
-  //
-  // Author: marian.ivanov@cern.ch
-  //
-  // Create outlier map for Pulser
-  // Parameters:
-  //  Return value     - outlyer map
-  //  noutlyersPulser  - number of outlyers
-  //  cutTime          - absolute cut - distance to the median of chamber
-  //  cutnRMSQ         - nsigma cut from median  q distribution per chamber
-  //  cutnRMSrms       - nsigma cut from median  rms distribution 
-  // Outlyers criteria:
-  // 0. Exclude masked pads
-  // 1. Exclude time outlyers (default 3 time bins)
-  // 2. Exclude q outlyers    (default 5 sigma)
-  // 3. Exclude rms outlyers  (default 5 sigma)
+  /// Author: marian.ivanov@cern.ch
+  ///
+  /// Create outlier map for Pulser
+  /// Parameters:
+  ///  Return value     - outlyer map
+  ///  noutlyersPulser  - number of outlyers
+  ///  cutTime          - absolute cut - distance to the median of chamber
+  ///  cutnRMSQ         - nsigma cut from median  q distribution per chamber
+  ///  cutnRMSrms       - nsigma cut from median  rms distribution
+  /// Outlyers criteria:
+  /// 0. Exclude masked pads
+  /// 1. Exclude time outlyers (default 3 time bins)
+  /// 2. Exclude q outlyers    (default 5 sigma)
+  /// 3. Exclude rms outlyers  (default 5 sigma)
+
   noutliersPulser=0;
   AliTPCCalPad *out=pulserOut;
   if (!out)     out= new AliTPCCalPad("outPulser","outPulser");
@@ -1534,40 +1497,37 @@ AliTPCCalPad *AliTPCcalibDButil::CreatePulserOutlyerMap(Int_t &noutliersPulser, 
 
 
 AliTPCCalPad *AliTPCcalibDButil::CreatePadTime0CE(TVectorD &fitResultsA, TVectorD&fitResultsC, Int_t &nOut, Double_t &chi2A, Double_t &chi2C, const char *dumpfile){
-  //
-  // Author : Marian Ivanov
-  // Create pad time0 correction map using information from the CE and from pulser
-  //
-  //
-  // Return PadTime0 to be used for time0 relative alignment
-  // if dump file specified intermediat results are dumped to the fiel and can be visualized 
-  // using $ALICE_ROOT/TPC/script/gui application
-  //
-  // fitResultsA - fitParameters A side
-  // fitResultsC - fitParameters C side
-  // chi2A       - chi2/ndf for A side (assuming error 1 time bin)
-  // chi2C       - chi2/ndf for C side (assuming error 1 time bin)
-  //
-  //
-  // Algorithm:
-  // 1. Find outlier map for CE
-  // 2. Find outlier map for Pulser
-  // 3. Replace outlier by median at given sector  (median without outliers)
-  // 4. Substract from the CE data pulser
-  // 5. Fit the CE with formula
-  //    5.1) (IROC-OROC) offset
-  //    5.2) gx
-  //    5.3) gy
-  //    5.4) (lx-xmid)
-  //    5.5) (IROC-OROC)*(lx-xmid)
-  //    5.6) (ly/lx)^2
-  // 6. Substract gy fit dependence from the CE data
-  // 7. Add pulser back to CE data  
-  // 8. Replace outliers by fit value - median of diff per given chamber -GY fit
-  // 9. return CE data
-  //
-  // Time0 <= padCE = padCEin  -padCEfitGy  - if not outlier
-  // Time0 <= padCE = padFitAll-padCEfitGy  - if outlier 
+  /// Author : Marian Ivanov
+  /// Create pad time0 correction map using information from the CE and from pulser
+  ///
+  /// Return PadTime0 to be used for time0 relative alignment
+  /// if dump file specified intermediat results are dumped to the fiel and can be visualized
+  /// using $ALICE_ROOT/TPC/script/gui application
+  ///
+  /// fitResultsA - fitParameters A side
+  /// fitResultsC - fitParameters C side
+  /// chi2A       - chi2/ndf for A side (assuming error 1 time bin)
+  /// chi2C       - chi2/ndf for C side (assuming error 1 time bin)
+  ///
+  /// Algorithm:
+  /// 1. Find outlier map for CE
+  /// 2. Find outlier map for Pulser
+  /// 3. Replace outlier by median at given sector  (median without outliers)
+  /// 4. Substract from the CE data pulser
+  /// 5. Fit the CE with formula
+  ///    5.1) (IROC-OROC) offset
+  ///    5.2) gx
+  ///    5.3) gy
+  ///    5.4) (lx-xmid)
+  ///    5.5) (IROC-OROC)*(lx-xmid)
+  ///    5.6) (ly/lx)^2
+  /// 6. Substract gy fit dependence from the CE data
+  /// 7. Add pulser back to CE data
+  /// 8. Replace outliers by fit value - median of diff per given chamber -GY fit
+  /// 9. return CE data
+  ///
+  /// Time0 <= padCE = padCEin  -padCEfitGy  - if not outlier
+  /// Time0 <= padCE = padFitAll-padCEfitGy  - if outlier
 
   // fit formula
   const char *formulaIn="(-1.+2.*(sector<36))*0.5++gx++gy++(lx-134.)++(-1.+2.*(sector<36))*0.5*(lx-134)++((ly/lx)^2/(0.1763)^2)";
@@ -1695,9 +1655,9 @@ AliTPCCalPad *AliTPCcalibDButil::CreatePadTime0CE(TVectorD &fitResultsA, TVector
 
 
 Int_t AliTPCcalibDButil::GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y){
-  //
-  // find the closest point to xref  in x  direction
-  // return dx and value 
+  /// find the closest point to xref  in x  direction
+  /// return dx and value
+
   dx = 0;
   y = 0;
 
@@ -1720,22 +1680,20 @@ Int_t AliTPCcalibDButil::GetNearest(TGraph *graph, Double_t xref, Double_t &dx, 
 }
 
 Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT, Double_t deltaTLaser, Int_t valType){
-  //
-  // Get the correction of the trigger offset
-  // combining information from the laser track calibration 
-  // and from cosmic calibration
-  //
-  // run       - run number
-  // timeStamp - tim stamp in seconds
-  // deltaT    - integration period to calculate offset 
-  // deltaTLaser -max validity of laser data
-  // valType   - 0 - median, 1- mean
-  // 
-  // Integration vaues are just recomendation - if not possible to get points
-  // automatically increase the validity by factor 2  
-  // (recursive algorithm until one month of data taking)
-  //
-  //
+  /// Get the correction of the trigger offset
+  /// combining information from the laser track calibration
+  /// and from cosmic calibration
+  ///
+  /// run       - run number
+  /// timeStamp - tim stamp in seconds
+  /// deltaT    - integration period to calculate offset
+  /// deltaTLaser -max validity of laser data
+  /// valType   - 0 - median, 1- mean
+  ///
+  /// Integration vaues are just recomendation - if not possible to get points
+  /// automatically increase the validity by factor 2
+  /// (recursive algorithm until one month of data taking)
+
   const Float_t kLaserCut=0.0005;
   const Int_t   kMaxPeriod=3600*24*30*12; // one year max
   const Int_t   kMinPoints=20;
@@ -1795,24 +1753,21 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
 }
 
 Double_t  AliTPCcalibDButil::GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT, Double_t deltaTLaser, Int_t valType){
-  //
-  // Get the correction of the drift velocity
-  // combining information from the laser track calibration 
-  // and from cosmic calibration
-  //
-  // dist      - return value - distance to closest point in graph
-  // run       - run number
-  // timeStamp - tim stamp in seconds
-  // deltaT    - integration period to calculate time0 offset 
-  // deltaTLaser -max validity of laser data
-  // valType   - 0 - median, 1- mean
-  // 
-  // Integration vaues are just recomendation - if not possible to get points
-  // automatically increase the validity by factor 2  
-  // (recursive algorithm until one month of data taking)
-  //
-  //
-  //
+  /// Get the correction of the drift velocity
+  /// combining information from the laser track calibration
+  /// and from cosmic calibration
+  ///
+  /// dist      - return value - distance to closest point in graph
+  /// run       - run number
+  /// timeStamp - tim stamp in seconds
+  /// deltaT    - integration period to calculate time0 offset
+  /// deltaTLaser -max validity of laser data
+  /// valType   - 0 - median, 1- mean
+  ///
+  /// Integration vaues are just recomendation - if not possible to get points
+  /// automatically increase the validity by factor 2
+  /// (recursive algorithm until one month of data taking)
+
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   if (!array) {
     AliTPCcalibDB::Instance()->UpdateRunInformations(run,kFALSE); 
@@ -1853,21 +1808,18 @@ Double_t  AliTPCcalibDButil::GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeS
 
 const char* AliTPCcalibDButil::GetGUIRefTreeDefaultName()
 {
-  //
-  // Create a default name for the gui file
-  //
-  
+  /// Create a default name for the gui file
+
   return Form("guiRefTreeRun%s.root",GetRefValidity());
 }
 
 Bool_t AliTPCcalibDButil::CreateGUIRefTree(const char* filename)
 {
-  //
-  // Create a gui reference tree
-  // if dirname and filename are empty default values will be used
-  // this is the recommended way of using this function
-  // it allows to check whether a file with the given run validity alredy exists
-  //
+  /// Create a gui reference tree
+  /// if dirname and filename are empty default values will be used
+  /// this is the recommended way of using this function
+  /// it allows to check whether a file with the given run validity alredy exists
+
   if (!AliCDBManager::Instance()->GetDefaultStorage()){
     AliError("Default Storage not set. Cannot create reference calibration Tree!");
     return kFALSE;
@@ -1920,28 +1872,28 @@ Bool_t AliTPCcalibDButil::CreateGUIRefTree(const char* filename)
 }
 
 Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracks(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT, Int_t side){
-  //
-  // Get the correction of the drift velocity using the offline laser tracks calbration
-  //
-  // run       - run number
-  // timeStamp - tim stamp in seconds
-  // deltaT    - integration period to calculate time0 offset 
-  // side      - 0 - A side,  1 - C side, 2 - mean from both sides
-  // Note in case no data form both A and C side - the value from active side used
+  /// Get the correction of the drift velocity using the offline laser tracks calbration
+  ///
+  /// run       - run number
+  /// timeStamp - tim stamp in seconds
+  /// deltaT    - integration period to calculate time0 offset
+  /// side      - 0 - A side,  1 - C side, 2 - mean from both sides
+  /// Note in case no data form both A and C side - the value from active side used
+
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
 
   return GetVDriftTPCLaserTracksCommon(dist, timeStamp, deltaT, side, array);
 }
 
 Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracksOnline(Double_t &dist, Int_t /*run*/, Int_t timeStamp, Double_t deltaT, Int_t side){
-  //
-  // Get the correction of the drift velocity using the online laser tracks calbration
-  //
-  // run       - run number
-  // timeStamp - tim stamp in seconds
-  // deltaT    - integration period to calculate time0 offset
-  // side      - 0 - A side,  1 - C side, 2 - mean from both sides
-  // Note in case no data form both A and C side - the value from active side used
+  /// Get the correction of the drift velocity using the online laser tracks calbration
+  ///
+  /// run       - run number
+  /// timeStamp - tim stamp in seconds
+  /// deltaT    - integration period to calculate time0 offset
+  /// side      - 0 - A side,  1 - C side, 2 - mean from both sides
+  /// Note in case no data form both A and C side - the value from active side used
+
   TObjArray *array =AliTPCcalibDB::Instance()->GetCEfitsDrift();
 
   Double_t dv = GetVDriftTPCLaserTracksCommon(dist, timeStamp, deltaT, side, array);
@@ -1976,9 +1928,8 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracksOnline(Double_t &dist, Int_t
 
 Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracksCommon(Double_t &dist, Int_t timeStamp, Double_t deltaT,
   Int_t side, TObjArray * const array){
-  //
-  // common drift velocity retrieval for online and offline method
-  //
+  /// common drift velocity retrieval for online and offline method
+
   TGraphErrors *grlaserA=0;
   TGraphErrors *grlaserC=0;
   Double_t vlaserA=0, vlaserC=0;
@@ -2006,15 +1957,15 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracksCommon(Double_t &dist, Int_t
 
 
 Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t timeStamp, Double_t deltaT, Int_t side){
-  //
-  // Get the correction of the drift velocity using the CE laser data
-  // combining information from the CE,  laser track calibration
-  // and P/T calibration 
-  //
-  // run       - run number
-  // timeStamp - tim stamp in seconds
-  // deltaT    - integration period to calculate time0 offset 
-  // side      - 0 - A side,  1 - C side, 2 - mean from both sides
+  /// Get the correction of the drift velocity using the CE laser data
+  /// combining information from the CE,  laser track calibration
+  /// and P/T calibration
+  ///
+  /// run       - run number
+  /// timeStamp - tim stamp in seconds
+  /// deltaT    - integration period to calculate time0 offset
+  /// side      - 0 - A side,  1 - C side, 2 - mean from both sides
+
   TObjArray *arrT     =AliTPCcalibDB::Instance()->GetCErocTtime();
   if (!arrT) return 0;
   AliTPCParam *param  =AliTPCcalibDB::Instance()->GetParameters();
@@ -2061,10 +2012,9 @@ if (driftCalib) corrPTC =  driftCalib->GetPTRelative(timeStamp,0);
 }
 
 Double_t  AliTPCcalibDButil::GetVDriftTPCITS(Double_t &dist, Int_t run, Int_t timeStamp){
-  //
-  // return drift velocity using the TPC-ITS matchin method
-  // return also distance to the closest point
-  //
+  /// return drift velocity using the TPC-ITS matchin method
+  /// return also distance to the closest point
+
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   TGraphErrors *graph=0;
   dist=0;
@@ -2080,14 +2030,13 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCITS(Double_t &dist, Int_t run, Int_t ti
 }
 
 Double_t AliTPCcalibDButil::GetTime0TPCITS(Double_t &dist, Int_t run, Int_t timeStamp){
-  //
-  // Get time dependent time 0 (trigger delay in cm) correction
-  // Arguments:
-  // timestamp - timestamp
-  // run       - run number
-  //
-  // Notice - Extrapolation outside of calibration range  - using constant function
-  //
+  /// Get time dependent time 0 (trigger delay in cm) correction
+  /// Arguments:
+  /// timestamp - timestamp
+  /// run       - run number
+  ///
+  /// Notice - Extrapolation outside of calibration range  - using constant function
+
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   TGraphErrors *graph=0;
   dist=0;
@@ -2106,11 +2055,10 @@ Double_t AliTPCcalibDButil::GetTime0TPCITS(Double_t &dist, Int_t run, Int_t time
 
 
 Int_t  AliTPCcalibDButil::MakeRunList(Int_t startRun, Int_t stopRun){
-  //
-  // VERY obscure method - we need something in framework
-  // Find the TPC runs with temperature OCDB entry
-  // cache the start and end of the run
-  //
+  /// VERY obscure method - we need something in framework
+  /// Find the TPC runs with temperature OCDB entry
+  /// cache the start and end of the run
+
   AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("TPC/Calib/Temperature");
   if (!storage) storage = AliCDBManager::Instance()->GetDefaultStorage();
   if (!storage) return 0;
@@ -2161,9 +2109,8 @@ Int_t  AliTPCcalibDButil::MakeRunList(Int_t startRun, Int_t stopRun){
 
 
 Int_t AliTPCcalibDButil::FindRunTPC(Int_t    itime, Bool_t debug){
-  //
-  // binary search - find the run for given time stamp
-  //
+  /// binary search - find the run for given time stamp
+
   Int_t index0  = TMath::BinarySearch(fRuns.fN, fRunsStop.fArray,itime);
   Int_t index1  = TMath::BinarySearch(fRuns.fN, fRunsStart.fArray,itime);
   Int_t cindex  = -1;
@@ -2185,9 +2132,9 @@ Int_t AliTPCcalibDButil::FindRunTPC(Int_t    itime, Bool_t debug){
 
 
 TGraph* AliTPCcalibDButil::FilterGraphMedian(TGraph * graph, Float_t sigmaCut,Double_t &medianY){
-  //
-  // filter outlyer measurement
-  // Only points around median +- sigmaCut filtered 
+  /// filter outlyer measurement
+  /// Only points around median +- sigmaCut filtered
+
   if (!graph) return  0;
   Int_t kMinPoints=2;
   Int_t npoints0 = graph->GetN();
@@ -2221,9 +2168,9 @@ TGraph* AliTPCcalibDButil::FilterGraphMedian(TGraph * graph, Float_t sigmaCut,Do
 
 
 TGraph* AliTPCcalibDButil::FilterGraphMedianAbs(TGraph * graph, Float_t cut,Double_t &medianY){
-  //
-  // filter outlyer measurement
-  // Only points around median +- cut filtered 
+  /// filter outlyer measurement
+  /// Only points around median +- cut filtered
+
   if (!graph) return  0;
   Int_t kMinPoints=2;
   Int_t npoints0 = graph->GetN();
@@ -2258,10 +2205,9 @@ TGraph* AliTPCcalibDButil::FilterGraphMedianAbs(TGraph * graph, Float_t cut,Doub
 
 
 TGraphErrors* AliTPCcalibDButil::FilterGraphMedianErr(TGraphErrors * const graph, Float_t sigmaCut,Double_t &medianY){
-  //
-  // filter outlyer measurement
-  // Only points with normalized errors median +- sigmaCut filtered
-  //
+  /// filter outlyer measurement
+  /// Only points with normalized errors median +- sigmaCut filtered
+
   Int_t kMinPoints=10;
   Int_t npoints0 = graph->GetN();
   Int_t npoints=0;
@@ -2304,9 +2250,8 @@ TGraphErrors* AliTPCcalibDButil::FilterGraphMedianErr(TGraphErrors * const graph
 
 
 void AliTPCcalibDButil::Sort(TGraph *graph){
-  //
-  // sort array - neccessay for approx
-  //
+  /// sort array - neccessay for approx
+
   Int_t npoints = graph->GetN();
   Int_t *indexes=new Int_t[npoints];
   Double_t *outx=new Double_t[npoints];
@@ -2322,9 +2267,8 @@ void AliTPCcalibDButil::Sort(TGraph *graph){
   delete [] outy;
 }
 void AliTPCcalibDButil::SmoothGraph(TGraph *graph, Double_t delta){
-  //
-  // smmoth graph - mean on the interval
-  //
+  /// smmoth graph - mean on the interval
+
   Sort(graph);
   Int_t npoints = graph->GetN();
   Double_t *outy=new Double_t[npoints];
@@ -2366,9 +2310,8 @@ void AliTPCcalibDButil::SmoothGraph(TGraph *graph, Double_t delta){
 }
 
 Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
-  //
-  // Use constant interpolation outside of range 
-  //
+  /// Use constant interpolation outside of range
+
   if (!graph) {
     AliInfoGeneral("AliTPCcalibDButil","AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
     return 0;
@@ -2393,9 +2336,8 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
 }
 
 Double_t AliTPCcalibDButil::EvalGraphConst(AliSplineFit *graph, Double_t xref){
-  //
-  // Use constant interpolation outside of range also for spline fits
-  //
+  /// Use constant interpolation outside of range also for spline fits
+
   if (!graph) {
     AliInfoGeneral("AliTPCcalibDButil","AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
     return 0;
@@ -2410,20 +2352,19 @@ Double_t AliTPCcalibDButil::EvalGraphConst(AliSplineFit *graph, Double_t xref){
 }
 
 Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Double_t ymax, Double_t maxdy,  Double_t sigmaCut){
-  //
-  // Filter DCS sensor information
-  //   ymin     - minimal value
-  //   ymax     - max value
-  //   maxdy    - maximal deirivative
-  //   sigmaCut - cut on values and derivative in terms of RMS distribution
-  // Return value - accepted fraction
-  // 
-  // Algorithm:
-  //
-  // 0. Calculate median and rms of values in specified range
-  // 1. Filter out outliers - median+-sigmaCut*rms
-  //    values replaced by median
-  //
+  /// Filter DCS sensor information
+  ///   ymin     - minimal value
+  ///   ymax     - max value
+  ///   maxdy    - maximal deirivative
+  ///   sigmaCut - cut on values and derivative in terms of RMS distribution
+  /// Return value - accepted fraction
+  ///
+  /// Algorithm:
+  ///
+  /// 0. Calculate median and rms of values in specified range
+  /// 1. Filter out outliers - median+-sigmaCut*rms
+  ///    values replaced by median
+
   AliSplineFit * fit    = sensor->GetFit();
   if (!fit) return 0.;
   Int_t          nknots = fit->GetKnots();
@@ -2484,13 +2425,13 @@ Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Do
 }
 
 Float_t  AliTPCcalibDButil::FilterTemperature(AliTPCSensorTempArray *tempArray, Double_t ymin, Double_t ymax, Double_t sigmaCut){
-  //
-  // Filter temperature array
-  // tempArray    - array of temperatures         -
-  // ymin         - minimal accepted temperature  - default 15
-  // ymax         - maximal accepted temperature  - default 22
-  // sigmaCut     - values filtered on interval median+-sigmaCut*rms - defaut 5
-  // return value - fraction of filtered sensors
+  /// Filter temperature array
+  /// tempArray    - array of temperatures         -
+  /// ymin         - minimal accepted temperature  - default 15
+  /// ymax         - maximal accepted temperature  - default 22
+  /// sigmaCut     - values filtered on interval median+-sigmaCut*rms - defaut 5
+  /// return value - fraction of filtered sensors
+
   const Double_t kMaxDy=0.1;
   Int_t nsensors=tempArray->NumSensors();
   if (nsensors==0) return 0.;
@@ -2511,24 +2452,23 @@ Float_t  AliTPCcalibDButil::FilterTemperature(AliTPCSensorTempArray *tempArray, 
 
 
 void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutSigma, TTreeSRedirector * const pcstream){
-  //
-  // Filter CE data
-  // Input parameters:
-  //    deltaT   - smoothing window (in seconds)
-  //    cutAbs   - max distance of the time info to the median (in time bins)
-  //    cutSigma - max distance (in the RMS)
-  //    pcstream - optional debug streamer to store original and filtered info
-  // Hardwired parameters:
-  //    kMinPoints =10;       // minimal number of points to define the CE
-  //    kMinSectors=12;       // minimal number of sectors to define sideCE
-  // Algorithm:
-  // 0. Filter almost emty graphs (kMinPoints=10)
-  // 1. calculate median and RMS per side
-  // 2. Filter graphs - in respect with side medians 
-  //                  - cutAbs and cutDelta used
-  // 3. Cut in respect wit the graph median - cutAbs and cutRMS used
-  // 4. Calculate mean for A side and C side
-  //
+  /// Filter CE data
+  /// Input parameters:
+  ///    deltaT   - smoothing window (in seconds)
+  ///    cutAbs   - max distance of the time info to the median (in time bins)
+  ///    cutSigma - max distance (in the RMS)
+  ///    pcstream - optional debug streamer to store original and filtered info
+  /// Hardwired parameters:
+  ///    kMinPoints =10;       // minimal number of points to define the CE
+  ///    kMinSectors=12;       // minimal number of sectors to define sideCE
+  /// Algorithm:
+  /// 0. Filter almost emty graphs (kMinPoints=10)
+  /// 1. calculate median and RMS per side
+  /// 2. Filter graphs - in respect with side medians
+  ///                  - cutAbs and cutDelta used
+  /// 3. Cut in respect wit the graph median - cutAbs and cutRMS used
+  /// 4. Calculate mean for A side and C side
+
   const Int_t kMinPoints =10;       // minimal number of points to define the CE
   const Int_t kMinSectors=12;       // minimal number of sectors to define sideCE
   const Int_t kMinTime   =400;     // minimal arrival time of CE
@@ -2716,12 +2656,10 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
 
 
 void AliTPCcalibDButil::FilterTracks(Int_t run, Double_t cutSigma, TTreeSRedirector * const pcstream){
-  //
-  // Filter Drift velocity measurement using the tracks
-  // 0.  remove outlyers - error based
-  //     cutSigma      
-  //
-  //
+  /// Filter Drift velocity measurement using the tracks
+  /// 0.  remove outlyers - error based
+  ///     cutSigma
+
   const Int_t kMinPoints=1;  // minimal number of points to define value
   TObjArray *arrT=AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   Double_t medianY=0;
@@ -2771,13 +2709,11 @@ void AliTPCcalibDButil::FilterTracks(Int_t run, Double_t cutSigma, TTreeSRedirec
 
 
 Double_t AliTPCcalibDButil::GetLaserTime0(Int_t run, Int_t timeStamp, Int_t deltaT, Int_t side){
-  //
-  //
-  // get laser time offset 
-  // median around timeStamp+-deltaT   
-  // QA - chi2 needed for later usage - to be added
-  //    - currently cut on error
-  //
+  /// get laser time offset
+  /// median around timeStamp+-deltaT
+  /// QA - chi2 needed for later usage - to be added
+  ///    - currently cut on error
+
   Int_t kMinPoints=1;
   Double_t kMinDelay=0.01;
   Double_t kMinDelayErr=0.0001;
@@ -2827,16 +2763,15 @@ Double_t AliTPCcalibDButil::GetLaserTime0(Int_t run, Int_t timeStamp, Int_t delt
 
 
 void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT, Double_t cutSigma, Double_t minVd, Double_t maxVd, TTreeSRedirector * const pcstream){
-  //
-  // Filter Goofie data
-  // goofieArray - points will be filtered
-  // deltaT      - smmothing time window 
-  // cutSigma    - outler sigma cut in rms
-  // minVn, maxVd- range absolute cut for variable vd/pt
-  //             - to be tuned
-  //
-  // Ignore goofie if not enough points
-  //
+  /// Filter Goofie data
+  /// goofieArray - points will be filtered
+  /// deltaT      - smmothing time window
+  /// cutSigma    - outler sigma cut in rms
+  /// minVn, maxVd- range absolute cut for variable vd/pt
+  ///             - to be tuned
+  ///
+  /// Ignore goofie if not enough points
+
   const Int_t kMinPoints = 3;
   //
 
@@ -2997,16 +2932,16 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
 
 
 TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray * const array, Float_t minFraction, Int_t minStat, Float_t maxvd){
-  //
-  // Make a statistic matrix
-  // Input parameters:
-  //   array        - TObjArray of AliRelKalmanAlign 
-  //   minFraction  - minimal ration of accepted tracks
-  //   minStat      - minimal statistic (number of accepted tracks)
-  //   maxvd        - maximal deviation for the 1
-  // Output matrix:
-  //    columns    - Mean, Median, RMS
-  //    row        - parameter type (rotation[3], translation[3], drift[3])
+  /// Make a statistic matrix
+  /// Input parameters:
+  ///   array        - TObjArray of AliRelKalmanAlign
+  ///   minFraction  - minimal ration of accepted tracks
+  ///   minStat      - minimal statistic (number of accepted tracks)
+  ///   maxvd        - maximal deviation for the 1
+  /// Output matrix:
+  ///    columns    - Mean, Median, RMS
+  ///    row        - parameter type (rotation[3], translation[3], drift[3])
+
   if (!array) return 0;
   if (array->GetEntries()<=0) return 0;
   //  Int_t entries = array->GetEntries();
@@ -3045,13 +2980,13 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray * const array, Float_t 
 
 
 TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const array, const TMatrixD & stat, Bool_t direction, Float_t sigmaCut){
-  //
-  // Smooth the array of AliRelKalmanAlign - detector alignment and drift calibration)
-  // Input:
-  //   array     - input array
-  //   stat      - mean parameters statistic
-  //   direction - 
-  //   sigmaCut  - maximal allowed deviation from mean in terms of RMS 
+  /// Smooth the array of AliRelKalmanAlign - detector alignment and drift calibration)
+  /// Input:
+  ///   array     - input array
+  ///   stat      - mean parameters statistic
+  ///   direction -
+  ///   sigmaCut  - maximal allowed deviation from mean in terms of RMS
+
   if (!array) return 0;
   if (array->GetEntries()<=0) return 0;
   if (!(&stat)) return 0;
@@ -3104,11 +3039,11 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const array, const TMa
 }
 
 TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const arrayP, TObjArray * const arrayM){
-  //
-  // Merge 2 RelKalman arrays
-  // Input:
-  //   arrayP    - rel kalman in direction plus
-  //   arrayM    - rel kalman in direction minus
+  /// Merge 2 RelKalman arrays
+  /// Input:
+  ///   arrayP    - rel kalman in direction plus
+  ///   arrayM    - rel kalman in direction minus
+
   if (!arrayP) return 0;
   if (arrayP->GetEntries()<=0) return 0;
   if (!arrayM) return 0;
@@ -3146,15 +3081,13 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const arrayP, TObjArra
 //_____________________________________________________________________________________
 TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
 {
-  //
-  // baseDir:   Base directory with the raw Kr calibration trees
-  //            and the trees from the calibQA
-  //            it assumes to following structure below:
-  //            KryptonCalib/<year>/calibKr/calibKr.<year>.<id>.root
-  //            calibQAdEdx/<year>/calibQA.<year>.<perid>.tree.root
-  //            map/treeMapping.root
-  //
-  
+  /// baseDir:   Base directory with the raw Kr calibration trees
+  ///            and the trees from the calibQA
+  ///            it assumes to following structure below:
+  ///            KryptonCalib/<year>/calibKr/calibKr.<year>.<id>.root
+  ///            calibQAdEdx/<year>/calibQA.<year>.<perid>.tree.root
+  ///            map/treeMapping.root
+
   
   // === add main tree, which will be a mapping file ================
   TFile *fin = TFile::Open(Form("%s/map/treeMapping.root",baseDir.Data()));
@@ -3288,11 +3221,11 @@ TTree* AliTPCcalibDButil::ConnectGainTrees(TString baseDir)
 //_____________________________________________________________________________________
 TTree* AliTPCcalibDButil::ConnectPulserTrees(TString baseDir, TTree *tMain)
 {
-  //
-  // baseDir:   Base directory with Pulser information
-  // TTrees are added to the base tree as a friend tree
-  //  
-  // === add the calibPulser trees ======================================
+  /// baseDir:   Base directory with Pulser information
+  /// TTrees are added to the base tree as a friend tree
+  ///
+  /// === add the calibPulser trees ======================================
+
   TString inputTreesPulserCalib       = gSystem->GetFromPipe(Form("ls %s/calibPulser/20*/*.tree.root",baseDir.Data()));
   TObjArray *arrInputTreesPulserCalib = inputTreesPulserCalib.Tokenize("\n");
   for (Int_t itree=0; itree<arrInputTreesPulserCalib->GetEntriesFast(); ++itree) {
@@ -3331,15 +3264,14 @@ TTree* AliTPCcalibDButil::ConnectPulserTrees(TString baseDir, TTree *tMain)
   
 
 TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TString  selection,  TTree *tMain){
-  //
-  // baseDir:   Base directory with Distortion information
-  // TTrees are added to the base tree as a friend tree
-  // If base tree not provide - first tree from list is used as base
-  //  
-  // === add the calibDistortion trees ======================================
-  //TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("ls %s/calibDistortion/20*/*.tree.root",baseDir.Data()));
-  // TString baseDir="$NOTES/reconstruction/distortionFit/"; TTree *tMain=0;
-  // AliTPCcalibDButil::ConnectDistortionTrees("$NOTES/reconstruction/distortionFit/", "calibTimeResHisto.root", 0);
+  /// baseDir:   Base directory with Distortion information
+  /// TTrees are added to the base tree as a friend tree
+  /// If base tree not provide - first tree from list is used as base
+  ///
+  /// === add the calibDistortion trees ======================================
+  /// TString inputTreesDistortionCalib       = gSystem->GetFromPipe(Form("ls %s/calibDistortion/20*/*.tree.root",baseDir.Data()));
+  /// TString baseDir="$NOTES/reconstruction/distortionFit/"; TTree *tMain=0;
+  /// AliTPCcalibDButil::ConnectDistortionTrees("$NOTES/reconstruction/distortionFit/", "calibTimeResHisto.root", 0);
 
   TString inputTreesDistortionCalib       = "";
   if (selection.Contains(".list")){    
@@ -3393,13 +3325,12 @@ TTree* AliTPCcalibDButil::ConnectDistortionTrees(TString baseDir, TString  selec
 //_____________________________________________________________________________________
 TTree* AliTPCcalibDButil::ConnectCalPadTrees(TString baseDir, TString pattern, TTree *tMain, Bool_t checkAliases)
 {
-  //
-  // baseDir:   Base directory with per Pad information
-  // TTrees are added to the base tree as a friend tree
-  // Example usage
-  //   TString baseDir="/hera/alice/fsozzi/summarymaps/calib2/";  // prefix directory with calibration with slash at the end
-  //   TString pattern="QA/*/*root";  
-  //   TTree * tree =  AliTPCcalibDButil::ConnectCalPadTrees(baseDir,pattern,0);   //create tree and attach calibration as friends
+  /// baseDir:   Base directory with per Pad information
+  /// TTrees are added to the base tree as a friend tree
+  /// Example usage
+  ///   TString baseDir="/hera/alice/fsozzi/summarymaps/calib2/";  // prefix directory with calibration with slash at the end
+  ///   TString pattern="QA/*/*root";
+  ///   TTree * tree =  AliTPCcalibDButil::ConnectCalPadTrees(baseDir,pattern,0);   //create tree and attach calibration as friends
 
   //  
   // === add the calibPulser trees ======================================

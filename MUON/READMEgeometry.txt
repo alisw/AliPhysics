@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_geometry Geometry
+\page README_geometry MUON Geometry
 
 
 \section geometry_s1 General Information about MUON Geometry

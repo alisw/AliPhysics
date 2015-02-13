@@ -1,3 +1,5 @@
+/// \file recMC.C
+
 void recMC(const char* tpcDBpath="local://$ALICE_ROOT", Int_t nevents){
   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();  
   AliTPCReconstructor::SetStreamLevel(10);

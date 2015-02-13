@@ -25,9 +25,13 @@
 # - ROOT_LIBMAP - path to rlibmap executable
 # - ROOT_FEATURES - list of build features for ROOT
 # - ROOT_LIBDIR - full path to ROOT library folder
+# - ROOT_ETCDIR - full path to the ROOT's configuration directory
 # - ROOT_LIBRARIES - libraries needed for the package to be used
 # - ROOT_GLIBRARIES - regular + GUI ROOT libraries + path to be used during linking
 # - ROOT_INCLUDE_DIR - full path to ROOT include folder
+# - ROOT_CXX_FLAGS - flags used by the C++ compiler for building ROOT
+# - ROOT_HAS_LIBCXX - TRUE if ROOT was built against libc++ (as opposed to libstdc++)
+# - ROOT_HAS_CXX11 - TRUE if ROOT was built with C++11 support
 # - ROOT_HASALIEN - ROOT was built with AliEn support
 # - ROOT_HASOPENGL - ROOT was built with OpenGL support
 # - ROOT_HASXML - ROOT was built with XML support
@@ -48,6 +52,7 @@ if(ROOTSYS)
     if(NOT ROOT_CONFIG)
         message(FATAL_ERROR "Could not find root-config script.")
     endif(NOT ROOT_CONFIG)
+    mark_as_advanced(ROOT_CONFIG)
 
     # Check for rlibmap
     find_program(ROOT_LIBMAP NAMES rlibmap rootcling PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
@@ -56,6 +61,7 @@ if(ROOTSYS)
     else()
         message(FATAL_ERROR "Could not find rlibmap executable.")
     endif(ROOT_LIBMAP)
+    mark_as_advanced(ROOT_LIBMAP)
 
     # Check for rootcint
     find_program(ROOT_CINT NAMES rootcint PATHS ${ROOTSYS}/bin NO_DEFAULT_PATH)
@@ -64,6 +70,7 @@ if(ROOTSYS)
     else()
         message(FATAL_ERROR "Could not find rootcint executable.")
     endif(ROOT_CINT)
+    mark_as_advanced(ROOT_CINT)
 
     # Checking ROOT version
     execute_process(COMMAND ${ROOT_CONFIG} --version OUTPUT_VARIABLE ROOT_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -83,7 +90,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error retrieving ROOT features : ${error}")
     else()
-        message(STATUS "ROOT was build with the following features: ${ROOT_FEATURES}")
+        message(STATUS "ROOT was built with the following features: ${ROOT_FEATURES}")
     endif(error)
     string(STRIP "${ROOT_FEATURES}" ROOT_FEATURES)
 
@@ -93,6 +100,13 @@ if(ROOTSYS)
         message(FATAL_ERROR "Error retrieving ROOT libdir: ${error}")
     endif(error)
     string(STRIP "${ROOT_LIBDIR}" ROOT_LIBDIR)
+
+    # Checking for ROOT etcdir
+    execute_process(COMMAND ${ROOT_CONFIG} --etcdir OUTPUT_VARIABLE ROOT_ETCDIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(error)
+        message(FATAL_ERROR "Error retrieving ROOT etcdir: ${error}")
+    endif(error)
+    string(STRIP "${ROOT_ETCDIR}" ROOT_ETCDIR)
 
     # Checking for ROOT libs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --libs OUTPUT_VARIABLE ROOT_LIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -117,6 +131,28 @@ if(ROOTSYS)
     string(STRIP "${ROOT_INCDIR}" ROOT_INCDIR)
     set(ROOT_INCLUDE_DIR ${ROOT_INCDIR})
 
+    # Setting ROOT compiler flags (except the -I parts) to a variable
+    execute_process(COMMAND ${ROOT_CONFIG} --auxcflags OUTPUT_VARIABLE _ROOT_CXX_FLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(error)
+        message(FATAL_ERROR "Error retrieving ROOT compiler flags: ${error}")
+    endif(error)
+    string(STRIP "${_ROOT_CXX_FLAGS}" ROOT_CXX_FLAGS)
+
+    # Check if ROOT was built with libc++ (as opposed to stdlibc++)
+    if(ROOT_CXX_FLAGS MATCHES "-stdlib=libc\\+\\+")
+        set(ROOT_HAS_LIBCXX TRUE)
+    else()
+        set(ROOT_HAS_LIBCXX FALSE)
+    endif()
+
+    # Check if ROOT was built with C++11 support
+    if(ROOT_CXX_FLAGS MATCHES "-std=c\\+\\+11")
+        message(STATUS "ROOT was built with C++11 support")
+        set(ROOT_HAS_CXX11 TRUE)
+    else()
+        set(ROOT_HAS_CXX11 FALSE)
+    endif()
+
     # Checking for glibs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -138,40 +174,40 @@ if(ROOTSYS)
     # If AliEn support is enabled we need to point to AliEn
     execute_process(COMMAND ${ROOT_CONFIG} --has-alien OUTPUT_VARIABLE ROOT_HASALIEN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was build with AliEn support: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with AliEn support: ${error}")
     endif(error)
     
     #if defined
     if(ROOT_HASALIEN)
         string(STRIP "${ROOT_HASALIEN}" ROOT_HASALIEN)
         if(ROOT_HASALIEN STREQUAL "yes")
-    	    if(ALIEN)
-        	add_definitions(-DWITHALIEN)
-        	
-        	# AliEn might bring some system libraries, we need to use them
-        	if(EXISTS "${ALIEN}/lib")
-        	    link_directories(${ALIEN}/lib)
-        	endif()
-        	
-        	# api/lib should always exists
-        	if(EXISTS "${ALIEN}/api/lib")
-        	    link_directories(${ALIEN}/api/lib)
-        	endif()
-        	
-        	# include for AliEn
-        	if(EXISTS "${ALIEN}/include")
-        	    include_directories(SYSTEM ${ALIEN}/include)
-        	endif()
-        	
-        	# api/include always exists
-        	if(EXISTS "${ALIEN}/api/include")
-        	    include_directories(SYSTEM ${ALIEN}/api/include)
-        	endif()
-        	
-        	set(ROOT_HASALIEN TRUE)
-    	    else(ALIEN)
-    		message(FATAL_ERROR "ROOT was build with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
-    	    endif(ALIEN)
+            if(ALIEN)
+            add_definitions(-DWITHALIEN)
+
+            # AliEn might bring some system libraries, we need to use them
+            if(EXISTS "${ALIEN}/lib")
+                link_directories(${ALIEN}/lib)
+            endif()
+
+            # api/lib should always exists
+            if(EXISTS "${ALIEN}/api/lib")
+                link_directories(${ALIEN}/api/lib)
+            endif()
+
+            # include for AliEn
+            if(EXISTS "${ALIEN}/include")
+                include_directories(SYSTEM ${ALIEN}/include)
+            endif()
+
+            # api/include always exists
+            if(EXISTS "${ALIEN}/api/include")
+                include_directories(SYSTEM ${ALIEN}/api/include)
+            endif()
+
+            set(ROOT_HASALIEN TRUE)
+            else(ALIEN)
+            message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+            endif(ALIEN)
         else()
             set(ROOT_HASALIEN FALSE)
         endif()
@@ -180,7 +216,7 @@ if(ROOTSYS)
     # Checking for xml support
     execute_process(COMMAND ${ROOT_CONFIG} --has-xml OUTPUT_VARIABLE ROOT_HASXML ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was build with xml support: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with xml support: ${error}")
     endif(error)
     
     # if defined
@@ -197,7 +233,7 @@ if(ROOTSYS)
     # Checking for OpenGL support
     execute_process(COMMAND ${ROOT_CONFIG} --has-opengl OUTPUT_VARIABLE ROOT_HASOPENGL ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
-        message(FATAL_ERROR "Error checking if ROOT was build with OpenGL support: ${error}")
+        message(FATAL_ERROR "Error checking if ROOT was built with OpenGL support: ${error}")
     endif(error)
     
     if(ROOT_HASOPENGL)
@@ -209,7 +245,6 @@ if(ROOTSYS)
         endif()
     endif()
 
-
     # Checking for fortran compiler
     execute_process(COMMAND ${ROOT_CONFIG} --f77 OUTPUT_VARIABLE ROOT_FORTRAN ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
@@ -219,7 +254,7 @@ if(ROOTSYS)
 
     # adding the libraries and the inc dir
     link_directories(${ROOT_LIBDIR})
-    include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+#    include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
     set(ROOT_FOUND TRUE)
 
     # Workaround misssing XML, VMC, Minuit from ROOT static library
@@ -228,7 +263,7 @@ if(ROOTSYS)
     if(ALIROOT_STATIC)
         message(WARNING "AliRoot static build enabled! libRootExtra.a will be created.\nPlease remove when ROOT https://sft.its.cern.ch/jira/browse/ROOT-6904 issue is fixed")
 
-        # ROOT needs xml2 but it is not build with the static version so we have to add it
+        # ROOT needs xml2 but it is not built with the static version so we have to add it
         find_package(LibXml2)
 
         if(LIBXML2_FOUND)

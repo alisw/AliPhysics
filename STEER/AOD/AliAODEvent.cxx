@@ -636,14 +636,15 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 Int_t AliAODEvent::GetNumberOfMuonTracks() const
 {
   // get number of muon tracks
+  int ntr = GetNumberOfTracks();
+  if (!ntr) return 0;
   Int_t nMuonTracks=0;
-   
   if(!dynamic_cast<AliAODTrack*>(GetTrack(0))) {
     AliError("Not a standard AOD");
     return 0;
   }
 
-  for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
+  for (Int_t iTrack=ntr; iTrack--;) {
     if (((AliAODTrack*)GetTrack(iTrack))->IsMuonTrack()) {
        nMuonTracks++;
     }
@@ -676,12 +677,14 @@ Int_t AliAODEvent::GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const       
 Int_t AliAODEvent::GetNumberOfMuonGlobalTracks() const                                    // AU
 {
   // get number of muon global tracks
+  int ntr = GetNumberOfTracks();
+  if (!ntr) return 0;
   Int_t nMuonGlobalTracks=0;
   if(!dynamic_cast<AliAODTrack*>(GetTrack(0))) {
     AliError("Not a standard AOD");
     return 0;
   }
-  for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
+  for (Int_t iTrack=ntr; iTrack--;) {
     if (((AliAODTrack*)GetTrack(iTrack))->IsMuonGlobalTrack()) {
        nMuonGlobalTracks++;
     }

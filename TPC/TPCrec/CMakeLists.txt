@@ -20,7 +20,7 @@ set(MODULE TPCrec)
 include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
@@ -53,6 +53,9 @@ set(SRCS
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Additional headers, with no corresponding sources
+list(APPEND HDRS "AliTPCreco.h")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -93,4 +96,4 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
-
+install(FILES ${HDRS} DESTINATION include)

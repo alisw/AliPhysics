@@ -21,30 +21,30 @@ class TRandom;
 class AliGenEMlib :public AliGenLib {
 public:
 
-  enum Particle_t{ kPizero=0x0, kEta=0x1, kRho0=0x2, kOmega=0x3, kEtaprime=0x4, kPhi=0x5, kJpsi=0x6,
-		   kSigma0=0x7, kK0s=0x8, kDeltaPlPl=0x9, kDeltaPl=0xA, kDeltaMi=0xB, kDeltaZero=0xC,
-		   kRhoPl =0xD, kRhoMi=0xE, kK0star=0xF, kDirectRealGamma=0x10, kDirectVirtGamma=0x11 };
+  enum Particle_t{ kPizero=0, kEta=1, kRho0=2, kOmega=3, kEtaprime=4, kPhi=5, kJpsi=6,
+		   kSigma0=7, kK0s=8, kDeltaPlPl=9, kDeltaPl=10, kDeltaMi=11, kDeltaZero=12,
+		   kRhoPl=13, kRhoMi=14, kK0star=15, kDirectRealGamma=16, kDirectVirtGamma=17 };
   
   enum CollisionSystem_t {kpp900GeV=0x000, kpp2760GeV=0x100, kpp7TeV=0x200, kpPb=0x300, kPbPb=0x400};
 
   enum Centrality_t{ kpp = 0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7,
 		     k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
   
-  enum PtParamSetPi0_t{ kPizeroParam=0x0, kPizeroParamlow=0x1, kPizeroParamhigh=0x2, kPichargedParam=0x3,
-			kPichargedParamlow=0x4, kPichargedParamhigh=0x5, kPizeroParamAlter=0x6,
-			kPizeroParamAlterlow=0x7, kPizeroParamAlterhigh=0x8, kNPi0Param=0x9,
-			kPichargedParamNew=0xA, kPichargedParamOld=0xB };
+  enum PtParamSetPi0_t{ kPizeroParam, kPizeroParamlow, kPizeroParamhigh, kPichargedParam,
+			kPichargedParamlow, kPichargedParamhigh, kPizeroParamAlter,
+			kPizeroParamAlterlow, kPizeroParamAlterhigh, kNPi0Param,
+			kPichargedParamNew, kPichargedParamOld };
   
-  enum PtParamSetEta_t{ kEtaParampp=0x0, kEtaParampplow=0x1, kEtaParampphigh=0x2,
-		        kEtaParamRatiopp=0x3, kEtaParamRatiopplow=0x4, kEtaParamRatiopphigh=0x5,
-		        kEtaParamPbPb=0x6, kEtaParamPPb=0x7 };
+  enum PtParamSetEta_t{ kEtaMtScal=0, kEtaParampp, kEtaParampplow, kEtaParampphigh,
+		        kEtaParamRatiopp, kEtaParamRatiopplow, kEtaParamRatiopphigh,
+		        kEtaParamPbPb, kEtaParamPPb };
   
-  enum PtParamSetOmega_t{ kOmegaParampp=0x0, kOmegaParampplow=0x1, kOmegaParampphigh=0x2,
-			  kOmegaParamRatiopp=0x3, kOmegaParamRatiopplow=0x4, kOmegaParamRatiopphigh=0x5,
-			  kOmegaParamPbPb=0x6, kOmegaParamPPb=0x7 };
+  enum PtParamSetOmega_t{ kOmegaMtScal=0, kOmegaParampp, kOmegaParampplow, kOmegaParampphigh,
+			  kOmegaParamRatiopp, kOmegaParamRatiopplow, kOmegaParamRatiopphigh,
+			  kOmegaParamPbPb, kOmegaParamPPb };
   
-  enum PtParamSetPhi_t{ kPhiParampp=0x0, kPhiParampplow=0x1, kPhiParampphigh=0x2,
-		        kPhiParamPbPb=0x3, kPhiParamPPb=0x4 };
+  enum PtParamSetPhi_t{ kPhiMtScal=0, kPhiParampp, kPhiParampplow, kPhiParampphigh,
+		        kPhiParamPbPb, kPhiParamPPb };
   
   enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
  

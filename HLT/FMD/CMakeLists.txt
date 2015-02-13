@@ -20,7 +20,7 @@ set(MODULE AliHLTFMD)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/FMD)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/FMD/FMDbase
                     ${AliRoot_SOURCE_DIR}/FMD/FMDrec
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
@@ -48,12 +48,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FmMDrec)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FMDrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase FMDbase FMDrec)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

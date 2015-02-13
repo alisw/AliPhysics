@@ -20,7 +20,7 @@ set(MODULE TRDbase)
 include_directories(${AliRoot_SOURCE_DIR}/TRD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
@@ -129,10 +129,28 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Setting compile and link flags in case of date
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
+endif(DATE_FOUND)
+
+# Check if CRS support was enabled
+if(TRD_RAW_CRC)
+    message(STATUS "CRC support for AliTRDrawStream enabled")
+    set(MODULE_COMPILE_FLAGS "-DTRD_RAW_CRC ${MODULE_COMPILE_FLAGS}")
+endif(TRD_RAW_CRC)
+
+# Check if RAW debug enabled
+if(TRD_RAW_DEBUG)
+    message(STATUS "Debug support for AliTRDrawStream enabled")
+    set(MODULE_COMPILE_FLAGS "-DTRD_RAW_DEBUG ${MODULE_COMPILE_FLAGS}")
+endif(TRD_RAW_DEBUG)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
 set(ROOT_DEPENDENCIES Core GenVector Geom Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree VMC XMLParser)
 set(ALIROOT_DEPENDENCIES STEERBase STEER ESD CDB RAWDatabase RAWDatarec)
@@ -156,26 +174,21 @@ target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-# Additional compilation flags
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")
-
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
-# Check if CRS support was enabled
-if(TRD_RAW_CRC)
-    message(STATUS "CRC support for AliTRDrawStream enabled")
-    add_definitions(-DTRD_RAW_CRC)
-endif(TRD_RAW_CRC)
 
-# Check if RAW debug enabled
-if(TRD_RAW_DEBUG)
-    message(STATUS "Debug support for AliTRDrawStream enabled")
-    add_definitions(-DTRD_RAW_DEBUG)
-endif(TRD_RAW_DEBUG)
+# Setting the correct headers for the object as gathered from the dependencies
+# Additional compilation flags
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
+# Setting the correct headers for the object as gathered from the dependencies
+# This has to be added after all the compile definitions
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Installation
 install(TARGETS ${MODULE}

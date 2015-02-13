@@ -20,7 +20,7 @@ set(MODULE TPCsim)
 include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatasim
@@ -92,4 +92,4 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
-
+install(FILES ${HDRS} DESTINATION include)

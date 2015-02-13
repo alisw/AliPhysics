@@ -1,20 +1,18 @@
-/*
-  Simple macro to make pedstal calibration
-  and visualize calibration data
-
-  .L $ALICE_ROOT/TPC/macros/testDataQA.C
-  
-*/
-
-
-
+/// \file testDataQA.C
+///
+/// Simple macro to make pedstal calibration
+/// and visualize calibration data
+///
+/// ~~~
+/// .L $ALICE_ROOT/TPC/macros/testDataQA.C
+/// ~~~
 
 void testDataQA(Char_t *fileName, Int_t maxevent=10)
 {
    AliRawReaderRoot *rawReader = new AliRawReaderRoot(fileName);
    if ( !rawReader ) return;
-   AliTPCdataQA *calib     = new AliTPCdataQA; 
-   AliTPCdataQA *calibFast = new AliTPCdataQA; 
+   AliTPCdataQA *calib     = new AliTPCdataQA;
+   AliTPCdataQA *calibFast = new AliTPCdataQA;
    calib->SetRangeTime(1,1000);
    calibFast->SetRangeTime(1,1000);
    printf("Processing data\n");
@@ -22,7 +20,6 @@ void testDataQA(Char_t *fileName, Int_t maxevent=10)
    while (rawReader->NextEvent()){
      calib->ProcessEvent(rawReader);
      rawReader->Reset();
-     calibFast->ProcessEventFast(rawReader);
      event++;
      // if you wann to check the handling of Analyse updates uncomment this
 //      if(gRandom->Rndm()<0.3) {
@@ -46,7 +43,7 @@ void testDataQA(Char_t *fileName, Int_t maxevent=10)
    TFile file2("dataQATestAnalyse.root");
    AliTPCdataQA* cal = (AliTPCdataQA*)file2.Get("AliTPCdataQA");
    AliTPCdataQA* calFast = (AliTPCdataQA*)file2.Get("AliTPCdataQAFast");
-   
+
    AliTPCPreprocessorOnline preprocesor;
    preprocesor.AddComponent(cal->GetNoThreshold());
    preprocesor.AddComponent(cal->GetOverThreshold10());
@@ -91,7 +88,7 @@ void testDataQA(Char_t *fileName, Int_t maxevent=10)
    preprocesor.AddComponent(calNTime    );
    preprocesor.AddComponent(calNPad     );
    preprocesor.AddComponent(calTimePos  );
-   
+
    preprocesor.DumpToFile("CalibTreeTestAnalyse.root");
    AliTPCCalibViewerGUI::ShowGUI("CalibTreeTestAnalyse.root");
 }

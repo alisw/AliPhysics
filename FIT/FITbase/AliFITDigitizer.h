@@ -26,7 +26,7 @@ class AliFITDigitizer : public AliDigitizer {
  // Do the main work
   void Digitize(Option_t* /*option=0*/) ;
   void AddDigit(Int_t* digits, Int_t*){;} // Not implemented
-  void AddSDigit(Int_t npmt,
+  void AddDigit(Int_t npmt,
 		 Int_t timeCFD, Int_t timeLED, Int_t timeQT0, Int_t timeQT1) ;
  
   void ResetDigits();

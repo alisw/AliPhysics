@@ -1,3 +1,5 @@
+/// \file ViewTPC.C
+
 void ViewTPC()
 {
   gMC->Gsatt("TPC ","SEEN",0);

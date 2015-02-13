@@ -1,28 +1,30 @@
-/*
-   Macro to make the MC based dEdx fits, and study the influence of thre track selection to the PID.
-
-   Motivation:
-   In the ALICE Geant3 MC the input Bethe-Bloch parameterization of the primary ionization can be 
-   parameterized by user defined formula.
-
-   In detector Input dEdx(BG)_in} (more exact dNprim/dx) is transformed to the output reconstructed dEdx_{rec}. 
-   While original input function is just function of particle \beta\gama, random variable, reconstructed 
-   dEdx estimate, is influenced by detection processes and is sensitive to other aspects namily 
-   diffusion, track inclination angle (\phi,\theta), gain ...
-
-   In the following we will calibrate transform function:
-    dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
-    //
-    // Example code for author:
-    //
-    .x $HOME/rootlogon.C
-    .x $HOME/NimStyle.C
-    .L $ALICE_ROOT/TPC/macros/data2011/makeBBFit.C+
-    Init();
-    MakeESDCutsPID();
-    makeBBfit(10000000);
-
-*/
+/// \file makeBBFit.C
+/// \brief Macro to make the MC based dEdx fits, and study the influence of thre track selection to the PID.
+/// 
+/// Motivation
+/// ----------
+/// In the ALICE Geant3 MC the input Bethe-Bloch parameterization of the primary ionization can be 
+/// parameterized by user defined formula.
+/// 
+/// In detector Input \f$ dE/dx(BG)_{in} \f$ (more exact \f$ dN_{prim}/dx \f$) is transformed to the output reconstructed \f$ dE/dx_{rec} \f$. 
+/// While original input function is just function of particle \beta\gama, random variable, reconstructed 
+/// dEdx estimate, is influenced by detection processes and is sensitive to other aspects namily 
+/// diffusion, track inclination angle (\f$\phi\f$,\f$\theta\f$), gain ...
+/// 
+/// In the following we will calibrate transform function:
+/// \f[
+/// \frac{dE}{dx}_{BB}= f_{tr}\left(\frac{dE}{dx}_{rec}, \phi, \eta\right)
+/// \f]
+/// 
+///  Example code for author:
+/// ~~~{.cpp} 
+/// .x $HOME/rootlogon.C
+/// .x $HOME/NimStyle.C
+/// .L $ALICE_ROOT/TPC/macros/data2011/makeBBFit.C+
+/// Init();
+/// MakeESDCutsPID();
+/// makeBBfit(10000000);
+/// ~~~
 
 #include "TCut.h"
 #include "TFile.h"
@@ -64,9 +66,8 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
 void FitTransferFunctionAll(Bool_t isMax, Int_t dType, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw);
 
 void Init(){
-   //
-  // 1.) Register default ALICE parametrization
-  //
+  /// 1.) Register default ALICE parametrization
+
   AliTPCParam param;
   param.RegisterBBParam(param.GetBetheBlochParamAlice(),1);
   for (Int_t ihis=0; ihis<4; ihis++)     massPDG [ihis]= TDatabasePDG::Instance()->GetParticle(pdgs[ihis])->Mass();
@@ -74,22 +75,21 @@ void Init(){
 
 
 void MakeESDCutsPID(Double_t fgeom=1, Double_t fcr=0.85, Double_t fcl=0.7 ){
-  //
-  // Cuts to be used in the sequenece
-  // 1.)  cutGeom - stronger cut on geometry  - perfect agreement data-MC        
-  //              - Default length factor 1
-  // 2.)  cutNcr  - relativally stong cut on the number of crossed rows to gaurantee tracking performance 
-  //                relativally good agrement in the MC except of the week decay propability
-  //              - Default length factor 0.85
-  // 3.)  cutNcl  - very week cut on the numebr of clusters
-  //              - Default length factor 0.7
-  //  
-  // Combined cuts should be combination:
-  // cutGeom+cutNcr+cutNcl 
-  //  Default  factors 1, 0.85 and 0.7 should be suited for most of analysis
-  //  Modification can be expected for the Jet analysis and further tuning of the parameters for the 
-  //     relativistic PID analysis
-  //  
+  /// Cuts to be used in the sequenece
+  /// 1.)  cutGeom - stronger cut on geometry  - perfect agreement data-MC
+  ///              - Default length factor 1
+  /// 2.)  cutNcr  - relativally stong cut on the number of crossed rows to gaurantee tracking performance
+  ///                relativally good agrement in the MC except of the week decay propability
+  ///              - Default length factor 0.85
+  /// 3.)  cutNcl  - very week cut on the numebr of clusters
+  ///              - Default length factor 0.7
+  ///
+  /// Combined cuts should be combination:
+  /// cutGeom+cutNcr+cutNcl
+  ///  Default  factors 1, 0.85 and 0.7 should be suited for most of analysis
+  ///  Modification can be expected for the Jet analysis and further tuning of the parameters for the
+  ///     relativistic PID analysis
+
   cutGeom=TString::Format("esdTrack.GetLengthInActiveZone(0,3,236, -5 ,0,0)> %f*(130-5*abs(esdTrack.fP[4]))",fgeom); 
   //  Geomtrical cut in fiducial volume - proper description  in the MC
   //  GetLengthInActiveZone(Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi = 0, TTreeSRedirector* pcstream = 0) const
@@ -117,12 +117,12 @@ void MakeESDCutsPID(Double_t fgeom=1, Double_t fcr=0.85, Double_t fcl=0.7 ){
 }
 
 void makeBBfit(Int_t ntracks=100000){
-  //
-  // Make dEdx  fits of indiviadual particle species in bins:
-  //  a.)  momenta
-  //  b.)  tan(theta) -tgl
-  //  c.)  per detector segmen
-  //  d.)  Qmax/Qtot
+  /// Make dEdx  fits of indiviadual particle species in bins:
+  ///  a.)  momenta
+  ///  b.)  tan(theta) -tgl
+  ///  c.)  per detector segmen
+  ///  d.)  Qmax/Qtot
+
   TFile * ff = TFile::Open("Filtered.root");
   TTreeSRedirector *pcstream = new TTreeSRedirector("dedxFit.root","update");
   TTree * treeMC = (TTree*)ff->Get("highPt");
@@ -248,9 +248,8 @@ void makeBBfit(Int_t ntracks=100000){
 
 
 void FitTransferFunctionScanAll(){
-  //
-  // Make fit of transfer functions - parabolic in theta
-  //
+  /// Make fit of transfer functions - parabolic in theta
+
   TTreeSRedirector * pcstream = new TTreeSRedirector("dedxFit.root","update");
   treeFit=(TTree*)pcstream->GetFile()->Get("fitdEdxG"); 
   treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
@@ -271,9 +270,8 @@ void FitTransferFunctionScanAll(){
 
 
 void FitTransferFunctionScanTheta(){
-  //
-  // Make fit of transfer functions - bin by bin in Theta
-  //
+  /// Make fit of transfer functions - bin by bin in Theta
+
   TTreeSRedirector * pcstream = new TTreeSRedirector("dedxFit.root","update");
   treeFit=(TTree*)pcstream->GetFile()->Get("fitdEdxG"); 
   treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
@@ -297,18 +295,15 @@ void FitTransferFunctionScanTheta(){
 
 
 void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw){
-  //
-  // 
-  // dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
-  //
-  // Fit the parematers of transfer function
-  // 4 models of transfer function used:
-  // 
-  //
-  // Example usage:
-  //    FitTransferFunctionTheta(1,3,8,1,5,0) 
-  //    isMax=1; dType=1; tgl=5; skipKaon=0; Double_t maxP=10
-  //
+  /// dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
+  ///
+  /// Fit the parematers of transfer function
+  /// 4 models of transfer function used:
+  ///
+  /// Example usage:
+  ///    FitTransferFunctionTheta(1,3,8,1,5,0)
+  ///    isMax=1; dType=1; tgl=5; skipKaon=0; Double_t maxP=10
+
   if (!pcstream)  pcstream = new TTreeSRedirector("dedxFit.root","update");
   //
   if (!treeFit){
@@ -443,14 +438,12 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
 //
 //
 void FitTransferFunctionAll(Bool_t isMax, Int_t dType, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw){
-  //
-  // 
-  // dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
-  //
-  // Example usage:
-  //    FitTransferFunctionAll(1,1,1,15,0,1) 
-  //    isMax=1; dType=1; skipKaon=0; Double_t maxP=10
-  //
+  /// dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
+  ///
+  /// Example usage:
+  ///    FitTransferFunctionAll(1,1,1,15,0,1)
+  ///    isMax=1; dType=1; skipKaon=0; Double_t maxP=10
+
   if (!pcstream)  pcstream = new TTreeSRedirector("dedxFit.root","update");
   //
   if (!treeFit){
@@ -614,9 +607,8 @@ void FitTransferFunctionAll(Bool_t isMax, Int_t dType, Bool_t skipKaon, Double_t
 
 
 void DrawFit(){
-  //
-  //
-  //
+  ///
+
   TTreeSRedirector * pcstream = new TTreeSRedirector("dedxFit.root","update");
   TTree * treeTheta=(TTree*)pcstream->GetFile()->Get("fitTheta"); 
   treeTheta->SetMarkerStyle(25);

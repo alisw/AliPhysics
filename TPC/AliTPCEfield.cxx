@@ -40,7 +40,7 @@ AliTPCEfield::AliTPCEfield():
   fIs2D(kTRUE),
   fWorkspace(0)   // file with trees, pictures ...
 {
-  /// 
+  ///
 
   for (Int_t i=0; i<3; i++){
     fMin[i]=0; fMax[i]=0;
@@ -56,7 +56,7 @@ AliTPCEfield::AliTPCEfield(const char* name, Int_t maxFreq, Bool_t is2D, Bool_t 
   fUseLinear(useLinear),
   fWorkspace(0)   // file with trees, pictures ...
 {
-  /// 
+  ///
 
   for (Int_t i=0; i<3; i++){
     fMin[i]=0; fMax[i]=0;
@@ -167,7 +167,7 @@ void AliTPCEfield::AddBoundaryLine(Double_t x0,Double_t y0,Double_t z0,  Double_
 }
 
 TTree * AliTPCEfield::GetTree(const char * tname){
-  /// 
+  ///
 
   return ((*fWorkspace)<<tname).GetTree();
 }
@@ -363,7 +363,7 @@ void AliTPCEfield::FitField(){
 
 
 TMatrixD* AliTPCEfield::MakeCorrelation(TMatrixD &matrix){
-  /// 
+  ///
 
   Int_t nrows = matrix.GetNrows();
   TMatrixD * mat = new TMatrixD(nrows,nrows);
@@ -378,7 +378,7 @@ TMatrixD* AliTPCEfield::MakeCorrelation(TMatrixD &matrix){
 
 
 void AliTPCEfield::DumpField(Double_t gridSize, Double_t step){
-  /// 
+  ///
 
   Double_t stepSize=0.001*fScale/fMaxFreq;
   //
@@ -444,7 +444,8 @@ void AliTPCEfield::DumpField(Double_t gridSize, Double_t step){
 
 
 void MakeTPC2DExample(AliTPCEfield *field){
-  //
+  ///
+
   /*
     .L  $ALICE_ROOT/TPC/AliTPCEfield.cxx++
     AliTPCEfield *field =  new AliTPCEfield("field",20, kTRUE,kTRUE);

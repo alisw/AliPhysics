@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_rec Reconstruction
+\page README_rec MUON Reconstruction
  
 The reconstruction is a multistage process, driven by the AliMUONTracker and AliMUONReconstructor classes
 via the AliReconstruction class, which is divided into three parts:

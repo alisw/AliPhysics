@@ -1,3 +1,5 @@
+/// \file driftITSTPC.C
+
 /*
   Formulas:
 
@@ -96,8 +98,8 @@ TVectorD errors;
 
 
 void FillVar(){
-  //
-  //
+  ///
+
   npoints =tree->Draw("side",cutA+cut1+cut2);
   vside.ResizeTo(npoints);  vside.SetElements(tree->GetV1());
   //
@@ -136,9 +138,8 @@ void FillVar(){
 
 
 void FitI1(){
-  //
-  // Independent fit 1
-  // 
+  /// Independent fit 1
+
   TString fstringTl1="";
   fstringTl1+="(side)++";
   fstringTl1+="(tl)++";
@@ -170,9 +171,8 @@ void FitI1(){
 }
 
 void Fit2I(){
-  //
-  // Independent fit
-  //
+  /// Independent fit
+
   TString fstringTl2="";
   fstringTl2+="(side)++";
   fstringTl2+="(tl)++";
@@ -218,11 +218,10 @@ void Fit2I(){
 
 
 void Fit1(){
-  //
-  //  
-  //  dz = zs-z = -s*vr *(z0-s*z)+s*dzt         
-  //  dzs/dl = dz/dl +s*s*vr*dz/dl 
-  //  d(dz/dl) = vr*dz/dl 
+  ///  dz = zs-z = -s*vr *(z0-s*z)+s*dzt
+  ///  dzs/dl = dz/dl +s*s*vr*dz/dl
+  ///  d(dz/dl) = vr*dz/dl
+
   TLinearFitter fitter1(5, "hyp4");
   // parameters
   // 0 - P3   offset
@@ -270,11 +269,10 @@ void Fit1(){
 
 
 void Fit2(){
-  //
-  //  
-  //  dz = zs-z = -s*vr *(z0-s*z)+s*dzt         
-  //  dzs/dl = dz/dl +s*s*vr*dz/dl 
-  //  d(dz/dl) = vr*dz/dl 
+  ///  dz = zs-z = -s*vr *(z0-s*z)+s*dzt
+  ///  dzs/dl = dz/dl +s*s*vr*dz/dl
+  ///  d(dz/dl) = vr*dz/dl
+
   TLinearFitter fitter2(7, "hyp6");
   // parameters
   // 0 - P3   offset

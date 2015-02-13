@@ -5,9 +5,8 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class for TPC   clusters                   //
-////////////////////////////////////////////////
+/// \class AliTPCClustersRow
+/// \brief Manager class for TPC   clusters
 
 
 #include "AliClusters.h"
@@ -23,9 +22,11 @@ public:
   virtual TObject *Append();  //create new object return pointer to this object
 
 public:
-  
-  ClassDef(AliTPCClustersRow,1) // Cluster manager 
-};  
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCClustersRow,1) // Cluster manager
+  /// \endcond
+};
 #endif //ALITPCCLUSTERROW_H
 
 

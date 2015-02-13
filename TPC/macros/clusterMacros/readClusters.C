@@ -1,40 +1,33 @@
-/* 
-   // -------------------------------------------------------------------------------
-   Macro to read TPC clusters from 
-   > TPC.RecPoints.root
-   > AliESDfriends.root
+/// \file readClusters.C
+/// \brief Macro to read TPC clusters from TPC.RecPoints.root and AliESDfriends.root and fill THnSparse with the content
+///
+/// Used for the HLT-TPC cluster verification
+///
+/// Usage:
+/// ~~~
+/// aliroot -b -l -q readClusters.C'("<Folder w/ sim/rec output>", "<Simulation Id>", "<Simulation Version>",
+///                                  <minimal folder Id>, <maximal folder Id>, <use ESDfriends 0 or 1>)'
+/// ~~~
+///
+/// Example:
+/// ~~~
+/// aliroot -b -l -q readClusters.C'("/lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia","Pythia","20a",30000,30001,1)'
+/// ~~~
+///
+/// Will read :
+/// * /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30000/offline20a/AliESDfriends.root
+/// * /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30000/HLThw20a/AliESDfriends.root
+/// * /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30000/HLThwRedux20a/AliESDfriends.root
+/// * /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30001/offline20a/AliESDfriends.root
+/// * /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30001/HLThw20a/AliESDfriends.root
+/// * /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30001/HLThwRedux20a/AliESDfriends.root
+///
+/// Will write :
+/// * $CWD/results/results_friends_Pythia_20a.root
+///
+/// \author Jochen Thaeder <jochen@thaeder.de>
 
-   and fill THnSparse with the content
-   
-   Used for the HLT-TPC cluster verification
-
-   // -------------------------------------------------------------------------------
-
-   Usage :
-   
-   aliroot -b -l -q readClusters.C'("<Folder w/ sim/rec output>", "<Simulation Id>", "<Simulation Version>", 
-                                    <minimal folder Id>, <maximal folder Id>, <use ESDfriends 0 or 1>)'
-
-   Example :		
-   aliroot -b -l -q readClusters.C'("/lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia","Pythia","20a",30000,30001,1)'
-				    
-   -> Will read : 
-      /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30000/offline20a/AliESDfriends.root
-      /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30000/HLThw20a/AliESDfriends.root
-      /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30000/HLThwRedux20a/AliESDfriends.root
-      /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30001/offline20a/AliESDfriends.root
-      /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30001/HLThw20a/AliESDfriends.root
-      /lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia/30001/HLThwRedux20a/AliESDfriends.root
-      
-   -> Will write :
-      $CWD/results/results_friends_Pythia_20a.root
-
-   // -------------------------------------------------------------------------------
-   
-   Author : Jochen Thaeder <jochen@thaeder.de>
-   
-   // -------------------------------------------------------------------------------
-
+/*
    #include "TROOT.h"
    #include "TStyle.h"
    #include "TFile.h"
@@ -44,7 +37,7 @@
    #include "TTree.h"
    #include "TAxis.h"
    #include "TDirectoryFile.h"
-   
+
    #include "TDirectoryFile.h"
    #include "AliESDfriend.h"
    #include "AliGeomManager.h"
@@ -61,15 +54,15 @@ void SetupStyle();
 THnSparseF* CreateTHnSparse(Char_t* name);
 
 // ==================================================================================
-void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia", 
+void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/data_2011-08-06_Pythia",
 		   Char_t *type = "Pythia", Char_t *version = "8",
-		   Int_t minId = 30000, Int_t maxId = 30020, 
+		   Int_t minId = 30000, Int_t maxId = 30020,
 		   Bool_t useFriends=kFALSE) {
 
-  // --------------------------------------------------------
-  // -- Setup
-  // --------------------------------------------------------
-  
+  /// --------------------------------------------------------
+  /// -- Setup
+  /// --------------------------------------------------------
+
   // -- Setup style
   SetupStyle();
 
@@ -77,25 +70,25 @@ void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
-  
+
   printf("AliCDBconnect: #### Loading geometry...\n");
   AliGeomManager::LoadGeometry();
   if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD") ) {
-    printf("Problem with align objects"); 
-  }  
+    printf("Problem with align objects");
+  }
 
   // --------------------------------------------------------
   // -- Create THnSparse
   // --------------------------------------------------------
-  
+
   THnSparseF* spo    = CreateTHnSparse("spo");
   THnSparseF* sphhw  = CreateTHnSparse("sphhw");
   THnSparseF* sphhwR = CreateTHnSparse("sphhwR");
 
   // --------------------------------------------------------
-  // -- Open input files / loop over them / fill clusters 
+  // -- Open input files / loop over them / fill clusters
   // --------------------------------------------------------
-  
+
   TFile* fo    = NULL;
   TFile* fhhw  = NULL;
   TFile* fhhwR = NULL;
@@ -106,7 +99,7 @@ void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/
   for (Int_t fileIdx = minId; fileIdx <= maxId; ++fileIdx) {
 
     printf(" -- Open new set of files : %d -- \n", fileIdx);
-         
+
     fo    = TFile::Open(Form("%s/%05d/offline%s/%s",    folder, fileIdx, version, fileName[useFriends]));
     fhhw  = TFile::Open(Form("%s/%05d/HLThw%s/%s",      folder, fileIdx, version, fileName[useFriends]));
     fhhwR = TFile::Open(Form("%s/%05d/HLThwRedux%s/%s", folder, fileIdx, version, fileName[useFriends]));
@@ -117,10 +110,10 @@ void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/
     // -------------------------------------------------------
     // -- Get ptr to friends
     // -------------------------------------------------------
-    
+
     TTree* toF    = NULL;
     TTree* thhwF  = NULL;
-    TTree* thhwRF = NULL; 
+    TTree* thhwRF = NULL;
     AliESDfriend* fFo    = NULL;
     AliESDfriend* fFhhw  = NULL;
     AliESDfriend* fFhhwR = NULL;
@@ -129,11 +122,11 @@ void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/
       toF    = dynamic_cast<TTree*> (fo->Get("esdFriendTree"));
       thhwF  = dynamic_cast<TTree*> (fhhw->Get("esdFriendTree"));
       thhwRF = dynamic_cast<TTree*> (fhhwR->Get("esdFriendTree"));
-      
+
       fFo    = new AliESDfriend();
       fFhhw  = new AliESDfriend();
       fFhhwR = new AliESDfriend();
-      
+
       toF->GetBranch("ESDfriend.")->SetAddress(&fFo);
       thhwF->GetBranch("ESDfriend.")->SetAddress(&fFhhw);
       thhwRF->GetBranch("ESDfriend.")->SetAddress(&fFhhwR);
@@ -188,11 +181,11 @@ void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/
     if (fhhwR) { fhhwR->Close(); fhhwR = NULL; }
 
   } // for (Int_t fileIdx = minId; fileIdx <= maxId; ++fileIdx) {
-    
+
   // --------------------------------------------------------
   // -- Write results
   // --------------------------------------------------------
-  
+
   gSystem->Exec("if [ ! -d ./results ] ; then mkdir -p results ; fi");
 
   const Char_t *source[] = {"recPoints", "friends"};
@@ -209,8 +202,8 @@ void readClusters( Char_t *folder = "/lustre/alice/jthaeder/data/compressionSGE/
 
 // ==================================================================================
 void FillFriends(AliESDfriend* esdFriend, THnSparseF *sparse) {
-  // -- Fill friends per event (out of TPC.RecPoints)
-  
+  /// -- Fill friends per event (out of TPC.RecPoints)
+
   for (Int_t nTrk = 0; nTrk < esdFriend->GetNumberOfTracks(); nTrk++) {
 
     AliESDfriendTrack* track = esdFriend->GetTrack(nTrk);
@@ -221,10 +214,10 @@ void FillFriends(AliESDfriend* esdFriend, THnSparseF *sparse) {
     AliTPCseed *seed = NULL;
     for (Int_t l=0; (calibObject=track->GetCalibObject(l)) ; ++l)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    
+
     if (!seed)
       continue;
-    
+
     for (Int_t iRow = 0; iRow < 160 ; ++iRow)
       FillClusters(sparse, seed->GetClusterFast(iRow));
   }
@@ -232,17 +225,17 @@ void FillFriends(AliESDfriend* esdFriend, THnSparseF *sparse) {
 
 // ==================================================================================
 void FillRecPoints(TTree* tree, THnSparseF *sparse) {
-  // -- Fill friends per event (out of AliESDfriend.root)
+  /// -- Fill friends per event (out of AliESDfriend.root)
 
   AliTPCClustersRow *row = new AliTPCClustersRow();
   tree->GetBranch("Segment")->SetAddress(&row);
-  
+
   for ( Int_t entry =0 ; entry < tree->GetEntriesFast() ; ++entry) {
     tree->GetEntry(entry);
     TClonesArray* c = row->GetArray();
-    if (!c) continue;      
-    
-    for (Int_t idx = 0; idx < c->GetEntriesFast(); ++idx) 
+    if (!c) continue;
+
+    for (Int_t idx = 0; idx < c->GetEntriesFast(); ++idx)
       FillClusters(sparse, static_cast<AliTPCclusterMI*>(c->UncheckedAt(idx)));
 
   } // for ( Int_t entry =0 ; entry <  tree->GetEntriesFast() ; ++entry) {
@@ -250,14 +243,14 @@ void FillRecPoints(TTree* tree, THnSparseF *sparse) {
 
 // ==================================================================================
 void FillClusters(THnSparseF *sparse,  AliTPCclusterMI* cl) {
-  // -- Fill cluster into THnSparse
+  /// -- Fill cluster into THnSparse
 
-  if (!cl) 
+  if (!cl)
     return;
 
   Float_t xyz[3];
   cl->GetGlobalXYZ(xyz);
-  
+
   Double_t arr[15];
 
   arr[0]  = cl->GetX();
@@ -266,7 +259,7 @@ void FillClusters(THnSparseF *sparse,  AliTPCclusterMI* cl) {
   arr[3]  = xyz[0];
   arr[4]  = xyz[1];
   arr[5]  = xyz[2];
-  /*  
+  /*
       arr[3]  = 0.;   TODO
       arr[4]  = 0.;   TODO
       arr[5]  = 0.;   TODO
@@ -274,30 +267,30 @@ void FillClusters(THnSparseF *sparse,  AliTPCclusterMI* cl) {
   arr[6]  = cl->GetSigmaY2();
   arr[7]  = cl->GetSigmaZ2();
   arr[8]  = cl->GetY()/cl->GetX();
-  arr[9]  = cl->GetTimeBin(); 
+  arr[9]  = cl->GetTimeBin();
   arr[10] = cl->GetRow();
 
   if (cl->GetDetector() > 35)
     arr[10] += 63;
 
   arr[11] = cl->GetPad();
-  arr[12] = cl->GetDetector();	
+  arr[12] = cl->GetDetector();
   arr[13] = cl->GetQ();
   arr[14] = cl->GetMax();
-  
+
   sparse->Fill(arr);
 }
 
 // ==================================================================================
 void SetupStyle() {
-  // -- setup style
-  
+  /// -- setup style
+
   gROOT->SetStyle("Plain");
 
   gStyle->SetHatchesSpacing(0.8);
   gStyle->SetHatchesLineWidth(1);
 
-  gStyle->SetCanvasBorderMode(0);  
+  gStyle->SetCanvasBorderMode(0);
   gStyle->SetCanvasColor(10);
 
   gStyle->SetPadBorderMode(0);
@@ -331,23 +324,23 @@ void SetupStyle() {
   gStyle->SetEndErrorSize(3);
 
   gStyle->SetLabelSize(0.04,"xyz");
-  gStyle->SetLabelFont(font,"xyz"); 
+  gStyle->SetLabelFont(font,"xyz");
   gStyle->SetLabelOffset(0.01,"xyz");
 
-  gStyle->SetTitleFont(font,"xyz");  
-  gStyle->SetTitleOffset(1.3,"xyz");  
-  gStyle->SetTitleSize(0.04,"xyz");  
-  gStyle->SetTitleSize(0.04);  
+  gStyle->SetTitleFont(font,"xyz");
+  gStyle->SetTitleOffset(1.3,"xyz");
+  gStyle->SetTitleSize(0.04,"xyz");
+  gStyle->SetTitleSize(0.04);
 
-  gStyle->SetMarkerSize(1.2); 
-  gStyle->SetPalette(1,0); 
+  gStyle->SetMarkerSize(1.2);
+  gStyle->SetPalette(1,0);
 
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1);
-  
+
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  
+
   gStyle->SetLineWidth(1);
 
   return;
@@ -355,8 +348,8 @@ void SetupStyle() {
 
 // ==================================================================================
 THnSparseF* CreateTHnSparse(Char_t* name) {
-  // -- Create new THnSparse
-  
+  /// -- Create new THnSparse
+
   // -- Setup THnSparse binning
   Int_t    bin[15] = { 60, 101,  100,    10,   10,   10, 100, 100, 100,  100,  160,   75,  76,  100, 100 };
   Double_t min[15] = { 80.,-80.,-350.,-350.,-350.,-350.,  0.,  0.,-0.2,   0., -0.5,   0.,  0.,   0.,   0.};

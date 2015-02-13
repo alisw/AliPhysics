@@ -20,7 +20,7 @@ set(MODULE RAWDatarecOnline)
 include_directories(${AliRoot_SOURCE_DIR}/RAW/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -35,10 +35,19 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Compile and link flags
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
+
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+endif(DATE_FOUND)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
 # Setting the dependencies
 set(ROOT_DEPENDENCIES Core)
@@ -58,24 +67,9 @@ add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:RAWDatarecOnline-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
-# Setting the correct headers for the object as gathered from the dependencies
-target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
-
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-# Compile and link flags
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
-
-if(DATE_FOUND)
-    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
-endif(DATE_FOUND)
-
-# Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
@@ -85,6 +79,10 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 # Setting target compile and linking flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
 # Installation
 install(TARGETS ${MODULE}

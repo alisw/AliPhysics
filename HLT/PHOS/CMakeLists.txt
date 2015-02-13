@@ -20,7 +20,7 @@ set(MODULE AliHLTPHOS)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/PHOS)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALraw
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
@@ -71,7 +71,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEER STEERBase CDB RAWDatabase AliHLTUtil EMCALraw EMCALUtils HLTbase PHOSUtils PHOSbase PHOSrec AliHLTCalo)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

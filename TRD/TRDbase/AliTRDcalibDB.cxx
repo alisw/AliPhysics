@@ -127,6 +127,8 @@ AliTRDcalibDB::AliTRDcalibDB()
   // TODO invalid calibration data to be used.
   //
 
+  fRun = AliCDBManager::Instance()->GetRun();
+
   for (Int_t i = 0; i < kCDBCacheSize; ++i) {
     fCDBCache[i]   = 0;
     fCDBEntries[i] = 0;
@@ -1098,12 +1100,22 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
 
     TString tableName = "";
     for (Int_t i = 0; i < 540; i++) {
-      const AliTRDCalDCSFEEv2 *calDCSFEEv2 = calDCSv2->GetCalDCSFEEObj(0);
-      tableName = calDCSFEEv2->GetGainTableName();
-      if (tableName.Length() > 0) {
-        break;
+      const AliTRDCalDCSFEEv2 *calDCSFEEv2 = calDCSv2->GetCalDCSFEEObj(i);
+      if (!calDCSFEEv2) {
+        continue;
+      }
+      const TString tableNameTmp = calDCSFEEv2->GetGainTableName();
+      if (tableNameTmp.Length() > 0) {
+        if ((tableName.Length() > 0) &&
+            (tableName != tableNameTmp)) {
+          AliFatal(Form("Inconsistent gain table names! %s - %s"
+                       ,tableName.Data(),tableNameTmp.Data()));
+          continue; // maybe return -1;
+        }
+        tableName = tableNameTmp; // this contains the first entry found
       }
     }
+
     if      (tableName.CompareTo("Krypton_2011-01")               == 0)
       fOnlineGainTableID = 1;
     else if (tableName.CompareTo("Gaintbl_Uniform_FGAN0_2011-01") == 0)

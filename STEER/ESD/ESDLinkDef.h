@@ -131,6 +131,7 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 
 #pragma link C++ class  AliESDVZEROfriend+;
 #pragma link C++ class  AliESDTZEROfriend+;
+#pragma link C++ class  AliESDADfriend+;
 
 #pragma link C++ class  AliESDHandler+;
 #pragma link C++ class  AliTrackerBase+;

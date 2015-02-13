@@ -5,11 +5,9 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TPC calibration class for parameters which are saved per pad                 //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalPad
+///
+///  TPC calibration class for parameters which are saved per pad
 
 #include "TNamed.h"
 //#include <TMath.h>
@@ -87,8 +85,10 @@ class AliTPCCalPad : public TNamed {
   static TCanvas * MakeReportPadSector2D(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser="");
   static AliTPCCalPad *MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC);
  protected:
-  AliTPCCalROC *fROC[kNsec];                    //  Array of ROC objects which contain the values per pad
+  AliTPCCalROC *fROC[kNsec];                    ///< Array of ROC objects which contain the values per pad
+  /// \cond CLASSIMP
   ClassDef(AliTPCCalPad,1)                      //  TPC calibration class for parameters which are saved per pad
+  /// \endcond
 };
 
 #endif

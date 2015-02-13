@@ -20,7 +20,7 @@ class TH1F;
 
 class AliADDataDCS : public TObject {
 public:
-  enum {kNAliases=60,kNGraphs=16,kNHvChannel=16,kNLvChannel=4,kNCIUBoards = 2};
+  enum {kNAliases=197,kNGraphs=16,kNHvChannel=16,kNLvChannel=4,kNCIUBoards = 2};
   enum {kHvMin=0, kHvMax=3000};
   
   AliADDataDCS();
@@ -50,14 +50,6 @@ public:
   Bool_t * GetDeadMap()   const {return (bool*)fDeadChannel;}
   TMap * GetFEEParameters() const {return fFEEParameters;};
   
-// Getter of Offline Channel number as used in aliroot (defined by aliroot 
-// numbering convention) from DCS Channel number
-
-    Int_t      GetOfflineChannel(Int_t channel)  const
-      { Int_t  fOfflineChannel[16] = {0,  1,  2,  3,  4,  5,  6,  7, 
-			              8,  9, 10, 11, 12, 13, 14, 15};
-               return fOfflineChannel[channel]; }
-
 private:
   AliADDataDCS(const AliADDataDCS&); // Not implemented
   AliADDataDCS& operator=(const AliADDataDCS&); // Not implemented
@@ -80,7 +72,7 @@ private:
   Float_t fMeanHV[kNHvChannel];            // High Voltage mean values
   Float_t fWidthHV[kNHvChannel];           // High Voltage widths
   Bool_t  fDeadChannel[kNHvChannel];       // Dead Map 
-  TMap * fFEEParameters;  // TMap holding the FEE parameters of Time Resolution
+  TMap * fFEEParameters;  // TMap holding the FEE parameters
     
   Bool_t fIsProcessed;                   // bool to know processing status
   

@@ -20,7 +20,7 @@ set(MODULE HLTshuttle)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/shuttle)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                    )
@@ -48,7 +48,7 @@ add_definitions("-DLIBHLTSHUTTLE_VERSION=${LIBHLTSHUTTLE_VERSION}")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} CDB HLTbase)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

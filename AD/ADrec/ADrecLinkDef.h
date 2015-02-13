@@ -9,7 +9,6 @@
 #pragma link C++ class  AliADReconstructor+;
 #pragma link C++ class  AliADTrigger+;
 #pragma link C++ class  AliADRecoParam+;
-#pragma link C++ class  AliADRawStream+;
 #pragma link C++ class  AliADQADataMakerRec+;
 #pragma link C++ class  AliADTrending+;
 #pragma link C++ class  AliADQAChecker+;

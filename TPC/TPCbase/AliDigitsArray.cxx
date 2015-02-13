@@ -13,16 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  AliDigitsArray  object                                //
-//
-//  Origin: Marian Ivanov , GSI Darmstadt
-//                                                                           //
-//                                                                          //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliDigitsArray
+/// \author Marian Ivanov , GSI Darmstadt
 
 #include "TObject.h"
 #include "AliSegmentID.h"
@@ -35,32 +27,29 @@
 
 
 
+/// \cond CLASSIMP
 ClassImp(AliDigitsArray)
-//
+/// \endcond
 
 AliDigitsArray::AliDigitsArray()
                :AliSegmentArray(),
 		fParam(0)
 {
-  //
-  // default constructor
-  //
+  /// default constructor
 }
 AliDigitsArray::AliDigitsArray(const AliDigitsArray &param)
              :AliSegmentArray(),
 	      fParam(0)
 {
-  //
-  // dummy
-  //
+  /// dummy
+
   fParam = param.fParam;
 }
 //
 AliDigitsArray & AliDigitsArray::operator =(const AliDigitsArray & param)
 {
-  //
-  // dummy
-  // 
+  /// dummy
+
  if (this == &param) return (*this); 
  fParam = param.fParam;
  return (*this);
@@ -68,13 +57,14 @@ AliDigitsArray & AliDigitsArray::operator =(const AliDigitsArray & param)
 //
 AliDigitsArray::~AliDigitsArray()
 {
-  // if (fParam != 0) delete fParam;
+  /// if (fParam != 0) delete fParam;
+
 }  
 
 Bool_t AliDigitsArray::Setup(AliDetectorParam *param)
 {
-  //
-  //setup array according parameters
+  /// setup array according parameters
+
   SetParam(param);
   return kTRUE;
 }

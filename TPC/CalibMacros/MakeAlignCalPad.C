@@ -1,50 +1,68 @@
-/*
-  marian.ivanov@cern.ch
-  Macro to create  alignment/distortion maps
-  As a input output of AliTPCcalibAlign is used.
+/// \file MakeAlignCalPad.C
+///
+/// \author marian.ivanov@cern.ch
+///
+/// Macro to create  alignment/distortion maps
+/// As a input output of AliTPCcalibAlign is used.
+///
+/// Algorithm:
+///
+/// In the setup without the magnetic field the tracks are fitted using the linear track model.
+/// ( in y-rphi coordinate the primary vertex is also used as a constrain)
+/// Residuals (deltas0  between the track and clusters in Y and in z direction are filled in the 4 D histogram:
+/// Delta: phi(180 bins): localX(53 bins): tan(phi): tan(theta)(10 bins)
+///
+/// Distortion map are extracted form the residual histograms as a mean value at each bin.
+/// Linear fits are then performed for each pad - delta as function of theta
+///
+/// ~~~{.cpp}
+/// Delta Ymeas = offsetY+slopeY*tan(theta)  
+/// Delta Zmeas = offsetZ+slopeZ*tan(theta)
+/// ~~~
+/// 
+/// Resulting residuals exported into the OCDB are:
+///
+/// ~~~{.cpp}
+/// DeltaY  = offsetY
+/// DeltaZ  = offsetZ
+/// DeltaR  = slopeZ;
+/// ~~~
+/// 
+/// Example usage:
+///
+/// make calpad+ make report ps file:
+///
+/// ~~~
+/// aliroot -b -q ~/NimStyle.C ../ConfigCalibTrain.C\(119037\) $ALICE_ROOT/TPC/CalibMacros/MakeAlignCalPad.C\(1\)
+/// ~~~
+///
+/// make only report ps file:
+///
+/// ~~~
+/// aliroot -b -q ~/NimStyle.C $ALICE_ROOT/TPC/CalibMacros/MakeAlignCalPad.C\(3\)
+/// ~~~
+///
+/// Making fit - iterative procedure - see below:
+///
+/// ~~~{.cpp}
+/// gROOT->Macro("~/rootlogon.C");
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libSTAT");
+/// gSystem->Load("libTPCcalib");
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros -I$ALICE_ROOT/TPC/TPC -I$ALICE_ROOT/STAT");
+/// .L $ALICE_ROOT/TPC/CalibMacros/MakeAlignCalPad.C+
+/// // load OCDB
+///
+/// gROOT->Macro("../ConfigCalibTrain.C(119037)");
+/// //2
+/// InitTPCalign(); 
+/// MakeFits();      // this is logn proceure 30 minutes
+///
+/// //UpdateOCDB(0,AliCDBRunRange::Infinity());
+/// //
+/// gROOT->Macro("~/NimStyle.C")
+/// ~~~
 
-  Algorithm:
-
-  In the setup without the magnetic field the tracks are fitted using the linear track model.
-  ( in y-rphi coordinate the primary vertex is also used as a constrain)
-  Residuals (deltas0  between the track and clusters in Y and in z direction are filled in the 4 D histogram:
-  Delta: phi(180 bins): localX(53 bins): tan(phi): tan(theta)(10 bins)
-
-  Distortion map are extracted form the residual histograms as a mean value at each bin.
-  Linear fits are then performed for each pad - delta as function of theta
-  Delta Ymeas = offsetY+slopeY*tan(theta)  
-  Delta Zmeas = offsetZ+slopeZ*tan(theta)  
-  
-  Resulting residuals exported into the OCDB are:
-  DeltaY  = offsetY
-  DeltaZ  = offsetZ
-  DeltaR  = slopeZ;
-  
-  Example usage:
-
-  make calpad+ make report ps file:
-  aliroot -b -q ~/NimStyle.C ../ConfigCalibTrain.C\(119037\) $ALICE_ROOT/TPC/CalibMacros/MakeAlignCalPad.C\(1\)
-  make only report ps file:
-  aliroot -b -q ~/NimStyle.C $ALICE_ROOT/TPC/CalibMacros/MakeAlignCalPad.C\(3\)
-  Making fit - iterative procedure - see below:
-  
-  gROOT->Macro("~/rootlogon.C");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libSTAT");
-  gSystem->Load("libTPCcalib");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros -I$ALICE_ROOT/TPC/TPC -I$ALICE_ROOT/STAT");
-  .L $ALICE_ROOT/TPC/CalibMacros/MakeAlignCalPad.C+
-  //load OCDB 
-  gROOT->Macro("../ConfigCalibTrain.C(119037)");
-  //2
-  InitTPCalign(); 
-  MakeFits();      // this is logn proceure 30 minutes
-
-  //UpdateOCDB(0,AliCDBRunRange::Infinity());
-  //
-   gROOT->Macro("~/NimStyle.C")
-
-*/
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TH1D.h"
 #include "TH2F.h"
@@ -98,9 +116,8 @@ void InitTPCalign();
 
 
 void MakeAlignCalPad(Int_t mode){
-  //
-  // Make AlignCalpad and make report
-  //
+  /// Make AlignCalpad and make report
+
   gSystem->Load("libANALYSIS");
   gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");  
@@ -114,9 +131,8 @@ void MakeAlignCalPad(Int_t mode){
 
 
 void InitTPCalign(){
-  //
-  // read the TPC alignment
-  //
+  /// read the TPC alignment
+
   TFile fcalib("CalibObjects.root");
   TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
   if (array){
@@ -140,9 +156,7 @@ void MakeFits(){
 }
 
 void FitdY(TTree * tree){
-  //
-  //
-  //
+  ///
 
   AliTPCROC * roc = AliTPCROC::Instance();
   Double_t xquadrant = roc->GetPadRowRadii(36,53); 
@@ -223,9 +237,8 @@ void FitdY(TTree * tree){
 
 
 void DumpDerivative(TH3 * his){
-  //
-  //
-  //
+  ///
+
   Int_t nbins0=his->GetXaxis()->GetNbins();
   Int_t nbins1=his->GetYaxis()->GetNbins();
   Int_t nbins2=his->GetZaxis()->GetNbins();
@@ -261,9 +274,8 @@ void DumpDerivative(TH3 * his){
 }
 
 Double_t GetCorr(Double_t sector, Double_t localX, Double_t kZ, Int_t type){
-  //
-  // calculate the correction at given position - check the geffCorr
-  //
+  /// calculate the correction at given position - check the geffCorr
+
   Double_t phi=sector*TMath::Pi()/9.;
   Double_t gx = localX*TMath::Cos(phi);
   Double_t gy = localX*TMath::Sin(phi);
@@ -286,9 +298,8 @@ Double_t GetCorr(Double_t sector, Double_t localX, Double_t kZ, Int_t type){
 
 
 void LoadDistortionTrees(){
-  //
-  // Load distortion tree
-  //
+  /// Load distortion tree
+
   TFile *fp = new TFile("clusterDYPlus.root");
   TFile *fm = new TFile("clusterDYMinus.root");
   TFile *f0 = new TFile("clusterDY0.root");
@@ -311,10 +322,9 @@ void LoadDistortionTrees(){
 }
 
 void UpdateEffSectorOCDB(){
-  //
-  // Incremeantal update ot the correction maps
-  // corrections on top of previous corrections
-  //
+  /// Incremeantal update ot the correction maps
+  /// corrections on top of previous corrections
+
   TFile fp("clusterDYPlus.root");
   TFile fm("clusterDYMinus.root");
   TFile f0("clusterDY0.root");
@@ -412,9 +422,8 @@ void DrawDiff(){
 
 
 void MakePlotDeltaZ(){
-  //
-  // 
-  //
+  ///
+
   TCut cut="entries>500&&PZ.entries>500&&MZ.entries>500";
   TCanvas *cA = new TCanvas("deltaZA","deltaZA",900,700);
   TCanvas *cC = new TCanvas("deltaZC","deltaZC",900,700);
@@ -492,14 +501,13 @@ void MakePlotDeltaZ(){
 
 
 void MakeAlign(){
-  //
-  // make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
-  // Combined information is used, mean residuals are minimized:
-  //
-  // 1. TPC-TPC sector alignment
-  // 2. TPC-ITS alignment
-  // 3. TPC vertex alignment 
-  //
+  /// make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
+  /// Combined information is used, mean residuals are minimized:
+  ///
+  /// 1. TPC-TPC sector alignment
+  /// 2. TPC-ITS alignment
+  /// 3. TPC vertex alignment
+
   TFile fcalib("../mergeField0/TPCAlignObjects.root");
   AliTPCcalibAlign * align = ( AliTPCcalibAlign *)fcalib.Get("alignTPC");
   TFile f0("../mergeField0/mean.root");

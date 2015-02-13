@@ -4,35 +4,19 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// _________________________________________________________________
-//
-// Begin_Html
-//   <h2>AliExBBShape class </h2>                                                    
-//   The class calculates the space point distortions due to the B field    
-//   shape imperfections using a second order technique based on integrals  
-//   over Bz (e.g. int By/Bz) obtained via the AliMagF class. The essential 
-//   input for this class is the magnetic field maps which can be set via the function SetBField.  
-//   <p>
-//   The class allows "effective Omega Tau" corrections.                    
-//   End_Html
-//   Begin_Macro(source)
-//   {
-//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("cAliTPCExBBShape","cAliTPCExBBShape",500,300); 
-//   AliTPCExBBShape exb;                                                 
-//   AliMagF mag("mag","mag");        // 0.5 Tesla (solenoid)
-//   exb.SetBField(&mag);             // use Bfield from AliMagF        
-//   exb.SetOmegaTauT1T2(-0.32,1.,1.); // values ideally from OCDB     
-//   exb.CreateHistoDRPhiinZR(0,100,100)->Draw("surf2"); 
-//   return c2;
-//   } 
-// End_Macro
-// Begin_Html
-//   <p>
-//   Date: 27/04/2010 <br>                                                      
-//   Authors: Magnus Mager, Jim Thomas, Stefan Rossegger                    
-// End_Html 
-// _________________________________________________________________
+/// \class AliTPCExBBShape
+/// \brief AliExBBShape class
+///
+/// The class calculates the space point distortions due to the B field
+/// shape imperfections using a second order technique based on integrals
+/// over Bz (e.g. int By/Bz) obtained via the AliMagF class. The essential
+/// input for this class is the magnetic field maps which can be set via the function SetBField.
+///
+/// The class allows "effective Omega Tau" corrections.
+/// ![Picture from ROOT macro](AliTPCExBBShape_h_32a8c9f.png)
+///
+/// \author Magnus Mager, Jim Thomas, Stefan Rossegger
+/// \date 27/04/2010
 
 #include "AliTPCCorrection.h"
 
@@ -41,7 +25,7 @@ class AliMagF;
 class AliTPCExBBShape : public AliTPCCorrection {
 public:
   AliTPCExBBShape();
-  virtual ~AliTPCExBBShape();  
+  virtual ~AliTPCExBBShape();
   virtual Bool_t AddCorrectionCompact(AliTPCCorrection* corr, Double_t weight);
 
  // initialization and update functions
@@ -69,15 +53,17 @@ public:
   static Double_t GetBFieldXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType);
   Double_t GetScaling() const {return fScaling;}
 private:
-  Float_t fC1; // coefficient C1          (compare Jim Thomas's notes for definitions)
-  Float_t fC2; // coefficient C2          (compare Jim Thomas's notes for definitions)
-  Float_t fScaling; // scaling factor to rescale distortion    - for tests purposes only
-  AliMagF *fBField;       // pointer to magnetic field
+  Float_t fC1; ///< coefficient C1          (compare Jim Thomas's notes for definitions)
+  Float_t fC2; ///< coefficient C2          (compare Jim Thomas's notes for definitions)
+  Float_t fScaling; ///< scaling factor to rescale distortion    - for tests purposes only
+  AliMagF *fBField;       ///< pointer to magnetic field
 
   AliTPCExBBShape & operator =(const AliTPCExBBShape &); // dummy assignment operator
   AliTPCExBBShape(const AliTPCExBBShape&); //dummy copy contructor
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCExBBShape,2);
+  /// \endcond
 };
 
 #endif

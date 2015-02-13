@@ -62,6 +62,7 @@ public:
     static void AddAODfriend  (const TString& friendFileName);
     static void SetRawFileName(const TString& raw);
     static void SetCdbUri     (const TString& cdb);
+    static void SetSpecificCdbUri(const TString& path,const TString& value);
     static void SetGAliceFileName(const TString& galice);
 
     // set Local Directory or URL where the files are located
@@ -203,6 +204,8 @@ protected:
     static TString  fgAODFileName;        // Name by which to open AOD.
     static TString  fgRawFileName;        // Name by which to open raw-data file.
     static TString  fgCdbUri;		// Global URI to CDB.
+    static TString  fgSpecificCdbUriValue;		// Global URI to specific CDB object.
+    static TString  fgSpecificCdbUriPath;		// Global URI to specific CDB object.
     static Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
     static Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
     static Bool_t   fgAssertAOD;		// Global flag specifying if AODEvent must be asserted during opening of the event-data.

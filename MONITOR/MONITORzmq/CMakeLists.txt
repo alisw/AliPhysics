@@ -28,6 +28,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${ZEROMQ_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order
@@ -55,33 +56,39 @@ if(DIMDIR AND ODIR)
     add_definitions(-DALI_DIM)
 endif()
 
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS} ${DATE_DYNMONLIBS}")
+endif(DATE_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB MONITOR zmq)
+set(LIBDEPS STEERBase STEER ESD CDB MONITOR ${ZEROMQ_LIBRARIES})
+if(DIMDIR AND ODIR)
+    set(LIBDEPS ${LIBDEPS} dim)
+endif()
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB MONITOR zmq)
-if(DIMDIR AND ODIR)
-    target_link_libraries(${MODULE} dim)
-endif()
-
-# Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Additional compilation and linking flags
+set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
 install(TARGETS ${MODULE}

@@ -558,26 +558,26 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       
     case GLOBAL_TRAILER:
    
-   //switch slot ID
-   switch (*rawData & SLOT_ID_MASK){
+      //switch slot ID
+      switch (*rawData & SLOT_ID_MASK){
      
-     //DRM global trailer (slotID=1)
-   case 1:
-     //recover error
-     if (fDecoderSummaryData->GetRecoveringError()){
-       //change decode status
-       decoderStatus = DRM_TRAILER_STATUS;
-       fDecoderSummaryData->SetDecoderStatus(decoderStatus);
-       fDecoderSummaryData->SetRecoveringError(kFALSE);
-       if (fVerbose)
-	 AliInfo("DRM global trailer found: error probably recovered");
-     }
-     //check decode status
-     if ( decoderStatus != DRM_TRAILER_STATUS ){
-       if (fLogErrors)
-	 AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
-       fDecoderSummaryData->SetErrorDetected(kTRUE);
-       fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
+	//DRM global trailer (slotID=1)
+      case 1:
+	//recover error
+	if (fDecoderSummaryData->GetRecoveringError()){
+	  //change decode status
+	  decoderStatus = DRM_TRAILER_STATUS;
+	  fDecoderSummaryData->SetDecoderStatus(decoderStatus);
+	  fDecoderSummaryData->SetRecoveringError(kFALSE);
+	  if (fVerbose)
+	    AliInfo("DRM global trailer found: error probably recovered");
+	}
+	//check decode status
+	if ( decoderStatus != DRM_TRAILER_STATUS ){
+	  if (fLogErrors)
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	  fDecoderSummaryData->SetErrorDetected(kTRUE);
+	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
 	  //try to recover error
 	  if (fRecoverError){
@@ -938,6 +938,32 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //try to recover error
       if (fDecoderSummaryData->GetRecoveringError())
 	continue;
+      //check decode status
+      if ( decoderStatus != TRM_ERROR_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
+	if (fLogErrors)
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected ERROR word (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	fDecoderSummaryData->SetErrorDetected(kTRUE);
+	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
+	errorWarning++;
+	//try to recover error
+	if (fRecoverError){
+	  if (errorWarning > fRecoverErrorThr) {
+	    if (fVerbose)
+	      AliInfo("Trying to recover the error: searching for the next header");
+	    fDecoderSummaryData->SetRecoveringError(kTRUE);
+	    continue;
+	  }
+	  else {
+	    if (fVerbose)
+	      AliInfo("Do not try to recover error yet, go on with decoding process");
+	    continue;
+	  }
+	}
+	return(fDecoderSummaryData->GetErrorDetected());
+      }
+      //decode status ok
+      errorWarning = 0;
+
       //decode TRM TDC error
       fTRMTDCError = (AliTOFTRMTDCError *)rawData;
       //check diagnostic word
@@ -946,11 +972,44 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	  AliInfo(Form("  %02x - 0x%08x \t  Diagnostic error word",decoderStatus,*rawData));
 	break;
       }
+
+      //try to recover error
+      if (fDecoderSummaryData->GetRecoveringError())
+	continue;
+      //check decode status
+      if ( decoderStatus != CHAIN_A_TDCERROR_STATUS && decoderStatus != CHAIN_B_TDCERROR_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
+	if (fLogErrors)
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TDC error (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	fDecoderSummaryData->SetErrorDetected(kTRUE);
+	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
+	errorWarning++;
+	//try to recover error
+	if (fRecoverError){
+	  if (errorWarning > fRecoverErrorThr) {
+	    if (fVerbose)
+	      AliInfo("Trying to recover the error: searching for the next header");
+	    fDecoderSummaryData->SetRecoveringError(kTRUE);
+	    continue;
+	  }
+	  else {
+	    if (fVerbose)
+	      AliInfo("Do not try to recover error yet, go on with decoding process");
+	    continue;
+	  }
+	}
+	return(fDecoderSummaryData->GetErrorDetected());
+      }
+      //decode status ok
+      errorWarning = 0;
+      
       //set error data
       error.SetErrorFlags(fTRMTDCError->GetErrorFlags());
       error.SetTDCID(fTRMTDCError->GetTDCID());
       //fill TDC error buffer
-      fTDCErrorBuffer->Add(error);
+      if (fTDCErrorBuffer) fTDCErrorBuffer->Add(error);
+      else {
+      	AliError("fTDCErrorBuffer is 0: no chain header was detected");	
+      }
       if (fVerbose)
 	AliInfo(Form("  %02x - 0x%08x \t  TDC error",decoderStatus,*rawData));
       break;

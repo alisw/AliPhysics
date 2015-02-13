@@ -1,6 +1,6 @@
 // $Id$
 
-/*! \page README_cosmics The Software testing on Cosmics Test Data
+/*! \page README_cosmics MUON The Software testing on Cosmics Test Data
 
 
 Seeveral macros has been developed during the Offline shifts

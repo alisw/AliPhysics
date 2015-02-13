@@ -115,10 +115,10 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   }
 }
 
-AliRawReaderRoot::AliRawReaderRoot(AliRawVEvent* event) :
+AliRawReaderRoot::AliRawReaderRoot(AliRawVEvent* event, Int_t evId) :
   fFile(NULL),
   fBranch(NULL),
-  fEventIndex(-1),
+  fEventIndex(evId),
   fEvent(event),
   fEventHeader(event->GetHeader()),
   fSubEventIndex(0),

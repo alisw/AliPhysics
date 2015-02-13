@@ -32,6 +32,14 @@ install(FILES
   ZPASignal.root
   ZPCSignal.root
   ZPsignalntu.root
+  light22620362207s
+  light22620362208s
+  light22620362209s
+  light22620362210s
+  light22620552207s
+  light22620552208s
+  light22620552209s
+  light22620552210s
   DESTINATION ZDC)
 
 message(STATUS "ZDC enabled")

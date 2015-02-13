@@ -14,28 +14,24 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Class for viewing/visualizing TPC calibration data                       //
-//  base on  TTree functionality for visualization                           //
-//                                                                           //
-//  Create a list of AliTPCCalPads, arrange them in an TObjArray.            //
-//  Pass this TObjArray to MakeTree and create the calibration Tree          //
-//  While craating this tree some statistical information are calculated     //
-//  Open the viewer with this Tree: AliTPCCalibViewer v("CalibTree.root")    //
-//  Have fun!                                                                //
-//  EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")      //
-//                                                                           //
-//  If you like to click, we recommand you the                               //
-//    AliTPCCalibViewerGUI                                                   //
-//                                                                           //
-//    THE DOCUMENTATION IS STILL NOT COMPLETED !!!!                          //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
-//
-// ROOT includes 
-//
+/// \class AliTPCCalibViewer
+/// \brief  Class for viewing/visualizing TPC calibration data
+///
+/// base on  TTree functionality for visualization
+///
+/// Create a list of AliTPCCalPads, arrange them in an TObjArray.
+/// Pass this TObjArray to MakeTree and create the calibration Tree
+/// While craating this tree some statistical information are calculated
+/// Open the viewer with this Tree: AliTPCCalibViewer v("CalibTree.root")
+/// Have fun!
+/// EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
+///
+/// If you like to click, we recommand you the
+///   AliTPCCalibViewerGUI
+///
+///   THE DOCUMENTATION IS STILL NOT COMPLETED !!!!
+///
+/// ROOT includes
 
 #include <fstream>
 #include <iostream>
@@ -46,7 +42,7 @@
 #include <TKey.h>
 #include <TPad.h>
 //#include <TCanvas.h>
-#include <TH1.h> 
+#include <TH1.h>
 #include <TH1F.h>
 #include <TLegend.h>
 #include <TLine.h>
@@ -71,7 +67,9 @@
 #include "AliTPCCalibViewer.h"
 
 using std::ifstream;
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibViewer)
+/// \endcond
 
 
 AliTPCCalibViewer::AliTPCCalibViewer()
@@ -79,8 +77,8 @@ AliTPCCalibViewer::AliTPCCalibViewer()
                    fTree(0),
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
-                   fTreeMustBeDeleted(0), 
-                   fAbbreviation(0), 
+                   fTreeMustBeDeleted(0),
+                   fAbbreviation(0),
                    fAppendString(0)
 {
   //
@@ -96,13 +94,12 @@ AliTPCCalibViewer::AliTPCCalibViewer(const AliTPCCalibViewer &c)
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
                    fTreeMustBeDeleted(0),
-                   fAbbreviation(0), 
+                   fAbbreviation(0),
                    fAppendString(0)
 {
-  //
-  // dummy AliTPCCalibViewer copy constructor
-  // not yet working!!!
-  //
+  /// dummy AliTPCCalibViewer copy constructor
+  /// not yet working!!!
+
   fTree = c.fTree;
   fTreeMustBeDeleted = c.fTreeMustBeDeleted;
   //fFile = new TFile(*(c.fFile));
@@ -118,12 +115,11 @@ AliTPCCalibViewer::AliTPCCalibViewer(TTree *const tree)
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
                    fTreeMustBeDeleted(0),
-                   fAbbreviation(0), 
+                   fAbbreviation(0),
                    fAppendString(0)
 {
-  //
-  // Constructor that initializes the calibration viewer
-  //
+  /// Constructor that initializes the calibration viewer
+
   fTree = tree;
   fTreeMustBeDeleted = kFALSE;
   fListOfObjectsToBeDeleted = new TObjArray();
@@ -138,14 +134,13 @@ AliTPCCalibViewer::AliTPCCalibViewer(const char* fileName, const char* treeName)
                    fFile(0),
                    fListOfObjectsToBeDeleted(0),
                    fTreeMustBeDeleted(0),
-                   fAbbreviation(0), 
+                   fAbbreviation(0),
                    fAppendString(0)
-                   
+
 {
-   //
-   // Constructor to initialize the calibration viewer
-   // the file 'fileName' contains the tree 'treeName'
-   //
+   /// Constructor to initialize the calibration viewer
+   /// the file 'fileName' contains the tree 'treeName'
+
    fFile = new TFile(fileName, "read");
    fTree = (TTree*) fFile->Get(treeName);
    fTreeMustBeDeleted = kTRUE;
@@ -153,14 +148,13 @@ AliTPCCalibViewer::AliTPCCalibViewer(const char* fileName, const char* treeName)
    fAbbreviation = "~";
    fAppendString = ".fElements";
 }
-                   
+
 //____________________________________________________________________________
 AliTPCCalibViewer & AliTPCCalibViewer::operator =(const AliTPCCalibViewer & param)
 {
-   //
-   // assignment operator - dummy
-   // not yet working!!!
-   //
+   /// assignment operator - dummy
+   /// not yet working!!!
+
   if (this == &param) return (*this);
 
    fTree = param.fTree;
@@ -175,10 +169,9 @@ AliTPCCalibViewer & AliTPCCalibViewer::operator =(const AliTPCCalibViewer & para
 //_____________________________________________________________________________
 AliTPCCalibViewer::~AliTPCCalibViewer()
 {
-   //
-   // AliTPCCalibViewer destructor
-   // all objects will be deleted, the file will be closed, the pictures will disappear
-   //
+   /// AliTPCCalibViewer destructor
+   /// all objects will be deleted, the file will be closed, the pictures will disappear
+
    if (fTree && fTreeMustBeDeleted) {
       fTree->SetCacheSize(0);
       fTree->Delete();
@@ -198,12 +191,10 @@ AliTPCCalibViewer::~AliTPCCalibViewer()
 
 //_____________________________________________________________________________
 void AliTPCCalibViewer::Delete(Option_t* /*option*/) {
-   //
-   // Should be called from AliTPCCalibViewerGUI class only.
-   // If you use Delete() do not call the destructor.
-   // All objects (except those contained in fListOfObjectsToBeDeleted) will be deleted, the file will be closed.
-   //
-   
+   /// Should be called from AliTPCCalibViewerGUI class only.
+   /// If you use Delete() do not call the destructor.
+   /// All objects (except those contained in fListOfObjectsToBeDeleted) will be deleted, the file will be closed.
+
    if (fTree && fTreeMustBeDeleted) {
       fTree->SetCacheSize(0);
       fTree->Delete();
@@ -213,30 +204,30 @@ void AliTPCCalibViewer::Delete(Option_t* /*option*/) {
 }
 
 
-const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDrawCommand){ 
-   // Replace all "<variable>" with "<variable><fAbbreviation>" (Adds forgotten "~")
-   // but take care on the statistical information, like "CEQmean_Mean"
-   // and also take care on correct given variables, like "CEQmean~"
-   // 
-   // For each variable out of "listOfVariables":
-   // - 'Save' correct items:
-   //   - form <replaceString>, take <variable>'s first char, add <removeString>, add rest of <variable>, e.g. "C!#EQmean" (<removeString> = "!#")
-   //   - For each statistical information in "listOfNormalizationVariables":
-   //     - ReplaceAll <variable><statistical_Information> with <replaceString><statistical_Information>
-   //   - ReplaceAll <variable><abbreviation> with <replaceString><abbreviation>, e.g. "CEQmean~" -> "C!#EQmean~"
-   //   - ReplaceAll <variable><appendStr> with <replaceString><appendStr>, e.g. "CEQmean.fElements" -> "C!#EQmean.fElements"
-   //
-   // - Do actual replacing:
-   //   - ReplaceAll <variable> with <variable><fAbbreviation>, e.g. "CEQmean" -> "CEQmean~"
-   //
-   // - Undo saving:
-   //   - For each statistical information in "listOfNormalizationVariables":
-   //     - ReplaceAll <replaceString><statistical_Information> with <variable><statistical_Information> 
-   //   - ReplaceAll <replaceString><abbreviation> with <variable><abbreviation>, e.g. "C!#EQmean~" -> "CEQmean~"
-   //   - ReplaceAll <replaceString><appendStr> with <variable><appendStr>, e.g. "C!#EQmean.fElements" -> "CEQmean.fElements"
-   // 
-   // Now all the missing "~" should be added.
-   
+const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDrawCommand){
+   /// Replace all "<variable>" with "<variable><fAbbreviation>" (Adds forgotten "~")
+   /// but take care on the statistical information, like "CEQmean_Mean"
+   /// and also take care on correct given variables, like "CEQmean~"
+   ///
+   /// For each variable out of "listOfVariables":
+   /// - 'Save' correct items:
+   ///   - form <replaceString>, take <variable>'s first char, add <removeString>, add rest of <variable>, e.g. "C!#EQmean" (<removeString> = "!#")
+   ///   - For each statistical information in "listOfNormalizationVariables":
+   ///     - ReplaceAll <variable><statistical_Information> with <replaceString><statistical_Information>
+   ///   - ReplaceAll <variable><abbreviation> with <replaceString><abbreviation>, e.g. "CEQmean~" -> "C!#EQmean~"
+   ///   - ReplaceAll <variable><appendStr> with <replaceString><appendStr>, e.g. "CEQmean.fElements" -> "C!#EQmean.fElements"
+   ///
+   /// - Do actual replacing:
+   ///   - ReplaceAll <variable> with <variable><fAbbreviation>, e.g. "CEQmean" -> "CEQmean~"
+   ///
+   /// - Undo saving:
+   ///   - For each statistical information in "listOfNormalizationVariables":
+   ///     - ReplaceAll <replaceString><statistical_Information> with <variable><statistical_Information>
+   ///   - ReplaceAll <replaceString><abbreviation> with <variable><abbreviation>, e.g. "C!#EQmean~" -> "CEQmean~"
+   ///   - ReplaceAll <replaceString><appendStr> with <variable><appendStr>, e.g. "C!#EQmean.fElements" -> "CEQmean.fElements"
+   ///
+   /// Now all the missing "~" should be added.
+
    TString str(c);
    TString removeString = "!#";  // very unpropable combination of chars
    TString replaceString = "";
@@ -255,7 +246,7 @@ const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDra
    TObjArray *listOfNormalizationVariables = GetListOfNormalizationVariables();
    Int_t nVariables = listOfVariables->GetEntriesFast();
    Int_t nNorm = listOfNormalizationVariables->GetEntriesFast();
-   
+
    Int_t *varLengths = new Int_t[nVariables];
    for (Int_t i = 0; i < nVariables; i++) {
       varLengths[i] = ((TObjString*)listOfVariables->At(i))->String().Length();
@@ -271,7 +262,7 @@ const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDra
    TMath::Sort(nNorm, normLengths, normSort, kTRUE);
    // for (Int_t i = 0; i<nNorm; i++)  printf("normLengths: %i\n", normLengths[normSort[i]]);
    // for (Int_t i = 0; i<nVariables; i++) printf("varLengths: %i\n", varLengths[varSort[i]]);
-   
+
    for (Int_t ivar = 0; ivar < nVariables; ivar++) {
       // ***** save correct tokens *****
       // first get the next variable:
@@ -296,15 +287,15 @@ const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDra
       // like: str.ReplaceAll("CEQmean~", "C!EQmean~");
       str.ReplaceAll(searchString + fAppendString,    replaceString + fAppendString);
       // like: str.ReplaceAll("CEQmean.fElements", "C!EQmean.fElements");
-      
+
       // ***** add missing extensions *****
       str.ReplaceAll(searchString, replaceString + fAbbreviation);
       // like: str.ReplaceAll("CEQmean", "C!EQmean~");
    }
-   
+
    // ***** undo saving *****
    str.ReplaceAll(removeString, "");
-  
+
    if (printDrawCommand) std::cout << "The string looks now like: " << str.Data() << std::endl;
    delete [] varLengths;
    delete [] normLengths;
@@ -318,16 +309,14 @@ const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDra
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  //
-  // easy drawing of data, use '~' for abbreviation of '.fElements'
-  // example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
- // sector: sector-number - only the specified sector will be drwawn
-  //         'A'/'C' or 'a'/'c' - side A/C will be drawn
-  //         'ALL' - whole TPC will be drawn, projected on one side
-  // cuts: specifies cuts
-  // drawOptions: draw options like 'same'
-  // writeDrawCommand: write the command, that is passed to TTree::Draw
-  //
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - only the specified sector will be drwawn
+   /// 'A'/'C' or 'a'/'c' - side A/C will be drawn
+   /// 'ALL' - whole TPC will be drawn, projected on one side
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    TString drawStr(drawCommand);
    TString sectorStr(sector);
@@ -412,14 +401,13 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
 
 
 Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  //
-  // easy drawing of data, use '~' for abbreviation of '.fElements'
-  // example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
-  // sector: sector-number - only the specified sector will be drwawn
-  // cuts: specifies cuts
-  // drawOptions: draw options like 'same'
-  // writeDrawCommand: write the command, that is passed to TTree::Draw
-  //
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - only the specified sector will be drwawn
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
+
    if (sector >= 0 && sector < 72) {
       return EasyDraw(drawCommand, Form("%i", sector), cuts, drawOptions, writeDrawCommand);
    }
@@ -430,16 +418,14 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const c
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  //
-  // easy drawing of data, use '~' for abbreviation of '.fElements'
-  // example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
-  // sector: sector-number - the specified sector will be drwawn
-  //         'A'/'C' or 'a'/'c' - side A/C will be drawn
-  //         'ALL' - whole TPC will be drawn, projected on one side
-  // cuts: specifies cuts
-  // drawOptions: draw options like 'same'
-  // writeDrawCommand: write the command, that is passed to TTree::Draw
-  //
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - the specified sector will be drwawn
+   /// 'A'/'C' or 'a'/'c' - side A/C will be drawn
+   /// 'ALL' - whole TPC will be drawn, projected on one side
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    TString drawStr(drawCommand);
    TString sectorStr(sector);
@@ -479,8 +465,8 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
    if (writeDrawCommand) std::cout << "fTree->Draw(\"" << drawStr << "\", \"" <<  cutStr << "\", \"" << drawOptionsStr << "\");" << std::endl;
    Int_t returnValue = fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
    if (returnValue == -1) return -1;
-   
-   TObject *obj = (gPad) ? gPad->GetPrimitive("htemp") : 0; 
+
+   TObject *obj = (gPad) ? gPad->GetPrimitive("htemp") : 0;
    if (!obj) obj = (TH1F*)gDirectory->Get("htemp");
    if (!obj) obj = gPad->GetPrimitive("tempHist");
    if (!obj) obj = (TH1F*)gDirectory->Get("tempHist");
@@ -492,14 +478,12 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
 
 
 Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
-  //
-  // easy drawing of data, use '~' for abbreviation of '.fElements'
-  // example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
-  // sector: sector-number - the specified sector will be drwawn
-  // cuts: specifies cuts
-  // drawOptions: draw options like 'same'
-  // writeDrawCommand: write the command, that is passed to TTree::Draw
-  //
+   /// easy drawing of data, use '~' for abbreviation of '.fElements'
+   /// example: EasyDraw("CETmean~-CETmean_mean", 34, "(CETmean~-CETmean_mean)>0")
+   /// sector: sector-number - the specified sector will be drwawn
+   /// cuts: specifies cuts
+   /// drawOptions: draw options like 'same'
+   /// writeDrawCommand: write the command, that is passed to TTree::Draw
 
    if (sector >= 0 && sector < 72) {
       return EasyDraw1D(drawCommand, Form("%i",sector), cuts, drawOptions, writeDrawCommand);
@@ -510,10 +494,9 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const
 
 
 void AliTPCCalibViewer::FormatHistoLabels(TH1 *histo) const {
-   // 
-   // formats title and axis labels of histo 
-   // removes '.fElements'
-   // 
+   /// formats title and axis labels of histo
+   /// removes '.fElements'
+
    if (!histo) return;
    TString replaceString(fAppendString.Data());
    TString *str = new TString(histo->GetTitle());
@@ -542,34 +525,32 @@ void AliTPCCalibViewer::FormatHistoLabels(TH1 *histo) const {
 
 
 Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, Int_t sector, const char* cuts, const char *sigmas, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
-   // 
-   // Easy drawing of data, in principle the same as EasyDraw1D
-   // Difference: A line for the mean / median / LTM is drawn 
-   // in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
-   // example: sigmas = "2; 4; 6;"  at Begin_Latex 2 #sigma End_Latex, Begin_Latex 4 #sigma End_Latex and Begin_Latex 6 #sigma End_Latex  a line is drawn.
-   // "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
-   // 
+   /// Easy drawing of data, in principle the same as EasyDraw1D
+   /// Difference: A line for the mean / median / LTM is drawn
+   /// in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
+   /// example: sigmas = "2; 4; 6;"  at \f$2 \sigma\f$, \f$4 \sigma\f$ and \f$6 \sigma\f$  a line is drawn.
+   /// "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
+
    if (sector >= 0 && sector < 72) {
       return DrawHisto1D(drawCommand, Form("%i", sector), cuts, sigmas, plotMean, plotMedian, plotLTM);
    }
    Error("DrawHisto1D","The TPC contains only sectors between 0 and 71.");
    return -1;
-}   
+}
 
 
 Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* sector, const char* cuts, const char *sigmas, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
-   // 
-   // Easy drawing of data, in principle the same as EasyDraw1D
-   // Difference: A line for the mean / median / LTM is drawn 
-   // in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
-   // example: sigmas = "2; 4; 6;"  at Begin_Latex 2 #sigma End_Latex, Begin_Latex 4 #sigma End_Latex and Begin_Latex 6 #sigma End_Latex  a line is drawn.
-   // "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
-   // 
+   /// Easy drawing of data, in principle the same as EasyDraw1D
+   /// Difference: A line for the mean / median / LTM is drawn
+   /// in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
+   /// example: sigmas = "2; 4; 6;"  at \f$2 \sigma\f$, \f$4 \sigma\f$ and \f$6 \sigma\f$  a line is drawn.
+   /// "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
+
    Int_t oldOptStat = gStyle->GetOptStat();
    gStyle->SetOptStat(0000000);
    Double_t ltmFraction = 0.8;
-   
-   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");
    TVectorF nsigma(sigmasTokens->GetEntriesFast());
    for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
       TString str(((TObjString*)sigmasTokens->At(i))->GetString());
@@ -589,12 +570,12 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
    TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
    // FIXME is this histogram deleted automatically?
    Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
-   
+
    Double_t mean = TMath::Mean(entries, values);
    Double_t median = TMath::Median(entries, values);
    Double_t sigma = TMath::RMS(entries, values);
    Double_t maxY = htemp->GetMaximum();
-   
+
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Statistical information");
    //fListOfObjectsToBeDeleted->Add(legend);
 
@@ -664,7 +645,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
          linePlusSigma->SetLineColor(kGreen+2);
          linePlusSigma->SetLineStyle(2+i);
          linePlusSigma->Draw();
-   
+
          TLine* lineMinusSigma = new TLine(ltm - nsigma[i] * ltmRms, 0, ltm - nsigma[i] * ltmRms, maxY);
          //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kGreen+2);
@@ -681,25 +662,23 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
 
 
 Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, Int_t sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
-   //
-   // Creates a histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
-   // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'array', 'n' specifies the length of the array
-   // 'mean' and 'sigma' are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in 'array', to be specified by the user
-   // 'nbins': number of bins, 'binLow': first bin, 'binUp': last bin
-   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
-   // sigmaStep: the binsize of the generated histogram
-   // Begin_Latex 
-   // f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = (#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx) / (#int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx)
-   // End_Latex
-   // 
-   //
-   // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
-   // around the mean/median/LTM
-   // with drawCommand, sector and cuts you specify your input data, see EasyDraw
-   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
-   // sigmaStep: the binsize of the generated histogram
-   // plotMean/plotMedian/plotLTM: specifies where to put the center
-   //
+   /// Creates a histogram \f$S(t, \mu, \sigma)\f$, where you can see, how much of the data are inside sigma-intervals around the mean value
+   /// The data of the distribution \f$f(x, \mu, \sigma)\f$ are given in 'array', 'n' specifies the length of the array
+   /// 'mean' and 'sigma' are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in 'array', to be specified by the user
+   /// 'nbins': number of bins, 'binLow': first bin, 'binUp': last bin
+   /// sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, \f$t \sigma\f$)
+   /// sigmaStep: the binsize of the generated histogram
+   /// \f[
+   /// f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = (\int_{\mu}^{\mu + t \sigma} f(x, \mu, \sigma) dx + \int_{\mu}^{\mu - t \sigma} f(x, \mu, \sigma) dx) / (\int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx)
+   /// \f]
+   ///
+   /// Creates a histogram, where you can see, how much of the data are inside sigma-intervals
+   /// around the mean/median/LTM
+   /// with drawCommand, sector and cuts you specify your input data, see EasyDraw
+   /// sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
+   /// sigmaStep: the binsize of the generated histogram
+   /// plotMean/plotMedian/plotLTM: specifies where to put the center
+
    if (sector >= 0 && sector < 72) {
       return SigmaCut(drawCommand, Form("%i", sector), cuts, sigmaMax, plotMean, plotMedian, plotLTM, pm, sigmas, sigmaStep);
    }
@@ -709,17 +688,15 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, Int_t sector, const c
 
 
 Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
-   //
-   // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
-   // around the mean/median/LTM
-   // with drawCommand, sector and cuts you specify your input data, see EasyDraw
-   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
-   // sigmaStep: the binsize of the generated histogram
-   // plotMean/plotMedian/plotLTM: specifies where to put the center
-   //
-  
+   /// Creates a histogram, where you can see, how much of the data are inside sigma-intervals
+   /// around the mean/median/LTM
+   /// with drawCommand, sector and cuts you specify your input data, see EasyDraw
+   /// sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
+   /// sigmaStep: the binsize of the generated histogram
+   /// plotMean/plotMedian/plotLTM: specifies where to put the center
+
    Double_t ltmFraction = 0.8;
-   
+
    TString drawStr(drawCommand);
    Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
    if (dangerousToDraw) {
@@ -727,23 +704,23 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
       return -1;
    }
    drawStr += " >> tempHist";
-   
+
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
    TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
    // FIXME is this histogram deleted automatically?
    Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
-   
+
    Double_t mean = TMath::Mean(entries, values);
    Double_t median = TMath::Median(entries, values);
    Double_t sigma = TMath::RMS(entries, values);
-   
+
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Cumulative");
    //fListOfObjectsToBeDeleted->Add(legend);
    TH1F *cutHistoMean = 0;
    TH1F *cutHistoMedian = 0;
    TH1F *cutHistoLTM = 0;
-   
-   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");
    TVectorF nsigma(sigmasTokens->GetEntriesFast());
    for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
       TString str(((TObjString*)sigmasTokens->At(i))->GetString());
@@ -762,7 +739,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
          cutHistoMean->Draw();
          DrawLines(cutHistoMean, nsigma, legend, kRed, pm);
       } // if (cutHistoMean)
-       
+
    }
    if (plotMedian) {
       cutHistoMedian = AliTPCCalibViewer::SigmaCut(htemp, median, sigma, sigmaMax, sigmaStep, pm);
@@ -797,20 +774,18 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
 
 
 Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector, const char* cuts, Float_t /*sigmaMax*/, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t /*pm*/, const char *sigmas, Float_t /*sigmaStep*/) const {
-   //
-   // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
-   // around the mean/median/LTM
-   // with drawCommand, sector and cuts you specify your input data, see EasyDraw
-   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
-   // sigmaStep: the binsize of the generated histogram
-   // plotMean/plotMedian/plotLTM: specifies where to put the center
-   //
-  
+   /// Creates a histogram, where you can see, how much of the data are inside sigma-intervals
+   /// around the mean/median/LTM
+   /// with drawCommand, sector and cuts you specify your input data, see EasyDraw
+   /// sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
+   /// sigmaStep: the binsize of the generated histogram
+   /// plotMean/plotMedian/plotLTM: specifies where to put the center
+
    // Double_t ltmFraction = 0.8;  //unused
-   
+
    TString drawStr(drawCommand);
    drawStr += " >> tempHist";
-   
+
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
    TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
    TGraph *cutGraphMean   = 0;
@@ -821,16 +796,16 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
    Float_t  *xarray = new Float_t[entries];
    Float_t  *yarray = new Float_t[entries];
    TMath::Sort(entries, values, index, kFALSE);
-   
+
    Double_t mean = TMath::Mean(entries, values);
    // Double_t median = TMath::Median(entries, values);
    Double_t sigma = TMath::RMS(entries, values);
-   
+
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Cumulative");
    //fListOfObjectsToBeDeleted->Add(legend);
-   
+
    // parse sigmas string
-   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");
    TVectorF nsigma(sigmasTokens->GetEntriesFast());
    for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
       TString str(((TObjString*)sigmasTokens->At(i))->GetString());
@@ -838,10 +813,10 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
       nsigma[i] = sig;
    }
    delete sigmasTokens;
-   
+
    if (plotMean) {
       for (Int_t i = 0; i < entries; i++) {
-         xarray[i] = TMath::Abs(values[index[i]] - mean) / sigma; 
+         xarray[i] = TMath::Abs(values[index[i]] - mean) / sigma;
          yarray[i] = float(i) / float(entries);
       }
       cutGraphMean = new TGraph(entries, xarray, yarray);
@@ -891,54 +866,54 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
 
 
 Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
-   //
-   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
-   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
-   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
-   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
-   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
-   // The actual work is done on the array.
-   /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex  
-   */
+   /// Creates an integrated histogram \f$S(t, \mu, \sigma)\f$, out of the input distribution distribution \f$f(x, \mu, \sigma)\f$, given in "histogram"
+   /// "mean" and "sigma" are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in "histogram", to be specified by the user
+   /// sigmaMax: up to which sigma around the mean/median/LTM you want to integrate
+   /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   /// The actual work is done on the array.
+   ///
+   /// \f[
+   ///       f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+
    if (sector >= 0 && sector < 72) {
       return Integrate(drawCommand, Form("%i", sector), cuts, sigmaMax, plotMean, plotMedian, plotLTM, sigmas, sigmaStep);
    }
    Error("Integrate","The TPC contains only sectors between 0 and 71.");
    return -1;
-   
+
 }
 
 
 Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
-   //
-   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
-   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
-   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
-   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
-   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
-   // The actual work is done on the array.
-   /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex  
-   */
-   
+   /// Creates an integrated histogram \f$S(t, \mu, \sigma)\f$, out of the input distribution distribution \f$f(x, \mu, \sigma)\f$, given in "histogram"
+   /// "mean" and "sigma" are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in "histogram", to be specified by the user
+   /// sigmaMax: up to which sigma around the mean/median/LTM you want to integrate
+   /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   /// The actual work is done on the array.
+   ///
+   /// \f[
+   ///       f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+
+
    Double_t ltmFraction = 0.8;
-   
+
    TString drawStr(drawCommand);
    drawStr += " >> tempHist";
-   
+
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
    TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
    // FIXME is this histogram deleted automatically?
    Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
-   
+
    Double_t mean = TMath::Mean(entries, values);
    Double_t median = TMath::Median(entries, values);
    Double_t sigma = TMath::RMS(entries, values);
-    
-   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");
    TVectorF nsigma(sigmasTokens->GetEntriesFast());
    for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
       TString str(((TObjString*)sigmasTokens->At(i))->GetString());
@@ -952,7 +927,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
    TH1F *integralHistoMean = 0;
    TH1F *integralHistoMedian = 0;
    TH1F *integralHistoLTM = 0;
-  
+
    if (plotMean) {
       integralHistoMean = AliTPCCalibViewer::Integrate(htemp, mean, sigma, sigmaMax, sigmaStep);
       if (integralHistoMean) {
@@ -997,20 +972,19 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
 
 
 Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, const char* cuts, Float_t /*sigmaMax*/, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t /*sigmaStep*/) const {
-   //
-   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
-   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
-   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
-   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
-   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
-   // The actual work is done on the array.
-   /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex  
-   */
-   
+   /// Creates an integrated histogram \f$S(t, \mu, \sigma)\f$, out of the input distribution distribution \f$f(x, \mu, \sigma)\f$, given in "histogram"
+   /// "mean" and "sigma" are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in "histogram", to be specified by the user
+   /// sigmaMax: up to which sigma around the mean/median/LTM you want to integrate
+   /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   /// The actual work is done on the array.
+   ///
+   /// \f[
+   ///  f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+
    Double_t ltmFraction = 0.8;
-   
+
    TString drawStr(drawCommand);
    Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
    if (dangerousToDraw) {
@@ -1018,7 +992,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
       return -1;
    }
    drawStr += " >> tempHist";
-   
+
    Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
    TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
    TGraph *integralGraphMean   = 0;
@@ -1029,13 +1003,13 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    Float_t  *xarray = new Float_t[entries];
    Float_t  *yarray = new Float_t[entries];
    TMath::Sort(entries, values, index, kFALSE);
-   
+
    Double_t mean = TMath::Mean(entries, values);
    Double_t median = TMath::Median(entries, values);
    Double_t sigma = TMath::RMS(entries, values);
-   
+
    // parse sigmas string
-   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");
    TVectorF nsigma(sigmasTokens->GetEntriesFast());
    for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
       TString str(((TObjString*)sigmasTokens->At(i))->GetString());
@@ -1046,10 +1020,10 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
 
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
    //fListOfObjectsToBeDeleted->Add(legend);
-  
+
    if (plotMean) {
       for (Int_t i = 0; i < entries; i++) {
-         xarray[i] = (values[index[i]] - mean) / sigma; 
+         xarray[i] = (values[index[i]] - mean) / sigma;
          yarray[i] = float(i) / float(entries);
       }
       integralGraphMean = new TGraph(entries, xarray, yarray);
@@ -1064,7 +1038,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    }
    if (plotMedian) {
       for (Int_t i = 0; i < entries; i++) {
-         xarray[i] = (values[index[i]] - median) / sigma; 
+         xarray[i] = (values[index[i]] - median) / sigma;
          yarray[i] = float(i) / float(entries);
       }
       integralGraphMedian = new TGraph(entries, xarray, yarray);
@@ -1082,7 +1056,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
       Double_t ltmRms = 0;
       Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
       for (Int_t i = 0; i < entries; i++) {
-         xarray[i] = (values[index[i]] - ltm) / ltmRms; 
+         xarray[i] = (values[index[i]] - ltm) / ltmRms;
          yarray[i] = float(i) / float(entries);
       }
       integralGraphLTM = new TGraph(entries, xarray, yarray);
@@ -1099,7 +1073,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    delete [] index;
    delete [] xarray;
    delete [] yarray;
-  
+
    if (!plotMean && !plotMedian && !plotLTM) return -1;
    legend->Draw();
    return entries;
@@ -1107,14 +1081,12 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
 
 
 void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
-   // 
-   // Private function for SigmaCut(...) and Integrate(...)
-   // Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
-   // 
-   
+   /// Private function for SigmaCut(...) and Integrate(...)
+   /// Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
+
    // start to draw the lines, loop over requested sigmas
    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-      if (!pm) { 
+      if (!pm) {
          Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
          TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineUp);
@@ -1154,19 +1126,17 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
          lineLeft2->Draw();
          legend->AddEntry(lineLeft2, Form("Fraction(-%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
       }
-   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
+   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)
 }
 
 
 void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
-   // 
-   // Private function for SigmaCut(...) and Integrate(...)
-   // Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
-   // 
-   
+   /// Private function for SigmaCut(...) and Integrate(...)
+   /// Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
+
    // start to draw the lines, loop over requested sigmas
    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-      if (!pm) { 
+      if (!pm) {
          TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineUp);
          lineUp->SetLineColor(color);
@@ -1203,7 +1173,7 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
          lineLeft2->Draw();
          legend->AddEntry(lineLeft2, Form("Fraction(-%f #sigma) = %f",nsigma[i], graph->Eval(-nsigma[i])), "l");
       }
-   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
+   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)
 }
 
 
@@ -1216,27 +1186,26 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
 
 
 Int_t AliTPCCalibViewer::GetBin(Float_t value, Int_t nbins, Double_t binLow, Double_t binUp){
-   // Returns the 'bin' for 'value'
-   // The interval between 'binLow' and 'binUp' is divided into 'nbins' equidistant bins
-   // avoid index out of bounds error: 'if (bin < binLow) bin = binLow' and vice versa
-   /* Begin_Latex
-         GetBin(value) = #frac{nbins - 1}{binUp - binLow} #upoint (value - binLow) +1
-      End_Latex
-   */
-   
+   /// Returns the 'bin' for 'value'
+   /// The interval between 'binLow' and 'binUp' is divided into 'nbins' equidistant bins
+   /// avoid index out of bounds error: 'if (bin < binLow) bin = binLow' and vice versa
+   ///
+   /// \f[
+   ///  GetBin(value) = \frac{nbins - 1}{binUp - binLow} \upoint (value - binLow) +1
+   /// \f]
+
    Int_t bin =  TMath::Nint( (Float_t)(value - binLow) / (Float_t)(binUp - binLow) * (nbins-1) ) + 1;
-   // avoid index out of bounds:   
+   // avoid index out of bounds:
    if (value < binLow) bin = 0;
    if (value > binUp)  bin = nbins + 1;
    return bin;
-   
-}   
+
+}
 
 
 Double_t AliTPCCalibViewer::GetLTM(Int_t n, const Double_t *const array, Double_t *const sigma, Double_t fraction){
-   //
-   //  returns the LTM and sigma
-   //
+   /// returns the LTM and sigma
+
    Double_t *ddata = new Double_t[n];
    Double_t mean = 0, lsigma = 0;
    UInt_t nPoints = 0;
@@ -1253,71 +1222,38 @@ Double_t AliTPCCalibViewer::GetLTM(Int_t n, const Double_t *const array, Double_
 
 
 TH1F* AliTPCCalibViewer::SigmaCut(TH1F *const histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm) {
-   //
-   // Creates a cumulative histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
-   // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'histogram'
-   // 'mean' and 'sigma' are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in 'histogram', to be specified by the user
-   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
-   // sigmaStep: the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
-   // pm: Decide weather Begin_Latex t > 0 End_Latex (first case) or Begin_Latex t End_Latex arbitrary (secound case)
-   // The actual work is done on the array.
-   /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = (#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx) / (#int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx),    for  t > 0    
-         or      
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex  
-      Begin_Macro(source)
-      {
-         Float_t mean = 0;
-         Float_t sigma = 1.5;
-         Float_t sigmaMax = 4;
-         gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distrib1", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
-         TRandom rand(23);
-         for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
-         Float_t *ar = distribution->GetArray();
-         
-         TCanvas* macro_example_canvas = new TCanvas("cAliTPCCalibViewer1", "", 350, 350);
-         macro_example_canvas->Divide(0,3);
-         TVirtualPad *pad1 = macro_example_canvas->cd(1);
-         pad1->SetGridy();
-         pad1->SetGridx();
-         distribution->Draw();
-         TVirtualPad *pad2 = macro_example_canvas->cd(2);
-         pad2->SetGridy();
-         pad2->SetGridx();
-         
-         TH1F *shist = AliTPCCalibViewer::SigmaCut(distribution, mean, sigma, sigmaMax);
-         shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
-         shist->Draw();  
-         TVirtualPad *pad3 = macro_example_canvas->cd(3);
-         pad3->SetGridy();
-         pad3->SetGridx();
-         TH1F *shistPM = AliTPCCalibViewer::SigmaCut(distribution, mean, sigma, sigmaMax, -1, kTRUE);
-         shistPM->Draw();   
-         return macro_example_canvas;
-      }  
-      End_Macro
-   */ 
-   
+   /// Creates a cumulative histogram \f$S(t, \mu, \sigma)\f$, where you can see, how much of the data are inside sigma-intervals around the mean value
+   /// The data of the distribution \f$f(x, \mu, \sigma)\f$ are given in 'histogram'
+   /// 'mean' and 'sigma' are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in 'histogram', to be specified by the user
+   /// sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, \f$t \sigma\f$)
+   /// sigmaStep: the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   /// pm: Decide weather \f$t > 0\f$ (first case) or \f$t\f$ arbitrary (secound case)
+   /// The actual work is done on the array.
+   ///
+   /// \f[
+   ///      f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = (\int_{\mu}^{\mu + t \sigma} f(x, \mu, \sigma) dx + \int_{\mu}^{\mu - t \sigma} f(x, \mu, \sigma) dx) / (\int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx),    for  t > 0
+   ///      or
+   ///      f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{\mu}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+   /// ![Picture from ROOT macro](AliTPCCalibViewer_cxx_0eb126d.png)
+
    Float_t *array = histogram->GetArray();
    Int_t    nbins = histogram->GetXaxis()->GetNbins();
    Float_t binLow = histogram->GetXaxis()->GetXmin();
    Float_t binUp  = histogram->GetXaxis()->GetXmax();
    return AliTPCCalibViewer::SigmaCut(nbins, array, mean, sigma, nbins, binLow, binUp, sigmaMax, sigmaStep, pm);
-}   
-   
+}
+
 
 TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm){
-   //
-   // Creates a histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
-   // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'array', 'n' specifies the length of the array
-   // 'mean' and 'sigma' are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in 'array', to be specified by the user
-   // 'nbins': number of bins, 'binLow': first bin, 'binUp': last bin
-   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
-   // sigmaStep: the binsize of the generated histogram
-   // Here the actual work is done.
-   
+   /// Creates a histogram \f$S(t, \mu, \sigma)\f$, where you can see, how much of the data are inside sigma-intervals around the mean value
+   /// The data of the distribution \f$f(x, \mu, \sigma)\f$ are given in 'array', 'n' specifies the length of the array
+   /// 'mean' and 'sigma' are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in 'array', to be specified by the user
+   /// 'nbins': number of bins, 'binLow': first bin, 'binUp': last bin
+   /// sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, \f$t \sigma\f$)
+   /// sigmaStep: the binsize of the generated histogram
+   /// Here the actual work is done.
+
    if (sigma == 0) return 0;
    Float_t binWidth = (binUp-binLow)/(nbins - 1);
    if (sigmaStep <= 0) sigmaStep = binWidth;
@@ -1325,22 +1261,22 @@ TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Float_t *array, Float_t mean, F
    if (pm) kbins = 2 * (Int_t)(sigmaMax * sigma / sigmaStep) + 1;
    Float_t kbinLow = !pm ? 0 : -sigmaMax;
    Float_t kbinUp  = sigmaMax;
-   TH1F *hist = new TH1F("sigmaCutHisto","Cumulative; Multiples of #sigma; Fraction of included data", kbins, kbinLow, kbinUp); 
+   TH1F *hist = new TH1F("sigmaCutHisto","Cumulative; Multiples of #sigma; Fraction of included data", kbins, kbinLow, kbinUp);
    hist->SetDirectory(0);
    hist->Reset();
-   
+
    // calculate normalization
    Double_t normalization = 0;
    for (Int_t i = 0; i <= n; i++) {
         normalization += array[i];
    }
-   
+
    // given units: units from given histogram
    // sigma units: in units of sigma
    // iDelta: integrate in interval (mean +- iDelta), given units
    // x:      ofset from mean for integration, given units
-   // hist:   needs 
-   
+   // hist:   needs
+
 //    printf("nbins: %i, binLow: %f, binUp: %f \n", nbins, binLow, binUp);
    // fill histogram
    for (Float_t iDelta = 0; iDelta <= sigmaMax * sigma; iDelta += sigmaStep) {
@@ -1351,8 +1287,8 @@ TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Float_t *array, Float_t mean, F
 //       printf("++ adding bins: ");
       for (Float_t x = binWidth; x <= iDelta; x += binWidth) {
          valueP += (mean + x <= binUp)  ? array[GetBin(mean + x, nbins, binLow, binUp)] : 0;
-         valueM += (mean-binWidth - x >= binLow) ? array[GetBin(mean-binWidth - x, nbins, binLow, binUp)] : 0; 
-//          printf("%i, ", GetBin(mean + x, nbins, binLow, binUp));        
+         valueM += (mean-binWidth - x >= binLow) ? array[GetBin(mean-binWidth - x, nbins, binLow, binUp)] : 0;
+//          printf("%i, ", GetBin(mean + x, nbins, binLow, binUp));
       }
 //       printf("\n");
       if (valueP / normalization > 100) printf("+++ Error, value to big: %f, normalization with %f will fail  +++ \n", valueP, normalization);
@@ -1382,90 +1318,62 @@ TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Float_t *array, Float_t mean, F
 
 
 TH1F* AliTPCCalibViewer::SigmaCut(Int_t /*n*/, const Double_t */*array*/, Double_t /*mean*/, Double_t /*sigma*/, Int_t /*nbins*/, const Double_t */*xbins*/, Double_t /*sigmaMax*/){
-   // 
-   // SigmaCut for variable binsize
-   // NOT YET IMPLEMENTED !!!
-   // 
+   /// SigmaCut for variable binsize
+   /// NOT YET IMPLEMENTED !!!
+
    printf("SigmaCut with variable binsize, Not yet implemented\n");
-   
+
    return 0;
-}   
+}
 
 
 TH1F* AliTPCCalibViewer::Integrate(TH1F *const histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
-   //
-   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
-   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
-   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
-   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
-   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
-   // The actual work is done on the array.
-   /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
-      End_Latex  
-      Begin_Macro(source)
-      {
-         Float_t mean = 0;
-         Float_t sigma = 1.5;
-         Float_t sigmaMax = 4;
-         gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distrib2", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
-         TRandom rand(23);
-         for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
-         Float_t *ar = distribution->GetArray();
-         
-         TCanvas* macro_example_canvas = new TCanvas("cAliTPCCalibViewer2", "", 350, 350);
-         macro_example_canvas->Divide(0,2);
-         TVirtualPad *pad1 = macro_example_canvas->cd(1);
-         pad1->SetGridy();
-         pad1->SetGridx();
-         distribution->Draw();
-         TVirtualPad *pad2 = macro_example_canvas->cd(2);
-         pad2->SetGridy();
-         pad2->SetGridx();
-         TH1F *shist = AliTPCCalibViewer::Integrate(distribution, mean, sigma, sigmaMax);
-         shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
-         shist->Draw();  
-         
-      }  
-      End_Macro
-   */ 
+   /// Creates an integrated histogram \f$S(t, \mu, \sigma)\f$, out of the input distribution distribution \f$f(x, \mu, \sigma)\f$, given in "histogram"
+   /// "mean" and "sigma" are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in "histogram", to be specified by the user
+   /// sigmaMax: up to which sigma around the mean/median/LTM you want to integrate
+   /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   /// The actual work is done on the array.
+   /// \f[
+   ///      f(x, \mu, \sigma)     \Rightarrow       S(t, \mu, \sigma) = \int_{-\infty}^{\mu + t \sigma} f(x, \mu, \sigma) dx / \int_{-\infty}^{+\infty} f(x, \mu, \sigma) dx
+   /// \f]
+   /// ![Picture from ROOT macro](AliTPCCalibViewer_cxx_f68daaf.png)
 
-   
+
    Float_t *array = histogram->GetArray();
    Int_t    nbins = histogram->GetXaxis()->GetNbins();
    Float_t binLow = histogram->GetXaxis()->GetXmin();
    Float_t binUp  = histogram->GetXaxis()->GetXmax();
    return AliTPCCalibViewer::Integrate(nbins, array, nbins, binLow, binUp, mean, sigma, sigmaMax, sigmaStep);
-}   
+}
 
 
 TH1F* AliTPCCalibViewer::Integrate(Int_t n, const Float_t *const array, Int_t nbins, Float_t binLow, Float_t binUp, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
-   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
-   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
-   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
-   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
-   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
-   // Here the actual work is done.
-      
+   /// Creates an integrated histogram \f$S(t, \mu, \sigma)\f$, out of the input distribution distribution \f$f(x, \mu, \sigma)\f$, given in "histogram"
+   /// "mean" and "sigma" are \f$\mu\f$ and  \f$\sigma\f$ of the distribution in "histogram", to be specified by the user
+   /// sigmaMax: up to which sigma around the mean/median/LTM you want to integrate
+   /// if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   /// "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   /// Here the actual work is done.
+
    Bool_t givenUnits = kTRUE;
    if (sigma != 0 && sigmaMax != 0) givenUnits = kFALSE;
    if (givenUnits) {
       sigma = 1;
       sigmaMax = (binUp - binLow) / 2.;
    }
-   
+
    Float_t binWidth = (binUp-binLow)/(nbins - 1);
    if (sigmaStep <= 0) sigmaStep = binWidth;
    Int_t kbins =  (Int_t)(sigmaMax * sigma / sigmaStep) + 1;  // + 1  due to overflow bin in histograms
    Float_t kbinLow = givenUnits ? binLow : -sigmaMax;
    Float_t kbinUp  = givenUnits ? binUp  : sigmaMax;
-   TH1F *hist = 0; 
-   if (givenUnits)  hist = new TH1F("integratedHisto","Integrated Histogram; Given x; Fraction of included data", kbins, kbinLow, kbinUp); 
-   if (!givenUnits) hist = new TH1F("integratedHisto","Integrated Histogram; Multiples of #sigma; Fraction of included data", kbins, kbinLow, kbinUp); 
+   TH1F *hist = 0;
+   if (givenUnits)  hist = new TH1F("integratedHisto","Integrated Histogram; Given x; Fraction of included data", kbins, kbinLow, kbinUp);
+   if (!givenUnits) hist = new TH1F("integratedHisto","Integrated Histogram; Multiples of #sigma; Fraction of included data", kbins, kbinLow, kbinUp);
    hist->SetDirectory(0);
    hist->Reset();
-   
+
    // calculate normalization
  //  printf("calculating normalization, integrating from bin 1 to %i \n", n);
    Double_t normalization = 0;
@@ -1473,13 +1381,13 @@ TH1F* AliTPCCalibViewer::Integrate(Int_t n, const Float_t *const array, Int_t nb
         normalization += array[i];
    }
  //  printf("normalization: %f \n", normalization);
-   
+
    // given units: units from given histogram
    // sigma units: in units of sigma
    // iDelta: integrate in interval (mean +- iDelta), given units
    // x:      ofset from mean for integration, given units
-   // hist:   needs 
-   
+   // hist:   needs
+
    // fill histogram
    for (Float_t iDelta = mean - sigmaMax * sigma; iDelta <= mean + sigmaMax * sigma; iDelta += sigmaStep) {
       // integrate array
@@ -1510,12 +1418,11 @@ TH1F* AliTPCCalibViewer::Integrate(Int_t n, const Float_t *const array, Int_t nb
 
 //_____________________________________________________________________________
 AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, const char* cuts, const char* calPadName) const {
-  //
-  // creates a AliTPCCalPad out of the 'desiredData'
-  // the functionality of EasyDraw1D is used
-  // calPadName specifies the name of the created AliTPCCalPad
-  //  - this takes a while -
-  //
+   /// creates a AliTPCCalPad out of the 'desiredData'
+   /// the functionality of EasyDraw1D is used
+   /// calPadName specifies the name of the created AliTPCCalPad
+   ///  - this takes a while -
+
    TString drawStr(desiredData);
    drawStr.Append(":channel");
    drawStr.Append(fAbbreviation);
@@ -1527,21 +1434,20 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPadOld(const char* desiredData, const cha
       if (entries == -1) return 0;
       const Double_t *pchannel = fTree->GetV2();
       const Double_t *pvalue   = fTree->GetV1();
-      for (Int_t i = 0; i < entries; i++) 
+      for (Int_t i = 0; i < entries; i++)
          roc->SetValue((UInt_t)(pchannel[i]), (Float_t)(pvalue[i]));
    }
-   return createdCalPad;   
+   return createdCalPad;
 }
 
 
 //_____________________________________________________________________________
 AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, const char* cuts, const char* calPadName) const {
-  //
-  // creates a AliTPCCalPad out of the 'desiredData'
-  // the functionality of EasyDraw1D is used
-  // calPadName specifies the name of the created AliTPCCalPad
-  //  - this takes a while -
-  //
+   /// creates a AliTPCCalPad out of the 'desiredData'
+   /// the functionality of EasyDraw1D is used
+   /// calPadName specifies the name of the created AliTPCCalPad
+   ///  - this takes a while -
+
    TString drawStr(desiredData);
    drawStr.Append(":channel.fElements:sector");
    AliTPCCalPad * createdCalPad = new AliTPCCalPad(calPadName, calPadName);
@@ -1561,36 +1467,34 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, const char* 
 //      AliTPCCalROC * roc = createdCalPad->GetCalROC(sec);
 //       entries = EasyDraw1D(drawStr.Data(), (Int_t)sec, cuts, "goff");
 //       if (entries == -1) return 0;
-//       for (Int_t i = 0; i < entries; i++) 
+//       for (Int_t i = 0; i < entries; i++)
 //          roc->SetValue((UInt_t)(pchannel[i]), (Float_t)(pvalue[i]));
 //    }
-   return createdCalPad;   
+   return createdCalPad;
 }
 
 //_____________________________________________________________________________
 AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t sector, const char* cuts) const {
-  //
-  // creates a AliTPCCalROC out of the desiredData
-  // the functionality of EasyDraw1D is used
-  // sector specifies the sector of the created AliTPCCalROC
-  //
+   /// creates a AliTPCCalROC out of the desiredData
+   /// the functionality of EasyDraw1D is used
+   /// sector specifies the sector of the created AliTPCCalROC
+
    TString drawStr(desiredData);
    drawStr.Append(":channel");
    drawStr.Append(fAbbreviation);
    Int_t entries = EasyDraw1D(drawStr.Data(), (Int_t)sector, cuts, "goff");
    if (entries == -1) return 0;
    AliTPCCalROC * createdROC = new AliTPCCalROC(sector);
-   for (Int_t i = 0; i < entries; i++) 
+   for (Int_t i = 0; i < entries; i++)
       createdROC->SetValue((UInt_t)(fTree->GetV2()[i]), fTree->GetV1()[i]);
    return createdROC;
 }
 
 
 TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
-  //
-  // scan the tree  - produces a list of available variables in the tree
-  // printList: print the list to the screen, after the scan is done
-  //
+   /// scan the tree  - produces a list of available variables in the tree
+   /// printList: print the list to the screen, after the scan is done
+
    TObjArray* arr = new TObjArray();
    TObjString* str = 0;
    if (!fTree) return 0;
@@ -1603,13 +1507,13 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
       str->String().ReplaceAll("_LTM", "");
       str->String().ReplaceAll("_OutlierCutted", "");
       str->String().ReplaceAll(".", "");
-      if (!arr->FindObject(str) && 
-          !(str->String() == "channel" || str->String() == "gx" || str->String() == "gy" || 
-            str->String() == "lx" || str->String() == "ly" || str->String() == "pad" || 
+      if (!arr->FindObject(str) &&
+          !(str->String() == "channel" || str->String() == "gx" || str->String() == "gy" ||
+            str->String() == "lx" || str->String() == "ly" || str->String() == "pad" ||
             str->String() == "row" || str->String() == "rpad" || str->String() == "sector"  ))
          arr->Add(str);
    }
-   
+
    // loop over all friends (if there are some) and add them to the list
    if (fTree->GetListOfFriends()) {
       for (Int_t ifriend = 0; ifriend < fTree->GetListOfFriends()->GetEntries(); ifriend++){
@@ -1628,8 +1532,8 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
             str->String().ReplaceAll("_LTM", "");
             str->String().ReplaceAll("_OutlierCutted", "");
             str->String().ReplaceAll(".", "");
-            if (!(str->String() == "channel" || str->String() == "gx" || str->String() == "gy" || 
-                  str->String() == "lx" || str->String() == "ly" || str->String() == "pad" || 
+            if (!(str->String() == "channel" || str->String() == "gx" || str->String() == "gy" ||
+                  str->String() == "lx" || str->String() == "ly" || str->String() == "pad" ||
                   str->String() == "row" || str->String() == "rpad" || str->String() == "sector"  )){
                // insert "<friendName>." at the beginning: (<friendName> is per default "R")
                str->String().Insert(0, ".");
@@ -1640,7 +1544,7 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
          }
       }
    } // if (fTree->GetListOfFriends())
-   
+
    arr->Sort();
 //   ((TFriendElement*)gui->GetViewer()->GetTree()->GetListOfFriends()->At(0))->GetTree()->GetListOfBranches()->At(0)->GetName()
 // ((TFriendElement*)gui->GetViewer()->GetTree()->GetListOfFriends()->At(0))->GetTree()->GetListOfBranches()
@@ -1660,10 +1564,9 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
 
 
 TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) const{
-  //
-  // produces a list of available variables for normalization in the tree
-  // printList: print the list to the screen, after the scan is done
-  //
+   /// produces a list of available variables for normalization in the tree
+   /// printList: print the list to the screen, after the scan is done
+
    TObjArray* arr = new TObjArray();
    arr->Add(new TObjString("_Mean"));
    arr->Add(new TObjString("_Mean_OutlierCutted"));
@@ -1693,10 +1596,9 @@ TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) 
 
 
 TFriendElement* AliTPCCalibViewer::AddReferenceTree(const char* filename, const char* treename, const char* refname){
-  //
-  // add a reference tree to the current tree
-  // by default the treename is 'calPads' and the reference treename is 'R'
-  //
+   /// add a reference tree to the current tree
+   /// by default the treename is 'calPads' and the reference treename is 'R'
+
    TFile *file = new TFile(filename);
    fListOfObjectsToBeDeleted->Add(file);
    TTree * tree = (TTree*)file->Get(treename);
@@ -1705,10 +1607,9 @@ TFriendElement* AliTPCCalibViewer::AddReferenceTree(const char* filename, const 
 
 
 TObjArray* AliTPCCalibViewer::GetArrayOfCalPads(){
-  //
-  // Returns a TObjArray with all AliTPCCalPads that are stored in the tree
-  //  - this takes a while - 
-  //
+   /// Returns a TObjArray with all AliTPCCalPads that are stored in the tree
+   ///  - this takes a while -
+
    TObjArray *listOfCalPads = GetListOfVariables();
    TObjArray *calPadsArray = new TObjArray();
    Int_t numberOfCalPads = listOfCalPads->GetEntries();
@@ -1717,8 +1618,8 @@ TObjArray* AliTPCCalibViewer::GetArrayOfCalPads(){
       char* calPadName = (char*)((TObjString*)(listOfCalPads->At(i)))->GetString().Data();
       TString drawCommand = ((TObjString*)(listOfCalPads->At(i)))->GetString();
       drawCommand.Append(fAbbreviation.Data());
-      AliTPCCalPad* calPad = GetCalPad(drawCommand.Data(), "", calPadName); 
-      calPadsArray->Add(calPad); 
+      AliTPCCalPad* calPad = GetCalPad(drawCommand.Data(), "", calPadName);
+      calPadsArray->Add(calPad);
    }
    std::cout << std::endl;
    listOfCalPads->Delete();
@@ -1728,53 +1629,51 @@ TObjArray* AliTPCCalibViewer::GetArrayOfCalPads(){
 
 
 TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix){
-   //
-   // fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
-   // returns chi2, fitParam and covMatrix
-   // returns TString with fitted formula
-   //
-   
-   TString formulaStr(formula); 
+   /// fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
+   /// returns chi2, fitParam and covMatrix
+   /// returns TString with fitted formula
+
+   TString formulaStr(formula);
    TString drawStr(drawCommand);
    TString cutStr(cuts);
-   
+
    // abbreviations:
    drawStr.ReplaceAll(fAbbreviation, fAppendString);
    cutStr.ReplaceAll(fAbbreviation, fAppendString);
    formulaStr.ReplaceAll(fAbbreviation, fAppendString);
-   
+
    formulaStr.ReplaceAll("++", fAbbreviation);
-   TObjArray* formulaTokens = formulaStr.Tokenize(fAbbreviation.Data()); 
+   TObjArray* formulaTokens = formulaStr.Tokenize(fAbbreviation.Data());
    Int_t dim = formulaTokens->GetEntriesFast();
-   
+
    fitParam.ResizeTo(dim);
    covMatrix.ResizeTo(dim,dim);
-   
+
    TLinearFitter* fitter = new TLinearFitter(dim+1, Form("hyp%d",dim));
-   fitter->StoreData(kTRUE);   
+   fitter->StoreData(kTRUE);
    fitter->ClearPoints();
-   
+
    Int_t entries = Draw(drawStr.Data(), cutStr.Data(), "goff");
    if (entries == -1) {
      delete formulaTokens;
      return new TString("An ERROR has occured during fitting!");
    }
-   Double_t **values = new Double_t*[dim+1] ; 
-   
+   Double_t **values = new Double_t*[dim+1] ;
+
    for (Int_t i = 0; i < dim + 1; i++){
       Int_t centries = 0;
       if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff");
       else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff");
-      
+
       if (entries != centries) {
         delete [] values;
 	delete formulaTokens;
         return new TString("An ERROR has occured during fitting!");
       }
       values[i] = new Double_t[entries];
-      memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
+      memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t));
    }
-   
+
    // add points to the fitter
    for (Int_t i = 0; i < entries; i++){
       Double_t x[1000];
@@ -1787,9 +1686,9 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
 //    chi2 = chi2;
-   
+
    TString *preturnFormula = new TString(Form("( %e+",fitParam[0])), &returnFormula = *preturnFormula;
-   
+
    for (Int_t iparam = 0; iparam < dim; iparam++) {
      returnFormula.Append(Form("%s*(%e)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]));
      if (iparam < dim-1) returnFormula.Append("+");
@@ -1806,12 +1705,11 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
 
 
 void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArray *const array, const char * mapFileName) {
-  //
-  // Write tree with all available information
-  // im mapFileName is speciefied, the Map information are also written to the tree
-  // AliTPCCalPad-Objects are written directly to the tree, so that they can be accessd later on
-  // (does not work!!!)
-  //
+   /// Write tree with all available information
+   /// im mapFileName is speciefied, the Map information are also written to the tree
+   /// AliTPCCalPad-Objects are written directly to the tree, so that they can be accessd later on
+   /// (does not work!!!)
+
    AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
    TObjArray* mapIROCs = 0;
@@ -1820,17 +1718,17 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
    TVectorF *mapOROCArray = 0;
    Int_t mapEntries = 0;
    TString* mapNames = 0;
-   
+
    if (mapFileName) {
       TFile mapFile(mapFileName, "read");
-      
+
       TList* listOfROCs = mapFile.GetListOfKeys();
       mapEntries = listOfROCs->GetEntries()/2;
       mapIROCs = new TObjArray(mapEntries*2);
       mapOROCs = new TObjArray(mapEntries*2);
       mapIROCArray = new TVectorF[mapEntries];
       mapOROCArray = new TVectorF[mapEntries];
-      
+
       mapNames = new TString[mapEntries];
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
          TString rocName(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
@@ -1839,11 +1737,11 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
          mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "OROC").Data()), ivalue);
          mapNames[ivalue].Append(rocName);
       }
-      
+
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
          mapIROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(0));
          mapOROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(36));
-      
+
          for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(0); ichannel++)
             (mapIROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapIROCs->At(ivalue)))->GetValue(ichannel);
          for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(36); ichannel++)
@@ -1851,22 +1749,22 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
       }
 
    } //  if (mapFileName)
-  
+
    TTreeSRedirector cstream(fileName);
    Int_t arrayEntries = array->GetEntries();
-   
+
    // Read names of AliTPCCalPads and save them in names[]
    TString* names = new TString[arrayEntries];
    for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
       names[ivalue].Append(((AliTPCCalPad*)array->At(ivalue))->GetName());
 
    for (UInt_t isector = 0; isector < tpcROCinstance->GetNSectors(); isector++) {
-      
+
       TVectorF *vectorArray = new TVectorF[arrayEntries];
       for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
          vectorArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
-            
-      
+
+
       //
       // fill vectors of variable per pad
       //
@@ -1889,7 +1787,7 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
             posArray[5][ichannel] = posG[1];
             posArray[6][ichannel] = (Int_t)(ipad - (Double_t)(tpcROCinstance->GetNPads(isector, irow))/2);
             posArray[7][ichannel] = ichannel;
-            
+
             // loop over array containing AliTPCCalPads
             for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
                AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
@@ -1908,7 +1806,7 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
          if (!roc) roc = &dummyROC;
          cstream << "calPads" <<
             (Char_t*)((names[ivalue] + ".=").Data()) << &vectorArray[ivalue];
-         cstream << "calPads" << 
+         cstream << "calPads" <<
             (Char_t*)((names[ivalue] + "Pad.=").Data()) << roc;
       }
 
@@ -1922,7 +1820,7 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
                   (Char_t*)((mapNames[ivalue] + ".=").Data()) << &mapOROCArray[ivalue];
          }
       }
-      
+
       cstream << "calPads" <<
          "sector=" << isector;
 
@@ -1955,18 +1853,17 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArra
 
 
 void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad *const outlierPad, Float_t ltmFraction) {
-  //
-  // Write a tree with all available information
-  // if mapFileName is speciefied, the Map information are also written to the tree
-  // pads specified in outlierPad are not used for calculating statistics
-  // The following statistical information on the basis of a ROC are calculated: 
-  // "_Median", "_Mean", "_LTM", "_RMS_LTM"
-  // "_Median_OutlierCutted", "_Mean_OutlierCutted", "_RMS_OutlierCutted", "_LTM_OutlierCutted", "_RMS_LTM_OutlierCutted"
-  // The following position variables are available:
-  // "row", "pad", "lx", "ly", "gx", "gy", "rpad", "channel"
-  // 
-  // The tree out of this function is the basis for the AliTPCCalibViewer and the AliTPCCalibViewerGUI.
-   
+  /// Write a tree with all available information
+  /// if mapFileName is speciefied, the Map information are also written to the tree
+  /// pads specified in outlierPad are not used for calculating statistics
+  /// The following statistical information on the basis of a ROC are calculated:
+  /// "_Median", "_Mean", "_LTM", "_RMS_LTM"
+  /// "_Median_OutlierCutted", "_Mean_OutlierCutted", "_RMS_OutlierCutted", "_LTM_OutlierCutted", "_RMS_LTM_OutlierCutted"
+  /// The following position variables are available:
+  /// "row", "pad", "lx", "ly", "gx", "gy", "rpad", "channel"
+  ///
+  /// The tree out of this function is the basis for the AliTPCCalibViewer and the AliTPCCalibViewerGUI.
+
   AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
   TObjArray* mapIROCs = 0;
@@ -1975,17 +1872,17 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
   TVectorF *mapOROCArray = 0;
   Int_t mapEntries = 0;
   TString* mapNames = 0;
-  
+
   if (mapFileName) {
     TFile mapFile(mapFileName, "read");
-    
+
     TList* listOfROCs = mapFile.GetListOfKeys();
     mapEntries = listOfROCs->GetEntries()/2;
     mapIROCs = new TObjArray(mapEntries*2);
     mapOROCs = new TObjArray(mapEntries*2);
     mapIROCArray = new TVectorF[mapEntries];
     mapOROCArray = new TVectorF[mapEntries];
-    
+
     mapNames = new TString[mapEntries];
     for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
       TString rocName(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
@@ -1994,27 +1891,27 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
       mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "OROC").Data()), ivalue);
       mapNames[ivalue].Append(rocName);
     }
-    
+
     for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
       mapIROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(0));
       mapOROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(36));
-      
+
       for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(0); ichannel++)
         (mapIROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapIROCs->At(ivalue)))->GetValue(ichannel);
       for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(36); ichannel++)
         (mapOROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapOROCs->At(ivalue)))->GetValue(ichannel);
     }
-    
+
   } //  if (mapFileName)
-  
+
   TTreeSRedirector cstream(fileName,"recreate");
   Int_t arrayEntries = 0;
   if (array) arrayEntries = array->GetEntries();
-  
+
   TString* names = new TString[arrayEntries];
   for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
     names[ivalue].Append(((AliTPCCalPad*)array->At(ivalue))->GetName());
-  
+
   for (UInt_t isector = 0; isector < tpcROCinstance->GetNSectors(); isector++) {
       //
       // get statistic for given sector
@@ -2029,14 +1926,14 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
     TVectorF rmsWithOut(arrayEntries);
     TVectorF ltmWithOut(arrayEntries);
     TVectorF ltmrmsWithOut(arrayEntries);
-    
+
     TVectorF *vectorArray = new TVectorF[arrayEntries];
     for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++){
       vectorArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
       vectorArray[ivalue].SetUniqueID(array->UncheckedAt(ivalue)->GetUniqueID());
 //       printf("UniqueID: %d\n",vectorArray[ivalue].GetUniqueID());
     }
-    
+
     for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
       AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
       AliTPCCalROC* calROC = calPad->GetCalROC(isector);
@@ -2071,14 +1968,14 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
         ltmrmsWithOut[ivalue] = 0.;
       }
     }
-    
+
       //
       // fill vectors of variable per pad
       //
     TVectorF *posArray = new TVectorF[8];
     for (Int_t ivalue = 0; ivalue < 8; ivalue++)
       posArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
-    
+
     Float_t posG[3] = {0};
     Float_t posL[3] = {0};
     Int_t ichannel = 0;
@@ -2094,7 +1991,7 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
         posArray[5][ichannel] = posG[1];
         posArray[6][ichannel] = (Int_t)(ipad - (Double_t)(tpcROCinstance->GetNPads(isector, irow))/2);
         posArray[7][ichannel] = ichannel;
-        
+
             // loop over array containing AliTPCCalPads
         for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
           AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
@@ -2107,10 +2004,10 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
         ichannel++;
       }
     }
-    
+
     cstream << "calPads" <<
       "sector=" << isector;
-    
+
     for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
       if (outlierPad==0) {
 	cstream << "calPads" <<
@@ -2146,14 +2043,14 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
 	      }
 	      }
 	      delete arrtitle;*/
-      
+
     }
-    
+
     for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
       cstream << "calPads" <<
         (Char_t*)((names[ivalue] + ".=").Data()) << &vectorArray[ivalue];
     }
-    
+
     if (mapFileName) {
           for  (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
             if (isector < 36)
@@ -2174,10 +2071,10 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
       "gy.=" << &posArray[5] <<
       "rpad.=" << &posArray[6] <<
       "channel.=" << &posArray[7];
-    
+
     cstream << "calPads" <<
       "\n";
-    
+
     delete[] posArray;
     delete[] vectorArray;
   }
@@ -2200,15 +2097,14 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
   }
 }
 void AliTPCCalibViewer::MakeCalPadAliases(TTree * tree){
-  //
-  // make standard aliases for standard calibration trees
-  //
+  /// make standard aliases for standard calibration trees
+
   tree->SetAlias("Pad0","MapPadLength.fElements==7.5");   // pad types
   tree->SetAlias("Pad1","MapPadLength.fElements==10.0");
   tree->SetAlias("Pad2","MapPadLength.fElements==15.0");
   tree->SetAlias("ly","(ly.fElements+((sector<36)*(2*((sector%36)<18)-1)*0.2)+((sector>=36)*(2*((sector%36)<18)-1)*0.3))"); // correction for bug in tpcROCinstance->GetPositionLocal(isector, irow, ipad, posL);
   tree->SetAlias("dRowNorm0","(row.fElements/32-1)");      // normalized distance to the center of the chamber in lx (-1,1)
-  tree->SetAlias("dRowNorm1","(row.fElements/32-1)");      // 
+  tree->SetAlias("dRowNorm1","(row.fElements/32-1)");      //
   tree->SetAlias("dRowNorm2","((row.fElements-63)/16-1)"); //
   tree->SetAlias("dRowNorm","(row.fElements<63)*(row.fElements/32-1)+(row.fElements>63)*((row.fElements-63)/16-1)");
   tree->SetAlias("dPhiNorm","(ly/lx.fElements)/(pi/18)"); // normalized distance to the center of the chamber in phi (-1,1)
@@ -2219,56 +2115,50 @@ void AliTPCCalibViewer::MakeCalPadAliases(TTree * tree){
 }
 
 void AliTPCCalibViewer::MakeTree(const char *outPutFileName, const Char_t *inputFileName, AliTPCCalPad *outlierPad, Float_t ltmFraction, const char *mapFileName ){
-   // 
-   // Function to create a calibration Tree with all available information.
-   // See also documentation to MakeTree   
-   // the file "inputFileName" must be in the following format (see also CreateObjectList):
-   // (each colum separated by tabs, "dependingOnType" can have 2 or 3 colums)
-   // 
-   // type	path	dependingOnType
-   // 
-   // type == "CE":
-   // dependingOnType = CETmean	CEQmean	CETrms
-   // 
-   // type == "Pulser":
-   // dependingOnType = PulserTmean	PulsterQmean	PulserTrms
-   // 
-   // type == "Pedestals":
-   // dependingOnType = Pedestals	Noise
-   // 
-   // type == "CalPad":
-   // dependingOnType = NameInFile	NameToWriteToFile
-   // 
-   // 
+   /// Function to create a calibration Tree with all available information.
+   /// See also documentation to MakeTree
+   /// the file "inputFileName" must be in the following format (see also CreateObjectList):
+   /// (each colum separated by tabs, "dependingOnType" can have 2 or 3 colums)
+   ///
+   /// type	path	dependingOnType
+   ///
+   /// type == "CE":
+   /// dependingOnType = CETmean	CEQmean	CETrms
+   ///
+   /// type == "Pulser":
+   /// dependingOnType = PulserTmean	PulsterQmean	PulserTrms
+   ///
+   /// type == "Pedestals":
+   /// dependingOnType = Pedestals	Noise
+   ///
+   /// type == "CalPad":
+   /// dependingOnType = NameInFile	NameToWriteToFile
+
    TObjArray objArray;
    CreateObjectList(inputFileName, &objArray);
-   MakeTree(outPutFileName, &objArray, mapFileName, outlierPad, ltmFraction);   
+   MakeTree(outPutFileName, &objArray, mapFileName, outlierPad, ltmFraction);
 }
 
 
 void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *calibObjects){
-   // 
-   // Function to create a TObjArray out of a given file
-   // the file must be in the following format:
-   // (each colum separated by tabs, "dependingOnType" can have 2 or 3 colums)
-   // 
-   // 
-   // type	path	dependingOnType
-   // 
-   // type == "CE":
-   // dependingOnType = CETmean	CEQmean	CETrms
-   // 
-   // type == "Pulser":
-   // dependingOnType = PulserTmean	PulsterQmean	PulserTrms
-   // 
-   // type == "Pedestals":
-   // dependingOnType = Pedestals	Noise
-   // 
-   // type == "CalPad":
-   // dependingOnType = NameInFile	NameToWriteToFile
-   // 
-   // 
-   // 
+   /// Function to create a TObjArray out of a given file
+   /// the file must be in the following format:
+   /// (each colum separated by tabs, "dependingOnType" can have 2 or 3 colums)
+   ///
+   /// type	path	dependingOnType
+   ///
+   /// type == "CE":
+   /// dependingOnType = CETmean	CEQmean	CETrms
+   ///
+   /// type == "Pulser":
+   /// dependingOnType = PulserTmean	PulsterQmean	PulserTrms
+   ///
+   /// type == "Pedestals":
+   /// dependingOnType = Pedestals	Noise
+   ///
+   /// type == "CalPad":
+   /// dependingOnType = NameInFile	NameToWriteToFile
+
    if ( calibObjects == 0x0 ) return;
    ifstream in;
    in.open(filename);
@@ -2276,27 +2166,27 @@ void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *cali
       fprintf(stderr,"Error: cannot open list file '%s'", filename);
       return;
    }
-   
+
    AliTPCCalPad *calPad=0x0;
-   
+
    TString sFile;
    sFile.ReadFile(in);
    in.close();
-   
+
    TObjArray *arrFileLine = sFile.Tokenize("\n");
    TIter nextLine(arrFileLine);
-   
+
    TObjString *sObjLine = 0x0;
    while ( (sObjLine = (TObjString*)nextLine()) ){
       TString sLine(sObjLine->GetString());
-      
+
       TObjArray *arrCol = sLine.Tokenize("\t");
       Int_t nCols = arrCol->GetEntriesFast();
-      
+
       TObjString *sObjType     = (TObjString*)(arrCol->At(0));
       TObjString *sObjFileName = (TObjString*)(arrCol->At(1));
       TObjString *sObjName = 0x0;
-      
+
       if ( !sObjType || !sObjFileName ) continue;
       TString sType(sObjType->GetString());
       TString sFileName(sObjFileName->GetString());
@@ -2306,79 +2196,79 @@ void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *cali
          fprintf(stderr,"File not found: '%s'", sFileName.Data());
          continue;
       }
-      
+
       if ( sType == "CE" ){  // next three colums are the names for CETmean, CEQmean and CETrms
          AliTPCCalibCE *ce = (AliTPCCalibCE*)fIn->Get("AliTPCCalibCE");
-         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadT0());         
+         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadT0());
          if (nCols > 2) {  // check, if the name is provided
             sObjName = (TObjString*)(arrCol->At(2));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("CETmean","CETmean");
          calibObjects->Add(calPad);
-         
-         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadQ());         
+
+         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadQ());
          if (nCols > 3) {  // check, if the name is provided
             sObjName = (TObjString*)(arrCol->At(3));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("CEQmean","CEQmean");
-         calibObjects->Add(calPad);        
-         
+         calibObjects->Add(calPad);
+
          calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadRMS());
          if (nCols > 4) {  // check, if the name is provided
             sObjName = (TObjString*)(arrCol->At(4));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("CETrms","CETrms");
-         calibObjects->Add(calPad);         
-                  
+         calibObjects->Add(calPad);
+
       } else if ( sType == "Pulser") {
          AliTPCCalibPulser *sig = (AliTPCCalibPulser*)fIn->Get("AliTPCCalibPulser");
-         
-         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadT0());         
+
+         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadT0());
          if (nCols > 2) {
             sObjName = (TObjString*)(arrCol->At(2));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("PulserTmean","PulserTmean");
          calibObjects->Add(calPad);
-         
-         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadQ());         
+
+         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadQ());
          if (nCols > 3) {
             sObjName = (TObjString*)(arrCol->At(3));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("PulserQmean","PulserQmean");
-         calibObjects->Add(calPad);        
-         
+         calibObjects->Add(calPad);
+
          calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadRMS());
          if (nCols > 4) {
             sObjName = (TObjString*)(arrCol->At(4));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("PulserTrms","PulserTrms");
-         calibObjects->Add(calPad);         
-      
+         calibObjects->Add(calPad);
+
       } else if ( sType == "Pedestals") {
          AliTPCCalibPedestal *ped = (AliTPCCalibPedestal*)fIn->Get("AliTPCCalibPedestal");
-         
-         calPad = new AliTPCCalPad((TObjArray*)ped->GetCalPadPedestal());         
+
+         calPad = new AliTPCCalPad((TObjArray*)ped->GetCalPadPedestal());
          if (nCols > 2) {
             sObjName = (TObjString*)(arrCol->At(2));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("Pedestals","Pedestals");
          calibObjects->Add(calPad);
-         
-         calPad = new AliTPCCalPad((TObjArray*)ped->GetCalPadRMS());         
+
+         calPad = new AliTPCCalPad((TObjArray*)ped->GetCalPadRMS());
          if (nCols > 3) {
             sObjName = (TObjString*)(arrCol->At(3));
             calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
          }
          else calPad->SetNameTitle("Noise","Noise");
-         calibObjects->Add(calPad);        
-     
+         calibObjects->Add(calPad);
+
       } else if ( sType == "CalPad") {
          if (nCols > 2) sObjName = (TObjString*)(arrCol->At(2));
          else continue;
@@ -2395,6 +2285,3 @@ void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *cali
    }
    delete arrFileLine;
 }
-
-
-

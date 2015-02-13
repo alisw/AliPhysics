@@ -70,6 +70,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fClusSigThresh(3.5)
   ,fTCnexp(1)
   ,fRecEveryNTB(1)
+  ,fClusterQmin(0)
   ,fNumberOfPresamples(0)
   ,fNumberOfPostsamples(0)
 {
@@ -142,6 +143,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fClusSigThresh(ref.fClusSigThresh)
   ,fTCnexp(ref.fTCnexp)
   ,fRecEveryNTB(ref.fRecEveryNTB)
+  ,fClusterQmin(ref.fClusterQmin)
   ,fNumberOfPresamples(ref.fNumberOfPresamples)
   ,fNumberOfPostsamples(ref.fNumberOfPostsamples)
 {
@@ -204,6 +206,7 @@ AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
   fClusSigThresh        = ref.fClusSigThresh;
   fTCnexp               = ref.fTCnexp;
   fRecEveryNTB          = ref.fRecEveryNTB;
+  fClusterQmin          = ref.fClusterQmin;
   fNumberOfPresamples   = ref.fNumberOfPresamples;
   fNumberOfPostsamples  = ref.fNumberOfPostsamples;
 

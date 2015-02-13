@@ -46,7 +46,7 @@ public:
    void WriteSDigits(AliLoader *loader);
    void ReadSDigits();
 
-   void AddDigit(Int_t pmnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels);
+   void AddDigit(Int_t pmnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Bool_t bbFlag, Bool_t bgFlag, Int_t *labels);
    void AddSDigit(Int_t pmnumber, Int_t nbins, Float_t *charges, Int_t *labels);
    TClonesArray* DigitsArray(); 
    TClonesArray* SDigitsArray(); 
@@ -81,6 +81,8 @@ public:
    Float_t  fAdc[16][kNClocks];      //! Container for ADC samples
    Float_t  fLeadingTime[16];        //! Leading time container
    Float_t  fTimeWidth[16];          //! Time width container
+   Bool_t   fBBFlag[16];	     //! Container for BB flags
+   Bool_t   fBGFlag[16];	     //! Container for BG flags
    Float_t  fAdcPedestal[16][2];     //! Pedestals, one per integrator
    Float_t  fAdcSigma[16][2];        //! Sigma of pedestals
    Float_t  fPmGain[16];             //! PMT gains

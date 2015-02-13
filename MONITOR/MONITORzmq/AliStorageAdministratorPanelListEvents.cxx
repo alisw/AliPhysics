@@ -87,9 +87,11 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    // "Run" group frame
    TGGroupFrame *fRunGroupFrame = new TGGroupFrame(this,"Run");
    fRunGroupFrame->SetLayoutBroken(kTRUE);
-   fRunMinEntry = new TGNumberEntry(fRunGroupFrame, (Double_t) 0,9,ENTRY_RUN_MIN,(TGNumberFormat::EStyle) 5);
+   
+   fRunMinEntry = new TGNumberEntry(fRunGroupFrame,0,9,ENTRY_RUN_MIN,(TGNumberFormat::EStyle) 5);
    fRunGroupFrame->AddFrame(fRunMinEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fRunMinEntry->MoveResize(38,22,80,22);
+   
    TGLabel *fRunMinLabel = new TGLabel(fRunGroupFrame,"Min:");
    fRunMinLabel->SetTextJustify(36);
    fRunMinLabel->SetMargins(0,0,0,0);
@@ -103,21 +105,24 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fRunMaxLabel->SetWrapLength(-1);
    fRunGroupFrame->AddFrame(fRunMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fRunMaxLabel->MoveResize(120,22,30,24);
-   fRunMaxEntry = new TGNumberEntry(fRunGroupFrame, (Double_t) 0,8,ENTRY_RUN_MAX,(TGNumberFormat::EStyle) 5);
+   
+   fRunMaxEntry = new TGNumberEntry(fRunGroupFrame,999999,8,ENTRY_RUN_MAX,(TGNumberFormat::EStyle) 5);
    fRunGroupFrame->AddFrame(fRunMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fRunMaxEntry->MoveResize(150,22,72,22);
 
    fRunGroupFrame->SetLayoutManager(new TGVerticalLayout(fRunGroupFrame));
-   fRunGroupFrame->Resize(230,60);
+   //fRunGroupFrame->Resize(230,60);
    AddFrame(fRunGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fRunGroupFrame->MoveResize(8,8,230,60);
    
    // "Event" group frame
    TGGroupFrame *fEventGroupFrame = new TGGroupFrame(this,"Event");
    fEventGroupFrame->SetLayoutBroken(kTRUE);
-   fEventMinEntry = new TGNumberEntry(fEventGroupFrame, (Double_t) 0,9,ENTRY_EVENT_MIN,(TGNumberFormat::EStyle) 5);
+   
+   fEventMinEntry = new TGNumberEntry(fEventGroupFrame,0,9,ENTRY_EVENT_MIN,(TGNumberFormat::EStyle) 5);
    fEventGroupFrame->AddFrame(fEventMinEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fEventMinEntry->MoveResize(38,22,80,22);
+   
    TGLabel *fEventMinLabel = new TGLabel(fEventGroupFrame,"Min:");
    fEventMinLabel->SetTextJustify(36);
    fEventMinLabel->SetMargins(0,0,0,0);
@@ -131,50 +136,58 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fEventMaxLabel->SetWrapLength(-1);
    fEventGroupFrame->AddFrame(fEventMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fEventMaxLabel->MoveResize(120,22,30,24);
-   fEventMaxEntry = new TGNumberEntry(fEventGroupFrame, (Double_t) 0,8,ENTRY_EVENT_MAX,(TGNumberFormat::EStyle) 5);
+   
+   fEventMaxEntry = new TGNumberEntry(fEventGroupFrame,999999,8,ENTRY_EVENT_MAX,(TGNumberFormat::EStyle) 5);
    fEventGroupFrame->AddFrame(fEventMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fEventMaxEntry->MoveResize(150,22,72,22);
+   
    fEventGroupFrame->SetLayoutManager(new TGVerticalLayout(fEventGroupFrame));
-   fEventGroupFrame->Resize(230,60);
+   //fEventGroupFrame->Resize(230,60);
    AddFrame(fEventGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fEventGroupFrame->MoveResize(8,68,230,60);
    
    // "Multiplicity" group frame
    TGGroupFrame *fMultiplicityGroupFrame = new TGGroupFrame(this,"Multiplicity");
    fMultiplicityGroupFrame->SetLayoutBroken(kTRUE);
-   fMultiplicityMinEntry = new TGNumberEntry(fMultiplicityGroupFrame, (Double_t) 0,9,ENTRY_MULTIPLICITY_MIN,(TGNumberFormat::EStyle) 5);
+   
+   fMultiplicityMinEntry = new TGNumberEntry(fMultiplicityGroupFrame,0,9,ENTRY_MULTIPLICITY_MIN,(TGNumberFormat::EStyle) 5);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMinEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fMultiplicityMinEntry->MoveResize(38,22,80,22);
+   
    TGLabel *fMultiplicityMinLabel = new TGLabel(fMultiplicityGroupFrame,"Min:");
    fMultiplicityMinLabel->SetTextJustify(36);
    fMultiplicityMinLabel->SetMargins(0,0,0,0);
    fMultiplicityMinLabel->SetWrapLength(-1);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMinLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fMultiplicityMinLabel->MoveResize(8,22,30,18);
+   
    TGLabel *fMultiplicityMaxLabel = new TGLabel(fMultiplicityGroupFrame,"Max:");
    fMultiplicityMaxLabel->SetTextJustify(36);
    fMultiplicityMaxLabel->SetMargins(0,0,0,0);
    fMultiplicityMaxLabel->SetWrapLength(-1);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMaxLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fMultiplicityMaxLabel->MoveResize(120,22,30,24);
-   fMultiplicityMaxEntry = new TGNumberEntry(fMultiplicityGroupFrame, (Double_t) 0,8,ENTRY_MULTIPLICITY_MAX,(TGNumberFormat::EStyle) 5);
+   
+   fMultiplicityMaxEntry = new TGNumberEntry(fMultiplicityGroupFrame,999999,8,ENTRY_MULTIPLICITY_MAX,(TGNumberFormat::EStyle) 5);
    fMultiplicityGroupFrame->AddFrame(fMultiplicityMaxEntry, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fMultiplicityMaxEntry->MoveResize(150,22,72,22);
 
    fMultiplicityGroupFrame->SetLayoutManager(new TGVerticalLayout(fMultiplicityGroupFrame));
-   fMultiplicityGroupFrame->Resize(230,60);
+   //fMultiplicityGroupFrame->Resize(230,60);
    AddFrame(fMultiplicityGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fMultiplicityGroupFrame->MoveResize(8,128,230,60);
 
    // "Beam" group frame
    TGGroupFrame *fBeamGroupFrame = new TGGroupFrame(this,"Beam");
    fBeamGroupFrame->SetLayoutBroken(kTRUE);
+   
    fPPcheckbox = new TGCheckButton(fBeamGroupFrame,"p-p",BUTTON_CHECK_PP);
    fPPcheckbox->SetTextJustify(36);
    fPPcheckbox->SetMargins(0,0,0,0);
    fPPcheckbox->SetWrapLength(-1);
    fBeamGroupFrame->AddFrame(fPPcheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fPPcheckbox->MoveResize(8,22,40,19);
+   
    fPbPbcheckbox = new TGCheckButton(fBeamGroupFrame,"Pb-Pb",BUTTON_CHECK_PBPB);
    fPbPbcheckbox->SetTextJustify(36);
    fPbPbcheckbox->SetMargins(0,0,0,0);
@@ -183,19 +196,21 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fPbPbcheckbox->MoveResize(60,22,55,19);
 
    fBeamGroupFrame->SetLayoutManager(new TGVerticalLayout(fBeamGroupFrame));
-   fBeamGroupFrame->Resize(230,60);
+   //fBeamGroupFrame->Resize(230,60);
    AddFrame(fBeamGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fBeamGroupFrame->MoveResize(8,188,230,60);
 
    // "Storage" group frame
    TGGroupFrame *fStorageGroupFrame = new TGGroupFrame(this,"Storage");
    fStorageGroupFrame->SetLayoutBroken(kTRUE);
+
    fPermanentCheckbox = new TGCheckButton(fStorageGroupFrame,"Permanent",BUTTON_CHECK_PERM);
    fPermanentCheckbox->SetTextJustify(36);
    fPermanentCheckbox->SetMargins(0,0,0,0);
    fPermanentCheckbox->SetWrapLength(-1);
    fStorageGroupFrame->AddFrame(fPermanentCheckbox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fPermanentCheckbox->MoveResize(8,22,80,19);
+
    fTemporaryCheckbox = new TGCheckButton(fStorageGroupFrame,"Temporary",BUTTON_CHECK_TEMP);
    fTemporaryCheckbox->SetTextJustify(36);
    fTemporaryCheckbox->SetMargins(0,0,0,0);
@@ -204,7 +219,7 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fTemporaryCheckbox->MoveResize(120,22,80,19);
 
    fStorageGroupFrame->SetLayoutManager(new TGVerticalLayout(fStorageGroupFrame));
-   fStorageGroupFrame->Resize(230,60);
+   // fStorageGroupFrame->Resize(230,60);
    AddFrame(fStorageGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fStorageGroupFrame->MoveResize(8,248,230,60);
    
@@ -236,14 +251,13 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    // list box
    fListBox = new TGListBox(this);
    fListBox->SetName("fListBox");
-   fListBox->AddEntry("Entry 1",0);
-   fListBox->Resize(230,436);
+   fListBox->AddEntry(new TGString("Run   Event   System   Mult   Marked"),0);
+   //fListBox->Resize(230,436);
    AddFrame(fListBox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fListBox->MoveResize(8,360,230,436);
 
-   SetMWMHints(kMWMDecorAll,
-                        kMWMFuncAll,
-                        kMWMInputModeless);
+   //  SetMWMHints(kMWMDecorAll,kMWMFuncAll,kMWMInputModeless);
+
    MapSubwindows();
    Resize(GetDefaultSize());
    MapWindow();
@@ -259,64 +273,40 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
 	struct listRequestStruct list; 
 
-	//get listing parameters from somwhere
+	//build query
 	list.runNumber[0]=fRunMinEntry->GetIntNumber();
 	list.runNumber[1]=fRunMaxEntry->GetIntNumber();
 	list.eventNumber[0]=fEventMinEntry->GetIntNumber();
 	list.eventNumber[1]=fEventMaxEntry->GetIntNumber();
-	if(fTemporaryCheckbox->GetState()==1)
-	{
-		list.marked[0]=0;
-	}
-	else
-	{
-		list.marked[0]=-1;
-	}
-	if(fPermanentCheckbox->GetState()==1)
-	{
-		list.marked[1]=1;
-	}
-	else
-	{
-		list.marked[1]=-1;
-	}
+	if(fTemporaryCheckbox->GetState()==1){list.marked[0]=0;}
+	else{list.marked[0]=-1;}
+	if(fPermanentCheckbox->GetState()==1){list.marked[1]=1;}
+	else{list.marked[1]=-1;}
 	list.multiplicity[0]=fMultiplicityMinEntry->GetIntNumber();
 	list.multiplicity[1]=fMultiplicityMaxEntry->GetIntNumber();
-	if(fPPcheckbox->GetState()==1)
-	{
-		strcpy(list.system[0],"p-p");
-	}
-	else
-	{
-		strcpy(list.system[0],"");
-	}
-	if(fPbPbcheckbox->GetState()==1)
-	{
-		strcpy(list.system[1],"A-A");
-	}
-	else
-	{
-		strcpy(list.system[1],"");
-	}
+	if(fPPcheckbox->GetState()==1){strcpy(list.system[0],"p-p");}
+	else{strcpy(list.system[0],"");}
+	if(fPbPbcheckbox->GetState()==1){strcpy(list.system[1],"A-A");}
+	else{strcpy(list.system[1],"");}
 	
 	requestMessage->messageType = REQUEST_LIST_EVENTS;
 	requestMessage->list = list;
 
-	fEventManager->Send(requestMessage,fServerSocket);
+	if(!fEventManager->Send(requestMessage,fServerSocket,1000)){return;}
 
 	fListBox->RemoveAll();
 	fListBox->AddEntry(new TGString("Run   Event   System   Mult   Marked"),0);
-	
+
 	vector<serverListStruct> receivedList = fEventManager->GetServerListVector(fServerSocket);
-    
+	
 	for(unsigned int i=0;i<receivedList.size();i++)
 	{
-		fListBox->InsertEntry(Form("%d   %d   %s   %d   %d   ",
+	  fListBox->AddEntry(new TGString(Form("%d   %d   %s   %d   %d   ",
 					      receivedList[i].runNumber,
 					      receivedList[i].eventNumber,
 					      receivedList[i].system,
 					      receivedList[i].multiplicity,
-					      receivedList[i].marked),i+1,i);
+					      receivedList[i].marked)),i+1);
 	}
 
 	fEventsListVector = receivedList;
@@ -397,7 +387,7 @@ void AliStorageAdministratorPanelListEvents::onLoadButton()
     SelectedEvent();
 }
 
-void AliStorageAdministratorPanelListEvents::onCloseButton(){onExit();}
+//void AliStorageAdministratorPanelListEvents::onCloseButton(){onExit();}
 void AliStorageAdministratorPanelListEvents::CloseWindow(){onExit();}
 
 void AliStorageAdministratorPanelListEvents::onExit()
@@ -417,7 +407,7 @@ Bool_t AliStorageAdministratorPanelListEvents::ProcessMessage(Long_t msg, Long_t
 		case kCM_BUTTON:
 			switch(parm1)
 			{
-			case BUTTON_CLOSE:onCloseButton();break;
+			  //	case BUTTON_CLOSE:onCloseButton();break;
 			case BUTTON_GET_LIST:onGetListButton();break;
 			case BUTTON_MARK_EVENT:onMarkButton();break;
             case BUTTON_LOAD_EVENT:onLoadButton();break;

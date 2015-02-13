@@ -205,7 +205,7 @@ void AliHLTGlobalEsdConverterComponent::GetOutputDataSize(unsigned long& constBa
 {
   // see header file for class documentation
   constBase=2000000;
-  inputMultiplier=10.0;
+  inputMultiplier=3.0;
 }
 
 int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)

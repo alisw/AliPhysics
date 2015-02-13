@@ -62,6 +62,7 @@ endfunction(find_date_libraries _output library_list library_paths)
 
 # DATE_CONFIG set from the configuration
 if(DATE_CONFIG)
+
     # Setting DIMDIR, ODIR and ROOTSYS in the environment, they are needed by date-config
     set(ENV{DIMDIR} ${DIMDIR})
     set(ENV{ODIR} ${ODIR})

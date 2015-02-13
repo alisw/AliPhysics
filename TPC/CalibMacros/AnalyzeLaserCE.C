@@ -1,82 +1,79 @@
-/*
-
-Macro to perform fits of the Laser Central electrode data
-Several fit methods implemented
-
-0. RebuildCE("ce.root","pul.root"); - rebuild data from the scratch
-                                    - the data will be storered in file inname
-                                    
-1. RebuildData() - transform arbitrary layout of the Input data to the internal format
-   StoreData();  - The data tree expected in file inname (see variable bellow)
-   StoreTree();  - Modify inname and xxside and tcor in order to transform data
-
-
-2. MakeFit();    - Make a fit of the data - already in internal format    
-   StoreData();  - Store
-   StoreTree();
-
-3. MakeRes();    - Make the final calibration  + combination of different components
-
-4. LoadViewer(); - Browse the fit parameters
- 
-
-.x ~/rootlogon.C
-gSystem->AddIncludePath("-I$ALICE_ROOT/TPC -I$ALICE_ROOT/STAT");
-gSystem->Load("libSTAT");
-.L $ALICE_ROOT/TPC/CalibMacros/AnalyzeLaserCE.C+
-
-// setup aliases
-qaside="CE_Q";
-taside="CE_T";
-raside="CE_RMS";
-qcside="CE_Q";
-tcside="CE_T";
-rcside="CE_RMS";
-
-
-
-
-Calibration viewer variables:
-
-Result  -  resulting correction
-out     -  outlyers not used for fit
-tcor    -  offset specified by user before fitting
-timeF1  -  sector local fit - plane
-timeF2  -  sector local fit - parabola
-timeIn  -  input times
-qIn     -  input charge
-out     -  outlyers not used for fit
-tcor    -  offset specified by user before fitting
-timeF1  -  sector time local fit - plane
-timeF2  -  sector time local fit - parabola
-qF1     -  sector q local fit    - plane
-qF2     -  sector q local fit    - parabola
-// fitted values
-//
-ffit0   - base fit
-ffit1   - adding common shifts    - alpha dependendent
-ffit2   - adding opposite shifts  - alpha dependent
-//
-fGXY    -  global fit parameter - XY
-fInOut  -  global fit parameter - inner-outer sector matching
-fLX     -  global LX  dependence
-//
-Gloabl fit o consist of
--fGXY~-fLX~-fTL~-fOff~:ffit0~
-
-//
-// Control variable - check results
-//
-//
-ffit2~-(timeIn~):lx~  - fit value minus input time 
-
-result cosntruction:
-(timeF2~-ffit2~+fTL~+fInOut~):Result~
-//
-timeF2~-Result~:ffit2~-fTL~-fInOut~
+/// \file AnalyzeLaserCE.C
+///
+/// Macro to perform fits of the Laser Central electrode data
+/// Several fit methods implemented
+/// 
+/// 0. RebuildCE("ce.root","pul.root"); - rebuild data from the scratch
+///                                     - the data will be storered in file inname
+///
+/// 1. RebuildData() - transform arbitrary layout of the Input data to the internal format
+///    StoreData();  - The data tree expected in file inname (see variable bellow)
+///    StoreTree();  - Modify inname and xxside and tcor in order to transform data
+/// 
+/// 
+/// 2. MakeFit();    - Make a fit of the data - already in internal format    
+///    StoreData();  - Store
+///    StoreTree();
+/// 
+/// 3. MakeRes();    - Make the final calibration  + combination of different components
+/// 
+/// 4. LoadViewer(); - Browse the fit parameters
+///  
+/// ~~~ 
+/// .x ~/rootlogon.C
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC -I$ALICE_ROOT/STAT");
+/// gSystem->Load("libSTAT");
+/// .L $ALICE_ROOT/TPC/CalibMacros/AnalyzeLaserCE.C+
+/// 
+/// // setup aliases
+/// 
+/// qaside="CE_Q";
+/// taside="CE_T";
+/// raside="CE_RMS";
+/// qcside="CE_Q";
+/// tcside="CE_T";
+/// rcside="CE_RMS";
+/// ~~~
+/// 
+/// Calibration viewer variables:
+/// 
+/// Result  -  resulting correction
+/// out     -  outlyers not used for fit
+/// tcor    -  offset specified by user before fitting
+/// timeF1  -  sector local fit - plane
+/// timeF2  -  sector local fit - parabola
+/// timeIn  -  input times
+/// qIn     -  input charge
+/// out     -  outlyers not used for fit
+/// tcor    -  offset specified by user before fitting
+/// timeF1  -  sector time local fit - plane
+/// timeF2  -  sector time local fit - parabola
+/// qF1     -  sector q local fit    - plane
+/// qF2     -  sector q local fit    - parabola
+///
+/// fitted values
+/// ffit0   - base fit
+/// ffit1   - adding common shifts    - alpha dependendent
+/// ffit2   - adding opposite shifts  - alpha dependent
+///
+/// fGXY    -  global fit parameter - XY
+/// fInOut  -  global fit parameter - inner-outer sector matching
+/// fLX     -  global LX  dependence
+///
+/// Gloabl fit o consist of
+/// -fGXY~-fLX~-fTL~-fOff~:ffit0~
+/// 
+///
+/// Control variable - check results
+///
+/// ffit2~-(timeIn~):lx~  - fit value minus input time 
+/// 
+/// result cosntruction:
+/// (timeF2~-ffit2~+fTL~+fInOut~):Result~
+///
+/// timeF2~-Result~:ffit2~-fTL~-fInOut~
 
 
-*/
 #include <fstream>
 #include "TString.h"
 #include "TSystem.h"
@@ -178,9 +175,8 @@ void StoreTree();     // store fit data in the output tree
 
 
 void AnalyzeLaser(){
-  //
-  //
-  //
+  ///
+
   LoadViewer();
   MakeAliases1();
 }
@@ -212,8 +208,8 @@ void MakeFitPulser(){
 }
 
 void MakeFit(){
-  //
-  //
+  ///
+
   LoadData();
   //LoadViewer();
   //
@@ -383,9 +379,8 @@ void MakeFit(){
 
 
 void LoadViewer(){
-  //
-  // Load calib Viewer
-  //
+  /// Load calib Viewer
+
   TObjArray * array = AliTPCCalibViewerGUI::ShowGUI(fname);
   viewer = (AliTPCCalibViewerGUI*)array->At(0);
   makePad = viewer->GetViewer();
@@ -399,9 +394,8 @@ void LoadViewer(){
 
 
 void RebuildData(){
-  //
-  // transform the input data to the fit format 
-  //
+  /// transform the input data to the fit format
+
   TStopwatch timer;
   makePad = new AliTPCCalibViewer(inname);
   tree = makePad->GetTree();
@@ -477,9 +471,8 @@ void RebuildData(){
 }
 
 void LoadData(){
-  //
-  // Get Data
-  //
+  /// Get Data
+
   TFile f(oname);
   calPadIn  = (AliTPCCalPad*)f.Get("timeIn");  // original time pad
   calPadF1  = (AliTPCCalPad*)f.Get("timeF1");  // original time pad - fit plane
@@ -505,9 +498,8 @@ void LoadData(){
 }
 
 void StoreData(){
-  //
-  // Store data
-  // 
+  /// Store data
+
   TFile * fstore = new TFile(oname,"recreate");
   if (calPadIn) calPadIn->Write("timeIn");   // original time pad
   if (calPadF1) calPadF1->Write("timeF1");   // original time pad - fit plane
@@ -535,9 +527,8 @@ void StoreData(){
 }
 
 void StoreTree(){
-  //
-  //
-  //
+  ///
+
   AliTPCPreprocessorOnline * preprocesor = new AliTPCPreprocessorOnline;
   //
   if (calPadIn) preprocesor->AddComponent(calPadIn->Clone());
@@ -567,9 +558,8 @@ void StoreTree(){
 
 
 void MakeAliases0(){
-  //
-  // Define variables and selection of outliers - for user defined tree
-  //
+  /// Define variables and selection of outliers - for user defined tree
+
   tree->SetAlias("tcor",tcor.Data());          // correction variable
   tree->SetAlias("ta",taside+".fElements");
   tree->SetAlias("tc",tcside+".fElements");
@@ -596,9 +586,8 @@ void MakeAliases0(){
 
 
 void MakeAliases1(){
-  //
-  // Define variables and selection of outliers -for default usage
-  //
+  /// Define variables and selection of outliers -for default usage
+
   tree->SetAlias("tcor","tcor.fElements");          // correction variable  
   tree->SetAlias("side","1-(sector%36>17)*2");
   tree->SetAlias("dt","timeIn.fElements");
@@ -622,9 +611,8 @@ void MakeAliases1(){
 
 void MakeRes()
 {
-  //
-  // make final calibration
-  //
+  /// make final calibration
+
   AliTPCCalPad * calPadRes0 =new AliTPCCalPad(*calPadIn);
   calPadRes0->Add(calPad2,-1);      // remove global fit
   calPadRes  = calPadRes0->GlobalFit("Result", calPadOut,kTRUE,1,0.9);
@@ -652,10 +640,10 @@ void MakeRes()
 
 
 void RebuildCE(char *finname, char *pulname){
-  //
-  // Transformation from the CE to the visualization-analisys output
-  //
-  // finname = CE_Vscan_Run_61684-50_170.root;
+  /// Transformation from the CE to the visualization-analisys output
+  ///
+  /// finname = CE_Vscan_Run_61684-50_170.root;
+
   TFile f(finname);
   AliTPCCalibCE * ce  = (AliTPCCalibCE*)f.Get("AliTPCCalibCE");
   //
@@ -703,9 +691,8 @@ void AnalyzeLaserCE(){
 
 
 void AddFiles(char *list){
-  //
-  // prepare viewer for data sets
-  //
+  /// prepare viewer for data sets
+
   fstream finput;
   finput.open(list, ios_base::in);
   //

@@ -14,12 +14,10 @@
  **************************************************************************/
 
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// Class describing TPC temperature sensors (including pointers to graphs/fits//
-// Authors: Marian Ivanov, Haavard Helstrup and Martin Siska                  //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCSensorTemp
+/// \brief Class describing TPC temperature sensors (including pointers to graphs/fits
+///
+/// \author Marian Ivanov, Haavard Helstrup and Martin Siska
 
 // Running instructions:
 /*
@@ -29,14 +27,16 @@
   tree->Branch("Temp",&arr);
   tree->Fill();
   tree->Write();
-  
+
 */
 
 //
 
 #include <strings.h>
 #include "AliTPCSensorTemp.h"
+/// \cond CLASSIMP
 ClassImp(AliTPCSensorTemp)
+/// \endcond
 
 
 
@@ -59,7 +59,7 @@ const Float_t kASideX[18][5]={
 	{ 64.99,   76.75,  104.97,  122,     139.1},
 	{ 87.56,  103.4,   141.42,  164.37,  187.41},
 	{ 99.56,  117.59,  160.82,  186.92,  213.11}};
-	
+
 const Float_t kASideY[18][5]={
         { 17.56,   20.73,   28.36,   32.96,   37.58},
 	{ 50.55,   59.7,    81.65,   94.9,   108.2},
@@ -78,8 +78,8 @@ const Float_t kASideY[18][5]={
         {-95.0, -112.2, -153.45, -178.35, -203.35},
 	{-77.45,  -91.47, -125.1, -145.4, -165.77},
 	{-50.55,  -59.7,  -81.65,  -94.9, -108.2},
-	{-17.56,  -20.73, -28.36,  -32.96, -37.58}};  
-	
+	{-17.56,  -20.73, -28.36,  -32.96, -37.58}};
+
 const Float_t kCSideX[18][5]={
         { 99.56,  117.59,  160.82,  186.92,  213.11},
 	{ 87.56,  103.4,   141.42,  164.37,  187.41},
@@ -118,12 +118,12 @@ const Float_t kCSideY[18][5]={
         {-95.0, -112.2, -153.45, -178.35, -203.35},
 	{-77.45,  -91.47, -125.1, -145.4, -165.77},
 	{-50.55,  -59.7,  -81.65,  -94.9, -108.2},
-	{-17.56,  -20.73, -28.36,  -32.96,  -37.58}};  
+	{-17.56,  -20.73, -28.36,  -32.96,  -37.58}};
 
 const Float_t kIFCrad[5] = {67.2, 64.4, 60.7, 64.4, 67.2};
 
-const Float_t kTSrad[4] =  {67.2, 61.5, 67.2, 61.5}; 
-const Float_t kTSz[4] =  {240.0, 90.0, 240.0, 90.0}; 
+const Float_t kTSrad[4] =  {67.2, 61.5, 67.2, 61.5};
+const Float_t kTSz[4] =  {240.0, 90.0, 240.0, 90.0};
 
 //______________________________________________________________________________________________
 
@@ -133,9 +133,8 @@ AliTPCSensorTemp::AliTPCSensorTemp(): AliDCSSensor(),
   fSector(0),
   fNum(0)
 {
-  //
-  //  Standard constructor
-  //
+  /// Standard constructor
+
 }
 //______________________________________________________________________________________________
 
@@ -153,33 +152,31 @@ AliTPCSensorTemp::AliTPCSensorTemp(const AliTPCSensorTemp& source) :
 //______________________________________________________________________________________________
 
 AliTPCSensorTemp& AliTPCSensorTemp::operator=(const AliTPCSensorTemp& source){
-//
-// assignment operator
-//
+/// assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCSensorTemp(source);
-  
-  return *this;  
+
+  return *this;
 }
 //______________________________________________________________________________________________
 
 TClonesArray * AliTPCSensorTemp::ReadList(const char *fname,
                                           const TString& amandaString) {
-  //
-  // read values from ascii file
-  //
+  /// read values from ascii file
+
   TTree * tree = new TTree("asci","asci");
   tree->ReadFile(fname,"");
   TClonesArray *arr = ReadTree(tree, amandaString);
   delete tree;
   return arr;
 }
-     
+
 //______________________________________________________________________________________________
 
-TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree, 
+TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
                                           const TString& amandaString) {
-  
+
   Int_t nentries = tree->GetEntries();
   Int_t sensor=0;
   Int_t sector=0;
@@ -221,7 +218,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
     if (bcmp(type,"ROC",3)==0) temp->SetType(0);
     if (bcmp(type,"OFC",3)==0) temp->SetType(1);
     if (bcmp(type,"IFC",3)==0) temp->SetType(2);
-    if (bcmp(type,"TPC",3)==0) temp->SetType(3); 
+    if (bcmp(type,"TPC",3)==0) temp->SetType(3);
     if (bcmp(type,"ELM",3)==0) temp->SetType(4);
     if (bcmp(type,"TS",2)==0)  temp->SetType(5);
     if (bcmp(type,"COOL",3)==0)temp->SetType(6);
@@ -233,7 +230,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
           temp->SetX(kCSideX[sector][num]);
       } else {
           temp->SetX(kASideX[sector][num]);
-      }      
+      }
     }
     if ((temp->GetType()==1) || (temp->GetType()==4)){
       temp->SetX(TMath::Cos((2*sector+1)*0.1745)*278);
@@ -247,14 +244,14 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
       } else {
         temp->SetX(TMath::Cos((2*sector+1)*0.1745)*241.8);
       }
-    } 
+    }
     if (temp->GetType()==5){
       temp->SetX(TMath::Cos(sector*0.524+(num+1)*0.131)*kTSrad[num]);
     }
     if (temp->GetType()==6){
       temp->SetX(0);
     }
-    
+
     //temp->SetY(y);
     if (temp->GetType()==0){
 //	  temp->SetY(TMath::Sin((2*sector+1)*0.1745)*(83+(num+1)*30));
@@ -262,7 +259,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
           temp->SetY(kCSideY[sector][num]);
       } else {
           temp->SetY(kASideY[sector][num]);
-      }      
+      }
     }
     if ((temp->GetType()==1) || (temp->GetType()==4)){
       temp->SetY(TMath::Sin((2*sector+1)*0.1745)*278);
@@ -276,7 +273,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
       } else {
         temp->SetY(TMath::Sin((2*sector+1)*0.1745)*241.8);
       }
-    } 
+    }
 
     if (temp->GetType()==5){
       temp->SetY(TMath::Sin(sector*0.524+(num+1)*0.131)*kTSrad[num]);
@@ -287,8 +284,8 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
     }
 
     //temp->SetZ(z);
-    if ((temp->GetType()==0 || 
-         temp->GetType()==4 || temp->GetType()==6) && 
+    if ((temp->GetType()==0 ||
+         temp->GetType()==4 || temp->GetType()==6) &&
 	 temp->GetSide()==0) {
              temp->SetZ(250);
       }

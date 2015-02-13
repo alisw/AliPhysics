@@ -13,18 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
-///////////////////////////////////////////////////////////////////////
-//  Manager and of geomety  classes for set: TPC                     //
-//                                                                   //
-//  !sectors are numbered from  0                                     //
-//  !pad rows are numbered from 0                                     //
-//  
-//  12.6.   changed z relative 
-//  Origin:  Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk // 
-//                                                                   //  
-///////////////////////////////////////////////////////////////////////
+/// \class AliTPCParam
+/// \brief Manager and of geomety  classes for set: TPC
+///
+/// !sectors are numbered from  0
+/// !pad rows are numbered from 0
+///
+/// 12.6.   changed z relative
+///
+/// \author Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk
 
 //
 
@@ -43,7 +41,9 @@
 
 TObjArray *AliTPCParam::fBBParam = 0;
 
+/// \cond CLASSIMP
 ClassImp(AliTPCParam)
+/// \endcond
 
 
 //___________________________________________
@@ -69,7 +69,7 @@ AliTPCParam::AliTPCParam()
 	     fRotAngle(),
 	     fGeometryType(0),
 	     fTrackingMatrix(0),
-	     fClusterMatrix(0), 
+	     fClusterMatrix(0),
 	     fGlobalMatrix(0),
 	     fNInnerWiresPerPad(0),
 	     fInnerWWPitch(0),
@@ -115,7 +115,8 @@ AliTPCParam::AliTPCParam()
              fWmean(0.),
              fExp(0.),
              fEend(0.),
-             fBetheBloch(0x0),
+             fBetheBloch(0x0),   // dE/dx:BG  - used in the reconstruction
+             fBetheBlochMC(0x0), // dN_{prim}/dx:BG - used for the simulation of energy loss
 	     fGainSlopesHV(0),   // graph with the gain slope as function of HV - per chamber
 	     fGainSlopesPT(0),   // graph with the gain slope as function of P/T - per chamber
 	     fPadCoupling(0.),
@@ -144,22 +145,20 @@ AliTPCParam::AliTPCParam()
 	     fGateDelay(0.),
 	     fL1Delay(0.),
 	     fNTBinsBeforeL1(0),
-	     fNTBinsL1(0.)   
-{   
+	     fNTBinsL1(0.)
+{
   //
   //constructor sets the default parameters
   //
 
   SetTitle("75x40_100x60_150x60");
-  SetDefault();  
+  SetDefault();
   if (!fBBParam) fBBParam= new TObjArray(1000);
 }
 
 AliTPCParam::~AliTPCParam()
 {
-  //
-  //destructor deletes some dynamicaly alocated variables
-  //
+  /// destructor deletes some dynamicaly alocated variables
 
   if (fResponseBin!=0)    delete [] fResponseBin;
   if (fResponseWeight!=0) delete [] fResponseWeight;
@@ -171,10 +170,8 @@ AliTPCParam::~AliTPCParam()
 
 Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
 {
-  //
-  // calculates sector number (index[1], undefined on input)
-  // xyz intact
-  //
+  /// calculates sector number (index[1], undefined on input)
+  /// xyz intact
 
   Float_t angle,x1;
   Int_t sector;
@@ -187,19 +184,19 @@ Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
       if ( (xyz[0]>0) && (xyz[1]<0) ) angle=2*TMath::Pi()+angle;
     }
 
-  sector=Int_t(TMath::Nint((angle-fInnerAngleShift)/fInnerAngle));      
- 
+  sector=Int_t(TMath::Nint((angle-fInnerAngleShift)/fInnerAngle));
+
   Float_t cos,sin;
   AdjustCosSin(sector,cos,sin);
   x1=xyz[0]*cos + xyz[1]*sin;
 
   if (x1>fOuterRadiusLow)
     {
-      sector=Int_t(TMath::Nint((angle-fOuterAngleShift)/fOuterAngle))+fNInnerSector;      
-      if (xyz[2]<0) 	sector+=(fNOuterSector>>1);            
+      sector=Int_t(TMath::Nint((angle-fOuterAngleShift)/fOuterAngle))+fNInnerSector;
+      if (xyz[2]<0) 	sector+=(fNOuterSector>>1);
     }
-    else   
-      if (xyz[2]<0) sector+=(fNInnerSector>>1);  
+    else
+      if (xyz[2]<0) sector+=(fNInnerSector>>1);
   if (sector<0 || sector>=fNSector) AliError(Form("Wrong sector %d",sector));
   index[1]=sector; // calculated sector number
   index[0]=1; // indicates system after transformation
@@ -208,7 +205,8 @@ Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
 
 Bool_t  AliTPCParam::Transform(Float_t */*xyz*/, Int_t *index, Int_t* /*oindex*/)
 {
-  //transformation from input coodination system to output coordination system
+  /// transformation from input coodination system to output coordination system
+
   switch (index[0]){
   case 0:
     break;
@@ -218,72 +216,71 @@ Bool_t  AliTPCParam::Transform(Float_t */*xyz*/, Int_t *index, Int_t* /*oindex*/
 
 }
 
-Int_t AliTPCParam::GetPadRow(Float_t *xyz, Int_t *index) const 
+Int_t AliTPCParam::GetPadRow(Float_t *xyz, Int_t *index) const
 {
-  //
-  //calculates pad row of point xyz - transformation to system 8 (digit system)
-  //
+  /// calculates pad row of point xyz - transformation to system 8 (digit system)
+
   Int_t system = index[0];
   if (0==system) {
-    Transform0to1(xyz,index); 
+    Transform0to1(xyz,index);
     system=1;
   }
   if (1==system) {
-    Transform1to2(xyz,index); 
+    Transform1to2(xyz,index);
     system=2;
   }
-    
-  if (fGeometryType==0){ //straight row    
+
+  if (fGeometryType==0){ //straight row
     if (2==system) {
-      Transform2to3(xyz,index);       
+      Transform2to3(xyz,index);
       system=3;
-    } 
+    }
     if (3==system) {
       Transform3to4(xyz,index);
-      system=4; 
+      system=4;
     }
     if (4==system) {
       Transform4to8(xyz,index);
-      system=8;     
+      system=8;
     }
     if (8==system) {
       index[0]=8;
       return index[2];
-    } 
+    }
   }
 
-  if (fGeometryType==1){ //cylindrical geometry    
+  if (fGeometryType==1){ //cylindrical geometry
     if (2==system) {
-      Transform2to5(xyz,index);       
+      Transform2to5(xyz,index);
       system=5;
-    } 
+    }
     if (5==system) {
       Transform2to3(xyz,index);
       system=6;
     }
     if (6==system) {
-      Transform3to4(xyz,index); 
+      Transform3to4(xyz,index);
       system=7;
     }
     if (8==system) {
       index[0]=8;
       return index[2];
     }
-  } 
+  }
   index[0]=system;
-  return -1; //if no reasonable system     
+  return -1; //if no reasonable system
 }
 
 void  AliTPCParam::SetSectorAngles(Float_t innerangle, Float_t innershift, Float_t outerangle,
 			Float_t outershift)
 {
-  //
-  // set opening angles  
+  /// set opening angles
+
   static const  Float_t  kDegtoRad = 0.01745329251994;
   fInnerAngle = innerangle;       //opening angle of Inner sector
   fInnerAngleShift = innershift;  //shift of first inner sector center to the 0
   fOuterAngle = outerangle;       //opening angle of outer sector
-  fOuterAngleShift = outershift;  //shift of first sector center to the 0  
+  fOuterAngleShift = outershift;  //shift of first sector center to the 0
   fInnerAngle *=kDegtoRad;
   fInnerAngleShift *=kDegtoRad;
   fOuterAngle *=kDegtoRad;
@@ -292,45 +289,46 @@ void  AliTPCParam::SetSectorAngles(Float_t innerangle, Float_t innershift, Float
 
 Float_t  AliTPCParam::GetInnerAngle() const
 {
-  //return angle 
+  /// return angle
+
   return fInnerAngle;
 
 }
 
 Float_t  AliTPCParam::GetInnerAngleShift() const
-{  
-  //return angle   
-  return fInnerAngleShift;  
+{
+  /// return angle
+
+  return fInnerAngleShift;
 }
 Float_t  AliTPCParam::GetOuterAngle() const
-{ 
-  //return angle 
+{
+  /// return angle
+
   return fOuterAngle;
-} 
+}
 Float_t  AliTPCParam::GetOuterAngleShift() const
-{ 
-  //return angle 
+{
+  /// return angle
 
      return fOuterAngleShift;
-} 
+}
 
 
 Int_t AliTPCParam::GetIndex(Int_t sector, Int_t row) const
 {
-  //
-  //give index of the given sector and pad row 
-  //no control if the sectors and rows  are reasonable !!!
-  //
+  /// give index of the given sector and pad row
+  /// no control if the sectors and rows  are reasonable !!!
+
   if (sector<fNInnerSector) return sector*fNRowLow+row;
-  return (fNInnerSector*fNRowLow)+(sector-fNInnerSector)*fNRowUp+row;  
+  return (fNInnerSector*fNRowLow)+(sector-fNInnerSector)*fNRowUp+row;
 }
 
 Bool_t   AliTPCParam::AdjustSectorRow(Int_t index, Int_t & sector, Int_t &row) const
 {
-  //
-  //return sector and padrow for given index
-  //if index is reasonable returns true else return false
-  //
+  /// return sector and padrow for given index
+  /// if index is reasonable returns true else return false
+
   if ( (index<0) || (index>fNtRows))  return kFALSE;
   Int_t outindex = fNInnerSector*fNRowLow;
   if (index<outindex) {
@@ -342,18 +340,17 @@ Bool_t   AliTPCParam::AdjustSectorRow(Int_t index, Int_t & sector, Int_t &row) c
   sector = index/fNRowUp;
   row    = index - sector*fNRowUp;
   sector += fNInnerSector;
-  return kTRUE;         
-} 
+  return kTRUE;
+}
 
 void AliTPCParam::SetDefault()
 {
-  //
-  //set default parameters
-  //
-  //const static  Int_t kMaxRows=600; 
-  //
-  //sector default parameters
-  //
+  /// set default parameters
+  ///
+  /// const static  Int_t kMaxRows=600;
+  ///
+  /// sector default parameters
+
   static const  Float_t kInnerRadiusLow = 83.65;
   static const  Float_t kInnerRadiusUp  = 133.3;
   static const  Float_t kOuterRadiusLow = 133.5;
@@ -367,7 +364,7 @@ void AliTPCParam::SetDefault()
   static const  Float_t kInnerWireMount = 1.2;
   static const  Float_t kOuterWireMount = 1.4;
   static const  Float_t kZLength =250.;
-  static const  Int_t   kGeometryType = 0; //straight rows 
+  static const  Int_t   kGeometryType = 0; //straight rows
   static const Int_t kNRowLow = 63;
   static const Int_t kNRowUp1 = 64;
   static const Int_t kNRowUp2 = 32;
@@ -383,14 +380,14 @@ void AliTPCParam::SetDefault()
   static const Float_t  kInnerOffWire = 0.5;
   static const Int_t    kNOuter1WiresPerPad = 4;
   static const Int_t    kNOuter2WiresPerPad = 6;
-  static const Float_t  kOuterWWPitch = 0.25;  
+  static const Float_t  kOuterWWPitch = 0.25;
   static const Float_t  kROuterFirstWire = 134.225;
   static const Float_t  kROuterLastWire = 246.975;
   static const Int_t    kOuterDummyWire = 2;
   static const Float_t  kOuterOffWire = 0.5;
   //
   //pad default parameters
-  // 
+  //
   static const Float_t  kInnerPadPitchLength = 0.75;
   static const Float_t  kInnerPadPitchWidth = 0.40;
   static const Float_t  kInnerPadLength = 0.75;
@@ -402,13 +399,13 @@ void AliTPCParam::SetDefault()
   static const Float_t  kOuter2PadPitchLength = 1.5;
   static const Float_t  kOuter2PadLength = 1.5;
 
-  static const Bool_t   kBMWPCReadout = kTRUE; //MWPC readout - another possibility GEM 
+  static const Bool_t   kBMWPCReadout = kTRUE; //MWPC readout - another possibility GEM
   static const Int_t    kNCrossRows = 1; //number of rows to cross-talk
-  
+
   //
   //gas default parameters
   //
-  static const  Float_t  kDiffT = 2.2e-2; 
+  static const  Float_t  kDiffT = 2.2e-2;
   static const  Float_t  kDiffL = 2.2e-2;
   static const  Float_t  kGasGain = 2.e4;
   static const  Float_t  kDriftV  =2.83e6;
@@ -420,25 +417,25 @@ void AliTPCParam::SetDefault()
   static const  Float_t  kNtot=42.66;
   static const  Float_t  kWmean = 35.97e-9;
   static const  Float_t  kExp = 2.2;
-  static const  Float_t  kEend = 10.e-6; 
+  static const  Float_t  kEend = 10.e-6;
   //
   //electronic default parameters
   //
   static const  Float_t  kPadCoupling=0.5;
   static const  Int_t    kZeroSup=2;
-  static const  Float_t  kNoise = 1000;                            
+  static const  Float_t  kNoise = 1000;
   static const  Float_t  kChipGain = 12;
   static const  Float_t  kChipNorm = 0.4;
-  static const  Float_t  kTSample = 2.e-7; 
+  static const  Float_t  kTSample = 2.e-7;
   static const  Float_t  kTFWHM   = 1.9e-7;  //fwhm of charge distribution
-  static const  Int_t    kMaxTBin =445;  
-  static const  Int_t    kADCSat  =1024;  
-  static const  Float_t  kADCDynRange =2000.;  
-  // 
+  static const  Int_t    kMaxTBin =445;
+  static const  Int_t    kADCSat  =1024;
+  static const  Float_t  kADCDynRange =2000.;
+  //
   //response constants
   //
   static const Int_t     kNResponseMax=100;
-  static const Float_t   kResponseThreshold=0.01;     
+  static const Float_t   kResponseThreshold=0.01;
   //L1 constants
   //  static const Float_t   kGateDelay=6.1e-6; //In s
   static const Float_t   kGateDelay=0.; //For the moment no gating
@@ -480,7 +477,7 @@ void AliTPCParam::SetDefault()
   SetRInnerLastWire(kRInnerLastWire);
   SetOuterWWPitch(kOuterWWPitch);
   SetROuterFirstWire(kROuterFirstWire);
-  SetROuterLastWire(kROuterLastWire);  
+  SetROuterLastWire(kROuterLastWire);
   //
   //set pad parameter
   //
@@ -488,12 +485,12 @@ void AliTPCParam::SetDefault()
   SetInnerPadPitchWidth(kInnerPadPitchWidth);
   SetInnerPadLength(kInnerPadLength);
   SetInnerPadWidth(kInnerPadWidth);
-  SetOuter1PadPitchLength(kOuter1PadPitchLength); 
+  SetOuter1PadPitchLength(kOuter1PadPitchLength);
   SetOuter2PadPitchLength(kOuter2PadPitchLength);
   SetOuterPadPitchWidth(kOuterPadPitchWidth);
   SetOuter1PadLength(kOuter1PadLength);
   SetOuter2PadLength(kOuter2PadLength);
-  SetOuterPadWidth(kOuterPadWidth); 
+  SetOuterPadWidth(kOuterPadWidth);
   SetMWPCReadout(kBMWPCReadout);
   SetNCrossRows(kNCrossRows);
   //
@@ -516,14 +513,15 @@ void AliTPCParam::SetDefault()
   SetComposition(0.9,0.,0.1,0.,0.,0.);// Ne-CO2 90/10
   //
   SetBetheBloch(GetBetheBlochParamAlice());
+  SetBetheBlochMC(GetBetheBlochParamAliceMC());
   //
-  //set electronivc parameters  
+  //set electronivc parameters
   //
   SetPadCoupling(kPadCoupling);
   SetZeroSup(kZeroSup);
   SetNoise(kNoise);
   SetChipGain(kChipGain);
-  SetChipNorm(kChipNorm);   
+  SetChipNorm(kChipNorm);
   SetTSample(kTSample);
   SetTFWHM(kTFWHM);
   SetMaxTBin(kMaxTBin);
@@ -542,9 +540,9 @@ void AliTPCParam::SetDefault()
 //   SetNPrimLoss(kNPrimLoss);
 //   SetNTotalLoss(kNTotalLoss);
   //
-  //set response  parameters  
+  //set response  parameters
   //
-  SetNResponseMax(kNResponseMax); 
+  SetNResponseMax(kNResponseMax);
   SetResponseThreshold(static_cast<int>(kResponseThreshold));
   //L1 data
   SetGateDelay(kGateDelay);
@@ -553,35 +551,34 @@ void AliTPCParam::SetDefault()
   SetNominalGainSlopes();
 }
 
-          
+
 Bool_t AliTPCParam::Update()
 {
-  //
-  // update some calculated parameter which must be updated after changing "base"
-  // parameters 
-  // for example we can change size of pads and according this recalculate number
-  // of pad rows, number of of pads in given row ....
-  //
+  /// update some calculated parameter which must be updated after changing "base"
+  /// parameters
+  /// for example we can change size of pads and according this recalculate number
+  /// of pad rows, number of of pads in given row ....
+
   const Float_t kQel = 1.602e-19; // elementary charge
   fbStatus = kFALSE;
 
-  Int_t i,j;  //loop variables because HP 
+  Int_t i,j;  //loop variables because HP
   //-----------------Sector section------------------------------------------
   //calclulate number of sectors
-  fNInnerSector = Int_t(4*TMath::Pi()/fInnerAngle+0.2); 
+  fNInnerSector = Int_t(4*TMath::Pi()/fInnerAngle+0.2);
        // number of inner sectors - factor 0.2 to don't be influnced by inprecision
   if (fNInnerSector%2) return kFALSE;
-  fNOuterSector = Int_t(4*TMath::Pi()/fOuterAngle+0.2); 
+  fNOuterSector = Int_t(4*TMath::Pi()/fOuterAngle+0.2);
   if (fNOuterSector%2) return kFALSE;
   fNSector  = fNInnerSector+fNOuterSector;
 
   if (fRotAngle!=0) delete [] fRotAngle;
   fRotAngle = new Float_t[4*fNSector];
-  //calculate sin and cosine of rotations angle     
+  //calculate sin and cosine of rotations angle
   //sectors angles numbering from 0
 
   j=fNInnerSector*2;
-  Float_t angle = fInnerAngleShift; 
+  Float_t angle = fInnerAngleShift;
   for (i=0; j<fNInnerSector*4; i+=4, j+=4 , angle +=fInnerAngle){
     fRotAngle[i]=TMath::Cos(angle);
     fRotAngle[i+1]=TMath::Sin(angle);
@@ -589,8 +586,10 @@ Bool_t AliTPCParam::Update()
     fRotAngle[j+1] =  fRotAngle[i+1];
     fRotAngle[i+2] =angle;
     fRotAngle[j+2] =angle;    
+    fRotAngle[i+3] =angle;
+    fRotAngle[j+3] =angle;    
   }
-  angle = fOuterAngleShift; 
+  angle = fOuterAngleShift;
   j=(fNInnerSector+fNOuterSector/2)*4;
   for (i=fNInnerSector*4; j<fNSector*4; i+=4,j+=4, angle +=fOuterAngle){
     fRotAngle[i]=TMath::Cos(angle);
@@ -599,28 +598,30 @@ Bool_t AliTPCParam::Update()
     fRotAngle[j+1] =  fRotAngle[i+1];
     fRotAngle[i+2] =angle;
     fRotAngle[j+2] =angle;    
+    fRotAngle[i+3] =angle;
+    fRotAngle[j+3] =angle;    
   }
 
-  fZWidth = fTSample*fDriftV;  
+  fZWidth = fTSample*fDriftV;
   fTotalNormFac = fPadCoupling*fChipNorm*kQel*1.e15*fChipGain*fADCSat/fADCDynRange;
   fNoiseNormFac = kQel*1.e15*fChipGain*fADCSat/fADCDynRange;
-  //wire section 
+  //wire section
   /*  Int_t nwire;
   Float_t wspace; //available space for wire
   Float_t dummyspace; //dummyspace for wire
- 
+
   wspace =fInnerRadiusUp-fInnerRadiusLow-2*fInnerOffWire;
   nwire = Int_t(wspace/fInnerWWPitch);
   wspace = Float_t(nwire)*fInnerWWPitch;
-  dummyspace =(fInnerRadiusUp-fInnerRadiusLow-wspace)/2.;  
+  dummyspace =(fInnerRadiusUp-fInnerRadiusLow-wspace)/2.;
   wspace =fOuterRadiusUp-fOuterRadiusLow-2*fOuterOffWire;
   nwire = Int_t(wspace/fOuterWWPitch);
   wspace = Float_t(nwire)*fOuterWWPitch;
-  dummyspace =(fOuterRadiusUp-fOuterRadiusLow-wspace)/2.; 
+  dummyspace =(fOuterRadiusUp-fOuterRadiusLow-wspace)/2.;
   fROuterFirstWire = fOuterRadiusLow+dummyspace;
   fROuterLastWire = fROuterFirstWire+fOuterWWPitch*(Float_t)(nwire);
   */
-  
+
   //
   //response data
   //
@@ -636,35 +637,32 @@ Bool_t AliTPCParam::Update()
 }
 
 void AliTPCParam::CleanGeoMatrices(){
-  //
-  // clean geo matrices
-  //
+  /// clean geo matrices
 
   if (fTrackingMatrix) {
     for(Int_t i = 0; i < fNSector; i++)
       delete fTrackingMatrix[i];
     delete [] fTrackingMatrix;
   }
-  
+
   if (fClusterMatrix) {
     for(Int_t i = 0; i < fNSector; i++)
       delete fClusterMatrix[i];
     delete [] fClusterMatrix;
   }
-  
+
   if (fGlobalMatrix) {
     for(Int_t i = 0; i < fNSector; i++)
       delete fGlobalMatrix[i];
     delete [] fGlobalMatrix;
   }
-  
+
   return;
 }
 
 Bool_t AliTPCParam::ReadGeoMatrices(){
-  //
-  // read geo matrixes
-  //
+  /// read geo matrixes
+
   if (!gGeoManager){
     AliFatal("Geo manager not initialized\n");
   }
@@ -682,12 +680,12 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     fGlobalMatrix[isec] = 0;
     fClusterMatrix[isec]= 0;
     fTrackingMatrix[isec]=0;
-  }   
+  }
   //
   for (Int_t isec=0; isec<fNSector; isec++) {
     fGlobalMatrix[isec] = 0;
     fClusterMatrix[isec]= 0;
-    fTrackingMatrix[isec]=0;   
+    fTrackingMatrix[isec]=0;
     AliGeomManager::ELayerID iLayer;
     Int_t iModule;
 
@@ -712,12 +710,12 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
     // Since GEANT4 does not allow reflections, in this case the reflection
     // component if the matrix is embedded by TGeo inside TGeoScaledShape
-    if (gGeoManager->GetCurrentVolume()->GetShape()->IsReflected()) 
+    if (gGeoManager->GetCurrentVolume()->GetShape()->IsReflected())
        m->ReflectZ(kFALSE, kTRUE);
     //
-    TGeoRotation mchange; 
+    TGeoRotation mchange;
     mchange.RotateY(90); mchange.RotateX(90);
-    Float_t ROCcenter[3]; 
+    Float_t ROCcenter[3];
     GetChamberCenter(isec,ROCcenter);
     //
     // Convert to global coordinate system
@@ -735,7 +733,7 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     rotMatrix.RotateZ(sectorAngle);
     if (GetGlobalMatrix(isec)->GetTranslation()[2]>0){
       //
-      // mirrored system 
+      // mirrored system
       //
       TGeoRotation mirrorZ;
       mirrorZ.SetAngles(90,0,90,90,180,0);
@@ -743,16 +741,15 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     }
     TGeoTranslation trans(0,0,GetZLength(isec));
     fClusterMatrix[isec]->MultiplyLeft(&trans);
-    fClusterMatrix[isec]->MultiplyLeft((GetGlobalMatrix(isec)));	
+    fClusterMatrix[isec]->MultiplyLeft((GetGlobalMatrix(isec)));
     fClusterMatrix[isec]->MultiplyLeft(&(rotMatrix.Inverse()));
   }
   return kTRUE;
 }
 
 TGeoHMatrix *  AliTPCParam::Tracking2LocalMatrix(const TGeoHMatrix * geoMatrix, Int_t sector) const{
-  //
-  // make local to tracking matrix
-  //
+  /// make local to tracking matrix
+
   Double_t sectorAngle = 20.*(sector%18)+10;
   TGeoHMatrix *newMatrix = new TGeoHMatrix();
   newMatrix->RotateZ(sectorAngle);
@@ -765,34 +762,40 @@ TGeoHMatrix *  AliTPCParam::Tracking2LocalMatrix(const TGeoHMatrix * geoMatrix, 
 
 Bool_t AliTPCParam::GetStatus() const
 {
-  //get information about object consistency
+  /// get information about object consistency
+
   return fbStatus;
 }
 
 Int_t AliTPCParam::GetNRowLow() const
 {
-  //get the number of pad rows in low sector
+  /// get the number of pad rows in low sector
+
   return fNRowLow;
 }
 Int_t AliTPCParam::GetNRowUp() const
 {
-  //get the number of pad rows in up sector
+  /// get the number of pad rows in up sector
+
   return fNRowUp;
 }
 Int_t AliTPCParam::GetNRowUp1() const
 {
-  //get the number of pad rows in up1 sector
+  /// get the number of pad rows in up1 sector
+
   return fNRowUp1;
 }
 Int_t AliTPCParam::GetNRowUp2() const
 {
-  //get the number of pad rows in up2 sector
+  /// get the number of pad rows in up2 sector
+
   return fNRowUp2;
 }
 Float_t AliTPCParam::GetPadRowRadiiLow(Int_t irow) const
 {
-  //get the pad row (irow) radii
-  if ( !(irow<0) && (irow<fNRowLow) ) 
+  /// get the pad row (irow) radii
+
+  if ( !(irow<0) && (irow<fNRowLow) )
     return  fPadRowLow[irow];
   else
     return 0;
@@ -800,8 +803,9 @@ Float_t AliTPCParam::GetPadRowRadiiLow(Int_t irow) const
 
 Float_t AliTPCParam::GetPadRowRadiiUp(Int_t irow) const
 {
-  //get the pad row (irow) radii
- if ( !(irow<0) && (irow<fNRowUp) ) 
+  /// get the pad row (irow) radii
+
+ if ( !(irow<0) && (irow<fNRowUp) )
     return  fPadRowUp[irow];
   else
     return 0;
@@ -809,8 +813,9 @@ Float_t AliTPCParam::GetPadRowRadiiUp(Int_t irow) const
 
 Int_t AliTPCParam::GetNPadsLow(Int_t irow) const
 {
-  //get the number of pads in row irow
-  if ( !(irow<0) && (irow<fNRowLow) ) 
+  /// get the number of pads in row irow
+
+  if ( !(irow<0) && (irow<fNRowLow) )
     return  fNPadsLow[irow];
   else
     return 0;
@@ -819,8 +824,9 @@ Int_t AliTPCParam::GetNPadsLow(Int_t irow) const
 
 Int_t AliTPCParam::GetNPadsUp(Int_t irow) const
 {
-  //get the number of pads in row irow
-  if ( !(irow<0) && (irow<fNRowUp) ) 
+  /// get the number of pads in row irow
+
+  if ( !(irow<0) && (irow<fNRowUp) )
     return  fNPadsUp[irow];
   else
     return 0;
@@ -828,24 +834,23 @@ Int_t AliTPCParam::GetNPadsUp(Int_t irow) const
 
 Int_t AliTPCParam::GetWireSegment(Int_t sector, Int_t row) const
 {
-  //
-  // Get Anode wire segment index IROC --> 4 segments in [0,3], 7 segments OROC[4,10]
-  // 
-  // To  be speed-up using caching lookup table
-  //
-  Int_t wireIndex = -1;  
+  /// Get Anode wire segment index IROC --> 4 segments in [0,3], 7 segments OROC[4,10]
+  ///
+  /// To  be speed-up using caching lookup table
+
+  Int_t wireIndex = -1;
   // check if the given set of sector and row is OK
   if ( (sector<0 || sector>=72) || (row<0 || row>95) || (sector<36 && row>64) ){
     AliError("No matching anode wire segment for this set of sector-row \n");
     return wireIndex;
-  }  
+  }
   // find the wire index for given sector-row
-  if ( sector<36 ){                               // IROC anode wire segments 
+  if ( sector<36 ){                               // IROC anode wire segments
     if (row<16) wireIndex=0;
     else if (row>=16 && row<32) wireIndex=1;
     else if (row>=32 && row<48) wireIndex=2;
-    else wireIndex=3;    
-  } else {                                        // OROC anode wire segments    
+    else wireIndex=3;
+  } else {                                        // OROC anode wire segments
     if (row<16) wireIndex=4;
     else if ( row>=16 && row<32) wireIndex=5;
     else if ( row>=32 && row<48) wireIndex=6;
@@ -853,28 +858,27 @@ Int_t AliTPCParam::GetWireSegment(Int_t sector, Int_t row) const
     else if ( row>=64 && row<75) wireIndex=8;
     else if ( row>=75 && row<85) wireIndex=9;
     else wireIndex=10;
-  }    
-  return wireIndex;  
+  }
+  return wireIndex;
 }
 
 Int_t AliTPCParam::GetNPadsPerSegment(Int_t wireSegmentID) const
 {
-  //
-  // Get the number of pads in a given anode wire segment
-  //
-  // check if the given segment index is OK 
-  // To be done (if needed) - cache the lookup table
-  //
+  /// Get the number of pads in a given anode wire segment
+  ///
+  /// check if the given segment index is OK
+  /// To be done (if needed) - cache the lookup table
+
   if ( wireSegmentID<0 || wireSegmentID>10 ){
     AliError("Wrong anode wire segment index. it should be [0,10] \n");
     return -1;
   }
   // get sector type from wireSegmentID
-  Int_t sector = (wireSegmentID<4) ? 0 : 36; // ROC [0,35] --> IROC, ROC [36,71] --> OROC  
+  Int_t sector = (wireSegmentID<4) ? 0 : 36; // ROC [0,35] --> IROC, ROC [36,71] --> OROC
   // get the upper and lower row number for the given wireSegmentID
   Int_t segRowDown = 0;
   Int_t segRowUp   = 0;
-  
+
   if ( wireSegmentID == 0 || wireSegmentID == 4 ) {
     segRowDown = 0;
     segRowUp   = 16;
@@ -896,7 +900,7 @@ Int_t AliTPCParam::GetNPadsPerSegment(Int_t wireSegmentID) const
   } else {
     segRowDown = 85;
     segRowUp   = 95;
-  }  
+  }
   // count the number of pads on the given segment
   AliTPCROC *r=AliTPCROC::Instance();
   Int_t nPads=0;
@@ -919,30 +923,31 @@ Float_t AliTPCParam::GetYOuter(Int_t irow) const
 
 Int_t AliTPCParam::GetSectorIndex(Float_t angle, Int_t row, Float_t z) const
 {
-  // returns the sector index
-  // takes as input the angle, index of the pad row and z position
+  /// returns the sector index
+  /// takes as input the angle, index of the pad row and z position
+
   if(row<0) return -1;
 
   if (angle > 2.*TMath::Pi()) angle -= 2.*TMath::Pi();
   if (angle < 0.            ) angle += 2.*TMath::Pi();
- 
+
   Int_t sector;
   if(row<fNRowLow) {
     sector=Int_t(TMath::Nint((angle-fInnerAngleShift)/fInnerAngle));
     if (z<0) sector += (fNInnerSector>>1);
   }
   else {
-    sector=Int_t(TMath::Nint((angle-fOuterAngleShift)/fOuterAngle))+fNInnerSector;      
+    sector=Int_t(TMath::Nint((angle-fOuterAngleShift)/fOuterAngle))+fNInnerSector;
     if (z<0) sector += (fNOuterSector>>1);
-  }    
-  
+  }
+
   return sector;
 }
 
 Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
 {
-  // returns the default radial position
-  // of the readout chambers
+  /// returns the default radial position
+  /// of the readout chambers
 
   const Float_t kROCcenterIn = 110.2;
   const Float_t kROCcenterOut = 188.45;
@@ -950,27 +955,26 @@ Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
   if (isec<fNInnerSector){
     if (center){
       center[0] = kROCcenterIn;
-      center[1] = 0; 
-      center[2] = -5.51-0.08; 
+      center[1] = 0;
+      center[2] = -5.51-0.08;
     }
     return kROCcenterIn;
   }
   else{
     if (center){
       center[0] = kROCcenterOut;
-      center[1] = 0; 
-      center[2] = -5.61-0.08; 
+      center[1] = 0;
+      center[2] = -5.61-0.08;
     }
     return kROCcenterOut;
   }
 }
 
 void AliTPCParam::SetNominalGainSlopes(){
-  //
-  // Setting the nominal TPC gain slopes 
-  // Nominal values were obtained as a mena values foe 2010,2011, and 2012 data
-  // Differntial values can be provided per year
-  //
+  /// Setting the nominal TPC gain slopes
+  /// Nominal values were obtained as a mena values foe 2010,2011, and 2012 data
+  /// Differntial values can be provided per year
+
   Float_t sector[72]={0};
   Float_t gainHV[72]={0};
   Float_t gainPT[72]={0};
@@ -988,10 +992,10 @@ void AliTPCParam::SetNominalGainSlopes(){
 
 
 TVectorD * AliTPCParam::GetBetheBlochParamNa49(){
-  //
-  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
-  //  Na49 parameters were used as first set of parameters for ALICE simulation
-  //  (see TPC TDR for details)
+  /// Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  /// Na49 parameters were used as first set of parameters for ALICE simulation
+  /// (see TPC TDR for details)
+
   TVectorD v(5);
   v(0)=0.76176e-1;
   v(1)=10.632;
@@ -1002,13 +1006,11 @@ TVectorD * AliTPCParam::GetBetheBlochParamNa49(){
 }
 
 TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
-  //
-  //
-  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
-  //  Na49 parameters were used as first set of parameters for ALICE simulation
-  //  Second set was obtained from ALICE 2009-2013 data taking 
-  //  (see TPC TDR for details)
-  //  
+  /// Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  /// Na49 parameters were used as first set of parameters for ALICE simulation
+  /// Second set was obtained from ALICE 2009-2013 data taking
+  /// (see TPC TDR for details)
+
   TVectorD v(5);
   v[0] = 0.0851148;
   v[1] = 9.25771;
@@ -1018,28 +1020,41 @@ TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
   return new TVectorD(v);
 }
 
+TVectorD * AliTPCParam::GetBetheBlochParamAliceMC(){
+  /// Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  /// dNdx parameterization
+
+  TVectorD v(5);
+  v[0] =0.0820172 ;
+  v[1] =9.94795 ;
+  v[2] =8.97292e-05;
+  v[3] =2.05873 ;
+  v[4] =1.65272 ;
+
+  return new TVectorD(v);
+}
+
 
 Double_t  AliTPCParam::BetheBlochAleph(Double_t bg, Int_t type){
-  //
-  //  GetBetheBloch retur values for the parametrs regieter at poition type 
-  //  Used for visualization and comparison purposes
+  /// GetBetheBloch retur values for the parametrs regieter at poition type
+  /// Used for visualization and comparison purposes
+
   TVectorD * paramBB =0;
   if (type==0) {
     AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
     if (param) paramBB=param->GetBetheBlochParameters();
-  } 
-  if (type>0){
+  }
+  if (type==1){
     paramBB = (TVectorD*)fBBParam->At(type);
   }
   if (!paramBB) return 0;
   //
-  return AliMathBase::BetheBlochAleph(bg,(*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4)); 
+  return AliMathBase::BetheBlochAleph(bg,(*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4));
 }
 
 
 void AliTPCParam::RegisterBBParam(TVectorD* param, Int_t position){
-  //
-  // 
-  //
+  ///
+
   fBBParam->AddAt(param,position);
 }

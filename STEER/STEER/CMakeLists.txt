@@ -20,7 +20,7 @@ set(MODULE STEER)
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
@@ -156,6 +156,9 @@ set(SRCS
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set(HDRS ${HDRS}
+   AliConst.h
+   )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

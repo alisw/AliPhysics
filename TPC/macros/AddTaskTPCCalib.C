@@ -1,13 +1,5 @@
-//=============================================================================
-//
-// *** AddTaskTPCCalib
-//
-// This macros setup the TPC calibration task
-//
-//=============================================================================
-
-
-
+/// \file AddTaskTPCCalib.C
+/// \brief This macros setup the TPC calibration task
 
 Int_t debugLevel  = 2;
 Int_t streamLevel = 20;
@@ -52,12 +44,11 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
 
 
 void AddCalibCalib(TObject* task){
-  //
-  // Responsible: Marian Ivanov
-  // Description:
-  // calibCalib is a prefilter 
-  // The current OCDB entries transformation are applied on cluster, tracks are refitted
-  //
+  /// Responsible: Marian Ivanov
+  /// Description:
+  /// calibCalib is a prefilter
+  /// The current OCDB entries transformation are applied on cluster, tracks are refitted
+
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibCalib *calibCalib = new AliTPCcalibCalib("calibTPC","calibTPC");
   calibCalib->SetDebugLevel(debugLevel);
@@ -67,10 +58,10 @@ void AddCalibCalib(TObject* task){
 
 }
 void AddCalibTimeGain(TObject* task){
-  //
-  //  Responsible: Alexander Kalweit
-  //  Description:
-  //  Parameters to set
+  ///  Responsible: Alexander Kalweit
+  ///  Description:
+  ///  Parameters to set
+
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain("calibTimeGain","calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 30*60);
   //calibTimeGain->SetLowMemoryConsumption(kTRUE);
@@ -85,11 +76,9 @@ void AddCalibTimeGain(TObject* task){
 }
 
 void AddCalibTime(TObject* task){
-  //
-  // Responsible: Dag Larsen
-  // Description:
-  //
-  //
+  /// Responsible: Dag Larsen
+  /// Description:
+
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 20*60);
   calibTime->SetDebugLevel(debugLevel);
@@ -100,9 +89,8 @@ void AddCalibTime(TObject* task){
 
 
 void SetupCalibTaskTrain1(TObject* task){
-  //
-  //
-  //
+  ///
+
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   //AddCalibCalib(task);
   AddCalibTimeGain(task);
@@ -118,7 +106,8 @@ void SetupCalibTaskTrain1(TObject* task){
 
 
 void ConfigOCDB(Int_t run){
-  // 
+  ///
+
   printf("SETUP OCBD for TPC\n");
   printf("SETUP OCBD for TPC\n");
   printf("SETUP OCBD for TPC\n");

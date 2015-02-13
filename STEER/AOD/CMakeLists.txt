@@ -20,7 +20,7 @@ set (MODULE AOD)
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 
 # Additional include directories - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
@@ -86,6 +86,9 @@ set(ALIROOT_DEPENDENCIES ESD STEERBase)
 # Dependecies
 set(LIBDEPS ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice

@@ -62,11 +62,12 @@ class AliHLTReadoutList : public TNamed
     kTRG = 0x1 << 17,      /// ID for TRG detector
     kEMCAL = 0x1 << 18,    /// ID for EMCAL detector
     kDAQTEST = 0x1 << 19,  /// ID for DAQ_TEST detector
+    kAD = 0x1 << 21,       /// ID for AD detector
     kHLT = 0x1 << 30,      /// ID for HLT detector
     // kALLDET sets readout for all detectors except DAQ_TEST
     kALLDET = (kITSSPD | kITSSDD | kITSSSD | kTPC | kTRD | kTOF | kHMPID | kPHOS
                | kCPV | kPMD | kMUONTRK | kMUONTRG | kFMD | kT0 | kV0 | kZDC
-               | kACORDE | kTRG | kEMCAL | kHLT)
+               | kACORDE | kTRG | kEMCAL | kAD | kHLT)
   };
   
   /// Converts a detector ID to a user readable string.
@@ -393,6 +394,7 @@ class AliHLTReadoutList : public TNamed
    */
   static bool DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitIndex);
   
+
  private:
   
   /**
@@ -404,7 +406,7 @@ class AliHLTReadoutList : public TNamed
   
   AliHLTEventDDL fReadoutList; /// The DDL readout list structure.
   
-  ClassDef(AliHLTReadoutList, 3) // Readout list object used for manipulating and storing an AliHLTEventDDL structure.
+  ClassDef(AliHLTReadoutList, 4) // Readout list object used for manipulating and storing an AliHLTEventDDL structure.
 
 };
 

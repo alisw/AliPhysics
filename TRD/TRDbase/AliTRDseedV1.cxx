@@ -2320,7 +2320,7 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz
   fYfit[1] = -par[1];
   //printf(" yfit: %f [%f] x[%e] dydx[%f]\n", fYfit[0], par[0], fX, par[1]);
   // store covariance
-  fCov[0] = kS2Ycorr*cov[0]; // variance of y0
+  fCov[0] = kScalePulls*kS2Ycorr*cov[0]; // variance of y0
   fCov[1] = kScalePulls*cov[2]; // covariance of y0, dydx
   fCov[2] = kScalePulls*cov[1]; // variance of dydx
   // check radial position

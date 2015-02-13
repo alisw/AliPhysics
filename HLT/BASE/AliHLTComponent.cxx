@@ -2698,9 +2698,10 @@ int AliHLTComponent::ExtractTriggerData(
   
   // Check that the trigger data pointer points to data of a size we can handle.
   // Either it is the size of AliHLTEventTriggerData or the size of the old
-  // version of AliHLTEventTriggerData using AliHLTEventDDLV0.
+  // version of AliHLTEventTriggerData using AliHLTEventDDLV0 or V1.
   if (trigData.fDataSize != sizeof(AliHLTEventTriggerData) and
-      trigData.fDataSize != sizeWithoutReadout + sizeof(AliHLTEventDDLV0)
+      trigData.fDataSize != sizeWithoutReadout + sizeof(AliHLTEventDDLV0) and
+      trigData.fDataSize != sizeWithoutReadout + sizeof(AliHLTEventDDLV1)
      )
   {
     if (printErrors)
@@ -2717,7 +2718,10 @@ int AliHLTComponent::ExtractTriggerData(
   assert(evtData != NULL);
   
   // Check that the CDH has the right number of words.
-  if (cdh != NULL and evtData->fCommonHeaderWordCnt != gkAliHLTCommonHeaderCount)
+  if ( cdh != NULL and 
+       evtData->fCommonHeaderWordCnt != gkAliHLTCommonHeaderCount and
+       evtData->fCommonHeaderWordCnt != gkAliHLTCommonHeaderCountV2
+     )
   {
     if (printErrors)
     {

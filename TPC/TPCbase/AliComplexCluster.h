@@ -3,17 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-//
-// this is a class
-// AliComplexCluster
-// by M. Ivanov
-//
+/// \class AliComplexCluster
+///
+/// \author M. Ivanov
 
 #include "TObject.h"
 #include "TMath.h"
 #include "AliTPCclusterMI.h"
-//
 
 class AliComplexCluster : public TObject {
 public:
@@ -34,17 +30,20 @@ public:
   Float_t GetArea()const {return fArea;}
   Float_t GetMax()const {return fMax;}
 private:
-  Int_t     fTracks[3];//labels of overlapped tracks
-  Float_t   fX ;       //Y of cluster
-  Float_t   fY ;       //Z of cluster
-  Float_t   fQ ;       //Q of cluster (in ADC counts)
-  Float_t   fSigmaX2;  //Sigma Y square of cluster
-  Float_t   fSigmaY2;  //Sigma Z square of cluster
-  Float_t   fSigmaXY;  //      XY moment 
-  Float_t   fArea;     //area of cluster
-  Float_t   fMax;     //amplitude at maximum 
+  Int_t     fTracks[3];///< labels of overlapped tracks
+  Float_t   fX ;       ///< Y of cluster
+  Float_t   fY ;       ///< Z of cluster
+  Float_t   fQ ;       ///< Q of cluster (in ADC counts)
+  Float_t   fSigmaX2;  ///< Sigma Y square of cluster
+  Float_t   fSigmaY2;  ///< Sigma Z square of cluster
+  Float_t   fSigmaXY;  ///< XY moment
+  Float_t   fArea;     ///< area of cluster
+  Float_t   fMax;     ///< amplitude at maximum
 
-  ClassDef(AliComplexCluster,1)
+  /// \cond CLASSIMP
+  ClassDef(AliComplexCluster, 1);
+  /// \endcond
+
     // Cluster manager
 };
 
@@ -92,18 +91,20 @@ class AliTPCTrackerPoint  {
 
   //
  private:
-  Short_t   fTX;        // x position of the cluster  in cm - 10 mum prec
-  Short_t   fTZ;        // current prolongation in Z  in cm - 10 mum prec.
-  Short_t   fTY;        // current prolongation in Y  in cm - 10 mum prec.
-  Char_t    fTAngleZ;    // angle 
-  Char_t    fTAngleY;    // angle 
-  UShort_t  fSigmaZ;     // shape  Z - normalised shape - normaliziation 1 - precision 2 percent
-  UShort_t  fSigmaY;     // shape  Y - normalised shape - normaliziation 1 - precision 2 percent
-  UShort_t  fErrZ;       // z error estimate - in  mm - 50 mum precision 
-  UShort_t  fErrY;       // y error estimate - in  mm - 50 mum precision 
-  Char_t   fIsShared;     // indicate sharing of the point between several tracks
+  Short_t   fTX;        ///< x position of the cluster  in cm - 10 mum prec
+  Short_t   fTZ;        ///< current prolongation in Z  in cm - 10 mum prec.
+  Short_t   fTY;        ///< current prolongation in Y  in cm - 10 mum prec.
+  Char_t    fTAngleZ;    ///< angle
+  Char_t    fTAngleY;    ///< angle
+  UShort_t  fSigmaZ;     ///< shape  Z - normalised shape - normaliziation 1 - precision 2 percent
+  UShort_t  fSigmaY;     ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
+  UShort_t  fErrZ;       ///< z error estimate - in  mm - 50 mum precision
+  UShort_t  fErrY;       ///< y error estimate - in  mm - 50 mum precision
+  Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
 
-  ClassDef(AliTPCTrackerPoint,2)  
+  /// \cond CLASSIMP
+  ClassDef(AliTPCTrackerPoint, 2);
+  /// \endcond  
 };
 
 class AliTPCClusterPoint  {
@@ -134,16 +135,17 @@ class AliTPCClusterPoint  {
   void     SetMax(Float_t max) {fMax = UShort_t(max);}
   void     SetType(Char_t type) {fCType = type;}
  private:
-  Short_t  fCZ;       // current cluster position Z in cm - 100 mum precision
-  Short_t  fCY;       // current cluster position Y in cm - 100 mum precision
-  UChar_t  fSigmaZ;   // shape  Z - normalised shape - normaliziation 1 - precision 2 percent
-  UChar_t  fSigmaY;   // shape  Y - normalised shape - normaliziation 1 - precision 2 percent
-  UShort_t fQ;        // total charge in cluster 
-  UShort_t fMax;      // charge at maximum  
-  Char_t   fCType;    // type of the cluster
+  Short_t  fCZ;       ///< current cluster position Z in cm - 100 mum precision
+  Short_t  fCY;       ///< current cluster position Y in cm - 100 mum precision
+  UChar_t  fSigmaZ;   ///< shape  Z - normalised shape - normaliziation 1 - precision 2 percent
+  UChar_t  fSigmaY;   ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
+  UShort_t fQ;        ///< total charge in cluster
+  UShort_t fMax;      ///< charge at maximum
+  Char_t   fCType;    ///< type of the cluster
 
-  //
-  ClassDef(AliTPCClusterPoint,1)  
+  /// \cond CLASSIMP
+  ClassDef(AliTPCClusterPoint, 1);
+  /// \endcond  
 };
 
 
@@ -161,17 +163,20 @@ class AliTPCExactPoint : public TObject{
     fRow(0),
     fSec(0){}
  private:
-  Float_t fEZ;       // current "exact" position according simulation
-  Float_t fEY;       // current "exact" position according simulation
-  Float_t fEX;       // x poistion of the cluster
-  Float_t fEAngleZ;  // angle Z
-  Float_t fEAngleY;  // angle Y
-  Float_t fEAmp;     // total charge deposited in row
-  Float_t fEPrim;    // primary charge deposited in row
-  Int_t   fTrackID;  // id of the track
-  Int_t   fRow;      // row
-  Int_t   fSec;      //sector
-  ClassDef(AliTPCExactPoint,1)  
+  Float_t fEZ;       ///< current "exact" position according simulation
+  Float_t fEY;       ///< current "exact" position according simulation
+  Float_t fEX;       ///< x poistion of the cluster
+  Float_t fEAngleZ;  ///< angle Z
+  Float_t fEAngleY;  ///< angle Y
+  Float_t fEAmp;     ///< total charge deposited in row
+  Float_t fEPrim;    ///< primary charge deposited in row
+  Int_t   fTrackID;  ///< id of the track
+  Int_t   fRow;      ///< row
+  Int_t   fSec;      ///< sector
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCExactPoint, 1);
+  /// \endcond 
 };
 
 
@@ -187,9 +192,12 @@ class AliTPCTrackPoint: public TObject{
  private:
   //  AliTPCClusterPoint fCPoint; 
   //Char_t fIsShared;
-  AliTPCTrackerPoint fTPoint;  // track point
-  AliTPCclusterMI    fCPoint;  // cluster point
-  ClassDef(AliTPCTrackPoint,1)  
+  AliTPCTrackerPoint fTPoint;  ///< track point
+  AliTPCclusterMI    fCPoint;  ///< cluster point
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCTrackPoint, 1);
+  /// \endcond
 };
 
 class AliTPCTrackPoint2: public AliTPCTrackPoint{
@@ -209,30 +217,28 @@ class AliTPCTrackPoint2: public AliTPCTrackPoint{
     fID(0),
     fLab(0){}
  private: 
-  Float_t fGX;    //global poition of the point
-  Float_t fGY;    //global poition of the point
-  Float_t fGZ;    //global poition of the point
+  Float_t fGX;    ///< global poition of the point
+  Float_t fGY;    ///< global poition of the point
+  Float_t fGZ;    ///< global poition of the point
   //
-  Float_t fDY;    //distortion of the clusters from the global helix (3 point interpolation)
-  Float_t fDZ;    //distortion of the clusters from the global helix (3 point interpolation)
+  Float_t fDY;    ///< distortion of the clusters from the global helix (3 point interpolation)
+  Float_t fDZ;    ///< distortion of the clusters from the global helix (3 point interpolation)
   //
-  Float_t fDYU;  //derivation in y up
-  Float_t fDYD;  //distortion of y down
+  Float_t fDYU;  ///< derivation in y up
+  Float_t fDYD;  ///< distortion of y down
   //
-  Float_t fDZU;  //derivation in y up
-  Float_t fDZD;  //distortion of y down
+  Float_t fDZU;  ///< derivation in y up
+  Float_t fDZD;  ///< distortion of y down
   //
-  Float_t fDDY;  //derivation in y,z up-down
-  Float_t fDDZ;  //derivation in y,z up-down
+  Float_t fDDY;  ///< derivation in y,z up-down
+  Float_t fDDZ;  ///< derivation in y,z up-down
   //
-  Int_t   fID;            //id of the corresponding track
-  Int_t   fLab;           //MC label of the track
-  ClassDef(AliTPCTrackPoint2,1)  
+  Int_t   fID;            ///< id of the corresponding track
+  Int_t   fLab;           ///< MC label of the track
+
+  /// \cond CLASSIMP
+  ClassDef(AliTPCTrackPoint2, 1);
+  /// \endcond
 };
-
-
-
-
-
 
 #endif //ALICOMPLEXCLUSTER_H

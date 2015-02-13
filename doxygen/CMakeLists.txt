@@ -15,19 +15,28 @@
 
 if(CAN_GENERATE_DOC)
 
-    # prepare Doxygen config from template
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
-        ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        @ONLY
-    )
+  # Prepare Doxygen config from template
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    @ONLY
+  )
 
-    # generate doc in build dir by using "make doxygen"
-    add_custom_target(doxygen
-        ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating AliRoot reference manual using Doxygen"
-        VERBATIM
-    )
+  # Generate doc in build dir by using "make doxygen"
+  add_custom_target(doxygen
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating AliRoot Core reference manual using Doxygen"
+  )
+
+  # Install documentation in the installation directory if requested
+  add_custom_target(install-doxygen
+    rsync -a --delete @CMAKE_CURRENT_BINARY_DIR@/html/ @CMAKE_INSTALL_PREFIX@/doxygen/
+    DEPENDS doxygen
+    COMMENT "Installing AliRoot Core reference manual"
+  )
+
+  # Install utilities to bin/
+  install(PROGRAMS alidoxyimg.sh thtml2doxy.py DESTINATION bin)
 
 endif(CAN_GENERATE_DOC)

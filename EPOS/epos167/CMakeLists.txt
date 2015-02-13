@@ -80,7 +80,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${CSRCS} ${FSRCS})
-target_link_libraries(${MODULE} STEERBase STEER EVGEN Core EG MathCore)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation and linking flags
 set(CMAKE_C_FLAGS "-ansi ${CMAKE_C_FLAGS}")

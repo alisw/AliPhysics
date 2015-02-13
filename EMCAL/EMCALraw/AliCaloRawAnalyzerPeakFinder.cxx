@@ -122,7 +122,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
  
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
-	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset);
+	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase);
  	}            
       else if ( maxf >= fAmpCut )
 	{
@@ -177,7 +177,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      tof = timebinOffset - 0.01*tof/fAmp - fL1Phase/TIMEBINWITH; // clock
 	      Float_t chi2 = CalculateChi2(fAmp, tof-timebinOffset+maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped , Ret::kFitPar, fAmp, tof, 
+	      return AliCaloFitResults( maxamp, ped , Ret::kFitPar, fAmp, (tof*TIMEBINWITH)-fL1Phase,
 					timebinOffset, chi2, ndf,
 					Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );  
 	    }
@@ -185,7 +185,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	    {
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped , Ret::kCrude, maxf, timebinOffset,
+	      return AliCaloFitResults( maxamp, ped , Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase,
 					timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
 	} // ampcut

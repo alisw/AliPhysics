@@ -40,6 +40,13 @@ endif(PYTHIA6)
 # Installation
 install(TARGETS alistorage RUNTIME DESTINATION bin)
 
+# Header files: set
+set(HDRS
+    AliStorageTypes.h
+   )
+
+# Header files: install
+install(FILES ${HDRS} DESTINATION include)
 
 # alistorageadmin executable
 add_executable(alistorageadmin alistorageadmin.cxx)

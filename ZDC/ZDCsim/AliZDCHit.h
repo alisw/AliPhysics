@@ -35,7 +35,7 @@ public:
   // Setters 
   virtual void SetVolume(Int_t i, Int_t val) {fVolume[i]=val;} 
   virtual void SetPDGCode(Int_t code)        {fPDGCode=code;}
-  virtual void SetMotherPDGCode(Int_t code)  {fPDGCode=code;}
+  virtual void SetMotherPDGCode(Int_t code)  {fMotherPDGCode=code;}
   virtual void SetLightPMQ(Float_t value)    {fLightPMQ=value;}
   virtual void SetLightPMC(Float_t value)    {fLightPMC=value;}
   virtual void SetSFlag(Float_t value)       {fSFlag=value;}

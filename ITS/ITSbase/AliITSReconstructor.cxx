@@ -39,7 +39,6 @@
 #include "AliITSVertexerZD.h"
 #include "AliITSVertexerCosmics.h"
 #include "AliITSInitGeometry.h"
-#include "AliITSTrackleterSPDEff.h"
 #include "AliITSMultReconstructor.h"
 
 ClassImp(AliITSReconstructor)
@@ -122,28 +121,6 @@ AliTrackleter* AliITSReconstructor::CreateMultFinder() const
   multReco->SetHistOn(kFALSE);
   multReco->SetDetTypeRec(fDetTypeRec);
   return multReco;
-}
-
-//_____________________________________________________________________________
-AliTracker* AliITSReconstructor::CreateTrackleter() const
-{
-// create the SPD trackeleter (for SPD PlaneEfficiency evaluation)
-  if(!GetRecoParam()->GetComputePlaneEff() || !GetRecoParam()->GetUseTrackletsPlaneEff()) return NULL;
-  //Int_t trackerOpt = GetRecoParam()->GetTracker();
-  AliTracker* trackleter;
-  trackleter = new AliITSTrackleterSPDEff();
-  AliITSTrackleterSPDEff *spdtrackleter=(AliITSTrackleterSPDEff*)trackleter;
-  // here set cuts (from RecoParam)
-  if(GetRecoParam()->GetBkgTrackletsPlaneEff()) spdtrackleter->SetReflectClusterAroundZAxisForLayer(1,kTRUE);
-  if(GetRecoParam()->GetMCTrackletsPlaneEff()) spdtrackleter->SetMC();
-  spdtrackleter->SetHistOn();
-  spdtrackleter->SetPhiWindowL2(GetRecoParam()->GetTrackleterPhiWindowL2());
-  spdtrackleter->SetZetaWindowL2(GetRecoParam()->GetTrackleterZetaWindowL2());
-  spdtrackleter->SetPhiWindowL1(GetRecoParam()->GetTrackleterPhiWindowL1());
-  spdtrackleter->SetZetaWindowL1(GetRecoParam()->GetTrackleterZetaWindowL1());
-  if(GetRecoParam()->GetUpdateOncePerEventPlaneEff()) spdtrackleter->SetUpdateOncePerEventPlaneEff();
-  spdtrackleter->SetMinContVtx(GetRecoParam()->GetMinContVtxPlaneEff());
-  return trackleter;
 }
 
 //_____________________________________________________________________________

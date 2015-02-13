@@ -76,6 +76,7 @@ void AliStorageServerThread::StartCommunication()
             }
             case REQUEST_GET_EVENT:
             {
+	      cout<<"get event"<<endl;
                 TThread::Lock();
                 AliESDEvent *event = fDatabase->GetEvent(request->event);
                 TThread::UnLock();
@@ -93,6 +94,7 @@ void AliStorageServerThread::StartCommunication()
             }
             case REQUEST_GET_PREV_EVENT:
             {
+	      cout<<"PREV request"<<endl;
                 AliESDEvent *event = fDatabase->GetPrevEvent(request->event);
                 eventManager->Send(event,socket);
                 delete event;
@@ -100,6 +102,7 @@ void AliStorageServerThread::StartCommunication()
             }
             case REQUEST_GET_LAST_EVENT:
             {
+	      cout<<"LAST request"<<endl;
                 AliESDEvent *event = fDatabase->GetLastEvent();
                 eventManager->Send(event,socket);
                 delete event;
@@ -107,6 +110,7 @@ void AliStorageServerThread::StartCommunication()
             }
             case REQUEST_GET_FIRST_EVENT:
             {
+	      cout<<"FIRST request"<<endl;
                 AliESDEvent *event = fDatabase->GetFirstEvent();
                 eventManager->Send(event,socket);
                 delete event;
@@ -114,13 +118,17 @@ void AliStorageServerThread::StartCommunication()
             }
             case REQUEST_MARK_EVENT:
             {
+	      cout<<"MARK request"<<endl;
                 struct eventStruct *markData  = &(request->event);
                 eventManager->Send(MarkEvent(*markData),socket);
                 break;
             }
             default:
-                sleep(1);
+	      {
+		cout<<"unknown request message"<<endl;
+		eventManager->Send(false,socket);
                 break;
+	      }
         }
         
     }

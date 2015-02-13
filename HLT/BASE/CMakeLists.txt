@@ -24,7 +24,8 @@ add_subdirectory(util)
 set(MODULE HLTbase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
+include_directories(${ROOT_INCLUDE_DIR}
+                              ${AliRoot_SOURCE_DIR}/HLT/BASE
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -40,6 +41,13 @@ if(USE_DLOPEN)
   add_definitions(-DHAVE_DLFCN_H)
   message(STATUS "Using dlopen() for HLT component libs.")
 endif(USE_DLOPEN)
+
+option(HLT_COMPONENT_STATISTICS "Build HLT component statistics" OFF)
+
+if(HLT_COMPONENT_STATISTICS)
+  add_definitions(-DHLT_COMPONENT_STATISTICS)
+  message(STATUS "HLT component statistics enabled.")
+endif(HLT_COMPONENT_STATISTICS)
 
 # Sources in alphabetical order
 set(SRCS
@@ -163,7 +171,7 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} DESTINATION include)
+install(FILES ${HDRS} AliHLTIndexGrid.h DESTINATION include)
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)

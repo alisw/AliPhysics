@@ -71,8 +71,9 @@
  *           TCPDumpSubscriber for the Common Data Header (CDH) and readout
  *           list information.
  *  17       New CDH v3 (10 32bit words, 100 trigger classes, etc.)
+ *  18       Added AD detector in AliHLTEventDDLV2
  */
-#define ALIHLT_DATA_TYPES_VERSION 17
+#define ALIHLT_DATA_TYPES_VERSION 18
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -858,8 +859,11 @@ extern "C" {
   /** size of the DDL list after DCAL added to EMCAL */
   const int gkAliHLTDDLListSizeV1 = 31;
 
+  /** size of the DDL list with AD */
+  const int gkAliHLTDDLListSizeV2 =32;
+
   /** size of the DDL list */
-  const int gkAliHLTDDLListSize = gkAliHLTDDLListSizeV1;
+  const int gkAliHLTDDLListSize = gkAliHLTDDLListSizeV2;
 
   /** Number of Trigger Classes of CTP in CDH */
   const int gkNCTPTriggerClassesV2 = 50;
@@ -894,10 +898,20 @@ extern "C" {
   };
   
   /**
+   * @struct AliHLTEventDDLV2
+   * DDL list event structure with extra word for AD bits.
+   */
+  struct AliHLTEventDDLV2
+  {
+    AliHLTUInt32_t fCount;                       /// Indicates the number of words in fList.
+    AliHLTUInt32_t fList[gkAliHLTDDLListSizeV2];   /// The list of DDL enable/disable bits.
+  };
+  
+  /**
    * @typedef AliHLTEventDDL
    * Current used default version of the AliHLTEventDDL structure.
    */
-  typedef AliHLTEventDDLV1 AliHLTEventDDL;
+  typedef AliHLTEventDDLV2 AliHLTEventDDL;
 
   /**
    * @struct AliHLTEventTriggerData
@@ -913,6 +927,7 @@ extern "C" {
       AliHLTEventDDL fReadoutList;   /// The default readout list structure.
       AliHLTEventDDLV0 fReadoutListV0;   /// Access to the old version of the readout list structure.
       AliHLTEventDDLV1 fReadoutListV1;   /// Access to the readout list structure with DCAL included.
+      AliHLTEventDDLV2 fReadoutListV2;   /// Access to the readout list structure with AD included.
     };
   };
 

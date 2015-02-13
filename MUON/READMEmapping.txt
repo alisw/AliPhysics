@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_mapping Mapping
+\page README_mapping MUON Mapping
  
 
 See the detailed description of the mapping package in ALICE-INT-2003-025.

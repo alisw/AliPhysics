@@ -246,17 +246,30 @@ void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & 
     AliFatal("Geo manager not initialized\n");
   }
   //construct module name
+  TGeoHMatrix *m = 0x0;
   char path[100] ; 
   Double_t dy ;
   if(tmpPHOS->IsEmc()){
-    TString spath="/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
-    snprintf(path,spath.Length(),spath.Data(),tmpPHOS->GetPHOSMod()) ;
-//    sprintf(path,"/ALIC_1/PHOS_%d",tmpPHOS->GetPHOSMod()) ;
+    snprintf(path,100,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",tmpPHOS->GetPHOSMod()) ;
+    if (!gGeoManager->CheckPath(path)){
+      snprintf(path,100,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1",tmpPHOS->GetPHOSMod()) ;
+      if(!gGeoManager->CheckPath(path)){     
+        AliFatal("Geo manager can not find path \n");
+      }
+    }
+    gGeoManager->cd(path) ;
+    m = gGeoManager->GetCurrentMatrix();
     dy=fCrystalShift ;
   }
   else{
-    TString spath="/ALIC_1/PHOS_%d/PCPV_1";
-    snprintf(path,spath.Length(),spath.Data(),tmpPHOS->GetPHOSMod()) ;
+    snprintf(path,100,"/ALIC_1/PHOS_%d/PCPV_1",tmpPHOS->GetPHOSMod());
+    if (!gGeoManager->CheckPath(path)){
+      snprintf(path,100,"/ALIC_1/PHOH_%d/PCPV_1",tmpPHOS->GetPHOSMod());
+      if (!gGeoManager->CheckPath(path))
+        AliFatal(Form("Geo manager can not find path /ALIC_1/PHOS(H)_%d/PCPV_1 \n",tmpPHOS->GetPHOSMod()));
+    }
+    gGeoManager->cd(path) ;
+    m = gGeoManager->GetCurrentMatrix();
     dy= GetCPVBoxSize(1)/2. ; //center of CPV module 
   }
   Double_t pos[3]={gpos.X(),gpos.Y()-dy,gpos.Z()} ;
@@ -264,10 +277,6 @@ void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & 
     pos[2]=-pos[2] ; //Opposite z directions in EMC matrix and local frame!!!
   Double_t posC[3] = {};
   //now apply possible shifts and rotations
-  if (!gGeoManager->cd(path)){
-    AliFatal("Geo manager can not find path \n");
-  }
-  TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
   if (m){
      m->LocalToMaster(pos,posC);
   }

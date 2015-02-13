@@ -11,7 +11,7 @@
 void ADTestPreprocessor()
 {
   // load library
-  gSystem->Load("libTestShuttle");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime

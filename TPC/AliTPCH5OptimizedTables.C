@@ -1,12 +1,12 @@
+/// \file AliTPCH5OptimizedTables.C
+///
+/// This macro compress and decompress an Altro format file using Huffman technique with 5 tables
+
 #if !defined(__CINT__)
 #include <Riostream.h>
 #include <TStopwatch.h>
 #include "AliTPCCompression.h"
 #endif
-
-/*
-This macro compress and decompress an Altro format file using Huffman technique with 5 tables
-*/
 
 void AliTPCH5OptimizedTables(const char* fSource="AltroFormat.dat",const char* fDest="CompressedData.dat"){
   cout<<"Source file: "<<fSource<<" Output file: "<<fDest<<endl;

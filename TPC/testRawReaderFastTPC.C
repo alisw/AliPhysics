@@ -1,3 +1,5 @@
+/// \file testRawReaderFastTPC.C
+
 #include <stdio.h>
 #include <TString.h>
 #include <TROOT.h>
@@ -31,8 +33,10 @@ AliTPCCalPad *testRawReaderFastTPC(const Char_t *file="/data.local/data/06000002
 
     AliLog::SetGlobalDebugLevel(0) ;
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
-//    TString filename("/d/alice05/testtpc/raw/pulser/06000002142000.1A.root");  //nfs
-//    TString filename("root://lxfs35.gsi.de:1094//alice/testtpc/raw2006/06000001537001.001.root");
+
+    //TString filename("/d/alice05/testtpc/raw/pulser/06000002142000.1A.root");  //nfs
+    //TString filename("root://lxfs35.gsi.de:1094//alice/testtpc/raw2006/06000001537001.001.root");
+
     TString filename(file);  //local
     // on castor: /castor/cern.ch/alice/data/2006/09/18/15/06000002142000.1A.root
 

@@ -117,7 +117,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fStatusPos(0),
   fBadCalibValidate(40),
   fNoDataValidate(40),
-  fRMSBadCalibratedGain(20.0),
+  fRMSBadCalibratedGain(15.0),
   fRMSBadCalibratedVdrift(20.0),
   fRMSBadCalibratedExB(20.0),
   fMinTimeOffsetValidate(-1.6),

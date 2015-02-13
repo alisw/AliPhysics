@@ -90,31 +90,10 @@ static inline float Curvature(float x1, float y1, float x2, float y2, float x3, 
   //
   // Initial approximation of the track curvature
   //
-//  return - 2.f * ((x2 - x1) * (y3 - y2) - (x3 - x2) * (y2 - y1))
-//               * invsqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) *
-//                         ((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3)) *
-//                         ((x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)));
-  
-  //calculates the curvature of track
-  float den = (x3 - x1) * (y2 - y1) - (x2 - x1) * (y3 - y1);
-  if(den * den < 1e-32) return 0.f;
-  float a = ((y3-y1)*(x2*x2+y2*y2-x1*x1-y1*y1)-(y2-y1)*(x3*x3+y3*y3-x1*x1-y1*y1))/den;
-  if((y2 - y1) * (y2 - y1) < 1e-32) return 0.f;
-  float b = -(x2 * x2 - x1 * x1 + y2 * y2 - y1 * y1 + a * (x2 - x1)) / (y2 - y1);
-  float c = -x1 * x1 - y1 * y1 - a * x1 - b * y1;
-  float xc = -a / 2.f;
-  
-  if((a * a + b * b - 4 * c) < 0) return 0.f;
-  float rad = TMath::Sqrt(a * a + b * b - 4 * c) / 2.f;
-  if(rad * rad < 1e-32) return 1e16;
-  
-  if((x1 > 0.f && y1 > 0.f && x1 < xc)) rad *= -1.f;
-  if((x1 < 0.f && y1 > 0.f && x1 < xc)) rad *= -1.f;
-  //  if((x1<0 && y1<0 && x1<xc)) rad*=-1;
-  // if((x1>0 && y1<0 && x1<xc)) rad*=-1;
-  
-  return 1.f/rad;
-
+  return   2.f * ((x2 - x1) * (y3 - y2) - (x3 - x2) * (y2 - y1))
+               * invsqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) *
+                         ((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3)) *
+                         ((x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)));
 }
 
 //__________________________________________________________________________________________________
@@ -125,18 +104,6 @@ static inline float TanLambda(float x1, float y1, float x2, float y2, float z1, 
   //
   return (z1 - z2) * invsqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
-
-//__________________________________________________________________________________________________
-//static inline float XCenterOfCurvature(float x1, float y1, float x2, float y2, float x3, float y3)
-//{
-//    //
-//    // Initial approximation of the x-coordinate of the center of curvature
-//    //
-//
-//  const float k1 = (y2 - y1) / (x2 - x1), k2 = (y3 - y2) / (x3 - x2);
-//  return TMath::Abs(k2 - k1) > kAlmost0 ?
-//    0.5f * (k1 * k2 * (y1 - y3) + k2 * (x1 + x2) - k1 * (x2 + x3)) / (k2 - k1) : 1e12f;
-//}
 
 //__________________________________________________________________________________________________
 static inline bool CompareAngles(float alpha, float beta, float tolerance)
@@ -273,12 +240,14 @@ bool AliITSUCATracker::CellParams(int l, ClsInfo_t* c1, ClsInfo_t* c2, ClsInfo_t
   n[1] = (mD10[2] * mD20[0]) - (mD10[0] * mD20[2]);
   n[2] = (mD10[0] * mD20[1]) - (mD10[1] * mD20[0]);
   // Normalisation
-  const float norm = TMath::Sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
+  float norm = TMath::Sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
   if (norm < 1e-20f || fabs(n[2]) < 1e-20f)
     return false;
-  n[0] /= norm;
-  n[1] /= norm;
-  n[2] /= norm;
+  else
+    norm = 1.f / norm;
+  n[0] *= norm;
+  n[1] *= norm;
+  n[2] *= norm;
   // Center of the circle
   const float c[2] = {-0.5f * n[0] / n[2], -0.5f * n[1] / n[2]};
   // Constant
@@ -597,9 +566,9 @@ void AliITSUCATracker::MakeCells(int iteration)
     ResetHistos();
 #endif
     for (int i = 0; i < 5; ++i)
-      fCells[i].clear();
+      vector<AliITSUCACell>().swap(fCells[i]);
     for (int i = 0; i < 6; ++i)
-      fDoublets[i].clear();
+      vector<Doublets>().swap(fDoublets[i]);
   }
   
   // Trick to speed up the navigation of the doublets array. The lookup table is build like:
@@ -608,9 +577,11 @@ void AliITSUCATracker::MakeCells(int iteration)
   // fLayer[l+1][i]
   vector<int> dLUT[5];
   for (int iL = 0; iL < 6; ++iL) {
-    if (iL < 5) {
+    if (fLayer[iL].GetNClusters() == 0) continue;
+    if (iL < 5)
       dLUT[iL].resize(fLayer[iL + 1].GetNClusters(),-1);
-    }
+    if (dLUT[iL - 1].size() == 0u)
+      continue;
     for (int iC = 0; iC < fLayer[iL].GetNClusters(); ++iC) {
       ClsInfo_t* cls = fLayer[iL].GetClusterInfo(iC);
       if (fUsedClusters[iL][cls->index]) {
@@ -661,18 +632,23 @@ void AliITSUCATracker::MakeCells(int iteration)
   // where n is the index inside fCells[l+1] of the first cells that uses the doublet
   // fDoublets[l+1][i]
   vector<int> tLUT[4];
+  tLUT[0].resize(fDoublets[1].size(),-1);
+  tLUT[1].resize(fDoublets[2].size(),-1);
+  tLUT[2].resize(fDoublets[3].size(),-1);
+  tLUT[3].resize(fDoublets[4].size(),-1);
+
   for (int iD = 0; iD < 5; ++iD)
   {
-    if (iD < 4) {
-      tLUT[iD].resize(fDoublets[iD + 1].size(),0);
-    }
+    if (fDoublets[iD + 1].size() == 0u || fDoublets[iD].size() == 0u) continue;
+
     for (size_t iD0 = 0; iD0 < fDoublets[iD].size(); ++iD0)
     {
       const int idx = fDoublets[iD][iD0].y;
       bool first = true;
       if (dLUT[iD][idx] == -1) continue;
-      for (size_t iD1 = dLUT[iD][idx]; idx == fDoublets[iD + 1][iD1].x;++iD1)
+      for (size_t iD1 = dLUT[iD][idx]; iD1 < fDoublets[iD + 1].size(); ++iD1)
       {
+        if (idx != fDoublets[iD + 1][iD1].x) break;
         if (TMath::Abs(fDoublets[iD][iD0].tanL - fDoublets[iD + 1][iD1].tanL) < fCDTanL &&
             TMath::Abs(fDoublets[iD][iD0].phi - fDoublets[iD + 1][iD1].phi) < fCDPhi) {
           const float tan = 0.5f * (fDoublets[iD][iD0].tanL + fDoublets[iD + 1][iD1].tanL);
@@ -714,16 +690,19 @@ void AliITSUCATracker::MakeCells(int iteration)
       }
     }
   }
-  
+
   // Adjacent cells: cells that share 2 points. In the following code adjacent cells are combined.
   // If they meet some requirements (~ same curvature, ~ same n) the innermost cell id is added
   // to the list of neighbours of the outermost cell. When the cell is added to the neighbours of
   // the outermost cell the "level" of the latter is set to the level of the innermost one + 1.
   // ( only if $(level of the innermost) + 1 > $(level of the outermost) )
   for (int iD = 0; iD < 4; ++iD) {
+    if (fCells[iD + 1].size() == 0u || tLUT[iD].size() == 0u) continue; // TODO: dealing with holes
     for (size_t c0 = 0; c0 < fCells[iD].size(); ++c0) {
       const int idx = fCells[iD][c0].d1();
-      for (size_t c1 = tLUT[iD][idx]; idx == fCells[iD + 1][c1].d0(); ++c1) {
+      if (tLUT[iD][idx] == -1) continue;
+      for (size_t c1 = tLUT[iD][idx]; c1 < fCells[iD + 1].size(); ++c1) {
+        if (idx != fCells[iD + 1][c1].d0()) break;
 #ifdef _TUNING_
         fGood = (fLayer[iD].GetClusterSorted(fCells[iD][c0].x())->GetLabel(0) ==
                  fLayer[iD + 1].GetClusterSorted(fCells[iD][c0].y())->GetLabel(0) &&
@@ -733,8 +712,8 @@ void AliITSUCATracker::MakeCells(int iteration)
                  fLayer[iD + 3].GetClusterSorted(fCells[iD + 1][c1].z())->GetLabel(0) &&
                  fLayer[iD].GetClusterSorted(fCells[iD][c0].x())->GetLabel(0) > 0);
 #endif
-        float *n0 = fCells[iD][c0].GetN();
-        float *n1 = fCells[iD + 1][c1].GetN();
+        float* n0 = fCells[iD][c0].GetN();
+        float* n1 = fCells[iD + 1][c1].GetN();
         const float dn2 = ((n0[0] - n1[0]) * (n0[0] - n1[0]) + (n0[1] - n1[1]) * (n0[1] - n1[1]) +
                            (n0[2] - n1[2]) * (n0[2] - n1[2]));
         const float dp = fabs(fCells[iD][c0].GetCurvature() - fCells[iD + 1][c1].GetCurvature());

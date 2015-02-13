@@ -3,11 +3,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-////////////////////////////////////////////////
-//  Manager class for TPC   clusters          //
-////////////////////////////////////////////////
+/// \class AliClusters
+///
+///  Manager class for TPC   clusters
 
 
 #include "AliSegmentID.h"
@@ -32,9 +30,10 @@ public:
   void DrawClusters(Float_t shiftx, Float_t shifty, Int_t color, Int_t size, Int_t style);
   Bool_t SetClass(const Text_t *classname);
 protected:
-  TClonesArray * fClusters; //->array of clusters 
+  /// array of clusters
+  TClonesArray * fClusters; //->
   Int_t  fNclusters;  
-  TClass * fClass; //!type of cluster class 
+  TClass * fClass; //!< type of cluster class
   ClassDef(AliClusters,1) // Cluster manager
 };
 

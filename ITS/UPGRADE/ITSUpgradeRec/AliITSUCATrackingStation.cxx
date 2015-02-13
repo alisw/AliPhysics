@@ -119,6 +119,7 @@ void AliITSUCATrackingStation::Init(AliITSURecoLayer *lr, AliITSUGeomTGeo *geo)
   fBins = new ClBinInfo_t[fNZBins * fNPhiBins];
   fOccBins = new int[fNZBins * fNPhiBins];
   fNClusters = fClusters->GetEntriesFast();
+  if(fNClusters == 0) return;
   fSortedClInfo.reserve(fClusters->GetEntriesFast());
   fVIDOffset = ((AliITSUClusterPix*)fClusters->UncheckedAt(0))->GetVolumeId();
   //

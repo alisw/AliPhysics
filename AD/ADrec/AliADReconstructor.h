@@ -13,8 +13,13 @@
 #include "AliReconstructor.h"
 #include "AliLog.h"
 #include "AliADConst.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliADRecoParam.h"
 
 class AliESDAD;
+class AliESDADfriend;
 class AliESDEvent;
 class AliADCalibData;
 
@@ -39,11 +44,23 @@ public:
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
   virtual void ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
 
+  static const AliADRecoParam* GetRecoParam() { return dynamic_cast<const AliADRecoParam*>(AliReconstructor::GetRecoParam(14)); }
+
+  AliCDBStorage     *SetStorage(const char* uri);
+  void GetCollisionMode();
+
   AliADCalibData *GetCalibData() const; 
+
+  enum {kInvalidADC   =  -1024,
+        kInvalidTime  =  -1024};
+
+  AliESDAD*    GetESDAD() { return fESDAD; }
 
 protected:
 
-  AliESDAD*        fESDAD;      // AD ESD object  
+  AliESDAD*        fESDAD;       // AD ESD object 
+  AliESDEvent*     fESD;         // ESD object
+  AliESDADfriend*  fESDADfriend; // AD ESDfriend object  
 
 private:
   AliADReconstructor(const AliADReconstructor &reconstructor); //Not implemented
@@ -51,6 +68,9 @@ private:
   
   AliADCalibData* fCalibData;      //! calibration data
   mutable TClonesArray *fDigitsArray;  // clones-array for ConvertDigits() and FillESD()
+  
+  Int_t              fCollisionMode;  // =0->p-p, =1->A-A
+  Float_t            fBeamEnergy;     // beam energy
 
   ClassDef(AliADReconstructor, 1)  // class for the AD reconstruction
 };

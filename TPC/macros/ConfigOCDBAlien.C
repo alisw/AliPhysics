@@ -1,21 +1,23 @@
-//
-// Macro to Setup OCDB  
-// This is just example macro - using the alien OCDB
-// Responsible: marian.ivanov@cern.ch
-// To be used:
-// 1. Before invocation of the calibration - in the calibration trains
-// 2. To setup calibration viewer.
-//  
-// ConfigOCDB  - setup default and specific data storage
-// SetupCustom - user sepcific configuration 
-//             - Values in local cache of OCDB are overwritten
+/// \file ConfigOCDBAlien.C
+///
+/// Macro to Setup OCDB
+/// This is just example macro - using the alien OCDB
+/// \author marian.ivanov@cern.ch
+/// To be used:
+/// 1. Before invocation of the calibration - in the calibration trains
+/// 2. To setup calibration viewer.
+///
+/// ConfigOCDB  - setup default and specific data storage
+/// SetupCustom - user sepcific configuration
+///             - Values in local cache of OCDB are overwritten
 
 
 
 void SetupCustom(Int_t run);
 
 void ConfigOCDBAlien(Int_t crun=-1){
-  // 
+  ///
+
   TGrid * alien =     TGrid::Connect("alien://",0,0,"t"); 
   printf("SETUP OCBD for TPC\n");
   //
@@ -30,13 +32,10 @@ void ConfigOCDBAlien(Int_t crun=-1){
 
 
 void SetupCustom(Int_t run){
-  //
-  //
-  // Custom part - to be empty once we are happy with the calibration
-  //
-  //
-  // Setup magnetic field - In future this should be part of GRP functionality
-  //
+  /// Custom part - to be empty once we are happy with the calibration
+  ///
+  /// Setup magnetic field - In future this should be part of GRP functionality
+
   AliGRPObject *grp = AliTPCcalibDB::GetGRP(run);
   Float_t current = 0;
   Float_t bz      = 0;

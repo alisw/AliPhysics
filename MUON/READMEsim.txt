@@ -1,6 +1,6 @@
 // $Id$
 
-/*! \page README_sim Simulation 
+/*! \page README_sim MUON Simulation
 
 The simulation encompasses the following tasks :
 

@@ -13,16 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------
-//          Implementation of the TPC cluser
-//
-//   Origin: Marian Ivanov   Marian.Ivanov@cern.ch
-// 
-//  AliTPC parallel tracker - 
-//  Description of this class together with its intended usage
-//  will follow shortly
-//  
-//-------------------------------------------------------
+/// \class AliTPCclusterMI
+/// \brief Implementation of the TPC cluser
+///
+/// AliTPC parallel tracker -
+/// Description of this class together with its intended usage
+/// will follow shortly
+///
+/// \author Marian Ivanov   Marian.Ivanov@cern.ch
 
 /* $Id$ */
 
@@ -32,7 +30,9 @@
 #include "AliGeomManager.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCclusterMI)
+/// \endcond
 
 
 AliTPCclusterMI::AliTPCclusterMI():
@@ -40,10 +40,10 @@ AliTPCclusterMI::AliTPCclusterMI():
   fInfo(0),
   fTimeBin(0),  //time bin coordinate
   fPad(0),  //pad coordinate
-  fQ(0),       //Q of cluster (in ADC counts)  
+  fQ(0),       //Q of cluster (in ADC counts)
   fMax(0),      //maximal amplitude in cluster
-  fType(0),     //type of the cluster 0 means golden 
-  fUsed(0),     //counter of usage  
+  fType(0),     //type of the cluster 0 means golden
+  fUsed(0),     //counter of usage
   fDetector(0), //detector  number
   fRow(0)      //row number number
 {
@@ -64,19 +64,19 @@ AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
   fDetector(cluster.fDetector),
   fRow(cluster.fRow)
 {
-  //
-  // copy constructor
-  // 
-  //  AliInfo("Copy constructor\n");
+  /// copy constructor
+
+  // AliInfo("Copy constructor\n");
+
   if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
 }
 
 AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
 {
-  //
-  // assignment operator
-  // 
-  //  AliInfo("Asignment operator\n");
+  /// assignment operator
+
+  // AliInfo("Asignment operator\n");
+
   if (this == &cluster) return (*this);
 
   (AliCluster&)(*this) = (AliCluster&)cluster;
@@ -97,29 +97,27 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
 
 
 
-AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) : 
+AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) :
   AliCluster(0,hit,0.,0.,lab),
   fInfo(0),
   fTimeBin(0),  //time bin coordinate
   fPad(0),  //pad coordinate
-  fQ(0),       //Q of cluster (in ADC counts)  
+  fQ(0),       //Q of cluster (in ADC counts)
   fMax(0),      //maximal amplitude in cluster
-  fType(0),     //type of the cluster 0 means golden 
-  fUsed(0),     //counter of usage  
+  fType(0),     //type of the cluster 0 means golden
+  fUsed(0),     //counter of usage
   fDetector(0), //detector  number
   fRow(0)      //row number number
 {
-  //
-  // constructor
-  //
+  /// constructor
+
   fQ = (UShort_t)hit[4];
   fInfo = 0;
 }
 
 AliTPCclusterMI::~AliTPCclusterMI() {
-  //
-  // destructor
-  //
+  /// destructor
+
   if (fInfo) delete fInfo;
   fInfo = 0;
 }
@@ -128,55 +126,50 @@ AliTPCclusterMI::~AliTPCclusterMI() {
 
 Bool_t AliTPCclusterMI::IsSortable() const
 {
-  //
-  //
+  ///
+
   return kTRUE;
 
 }
 
 Int_t AliTPCclusterMI::Compare(const TObject* obj) const
 {
-  //
-  // compare according y
+  /// compare according y
+
   AliTPCclusterMI * o2 = (AliTPCclusterMI*)obj;
-  return (o2->GetY()>GetY())? -1:1; 
+  return (o2->GetY()>GetY())? -1:1;
 }
 
 
 void AliTPCclusterMI::SetDetector(Int_t detector){
-  //
-  // set volume ID 
-  //  
+  /// set volume ID
+
   fDetector = (UChar_t)(detector%72);
-  AliGeomManager::ELayerID id = (fDetector<36) ? 
+  AliGeomManager::ELayerID id = (fDetector<36) ?
     AliGeomManager::kTPC1 :AliGeomManager::kTPC2 ;
   Int_t modId = (fDetector<36)?fDetector: fDetector-36;
-  SetVolumeId(AliGeomManager::LayerToVolUID(id,modId));  
+  SetVolumeId(AliGeomManager::LayerToVolUID(id,modId));
 }
 
 
 void AliTPCclusterMI::SetInfo(AliTPCclusterInfo * info) {
-  //
-  //
-  //
+  ///
+
   if (fInfo) delete fInfo;
   fInfo = info;
 }
 
 
 AliTPCclusterMI* AliTPCclusterMI::MakeCluster(AliTrackPoint* /*point*/) {
-  //
-  // make AliTPCclusterMI out of AliTrackPoint
-  // (not yet implemented)
-  
+  /// make AliTPCclusterMI out of AliTrackPoint
+  /// (not yet implemented)
+
   return NULL;
 }
 
 
 AliTrackPoint* AliTPCclusterMI::MakePoint() {
-  //
-  // make AliTrackPoint out of AliTPCclusterMI
-  //
+  /// make AliTrackPoint out of AliTPCclusterMI
 
   AliTrackPoint* point = new AliTrackPoint();
   Float_t xyz[3]={0.};
@@ -193,10 +186,8 @@ AliTrackPoint* AliTPCclusterMI::MakePoint() {
 //______________________________________________________________________________
 void AliTPCclusterMI::SetGlobalTrackPoint( const AliCluster &cl, AliTrackPoint &point )
 {
-  //
-  // Set global AliTrackPoint
-  //
-  
+  /// Set global AliTrackPoint
+
   Float_t xyz[3]={0.};
   Float_t cov[6]={0.};
   cl.GetGlobalXYZ(xyz);

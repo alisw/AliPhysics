@@ -326,7 +326,7 @@ void AliPHOSv1::StepManager(void)
       TVirtualMC::GetMC()->CurrentVolOffID(3, strip);
       Int_t cell ;
       TVirtualMC::GetMC()->CurrentVolOffID(2, cell);
-
+      
       //Old formula for row is wrong. For example, I have strip 56 (28 for 2 x 8), row must be 1.
       //But row == 1 + 56 - 56 % 56 == 57 (row == 1 + 28 - 28 % 28 == 29)
       //Int_t row = 1 + GetGeometry()->GetEMCAGeometry()->GetNStripZ() - strip % (GetGeometry()->GetEMCAGeometry()->GetNStripZ()) ;
@@ -336,8 +336,7 @@ void AliPHOSv1::StepManager(void)
       // Absid for 8x2-strips. Looks nice :) 
       absid = (moduleNumber-1)*GetGeometry()->GetNCristalsInModule() + 
 	            row * 2 + (col*GetGeometry()->GetEMCAGeometry()->GetNCellsXInStrip() + (cell - 1) / 2)*GetGeometry()->GetNZ() - (cell & 1 ? 1 : 0);
-
-      
+		    
       //Calculates the light yield, the number of photons produced in the
       //crystal 
       //There is no dependence of reponce on distance from energy deposition to APD

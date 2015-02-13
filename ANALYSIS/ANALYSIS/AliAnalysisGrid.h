@@ -74,6 +74,7 @@ enum EPluginBits {
    virtual void        SetAPIVersion(const char *version)                = 0;
    virtual void        SetROOTVersion(const char *version)               = 0;
    virtual void        SetAliROOTVersion(const char *version)            = 0;
+   virtual void        SetAliPhysicsVersion(const char *version)         = 0;
    virtual void        SetUser(const char *user)                         = 0;
    virtual void        SetTTL(Int_t ttl=30000)                           = 0;
    virtual void        SetGridWorkingDir(const char *name="workdir")     = 0;

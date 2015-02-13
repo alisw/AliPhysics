@@ -49,9 +49,6 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2() : AliEMCALTriggerMapping()
     fnFastORInSMEta[  iSM]  = 0 ;
   }
   fnModuleInEMCALPhi  = 0 ;
-
-  Init_TRU_offset()  ;
-  Init_SM_offset()   ;
 }
 //________________________________________________________________________________________________
 AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(const Int_t ntru, const AliEMCALGeometry* geo) : AliEMCALTriggerMapping(ntru, geo)
@@ -72,6 +69,9 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(const Int_t ntru, const AliEM
     fnFastORInSMEta[  iSM]  = 0;
   }
   fnModuleInEMCALPhi  = 0;
+
+  Init_TRU_offset()  ;
+  Init_SM_offset()   ;
 }
 
 //________________________________________________________________________________________________

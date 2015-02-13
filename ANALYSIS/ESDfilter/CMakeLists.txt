@@ -20,7 +20,7 @@ set(MODULE ESDfilter)
 include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
@@ -49,7 +49,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} ANALYSIS ANALYSISalice AOD ESD STEERBase EMCALUtils Core EG Hist MathCore Physics RIO Tree)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

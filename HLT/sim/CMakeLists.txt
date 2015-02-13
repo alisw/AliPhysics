@@ -20,7 +20,7 @@ set(MODULE HLTsim)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/sim)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
@@ -57,7 +57,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
-target_link_libraries(${MODULE} HLTbase)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

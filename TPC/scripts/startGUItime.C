@@ -1,4 +1,6 @@
-//global variables to access the gui components
+/// \file startGUItime.C
+/// \brief Global variables to access the gui components
+
 AliTPCCalibViewerGUItime *guiTime=0x0;
 TObjArray *arrGUI=0x0;
 AliTPCCalibViewerGUI *gui=0x0;

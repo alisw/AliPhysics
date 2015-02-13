@@ -109,6 +109,7 @@ class AliTRDclusterizer : public TNamed
   static UChar_t   GetStatus(Short_t &signal);
   Int_t            GetAddedClusters() const {return fNoOfClusters;}
   Int_t            GetNTimeBins() const {return fTimeTotal;}
+  Int_t            GetNTimeBinsDCS() const {return fTimeBinsDCS;}
 
   Bool_t           IsClustersOwner() const {return TestBit(kClOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
@@ -164,6 +165,8 @@ protected:
   UShort_t             fVolid;                    // Volume ID
   Int_t                fColMax;                   // Number of Colums in one detector
   Int_t                fTimeTotal;                // Number of time bins
+  Int_t                fTimeBinsDCS;              // number or time bins from DCS (OCDB)
+  Int_t                fRun;                      // last run processed (to update cached OCDB params if run changes)
   AliTRDCalROC        *fCalGainFactorROC;         // Calibration object with pad wise values for the gain factors
   Float_t              fCalGainFactorDetValue;    // Calibration value for chamber wise noise
   AliTRDCalROC        *fCalNoiseROC;              // Calibration object with pad wise values for the noise
@@ -176,11 +179,10 @@ protected:
   Int_t                fBaseline;                 // Baseline of the ADC values
   AliTRDrawStream     *fRawStream;                // Raw data streamer
   UInt_t               fTrgFlags[AliTRDgeometry::kNsector]; // trigger flags
-
 private:
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
 
-  ClassDef(AliTRDclusterizer,6)                   //  TRD clusterfinder
+  ClassDef(AliTRDclusterizer,7)                   //  TRD clusterfinder
 
 };
 

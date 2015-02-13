@@ -1,61 +1,61 @@
-/*
-// Pseudo code
-// 1. Load Calibration from DB
-
-   .x $ALICE_ROOT/TPC/macros/ConfigOCDB.C
-
-//
-//2.  Load Calibration components
-//
-.x ~/UliStyle.C
-gSystem->Load("libANALYSIS");
-gSystem->Load("libSTAT");
-gSystem->Load("libTPCcalib");
-TFile fcalib("CalibObjects.root");
-TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-AliTPCcalibTracksGain * gain = ( AliTPCcalibTracksGain *)array->FindObject("calibTracksGain");
-
-//
-//3.
-// 
-AliTPCClusterParam * paramCl = AliTPCcalibDB::Instance()->GetClusterParam(); 
-gain->UpdateClusterParam(paramCl);
-
-//
-//4. Test - visulaize results
-//
-TF1 fdr("fdr","AliTPCClusterParam::SQnorm(0,0,x,0,0)",0,1);
-
-//
-//5. Update the ClusterParam in your OCDB
-//
-//
-Int_t runNumber = 0; //61725
-AliCDBMetaData *metaData= new AliCDBMetaData();
-metaData->SetObjectClassName("AliTPCClusterParam");
-metaData->SetResponsible("Marian Ivanov");
-metaData->SetBeamPeriod(1);
-metaData->SetAliRootVersion("05-06-00"); //root version
-metaData->SetComment("October runs calibration");
-AliCDBId id1("TPC/Calib/ClusterParam", runNumber, AliCDBRunRange::Infinity());
-gStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT/OCDB");
-gStorage->Put(paramCl, id1, metaData);
-
-
-//
-//  6. dEdx matching - Currently only debug streamers
-//  Load Proof with OCDB 
-    See pseudo code TestChainCosmicdEdx
-*/
-
-
-
-
+/// \file CalibClParamNew.C
+/// 
+/// Pseudo code
+/// 
+/// 1. Load Calibration from DB
+/// 
+/// ~~~
+/// .x $ALICE_ROOT/TPC/macros/ConfigOCDB.C
+/// ~~~
+/// 
+/// 2.  Load Calibration components
+/// 
+/// ~~~
+/// .x ~/UliStyle.C
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libSTAT");
+/// gSystem->Load("libTPCcalib");
+/// TFile fcalib("CalibObjects.root");
+/// TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+/// AliTPCcalibTracksGain * gain = ( AliTPCcalibTracksGain *)array->FindObject("calibTracksGain");
+/// ~~~
+/// 
+/// 3.
+/// 
+/// ~~~
+/// AliTPCClusterParam * paramCl = AliTPCcalibDB::Instance()->GetClusterParam(); 
+/// gain->UpdateClusterParam(paramCl);
+/// ~~~
+/// 
+/// 4. Test - visulaize results
+/// 
+/// ~~~
+/// TF1 fdr("fdr","AliTPCClusterParam::SQnorm(0,0,x,0,0)",0,1);
+/// ~~~
+/// 
+/// 
+/// 5. Update the ClusterParam in your OCDB
+/// 
+/// ~~~{.cpp}
+/// Int_t runNumber = 0; //61725
+/// AliCDBMetaData *metaData= new AliCDBMetaData();
+/// metaData->SetObjectClassName("AliTPCClusterParam");
+/// metaData->SetResponsible("Marian Ivanov");
+/// metaData->SetBeamPeriod(1);
+/// metaData->SetAliRootVersion("05-06-00"); //root version
+/// metaData->SetComment("October runs calibration");
+/// AliCDBId id1("TPC/Calib/ClusterParam", runNumber, AliCDBRunRange::Infinity());
+/// gStorage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT/OCDB");
+/// gStorage->Put(paramCl, id1, metaData);
+/// ~~~
+/// 
+/// 6. dEdx matching - Currently only debug streamers
+/// Load Proof with OCDB 
+/// See pseudo code TestChainCosmicdEdx
 
 void TestChainCosmicDedx(){
-  //
-  // pseudo cose
-  //
+  /// pseudo cose
+
   gSystem->Load("libANALYSIS");
   gSystem->Load("libSTAT");
   gSystem->Load("libTPCcalib");

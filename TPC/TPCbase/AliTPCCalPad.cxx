@@ -15,12 +15,10 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TPC calibration class for parameters which are saved per pad             //
-//  Each AliTPCCalPad consists of 72 AliTPCCalROC-objects                    //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalPad
+///
+///  TPC calibration class for parameters which are saved per pad
+///  Each AliTPCCalPad consists of 72 AliTPCCalROC-objects
 
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
@@ -47,7 +45,9 @@
 #include <TVirtualPad.h>
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibViewer.h"
+/// \cond CLASSIMP
 ClassImp(AliTPCCalPad)
+/// \endcond
 
 //_____________________________________________________________________________
 AliTPCCalPad::AliTPCCalPad():TNamed()
@@ -66,9 +66,8 @@ AliTPCCalPad::AliTPCCalPad():TNamed()
 AliTPCCalPad::AliTPCCalPad(const Text_t *name, const Text_t *title)
                 :TNamed(name,title)
 {
-  //
-  // AliTPCCalPad constructor
-  //
+  /// AliTPCCalPad constructor
+
   for (Int_t isec = 0; isec < kNsec; isec++) {
     fROC[isec] = new AliTPCCalROC(isec);
   }
@@ -78,9 +77,7 @@ AliTPCCalPad::AliTPCCalPad(const Text_t *name, const Text_t *title)
 //_____________________________________________________________________________
 AliTPCCalPad::AliTPCCalPad(const AliTPCCalPad &c):TNamed(c)
 {
-  //
-  // AliTPCCalPad copy constructor
-  //
+  /// AliTPCCalPad copy constructor
 
   for (Int_t isec = 0; isec < kNsec; isec++) {
          fROC[isec] = 0;
@@ -92,9 +89,7 @@ AliTPCCalPad::AliTPCCalPad(const AliTPCCalPad &c):TNamed(c)
 //_____________________________________________________________________________
 AliTPCCalPad::AliTPCCalPad(TObjArray * array):TNamed(array->GetName(),array->GetName())
 {
-  //
-  // AliTPCCalPad default constructor
-  //
+  /// AliTPCCalPad default constructor
 
   for (Int_t isec = 0; isec < kNsec; isec++) {
     fROC[isec] = (AliTPCCalROC *)array->At(isec);
@@ -106,9 +101,7 @@ AliTPCCalPad::AliTPCCalPad(TObjArray * array):TNamed(array->GetName(),array->Get
 ///_____________________________________________________________________________
 AliTPCCalPad::~AliTPCCalPad()
 {
-  //
-  // AliTPCCalPad destructor
-  //
+  /// AliTPCCalPad destructor
 
   for (Int_t isec = 0; isec < kNsec; isec++) {
     if (fROC[isec]) {
@@ -122,9 +115,7 @@ AliTPCCalPad::~AliTPCCalPad()
 //_____________________________________________________________________________
 AliTPCCalPad &AliTPCCalPad::operator=(const AliTPCCalPad &c)
 {
-  //
-  // Assignment operator
-  //
+  /// Assignment operator
 
   if (this != &c) ((AliTPCCalPad &) c).Copy(*this);
   return *this;
@@ -134,9 +125,7 @@ AliTPCCalPad &AliTPCCalPad::operator=(const AliTPCCalPad &c)
 //_____________________________________________________________________________
 void AliTPCCalPad::Copy(TObject &c) const
 {
-  //
-  // Copy function
-  //
+  /// Copy function
 
   for (Int_t isec = 0; isec < kNsec; isec++) {
     if (fROC[isec]) {
@@ -148,11 +137,10 @@ void AliTPCCalPad::Copy(TObject &c) const
 
 
 void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
-   //
-   // Set AliTPCCalROC copies values from 'roc'
-   // if sector == -1 the sector specified in 'roc' is used
-   // else sector specified in 'roc' is ignored and specified sector is filled
-   //
+   /// Set AliTPCCalROC copies values from 'roc'
+   /// if sector == -1 the sector specified in 'roc' is used
+   /// else sector specified in 'roc' is ignored and specified sector is filled
+
    if (sector == -1) sector = roc->GetSector();
    if (!fROC[sector]) fROC[sector] = new AliTPCCalROC(sector);
    for (UInt_t ichannel = 0; ichannel < roc->GetNchannels(); ichannel++) 
@@ -160,9 +148,8 @@ void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
 }
 
 Bool_t  AliTPCCalPad::MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*outlierPad,  Bool_t doEdge){
-  //
-  // replace constent with median in the neigborhood
-  //
+  /// replace constent with median in the neigborhood
+
   Bool_t isOK=kTRUE;
   for (Int_t isec = 0; isec < kNsec; isec++) {
     AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
@@ -174,9 +161,8 @@ Bool_t  AliTPCCalPad::MedianFilter(Int_t deltaRow, Int_t deltaPad, AliTPCCalPad*
 }
 
 Bool_t  AliTPCCalPad::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction, Int_t type, AliTPCCalPad*outlierPad,  Bool_t doEdge){
-  //
-  // replace constent with LTM statistic  in  neigborhood
-  //
+  /// replace constent with LTM statistic  in  neigborhood
+
   Bool_t isOK=kTRUE;
   for (Int_t isec = 0; isec < kNsec; isec++) {
     AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
@@ -188,9 +174,8 @@ Bool_t  AliTPCCalPad::LTMFilter(Int_t deltaRow, Int_t deltaPad, Float_t fraction
 }
 
 Bool_t  AliTPCCalPad::Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCalPad*outlierPad, TF1 *fpad, TF1 *frow){
-  //
-  // replace constent with median in the neigborhood
-  //
+  /// replace constent with median in the neigborhood
+
   Bool_t isOK=kTRUE;
   for (Int_t isec = 0; isec < kNsec; isec++) {
     AliTPCCalROC *outlierROC=(outlierPad==NULL)?NULL:outlierPad->GetCalROC(isec);
@@ -205,9 +190,7 @@ Bool_t  AliTPCCalPad::Convolute(Double_t sigmaPad, Double_t sigmaRow,  AliTPCCal
 //_____________________________________________________________________________
 void AliTPCCalPad::Add(Float_t c1)
 {
-    //
-    // add constant c1 to all channels of all ROCs
-    //
+    /// add constant c1 to all channels of all ROCs
 
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
@@ -219,9 +202,8 @@ void AliTPCCalPad::Add(Float_t c1)
 //_____________________________________________________________________________
 void AliTPCCalPad::Multiply(Float_t c1)
 {
-  //
-  // multiply each channel of all ROCs with c1
-  //    
+  /// multiply each channel of all ROCs with c1
+
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Multiply(c1);
@@ -232,10 +214,9 @@ void AliTPCCalPad::Multiply(Float_t c1)
 //_____________________________________________________________________________
 void AliTPCCalPad::Add(const AliTPCCalPad * pad, Double_t c1)
 {
-  //
-  // multiply AliTPCCalPad 'pad' by c1 and add each channel to the coresponing channel in all ROCs
-  //  - pad by pad -
-  //
+  /// multiply AliTPCCalPad 'pad' by c1 and add each channel to the coresponing channel in all ROCs
+  ///  - pad by pad -
+
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec] && pad->GetCalROC(isec)){
 	    fROC[isec]->Add(pad->GetCalROC(isec),c1);
@@ -246,10 +227,9 @@ void AliTPCCalPad::Add(const AliTPCCalPad * pad, Double_t c1)
 //_____________________________________________________________________________
 void AliTPCCalPad::Multiply(const AliTPCCalPad * pad)
 {
-  //
-  // multiply each channel of all ROCs with the coresponding channel of 'pad'
-  //     - pad by pad -
-  //
+  /// multiply each channel of all ROCs with the coresponding channel of 'pad'
+  ///     - pad by pad -
+
    for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Multiply(pad->GetCalROC(isec));
@@ -260,10 +240,9 @@ void AliTPCCalPad::Multiply(const AliTPCCalPad * pad)
 //_____________________________________________________________________________
 void AliTPCCalPad::Divide(const AliTPCCalPad * pad)
 {
-  //
-  // divide each channel of all ROCs by the coresponding channel of 'pad'
-  //     - pad by pad -
-  //    
+  /// divide each channel of all ROCs by the coresponding channel of 'pad'
+  ///     - pad by pad -
+
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Divide(pad->GetCalROC(isec));
@@ -274,9 +253,8 @@ void AliTPCCalPad::Divide(const AliTPCCalPad * pad)
 //_____________________________________________________________________________
 void AliTPCCalPad::Reset()
 {
-  //
-  // Reset all cal Rocs
-  //
+  /// Reset all cal Rocs
+
   for (Int_t isec = 0; isec < kNsec; isec++) {
     if (fROC[isec]){
       fROC[isec]->Reset();
@@ -286,11 +264,10 @@ void AliTPCCalPad::Reset()
 
 //_____________________________________________________________________________
 TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
-  //
-  //   type=1 - mean
-  //        2 - median
-  //        3 - LTM
-  //
+  ///   type=1 - mean
+  ///        2 - median
+  ///        3 - LTM
+
   Int_t npoints = 0;
   for (Int_t i=0;i<72;i++) if (fROC[i]) npoints++;
   TGraph * graph = new TGraph(npoints);
@@ -323,9 +300,8 @@ TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
 //_____________________________________________________________________________
 Double_t AliTPCCalPad::GetMeanRMS(Double_t &rms)
 {
-    //
-    // Calculates mean and RMS of all ROCs
-    //
+    /// Calculates mean and RMS of all ROCs
+
     Double_t sum = 0, sum2 = 0, n=0, val=0;
     for (Int_t isec = 0; isec < kNsec; isec++) {
         AliTPCCalROC *calRoc = fROC[isec];
@@ -351,9 +327,8 @@ Double_t AliTPCCalPad::GetMeanRMS(Double_t &rms)
 //_____________________________________________________________________________
 Double_t AliTPCCalPad::GetMean(AliTPCCalPad* outlierPad)
 {
-    //
-    // return mean of the mean of all ROCs
-    //
+    /// return mean of the mean of all ROCs
+
     Double_t arr[kNsec];
     Int_t n=0;
     for (Int_t isec = 0; isec < kNsec; isec++) {
@@ -371,9 +346,8 @@ Double_t AliTPCCalPad::GetMean(AliTPCCalPad* outlierPad)
 //_____________________________________________________________________________
 Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad)
 {
-    //
-    // return mean of the RMS of all ROCs
-    //
+    /// return mean of the RMS of all ROCs
+
     Double_t arr[kNsec];
     Int_t n=0;
     for (Int_t isec = 0; isec < kNsec; isec++) {
@@ -391,9 +365,8 @@ Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad)
 //_____________________________________________________________________________
 Double_t AliTPCCalPad::GetMedian(AliTPCCalPad* outlierPad)
 {
-    //
-    // return mean of the median of all ROCs
-    //
+    /// return mean of the median of all ROCs
+
     Double_t arr[kNsec];
     Int_t n=0;
     for (Int_t isec = 0; isec < kNsec; isec++) {
@@ -411,9 +384,8 @@ Double_t AliTPCCalPad::GetMedian(AliTPCCalPad* outlierPad)
 //_____________________________________________________________________________
 Double_t AliTPCCalPad::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalPad* outlierPad)
 {
-    //
-    // return mean of the LTM and sigma of all ROCs
-    //
+    /// return mean of the LTM and sigma of all ROCs
+
     Double_t arrm[kNsec];
     Double_t arrs[kNsec];
     Double_t *sTemp=0x0;
@@ -435,11 +407,10 @@ Double_t AliTPCCalPad::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalPad* 
 
 //_____________________________________________________________________________
 TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type, Int_t side){
-  //
-  // make 1D histo
-  // type -1 = user defined range
-  //       0 = nsigma cut nsigma=min
-  //
+  /// make 1D histo
+  /// type -1 = user defined range
+  ///       0 = nsigma cut nsigma=min
+
   if (type>=0){
     if (type==0){
       // nsigma range
@@ -486,11 +457,10 @@ TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type, Int_t side
 
 //_____________________________________________________________________________
 TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
-  //
-  // Make 2D graph
-  // side  -  specify the side A = 0 C = 1
-  // type  -  used types of determination of boundaries in z
-  //
+  /// Make 2D graph
+  /// side  -  specify the side A = 0 C = 1
+  /// type  -  used types of determination of boundaries in z
+
   Float_t kEpsilon = 0.000000000001;
   TH2F * his = new TH2F(GetName(), GetName(), 250,-250,250,250,-250,250);
   AliTPCROC * roc  = AliTPCROC::Instance(); 
@@ -518,21 +488,19 @@ TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
 
 
 AliTPCCalPad* AliTPCCalPad::LocalFit(const char* padName, Int_t rowRadius, Int_t padRadius, AliTPCCalPad* PadOutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction, Bool_t printCurrentSector) const {
-   //
-   // Loops over all AliTPCCalROCs and performs a localFit in each ROC
-   // AliTPCCalPad with fit-data is returned
-   // rowRadius and padRadius specifies a window around a given pad in one sector. 
-   // The data of this window are fitted with a parabolic function. 
-   // This function is evaluated at the pad's position.
-   // At the edges the window is shifted, so that the specified pad is not anymore in the center of the window. 
-   // rowRadius  -  radius - rows to be used for smoothing
-   // padradius  -  radius - pads to be used for smoothing
-   // ROCoutlier -  map of outliers - pads not to be used for local smoothing
-   // robust     -  robust method of fitting  - (much slower)
-   // chi2Threshold: Threshold for chi2 when EvalRobust is called
-   // robustFraction: Fraction of data that will be used in EvalRobust
-   //
-   //
+   /// Loops over all AliTPCCalROCs and performs a localFit in each ROC
+   /// AliTPCCalPad with fit-data is returned
+   /// rowRadius and padRadius specifies a window around a given pad in one sector.
+   /// The data of this window are fitted with a parabolic function.
+   /// This function is evaluated at the pad's position.
+   /// At the edges the window is shifted, so that the specified pad is not anymore in the center of the window.
+   /// rowRadius  -  radius - rows to be used for smoothing
+   /// padradius  -  radius - pads to be used for smoothing
+   /// ROCoutlier -  map of outliers - pads not to be used for local smoothing
+   /// robust     -  robust method of fitting  - (much slower)
+   /// chi2Threshold: Threshold for chi2 when EvalRobust is called
+   /// robustFraction: Fraction of data that will be used in EvalRobust
+
    AliTPCCalPad* pad = new AliTPCCalPad(padName, padName);
    for (Int_t isec = 0; isec < 72; isec++){
       if (printCurrentSector) std::cout << "LocalFit in sector " << isec << "\r" << std::flush;
@@ -546,16 +514,15 @@ AliTPCCalPad* AliTPCCalPad::LocalFit(const char* padName, Int_t rowRadius, Int_t
 
 
 AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutliers, Bool_t robust, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction, Double_t err, TObjArray *fitParArr, TObjArray *fitCovArr){
-   //
-   // Loops over all AliTPCCalROCs and performs a globalFit in each ROC
-   // AliTPCCalPad with fit-data is returned
-   // chi2Threshold: Threshold for chi2 when EvalRobust is called
-   // robustFraction: Fraction of data that will be used in EvalRobust
-   // chi2Threshold: Threshold for chi2 when EvalRobust is called
-   // robustFraction: Fraction of data that will be used in EvalRobust
-   // err: error of the data points
-   // if fitParArr and/or fitCovArr is given, write fitParameters and/or covariance Matrices into the array
-   //
+   /// Loops over all AliTPCCalROCs and performs a globalFit in each ROC
+   /// AliTPCCalPad with fit-data is returned
+   /// chi2Threshold: Threshold for chi2 when EvalRobust is called
+   /// robustFraction: Fraction of data that will be used in EvalRobust
+   /// chi2Threshold: Threshold for chi2 when EvalRobust is called
+   /// robustFraction: Fraction of data that will be used in EvalRobust
+   /// err: error of the data points
+   /// if fitParArr and/or fitCovArr is given, write fitParameters and/or covariance Matrices into the array
+
    AliTPCCalPad* pad = new AliTPCCalPad(padName, padName);
    TVectorD fitParam(0);
    TMatrixD covMatrix(0,0);
@@ -577,9 +544,7 @@ AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutl
 //_____________________________________________________________________________
 TObjArray* AliTPCCalPad::CreateFormulaArray(const char *fitFormula)
 {
-  //
-  // create an array of TFormulas for the each parameter of the fit function
-  //
+  /// create an array of TFormulas for the each parameter of the fit function
 
   // split fit string in single parameters
   // find dimension of the fit:
@@ -608,9 +573,8 @@ TObjArray* AliTPCCalPad::CreateFormulaArray(const char *fitFormula)
 void AliTPCCalPad::EvalFormulaArray(const TObjArray &arrFitFormulas, TVectorD &results,
                                     const Int_t sec, const Int_t row, const Int_t pad)
 {
-  //
-  // evaluate the fit formulas
-  //
+  /// evaluate the fit formulas
+
   Int_t ndim=arrFitFormulas.GetEntries();
   results.ResizeTo(ndim);
   
@@ -628,17 +592,15 @@ void AliTPCCalPad::EvalFormulaArray(const TObjArray &arrFitFormulas, TVectorD &r
 }
 //_____________________________________________________________________________
 void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* fitFormula, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, AliTPCCalPad *pointError, Bool_t robust, Double_t robustFraction){
-  //
-  // Performs a fit on both sides.
-  // Valid information for the fitFormula are the variables
-  // - gx, gy, lx ,ly: meaning global x, global y, local x, local y value of the padName
-  // - sector:         the sector number.
-  //  eg. a formula might look 'gy' or '(sector<36) ++ gy' or 'gx ++ gy' or 'gx ++ gy ++ lx ++ lx^2' and so on
-  //
-  // PadOutliers - pads with value !=0 are not used in fitting procedure
-  // chi2Threshold: Threshold for chi2 when EvalRobust is called
-  // robustFraction: Fraction of data that will be used in EvalRobust
-  //
+  /// Performs a fit on both sides.
+  /// Valid information for the fitFormula are the variables
+  /// - gx, gy, lx ,ly: meaning global x, global y, local x, local y value of the padName
+  /// - sector:         the sector number.
+  ///  eg. a formula might look 'gy' or '(sector<36) ++ gy' or 'gx ++ gy' or 'gx ++ gy ++ lx ++ lx^2' and so on
+  ///
+  /// PadOutliers - pads with value !=0 are not used in fitting procedure
+  /// chi2Threshold: Threshold for chi2 when EvalRobust is called
+  /// robustFraction: Fraction of data that will be used in EvalRobust
 
   TObjArray* arrFitFormulas=CreateFormulaArray(fitFormula);
   Int_t ndim = arrFitFormulas->GetEntries();
@@ -707,9 +669,8 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
 //
 AliTPCCalPad *AliTPCCalPad::CreateCalPadFit(const char* fitFormula, const TVectorD &fitParamSideA, const TVectorD &fitParamSideC)
 {
-  //
-  //
-  //
+  ///
+
   TObjArray *arrFitFormulas=CreateFormulaArray(fitFormula);
   Int_t ndim = arrFitFormulas->GetEntries();
   //check if dimension of fit formula and fit parameters agree
@@ -745,10 +706,9 @@ AliTPCCalPad *AliTPCCalPad::CreateCalPadFit(const char* fitFormula, const TVecto
 
 
 TCanvas * AliTPCCalPad::MakeReportPadSector(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser){
-  //
-  // Make a report - cal pads per sector
-  // mean valeus per sector and local X
-  //
+  /// Make a report - cal pads per sector
+  /// mean valeus per sector and local X
+
   TH1* his=0; 
   TLegend *legend = 0;
   TCanvas *canvas = new TCanvas(Form("Sector: %s",varTitle),Form("Sector: %s",varTitle),1500,1100);
@@ -816,11 +776,10 @@ TCanvas * AliTPCCalPad::MakeReportPadSector(TTree *chain, const char* varName, c
 
 
 TCanvas * AliTPCCalPad::MakeReportPadSector2D(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser){
-  //
-  // Make a report - cal pads per sector
-  // 2D view
-  // Input tree should be created using AliPreprocesorOnline before
-  // 
+  /// Make a report - cal pads per sector
+  /// 2D view
+  /// Input tree should be created using AliPreprocesorOnline before
+
   TH1* his=0; 
   TCanvas *canvas = new TCanvas(Form("%s2D",varTitle),Form("%s2D",varTitle),1500,1100);
   canvas->Divide(2);
@@ -864,9 +823,8 @@ TCanvas * AliTPCCalPad::MakeReportPadSector2D(TTree *chain, const char* varName,
 }
 
 void  AliTPCCalPad::Draw(Option_t* option){
-  // 
-  // Draw function - standard 2D view
-  //
+  /// Draw function - standard 2D view
+
   TH1* his=0; 
   TCanvas *canvas = new TCanvas(Form("%s2D",GetTitle()),Form("%s2D",GetTitle()),900,900);
   canvas->Divide(2,2);
@@ -914,9 +872,8 @@ void  AliTPCCalPad::Draw(Option_t* option){
 
 
 AliTPCCalPad * AliTPCCalPad::MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC){
-  //
-  // Make cal pad from r-phi histograms
-  //
+  /// Make cal pad from r-phi histograms
+
   AliTPCROC *proc= AliTPCROC::Instance();
   AliTPCCalPad *calPad = new AliTPCCalPad("his","his");
   Float_t globalPos[3];
@@ -940,9 +897,8 @@ AliTPCCalPad * AliTPCCalPad::MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC){
 }
 
 AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name, Bool_t doFast){
-  //
-  // make cal pad from the tree 
-  //
+  /// make cal pad from the tree
+
   if (!treePad){
     ::Error("AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, const char* name)","Input tree is missing");
     return 0;
@@ -979,9 +935,8 @@ AliTPCCalPad *AliTPCCalPad::MakePadFromTree(TTree * treePad, const char *query, 
 }
 
 void AliTPCCalPad::AddFriend(TTree * treePad, const char *friendName, const char *fname){
-  //
-  //
-  //
+  ///
+
   TObjArray *fArray = new TObjArray(1);
   fArray->AddLast(this);
   this->SetName(friendName);

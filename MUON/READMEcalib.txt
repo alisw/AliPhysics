@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_calib Calibration
+\page README_calib MUON Calibration
  
  
 The Offline Condition DataBase is described extensively on ALICE Offline pages.

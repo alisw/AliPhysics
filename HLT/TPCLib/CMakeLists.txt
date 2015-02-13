@@ -43,7 +43,7 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/TPCLib
 )
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
@@ -182,9 +182,12 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim Eve Graf Gpad Recorder)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# NOTE: Vc should not stay in the rootmap!
+set(LIBDEPS ${LIBDEPS} Vc)
+
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} Vc STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim Eve Graf Gpad Recorder)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

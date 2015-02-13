@@ -4,40 +4,24 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// _________________________________________________________________
-//
-// Begin_Html
-//   <h2> AliTPCExBTwist class    </h2>       
-//   The class calculates the space point distortions due to a mismatch     
-//   of the E and B field axis (original code from STAR)                    
-//   <p>
-//   It assumes a homogeneous magnetic and electric field. The calculations performed 
-//   within this class can be written in a compact form as well (compare notes of Jim Thomas)
-//   <p>
-//   The inputs to this class are the twist angles in the x and y plane ($\theta_x,\theta_y$) 
-//   in cartesian coordinates. They can be set via the member functions SetXTwist and SetYTwist.
-// End_Html
-//
-// Begin_Macro(source)
-//   {
-//   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("cAliTPCExBTwist","cAliTPCExBTwist",500,300); 
-//   AliTPCExBTwist twist;
-//   twist.SetXTwist(0.001);  // x angle in [rad]
-//   twist.SetXTwist(0.0005); // y angle in [rad]
-//   twist.SetOmegaTauT1T2(0.32,1,1);
-//   twist.CreateHistoDRPhiinXY(1.)->Draw("surf2"); // A side
-//   return c2;
-//   } 
-// End_Macro
-//
-// Begin_Html
-//   <p>
-// Date: 27/04/2010  <br>
-// Authors: Jim Thomas, Magnus Mager, Stefan Rossegger 
-// Support since 2010: mrain.ivanov@cern.ch
-// End_Html 
-// _________________________________________________________________
+/// \class AliTPCExBTwist
+/// \brief AliTPCExBTwist class
+///
+/// The class calculates the space point distortions due to a mismatch
+/// of the E and B field axis (original code from STAR)
+///
+/// It assumes a homogeneous magnetic and electric field. The calculations performed
+/// within this class can be written in a compact form as well (compare notes of Jim Thomas)
+///
+/// The inputs to this class are the twist angles in the x and y plane ($\theta_x,\theta_y$)
+/// in cartesian coordinates. They can be set via the member functions SetXTwist and SetYTwist.
+///
+/// ![Picture from ROOT macro](AliTPCExBTwist_h_76e03fd.png)
+///
+/// Support since 2010: mrain.ivanov@cern.ch
+///
+/// \author Jim Thomas, Magnus Mager, Stefan Rossegger
+/// \date 27/04/2010
 
 #include "AliTPCCorrection.h"
 
@@ -53,7 +37,7 @@ public:
 
   // common setters and getters for ExB
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
-    fT1=t1; fT2=t2; 
+    fT1=t1; fT2=t2;
     const Float_t wt1=t1*omegaTau;     fC1=wt1/(1.+wt1*wt1);
     const Float_t wt2=t2*omegaTau;     fC2=wt2*wt2/(1.+wt2*wt2);
   };
@@ -73,13 +57,15 @@ protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:
-  Float_t fC1; // coefficient C1                 (compare Jim Thomas's notes for definitions)
-  Float_t fC2; // coefficient C2                 (compare Jim Thomas's notes for definitions)
+  Float_t fC1; ///< coefficient C1                 (compare Jim Thomas's notes for definitions)
+  Float_t fC2; ///< coefficient C2                 (compare Jim Thomas's notes for definitions)
 
-  Float_t fXTwist;               // Twist of E to B field in X-Z [rad]
-  Float_t fYTwist;               // Twist of E to B field in Y-Z [rad]
+  Float_t fXTwist;               ///< Twist of E to B field in X-Z [rad]
+  Float_t fYTwist;               ///< Twist of E to B field in Y-Z [rad]
 
+  /// \cond CLASSIMP
   ClassDef(AliTPCExBTwist,1);
+  /// \endcond
 };
 
 #endif

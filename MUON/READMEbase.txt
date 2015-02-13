@@ -1,6 +1,6 @@
 // $Id$
 
-/*! \page README_base Data definition and access
+/*! \page README_base MUON Data definition and access
 
 Both the simulation and reconstruction use containers (called stores in the MUON jargon) 
 to hold the data we're dealing with: hits, (s)digits, trigger, clusters, tracks and 

@@ -24,7 +24,7 @@ class AliRawReaderRoot: public AliRawReader {
   public :
     AliRawReaderRoot();
     AliRawReaderRoot(const char* fileName, Int_t eventNumber = -1);
-    AliRawReaderRoot(AliRawVEvent* event);
+    AliRawReaderRoot(AliRawVEvent* event, Int_t evID=-1);
     AliRawReaderRoot(const AliRawReaderRoot& rawReader);
     AliRawReaderRoot& operator = (const AliRawReaderRoot& rawReader);
     virtual ~AliRawReaderRoot();

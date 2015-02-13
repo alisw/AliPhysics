@@ -32,6 +32,8 @@ public:
     Bool_t  GetIntegratorFlag(Int_t clock);
     Bool_t  GetBBflag()  const {return fBBflag;}
     Bool_t  GetBGflag()  const {return fBGflag;}
+    void    SetBBflag(Bool_t bbFlag) {fBBflag = bbFlag;}
+    void    SetBGflag(Bool_t bgFlag) {fBGflag = bgFlag;}
     
   protected:
     Int_t   fPMNumber;      // PhotoMultiplier number (0 to 16)

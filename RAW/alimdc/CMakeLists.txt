@@ -18,7 +18,7 @@ set (MODULE alimdc)
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Aditional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS} 
+include_directories(${ROOT_INCLUDE_DIR} 
                     ${AliRoot_SOURCE_DIR}/RAW/MDC
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec

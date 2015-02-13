@@ -957,6 +957,7 @@ Double_t AliGenEMlib::PtEta( const Double_t *px, const Double_t */*dummy*/ )
       km = 0.547853; kc = 3.060; kT = 0.212; kn = 6.578;
       return PtTsallis(*px,km,kc,kT,kn);
       break;
+    case kEtaMtScal:
     default:
       return MtScal(*px,kEta);
     }
@@ -976,6 +977,7 @@ Double_t AliGenEMlib::PtEta( const Double_t *px, const Double_t */*dummy*/ )
       km = 0.547853; kc = 2.802; kT = 0.164; kn = 5.815;
       return PtTsallis(*px,km,kc,kT,kn);
       break;
+    case kEtaMtScal:
     default:
       return MtScal(*px,kEta);
       break;
@@ -1076,6 +1078,7 @@ Double_t AliGenEMlib::PtOmega( const Double_t *px, const Double_t */*dummy*/ )
       km = 0.78265; kc = 0.340051/(2*TMath::Pi()); kT = 0.206; kn = 6.31422;
       return PtTsallis(*px,km,kc,kT,kn);
       break;
+    case kOmegaMtScal:
     default:
       return MtScal(*px,kOmega);
     }
@@ -1177,6 +1180,7 @@ Double_t AliGenEMlib::PtPhi( const Double_t *px, const Double_t */*dummy*/ )
       km = 1.01946; kc = 0.0269578/(2*TMath::Pi()); kT = 0.2718119311; kn = 6.6755739295;
       return PtTsallis(*px,km,kc,kT,kn);
       break;
+    case kPhiMtScal:
     default:
       return MtScal(*px,kPhi);
     }

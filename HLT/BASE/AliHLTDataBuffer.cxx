@@ -1174,6 +1174,11 @@ vector<AliHLTDataBuffer::AliHLTRawPage*> AliHLTDataBuffer::AliHLTRawPage::fgGlob
 
 AliHLTUInt32_t AliHLTDataBuffer::AliHLTRawPage::fgGlobalPageSize=30*1024*1024;
 
+unsigned int AliHLTDataBuffer::GetMaxBufferSize()
+{
+	return(30 * AliHLTRawPage::GetGlobalPageSize()); //Use a max data size of 30 * GlobalPageSize, as this is the maximum AliHLTRawPage::GlobalAlloc will allocate
+}
+
 AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(AliHLTUInt32_t size, int verbosity)
 {
   // alloc a buffer of specified size from the global pages
@@ -1192,7 +1197,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(
   if (!rawbuffer) {
     AliHLTUInt32_t rawPageSize=fgGlobalPageSize;
     if (rawPageSize<size) {
-      if (rawPageSize*10<size) {
+      if (rawPageSize*30+fgkSafetyPatternSize<size) {
 	log.Logging(kHLTLogError, "AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc", "data buffer handling", "refusing to allocate buffer of size %d", size);
 	return NULL;
       }

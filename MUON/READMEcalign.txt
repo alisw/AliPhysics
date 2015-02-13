@@ -2,7 +2,7 @@
 
 /*! 
 
-\page README_calign Offline Calibration and Alignment
+\page README_calign MUON Offline Calibration and Alignment
  
 \section calign_s1 Offline monitoring of the Alignment and Calibration
 

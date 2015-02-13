@@ -1,14 +1,14 @@
-/*
-  Unit test for some functions classes  used in the $ALICE_ROOT/TPC/Base directory:
-    
-gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/install/include -I$ALICE_ROOT/STEER   -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCbase -I$ALICE_ROOT/TPCcalib"); 
-
-   
-  .L $ALICE_ROOT/TPC/Base/test/UnitTest.C+ 
- UnitTestAliTPCCalPadTree();
-  TestCorrection_AliTPCCorrection_AddCorrectionCompact();
-
-*/
+/// \file UnitTest.C
+///
+/// Unit test for some functions classes  used in the $ALICE_ROOT/TPC/Base directory:
+///
+/// ~~~{.cpp}
+/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/install/include -I$ALICE_ROOT/STEER   -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCbase -I$ALICE_ROOT/TPCcalib");
+///
+/// .L $ALICE_ROOT/TPC/Base/test/UnitTest.C+
+/// UnitTestAliTPCCalPadTree();
+/// TestCorrection_AliTPCCorrection_AddCorrectionCompact();
+/// ~~~
 
 #include "TF1.h"
 #include "TMath.h"
@@ -34,9 +34,7 @@ gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/install
 #include "TGeoMatrix.h"
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
-//
 // PARAMETERS to set from outside:
-//
 TString baseDir="/hera/alice/wiechula/calib/guiTrees";  // TO  FIX specification of inout data
 //
 //
@@ -51,12 +49,11 @@ Bool_t  TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact();
 Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(Bool_t fast=kFALSE);
 
 void  UnitTestAliTPCCalPadTree(){
-  //
-  //  Make a UnitTest of the AliTPCCalPad 
-  //   a.) TTree functionaility
-  //   b.) MedianFilterFunctionality
-  //   c.) LTMFilterFunctionality
-  // 
+  ///  Make a UnitTest of the AliTPCCalPad
+  ///   a.) TTree functionaility
+  ///   b.) MedianFilterFunctionality
+  ///   c.) LTMFilterFunctionality
+
   TObjArray *fArray = new TObjArray(100);
   TTree * treePad=AliTPCcalibDButil::ConnectGainTrees(baseDir);
   for (Int_t i=0; i<5; i+=2){
@@ -116,10 +113,8 @@ void  UnitTestAliTPCCalPadTree(){
 
 
 Bool_t  TestCorrection_AliTPCExBTwistAddCorrectionCompact(){
-  //
-  // 
-  // 1.) Test ExB twist AddCorrectionCompact
-  //
+  /// 1.) Test ExB twist AddCorrectionCompact
+
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   AliTPCComposedCorrection *compCorrTwist = new AliTPCComposedCorrection();
   AliTPCExBTwist  *twistX    = new  AliTPCExBTwist;
@@ -174,9 +169,8 @@ Bool_t  TestCorrection_AliTPCExBTwistAddCorrectionCompact(){
 
 
 Bool_t  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact(){
-  //
-  // TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact
-  //
+  /// TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact
+
   const Float_t kEpsilon=0.000001;
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   AliTPCComposedCorrection *compCorrComp = new AliTPCComposedCorrection();
@@ -243,9 +237,8 @@ Bool_t  TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact(){
 
 
 Bool_t  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact(){
-  //
-  // AliTPCRocVoltError3DAddCorrectionCompact
-  //
+  /// AliTPCRocVoltError3DAddCorrectionCompact
+
   const Float_t kEpsilon=0.00000001;
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   AliTPCComposedCorrection *compCorrROCVoltError3D = new AliTPCComposedCorrection();
@@ -310,9 +303,8 @@ Bool_t  TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact(){
 
 
 Bool_t  TestCorrection_AliTPCBoundaryVoltErrorAddCorrectionCompact(){
-  //
-  // AliTPCBoundaryVoltErrorAddCorrectionCompact
-  //
+  /// AliTPCBoundaryVoltErrorAddCorrectionCompact
+
   const Float_t kEpsilon=0.00000001;
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   AliTPCComposedCorrection *compCorrBoundaryVoltError = new AliTPCComposedCorrection();
@@ -377,11 +369,11 @@ Bool_t  TestCorrection_AliTPCBoundaryVoltErrorAddCorrectionCompact(){
 
 
 Bool_t  TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact(){
-  //
-  // AliTPCCalibGlobalMisalignmentAddCorrectionCompact
-  // Invariant used in test is not exact it is only approximate - as matrix multiplication is not comulative
-  //  !!!! BUG FOUND ????
-  //  hmatrix1->GetTranslation()[idelta]=xxx; // does not work as expected Translation is set,  visible in Print but not used  later
+  /// AliTPCCalibGlobalMisalignmentAddCorrectionCompact
+  /// Invariant used in test is not exact it is only approximate - as matrix multiplication is not comulative
+  ///  !!!! BUG FOUND ????
+  ///  hmatrix1->GetTranslation()[idelta]=xxx; // does not work as expected Translation is set,  visible in Print but not used  later
+
   const Float_t kEpsilon=0.0001;
   Bool_t isOK[10]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
   Double_t delta[3]={0.01,0.02,0.03};
@@ -466,9 +458,8 @@ Bool_t  TestCorrection_AliTPCCalibGlobalMisalignmentAddCorrectionCompact(){
 } 
 
 Bool_t  TestCorrection_AliTPCCorrection_AddCorrectionCompact(){
-  //
-  //
-  //
+  ///
+
   TestCorrection_AliTPCExBTwistAddCorrectionCompact();
   TestCorrection_AliTPCFCVoltError3DAddCorrectionCompact();
   TestCorrection_AliTPCRocVoltError3DAddCorrectionCompact();
@@ -477,9 +468,8 @@ Bool_t  TestCorrection_AliTPCCorrection_AddCorrectionCompact(){
 }
 
 Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorrection(Bool_t fast){
-  //
-  // Test the 
-  //
+  /// Test the
+
   const Int_t npointsTest=10000;
   const Float_t kEpsilon=0.001;  //10 microns
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
@@ -548,13 +538,12 @@ Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact_TPCCalibCorre
 
 
 Bool_t TestCorrection_AliTPCComposedCorrectionAddCorrectionCompact(){
-  //
-  // Tests of AliTPCComposedCorrection
-  //  1.) Make linear combination  correction example using weights.  
-  //      Test correction  checking invariant inverse x orig  (there are simpler way to do inversion using AliTPCInverseCorrection)
-  //
-  //  2.) Make compact for of the Composed correction. Test correction  checking invariant inverse x orig
-  //          
+  /// Tests of AliTPCComposedCorrection
+  ///  1.) Make linear combination  correction example using weights.
+  ///      Test correction  checking invariant inverse x orig  (there are simpler way to do inversion using AliTPCInverseCorrection)
+  ///
+  ///  2.) Make compact for of the Composed correction. Test correction  checking invariant inverse x orig
+
   const Int_t npointsTest=10000;
   const Float_t kEpsilon=0.0001;  // using Floating point precission
   //

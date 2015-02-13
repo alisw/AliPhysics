@@ -21,7 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE}
                    )
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/EVGEN
                     ${AliRoot_SOURCE_DIR}/LHAPDF
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
@@ -48,7 +48,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS EVGEN STEER AliPythia6 lhapdf pythia6 qpythia microcern)
+set(LIBDEPS EVGEN STEER AliPythia6 lhapdf qpythia microcern)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

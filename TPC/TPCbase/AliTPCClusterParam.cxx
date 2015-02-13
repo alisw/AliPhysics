@@ -14,76 +14,67 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TPC cluster error, shape and charge parameterization as function
-//  of drift length, and inclination angle                                   //
-//
-//  Following notation is used in following
-//  Int_t dim 0 - y direction
-//            1 - z direction
-//
-//  Int_t type 0 - short pads 
-//             1 - medium pads
-//             2 - long pads
-//  Float_t z    - drift length
-// 
-//  Float_t angle - tangent of inclination angle at given dimension 
-//
-//  Implemented parameterization
-//
-//
-//  1. Resolution as function of drift length and inclination angle
-//     1.a) GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle)
-//          Simple error parameterization as derived from analytical formula
-//          only linear term in drift length and angle^2
-//          The formula is valid only with precission +-5%
-//          Separate parameterization for differnt pad geometry
-//     1.b) GetError0Par
-//          Parabolic term correction - better precision
-//
-//     1.c) GetError1 - JUST FOR Study
-//          Similar to GetError1
-//          The angular and diffusion effect is scaling with pad length
-//          common parameterization for different pad length
-//
-//  2. Error parameterization using charge 
-//     2.a) GetErrorQ
-//          GetError0+
-//          adding 1/Q component to diffusion and angluar part
-//     2.b) GetErrorQPar
-//          GetError0Par+
-//          adding 1/Q component to diffusion and angluar part
-//     2.c) GetErrorQParScaled - Just for study
-//          One parameterization for all pad shapes
-//          Smaller precission as previous one
-//
-//
-//  Example how to retrieve the paramterization:
-/*    
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-      AliCDBManager::Instance()->SetRun(0) 
-      AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
+/// \class AliTPCClusterParam
+/// \brief TPC cluster error, shape and charge parameterization as function of drift length and inclination angle
+///
+/// Following notation is used in following
+/// Int_t dim 0 - y direction
+/// 1 - z direction
+///
+/// Int_t type 0 - short pads
+/// 1 - medium pads
+/// 2 - long pads
+/// Float_t z    - drift length
+///
+/// Float_t angle - tangent of inclination angle at given dimension
+///
+/// Implemented parameterization
+///
+/// 1. Resolution as function of drift length and inclination angle
+///   1.a) GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle)
+/// Simple error parameterization as derived from analytical formula
+/// only linear term in drift length and angle^2
+/// The formula is valid only with precission +-5%
+/// Separate parameterization for differnt pad geometry
+///   1.b) GetError0Par
+/// Parabolic term correction - better precision
+///
+///   1.c) GetError1 - JUST FOR Study
+/// Similar to GetError1
+/// The angular and diffusion effect is scaling with pad length
+/// common parameterization for different pad length
+///
+/// 2. Error parameterization using charge
+///   2.a) GetErrorQ
+/// GetError0+
+/// adding 1/Q component to diffusion and angluar part
+///   2.b) GetErrorQPar
+/// GetError0Par+
+/// adding 1/Q component to diffusion and angluar part
+///   2.c) GetErrorQParScaled - Just for study
+/// One parameterization for all pad shapes
+/// Smaller precission as previous one
+///
+/// Example how to retrieve the paramterization:
+///
+/// ~~~{.cpp}
+/// AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+/// AliCDBManager::Instance()->SetRun(0)
+/// AliTPCClusterParam * param = AliTPCcalibDB::Instance()->GetClusterParam();
+///
+/// AliTPCClusterParam::SetInstance(param);
+/// TF1 f1("f1","AliTPCClusterParam::SGetError0Par(1,0,x,0)",0,250);
+/// ~~~
+///
+/// Example how to create parameterization:
+/// Note resol is the resolution tree created by AliTPCcalibTracks
+///
+/// ~~~{.cpp}
+/// AliTPCClusterParam  *param = new AliTPCClusterParam;
+/// param->FitData(Resol);
+/// AliTPCClusterParam::SetInstance(param);
+/// ~~~
 
-      //
-      //
-      AliTPCClusterParam::SetInstance(param);
-      TF1 f1("f1","AliTPCClusterParam::SGetError0Par(1,0,x,0)",0,250);
-*/      
-
-// EXAMPLE hot to create parameterization
-/*
-// Note resol is the resolution tree created by AliTPCcalibTracks
-//
-AliTPCClusterParam  *param = new AliTPCClusterParam;
-param->FitData(Resol);
-AliTPCClusterParam::SetInstance(param);
- 
-*/
-
-//
-//                                                                     //
-///////////////////////////////////////////////////////////////////////////////
 #include "AliTPCClusterParam.h"
 #include "TMath.h"
 #include "TFile.h"
@@ -101,7 +92,9 @@ AliTPCClusterParam::SetInstance(param);
 
 #include "AliMathBase.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCClusterParam)
+/// \endcond
 
 
 AliTPCClusterParam* AliTPCClusterParam::fgInstance = 0;
@@ -109,9 +102,9 @@ AliTPCClusterParam* AliTPCClusterParam::fgInstance = 0;
 
 /*
   Example usage fitting parameterization:
-  TFile fres("resol.root");    //tree with resolution and shape 
+  TFile fres("resol.root");    //tree with resolution and shape
   TTree * treeRes =(TTree*)fres.Get("Resol");
-  
+
   AliTPCClusterParam param;
   param.SetInstance(&param);
   param.FitResol(treeRes);
@@ -121,10 +114,10 @@ AliTPCClusterParam* AliTPCClusterParam::fgInstance = 0;
   //
   //
   TFile fparam("TPCClusterParam.root");
-  AliTPCClusterParam *param2  =  (AliTPCClusterParam *) fparam.Get("Param"); 
+  AliTPCClusterParam *param2  =  (AliTPCClusterParam *) fparam.Get("Param");
   param2->SetInstance(param2);
   param2->Test(treeRes);
-  
+
 
   treeRes->Draw("(Resol-AliTPCClusterParam::SGetError0(Dim,Pad,Zm,AngleM))/Resol","Dim==0&&QMean<0")
 
@@ -136,10 +129,9 @@ AliTPCClusterParam* AliTPCClusterParam::fgInstance = 0;
 //_ singleton implementation __________________________________________________
 AliTPCClusterParam* AliTPCClusterParam::Instance()
 {
-  //
-  // Singleton implementation
-  // Returns an instance of this class, it is created if neccessary
-  //
+  /// Singleton implementation
+  /// Returns an instance of this class, it is created if neccessary
+
   if (fgInstance == 0){
     fgInstance = new AliTPCClusterParam();
   }
@@ -162,15 +154,14 @@ AliTPCClusterParam::AliTPCClusterParam():
   fResolutionYMap(0)
   //
 {
+  /// Default constructor
+
+  fPosQTnorm[0] = 0;   fPosQTnorm[1] = 0;   fPosQTnorm[2] = 0;
+  fPosQMnorm[0] = 0;   fPosQMnorm[1] = 0;   fPosQMnorm[2] = 0;
   //
-  // Default constructor
-  //
-  fPosQTnorm[0] = 0;   fPosQTnorm[1] = 0;   fPosQTnorm[2] = 0; 
-  fPosQMnorm[0] = 0;   fPosQMnorm[1] = 0;   fPosQMnorm[2] = 0; 
-  //
-  fPosYcor[0]   = 0;   fPosYcor[1]   = 0;   fPosYcor[2]   = 0; 
-  fPosZcor[0]   = 0;   fPosZcor[1]   = 0;   fPosZcor[2]   = 0; 
-  fErrorRMSSys[0]=0;   fErrorRMSSys[1]=0; 
+  fPosYcor[0]   = 0;   fPosYcor[1]   = 0;   fPosYcor[2]   = 0;
+  fPosZcor[0]   = 0;   fPosZcor[1]   = 0;   fPosZcor[2]   = 0;
+  fErrorRMSSys[0]=0;   fErrorRMSSys[1]=0;
 }
 
 AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
@@ -187,9 +178,8 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
   fWaveCorrectionMirroredAngle( kFALSE ),
   fResolutionYMap(0)
 {
-  //
-  // copy constructor
-  //
+  /// copy constructor
+
   if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
   if (param.fQNormHis) fQNormHis = (TObjArray*) param.fQNormHis->Clone();
   //
@@ -258,9 +248,8 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
 
 
 AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& param){
-  //
-  // Assignment operator
-  //
+  /// Assignment operator
+
   if (this != &param) {
     if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
     if (param.fQNormHis) fQNormHis = (TObjArray*) param.fQNormHis->Clone();
@@ -282,7 +271,7 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
       fPosZcor[1] = new TVectorD(*(param.fPosZcor[1]));
       fPosZcor[2] = new TVectorD(*(param.fPosZcor[2]));
     }
-    
+
     for (Int_t ii = 0; ii < 2; ++ii) {
       for (Int_t jj = 0; jj < 3; ++jj) {
 	for (Int_t kk = 0; kk < 4; ++kk) {
@@ -322,7 +311,7 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
 	fRMSSigmaRatio[ii][jj] = param.fRMSSigmaRatio[ii][jj];
       }
     }
-    
+
     SetWaveCorrectionMap( param.fWaveCorrectionMap );
     SetResolutionYMap( param.fResolutionYMap );
   }
@@ -331,9 +320,8 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
 
 
 AliTPCClusterParam::~AliTPCClusterParam(){
-  //
-  // destructor
-  //
+  /// destructor
+
   if (fQNorm) fQNorm->Delete();
   if (fQNormCorr) delete fQNormCorr;
   if (fQNormHis) fQNormHis->Delete();
@@ -363,10 +351,10 @@ AliTPCClusterParam::~AliTPCClusterParam(){
 
 
 void AliTPCClusterParam::FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution
+  ///
+  /// Int_t dim=0, type=0;
+
   TString varVal;
   varVal="Resol:AngleM:Zm";
   TString varErr;
@@ -378,20 +366,20 @@ void AliTPCClusterParam::FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t 
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
     pz[ipoint]= tree->GetV1()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(3,"hyp2");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -416,10 +404,10 @@ void AliTPCClusterParam::FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t 
 
 
 void AliTPCClusterParam::FitResol0Par(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="Resol:AngleM:Zm";
  TString varErr;
@@ -431,20 +419,20 @@ void AliTPCClusterParam::FitResol0Par(TTree * tree, Int_t dim, Int_t type, Float
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
     pz[ipoint]= tree->GetV1()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(6,"hyp5");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -481,10 +469,10 @@ void AliTPCClusterParam::FitResol0Par(TTree * tree, Int_t dim, Int_t type, Float
 
 
 void AliTPCClusterParam::FitResol1(TTree * tree, Int_t dim, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution - pad length scaling 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution - pad length scaling
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="Resol:AngleM*sqrt(Length):Zm/Length";
  TString varErr;
@@ -496,20 +484,20 @@ void AliTPCClusterParam::FitResol1(TTree * tree, Int_t dim, Float_t *param0, Flo
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
     pz[ipoint]= tree->GetV1()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(3,"hyp2");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -533,10 +521,10 @@ void AliTPCClusterParam::FitResol1(TTree * tree, Int_t dim, Float_t *param0, Flo
 }
 
 void AliTPCClusterParam::FitResolQ(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution - Q scaling 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution - Q scaling
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="Resol:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
@@ -551,12 +539,12 @@ void AliTPCClusterParam::FitResolQ(TTree * tree, Int_t dim, Int_t type, Float_t 
   Float_t px[20000], py[20000], pz[20000], pu[20000], pt[20000];
   Float_t ex[20000], ey[20000], ez[20000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
@@ -568,8 +556,8 @@ void AliTPCClusterParam::FitResolQ(TTree * tree, Int_t dim, Int_t type, Float_t 
     pu[ipoint]= tree->GetV3()[ipoint];
     pt[ipoint]= tree->GetV2()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(5,"hyp4");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -600,10 +588,10 @@ void AliTPCClusterParam::FitResolQ(TTree * tree, Int_t dim, Int_t type, Float_t 
 }
 
 void AliTPCClusterParam::FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution - Q scaling  - parabolic correction
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution - Q scaling  - parabolic correction
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="Resol:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
@@ -618,12 +606,12 @@ void AliTPCClusterParam::FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float
   Float_t px[20000], py[20000], pz[20000], pu[20000], pt[20000];
   Float_t ex[20000], ey[20000], ez[20000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
@@ -635,8 +623,8 @@ void AliTPCClusterParam::FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float
     pu[ipoint]= tree->GetV3()[ipoint];
     pt[ipoint]= tree->GetV2()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(8,"hyp7");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -680,10 +668,10 @@ void AliTPCClusterParam::FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float
 
 
 void AliTPCClusterParam::FitRMS0(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="RMSm:AngleM:Zm";
  TString varErr;
@@ -695,20 +683,20 @@ void AliTPCClusterParam::FitRMS0(TTree * tree, Int_t dim, Int_t type, Float_t *p
   Float_t px[10000], py[10000], pz[10000];
   Float_t ex[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
     pz[ipoint]= tree->GetV1()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(3,"hyp2");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -732,10 +720,10 @@ void AliTPCClusterParam::FitRMS0(TTree * tree, Int_t dim, Int_t type, Float_t *p
 }
 
 void AliTPCClusterParam::FitRMS1(TTree * tree, Int_t dim, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution - pad length scaling 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution - pad length scaling
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="RMSm:AngleM*Length:Zm";
  TString varErr;
@@ -747,20 +735,20 @@ void AliTPCClusterParam::FitRMS1(TTree * tree, Int_t dim, Float_t *param0, Float
   Float_t px[10000], py[10000], pz[10000];
   Float_t type[10000], ey[10000], ez[10000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     type[ipoint] = tree->GetV3()[ipoint];
     ey[ipoint]   = tree->GetV2()[ipoint];
     ez[ipoint]   = tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
     py[ipoint]= tree->GetV2()[ipoint];
     pz[ipoint]= tree->GetV1()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(4,"hyp3");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -787,10 +775,10 @@ void AliTPCClusterParam::FitRMS1(TTree * tree, Int_t dim, Float_t *param0, Float
 }
 
 void AliTPCClusterParam::FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error){
-  //
-  // Fit z - angular dependence of resolution - Q scaling 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution - Q scaling
+  ///
+  /// Int_t dim=0, type=0;
+
  TString varVal;
   varVal="RMSm:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
@@ -805,12 +793,12 @@ void AliTPCClusterParam::FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *p
   Float_t px[20000], py[20000], pz[20000], pu[20000], pt[20000];
   Float_t ex[20000], ey[20000], ez[20000];
   //
-  tree->Draw(varErr.Data(),varCut);  
+  tree->Draw(varErr.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     ex[ipoint]= tree->GetV3()[ipoint];
     ey[ipoint]= tree->GetV2()[ipoint];
     ez[ipoint]= tree->GetV1()[ipoint];
-  } 
+  }
   tree->Draw(varVal.Data(),varCut);
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     px[ipoint]= tree->GetV3()[ipoint];
@@ -822,8 +810,8 @@ void AliTPCClusterParam::FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *p
     pu[ipoint]= tree->GetV3()[ipoint];
     pt[ipoint]= tree->GetV2()[ipoint];
   }
-  
-  //  
+
+  //
   TLinearFitter fitter(5,"hyp4");
   for (Int_t ipoint=0; ipoint<entries; ipoint++){
     Float_t val = pz[ipoint]*pz[ipoint];
@@ -855,10 +843,10 @@ void AliTPCClusterParam::FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *p
 
 
 void AliTPCClusterParam::FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t */*error*/){
-  //
-  // Fit z - angular dependence of resolution - Q scaling 
-  //
-  // Int_t dim=0, type=0;
+  /// Fit z - angular dependence of resolution - Q scaling
+  ///
+  /// Int_t dim=0, type=0;
+
   TString varVal;
   varVal="RMSs:RMSm";
   //
@@ -889,22 +877,20 @@ void AliTPCClusterParam::FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_
 
 
 Float_t  AliTPCClusterParam::GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
-  //
-  //
-  //
+  ///
+
   Float_t value=0;
   value += fParamS0[dim][type][0];
   value += fParamS0[dim][type][1]*z;
   value += fParamS0[dim][type][2]*angle*angle;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 }
 
 
 Float_t  AliTPCClusterParam::GetError0Par(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
-  //
-  //
-  //
+  ///
+
   Float_t value=0;
   value += fParamS0Par[dim][type][0];
   value += fParamS0Par[dim][type][1]*z;
@@ -912,16 +898,15 @@ Float_t  AliTPCClusterParam::GetError0Par(Int_t dim, Int_t type, Float_t z, Floa
   value += fParamS0Par[dim][type][3]*z*z;
   value += fParamS0Par[dim][type][4]*angle*angle*angle*angle;
   value += fParamS0Par[dim][type][5]*z*angle*angle;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 }
 
 
 
 Float_t  AliTPCClusterParam::GetError1(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
-  //
-  //
-  //
+  ///
+
   Float_t value=0;
   Float_t length=0.75;
   if (type==1) length=1;
@@ -929,30 +914,28 @@ Float_t  AliTPCClusterParam::GetError1(Int_t dim, Int_t type, Float_t z, Float_t
   value += fParamS1[dim][0];
   value += fParamS1[dim][1]*z/length;
   value += fParamS1[dim][2]*angle*angle*length;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 }
 
 Float_t  AliTPCClusterParam::GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
-  //
-  //
-  //
+  ///
+
   Float_t value=0;
   value += fParamSQ[dim][type][0];
   value += fParamSQ[dim][type][1]*z;
   value += fParamSQ[dim][type][2]*angle*angle;
   value += fParamSQ[dim][type][3]*z/Qmean;
   value += fParamSQ[dim][type][4]*angle*angle/Qmean;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 
 
 }
 
 Float_t  AliTPCClusterParam::GetErrorQPar(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
-  //
-  //
-  //
+  ///
+
   Float_t value=0;
   value += fParamSQPar[dim][type][0];
   value += fParamSQPar[dim][type][1]*z;
@@ -962,16 +945,15 @@ Float_t  AliTPCClusterParam::GetErrorQPar(Int_t dim, Int_t type, Float_t z, Floa
   value += fParamSQPar[dim][type][5]*z*angle*angle;
   value += fParamSQPar[dim][type][6]*z/Qmean;
   value += fParamSQPar[dim][type][7]*angle*angle/Qmean;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 
 
 }
 
 Float_t  AliTPCClusterParam::GetErrorQParScaled(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
-  //
-  //
-  //
+  ///
+
   Float_t value=0;
   value += fParamSQPar[dim][type][0];
   value += fParamSQPar[dim][type][1]*z;
@@ -982,29 +964,27 @@ Float_t  AliTPCClusterParam::GetErrorQParScaled(Int_t dim, Int_t type, Float_t z
   value += fParamSQPar[dim][type][6]*z/Qmean;
   value += fParamSQPar[dim][type][7]*angle*angle/Qmean;
   Float_t valueMean = GetError0Par(dim,type,z,angle);
-  value -= 0.35*0.35*valueMean*valueMean; 
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value -= 0.35*0.35*valueMean*valueMean;
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 
 
 }
 
 Float_t  AliTPCClusterParam::GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
-  //
-  // calculate mean RMS of cluster - z,angle - parameters for each pad and dimension separatelly
-  //
+  /// calculate mean RMS of cluster - z,angle - parameters for each pad and dimension separatelly
+
   Float_t value=0;
   value += fParamRMS0[dim][type][0];
   value += fParamRMS0[dim][type][1]*z;
   value += fParamRMS0[dim][type][2]*angle*angle;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 }
 
 Float_t  AliTPCClusterParam::GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
-  //
-  // calculate mean RMS of cluster - z,angle - pad length scalling
-  //
+  /// calculate mean RMS of cluster - z,angle - pad length scalling
+
   Float_t value=0;
   Float_t length=0.75;
   if (type==1) length=1;
@@ -1016,28 +996,26 @@ Float_t  AliTPCClusterParam::GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t a
   }
   value += fParamRMS1[dim][2]*z;
   value += fParamRMS1[dim][3]*angle*angle*length*length;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 }
 
 Float_t  AliTPCClusterParam::GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
-  //
-  // calculate mean RMS of cluster - z,angle, Q dependence
-  //
+  /// calculate mean RMS of cluster - z,angle, Q dependence
+
   Float_t value=0;
   value += fParamRMSQ[dim][type][0];
   value += fParamRMSQ[dim][type][1]*z;
   value += fParamRMSQ[dim][type][2]*angle*angle;
   value += fParamRMSQ[dim][type][3]*z/Qmean;
   value += fParamRMSQ[dim][type][4]*angle*angle/Qmean;
-  value  = TMath::Sqrt(TMath::Abs(value)); 
+  value  = TMath::Sqrt(TMath::Abs(value));
   return value;
 }
 
 Float_t  AliTPCClusterParam::GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
-  //
-  // calculates RMS of signal shape fluctuation
-  //
+  /// calculates RMS of signal shape fluctuation
+
   Float_t mean = GetRMSQ(dim,type,z,angle,Qmean);
   Float_t value  = fRMSSigmaFit[dim][type][0];
   value+=  fRMSSigmaFit[dim][type][1]*mean;
@@ -1045,9 +1023,8 @@ Float_t  AliTPCClusterParam::GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float
 }
 
 Float_t  AliTPCClusterParam::GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM) const {
-  //
-  // calculates vallue - sigma distortion contribution
-  //
+  /// calculates vallue - sigma distortion contribution
+
   Double_t value =0;
   //
   Float_t rmsMeanQ  = GetRMSQ(dim,type,z,angle,Qmean);
@@ -1070,18 +1047,18 @@ Float_t  AliTPCClusterParam::GetShapeFactor(Int_t dim, Int_t type, Float_t z, Fl
 
 
 void AliTPCClusterParam::FitData(TTree * tree){
-  //
-  // make fits for error param and shape param
-  //
+  /// make fits for error param and shape param
+
   FitResol(tree);
   FitRMS(tree);
 
 }
 
 void AliTPCClusterParam::FitResol(TTree * tree){
-  //
+  ///
+
   SetInstance(this);
-  for (Int_t idir=0;idir<2; idir++){    
+  for (Int_t idir=0;idir<2; idir++){
     for (Int_t itype=0; itype<3; itype++){
       Float_t param0[10];
       Float_t error0[10];
@@ -1091,17 +1068,17 @@ void AliTPCClusterParam::FitResol(TTree * tree){
       printf("%f\t%f\t%f\n", param0[0],param0[1],param0[2]);
       printf("%f\t%f\t%f\n", error0[0],error0[1],error0[2]);
       for (Int_t ipar=0;ipar<4; ipar++){
-	fParamS0[idir][itype][ipar] = param0[ipar];	
-	fErrorS0[idir][itype][ipar] = param0[ipar];	
-      } 
+	fParamS0[idir][itype][ipar] = param0[ipar];
+	fErrorS0[idir][itype][ipar] = param0[ipar];
+      }
       // error param with parabolic correction
       FitResol0Par(tree, idir, itype,param0,error0);
       printf("\nResolPar\t%d\t%d\tchi2=%f\n",idir,itype,param0[6]);
       printf("%f\t%f\t%f\t%f\t%f\t%f\n", param0[0],param0[1],param0[2],param0[3],param0[4],param0[5]);
       printf("%f\t%f\t%f\t%f\t%f\t%f\n", error0[0],error0[1],error0[2],error0[3],error0[4],error0[5]);
       for (Int_t ipar=0;ipar<7; ipar++){
-	fParamS0Par[idir][itype][ipar] = param0[ipar];	
-	fErrorS0Par[idir][itype][ipar] = param0[ipar];	
+	fParamS0Par[idir][itype][ipar] = param0[ipar];
+	fErrorS0Par[idir][itype][ipar] = param0[ipar];
       }
       //
       FitResolQ(tree, idir, itype,param0,error0);
@@ -1109,8 +1086,8 @@ void AliTPCClusterParam::FitResol(TTree * tree){
       printf("%f\t%f\t%f\t%f\t%f\n", param0[0],param0[1],param0[2],param0[3],param0[4]);
       printf("%f\t%f\t%f\t%f\t%f\n", error0[0],error0[1],error0[2],error0[3],error0[4]);
       for (Int_t ipar=0;ipar<6; ipar++){
-	fParamSQ[idir][itype][ipar] = param0[ipar];	
-	fErrorSQ[idir][itype][ipar] = param0[ipar];	
+	fParamSQ[idir][itype][ipar] = param0[ipar];
+	fErrorSQ[idir][itype][ipar] = param0[ipar];
       }
       //
       FitResolQPar(tree, idir, itype,param0,error0);
@@ -1118,14 +1095,14 @@ void AliTPCClusterParam::FitResol(TTree * tree){
       printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", param0[0],param0[1],param0[2],param0[3],param0[4],param0[5],param0[6],param0[7]);
       printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", error0[0],error0[1],error0[2],error0[3],error0[4],error0[5],error0[6],error0[7]);
       for (Int_t ipar=0;ipar<9; ipar++){
-	fParamSQPar[idir][itype][ipar] = param0[ipar];	
-	fErrorSQPar[idir][itype][ipar] = param0[ipar];	
+	fParamSQPar[idir][itype][ipar] = param0[ipar];
+	fErrorSQPar[idir][itype][ipar] = param0[ipar];
       }
     }
   }
   //
   printf("Resol z-scaled\n");
-  for (Int_t idir=0;idir<2; idir++){    
+  for (Int_t idir=0;idir<2; idir++){
     Float_t param0[4];
     Float_t error0[4];
     FitResol1(tree, idir,param0,error0);
@@ -1133,8 +1110,8 @@ void AliTPCClusterParam::FitResol(TTree * tree){
     printf("%f\t%f\t%f\n", param0[0],param0[1],param0[2]);
     printf("%f\t%f\t%f\n", error0[0],error0[1],error0[2]);
     for (Int_t ipar=0;ipar<4; ipar++){
-      fParamS1[idir][ipar] = param0[ipar];	
-      fErrorS1[idir][ipar] = param0[ipar];	
+      fParamS1[idir][ipar] = param0[ipar];
+      fErrorS1[idir][ipar] = param0[ipar];
     }
   }
 
@@ -1147,15 +1124,16 @@ void AliTPCClusterParam::FitResol(TTree * tree){
       if (itype==2) length=1.5;
       printf("%d\t%f\t%f\t%f\n", itype,fParamS0[idir][itype][0],fParamS0[idir][itype][1]*TMath::Sqrt(length),fParamS0[idir][itype][2]/TMath::Sqrt(length));
     }
-  }  
+  }
 }
 
 
 
 void AliTPCClusterParam::FitRMS(TTree * tree){
-  //
+  ///
+
   SetInstance(this);
-  for (Int_t idir=0;idir<2; idir++){    
+  for (Int_t idir=0;idir<2; idir++){
     for (Int_t itype=0; itype<3; itype++){
       Float_t param0[6];
       Float_t error0[6];
@@ -1164,22 +1142,22 @@ void AliTPCClusterParam::FitRMS(TTree * tree){
       printf("%f\t%f\t%f\n", param0[0],param0[1],param0[2]);
       printf("%f\t%f\t%f\n", error0[0],error0[1],error0[2]);
       for (Int_t ipar=0;ipar<4; ipar++){
-	fParamRMS0[idir][itype][ipar] = param0[ipar];	
-	fErrorRMS0[idir][itype][ipar] = param0[ipar];	
+	fParamRMS0[idir][itype][ipar] = param0[ipar];
+	fErrorRMS0[idir][itype][ipar] = param0[ipar];
       }
       FitRMSQ(tree, idir, itype,param0,error0);
       printf("\nRMSQ\t%d\t%d\tchi2=%f\n",idir,itype,param0[5]);
       printf("%f\t%f\t%f\t%f\t%f\n", param0[0],param0[1],param0[2],param0[3],param0[4]);
       printf("%f\t%f\t%f\t%f\t%f\n", error0[0],error0[1],error0[2],error0[3],error0[4]);
       for (Int_t ipar=0;ipar<6; ipar++){
-	fParamRMSQ[idir][itype][ipar] = param0[ipar];	
-	fErrorRMSQ[idir][itype][ipar] = param0[ipar];	
+	fParamRMSQ[idir][itype][ipar] = param0[ipar];
+	fErrorRMSQ[idir][itype][ipar] = param0[ipar];
       }
     }
   }
   //
   printf("RMS z-scaled\n");
-  for (Int_t idir=0;idir<2; idir++){    
+  for (Int_t idir=0;idir<2; idir++){
     Float_t param0[5];
     Float_t error0[5];
     FitRMS1(tree, idir,param0,error0);
@@ -1187,8 +1165,8 @@ void AliTPCClusterParam::FitRMS(TTree * tree){
     printf("%f\t%f\t%f\t%f\n", param0[0],param0[1],param0[2], param0[3]);
     printf("%f\t%f\t%f\t%f\n", error0[0],error0[1],error0[2], error0[3]);
     for (Int_t ipar=0;ipar<5; ipar++){
-      fParamRMS1[idir][ipar] = param0[ipar];	
-      fErrorRMS1[idir][ipar] = param0[ipar];	
+      fParamRMS1[idir][ipar] = param0[ipar];
+      fErrorRMS1[idir][ipar] = param0[ipar];
     }
   }
 
@@ -1202,22 +1180,22 @@ void AliTPCClusterParam::FitRMS(TTree * tree){
       if (itype==0) printf("%d\t%f\t\t\t%f\t%f\n", itype,fParamRMS0[idir][itype][0],fParamRMS0[idir][itype][1],fParamRMS0[idir][itype][2]/length);
       if (itype>0) printf("%d\t\t\t%f\t%f\t%f\n", itype,fParamRMS0[idir][itype][0],fParamRMS0[idir][itype][1],fParamRMS0[idir][itype][2]/length);
     }
-  }  
+  }
   //
   // Fit RMS sigma
   //
   printf("RMS fluctuation  parameterization \n");
-  for (Int_t idir=0;idir<2; idir++){    
-    for (Int_t itype=0; itype<3; itype++){ 
+  for (Int_t idir=0;idir<2; idir++){
+    for (Int_t itype=0; itype<3; itype++){
       Float_t param0[5];
       Float_t error0[5];
-      FitRMSSigma(tree, idir,itype,param0,error0); 
+      FitRMSSigma(tree, idir,itype,param0,error0);
       printf("\t%d\t%d\t%f\t%f\n", idir, itype, param0[0],param0[1]);
       for (Int_t ipar=0;ipar<2; ipar++){
-	fRMSSigmaFit[idir][itype][ipar] = param0[ipar];	
+	fRMSSigmaFit[idir][itype][ipar] = param0[ipar];
       }
     }
-  } 
+  }
   //
   // store systematic error end RMS fluctuation parameterization
   //
@@ -1236,9 +1214,8 @@ void AliTPCClusterParam::FitRMS(TTree * tree){
 }
 
 void AliTPCClusterParam::Test(TTree * tree, const char *output){
-  //
-  // Draw standard quality histograms to output file
-  //
+  /// Draw standard quality histograms to output file
+
   SetInstance(this);
   TFile f(output,"recreate");
   f.cd();
@@ -1301,9 +1278,7 @@ void AliTPCClusterParam::Test(TTree * tree, const char *output){
 
 
 void AliTPCClusterParam::Print(Option_t* /*option*/) const{
-  //
-  // Print param Information
-  //
+  /// Print param Information
 
   //
   // Error parameterization
@@ -1315,8 +1290,8 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
-    if (ipad==2) length=1.5;    
-    printf("\t%d\t%f\t%f\t%f\t%f\n", ipad, 
+    if (ipad==2) length=1.5;
+    printf("\t%d\t%f\t%f\t%f\t%f\n", ipad,
 	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][0])),
 	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][1]*length)),
 	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][2]/length)),
@@ -1326,7 +1301,7 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
     Float_t length=0.75;
     if (ipad==1) length=1;
     if (ipad==2) length=1.5;
-    printf("\t%dPar\t%f\t%f\t%f\t%f\n", ipad, 
+    printf("\t%dPar\t%f\t%f\t%f\t%f\n", ipad,
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][0])),
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][1]*length)),
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][2]/length)),
@@ -1334,12 +1309,12 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   }
   printf("Z\tall\t%f\t%f\t%f\t%f\n", TMath::Sqrt(TMath::Abs(fParamS1[1][0])),TMath::Sqrt(fParamS1[1][1]),
 	 TMath::Sqrt(fParamS1[1][2]), TMath::Sqrt(fParamS1[1][3]));
-  
+
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
-    if (ipad==2) length=1.5;    
-    printf("\t%d\t%f\t%f\t%f\t%f\n", ipad, 
+    if (ipad==2) length=1.5;
+    printf("\t%d\t%f\t%f\t%f\t%f\n", ipad,
 	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][0])),
 	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][1]*length)),
 	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][2]/length)),
@@ -1348,21 +1323,21 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
-    if (ipad==2) length=1.5;        
-    printf("\t%dPar\t%f\t%f\t%f\t%f\n", ipad, 
+    if (ipad==2) length=1.5;
+    printf("\t%dPar\t%f\t%f\t%f\t%f\n", ipad,
 	   TMath::Sqrt(TMath::Abs(TMath::Abs(fParamS0Par[1][ipad][0]))),
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][1]*length)),
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][2]/length)),
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][6])));
   }
-  
+
   //
   // RMS scaling
   //
   printf("\n");
   printf("\nRMS Scaled factors\n");
   printf("Dir\tPad\tP00\t\tP01\t\tP1\t\tP2\t\tchi2\n");
-  printf("Y\tall\t%f\t%f\t%f\t%f\t%f\n", 
+  printf("Y\tall\t%f\t%f\t%f\t%f\t%f\n",
 	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][0])),
 	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][1])),
 	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][2])),
@@ -1371,25 +1346,25 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
-    if (ipad==2) length=1.5;    
+    if (ipad==2) length=1.5;
     if (ipad==0){
-      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
+      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][0])),
 	     0.,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][1])),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][2]/(length*length))),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][3])));
     }else{
-      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
+      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad,
 	     0.,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][0])),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][1])),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][2]/(length*length))),
-	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][3])));	
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][3])));
     }
   }
   printf("\n");
-  printf("Z\tall\t%f\t%f\t%f\t%f\t%f\n", 
+  printf("Z\tall\t%f\t%f\t%f\t%f\t%f\n",
 	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][0])),
 	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][1])),
 	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][2])),
@@ -1398,21 +1373,21 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
-    if (ipad==2) length=1.5;    
+    if (ipad==2) length=1.5;
     if (ipad==0){
-      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
+      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][0])),
 	     0.,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][1])),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][2]/(length*length))),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][3])));
     }else{
-      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
+      printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad,
 	     0.,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][0])),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][1])),
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][2]/(length*length))),
-	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][3])));	
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][3])));
     }
   }
   printf("\ndEdx  correction matrix used in GetQnormCorr\n");
@@ -1425,17 +1400,17 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
 
 
 Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz){
-  // get Q normalization
-  // type - 0 Qtot 1 Qmax
-  // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
-  //
-  //expession formula - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++++dr*dr++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
+  /// get Q normalization
+  /// type - 0 Qtot 1 Qmax
+  /// ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
+  ///
+  /// expession formula - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++++dr*dr++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
 
   if (fQNorm==0) return 0;
   TVectorD * norm = (TVectorD*)fQNorm->At(3*itype+ipad);
   if (!norm) return 0;
   TVectorD &no  = *norm;
-  Float_t   res = 
+  Float_t   res =
     no[0]+
     no[1]*dr+
     no[2]*ty+
@@ -1453,10 +1428,9 @@ Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t t
 
 
 Float_t AliTPCClusterParam::QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_t p2, Float_t p3){
-  // get Q normalization
-  // type - 0 Qtot 1 Qmax
-  // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
-  //
+  /// get Q normalization
+  /// type - 0 Qtot 1 Qmax
+  /// ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
 
   if (fQNormHis==0) return 0;
   TH3F * norm = (TH3F*)fQNormHis->At(4*itype+ipad);
@@ -1472,7 +1446,7 @@ Float_t AliTPCClusterParam::QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_
   p3=TMath::Max(p3,Float_t(norm->GetZaxis()->GetXmin()+norm->GetZaxis()->GetBinWidth(0)));
   //
   Double_t res = norm->GetBinContent(norm->FindBin(dr,p2,p3));
-  if (res==0) res = norm->GetBinContent(norm->FindBin(0.5,0.5,0.5));  // This is just hack - to be fixed entries without 
+  if (res==0) res = norm->GetBinContent(norm->FindBin(0.5,0.5,0.5));  // This is just hack - to be fixed entries without
 
   return res;
 }
@@ -1480,39 +1454,36 @@ Float_t AliTPCClusterParam::QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_
 
 
 void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, const TVectorD *const norm){
-  //
-  // set normalization
-  //
-  // type - 0 Qtot 1 Qmax
-  // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
-  //
+  /// set normalization
+  ///
+  /// type - 0 Qtot 1 Qmax
+  /// ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
 
   if (fQNorm==0) fQNorm = new TObjArray(6);
   fQNorm->AddAt(new TVectorD(*norm), itype*3+ipad);
 }
 
 void AliTPCClusterParam::ResetQnormCorr(){
-  //
-  //
-  //
+  ///
+
   if (!fQNormCorr) fQNormCorr= new TMatrixD(12,6);
   for (Int_t irow=0;irow<12; irow++)
     for (Int_t icol=0;icol<6; icol++){
       (*fQNormCorr)(irow,icol)=1.;             // default - no correction
       if (irow>5) (*fQNormCorr)(irow,icol)=0.; // default - no correction
-    } 
+    }
 }
 
 void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val, Int_t mode){
-  //
-  // ipad        - pad type
-  // itype       - 0- qtot 1-qmax
-  // corrType    - 0 - s0y corr     - eff. PRF corr
-  //             - 1 - s0z corr     - eff. TRF corr
-  //             - 2 - d0y          - eff. diffusion correction y
-  //             - 3 - d0z          - eff. diffusion correction
-  //             - 4 - eff length   - eff.length - wire pitch + x diffsion
-  //             - 5 - pad type normalization
+  /// ipad        - pad type
+  /// itype       - 0- qtot 1-qmax
+  /// corrType    - 0 - s0y corr     - eff. PRF corr
+  /// - 1 - s0z corr     - eff. TRF corr
+  /// - 2 - d0y          - eff. diffusion correction y
+  /// - 3 - d0z          - eff. diffusion correction
+  /// - 4 - eff length   - eff.length - wire pitch + x diffsion
+  /// - 5 - pad type normalization
+
   if (!fQNormCorr) {
     ResetQnormCorr();
   }
@@ -1521,40 +1492,37 @@ void AliTPCClusterParam::SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, F
   //
   // rows
   // itype*3+ipad  - itype=0 qtot itype=1 qmax ipad=0
-  // 
-  if (mode==1) { 
+  //
+  if (mode==1) {
     // mode introduced in 20.07.2014 - git describe ~ vAN-20140703-48-g3449a97 - to keep back compatibility with o
     (*fQNormCorr)(itype*3+ipad, corrType) = val;  // set value
     return;
   }
   if (itype<2) (*fQNormCorr)(itype*3+ipad, corrType) *= val;  // multiplicative correction
-  if (itype>=2) (*fQNormCorr)(itype*3+ipad, corrType)+= val;  // additive       correction  
+  if (itype>=2) (*fQNormCorr)(itype*3+ipad, corrType)+= val;  // additive       correction
 }
 
 Double_t  AliTPCClusterParam::GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const{
-  //
-  // see AliTPCClusterParam::SetQnormCorr
-  //
+  /// see AliTPCClusterParam::SetQnormCorr
+
   if (!fQNormCorr) return 0;
   return  (*fQNormCorr)(itype*3+ipad, corrType);
 }
 
 
 Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt){
-  //
-  // Make Q normalization as function of following parameters
-  // Fit parameters to be used in corresponding correction function extracted in the AliTPCclaibTracksGain - Taylor expansion
-  // 1 - dp   - relative pad position 
-  // 2 - dt   - relative time position
-  // 3 - di   - drift length (norm to 1);
-  // 4 - dq0  - Tot/Max charge
-  // 5 - dq1  - Max/Tot charge
-  // 6 - sy   - sigma y - shape
-  // 7 - sz   - sigma z - shape
-  //  
-  
-  //The results can be visualized using the debug streamer information of the AliTPCcalibTracksGain - 
-  // Following variable used - correspondance to the our variable conventions  
+  /// Make Q normalization as function of following parameters
+  /// Fit parameters to be used in corresponding correction function extracted in the AliTPCclaibTracksGain - Taylor expansion
+  /// 1 - dp   - relative pad position
+  /// 2 - dt   - relative time position
+  /// 3 - di   - drift length (norm to 1);
+  /// 4 - dq0  - Tot/Max charge
+  /// 5 - dq1  - Max/Tot charge
+  /// 6 - sy   - sigma y - shape
+  /// 7 - sz   - sigma z - shape
+
+  //The results can be visualized using the debug streamer information of the AliTPCcalibTracksGain -
+  // Following variable used - correspondance to the our variable conventions
   //chain0->SetAlias("dp","((Cl.fPad-int(Cl.fPad)-0.5)/0.5)");
   Double_t dp = ((pad-int(pad)-0.5)*2.);
   //chain0->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin)-0.5)/0.5)");
@@ -1576,12 +1544,12 @@ Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float
   if (isMax){
     pvec = fPosQMnorm[ipad];
   }else{
-    pvec = fPosQTnorm[ipad];    
+    pvec = fPosQTnorm[ipad];
   }
   TVectorD &param = *pvec;
   //
   // Eval part  - in correspondance with fit part from debug streamer
-  // 
+  //
   Double_t result=param[0];
   Int_t index =1;
   //
@@ -1622,7 +1590,7 @@ Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float
   if (result>1.25) result=1.25;
 
   return result;
-  
+
 }
 
 
@@ -1631,15 +1599,14 @@ Float_t AliTPCClusterParam::QnormPos(Int_t ipad,Bool_t isMax, Float_t pad, Float
 
 Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t /*sy2*/, Float_t /*sz2*/, Float_t /*qm*/){
 
-  //
-  // Make postion correction
-  // type - 0 - y correction
-  //        1 - z correction
-  // ipad - 0, 1, 2 - short, medium long pads 
-  // pad  - float pad number          
-  // time - float time bin number
-  //    z - z of the cluster
-  
+  /// Make postion correction
+  /// type - 0 - y correction
+  ///        1 - z correction
+  /// ipad - 0, 1, 2 - short, medium long pads
+  /// pad  - float pad number
+  /// time - float time bin number
+  ///    z - z of the cluster
+
   //
   //chainres->SetAlias("dp","(-1+(Cl.fZ>0)*2)*((Cl.fPad-int(Cl.fPad))-0.5)");
   //chainres->SetAlias("dt","(-1+(Cl.fZ>0)*2)*((Cl.fTimeBin-0.66-int(Cl.fTimeBin-0.66))-0.5)");
@@ -1664,7 +1631,7 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
   if (type==0){
     pvec = fPosYcor[ipad];
   }else{
-    pvec = fPosZcor[ipad];    
+    pvec = fPosZcor[ipad];
   }
   TVectorD &param = *pvec;
   //
@@ -1693,14 +1660,13 @@ Float_t AliTPCClusterParam::PosCorrection(Int_t type, Int_t ipad,  Float_t pad, 
 
 
 Double_t  AliTPCClusterParam::GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1){
-  //
-  // 2 D gaus convoluted with angular effect
-  // See in mathematica: 
-  //Simplify[Integrate[Exp[-(x0-k0*xd)*(x0-k0*xd)/(2*s0*s0)-(x1-k1*xd)*(x1-k1*xd)/(2*s1*s1)]/(s0*s1),{xd,-1/2,1/2}]]
-  // 
-  //TF1 f1("f1","AliTPCClusterParam::GaussConvolution(x,0,1,0,0.1,0.1)",-2,2)
-  //TF2 f2("f2","AliTPCClusterParam::GaussConvolution(x,y,1,1,0.1,0.1)",-2,2,-2,2)
-  //
+  /// 2 D gaus convoluted with angular effect
+  /// See in mathematica:
+  /// Simplify[Integrate[Exp[-(x0-k0*xd)*(x0-k0*xd)/(2*s0*s0)-(x1-k1*xd)*(x1-k1*xd)/(2*s1*s1)]/(s0*s1),{xd,-1/2,1/2}]]
+  ///
+  /// TF1 f1("f1","AliTPCClusterParam::GaussConvolution(x,0,1,0,0.1,0.1)",-2,2)
+  /// TF2 f2("f2","AliTPCClusterParam::GaussConvolution(x,y,1,1,0.1,0.1)",-2,2,-2,2)
+
   const Double_t kEpsilon = 0.0001;
   const Double_t twoPi = TMath::TwoPi();
   const Double_t hnorm = 0.5/TMath::Sqrt(twoPi);
@@ -1727,13 +1693,13 @@ Double_t  AliTPCClusterParam::GaussConvolution(Double_t x0, Double_t x1, Double_
 
 
 Double_t  AliTPCClusterParam::GaussConvolutionTail(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1, Double_t tau){
-  //
-  // 2 D gaus convoluted with angular effect and exponential tail in z-direction
-  // tail integrated numerically 
-  // Integral normalized to one
-  // Mean at 0
-  // 
-  // TF1 f1t("f1t","AliTPCClusterParam::GaussConvolutionTail(0,x,0,0,0.5,0.5,0.9)",-5,5)
+  /// 2 D gaus convoluted with angular effect and exponential tail in z-direction
+  /// tail integrated numerically
+  /// Integral normalized to one
+  /// Mean at 0
+  ///
+  /// TF1 f1t("f1t","AliTPCClusterParam::GaussConvolutionTail(0,x,0,0,0.5,0.5,0.9)",-5,5)
+
   Double_t sum =1, mean=0;
   // the COG of exponent
   for (Float_t iexp=0;iexp<5;iexp+=0.2){
@@ -1752,14 +1718,14 @@ Double_t  AliTPCClusterParam::GaussConvolutionTail(Double_t x0, Double_t x1, Dou
 }
 
 Double_t  AliTPCClusterParam::GaussConvolutionGamma4(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1, Double_t tau){
-  //
-  // 2 D gaus convoluted with angular effect and exponential tail in z-direction
-  // tail integrated numerically 
-  // Integral normalized to one
-  // Mean at 0
-  // 
-  // TF1 f1g4("f1g4","AliTPCClusterParam::GaussConvolutionGamma4(0,x,0,0,0.5,0.2,1.6)",-5,5)
-  // TF2 f2g4("f2g4","AliTPCClusterParam::GaussConvolutionGamma4(y,x,0,0,0.5,0.2,1.6)",-5,5,-5,5)
+  /// 2 D gaus convoluted with angular effect and exponential tail in z-direction
+  /// tail integrated numerically
+  /// Integral normalized to one
+  /// Mean at 0
+  ///
+  /// TF1 f1g4("f1g4","AliTPCClusterParam::GaussConvolutionGamma4(0,x,0,0,0.5,0.2,1.6)",-5,5)
+  /// TF2 f2g4("f2g4","AliTPCClusterParam::GaussConvolutionGamma4(y,x,0,0,0.5,0.2,1.6)",-5,5,-5,5)
+
   Double_t sum =0, mean=0;
   // the COG of G4
   for (Float_t iexp=0;iexp<5;iexp+=0.2){
@@ -1771,7 +1737,7 @@ Double_t  AliTPCClusterParam::GaussConvolutionGamma4(Double_t x0, Double_t x1, D
   //
   sum = 0;
   Double_t val = 0;
-  for (Float_t iexp=0;iexp<5;iexp+=0.2){ 
+  for (Float_t iexp=0;iexp<5;iexp+=0.2){
     Double_t g4 = TMath::Exp(-4.*iexp/tau)*TMath::Power(iexp/tau,4.);
     val+=GaussConvolution(x0,x1+mean-iexp, k0, k1 , s0,s1)*g4;
     sum+=g4;
@@ -1780,26 +1746,24 @@ Double_t  AliTPCClusterParam::GaussConvolutionGamma4(Double_t x0, Double_t x1, D
 }
 
 Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t effPad, Float_t effDiff){
-  //
-  //
-  // cpad      - pad (y) coordinate
-  // ctime     - time(z) coordinate
-  // ky        - dy/dx
-  // kz        - dz/dx
-  // rmsy0     - RF width in pad units
-  // rmsz0     - RF width in time bin  units
-  // effLength - contibution of PRF and diffusion
-  // effDiff   - overwrite diffusion
+  /// cpad      - pad (y) coordinate
+  /// ctime     - time(z) coordinate
+  /// ky        - dy/dx
+  /// kz        - dz/dx
+  /// rmsy0     - RF width in pad units
+  /// rmsz0     - RF width in time bin  units
+  /// effLength - contibution of PRF and diffusion
+  /// effDiff   - overwrite diffusion
 
   // Response function aproximated by convolution of gaussian with angular effect (integral=1)
-  //  
-  // Gaus width sy and sz is determined by RF width and diffusion 
+  //
+  // Gaus width sy and sz is determined by RF width and diffusion
   // Integral of Q is equal 1
   // Q max is calculated at position cpad, ctime
-  // Example function:         
-  //  TF1 f1("f1", "AliTPCClusterParam::QmaxCorrection(0,0.5,x,0,0,0.5,0.6)",0,1000) 
+  // Example function:
+  //  TF1 f1("f1", "AliTPCClusterParam::QmaxCorrection(0,0.5,x,0,0,0.5,0.6)",0,1000)
   //
-  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
+  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters();
   Double_t padLength= param->GetPadPitchLength(sector,row);
   Double_t padWidth = param->GetPadPitchWidth(sector);
   Double_t zwidth   = param->GetZWidth();
@@ -1821,35 +1785,33 @@ Double_t  AliTPCClusterParam::QmaxCorrection(Int_t sector, Int_t row, Float_t cp
   //
   //
   Double_t sy = TMath::Sqrt(rmsy0*rmsy0+diffT*diffT);
-  Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL); 
+  Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL);
   //return GaussConvolutionGamma4(py,pz, pky,pkz,sy,sz,tau);
   Double_t length = padLength*TMath::Sqrt(1+ky*ky+kz*kz);
   return GaussConvolution(py,pz, pky,pkz,sy,sz)*length;
 }
 
 Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0,  Float_t qtot, Float_t thr, Float_t effPad, Float_t effDiff){
-  //
-  //
-  // cpad      - pad (y) coordinate
-  // ctime     - time(z) coordinate
-  // ky        - dy/dx
-  // kz        - dz/dx
-  // rmsy0     - RF width in pad units
-  // rmsz0     - RF width in time bin  units
-  // qtot      - the sum of signal in cluster - without thr correction
-  // thr       - threshold
-  // effLength - contibution of PRF and diffusion
-  // effDiff   - overwrite diffusion
+  /// cpad      - pad (y) coordinate
+  /// ctime     - time(z) coordinate
+  /// ky        - dy/dx
+  /// kz        - dz/dx
+  /// rmsy0     - RF width in pad units
+  /// rmsz0     - RF width in time bin  units
+  /// qtot      - the sum of signal in cluster - without thr correction
+  /// thr       - threshold
+  /// effLength - contibution of PRF and diffusion
+  /// effDiff   - overwrite diffusion
 
   // Response function aproximated by convolution of gaussian with angular effect (integral=1)
-  //  
-  // Gaus width sy and sz is determined by RF width and diffusion 
+  //
+  // Gaus width sy and sz is determined by RF width and diffusion
   // Integral of Q is equal 1
   // Q max is calculated at position cpad, ctime
-  //          
-  //  
   //
-  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters(); 
+  //
+  //
+  AliTPCParam * param   = AliTPCcalibDB::Instance()->GetParameters();
   Double_t padLength= param->GetPadPitchLength(sector,row);
   Double_t padWidth = param->GetPadPitchWidth(sector);
   Double_t zwidth   = param->GetZWidth();
@@ -1861,16 +1823,16 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
   diffT*=effDiff;  //
   diffL*=effDiff;  //
   //
-  // transform angular effect to pad units 
+  // transform angular effect to pad units
   Double_t pky   = ky*effLength/padWidth;
   Double_t pkz   = kz*effLength/zwidth;
   // position in pad unit
-  //  
+  //
   Double_t py = (cpad+0.5)-TMath::Nint(cpad+0.5);
   Double_t pz = (ctime+0.5)-TMath::Nint(ctime+0.5);
   //
   Double_t sy = TMath::Sqrt(rmsy0*rmsy0+diffT*diffT);
-  Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL); 
+  Double_t sz = TMath::Sqrt(rmsz0*rmsz0+diffL*diffL);
   //
   //
   //
@@ -1880,8 +1842,8 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
   Double_t qnorm=qtot;
   for (Float_t iy=-3;iy<=3;iy+=1.)
     for (Float_t iz=-4;iz<=4;iz+=1.){
-      //      Double_t val = GaussConvolutionGamma4(py-iy,pz-iz, pky,pkz, sy,sz,tau);      
-      Double_t val = GaussConvolution(py-iy,pz-iz, pky,pkz, sy,sz);      
+      //      Double_t val = GaussConvolutionGamma4(py-iy,pz-iz, pky,pkz, sy,sz,tau);
+      Double_t val = GaussConvolution(py-iy,pz-iz, pky,pkz, sy,sz);
       Double_t qlocal =qnorm*val;
       if (TMath::Abs(iy)<1.5&&TMath::Abs(iz)<1.5){
       	sumThr+=qlocal;   // Virtual charge used in cluster finder
@@ -1903,9 +1865,8 @@ Double_t  AliTPCClusterParam::QtotCorrection(Int_t sector, Int_t row, Float_t cp
 
 void AliTPCClusterParam::SetWaveCorrectionMap( THnBase *Map)
 {
-  //
-  // Set Correction Map for Y
-  //
+  /// Set Correction Map for Y
+
   delete fWaveCorrectionMap;
   fWaveCorrectionMap = 0;
   fWaveCorrectionMirroredPad = kFALSE;
@@ -1915,7 +1876,7 @@ void AliTPCClusterParam::SetWaveCorrectionMap( THnBase *Map)
     fWaveCorrectionMap = dynamic_cast<THnBase*>( Map->Clone(Map->GetName()));
     if( fWaveCorrectionMap ){
       fWaveCorrectionMirroredPad   = ( fWaveCorrectionMap->GetAxis(3)->FindFixBin(0.5)<=1 );   // Pad axis is mirrored at 0.5
-      fWaveCorrectionMirroredZ     = ( fWaveCorrectionMap->GetAxis(1)->FindFixBin(0)<=1); // Z axis is mirrored at 0
+      fWaveCorrectionMirroredZ     = ( fWaveCorrectionMap->GetAxis(1)->FindFixBin(0.0)<=1); // Z axis is mirrored at 0
       fWaveCorrectionMirroredAngle = ( fWaveCorrectionMap->GetAxis(4)->FindFixBin(0.0)<=1 );   // Angle axis is mirrored at 0
     }
   }
@@ -1923,9 +1884,8 @@ void AliTPCClusterParam::SetWaveCorrectionMap( THnBase *Map)
 
 void AliTPCClusterParam::SetResolutionYMap( THnBase *Map)
 {
-  //
-  // Set Resolution Map for Y
-  //
+  /// Set Resolution Map for Y
+
   delete fResolutionYMap;
   fResolutionYMap = 0;
   if( Map ){
@@ -1935,16 +1895,14 @@ void AliTPCClusterParam::SetResolutionYMap( THnBase *Map)
 
 Float_t AliTPCClusterParam::GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax, Float_t Pad, Float_t angleY ) const
 {
-  //
-  // Correct Y cluster coordinate using a map
-  //
+  /// Correct Y cluster coordinate using a map
 
   if( !fWaveCorrectionMap ) return 0;
   Bool_t swapY = kFALSE;
   Pad = Pad-(Int_t)Pad;
 
   if( TMath::Abs(Pad-0.5)<1.e-8 ){// one pad clusters a stored in underflow bins
-    Pad = -1.; 
+    Pad = -1.;
   } else {
     if( fWaveCorrectionMirroredPad && (Pad<0.5) ){ // cog axis is mirrored at 0.5
 	swapY = !swapY;
@@ -1956,10 +1914,10 @@ Float_t AliTPCClusterParam::GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax,
     swapY = !swapY;
     Z = -Z;
   }
-  
+
   if( fWaveCorrectionMirroredAngle && (angleY<0) ){ // Angle axis is mirrored at 0
     angleY = -angleY;
-  }  
+  }
   double var[5] = { static_cast<double>(Type), Z, static_cast<double>(QMax), Pad, angleY };
   Long64_t bin = fWaveCorrectionMap->GetBin(var, kFALSE );
   if( bin<0 ) return 0;

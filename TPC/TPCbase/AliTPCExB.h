@@ -1,3 +1,5 @@
+/// \class AliTPCExB
+
 #ifndef ALITPCEXB_H
 #define ALITPCEXB_H
 
@@ -47,19 +49,21 @@ public:
   Double_t Eval(Int_t type, Double_t r, Double_t phi, Double_t z);
   Double_t SEval(Int_t type, Double_t r, Double_t phi, Double_t z){return Instance()->Eval(type,r,phi,z);}
   static Double_t EvalMat(const TVectorD &vec, Double_t r, Double_t phi, Double_t z);     // evalute parameterization
- 
+
  private:
-  TVectorD *          fMatBrBz;       //param matrix Br/Bz
-  TVectorD *          fMatBrfiBz;     //param matrix Br/Bz
-  TVectorD *          fMatBrBzI0;     //param matrix Br/Bz integral  z>0 
-  TVectorD *          fMatBrBzI1;     //param matrix Br/Bz integral  z<0 
-  TVectorD *          fMatBrfiBzI0;   //param matrix Br/Bz integral  z>0 
-  TVectorD *          fMatBrfiBzI1;   //param matrix Br/Bz integral  z<0
-  
-  static AliTPCExB*   fgInstance;  //! Instance of this class (singleton implementation)
-  static TObjArray    fgArray;     //! array of magnetic fields
+  TVectorD *          fMatBrBz;       ///< param matrix Br/Bz
+  TVectorD *          fMatBrfiBz;     ///< param matrix Br/Bz
+  TVectorD *          fMatBrBzI0;     ///< param matrix Br/Bz integral  z>0
+  TVectorD *          fMatBrBzI1;     ///< param matrix Br/Bz integral  z<0
+  TVectorD *          fMatBrfiBzI0;   ///< param matrix Br/Bz integral  z>0
+  TVectorD *          fMatBrfiBzI1;   ///< param matrix Br/Bz integral  z<0
+
+  static AliTPCExB*   fgInstance;  //!< Instance of this class (singleton implementation)
+  static TObjArray    fgArray;     //!< array of magnetic fields
   //
+  /// \cond CLASSIMP
   ClassDef(AliTPCExB,2)
+  /// \endcond
 };
 
 #endif

@@ -19,6 +19,6 @@ add_subdirectory(ITSUpgradeRec)
 add_subdirectory(ITSUpgradeSim)
 
 # Macros
-install(DIRECTORY macros DESTINATION ITS/UPGRADE)
+install(DIRECTORY macros misc testITSU  testITSUv1 DESTINATION ITS/UPGRADE)
 
 message(STATUS "ITS UPGRADE enabled")

@@ -1,23 +1,27 @@
-// Macro to generate and update OCDB entries for a given run:
-// this is a TObjArray which has at 0 the MIP-Spline and at 1 the Fermi-Plateau-Spline ...
-// Responsible: marian.ivanov@cern.ch
-// Responsible: A.Kalweit@gsi.de
+/// \file CalibTimeGain.C
+///
+/// Macro to generate and update OCDB entries for a given run:
+/// this is a TObjArray which has at 0 the MIP-Spline and at 1 the Fermi-Plateau-Spline ...
+///
+/// \author marian.ivanov@cern.ch
+/// \author A.Kalweit@gsi.de
+///
+/// How to use it locally:
+///
+/// ~~~{.cpp}
+/// // Load libraries
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libSTAT");
+/// gSystem->Load("libTPCcalib");
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibTimeGain.C+
+///
+/// //Make calibration
+/// CalibTimeGain("CalibObjectsTrain1.root",0,120000);
+/// TBrowser b;
+/// b.Add(gainArray);
+/// ~~~
 
-/* How to use it locally:
-//
-// Load libraries
-gSystem->Load("libANALYSIS");
-gSystem->Load("libSTAT");
-gSystem->Load("libTPCcalib");
-gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-.L $ALICE_ROOT/TPC/CalibMacros/CalibTimeGain.C+
-
-//Make calibration
-CalibTimeGain("CalibObjectsTrain1.root",0,120000);
-TBrowser b;
-b.Add(gainArray);
-
-*/
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TObjArray.h"
 #include "TGraphErrors.h"
@@ -53,9 +57,8 @@ Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGau
 
 
 void CalibTimeGain(Char_t* fileName="CalibObjectsTrain1.root", Int_t startRunNumber=0, Int_t endRunNumber=AliCDBRunRange::Infinity(),  TString  ocdbStorage=""){
-  //
-  // Update OCDB gain
-  //
+  /// Update OCDB gain
+
   ReadGainGlobal(fileName);
   AnalyzeGain(startRunNumber,endRunNumber, 1000,1.43);
   MakeQAPlot(1.43);  
@@ -67,9 +70,8 @@ void CalibTimeGain(Char_t* fileName="CalibObjectsTrain1.root", Int_t startRunNum
 
 
 void ReadGainGlobal(Char_t* fileName){
-  //
-  // read calibration entries from file
-  // 
+  /// read calibration entries from file
+
   TFile fcalib(fileName);
   TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
   if (array){
@@ -103,9 +105,8 @@ void ReadGainGlobal(Char_t* fileName){
 
 
 Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit,  Float_t FPtoMIPratio){
-  //
-  //
-  //
+  ///
+
   gainMIP->GetHistGainTime()->GetAxis(5)->SetRangeUser(startRunNumber, endRunNumber);
   // 1.) try to create MIP spline
   gainMIP->GetHistGainTime()->GetAxis(2)->SetRangeUser(1.51,2.49); // only beam data
@@ -146,9 +147,8 @@ Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGau
 
 
 void UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
-  //
-  // Update OCDB entry
-  //
+  /// Update OCDB entry
+
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Alexander Kalweit");
@@ -161,11 +161,8 @@ void UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *stor
 }
 
 void MakeQAPlot(Float_t  FPtoMIPratio) {
-  //
-  // Make QA plot to visualize results
-  //
-  //
-  //
+  /// Make QA plot to visualize results
+
   if (graphCosmic) {
     TCanvas * canvasCosmic = new TCanvas("gain Cosmic", "time dependent gain QA histogram cosmic");
     canvasCosmic->cd();

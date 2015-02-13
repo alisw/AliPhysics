@@ -1,6 +1,6 @@
 // $Id$
 
-/*! \page README_mchview Tracker visualisation program
+/*! \page README_mchview MUON Tracker visualisation program
 
 A visualisation program, \link mchview.cxx mchview \endlink, is now available to display, in two dimensions
  (3D visu being done within the EVE framework), the tracker chambers. 

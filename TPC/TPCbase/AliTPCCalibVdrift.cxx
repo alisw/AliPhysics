@@ -14,12 +14,11 @@
  **************************************************************************/
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Class describing the Vdrift dependencies on E,T,P and GasComposition      //
-// Authors: Stefan Rossegger, Haavard Helstrup                               //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCCalibVdrift
+///
+/// Class describing the Vdrift dependencies on E,T,P and GasComposition
+///
+/// \author Stefan Rossegger, Haavard Helstrup
 
 #include "TSystem.h"
 #include "TObject.h"
@@ -29,7 +28,9 @@
 
 #include "AliTPCCalibVdrift.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCCalibVdrift)
+/// \endcond
 
 namespace paramDefinitions {
     
@@ -83,9 +84,8 @@ AliTPCCalibVdrift::AliTPCCalibVdrift():
   fNominalTemp(0),    // nominal temperature in Kelvin
   fNominalPress(0)    // nominal pressure    in mbar 
 {
-  //
-  //  default constructor
-  //
+  ///  default constructor
+
 }
 
 AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSensor *SensPres, TObject *SensGasComp):
@@ -97,9 +97,7 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(AliTPCSensorTempArray *SensTemp, AliDCSSens
   fNominalTemp(0),    // nominal temperature in Kelvin
   fNominalPress(0)    // nominal pressure    in mbar 
 {
-  //
-  //  Standard constructor
-  //
+  ///  Standard constructor
 
   fSensTemp = SensTemp;
   fSensPres = SensPres;
@@ -124,16 +122,14 @@ AliTPCCalibVdrift::AliTPCCalibVdrift(const AliTPCCalibVdrift& source) :
   fNominalPress(source.fNominalPress)    // nominal pressure    in mbar 
 
 {
-  //
-  //  Copy constructor
-  //
+  ///  Copy constructor
+
 }
 
 //_____________________________________________________________________________
 AliTPCCalibVdrift& AliTPCCalibVdrift::operator=(const AliTPCCalibVdrift& source){
-  //
-  // assignment operator
-  //
+  /// assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCCalibVdrift(source);
   
@@ -143,19 +139,15 @@ AliTPCCalibVdrift& AliTPCCalibVdrift::operator=(const AliTPCCalibVdrift& source)
 //_____________________________________________________________________________
 AliTPCCalibVdrift::~AliTPCCalibVdrift()
 {
-  //
-  // AliTPCCalibVdrift destructor
-  // 
+  /// AliTPCCalibVdrift destructor
 
 }
 
 //_____________________________________________________________________________
 Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t absTimeSec, Int_t side){
-  //
-  // Get Relative difference of p/T for given time stamp
-  // absTimeSec - absolute time in secounds
-  // side: 0 - A side |  1 - C side
-  //
+  /// Get Relative difference of p/T for given time stamp
+  /// absTimeSec - absolute time in secounds
+  /// side: 0 - A side |  1 - C side
 
   TTimeStamp tstamp(absTimeSec);
 
@@ -183,10 +175,8 @@ Double_t AliTPCCalibVdrift::GetPTRelative(UInt_t absTimeSec, Int_t side){
 //_____________________________________________________________________________
 Double_t AliTPCCalibVdrift::VdriftLinearHyperplaneApprox(Double_t dE, Double_t dT, Double_t dP, Double_t dCco2, Double_t dCn2) 
 {
-  //
-  // Returns approximated value for the driftvelocity change (in percent)
-  // based on a Hyperplane approximation (~ Taylorapproximation of 2nd order)
-  //
+  /// Returns approximated value for the driftvelocity change (in percent)
+  /// based on a Hyperplane approximation (~ Taylorapproximation of 2nd order)
 
   Double_t termE   = dE*kdvdE + TMath::Power(dE,2)*kdvdE2nd;
   Double_t termT   = dT*kdvdT + TMath::Power(dT,2)*kdvdT2nd;
@@ -204,7 +194,8 @@ Double_t AliTPCCalibVdrift::VdriftLinearHyperplaneApprox(Double_t dE, Double_t d
 
 Double_t AliTPCCalibVdrift::GetVdriftNominal() 
 {
-  // returns nominal Driftvelocity at StandardConditions
+  /// returns nominal Driftvelocity at StandardConditions
+
   return kstdVdrift;
 }
 
@@ -212,10 +203,8 @@ Double_t AliTPCCalibVdrift::GetVdriftNominal()
 
 Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, UInt_t absTimeSec)
 {
-  // 
-  // Calculates Vdrift change in percent of Vdrift_nominal 
-  // (under nominal conditions) at x,y,z at absolute time (in sec)
-  //
+  /// Calculates Vdrift change in percent of Vdrift_nominal
+  /// (under nominal conditions) at x,y,z at absolute time (in sec)
 
   TTimeStamp tstamp(absTimeSec);
 
@@ -260,12 +249,10 @@ Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, 
 
 Double_t AliTPCCalibVdrift::GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t absTimeSec)
 {
-  // 
-  // Calculates Meanvalue in z direction of Vdrift change in percent 
-  // of Vdrift_nominal (under standard conditions) at position x,y,absTimeSec
-  // with help of 'nPopints' base points
-  //
-  
+  /// Calculates Meanvalue in z direction of Vdrift change in percent
+  /// of Vdrift_nominal (under standard conditions) at position x,y,absTimeSec
+  /// with help of 'nPopints' base points
+
   Int_t nPoints = 5;
  
   Double_t vdriftSum = 0;
@@ -285,10 +272,8 @@ Double_t AliTPCCalibVdrift::GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t 
 
 TGraph *AliTPCCalibVdrift::MakeGraphMeanZVdriftChange(Double_t x, Double_t y, Int_t nPoints)
 {
-  //
-  // Make graph from start time to end time of Mean Drift Velocity in 
-  // Z direction at given x and y position
-  //
+  /// Make graph from start time to end time of Mean Drift Velocity in
+  /// Z direction at given x and y position
 
   UInt_t startTime = fSensTemp->GetStartTime();
   UInt_t endTime = fSensTemp->GetEndTime();

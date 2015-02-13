@@ -13,17 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Alice segment manager object                                             //
-//  AliSimDigits object   (derived from AliDigits)                           //
-//  provide additional track information to digit                            //
-//   Origin: Marian Ivanov  GSI Darmstadt                                    //
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliSimDigits
+///
+///  Alice segment manager object
+///  AliSimDigits object   (derived from AliDigits)
+///  provide additional track information to digit
+/// \author Marian Ivanov  GSI Darmstadt
 
 #include "TClass.h"
 #include <Riostream.h>
@@ -40,7 +36,9 @@
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 //_____________________________________________________________________________
+/// \cond CLASSIMP
 ClassImp(AliSimDigits)
+/// \endcond
 
 AliSimDigits::AliSimDigits()
              :AliDigits(),
@@ -61,9 +59,8 @@ AliSimDigits::AliSimDigits(const AliSimDigits &param)
 	      fNlevel(0),
 	      fTrBufType(0) 
 {
-  //
-  // dummy
-  //
+  /// dummy
+
   fTrIndex = param.fTrIndex;
 }
 //
@@ -80,9 +77,8 @@ AliSimDigits::~AliSimDigits()
 }
 AliSimDigits & AliSimDigits::operator =(const AliSimDigits & param)
 {
-  //
-  // assignment operator - dummy
-  //
+  /// assignment operator - dummy
+
   if(this!=&param){
     fTrIndex=param.fTrIndex;
   }
@@ -92,8 +88,8 @@ AliSimDigits & AliSimDigits::operator =(const AliSimDigits & param)
 //__________________________________________________________________
 void AliSimDigits::InvalidateTrack() 
 { 
-  //
-  //set default (invalid parameters)
+  /// set default (invalid parameters)
+
   if ( fTracks != 0) delete fTracks;
   fTracks = new TArrayI;
   if ( fTrIndex  != 0) delete fTrIndex;
@@ -107,9 +103,9 @@ void AliSimDigits::InvalidateTrack()
 
 void  AliSimDigits::AllocateTrack(Int_t length)
 {
-  //
-  //construct empty buffer fElements and fTracks with size fNrows x fNcols x
-  //length 
+  /// construct empty buffer fElements and fTracks with size fNrows x fNcols x
+  /// length
+
   InvalidateTrack();
   fNlevel = length;
   fTracks->Set(fNcols*fNrows*fNlevel);
@@ -119,8 +115,8 @@ void  AliSimDigits::AllocateTrack(Int_t length)
 
 Int_t AliSimDigits::GetTrackID(Int_t row, Int_t column, Int_t level) 
 {
-  //
-  //Get track ID 
+  /// Get track ID
+
   if (fTrBufType == 0) return  GetTrackIDFast(row, column,level);
   if (fTrBufType == 1) return  GetTrackID1(row, column,level); 
   if (fTrBufType == 2) return  GetTrackID2(row, column,level); 
@@ -129,8 +125,8 @@ Int_t AliSimDigits::GetTrackID(Int_t row, Int_t column, Int_t level)
 
 void AliSimDigits::ExpandTrackBuffer()
 {  
-  //
-  //expand buffer to two dimensional array 
+  /// expand buffer to two dimensional array
+
   if (fTrBufType<0)  {
     Error("ExpandBuffer", "buffer doesn't exist");
     return;
@@ -143,9 +139,8 @@ void AliSimDigits::ExpandTrackBuffer()
 
 void AliSimDigits::CompresTrackBuffer(Int_t bufType)
 {
-  //
-  //compres buffer according buffertype algorithm
-  //
+  /// compres buffer according buffertype algorithm
+
   if (fTrBufType<0)  {
     Error("CompressBuffer", "buffer doesn't exist");
     return;
@@ -166,7 +161,8 @@ void AliSimDigits::CompresTrackBuffer(Int_t bufType)
 
 Int_t  AliSimDigits::GetTrackID1(Int_t row, Int_t column, Int_t level)
 {
-  //return  track ID of digits - for buffer compresion 2
+  /// return  track ID of digits - for buffer compresion 2
+
   Int_t i,n1,n2;
   i = level*fNcols+column;
   if ( (i+1)>=fTrIndex->fN) n2 = fTracks->fN;
@@ -205,10 +201,9 @@ Int_t  AliSimDigits::GetTrackID1(Int_t row, Int_t column, Int_t level)
 
 void  AliSimDigits::ExpandTrackBuffer1()
 {
-  //
-  //expand  track compressed according algorithm 1 (track id comression independent to the digit compression)
-  // !!in expanded tracks we don't use fTrIndex array
-  //  
+  /// expand  track compressed according algorithm 1 (track id comression independent to the digit compression)
+  /// !!in expanded tracks we don't use fTrIndex array
+
   fTrBufType = 0;
   Int_t i,j;
   Int_t all   = fNrows*fNcols;  //total number of digits
@@ -250,9 +245,8 @@ void  AliSimDigits::ExpandTrackBuffer1()
 
 void  AliSimDigits::CompresTrackBuffer1()
 {
-  //
-  //comress track according algorithm 1 (track id comression independent to the digit compression)
-  //
+  /// comress track according algorithm 1 (track id comression independent to the digit compression)
+
   fTrBufType = 1;  
 
   TArrayI *  buf = new TArrayI;   //create  new buffer 
@@ -344,22 +338,23 @@ void  AliSimDigits::CompresTrackBuffer1()
 
 void  AliSimDigits::ExpandTrackBuffer2()
 {
-  //
-  //comress track according algorithm 2 (track id comression according  digit compression)
+  /// comress track according algorithm 2 (track id comression according  digit compression)
+
   fTrBufType = 0;
 }
 
 void  AliSimDigits::CompresTrackBuffer2()
 {
-  //
-  //comress track according algorithm 2 (track id comression according  digit compression)
+  /// comress track according algorithm 2 (track id comression according  digit compression)
+
   fTrBufType = 2;
 }
 
 
 Int_t  AliSimDigits::GetTrackID2(Int_t /*row*/, Int_t /*column*/, Int_t /*level*/)
 {
-  //returnb track id of digits - for buffer compresion 2
+  /// returnb track id of digits - for buffer compresion 2
+
   return -2;
 }
 
@@ -368,10 +363,10 @@ Int_t  AliSimDigits::GetTrackID2(Int_t /*row*/, Int_t /*column*/, Int_t /*level*
 AliH2F *  AliSimDigits::DrawTracks( const char *option,Int_t level, 
 			      Float_t x1, Float_t x2, Float_t y1, Float_t y2)
 {
-  //
-  //draw digits in given array
-  //  
-  //make digits histo 
+  /// draw digits in given array
+  ///
+  /// make digits histo
+
   char ch[30];
   //sprintf(ch,"Track Segment_%d level %d ",GetID(),level );
   snprintf(ch,30,"Track Segment_%d level %d ",GetID(),level );
@@ -396,10 +391,8 @@ AliH2F *  AliSimDigits::DrawTracks( const char *option,Int_t level,
 }
 
 void AliSimDigits::GlitchFilter(){
-  //
-  //  glitch filter, optionally
-  //
-  
+  ///  glitch filter, optionally
+
   for (Int_t i=0;i<fNcols;i++){ //pads
     for(Int_t j=1;j<fNrows-1;j++){ //time bins
       // first and last time bins are checked separately

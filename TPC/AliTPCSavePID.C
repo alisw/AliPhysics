@@ -1,9 +1,11 @@
 /// \file AliTPCSavePID.C
-/// 
-/// \author Dubna, 22 Jan 2003
+///
+/// \author Dubna
+/// \date 2003, 22 Jan
 
 Int_t AliTPCSavePID(Int_t emax=3) {
-///////////////////////////////////////
+///
+
 #include<fstream.h>
 TFile *inkin = TFile::Open("galice.root");
 if (!inkin->IsOpen()) {

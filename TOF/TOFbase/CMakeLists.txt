@@ -20,7 +20,7 @@ set(MODULE TOFbase)
 include_directories(${AliRoot_SOURCE_DIR}/TOF/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatasim
@@ -85,6 +85,34 @@ set(SRCS
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Additional headers, with no corresponding sources
+list(APPEND HDRS "AliTOFDRMEventCRC.h"
+                 "AliTOFDRMGlobalHeader.h"
+                 "AliTOFDRMGlobalTrailer.h"
+                 "AliTOFDRMStatusHeader1.h"
+                 "AliTOFDRMStatusHeader2.h"
+                 "AliTOFDRMStatusHeader3.h"
+                 "AliTOFDRMStatusHeader4.h"
+                 "AliTOFFEEConfig.h"
+                 "AliTOFFEElightConfig.h"
+                 "AliTOFLTMADCData.h"
+                 "AliTOFLTMGlobalHeader.h"
+                 "AliTOFLTMGlobalTrailer.h"
+                 "AliTOFLTMORData.h"
+                 "AliTOFLTMPDLData.h"
+                 "AliTOFPreprocessor.h"
+                 "AliTOFRawDataFormat.h"
+                 "AliTOFTDCPackedHit.h"
+                 "AliTOFTDCUnpackedHit.h"
+                 "AliTOFTRMChainHeader.h"
+                 "AliTOFTRMChainTrailer.h"
+                 "AliTOFTRMDiagnosticErrorWord1.h"
+                 "AliTOFTRMDiagnosticErrorWord2.h"
+                 "AliTOFTRMGlobalHeader.h"
+                 "AliTOFTRMGlobalTrailer.h"
+                 "AliTOFTRMTDCError.h"
+    )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

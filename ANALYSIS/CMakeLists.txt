@@ -20,5 +20,6 @@ add_subdirectory(ESDfilter)
 
 # Installing the macros
 install(DIRECTORY macros DESTINATION ANALYSIS)
+install(DIRECTORY BadChunkFilter DESTINATION ANALYSIS)
 
 message(STATUS "ANALYSIS enabled")

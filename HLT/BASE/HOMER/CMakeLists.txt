@@ -20,7 +20,7 @@ set(MODULE AliHLTHOMER)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order
@@ -48,7 +48,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Do not forget to add dependencies to the object in case they appear
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:AliHLTHOMER-object>)
-target_link_libraries(${MODULE} Core)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "")

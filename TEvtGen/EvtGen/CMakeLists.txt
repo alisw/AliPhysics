@@ -20,7 +20,7 @@ set (MODULE EvtGen)
 include_directories(${AliRoot_SOURCE_DIR}/TEvtGen/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/TEvtGen
 )
 
@@ -327,3 +327,5 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+install( FILES DECAY.DEC evt.pdl DESTINATION TEvtGen/EvtGen )
+install( DIRECTORY DecayTable DESTINATION TEvtGen/EvtGen )

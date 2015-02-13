@@ -1,33 +1,31 @@
-/*
-  
- Class AliTPCtransformation:
- Should represent general non linear transformation. Currently tune for TPConly.
- To be used:
- 1. Simulation-Digitization
- 2. Reconstruction - AliTPCTransform
- 3. Calibration/Alignment (KalmanFilter, Milipedde)
- 4. Set of transformation to be stored/retrieved as OCDB entry 
-
- Base functionality:
- 
- 1. Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z)
- Get correction - return the delta of coordinate coord dx or dy or dz for given volID for point at point (x,y,z)
- All coordinates are global
-
- 2. The transformation should work only for given volIDs and detector IDs
-    Currently Bitmask is used for filtering 
-
-
- Transformation - naming convention:
- //
- XXX(local)YYYZZZ
- TPClocaldLxdGX
- XXX   - detector if detector specific
- local - if local transforamtion
- YYY   - type of transformation
- ZZZ   - return type of transformation
-
-*/
+/// \class AliTPCTransformation
+/// \brief Should represent general non linear transformation.
+///
+/// Currently tune for TPConly.
+///
+/// To be used:
+/// 1. Simulation-Digitization
+/// 2. Reconstruction - AliTPCTransform
+/// 3. Calibration/Alignment (KalmanFilter, Milipedde)
+/// 4. Set of transformation to be stored/retrieved as OCDB entry
+///
+/// Base functionality:
+///
+/// 1. Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z)
+/// Get correction - return the delta of coordinate coord dx or dy or dz for given volID for point at point (x,y,z)
+/// All coordinates are global
+///
+/// 2. The transformation should work only for given volIDs and detector IDs
+///    Currently Bitmask is used for filtering
+///
+/// Transformation - naming convention:
+///
+/// XXX(local)YYYZZZ
+/// TPClocaldLxdGX
+/// XXX   - detector if detector specific
+/// local - if local transforamtion
+/// YYY   - type of transformation
+/// ZZZ   - return type of transformation
 
 #include <string.h>
 #include "TRandom.h"
@@ -44,24 +42,24 @@
 #include "AliLog.h"
 #include "AliTPCTransformation.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCTransformation)
-
+/// \endcond
 
 AliTPCTransformation::GenFuncG    AliTPCTransformation::fgFormulas[10000];
 TObjArray*  AliTPCTransformation::fgFormulasName = new TObjArray(10000);
 
 
 void AliTPCTransformation::RegisterFormula(const char * name, GenFuncG formula){
-  //
-  // Add Formula to the list of formulas
-  //
+  /// Add Formula to the list of formulas
+
   Int_t last= fgFormulasName->GetEntries();
   fgFormulasName->AddLast(new TObjString(name));
   fgFormulas[last]=formula;
 }
 
 Int_t  AliTPCTransformation::BuildBasicFormulas(){
-  //
+  ///
 
   //
   //build list of basic TPC formulas - corrections
@@ -98,9 +96,8 @@ Int_t  AliTPCTransformation::BuildBasicFormulas(){
 }
 
 AliTPCTransformation::GenFuncG  AliTPCTransformation::FindFormula(const char * name){
-  //
-  // find formula - if registered
-  //
+  /// find formula - if registered
+
   if (fgFormulasName->FindObject(name)==0) return 0;
   Int_t entries = fgFormulasName->GetEntries();
   for (Int_t i=0;i<entries;i++){
@@ -112,9 +109,8 @@ AliTPCTransformation::GenFuncG  AliTPCTransformation::FindFormula(const char * n
 }
 
 Double_t AliTPCTransformation::Eval(const char * name, const Double_t*x,const Double_t*par){
-  //
-  // Only for test purposes - very slow
-  //
+  /// Only for test purposes - very slow
+
   GenFuncG fun = FindFormula(name);
   if (!fun) return 0;
   return fun(x,par);
@@ -142,9 +138,8 @@ AliTPCTransformation::AliTPCTransformation():
   fFormulaZ(0)       // z formula - pointer to the function
   //
 {
-  //
-  // default constructor
-  //
+  /// default constructor
+
 }
 
 
@@ -168,9 +163,8 @@ AliTPCTransformation::AliTPCTransformation(const char *name, TBits *mask, const 
   fFormulaY(0),       // y formula - pointer to the function
   fFormulaZ(0)       // z formula - pointer to the function
 {
-  //
-  // non default constructor
-  //
+  /// non default constructor
+
   if (fx) fNameX= new TString(fx);
   if (fy) fNameY= new TString(fy);
   if (fz) fNameZ= new TString(fz);
@@ -197,9 +191,8 @@ AliTPCTransformation::AliTPCTransformation(const AliTPCTransformation&trafo):
   fFormulaY(0),       // y formula - pointer to the function
   fFormulaZ(0)       // z formula - pointer to the function
 {
-  //
-  // comment are above
-  //
+  /// comment are above
+
   if (trafo.fNameX) fNameX = new TString(*(trafo.fNameX)); 
   if (trafo.fNameY) fNameY = new TString(*(trafo.fNameY)); 
   if (trafo.fNameZ) fNameZ = new TString(*(trafo.fNameZ)); 
@@ -207,9 +200,8 @@ AliTPCTransformation::AliTPCTransformation(const AliTPCTransformation&trafo):
 }
 
 AliTPCTransformation::~AliTPCTransformation(){
-  //
-  // destructor
-  //
+  /// destructor
+
   delete fNameX;
   delete fNameY;
   delete fNameZ;
@@ -217,9 +209,8 @@ AliTPCTransformation::~AliTPCTransformation(){
   delete fFixedParam;
 }
 void AliTPCTransformation::SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, const TVectorD *const fixedParams){
-  //
-  // Set parameters of transformation
-  //
+  /// Set parameters of transformation
+
   fParam = param;
   fSigma = sigma;
   fSigmaMax = sigma;
@@ -231,9 +222,8 @@ void AliTPCTransformation::SetParams(Double_t param, Double_t sigma, Double_t si
 
 
 Bool_t AliTPCTransformation::Init(){
-  //
-  // associate formulas with pointer to the function
-  //
+  /// associate formulas with pointer to the function
+
   Bool_t isOK=kTRUE;
   if (fNameX) {
     fFormulaX=FindFormula(fNameX->Data());
@@ -253,9 +243,8 @@ Bool_t AliTPCTransformation::Init(){
 
 
 TBits * AliTPCTransformation::BitsSide(Bool_t aside){
-  //
-  // Set bits for given side
-  //
+  /// Set bits for given side
+
   TBits * bits = new TBits(72);
   for (Int_t i=0; i<72;i++){
     if (i%36<18 && aside) (*bits)[i]=kTRUE;
@@ -267,9 +256,8 @@ TBits * AliTPCTransformation::BitsSide(Bool_t aside){
 }
 
 TBits * AliTPCTransformation::BitsAll(){
-  //
-  // Set all bits to kTRUE
-  //
+  /// Set all bits to kTRUE
+
   TBits * bits = new TBits(72);
   for (Int_t i=0; i<72;i++){
     (*bits)[i]=kTRUE;
@@ -315,15 +303,14 @@ TBits * AliTPCTransformation::BitsAll(){
 
 
 Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z){
-  //
-  //
-  // coord - type of coordinate
-  //       - 0 -X
-  //         1 -Y
-  //         2 -Z
-  //         3 -R
-  //         4 -RPhi
-  //         5 -Z
+  /// coord - type of coordinate
+  ///       - 0 -X
+  ///         1 -Y
+  ///         2 -Z
+  ///         3 -R
+  ///         4 -RPhi
+  ///         5 -Z
+
   if (!fIsActive) return 0;
   if (fBitMask && (!(*fBitMask)[volID])) return 0;
   Double_t xyz[5]={x,y,z, param,volID};
@@ -368,14 +355,13 @@ Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t pa
 
 
 Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, const Double_t * const param){
-  //
-  // Scaling and shift of TPC radius
-  // xyz[0..2] - global xyz of point 
-  // xyz[3]    - scale parameter
-  // param[0]  - radial scaling power
-  // param[1]  - drift  scaling power
-  // radius  from -1(at rInner)   to 1 (rOuter)
-  // driftM  from -1(at 0 drift)  to 1 (250 cm drift)
+  /// Scaling and shift of TPC radius
+  /// xyz[0..2] - global xyz of point
+  /// xyz[3]    - scale parameter
+  /// param[0]  - radial scaling power
+  /// param[1]  - drift  scaling power
+  /// radius  from -1(at rInner)   to 1 (rOuter)
+  /// driftM  from -1(at 0 drift)  to 1 (250 cm drift)
 
   Double_t rInner=78.8;
   Double_t rOuter=258.0; 
@@ -388,11 +374,10 @@ Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, const Double_t * c
 
 
 Double_t  AliTPCTransformation::TPCscalingZDrift(Double_t *xyz, const Double_t * const param){
-  //
-  //
-  // Scaling and shift of TPC radius
-  // xyz[0..2] - global xyz of point 
-  // xyz[3]    - scale parameter
+  /// Scaling and shift of TPC radius
+  /// xyz[0..2] - global xyz of point
+  /// xyz[3]    - scale parameter
+
   Double_t driftP  = TMath::Power(1. - TMath::Abs(xyz[2]/250.), param[0]);
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t deltaZ  = (sector%36<18) ? -driftP : driftP;
@@ -400,13 +385,12 @@ Double_t  AliTPCTransformation::TPCscalingZDrift(Double_t *xyz, const Double_t *
 }
 
 Double_t  AliTPCTransformation::TPCscalingZDriftT0(Double_t *xyz, const Double_t * const /*param*/){
-  //
-  //
-  // Z shift because time 0 offset
-  // opposite on A and C side
-  //
-  // xyz[0..2] - global xyz of point 
-  // xyz[3]    - scale parameter
+  /// Z shift because time 0 offset
+  /// opposite on A and C side
+  ///
+  /// xyz[0..2] - global xyz of point
+  /// xyz[3]    - scale parameter
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t sign  = (sector%36<18) ? -1 : 1;
   return sign*xyz[3];
@@ -414,11 +398,10 @@ Double_t  AliTPCTransformation::TPCscalingZDriftT0(Double_t *xyz, const Double_t
 
 
 Double_t  AliTPCTransformation::TPCscalingZDriftGy(Double_t *xyz, const Double_t * const param){
-  //
-  //
-  // Scaling and shift of TPC radius
-  // xyz[0..2] - global xyz of point 
-  // xyz[3]    - scale parameter
+  /// Scaling and shift of TPC radius
+  /// xyz[0..2] - global xyz of point
+  /// xyz[3]    - scale parameter
+
   Double_t driftP  = TMath::Power(1. - TMath::Abs(xyz[2]/250.), param[0]);
   Double_t gy      = xyz[1]/250.;
   Int_t    sector = TMath::Nint(xyz[4]);
@@ -429,12 +412,11 @@ Double_t  AliTPCTransformation::TPCscalingZDriftGy(Double_t *xyz, const Double_t
 
 
 Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, const Double_t * const param){
-  //
-  //
-  // Scaling if the local y -phi
-  // xyz[0..2] - global xyz of point 
-  // xyz[3]    - scale parameter
-  // value = 1 for ful drift length and parameter 1
+  /// Scaling if the local y -phi
+  /// xyz[0..2] - global xyz of point
+  /// xyz[3]    - scale parameter
+  /// value = 1 for ful drift length and parameter 1
+
   Double_t alpha       = TMath::ATan2(xyz[1],xyz[0]);
   Double_t sector      = TMath::Nint(9*alpha/TMath::Pi()-0.5);
   Double_t localAlpha  = (alpha-(sector+0.5)*TMath::Pi()/9.);
@@ -445,13 +427,12 @@ Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, const Double_t
 }
 
 Double_t  AliTPCTransformation::TPClocalRPhiEdge(Double_t *xyz, const Double_t *const param){
-  //
-  //
-  // Scaling if the local y -phi
-  // xyz[0..2] - global xyz of point 
-  // xyz[3]    - scale parameter
-  // param[0]  - dedge offset - should be around gap size/2.
-  // param[1]  - dedge factor - should be around gap size/2.
+  /// Scaling if the local y -phi
+  /// xyz[0..2] - global xyz of point
+  /// xyz[3]    - scale parameter
+  /// param[0]  - dedge offset - should be around gap size/2.
+  /// param[1]  - dedge factor - should be around gap size/2.
+
   Double_t alpha       = TMath::ATan2(xyz[1],xyz[0]);
   Double_t sector      = TMath::Nint(9*alpha/TMath::Pi()-0.5);
   Double_t localAlpha  = (alpha-(sector+0.5)*TMath::Pi()/9.);
@@ -464,10 +445,10 @@ Double_t  AliTPCTransformation::TPClocalRPhiEdge(Double_t *xyz, const Double_t *
 
 
 Double_t       AliTPCTransformation::TPCscalingRIFC(Double_t *xyz, const Double_t * const param){
-  //
-  // inner field cage r distorion - proportinal to 1 over distance to the IFC
-  // param[0] - drift polynom order
-  // distortion at first pad row - is normalized to 
+  /// inner field cage r distorion - proportinal to 1 over distance to the IFC
+  /// param[0] - drift polynom order
+  /// distortion at first pad row - is normalized to
+
   Double_t rInner=78.8;
   Double_t rFirst=85.2; 
   Double_t deltaR  = rFirst-rInner;
@@ -478,11 +459,10 @@ Double_t       AliTPCTransformation::TPCscalingRIFC(Double_t *xyz, const Double_
 }
 
 Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, const Double_t * const param){
-  //
-  // outer field cage r distorion - proportinal to 1 over distance to the OFC
-  // param[0] - drift polynom order
-  // driftM   - from -1 to 1 
-  //
+  /// outer field cage r distorion - proportinal to 1 over distance to the OFC
+  /// param[0] - drift polynom order
+  /// driftM   - from -1 to 1
+
   Double_t rLast=245.8;
   Double_t rOuter=258.0;  
   Double_t deltaR  = rOuter-rLast;
@@ -494,14 +474,13 @@ Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, const Double_
 
 
 Double_t       AliTPCTransformation::TPCdeltaFCROC(Double_t *xyz, const Double_t *const param){
-  // 
-  // delta R(Z) ROC induced
-  // param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
-  // param[1] - kFC scaling factor  (multiplication factor  of (OFC-IFC))
-  // param[2] - kROC scaling factor 
-  // parameters [1] and [2] should be obtained from the electric field
-  //            simulation
-  //
+  /// delta R(Z) ROC induced
+  /// param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
+  /// param[1] - kFC scaling factor  (multiplication factor  of (OFC-IFC))
+  /// param[2] - kROC scaling factor
+  /// parameters [1] and [2] should be obtained from the electric field
+  ///            simulation
+
   Double_t rInner=78.8;
   Double_t rFirst=85.2; 
   Double_t rLast=245.8;
@@ -521,13 +500,13 @@ Double_t       AliTPCTransformation::TPCdeltaFCROC(Double_t *xyz, const Double_t
 
 
 Double_t       AliTPCTransformation::TPCdeltaFCCE(Double_t *xyz, const Double_t *const param){
-  // 
-  // delta R(Z) CE (central electrode) induced
-  // param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
-  // param[1] - kFC scaling factor  (multiplication factor  of (OFC-IFC))
-  // param[2] - kCE scaling factor 
-  // parameters [1] and [2] should be obtained from the electric field
-  //            simulation
+  /// delta R(Z) CE (central electrode) induced
+  /// param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
+  /// param[1] - kFC scaling factor  (multiplication factor  of (OFC-IFC))
+  /// param[2] - kCE scaling factor
+  /// parameters [1] and [2] should be obtained from the electric field
+  ///            simulation
+
   Double_t rInner=78.8;
   Double_t rFirst=85.2; 
   Double_t rLast =245.8;
@@ -557,15 +536,14 @@ Double_t       AliTPCTransformation::TPCdeltaFCCE(Double_t *xyz, const Double_t 
 //
 //
 Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //       [3]    - scale parameter
-  //       [4]    - volID
-  // param[0]= n  - cos(n *alpha)
-  // param[1]= n  - sin(n *alpha)
-  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///       [3]    - scale parameter
+  ///       [4]    - volID
+  /// param[0]= n  - cos(n *alpha)
+  /// param[1]= n  - sin(n *alpha)
+  /// param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   Double_t ca     = TMath::Cos(alpha);
@@ -579,15 +557,14 @@ Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, const Double_t *co
 }
 
 Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //       [3]    - scale parameter
-  //       [4]    - volID
-  // param[0]= n  - cos(n *alpha)
-  // param[1]= n  - sin(n *alpha)
-  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///       [3]    - scale parameter
+  ///       [4]    - volID
+  /// param[0]= n  - cos(n *alpha)
+  /// param[1]= n  - sin(n *alpha)
+  /// param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   //Double_t ca     = TMath::Cos(alpha);
@@ -601,15 +578,14 @@ Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, const Double_t *con
 }
 
 Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //       [3]    - scale parameter
-  //       [4]    - volID
-  // param[0]= n  - cos(n *alpha)
-  // param[1]= n  - sin(n *alpha)
-  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///       [3]    - scale parameter
+  ///       [4]    - volID
+  /// param[0]= n  - cos(n *alpha)
+  /// param[1]= n  - sin(n *alpha)
+  /// param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   //Double_t ca     = TMath::Cos(alpha);
@@ -623,15 +599,14 @@ Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, const Double_t *co
 }
 
 Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //       [3]    - scale parameter
-  //       [4]    - volID
-  // param[0]= n  - cos(n *alpha)
-  // param[1]= n  - sin(n *alpha)
-  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///       [3]    - scale parameter
+  ///       [4]    - volID
+  /// param[0]= n  - cos(n *alpha)
+  /// param[1]= n  - sin(n *alpha)
+  /// param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   Double_t ca     = TMath::Cos(alpha);
@@ -646,15 +621,14 @@ Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, const Double_t *con
 
 
 Double_t AliTPCTransformation::TPClocaldRzdGX(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //       [3]    - scale parameter - rotation angle in mrad
-  //       [4]    - volID
-  // param[0]= n  - cos(n *alpha)
-  // param[1]= n  - sin(n *alpha)
-  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite  
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///       [3]    - scale parameter - rotation angle in mrad
+  ///       [4]    - volID
+  /// param[0]= n  - cos(n *alpha)
+  /// param[1]= n  - sin(n *alpha)
+  /// param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   Double_t ca     = TMath::Cos(alpha);  
@@ -677,15 +651,14 @@ Double_t AliTPCTransformation::TPClocaldRzdGX(Double_t *xyz, const Double_t *con
 }
 
 Double_t AliTPCTransformation::TPClocaldRzdGY(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //       [3]    - scale parameter - rotation angle in mrad
-  //       [4]    - volID
-  // param[0]= n  - cos(n *alpha)
-  // param[1]= n  - sin(n *alpha)
-  // param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///       [3]    - scale parameter - rotation angle in mrad
+  ///       [4]    - volID
+  /// param[0]= n  - cos(n *alpha)
+  /// param[1]= n  - sin(n *alpha)
+  /// param[2]     - indication - 0 - the same for IROC OROC 1 - opposite
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
   Double_t ca     = TMath::Cos(alpha);  
@@ -709,12 +682,11 @@ Double_t AliTPCTransformation::TPClocaldRzdGY(Double_t *xyz, const Double_t *con
 
 
 Double_t        AliTPCTransformation::TPCDeltaZMediumLong(Double_t *xyz, Double_t * /*param*/){
-  //
-  // xyz - [0..2] - position 
-  //        [3]    - scale parameter
-  //        [4]    - volID
-  // return delta in global coordinate system 
-  //
+  /// xyz - [0..2] - position
+  ///        [3]    - scale parameter
+  ///        [4]    - volID
+  /// return delta in global coordinate system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t signZ  = (sector%36<18) ? 1: -1;  // drift direction
   if    (sector<36) return 0;     
@@ -730,12 +702,11 @@ Double_t        AliTPCTransformation::TPCDeltaZMediumLong(Double_t *xyz, Double_
 }
 
 Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, const Double_t *const param){
-  //
-  // xyz - [0..2] - position 
-  //        [3]    - scale parameter
-  //        [4]    - volID
-  // return delta in global coordiante system
-  //
+  /// xyz - [0..2] - position
+  ///        [3]    - scale parameter
+  ///        [4]    - volID
+  /// return delta in global coordiante system
+
   Int_t    sector = TMath::Nint(xyz[4]);
   Double_t delta  = (sector%36<18) ? 1: -1;  // drift direction
   Double_t alpha  = TMath::Pi()*(sector+0.5)/9;
@@ -752,13 +723,14 @@ Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, const Double_t *c
 
 
 Double_t       AliTPCTransformation::TPCTiltingZ(Double_t *xyz, const Double_t *const param){
-  // xyz - [0..2] - position 
-  //        [3]    - scale parameter
-  //        [4]    - volID
-  // param[0]      - n for cos
-  // param[1]      - n for sin
-  // param[2]      - IROC-ORC relative (if >0.5 )
-  // return delta in global coordinate system 
+  /// xyz - [0..2] - position
+  ///        [3]    - scale parameter
+  ///        [4]    - volID
+  /// param[0]      - n for cos
+  /// param[1]      - n for sin
+  /// param[2]      - IROC-ORC relative (if >0.5 )
+  /// return delta in global coordinate system
+
   const Double_t rFirst=85.2; 
   const Double_t rLast =245.8;
   const Double_t xIROCOROC = 133.4;  

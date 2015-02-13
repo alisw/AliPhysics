@@ -258,7 +258,7 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, const AliHLT
     AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
     HLTWarning("invalid trigger mask %s, unknown CTP trigger, initialized %s", 
 	       TriggerMaskToString(triggerMask).c_str(), TriggerMaskToString(fMask).c_str() );
-    for (int i=0; i<gkAliHLTCommonHeaderCount; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
+    for (int i=0; i<evtData->fCommonHeaderWordCnt; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
     return false;
   }
 
@@ -379,7 +379,7 @@ int AliHLTCTPData::Increment(AliHLTComponentTriggerData& trigData)
     AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
     HLTWarning("invalid trigger mask %s, unknown CTP trigger, initialized %s", 
 	       TriggerMaskToString(triggerMask).c_str(), TriggerMaskToString(fMask).c_str());
-    for (int i=0; i<gkAliHLTCommonHeaderCount; i++) 
+    for (int i=0; i<evtData->fCommonHeaderWordCnt; i++) 
       HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
   }
   Increment(triggerMask);
@@ -451,7 +451,7 @@ AliHLTReadoutList AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& t
     AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
     HLTWarning("invalid trigger mask %s, unknown CTP trigger, initialized %s",
                TriggerMaskToString(triggerMask).c_str(), TriggerMaskToString(fMask).c_str());
-    for (int i=0; i<gkAliHLTCommonHeaderCount; i++)
+    for (int i=0; i<evtData->fCommonHeaderWordCnt; i++)
       HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
   }
 

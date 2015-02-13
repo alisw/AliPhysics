@@ -1,47 +1,47 @@
-/*
-  marian.ivanov@cern.ch 
-  
-  AliTPCkalmanFit:
-
-  Kalman filter(s) for fitting of the tracks together with calibration/transformation 
-  parameters.
-
-  Correction/Transformation are currently described by set (TObjArray) of primitive 
-  correction/transformatio - AliTPCTransformation.  Currently we assume that transformation 
-  comute (in first order). AliTPCTransformation describe general non linear transformation.   
-  
-  Current calibration parameters and covariance stored (fCalibParam, fCalibCovar).
-  
-  Currenly only linear track model implemented.
-  Fits to be implemented:
-   0. Plane fitting (Laser CE)
-   1. Primary vertex fitting.
-   2. Propagation in magnetic field and fit of planes
-
-
-  
-  How to use it - see  AliTPCkalmanFit::Test function
-
-  Simple test (see AliTPCkalmanFit::Test)  
-  AliTPCTransformation::BuildBasicFormulas();
-  AliTPCkalmanFit *kalmanFit0 = AliTPCkalmanFit::Test(2000);
-  TFile f("kalmanfitTest.root");
- 
-  Transformation visualization:
-  Transforamtion can be visualized using TFn (TF1,TF2 ...) and using tree->Draw()
-  e.g:
-  kalmanFit0->SetInstance(kalmanFit0);   // 
-  kalmanFit0->InitTransformation();      //
-  //
-  TF2 fxRZdz("fxRZdz","sign(y)*1000*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,0,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,0,x,0,y-1))",85,245,-250,250);
-  fxRZdz->Draw("");
-
-  TF2 fxRZ("fxRZ","sign(y)*10*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y))",85,245,-250,250);
-  fxRZ->Draw("");
-
-
-
-*/
+/// \class AliTPCkalmanFit
+///
+///  AliTPCkalmanFit:
+///
+///  Kalman filter(s) for fitting of the tracks together with calibration/transformation
+///  parameters.
+///
+///  Correction/Transformation are currently described by set (TObjArray) of primitive
+///  correction/transformatio - AliTPCTransformation.  Currently we assume that transformation
+///  comute (in first order). AliTPCTransformation describe general non linear transformation.
+///
+///  Current calibration parameters and covariance stored (fCalibParam, fCalibCovar).
+///
+///  Currenly only linear track model implemented.
+///  Fits to be implemented:
+///   0. Plane fitting (Laser CE)
+///   1. Primary vertex fitting.
+///   2. Propagation in magnetic field and fit of planes
+///
+///  How to use it - see  AliTPCkalmanFit::Test function
+///
+///  Simple test (see AliTPCkalmanFit::Test)
+///
+/// ~~~{.cpp}
+/// AliTPCTransformation::BuildBasicFormulas();
+/// AliTPCkalmanFit *kalmanFit0 = AliTPCkalmanFit::Test(2000);
+/// TFile f("kalmanfitTest.root");
+/// ~~~
+///
+/// Transformation visualization:
+/// Transforamtion can be visualized using TFn (TF1,TF2 ...) and using tree->Draw()
+///
+/// ~~~{.cpp}
+/// kalmanFit0->SetInstance(kalmanFit0);
+/// kalmanFit0->InitTransformation();
+///
+/// TF2 fxRZdz("fxRZdz","sign(y)*1000*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,0,x,0,y)-AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,0,x,0,y-1))",85,245,-250,250);
+/// fxRZdz->Draw("");
+///
+/// TF2 fxRZ("fxRZ","sign(y)*10*(AliTPCkalmanFit::SGetTPCDeltaXYZ(0,-1,x,0,y))",85,245,-250,250);
+/// fxRZ->Draw("");
+/// ~~~
+///
+/// \author Marian Ivanov <marian.ivanov@cern.ch>
 
 #include "TRandom.h"
 #include "TMath.h"
@@ -60,7 +60,9 @@
 #include "AliTPCTransformation.h"
 #include "AliTPCkalmanFit.h"
 
+/// \cond CLASSIMP
 ClassImp(AliTPCkalmanFit)
+/// \endcond
 
 AliTPCkalmanFit* AliTPCkalmanFit::fgInstance = 0;
 
@@ -76,9 +78,8 @@ AliTPCkalmanFit::AliTPCkalmanFit():
   fCA(0),            //! cosine of current angle
   fSA(0)            //! sinus of current angle    
 {
-  //
-  // Default constructor
-  //  
+  /// Default constructor
+
   for (Int_t ihis=0; ihis<12; ihis++){
     fLinearTrackDelta[ihis]=0;
     fLinearTrackPull[ihis]=0;
@@ -86,10 +87,8 @@ AliTPCkalmanFit::AliTPCkalmanFit():
 }
 
 void AliTPCkalmanFit::InitTransformation(){
-  //
-  // Initialize pointers to the transforamtion functions
-  //
-  //
+  /// Initialize pointers to the transforamtion functions
+
   Int_t ncalibs = fCalibration->GetEntries();
   for (Int_t icalib=0;icalib<ncalibs; icalib++){
     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
@@ -98,9 +97,8 @@ void AliTPCkalmanFit::InitTransformation(){
 }
 
 void AliTPCkalmanFit::Add(const AliTPCkalmanFit * kalman){
-  //
-  //
-  //
+  ///
+
   Update(kalman);
   for (Int_t i=0;i<12;i++){
     if (fLinearTrackDelta[i] && kalman->fLinearTrackDelta[i]){
@@ -115,11 +113,9 @@ void AliTPCkalmanFit::Add(const AliTPCkalmanFit * kalman){
 
 
 void AliTPCkalmanFit::Init(){
-  //
-  // Initialize parameter vector and covariance matrix
-  // To be called after initialization of all of the transformations
-  //
-  //
+  /// Initialize parameter vector and covariance matrix
+  /// To be called after initialization of all of the transformations
+
   Int_t ncalibs = fCalibration->GetEntries();
   fCalibParam = new TMatrixD(ncalibs,1);
   fCalibCovar = new TMatrixD(ncalibs,ncalibs);
@@ -198,10 +194,10 @@ void AliTPCkalmanFit::Init(){
 }
 
 void AliTPCkalmanFit::SetStatus(const char * mask, Bool_t setOn, Bool_t isOr){
-  //
-  // 0. To activate all transforamtion call SetStatus(0,kTRUE)
-  // 1. To disable everything               SetStatus(0,kFALSE)
-  // 2. To activate/desactivate             SetStatus("xxx",kTRUE/kFALSE,kFALSE)
+  /// 0. To activate all transforamtion call SetStatus(0,kTRUE)
+  /// 1. To disable everything               SetStatus(0,kFALSE)
+  /// 2. To activate/desactivate             SetStatus("xxx",kTRUE/kFALSE,kFALSE)
+
   Int_t ncalibs = fCalibration->GetEntries();
   if (mask==0) {
     for (Int_t i=0; i<ncalibs;i++){
@@ -223,22 +219,21 @@ void AliTPCkalmanFit::SetStatus(const char * mask, Bool_t setOn, Bool_t isOr){
 
 
 void AliTPCkalmanFit::Update(const AliTPCkalmanFit * kalman){
-  //
-  // Update Kalman filter
-  //
+  /// Update Kalman filter
+
   Int_t ncalibs = fCalibration->GetEntries();
-  TMatrixD vecXk=*fCalibParam;       // X vector
-  TMatrixD covXk=*fCalibCovar;       // X covariance
+  TMatrixD vecXk=*fCalibParam;       ///< X vector
+  TMatrixD covXk=*fCalibCovar;       ///< X covariance
   TMatrixD &vecZk = *(kalman->fCalibParam);
   TMatrixD &measR = *(kalman->fCalibCovar);
 
-  TMatrixD matHk(ncalibs,ncalibs);   // vector to mesurement
-  TMatrixD vecYk(ncalibs,1);         // Innovation or measurement residual
-  TMatrixD matHkT(ncalibs,ncalibs);  // helper matrix Hk transpose
-  TMatrixD matSk(ncalibs,ncalibs);   // Innovation (or residual) covariance
-  TMatrixD matKk(ncalibs,ncalibs);   // Optimal Kalman gain
-  TMatrixD covXk2(ncalibs,ncalibs);  // helper matrix
-  TMatrixD covXk3(ncalibs,ncalibs);  // helper matrix
+  TMatrixD matHk(ncalibs,ncalibs);   ///< vector to mesurement
+  TMatrixD vecYk(ncalibs,1);         ///< Innovation or measurement residual
+  TMatrixD matHkT(ncalibs,ncalibs);  ///< helper matrix Hk transpose
+  TMatrixD matSk(ncalibs,ncalibs);   ///< Innovation (or residual) covariance
+  TMatrixD matKk(ncalibs,ncalibs);   ///< Optimal Kalman gain
+  TMatrixD covXk2(ncalibs,ncalibs);  ///< helper matrix
+  TMatrixD covXk3(ncalibs,ncalibs);  ///< helper matrix
   //
   for (Int_t i=0;i<ncalibs;i++){
     for (Int_t j=0;j<ncalibs;j++) matHk(i,j)=0;
@@ -262,8 +257,7 @@ void AliTPCkalmanFit::Update(const AliTPCkalmanFit * kalman){
 
 
 void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirector *debug,  Float_t scalingRMSY, Float_t scalingRMSZ){
-  //
-  //
+  ///
 
   if (!fCalibParam) {
     AliError("Kalman Fit not initialized");
@@ -385,12 +379,10 @@ void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirecto
 }
 
 void AliTPCkalmanFit::DumpTrackLinear(AliTrackPointArray &points, TTreeSRedirector *debug){
-  //
-  // Dump the track parameters before and after current calibration
-  //
-  // Track is divided to two parts - 
-  // X mean is defined as middle point 
-  //
+  /// Dump the track parameters before and after current calibration
+  ///
+  /// Track is divided to two parts -
+  /// X mean is defined as middle point
 
   if (!fCalibParam) {
     AliError("Kalman Fit not initialized");
@@ -595,16 +587,14 @@ void AliTPCkalmanFit::DumpTrackLinear(AliTrackPointArray &points, TTreeSRedirect
 }
 
 
-void AliTPCkalmanFit::Propagate(TTreeSRedirector */*debug*/){
-  //
-  // Propagate the Kalman
-  //
+void AliTPCkalmanFit::Propagate(TTreeSRedirector * /*debug*/){
+  /// Propagate the Kalman
+
 }
 
 void AliTPCkalmanFit::AddCovariance(const char * varName, Double_t sigma){
-  //
-  //
-  //
+  ///
+
   if (!fCalibCovar) return;
   if (!fCalibration) return;
   if (!fCalibration->FindObject(varName)) return;
@@ -620,10 +610,9 @@ void AliTPCkalmanFit::AddCovariance(const char * varName, Double_t sigma){
 
 
 void AliTPCkalmanFit::PropagateTime(Int_t time){
-  //
-  // Propagate the calibration in time
-  // - Increase covariance matrix
-  //
+  /// Propagate the calibration in time
+  /// - Increase covariance matrix
+
   if (!fCalibCovar) return;
   Int_t ncalibs = fCalibration->GetEntries();
   Double_t deltaT = 0;
@@ -638,25 +627,23 @@ void AliTPCkalmanFit::PropagateTime(Int_t time){
 
 
 void  AliTPCkalmanFit::UpdateLinear(AliTrackPoint &point, TTreeSRedirector *debug){
-  //
-  // Update Kalman
-  //
-  //
+  /// Update Kalman
+
   Int_t ncalibs = fCalibration->GetEntries();
   Int_t kNmeas  = 2; 
   Int_t nelem   = ncalibs+4;
-  TMatrixD &vecXk=*fLinearParam;     // X vector
-  TMatrixD &covXk=*fLinearCovar;     // X covariance
+  TMatrixD &vecXk=*fLinearParam;     ///< X vector
+  TMatrixD &covXk=*fLinearCovar;     ///< X covariance
   //
-  TMatrixD matHk(kNmeas,nelem);     // vector to mesurement
-  TMatrixD vecYk(kNmeas,1);         // Innovation or measurement residual
-  TMatrixD vecZk(kNmeas,1);         // Innovation or measurement residual
+  TMatrixD matHk(kNmeas,nelem);     ///< vector to mesurement
+  TMatrixD vecYk(kNmeas,1);         ///< Innovation or measurement residual
+  TMatrixD vecZk(kNmeas,1);         ///< Innovation or measurement residual
   TMatrixD measR(kNmeas,kNmeas);
-  TMatrixD matHkT(nelem,kNmeas);    // helper matrix Hk transpose
-  TMatrixD matSk(kNmeas,kNmeas);    // Innovation (or residual) covariance
-  TMatrixD matKk(nelem,kNmeas);     // Optimal Kalman gain
-  TMatrixD covXk2(nelem,nelem);     // helper matrix
-  TMatrixD covXk3(nelem,nelem);     // helper matrix
+  TMatrixD matHkT(nelem,kNmeas);    ///< helper matrix Hk transpose
+  TMatrixD matSk(kNmeas,kNmeas);    ///< Innovation (or residual) covariance
+  TMatrixD matKk(nelem,kNmeas);     ///< Optimal Kalman gain
+  TMatrixD covXk2(nelem,nelem);     ///< helper matrix
+  TMatrixD covXk3(nelem,nelem);     ///< helper matrix
   TMatrixD mat1(nelem,nelem);
   //
   // reset matHk
@@ -736,12 +723,10 @@ void  AliTPCkalmanFit::UpdateLinear(AliTrackPoint &point, TTreeSRedirector *debu
 
 
 AliTrackPointArray * AliTPCkalmanFit::SortPoints(AliTrackPointArray &points){
-  //
-  //Creates the array  - points sorted according radius - neccessay for kalman fit
-  // 
-  //
-  // 0. choose the frame - rotation angle
-  //
+  /// Creates the array  - points sorted according radius - neccessay for kalman fit
+  ///
+  /// 0. choose the frame - rotation angle
+
   Int_t npoints = points.GetNPoints();
   if (npoints<1) return 0;
   Double_t currentAlpha = TMath::ATan2(points.GetY()[npoints-1]-points.GetY()[0], points.GetX()[npoints-1]-points.GetX()[0]);  
@@ -770,11 +755,10 @@ AliTrackPointArray * AliTPCkalmanFit::SortPoints(AliTrackPointArray &points){
 
 
 AliTrackPointArray * AliTPCkalmanFit::MakePointArrayLinear(Double_t alpha, Double_t y0, Double_t z0, Double_t ky, Double_t kz, Double_t err){
-  //
-  //
-  //
+  ///
+
   AliTrackPointArray array(500);
-  Float_t cov[10];  // dummy covariance
+  Float_t cov[10];  ///< dummy covariance
   Int_t npoints=0;
   for (Int_t i=0;i<6;i++) cov[i]=0.001;
   for (Int_t i=0;i<500;i++){    
@@ -816,17 +800,15 @@ AliTrackPointArray * AliTPCkalmanFit::MakePointArrayLinear(Double_t alpha, Doubl
 }
 
 void AliTPCkalmanFit::AddCalibration(AliTPCTransformation * calib){
-  //
-  // Add calibration
-  //
+  /// Add calibration
+
   if (!fCalibration) fCalibration = new TObjArray(2000);
   fCalibration->AddLast(calib);
 }
 
 Int_t AliTPCkalmanFit::GetTransformationIndex(const char * trName){
-  //
-  //
-  //
+  ///
+
   if (!fCalibration) return -1;
   if (!fCalibration->FindObject(trName)) return -1;
   //
@@ -844,9 +826,8 @@ Int_t AliTPCkalmanFit::GetTransformationIndex(const char * trName){
 
 
 void AliTPCkalmanFit::ApplyCalibration(AliTrackPointArray *array, Double_t csign){
-  //
-  //
-  //
+  ///
+
   if (!fCalibration) return;
   Int_t ncalibs = fCalibration->GetEntries();
   if (ncalibs==0) return;
@@ -868,9 +849,8 @@ void AliTPCkalmanFit::ApplyCalibration(AliTrackPointArray *array, Double_t csign
 }
 
 Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask0, const char *mask1){
-  //
-  //
-  //
+  ///
+
   TMatrixD &mat = *fCalibCovar;
   Int_t nrow= mat.GetNrows();
   for (Int_t irow=0; irow<nrow; irow++){
@@ -902,9 +882,8 @@ Bool_t AliTPCkalmanFit::DumpCorelation(Double_t threshold,  const char *mask0, c
 }
 
 Bool_t AliTPCkalmanFit::DumpCalib(const char *mask, Float_t correlationCut){
-  //
-  // Print calibration entries - name, value, error
-  //
+  /// Print calibration entries - name, value, error
+
   TMatrixD &mat = *fCalibCovar;
   Int_t nrow= mat.GetNrows();
   TString  strMask(mask);
@@ -938,9 +917,9 @@ Bool_t AliTPCkalmanFit::DumpCalib(const char *mask, Float_t correlationCut){
 
 
 Bool_t  AliTPCkalmanFit::CheckCovariance(TMatrixD &mat, Float_t /*maxEl*/){
-  //
-  // Check consistency of covariance matrix
-  // + symetrize coavariance matrix
+  /// Check consistency of covariance matrix
+  /// + symetrize coavariance matrix
+
   Bool_t isOK=kTRUE;
   Int_t nrow= mat.GetNrows();
   for (Int_t irow=0; irow<nrow; irow++){
@@ -983,9 +962,7 @@ Bool_t  AliTPCkalmanFit::CheckCovariance(TMatrixD &mat, Float_t /*maxEl*/){
 
 
 AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
-  //
-  // This is test example
-  //
+  /// This is test example
 
   //
   // 1. Setup transformation
@@ -1005,7 +982,7 @@ AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
 	fpar[0]=ipar0; 
 	fpar[1]=ipar1;
 	if (ipar0+ipar1==0) continue;
-	Double_t param = (gRandom->Rndm()-0.5)*0.5;  // generate random parameters
+	Double_t param = (gRandom->Rndm()-0.5)*0.5;  ///< generate random parameters
 	char tname[100];
 	snprintf(tname,100,"tscalingR%d%dSide%d",ipar0,ipar1,iside);
 	transformation = new AliTPCTransformation(tname,AliTPCTransformation::BitsSide(iside),"TPCscalingRPol",0,0,1);
@@ -1038,7 +1015,7 @@ AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
      Double_t   kz  = (gRandom->Rndm()-0.5)*1;
      //generate random TPC track
      AliTrackPointArray * array  = AliTPCkalmanFit::MakePointArrayLinear(alpha,y0,z0, ky, kz,0.04);
-     AliTrackPointArray * arrayB = new AliTrackPointArray(*array);  // backup
+     AliTrackPointArray * arrayB = new AliTrackPointArray(*array);  ///< backup
      kalmanFit2->ApplyCalibration(array,1.);  // misalign ideal track
      for (Int_t icalib=0; icalib<ncalibs; icalib++){
        err[icalib] = TMath::Sqrt((*kalmanFit0->fCalibCovar)(icalib,icalib));
@@ -1110,21 +1087,20 @@ AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
 
 
 Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
-  //
-  // function for visualization purposes
-  //
-  // coord - coordinate for output
-  //       - 0 -X
-  //         1 -Y
-  //         2 -Z
-  //         3 -R
-  //         4 -RPhi
-  //         5 -Z
-  //
-  //icoordsys - type of coordinate system for input
-  //         - 0  - x,y,z
-  //         - 1  - r,phi,z
-  //
+  /// function for visualization purposes
+  ///
+  /// coord - coordinate for output
+  ///       - 0 -X
+  ///         1 -Y
+  ///         2 -Z
+  ///         3 -R
+  ///         4 -RPhi
+  ///         5 -Z
+  ///
+  /// icoordsys - type of coordinate system for input
+  ///         - 0  - x,y,z
+  ///         - 1  - r,phi,z
+
   if (!fCalibration) return 0;
   Int_t ncalibs = fCalibration->GetEntries();
   if (ncalibs==0) return 0;
@@ -1160,9 +1136,8 @@ Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoords
 
 
 Double_t AliTPCkalmanFit::SGetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
-  //
-  //
-  //
+  ///
+
   if (AliTPCkalmanFit::fgInstance==0) return 0;
   return AliTPCkalmanFit::fgInstance->GetTPCDeltaXYZ(coord, volID, icoordsys,x,y,z);
 }
@@ -1205,18 +1180,16 @@ Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID
 }
 
 Double_t AliTPCkalmanFit::SGetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID, Int_t icoordsys, Double_t x, Double_t y, Double_t z){
-  //
-  //
-  //
+  ///
+
   if (AliTPCkalmanFit::fgInstance==0) return 0;
   return AliTPCkalmanFit::fgInstance->GetTPCtransXYZ(coord, volID, calibID,icoordsys,x,y,z);
 }
 
 
 void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug, const char *treeName){
-  //
-  // Make the Tree before and after current calibration
-  //
+  /// Make the Tree before and after current calibration
+
   if (!fCalibParam) {
     AliError("Kalman Fit not initialized");
     return;

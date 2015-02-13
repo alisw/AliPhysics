@@ -5,11 +5,10 @@
 
 /* $Id: AliTPCCalibViewer.h,v */
 
-///////////////////////////////////////////////////
-//                                               //
-//  TPC calibration viewer/visualization class   //
-//  use Tree for visualization                   //
-///////////////////////////////////////////////////
+/// \class AliTPCCalibViewer
+///
+/// \brief TPC calibration viewer/visualization class
+///  use Tree for visualization
 
 class TFile;
 class TLegend;
@@ -98,18 +97,20 @@ public:
    
          
 protected:
-   TTree* fTree;     // tree containing visualization data (e.g. written by AliTPCCalPad::MakeTree(...)
-   TFile* fFile;     // file that contains a calPads tree (e.g. written by AliTPCCalPad::MakeTree(...)
-   TObjArray* fListOfObjectsToBeDeleted;  //Objects, that will be deleted when the destructor ist called
-   Bool_t fTreeMustBeDeleted;  // decides weather the tree must be deleted in destructor or not 
-   TString fAbbreviation;       // the abreviation for '.fElements'
-   TString fAppendString;      // '.fElements', stored in a TStrig
+   TTree* fTree;     ///< tree containing visualization data (e.g. written by AliTPCCalPad::MakeTree(...)
+   TFile* fFile;     ///< file that contains a calPads tree (e.g. written by AliTPCCalPad::MakeTree(...)
+   TObjArray* fListOfObjectsToBeDeleted;  ///< Objects, that will be deleted when the destructor ist called
+   Bool_t fTreeMustBeDeleted;  ///< decides weather the tree must be deleted in destructor or not
+   TString fAbbreviation;       ///< the abreviation for '.fElements'
+   TString fAppendString;      ///< '.fElements', stored in a TStrig
    
    void DrawLines(TH1F *cutHistoMean, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const;
    void DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const;
   
    
+   /// \cond CLASSIMP
    ClassDef(AliTPCCalibViewer,1)    //  TPC calibration viewer class
+   /// \endcond
 };
 
 #endif

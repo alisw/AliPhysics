@@ -1,39 +1,37 @@
-/*
+/// \file CosmicPerformance.C
+///
+/// ~~~{.cpp}
+/// .x ~/UliStyle.C
+/// .x ~/NimStyle.C
+/// .x ~/rootlogon.C
+/// TProof::Open("");
+/// gSystem->Load("libSTAT");
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib");
+/// gSystem->Load("libSTAT");
+/// 
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");  
+/// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
+/// AliXRDPROOFtoolkit tool; 
+/// TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
+/// chain->Lookup();
+/// chain->SetProof(kTRUE);
+/// 
+/// .L $ALICE_ROOT/TPC/CalibMacros/CosmicPerformance.C+
+/// chainCosmic=chain;
+/// MakeCuts()
+/// MakeAlias();
+/// Make1PtPlot();
+/// Draw1Pt();
+/// Draw1PtPull();
+/// 
+/// MakeZPlot();
+/// DrawZ();
+/// DrawZPull();
+/// 
+/// PtResolPt();
+/// ~~~
   
-  .x ~/UliStyle.C
-  .x ~/NimStyle.C
-  .x ~/rootlogon.C
-  TProof::Open("");
-  gSystem->Load("libSTAT");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib");
-  gSystem->Load("libSTAT");
-
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");  
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
-  AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("cosmic.txt","Track0",0,1000000);
-  chain->Lookup();
-  chain->SetProof(kTRUE);
-
-  .L $ALICE_ROOT/TPC/CalibMacros/CosmicPerformance.C+
-  chainCosmic=chain;
-  MakeCuts()
-  MakeAlias();
-  Make1PtPlot();
-  Draw1Pt();
-  Draw1PtPull();
-
-  MakeZPlot();
-  DrawZ();
-  DrawZPull();
-
-  //
-  PtResolPt();
-  
-  
-*/
-
 #include "TTree.h"
 #include "TChain.h"
 #include "TPad.h"
@@ -103,9 +101,8 @@ TH1F * hsSP1Pt[5];
 TH1F * hsPP1Pt[5];
 
 void MakeCutsParam(){
-  //
-  // Default selection criteria
-  //
+  /// Default selection criteria
+
   cutDiff[0]="abs(Tr0.fP[0]+Tr1.fP[0])<3";
   cutDiff[1]="abs(Tr0.fP[1]-Tr1.fP[1])<15"; 
   cutDiff[2]="abs(Tr1.fAlpha-Tr0.fAlpha+pi)<0.1";
@@ -122,9 +119,8 @@ void MakeCutsParam(){
 }
 
 void MakeGeomCuts(){
-//
-// Geometrical cut 
-//
+  /// Geometrical cut
+
   TCut cutOx("Op1.fX>240&&Op0.fX>240");
   TCut cutOz("abs(Op1.fP[1])<240&&abs(Op0.fP[1])<240");
   TCut cutIz("abs(Ip1.fP[1])<240&&abs(Ip0.fP[1])<240");
@@ -136,7 +132,8 @@ void MakeGeomCuts(){
 }
 
 void MakeCuts(){
-  // make cuts all 
+  /// make cuts all
+
   MakeGeomCuts();
   MakeCutsParam();
   cutAll = cutDiff[5]+cutPull[5]+cutGeomTPC;

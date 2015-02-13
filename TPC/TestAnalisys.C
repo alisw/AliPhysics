@@ -87,10 +87,8 @@ TEventList * listFitPed    = new TEventList("listFitPed","listFitPed");
 
 
 void MakePictures(char *dirname){
-  //
-  //
-  //
-  // Define Uli Style
+  /// Define Uli Style
+
   gROOT->SetStyle("Plain");
   gStyle->SetFillColor(10);
   gStyle->SetPadColor(10);
@@ -253,9 +251,8 @@ void MakePictures(char *dirname){
 
 
 void AddChains(Int_t run){
-  //
-  // add files to the chains + check consistency
-  //
+  /// add files to the chains + check consistency
+
   ifstream in0;
   ifstream in1;
   ifstream in2;
@@ -349,9 +346,8 @@ void AddChains(Int_t run){
 }
 
 void Select(){
-  //
-  // base cut on the tracks
-  //
+  /// base cut on the tracks
+
   comp.fTree->Draw(">>listTracks","Etrack.fTPCncls>30&&abs(Etrack.fIp.fP[4])<1");
   comp.fTree->SetEventList(listTracks);
   //
@@ -360,9 +356,8 @@ void Select(){
 }
 
 void SelectLaser(){
-  //
-  // base cut on the tracks
-  //
+  /// base cut on the tracks
+
   comp.fTree->Draw(">>listTracks","Etrack.fTPCncls>20&&abs(Etrack.fIp.fP[4])<1&&abs(Etrack.fIp.fP[3])<0.01");
   comp.fTree->SetEventList(listTracks);
   //
@@ -382,10 +377,8 @@ void SelectLaser(){
 
 
 void PRFYZ(TCut cut0, TCut cut1,  char * description){
-  //
-  // plot Pad response function as funtion of drift z
-  //
-  //
+  /// plot Pad response function as funtion of drift z
+
   TF1 * f1 = new TF1("fdiff","sqrt([0]*[0]+(250-x)*[1]*[1])");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
@@ -452,9 +445,8 @@ void PRFZZ(TCut cut0, TCut cut1,  char * description){
 
 
 void ResYZ(TCut cut0, TCut cut1,  char * description){
-  //
-  // resolution in y coordinate as function of z
-  //
+  /// resolution in y coordinate as function of z
+
   TF1 * f1 = new TF1("fdiff","sqrt([0]*[0]+(250-x)*[1]*[1])");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
@@ -488,9 +480,8 @@ void ResYZ(TCut cut0, TCut cut1,  char * description){
 }
 
 void SysYX(TCut cut0,  char * description){
-  //
-  //
-  //
+  ///
+
   TProfile * profA = new TProfile("profY","profY",70,89,250);
   comp.fTree->Draw("Cl.fY-Track.fTrackPoints.GetY():Track.fTrackPoints.GetX()>>profY","abs(Cl.fY-Track.fTrackPoints.GetY())<1&&Track.fTrackPoints.fTX>10"+cut0,"prof");
   profA->SetXTitle("Local X (cm)");
@@ -500,9 +491,8 @@ void SysYX(TCut cut0,  char * description){
 }
 
 void SysZX(TCut cut0,  char * description){
-  //
-  //
-  //
+  ///
+
   TProfile * profA = new TProfile("profZ","profZ",70,89,250);
   comp.fTree->Draw("abs(Cl.fZ)-abs(Track.fTrackPoints.GetZ()):Track.fTrackPoints.GetX()>>profZ","abs(abs(Cl.fZ)-abs(Track.fTrackPoints.GetZ()))<1&&Track.fTrackPoints.fTX>10"+cut0,"prof");
   profA->SetXTitle("Local X (cm)");
@@ -512,9 +502,8 @@ void SysZX(TCut cut0,  char * description){
 }
 
 TProfile * ProfileMaxRow(TCut cut0, char *name, Int_t max){ 
-  //
-  // make profile histrogram of amplitudes
-  //
+  /// make profile histrogram of amplitudes
+
   TProfile *profA = new TProfile(name,name,max,0,max-1);
   char expr[100];
   sprintf(expr,"Cl.fMax:Cl.fRow>>%s",name);
@@ -525,9 +514,8 @@ TProfile * ProfileMaxRow(TCut cut0, char *name, Int_t max){
 }
 
 TProfile * ProfileMaxPhi(TCut cut0, char *name, Int_t max){ 
-  //
-  // make profile histrogram of amplitudes
-  //
+  /// make profile histrogram of amplitudes
+
   TProfile *profA = new TProfile(name,name,max,-0.14,0.14);
   char expr[100];
   sprintf(expr,"Cl.fMax:Cl.fY/Cl.fX>>%s",name);
@@ -538,9 +526,8 @@ TProfile * ProfileMaxPhi(TCut cut0, char *name, Int_t max){
 }
 
 TProfile * ProfileQRow(TCut cut0, char *name, Int_t max){ 
-  //
-  // make profile histrogram of amplitudes
-  //
+  /// make profile histrogram of amplitudes
+
   TProfile *profA = new TProfile(name,name,max,0,max-1);
   char expr[100];
   sprintf(expr,"Cl.fQ:Cl.fRow>>%s",name);
@@ -551,9 +538,8 @@ TProfile * ProfileQRow(TCut cut0, char *name, Int_t max){
 }
 
 TProfile * ProfileQPhi(TCut cut0, char *name, Int_t max){ 
-  //
-  // make profile histrogram of amplitudes
-  //
+  /// make profile histrogram of amplitudes
+
   TProfile *profA = new TProfile(name,name,max,-0.14,0.14);
   char expr[100];
   sprintf(expr,"Cl.fQ:Cl.fY/Cl.fX>>%s",name);
@@ -564,9 +550,8 @@ TProfile * ProfileQPhi(TCut cut0, char *name, Int_t max){
 }
 
 TProfile * ProfileQZ(TCut cut0, char *name, Int_t max){ 
-  //
-  // make profile histrogram of amplitudes
-  // 
+  /// make profile histrogram of amplitudes
+
   TF1 * fline = new TF1("fline","[0]+[1]*[0]*(250-x)");
   TF1 * f1 = new TF1("f1","[0]*exp(-[1]*(250-x))");
   TProfile *profA = new TProfile(name,name,max,0,250);
@@ -588,9 +573,8 @@ TProfile * ProfileQZ(TCut cut0, char *name, Int_t max){
 }
 
 TProfile * ProfileMaxZ(TCut cut0, char *name, Int_t max){ 
-  //
-  // make profile histrogram of amplitudes
-  // 
+  /// make profile histrogram of amplitudes
+
   TF1 * f1 = new TF1("f1","[0]+[1]*[0]*(250-x)");
   TProfile *profA = new TProfile(name,name,max,0,250);
   char expr[100];
@@ -608,9 +592,8 @@ TProfile * ProfileMaxZ(TCut cut0, char *name, Int_t max){
 
 
 void P3Z(TCut cut0, TCut cut1,  char * description){
-  //
-  // first exponenent as function of z drift
-  //
+  /// first exponenent as function of z drift
+
   TF1 * f1 = new TF1("fdiff","[0]+[1]/[0]*x");
   f1->SetParameter(1,0.2);   
   f1->SetParameter(0,0.2);
@@ -644,9 +627,8 @@ void P3Z(TCut cut0, TCut cut1,  char * description){
 
 
 void P5Z(TCut cut0, TCut cut1,  char * description){
-  //
-  // second exponenent as function of z drift
-  //
+  /// second exponenent as function of z drift
+
   TF1 * f1 = new TF1("fdiff","[0]+[1]/[0]*x");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
@@ -679,9 +661,8 @@ void P5Z(TCut cut0, TCut cut1,  char * description){
 }
 
 TCanvas *  NoiseSector(TCut cut0,  char * description, Int_t maxrow, Int_t maxpad){
-  //
-  // draw plots of the noise
-  //
+  /// draw plots of the noise
+
   TCanvas * c = new TCanvas;
   c->Divide(2,1);
   c->Draw();

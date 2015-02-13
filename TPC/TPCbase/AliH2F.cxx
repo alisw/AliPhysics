@@ -15,12 +15,11 @@
 
 /* $Id$ */
 
-//----------------------------------------------------------------------------
-//  Author:   Marian Ivanov
-//
-//  Implementation of class AliH2F
-//
-//-----------------------------------------------------------------------------
+/// \class AliH2F
+///
+///  Implementation of class AliH2F
+///
+/// \author Marian Ivanov
 
 #include <TClonesArray.h>
 #include <TMath.h>
@@ -29,7 +28,9 @@
 #include "AliH2F.h"
 
 
+/// \cond CLASSIMP
 ClassImp(AliH2F)
+/// \endcond
 //***********************************************************************
 //***********************************************************************
 //***********************************************************************
@@ -45,25 +46,27 @@ AliH2F::AliH2F(const Text_t *name,const Text_t *title,
   TH2F(name,title,nbinsx,xlow,xup
        ,nbinsy,ylow,yup)
 {
-  //
-  
+  ///
+
 }
      
 AliH2F::~AliH2F() 
 {
-  //
+  ///
+
 }
 
 AliH2F::AliH2F(const AliH2F &his) :
   TH2F(his)
 {
-  //
-  
+  ///
+
 }
 
 AliH2F & AliH2F::operator = (const AliH2F & /*his*/) 
 {
-  //
+  ///
+
   return *this;
 }
 
@@ -84,7 +87,8 @@ TClonesArray * AliH2F::FindPeaks(Float_t threshold, Float_t noise)
 
 void AliH2F::ClearSpectrum()
 {
-  //clera histogram
+  /// clera histogram
+
   Int_t dimx =  fXaxis.GetNbins();
   Int_t dimy =  fYaxis.GetNbins();
   for (Int_t i = 0 ;i<dimx;i++)
@@ -98,7 +102,8 @@ void AliH2F::ClearSpectrum()
 
 void AliH2F::AddNoise(Float_t sn)
 {
-  // add gauss noise with sigma sn
+  /// add gauss noise with sigma sn
+
   Int_t dimx =  fXaxis.GetNbins();
   Int_t dimy =  fYaxis.GetNbins();
   for (Int_t i = 0 ;i<dimx;i++)
@@ -117,7 +122,8 @@ void AliH2F::AddNoise(Float_t sn)
 void AliH2F::AddGauss(Float_t x, Float_t y, 
 			  Float_t sx, Float_t sy, Float_t max)
 {  
-  //transform to histogram coordinata  
+  /// transform to histogram coordinata
+
   Int_t dimx =  fXaxis.GetNbins();
   Int_t dimy =  fYaxis.GetNbins();
   Float_t dx =(GetXaxis()->GetXmax()-GetXaxis()->GetXmin())/Float_t(dimx);
@@ -144,7 +150,8 @@ void AliH2F::AddGauss(Float_t x, Float_t y,
 
 void AliH2F::ClearUnderTh(Int_t threshold)
 {
-  //clear histogram for bin under threshold
+  /// clear histogram for bin under threshold
+
   Int_t dimx =  fXaxis.GetNbins();
   Int_t dimy =  fYaxis.GetNbins();
   for (Int_t i = 0 ;i<=dimx;i++)
@@ -158,7 +165,8 @@ void AliH2F::ClearUnderTh(Int_t threshold)
 
 void AliH2F::Round()
 {
-  //round float to integer 
+  /// round float to integer
+
   Int_t dimx =  fXaxis.GetNbins();
   Int_t dimy =  fYaxis.GetNbins();
   for (Int_t i = 0 ;i<=dimx;i++)
@@ -175,10 +183,10 @@ void AliH2F::Round()
 AliH2F *AliH2F::GetSubrange2d(Float_t xmin, Float_t xmax, 
 				      Float_t ymin, Float_t ymax)
 {
-  //this function return pointer to the new created 
-  //histogram which is subhistogram of the 
-  //calculate number
-  //subhistogram range must be inside histogram
+  /// this function return pointer to the new created
+  /// histogram which is subhistogram of the
+  /// calculate number
+  /// subhistogram range must be inside histogram
 
   if (xmax<=xmin) {
     xmin=fXaxis.GetXmin();
@@ -223,11 +231,11 @@ AliH2F *AliH2F::GetSubrange2d(Float_t xmin, Float_t xmax,
 TH1F *AliH2F::GetAmplitudes(Float_t zmin, Float_t zmax, Float_t th, Float_t xmin, Float_t xmax, 
 				      Float_t ymin, Float_t ymax)
 {
-  //this function return pointer to the new created 
-  //histogram which is subhistogram of the 
-  //calculate number
-  //subhistogram range must be inside histogram
- 
+  /// this function return pointer to the new created
+  /// histogram which is subhistogram of the
+  /// calculate number
+  /// subhistogram range must be inside histogram
+
   if (xmax<=xmin) {
     xmin=fXaxis.GetXmin();
     xmax=fXaxis.GetXmax();
@@ -266,11 +274,11 @@ TH1F *AliH2F::GetAmplitudes(Float_t zmin, Float_t zmax, Float_t th, Float_t xmin
 Float_t   AliH2F::GetOccupancy(Float_t th , Float_t xmin, Float_t xmax, 
 			     Float_t ymin, Float_t ymax)
 {
-  //this function return pointer to the new created 
-  //histogram which is subhistogram of the 
-  //calculate number
-  //subhistogram range must be inside histogram
- 
+  /// this function return pointer to the new created
+  /// histogram which is subhistogram of the
+  /// calculate number
+  /// subhistogram range must be inside histogram
+
   if (xmax<=xmin) {
     xmin=fXaxis.GetXmin();
     xmax=fXaxis.GetXmax();

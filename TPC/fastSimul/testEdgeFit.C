@@ -1,7 +1,9 @@
-/*
-  .L $ALICE_ROOT/TPC/fastSimul/testEdgeFit.C+
-  testEdge(50000);
-*/
+/// \file testEdgeFit.C
+///
+/// ~~~
+/// .L $ALICE_ROOT/TPC/fastSimul/testEdgeFit.C+
+/// testEdge(50000);
+/// ~~~
 
 #include "TVectorD.h"
 #include "TMath.h"

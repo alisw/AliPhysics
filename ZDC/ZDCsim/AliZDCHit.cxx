@@ -125,7 +125,7 @@ AliZDCHit &AliZDCHit::operator= (const AliZDCHit &hit)
 void AliZDCHit::Print(Option_t *) const 
 {
    // Print method
-   printf("\t **** AliZDCHit: track %d eta %f PDGcode %d TOF %1.1f ns E_prim = %1.2f GeV \n" 
+   printf(" **** AliZDCHit: track %d eta %f PDGcode %d TOF %1.1f ns E_prim = %1.2f GeV \n" 
 	  "\t DETECTOR (%d, %d)  (X, Y)_impact (%1.2f, %1.2f) cm  Secflag %1.0f\n"
           "\t PMQLight %1.0f, PMCLight %1.0f,  E_dep %1.2f\n ", 
           fTrack,fTrackEta,fPDGCode,fTrackTOF,fPrimKinEn,

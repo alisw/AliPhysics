@@ -24,12 +24,14 @@ if(daqDA)
     if(DAQDAH-NOTFOUND)
         message(FATAL_ERROR "daqDA enabled but daqDA.h not found. Please check that daqDA points to your installation")
     endif(DAQDAH-NOTFOUND)
-    
+    mark_as_advanced(DAQDAH)
+
     find_path(DAQDALIB libdaqDA.a PATHS ${daqDA})
     
     if(DAQDALIB-NOTFOUND)
         message(FATAL_ERROR "daqDA enabled but libdaqDA.a not found. Please check that daqDA points to your installation")
     endif(DAQDALIB-NOTFOUND)
+    mark_as_advanced(DAQDALIB)
 
     set(daqDA_FOUND TRUE)
 endif(daqDA)

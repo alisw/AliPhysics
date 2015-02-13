@@ -13,20 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Class for Parsing simple text configuration files                        //
-//  It produces a TList for the TObjArrays with the name of the Key
-//    the TObjArray contain the Values, split from kommas, as found in the   //
-//  Configutation file.                                                      //
-//                                                                           //
-// The configuration file has a simple structure:                            //
-// * Lines starting with a # or empty lines are ignored                      //
-// * Key and Value are separated either by a <tab> or <space>es              //
-//                                                                           //
-//  Currently the class is used in the TPC DAs to allow an adjustment of     //
-//  the most relevant parameters without recompiling the DAs                 //
-///////////////////////////////////////////////////////////////////////////////
+/// \class AliTPCConfigParser
+/// \brief  Class for Parsing simple text configuration files
+///
+/// It produces a TList for the TObjArrays with the name of the Key
+///   the TObjArray contain the Values, split from kommas, as found in the
+/// Configutation file.
+///
+/// The configuration file has a simple structure:
+/// * Lines starting with a # or empty lines are ignored
+/// * Key and Value are separated either by a <tab> or <space>es
+///
+/// Currently the class is used in the TPC DAs to allow an adjustment of
+/// the most relevant parameters without recompiling the DAs
 
 
 #include <fstream>
@@ -50,11 +49,10 @@ fConfigMap(new TList),
 fKeyIter(0),
 fValIter(0)
 {
- //
- // default constructor
- //
+ /// default constructor
+
   fConfigMap->SetOwner();
-} 
+}
 //_____________________________________________________________________
 AliTPCConfigParser::AliTPCConfigParser(const AliTPCConfigParser &cfg) :
 TObject(),
@@ -62,9 +60,8 @@ fConfigMap((TList*)cfg.fConfigMap->Clone()),
 fKeyIter(0),
 fValIter(0)
 {
-  //
-  // copy constructor
-  //
+  /// copy constructor
+
   fConfigMap->SetOwner();
 }
 
@@ -75,9 +72,8 @@ fConfigMap(new TList),
 fKeyIter(0),
 fValIter(0)
 {
-  //
-  // default constructor using the config file name as input parameter
-  //
+  /// default constructor using the config file name as input parameter
+
   fConfigMap->SetOwner();
   if ( !cfgfile ) return;
   ParseConfigFileTxt(cfgfile);
@@ -85,20 +81,18 @@ fValIter(0)
 //_____________________________________________________________________
 AliTPCConfigParser& AliTPCConfigParser::operator = (const  AliTPCConfigParser &source)
 {
-  //
-  // assignment operator
-  //
+  /// assignment operator
+
   if (&source == this) return *this;
   new (this) AliTPCConfigParser(source);
-  
+
   return *this;
 }
 //_____________________________________________________________________
 AliTPCConfigParser::~AliTPCConfigParser()
 {
- //
- // dtor
- //
+ /// dtor
+
   delete fConfigMap;
   delete fKeyIter;
   delete fValIter;
@@ -106,9 +100,8 @@ AliTPCConfigParser::~AliTPCConfigParser()
 //_____________________________________________________________________
 Int_t AliTPCConfigParser::ParseConfigFileTxt(const char* cfgfile)
 {
- //
- // Function to parse a configuration file
- //
+ /// Function to parse a configuration file
+
   ResetMap();
   ifstream file(gSystem->ExpandPathName(cfgfile));
   if ( !file.is_open() ){
@@ -159,16 +152,15 @@ Int_t AliTPCConfigParser::ParseConfigFileTxt(const char* cfgfile)
     fConfigMap->AddLast(objArr);
     delete arrValues;
   }
-  
+
   delete arr;
   return 0;
 }
 //_____________________________________________________________________
 Float_t AliTPCConfigParser::GetValue(const char *key, UInt_t position)
 {
-  //
-  //Get value for the speciefied key
-  //
+  /// Get value for the speciefied key
+
   TObject *val=((TObjArray*)fConfigMap->FindObject(key))->At(position);
   if ( !val ) return -999.;
   TString sval(((TObjString*)val)->GetString());
@@ -177,9 +169,8 @@ Float_t AliTPCConfigParser::GetValue(const char *key, UInt_t position)
 //_____________________________________________________________________
 const char* AliTPCConfigParser::GetData(const char *key, UInt_t position)
 {
-  //
-  //Get value for the speciefied key
-  //
+  /// Get value for the speciefied key
+
   TObjArray *arr=((TObjArray*)fConfigMap->FindObject(key));
   if (position>=(UInt_t)(arr->GetEntries())) return "";
   TObject *val=arr->At(position);
@@ -189,9 +180,8 @@ const char* AliTPCConfigParser::GetData(const char *key, UInt_t position)
 //_____________________________________________________________________
 Float_t AliTPCConfigParser::GetValue(const TObject *key, UInt_t position)
 {
-  //
-  //Get value for the speciefied key
-  //
+  /// Get value for the speciefied key
+
   TObject *val=((TObjArray*)fConfigMap->FindObject(key))->At(position);
   if ( !val ) return -999.;
   TString sval(((TObjString*)val)->GetString());
@@ -200,9 +190,8 @@ Float_t AliTPCConfigParser::GetValue(const TObject *key, UInt_t position)
 //_____________________________________________________________________
 const char* AliTPCConfigParser::GetData(const TObject *key, UInt_t position)
 {
-  //
-  //Get value for the speciefied key
-  //
+  /// Get value for the speciefied key
+
   TObjArray *arr=((TObjArray*)fConfigMap->FindObject(key));
   if (position>=((UInt_t)arr->GetEntries())) return "";
   TObject *val=arr->At(position);
@@ -212,17 +201,15 @@ const char* AliTPCConfigParser::GetData(const TObject *key, UInt_t position)
 //_____________________________________________________________________
 Int_t AliTPCConfigParser::GetNumberOfValues(const char* key) const
 {
-  //
-  // return the number of values for key
-  //
+  /// return the number of values for key
+
   return ((TObjArray*)fConfigMap->FindObject(key))->GetEntries();
 }
 //_____________________________________________________________________
 Int_t AliTPCConfigParser::GetNumberOfValues(TObject* key) const
 {
-  //
-  // return the number of values for key
-  //
+  /// return the number of values for key
+
   return ((TObjArray*)fConfigMap->FindObject(key))->GetEntries();
 }
 //_____________________________________________________________________
@@ -262,8 +249,7 @@ TObject* AliTPCConfigParser::NextValueIter(TObjArray *key){
 //_____________________________________________________________________
 void AliTPCConfigParser::ResetMap()
 {
-  //
-  // Reset the map with the configuration values
-  //
+  /// Reset the map with the configuration values
+
   fConfigMap->Delete();
 }

@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class generaol Alice segment 
-//  segment is for example one pad row in TPC //
-////////////////////////////////////////////////
+/// \class AliSegmentID
+///
+///  Manager class generaol Alice segment
+///  segment is for example one pad row in TPC
 
 #include "TObject.h"
 
@@ -19,8 +19,10 @@ public:
   Int_t GetID() {return fSegmentID;}
   void  SetID(Int_t index){fSegmentID = index;} 
 protected:
-  Int_t fSegmentID;   //identification number of Segment
-  ClassDef(AliSegmentID,1) 
+  Int_t fSegmentID;   ///< identification number of Segment
+  /// \cond CLASSIMP
+  ClassDef(AliSegmentID,1);
+  /// \endcond
 };
    
 #endif //ALISEGMENTID_H

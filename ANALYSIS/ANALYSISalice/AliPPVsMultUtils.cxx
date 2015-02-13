@@ -176,12 +176,12 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
     TFile *lCalibFile_V0CEq = 0x0;
     
     //AliInfo("Calling TFile::Open");
-    lCalibFile_V0M = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0M.root");
-    lCalibFile_V0A = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0A.root");
-    lCalibFile_V0C = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0C.root");
-    lCalibFile_V0MEq = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0MEq.root");
-    lCalibFile_V0AEq = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0AEq.root");
-    lCalibFile_V0CEq = TFile::Open("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0CEq.root");
+    lCalibFile_V0M = TFile::Open("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0M.root");
+    lCalibFile_V0A = TFile::Open("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0A.root");
+    lCalibFile_V0C = TFile::Open("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0C.root");
+    lCalibFile_V0MEq = TFile::Open("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0MEq.root");
+    lCalibFile_V0AEq = TFile::Open("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0AEq.root");
+    lCalibFile_V0CEq = TFile::Open("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/corrections/calibration_V0CEq.root");
     
     //AliInfo("Casting");
     fBoundaryHisto_V0M   = dynamic_cast<TH1F *>(lCalibFile_V0M  -> Get(Form("histocalib%i",lLoadThisCalibration)) );

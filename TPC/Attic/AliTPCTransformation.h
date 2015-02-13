@@ -1,16 +1,12 @@
 #ifndef ALITPCTRANSFORMATION_H
 #define ALITPCTRANSFORMATION_H
 
-//-------------------------------------------------------
-//                       TPC transformations
-//   
-//
-//   Origin: marian.ivanov@cern.ch
-//           Code is not used anymore for the TPC corrections
-//           Obsolete - will be removed soon 
-// 
-//-------------------------------------------------------
-
+/// \class AliTPCTransformation
+/// \brief TPC transformations
+///
+/// \deprecated Code is not used anymore for the TPC corrections. Obsolete - will be removed soon
+///
+/// \author Marian Ivanov <marian.ivanov@cern.ch>
 
 #include "TNamed.h"
 #include "TMatrixD.h"
@@ -51,18 +47,18 @@ public:
 
  private:
   //
-  TString  * fNameX;         // x formula
-  TString  * fNameY;         // y formula
-  TString  * fNameZ;         // z formula  
+  TString  * fNameX;         ///< x formula
+  TString  * fNameY;         ///< y formula
+  TString  * fNameZ;         ///< z formula
   //  
-  TBits    * fBitMask;       // bitmaps - transformation only for specified volID
-  Int_t      fCoordSystem;   // coord system of  output deltas 
-  Double_t   fParam;         // free parameter of transformation
-  Double_t   fSigma;         // error of the parameter
-  Double_t   fSigmaMax;      // maximal sigma (Not allowed to increase in propagate time by bigger factor)
-  Double_t   fSigma2Time;    // change of the error in time (per hour) - (For kalman filter) 
-  TVectorD  *fFixedParam;    // fixed parameters of tranformation
-  Bool_t     fIsActive;      // switch - is transformation active
+  TBits    * fBitMask;       ///< bitmaps - transformation only for specified volID
+  Int_t      fCoordSystem;   ///< coord system of  output deltas
+  Double_t   fParam;         ///< free parameter of transformation
+  Double_t   fSigma;         ///< error of the parameter
+  Double_t   fSigmaMax;      ///< maximal sigma (Not allowed to increase in propagate time by bigger factor)
+  Double_t   fSigma2Time;    ///< change of the error in time (per hour) - (For kalman filter)
+  TVectorD  *fFixedParam;    ///< fixed parameters of tranformation
+  Bool_t     fIsActive;      ///< switch - is transformation active
   //
   // predefined formulas
   //
@@ -106,12 +102,12 @@ public:
   static  Double_t       TPCDeltaZMediumLong(Double_t *xyz, Double_t * param);
   static  Double_t       TPCTiltingZ(Double_t *xyz, const Double_t *const param);
   //
-  Bool_t    fInit;          // initialization flag
-  GenFuncG  fFormulaX;      //! x formula
-  GenFuncG  fFormulaY;      //! y formula
-  GenFuncG  fFormulaZ;      //! z formula
-  static  GenFuncG    fgFormulas[10000];   //! array of pointers to formula
-  static  TObjArray*  fgFormulasName;      //! array of formalas name
+  Bool_t    fInit;          ///< initialization flag
+  GenFuncG  fFormulaX;      //!< x formula
+  GenFuncG  fFormulaY;      //!< y formula
+  GenFuncG  fFormulaZ;      //!< z formula
+  static  GenFuncG    fgFormulas[10000];   //!< array of pointers to formula
+  static  TObjArray*  fgFormulasName;      //!< array of formalas name
 
   AliTPCTransformation &operator=(const AliTPCTransformation&);    // not implemented
 

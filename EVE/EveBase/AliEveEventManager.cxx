@@ -112,6 +112,8 @@ TString  AliEveEventManager::fgAODFileName("AliAOD.root");
 TString  AliEveEventManager::fgGAliceFileName("galice.root");
 TString  AliEveEventManager::fgRawFileName("raw.root");
 TString  AliEveEventManager::fgCdbUri;
+TString  AliEveEventManager::fgSpecificCdbUriValue;
+TString  AliEveEventManager::fgSpecificCdbUriPath;
 
 TList*   AliEveEventManager::fgAODfriends = 0;
 
@@ -174,8 +176,8 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
     fEventListenerThread->Run();
     
-    fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
-    fStorageManagerWatcherThread->Run();
+    // fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
+    //fStorageManagerWatcherThread->Run();
       }
 #else
     cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
@@ -457,6 +459,13 @@ void AliEveEventManager::SetCdbUri(const TString& cdb)
 {
     // Set path to CDB, there is no default.
     if ( ! cdb.IsNull()) fgCdbUri = cdb;
+}
+
+void AliEveEventManager::SetSpecificCdbUri(const TString& path,const TString& value)
+{
+    // Set path to specific CDB object, there is no default.
+  if ( ! value.IsNull()) fgSpecificCdbUriValue = value;
+  if ( ! path.IsNull()) fgSpecificCdbUriPath = path;
 }
 
 void AliEveEventManager::SetGAliceFileName(const TString& galice)
@@ -795,17 +804,19 @@ void AliEveEventManager::InitOCDB(int runNo)
                 cdb->SetDefaultStorage("MC", "Residual");
             else if (fgCdbUri == "mcfull://")
                 cdb->SetDefaultStorage("MC", "Full");
-            else if (fgCdbUri == "local://") {
-                fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
+            else if (fgCdbUri == "local://"){
+		fgCdbUri = Form("local://%s/OCDB", gSystem->Getenv("ALICE_ROOT"));
 		cdb->SetDefaultStorage(fgCdbUri);
-            } else
+	      } 
+	    else{
                 cdb->SetDefaultStorage(fgCdbUri);
-
+		cdb->SetSpecificStorage(fgSpecificCdbUriPath,fgSpecificCdbUriValue);
+	      }
             cdb->SetRun(runNo);
 
             if (cdb->IsDefaultStorageSet() == kFALSE)
                 throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";
-        }
+        }/*
         if (fgCdbUri.BeginsWith("local://"))
         {
             TString curPath = gSystem->WorkingDirectory();
@@ -825,7 +836,7 @@ void AliEveEventManager::InitOCDB(int runNo)
                     cdb->SetSpecificStorage(grp, lpath);
                 }
             }
-	}
+	    }*/
     }
 }
 

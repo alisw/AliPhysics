@@ -211,6 +211,8 @@ Double_t AliHMPIDPIDResponse::ExpectedSignal(const AliVTrack *vTrk, Double_t nme
   if(vTrk->GetOuterHmpPxPyPz(p))  mom = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);  // Momentum of the charged particle    
   else return thetaTheor;
     
+  if(mom<0.001) return thetaTheor;
+                  
   const Double_t mass = AliPID::ParticleMass(specie); 
   const Double_t cosTheta = TMath::Sqrt(mass*mass+mom*mom)/(nmean*mom);
    

@@ -34,6 +34,10 @@ public:
 		   kMultiADA,kMultiADC,kChargeADA,kChargeADC,kChargeAD, 
 		   kADATime,kADCTime,kDiffTime,kTimeADAADC,
 		   kNCoincADA,kNCoincADC,kPairDiffTime,kPairDiffCharge};
+		   
+  enum HESDType_t {kCellMultiADA,kCellMultiADC,
+		   kBBFlag,kBGFlag,kChargeChannel,kTimeChannel,
+		   kESDADATime,kESDADCTime,kESDDiffTime};
 	
 public:
   AliADQADataMakerRec() ;            // constructor
@@ -66,7 +70,7 @@ private:
   Float_t            fTimeOffset[16]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
 
-  ClassDef(AliADQADataMakerRec,4)  // description 
+  ClassDef(AliADQADataMakerRec,1)  // description 
 
 };
 

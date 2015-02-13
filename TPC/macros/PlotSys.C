@@ -1,26 +1,29 @@
-/*
-  Origin:  marian.ivanov@cern.ch
-  Make sys watch default plots (see $ALICE_ROOT/STEER/AliSysInfo.cxx):
-  Input   -  syswatch.log  - text log file created by process to be monitored
-  Output  -  syswatch.root - root files with default histograms
-  Number of top violators - only top consumer displayed
-          
-  Default histogram:  
-               
-  TOP violateors      - CPU and Virtual memory usage
-  Detector reports    - CPU and Virtual memory usage per detector
-
-
-
-
-
-  Usage example:
-  .x ~/rootlogon.C
-  gROOT->LoadMacro("$ALICE_ROOT/macros/PlotSys.C+");
-  MakePlots("syswatch.log","syswatch.root",10);
-  TFile f("syswatch.root");
-  TBrowser b;
-*/
+/// \file PlotSys.C
+/// \author marian.ivanov@cern.ch
+/// \brief Make sys watch default plots
+///
+/// See `$ALICE_ROOT/STEER/AliSysInfo.cxx`.
+/// Input   -  syswatch.log  - text log file created by process to be monitored
+/// Output  -  syswatch.root - root files with default histograms
+/// Number of top violators - only top consumer displayed
+///         
+/// Default histogram:  
+///              
+/// TOP violateors      - CPU and Virtual memory usage
+/// Detector reports    - CPU and Virtual memory usage per detector
+/// 
+/// 
+/// 
+/// 
+/// 
+/// Usage example:
+/// ~~~{.cpp}
+/// .x ~/rootlogon.C
+/// gROOT->LoadMacro("$ALICE_ROOT/macros/PlotSys.C+");
+/// MakePlots("syswatch.log","syswatch.root",10);
+/// TFile f("syswatch.root");
+/// TBrowser b;
+/// ~~~
 
 #include "TMath.h"
 #include "TH1F.h"
@@ -46,9 +49,8 @@ void TopVMDetector();
 void TopCPUDetector();
 
 void PInit(const char *log="syswatch.log", const char *out="syswatch.root"){
-  //
-  // Set Input output
-  //
+  /// Set Input output
+
   tree = AliSysInfo::MakeTree(log);
   fout = new TFile(out,"recreate");
 }
@@ -56,9 +58,8 @@ void PInit(const char *log="syswatch.log", const char *out="syswatch.root"){
 
 
 void MakePlots(const char *log="syswatch.log", const char *out="syswatch.root", Int_t top=10){
-  //
-  //
-  //
+  ///
+
   ctop=top;
   PInit(log,out);
   gStyle->SetOptStat(0);
@@ -87,10 +88,9 @@ void MakePlots(const char *log="syswatch.log", const char *out="syswatch.root", 
 }
 
 void TopVM(){
-  //
-  // select top user of virtual Memory 
-  // MakeReport - ASCII and histogram
-  // 
+  /// select top user of virtual Memory
+  /// MakeReport - ASCII and histogram
+
   TH1 * his=0;
   TH2 * his2=0;
   Float_t thVM = TopUsage(tree,"deltaVM","",ctop);
@@ -137,10 +137,9 @@ void TopVM(){
 }
 
 void TopCPU(){  
-  //
-  // select top user of CPU 
-  // MakeReport - ASCII and histogram
-  // 
+  /// select top user of CPU
+  /// MakeReport - ASCII and histogram
+
   TH2 * his2=0;
   Float_t thDT = TopUsage(tree,"deltaT","id2<3",ctop);
   cutDT = TCut("cutDT",Form("deltaT>%f",thDT));
@@ -165,9 +164,8 @@ void TopCPU(){
 
 
 void TopVMDetector(){
-  //
-  // Draw usage of VM
-  //
+  /// Draw usage of VM
+
   TH2 * his2=0;
   //
   //
@@ -212,9 +210,8 @@ void TopVMDetector(){
 
 
 void TopCPUDetector(){
-  //
-  // Draw usage of CPU
-  //
+  /// Draw usage of CPU
+
   TH2 * his2=0;
   //
   //
@@ -249,11 +246,9 @@ void TopCPUDetector(){
 
 
 Float_t TopUsage(TTree* tree, const char *exp, const char*cut, Int_t order){
-  //
-  // 
-  // Find value for given order
-  // Used to select top violator
-  //
+  /// Find value for given order
+  /// Used to select top violator
+
   Int_t entries = tree->Draw(Form("%s>>hhh1",exp),cut,"goff");
   if (entries<=1) {
     if (tree->GetHistogram()) delete tree->GetHistogram(); 

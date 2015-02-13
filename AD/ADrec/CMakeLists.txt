@@ -21,9 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/AD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${AliRoot_SOURCE_DIR}/AD/ADbase
-                    ${AliRoot_SOURCE_DIR}/RAW/dateStream
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+		    ${AliRoot_SOURCE_DIR}/AD/ADsim
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
@@ -32,13 +30,12 @@ include_directories(${AliRoot_SOURCE_DIR}/AD/ADbase
 
 # Sources in alphabetical order
 set(SRCS
-    AliADReconstructor.cxx
-    AliADTrigger.cxx
-    AliADRecoParam.cxx
-    AliADRawStream.cxx
-    AliADQADataMakerRec.cxx
-    AliADTrending.cxx
     AliADQAChecker.cxx
+    AliADQADataMakerRec.cxx
+    AliADReconstructor.cxx
+    AliADRecoParam.cxx
+    AliADTrending.cxx
+    AliADTrigger.cxx    
    )
 
 # Headers from sources

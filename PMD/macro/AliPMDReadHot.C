@@ -1,6 +1,5 @@
-void AliPMDReadHot()
-{
-  TFile * f = TFile::Open("Run0_0_v0_s3.root");
+void AliPMDReadHot(const Char_t *filename) {
+  TFile * f = TFile::Open(filename);
   f->ls();
   if (!AliCDBEntry)
     {

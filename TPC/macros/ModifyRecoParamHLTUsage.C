@@ -1,13 +1,16 @@
-/* ModifyRecoParamHLTUsage
- *  Changes the Input for Reconstruction ( TPC RAW data or HLT TPC clusters ) 
- *    1 -> only TPC raw/sim data
- *    2 -> if present TPC raw/sim data, otherwise HLT clusters
- *    3 -> only HLT clusters
- *    4 -> if present HLT clusters, otherwise TPC raw/sim data
- *
- * Usage : aliroot -b -q ModifyRecoParamHLTUsage.C'("/lustre/alice/alien/alice/data/2011/OCDB/TPC/Calib/RecoParam/Run136844_999999999_v2_s0.root",3,"local:///tmp/ocdb/")'
- *
- */
+/// \file ModifyRecoParamHLTUsage.C
+/// 
+/// ModifyRecoParamHLTUsage
+///  Changes the Input for Reconstruction ( TPC RAW data or HLT TPC clusters ) 
+///    1 -> only TPC raw/sim data
+///    2 -> if present TPC raw/sim data, otherwise HLT clusters
+///    3 -> only HLT clusters
+///    4 -> if present HLT clusters, otherwise TPC raw/sim data
+/// 
+/// Usage:
+/// ~~~
+/// aliroot -b -q ModifyRecoParamHLTUsage.C'("/lustre/alice/alien/alice/data/2011/OCDB/TPC/Calib/RecoParam/Run136844_999999999_v2_s0.root",3,"local:///tmp/ocdb/")'
+/// ~~~
 
 void ModifyRecoParamHLTUsage( const Char_t* lastOCDBEntry, 
 			      Int_t iHLTusage,

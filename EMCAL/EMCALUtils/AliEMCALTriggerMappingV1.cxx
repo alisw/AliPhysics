@@ -162,7 +162,7 @@ Bool_t AliEMCALTriggerMappingV1::GetAbsFastORIndexFromPositionInEMCAL(const Int_
 {
   // Trigger mapping method, from position in EMCAL Index get FastOR index 
 
-  if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 59) {
+  if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63) {
     AliError(Form("Out of range! iEta: %2d iPhi: %2d", iEta, iPhi));
     return kFALSE;
   }

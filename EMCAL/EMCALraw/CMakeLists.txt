@@ -20,7 +20,7 @@ set(MODULE EMCALraw)
 include_directories(${AliRoot_SOURCE_DIR}/EMCAL/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
@@ -65,6 +65,9 @@ set(ALIROOT_DEPENDENCIES STEERBase CDB ESD RAWDatabase RAWDatarec EMCALUtils)
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Create an object to be reused in case of static libraries 
 # Otherwise the sources will be compiled twice

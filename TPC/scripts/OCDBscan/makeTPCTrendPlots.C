@@ -1,16 +1,16 @@
-/*
-  Make a TPC basic calibration trend plots:
-  Input  - calibTime.root  tree with summary info per run expected to be in the local directory
-         - optional parameters run range can be specified - startRun -endRun
-  Output - default plots are saved in the pwd/pic/
-  macro to define the picture style (NimStyle.C)  expected to be in the current directory 
+/// \file makeTPCTrendPlots.C
+/// \brief Make a TPC basic calibration trend plots
+///
+/// * Input - calibTime.root  tree with summary info per run expected to be in the local directory
+/// optional parameters run range can be specified - startRun -endRun
+/// * Output - default plots are saved in the pwd/pic/
+/// macro to define the picture style (NimStyle.C)  expected to be in the current directory
+///
+/// Example usage:
+/// ~~~
+/// aliroot -b -q /u/miranov/AliRoot/trunk/TPC/scripts/OCDBscan/makeTPCTrendPlots.C
+/// ~~~
 
-  
-  Example usage:
-  
-  aliroot -b -q /u/miranov/AliRoot/trunk/TPC/scripts/OCDBscan/makeTPCTrendPlots.C
-
-*/
 
 TTree * tree=0;
 const Double_t kmin=0.01;
@@ -20,9 +20,8 @@ Int_t run0=0;  // value to set from outside
 Int_t run1=10000000;  // vaue to set  from outside
 
 void makeTPCTrendPlots(Int_t startRun=0, Int_t endRun=1000000){
-  //
-  // make trend plots of the basic TPC calibration parameters
-  //
+  /// make trend plots of the basic TPC calibration parameters
+
   run0=startRun;
   run1=endRun;
   gROOT->Macro("NimStyle.C");
@@ -46,9 +45,8 @@ void makeTPCTrendPlots(Int_t startRun=0, Int_t endRun=1000000){
 
 
 void DrawDriftTime(){
-  //
-  // Draw drift velocity trend grapsh - as function of time
-  //
+  /// Draw drift velocity trend grapsh - as function of time
+
   TCut cutRun=Form("run>%d&&run<%d",run0,run1);
   TCut cutCE="(tdriftCE.fElements[72]>100||tdriftCE.fElements[72]>100)&&min(abs(dcea),abs(dcec))<3600";
   TCut cutITS="abs(dits)<3600";
@@ -112,14 +110,14 @@ void DrawDriftTime(){
   graphITSTPCA->GetXaxis()->SetRangeUser(minT,maxT);
   //
   //
-  canvasDrift->cd(1); 
+  canvasDrift->cd(1);
   graphPTA->GetXaxis()->SetTimeDisplay(kTRUE);
   graphPTA->GetYaxis()->SetTitle("#Delta P/T (%)");
   graphPTA->SetMarkerColor(2);graphPTA->SetMarkerStyle(25);
   graphPTC->SetMarkerColor(4);graphPTC->SetMarkerStyle(27);
   graphPTA->Draw("alp");
   graphPTC->Draw("lp");
-  graphPTAMC->SetMarkerColor(3);graphPTAMC->SetMarkerStyle(25); 
+  graphPTAMC->SetMarkerColor(3);graphPTAMC->SetMarkerStyle(25);
   graphPTAMC->Draw("lp");
   TLegend *legend = new TLegend(0.11,0.11,0.4,0.35,"P/T correction");
   legend->AddEntry(graphPTA,"A side (%)");
@@ -127,11 +125,11 @@ void DrawDriftTime(){
   legend->AddEntry(graphPTAMC,"A-C side (0.1%)");
   legend->Draw();
   //
-  canvasDrift->cd(2); 
+  canvasDrift->cd(2);
   graphITSTPCA->GetXaxis()->SetTimeDisplay(kTRUE);
   graphITSTPCA->GetYaxis()->SetTitle("v_{dcorr} (%)");
   graphITSTPCA->SetMarkerColor(2);graphITSTPCA->SetMarkerStyle(25);
-  graphITSTPCC->SetMarkerColor(4);graphITSTPCC->SetMarkerStyle(27); 
+  graphITSTPCC->SetMarkerColor(4);graphITSTPCC->SetMarkerStyle(27);
   graphITSTPCA->Draw("ap");
   graphITSTPCC->Draw("p");
   TLegend *legend = new TLegend(0.11,0.11,0.4,0.35,"Drift correction (TPC-ITS)");
@@ -139,14 +137,14 @@ void DrawDriftTime(){
   legend->AddEntry(graphITSTPCC,"C side (%)");
   legend->Draw();
   //
-  canvasDrift->cd(3); 
+  canvasDrift->cd(3);
   graphCEA->GetXaxis()->SetTimeDisplay(kTRUE);
   graphCEA->GetYaxis()->SetTitle("(T_{CE0}-T_{CE})/T_{CE0}");
   graphCEA->SetMarkerColor(2);graphCEA->SetMarkerStyle(25);
   graphCEC->SetMarkerColor(4);graphCEC->SetMarkerStyle(27);
   graphCEA->Draw("ap");
   graphCEC->Draw("p");
-  graphCEAMC->SetMarkerColor(3);graphCEAMC->SetMarkerStyle(25); 
+  graphCEAMC->SetMarkerColor(3);graphCEAMC->SetMarkerStyle(25);
   graphCEAMC->Draw("p");
   TLegend *legend = new TLegend(0.11,0.11,0.4,0.35,"CE laser time (T_{CE0}=990)");
   legend->AddEntry(graphCEA,"A side (%)");
@@ -159,8 +157,8 @@ void DrawDriftTime(){
 
 
 void DrawDriftRun(){
-  //
-  //
+  ///
+
   TCut cutRun=Form("run>%d&&run<%d",run0,run1);
   TCut cutCE="(tdriftCE.fElements[72]>100||tdriftCE.fElements[72]>100)&&min(abs(dcea),abs(dcec))<3600";
   TCut cutITS="abs(dits)<3600";
@@ -213,14 +211,14 @@ void DrawDriftRun(){
   graphITSTPCA->SetMaximum(max);
   //
   //
-  canvasDrift->cd(1); 
+  canvasDrift->cd(1);
   graphPTA->GetXaxis()->SetTimeDisplay(kTRUE);
   graphPTA->GetYaxis()->SetTitle("#Delta P/T (%)");
   graphPTA->SetMarkerColor(2);graphPTA->SetMarkerStyle(25);
   graphPTC->SetMarkerColor(4);graphPTC->SetMarkerStyle(27);
   graphPTA->Draw("alp");
   graphPTC->Draw("lp");
-  graphPTAMC->SetMarkerColor(3);graphPTAMC->SetMarkerStyle(25); 
+  graphPTAMC->SetMarkerColor(3);graphPTAMC->SetMarkerStyle(25);
   graphPTAMC->Draw("lp");
   TLegend *legend = new TLegend(0.11,0.11,0.4,0.35,"P/T correction");
   legend->AddEntry(graphPTA,"A side (%)");
@@ -228,11 +226,11 @@ void DrawDriftRun(){
   legend->AddEntry(graphPTAMC,"A-C side (0.1%)");
   legend->Draw();
   //
-  canvasDrift->cd(2); 
+  canvasDrift->cd(2);
   graphITSTPCA->GetXaxis()->SetTimeDisplay(kTRUE);
   graphITSTPCA->GetYaxis()->SetTitle("v_{dcorr} (%)");
   graphITSTPCA->SetMarkerColor(2);graphITSTPCA->SetMarkerStyle(25);
-  graphITSTPCC->SetMarkerColor(4);graphITSTPCC->SetMarkerStyle(27); 
+  graphITSTPCC->SetMarkerColor(4);graphITSTPCC->SetMarkerStyle(27);
   graphITSTPCA->Draw("ap");
   graphITSTPCC->Draw("p");
   TLegend *legend = new TLegend(0.11,0.11,0.4,0.35,"Drift correction (TPC-ITS)");
@@ -240,14 +238,14 @@ void DrawDriftRun(){
   legend->AddEntry(graphITSTPCC,"C side (%)");
   legend->Draw();
   //
-  canvasDrift->cd(3); 
+  canvasDrift->cd(3);
   graphCEA->GetXaxis()->SetTimeDisplay(kTRUE);
   graphCEA->GetYaxis()->SetTitle("(T_{CE0}-T_{CE})/T_{CE0}");
   graphCEA->SetMarkerColor(2);graphCEA->SetMarkerStyle(25);
   graphCEC->SetMarkerColor(4);graphCEC->SetMarkerStyle(27);
   graphCEA->Draw("ap");
   graphCEC->Draw("p");
-  graphCEAMC->SetMarkerColor(3);graphCEAMC->SetMarkerStyle(25); 
+  graphCEAMC->SetMarkerColor(3);graphCEAMC->SetMarkerStyle(25);
   graphCEAMC->Draw("p");
   TLegend *legend = new TLegend(0.11,0.11,0.4,0.35,"CE laser time (T_{CE0}=990)");
   legend->AddEntry(graphCEA,"A side (%)");
@@ -259,9 +257,8 @@ void DrawDriftRun(){
 }
 
 void DrawDriftCorel(){
-  //
-  //
-  //
+  ///
+
   TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;
@@ -273,16 +270,16 @@ void DrawDriftCorel(){
   tree->SetAlias("tCEB","(tdriftCE.fElements[72]+tdriftCE.fElements[73]-2000)/2000");
   tree->SetAlias("tCEA","(tdriftCE.fElements[72]-1000)/1000");
   tree->SetAlias("tCEC","(tdriftCE.fElements[73]-1000)/1000");
-  
+
   tree->SetAlias("tCEE","1-((1+(ptrel0+ptrel1)*0.5)*(1+vdriftITS))");
   strDelta= TStatToolkit::FitPlaneConstrain(tree,"tCEB", "tCEE","isValidCEB&&isValidITS", chi2,npoints,param,covar,-1,0, npointsMax, 20);
   //
   strDelta->Tokenize("++")->Print();
   tree->SetAlias("tCEF",strDelta->Data());
 
-  TGraph * graphLT = TStatToolkit::MakeGraphSparse(tree,"2.64*1000*(tCEB-tCEF):run","isValidCEB&&isValidITS"); 
-  TGraph * graphLTA = TStatToolkit::MakeGraphSparse(tree,"2.64*1000*(tCEA-tCEF):run","isValidCEB&&isValidITS"); 
-  TGraph * graphLTC = TStatToolkit::MakeGraphSparse(tree,"2.64*1000*(tCEC-tCEF):run","isValidCEB&&isValidITS"); 
+  TGraph * graphLT = TStatToolkit::MakeGraphSparse(tree,"2.64*1000*(tCEB-tCEF):run","isValidCEB&&isValidITS");
+  TGraph * graphLTA = TStatToolkit::MakeGraphSparse(tree,"2.64*1000*(tCEA-tCEF):run","isValidCEB&&isValidITS");
+  TGraph * graphLTC = TStatToolkit::MakeGraphSparse(tree,"2.64*1000*(tCEC-tCEF):run","isValidCEB&&isValidITS");
   graphLT->GetYaxis()->SetTitle("#Delta (mm)");
   graphLT->SetMarkerStyle(25);
   graphLTA->SetMarkerStyle(26); graphLTA->SetMarkerColor(2);

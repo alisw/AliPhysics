@@ -1,24 +1,23 @@
-/* 
-//
-   .x ~/rootlogon.C
-   .L $ALICE_ROOT/TPC/CalibMacros/CalibLaserExBscan.C
-
-   
-   // 0. Make a calibration
-   // 1. Make a laser scan list
-   //    e.g in TPC workscape
-   
-   // 2. Define a reference data  e.g:
-   // for a in `cat laserScan.txt`; do echo `pwd`/../mergerunMag0.list/laserMean.root; done >laserScanRef.txt
-  
-   Init();         // init chain
-   MakeAliases();  // make alaises for variables
-
-
-*/
-
-
-
+/// \file CalibLaserExBscan.C
+///
+/// ~~~
+/// .x ~/rootlogon.C
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibLaserExBscan.C
+/// ~~~
+///
+/// 0. Make a calibration
+/// 1. Make a laser scan list
+///     e.g in TPC workscape
+///
+/// 2. Define a reference data  e.g:
+/// ~~~
+/// for a in `cat laserScan.txt`; do echo `pwd`/../mergerunMag0.list/laserMean.root; done >laserScanRef.txt
+/// ~~~
+///
+/// ~~~{.cpp}
+/// Init();         // init chain
+/// MakeAliases();  // make alaises for variables
+/// ~~~
 
 TCut  cutE="eY.fElements<0.02&&Rr.eY.fElements<0.02";         // error cut 200 microns 
 TCut  cutN="nCl.fElements>10&&Rr.nCl.fElements>10";           // number of clusters cut
@@ -60,9 +59,8 @@ Double_t chi2A[6];          //
 
 
 void Init(){
-  //
-  // 
-  //
+  ///
+
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib"); 
   gSystem->Load("libSTAT");
@@ -79,10 +77,10 @@ void Init(){
 
 
 void MakeAliases(){
-  //
-  // shortcuts for variables to fit
-  //
-  // bserved distrotions
+  /// shortcuts for variables to fit
+  ///
+  /// bserved distrotions
+
   chain->SetAlias("dy","(dY.fElements-Rr.dY.fElements)");              // y ~ (r-phi) distortion
   chain->SetAlias("ctany","(dY.fElements-Rr.dY.fElements)/(250*dr)");  // mean distortion (angle) over drift length
   //
@@ -108,9 +106,8 @@ void MakeAliases(){
 
 
 TMatrixD * MakeErrVector(TMatrixD & mat){
-  //
-  // get error vector
-  //
+  /// get error vector
+
   Int_t    nrows=mat.GetNrows();
   TMatrixD *err = new TMatrixD(nrows,1);
   for (Int_t i=0; i<nrows;i++) (*err)(i,0)=TMath::Sqrt(mat(i,i));
@@ -119,9 +116,8 @@ TMatrixD * MakeErrVector(TMatrixD & mat){
 
 
 void MakeFit(Int_t i, TCut cutI, TString  aName){
-  //
-  //
-  //
+  ///
+
   Int_t  ntracks=3000000;
   TStatToolkit toolkit;
   Double_t chi2=0;
@@ -221,9 +217,7 @@ void MakeFit(Int_t i, TCut cutI, TString  aName){
 
 
 void MakeFitDy(){
-  //
-  //
-  //
+  ///
 
 
   MakeFit(0,cutAM5,"dyAM5");
@@ -238,9 +232,8 @@ void MakeFitDy(){
 
 
 void DrawPhi(){
-  //
-  //
-  //
+  ///
+
   chain->Draw("(dy-dyAM5_FA):LTr.fVecPhi.fElements>>hisAM5(60,-3.14,3.14,100,-0.2,0.2)",cutAM5,"");
   chain->Draw("(dy-dyAP5_FA):LTr.fVecPhi.fElements>>hisAP5(60,-3.14,3.14,100,-0.2,0.2)",cutAP5,"");
   chain->Draw("(dy-dyAP2_FA):LTr.fVecPhi.fElements>>hisAP2(60,-3.14,3.14,100,-0.2,0.2)",cutAP2,"");
@@ -294,9 +287,8 @@ void MakeGraphs(){
 
 
 void DumpFit(){
-  //
-  //
-  //
+  ///
+
   TTreeSRedirector *pcstream = new TTreeSRedirector("exbFits.root");
 
   for (Int_t i=0; i<5;i++){

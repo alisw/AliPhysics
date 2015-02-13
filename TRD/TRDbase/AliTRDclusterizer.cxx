@@ -82,6 +82,8 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fVolid(0)
   ,fColMax(0)
   ,fTimeTotal(0)
+  ,fTimeBinsDCS(-999)
+  ,fRun(-1)
   ,fCalGainFactorROC(NULL)
   ,fCalGainFactorDetValue(0)
   ,fCalNoiseROC(NULL)
@@ -142,6 +144,8 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name
   ,fVolid(0)
   ,fColMax(0)
   ,fTimeTotal(0)
+  ,fTimeBinsDCS(-999)
+  ,fRun(-1)
   ,fCalGainFactorROC(NULL)
   ,fCalGainFactorDetValue(0)
   ,fCalNoiseROC(NULL)
@@ -195,6 +199,8 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fVolid(0)
   ,fColMax(0)
   ,fTimeTotal(0)
+  ,fTimeBinsDCS(-999)
+  ,fRun(-1)
   ,fCalGainFactorROC(NULL)
   ,fCalGainFactorDetValue(0)
   ,fCalNoiseROC(NULL)
@@ -288,6 +294,8 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fVolid         = 0;
   ((AliTRDclusterizer &) c).fColMax        = 0;
   ((AliTRDclusterizer &) c).fTimeTotal     = 0;
+  ((AliTRDclusterizer &) c).fTimeBinsDCS   = -999;
+  ((AliTRDclusterizer &) c).fRun           = -1;
   ((AliTRDclusterizer &) c).fCalGainFactorROC = NULL;
   ((AliTRDclusterizer &) c).fCalGainFactorDetValue = 0;
   ((AliTRDclusterizer &) c).fCalNoiseROC   = NULL;
@@ -394,6 +402,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   Int_t nRecPoints = RecPoints()->GetEntriesFast();
   if(!nRecPoints) return kTRUE;
 
+  const AliTRDrecoParam *const recoParam = fReconstructor->GetRecoParam();
+
   TObjArray *ioArray = new TObjArray(400);
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
   if (!branch) {
@@ -409,7 +419,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     }
     fClusterTree->Fill();
     ioArray->Clear();
-  } else {
+  } 
+  else {
     if(!(c = (AliTRDcluster*)RecPoints()->UncheckedAt(0))){
       AliError("Missing first cluster.");
       delete ioArray;
@@ -419,6 +430,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     ioArray->AddLast(c);
     for (Int_t i(1); i<nRecPoints; i++) {
       if(!(c = (AliTRDcluster *) RecPoints()->UncheckedAt(i))) continue;
+      // Check on total cluster charge
+      if (c->GetQ() < recoParam->GetClusterQmin()) continue;
       if(c->GetDetector() != detOld){
         nw += ioArray->GetEntriesFast();
         // fill & clear previously detector set of clusters
@@ -677,7 +690,6 @@ Bool_t AliTRDclusterizer::Raw2Clusters(AliRawReader *rawReader)
   //
   // Creates clusters from raw data
   //
-
   return Raw2ClustersChamber(rawReader);
 
 }
@@ -688,6 +700,18 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   //
   // Creates clusters from raw data
   //
+  // if first call or run number was changed, update cached value ot timebinsDCS
+  AliTRDcalibDB* const calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliFatal("No AliTRDcalibDB instance available\n");
+    return kFALSE;  
+  }
+  
+  if (fTimeBinsDCS==-999 || fRun!=(int)calibration->GetRun()) {
+    fRun = calibration->GetRun();
+    fTimeBinsDCS = calibration->GetNumberOfTimeBinsDCS();
+    AliInfoF("Set number of DCS time bins to %d for run %d",fTimeBinsDCS,fRun);
+  }
 
   // Create the digits manager
   if (!fDigitsManager){
@@ -859,25 +883,24 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   if(nrows != fIndexes->GetNrow()) AliDebug(1, Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fIndexes->GetNrow()));
 
   // Check consistency between OCDB and raw data
-  Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();
   if(fReconstructor->IsHLT()){
-    if((nTimeOCDB > -1) && (fTimeTotal != nTimeOCDB)){
+    if((fTimeBinsDCS > -1) && (fTimeTotal != fTimeBinsDCS)){
       AliWarning(Form("Number of timebins does not match OCDB value (RAW[%d] OCDB[%d]), using raw value"
-		      ,fTimeTotal,nTimeOCDB));
+		      ,fTimeTotal,fTimeBinsDCS));
     }
   }else{
-    if(nTimeOCDB == -1){
+    if(fTimeBinsDCS == -1){
       AliDebug(1, "Undefined number of timebins in OCDB, using value from raw data.");
       if(!(fTimeTotal>0)){
         AliError(Form("Number of timebins in raw data is negative, skipping chamber[%3d]!", fDet));
         return kFALSE;
       }
-    }else if(nTimeOCDB == -2){
+    }else if(fTimeBinsDCS == -2){
       AliError("Mixed number of timebins in OCDB, no reconstruction of TRD data!"); 
       return kFALSE;
-    }else if(fTimeTotal != nTimeOCDB){
+    }else if(fTimeTotal != fTimeBinsDCS){
       AliError(Form("Number of timebins in raw data does not match OCDB value (RAW[%d] OCDB[%d]), skipping chamber[%3d]!"
-        ,fTimeTotal,nTimeOCDB, fDet));
+        ,fTimeTotal,fTimeBinsDCS, fDet));
       return kFALSE;
     }
   }

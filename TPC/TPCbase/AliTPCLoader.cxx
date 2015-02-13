@@ -1,3 +1,5 @@
+/// \class AliTPCLoader
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,7 +15,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 #include "AliTPCLoader.h"
 #include "AliLog.h"
@@ -25,17 +26,19 @@ const TString AliTPCLoader::fgkDefaultRecPointsFileName = "TPC.RecPoints.root";
 const TString AliTPCLoader::fgkDefaultTracksFileName    = "TPC.Tracks.root";
 
 
+/// \cond CLASSIMP
 ClassImp(AliTPCLoader)
+/// \endcond
 AliTPCLoader::AliTPCLoader()
  {
  }
-/*****************************************************************************/ 
+/*****************************************************************************/
 AliTPCLoader::AliTPCLoader(const Char_t *name,const Char_t *topfoldername)
  :AliLoader(name,topfoldername)
 {
   AliDebug(1,Form("Name = %s; topfolder = %s",name,topfoldername));
 }
-/*****************************************************************************/ 
+/*****************************************************************************/
 
 AliTPCLoader::AliTPCLoader(const Char_t *name,TFolder *topfolder)
  :AliLoader(name,topfolder)

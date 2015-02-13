@@ -2344,10 +2344,11 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
     //      for electrons also for ITS+TPC tracks
     Double_t bethe=fITSResponse.Bethe(momITS,(AliPID::EParticleType)j,isSA || (j==(Int_t)AliPID::kElectron))*chargeFactor;
     Double_t sigma=fITSResponse.GetResolution(bethe,nPointsForPid,isSA || (j==(Int_t)AliPID::kElectron));
-    if (TMath::Abs(dedx-bethe) > fRange*sigma) {
+    Double_t nSigma=fITSResponse.GetNumberOfSigmas(track, (AliPID::EParticleType)j);
+    if (TMath::Abs(nSigma) > fRange) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
     } else {
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+      p[j]=TMath::Exp(-0.5*nSigma*nSigma)/sigma;
       mismatch=kFALSE;
     }
   }

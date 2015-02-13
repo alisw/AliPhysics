@@ -1,31 +1,31 @@
-/*
-  .x ~/UliStyle.C
-  .x ~/rootlogon.C
-  gSystem->Load("libSTAT");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib"); 
-  gSystem->Load("libSTAT");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+/// \file CalibAlign.C
+///
+/// ~~~{.cpp}
+/// .x ~/UliStyle.C
+/// .x ~/rootlogon.C
+/// gSystem->Load("libSTAT");
+/// gSystem->Load("libANALYSIS");
+/// gSystem->Load("libTPCcalib"); 
+/// gSystem->Load("libSTAT");
+/// gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+/// 
+///
+///
+/// gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+/// AliXRDPROOFtoolkit tool; 
+/// TChain * chainCosmic = tool.MakeChain("cosmic.txt","Track0",0,1000000);
+/// chainCosmic->Lookup();
+/// chainCosmic->SetProof(kTRUE);
+/// TChain * chainTr = tool.MakeChain("align.txt","Tracklet",0,10200);
+/// chainTr->Lookup();
+/// //chainTr->SetProof(kTRUE);
+///
+/// .L $ALICE_ROOT/TPC/CalibMacros/CalibAlign.C
+/// SetAlias();
+/// InitCutsAlign();
+/// MakeAlign();
+/// ~~~
   
-
-
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-  AliXRDPROOFtoolkit tool; 
-  TChain * chainCosmic = tool.MakeChain("cosmic.txt","Track0",0,1000000);
-  chainCosmic->Lookup();
-  chainCosmic->SetProof(kTRUE);
-  TChain * chainTr = tool.MakeChain("align.txt","Tracklet",0,10200);
-  chainTr->Lookup();
-  //chainTr->SetProof(kTRUE);
-  //
-  //
-  //
-  .L $ALICE_ROOT/TPC/CalibMacros/CalibAlign.C
-  SetAlias();
-  InitCutsAlign();
-  MakeAlign();
-  
-*/
 /*
 #include "TMath.h"
 #include "TFile.h"
@@ -40,15 +40,12 @@
 #include "AliTPCcalibAlign.h"
 */
 
-
-
 AliTPCcalibAlign align;
 TChain * chainTr;
 
 void SetAlias(){
-  //
-  //
-  //
+  ///
+
   chainTr->SetAlias("dP0","tp1.fP[0]-tp2.fP[0]");
   chainTr->SetAlias("dP1","tp1.fP[1]-tp2.fP[1]");
   chainTr->SetAlias("dP2","tp1.fP[2]-tp2.fP[2]");
@@ -100,7 +97,8 @@ void SetAlias(){
 
 
 void InitCutsAlign(){
-  // resolution cuts
+  /// resolution cuts
+
   TCut cutS0("sqrt(tp2.fC[0]+tp2.fC[0])<0.2");
   TCut cutS1("sqrt(tp2.fC[2]+tp2.fC[2])<0.2");
   TCut cutS2("sqrt(tp2.fC[5]+tp2.fC[5])<0.01");
@@ -134,9 +132,8 @@ void MakeAlign(){
 }
  
 void MakeCompareAlign(){
-  //
-  //
-  //
+  ///
+
   TFile falignTreeNoMag("/lustre_alpha/alice/miranov/rec/LHC08d/nomag/alignTree.root");
   TTree * treeAlignNoMag = (TTree*)falignTreeNoMag.Get("Align");
   TFile falignTree("alignTree.root");
@@ -150,8 +147,8 @@ TMatrixD * arrayAlign[72];
 TMatrixD * arrayAlignTmp[72];
 
 void ClearMatrices(){
-  //
-  //
+  ///
+
   for (Int_t i=0;i<72; i++) {
     TMatrixD * mat = new TMatrixD(4,4);
     mat->UnitMatrix();
@@ -162,9 +159,8 @@ void ClearMatrices(){
 }
 
 void GlobalAlign(){
-  //
-  // Global Align
-  //
+  /// Global Align
+
   TTreeSRedirector *cstream = new TTreeSRedirector("galign.root");
 
   for (Int_t iter=0; iter<10;iter++){
@@ -225,9 +221,8 @@ void GlobalAlign(){
 
 
 void MakeGlobalCorr(){
-  //
-  //
-  //
+  ///
+
   TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;
@@ -274,9 +269,8 @@ void MakeGlobalCorr(){
 }
 
 void P0resolZ(){
-  //
-  //
-  //
+  ///
+
   TH2F * hdP0Z = new TH2F("hdP0Z","hdP0Z",10,-250,250,100,-0.5,0.5);
   TH2F * hdP0ZNoCor = new TH2F("hdP0ZNoCor","hdP0ZNoCor",10,-250,250,100,-0.5,0.5);
   chainTr->Draw("(dP0-corrP0)/sqrt(2.):meanZ>>hdP0Z",""+cutRun+cutS+cutN120,"");
@@ -322,9 +316,8 @@ void P0resolZ(){
 }
 
 void P1resolZ(){
-  //
-  //
-  //
+  ///
+
   TH2F * hdP1Z = new TH2F("hdP1Z","hdP1Z",10,-250,250,100,-0.2,0.2);
   TH2F * hdP1ZNoCor = new TH2F("hdP1ZNoCor","hdP1ZNoCor",10,-250,250,100,-0.2,0.2);
   chainTr->Draw("(dP1-corrP1)/sqrt(2.):meanZ>>hdP1Z",""+cutRun+cutS+cutN120,"");
@@ -371,9 +364,8 @@ void P1resolZ(){
 
 
 void P4resolZ(){
-  //
-  //
-  //
+  ///
+
   TH2F * hdP4Z = new TH2F("hdP4Z","hdP4Z",10,-250,250,100,-0.4,0.4);
   TH2F * hdP4ZNoCor = new TH2F("hdP4ZNoCor","hdP4ZNoCor",10,-250,250,100,-0.4,0.4);
   chainTr->Draw("(dP4-corrP4)/sqrt(2.):meanZ>>hdP4Z",""+cutRun+cutS+cutN120,"");
@@ -423,9 +415,8 @@ void P4resolZ(){
 
 
 void MakeFit(){
-  //
-  //
-  //
+  ///
+
   TChain *chainTracklet=chainTr;
   AliTPCcalibAlign align;
   //
@@ -457,7 +448,8 @@ void MakeFit(){
 // chainTr->Scan("vy1:AliTPCcalibAlign::SCorrect(0,1,s1,s2,vx1,vy1,vz1,vdydx1,vdzdx1)","","",100); 
 
 void MakePlot(){
-  //
+  ///
+
   chainTr->Draw("vy2-vy1:s1>>hisdYNoCor(36,0,36,100,-0.3,0.3)","abs(s2-s1-36)<1","",40000);
   chainTr->Draw("vy2-vy1-dy1:s1>>hisdYCor(36,0,36,100,-0.3,0.3)","abs(s2-s1-36)<1","",40000);
   hisdYCor->FitSlicesY();
@@ -468,9 +460,8 @@ void MakePlot(){
 
 
 void dPhi(){
-  //
-  //
-  //  
+  ///
+
   treeAlign->Draw("1000*m6.fElements[4]","s2==s1+36&&nphi>100");
   htemp->SetXTitle("#Delta_{#phi} (mrad)");
   gPad->SaveAs("picAlign/mag5dPhi.eps");
@@ -492,9 +483,8 @@ void dPhi(){
 
 
 void dTheta(){
-  //
-  //
-  //  
+  ///
+
   treeAlign->Draw("1000*m6.fElements[8]","s2==s1+36&&nphi>100");
   htemp->SetXTitle("#Delta_{#theta} (mrad)");
   gPad->SaveAs("picAlign/mag5dTheta.eps");
@@ -525,9 +515,8 @@ void dTheta(){
 
 
 void dZ(){
-  //
-  //
-  //  
+  ///
+
   treeAlign->Draw("dz","s2==s1+36&&nphi>100");
   htemp->SetXTitle("#Delta_{Z} (cm)");
   gPad->SaveAs("picAlign/mag5dZ.eps");
@@ -556,9 +545,8 @@ void dZ(){
 }
 
 void dY(){
-  //
-  //
-  //  
+  ///
+
   treeAlign->Draw("dy","s2==s1+36&&nphi>100");
   htemp->SetXTitle("#Delta_{Y} (cm)");
   gPad->SaveAs("picAlign/mag5dY.eps");

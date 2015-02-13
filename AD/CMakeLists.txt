@@ -21,3 +21,7 @@ add_subdirectory(ADsim)
 install(DIRECTORY macros DESTINATION AD)
 
 message(STATUS "AD enabled")
+
+if(DA)
+   add_subdirectory(DA)
+endif(DA)

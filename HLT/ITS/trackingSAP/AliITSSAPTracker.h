@@ -12,7 +12,7 @@
 #include "AliESDVertex.h"
 
 //------- compilation options, comment out all for best performance ------
-#define _TIMING_                            // print timing info, use only in offline mode
+//#define _TIMING_                            // print timing info, use only in offline mode
 //#define _CONTROLH_                          // fill control histos, use only in offline mode
 //#define _DEBUG_                             // print debug info, use only in offline mode
 //------------------------------------------------------------------------

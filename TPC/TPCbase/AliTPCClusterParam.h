@@ -5,11 +5,8 @@
 
 /* $Id: AliTPCClusterParam.h,v */
 
-////////////////////////////////////////////////////
-//                                                //
-//  TPC cluster error and shape parameterization  //
-//                                                //
-////////////////////////////////////////////////////
+/// \class AliTPCClusterParam
+/// \brief TPC cluster error and shape parameterization
 
 
 #include <TObject.h>
@@ -36,23 +33,23 @@ class AliTPCClusterParam : public TObject {
   void FitData(TTree * tree);
   void FitResol(TTree * tree);
   void FitRMS(TTree * tree);
-  void SetQnorm(Int_t ipad, Int_t itype,  const TVectorD *const norm); 
-  void SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val, Int_t mode=1); 
+  void SetQnorm(Int_t ipad, Int_t itype,  const TVectorD *const norm);
+  void SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val, Int_t mode=1);
   Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const;
   TMatrixD *GetQnormCorrMatrix(){return fQNormCorr;};
-  void ResetQnormCorr(); 
+  void ResetQnormCorr();
   void SetWaveCorrectionMap( THnBase *WaveCorrectionMap);
   void SetResolutionYMap( THnBase *ResolutionYMap);
   //
   // Charge parameterization
   //
-  Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);   
+  Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);
   Float_t QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);
 
 
   Float_t QnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt);
   static Float_t SQnormPos(Int_t ipad, Bool_t isMax,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm, Float_t qt){ return fgInstance->QnormPos(ipad,isMax,pad,time,z,sy2,sz2,qm,qt);;}
- 
+
   Float_t PosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm);
   static Float_t  SPosCorrection(Int_t type, Int_t ipad,  Float_t pad, Float_t time, Float_t z, Float_t sy2, Float_t sz2, Float_t qm){ return fgInstance->PosCorrection(type,ipad,pad,time,z,sy2,sz2,qm);}
   //
@@ -72,7 +69,7 @@ class AliTPCClusterParam : public TObject {
   Float_t GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
   Float_t GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
   Float_t GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM) const;
-  // 
+  //
   // Correction and resolution maps
   //
   const THnBase *GetWaveCorrectionMap() const { return fWaveCorrectionMap; }
@@ -84,7 +81,7 @@ class AliTPCClusterParam : public TObject {
   //
   void Test(TTree * tree, const char *output="TestClusterParam.root");
   //
-  // static methods equivalents  - use instance of param object - useful for tree draw and TF2 visualization 
+  // static methods equivalents  - use instance of param object - useful for tree draw and TF2 visualization
   static Float_t SGetError0(Int_t dim, Int_t type, Float_t z, Float_t angle){
     return fgInstance->GetError0(dim,type,z,angle);
   }
@@ -143,8 +140,8 @@ class AliTPCClusterParam : public TObject {
   void FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
   void FitRMS0(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
   void FitRMS1(TTree * tree, Int_t dim, Float_t *param0, Float_t *error);
-  void FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);  
-  void FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);  
+  void FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
+  void FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
   //
   TVectorD*& PosYcor(Int_t ind) {return fPosYcor[ind];}
   TVectorD*& PosZcor(Int_t ind) {return fPosZcor[ind];}
@@ -153,57 +150,59 @@ class AliTPCClusterParam : public TObject {
   TVectorD* QpadMnorm() const {return fQpadMnorm;}
 
 protected:
-  Float_t fRatio;               //ratio of values constibution to error
-  Float_t fParamS0[2][3][4];    //error parameterization coeficients
-  Float_t fErrorS0[2][3][4];    //error parameterization coeficients
-  Float_t fParamS0Par[2][3][7];    //error parameterization coeficients
-  Float_t fErrorS0Par[2][3][7];    //error parameterization coeficients  
-  Float_t fParamSQ[2][3][6];    //error parameterization coeficients
-  Float_t fErrorSQ[2][3][6];    //error parameterization coeficients
-  Float_t fParamSQPar[2][3][9];    //error parameterization coeficients
-  Float_t fErrorSQPar[2][3][9];    //error parameterization coeficients
-  Float_t fParamS1[2][4];       //error parameterization coeficients
-  Float_t fErrorS1[2][4];       //error parameterization coeficients
+  Float_t fRatio;               ///< ratio of values constibution to error
+  Float_t fParamS0[2][3][4];    ///< error parameterization coeficients
+  Float_t fErrorS0[2][3][4];    ///< error parameterization coeficients
+  Float_t fParamS0Par[2][3][7];    ///< error parameterization coeficients
+  Float_t fErrorS0Par[2][3][7];    ///< error parameterization coeficients
+  Float_t fParamSQ[2][3][6];    ///< error parameterization coeficients
+  Float_t fErrorSQ[2][3][6];    ///< error parameterization coeficients
+  Float_t fParamSQPar[2][3][9];    ///< error parameterization coeficients
+  Float_t fErrorSQPar[2][3][9];    ///< error parameterization coeficients
+  Float_t fParamS1[2][4];       ///< error parameterization coeficients
+  Float_t fErrorS1[2][4];       ///< error parameterization coeficients
   //
-  Float_t fParamRMS0[2][3][4];   //shape parameterization coeficients
-  Float_t fErrorRMS0[2][3][4];   //shape parameterization coeficients
-  Float_t fParamRMSQ[2][3][6];   //shape parameterization coeficients
-  Float_t fErrorRMSQ[2][3][6];   //shape parameterization coeficients
-  Float_t fParamRMS1[2][5];      //shape parameterization coeficients
-  Float_t fErrorRMS1[2][5];      //shape parameterization coeficients
-  Float_t fErrorRMSSys[2];        // systematic relative error of the parametererization
-  Float_t fRMSSigmaRatio[2][2];   // mean value of the varation of RMS to RMS
-  Float_t fRMSSigmaFit[2][3][2];   // mean value of the varation of RMS to RMS
+  Float_t fParamRMS0[2][3][4];   ///< shape parameterization coeficients
+  Float_t fErrorRMS0[2][3][4];   ///< shape parameterization coeficients
+  Float_t fParamRMSQ[2][3][6];   ///< shape parameterization coeficients
+  Float_t fErrorRMSQ[2][3][6];   ///< shape parameterization coeficients
+  Float_t fParamRMS1[2][5];      ///< shape parameterization coeficients
+  Float_t fErrorRMS1[2][5];      ///< shape parameterization coeficients
+  Float_t fErrorRMSSys[2];        ///< systematic relative error of the parametererization
+  Float_t fRMSSigmaRatio[2][2];   ///< mean value of the varation of RMS to RMS
+  Float_t fRMSSigmaFit[2][3][2];   ///< mean value of the varation of RMS to RMS
   //
   // charge normalization parametrization
   //
-  TObjArray *fQNorm;              // q norm paramters
-  TMatrixD  *fQNormCorr;          // q norm correction for analytica  correction
-  TObjArray *fQNormHis;           // q norm correction for analytical correction 
+  TObjArray *fQNorm;              ///< q norm paramters
+  TMatrixD  *fQNormCorr;          ///< q norm correction for analytica  correction
+  TObjArray *fQNormHis;           ///< q norm correction for analytical correction
   //
-  TVectorD  *fPosQTnorm[3];       // q position normalization
-  TVectorD  *fPosQMnorm[3];       // q position normalization
-  TVectorD  *fQpadTnorm;          // q pad normalization - Total charge
-  TVectorD  *fQpadMnorm;          // q pad normalization - Max charge
+  TVectorD  *fPosQTnorm[3];       ///< q position normalization
+  TVectorD  *fPosQMnorm[3];       ///< q position normalization
+  TVectorD  *fQpadTnorm;          ///< q pad normalization - Total charge
+  TVectorD  *fQpadMnorm;          ///< q pad normalization - Max charge
   //
   // Position corrections
-  // 
-  TVectorD  *fPosYcor[3];       //  position correction parameterization 
-  TVectorD  *fPosZcor[3];       //  position correction parameterization
   //
-  // Wave Correction Map 
+  TVectorD  *fPosYcor[3];       ///< position correction parameterization
+  TVectorD  *fPosZcor[3];       ///< position correction parameterization
   //
-  THnBase* fWaveCorrectionMap; //dY with respect to the distance to the center of the pad
-  Bool_t   fWaveCorrectionMirroredPad;   // flag is the cog axis mirrored at 0.5
-  Bool_t   fWaveCorrectionMirroredZ;     // flag is the Z axis mirrored at 0
-  Bool_t   fWaveCorrectionMirroredAngle; // flag is the Angle axis mirrored at 0
+  // Wave Correction Map
+  //
+  THnBase* fWaveCorrectionMap; ///< dY with respect to the distance to the center of the pad
+  Bool_t   fWaveCorrectionMirroredPad;   ///< flag is the cog axis mirrored at 0.5
+  Bool_t   fWaveCorrectionMirroredZ;     ///< flag is the Z axis mirrored at 0
+  Bool_t   fWaveCorrectionMirroredAngle; ///< flag is the Angle axis mirrored at 0
   //
   // Resolution Map
   //
-  THnBase* fResolutionYMap; // Map of resolution in Y
+  THnBase* fResolutionYMap; ///< Map of resolution in Y
   //
-  static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
+  static AliTPCClusterParam*   fgInstance; //!< Instance of this class (singleton implementation)
+  /// \cond CLASSIMP
   ClassDef(AliTPCClusterParam,7)    //  TPC Cluster parameter class
+  /// \endcond
 };
 
 #endif

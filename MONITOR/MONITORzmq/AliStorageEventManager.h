@@ -23,7 +23,7 @@ public:
 	static AliStorageEventManager* GetEventManagerInstance();
 
 	void Send(std::vector<serverListStruct> list,storageSockets socket);
-	void Send(struct serverRequestStruct *request,storageSockets socket);
+	bool Send(struct serverRequestStruct *request,storageSockets socket,int timeout = -1);
 	bool Send(struct clientRequestStruct *request,storageSockets socket,int timeout = -1);
 	void Send(AliESDEvent *event,storageSockets socket);
 	void Send(TFile *file,storageSockets socket);

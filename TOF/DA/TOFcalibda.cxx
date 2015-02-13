@@ -114,9 +114,9 @@ main(int argc, char **argv)
   int ret;
   /* define monitoring table */
   char *monTable[5] = {
-    "ALL", "no",
-    "CAL", "yes",
-    NULL
+    (char *)"ALL", (char *)"no",
+    (char *)"CAL", (char *)"yes",
+    (char *)NULL
   };
   ret = monitorDeclareTable(monTable);
   if (ret != 0) {

@@ -1,10 +1,10 @@
 /// \file AliTPCCmpNG.C
-/// 
+///
 /// version: 1.0
 /// description:
 ///        define a class TPCGenTrack
 ///        save TPC related properties of tracks into a single tree
-/// 
+///
 /// input:
 ///        Int_t nEvents      ... nr of events to process
 ///        Int_t firstEventNr ... first event number (starts from 0)
@@ -12,7 +12,7 @@
 ///        char* fnHits ... name of file with hits and Kine Tree
 ///        char* fnDigits  ... name of file with digits
 ///        char* fnTracks .. output file name, default genTracks.root
-/// 
+///
 /// How to use:
 ///  Typical usage:
 ///    .L AliTPCCmpNG.C+
@@ -23,11 +23,11 @@
 ///    .L  AliTPCCmpNG.C+
 ///    TPCCmpTr *t2 = new TPCCmpTr("tpc.tracks.root","genTracks.root","cmpTracks.root");
 ///    t2->Exec();
-/// 
+///
 ///  Details:
-/// 
+///
 ///  Step 1 - summurize information from simulation
-/// 
+///
 ///  Compile macro with ACLIC:
 ///     .L AliTPCCmpNG.C+
 ///  create an object TPCFindGenTracks, which processes information
@@ -56,9 +56,9 @@
 ///    t->Exec(nEvents, firstEvent)
 ///  Then you have to quit root to get rid of problems with deleting gAlice
 ///  object (it is not deleted, but read again in the following step):
-/// 
+///
 ///  Step 2 - compare reconstructed tracks with simulated
-/// 
+///
 ///  Load (and compile) the macro:
 ///   .L AliTPCCmpNG.C+
 ///  Create object TPCCmpTr, which does the comparison. As input it requires
@@ -70,17 +70,17 @@
 ///  The interface is quite similar to the TPCFindGenTracks class.
 ///  Then just invoke Exec() method:
 ///  t2->Exec();
-/// 
+///
 ///  Step 3 - study the results
-/// 
+///
 ///  Load the outoput TTree and you can do Draw(), Scan() or other
 ///  usual things to do with TTree:
 ///  TFile *f = new TFile("cmpTracks.root")
 ///  TTree *t = (TTree*)f->Get("TPCcmpTracks")
 ///  t->Draw("fVDist[3]","fReconstructed")
-/// 
+///
 /// History:
-/// 
+///
 /// 24.09.02 - first version
 /// 24.01.03 - v7, before change from TPC Special Hits to TrackReferences
 /// 26.01.03 - change from TPC Special Hits to TrackReferences
@@ -92,7 +92,7 @@
 ///            into separate step
 /// 03.02.03 - rename to AliTPCCmpNG.C, remove the part with rec. tracks
 ///            (will be addded in a macro AliTPCCmpTr.C
-/// 
+///
 /// \author Jiri Chudoba
 /// \date 24.09.2002
 
@@ -160,9 +160,8 @@ Int_t Chain(TString baseDir, TString subDirNameMask, TString fn, TChain& chain);
 ////////////////////////////////////////////////////////////////////////
 void WaitForReturn() 
 {
-//
-// wait until user press return;
-//
+/// wait until user press return;
+
   char    *input;
   Bool_t done = kFALSE;
   TTimer  *timer = new TTimer("gSystem->ProcessEvents();", 50, kFALSE);
@@ -181,8 +180,8 @@ void WaitForReturn()
 ////////////////////////////////////////////////////////////////////////
 
 Int_t Chain(TString baseDir, TString subDirNameMask, TString fn, TChain& chain) {
-// chain all files fn in the subdirectories which match subDirName
-// return number of chained files
+/// chain all files fn in the subdirectories which match subDirName
+/// return number of chained files
 
 // open baseDir, loop over subdirs
 
@@ -211,7 +210,8 @@ Int_t Chain(TString baseDir, TString subDirNameMask, TString fn, TChain& chain) 
 }
 ////////////////////////////////////////////////////////////////////////
 Bool_t ImportgAlice(TFile *file) {
-// read in gAlice object from the file
+/// read in gAlice object from the file
+
   gAlice = (AliRun*)file->Get("gAlice");
   if (!gAlice)  return kFALSE;
   return kTRUE;
@@ -925,7 +925,9 @@ private:
 
   ClassDef(TPCCmpTr,1)    // class which creates and fills tree with TPCGenTrack objects
 };
+/// \cond CLASSIMP
 ClassImp(TPCCmpTr)
+/// \endcond
   
 ////////////////////////////////////////////////////////////////////////
 TPCCmpTr::TPCCmpTr()

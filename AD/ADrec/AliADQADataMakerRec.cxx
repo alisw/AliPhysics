@@ -110,14 +110,14 @@ AliADCalibData* AliADQADataMakerRec::GetCalibData() const
 
   AliCDBEntry *entry=0;
 
-  //entry = man->Get("AD/Calib/Data",fRun);
-  //if(!entry){
-    //AliWarning("Load of calibration data from default storage failed!");
-    //AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
+  entry = man->Get("AD/Calib/Data",fRun);
+  if(!entry){
+    AliWarning("Load of calibration data from default storage failed!");
+    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
 	
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     entry = man->Get("AD/Calib/Data",fRun);
-  //}
+  }
   // Retrieval of data in directory AD/Calib/Data:
 
   AliADCalibData *calibdata = 0;
@@ -163,10 +163,10 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
 		      //     fCalibData->GetTimeOffset(i) -
 		      //     l1Delay+
 		      //delays->GetBinContent(i+1)//+
-		      //      kV0Offset
+		      //      kADOffset
 		      0
 		      );
-    //		      AliInfo(Form(" fTimeOffset[%d] = %f  kV0offset %f",i,fTimeOffset[i],kV0Offset));
+    //		      AliInfo(Form(" fTimeOffset[%d] = %f  kADoffset %f",i,fTimeOffset[i],kADOffset));
   }
 
  
@@ -185,7 +185,7 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
   // Does the QA checking
   ResetEventTrigClasses();
   //
-  AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
+  
   
   if(task == AliQAv1::kRAWS){
     TTimeStamp currentTime;
@@ -199,37 +199,200 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     } else if (task == AliQAv1::kESDS) {
     }
   }
+  AliQAChecker::Instance()->Run(AliQAv1::kAD, task, list) ;
 }
 
 //____________________________________________________________________________ 
 void AliADQADataMakerRec::InitESDs()
 {
-  // Creates histograms to control ESDs
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+
+  TH1I * h0 = new TH1I("H1I_Cell_Multiplicity_ADA", "Cell Multiplicity in ADA;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
+  Add2ESDsList(h0, kCellMultiADA, !expert, image)  ;  
+                                                                                                        
+  TH1I * h1 = new TH1I("H1I_Cell_Multiplicity_ADC", "Cell Multiplicity in AD;Multiplicity (Nb of Cell);Counts", 35, 0, 35) ;  
+  Add2ESDsList(h1, kCellMultiADC, !expert, image)  ;  
+  
+  TH1F * h2 = new TH1F("H1D_BBFlag_Counters", "BB Flag Counters;Channel;Counts",16, 0, 16) ;  
+  Add2ESDsList(h2, kBBFlag, !expert, image)  ;  
+  
+  TH1F * h3 = new TH1F("H1D_BGFlag_Counters", "BG Flag Counters;Channel;Counts",16, 0, 16) ;  
+  Add2ESDsList(h3, kBGFlag, !expert, image)  ;  
+  
+  TH2F * h4 = new TH2F("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",16, 0, 16, 1024, 0, 1024) ;  
+  Add2ESDsList(h4, kChargeChannel, !expert, image)  ;  
+  
+  TH2F * h5 = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",16, 0, 16, 400, -100, 100) ;  
+  Add2ESDsList(h5, kTimeChannel, !expert, image)  ;  
+  
+  TH1F * h6 = new TH1F("H1D_ADA_Time", "Mean ADA Time;Time (ns);Counts",1000, -100., 100.);
+  Add2ESDsList(h6,kESDADATime, !expert, image); 
+  
+  TH1F * h7 = new TH1F("H1D_ADC_Time", "Mean ADC Time;Time (ns);Counts",1000, -100., 100.);
+  Add2ESDsList(h7,kESDADCTime, !expert, image); 
+  
+  TH1F * h8 = new TH1F("H1D_Diff_Time", "Diff Time ADA - ADC;Diff Time ADA - ADC (ns);Counts",1000, -200., 200.);
+  Add2ESDsList(h8,kESDDiffTime, !expert, image); 
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line	
 }
 
 //____________________________________________________________________________ 
 void AliADQADataMakerRec::InitDigits()
 {
+// create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
 
+  // create Digits histograms in Digits subdir
+  TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in AD;# of Digits;Entries", 17,-0.5,16.5) ; 
+  h0->Sumw2() ;
+  Add2DigitsList(h0, 0, !expert, image) ;
+     
+  TH2D * h1 = new TH2D("hDigitLeadingTimePerPM", "Leading time distribution per PM in AD;PM number;Leading Time [ns]",16,0,16, 1000, 200, 300); 
+  h1->Sumw2() ;
+  Add2DigitsList(h1, 1, !expert, image) ; 
+  
+  TH2D * h2 = new TH2D("hDigitTimeWidthPerPM", "Time width distribution per PM in AD;PM number;Time width [ns]",16,0,16, 1000, 0, 100); 
+  h2->Sumw2() ;
+  Add2DigitsList(h2, 2, !expert, image) ;
+  
+  TH2I * h3 = new TH2I("hDigitChargePerClockPerPM", "Charge array per PM in AD;PM number; Clock",16,0,16,21, -10.5, 10.5);
+  h3->Sumw2();
+  Add2DigitsList(h3, 3, !expert, image) ;
+  
+  TH1I * h4 = new TH1I("hDigitBBflagsAD","Number of BB flags in AD; # of BB flags; Entries",17,-0.5,16.5);
+  h4->Sumw2();
+  Add2DigitsList(h4, 4, !expert, image) ;
+  
+  TH1I * h5 = new TH1I("hDigitBBflagsADA","Number of BB flags in ADA; # of BB flags; Entries",9,-0.5,8.5);
+  h5->Sumw2();
+  Add2DigitsList(h5, 5, !expert, image) ;
+  
+  TH1I * h6 = new TH1I("hDigitBBflagsADC","Number of BB flags in ADC; # of BB flags; Entries",9,-0.5,8.5);
+  h6->Sumw2();
+  Add2DigitsList(h6, 6, !expert, image) ;
+  
+  TH2D * h7 = new TH2D("hDigitTotalChargePerPM", "Total Charge per PM in AD;PM number; Charge [ADC counts]",16,0,16,10000,0,10000);
+  h7->Sumw2();
+  Add2DigitsList(h7, 7, !expert, image) ;
+  
+  TH2I * h8 = new TH2I("hDigitMaxChargeClockPerPM", "Clock with maximum charge per PM in AD;PM number; Clock ",16,0,16,21, -10.5, 10.5);
+  h8->Sumw2();
+  Add2DigitsList(h8, 8, !expert, image) ;
+   
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________
 void AliADQADataMakerRec::MakeDigits()
 {
+ // makes data from Digits
 
+  FillDigitsData(0,fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
+    AliADdigit *ADDigit ; 
+    Int_t nBBflagsADA = 0;
+    Int_t nBBflagsADC = 0;
+    
+    while ( (ADDigit = dynamic_cast<AliADdigit *>(next())) ) {
+         Int_t totCharge = 0;
+         Int_t   PMNumber  = ADDigit->PMNumber();
+	 if(PMNumber<8 && ADDigit->GetBBflag()) nBBflagsADC++;
+	 if(PMNumber>7 && ADDigit->GetBBflag()) nBBflagsADA++;
+	 
+	 Short_t adc[21];
+	 for(Int_t iClock=0; iClock<21; iClock++) { 
+	 adc[iClock]= ADDigit->ChargeADC(iClock);
+	 FillDigitsData(3, PMNumber,(float)iClock-10,(float)adc[iClock]);
+	 totCharge += adc[iClock];
+	 }
+	    
+         FillDigitsData(1,PMNumber,ADDigit->Time()); 
+	 FillDigitsData(2,PMNumber,ADDigit->Width());
+	 FillDigitsData(7,PMNumber,totCharge);
+	 FillDigitsData(8,PMNumber,TMath::LocMax(21,adc)-10); 
+	 
+    }
+    FillDigitsData(4,nBBflagsADA+nBBflagsADC);
+    FillDigitsData(5,nBBflagsADA);
+    FillDigitsData(6,nBBflagsADC);  
 }
 
 //____________________________________________________________________________
-void AliADQADataMakerRec::MakeDigits(TTree* /*digitTree*/)
+void AliADQADataMakerRec::MakeDigits(TTree* digitTree)
 {
+  // makes data from Digit Tree
+	
+  if (fDigitsArray)
+    fDigitsArray->Clear() ; 
+  else 
+    fDigitsArray = new TClonesArray("AliADdigit", 1000) ; 
 
+    TBranch * branch = digitTree->GetBranch("ADDigit") ;
+    if ( ! branch ) {
+         AliWarning("AD branch in Digit Tree not found") ; 
+    } else {
+         branch->SetAddress(&fDigitsArray) ;
+         branch->GetEntry(0) ; 
+         MakeDigits() ; 
+    }  
+    //
+    IncEvCountCycleDigits();
+    IncEvCountTotalDigits();
+    //    
 }
 
 
 //____________________________________________________________________________
-void AliADQADataMakerRec::MakeESDs(AliESDEvent* /*esd*/)
+void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
- 
+// Creates QA data from ESDs
+  
+  UInt_t eventType = esd->GetEventType();
+
+  switch (eventType){
+  case PHYSICS_EVENT:
+    AliESDAD *esdAD=esd->GetADData();
+   
+    if (!esdAD) break;
+		  
+    FillESDsData(kCellMultiADA,esdAD->GetNbPMADA());
+    FillESDsData(kCellMultiADC,esdAD->GetNbPMADC());   
+    	
+    for(Int_t i=0;i<16;i++) {
+      FillESDsData(kChargeChannel,(Float_t) i,(Float_t) esdAD->GetAdc(i));
+      if (i < 8) {
+	if(esdAD->BBTriggerADC(i)) FillESDsData(kBBFlag,(Float_t) i);
+	if(esdAD->BGTriggerADC(i)) FillESDsData(kBGFlag,(Float_t) i);
+      }
+      else {
+	if(esdAD->BBTriggerADA(i-8)) FillESDsData(kBBFlag,(Float_t) i);  
+	if(esdAD->BGTriggerADA(i-8)) FillESDsData(kBGFlag,(Float_t) i);
+      }		  	
+      Float_t time = (Float_t) esdAD->GetTime(i);
+      FillESDsData(kTimeChannel,(Float_t) i,time);
+    }
+				
+    Float_t timeADA = esdAD->GetADATime();
+    Float_t timeADC = esdAD->GetADCTime();
+    Float_t diffTime;
+
+    if(timeADA<-1024.+1.e-6 || timeADC<-1024.+1.e-6) diffTime = -1024.;
+    else diffTime = timeADA - timeADC;
+
+    FillESDsData(kESDADATime,timeADA);
+    FillESDsData(kESDADCTime,timeADC);
+    FillESDsData(kESDDiffTime,diffTime);
+		
+    break;
+  }  
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();  
+  // 
 }
 
 //____________________________________________________________________________ 
@@ -416,7 +579,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     for(Int_t iChannel=0; iChannel<16; iChannel++) { // BEGIN : Loop over channels
 		   
-      offlineCh = rawStream->GetOfflineChannel(iChannel);
+      offlineCh = kOfflineChannel[iChannel];
 		   
       // Fill Pedestal histograms
 	   
@@ -502,7 +665,8 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		   
   
       // Fill HPTDC Time Histograms
-      timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
+      //timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
+      timeCorr[offlineCh] = time[offlineCh];
 
       //const Float_t p1 = 2.50; // photostatistics term in the time resolution
       //const Float_t p2 = 3.00; // sleewing related term in the time resolution
@@ -566,7 +730,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }// END of Loop over channels
     
     for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs ADC
-    	offlineCh = rawStream->GetOfflineChannel(iChannel);
+    	offlineCh = kOfflineChannel[iChannel];
 	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);		
     	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ){ 
@@ -579,7 +743,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	iPair++;
 	}
     for(Int_t iChannel=8; iChannel<12; iChannel++) {//Loop over pairs ADA
-    	offlineCh = rawStream->GetOfflineChannel(iChannel);
+    	offlineCh = kOfflineChannel[iChannel];
 	Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 	Float_t sigma4 = fCalibData->GetSigma(offlineCh+4+16*integrator[offlineCh]);
     	if( ((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)) && ((adc[offlineCh+4] > 2.*sigma4) && !(time[offlineCh+4] <1.e-6)) ){ 
@@ -659,7 +823,6 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float
   if (time < 1e-6) return -1024;
 
   // Channel alignment and general offset subtraction
-  //  if (i < 32) time -= kV0CDelayCables;
   //  time -= fTimeOffset[i];
   //AliInfo(Form("time-offset %f", time));
 
