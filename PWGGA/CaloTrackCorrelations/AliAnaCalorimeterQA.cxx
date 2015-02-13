@@ -481,15 +481,26 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         Int_t icols = icol;
         Int_t irows = irow;
         
-        if(GetCalorimeter()==kEMCAL)
+        if ( GetCalorimeter() == kEMCAL)
         {
-          icols = (nModule % 2) ? icol + fNMaxCols : icol;				
-          if(nModule < 10 ) 
-            irows = irow + fNMaxRows       * Int_t(nModule / 2);
-          else // 1/3 SM
-            irows = irow + (fNMaxRows / 3) * Int_t(nModule / 2);
+          //
+          // Shift collumns in even SM
+          Int_t shiftEta = fNMaxCols;
+
+          // Shift collumn even more due to smaller acceptance of DCal collumns
+          if ( nModule >  11 && nModule < 18) shiftEta+=fNMaxCols/3;
+          
+          icols = (nModule % 2) ? icol + shiftEta : icol;	
+          
+          //
+          // Shift rows per sector
+          irows = irow + fNMaxRows * Int_t(nModule / 2); 
+          
+          // Shift row less due to smaller acceptance of SM 10 and 11 to count DCal rows
+          if ( nModule >  11 && nModule < 20) irows -= (2*fNMaxRows / 3);
+          
         }
-        else 
+        else // PHOS
         {
           irows = irow + fNMaxRows * nModule;
         }
@@ -528,10 +539,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         }
       }
       
-      //Get Eta-Phi position of Cell
+      // Get Eta-Phi position of Cell
       if(fFillAllPosHisto)
       {
-        if(GetCalorimeter()==kEMCAL && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+        if(GetCalorimeter()==kEMCAL && GetCaloUtils()->IsEMCALGeoMatrixSet())
+        {
           Float_t celleta = 0.;
           Float_t cellphi = 0.;
           GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
@@ -546,7 +558,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           fhRCellE->Fill(rcell,amp)  ;
           fhXYZCell->Fill(cellpos[0],cellpos[1],cellpos[2])  ;
         }//EMCAL Cells
-        else if(GetCalorimeter()==kPHOS && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+        else if(GetCalorimeter()==kPHOS && GetCaloUtils()->IsPHOSGeoMatrixSet())
+        {
           TVector3 xyz;
           Int_t relId[4], module;
           Float_t xCell, zCell;
