@@ -182,10 +182,10 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       Int_t imo = p->GetFirstMother();
       //
       if(track != imo){
-        newquad->SetSFlag(1);  // SECONDARY particle entering the ZDC
+        newquad->SetSFlag(1.);  // SECONDARY particle entering the ZDC
       }
       else if(track == imo){
-        newquad->SetSFlag(0);  // PRIMARY particle entering the ZDC
+        newquad->SetSFlag(0.);  // PRIMARY particle entering the ZDC
       }
       //  
       sFlag 	 = newquad->GetSFlag();
@@ -196,13 +196,25 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       motPDGcode = newquad->GetMotherPDGCode();
       trackTime  = newquad->GetTrackTOF();
       trackEta   = newquad->GetTrackEta();
-
+      //
+      //newquad->Print("");
    }
    else{       
+      // -> setting flag for primary or secondary particle
+      TParticle * p = gAlice->GetMCApp()->Particle(track);
+      Int_t imo = p->GetFirstMother();
+      //
+      Float_t sFlag = -1;
+      if(track != imo){
+        newquad->SetSFlag(1.);  // SECONDARY particle entering the ZDC
+      }
+      else if(track == imo){
+        newquad->SetSFlag(0.);  // PRIMARY particle entering the ZDC
+      }
+      //
       newquad->SetPrimKinEn(primKinEn);
       newquad->SetXImpact(xImpact);
       newquad->SetYImpact(yImpact);
-      newquad->SetSFlag(sFlag);
       newquad->SetPDGCode(pcPDGcode);
       newquad->SetMotherPDGCode(motPDGcode);
       newquad->SetTrackTOF(trackTime);
@@ -216,7 +228,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
      if(*curprimquad == *newquad){
         *curprimquad = *curprimquad+*newquad;
         // Ch. debug
-        //printf("\n\t Summing hits **************** \n", fNhits);
+        //printf("\n\t Summing hits **************** \n");
         //curprimquad->Print("");
 	//
 	delete newquad;
@@ -227,10 +239,11 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 
     //Otherwise create a new hit
     new(lhits[fNhits]) AliZDCHit(*newquad);
-    fNhits++;
     // Ch. debug
     //printf("\n\t New ZDC hit added! fNhits = %d\n", fNhits);
     //newquad->Print("");
+    //
+    fNhits++;
     
     delete newquad;
 }
