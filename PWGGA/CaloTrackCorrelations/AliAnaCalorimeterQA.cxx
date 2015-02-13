@@ -75,9 +75,11 @@ fClusterMomentum(),                    fClusterMomentum2(),
 fPrimaryMomentum(),
 //Histograms
 fhE(0),                                fhPt(0),                                
-fhPhi(0),                              fhEta(0),                               fhEtaPhiE(0),
+fhPhi(0),                              fhEta(0),                               
+fhEtaPhi(0),                           fhEtaPhiE(0),
 fhECharged(0),                         fhPtCharged(0),             
-fhPhiCharged(0),                       fhEtaCharged(0),                        fhEtaPhiECharged(0), 
+fhPhiCharged(0),                       fhEtaCharged(0),                        
+fhEtaPhiCharged(0),                    fhEtaPhiECharged(0), 
 
 //Invariant mass
 fhIM(0 ),                              fhAsym(0), 
@@ -903,9 +905,11 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   fhPhi    ->Fill(phi);
   fhEta    ->Fill(eta);
   
-  if(fFillAllTH3)
+  if ( fFillAllTH3 )
     fhEtaPhiE->Fill(eta,phi,e);
-  
+  else if ( e > 0.5 ) 
+    fhEtaPhi->Fill(eta,phi);
+
   //Cells per cluster
   fhNCellsPerCluster   ->Fill(e, nCaloCellsPerCluster);
 
@@ -1395,6 +1399,11 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, B
   fhPhiCharged ->Fill(phi);
   fhEtaCharged ->Fill(eta);
     
+  if ( fFillAllTH3 )
+    fhEtaPhiECharged->Fill(eta,phi,e);
+  else if ( e > 0.5 ) 
+    fhEtaPhiCharged->Fill(eta,phi);
+  
   //Study the track and matched cluster if track exists.
     
   AliVTrack *track = GetCaloUtils()->GetMatchedTrack(clus, GetReader()->GetInputEvent());
@@ -1785,6 +1794,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhEtaPhiE->SetYTitle("#phi (rad)");
     fhEtaPhiE->SetZTitle("#it{E} (GeV) ");
     outputContainer->Add(fhEtaPhiE);
+  }
+  else
+  {
+    fhEtaPhi  = new TH2F ("hEtaPhi","#eta vs #phi for #it{E} > 0.5 GeV, reconstructed clusters",
+                           netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhi->SetXTitle("#eta ");
+    fhEtaPhi->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhi);
   }
   
   fhClusterTimeEnergy  = new TH2F ("hClusterTimeEnergy","energy vs TOF, reconstructed clusters",
@@ -2299,6 +2316,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhEtaPhiECharged->SetYTitle("#phi ");
       fhEtaPhiECharged->SetZTitle("#it{E} (GeV) ");
       outputContainer->Add(fhEtaPhiECharged);	
+    }
+    else
+    {
+      fhEtaPhiCharged  = new TH2F ("hEtaPhiCharged","#eta vs #phi for #it{E} > 0.5 GeV, reconstructed clusters, with matched track",
+                            netabins,etamin,etamax,nphibins,phimin,phimax); 
+      fhEtaPhiCharged->SetXTitle("#eta ");
+      fhEtaPhiCharged->SetYTitle("#phi (rad)");
+      outputContainer->Add(fhEtaPhiCharged);
     }
     
     fh1EOverP = new TH2F("h1EOverP","TRACK matches #it{E}/#it{p}",nptbins,ptmin,ptmax, nPoverEbins,eOverPmin,eOverPmax);
