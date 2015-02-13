@@ -9,23 +9,23 @@ It is constantly updated by all dimuon code developers.
 The documentation is organized in the thematic pages, defined in the 
 README*.txt files, which follow the code organization in the libraries.
 Currently there are the documentation pages on
-- \ref README_sim
-- \ref README_rec
-- \ref README_base
-- \ref README_mchview 
-- \ref README_eve
-- \ref README_evaluation 
-- \ref README_cosmics
-- \ref README_fast
-- \ref README_raw 
-- \ref README_mapping 
-- \ref README_mchda 
-- \ref README_mtrda 
-- \ref README_calib 
-- \ref README_calign 
-- \ref README_geometry 
-- \ref README_trigger 
-- \ref README_shuttle 
+- \subpage README_sim
+- \subpage README_rec
+- \subpage README_base
+- \subpage README_mchview
+- \subpage README_eve
+- \subpage README_evaluation
+- \subpage README_cosmics
+- \subpage README_fast
+- \subpage README_raw
+- \subpage README_mapping
+- \subpage README_mchda
+- \subpage README_mtrda
+- \subpage README_calib
+- \subpage README_calign
+- \subpage README_geometry
+- \subpage README_trigger
+- \subpage README_shuttle
 
 On this page you will find the first how to run the 
 simulation, reconstructin and evaluation chain. More details
