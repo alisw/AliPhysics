@@ -1,4 +1,4 @@
-void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult) {
+void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliRecoParam::kLowMult, const char *outputCDB = "local://$ALICE_ROOT/../AliRoot/OCDB") {
 //========================================================================
 //
 // Steering macro for AD reconstruction parameters
@@ -11,7 +11,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t default=AliRecoParam::kLow
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  cdb->SetDefaultStorage(outputCDB);
   cdb->SetRun(0);
   
   TObjArray *recoParamArray = new TObjArray();
@@ -40,12 +40,12 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t default=AliRecoParam::kLow
     recoParamArray->AddLast(ADRecoParam);
   }
 
-  // Set the default
+  // Set the defaultEventSpecie
   Bool_t defaultIsSet = kFALSE;
   for(Int_t i =0; i < recoParamArray->GetEntriesFast(); i++) {
     AliDetectorRecoParam *param = (AliDetectorRecoParam *)recoParamArray->UncheckedAt(i);
     if (!param) continue;
-    if (default & param->GetEventSpecie()) {
+    if (defaultEventSpecie & param->GetEventSpecie()) {
       param->SetAsDefault();
       defaultIsSet = kTRUE;
     }
@@ -62,8 +62,8 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t default=AliRecoParam::kLow
   md->SetComment("Reconstruction parameters for AD");
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
-  AliCDBId id("AD/Calib/RecoParam",0,AliCDBRunRange::Infinity());
-  cdb->GetDefaultStorage()->Put(recoParamArray,id, md);
+  AliCDBId id("AD/Calib/RecoParam", 0, AliCDBRunRange::Infinity());
+  cdb->Put(recoParamArray, id, md);
 
   return;
 }
