@@ -438,14 +438,19 @@ public:
   TH2F *   fhMCChHad1EleEOverP;               //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC charged hadrons
   TH2F *   fhMCNeutral1EleEOverP;             //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC neutral
 
-  TH2F *   fhTrackMatchedDEta    ;            //! Eta distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F *   fhTrackMatchedDPhi    ;            //! Phi distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F *   fhTrackMatchedDEtaDPhi;            //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  TH2F *   fhTrackMatchedDEtaNeg;             //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDPhiNeg;             //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDEtaDPhiNeg;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
   
   TH2F *   fhTrackMatchedDEtaPos;             //! Eta distance between track and cluster vs cluster E, after and before photon cuts
   TH2F *   fhTrackMatchedDPhiPos;             //! Phi distance between track and cluster vs cluster E, after and before photon cuts
   TH2F *   fhTrackMatchedDEtaDPhiPos;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
 
+  TH2F *   fhTrackMatchedDEtaNegMod;          //! Eta distance between negative track and cluster vs module for E > 0.5 GeV
+  TH2F *   fhTrackMatchedDPhiNegMod;          //! Phi distance between negative track and cluster vs module for E > 0.5 GeV
+  TH2F *   fhTrackMatchedDEtaPosMod;          //! Eta distance between positive track and cluster vs module for E > 0.5 GeV
+  TH2F *   fhTrackMatchedDPhiPosMod;          //! Phi distance between positive track and cluster vs module for E > 0.5 GeV
+  
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   

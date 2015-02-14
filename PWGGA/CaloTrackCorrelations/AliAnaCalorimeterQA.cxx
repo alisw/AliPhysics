@@ -180,8 +180,10 @@ fhMCNeutral1EOverP(0),                 fhMCNeutral1dR(0),                      f
 fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 fhMCNeutral1EOverPR02(0),
 fh1EleEOverP(0),                       fhMCEle1EleEOverP(0),
 fhMCChHad1EleEOverP(0),                fhMCNeutral1EleEOverP(0),
-fhTrackMatchedDEta(0),                 fhTrackMatchedDPhi(0),                  fhTrackMatchedDEtaDPhi(0),
-fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               fhTrackMatchedDEtaDPhiPos(0)
+fhTrackMatchedDEtaNeg(0),              fhTrackMatchedDPhiNeg(0),               fhTrackMatchedDEtaDPhiNeg(0),
+fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               fhTrackMatchedDEtaDPhiPos(0),
+fhTrackMatchedDEtaNegMod(0),           fhTrackMatchedDPhiNegMod(0),             
+fhTrackMatchedDEtaPosMod(0),           fhTrackMatchedDPhiPosMod(0)
 {
   //Default Ctor
   
@@ -1440,18 +1442,31 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, B
   Float_t deta  = clus->GetTrackDz();
   Float_t dphi  = clus->GetTrackDx();
   Double_t  dR  = TMath::Sqrt(dphi*dphi + deta*deta);
-  
-  if(TMath::Abs(dphi) < 999)
+  Int_t nModule = GetModuleNumber(clus);
+
+  if( TMath::Abs(dphi) < 999 )
   {
-    fhTrackMatchedDEta->Fill(e,deta);
-    fhTrackMatchedDPhi->Fill(e,dphi);
-    if(e > 0.5) fhTrackMatchedDEtaDPhi->Fill(deta,dphi);
-    
-    if(track && positive)
+    if(positive)
     {
       fhTrackMatchedDEtaPos->Fill(e,deta);
       fhTrackMatchedDPhiPos->Fill(e,dphi);
-      if(e > 0.5) fhTrackMatchedDEtaDPhiPos->Fill(deta,dphi);
+      if(e > 0.5) 
+      {
+        fhTrackMatchedDEtaPosMod ->Fill(deta,nModule);
+        fhTrackMatchedDPhiPosMod ->Fill(dphi,nModule);
+        fhTrackMatchedDEtaDPhiPos->Fill(deta,dphi);
+      }
+    }
+    else 
+    {
+      fhTrackMatchedDEtaNeg->Fill(e,deta);
+      fhTrackMatchedDPhiNeg->Fill(e,dphi);
+      if(e > 0.5) 
+      {
+        fhTrackMatchedDEtaNegMod ->Fill(deta,nModule);
+        fhTrackMatchedDPhiNegMod ->Fill(dphi,nModule);
+        fhTrackMatchedDEtaDPhiNeg->Fill(deta,dphi);
+      }
     }
   }
   
@@ -2326,42 +2341,69 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();
     Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
     
-    fhTrackMatchedDEta  = new TH2F("hTrackMatchedDEta","d#eta of cluster-track vs cluster energy",
+    fhTrackMatchedDEtaNeg  = new TH2F("hTrackMatchedDEtaNeg","d#eta of cluster-negative track vs cluster energy",
                                    nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
-    fhTrackMatchedDEta->SetYTitle("d#eta");
-    fhTrackMatchedDEta->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhTrackMatchedDEtaNeg->SetYTitle("d#eta");
+    fhTrackMatchedDEtaNeg->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDPhi  = new TH2F("hTrackMatchedDPhi","d#phi of cluster-track vs cluster energy",
+    fhTrackMatchedDPhiNeg  = new TH2F("hTrackMatchedDPhiNeg","d#phi of cluster-negative track vs cluster energy",
                                    nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDPhi->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhTrackMatchedDPhiNeg->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhiNeg->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDEtaDPhi  = new TH2F("hTrackMatchedDEtaDPhi","d#eta vs d#phi of cluster-track vs cluster energy",
+    fhTrackMatchedDEtaDPhiNeg  = new TH2F("hTrackMatchedDEtaDPhiNeg","d#eta vs d#phi of cluster- negative track vs cluster energy",
                                        nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
-    fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");
+    fhTrackMatchedDEtaDPhiNeg->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhiNeg->SetXTitle("d#eta");
     
-    fhTrackMatchedDEtaPos  = new TH2F("hTrackMatchedDEtaPos","d#eta of cluster-track vs cluster energy",
+    fhTrackMatchedDEtaPos  = new TH2F("hTrackMatchedDEtaPos","d#eta of cluster-positive track vs cluster energy",
                                       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
     fhTrackMatchedDEtaPos->SetYTitle("d#eta");
     fhTrackMatchedDEtaPos->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDPhiPos  = new TH2F("hTrackMatchedDPhiPos","d#phi of cluster-track vs cluster energy",
+    fhTrackMatchedDPhiPos  = new TH2F("hTrackMatchedDPhiPos","d#phi of cluster-positive track vs cluster energy",
                                       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
     fhTrackMatchedDPhiPos->SetYTitle("d#phi (rad)");
     fhTrackMatchedDPhiPos->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDEtaDPhiPos  = new TH2F("hTrackMatchedDEtaDPhiPos","d#eta vs d#phi of cluster-track vs cluster energy",
+    fhTrackMatchedDEtaDPhiPos  = new TH2F("hTrackMatchedDEtaDPhiPos","d#eta vs d#phi of cluster-positive track vs cluster energy",
                                           nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
     fhTrackMatchedDEtaDPhiPos->SetYTitle("d#phi (rad)");
     fhTrackMatchedDEtaDPhiPos->SetXTitle("d#eta");
 
-    outputContainer->Add(fhTrackMatchedDEta) ;
-    outputContainer->Add(fhTrackMatchedDPhi) ;
-    outputContainer->Add(fhTrackMatchedDEtaDPhi) ;
+    
+    fhTrackMatchedDEtaNegMod  = new TH2F("hTrackMatchedDEtaNegPerModule","d#eta of cluster-negative track vs module, E > 0.5 GeV",
+                                         nresetabins,resetamin,resetamax,fNModules,0,fNModules);
+    fhTrackMatchedDEtaNegMod->SetXTitle("d#eta");
+    fhTrackMatchedDEtaNegMod->SetYTitle("Module");
+    
+    fhTrackMatchedDPhiNegMod  = new TH2F("hTrackMatchedDPhiNegPerModule","d#phi of cluster-negative track vs module, E > 0.5 GeV",
+                                         nresetabins,resetamin,resetamax,fNModules,0,fNModules);
+    fhTrackMatchedDPhiNegMod->SetXTitle("d#phi (rad)");
+    fhTrackMatchedDPhiNegMod->SetYTitle("Module");
+    
+    fhTrackMatchedDEtaPosMod  = new TH2F("hTrackMatchedDEtaPosPerModule","d#eta of cluster-positive track vs module, E > 0.5 GeV",
+                                         nresetabins,resetamin,resetamax,fNModules,0,fNModules);
+    fhTrackMatchedDEtaPosMod->SetXTitle("d#eta");
+    fhTrackMatchedDEtaPosMod->SetYTitle("Module");
+    
+    fhTrackMatchedDPhiPosMod  = new TH2F("hTrackMatchedDPhiPosPerModule","d#phi of cluster-positive track vs module, E > 0.5 GeV",
+                                         nresetabins,resetamin,resetamax,fNModules,0,fNModules);
+    fhTrackMatchedDPhiPosMod->SetXTitle("d#phi (rad)");
+    fhTrackMatchedDPhiPosMod->SetYTitle("Module");
+  
+    outputContainer->Add(fhTrackMatchedDEtaNeg) ;
+    outputContainer->Add(fhTrackMatchedDPhiNeg) ;
     outputContainer->Add(fhTrackMatchedDEtaPos) ;
     outputContainer->Add(fhTrackMatchedDPhiPos) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhiNeg) ;
     outputContainer->Add(fhTrackMatchedDEtaDPhiPos) ;
+    
+    outputContainer->Add(fhTrackMatchedDEtaNegMod) ;
+    outputContainer->Add(fhTrackMatchedDPhiNegMod) ;
+    outputContainer->Add(fhTrackMatchedDEtaPosMod) ;
+    outputContainer->Add(fhTrackMatchedDPhiPosMod) ;
+    
     
     fhECharged  = new TH1F ("hECharged","#it{E} reconstructed clusters, matched with track", nptbins,ptmin,ptmax);
     fhECharged->SetXTitle("#it{E} (GeV)");
