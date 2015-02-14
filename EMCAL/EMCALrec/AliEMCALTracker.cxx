@@ -256,7 +256,7 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
   //
   // Load ESD tracks.
   //
-
+  
   UInt_t mask1 = esd->GetESDRun()->GetDetectorsInDAQ();
   UInt_t mask2 = esd->GetESDRun()->GetDetectorsInReco();
   Bool_t desc1 = (mask1 >> 3) & 0x1;
@@ -270,7 +270,7 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
   
   Clear("TRACKS");
   fTracks = new TObjArray(0);
-	
+
   Int_t nTracks = esd->GetNumberOfTracks();
   //Bool_t isKink=kFALSE;
   for (Int_t i = 0; i < nTracks; i++) {
@@ -285,8 +285,17 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
       if (esdTrack->GetNcls(1)<fCutNTPC) continue;
     
     //Loose geometric cut
-    Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
-    if (TMath::Abs(esdTrack->Eta())>0.9 || phi <= 10 || phi >= 250) continue;
+    
+    if ( TMath::Abs(esdTrack->Eta()) > 0.9 ) continue;
+
+    // Save some time and memory in case of no DCal present
+    
+    if(fGeom->GetNumberOfSuperModules() < 13)
+    {
+      Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
+      if ( phi <= 10 || phi >= 250 ) continue;
+    }
+        
     fTracks->AddLast(esdTrack);
   }
   
@@ -336,6 +345,8 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
     return 1;
   }
 	
+  if( !fGeom ) fGeom = AliEMCALGeometry::GetInstance();
+  
   // step 1: collect clusters
   Int_t okLoadClusters = 0;  
   if (!fClusters || (fClusters && fClusters->IsEmpty()))
@@ -409,8 +420,16 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   }
   
   track->SetTrackPhiEtaPtOnEMCal(phi,eta,pt);
+
+  if ( TMath::Abs(eta) > 0.75 ) 
+  {
+    if (fITSTrackSA) delete trkParam;
+    return index;
+  }
   
-  if (TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad())
+  // Save some time and memory in case of no DCal present
+  if ( fGeom->GetNumberOfSuperModules() < 13 && 
+      ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())) 
   {
     if (fITSTrackSA) delete trkParam;
     return index;

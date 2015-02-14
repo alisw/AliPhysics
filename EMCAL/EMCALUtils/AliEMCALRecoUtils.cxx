@@ -1852,8 +1852,16 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       if (!esdTrack) continue;
       if (!IsAccepted(esdTrack)) continue;
       if (esdTrack->Pt()<fCutMinTrackPt) continue;
-      Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
-      if (TMath::Abs(esdTrack->Eta())>0.9 || phi <= 10 || phi >= 250 ) continue;
+
+      if ( TMath::Abs(esdTrack->Eta()) > 0.9 ) continue;
+      
+      // Save some time and memory in case of no DCal present
+      if( geom->GetNumberOfSuperModules() < 13 )
+      {
+        Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
+        if ( phi <= 10 || phi >= 250 ) continue;
+      }
+
       if (!fITSTrackSA)
 	trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
       else
@@ -1880,9 +1888,15 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       
       if (aodTrack->Pt()<fCutMinTrackPt) continue;
 
-      Double_t phi = aodTrack->Phi()*TMath::RadToDeg();
-      if (TMath::Abs(aodTrack->Eta())>0.9 || phi <= 10 || phi >= 250 ) 
-	continue;
+      if ( TMath::Abs(aodTrack->Eta()) > 0.9 ) continue;
+      
+      // Save some time and memory in case of no DCal present
+      if( geom->GetNumberOfSuperModules() < 13 )
+      {
+        Double_t phi = aodTrack->Phi()*TMath::RadToDeg();
+        if ( phi <= 10 || phi >= 250 ) continue;
+      }
+      
       Double_t pos[3],mom[3];
       aodTrack->GetXYZ(pos);
       aodTrack->GetPxPyPz(mom);
@@ -1912,12 +1926,20 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       continue;
     }
 
-    if (TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) {
-      if (aodevent && trackParam) delete trackParam;
-      if (fITSTrackSA && trackParam) delete trackParam;
+    if ( TMath::Abs(eta) > 0.75 ) 
+    {
+      if ( trackParam && (aodevent || fITSTrackSA) )   delete trackParam;
       continue;
     }
-
+    
+    // Save some time and memory in case of no DCal present
+    if ( geom->GetNumberOfSuperModules() < 13 && 
+        ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())) 
+    {
+      if ( trackParam && (aodevent || fITSTrackSA) )   delete trackParam;
+      continue;
+    }
+    
     //Find matched clusters
     Int_t index = -1;
     Float_t dEta = -999, dPhi = -999;
@@ -1961,8 +1983,16 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   // This function returns the index of matched cluster to input track
   // Returns -1 if no match is found
   Int_t index = -1;
-  Double_t phiV = track->Phi()*TMath::RadToDeg();
-  if (TMath::Abs(track->Eta())>0.9 || phiV <= 10 || phiV >= 250 ) return index;
+  
+  if ( TMath::Abs(track->Eta()) > 0.9 ) return index;
+  
+  // Save some time and memory in case of no DCal present
+  if( geom->GetNumberOfSuperModules() < 13 )
+  {
+    Double_t phiV = track->Phi()*TMath::RadToDeg();
+    if ( phiV <= 10 || phiV >= 250 ) return index;
+  }
+  
   AliExternalTrackParam *trackParam = 0;
   if (!fITSTrackSA)
     trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());  // If TPC
@@ -1977,11 +2007,21 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
     if (fITSTrackSA) delete trackParam;
     return index;
   }
-  if (TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) {
+    
+  if ( TMath::Abs(eta) > 0.75 ) 
+  {
     if (fITSTrackSA) delete trackParam;
     return index;
   }
   
+  // Save some time and memory in case of no DCal present
+  if ( geom->GetNumberOfSuperModules() < 13 && 
+      ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())) 
+  {
+    if (fITSTrackSA) delete trackParam;
+    return index;    
+  }
+
   TObjArray *clusterArr = new TObjArray(event->GetNumberOfCaloClusters());
 
   for (Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
@@ -2064,12 +2104,18 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 
   track->SetTrackPhiEtaPtOnEMCal(-999, -999, -999);
 
-  if (track->Pt()<minpt)
+  if ( track->Pt() < minpt )
     return kFALSE;
 
-  Double_t phi = track->Phi()*TMath::RadToDeg();
-  if (TMath::Abs(track->Eta())>0.9 || phi <= 10 || phi >= 250) 
-    return kFALSE;
+  if ( TMath::Abs(track->Eta()) > 0.9 ) return kFALSE;
+  
+  // Save some time and memory in case of no DCal present
+  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  if ( geom->GetNumberOfSuperModules() < 13 )
+  {
+    Double_t phi = track->Phi()*TMath::RadToDeg();
+    if ( phi <= 10 || phi >= 250 ) return kFALSE;
+  }
 
   AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(track);
   AliAODTrack *aodt = 0;
@@ -2121,12 +2167,21 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 					      etaout, 
 					      phiout,
 					      ptout);
+  
   delete trackParam;
-  if (!ret)
-    return kFALSE;
-  if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
-    return kFALSE;
+  
+  if (!ret) return kFALSE;
+  
+  if ( TMath::Abs(etaout) > 0.75 ) return kFALSE;
+  
+  // Save some time and memory in case of no DCal present
+  if ( geom->GetNumberOfSuperModules() < 13 )
+  {
+    if ( (phiout < 70*TMath::DegToRad()) || (phiout > 190*TMath::DegToRad()) )  return kFALSE;
+  }
+
   track->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
+  
   return kTRUE;
 }
 
