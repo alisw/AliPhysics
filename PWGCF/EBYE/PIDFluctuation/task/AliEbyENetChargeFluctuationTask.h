@@ -104,9 +104,11 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void InitPhy();  
   void CreateQA();
   void CreateBasicQA();
+  void CreateSourceHistos(const Char_t *title, Bool_t isMC);
   void CreateBasicHistos(const Char_t *title, Bool_t isMC, Bool_t isPer);
   void CreateRatioHistos(const Char_t *title,Bool_t isMC, Bool_t isPer);
   void CreateGroupHistos(const Char_t *name, const Char_t *title, Int_t nSample,Bool_t isPer);
+  void FillSourceHistos(Bool_t isMC);
   void FillBasicHistos(Bool_t isMC, Bool_t isPer);
   void FillRatioHistos(Bool_t isMC,Bool_t isPer);
   void FillGroupHistos(const Char_t *name, Int_t iSub, Bool_t isMC,Bool_t isPer);
@@ -206,6 +208,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t     fIsDca;                        // Check for Dca
   Bool_t     fIsNu;                         // Check for Nu
   Bool_t     fIsTen;                        // 10% bin 
+  Bool_t     fIs3D;                         // 3D Mapping
 
   TRandom3  *fRan;                          // Radom Number BS
   TRandom3  *fRanIdx;                       // Random Number SS

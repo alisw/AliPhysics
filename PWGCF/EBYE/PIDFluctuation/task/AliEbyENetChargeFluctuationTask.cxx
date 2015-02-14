@@ -335,8 +335,6 @@ void AliEbyENetChargeFluctuationTask::UserExec( Option_t * ){
     return;
   
 
-  return;
-
   //-- -  - - -  - - ---- -- - --- -- --- -- - --
   PostData(1, fPhyList); 
   PostData(2, fQaList);
@@ -552,6 +550,8 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
   
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
   if(fIsPhy) {
+    if (fIs3D) {FillSourceHistos(0); }
+    else {
     FillBasicHistos(0,0);
     FillBasicHistos(0,1);
     if (fIsRatio) {
@@ -567,6 +567,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	FillGroupHistos("PhyBinBS",fRan->Integer(fNSubSamples),kFALSE,0);
 	if(fIsPer)  FillGroupHistos("PhyPerBS",fRan->Integer(fNSubSamples),kFALSE,1);
       }
+    }
     }
   }
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
@@ -623,6 +624,8 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
     
     //---- - -- - - - - -   -  -- - - - ---- - - - --- 
     if (fIsPhy) {
+      if (fIs3D) { FillSourceHistos(1); }
+      else {
       FillBasicHistos(kTRUE,0);
       FillBasicHistos(kTRUE,1);
       if (fIsRatio) {
@@ -638,6 +641,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	  FillGroupHistos("MCBinBS",fRan->Integer(fNSubSamples),kFALSE,0);
 	  if(fIsPer)  FillGroupHistos("MCPerBS",fRan->Integer(fNSubSamples),kFALSE,1);
 	}
+      }
       }
     }
     //---- - -- - - - - -   -  -- - - - ---- - - - --- 
@@ -886,6 +890,7 @@ void AliEbyENetChargeFluctuationTask::SetAnal(Int_t i, Int_t j){
   else if (i == 17) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1;              }     
   else if (i == 18) { fIsNu  = 1; fIsPhy  = 1; fIsBS  = 1; fIsSub = 1; fIsRatio = 1; fIsPer = 1;  }     
   else if (i == 19) { fIsPhy = 1; fIsBS   = 1; fIsSub = 1; fIsPer = 1; fIsRatio = 1;              }    
+  else if (i == 20) { fIsPhy = 1; fIs3D   = 1;                                                    }    
   else {fIsPhy= 0;    fIsEff = 0; fIsDca  = 0; fIsQa  = 0; fIsSub = 0; fIsBS    = 0; fIsPer = 0; fIsRatio = 0;}
    
   if      (j ==  0) {fIsTen = 0; }
@@ -932,6 +937,8 @@ void AliEbyENetChargeFluctuationTask::InitPhy() {
 
   TString name = Form("#it{p}_{T} [%.1f,%.1f] : #eta [%.1f,%.1f]",fPtMin, fPtMax, fEtaMin, fEtaMax);
 
+  if (fIs3D) {CreateSourceHistos(name.Data(),0); if (fIsMC) CreateSourceHistos(name.Data(),1); }
+  else{
   CreateBasicHistos(name.Data(),0,0);
   CreateBasicHistos(name.Data(),0,1);
   
@@ -973,6 +980,7 @@ void AliEbyENetChargeFluctuationTask::InitPhy() {
       if (fIsPer)  
 	CreateGroupHistos("MCPerBS", name.Data(),fNSubSamples,1);  
     }
+  }
   }
 }
 
@@ -1060,6 +1068,67 @@ void  AliEbyENetChargeFluctuationTask::CreateBasicHistos(const Char_t *title, Bo
   return;
 }
 
+
+//________________________________________________________________________
+void  AliEbyENetChargeFluctuationTask::CreateSourceHistos(const Char_t *title, Bool_t isMC)  {
+
+  TString nmc  = (isMC)  ? "MC" : "Phy";
+  TString name = "Source";
+    
+  fPhyList->Add(new TList);
+  TList *list =  static_cast<TList*>(fPhyList->Last());
+  list->SetName(Form("f%s%s",name.Data(),nmc.Data()));
+  list->SetOwner(kTRUE);
+  
+  list->Add(new TH3I(Form("fHist%sNch",name.Data()),Form("%s = Ch;Cent;0;1",title),
+		     100,0.5,100.5,1000,0.5,1000.5,1000,0.5,1000.5));
+  list->Add(new TH3I(Form("fHist%sNpi",name.Data()),Form("%s = #pi;Cent;0;1",title),
+		     100,0.5,100.5,800,0.5,800.5,800,0.5,800.5));
+  list->Add(new TH3I(Form("fHist%sNka",name.Data()),Form("%s = K;Cent;0;1",title),
+		     100,0.5,100.5,500,0.5,500.5,500,0.5,500.5));
+  list->Add(new TH3I(Form("fHist%sNpr",name.Data()),Form("%s = P;Cent;0;1",title),
+		     100,0.5,100.5,200,0.5,200.5,200,0.5,200.5));
+
+}
+
+//________________________________________________________________________
+void AliEbyENetChargeFluctuationTask::FillSourceHistos(Bool_t isMC)  {
+  Double_t np[4][2];
+  if (isMC) {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fMCNp[i][0];
+      np[i][1] = fMCNp[i][1];
+    }
+  } else {
+    for (Int_t i = 0; i < 4; i++) {
+      np[i][0] = fNp[i][0];
+      np[i][1] = fNp[i][1];
+    }
+  }
+
+  Bool_t isZero = kTRUE;
+  Bool_t isZeroPid[4] = {1,1,1,1};
+  if ((np[0][0] == 0) || (np[0][1] == 0))
+    {isZero = kFALSE; isZeroPid[0] = kFALSE;}
+  else if ((np[1][0] == 0) || (np[1][1] == 0))
+    {isZero = kFALSE; isZeroPid[1] = kFALSE;} 
+  else if ((np[2][0] == 0) || (np[2][1] == 0))
+    {isZero = kFALSE; isZeroPid[2] = kFALSE;}
+  else if ((np[3][0] == 0) || (np[3][1] == 0))
+    {isZero = kFALSE; isZeroPid[3] = kFALSE;}
+  else isZero = kTRUE;
+
+  TString nmc  = (isMC) ? "MC" : "Phy";
+  TString name = "Source";
+  
+  TList *list = static_cast<TList*>(fPhyList->FindObject(Form("f%s%s",name.Data(),nmc.Data())));
+  
+  if (isZeroPid[0]) (static_cast<TH3I*>(list->FindObject(Form("fHist%sNch",name.Data()))))->Fill(fCentralityPercentile,np[0][0],np[0][1]);
+  if (isZeroPid[1]) (static_cast<TH3I*>(list->FindObject(Form("fHist%sNpi",name.Data()))))->Fill(fCentralityPercentile,np[1][0],np[1][1]);
+  if (isZeroPid[2]) (static_cast<TH3I*>(list->FindObject(Form("fHist%sNka",name.Data()))))->Fill(fCentralityPercentile,np[2][0],np[2][1]);
+  if (isZeroPid[3]) (static_cast<TH3I*>(list->FindObject(Form("fHist%sNpr",name.Data()))))->Fill(fCentralityPercentile,np[3][0],np[3][1]);
+  
+}
 
 
 //________________________________________________________________________
@@ -1278,13 +1347,15 @@ void AliEbyENetChargeFluctuationTask::FillRatioHistos(Bool_t isMC,Bool_t isPer) 
     isZero = kFALSE;
   else isZero = kTRUE;
   
-  if (!isZero) return;
+
 
   TString nmc  = (isMC) ? "MC" : "Phy";
   TString name = (isPer) ? Form("%sPer",nmc.Data()) : Form("%sBin",nmc.Data());
   Float_t centralityBin = (isPer) ? (fCentralityPercentile + 1) : (fCentralityBin + 1);
   TList *list = static_cast<TList*>(fPhyList->FindObject(Form("fRatio%s",name.Data())));
    
+
+  if (!isZero) return;
 
   if (fIsNu) {
     Double_t a[22]; Double_t b[4];
