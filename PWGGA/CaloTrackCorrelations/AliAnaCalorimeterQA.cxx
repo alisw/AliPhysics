@@ -1387,12 +1387,12 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
 
   //printf("mc index %d\n",mcIndex);
   
-  if( mcIndex >= 0  && mcIndex < 7 )
+  if( mcIndex >= 0  && mcIndex < 7  && e > 0.5 && eMC > 0.5)
   {
-    fhRecoMCE  [mcIndex][(matched)]     ->Fill(e,eMC);
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcIndex][(matched)]->Fill(eta,etaMC);
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcIndex][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcIndex][(matched)]->Fill(e,e/eMC);
+    fhRecoMCE       [mcIndex][(matched)]->Fill(e,eMC);
+    fhRecoMCEta     [mcIndex][(matched)]->Fill(eta,etaMC);
+    fhRecoMCPhi     [mcIndex][(matched)]->Fill(phi,phiMC);
+    fhRecoMCRatioE  [mcIndex][(matched)]->Fill(e,e/eMC);
     fhRecoMCDeltaE  [mcIndex][(matched)]->Fill(e,eMC-e);
     fhRecoMCDeltaPhi[mcIndex][(matched)]->Fill(e,phiMC-phi);
     fhRecoMCDeltaEta[mcIndex][(matched)]->Fill(e,etaMC-eta);
