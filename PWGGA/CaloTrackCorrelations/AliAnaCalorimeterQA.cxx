@@ -126,8 +126,13 @@ fhTimeId(0),                           fhTimeAmp(0),
 fhAmpIdLowGain(0),                     fhTimeIdLowGain(0),                     fhTimeAmpLowGain(0),
 
 fhCellECross(0),
-fhCaloCorrNClusters(0),                fhCaloCorrEClusters(0),     
-fhCaloCorrNCells(0),                   fhCaloCorrECells(0),
+
+fhEMCALPHOSCorrNClusters(0),           fhEMCALPHOSCorrEClusters(0),     
+fhEMCALPHOSCorrNCells(0),              fhEMCALPHOSCorrECells(0),
+fhEMCALDCALCorrNClusters(0),           fhEMCALDCALCorrEClusters(0),     
+fhEMCALDCALCorrNCells(0),              fhEMCALDCALCorrECells(0),
+fhDCALPHOSCorrNClusters(0),            fhDCALPHOSCorrEClusters(0),     
+fhDCALPHOSCorrNCells(0),               fhDCALPHOSCorrECells(0),
 fhCaloV0SCorrNClusters(0),             fhCaloV0SCorrEClusters(0),              
 fhCaloV0SCorrNCells(0),                fhCaloV0SCorrECells(0),
 fhCaloV0MCorrNClusters(0),             fhCaloV0MCorrEClusters(0),  
@@ -1534,100 +1539,153 @@ void AliAnaCalorimeterQA::Correlate()
   }
 
   // Clusters parameters
-  Int_t nclEMCAL = caloClustersEMCAL->GetEntriesFast();
-  Int_t nclPHOS  = caloClustersPHOS ->GetEntriesFast();
-  
-  Float_t cen = GetEventCentrality();
-  Float_t ep  = GetEventPlaneAngle();
+  Int_t nclEMCAL = 0;
+  Int_t nclDCAL  = 0;
+  Int_t nclPHOS  = 0;
 
   Float_t sumClusterEnergyEMCAL = 0;
+  Float_t sumClusterEnergyDCAL  = 0;
   Float_t sumClusterEnergyPHOS  = 0;
-  Int_t iclus = 0;
-  for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
-    sumClusterEnergyEMCAL += ((AliVCluster*)caloClustersEMCAL->At(iclus))->E();
-  for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
-    sumClusterEnergyPHOS += ((AliVCluster*)caloClustersPHOS->At(iclus))->E();
   
-  //Cells parameters
-  Int_t ncellsEMCAL = cellsEMCAL->GetNumberOfCells();
-  Int_t ncellsPHOS  = cellsPHOS ->GetNumberOfCells();
+  Int_t iclus = 0;
+  Float_t energy = 0;
+  AliVCluster* cluster = 0;
+  for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
+  {
+    cluster = (AliVCluster*)caloClustersEMCAL->At(iclus);
+    Float_t energy = cluster->E();
+    
+    if( energy < 0.5 ) continue;
+    
+    if(cluster->GetCellsAbsId()[0] < 12288)
+    {
+      nclEMCAL++;
+      sumClusterEnergyEMCAL += energy;
+    }
+    else
+    {
+      nclDCAL++;
+      sumClusterEnergyDCAL  += energy;
+    }
+  }
+  
+  for(iclus = 0 ; iclus <  caloClustersPHOS ->GetEntriesFast(); iclus++) 
+  {
+    cluster = (AliVCluster*)caloClustersPHOS->At(iclus);
+
+    energy = cluster->E();
+    
+    if( energy < 0.5 ) continue;
+    
+    nclPHOS++;
+    sumClusterEnergyPHOS += energy;
+  }
+  
+  // Cells parameters
+  Int_t ncellsEMCAL = 0 ;
+  Int_t ncellsDCAL  = 0 ;
+  Int_t ncellsPHOS  = 0;
   
   Float_t sumCellEnergyEMCAL = 0;
+  Float_t sumCellEnergyDCAL  = 0;
   Float_t sumCellEnergyPHOS  = 0;
   Int_t icell = 0;
   for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
-    sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
+  {
+    Float_t  amp = cellsEMCAL->GetAmplitude(icell);
+    Int_t cellId = cellsEMCAL->GetCellNumber(icell);
+    
+    if (amp < fEMCALCellAmpMin) continue;
+    
+    if( cellId < 12288) 
+    {
+      ncellsEMCAL++;
+      sumCellEnergyEMCAL += amp;
+    }
+    else
+    {
+      ncellsDCAL++;
+      sumCellEnergyDCAL  += amp;
+    }
+  }
+  
   for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
-    sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
-  
-  
-  //Fill Histograms
-  fhCaloCorrNClusters->Fill(nclEMCAL,nclPHOS);
-  fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
-  fhCaloCorrNCells   ->Fill(ncellsEMCAL,ncellsPHOS);
-  fhCaloCorrECells   ->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
-  
-  Int_t v0S = GetV0Signal(0)+GetV0Signal(1);
-  Int_t v0M = GetV0Multiplicity(0)+GetV0Multiplicity(1);
-  Int_t trM = GetTrackMultiplicity();
-  if(GetCalorimeter()==kPHOS)
   {
-    fhCaloV0MCorrNClusters   ->Fill(v0M,nclPHOS);
-    fhCaloV0MCorrEClusters   ->Fill(v0M,sumClusterEnergyPHOS);
-    fhCaloV0MCorrNCells      ->Fill(v0M,ncellsPHOS);
-    fhCaloV0MCorrECells      ->Fill(v0M,sumCellEnergyPHOS);
+    Float_t amp = cellsPHOS->GetAmplitude(icell);
     
-    fhCaloV0SCorrNClusters   ->Fill(v0S,nclPHOS);
-    fhCaloV0SCorrEClusters   ->Fill(v0S,sumClusterEnergyPHOS);
-    fhCaloV0SCorrNCells      ->Fill(v0S,ncellsPHOS);
-    fhCaloV0SCorrECells      ->Fill(v0S,sumCellEnergyPHOS);
+    if (amp < fPHOSCellAmpMin) continue;
     
-    fhCaloTrackMCorrNClusters->Fill(trM,nclPHOS);
-    fhCaloTrackMCorrEClusters->Fill(trM,sumClusterEnergyPHOS);    
-    fhCaloTrackMCorrNCells   ->Fill(trM,ncellsPHOS);
-    fhCaloTrackMCorrECells   ->Fill(trM,sumCellEnergyPHOS);
-    
-    fhCaloCenNClusters       ->Fill(cen,nclPHOS);
-    fhCaloCenEClusters       ->Fill(cen,sumClusterEnergyPHOS);
-    fhCaloCenNCells          ->Fill(cen,ncellsPHOS);
-    fhCaloCenECells          ->Fill(cen,sumCellEnergyPHOS);
-    
-    fhCaloEvPNClusters       ->Fill(ep ,nclPHOS);
-    fhCaloEvPEClusters       ->Fill(ep ,sumClusterEnergyPHOS);
-    fhCaloEvPNCells          ->Fill(ep ,ncellsPHOS);
-    fhCaloEvPECells          ->Fill(ep ,sumCellEnergyPHOS);
+    ncellsPHOS++;
+    sumCellEnergyPHOS += amp;
   }
-  else
+  
+  // Fill Histograms
+  
+  fhEMCALPHOSCorrNClusters->Fill(nclEMCAL,nclPHOS);
+  fhEMCALPHOSCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
+  fhEMCALPHOSCorrNCells   ->Fill(ncellsEMCAL,ncellsPHOS);
+  fhEMCALPHOSCorrECells   ->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
+  
+  fhEMCALDCALCorrNClusters->Fill(nclEMCAL,nclDCAL);
+  fhEMCALDCALCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyDCAL);
+  fhEMCALDCALCorrNCells   ->Fill(ncellsEMCAL,ncellsPHOS);
+  fhEMCALDCALCorrECells   ->Fill(sumCellEnergyEMCAL,sumCellEnergyDCAL);
+  
+  fhDCALPHOSCorrNClusters->Fill(nclDCAL,nclPHOS);
+  fhDCALPHOSCorrEClusters->Fill(sumClusterEnergyDCAL,sumClusterEnergyPHOS);
+  fhDCALPHOSCorrNCells   ->Fill(ncellsDCAL,ncellsPHOS);
+  fhDCALPHOSCorrECells   ->Fill(sumCellEnergyDCAL,sumCellEnergyPHOS);
+  
+  Int_t   v0S = GetV0Signal(0)+GetV0Signal(1);
+  Int_t   v0M = GetV0Multiplicity(0)+GetV0Multiplicity(1);
+  Int_t   trM = GetTrackMultiplicity();
+  Float_t cen = GetEventCentrality();
+  Float_t ep  = GetEventPlaneAngle();
+  
+  Int_t   ncl              = nclPHOS;
+  Float_t sumClusterEnergy = sumClusterEnergyPHOS;
+  Int_t   ncells           = ncellsPHOS;
+  Float_t sumCellEnergy    = sumCellEnergyPHOS;
+  
+  if ( GetCalorimeter() == kEMCAL )
   {
-    fhCaloV0MCorrNClusters   ->Fill(v0M,nclEMCAL);
-    fhCaloV0MCorrEClusters   ->Fill(v0M,sumClusterEnergyEMCAL);
-    fhCaloV0MCorrNCells      ->Fill(v0M,ncellsEMCAL);
-    fhCaloV0MCorrECells      ->Fill(v0M,sumCellEnergyEMCAL);
-    
-    fhCaloV0SCorrNClusters   ->Fill(v0S,nclEMCAL);
-    fhCaloV0SCorrEClusters   ->Fill(v0S,sumClusterEnergyEMCAL);
-    fhCaloV0SCorrNCells      ->Fill(v0S,ncellsEMCAL);
-    fhCaloV0SCorrECells      ->Fill(v0S,sumCellEnergyEMCAL);
-    
-    fhCaloTrackMCorrNClusters->Fill(trM,nclEMCAL);
-    fhCaloTrackMCorrEClusters->Fill(trM,sumClusterEnergyEMCAL);    
-    fhCaloTrackMCorrNCells   ->Fill(trM,ncellsEMCAL);
-    fhCaloTrackMCorrECells   ->Fill(trM,sumCellEnergyEMCAL);
-    
-    fhCaloCenNClusters       ->Fill(cen,nclEMCAL);
-    fhCaloCenEClusters       ->Fill(cen,sumClusterEnergyEMCAL);
-    fhCaloCenNCells          ->Fill(cen,ncellsEMCAL);
-    fhCaloCenECells          ->Fill(cen,sumCellEnergyEMCAL);
-    
-    fhCaloEvPNClusters       ->Fill(ep ,nclEMCAL);
-    fhCaloEvPEClusters       ->Fill(ep ,sumClusterEnergyEMCAL);
-    fhCaloEvPNCells          ->Fill(ep ,ncellsEMCAL);
-    fhCaloEvPECells          ->Fill(ep ,sumCellEnergyEMCAL);
+    ncl              = nclEMCAL              + nclDCAL;
+    sumClusterEnergy = sumClusterEnergyEMCAL + sumClusterEnergyDCAL;
+    ncells           = ncellsEMCAL           + ncellsDCAL;
+    sumCellEnergy    = sumCellEnergyEMCAL    + sumCellEnergyDCAL;
   }
+  
+  fhCaloV0MCorrNClusters   ->Fill(v0M,ncl);
+  fhCaloV0MCorrEClusters   ->Fill(v0M,sumClusterEnergy);
+  fhCaloV0MCorrNCells      ->Fill(v0M,ncells);
+  fhCaloV0MCorrECells      ->Fill(v0M,sumCellEnergy);
+  
+  fhCaloV0SCorrNClusters   ->Fill(v0S,ncl);
+  fhCaloV0SCorrEClusters   ->Fill(v0S,sumClusterEnergy);
+  fhCaloV0SCorrNCells      ->Fill(v0S,ncells);
+  fhCaloV0SCorrECells      ->Fill(v0S,sumCellEnergy);
+  
+  fhCaloTrackMCorrNClusters->Fill(trM,ncl);
+  fhCaloTrackMCorrEClusters->Fill(trM,sumClusterEnergy);    
+  fhCaloTrackMCorrNCells   ->Fill(trM,ncells);
+  fhCaloTrackMCorrECells   ->Fill(trM,sumCellEnergy);
+  
+  fhCaloCenNClusters       ->Fill(cen,ncl);
+  fhCaloCenEClusters       ->Fill(cen,sumClusterEnergy);
+  fhCaloCenNCells          ->Fill(cen,ncells);
+  fhCaloCenECells          ->Fill(cen,sumCellEnergy);
+  
+  fhCaloEvPNClusters       ->Fill(ep ,ncl);
+  fhCaloEvPEClusters       ->Fill(ep ,sumClusterEnergy);
+  fhCaloEvPNCells          ->Fill(ep ,ncells);
+  fhCaloEvPECells          ->Fill(ep ,sumCellEnergy);
+  
   
   AliDebug(1,"Correlate():");
   AliDebug(1,Form("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f",
-                  ncellsEMCAL,nclEMCAL, sumCellEnergyEMCAL,sumClusterEnergyEMCAL));
+                  ncellsEMCAL,nclEMCAL, sumCellEnergyEMCAL,sumClusterEnergyEMCAL));  
+  AliDebug(1,Form("\t DCAL : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f",
+                  ncellsDCAL,nclDCAL, sumCellEnergyDCAL,sumClusterEnergyDCAL));
   AliDebug(1,Form("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f",
                   ncellsPHOS,nclPHOS,sumCellEnergyPHOS,sumClusterEnergyPHOS));
   AliDebug(1,Form("\t V0 : Signal %d, Multiplicity  %d, Track Multiplicity %d", v0S,v0M,trM));
@@ -2605,25 +2663,70 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   if(fCorrelate)
   {
     //PHOS vs EMCAL
-    fhCaloCorrNClusters  = new TH2F ("hCaloCorrNClusters","# clusters in EMCAL vs PHOS", nclbins,nclmin,nclmax,nclbins,nclmin,nclmax); 
-    fhCaloCorrNClusters->SetXTitle("number of clusters in EMCAL");
-    fhCaloCorrNClusters->SetYTitle("number of clusters in PHOS");
-    outputContainer->Add(fhCaloCorrNClusters);
+    fhEMCALPHOSCorrNClusters  = new TH2F ("hEMCALPHOSCorrNClusters","# clusters in EMCAL vs PHOS", nclbins,nclmin,nclmax,nclbins,nclmin,nclmax); 
+    fhEMCALPHOSCorrNClusters->SetXTitle("number of clusters in EMCAL");
+    fhEMCALPHOSCorrNClusters->SetYTitle("number of clusters in PHOS");
+    outputContainer->Add(fhEMCALPHOSCorrNClusters);
     
-    fhCaloCorrEClusters  = new TH2F ("hCaloCorrEClusters","summed energy of clusters in EMCAL vs PHOS", nptbins,ptmin,ptmax*2,nptbins,ptmin,ptmax*2);
-    fhCaloCorrEClusters->SetXTitle("#Sigma #it{E} of clusters in EMCAL (GeV)");
-    fhCaloCorrEClusters->SetYTitle("#Sigma #it{E} of clusters in PHOS (GeV)");
-    outputContainer->Add(fhCaloCorrEClusters);
+    fhEMCALPHOSCorrEClusters  = new TH2F ("hEMCALPHOSCorrEClusters","summed energy of clusters in EMCAL vs PHOS", nptbins,ptmin,ptmax*2,nptbins,ptmin,ptmax*2);
+    fhEMCALPHOSCorrEClusters->SetXTitle("#Sigma #it{E} of clusters in EMCAL (GeV)");
+    fhEMCALPHOSCorrEClusters->SetYTitle("#Sigma #it{E} of clusters in PHOS (GeV)");
+    outputContainer->Add(fhEMCALPHOSCorrEClusters);
     
-    fhCaloCorrNCells  = new TH2F ("hCaloCorrNCells","# Cells in EMCAL vs PHOS", ncebins,ncemin,ncemax, ncebins,ncemin,ncemax); 
-    fhCaloCorrNCells->SetXTitle("number of Cells in EMCAL");
-    fhCaloCorrNCells->SetYTitle("number of Cells in PHOS");
-    outputContainer->Add(fhCaloCorrNCells);
+    fhEMCALPHOSCorrNCells  = new TH2F ("hEMCALPHOSCorrNCells","# Cells in EMCAL vs PHOS", ncebins,ncemin,ncemax, ncebins,ncemin,ncemax); 
+    fhEMCALPHOSCorrNCells->SetXTitle("number of Cells in EMCAL");
+    fhEMCALPHOSCorrNCells->SetYTitle("number of Cells in PHOS");
+    outputContainer->Add(fhEMCALPHOSCorrNCells);
     
-    fhCaloCorrECells  = new TH2F ("hCaloCorrECells","summed energy of Cells in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*4,nptbins*2,ptmin,ptmax*4);
-    fhCaloCorrECells->SetXTitle("#Sigma #it{E} of Cells in EMCAL (GeV)");
-    fhCaloCorrECells->SetYTitle("#Sigma #it{E} of Cells in PHOS (GeV)");
-    outputContainer->Add(fhCaloCorrECells);
+    fhEMCALPHOSCorrECells  = new TH2F ("hEMCALPHOSCorrECells","summed energy of Cells in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*4,nptbins*2,ptmin,ptmax*4);
+    fhEMCALPHOSCorrECells->SetXTitle("#Sigma #it{E} of Cells in EMCAL (GeV)");
+    fhEMCALPHOSCorrECells->SetYTitle("#Sigma #it{E} of Cells in PHOS (GeV)");
+    outputContainer->Add(fhEMCALPHOSCorrECells);
+
+    //DCal vs EMCAL
+    fhEMCALDCALCorrNClusters  = new TH2F ("hEMCALDCALCorrNClusters","# clusters in EMCAL vs DCAL", nclbins,nclmin,nclmax,nclbins,nclmin,nclmax); 
+    fhEMCALDCALCorrNClusters->SetXTitle("number of clusters in EMCAL");
+    fhEMCALDCALCorrNClusters->SetYTitle("number of clusters in DCAL");
+    outputContainer->Add(fhEMCALDCALCorrNClusters);
+    
+    fhEMCALDCALCorrEClusters  = new TH2F ("hEMCALDCALCorrEClusters","summed energy of clusters in EMCAL vs DCAL", nptbins,ptmin,ptmax*2,nptbins,ptmin,ptmax*2);
+    fhEMCALDCALCorrEClusters->SetXTitle("#Sigma #it{E} of clusters in EMCAL (GeV)");
+    fhEMCALDCALCorrEClusters->SetYTitle("#Sigma #it{E} of clusters in DCAL (GeV)");
+    outputContainer->Add(fhEMCALDCALCorrEClusters);
+    
+    fhEMCALDCALCorrNCells  = new TH2F ("hEMCALDCALCorrNCells","# Cells in EMCAL vs DCAL", ncebins,ncemin,ncemax, ncebins,ncemin,ncemax); 
+    fhEMCALDCALCorrNCells->SetXTitle("number of Cells in EMCAL");
+    fhEMCALDCALCorrNCells->SetYTitle("number of Cells in DCAL");
+    outputContainer->Add(fhEMCALDCALCorrNCells);
+    
+    fhEMCALDCALCorrECells  = new TH2F ("hEMCALDCALCorrECells","summed energy of Cells in EMCAL vs DCAL", nptbins*2,ptmin,ptmax*4,nptbins*2,ptmin,ptmax*4);
+    fhEMCALDCALCorrECells->SetXTitle("#Sigma #it{E} of Cells in EMCAL (GeV)");
+    fhEMCALDCALCorrECells->SetYTitle("#Sigma #it{E} of Cells in DCAL (GeV)");
+    outputContainer->Add(fhEMCALDCALCorrECells);
+
+    
+    //DCAL vs PHOS
+    fhDCALPHOSCorrNClusters  = new TH2F ("hDCALPHOSCorrNClusters","# clusters in DCAL vs PHOS", nclbins,nclmin,nclmax,nclbins,nclmin,nclmax); 
+    fhDCALPHOSCorrNClusters->SetXTitle("number of clusters in DCAL");
+    fhDCALPHOSCorrNClusters->SetYTitle("number of clusters in PHOS");
+    outputContainer->Add(fhDCALPHOSCorrNClusters);
+    
+    fhDCALPHOSCorrEClusters  = new TH2F ("hDCALPHOSCorrEClusters","summed energy of clusters in DCAL vs PHOS", nptbins,ptmin,ptmax*2,nptbins,ptmin,ptmax*2);
+    fhDCALPHOSCorrEClusters->SetXTitle("#Sigma #it{E} of clusters in DCAL (GeV)");
+    fhDCALPHOSCorrEClusters->SetYTitle("#Sigma #it{E} of clusters in PHOS (GeV)");
+    outputContainer->Add(fhDCALPHOSCorrEClusters);
+    
+    fhDCALPHOSCorrNCells  = new TH2F ("hDCALPHOSCorrNCells","# Cells in DCAL vs PHOS", ncebins,ncemin,ncemax, ncebins,ncemin,ncemax); 
+    fhDCALPHOSCorrNCells->SetXTitle("number of Cells in DCAL");
+    fhDCALPHOSCorrNCells->SetYTitle("number of Cells in PHOS");
+    outputContainer->Add(fhDCALPHOSCorrNCells);
+    
+    fhDCALPHOSCorrECells  = new TH2F ("hDCALPHOSCorrECells","summed energy of Cells in DCAL vs PHOS", nptbins*2,ptmin,ptmax*4,nptbins*2,ptmin,ptmax*4);
+    fhDCALPHOSCorrECells->SetXTitle("#Sigma #it{E} of Cells in DCAL (GeV)");
+    fhDCALPHOSCorrECells->SetYTitle("#Sigma #it{E} of Cells in PHOS (GeV)");
+    outputContainer->Add(fhDCALPHOSCorrECells);
+
+    
     
     //Calorimeter VS V0 signal
     fhCaloV0SCorrNClusters  = new TH2F ("hCaloV0SNClusters",Form("# clusters in %s vs V0 signal",GetCalorimeterString().Data()), nv0sbins,nv0smin,nv0smax,nclbins,nclmin,nclmax); 

@@ -293,11 +293,21 @@ public:
   TH2F *   fhCellECross;                      //! 1 - Energy in cross around cell /  cell energy
   
   //Calorimeters Correlation
-  TH2F *   fhCaloCorrNClusters;               //! EMCAL vs PHOS, number of clusters	
-  TH2F *   fhCaloCorrEClusters;               //! EMCAL vs PHOS, total measured cluster energy
-  TH2F *   fhCaloCorrNCells;                  //! EMCAL vs PHOS, number of cells
-  TH2F *   fhCaloCorrECells;                  //! EMCAL vs PHOS,  total measured cell energy
-	
+  TH2F *   fhEMCALPHOSCorrNClusters;          //! EMCAL vs PHOS, number of clusters	
+  TH2F *   fhEMCALPHOSCorrEClusters;          //! EMCAL vs PHOS, total measured cluster energy
+  TH2F *   fhEMCALPHOSCorrNCells;             //! EMCAL vs PHOS, number of cells
+  TH2F *   fhEMCALPHOSCorrECells;             //! EMCAL vs PHOS, total measured cell energy
+
+  TH2F *   fhEMCALDCALCorrNClusters;          //! EMCAL vs DCAL, number of clusters	
+  TH2F *   fhEMCALDCALCorrEClusters;          //! EMCAL vs DCAL, total measured cluster energy
+  TH2F *   fhEMCALDCALCorrNCells;             //! EMCAL vs DCAL, number of cells
+  TH2F *   fhEMCALDCALCorrECells;             //! EMCAL vs DCAL, total measured cell energy
+
+  TH2F *   fhDCALPHOSCorrNClusters;           //! DCAL vs PHOS, number of clusters	
+  TH2F *   fhDCALPHOSCorrEClusters;           //! DCAL vs PHOS, total measured cluster energy
+  TH2F *   fhDCALPHOSCorrNCells;              //! DCAL vs PHOS, number of cells
+  TH2F *   fhDCALPHOSCorrECells;              //! DCAL vs PHOS, total measured cell energy
+  
   //V0 Correlation
   TH2F *   fhCaloV0SCorrNClusters;            //! Calo vs V0 signal , number of clusters	
   TH2F *   fhCaloV0SCorrEClusters;            //! Calo vs V0 signal, total measured cluster energy
