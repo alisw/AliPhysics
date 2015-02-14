@@ -1874,7 +1874,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     if(clus->GetM02()>fM02)
       continue;
     if(fDoTrMtSmpl){
-      if(!clus->GetNTracksMatched()==0){
+      if(clus->GetNTracksMatched()!=0){
      	continue;
       }
     }
