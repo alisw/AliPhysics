@@ -43,6 +43,7 @@
 #include <TSystem.h>
 #include <TDatime.h>
 #include <TH2.h>
+#include <TROOT.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDPedestalDA)
@@ -271,7 +272,8 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
     fitFunc->SetParameters(100,100,1);
     hChannel->Fit(fitFunc,"Q0","",10,200);
     hChannel->GetListOfFunctions()->Remove(fitFunc);
-    
+    gROOT->GetListOfFunctions()->Remove(fitFunc);
+
     Float_t mean = hChannel->GetMean();
     Float_t rms  = hChannel->GetRMS();
     

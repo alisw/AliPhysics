@@ -14,7 +14,9 @@
 #include <AliFMDGainDA.h>
 #include <AliFMDParameters.h>
 #include "FMDUtilda.h"
+#include <TROOT.h>
 #include <iostream>
+#include <unistd.h>
 
 int main(int argc, char **argv) 
 {
@@ -44,6 +46,12 @@ int main(int argc, char **argv)
   PostSummaries(gainDA, "gain", r.RunNumber());
 
   std::cout << "End of FMD-Gain, return " << ret << std::endl;
+
+  gROOT->SetMustClean(false);
+
+  std::cout << "Now calling _Exit(" << ret << ") to finish NOW!" << std::endl;
+  _exit(ret);
+
   return ret;
 }
 //

@@ -40,6 +40,7 @@
 #include <TGraphErrors.h>
 #include <TDatime.h>
 #include <TH2.h>
+#include <TROOT.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDGainDA)
@@ -297,20 +298,24 @@ void AliFMDGainDA::Analyse(UShort_t det,
                      det, ring , sec, strip));
     return;
   }
-  TF1 fitFunc("fitFunc","pol1",-10,280); 
-  fitFunc.SetParameters(100,3);
-  grChannel->Fit("fitFunc","Q0","",0,fHighPulse);
+  TF1* fitFunc = new TF1("fitFunc","pol1",-10,280); 
+  fitFunc->SetParameters(100,3);
+  grChannel->Fit(fitFunc,"Q0","",0,fHighPulse);
+  if (grChannel->GetListOfFunctions())
+    grChannel->GetListOfFunctions()->Remove(fitFunc);
+  gROOT->GetListOfFunctions()->Remove(fitFunc);
+
      
   Float_t gain    = -1;
   Float_t error   = -1; 
   Float_t chi2ndf = -1;
-  if((fitFunc.GetParameter(1)) == (fitFunc.GetParameter(1))) {
-    gain    = fitFunc.GetParameter(1);
-    error   = fitFunc.GetParError(1);
-    if(fitFunc.GetNDF())
-      chi2ndf = fitFunc.GetChisquare() / fitFunc.GetNDF();
+  if((fitFunc->GetParameter(1)) == (fitFunc->GetParameter(1))) {
+    gain    = fitFunc->GetParameter(1);
+    error   = fitFunc->GetParError(1);
+    if(fitFunc->GetNDF())
+      chi2ndf = fitFunc->GetChisquare() / fitFunc->GetNDF();
   }
-  
+
   fOutputFile << det                         << ','
 	      << ring                        << ','
 	      << sec                         << ','
@@ -322,8 +327,8 @@ void AliFMDGainDA::Analyse(UShort_t det,
   //due to RCU trouble, first strips on VAs are excluded
   // if(strip%128 != 0) {
     
-  fSummaryGains.SetBinContent(fCurrentSummaryStrip,fitFunc.GetParameter(1));
-  fSummaryGains.SetBinError(fCurrentSummaryStrip,fitFunc.GetParError(1));
+  fSummaryGains.SetBinContent(fCurrentSummaryStrip,fitFunc->GetParameter(1));
+  fSummaryGains.SetBinError(fCurrentSummaryStrip,fitFunc->GetParError(1));
   
   fCurrentSummaryStrip++;
 
@@ -354,9 +359,10 @@ void AliFMDGainDA::Analyse(UShort_t det,
     // }
   if(fSaveHistograms) {
     TH1F* summary = GetSectorSummary(det, ring, sec);
-    summary->SetBinContent(strip+1, fitFunc.GetParameter(1));
-    summary->SetBinError(strip+1, fitFunc.GetParError(1));
+    summary->SetBinContent(strip+1, fitFunc->GetParameter(1));
+    summary->SetBinError(strip+1, fitFunc->GetParError(1));
   }  
+  delete fitFunc;
 }
 
 //_____________________________________________________________________
