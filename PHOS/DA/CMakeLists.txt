@@ -42,3 +42,6 @@ generateDA("PHOS" "PED" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES PHOSbase-static RAWDatabase-static RAWDatarec-static STEERBase-static)
 generateDA("PHOS" "CPVPED" "${STATIC_DEPENDENCIES}")
+
+set(STATIC_DEPENDENCIES PHOSbase-static RAWDatabase-static RAWDatarec-static STEERBase-static)
+generateDA("PHOS" "CPVBCM" "${STATIC_DEPENDENCIES}")

@@ -29,6 +29,16 @@ AliPHOSCpvPedProducer::AliPHOSCpvPedProducer(Int_t sigcut):
   //
   //constructor
   //
+  for(Int_t iDDL=0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++) {//iDDL
+    fPedMeanMap[iDDL]=0;
+    fPedSigMap [iDDL]=0;
+    f1DPedMean [iDDL]=0;
+    f1DPedSigma[iDDL]=0;
+    for(Int_t iX=0; iX<AliPHOSCpvParam::kPadPcX; iX++)
+      for(Int_t iY=1; iY<AliPHOSCpvParam::kPadPcY; iY++)
+	fPadAdc[iDDL][iX][iY]=0;
+  }//iDDL
+
   CreateErrHist();
 }  //constructor
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -37,7 +47,7 @@ AliPHOSCpvPedProducer::~AliPHOSCpvPedProducer()
   //
   //destructor
   //
-  for(Int_t iDDL=0; iDDL<AliPHOSCpvParam::kNDDL; iDDL++) {//iDDL
+  for(Int_t iDDL=0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++) {//iDDL
     delete fPedMeanMap[iDDL];
     delete fPedSigMap [iDDL];
     delete f1DPedMean [iDDL];
@@ -82,7 +92,7 @@ Bool_t AliPHOSCpvPedProducer::FillPedestal(Int_t abspad,Float_t q)
     Int_t iDDL=AliPHOSCpvParam::A2DDL(abspad),
             iX=AliPHOSCpvParam::A2X(abspad),
             iY=AliPHOSCpvParam::A2Y(abspad);
-    if(!fPedMeanMap[iDDL]) CreateDDLHistos(iDDL);
+    if(!fPadAdc [iDDL][iX][iY]) CreateDDLHistos(iDDL); 
     fPadAdc [iDDL][iX][iY] -> Fill(q);
     return kTRUE;
   }
@@ -137,7 +147,7 @@ void AliPHOSCpvPedProducer::WriteAllHistsToFile(const char * name) const
   TFile * rootF = TFile::Open(name,"RECREATE");
   printf("Root file created \n");
   //rootF->cd();
-  for(Int_t iDDL=0; iDDL<AliPHOSCpvParam::kNDDL; iDDL++) {
+  for(Int_t iDDL=0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++) {
     // for(Int_t iX=0; iX<AliPHOSCpvParam::kPadPcX; iX++) {
     //   for(Int_t iY=0; iY<AliPHOSCpvParam::kPadPcY; iY++) {
     // 	//fPadAdc[iDDL][iX][iY]->Write();
@@ -156,7 +166,7 @@ void AliPHOSCpvPedProducer::WriteAllHistsToFile(const char * name) const
   }
   //if(fhErrors) fhErrors -> Write();
 
-  for(Int_t iDDL=0; iDDL<AliPHOSCpvParam::kNDDL; iDDL++)
+  for(Int_t iDDL=0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++)
     for(Int_t iX=0; iX<AliPHOSCpvParam::kPadPcX; iX++)
       for(Int_t iY=0; iY<AliPHOSCpvParam::kPadPcY; iY++);
   //fPadAdc[iDDL][iX][iY]->Write();

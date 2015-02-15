@@ -11,11 +11,11 @@ Input files: raw data file
 Output files: thr?_??.dat CpvPeds.root
 Trigger types used: PHYSICS_EVENT
 */
-
+//daqDA
 #include "event.h"
 #include "monitor.h"
 #include "daqDA.h"
-
+//system
 #include <Riostream.h>
 #include <stdlib.h>
 #include <fstream>
@@ -27,14 +27,13 @@ Trigger types used: PHYSICS_EVENT
 #include "AliPHOSCpvParam.h"
 #include "AliRawReaderDate.h"
 #include "AliBitPacking.h"
-#include "TMath.h"
 
 //ROOT
 #include "TROOT.h"
 #include "TPluginManager.h"
 #include "TSAXParser.h"
 #include "TTree.h"
-
+#include "TMath.h"
 #include "TString.h"
 #include "TFile.h"
 #include "TSystem.h"
@@ -64,7 +63,7 @@ int main( int argc, char **argv )
   }
 
   // log start of process
-  printf("Cpv DA program started\n");
+  printf("Cpv pedestal DA program started\n");
 
   /* report progress */
   daqDA_progressReport(0);
@@ -146,26 +145,28 @@ int main( int argc, char **argv )
 
   Printf(" Received %d events, %d good events",iTotEvnt,iPhysEvnt);
   /* report progress */
-  daqDA_progressReport(80);
+  daqDA_progressReport(95);
 
-  for(int iDDL = 0; iDDL<AliPHOSCpvParam::kNDDL; iDDL++){
+  for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++){
     if(pedProducer -> CalcPedestal(iDDL)){
       pedProducer -> WritePedFiles(iDDL);
-      //for (int iCC = 0; iCC<AliPHOSCpvParam::kNRows){
-      //	status=daqDA_DB_storeFile(Form("thr%d_%02d.dat", iDDL, iCC));
-      //	if(status) printf("Failed to store thr%d_%02d.dat in DAQ DB!\n",iDDL, iCC);
-      //	status=daqDA_FES_storeFile(Form("thr%d_%02d.dat", iDDL, iCC));
-      //	if(status) printf("Failed to export thr%d_%02d.dat to DAQ FES!\n",iDDL, iCC);
-      //}
+      for (int iCC = 0; iCC<AliPHOSCpvParam::kNRows; iCC++){
+      	status=daqDA_DB_storeFile(Form("thr%d_%02d.dat", iDDL, iCC),Form("thr%d_%02d.dat", iDDL, iCC));
+      	if(status) printf("Failed to store thr%d_%02d.dat in DAQ DB!\n",iDDL, iCC);
+      	//status=daqDA_FES_storeFile(Form("thr%d_%02d.dat", iDDL, iCC));
+      	//if(status) printf("Failed to export thr%d_%02d.dat to DAQ FES!\n",iDDL, iCC);
+      }
     }
   }
 
   pedProducer->WriteAllHistsToFile("CpvPeds.root");
   status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
   if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
+  status = daqDA_FES_storeFile("CpvPeds.root","CpvPeds.root");
+  if(status) printf("Failed to store CpvPeds.root in DAQ FXS!\n");
 
   /* report progress */
-  daqDA_progressReport(95);
+  daqDA_progressReport(100);
 
 
   return status;

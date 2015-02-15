@@ -42,7 +42,7 @@ AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer():
 
   CreateErrHist();
   // create a 2d array to store the pedestals                                        
-  for (Int_t iDDL=0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++){
+  for (Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++){
     fPed[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     fPed[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) {
@@ -68,7 +68,7 @@ AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer(AliRawReader * rawReader):
   fRawStream->SetTurbo(fTurbo);
   CreateErrHist();
   // create a 2d array to store the pedestals                                               
-  for (Int_t iDDL=0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++) {
+  for (Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++) {
     fPed[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     fPed[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) {
@@ -82,7 +82,7 @@ AliPHOSCpvRawDigiProducer::~AliPHOSCpvRawDigiProducer()
 {
   if(fRawStream) delete fRawStream;
   if(fhErrors) delete fhErrors; 
-  for(Int_t iDDL = 0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++) {
+  for(Int_t iDDL = 0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++) {
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) { 
       delete [] fPed[0][iDDL][ix];
       delete [] fPed[1][iDDL][ix];
@@ -94,7 +94,7 @@ AliPHOSCpvRawDigiProducer::~AliPHOSCpvRawDigiProducer()
 //--------------------------------------------------------------------------------------
 Bool_t AliPHOSCpvRawDigiProducer::LoadPedFiles() {
   // read pedestals from file                                             
-  for(Int_t iDDL = 0;iDDL<AliPHOSCpvParam::kNDDL;iDDL++)
+  for(Int_t iDDL = 0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2)
     for(Int_t iCC=0; iCC<AliPHOSCpvParam::kNRows; iCC++) {
       FILE * pedFile;
       pedFile = fopen(Form("thr%d_%02d.dat",iDDL,iCC),"r");
@@ -177,7 +177,7 @@ void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
       Int_t iddl     = AliPHOSCpvParam::A2DDL(aPad);
 
       relId[0] = AliPHOSCpvParam::DDL2Mod(iddl) ; // counts from 1 to 5
-      relId[1] = 1;      // 1=CPV
+      relId[1] = -1;      // -1=CPV
       relId[2] = ix + 1; // counts from 1 to 128
       relId[3] = iy + 1; // counts from 1 to 60
       fGeom->RelToAbsNumbering(relId, absId);
@@ -205,7 +205,7 @@ void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
   AliDebug(1,Form("Array of %d CPV digits is created",digits->GetEntriesFast())); 
 
   // fill histogram of errors
-  for(Int_t iDDL=0; iDDL<AliPHOSCpvParam::kNDDL; iDDL++) {
+  for(Int_t iDDL=0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++) {
     Int_t nErrors = AliPHOSCpvRawStream::GetNErrors();
     for(Int_t iType=0; iType<nErrors; iType++) { // iType - type of error
       fhErrors -> Fill(iType+1,fRawStream -> GetErrors(iDDL,iType));

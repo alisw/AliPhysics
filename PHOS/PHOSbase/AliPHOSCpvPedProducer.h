@@ -47,15 +47,16 @@ protected:
   void CreateErrHist();    // initialize histogram of errors
   void CreateDDLHistos(Int_t iDDL);  // initialize histograms for pedestal calculation and representation
 
-  TH1F       *fPadAdc[AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY];        //Charge distribution for pads
+  //our ddls are 0,2,4,6,8
+  TH1F       *fPadAdc[2*AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY];        //Charge distribution for pads
   Int_t       fSigCut;                         //n. of pedestal distribution sigmas used to create zero suppresion table
   static const Int_t fMaxThr = 511;            //maximal threshold (9 bits all with 1)
   Bool_t fTurbo;           // if true, then read without error checking
-
-  TH2F       *fPedMeanMap[AliPHOSCpvParam::kNDDL]; //2D mean pedestal map to export to AMORE
-  TH2F       *fPedSigMap [AliPHOSCpvParam::kNDDL]; //2D pedestal sigma map to export to AMORE
-  TH1F       *f1DPedMean [AliPHOSCpvParam::kNDDL]; //1D mean pedestal map to export to AMORE
-  TH1F       *f1DPedSigma[AliPHOSCpvParam::kNDDL]; //1D pedestal sigma map to export to AMORE
+  //our ddls are 0,2,4,6,8
+  TH2F       *fPedMeanMap[2*AliPHOSCpvParam::kNDDL]; //2D mean pedestal map to export to AMORE
+  TH2F       *fPedSigMap [2*AliPHOSCpvParam::kNDDL]; //2D pedestal sigma map to export to AMORE
+  TH1F       *f1DPedMean [2*AliPHOSCpvParam::kNDDL]; //1D mean pedestal map to export to AMORE
+  TH1F       *f1DPedSigma[2*AliPHOSCpvParam::kNDDL]; //1D pedestal sigma map to export to AMORE
   TH1I       *fhErrors;                        //histogram of errors from AliPHOSCpvRawDigiProducer
   AliPHOSCpvRawStream         * fRawStream;       //! Raw data stream
 private:

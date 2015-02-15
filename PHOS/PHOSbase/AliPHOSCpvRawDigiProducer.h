@@ -51,7 +51,7 @@ private:
 
   TH1I * fhErrors;         // ! histogram of errors
 
-  Int_t ** fPed[2][AliPHOSCpvParam::kNDDL]; // pedestals    ped[0][iddl][x][y] = pedestal; ped[1][iddl][x][y] = N*sigma (N was used while creating ped files)
+  Int_t ** fPed[2][2*AliPHOSCpvParam::kNDDL]; // pedestals    ped[0][iddl][x][y] = pedestal; ped[1][iddl][x][y] = N*sigma (N was used while creating ped files)
   Bool_t fPedFilesRLoaded;
 
   ClassDef(AliPHOSCpvRawDigiProducer,2);
