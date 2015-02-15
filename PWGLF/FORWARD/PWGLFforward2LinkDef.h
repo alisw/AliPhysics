@@ -185,6 +185,7 @@
 #pragma link C++ class AliForwardFlowWeights+;
 #pragma link C++ class AliBaseMCWeights+;
 #pragma link C++ class AliSimplePidWeights+;
+#pragma link C++ class AliPtEtaPidWeights+;
 #endif
 //
 // EOF
