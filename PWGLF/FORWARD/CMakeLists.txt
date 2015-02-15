@@ -102,7 +102,8 @@ set(SRCS_analysis2
   # MC Weights
   analysis2/AliBaseMCWeights.cxx	
   analysis2/AliForwardFlowWeights.cxx
-  analysis2/AliSimplePidWeights.cxx	
+  analysis2/AliSimplePidWeights.cxx
+  analysis2/AliPtEtaPidWeights.cxx	
 )
 
 # Sources under GEO/ - alphabetical order
