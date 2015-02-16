@@ -72,7 +72,9 @@ public:
   virtual void Init(TList* l);
   /** 
    * Add a PDG code to be weighted.  Note that this object will claim
-   * ownership of the passed histogram.
+   * ownership of the passed histogram.  The X axis of the histogram
+   * is assumed to be the @f$\eta@f$ axis, while the Y axis is assumed
+   * to be @f$p_T@f$ axis.
    * 
    * @param pdg Particle code 
    * @param weight The histogram of (eta,phi) dependent weight factors 

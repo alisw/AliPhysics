@@ -71,7 +71,7 @@ Double_t AliPtEtaPidWeights::CalcWeight(Double_t eta,
     if (v == id) {
       TH2*  hist = static_cast<TH2*>(fWeights.At(i));
       Int_t binpt = hist->GetYaxis()->FindBin(pt);
-      Int_t bineta = hist->GetYaxis()->FindBin(eta);
+      Int_t bineta = hist->GetXaxis()->FindBin(eta);
       return hist->GetBinContent(bineta,binpt);
     }
   }
