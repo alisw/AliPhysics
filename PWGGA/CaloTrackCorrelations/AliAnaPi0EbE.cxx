@@ -50,16 +50,17 @@ ClassImp(AliAnaPi0EbE)
 AliAnaPi0EbE::AliAnaPi0EbE() :
 AliAnaCaloTrackCorrBaseClass(),
 fAnaType(kIMCalo),
-fMinDist(0.),fMinDist2(0.),         fMinDist3(0.),
 fNLMCutMin(-1),                     fNLMCutMax(10),
-fTimeCutMin(-10000),                fTimeCutMax(10000),
-fRejectTrackMatch(kTRUE),           fSelectIsolatedDecay(kFALSE),
-fCheckSplitDistToBad(0),            fSelectPairInIsoCone(0),
+fFillAllNLMHistograms(0),           fFillTMHisto(0),
+fFillSelectClHisto(0),              
+fM02MaxCutForIM(0),                 fM02MinCutForIM(0),
+fSelectIsolatedDecay(kFALSE),       fSelectPairInIsoCone(0),           
 fR(0),                              fIsoCandMinPt(0),
-fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
-fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),
+fMinDist(0.),    fMinDist2(0.),     fMinDist3(0.),
+fTimeCutMin(-10000),                fTimeCutMax(10000),
+fRejectTrackMatch(kTRUE),           fCheckSplitDistToBad(0),      
+fFillWeightHistograms(kFALSE),      fFillOnlySimpleSSHisto(1),
 fFillEMCALBCHistograms(0),
-fFillAllNLMHistograms(0),
 fInputAODGammaConvName(""),
 fMomentum(),  fMomentum1(),  fMomentum2(),
 fMomentum12(),fPrimaryMom(), fGrandMotherMom(),
@@ -91,6 +92,7 @@ fhSplitE(0),                        fhSplitPt(0),
 fhSplitPtEta(0),                    fhSplitPtPhi(0),
 fhNLocMaxSplitPt(0),
 fhPtDecay(0),
+fhMassPtMaxPair(0),            fhMassPtMinPair(0),
 
 // Shower shape histos
 fhPtDispersion(0),                  fhPtLambda0(0),                     fhPtLambda0NoSplitCut(0),
@@ -226,12 +228,12 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     fhMCEtaPtRecoPtPrimLocMax             [i] = 0;
     fhMCPi0SplitPtRecoPtPrimLocMax        [i] = 0;
     fhMCEtaSplitPtRecoPtPrimLocMax        [i] = 0;
-
+    
     fhMCPi0SelectedPtRecoPtPrimLocMax     [i] = 0;
     fhMCEtaSelectedPtRecoPtPrimLocMax     [i] = 0;
     fhMCPi0SelectedSplitPtRecoPtPrimLocMax[i] = 0;
     fhMCEtaSelectedSplitPtRecoPtPrimLocMax[i] = 0;
-
+    
   }
   
   //Weight studies
@@ -274,7 +276,7 @@ void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t ph
   
   Int_t id = GetReader()->GetTriggerClusterId();
   if( id < 0 ) return;
-
+  
   Int_t bc = GetReader()->GetTriggerClusterBC();
   if(TMath::Abs(bc) >= 6) AliInfo(Form("Trigger BC not expected = %d",bc));
   
@@ -283,7 +285,7 @@ void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t ph
   if(energy > 2)
   {
     Double_t timeUS = TMath::Abs(time);
-
+    
     if      (timeUS < 25) fhEtaPhiEMCALBC0->Fill(eta, phi);
     else if (timeUS < 75) fhEtaPhiEMCALBC1->Fill(eta, phi);
     else                  fhEtaPhiEMCALBCN->Fill(eta, phi);
@@ -317,13 +319,12 @@ void AliAnaPi0EbE::FillEMCALBCHistograms(Float_t energy, Float_t eta, Float_t ph
 void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * calo)
 {
   // Fill some histograms to understand pile-up
-	
+  
   //printf("E %f, time %f\n",energy,time);
   AliVEvent * event = GetReader()->GetInputEvent();
   
   fhTimePtNoCut->Fill(pt,time);
-  if(GetReader()->IsPileUpFromSPD())     
-  
+    
   if(GetReader()->IsPileUpFromSPD())             { fhPtPileUp[0]->Fill(pt); fhTimePtSPD     ->Fill(pt,time); }
   if(GetReader()->IsPileUpFromEMCal())             fhPtPileUp[1]->Fill(pt);
   if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtPileUp[2]->Fill(pt);
@@ -339,14 +340,14 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
   AliVCaloCells* cells = 0;
   if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
   else                           cells = GetPHOSCells();
-
+  
   Float_t maxCellFraction = 0.;
   Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
   
   Double_t tmax  = cells->GetCellTime(absIdMax);
   GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
   tmax*=1.e9;
-    
+  
   // Loop on cells inside cluster, max cell must be over 100 MeV and time in BC=0
   if(cells->GetCellAmplitude(absIdMax) > 0.1 && TMath::Abs(tmax) < 30)
   {
@@ -363,14 +364,14 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
       timecell*=1e9;
       
       Float_t diff = (tmax-timecell);
-            
+      
       if( cells->GetCellAmplitude(absIdMax) < 0.1 ) continue ;
       
       if(GetReader()->IsPileUpFromSPD())
       {
         fhPtCellTimePileUp[0]->Fill(pt, timecell);
         fhPtTimeDiffPileUp[0]->Fill(pt, diff);
-       }
+      }
       
       if(GetReader()->IsPileUpFromEMCal())
       {
@@ -409,7 +410,7 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
       }
     }//loop
   }
-
+  
   if(pt < 8) return; // Fill time figures for high energy clusters not too close to trigger threshold
   
   AliESDEvent* esdEv = dynamic_cast<AliESDEvent*> (event);
@@ -434,13 +435,13 @@ void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * 
   fhTimeNPileUpVertSPD  ->Fill(time,nVtxSPD);
   fhTimeNPileUpVertTrack->Fill(time,nVtxTrk);
   
-	fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);
-	fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
-	
-	if(TMath::Abs(time) < 25)
-	{
-		fhPtNPileUpSPDVtxTimeCut ->Fill(pt,nVtxSPD);
-		fhPtNPileUpTrkVtxTimeCut ->Fill(pt,nVtxTrk);
+  fhPtNPileUpSPDVtx->Fill(pt,nVtxSPD);
+  fhPtNPileUpTrkVtx->Fill(pt,nVtxTrk);
+  
+  if(TMath::Abs(time) < 25)
+  {
+    fhPtNPileUpSPDVtxTimeCut ->Fill(pt,nVtxSPD);
+    fhPtNPileUpTrkVtxTimeCut ->Fill(pt,nVtxTrk);
   }
   
   if(time < 75 && time > -25)
@@ -496,15 +497,15 @@ void AliAnaPi0EbE::FillRejectedClusterHistograms(Int_t mctag, Int_t nMaxima)
   Float_t phi   = fMomentum.Phi();
   if(phi < 0) phi+=TMath::TwoPi();
   Float_t eta = fMomentum.Eta();
-
+  
   fhPtReject     ->Fill(pt);
   fhEReject      ->Fill(ener);
-
+  
   fhPtEtaReject  ->Fill(ener,eta);
   fhPtPhiReject  ->Fill(ener,phi);
   fhEtaPhiReject ->Fill(eta,phi);
   fhNLocMaxPtReject->Fill(pt,nMaxima);
-
+  
   if(IsDataMC())
   {
     Int_t mcIndex = GetMCIndex(mctag);
@@ -512,7 +513,7 @@ void AliAnaPi0EbE::FillRejectedClusterHistograms(Int_t mctag, Int_t nMaxima)
     fhMCPtReject [mcIndex] ->Fill(pt);
     if(fFillAllNLMHistograms) fhMCNLocMaxPtReject[mcIndex]->Fill(pt,nMaxima);
   }
-
+  
 }
 
 //___________________________________________________________________________________
@@ -562,7 +563,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
   AliVCaloCells * cell = 0x0;
   Float_t maxCellFraction = 0;
-
+  
   if(GetCalorimeter() == kEMCAL && !fFillOnlySimpleSSHisto)
   {
     cell = GetEMCALCells();
@@ -597,7 +598,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
       fhAsymmetryDispEta[ptbin]->Fill(dEta,asy);
       fhAsymmetryDispPhi[ptbin]->Fill(dPhi,asy);
     }
-  
+    
     if(fFillAllNLMHistograms)
     {
       fhPtDispersionLocMax    [indexMax]->Fill(pt,disp);
@@ -660,12 +661,12 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
           fhTrackMatchedDPhiNeg->Fill(pt,dR);
           if(ener > 0.5) fhTrackMatchedDEtaDPhiNeg->Fill(dZ,dR);
         }
-    }
+      }
     }
     // Check dEdx and E/p of matched clusters
     
     if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
-    {      
+    {
       if(track)
       {
         Float_t dEdx = track->GetTPCsignal();
@@ -719,7 +720,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     fhMCPtLambda0[mcIndex]    ->Fill(pt, l0);
     fhMCPtLambda1[mcIndex]    ->Fill(pt, l1);
     if(fFillAllNLMHistograms) fhMCPtLambda0LocMax[mcIndex][indexMax]->Fill(pt,l0);
-
+    
     if(GetCalorimeter()==kEMCAL && GetFirstSMCoveredByTRD() >= 0 &&
        GetModuleNumber(cluster) < GetFirstSMCoveredByTRD() )
       fhMCPtLambda0NoTRD[mcIndex]->Fill(pt, l0  );
@@ -728,7 +729,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     {
       if(maxCellFraction < 0.5)
         fhMCPtLambda0FracMaxCellCut[mcIndex]->Fill(pt, l0  );
-
+      
       fhMCPtDispersion     [mcIndex]->Fill(pt, disp);
       fhMCPtFracMaxCell    [mcIndex]->Fill(pt,maxCellFraction);
       
@@ -751,7 +752,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     } // only SS simple?
     
   } // MC
-
+  
 }
 
 //________________________________________________________
@@ -834,7 +835,7 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
 //__________________________________________
 TObjString * AliAnaPi0EbE::GetAnalysisCuts()
 {
-	// Save parameters used for analysis
+  // Save parameters used for analysis
   TString parList ; // this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -937,7 +938,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   TString pname [] = {"Pi0"    , "Eta" , "Photon"         ,"Pi0Decay"        , "EtaDecay"     , "OtherDecay"    ,   "Electron", "Hadron"};
   
   Int_t   bin[]   = {0,2,4,6,10,15,20,100}; // energy bins
-
+  
   fhPt  = new TH1F("hPt","Number of identified  #pi^{0} (#eta) decay",nptbins,ptmin,ptmax);
   fhPt->SetYTitle("#it{N}");
   fhPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1102,7 +1103,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhNLocMaxPtReject ->SetYTitle("N maxima");
     fhNLocMaxPtReject ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhNLocMaxPtReject) ;
-
+    
   }
   
   fhMass  = new TH2F
@@ -1122,6 +1123,18 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhMassPt->SetYTitle("#it{M} (GeV/#it{c}^{2})");
   fhMassPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhMassPt) ;
+  
+  fhMassPtMaxPair  = new TH2F
+  ("hMassPtMaxPair","all pairs #it{M}: #it{p}_{T}^{max} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+  fhMassPtMaxPair->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+  fhMassPtMaxPair->SetXTitle("#it{p}_{T}^{max} (GeV/#it{c})");
+  outputContainer->Add(fhMassPtMaxPair) ;
+  
+  fhMassPtMinPair  = new TH2F
+  ("hMassPtMinPair","all pairs #it{M}: #it{p}_{T}^{min} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+  fhMassPtMinPair->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+  fhMassPtMinPair->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  outputContainer->Add(fhMassPtMinPair) ;
   
   fhSelectedMassPt  = new TH2F
   ("hSelectedMassPt","Selected #pi^{0} (#eta) pairs #it{M}: #it{p}_{T} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
@@ -1232,11 +1245,11 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     if(IsDataMC())
     {
       fhMCPtDecayLostPairPi0  = new TH1F("hPtDecay_MCPi0DecayLostPair","Selected  #pi^{0} (#eta) decay photons, from MC #gamma #pi^{0} decay, companion lost",
-                                     nptbins,ptmin,ptmax);
+                                         nptbins,ptmin,ptmax);
       fhMCPtDecayLostPairPi0->SetYTitle("#it{N}");
       fhMCPtDecayLostPairPi0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhMCPtDecayLostPairPi0) ;
-
+      
       fhMCPtDecayLostPairEta  = new TH1F("hPtDecay_MCEtaDecayLostPair","Selected  #pi^{0} (#eta) decay photons, from MC #gamma #eta decay, companion lost",
                                          nptbins,ptmin,ptmax);
       fhMCPtDecayLostPairEta->SetYTitle("#it{N}");
@@ -1724,7 +1737,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
     fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
     outputContainer->Add(fhMCPi0PtOrigin) ;
-
+    
     fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
     fhMCNotResonancePi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhMCNotResonancePi0PtOrigin->SetYTitle("Origin");
@@ -1739,12 +1752,12 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
     fhMCNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
     outputContainer->Add(fhMCNotResonancePi0PtOrigin) ;
-
+    
     fhMCPi0PtStatus     = new TH2F("hMCPi0PtStatus","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs status",nptbins,ptmin,ptmax,101,-50,50) ;
     fhMCPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhMCPi0PtStatus->SetYTitle("Status");
     outputContainer->Add(fhMCPi0PtStatus) ;
-
+    
     fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
     fhMCEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhMCEtaPtOrigin->SetYTitle("Origin");
@@ -1841,7 +1854,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     Int_t ntypes = fgkNmcTypes;
     if(fAnaType != kSSCalo) ntypes = 2;
-  
+    
     for(Int_t i = 0; i < ntypes; i++)
     {
       fhMCE[i]  = new TH1F
@@ -1883,7 +1896,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         fhMCNLocMaxPt[i] ->SetYTitle("#it{NLM}");
         fhMCNLocMaxPt[i] ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCNLocMaxPt[i]) ;
-
+        
         fhMCNLocMaxPtReject[i] = new TH2F
         (Form("hNLocMaxPtReject_MC%s",pname[i].Data()),
          Form("cluster from %s, #it{p}_{T} of cluster vs NLM, rejected",ptype[i].Data()),
@@ -2551,42 +2564,42 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance #it{Z} (cm) ");
     fhTimePileUpMainVertexZDiamond->SetXTitle("#it{t} (ns)");
     outputContainer->Add(fhTimePileUpMainVertexZDiamond);
-		
-		fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","#it{p}_{T} of cluster vs #it{N} pile-up SPD vertex",
-																	 nptbins,ptmin,ptmax,20,0,20);
-		fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
-		fhPtNPileUpSPDVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-		outputContainer->Add(fhPtNPileUpSPDVtx);
-	  
-		fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","#it{p}_{T} of cluster vs #it{N} pile-up Tracks vertex",
-																	 nptbins,ptmin,ptmax, 20,0,20 );
-		fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
-		fhPtNPileUpTrkVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-		outputContainer->Add(fhPtNPileUpTrkVtx);
-		
-		fhPtNPileUpSPDVtxTimeCut  = new TH2F ("hPt_NPileUpVertSPD_TimeCut","#it{p}_{T} of cluster vs N pile-up SPD vertex, |tof| < 25 ns",
+    
+    fhPtNPileUpSPDVtx  = new TH2F ("hPt_NPileUpVertSPD","#it{p}_{T} of cluster vs #it{N} pile-up SPD vertex",
+                                   nptbins,ptmin,ptmax,20,0,20);
+    fhPtNPileUpSPDVtx->SetYTitle("# vertex ");
+    fhPtNPileUpSPDVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNPileUpSPDVtx);
+    
+    fhPtNPileUpTrkVtx  = new TH2F ("hPt_NPileUpVertTracks","#it{p}_{T} of cluster vs #it{N} pile-up Tracks vertex",
+                                   nptbins,ptmin,ptmax, 20,0,20 );
+    fhPtNPileUpTrkVtx->SetYTitle("# vertex ");
+    fhPtNPileUpTrkVtx->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNPileUpTrkVtx);
+    
+    fhPtNPileUpSPDVtxTimeCut  = new TH2F ("hPt_NPileUpVertSPD_TimeCut","#it{p}_{T} of cluster vs N pile-up SPD vertex, |tof| < 25 ns",
                                           nptbins,ptmin,ptmax,20,0,20);
-		fhPtNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
-		fhPtNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-		outputContainer->Add(fhPtNPileUpSPDVtxTimeCut);
-	  
-		fhPtNPileUpTrkVtxTimeCut  = new TH2F ("hPt_NPileUpVertTracks_TimeCut","#it{p}_{T} of cluster vs N pile-up Tracks vertex, |tof| < 25 ns",
-																					nptbins,ptmin,ptmax, 20,0,20 );
-		fhPtNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
-		fhPtNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-		outputContainer->Add(fhPtNPileUpTrkVtxTimeCut);
+    fhPtNPileUpSPDVtxTimeCut->SetYTitle("# vertex ");
+    fhPtNPileUpSPDVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNPileUpSPDVtxTimeCut);
+    
+    fhPtNPileUpTrkVtxTimeCut  = new TH2F ("hPt_NPileUpVertTracks_TimeCut","#it{p}_{T} of cluster vs N pile-up Tracks vertex, |tof| < 25 ns",
+                                          nptbins,ptmin,ptmax, 20,0,20 );
+    fhPtNPileUpTrkVtxTimeCut->SetYTitle("# vertex ");
+    fhPtNPileUpTrkVtxTimeCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNPileUpTrkVtxTimeCut);
     
     fhPtNPileUpSPDVtxTimeCut2  = new TH2F ("hPt_NPileUpVertSPD_TimeCut2","#it{p}_{T} of cluster vs N pile-up SPD vertex, -25 < tof < 75 ns",
                                            nptbins,ptmin,ptmax,20,0,20);
-		fhPtNPileUpSPDVtxTimeCut2->SetYTitle("# vertex ");
-		fhPtNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-		outputContainer->Add(fhPtNPileUpSPDVtxTimeCut2);
-	  
-		fhPtNPileUpTrkVtxTimeCut2  = new TH2F ("hPt_NPileUpVertTracks_TimeCut2","#it{p}_{T} of cluster vs N pile-up Tracks vertex, -25 < tof < 75 ns",
+    fhPtNPileUpSPDVtxTimeCut2->SetYTitle("# vertex ");
+    fhPtNPileUpSPDVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNPileUpSPDVtxTimeCut2);
+    
+    fhPtNPileUpTrkVtxTimeCut2  = new TH2F ("hPt_NPileUpVertTracks_TimeCut2","#it{p}_{T} of cluster vs N pile-up Tracks vertex, -25 < tof < 75 ns",
                                            nptbins,ptmin,ptmax, 20,0,20 );
-		fhPtNPileUpTrkVtxTimeCut2->SetYTitle("# vertex ");
-		fhPtNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-		outputContainer->Add(fhPtNPileUpTrkVtxTimeCut2);
+    fhPtNPileUpTrkVtxTimeCut2->SetYTitle("# vertex ");
+    fhPtNPileUpTrkVtxTimeCut2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNPileUpTrkVtxTimeCut2);
     
   }
   
@@ -2629,7 +2642,7 @@ Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
   else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
   {
-      return kmcPi0Decay ;
+    return kmcPi0Decay ;
   }//decay photon from pi0
   else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
@@ -2726,12 +2739,12 @@ void AliAnaPi0EbE::HasPairSameMCMother(Int_t label1 , Int_t label2,
         fhMassPairMCPi0 ->Fill(epair,mass);
         fhAnglePairMCPi0->Fill(epair,angle);
         GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
-//        printf(" Lab1 %d (%d), lab2 %d (%d), pdg1 %d, pdg2 %d, Is In calo %d, %d, Is lost %d, %d\n",
-//               label1,photon1->GetLabel(),label2,photon2->GetLabel(), pdg1, pdg2,
-//               GetMCAnalysisUtils()->CheckTagBit(photon1->GetTag(),AliMCAnalysisUtils::kMCDecayPairInCalo),
-//               GetMCAnalysisUtils()->CheckTagBit(photon2->GetTag(),AliMCAnalysisUtils::kMCDecayPairInCalo),
-//               GetMCAnalysisUtils()->CheckTagBit(photon1->GetTag(),AliMCAnalysisUtils::kMCDecayPairLost),
-//               GetMCAnalysisUtils()->CheckTagBit(photon2->GetTag(),AliMCAnalysisUtils::kMCDecayPairLost));
+        //        printf(" Lab1 %d (%d), lab2 %d (%d), pdg1 %d, pdg2 %d, Is In calo %d, %d, Is lost %d, %d\n",
+        //               label1,photon1->GetLabel(),label2,photon2->GetLabel(), pdg1, pdg2,
+        //               GetMCAnalysisUtils()->CheckTagBit(photon1->GetTag(),AliMCAnalysisUtils::kMCDecayPairInCalo),
+        //               GetMCAnalysisUtils()->CheckTagBit(photon2->GetTag(),AliMCAnalysisUtils::kMCDecayPairInCalo),
+        //               GetMCAnalysisUtils()->CheckTagBit(photon1->GetTag(),AliMCAnalysisUtils::kMCDecayPairLost),
+        //               GetMCAnalysisUtils()->CheckTagBit(photon2->GetTag(),AliMCAnalysisUtils::kMCDecayPairLost));
       }
       else  if(pdg1==221)
       {
@@ -2778,6 +2791,9 @@ void AliAnaPi0EbE::InitParameters()
   fIsoCandMinPt = 8;
   fR            = 0.4;
   
+  fM02MinCutForIM = -1 ;
+  fM02MaxCutForIM = -1 ;
+  
 }
 
 //__________________________________________________________________
@@ -2803,7 +2819,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
   }
   
   AliDebug(1,"End");
-
+  
 }
 
 //____________________________________________
@@ -2961,10 +2977,33 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       }
       
       //
+      // Skip pairs with too large/small SS
+      //
+      if(fM02MaxCutForIM > 0 && fM02MinCutForIM > 0)  // 0.1 < M02 < 0.35
+      {
+        Float_t m02Ph1 = photon1->GetM02();
+        Float_t m02Ph2 = photon2->GetM02();
+
+        if(m02Ph1 > fM02MaxCutForIM || m02Ph1 < fM02MinCutForIM) continue ;
+        if(m02Ph2 > fM02MaxCutForIM || m02Ph2 < fM02MinCutForIM) continue ;
+      }
+
+      //
       // Mass of all pairs before selection
       //
       fhMass  ->Fill( epair,mass);
       fhMassPt->Fill(ptpair,mass);
+      if(photon1->Pt() >= photon2->Pt())
+      {
+        fhMassPtMaxPair->Fill(photon1->Pt(),mass);
+        fhMassPtMinPair->Fill(photon2->Pt(),mass);
+      }
+      else
+      {
+        fhMassPtMaxPair->Fill(photon2->Pt(),mass);
+        fhMassPtMinPair->Fill(photon1->Pt(),mass);
+      }
+      
       if(IsDataMC() && mcIndex < 2) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
       
       if(fSelectPairInIsoCone && fMomentum1.Pt() > fIsoCandMinPt)
@@ -3143,8 +3182,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   TObjArray *clusters = 0;
   if( fFillSelectClHisto || IsPileUpAnalysisOn() )
   {
-    if     (GetCalorimeter()==kEMCAL) clusters = GetEMCALClusters();
-	   else if(GetCalorimeter()==kPHOS)  clusters = GetPHOSClusters() ;
+    if     (GetCalorimeter() == kEMCAL) clusters = GetEMCALClusters() ;
+    else if(GetCalorimeter() == kPHOS ) clusters = GetPHOSClusters () ;
   }
   
   AliVCluster * cluster = 0;
@@ -3182,6 +3221,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(!cluster) AliWarning("Cluster not found");
     }
     
+    // Skip cluster with too large/small SS
+    if(fM02MaxCutForIM > 0 && fM02MinCutForIM > 0)  // 0.1 < M02 < 0.35
+    {
+      Float_t m02 = photon1->GetM02();
+      
+      if(m02 > fM02MaxCutForIM || m02 < fM02MinCutForIM) continue ;
+    }
+    
     for(Int_t jphoton = 0; jphoton < nCTS; jphoton++)
     {
       AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (inputAODGammaConv->At(jphoton));
@@ -3214,7 +3261,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         AliDebug(1,Form("NLM %d out of range",nMaxima));
         continue ;
       }
-      
+            
       // Play with the MC stack if available
       Int_t mcIndex = kmcHadron;
       Int_t tag     = 0;
@@ -3233,6 +3280,18 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       // Mass of selected pairs
       fhMass  ->Fill( epair,mass);
       fhMassPt->Fill(ptpair,mass);
+  
+      if(photon1->Pt() >= photon2->Pt())
+      {
+        fhMassPtMaxPair->Fill(photon1->Pt(),mass);
+        fhMassPtMinPair->Fill(photon2->Pt(),mass);
+      }
+      else
+      {
+        fhMassPtMaxPair->Fill(photon2->Pt(),mass);
+        fhMassPtMinPair->Fill(photon1->Pt(),mass);
+      }
+      
       if(IsDataMC() && mcIndex < 2 ) fhMCMassPt[mcIndex]->Fill(ptpair,mass);
       
       //
@@ -3328,7 +3387,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 {
   // Search for pi0 in GetCalorimeter() with shower shape analysis
-
+  
   TObjArray * pl        = 0x0;
   AliVCaloCells * cells = 0x0;
   
@@ -3352,7 +3411,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     AliInfo(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
     return;
   }
-
+  
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++)
   {
     AliVCluster * calo = (AliVCluster*) (pl->At(icalo));
@@ -3396,19 +3455,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
       AliDebug(1,Form("Origin of candidate %d",tag));
     }
-
+    
     //Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
     
     // Check Distance to Bad channel, set bit.
     Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
     if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
     if(distBad < fMinDist)
-    { 
+    {
       // In bad channel (PHOS cristal size 2.2x2.2 cm)
       // FillRejectedClusterHistograms(tag,nMaxima);
       continue ;
     }
- 
+    
     AliDebug(1,Form("Bad channel cut passed %4.2f",distBad));
     
     // If too low number of cells, skip it
@@ -3428,7 +3487,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       //FillRejectedClusterHistograms(tag,nMaxima);
       continue ;
     }
-
+    
     // Check PID
     // PID selection or bit setting
     Int_t    nMaxima  = 0;
@@ -3436,7 +3495,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t    absId1   =-1, absId2   =-1;
     Float_t  distbad1 =-1, distbad2 =-1;
     Bool_t   fidcut1  = 0, fidcut2  = 0;
-
+    
     Int_t idPartType = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
                                                                                    GetVertex(evtIndex),nMaxima,
                                                                                    mass,angle,
@@ -3481,10 +3540,20 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fMomentum12 = fMomentum1+fMomentum2;
     Float_t ptSplit = fMomentum12.Pt();
     Float_t  eSplit = e1+e2;
-
+    
     // Mass of all clusters
     fhMass       ->Fill(fMomentum.E() ,mass);
     fhMassPt     ->Fill(fMomentum.Pt(),mass);
+    if(fMomentum1.Pt() >= fMomentum2.Pt())
+    {
+      fhMassPtMaxPair->Fill(fMomentum1.Pt(),mass);
+      fhMassPtMinPair->Fill(fMomentum2.Pt(),mass);
+    }
+    else
+    {
+      fhMassPtMaxPair->Fill(fMomentum2.Pt(),mass);
+      fhMassPtMinPair->Fill(fMomentum1.Pt(),mass);
+    }
     fhMassSplitPt->Fill(ptSplit ,mass);
     fhPtLambda0NoSplitCut->Fill(fMomentum.Pt(),l0);
     
@@ -3505,7 +3574,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t   noverlaps  =  0;
     Float_t ptprim     =  0;
     Int_t   mesonLabel = -1;
-
+    
     if(IsDataMC())
     {
       mcIndex = GetMCIndex(tag);
@@ -3529,11 +3598,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
           if(fGrandMotherMom.E() > 0 && ok) ptprim = fGrandMotherMom.Pt();
         }
       }
-            
+      
       const UInt_t nlabels = calo->GetNLabels();
       Int_t overpdg[nlabels];
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,mesonLabel,GetReader(),overpdg);
- 
+      
       fhMCMassPt     [mcIndex]->Fill(fMomentum.Pt(),mass);
       fhMCMassSplitPt[mcIndex]->Fill(ptSplit ,mass);
       if(mcIndex==kmcPi0)
@@ -3542,7 +3611,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
         fhMCPi0SplitPtRecoPtPrim                ->Fill(ptSplit ,ptprim);
         fhMCPi0PtRecoPtPrimLocMax     [indexMax]->Fill(fMomentum.Pt(),ptprim);
         fhMCPi0SplitPtRecoPtPrimLocMax[indexMax]->Fill(ptSplit ,ptprim);
-
+        
       }
       else if(mcIndex==kmcEta)
       {
@@ -3551,7 +3620,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
         fhMCEtaPtRecoPtPrimLocMax     [indexMax]->Fill(fMomentum.Pt(),ptprim);
         fhMCEtaSplitPtRecoPtPrimLocMax[indexMax]->Fill(ptSplit ,ptprim);
       }
-
+      
       if(noverlaps==0)
       {
         if(mcIndex==kmcPi0)
@@ -3572,7 +3641,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
         fhMCMassPtNoOverlap     [mcIndex]->Fill(fMomentum.Pt(),mass);
         fhMCMassSplitPtNoOverlap[mcIndex]->Fill(ptSplit ,mass);
       }
-
+      
       fhMCPtAsymmetry[mcIndex]->Fill(fMomentum.Pt(),asy);
     }
     
@@ -3592,21 +3661,21 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     }
     
     AliDebug(1,Form("Pi0/Eta selection cuts passed: pT %3.2f, pdg %d",fMomentum.Pt(), idPartType));
-        
+    
     // Mass and asymmetry of selected pairs
     fhSelectedAsymmetry  ->Fill(fMomentum.E() ,asy );
     fhSelectedMass       ->Fill(fMomentum.E() ,mass);
     fhSelectedMassPt     ->Fill(fMomentum.Pt(),mass);
     fhSelectedMassSplitPt->Fill(ptSplit ,mass);
     fhSelectedMassPtLocMax[indexMax]->Fill(fMomentum.Pt(),mass);
-
+    
     Int_t   nSM  = GetModuleNumber(calo);
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0 && fFillAllNLMHistograms)
     {
       fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(fMomentum.Pt(),mass);
       fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(fMomentum.Pt(),l0  );
     }
-
+    
     if(IsDataMC())
     {
       if(mcIndex==kmcPi0)
@@ -3675,7 +3744,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       fhMCSelectedMassPt     [mcIndex]->Fill(fMomentum.Pt(),mass);
       fhMCSelectedMassSplitPt[mcIndex]->Fill(ptSplit,mass);
       fhMCSelectedMassPtLocMax[mcIndex][indexMax]->Fill(fMomentum.Pt(),mass);
-
+      
       if(noverlaps==0)
       {
         fhMCSelectedMassPtNoOverlap     [mcIndex]->Fill(fMomentum.Pt(),mass);
@@ -3687,7 +3756,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(nMaxima == 1 && fNLMECutMin[0] > fMomentum.E()) continue;
     if(nMaxima == 2 && fNLMECutMin[1] > fMomentum.E()) continue;
     if(nMaxima >  2 && fNLMECutMin[2] > fMomentum.E()) continue;
-
+    
     // Fill some histograms about shower shape
     if(fFillSelectClHisto && GetReader()->GetDataType()!=AliCaloTrackReader::kMC)
     {
@@ -3725,12 +3794,12 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     aodpi0.SetTime(tofcluster);
     aodpi0.SetNCells(calo->GetNCells());
     aodpi0.SetSModNumber(nSM);
-
+    
     aodpi0.SetTag(tag);
-
+    
     // Add AOD with pi0 object to aod branch
     AddAODParticle(aodpi0);
-        
+    
   } // loop
   
   AliDebug(1,"End fill AODs");
@@ -3760,7 +3829,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   {
     AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = pi0->GetIdentifiedParticleType();
-	  
+    
     if( ( pdg != AliCaloPID::kPi0 && pdg != AliCaloPID::kEta ) ) continue;
     
     // Fill pi0 histograms
@@ -3788,7 +3857,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       Int_t tag     = pi0->GetTag();
       Int_t label   = pi0->GetLabel();
       Int_t mcIndex = GetMCIndex(tag);
-
+      
       if(fAnaType!=kSSCalo && mcIndex > 1) continue;
       
       fhMCE    [mcIndex] ->Fill(ener);
@@ -3935,13 +4004,13 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
           else                      fhMCEtaPtOrigin->Fill(pt,7.5);//other?
         }
       }
-
+      
     } // Histograms with MC
     
   }// aod loop
   
   AliDebug(1,"End");
-
+  
 }
 
 //__________________________________________________________________
@@ -3960,9 +4029,12 @@ void AliAnaPi0EbE::Print(const Option_t * opt) const
     printf("Min Distance to Bad Channel   = %2.1f\n",fMinDist);
     printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
     printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);
-  } 
+  }
   printf("    \n") ;
   
-} 
+}
+
+
+
 
 
