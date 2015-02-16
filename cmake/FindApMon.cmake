@@ -15,7 +15,7 @@ if(ApMon)
         message(STATUS "Found ApMon library: ${ApMon_LIBRARIES}")
     endif()
     
-    # check for the existance of the ApMin header
+    # check for the existance of the ApMon header
     find_path(ApMon_INCLUDE_DIR NAMES ApMon.h PATHS ${ApMon}/include NO_DEFAULT_PATH  DOC "Path to ApMon header folder.")
     
     if(NOT ApMon_INCLUDE_DIR)
@@ -25,7 +25,7 @@ if(ApMon)
     endif()
 
     set(ApMon_FOUND TRUE)
-    mark_as_advanced(${ApMon_LIBRARIES} ${ApMon_INCLUDE_DI})
+    mark_as_advanced(${ApMon_LIBRARIES} ${ApMon_INCLUDE_DIR})
 else()
     message(FATAL_ERROR "Please point to the ApMon installation using -DApMon=/install/point")
 endif(ApMon)

@@ -13,7 +13,15 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# Module
+# TestShuttle
+# It needs to be included before the production SHUTTLE in order not to
+# inherit the SHUTTLE environment
+if(TESTSHUTTLE)
+  message(STATUS "TestShuttle enabled")
+  add_subdirectory(TestShuttle)
+endif(TESTSHUTTLE)
+
+# SHUTTLE Module
 set(MODULE SHUTTLE)
 
 # Module include folder
