@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////
 
 #ifndef ROOT_TAxis
-#include "TAxis.h"
+#include <TAxis.h>
 #endif
 
 #ifndef ALITRDRECOTASK_H
@@ -20,7 +20,7 @@
 #endif
 
 #ifndef ALIPID_H
-#include "AliPID.h"
+#include <AliPID.h>
 #endif
 
 class AliTRDpidUtil;
