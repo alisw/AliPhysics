@@ -1,6 +1,7 @@
 #if !defined( __CINT__) || defined(__MAKECINT__)
 
 #include <iostream>
+#include <TMath.h>
 
 #include <AliCDBManager.h>
 #include <AliCDBStorage.h>
@@ -104,6 +105,19 @@ TObject *CreatePRFWidthObject()
 }
 
 //_____________________________________________________________________________
+TObject *CreateChamberExB()
+{
+
+  AliTRDCalDet *calDet = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
+  for (Int_t det = 0; det < AliTRDgeometry::kNdet; ++det) {
+    calDet->SetValue(det,TMath::Tan(9.8/360.*2*TMath::Pi()));
+  }
+  
+  return calDet;
+
+}
+
+//_____________________________________________________________________________
 AliTRDCalChamberStatus *CreateChamberStatusObject()
 {
 
@@ -111,7 +125,7 @@ AliTRDCalChamberStatus *CreateChamberStatusObject()
                                                           ,"chamberstatus");
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; ++i) {
-    obj->SetStatus(i, AliTRDCalChamberStatus::kInstalled);
+    obj->SetStatus(i, AliTRDCalChamberStatus::kGood);
   }
 
   return obj;
@@ -215,7 +229,7 @@ void AliTRDCreateDummyCDB()
   metaData->SetAliRootVersion("05-19-04"); //root version
   metaData->SetComment("Ideal reconstruction parameters for low, high and cosmic runs");
   StoreObject("TRD/Calib/RecoParam",CreateRecoParamObject(),metaData);
-  return;
+  //return;
 
   //
   // Pad objects
@@ -235,6 +249,9 @@ void AliTRDCreateDummyCDB()
   obj = CreatePRFWidthObject();
   StoreObject("TRD/Calib/PRFWidth"          ,obj,metaData);
 
+  obj = CreatePadObject("PadNoise"        ,"PadNoise (local variations)",0.12);
+  StoreObject("TRD/Calib/PadNoise"   ,obj,metaData);
+
   //
   // Detector objects
   //
@@ -249,6 +266,13 @@ void AliTRDCreateDummyCDB()
   
   obj = CreateDetObject("ChamberGainFactor" ,"GainFactor (detector value)", 1);
   StoreObject("TRD/Calib/ChamberGainFactor" ,obj,metaData);
+
+  obj = CreateDetObject("DetNoise" ,"Det Noise (simple scaling value)", 10.0);
+  StoreObject("TRD/Calib/DetNoise" ,obj,metaData);
+
+  obj = CreateChamberExB();
+  StoreObject("TRD/Calib/ChamberExB" ,obj,metaData);
+
   
   //
   // Status objects
