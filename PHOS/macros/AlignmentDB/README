@@ -2,6 +2,18 @@
 
 
 This directory contains a set of scripts related to PHOS alignment.
+Method used in 2015:
+1) using minuit minimization find PHOS alignment matrixes which produce correct position of repers in ALICE.
+   This is done with CheckPHOSAlignment.C macros.
+2) with macros MakeFinalAlignment.C one first creates ideal PHOS rotation matrixes, 
+   then calculates correct rotation matrixes and finally calculates offses. Rotation matrixes 
+   created in reconstruction and stored in ESD file can be ptinted with PrintPHOSMatrix.C macros.
+
+
+
+
+
+
 
 The PHOS alignment object (AliPHOSAlignData) contans as data members 3
 parameters:
