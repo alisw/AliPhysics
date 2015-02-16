@@ -31,6 +31,7 @@ TNamed(),
   fhEfficiency(0),
   fhSmoothEfficiency(0),
   fCorrectpTtrack(0),
+  fNpPoisson(0),
   fpAppliedEfficiency(0)
 {
   // Dummy constructor.
@@ -50,6 +51,7 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fhEfficiency(0),
   fhSmoothEfficiency(0),
   fCorrectpTtrack(0),
+  fNpPoisson(0),
   fpAppliedEfficiency(0)
 {
   // Default constructor.
@@ -124,7 +126,11 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   fpAppliedEfficiency->Fill(meanPt,eff);
 
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
+  if(fNpPoisson){
+     TRandom3 *rndP=new TRandom3(1234);
+     np=rndP->Poisson(np);
   
+  }
   TLorentzVector corrVec; corrVec.SetPtEtaPhiM(jet->Pt(),jet->Eta(),jet->Phi(),jet->M());
 
   Double_t mass = 0.13957; //pion mass
