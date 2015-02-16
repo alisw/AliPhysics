@@ -17,7 +17,7 @@ AliESDtrackCuts *configureNetChargeTrackCut(const Char_t *tname = "sjenaTracksCf
   Double_t gPtMin = 0.10;
   Double_t gPtMax = 100.;
 
-  TString tag = Form(" %d : %d : %4.1f : %4.1f %4.1 =>", imode, cutMode, eta, dcaxy, dcaz);
+  TString tag = Form(" %d : %d : %4.1f : %4.1f %4.1f =>", imode, cutMode, eta, dcaxy, dcaz);
   AliESDtrackCuts *trackCuts  = new AliESDtrackCuts(Form("sjena_%s",tname),Form("satya_%s",tname));
 
   
