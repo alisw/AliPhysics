@@ -73,7 +73,15 @@ class AliPHOSv0 : public AliPHOS {
   AliPHOSv0(AliPHOSv0 & phos);
   AliPHOSv0 & operator = (const AliPHOSv0 & /*rvalue*/);
 
-  ClassDef(AliPHOSv0,1)  // Implementation of PHOS manager class for layout EMC+PPSD
+ protected:  
+  Bool_t fCreateCPV ;         //Should we create module with CPV
+  Bool_t fCreateHalfMod ;     //Should we create  1/2 filled module 
+  Bool_t fActiveModule[6] ;   //list of modules to create
+  Bool_t fActiveCPV[6] ;      //list of modules with CPV
+
+ private:
+  
+  ClassDef(AliPHOSv0,2)  // Implementation of PHOS manager class for layout EMC+PPSD
     
     };
     

@@ -187,7 +187,7 @@ void AliPHOSv1::StepManager(void)
   Int_t moduleNumber ;
   
   static Int_t idPCPQ = -1;
-  if (strstr(fTitle.Data(),"noCPV") == 0) 
+  if (fCreateCPV) 
     idPCPQ = TVirtualMC::GetMC()->VolId("PCPQ");
 
   if( TVirtualMC::GetMC()->CurrentVolID(copy) == idPCPQ &&

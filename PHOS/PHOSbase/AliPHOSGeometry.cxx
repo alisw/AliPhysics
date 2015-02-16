@@ -252,9 +252,12 @@ void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & 
   if(tmpPHOS->IsEmc()){
     snprintf(path,100,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",tmpPHOS->GetPHOSMod()) ;
     if (!gGeoManager->CheckPath(path)){
-      snprintf(path,100,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1",tmpPHOS->GetPHOSMod()) ;
-      if(!gGeoManager->CheckPath(path)){     
-        AliFatal("Geo manager can not find path \n");
+      snprintf(path,100,"/ALIC_1/PHOC_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",tmpPHOS->GetPHOSMod()) ;
+      if (!gGeoManager->CheckPath(path)){
+        snprintf(path,100,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1",tmpPHOS->GetPHOSMod()) ;
+        if(!gGeoManager->CheckPath(path)){     
+          AliFatal("Geo manager can not find path \n");
+	}
       }
     }
     gGeoManager->cd(path) ;
@@ -262,11 +265,11 @@ void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & 
     dy=fCrystalShift ;
   }
   else{
-    snprintf(path,100,"/ALIC_1/PHOS_%d/PCPV_1",tmpPHOS->GetPHOSMod());
+    snprintf(path,100,"/ALIC_1/PHOC_%d/PCPV_1",tmpPHOS->GetPHOSMod());
     if (!gGeoManager->CheckPath(path)){
       snprintf(path,100,"/ALIC_1/PHOH_%d/PCPV_1",tmpPHOS->GetPHOSMod());
       if (!gGeoManager->CheckPath(path))
-        AliFatal(Form("Geo manager can not find path /ALIC_1/PHOS(H)_%d/PCPV_1 \n",tmpPHOS->GetPHOSMod()));
+        AliFatal(Form("Geo manager can not find path /ALIC_1/PHOC(H)_%d/PCPV_1 \n",tmpPHOS->GetPHOSMod()));
     }
     gGeoManager->cd(path) ;
     m = gGeoManager->GetCurrentMatrix();

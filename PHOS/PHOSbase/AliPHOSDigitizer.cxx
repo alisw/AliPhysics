@@ -280,15 +280,24 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //Making digits with noise, first EMC
   //Check which PHOS modules are present
   Bool_t isPresent[5] ;
+  Bool_t isCPVpresent[5] ;
   TString volpath ;
   Int_t nmod=0 ;
+  Int_t nCPVmod=0 ;
   for(Int_t i=0; i<5; i++){
     isPresent[i]=0 ;
-    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOS_%d",i+1))) {
+    isCPVpresent[i]=0 ;
+    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOS_%d",i+1))) { //PHOS module without CPV
       isPresent[i]=1 ;
       nmod++ ;
     }
-    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOH_%d",i+1))) {
+    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOC_%d",i+1))) { //PHOS module with CPV
+      isPresent[i]=1 ;
+      isCPVpresent[i]=1 ;
+      nCPVmod++ ;
+      nmod++ ;
+    }
+    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOH_%d",i+1))) { //1/2 PHOS module
       isPresent[i]=1 ;
       nmod++ ;
     }
@@ -298,24 +307,14 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   
   Int_t nCPV ;
   Int_t absID ;
-  
-  //check if CPV exists
-  Bool_t isCPVpresent=0 ;
-  for(Int_t i=1; i<=5 && !isCPVpresent; i++){
-    volpath = "/ALIC_1/PHOS_";
-    volpath += i;
-    volpath += "/PCPV_1";
-    if (gGeoManager->CheckPath(volpath.Data())) 
-      isCPVpresent=1 ;
-  } 
-  
-  if(isCPVpresent){
-    nCPV = nEMC + geom->GetNumberOfCPVPadsZ() * geom->GetNumberOfCPVPadsPhi() * nmod ;
+    
+  if(nCPVmod){
+    nCPV = nEMC + geom->GetNumberOfCPVPadsZ() * geom->GetNumberOfCPVPadsPhi() * nCPVmod ;
   }
   else{
      nCPV = nEMC ;
-  }  
-
+  }    
+  
   digits->Expand(nCPV) ;
 
   //take all the inputs to add together and load the SDigits
@@ -385,6 +384,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   if(toMakeNoise)
      apdNoise = AliPHOSSimParam::GetInstance()->GetAPDNoise() ; 
 
+  Int_t relId[4] ;
   Int_t emcpermod=geom->GetNPhi()*geom->GetNZ();
   Int_t idigit= 0;
   for(Int_t imod=0; imod<5; imod++){
@@ -393,6 +393,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     Int_t firstAbsId=imod*emcpermod+1 ;
     Int_t lastAbsId =(imod+1)*emcpermod ; 
     for(absID = firstAbsId ; absID <= lastAbsId ; absID++){
+      //do not add digits to non-existing part of mod4
+      geom->AbsToRelNumbering(absID,relId) ;
+      if(relId[0]==4 && relId[2]<33) //This part of module does not exist
+	continue ;
       Float_t noise = gRandom->Gaus(0.,apdNoise) ; 
       new((*digits)[idigit]) AliPHOSDigit( -1, absID, noise, TimeOfNoise() ) ;
       //look if we have to add signal?
@@ -475,17 +479,20 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     }
   }
 
+  Int_t nEMCcreated=idigit ;
 
   //Apply non-linearity
   if(AliPHOSSimParam::GetInstance()->IsCellNonlinearityOn()){ //Apply non-lineairyt on cell level
     const Double_t aNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyA() ;
     const Double_t bNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyB() ;
     const Double_t cNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyC() ;
-    for(Int_t i = 0 ; i < nEMC ; i++){
+    for(Int_t i = 0 ; i < nEMCcreated ; i++){
       digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
-      Double_t e= digit->GetEnergy() ;
-      // version(1)      digit->SetEnergy(e*(1+a*TMath::Exp(-e/b))) ;
-      digit->SetEnergy(e*cNL*(1.+aNL*TMath::Exp(-e*e/2./bNL/bNL))) ; //Better agreement with data...
+      if(digit){ //if there is mod 4, there is a hole
+         Double_t e= digit->GetEnergy() ;
+         // version(1)      digit->SetEnergy(e*(1+a*TMath::Exp(-e/b))) ;
+         digit->SetEnergy(e*cNL*(1.+aNL*TMath::Exp(-e*e/2./bNL/bNL))) ; //Better agreement with data...
+      }
     }  
   }
 
@@ -493,16 +500,18 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //distretize energy if necessary
   if(AliPHOSSimParam::GetInstance()->IsEDigitizationOn()){
     Float_t adcW=AliPHOSSimParam::GetInstance()->GetADCchannelW() ;
-    for(Int_t i = 0 ; i < nEMC ; i++){                                                                                                       
+    for(Int_t i = 0 ; i < nEMCcreated ; i++){                                                                                                       
       digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
-      digit->SetEnergy(adcW*ceil(digit->GetEnergy()/adcW)) ;
+      if(digit)
+        digit->SetEnergy(adcW*ceil(digit->GetEnergy()/adcW)) ;
     } 
   }
  
   //Apply decalibration if necessary
-  for(Int_t i = 0 ; i < nEMC ; i++){
+  for(Int_t i = 0 ; i < nEMCcreated ; i++){
     digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
-    Decalibrate(digit) ;
+    if(digit)
+      Decalibrate(digit) ;
   }
   
 //  ticks->Delete() ;
@@ -512,10 +521,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   Int_t cpvpermod = geom->GetNumberOfCPVPadsZ() * geom->GetNumberOfCPVPadsPhi() ;
   Int_t nEMCtotal=emcpermod*5 ;
   Float_t cpvNoise = AliPHOSSimParam::GetInstance()->GetCPVNoise() ;
-  if(isCPVpresent){  //CPV is present in current geometry
-    for(Int_t imod=0; imod<5; imod++){ //module is present in current geometry
-      if(!isPresent[imod])
-        continue ;
+  for(Int_t imod=0; imod<5; imod++){ //module is present in current geometry
+    if(isCPVpresent[imod]){  //CPV is present in current geometry
       Int_t firstAbsId=nEMCtotal+imod*cpvpermod+1 ;
       Int_t lastAbsId =nEMCtotal+(imod+1)*cpvpermod ;
       for(absID = firstAbsId; absID <= lastAbsId; absID++){
@@ -569,23 +576,27 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
   delete sdigArray ; //We should not delete its contents 
   
-  Int_t relId[4];
-
   //set amplitudes in bad channels to zero
+  
+  
 
-  for(Int_t i = 0 ; i <digits->GetEntriesFast(); i++){
+//  for(Int_t i = 0 ; i <digits->GetEntriesFast(); i++){
+  for(Int_t i = 0 ; i <nEMCcreated; i++){
     digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
-    geom->AbsToRelNumbering(digit->GetId(),relId);
-    if(relId[1] == 0){ // Emc
-      if(fcdb->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
+    if(digit){
+      geom->AbsToRelNumbering(digit->GetId(),relId);
+      if(relId[1] == 0){ // Emc
+        if(fcdb->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
+      }
     }
   }
 
   //remove digits below thresholds
   Float_t emcThreshold = AliPHOSSimParam::GetInstance()->GetEmcDigitsThreshold() ;
-  for(Int_t i = 0 ; i < nEMC ; i++){
+  for(Int_t i = 0 ; i < nEMCcreated ; i++){
     digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
-
+    if(!digit)
+      continue ;
     if(digit->GetEnergy() < emcThreshold){
       digits->RemoveAt(i) ;
       continue ;
@@ -609,8 +620,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     digit->SetALTROSamplesLG(nSamples,fADCValuesLG);
   }
 
+  Int_t nCPVcreated=digits->GetEntriesFast() ;
   Float_t cpvDigitThreshold = AliPHOSSimParam::GetInstance()->GetCpvDigitsThreshold() ;
-  for(Int_t i = nEMC; i < nCPV ; i++){
+  for(Int_t i = nEMCcreated; i < nCPVcreated ; i++){
     if( static_cast<AliPHOSDigit*>(digits->At(i))->GetEnergy() < cpvDigitThreshold )
       digits->RemoveAt(i) ;
   } 

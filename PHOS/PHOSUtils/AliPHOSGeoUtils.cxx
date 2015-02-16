@@ -171,11 +171,10 @@ AliPHOSGeoUtils::~AliPHOSGeoUtils(void)
   }
 
   for(Int_t mod=0; mod<5; mod++){
-    delete fEMCMatrix[mod] ;
-    for(Int_t istrip=0; istrip<224; istrip++)
-      delete fStripMatrix[mod][istrip];
-    delete fCPVMatrix[mod];
-    delete fPHOSMatrix[mod];
+     if(fPHOSMatrix[mod]){
+      delete fPHOSMatrix[mod];
+      fPHOSMatrix[mod]=0x0 ;
+    }
   }
 }
 //____________________________________________________________________________
@@ -548,12 +547,15 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
     char path[255] ;
     snprintf(path,255,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
     //    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
-    if (!gGeoManager->CheckPath(path)){
-//Try half-mod name      
-      snprintf(path,255,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1",mod) ;
+    if (!gGeoManager->CheckPath(path)){ //Module with CPV
+      snprintf(path,255,"/ALIC_1/PHOC_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
       if (!gGeoManager->CheckPath(path)){
-        AliWarning(Form("Geo manager can not find path %s \n",path));
-        return 0;
+        //Try half-mod name      
+        snprintf(path,255,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1",mod) ;
+        if (!gGeoManager->CheckPath(path)){
+          AliWarning(Form("Geo manager can not find path %s \n",path));
+          return 0;
+	}
       }
     }
     gGeoManager->cd(path) ;
@@ -579,12 +581,15 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
   if(gGeoManager){
     char path[255] ;
     snprintf(path,255,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d",mod,strip) ;
-    if (!gGeoManager->CheckPath(path)){
-      //Look for half-module path
-      snprintf(path,255,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1/PSTR_%d",mod,strip) ;
-      if (!gGeoManager->CheckPath(path)){    
-        AliWarning(Form("Geo manager can not find path %s \n",path));
-        return 0 ;
+    if (!gGeoManager->CheckPath(path)){ //Test module with CPV
+      snprintf(path,255,"/ALIC_1/PHOC_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d",mod,strip) ;
+      if (!gGeoManager->CheckPath(path)){
+        //Look for half-module path
+        snprintf(path,255,"/ALIC_1/PHOH_%d/PEMH_1/PCLH_1/PIOH_1/PCOH_1/PAGH_1/PTIH_1/PSTR_%d",mod,strip) ;
+        if (!gGeoManager->CheckPath(path)){    
+          AliWarning(Form("Geo manager can not find path %s \n",path));
+          return 0 ;
+	}
       }
     }
     gGeoManager->cd(path) ;
@@ -610,7 +615,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
   if(gGeoManager){ 
     char path[255] ;
     //now apply possible shifts and rotations
-    snprintf(path,255,"/ALIC_1/PHOS_%d/PCPV_1",mod) ;
+    snprintf(path,255,"/ALIC_1/PHOC_%d/PCPV_1",mod) ;
     if (!gGeoManager->CheckPath(path)){
       snprintf(path,255,"/ALIC_1/PHOH_%d/PCPV_1",mod) ;
       if (!gGeoManager->CheckPath(path)){
@@ -642,12 +647,14 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
 
     char path[255] ;
     snprintf(path,255,"/ALIC_1/PHOS_%d",mod) ;
-  
-    if (!gGeoManager->CheckPath(path)){
-      snprintf(path,255,"/ALIC_1/PHOH_%d",mod) ;
-      if (!gGeoManager->CheckPath(path)){
-        AliWarning(Form("Geo manager can not find path %s \n",path));
-        return 0 ;
+    if (!gGeoManager->CheckPath(path)){ //Module with CPV
+      snprintf(path,255,"/ALIC_1/PHOC_%d",mod) ;
+      if (!gGeoManager->CheckPath(path)){ //1/2 module
+        snprintf(path,255,"/ALIC_1/PHOH_%d",mod) ;
+        if (!gGeoManager->CheckPath(path)){
+          AliWarning(Form("Geo manager can not find path %s \n",path));
+          return 0 ;
+	}
       }
     }
     gGeoManager->cd(path) ;
@@ -733,4 +740,18 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   fCPVMatrix[mod]->SetTranslation(globCPV) ;
 
 }
+//____________________________________________________________________________ 
+void AliPHOSGeoUtils::TestSurvey(Int_t module, const Float_t *point, TVector3 &globaPos) const { 
+  //method used in PHOS alignment check
+  //Input is module number and point is Photogrammetry reference point wrt top right crystal
+  //output- point coordinates in ALICE global system
+  
+  Double_t x0=31.5*fCellStep;      //Number of crystals 
+  Double_t z0=26.5*fCellStep;  //from module center
+  Double_t posL[3]={-x0+point[0],-fCrystalShift-point[1],z0-point[2]} ; 
+  Double_t posG[3] ;
+  const TGeoHMatrix *mPHOS = GetMatrixForModule(module) ;
+  mPHOS->LocalToMaster(posL,posG);
+  globaPos.SetXYZ(posG[0],posG[1],posG[2]) ;
  
+}

@@ -51,7 +51,9 @@ public:
                                          // gets the position of element (pad or Xtal) relative to Alice
 
   void Local2Global(Int_t module, Float_t x, Float_t z, TVector3 &globaPos) const ;
-              
+
+  void TestSurvey(Int_t module, const Float_t *point, TVector3 &globaPos) const ; //method used in PHOS alignment check
+             
   void Global2Local(TVector3& localPosition,const TVector3& globalPosition,Int_t module) const ;
 
   Bool_t GlobalPos2RelId(TVector3 & global, Int_t * relId) ;
