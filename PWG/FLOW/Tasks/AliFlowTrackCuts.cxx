@@ -621,10 +621,19 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
       delete fChi3C;
       fChi3C = 0x0;
   }
-  fContoursFile->Close();
+  if(fContoursFile) {
+      fContoursFile->Close();
+      fContoursFile = 0x0;
+  }
   for(int i=0;i<50;i++){
-     delete fCutContour[i];
-     delete fCutGraph[i];
+     if(fCutContour[i]) {
+         delete fCutContour[i];
+         fCutContour[i] = 0;
+     }
+     if(fCutGraph[i]) {
+         delete fCutGraph[i];
+         fCutGraph[i] = 0x0;
+     }
   }
 }
 
