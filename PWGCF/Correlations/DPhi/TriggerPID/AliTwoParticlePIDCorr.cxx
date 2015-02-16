@@ -1797,7 +1797,6 @@ void AliTwoParticlePIDCorr::doMCAODevent()
     AliError("eventMain not available");
     return;
   }
-    cout<<"********************************************************************Hi"<<endl;
 
   Double_t Inv_mass=0.0;//has no meaning for pions, kaons and protons(just set 0.0) to fill the LRCParticlePID position
     evplaneMC=999.;
@@ -2844,12 +2843,12 @@ void AliTwoParticlePIDCorr::doAODevent()
   }
 
 
-   TString firedTriggerClasses=aod->GetFiredTriggerClasses();
+  //TString firedTriggerClasses=aod->GetFiredTriggerClasses();
   //if(firedTriggerClasses.Contains("CSH1-B")){
  
  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSelectBit);
  //if(!isSelected) return;
-    cout<<"*************************************************"<<firedTriggerClasses<<endl;
+   //cout<<"*************************************************"<<firedTriggerClasses<<endl;
   Double_t Inv_mass=0.0;
 
 // count all events   
