@@ -2241,8 +2241,8 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 			      // Check the acceptance for gamma and electrons
 			
 			      TParticle *gamma    = fMCStack->Particle(labelgamma);
-			      TParticle *electron = fMCStack->Particle(labelelectron);
-			      TParticle *positron = fMCStack->Particle(labelpositron);
+			      //TParticle *electron = fMCStack->Particle(labelelectron);
+			      //TParticle *positron = fMCStack->Particle(labelpositron);
 			      
 			      Bool_t kDaughGammaIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelgamma,     mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 			      Bool_t kDaughElectIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelelectron,  mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -2250,7 +2250,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 					
 			
 			
-			      if( kDaughElectIsPrim && kDaughElectIsPrim && kDaughPositIsPrim &&				
+			      if( kDaughElectIsPrim && kDaughPositIsPrim && kDaughGammaIsPrim &&				
 				 ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma,fMCStack,kFALSE) &&
 				 ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(gamma->Phi(),fEventPlaneAngle,kFALSE) &&
 				 ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(labelelectron,fMCStack) &&
