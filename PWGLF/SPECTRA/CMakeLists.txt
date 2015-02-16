@@ -87,7 +87,14 @@ set(SRCS
   XtAnalysis/AliJCard.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
   IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
-  )
+  MultEvShape/AliMESeventInfo.cxx
+  MultEvShape/AliMEStrackInfo.cxx
+  MultEvShape/AliMESbaseTask.cxx
+  MultEvShape/AliMEStender.cxx
+  MultEvShape/AliMESpidTask.cxx
+  MultEvShape/AliMESchgTask.cxx
+  MultEvShape/AliMESppColTask.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
