@@ -281,6 +281,7 @@ void AliAnalysisTaskEmcalJetTagger::ResetTagging(const Int_t c) {
 
   for(int i = 0;i<GetNJets(c);i++){
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(GetJetFromArray(i, c));
+    if(!jet) continue;
     if(fJetTaggingType==kClosest)
       jet->ResetMatching();
     else if(fJetTaggingType==kTag) {
