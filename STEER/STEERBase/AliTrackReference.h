@@ -30,6 +30,7 @@ public:
 		    kPMD   = 10,
 		    kFMD   = 12,
 		    kVZERO = 14,
+		    kZDC   = 15,
 		    kMFT   = 16,
 		    kHALL  = 17,
 		    kFIT  = 18 //alla
@@ -97,6 +98,6 @@ protected:
   Float_t   fTime;       // time of flight in cm  
   Int_t     fUserId;     // optional Id defined by user
   Int_t     fDetectorId; // Detector Id
-  ClassDef(AliTrackReference,6)  //Base class for all Alice track references
+  ClassDef(AliTrackReference,7)  //Base class for all Alice track references
 };
 #endif
