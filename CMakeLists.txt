@@ -111,7 +111,7 @@ else()
   # date-config needs DIMDIR and ODIR set
   # Setting variables in cache to be accesible by ccmake
   set(DATE_CONFIG CACHE STRING "date-config script location")
-  set(DIMDIT CACHE STRING "dim installation folder")
+  set(DIMDIR CACHE STRING "dim installation folder")
   set(ODIR CACHE STRING "dim plaform, usually \"linux\"")
 
   if(DIMDIR AND ODIR)
