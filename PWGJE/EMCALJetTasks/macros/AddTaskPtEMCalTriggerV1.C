@@ -107,7 +107,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts *kineCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts();
   kineCuts->SetPtRange(2., 100.);
   defaultselect->SetKineCuts(kineCuts);
-  AddEventCounterComponent(defaultselect, isMC);
+  AddEventCounterComponent(defaultselect, usePatches);
   if(isMC){
     if(doMCParticles) AddMCParticleComponent(defaultselect);
     if(doMCJets) AddMCJetComponent(defaultselect, 20.);
