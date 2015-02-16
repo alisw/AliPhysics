@@ -116,19 +116,19 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
 
   // *******************  MES PID task  ******************
   if(tpid){ 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C+");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
     AddMESpidTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
 // 
 //   // *******************  MES CHG task  ******************
   if(tchg){ 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C+");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C");
     AddMESchgTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
 //   
 //   // *******************  MES ppCol task  ******************
   if(tpp){ 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C+");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
     AddMESppColTask(&co[AliMESbaseTask::kEventInfo], mc);  
   }
   if (!mgr->InitAnalysis()) return;
