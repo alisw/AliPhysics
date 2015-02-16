@@ -105,7 +105,14 @@ class AliJetFlowTools {
             fCentralityWeights = weights;
             if(!fCentralityArray) printf(" > Warning: centrality weights set, but bins are not defined! \n");
         }
-        void            SetMergeWith(TList* l, Int_t c)         {fMergeWithList         = l; fMergeWithCen      = c;}
+        void            SetMergeWith(
+                TList* l, 
+                Int_t c,
+                Float_t weight) {
+            fMergeWithList      = l; 
+            fMergeWithCen       = c;
+            fMergeWithWeight    = weight;
+        }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
         void            SetBinsTrue(TArrayD* bins)              {fBinsTrue              = bins;}
@@ -266,7 +273,7 @@ class AliJetFlowTools {
         static void     MinimizeChi2nd();
         static Double_t PhenixChi2nd(const Double_t *xx );
         static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
-        static TF2*     ReturnFunctionnd(Double_t &p, Double_t p_wrt_to = 0.);
+        static TF2*     ReturnFunctionnd(Double_t &p);
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -343,7 +350,9 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
             return tex;
         }
 
-        static void     SavePadToPDF(TVirtualPad* pad)  {return;/*pad->SaveAs(Form("%s.pdf", pad->GetName()));*/}
+        static void     SavePadToPDF(TVirtualPad* pad)  {
+            if(pad) return;/*pad->SaveAs(Form("%s.pdf", pad->GetName()));*/
+            else return;}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}
@@ -414,6 +423,10 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                 TString source = "",
                 Bool_t RMS = kFALSE) const;
         static void     ResetAliUnfolding();
+        static void     SquelchWarning() {
+            printf(" >> I squelched a warning << \n");
+            return;
+        }
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
         // ProjectionY()) check for existing objects by name and re-use them
@@ -439,6 +452,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TArrayD*                fCentralityWeights;     // array of centrality weights
         TList*                  fMergeWithList;         // additional input list
         Int_t                   fMergeWithCen;          // centrality bin of additional input list
+        Float_t                 fMergeWithWeight;       // weight of additional input list
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
