@@ -92,6 +92,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fCentralityWeights  (0x0),
     fMergeWithList      (0x0),
     fMergeWithCen       (-1),
+    fMergeWithWeight    (1.),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -883,12 +884,13 @@ TH1D* AliJetFlowTools::FoldSpectrum(
         const TH1D* measuredJetSpectrum,      // truncated raw jets (same binning as pt rec of response) 
         const TH2D* resizedResponse,          // response matrix
         const TH1D* kinematicEfficiency,      // kinematic efficiency
-        const TH1D* measuredJetSpectrumTrueBins,        // unfolding template: same binning is pt gen of response
+        const TH1D* measuredJetSpectrumTrueBins,        // not used
         const TString suffix,                 // suffix (in or out of plane)
         const TH1D* jetFindingEfficiency)     // jet finding efficiency (optional)
 {
     // simple function to fold the given spectrum with the in-plane and out-of-plane response
 
+    if(!measuredJetSpectrumTrueBins) SquelchWarning();
     // 0) for consistency with the other methods, keep the same nomenclature which admittedly is a bit confusing 
     // what is 'unfolded' here, is just a clone of the input spectrum, binned to the 'unfolded' binning
     TH1D* unfoldedLocal((TH1D*)measuredJetSpectrum->Clone(Form("unfoldedLocal_%s", suffix.Data())));
@@ -972,7 +974,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
     if(fMergeWithList) {
         spectrumName = Form("fHistJetPsi2Pt_%i", fMergeWithCen);
         printf( " Adding additional output %s \n", spectrumName.Data());
-        fJetPtDeltaPhi->Add(((TH2D*)fMergeWithList->FindObject(spectrumName.Data())));
+        fJetPtDeltaPhi->Add(((TH2D*)fMergeWithList->FindObject(spectrumName.Data())), fMergeWithWeight);
     }
 
     // in plane spectrum
@@ -1053,7 +1055,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
     if(fMergeWithList) {
         deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fMergeWithCen) : Form("fHistDeltaPtDeltaPhi2_%i", fMergeWithCen);
         printf(" Adding additional data %s \n", deltaptName.Data());
-        fDeltaPtDeltaPhi->Add((TH2D*)fMergeWithList->FindObject(deltaptName.Data()));
+        fDeltaPtDeltaPhi->Add((TH2D*)fMergeWithList->FindObject(deltaptName.Data()), fMergeWithWeight);
     }
 
     // in plane delta pt distribution
@@ -1746,7 +1748,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
        } break;
        case kV2 : {
 //            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
-            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} \{EP, |#Delta#eta|>0.9 \} ");
+            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} {EP, |#Delta#eta|>0.9 } ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
             h->SetMarkerStyle(8);
             h->SetMarkerSize(1);
@@ -1773,6 +1775,7 @@ void AliJetFlowTools::GetNominalValues(
     printf("\n\n\n\t\t GetNominalValues \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(outFile.Data(), "RECREATE"));   // create new output file
+    if(output) SquelchWarning();
     // get some placeholders, have to be initialized but will be deleted
     ratio = new TH1D("nominal", "nominal", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
     TH1D* nominalIn(new TH1D("nominal in", "nominal in", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -1830,6 +1833,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     printf("\n\n\n\t\t GetCorrelatedUncertainty \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
+
+    if(sym2nd) SquelchWarning();
 
     // create some null placeholder pointers
     TH1D* relativeErrorVariationInLow(0x0);
@@ -4291,7 +4296,7 @@ void AliJetFlowTools::GetSignificance(
         )
 {
     // main use of this function is filling the static buffers
-    Double_t statE(0), shapeE(0), corrE(0), y(0), x(0), chi2(0);
+    Double_t statE(0), shapeE(0), corrE(0), y(0), x(0);
 
     // print some stuff
     printf(" double v2[] = {\n");
@@ -4419,10 +4424,11 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 Double_t AliJetFlowTools::ConstructFunctionnd(Double_t *x, Double_t *par)
 {
     // internal use only: evaluate the function at a given point
+    if(par) SquelchWarning(); 
     return AliJetFlowTools::PhenixChi2nd(x);
 }
 //_____________________________________________________________________________
-TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p, Double_t p_wrt_to)
+TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
 {
     // return the fitting function, pass the p-value w.r.t. 0 by reference
     const Int_t DOF(4);
