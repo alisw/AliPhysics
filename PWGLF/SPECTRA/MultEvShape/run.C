@@ -1,32 +1,32 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include <Riostream.h>
 
-#include "TStopwatch.h"
+#include <TStopwatch.h>
 
-#include "TROOT.h"
-#include "TClass.h"
-#include "TSystem.h"
-#include "TError.h"
-#include "TChain.h"
-#include "TGrid.h"
-#include "TList.h"
-#include "TMethodCall.h"
-#include "TAlienCollection.h"
-#include "TGridCollection.h"
-#include "TGridResult.h"
-#include "TGeoGlobalMagField.h"
+#include <TROOT.h>
+#include <TClass.h>
+#include <TSystem.h>
+#include <TError.h>
+#include <TChain.h>
+#include <TGrid.h>
+#include <TList.h>
+#include <TMethodCall.h>
+#include <TAlienCollection.h>
+#include <TGridCollection.h>
+#include <TGridResult.h>
+#include <TGeoGlobalMagField.h>
 
-#include "AliLog.h"
-#include "AliCDBManager.h"
-#include "AliGRPManager.h"
-#include "AliGeomManager.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliMCEventHandler.h"
-#include "AliESDInputHandler.h"
+#include <AliLog.h>
+#include <AliCDBManager.h>
+#include <AliGRPManager.h>
+#include <AliGeomManager.h>
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+#include <AliMCEventHandler.h>
+#include <AliESDInputHandler.h>
 
-#include "PWGLF/SPECTRA/MultEvShape/AliMESbaseTask.h"
-#include "PWGLF/SPECTRA/MultEvShape/AliMEStender.h"
+#include <AliMESbaseTask.h>
+#include <AliMEStender.h>
 #endif
 
 TChain* MakeChainLST(const char* filename = NULL);
@@ -116,19 +116,19 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
 
   // *******************  MES PID task  ******************
   if(tpid){ 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C+");
     AddMESpidTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
 // 
 //   // *******************  MES CHG task  ******************
   if(tchg){ 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C+");
     AddMESchgTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
 //   
 //   // *******************  MES ppCol task  ******************
   if(tpp){ 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C+");
     AddMESppColTask(&co[AliMESbaseTask::kEventInfo], mc);  
   }
   if (!mgr->InitAnalysis()) return;
