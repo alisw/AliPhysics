@@ -1,12 +1,16 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
-#include "TError.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliLog.h"
-#include "AliTRDpwgppHelper.h"
-#include "AliTRDefficiency.h"
-#include "AliTRDefficiencyMC.h"
-#include "AliTRDmultiplicity.h"
+#include <TError.h>
+
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+#include <AliLog.h>
+
+#include <AliTRDtrackInfo.h>
+#include <AliTRDeventInfo.h>
+#include <AliTRDpwgppHelper.h>
+#include <AliTRDefficiency.h>
+#include <AliTRDefficiencyMC.h>
+#include <AliTRDmultiplicity.h>
 #endif
 
 void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
