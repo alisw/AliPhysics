@@ -229,6 +229,9 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
+  TStopwatch stopwatch;
+  stopwatch.Start();
+  
   HLTInfo("AliHLTTPCCalibManagerComponent::DoEvent\n");
   Int_t iResult=0;
 
@@ -269,6 +272,8 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
   PushAndReset(fAnalysisManager->GetOutputs()); 
 
+  stopwatch.Stop();
+  AliSysInfo::AddStamp("analysisTiming",vEvent->GetNumberOfTracks(),stopwatch.RealTime()*1000,stopwatch.CpuTime()*1000);
   return iResult;
 }
 
