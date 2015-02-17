@@ -33,6 +33,8 @@
 #include "TFile.h"
 #include "TSystem.h"
 #include "TTimeStamp.h"
+#include "TStopwatch.h"
+#include "AliSysInfo.h"
 
 ClassImp(AliTPCAnalysisTaskcalib)
 
@@ -85,6 +87,8 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   // Exec function
   // Loop over tracks and call  Process function
     //Printf(" **************** AliTPCAnalysisTaskcalib::Exec() **************** ");
+  TStopwatch stopWatch;
+  stopWatch.Start();
   if (!fV) {
     Printf("ERROR: fV not available");
     return;
@@ -112,6 +116,8 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     if (track) Process(track, run);
     if (seed)  Process(seed);
   }
+  stopWatch.Stop();
+  AliSysInfo::AddStamp("AliTPCAnalysisTaskcalib::Exec()",fV->GetNumberOfTracks(),stopWatch.RealTime()*1000,stopWatch.CpuTime()*1000);
 }
 
 void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {

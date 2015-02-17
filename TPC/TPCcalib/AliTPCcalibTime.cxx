@@ -60,6 +60,9 @@ Comments to be written here:
 #include "AliKFVertex.h"
 #include <AliLog.h>
 
+#include "TStopwatch.h"
+#include "AliSysInfo.h"
+
 ClassImp(AliTPCcalibTime)
 
 Double_t AliTPCcalibTime::fgResHistoMergeCut = 20000000.;
@@ -372,6 +375,8 @@ void AliTPCcalibTime::Process(AliVEvent *event){
   //
   // main function to make calibration
   //
+  TStopwatch stopWatch;
+  stopWatch.Start();
   if(!event) return;
   if (event->GetNumberOfTracks()<2) return; 
   AliVfriendEvent *Vfriend=event->FindFriend();
@@ -387,6 +392,10 @@ void AliTPCcalibTime::Process(AliVEvent *event){
   ProcessCosmic(event);
   //if(IsBeam   (event)) 
   ProcessBeam  (event);
+
+  stopWatch.Stop();
+  AliSysInfo::AddStamp("AliTPCcalibTime::Process()",event->GetNumberOfTracks(),stopWatch.RealTime()*1000,stopWatch.CpuTime()*1000);
+
 }
 
 void AliTPCcalibTime::ProcessLaser(AliVEvent *event){
