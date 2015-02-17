@@ -67,8 +67,8 @@ class AliJetFlowTools {
             kDeltaPhi,                  // default for delta phi
             kEmpty };                   // default style
         // setters, interface to the class
-        void            SetOffsetStart(Int_t g)         {gOffsetStop            = g;}
-        void            SetOffsetStop(Int_t g)          {gOffsetStart           = g;}
+        void            SetOffsetStart(Int_t g)         {gOffsetStart           = g;}
+        void            SetOffsetStop(Int_t g)          {gOffsetStop            = g;}
         void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
         void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
