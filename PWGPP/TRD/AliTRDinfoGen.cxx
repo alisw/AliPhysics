@@ -375,7 +375,8 @@ Bool_t AliTRDinfoGen::LoadOnlTracklets(const Option_t *opt)
     br->SetAddress(&trkl);
     for (Int_t iTracklet = 0; iTracklet < br->GetEntries(); iTracklet++) {
       if(!br->GetEntry(iTracklet)) continue;
-      new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliTRDtrackletMCM(*trkl);
+      //new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliTRDtrackletMCM(*trkl);
+      fTracklets->Add(new AliTRDtrackletMCM(*trkl));
     }
   } else if(strcmp(opt, "_raw")==0){   // loading raw.onl.tracklets
     snprintf(typ, 5, "RAW");
@@ -388,7 +389,8 @@ Bool_t AliTRDinfoGen::LoadOnlTracklets(const Option_t *opt)
       for (Int_t iTracklet = 0; iTracklet < trklArray->GetEntries(); iTracklet++) {
         AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) ((*trklArray)[iTracklet]);
         trklWord->SetDetector(hc/2);
-        new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliTRDtrackletWord(*trklWord);
+        //new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliTRDtrackletWord(*trklWord);
+        fTracklets->Add(new AliTRDtrackletWord(*trklWord));
       }
     }
   }
