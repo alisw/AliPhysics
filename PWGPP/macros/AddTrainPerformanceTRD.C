@@ -35,7 +35,7 @@
 
 #include <TStopwatch.h>
 #include <TMemStat.h>
-#include <TMemStatViewerGUI.h>
+//#include <TMemStatViewerGUI.h>
 
 #include <TROOT.h>
 #include <TClass.h>
@@ -142,10 +142,10 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       break;
     case AliTRDpwgppHelper::kCheckTRK:
       // map slots
-      ce[0]=ci[AliTRDpwgppHelper::kTracksBarrel];
-      ce[1]=ci[AliTRDpwgppHelper::kEventInfo];
-      ce[2]=ci[AliTRDpwgppHelper::kTracklets];
-      ce[3]=ci[AliTRDpwgppHelper::kClusters];
+      //ce[0]=ci[AliTRDpwgppHelper::kTracksBarrel];
+      //ce[1]=ci[AliTRDpwgppHelper::kEventInfo];
+      //ce[2]=ci[AliTRDpwgppHelper::kTracklets];
+      //ce[3]=ci[AliTRDpwgppHelper::kClusters];
       AddTRDcheckTRK(mgr, 0, ce);
       break;
     case AliTRDpwgppHelper::kV0Monitor:
