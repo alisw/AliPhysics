@@ -19,11 +19,11 @@
 //
 // In compiled mode : 
 // Don't forget to load first the libraries
-// gSystem->Load("libMemStat")
-// gSystem->Load("libMemStatGui")
-// gSystem->Load("libANALYSIS")
-// gSystem->Load("libANALYSISalice")
-// gSystem->Load("libPWGPP");
+// gSystem->Load("libMemStat.so")
+// gSystem->Load("libMemStatGui.so")
+// gSystem->Load("libANALYSIS.so")
+// gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libPWGPP.so");
 //
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
@@ -33,35 +33,35 @@
 //#ifndef __CINT__
 #include <Riostream.h>
 
-#include "TStopwatch.h"
-#include "TMemStat.h"
-#include "TMemStatViewerGUI.h"
+#include <TStopwatch.h>
+#include <TMemStat.h>
+#include <TMemStatViewerGUI.h>
 
-#include "TROOT.h"
-#include "TClass.h"
-#include "TSystem.h"
-#include "TString.h"
-#include "TError.h"
-#include "TChain.h"
-#include "TGrid.h"
-#include "TAlienCollection.h"
-#include "TGridCollection.h"
-#include "TGridResult.h"
-#include "TGeoGlobalMagField.h"
+#include <TROOT.h>
+#include <TClass.h>
+#include <TSystem.h>
+#include <TString.h>
+#include <TError.h>
+#include <TChain.h>
+#include <TGrid.h>
+#include <TAlienCollection.h>
+#include <TGridCollection.h>
+#include <TGridResult.h>
+#include <TGeoGlobalMagField.h>
 
-#include "AliMagF.h"
-#include "AliTracker.h"
-#include "AliLog.h"
-#include "AliCDBManager.h"
-#include "AliGRPManager.h"
-#include "AliGeomManager.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliMCEventHandler.h"
-#include "AliESDInputHandler.h"
+#include <AliMagF.h>
+#include <AliTracker.h>
+#include <AliLog.h>
+#include <AliCDBManager.h>
+#include <AliGRPManager.h>
+#include <AliGeomManager.h>
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+#include <AliMCEventHandler.h>
+#include <AliESDInputHandler.h>
 
-#include "TRD/AliTRDtrackerV1.h"
-#include "TRD/AliTRDcalibDB.h"
+#include <AliTRDtrackerV1.h>
+#include <AliTRDcalibDB.h>
 
 #include "PWGPP/TRD/macros/AddTRDcheckESD.C"
 #include "PWGPP/TRD/macros/AddTRDinfoGen.C"
@@ -85,7 +85,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
 
   // TRD data containers
   AliAnalysisDataContainer *ci[AliTRDpwgppHelper::kNOutSlots];
-  AliAnalysisDataContainer *ce[5];
+  AliAnalysisDataContainer *ce[6];
 
   Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
   Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
@@ -108,7 +108,8 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwgppHelper::kTracksSA];
       ce[2]=ci[AliTRDpwgppHelper::kTracksKink];
       ce[3]=ci[AliTRDpwgppHelper::kEventInfo];
-      ce[4]=ci[AliTRDpwgppHelper::kClusters];
+      ce[4]=ci[AliTRDpwgppHelper::kTracklets];
+      ce[5]=ci[AliTRDpwgppHelper::kClusters];
       AddTRDcheckDET(mgr, bitmap, ce);
       break;
     case AliTRDpwgppHelper::kEfficiency:
@@ -117,7 +118,8 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwgppHelper::kTracksITS];
       ce[2]=ci[AliTRDpwgppHelper::kTracksKink];
       ce[3]=ci[AliTRDpwgppHelper::kEventInfo];
-      ce[4]=ci[AliTRDpwgppHelper::kClusters];
+      ce[4]=ci[AliTRDpwgppHelper::kTracklets];
+      ce[5]=ci[AliTRDpwgppHelper::kClusters];
       AddTRDefficiency(mgr, bitmap, ce);
       break;
     case AliTRDpwgppHelper::kResolution:
@@ -126,25 +128,30 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwgppHelper::kTracksITS];
       ce[2]=ci[AliTRDpwgppHelper::kTracksKink];
       ce[3]=ci[AliTRDpwgppHelper::kEventInfo];
-      ce[4]=ci[AliTRDpwgppHelper::kClusters];
+      ce[4]=ci[AliTRDpwgppHelper::kTracklets];
+      ce[5]=ci[AliTRDpwgppHelper::kClusters];
       AddTRDresolution(mgr, bitmap, ce); 
       break;
     case AliTRDpwgppHelper::kCheckPID:
       // map slots
       ce[0]=ci[AliTRDpwgppHelper::kTracksBarrel];
       ce[1]=ci[AliTRDpwgppHelper::kEventInfo];
-      ce[2]=ci[AliTRDpwgppHelper::kV0List];
-      AddTRDcheckPID(mgr, bitmap, ce, &ce[3]);
+      ce[2]=ci[AliTRDpwgppHelper::kTracklets];
+      ce[3]=ci[AliTRDpwgppHelper::kV0List];
+      AddTRDcheckPID(mgr, bitmap, ce, &ce[4]);
       break;
     case AliTRDpwgppHelper::kCheckTRK:
       // map slots
       ce[0]=ci[AliTRDpwgppHelper::kTracksBarrel];
       ce[1]=ci[AliTRDpwgppHelper::kEventInfo];
-      ce[2]=ci[AliTRDpwgppHelper::kClusters];
+      ce[2]=ci[AliTRDpwgppHelper::kTracklets];
+      ce[3]=ci[AliTRDpwgppHelper::kClusters];
       AddTRDcheckTRK(mgr, 0, ce);
       break;
     case AliTRDpwgppHelper::kV0Monitor:
       // slots already mapped by checkPID
+      ce[2] = ce[3];
+      ce[3] = ce[4];
       AddTRDv0Monitor(mgr, 0, ce);
       break;
     default:
