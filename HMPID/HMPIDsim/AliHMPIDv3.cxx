@@ -929,6 +929,7 @@ void AliHMPIDv3::StepManager()
       if(eloss>0) {
         new((*fHits)[fNhits++])AliHMPIDHit(idch,eloss,pid,tid,xl,yl,hitTime,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
         if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
+        eloss=0;
       }
     }else                                                                                         //just going inside
       eloss          += TVirtualMC::GetMC()->Edep();                                                              //collect this step eloss 
