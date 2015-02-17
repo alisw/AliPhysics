@@ -753,8 +753,8 @@ void AliADv1::CreateAD()
   TGeoVolume * voADcoverplate = new TGeoVolume("voADcoverplate", shADcoverplate, kMedAlu);
   //
   TGeoVolume *voADsupport = new TGeoVolumeAssembly("voADsupport"); 
-  voADsupport->AddNode(voADcoverplate,  1, new TGeoTranslation( 0., 0., -5.66/2.-0.1));
-  voADsupport->AddNode(voADcoverplate,  2, new TGeoTranslation( 0., 0., +5.66/2.+0.1));
+  voADsupport->AddNode(voADcoverplate,  1, new TGeoTranslation( 0., 0., -5.66/2.-0.23));
+  voADsupport->AddNode(voADcoverplate,  2, new TGeoTranslation( 0., 0., +5.66/2.+0.23));
   voADsupport->AddNode(voADhorizontalside,  1, new TGeoCombiTrans( -6.0 - 7.1/2., 22.5-0.4, -5.66/2., Rx90));
   voADsupport->AddNode(voADhorizontalside,  2, new TGeoCombiTrans( +6.0 + 7.1/2., 22.5-0.4, -5.66/2., Rx90));
   voADsupport->AddNode(voADsidebox,  1, new TGeoTranslation( -20.7 +0.4, 18.55/2., 0.));
@@ -794,8 +794,8 @@ void AliADv1::CreateAD()
   // total shift on Y :  0.21 cm
   const Double_t kShiftX       =  0.54;
   const Double_t kShiftY       =  0.10;
-  const Double_t kADACelldz    =  2.50;
-  const Double_t kADCCelldz    =  2.50;
+  const Double_t kADACelldz    =  2.54;
+  const Double_t kADCCelldz    =  2.54;
   const Double_t kADABeamPipeR =  6.20; // Radius of beam pipe hole for ADA (Diameter  12.4 cm)
   const Double_t kADCBeamPipeR =  3.70; // Radius of beam pipe hole for ADC (Diameter   7.4 cm)
   const Int_t    kColorADA     = kGreen;
@@ -856,10 +856,10 @@ void AliADv1::CreateAD()
   // ad->AddNode(vADAarray,1, new TGeoTranslation(0., 0., kPosAD2)); 
   // ad->AddNode(vADAarray,2, new TGeoTranslation(0., 0., kPosAD3));
   const Float_t kPosADA = 1699.7;
-  ad->AddNode(vADAarray,    1, new TGeoTranslation(0., 0., kPosADA - kADACelldz/2. -0.1)); 
-  ad->AddNode(vADAarray,    2, new TGeoTranslation(0., 0., kPosADA + kADACelldz/2. +0.1));
-  ad->AddNode(voADsupport,  1, new TGeoTranslation( 0., 0., kPosADA));
-  ad->AddNode(voADsupport,  2, new TGeoCombiTrans ( 0., 0., kPosADA, Rz180));
+  ad->AddNode(vADAarray,    1, new TGeoTranslation(0., 0., kPosADA - kADACelldz/2. -0.23)); 
+  ad->AddNode(vADAarray,    2, new TGeoTranslation(0., 0., kPosADA + kADACelldz/2. +0.23));
+  ad->AddNode(voADsupport,  1, new TGeoTranslation(0., 0., kPosADA));
+  ad->AddNode(voADsupport,  2, new TGeoCombiTrans (0., 0., kPosADA, Rz180));
 
   // ==========================================================================
   //
@@ -930,10 +930,10 @@ void AliADv1::CreateAD()
         // ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kZbegADC1 - kADCCelldz/2.)); // Tunnel
         const Float_t kPosADC = -kZbegFrontBar-2.-3.0-0.3;  // 3.0 = (5.6 + 0.2 + 0.2)/2. // (ecalvovi@cern.ch) 
         printf("CreateAD: kPosADC=%8.2f\n", kPosADC);
-        ad -> AddNode(vADCarray , 1, new TGeoTranslation(0., 0., kPosADC - kADCCelldz/2. - 0.165)); // Tunnel // ADC1
-        ad -> AddNode(vADCarray , 2, new TGeoTranslation(0., 0., kPosADC + kADCCelldz/2. + 0.165)); // Tunnel // ADC2
-        ad -> AddNode(voADsupport, 3, new TGeoTranslation( 0., 0., kPosADC));
-        ad -> AddNode(voADsupport, 4, new TGeoCombiTrans ( 0., 0., kPosADC, Rz180));
+        ad -> AddNode(vADCarray,   1, new TGeoTranslation(0., 0., kPosADC - kADCCelldz/2. - 0.23)); // Tunnel // ADC1
+        ad -> AddNode(vADCarray,   2, new TGeoTranslation(0., 0., kPosADC + kADCCelldz/2. + 0.23)); // Tunnel // ADC2
+        ad -> AddNode(voADsupport, 3, new TGeoTranslation(0., 0., kPosADC));
+        ad -> AddNode(voADsupport, 4, new TGeoCombiTrans (0., 0., kPosADC, Rz180));
         break;
       }
     case kADCInCavern:
