@@ -23,7 +23,9 @@ AliEveMacro::AliEveMacro(Int_t src, const TString& tags, const TString& mac,
   TObject(),
   fSources(src), fTags(tags), fMacro (mac),
   fFunc   (foo), fArgs(args), fActive(act),
-  fExecStatus(kNotRun), fExecExcString(), fExecResult(0)
+  fExecStatus(kNotRun), 
+  fExecExcString(), 
+  fExecResult(0)
 {
   // Constructor.
 }

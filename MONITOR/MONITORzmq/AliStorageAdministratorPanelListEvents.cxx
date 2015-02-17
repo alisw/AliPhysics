@@ -39,21 +39,25 @@ enum ENTRY{
 
 AliStorageAdministratorPanelListEvents::AliStorageAdministratorPanelListEvents() :
   TGMainFrame(gClient->GetRoot(),10,10,kMainFrame | kVerticalFrame),
-	fStatusLabel(0),
-	fRunMinEntry(0),
-	fRunMaxEntry(0),
-	fEventMinEntry(0),
-	fEventMaxEntry(0),
-	fMultiplicityMinEntry(0),
-	fMultiplicityMaxEntry(0),
-	fPPcheckbox(0),
-	fPbPbcheckbox(0),
-	fTemporaryCheckbox(0),
-	fPermanentCheckbox(0),
-	fListBox(0),
-	fEventsListVector(0),
-	fServerSocket(SERVER_COMMUNICATION_REQ),
-	fEventManager(0)
+  fStatusLabel(0),
+  fRunMinEntry(0),
+  fRunMaxEntry(0),
+  fEventMinEntry(0),
+  fEventMaxEntry(0),
+  fMultiplicityMinEntry(0),
+  fMultiplicityMaxEntry(0),
+  fPPcheckbox(0),
+  fPbPbcheckbox(0),
+  fTemporaryCheckbox(0),
+  fPermanentCheckbox(0),
+  fGetListButton(0),
+  fMarkButton(0),
+  fLoadButton(0),
+  fListBox(0),
+  fEventsListVector(0),
+  fServerSocket(SERVER_COMMUNICATION_REQ),
+  fEventManager(0),
+  fCurrentEvent(0)
 {
 	fEventManager = AliStorageEventManager::GetEventManagerInstance();
 	fEventManager->CreateSocket(fServerSocket);
@@ -111,7 +115,6 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fRunMaxEntry->MoveResize(150,22,72,22);
 
    fRunGroupFrame->SetLayoutManager(new TGVerticalLayout(fRunGroupFrame));
-   //fRunGroupFrame->Resize(230,60);
    AddFrame(fRunGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fRunGroupFrame->MoveResize(8,8,230,60);
    
@@ -142,7 +145,6 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fEventMaxEntry->MoveResize(150,22,72,22);
    
    fEventGroupFrame->SetLayoutManager(new TGVerticalLayout(fEventGroupFrame));
-   //fEventGroupFrame->Resize(230,60);
    AddFrame(fEventGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fEventGroupFrame->MoveResize(8,68,230,60);
    
@@ -173,7 +175,6 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fMultiplicityMaxEntry->MoveResize(150,22,72,22);
 
    fMultiplicityGroupFrame->SetLayoutManager(new TGVerticalLayout(fMultiplicityGroupFrame));
-   //fMultiplicityGroupFrame->Resize(230,60);
    AddFrame(fMultiplicityGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fMultiplicityGroupFrame->MoveResize(8,128,230,60);
 
@@ -196,7 +197,6 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fPbPbcheckbox->MoveResize(60,22,55,19);
 
    fBeamGroupFrame->SetLayoutManager(new TGVerticalLayout(fBeamGroupFrame));
-   //fBeamGroupFrame->Resize(230,60);
    AddFrame(fBeamGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fBeamGroupFrame->MoveResize(8,188,230,60);
 
@@ -219,10 +219,24 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fTemporaryCheckbox->MoveResize(120,22,80,19);
 
    fStorageGroupFrame->SetLayoutManager(new TGVerticalLayout(fStorageGroupFrame));
-   // fStorageGroupFrame->Resize(230,60);
    AddFrame(fStorageGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
    fStorageGroupFrame->MoveResize(8,248,230,60);
    
+   // Status label group frame
+   TGGroupFrame *fStatusGroupFrame = new TGGroupFrame(this,"Status");
+   fStatusGroupFrame->SetLayoutBroken(kTRUE);
+
+   fStatusLabel = new TGLabel(fStatusGroupFrame,"Status label");
+   fStatusLabel->SetTextJustify(36);
+   fStatusLabel->SetMargins(0,0,0,0);
+   fStatusLabel->SetWrapLength(-1);
+   fStatusGroupFrame->AddFrame(fStatusLabel, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fStatusLabel->MoveResize(8,22,80,19);
+
+   fStatusGroupFrame->SetLayoutManager(new TGVerticalLayout(fStatusGroupFrame));
+   AddFrame(fStatusGroupFrame, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
+   fStatusGroupFrame->MoveResize(8,310,230,60);
+
    // buttons
    fMarkButton = new TGTextButton(this,"Mark event",BUTTON_MARK_EVENT);
    fMarkButton->SetTextJustify(36);
@@ -230,7 +244,7 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fMarkButton->SetWrapLength(-1);
    fMarkButton->Resize(100,24);
    AddFrame(fMarkButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fMarkButton->MoveResize(8,310,100,24);
+   fMarkButton->MoveResize(8,382,100,24);
    
    fLoadButton = new TGTextButton(this,"Load selected event",BUTTON_LOAD_EVENT);
    fLoadButton->SetTextJustify(36);
@@ -238,7 +252,7 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fLoadButton->SetWrapLength(-1);
    fLoadButton->Resize(130,24);
    AddFrame(fLoadButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fLoadButton->MoveResize(108,310,130,24);
+   fLoadButton->MoveResize(108,382,130,24);
    
    fGetListButton = new TGTextButton(this,"List events",BUTTON_GET_LIST);
    fGetListButton->SetTextJustify(36);
@@ -246,20 +260,16 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
    fGetListButton->SetWrapLength(-1);
    fGetListButton->Resize(100,24);
    AddFrame(fGetListButton, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fGetListButton->MoveResize(8,334,100,24);
+   fGetListButton->MoveResize(8,406,100,24);
 
    // list box
    fListBox = new TGListBox(this);
    fListBox->SetName("fListBox");
    fListBox->AddEntry(new TGString("Run   Event   System   Mult   Marked"),0);
-   //fListBox->Resize(230,436);
-   AddFrame(fListBox, new TGLayoutHints(kLHintsLeft | kLHintsTop,2,2,2,2));
-   fListBox->MoveResize(8,360,230,436);
-
-   //  SetMWMHints(kMWMDecorAll,kMWMFuncAll,kMWMInputModeless);
+   AddFrame(fListBox, new TGLayoutHints(kLHintsLeft | kLHintsExpandY  | kLHintsTop,2,2,2,2));
+   fListBox->MoveResize(8,442,230,436);
 
    MapSubwindows();
-   Resize(GetDefaultSize());
    MapWindow();
    Resize(252,809);
 }
@@ -292,13 +302,18 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 	requestMessage->messageType = REQUEST_LIST_EVENTS;
 	requestMessage->list = list;
 
-	if(!fEventManager->Send(requestMessage,fServerSocket,1000)){return;}
+	if(!fEventManager->Send(requestMessage,fServerSocket)){return;}
 
 	fListBox->RemoveAll();
 	fListBox->AddEntry(new TGString("Run   Event   System   Mult   Marked"),0);
 
 	vector<serverListStruct> receivedList = fEventManager->GetServerListVector(fServerSocket);
 	
+	if(receivedList.size()==0){
+	  fStatusLabel->SetText("List is empty");
+	}
+
+
 	for(unsigned int i=0;i<receivedList.size();i++)
 	{
 	  fListBox->AddEntry(new TGString(Form("%d   %d   %s   %d   %d   ",
@@ -308,7 +323,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
 					      receivedList[i].multiplicity,
 					      receivedList[i].marked)),i+1);
 	}
-
+	fListBox->MoveResize(8,442,230,436);
 	fEventsListVector = receivedList;
 	
 	gClient->HandleInput();
@@ -387,7 +402,6 @@ void AliStorageAdministratorPanelListEvents::onLoadButton()
     SelectedEvent();
 }
 
-//void AliStorageAdministratorPanelListEvents::onCloseButton(){onExit();}
 void AliStorageAdministratorPanelListEvents::CloseWindow(){onExit();}
 
 void AliStorageAdministratorPanelListEvents::onExit()
@@ -407,10 +421,9 @@ Bool_t AliStorageAdministratorPanelListEvents::ProcessMessage(Long_t msg, Long_t
 		case kCM_BUTTON:
 			switch(parm1)
 			{
-			  //	case BUTTON_CLOSE:onCloseButton();break;
 			case BUTTON_GET_LIST:onGetListButton();break;
 			case BUTTON_MARK_EVENT:onMarkButton();break;
-            case BUTTON_LOAD_EVENT:onLoadButton();break;
+			case BUTTON_LOAD_EVENT:onLoadButton();break;
 			default:break;
 			}
 			break;

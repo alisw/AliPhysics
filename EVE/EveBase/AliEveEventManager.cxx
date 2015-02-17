@@ -63,6 +63,8 @@
 
 #ifdef ZMQ
 #include "AliStorageEventManager.h"
+#include "AliOnlineReconstructionUtil.h"
+#include "AliGRPPreprocessor.h"
 #endif
 
 using std::cout;
@@ -144,6 +146,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fAutoLoadTimerRunning(kFALSE),
     fMutex(new TMutex()),
     fgSubSock(EVENTS_SERVER_SUB),
+    fCurrentRun(-1),
     fEventInUse(1),
     fWritingToEventIndex(0),
     fIsNewEventAvaliable(false),
@@ -152,23 +155,17 @@ AliEveEventManager::AliEveEventManager(const TString& name, Int_t ev) :
     fFinished(false)
 {
     // Constructor with event-id.
-		
-    InitInternals();
+  if (0 == name.CompareTo("online")) {fOnlineMode = kTRUE;}
+  else{fOnlineMode = kFALSE;}	
+  
+  InitInternals();
 
-    Open();
-    if (ev >= 0)
+  Open();
+  if (ev >= 0)
     {
         GotoEvent(ev);
     }
     
-    if (0 == name.CompareTo("online")) {
-      fOnlineMode = kTRUE;
-    }
-    else{
-      fOnlineMode = kFALSE;
-    }
-
-
 #ifdef ZMQ
     if(fOnlineMode)
       {
@@ -245,10 +242,10 @@ void AliEveEventManager::GetNextEvent()
     list.eventNumber[1]=999999;
     list.marked[0]=1;
     list.marked[1]=1;
-    list.multiplicity[0]=1;
+    list.multiplicity[0]=0;
     list.multiplicity[1]=999999;
     strcpy(list.system[0],"p-p");
-    strcpy(list.system[1],"A-A");
+    strcpy(list.system[1],"");
     
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
     requestMessage->messageType = REQUEST_LIST_EVENTS;
@@ -267,10 +264,12 @@ void AliEveEventManager::GetNextEvent()
     int iter=0;
     while(!fFinished)
     {
+      cout<<"not finished"<<endl;
         if(!fLoopMarked || receivedList.size()<=0)
         {
             cout<<"taking event from reco server"<<endl;
             tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5000);
+	    cout<<"after get event"<<endl;
             if(!tmpEvent){sleep(1);}
         }
         else
@@ -316,6 +315,7 @@ void AliEveEventManager::GetNextEvent()
             }
         }
         else{cout<<"didn't receive new event"<<endl;}
+     
     }
     delete requestMessage;
     
@@ -772,7 +772,7 @@ void AliEveEventManager::Open()
 
     // Initialize OCDB ... only in master event-manager
 
-		InitOCDB(runNo);
+    InitOCDB(runNo);
 
 
     fIsOpen = kTRUE;
@@ -780,10 +780,51 @@ void AliEveEventManager::Open()
 
 void AliEveEventManager::InitOCDB(int runNo)
 {
+  TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  if(fOnlineMode)
+    {
+      if(runNo != fCurrentRun)
+	{ 
+	  cout<<"Loading OCDB for new run:"<<runNo<<" in online mode."<<endl;
+	  TEnv settings;
+	  settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+	  fCurrentRun = runNo;
+	  cout<<"config read"<<endl;
+
+	  // Retrieve GRP entry for given run from aldaqdb.
+	  TString dbHost = settings.GetValue("logbook.host", DEFAULT_LOGBOOK_HOST);
+	  Int_t   dbPort =  settings.GetValue("logbook.port", DEFAULT_LOGBOOK_PORT);
+	  TString dbName =  settings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB);
+	  TString user =  settings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER);
+	  TString password = settings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
+	  
+	  gSystem->cd(cdbPath.Data());
+	  gSystem->Exec("rm -fr GRP/");
+	  cout<<"CDB path for GRP:"<<cdbPath<<endl;
+
+	  TString gdc;
+
+	  Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(fCurrentRun, dbHost.Data(),
+								    dbPort, dbName.Data(),
+								    user.Data(), password.Data(),
+								    Form("%s",cdbPath.Data()),
+								    gdc);
+
+	  if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
+	  else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
+	  else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
+
+
+	  cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
+	  cdb->SetSpecificStorage("GRP/GRP/Data",cdbPath.Data());
+	  cdb->SetRun(fCurrentRun);
+	  cdb->Print();
+	}
+    }
   static const TEveException kEH("AliEveEventManager::InitOCDB ");
     //if (this == fgMaster)
     {
-      AliCDBManager* cdb = AliCDBManager::Instance();
         if (cdb->IsDefaultStorageSet() == kTRUE)
         {
             Warning(kEH, "CDB already set - using the old storage:\n  '%s'",
@@ -796,7 +837,7 @@ void AliEveEventManager::InitOCDB(int runNo)
                 gEnv->SetValue("Root.Stacktrace", "no");
                 Fatal("Open()", "OCDB path was not specified.");
             }
-
+	    cout<<"Setting default storage:"<<fgCdbUri<<endl;
             // Handle some special cases for MC (should be in OCDBManager).
             if (fgCdbUri == "mcideal://")
                 cdb->SetDefaultStorage("MC", "Ideal");
@@ -809,8 +850,7 @@ void AliEveEventManager::InitOCDB(int runNo)
 		cdb->SetDefaultStorage(fgCdbUri);
 	      } 
 	    else{
-                cdb->SetDefaultStorage(fgCdbUri);
-		cdb->SetSpecificStorage(fgSpecificCdbUriPath,fgSpecificCdbUriValue);
+	      cdb->SetDefaultStorage(fgCdbUri);
 	      }
             cdb->SetRun(runNo);
 
@@ -1104,10 +1144,15 @@ void AliEveEventManager::GotoEvent(Int_t event)
     {
         throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
     }
-    if (event < 0 || event > maxEvent)
+    if (event < 0)
     {
         throw (kEH + Form("event %d not present, available range [%d, %d].",
                           event, 0, maxEvent));
+    }
+    if (event > maxEvent)
+    {
+      event=0;
+      cout<<"Event number out of range. Going to event 0"<<endl;
     }
 
     TString sysInfoHeader;
@@ -1879,9 +1924,18 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
 void AliEveEventManager::SetLoopMarked(Bool_t loopMarked)
 {
     // Set the automatic event loading mode
-    fLoopMarked = loopMarked;
-    if (fLoopMarked){StartAutoLoadTimer();}
-    else{StopAutoLoadTimer();}
+  if(fLoopMarked == loopMarked)
+    {
+      cout<<"loop marked has the same value - ignoring"<<endl;
+      return;
+    }
+  else
+    {
+      cout<<"Setting loof marked to:"<<loopMarked<<endl;
+      fLoopMarked = loopMarked;
+      if (fLoopMarked){StartAutoLoadTimer();}
+      else{StopAutoLoadTimer();}
+    }
 }
 
 void AliEveEventManager::SetTrigSel(Int_t trig)

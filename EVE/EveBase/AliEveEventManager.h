@@ -248,6 +248,7 @@ private:
     int fWritingToEventIndex;
     bool fIsNewEventAvaliable;
     storageSockets fgSubSock;
+    int fCurrentRun;
 
     Bool_t fOnlineMode;
     Bool_t fStorageDown;

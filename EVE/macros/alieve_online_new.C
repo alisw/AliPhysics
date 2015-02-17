@@ -25,7 +25,6 @@ void alieve_online_new()
     //AliEveEventManager::SetCdbUri("local://$ALICE_ROOT/OCDB");
     //AliEveEventManager::SetCdbUri("local:///local/OCDB/2013");
     AliEveEventManager::SetCdbUri("local:///local/cdb");
-    AliEveEventManager::SetSpecificCdbUri("GRP/GRP/Data","local:///local/reco");
  
 
     //AliEveEventManager::SetCdbUri("raw://");
@@ -127,7 +126,7 @@ void alieve_online_new()
     new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
     browser->StopEmbedding("EventCtrl");
  
-//    browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
+    browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
     
 //    browser->MoveResize(0, 0, gClient->GetDisplayHeight()*1.6,gClient->GetDisplayHeight()-32);
     

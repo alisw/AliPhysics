@@ -195,7 +195,7 @@ vector<serverListStruct> AliStorageDatabase::GetList(struct listRequestStruct li
 
 AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
 {
-	cout<<"database - get event"<<endl;
+  cout<<"database - get event:"<<event.runNumber<<"\t"<<event.eventNumber<<endl;
 	string pathToFile = GetFilePath(event);
 
 	if(!strcmp(pathToFile.c_str(),""))

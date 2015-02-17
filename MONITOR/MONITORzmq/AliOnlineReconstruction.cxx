@@ -104,10 +104,9 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
 	TString dbName =  fSettings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB);
 	TString user =  fSettings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER);
 	TString password = fSettings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
-	TString cdbPath = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
+	TString cdbPath;// = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
 
 	cdbPath = Form("local://%s",gSystem->pwd());
-
 	gSystem->Exec(Form("rm -fr %s/GRP",cdbPath.Data()));
 	cout<<"CDB path for GRP:"<<cdbPath<<endl;
 
@@ -143,9 +142,9 @@ cout<<"Set specific storage 2"<<endl;
 	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath2", DEFAULT_CDB_SPEC_STORAGE_PATH2),  
 				    fSettings.GetValue( "cdb.specificStorageValue2", DEFAULT_CDB_SPEC_STORAGE_VALUE2));
 	fCDBmanager->Print();
-//	cout<<"Set specific storage 3"<<endl;
-//	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath3", DEFAULT_CDB_SPEC_STORAGE_PATH3),  
-//				    fSettings.GetValue( "cdb.specificStorageValue3", DEFAULT_CDB_SPEC_STORAGE_VALUE3));
+	cout<<"Set specific storage 3"<<endl;
+	fCDBmanager->SetSpecificStorage(fSettings.GetValue( "cdb.specificStoragePath3", DEFAULT_CDB_SPEC_STORAGE_PATH3),  
+				    fSettings.GetValue( "cdb.specificStorageValue3", DEFAULT_CDB_SPEC_STORAGE_VALUE3));
 
 
 	//fCDBmanager->SetSpecificStorage("TPC/Calib//PreprocStatus","local:///local/cdb");
@@ -270,6 +269,11 @@ void AliOnlineReconstruction::ReconstructionLoop()
 	      }
 	      cout<<"clean"<<endl;
 	      fAliReco->CleanProcessedEvent();
+	      /*      if(event)
+		{
+		  delete event;
+		  event=0;
+		  }*/
 	      cout<<"iEvent++"<<endl;
 	      iEvent++;
 	    }

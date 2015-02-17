@@ -25,6 +25,7 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
+		    ${AliRoot_SOURCE_DIR}/MONITOR/alionlinereco
                     ${AliRoot_SOURCE_DIR}/MONITOR/alistoragemanager
 		    ${AliRoot_SOURCE_DIR}/MONITOR/MONITORzmq
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
