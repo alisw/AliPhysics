@@ -33,7 +33,7 @@ class AliDCSSensor : public TNamed {
 public:
   AliDCSSensor();
   AliDCSSensor(const AliDCSSensor& source);
-  virtual ~AliDCSSensor(){}
+  virtual ~AliDCSSensor();
   AliDCSSensor& operator=(const AliDCSSensor& source);
   virtual void Print(const Option_t* option="") const;
   virtual void Draw(Option_t* option="") ;

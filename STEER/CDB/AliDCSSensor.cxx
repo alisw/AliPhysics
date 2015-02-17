@@ -69,6 +69,16 @@ AliDCSSensor::AliDCSSensor(const AliDCSSensor& source) :
    if (source.fFit) fFit = (AliSplineFit*)source.fFit->Clone();
 }
 
+AliDCSSensor::~AliDCSSensor(){
+  //
+  // Destructor
+  //
+  if(fGraph)
+    delete fGraph;
+  fGraph=0;
+
+}
+
 AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
 //
 // assignment operator
