@@ -13,15 +13,16 @@
 class AliTRDpwgppHelper{
 public:
   enum ETRDinfoGenOutSlots {
-    kEventInfo     = 1
-    ,kTracksBarrel
-    ,kTracksITS
-    ,kTracksSA
-    ,kTracksKink
-    ,kV0List
-    ,kClusters
-    ,kMonitor
-    ,kNOutSlots
+    kEventInfo     = 1  // event info object
+    ,kTracksBarrel      // list of barrel (TPC seeded) tracks
+    ,kTracksITS         // list of ITS seeded tracks 
+    ,kTracksSA          // list of TRD seeded tracks
+    ,kTracksKink        // list of kink prologation tracks
+    ,kV0List            // list of V0s
+    ,kTracklets         // list of online tracklets from ESD
+    ,kClusters          // list of clusters from TRD.RecPoint.root
+    ,kMonitor           // list of histograms for general monitoring
+    ,kNOutSlots         // count for all slots
   };
 
   enum ETRDrecoTasks{
@@ -47,8 +48,8 @@ public:
     kNTRDTASKS = kNTRDQATASKS + kNTRDCALIBTASKS
   };
 
-  AliTRDpwgppHelper(){;}
-  virtual ~AliTRDpwgppHelper(){;}
+  AliTRDpwgppHelper();
+  ~AliTRDpwgppHelper();
 
   static Bool_t DoTask(Int_t idx, Int_t map);
   static Int_t  GetTaskIndex(const Char_t *name);
