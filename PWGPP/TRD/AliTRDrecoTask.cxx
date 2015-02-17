@@ -112,7 +112,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   snprintf(fNameId, 10, "no name");
   DefineInput (1, TObjArray::Class()); // track list
   DefineInput (2, AliTRDeventInfo::Class()); // event info object
-  DefineInput (3, TClonesArray::Class()); // online tracklets list object
+  DefineInput (3, TObjArray::Class()); // online tracklets list object
   DefineInput (4, TObjArray::Class()); // cluster list object
   DefineOutput(1, TObjArray::Class()); // histogram list
 }
