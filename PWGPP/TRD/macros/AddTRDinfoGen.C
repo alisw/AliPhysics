@@ -1,12 +1,20 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
+#include <TError.h>
+#include <TSystem.h>
+#include <TObjArray.h>
 
-#include "AliTRDinfoGen.h"
-#include "AliTRDpwgppHelper.h"
-#include "AliTRDeventInfo.h"
-#include "AliTRDeventCuts.h"
+#include <AliLog.h>
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+
+#include <AliTRDtrackInfo.h>
+#include <AliTRDv0Info.h>
+#include <AliTRDchmbInfo.h>
+#include <AliTRDtriggerInfo.h>
+#include <AliTRDeventInfo.h>
+#include <AliTRDeventCuts.h>
+#include <AliTRDinfoGen.h>
+#include <AliTRDpwgppHelper.h>
 #endif
 
 void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
@@ -19,7 +27,8 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   info->SetMCdata(mc);
   info->SetLocalTrkSelection();
   info->UseTrackPoints(kFALSE); // set it to true if track points for alignment are to be saved in trackInfo object
-  info->SetOCDB("alien://folder=/alice/data/2010/OCDB");
+//  info->SetOCDB("alien://folder=/alice/data/2012/OCDB?cacheFolder=/home/niham/abercuci/local");
+  info->SetOCDB(Form("local://%s/local/alice/data/2012/OCDB", gSystem->ExpandPathName("$HOME")));
   // settings for collisions
   info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
@@ -49,6 +58,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   co[AliTRDpwgppHelper::kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwgppHelper::kTracklets] = mgr->CreateContainer("onl.tracklets", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwgppHelper::kClusters] = mgr->CreateContainer("clusters", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   for(Int_t ios(1);ios<AliTRDpwgppHelper::kNOutSlots-1;ios++) mgr->ConnectOutput(info, ios, co[ios]);
   
