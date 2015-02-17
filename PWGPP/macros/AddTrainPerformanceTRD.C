@@ -63,6 +63,7 @@
 #include <AliTRDtrackerV1.h>
 #include <AliTRDcalibDB.h>
 
+#include <AliTRDpwgppHelper.h>
 #include "PWGPP/TRD/macros/AddTRDcheckESD.C"
 #include "PWGPP/TRD/macros/AddTRDinfoGen.C"
 #include "PWGPP/TRD/macros/AddTRDcheckDET.C"
@@ -91,7 +92,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
   Int_t bitmap = AliTRDpwgppHelper::ParseOptions(trd);
   for(Int_t it=0; it<AliTRDpwgppHelper::kNTRDQATASKS; it++){
-    if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(AliTRDpwgppHelper::TaskClassName(it))(3,20).Data()))) {
+    if(gROOT->LoadMacro(Form("%s/Add%s.C", addMacroPath, TString(AliTRDpwgppHelper::TaskClassName(it))(3,20).Data()))) {
       Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", AliTRDpwgppHelper::TaskClassName(it)));
       return kFALSE;
     } 
