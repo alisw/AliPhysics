@@ -782,6 +782,7 @@ void AliEveEventManager::InitOCDB(int runNo)
 {
   TString cdbPath = Form("local://%s/ed_ocdb_objects/",gSystem->Getenv("HOME"));
   AliCDBManager* cdb = AliCDBManager::Instance();
+#ifdef ZMQ
   if(fOnlineMode)
     {
       if(runNo != fCurrentRun)
@@ -822,6 +823,8 @@ void AliEveEventManager::InitOCDB(int runNo)
 	  cdb->Print();
 	}
     }
+#endif
+
   static const TEveException kEH("AliEveEventManager::InitOCDB ");
     //if (this == fgMaster)
     {
