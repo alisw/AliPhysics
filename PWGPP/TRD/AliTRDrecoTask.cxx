@@ -13,36 +13,37 @@
 //
 /////////////////////////////////////////////////////////
 
-#include "TClass.h"
-#include "TMethod.h"
-#include "TMethodCall.h"
-#include "TMethodArg.h"
-#include "TFile.h"
-#include "TChain.h"
-#include "TList.h"
-#include "TMap.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TF1.h"
-#include "TObjArray.h"
-#include "TDirectory.h"
-#include "TTreeStream.h"
-#include "TBox.h"
-#include "TLatex.h"
-#include "TVectorT.h"
+#include <TClass.h>
+#include <TMethod.h>
+#include <TMethodCall.h>
+#include <TMethodArg.h>
+#include <TFile.h>
+#include <TChain.h>
+#include <TList.h>
+#include <TMap.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TF1.h>
+#include <TClonesArray.h>
+#include <TObjArray.h>
+#include <TDirectory.h>
+#include <TTreeStream.h>
+#include <TBox.h>
+#include <TLatex.h>
+#include <TVectorT.h>
 
-#include "AliLog.h"
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
-#include "AliExternalTrackParam.h"
+#include <AliLog.h>
+#include <AliAnalysisTask.h>
+#include <AliAnalysisManager.h>
+#include <AliExternalTrackParam.h>
+#include <AliTRDtrackV1.h>
+#include <AliTRDpidUtil.h>
 
 #include "info/AliTRDchmbInfo.h"
 #include "info/AliTRDeventInfo.h"
 #include "info/AliTRDtrendingManager.h"
 #include "AliTRDrecoTask.h"
-#include "AliTRDtrackV1.h"
-#include "AliTRDpidUtil.h"
 
 ClassImp(AliTRDrecoTask)
 
@@ -58,6 +59,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
+  ,fOnlTracklets(NULL)
   ,fClusters(NULL)
   ,fkClusters(NULL)
   ,fkTrack(NULL)
@@ -68,7 +70,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
-  ,fNpt(0)
+  ,fNpt(-1)
   ,fTriggerList(NULL)
   ,fPlotFuncList(NULL)
   ,fDetFuncList(NULL)
@@ -87,6 +89,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
+  ,fOnlTracklets(NULL)
   ,fClusters(NULL)
   ,fkClusters(NULL)
   ,fkTrack(NULL)
@@ -97,7 +100,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
-  ,fNpt(0)
+  ,fNpt(-1)
   ,fTriggerList(NULL)
   ,fPlotFuncList(NULL)
   ,fDetFuncList(NULL)
@@ -109,7 +112,8 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   snprintf(fNameId, 10, "no name");
   DefineInput (1, TObjArray::Class()); // track list
   DefineInput (2, AliTRDeventInfo::Class()); // event info object
-  DefineInput (3, TObjArray::Class()); // cluster list object
+  DefineInput (3, TClonesArray::Class()); // online tracklets list object
+  DefineInput (4, TObjArray::Class()); // cluster list object
   DefineOutput(1, TObjArray::Class()); // histogram list
 }
 
@@ -191,11 +195,11 @@ Bool_t AliTRDrecoTask::MakeMomSegmentation()
   case fgNPt:
     fgPt[0]=0.3;
     for(Int_t j(1); j<=fgNPt; j++) fgPt[j]=fgPt[j-1]+(TMath::Exp(j*j*2.e-3)-1.);
-    AliDebug(2, "Using debug momentum segmentation");
+    AliDebug(1, "Using debug momentum segmentation");
     break;
-  case 4:
+  case 3:
     fgPt[0]=0.5; fgPt[1]=0.8; fgPt[2]=1.5; fgPt[3]=5.;
-    AliDebug(2, "Using default momentum segmentation");
+    AliDebug(1, "Using default momentum segmentation");
     break;
   default:
     AliError(Form("Momentum segmentation %d not supported.", fNpt));
@@ -210,7 +214,7 @@ void AliTRDrecoTask::UserCreateOutputObjects()
 {
   if(!HasFunctorList()) InitFunctorList();
   if(DebugLevel()) fNpt = fgNPt;
-  else fNpt = 4;
+  else fNpt = 3;
   MakeMomSegmentation();
 
   fContainer = Histos();
@@ -236,7 +240,8 @@ void AliTRDrecoTask::UserExec(Option_t *)
       return;
     }
   }
-  fClusters = dynamic_cast<TObjArray*>(GetInputData(3));
+  fOnlTracklets = dynamic_cast<TObjArray*>(GetInputData(3)); // link online tracklets
+  fClusters  = dynamic_cast<TObjArray*>(GetInputData(4)); // link offline clusters
 
   if(!fPlotFuncList){
     AliWarning("No track functor list defined for the task");
@@ -328,7 +333,7 @@ void AliTRDrecoTask::InitFunctorList()
       if(!fDetFuncList) fDetFuncList = new TList();
       fDetFuncList->AddLast(new TMethodCall(c, (const char*)name, ""));
     }
-  }
+  } 
 }
 
 //_______________________________________________________
