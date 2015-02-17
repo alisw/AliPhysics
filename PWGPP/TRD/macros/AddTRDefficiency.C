@@ -31,7 +31,8 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  // connect main (ESD) container
     mgr->ConnectInput(eff, 1, ci[its]);                 // conect track info container
     mgr->ConnectInput(eff, 2, evInfoContainer);                 // conect event info container
-    mgr->ConnectInput(eff, 3, ci[4]);                 // conect clusters container
+    mgr->ConnectInput(eff, 3, ci[4]);                          // conect onl.tracklets container
+    mgr->ConnectInput(eff, 4, ci[5]);                          // conect clusters container
     mgr->ConnectOutput(eff,1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
   }
 
