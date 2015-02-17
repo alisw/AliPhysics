@@ -1031,6 +1031,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDplusCuts)) isBitSelected = kFALSE;
       }else if(fDecayChannel==33){
 	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==32){
+	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kLcCuts)) isBitSelected = kFALSE;
       }
       if(!isBitSelected){
 	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
