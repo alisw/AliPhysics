@@ -28,7 +28,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   info->SetLocalTrkSelection();
   info->UseTrackPoints(kFALSE); // set it to true if track points for alignment are to be saved in trackInfo object
 //  info->SetOCDB("alien://folder=/alice/data/2012/OCDB?cacheFolder=/home/niham/abercuci/local");
-  info->SetOCDB(Form("local://%s/local/alice/data/2012/OCDB", gSystem->ExpandPathName("$HOME")));
+  info->SetOCDB(Form("local://%s/local/alice/data/%d/OCDB", gSystem->ExpandPathName("$HOME"), AliTRDpwgppHelper::GetRunYear()));
   // settings for collisions
   info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){

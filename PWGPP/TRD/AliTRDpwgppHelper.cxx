@@ -62,6 +62,7 @@
 #include "macros/AddTRDefficiency.C"
 #include "macros/AddTRDv0Monitor.C"
 
+Int_t AliTRDpwgppHelper::fgYear = 0;
 const Char_t * AliTRDpwgppHelper::fgkTRDtaskClassName[AliTRDpwgppHelper::kNTRDTASKS] = {
   "AliTRDcheckESD"
   ,"AliTRDinfoGen"
