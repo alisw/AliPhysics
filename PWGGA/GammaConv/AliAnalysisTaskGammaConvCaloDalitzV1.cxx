@@ -2241,8 +2241,6 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 			      // Check the acceptance for gamma and electrons
 			
 			      TParticle *gamma    = fMCStack->Particle(labelgamma);
-			      //TParticle *electron = fMCStack->Particle(labelelectron);
-			      //TParticle *positron = fMCStack->Particle(labelpositron);
 			      
 			      Bool_t kDaughGammaIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelgamma,     mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 			      Bool_t kDaughElectIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, labelelectron,  mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -3531,10 +3529,22 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessConversionPhotonsForMissingTag
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessElectronCandidates(){
 
-	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
-	Double_t mcProdVtxX 	= primVtxMC->GetX();
-	Double_t mcProdVtxY 	= primVtxMC->GetY();
-	Double_t mcProdVtxZ 	= primVtxMC->GetZ();	
+	 const AliVVertex* primVtxMC 	= 0;
+	 Double_t mcProdVtxX 	= 0;
+	 Double_t mcProdVtxY 	= 0;
+	 Double_t mcProdVtxZ 	= 0;	
+	
+  
+  
+  
+	if ( fMCEvent ) {
+  
+	  primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	  mcProdVtxX 	= primVtxMC->GetX();
+	  mcProdVtxY 	= primVtxMC->GetY();
+	  mcProdVtxZ 	= primVtxMC->GetZ();	
+	
+	}
   
   
    
