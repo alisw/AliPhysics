@@ -174,7 +174,7 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
 
   AliESDVertex vESD(params, cov, vtx->GetChi2(), vtx->GetNContributors());
   esd->SetPrimaryVertexTPC(&vESD);
-  esd->SetPrimaryVertexTracks(&vESD);
+  //esd->SetPrimaryVertexTracks(&vESD);
 
   //Relate tracks to the primary vertex
   const PrimaryFinderBlock* prim = static_cast<const PrimaryFinderBlock*>(primData);
@@ -195,7 +195,7 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
         continue;
       const int itr = it->second;
       //100. is an argument for parameter maxd in AliESDtrack - cut on impact parameter.
-      esd->GetTrack(itr)->RelateToVertex(&vESD, esd->GetMagneticField(), 100.);
+      esd->GetTrack(itr)->RelateToVertexTPC(&vESD, esd->GetMagneticField(), 100.);
       constrainedToVtx[itr] = true;
     }
   }
@@ -227,8 +227,8 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
       double sigma[3] = {.1, .1, .1};
       v0.XvYvZv(pos);
       AliESDVertex v0ESD(pos, sigma);
-      esd->GetTrack(iTr)->RelateToVertex(&v0ESD, esd->GetMagneticField(), 100.);
-      esd->GetTrack(jTr)->RelateToVertex(&v0ESD, esd->GetMagneticField(), 100.);
+      esd->GetTrack(iTr)->RelateToVertexTPC(&v0ESD, esd->GetMagneticField(), 100.);
+      esd->GetTrack(jTr)->RelateToVertexTPC(&v0ESD, esd->GetMagneticField(), 100.);
       constrainedToVtx[iTr] = true;
       constrainedToVtx[jTr] = true;
     }

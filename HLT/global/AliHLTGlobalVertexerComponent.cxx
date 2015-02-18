@@ -665,7 +665,7 @@ void AliHLTGlobalVertexerComponent::FillESD( AliESDEvent *event, AliHLTGlobalVer
 
     AliESDVertex vESD( data->fPrimP, data->fPrimC, data->fPrimChi2, data->fPrimNContributors );
     event->SetPrimaryVertexTPC( &vESD );
-    event->SetPrimaryVertexTracks( &vESD );
+    //event->SetPrimaryVertexTracks( &vESD );
 
     // relate tracks to the primary vertex
 
@@ -706,8 +706,8 @@ void AliHLTGlobalVertexerComponent::FillESD( AliESDEvent *event, AliHLTGlobalVer
       double sigma[3] = {.1,.1,.1};
       v0.XvYvZv(pos);
       AliESDVertex vESD(pos, sigma);
-      event->GetTrack(iTr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
-      event->GetTrack(jTr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
+      event->GetTrack(iTr)->RelateToVertexTPC( &vESD, event->GetMagneticField(),100. );
+      event->GetTrack(jTr)->RelateToVertexTPC( &vESD, event->GetMagneticField(),100. );
       constrainedToVtx[iTr] = 1;
       constrainedToVtx[jTr] = 1;    
     }
