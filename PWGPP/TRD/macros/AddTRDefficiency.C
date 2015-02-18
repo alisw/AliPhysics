@@ -1,17 +1,17 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
-#include <TError.h>
-
-#include <AliAnalysisManager.h>
-#include <AliAnalysisDataContainer.h>
-#include <AliLog.h>
-
-#include <AliTRDtrackInfo.h>
-#include <AliTRDeventInfo.h>
-#include <AliTRDpwgppHelper.h>
-#include <AliTRDefficiency.h>
-#include <AliTRDefficiencyMC.h>
-#include <AliTRDmultiplicity.h>
-#endif
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TError.h>
+// 
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// #include <AliLog.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDefficiency.h>
+// #include <AliTRDefficiencyMC.h>
+// #include <AliTRDmultiplicity.h>
+// #endif
 
 void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
@@ -29,10 +29,10 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     eff->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
     eff->SetDebugLevel(0);
     mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  // connect main (ESD) container
-    mgr->ConnectInput(eff, 1, ci[its]);                 // conect track info container
+    mgr->ConnectInput(eff, 1, ci[its]);                         // conect track info container
     mgr->ConnectInput(eff, 2, evInfoContainer);                 // conect event info container
-    mgr->ConnectInput(eff, 3, ci[4]);                          // conect onl.tracklets container
-    mgr->ConnectInput(eff, 4, ci[5]);                          // conect clusters container
+    mgr->ConnectInput(eff, 3, ci[4]);                           // conect onl.tracklets container
+    mgr->ConnectInput(eff, 4, ci[5]);                           // conect clusters container
     mgr->ConnectOutput(eff,1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
   }
 

@@ -7,6 +7,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <TROOT.h>
 #include <TError.h>
 #include <Rtypes.h>
 #include <TMath.h>
@@ -21,7 +22,45 @@
 #include <cstring>
 #include <fstream>
 
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+#include <AliESDtrackCuts.h>
+#include <AliTRDtrackerV1.h>
+
 #include "AliTRDpwgppHelper.h"
+
+#include "info/AliTRDtrackInfo.h"
+#include "info/AliTRDv0Info.h"
+#include "info/AliTRDchmbInfo.h"
+#include "info/AliTRDtriggerInfo.h"
+#include "info/AliTRDeventInfo.h"
+#include "info/AliTRDeventCuts.h"
+#include "AliTRDinfoGen.h"
+#include "AliTRDcheckESD.h"
+#include "AliTRDcheckDET.h"
+#include "AliTRDcheckPID.h"
+#include "AliTRDcheckTRK.h"
+#include "AliTRDcalibration.h"
+#include "AliTRDalignmentTask.h"
+#include "AliTRDresolution.h"
+#include "AliTRDclusterResolution.h"
+#include "AliTRDpidRefMaker.h"
+#include "AliTRDpidRefMakerNN.h"
+#include "AliTRDpidRefMakerLQ.h"
+#include "AliTRDefficiency.h"
+#include "AliTRDefficiencyMC.h"
+#include "AliTRDmultiplicity.h"
+#include "AliTRDv0Monitor.h"
+#include "AliTRDpwgppHelper.h"
+
+#include "macros/AddTRDcheckESD.C"
+#include "macros/AddTRDcheckDET.C"
+#include "macros/AddTRDcheckPID.C"
+#include "macros/AddTRDcheckTRK.C"
+#include "macros/AddTRDinfoGen.C"
+#include "macros/AddTRDresolution.C"
+#include "macros/AddTRDefficiency.C"
+#include "macros/AddTRDv0Monitor.C"
 
 const Char_t * AliTRDpwgppHelper::fgkTRDtaskClassName[AliTRDpwgppHelper::kNTRDTASKS] = {
   "AliTRDcheckESD"
@@ -57,6 +96,141 @@ const Char_t * AliTRDpwgppHelper::fgkTRDtaskOpt[AliTRDpwgppHelper::kNTRDTASKS+1]
   ,"MULT"
   ,"ALL"
 };
+
+//______________________________________________________
+Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t *addMacroPath)
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr) { 
+    Error("AddTrainPerformanceTRD", "AliAnalysisManager not set!");
+    return kFALSE;
+  }
+
+  // TRD data containers
+  AliAnalysisDataContainer *ci[kNOutSlots];
+  AliAnalysisDataContainer *ce[6];
+
+  Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
+  Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
+  Int_t bitmap = ParseOptions(trd);
+  for(Int_t it=0; it<kNTRDQATASKS; it++){
+    if(gROOT->LoadMacro(Form("%s/Add%s.C", addMacroPath, TString(TaskClassName(it))(3,20).Data()))) {
+      Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", TaskClassName(it)));
+      return kFALSE;
+    } 
+    if(!DoTask(it, bitmap)) continue;
+
+    switch(it){
+    case kCheckESD:
+      AddTRDcheckESD(mgr); break;
+    case kInfoGen:
+      AddTRDinfoGen(mgr, 0, NULL, ci); break;
+    case kCheckDET:
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      ce[1]=ci[kTracksSA];
+      ce[2]=ci[kTracksKink];
+      ce[3]=ci[kEventInfo];
+      ce[4]=ci[kTracklets];
+      ce[5]=ci[kClusters];
+      AddTRDcheckDET(mgr, bitmap, ce);
+      break;
+    case kEfficiency:
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      ce[1]=ci[kTracksITS];
+      ce[2]=ci[kTracksKink];
+      ce[3]=ci[kEventInfo];
+      ce[4]=ci[kTracklets];
+      ce[5]=ci[kClusters];
+      AddTRDefficiency(mgr, bitmap, ce);
+      break;
+    case kResolution:
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      ce[1]=ci[kTracksITS];
+      ce[2]=ci[kTracksKink];
+      ce[3]=ci[kEventInfo];
+      ce[4]=ci[kTracklets];
+      ce[5]=ci[kClusters];
+      AddTRDresolution(mgr, bitmap, ce); 
+      break;
+    case kCheckPID:
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      ce[1]=ci[kEventInfo];
+      ce[2]=ci[kTracklets];
+      ce[3]=ci[kV0List];
+      AddTRDcheckPID(mgr, bitmap, ce, &ce[4]);
+      break;
+    case kCheckTRK:
+      // map slots
+      ce[0]=ci[kTracksBarrel];
+      ce[1]=ci[kEventInfo];
+      ce[2]=ci[kTracklets];
+      ce[3]=ci[kClusters];
+      AddTRDcheckTRK(mgr, 0, ce);
+      break;
+    case kV0Monitor:
+      // slots already mapped by checkPID
+      ce[2] = ce[3];
+      ce[3] = ce[4];
+      AddTRDv0Monitor(mgr, 0, ce);
+      break;
+    default:
+      Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 
+    }
+  }
+  return kTRUE;
+}
+
+//______________________________________________________
+const Char_t* AliTRDpwgppHelper::Translate(Bool_t doCheckESD, Bool_t doCheckDET, Bool_t doEffic, Bool_t doResolution, Bool_t doCheckPID, Bool_t doCheckV0)
+{
+  TString *opt = new TString("");
+  if( doCheckESD==kTRUE &&
+      doCheckDET==kTRUE &&
+      doEffic==kTRUE &&
+      doResolution==kTRUE &&
+      doCheckPID==kTRUE &&
+      doCheckV0==kTRUE
+  ){
+    (*opt)="ESD DET EFF RES PID V0";
+  } else {
+    Bool_t kINDENT(kFALSE);
+    if(doCheckESD){ 
+      opt->Append("ESD");
+      kINDENT=kTRUE;
+    }
+    if(doCheckDET){ 
+      if(kINDENT) opt->Append(" ");
+      opt->Append("DET"); 
+      kINDENT = kTRUE;
+    }
+    if(doEffic){ 
+      if(kINDENT) opt->Append(" ");
+      opt->Append("EFF");
+      kINDENT=kTRUE;
+    }
+    if(doResolution){ 
+      if(kINDENT) opt->Append(" ");
+      opt->Append("RES");
+      kINDENT=kTRUE;
+    }
+    if(doCheckPID){ 
+      if(kINDENT) opt->Append(" ");
+      opt->Append("PID");
+      kINDENT=kTRUE;
+    }
+    if(doCheckV0){ 
+      if(kINDENT) opt->Append(" ");
+      opt->Append("V0");
+      kINDENT=kTRUE;
+    }
+  }
+
+  return (const Char_t*)opt->Data();
+}
 
 //______________________________________________________
 Bool_t AliTRDpwgppHelper::DoTask(Int_t idx, Int_t map)
