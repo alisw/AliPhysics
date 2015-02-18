@@ -1232,15 +1232,24 @@ Double_t AliTOFTenderSupply::EstimateLengthOutTRD(AliESDtrack *track)
 Int_t AliTOFTenderSupply::GetOCDBVersion(Int_t runNo)
 {
   Int_t verNo = -1;
-  if ( (runNo>=118503 && runNo <=121040) )  { // LHC10C
-    if (fRecoPass == 2) {                     // on pass2
-      if (runNo >= 119159 && runNo <= 119163) verNo=3;
+  if (fRecoPass == 2) {
+      if (runNo >= 114931 && runNo <= 115514) verNo=3;
+      else if (runNo >= 116102 && runNo <= 116681) verNo=3;
+      else if (runNo >= 117048 && runNo <= 117222) verNo=3;
+      else if (runNo >= 119159 && runNo <= 119163) verNo=3;
       else if (runNo >= 119837 && runNo <= 119934) verNo=4;
       else if (runNo >= 120067 && runNo <= 120244) verNo=4;
       else if (runNo >= 120503 && runNo <= 120505) verNo=4;
       else if (runNo >= 120616 && runNo <= 120671) verNo=4;
       else if (runNo >= 120741 && runNo <= 120829) verNo=4;
-    }
+      else if (runNo >= 124187 && runNo <= 124381) verNo=3;
+      else if (runNo >= 124603 && runNo <= 124751) verNo=4;
+      else if (runNo >= 125023 && runNo <= 125134) verNo=3;
+      else if (runNo >= 125294 && runNo <= 125296) verNo=3;
+      else if (runNo >= 125628 && runNo <= 125634) verNo=3;
+      else if (runNo >= 125842 && runNo <= 125855) verNo=3;
+      else if (runNo >= 126004 && runNo <= 126168) verNo=3;
+      else if (runNo >= 126283 && runNo <= 126437) verNo=3;
   }
   return verNo;
 }
