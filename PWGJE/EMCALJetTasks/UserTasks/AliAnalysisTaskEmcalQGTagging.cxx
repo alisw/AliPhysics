@@ -36,6 +36,7 @@
 #include "AliParticleContainer.h"
 #include "AliPythiaInfo.h"
 #include "TRandom3.h"
+#include "AliPicoTrack.h"
 
 
 #include "AliAODEvent.h"
@@ -137,7 +138,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   TH1::AddDirectory(kFALSE);
 
   fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
-  Int_t nVar = 18; 
+  const Int_t nVar = 18;
   fShapesVar = new Float_t [nVar]; 
   TString *fShapesVarNames = new TString [nVar];
 
@@ -188,9 +189,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fPtJet= new TH1F("fPtJet", "fPtJet", 100, 0, 200);
   fOutput->Add(fPtJet);
   
-  fhpTjetpT= new TH2F("fhpTjetpT", "fhpTjetpT", 100, 0, 200,  100, 0, 200);
+  fhpTjetpT= new TH2F("fhpTjetpT", "fhpTjetpT", 200, 0, 200,  200, 0, 200);
   fOutput->Add(fhpTjetpT);
-  fhPt= new TH1F("fhPt", "fhPt", 100, 0, 200);
+  fhPt= new TH1F("fhPt", "fhPt", 200, 0, 200);
   fOutput->Add(fhPt);
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
@@ -225,19 +226,22 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   if (fJetSelection == kRecoil) {
     //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
     Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
-    if (triggerHadronLabel==-9999) {
-      Printf ("Trigger Hadron not found, return");
+    
+    if (triggerHadronLabel==-99999) {
+      //Printf ("Trigger Hadron not found, return");
       return 0;
     }
+  
     AliParticleContainer *partContAn = GetParticleContainer(0);
     TClonesArray *trackArrayAn = partContAn->GetArray();
     triggerHadron = static_cast<AliAODTrack*>(trackArrayAn->At(triggerHadronLabel));
+  
     if (!triggerHadron) {
-      Printf("No Trigger hadron with the found label!!");
+      //Printf("No Trigger hadron with the found label!!");
       return 0;
     }
   }
-
+  
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
@@ -324,15 +328,16 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       Float_t dphiRecoil = 0.;
       if (fJetSelection == kRecoil){
         dphiRecoil = RelativePhi(triggerHadron->Phi(), jet1->Phi());
-        if (TMath::Abs(dphiRecoil) < TMath::Pi() - fangWindowRecoil) {
+        if (TMath::Abs(dphiRecoil) < (TMath::Pi() - fangWindowRecoil)) {
          // Printf("Recoil jets back to back not found! continuing");
           continue;
         }
-        //Printf("Recoil jets back to back found! filling histos!");
+        
         fhpTjetpT->Fill(triggerHadron->Pt(), jet1->Pt());
-        //Printf("triggerHadron =%f, jet1 = %f", triggerHadron->Pt(), jet1->Pt());
+        //Printf(" ************ FILLING HISTOS****** shapeSub = %d, triggerHadron = %f, jet1 = %f", fJetShapeSub, triggerHadron->Pt(), jet1->Pt());
         fhPt->Fill(triggerHadron->Pt());
         fhPhi->Fill(RelativePhi(triggerHadron->Phi(), jet1->Phi()));
+        
       }
       
       if (((fJetShapeType == kData) || (fJetShapeType == kDetEmb)) && (fJetShapeSub == kConstSub))
@@ -584,8 +589,9 @@ Float_t AliAnalysisTaskEmcalQGTagging::LeSub(AliEmcalJet *jet, Int_t jetContNb =
   AliVParticle *vp2 = 0x0;
   std::vector<int> ordindex;
   ordindex=jet->SortConstituentsPt(jetCont->GetParticleContainer()->GetArray());
+ //Printf("ordindex[0] = %d, ordindex[1] = %d ", ordindex[0], ordindex[1]);
   
-  if ((!ordindex[0]) || (!ordindex[1])) return 0;
+  if ((&ordindex[0] == 0x0) || (&ordindex[1]==0x0)) return 0;
   
   vp1 = static_cast<AliVParticle*>(jet->TrackAt(ordindex[0], jetCont->GetParticleContainer()->GetArray()));
   if (!vp1){
@@ -706,37 +712,71 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
 
   AliParticleContainer *partCont = GetParticleContainer(0);
   TClonesArray *tracksArray = partCont->GetArray();
-
-  if(!partCont || !tracksArray) return 0; 
+  
+  if(!partCont || !tracksArray) return -99999;
   AliAODTrack *track = 0x0;
-
+  AliEmcalParticle *emcPart = 0x0;
+  AliPicoTrack *picoTrack = 0x0;
+  
   TList *trackList = new TList();
   Int_t triggers[100];
-  for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0; 
-  Int_t iTT = 0; 
-    
+  for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0;
+  Int_t iTT = 0;
+  
   for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
-    track = static_cast<AliAODTrack*>(tracksArray->At(iTrack));
-    if (!track) continue;
     
-    if(TMath::Abs(track->Eta())>0.9) continue;
-    if (track->Pt()<0.15) continue;
-    if (!(track->TestFilterBit(768))) continue;
+    if (fJetShapeSub == kNoSub) {
+      picoTrack = static_cast<AliPicoTrack*>(tracksArray->At(iTrack));
+      if (!picoTrack) continue;
+      
+      
+      if(TMath::Abs(picoTrack->Eta())>0.9) continue;
+      if(picoTrack->Pt()<0.15) continue;
+      if(picoTrack->GetTrackType() == 2) continue;
     
-    if ((track->Pt() >= minpT) && (track->Pt()< maxpT)) {
-      trackList->Add(track);
-      triggers[iTT] = iTrack;
-      iTT++;
+      //if ((picoTrack->Pt()>8) && (picoTrack->Pt()<9)) Printf("picoTrackLabel = %d", picoTrack->GetTrackType());
+      
+      if ((picoTrack->Pt() >= minpT) && (picoTrack->Pt()< maxpT)) {
+        trackList->Add(picoTrack);
+        triggers[iTT] = iTrack;
+        iTT++;
+      }
+    }
+    else if (fJetShapeSub == kConstSub){
+      emcPart = static_cast<AliEmcalParticle*>(tracksArray->At(iTrack));
+      if (!emcPart) continue;
+      if(TMath::Abs(emcPart->Eta())>0.9) continue;
+      if (emcPart->Pt()<0.15) continue;
+      
+      if ((emcPart->Pt() >= minpT) && (emcPart->Pt()< maxpT)) {
+        trackList->Add(emcPart);
+        triggers[iTT] = iTrack;
+        iTT++;
+      }
+    }
+    else{
+      track = static_cast<AliAODTrack*>(tracksArray->At(iTrack));
+      if (!track) continue;
+      if(TMath::Abs(track->Eta())>0.9) continue;
+      if (track->Pt()<0.15) continue;
+      if (!(track->TestFilterBit(768))) continue;
+      
+      if ((track->Pt() >= minpT) && (track->Pt()< maxpT)) {
+        trackList->Add(track);
+        triggers[iTT] = iTrack;
+        iTT++;
+        
+      }
     }
   }
 
-  if (iTT == 0) return -9999;
+  if (iTT == 0) return -99999;
   Int_t nbRn = 0, index = 0 ; 
   TRandom3* random = new TRandom3(0); 
   nbRn = random->Integer(iTT);
 
   index = triggers[nbRn];
-  //Printf("iTT= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
+  //Printf("iTT Total= %d, nbRn = %d, Index = %d",iTT, nbRn, index );
   return index; 
   
 }
