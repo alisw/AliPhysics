@@ -17,7 +17,7 @@
 
 void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci)
 {
-  Info("AddTRDresolution", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\" [5]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName(), ci[5]->GetName()));
+  Info("AddTRDresolution", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\" [5]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName(), ci[5]->GetName());
   AliAnalysisDataContainer *evInfoContainer = ci[3];
 
   //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
