@@ -133,7 +133,7 @@ AliAnalysisTaskSE(),
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fKeepCorrPlots(kFALSE),
-  fUseNchWeight(kFALSE),
+  fUseNchWeight(0),
   fHistoMCNch(0),
   fHistoMeasNch(0),
   fRefMult(9.26),
@@ -228,7 +228,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fKeepCorrPlots(kFALSE),
-  fUseNchWeight(kFALSE),
+  fUseNchWeight(0),
   fHistoMCNch(0),
   fHistoMeasNch(0),
   fRefMult(9.26),
@@ -305,10 +305,16 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   //
   // Initialization
   //
-  printf("AnalysisTaskSEDvsMultiplicity::Init() \n");
+  printf("AnalysisTaskSEDvsMultiplicity_0::Init() \n");
 
   if(fUseNchWeight && !fReadMC){ AliFatal("Nch weights can only be used in MC mode"); return; }
   if(fUseNchWeight && !fHistoMCNch){ AliFatal("Nch weights can only be used without histogram"); return; }
+  if(fUseNchWeight==1 && !fHistoMeasNch) {//Nch weights
+    if(fisPPbData){ AliFatal("Nch weights can only be used with MC and data histogram in pPb"); return; }
+    else CreateMeasuredNchHisto();  
+  }
+  if(fUseNchWeight==2 && !fHistoMeasNch){ AliFatal("Ntrk weights can only be used with MC and data histogram"); return; } //for pp, pPb Ntrk weights 
+
   
   fListCuts=new TList();
   fListCuts->SetOwner();
@@ -328,6 +334,9 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
     copycut->SetName("AnalysisCutsDStar");
     fListCuts->Add(copycut);
   }
+  if(fHistoMeasNch) fListCuts->Add(fHistoMeasNch);
+  if(fHistoMCNch) fListCuts->Add(fHistoMCNch);
+
   PostData(2,fListCuts);
   
   fListProfiles = new TList();
@@ -344,6 +353,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
       fListProfiles->Add(hprof);
     }
   }
+
   PostData(4,fListProfiles);
 
   return;
@@ -572,8 +582,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   PostData(2,fListCuts);
   PostData(3,fOutputCounters);
   PostData(4,fListProfiles);
-
-  if(fUseNchWeight) CreateMeasuredNchHisto();
 
   return;
 }
@@ -869,19 +877,23 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Int_t nChargedMCPrimary=nChargedMCPrimaryEta10;
     Int_t nChargedMCPhysicalPrimary=nChargedMCPhysicalPrimaryEta10;
 
-
     // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
-    if(fUseNchWeight){
+    if(fUseNchWeight>0){
+      
       Double_t tmpweight = 1.0;
-      if(nChargedMCPhysicalPrimary<=0) tmpweight = 0.0;
+      Double_t tmpXweight=nChargedMCPhysicalPrimary; // Nch weights
+      if(fUseNchWeight==2) tmpXweight=countMult;     // Ntrk weights
+
+      if(tmpXweight<=0) tmpweight = 0.0;
       else{
-	Double_t pMeas = fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nChargedMCPhysicalPrimary));
-	//	printf(" pMeas=%2.2f  and histo MCNch %s \n",pMeas,fHistoMCNch);
-	Double_t pMC = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nChargedMCPhysicalPrimary));
+	Double_t pMeas = fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(tmpXweight));
+	//printf(" pMeas=%2.2f  and histo MCNch %s \n",pMeas,fHistoMCNch);
+	Double_t pMC = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(tmpXweight));
 	tmpweight = pMC>0 ? pMeas/pMC : 0.;
       }
       nchWeight *= tmpweight;
-      AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,nchWeight));
+      AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
+      
     }
 
     // Now recompute the variables in case another MC estimator is considered
