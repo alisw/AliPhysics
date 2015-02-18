@@ -436,44 +436,48 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
     const AliESDVertex *primaryVertex = 0;
     const AliESDVertex *primaryVertexTracks = 0;
-
-    { // fill primary vertex Tracks
-
-      primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) ); 
-      primaryVertex = primaryVertexTracks;
-      err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
-      freeSpace = maxOutputSize - flatEsd->GetSize();
-    }
- 
-    if( err ) break;
+    const AliESDVertex *primaryVertexSPD = 0;    
+    const AliESDVertex *primaryVertexTPC = 0;
+    AliESDVertex primaryVertexTracksTmp;
    
-    { // fill primary vertex TPC
 
-    // fill primary vertex SPD
-
-    AliESDVertex primaryVertexSPD;    
-    { 
+    { // fill ITS standalone primary vertex
+ 
       const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
       if (pBlock) { // Get ITS Standalone primaries (SAP) vertexTracks
 	fBenchmark.AddInput(pBlock->fSize);
 	AliFlatESDVertex *vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
 	if (vtxFlat->GetNContributors()>0) {
 	  //cout<<"\n\n ESD converter: input vertexTrackSAP with "<<vtxFlat->GetNContributors()<<" contributors"<<endl;
-	  vtxFlat->GetESDVertex( primaryVertexSPD );
-	  primaryVertexSPD.SetTitle("vertexITSSAP");
-	  if( !primaryVertex ) primaryVertex = &primaryVertexSPD;  
-	  err = flatEsd->SetPrimaryVertexSPD( &primaryVertexSPD, freeSpace );
+	  vtxFlat->GetESDVertex( primaryVertexTracksTmp );
+	  primaryVertexTracksTmp.SetTitle("vertexITSSAP");
+	  primaryVertexTracks = &primaryVertexTracksTmp;
+	  primaryVertex = primaryVertexTracks;  
+	  err = flatEsd->SetPrimaryVertexSPD( primaryVertexTracks, freeSpace );
 	  freeSpace = maxOutputSize - flatEsd->GetSize();     
 	}
       }
-      else { // old SPD vertex
-	const AliESDVertex *primaryVertexSPDOld = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS ) );
-	if( primaryVertexSPDOld ){
-	  if( !primaryVertex ) primaryVertex = primaryVertexSPDOld;  
-	  err = flatEsd->SetPrimaryVertexSPD( primaryVertexSPDOld, freeSpace );
-	  freeSpace = maxOutputSize - flatEsd->GetSize();     
-	}
-      }
+    }
+ 
+    if( err ) break;
+   
+    { // fill primary vertex TPC
+
+      primaryVertexTPC = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) ); 
+      if( !primaryVertex ) primaryVertex = primaryVertexTPC;
+      err = flatEsd->SetPrimaryVertexTPC( primaryVertexTPC, freeSpace );
+      freeSpace = maxOutputSize - flatEsd->GetSize();
+    }
+    
+    if( err ) break;
+
+    { // fill primary vertex SPD
+      primaryVertexSPD = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS ) );
+      if( primaryVertexSPD ){
+	if( !primaryVertex ) primaryVertex = primaryVertexSPD;
+	err = flatEsd->SetPrimaryVertexSPD( primaryVertexSPD, freeSpace );
+	freeSpace = maxOutputSize - flatEsd->GetSize();     
+      }    
     } // SPD vertex
 
     if( err ) break;
@@ -533,17 +537,21 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       
       // vertex-constrained parameters for TPC tracks	
       
-      const AliExternalTrackParam *tpcConstrained=0;       
+      const AliExternalTrackParam *constrained=0;       
       const AliExternalTrackParam *tpcInner=tpcTrack;       
+      float impParTPC[6] = {0.,0.,0.,0.,0.,0.};
       float impPar[6] = {0.,0.,0.,0.,0.,0.};
 
       AliESDtrack esdTrack;
-      if( primaryVertexTracks ){
+      if( primaryVertex ){
 	esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);
-	esdTrack.RelateToVertexTPC( primaryVertexTracks, GetBz(), 1000 );
-	tpcConstrained = esdTrack.GetConstrainedParam();	
+	esdTrack.RelateToVertexTPC( primaryVertex, GetBz(), 1000 );
+	esdTrack.RelateToVertex( primaryVertex, GetBz(), 1000 );
 	tpcInner = esdTrack.GetTPCInnerParam();
-	esdTrack.GetImpactParametersTPC(impPar, impPar+2 );
+	constrained = esdTrack.GetConstrainedParam();	
+	esdTrack.GetImpactParametersTPC(impParTPC, impParTPC+2 );
+	impParTPC[5] = esdTrack.GetConstrainedChi2TPC();
+	esdTrack.GetImpactParameters(impPar, impPar+2 );
 	impPar[5] = esdTrack.GetConstrainedChi2();
       }
 	
@@ -559,10 +567,11 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       
       new (flatTrack) AliFlatESDTrack;       
       
-      flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, tpcConstrained );
+      flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, constrained );
       flatTrack->SetNumberOfTPCClusters( nClustersTPC );
       flatTrack->SetNumberOfITSClusters( nClustersITS );
       flatTrack->SetImpactParameters( impPar, impPar+2,impPar[5] );
+      flatTrack->SetImpactParametersTPC( impParTPC, impParTPC+2,impParTPC[5] );
 
       trackSize += flatTrack->GetSize();
       freeSpace -= flatTrack->GetSize();

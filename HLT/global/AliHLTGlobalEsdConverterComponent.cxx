@@ -957,12 +957,13 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // TODO 2010-07-12 this propagates also the TPC inner param to beamline
   // sounds not very reasonable
   // https://savannah.cern.ch/bugs/index.php?69873
-  if( pESD->GetPrimaryVertexTracks() && pESD->GetPrimaryVertexTracks()->GetStatus() ){
+  if( pESD->GetPrimaryVertex() && pESD->GetPrimaryVertex()->GetStatus() ){
     for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
       if (!pESD->GetTrack(i) || 
 	  !pESD->GetTrack(i)->GetTPCInnerParam() ) continue;
-      pESD->GetTrack(i)->RelateToVertexTPC(pESD->GetPrimaryVertexTracks(), fSolenoidBz, 1000 );
-    }
+      pESD->GetTrack(i)->RelateToVertexTPC(pESD->GetPrimaryVertex(), fSolenoidBz, 1000 );
+      pESD->GetTrack(i)->RelateToVertex(pESD->GetPrimaryVertex(), fSolenoidBz, 1000 );
+   }
   }
 
 
