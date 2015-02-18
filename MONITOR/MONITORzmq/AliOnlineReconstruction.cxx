@@ -280,6 +280,7 @@ void AliOnlineReconstruction::ReconstructionLoop()
 	  else
 	    {
 	      cout<<"No event after!"<<endl;
+	      gQuit=true;
 	    }
 	}
 	cout<<"after while"<<endl;
