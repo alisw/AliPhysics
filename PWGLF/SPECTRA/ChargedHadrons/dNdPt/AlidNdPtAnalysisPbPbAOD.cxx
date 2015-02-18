@@ -88,6 +88,7 @@ fPcosPhiCent(0),
 fPsinPhiCent(0),
 // cross check for event plane determination
 fDeltaPhiCent(0),
+fDeltaPhiSymCent(0),
 fCrossCheckFilterBitPhiCent(0),
 //global
 fIsMonteCarlo(0),
@@ -655,6 +656,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fDeltaPhiCent->GetYaxis()->SetTitle("Centrality");
   fDeltaPhiCent->Sumw2();
   
+  fDeltaPhiSymCent = new TH2F("fDeltaPhiSymCent","fDeltaPhiSymCent",200, 0., 0.5*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
+  fDeltaPhiSymCent->GetXaxis()->SetTitle("#Delta #phi");
+  fDeltaPhiSymCent->GetYaxis()->SetTitle("Centrality");
+  fDeltaPhiSymCent->Sumw2();
+  
   Int_t binsFilterBitPhiCent[3]={3,200,fCentralityNbins-1};
   Double_t minbinsFilterBitPhiCent[3]={0,-2.*TMath::Pi(),0}; 
   Double_t maxbinsFilterBitPhiCent[3]={3,2.*TMath::Pi(),100};
@@ -721,6 +727,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPsinPhiCent);
   
   fOutputList->Add(fDeltaPhiCent);
+  fOutputList->Add(fDeltaPhiSymCent);
   
   fOutputList->Add(fCrossCheckFilterBitPhiCent);
   
@@ -1152,6 +1159,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  // 	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
 	  
 	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
+	  fDeltaPhiSymCent->Fill(dTrackDeltaphiPtEtaPhiCent[0], dCentrality);
 	}
   } // end track loop
   
