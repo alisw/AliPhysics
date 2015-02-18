@@ -47,6 +47,7 @@
 #include "AliZDCv4.h"
 #include "AliMC.h"
 #include "AliMCParticle.h"
+#include "AliTrackReference.h"
  
 class  AliZDCHit;
 class  AliPDG;
@@ -2269,13 +2270,13 @@ void AliZDCv4::StepManager()
   //
   // Routine called at every step in the Zero Degree Calorimeters
   //
-  Int_t   j=0, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
+  Int_t   vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
   Float_t x[3]={0.,0.,0.}, xdet[3]={999.,999.,999.}, um[3]={0.,0.,0.}, ud[3]={0.,0.,0.};
-  Float_t destep=0., be=0., out=0.;
   Double_t s[3]={0.,0.,0.}, p[4]={0.,0.,0.,0.};
+  Float_t destep=0., be=0., out=0.;
   //
   Float_t hits[14];
-  for(j=0;j<14;j++) hits[j]=-999.;
+  for(int j=0; j<14; j++) hits[j]=-999.;
   const char *knamed = (TVirtualMC::GetMC())->CurrentVolName();
   Int_t  mid = TVirtualMC::GetMC()->CurrentMedium();
   
@@ -2381,10 +2382,12 @@ void AliZDCv4::StepManager()
      (mid == fMedSensGR) || (mid == fMedSensF1) ||
      (mid == fMedSensF2) || (mid == fMedSensZEM)){
 
+    //Ch. debug
+    //printf(" ** pc. track %d in vol. %s \n",gAlice->GetMCApp()->GetCurrentTrackNumber(), knamed);
     
   //Particle coordinates 
     TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
-    for(j=0; j<=2; j++) x[j] = s[j];
+    for(int j=0; j<=2; j++) x[j] = s[j];
     hits[0] = x[0];
     hits[1] = x[1];
     hits[2] = x[2];
@@ -2399,6 +2402,15 @@ void AliZDCv4::StepManager()
 	  else if(x[2]>0.) vol[0]=5; //ZPA  
     }
     else if(!strncmp(knamed,"ZE",2)) vol[0]=3; //ZEM
+    
+    // February 2015: Adding TrackReference
+    if(TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting()) {
+       AliTrackReference* trackRef = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kZDC);
+       if(vol[0]>0){
+         trackRef->SetUserId(vol[0]);
+         //printf("Adding track reference for track %d in vol. %d\n", gAlice->GetMCApp()->GetCurrentTrackNumber(), vol[0]);
+       }
+    }
   
   // Determine in which quadrant the particle is
     if(vol[0]==1){	//Quadrant in ZNC
@@ -2415,7 +2427,6 @@ void AliZDCv4::StepManager()
         else vol[1]=4;
       }
     }
-    
     else if(vol[0]==2){	//Quadrant in ZPC
       // Calculating particle coordinates inside ZPC
       xdet[0] = x[0]-fPosZPC[0];
@@ -2484,7 +2495,6 @@ void AliZDCv4::StepManager()
     // Ch. debug
     //printf("\t *** det %d vol %d xdet(%f, %f)\n",vol[0], vol[1], xdet[0], xdet[1]);
     
-    
     // Store impact point and kinetic energy of the ENTERING particle
     
     if(TVirtualMC::GetMC()->IsTrackEntering()){
@@ -2541,7 +2551,7 @@ void AliZDCv4::StepManager()
       }
       
 
-      AddHit(curTrackN, vol, hits);
+      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 
       if(fNoShower==1){
         if(vol[0]==1){
@@ -2579,7 +2589,6 @@ void AliZDCv4::StepManager()
       hits[8] = 0.;
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
     }
-  }
  
 
   // *** Light production in fibres 
@@ -2615,7 +2624,7 @@ void AliZDCv4::StepManager()
  
        // Distance between particle trajectory and fibre axis
        TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
-       for(j=0; j<=2; j++){
+       for(int j=0; j<=2; j++){
    	  x[j] = s[j];
        }
        TVirtualMC::GetMC()->Gmtod(x,xdet,1);
@@ -2683,7 +2692,7 @@ void AliZDCv4::StepManager()
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
 	 Float_t xalic[3];
-         for(j=0; j<3; j++){
+         for(int j=0; j<3; j++){
             xalic[j] = s[j];
          }
 	 // z-coordinate from ZEM front face 
@@ -2714,4 +2723,5 @@ void AliZDCv4::StepManager()
        }
      }
    }
+  }
 }
