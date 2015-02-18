@@ -91,11 +91,15 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
-  // Nch weights on MC
-  void UseMCNchWeight(Bool_t flag) { fUseNchWeight = flag; }
+  // Nch Ntrk weights on MC
+  void UseMCNchWeight(Int_t flag) { fUseNchWeight = flag; }
   void SetHistoNchWeight(TH1F *h){
     if(fHistoMCNch) delete fHistoMCNch;
     fHistoMCNch = new TH1F(*h);
+  }
+  void SetMeasuredNchHisto(TH1F* h){
+    if(fHistoMeasNch) delete fHistoMeasNch;
+    fHistoMeasNch = new TH1F(*h);
   }
 
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
@@ -221,7 +225,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
   Bool_t fKeepCorrPlots; // flag to look at the correlation of different estimators (eta ranges)
 
-  Bool_t fUseNchWeight; // weight on the MC on the generated multiplicity
+  Int_t fUseNchWeight; // weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
   TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
   TH1F* fHistoMeasNch;  //! weight histogram on the true measured multiplicity
   
@@ -234,7 +238,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Int_t fDoVZER0ParamVertexCorr; // Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,14); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,15); // D vs. mult task
 };
 
 #endif
