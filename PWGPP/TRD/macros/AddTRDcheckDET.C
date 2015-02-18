@@ -1,15 +1,15 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
-#include <TError.h>
-#include <AliLog.h>
-#include <AliAnalysisManager.h>
-#include <AliAnalysisDataContainer.h>
-
-#include <AliTRDtrackInfo.h>
-#include <AliTRDeventInfo.h>
-#include <AliTRDpwgppHelper.h>
-#include <AliTRDcheckDET.h>
-#include <AliTRDcalibration.h>
-#endif
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TError.h>
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDcheckDET.h>
+// #include <AliTRDcalibration.h>
+// #endif
 
 void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {

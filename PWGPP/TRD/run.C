@@ -149,8 +149,8 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
     //taskCDB->SetRunNumber(run);
   } else Warning("run.C", "OCDB connection via AliTRDinfoGen.");
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
-  if(!AddTrainPerformanceTRD(optList)) {
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
+  if(!AliTRDpwgppHelper::AddTrainPerformanceTRD(optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
   }

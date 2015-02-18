@@ -1,19 +1,19 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
-#include <TTree.h>
-#include <TError.h>
-
-#include <AliLog.h>
-#include <AliAnalysisManager.h>
-#include <AliAnalysisDataContainer.h>
-#include <AliTRDgeometry.h>
-
-#include <AliTRDtrackInfo.h>
-#include <AliTRDeventInfo.h>
-#include <AliTRDpwgppHelper.h>
-#include <AliTRDresolution.h>
-#include <AliTRDclusterResolution.h>
-#include <AliTRDalignmentTask.h>
-#endif
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TTree.h>
+// #include <TError.h>
+// 
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// #include <AliTRDgeometry.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDresolution.h>
+// #include <AliTRDclusterResolution.h>
+// #include <AliTRDalignmentTask.h>
+// #endif
 
 void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci)
 {
