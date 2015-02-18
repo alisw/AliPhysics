@@ -9,6 +9,7 @@
 class TH3;
 class TProfile;
 class AliEmcalJet;
+class TList;
 
 class AliEmcalJetByJetCorrection : public TNamed
 {
@@ -35,6 +36,8 @@ class AliEmcalJetByJetCorrection : public TNamed
   TProfile    *GetAppliedEfficiency() const {return fpAppliedEfficiency;}
   Bool_t       GetCorrectTemplateTrackpT() const {return fCorrectpTtrack;}
   Bool_t       GetPoissonianNmissing() const     {return fNpPoisson;}
+  TH2F        *GetAddedNConstituents() const     {return fNmissing;}
+  TList       *GetListOfOutput()       const     {return fListOfOutput;}
   void         Init();
   AliEmcalJet *Eval(const AliEmcalJet *jet, TClonesArray *fTracks);
   
@@ -53,8 +56,9 @@ class AliEmcalJetByJetCorrection : public TNamed
 
   //book-keeping object filled inside Eval()
   TProfile *fpAppliedEfficiency;               // Control profile efficiency
-
+  TH2F     *fNmissing;                         // number of missing constituents added versus pTjet
+  TList    *fListOfOutput;                     // list containing all histograms
  private:
-  ClassDef(AliEmcalJetByJetCorrection, 4) // jet-by-jet correction class
+  ClassDef(AliEmcalJetByJetCorrection, 5) // jet-by-jet correction class
 };
 #endif
