@@ -111,12 +111,12 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
   AliAnalysisDataContainer *ci[kNOutSlots];
   AliAnalysisDataContainer *ce[6];
 
-  Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
-  Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
+  Info("AddTrainPerformanceTRD", "Add Macros taken from %s", addMacroPath);
+  Info("AddTrainPerformanceTRD", "TRD wagons \"%s\"", trd);
   Int_t bitmap = ParseOptions(trd);
   for(Int_t it=0; it<kNTRDQATASKS; it++){
     if(gROOT->LoadMacro(Form("%s/Add%s.C", addMacroPath, TString(TaskClassName(it))(3,20).Data()))) {
-      Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", TaskClassName(it)));
+      Error("AddTrainPerformanceTRD()", "Error loading %s task.", TaskClassName(it));
       return kFALSE;
     } 
     if(!DoTask(it, bitmap)) continue;
@@ -179,7 +179,7 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
       AddTRDv0Monitor(mgr, 0, ce);
       break;
     default:
-      Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 
+      Warning("AddTrainPerformanceTRD()", "No performance task registered at slot %d.", it); 
     }
   }
   return kTRUE;

@@ -13,7 +13,7 @@
 
 void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Info("AddTRDcheckDET", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName()));
+  Info("AddTRDcheckDET", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName());
   AliAnalysisDataContainer *evInfoContainer = ci[3];
 
   //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);

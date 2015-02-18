@@ -14,7 +14,7 @@
 
 void AddTRDcheckTRK(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Info("AddTRDcheckTRK", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName()));
+  Info("AddTRDcheckTRK",  "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
 
   //AliLog::SetClassDebugLevel("AliTRDcheckTRK", 3);
   // global settings for tracking
