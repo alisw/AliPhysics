@@ -237,6 +237,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 
 	// cross check for event plane determination
 	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
+	TH2F		*fDeltaPhiSymCent; // DeltaPhi:Cent - DeltaPhi in the range from 0 to pi/2
 	
 	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
 
