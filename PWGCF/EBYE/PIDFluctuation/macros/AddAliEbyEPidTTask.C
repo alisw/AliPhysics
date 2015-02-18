@@ -7,39 +7,43 @@
 //                                                                         //
 //=========================================================================//
 
-void AddAliEbyEPidTTask(Double_t ptl=0.5, 
-			Int_t AODfilterBit = 768, 
-			Int_t pidtype = 2, 
-			Int_t requestTofPid = 1, 
-			Double_t nSigmaCut = 3., 
-			Bool_t isMC = 0, 
-			TString centralityEstimator = "V0M", 
-			TString ctaskname = "2011") {
-
- 
-  TString taskname = "EbyECF_";
-  taskname += ctaskname;
-  taskname += "_";
-  taskname += Form("%d",isMC);
-  taskname += "_";
-  taskname += centralityEstimator;
-  taskname += "_";
-  taskname += Form("%d",AODfilterBit);
+AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 1,
+				    Int_t AODfilterBit = 768, 
+				    
+				    Int_t pidtype       = 2, 
+				    Int_t requestTofPid = 1,
+				    Double_t nSigmaCut  = 3.,
+				    Double_t lptfortof  = 0.5,
+				    
+				    Double_t ptl        = 0.5, 
+				    Double_t pth        = 5.0, 
+				    Double_t gEta       = 0.8,
+				    
+				    Double_t dcaxy     = 2.4,
+				    Double_t dcaz      = 3.2,
+				    
+				    Double_t vz         = 10.,
+				    
+				    TString ctaskname = "D2011") {
   
  
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  TString taskname = "";
+  taskname += ctaskname;
+  taskname += Form("%d",isMC);
+  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskFluctuations", "No analysis manager to connect to.");
     return NULL;
   }
-
+  
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskFluctuations", "This task requires an input event handler");
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); 
-
- 
+  
+  
   TString basefilename = AliAnalysisManager::GetCommonFileName();
   
   
@@ -59,7 +63,7 @@ void AddAliEbyEPidTTask(Double_t ptl=0.5,
   mgr->AddTask(taskqa);
   
   AliAnalysisDataContainer *coutqa = mgr->CreateContainer(Form("%s_QA",taskname.Data()),TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s",basefilename.Data()));
-  AliAnalysisDataContainer *coutt = mgr->CreateContainer("fEventTree",TTree::Class(),AliAnalysisManager::kOutputContainer, Form("%s",basefilename.Data()));
+  AliAnalysisDataContainer *coutt = mgr->CreateContainer("Event",TTree::Class(),AliAnalysisManager::kOutputContainer, Form("%s",basefilename.Data()));
 
   mgr->ConnectInput(taskqa, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskqa, 1, coutqa);

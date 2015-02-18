@@ -55,7 +55,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void SetTrackFilterBit(Int_t bit) {fAODtrackCutBit = bit; }
   void SetCentralityEstimator(const char* cent)  { fCentralityEstimator = cent;}
   void SetSystemType(Int_t i) { fSystemType = i; }
- 
+  void SetEventSelectionBit(UInt_t val) { fSelectBit = val; }
   void SetPhi(Double_t phil) {fPhiMax = phil;}
   void SetIsMC() {fIsMC = kTRUE;}
   void SetNSubSamples(Int_t i) {fNSubSamples = i;}
@@ -96,8 +96,9 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t IsFindableInTPC(Int_t label);
   Bool_t AcceptEvent(AliAODEvent *event, Int_t cent) const; //! accept eventc
   Bool_t IsEventStats(Int_t *aEventCuts);
-  Bool_t AcceptTrack(AliVTrack *track) const;
-  Bool_t AcceptTrackMC(AliVParticle *particle, Int_t idxMC) const;
+  Bool_t AcceptTrackL(AliVTrack *track) const;
+  Bool_t AcceptTrackLDCA(AliVTrack *track) const;
+  Bool_t AcceptTrackLMC(AliVParticle *particle, Int_t idxMC) const;
 
   /* ------ Containers ------ */
   
@@ -183,6 +184,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Double_t   fCurCont[6];                   // Current Contamination
 
   Float_t    fMinTrackLengthMC;             // Min track length for MC tracks
+  UInt_t     fSelectBit;                    // Trigger Bit
   Int_t      fAODtrackCutBit;               // AOD BITs
   Int_t      fNSubSamples;                  // N subsamples
   Int_t      fSubSampleIdx;                 // Subsample idx for current event
