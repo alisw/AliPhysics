@@ -472,7 +472,6 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
 
    // Fill Event Histograms
    if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-   if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
    if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
    if(hCentralityVsNumberOfPrimaryTracks)
       hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
@@ -1359,7 +1358,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
 	Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
 	Int_t PrimaryTracks10[11][2] =
 		{
-			{9999,9999}, //  0
+			{9999,1550}, //  0 //changed from 9999 on 18 Feb
 			{1210, 928}, // 10
 			{ 817, 658}, // 20
 			{ 536, 435}, // 30
@@ -1373,7 +1372,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
 		};
 	Int_t PrimaryTracks5a[11][2] =
 		{
-			{9999,9999}, // 0
+			{9999,1550}, // 0 //changed from 9999 on 18 Feb
 			{1485,1168}, // 5
 			{1210, 928}, // 10
 			{ 995, 795}, // 15
@@ -2051,6 +2050,8 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	}	
 		
 	if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
+	if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
+
 	if(hCentralityVsNumberOfPrimaryTracks)
 		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
 												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
