@@ -9,6 +9,7 @@ class AliTOFcalib;
 class AliTOFT0maker;
 class AliTOFT0v1;
 class AliTOFHeader;
+class AliTOFChannelOnlineStatusArray;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -45,7 +46,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TString GetSpeciesName(Int_t absPdgCode);
   void    HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle,  TString drawOpt, TString newName, TString newTitle, TString xTitle, TString yTitle);
   Double_t GetPhiAtTPCouterRadius(AliESDtrack * track);
-  
+  void    SetOCDBInfo(const char *cdbLocation, UInt_t runN) {fOCDBLocation=cdbLocation; fRunNumber=runN;}
+
  protected:
   void    AddTofBaseHisto(TList *list, Int_t charge, TString suffix);
   void    AddMatchingEffHisto(TList *list, Int_t charge, TString suffix);
@@ -69,6 +71,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Bool_t  IsTPCTOFMatched(AliESDtrack * track);
   Bool_t  IsInTRD(AliESDtrack * track);
   Bool_t  IsEventSelected(AliESDEvent * event);
+  void    LoadChannelMapsFromOCDB();
+  Bool_t  IsChannelGood(Int_t channel);
 
  private: 
   Int_t               fRunNumber; //run number
@@ -107,6 +111,8 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t            fMatchingMomCut;//minimum pT cut for matching eff vs eta, phi 
   Double_t            fMatchingEtaCut;//simmetric eta cut for matching eff vs pt, eta, phi
   Double_t            fTof;
+  TString             fOCDBLocation;       // ocdb path
+  AliTOFChannelOnlineStatusArray * fChannelArray; //array of channel status
   //output objects
   TList *             fHlist;  //list of general histos
   TList *             fHlistTimeZero; //list of timeZero related histos
@@ -114,7 +120,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TList *             fHlistTRD;  //list of general histos for positive tracks
   TList *             fHlistTrigger;  //list of general histos for TOF trg infos
 
-  ClassDef(AliAnalysisTaskTOFqaID, 2); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqaID, 3); // example of analysis
 };
 
 #endif
