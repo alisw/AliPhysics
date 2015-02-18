@@ -58,7 +58,7 @@ AliITSPreprocessorSDD::AliITSPreprocessorSDD( AliShuttleInterface* shuttle):
 }
 
 //______________________________________________________________________
-UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
+UInt_t AliITSPreprocessorSDD::Process(TMap* /*dcsAliasMap*/ ){
 
 
   // Get DDL map from OCDB
@@ -87,10 +87,10 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* dcsAliasMap){
   }
   if(retcode!=0) return retcode;
 
-  Log("Process DCS data");
-  Bool_t retcodedcs =ProcessDCSDataPoints(dcsAliasMap);
-  if(retcodedcs) return 0; 
-  else return 1;           
+  // Log("Process DCS data");
+  // Bool_t retcodedcs =ProcessDCSDataPoints(dcsAliasMap);
+  // if(retcodedcs) return 0; 
+  // else return 1;           
 
 }
 //______________________________________________________________________
