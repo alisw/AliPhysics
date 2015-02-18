@@ -22,6 +22,7 @@
 //            Version 2:  pp Added with AliVTrack   (1/12/2014) - fixme    //            
 //            Version 3:  pA Added with AliVTrack   (2/12/2014) - fixme    //    
 //            Version 4:  Array Bug Fix | reduced THn-Bins 11/01/2015      //    
+//            Version 5:  Introduting 3D mapping       (14/2/2015)         //    
 //=========================================================================//
 
 #include "TChain.h"
@@ -114,6 +115,7 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
 // fRedFactp(NULL),           
    
   fMinTrackLengthMC(80), 
+  fSelectBit(AliVEvent::kMB),
   fAODtrackCutBit(768),   
   fNSubSamples(10),     
   fSubSampleIdx(0),
@@ -139,6 +141,7 @@ AliEbyENetChargeFluctuationTask::AliEbyENetChargeFluctuationTask(const char *nam
   fIsDca(kFALSE),
   fIsNu(kFALSE),
   fIsTen(kFALSE),
+  fIs3D(kFALSE),
 
   fRan(0),             
   fRanIdx(0),                        
@@ -531,8 +534,8 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
     AliVTrack *track = (fESD) ? 
       static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : 
       static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
-    if(!AcceptTrack(track)) continue;
-
+    if(!AcceptTrackL(track)) continue;
+    if(!AcceptTrackLDCA(track)) continue;
     Int_t icharge = track->Charge() < 0 ? 0 : 1;
     fNp[0][icharge] += 1.; 
     if (!fIsNu && fIsQa) FillQAThnRec(track,0,0);
@@ -580,7 +583,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	AliAODMCParticle *particle = static_cast<AliAODMCParticle*>(fArrayMC->At(idxMC));
 	if (!particle) 
 	  continue;
-	if (!AcceptTrackMC((AliVParticle*)particle, idxMC)) continue;
+	if (!AcceptTrackLMC((AliVParticle*)particle, idxMC)) continue;
 	Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 	fMCNp[0][icharge]    += 1.;    	   
 	if(!fIsNu && fIsQa)FillQAThnMc((AliVParticle*)particle,0,0);
@@ -604,7 +607,7 @@ void AliEbyENetChargeFluctuationTask::ExecAA(){
 	   AliVParticle* particle = fMCEvent->GetTrack(idxMC);
 	   if (!particle) 
 	     continue;
-	   if (!AcceptTrackMC(particle, idxMC)) continue;
+	   if (!AcceptTrackLMC(particle, idxMC)) continue;
 	   Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 	   fMCNp[0][icharge]  += 1.;    	   
 	   if(!fIsNu && fIsQa)FillQAThnMc(particle, 0, 0);
@@ -654,7 +657,29 @@ void AliEbyENetChargeFluctuationTask::Terminate( Option_t * ){
 }
 
 //___________________________________________________________
-Bool_t AliEbyENetChargeFluctuationTask::AcceptTrack(AliVTrack *track) const {
+Bool_t AliEbyENetChargeFluctuationTask::AcceptTrackLDCA(AliVTrack *track) const {
+  Float_t dca[2], cov[3]; // 
+  if (fESD)
+    (dynamic_cast<AliESDtrack*>(track))->GetImpactParameters(dca, cov);
+  else  {
+    Double_t dcaa[2] = {-999,-999};
+    Double_t cova[3] = {-999,-999,-999};
+    AliAODTrack* clone =dynamic_cast<AliAODTrack*>(track->Clone("trk_clone"));
+    Bool_t propagate = clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),100.,dcaa,cova);
+    delete clone;  
+    if (!propagate) dca[0] = -999;
+    else dca[0] = Float_t(dcaa[0]);
+  }
+
+  if ( TMath::Abs(dca[0]) > fDcaXy ) return kFALSE;
+  if ( TMath::Abs(dca[1]) > fDcaZ )  return kFALSE;
+
+  return kTRUE;
+
+}
+
+//___________________________________________________________
+Bool_t AliEbyENetChargeFluctuationTask::AcceptTrackL(AliVTrack *track) const {
  if (!track) 
    return kFALSE; 
  if (track->Charge() == 0) 
@@ -683,7 +708,7 @@ Bool_t AliEbyENetChargeFluctuationTask::AcceptTrack(AliVTrack *track) const {
 
 
 //___________________________________________________________
-Bool_t AliEbyENetChargeFluctuationTask::AcceptTrackMC(AliVParticle *particle, Int_t idxMC) const {
+Bool_t AliEbyENetChargeFluctuationTask::AcceptTrackLMC(AliVParticle *particle, Int_t idxMC) const {
   if(!particle) return kFALSE;
 
   if (particle->Charge() == 0.0) 
@@ -939,48 +964,48 @@ void AliEbyENetChargeFluctuationTask::InitPhy() {
 
   if (fIs3D) {CreateSourceHistos(name.Data(),0); if (fIsMC) CreateSourceHistos(name.Data(),1); }
   else{
-  CreateBasicHistos(name.Data(),0,0);
-  CreateBasicHistos(name.Data(),0,1);
-  
-  if (fIsRatio) {
-    CreateRatioHistos(name.Data(),0,0);
-    if (fIsPer) 
-      CreateRatioHistos(name.Data(),0,1);
-  }
-  
-  if (fIsSub) {
-    CreateGroupHistos("PhyBinSS",name.Data(),fNSubSamples,0);  
-    if (fIsPer) 
-      CreateGroupHistos("PhyPerSS",name.Data(),fNSubSamples,1);  
-  }
-  
-  if (fIsBS){
-    CreateGroupHistos("PhyBinBS",name.Data(),fNSubSamples,0);  
-    if (fIsPer) CreateGroupHistos("PhyPerBS",name.Data(),fNSubSamples,1);  
-  }
-  
-  if (fIsMC) {
-    CreateBasicHistos(name.Data(),1,0);
-    CreateBasicHistos(name.Data(),1,1);
+    CreateBasicHistos(name.Data(),0,0);
+    CreateBasicHistos(name.Data(),0,1);
     
-    if (fIsRatio){
-      CreateRatioHistos(name.Data(),1,0);
-      if (fIsPer)  
-	CreateRatioHistos(name.Data(),1,1);
+    if (fIsRatio) {
+      CreateRatioHistos(name.Data(),0,0);
+      if (fIsPer) 
+	CreateRatioHistos(name.Data(),0,1);
     }
     
-    if (fIsSub){
-      CreateGroupHistos("MCBinSS", name.Data(),fNSubSamples,0);  
-      if (fIsPer)  
-	CreateGroupHistos("MCPerSS", name.Data(),fNSubSamples,1);  
+    if (fIsSub) {
+      CreateGroupHistos("PhyBinSS",name.Data(),fNSubSamples,0);  
+      if (fIsPer) 
+	CreateGroupHistos("PhyPerSS",name.Data(),fNSubSamples,1);  
     }
     
     if (fIsBS){
-      CreateGroupHistos("MCBinBS",name.Data(),fNSubSamples,0);  
-      if (fIsPer)  
-	CreateGroupHistos("MCPerBS", name.Data(),fNSubSamples,1);  
+      CreateGroupHistos("PhyBinBS",name.Data(),fNSubSamples,0);  
+      if (fIsPer) CreateGroupHistos("PhyPerBS",name.Data(),fNSubSamples,1);  
     }
-  }
+    
+    if (fIsMC) {
+      CreateBasicHistos(name.Data(),1,0);
+      CreateBasicHistos(name.Data(),1,1);
+      
+      if (fIsRatio){
+	CreateRatioHistos(name.Data(),1,0);
+	if (fIsPer)  
+	  CreateRatioHistos(name.Data(),1,1);
+      }
+      
+      if (fIsSub){
+	CreateGroupHistos("MCBinSS", name.Data(),fNSubSamples,0);  
+	if (fIsPer)  
+	  CreateGroupHistos("MCPerSS", name.Data(),fNSubSamples,1);  
+      }
+      
+      if (fIsBS){
+	CreateGroupHistos("MCBinBS",name.Data(),fNSubSamples,0);  
+	if (fIsPer)  
+	  CreateGroupHistos("MCPerBS", name.Data(),fNSubSamples,1);  
+      }
+    }
   }
 }
 
@@ -1688,12 +1713,12 @@ Bool_t AliEbyENetChargeFluctuationTask::TriggeredEvents() {
 
   for (Int_t ii=0; ii<fNTriggers; ++ii) {
     if(aTriggerFired[ii]) {
-      isTriggered = kTRUE;
       if (fNeedQa) (static_cast<TH1F*>(fQaList->FindObject(Form("hTriggerStat"))))->Fill(ii);
     }
   }
-  
-  delete[] aTriggerFired;
+  // Fix for only selected events || Histo to keep what is the ratio
+  if ((fInputEventHandler->IsEventSelected() & fSelectBit))  isTriggered = kTRUE; 
+    delete[] aTriggerFired;
   return isTriggered;
 }
 
@@ -1788,6 +1813,8 @@ Bool_t AliEbyENetChargeFluctuationTask::RejectedEvent() {
   */
 
   Bool_t isRejected = IsEventStats(aEventCuts);
+
+  
 
   delete[] aEventCuts;
   return isRejected;
@@ -1999,8 +2026,8 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
      static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
 
    // DO track cut.
-   if(!AcceptTrack(track)) continue;
-   
+   if(!AcceptTrackL(track)) continue;
+  
 
    fCurCont[1] = track->Charge() < 0 ? 0 : 1;
    
@@ -2083,7 +2110,7 @@ void AliEbyENetChargeFluctuationTask::CalculateCE(Int_t gPid) {
      static_cast<AliVParticle*>(fMCEvent->GetTrack(idxMC)) : 
      static_cast<AliVParticle*>(fArrayMC->At(idxMC));
    
-   if (!AcceptTrackMC(particle, idxMC)) continue;
+   if (!AcceptTrackLMC(particle, idxMC)) continue;
    
    fCurGen[1] = (particle->PdgCode() < 0) ? -1. : 1.;
       
@@ -2208,7 +2235,7 @@ void AliEbyENetChargeFluctuationTask::CalculateDED(Int_t gPid) {
       static_cast<AliVTrack*>(fESD->GetTrack(idxTrack)) : 
       static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
    
-    if(!AcceptTrack(track)) continue; 
+    if(!AcceptTrackL(track)) continue; 
      
     fCurRecD[1] = track->Charge() < 0 ? 0. : 1.;      // 1
     
@@ -2258,7 +2285,7 @@ void AliEbyENetChargeFluctuationTask::CalculateDE(Int_t gPid) {
       static_cast<AliVTrack*>(fAOD->GetTrack(idxTrack)); 
     
 
-    if(!AcceptTrack(track)) continue;
+    if(!AcceptTrackL(track)) continue;
     fCurGenD[1] = track->Charge() < 0 ? 0. : 1.;            // 1
     
     Int_t b = 0;
