@@ -11,26 +11,27 @@ class AliTriggerAnalysis;
 class AliSysInfo;
 
 TH2D* V0StateHistogram;
-
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
+
+Int_t      g_pic_id  = 0;
+Int_t      g_pic_max = 100;
+TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_new()
 {
-    if (gSystem->Getenv("ALICE_ROOT") != 0)
-    {
-        gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
-        gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
-    }
+    // set OCDB path:
+    //AliEveEventManager::SetCdbUri("local://$ALICE_ROOT/OCDB"); // default OCDB from aliroot
+    //AliEveEventManager::SetCdbUri("local:///local/OCDB/2013"); // OCDB snapshot for particular run
+    AliEveEventManager::SetCdbUri("local:///local/cdb");         // current OCDB snapshot
+    //AliEveEventManager::SetCdbUri("raw://");                   // reading OCDB from alien
     
-    //AliEveEventManager::SetCdbUri("local://$ALICE_ROOT/OCDB");
-    //AliEveEventManager::SetCdbUri("local:///local/OCDB/2013");
-    AliEveEventManager::SetCdbUri("local:///local/cdb");
- 
-
-    //AliEveEventManager::SetCdbUri("raw://");
+    
     Info("alieve_init", "Adding standard macros.");
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     alieve_init_import_macros();
+    gSystem->cd(Form("%s/../src/",gSystem->Getenv("ALICE_ROOT")));
+    gROOT->ProcessLine(".L saveViews.C++");
+    TEveUtil::LoadMacro("saveViews.C");
     gSystem->cd(hack);
     
     new AliEveEventManager("online", -1);
@@ -39,8 +40,7 @@ void alieve_online_new()
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();
     
-    AliEveMacroExecutor *exec  = AliEveEventManager::GetMaster()->GetExecutor();
-    TEveBrowser         *browser = gEve->GetBrowser();
+    TEveBrowser *browser = gEve->GetBrowser();
     browser->ShowCloseTab(kFALSE);
     
     AliEveMultiView *multiView = new AliEveMultiView(kTRUE);
@@ -50,19 +50,20 @@ void alieve_online_new()
                               geom_gentle_rhoz(),
                               geom_gentle_rhoz());
     
-    //These macros crashes on mac os. To be checked. Problems on SLC as well.
+    gROOT->ProcessLine(".L geom_gentle_trd.C++");
+    TEveUtil::LoadMacro("geom_gentle_trd.C");
+    multiView->InitGeomGentleTrd(geom_gentle_trd());
     
-    //TEveUtil::LoadMacro("geom_gentle_trd.C");
-    //multiView->InitGeomGentleTrd(geom_gentle_trd());
+    gROOT->ProcessLine(".L geom_gentle_muon.C++");
+    TEveUtil::LoadMacro("geom_gentle_muon.C");
+    multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
     
-    //TEveUtil::LoadMacro("geom_gentle_muon.C");
-    //multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
     
     //============================================================================
     // Standard macros to execute -- not all are enabled by default.
     //============================================================================
     
-    printf("============ Setting macro executor\n");
+    printf("============ Setting macro executor ============\n");
     
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
     
@@ -75,29 +76,9 @@ void alieve_online_new()
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_tpc",         "",                kFALSE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus ITS",   "its_clusters.C",   "its_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC",   "tpc_clusters.C",   "tpc_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TRD",   "trd_clusters.C",   "trd_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TOF",   "tof_clusters.C",   "tof_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus HMPID", "hmpid_clusters.C", "hmpid_clusters"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus MUON",  "muon_clusters.C",  "muon_clusters"));
-    
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG EMCAL",   "emcal_digits.C",   "emcal_digits"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw"));
-    //  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw", "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw", "", kFALSE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON",    "muon_raw.C",  "muon_raw"));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw"));
-    
-    
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks",             "", kFALSE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_MI",          "", kFALSE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track MUON", "esd_muon_tracks.C", "esd_muon_tracks",        "kTRUE,kFALSE", kTRUE));
-    
     
     // these macros were leaking:
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track",      "esd_tracks.C",        "esd_tracks_by_category", "", kTRUE));// just a little
@@ -120,7 +101,6 @@ void alieve_online_new()
     // Final GUI setup
     //============================================================================
     
-    //
     browser->GetTabRight()->SetTab(1);
     browser->StartEmbedding(TRootBrowser::kBottom);
     new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
@@ -128,32 +108,26 @@ void alieve_online_new()
  
     browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
     
-//    browser->MoveResize(0, 0, gClient->GetDisplayHeight()*1.6,gClient->GetDisplayHeight()-32);
-    
     gEve->FullRedraw3D(kTRUE);
     gSystem->ProcessEvents();
     
+    // move and rotate sub-views
     TGLViewer *glv1 = multiView->Get3DView()->GetGLViewer();
     TGLViewer *glv2 = multiView->GetRPhiView()->GetGLViewer();
     TGLViewer *glv3 = multiView->GetRhoZView()->GetGLViewer();
     
-    glv1->CurrentCamera().RotateRad(-0.4, -1.8);
-    glv2->CurrentCamera().Dolly(450, kFALSE, kFALSE);
-    glv3->CurrentCamera().Dolly(1500, kFALSE, kFALSE);
+    glv1->CurrentCamera().RotateRad(-0.4, 0.6);
+    glv2->CurrentCamera().Dolly(90, kFALSE, kFALSE);
+    glv3->CurrentCamera().Dolly(1700, kFALSE, kFALSE);
     
     AliEveEventManager::GetMaster()->AddNewEventCommand("alieve_online_on_new_event();");
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
     gEve->Redraw3D(kTRUE);
     
+    // set autoload by default
     AliEveEventManager::GetMaster()->SetAutoLoad(true);
-    
 }
-
-
-Int_t      g_pic_id  = 0;
-Int_t      g_pic_max = 100;
-TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_on_new_event()
 {
@@ -216,7 +190,6 @@ void alieve_online_on_new_event()
        Int_t status;
      
        // create screenshots from OpenGL views
-       TEveUtil::LoadMacro("saveViews.C");
        saveViews(pic.Data());
      
        // send screenshot to AMORE
@@ -241,8 +214,14 @@ void alieve_init_import_macros()
     // Put macros in the list of browsables, add a macro browser to
     // top-level GUI.
     
-    TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
-    gSystem->ExpandPathName(macdir);
+    if (gSystem->Getenv("ALICE_ROOT") != 0)
+    {
+        gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));
+        gInterpreter->AddIncludePath(Form("%s/MUON/mapping", gSystem->Getenv("ALICE_ROOT")));
+        TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
+        gSystem->ExpandPathName(macdir);
+    }
+    
     
     TFolder* f = gEve->GetMacroFolder();
     void* dirhandle = gSystem->OpenDirectory(macdir.Data());
