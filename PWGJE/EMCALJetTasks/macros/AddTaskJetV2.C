@@ -94,7 +94,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   // if centralities haven't been specified use defaults
   if(!centralities) {
       if(LHC10h) {
-          Double_t c[] = {0., 10., 30., 50., 70., 90.};
+          Double_t c[] = {0., 5., 10., 30., 50., 70., 90.};
           jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
       } else {
           Double_t c[] = {0., 2., 4., 6., 8., 10., 30., 50., 90.};
