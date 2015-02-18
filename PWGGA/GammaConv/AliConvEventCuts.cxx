@@ -282,9 +282,9 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(hReweightMCHistK0s);
    }
 
-   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",100,0,100);
+   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
    fHistograms->Add(hCentrality);
-   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
+   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
    fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
    hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
    fHistograms->Add(hVertexZ);
@@ -1299,7 +1299,7 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 }
 
 //-------------------------------------------------------------
-Double_t AliConvEventCuts::GetCentrality(AliVEvent *event)
+Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
 
 	AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
