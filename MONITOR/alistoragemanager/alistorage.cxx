@@ -28,6 +28,8 @@ void *ServerThreadHandle(void*)
 bool isStorageRunning()
 {
  // check if there is events server already running
+
+  // first mathod with pidof
   const char *pid = gSystem->GetFromPipe("pidof alistorage").Data();
   int pidSize = gSystem->GetFromPipe("pidof alistorage").Sizeof();
   std::string pidOfAll(pid,pidSize);
@@ -36,6 +38,12 @@ bool isStorageRunning()
   std::string word;
   while( pidStream >> word ) ++word_count;
   if(word_count != 1){return true;}
+  
+  // second method with ps
+  cout<<"checking if alistorage is running with ps"<<endl;
+  TString psName = gSystem->GetFromPipe("ps -e -o comm | grep alistorage");
+  if(strcmp(psName.Data(),"alistorage")>0){return true;}
+
   return false;
 }
 

@@ -46,7 +46,6 @@ void AliCommunicationThread::CommunicationHandle()
     
     while(!fFinished)
     {
-        cout<<"COMMUNICATION -- waiting for requests"<<endl;
         request = eventManager->GetClientStruct(socket,5000);
         
         if(request)
@@ -92,7 +91,7 @@ void AliCommunicationThread::CommunicationHandle()
             }
             delete request;
         }
-        else{cout<<"COMMUNICATION -- received NO request"<<endl;}
+        else{sleep(1);}
     }
 }
 
