@@ -261,6 +261,12 @@ fPtTOFPIDmax=PtTOFPIDmax;
   //NSigma cut
   //set cut on beyesian probability
   void SetBayesCut(Double_t cut){fBayesCut=cut;}
+  void SetdiffPtRanges_PIDcut(Double_t Pt1, Double_t Pt2, Double_t Pt3)//set Pt ranges for diff. pid cut values < fPtTOFPIDMax
+  {
+    fPt1=Pt1;
+    fPt2=Pt2;
+    fPt3=Pt3;
+  }
   void SetdiffPIDcutvalues(Bool_t diffPIDcutvalues,Double_t PIDCutval1, Double_t PIDCutval2, Double_t PIDCutval3,Double_t PIDCutval4){
     fdiffPIDcutvalues=diffPIDcutvalues;
     fPIDCutval1=PIDCutval1;
@@ -574,6 +580,9 @@ fFracTPCcls=FracSharedTPCcls;//0.4
   Double_t fNSigmaPID; // number of sigma for PID cut
   Double_t fBayesCut; // Cut on Bayesian probability
  Bool_t fdiffPIDcutvalues;
+ Double_t fPt1;//set Pt ranges for diff. pid cut values < fPtTOFPIDMax
+ Double_t fPt2;
+ Double_t fPt3;
  Double_t fPIDCutval1;
  Double_t fPIDCutval2;
  Double_t fPIDCutval3;
