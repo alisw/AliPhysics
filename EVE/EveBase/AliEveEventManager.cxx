@@ -251,9 +251,10 @@ void AliEveEventManager::GetNextEvent()
     requestMessage->messageType = REQUEST_LIST_EVENTS;
     requestMessage->list = list;
     
+    cout<<"Sending request for marked events list"<<endl;
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
+    cout<<"Waiting for response"<<endl;
     vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ,3000);
-    
     cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
     
     for(int i=0;i<receivedList.size();i++)
@@ -262,6 +263,8 @@ void AliEveEventManager::GetNextEvent()
     }
     
     int iter=0;
+
+    cout<<"Starting subscriber's loop"<<endl;
     while(!fFinished)
     {
       cout<<"not finished"<<endl;

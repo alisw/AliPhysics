@@ -230,7 +230,8 @@ void visscan_init(const TString& cdburi = "",
   //==============================================================================
 
   // A refresh to show proper window.
-  gEve->GetViewers()->SwitchColorSet();
+  //gEve->GetViewers()->SwitchColorSet();
+  browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
   gEve->Redraw3D(kTRUE);
   gSystem->ProcessEvents();
 
@@ -239,8 +240,10 @@ void visscan_init(const TString& cdburi = "",
   AliEveEventManager::GetMaster()->GotoEvent(0);
 
   gEve->EditElement(g_trkcnt);
-
   gEve->Redraw3D(kTRUE);
+   
+  // set autoload by default
+  AliEveEventManager::GetMaster()->SetAutoLoad(true);
 }
 
 /******************************************************************************/

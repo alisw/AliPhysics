@@ -31,8 +31,11 @@ void alieve_online_new()
     alieve_init_import_macros();
     gSystem->cd(Form("%s/../src/",gSystem->Getenv("ALICE_ROOT")));
     gROOT->ProcessLine(".L saveViews.C++");
+    gROOT->ProcessLine(".L geom_gentle_muon.C++");
+    gROOT->ProcessLine(".L geom_gentle_trd.C++");
     TEveUtil::LoadMacro("saveViews.C");
     gSystem->cd(hack);
+    cout<<"Standard macros added"<<endl;
     
     new AliEveEventManager("online", -1);
     gEve->AddEvent(AliEveEventManager::GetMaster());
@@ -43,6 +46,8 @@ void alieve_online_new()
     TEveBrowser *browser = gEve->GetBrowser();
     browser->ShowCloseTab(kFALSE);
     
+
+    cout<<"Creating multiview"<<endl;
     AliEveMultiView *multiView = new AliEveMultiView(kTRUE);
     TEveUtil::LoadMacro("geom_gentle.C");
     multiView->InitGeomGentle(geom_gentle(),
@@ -50,15 +55,12 @@ void alieve_online_new()
                               geom_gentle_rhoz(),
                               geom_gentle_rhoz());
     
-    gROOT->ProcessLine(".L geom_gentle_trd.C++");
     TEveUtil::LoadMacro("geom_gentle_trd.C");
     multiView->InitGeomGentleTrd(geom_gentle_trd());
-    
-    gROOT->ProcessLine(".L geom_gentle_muon.C++");
+
     TEveUtil::LoadMacro("geom_gentle_muon.C");
     multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
-    
-    
+ 
     //============================================================================
     // Standard macros to execute -- not all are enabled by default.
     //============================================================================
