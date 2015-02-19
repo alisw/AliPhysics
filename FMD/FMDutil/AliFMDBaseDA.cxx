@@ -742,7 +742,7 @@ namespace {
 Int_t
 AliFMDBaseDA::Runner::Init(int argc, char** argv)
 {
-  // AddHandlers();
+  AddHandlers();
 
   // --- Process the command line ------------------------------------
   TString source;
