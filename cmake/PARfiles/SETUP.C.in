@@ -25,6 +25,17 @@ Int_t SETUP()
   // gInterpreter->UnloadLibraryMap("lib@PARMODULE@");
   // gInterpreter->LoadLibraryMap(buf.Data());
 
+  // Append this PARfile's name to the list of currently enabled ones in an environment variable.
+  // The variable will be used by other PARfiles in order to correctly set some paths during the
+  // PARfile build process
+  const char *parEnvVarName = "ALICE_PARFILES_ENABLED";
+  TString parEnvVar = gSystem->Getenv(parEnvVarName);
+  if (!parEnvVar.IsNull()) {
+    parEnvVar.Append(" ");
+  }
+  parEnvVar.Append("@PARMODULE@");
+  gSystem->Setenv(parEnvVarName, parEnvVar.Data());
+
   // Here we load the library, but beware: if using multiple PARfiles for overriding multiple
   // AliRoot libraries, they must be loaded in the correct order. With the autoloading, it might
   // happen that the *wrong* library gets loaded as a dependency
