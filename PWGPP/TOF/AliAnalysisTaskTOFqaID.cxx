@@ -27,7 +27,6 @@
 #include "AliCDBEntry.h"
 #include "AliCDBPath.h"
 #include "AliTOFcalib.h"
-#include "AliTOFcalibHisto.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFT0v1.h"
 #include "AliAnalysisTaskTOFqaID.h"
@@ -74,6 +73,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fTof(1e10),
   fOCDBLocation("local://$ALICE_ROOT/OCDB"),
   fChannelArray(0x0),
+  fCalib(0x0),
   fHlist(0x0),
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
@@ -127,6 +127,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fTof(1e10),
   fOCDBLocation("local://$ALICE_ROOT/OCDB"),
   fChannelArray(0x0),
+  fCalib(0x0),
   fHlist(0x0),
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
@@ -194,6 +195,7 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   fTof(copy.fTof),
   fOCDBLocation(copy.fOCDBLocation),
   fChannelArray(copy.fChannelArray),
+  fCalib(copy.fCalib),
   fHlist(copy.fHlist),
   fHlistTimeZero(copy.fHlistTimeZero),
   fHlistPID(copy.fHlistPID),
@@ -263,6 +265,7 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fTof=copy.fTof;
     fOCDBLocation=copy.fOCDBLocation;
     fChannelArray=copy.fChannelArray;
+    fCalib=copy.fCalib;
     fHlist=copy.fHlist;
     fHlistTimeZero=copy.fHlistTimeZero;
     fHlistPID=copy.fHlistPID;
@@ -284,8 +287,8 @@ AliAnalysisTaskTOFqaID::~AliAnalysisTaskTOFqaID() {
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
   if (fChannelArray) delete fChannelArray;
+  if (fCalib) delete fCalib;
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;  
-
 
   if (fHlist) {
     delete fHlist;
@@ -449,7 +452,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   // get run number
   Int_t runNb = fESD->GetRunNumber();
   if (runNb != fRunNumber) {
-    //retreive maps of channels from OCDB
+    //retrieve maps of channels from OCDB
     fRunNumber = runNb;
     LoadChannelMapsFromOCDB();
   }
@@ -1610,6 +1613,8 @@ void AliAnalysisTaskTOFqaID::LoadChannelMapsFromOCDB()
   }
 
   fChannelArray = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
+  fCalib = new AliTOFcalib();
+  fCalib->Init();
   return;
 }
 
@@ -1621,19 +1626,14 @@ Bool_t AliAnalysisTaskTOFqaID::IsChannelGood(Int_t channel = -1)
   // against the status maps
   // taken from the OCDB
 
- if (channel<0) 
+  if (channel<0) 
     return kFALSE;
-  if (!fChannelArray) {
+  if (!fChannelArray || !fCalib) {
     AliError("Array with TOF channel status from OCDB not available.");
     return kFALSE;
   }
-  AliTOFcalibHisto calibHisto;
-  calibHisto.LoadCalibHisto();
-  AliTOFcalib calib;
-  calib.Init();
   if ( (fChannelArray->GetNoiseStatus(channel) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) ||
-       //!calib.IsChannelEfficient(channel) ||
-       calib.IsChannelProblematic(channel) ) return kFALSE;
+       fCalib->IsChannelProblematic(channel) ) return kFALSE;
   
   return kTRUE;
 }
