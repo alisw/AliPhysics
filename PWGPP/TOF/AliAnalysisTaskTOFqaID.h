@@ -10,6 +10,7 @@ class AliTOFT0maker;
 class AliTOFT0v1;
 class AliTOFHeader;
 class AliTOFChannelOnlineStatusArray;
+class AliTOFcalib;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -113,6 +114,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t            fTof;
   TString             fOCDBLocation;       // ocdb path
   AliTOFChannelOnlineStatusArray * fChannelArray; //array of channel status
+  AliTOFcalib *       fCalib; //TOF calibration object
   //output objects
   TList *             fHlist;  //list of general histos
   TList *             fHlistTimeZero; //list of timeZero related histos
@@ -120,7 +122,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TList *             fHlistTRD;  //list of general histos for positive tracks
   TList *             fHlistTrigger;  //list of general histos for TOF trg infos
 
-  ClassDef(AliAnalysisTaskTOFqaID, 3); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqaID, 4); // example of analysis
 };
 
 #endif
