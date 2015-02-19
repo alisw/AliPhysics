@@ -83,6 +83,7 @@ using namespace std;
 ClassImp(AliTwoParticlePIDCorr)
 ClassImp(LRCParticlePID)
 
+
 const char * kPIDTypeName[]={"TPC","TOF","TPC-TOF"} ;
 const char * kDetectorName[]={"ITS","TPC","TOF"} ;
 const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
@@ -286,6 +287,9 @@ fTwoTrackCutMaxRadius(2.5),
   fNSigmaPID(3),
   fBayesCut(0.8),
  fdiffPIDcutvalues(kFALSE),
+ fPt1(2.0),//set Pt ranges for diff. pid cut values < fPtTOFPIDMax
+ fPt2(3.5),
+ fPt3(4.0),
  fPIDCutval1(0.0),
  fPIDCutval2(0.0),
  fPIDCutval3(0.0),
@@ -572,6 +576,9 @@ fTwoTrackCutMaxRadius(2.5),
   fNSigmaPID(3),
   fBayesCut(0.8),
  fdiffPIDcutvalues(kFALSE),
+ fPt1(2.0),
+ fPt2(3.5),
+ fPt3(4.0),
  fPIDCutval1(0.0),
  fPIDCutval2(0.0),
  fPIDCutval3(0.0),
@@ -764,10 +771,10 @@ void AliTwoParticlePIDCorr::UserCreateOutputObjects()
   //fEventCounter->GetXaxis()->SetBinLabel(8,"Event Analysis finished");
   fOutput->Add(fEventCounter);
   
-fEtaSpectrasso=new TH2F("fEtaSpectraasso","fEtaSpectraasso",180,-0.9,0.9,100,0.,20. );
+fEtaSpectrasso=new TH2F("fEtaSpectraasso","fEtaSpectraasso",180,-0.9,0.9,200,0.0,fmaxPt);
 fOutput->Add(fEtaSpectrasso);
 
-fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),100,0.,20.);
+fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),200,0.0,fmaxPt);
 fOutput->Add(fphiSpectraasso);
 
  if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
@@ -803,7 +810,7 @@ fhistImpactParmvsMult=new TH2F("fhistImpactParmvsMult","fhistImpactParmvsMult",3
 fOutput->Add(fhistImpactParmvsMult);
  }
 
- if(fAnalysisType =="MCAOD" || fAnalysisType =="MC"){
+ if(fAnalysisType =="MCAOD"){
 fNchNpartCorr=new TH2F("fNchNpartCorr","fNchNpartCorr",500,0.0,500.0,4001,-0.5,40000.5);
 fNchNpartCorr->GetXaxis()->SetTitle("Npart (a.u.)");
 fNchNpartCorr->GetYaxis()->SetTitle("Nch(a.u.)");
@@ -887,37 +894,37 @@ fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 
  fOutput->Add(fControlConvResoncances);
     }
 
-fHistoTPCdEdx = new TH2F("fHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,10.0,500, 0., 500.);
+fHistoTPCdEdx = new TH2F("fHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,fmaxPt,500, 0., 500.);
 fOutputList->Add(fHistoTPCdEdx);
-fHistoTOFbeta = new TH2F(Form("fHistoTOFbeta"), ";p_{T} (GeV/c);v/c",100, 0., fmaxPt, 500, 0.1, 1.1);
+fHistoTOFbeta = new TH2F(Form("fHistoTOFbeta"), ";p_{T} (GeV/c);v/c",200, 0.0, fmaxPt, 500, 0.1, 1.1);
   fOutputList->Add(fHistoTOFbeta);
   
-   fTPCTOFPion3d=new TH3F ("fTPCTOFpion3d", "fTPCTOFpion3d",100,0., 10., 120,-60.,60.,120,-60.,60);
+   fTPCTOFPion3d=new TH3F ("fTPCTOFpion3d", "fTPCTOFpion3d",200,0.0,fmaxPt, 120,-60.,60.,120,-60.,60);
    fOutputList->Add(fTPCTOFPion3d);
   
-   fTPCTOFKaon3d=new TH3F ("fTPCTOFKaon3d", "fTPCTOFKaon3d",100,0., 10., 120,-60.,60.,120,-60.,60);
+   fTPCTOFKaon3d=new TH3F ("fTPCTOFKaon3d", "fTPCTOFKaon3d",200,0.0,fmaxPt, 120,-60.,60.,120,-60.,60);
    fOutputList->Add(fTPCTOFKaon3d);
 
-   fTPCTOFProton3d=new TH3F ("fTPCTOFProton3d", "fTPCTOFProton3d",100,0., 10., 120,-60.,60.,120,-60.,60);
+   fTPCTOFProton3d=new TH3F ("fTPCTOFProton3d", "fTPCTOFProton3d",200,0.0,fmaxPt, 120,-60.,60.,120,-60.,60);
    fOutputList->Add(fTPCTOFProton3d);
 
 if(ffillhistQAReco)
     {
-    fPionPt = new TH1F("fPionPt","p_{T} distribution",200,0.,10.);
+    fPionPt = new TH1F("fPionPt","p_{T} distribution",200,0.0,fmaxPt);
  fOutputList->Add(fPionPt);
     fPionEta= new TH1F("fPionEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fPionEta);
     fPionPhi = new TH1F("fPionPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fPionPhi);
   
-    fKaonPt = new TH1F("fKaonPt","p_{T} distribution",200,0.,10.);
+    fKaonPt = new TH1F("fKaonPt","p_{T} distribution",200,0.0,fmaxPt);
  fOutputList->Add(fKaonPt);
     fKaonEta= new TH1F("fKaonEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fKaonEta);
     fKaonPhi = new TH1F("fKaonPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fKaonPhi);
   
-    fProtonPt = new TH1F("fProtonPt","p_{T} distribution",200,0.,10.);
+    fProtonPt = new TH1F("fProtonPt","p_{T} distribution",200,0.0,fmaxPt);
  fOutputList->Add(fProtonPt);
     fProtonEta= new TH1F("fProtonEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fProtonEta);
@@ -933,7 +940,7 @@ if(ffillhistQAReco)
   fHistQA[5] = new TH1F("fHistQAvzA", "Histo Vz After Cut", 50, -25., 25.);
   fHistQA[6] = new TH1F("fHistQADcaXyC", "Histo DCAxy after cut", 50, -5., 5.);
   fHistQA[7] = new TH1F("fHistQADcaZC", "Histo DCAz after cut", 50, -5., 5.);   
-  fHistQA[8] = new TH1F("fHistQAPt","p_{T} distribution",200,0.,10.);
+  fHistQA[8] = new TH1F("fHistQAPt","p_{T} distribution",200,0.0,fmaxPt);
   fHistQA[9] = new TH1F("fHistQAEta","#eta distribution",360,-1.8,1.8);
   fHistQA[10] = new TH1F("fHistQAPhi","#phi distribution",340,0,6.8);
   fHistQA[11] = new TH1F("fHistQANCls","Number of TPC cluster",200,0,200);
@@ -1354,7 +1361,7 @@ axisTitleTrig[dim_val_trig+1]=axisTitlePair[dim_val+2];
 if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   if(ffillhistQATruth)
     {
-  MCtruthpt=new TH1F ("MCtruthpt","ptdistributiontruthprim",100,0.,10.);
+  MCtruthpt=new TH1F ("MCtruthpt","ptdistributiontruthprim",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthpt);
 
   MCtrutheta=new TH1F ("MCtrutheta","etadistributiontruthprim",360,-1.8,1.8);
@@ -1363,7 +1370,7 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthphi=new TH1F ("MCtruthphi","phidisttruthprim",340,0,6.8);
   fOutputList->Add(MCtruthphi);
 
-  MCtruthpionpt=new TH1F ("MCtruthpionpt","MCtruthpionpt",100,0.,10.);
+  MCtruthpionpt=new TH1F ("MCtruthpionpt","MCtruthpionpt",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthpionpt);
 
   MCtruthpioneta=new TH1F ("MCtruthpioneta","MCtruthpioneta",360,-1.8,1.8);
@@ -1372,7 +1379,7 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthpionphi=new TH1F ("MCtruthpionphi","MCtruthpionphi",340,0,6.8);
   fOutputList->Add(MCtruthpionphi);
 
-  MCtruthkaonpt=new TH1F ("MCtruthkaonpt","MCtruthkaonpt",100,0.,10.);
+  MCtruthkaonpt=new TH1F ("MCtruthkaonpt","MCtruthkaonpt",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthkaonpt);
 
   MCtruthkaoneta=new TH1F ("MCtruthkaoneta","MCtruthkaoneta",360,-1.8,1.8);
@@ -1381,7 +1388,7 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthkaonphi=new TH1F ("MCtruthkaonphi","MCtruthkaonphi",340,0,6.8);
   fOutputList->Add(MCtruthkaonphi);
 
-  MCtruthprotonpt=new TH1F ("MCtruthprotonpt","MCtruthprotonpt",100,0.,10.);
+  MCtruthprotonpt=new TH1F ("MCtruthprotonpt","MCtruthprotonpt",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthprotonpt);
 
   MCtruthprotoneta=new TH1F ("MCtruthprotoneta","MCtruthprotoneta",360,-1.8,1.8);
@@ -1390,16 +1397,16 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthprotonphi=new TH1F ("MCtruthprotonphi","MCtruthprotonphi",340,0,6.8);
   fOutputList->Add(MCtruthprotonphi);
     }
- fPioncont=new TH2F("fPioncont", "fPioncont",10,-0.5,9.5,100,0.,10.);
+ fPioncont=new TH2F("fPioncont", "fPioncont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fPioncont);
 
- fKaoncont=new TH2F("fKaoncont","fKaoncont",10,-0.5,9.5,100,0.,10.);
+ fKaoncont=new TH2F("fKaoncont","fKaoncont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fKaoncont);
 
- fProtoncont=new TH2F("fProtoncont","fProtoncont",10,-0.5,9.5,100,0.,10.);
+ fProtoncont=new TH2F("fProtoncont","fProtoncont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fProtoncont);
 
-fUNIDcont=new TH2F("fUNIDcont","fUNIDcont",10,-0.5,9.5,100,0.,10.);
+fUNIDcont=new TH2F("fUNIDcont","fUNIDcont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fUNIDcont);
   }
 
@@ -1493,27 +1500,27 @@ fileT->Close();
 
  
 
-   fHistRawPtCentInvK0s= new TH3F("fHistRawPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,100,0.0,10.0,100,0.0,100.);
+   fHistRawPtCentInvK0s= new TH3F("fHistRawPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvK0s);
 
 
- fHistRawPtCentInvLambda= new TH3F("fHistRawPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+ fHistRawPtCentInvLambda= new TH3F("fHistRawPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvLambda);
 
 
- fHistRawPtCentInvAntiLambda= new TH3F("fHistRawPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+ fHistRawPtCentInvAntiLambda= new TH3F("fHistRawPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvAntiLambda);
 
 
- fHistFinalPtCentInvK0s= new TH3F("fHistFinalPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,100,0.0,10.0,100,0.0,100.);
+ fHistFinalPtCentInvK0s= new TH3F("fHistFinalPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvK0s);
 
 
- fHistFinalPtCentInvLambda= new TH3F("fHistFinalPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+fHistFinalPtCentInvLambda= new TH3F("fHistFinalPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvLambda);
 
 
- fHistFinalPtCentInvAntiLambda= new TH3F("fHistFinalPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+ fHistFinalPtCentInvAntiLambda= new TH3F("fHistFinalPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvAntiLambda);
 
  }
@@ -1590,7 +1597,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t miny=-30;
       Double_t maxy=30;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=50;}
-      TH2F *fHistoNSigma=new TH2F(Form("NSigma_%d_%d",ipart,ipid),Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,20,500,miny,maxy);
+      TH2F *fHistoNSigma=new TH2F(Form("NSigma_%d_%d",ipart,ipid),Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1604,7 +1611,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=15;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=20;}
       TH2F *fHistoNSigma=new TH2F(Form("NSigmaRec_%d_%d",ipart,ipid),
-				  Form("n#sigma for reconstructed %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,20,500,miny,maxy);
+				  Form("n#sigma for reconstructed %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1620,26 +1627,26 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
     Double_t miny=0.;
     Double_t maxy=1;
     TH2F *fHistoBayes=new TH2F(Form("BayesRec_%d",ipart),
-			       Form("probability for reconstructed %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for reconstructed %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayes->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayes->GetYaxis()->SetTitle(Form("Bayes prob %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayes);
 
 
    TH2F *fHistoBayesTPC=new TH2F(Form("probBayes_TPC_%d",ipart),
-			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayesTPC->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayesTPC->GetYaxis()->SetTitle(Form("Bayes prob TPC %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayesTPC);
 
   TH2F *fHistoBayesTOF=new TH2F(Form("probBayes_TOF_%d",ipart),
-			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayesTOF->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayesTOF->GetYaxis()->SetTitle(Form("Bayes prob TOF %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayesTOF);
 
  TH2F *fHistoBayesTPCTOF=new TH2F(Form("probBayes_TPCTOF_%d",ipart),
-			       Form("probability for Tracks as  %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for Tracks as  %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayesTPCTOF->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayesTPCTOF->GetYaxis()->SetTitle(Form("Bayes prob TPCTOF %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayesTPCTOF);
@@ -1651,19 +1658,19 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
  Double_t miny=0;
  Double_t maxy=10;
    TH2F *Pi_Ka_sep=new TH2F(Form("Pi_Ka_sep_%d",ipid),
-			       Form("Pi_Ka separation in %s",kPIDTypeName[ipid]),200,0,20,200,miny,maxy);
+			       Form("Pi_Ka separation in %s",kPIDTypeName[ipid]),200,0.0,fmaxPt,200,miny,maxy);
     Pi_Ka_sep->GetXaxis()->SetTitle("P_{T} (GeV/C)");
     Pi_Ka_sep->GetYaxis()->SetTitle(Form("expected seaparation(n#sigma) in %s",kPIDTypeName[ipid]));
     fOutputList->Add(Pi_Ka_sep);
 
    TH2F *Pi_Pr_sep=new TH2F(Form("Pi_Pr_sep_%d",ipid),
-			       Form("Pi_Pr separation in %s",kPIDTypeName[ipid]),200,0,20,200,miny,maxy);
+			       Form("Pi_Pr separation in %s",kPIDTypeName[ipid]),200,0.0,fmaxPt,200,miny,maxy);
     Pi_Pr_sep->GetXaxis()->SetTitle("P_{T} (GeV/C)");
     Pi_Pr_sep->GetYaxis()->SetTitle(Form("expected seaparation(n#sigma) in %s",kPIDTypeName[ipid]));
     fOutputList->Add(Pi_Pr_sep);
 
     TH2F *Ka_Pr_sep=new TH2F(Form("Ka_Pr_sep_%d",ipid),
-			       Form("Ka_Pr separation in %s",kPIDTypeName[ipid]),200,0,20,200,miny,maxy);
+			       Form("Ka_Pr separation in %s",kPIDTypeName[ipid]),200,0.0,fmaxPt,200,miny,maxy);
     Ka_Pr_sep->GetXaxis()->SetTitle("P_{T} (GeV/C)");
     Ka_Pr_sep->GetYaxis()->SetTitle(Form("expected seaparation(n#sigma) in %s",kPIDTypeName[ipid]));
     fOutputList->Add(Ka_Pr_sep);
@@ -1675,7 +1682,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=20;
       if(ipart!=SpPion) continue;//only around pion's mean position;protn and pion's delta in one histo
       TH2F *fHistodelta=new TH2F(Form("deltapion_%d",ipart),
-				  Form("deltapion %s",kParticleSpeciesName[ipart]),200,0,20,600,miny,maxy);
+				  Form("deltapion %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
       fHistodelta->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistodelta->GetYaxis()->SetTitle(Form("deltapion %s",kParticleSpeciesName[ipart]));
       fOutputList->Add(fHistodelta);
@@ -1687,7 +1694,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=20;
       if(ipart!=SpPion) continue;//only around pion's mean position;protn and pion's delta in one histo
       TH2F *fHistodeltaRec=new TH2F(Form("deltapionRec_%d",ipart),
-				  Form("deltapionRec %s",kParticleSpeciesName[ipart]),200,0,20,600,miny,maxy);
+				  Form("deltapionRec %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
       fHistodeltaRec->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistodeltaRec->GetYaxis()->SetTitle(Form("deltapionRec %s",kParticleSpeciesName[ipart]));
       fOutputList->Add(fHistodeltaRec);
@@ -1699,7 +1706,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t miny=-40;
       Double_t maxy=20;
       TH2F *fHistodeltaMC=new TH2F(Form("deltapionMC_%d",ipart),
-				  Form("deltapionMC %s",kParticleSpeciesName[ipart]),200,0,20,600,miny,maxy);
+				  Form("deltapionMC %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
       fHistodeltaMC->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistodeltaMC->GetYaxis()->SetTitle(Form("deltapionMC %s",kParticleSpeciesName[ipart]));
       fOutputList->Add(fHistodeltaMC);
@@ -1713,7 +1720,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=10;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=20;}
       TH2F *fHistoNSigma=new TH2F(Form("NSigmaDC_%d_%d",ipart,ipid),
-				  Form("n#sigma for double counting %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,20,500,miny,maxy);
+				  Form("n#sigma for double counting %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1728,7 +1735,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=30;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=50;}
       TH2F *fHistoNSigma=new TH2F(Form("NSigmaMC_%d_%d",ipart,ipid),
-				  Form("n#sigma for MC %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,20,500,miny,maxy);
+				  Form("n#sigma for MC %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1740,7 +1747,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
     for(Int_t ipart=0;ipart<NSpecies;ipart++){
       Double_t maxy=500;
       if(idet==fTOF)maxy=1.1;
-      TH2F *fHistoPID=new TH2F(Form("PID_%d_%d",idet,ipart),Form("%s signal - %s",kDetectorName[idet],kParticleSpeciesName[ipart]),200,0,20,500,-maxy,maxy);
+      TH2F *fHistoPID=new TH2F(Form("PID_%d_%d",idet,ipart),Form("%s signal - %s",kDetectorName[idet],kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,-maxy,maxy);
       fHistoPID->GetXaxis()->SetTitle("P (GeV / c)");
       fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
       fOutputList->Add(fHistoPID);
@@ -1750,7 +1757,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
   for(Int_t idet=0;idet<fNDetectors;idet++){
     Double_t maxy=500;
     if(idet==fTOF)maxy=1.1;
-    TH2F *fHistoPID=new TH2F(Form("PIDAll_%d",idet),Form("%s signal",kDetectorName[idet]),200,0,20,500,-maxy,maxy);
+    TH2F *fHistoPID=new TH2F(Form("PIDAll_%d",idet),Form("%s signal",kDetectorName[idet]),200,0.0,fmaxPt,500,-maxy,maxy);
     fHistoPID->GetXaxis()->SetTitle("P (GeV / c)");
     fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
     fOutputList->Add(fHistoPID);
@@ -1767,7 +1774,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
 void AliTwoParticlePIDCorr::UserExec( Option_t * ){
  
   if(fAnalysisType == "AOD") {
-
+    
     doAODevent();
     
   }//AOD--analysis-----
@@ -1988,13 +1995,15 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
  if(nooftrackstruth>0.0){
 if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
-AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());    
+AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
+/*
  if(collGeometry){
 Float_t NpartProj= collGeometry-> ProjectileParticipants();
 Float_t NpartTarg = collGeometry->TargetParticipants();
  Float_t Npart= (NpartProj + NpartTarg);
-fNchNpartCorr->Fill(Npart,nooftrackstruth);
+fNchNpartCorr->Fill(Npart,nooftrackstruth);//Creating some problem while being written in the TList in outputcontainer:::NOT SOLVED(ONLY in case of"MC", Fine for "MCAOD")
  }
+*/
  }
 
   if (fRandomizeReactionPlane)//only for TRuth MC??
@@ -4159,10 +4168,10 @@ if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!H
 
 
 if(fdiffPIDcutvalues){
-  if(track->Pt()<=4) fNSigmaPID=fPIDCutval1;
-  if(track->Pt()>4 && track->Pt()<=6) fNSigmaPID=fPIDCutval2;
-  if(track->Pt()>6 && track->Pt()<=8) fNSigmaPID=fPIDCutval3;
-  if(track->Pt()>8) fNSigmaPID=fPIDCutval4;
+  if(track->Pt()<=fPt1) fNSigmaPID=fPIDCutval1;
+  if(track->Pt()>fPt1 && track->Pt()<=fPt2) fNSigmaPID=fPIDCutval2;
+  if(track->Pt()>fPt2 && track->Pt()<=fPt3) fNSigmaPID=fPIDCutval3;
+  if(track->Pt()>fPt3) fNSigmaPID=fPIDCutval4;
   }
 
  // guess the particle based on the smaller nsigma (within fNSigmaPID)
@@ -4368,10 +4377,10 @@ for(Int_t ipart=0;ipart<NSpecies;ipart++){
   }
 
   if(fdiffPIDcutvalues){
-  if(trk->Pt()<=4) fBayesCut=fPIDCutval1;
-  if(trk->Pt()>4 && trk->Pt()<=6) fBayesCut=fPIDCutval2;
-  if(trk->Pt()>6 && trk->Pt()<=8) fBayesCut=fPIDCutval3;
-  if(trk->Pt()>8) fBayesCut=fPIDCutval4;
+  if(trk->Pt()<=fPt1) fBayesCut=fPIDCutval1;
+  if(trk->Pt()>fPt1 && trk->Pt()<=fPt2) fBayesCut=fPIDCutval2;
+  if(trk->Pt()>fPt2 && trk->Pt()<=fPt3) fBayesCut=fPIDCutval3;
+  if(trk->Pt()>fPt3) fBayesCut=fPIDCutval4;
   }
 
   

@@ -600,8 +600,9 @@ Bool_t AliEbyEPidTTask::RejectedEvent() {
   const AliESDVertex* vtxESD = NULL;
   const AliAODVertex* vtxAOD = NULL;
   if (fESD){
-    vtxESD = fESD->GetPrimaryVertexTracks();
+    vtxESD = fESD->GetPrimaryVertex();
     if (!vtxESD) return kFALSE;
+    if(vtxESD->GetNContributors() <= 0)  return kFALSE;
 
     if(TMath::Abs(vtxESD->GetX()) > fVxMax) return kFALSE;
     if(TMath::Abs(vtxESD->GetY()) > fVyMax) return kFALSE;
@@ -613,6 +614,7 @@ Bool_t AliEbyEPidTTask::RejectedEvent() {
   else if (fAOD){
     vtxAOD = fAOD->GetPrimaryVertex();
     if (!vtxAOD) return kFALSE;
+    if(vtxAOD->GetNContributors() <= 0)  return kFALSE;
     
     if(TMath::Abs(vtxAOD->GetX()) > fVxMax)  return kFALSE;
     if(TMath::Abs(vtxAOD->GetY()) > fVyMax)  return kFALSE;
