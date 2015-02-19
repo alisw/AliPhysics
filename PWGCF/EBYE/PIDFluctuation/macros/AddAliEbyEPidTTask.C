@@ -31,9 +31,6 @@ AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
  
   Double_t vx = 5.; Double_t vy = 5.;
  
-  TString taskname = "";
-  taskname += ctaskname;
-  taskname += Form("%d",isMC);
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -50,6 +47,9 @@ AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
   if (isMC)
     Info("AddTaskNetParticle", "This task has MC.");
   
+   TString taskname = ctaskname;
+
+
   AliEbyEPidTTask *task = new AliEbyEPidTTask(taskname.Data());
   if (!task) {
     Error("EbyEPidRatio", "Task could not be created.");
