@@ -1308,16 +1308,24 @@ void AliEveEventManager::NextEvent()
     }
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
+      cout<<"There is ESD or HLTESD tree"<<endl;
       Int_t nextevent=0;
       if (fPEventSelector->FindNext(nextevent))
       {
+	cout<<"GotoEvent:"<<nextevent<<endl;
         GotoEvent(nextevent);
       }
     }
     else if (fEventId < GetMaxEventId(kTRUE))
     {
+      cout<<"GotoEvent:"<<fEventId+1<<endl;
       GotoEvent(fEventId + 1);
     }
+    else
+      {
+	cout<<"Going back to event 0"<<endl;
+	GotoEvent(0);
+      }
     
     gSystem->ProcessEvents();
     
@@ -1997,8 +2005,9 @@ void AliEveEventManager::AutoLoadNextEvent()
 
 	StopAutoLoadTimer();
 	NextEvent();
-	if (fAutoLoad || fLoopMarked)
+	if (fAutoLoad || fLoopMarked){
 		StartAutoLoadTimer();
+	}
 }
 
 //------------------------------------------------------------------------------
