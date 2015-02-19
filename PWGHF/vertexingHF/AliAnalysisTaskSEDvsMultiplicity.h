@@ -227,7 +227,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Int_t fUseNchWeight; // weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
   TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
-  TH1F* fHistoMeasNch;  //! weight histogram on the true measured multiplicity
+  TH1F* fHistoMeasNch;  // weight histogram on the true measured multiplicity
   
   TProfile* fMultEstimatorAvg[4]; //TProfile with mult vs. Z per period
   Double_t fRefMult;   // refrence multiplcity (period b)
