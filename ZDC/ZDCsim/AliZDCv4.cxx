@@ -233,8 +233,11 @@ void AliZDCv4::CreateBeamLine()
   //
   if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
   
-  Double_t zd1, zd2, zCorrDip, zInnTrip, zD1;
-  Double_t conpar[15], tubpar[3], tubspar[5], boxpar[3];
+  Double_t zd1=0., zd2=0., zCorrDip=0., zInnTrip=0., zD1=0.;
+  Double_t tubpar[3]={0.,0.,0}, boxpar[3]={0.,0.,0};
+  Double_t tubspar[5]={0.,0.,0.,0.,0.};
+  Double_t conpar[9]={0.,0.,0.,0.,0.,0.,0.,0.,0.};
+
   //-- rotation matrices for the legs
   Int_t irotpipe1, irotpipe2;
   TVirtualMC::GetMC()->Matrix(irotpipe1,90.-1.0027,0.,90.,90.,1.0027,180.);      

@@ -260,20 +260,28 @@ void AliZDCv5::CreateBeamLine()
   
 if(!fOnlyZEM){  
   // -- Mother of the ZDCs (Vacuum PCON)
-  zd1 = 1921.6;
-  
-  conpar[0] = 0.;
-  conpar[1] = 360.;
-  conpar[2] = 2.;
-  conpar[3] = -13500.;
-  conpar[4] = 0.;
-  conpar[5] = 55.;
-  conpar[6] = -zd1;
-  conpar[7] = 0.;
-  conpar[8] = 55.;
-  TVirtualMC::GetMC()->Gsvolu("ZDCC", "PCON", idtmed[10], conpar, 9);
+  zd1 = 1947.2;
+  // zd1 = 1921.6;
+  // const Double_t kZComDip = -1972.5;
+  const Double_t kZComDip = -1974.0;
+  conpar[ 0] = 0.;
+  conpar[ 1] = 360.;
+  conpar[ 2] = 4.;      // Num radius specifications: 4
+  conpar[ 3] = -13500.; // (1) end of mother vol
+  conpar[ 4] = 0.;
+  conpar[ 5] = 55.;
+  conpar[ 6] = kZComDip; // (2) Beginning of Compensator Dipole
+  conpar[ 7] = 0.;
+  conpar[ 8] = 55.;
+  conpar[ 9] = kZComDip; // (3) Reducing radii of ZDCC to beam pipe radius
+  conpar[10] = 0.;
+  conpar[11] = 6.7/2.;
+  conpar[12] = -zd1;    // (4) Beginning of ZDCC mother volume
+  // conpar[12] = -1947.2;    // (4) Beginning of ZDCC mother volume
+  conpar[13] = 0.;
+  conpar[14] = 6.7/2.; 
+  TVirtualMC::GetMC()->Gsvolu("ZDCC", "PCON", idtmed[10], conpar, 15);
   TVirtualMC::GetMC()->Gspos("ZDCC", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-  
 
   // -- BEAM PIPE from compensator dipole to the beginning of D1) 
   tubpar[0] = 6.3/2.;
@@ -2682,6 +2690,14 @@ void AliZDCv5::StepManager()
 	  else if(x[2]>0.) vol[0]=5; //ZPA  
     }
     else if(!strncmp(knamed,"ZE",2)) vol[0]=3; //ZEM
+    // February 2015: Adding TrackReference
+    if(TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting()) {
+       AliTrackReference* trackRef = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kZDC);
+       if(vol[0]>0){
+         trackRef->SetUserId(vol[0]);
+         //printf("Adding track reference for track %d in vol. %d\n", gAlice->GetMCApp()->GetCurrentTrackNumber(), vol[0]);
+       }
+    }
   
   // Determine in which quadrant the particle is
     if(vol[0]==1){	//Quadrant in ZNC
