@@ -237,7 +237,8 @@ void AliZDCv5::CreateBeamLine()
   Double_t zd1=0., zd2=0., zCorrDip=0., zInnTrip=0., zD1=0.;
   Double_t tubpar[3]={0.,0.,0}, boxpar[3]={0.,0.,0};
   Double_t tubspar[5]={0.,0.,0.,0.,0.};
-  Double_t conpar[9]={0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t conpar[15];
+  for(int i=0; i<15; i++) conpar[i]=0.;
 
   //-- rotation matrices for the legs
   Int_t irotpipe1, irotpipe2;
@@ -2019,8 +2020,10 @@ void AliZDCv5::CreateZDC()
  //
   
   Float_t dimPb[6], dimVoid[6];
-  
-  Int_t *idtmed = fIdtmed->GetArray();
+  for(int i=0; i<6; i++){
+     dimPb[i]=0.;
+     dimVoid[i]=0.;
+  }
 
   // Parameters for EM calorimeter geometry
   // NB -> parameters used ONLY in CreateZDC()
@@ -2030,6 +2033,8 @@ void AliZDCv5::CreateZDC()
   Float_t fDimZEM[6] = {fZEMLength, 3.5, 3.5, 45., 0., 0.}; // Dimensions of EM detector
   Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-kFibRadZEM;
   Float_t fFibZEM[3] = {0., 0.0275, fFibZEM2};  // Fibers for EM calorimeter
+  
+  Int_t *idtmed = fIdtmed->GetArray();
 
 if(!fOnlyZEM){
   // Parameters for hadronic calorimeters geometry
@@ -2154,7 +2159,7 @@ if(!fOnlyZEM){
   // --- No rotation 
   TVirtualMC::GetMC()->Gspos("ZPRO", 2, "ZDCA", fPosZPA[0], fPosZPA[1], fPosZPA[2]+fDimZP[2], 0, "ONLY");
   //Ch debug
-  printf("\n ZPA -> %f < z < %f cm\n",fPosZPA[2],fPosZPA[2]+2*fDimZP[2]);  
+  printf(" ZPA -> %f < z < %f cm\n\n",fPosZPA[2],fPosZPA[2]+2*fDimZP[2]);  
 }    
   
   // -------------------------------------------------------------------------------

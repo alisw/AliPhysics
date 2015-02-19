@@ -236,7 +236,8 @@ void AliZDCv4::CreateBeamLine()
   Double_t zd1=0., zd2=0., zCorrDip=0., zInnTrip=0., zD1=0.;
   Double_t tubpar[3]={0.,0.,0}, boxpar[3]={0.,0.,0};
   Double_t tubspar[5]={0.,0.,0.,0.,0.};
-  Double_t conpar[9]={0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t conpar[15];
+  for(int i=0; i<15; i++) conpar[i]=0.;
 
   //-- rotation matrices for the legs
   Int_t irotpipe1, irotpipe2;
