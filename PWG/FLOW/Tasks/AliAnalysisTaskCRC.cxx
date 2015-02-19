@@ -84,7 +84,9 @@ fnSubsamples(10),
 fCalculateCRC(kFALSE),
 fUseEtaGap(kFALSE),
 fEtaGap(0.),
-fUseNUAforCRC(kFALSE)
+fUseNUAforCRC(kFALSE),
+fCRCEtaMin(0.),
+fCRCEtaMax(0.)
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -176,7 +178,9 @@ fnSubsamples(10),
 fCalculateCRC(kFALSE),
 fUseEtaGap(kFALSE),
 fEtaGap(0.),
-fUseNUAforCRC(kFALSE)
+fUseNUAforCRC(kFALSE),
+fCRCEtaMin(0.),
+fCRCEtaMax(0.)
 {
  // Dummy constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC()");
@@ -209,7 +213,7 @@ fUseNUAforCRC(kFALSE)
  
 }
 
-//================================================================================================================
+//==========================================================================================================
 
 void AliAnalysisTaskCRC::UserCreateOutputObjects()
 {
@@ -235,7 +239,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateMixedHarmonics(fCalculateMixedHarmonics);
  fQC->SetCalculateMixedHarmonicsVsM(fCalculateMixedHarmonicsVsM);
  fQC->SetCalculateCRC(fCalculateCRC);
- fQC->SetUseRPforCRC(fUseRPforCRC);
+ fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetStoreControlHistograms(fStoreControlHistograms);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow);
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances);
@@ -243,6 +247,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetUseEtaGap(fUseEtaGap);
  fQC->SetEtaGap(fEtaGap);
  fQC->SetNUAforCRC(fUseNUAforCRC);
+ fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);

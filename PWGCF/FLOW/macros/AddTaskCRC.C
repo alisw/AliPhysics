@@ -1,4 +1,4 @@
-void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t pTMin, Double_t pTMax, Bool_t UseEtaGap = kFALSE, Double_t EtaGap = 0., Bool_t bNUACorr = kFALSE)
+void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t pTMin, Double_t pTMax, Bool_t UseEtaGap = kFALSE, Double_t EtaGap = 0., Bool_t bNUACorr = kFALSE, Bool_t doQA = kFALSE)
 {
  // load libraries
  gSystem->Load("libGeom");
@@ -12,15 +12,9 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  gSystem->Load("libAOD");
  gSystem->Load("libANALYSIS");
  gSystem->Load("libANALYSISalice");
- gSystem->Load("libANALYSIScalib");
  gSystem->Load("libOADB.so");
- gSystem->Load("libEventMixing.so");
- gSystem->Load("libCORRFW.so");
- gSystem->Load("libPWGTools.so");
  gSystem->Load("libPWGflowBase.so");
  gSystem->Load("libPWGflowTasks.so");
- gSystem->Load("libTPCbase.so");
- gSystem->Load("libTPCcalib.so");
  
  gROOT->ProcessLine(".include $ALICE_ROOT/include");
  gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
@@ -41,10 +35,10 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  
  // specify charge/CEA in all names
  TString suffix = ":CRC";
- TString EtaGapName = "_";
- if (!UseEtaGap) { EtaGapName += "FER"; }
- else            { EtaGapName += Form("0.%i",(Int_t)(EtaGap*10.)); }
- suffix += EtaGapName;
+ 
+ TString HarmName = "_n";
+ HarmName += (Int_t)iHarmonic;
+ suffix += HarmName;
  
  TString CentrName = "_";
  CentrName += (Int_t)centrMin;
@@ -62,13 +56,17 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  pTName += ( pTMax < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
  suffix += pTName;
  
+ TString EtaGapName = "_EG";
+ if (!UseEtaGap) { EtaGapName += "NULL"; }
+ else            { EtaGapName += Form("0.%i",(Int_t)(EtaGap*10.)); }
+ suffix += EtaGapName;
+ 
  // specify some variables
  // Float_t centrMin = 20.;
  // Float_t centrMax = 30.;
  
  // create instance of the class: because possible qa plots are added in a second output slot,
  // the flow analysis task must know if you want to save qa plots at the time of class construction
- Bool_t doQA = kTRUE;
  TString taskFEname = "FlowEventTask";
  taskFEname += suffix;
  // create instance of the class
@@ -202,10 +200,11 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
+ taskQC->SetCalculateCRCPt(kTRUE);
  taskQC->SetUseEtaGap(UseEtaGap);
  taskQC->SetEtaGap(EtaGap);
  taskQC->SetNUAforCRC(bNUACorr);
- taskQC->SetUseRPforCRC(kFALSE);
+ taskQC->SetCRCEtaRange(-0.8,0.8);
  
  // connect the task to the analysis manager
  mgr->AddTask(taskQC);

@@ -31,7 +31,7 @@ class TList;
 class AliFlowEventSimple;
 class AliFlowAnalysisCRC;
 
-//================================================================================================================
+//==============================================================================================================
 
 class AliAnalysisTaskCRC : public AliAnalysisTaskSE{
 public:
@@ -144,17 +144,18 @@ public:
  void SetnSubsamples(Int_t const ns) {this->fnSubsamples = ns;};
  Int_t GetnSubsamples() const {return this->fnSubsamples;};
  
- // charge-eta asymmetry:
+ // Charge-Rapidity Correlations:
  void SetCalculateCRC(Bool_t const cCRC) {this->fCalculateCRC = cCRC;};
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
- void SetUseRPforCRC(Bool_t const cCRC) {this->fUseRPforCRC = cCRC;};
- Bool_t GetUseRPforCRC() const {return this->fUseRPforCRC;};
+ void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
+ Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
  void SetUseEtaGap(Bool_t const cCRC) {this->fUseEtaGap = cCRC;};
  Bool_t GetUseEtaGap() const {return this->fUseEtaGap;};
  void SetEtaGap(Double_t const etagap) {this->fEtaGap = etagap;};
  Double_t GetEtaGap() const {return this->fEtaGap;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
+ void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -215,10 +216,12 @@ private:
  Int_t fnSubsamples; // number of subsamples (SS), by default 10
  // Charge-Eta Asymmetry
  Bool_t fCalculateCRC; // calculate CRC quantities
- Bool_t fUseRPforCRC;
+ Bool_t fCalculateCRCPt;
  Bool_t fUseEtaGap;
  Double_t fEtaGap;
  Bool_t fUseNUAforCRC;
+ Double_t fCRCEtaMin;
+ Double_t fCRCEtaMax;
  
  ClassDef(AliAnalysisTaskCRC, 2);
 };
