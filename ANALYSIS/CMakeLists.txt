@@ -15,6 +15,7 @@
 
 add_subdirectory(ANALYSIS)
 add_subdirectory(ANALYSISalice)
+add_subdirectory(ANALYSISaliceBase)
 add_subdirectory(ANALYSIScalib)
 add_subdirectory(ESDfilter)
 

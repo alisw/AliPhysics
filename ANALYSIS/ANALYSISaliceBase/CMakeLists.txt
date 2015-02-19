@@ -14,7 +14,7 @@
 # **************************************************************************
 
 # Module
-set(MODULE ANALYSISalice)
+set(MODULE ANALYSISaliceBase)
 
 # Module include folders in alphabetical order except ROOT
 include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
@@ -22,55 +22,25 @@ include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
 # Additional include directories
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISaliceBase
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order 
 set(SRCS 
-    AliAnalysisCuts.cxx
-    AliAnalysisFilter.cxx
-    AliAnalysisTaskBadChunkID.cxx
-    AliAnalysisTaskBaseLine.cxx
-    AliAnalysisTaskMCParticleFilter.cxx
-    AliAnalysisTaskME.cxx
-    AliAnalysisTaskPIDCombined.cxx
-    AliAnalysisTaskPIDqa.cxx
-    AliAnalysisTaskPIDResponse.cxx
-    AliAnalysisTaskSE.cxx
-    AliAnalysisTaskStat.cxx
-    AliAnalysisTaskTagCreator.cxx
-    AliAODv0KineCuts.cxx
-    AliESDpidCuts.cxx
-    AliESDtrackCuts.cxx
-    AliESDv0Cuts.cxx
-    AliESDv0KineCuts.cxx
-    AliEventPoolLoop.cxx
-    AliEventPoolManager.cxx
-    AliEventPoolOTF.cxx
-    AliEventPoolSparse.cxx
-    AliHEPDataParser.cxx
-    AliKineTrackCuts.cxx
-    AliMultiEventInputHandler.cxx
-    AliPIDResponseInputHandler.cxx
-    AliPPVsMultUtils.cxx
-    AliTagAnalysis.cxx
-    AliUnfolding.cxx
-    AliVZEROEPSelectionTask.cxx
-    AliXMLCollection.cxx
-  )
+  AliMultiInputEventHandler.cxx
+)
 
-
-# If ROOT has no xml support desabling collections and AliEn support
 if(ROOT_HASXML)
-    set(SRCS ${SRCS}
-         AliTagAnalysis.cxx
-         AliXMLCollection.cxx
-       )
+  if(ROOT_HASALIEN)
+    # Must have both XML and AliEn support for the AliEn Plugin
+    list(APPEND SRCS
+      AliAnalysisAlien.cxx
+    )
+  else()
+    message(STATUS "${MODULE} - ROOT was configured with no AliEn support: disabling AliRoot AliEn support")
+  endif()
 else()
-    message(STATUS "${MODULE} - ROOT was built with no XML support. Disabling XML collection and AliEn support")
+  message(STATUS "${MODULE} - ROOT was configured with no XML support: disabling AliRoot AliEn support")
 endif()
 
 # Headers from sources
@@ -83,7 +53,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISaliceBase AOD ESD STEERBase Core EG Gpad Gui Hist MathCore Matrix Net Physics RIO TreePlayer Tree XMLIO)
+set(LIBDEPS ANALYSIS STEERBase Core Net RIO Tree)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -91,9 +61,6 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-
-# Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
