@@ -21,10 +21,10 @@ class AliMultiplictyLoaderTask : public AliAnalysisTaskSE
  		 //virtual void   ConnectInputData(Option_t *);
   		 virtual void   UserCreateOutputObjects();
  		 virtual void   UserExec(Option_t *option);
- 		 virtual void   Terminate(Option_t *){}; 
+ 		 virtual void   Terminate(Option_t *){} 
   		//virtual void   LocalInit();
- 		void SetCentEstimator(TString cent = "V0M")    {fCentEstimator = cent; };
- 		void SetUseAliPPVsMultUtils(Bool_t flag)	{fUseAliPPVsMultUtils=flag;};
+ 		void SetCentEstimator(TString cent = "V0M")    {fCentEstimator = cent; }
+ 		void SetUseAliPPVsMultUtils(Bool_t flag)	{fUseAliPPVsMultUtils=flag;}
  
 	private:
 		AliESDEvent *fESD;    //! ESD object
@@ -35,8 +35,8 @@ class AliMultiplictyLoaderTask : public AliAnalysisTaskSE
 	        TParameter<Int_t>* fncharged05value; // value of Nch for |eta|<0.5
 		TParameter<Int_t>* fncharged08value; // value of Nch for |eta|<0.8
 		Bool_t fFirstEvent; // first Event Flag
-		AliMultiplictyLoaderTask(const AliMultiplictyLoaderTask&){}; // private copy const
- 		AliMultiplictyLoaderTask& operator=(const AliMultiplictyLoaderTask&){}; // private = operator
+		AliMultiplictyLoaderTask(const AliMultiplictyLoaderTask&); // private copy const
+ 		AliMultiplictyLoaderTask& operator=(const AliMultiplictyLoaderTask&); // private = operator
 
 	
 	 ClassDef(AliMultiplictyLoaderTask, 1); 
