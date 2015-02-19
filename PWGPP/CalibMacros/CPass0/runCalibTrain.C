@@ -93,7 +93,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   // Detector Tasks
   //
   AliSysInfo::AddStamp("BeforeTPC");
-  if ( detStr.Contains("TPC"))    AddTaskTPCCalib(runNumber);
+  if ( detStr.Contains("TPC"))    AddTaskTPCCalib();
 
   AliSysInfo::AddStamp("BeforeTRD");
   if ( detStr.Contains("TRD") && detStr.Contains("TPC"))    AddTaskTRDCalib(runNumber);
