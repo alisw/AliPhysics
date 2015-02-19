@@ -12,9 +12,10 @@ PAR_LIBDEPS := @PARLIBDEPS@
 # Current OS
 OS := $(shell uname)
 
-# Include paths
+# Include paths: take into consideration "extra includes" (manually entered by users) and includes
+# from other previously enabled PARfiles
 PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
-PAR_INCLUDES = -I. $(addprefix -I,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
+PAR_INCLUDES = -I. $(addprefix -I../,$(ALICE_PARFILES_ENABLED)) $(addprefix -I,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
 ifneq ($(FASTJET),)
 	PAR_INCLUDES += -I$(FASTJET)/include
 endif
