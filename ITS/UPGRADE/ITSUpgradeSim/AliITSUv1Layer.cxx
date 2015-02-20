@@ -538,8 +538,9 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
       fHierarchy[kHalfStave] = 2; // RS 
       mechStaveVol = CreateSpaceFrameOuterB();
       if (mechStaveVol) {
-	staveVol->AddNode(mechStaveVol, 1,
-			  new TGeoCombiTrans(0, -fgkOBSFrameULegHeight1, 0,
+	if (fBuildLevel < 6)   // Carbon
+	  staveVol->AddNode(mechStaveVol, 1,
+			    new TGeoCombiTrans(0, -fgkOBSFrameULegHeight1, 0,
 					     new TGeoRotation("", 180, 0, 0)));
       }
     } // if (fStaveModel)
@@ -2102,7 +2103,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   TGeoVolume *mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
   mechStavVol->SetLineColor(12);
   mechStavVol->SetFillColor(12); 
-  mechStavVol->SetVisibility(kTRUE);  
+  mechStavVol->SetVisibility(kFALSE);
 
   TGeoVolume *kapCableVol = new TGeoVolume("FPCKapton", kapCable, medKapton);
   kapCableVol->SetLineColor(kBlue);
@@ -2878,6 +2879,8 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterBDummy(const TGeoManager *) con
 TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 //
 // Create the space frame for the Outer Barrel (Model 1)
+// The building blocks are created in another method to avoid
+// replicating the same volumes for all OB staves
 //
 // Input:
 //         mgr  : the GeoManager (used only to get the proper material)
@@ -2887,12 +2890,100 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 // Return:
 //         a TGeoVolume with the Space Frame of a stave
 //
-// Created:      20 Dec 2013  Anastasia Barbano
-// Updated:      15 Jan 2014  Mario Sitta
-// Updated:      18 Feb 2014  Mario Sitta
-// Updated:      12 Mar 2014  Mario Sitta
-// Updated:      15 Dec 2014  Mario Sitta
-// Updated:      28 Jan 2014  Mario Sitta  Change frame shape to avoid overlaps
+// Created:      03 Feb 2015  Mario Sitta
+//
+
+  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+
+  TGeoVolume *unitVol[2], *endVol[2];
+  Double_t *xtru, *ytru;
+  Double_t zlen, zpos;
+  Int_t nPoints;
+  char volname[30];
+
+
+  // Check whether we have already all pieces
+  // Otherwise create them
+  unitVol[0] = mgr->GetVolume("SpaceFrameUnit0");
+
+  if (!unitVol[0]) {
+    CreateOBSpaceFrameObjects(mgr);
+    unitVol[0] = mgr->GetVolume("SpaceFrameUnit0");
+  }
+
+  unitVol[1] = mgr->GetVolume("SpaceFrameUnit1");
+
+  endVol[0]  = mgr->GetVolume("SpaceFrameEndUnit0");
+  endVol[1]  = mgr->GetVolume("SpaceFrameEndUnit1");
+
+  // Get the shape of the units
+  // and create a similar shape for the Space Frame container
+  TGeoXtru *volShape = (TGeoXtru*)(unitVol[0]->GetShape());
+
+  nPoints = volShape->GetNvert();
+  xtru = new Double_t[nPoints];
+  ytru = new Double_t[nPoints];
+
+  for (Int_t i=0; i<nPoints; i++) {
+    xtru[i] = volShape->GetX(i);
+    ytru[i] = volShape->GetY(i);
+  }
+
+  zlen = fgkOBSpaceFrameZLen[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
+
+  TGeoXtru *spaceFrame = new TGeoXtru(2);
+  spaceFrame->DefinePolygon(nPoints, xtru, ytru);
+  spaceFrame->DefineSection(0,-zlen/2);
+  spaceFrame->DefineSection(1, zlen/2);
+
+  snprintf(volname, 30, "SpaceFrameVolumeLay%d", fLayerNumber);
+  TGeoVolume *spaceFrameVol = new TGeoVolume(volname, spaceFrame, medAir);
+  spaceFrameVol->SetVisibility(kFALSE);
+
+
+  // Finally build up the space frame
+  Int_t nUnits = fgkOBSpaceFrameNUnits[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
+
+  TGeoXtru *frameUnit = (TGeoXtru*)(unitVol[0]->GetShape());
+  TGeoXtru *endUnit   = (TGeoXtru*)( endVol[0]->GetShape());
+
+  zpos = -spaceFrame->GetDZ() + endUnit->GetDZ();
+  spaceFrameVol->AddNode(endVol[0], 1, new TGeoTranslation(0, 0, zpos));
+
+  for(Int_t i=1; i<nUnits-1; i++){
+    zpos = -spaceFrame->GetDZ() + (1 + 2*i)*frameUnit->GetDZ();
+    Int_t j = i/2;
+    Int_t k = i - j*2;  // alternatively 0 or 1
+    spaceFrameVol->AddNode(unitVol[k], j+1, new TGeoTranslation(0, 0, zpos));
+  }
+
+  zpos = -spaceFrame->GetDZ() + (2*nUnits - 1)*endUnit->GetDZ();
+  spaceFrameVol->AddNode(endVol[1], 1, new TGeoTranslation(0, 0, zpos));
+
+
+  // Done, clean up and return the space frame structure
+  delete [] xtru;
+  delete [] ytru;
+
+  return spaceFrameVol;
+}
+
+//________________________________________________________________________
+void AliITSUv1Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
+//
+// Create the space frame building blocks for the Outer Barrel
+// This method is practically identical to previous versions of
+// CreateSpaceFrameOuterB1
+//
+// Input:
+//         mgr  : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//         a TGeoVolume with the Space Frame of a stave
+//
+// Created:      03 Feb 2015  Mario Sitta
 //
 
 
@@ -2921,7 +3012,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   Double_t basePhiDeg      = fgkOBSFrameBaseRibPhi;
   Double_t basePhiRad      = basePhiDeg*TMath::DegToRad();
   Double_t ulegHalfLen     = fgkOBSFrameULegLen/2;
-  Double_t ulegHalfWidth   = fgkOBSFrameULegWidth;
+  Double_t ulegHalfWidth   = fgkOBSFrameULegWidth/2;
   Double_t ulegHigh1       = fgkOBSFrameULegHeight1;
   Double_t ulegHigh2       = fgkOBSFrameULegHeight2;
   Double_t ulegThick       = fgkOBSFrameULegThick;
@@ -2972,14 +3063,9 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   ytru[20] = ytru[15];
 
 
-  // The space frame container and a single unit
+  // The space frame single units
   // We need two units because the base ribs are alternately oriented
   // The end units are slightly different
-  TGeoXtru *spaceFrame = new TGeoXtru(2);
-  spaceFrame->DefinePolygon(22, xtru, ytru);
-  spaceFrame->DefineSection(0,-zlen/2);
-  spaceFrame->DefineSection(1, zlen/2);
-
   TGeoXtru *frameUnit  = new TGeoXtru(2);
   frameUnit->DefinePolygon(22, xtru, ytru);
   frameUnit->DefineSection(0,-unitlen/2);
@@ -2990,10 +3076,6 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   endUnit->DefineSection(0,-unitlen/2);
   endUnit->DefineSection(1, unitlen/2);
 
-
-  snprintf(volname, 30, "SpaceFrameVolumeLay%d", fLayerNumber);
-  TGeoVolume *spaceFrameVol = new TGeoVolume(volname, spaceFrame, medAir);
-  spaceFrameVol->SetVisibility(kFALSE);
 
   TGeoVolume *unitVol[2];
   unitVol[0] = new TGeoVolume("SpaceFrameUnit0", frameUnit, medAir);
@@ -3271,25 +3353,8 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 		  new TGeoTranslation( -xpos, -ypos,  zpos));
 
 
-  // Finally build up the space frame
-  Int_t nUnits = fgkOBSpaceFrameNUnits[fLayerNumber/5]; // 3,4 -> 0 - 5,6 -> 1
-
-  zpos = -spaceFrame->GetDZ() + endUnit->GetDZ();
-  spaceFrameVol->AddNode(endVol[0], 1, new TGeoTranslation(0, 0, zpos));
-
-  for(Int_t i=1; i<nUnits-1; i++){
-    zpos = -spaceFrame->GetDZ() + (1 + 2*i)*frameUnit->GetDZ();
-    Int_t j = i/2;
-    Int_t k = i - j*2;  // alternatively 0 or 1
-    spaceFrameVol->AddNode(unitVol[k], j+1, new TGeoTranslation(0, 0, zpos));
-  }
-
-  zpos = -spaceFrame->GetDZ() + (2*nUnits - 1)*endUnit->GetDZ();
-  spaceFrameVol->AddNode(endVol[1], 1, new TGeoTranslation(0, 0, zpos));
-
-
-  // Done, return the space frame structure
-  return spaceFrameVol;
+  // Done
+  return;
 }
 
 //________________________________________________________________________
@@ -3330,14 +3395,21 @@ TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xchip,
 
   // We have all shapes: now create the real volumes
   TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
+  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medChip;
+
+  if (fBuildLevel < 7)
+    medChip = medSi;
+  else
+    medChip = medAir;
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSChipPattern(), fLayerNumber);
-  TGeoVolume *chipVol = new TGeoVolume(volname, chip, medSi);
+  TGeoVolume *chipVol = new TGeoVolume(volname, chip, medChip);
   chipVol->SetVisibility(kTRUE);
   chipVol->SetLineColor(1);
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSSensorPattern(), fLayerNumber);
-  TGeoVolume *sensVol = new TGeoVolume(volname, sensor, medSi);
+  TGeoVolume *sensVol = new TGeoVolume(volname, sensor, medChip);
   sensVol->SetVisibility(kTRUE);
   sensVol->SetLineColor(8);
   sensVol->SetLineWidth(1);

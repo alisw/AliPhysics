@@ -100,6 +100,7 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     TGeoVolume* CreateSpaceFrameOuterB(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateSpaceFrameOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateSpaceFrameOuterB1(const TGeoManager *mgr=gGeoManager);
+    void        CreateOBSpaceFrameObjects(const TGeoManager *mgr=gGeoManager);
 
     TGeoXtru* CreateStaveSide(const char *name,
 			       Double_t dz, Double_t alpha, Double_t beta,

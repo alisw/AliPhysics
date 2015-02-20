@@ -41,7 +41,7 @@
 // Original version
 // Chinorat Kobdaj <kobdaj@g.sut.ac.th> , Stefan Rossegger
 // Revised and adapted to newer AliITSUv1 versions
-// Mario Sitta <sitta@to.infn.it> - Nov 2014
+// Mario Sitta <sitta@to.infn.it> - Nov 2014, Feb 2015
 
 
 enum {
@@ -51,6 +51,7 @@ enum {
     kIBModel21=3,
     kIBModel22=4,
     kIBModel3=5,
+    kIBModel4=10,
     kOBModelDummy=6,
     kOBModel0=7,
     kOBModel1=8, 
@@ -241,6 +242,7 @@ void DrawMaterialBudget_Splitted(Int_t nLay = 0, Double_t rmin = 1.,
   const Int_t maxNumberOfScenarios = nScenariosOB;
 
   Double_t meanX0[maxNumberOfScenarios];
+  Double_t contribX0[maxNumberOfScenarios];
   TH1F *l[maxNumberOfScenarios+1];
 
   TString strDescrip[maxNumberOfScenarios];
@@ -257,35 +259,38 @@ void DrawMaterialBudget_Splitted(Int_t nLay = 0, Double_t rmin = 1.,
 
   char title[30];
   Int_t model, buildlevel;
+
+  strcpy(title,
+	 gGeoManager->GetVolume(Form("ITSULayer%d",nLay))->GetTitle());
+  if (strlen(title) == 0) // No Model info -> old model schema
+    model = -1;
+  else  // New model schema -> extract model
+    sscanf(title, "Model %d Build level %d", &model, &buildlevel);
+
   if (nLay < 3) { // IB has only 6 scenarios
     nScenarios = nScenariosIB;
-    for (Int_t i=0; i<nScenarios; i++) {
-      strDescrip[i] = strDescripIB[i];
-      colors[i] = colorsIB[i];
-    }
-  } else {
-    strcpy(title,
-	   gGeoManager->GetVolume(Form("ITSULayer%d",nLay))->GetTitle());
-    if (strlen(title) == 0) { // Old OB has only 6 scenarios like IB
-      nScenarios = nScenariosIB;
+    if (model == kIBModel4) // New model -> same name/colors as OB
       for (Int_t i=0; i<nScenarios; i++) {
 	strDescrip[i] = strDescripOB[i+1];
 	colors[i] = colorsOB[i+1];
       }
-    } else { // New OB: check model
-      sscanf(title, "Model %d Build level %d", &model, &buildlevel);
-      if (model == kOBModel2) {
-	nScenarios = nScenariosOB;
-	for (Int_t i=0; i<nScenarios; i++) {
-	  strDescrip[i] = strDescripOB[i];
-	  colors[i] = colorsOB[i];
-	}
-      } else {
-	nScenarios = nScenariosIB;
-	for (Int_t i=0; i<nScenarios; i++) {
-	  strDescrip[i] = strDescripOB[i+1];
-	  colors[i] = colorsOB[i+1];
-	}
+    else // Old model -> old names/colors
+      for (Int_t i=0; i<nScenarios; i++) {
+	strDescrip[i] = strDescripIB[i];
+	colors[i] = colorsIB[i];
+      }
+  } else {
+    if (model == kOBModel2) { // New OB
+      nScenarios = nScenariosOB;
+      for (Int_t i=0; i<nScenarios; i++) {
+	strDescrip[i] = strDescripOB[i];
+	colors[i] = colorsOB[i];
+      }
+    } else { // Old OB has only 6 scenarios like IB
+      nScenarios = nScenariosIB;
+      for (Int_t i=0; i<nScenarios; i++) {
+	strDescrip[i] = strDescripOB[i+1];
+	colors[i] = colorsOB[i+1];
       }
     }
   } // if (nLay < 3)
@@ -347,10 +352,13 @@ void DrawMaterialBudget_Splitted(Int_t nLay = 0, Double_t rmin = 1.,
   for (Int_t i=0; i<nScenarios; i++) {
     // contribution in percent
     Double_t contr = 0;
-    if (i == nScenarios-1)
-      contr = (meanX0[i])/meanX0[0]*100; 
-    else
-      contr = (meanX0[i]-meanX0[i+1])/meanX0[0]*100; 
+    if (i == nScenarios-1) {
+      contr = (meanX0[i])/meanX0[0]*100;
+      contribX0[i] = meanX0[i];
+    } else {
+      contr = (meanX0[i]-meanX0[i+1])/meanX0[0]*100;
+      contribX0[i] = meanX0[i]-meanX0[i+1];
+    }
  
     strDescrip[i].Append(Form(" (%3.1lf%%)",contr));
     leg->AddEntry(l[i],strDescrip[i].Data(),"l");
@@ -370,6 +378,10 @@ void DrawMaterialBudget_Splitted(Int_t nLay = 0, Double_t rmin = 1.,
   l[nScenarios]->SetLineWidth(2);
   l[nScenarios]->DrawCopy("same");
   
+  printf("\n X/X0 contributions:\n");
+  for (Int_t i=0; i<nScenarios; i++)
+    printf("%s\t\t%f\n",strDescrip[i].Data(),contribX0[i]);
+
   c2->SaveAs("Material-details.pdf");
   
 }
