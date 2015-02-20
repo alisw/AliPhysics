@@ -81,7 +81,7 @@ AliAnalysisTaskSE( name ),
   fAODtrackCutBit(128),
   fHelperPID(0x0),
   fEventCounter(NULL), 
-  fPidCont(NULL),
+  fPidCont(0x0),
   
   fVxMax(3.), 
   fVyMax(3.), 
@@ -142,12 +142,27 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
     Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
   }     
 
-
-
   fEventCounter = new TH1D("fEventCounter","EventCounter", 100, 0.5,100.5);
   fThnList->Add(fEventCounter);
   
-  if (fHelperPID) {
+   TDirectory *owd = gDirectory;
+  OpenFile(1);
+  fPidCont = new TTree("Event","fPidCont B");
+  owd->cd();
+
+  fPidCont->Branch("fRunNumber", &fRunNumber,  "fRunNumber/I");
+  fPidCont->Branch("cent",fCentrality,"fCentrality[6]/F");
+  fPidCont->Branch("Trigger", fTrigMask,  "fTrigMask[5]/I");
+  fPidCont->Branch("vertex", fVtx,"fVtx[3]/F");
+  fPidCont->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
+  fPidCont->Branch("fTrackPt",   fTrackPt,"fTrackPt[fNumberOfTracks]/F");
+  fPidCont->Branch("fTrackPhi",  fTrackPhi,"fTrackPhi[fNumberOfTracks]/F");
+  fPidCont->Branch("fTrackEta",  fTrackEta,"fTrackEta[fNumberOfTracks]/F");
+  fPidCont->Branch("fTrackDxy",  fTrackDxy,"fTrackDxy[fNumberOfTracks]/F");
+  fPidCont->Branch("fTrackDz",   fTrackDz,"fTrackDz[fNumberOfTracks]/F");
+  fPidCont->Branch("fTrackPid",  fTrackPid,"fTrackPid[fNumberOfTracks]/I");
+  
+ if (fHelperPID) {
     fThnList->Add(new TList);
     TList *list =  static_cast<TList*>(fThnList->Last());
     list->SetName("HelperPID");
@@ -158,22 +173,6 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
     }
   }
 
-  TDirectory *owd = gDirectory;
-  OpenFile(1);
-  fPidCont = new TTree("Event","fPidCont");
-  owd->cd();
-
-  fPidCont->Branch("cent",fCentrality,"fCentrality[6]/F");
-  fPidCont->Branch("fRunNumber", &fRunNumber,  "fRunNumber/I");
-  fPidCont->Branch("Trigger", fTrigMask,  "fTrigMask[5]/I");
-  fPidCont->Branch("vertex",&fVtx,"fVtx[3]/F");
-  fPidCont->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
-  fPidCont->Branch("fTrackPt",   fTrackPt,        "fTrackPt[fNumberOfTracks]/F");
-  fPidCont->Branch("fTrackPhi",  fTrackPhi,       "fTrackPhi[fNumberOfTracks]/F");
-  fPidCont->Branch("fTrackEta",  fTrackEta,       "fTrackEta[fNumberOfTracks]/F");
-  fPidCont->Branch("fTrackDxy",  fTrackDxy,       "fTrackDxy[fNumberOfTracks]/I");
-  fPidCont->Branch("fTrackDz",   fTrackDxy,       "fTrackDz[fNumberOfTracks]/F");
-  fPidCont->Branch("fTrackPid",  fTrackPid,       "fTrackPid[fNumberOfTracks]/I");
   if(fIsMC) {
     fPidCont->Branch("fNumberOfTracksM", &fNumberOfTracksM, "fNumberOfTracksM/I");
     fPidCont->Branch("fTrackPtM",        fTrackPtM,        "fTrackPtM[fNumberOfTracksM]/F");
@@ -181,7 +180,6 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
     fPidCont->Branch("fTrackEtaM",       fTrackEtaM,       "fTrackEtaM[fNumberOfTracksM]/F");
     fPidCont->Branch("fTrackPidM",       fTrackPidM,       "fTrackPidM[fNumberOfTracksM]/I");
   }
-
   PostData(1, fThnList);
   PostData(2, fPidCont);  
 }
@@ -189,22 +187,186 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
 //----------------------------------------------------------------------------------
 void AliEbyEPidTTask::UserExec( Option_t * ){
   fEventCounter->Fill(1);
- if (SetupEvent() < 0) {
-   fEventCounter->Fill(2);
-   PostData(1, fThnList); 
-   PostData(2, fPidCont);
-   return;
- }
- fEventCounter->Fill(3);
- fNTracks  = (fESD) ? fESD->GetNumberOfTracks() : fAOD->GetNumberOfTracks();  
- if (fIsMC && fIsAOD) {
-   fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-   if (!fArrayMC)
-     AliFatal("No array of MC particles found !!!"); 
- }
- fEventCounter->Fill(4);
- ExecEvents();
+  /*
+    Setup VEvents
+   */
+
+  AliVEvent *event = InputEvent();
+  if (!event) return;
+
+  fInputEventHandler = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!fInputEventHandler) return;
+  
+  const AliVVertex *vertex = event->GetPrimaryVertex();
+  if(!vertex) return;
+ 
+  Bool_t vtest = kFALSE;
+  Double32_t fCov[6];
+  vertex->GetCovarianceMatrix(fCov);
+  if(vertex->GetNContributors() > 0) {
+    if(fCov[5] != 0) {
+      vtest = kTRUE;
+    }
+  }
+  if(!vtest)return;
+  
+  if(TMath::Abs(vertex->GetX()) > fVxMax) return;
+  fVtx[0] = vertex->GetX();
+  if(TMath::Abs(vertex->GetY()) > fVyMax) return;
+  fVtx[1] = vertex->GetY();
+  if(TMath::Abs(vertex->GetZ()) > fVzMax) return;
+  fVtx[2] = vertex->GetZ();
+  
+  AliCentrality *centrality = event->GetCentrality();
+ 
+  if (centrality->GetQuality() != 0) return;
+  fRunNumber = event->GetRunNumber();
+  fTrigMask[0] = 0;  
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kMB))          
+    fTrigMask[0] = 1;
+  fTrigMask[1] = 0;  
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kCentral))     
+    fTrigMask[1] = 1;
+  fTrigMask[2] = 0;  
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) 
+    fTrigMask[2] = 1;
+  fTrigMask[3] = 0;  
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      
+    fTrigMask[3] = 1;
+  fTrigMask[4] = 0;  
+  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      
+    fTrigMask[4] = 1;
+  
+  fCentrality[0] = centrality->GetCentralityPercentile("V0M");
+  fCentrality[1] = centrality->GetCentralityPercentile("CL1");
+  fCentrality[2] = centrality->GetCentralityPercentile("TRK");
+  fCentrality[3] = centrality->GetCentralityPercentile("FMD");
+  fCentrality[4] = centrality->GetCentralityPercentile("TKL");
+  fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
+    
+  fEventCounter->Fill(3);
+  fNTracks  = event->GetNumberOfTracks();  
+  
+  Int_t iTracks = 0; 
+  for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
+    AliVTrack *track = static_cast<AliVTrack*>(event->GetTrack(idxTrack)); 
+    if(!AcceptTrackL(track)) continue;
+    
+    Float_t dca[2], cov[3]; // 
+    if (track->InheritsFrom("AliESDtrack")) {
+      (dynamic_cast<AliESDtrack*>(track))->GetImpactParameters(dca, cov);
+    } else if (track->InheritsFrom("AliAODTrack")) {
+      Double_t dcaa[2] = {-999,-999};
+     Double_t cova[3] = {-999,-999,-999};
+     AliAODTrack* clone = dynamic_cast<AliAODTrack*>(track->Clone("trk_clone"));
+     Bool_t propagate = clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),100.,dcaa,cova);
+     delete clone;  
+     if (!propagate) dca[0] = -999;
+     else dca[0] = Float_t(dcaa[0]);
+   }
+    
+    if ( TMath::Abs(dca[0]) > fDcaXy ) continue;
+    if ( TMath::Abs(dca[1]) > fDcaZ )  continue;
+
+    Int_t icharge = track->Charge() < 0 ? -1 : 1;
+    Int_t a = fHelperPID->GetParticleSpecies(track,kTRUE);
+    Int_t b = -999;
+    if (a == 0 )      b = 1;
+    else if (a == 1 ) b = 2;
+    else if (a == 2 ) b = 3;
+    else              b = 4;    
+    fTrackPt[iTracks]  = (Float_t)track->Pt();
+    fTrackPhi[iTracks] = (Float_t)track->Phi();
+    fTrackEta[iTracks] = (Float_t)track->Eta();
+    fTrackDxy[iTracks] = dca[0];
+    fTrackDz[iTracks]  = dca[1];
+    fTrackPid[iTracks] = icharge*b;
+
+   // Printf("%6d %10.5f %10.5f %10.5f %10.5f %10.5f %d",iTracks, 
+   //	   fTrackPt[iTracks],fTrackPhi[iTracks],fTrackEta[iTracks],
+   //	   fTrackDxy[iTracks],fTrackDz[iTracks],fTrackPid[iTracks]);
+
+    iTracks++;
+  }
+  fNumberOfTracks = iTracks;
+  fEventCounter->Fill(7);
+  //---- - -- - - - - -   -  -- - - - ---- - - - ---
+  if (fIsMC) {
+    Int_t mTracks = 0;
+    fEventCounter->Fill(8);
+    if (fIsAOD) {
+      fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!fArrayMC)
+	AliFatal("No array of MC particles found !!!"); 
+      
+      for (Int_t idxMC = 0; idxMC < fArrayMC->GetEntries(); idxMC++) {
+	AliAODMCParticle *particle = static_cast<AliAODMCParticle*>(fArrayMC->At(idxMC));
+	if (!particle) 
+	  continue;
+
+	if(!particle->IsPhysicalPrimary()) continue;
+
+	if (!AcceptTrackLMC((AliVParticle*)particle)) continue;
+	Int_t icharge = (particle->PdgCode() < 0) ? -1 : 1;
+	Int_t iPid = -999;  
+	if      (TMath::Abs(particle->PdgCode()) ==  211) iPid = 1; // pion
+	else if (TMath::Abs(particle->PdgCode()) ==  321) iPid = 2; // kaon
+	else if (TMath::Abs(particle->PdgCode()) == 2212) iPid = 3; // proton
+	else    iPid = 4;
+
+	fTrackPtM[mTracks]     = (Float_t)particle->Pt();
+	fTrackPhiM[mTracks]    = (Float_t)particle->Phi();
+	fTrackEtaM[mTracks]    = (Float_t)particle->Eta();
+	fTrackPidM[mTracks] = icharge*iPid;
+      
+	mTracks++;
+      }
+      fEventCounter->Fill(9);
+      fNumberOfTracksM = mTracks;
+    } else  {
+
+      AliMCEvent* mcEvent = MCEvent();
+      if (!mcEvent) {
+	Printf("ERROR: Could not retrieve MC event");
+	return;
+      }
+      AliStack* stack = mcEvent->Stack();
+      if (!stack) {
+	Printf("ERROR: Could not retrieve MC stack");
+	return;
+    }
+
+      fEventCounter->Fill(10);
+      for (Int_t idxMC = 0; idxMC < stack->GetNprimary(); ++idxMC) {
+	AliVParticle* particle = mcEvent->GetTrack(idxMC);
+	if (!particle) 
+	  continue;
+	if(!stack->IsPhysicalPrimary(idxMC))  continue;
+	
+	if (!AcceptTrackLMC(particle)) continue;
+	Int_t icharge = (particle->PdgCode() < 0) ? -1 : 1;
+	
+	Int_t iPid = -999;  
+	if      (TMath::Abs(particle->PdgCode()) ==  211) iPid = 1; // pion
+	else if (TMath::Abs(particle->PdgCode()) ==  321) iPid = 2; // kaon
+	else if (TMath::Abs(particle->PdgCode()) == 2212) iPid = 3; // proton
+	else  iPid = 4;
+	
+	fTrackPtM[mTracks]     = (Float_t)particle->Pt();
+	fTrackPhiM[mTracks]    = (Float_t)particle->Phi();
+	   fTrackEtaM[mTracks]    = (Float_t)particle->Eta();
+	   fTrackPidM[mTracks] = icharge*iPid;
+	   
+	   mTracks++;
+      }
+      fEventCounter->Fill(11);
+      fNumberOfTracksM = mTracks;
+    }
+  }
+  fEventCounter->Fill(12);
+  
  fEventCounter->Fill(5);
+ fPidCont->Fill();  
  PostData(1, fThnList); 
  PostData(2, fPidCont);
 
@@ -242,15 +404,8 @@ void AliEbyEPidTTask::ExecEvents(){
     else if (a == 1 ) b = 2;
     else if (a == 2 ) b = 3;
     else              b = 4;    
-    fTrackPt[iTracks]  = (Float_t)track->Pt();
-    fTrackPhi[iTracks] = (Float_t)track->Phi();
-    fTrackEta[iTracks] = (Float_t)track->Eta();
-    fTrackDxy[iTracks] = dca[0];
-    fTrackDz[iTracks]  = dca[1];
-    fTrackPid[iTracks] = icharge*b;
     iTracks++;
   }
-  fNumberOfTracks = iTracks;
   fEventCounter->Fill(7);
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
   if (fIsMC) {
@@ -261,30 +416,24 @@ void AliEbyEPidTTask::ExecEvents(){
 	AliAODMCParticle *particle = static_cast<AliAODMCParticle*>(fArrayMC->At(idxMC));
 	if (!particle) 
 	  continue;
-	if (!AcceptTrackLMC((AliVParticle*)particle, idxMC)) continue;
+	if (!AcceptTrackLMC((AliVParticle*)particle)) continue;
 	Int_t icharge = (particle->PdgCode() < 0) ? -1 : 1;
 	Int_t iPid = -999;  
 	if      (TMath::Abs(particle->PdgCode()) ==  211) iPid = 1; // pion
 	else if (TMath::Abs(particle->PdgCode()) ==  321) iPid = 2; // kaon
 	else if (TMath::Abs(particle->PdgCode()) == 2212) iPid = 3; // proton
 	else    iPid = 4;
-
-	fTrackPtM[mTracks]     = (Float_t)particle->Pt();
-	fTrackPhiM[mTracks]    = (Float_t)particle->Phi();
-	fTrackEtaM[mTracks]    = (Float_t)particle->Eta();
-	fTrackPidM[mTracks] = icharge*iPid;
       
 	mTracks++;
       }
       fEventCounter->Fill(9);
-      fNumberOfTracksM = mTracks;
     } else if (fESD) {
       fEventCounter->Fill(10);
       for (Int_t idxMC = 0; idxMC < fStack->GetNprimary(); ++idxMC) {
 	AliVParticle* particle = fMCEvent->GetTrack(idxMC);
 	if (!particle) 
 	  continue;
-	if (!AcceptTrackLMC(particle, idxMC)) continue;
+	if (!AcceptTrackLMC(particle)) continue;
 	   Int_t icharge = (particle->PdgCode() < 0) ? -1 : 1;
 	  
 	   Int_t iPid = -999;  
@@ -293,180 +442,16 @@ void AliEbyEPidTTask::ExecEvents(){
 	   else if (TMath::Abs(particle->PdgCode()) == 2212) iPid = 3; // proton
 	   else  iPid = 4;
 	   
-	   fTrackPtM[mTracks]     = (Float_t)particle->Pt();
-	   fTrackPhiM[mTracks]    = (Float_t)particle->Phi();
-	   fTrackEtaM[mTracks]    = (Float_t)particle->Eta();
-	   fTrackPidM[mTracks] = icharge*iPid;
-	   
+	 	   
 	   mTracks++;
       }
       fEventCounter->Fill(11);
-      fNumberOfTracksM = mTracks;
+      
     }
   }
   fEventCounter->Fill(12);
-  fPidCont->Fill();  
+ 
 }
-
-//________________________________________________________________________
-Int_t AliEbyEPidTTask::SetupEvent() {
-  ResetCurrentEvent();
-  fEventCounter->Fill(13);
-  if (!fIsAOD && (SetupESD() < 0)) {
-    fEventCounter->Fill(14);
-    AliError("ESD Event failed");
-    return -1;
-  }
-  fEventCounter->Fill(15);
-  if (fIsAOD && (SetupAOD() < 0)) {
-    fEventCounter->Fill(16);
-    AliError("AOD Event failed");
-    return -1;
-  }
-  fEventCounter->Fill(17);
-  if ((fIsMC && !fIsAOD) && (SetupMC() < 0)) {
-    fEventCounter->Fill(18);
-      AliError("MC Event failed");
-      return -1;
-  }
-  
-  fEventCounter->Fill(19);
-  if(SetupEventCR(fESDHandler, fAODHandler, fMCEvent) < 0) {
-    fEventCounter->Fill(20);
-    AliError("MC Event failed");
-    return -1;
-  }
-  fEventCounter->Fill(21);
-  return RejectedEvent() ? -2 : 0;
-}
-
-//________________________________________________________________________
-void AliEbyEPidTTask::ResetCurrentEvent() { 
-  fEventCounter->Fill(22);
-  fESD = NULL; 
-  fAOD = NULL;
-  if (fIsMC && !fIsAOD) 
-    fMCEvent = NULL; 
-  else if(fIsMC && fIsAOD) 
-    fArrayMC = NULL; 
-  return;
-}
-
-
-//________________________________________________________________________
-Int_t AliEbyEPidTTask::SetupMC() {
-  fEventCounter->Fill(23);
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> 
-    (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  
-  if (!mcH) {
-    AliError("MC event handler not available");
-    return -1;
-  }
-
-  fEventCounter->Fill(24);
-  fMCEvent = mcH->MCEvent();
-  if (!fMCEvent) {
-    AliError("MC event not available");
-    return -1;
-  }
-  fEventCounter->Fill(25);
-  AliHeader* header = fMCEvent->Header();
-  if (!header) {
-    AliError("MC header not available");
-    return -1;
-  }
-  fEventCounter->Fill(26);
-  fMCStack = fMCEvent->Stack(); 
-  if (!fMCStack) {
-    AliError("MC stack not available");
-    return -1;
-  }
-  fEventCounter->Fill(27);
-  if (!header->GenEventHeader()) {
-    AliError("Could not retrieve genHeader from header");
-    return -1;
-  }
-  fEventCounter->Fill(28);
-  if (!fMCEvent->GetPrimaryVertex()){
-    AliError("Could not get MC vertex");
-    return -1;
-  }
-  fEventCounter->Fill(29);
-  return 0;
-}
-
-
-//________________________________________________________________________
-Int_t AliEbyEPidTTask::SetupAOD() {
-  fAODHandler= dynamic_cast<AliAODInputHandler*> 
-    (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  fEventCounter->Fill(30);
-  if (!fAODHandler) {
-    AliError("Could not get AOD input handler");
-    return -1;
-  } 
-  fEventCounter->Fill(31);
-  fAOD = fAODHandler->GetEvent();
-  if (!fAOD) {
-    AliError("Could not get AOD event");
-    return -1;
-  }
-  fEventCounter->Fill(32);
-  if (!fAODHandler->GetPIDResponse()) {
-    AliError("Could not get PID response");
-    return -1;
-  } 
-  fEventCounter->Fill(33);
-  if (!fAOD->GetPrimaryVertex()) {
-    AliError("Could not get primary vertex");
-    return -1;
-  }
-  fEventCounter->Fill(34);
-  if (!((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()) {
-    AliError("Could not get centrality");
-    return -1;
-  }
-  fEventCounter->Fill(35);
-  return 0;
-}
-
-
-//________________________________________________________________________
-Int_t AliEbyEPidTTask::SetupESD() {
-  fEventCounter->Fill(36);
-  fESDHandler= dynamic_cast<AliESDInputHandler*> 
-    (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  fEventCounter->Fill(37);
-  if (!fESDHandler) {
-    AliError("Could not get ESD input handler");
-    return -1;
-  } 
-  fEventCounter->Fill(38);
-  fESD = fESDHandler->GetEvent();
-  if (!fESD) {
-    AliError("Could not get ESD event");
-    return -1;
-  }
-  fEventCounter->Fill(39);
-  if (!fESDHandler->GetPIDResponse()) {
-    AliError("Could not get PID response");
-    return -1;
-  } 
-  fEventCounter->Fill(40);
-  if (!fESD->GetPrimaryVertexTracks()) {
-    AliError("Could not get vertex from tracks");
-    return -1;
-  }
-  fEventCounter->Fill(41);
-  if (!fESD->GetCentrality()) {
-    AliError("Could not get centrality");
-    return -1;
-  }
-  fEventCounter->Fill(42);
-  return 0;
-}
-
 
 //___________________________________________________________
 Bool_t AliEbyEPidTTask::AcceptTrackL(AliVTrack *track) const {
@@ -496,18 +481,12 @@ Bool_t AliEbyEPidTTask::AcceptTrackL(AliVTrack *track) const {
 
 
 //___________________________________________________________
-Bool_t AliEbyEPidTTask::AcceptTrackLMC(AliVParticle *particle, Int_t idxMC) const {
+Bool_t AliEbyEPidTTask::AcceptTrackLMC(AliVParticle *particle) const {
   if(!particle) return kFALSE;
 
   if (particle->Charge() == 0.0) 
     return kFALSE;
-  
-  if (fIsAOD) {
-    if(!(static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary()) return kFALSE;
-  } else {
-    if(!fStack->IsPhysicalPrimary(idxMC)) return kFALSE;
-  }
- 
+   
   if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
   if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
 
@@ -516,56 +495,6 @@ Bool_t AliEbyEPidTTask::AcceptTrackLMC(AliVParticle *particle, Int_t idxMC) cons
 
 
 
-//________________________________________________________________________
-
-Int_t AliEbyEPidTTask::SetupEventCR(AliESDInputHandler *esdHandler, 
-						   AliAODInputHandler *aodHandler, 
-						   AliMCEvent *mcEvent) {
-  fEventCounter->Fill(43);  
-if(esdHandler){
-    fInputEventHandler = static_cast<AliInputEventHandler*>(esdHandler);
-    fESD               = dynamic_cast<AliESDEvent*>(fInputEventHandler->GetEvent());
-    if (!fESD) {
-      AliError("ESD event handler not available");
-      return -1;
-    }
-  }
- else if(aodHandler){
-    fInputEventHandler = static_cast<AliInputEventHandler*>(aodHandler);
-    fAOD               = dynamic_cast<AliAODEvent*>(fInputEventHandler->GetEvent());
-    if (!fAOD) {
-      AliError("AOD event handler not available");
-      return -1;
-    }
-  }
- fEventCounter->Fill(45);
-  //  fPIDResponse = fInputEventHandler->GetPIDResponse();
-  fMCEvent     = mcEvent;
-  if (fMCEvent)
-    fStack     = fMCEvent->Stack();
-  
-  AliCentrality *centrality = NULL;
-  fEventCounter->Fill(46);
-  if(esdHandler)
-    centrality = fESD->GetCentrality();
-  else if(aodHandler)
-    centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
-
-  fEventCounter->Fill(47);
-  if (!centrality) {
-    AliError("Centrality not available");
-    return -1;
-  }
-  fEventCounter->Fill(48);
-  fCentrality[0] = centrality->GetCentralityPercentile("V0M");
-  fCentrality[1] = centrality->GetCentralityPercentile("V0A");
-  fCentrality[2] = centrality->GetCentralityPercentile("V0C");
-  fCentrality[3] = centrality->GetCentralityPercentile("CL1");
-  fCentrality[4] = centrality->GetCentralityPercentile("ZNA");
-  fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
-    
-  return 0;
-}
 //________________________________________________________________________
 Bool_t AliEbyEPidTTask::TriggeredEvents() {
   fEventCounter->Fill(49);
@@ -577,9 +506,8 @@ Bool_t AliEbyEPidTTask::TriggeredEvents() {
   if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = 1;
   if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = 1;
   if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = 1;
-  for (Int_t ii=0; ii<5; ++ii) {
-    fTrigMask[ii] = aTriggerFired[ii];
-  }
+  
+  Printf("%d %d %d %d %d", aTriggerFired[0], aTriggerFired[1], aTriggerFired[2], aTriggerFired[3], aTriggerFired[4]);
 
  Bool_t isTriggered = kFALSE;
 
@@ -607,9 +535,9 @@ Bool_t AliEbyEPidTTask::RejectedEvent() {
     if(TMath::Abs(vtxESD->GetX()) > fVxMax) return kFALSE;
     if(TMath::Abs(vtxESD->GetY()) > fVyMax) return kFALSE;
     if(TMath::Abs(vtxESD->GetZ()) > fVzMax) return kFALSE;
-    fVtx[0] = vtxESD->GetX();
-    fVtx[1] = vtxESD->GetY();
-    fVtx[2] = vtxESD->GetZ();
+   
+    Printf("%f %f %f", fVtx[0], fVtx[1], fVtx[2]);
+
   }
   else if (fAOD){
     vtxAOD = fAOD->GetPrimaryVertex();
@@ -619,9 +547,7 @@ Bool_t AliEbyEPidTTask::RejectedEvent() {
     if(TMath::Abs(vtxAOD->GetX()) > fVxMax)  return kFALSE;
     if(TMath::Abs(vtxAOD->GetY()) > fVyMax)  return kFALSE;
     if(TMath::Abs(vtxAOD->GetZ()) > fVzMax)  return kFALSE;
-    fVtx[0] = vtxAOD->GetX();
-    fVtx[1] = vtxAOD->GetY();
-    fVtx[2] = vtxAOD->GetZ();
+   
   } else 
     return kFALSE;
   

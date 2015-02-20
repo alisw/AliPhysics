@@ -64,13 +64,8 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
 
   Bool_t RejectedEvent();
   Bool_t TriggeredEvents();
-  Int_t SetupEventCR(AliESDInputHandler *esdHandler, AliAODInputHandler *aodHandler, AliMCEvent *mcEvent);
-  Bool_t AcceptTrackLMC(AliVParticle *particle, Int_t idxMC) const;
+  Bool_t AcceptTrackLMC(AliVParticle *particle) const;
   Bool_t AcceptTrackL(AliVTrack *track) const;
-  Int_t SetupESD();
-  Int_t SetupAOD();
-  Int_t SetupMC();
-  Int_t SetupEvent();
   void ExecEvents();
   void ResetCurrentEvent(); 
    
@@ -85,11 +80,11 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   TClonesArray         *fArrayMC;           // AOD MC stack
   AliESDtrackCuts      *fESDtrackCuts;      // ESD Track Cuts
      
-  TList        *fThnList;       //
+  TList        *fThnList;       //!
   Int_t        fAODtrackCutBit; //
   AliHelperPID *fHelperPID;     //
   TH1D         *fEventCounter;  //
-  TTree        *fPidCont;       //
+  TTree        *fPidCont;       //!
   
   Double_t   fVxMax;                        // X vertex  Range
   Double_t   fVyMax;                        // Y vertex Range
@@ -109,9 +104,9 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Int_t   fRunNumber;           //
   Int_t   fNumberOfTracks;      //
   Int_t   fNumberOfTracksM;     //
-Int_t      fNTracks;                      // Number of Tracks of Current Events
-Float_t fCentrality[6];       //
-  Float_t fVtx[3];           // 
+  Int_t   fNTracks;            // Number of Tracks of Current Events
+  Float_t fCentrality[6];       //
+  Float_t fVtx[3];              // 
   Int_t   fTrigMask[5];         //
    
   Float_t fTrackPt[kTrack];     //
@@ -120,8 +115,8 @@ Float_t fCentrality[6];       //
   Float_t fTrackPtM[kTrack];    //
   Float_t fTrackEtaM[kTrack];   //
   Float_t fTrackPhiM[kTrack];   //
-  Int_t   fTrackDxy[kTrack];    //
-  Int_t   fTrackDz[kTrack];     //
+  Float_t fTrackDxy[kTrack];    //
+  Float_t fTrackDz[kTrack];     //
   Int_t   fTrackPid[kTrack];    //
   Int_t   fTrackPidM[kTrack];   //
  
