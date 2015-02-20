@@ -57,6 +57,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   fZVtxMin(0),
   fZVtxMax(0),
   fPt2Min(0),
+  fPt2Max(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fTrackEtaCut(0),
@@ -413,6 +414,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fZVtxMin(0),
   fZVtxMax(0),
   fPt2Min(0),
+  fPt2Max(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fTrackEtaCut(0),
@@ -519,6 +521,7 @@ void AliUEHist::Copy(TObject& c) const
   target.fZVtxMin = fZVtxMin;
   target.fZVtxMax = fZVtxMax;
   target.fPt2Min = fPt2Min;
+  target.fPt2Max = fPt2Max;
   
   if (fContaminationEnhancement)
     target.fContaminationEnhancement = dynamic_cast<TH1F*> (fContaminationEnhancement->Clone());
@@ -597,7 +600,9 @@ void AliUEHist::SetBinLimits(THnBase* grid)
     grid->GetAxis(0)->SetRangeUser(fEtaMin, fEtaMax);
   if (fPtMax > fPtMin)
     grid->GetAxis(1)->SetRangeUser(fPtMin, fPtMax);
-  if (fPt2Min > 0)
+  if (fPt2Min > 0 && fPt2Max > 0)
+    grid->GetAxis(6)->SetRangeUser(fPt2Min, fPt2Max);
+  else if (fPt2Min > 0)
     grid->GetAxis(6)->SetRangeUser(fPt2Min, grid->GetAxis(6)->GetXmax() - 0.01);
 }  
 
@@ -929,6 +934,8 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
   {
     Int_t firstBinPt2 = sparse->GetAxis(6)->FindBin(fPt2Min);
     Int_t lastBinPt2 = sparse->GetAxis(6)->GetNbins();
+    if(fPt2Max > 0)
+      lastBinPt2 =  sparse->GetAxis(6)->FindBin(fPt2Max);
 
     fEventHist->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(firstBinPt2, lastBinPt2);
   }
