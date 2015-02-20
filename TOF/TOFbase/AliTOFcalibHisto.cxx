@@ -349,6 +349,10 @@ AliTOFcalibHisto::AliTOFcalibHisto() :
 AliTOFcalibHisto::~AliTOFcalibHisto()
 {
   /* default destructor */
+    
+    if (fgCalibHistoFile && fgCalibHistoFile->IsOpen()) {
+        fgCalibHistoFile->Close();
+    }
 }
 
 //__________________________________________________________________________
@@ -416,8 +420,10 @@ AliTOFcalibHisto::LoadCalibHisto()
 {
   /* load calib histo */
 
-  if (fgCalibHistoFile && fgCalibHistoFile->IsOpen())
-    AliWarning("calib histo file already open: reloading"); 
+    if (fgCalibHistoFile && fgCalibHistoFile->IsOpen()) {
+    	AliWarning("calib histo file already open: reloading");
+    	fgCalibHistoFile->Close();
+    }
 
   /* open input file */
   TFile *fileIn = TFile::Open(GetCalibHistoFileName());
