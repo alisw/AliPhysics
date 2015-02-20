@@ -72,8 +72,10 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   AliEmcalTriggerSetupInfo  *fCaloTriggerSetupOut;      //!trigger setup
   AliAODCaloTrigger         *fSimpleOfflineTriggers;    //!simple offline trigger
   AliVVZERO                 *fV0;                       //!V0 object
+  Float_t                    fPatchAmplitudes[kPatchCols][kPatchRows];  //!TRU Amplitudes (for L0)
   Double_t                   fPatchADCSimple[kPatchCols][kPatchRows];   //!patch map for simple offline trigger
   Int_t                      fPatchADC[kPatchCols][kPatchRows];         //!ADC values map
+  Char_t                     fLevel0TimeMap[kPatchCols][kPatchRows];    //!Map needed to store the level0 times
   Int_t                      fITrigger;                 //!trigger counter
   Bool_t                     fRunTriggerType[5];        // Run patch maker for a given trigger type
   Bool_t                     fDoQA;                     // Fill QA histograms
