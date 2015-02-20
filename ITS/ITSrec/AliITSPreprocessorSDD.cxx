@@ -85,12 +85,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap* /*dcsAliasMap*/ ){
     Log("Process FXS files from INJECTOR RUN");
     retcode=ProcessInjector(ddlmap);
   }
-  if(retcode!=0) return retcode;
-
-  // Log("Process DCS data");
-  // Bool_t retcodedcs =ProcessDCSDataPoints(dcsAliasMap);
-  // if(retcodedcs) return 0; 
-  // else return 1;           
+  return retcode;
 
 }
 //______________________________________________________________________
@@ -448,22 +443,5 @@ Double_t* AliITSPreprocessorSDD::RescaleDriftSpeedModule(const TList* theList,
   return params;
 }
 
-//______________________________________________________________________
-Bool_t AliITSPreprocessorSDD::ProcessDCSDataPoints(TMap* dcsAliasMap){
-  // Process DCS data
-  AliITSDCSAnalyzerSDD *dcs=new AliITSDCSAnalyzerSDD();
-  dcs->AnalyzeData(dcsAliasMap);
-  TObjArray refDCS(kNumberOfSDD);
-  refDCS.SetOwner(kFALSE);
-  for(Int_t imod=0;imod<kNumberOfSDD;imod++){
-    AliITSDCSDataSDD *dcsdata=dcs->GetDCSData(imod);
-    refDCS.Add(dcsdata);
-  }    
-  AliCDBMetaData *md= new AliCDBMetaData();
-  md->SetResponsible("Francesco Prino");
-  md->SetBeamPeriod(0);
-  md->SetComment("AliITSDCSDataSDD objects from DCS DB");
-  Bool_t retCode = StoreReferenceData("DCS","DataSDD",&refDCS,md);
-  return retCode;
-}
+
 
