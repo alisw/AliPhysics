@@ -77,6 +77,9 @@ set(SRCS
     physics/AliHLTMultiplicityCorrelations.cxx
     physics/AliHLTV0HistoComponent.cxx
     physics/AliHLTFlatAnaManagerComponent.cxx
+    physics/AliHLTTPCCalibManagerComponent.cxx
+    physics/AliHLTESDAnaManagerComponent.cxx
+    physics/AliHLTAnalysisManager.cxx
    )
 
 # Headers from sources
