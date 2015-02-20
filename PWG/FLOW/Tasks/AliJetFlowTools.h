@@ -234,7 +234,11 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 Float_t corr = .0,
                 TString in = "UnfoldedSpectra.root", 
-                TString out = "ShapeUncertainty.root") const;
+                TString out = "ShapeUncertainty.root",
+                Bool_t regularizationOnV2 = kFALSE,     // get uncertainty on yields separately or v2 directly
+                Bool_t trueBinOnV2 = kFALSE,
+                Bool_t recBin = kFALSE,
+                Bool_t method = kFALSE) const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -254,6 +258,8 @@ class AliJetFlowTools {
         static TH1D*    MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
+        static TH1F*            ConvertGraphToHistogram(TGraphErrors* g);
+        static TGraphAsymmErrors*       AddHistoToGraph(TGraphAsymmErrors* g, TH1D* h);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
@@ -404,6 +410,25 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                                                         const TH1D* measuredJetSpectrumTrueBins,
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency = 0x0);
+       void            SystematicsWrapper(
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                TH1D*& relativeErrorInUp,
+                TH1D*& relativeErrorInLow,
+                TH1D*& relativeErrorOutUp,
+                TH1D*& relativeErrorOutLow,
+                TH1D*& relativeSystematicIn,
+                TH1D*& relativeSystematicOut,
+                TH1D*& nominal,
+                TH1D*& nominalIn,
+                TH1D*& nominalOut,
+                Int_t columns,
+                Float_t rangeLow,
+                Float_t rangeUp,
+                TFile* readMe, 
+                TString source = "",
+                Bool_t RMS = kFALSE,
+                Bool_t onRatio = kTRUE) const;
         void            DoIntermediateSystematics(
                 TArrayI* variationsIn,
                 TArrayI* variationsOut,
@@ -422,9 +447,28 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                 TFile* readMe, 
                 TString source = "",
                 Bool_t RMS = kFALSE) const;
+        void            DoIntermediateSystematicsOnV2(
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                TH1D*& relativeErrorInUp,
+                TH1D*& relativeErrorInLow,
+                TH1D*& relativeErrorOutUp,
+                TH1D*& relativeErrorOutLow,
+                TH1D*& relativeSystematicIn,
+                TH1D*& relativeSystematicOut,
+                TH1D*& nominal,
+                TH1D*& nominalIn,
+                TH1D*& nominalOut,
+                Int_t columns,
+                Float_t rangeLow,
+                Float_t rangeUp,
+                TFile* readMe, 
+                TString source = "",
+                Bool_t RMS = kFALSE) const;
+
         static void     ResetAliUnfolding();
         static void     SquelchWarning() {
-            printf(" >> I squelched a warning << \n");
+            printf(" >> I squelched a warning, jay, I'm contributing ! << \n");
             return;
         }
         // give object a unique name via the 'protect heap' functions. 
