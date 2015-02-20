@@ -73,7 +73,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //double PhiStarDifferenceMinimum=0.03;//0.017; //[radian]
   //double EtaDifferenceMinimum=0.02;//0.015; //[radian]
    double PhiStarDifferenceMinimum=0.04; //[radian]
-   double EtaDifferenceMinimum=0.02; //[radian]
+   double EtaDifferenceMinimum=0.03; //[radian]
   
   
   //=======Double track cuts=================================================<

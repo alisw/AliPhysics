@@ -75,7 +75,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lmlist010",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lmlist010"  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
