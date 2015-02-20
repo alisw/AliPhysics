@@ -66,14 +66,6 @@ AliFMDPedestalDA::AliFMDPedestalDA()
     fSummaryFMD3o(0)
 {
   // Default constructor 
-  Rotate("peds.csv", 3);
-  fOutputFile.open("peds.csv");
-  Rotate("ddl3072.csv", 10);
-  fZSfileFMD1.open("ddl3072.csv");
-  Rotate("ddl3073.csv", 10);
-  fZSfileFMD2.open("ddl3073.csv");
-  Rotate("ddl3074.csv", 10);
-  fZSfileFMD3.open("ddl3074.csv");  
   fDiagnosticsFilename = "diagnosticsPedestal.root";
 }
 
@@ -101,6 +93,31 @@ AliFMDPedestalDA::AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) :
 AliFMDPedestalDA::~AliFMDPedestalDA() 
 { 
   // Destructor.
+}
+
+//_____________________________________________________________________
+Bool_t 
+AliFMDPedestalDA::OpenFiles(Bool_t appendRun)
+{
+  if (!AliFMDBaseDA::OpenFiles(appendRun)) return false;
+  if (!appendRun || fRunno == 0) {
+    Rotate("peds.csv", 3);
+    fOutputFile.open("peds.csv");
+  }
+  else 
+    fOutputFile.open(Form("peds_%09d.csv",fRunno));
+  
+  if (!fOutputFile) { 
+    Error("OpenFiles", "Failed to open pedestal file");
+    return false;
+  }
+  Rotate("ddl3072.csv", 10);
+  fZSfileFMD1.open("ddl3072.csv");
+  Rotate("ddl3073.csv", 10);
+  fZSfileFMD2.open("ddl3073.csv");
+  Rotate("ddl3074.csv", 10);
+  fZSfileFMD3.open("ddl3074.csv");  
+  return true;
 }
 
 //_____________________________________________________________________

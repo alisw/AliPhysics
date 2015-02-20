@@ -49,61 +49,27 @@ int main(int argc, char **argv)
 					"RIO",
 					"TStreamerInfo()");
 #endif
+  AliFMDBaseDA::Runner r;
+
+  Int_t ret = r.Init(argc, argv, false);
+  if (ret < 0) return -ret;
+  if (ret > 0) return 0;
+
   
   
   const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
 
-  Bool_t old = kTRUE;
   monitorDeclareTable(const_cast<char**>(tableSOD));
 
-  AliFMDParameters::Instance()->Init(kFALSE,0);
-  AliFMDParameters::Instance()->UseCompleteHeader(old);
-
-  Int_t  debugLevel = 0;
-  Bool_t badOption  = false;
-  char*  source     = 0;
-  for (int i = 1; i < argc; i++) { 
-    if (argv[i][0] == '-') { // Options 
-      if (argv[i][1] == '-') { // Long option 
-	TString arg(&(argv[i][2])); 
-	if      (arg.EqualTo("help")) { usage(std::cout, argv[0]); return 0; }
-	if      (arg.EqualTo("diagnostics")) { }
-	else if (arg.EqualTo("debug")) debugLevel = atoi(argv[++i]); 
-	else                             badOption = true;
-      }
-      else { // Short option 
-	switch (argv[i][1]) { 
-	case 'h': usage(std::cout, argv[0]); return 0; 
-	case 'd': break; 
-	case 'D': debugLevel = atoi(argv[++i]); break;
-	default:  badOption = true;
-	}
-      }
-      if (badOption) { 
-	std::cerr << argv[0] << ": Unknown option " << argv[i] 
-		  << std::endl;
-	return 1;
-      }
-    }
-    else { 
-      if (!source) source     = argv[i];
-      else         debugLevel = atoi(argv[i]);
-    }
-  }
-  if (!source) { 
-    printf("%s: No data source specified\n", argv[0]);
-    return -1;
-  }
-  int status=monitorSetDataSource(source);
+  int status = monitorSetDataSource(r.fSource.Data());
   if (status!=0) {
     printf("monitorSetDataSource() failed for %s: %s\n",
-	   source, monitorDecodeError(status));
+	   r.fSource.Data(), monitorDecodeError(status));
     return -1;
   }
   
-  AliLog::SetModuleDebugLevel("FMD", debugLevel);
   /* declare monitoring program */
-  status=monitorDeclareMp( __FILE__ );
+  status = monitorDeclareMp( __FILE__ );
   if (status!=0) {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
@@ -112,11 +78,10 @@ int main(int argc, char **argv)
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
 
-  AliRawReader* reader  = 0;
   AliFMDBaseDA  baseDA;
-  Int_t         retval  = 0;
   Int_t         iev     = 0;
-  Bool_t        sodSeen = kFALSE;
+  Bool_t        sodSeen = false;
+  Bool_t        success = false;
   while(!sodSeen && iev<1000) {
     
     /* check shutdown condition */
@@ -142,24 +107,28 @@ int main(int argc, char **argv)
     iev++; 
     
     switch (event->eventType) {
-    case START_OF_DATA:
+    case START_OF_DATA: {
       std::cout << "Got START OF DATA event" << std::endl;
-      reader = new AliRawReaderDate((void*)event);
-      baseDA.Run(reader, true);
+      AliRawReader* reader = new AliRawReaderDate((void*)event);
+      if (!(success = baseDA.Run(reader, r.fAppendRun, true)))     
+	std::cout << "Base DA failed" << std::endl;
       sodSeen = kTRUE;
-      std::cout << "Pushing to FXS" << std::endl;
-      retval = 
-	daqDA_FES_storeFile("conditions.csv", 
-			    AliFMDParameters::Instance()
-			    ->GetConditionsShuttleID());
-      if (retval != 0) std::cerr << "Base DA failed" << std::endl;
-      
+    }
       break;
-    
     default:
       break;
     
     }
+  }
+  int retval = success ? 0 : 1;
+  if (r.fUpload && success) {
+    std::cout << "Pushing to FXS" << std::endl;
+    retval = 
+      daqDA_FES_storeFile("conditions.csv", 
+			  AliFMDParameters::Instance()
+			  ->GetConditionsShuttleID());
+    if (retval != 0) std::cerr << "Base DA failed" << std::endl;
+      
   }
   std::cout << "End of FMD-Base - return " << retval << std::endl;
    

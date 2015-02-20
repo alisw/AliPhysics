@@ -84,9 +84,10 @@ public:
    * Run this DA
    * 
    * @param fmdReader Raw input reader
+   * @param appendRun Append run number to files
    * @param isBase Terminate after reading SOD   
    */  
-  void Run(AliRawReader* fmdReader, Bool_t isBase=false);
+  Bool_t Run(AliRawReader* fmdReader, Bool_t appendRun, Bool_t isBase=false);
   /** 
    * Set whether to save diagnostics 
    * 
@@ -144,20 +145,53 @@ public:
   struct Runner {
     Runner();
     Runner(const Runner&) 
-      : fReader(0), fDiagFile(""), fDiag(false), fAll(false) {}
+      : fReader(0),
+	fSource(""),
+	fDiagFile(""), 
+	fDiag(false), 
+	fAll(false),
+	fFast(true),
+	fUpload(true),
+	fAppendRun(false),
+	fOwnUpload(false)
+    {}
     ~Runner() {} 
     Runner& operator=(const Runner&) { return *this; }
     void   AddHandlers();
     void   ShowUsage(std::ostream& o, const char* progname);
-    Int_t  Init(int argc, char** argv);
-    void   Exec(AliFMDBaseDA& da);
+    Int_t  Init(int argc, char** argv, Bool_t reader=true);
+    Bool_t Exec(AliFMDBaseDA& da);
     Int_t  RunNumber() const;
     AliRawReader* fReader;
+    TString       fSource;
     TString       fDiagFile;
     Bool_t        fDiag;
     Bool_t        fAll;
+    Bool_t        fFast;
+    Bool_t        fUpload;
+    Bool_t        fAppendRun;
+    Bool_t        fOwnUpload;
   };
 protected:
+  /**
+   * Open our output file 
+   *
+   * The output file is named 
+   *
+   *   conditions.csv 
+   *
+   * and existing files are rotated, or 
+   * 
+   *   conditions_XXXXXXXXX.csv 
+   *
+   * in case the run number is to be appended. 
+   * 
+   * @param appendRun if true, append run number (9 digits, zero
+   * padded) to the output file name(s).
+   *
+   * @return true on success 
+   */
+  virtual Bool_t OpenFiles(Bool_t appendRun=false);
   /** 
    * Initialize 
    */  

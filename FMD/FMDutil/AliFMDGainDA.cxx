@@ -75,7 +75,6 @@ AliFMDGainDA::AliFMDGainDA()
   //   None
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
-  fOutputFile.open("gains.csv");
   fDiagnosticsFilename = "diagnosticsGain.root";
 }
 
@@ -115,6 +114,25 @@ AliFMDGainDA::~AliFMDGainDA()
   // 
   // Parameters: 
   //   None
+}
+
+
+//_____________________________________________________________________
+Bool_t
+AliFMDGainDA::OpenFiles(Bool_t appendRun) 
+{
+  if (!AliFMDBaseDA::OpenFiles(appendRun)) return false;
+  if (!appendRun || fRunno == 0) { 
+    Rotate("gains.csv", 3);
+    fOutputFile.open("gains.csv");
+  }
+  else 
+    fOutputFile.open(Form("gains_%09d.csv", fRunno));
+  if (!fOutputFile) { 
+    Error("OpenFiles", "Failed to open gains file");
+    return false;
+  }
+  return true;
 }
 
 //_____________________________________________________________________

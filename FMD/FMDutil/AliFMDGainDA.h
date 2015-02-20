@@ -43,6 +43,27 @@ public:
    * 
    */
   virtual ~AliFMDGainDA();
+  /**
+   * Open our output files 
+   *
+   * The output files are named 
+   *
+   *   gains.csv
+   *   conditions.csv 
+   *
+   * or 
+   * 
+   *   gains_XXXXXXXXX.csv 
+   *   conditions_XXXXXXXXX.csv 
+   *
+   * in case the run number is to be appended
+   * 
+   * @param appendRun if true, append run number (9 digits, zero
+   * padded) to the output file name(s).
+   *
+   * @return true on success 
+   */
+  Bool_t OpenFiles(Bool_t appendRun=false);
   /** 
    * Initialize 
    * 
