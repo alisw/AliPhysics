@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/global
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
@@ -76,6 +77,9 @@ set(SRCS
     physics/AliHLTMultiplicityCorrelations.cxx
     physics/AliHLTV0HistoComponent.cxx
     physics/AliHLTFlatAnaManagerComponent.cxx
+    physics/AliHLTTPCCalibManagerComponent.cxx
+    physics/AliHLTESDAnaManagerComponent.cxx
+    physics/AliHLTAnalysisManager.cxx
    )
 
 # Headers from sources
@@ -88,7 +92,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib)
+set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
