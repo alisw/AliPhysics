@@ -143,7 +143,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
    
    //for systematic checks
      {
-   gROOT->LoadMacro("ConfigPhiMassStudy.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiMassStudy.C");
    if (!ConfigPhiMassStudy(task, isMC, isPP, "", cutsPair, aodFilterBit, cutKaCandidate, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, signedPdg,monitorOpt,useCrossedRows,yaxisVar ,useMixLS)) 
 
 return 0x0;  
