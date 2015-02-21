@@ -1426,6 +1426,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
 				fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+		if (fV0Reader->GetV0FindingEfficiencyHistograms())
+			fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+
 			
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
@@ -2361,7 +2366,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 // 	cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
 	
 	// Loop over all primary MC particle	
-	for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
+	for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
 		if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 			// fill primary histograms
 			TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -3408,8 +3413,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
 		AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
 		if (gamma0->IsTrueConvertedPhoton()){
-			Int_t gamma0MotherLabel = -1;
-			Int_t gamma0MCLabel = gamma0->GetMCParticleLabel(fMCStack);
+			UInt_t gamma0MotherLabel = -1;
+			UInt_t gamma0MCLabel = gamma0->GetMCParticleLabel(fMCStack);
 			if(gamma0MCLabel != -1){ 
 				TParticle * gammaMC0 = (TParticle*)fMCStack->Particle(gamma0MCLabel);
 				gamma0MotherLabel=gammaMC0->GetFirstMother();

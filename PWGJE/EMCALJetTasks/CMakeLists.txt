@@ -68,6 +68,7 @@ set(SRCS
     Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
     Tracks/AliEMCalPtTaskVTrackSelection.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
+    Tracks/AliEMCalTriggerAnaTriggerDecisionConfig.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
     Tracks/AliEMCalTriggerBinningFactory.cxx
     Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
@@ -135,6 +136,7 @@ if(FASTJET_FOUND)
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
+        AliJetShape.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
@@ -160,7 +162,7 @@ endif(FASTJET_FOUND)
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 if(FASTJET_FOUND)
-  list(APPEND HDRS FJ_includes.h AliJetShape.h)
+  list(APPEND HDRS FJ_includes.h)
 endif(FASTJET_FOUND)
 
 # Generate the dictionary

@@ -9,6 +9,9 @@ PAR_MODULE := @PARMODULE@
 # This module depends on the following libraries
 PAR_LIBDEPS := @PARLIBDEPS@
 
+# Current OS
+OS := $(shell uname)
+
 # Include paths
 PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
 PAR_INCLUDES = -I. $(addprefix -I,$(PAR_EXTRAINCLUDES)) -I$(ALICE_ROOT)/include -I$(ALICE_PHYSICS)/include -I$(shell root-config --incdir)
@@ -21,6 +24,10 @@ PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)
 
 # Get linker flags from ROOT
 PAR_SOFLAGS = $(SOFLAGS) $(LDFLAGS)
+ifeq ($(OS),Darwin)
+	# Only on OS X
+	PAR_SOFLAGS += -undefined dynamic_lookup
+endif
 
 # Get some ROOT build flags from the current installation
 ROOT_DEFINES += $(shell root-config --features | grep -q xml && echo '-DWITHXML')
@@ -42,30 +49,33 @@ COLC := \033[36m
 COLG := \033[32m
 COLZ := \033[m
 
+# Multiplatform echo. Interprets escapes. Use it with $(call ECHO,"<message>")
+ECHO = printf $(1)"\n"
+
 # Default rule (it's the first one, "all" is just a convention)
 all: lib$(PAR_MODULE).rootmap lib$(PAR_MODULE).so
-	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)] $(COLG)PARfile built successfully$(COLZ)"
+	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] $(COLG)PARfile built successfully$(COLZ)")
 
 # Abstract rule to compile classes to objects
 %.o: %.cxx %.h
-	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)] compiling $(COLC)$<$(COLZ)"
+	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] compiling $(COLC)$<$(COLZ)")
 	@$(CXX) $(PAR_CXXFLAGS) -c $< -o $@
 
 # Generate library from objects
 lib$(PAR_MODULE).so: $(OBJS)
-	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" building shared library
+	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] building shared library")
 	@$(LD) $(PAR_SOFLAGS) $^ -o $@ $(EXPLLINKLIBS)
 
 # Generate dictionary (rule broken up to accommodate parallel builds)
 G__$(PAR_MODULE).h: G__$(PAR_MODULE).cxx
 
 G__$(PAR_MODULE).cxx: $(HDRS) $(DHDR)
-	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating dictionary
+	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] generating dictionary")
 	@rootcint -f $@ -c -p $(ROOT_DEFINES) $(PAR_INCLUDES) $^
 
 # Generate rootmap (for automatic loading of libraries)
 lib$(PAR_MODULE).rootmap: lib$(PAR_MODULE).so
-	@echo -e "[$(COLM)$(PAR_MODULE)$(COLZ)]" generating rootmap
+	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] generating rootmap")
 	@rlibmap -o $@ -l lib$(PAR_MODULE) -d $(PAR_LIBDEPS) -c $(DHDR)
 
 # Delete all

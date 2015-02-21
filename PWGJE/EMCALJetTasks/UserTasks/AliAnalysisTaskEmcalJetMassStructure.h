@@ -9,6 +9,7 @@ class THnSparse;
 class TClonesArray;
 class TArrayI;
 class TRandom3;
+class TList;
 
 class AliAnalysisManager;
 class AliJetContainer;
@@ -76,17 +77,15 @@ class AliAnalysisTaskEmcalJetMassStructure : public AliAnalysisTaskEmcalJet {
   THnSparse                          *fhnMassResponse;             //! response matrix
   THnSparse                          *fhnMassResponseCorr;         //! response matrix corrected
   TH3F                              **fh3JetPtDRTrackPt;           //! jet pt vs dr(jet axis, constituent) vs pT,track
-  TProfile                           *fpUsedEfficiency;            //! efficiency used for correction
   THnSparse                          *fhnDeltaMass;                //! resolution on mass matrix
   THnSparse                          *fhnDeltaMassCorr;            //! resolution on mass matrix corrected
-
+  TList                              *fListOfOutputFromClass;  //! list of output from class AliEmcalJetByJetCorrection
   Bool_t                             fSwitchResolutionhn;          // switch on/off (default on) the 2 THnSparse for the mass resolution 
-
- private:
+  private:
   AliAnalysisTaskEmcalJetMassStructure(const AliAnalysisTaskEmcalJetMassStructure&);            // not implemented
   AliAnalysisTaskEmcalJetMassStructure &operator=(const AliAnalysisTaskEmcalJetMassStructure&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 4)
+  ClassDef(AliAnalysisTaskEmcalJetMassStructure, 5)
 };
 #endif
 

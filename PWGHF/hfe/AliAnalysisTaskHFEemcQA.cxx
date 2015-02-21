@@ -62,6 +62,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fpidResponse(0),
   fFlagSparse(kFALSE),
   fUseTender(kTRUE),
+  fEMCEG1(kFALSE),
+  fEMCEG2(kFALSE),
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fOutputList(0),
@@ -78,8 +80,6 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
-  fHistoCalTime(0),
-  fHistoCalCellTime(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -133,6 +133,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fpidResponse(0),
   fFlagSparse(kFALSE),
   fUseTender(kTRUE),
+  fEMCEG1(kFALSE),
+  fEMCEG2(kFALSE),
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fOutputList(0),
@@ -149,8 +151,6 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
-  fHistoCalTime(0),
-  fHistoCalCellTime(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -275,12 +275,6 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",15000,-0.5,14999.5,600,0,30);
   fOutputList->Add(fHistoCalCell);
 
-  fHistoCalTime = new TH2F("fHistoCalTime","Cluster Time;  p_{T} (GeV/c); Time (s)",300,0,30,1000,1e-8,1e-5);
-  fOutputList->Add(fHistoCalTime);
-
-  fHistoCalCellTime = new TH2F("fHistoCalCellTime","Cell Time;  ID; Time (s)",15000,-0.5,14999.5,1000,1e-8,1e-5);
-  fOutputList->Add(fHistoCalCellTime);
-
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0); 
   fOutputList->Add(fNegTrkIDPt);
 
@@ -377,7 +371,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   Int_t bins[6]={8,500,200,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02
   Double_t xmin[6]={-0.5,0,-10,0,0,0};
   Double_t xmax[6]={7.5,25,10,2,2,2};
-  fSparseElectron = new THnSparseD ("Electron","Electron",6,bins,xmin,xmax);
+  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;",6,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
   PostData(1,fOutputList);
@@ -463,12 +457,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   TString TriggerEG1("EG1");
   TString TriggerEG2("EG2");
   fVevent->GetFiredTriggerClasses();
+  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
 
   Bool_t EG1tr = kFALSE;
   Bool_t EG2tr = kFALSE;
 
   if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
+
+  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+  if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
 
   Int_t trigger = -1;
   if (fAOD){
@@ -502,7 +500,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ////////////////////
   //event selection//
   ///////////////////
-  if(fabs(Zvertex>10.0))return; 
+  if(fabs(Zvertex)>10.0)return; 
   fNevents->Fill(2); //events after z vtx cut
 
   /////////////////////////////
@@ -536,9 +534,6 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       fHistoNCells->Fill(clustE,clust->GetNCells());
       //fHistoNCells->Fill(clust->GetNCells());
-    
-      double emctof = clust->GetTOF();
-      fHistoCalTime->Fill(clustE,emctof);
 
       NclustAll++;  
       if(clustE>0.1)NclustE1++;
@@ -559,17 +554,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   Short_t cellAddr, nSACell;
   Int_t  mclabel;
   Short_t iSACell;
-  Double_t cellAmp=-1., cellTimeT=-1., efrac=-1.;
+  Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
   nSACell = fCaloCells->GetNumberOfCells();
   for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
     Bool_t haveCell = fCaloCells->GetCell(iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
     //virtual Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time, Int_t &mclabel,    Double_t  &efrac)      
-    if(haveCell)
-       {
-        fHistoCalCell->Fill(cellAddr,cellAmp);
-        fHistoCalCellTime->Fill(cellAddr,cellTimeT);
-        }
+    if(haveCell)fHistoCalCell->Fill(cellAddr,cellAmp);
+
   }
 
   /////////////////////////////////

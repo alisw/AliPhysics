@@ -30,7 +30,8 @@ void AddAliEbyENetChargeFluctuationBinTask(const Char_t *taskname="TOFTPC",
 					   
 					   Double_t vz         = 10.,
 					   Int_t nSample       = 25,
-					   Int_t analType      = 1) {
+					   Int_t analType      = 1,
+					   Int_t isBasic       = 0) {
   
   Double_t vx = 3.; Double_t vy = 3.; 
  
@@ -104,6 +105,7 @@ help->Print();
       task[iEta]->SetTrackFilterBit(aodFilterBit);
     }
     task[iEta]->SetSystemType(sysii);
+    task[iEta]->SetEventSelectionBit(AliVEvent::kMB);
     task[iEta]->SetCentralityEstimator(centralityEstimator);
     task[iEta]->SetVertexDiamond(vx,vy,vz);
     task[iEta]->SetKinematicsCuts(ptl,pth,eEta,gRap);
@@ -119,8 +121,8 @@ help->Print();
     
     
     task[iEta]->SetHelperPID(help);
-    task[iEta]->SetAnal(analType);
-     mgr->AddTask(task[iEta]);
+    task[iEta]->SetAnal(analType,isBasic);
+    mgr->AddTask(task[iEta]);
     
      
     TString commonname   = Form("%s:%s_E%d", AliAnalysisManager::GetCommonFileName(),taskname, iEta);

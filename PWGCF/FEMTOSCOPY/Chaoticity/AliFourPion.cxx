@@ -114,7 +114,9 @@ AliAnalysisTaskSE(),
   fQmean(),
   fDampStart(0),
   fDampStep(0),
+  fChargeSelection(kFALSE),
   fq2Binning(0),
+  fLowMultBinning(0),
   fq2Index(0),
   fq2CutLow(0.1),
   fq2CutHigh(0.11),
@@ -317,7 +319,9 @@ AliFourPion::AliFourPion(const Char_t *name)
   fQmean(),
   fDampStart(0),
   fDampStep(0),
+  fChargeSelection(kFALSE),
   fq2Binning(0),
+  fLowMultBinning(0),
   fq2Index(0),
   fq2CutLow(0.1),
   fq2CutHigh(0.11),
@@ -525,7 +529,9 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fQmean(),
     fDampStart(obj.fDampStart),
     fDampStep(obj.fDampStep),
+    fChargeSelection(obj.fChargeSelection),
     fq2Binning(obj.fq2Binning),
+    fLowMultBinning(obj.fLowMultBinning),
     fq2Index(obj.fq2Index),
     fq2CutLow(obj.fq2CutLow),
     fq2CutHigh(obj.fq2CutHigh),
@@ -669,7 +675,9 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fQstepWeights = obj.fQstepWeights;
   fDampStart = obj.fDampStart;
   fDampStep = obj.fDampStep;
+  fChargeSelection = obj.fChargeSelection;
   fq2Binning = obj.fq2Binning;
+  fLowMultBinning = obj.fLowMultBinning;
   fq2Index = obj.fq2Index;
   fq2CutLow = obj.fq2CutLow;
   fq2CutHigh = obj.fq2CutHigh;
@@ -864,16 +872,18 @@ void AliFourPion::ParInit()
 {
   cout<<"AliFourPion MyInit() call"<<endl;
   cout<<"lego:"<<fLEGO<<"  MCcase:"<<fMCcase<<"  CollisionType:"<<fCollisionType<<"  TabulatePairs:"<<fTabulatePairs<<"  GenSignal:"<<fGenerateSignal<<"  CentLow:"<<fCentBinLowLimit<<"  CentHigh:"<<fCentBinHighLimit<<"  RMax:"<<fRMax<<"  fc^2:"<<ffcSq<<"  FB:"<<fFilterBit<<"  MaxChi2/NDF:"<<fMaxChi2NDF<<"  MinTPCncls:"<<fMinTPCncls<<"  MinPairSepEta:"<<fMinSepPairEta<<"  MinPairSepPhi:"<<fMinSepPairPhi<<"  NsigTPC:"<<fSigmaCutTPC<<"  NsigTOF:"<<fSigmaCutTOF<<endl;
-
+  
   fRandomNumber = new TRandom3();
   fRandomNumber->SetSeed(0);
-    
+  
   //
   fEventCounter=0;
   fEventsToMix=3;
-  fEventMixingEDbins=2;// 2 Z-vertex bins by default
-  if(fq2Binning) fEventMixingEDbins=6;// 6 q2 bins in this case
+  if(fq2Binning) fEventMixingEDbins=9;// was 81 with q1 and q2 binning
+  else fEventMixingEDbins=2;// for both Z-vertex binning and LowMultBinning
 
+  if(fMCcase) fEventMixingEDbins=2;
+  
   fTPCTOFboundry = 0.6;// TPC pid used below this momentum, TOF above but below TOF_boundry
   fTOFboundry = 2.1;// TOF pid used below this momentum
   
@@ -1245,6 +1255,7 @@ void AliFourPion::UserCreateOutputObjects()
     if(fCollisionType==0) {if((mb < fCentBinLowLimit) || (mb > fCentBinHighLimit)) continue;}
     
     for(Int_t edB=0; edB<fEDbins; edB++){
+      
       for(Int_t c1=0; c1<2; c1++){
 	for(Int_t c2=0; c2<2; c2++){
 	  for(Int_t term=0; term<2; term++){
@@ -1724,9 +1735,14 @@ void AliFourPion::UserCreateOutputObjects()
   TH2D *fc4QSFitDen = new TH2D("fc4QSFitDen","",7,0.5,7.5, fQbinsQ4,0.,fQupperBoundQ4);
   fOutputList->Add(fc4QSFitDen);
 
-  TH3F *fq2Dist = new TH3F("fq2Dist","",fMbins,.5,fMbins+.5, 4,0.5,4.5, 200,0,10);
+  TH3F *fq1Dist = new TH3F("fq1Dist","",fMbins,.5,fMbins+.5, 4,0.5,4.5, 200,0,10);// Mult, pT bin, q2 bin
+  fOutputList->Add(fq1Dist);
+  TH3F *fq2Dist = new TH3F("fq2Dist","",fMbins,.5,fMbins+.5, 4,0.5,4.5, 200,0,10);// Mult, pT bin, q2 bin
   fOutputList->Add(fq2Dist);
 
+  TH2D *fLowPtDist = new TH2D("fLowPtDist","",fMbins,.5,fMbins+.5, 500,0.5,500.5);
+  fOutputList->Add(fLowPtDist);
+  
   TH2D *fcumulant2INT = new TH2D("fcumulant2INT","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
   TH2D *fcumulant2DIFF = new TH2D("fcumulant2DIFF","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
   TH2D *fcumulant2EN = new TH2D("fcumulant2EN","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
@@ -1754,6 +1770,7 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fSingleSumSinTotalINT);
   fOutputList->Add(fSingleSumTotalEN);
 
+ 
   ////////////////////////////////////
   ///////////////////////////////////  
   
@@ -1844,7 +1861,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t centralityPercentile=0;
   Float_t cStep=5.0, cStepMixing=5.0, cStart=0;
   Int_t MbinMixing=0;
- 
+  
   if(fAODcase){// AOD case
     if(fCollisionType==0){
       centrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
@@ -1855,13 +1872,14 @@ void AliFourPion::UserExec(Option_t *)
     }
     const AliAODVertex* primaryVertexAOD = (AliAODVertex*)fAOD->GetPrimaryVertex();
     ((TH1F*)fOutputList->FindObject("fMultDist0"))->Fill(fAOD->GetNumberOfTracks());
-
+   
     // Pile-up rejection
     AliAnalysisUtils *AnaUtil=new AliAnalysisUtils();
     if(fCollisionType!=0) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pp and pPb
     else AnaUtil->SetUseMVPlpSelection(kFALSE);
     Bool_t pileUpCase=AnaUtil->IsPileUpEvent(fAOD); 
     if(pileUpCase) return;
+   
     ////////////////////////////////
     // Vertexing
     ((TH1F*)fOutputList->FindObject("fMultDist1"))->Fill(fAOD->GetNumberOfTracks());
@@ -2272,40 +2290,74 @@ void AliFourPion::UserExec(Option_t *)
     ((TH1D*)fOutputList->FindObject("fSingleSumTotalEN"))->Fill(fMbin+1, Ncomb);
   }
 
-  // q2 vector
-  Float_t Qx[4]={0};
-  Float_t Qy[4]={0};
+  // q1 vector
+  Float_t Q1x[4]={0};
+  Float_t Q1y[4]={0};
   Float_t Mq[4]={0};
+  Float_t qVect1[4]={0};
+  Float_t Psi1[4]={0};
+  Int_t qindex=0;
+  // q2 vector
+  Float_t Q2x[4]={0};
+  Float_t Q2y[4]={0};
   Float_t qVect2[4]={0};
   Float_t Psi2[4]={0};
-  Int_t q2index=0;
   for(Int_t i=0; i<myTracks; i++){
-    if(fTempStruct[i].fPt < 0.25) q2index=0;
-    else if(fTempStruct[i].fPt < 0.35) q2index=1;
-    else if(fTempStruct[i].fPt < 0.45) q2index=2;
-    else q2index=3;
+    if(fChargeSelection && fTempStruct[i].fCharge !=-1) continue;
+
+    if(fTempStruct[i].fPt < 0.25) qindex=0;// was 0.28
+    else if(fTempStruct[i].fPt < 0.4) qindex=1;
+    else if(fTempStruct[i].fPt < 0.5) qindex=2;
+    else qindex=3;
     
-    Qx[q2index] += cos(2*fTempStruct[i].fPhi);
-    Qy[q2index] += sin(2*fTempStruct[i].fPhi);
-    Mq[q2index]++;
+    Q1x[qindex] += cos(fTempStruct[i].fPhi);
+    Q1y[qindex] += sin(fTempStruct[i].fPhi);
+    Q2x[qindex] += cos(2*fTempStruct[i].fPhi);
+    Q2y[qindex] += sin(2*fTempStruct[i].fPhi);
+    Mq[qindex]++;
   }
   for(Int_t i=0; i<4; i++){ 
-    qVect2[i] = sqrt(pow(Qx[i],2)+pow(Qy[i],2)); 
-    if(Mq[i] > 0) qVect2[i] /= sqrt(Mq[i]);
+    qVect1[i] = sqrt(pow(Q1x[i],2)+pow(Q1y[i],2)); 
+    qVect2[i] = sqrt(pow(Q2x[i],2)+pow(Q2y[i],2));
+    if(Mq[i] > 0) {qVect1[i] /= sqrt(Mq[i]); qVect2[i] /= sqrt(Mq[i]);}
+    ((TH3F*)fOutputList->FindObject("fq1Dist"))->Fill(fMbin+1, i+1, qVect1[i]);
     ((TH3F*)fOutputList->FindObject("fq2Dist"))->Fill(fMbin+1, i+1, qVect2[i]);
-    Psi2[i] = atan2(Qy[i],Qx[i]) / 2.;// -PI/2 to +PI/2
+    Psi1[i] = atan2(Q1y[i],Q1x[i]) + PI;// 0 to +2PI
+    Psi2[i] = atan2(Q2y[i],Q2x[i]) / 2.;// -PI/2 to +PI/2
     Psi2[i] = fabs(Psi2[i]);// 0 to +PI/2
   }
+  ((TH2D*)fOutputList->FindObject("fLowPtDist"))->Fill(fMbin+1, Mq[fq2Index]);
+  
   //
   if(fq2Binning){// bin in q2
     if(qVect2[fq2Index] < fq2CutLow) fEDbin = 0;
-    else if (qVect2[fq2Index] > fq2CutHigh) fEDbin = 1;
-    else return;
-    mixingEDbin = (fEDbin)*3 + int(Psi2[fq2Index]/(PI/6.) - 0.000001);
+    else fEDbin = 1;
+  
+    Int_t Inq1=0;
+    if(qVect1[fq2Index] > 0.5 && qVect1[fq2Index] < 1.5) Inq1=1;
+    else Inq1=2;
+    //
+    Int_t Inq2=0;
+    if(qVect2[fq2Index] > 0.5 && qVect2[fq2Index] < 1.5) Inq2=1;
+    else Inq2=2;
+    //
+    //if(!fMCcase) mixingEDbin = (Inq1*3*3*3) + int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)*3*3 + (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);// q1 and q2
+    if(!fMCcase) mixingEDbin = (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);// q2 only
   }
+  //
+  if(fLowMultBinning){
+    Float_t meanLowPtMult = 170. - 25.*fMbin;// approximate mean values vs. fMbin
+    //Float_t sigmaLowPtMult = 0.1*meanLowPtMult;// approximate sigma values
+    if(Mq[fq2Index] < meanLowPtMult) fEDbin=0;
+    else fEDbin = 1;
+    //
+    mixingEDbin = fEDbin;
+  }
+  
   //////////////////////////////////////////////////////////////////////////
+  
 
-
+  
   ///////////////////
   // can only be called after fMbin has been set
   // Radius parameter only matters for Monte-Carlo data
@@ -2320,7 +2372,7 @@ void AliFourPion::UserExec(Option_t *)
   else {rBinForTPNMomRes=6;}
 
   //////////////////////////////////////////////////
-  if(!fq2Binning) fEDbin=0;// Extra Dimension bin (Kt3, q2,....)
+  if(!fq2Binning && !fLowMultBinning) fEDbin=0;// Extra Dimension bin (Kt3, q2,....)
   //////////////////////////////////////////////////
   
   
@@ -2350,7 +2402,7 @@ void AliFourPion::UserExec(Option_t *)
     }
   }
   
-
+  
   
   Float_t qinv12=0, qinv13=0, qinv14=0, qinv23=0, qinv24=0, qinv34=0;
   Float_t qout=0, qside=0, qlong=0;
@@ -2399,8 +2451,6 @@ void AliFourPion::UserExec(Option_t *)
   
 
   ////////////////////
-  //Int_t PairCount[7]={0};
-  //Int_t NormPairCount[7]={0};
   Int_t EDindex3=0, EDindex4=0;
 
   // reset to defaults
@@ -2509,8 +2559,10 @@ void AliFourPion::UserExec(Option_t *)
 	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTindex].TwoPT[1].fUnitMultBin->Fill(UnitMultBin, qinv12);
 	    }
 	  }
+
 	  /////////////////////////////////////////////////////
 	  if(fTabulatePairs && en1==0 && en2<=1 && bin1==bin2){
+	    if(fChargeSelection && (fEvt+en1)->fTracks[i].fCharge !=-1) continue;
 	    Float_t kY = 0;
 	    Int_t kTbin=-1, kYbin=-1;
 	    Bool_t PairToReject=kFALSE;
@@ -2557,8 +2609,7 @@ void AliFourPion::UserExec(Option_t *)
     }
   }
     
-  //cout<<PairCount[0]<<"  "<<PairCount[1]<<"  "<<PairCount[2]<<"  "<<PairCount[3]<<"  "<<PairCount[4]<<"  "<<PairCount[5]<<"  "<<PairCount[6]<<endl;
-  //cout<<NormPairCount[0]<<"  "<<NormPairCount[1]<<"  "<<NormPairCount[2]<<"  "<<NormPairCount[3]<<"  "<<NormPairCount[4]<<"  "<<NormPairCount[5]<<"  "<<NormPairCount[6]<<endl;
+ 
   ///////////////////////////////////////////////////  
   // Do not use pairs from events with too many pairs
   
@@ -2622,7 +2673,7 @@ void AliFourPion::UserExec(Option_t *)
 	      SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
 	      
 	      Float_t KT3 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-	      if(!fq2Binning){
+	      if(!fq2Binning && !fLowMultBinning){
 		if(KT3<=fKT3transition) EDindex3=0;
 		else EDindex3=1;
 	      }else{
@@ -2672,7 +2723,7 @@ void AliFourPion::UserExec(Option_t *)
 		ch4 = Int_t(((fEvt+en4)->fTracks[l].fCharge + 1)/2.);
 		Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
 		
-		if(!fq2Binning){
+		if(!fq2Binning && !fLowMultBinning){
 		  if(KT4<=fKT4transition) EDindex4=0;
 		  else EDindex4=1;
 		}else{
@@ -2944,7 +2995,7 @@ void AliFourPion::UserExec(Option_t *)
 	      }// MC case
 	      
 		
-
+	      
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
 		if(en3==0) {
@@ -2990,7 +3041,7 @@ void AliFourPion::UserExec(Option_t *)
 		SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
 		
 		Float_t KT3 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-		if(!fq2Binning){
+		if(!fq2Binning && !fLowMultBinning){
 		  if(KT3<=fKT3transition) EDindex3=0;
 		  else EDindex3=1;
 		}else{
@@ -3079,7 +3130,7 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		}
 		
-		// r3 denominator
+		// C3 Building
 		if(ENsum==6 && ch1==ch2 && ch1==ch3 && fCollisionType==0){
 		  Positive1stTripletWeights = kTRUE;
 		  //
@@ -3194,7 +3245,7 @@ void AliFourPion::UserExec(Option_t *)
 		    
 		  }// 1st r3 den check
 		  
-		}// r3 den
+		}// C3 Building section end
 		
 	      
 		if(ch1==ch2 && ch1==ch3){
@@ -3330,7 +3381,7 @@ void AliFourPion::UserExec(Option_t *)
 		
 		
 		
-
+	
 		/////////////////////////////////////////////////////////////
 		for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
 		  if(en4==0){
@@ -3396,7 +3447,7 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		  
 		  Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
-		  if(!fq2Binning){
+		  if(!fq2Binning && !fLowMultBinning){
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
 		  }else{
@@ -3456,7 +3507,7 @@ void AliFourPion::UserExec(Option_t *)
 		  
 		  /////////////////////////////////////////////////////////////
 		  // C4 building
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 ){
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6 && !fMCcase){
 		    if(fCollisionType==0){
 		      Positive2ndTripletWeights=kTRUE;
 		      //
@@ -4096,7 +4147,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   //Float_t qinvtemp=GetQinv(0,track1, track2);
   //
   Int_t q2bin=0;
-  if(fq2Binning) q2bin = fEDbin;
+  if(fq2Binning || fLowMultBinning) q2bin = fEDbin;
   //
 
   if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=1;}

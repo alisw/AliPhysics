@@ -73,8 +73,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   // Geometry alignment
   //---------------------
   
-  //pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1");
-  pi0calib->SetGeometryName("EMCAL_COMPLETEV1");
+  pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
 
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
   

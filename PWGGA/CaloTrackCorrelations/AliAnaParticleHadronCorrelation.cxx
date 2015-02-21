@@ -73,8 +73,9 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
     fMinLeadHadPt(0),               fMaxLeadHadPt(0),
     fFillEtaGapsHisto(1),           fFillMomImbalancePtAssocBinsHisto(0),
+    fFillInvMassHisto(0),
     fMCGenTypeMin(0),               fMCGenTypeMax(0),
-    fTrackVector(),                 fMomentum(),
+    fTrackVector(),                 fMomentum(),           fMomentumIM(),
     fDecayMom1(),                   fDecayMom2(),
     //Histograms
     fhPtTriggerInput(0),            fhPtTriggerSSCut(0),
@@ -179,8 +180,9 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhMixDeltaPhiChargedAssocPtBinDEta08(),
     fhMixDeltaPhiChargedAssocPtBinDEta0(),
     fhMixDeltaPhiDeltaEtaChargedAssocPtBin(),
-    fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0)
-{ 
+    fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0),
+    fhMassPtTrigger(0),             fhMCMassPtTrigger()
+{
   //Default Ctor 
     
   //Initialize parameters
@@ -191,10 +193,12 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhPtTriggerMC[i] = 0;
     fhXEChargedMC[i] = 0;
     fhDeltaPhiChargedMC[i] = 0;
-    for(Int_t ib = 0; ib < 4; ib++)  fhPtDecayTriggerMC[ib][i] = 0;
+		fhMCMassPtTrigger  [i] = 0 ;
+
+    for(Int_t ib = 0; ib < AliNeutralMesonSelection::fgkMaxNDecayBits; ib++)  fhPtDecayTriggerMC[ib][i] = 0;
   }
 
-  for(Int_t ib = 0; ib < 4; ib++)  fhPtDecayTrigger[ib] = 0;
+  for(Int_t ib = 0; ib < AliNeutralMesonSelection::fgkMaxNDecayBits; ib++)  fhPtDecayTrigger[ib] = 0;
 
   for(Int_t i = 0; i < 7; i++)
   {
@@ -376,7 +380,9 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
     
     if(fDecayTrigger && decayTag > 0 && fNDecayBits > 0 &&
        GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
-      fhDeltaPhiDecayChargedAssocPtBin[bin]->Fill(ptTrig, deltaPhi);      
+    {
+      fhDeltaPhiDecayChargedAssocPtBin[bin]->Fill(ptTrig, deltaPhi);
+    }
     
     if(fHMPIDCorrelation)
     {
@@ -1312,7 +1318,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   Float_t xeztmin  = GetHistogramRanges()->GetHistoRatioMin();   Float_t hbpmin  = GetHistogramRanges()->GetHistoHBPMin();
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
-  
+	
+	Int_t   nmassbins = GetHistogramRanges()->GetHistoMassBins();
+	Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
+	Float_t massmax   = GetHistogramRanges()->GetHistoMassMax();
+	
   TString nameMC[]     = {"Photon","Pi0","Pi0Decay","Eta","EtaDecay","OtherDecay","Electron","Hadron","Pi0DecayLostPair","EtaDecayLostPair"};
   TString pileUpName[] = {"SPD","EMCAL","SPDOrEMCAL","SPDAndEMCAL","SPDAndNotEMCAL","EMCALAndNotSPD","NotSPDAndNotEMCAL"} ;
   
@@ -1351,19 +1361,38 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   fhPtTrigger  = new TH1F("hPtTrigger","#it{p}_{T} distribution of trigger particles (after opposite hadron leading cut and rest)", nptbins,ptmin,ptmax);
   fhPtTrigger->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
   outputContainer->Add(fhPtTrigger);
-  
-  if(IsDataMC())
-  {
-    for(Int_t i=0; i < fgkNmcTypes; i++)
-    {
-      fhPtTriggerMC[i]  = new TH1F(Form("hPtTrigger_MC%s",nameMC[i].Data()),
-                                   Form("#it{p}_{T} distribution of trigger particles, trigger origin is %s",nameMC[i].Data()),
-                                   nptbins,ptmin,ptmax);
-      fhPtTriggerMC[i]->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
-      outputContainer->Add(fhPtTriggerMC[i]);
-    }
-  }
-  
+	
+	if(fFillInvMassHisto)
+	{
+		fhMassPtTrigger  = new TH2F("hMassPtTrigger","2 photons invariant mass vs p_{T}^{trig}",
+																nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+		fhMassPtTrigger->SetYTitle("M_{#gamma#gamma} (GeV/#it{c}^{2})");
+		fhMassPtTrigger->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+		outputContainer->Add(fhMassPtTrigger);
+	}
+	
+	if(IsDataMC())
+	{
+		for(Int_t i=0; i < fgkNmcTypes; i++)
+		{
+			fhPtTriggerMC[i]  = new TH1F(Form("hPtTrigger_MC%s",nameMC[i].Data()),
+																	 Form("#it{p}_{T} distribution of trigger particles, trigger origin is %s",nameMC[i].Data()),
+																	 nptbins,ptmin,ptmax);
+			fhPtTriggerMC[i]->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+			outputContainer->Add(fhPtTriggerMC[i]);
+			
+			if(fFillInvMassHisto)
+			{
+				fhMCMassPtTrigger[i]  = new TH2F(Form("hMassPtTrigger_MC%s",nameMC[i].Data()),
+																				 Form("2 photons invariant mass, trigger origin is %s",nameMC[i].Data()),
+																				 nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+				fhMCMassPtTrigger[i]->SetYTitle("m_{#gamma#gamma}");
+				fhMCMassPtTrigger[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+				outputContainer->Add(fhMCMassPtTrigger[i]) ;
+			}
+		}
+	}
+	
   if(fDecayTrigger)
   {
     for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
@@ -3039,8 +3068,61 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fNDecayBits = 1;
   fDecayBits[0] = AliNeutralMesonSelection::kPi0;
   fDecayBits[1] = AliNeutralMesonSelection::kEta;
-  fDecayBits[2] = AliNeutralMesonSelection::kPi0Side;
-  fDecayBits[3] = AliNeutralMesonSelection::kEtaSide;
+  fDecayBits[2] = AliNeutralMesonSelection::kPi0RightSide;
+  fDecayBits[3] = AliNeutralMesonSelection::kEtaRightSide;
+  fDecayBits[4] = AliNeutralMesonSelection::kEtaLeftSide ;
+  fDecayBits[5] = AliNeutralMesonSelection::kEtaBothSides;
+  fDecayBits[6] = AliNeutralMesonSelection::kPi0LeftSide ; // Leave it last since likely not used
+  fDecayBits[7] = AliNeutralMesonSelection::kPi0BothSides; // Leave it last since likely not used
+}
+
+//________________________________________________________________________________________________________
+void AliAnaParticleHadronCorrelation::InvMassHisto(AliAODPWG4ParticleCorrelation * trigger, Int_t mcIndex)
+{
+	// Do the invariant mass of the trigger particle with other clusters
+	// Activate for photon analysis
+	
+	Int_t    idTrig = trigger->GetCaloLabel(0);
+	Float_t  ptTrig = trigger->Pt();
+	Float_t tofTrig = trigger->GetTime();
+
+	fMomentum = *(trigger->Momentum());
+
+	//Loop on second cluster to be associated to trigger particle to have the invariant mass
+	Int_t nphoton = GetInputAODBranch()->GetEntriesFast();
+	
+	for(Int_t iphoton = 0; iphoton < nphoton; iphoton++)
+	{
+		AliAODPWG4ParticleCorrelation * photon1 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iphoton));
+		
+		if(idTrig == photon1->GetCaloLabel(0)) continue;        //Do not the invariant mass for the same particle
+		
+		fMomentumIM = *(photon1->Momentum());
+		
+		// Select secondary photon with proper invariant mass
+		if(fM02MaxCut > 0 && fM02MinCut > 0) //clID1 > 0 && clID2 < 0 &&
+		{
+			Float_t m02 = photon1->GetM02();
+			
+			if(m02 > fM02MaxCut || m02 < fM02MinCut) continue ;
+		}
+
+		//Select clusters with good time window difference
+		Double_t tdiff = tofTrig - photon1->GetTime();
+		if(TMath::Abs(tdiff) > GetPairTimeCut()) continue;
+		
+		// Add momenta of trigger and possible secondary decay
+		fMomentumIM += fMomentum;
+		
+		Double_t mass  = fMomentumIM.M();
+		Double_t epair = fMomentumIM.E();
+		Float_t ptpair = fMomentumIM.Pt();
+		
+		//Mass of all pairs
+		fhMassPtTrigger->Fill(ptTrig,mass);
+		if(IsDataMC()) fhMCMassPtTrigger[mcIndex]->Fill(ptTrig,mass);
+		
+	}
 }
 
 //_________________________________________________________________________
@@ -3238,7 +3320,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(pt < GetMinPt() || pt > GetMaxPt() ) continue ;
 
     fhPtTriggerInput->Fill(pt);
-    
+
     //
     // check if it was a calorimeter cluster
     // and if the shower shape cut was requested apply it.
@@ -3355,7 +3437,10 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         else if( mcIndex == 4 ) fhPtTriggerMC[9]->Fill(pt); // eta decay
       }
     }
-    
+		
+		// Invariant mass of trigger particle
+		if(fFillInvMassHisto) InvMassHisto(particle,mcIndex);
+		
     if(fDecayTrigger)
     {
       Int_t decayTag = particle->DecayTag();

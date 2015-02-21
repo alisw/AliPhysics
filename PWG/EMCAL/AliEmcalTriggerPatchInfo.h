@@ -75,6 +75,7 @@ class AliEmcalTriggerPatchInfo: public TObject {
   void SetADCAmp( Int_t a ) { fADCAmp = a; }
   void SetADCOfflineAmp( Int_t a ) { fADCOfflineAmp = a; }
   void SetEdgeCell( Int_t x, Int_t y ) { fEdgeCell[0] = x; fEdgeCell[1] = y; }
+  void SetOfflineSimple() { fTriggerBits |= 1 << kSimpleOfflineBitNum; }
 
   void SetLorentzVector( TLorentzVector &lv, TVector3 &v, Double_t e );
 

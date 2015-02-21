@@ -19,7 +19,8 @@
 //     "NOFR" : Data set does not have AliESDfriends.root 
 //     "NOMC" : Data set does not have Monte Carlo Informations (default have MC), 
 //
-//     run   : run number [default 0]; if negative value is specified the OCDB connection is left to AddTRDinfoGen.C
+//     run   : run number [default 0]; if negative value is specified it should be the -YEAR of the run and the OCDB connection is left to AddTRDinfoGen.C.
+//             A local cache should be performed first via cacheOCDB.C macro 
 //     files : the list of ESD files to be processed [default AliESds.root from cwd]
 //     nev   : number of events to be processed [default all]
 //     first : first event to process [default 0]
@@ -108,7 +109,7 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
   if(gSystem->Load("libTender")<0) return;
   if(gSystem->Load("libCORRFW")<0) return;
   if(gSystem->Load("libPWGPP")<0) return;
-  if(gSystem->Load("libPWGmuon")<0) return;
+  //if(gSystem->Load("libPWGmuon")<0) return;
 
   Bool_t fHasMCdata = UseMC(optList);
   Bool_t fHasFriends = UseFriends(optList);
@@ -143,14 +144,16 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
 
   // add CDB task
   if(run>=0){
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect("raw://", run);
     if (!taskCDB) return;
-    taskCDB->SetRunNumber(run);
-  } else Warning("run.C", "OCDB connection via AliTRDinfoGen.");
-
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
-  if(!AddTrainPerformanceTRD(optList)) {
+    //taskCDB->SetRunNumber(run);
+  } else {
+    Warning("run.C", "OCDB connection via AliTRDinfoGen.");
+    AliTRDpwgppHelper::SetRunYear(-run);
+  }
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
+  if(!AliTRDpwgppHelper::AddTrainPerformanceTRD(optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
   }

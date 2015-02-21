@@ -108,7 +108,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fV0Cpol(0.),fV0Apol(0.),
   fESDtrackCuts(0x0),
   fPHOSCalibData(0x0),
-  fEPcalibFileName("$ALICE_ROOT/OADB/PHOS/PHOSflat.root"), 
+  fEPcalibFileName("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root"), 
   fTPCFlat(0x0),
   fV0AFlat(0x0),
   fV0CFlat(0x0),
@@ -2368,7 +2368,7 @@ void AliAnalysisTaskPi0Flow::SetV0Calibration(){
 
     int runNumber = this->fRunNumber;
     
-    TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
+    TString oadbfilename = "$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root";
     TFile *foadb = TFile::Open(oadbfilename.Data());
 
     if(!foadb){
@@ -2496,7 +2496,7 @@ void AliAnalysisTaskPi0Flow::SetGeometry()
   //Init geometry
   if(!fPHOSGeo){
     AliOADBContainer geomContainer("phosGeo");
-    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {

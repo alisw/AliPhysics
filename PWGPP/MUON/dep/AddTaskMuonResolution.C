@@ -1,7 +1,7 @@
-AliAnalysisTaskMuonResolution *AddTaskMuonResolution(Bool_t selectPhysics = kFALSE, Bool_t selectTrigger = kFALSE,
-						     Bool_t matchTrig = kTRUE, Bool_t applyAccCut = kTRUE,
-						     Double_t minMomentum = 0., Bool_t correctForSystematics = kTRUE,
-						     Int_t extrapMode = 1)
+AliAnalysisTaskMuonResolution *AddTaskMuonResolution(Double_t minMomentum = 0.,
+                                                     Double_t minPt = 0.,
+                                                     Bool_t correctForSystematics = kTRUE,
+                                                     Int_t extrapMode = 1)
 {
   /// Add AliAnalysisTaskMuonResolution to the train (Philippe Pillot)
   
@@ -26,12 +26,8 @@ AliAnalysisTaskMuonResolution *AddTaskMuonResolution(Bool_t selectPhysics = kFAL
     Error("AddTaskMuonResolution", "Muon resolution task cannot be created!");
     return NULL;
   }
-  task->SelectPhysics(selectPhysics);
-  task->SelectTrigger(selectTrigger);
-//  task->SelectTrigger(selectTrigger, AliVEvent::kMB);
-  task->MatchTrigger(matchTrig);
-  task->ApplyAccCut(applyAccCut);
   task->SetMinMomentum(minMomentum);
+  task->SetMinPt(minPt);
   task->CorrectForSystematics(correctForSystematics);
   task->SetExtrapMode(extrapMode);
   

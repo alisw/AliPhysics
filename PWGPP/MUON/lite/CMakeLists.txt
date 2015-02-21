@@ -29,6 +29,7 @@ set(SRCS
   AliAnalysisTaskMuonCuts.cxx
   AliAnalysisTaskMuonQA.cxx
   AliAnalysisTaskTrigChEff.cxx
+  AliAnalysisTaskTriggerRates.cxx
   )
 
 # Headers from sources

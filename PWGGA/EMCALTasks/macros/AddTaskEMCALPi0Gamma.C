@@ -4,14 +4,18 @@
 AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       Bool_t mcmode = 0, 
                                       Bool_t addsig = 0, 
+				      Bool_t issys = 0,
                                       const char geoname[] = "EMCAL_COMPLETEV1",
                                       Bool_t qf = 0, 
 				      Double_t asym1 = 0.3, 
                                       Double_t asym2 = 0.7, 
-                                      Double_t minE = 0.3, 
+                                      Double_t minE = 0.4, 
                                       Double_t minecc = -10, 
                                       Int_t ncells = 2, 
-                                      Bool_t bunfold = 0)
+                                      Bool_t bunfold = 0,
+				      Double_t cutm02 = 100,
+				      Double_t cutchi2 = -1,
+				      Bool_t dotrmsmpl = 0)
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -65,14 +69,33 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetMcMode(mcmode);
   task->SetAddedSignal(addsig);
   task->SetFillNtuple(0);
+  task->SetM02Cut(cutm02);
+  task->SetMinEcc(cutchi2);
+  task->SetTrackMatchSimple(dotrmsmpl);
   mgr->AddTask(task);
   
+  char name[256];
+
+  sprintf(name,"histosPi0Gamma%s","MB");
+  if(triggermask == AliVEvent::kINT7){
+    sprintf(name,"histosPi0Gamma%s","INT7");
+  }
+  if(triggermask == AliVEvent::kEMC1){
+    sprintf(name,"histosPi0Gamma%s","EMC1");
+  }
+  if(triggermask == AliVEvent::kEMC7){
+    sprintf(name,"histosPi0Gamma%s","EMC7");
+  }
+
+  if(issys){
+    strcat(name,"sys");
+  }
   //RequestMemory(task,320*1024); // request 0.5GB memory for task 
 
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosPi0Gamma",
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(name,
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
 							    //							    "_pi0gamma.root");

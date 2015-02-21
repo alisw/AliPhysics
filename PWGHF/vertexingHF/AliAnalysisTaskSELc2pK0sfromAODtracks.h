@@ -31,6 +31,7 @@ class TH1F;
 class TClonesArray;
 class AliAODRecoCascadeHF;
 class AliESDVertex;
+class AliAODMCParticle;
 
 class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE 
 {
@@ -46,8 +47,8 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *lcobj);
-  void MakeAnalysis(AliAODEvent *aod);
+  void FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, Int_t mcnused);
+  void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
 
   // set MC usage

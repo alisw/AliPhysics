@@ -39,8 +39,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                            Double_t ptminassocut = 0.0,
                                                            Bool_t Weight = kFALSE,
                                                            Bool_t withmultetacorrection=kFALSE,
-                                                           Double etaminpos = 0,
-                                                           Double etaminneg = 0,
+                                                           Double_t etaminpos = 0,
+                                                           Double_t etaminneg = 0,
                                                            Bool_t PhiCut = kFALSE,
                                                            Bool_t PhotonicElectronDCA = kFALSE,
                                                            // Bool_t QaPidSparse = kFALSE,
@@ -96,7 +96,12 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
     }
     
-    TString histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
+    TString histoflatnameEP;
+   if(centrMax == 10.) histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
+   if(centrMax == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero05_Smart.root";
+   if(centrMin == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero510_Smart.root";
+
+    
     if(Weight){
         TFile *fFlatEP=TFile::Open(histoflatnameEP,"READ");
         TCanvas *cEP=fFlatEP->Get("c1_n7");

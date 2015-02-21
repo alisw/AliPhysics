@@ -43,7 +43,8 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
 
 
   Bool_t SingleTrkCuts(AliAODTrack *trk);
-  Bool_t SingleCascadeCuts(AliAODcascade *casc);
+  Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
+  Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2);
 
   void SetProdTrackPtMin(Double_t a){fProdTrackPtMin=a;}
@@ -55,6 +56,14 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   void SetProdRfidMaxV0(Double_t a){fProdRfidMaxV0=a;}
   void SetProdRfidMinXi(Double_t a){fProdRfidMinXi=a;}
   void SetProdRfidMaxXi(Double_t a){fProdRfidMaxXi=a;}
+  void SetProdDcaXiDaughtersMax(Double_t a){fProdDcaXiDaughtersMax=a;}
+  void SetProdDcaV0DaughtersMax(Double_t a){fProdDcaV0DaughtersMax=a;}
+  void SetProdDcaBachToPrimVertexMin(Double_t a){fProdDcaBachToPrimVertexMin=a;}
+  void SetProdDcaV0ToPrimVertexMin(Double_t a){fProdDcaV0ToPrimVertexMin=a;}
+  void SetProdDcaPosToPrimVertexMin(Double_t a){fProdDcaPosToPrimVertexMin=a;}
+  void SetProdDcaNegToPrimVertexMin(Double_t a){fProdDcaNegToPrimVertexMin=a;}
+  void SetProdXiCosineOfPoiningAngleMin(Double_t a){fProdXiCosineOfPoiningAngleMin=a;}
+  void SetProdV0CosineOfPoiningAngleXiMin(Double_t a){fProdV0CosineOfPoiningAngleXiMin=a;}
   void SetProdRoughMassTol(Double_t a){fProdRoughMassTol=a;}
   void SetProdRoughPtMin(Double_t a){fProdRoughPtMin=a;}
   void SetProdLikeSignDcaMax(Double_t a){fProdLikeSignDcaMax=a;}
@@ -68,6 +77,14 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t GetProdRfidMaxV0(){return fProdRfidMaxV0;}
   Double_t GetProdRfidMinXi(){return fProdRfidMinXi;}
   Double_t GetProdRfidMaxXi(){return fProdRfidMaxXi;}
+  Double_t GetProdDcaXiDaughtersMax(){return fProdDcaXiDaughtersMax;}
+  Double_t GetProdDcaV0DaughtersMax(){return fProdDcaV0DaughtersMax;}
+  Double_t GetProdDcaBachToPrimVertexMin(){return fProdDcaBachToPrimVertexMin;}
+  Double_t GetProdDcaV0ToPrimVertexMin(){return fProdDcaV0ToPrimVertexMin;}
+  Double_t GetProdDcaPosToPrimVertexMin(){return fProdDcaPosToPrimVertexMin;}
+  Double_t GetProdDcaNegToPrimVertexMin(){return fProdDcaNegToPrimVertexMin;}
+  Double_t GetProdXiCosineOfPoiningAngleMin(){return fProdXiCosineOfPoiningAngleMin;}
+  Double_t GetProdV0CosineOfPoiningAngleXiMin(){return fProdV0CosineOfPoiningAngleXiMin;}
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdLikeSignDcaMax(){return fProdLikeSignDcaMax;}
@@ -89,12 +106,20 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdRfidMaxV0;          //Max Decay vertex of V0
   Double_t fProdRfidMinXi;          //Minimum Decay vertex of Xi
   Double_t fProdRfidMaxXi;          //Max Decay vertex of Xi
+  Double_t fProdDcaXiDaughtersMax;  //Max Dca between Xi daughters
+  Double_t fProdDcaV0DaughtersMax;  //Max Dca between V0 daughters
+  Double_t fProdDcaBachToPrimVertexMin;  //Min Dca between Bachelor and PV 
+  Double_t fProdDcaV0ToPrimVertexMin;  //Min Dca between v0 and PV 
+  Double_t fProdDcaPosToPrimVertexMin;  //Min Dca between v0-pos and PV 
+  Double_t fProdDcaNegToPrimVertexMin;  //Min Dca between v0-neg and PV 
+  Double_t fProdXiCosineOfPoiningAngleMin;  //Min Xi cos pointing angle  to PV
+  Double_t fProdV0CosineOfPoiningAngleXiMin;  //Min V0 cos pointing angle  to Xi vertex
   Double_t fProdLikeSignDcaMax;     //Maximum DCA of pions
   Double_t fProdRoughMassTol;       //Tolerance of Xic mass from PDG value 
   Double_t fProdRoughPtMin;         //Minimum pT of Xic
 
 
-  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,2); 
+  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,3); 
 };
 
 #endif

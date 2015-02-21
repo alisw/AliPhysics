@@ -55,14 +55,14 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   void SetTrackFilterBit(Int_t bit) {fAODtrackCutBit = bit; }
   void SetCentralityEstimator(const char* cent)  { fCentralityEstimator = cent;}
   void SetSystemType(Int_t i) { fSystemType = i; }
- 
+  void SetEventSelectionBit(UInt_t val) { fSelectBit = val; }
   void SetPhi(Double_t phil) {fPhiMax = phil;}
   void SetIsMC() {fIsMC = kTRUE;}
   void SetNSubSamples(Int_t i) {fNSubSamples = i;}
   void Debug() {fDebug = kTRUE;}
   void DoBasicQA() {fNeedQa = kTRUE;}
   void SetIsAOD() {fIsAOD = kTRUE;}
-  void SetAnal(Int_t i);// {fAnalType = i; };
+  void SetAnal(Int_t i, Int_t j);// {fAnalType = i; };
   void SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
   void SetDca(Double_t dcaxy,Double_t dcaz) { fDcaXy = dcaxy; fDcaZ = dcaz;}
  
@@ -96,17 +96,20 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t IsFindableInTPC(Int_t label);
   Bool_t AcceptEvent(AliAODEvent *event, Int_t cent) const; //! accept eventc
   Bool_t IsEventStats(Int_t *aEventCuts);
-  Bool_t AcceptTrack(AliVTrack *track) const;
-  Bool_t AcceptTrackMC(AliVParticle *particle, Int_t idxMC) const;
+  Bool_t AcceptTrackL(AliVTrack *track) const;
+  Bool_t AcceptTrackLDCA(AliVTrack *track) const;
+  Bool_t AcceptTrackLMC(AliVParticle *particle, Int_t idxMC) const;
 
   /* ------ Containers ------ */
   
   void InitPhy();  
   void CreateQA();
   void CreateBasicQA();
+  void CreateSourceHistos(const Char_t *title, Bool_t isMC);
   void CreateBasicHistos(const Char_t *title, Bool_t isMC, Bool_t isPer);
   void CreateRatioHistos(const Char_t *title,Bool_t isMC, Bool_t isPer);
   void CreateGroupHistos(const Char_t *name, const Char_t *title, Int_t nSample,Bool_t isPer);
+  void FillSourceHistos(Bool_t isMC);
   void FillBasicHistos(Bool_t isMC, Bool_t isPer);
   void FillRatioHistos(Bool_t isMC,Bool_t isPer);
   void FillGroupHistos(const Char_t *name, Int_t iSub, Bool_t isMC,Bool_t isPer);
@@ -181,6 +184,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Double_t   fCurCont[6];                   // Current Contamination
 
   Float_t    fMinTrackLengthMC;             // Min track length for MC tracks
+  UInt_t     fSelectBit;                    // Trigger Bit
   Int_t      fAODtrackCutBit;               // AOD BITs
   Int_t      fNSubSamples;                  // N subsamples
   Int_t      fSubSampleIdx;                 // Subsample idx for current event
@@ -190,6 +194,7 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Int_t      fNCentralityBins;              // N centrality bins used
   Int_t      fCentralityBinMax;             // Max Cent
   Int_t      fNTracks;                      // Number of Tracks of Current Events
+  Int_t      fNbwcBin;                      // FIXME
 
   Bool_t     fIsMC;                         // Is MC event - Auto set by Add Task
   Bool_t     fIsRatio;                      // Is Ratio
@@ -204,6 +209,8 @@ class AliEbyENetChargeFluctuationTask: public AliAnalysisTaskSE {
   Bool_t     fIsPhy;                        // Check for Phy
   Bool_t     fIsDca;                        // Check for Dca
   Bool_t     fIsNu;                         // Check for Nu
+  Bool_t     fIsTen;                        // 10% bin 
+  Bool_t     fIs3D;                         // 3D Mapping
 
   TRandom3  *fRan;                          // Radom Number BS
   TRandom3  *fRanIdx;                       // Random Number SS

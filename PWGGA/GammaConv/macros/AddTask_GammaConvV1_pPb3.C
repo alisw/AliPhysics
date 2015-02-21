@@ -1,11 +1,12 @@
-void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set of cuts
-                              Bool_t isMC   = kFALSE, //run MC
-                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAPhotonTask = 0, // enable additional QA task
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Int_t doWeightingPart = 0,  //enable Weighting
-                              TString generatorName = "DPMJET",
-                              TString cutnumberAODBranch = "8000000160084000001500000" // cutnumber for AOD branch
+void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change different set of cuts
+									Bool_t 		isMC   						= kFALSE, 							// run MC
+									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+									Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
+									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+									Int_t 		doWeightingPart 			= 0,  								// enable Weighting
+									TString 	generatorName 				= "DPMJET",							// generator Name	
+									TString 	cutnumberAODBranch 			= "800000016008400000001500000", 	// cutnumber for AOD branch
+									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
                            ) {
 
 	Int_t isHeavyIon = 2;
@@ -49,7 +50,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 
 	//=========  Set Cutnumber for V0Reader ================================
 	//offline V0Finder
-	TString cutnumberPhoton = "160000084001001500000000";
+	TString cutnumberPhoton = "16000008400100001500000000";
 	TString cutnumberEvent = "8000000";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -60,7 +61,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-		
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;
@@ -121,15 +122,15 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 	TString stringShift = "";
 	
 	if (trainConfig == 1) {
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "102000092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "102000092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "102000092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "102000092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
+		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "102000092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 1] = "102000092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 2] = "102000092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 3] = "102000092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
+		eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -162,7 +163,7 @@ void AddTask_GammaConvV1_pPb3(  Int_t trainConfig = 1,  //change different set o
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
-	AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
+	AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 	

@@ -88,10 +88,14 @@ fPcosPhiCent(0),
 fPsinPhiCent(0),
 // cross check for event plane determination
 fDeltaPhiCent(0),
+fDeltaPhiSymCent(0),
+fMCRecTracksMult(0),
+fMCGenTracksMult(0),
 fCrossCheckFilterBitPhiCent(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
+fCentEstimator("V0M"),
 // event cut variables
 fCutMaxZVertex(10.),  
 // track kinematic cut variables
@@ -562,22 +566,28 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCutPercCrossed = new TH1F("fCutPercCrossed","fCutPercCrossed;NcrossedRowsTPC;counts",160,0,160);
   fCutPercCrossed->Sumw2();
   
-  fCrossCheckRowsLength = new TH2F("fCrossCheckRowsLength","fCrossCheckRowsLength;Length in TPC;NcrossedRows",170,0,170,170,0,170);
+  fCrossCheckRowsLength = new TH3F("fCrossCheckRowsLength","fCrossCheckRowsLength;Length in TPC;NcrossedRows;Centrality",170,0,170,170,0,170, 100,0,100);
+  fCrossCheckRowsLength->GetZaxis()->Set( fCentralityNbins-1, fBinsCentrality);
   fCrossCheckRowsLength->Sumw2();
   
-  fCrossCheckClusterLength = new TH2F("fCrossCheckClusterLength","fCrossCheckClusterLength;Length in TPC;NClusters",170,0,170,170,0,170);
+  fCrossCheckClusterLength = new TH3F("fCrossCheckClusterLength","fCrossCheckClusterLength;Length in TPC;NClusters;Centrality",170,0,170,170,0,170, 100,0,100);
+  fCrossCheckClusterLength->GetZaxis()->Set( fCentralityNbins-1, fBinsCentrality);
   fCrossCheckClusterLength->Sumw2();
   
-  fCrossCheckRowsLengthAcc = new TH2F("fCrossCheckRowsLengthAcc","fCrossCheckRowsLengthAcc;Length in TPC;NcrossedRows",170,0,170,170,0,170);
+  fCrossCheckRowsLengthAcc = new TH3F("fCrossCheckRowsLengthAcc","fCrossCheckRowsLengthAcc;Length in TPC;NcrossedRows;Centrality",170,0,170,170,0,170, 100,0,100);
+  fCrossCheckRowsLengthAcc->GetZaxis()->Set( fCentralityNbins-1, fBinsCentrality);
   fCrossCheckRowsLengthAcc->Sumw2();
   
-  fCrossCheckClusterLengthAcc = new TH2F("fCrossCheckClusterLengthAcc","fCrossCheckClusterLengthAcc;Length in TPC;NClusters",170,0,170,170,0,170);
+  fCrossCheckClusterLengthAcc = new TH3F("fCrossCheckClusterLengthAcc","fCrossCheckClusterLengthAcc;Length in TPC;NClusters;Centrality",170,0,170,170,0,170, 100,0,100);
+  fCrossCheckClusterLengthAcc->GetZaxis()->Set( fCentralityNbins-1, fBinsCentrality);
   fCrossCheckClusterLengthAcc->Sumw2();
   
-  fCrossCheckPtresLength = new TH2F("fCrossCheckPtresLength","fCrossCheckPtresLength;Length in TPC;#sigma(1/pT)*pT",170,0,170,100,0,1);
+  fCrossCheckPtresLength = new TH3F("fCrossCheckPtresLength","fCrossCheckPtresLength;Length in TPC;#sigma(1/pT)*pT;Centrality",170,0,170,100,0,1, 100,0,100);
+  fCrossCheckPtresLength->GetZaxis()->Set( fCentralityNbins-1, fBinsCentrality);
   fCrossCheckPtresLength->Sumw2();
   
-  fCrossCheckPtresRows = new TH2F("fCrossCheckPtresRows","fCrossCheckPtresRows;NcrossedRows;#sigma(1/pT)*pT",170,0,170,100,0,1);
+  fCrossCheckPtresRows = new TH3F("fCrossCheckPtresRows","fCrossCheckPtresRows;NcrossedRows;#sigma(1/pT)*pT;Centrality",170,0,170,100,0,1, 100,0,100);
+  fCrossCheckPtresRows->GetZaxis()->Set( fCentralityNbins-1, fBinsCentrality);
   fCrossCheckPtresRows->Sumw2();
   
   fCutSettings = new TH1F("fCutSettings","fCutSettings",100,0,10);
@@ -654,6 +664,21 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fDeltaPhiCent->GetYaxis()->SetTitle("Centrality");
   fDeltaPhiCent->Sumw2();
   
+  fDeltaPhiSymCent = new TH2F("fDeltaPhiSymCent","fDeltaPhiSymCent",200, 0., 0.5*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
+  fDeltaPhiSymCent->GetXaxis()->SetTitle("#Delta #phi");
+  fDeltaPhiSymCent->GetYaxis()->SetTitle("Centrality");
+  fDeltaPhiSymCent->Sumw2();
+  
+  fMCRecTracksMult = new TH1F("fMCRecTracksMult","fMCRecTracksMult",4000,-0.5,3999.5);
+  fMCRecTracksMult->GetYaxis()->SetTitle("#recoTracks (MC)");
+  fMCRecTracksMult->GetXaxis()->SetTitle("reference multiplicity");
+  fMCRecTracksMult->Sumw2();
+  
+  fMCGenTracksMult = new TH1F("fMCGenTracksMult","fMCGenTracksMult",4000,-0.5,3999.5);
+  fMCGenTracksMult->GetYaxis()->SetTitle("#genTracks (MC)");
+  fMCGenTracksMult->GetXaxis()->SetTitle("reference multiplicity");
+  fMCGenTracksMult->Sumw2();
+  
   Int_t binsFilterBitPhiCent[3]={3,200,fCentralityNbins-1};
   Double_t minbinsFilterBitPhiCent[3]={0,-2.*TMath::Pi(),0}; 
   Double_t maxbinsFilterBitPhiCent[3]={3,2.*TMath::Pi(),100};
@@ -720,6 +745,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPsinPhiCent);
   
   fOutputList->Add(fDeltaPhiCent);
+  fOutputList->Add(fDeltaPhiSymCent);
+  
+  fOutputList->Add(fMCRecTracksMult);
+  fOutputList->Add(fMCGenTracksMult);
   
   fOutputList->Add(fCrossCheckFilterBitPhiCent);
   
@@ -778,6 +807,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dEventplaneAngle = -10;
   Double_t dEventplaneAngleCorrected = -10; // event plane angle, where tracks contributing to this angle have been subtracted
   Double_t dMCEventplaneAngle = -10;
+  
+  Double_t dReferenceMultiplicity = 0;
+  Float_t dMCNRecTracks = 0;
+  Float_t dMCNGenTracks = 0;
   
   fIsMonteCarlo = kFALSE;
   
@@ -839,7 +872,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   }
   
   AliCentrality* aCentrality = eventAOD->GetCentrality();
-  Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
+//   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
+  Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
   
   if( dCentrality < 0 ) return;
   
@@ -938,6 +972,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 		fMCPt->Fill(mcPart->Pt());
 		fMCCharge->Fill(mcPart->Charge()/3.);
 		bEventHasATrackInRange = kTRUE;
+		dMCNGenTracks++;
 	  }
 	  
 	}
@@ -1086,6 +1121,14 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 		fMCRecPrimZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
 		fMCRecPrimPtEtaPhiCent->Fill(dMCTrackPtEtaPhiCent);
 		fMCDCAPtPrimary->Fill(dDCAxyDCAzPt);
+		if( (dMCTrackZvPtEtaCent[1] > GetCutPtMin()) &&
+		  (dMCTrackZvPtEtaCent[1] < GetCutPtMax()) &&
+		  (dMCTrackZvPtEtaCent[2] > GetCutEtaMin()) &&
+		  (dMCTrackZvPtEtaCent[2] < GetCutEtaMax()) )
+		{
+		  dMCNRecTracks++; 
+		}
+		
 	  }
 	  
 	  if(!bIsPrimary /*&& !bIsHijingParticle*/)
@@ -1150,6 +1193,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  // 	  if(deltaphi > TMath::Pi()) deltaphi -= 2.*TMath::Pi();
 	  
 	  fDeltaPhiCent->Fill(deltaphi, dCentrality);
+	  fDeltaPhiSymCent->Fill(dTrackDeltaphiPtEtaPhiCent[0], dCentrality);
 	}
   } // end track loop
   
@@ -1174,7 +1218,14 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   fZvMultCent->Fill(dEventZvMultCent);
   
   // store correlation between data and MC eventplane
-  if(fIsMonteCarlo) fCorrelEventplaneMCDATA->Fill(dEventplaneAngle, dMCEventplaneAngle);
+  if(fIsMonteCarlo) 
+  {
+	fCorrelEventplaneMCDATA->Fill(dEventplaneAngle, dMCEventplaneAngle);
+	AliAODHeader *aodHeader = (AliAODHeader*)eventAOD->GetHeader();
+	dReferenceMultiplicity = aodHeader->GetRefMultiplicity();
+	fMCRecTracksMult->Fill(dReferenceMultiplicity, dMCNRecTracks);
+	fMCGenTracksMult->Fill(dReferenceMultiplicity, dMCNGenTracks);
+  }
   
   PostData(1, fOutputList);
   
@@ -1359,8 +1410,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   FillDebugHisto(dCheck, dKine, dCentrality, kFALSE);
   
-  fCrossCheckPtresLength->Fill(dLengthInTPC, dSigmaOneOverPt*tr->Pt());
-  fCrossCheckPtresRows->Fill(dCrossedRowsTPC, dSigmaOneOverPt*tr->Pt());
+  fCrossCheckPtresLength->Fill(dLengthInTPC, dSigmaOneOverPt*tr->Pt(), dCentrality);
+  fCrossCheckPtresRows->Fill(dCrossedRowsTPC, dSigmaOneOverPt*tr->Pt(), dCentrality);
   
   
   // first cut on length
@@ -1424,8 +1475,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_
 	  fCrossCheckAcc[iCrossCheck]->Fill(dFillIt);
 	}
 	
-	fCrossCheckRowsLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows]);
-	fCrossCheckClusterLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster]);
+	fCrossCheckRowsLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows], dCentrality);
+	fCrossCheckClusterLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster], dCentrality);
   }
   else
   {
@@ -1435,8 +1486,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_
 	  fCrossCheckAll[iCrossCheck]->Fill(dFillIt);
 	}
 	
-	fCrossCheckRowsLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows]);
-	fCrossCheckClusterLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster]);
+	fCrossCheckRowsLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows], dCentrality);
+	fCrossCheckClusterLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqNcluster], dCentrality);
   }
   
   return kTRUE;

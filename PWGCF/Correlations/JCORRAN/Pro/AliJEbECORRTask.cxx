@@ -70,7 +70,9 @@ ClassImp(AliJEbECORRTask)
 	fEbECentBinBorders(NULL),
 	ebePercentileInputFileName(""),
 	fRunTable(0),
-	fRandom(NULL)
+	fRandom(NULL),
+	IsMC(kFALSE),
+	fenableCORR(kFALSE)
 {
 	// Constructor
 }
@@ -101,7 +103,9 @@ AliJEbECORRTask::AliJEbECORRTask(const char *name)
 	fEbECentBinBorders(0x0),
 	ebePercentileInputFileName(""),
 	fRunTable(0),
-	fRandom(0x0) 
+	fRandom(0x0),
+	IsMC(kFALSE),
+	fenableCORR(kFALSE) 
 {
 
 	// Constructor
@@ -141,7 +145,9 @@ AliJEbECORRTask::AliJEbECORRTask(const AliJEbECORRTask& a):
 	fEbECentBinBorders(a.fEbECentBinBorders),
 	ebePercentileInputFileName(""),
 	fRunTable(a.fRunTable),
-	fRandom(a.fRandom)
+	fRandom(a.fRandom),
+	IsMC(a.IsMC),
+	fenableCORR(a.fenableCORR)
 {
 	//copy constructor
 }
@@ -189,10 +195,10 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 	fHistos = new AliJHistos(fCard);
 	fHistos->CreateEventTrackHistos();
 	fHistos->CreateAzimuthCorrHistos();
-	fHistos->CreateIAAMoons();
-	fHistos->CreateXEHistos();
+	//fHistos->CreateIAAMoons();
+	//fHistos->CreateXEHistos();
 	fHistos->CreateXtHistos();
-	fHistos->CreatePairPtCosThetaStar();
+	//fHistos->CreatePairPtCosThetaStar();
 
 	fHistos->fHMG->Print();
 	// E-b-E
@@ -206,6 +212,7 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 
 	fEfficiency = new AliJEfficiency();	
 	fEfficiency->SetMode( fCard->Get("EfficiencyMode") ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
+	if(IsMC) fEfficiency->SetMode( 0 );
 	fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data"); // Efficiency root file location local or alien
 
 	fHadronSelectionCut = int ( fCard->Get("HadronSelectionCut"));
@@ -220,7 +227,7 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 //________________________________________________________________________
 AliJEbECORRTask::~AliJEbECORRTask() {
 	delete fOutput; 
-	delete [] fAnaUtils;
+	delete fAnaUtils;
 	delete fHistos;
 	delete fEbeHistos;
 	delete fEfficiency;
@@ -291,24 +298,51 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	int counter = 0;
 
 	// Making the inputlist from AOD
-	for(Int_t it = 0; it < nt; it++) {
-		AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(it));
-		if( !aodtrack ) continue;
-		if(aodtrack->TestFilterBit(trkfilterBit)) { 
-			if(!fCard->IsInEtaRange(aodtrack->Eta())) continue;
-			TLorentzVector l = TLorentzVector( aodtrack->Px(), aodtrack->Py(), aodtrack->Pz(), aodtrack->E() );
-			AliJBaseTrack *track = new AliJBaseTrack( l );
-			track->SetID(fInputList->GetEntriesFast());
-			track->SetParticleType(kJHadron);
-			track->SetCharge(aodtrack->Charge());
-			double ptt = track->Pt();
-			double effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
-			fHistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
-			track->SetTrackEff( 1./effCorr );
-			//fInputList->Add( track );
-			new ((*fInputList)[counter++]) AliJBaseTrack(*track);
-		}
-	} // end of aodtrack
+    if( IsMC == kTRUE ){  // how to get a flag to check  MC or not !
+        TClonesArray *mcArray = (TClonesArray*) aodEvent->FindListObject(AliAODMCParticle::StdBranchName());
+		if(!mcArray){ Printf("Error not a proper MC event"); return;};  // check mc array
+
+        Int_t nt = mcArray->GetEntriesFast();
+        Int_t ntrack =0;
+        for( int it=0; it< nt ; it++){
+                AliAODMCParticle *mctrack = (AliAODMCParticle*)mcArray->At(it);
+				if( !mctrack ) continue;
+				if( mctrack->IsPhysicalPrimary() ){
+					if(!fCard->IsInEtaRange(mctrack->Eta())) continue;
+					AliJBaseTrack* track = new( (*fInputList)[fInputList->GetEntriesFast()] ) AliJBaseTrack;
+					track->SetPxPyPzE(mctrack->Px(), mctrack->Py(), mctrack->Pz(), mctrack->E());
+					Int_t pdg = mctrack->GetPdgCode();
+					Char_t ch = (Char_t) mctrack->Charge();
+					Int_t label = mctrack->GetLabel();
+					track->SetID(fInputList->GetEntriesFast());
+					track->SetParticleType(kJHadron);
+					track->SetCharge(ch);
+					track->SetLabel( label );
+					double ptt = mctrack->Pt();
+					double effCorr = 1.;  // here you generate warning if ptt>30
+					fHistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
+					track->SetTrackEff( 1./effCorr );
+				} // PhysicalPrimary
+		} // mcArray
+	} // read mc track done.
+	if( IsMC == kFALSE ){  
+		for(Int_t it = 0; it < nt; it++) {
+			AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(it));
+			if( !aodtrack ) continue;
+			if(aodtrack->TestFilterBit(trkfilterBit)) { 
+				if(!fCard->IsInEtaRange(aodtrack->Eta())) continue;
+				AliJBaseTrack* track = new( (*fInputList)[fInputList->GetEntriesFast()] ) AliJBaseTrack;
+				track->SetPxPyPzE(aodtrack->Px(), aodtrack->Py(), aodtrack->Pz(), aodtrack->E());
+				track->SetID(fInputList->GetEntriesFast());
+				track->SetParticleType(kJHadron);
+				track->SetCharge(aodtrack->Charge());
+				double ptt = track->Pt();
+				double effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
+				fHistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
+				track->SetTrackEff( 1./effCorr );
+			}
+		} // end of aodtrack
+	}
 
 	// Run the flow analysis here
 	if(fDebugMode) cout << "Start of RunEbEFlowAnalysis.. FilterBit (AOD,Ntrack)="<< trkfilterBit << ","<< nt <<","<< fInputList->GetEntries() <<endl;
@@ -343,22 +377,25 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 		if( -0.2<etat && etat< 0.3) fHistos->fhChargedPtJacekEta[cBin][1]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);
 		if(  0.3<etat && etat< 0.8) fHistos->fhChargedPtJacekEta[cBin][2]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);
 		fHistos->fhChargedPtFiete->Fill(ptt, effCorr );
-		if( track->GetTriggBin() > -1 ) { new ((*ftriggList)[noTrigg++]) AliJBaseTrack(*track); }//ftriggList->Add( track );
-		if( track->GetAssocBin() > -1 ) { new ((*fassocList)[noAssoc++]) AliJBaseTrack(*track); }//
-		if(track->GetAssocBin() > -1){
-			int ipta  = track->GetAssocBin();
-			double effCorrection = 1.0/track->GetTrackEff();
-			fHistos->fhIphiAssoc[cBin][ipta]->Fill( track->Phi(), effCorrection);
-			fHistos->fhIetaAssoc[cBin][ipta]->Fill( track->Eta(), effCorrection);
+		if(fenableCORR) {
+			if( track->GetTriggBin() > -1 ) { new ((*ftriggList)[noTrigg++]) AliJBaseTrack(*track); }//ftriggList->Add( track );
+			if( track->GetAssocBin() > -1 ) { new ((*fassocList)[noAssoc++]) AliJBaseTrack(*track); }//
+			if(track->GetAssocBin() > -1){
+				int ipta  = track->GetAssocBin();
+				double effCorrection = 1.0/track->GetTrackEff();
+				fHistos->fhIphiAssoc[cBin][ipta]->Fill( track->Phi(), effCorrection);
+				fHistos->fhIetaAssoc[cBin][ipta]->Fill( track->Eta(), effCorrection);
+			}
 		}
 	}
 
 	// correlation loop
 	if(fDebugMode) cout << "Start of Correlation Loop noTrigg = "<< ftriggList->GetEntriesFast()<<"\t noAssoc="<<fassocList->GetEntriesFast()<<endl;
-	if(fassocList->GetEntriesFast()>0 ) fassocPool->AcceptList(fassocList, fcent, zVert, fInputList->GetEntriesFast(), fevt);
-	PlayCorrelation(ftriggList, fassocList);
-	fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, fInputList->GetEntriesFast(), fevt);
-
+	if(fenableCORR) {
+		if(fassocList->GetEntriesFast()>0 ) fassocPool->AcceptList(fassocList, fcent, zVert, fInputList->GetEntriesFast(), fevt);
+		PlayCorrelation(ftriggList, fassocList);
+		fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, fInputList->GetEntriesFast(), fevt);
+	}
 	PostData(1, fOutput);
 }
 
@@ -517,7 +554,7 @@ double AliJEbECORRTask::RunEbEFlowAnalysis(AliVEvent *event, TClonesArray* input
 		}
 	} // track loop
 
-    for(int ih = firstH ; ih < kNHarmonics ; ih++)  vobsalt[ih] = 0;
+	for(int ih = firstH ; ih < kNHarmonics ; ih++)  vobsalt[ih] = 0;
 	// calculating Vn obs
 	if(counterA > 1 && counterB > 1){
 

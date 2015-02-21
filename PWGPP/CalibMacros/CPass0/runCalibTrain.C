@@ -7,7 +7,7 @@
   - output AliESDfriends_v1.root with TPC and TRD calibration objects are created
 
   Example:
-  .L $ALICE_ROOT/ANALYSIS/macros/runCalibTrain.C
+  .L $ALICE_PHYSICS/ANALYSIS/macros/runCalibTrain.C
   runCalibTrain("104892");
 */
 
@@ -18,18 +18,18 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //
   AliSysInfo::SetVerbose(kTRUE);
   AliLog::SetGlobalLogLevel(AliLog::kError); 
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
-  gSystem->SetIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS"); 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+  gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
+  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
 
   // detector tasks
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskTRDCalib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskT0Calib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskMeanVertexCalib.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass0/AddTaskSDDCalib.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTRDCalib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskT0Calib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskMeanVertexCalib.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskSDDCalib.C"); 
 
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);

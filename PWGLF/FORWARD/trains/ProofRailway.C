@@ -154,7 +154,8 @@ struct ProofRailway : public Railway
    * @return true on success 
    */
   virtual Bool_t LoadLibrary(const TString& name, 
-			     Bool_t slaves=true)
+			     Bool_t slaves=true,
+			     Bool_t forcePar=false)
   {
     Bool_t isBase = false;
     if (!fBasePars) { 
@@ -166,7 +167,7 @@ struct ProofRailway : public Railway
 	  name.EqualTo("ANALYSISalice")) 
 	isBase = true;
     }
-    if (!fUsePars || isBase) {
+    if ((!fUsePars || isBase) && !forcePar) {
       Int_t ret = gSystem->Load(MakeLibraryName(name));
       if (ret < 0) return false;
       if (slaves) fExtraLibs.Append(Form(":%s", name.Data()));
@@ -406,7 +407,7 @@ struct ProofRailway : public Railway
     TString env(gSystem->Getenv(name.Data()));
     if (env.IsNull()) return;
 
-    out.Append(Form("  gSystem->SetEnv(\"%s\",\"%\");\n",
+    out.Append(Form("  gSystem->Setenv(\"%s\",\"%s\");\n",
 		    name.Data(), env.Data()));
   }
 		

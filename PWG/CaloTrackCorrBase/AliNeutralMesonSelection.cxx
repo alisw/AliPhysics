@@ -26,6 +26,7 @@
 
 //---- AliRoot system ----
 #include "AliNeutralMesonSelection.h" 
+#include "AliLog.h"
 
 ClassImp(AliNeutralMesonSelection)
   
@@ -220,6 +221,8 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
   
   //Search for the neutral pion within selection cuts
   
+  fDecayBit = 0;
+  
   //  Double_t pt  = (gammai+gammaj).Pt();
   Double_t phi = (gammai+gammaj).Phi();
   if(phi < 0)
@@ -249,8 +252,11 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
         fhInvMassPairOpeningAngleCut->Fill(e,invmass);
         fhAsymmetryOpeningAngleCut  ->Fill(e,asy);
       }
-      //AliDebug(2,Form("Angle cut: pt %f, phi %f",pt,phi));
-    } else return kFALSE;
+      
+      AliDebug(2,Form("Angle cut: energy %f, phi %f",e,phi));
+      
+    }
+    else return kFALSE;
   }
   
   // Asymmetry cut
@@ -263,41 +269,50 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
         fhInvMassPairAsymmetryCut->Fill(e,invmass);
         fhAnglePairAsymmetryCut  ->Fill(e,angle);
       }
-    } else return kFALSE;
+    }
+    else
+      return kFALSE;
   }
-  
   
   //Cut on the invariant mass of the pair
   
-  Float_t invmassmaxcut = fInvMassMaxCut;
+  Float_t invmassmaxcut          = fInvMassMaxCut;
   Float_t invmassRightBandMinCut = fRightBandMinCut;
-  Float_t invmassRightBandMixCut = fRightBandMaxCut;
+  Float_t invmassRightBandMaxCut = fRightBandMaxCut;
 
   // kEMCAL=0, kPHOS=1
   if(calo==0 && e > 6.)
-  { // for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
+  {
+    // for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
   
-    invmassmaxcut = (fInvMassMaxCutParam[0]+fInvMassMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
+    invmassmaxcut          = (fInvMassMaxCutParam[0]+fInvMassMaxCut  )+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
     invmassRightBandMinCut = (fInvMassMaxCutParam[0]+fRightBandMinCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
-    invmassRightBandMixCut = (fInvMassMaxCutParam[0]+fRightBandMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
+    invmassRightBandMaxCut = (fInvMassMaxCutParam[0]+fRightBandMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
 
     //printf("e %f, max cut %f, p00 %f,p0 %f,p1 %f,p2 %f\n",
     //       e,invmassmaxcut,fInvMassMaxCut,fInvMassMaxCutParam[0],fInvMassMaxCutParam[1],fInvMassMaxCutParam[2]);
   }
   
   // normal case, invariant mass selection around pi0/eta peak
+  Int_t decayBit = -1;
+
   if( !fParticle.Contains("SideBand") )
   {
     if( invmass > fInvMassMinCut && invmass < invmassmaxcut )
-    { 
+    {
+      if     (fParticle=="Pi0") fDecayBit = kPi0;
+      else if(fParticle=="Eta") fDecayBit = kEta;
+      else AliWarning("Unexpected particle peak name!");
+      
       if(fKeepNeutralMesonHistos)
       {
         fhInvMassPairAllCut->Fill(e,invmass);
         fhAnglePairAllCut  ->Fill(e,angle);
         fhAsymmetryAllCut  ->Fill(e,asy);
-      }      
+      }
       
-      //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
+      AliDebug(2,Form("IM in peak cut: energy %f, im %f, bit map %d",e,invmass,fDecayBit));
+      
       return kTRUE;
       
     }//(invmass>0.125) && (invmass<0.145)
@@ -309,9 +324,31 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
  
   else // select a band around pi0/eta
   {
-    if((invmass > fLeftBandMinCut  && invmass < fLeftBandMaxCut ) ||  
-       (invmass > invmassRightBandMinCut && invmass < invmassRightBandMixCut))
-    { 
+    Bool_t ok = kFALSE;
+    
+    // Left side?
+    if( invmass > fLeftBandMinCut  && invmass < fLeftBandMaxCut )
+    {
+      if     (fParticle.Contains("Pi0")) fDecayBit = kPi0LeftSide;
+      else if(fParticle.Contains("Eta")) fDecayBit = kEtaLeftSide;
+      else AliWarning("Unexpected particle side_band name!");
+      
+      ok = kTRUE;
+    }
+    
+    //Right side?
+    if( invmass > invmassRightBandMinCut && invmass < invmassRightBandMaxCut )
+    {
+      if     (fParticle.Contains("Pi0")) { fDecayBit = kPi0RightSide; if(ok) fDecayBit = kPi0BothSides; }
+      else if(fParticle.Contains("Eta")) { fDecayBit = kEtaRightSide; if(ok) fDecayBit = kEtaBothSides; }
+      else AliWarning("Unexpected particle side_band name!");
+      
+      ok = kTRUE;
+    }
+    
+    // Any of the sides?
+    if(ok)
+    {
       if(fKeepNeutralMesonHistos)
       {
         fhInvMassPairAllCut->Fill(e,invmass);
@@ -319,7 +356,8 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
         fhAsymmetryAllCut  ->Fill(e,asy);
       }      
       
-      //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
+      AliDebug(2,Form("IM side band cut: energy %f, im %f, bit map %d",e,invmass,fDecayBit));
+      
       return kTRUE;
       
     }//(invmass>0.125) && (invmass<0.145)
@@ -337,7 +375,6 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
   // Set some default parameters for selection of pi0 or eta
 
   fParticle = particleName ;
-  fDecayBit = kPi0;
 
   if(particleName.Contains("Pi0"))
   {
@@ -365,10 +402,6 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     fAngleMaxParam.AddAt(-1,    1) ;
     fAngleMaxParam.AddAt( 0.09, 2) ; //for pi0 shift, for eta maybe 0.09 
     fAngleMaxParam.AddAt(-2.e-3,3) ;
-    
-    fDecayBit = kPi0;
-    if(particleName.Contains("Side")) fDecayBit = kPi0Side;
-  
   }  
   else if(particleName.Contains("Eta"))
   {
@@ -396,9 +429,6 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
     fAngleMaxParam.AddAt(-0.25,  1) ; // Same as pi0
     fAngleMaxParam.AddAt( 0.12,  2) ; // Shifted with respect to pi0
     fAngleMaxParam.AddAt(-5.e-4, 3) ; // Same as pi0
-    
-    fDecayBit = kEta;
-    if(particleName.Contains("Side")) fDecayBit = kEtaSide;
   }
   else 
     printf("AliAnaNeutralMesonSelection::SetParticle(%s) *** Particle NOT defined (Pi0 or Eta), Pi0 settings by default *** \n",particleName.Data());

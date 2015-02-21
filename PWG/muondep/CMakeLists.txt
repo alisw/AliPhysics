@@ -27,7 +27,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskESDMCLabelAddition.cxx 
-  AliAnalysisTaskPileup.cxx 
+  AliAnalysisTaskPileup.cxx
+  AliAnalysisTaskMuonCDBConnect.cxx
   AliAnalysisTaskMuonRefit.cxx
   AliAnalysisTriggerScalers.cxx
   AliAnalysisMuMu.cxx

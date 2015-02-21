@@ -54,7 +54,6 @@ set(SRCS_analysis2
   analysis2/AliPoissonCalculator.cxx
   analysis2/AliMCAuxHandler.cxx
   # Forward Aux
-  analysis2/AliForwardFlowWeights.cxx
   analysis2/AliForwardUtil.cxx
   analysis2/AliFMDMultCuts.cxx
   # FMD corrections
@@ -99,7 +98,12 @@ set(SRCS_analysis2
   # MC investigations 
   analysis2/AliFMDMCTrackELoss.cxx
   analysis2/AliFMDMCTrackInspector.cxx 
-  analysis2/AliFMDMCTrackInspectorTask.cxx 
+  analysis2/AliFMDMCTrackInspectorTask.cxx
+  # MC Weights
+  analysis2/AliBaseMCWeights.cxx	
+  analysis2/AliForwardFlowWeights.cxx
+  analysis2/AliSimplePidWeights.cxx
+  analysis2/AliPtEtaPidWeights.cxx	
 )
 
 # Sources under GEO/ - alphabetical order
@@ -153,7 +157,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate a PARfile target for this library
-add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+add_target_parfile(${MODULE}
+  "${SRCS}"
+  "${HDRS}"
+  "${MODULE}LinkDef.h"
+  "${LIBDEPS}")
 
 # Add a shared library
 add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
@@ -168,6 +176,7 @@ target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
+
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)

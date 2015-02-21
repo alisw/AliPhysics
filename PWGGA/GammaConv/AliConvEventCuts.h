@@ -137,7 +137,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
 		ULong_t 	GetTriggerList();
 		Float_t 	GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
-		Double_t 	GetCentrality(AliVEvent *event);
+		Float_t 	GetCentrality(AliVEvent *event);
 		void 		GetCorrectEtaShiftFromPeriod(TString periodName);
 		void 		GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent); 
 		TClonesArray* 	GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
@@ -188,7 +188,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		void 		DoEtaShift(Bool_t doEtaShift)							{ fDoEtaShift = doEtaShift								; }
 		
 		//MC particle flags - determine whether particle is primary or secondary
-		Bool_t IsConversionPrimaryESD( AliStack *MCStack, Int_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ); 
+		Bool_t IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ); 
 		
 	protected:
 		TList 						*fHistograms;
@@ -263,7 +263,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		
 	private:
 
-		ClassDef(AliConvEventCuts,3)
+		ClassDef(AliConvEventCuts,4)
 };
 
 

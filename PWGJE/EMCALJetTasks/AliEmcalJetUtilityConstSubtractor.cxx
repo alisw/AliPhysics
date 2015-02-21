@@ -185,7 +185,6 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
       std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
       std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
       fJetTask->FillJetConstituents(jet_sub, constituents_sub, fJetTask->GetTracks(), fJetTask->GetClusters(), constituents_unsub, 1, fParticlesSub);
-      jet_sub->SetNumberOfTracks(constituents_sub.size());
       jetCount++;
     }
   }

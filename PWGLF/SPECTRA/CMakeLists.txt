@@ -26,6 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
   )
 
 # Sources - alphabetical order
@@ -63,6 +64,8 @@ set(SRCS
   PiKaPr/TestAOD/AliAnalysisTaskV2AllChAOD.cxx
   Kinks/AliAnalysisKinkESDat.cxx
   Kinks/AliAnalysisKinkESDMC.cxx
+  Kinks/AliESDkinkCuts.cxx
+  Kinks/AliAnalysisTaskKinksFilimon.cxx
   PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
@@ -84,7 +87,14 @@ set(SRCS
   XtAnalysis/AliJCard.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
   IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
-  )
+  MultEvShape/AliMESeventInfo.cxx
+  MultEvShape/AliMEStrackInfo.cxx
+  MultEvShape/AliMESbaseTask.cxx
+  MultEvShape/AliMEStender.cxx
+  MultEvShape/AliMESpidTask.cxx
+  MultEvShape/AliMESchgTask.cxx
+  MultEvShape/AliMESppColTask.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -99,7 +109,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGTools PWGUDbase)
+set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -129,3 +139,5 @@ install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
 install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
 install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
+install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "*.C")
+install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION  PWGLF/SPECTRA/MultEvShape)

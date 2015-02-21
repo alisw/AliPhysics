@@ -288,7 +288,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // Primaries origin
   TH2F *   fhPrimPi0PtOrigin ;         //! Spectrum of generated pi0 vs mother
   TH2F *   fhPrimEtaPtOrigin ;         //! Spectrum of generated eta vs mother
-  
+  TH2F *   fhPrimNotResonancePi0PtOrigin ; //! Spectrum of generated pi0 vs mother
+  TH2F *   fhPrimPi0PtStatus ;         //! Spectrum of generated pi0 vs pi0 status
+
   //Pair origin
   //Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles, 
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
@@ -306,6 +308,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F **  fhMCEtaPtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts] Real eta pairs, reconstructed pt vs generated pt of pair
 
   TH2F *   fhMCPi0PtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
+  TH2F *   fhMCNotResonancePi0PtOrigin ;//! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
+  TH2F *   fhMCPi0PtStatus ;            //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2F *   fhMCEtaPtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
   TH2F *   fhMCPi0ProdVertex;          //! Spectrum of selected pi0 vs production vertex

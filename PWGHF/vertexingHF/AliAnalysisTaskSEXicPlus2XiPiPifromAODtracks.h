@@ -28,6 +28,7 @@
 
 class THnSparse;
 class TH1F;
+class TH2F;
 class TClonesArray;
 class AliAODRecoCascadeHF3Prong;
 class AliAODPidHF;
@@ -49,7 +50,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, Int_t mcnused);
+  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   
@@ -125,8 +126,11 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistonSigmaTPCpi;                  //! nSigma of TPC pion
   TH1F*  fHistonSigmaTOFpi;                  //! nSigma of TOF pion
   TH1F*  fHistoProbPion;                     //! Probability to be pion
+
+  TH2F*  fHistoXiMassvsPtRef;                    //! Reference Xi mass spectra 
+  TH1F*  fHistoPiPtRef;                      //! Reference pi spectra 
   
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,3); // class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,4); // class for Xic->Xipipi
 };
 #endif
 

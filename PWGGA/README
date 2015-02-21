@@ -10,6 +10,7 @@ Provided libraries:
 libPWGGACaloTrackCorrelations.so
 libPWGGAEMCALTasks.so
 libPWGGAGammaConv.so
+libPWGGAHyperon.so
 libPWGGAPHOSTasks.so
 libPWGGACaloTasks.so
 
@@ -24,6 +25,9 @@ Responsible: G. Conesa, M. Cosentino
 
 GammaConv: holds code re Conversions depends on CORRFW
 Responsible: S. Lindal, D. Lohner
+
+Hyperon: holds code re Sigma0->Lambda+gamma where gamma detected in PCM or in PHOS
+Responsible: Y. Kharlov (analysis developer A.Borissov)
 
 PHOSTasks: holds code re the PHOS
 Responsible: D. Peressounko, Y. Kharlov

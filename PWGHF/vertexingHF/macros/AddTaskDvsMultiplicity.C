@@ -8,7 +8,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 TString estimatorFilename="",
 							 Double_t refMult=9.26,
 							 Bool_t subtractDau=kFALSE,
-							 Bool_t NchWeight=kFALSE,
+							 Int_t NchWeight=0,
 							 Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
 							 Int_t MCEstimator = AliAnalysisTaskSEDvsMultiplicity::kEta10,
 							 Bool_t isPPbData=kFALSE)
@@ -78,17 +78,39 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   if(isPPbData) dMultTask->SetIsPPbData();
 
   if(NchWeight){
-    TH1F *hNchPrimaries = NULL; 
-    if(isPPbData) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithDWeight");
-    else hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
-    if(hNchPrimaries) {
-      dMultTask->UseMCNchWeight(true);
-      dMultTask->SetHistoNchWeight(hNchPrimaries);
-    } else {
-      AliFatal("Histogram for multiplicity weights not found");
-      return 0x0;
+    TH1F *hNchPrimaries = NULL;
+    TH1F *hMeasNchPrimaries = NULL; 
+    if(NchWeight==1){ 
+      if(isPPbData) {
+	hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithDWeight"); // MC distribution
+      }
+      else hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
+      if(hNchPrimaries) {
+	dMultTask->UseMCNchWeight(NchWeight);
+	dMultTask->SetHistoNchWeight(hNchPrimaries);
+      } else {
+	AliFatal("Histogram for Nch multiplicity weights not found");
+	return 0x0;
+      }
+      hMeasNchPrimaries = (TH1F*)filecuts->Get("hMeasNtrUnCorrEvWithD"); // data distribution
+      if(hMeasNchPrimaries) {
+	dMultTask->SetMeasuredNchHisto(hMeasNchPrimaries);
+      } 
+    }
+    else if(NchWeight==2){ 
+      hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithDWeight"); // MC distribution
+      hMeasNchPrimaries = (TH1F*)filecuts->Get("hMeasNtrUnCorrEvWithD"); // data distribution
+      if(hNchPrimaries && hMeasNchPrimaries) {
+	dMultTask->UseMCNchWeight(NchWeight);
+	dMultTask->SetHistoNchWeight(hNchPrimaries);
+	dMultTask->SetMeasuredNchHisto(hMeasNchPrimaries);
+      } else {
+	AliFatal("Histogram for Ntrk multiplicity weights not found");
+	return 0x0;
+      }
     }
   }
+
 
   if(pdgMeson==421) { 
     dMultTask->SetMassLimits(1.5648,2.1648);

@@ -51,6 +51,7 @@
 #include "AliKFVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliTriggerAnalysis.h"
+#include "AliAODMCHeader.h"
 
 // my headers
 #include "AliAnalysisTaskUpcPsi2s.h"
@@ -142,6 +143,7 @@ void AliAnalysisTaskUpcPsi2s::Init()
 	}
   for(Int_t i=0; i<3; i++){
   	fVtxPos[i] = -666; 
+	fMCVtxPos[i] = -666;
 	fVtxErr[i] = -666;
 	fKfVtxPos[i] = -666;
 	fSpdVtxPos[i] = -666;
@@ -253,6 +255,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   if(isMC) {
     fJPsiTree ->Branch("fGenPart", &fGenPart);
     fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[4]/O");
+    fJPsiTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
   }
 
  
@@ -317,6 +320,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   if(isMC) {
     fPsi2sTree ->Branch("fGenPart", &fGenPart);
     fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[4]/O");
+    fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
   }
 
   
@@ -1159,6 +1163,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
     part->SetPdgCode(mcPart->GetPdgCode());
     part->SetUniqueID(imc);
   }//loop over mc particles
+  
+  AliAODMCHeader *mcHeader = (AliAODMCHeader*) aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) return;
+  
+  fMCVtxPos[0] = mcHeader->GetVtxX();
+  fMCVtxPos[1] = mcHeader->GetVtxY();
+  fMCVtxPos[2] = mcHeader->GetVtxZ(); 
 
 }//RunAODMC
 

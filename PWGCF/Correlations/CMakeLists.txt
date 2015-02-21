@@ -17,6 +17,7 @@
 add_subdirectory(Base)
 add_subdirectory(DPhi)
 add_subdirectory(JCORRAN)
+add_subdirectory(ThreePart)
 
 # Install the macros
 install(DIRECTORY macros DESTINATION PWGCF/Correlations)

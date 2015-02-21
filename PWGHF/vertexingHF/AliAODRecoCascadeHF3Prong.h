@@ -77,6 +77,7 @@ class AliAODRecoCascadeHF3Prong : public AliAODRecoDecayHF3Prong {
   Double_t CascMassAntiLambda() const;
 
   Double_t XicCosPointingAngle() const;
+  Double_t BachelorsCosPointingAngle() const;
 
  protected:
 

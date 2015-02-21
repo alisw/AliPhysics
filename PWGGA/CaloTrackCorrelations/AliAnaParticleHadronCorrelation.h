@@ -88,7 +88,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         FillNeutralUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc, 
                                                          Float_t zT,       Float_t hbpZT, 
                                                          Float_t deltaPhi);  
-    
+	
+	void         InvMassHisto(AliAODPWG4ParticleCorrelation * trigger, Int_t mcIndex);
+	
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   static const Int_t fgkNmcTypes = 10;
 
@@ -130,6 +132,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillLeadHadronHistograms() { fFillLeadHadOppositeHisto = kTRUE  ; }
   void         SwitchOffFillLeadHadronHistograms(){ fFillLeadHadOppositeHisto = kFALSE ; }
 
+	void         SwitchOnInvariantMassHistograms() { fFillInvMassHisto = kTRUE     ; }
+	void         SwitchOffInvariantMassHistograms(){ fFillInvMassHisto = kFALSE     ; }
+	
   // UE
   
   Double_t     GetUeDeltaPhiMaxCut()       const { return fUeDeltaPhiMaxCut      ; }
@@ -166,7 +171,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnDecayTriggerDecayCorr()   { fDecayTrigger        = kTRUE  ; }
   void         SwitchOffDecayTriggerDecayCorr()  { fDecayTrigger        = kFALSE ; }  
   void         SetNDecayBits(Int_t n)            { fNDecayBits = n               ; }
-  void         SetDecayBits(Int_t i, UInt_t bit) { if(i < 4) fDecayBits[i] = bit ; }
+  void         SetDecayBits(Int_t i, UInt_t bit) { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits)
+                                                   fDecayBits[i] = bit           ; }
   
   Bool_t       IsHMPIDCorrelation()        const { return fHMPIDCorrelation      ; }
   void         SwitchOnHMPIDCorrelation()        { fHMPIDCorrelation    = kTRUE  ; }
@@ -227,7 +233,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fPi0Trigger ;                   // switch the analysis with decay photon from pi0 trigger
   Bool_t       fDecayTrigger ;                 // switch the analysis with decay photon from photon trigger
   Int_t        fNDecayBits ;                   // in case of study of decay triggers, select the decay bit
-  UInt_t       fDecayBits[4] ;                 // in case of study of decay triggers, select the decay bit
+  UInt_t       fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; // in case of study of decay triggers, select the decay bit
   Bool_t       fMakeAbsoluteLeading ;          // requesting absolute leading triggers
   Bool_t       fMakeNearSideLeading ;          // requesting near side leading (+-90º from trigger particle) triggers
   Int_t        fLeadingTriggerIndex ;          // Store here per event the trigger index, to avoid too many loops
@@ -256,12 +262,15 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t       fFillEtaGapsHisto;              // Fill azimuthal correlation histograms in 2 eta gaps, |eta|>0.8 and |eta|<0.01
   Bool_t       fFillMomImbalancePtAssocBinsHisto; // momentum imbalance histograms in bins of pT associated
-  
+	
+	Bool_t       fFillInvMassHisto;              // Fill invariant mass histograms for trigger
+	
   Int_t        fMCGenTypeMin;                  // Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax
   Int_t        fMCGenTypeMax;                  // Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax
   
   TVector3       fTrackVector;                 //! track momentum vector
-  TLorentzVector fMomentum;                    //! trigger momentum
+	TLorentzVector fMomentum;                    //! trigger momentum
+	TLorentzVector fMomentumIM;                  //! cluster momentum from Invariant mass
   TLorentzVector fDecayMom1;                   //! decay particle momentum
   TLorentzVector fDecayMom2;                   //! decay particle momentum
   
@@ -282,8 +291,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F *       fhPtTriggerMC[fgkNmcTypes];     //! pT distribution of trigger particles, check the origin of the cluster : "Photon","Pi0","Pi0Decay","EtaDecay","OtherDecay","Electron","Hadron"
 
-  TH1F *       fhPtDecayTrigger[4];            //! pT distribution of trigger particles, tagged as decay
-  TH1F *       fhPtDecayTriggerMC[4][fgkNmcTypes];//! pT distribution of trigger particles, tagged as decay, check the origin of the cluster
+  TH1F *       fhPtDecayTrigger  [AliNeutralMesonSelection::fgkMaxNDecayBits]; //! pT distribution of trigger particles, tagged as decay
+  TH1F *       fhPtDecayTriggerMC[AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes];//! pT distribution of trigger particles, tagged as decay, check the origin of the cluster
   
   TH2F *       fhPtTriggerCentrality;          //! pT distribution of trigger particles vs centrality
   TH2F *       fhPtTriggerEventPlane;          //! pT distribution of trigger particles vs centrality
@@ -294,7 +303,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtTriggerMixedBin;            //! pT distribution of trigger particles vs mixing bin
   TH2F *       fhPhiTriggerMixed;              //! phi distribution vs pT of trigger particles, used in mixing
   TH2F *       fhEtaTriggerMixed;              //! eta distribution vs pT of trigger particles, used in mixing  
-
+	
   // Leading hadron in the opposite side of the trigger
   TH2F *       fhPtLeadingOppositeHadron;        //! pT trigger : pT distribution of leading hadron oposite to trigger
   TH2F *       fhPtDiffPhiLeadingOppositeHadron; //! pT trigger : difference phi distribution of leading hadron oposite and trigger
@@ -444,9 +453,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhZTPi0DecayNeutral ;           //! Trigger particle (decay from pi0/eta trigger)-neutral hadron momentum imbalance histogram
 
   // Decay photon trigger correlation
-  TH2F *       fhDeltaPhiDecayCharged[4]  ;    //! Difference of charged particle phi and photon decay trigger
-  TH2F *       fhXEDecayCharged[4] ;           //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
-  TH2F *       fhZTDecayCharged[4] ;           //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
+  TH2F *       fhDeltaPhiDecayCharged[AliNeutralMesonSelection::fgkMaxNDecayBits];//! Difference of charged particle phi and photon decay trigger
+  TH2F *       fhXEDecayCharged[AliNeutralMesonSelection::fgkMaxNDecayBits];      //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
+  TH2F *       fhZTDecayCharged[AliNeutralMesonSelection::fgkMaxNDecayBits];      //! Trigger particle (decay from pi0)-charged hadron momentum imbalance histogram
   TH2F **      fhDeltaPhiDecayChargedAssocPtBin;//![fNAssocPtBins*GetNZvertBin()] Tagged as decay (fDecayBits[0]) Trigger pT vs dPhi for different associated pt bins
   
   // If the data is MC, correlation with generated particles
@@ -497,7 +506,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH1I *       fhEventBin;                     //! Number of triggers in a particular event bin (cen,vz,rp)
   TH1I *       fhEventMixBin;                  //! Number of triggers mixed in a particular bin (cen,vz,rp)
   TH1I *       fhEventMBBin;                   //! Number of MB events in a particular bin (cen,vz,rp)
-  
+	
+	// Check invariant mass
+	TH2F *       fhMassPtTrigger;                //! Invariant mass of the trigger
+	TH2F *       fhMCMassPtTrigger[fgkNmcTypes]; //! Invariant mass of the trigger vs MC origin
+
+	
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	

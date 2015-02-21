@@ -53,7 +53,7 @@ class TProfile;
 
 namespace AliPIDNameSpace {
   
-  enum PIDType
+  enum PIDTypes
   {
     NSigmaTPC = 0,
     NSigmaTOF,
@@ -69,7 +69,6 @@ namespace AliPIDNameSpace {
     fTOF,
     fNDetectors
   };
-  
   
   enum AliParticleSpecies
   {
@@ -244,15 +243,30 @@ fPtTOFPIDmin=PtTOFPIDmin;
 fPtTOFPIDmax=PtTOFPIDmax;
 }
 
+ void detdeltacutPion(Double_t Piondeltacutmin,Double_t Piondeltacutmax){
+   fPiondeltacutmin=Piondeltacutmin;
+   fPiondeltacutmax=Piondeltacutmax;
+ }
+ void detdeltacutProton(Double_t Protondeltacutmin, Double_t Protondeltacutmax){
+   fProtondeltacutmin=Protondeltacutmin;
+   fProtondeltacutmax=Protondeltacutmax;
+ }
+
  void SetEffcorectionfilePathName(TString efffilename) {fefffilename=efffilename;}
  
 
   //PID Type
-  void SetPIDType(AliPIDNameSpace::PIDType PIDmethod) { fPIDType = PIDmethod; }
-  AliPIDNameSpace::PIDType GetPIDType() {return fPIDType; }
+  void SetPIDTypes(PIDTypes PIDmethod) { fPIDType = PIDmethod; }
+  PIDTypes GetPIDTypes() {return fPIDType; }
   //NSigma cut
   //set cut on beyesian probability
   void SetBayesCut(Double_t cut){fBayesCut=cut;}
+  void SetdiffPtRanges_PIDcut(Double_t Pt1, Double_t Pt2, Double_t Pt3)//set Pt ranges for diff. pid cut values < fPtTOFPIDMax
+  {
+    fPt1=Pt1;
+    fPt2=Pt2;
+    fPt3=Pt3;
+  }
   void SetdiffPIDcutvalues(Bool_t diffPIDcutvalues,Double_t PIDCutval1, Double_t PIDCutval2, Double_t PIDCutval3,Double_t PIDCutval4){
     fdiffPIDcutvalues=diffPIDcutvalues;
     fPIDCutval1=PIDCutval1;
@@ -312,7 +326,6 @@ fFracTPCcls=FracSharedTPCcls;//0.4
     Double_t fVxMax_MC;
     Double_t fVyMax_MC;
     Double_t fVzMax_MC;
-
     Bool_t ffilltrigassoUNID;
     Bool_t ffilltrigUNIDassoID;
     Bool_t ffilltrigIDassoUNID;
@@ -534,7 +547,9 @@ fFracTPCcls=FracSharedTPCcls;//0.4
     void CalculateNSigmas(AliAODTrack *track, Bool_t FIllQAHistos);
     Int_t FindMinNSigma(AliAODTrack *track, Bool_t FIllQAHistos);
     Bool_t* GetDoubleCounting(AliAODTrack * trk, Bool_t FIllQAHistos);
-    Int_t GetParticle(AliAODTrack * trk, Bool_t FIllQAHistos);  
+    Int_t GetParticle(AliAODTrack * trk, Bool_t FIllQAHistos);
+
+    Bool_t TPCCutMIGeo(AliAODTrack* track,AliAODEvent* evt);//TPCSectoredge cut for TPC only PID at high Pt
  
      TH2F* GetHistogram2D(const char * name);//!return histogram "name" from fOutputList
 
@@ -560,11 +575,14 @@ fFracTPCcls=FracSharedTPCcls;//0.4
   Float_t fPtTOFPIDmin; //lower pt bound for the TOCTOF combined circular pid
   Float_t fPtTOFPIDmax; //uper pt bound for the TOCTOF combined circular pid
   Bool_t fRequestTOFPID;//if true returns kSpUndefined if the TOF signal is missing
-  AliPIDNameSpace::PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
+  PIDTypes fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
   Bool_t fFIllPIDQAHistos; //Switch for filling the nSigma histos
   Double_t fNSigmaPID; // number of sigma for PID cut
   Double_t fBayesCut; // Cut on Bayesian probability
  Bool_t fdiffPIDcutvalues;
+ Double_t fPt1;//set Pt ranges for diff. pid cut values < fPtTOFPIDMax
+ Double_t fPt2;
+ Double_t fPt3;
  Double_t fPIDCutval1;
  Double_t fPIDCutval2;
  Double_t fPIDCutval3;
@@ -617,9 +635,16 @@ TH3F*  fHistFinalPtCentInvAntiLambda;//!
 Int_t fDaugNClsTPC;
 Float_t fFracTPCcls;
 
+ Bool_t TPCSectoredgecut;
+ Int_t fNclsusedfordEdXdtr;
+ Double_t fPiondeltacutmin;
+ Double_t fPiondeltacutmax;  
+ Double_t fProtondeltacutmin;
+ Double_t fProtondeltacutmax;
+ Double_t deltapion_val;//global deltapion variable;no need toset any value for it
 
 
-  Float_t fnsigmas[NSpecies][AliPIDNameSpace::NSigmaPIDType+1]; //nsigma values
+  Float_t fnsigmas[NSpecies][NSigmaPIDType+1]; //nsigma values
   Bool_t fHasDoubleCounting[NSpecies];//array with compatible identities
 
   //Int_t fPIDMethod; // PID method
@@ -709,3 +734,10 @@ fCentralityCorrelation
 
 //particlepidtrig
 //fRequestEventPlanemixing
+/*
+AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
+                                    Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
+                                    Bool_t cachePID=kFALSE, TString detResponse="",
+                                    Bool_t useTPCEtaCorrection = kTRUE,//Please use default value! Otherwise splines can be off
+                                    Bool_t useTPCMultiplicityCorrection = kTRUE,//Please use default value! Otherwise splines can be off
+                                    Int_t  recoDataPass = -1)*/

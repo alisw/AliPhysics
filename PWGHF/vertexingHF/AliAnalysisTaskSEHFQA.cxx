@@ -1164,9 +1164,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   TClonesArray *arrayProng =0;
 
   // Load all the branches of the DeltaAOD - needed for SelectionBit counting
-  TClonesArray *arrayProng1 =0;
-  TClonesArray *arrayProng2 =0;
-  TClonesArray *arrayProng3 =0;
+  TClonesArray *arrayProngD0toKpi  =0;
+  TClonesArray *arrayProng3Prong   =0;
+  TClonesArray *arrayProng4Prong   =0;
+  TClonesArray *arrayProngDstar    =0;
+  TClonesArray *arrayProngCascades =0;
 
   Int_t pdg=0;
   Int_t *pdgdaughters=0x0;
@@ -1183,13 +1185,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
-   
-   
       
-      switch(fDecayChannel){
-      case 0:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
-	pdg=411;
+      arrayProng3Prong  =(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+      arrayProng4Prong  =(TClonesArray*)aodFromExt->GetList()->FindObject("Charm4Prong");
+      arrayProngD0toKpi =(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+      arrayProngDstar   =(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+      arrayProngCascades=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
+      
+    switch(fDecayChannel){
+
+    case 0:
+      arrayProng=arrayProng3Prong;
+      pdg=411;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
 	  pdgdaughters[0]=211;//pi
@@ -1197,18 +1204,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[2]=211;//pi
 	}
 	break; 
-      case 1:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
-	pdg=421;
+    case 1:
+      arrayProng=arrayProngD0toKpi;
+      pdg=421;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[2];
 	  pdgdaughters[0]=211;//pi 
 	  pdgdaughters[1]=321;//K
 	}
 	break; 
-      case 2:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
-	pdg=413;
+    case 2:
+      arrayProng=arrayProngDstar;
+      pdg=413;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
 	  pdgdaughters[1]=211;//pi
@@ -1216,9 +1223,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[2]=211;//pi (soft?)
 	}
 	break; 
-      case 3:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
-	pdg=431;
+    case 3:
+      arrayProng=arrayProng3Prong;
+      pdg=431;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
 	  pdgdaughters[0]=321;//K
@@ -1226,9 +1233,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[2]=211;//pi
 	}
 	break; 
-      case 4:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm4Prong");
-	pdg=421;
+    case 4:
+      arrayProng=arrayProng4Prong;
+      pdg=421;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[4];
 	  pdgdaughters[0]=321;
@@ -1237,9 +1244,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[3]=211;
 	}
 	break; 
-      case 5:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
-	pdg=4122;
+    case 5:
+      arrayProng=arrayProng3Prong;
+      pdg=4122;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
 	  pdgdaughters[0]=2212;//p
@@ -1247,8 +1254,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[2]=211;//pi
 	}
 	break; 
-      case kLambdactoV0:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
+    case kLambdactoV0:
+      arrayProng=arrayProngCascades;
 	pdg=4122;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
@@ -1260,9 +1267,17 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
     }
   } else if(aod) {
+
+    arrayProng3Prong  =(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+    arrayProng4Prong  =(TClonesArray*)aod->GetList()->FindObject("Charm4Prong");
+    arrayProngD0toKpi =(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    arrayProngDstar   =(TClonesArray*)aod->GetList()->FindObject("Dstar");
+    arrayProngCascades=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
+      
     switch(fDecayChannel){
+      
     case 0:
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+      arrayProng=arrayProng3Prong;
       pdg=411;
       if(fReadMC){
 	pdgdaughters =new Int_t[3];
@@ -1272,7 +1287,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       break; 
     case 1:
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+      arrayProng=arrayProngD0toKpi;
       pdg=421;
       if(fReadMC){
 	pdgdaughters =new Int_t[2];
@@ -1281,7 +1296,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       break; 
     case 2:
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      arrayProng=arrayProngDstar;
       pdg=413;
       if(fReadMC){
 	pdgdaughters =new Int_t[3];
@@ -1291,7 +1306,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       break; 
     case 3:
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+      arrayProng=arrayProng3Prong;
       pdg=431;
       if(fReadMC){
 	pdgdaughters =new Int_t[3];
@@ -1301,7 +1316,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       break; 
     case 4:
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm4Prong");
+      arrayProng=arrayProng4Prong;
       pdg=421;
       if(fReadMC){
 	pdgdaughters =new Int_t[4];
@@ -1312,7 +1327,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       break; 
     case 5:
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+      arrayProng=arrayProng3Prong;
       pdg=4122;
       if(fReadMC){
 	pdgdaughters =new Int_t[3];
@@ -1321,16 +1336,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[2]=211;//pi
       }
       break; 
-      case kLambdactoV0:
-	arrayProng=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
-	pdg=4122;
-	if(fReadMC){
-	  pdgdaughters =new Int_t[3];
-	  pdgdaughters[0]=2212;//p
-	  pdgdaughters[1]=211;//pi
-	  pdgdaughters[2]=211;//pi
-	}
-	break; 
+    case kLambdactoV0:
+      arrayProng=arrayProngCascades;
+      pdg=4122;
+      if(fReadMC){
+	pdgdaughters =new Int_t[3];
+	pdgdaughters[0]=2212;//p
+	pdgdaughters[1]=211;//pi
+	pdgdaughters[2]=211;//pi
+      }
+      break;
     }
   }
   Bool_t isSimpleMode=fSimpleMode;
@@ -1583,7 +1598,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {
+  Double_t magField  = aod->GetMagneticField();
+  if(!aod->GetPrimaryVertex() || TMath::Abs(magField)<0.001) {
     delete [] pdgdaughters;
     return;
   }
@@ -1593,7 +1609,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-
   Double_t pos[3],cov[6];
   vtx1->GetXYZ(pos);
   vtx1->GetCovarianceMatrix(cov);
@@ -1876,19 +1891,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   // load all the branches and fill the SelectionBit histo
-  if(fUseSelectionBit){
+  if(fUseSelectionBit && !isSimpleMode){
     
     //load branches
-    arrayProng1=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
-    Int_t nCand = arrayProng1->GetEntriesFast();
-    arrayProng2=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
-    Int_t nCand2 = arrayProng2->GetEntriesFast();
-    arrayProng3=(TClonesArray*)aod->GetList()->FindObject("Dstar");
-    Int_t nCand3 = arrayProng3->GetEntriesFast();
+    Int_t nCand3Prong = arrayProng3Prong->GetEntriesFast();
+    Int_t nCandD0toKpi = arrayProngD0toKpi->GetEntriesFast();
+    Int_t nCandDstar = arrayProngDstar->GetEntriesFast();
     
     // D+, Ds and Lc
-    for (Int_t iCand = 0; iCand < nCand; iCand++) {
-      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng1->UncheckedAt(iCand);
+    for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
+      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
 	if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(0.0,ptCand_selBit);
@@ -1897,16 +1909,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
     }
     // D0kpi
-    for (Int_t iCand = 0; iCand < nCand2; iCand++) {
-      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng2->UncheckedAt(iCand);
+    for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
+      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
 	if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(4.0,ptCand_selBit);
       }     
     }
     // Dstar
-    for (Int_t iCand = 0; iCand < nCand3; iCand++) {
-      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng3->UncheckedAt(iCand);
+    for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
+      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
        	if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(3.0,ptCand_selBit);
@@ -1938,11 +1950,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     for (Int_t k=0;k<ntracks;k++){
       AliAODTrack* track=dynamic_cast<AliAODTrack*>(aod->GetTrack(k));
       if(!track) AliFatal("Not a standard AOD");
-
       // Track selection cuts
       if(track->GetID()<0) continue;
       Double_t d0z0[2],covd0z0[3];
-      if(!track->PropagateToDCA(vtx1,aod->GetMagneticField(),99999.,d0z0,covd0z0)) continue;
+      if(!track->PropagateToDCA(vtx1,magField,99999.,d0z0,covd0z0)) continue;
       if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
 	((TH1F*)fOutputTrack->FindObject("hd0TracksFilterBit4"))->Fill(d0z0[0]);
       }
@@ -2304,7 +2315,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
 		((TH2F*)fOutputTrack->FindObject("hd0dauphi_filt"))->Fill(phidaughter, d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
-		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
+		Bool_t isDCA=track->PropagateToDCA(vtx1,magField,9999.,d0rphiz,covd0);
 		if(isDCA){
 		  ((TH1F*)fOutputTrack->FindObject("hd0zdau_filt"))->Fill(d0rphiz[1]);
 		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi_filt"))->Fill(phidaughter,d0rphiz[1]);
@@ -2335,7 +2346,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
 		((TH2F*)fOutputTrack->FindObject("hd0dauphi"))->Fill(phidaughter, d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
-		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
+		Bool_t isDCA=track->PropagateToDCA(vtx1,magField,9999.,d0rphiz,covd0);
 		if(isDCA){
 		  ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
 		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi"))->Fill(phidaughter,d0rphiz[1]);

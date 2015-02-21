@@ -50,7 +50,7 @@ ClassImp(AliSpectraBothEventCuts)
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.8),fUseAliPPVsMultUtils(false),
-fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),
+fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
 fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
@@ -307,38 +307,91 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 Bool_t AliSpectraBothEventCuts::CheckVtx()
 {
   // reject events outside of range
-  const AliVVertex * vertex = fAOD->GetPrimaryVertex();
-  //when moving to 2011 wìone has to add a cut using SPD vertex.
-  //The point is that for events with |z|>20 the vertexer tracks is not working (only 2011!). One has to put a safety cut using SPD vertex large e.g. 15cm
-  if (!vertex)
-    {
-      fHistoCuts->Fill(kVtxNoEvent);
-      return kFALSE;
-    }
-    if(vertex->GetNContributors()<1)
-   {
+  	const AliVVertex * vertex = fAOD->GetPrimaryVertex();
+	Int_t vertexflag=0;		
+  	if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+ 	{
+		AliESDEvent* esdevent=dynamic_cast<AliESDEvent*>(fAOD);
+		if(!esdevent)
+			return kFALSE;
+		const AliESDVertex* vertextracks=esdevent->GetPrimaryVertexTracks();
+		const AliESDVertex* vertexspd=esdevent->GetPrimaryVertexSPD();
+		if(vertextracks)
+		{	
+			if(vertextracks->GetNContributors()>0)
+				vertexflag=vertexflag+1;
+		}
+		if(vertexspd)
+		{
+			if(vertexspd->GetNContributors()>0)
+				vertexflag=vertexflag+2;
+		}
 
-      fHistoCuts->Fill(kZeroCont);
-      return kFALSE;
+ 	}			
+ 	else if(fAODEvent==AliSpectraBothTrackCuts::kAODobject)
+  	{
+		AliAODEvent* aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+		if(!aodevent)
+			return kFALSE;
+		AliAODVertex* vertexspd=aodevent->GetPrimaryVertexSPD();
+		if(vertexspd)
+		{
+			if(vertexspd->GetNContributors()>0)
+				vertexflag=vertexflag+2;
+			TString tmp(vertex->GetTitle());
+			if(tmp.Contains("VertexerTracksWithConstraint"))
+				vertexflag=vertexflag+1;
+		}
+		
 
-   }
+  	}
+  	else 
+		return kFALSE;	 
+       			
+  	//when moving to 2011 wìone has to add a cut using SPD vertex.
+ 	 //The point is that for events with |z|>20 the vertexer tracks is not working (only 2011!). One has to put a safety cut using SPD vertex large e.g. 15cm
+ 	if (!vertex)
+ 	{
+      		fHistoCuts->Fill(kVtxNoEvent);
+      		return kFALSE;
+   	 }
+
+    	if(vertex->GetNContributors()<1)
+   	{
+      		fHistoCuts->Fill(kZeroCont);
+      		return kFALSE;
+	}
 	
-   TString tmp(vertex->GetTitle());
-   if(tmp.Contains("NoConstraint"))
-   {
-        fHistoCuts->Fill(kTPCasPV);
-        return kFALSE;
-   }
+   	TString tmp(vertex->GetTitle());
+	if(fchecktypeofveretxbytitle)
+	{
+   		if(tmp.Contains("NoConstraint"))
+   		{
+   		     fHistoCuts->Fill(kTPCasPV);
+   		     return kFALSE;
+   		}
+	}
+	else
+	{
+		if(vertexflag==0)
+   		{
+   		     fHistoCuts->Fill(kTPCasPV);
+   		     return kFALSE;
+   		}
+	
+	}
+	if(fvertexselection>0&&((vertexflag&fvertexselection)==0))
+		return kFALSE;
 
 
- // if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
+	// if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
    // {
     //  return kTRUE;
    // }
-   if(!CheckVtxChi2perNDF())	  
-	return kFALSE;
+     if(!CheckVtxChi2perNDF())	  
+		return kFALSE;
 		
- fHistoCuts->Fill(kGoodVtx);
+  fHistoCuts->Fill(kGoodVtx);
   //return kFALSE;
    return kTRUE;
 }

@@ -1,7 +1,8 @@
 AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFALSE,
                                     Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
                                     Bool_t usePhiCut = kFALSE,
-                                    Double_t ptThresholdForPhiCut = 0.0){
+                                    Double_t ptThresholdForPhiCut = 0.0,
+                                    TString centralityEstimator = ""/*"ITSTPCtracklets" or "ppMultV0M" or ""*/){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -56,6 +57,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
   task->SetUsePhiCut(usePhiCut);
   task->SetPtThresholdForPhiCut(ptThresholdForPhiCut);
   task->SetTPCcutType(tpcCutType);
+  task->SetCentralityEstimator(centralityEstimator);
   
   printf("Eta cut: %f\n", task->GetEtaCut());
   printf("UsePhiCut: %d\n", task->GetUsePhiCut());
@@ -63,6 +65,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
     printf("PtThresholdForPhiCut: %f\n", task->GetPtThresholdForPhiCut());
   printf("UseTPCCutMIGeo: %d\n", task->GetUseTPCCutMIGeo());
   printf("UseTPCnclCut: %d\n", task->GetUseTPCnclCut());
+  printf("Centrality estimator: \"%s\"\n", task->GetCentralityEstimator().Data());
   
   
   

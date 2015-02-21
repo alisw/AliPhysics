@@ -231,6 +231,13 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     if(nContribTPC > maxCut || nContribTPC < minCut) return kFALSE;
   }
 
+  // run rejection
+  Int_t run = ev->GetRunNumber();
+  if(fRun.GetNrows()) {
+    for(Int_t irun=0; irun<fRun.GetNrows(); irun++) {
+      if(fRun(irun)==run) return kFALSE;
+    }
+  }
 
   return kTRUE;
 }

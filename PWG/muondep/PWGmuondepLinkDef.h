@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisTaskESDMCLabelAddition+;
 #pragma link C++ class AliAnalysisTaskPileup+;
+#pragma link C++ class AliAnalysisTaskMuonCDBConnect+;
 #pragma link C++ class AliAnalysisTaskMuonRefit+;
 
 #pragma link C++ class AliAnalysisMuMu+;

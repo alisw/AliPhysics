@@ -55,24 +55,23 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
 
   AliEMCalTriggerBinningDimension *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi");
-  const TAxis *patchenergyaxes[4] = {
+  const TAxis *patchaxes[6] = {
     DefineAxis("energy", 100, 0., 100),
+    DefineAxis("energyRough", 100, 0., 100),
+    DefineAxis("amplitude", 1000, 0., 1000.),       // limit for the moment
     DefineAxis("eta", etabinning),
     DefineAxis("phi", phibinning),
     DefineAxis("isMain", 2, -0.5, 1.5)
   };
-  const TAxis *patchampaxes[4] = {
-    DefineAxis("amplitude", 10000, 0., 10000.),
-    DefineAxis("eta", etabinning),
-    DefineAxis("phi",  phibinning),
-    DefineAxis("isMain", 2, -0.5, 1.5)
-  };
 
   std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
+  std::string triggermodes[] = {"Online", "Offline"};
   for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-    fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-    fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 4, patchenergyaxes, "s");
-    fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 4, patchampaxes, "s");
+    for(std::string *triggermode = triggermodes; triggermode < triggermodes + sizeof(triggermodes)/sizeof(std::string); ++triggermode){
+      if((!strcmp(triggermode->c_str(), "Offline")) && (!strcmp(triggerpatch->c_str(), "Level0"))) continue; // Don't process L0 in case of offline
+      printf("Adding patch for trigger %s in case of %s\n", triggerpatch->c_str(), triggermode->c_str());
+      fHistos->CreateTHnSparse(Form("PatchInfo%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 6, patchaxes, "s");
+    }
   }
 
 }
@@ -85,33 +84,38 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
   AliEmcalTriggerPatchInfo *triggerpatch(NULL);
   TIter patchIter(data->GetTriggerPatchContainer());
   while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-    double triggerpatchinfo[4] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-    double triggerpatchinfoamp[4] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-    double triggerpatchinfoer[4] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
-    if(triggerpatch->IsJetHigh()){
-      fHistos->FillTHnSparse("EnergyJetHigh", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeJetHigh", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughJetHigh", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsJetLow()){
-      fHistos->FillTHnSparse("EnergyJetLow", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeJetLow", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughJetLow", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsGammaHigh()){
-      fHistos->FillTHnSparse("EnergyGammaHigh", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeGammaHigh", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughGammaHigh", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsGammaLow()){
-      fHistos->FillTHnSparse("EnergyGammaLow", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeGammaLow", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughGammaLow", triggerpatchinfoer);
-    }
-    if(triggerpatch->IsLevel0()){
-      fHistos->FillTHnSparse("EnergyLevel0", triggerpatchinfo);
-      fHistos->FillTHnSparse("AmplitudeLevel0", triggerpatchinfoamp);
-      fHistos->FillTHnSparse("EnergyRoughLevel0", triggerpatchinfoer);
+    double triggerpatchinfo[6] = {triggerpatch->GetPatchE(),triggerpatch->GetADCAmpGeVRough(),
+        static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(),
+        triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+    if(triggerpatch->IsOfflineSimple()){
+      if(triggerpatch->IsJetHighSimple()){
+        fHistos->FillTHnSparse("PatchInfoJetHighOffline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsJetLowSimple()){
+    	  fHistos->FillTHnSparse("PatchInfoJetLowOffline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsGammaHighSimple()){
+        fHistos->FillTHnSparse("PatchInfoGammaHighOffline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsGammaLowSimple()){
+        fHistos->FillTHnSparse("PatchInfoGammaLowOffline", triggerpatchinfo);
+      }
+    } else{
+      if(triggerpatch->IsJetHigh()){
+        fHistos->FillTHnSparse("PatchInfoJetHighOnline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsJetLow()){
+        fHistos->FillTHnSparse("PatchInfoJetLowOnline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsGammaHigh()){
+        fHistos->FillTHnSparse("PatchInfoGammaHighOnline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsGammaLow()){
+        fHistos->FillTHnSparse("PatchInfoGammaLowOnline", triggerpatchinfo);
+      }
+      if(triggerpatch->IsLevel0()){
+        fHistos->FillTHnSparse("PatchInfoLevel0Online", triggerpatchinfo);
+      }
     }
   }
 }

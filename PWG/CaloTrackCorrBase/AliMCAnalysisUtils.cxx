@@ -1631,6 +1631,14 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
     {
       TParticle * momP = reader->GetStack()->Particle(label);
 
+      if(momP->GetPdgCode()==pdg)
+      {
+        AliDebug(2,"PDG of mother is already the one requested!");
+        fGMotherMom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->Energy());
+        ok=kTRUE;
+        return fGMotherMom;
+      }
+
       Int_t grandmomLabel = momP->GetFirstMother();
       Int_t grandmomPDG   = -1;
       TParticle * grandmomP = 0x0;
@@ -1649,7 +1657,7 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
         
       }
       
-      if(grandmomPDG!=pdg) AliInfo(Form("Mother with PDG %d, not found! \n",pdg));
+      if(grandmomPDG!=pdg) AliInfo(Form("Mother with PDG %d, NOT found! \n",pdg));
     }
   }
   else if(reader->ReadAODMCParticles())
@@ -1667,6 +1675,14 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
     if(label >= 0 && label < nprimaries)
     {
       AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      
+      if(momP->GetPdgCode()==pdg)
+      {
+        AliDebug(2,"PDG of mother is already the one requested!");
+        fGMotherMom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
+        ok=kTRUE;
+        return fGMotherMom;
+      }
       
       Int_t grandmomLabel = momP->GetMother();
       Int_t grandmomPDG   = -1;

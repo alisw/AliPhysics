@@ -47,6 +47,7 @@
 #pragma link C++ class AliAnalysisTaskJetAntenna+;
 
 #ifdef HAVE_FASTJET
+#pragma link C++ class AliAnalysisTaskJetFFMoments+;
 #pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
 #pragma link C++ class AliAnalysisTaskJetHadronCorrelation+;
 #pragma link C++ class AliAnalysisTaskJetHBOM+;

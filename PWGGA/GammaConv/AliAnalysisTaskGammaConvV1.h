@@ -65,7 +65,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		// BG HandlerSettings
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
-		void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
+		void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Int_t fDoPhotonQA, Double_t PhiParticle[]);
 		void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 		void UpdateEventByEventData();
 		void SetLogBinningXTH2(TH2* histoRebin);
@@ -183,6 +183,11 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F								**hESDTrueConvGammaRMC;      						//!
 		TH1F 								**hESDTrueConvGammaEta;								//!
 		TH2F 								**hESDCombinatorialPt;								//!
+		TH2F 								**hESDCombinatorialPtDeltaPhi_ek;					//!
+		TH2F 								**hESDCombinatorialPtDeltaPhi_ep;					//!
+		TH2F 								**hESDCombinatorialPtDeltaPhi_epi;					//!
+		TH2F 								**hESDCombinatorialPtDeltaPhi_pik;					//!
+		TH2F 								**hESDCombinatorialPtDeltaPhi_pip;					//!
 		TH1F 								**hESDTruePrimaryConvGammaPt;						//!
 		TH2F 								**hESDTruePrimaryConvGammaESDPtMCPt;				//!
 		TH1F 								**hESDTrueSecondaryConvGammaPt;						//!

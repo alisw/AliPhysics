@@ -70,9 +70,15 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
      *   jetHighA             (int)                = 0,
      *   jetHighB             (int)                = 0,
      *   jetHighC             (int)                = 0,
+     *   gammaLowA            (int)                = 0,
+     *   gammaLowB            (int)                = 0,
+     *   gammaLowC            (int)                = 0,
+     *   gammaHighA           (int)                = 0,
+     *   gammaHighB           (int)                = 0,
+     *   gammaHighC           (int)                = 0,
      *   doQA                 (bool)               = kFALSE
      */
-    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, useOldBitConfig, doTriggerQA);
+    AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, useOldBitConfig, doTriggerQA);
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 
