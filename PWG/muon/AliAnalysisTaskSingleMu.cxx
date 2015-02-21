@@ -453,7 +453,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       Int_t icharge1 = ( icharge < 2 ) ? icharge : 0;
       Int_t icharge2 = ( icharge < 2 ) ? icharge : 1;
       for ( Int_t igrid=0; igrid<3; ++igrid ) {
-        if ( gridSparseArray[igrid]->GetEntries() == 0. ) break;
+        if ( gridSparseArray[igrid]->GetEntries() == 0. ) continue;
         if ( gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) {
           SetSparseRange(gridSparseArray[igrid], kHvarEta, "", -3.999, -2.501);
           SetSparseRange(gridSparseArray[igrid], kHvarMotherType, "", isrc, isrc, "USEBIN");
