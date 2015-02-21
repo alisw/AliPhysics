@@ -282,11 +282,13 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(hReweightMCHistK0s);
    }
 
-   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",100,0,100);
+   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
    fHistograms->Add(hCentrality);
-   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
+   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
    fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
-
+   hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
+   fHistograms->Add(hVertexZ);
+   
    // Event Cuts and Info
    if(preCut){
       fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
@@ -470,7 +472,6 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
 
    // Fill Event Histograms
    if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-   if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
    if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
    if(hCentralityVsNumberOfPrimaryTracks)
       hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
@@ -949,7 +950,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 		case 3: // kCentral - both
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
-			fSpecialSubTriggerName="CVHN|CCENT";
+			fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
 			cout << "kCentral both" << endl;
 			break;
 		case 4: // kSemiCentral - no vertex restriction
@@ -982,6 +983,12 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fSpecialSubTriggerName="CPBI2_|CPBI2-";
 			cout << "kMB 2" << endl;
 			break;			
+		case 9: // kMB
+			fSpecialSubTrigger=1; 
+			fNSpecialSubTriggerOptions=1;
+			fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
+			cout << "kMB both" << endl;
+			break;	
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
 			return 0;
@@ -1292,7 +1299,7 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 }
 
 //-------------------------------------------------------------
-Double_t AliConvEventCuts::GetCentrality(AliVEvent *event)
+Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
 
 	AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
@@ -1351,7 +1358,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
 	Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
 	Int_t PrimaryTracks10[11][2] =
 		{
-			{9999,9999}, //  0
+			{9999,1550}, //  0 //changed from 9999 on 18 Feb
 			{1210, 928}, // 10
 			{ 817, 658}, // 20
 			{ 536, 435}, // 30
@@ -1365,7 +1372,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
 		};
 	Int_t PrimaryTracks5a[11][2] =
 		{
-			{9999,9999}, // 0
+			{9999,1550}, // 0 //changed from 9999 on 18 Feb
 			{1485,1168}, // 5
 			{1210, 928}, // 10
 			{ 995, 795}, // 15
@@ -1571,21 +1578,25 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 				}
 				//if for specif centrality trigger selection 
 				if(fSpecialSubTrigger == 1){
-					if(fSpecialSubTriggerName.Contains("|")){
+					if(fSpecialSubTriggerName.Contains("|")  && GetCentrality(fInputEvent) <= 10.){
 						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("|");
 						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
 							TObjString *NameClass = (TObjString*)ClassesList->At(i);
 							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
-// 							cout << "|||||||| \t" << NameClass->GetString() << "\t ||||||||" << endl;
 						}
 					} else if(fSpecialSubTriggerName.Contains("%")){
 						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("%");
 						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
 							TObjString *NameClass = (TObjString*)ClassesList->At(i);
 							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
-// 							cout << "|||||||| \t" << NameClass->GetString() << "\t ||||||||" << endl;
+						}
+					} else if(fSpecialSubTriggerName.Contains("@")){
+						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("@");
+						for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
+							TObjString *NameClass = (TObjString*)ClassesList->At(i);
+							if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
 						}	
-					} else if(fSpecialSubTriggerName.Contains("&")){
+					} else if(fSpecialSubTriggerName.Contains("&")){ //logic AND of two classes
 						TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("&");
 						TString CheckClass = "";
 						for (Int_t i=0; i<ClassesList->GetEntriesFast(); i++){
@@ -1594,7 +1605,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 							else CheckClass+="0";
 						}
 						if(CheckClass.Contains("0")) isSelected = 0;
-// 						cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
 					}	
 					else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
 				}
@@ -2040,6 +2050,8 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	}	
 		
 	if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
+	if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
+
 	if(hCentralityVsNumberOfPrimaryTracks)
 		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
 												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
@@ -2368,7 +2380,7 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 }
 
 //_________________________________________________________________________
-Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
+Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
 	
 	TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
 	if (!particle) return kFALSE; 
@@ -2384,6 +2396,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackp
 		Bool_t dalitzCand = kFALSE;
 		
 		TParticle* firstmother = (TParticle *)MCStack->Particle(particle->GetMother(0));
+		if (!firstmother) return kFALSE;
 		Int_t pdgCodeFirstMother 		= firstmother->GetPdgCode();			
 		Bool_t intDecay = kFALSE;
 		if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
@@ -2392,7 +2405,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Int_t stackp
 // 			cout << "dalitz candidate found" << endl;
 		}
 	
-		Int_t source = particle->GetMother(0);
+		UInt_t source = particle->GetMother(0);
 		Bool_t foundExcludedPart = kFALSE;
 		Bool_t foundShower = kFALSE;		
 		Int_t pdgCodeMotherPrev = 0;

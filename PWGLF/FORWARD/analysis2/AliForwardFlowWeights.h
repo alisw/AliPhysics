@@ -1,15 +1,27 @@
 #ifndef ALIROOT_ALIFORWARDFLOWWEIGHTS
 #define ALIROOT_ALIFORWARDFLOWWEIGHTS
-#include <TObject.h>
+/**
+ * @file   AliForwardFlowWeights.h
+ * @author Alexander Hansen <alex@nbi.dk>
+ * @date   Wed Feb  4 01:18:39 2015
+ * 
+ * @brief  
+ * 
+ * 
+ */
+
+#include "AliBaseMCWeights.h"
 class TGraph;
 class TF1;
-class TList;
+
 
 /** 
  * Utility class to calculate flow weights 
  * 
+ *
+ * @ingroup pwglf_forward_mc
  */
-class AliForwardFlowWeights : public TObject
+class AliForwardFlowWeights : public AliBaseMCWeights
 {
 public:
   enum { 
@@ -113,9 +125,12 @@ public:
    * 
    * @return 
    */
-  virtual Double_t CalcWeight(Double_t eta, Double_t pt, 
-			      Double_t phi, Int_t id, 
-			      Double_t phiR, Double_t b) const;
+  virtual Double_t CalcWeight(Double_t eta,
+			      Double_t pt, 
+			      Double_t phi,
+			      Int_t id, 
+			      Double_t phiR,
+			      Double_t b) const;
   /** 
    * Construct an object from objects found in list, or null
    * 
@@ -124,6 +139,12 @@ public:
    * @return Newly created object, or null 
    */
   static AliForwardFlowWeights* FromList(TList* l);
+  /** 
+   * Print information 
+   * 
+   * @param option Not used 
+   */
+  virtual void Print(Option_t* option="") const;
 protected:
   /** 
    * Calculate weight 
@@ -175,7 +196,7 @@ protected:
   TGraph* fV2B;      // Contribution from v2 as a function of b
   TGraph* fV2C;      // Contribution from v2 as a function of centrality
     
-  ClassDef(AliForwardFlowWeights,2);
+  ClassDef(AliForwardFlowWeights,3);
 };
 
 #endif

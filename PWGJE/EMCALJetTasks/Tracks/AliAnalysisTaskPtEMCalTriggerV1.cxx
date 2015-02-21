@@ -24,11 +24,14 @@
 #include "AliParticleContainer.h"
 #include "AliJetContainer.h"
 
+#include "AliESDEvent.h"
+
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerAnaTriggerDecisionConfig.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
 
@@ -41,9 +44,11 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     AliAnalysisTaskEmcalJet(),
     fTaskGroups(NULL),
     fBinning(NULL),
+	fTriggerDecisionConfig(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
-    fSwapTriggerThresholds(kFALSE)
+    fSwapTriggerThresholds(kFALSE),
+    fDoTriggerDebug(kFALSE)
 {
   /*
    * Dummy constructor
@@ -55,9 +60,11 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fTaskGroups(NULL),
     fBinning(NULL),
+	fTriggerDecisionConfig(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
-    fSwapTriggerThresholds(kFALSE)
+    fSwapTriggerThresholds(kFALSE),
+    fDoTriggerDebug(kFALSE)
 {
   /*
    * Main Constructor
@@ -114,7 +121,8 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
    */
   AliEMCalTriggerEventData *event = BuildEvent();
   AliEMCalTriggerAnaTriggerDecision triggerDecision;
-  if(fSwapTriggerThresholds) triggerDecision.SetSwapThresholds();
+  if(fDoTriggerDebug) triggerDecision.SetDebugMode();
+  if(fTriggerDecisionConfig) fTriggerDecisionConfig->ConfigureTriggerDecision(triggerDecision);
   triggerDecision.Create(event);
   triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
   TIter groupIter(fTaskGroups);

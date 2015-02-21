@@ -65,6 +65,11 @@ class AliHFSystErr : public TNamed
     fIsLowEnergy = flag; 
     AliInfo(" Settings for the low energy run");
   }
+  void SetIsLowPtAnalysis(Bool_t flag){
+    fIsLowPtAnalysis = flag;
+    AliInfo("Settings for the low pt analysis");  
+  }
+
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
     AliInfo(" Settings for the PbPb 2010 energy scan");
@@ -196,6 +201,7 @@ class AliHFSystErr : public TNamed
  
   void InitD0toKpi2010pp();
   void InitD0toKpi2010ppLowEn();
+  void InitD0toKpi2010ppLowPtAn();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
@@ -227,6 +233,7 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2010pp();
 
   void InitD0toKpi2013pPb0100();
+  void InitD0toKpi2013pPb0100LowPtAn();
   void InitDplustoKpipi2013pPb0100();
   void InitDstartoD0pi2013pPb0100();
   void InitDstoKKpi2013pPb0100();
@@ -251,10 +258,12 @@ class AliHFSystErr : public TNamed
   TString fRapidityRange;  // Rapidity range fot y measurements 
 
   Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
+  Bool_t fIsLowPtAnalysis; // flag for the low pt analysis (no topological cuts)
+
   Bool_t fIsCentScan;      // flag fot the PbPb centrality scan
   Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement
  
-  ClassDef(AliHFSystErr,5);  // class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,6);  // class for systematic errors of charm hadrons
 };
 
 #endif

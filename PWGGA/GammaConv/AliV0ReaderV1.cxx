@@ -92,7 +92,28 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fEventIsSelected(kFALSE),
 	fNumberOfPrimaryTracks(0),
 	fPeriodName(""),
-	fUseMassToZero(kTRUE)
+	fUseMassToZero(kTRUE),
+	fProduceV0findingEffi(kFALSE),
+	fMCPhotonLabelArray(NULL),
+	fNMCRecPhotons(0),
+	fHistograms(NULL),
+	fHistoMCGammaPtvsR(NULL),
+	fHistoMCGammaPtvsPhi(NULL),
+	fHistoMCGammaPtvsEta(NULL),
+	fHistoMCGammaRvsPhi(NULL),
+	fHistoMCGammaRvsEta(NULL),
+	fHistoMCGammaPhivsEta(NULL),
+	fHistoRecMCGammaPtvsR(NULL),
+	fHistoRecMCGammaPtvsPhi(NULL),
+	fHistoRecMCGammaPtvsEta(NULL),
+	fHistoRecMCGammaRvsPhi(NULL),
+	fHistoRecMCGammaRvsEta(NULL),
+	fHistoRecMCGammaPhivsEta(NULL),
+	fHistoRecMCGammaMultiPt(NULL),
+	fHistoRecMCGammaMultiPtvsEta(NULL),
+	fHistoRecMCGammaMultiR(NULL),
+	fHistoRecMCGammaMultiPhi(NULL),
+	fStrFoundGammas("")
 {
 	// Default constructor
 
@@ -198,6 +219,85 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		AddAODBranch("TClonesArray", &fConversionGammas, fDeltaAODFilename.Data());
 		AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFilename.Data());
 	}
+	
+	
+	if (fProduceV0findingEffi){
+		TH1::AddDirectory(kFALSE);
+		if(fHistograms != NULL){
+			delete fHistograms;
+			fHistograms 				= NULL;
+		}
+		if(fHistograms==NULL){
+			fHistograms 				= new TList();
+			fHistograms->SetOwner(kTRUE);
+			fHistograms->SetName(Form("V0FindingEfficiencyInput_%s",fEventCuts->GetCutNumber().Data()));
+		}
+
+		fHistoMCGammaPtvsR 				= new TH2F("MCconvGamma_Pt_R","MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
+		fHistoMCGammaPtvsR->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoMCGammaPtvsR->SetYTitle("R_{MC,conv} (cm)");
+		fHistograms->Add(fHistoMCGammaPtvsR);
+		fHistoMCGammaPtvsEta 			= new TH2F("MCconvGamma_Pt_Eta","MC converted gamma Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
+		fHistoMCGammaPtvsEta->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoMCGammaPtvsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoMCGammaPtvsEta);
+		fHistoMCGammaPtvsPhi 			= new TH2F("MCconvGamma_Pt_Phi","MC converted gamma Pt vs Phi (|eta| < 0.9) ",250,0.0,25,400,0,2*TMath::Pi());
+		fHistoMCGammaPtvsPhi->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoMCGammaPtvsPhi->SetYTitle("#varphi_{MC} (rad)");		
+		fHistograms->Add(fHistoMCGammaPtvsPhi);
+		fHistoMCGammaRvsPhi 			= new TH2F("MCconvGamma_R_Phi","MC converted gamma R vs Phi (|eta| < 0.9) ",400,0,200,400,0,2*TMath::Pi());
+		fHistoMCGammaRvsPhi->SetXTitle("R_{MC,conv} (cm)");
+		fHistoMCGammaRvsPhi->SetYTitle("#varphi_{MC} (rad)");		
+		fHistograms->Add(fHistoMCGammaRvsPhi);
+		fHistoMCGammaRvsEta 			= new TH2F("MCconvGamma_R_Eta","MC converted gamma R vs Eta ",400,0,200,280,-1.4,1.4);
+		fHistoMCGammaRvsEta->SetXTitle("R_{MC,conv} (cm)");
+		fHistoMCGammaRvsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoMCGammaRvsEta);
+		fHistoMCGammaPhivsEta 			= new TH2F("MCconvGamma_Phi_Eta","MC converted gamma Phi vs Eta ",400,0,2*TMath::Pi(),280,-1.4,1.4);
+		fHistoMCGammaPhivsEta->SetXTitle("#phi_{MC} (rad)");
+		fHistoMCGammaPhivsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoMCGammaPhivsEta);
+		fHistoRecMCGammaPtvsR 			= new TH2F("RecMCconvGamma_Pt_R","rec MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);
+		fHistoRecMCGammaPtvsR->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoRecMCGammaPtvsR->SetYTitle("R_{MC,conv} (cm)");
+		fHistograms->Add(fHistoRecMCGammaPtvsR);
+		fHistoRecMCGammaPtvsEta 		= new TH2F("RecMCconvGamma_Pt_Eta","rec MC converted gamma Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
+		fHistoRecMCGammaPtvsEta->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoRecMCGammaPtvsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoRecMCGammaPtvsEta);
+		fHistoRecMCGammaPtvsPhi 		= new TH2F("RecMCconvGamma_Pt_Phi","rec MC converted gamma Pt vs Phi (|eta| < 0.9) ",250,0.0,25,400,0,2*TMath::Pi());
+		fHistoRecMCGammaPtvsPhi->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoRecMCGammaPtvsPhi->SetYTitle("#varphi_{MC} (rad)");		
+		fHistograms->Add(fHistoRecMCGammaPtvsPhi);
+		fHistoRecMCGammaRvsPhi 			= new TH2F("RecMCconvGamma_R_Phi","rec MC converted gamma R vs Phi (|eta| < 0.9) ",400,0,200,400,0,2*TMath::Pi());
+		fHistoRecMCGammaRvsPhi->SetXTitle("R_{MC,conv} (cm)");
+		fHistoRecMCGammaRvsPhi->SetYTitle("#varphi_{MC} (rad)");		
+		fHistograms->Add(fHistoRecMCGammaRvsPhi);
+		fHistoRecMCGammaRvsEta			= new TH2F("RecMCconvGamma_R_Eta","rec MC converted gamma R vs Eta ",400,0,200,280,-1.4,1.4);
+		fHistoRecMCGammaRvsEta->SetXTitle("R_{MC,conv} (cm)");
+		fHistoRecMCGammaRvsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoRecMCGammaRvsEta);
+		fHistoRecMCGammaPhivsEta 		= new TH2F("RecMCconvGamma_Phi_Eta","rec MC converted gamma Phi vs Eta ",400,0,2*TMath::Pi(),280,-1.4,1.4);
+		fHistoRecMCGammaPhivsEta->SetXTitle("#phi_{MC} (rad)");
+		fHistoRecMCGammaPhivsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoRecMCGammaPhivsEta);
+		
+		fHistoRecMCGammaMultiPtvsEta 	= new TH2F("RecMCconvGammaMulti_Pt_Eta","rec MC converted gamma (at least double counted) Pt vs Eta ",250,0.0,25,280,-1.4,1.4);
+		fHistoRecMCGammaMultiPtvsEta->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistoRecMCGammaMultiPtvsEta->SetYTitle("#eta_{MC}");		
+		fHistograms->Add(fHistoRecMCGammaMultiPtvsEta);
+
+		fHistoRecMCGammaMultiPt			= new TH1F("RecMCconvGammaMulti_Pt","rec MC converted gamma (at least double counted) Pt (|eta| < 0.9)",250,0.0,25);
+		fHistoRecMCGammaMultiPt->SetXTitle("p_{MC,T} (GeV/c)");
+		fHistograms->Add(fHistoRecMCGammaMultiPt);
+		fHistoRecMCGammaMultiR			= new TH1F("RecMCconvGammaMulti_R","rec MC converted gamma (at least double counted) R (|eta| < 0.9)",400,0,200);
+		fHistoRecMCGammaMultiR->SetXTitle("R_{MC,conv} (cm)");
+		fHistograms->Add(fHistoRecMCGammaMultiR);
+		fHistoRecMCGammaMultiPhi		= new TH1F("RecMCconvGammaMulti_Phi","rec MC converted gamma (at least double counted) Phi (|eta| < 0.9)",400,0,2*TMath::Pi());
+		fHistoRecMCGammaMultiPhi->SetXTitle("#phi_{MC} (rad)");
+		fHistograms->Add(fHistoRecMCGammaMultiPhi);
+		
+	}	
 
 }
 //________________________________________________________________________
@@ -244,7 +344,7 @@ void AliV0ReaderV1::UserExec(Option_t *option){
 
 	// Check if correctly initialized
 	if(!fConversionGammas)Init();
-
+	
 	// User Exec
 	fEventIsSelected=ProcessEvent(fInputEvent,fMCEvent);
 
@@ -270,14 +370,26 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 	if(!fEventCuts){AliError("No EventCuts");return kFALSE;}
 	if(!fConversionCuts){AliError("No ConversionCuts");return kFALSE;}
 
+	
 	// Count Primary Tracks Event
 	CountTracks();
 
 	// Event Cuts
 	if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent))return kFALSE;
-
+	
 	// Set Magnetic Field
 	AliKFParticle::SetField(fInputEvent->GetMagneticField());
+	
+	if(fInputEvent->IsA()==AliAODEvent::Class() && fProduceV0findingEffi){
+		fProduceV0findingEffi = kFALSE;
+		AliWarning("V0finding effi cannot be run on AODs ");
+	}	
+	
+	if(fProduceV0findingEffi){
+		CreatePureMCHistosForV0FinderEffiESD();
+		fStrFoundGammas = "";
+	}	
+
 
 	if(fInputEvent->IsA()==AliESDEvent::Class()){
 		ProcessESDV0s();
@@ -378,6 +490,8 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 		fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kOnFly);
 		return 0x0;
 	}
+
+	if (fMCEvent && fProduceV0findingEffi ) FillRecMCHistosForV0FinderEffiESD(fCurrentV0);
 	
 	// TrackLabels
 	Int_t currentTrackLabels[2]={-1,-1};
@@ -392,6 +506,8 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
 	// Apply some Cuts before Reconstruction
 
+	
+	
 	AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[0]);
 	AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[1]);
 	if(!negTrack || !posTrack) {
@@ -451,6 +567,10 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 		Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
 		Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 
+// 		cout << "rec: " <<  currentTrackLabels[0] << "\t" << currentTrackLabels[1] << endl;
+// 		cout << "recProp: " <<  fCurrentMotherKF->GetTrackLabelPositive() << "\t" << fCurrentMotherKF->GetTrackLabelNegative() << endl;
+// 		cout << "MC: " <<  labeln << "\t" << labelp << endl;
+		
 		TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
 		TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
 
@@ -881,6 +1001,187 @@ void AliV0ReaderV1::CountTracks(){
 	}
 
 	return;
+}
+
+///________________________________________________________________________
+Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
+	// MonteCarlo Photon Selection
+	if(!MCStack)return kFALSE;
+	
+	if (particle->GetPdgCode() == 22){
+		// check whether particle is within eta range
+		if( abs(particle->Eta()) > etaMax ) return kFALSE;
+		// check if particle doesn't have a photon as mother
+		if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+			return kFALSE; // no photon as mothers!
+		}
+		// looking for conversion gammas (electron + positron from pairbuilding (= 5) )
+		TParticle* ePos = NULL;
+		TParticle* eNeg = NULL;
+		if(particle->GetNDaughters() >= 2){
+			for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+				TParticle *tmpDaughter = MCStack->Particle(daughterIndex);
+				if(tmpDaughter->GetUniqueID() == 5){
+					if(tmpDaughter->GetPdgCode() == 11){
+						eNeg = tmpDaughter;
+					} else if(tmpDaughter->GetPdgCode() == -11){
+						ePos = tmpDaughter;
+					}
+				}
+			}
+		}
+		if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
+			return kFALSE;
+		}
+		// check if electrons are in correct eta window
+		if( abs(ePos->Eta()) > etaMax ||
+			abs(eNeg->Eta()) > etaMax )
+			return kFALSE;
+
+		// check if photons have converted in reconstructable range
+		if(ePos->R() > rMax){
+			return kFALSE; // cuts on distance from collision point
+		} 
+		if(abs(ePos->Vz()) > zMax){
+			return kFALSE;  // outside material
+		}
+		if(abs(eNeg->Vz()) > zMax){
+			return kFALSE;  // outside material
+		}
+
+		
+		Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
+		Double_t lineCutZValue = 7.;
+		if( ePos->R() <= ((abs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
+			return kFALSE;  // line cut to exclude regions where we do not reconstruct
+		}
+		if( eNeg->R() <= ((abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
+			return kFALSE; // line cut to exclude regions where we do not reconstruct
+		}
+		if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){
+			return kFALSE;
+		}	
+
+		return kTRUE;
+	}
+	return kFALSE;
+}
+
+///_______________________________________________________________________
+void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
+	
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+// 	cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
+	
+	AliStack *fMCStack= fMCEvent->Stack();	
+	// Loop over all primary MC particle	
+	for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+		if (fEventCuts->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
+			// fill primary histogram
+			TParticle* particle = (TParticle *)fMCStack->Particle(i);
+			if (!particle) continue;
+			if (ParticleIsConvertedPhoton(fMCStack, particle, 0.9, 180.,250. )){
+				TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
+				if (!tmpDaughter) continue;
+				fHistoMCGammaPtvsR->Fill(particle->Pt(),tmpDaughter->R());
+				fHistoMCGammaPtvsPhi->Fill(particle->Pt(),particle->Phi());
+				fHistoMCGammaRvsPhi->Fill(tmpDaughter->R(),particle->Phi());
+			}	
+			if (ParticleIsConvertedPhoton(fMCStack, particle, 1.4, 180.,250. )){
+				TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
+				if (!tmpDaughter) continue;
+				fHistoMCGammaPtvsEta->Fill(particle->Pt(),particle->Eta());
+				fHistoMCGammaRvsEta->Fill(tmpDaughter->R(),particle->Eta());
+				fHistoMCGammaPhivsEta->Fill(particle->Phi(),particle->Eta());
+			}	
+		}
+	}	
+}	
+
+///_______________________________________________________________________
+void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
+	
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+// 	cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
+
+	Int_t tracklabelPos=currentV0->GetPindex();
+	Int_t tracklabelNeg=currentV0->GetNindex();
+	
+	AliStack *fMCStack= fMCEvent->Stack();
+
+	Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelPos)->GetLabel());
+	Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelNeg)->GetLabel());
+
+	TParticle* negPart = (TParticle *)fMCStack->Particle(labeln);
+	TParticle* posPart = (TParticle *)fMCStack->Particle(labelp);
+	
+	if ( negPart == NULL || posPart == NULL ) return;
+// 	if (!(negPart->GetPdgCode() == 11)) return;
+// 	if (!(posPart->GetPdgCode() == -11)) return;
+	UInt_t motherlabelNeg = negPart->GetFirstMother();
+	UInt_t motherlabelPos = posPart->GetFirstMother();
+	
+// 	cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
+	if (motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
+		if (fEventCuts->IsConversionPrimaryESD( fMCStack, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
+			
+			TParticle* mother =  (TParticle *)fMCStack->Particle(motherlabelNeg);
+			if (mother->GetPdgCode() == 22 ){
+				if (!CheckIfContainedInStringAndAppend(fStrFoundGammas,motherlabelNeg ) ){
+					if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
+						fHistoRecMCGammaPtvsR->Fill(mother->Pt(),negPart->R());
+						fHistoRecMCGammaPtvsPhi->Fill(mother->Pt(),mother->Phi());
+						fHistoRecMCGammaRvsPhi->Fill(negPart->R(),mother->Phi());
+					} 
+					if (ParticleIsConvertedPhoton(fMCStack, mother, 1.4, 180.,250. )){
+						fHistoRecMCGammaPtvsEta->Fill(mother->Pt(),mother->Eta());
+						fHistoRecMCGammaRvsEta->Fill(negPart->R(),mother->Eta());
+						fHistoRecMCGammaPhivsEta->Fill(mother->Phi(),mother->Eta());
+					}	
+// 					cout << "new gamma found" << endl;
+				} else {
+					if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
+						fHistoRecMCGammaMultiPt->Fill(mother->Pt());
+						fHistoRecMCGammaMultiPhi->Fill(mother->Phi());
+						fHistoRecMCGammaMultiR->Fill(negPart->R());
+					} 
+					if (ParticleIsConvertedPhoton(fMCStack, mother, 1.4, 180.,250. )){
+						fHistoRecMCGammaMultiPtvsEta->Fill(mother->Pt(),mother->Eta());
+					}	
+// 					cout << "this one I had already: " << motherlabelNeg << endl << "-----------------------"  << endl;
+				}	
+// 				cout << "event gammas: " << fStrFoundGammas.Data() << endl;
+			}	
+		}	
+	}	
+}	
+
+//_________________________________________________________________________________
+Bool_t AliV0ReaderV1::CheckIfContainedInString(TString input, Int_t tobechecked){
+	TObjArray *arr = input.Tokenize(",");
+	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
+		TString tempStr = ((TObjString*)arr->At(i))->GetString();
+		if (tempStr.Atoi() == tobechecked) return kTRUE;
+	}	
+	return kFALSE;
+}
+
+//_________________________________________________________________________________
+Bool_t AliV0ReaderV1::CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked){
+	TObjArray *arr = input.Tokenize(",");
+	Bool_t isContained = kFALSE;
+	for (Int_t i = 0; i < arr->GetEntriesFast();i++){
+		TString tempStr = ((TObjString*)arr->At(i))->GetString();
+		if (tempStr.Atoi() == tobechecked) isContained= kTRUE;
+	}	
+	if (!isContained)input.Append(Form("%i,",tobechecked));	
+	return isContained;
 }
 
 //________________________________________________________________________

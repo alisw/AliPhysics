@@ -273,7 +273,8 @@ AliFMDMCTrackDensity::StoreParticle(AliMCParticle*       particle,
   // If invalid, force it valid 
   if (old == AliESDFMD::kInvalidMult) old = 0;
 
-  // Increment count 
+  // Increment count
+   
   fOutput->SetMultiplicity(d,r,s,t,old+w);
 
   // Fill histograms 

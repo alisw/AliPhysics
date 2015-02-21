@@ -107,6 +107,7 @@ class AliUEHist : public TObject
   void SetCentralityRange(Float_t min, Float_t max)    { fCentralityMin = min; fCentralityMax = max; }
   void SetZVtxRange(Float_t min, Float_t max)          { fZVtxMin = min; fZVtxMax = max; }
   void SetPt2Min(Float_t ptMin)			       { fPt2Min = ptMin; }
+  void SetPt2Max(Float_t ptMin)			       { fPt2Max = ptMin; }
   
   Float_t GetTrackEtaCut() { return fTrackEtaCut; }
   void SetTrackEtaCut(Float_t value) { fTrackEtaCut = value; }
@@ -161,6 +162,7 @@ protected:
   Float_t fZVtxMin;                   // z vtx min for projections
   Float_t fZVtxMax;                   // z vtx max for projections
   Float_t fPt2Min;		      // pT min for projections (for pT,2 (only 2+1 corr case))
+  Float_t fPt2Max;		      // pT max for projections (for pT,2 (only 2+1 corr case))
   
   TH1F* fContaminationEnhancement;    // histogram that contains the underestimation of secondaries in the MC as function of pT
   
@@ -176,7 +178,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 15) // underlying event histogram container
+  ClassDef(AliUEHist, 16) // underlying event histogram container
 };
 
 #endif

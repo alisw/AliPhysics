@@ -6,17 +6,33 @@ cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 
 project(AliPhysics CXX C)
 
+### CMP0025   Compiler id for Apple Clang is now AppleClang.
+### CMP0042   MACOSX_RPATH is enabled by default.
+foreach(p
+  CMP0025 # CMake 3.0
+  CMP0042 # CMake 3.0
+  )
+  if(POLICY ${p})
+  cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
+
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliPhysics_BINARY_DIR}")
 message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
+
+# CMake supports different build types by default. We want the DEBUG build type
+# to have "-g -O0" flags: by default it only has "-g"
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 # You can change the build type using 
 # cmake -DCMAKE_BUILD_TYPE=DEBUG | RELEASE | RELWITHDEBINFO | MINSIZEREL ...
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 endif(NOT CMAKE_BUILD_TYPE)
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE} (${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}})")
 
 if(CMAKE_INSTALL_PREFIX STREQUAL "${AliPhysics_SOURCE_DIR}")
     message(FATAL_ERROR "Please choose a different installation point than the source tree!")

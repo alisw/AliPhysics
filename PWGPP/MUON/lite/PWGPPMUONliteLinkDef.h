@@ -8,5 +8,6 @@
 #pragma link C++ class AliAnalysisTaskTrigChEff+;
 #pragma link C++ class AliAnalysisTaskMuonQA+;
 #pragma link C++ class AliAnalysisTaskMuonCuts+;
+#pragma link C++ class AliAnalysisTaskTriggerRates+;
 
 #endif

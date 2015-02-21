@@ -60,6 +60,14 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdRfidMaxV0(100.0),
   fProdRfidMinXi(0.6),
   fProdRfidMaxXi(100.0),
+  fProdDcaXiDaughtersMax(100.),
+  fProdDcaV0DaughtersMax(100.),
+  fProdDcaBachToPrimVertexMin(0.),
+  fProdDcaV0ToPrimVertexMin(0.),
+  fProdDcaPosToPrimVertexMin(0.),
+  fProdDcaNegToPrimVertexMin(0.),
+  fProdXiCosineOfPoiningAngleMin(-1.),
+  fProdV0CosineOfPoiningAngleXiMin(-1.),
   fProdLikeSignDcaMax(2.0),
   fProdRoughMassTol(0.25),
   fProdRoughPtMin(0.0)
@@ -134,6 +142,14 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdRfidMaxV0(source.fProdRfidMaxV0),
   fProdRfidMinXi(source.fProdRfidMinXi),
   fProdRfidMaxXi(source.fProdRfidMaxXi),
+  fProdDcaXiDaughtersMax(source.fProdDcaXiDaughtersMax),
+  fProdDcaV0DaughtersMax(source.fProdDcaV0DaughtersMax),
+  fProdDcaBachToPrimVertexMin(source.fProdDcaBachToPrimVertexMin),
+  fProdDcaV0ToPrimVertexMin(source.fProdDcaV0ToPrimVertexMin),
+  fProdDcaPosToPrimVertexMin(source.fProdDcaPosToPrimVertexMin),
+  fProdDcaNegToPrimVertexMin(source.fProdDcaNegToPrimVertexMin),
+  fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
+  fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
   fProdLikeSignDcaMax(source.fProdLikeSignDcaMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin)
@@ -165,6 +181,14 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks &AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
   fProdRfidMinXi = source.fProdRfidMinXi;
   fProdRfidMaxXi = source.fProdRfidMaxXi;
+  fProdDcaXiDaughtersMax = source.fProdDcaXiDaughtersMax;
+  fProdDcaV0DaughtersMax = source.fProdDcaV0DaughtersMax;
+  fProdDcaBachToPrimVertexMin = source.fProdDcaBachToPrimVertexMin;
+  fProdDcaV0ToPrimVertexMin = source.fProdDcaV0ToPrimVertexMin;
+  fProdDcaPosToPrimVertexMin = source.fProdDcaPosToPrimVertexMin;
+  fProdDcaNegToPrimVertexMin = source.fProdDcaNegToPrimVertexMin;
+  fProdXiCosineOfPoiningAngleMin = source.fProdXiCosineOfPoiningAngleMin;
+  fProdV0CosineOfPoiningAngleXiMin = source.fProdV0CosineOfPoiningAngleXiMin;
   fProdLikeSignDcaMax = source.fProdLikeSignDcaMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
@@ -474,7 +498,7 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleTrkCuts(AliAODTrack *trk)
 }
 
 //________________________________________________________________________
-Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade *casc)
+Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert)
 {
   //
   //  Single Cascade Cut
@@ -513,10 +537,88 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade 
   
   if(decayvertV0<fProdRfidMinV0 || decayvertV0>fProdRfidMaxV0) return kFALSE;
   if(decayvertXi<fProdRfidMinXi || decayvertXi>fProdRfidMaxXi) return kFALSE;
+
+	Double_t lDcaXiDaughters = casc->DcaXiDaughters();
+	Double_t lDcaV0Daughters = casc->DcaV0Daughters();
+	if(lDcaXiDaughters > fProdDcaXiDaughtersMax) return kFALSE;
+	if(lDcaV0Daughters > fProdDcaV0DaughtersMax) return kFALSE;
+
+	Double_t lDcaBachToPrimVertex = casc->DcaBachToPrimVertex();
+	Double_t lDcaV0ToPrimVertex = casc->DcaV0ToPrimVertex();
+	Double_t lDcaPosToPrimVertex = casc->DcaPosToPrimVertex();
+	Double_t lDcaNegToPrimVertex = casc->DcaNegToPrimVertex();
+	if(lDcaBachToPrimVertex < fProdDcaBachToPrimVertexMin) return kFALSE;
+	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
+	if(lDcaPosToPrimVertex < fProdDcaPosToPrimVertexMin) return kFALSE;
+	if(lDcaNegToPrimVertex < fProdDcaNegToPrimVertexMin) return kFALSE;
+
+	Double_t lXiCosineOfPointingAngle = casc->CosPointingAngleXi(primvert[0],primvert[1],primvert[2]);
+	Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
+
+	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
+	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
   
   return kTRUE;
 }
+//________________________________________________________________________
+Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCutsRef(AliAODcascade *casc,Double_t *primvert)
+{
+  //
+  //  Single Cascade Cut (without Xi mass selection)
+  //
+	
+  if(!casc) return kFALSE;
 
+  AliAODTrack *ptrack = (AliAODTrack*) (casc->GetDaughter(0));
+  AliAODTrack *ntrack = (AliAODTrack*) (casc->GetDaughter(1));
+  AliAODTrack *btrack = (AliAODTrack*) (casc->GetDecayVertexXi()->GetDaughter(0));
+  
+  if(!ptrack||!ntrack||!btrack) return kFALSE;
+
+  Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+  
+  Double_t massLambda = casc->MassLambda();
+  Double_t massAntiLambda = casc->MassAntiLambda();
+  if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
+    return kFALSE;
+  
+  Double_t lPosXi[3];
+  lPosXi[0] = casc->DecayVertexXiX();
+  lPosXi[1] = casc->DecayVertexXiY();
+  lPosXi[2] = casc->DecayVertexXiZ();
+  Double_t decayvertXi = TMath::Sqrt(lPosXi[0]*lPosXi[0]+lPosXi[1]*lPosXi[1]);
+  Double_t lPosV0[3];
+  lPosV0[0] = casc->DecayVertexV0X();
+  lPosV0[1] = casc->DecayVertexV0Y();
+  lPosV0[2] = casc->DecayVertexV0Z();
+  Double_t decayvertV0 = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+  
+  if(decayvertV0<fProdRfidMinV0 || decayvertV0>fProdRfidMaxV0) return kFALSE;
+  if(decayvertXi<fProdRfidMinXi || decayvertXi>fProdRfidMaxXi) return kFALSE;
+
+	Double_t lDcaXiDaughters = casc->DcaXiDaughters();
+	Double_t lDcaV0Daughters = casc->DcaV0Daughters();
+	if(lDcaXiDaughters > fProdDcaXiDaughtersMax) return kFALSE;
+	if(lDcaV0Daughters > fProdDcaV0DaughtersMax) return kFALSE;
+
+	Double_t lDcaBachToPrimVertex = casc->DcaBachToPrimVertex();
+	Double_t lDcaV0ToPrimVertex = casc->DcaV0ToPrimVertex();
+	Double_t lDcaPosToPrimVertex = casc->DcaPosToPrimVertex();
+	Double_t lDcaNegToPrimVertex = casc->DcaNegToPrimVertex();
+	if(lDcaBachToPrimVertex < fProdDcaBachToPrimVertexMin) return kFALSE;
+	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
+	if(lDcaPosToPrimVertex < fProdDcaPosToPrimVertexMin) return kFALSE;
+	if(lDcaNegToPrimVertex < fProdDcaNegToPrimVertexMin) return kFALSE;
+
+	Double_t lXiCosineOfPointingAngle = casc->CosPointingAngleXi(primvert[0],primvert[1],primvert[2]);
+	Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
+
+	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
+	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
+  
+  return kTRUE;
+}
 //________________________________________________________________________
 Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *part1, AliAODTrack *part2)
 {

@@ -1181,10 +1181,12 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
     {
       if     (runnumber < 140000) fGeomName = "EMCAL_FIRSTYEARV1";
       else if(runnumber < 171000) fGeomName = "EMCAL_COMPLETEV1";
-      else                        fGeomName = "EMCAL_COMPLETE12SMV1";  
-      AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fGeomName.Data(),runnumber));
+      else if(runnumber < 198000) fGeomName = "EMCAL_COMPLETE12SMV1";
+      else                        fGeomName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
     }
     
+    AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fGeomName.Data(),runnumber));
+
 		fGeom = AliEMCALGeometry::GetInstance(fGeomName);
     
     // Init geometry, I do not like much to do it like this ...
@@ -1193,14 +1195,14 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
       {
         // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-        if     (runnumber <  140000 &&
-                runnumber >= 100000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-        if     (runnumber >= 140000 &&
-                runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-        else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+        if      (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+        else if (runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+        else if (runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+        else                          fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >=2015
       }
       
       AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
+      
       TGeoManager::Import(fImportGeometryFilePath) ;
     }
 

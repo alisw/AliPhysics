@@ -49,7 +49,7 @@ AliEventPlaneResolutionHandler::AliEventPlaneResolutionHandler():TObject(),
   fHistoAB(0x0),
   fHistoBC(0x0),
   fHistoAC(0x0),
-  fRootFileName("$ALICE_ROOT/PWGHF/vertexingHF/charmFlow/EventPlaneResolutionHistos.root")
+  fRootFileName("$ALICE_PHYSICS/../src/PWGHF/vertexingHF/charmFlow/EventPlaneResolutionHistos.root")
 {
   // Default contructor
   InitializeWeights();

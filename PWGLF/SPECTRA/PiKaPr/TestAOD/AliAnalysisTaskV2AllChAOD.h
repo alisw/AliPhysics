@@ -44,7 +44,7 @@ public:
   fEtaGapMax(0.5),
   fTrkBit(128),
   fEtaCut(0.8),
-  fMinPt(0),
+  fMinPt(0.2),
   fMaxPt(20.0),
   fMinTPCNcls(70),
   fFillTHn(kTRUE),
@@ -54,19 +54,13 @@ public:
   fQvector_sq(0),
   fResSP(0),
   fResSP_vs_Cent(0),
-  f2partCumQA_vs_Cent(0),
-  f2partCumQB_vs_Cent(0),
   fEta_vs_Phi_bef(0),
   fEta_vs_PhiA(0),
   fEta_vs_PhiB(0),
   fResSP_lq(0),
   fResSP_vs_Cent_lq(0),
-  f2partCumQA_vs_Cent_lq(0),
-  f2partCumQB_vs_Cent_lq(0),
   fResSP_sq(0),
   fResSP_vs_Cent_sq(0),
-  f2partCumQA_vs_Cent_sq(0),
-  f2partCumQB_vs_Cent_sq(0),
   fResSP_inclusive(0),
   fv2SPGap1A_inclusive_mb(0),
   fv2SPGap1B_inclusive_mb(0),
@@ -225,8 +219,6 @@ private:
   //output object
   TProfile*     fResSP;             //! resolution
   TProfile*     fResSP_vs_Cent;   //! TBD
-  TProfile*     f2partCumQA_vs_Cent;   //! TBD
-  TProfile*     f2partCumQB_vs_Cent;   //! TBD
   TH2D*         fEta_vs_Phi_bef;        //! eta vs phi distribution before sub events cut 
   TH2D*         fEta_vs_PhiA;            //! eta vs phi distribution after sub events cut 
   TH2D*         fEta_vs_PhiB;            //! eta vs phi distribution after sub events cut 
@@ -246,8 +238,6 @@ private:
   //large q
   TProfile*     fResSP_lq;             //! resolution
   TProfile*     fResSP_vs_Cent_lq;   //! TBD
-  TProfile*     f2partCumQA_vs_Cent_lq;   //! TBD
-  TProfile*     f2partCumQB_vs_Cent_lq;   //! TBD
   TProfile*     fv2SPGap1A_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_lq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1Aq_lq[9];      //! <sin> vs pT gap 1
@@ -262,8 +252,6 @@ private:
   //small q
   TProfile*     fResSP_sq;             //! resolution
   TProfile*     fResSP_vs_Cent_sq;   //! TBD
-  TProfile*     f2partCumQA_vs_Cent_sq;   //! TBD
-  TProfile*     f2partCumQB_vs_Cent_sq;   //! TBD
   TProfile*     fv2SPGap1A_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fv2SPGap1B_sq[9];         //! v2{2} eta gap 1 for all events
   TProfile*     fSinGap1Aq_sq[9];      //! <sin> vs pT gap 1
@@ -313,7 +301,7 @@ private:
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
 
-  ClassDef(AliAnalysisTaskV2AllChAOD, 16);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 17);
 };
 
 #endif

@@ -26,7 +26,9 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   kNSigmaStrong,
   kCombinedpPb,
   kCombinedpPb2,
-  kNSigmaPbPb
+  kNSigmaPbPb,
+  kNSigmaMin,
+  kCombinedProb
  };
  enum ECutsStrategy {
   kStandard,
@@ -97,6 +99,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   Int_t IsSelectedCombinedPIDpPb2(AliAODRecoDecayHF* obj);
   Int_t IsSelectedPIDStrong(AliAODRecoDecayHF* obj);
   Int_t IsSelectedNSigmaPbPb(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPIDProb(AliAODRecoDecayHF* obj);
   Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
 
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
@@ -122,8 +125,7 @@ private:
   Double_t fPIDThreshold[AliPID::kSPECIES]; // PID threshold for each species
   ECutsStrategy fCutsStrategy;              // cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
-
-  ClassDef(AliRDHFCutsLctopKpi,9);  // class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,10);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif

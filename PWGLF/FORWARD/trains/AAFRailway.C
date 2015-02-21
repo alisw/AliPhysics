@@ -86,6 +86,19 @@ struct AAFRailway : public ProofRailway
   }
   virtual ~AAFRailway() {}
   /** 
+   * Get the name of the Aliphysics par file to use 
+   * 
+   * @return String 
+   */
+  virtual const char* AliPhysicsParName() const
+  {
+    return Form("VO_ALICE@AliPhysics::%s", fOptions.Get("aliphysics").Data());
+  }
+  virtual Bool_t CreateAliPhysicsPar()
+  {
+    return true;
+  }
+  /** 
    * Get the name of the AliROOT par file to use 
    * 
    * @return String 
@@ -106,12 +119,15 @@ struct AAFRailway : public ProofRailway
    */
   virtual Bool_t PreSetup() 
   {
+    TString aliphysics("last");
     TString aliroot("last");
     TString root("last");
-    if (fOptions.Has("aliroot")) aliroot = fOptions.Get("aliroot");
-    if (fOptions.Has("root"))    root    = fOptions.Get("root");
+    if (fOptions.Has("aliphysics")) aliphysics = fOptions.Get("aliphysics");
+    if (fOptions.Has("aliroot"))    aliroot    = fOptions.Get("aliroot");
+    if (fOptions.Has("root"))       root       = fOptions.Get("root");
 
-    AvailableSoftware::Check(aliroot, root);
+    AvailableSoftware::Check(aliphysics,aliroot, root);
+    fOptions.Set("aliphysics", aliphysics);
     fOptions.Set("aliroot", aliroot);
     fOptions.Set("root", root);
 

@@ -67,8 +67,8 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskJetV2)
 
-AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetV2", kTRUE), 
-    fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fRunNumberCaliInfo(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistRunnumbersCaliInfo(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROApol(0), fVZEROCpol(0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
+AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetV2", kFALSE),
+    fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fRunNumberCaliInfo(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistMultCorAfterCuts(0), fHistMultvsCentr(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistRunnumbersCaliInfo(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROApol(0), fVZEROCpol(0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
 {
     for(Int_t i(0); i < 10; i++) {
         fEventPlaneWeights[i] = 0;
@@ -125,8 +125,8 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
    // default constructor
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fRunNumberCaliInfo(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistRunnumbersCaliInfo(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROApol(0), fVZEROCpol(0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
+AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type, Bool_t baseClassHistos) : AliAnalysisTaskEmcalJet(name, baseClassHistos),
+  fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fAcceptanceWeights(kFALSE), fEventPlaneWeight(1.), fTracksCont(0), fClusterCont(0), fJetsCont(0), fLeadingJet(0), fLeadingJetAfterSub(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kVZEROComb), fAnalysisType(kCharged), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fRunNumberCaliInfo(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameSmallRho(""), fCachedRho(0), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fHistCentrality(0), fHistCentralityPercIn(0), fHistCentralityPercOut(0), fHistCentralityPercLost(0), fHistVertexz(0), fHistMultCorAfterCuts(0), fHistMultvsCentr(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistRunnumbersCaliInfo(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fMaxCones(-1), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0), fVZEROgainEqualization(0x0), fVZEROApol(0), fVZEROCpol(0), fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), fOADB(0x0)
 {
     for(Int_t i(0); i < 10; i++) {
         fEventPlaneWeights[i] = 0;
@@ -183,12 +183,14 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
 
     // constructor
     DefineInput(0, TChain::Class());
-    DefineOutput(1, TList::Class());
+    Int_t startAt(1);
+    if(fCreateHisto) startAt++;
+    DefineOutput(startAt, TList::Class());
     switch (fRunModeType) {
         case kLocal : {
             gStyle->SetOptFit(1);
-            DefineOutput(2, TList::Class());
-            DefineOutput(3, TList::Class());
+            DefineOutput(startAt+1, TList::Class());
+            DefineOutput(startAt+2, TList::Class());
         } break;
         default: break;
     }
@@ -199,12 +201,13 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type) :
         default : break;
     }
     if(fLocalRhoName=="") fLocalRhoName = Form("LocalRhoFrom_%s", GetName());
+    SetMakeGeneralHistograms(baseClassHistos);
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 {
     // destructor
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
 
@@ -230,37 +233,38 @@ AliAnalysisTaskJetV2::~AliAnalysisTaskJetV2()
 void AliAnalysisTaskJetV2::ExecOnce()
 {
     // Init the analysis
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
-    if(fAttachToEvent) {
-        if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
-            InputEvent()->AddObject(fLocalRho);
-        } else {
-            AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), fLocalRho->GetName()));
+    if(!fLocalRho) {
+        fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
+        if(fAttachToEvent) {
+           if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
+                InputEvent()->AddObject(fLocalRho);
+            } else {
+                AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), fLocalRho->GetName()));
+            }
         }
     }
     AliAnalysisTaskEmcalJet::ExecOnce();        // init the base class
-    AliAnalysisTaskEmcalJet::SetVzRange(-1.*fAbsVertexZ, fAbsVertexZ);
     if(!GetJetContainer()) AliFatal(Form("%s: Couldn't find jet container. Aborting !", GetName()));
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskJetV2::Notify()
 {
     // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(fRunNumber != InputEvent()->GetRunNumber()) {
         fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
     #endif
         // check if this is 10h or 11h data
         switch (fCollisionType) {
             case kPbPb10h : {
-                #ifdef DEBUGTASK
+                #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
                     printf(" LHC10h data, assuming full acceptance, reading VZERO calibration DB \n ");
                 #endif
                 // for 10h data the vzero event plane calibration needs to be cached
@@ -272,7 +276,7 @@ Bool_t AliAnalysisTaskJetV2::Notify()
                 return kTRUE;
             } break;
             default :  {
-                #ifdef DEBUGTASK
+                #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
                     printf(" checking runnumber to adjust acceptance on the fly \n");           
                 #endif
                 ReadVZEROCalibration2011h();
@@ -293,7 +297,7 @@ Bool_t AliAnalysisTaskJetV2::Notify()
             } break;
         }
         if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
-            #ifdef DEBUGTASK
+            #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
                 printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
             #endif
             fRho = fCachedRho;          // reset rho back to cached value. again, should be pointless
@@ -301,7 +305,7 @@ Bool_t AliAnalysisTaskJetV2::Notify()
         Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
         for(Int_t i(0); i < fExpectedSemiGoodRuns->GetSize(); i++) {
             if(fExpectedSemiGoodRuns->At(i) == fRunNumber) { // run is semi-good
-                #ifdef DEBUGTASK
+                #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
                     printf("__FUNC__ %s > semi-good tpc run detected, adjusting acceptance \n ", __func__);
                 #endif
                 flaggedAsSemiGood = kTRUE;
@@ -317,7 +321,7 @@ Bool_t AliAnalysisTaskJetV2::Notify()
                 // for semi-good runs, also try to get the 'small rho' estimate, if it is available
                 AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
                 if(tempRho) {
-                    #ifdef DEBUGTASK
+                    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
                         printf("__FUNC__ %s > switching to small rho, caching normal rho \n ", __func__);
                     #endif
                     fHistAnalysisSummary->SetBinContent(54, 1.);        // bookkeep the fact that small rho is used
@@ -342,7 +346,7 @@ Bool_t AliAnalysisTaskJetV2::Notify()
 Bool_t AliAnalysisTaskJetV2::InitializeAnalysis() 
 {
     // initialize the anaysis
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     // if not set, estimate the number of cones that would fit into the selected acceptance
@@ -390,7 +394,7 @@ Bool_t AliAnalysisTaskJetV2::InitializeAnalysis()
 TH1F* AliAnalysisTaskJetV2::BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c, Bool_t append)
 {
     // book a TH1F and connect it to the output container
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(fReduceBinsXByFactor > 0 ) bins = TMath::Nint(bins/fReduceBinsXByFactor);
@@ -410,7 +414,7 @@ TH1F* AliAnalysisTaskJetV2::BookTH1F(const char* name, const char* x, Int_t bins
 TH2F* AliAnalysisTaskJetV2::BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c, Bool_t append)
 {
     // book a TH2F and connect it to the output container
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(fReduceBinsXByFactor > 0 ) binsx = TMath::Nint(binsx/fReduceBinsXByFactor);
@@ -431,7 +435,7 @@ TH2F* AliAnalysisTaskJetV2::BookTH2F(const char* name, const char* x, const char
 TH3F* AliAnalysisTaskJetV2::BookTH3F(const char* name, const char* x, const char* y, const char* z, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t binsz, Double_t minz, Double_t maxz, Int_t c, Bool_t append)
 {
     // book a TH2F and connect it to the output container
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(fReduceBinsXByFactor > 0 ) {
@@ -456,9 +460,10 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
 {
     // create output objects. also initializes some default values in case they aren't 
     // loaded via the AddTask macro
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
+    if(fCreateHisto) AliAnalysisTaskEmcal::UserCreateOutputObjects();
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     if(!fCentralityClasses) {   // classes must be defined at this point
@@ -471,7 +476,12 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     }
     // set default semi-good runs only for 11h data
     switch (fCollisionType) {
-        case kPbPb10h : break;
+        case kPbPb10h : {
+            fHistMultCorAfterCuts = new TH2F("fHistMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+            fOutputList->Add(fHistMultCorAfterCuts);
+            fHistMultvsCentr = new TH2F("fHistMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 100.5, 101, 0, 3000);
+            fOutputList->Add(fHistMultvsCentr);
+        } break;
         default : {
             if(!fExpectedSemiGoodRuns) {
                 Int_t r[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
@@ -488,7 +498,6 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         fHistCentralityPercOut =        new TProfile("fHistCentralityPercOut", "fHistCentralityPercOut", 102, -2, 100);
         fHistCentralityPercLost =       new TProfile("fHistCentralityPercLost", "fHistCentralityPercLost", 102, -2, 100);
     }
-
     // for some histograms adjust the bounds according to analysis acceptance
     Double_t etaMin(-1.), etaMax(1.), phiMin(0.), phiMax(TMath::TwoPi());
     switch (fAnalysisType) {
@@ -561,15 +570,17 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     }
 
     if(fFillQAHistograms) {
+        Int_t low(fCentralityClasses->At(0)), up(fCentralityClasses->At(fCentralityClasses->GetSize()-1));
+        Int_t diff(TMath::Abs(up-low));
         // event plane estimates and quality
-        fHistPsiVZEROAV0M =         BookTH2F("fHistPsiVZEROAV0M", "V0M", "#Psi_{2, VZEROA}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZEROCV0M =         BookTH2F("fHistPsiVZEROCV0M", "V0M", "#Psi_{2, VZEROC}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZEROVV0M =         BookTH2F("fHistPsiVZEROV0M", "V0M", "#Psi_{2, VZERO}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiTPCV0M =            BookTH2F("fHistPsiTPCV0M", "V0M", "#Psi_{2, TRK}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZEROATRK =         BookTH2F("fHistPsiVZEROATRK", "TRK", "#Psi_{2, VZEROA}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZEROCTRK =         BookTH2F("fHistPsiVZEROCTRK", "TRK", "#Psi_{2, VZEROC}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiVZEROTRK =          BookTH2F("fHistPsiVZEROTRK", "TRK", "#Psi_{2, VZERO}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
-        fHistPsiTPCTRK =            BookTH2F("fHistPsiTPCTRK", "TRK", "#Psi_{2, TRK}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROAV0M =         BookTH2F("fHistPsiVZEROAV0M", "V0M", "#Psi_{2, VZEROA}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROCV0M =         BookTH2F("fHistPsiVZEROCV0M", "V0M", "#Psi_{2, VZEROC}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROVV0M =         BookTH2F("fHistPsiVZEROV0M", "V0M", "#Psi_{2, VZERO}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiTPCV0M =            BookTH2F("fHistPsiTPCV0M", "V0M", "#Psi_{2, TRK}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROATRK =         BookTH2F("fHistPsiVZEROATRK", "TRK", "#Psi_{2, VZEROA}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROCTRK =         BookTH2F("fHistPsiVZEROCTRK", "TRK", "#Psi_{2, VZEROC}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROTRK =          BookTH2F("fHistPsiVZEROTRK", "TRK", "#Psi_{2, VZERO}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiTPCTRK =            BookTH2F("fHistPsiTPCTRK", "TRK", "#Psi_{2, TRK}", diff, low, up, 40, -.5*TMath::Pi(), .5*TMath::Pi());
     }
     // background
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i ++) {
@@ -724,7 +735,7 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     fHistRhoStatusCent = BookTH2F("fHistRhoStatusCent", "centrality", "status [-1=lin was better, 0=ok, 1 = failed]", 101, -1, 100, 3, -1.5, 1.5);
     fHistUndeterminedRunQA = BookTH1F("fHistUndeterminedRunQA", "runnumber", 10, 0, 10);
  
-    PostData(1, fOutputList);
+    PostData((fCreateHisto) ? 2 : 1, fOutputList);
 
     switch (fRunModeType) {
         case kLocal : {
@@ -732,8 +743,8 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             fOutputListGood->SetOwner(kTRUE);
             fOutputListBad = new TList();
             fOutputListBad->SetOwner(kTRUE);
-            PostData(2, fOutputListGood);
-            PostData(3, fOutputListBad);
+            PostData((fCreateHisto) ? 3 : 2, fOutputListGood);
+            PostData((fCreateHisto) ? 4 : 3, fOutputListBad);
         } break;
         default: break;
     }
@@ -747,7 +758,7 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskJetV2::Run()
 {
     // called for each accepted event (call made from user exec of parent class)
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!fTracks||!fJets||!fRho) {
@@ -909,11 +920,11 @@ Bool_t AliAnalysisTaskJetV2::Run()
     if(fFillQAHistograms) FillWeightedQAHistograms(InputEvent());
     if(fFillHistograms)   FillHistogramsAfterSubtraction(psi2, vzero, vzeroComb, tpc);
     // send the output to the connected output container
-    PostData(1, fOutputList);
+    PostData((fCreateHisto) ? 2 : 1, fOutputList);
     switch (fRunModeType) {
         case kLocal : {
-            PostData(2, fOutputListGood);
-            PostData(3, fOutputListBad);
+            PostData((fCreateHisto) ? 3 : 2, fOutputListGood);
+            PostData((fCreateHisto) ? 4 : 3, fOutputListBad);
         } break;
         default: break;
     }
@@ -923,7 +934,7 @@ Bool_t AliAnalysisTaskJetV2::Run()
 void AliAnalysisTaskJetV2::Exec(Option_t* c)
 {
     // for stand alone, avoid framework event setup
-     #ifdef DEBUGTASK
+     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
    switch (fCollisionType) {
@@ -932,6 +943,12 @@ void AliAnalysisTaskJetV2::Exec(Option_t* c)
             if(!fLocalRho) AliAnalysisTaskJetV2::ExecOnce();
             AliAnalysisTaskJetV2::Run();
         } break;
+//        case kPbPb10h : {
+//            // bypass framework event selection. additional check for fTracks 
+//            // to avoid the situation where base classes are never initialized
+//            if(fTracks && fTracks->GetEntriesFast() > 0) AliAnalysisTaskJetV2::Run();
+//            else AliAnalysisTaskSE::Exec(c);
+//        } break;
         default : {
             AliAnalysisTaskSE::Exec(c);
         } break;
@@ -940,6 +957,9 @@ void AliAnalysisTaskJetV2::Exec(Option_t* c)
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::NumericalOverlap(Double_t x1, Double_t x2, Double_t psi2, Double_t &percIn, Double_t &percOut, Double_t &percLost)
 {
+   #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
+       printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+   #endif
    // numerically integrate with finite resolution
    // idea is the following:
    // 1) choose a vector phi
@@ -973,6 +993,9 @@ Int_t AliAnalysisTaskJetV2::OverlapsWithPlane (
         Double_t a, Double_t b, Double_t c, Double_t d, Double_t e,     // in-plane, out-of-plane boundaries (see comments)
         Double_t phi)                                                   // variable
 {
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
     // 'numerical integration' of geometric overlap
     //
     // works as follows: for a given vector phi determines whether
@@ -1022,7 +1045,7 @@ Double_t AliAnalysisTaskJetV2::CalculateEventPlaneChi(Double_t res)
 void AliAnalysisTaskJetV2::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const 
 {
     // get the vzero event plane (a and c separately)
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     switch (fCollisionType) {
@@ -1037,6 +1060,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
             vzero[1][0] = .5*TMath::ATan2(QC2[1], QC2[0]);
             vzero[0][1] = (1./3.)*TMath::ATan2(QA3[1], QA3[0]);
             vzero[1][1] = (1./3.)*TMath::ATan2(QC3[1], QC3[0]);
+            return;     // paranoid return
         } break;
         default: {
             // by default use the ep from the event header (make sure EP selection task is enabeled!)
@@ -1053,7 +1077,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
 void AliAnalysisTaskJetV2::CalculateEventPlaneCombinedVZERO(Double_t* comb) const
 {
     // return the combined vzero event plane
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
  
@@ -1107,7 +1131,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneCombinedVZERO(Double_t* comb) cons
 void AliAnalysisTaskJetV2::CalculateEventPlaneTPC(Double_t* tpc)
 {
    // grab the TPC event plane
-   #ifdef DEBUGTASK
+   #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
    #endif
    fNAcceptedTracks = 0;                // reset the track counter
@@ -1136,7 +1160,7 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneTPC(Double_t* tpc)
 void AliAnalysisTaskJetV2::CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
 {
     // fill the profiles for the resolution parameters
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     fProfV2Resolution[fInCentralitySelection]->Fill(2., TMath::Cos(2.*(vzero[0][0] - vzero[1][0])));
@@ -1193,7 +1217,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
     // 
     // Qa2[0] = Qx2 for vzero A         Qa2[1] = Qy2 for vzero A (etc)
     
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     // placeholders 
@@ -1261,7 +1285,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_
     // calculate calibrated q-vector of the combined vzeroa, vzeroc system
     // this is somewhat ugly as CalculateQvectorCombinedVZERO is called more than once per event
     // but for now it will have to do ...
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
 
@@ -1290,7 +1314,7 @@ void AliAnalysisTaskJetV2::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_
         AliParticleContainer* tracksCont, AliClusterContainer* clusterCont, AliEmcalJet* jet) const
 {
     // get a random cone
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     pt = 0; eta = 0; phi = 0;
@@ -1349,7 +1373,7 @@ void AliAnalysisTaskJetV2::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::CalculateQC2(Int_t harm) {
     // get the second order q-cumulant, a -999 return will be caught in the qa routine of CorrectRho
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Double_t reQ(0), imQ(0), modQ(0), M11(0), M(0);
@@ -1367,7 +1391,7 @@ Double_t AliAnalysisTaskJetV2::CalculateQC2(Int_t harm) {
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::CalculateQC4(Int_t harm) {
     // get the fourth order q-cumulant, a -999 return will be caught in the qa routine of CorrectRho
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Double_t reQn1(0), imQn1(0), reQ2n2(0), imQ2n2(0), reQn3(0), imQn3(0), M1111(0), M(0);
@@ -1403,7 +1427,7 @@ Double_t AliAnalysisTaskJetV2::CalculateQC4(Int_t harm) {
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::QCnQnk(Int_t n, Int_t k, Double_t &reQ, Double_t &imQ) {
     // get the weighted n-th order q-vector, pass real and imaginary part as reference
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!fTracks) return;
@@ -1424,7 +1448,7 @@ void AliAnalysisTaskJetV2::QCnDiffentialFlowVectors(
         Double_t *mp, Double_t *reqn, Double_t *imqn, Double_t* mq, Int_t n) 
 {
     // get  unweighted differential flow vectors
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t iPois(pois->GetEntriesFast());
@@ -1464,7 +1488,7 @@ void AliAnalysisTaskJetV2::QCnDiffentialFlowVectors(
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::QCnS(Int_t i, Int_t j) {
     // get the weighted ij-th order autocorrelation correction
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!fTracks || i <= 0 || j <= 0) return -999;
@@ -1480,7 +1504,7 @@ Double_t AliAnalysisTaskJetV2::QCnS(Int_t i, Int_t j) {
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::QCnM() {
     // get multiplicity for unweighted q-cumulants. function QCnQnk should be called first
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     return (Double_t) fNAcceptedTracksQCn;
@@ -1488,7 +1512,7 @@ Double_t AliAnalysisTaskJetV2::QCnM() {
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::QCnM11() {
     // get multiplicity weights for the weighted two particle cumulant
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     return (QCnS(2,1) - QCnS(1,2));
@@ -1496,7 +1520,7 @@ Double_t AliAnalysisTaskJetV2::QCnM11() {
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskJetV2::QCnM1111() {
     // get multiplicity weights for the weighted four particle cumulant
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     return (QCnS(4,1)-6*QCnS(1,2)*QCnS(2,1)+8*QCnS(1,3)*QCnS(1,1)+3*QCnS(2,2)-6*QCnS(1,4));
@@ -1505,7 +1529,7 @@ Double_t AliAnalysisTaskJetV2::QCnM1111() {
 Bool_t AliAnalysisTaskJetV2::QCnRecovery(Double_t psi2, Double_t psi3) {
     // decides how to deal with the situation where c2 or c3 is negative 
     // returns kTRUE depending on whether or not a modulated rho is used for the jet background
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(TMath::AreEqualAbs(fFitModulation->GetParameter(3), .0, 1e-10) && TMath::AreEqualAbs(fFitModulation->GetParameter(7), .0,1e-10)) {
@@ -1559,7 +1583,7 @@ Bool_t AliAnalysisTaskJetV2::CorrectRho(Double_t psi2, Double_t psi3)
     //      the fit can be done with either v2, v3 or a combination.
     //      in all cases, a cut can be made on the p-value of the chi-squared value of the fit
     //      and a check can be performed to see if rho has no negative local minimum
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t freeParams(2);                // free parameters of the fit (for NDF) 
@@ -1923,18 +1947,26 @@ Bool_t AliAnalysisTaskJetV2::CorrectRho(Double_t psi2, Double_t psi3)
 Bool_t AliAnalysisTaskJetV2::PassesCuts(AliVEvent* event)
 {
     // event cuts
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     switch (fCollisionType) {
         case kJetFlowMC : {
             fInCentralitySelection = 0;
             return kTRUE;
-    } break;
-        default : break;
-    }
-    if(!event || !AliAnalysisTaskEmcal::IsEventSelected()) return kFALSE;
-    if(TMath::Abs(InputEvent()->GetPrimaryVertex()->GetZ()) > 10.) return kFALSE;
+        } break;
+        case kPbPb10h : {
+            // ugly hack for 10h data
+            UInt_t trigger(0);
+            AliAODEvent* aodEvent = static_cast<AliAODEvent*>(InputEvent());
+            if(aodEvent) trigger = ((AliVAODHeader*)(aodEvent->GetHeader()))->GetOfflineTrigger();
+            else return kFALSE;
+            if((trigger & AliVEvent::kMB) == 0) return kFALSE;
+        } break;
+        default : { 
+            if(!event || !AliAnalysisTaskEmcal::IsEventSelected()) return kFALSE;
+        } break;
+   }
     // aod and esd specific checks
     switch (fDataType) {
        case kESD: {
@@ -1962,13 +1994,43 @@ Bool_t AliAnalysisTaskJetV2::PassesCuts(AliVEvent* event)
     if(fTracks->GetEntries() < 1) return kFALSE;
     if(fRho->GetVal() <= 0 ) return kFALSE;
     if(fAnalysisType == AliAnalysisTaskJetV2::kFull && !fClusterCont) return kFALSE;
+    // last but not least this hideous pile-up cut for 10h data
+    if(fCollisionType == kPbPb10h) {
+        Float_t multTPC(0.), multGlob(0.);
+        AliAODEvent* event = static_cast<AliAODEvent*>(InputEvent());
+        Int_t nGoodTracks(event->GetNumberOfTracks());
+        for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+            AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(iTracks));
+            if(!trackAOD) AliFatal("Not a standard AOD");
+            if (!trackAOD) continue;
+            if (!(trackAOD->TestFilterBit(1))) continue;
+            if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+          multTPC++;
+        }
+        for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+            AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(iTracks));
+            if(!trackAOD) AliFatal("Not a standard AOD");
+            if (!trackAOD) continue;
+            if (!(trackAOD->TestFilterBit(16))) continue;
+            if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+            Double_t b[2] = {-99., -99.};
+            Double_t bCov[3] = {-99., -99., -99.};
+            AliAODTrack copy(*trackAOD);
+            if (!(copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+            if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+            multGlob++;
+        } //track loop
+        if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) return kFALSE;
+        fHistMultCorAfterCuts->Fill(multGlob, multTPC);  
+        fHistMultvsCentr->Fill(fCent, multTPC);
+    }
     return kTRUE;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
 {
     // fill histograms 
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     // fill histograms. weight is 1 when no procedure is defined
@@ -1983,7 +2045,7 @@ void AliAnalysisTaskJetV2::FillHistogramsAfterSubtraction(Double_t psi2, Double_
 void AliAnalysisTaskJetV2::FillQAHistograms(AliVTrack* vtrack) const
 {
     // fill qa histograms for pico tracks
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!vtrack) return;
@@ -2008,18 +2070,18 @@ void AliAnalysisTaskJetV2::FillQAHistograms(AliVTrack* vtrack) const
 void AliAnalysisTaskJetV2::FillQAHistograms(AliVEvent* vevent) 
 {
     // fill qa histograms for events
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!vevent) return;
-    fHistVertexz->Fill(vevent->GetPrimaryVertex()->GetZ());
+    fHistVertexz->Fill(fVertex[2]);
     fHistCentrality->Fill(fCent);
     Int_t runNumber(InputEvent()->GetRunNumber());
     if(fLeadingJet && fLeadingJetAfterSub) fHistLeadingJetBackground[fInCentralitySelection]->Fill(TMath::Abs(fLeadingJet->Eta()-fLeadingJetAfterSub->Eta()), PhaseShift(fLeadingJet->Phi()-fLeadingJetAfterSub->Phi()));
     for(fMappedRunNumber = 0; fMappedRunNumber < fExpectedRuns->GetSize(); fMappedRunNumber++) {
         if(fExpectedRuns->At(fMappedRunNumber) == runNumber) return;
     }
-     #ifdef DEBUGTASK
+     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_
          printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
      #endif
 }
@@ -2027,7 +2089,7 @@ void AliAnalysisTaskJetV2::FillQAHistograms(AliVEvent* vevent)
 void AliAnalysisTaskJetV2::FillWeightedTrackHistograms() const
 {
     // fill track histograms
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t iTracks(fTracks->GetEntriesFast()), iAcceptedTracks(0);
@@ -2044,7 +2106,7 @@ void AliAnalysisTaskJetV2::FillWeightedTrackHistograms() const
 void AliAnalysisTaskJetV2::FillWeightedClusterHistograms() const
 {
     // fill cluster histograms
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!fClusterCont) return;
@@ -2064,7 +2126,7 @@ void AliAnalysisTaskJetV2::FillWeightedClusterHistograms() const
 void AliAnalysisTaskJetV2::FillWeightedEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const
 {
     // fill event plane histograms, only called in qa mode
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Double_t TRK(InputEvent()->GetCentrality()->GetCentralityPercentile("TRK"));
@@ -2093,7 +2155,7 @@ void AliAnalysisTaskJetV2::FillWeightedEventPlaneHistograms(Double_t vzero[2][2]
 void AliAnalysisTaskJetV2::FillWeightedRhoHistograms()
 {
     // fill rho histograms
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     fHistRhoPackage[fInCentralitySelection]->Fill(fLocalRho->GetVal(), fEventPlaneWeight);    // save the rho estimate from the emcal jet package
@@ -2114,7 +2176,7 @@ void AliAnalysisTaskJetV2::FillWeightedRhoHistograms()
 void AliAnalysisTaskJetV2::FillWeightedDeltaPtHistograms(Double_t psi2) const
 {
     // fill delta pt histograms
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t i(0);
@@ -2147,14 +2209,14 @@ void AliAnalysisTaskJetV2::FillWeightedDeltaPtHistograms(Double_t psi2) const
 void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
 {
     // fill jet histograms
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t iJets(fJets->GetEntriesFast());
     UInt_t trigger(0);
     if(fFillQAHistograms) {
         trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         PrintTriggerSummary(trigger);
     #endif
     }
@@ -2182,7 +2244,7 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
 void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVTrack* vtrack) const
 {
     // fill qa histograms for pico tracks
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!vtrack) return;
@@ -2207,7 +2269,7 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVTrack* vtrack) const
 void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent) 
 {
     // fill qa histograms for events
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!vevent) return;
@@ -2218,7 +2280,7 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent)
     for(fMappedRunNumber = 0; fMappedRunNumber < fExpectedRuns->GetSize(); fMappedRunNumber++) {
         if(fExpectedRuns->At(fMappedRunNumber) == runNumber) return;
     }
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("\n > TASK %s CANNOT IDENTIFY RUN - CONFIGURATION COULD BE INCORRECT < \n", GetName());
     #endif
     if(fHistRunnumbersCaliInfo) {
@@ -2232,7 +2294,7 @@ void AliAnalysisTaskJetV2::FillWeightedQAHistograms(AliVEvent* vevent)
 void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger)
 {
     // fill the trigger efficiency histograms
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_2
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     // some trigger definitions for readability. the way this routine is set up is as follows
@@ -2305,7 +2367,7 @@ void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UIn
 void AliAnalysisTaskJetV2::FillAnalysisSummaryHistogram() const
 {
     // fill the analysis summary histrogram, saves all relevant analysis settigns
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fJetRadius");
@@ -2363,7 +2425,7 @@ void AliAnalysisTaskJetV2::Terminate(Option_t *)
     // terminate
     switch (fRunModeType) {
         case kLocal : {
-        #ifdef DEBUGTASK
+        #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
             printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
         #endif
         AliAnalysisTaskJetV2::Dump();
@@ -2376,7 +2438,7 @@ void AliAnalysisTaskJetV2::Terminate(Option_t *)
 void AliAnalysisTaskJetV2::SetModulationFit(TF1* fit) 
 {
     // set modulation fit
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if (fFitModulation) delete fFitModulation;
@@ -2386,7 +2448,7 @@ void AliAnalysisTaskJetV2::SetModulationFit(TF1* fit)
 void AliAnalysisTaskJetV2::SetUseControlFit(Bool_t c)
 {
     // set control fit
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if (fFitControl) delete fFitControl;
@@ -2399,7 +2461,7 @@ TH1F* AliAnalysisTaskJetV2::GetResolutionFromOuptutFile(detectorType det, Int_t 
 {
     // INTERFACE METHOD FOR OUTPUTFILE
     // get the detector resolution, user has ownership of the returned histogram
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!fOutputList) {
@@ -2449,7 +2511,7 @@ TH1F* AliAnalysisTaskJetV2::CorrectForResolutionDiff(TH1F* v, detectorType det, 
 {
     // INTERFACE METHOD FOR OUTPUT FILE
     // correct the supplied differential vn histogram v for detector resolution
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     TH1F* r(GetResolutionFromOuptutFile(det, h, cen));
@@ -2469,7 +2531,7 @@ TH1F* AliAnalysisTaskJetV2::CorrectForResolutionInt(TH1F* v, detectorType det, T
     // INTERFACE METHOD FOR OUTPUT FILE
     // correct the supplied intetrated vn histogram v for detector resolution
     // integrated vn must have the same centrality binning as the resolotion correction
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     TH1F* r(GetResolutionFromOuptutFile(det, h, cen));
@@ -2480,7 +2542,7 @@ TH1F* AliAnalysisTaskJetV2::CorrectForResolutionInt(TH1F* v, detectorType det, T
 TH1F* AliAnalysisTaskJetV2::GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h)
 {
     // get differential QC
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Double_t r(refCumulants->GetBinContent(h-1)); // v2 reference flow
@@ -2504,7 +2566,7 @@ void AliAnalysisTaskJetV2::ReadVZEROCalibration2010h()
     // necessary for calibration of 10h vzero event plane. code copied from flow package 
     // (duplicate, but i didn't want to introduce an ulgy dependency )
     // this function is only called when the runnumber changes 
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
 
@@ -2636,7 +2698,11 @@ void AliAnalysisTaskJetV2::ReadVZEROCalibration2010h()
 }
 //_____________________________________________________________________________i
 void AliAnalysisTaskJetV2::ReadVZEROCalibration2011h()
-{
+{    
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+
     // make sure calibration parameters are present for vzero ep 11h data
     //
     // chi values can be calculated using the static helper function 
@@ -2674,7 +2740,7 @@ void AliAnalysisTaskJetV2::ReadVZEROCalibration2011h()
 Int_t AliAnalysisTaskJetV2::GetVZEROCentralityBin() const
 {
     // return cache index number corresponding to the event centrality
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Float_t v0Centr(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
@@ -2693,7 +2759,7 @@ AliEmcalJet* AliAnalysisTaskJetV2::GetLeadingJet(AliLocalRhoParameter* localRho)
     // return pointer to the highest pt jet (before background subtraction) within acceptance
     // only rudimentary cuts are applied on this level, hence the implementation outside of
     // the framework
-    #ifdef DEBUGTASK
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     Int_t iJets(fJets->GetEntriesFast());
@@ -2729,6 +2795,10 @@ AliEmcalJet* AliAnalysisTaskJetV2::GetLeadingJet(AliLocalRhoParameter* localRho)
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskJetV2::GetEventPlaneWeights(TH1F* hist, Int_t c)
 {
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+
     // get event weights distribution from event plane distribution
     TH1F* temp((TH1F*)hist->Clone(Form("EP_weights_cen_%i", c)));
     Double_t integral(hist->Integral()/hist->GetNbinsX());
@@ -2742,6 +2812,10 @@ TH1F* AliAnalysisTaskJetV2::GetEventPlaneWeights(TH1F* hist, Int_t c)
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV2::PrintTriggerSummary(UInt_t trigger)
 {
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+
     // test function to print binary representation of given trigger mask
     // trigger mask is represented by 32 bits (hardcoded as it is an UInt_t ) 
     TString triggerName[] = { // trigger names and their corresponding bits. some bits have multiple names

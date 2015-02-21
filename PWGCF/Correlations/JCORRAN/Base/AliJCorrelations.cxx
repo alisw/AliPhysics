@@ -318,13 +318,13 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   
   bool fill2DBackgroundQualityControlHistograms = false;  // Choose whether to fill the DeltaPhi DeltaEta histograms for jT background
   
-  //FillPairPtAndCosThetaStarHistograms(fTyp, ftk1, ftk2);  // Fill the pair pT and cos(theta*) histograms TODO: Does not work! Needs debugging
-  FillXeHistograms(fTyp);  // Fill the xE and xLong histograms
-  FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
+  //if(fhistos->fhCosThetaStar.Dimension()>0) FillPairPtAndCosThetaStarHistograms(fTyp, ftk1, ftk2);  // Fill the pair pT and cos(theta*) histograms TODO: Does not work! Needs debugging
+  if(fhistos->fhxEF.Dimension()>0) FillXeHistograms(fTyp);  // Fill the xE and xLong histograms
+  if(fhistos->fhJT.Dimension()>0) FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
   FillDeltaEtaHistograms(fTyp, ZBin);  // Fill all the delta eta histograms
   FillDeltaPhiHistograms(fTyp);  // Fill the azimuthal correlation functions
   FillPtaHistograms(fTyp);  // Fill various pTa histograms
-  FillIAAAndMoonHistograms(fTyp, ZBin);  // Fill the I_AA and moon histograms
+  if(fhistos->fhDRNearPtMoon.Dimension()>0) FillIAAAndMoonHistograms(fTyp, ZBin);  // Fill the I_AA and moon histograms
   
 }
 
@@ -669,7 +669,7 @@ void AliJCorrelations::FillIAAAndMoonHistograms(fillType fTyp, int ZBin)
 {
   // This method fills the I_AA and moon histograms
   
-  fhistos->fhDphiAssoc2DIAA[fTyp][fCentralityBin][ZBin][fpttBin][fptaBin]->Fill( fDeltaEta, fDeltaPhi/kJPi, fTrackPairEfficiency);
+  if(fhistos->Is2DHistosEnabled()) fhistos->fhDphiAssoc2DIAA[fTyp][fCentralityBin][ZBin][fpttBin][fptaBin]->Fill( fDeltaEta, fDeltaPhi/kJPi, fTrackPairEfficiency);
   
   if(fRGapBinNear>=0){
     if(fRGapBinNear <= fRSignalBin) fhistos->fhDRNearPt[fTyp][fCentralityBin][ZBin][fRGapBinNear][fpttBin]->Fill( fpta, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
@@ -697,7 +697,7 @@ void AliJCorrelations::FillIAAAndMoonHistograms(fillType fTyp, int ZBin)
               fhistos->fhDRNearPtMoon[fCentralityBin][ZBin][ir1][irs][fpttBin]->Fill( fpta, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
             else
               fhistos->fhDRNearPtMoonM[fCentralityBin][ZBin][ir1][irs][fpttBin]->Fill( fpta, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
-            if(fTyp == kReal)       fhistos->fhDphiAssoc2D[ir1][irs]->Fill( fDeltaEta, fDeltaPhi/kJPi, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
+            if(fTyp == kReal && fhistos->Is2DHistosEnabled())       fhistos->fhDphiAssoc2D[ir1][irs]->Fill( fDeltaEta, fDeltaPhi/kJPi, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
           }
         }
       }

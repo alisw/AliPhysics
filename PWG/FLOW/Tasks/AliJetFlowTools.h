@@ -67,8 +67,8 @@ class AliJetFlowTools {
             kDeltaPhi,                  // default for delta phi
             kEmpty };                   // default style
         // setters, interface to the class
-        void            SetOffsetStart(Int_t g)         {gOffsetStop            = g;}
-        void            SetOffsetStop(Int_t g)          {gOffsetStart           = g;}
+        void            SetOffsetStart(Int_t g)         {gOffsetStart           = g;}
+        void            SetOffsetStop(Int_t g)          {gOffsetStop            = g;}
         void            SetReductionFactor(Float_t g)   {gReductionFactor       = g;}
         void            SetPwrtTo(Float_t p)            {gPwrtTo                = p;}
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
@@ -104,6 +104,14 @@ class AliJetFlowTools {
         void            SetCentralityWeight(TArrayD* weights)   {
             fCentralityWeights = weights;
             if(!fCentralityArray) printf(" > Warning: centrality weights set, but bins are not defined! \n");
+        }
+        void            SetMergeWith(
+                TList* l, 
+                Int_t c,
+                Float_t weight) {
+            fMergeWithList      = l; 
+            fMergeWithCen       = c;
+            fMergeWithWeight    = weight;
         }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
@@ -226,7 +234,11 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 Float_t corr = .0,
                 TString in = "UnfoldedSpectra.root", 
-                TString out = "ShapeUncertainty.root") const;
+                TString out = "ShapeUncertainty.root",
+                Bool_t regularizationOnV2 = kFALSE,     // get uncertainty on yields separately or v2 directly
+                Bool_t trueBinOnV2 = kFALSE,
+                Bool_t recBin = kFALSE,
+                Bool_t method = kFALSE) const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -246,6 +258,8 @@ class AliJetFlowTools {
         static TH1D*    MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
+        static TH1F*            ConvertGraphToHistogram(TGraphErrors* g);
+        static TGraphAsymmErrors*       AddHistoToGraph(TGraphAsymmErrors* g, TH1D* h);
         void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
         void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
@@ -265,7 +279,7 @@ class AliJetFlowTools {
         static void     MinimizeChi2nd();
         static Double_t PhenixChi2nd(const Double_t *xx );
         static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
-        static TF2*     ReturnFunctionnd(Double_t &p, Double_t p_wrt_to = 0.);
+        static TF2*     ReturnFunctionnd(Double_t &p);
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -342,7 +356,9 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
             return tex;
         }
 
-        static void     SavePadToPDF(TVirtualPad* pad)  {return;/*pad->SaveAs(Form("%s.pdf", pad->GetName()));*/}
+        static void     SavePadToPDF(TVirtualPad* pad)  {
+            if(pad) return;/*pad->SaveAs(Form("%s.pdf", pad->GetName()));*/
+            else return;}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}
@@ -394,6 +410,25 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                                                         const TH1D* measuredJetSpectrumTrueBins,
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency = 0x0);
+       void            SystematicsWrapper(
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                TH1D*& relativeErrorInUp,
+                TH1D*& relativeErrorInLow,
+                TH1D*& relativeErrorOutUp,
+                TH1D*& relativeErrorOutLow,
+                TH1D*& relativeSystematicIn,
+                TH1D*& relativeSystematicOut,
+                TH1D*& nominal,
+                TH1D*& nominalIn,
+                TH1D*& nominalOut,
+                Int_t columns,
+                Float_t rangeLow,
+                Float_t rangeUp,
+                TFile* readMe, 
+                TString source = "",
+                Bool_t RMS = kFALSE,
+                Bool_t onRatio = kTRUE) const;
         void            DoIntermediateSystematics(
                 TArrayI* variationsIn,
                 TArrayI* variationsOut,
@@ -412,7 +447,30 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
                 TFile* readMe, 
                 TString source = "",
                 Bool_t RMS = kFALSE) const;
+        void            DoIntermediateSystematicsOnV2(
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                TH1D*& relativeErrorInUp,
+                TH1D*& relativeErrorInLow,
+                TH1D*& relativeErrorOutUp,
+                TH1D*& relativeErrorOutLow,
+                TH1D*& relativeSystematicIn,
+                TH1D*& relativeSystematicOut,
+                TH1D*& nominal,
+                TH1D*& nominalIn,
+                TH1D*& nominalOut,
+                Int_t columns,
+                Float_t rangeLow,
+                Float_t rangeUp,
+                TFile* readMe, 
+                TString source = "",
+                Bool_t RMS = kFALSE) const;
+
         static void     ResetAliUnfolding();
+        static void     SquelchWarning() {
+            printf(" >> I squelched a warning, jay, I'm contributing ! << \n");
+            return;
+        }
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
         // ProjectionY()) check for existing objects by name and re-use them
@@ -436,6 +494,9 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TArrayI*                fCentralityArray;       // array of centrality bins that are merged
         TArrayI*                fMergeBinsArray;        // array of pt bins that are merged
         TArrayD*                fCentralityWeights;     // array of centrality weights
+        TList*                  fMergeWithList;         // additional input list
+        Int_t                   fMergeWithCen;          // centrality bin of additional input list
+        Float_t                 fMergeWithWeight;       // weight of additional input list
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding

@@ -33,6 +33,8 @@
 #include "THistManager.h"
 #include "TString.h"
 
+#include <bitset>
+
 ClassImp(AliEmcalTriggerMaker)
 
 using namespace std;
@@ -63,6 +65,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 }
 
 //________________________________________________________________________
@@ -88,8 +92,10 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
   fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
+  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
   memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchCols * kPatchRows);
   memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 }
 
 //________________________________________________________________________
@@ -223,6 +229,8 @@ Bool_t AliEmcalTriggerMaker::Run()
   if (fCaloTriggers->GetEntries() > 0) {
     // zero the arrays
     memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+    memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+    memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 
     // go throuth the trigger channels
     while (fCaloTriggers->Next()) {
@@ -236,6 +244,29 @@ Bool_t AliEmcalTriggerMaker::Run()
       fCaloTriggers->GetL1TimeSum(adcAmp);
       if (adcAmp>-1)
 	    fPatchADC[globCol][globRow] = adcAmp;
+
+      // Handling for L0 triggers
+      // For the ADC value we use fCaloTriggers->GetAmplitude()
+      // In data, all patches which have 4 TRUs with proper level0 times are
+      // valid trigger patches. Therefore we need to check all neighbors for
+      // the level0 times, not only the bottom left. In order to obtain this
+      // information, a lookup table with the L0 times for each TRU is created
+      Float_t amplitude(0);
+      fCaloTriggers->GetAmplitude(amplitude);
+      if(amplitude < 0) amplitude = 0;
+      fPatchAmplitudes[globCol][globRow] = amplitude;
+      Int_t nl0times(0);
+      fCaloTriggers->GetNL0Times(nl0times);
+      if(nl0times){
+        TArrayI l0times(nl0times);
+        fCaloTriggers->GetL0Times(l0times.GetArray());
+        for(int itime = 0; itime < nl0times; itime++){
+          if(l0times[itime] >7 && l0times[itime] < 10){
+            fLevel0TimeMap[globCol][globRow] = static_cast<Char_t>(l0times[itime]);
+            break;
+          }
+        }
+      }
     } // patches
   } // array not empty
   
@@ -389,6 +420,19 @@ Bool_t AliEmcalTriggerMaker::Run()
     }
   } // there are some triggers
 
+  // Diagnostics
+  int npatchOnline = 0;
+  for(TIter patchIter = TIter(fCaloTriggersOut).Begin(); patchIter != TIter::End(); ++patchIter){
+    AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(mypatch->IsOfflineSimple()) continue;
+    AliDebug(1,Form("Patch with bits: %s, types: JH[%s], JL[%s], GH[%s], GL[%s], L0[%s]",
+        std::bitset<sizeof(int)*4>(mypatch->GetTriggerBits()).to_string().c_str(),
+        (mypatch->IsJetHigh() ? "y" : "n"), (mypatch->IsJetLow() ? "y" : "n"),
+        (mypatch->IsGammaHigh() ? "y" : "n"), (mypatch->IsGammaLow() ? "y" : "n"),(mypatch->IsLevel0() ? "y" : "n")));
+    npatchOnline++;
+  }
+  AliDebug(1, Form("Number of online patches: %d", npatchOnline));
+
   return kTRUE;
 }
 
@@ -464,11 +508,11 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	    cmiRow += ca*(Float_t)j;
 	  }
 	  // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
-
 	  if(type == kTMEMCalLevel0){
-	    adcAmp += fPatchADC[globCol+i][globRow+j] * 4; // precision loss in case of global integer field
-	  } else
+	    adcAmp += static_cast<Int_t>(fPatchAmplitudes[globCol+i][globRow+j] * 4); // precision loss in case of global integer field
+	  } else {
 	    adcAmp += fPatchADC[globCol+i][globRow+j];
+	  }
 
 	  adcOfflineAmp += fPatchADCSimple[globCol+i][globRow+j];
     }
@@ -613,6 +657,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   trigger->SetTriggerBits(tBits);
   trigger->SetOffSet(offSet);
   trigger->SetEdgeCell(globCol*2, globRow*2); // from triggers to cells
+  //if(isOfflineSimple)trigger->SetOfflineSimple();
   if(fDoQA){
     fQAHistos->FillTH2(Form("RCPos%s", fgkTriggerTypeNames[type].Data()), globCol, globRow);
     fQAHistos->FillTH2(Form("EPCentPos%s", fgkTriggerTypeNames[type].Data()), centerGeo.Eta(), centerGeo.Phi());
@@ -662,6 +707,8 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   // run the trigger algo, stepping by 8 towers (= 4 trigger channels)
   Int_t maxCol = 48;
   Int_t maxRow = fGeom->GetNTotalTRU()*2;
+  Int_t isMC = MCEvent() ? 1 : 0;
+  Int_t bitOffSet = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
   for (Int_t i = 0; i < (maxCol-16); i += 4) {
     for (Int_t j = 0; j < (maxRow-16); j += 4) {
       Double_t tSumOffline  = 0;
@@ -689,9 +736,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
 
       // check thresholds
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetLowSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetHighSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
@@ -738,9 +785,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
 
       // check thresholds
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaLowSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaHighSimple())
-	tBits = tBits | ( 1 << ( fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit() ));
+	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
@@ -788,23 +835,18 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
     return tbits & (1 << fTriggerBitConfig->GetLevel0Bit());
   } else {
     // For Data check from the level0 times if the trigger has fired at level0,
-    // accept the patch only in case row and col are even
-    Int_t row, col;trg.GetPosition(col, row);   // @MF: temporarily for understanding, under the asumption that the L0 algorithm has no overlapping fast-ors, to be replaced by a refined trigger patch selection based on ADC above threshold
-    if(row %2 || col % 2) return false;
-    Int_t nl0times(0);
-    Bool_t l0fired(kFALSE);
-    trg.GetNL0Times(nl0times);
-    if(nl0times){
-      TArrayI l0times(nl0times);
-      trg.GetL0Times(l0times.GetArray());
-      // Apply timing cut to see if a L0 has fired
-      for(Int_t *l0timeIter = l0times.GetArray(); l0timeIter < l0times.GetArray() + l0times.GetSize(); l0timeIter++){
-        if(*l0timeIter > 7 && *l0timeIter < 10){
-          l0fired = kTRUE;
-          break;
-        }
+    // accept the patch only if all 4 TRUs have level0 times either 8 or 9
+    Int_t row, col;trg.GetPosition(col, row);
+    int nvalid(0);
+    for(int ipos = 0; ipos < 2; ipos++){
+      if(row + ipos >= kPatchRows) continue;    // boundary check
+      for(int jpos = 0; jpos < 2; jpos++){
+        if(col + jpos >= kPatchCols) continue;  // boundary check
+        const Char_t &l0times = fLevel0TimeMap[col + jpos][row + ipos];
+        if(l0times > 7 && l0times < 10) nvalid++;
       }
     }
-    return l0fired;
+    if (nvalid != 4) return false;
+    return true;
   }
 }

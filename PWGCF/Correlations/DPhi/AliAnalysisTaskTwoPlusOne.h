@@ -68,6 +68,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetAlpha(Double_t val){fAlpha = val; }
   void   SetUseLeadingPt(Bool_t flag) { fUseLeadingPt = flag; }
   void   SetUseAllT1(Bool_t flag) { fUseAllT1 = flag; }
+  void   SetUseBackgroundSameFromMixedComb(Bool_t flag) { fUseBackgroundSameFromMixedComb  = flag; }
 
  private:
   void            AddSettingsTree();                                  // add list of settings to output list
@@ -115,12 +116,13 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Double_t fAlpha;            //sets the alpha parameter in the container
     Bool_t fUseLeadingPt;        //decides if all particles of a cone are used as trigger particles or only the leading particles within alpha (apply this on near and away side)
     Bool_t fUseAllT1;            //decides if the near side yield is filled for all away side yields or only for the highest one
+    Bool_t fUseBackgroundSameFromMixedComb; //decides if the background same method is filled with the same event or with the mixed combinatorics events
     
     AliAnalysisTaskTwoPlusOne(const AliAnalysisTaskTwoPlusOne&); // not implemented
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-  ClassDef(AliAnalysisTaskTwoPlusOne, 3); // two plus one analysis with two trigger particles and particle correlations to these triggers
+  ClassDef(AliAnalysisTaskTwoPlusOne, 4); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif

@@ -65,7 +65,6 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
 
-#include "AliHFMassFitter.h"
 #include "AliEventplane.h"
 #include "AliFlowTrack.h"
 #include "AliFlowVector.h"

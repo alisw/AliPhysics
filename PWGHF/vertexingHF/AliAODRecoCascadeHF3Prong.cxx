@@ -290,6 +290,29 @@ Double_t AliAODRecoCascadeHF3Prong::XicCosPointingAngle() const
   else
     return -9999.;
 }
+//________________________________________________________________________
+Double_t AliAODRecoCascadeHF3Prong::BachelorsCosPointingAngle() const
+{
+  //
+  // Bachelor pointing angle to primary vertex
+  //
+
+  AliAODVertex *vtxPrimary = GetPrimaryVtx();
+  AliAODVertex *vtxSecondary = GetSecondaryVtx();
+
+  Double_t dx = vtxSecondary->GetX()-vtxPrimary->GetX();
+  Double_t dy = vtxSecondary->GetY()-vtxPrimary->GetY();
+  Double_t dl = sqrt(dx*dx+dy*dy);
+
+  Double_t px = PxProng(0)+PxProng(2);
+  Double_t py = PyProng(0)+PyProng(2);
+  Double_t pt = sqrt(px*px+py*py);
+
+  if(dl>0&&pt>0)
+    return (px*dx+py*dy)/pt/dl; 
+  else
+    return -9999.;
+}
 //----------------------------------------------------------------------------
 Int_t AliAODRecoCascadeHF3Prong::MatchToMC(Int_t pdgabs,Int_t pdgabscasc,
                                      Int_t *pdgDg,Int_t *pdgDgcasc,Int_t *pdgDgv0

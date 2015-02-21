@@ -67,6 +67,7 @@ if(FASTJET_FOUND)
         ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx
         ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
         ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHBOM.cxx
+        AliAnalysisTaskJetFFMoments.cxx
     )
 
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})

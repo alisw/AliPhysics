@@ -249,7 +249,7 @@ AliLandauGausFitter::Fit1Particle(TH1* dist, Double_t sigman)
   // Define the function to fit 
   TF1* f = AliLandauGaus::MakeF1(intg,peakE,peakE/10,peakE/5,sigman,minE,maxE);
   SetParLimits(f, kDelta, peakE,   minE, fMaxRange);
-  SetParLimits(f, kXi,    peakE,   0,    rmsE); // 0.1
+  SetParLimits(f, kXi,    peakE,   0,    2*rmsE); // 0.1
   SetParLimits(f, kSigma, peakE/5, 1e-5, rmsE); // 0.1
   if (sigman <= 0)  
     f->FixParameter(kSigmaN, 0);

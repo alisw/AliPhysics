@@ -16,6 +16,7 @@
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
 
+#include "AliESDtrackCuts.h"
 #include "AliVVertex.h"
 #include "AliAnalysisFilter.h"
 #include "AliPID.h"
@@ -43,6 +44,7 @@ AliTPCPIDEtaQA::AliTPCPIDEtaQA()
   , fPtThresholdForPhiCut(2.0)
   , fPhiCutSecondBranchLow(0x0)
   , fPhiCutSecondBranchHigh(0x0)
+  , fCentralityEstimator("")
   , fhPIDdataAll(0x0)
   //OLD clusterQA, fhNumClustersPhiPrimePtBeforeCut(0x0)
   //OLD clusterQA, fhNumClustersPhiPrimePtAfterCut(0x0)
@@ -70,6 +72,7 @@ AliTPCPIDEtaQA::AliTPCPIDEtaQA(const char *name)
   , fPtThresholdForPhiCut(2.0)
   , fPhiCutSecondBranchLow(0x0)
   , fPhiCutSecondBranchHigh(0x0)
+  , fCentralityEstimator("")
   , fhPIDdataAll(0x0)
   //OLD clusterQA, fhNumClustersPhiPrimePtBeforeCut(0x0)
   //OLD clusterQA, fhNumClustersPhiPrimePtAfterCut(0x0)
@@ -143,12 +146,33 @@ void AliTPCPIDEtaQA::UserCreateOutputObjects()
   const Int_t nBins = 6;
   // MC PID, SelectSpecies, P(TPC_inner), multiplicity, deltaPrimeSpecies, eta
   
+  
+  // Binning for multiplicity
+  Int_t nMultBins = 40;
+  Double_t multLow = 0.;
+  Double_t multUp = 20000;
+  
+  CentralityEstimatorType centType = GetCentralityEstimatorType();
+  if (centType == kITSTPCtracklets) {
+    // Special pp centrality estimator
+    nMultBins = 100;
+    multLow = 0;
+    multUp = 100;
+  }
+  else if (centType == kPPmultV0M) {
+    // Another special pp centrality estimator
+    nMultBins = 100;
+    multLow = 0.;
+    multUp = 1.;
+  }
+  
+  
   Int_t bins[nBins] = 
-    {  9,   4, nPtBins,    40, 201, nEta };
+    {  9,   4, nPtBins, nMultBins, 201, nEta };
   Double_t xmin[nBins] = 
-    {  0., 0.,      0.,    0., 0.5, -fEtaCut};
+    {  0., 0.,      0.,   multLow, 0.5, -fEtaCut};
   Double_t xmax[nBins] = 
-    {  9., 4.,    50.0, 20000, 2.0, fEtaCut };
+    {  9., 4.,    50.0,    multUp, 2.0, fEtaCut };
  
   		
   fhPIDdataAll = new THnSparseI("hPIDdataAll","", nBins, bins, xmin, xmax);
@@ -220,7 +244,21 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
   // Fill V0 arrays with V0s
   FillV0PIDlist();
   
-  Int_t multiplicity = fESD->GetNumberOfESDTracks();
+  Double_t multiplicity = -1;
+  
+  CentralityEstimatorType centType = GetCentralityEstimatorType();
+  if (centType == kITSTPCtracklets) {
+    // Special pp centrality estimator
+    multiplicity = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+  }
+  else if (centType == kPPmultV0M) {
+    // Another special pp centrality estimator
+    multiplicity = fAnaUtils->GetMultiplicityPercentile(fESD, "V0M");
+  }
+  else {
+    // Take default, namely number of ESD tracks
+    multiplicity = fESD->GetNumberOfESDTracks();
+  }
   
   // Track loop to fill a Train spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
@@ -463,7 +501,7 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
     }
     
     // MC PID, SelectSpecies, P(TPC_inner), multiplicity, deltaPrimeSpecies, eta
-    Double_t entry[6] = { (Double_t)binMC, 0., pTPC, (Double_t)multiplicity, deltaPrimeEl, eta };
+    Double_t entry[6] = { (Double_t)binMC, 0., pTPC, multiplicity, deltaPrimeEl, eta };
     
     if (fMC)  {
       fhPIDdataAll->Fill(entry);

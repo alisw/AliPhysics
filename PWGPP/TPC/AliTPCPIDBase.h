@@ -27,9 +27,11 @@ class AliVTrack;
 #include "AliInputEventHandler.h"
 #include "AliTOFPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
 
 class AliTPCPIDBase : public AliAnalysisTaskSE {
  public:
+  enum PileUpRejectionType { kPileUpRejectionOff = 0, kPileUpRejectionSPD = 1, kPileUpRejectionMV = 2 };
   enum TPCcutType { kNoCut = 0, kTPCCutMIGeo = 1, kTPCnclCut = 2 };
   AliTPCPIDBase();
   AliTPCPIDBase(const char *name);
@@ -40,12 +42,14 @@ class AliTPCPIDBase : public AliAnalysisTaskSE {
   virtual void   Terminate(const Option_t*);
   
   virtual Bool_t GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcut = kTRUE) const;
+ 
+  virtual Bool_t GetIsPileUp(AliVEvent* event, PileUpRejectionType pileUpRejectionType) const;
   
   virtual Bool_t GetIsPbpOrpPb() const { return fIsPbpOrpPb; };
   virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };
   
   virtual Double_t GetZvtxCutEvent() const { return fZvtxCutEvent; };
-  virtual void SetZvtxCutEvent(Double_t newValue) { fZvtxCutEvent = newValue; };
+  virtual void SetZvtxCutEvent(Double_t newValue) { fZvtxCutEvent = newValue; if (fAnaUtils) fAnaUtils->SetMaxVtxZ(fZvtxCutEvent);};
   
   virtual Bool_t GetUsePhiCut() const { return fUsePhiCut; };
   virtual void SetUsePhiCut(Bool_t newValue) { fUsePhiCut = newValue; };
@@ -109,6 +113,8 @@ class AliTPCPIDBase : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;    //! PID response Handler
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
   
+  AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
+  
   Bool_t fIsPbpOrpPb;       // Pbp/pPb collision or something else?
   Bool_t fUsePhiCut;        // Use cut on phi (useful for TPC)
   TPCcutType fTPCcutType;   // Type of TPC cut to be used
@@ -134,7 +140,7 @@ class AliTPCPIDBase : public AliAnalysisTaskSE {
   AliTPCPIDBase(const AliTPCPIDBase&); // not implemented
   AliTPCPIDBase& operator=(const AliTPCPIDBase&); // not implemented
   
-  ClassDef(AliTPCPIDBase, 1);
+  ClassDef(AliTPCPIDBase, 2);
 };
 
 

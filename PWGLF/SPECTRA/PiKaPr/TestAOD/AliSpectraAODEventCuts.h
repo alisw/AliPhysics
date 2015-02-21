@@ -24,12 +24,12 @@ class TProfile;
 
 class AliSpectraAODEventCuts : public TNamed
 {
- public:
+public:
   enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : 
-  TNamed(),
+  AliSpectraAODEventCuts() :
+    TNamed(),
     fAOD(0),
     fSelectBit(AliVEvent::kMB),
     fCentralityMethod(),
@@ -46,6 +46,7 @@ class AliSpectraAODEventCuts : public TNamed
     fVertexCutMax(10.),
     fMultiplicityCutMin(-999.),
     fMultiplicityCutMax(99999.),
+    fRejectionFractionTPC(-999.),
     fqTPC(-999.),
     fqV0C(-999.),
     fqV0A(-999.),
@@ -72,7 +73,7 @@ class AliSpectraAODEventCuts : public TNamed
     fQvecIntegral(0), 
     fSplineArrayV0A(0),
     fSplineArrayV0C(0),
-	fSplineArrayTPC(0),
+    fSplineArrayTPC(0),
     fQgenIntegral(0), 
     fSplineArrayV0Agen(0),
     fSplineArrayV0Cgen(0),
@@ -80,17 +81,17 @@ class AliSpectraAODEventCuts : public TNamed
     fNch(0),
     fQvecCalibType(0),
     fV0Aeff(0)
-      {
-	for (Int_t i = 0; i<10; i++){
-	  fMeanQxa2[i] = -1;
-	  fMeanQya2[i] = -1;
-	  fMeanQxc2[i] = -1;
-	  fMeanQyc2[i] = -1;   
-	}
-      }
+  {
+    for (Int_t i = 0; i<10; i++){
+      fMeanQxa2[i] = -1;
+      fMeanQya2[i] = -1;
+      fMeanQxc2[i] = -1;
+      fMeanQyc2[i] = -1;
+    }
+  }
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
-  
+
   void  SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
   void  SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void  SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
@@ -101,7 +102,8 @@ class AliSpectraAODEventCuts : public TNamed
   void  SetQVectorCut(Float_t min,Float_t max)  { fQVectorCutMin = min; fQVectorCutMax = max; }
   void  SetVertexCut(Float_t min,Float_t max)  { fVertexCutMin = min; fVertexCutMax = max; }
   void  SetMultiplicityCut(Float_t min,Float_t max)  { fMultiplicityCutMin = min; fMultiplicityCutMax = max; }
-  
+  void  SetRejectionFractionTPC(Float_t rej)  { fRejectionFractionTPC = rej; }
+
   UInt_t GetEventSelectionBit()   const           { return fSelectBit;}
   TString GetCentralityMethod()   const           { return fCentralityMethod;}
   UInt_t GetTrackType()          const    { return fTrackBits;}
@@ -135,7 +137,7 @@ class AliSpectraAODEventCuts : public TNamed
       fCalib->Add(obj);
     }
   };
-  
+
   void SetQvecIntegralFile(TFile *f)    {
     TIter next(f->GetListOfKeys());
     TKey *key;
@@ -144,7 +146,7 @@ class AliSpectraAODEventCuts : public TNamed
       fQvecIntList->Add(h);
     }
   };
-  
+
   // Methods
   Bool_t IsSelected(AliAODEvent * aod,AliSpectraAODTrackCuts     *trackcuts);
   Bool_t CheckVtxRange();
@@ -156,9 +158,9 @@ class AliSpectraAODEventCuts : public TNamed
   void   PrintCuts();
   Bool_t OpenInfoCalbration(Int_t run);
   Short_t  GetCentrCode(AliVEvent* ev);
-  
+
   Double_t CalculateQVector(); //q vector calculation using Event plane task
-  
+
   Float_t  NumberOfEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kProcessedEvents+1); }
   Float_t  NumberOfPhysSelEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kPhysSelEvents+1); }
@@ -169,22 +171,22 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t CheckSplineArray(TObjArray * splarr, Int_t n);
   TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
   TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
-  
+
   Double_t GetQvecMC() {return fQvecMC;}
-  
+
   Int_t GetNch() { return fNch; }
-  
+
   void SetQVecCalibType(Int_t val) { fQvecCalibType=val; }  //0. centrality - 1. Nch
   Int_t GetNchBin(TH2D * h);
-  
+
   Double_t CalculateQVectorMC(Int_t v0side, Int_t type);
   Double_t GetQvecPercentileMC(Int_t v0side, Int_t type);
-  
+
   Int_t CheckVZEROchannel(Int_t vzeroside, Double_t eta, Double_t phi);
   Int_t CheckVZEROacceptance(Double_t eta);
 
- private:
-  
+private:
+
   AliAODEvent     *fAOD;              //! AOD event
   UInt_t           fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
   TString          fCentralityMethod;     // Method to determine centrality
@@ -201,6 +203,7 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t         fVertexCutMax;     // maximum vertex position
   Float_t         fMultiplicityCutMin;     // minimum multiplicity position
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
+  Double_t       fRejectionFractionTPC;            //rejection fraction in TPC calculation, (e.g. 0.1 means that 10 % of the tracks will be rejected in the calculation)
   Double_t       fqTPC;            //q vector in the TPC
   Double_t       fqV0C;            //q vector in the VZERO-C
   Double_t       fqV0A;            //q vector in the VZERO-A
@@ -237,16 +240,16 @@ class AliSpectraAODEventCuts : public TNamed
   TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
   TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
   Double_t fQvecMC; //q-vector value from MC
-  
+
   Int_t fNch;
   Int_t fQvecCalibType; //0. centrality - 1. Nch
   TH1F * fV0Aeff; // VZEROA efficiency prim+sec / gen.
 
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
-  
+
   ClassDef(AliSpectraAODEventCuts, 10);
-  
+
 };
 #endif
 

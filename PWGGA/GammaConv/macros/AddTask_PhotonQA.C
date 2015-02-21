@@ -1,14 +1,15 @@
-void AddTask_PhotonQA(	TString V0ReaderEventCutNumber 	= "0000000", 
-						TString V0ReaderPhotonCutNumber = "060000084001001500000000", 
-						TString TaskEventCutnumber 		= "0000000",
-						TString TaskPhotonCutnumber 	= "090000092663743800000000",
-						Bool_t isMC = kFALSE,
-						Int_t IsHeavyIon = 0,
-						Bool_t kHistograms = kTRUE, 
-						Bool_t kTree = kTRUE,
-						TString V0ReaderCutNumberAODBranch = "0000000060084001001500000", 
-						Bool_t runBasicQAWithStandardOutput = kTRUE,
-						Bool_t doEtaShiftV0Reader = kFALSE 
+void AddTask_PhotonQA(	TString 	V0ReaderEventCutNumber 			= "0000000", 
+						TString 	V0ReaderPhotonCutNumber 		= "060000084001001500000000", 
+						TString 	TaskEventCutnumber 				= "0000000",
+						TString 	TaskPhotonCutnumber 			= "090000092663743800000000",
+						Bool_t 		isMC	 						= kFALSE,
+						Int_t 		IsHeavyIon 						= 0,
+						Bool_t 		kHistograms 					= kTRUE, 
+						Bool_t 		kTree 							= kTRUE,
+						TString 	V0ReaderCutNumberAODBranch 		= "0000000060084001001500000", 
+						Bool_t 		runBasicQAWithStandardOutput 	= kTRUE,
+						Bool_t 		doEtaShiftV0Reader 				= kFALSE,
+						Bool_t 		enableV0findingEffi 			= kFALSE							// enables V0finding efficiency histograms
                      ){
 	
 	// ================= Load Librariers =================================
@@ -55,7 +56,7 @@ void AddTask_PhotonQA(	TString V0ReaderEventCutNumber 	= "0000000",
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-
+		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;

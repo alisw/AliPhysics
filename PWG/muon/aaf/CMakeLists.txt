@@ -29,6 +29,7 @@ set(SRCS
   StageAndFilter.cxx
   FILTER_AODMUONWITHTRACKLETS.cxx
   FILTER_RAWMUON.cxx
+  FILTER_ESDMUON.cxx
   )
 
 # Headers from sources
@@ -48,7 +49,7 @@ add_executable(${EXE} ${EXE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS PWGmuon)
+set(LIBDEPS PWGmuon RAWDatabase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library

@@ -90,6 +90,9 @@ AliJetFlowTools::AliJetFlowTools() :
     fCentralityArray    (0x0),
     fMergeBinsArray     (0x0),
     fCentralityWeights  (0x0),
+    fMergeWithList      (0x0),
+    fMergeWithCen       (-1),
+    fMergeWithWeight    (1.),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -881,12 +884,13 @@ TH1D* AliJetFlowTools::FoldSpectrum(
         const TH1D* measuredJetSpectrum,      // truncated raw jets (same binning as pt rec of response) 
         const TH2D* resizedResponse,          // response matrix
         const TH1D* kinematicEfficiency,      // kinematic efficiency
-        const TH1D* measuredJetSpectrumTrueBins,        // unfolding template: same binning is pt gen of response
+        const TH1D* measuredJetSpectrumTrueBins,        // not used
         const TString suffix,                 // suffix (in or out of plane)
         const TH1D* jetFindingEfficiency)     // jet finding efficiency (optional)
 {
     // simple function to fold the given spectrum with the in-plane and out-of-plane response
 
+    if(!measuredJetSpectrumTrueBins) SquelchWarning();
     // 0) for consistency with the other methods, keep the same nomenclature which admittedly is a bit confusing 
     // what is 'unfolded' here, is just a clone of the input spectrum, binned to the 'unfolded' binning
     TH1D* unfoldedLocal((TH1D*)measuredJetSpectrum->Clone(Form("unfoldedLocal_%s", suffix.Data())));
@@ -966,6 +970,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
         printf( " Merging with %s with weight %.4f \n", spectrumName.Data(), fCentralityWeights->At(i));
         fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())), fCentralityWeights->At(i));
     }
+    // if a second list is passed, merge this with the existing one
+    if(fMergeWithList) {
+        spectrumName = Form("fHistJetPsi2Pt_%i", fMergeWithCen);
+        printf( " Adding additional output %s \n", spectrumName.Data());
+        fJetPtDeltaPhi->Add(((TH2D*)fMergeWithList->FindObject(spectrumName.Data())), fMergeWithWeight);
+    }
 
     // in plane spectrum
     if(!fDphiUnfolding) {
@@ -1040,6 +1050,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
         deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
         printf(" Merging with %s with weight %.4f \n", deltaptName.Data(), fCentralityWeights->At(i));
         fDeltaPtDeltaPhi->Add((TH2D*)fInputList->FindObject(deltaptName.Data()), fCentralityWeights->At(i));
+    }
+    // if a second list is passed, merge this with the existing one
+    if(fMergeWithList) {
+        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fMergeWithCen) : Form("fHistDeltaPtDeltaPhi2_%i", fMergeWithCen);
+        printf(" Adding additional data %s \n", deltaptName.Data());
+        fDeltaPtDeltaPhi->Add((TH2D*)fMergeWithList->FindObject(deltaptName.Data()), fMergeWithWeight);
     }
 
     // in plane delta pt distribution
@@ -1732,7 +1748,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
        } break;
        case kV2 : {
 //            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
-            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} \{EP, |#Delta#eta|>0.9 \} ");
+            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} {EP, |#Delta#eta|>0.9 } ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
             h->SetMarkerStyle(8);
             h->SetMarkerSize(1);
@@ -1759,6 +1775,7 @@ void AliJetFlowTools::GetNominalValues(
     printf("\n\n\n\t\t GetNominalValues \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(outFile.Data(), "RECREATE"));   // create new output file
+    if(output) SquelchWarning();
     // get some placeholders, have to be initialized but will be deleted
     ratio = new TH1D("nominal", "nominal", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
     TH1D* nominalIn(new TH1D("nominal in", "nominal in", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -1817,6 +1834,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     readMe->ls();
     TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
 
+    if(sym2nd) SquelchWarning();
+
     // create some null placeholder pointers
     TH1D* relativeErrorVariationInLow(0x0);
     TH1D* relativeErrorVariationInUp(0x0);
@@ -1835,7 +1854,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
 
     // call the functions
     if(variationsIn && variationsOut) {
-        DoIntermediateSystematics(
+        SystematicsWrapper(
                 variationsIn, 
                 variationsOut, 
                 relativeErrorVariationInUp,        // pointer reference
@@ -1851,7 +1870,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                type);
+                type,
+                kFALSE,
+                kTRUE);
         if(relativeErrorVariationInUp) {
             // canvas with the error from variation strength
             TCanvas* relativeErrorVariation(new TCanvas(Form("relativeError_%s", type.Data()), Form("relativeError_%s", type.Data())));
@@ -1897,7 +1918,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     }
     // call the functions for a second set of systematic sources
     if(variations2ndIn && variations2ndOut) {
-        DoIntermediateSystematics(
+        SystematicsWrapper(
                 variations2ndIn, 
                 variations2ndOut, 
                 relativeError2ndVariationInUp,        // pointer reference
@@ -1913,7 +1934,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                type2);
+                type2,
+                kFALSE,
+                kTRUE);
         if(relativeError2ndVariationInUp) {
             // canvas with the error from variation strength
             TCanvas* relativeError2ndVariation(new TCanvas(Form("relativeError2nd_%s", type2.Data()), Form("relativeError2nd_%s", type2.Data())));
@@ -2081,7 +2104,6 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     SavePadToPDF(relativeError);
     relativeError->Write();
     output->Write();
-//    output->Close();
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::GetShapeUncertainty(
@@ -2100,8 +2122,11 @@ void AliJetFlowTools::GetShapeUncertainty(
         Float_t rangeUp,                // upper pt range
         Float_t corr,                   // correlation strength
         TString in,                     // input file name (created by this unfolding class)
-        TString out                     // output file name (which will hold results of the systematic test)
-        ) const
+        TString out,                    // output file name (which will hold results of the systematic test)
+        Bool_t regularizationOnV2,      // get uncertainty on yields separately or v2 directly
+        Bool_t trueBinOnV2,
+        Bool_t recBin,
+        Bool_t method) const
 {
     // do full systematics
     if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
@@ -2140,7 +2165,7 @@ void AliJetFlowTools::GetShapeUncertainty(
 
     // call the functions
     if(regularizationIn && regularizationOut) {
-        DoIntermediateSystematics(
+        SystematicsWrapper(
                 regularizationIn, 
                 regularizationOut, 
                 relativeErrorRegularizationInUp,        // pointer reference
@@ -2157,8 +2182,9 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeUp,
                 readMe,
                 "regularization",
-                fRMS);
-        if(relativeErrorRegularizationInUp) {
+                fRMS,
+                !regularizationOnV2);
+        if(relativeErrorRegularizationInUp && !regularizationOnV2 ) {
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRegularization(new TCanvas("relativeErrorRegularization", "relativeErrorRegularization"));
             relativeErrorRegularization->Divide(2);
@@ -2177,7 +2203,7 @@ void AliJetFlowTools::GetShapeUncertainty(
         }
     }
     if(trueBinIn && trueBinOut) {
-        DoIntermediateSystematics(
+        SystematicsWrapper(
                 trueBinIn, 
                 trueBinOut, 
                 relativeErrorTrueBinInUp,       // pointer reference
@@ -2193,7 +2219,9 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                "trueBin");
+                "trueBin",
+                kFALSE,
+                !trueBinOnV2);
         if(relativeErrorTrueBinInUp) {
             TCanvas* relativeErrorTrueBin(new TCanvas("relativeErrorTrueBin", "relativeErrorTrueBin"));
             relativeErrorTrueBin->Divide(2);
@@ -2212,7 +2240,7 @@ void AliJetFlowTools::GetShapeUncertainty(
         }
     }
     if(recBinIn && recBinOut) {
-        DoIntermediateSystematics(
+        SystematicsWrapper(
                 recBinIn, 
                 recBinOut, 
                 relativeErrorRecBinInUp,       // pointer reference
@@ -2229,7 +2257,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeUp,
                 readMe,
                 "recBin",
-                fRMS);
+                fRMS,
+                !recBin);
         if(relativeErrorRecBinOutUp) {
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRecBin(new TCanvas("relativeErrorRecBin"," relativeErrorRecBin"));
@@ -2249,7 +2278,7 @@ void AliJetFlowTools::GetShapeUncertainty(
         }
     }
     if(methodIn && methodOut) {
-        DoIntermediateSystematics(
+        SystematicsWrapper(
                 methodIn, 
                 methodOut, 
                 relativeErrorMethodInUp,       // pointer reference
@@ -2265,8 +2294,9 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                "method"
-                );
+                "method",
+                kFALSE,
+                !method);
         if(relativeErrorMethodInUp) {
             TCanvas* relativeErrorMethod(new TCanvas("relativeErrorMethod", "relativeErrorMethod"));
             relativeErrorMethod->Divide(2);
@@ -2303,7 +2333,7 @@ void AliJetFlowTools::GetShapeUncertainty(
 
     for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
         // for the upper bound
-        if(relativeErrorRegularizationInUp) aInUp = relativeErrorRegularizationInUp->GetBinContent(b+1);
+        if(relativeErrorRegularizationInUp && !regularizationOnV2) aInUp = relativeErrorRegularizationInUp->GetBinContent(b+1);
         if(relativeErrorRegularizationOutUp) aOutUp = relativeErrorRegularizationOutUp->GetBinContent(b+1);
         if(relativeErrorTrueBinInUp) bInUp = relativeErrorTrueBinInUp->GetBinContent(b+1);
         if(relativeErrorTrueBinOutUp) bOutUp = relativeErrorTrueBinOutUp->GetBinContent(b+1);
@@ -2364,6 +2394,7 @@ void AliJetFlowTools::GetShapeUncertainty(
             ax[i] = nominal->GetBinCenter(i+1);
             ay[i] = nominal->GetBinContent(i+1);
         }
+
         // save the nominal ratio
         TGraphAsymmErrors* nominalError(new TGraphAsymmErrors(fBinsTrue->GetSize()-1, ax, ay, axl, axh, ayl, ayh));
         shapeRatio = (TGraphAsymmErrors*)nominalError->Clone();
@@ -2395,6 +2426,9 @@ void AliJetFlowTools::GetShapeUncertainty(
                     corr));
         shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
+        // add in quadratufe (not very nice, rethink this because it may add additional weight to
+        // the rms unfolded piece) the additional error
+        if(regularizationOnV2) shapeV2 = AddHistoToGraph(shapeV2, relativeErrorRegularizationInUp);
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kCyan, kV2);
@@ -2409,7 +2443,6 @@ void AliJetFlowTools::GetShapeUncertainty(
         SavePadToPDF(nominalCanvas);
         nominalCanvas->Write();
     }
-
     TCanvas* relativeError(new TCanvas("relativeError"," relativeError"));
     relativeError->Divide(2);
     relativeError->cd(1);
@@ -2424,23 +2457,72 @@ void AliJetFlowTools::GetShapeUncertainty(
     Style(AddLegend(gPad));
     relativeError->cd(2);
     Style(gPad, "GRID");
-    relativeErrorOutUp->GetYaxis()->SetRangeUser(-1.5, 3.);
     Style(relativeErrorOutUp, kBlue, kBar);
     Style(relativeErrorOutLow, kGreen, kBar);
     relativeErrorOutUp->DrawCopy("b");
-    relativeErrorOutLow->DrawCopy("same b");
-    Style(relativeStatisticalErrorOut, kRed);
-    relativeStatisticalErrorOut->DrawCopy("same");
+    if(relativeErrorOutLow) relativeErrorOutLow->DrawCopy("same b");
+    if(relativeStatisticalErrorOut) Style(relativeStatisticalErrorOut, kRed);
+    if(relativeStatisticalErrorOut) relativeStatisticalErrorOut->DrawCopy("same");
     Style(AddLegend(gPad));
 
-    // write the buffered file to disk and close the file
+    // write the buffered file to disk
     SavePadToPDF(relativeError);
     relativeError->Write();
     output->Write();
-//    output->Close();
 }
 //_____________________________________________________________________________
-    void AliJetFlowTools::DoIntermediateSystematics(
+void AliJetFlowTools::SystematicsWrapper(
+            TArrayI* variationsIn,                  // variantions in plane
+            TArrayI* variationsOut,                 // variantions out of plane
+            TH1D*& relativeErrorInUp,               // pointer reference to minimum relative error histogram in plane
+            TH1D*& relativeErrorInLow,              // pointer reference to maximum relative error histogram in plane
+            TH1D*& relativeErrorOutUp,              // pointer reference to minimum relative error histogram out of plane
+            TH1D*& relativeErrorOutLow,             // pointer reference to maximum relative error histogram out of plane
+            TH1D*& relativeStatisticalErrorIn,      // relative systematic error on ratio
+            TH1D*& relativeStatisticalErrorOut,     // relative systematic error on ratio
+            TH1D*& nominal,                         // clone of the nominal ratio in / out of plane
+            TH1D*& nominalIn,                       // clone of the nominal in plane yield
+            TH1D*& nominalOut,                      // clone of the nominal out of plane yield
+            Int_t columns,                          // divide the output canvasses in this many columns
+            Float_t rangeLow,                       // lower pt range
+            Float_t rangeUp,                        // upper pt range
+            TFile* readMe,                          // input file name (created by this unfolding class)
+            TString source,                         // source of the variation
+            Bool_t RMS,                             // return RMS of distribution of variations as error
+            Bool_t onRatio                          // use ratio or v2 directly for assessing systematic uncertainty
+            ) const
+{
+    // wrapper function to call specific systematics function using function pointers
+    void (AliJetFlowTools::*myFunction)(TArrayI*, TArrayI*, TH1D*&, TH1D*&, TH1D*&, TH1D*&, TH1D*&, TH1D*&, 
+            TH1D*&, TH1D*&, TH1D*&, Int_t, Float_t, Float_t, TFile*, TString, Bool_t) const;
+
+    printf(" >>> systematic wrapper called for %s <<< \n", source.Data());
+
+    // initialize functon pointer
+    if(onRatio)         myFunction = &AliJetFlowTools::DoIntermediateSystematics;
+    else                myFunction = &AliJetFlowTools::DoIntermediateSystematicsOnV2;
+    // do the actual unfolding with the selected function
+    return (this->*myFunction)( 
+           variationsIn,             
+           variationsOut,            
+           relativeErrorInUp,          
+           relativeErrorInLow,         
+           relativeErrorOutUp,         
+           relativeErrorOutLow,        
+           relativeStatisticalErrorIn, 
+           relativeStatisticalErrorOut,
+           nominal,                    
+           nominalIn,                  
+           nominalOut,                 
+           columns,                     
+           rangeLow,                  
+           rangeUp,                   
+           readMe,                     
+           source,                    
+           RMS);
+} 
+//_____________________________________________________________________________
+void AliJetFlowTools::DoIntermediateSystematics(
             TArrayI* variationsIn,                  // variantions in plane
             TArrayI* variationsOut,                 // variantions out of plane
             TH1D*& relativeErrorInUp,               // pointer reference to minimum relative error histogram in plane
@@ -3110,6 +3192,74 @@ void AliJetFlowTools::GetShapeUncertainty(
    Style(AddLegend(gPad));
    SavePadToPDF(canvasNominalMasterOut);
    canvasNominalMasterOut->Write();
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::DoIntermediateSystematicsOnV2(
+            TArrayI* variationsIn,                  // variantions in plane
+            TArrayI* variationsOut,                 // variantions out of plane
+            TH1D*& relativeErrorInUp,               // will store absolute  systematic error on v2 
+            TH1D*& relativeErrorInLow,              // remains NULL
+            TH1D*& relativeErrorOutUp,              // remains NULL
+            TH1D*& relativeErrorOutLow,             // remains NULL
+            TH1D*& relativeStatisticalErrorIn,      // stores statistical error on v2
+            TH1D*& relativeStatisticalErrorOut,     // remains NULL
+            TH1D*& nominal,                         // nominal v2
+            TH1D*& nominalIn,                       // remains NULL
+            TH1D*& nominalOut,                      // remains NULL
+            Int_t columns,                          // trivial
+            Float_t rangeLow,                       // trivial
+            Float_t rangeUp,                        // trivial
+            TFile* readMe,                          // trivial
+            TString source,                         // trivial
+            Bool_t RMS                              // NOT trivial
+            ) const
+{
+    // intermediate systematic check function. first index is nominal value
+    if(! (relativeErrorInLow ||  relativeErrorOutUp || relativeErrorOutLow || relativeStatisticalErrorOut || nominalOut || columns || rangeLow || rangeUp)) SquelchWarning();
+    
+    for(Int_t i(0); i < variationsIn->GetSize(); i++) {
+        // loop over the variations, index 0 is nominal 
+        Int_t iIn[] = {variationsIn->At(i), variationsIn->At(i)};
+        Int_t iOut[] = {variationsOut->At(i), variationsOut->At(i)};
+
+        // call the functions and set the relevant pointer references
+        TH1D* dud(0x0);
+        relativeErrorInUp = new TH1D(Form("absolute_systematic_uncertainty_%s", source.Data()), Form("absolute_systematic_uncertainty_%s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+        DoIntermediateSystematics(
+                new TArrayI(2, iIn), 
+                new TArrayI(2, iOut),
+                dud, dud, dud, dud, dud, dud, 
+                dud,              // pointer reference, output of this function 
+                nominalIn,
+                nominalOut,
+                1, 
+                fBinsTrue->At(0), 
+                fBinsTrue->At(fBinsTrue->GetSize()-1),
+                readMe,
+                Form("error_on_v2_variation_%i", i));
+        TH1F* v2(ConvertGraphToHistogram(GetV2(nominalIn, nominalOut, fEventPlaneRes, "nominal v_{2}")));
+        if(i==0) {
+            // store the nominal value, trivial upcast to TH1D ...
+            nominal = (TH1D*)v2;
+            // and bookkeep the statistical uncertainties
+            relativeStatisticalErrorIn = (TH1D*)v2->Clone("statistical_errors_on_nominal_v2");
+            for(Int_t j(0); j < nominal->GetNbinsX(); j++) relativeStatisticalErrorIn->SetBinContent(j+1, nominal->GetBinError(j+1));
+        }
+        // calculate the uncertainty. for now only RMS style, easier and the first check
+        if(RMS) {
+            // increment bin content by new bins
+            for(Int_t k(0); k < nominal->GetNbinsX(); k++) {
+                relativeErrorInUp->SetBinContent(k+1, relativeErrorInUp->GetBinContent(k+1)+v2->GetBinContent(k+1)*v2->GetBinContent(k+1));
+            }
+        }
+    }
+    // looped over all the variations, now get to a final systematic
+    if(RMS) {
+        // substitute the histogram content with the RMS value
+        for(Int_t k(0); k < nominal->GetNbinsX(); k++) {
+            relativeErrorInUp->SetBinContent(k+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(k+1)/((double)variationsIn->GetSize())));
+        }
+    }
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
@@ -3853,6 +4003,44 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
     return gr;
 }
 //_____________________________________________________________________________
+TH1F* AliJetFlowTools::ConvertGraphToHistogram(TGraphErrors* g)
+{
+    // convert a tgrapherrors to a histogram
+    if(!g) {
+        printf(" > ConvertGraphToHistogram recevied a NULL pointer > \n");
+        return 0x0;
+    }
+    // first get the frame which we'll use to build the histogram
+    TH1F* hist(g->GetHistogram());
+    Double_t xref(0), yref(0), yerr(0);
+    // then copy the points and errors (remember graph starts at bin 0 and hist at 1)
+    for(Int_t i(0); i < hist->GetNbinsX(); i++) {
+        g->GetPoint(i, xref, yref);
+        yerr = g->GetErrorY(i);
+        hist->SetBinContent(i+1, yref);
+        hist->SetBinError(i+1, yerr);
+    }
+    return hist;
+}
+//_____________________________________________________________________________
+TGraphAsymmErrors* AliJetFlowTools::AddHistoToGraph(TGraphAsymmErrors* g, TH1D* h)
+{
+    // convert a tgrapherrors to a histogram
+    if(!(g&&h)) {
+        printf(" > ConvertGraphToHistogram recevied a NULL pointer > \n");
+        return 0x0;
+    }
+    Double_t yerr(0), herr(0);
+    // quadratic sum of the errors, assyming here symmetric ones
+    for(Int_t i(0); i < h->GetNbinsX(); i++) {
+        yerr = g->GetErrorY(i);
+        herr = h->GetBinError(i+1);
+        yerr = TMath::Sqrt(yerr*yerr+herr*herr);
+        g->SetPointError(g->GetErrorX(i), g->GetErrorX(i), yerr, yerr);
+    }
+    return g;
+}
+//_____________________________________________________________________________
 TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         TH1* h1, TH1* h2, Double_t r, TString name, 
         TH1* relativeErrorInUp,
@@ -4277,7 +4465,7 @@ void AliJetFlowTools::GetSignificance(
         )
 {
     // main use of this function is filling the static buffers
-    Double_t statE(0), shapeE(0), corrE(0), y(0), x(0), chi2(0);
+    Double_t statE(0), shapeE(0), corrE(0), y(0), x(0);
 
     // print some stuff
     printf(" double v2[] = {\n");
@@ -4405,10 +4593,11 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 Double_t AliJetFlowTools::ConstructFunctionnd(Double_t *x, Double_t *par)
 {
     // internal use only: evaluate the function at a given point
+    if(par) SquelchWarning(); 
     return AliJetFlowTools::PhenixChi2nd(x);
 }
 //_____________________________________________________________________________
-TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p, Double_t p_wrt_to)
+TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
 {
     // return the fitting function, pass the p-value w.r.t. 0 by reference
     const Int_t DOF(4);

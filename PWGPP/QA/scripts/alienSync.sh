@@ -17,6 +17,30 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
+#default values
+configFile=""
+alienFindCommand=""
+secondsToSuicide=$(( 10*3600 ))
+localPathPrefix="${PWD}"
+#define alienSync_localPathPrefix in your env to have a default central location
+[[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
+unzipFiles=0
+allOutputToLog=0
+copyMethod="tfilecp"
+useExistingAlienFileDatabase=""
+logOutputPath=""
+alienUserName=""
+forceLocalMD5recalculation=""
+softLinkName=""
+timeStampInLog=1
+alienSyncFilesGroupOwnership=""
+postCommand=""
+copyTimeout=600
+copyTimeoutHard=1200
+destinationModifyCommand=""
+executeEnd=""
+MAILTO=""
+
 main()
 {
   if [[ $# -lt 1 ]]; then
@@ -33,9 +57,11 @@ main()
   #be nice and allow group members access as well (002 will create dirs with 775 and files with 664)
   umask 0002
 
-  # try to load the config file
-  #[[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
+  #configure
   if ! parseConfig "$@"; then return 1; fi
+  
+  #things that by default depend on other variables should be set here, after the dependencies
+  [[ -z ${logOutputPath} ]] && logOutputPath="${localPathPrefix}/alienSyncLogs"
 
   [[ -z ${alienFindCommand} ]] && echo "alienFindCommand not defined!" && return 1
 
@@ -98,7 +124,6 @@ main()
   source /tmp/gclient_env_$UID
 
   #set a default timeout for grid access
-  [[ -z $copyTimeout ]] && copyTimeout=600
   export GCLIENT_COMMAND_MAXWAIT=$copyTimeout
 
   localAlienDatabase=$logOutputPath/localAlienDatabase.list
@@ -531,16 +556,6 @@ EOF
 
 parseConfig()
 {
-  #config file
-  configFile=""
-  alienFindCommand=""
-  secondsToSuicide=$(( 10*3600 ))
-  localPathPrefix="${PWD}"
-  #define alienSync_localPathPrefix in your env to have a default central location
-  [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
-  unzipFiles=0
-  allOutputToLog=0
-
   args=("$@")
 
   #first, check if the config file is configured
@@ -568,8 +583,6 @@ parseConfig()
     export ${var}="${value}"
   done
 
-  #things that by default depend on other variables should be set here, after the dependencies
-  [[ -z ${logOutputPath} ]] && logOutputPath="${localPathPrefix}/alienSyncLogs"
   return 0
 }
 

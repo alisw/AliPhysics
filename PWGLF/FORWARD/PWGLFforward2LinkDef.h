@@ -91,7 +91,6 @@
 
 // Forward AUX (Cuts, etc.)
 #pragma link C++ class AliFMDMultCuts+;
-#pragma link C++ class AliForwardFlowWeights+;
 #pragma link C++ class AliForwardUtil+;
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
@@ -182,6 +181,11 @@
 #endif
 #pragma link C++ class AliForwardMultDists::BinSpec+;
 
+//  MC Weights
+#pragma link C++ class AliForwardFlowWeights+;
+#pragma link C++ class AliBaseMCWeights+;
+#pragma link C++ class AliSimplePidWeights+;
+#pragma link C++ class AliPtEtaPidWeights+;
 #endif
 //
 // EOF
