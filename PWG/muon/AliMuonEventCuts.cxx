@@ -84,7 +84,7 @@ AliAnalysisCuts(name, title),
   fCentralityClasses(0x0),
   fAnalysisUtils(0x0),
   fEventTriggerMask(0),
-  fSelectedTrigClassesInEvent(new TObjArray())
+  fSelectedTrigClassesInEvent(0x0)
 {
   /// Constructor
   SetDefaultParameters();
@@ -94,7 +94,6 @@ AliAnalysisCuts(name, title),
   SetCentralityClasses();
   fAnalysisUtils = new AliAnalysisUtils();
   fAllSelectedTrigClasses->SetOwner();
-  fSelectedTrigClassesInEvent->SetOwner();
 }
 
 //________________________________________________________________________
@@ -651,7 +650,7 @@ void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
   
   AliDebug(2,Form("Fired classes: %s  Inputs 0x%x 0x%x 0x%x",firedTrigClasses.Data(),l0Inputs,l1Inputs,l2Inputs));
   
-  if ( fSelectedTrigClassesInEvent) fSelectedTrigClassesInEvent->Delete();
+  if ( fSelectedTrigClassesInEvent ) fSelectedTrigClassesInEvent->Delete();
   else {
     fSelectedTrigClassesInEvent = new TObjArray(0);
     fSelectedTrigClassesInEvent->SetOwner();
