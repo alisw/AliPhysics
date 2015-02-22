@@ -96,6 +96,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
 
  protected:
+  Double_t                    DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2) const;
   void                        SetRejectionReasonLabels(TAxis* axis);
   Double_t*                   GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
   void                        GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const;
@@ -112,8 +113,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       GetNParticles(Int_t i=0)                           const;
   Int_t                       GetNClusters(Int_t i=0)                            const;
   AliEmcalTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
-  Bool_t					            HasTriggerType(TriggerType triggersel);
-  ULong_t 					          GetTriggerList();
+  Bool_t		      HasTriggerType(TriggerType triggersel);
+  ULong_t 		      GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
   void                        UserCreateOutputObjects();
   void                        UserExec(Option_t *option);
@@ -206,4 +207,25 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   ClassDef(AliAnalysisTaskEmcal, 11) // EMCAL base analysis task
 };
+
+//________________________________________________________________________
+inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib,
+                                               Double_t rangeMin, Double_t rangeMax) const
+{
+  // Calculate Delta Phi.
+
+  Double_t dphi = -999;
+  const Double_t tpi = TMath::TwoPi();
+  
+  if (phia < 0)         phia += tpi;
+  else if (phia > tpi) phia -= tpi;
+  if (phib < 0)         phib += tpi;
+  else if (phib > tpi) phib -= tpi;
+  dphi = phib - phia;
+  if (dphi < rangeMin)      dphi += tpi;
+  else if (dphi > rangeMax) dphi -= tpi;
+  
+  return dphi;
+}
+
 #endif
