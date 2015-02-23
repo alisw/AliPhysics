@@ -134,18 +134,25 @@ void AddAnalysisTasks(Int_t merge){
   if (iMUONRefit) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskMuonRefit.C");
     AliAnalysisTaskMuonRefit* refit = AddTaskMuonRefit(-1., -1., kTRUE, -1., -1.);
+    refit->SetDefaultStorage(VAR_OCDB_PATH);
+    refit->SetAlignStorage(VAR_REC_ALIGNDATA);
     refit->RemoveMonoCathodClusters(kTRUE, kFALSE);
   }
 
   if(iESDMCLabelAddition) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskESDMCLabelAddition.C");
     AliAnalysisTaskESDMCLabelAddition *esdmclabel = AddTaskESDMCLabelAddition();
+    esdmclabel->SetDefaultStorage(VAR_OCDB_PATH);
+    esdmclabel->SetAlignStorage(VAR_REC_ALIGNDATA);
+    esdmclabel->DecayAsFake(kTRUE);
   }
 
   if (useMC && useTR && iMUONPerformance) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMuonPerformance.C");
     AliAnalysisTaskMuonPerformance* muonPerformance = AddTaskMuonPerformance();
     if (usePhysicsSelection) muonPerformance->SelectCollisionCandidates(AliVEvent::kAny);
+    muonPerformance->SetDefaultStorage(VAR_OCDB_PATH);
+    muonPerformance->SetAlignStorage(VAR_REC_ALIGNDATA);
     muonPerformance->UseMCKinematics(kTRUE);
     muonPerformance->SetMCTrigLevelFromMatchTrk(kTRUE);
   }
@@ -154,6 +161,8 @@ void AddAnalysisTasks(Int_t merge){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMUONTrackingEfficiency.C");
     AliAnalysisTaskMuonTrackingEff* muonEfficiency = AddTaskMUONTrackingEfficiency(kTRUE, kTRUE);
     if (usePhysicsSelection) muonEfficiency->SelectCollisionCandidates(AliVEvent::kAny);
+    muonEfficiency->SetDefaultStorage(VAR_OCDB_PATH);
+    muonEfficiency->SetAlignStorage(VAR_REC_ALIGNDATA);
     muonEfficiency->UseMCLabel(kTRUE);
   }
 
