@@ -100,6 +100,8 @@ AliITSSAPTracker::AliITSSAPTracker() :
   ,fMaxMissedLayers(1)
   ,fNTracks(0)
   ,fMaxTrackletsToRunTracking(99999)
+  ,fMaxVtxIter(5)
+  ,fStopScaleChange(0.8)
   ,fTracks()
   ,fTrackVertex()
   ,fFitVertex(kTRUE)
