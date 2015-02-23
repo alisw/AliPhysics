@@ -56,12 +56,12 @@ void sim(Int_t nev=VAR_EVENTS_PER_JOB)
     // MUON Tracker
     simulator.SetSpecificStorage("MUON/Align/Data",VAR_SIM_ALIGNDATA);
 
-    simulator.SetSpecificStorage("ITS/Align/Data",  "alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal");
     // Mag.field from OCDB
     simulator.UseMagFieldFromGRP();
 
     if ( VAR_USE_ITS_RECO )
     {
+      simulator.SetSpecificStorage("ITS/Align/Data",  "alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal");
       simulator.UseVertexFromCDB();
     }
   }

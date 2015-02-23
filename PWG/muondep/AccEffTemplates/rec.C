@@ -28,13 +28,14 @@ void rec()
   // MUON Tracker Residual Alignment
   reco.SetSpecificStorage("MUON/Align/Data",VAR_REC_ALIGNDATA);
   
-  // ITS
-  reco.SetRunPlaneEff(kTRUE);
-  reco.SetUseTrackingErrorsForAlignment("ITS");
+  if ( VAR_USE_ITS_RECO ) {
+    // ITS
+    reco.SetRunPlaneEff(kTRUE);
+    reco.SetUseTrackingErrorsForAlignment("ITS");
 
-  // ITS
-  
-  reco.SetSpecificStorage("ITS/Align/Data",     "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+    // ITS
+    reco.SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  }
 
   reco.Run();
 }
