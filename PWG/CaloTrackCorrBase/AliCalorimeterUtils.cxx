@@ -1633,8 +1633,7 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cl
       Float_t amp = cells->GetCellAmplitude(absId);
       RecalibrateCellAmplitude(amp,calo, absId);
       
-      if(fMCECellClusFracCorrOn)
-        amp*=GetMCECellClusFracCorrection(amp,energyOrg);
+      amp*=GetMCECellClusFracCorrection(amp,energyOrg);
       
       AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy %f",
                       calo,frac,cells->GetCellAmplitude(absId)));
