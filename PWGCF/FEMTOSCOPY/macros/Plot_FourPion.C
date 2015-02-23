@@ -38,14 +38,14 @@ using namespace std;
 int FileSetting=0;
 //
 bool MCcase_def=0;// MC data?
-int CollisionType_def=2;// PbPb, pPb, pp
+int CollisionType_def=0;// PbPb, pPb, pp
 //
 int Mbin_def=0;// 0-9: centrality bin in widths of 5%
 bool SameCharge_def=1;// same-charge?
 int CHARGE_def=1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
 int MixedCharge4pionType_def = 1;// 1(---+) or 2(--++)
 //
-int EDbin_def=1;// 0 or 1: Kt3 bin
+int EDbin_def=0;// 0 or 1: Kt3 bin
 int TPNbin=3;// TPN bin for r3 and r4
 int Gbin = int( (0) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 155 (t=T)
 int Ktbin_def=1;// 1(0.2-0.3),..., 6(0.7-0.8), 10 = Full Range
@@ -79,6 +79,10 @@ double NormQcutLow_pp = 1.0;
 double NormQcutHigh_pp = 1.5;
 double NormQcutLow_PbPb = .15;
 double NormQcutHigh_PbPb = .2;// was .175
+double ReNormL_3;
+double ReNormH_3;
+double ReNormL_4;
+double ReNormH_4;
 
 int ThreeParticleRebin;
 int FourParticleRebin;
@@ -236,6 +240,17 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     ThreeParticleRebin=2;
     FourParticleRebin=6;
   }
+
+  if(CollisionType==0){
+    ReNormL_3=0.085;
+    ReNormH_3=0.095;
+    ReNormL_4=0.14;
+    ReNormH_4=0.16;
+  }else{
+    ReNormL_4=0.46;
+    ReNormH_4=0.49;
+  }
+
   float Cutoff_FullWeight_Q3[10]={0.065, 0.065, 0.075, 0.075, 0.075, 0.075, 0.085, 0.085, 0.085, 0.085};
   float Cutoff_FullWeight_Q4[10]={0.115, 0.115, 0.115, 0.130, 0.130, 0.130, 0.145, 0.145, 0.145, 0.145};
 
@@ -382,13 +397,13 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     MyList=(TList*)_file0->Get("MyList");
   }
   _file0->Close();
-
- 
+  
+  
   TH1D *Events = (TH1D*)MyList->FindObject("fEvents2");
   //
-
+  
   cout<<"#Events = "<<Events->Integral(Mbin+1,Mbin+1)<<endl;
-
+  
   
   
   ///////////////////////////////////
@@ -1148,8 +1163,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   //
   if(SameCharge && CollisionType==0 && !MCcase) {
     if(ReNormBuiltBaseline){
-      int BinL = Build_ThreeParticle[ch1_3]->GetXaxis()->FindBin(0.085);
-      int BinH = Build_ThreeParticle[ch1_3]->GetXaxis()->FindBin(0.095);
+      int BinL = Build_ThreeParticle[ch1_3]->GetXaxis()->FindBin(ReNormL_3);
+      int BinH = Build_ThreeParticle[ch1_3]->GetXaxis()->FindBin(ReNormH_3);
       Build_ThreeParticle[ch1_3]->Scale(C3QS->Integral(BinL,BinH) / Build_ThreeParticle[ch1_3]->Integral(BinL,BinH));
       CumulantBuild_ThreeParticle[ch1_3]->Scale(c3QS->Integral(BinL,BinH) / CumulantBuild_ThreeParticle[ch1_3]->Integral(BinL,BinH));
     }
@@ -1646,19 +1661,15 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //
     // renormalize
     if(ReNormBuiltBaseline){
-      int BinL = 1;
-      int BinH = 1;
+      int BinL = Build_FourParticle[ch1_4]->GetXaxis()->FindBin(ReNormL_4);
+      int BinH = Build_FourParticle[ch1_4]->GetXaxis()->FindBin(ReNormH_4);
       if(CollisionType==0){
-	BinL = Build_FourParticle[ch1_4]->GetXaxis()->FindBin(0.14);
-	BinH = Build_FourParticle[ch1_4]->GetXaxis()->FindBin(0.16);
 	Build_FourParticle[ch1_4]->Scale(C4QS->Integral(BinL,BinH) / Build_FourParticle[ch1_4]->Integral(BinL,BinH));
 	PrimeBuild_FourParticle[ch1_4]->Scale(a4QS->Integral(BinL,BinH) / PrimeBuild_FourParticle[ch1_4]->Integral(BinL,BinH));
 	PrimePrimeBuild_FourParticle[ch1_4]->Scale(b4QS->Integral(BinL,BinH) / PrimePrimeBuild_FourParticle[ch1_4]->Integral(BinL,BinH));
 	CumulantBuild_FourParticle[ch1_4]->Scale(c4QS->Integral(BinL,BinH) / CumulantBuild_FourParticle[ch1_4]->Integral(BinL,BinH));
-      }else{
-	BinL = Build_FourParticle[ch1_4]->GetXaxis()->FindBin(0.46);
-	BinH = Build_FourParticle[ch1_4]->GetXaxis()->FindBin(0.49);
       }
+      //
       BuildFromFits1->Scale(C4QS->Integral(BinL,BinH) / BuildFromFits1->Integral(BinL,BinH));
       PrimeBuildFromFits1->Scale(a4QS->Integral(BinL,BinH) / PrimeBuildFromFits1->Integral(BinL,BinH));
       PrimePrimeBuildFromFits1->Scale(b4QS->Integral(BinL,BinH) / PrimePrimeBuildFromFits1->Integral(BinL,BinH));
@@ -1667,7 +1678,6 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
       PrimeBuildFromFits2->Scale(a4QS->Integral(BinL,BinH) / PrimeBuildFromFits2->Integral(BinL,BinH));
       PrimePrimeBuildFromFits2->Scale(b4QS->Integral(BinL,BinH) / PrimePrimeBuildFromFits2->Integral(BinL,BinH));
       CumulantBuildFromFits2->Scale(c4QS->Integral(BinL,BinH) / CumulantBuildFromFits2->Integral(BinL,BinH));
-      
     }
     if(CollisionType==0){
       Build_FourParticle[ch1_4]->Draw("same");
@@ -1876,8 +1886,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   C4norm->FixParameter(0, 0.25);
   C4norm->FixParameter(1, 10./FmToGeV);*/
   //C4norm->Draw();
-
-
+  
+  
   if(SaveToFile){
     TString *savefilename = new TString("OutFiles/OutFile");
     if(MCcase) savefilename->Append("MonteCarlo");

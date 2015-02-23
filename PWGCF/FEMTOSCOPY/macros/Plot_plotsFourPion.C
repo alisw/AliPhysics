@@ -30,7 +30,7 @@
 
 using namespace std;
 
-const int CollisionType=0;// Pb-Pb(0), p-Pb(1), pp(2)
+const int CollisionType=2;// Pb-Pb(0), p-Pb(1), pp(2)
 const int ChProdBOI=0;// 0=SameCharge, 1=MixedCharge1, 2=MixedCharge2
 const int EDBin=0;// KT3,4 bin. 0=low KT bin.  1=high KT bin
 const int MBOI=0;// Centrality bin: 0-9
@@ -39,9 +39,11 @@ const int Q4binChi2= 3;// 3-7
 const int MBins=1;
 const int EDBins=2;
 const int RcohIndex=6;// 0(point source), 6(Full Size)
+const int GValue = 0;
 const int Gbinstart= 5 + RcohIndex*25;
-const int GbinPlot=int( (0) /2. ) + 25*RcohIndex + 5;// +5 (Rcoh=0), +30 (Rcoh=1),....
+const int GbinPlot=int( (GValue) /2. ) + 25*RcohIndex + 5;// +5 (Rcoh=0), +30 (Rcoh=1),....
 bool FitBuild=1;
+bool ReNormBuiltBaseline=1;
 //
 //
 //
@@ -62,11 +64,11 @@ void Plot_plotsFourPion(){
   gStyle->SetOptDate(0);
   
   int Ysize=600;
-  if(ChProdBOI==0 && CollisionType==0 && FitBuild==0) Ysize=800;
+  if(ChProdBOI==0) Ysize=800;
   double Ystart=0.3;
-  if(CollisionType!=0 || ChProdBOI!=0 || FitBuild==1) Ystart=0.005;
+  if(ChProdBOI!=0) Ystart=0.005;
   double Xmarge=0.01;
-  if(CollisionType!=0 || ChProdBOI!=0 || FitBuild==1) Xmarge=0.14;
+  if(ChProdBOI!=0) Xmarge=0.14;
   
   TString *System=new TString("");
   if(CollisionType==0) System->Append("Pb-Pb #\sqrt{#font[12]{s}_{NN}}=2.76 TeV");
@@ -86,13 +88,38 @@ void Plot_plotsFourPion(){
   KTspecif->SetTextSize(SizeSpecif);
     
   TString *Centname=new TString("0-5%");
-  TLatex *Centspecif = new TLatex(0.5,0.9,Centname->Data());
+  TLatex *Centspecif = new TLatex(0.52,0.8,Centname->Data());
   Centspecif->SetNDC(1);
   Centspecif->SetTextFont(TextFont);
   Centspecif->SetTextSize(SizeSpecif);
 
+  TString *BuiltNameC2 = new TString("Built from #font[12]{C}_{2} (G=");
+  TString *BuiltNameC3 = new TString("Built from #font[12]{C}_{3} (G=");
+  TString *BuiltNamec3 = new TString("Built from #font[12]{#bf{c}}_{3} (G=");
+  *BuiltNameC2 += GValue;
+  *BuiltNameC3 += GValue;
+  *BuiltNamec3 += GValue;
+  BuiltNameC2->Append("%)");
+  BuiltNameC3->Append("%)");
+  BuiltNamec3->Append("%)");
+  
   int Q3_meanpT[2][5]={{0,213,228,233,237},{0,316,336,354,366}};// low then high KT3
   int Q4_meanpT[2][7]={{0,0,221,229,234,238,241},{0,0,325,335,344,351,355}};// low then high KT4
+
+  double ReNormL_3;
+  double ReNormH_3;
+  double ReNormL_4;
+  double ReNormH_4;
+  if(CollisionType==0){
+    ReNormL_3=0.085;
+    ReNormH_3=0.095;
+    ReNormL_4=0.14;
+    ReNormH_4=0.16;
+  }else{
+    ReNormL_4=0.46;
+    ReNormH_4=0.49;
+  }
+
 
   TFile *files[3][2][2][10][3];// SC/MC1/MC2, +/-, KT, MBINS, CT
   //
@@ -124,18 +151,10 @@ void Plot_plotsFourPion(){
   TH2D *c4QSBuilt2D[2][EDBins][10][3];// +/-, KT, Mbin, CT
   TH2D *c4QSNegBuilt2D[2][EDBins][10][3];// +/-, KT, Mbin, CT
   //
-  TH1D *C4QSBuiltFromFits1[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *C4QSBuiltFromFits2[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *C4QSBuiltFromFits_M[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *a4QSBuiltFromFits1[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *a4QSBuiltFromFits2[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *a4QSBuiltFromFits_M[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *b4QSBuiltFromFits1[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *b4QSBuiltFromFits2[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *b4QSBuiltFromFits_M[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *c4QSBuiltFromFits1[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *c4QSBuiltFromFits2[2][EDBins][10][3];// +/-, ED, Mbin, CT
-  TH1D *c4QSBuiltFromFits_M[2][EDBins][10][3];// +/-, ED, Mbin, CT
+  TH3D *C4QSBuiltFromFits3D[2][EDBins][10][3];// +/-, ED, Mbin, CT
+  TH3D *a4QSBuiltFromFits3D[2][EDBins][10][3];// +/-, ED, Mbin, CT
+  TH3D *b4QSBuiltFromFits3D[2][EDBins][10][3];// +/-, ED, Mbin, CT
+  TH3D *c4QSBuiltFromFits3D[2][EDBins][10][3];// +/-, ED, Mbin, CT
   //
   TH1D *r3[2][EDBins][10];// +/-, KT, Mbin
   TH1D *r42[2][EDBins][10];// +/-, KT, Mbin
@@ -231,28 +250,16 @@ void Plot_plotsFourPion(){
 		//
 		r42[ch][ED][mb]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("r42");
 		r42[ch][ED][mb]->SetDirectory(0);
-	      }	
-	      C4QSBuiltFromFits1[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("C4QS_BuiltFromFits1");
-	      C4QSBuiltFromFits2[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("C4QS_BuiltFromFits2");
-	      C4QSBuiltFromFits_M[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("C4QS_BuiltFromFits_M");
-	      a4QSBuiltFromFits1[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("a4QS_BuiltFromFits1");
-	      a4QSBuiltFromFits2[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("a4QS_BuiltFromFits2");
-	      a4QSBuiltFromFits_M[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("a4QS_BuiltFromFits_M");
-	      b4QSBuiltFromFits1[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("b4QS_BuiltFromFits1");
-	      b4QSBuiltFromFits2[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("b4QS_BuiltFromFits2");
-	      b4QSBuiltFromFits_M[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("b4QS_BuiltFromFits_M");
-	      c4QSBuiltFromFits1[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("c4QS_BuiltFromFits1");
-	      c4QSBuiltFromFits2[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("c4QS_BuiltFromFits2");
-	      c4QSBuiltFromFits_M[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("c4QS_BuiltFromFits_M");
+	      }
+	      C4QSBuiltFromFits3D[ch][ED][mb][CT]=(TH3D*)files[ChComb][ch][ED][mb][CT]->Get("C4QS_BuiltFromFits3D");
+	      a4QSBuiltFromFits3D[ch][ED][mb][CT]=(TH3D*)files[ChComb][ch][ED][mb][CT]->Get("a4QS_BuiltFromFits3D");
+	      b4QSBuiltFromFits3D[ch][ED][mb][CT]=(TH3D*)files[ChComb][ch][ED][mb][CT]->Get("b4QS_BuiltFromFits3D");
+	      c4QSBuiltFromFits3D[ch][ED][mb][CT]=(TH3D*)files[ChComb][ch][ED][mb][CT]->Get("c4QS_BuiltFromFits3D");
 	      //
-	      C4QSBuiltFromFits1[ch][ED][mb][CT]->SetDirectory(0); C4QSBuiltFromFits2[ch][ED][mb][CT]->SetDirectory(0);
-	      C4QSBuiltFromFits_M[ch][ED][mb][CT]->SetDirectory(0);
-	      a4QSBuiltFromFits1[ch][ED][mb][CT]->SetDirectory(0); a4QSBuiltFromFits2[ch][ED][mb][CT]->SetDirectory(0);
-	      a4QSBuiltFromFits_M[ch][ED][mb][CT]->SetDirectory(0);
-	      b4QSBuiltFromFits1[ch][ED][mb][CT]->SetDirectory(0); b4QSBuiltFromFits2[ch][ED][mb][CT]->SetDirectory(0);
-	      b4QSBuiltFromFits_M[ch][ED][mb][CT]->SetDirectory(0);
-	      c4QSBuiltFromFits1[ch][ED][mb][CT]->SetDirectory(0); c4QSBuiltFromFits2[ch][ED][mb][CT]->SetDirectory(0);
-	      c4QSBuiltFromFits_M[ch][ED][mb][CT]->SetDirectory(0);
+	      C4QSBuiltFromFits3D[ch][ED][mb][CT]->SetDirectory(0);
+	      a4QSBuiltFromFits3D[ch][ED][mb][CT]->SetDirectory(0);
+	      b4QSBuiltFromFits3D[ch][ED][mb][CT]->SetDirectory(0);
+	      c4QSBuiltFromFits3D[ch][ED][mb][CT]->SetDirectory(0);
 	      //
 	      C4QS[ChComb][ch][ED][mb][CT]->SetBinContent(2,100); C4QS[ChComb][ch][ED][mb][CT]->SetBinError(2,100);
 	      c4QS[ChComb][ch][ED][mb][CT]->SetBinContent(2,100); c4QS[ChComb][ch][ED][mb][CT]->SetBinError(2,100);
@@ -300,18 +307,20 @@ void Plot_plotsFourPion(){
   TH2D *c4QSBuiltmerged2D[EDBins][10][3];// ED, Mbin, CT
   TH2D *c4QSNegBuiltmerged2D[EDBins][10][3];// ED, Mbin, CT
   //
+  TH3D *C4QSBuiltFromFitsmerged3D[EDBins][10][3];// ED, Mbin, CT
+  TH3D *a4QSBuiltFromFitsmerged3D[EDBins][10][3];// ED, Mbin, CT
+  TH3D *b4QSBuiltFromFitsmerged3D[EDBins][10][3];// ED, Mbin, CT
+  TH3D *c4QSBuiltFromFitsmerged3D[EDBins][10][3];// ED, Mbin, CT
+  //
   TH1D *C4QSBuiltFromFitsmerged1[EDBins][10][3];// ED, Mbin, CT
   TH1D *C4QSBuiltFromFitsmerged2[EDBins][10][3];// ED, Mbin, CT
-  TH1D *C4QSBuiltFromFitsmerged_M[EDBins][10][3];// ED, Mbin, CT
   TH1D *a4QSBuiltFromFitsmerged1[EDBins][10][3];// ED, Mbin, CT
   TH1D *a4QSBuiltFromFitsmerged2[EDBins][10][3];// ED, Mbin, CT
-  TH1D *a4QSBuiltFromFitsmerged_M[EDBins][10][3];// ED, Mbin, CT
   TH1D *b4QSBuiltFromFitsmerged1[EDBins][10][3];// ED, Mbin, CT
   TH1D *b4QSBuiltFromFitsmerged2[EDBins][10][3];// ED, Mbin, CT
-  TH1D *b4QSBuiltFromFitsmerged_M[EDBins][10][3];// ED, Mbin, CT
   TH1D *c4QSBuiltFromFitsmerged1[EDBins][10][3];// ED, Mbin, CT
   TH1D *c4QSBuiltFromFitsmerged2[EDBins][10][3];// ED, Mbin, CT
-  TH1D *c4QSBuiltFromFitsmerged_M[EDBins][10][3];// ED, Mbin, CT
+  
   
 
   for(int CT=0; CT<3; CT++){
@@ -359,36 +368,66 @@ void Plot_plotsFourPion(){
 	      c4QSBuiltmerged2D[ED][mb][CT]->Add(c4QSBuilt2D[1][ED][mb][CT]);
 	      c4QSNegBuiltmerged2D[ED][mb][CT]->Add(c4QSNegBuilt2D[1][ED][mb][CT]);
 	    }
-	    C4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)C4QSBuiltFromFits1[0][ED][mb][CT]->Clone();
-	    C4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)C4QSBuiltFromFits2[0][ED][mb][CT]->Clone();
-	    C4QSBuiltFromFitsmerged_M[ED][mb][CT] = (TH1D*)C4QSBuiltFromFits_M[0][ED][mb][CT]->Clone();
-	    a4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)a4QSBuiltFromFits1[0][ED][mb][CT]->Clone();
-	    a4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)a4QSBuiltFromFits2[0][ED][mb][CT]->Clone();
-	    a4QSBuiltFromFitsmerged_M[ED][mb][CT] = (TH1D*)a4QSBuiltFromFits_M[0][ED][mb][CT]->Clone();
-	    b4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)b4QSBuiltFromFits1[0][ED][mb][CT]->Clone();
-	    b4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)b4QSBuiltFromFits2[0][ED][mb][CT]->Clone();
-	    b4QSBuiltFromFitsmerged_M[ED][mb][CT] = (TH1D*)b4QSBuiltFromFits_M[0][ED][mb][CT]->Clone();
-	    c4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)c4QSBuiltFromFits1[0][ED][mb][CT]->Clone();
-	    c4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)c4QSBuiltFromFits2[0][ED][mb][CT]->Clone();
-	    c4QSBuiltFromFitsmerged_M[ED][mb][CT] = (TH1D*)c4QSBuiltFromFits_M[0][ED][mb][CT]->Clone();
-	    C4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(C4QSBuiltFromFits1[1][ED][mb][CT]); C4QSBuiltFromFitsmerged1[ED][mb][CT]->Scale(0.5);
-	    C4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(C4QSBuiltFromFits2[1][ED][mb][CT]); C4QSBuiltFromFitsmerged2[ED][mb][CT]->Scale(0.5);
-	    C4QSBuiltFromFitsmerged_M[ED][mb][CT]->Add(C4QSBuiltFromFits_M[1][ED][mb][CT]); C4QSBuiltFromFitsmerged_M[ED][mb][CT]->Scale(0.5);
-	    a4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(a4QSBuiltFromFits1[1][ED][mb][CT]); a4QSBuiltFromFitsmerged1[ED][mb][CT]->Scale(0.5);
-	    a4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(a4QSBuiltFromFits2[1][ED][mb][CT]); a4QSBuiltFromFitsmerged2[ED][mb][CT]->Scale(0.5);
-	    a4QSBuiltFromFitsmerged_M[ED][mb][CT]->Add(a4QSBuiltFromFits_M[1][ED][mb][CT]); a4QSBuiltFromFitsmerged_M[ED][mb][CT]->Scale(0.5);
-	    b4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(b4QSBuiltFromFits1[1][ED][mb][CT]); b4QSBuiltFromFitsmerged1[ED][mb][CT]->Scale(0.5);
-	    b4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(b4QSBuiltFromFits2[1][ED][mb][CT]); b4QSBuiltFromFitsmerged2[ED][mb][CT]->Scale(0.5);
-	    b4QSBuiltFromFitsmerged_M[ED][mb][CT]->Add(b4QSBuiltFromFits_M[1][ED][mb][CT]); b4QSBuiltFromFitsmerged_M[ED][mb][CT]->Scale(0.5);
-	    c4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(c4QSBuiltFromFits1[1][ED][mb][CT]); c4QSBuiltFromFitsmerged1[ED][mb][CT]->Scale(0.5);
-	    c4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(c4QSBuiltFromFits2[1][ED][mb][CT]); c4QSBuiltFromFitsmerged2[ED][mb][CT]->Scale(0.5);
-	    c4QSBuiltFromFitsmerged_M[ED][mb][CT]->Add(c4QSBuiltFromFits_M[1][ED][mb][CT]); c4QSBuiltFromFitsmerged_M[ED][mb][CT]->Scale(0.5);
-	    for(int ii=1; ii<C4QSBuiltFromFitsmerged_M[ED][mb][CT]->GetNbinsX(); ii++){
-	      C4QSBuiltFromFitsmerged_M[ED][mb][CT]->SetBinError(ii, (C4QSBuiltFromFitsmerged1[ED][mb][CT]->GetBinContent(ii)-C4QSBuiltFromFitsmerged2[ED][mb][CT]->GetBinContent(ii))/2.);
-	      a4QSBuiltFromFitsmerged_M[ED][mb][CT]->SetBinError(ii, (a4QSBuiltFromFitsmerged1[ED][mb][CT]->GetBinContent(ii)-a4QSBuiltFromFitsmerged2[ED][mb][CT]->GetBinContent(ii))/2.);
-	      b4QSBuiltFromFitsmerged_M[ED][mb][CT]->SetBinError(ii, (b4QSBuiltFromFitsmerged1[ED][mb][CT]->GetBinContent(ii)-b4QSBuiltFromFitsmerged2[ED][mb][CT]->GetBinContent(ii))/2.);
-	      c4QSBuiltFromFitsmerged_M[ED][mb][CT]->SetBinError(ii, (c4QSBuiltFromFitsmerged1[ED][mb][CT]->GetBinContent(ii)-c4QSBuiltFromFitsmerged2[ED][mb][CT]->GetBinContent(ii))/2.);
-	    }
+	    C4QSBuiltFromFitsmerged3D[ED][mb][CT] = (TH3D*)C4QSBuiltFromFits3D[0][ED][mb][CT]->Clone();
+	    a4QSBuiltFromFitsmerged3D[ED][mb][CT] = (TH3D*)a4QSBuiltFromFits3D[0][ED][mb][CT]->Clone();
+	    b4QSBuiltFromFitsmerged3D[ED][mb][CT] = (TH3D*)b4QSBuiltFromFits3D[0][ED][mb][CT]->Clone();
+	    c4QSBuiltFromFitsmerged3D[ED][mb][CT] = (TH3D*)c4QSBuiltFromFits3D[0][ED][mb][CT]->Clone();
+	    C4QSBuiltFromFitsmerged3D[ED][mb][CT]->Add(C4QSBuiltFromFits3D[1][ED][mb][CT]);
+	    a4QSBuiltFromFitsmerged3D[ED][mb][CT]->Add(a4QSBuiltFromFits3D[1][ED][mb][CT]);
+	    b4QSBuiltFromFitsmerged3D[ED][mb][CT]->Add(b4QSBuiltFromFits3D[1][ED][mb][CT]);
+	    c4QSBuiltFromFitsmerged3D[ED][mb][CT]->Add(c4QSBuiltFromFits3D[1][ED][mb][CT]);
+	    //
+	    TString *DenName=new TString("DenNamePro_"); *DenName += ED; *DenName += mb; *DenName += CT; 
+	    TH1D *tempDen2 = (TH1D*)C4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(DenName->Data(), 1,1, 4, 4);
+	    TString *FitBuildName=new TString("FitBuildPro_");
+	    *FitBuildName += ED; *FitBuildName += mb; *FitBuildName += CT;
+	    C4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)C4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),1,1,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    C4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)C4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),2,2,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    a4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)a4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),1,1,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    a4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)a4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),2,2,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    b4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)b4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),1,1,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    b4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)b4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),2,2,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    c4QSBuiltFromFitsmerged1[ED][mb][CT] = (TH1D*)c4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),1,1,GbinPlot,GbinPlot);
+	    FitBuildName->Append("1");
+	    c4QSBuiltFromFitsmerged2[ED][mb][CT] = (TH1D*)c4QSBuiltFromFitsmerged3D[ED][mb][CT]->ProjectionZ(FitBuildName->Data(),2,2,GbinPlot,GbinPlot);
+	    //
+	    C4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(tempDen2);
+	    C4QSBuiltFromFitsmerged1[ED][mb][CT]->Divide(tempDen2);
+	    C4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineColor(4); C4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineStyle(2);
+	    //
+	    a4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(tempDen2);
+	    a4QSBuiltFromFitsmerged1[ED][mb][CT]->Divide(tempDen2);
+	    a4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineColor(2); a4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineStyle(2);
+	    //
+	    b4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(tempDen2);
+	    b4QSBuiltFromFitsmerged1[ED][mb][CT]->Divide(tempDen2);
+	    b4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineColor(6); b4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineStyle(2);
+	    //
+	    c4QSBuiltFromFitsmerged1[ED][mb][CT]->Add(tempDen2);
+	    c4QSBuiltFromFitsmerged1[ED][mb][CT]->Divide(tempDen2);
+	    c4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineColor(1); c4QSBuiltFromFitsmerged1[ED][mb][CT]->SetLineStyle(2);
+	    ////
+	    C4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(tempDen2);
+	    C4QSBuiltFromFitsmerged2[ED][mb][CT]->Divide(tempDen2);
+	    C4QSBuiltFromFitsmerged2[ED][mb][CT]->SetLineColor(4);
+	    //
+	    a4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(tempDen2);
+	    a4QSBuiltFromFitsmerged2[ED][mb][CT]->Divide(tempDen2);
+	    a4QSBuiltFromFitsmerged2[ED][mb][CT]->SetLineColor(2);
+	    //
+	    b4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(tempDen2);
+	    b4QSBuiltFromFitsmerged2[ED][mb][CT]->Divide(tempDen2);
+	    b4QSBuiltFromFitsmerged2[ED][mb][CT]->SetLineColor(6);
+	    //
+	    c4QSBuiltFromFitsmerged2[ED][mb][CT]->Add(tempDen2);
+	    c4QSBuiltFromFitsmerged2[ED][mb][CT]->Divide(tempDen2);
+	    c4QSBuiltFromFitsmerged2[ED][mb][CT]->SetLineColor(1);
 	  }
 	  
 	  if(ChComb!=2){
@@ -730,9 +769,8 @@ void Plot_plotsFourPion(){
     legend1->AddEntry(C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{C}_{3}^{QS}","p");
     legend1->AddEntry(c3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{c}}_{3}^{QS}","p");
     if(ChProdBOI==0 && CollisionType==0) {
-      legend1->AddEntry(C3QSBuiltmerged[EDBin][MBOI][CollisionType],"Built #font[12]{C}_{3}^{QS} (G=0%)","l");
-      if(EDBin==0) legend1->AddEntry(C3QSbuilt_G,"Built #font[12]{C}_{3}^{QS} (G=30%)","l");
-      else legend1->AddEntry(C3QSbuilt_G,"Built #font[12]{C}_{3}^{QS} (G=20%)","l");
+      legend1->AddEntry(C3QSBuiltmerged[EDBin][MBOI][CollisionType],"Built from #font[12]{C}_{2} (G=0%)","l");
+      legend1->AddEntry(C3QSbuilt_G,BuiltNameC2->Data(),"l");
       legend1->AddEntry(C3QSBuilt_Syst,"Built #font[12]{C}_{3}^{QS} systematic uncertainty","l");
     }  
     legend1->AddEntry(C3QS_Syst,"#font[12]{C}_{3}^{QS} systematic uncertainty","l");
@@ -787,8 +825,7 @@ void Plot_plotsFourPion(){
       Unity->Draw("same");
       
       legend1_2->AddEntry(Ratio_3,"G=0%","p");
-      if(EDBin==0) legend1_2->AddEntry(Ratio_3_G,"G=30%","p");
-      else legend1_2->AddEntry(Ratio_3_G,"G=20%","p");
+      legend1_2->AddEntry(Ratio_3_G,BuiltNameC2->Data(),"p");
       legend1_2->Draw("same");
       
       TCanvas *can2 = new TCanvas("can2", "can2",800,0,700,600);// 11,53,700,500
@@ -1030,7 +1067,7 @@ void Plot_plotsFourPion(){
   TPad *pad3 = new TPad("pad3","pad3",0.,Ystart,1.,1.);
   TPad *pad3_2 = new TPad("pad3_2","pad3_2",0.,0.,1.,Ystart);
   pad3->Draw();
-  if(CollisionType==0 && ChProdBOI==0 && FitBuild==0) pad3_2->Draw();
+  if(ChProdBOI==0) pad3_2->Draw();
   pad3->cd();
   gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.03); gPad->SetBottomMargin(Xmarge);
@@ -1042,7 +1079,7 @@ void Plot_plotsFourPion(){
   legend3->SetTextSize(SizeLegend);
   if(ChProdBOI!=0) {legend3->SetY1(0.55); legend3->SetY2(0.75);}
   TLegend *legend3_2=(TLegend*)legend3->Clone();
-  legend3_2->SetX1(0.8); legend3_2->SetX2(0.9); legend3_2->SetY1(0.4); legend3_2->SetY2(0.65); 
+  legend3_2->SetX1(0.52); legend3_2->SetX2(0.9); legend3_2->SetY1(0.35); legend3_2->SetY2(0.6); 
   legend3_2->SetTextSize(2.5*SizeLegend);
 
   C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetTitleSize(SizeTitle);
@@ -1079,25 +1116,47 @@ void Plot_plotsFourPion(){
     a4QSbuilt_G->Divide(tempDen4);
     b4QSbuilt_G->Divide(tempDen4);
     c4QSbuilt_G->Divide(tempDen4);
-    int BinL = C4QSbuilt_G->GetXaxis()->FindBin(0.14);
-    int BinH = C4QSbuilt_G->GetXaxis()->FindBin(0.16);
-    C4QSbuilt_G->Scale( C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / C4QSbuilt_G->Integral(BinL,BinH));
-    a4QSbuilt_G->Scale( a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / a4QSbuilt_G->Integral(BinL,BinH));
-    b4QSbuilt_G->Scale( b4QSmerged[EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / b4QSbuilt_G->Integral(BinL,BinH));
-    c4QSbuilt_G->Scale( c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / c4QSbuilt_G->Integral(BinL,BinH));
-    C4QSbuilt_G->SetLineColor(4);
-    a4QSbuilt_G->SetLineColor(2);
-    b4QSbuilt_G->SetLineColor(6);
-    c4QSbuilt_G->SetLineColor(1);
-    a4QSbuilt_G->SetBinContent(2,0);
-    b4QSbuilt_G->SetBinContent(2,0);
-    c4QSbuilt_G->SetBinContent(2,0);
+    if(ReNormBuiltBaseline){
+      int BinL = C4QSbuilt_G->GetXaxis()->FindBin(ReNormL_4);
+      int BinH = C4QSbuilt_G->GetXaxis()->FindBin(ReNormH_4);
+      C4QSbuilt_G->Scale( C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / C4QSbuilt_G->Integral(BinL,BinH));
+      a4QSbuilt_G->Scale( a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / a4QSbuilt_G->Integral(BinL,BinH));
+      b4QSbuilt_G->Scale( b4QSmerged[EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / b4QSbuilt_G->Integral(BinL,BinH));
+      c4QSbuilt_G->Scale( c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / c4QSbuilt_G->Integral(BinL,BinH));
+      C4QSbuilt_G->SetLineColor(4);
+      a4QSbuilt_G->SetLineColor(2);
+      b4QSbuilt_G->SetLineColor(6);
+      c4QSbuilt_G->SetLineColor(1);
+      a4QSbuilt_G->SetBinContent(2,0);
+      b4QSbuilt_G->SetBinContent(2,0);
+      c4QSbuilt_G->SetBinContent(2,0);
+    }
     for(int bin=1; bin<=C4QSbuilt_G->GetNbinsX(); bin++) {
       C4QSbuilt_G->SetBinError(bin,0);
       a4QSbuilt_G->SetBinError(bin,0);
       b4QSbuilt_G->SetBinError(bin,0);
       c4QSbuilt_G->SetBinError(bin,0);
     }
+  }
+  if(ReNormBuiltBaseline){
+    int BinL = C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->FindBin(ReNormL_4);
+    int BinH = C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->FindBin(ReNormH_4);
+    C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Scale(C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Integral(BinL,BinH));
+    C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Scale(C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Integral(BinL,BinH));
+    b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Scale(b4QSmerged[EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Integral(BinL,BinH));
+    b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Scale(b4QSmerged[EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Integral(BinL,BinH));
+    c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Scale(c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Integral(BinL,BinH));
+    c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Scale(c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Integral(BinL,BinH) / c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Integral(BinL,BinH));
+  }
+  for(int bin=1; bin<=C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->GetNbinsX(); bin++){
+    C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    a4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    a4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
+    c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinError(bin,0);
   }
   //
   if(EDBin==1 && ChProdBOI!=0){
@@ -1116,23 +1175,26 @@ void Plot_plotsFourPion(){
       b4QSmerged[EDBin][MBOI][CollisionType]->SetBinContent(4,100);
       c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->SetBinContent(4,100);
     }
-    //
+  }
+  if(ChProdBOI==0){
     C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
     a4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
     b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
     c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
-    C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
-    a4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
-    b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
-    c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
     C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
     a4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
     b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
     c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(2,0);
-    C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
-    a4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
-    b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
-    c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+    if(CollisionType!=0){
+      C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      a4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      a4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+      c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->SetBinContent(3,0);
+    }
     if(CollisionType==2){
       C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(4,0);
       a4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->SetBinContent(4,0);
@@ -1225,8 +1287,8 @@ void Plot_plotsFourPion(){
   a4QS_Syst->SetMarkerSize(0); a4QS_Syst->SetFillColor(kRed-10); a4QS_Syst->SetMarkerColor(kRed-10); a4QS_Syst->SetLineColor(kRed-10);
   
   if(ChProdBOI==0 && CollisionType==0) {
-    C4QS_Syst->GetXaxis()->SetRangeUser(0.03,0.2); 
-    C4QSBuilt_Syst->GetXaxis()->SetRangeUser(0.03,0.2);
+    C4QS_Syst->GetXaxis()->SetRangeUser(0.035,0.2); 
+    C4QSBuilt_Syst->GetXaxis()->SetRangeUser(0.035,0.2);
   }
   if(ChProdBOI==0 && CollisionType==1){
     C4QS_Syst->GetXaxis()->SetRangeUser(0.1,0.5);
@@ -1241,6 +1303,7 @@ void Plot_plotsFourPion(){
   double Syst_forRatio4[15]={0};
   for(int bin=1; bin<=15; bin++){
     double q4 = C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->GetBinCenter(bin);
+    if(CollisionType!=0) q4 /= 3.3;// rescale q4 for pp and p-Pb
     int SystBin = C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->FindBin(q4);
     double SystPercent_Diff = 0;
     //SystPercent_Diff += pow(0.125*exp(-61.38*q4),2);// K factorization
@@ -1255,9 +1318,11 @@ void Plot_plotsFourPion(){
     SystPercent_Diff = sqrt(SystPercent_Diff);
     Syst_forChi2_4[bin-1] = SystPercent_Diff * C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetBinContent(bin);
     // ratio
-    if(ChProdBOI==0 && CollisionType==0){
+    if(ChProdBOI==0){
       double A = C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetBinContent(bin);
-      double B = C4QSBuiltmerged[EDBin][MBOI][CollisionType]->GetBinContent(bin);
+      double B = 0;
+      if(CollisionType==0 && !FitBuild) B = C4QSBuiltmerged[EDBin][MBOI][CollisionType]->GetBinContent(bin);
+      else B = C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->GetBinContent(bin);
       if(B<1) continue;
       double ratio = A / B;
       Syst_forRatio4[bin-1] = pow( ratio * (0.01*(1 - q4/0.18)) ,2);// f coefficients
@@ -1297,16 +1362,12 @@ void Plot_plotsFourPion(){
       b4QSBuiltmerged[EDBin][MBOI][CollisionType]->Draw("same");
       c4QSBuiltmerged[EDBin][MBOI][CollisionType]->Draw("same");
     }else{
-      //C4QSBuiltFromFitsmerged_M[EDBin][MBOI][CollisionType]->Draw("E2 same");
       C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Draw("same");
       C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Draw("same");
-      //a4QSBuiltFromFitsmerged_M[EDBin][MBOI][CollisionType]->Draw("E2 same");
       a4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Draw("same");
       a4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Draw("same");
-      //b4QSBuiltFromFitsmerged_M[EDBin][MBOI][CollisionType]->Draw("E2 same");
       b4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Draw("same");
       b4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Draw("same");
-      //c4QSBuiltFromFitsmerged_M[EDBin][MBOI][CollisionType]->Draw("E2 same");
       c4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]->Draw("same");
       c4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]->Draw("same");
       //
@@ -1329,20 +1390,21 @@ void Plot_plotsFourPion(){
   legend3->AddEntry(a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{a}}_{4}^{QS}","p");
   if(ChProdBOI==0) legend3->AddEntry(b4QSmerged[EDBin][MBOI][CollisionType],"#font[12]{#bf{b}}_{4}^{QS}","p");
   legend3->AddEntry(c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{c}}_{4}^{QS}","p");
-  if(ChProdBOI==0 && CollisionType==0) {
+  if(ChProdBOI==0 && CollisionType==0 && !FitBuild) {
     TH1D *Built1_forLegend = (TH1D*)C4QSBuiltmerged[EDBin][MBOI][CollisionType]->Clone();
     TH1D *Built2_forLegend = (TH1D*)C4QSbuilt_G->Clone();
     Built1_forLegend->SetLineColor(1);
-    legend3->AddEntry(Built1_forLegend,"Built (G=0%)","l");
+    legend3->AddEntry(Built1_forLegend,"Built from #font[12]{C}_{2} (G=0%)","l");
     Built2_forLegend->SetLineColor(1);
-    if(EDBin==0) legend3->AddEntry(Built2_forLegend,"Built (G=30%)","l");
-    else legend3->AddEntry(Built2_forLegend,"Built (G=20%)","l");
+    legend3->AddEntry(Built2_forLegend,BuiltNameC2->Data(),"l");
     //legend3->AddEntry(C4QSbuilt_G,"Built #font[12]{C}_{4}^{QS} (G=30%, R_{coh}=R_{ch})","l");
     //legend3->AddEntry(C4QSBuilt_Syst,"Built #font[12]{C}_{4}^{QS} systematic uncertainty","f");
   }
-  if(ChProdBOI==0 && CollisionType!=0){
-    legend3->AddEntry(C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType],"Built from #font[12]{#bf{c}}_{3} fits","l");
-    legend3->AddEntry(C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType],"Built from #font[12]{C}_{3} fits","l");
+  if(ChProdBOI==0){
+    if(FitBuild || CollisionType!=0){
+      legend3->AddEntry(C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType], BuiltNamec3->Data(),"l");
+      legend3->AddEntry(C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType], BuiltNameC3->Data(),"l");
+    }
   }
   //legend3->AddEntry(C4QS_Syst,"#font[12]{C}_{4}^{QS} systematic uncertainty","f");
   
@@ -1363,29 +1425,35 @@ void Plot_plotsFourPion(){
   double y_ref[12]={0, 0, 1.00133, 0.980848, 0.988251, 0.994434, 0.999677, 1.00269, 1.00642, 1.00881, 1.01082, 1.01554};
   double y_ref_e[12]={0, 0, 0.054465, 0.00678447, 0.00194947, 0.000799564, 0.00039767, 0.000222628, 0.000135335, 8.75305e-05, 6.31392e-05, 5.53329e-05};
   double y_ref_Syst[12]={0, 0, 0.0167026, 0.00971243, 0.00945824, 0.0121959, 0.014654, 0.0155188, 0.0147369, 0.0128801, 0.0109854, 0.0100858};// without MC1 residue
-
-  pad3_2->cd();
-  gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
-  gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.32);
-  
-  TH1D *Ratio_4=(TH1D*)C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Clone();
-  Ratio_4->GetXaxis()->SetTitleSize(2.2*SizeTitle);
-  Ratio_4->GetXaxis()->SetLabelSize(2.2*SizeLabel);
-  Ratio_4->GetYaxis()->SetTitleSize(2.2*SizeTitle);
-  Ratio_4->GetYaxis()->SetLabelSize(2.2*SizeLabel);
-  Ratio_4->GetXaxis()->SetTitleOffset(1.05);
-  Ratio_4->GetYaxis()->SetTitleOffset(0.5);
-  Ratio_4->GetXaxis()->SetNdivisions(606);
-  Ratio_4->GetYaxis()->SetNdivisions(202);
-  Ratio_4->GetYaxis()->SetTitle("#font[12]{C_{4}^{QS}} / built ");
-  Ratio_4->SetMinimum(0.9); Ratio_4->SetMaximum(1.05);
-  TH1D *Ratio_4_G=(TH1D*)Ratio_4->Clone();
-  Ratio_4->SetMarkerStyle(24);
-  Ratio_4_G->SetMarkerStyle(20);
-  if(CollisionType==0 && FitBuild==0){
-    Ratio_4->Divide(C4QSBuiltmerged[EDBin][MBOI][CollisionType]);
-    Ratio_4_G->Divide(C4QSbuilt_G);
-    TH1D *Ratio_4_Syst=(TH1D*)Ratio_4->Clone(); 
+  if(ChProdBOI==0){
+    pad3_2->cd();
+    gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+    gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.32);
+    
+    TH1D *Ratio_4=(TH1D*)C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Clone();
+    Ratio_4->GetXaxis()->SetTitleSize(2.2*SizeTitle);
+    Ratio_4->GetXaxis()->SetLabelSize(2.2*SizeLabel);
+    Ratio_4->GetYaxis()->SetTitleSize(2.2*SizeTitle);
+    Ratio_4->GetYaxis()->SetLabelSize(2.2*SizeLabel);
+    Ratio_4->GetXaxis()->SetTitleOffset(1.05);
+    Ratio_4->GetYaxis()->SetTitleOffset(0.5);
+    Ratio_4->GetXaxis()->SetNdivisions(606);
+    Ratio_4->GetYaxis()->SetNdivisions(202);
+    Ratio_4->GetYaxis()->SetTitle("#font[12]{C_{4}^{QS}} / built ");
+    if(CollisionType==0){Ratio_4->SetMinimum(0.9); Ratio_4->SetMaximum(1.05);}
+    else {Ratio_4->SetMinimum(0.8); Ratio_4->SetMaximum(1.18);}
+    TH1D *Ratio_4_2=(TH1D*)Ratio_4->Clone();
+    TH1D *Ratio_4_G=(TH1D*)Ratio_4->Clone();
+    Ratio_4->SetMarkerStyle(24);
+    Ratio_4_G->SetMarkerStyle(20);
+    if(CollisionType==0 && FitBuild==0){
+      Ratio_4->Divide(C4QSBuiltmerged[EDBin][MBOI][CollisionType]);
+      Ratio_4_G->Divide(C4QSbuilt_G);
+    }else{
+      Ratio_4->Divide(C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType]);
+      Ratio_4_2->Divide(C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]);
+    }
+    TH1D *Ratio_4_Syst=(TH1D*)Ratio_4->Clone();
     Ratio_4_Syst->SetMarkerSize(0); Ratio_4_Syst->SetMarkerColor(kBlue-10); Ratio_4_Syst->SetFillColor(kBlue-10);
     Ratio_4_Syst->SetLineColor(kBlue-10);
     for(int bin=1; bin<=15; bin++){
@@ -1394,14 +1462,22 @@ void Plot_plotsFourPion(){
     
     Ratio_4_Syst->SetLineWidth(5);
     Ratio_4_Syst->Draw();
-    Ratio_4->Draw("same");
-    Ratio_4_G->Draw("same");
-    legend3_2->AddEntry(Ratio_4,"G=0%","p");
-    if(EDBin==0) legend3_2->AddEntry(Ratio_4_G,"G=30%","p");
-    else legend3_2->AddEntry(Ratio_4_G,"G=20%","p");
+    if(CollisionType==0 && FitBuild==0){
+      Ratio_4->Draw("same");
+      Ratio_4_G->Draw("same");
+      legend3_2->AddEntry(Ratio_4,"Built from #font[12]{C}_{2} (G=0%)","p");
+      legend3_2->AddEntry(Ratio_4_G,BuiltNameC2->Data(),"p");
+    }else{
+     Ratio_4->Draw("same");
+     Ratio_4_2->Draw("same");
+     legend3_2->AddEntry(Ratio_4,BuiltNamec3->Data(),"p");
+     legend3_2->AddEntry(Ratio_4_2,BuiltNameC3->Data(),"p");
+     legend3_2->SetX1(0.52); legend3_2->SetY1(0.69); legend3_2->SetY2(0.95);
+    }
+      
     legend3_2->Draw("same");
-    
   }
+
   /*if(CollisionType!=0){// FitBuilds from c3/C3
     TH1D *Ratio2_4 = (TH1D*)Ratio_4->Clone();
     TH1D *RatioM_4 = (TH1D*)Ratio_4->Clone();
