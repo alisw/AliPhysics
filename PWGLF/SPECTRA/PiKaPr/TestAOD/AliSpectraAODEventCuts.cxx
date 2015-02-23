@@ -65,6 +65,8 @@ fVertexCutMax(10.),
 fMultiplicityCutMin(-999.),
 fMultiplicityCutMax(99999.),
 fRejectionFractionTPC(-999.),
+fEtaTPCmin(-0.4),
+fEtaTPCmax(0.4),
 fqTPC(-999.),
 fqV0C(-999.),
 fqV0A(-999.),
@@ -400,7 +402,7 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
 
 //______________________________________________________
 
-Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(Double_t etaMin,Double_t etaMax){
+Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(){
 
   Double_t Qx2 = 0, Qy2 = 0;
   Int_t mult = 0;
@@ -410,7 +412,7 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(Double_t etaMin,Double_t et
     if(!aodTrack) AliFatal("Not a standard AOD");
     if(fRejectionFractionTPC>0 && g->Rndm()<fRejectionFractionTPC)continue; //to test the resolution vs multiplicity
     if (!aodTrack->TestFilterBit(128)) continue;  //FIXME track type hard coded -> TPC only constrained to the vertex
-    if (aodTrack->Eta() <etaMin || aodTrack->Eta() > etaMax)continue; //default: etaMin=-0.5. etaMax=0.5
+    if ( aodTrack->Eta() < fEtaTPCmin || aodTrack->Eta() > fEtaTPCmax)continue; //default: etaMin=-0.4. etaMax=0.4, Abs to have symmetric selection wrt midrapidity
     if (aodTrack->Pt()<0.2 || aodTrack->Pt()>20.)continue; //FIXME add variable pt cut, pt cut as in https://aliceinfo.cern.ch/Notes/node/71
 
     mult++;
