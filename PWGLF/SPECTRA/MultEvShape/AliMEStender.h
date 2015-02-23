@@ -75,6 +75,7 @@ public:
 
   //static Int_t    MakeMultiplicityESD(AliESDEvent* const, const char *opt);
   static Int_t    MakeMultiplicityMC(AliMCEvent* const);
+  static Int_t    MakeMultiplicity0408MC(AliMCEvent* const);
   
   virtual Bool_t  ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec, 
                              AliMESconfigTender::EMESconfigTrackCuts tc, 
@@ -99,7 +100,7 @@ private:
   AliAnalysisFilter  *fTrackFilter;  // working track filter
   AliPIDCombined     *fPIDcomb;      // working PID combined service
 
- TObjArray *fTracks;
+  TObjArray *fTracks;
   AliMESeventInfo *fEvInfo;
   TObjArray *fMCtracks;
   AliMESeventInfo *fMCevInfo;
