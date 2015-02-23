@@ -243,24 +243,6 @@ void AliFRAMEv3::CreateGeometry()
   Float_t dol = 4.;
   Float_t doh = 4.;
   Float_t ds  = 0.63;
-//
-// Mother volume
-//
-  ppgon[0] =   0.;
-  ppgon[1] = 360.;
-  ppgon[2] =  18.;
-
-  ppgon[3] =   2.;
-
-  ppgon[4] = -376.5;
-  ppgon[5] =  402.0;
-  ppgon[6] =  423.6;
-
-  ppgon[7] =  -ppgon[4]; 
-  ppgon[8] =   ppgon[5];
-  ppgon[9] =   ppgon[6];
-//  TVirtualMC::GetMC()->Gsvolu("B076", "PGON", kAir, ppgon, 10);
-//TVirtualMC::GetMC()->Gspos("B076", 1, "B077", 0., 0., 0., 0, "ONLY");
 //  
 // Rings    
 //
@@ -1088,6 +1070,11 @@ void AliFRAMEv3::CreateGeometry()
   // absolute position of center 290.43 + 38.95 = 329.38
   // frame center                283.00 + 59.50 = 342.50
   // relative position of TRD    329.38 - 342.50
+  //
+  // shift wrt v2
+  //
+  const Float_t zsh = -0.326;
+  //
   ptrd1[0] = 47.4405;   // CBL 28/6/2006
   ptrd1[1] = 61.1765;   // CBL
   ptrd1[2] = 375.5;     // CBL
@@ -1100,7 +1087,7 @@ void AliFRAMEv3::CreateGeometry()
     snprintf(nameMo, 16, "BSEGMO%d",i);
     TVirtualMC::GetMC()->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., -13.12 + dext, 0, "ONLY"); // CBL 28/6/2006
+    TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., -12.62 + zsh, 0, "ONLY"); // CBL 28/6/2006
   }
 
 // 
@@ -1134,7 +1121,7 @@ void AliFRAMEv3::CreateGeometry()
     TGeoVolume* btf = new TGeoVolume(nameCh, btofcs, gGeoManager->GetMedium("FRAME_Air"));
     btf->SetName(nameCh); 
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., 43.525 + zsh, 0, "ONLY"); 
   }
 //
 //    Geometry of Rails starts here
