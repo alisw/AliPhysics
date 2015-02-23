@@ -29,11 +29,16 @@
 #include "AliCDBManager.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliITStrackV2.h"
+#include "AliESDUtils.h"
+#include "AliVertexerTracks.h"
+#include "AliCDBEntry.h"
+#include "AliGRPRecoParam.h"
 //
 
-#include "../HLT/ITS/trackingSAP/AliITSSAPAux.h"
-#include "../HLT/ITS/trackingSAP/AliITSSAPLayer.h"
-#include "../HLT/ITS/trackingSAP/AliITSSAPTracker.h"
+#include "HLT/ITS/trackingSAP/AliITSSAPAux.h"
+#include "HLT/ITS/trackingSAP/AliITSSAPLayer.h"
+#include "HLT/ITS/trackingSAP/AliITSSAPTracker.h"
 #include "TProfile.h"
 #include "TStopwatch.h"
 #endif
@@ -44,10 +49,14 @@ AliITSSAPTracker* tracker=0;
 TTree* treeInp = 0;
 AliRunLoader* runLoader = 0;
 AliESDEvent* esd=0;
+AliESDEvent* esdF=0;
+Int_t maxEvProc = -1, nEvProc = 0;
+
 typedef struct {
   Bool_t  validSPD;
   Bool_t  validTrc;
   Bool_t  isPrim;
+  Char_t  itsPatt;
   Char_t  ntlC;
   Char_t  ntlF;
   Char_t  mtlC;
@@ -56,11 +65,35 @@ typedef struct {
   Char_t  ntrF;
   Int_t   pdg;
   Int_t   evID;
-  Int_t   mult;
+  Int_t   multSPDESD;
+  Int_t   multSPD;
+  Int_t   multTrc;
+  Int_t   multSAESD;
+  Int_t   multGLOESD;
+  Int_t   trId;
+  Float_t ptSA;
+  Float_t ptGL;
   Float_t pt;
-  Float_t eta;
-  Float_t phi;
-  Float_t zv;
+  Float_t ptMC;
+  Float_t etaMC;
+  Float_t phiMC;
+  int     nvSPDHLTCont;
+  int     nvTrcHLTCont;
+  int     nvSPDESDCont;
+  int     nvTrcESDCont;
+  int     nvTrcHLTrefCont;
+  int     nvTrcESDrefCont;
+  Float_t vtxSPD[3];
+  Float_t vtxTrcHLT[3];
+  Float_t vtxTrcESD[3];
+  Float_t vtxSPDESD[3];
+  Float_t vtxMC[3];
+  Float_t vtxTrcHLTref[3];
+  Float_t vtxTrcESDref[3];
+  //
+  Float_t dcaTrc[2];
+  Float_t dcaSA[2];
+  Float_t dcaGL[2];
   //
   Float_t spdDPhi;
   Float_t spdDTht;
@@ -73,7 +106,7 @@ TTree* trOut = 0;
 
 
 void ProcessEvent(int iev);
-void Process(const char* path);
+void Process(const char* path, int maxEv=-1);
 void ProcChunk(const char* path);
 void TestTracker(TTree* tRP, const AliESDVertex* vtx);
 void LoadClusters(TTree* tRP);
@@ -83,15 +116,16 @@ void InitOutTree(const char* fname="rcInfo.root");
 void SaveOutTree();
 void InitTracker(int runNumber);
 
-
+void CreateFakeEvent();
 
 #ifdef _TIMING_
 TProfile* hTiming[AliITSSAPTracker::kNSW];
 #endif
 
-void Process(const char* inpData)
+void Process(const char* inpData, int maxEv)
 {
   //
+  maxEvProc = maxEv;
   InitOutTree();
   TString inpDtStr = inpData;
   if (inpDtStr.EndsWith(".root") || inpDtStr.EndsWith(".zip#")) {
@@ -112,6 +146,7 @@ void Process(const char* inpData)
       inpDtStr = inpDtStr.Strip(TString::kBoth,'"');
       ProcChunk(inpDtStr.Data());
       inpDtStr.ReadLine(inpf);
+      if (maxEvProc>0 && nEvProc>=maxEvProc) break;
     }
   }
 #ifdef _CONTROLH_
@@ -167,6 +202,8 @@ void ProcChunk(const char* path)
   for (int iEv=0;iEv<runLoader->GetNumberOfEvents(); iEv++) {
     printf("ev %d\n",iEv);
     ProcessEvent(iEv);
+    nEvProc++;
+    if (maxEvProc>0 && nEvProc>=maxEvProc) break;
   }
   runLoader->UnloadRecPoints("all");
   runLoader->UnloadKinematics();
@@ -231,8 +268,8 @@ void TestTracker(TTree* tRP, const AliESDVertex* vtx)
   tracker->SetBz(esd->GetMagneticField());
   tracker->ProcessEvent();
   //
-  tracker->PrintTracklets();
-  tracker->PrintTracks();  
+  //  tracker->PrintTracklets();
+  //  tracker->PrintTracks();  
   //
   //
   //  vtx->Print();
@@ -312,11 +349,22 @@ void CheckRecStatus()
   static vector<float> spdDPhi;
   static vector<float> spdDTht;
   static vector<float> spdChi2;
+  static vector<int> refMC2Tr;
+  static vector<int> refMC2SA;
+  static vector<int> refMC2GL;
   //
   AliStack* stack = 0;
   AliRunLoader* rl = AliRunLoader::Instance();
   if (!rl || !(stack=rl->Stack())) return;
   nev++;
+  //
+  CreateFakeEvent();
+  //
+  double bz = esd->GetMagneticField();
+  AliGenEventHeader* mcGenH = rl->GetHeader()->GenEventHeader();
+  TArrayF vtmc(3);
+  mcGenH->PrimaryVertex(vtmc);
+  for (int i=3;i--;) tres.vtxMC[i] = vtmc[i];
   //
   enum {kIsPrim=AliITSSAPTracker::kNLrActive,kValidTracklet,kValidTrack,kRecDone,kBitPerTrack};
   int nTrkMC = stack->GetNtrack();
@@ -343,7 +391,9 @@ void CheckRecStatus()
   spdDPhi.resize(nTrkMC,0);
   spdDTht.resize(nTrkMC,0);
   spdChi2.resize(nTrkMC,0);
-  
+  refMC2Tr.resize(nTrkMC,0);
+  refMC2SA.resize(nTrkMC,0);
+  refMC2GL.resize(nTrkMC,0);
   //
   // fill MC track patterns
   for (int ilr=6;ilr--;) {
@@ -381,6 +431,9 @@ void CheckRecStatus()
   AliITSSAPLayer* lr0 = tracker->GetLayer(0);
   AliITSSAPLayer* lr1 = tracker->GetLayer(1);
   for (int itrm=0;itrm<nTrkMC;itrm++) {
+    refMC2Tr[itrm] = -1;
+    refMC2SA[itrm] = -1;
+    refMC2GL[itrm] = -1;
     if (ntlCorr[itrm]+ntlFake[itrm]<2) continue;
     printf("\nExtra for tr %d nC:%d nF:%d\n",itrm,ntlCorr[itrm],ntlFake[itrm]);
     //
@@ -396,8 +449,25 @@ void CheckRecStatus()
     }
   }
   //
+  tres.multSAESD = 0;
+  for (int it=esd->GetNumberOfTracks();it--;) {
+    AliESDtrack* trc = esd->GetTrack(it);
+    int lb  = trc->GetLabel();
+    int lbA = TMath::Abs(lb);
+    //
+    if (trc->IsOn(AliESDtrack::kITSpureSA) && trc->IsOn(AliESDtrack::kITSrefit)) {
+      tres.multSAESD++;
+      if (lbA<nTrkMC) refMC2SA[lbA] = it;
+    }
+    else if (trc->IsOn(AliESDtrack::kTPCrefit) && trc->IsOn(AliESDtrack::kITSrefit))  {
+      tres.multGLOESD++;
+      if (lbA<nTrkMC) refMC2GL[lbA] = it;
+    }
+  }
+  
   const AliMultiplicity* mltESD = esd->GetMultiplicity();
   nTrk = mltESD->GetNumberOfTracklets();
+  tres.multSPDESD = nTrk;
   for (int itr=0;itr<nTrk;itr++) {
     int lb0 = mltESD->GetLabel(itr,0);
     int lb1 = mltESD->GetLabel(itr,1);    
@@ -414,30 +484,153 @@ void CheckRecStatus()
     int lblA = TMath::Abs(lbl);
     if (lblA==lbl) ntrCorr[lblA]++;
     else           ntrFake[lblA]++;
+    refMC2Tr[lblA] = itr;
   }
   //
   // set reconstructability
-  for (int itr=nTrkMC;itr--;) {
+  //
+  const AliESDVertex* vtxSPD = tracker->GetSPDVertex();
+  if (vtxSPD->GetStatus()>0) {
+    tres.vtxSPD[0] = vtxSPD->GetX();
+    tres.vtxSPD[1] = vtxSPD->GetY();
+    tres.vtxSPD[2] = vtxSPD->GetZ();
+  }
+  else {
+    tres.vtxSPD[0] = -999;
+    tres.vtxSPD[1] = -999;
+    tres.vtxSPD[2] = -999;
+  }
+  tres.nvSPDHLTCont = vtxSPD->GetNContributors();
+  //
+  const AliESDVertex* vtxTRC = &tracker->GetTrackVertex();
+  if (vtxTRC->GetStatus()>0) {
+    tres.vtxTrcHLT[0] = vtxTRC->GetX();
+    tres.vtxTrcHLT[1] = vtxTRC->GetY();
+    tres.vtxTrcHLT[2] = vtxTRC->GetZ();
+  }
+  else {
+    tres.vtxTrcHLT[0] = -999;
+    tres.vtxTrcHLT[1] = -999;
+    tres.vtxTrcHLT[2] = -999;
+  }
+  tres.nvTrcHLTCont = vtxTRC->GetNContributors();
+  //
+  const AliESDVertex* vtxTRCESD = esd->GetPrimaryVertexTracks();
+  if (vtxTRCESD->GetStatus()>0) {
+    tres.vtxTrcESD[0] = vtxTRCESD->GetX();
+    tres.vtxTrcESD[1] = vtxTRCESD->GetY();
+    tres.vtxTrcESD[2] = vtxTRCESD->GetZ();
+  }
+  else {
+    tres.vtxTrcESD[0] = -999;
+    tres.vtxTrcESD[1] = -999;
+    tres.vtxTrcESD[2] = -999;
+  }
+  tres.nvTrcESDCont = vtxTRCESD->GetNContributors();
+  //
+  const AliESDVertex* vtxTRCEXT = esdF->GetPrimaryVertexTracks();
+  if (vtxTRCEXT->GetStatus()>0) {
+    tres.vtxTrcHLTref[0] = vtxTRCEXT->GetX();
+    tres.vtxTrcHLTref[1] = vtxTRCEXT->GetY();
+    tres.vtxTrcHLTref[2] = vtxTRCEXT->GetZ();
+  }
+  else {
+    tres.vtxTrcHLTref[0] = -999;
+    tres.vtxTrcHLTref[1] = -999;
+    tres.vtxTrcHLTref[2] = -999;
+  }
+  tres.nvTrcHLTrefCont = vtxTRCEXT->GetNContributors();
+  //
+  const AliESDVertex* vtxTrcESDref = esdF->GetPrimaryVertexSPD();
+  if (vtxTrcESDref->GetStatus()>0) {
+    tres.vtxTrcESDref[0] = vtxTrcESDref->GetX();
+    tres.vtxTrcESDref[1] = vtxTrcESDref->GetY();
+    tres.vtxTrcESDref[2] = vtxTrcESDref->GetZ();
+  }
+  else {
+    tres.vtxTrcESDref[0] = -999;
+    tres.vtxTrcESDref[1] = -999;
+    tres.vtxTrcESDref[2] = -999;
+  }
+  tres.nvTrcESDrefCont = vtxTrcESDref->GetNContributors();
+  //
+  //
+  const AliESDVertex* vtxSPDESD = esd->GetPrimaryVertexSPD();
+  if (vtxSPDESD->GetStatus()>0) {
+    tres.vtxSPDESD[0] = vtxSPDESD->GetX();
+    tres.vtxSPDESD[1] = vtxSPDESD->GetY();
+    tres.vtxSPDESD[2] = vtxSPDESD->GetZ();
+  }
+  else {
+    tres.vtxSPDESD[0] = -999;
+    tres.vtxSPDESD[1] = -999;
+    tres.vtxSPDESD[2] = -999;
+  }
+  tres.nvSPDESDCont = vtxSPDESD->GetNContributors();
+  //
+  tres.trId = 0;
+  tres.evID = nev;
+  tres.multSPD = tracker->GetNTracklets();
+  tres.multTrc = tracker->GetNTracks();
+  //
+  for (int itr=0;itr<nTrkMC;itr++) {
+    tres.itsPatt = 0;
     int bitoffs = itr*kBitPerTrack;
     //
-    tres.validSPD = patternMC.TestBitNumber(bitoffs+AliITSSAPTracker::kALrSPD1) && 
-      patternMC.TestBitNumber(bitoffs+AliITSSAPTracker::kALrSPD2);
+    if (patternMC.TestBitNumber(bitoffs+AliITSSAPTracker::kALrSPD1)) tres.itsPatt |= 0x1;
+    if (patternMC.TestBitNumber(bitoffs+AliITSSAPTracker::kALrSPD2)) tres.itsPatt |= 0x2;
+    tres.validSPD = tres.itsPatt == 0x3; // both spd layers
+    //
     int nmiss = 0;
-    for (int il=AliITSSAPTracker::kALrSDD1;il<=AliITSSAPTracker::kALrSSD2;il++) 
-      if (tracker->IsObligatoryLayer(il) && !patternMC.TestBitNumber(bitoffs+il)) nmiss++;
+    for (int il=AliITSSAPTracker::kALrSDD1;il<=AliITSSAPTracker::kALrSSD2;il++) {
+      Bool_t hit = patternMC.TestBitNumber(bitoffs+il);
+      if (hit) tres.itsPatt |= 0x1<<il;
+      else if (!tracker->GetSkipLayer(il)) nmiss++;
+    }
     tres.validTrc = tres.validSPD && (nmiss<=tracker->GetMaxMissedLayers());
     //
+    int trID = refMC2Tr[itr];
+    int trSA = refMC2SA[itr];
+    int trGL = refMC2GL[itr];
+    //
+    TParticle* mctr = stack->Particle(itr);
+    tres.etaMC = mctr->Eta();
     if ( !tres.validSPD && !tres.validTrc && 
 	 (ntlCorr[itr]+ntlFake[itr])==0 && 
 	 (ntrCorr[itr]+ntrFake[itr])==0 &&
-	 (mtlCorr[itr]+mtlFake[itr])==0 ) continue;
+	 (mtlCorr[itr]+mtlFake[itr])==0 &&
+	 trSA<0 && trGL<0  
+			//	 && TMath::Abs(tres.etaMC)>1.3
+   ) continue;
     //
-    TParticle* mctr = stack->Particle(itr);
+    tres.pt = -1.0;
+    tres.dcaTrc[0] = tres.dcaTrc[1] = -999;
+    if (trID>=0) {
+      //      printf("%d -> %d (of %d)\n",itr, trID,nTrk);
+      const AliITSSAPTracker::ITStrack_t &track = tracker->GetTrack(trID);
+      const AliExternalTrackParam& etp = track.paramInw;
+      tres.pt = etp.Pt();
+      etp.GetDZ(vtmc[0],vtmc[1],vtmc[2], bz, tres.dcaTrc);
+    }
+    tres.ptSA = -1.0;
+    tres.dcaSA[0] = tres.dcaSA[1] = -999;
+    if (trSA>=0) {
+      AliESDtrack* trcESD = esd->GetTrack(trSA);
+      tres.ptSA = trcESD->Pt();
+      trcESD->GetDZ(vtmc[0],vtmc[1],vtmc[2], bz, tres.dcaSA);
+    }
+    tres.ptGL = -1.0;
+    tres.dcaGL[0] = tres.dcaGL[1] = -999;
+    if (trGL>=0) {
+      AliESDtrack* trcESD = esd->GetTrack(trGL);
+      tres.ptGL = trcESD->Pt();
+      trcESD->GetDZ(vtmc[0],vtmc[1],vtmc[2], bz, tres.dcaGL);
+    }
+
     tres.isPrim = stack->IsPhysicalPrimary(itr);
     tres.pdg = mctr->GetPdgCode();
-    tres.pt =  mctr->Pt();
-    tres.eta = mctr->Eta();
-    tres.phi = mctr->Phi();
+    tres.ptMC =  mctr->Pt();
+    tres.phiMC = mctr->Phi();
     //
     tres.ntlC = ntlCorr[itr];
     tres.ntlF = ntlFake[itr];
@@ -447,15 +640,12 @@ void CheckRecStatus()
     tres.mtlC = mtlCorr[itr];
     tres.mtlF = mtlFake[itr];
     //
-    tres.evID = nev;
-    tres.mult = tracker->GetNTracklets();
-    tres.zv = tracker->GetSPDVertex()->GetZ();
-    //
     tres.spdDPhi = spdDPhi[itr];
     tres.spdDTht = spdDTht[itr];
     tres.spdChi2 = spdChi2[itr];
     //
     trOut->Fill();
+    tres.trId++;
   }
   //
 }
@@ -490,6 +680,10 @@ void InitTracker(int runNumber)
   man->SetRun(runNumber);
   tracker = new AliITSSAPTracker(); 
   tracker->Init();
+  //  tracker->SetMaxMissedLayers(2);
+  //  tracker->SetSkipLayer(2);
+  //  tracker->SetSkipLayer(3);
+  //  tracker->SetMaxMissedLayers(0);
   //
   //
 #ifdef _TIMING_
@@ -501,3 +695,81 @@ void InitTracker(int runNumber)
 #endif
   //  
 }
+
+void CreateFakeEvent()
+{
+  if (!esdF) {
+    esdF = new AliESDEvent();
+    esdF->CreateStdContent();
+  }
+  esdF->ResetStdContent();
+  AliESDRun* rn = (AliESDRun*)esdF->GetESDRun();
+  *rn = *(AliESDRun*)esd->GetESDRun();
+  AliESDHeader* hd = (AliESDHeader*)esdF->GetHeader();
+  *hd = *(AliESDHeader*)esd->GetHeader();
+  static AliESDVertex vtFake;
+  Double_t diamondxyzD[3]={esdF->GetDiamondX(),esdF->GetDiamondY(),0};    
+  Double_t diamondcovxyD[6]={1,0,1,0,0,36};
+  vtFake.SetXYZ(diamondxyzD);
+  vtFake.SetCovarianceMatrix(diamondcovxyD);
+  esdF->SetDiamond(&vtFake);
+  //
+  static AliESDtrack trESD;
+  static AliITStrackV2 trITS;
+  int nTrk = tracker->GetNTracklets(); 
+  for (int itr = nTrk;itr--;) {
+    const AliITSSAPTracker::ITStrack_t &track = tracker->GetTrack(itr);
+    if (track.paramOut.TestBit(AliITSSAPTracker::kInvalidBit) ||
+	track.paramInw.TestBit(AliITSSAPTracker::kInvalidBit)) continue;
+    trITS.AliExternalTrackParam::operator=(track.paramInw);
+    trITS.SetNumberOfClusters(track.ncl);
+    trITS.SetChi2(track.chi2);
+    trITS.SetLabel(track.label);
+    trESD.UpdateTrackParams(&trITS,AliESDtrack::kITSrefit);
+    trESD.SetFlag(AliESDtrack::kITSin | AliESDtrack::kITSout | AliESDtrack::kITSrefit);
+    esdF->AddTrack(&trESD);
+  }
+  //
+  static AliVertexerTracks* vtFinder = 0;
+  if (!vtFinder) { // create vertexer
+    vtFinder = new AliVertexerTracks(esdF->GetMagneticField());
+    AliGRPRecoParam *grpRecoParam=0x0;
+    AliCDBEntry* ent = AliCDBManager::Instance()->Get("GRP/Calib/RecoParam");
+    grpRecoParam= (AliGRPRecoParam*) ((TObjArray*)ent->GetObject())->At(1);
+    Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
+    Double_t *cutsVertexer = new Double_t[nCutsVertexer];
+    grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer,nCutsVertexer);
+    vtFinder->SetITSMode();
+    vtFinder->SetCuts(cutsVertexer,nCutsVertexer);
+    vtFinder->SetConstraintOff();
+    printf("Initialized vertexer for VertexTracks refit with field %f kG\n",esdF->GetMagneticField());
+    //
+  }
+  /*
+  const int kNCuts=21;
+  const double vtCuts[kNCuts] = 
+    {1.00e-01,1.00e-01,5.00e-01,3.00e+00,1.00e+00,3.00e+00,1.00e+02,
+     1.00e+03,3.00e+00,3.00e+01,
+     6.00e+00, // algo
+     4.00e+00,7.00e+00,1.00e+03,
+     5.00e+00,5.00e-02,1.00e-03,2.00e+00,1.00e+01,1.00e+00,5.00e+01};
+  //
+  */
+  int ntrESD = esdF->GetNumberOfTracks();
+  //  Bool_t res = AliESDUtils::RefitESDVertexTracks(esdF); //,kNCuts,vtCuts);
+  AliESDVertex* vtxNCESD = vtFinder->FindPrimaryVertex(esd);
+  if (vtxNCESD) {
+    AliESDVertex* vtspd = (AliESDVertex*)esdF->GetPrimaryVertexSPD();
+    *vtspd = *vtxNCESD;
+    delete vtxNCESD;
+  }
+  //
+  AliESDVertex* vtxNC = vtFinder->FindPrimaryVertex(esdF);
+  if (vtxNC) {
+     AliESDVertex* vttrc = (AliESDVertex*)esdF->GetPrimaryVertexTracks();
+    *vttrc = *vtxNC;
+    delete vtxNC;
+  }
+  
+}
+
