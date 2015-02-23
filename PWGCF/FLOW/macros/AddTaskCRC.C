@@ -110,7 +110,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  //   cutsRP->SetDCAToVertex2D(kTRUE);
  //   cutsRP->SetAcceptKinkDaughters(kFALSE);
  //   cutsRP->SetMinimalTPCdedx(10.);
- cutsRP->SetQA(kTRUE);
+ cutsRP->SetQA(doQA);
  
  taskFE->SetCutsRP(cutsRP);
  
@@ -129,7 +129,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  //   cutsPOI->SetDCAToVertex2D(kTRUE);
  //   cutsPOI->SetAcceptKinkDaughters(kFALSE);
  //   cutsPOI->SetMinimalTPCdedx(10.);
- cutsPOI->SetQA(kTRUE);
+ cutsPOI->SetQA(doQA);
  
  //cutsPOI->SetRequireCharge(kTRUE);
  //cutsPOI->SetMinNsigmaToVertex(4);
@@ -223,4 +223,4 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  // which will be written to the output file
  mgr->ConnectOutput(taskQC, 1, coutputQC);
  
-};
+}
