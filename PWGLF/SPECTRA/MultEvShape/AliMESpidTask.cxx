@@ -347,6 +347,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		// ---------------------------
 		// get generated multiplicity
 		valMC[0] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
+// 		valMC[0] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
 
 		// ---------------------------
 		// get pT
