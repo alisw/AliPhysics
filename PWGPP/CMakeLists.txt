@@ -270,6 +270,9 @@ install(FILES T0/AddTaskT0QA.C
 	      DESTINATION PWGPP/T0)
 install(FILES TOF/AddTaskTOFQA.C
               TOF/AddTaskTOFqaID.C
+	      TOF/trending/MakeTrendingTOFQA.C
+	      TOF/trending/DrawTrendingTOFQA.C
+	      TOF/trending/MakeTrendingTOFQAv2.C
         DESTINATION PWGPP/TOF)
 install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
 install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
