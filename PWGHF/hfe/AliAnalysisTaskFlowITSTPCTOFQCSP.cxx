@@ -22,7 +22,7 @@
 //                                                                    //
 //                                                                    //
 //  Author: Andrea Dubla (Utrecht University)                         //
-//                                                                                        //
+//                                                                    //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -217,6 +217,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,multCorrection(0)
 ,fEtaMinimumPositive(0)
 ,fEtaMinimumNegative(0)
+,fCentralityAll(0)
+,fCentFlatMine(0)
 {
     //Named constructor
     
@@ -344,6 +346,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,multCorrection(0)
 ,fEtaMinimumPositive(0)
 ,fEtaMinimumNegative(0)
+,fCentralityAll(0)
+,fCentFlatMine(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -1293,7 +1297,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     
     
     fOutputList->Add(fHistEPDistrWeight);
+
+    fCentralityAll = new TH1F("fCentralityAll", "Centrality Pass All", 101, -1, 100);
+    fOutputList->Add(fCentralityAll);
     
+
     
     PostData(1,fOutputList);
     // create and post flowevent
@@ -1375,6 +1383,8 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::CheckCentrality(AliAODEvent* event, Bool_
     // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
     if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
     fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
+    fCentralityAll->Fill(fCentrality);
+
     //   cout << "--------------Centrality evaluated-------------------------"<<endl;
     if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
     {
@@ -1425,10 +1435,20 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::CheckCentrality(AliAODEvent* event, Bool_
     }//...after CORR CUT
     //=================================All cuts are passed==================++++==================================================
     //=================================Now Centrality flattening for central trigger==================++++==================================================
-    if(fTrigger==0 || fTrigger==4){
-        if(!IsEventSelectedForCentrFlattening(fCentrality)){
-            centralitypass = kFALSE;
-            fCentralityNoPassForFlattening->Fill(fCentrality);
+    if(!fCentFlatMine){
+        if(fTrigger==0 || fTrigger==4){
+            if(!IsEventSelectedForCentrFlattening(fCentrality)){
+                centralitypass = kFALSE;
+                fCentralityNoPassForFlattening->Fill(fCentrality);
+            }
+        }
+    }
+    if(fCentFlatMine){
+        if(fTrigger==0 || fTrigger==4){
+            if(!IsEventSelectedForCentrFlattening_Bis(fCentrality)){
+                centralitypass = kFALSE;
+                fCentralityNoPassForFlattening->Fill(fCentrality);
+            }
         }
     }
     //==============================fill histo after all cuts==============================++++==================================================
@@ -1586,6 +1606,70 @@ Double_t AliAnalysisTaskFlowITSTPCTOFQCSP::GiveMeWeight(Double_t EP){
 //-------------------------------------------------
 
 
+//_____________________________________________________________________________
+void AliAnalysisTaskFlowITSTPCTOFQCSP::SetHistoForCentralityFlattening_Bis(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef){
+    // set the histo for centrality flattening
+    // the centrality is flatten in the range minCentr,maxCentr
+    // if centrRef is zero, the minimum in h within (minCentr,maxCentr) defines the reference
+    //                positive, the value of h(centrRef) defines the reference (-> the centrality distribution might be not flat in the whole desired range)
+    //                negative, h(bin with max in range)*centrRef is used to define the reference (-> defines the maximum loss of events, also in this case the distribution might be not flat)
+    // switchTRand is used to set the unerflow bin of the histo: if it is < -1 in the analysis the random event selection will be done on using TRandom
+    
+    if(maxCentr<minCentr){
+        AliWarning("AliAnalysisCheckCorrdist::Wrong centralities values while setting the histogram for centrality flattening");
+    }
+    
+    if(fHistCentrDistr)delete fHistCentrDistr;
+    fHistCentrDistr=(TH1F*)h->Clone("fHistCentrDistr");
+    Int_t minbin=fHistCentrDistr->FindBin(minCentr); // fast if fix bin width*fHistEPDistr->GetBinWidth()
+    Int_t maxbin=fHistCentrDistr->FindBin(maxCentr);//*fHistEPDistr->GetBinWidth()
+    fHistCentrDistr->GetXaxis()->SetRange(minbin,maxbin);
+    Double_t ref=0.,bincont=0.,binrefwidth=1.;
+    Int_t binref=0;
+    if(TMath::Abs(centrRef)<0.0001){
+        binref=fHistCentrDistr->GetMinimumBin();
+        binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+        ref=fHistCentrDistr->GetBinContent(binref)/binrefwidth;
+    }
+    
+    for(Int_t j=minbin;j<=maxbin;j++){// Now set the "probabilities"
+        bincont=h->GetBinContent(j);
+        fHistCentrDistr->SetBinContent(j,ref/bincont*h->GetBinWidth(j));
+        fHistCentrDistr->SetBinError(j,0./*h->GetBinError(j)*ref/bincont*/);
+    }
+    
+    return;
+    
+}
+
+//-------------------------------------------------
+Bool_t AliAnalysisTaskFlowITSTPCTOFQCSP::IsEventSelectedForCentrFlattening_Bis(Double_t centvalue){
+    //
+    //  Random event selection, based on fHistCentrDistr, to flatten the centrality distribution
+    //  Can be faster if it was required that fHistCentrDistr covers
+    //  exactly the desired centrality range (e.g. part of the lines below should be done during the
+    // setting of the histo) and TH1::SetMinimum called
+    //
+    
+    if(!fHistCentrDistr) return kTRUE;
+    
+    Int_t bin=fHistCentrDistr->FindBin(centvalue); // Fast if the histo has a fix bin
+    
+    Double_t bincont=fHistCentrDistr->GetBinContent(bin);
+    Double_t centDigits=centvalue-(Int_t)(centvalue*100.)/100.;// this is to extract a random number between 0 and 0.01
+    
+    if(fHistCentrDistr->GetBinContent(0)<-0.9999){
+        if(gRandom->Uniform(1.)<bincont)return kTRUE;
+        return kFALSE;
+    }
+    
+    //if(TMath::Abs(centDigits*100.)<bincont)return kTRUE;
+    if(centDigits*100.<bincont)return kTRUE;  // original from centrality flatt
+    
+    return kFALSE;
+    
+}
+//---------------------------------------------------------------------------
 
 //_____________________________________________________________________________
 
