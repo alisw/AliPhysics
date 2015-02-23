@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-// Analysis task for identifion PHOS cluster from Pi0 and extracting pi0-hadron correlation.
+// Analysis task for pi0-hadron correlation whis PHOS detector.
 // Author:     Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
-// 20-Sept-2014
+// 20-Feb-2015
 
 #include <Riostream.h>
 #include "THashList.h"
@@ -80,7 +80,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fPeriod("0x0"),
     fPHOSEvent(false),
     fMBEvent(false),
-    fNVtxZBins(1),
+    fNVtxZBins(5),
     fVtxEdges(10),
     fCentEdges(10),
     fCentNMixed(),
@@ -94,6 +94,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fHaveTPCRP(0),
     fRP(0.),
     fEMRPBin(0),
+    fEventPlaneMethod(""),
     fMaxAbsVertexZ(10.),
     fCentralityLowLimit(0.),
     fCentralityHightLimit(90),
@@ -163,7 +164,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fPeriod("0x0"),
     fPHOSEvent(false),
     fMBEvent(false),
-    fNVtxZBins(1),
+    fNVtxZBins(5),
     fVtxEdges(10),
     fCentEdges(10),
     fCentNMixed(),
@@ -177,6 +178,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fHaveTPCRP(0),
     fRP(0.),
     fEMRPBin(0),
+    fEventPlaneMethod(""),
     fMaxAbsVertexZ(10.),
     fCentralityLowLimit(0.),
     fCentralityHightLimit(90),
@@ -1535,27 +1537,36 @@ void AliPHOSCorrelations::EvalReactionPlane()
     // assigns: fHaveTPCRP and fRP
     // also does RP histogram fill
 
-    AliEventplane *eventPlane = fEvent->GetEventplane();
-    if( ! eventPlane ) 
-        { AliError("Event has no event plane"); return; }
-
-    Double_t reactionPlaneQ = eventPlane->GetEventplane("Q");
-
-    if(reactionPlaneQ>=999 || reactionPlaneQ < 0.)
-    { 
-        //reaction plain was not defined
-        fHaveTPCRP = kFALSE;
-    }
-    else
+    if(fEvent->GetEventplane())
     {
-        //reaction plain defined
-        fHaveTPCRP = kTRUE;
-    }
+        Float_t ep =  fEvent->GetEventplane()->GetEventplane(GetEventPlaneMethod(), fEvent);
 
-    if(fHaveTPCRP)
-        fRP = reactionPlaneQ;
-    else
-        fRP = 0.;
+        if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi()))
+        {
+            AliDebug(1,Form("Bad EP for <Q> method : %f\n",ep));
+            ep = -1000;
+        }
+        else 
+        if(GetEventPlaneMethod().Contains("V0")  )
+        {
+            if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
+            {
+                AliDebug(1,Form("Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep));
+                ep = -1000;
+            }
+
+            ep+=TMath::Pi()/2; // put same range as for <Q> method
+        }
+
+        AliDebug(3,Form("Event plane angle %f",ep));
+        
+        if(ep>=999 || ep < 0.)
+        {
+            fRP = 0.;
+        }
+        else
+            fRP = ep;
+    }
     
     FillHistogram("phiRPflat",fRP,fCentrality) ;
 }
@@ -2222,7 +2233,7 @@ void AliPHOSCorrelations::SetGeometry()
     if(!fPHOSGeo)
     {
         AliOADBContainer geomContainer("phosGeo");
-        geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+        geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
         TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
         fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
         for(Int_t mod=0; mod<5; mod++) 
@@ -2427,4 +2438,47 @@ void AliPHOSCorrelations::FillEventBiningProperties() const
             FillHistogram( "hVertexZBiningMB",    fVtxBin) ;
         }
     }
+}
+
+//_____________________________________________________________________________
+void AliPHOSCorrelations::ShowTaskInfo()
+{
+    // Show all info about task settings.
+    AliInfo("//________________________________________________");
+    AliInfo(Form("Period: %s", fPeriod.Data()));
+    
+    AliInfo("Bining:");
+    AliInfo(Form("fNVtxZBins = %i", fNVtxZBins));
+   // AliInfo(Form("fCentNMixed = %i", fCentNMixed));
+    AliInfo(Form("fNEMRPBins = %i", fNEMRPBins));
+    AliInfo(" ");
+    AliInfo(Form("fCentralityEstimator = %s", fCentralityEstimator.Data()));
+    
+    AliInfo("Global event cuts:");
+    AliInfo(Form("fMaxAbsVertexZ = %f", fMaxAbsVertexZ));
+    AliInfo(Form("fCentralityLowLimit = %f", fCentralityLowLimit));
+    AliInfo(Form("fCentralityHightLimit = %f", fCentralityHightLimit));
+    
+    AliInfo("PHOS claster cuts:");
+    AliInfo(Form("fMinClusterEnergy = %f", fMinClusterEnergy));
+    AliInfo(Form("fMinBCDistance = %f", fMinBCDistance));
+    AliInfo(Form("fMinNCells = %i", fMinNCells));
+    AliInfo(Form("fMinM02 = %f", fMinM02));
+    AliInfo(Form("fTOFCutEnabled = %i", fTOFCutEnabled));
+    AliInfo(Form("fTOFCut = %f", fTOFCut));
+    AliInfo(Form("fUseMassWindowParametrisation = %i", fUseMassWindowParametrisation));
+    AliInfo(Form("fMassInvMeanMin = %f", fMassInvMeanMin));
+    AliInfo(Form("fMassInvMeanMax = %f", fMassInvMeanMax));
+    AliInfo(Form("fNSigmaWidth = %f", fNSigmaWidth));
+    AliInfo(Form("fUseEfficiency = %i", fUseEfficiency));
+
+    AliInfo("Track cuts:");
+    AliInfo(Form("fSelectHybridTracks = %i", fSelectHybridTracks));
+    // AliInfo(Form("fTrackStatus = %f", fTrackStatus));
+    // AliInfo(Form("fTrackFilterMask = %f", fTrackFilterMask));
+    AliInfo(Form("fSelectSPDHitTracks = %i", fSelectSPDHitTracks));
+    AliInfo(Form("fSelectFractionTPCSharedClusters = %i", fSelectFractionTPCSharedClusters));
+    AliInfo(Form("fCutTPCSharedClustersFraction = %f", fCutTPCSharedClustersFraction));
+
+    AliInfo(Form("Parametrization: Maen [%f, %f], Sigma[%f, %f, %f]", fMassMean[0], fMassMean[1], fMassSigma[0], fMassSigma[1], fMassSigma[2]));
 }
