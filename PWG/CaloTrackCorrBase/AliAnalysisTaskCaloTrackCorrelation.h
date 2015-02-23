@@ -48,17 +48,27 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   
   void         SetConfigFileName(TString & name ) { fConfigName = name   ; }
   TString      GetConfigFileName()          const { return fConfigName   ; }
-	  
+
+  void         SetLastEvent(Int_t event )         { fLastEvent = event   ; }
+  Int_t        GetLastEvent()               const { return fLastEvent    ; }
+
+  
  private:
+  
   AliAnalysisTaskCaloTrackCorrelation           (const AliAnalysisTaskCaloTrackCorrelation&); // Not implemented
   AliAnalysisTaskCaloTrackCorrelation& operator=(const AliAnalysisTaskCaloTrackCorrelation&); // Not implemented
   
   AliAnaCaloTrackCorrMaker* fAna;  //  Pointer to the manager class 
+  
   TList * fOutputContainer ;       //! Histogram container
+  
   TString fConfigName ;            //  Configuration file name
+  
   TList * fCuts ;                  //! List with analysis cuts
   
-  ClassDef(AliAnalysisTaskCaloTrackCorrelation, 3); // Analysis task for standard gamma correlation analysis
+  Int_t   fLastEvent;              //! Analyze all the events until this one, for testing    
+  
+  ClassDef(AliAnalysisTaskCaloTrackCorrelation, 4); // Analysis task for standard gamma correlation analysis
 };
 
 #endif //ALIANALYSISTASKCALOTRACKCORRELATION_H
