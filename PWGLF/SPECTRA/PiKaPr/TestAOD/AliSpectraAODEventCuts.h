@@ -47,6 +47,8 @@ public:
     fMultiplicityCutMin(-999.),
     fMultiplicityCutMax(99999.),
     fRejectionFractionTPC(-999.),
+    fEtaTPCmin(-0.4),
+    fEtaTPCmax(0.4),
     fqTPC(-999.),
     fqV0C(-999.),
     fqV0A(-999.),
@@ -103,6 +105,9 @@ public:
   void  SetVertexCut(Float_t min,Float_t max)  { fVertexCutMin = min; fVertexCutMax = max; }
   void  SetMultiplicityCut(Float_t min,Float_t max)  { fMultiplicityCutMin = min; fMultiplicityCutMax = max; }
   void  SetRejectionFractionTPC(Float_t rej)  { fRejectionFractionTPC = rej; }
+  void  SetEtaTPCmin(Float_t min)  { fEtaTPCmin = min; }
+  void  SetEtaTPCmax(Float_t max)  { fEtaTPCmax = max; }
+
 
   UInt_t GetEventSelectionBit()   const           { return fSelectBit;}
   TString GetCentralityMethod()   const           { return fCentralityMethod;}
@@ -154,7 +159,7 @@ public:
   Bool_t CheckMultiplicityCut();
   Bool_t CheckQVectorCut();
   Double_t CalculateQVectorLHC10h();  //procedure to calculate the q vector for PbPb 2010
-  Double_t CalculateQVectorTPC(Double_t etaMin=-0.5,Double_t etaMax=0.5);  //procedure to calculate the q vector from TPC
+  Double_t CalculateQVectorTPC();  //procedure to calculate the q vector from TPC
   void   PrintCuts();
   Bool_t OpenInfoCalbration(Int_t run);
   Short_t  GetCentrCode(AliVEvent* ev);
@@ -204,6 +209,8 @@ private:
   Float_t         fMultiplicityCutMin;     // minimum multiplicity position
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
   Double_t       fRejectionFractionTPC;            //rejection fraction in TPC calculation, (e.g. 0.1 means that 10 % of the tracks will be rejected in the calculation)
+  Double_t       fEtaTPCmin;            //q vector in the TPC
+  Double_t       fEtaTPCmax;            //q vector in the TPC
   Double_t       fqTPC;            //q vector in the TPC
   Double_t       fqV0C;            //q vector in the VZERO-C
   Double_t       fqV0A;            //q vector in the VZERO-A
@@ -248,7 +255,7 @@ private:
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
 
-  ClassDef(AliSpectraAODEventCuts, 10);
+  ClassDef(AliSpectraAODEventCuts, 11);
 
 };
 #endif
