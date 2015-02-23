@@ -1583,8 +1583,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
       Float_t amp = cells->GetCellAmplitude(absId);
       RecalibrateCellAmplitude(amp,calo, absId);
       
-      AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy %f",
-                      calo,frac,cells->GetCellAmplitude(absId)));
+      AliDebug(2,Form("Recalibrate cell: calo <%d>, cell fraction %f, cell energy: before cal %f; after cal %f",
+                      calo,frac,cells->GetCellAmplitude(absId),amp));
       
       energy += amp*frac;
     }
