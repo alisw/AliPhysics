@@ -27,7 +27,7 @@ class AliITSSAPTracker : public TObject
   enum {kALrSPD1,kALrSPD2, kALrSDD1,kALrSDD2, kALrSSD1,kALrSSD2,kNLrActive};
   enum {kLrBeamPime, kLrSPD1,kLrSPD2, kLrShield1, kLrSDD1,kLrSDD2, kLrShield2, kLrSSD1,kLrSSD2,
 	kMaxLrITS,kNLrPassive=kMaxLrITS-kNLrActive};
-  enum {kInvalidBit=BIT(14)};
+  enum {kInvalidBit=BIT(14),kVtUsedBit=BIT(15)};
   //
   struct SPDtracklet {
   SPDtracklet() : id1(0),id2(0),label(0),dphi(0),dtht(0),chi2(0) {}
@@ -120,6 +120,10 @@ class AliITSSAPTracker : public TObject
   // methods for vertex reconstruction ------>>>
   Bool_t  FitTrackVertex();
   AliESDVertex& GetTrackVertex()      const       {return (AliESDVertex&)fTrackVertex;}
+  void      SetMaxVtxIter(Int_t n=5)              {fMaxVtxIter = n;}
+  Int_t     GetMaxVtxIter()           const       {return fMaxVtxIter;}
+  void      SetStopScaleChange(float v=0.8)       {fStopScaleChange = v;}
+  Float_t   GetStopScaleChange()           const  {return fStopScaleChange;}
   // methods for vertex reconstruction ------<<<
   //
  protected:
@@ -166,10 +170,14 @@ class AliITSSAPTracker : public TObject
   Float_t  fMSPhi[kNLrActive];                    //! dphi due to the MS for 1 GeV particle
   Float_t  fTolPhiCrude[kNLrActive];              //! tolerance in dphi for particle of unknown momentum
   Float_t  fTolZCrude[kNLrActive];                //! tolerance in Z for particle of unknown momentum
-  Float_t fMissChi2Penalty;                       //! penalize missed clusters
-  Int_t     fMaxMissedLayers;                     //! allow to miss at most this number of layers
-  Int_t     fNTracks;                             //! n found tracks
-  Int_t     fMaxTrackletsToRunTracking;           //! skip tracking if too many SPD tracklets
+  Float_t  fMissChi2Penalty;                      //! penalize missed clusters
+  Int_t    fMaxMissedLayers;                      //! allow to miss at most this number of layers
+  Int_t    fNTracks;                              //! n found tracks
+  Int_t    fMaxTrackletsToRunTracking;            //! skip tracking if too many SPD tracklets
+  //
+  Int_t    fMaxVtxIter;                           //! max number of vertexing iterations
+  Float_t  fStopScaleChange;                      //! stop vertexing if sigma scaling change is above this
+  //
   std::vector<ITStrack_t> fTracks;                //! found tracks container
   AliESDVertex fTrackVertex;                      //! fitted track vertex
   Bool_t    fFitVertex;                           //! fit vertex with tracks

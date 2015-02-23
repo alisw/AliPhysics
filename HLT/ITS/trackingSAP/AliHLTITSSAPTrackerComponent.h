@@ -148,6 +148,10 @@ private:
 
   int fMaxTrackletsToRun; // don't run tracking if Ntracklets above this value
 
+  int fMaxVtxIter;        // max iteration for vertexer
+  
+  float fStopScaleChange; // min scale change in vertexer to stop iterations
+
   AliHLTComponentBenchmark fBenchmark;// benchmark
   AliITSSAPTracker *fTracker; // the tracker itself
 

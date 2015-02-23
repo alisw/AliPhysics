@@ -65,6 +65,8 @@ AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent()
   fSkipSDD(-1),
   fMaxMissL(1),
   fMaxTrackletsToRun(-1),
+  fMaxVtxIter(-1),
+  fStopScaleChange(-1),
   fBenchmark("ITSSAPTracker"),
   fTracker(0),
   fClusters(0)
@@ -83,6 +85,8 @@ AliHLTITSSAPTrackerComponent::AliHLTITSSAPTrackerComponent( const AliHLTITSSAPTr
    fSkipSDD(-1),
    fMaxMissL(1),
    fMaxTrackletsToRun(-1),
+   fMaxVtxIter(-1),
+   fStopScaleChange(-1),
    fBenchmark("ITSSAPTracker"),
    fTracker(0),
    fClusters(0)
@@ -215,6 +219,28 @@ int AliHLTITSSAPTrackerComponent::ReadConfigurationString(  const char* argument
       if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
       fMaxTrackletsToRun = ((TObjString*)pTokens->At(i))->GetString().Atoi();
       HLTInfo("Skip tracking if N SPD tracklets > %d", fMaxTrackletsToRun);
+      continue;
+    } 
+    //
+    if (argument.CompareTo("-maxitervtx")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fMaxVtxIter = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+      if (fMaxVtxIter<1) {
+	HLTError("Incorrect maxitervtx %d supplied, ITSSAPTracker default will be used", fMaxVtxIter);
+	fMaxVtxIter = -1;
+      }
+      else HLTInfo("Allow max %d iterations for vertexer", fMaxVtxIter);
+      continue;
+    } 
+    //
+    if (argument.CompareTo("-stopscalevtx")==0) {
+      if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+      fStopScaleChange = ((TObjString*)pTokens->At(i))->GetString().Atof();
+      if (fStopScaleChange<0.3) {
+	HLTError("Incorrect stopscalevtx %.2f supplied, ITSSAPTracker default will be used", fStopScaleChange);
+	fStopScaleChange = -1;
+      }
+      else HLTInfo("Stop vertexing on scale change below %.2f", fStopScaleChange);
       continue;
     } 
     //
@@ -422,6 +448,9 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   if (skipSDD && maxMiss>1) maxMiss = 1; // there should be at least 1 hits above SPD
   fTracker->SetMaxMissedLayers(maxMiss);
 
+  if (fMaxVtxIter>0)      fTracker->SetMaxVtxIter(fMaxVtxIter);
+  if (fStopScaleChange>0) fTracker->SetStopScaleChange(fStopScaleChange);
+
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
@@ -566,6 +595,6 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   HLTInfo( "ITS SAP Tracker: output %d tracks;  input %d clusters, VertexTracks: %s",
 	   nAddedTracks, nClTotal, vtxOK ? "OK" : "Not Found" );
 
-  HLTBenchmark(fBenchmark.GetStatistics());
+  HLTInfo(fBenchmark.GetStatistics());
   return iResult;
 }
