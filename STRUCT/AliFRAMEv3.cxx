@@ -178,7 +178,7 @@ void AliFRAMEv3::CreateGeometry()
   const Float_t iFrH   =  119.00;  
   //
   // radial length of web frame elements
-  const Float_t dHz    = 113./cos10 - 0.25; // 114.74 (114.5 on drawing)
+  const Float_t dHz    = 113./cos10 - 0.3; // 114.74 (114.5 on drawing)
   // Positions of ring bars (ALIP2A_0008)
   // outer
   const Float_t dymodU[3] = {71.5, 228.5, 339.5};
@@ -327,8 +327,8 @@ void AliFRAMEv3::CreateGeometry()
    TVirtualMC::GetMC()->Gsvolu("BREF2", "BOX", kAir, pbox, 3);
    TVirtualMC::GetMC()->Gspos("BREF2", 1, "B080",  3.37 - 0.05, 0., 0., 0, "ONLY");
 
-  TVirtualMC::GetMC()->Gspos("B080", 1, "B077",  283.3, 0., 0., 0, "ONLY");
-  TVirtualMC::GetMC()->Gspos("B080", 2, "B077", -283.3, 0., 0., idrotm[2088], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B080", 1, "B077",  283.25, 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("B080", 2, "B077", -283.25, 0., 0., idrotm[2088], "ONLY");
 
    
 //
@@ -569,12 +569,12 @@ void AliFRAMEv3::CreateGeometry()
   ptrd1[1] =  (hR - longH/2. + iFrH0)  * tan10;
   ptrd1[2] =  zE;  
   ptrd1[3] =  iFrH0 / 2.;  
-  Float_t dd   = longW / 2. * cos10;
+  Float_t dd   = longW / 2. * cos10 + 0.1;
   TGeoTrd1*   shTRD1  = new TGeoTrd1("shTRD1", ptrd1[0], ptrd1[1], ptrd1[2], ptrd1[3]);
   TGeoBBox*   shBox   = new TGeoBBox("shBox", 50., zE+10., 1.);
   TGeoRotation* rot1  = new TGeoRotation("urot1", 100., 0., 90., 90.,  10., 0.);    
   TGeoRotation* rot2  = new TGeoRotation("urot2",  80., 0., 90., 90., -10., 0.);    
-  Float_t trotDz = iFrH0 / 2. - 2. * sin10 + 1.;
+  Float_t trotDz = iFrH0 / 2. + 1.;
   Float_t trotDx = 402. * tan10;
   TGeoCombiTrans* trot1    = new TGeoCombiTrans(-trotDx, 0., trotDz, rot2);
   TGeoCombiTrans* trot2    = new TGeoCombiTrans(+trotDx, 0., trotDz, rot1);
@@ -588,7 +588,7 @@ void AliFRAMEv3::CreateGeometry()
   //vertical
   Float_t rout1  = 406.0;
   // radial
-  Float_t rout2  = 412.3 - 2. * sin10;
+  Float_t rout2  = 412.3 - 2. * sin10 + 0.25;
   //
   TString module[18];
   TGeoVolume* voIF[18];
@@ -706,8 +706,8 @@ void AliFRAMEv3::CreateGeometry()
 
   dz = -iFrH0 / 2. + ringH / 2. + dext;
 
-  Float_t dz0 = -iFrH0 / 2. + longH + 113. / 2. + dext;  
-  Float_t dx0 = (hR + iFrH/2.) * tan10 - longW / 4. / cos10;
+  Float_t dz0 = -iFrH0 / 2. + longH + 113. / 2. + dext - 0.1;  
+  Float_t dx0 = (hR + iFrH/2.) * tan10 - longW / 4. * cos10 - 0.065;
   for (jmod = 0; jmod < 18; jmod++)
   {
 //
@@ -792,7 +792,7 @@ void AliFRAMEv3::CreateGeometry()
     TVirtualMC::GetMC()->Gspos("BA62", 1, "BA59", 0.25, 0.0, 0.0, 0, "ONLY");
 
     dz = -iFrH0 / 2. + longH / 2. - 1. * sin10 + dext;
-    dx = hR * tan10 - longW / 4. / cos10;
+    dx = hR * tan10 - longW / 4. * cos10 - 0.065;
     for (jmod = 0; jmod < 18; jmod++) {
       TVirtualMC::GetMC()->Gspos("BA59", 2*jmod+1, module[jmod],  dx, 0.0, dz, idrotm[2096], "ONLY");
       TVirtualMC::GetMC()->Gspos("BA59", 2*jmod+2, module[jmod], -dx, 0.0, dz, idrotm[2087], "ONLY");
@@ -837,7 +837,7 @@ void AliFRAMEv3::CreateGeometry()
    for (Int_t index = 0; index < 11; index++) {
      jmod = isec_1[index];
      Float_t dz1 =  dz + 3. + (zpos - 4.);
-     dx0 = (hR + dz0 + zpos - 4.) * tan10 - (longW / 2. + 0.2) / cos10;
+     dx0 = (hR + dz0 + zpos - 4.) * tan10 - (longW / 2. + 0.2) / cos10 - 0.05;
      if (jmod !=  5) TVirtualMC::GetMC()->Gspos("BTRDR_10", 2*jmod+1, module[jmod],   dx0,  0.0, dz1, idrotm[2096], "ONLY");
      if (jmod != 13) TVirtualMC::GetMC()->Gspos("BTRDR_10", 2*jmod+2, module[jmod],  -dx0,  0.0, dz1, idrotm[2086], "ONLY");
      dx0 -= 0.5;
