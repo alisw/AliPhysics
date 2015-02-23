@@ -124,12 +124,14 @@ public:
   virtual Double_t  GetITSsignal()       const {return 0.;}
   virtual Double_t  GetTPCsignal()       const {return 0.;}
   virtual Double_t  GetTPCsignalTunedOnData() const {return 0.;}
+  virtual void      SetTPCsignalTunedOnData(Double_t /*signal*/) {}
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTPCTgl()          const {return 0.;}
   virtual Double_t  GetTgl()             const {return 0.;}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
+  virtual void      SetTOFsignalTunedOnData(Double_t /*signal*/) {}
   virtual Double_t  GetHMPIDsignal()     const {return 0.;}
   virtual Double_t  GetTRDsignal()       const {return 0.;}
   virtual UChar_t GetTRDNchamberdEdx() const {return 0;}

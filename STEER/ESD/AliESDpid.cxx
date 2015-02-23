@@ -71,13 +71,13 @@ Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t /*timeZeroT
 }
 //_________________________________________________________________________
 Float_t AliESDpid::GetTPCsignalTunedOnData(const AliVTrack *t) const {
-    AliESDtrack *track = (AliESDtrack *) t;
-    Float_t dedx = track->GetTPCsignalTunedOnData();
+//    AliESDtrack *track = (AliESDtrack *) t;
+    Float_t dedx = t->GetTPCsignalTunedOnData();
 
     if(dedx > 0) return dedx;
 
     dedx = t->GetTPCsignal();
-    track->SetTPCsignalTunedOnData(dedx);
+    ((AliVTrack*)t)->SetTPCsignalTunedOnData(dedx);
     if(dedx < 20) return dedx;
 
     AliPID::EParticleType type = AliPID::kPion;
@@ -125,9 +125,9 @@ Float_t AliESDpid::GetTPCsignalTunedOnData(const AliVTrack *t) const {
 	    
 	    if(kGood){
         //TODO maybe introduce different dEdxSources?
-        Double_t bethe = fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
+        Double_t bethe = fTPCResponse.GetExpectedSignal(t, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
                                                         this->UseTPCMultiplicityCorrection());
-        Double_t sigma = fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
+        Double_t sigma = fTPCResponse.GetExpectedSigma(t, type, AliTPCPIDResponse::kdEdxDefault, this->UseTPCEtaCorrection(),
                                                        this->UseTPCMultiplicityCorrection());
 		dedx = gRandom->Gaus(bethe,sigma);
 // 		if(iS == AliPID::ParticleCode(AliPID::kHe3) || iS == AliPID::ParticleCode(AliPID::kAlpha)) dedx *= 5;
@@ -135,13 +135,13 @@ Float_t AliESDpid::GetTPCsignalTunedOnData(const AliVTrack *t) const {
 	}
     }
 
-    track->SetTPCsignalTunedOnData(dedx);
+    ((AliVTrack*)t)->SetTPCsignalTunedOnData(dedx);
     return dedx;
 }
 //_________________________________________________________________________
 Float_t AliESDpid::GetTOFsignalTunedOnData(const AliVTrack *t) const {
-    AliESDtrack *track = (AliESDtrack *) t;
-    Double_t tofSignal = track->GetTOFsignalTunedOnData();
+//    AliESDtrack *track = (AliESDtrack *) t;
+    Double_t tofSignal = t->GetTOFsignalTunedOnData();
 
     if(tofSignal <  99999) return (Float_t)tofSignal; // it has been already set
     // read additional mismatch fraction
@@ -153,7 +153,7 @@ Float_t AliESDpid::GetTOFsignalTunedOnData(const AliVTrack *t) const {
     }
 
     tofSignal = t->GetTOFsignal() + fTOFResponse.GetTailRandomValue(t->Pt(),t->Eta(),t->GetTOFsignal(),addmism);
-    track->SetTOFsignalTunedOnData(tofSignal);
+    ((AliVTrack*)t)->SetTOFsignalTunedOnData(tofSignal);
     return (Float_t)tofSignal;
 }
 //_________________________________________________________________________
