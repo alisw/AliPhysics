@@ -86,8 +86,12 @@ public:
     
     void                                 SetEtaMinPos(Double_t minetapos){fEtaMinimumPositive = minetapos;}
     void                                 SetEtaMinNeg(Double_t minetaneg){fEtaMinimumNegative = minetaneg;}
-    
-    
+
+    void                                 SetHistoForCentralityFlattening_Bis(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef);
+    Bool_t                               IsEventSelectedForCentrFlattening_Bis(Double_t centvalue);
+
+    void                                 SetCentralityMine(Bool_t CentFlatMine){fCentFlatMine = CentFlatMine;}
+
     AliHFEpid *GetPID() const { return fPID; };
     
 private:
@@ -206,6 +210,8 @@ private:
     Bool_t                multCorrection;//Flag to activate mult/etacorrection
     Double_t              fEtaMinimumPositive;//for reso
     Double_t              fEtaMinimumNegative;//for reso
+    TH1F                 *fCentralityAll;//!centall
+    Bool_t               fCentFlatMine; //for purity evaluation
 
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented

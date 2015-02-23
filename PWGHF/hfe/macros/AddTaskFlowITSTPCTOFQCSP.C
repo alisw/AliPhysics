@@ -16,6 +16,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                            TString uniqueID = "",
                                                            Float_t centrMin ,
                                                            Float_t centrMax ,
+                                                           Bool_t CentFlatMine,
                                                            Double_t InvmassCut,
                                                            Int_t Trigger,
                                                            Bool_t multCorrcut,
@@ -52,10 +53,10 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                            Bool_t shrinkSP = kTRUE,
                                                            Bool_t debug = kFALSE,
                                                            Int_t RPFilterBit = 1
-                                                           //Bool_t op_ang = kFALSE
-                                                           //Int_t Vz = 10,
-                                                           //Double_t op_angle_cut = 3.
-                                                           )
+//Bool_t op_ang = kFALSE
+//Int_t Vz = 10,
+//Double_t op_angle_cut = 3.
+)
 
 {
     
@@ -89,18 +90,32 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     
     
     TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root";
-    if(Trigger==0 || Trigger==4){
-        TFile *fFlat=TFile::Open(histoflatname.Data());
-        TCanvas *c=fFlat->Get("cintegral");
-        TH1F *hfl=(TH1F*)c->FindObject("hint");
-        taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
+    TString histoflatnameMine = "alien:///alice/cern.ch/user/a/adubla/CentFlat010_Smart.root";
+    
+    if(!CentFlatMine){
+        if(Trigger==0 || Trigger==4){
+            TFile *fFlat=TFile::Open(histoflatname.Data());
+            TCanvas *c=fFlat->Get("cintegral");
+            TH1F *hfl=(TH1F*)c->FindObject("hint");
+            taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
+        }
     }
+    if(CentFlatMine){
+        if(Trigger==0 || Trigger==4){
+            TFile *fFlat=TFile::Open(histoflatnameMine.Data());
+            TCanvas *c=fFlat->Get("CentFlat_mine");
+            TH1F *hfl=(TH1F*)c->FindObject("cent");
+            taskHFE->SetHistoForCentralityFlattening_Bis(hfl,centrMin,centrMax,0);
+        }
+    }
+    taskHFE->SetCentralityMine(CentFlatMine);
+
     
     TString histoflatnameEP;
-   if(centrMax == 10.) histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
-   if(centrMax == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero05_Smart.root";
-   if(centrMin == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero510_Smart.root";
-
+    if(centrMax == 10.) histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
+    if(centrMax == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero05_Smart.root";
+    if(centrMin == 5.)  histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero510_Smart.root";
+    
     
     if(Weight){
         TFile *fFlatEP=TFile::Open(histoflatnameEP,"READ");

@@ -16,6 +16,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           TString uniqueID = "",
                                                           Float_t centrMin ,
                                                           Float_t centrMax ,
+                                                          Bool_t CentFlatMine,
                                                           Double_t InvmassCut,
                                                           Double_t pTCut,
                                                           Int_t Trigger,
@@ -51,11 +52,11 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
                                                           Bool_t shrinkSP = kTRUE,
                                                           Bool_t debug = kFALSE,
                                                           Int_t RPFilterBit = 1,
-                                                          //Bool_t purity = kTRUE,
-                                                          //Bool_t op_ang = kFALSE,
-                                                          //Double_t op_angle_cut=3.
-                                                          )
+                                                        //Bool_t purity = kTRUE,
+                                                        //Bool_t op_ang = kFALSE,
+                                                        //Double_t op_angle_cut=3.
 
+                                                        )
 {
     
     
@@ -88,13 +89,27 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     
     
     TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root";
+    TString histoflatnameMine = "alien:///alice/cern.ch/user/a/adubla/CentFlat010_Smart.root";
+
+
+    if(!CentFlatMine){
     if(Trigger==0 || Trigger==4){
         TFile *fFlat=TFile::Open(histoflatname.Data());
         TCanvas *c=fFlat->Get("cintegral");
         TH1F *hfl=(TH1F*)c->FindObject("hint");
         taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
     }
-    
+    }
+    if(CentFlatMine){
+    if(Trigger==0 || Trigger==4){
+        TFile *fFlat=TFile::Open(histoflatnameMine.Data());
+        TCanvas *c=fFlat->Get("CentFlat_mine");
+        TH1F *hfl=(TH1F*)c->FindObject("cent");
+        taskHFE->SetHistoForCentralityFlattening_Bis(hfl,centrMin,centrMax,0);
+    }
+    }
+    taskHFE->SetCentralityMine(CentFlatMine);
+
     
     TString histoflatnameEP;
     if(centrMax == 10.) histoflatnameEP = "alien:///alice/cern.ch/user/a/adubla/EPVZero010_Smart.root";
@@ -127,7 +142,7 @@ AliAnalysisTaskFlowTPCEMCalQCSP*  AddTaskFlowTPCEMCalQCSP(
     taskHFE->SetPtMinAssoCut(ptminassocut);
     taskHFE->SetEtaMinPos(etaminpos); //0.2
     taskHFE->SetEtaMinNeg(etaminneg);//-0.2
-
+    
     
     //set RP cuts for flow package analysis
     cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
