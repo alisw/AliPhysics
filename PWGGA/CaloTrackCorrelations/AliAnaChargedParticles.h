@@ -56,6 +56,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtCutDCA;                        //! pT distribution, Apply DCA cut
   TH1F * fhPtCutDCABCOK;                    //! pT distribution, Apply DCA cut, BC=0 or -100
 
+  TH1F * fhPtNotPrimary;                    //! pT spectra of tracks not declared as primary (AOD)
+  TH1F * fhPtNotSharedClusterCut;           //! pT spectra of tracks not passing the shared clusters cut (AOD)
+  
   TH1F * fhPtPileUp[7];                     //! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //! phi distribution vs pT, negative
   TH2F * fhEtaNeg;                          //! eta distribution vs pT, negative
