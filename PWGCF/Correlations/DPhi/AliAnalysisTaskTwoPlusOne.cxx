@@ -249,8 +249,8 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 
       //background same from mixed comb
       if(fUseBackgroundSameFromMixedComb){
-	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0, kFALSE, kTRUE);
-	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0, kFALSE, kTRUE);
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kTRUE);
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kTRUE);
       }
     }
     
