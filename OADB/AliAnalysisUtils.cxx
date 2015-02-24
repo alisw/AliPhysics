@@ -82,7 +82,7 @@ Bool_t AliAnalysisUtils::IsVertexSelected2013pA(AliVEvent *event)
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return accept;
+  if (vtxTyp.Contains("vertexer: Z") && (zRes>0.25)) return accept;
   if (fCutOnZVertexSPD && TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return accept;
 
   if (TMath::Abs(zvtx) > fMaxVtxZ) return accept;
