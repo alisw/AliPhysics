@@ -48,6 +48,7 @@ class AliTriggerRunScalers;
 class AliCTPTimeParams;
 class AliAnalysisManager;
 class AliRecoInputHandler;
+class THashList;
 
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
