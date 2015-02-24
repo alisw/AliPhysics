@@ -176,7 +176,9 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fPionPionK3; //!
     //
     TH2D *fBuild; //!
+    TH2D *fCumulantBuild; //!
     TH2D *fBuildNeg; //!
+    TH2D *fCumulantBuildNeg; //!
     TH2D *fBuildErr; //!
   };
   struct St7 {

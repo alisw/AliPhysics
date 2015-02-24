@@ -1462,10 +1462,20 @@ void AliFourPion::UserCreateOutputObjects()
 		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuild = new TH2D(nameBuild->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
 		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuild);
 		//
+		TString *nameCumulantBuild=new TString(namePC3->Data());
+		nameCumulantBuild->Append("_CumulantBuild");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuild = new TH2D(nameCumulantBuild->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuild);
+		//
 		TString *nameBuildNeg=new TString(namePC3->Data());
 		nameBuildNeg->Append("_BuildNeg");
 		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuildNeg = new TH2D(nameBuildNeg->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
 		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuildNeg);
+		//
+		TString *nameCumulantBuildNeg=new TString(namePC3->Data());
+		nameCumulantBuildNeg->Append("_CumulantBuildNeg");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuildNeg = new TH2D(nameCumulantBuildNeg->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuildNeg);
 		//
 		TString *nameBuildErr=new TString(namePC3->Data());
 		nameBuildErr->Append("_BuildErr");
@@ -1742,7 +1752,13 @@ void AliFourPion::UserCreateOutputObjects()
 
   TH2D *fLowPtDist = new TH2D("fLowPtDist","",fMbins,.5,fMbins+.5, 500,0.5,500.5);
   fOutputList->Add(fLowPtDist);
-  
+  TH3D *fPtMultCrossing1 = new TH3D("fPtMultCrossing1","",fMbins,.5,fMbins+.5, 500,0.5,500.5, 500,0.5,500.5);
+  TH3D *fPtMultCrossing2 = new TH3D("fPtMultCrossing2","",fMbins,.5,fMbins+.5, 500,0.5,500.5, 500,0.5,500.5);
+  TH3D *fPtMultCrossing3 = new TH3D("fPtMultCrossing3","",fMbins,.5,fMbins+.5, 500,0.5,500.5, 500,0.5,500.5);
+  fOutputList->Add(fPtMultCrossing1);
+  fOutputList->Add(fPtMultCrossing2);
+  fOutputList->Add(fPtMultCrossing3);
+
   TH2D *fcumulant2INT = new TH2D("fcumulant2INT","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
   TH2D *fcumulant2DIFF = new TH2D("fcumulant2DIFF","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
   TH2D *fcumulant2EN = new TH2D("fcumulant2EN","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
@@ -2306,7 +2322,7 @@ void AliFourPion::UserExec(Option_t *)
     if(fChargeSelection && fTempStruct[i].fCharge !=-1) continue;
 
     if(fTempStruct[i].fPt < 0.25) qindex=0;// was 0.28
-    else if(fTempStruct[i].fPt < 0.4) qindex=1;
+    else if(fTempStruct[i].fPt < 0.35) qindex=1;// was 0.4
     else if(fTempStruct[i].fPt < 0.5) qindex=2;
     else qindex=3;
     
@@ -2327,7 +2343,9 @@ void AliFourPion::UserExec(Option_t *)
     Psi2[i] = fabs(Psi2[i]);// 0 to +PI/2
   }
   ((TH2D*)fOutputList->FindObject("fLowPtDist"))->Fill(fMbin+1, Mq[fq2Index]);
-  
+  ((TH3D*)fOutputList->FindObject("fPtMultCrossing1"))->Fill(fMbin+1, Mq[0], Mq[2]);
+  ((TH3D*)fOutputList->FindObject("fPtMultCrossing2"))->Fill(fMbin+1, Mq[1], Mq[2]);
+  ((TH3D*)fOutputList->FindObject("fPtMultCrossing3"))->Fill(fMbin+1, Mq[2], Mq[3]);
   //
   if(fq2Binning){// bin in q2
     if(qVect2[fq2Index] < fq2CutLow) fEDbin = 0;
@@ -2346,9 +2364,14 @@ void AliFourPion::UserExec(Option_t *)
   }
   //
   if(fLowMultBinning){
-    Float_t meanLowPtMult = 170. - 25.*fMbin;// approximate mean values vs. fMbin
+    Float_t HighPtMult_L = 300 - 55*fMbin;// approximate binning for 0.35-0.5 counting interval
+    Float_t HighPtMult_H = 330 - 55*fMbin;
+    ////////////////////////////////////////////////////////
+    if(Mq[2] < HighPtMult_L || Mq[2] > HighPtMult_H) return;// remove event completely 
+    ////////////////////////////////////////////////////////
+    Float_t meanLowPtMult[10] ={175, 147, 125, 103, 86, 71, 58, 48, 38, 30};// was 170. - 25.*fMbin;// approximate mean values vs. fMbin
     //Float_t sigmaLowPtMult = 0.1*meanLowPtMult;// approximate sigma values
-    if(Mq[fq2Index] < meanLowPtMult) fEDbin=0;
+    if(Mq[fq2Index] < meanLowPtMult[fMbin]) fEDbin=0;
     else fEDbin = 1;
     //
     mixingEDbin = fEDbin;
@@ -3225,11 +3248,14 @@ void AliFourPion::UserExec(Option_t *)
 			}
 			weightTotal = 2*G*(1-G)*(T12*t12 + T13*t13 + T23*t23) + pow(1-G,2)*(T12*T12 + T13*T13 + T23*T23);
 			weightTotal += 2*G*pow(1-G,2)*(T12*T13*t23 + T12*T23*t13 + T13*T23*t12) + 2*pow(1-G,3)*T12*T13*T23;
-			
+			weightCumulant = 2*G*pow(1-G,2)*(T12*T13*t23 + T12*T23*t13 + T13*T23*t12) + 2*pow(1-G,3)*T12*T13*T23;
+
 			if(Positive1stTripletWeights){
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fBuild->Fill(FillBin, q3, weightTotal);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fCumulantBuild->Fill(FillBin, q3, weightCumulant);
 			}else{
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fBuildNeg->Fill(FillBin, q3, weightTotal);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fCumulantBuildNeg->Fill(FillBin, q3, weightCumulant);
 			}
 		      }
 		    }
