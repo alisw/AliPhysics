@@ -48,4 +48,5 @@
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
+#pragma link C++ class AliAnalysisTaskNucleiYield+;
 #endif
