@@ -194,9 +194,6 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
   }
 
   Double_t phi = vp->Phi();
-  if(phi<fParticleMinPhi)      phi+=fPhiOffset;
-  else if(phi>fParticleMaxPhi) phi-=fPhiOffset;
-
   if (vp->Eta() < fParticleMinEta || vp->Eta() > fParticleMaxEta || 
       phi < fParticleMinPhi       || phi > fParticleMaxPhi) {
     fRejectionReason |= kAcceptanceCut;
