@@ -31,6 +31,7 @@ set(SRCS
     AliFITv0.cxx
     AliFITv1.cxx
     AliFITv2.cxx
+    AliFITv3.cxx
    )
 
 # Headers from sources
