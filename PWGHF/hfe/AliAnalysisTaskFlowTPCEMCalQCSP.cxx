@@ -1584,8 +1584,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SetHistoForCentralityFlattening_Bis(TH1F *
     
     if(fHistCentrDistr)delete fHistCentrDistr;
     fHistCentrDistr=(TH1F*)h->Clone("fHistCentrDistr");
-    Int_t minbin=fHistCentrDistr->FindBin(minCentr); // fast if fix bin width*fHistEPDistr->GetBinWidth()
-    Int_t maxbin=fHistCentrDistr->FindBin(maxCentr);//*fHistEPDistr->GetBinWidth()
+    Int_t minbin=fHistCentrDistr->FindBin(minCentr*1.00001); // fast if fix bin width
+    Int_t maxbin=fHistCentrDistr->FindBin(maxCentr*0.9999);
     fHistCentrDistr->GetXaxis()->SetRange(minbin,maxbin);
     Double_t ref=0.,bincont=0.,binrefwidth=1.;
     Int_t binref=0;
