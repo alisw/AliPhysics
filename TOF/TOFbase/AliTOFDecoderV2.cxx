@@ -285,7 +285,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//check decode status
 	if ( decoderStatus != DRM_HEADER_STATUS ){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global header (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global header (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	  fDecoderSummaryData->SetErrorDetected(kTRUE);
 	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -385,7 +385,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//check decode status
 	if ( decoderStatus != LTM_HEADER_STATUS ){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected LTM global header (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected LTM global header (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	  fDecoderSummaryData->SetErrorDetected(kTRUE);
 	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -486,7 +486,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//check decode status
 	if ( decoderStatus != TRM_HEADER_STATUS ){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM global header (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM global header (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	  fDecoderSummaryData->SetErrorDetected(kTRUE);
 	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -532,7 +532,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	
       default:
 	if (fLogErrors)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID in global header (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID in global header (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  //try to recover error
@@ -575,7 +575,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//check decode status
 	if ( decoderStatus != DRM_TRAILER_STATUS ){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global trailer (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	  fDecoderSummaryData->SetErrorDetected(kTRUE);
 	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -620,7 +620,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
    	//check decode status
 	if ( decoderStatus != LTM_TRAILER_STATUS ){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected LTM global trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected LTM global trailer (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	  fDecoderSummaryData->SetErrorDetected(kTRUE);
 	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -665,7 +665,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	//check decode status
 	if ( decoderStatus != TRM_TRAILER_STATUS ){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM global trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM global trailer (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	  fDecoderSummaryData->SetErrorDetected(kTRUE);
 	  fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -707,7 +707,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
 	if (fDecoderSummaryData->GetRecoveringError())
 	  continue;
 	if (fLogErrors)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID/pattern in global trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID/pattern in global trailer (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -731,7 +731,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //check decode status
       if ( decoderStatus != CHAIN_A_HEADER_STATUS  && !fDecoderSummaryData->GetRecoveringError() ){
 	if (fLogErrors)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain A header (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain A header (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -794,7 +794,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //check decode status
       if ( decoderStatus != CHAIN_A_TRAILER_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain A trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain A trailer (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -836,7 +836,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //check decode status
       if ( decoderStatus != CHAIN_B_HEADER_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain B header (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain B header (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -899,7 +899,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //check decode status
       if ( decoderStatus != CHAIN_B_TRAILER_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain B trailer (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain B trailer (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
@@ -941,7 +941,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //check decode status
       if ( decoderStatus != TRM_ERROR_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
 	if (fLogErrors)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected ERROR word (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected ERROR word (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	errorWarning++;
@@ -979,7 +979,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       //check decode status
       if ( decoderStatus != CHAIN_A_TDCERROR_STATUS && decoderStatus != CHAIN_B_TDCERROR_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
 	if (fLogErrors)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TDC error (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TDC error (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	errorWarning++;
@@ -1032,7 +1032,7 @@ AliTOFDecoderV2::Decode(UInt_t *rawData, UInt_t nWords)
       if ( decoderStatus != CHAIN_A_TDC_HIT_STATUS &&
 	   decoderStatus != CHAIN_B_TDC_HIT_STATUS  && !fDecoderSummaryData->GetRecoveringError()){
 	  if (fLogErrors)
-	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected or unknown word (curslot=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID()));
+	    AliError(Form("  %02x - 0x%08x [ERROR] Unexpected or unknown word (curslot=%d, eqID=%d)",decoderStatus,*rawData,fDecoderSummaryData->GetCurrentSlotID(), fEquipmentID));
 	fDecoderSummaryData->SetErrorDetected(kTRUE);
 	fDecoderSummaryData->SetErrorSlotID(fDecoderSummaryData->GetCurrentSlotID());
 	  errorWarning++;
