@@ -56,6 +56,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fAlpha(0.2),
   fUseLeadingPt(1),
   fUseAllT1(1),
+  fUseBackgroundSameOneSide(0),
   fUseBackgroundSameFromMixedComb(0)
 {
 
@@ -90,6 +91,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fHistos->GetData()->SetTrackEtaCut(fTrackEtaCut);
   fHistos->SetUseLeadingPt(fUseLeadingPt);
   fHistos->SetUseAllT1(fUseAllT1);
+  fHistos->SetUseBackgroundSameOneSide(fUseBackgroundSameOneSide);
 
   fListOfHistos->Add(fHistos);
 
