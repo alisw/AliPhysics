@@ -1535,7 +1535,7 @@ int AliHLTGlobalTriggerComponent::UnloadTriggerClass(const char* filename)
   HLTDebug("Unloading HLT trigger class in file '%s'.", filename);
   
   TString compiler = gSystem->GetBuildCompilerVersion();
-  if (fRuntimeCompile && (compiler.Contains("gcc") or compiler.Contains("icc")))
+  if (fRuntimeCompile)
   {
     // Generate the library name.
     TString libname = filename;
