@@ -63,7 +63,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   //  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   //train::::::::::::::::::::::::::::<
-  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral);// | AliVEvent::kSemiCentral);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -75,7 +75,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lmlist010"  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lm0010",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
