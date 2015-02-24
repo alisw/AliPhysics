@@ -57,10 +57,10 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
   //local------>
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
+  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
   //local------<
   //train::::::::::::::::::::::::::::>
- ///////////////////////////new   -- AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   //train::::::::::::::::::::::::::::<
   //10-90% only two triggers: SemiCentral and MB
@@ -78,7 +78,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lmlist090",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lm1090",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
