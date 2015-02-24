@@ -29,7 +29,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarTest
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
-   TString     outNameSuffix = ""
+   TString     outNameSuffix = "",
+   TString     optSys = "Default"
 )
 {  
   //
@@ -121,14 +122,15 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarTest
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    if(!isMC){
-     //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarTest.C");
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarTest.C");
-     if (!ConfigTPCanalysisKStarTest(task, isMC, isPP, "", cutsPair, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly)) return 0x0;
+     //gROOT->LoadMacro("ConfigTPCanalysisKStarTest.C");
+     if (!ConfigTPCanalysisKStarTest(task, isMC, isPP, "", cutsPair, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,313,optSys.Data())) return 0x0;
    }
    else {
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarTest.C");
-     if (!ConfigTPCanalysisKStarTest(task, isMC, isPP, "Part", cutsPair, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313)) return 0x0; //K*
-     if (!ConfigTPCanalysisKStarTest(task, isMC, isPP, "AntiPart", cutsPair, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313)) return 0x0; //anti-K* 
+     //gROOT->LoadMacro("ConfigTPCanalysisKStarTest.C");
+     if (!ConfigTPCanalysisKStarTest(task, isMC, isPP, "Part", cutsPair, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313,optSys.Data())) return 0x0; //K*
+     if (!ConfigTPCanalysisKStarTest(task, isMC, isPP, "AntiPart", cutsPair, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313,optSys.Data())) return 0x0; //anti-K* 
    }
    
    

@@ -22,7 +22,8 @@ Bool_t ConfigTPCanalysisKStarTest
     Float_t                nsigmaKa = 2.0,
     Bool_t                 enableMonitor = kTRUE,
     Bool_t                 IsMcTrueOnly = kFALSE,
-    Int_t                  Pdg = 313
+    Int_t                  Pdg = 313,
+    TString                optSys = "Default"
    )
 {
   // manage suffix
@@ -41,34 +42,11 @@ Bool_t ConfigTPCanalysisKStarTest
 
   AliRsnCutTrackQuality *fQualityTrackCut = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
 
-  //
-  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
-
-  Int_t clusterCut = 1;
-  Bool_t selPrimaries = kTRUE;  
-  if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(50);
-  else if (clusterCut == 1) {
-    esdTrackCuts->SetMinNCrossedRowsTPC(70);
-    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  }
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  // ITS
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kAny);
-  if(selPrimaries) {
-    // 7*(0.0015+0.0050/pt^1.1)
-    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-  }
-  esdTrackCuts->SetMaxDCAToVertexZ(2);
-  esdTrackCuts->SetDCAToVertex2D(kFALSE);
-  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  esdTrackCuts->SetMaxChi2PerClusterITS(36);
-
+  //Analysis Track cuts are implemented here
+  AliESDtrackCuts * esdTrackCuts = MyTrackCuts(1, kTRUE,optSys.Data());
   fQualityTrackCut->SetESDtrackCuts(esdTrackCuts);
+  fQualityTrackCut->SetPtRange(0.15,30);
+  fQualityTrackCut->SetEtaRange(-0.8,0.8); 
 
   //PID selection
   cutSetKaon->AddCut(fQualityTrackCut);
@@ -78,8 +56,6 @@ Bool_t ConfigTPCanalysisKStarTest
   cutSetPion->AddCut(fQualityTrackCut);
   if (!schemePi.IsNull()) schemePi += "&";
   schemePi += fQualityTrackCut->GetName(); 
-
-
 
   AliRsnCutPIDNSigma *cutPiTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCPi",AliPID::kPion,AliRsnCutPIDNSigma::kTPC);
   cutPiTPC->SinglePIDRange(nsigmaPi);
@@ -194,4 +170,96 @@ Bool_t ConfigTPCanalysisKStarTest
     //outm->AddAxis(yID, 32, -0.8, 0.8);
   }
   return kTRUE;
+}
+
+AliESDtrackCuts* MyTrackCuts(Int_t clusterCut = 1,  Bool_t selPrimaries = kTRUE, TString optSyt="Default")
+{
+  Double_t  dcaxymax                  = 2.0;
+  TString   PtDcaFormula              = "0.0105+0.0350/pt^1.1";//7sigma
+  Double_t  dcazmax                   = 2.0;
+  Double_t  minNcls                   = 50;
+  Double_t  maxX2TPCcls               = 4.0;
+  Double_t  maxX2ITScls               = 36.0;
+  Double_t  minCrossedRows            = 70.0;
+  Double_t  minRatioClsCrRowsOverFCls = 0.8;
+  
+  if(optSyt.Contains("PtDCAXY5s")) {PtDcaFormula = "0.0075+0.025/pt^1.1";}
+  if(optSyt.Contains("PtDCAXY6s")) {PtDcaFormula = "0.0090+0.030/pt^1.1";}
+  if(optSyt.Contains("PtDCAXY7s")) {PtDcaFormula = "0.0105+0.035/pt^1.1";}//Defult
+  if(optSyt.Contains("PtDCAXY8s")) {PtDcaFormula = "0.0120+0.040/pt^1.1";}
+  if(optSyt.Contains("PtDCAXY9s")) {PtDcaFormula = "0.0135+0.045/pt^1.1";}
+
+  if(optSyt.Contains("FixDCAZ1")) {dcazmax = 1.;}
+  if(optSyt.Contains("FixDCAZ2")) {dcazmax = 2.;}//Defult
+  if(optSyt.Contains("FixDCAZ3")) {dcazmax = 3.;}
+  
+  if(optSyt.Contains("NCrRows60")){minCrossedRows = 60;}
+  if(optSyt.Contains("NCrRows70")){minCrossedRows = 70;}//Defult
+  if(optSyt.Contains("NCrRows80")){minCrossedRows = 80;}
+  if(optSyt.Contains("NCrRows90")){minCrossedRows = 90;}
+
+  if(optSyt.Contains("RClsCrRowsOvFCls0.7")){minRatioClsCrRowsOverFCls = 0.7;}
+  if(optSyt.Contains("RClsCrRowsOvFCls0.8")){minRatioClsCrRowsOverFCls = 0.8;}//Defult
+  if(optSyt.Contains("RClsCrRowsOvFCls0.9")){minRatioClsCrRowsOverFCls = 0.9;}
+
+  if(optSyt.Contains("ChiSqrPerTPCCls3")) {maxX2TPCcls = 3.0;}
+  if(optSyt.Contains("ChiSqrPerTPCCls4")) {maxX2TPCcls = 4.0;}//Defult
+  if(optSyt.Contains("ChiSqrPerTPCCls5")) {maxX2TPCcls = 5.0;}
+
+  if(optSyt.Contains("ChiSqrPerITSCls30")) {maxX2ITScls = 30.0;}
+  if(optSyt.Contains("ChiSqrPerITSCls36")) {maxX2ITScls = 36.0;}//Defult
+  if(optSyt.Contains("ChiSqrPerITSCls45")) {maxX2ITScls = 45.0;}
+  
+
+
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  if(optSyt.Contains("Default")){
+    ::Info("Config KSTAR ", Form("Default 2011 ESD track cuts used : %s\n",optSyt.Data()));
+    if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(50);
+    else if (clusterCut == 1) {
+      esdTrackCuts->SetMinNCrossedRowsTPC(70);
+      esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    }
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    // ITS
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					   AliESDtrackCuts::kAny);
+    if(selPrimaries) {
+      // 7*(0.0015+0.0050/pt^1.1)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+      esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+    }
+    esdTrackCuts->SetMaxDCAToVertexZ(2);
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else{
+    ::Info("Config KSTAR ", Form("User Defined ESD track cuts used for Sys : %s\n",optSyt.Data()));
+    if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(minNcls);
+    else if (clusterCut == 1) {
+      esdTrackCuts->SetMinNCrossedRowsTPC(minCrossedRows);
+      esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioClsCrRowsOverFCls);
+    }
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxX2TPCcls);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    // ITS
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					   AliESDtrackCuts::kAny);
+    if(selPrimaries) {
+      // 7*(0.0015+0.0050/pt^1.1)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep(PtDcaFormula.Data());
+      esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+    }
+    esdTrackCuts->SetMaxDCAToVertexZ(dcazmax);
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxChi2PerClusterITS(maxX2ITScls);
+  }
+  return esdTrackCuts;
 }
