@@ -932,7 +932,13 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         AliError("Pointer == 0, this can not happen!");
         return;
     }
-
+    
+    // Check if Event is selected (for triggers)
+    if (IsEventSelected() == kFALSE)
+    {
+        return;
+    }
+    
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(fEvent);
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
     
