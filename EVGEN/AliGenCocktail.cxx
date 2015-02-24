@@ -47,7 +47,8 @@ AliGenCocktail::AliGenCocktail()
      fEntries(0),
      flnk1(0),
      flnk2(0), 
-     fHeader(0)
+     fHeader(0),
+     fSeed(0)
 {
 // Constructor
     fName = "Cocktail";
