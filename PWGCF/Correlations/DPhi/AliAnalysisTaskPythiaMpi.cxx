@@ -20,17 +20,25 @@
  **************************************************************************/
 
 #include "TChain.h"
+#include "TH3.h"
+#include "TProfile.h"
 
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
 #include "AliVEvent.h"
+#include "AliVHeader.h"
+#include "AliHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliAnalysisTaskPythiaMpi.h"
 #include "AliGenEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliVParticle.h"
 #include "AliPythia.h"
 #include "AliPythia8.h"
+//#include "AliAnalysisHelperJetTasks.h"
+#include <typeinfo>
 
 using namespace std;
 
@@ -114,9 +122,8 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
  
   TH1I *fHistEvents = new TH1I("fHistNEvents","fHistNEvents",2,0,2);
   fHistEvents->GetXaxis()->SetBinLabel(1,"All events");
-  fHistEvents->GetXaxis()->SetBinLabel(2,"Events with |zVtx|<10cm");
 
-  TH1F *fHistPt = new TH1F("fHistPt","p_{T} distribution",15,0.2,5.0);
+  TH1F *fHistPt = new TH1F("fHistPt","p_{T} distribution",15,0.15,10.0);
   fHistPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPt->GetYaxis()->SetTitle("dN/dp_{T} (GeV/c^{-1})");
   fHistPt->SetMarkerStyle(kFullCircle);
@@ -139,11 +146,24 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   TH2F *fHistdNdetaMpi = new TH2F("fHistdNdetaMpi","dN/d#etadMPIs",100,-0.5,99.5,100,-5,5);
   fHistdNdetaMpi->GetXaxis()->SetTitle("#MPIs");
   fHistdNdetaMpi->GetYaxis()->SetTitle("#eta");
-  //fHistdNdetaMpi->SetMarkerStyle();
 
-  TH2F *fHistPtMpi = new TH2F("fHistPtMpi","fHistPtMpi",100,-0.5,99.5,15,0.2,5.0);
+  TH2F *fHistPtMpi = new TH2F("fHistPtMpi","fHistPtMpi",100,-0.5,99.5,15,0.15,10.0);
   fHistPtMpi->GetXaxis()->SetTitle("#MPIs");
   fHistPtMpi->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+
+  TProfile* fProfileMpiPt = new TProfile("fProfileMpiPt","fProfileMpiPt",100,-0.5,99.5,0.15,10.);
+  fProfileMpiPt->GetXaxis()->SetTitle("#MPIs");
+  fProfileMpiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+
+  TProfile* fProfilePtMpi = new TProfile("fProfilePtMpi","fProfilePtMpi",15,0.15,10.,-0.5,99.5);
+  fProfilePtMpi->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fProfilePtMpi->GetYaxis()->SetTitle("#MPIs");
+
+  TH3F *fHistTracks = new TH3F("fHistTracks","fHistTracks",20,-1.,1.,15,0.15,10.0,100,-0.5,99.5);
+  fHistTracks->GetXaxis()->SetTitle("#eta");
+  fHistTracks->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistTracks->GetZaxis()->SetTitle("#MPIs");
+
 
   fOutputList->Add(fHistEvents);
   fOutputList->Add(fHistPt);
@@ -152,6 +172,9 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fOutputList->Add(fHistMultMpi);
   fOutputList->Add(fHistdNdetaMpi);
   fOutputList->Add(fHistPtMpi);
+  fOutputList->Add(fProfileMpiPt);
+  fOutputList->Add(fProfilePtMpi);
+  fOutputList->Add(fHistTracks);
 
   PostData(1,fOutputList);
 
@@ -196,8 +219,18 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
    TH1I* fHistEvents = (TH1I*) fOutputList->FindObject("fHistNEvents");
    fHistEvents->Fill(0.5);
 
+  
+
    if(fMcHandler){
       fMcEvent = fMcHandler->MCEvent(); 
+
+      AliGenEventHeader *fMcHeader = (fMcEvent->GenEventHeader());
+      if(!fMcHeader) Printf("fMcHeader NULL!");
+
+      AliGenPythiaEventHeader *fMcPythiaHeader = dynamic_cast <AliGenPythiaEventHeader*> (fMcHeader);
+      if(!fMcPythiaHeader) Printf("fMcPythiaHeader NULL!");
+      //Printf("PROCESS: %d",(fMcPythiaHeader->ProcessType()));
+
    }else{
       if(fDebug > 1) printf("AnalysisTaskPythiaMpi::Handler() fMcHandler=NULL\n");
       return;
@@ -207,10 +240,6 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
       return;
    }
 
-   const AliVVertex *vtxMC = fMcEvent->GetPrimaryVertex();
-   Float_t zVtx = vtxMC->GetZ();
-   if(TMath::Abs(zVtx)<10) fHistEvents->Fill(1.5);
-   else return;
 
    Printf("MC particles: %d",fMCEvent->GetNumberOfTracks());
 
@@ -228,6 +257,9 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
    TH1F* fHistEta = (TH1F*) fOutputList->FindObject("fHistEta");
    TH2F* fHistdNdetaMpi = (TH2F*) fOutputList->FindObject("fHistdNdetaMpi");
    TH2F* fHistPtMpi = (TH2F*) fOutputList->FindObject("fHistPtMpi");
+   TProfile* fProfileMpiPt = (TProfile*) fOutputList->FindObject("fProfileMpiPt");
+   TProfile* fProfilePtMpi = (TProfile*) fOutputList->FindObject("fProfilePtMpi");
+   TH3F* fHistTracks = (TH3F*) fOutputList->FindObject("fHistTracks");
 
    for(Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++){
      AliVParticle* track = fMCEvent->GetTrack(iTracks);
@@ -241,6 +273,10 @@ void AliAnalysisTaskPythiaMpi::UserExec(Option_t*)
 
      fHistdNdetaMpi->Fill(Nmpi,track->Eta());
      fHistPtMpi->Fill(Nmpi,track->Pt());
+     fProfileMpiPt->Fill(Nmpi,track->Pt());
+     fProfilePtMpi->Fill(track->Pt(),Nmpi);
+
+     fHistTracks->Fill(track->Eta(),track->Pt(),Nmpi);
    }
    
    PostData(1, fOutputList);
