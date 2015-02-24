@@ -32,7 +32,7 @@ class AliGenEvtGen : public AliGenerator {
   void SetForceDecay(Decay_t decay = kAll) {fForceDecay = decay;} //set a decay mode
   Bool_t SetUserDecayTable(Char_t *path);
   void SetParticleSwitchedOff(DecayOff_t decay) {fSwitchOff = decay;} //set particles to be decayed by EvtGen
-  
+  void SetSeed(UInt_t /*seed*/) {;}
   protected:
   Int_t GetFlavour(Int_t pdgCode); 
   

@@ -65,6 +65,7 @@ public:
     double RandomMass(Double_t mh);
     Int_t VirtualGammaPairProduction(TClonesArray *particles, Int_t nPart);
     Int_t ForceGammaConversion(TClonesArray *particles, Int_t nPart);
+    virtual void SetSeed(UInt_t /*seed*/) {;}
   
 protected:
     Double_t (*fPtParaFunc)(const Double_t*, const Double_t*); //! Pointer to Pt parametrisation function

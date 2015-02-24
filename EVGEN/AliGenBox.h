@@ -26,6 +26,7 @@ class AliGenBox : public AliGenerator
       {SetBit(kEtaRange);fEtaMin = etamin; fEtaMax = etamax;}
   virtual void SetPart(Int_t part) {fIpart=part;}
   virtual void SetParticleType(Int_t part) {SetPart(part);}
+  virtual void SetSeed(UInt_t /*seed*/) {;}
 protected:
 
   Int_t fIpart; // Particle type
