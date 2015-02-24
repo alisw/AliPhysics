@@ -55,6 +55,7 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fAlpha(alpha),
   fUseLeadingPt(1),
   fUseAllT1(1),
+  fUseBackgroundSameOneSide(0),
   fMergeCount(0)
 {
   // Constructor
@@ -178,7 +179,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 
   //in case of the computation of the background in the same event there are two possible positions: delta phi = +/- pi/2
   //both positions are used so the results could only be weighted with 0.5*weight
-  if(isBackgroundSame)
+  if(isBackgroundSame && !fUseBackgroundSameOneSide)
      fAlpha*= 0.5;
 
   for (Int_t i=0; i<triggerNear->GetEntriesFast(); i++){
@@ -259,11 +260,15 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
 	  //shift defined area of delta phi
 	  if(dphi_triggers>TMath::Pi()) dphi_triggers -= TMath::TwoPi();
 	
-	  //look at delta phi = +/- pi/2
-	  if(dphi_triggers<0)
-	    dphi_triggers += 0.5*TMath::Pi();
-	  else if(dphi_triggers>0)
+	  if(!fUseBackgroundSameOneSide){
+	    //look at delta phi = +/- pi/2
+	    if(dphi_triggers<0)
+	      dphi_triggers += 0.5*TMath::Pi();
+	    else if(dphi_triggers>0)
+	      dphi_triggers -= 0.5*TMath::Pi();
+	  }else if(fUseBackgroundSameOneSide){
 	    dphi_triggers -= 0.5*TMath::Pi();
+	  }
 	}
 	if(TMath::Abs(dphi_triggers)>fAlpha)
 	  continue;
@@ -429,7 +434,7 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   }//end loop to search for the first trigger particle
 
   //put fAlpha back on the old value in case this is for background same
-  if(isBackgroundSame)
+  if(isBackgroundSame && !fUseBackgroundSameOneSide)
      fAlpha*= 2;
 }
 
