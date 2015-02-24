@@ -31,7 +31,7 @@ class AliGenCocktail : public AliGenerator
     virtual void SetVertexSmear(VertexSmear_t smear);
     virtual void SetRandomise(Bool_t flag) {fSRandom = flag;}
     virtual void UsePerEventRates() {fUsePerEventRate  = kTRUE;}
-	    
+    virtual void SetSeed(UInt_t seed) {fSeed = seed;}
     //
     // Add a new generator to the list
     virtual void AddGenerator
@@ -54,7 +54,7 @@ class AliGenCocktail : public AliGenerator
     TObjLink *flnk1;                    // ! Iterator for first generator
     TObjLink *flnk2;                    // ! Iterator for second generator
     AliGenCocktailEventHeader* fHeader; // !Header container  
-			   
+    UInt_t fSeed;                       // !Seed
 //
  private:
     AliGenCocktail(const AliGenCocktail &cocktail);
