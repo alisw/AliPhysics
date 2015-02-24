@@ -71,7 +71,8 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     isMC = kTRUE;
     includeNoITS = kTRUE;
   } else if (runPeriod.Contains(":")) {
-    TObjArray *arr = runPeriod.Tokenize(":");
+    TString runPeriodToken(runperiod);
+    TObjArray *arr = runPeriodToken.Tokenize(":");
     TString arg1(arr->At(0)->GetName());
     TString arg2("-1");
     if (arr->GetEntries()>1)
