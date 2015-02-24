@@ -22,6 +22,7 @@
 class AliEventInfo : public TObject {
 
  public:
+  enum {kBeamTrigBit=BIT(14),kCosmicBit=BIT(15),kLaserBit=BIT(16)};
   AliEventInfo();
   AliEventInfo(UInt_t evType,
 	       const char *classes,
@@ -37,7 +38,7 @@ class AliEventInfo : public TObject {
   void SetTriggerCluster(const char *cluster) { fTriggerCluster = cluster; }
   void SetHLTDecision(const char *decision) { fHLTDecision = decision; }
 
-  virtual void Print(Option_t */*option=""*/) const { Dump(); }
+  //  virtual void Print(Option_t */*option=""*/) const { Dump(); }
 
   UInt_t      GetEventType() const { return fEventType; }
   const char *GetTriggerClasses() const { return fTriggerClasses.Data(); }
@@ -49,7 +50,16 @@ class AliEventInfo : public TObject {
   AliEventInfo(const AliEventInfo &evInfo);
   AliEventInfo& operator= (const AliEventInfo& evInfo);
 
+  Bool_t  HasBeamTrigger()                      const {return TestBit(kBeamTrigBit);}
+  Bool_t  HasCosmicTrigger()                    const {return TestBit(kCosmicBit);}
+  Bool_t  HasCalibLaserTrigger()                const {return TestBit(kLaserBit);}
+  void    SetBeamTrigger(Bool_t v=kTRUE)              {SetBit(kBeamTrigBit,v);}
+  void    SetCosmicTrigger(Bool_t v=kTRUE)            {SetBit(kCosmicBit,v);}
+  void    SetCalibLaserTrigger(Bool_t v=kTRUE)        {SetBit(kLaserBit,v);}
+
   void Reset();
+
+  void Print(Option_t* opt=0) const;
 
  private:
 

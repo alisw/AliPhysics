@@ -74,6 +74,12 @@ public:
   void           SetOption(const char* detector, const char* option);
   void           SetRecoParam(const char* detector, AliDetectorRecoParam *par);
 
+  void           SetCosmicAlias(const char* nm="kCosmic") {fCosmicAlias = nm;}
+  void           SetLaserAlias(const char* nm="kCalibLaser") {fLaserAlias = nm;}
+
+  TString&       GetCosmicAlias() const {return (TString&)fCosmicAlias;}
+  TString&       GetLaserAlias()  const {return (TString&)fLaserAlias;}
+
   void           SetRunLocalReconstruction(const char* detectors) {
     fRunLocalReconstruction = detectors;};
   void           SetRunTracking(const char* detectors) {
@@ -272,7 +278,8 @@ private:
 
   Bool_t         InitRecoParams(); // init the array with the reconstruciton parameters
   Bool_t         GetEventInfo();   // fill the event info inside the event loop
-
+  void           ProcessTriggerAliases();
+  Bool_t         TriggerMatches2Alias(const char* trigName, const char* alias);
   const char    *MatchDetectorList(const char *detectorList, UInt_t detectorMask);
 
   //*** Global reconstruction flags *******************
@@ -295,7 +302,10 @@ private:
   Float_t        fV0CsPmin;      // min. allowed cosine of V0 pointing angle 
   Float_t        fDmax;          // max. allowed transverse impact parameter 
   Float_t        fZmax;          // max. allowed longitudinal impact parameter 
-
+  
+  TString        fCosmicAlias;        // alias for cosmic triggers
+  TString        fLaserAlias;         // alias for laser triggers
+  //
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
@@ -337,7 +347,8 @@ private:
   AliESDVertex*  fDiamondProfileSPD;       // (x,y) diamond profile from SPD for AliITSVertexer3D(Z)
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks (ITS+TPC)
   AliESDVertex*  fDiamondProfileTPC;       // (x,y) diamond profile from TPC for AliVertexerTracks
-  THashTable*    fListOfCosmicTriggers;    // list of cosmic triggers as defined by trigger coordination
+  THashTable*    fListOfCosmicTriggers;    // list of cosmic triggers as defined by trigger coordination (RS for BWD comp)
+  THashList*     fAlias2Trigger;          // list of aliases with string of triggers per alias
 
   AliGRPObject*  fGRPData;              // Data from the GRP/GRP/Data CDB folder
 

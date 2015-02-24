@@ -192,8 +192,7 @@ void  AliRecoParam::Print(Option_t *option) const {
   }
 }
 
-void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo,
-	const THashTable *cosmicTriggersList)
+void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo, const THashTable *cosmicTriggersList)
 {
     // Implemented according to the discussions
     // and meetings with physics and trigger coordination
@@ -238,39 +237,43 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
     // Now we look into the trigger type in order to decide
     // on the remaining cases (cosmic event within LHC run,
     // calibration, for example TPC laser, triggers within physics run
-    TString triggerClasses = evInfo.GetTriggerClasses();
-    TObjArray* trClassArray = triggerClasses.Tokenize(" ");
-    Int_t nTrClasses = trClassArray->GetEntriesFast();
-    Bool_t cosmicTrigger = kFALSE,
-	   calibTrigger = kFALSE,
-	   otherTrigger = kFALSE;
-    for( Int_t i=0; i<nTrClasses; ++i ) {
+    //
+    Bool_t cosmicTrigger = evInfo.HasCosmicTrigger();
+    Bool_t calibTrigger = evInfo.HasCalibLaserTrigger();
+    Bool_t otherTrigger = evInfo.HasBeamTrigger();
+    // 
+    // -------------------------------------------------------------- >>
+    // for BWD compatibility, preserve also old way of checking
+    if (!cosmicTrigger && !calibTrigger) { // not set via alias
+      TString triggerClasses = evInfo.GetTriggerClasses();
+      TObjArray* trClassArray = triggerClasses.Tokenize(" ");
+      Int_t nTrClasses = trClassArray->GetEntriesFast();
+      for( Int_t i=0; i<nTrClasses; ++i ) {
 	TString trClass = ((TObjString*)trClassArray->At(i))->String();
-
-	if (trClass.BeginsWith("C0L")) {
-	    // Calibration triggers always start with C0L
-	    calibTrigger = kTRUE;
-	    continue;
+	if (trClass.BeginsWith("C0L")) { // Calibration triggers always start with C0L
+	  calibTrigger = kTRUE;
+	  continue;
 	}
-
+	//
 	if (cosmicTriggersList) {
-	    if (cosmicTriggersList->FindObject(trClass.Data())) {
-		// Cosmic trigger accorind to the table
-		// provided in OCDB
-		cosmicTrigger = kTRUE;
-		AliDebug(1,Form("Trigger %s identified as cosmic according to the list defined in OCDB.",
-			    trClass.Data()));
-		continue;
-	    }
+	  if (cosmicTriggersList->FindObject(trClass.Data())) {
+	    // Cosmic trigger accorind to the table provided in OCDB
+	    cosmicTrigger = kTRUE;
+	    AliDebug(1,Form("Trigger %s identified as cosmic according to the list defined in OCDB.",trClass.Data()));
+	    continue;
+	  }
 	}
 	else {
-	    AliDebug(1,"Cosmic trigger list is not provided, cosmic event specie is effectively disabled!");
+	  AliDebug(1,"Cosmic trigger list is not provided, cosmic event specie is effectively disabled!");
 	}
-
+      //
 	otherTrigger = kTRUE;
+      }
+      delete trClassArray;
+      //
     }
-    delete trClassArray;
-
+    // -------------------------------------------------------------- <<
+    //
     if (calibTrigger) {
 	fEventSpecie = kCalib;
 	return;

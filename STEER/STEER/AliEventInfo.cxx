@@ -100,4 +100,21 @@ void AliEventInfo::Reset()
   fTriggerMask = 0;
   fTriggerCluster = "";
   fHLTDecision = "";
+  ResetBit(0xffffffff);
+}
+
+//______________________________________________________________________________
+void AliEventInfo::Print(Option_t* ) const
+{
+  // print itself
+  printf("EventInfo for EventType:\t%d Cosmic:%s Laser:%s Other:%s\n",
+	 fEventType,
+	 HasCosmicTrigger() ? "ON":"OFF",
+	 HasCalibLaserTrigger() ? "ON":"OFF",
+	 HasBeamTrigger() ? "ON":"OFF");
+  //
+  printf("fTriggerMask/fTriggerMaskNext50:\t%#llx/%#llx\n",fTriggerMask,fTriggerMaskNext50);
+  printf("TriggerCluster:\t%s\n",fTriggerCluster.Data());
+  printf("TriggerClasses:\t%s\n",fTriggerClasses.Data());
+  printf("HLT desicion  :\t%s\n",fHLTDecision.Data());  
 }

@@ -43,8 +43,7 @@ class AliRecoParam : public TObject
 
   virtual void                  Print(Option_t *option="") const;
   const TObjArray              *GetDetRecoParamArray(Int_t iDet) const { return fDetRecoParams[iDet]; }
-  void                          SetEventSpecie(const AliRunInfo*runInfo, const AliEventInfo &evInfo,
-					       const THashTable*cosmicTriggersList);
+  void                          SetEventSpecie(const AliRunInfo*runInfo, const AliEventInfo &evInfo,const THashTable *cosmicTriggersList=0);
   EventSpecie_t                 GetEventSpecie() const { return fEventSpecie; }
   static const char*            GetEventSpecieName(EventSpecie_t es);
   static const char*            GetEventSpecieName(Int_t esIndex);
