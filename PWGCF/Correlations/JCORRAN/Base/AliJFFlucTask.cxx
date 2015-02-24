@@ -139,6 +139,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 	// load current event and save track, event info 
 	AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 
+	if(!IsGoodEvent( currentEvent )) return; // zBin is set there
+
 	ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 	fCent = 		ReadAODCentrality( currentEvent, "V0M"  ) ; 
 
@@ -170,72 +172,82 @@ void AliJFFlucTask::Init()
 
 	// Intialisation of parameters
 	AliInfo("Doing initialization") ; 
-//
+	//
 }
 //______________________________________________________________________________
 void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 {
-		//aod->Print();
+	//aod->Print();
 	if( IsMC == kTRUE ){  // how to get a flag to check  MC or not ! 
 
 		TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
-		
+
 		Int_t nt = mcArray->GetEntriesFast();
 		Int_t ntrack =0;
 		for( int it=0; it< nt ; it++){
-				AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
-				if(!track) { Error("ReadEventAODMC", "Could not receive particle %d",(int) it); continue; };
-				if( track->IsPhysicalPrimary() ){
-						// insert eta cut here // 
-						double track_abs_eta = TMath::Abs( track->Eta() );
-						//if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
-								//if( track->Pt() < 0.2 || track->Pt() > 5 ) continue ; // test pt cut
-								Int_t pdg = track->GetPdgCode();
-								Char_t ch = (Char_t) track->Charge();
-								Int_t label = track->GetLabel();
-								AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
-								itrack->SetLabel( label );
-								itrack->SetParticleType( pdg);
-								itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
-								itrack->SetCharge(ch) ;
-						//}; no eta cut in task file
-				}
+			AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
+			if(!track) { Error("ReadEventAODMC", "Could not receive particle %d",(int) it); continue; };
+			if( track->IsPhysicalPrimary() ){
+				// insert eta cut here // 
+				double track_abs_eta = TMath::Abs( track->Eta() );
+				//if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
+				//if( track->Pt() < 0.2 || track->Pt() > 5 ) continue ; // test pt cut
+				Int_t pdg = track->GetPdgCode();
+				Char_t ch = (Char_t) track->Charge();
+				Int_t label = track->GetLabel();
+				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
+				itrack->SetLabel( label );
+				itrack->SetParticleType( pdg);
+				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
+				itrack->SetCharge(ch) ;
+				//}; no eta cut in task file
+			}
 		}
 	} // read mc track done.
 	else if( IsMC == kFALSE){
 		Int_t nt = aod->GetNumberOfTracks();
 		Int_t ntrack =0;
 		for( int it=0; it<nt ; it++){
-				AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
-				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
-				if(track->TestFilterBit( fFilterBit )){ // hybrid cut
-//						double track_abs_eta = TMath::Abs( track->Eta() );
-//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
-								AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack; 
-								//itrack->SetID( track->GetID() );
-								itrack->SetID( TrackList->GetEntriesFast() ) ;
-								itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
-								itrack->SetParticleType(kJHadron);
-								itrack->SetCharge(track->Charge() );
-								itrack->SetStatus(track->GetStatus() );
-//						} no eta cut in task file
-				}
+			AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+			if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
+			if(track->TestFilterBit( fFilterBit )){ // hybrid cut
+				//						double track_abs_eta = TMath::Abs( track->Eta() );
+				//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
+				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack; 
+				//itrack->SetID( track->GetID() );
+				itrack->SetID( TrackList->GetEntriesFast() ) ;
+				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
+				itrack->SetParticleType(kJHadron);
+				itrack->SetCharge(track->Charge() );
+				itrack->SetStatus(track->GetStatus() );
+				//						} no eta cut in task file
+			}
 		}
 	} //read aod reco track done.
 }
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
-	Bool_t Trigger_kCentral = kFALSE; // init
-	Trigger_kCentral =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-->IsEventSelected() & AliVEvent::kCentral);
-	return Trigger_kCentral;
+	// check reconstructed vertex
+	int ncontributors = 0;
+	Bool_t goodRecVertex = kFALSE;
+	const AliVVertex *vtx = event->GetPrimaryVertex();
+	if(vtx){
+		ncontributors = vtx->GetNContributors();
+		if(ncontributors > 0){
+			double zVert = vtx->GetZ();
+			if(TMath::Abs(zVert)<10.0) {
+				goodRecVertex = kTRUE;
+			}
+		}
+	}
+	return goodRecVertex;
 }
 //
 //______________________________________________________________________________
 void AliJFFlucTask::Terminate(Option_t *)
 {
-//    fFFlucAna->Terminate("");
+	//    fFFlucAna->Terminate("");
 	// Processing when the event loop is ended
 	cout<<"AliJFFlucTask Analysis DONE !!"<<endl; 
 }
