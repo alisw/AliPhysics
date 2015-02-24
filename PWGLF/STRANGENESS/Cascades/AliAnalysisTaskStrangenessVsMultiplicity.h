@@ -54,6 +54,7 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+  Bool_t   IsINELgtZERO(AliESDEvent *lESDevent, TString lType) const; 
 
   void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) { fkSaveV0Tree        = lSaveV0s;        }
   void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) { fkSaveCascadeTree   = lSaveCascades;   }
@@ -139,15 +140,17 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Bool_t fEvSel_IsNotPileupMV;            //!
   Bool_t fEvSel_IsNotPileupInMultBins;    //!
   Bool_t fEvSel_Triggered;                //!
+  Bool_t fEvSel_INELgtZERO;               //!
+  Bool_t fEvSel_INELgtZEROtracklets;      //!
     
   //Other Selections: more dedicated filtering to be studied!
-  Int_t fEvSel_nTracklets;              //!
-  Int_t fEvSel_nSPDClusters;            //!
+  Int_t   fEvSel_nTracklets;              //!
+  Int_t   fEvSel_nSPDClusters;            //!
   Float_t fEvSel_VtxZ; //! the actual value
-  Int_t fEvSel_nSPDPrimVertices; //! pileup vertices
+  Int_t   fEvSel_nSPDPrimVertices; //! pileup vertices
   Float_t fEvSel_distZ; //! distance between largest vertices
-  Int_t fEvSel_nContributors; //!
-  Int_t fEvSel_nContributorsPileup; //! 
+  Int_t   fEvSel_nContributors; //!
+  Int_t   fEvSel_nContributorsPileup; //! 
   
 //===========================================================================================
 //   Variables for V0 Tree

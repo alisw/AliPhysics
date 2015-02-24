@@ -54,6 +54,9 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+  //Bool_t   IsINELgtZERO          (AliESDEvent *lESDevent) const; 
+  //Bool_t   IsINELgtZEROPrimOnly  (AliESDEvent *lESDevent, AliStack *lStack) const; 
+  //Bool_t   IsINELgtZEROGenerator (AliStack *lStack) const; 
 
   void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) { fkSaveV0Tree        = lSaveV0s;        }
   void SetSaveCascades           (Bool_t lSaveCascades   = kTRUE ) { fkSaveCascadeTree   = lSaveCascades;   }
