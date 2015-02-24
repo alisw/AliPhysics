@@ -169,7 +169,7 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   // see header file for function documentation
   if (!ctpString) return -EINVAL;
 
-  HLTImportant("Parameter: %s", ctpString);
+  HLTDebug("Parameter: %s", ctpString);
 
   fMask=0;
   fClassIds.Delete();
