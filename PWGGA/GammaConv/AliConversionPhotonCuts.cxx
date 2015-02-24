@@ -2274,6 +2274,9 @@ Bool_t AliConversionPhotonCuts::SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut)
 	case 5:  // 7. GeV
 		fPIDMaxPnSigmaAbovePionLine=7.;
 		break;
+	case 6:  // 2. GeV
+		fPIDMaxPnSigmaAbovePionLine=2.;
+		break;
 	default:
 		AliError(Form("piMaxMomdedxSigmaCut not defined %d",piMaxMomdedxSigmaCut));
 		return kFALSE;
