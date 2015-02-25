@@ -1,3 +1,16 @@
+/*
+TPC DA for online calibration
+
+Contact: Haavard.Helstrup@cern.ch
+Link:
+Run Type: PEDESTAL
+DA Type: LDC
+Number of events needed: 100
+Input Files:
+Output Files: tpcPedestal.root, to be exported to the DAQ FXS
+fileId:   pedestals
+Trigger types used: CALIBRATION_EVENT
+*/
 /// \file TPCPEDESTALda.cxx
 ///
 /// TPC DA for online calibration

@@ -1,3 +1,16 @@
+/*
+TPC DA for online calibration
+
+Contact: Jens.Wiechula@cern.ch
+Link:
+Run Type: PHYSICS STANDALONE
+DA Type: MON
+Number of events needed: 200
+Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
+Output Files: tpcCalibRaw.root, to be exported to the DAQ FXS
+fileId:   tpcCalibRaw
+Trigger types used: PHYSICS_EVENT
+*/
 /// \file TPCRAWda.cxx
 /// \brief calibration algorithm for L1 phase monitoring and drift velocity from last time bin determination
 /// 

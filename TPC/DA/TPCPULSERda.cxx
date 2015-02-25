@@ -1,3 +1,16 @@
+/*
+TPC DA for online calibration
+
+Contact: Haavard.Helstrup@cern.ch
+Link:
+Run Type: CALIBRATION_PULSER
+DA Type: LDC
+Number of events needed: 100
+Input Files: 
+Output Files: tpcPulser.root, to be exported to the DAQ FXS
+fileId:   pulser
+Trigger types used: CALIBRATION_EVENT
+*/
 /// \file TPCPULSERda.cxx
 /// \brief TPC DA for online calibration
 /// 

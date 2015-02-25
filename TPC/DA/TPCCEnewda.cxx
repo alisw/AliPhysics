@@ -1,3 +1,16 @@
+/*
+TPC DA for online calibration
+
+Contact: Haavard.Helstrup@cern.ch
+Link:
+Run Type: PHYSICS STANDALONE DAQ
+DA Type: MON
+Number of events needed: 500
+Input Files: 
+Output Files: tpcCE.root, to be exported to the DAQ FXS
+fileId:   CEnew
+Trigger types used: PHYSICS_EVENT
+*/
 /// \class TPCCEnewda
 /// \brief TPC DA for online calibration
 ///
