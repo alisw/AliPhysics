@@ -329,29 +329,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
     fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0AccPhi) ;
-    
-    fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
-                                         nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
-                                         nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
-    fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
-    outputContainer->Add(fhPrimPi0PtCentrality) ;
-    outputContainer->Add(fhPrimPi0AccPtCentrality) ;
-    
-    fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
-                                         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
-                                         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-    fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
-    outputContainer->Add(fhPrimPi0PtEventPlane) ;
-    outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
-    
+        
     //Eta
     
     fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",nptbins,ptmin,ptmax) ;
@@ -403,23 +381,49 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaAccPhi) ;
     
-    fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
-    fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
-    outputContainer->Add(fhPrimEtaPtCentrality) ;
-    outputContainer->Add(fhPrimEtaAccPtCentrality) ;
-    
-    fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-    fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
-    outputContainer->Add(fhPrimEtaPtEventPlane) ;
-    outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+    // Create histograms only for PbPb or high multiplicity analysis analysis
+    if( IsHighMultiplicityAnalysisOn() )
+    {
+      fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
+      fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
+      outputContainer->Add(fhPrimPi0PtCentrality) ;
+      outputContainer->Add(fhPrimPi0AccPtCentrality) ;
+      
+      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
+      fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
+      outputContainer->Add(fhPrimEtaPtCentrality) ;
+      outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+      
+      fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
+                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
+      fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+      outputContainer->Add(fhPrimPi0PtEventPlane) ;
+      outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+      
+      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
+      fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+      outputContainer->Add(fhPrimEtaPtEventPlane) ;
+      outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+    }
     
     if(fFillAngleHisto)
     {
@@ -931,7 +935,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhEventMixBin) ;
   }
   
-  if(GetNCentrBin()>1)
+  if( IsHighMultiplicityAnalysisOn() )
   {
     fhCentrality=new TH1F("hCentralityBin","Number of events in centrality bin",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentrality->SetXTitle("Centrality bin");
@@ -940,10 +944,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhCentralityNoPair=new TH1F("hCentralityBinNoPair","Number of events in centrality bin, with no cluster pairs",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentralityNoPair->SetXTitle("Centrality bin");
     outputContainer->Add(fhCentralityNoPair) ;
-  }
-  
-  if(GetNRPBin() > 1 && GetNCentrBin()>1 )
-  {
+    
     fhEventPlaneResolution=new TH2F("hEventPlaneResolution","Event plane resolution",GetNCentrBin(),0,GetNCentrBin(),100,0.,TMath::TwoPi()) ;
     fhEventPlaneResolution->SetYTitle("Resolution");
     fhEventPlaneResolution->SetXTitle("Centrality Bin");
@@ -1429,9 +1430,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimPi0Pt ->Fill(mesonPt) ;
         fhPrimPi0Phi->Fill(mesonPt, mesonPhi) ;
         
-        fhPrimPi0YetaYcut    ->Fill(mesonPt,mesonYeta) ;
-        fhPrimPi0PtCentrality->Fill(mesonPt,cen) ;
-        fhPrimPi0PtEventPlane->Fill(mesonPt,ep ) ;
+        fhPrimPi0YetaYcut->Fill(mesonPt,mesonYeta) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimPi0PtCentrality->Fill(mesonPt,cen) ;
+          fhPrimPi0PtEventPlane->Fill(mesonPt,ep ) ;
+        }
       }
       
       fhPrimPi0Y   ->Fill(mesonPt, mesonY) ;
@@ -1445,9 +1450,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimEtaPt ->Fill(mesonPt) ;
         fhPrimEtaPhi->Fill(mesonPt, mesonPhi) ;
         
-        fhPrimEtaYetaYcut    ->Fill(mesonPt,mesonYeta) ;
-        fhPrimEtaPtCentrality->Fill(mesonPt,cen) ;
-        fhPrimEtaPtEventPlane->Fill(mesonPt,ep ) ;
+        fhPrimEtaYetaYcut->Fill(mesonPt,mesonYeta) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimEtaPtCentrality->Fill(mesonPt,cen) ;
+          fhPrimEtaPtEventPlane->Fill(mesonPt,ep ) ;
+        }
       }
       
       fhPrimEtaY   ->Fill(mesonPt, mesonY) ;
@@ -1657,8 +1666,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimPi0AccPhi ->Fill(mesonPt, mesonPhi) ;
         fhPrimPi0AccY   ->Fill(mesonPt, mesonY) ;
         fhPrimPi0AccYeta->Fill(mesonPt, mesonYeta) ;
-        fhPrimPi0AccPtCentrality->Fill(mesonPt,cen) ;
-        fhPrimPi0AccPtEventPlane->Fill(mesonPt,ep ) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimPi0AccPtCentrality->Fill(mesonPt,cen) ;
+          fhPrimPi0AccPtEventPlane->Fill(mesonPt,ep ) ;
+        }
         
         if(fFillAngleHisto)
         {
@@ -1674,8 +1687,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimEtaAccPhi ->Fill(mesonPt, mesonPhi) ;
         fhPrimEtaAccY   ->Fill(mesonPt, mesonY) ;
         fhPrimEtaAccYeta->Fill(mesonPt, mesonYeta) ;
-        fhPrimEtaAccPtCentrality->Fill(mesonPt,cen) ;
-        fhPrimEtaAccPtEventPlane->Fill(mesonPt,ep ) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimEtaAccPtCentrality->Fill(mesonPt,cen) ;
+          fhPrimEtaAccPtEventPlane->Fill(mesonPt,ep ) ;
+        }
         
         if(fFillAngleHisto)
         {
@@ -2100,12 +2117,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if (evtIndex1 != currentEvtIndex)
     {
       //Fill event bin info
-      if(DoOwnMix()) fhEventBin->Fill(eventbin) ;
-      if(GetNCentrBin() > 1)
+      if( DoOwnMix() ) fhEventBin->Fill(eventbin) ;
+      
+      if( IsHighMultiplicityAnalysisOn() )
       {
         fhCentrality->Fill(curCentrBin);
-        if(GetNRPBin() > 1 && GetEventPlane()) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
+        if( GetEventPlane() ) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
       }
+      
       currentEvtIndex = evtIndex1 ;
     }
     
