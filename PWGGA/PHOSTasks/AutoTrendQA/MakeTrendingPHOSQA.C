@@ -2,7 +2,7 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
 {
   //const char* dirNames[] = {"PHOSCellsQA_AnyInt","PHOSCellsQA_PHI7","PHOSPbPbQAResults","PHOSTriggerQAResults"};
   if (IsOnGrid) TGrid::Connect("alien://");  
-
+  
   TFile* fin = TFile::Open(file);
   if(!fin) {printf("Cannot open file %s. exit.\n",file); return; }
 
@@ -26,6 +26,7 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   Float_t avCluEnergySM1=-9999., avCluMultSM1=-9999., avNcellPerCluSM1=-9999.; // Module 1
   Float_t avCluEnergySM2=-9999., avCluMultSM2=-9999., avNcellPerCluSM2=-9999.; // Module 2
   Float_t avCluEnergySM3=-9999., avCluMultSM3=-9999., avNcellPerCluSM3=-9999.; // Module 3
+  Float_t avCluEnergySM4=-9999., avCluMultSM4=-9999., avNcellPerCluSM4=-9999.; // Module 4
 
   ttree->Branch("run",&runNumber,"run/I");
   ttree->Branch("nEvents",&nEvents,"nEvents/F");
@@ -41,6 +42,10 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   ttree->Branch("avCluEnergySM3",&avCluEnergySM3,"avCluEnergySM3/F");
   ttree->Branch("avCluMultSM3",&avCluMultSM3,"avCluMultSM3/F");
   ttree->Branch("avNcellPerCluSM3",&avNcellPerCluSM3,"avNcellPerCluSM3/F");
+
+  ttree->Branch("avCluEnergySM4",&avCluEnergySM4,"avCluEnergySM4/F");
+  ttree->Branch("avCluMultSM4",&avCluMultSM4,"avCluMultSM4/F");
+  ttree->Branch("avNcellPerCluSM4",&avNcellPerCluSM4,"avNcellPerCluSM4/F");
   
   char hnam[60]; 
   TH2* h;
@@ -78,147 +83,150 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
     avCluEnergySM3 = h->ProjectionX()->GetMean(); avNcellPerCluSM3 = h->ProjectionY()->GetMean();
     avCluMultSM3 = h->Integral()/nEvents;
   }
+
+  sprintf(hnam,"run%d_hNCellsInClusterSM4",runNumber); 
+  h = (TH2*)listAnyInt->FindObject(hnam);
+
+  if(h && nEvents) {
+    h->GetXaxis()->SetRangeUser(emin,emax);
+    avCluEnergySM4 = h->ProjectionX()->GetMean(); avNcellPerCluSM4 = h->ProjectionY()->GetMean();
+    avCluMultSM4 = h->Integral()/nEvents;
+  }
     
   //-------- Average pi0s number per event, pi0 mass, width -------------------------------------------
-    Double_t nraw, enraw, mass, emass, sigma, esigma;
-    Int_t sm; TH1* hm;
-    char name[20],leaf[20];
+  Double_t nraw, enraw, mass, emass, sigma, esigma;
+  Int_t sm; TH1* hm;
+  char name[20],leaf[20];
     
-    sm = 1;
-    hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+  sm = 1;
+  hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
     
-    Float_t avPi0NumSM1   =-9999., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
-    Float_t avPi0NumErrSM1=-9999., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
+  Float_t avPi0NumSM1   =-9999., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
+  Float_t avPi0NumErrSM1=-9999., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
     
-    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumSM1,leaf);
+  sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumSM1,leaf);
     
-    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassSM1,leaf);
+  sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassSM1,leaf);
     
-    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaSM1,leaf);
+  sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaSM1,leaf);
     
-    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumErrSM1,leaf);
+  sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumErrSM1,leaf);
     
-    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassErrSM1,leaf);
+  sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassErrSM1,leaf);
     
-    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaErrSM1,leaf);
+  sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaErrSM1,leaf);
     
-    FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+  FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
     
-    avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
-    avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma;
+  avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
+  avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma;
     
+  
+  sm = 2;
+  hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+  
+  Float_t avPi0NumSM2   =-9999., avPi0MassSM2   =-9999., avPi0SigmaSM2   =-9999.;
+  Float_t avPi0NumErrSM2=-9999., avPi0MassErrSM2=-9999., avPi0SigmaErrSM2=-9999.;
+  
+  sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumSM2,leaf);
+  
+  sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassSM2,leaf);
+  
+  sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaSM2,leaf);
     
-    sm = 2;
-    hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+  sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumErrSM2,leaf);
     
-    Float_t avPi0NumSM2   =-9999., avPi0MassSM2   =-9999., avPi0SigmaSM2   =-9999.;
-    Float_t avPi0NumErrSM2=-9999., avPi0MassErrSM2=-9999., avPi0SigmaErrSM2=-9999.;
+  sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassErrSM2,leaf);
+  
+  sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaErrSM2,leaf);
+  
+  FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+  
+  avPi0NumSM2 = nraw/nEvents; avPi0MassSM2 = mass; avPi0SigmaSM2 = sigma;
+  avPi0NumErrSM2 = enraw/nEvents; avPi0MassErrSM2 = emass; avPi0SigmaErrSM2 = esigma;
+  
+  
+  sm = 3;
+  hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
     
-    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumSM2,leaf);
+  Float_t avPi0NumSM3   =-9999., avPi0MassSM3   =-9999., avPi0SigmaSM3   =-9999.;
+  Float_t avPi0NumErrSM3=-9999., avPi0MassErrSM3=-9999., avPi0SigmaErrSM3=-9999.;
     
-    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassSM2,leaf);
+  sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumSM3,leaf);
+  
+  sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassSM3,leaf);
+  
+  sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaSM3,leaf);
+  
+  sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumErrSM3,leaf);
     
-    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaSM2,leaf);
+  sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassErrSM3,leaf);
     
-    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumErrSM2,leaf);
+  sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaErrSM3,leaf);
+  
+  FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
     
-    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassErrSM2,leaf);
-    
-    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaErrSM2,leaf);
-    
-    FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
-    
-    avPi0NumSM2 = nraw/nEvents; avPi0MassSM2 = mass; avPi0SigmaSM2 = sigma;
-    avPi0NumErrSM2 = enraw/nEvents; avPi0MassErrSM2 = emass; avPi0SigmaErrSM2 = esigma;
-
-    
-    sm = 3;
-    hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
-    
-    Float_t avPi0NumSM3   =-9999., avPi0MassSM3   =-9999., avPi0SigmaSM3   =-9999.;
-    Float_t avPi0NumErrSM3=-9999., avPi0MassErrSM3=-9999., avPi0SigmaErrSM3=-9999.;
-    
-    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumSM3,leaf);
-    
-    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassSM3,leaf);
-    
-    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaSM3,leaf);
-    
-    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumErrSM3,leaf);
-    
-    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassErrSM3,leaf);
-    
-    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaErrSM3,leaf);
-    
-    FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
-    
-    avPi0NumSM3 = nraw/nEvents; avPi0MassSM3 = mass; avPi0SigmaSM3 = sigma;
-    avPi0NumErrSM3 = enraw/nEvents; avPi0MassErrSM3 = emass; avPi0SigmaErrSM3 = esigma;
-
-    
+  avPi0NumSM3 = nraw/nEvents; avPi0MassSM3 = mass; avPi0SigmaSM3 = sigma;
+  avPi0NumErrSM3 = enraw/nEvents; avPi0MassErrSM3 = emass; avPi0SigmaErrSM3 = esigma;
+  
+  sm = 4;
+  hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
+  
+  Float_t avPi0NumSM4   =-9999., avPi0MassSM4   =-9999., avPi0SigmaSM4   =-9999.;
+  Float_t avPi0NumErrSM4=-9999., avPi0MassErrSM4=-9999., avPi0SigmaErrSM4=-9999.;
+  
+  sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumSM4,leaf);
+  
+  sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassSM4,leaf);
+  
+  sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaSM4,leaf);
+  
+  sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0NumErrSM4,leaf);
+  
+  sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0MassErrSM4,leaf);
+  
+  sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
+  ttree->Branch(name,&avPi0SigmaErrSM4,leaf);
+  
+  FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+  
+  avPi0NumSM4 = nraw/nEvents; avPi0MassSM4 = mass; avPi0SigmaSM4 = sigma;
+  avPi0NumErrSM4 = enraw/nEvents; avPi0MassErrSM4 = emass; avPi0SigmaErrSM4 = esigma;
+  
+  
   //---------------------------------------------------------------------------------------------------
-
+  
   ttree->Fill();
   trendFile->cd();
-
+  
   ttree->Write();
   trendFile->Close();
   
 }
 
-
-
-//-----------------------------------------------------------------------------------------------------
-void MakePi0Averages(TH1* hm1, Int_t runNumber, Int_t sm, TTree* ttree, Int_t nEvents)
-{
-    Float_t avPi0NumSM1   =-9999., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
-    Float_t avPi0NumErrSM1=-9999., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
-
-    char name[20],leaf[20];
-    
-    sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumSM1,leaf);
-
-    sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassSM1,leaf);
-    
-    sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaSM1,leaf);
-    
-    sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0NumErrSM1,leaf);
-    
-    sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0MassErrSM1,leaf);
-    
-    sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
-    ttree->Branch(name,&avPi0SigmaErrSM1,leaf);
- 
-    Double_t nraw, enraw, mass, emass, sigma, esigma;
-    FitPi0(hm1, nraw, enraw, mass, emass, sigma, esigma);
-    
-    avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
-    avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma;
-    printf("%f %f %f\n",avPi0NumSM1,avPi0MassSM1,avPi0SigmaSM1);
-}
 
 //-----------------------------------------------------------------------------------------------------
 void FitPi0(TH1* h, Double_t &nraw, Double_t &enraw,
