@@ -144,14 +144,19 @@ AliJetFlowTools::AliJetFlowTools() :
     fDptOut             (0x0),
     fFullResponseIn     (0x0),
     fFullResponseOut    (0x0) { // class constructor
-        // create response maker weight function (tuned to PYTHIA spectrum)
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
         fResponseMaker->SetRMMergeWeightFunction(new TF1("weightFunction", "x*TMath::Power(1.+(1./(8.*0.9))*x, -8.)", 0, 200));
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::Make(TH1* customIn, TH1* customOut) {
     // core function of the class
-    if(fDphiDptUnfolding) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
+   if(fDphiDptUnfolding) {
         // to extract the yield as function of Dphi, Dpt - experimental
         MakeAU();
         return;
@@ -384,6 +389,9 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
         const TString suffix,                   // suffix (in or out of plane)
         const TH1D* jetFindingEfficiency)       // jet finding efficiency
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // wrapper function to call specific unfolding routine
     TH1D* (AliJetFlowTools::*myFunction)(const TH1D*, const TH2D*, const TH1D*, const TH1D*, const TString, const TH1D*);
     // initialize functon pointer
@@ -410,6 +418,9 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
         const TString suffix,                 // suffix (in or out of plane)
         const TH1D* jetFindingEfficiency)     // jet finding efficiency (optional)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // unfold the spectrum using chi2 minimization
 
     // step 0) setup the static members of AliUnfolding
@@ -525,7 +536,9 @@ TH1D* AliJetFlowTools::UnfoldSpectrumSVD(
         const TString suffix,                         // suffix (in, out)
         const TH1D* jetFindingEfficiency)             // jet finding efficiency (optional)
 {
-
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     TH1D* priorLocal( GetPrior(
         measuredJetSpectrum,              // jet pt in pt rec bins 
         resizedResponse,                  // full response matrix, normalized in slides of pt true
@@ -655,6 +668,9 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
         const TString suffix,                         // suffix (in, out)
         const TH1D* jetFindingEfficiency)             // jet finding efficiency (optional)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // unfold the spectrum using the bayesian unfolding impelmented in AliUnfolding
     // FIXME careful, not tested yet ! (06122013) FIXME
 
@@ -777,6 +793,9 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
         const TString suffix,                         // suffix (in, out)
         const TH1D* jetFindingEfficiency)             // jet finding efficiency (optional)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // use bayesian unfolding from the RooUnfold package to unfold jet spectra
     
     // 1) get a prior for unfolding.
@@ -888,6 +907,9 @@ TH1D* AliJetFlowTools::FoldSpectrum(
         const TString suffix,                 // suffix (in or out of plane)
         const TH1D* jetFindingEfficiency)     // jet finding efficiency (optional)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // simple function to fold the given spectrum with the in-plane and out-of-plane response
 
     if(!measuredJetSpectrumTrueBins) SquelchWarning();
@@ -927,6 +949,9 @@ TH1D* AliJetFlowTools::FoldSpectrum(
 //_____________________________________________________________________________
 Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // prepare for unfolding. check if all the necessary input data is available, if not, retrieve it
     if(fRawInputProvided) return kTRUE;
     if(!fInputList) {
@@ -1107,6 +1132,9 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
 Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
     // prepare for unfoldingUA - more robust method to extract input spectra from file
     // will replace PrepareForUnfolding eventually (09012014)
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     if(!fInputList) {
         printf(" AliJetFlowTools::PrepareForUnfolding() fInputList not found \n - Set a list using AliJetFlowTools::SetInputList() \n");
         return kFALSE;
@@ -1188,6 +1216,9 @@ TH1D* AliJetFlowTools::GetPrior(
         const TString suffix,                         // suffix (in, out)
         const TH1D* jetFindingEfficiency)             // jet finding efficiency (optional)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // 1) get a prior for unfolding. 
     // this can be either an unfolded spectrum from e.g. chi2 unfolding or the measured spectrum
     TH1D* unfolded(0x0);
@@ -1276,6 +1307,9 @@ TH1D* AliJetFlowTools::GetPrior(
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix) {
     // resize the x-axis of a th1d
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     if(!histo) {
         printf(" > ResizeXaxisTH!D:: fatal error, NULL pointer passed < \n");
         return NULL;
@@ -1297,6 +1331,9 @@ TH1D* AliJetFlowTools::ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TString suffix) {
     // resize the y-axis of a th2d
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     if(!histo) {
         printf(" > ResizeYaxisTH2D:: fatal error, NULL pointer passed < \n");
         return NULL;
@@ -1322,6 +1359,9 @@ TH2D* AliJetFlowTools::ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TStr
 TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
     // general method to normalize all vertical slices of a th2 to unity
     // i.e. get a probability matrix
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     if(!histo) {
         printf(" > NormalizeTH2D:: NULL pointer passed, returning NULL < \n");
         return NULL;
@@ -1346,6 +1386,9 @@ TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
 }
 //_____________________________________________________________________________
 TH1* AliJetFlowTools::Bootstrap(TH1* hist, Bool_t kill) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // resample a TH1
     // the returned histogram is new, the original is deleted from the heap if kill is true
     if(!hist) {
@@ -1390,6 +1433,9 @@ TH1* AliJetFlowTools::Bootstrap(TH1* hist, Bool_t kill) {
 }
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix, Bool_t kill) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // return a TH1D with the supplied histogram rebinned to the supplied bins
     // the returned histogram is new, the original is deleted from the heap if kill is true
     if(!histo || !bins) {
@@ -1415,6 +1461,9 @@ TH1D* AliJetFlowTools::RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix, Boo
 }
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::RebinTH2D(TH2D* rebinMe, TArrayD* binsTrue, TArrayD* binsRec, TString suffix) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // weighted rebinning of a th2d, implementation for function call to AliAnaChargedJetResponseMaker
     // not static as it is just a wrapper for the response maker object
     if(!fResponseMaker || !binsTrue || !binsRec) {
@@ -1427,6 +1476,9 @@ TH2D* AliJetFlowTools::RebinTH2D(TH2D* rebinMe, TArrayD* binsTrue, TArrayD* bins
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::MatrixMultiplication(TH2D* a, TH2D* b, TString name)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // multiply two matrices
     if (a->GetNbinsX() != b->GetNbinsY()) return 0x0;
     TH2D* c = (TH2D*)a->Clone("c");
@@ -1447,6 +1499,9 @@ TH2D* AliJetFlowTools::MatrixMultiplication(TH2D* a, TH2D* b, TString name)
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::NormalizeTH1D(TH1D* histo, Double_t scale) 
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // normalize a th1d to a certain scale
     histo->Sumw2();
     Double_t integral = histo->Integral()*scale;
@@ -1458,6 +1513,9 @@ TH1D* AliJetFlowTools::NormalizeTH1D(TH1D* histo, Double_t scale)
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // merge a spectrum histogram taking into account the correlation terms
     if(!(bins&&spectrum)) {
         printf(" > NULL pointer passed as argument in MergeSpectrumBins ! < \n");
@@ -1487,6 +1545,9 @@ TH1D* AliJetFlowTools::MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* co
 //_____________________________________________________________________________
 TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covarianceMatrix) 
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // Calculate pearson coefficients from covariance matrix
     TMatrixD *pearsonCoefficients((TMatrixD*)covarianceMatrix->Clone("pearsonCoefficients"));
     Int_t nrows(covarianceMatrix->GetNrows()), ncols(covarianceMatrix->GetNcols());
@@ -1502,6 +1563,9 @@ TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covarianceMatr
 }
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill, Bool_t counts) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // smoothen the spectrum using a user defined function
     // returns a clone of the original spectrum if fitting failed
     // if kill is kTRUE the input spectrum will be deleted from the heap
@@ -1526,6 +1590,9 @@ TH1D* AliJetFlowTools::SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(Bool_t legacy)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // set global style for your current aliroot session
     if(!gStyle) return;
     // legacy style is pleasing to the eye, default is the formal ALICE style
@@ -1581,6 +1648,10 @@ void AliJetFlowTools::Style(Bool_t legacy)
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TCanvas* c, TString style)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
+    if(c) return;
     // set a default style for a canvas
     if(!strcmp(style.Data(), "PEARSON")) {
         printf(" > style PEARSON canvas < \n");
@@ -1602,8 +1673,11 @@ void AliJetFlowTools::Style(TCanvas* c, TString style)
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TVirtualPad* c, TString style, Bool_t legacy)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // set a default style for a canva
-    
+    if(!c) return;
     if(legacy) {
         c->SetLeftMargin(.25);
         c->SetBottomMargin(.25);
@@ -1635,7 +1709,11 @@ void AliJetFlowTools::Style(TVirtualPad* c, TString style, Bool_t legacy)
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TLegend* l)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // set a default style for a legend
+    if(!l) return;
     l->SetFillColor(0);
     l->SetBorderSize(0);
     if(gStyle) l->SetTextSize(gStyle->GetTextSize()*.08);
@@ -1643,7 +1721,11 @@ void AliJetFlowTools::Style(TLegend* l)
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // style a histo
+    if(!h) return;
     h->GetYaxis()->SetNdivisions(505);
     h->SetLineColor(col);
     h->SetMarkerColor(col);
@@ -1704,7 +1786,11 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // style a tgraph
+    if(!h) return;
     h->GetYaxis()->SetNdivisions(505);
     h->SetLineColor(col);
     h->SetMarkerColor(col);
@@ -1743,11 +1829,9 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
        } break;
        case kRatio : {
-//            h->GetYaxis()->SetTitle("#frac{d#it{N_{in plane}^{jet}}}{d#it{p}_{T}} / #frac{d#it{N_{out of plane}^{jet}}}{d#it{p}_{T}}");
             h->GetYaxis()->SetTitle("(d#it{N}^{ch, jet}_{in plane}/(d#it{p}_{T}d#eta))/(d#it{N}^{ch,jet}_{out of plane}/(d#it{p}_{T}d#eta))");
        } break;
        case kV2 : {
-//            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
             h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} {EP, |#Delta#eta|>0.9 } ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
             h->SetMarkerStyle(8);
@@ -1765,6 +1849,9 @@ void AliJetFlowTools::GetNominalValues(
         TString inFile,
         TString outFile) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // pass clones of the nominal points and nominal v2 values 
     if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
     TFile* readMe(new TFile(inFile.Data(), "READ"));                    // open unfolding output read-only
@@ -1823,6 +1910,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // do full systematics
     if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
     TFile* readMe(new TFile(in.Data(), "READ"));                        // open unfolding output read-only
@@ -2128,6 +2218,9 @@ void AliJetFlowTools::GetShapeUncertainty(
         Bool_t recBin,
         Bool_t method) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // do full systematics
     if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
     TFile* readMe(new TFile(in.Data(), "READ"));                        // open unfolding output read-only
@@ -2492,6 +2585,9 @@ void AliJetFlowTools::SystematicsWrapper(
             Bool_t onRatio                          // use ratio or v2 directly for assessing systematic uncertainty
             ) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // wrapper function to call specific systematics function using function pointers
     void (AliJetFlowTools::*myFunction)(TArrayI*, TArrayI*, TH1D*&, TH1D*&, TH1D*&, TH1D*&, TH1D*&, TH1D*&, 
             TH1D*&, TH1D*&, TH1D*&, Int_t, Float_t, Float_t, TFile*, TString, Bool_t) const;
@@ -2542,6 +2638,9 @@ void AliJetFlowTools::DoIntermediateSystematics(
             Bool_t RMS                              // return RMS of distribution of variations as error
             ) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
    // intermediate systematic check function. first index of supplied array is nominal value
    TList* listOfKeys((TList*)readMe->GetListOfKeys());
    if(!listOfKeys) {
@@ -3214,6 +3313,9 @@ void AliJetFlowTools::DoIntermediateSystematicsOnV2(
             Bool_t RMS                              // NOT trivial
             ) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // intermediate systematic check function. first index is nominal value
     if(! (relativeErrorInLow ||  relativeErrorOutUp || relativeErrorOutLow || relativeStatisticalErrorOut || nominalOut || columns || rangeLow || rangeUp)) SquelchWarning();
     
@@ -3264,6 +3366,9 @@ void AliJetFlowTools::DoIntermediateSystematicsOnV2(
 //_____________________________________________________________________________
 void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
    // go through the output file and perform post processing routines
    // can either be performed in one go with the unfolding, or at a later stage
    if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();
@@ -3696,6 +3801,9 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
 //_____________________________________________________________________________
 void AliJetFlowTools::BootstrapSpectra(TString def, TString in, TString out) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
    // function to interpret results of bootstrapping routine
    // TString def should hold the true emperical distribution
    if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();
@@ -3863,6 +3971,9 @@ Bool_t AliJetFlowTools::SetRawInput (
         TH1D* dptIn,             // in plane delta pt distribution
         TH1D* dptOut,            // out of plane delta pt distribution
         Int_t eventCount) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // set input histograms manually
     fDetectorResponse   = detectorResponse;
     fSpectrumIn         = jetPtIn;
@@ -3918,6 +4029,9 @@ Bool_t AliJetFlowTools::SetRawInput (
 //_____________________________________________________________________________
 TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t appendFit, Int_t xmax) 
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // return ratio of h1 / h2
     // histograms can have different binning. errors are propagated as uncorrelated
     if(!(h1 && h2) ) {
@@ -3971,6 +4085,9 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
 //_____________________________________________________________________________
 TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name) 
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // get v2 from difference of in plane, out of plane yield
     // h1 must hold the in-plane yield, h2 holds the out of plane  yield
     // r is the event plane resolution for the chosen centrality
@@ -4005,6 +4122,9 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
 //_____________________________________________________________________________
 TH1F* AliJetFlowTools::ConvertGraphToHistogram(TGraphErrors* g)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // convert a tgrapherrors to a histogram
     if(!g) {
         printf(" > ConvertGraphToHistogram recevied a NULL pointer > \n");
@@ -4025,6 +4145,9 @@ TH1F* AliJetFlowTools::ConvertGraphToHistogram(TGraphErrors* g)
 //_____________________________________________________________________________
 TGraphAsymmErrors* AliJetFlowTools::AddHistoToGraph(TGraphAsymmErrors* g, TH1D* h)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // convert a tgrapherrors to a histogram
     if(!(g&&h)) {
         printf(" > ConvertGraphToHistogram recevied a NULL pointer > \n");
@@ -4049,6 +4172,9 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         TH1* relativeErrorOutLow,
         Float_t rho) const
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // get v2 with asymmetric systematic error
     // note that this is ONLY the systematic error, no statistical error!
     // rho is the pearson correlation coefficient
@@ -4105,6 +4231,9 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::WriteObject(TObject* object, TString suffix, Bool_t kill) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // write object, if a unique identifier is given the object is cloned
     // and the clone is saved. setting kill to true will delete the original obect from the heap
     if(!object) {
@@ -4119,6 +4248,9 @@ void AliJetFlowTools::WriteObject(TObject* object, TString suffix, Bool_t kill) 
 }
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // construt a delta pt response matrix from supplied dpt distribution
     // binning is fine, set fBinsTrue and fBinsRec and call 'RebinTH2D' to 
     // do a weighted rebinning to a (coarser) dpt distribution
@@ -4143,7 +4275,10 @@ TH2D* AliJetFlowTools::ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRound
 }
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix) {
-    if(!binsTrue || !binsRec) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
+   if(!binsTrue || !binsRec) {
         printf(" > GetUnityResponse:: function called with NULL arguments < \n");
         return 0x0;
     }
@@ -4158,6 +4293,9 @@ TH2D* AliJetFlowTools::GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TSt
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut) const {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // save configuration parameters to histogram
     TH1F* summary = new TH1F("UnfoldingConfiguration","UnfoldingConfiguration", 20, -.5, 19.5);
     summary->SetBinContent(1, fBetaIn);
@@ -4203,6 +4341,9 @@ void AliJetFlowTools::SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut)
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::ResetAliUnfolding() {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
      // ugly function: reset all unfolding parameters 
      TVirtualFitter* fitter(TVirtualFitter::GetFitter());
      if(fitter) {
@@ -4259,6 +4400,9 @@ void AliJetFlowTools::ResetAliUnfolding() {
 }
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) const {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH1D* p = (TH1D*)protect->Clone();
@@ -4271,6 +4415,9 @@ TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) c
 }
 //_____________________________________________________________________________
 TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) const {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH2D* p = (TH2D*)protect->Clone();
@@ -4283,6 +4430,9 @@ TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) c
 }
 //_____________________________________________________________________________
 TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, TString suffix) const {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TGraphErrors* p = (TGraphErrors*)protect->Clone();
@@ -4295,6 +4445,9 @@ TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, T
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::MakeAU() {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // === azimuthal unfolding ===
     // 
     // unfolds the spectrum in delta phi bins, extracts the yield per bin, and does a fit
@@ -4438,6 +4591,9 @@ void AliJetFlowTools::MakeAU() {
 //_____________________________________________________________________________
 void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphErrors* graph) {
    // replace bins
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
    Double_t x(0), y(0);
    graph->GetPoint(0, x, y);
    graph->SetPoint(array->At(0)-1, fBinsTrue->At(array->At(0)), y);
@@ -4446,6 +4602,9 @@ void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphErrors* graph) {
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph) {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
    // replace bins
    Double_t x(0), y(0);
    graph->GetPoint(0, x, y);
@@ -4464,6 +4623,9 @@ void AliJetFlowTools::GetSignificance(
         Int_t up                        // upper bin
         )
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // main use of this function is filling the static buffers
     Double_t statE(0), shapeE(0), corrE(0), y(0), x(0);
 
@@ -4533,6 +4695,9 @@ void AliJetFlowTools::GetSignificance(
 //_____________________________________________________________________________
 void AliJetFlowTools::MinimizeChi2nd()
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // Choose method upon creation between:
     // kMigrad, kSimplex, kCombined, 
     // kScan, kFumili
@@ -4556,6 +4721,9 @@ void AliJetFlowTools::MinimizeChi2nd()
 //_____________________________________________________________________________
 Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // define arrays with results and errors here, see example at PhenixChi2()
 
     // return the function value at certain epsilon
@@ -4592,6 +4760,9 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
 //_____________________________________________________________________________
 Double_t AliJetFlowTools::ConstructFunctionnd(Double_t *x, Double_t *par)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // internal use only: evaluate the function at a given point
     if(par) SquelchWarning(); 
     return AliJetFlowTools::PhenixChi2nd(x);
@@ -4599,6 +4770,9 @@ Double_t AliJetFlowTools::ConstructFunctionnd(Double_t *x, Double_t *par)
 //_____________________________________________________________________________
 TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
 {
+#ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
+    printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+#endif
     // return the fitting function, pass the p-value w.r.t. 0 by reference
     const Int_t DOF(4);
     TF2 *f1 = new TF2("ndhist", AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
