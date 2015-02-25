@@ -166,10 +166,14 @@ Bool_t AliEMCALTriggerMappingV1::GetAbsFastORIndexFromPositionInEMCAL(const Int_
     AliError(Form("Out of range! iEta: %2d iPhi: %2d", iEta, iPhi));
     return kFALSE;
   }
-  
-  id = iEta * 48 + iPhi;
-  
-  return kTRUE;
+
+  Int_t s = int(iEta / 24) + 2 * int(iPhi / 4);
+  Int_t x = iEta % 24;
+  Int_t y = iPhi % 4;
+  if (GetAbsFastORIndexFromPositionInSM(s, x, y, id)) {
+      return kTRUE;
+  }
+  return kFALSE;
 }
 
 //________________________________________________________________________________________________
