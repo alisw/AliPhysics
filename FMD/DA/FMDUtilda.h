@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 #ifdef ALI_AMORE
 # include <AmoreDA.h>
 # include <TH2.h>
