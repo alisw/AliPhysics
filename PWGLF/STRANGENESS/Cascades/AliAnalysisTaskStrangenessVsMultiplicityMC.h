@@ -191,6 +191,7 @@ private:
     Bool_t fEvSel_Triggered;                //!
 
     Bool_t fEvSel_INELgtZERO;               //!
+    Bool_t fEvSel_INELgtZEROStackPrimaries; //!
     Bool_t fEvSel_INELgtZEROtracklets;      //!
 
     Bool_t fEvSel_INELgtZERORefMult;           //!
