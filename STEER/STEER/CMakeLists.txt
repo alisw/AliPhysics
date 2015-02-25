@@ -158,6 +158,7 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS}
    AliConst.h
+   AliRawDataHeaderSim.h
    )
 
 # Generate the dictionary
