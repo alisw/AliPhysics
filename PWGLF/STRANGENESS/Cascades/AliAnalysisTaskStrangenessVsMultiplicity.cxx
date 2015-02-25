@@ -854,7 +854,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Copy to Event Tree for extra information
     fAmplitude_V0A = multV0ACorr;
     fAmplitude_V0C = multV0CCorr;
-    fAmplitude_V0M = multV0A + multV0C; // beware unusual difference 
+    fAmplitude_V0M = multV0A + multV0C; // beware unusual difference
 
     // Equalized signals // From AliCentralitySelectionTask // Updated
     for(Int_t iCh = 32; iCh < 64; ++iCh) {
@@ -876,17 +876,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fCentrality_V0CEq = -100;
     fCentrality_V0MEq = -100;
 
-    //AliCentrality... Check if working?
-    AliCentrality* centrality;
-    centrality = lESDevent->GetCentrality();
-    if ( !(centrality->GetQuality()>1) ) {
-        fCentrality_V0A   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0A"   );
-        fCentrality_V0C   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0C"   );
-        fCentrality_V0M   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0M"   );
-        fCentrality_V0AEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0AEq" );
-        fCentrality_V0CEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0CEq" );
-        fCentrality_V0MEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0MEq" );
-    }
+    fCentrality_V0A   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0A"   );
+    fCentrality_V0C   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0C"   );
+    fCentrality_V0M   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0M"   );
+    fCentrality_V0AEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0AEq" );
+    fCentrality_V0CEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0CEq" );
+    fCentrality_V0MEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0MEq" );
 
     //Tracklets vs Clusters Exploratory data
     fEvSel_nTracklets     = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
@@ -1074,11 +1069,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
 
         //Copy Multiplicity information
         fTreeVariableCentV0M = fCentrality_V0M;
-	fTreeVariableCentV0A = fCentrality_V0A;
-	fTreeVariableCentV0C = fCentrality_V0C;
+        fTreeVariableCentV0A = fCentrality_V0A;
+        fTreeVariableCentV0C = fCentrality_V0C;
         fTreeVariableCentV0MEq = fCentrality_V0MEq;
-	fTreeVariableCentV0AEq = fCentrality_V0AEq;
-	fTreeVariableCentV0CEq = fCentrality_V0CEq;
+        fTreeVariableCentV0AEq = fCentrality_V0AEq;
+        fTreeVariableCentV0CEq = fCentrality_V0CEq;
         fTreeVariableRefMultEta8 = fRefMultEta8;
         fTreeVariableRefMultEta5 = fRefMultEta5;
         fTreeVariableRunNumber = fRunNumber;
@@ -1453,11 +1448,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
 
         //Copy Multiplicity information
         fTreeCascVarCentV0M = fCentrality_V0M;
-	fTreeCascVarCentV0A = fCentrality_V0A;
-	fTreeCascVarCentV0C = fCentrality_V0C;
+        fTreeCascVarCentV0A = fCentrality_V0A;
+        fTreeCascVarCentV0C = fCentrality_V0C;
         fTreeCascVarCentV0MEq = fCentrality_V0MEq;
-	fTreeCascVarCentV0AEq = fCentrality_V0AEq;
-	fTreeCascVarCentV0CEq = fCentrality_V0CEq;
+        fTreeCascVarCentV0AEq = fCentrality_V0AEq;
+        fTreeCascVarCentV0CEq = fCentrality_V0CEq;
         fTreeCascVarRefMultEta8 = fRefMultEta8;
         fTreeCascVarRefMultEta5 = fRefMultEta5;
         fTreeCascVarRunNumber = fRunNumber;
