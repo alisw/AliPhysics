@@ -2,7 +2,7 @@
 Summary: @DETECTOR@ Detector Algorithm
 Name: @DA_NAME@
 Version: @ALIROOT_VERSION_RPM@
-Release: @GIT_SHORT_SHA1@
+Release: @ALIROOT_REVISION@
 License: CERN Alice DAQ/Offine
 Group: Applications/Alice
 Prefix: /opt/%{name}

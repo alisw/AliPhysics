@@ -149,7 +149,7 @@ void MakeAlignmentObjs(const char* detList="ALL", const char* ocdbOrDir = "local
 			strId+="/Align/Data";
 			AliCDBId id(strId.Data(),0,AliCDBRunRange::Infinity());
 			AliCDBMetaData *md = misAligner->GetCDBMetaData();
-			md->SetAliRootVersion(ALIROOT_BRANCH);
+			md->SetAliRootVersion(ALIROOT_VERSION);
 			md->AddDateToComment();
 			storage->Put(objsArray, id, md);
 		}else{

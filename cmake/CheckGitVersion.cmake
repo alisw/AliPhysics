@@ -1,130 +1,202 @@
-# **************************************************************************
-# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
-# *                                                                        *
-# * Author: The ALICE Off-line Project.                                    *
-# * Contributors are mentioned in the code where appropriate.              *
-# *                                                                        *
-# * Permission to use, copy, modify and distribute this software and its   *
-# * documentation strictly for non-commercial purposes is hereby granted   *
-# * without fee, provided that the above copyright notice appears in all   *
-# * copies and that both the copyright notice and this permission notice   *
-# * appear in the supporting documentation. The authors make no claims     *
-# * about the suitability of this software for any purpose. It is          *
-# * provided "as is" without express or implied warranty.                  *
-# **************************************************************************
-
-# Configure ARVerion.h using Git informatiion
-# Sets 4 git variables
-#  - GIT_REFSPEC - complete name of the current reference
-#  - ALIROOT_BRANCH - name of the branch or tag extracted from the current reference
-#  - GIT_SHA1 - current hash in the long format
-#  - GIT_SHORT_SHA1 - current hash in the short format
-#
-#  - ALIROOT_VERSION - name of the branch/tag
-#  - ALIROOT_VERSION_RPM - name of the branch/tag in rpm format, - replaced with .
+# 1. Extracts versioning information from the Git repository
+# 2. Enables rerun of cmake configuration on each pull: GetGitRevisionDescription
+#  - ALIROOT_VERSION - branch/tag name or short hash if detached at randon hash
 #  - ALIROOT_REVISION - short sha1
-if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
-    include(GetGitRevisionDescription)
-    
-    find_package(Git)
-    
-    if(GIT_FOUND)
-        message(STATUS "Git version = ${GIT_VERSION_STRING}")
-        
-        get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+#  - ALIROOT_SERIAL - number of commits
+#  - ALIROOT_VERSION_RPM - name of the branch/tag in rpm format, - replaced with .
+#  - ALIROOT_GITREFTYPE - BRANCH/TAG/DETACHED
 
-        # generate the short version of the revision hash
-        execute_process(COMMAND git rev-parse --short ${GIT_SHA1}
-                          WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
-                          OUTPUT_STRIP_TRAILING_WHITESPACE
-                          RESULT_VARIABLE res
-                          OUTPUT_VARIABLE GIT_SHORT_SHA1)
+# Setting default values
+set(ALIROOT_VERSION "")
+set(ALIROOT_REVISION "")
+set(ALIROOT_SERIAL 0)
+set(ALIROOT_GITREFTYPE "")
 
-        # if the rev-parse fails we set the short sha to the long initial one
-        if(NOT res EQUAL 0)
-            set(GIT_SHORT_SHA1 ${GIT_SHA1})
+# Checks if the sources where cloned as a full git repository
+if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
+  # Git installation mandatory
+  find_package(Git REQUIRED)
+
+  # The simple include will not trigger the reconfiguration
+  # get_git_head_revision has to be called at least once
+  include(GetGitRevisionDescription)
+  # GIT_SHA1 - current long hash
+  # GIT_REFSPEC
+  #     1. branches: refs/heads/master
+  #     2. detached mode(tags or hashes) empty string
+  get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+
+  if(CMAKEDEBUG)
+    message(STATUS "DEBUG: GIT_REFSPEC = \"${GIT_REFSPEC}\", GIT_SHA1 = \"${GIT_SHA1}\"")
+  endif(CMAKEDEBUG)
+
+  # Setting ALIROOT_REVISION as the long hash
+  set(ALIROOT_REVISION ${GIT_SHA1})
+
+  # Generate the short version of the revision hash
+  execute_process(COMMAND git rev-parse --short ${GIT_SHA1} 
+                  WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                  OUTPUT_VARIABLE GIT_SHORT_SHA1
+                  RESULT_VARIABLE process_result
+                  ERROR_VARIABLE process_error
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+                  ERROR_STRIP_TRAILING_WHITESPACE
+                )
+  # Set ALIROOT_REVISION to short hash if no error
+  if(process_result EQUAL 0)
+    if(CMAKEDEBUG)
+      message(STATUS "DEBUG: Short SHA1 = \"${GIT_SHORT_SHA1}\"")
+    endif(CMAKEDEBUG)
+
+    set(ALIROOT_REVISION ${GIT_SHORT_SHA1})
+  else()
+    if(CMAKEDEBUG)
+      message(STATUS "DEBUG: result = \"${process_result}\",  parse-rev error : ${ERROR_VARIABLE}")
+    endif()
+
+    message(WARNING "Could not retrieve the short hash, using the long version : \"${ALIROOT_REVISION}\"")
+  endif()
+
+  # Generate ALIROOT_VERSION
+  # 1. Branch -> Branch name
+  # 2. Detached mode
+  #    2.1 Tags -> Tag name
+  #    2.2 Detached hash -> Short hash
+  
+  # Check if dettached mode
+  # rev-parse will return:
+  # 1. Branch -> Branch name, ex: master
+  # 2. Detached mode: "HEAD" for both tags and random hashes
+  execute_process(COMMAND git rev-parse --abbrev-ref HEAD
+                  WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                  OUTPUT_VARIABLE ref_output
+                  RESULT_VARIABLE ref_result
+                  ERROR_VARIABLE ref_error
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+                  ERROR_STRIP_TRAILING_WHITESPACE
+                )
+
+  if(ref_result EQUAL 0)
+    if(CMAKEDEBUG)
+      message(STATUS "DEBUG: rev-parse HEAD result = \"${ref_output}\"")
+    endif()
+
+    # detached mode
+    if(ref_output STREQUAL "HEAD")
+      # Checking if this is a tag in detached mode
+      #  1. If tag the OUTPUT_VARIABLE will contain the tag name
+      #  2. If random hash the RESULT_VARIABLE is 128 and ERROR_VARIABLE contains the error message
+      execute_process(COMMAND git describe --exact-match
+                      WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                      OUTPUT_VARIABLE tag_output
+                      RESULT_VARIABLE tag_result
+                      ERROR_VARIABLE tag_error
+                      OUTPUT_STRIP_TRAILING_WHITESPACE
+                      ERROR_STRIP_TRAILING_WHITESPACE
+                    )
+
+      if(tag_result EQUAL 0)
+      
+        if(CMAKEDEBUG)
+          message(STATUS "DEBUG: git describe tag_result = ${tag_output}")
         endif()
 
-        # Older Git version < 1.7.3 do not have --count option for rev-list
-        # We use simple rev-list and we count the lines of the output
-        string(COMPARE GREATER "${GIT_VERSION_STRING}" "1.7.3" NEWGIT)
-        
-        if(NEWGIT)
-            # generate the short version of the revision hash using --count
-            execute_process(COMMAND git rev-list --count ${GIT_SHA1}
-                            WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
-                            OUTPUT_STRIP_TRAILING_WHITESPACE
-                            RESULT_VARIABLE revcount
-                            OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
-        else()
-            # generate the short version of the revision hash using -wc -l
-            execute_process(COMMAND git rev-list ${GIT_SHA1}
-                            COMMAND wc -l
-                            WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
-                            OUTPUT_STRIP_TRAILING_WHITESPACE
-                            RESULT_VARIABLE revcount
-                            OUTPUT_VARIABLE ALIROOT_SERIAL_ORIGINAL)
-        endif()
+        set(ALIROOT_VERSION ${tag_output})
+        set(ALIROOT_GITREFTYPE "TAG")
+      else()
+        # Detached at a random hash, the version is the short SHA1
+        if(CMAKEDEBUG)
+          message(STATUS "DEBUG: git describe tar_error = ${tag_error}")
+        endif()  
 
-        # GIT_REFSPEC is empty for detached mode = tags in detached mode or checkout to specific hash
-
-        # returns the closest reference to the current hash
-        # name of the current tag or heads/branch in the case of branches
-        # Older git version of Git report only the name of the tag
-        # Newer version report tags/vAN-20141215
-        # Just in case we replace tags/ with nothing
-        git_describe(ALIROOT_GIT_TAG "--all" "--abbrev=0")
-        
-        if(ALIROOT_GIT_TAG)
-            string(STRIP ${ALIROOT_GIT_TAG} ALIROOT_GIT_TAG)
-            string(REPLACE "tags/" ""  ALIROOT_GIT_TAG ${ALIROOT_GIT_TAG})
-        endif(ALIROOT_GIT_TAG)
-        
-        # using the closest tag for branches
-        git_describe(ALIROOT_CLOSEST_GIT_TAG "--abbrev=0")
-
-        if(ALIROOT_GIT_TAG)
-            string(STRIP ${ALIROOT_GIT_TAG} ALIROOT_GIT_TAG)
-            string(REPLACE "tags/" ""  ALIROOT_GIT_TAG ${ALIROOT_GIT_TAG})
-        endif(ALIROOT_GIT_TAG)
-        
-        STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
-        
-        # the revision is not set in the case of a branch, it means we are doing development
-        # and the revision will trigger a reconfiguration
-        if(BRANCH_TYPE STREQUAL "heads")
-            set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
-            set(ALIROOT_SERIAL 0)
-            set(ALIROOT_GIT_TAG ${ALIROOT_CLOSEST_GIT_TAG})
-            STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
-            message(STATUS "This is a working branch, ARVersion will not contain the revision and the serial number")
-        else()
-            set(BRANCH_TYPE "tags")
-            set(SHORT_BRANCH ${ALIROOT_GIT_TAG})
-            set(ALIROOT_REVISION ${GIT_SHORT_SHA1})
-            set(ALIROOT_SERIAL ${ALIROOT_SERIAL_ORIGINAL})
-        endif()
-
-        set(ALIROOT_BRANCH ${SHORT_BRANCH})
-        set(ALIROOT_VERSION ${SHORT_BRANCH})
-        
-        # extract major minor and patch from AliRoot tag
-        string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" ALIROOT_VERSION_MAJOR "${ALIROOT_GIT_TAG}")
-        string(REGEX REPLACE "^[0-9]+\\.([0-9])+\\.[0-9]+" "\\1" ALIROOT_VERSION_MINOR "${ALIROOT_GIT_TAG}")
-        string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" ALIROOT_VERSION_PATCH "${ALIROOT_GIT_TAG}")
-        message(STATUS "Found ALIROOT version ${ALIROOT_VERSION_MAJOR}.${ALIROOT_VERSION_MINOR}.${ALIROOT_VERSION_PATCH}")
-        
-        # Replace - with . for rpm creation
-        string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
-
-        message(STATUS "Aliroot branch/tag: \"${ALIROOT_VERSION}\" - Revision:  \"${GIT_SHORT_SHA1}\" - Serial: \"${ALIROOT_SERIAL_ORIGINAL}\"")
-
+        set(ALIROOT_VERSION ${ALIROOT_REVISION})
+        set(ALIROOT_GITREFTYPE "DETACHED")
+      endif()
     else()
-        message(STATUS "Git not installed. I can't tell you which revision you are using!")
-    endif(GIT_FOUND)
-else()
-    message("AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
-endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
+      # Branch
+      set(ALIROOT_VERSION ${ref_output})
+      set(ALIROOT_GITREFTYPE "BRANCH")
+    endif()
+  else(ref_result EQUAL 0)
+    message(FATAL_ERROR "Could not retreive information about the current git hash: ${ref_error}")
+  endif(ref_result EQUAL 0)
+  
+  # Generating the ALIROOT_SERIAL using git rev-list
+  # Older Git version < 1.7.3 do not have --count option for rev-list
+  # We use simple rev-list and count the lines of the output 
+  
+  # extract major minor and patch from Git version
+  string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" GIT_VERSION_MAJOR "${GIT_VERSION_STRING}")
+  string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" GIT_VERSION_MINOR "${GIT_VERSION_STRING}")
+  string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" GIT_VERSION_PATCH "${GIT_VERSION_STRING}")
 
+  if(${GIT_VERSION_MAJOR} EQUAL 1 AND ${GIT_VERSION_MINOR} LESS 3)
+    if(CMAKEDEBUG)
+      message(STATUS "DEBUG: cmake version less that 1.7.3!")
+    endif()
+    
+    execute_process(COMMAND git rev-list ${GIT_SHA1}
+                    COMMAND wc -l
+                    WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                    RESULT_VARIABLE serial_result
+                    ERROR_VARIABLE serial_error
+                    OUTPUT_VARIABLE serial_output
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_STRIP_TRAILING_WHITESPACE
+                  )
+  else()
+    execute_process(COMMAND git rev-list --count ${GIT_SHA1}
+                    WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                    RESULT_VARIABLE serial_result
+                    ERROR_VARIABLE serial_error
+                    OUTPUT_VARIABLE serial_output
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_STRIP_TRAILING_WHITESPACE
+      )
+
+  endif()
+
+  if(serial_result EQUAL 0)
+    if(CMAKEDEBUG)
+      message(STATUS "DEBUG: AliRoot serial: ${serial_output}")
+    endif()
+    
+    set(ALIROOT_SERIAL ${serial_output})
+  else()
+    message(FATAL_ERROR "Could not retrieve serial number: ${serial_error}")
+  endif()
+
+  if(${ALIROOT_GITREFTYPE} STREQUAL "DETACHED")
+    message(STATUS "Found AliRoot in detached mode, hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\"")
+  elseif(${ALIROOT_GITREFTYPE} STREQUAL "BRANCH")
+    message(STATUS "Found AliRoot branch \"${ALIROOT_VERSION}\", hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\"")
+  elseif(${ALIROOT_GITREFTYPE} STREQUAL "TAG")
+    message(STATUS "Found AliRoot tag \"${ALIROOT_VERSION}\", hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\"")
+  else()
+    # it does not get here
+    message(FATAL_ERROR "Git type error")
+  endif()
+else(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
+    message(WARNING "AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
+endif(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
+
+# ALIROOT_VERSION_RPM
+# Replacing -/ with . , normally it should not contain / 
+# - and / are forbidden characters in rpm creation
+string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
+string(REPLACE "/" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION_RPM})
+if(CMAKEDEBUG)
+  message(STATUS "DEBUG: ALIROOT_VERSION_RPM = ${ALIROOT_VERSION_RPM}")
+endif()
+
+# Generating ARVersion.h from ARVersion.h.tmp
+set(ALIROOT_AR_VERSION ${ALIROOT_VERSION})
+if(${ALIROOT_GITREFTYPE} STREQUAL "BRANCH")
+  set(ALIROOT_AR_REVISION "")
+  set(ALIROOT_AR_SERIAL 0)
+else()
+  set(ALIROOT_AR_REVISION ${ALIROOT_REVISION})
+  set(ALIROOT_AR_SERIAL ${ALIROOT_SERIAL})
+endif()
 configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_BINARY_DIR}/version/ARVersion.h @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/version/ARVersion.h DESTINATION include)

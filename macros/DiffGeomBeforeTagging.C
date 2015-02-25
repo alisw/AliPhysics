@@ -77,7 +77,7 @@ Bool_t DiffGeomBeforeTagging(const char* recipient, const char* cdbUri="local://
 
 		// Get root and AliRoot versions
 		const char* rootv = gROOT->GetVersion();
-		TString av(ALIROOT_BRANCH);
+		TString av(ALIROOT_VERSION);
 		TString revnum(ALIROOT_REVISION);
 		Printf("root version: %s.  AliRoot %s, revision number %s",rootv,av.Data(),revnum);
 

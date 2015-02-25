@@ -17,7 +17,7 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisA
   }else{  
     gSystem->Setenv("TOCDB","kTRUE");
     gSystem->Setenv("STORAGE",strStorage.Data());
-    gSystem->Setenv("ARVERSION",ALIROOT_BRANCH);
+    gSystem->Setenv("ARVERSION",ALIROOT_VERSION);
   }
   if(partialGeom){
     gSystem->Setenv("REALSETUP","kTRUE");

@@ -1,6 +1,12 @@
+/* 
+   ALIROOT_VERSION: branch or tag name, short hash in detached mode
+   ALIROOT_REVISION: 0 if branch, short revision tag and detached mode
+   ALIROOT_SERIAL: 0 if branch, number if commits for tag and detached mode
+   TODO: change this to Doxygen
+*/
 #ifndef ALIROOT_ARVersion
 #define ALIROOT_ARVersion
-#define ALIROOT_REVISION "@ALIROOT_REVISION@"
-#define ALIROOT_BRANCH "@ALIROOT_BRANCH@"
-#define ALIROOT_SERIAL @ALIROOT_SERIAL@
+#define ALIROOT_VERSION "@ALIROOT_AR_VERSION@"
+#define ALIROOT_REVISION "@ALIROOT_AR_REVISION@"
+#define ALIROOT_SERIAL @ALIROOT_AR_SERIAL@
 #endif

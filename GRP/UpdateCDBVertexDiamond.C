@@ -40,7 +40,7 @@ void UpdateCDBVertexDiamond(const char* objName, Double_t xmed, Double_t ymed, D
 
   // Get root and AliRoot versions
   const char* rootv = gROOT->GetVersion();
-  TString av(ALIROOT_BRANCH);
+  TString av(ALIROOT_VERSION);
   TString revnum(ALIROOT_REVISION);
 
   metadata->SetResponsible("prino@to.infn.it");
@@ -82,7 +82,7 @@ void UpdateCDBVertexDiamondOld(Double_t xmed = 0., Double_t ymed = 0., Double_t 
 
   // Get root and AliRoot versions
   const char* rootv = gROOT->GetVersion();
-  TString av(ALIROOT_BRANCH);
+  TString av(ALIROOT_VERSION);
   TString revnum(ALIROOT_REVISION);
 
   metadata->SetResponsible("prino@to.infn.it");

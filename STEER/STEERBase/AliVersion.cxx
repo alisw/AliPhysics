@@ -13,7 +13,7 @@ AliVersion* AliVersion::Instance()
 AliVersion::AliVersion()
   : TNamed("alirootVersion", "AliROOT Version"),
     fHash(ALIROOT_REVISION),
-    fTag(ALIROOT_BRANCH)
+    fTag(ALIROOT_VERSION)
 {   SetUniqueID(ALIROOT_SERIAL); }
 
 Int_t AliVersion::Compare(const TObject* o) const
