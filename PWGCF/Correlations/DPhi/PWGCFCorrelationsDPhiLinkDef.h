@@ -26,6 +26,7 @@
 #pragma link C++ class AliHistToolsDiHadronPID+;
 #pragma link C++ class AliAnalysisTaskDiHadronPID+;
 #pragma link C++ class AliAnalysisTaskCompareAODTrackCuts+;
+#pragma link C++ class AliAnalysisTaskDiJetCorrelationsAllb2b+;
 #pragma link C++ class AliEvtPoolManager+;
 #pragma link C++ class AliEvtPool+;
 #pragma link C++ class AliMiniTrack+;
