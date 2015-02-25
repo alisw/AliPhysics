@@ -142,7 +142,10 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Bool_t fEvSel_Triggered;                //!
   Bool_t fEvSel_INELgtZERO;               //!
   Bool_t fEvSel_INELgtZEROtracklets;      //!
-    
+  
+  Bool_t fEvSel_INELgtZERORefMult;           //!
+  Bool_t fEvSel_INELgtZERORefMultTracklets;  //!
+  
   //Other Selections: more dedicated filtering to be studied!
   Int_t   fEvSel_nTracklets;              //!
   Int_t   fEvSel_nSPDClusters;            //!

@@ -89,6 +89,7 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicity.h"
+#include <../../home/daviddc/wonderland/root/include/Rtypes.h>
 
 using std::cout;
 using std::endl;
@@ -126,6 +127,8 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_Triggered(0),
       fEvSel_INELgtZERO(0),
       fEvSel_INELgtZEROtracklets(0),
+      fEvSel_INELgtZERORefMult(0),
+      fEvSel_INELgtZERORefMultTracklets(0),
       fEvSel_nTracklets(0),
       fEvSel_nSPDClusters(0),
       fEvSel_VtxZ(0),
@@ -243,6 +246,8 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_Triggered(0),
       fEvSel_INELgtZERO(0),
       fEvSel_INELgtZEROtracklets(0),
+      fEvSel_INELgtZERORefMult(0),
+      fEvSel_INELgtZERORefMultTracklets(0),
       fEvSel_nTracklets(0),
       fEvSel_nSPDClusters(0),
       fEvSel_VtxZ(0),
@@ -439,6 +444,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
     fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
     fTreeEvent->Branch("fEvSel_INELgtZEROtracklets", &fEvSel_INELgtZEROtracklets, "fEvSel_INELgtZEROtracklets/O");
+    fTreeEvent->Branch("fEvSel_INELgtZERORefMult", &fEvSel_INELgtZERORefMult, "fEvSel_INELgtZERORefMult/O");
+    fTreeEvent->Branch("fEvSel_INELgtZERORefMultTracklets", &fEvSel_INELgtZERORefMultTracklets, "fEvSel_INELgtZERORefMultTracklets/O");
 
     //Tracklets vs clusters test
     fTreeEvent->Branch("fEvSel_nTracklets", &fEvSel_nTracklets, "fEvSel_nTracklets/I");
@@ -869,6 +876,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fEvSel_INELgtZERO          = IsINELgtZERO( lESDevent , "tracks"    );
     fEvSel_INELgtZEROtracklets = IsINELgtZERO( lESDevent , "tracklets" );
 
+    fEvSel_INELgtZERORefMult = kFALSE; 
+    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 1.0) >= 1 ) fEvSel_INELgtZERORefMult = kTRUE; 
+
+    fEvSel_INELgtZERORefMultTracklets = kFALSE; 
+    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE; 
+    
     //Event-level fill
     fTreeEvent->Fill() ;
 
@@ -1533,7 +1546,7 @@ Bool_t AliAnalysisTaskStrangenessVsMultiplicity::IsINELgtZERO(AliESDEvent *lESDe
         delete list;
     }
 
-    if (lType == "tracklets") //pure tracklets check only... 
+    if (lType == "tracklets") //pure tracklets check only...
     {
         const AliMultiplicity* spdmult = lESDevent->GetMultiplicity();    // spd multiplicity object
         for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i)
