@@ -43,8 +43,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t minB = +0.5*EtaGap;//
     Double_t maxB = +0.8;//
     
-    int centrMin[9] = {0,5,10,20,30,40,50,60,70};
-    int centrMax[9] = {5,10,20,30,40,50,60,70,80};
+    int centrMin[9] = {0,1,10,20,30,40,50,60,70};
+    int centrMax[9] = {1,2,20,30,40,50,60,70,80};
     const int ncentrminlim = ncentralityminlim;
     const int ncentrmaxlim = ncentralitymaxlim;
     
@@ -79,9 +79,6 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         cutsEvent[icentr]->SetLHC11h(is2011);
         cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
         cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-        //  cutsEvent[icentr]->SetRefMultMethod(AliFlowEventCuts::kVZERO);
-        //cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
-        //cutsEvent[icentr]->SetNContributorsRange(2);
         cutsEvent[icentr]->SetPrimaryVertexZrange(-10.,10.);
         cutsEvent[icentr]->SetQA(doQA);
         cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
@@ -181,9 +178,6 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         SP_POI[icentr]->SetQA(doQA);
         SP_POI[icentr]->SetPriors((centrMin[icentr+ncentrminlim]+centrMax[icentr+ncentrminlim])*0.5);
         
-        
-        
-        
         //=====================================================================
         
         if(!VZERO && Qvector=="Qa") suffixName[icentr] = "Qa";
@@ -198,7 +192,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             suffixName[icentr]+=AliFlowTrackCuts::PIDsourceName(sourcePID);
             suffixName[icentr]+="_";
             suffixName[icentr]+=uniqueStr;
-            suffixName[icentr]+="_";
+            //suffixName[icentr]+="_";
             //suffixName[icentr]+=AliPID::ParticleName(particleType);//particleType
         }
         else{

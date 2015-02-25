@@ -34,6 +34,9 @@ class AliUnfolding;
 #include "TLatex.h"
 #include "TF1.h"
 #include "TH1D.h"
+// define the following variable to build with debug flags
+#define ALIJETFLOWTOOLS_DEBUG_FLAG
+
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public:
