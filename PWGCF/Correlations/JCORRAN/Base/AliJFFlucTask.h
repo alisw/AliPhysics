@@ -28,7 +28,8 @@
 #include "AliPIDCombined.h"
 #include "AliJFFlucAnalysis.h"
 #include "AliJEfficiencyScanner.h"
-#include "AliAnalysisUtils.h" 
+#include "AliAnalysisUtils.h"
+#include "AliVVertex.h" 
 
 //==============================================================
 
@@ -74,6 +75,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   inline void DEBUG(int level, TString msg){ if(level < fDebugLevel){ std::cout<< level << "\t" << msg << endl;}};
   void SetFFlucTaskName(TString taskname){fTaskName = taskname;};
   TString GetFFlucTaskName(){return fTaskName;};
+  void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
 
  private:
   TString fTaskName;
