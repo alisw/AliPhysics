@@ -31,9 +31,19 @@ public:
   		   kChargeEoI,kChargeEoIInt0,kChargeEoIInt1,
 		   kWidth,kHPTDCTime,kWidthBB,kWidthBG,kHPTDCTimeBB,kHPTDCTimeBG,
 		   kChargeVsClockInt0,kChargeVsClockInt1,kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
+		   kFlagNoTime,kTimeNoFlag,
+		   kTimeSlewingOff,kTimeSlewingOn,kWidthSlewing,
+		   kPedestalDiffInt0,kPedestalDiffInt1,
 		   kMultiADA,kMultiADC,kChargeADA,kChargeADC,kChargeAD, 
 		   kADATime,kADCTime,kDiffTime,kTimeADAADC,
-		   kNCoincADA,kNCoincADC,kPairDiffTime,kPairDiffCharge};
+		   kNCoincADA,kNCoincADC,kPairTimeDiffMean,kPairTimeDiffRMS,
+		   kNChargeCorrADA,
+		   kNChargeCorrADC = kNChargeCorrADA + 28,
+		   kNTimeCorrADA = kNChargeCorrADC + 28,
+		   kNTimeCorrADC = kNTimeCorrADA + 28,
+		   kNTimeDiffADA = kNTimeCorrADC + 28,
+		   kNTimeDiffADC = kNTimeDiffADA + 28};
+		   
 		   
   enum HESDType_t {kCellMultiADA,kCellMultiADC,
 		   kBBFlag,kBGFlag,kChargeChannel,kTimeChannel,
