@@ -35,7 +35,16 @@ AliADRecoParam::AliADRecoParam() : AliDetectorRecoParam(),
   fTimeWindowBBCUp(22.5),
   fTimeWindowBGCLow(-2.5),
   fTimeWindowBGCUp(2.5),
-  fMaxResid(4.)  	
+  fMaxResid(4.),
+  fNTdcTimeBins(2560),
+  fTdcTimeMin(20.),
+  fTdcTimeMax(180.),
+  fNTdcWidthBins(256),
+  fTdcWidthMin(2.343750),
+  fTdcWidthMax(202.343750),
+  fNChargeChannelBins(300),
+  fNChargeSideBins(500),
+  fNChargeCorrBins(150) 	
 
 {
   //

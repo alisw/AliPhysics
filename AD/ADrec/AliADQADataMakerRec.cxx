@@ -48,6 +48,7 @@
 #include "AliADReconstructor.h"
 #include "AliADTrending.h"
 #include "AliADCalibData.h"
+#include "AliADRecoParam.h"
 #include "AliCTPTimeParams.h"
 #include "event.h"
 
@@ -57,6 +58,7 @@ ClassImp(AliADQADataMakerRec)
 AliADQADataMakerRec::AliADQADataMakerRec() : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kAD), "AD Quality Assurance Data Maker"),
   fCalibData(0x0),
+  fRecoParam(0x0),
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
@@ -80,6 +82,7 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kAD), "AD Quality Assurance Data 
 AliADQADataMakerRec::AliADQADataMakerRec(const AliADQADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fCalibData(0x0),
+  fRecoParam(0x0),
   fTrendingUpdateTime(0), 
   fCycleStartTime(0), 
   fCycleStopTime(0),
@@ -135,6 +138,7 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   // Reset of the histogram used - to have the trend versus time -
  
   fCalibData = GetCalibData();
+  fRecoParam = (AliADRecoParam*)GetRecoParam();
  
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
   if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
@@ -149,11 +153,11 @@ void AliADQADataMakerRec::StartOfDetectorCycle()
   AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
   if (!entry2) AliFatal("AD time delays are not found in OCDB !");
   TH1F *delays = (TH1F*)entry2->GetObject();
-
+  /*/
   AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("AD/Calib/TimeSlewing");
   if (!entry3) AliFatal("AD time slewing function is not found in OCDB !");
   fTimeSlewing = (TF1*)entry3->GetObject();
-  /*/
+ 
 
   for(Int_t i = 0 ; i < 16; ++i) {
     //Int_t board = AliADCalibData::GetBoardNumber(i);
@@ -425,38 +429,51 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
 void AliADQADataMakerRec::InitRaws()
 {
   // Creates RAW histograms in Raws subdir
-
+  if(!fRecoParam) fRecoParam = (AliADRecoParam*)GetRecoParam();
+ 
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
   const Int_t kNintegrator  =    2;
  
-  const Int_t kNTdcTimeBins  = 2560;
-  const Float_t kTdcTimeMin    =    20.;
-  const Float_t kTdcTimeMax    = 180.;
-    const Int_t kNTdcWidthBins =  256;
-  const Float_t kTdcWidthMin   =    2.343750;
-  const Float_t kTdcWidthMax   =  202.343750;
-  const Int_t kNChargeBins   = 300;
-  const Float_t kChargeMin     =    1;
-  const Float_t kChargeMax     = 301;
-  const Int_t kNChannelBins  =   16;
-  const Float_t kChannelMin    =    0;
-  const Float_t kChannelMax    =   16;
-  const Int_t kNPedestalBins =  40;
-  const Float_t kPedestalMin   =    0;
-  const Float_t kPedestalMax   =  40; 
-  const Int_t kNPairBins  =   8;
-  const Float_t kPairMin    =    0;
-  const Float_t kPairMax    =   8;
+  const Int_t kNTdcTimeBins  = fRecoParam->GetNTdcTimeBins();
+  const Float_t kTdcTimeMin    =  fRecoParam->GetTdcTimeMin();
+  const Float_t kTdcTimeMax    = fRecoParam->GetTdcTimeMax();
+  const Int_t kNTdcWidthBins =  fRecoParam->GetNTdcWidthBins();
+  const Float_t kTdcWidthMin   =    fRecoParam->GetTdcWidthMin();
+  const Float_t kTdcWidthMax   =  fRecoParam->GetTdcWidthMax();
+  const Int_t kNChargeChannelBins   =  fRecoParam->GetNChargeChannelBins();
+  const Int_t kNChargeSideBins   = fRecoParam->GetNChargeSideBins();
+  const Int_t kNChargeCorrBins   = fRecoParam->GetNChargeCorrBins();
+   
+  const Float_t kChargeChannelMin     =    1;
+  const Float_t kChargeChannelMax     = 1+kNChargeChannelBins;
+  const Float_t kChargeSideMin     =    1;
+  const Float_t kChargeSideMax     = 1+kNChargeSideBins;
+  const Float_t kChargeCorrMin     =    0;
+  const Float_t kChargeCorrMax     = kNChargeCorrBins;
+  
   const Int_t kNTimeCorrBins = 614; 
   const Float_t kTimeCorrMin = 70.019531;
-  const Float_t kTimeCorrMax =  129.980469;
+  const Float_t kTimeCorrMax =  129.980469; 
+   
   const Int_t kNTimeDiffBins = 154; 
   const Float_t kTimeDiffMin = -15.039062;
   const Float_t kTimeDiffMax =  15.039062;
-
+  
+  const Int_t kNChannelBins  =   16;
+  const Float_t kChannelMin    =    0;
+  const Float_t kChannelMax    =   16;
+  
+  const Int_t kNPedestalBins =  40;
+  const Float_t kPedestalMin   =    0;
+  const Float_t kPedestalMax   =  40; 
+  
+  const Int_t kNPairBins  =   8;
+  const Float_t kPairMin    =    0;
+  const Float_t kPairMax    =   8;
+  
   TH2I * h2i;
   TH2F * h2d;
   TH1I * h1i;
@@ -471,9 +488,9 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1i,kMultiADC, !expert, image, saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1F("H1D_Charge_ADA", "Total Charge in ADA;Charge [ADC counts];Counts", 500, 0, 500) ;  
+  h1d = new TH1F("H1D_Charge_ADA", "Total Charge in ADA;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADA, !expert, image, saveCorr);   iHisto++;
-  h1d = new TH1F("H1D_Charge_ADC", "Total Charge in ADC;Charge [ADC counts];Counts", 500, 0, 500) ;  
+  h1d = new TH1F("H1D_Charge_ADC", "Total Charge in ADC;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADC, !expert, image, saveCorr);   iHisto++;
   h1d = new TH1F("H1D_Charge_AD", "Total Charge in AD;Charge [ADC counts];Counts", 4000, 0, 80000) ;  
   Add2RawsList(h1d,kChargeAD, !expert,  image, saveCorr);   iHisto++;
@@ -481,7 +498,7 @@ void AliADQADataMakerRec::InitRaws()
 
   // Creation of Charge EoI histogram 
   h2d = new TH2F("H2D_ChargeEoI", "Charge Event of Interest;Channel Number;Charge [ADC counts]"
-		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
   Add2RawsList(h2d,kChargeEoI, !expert, image, saveCorr); iHisto++;
 
   for(Int_t iInt=0;iInt<kNintegrator;iInt++){
@@ -497,7 +514,7 @@ void AliADQADataMakerRec::InitRaws()
 
     // Creation of Charge EoI histograms 
     h2i = new TH2I(Form("H2I_ChargeEoI_Int%d",iInt), Form("Charge EoI (Int%d);Channel;Charge [ADC counts]",iInt)
-		   ,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+		   ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), !expert, image, saveCorr); iHisto++;
     
   }	
@@ -527,19 +544,19 @@ void AliADQADataMakerRec::InitRaws()
   h1d = new TH1F("H1D_ADC_Time", "ADC Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h1d,kADCTime, !expert, image, saveCorr); iHisto++;
 	
-  h1d = new TH1F("H1D_Diff_Time","Diff ADA-ADC Time;Time [ns];Counts",kNTdcTimeBins, -50., 50.);
+  h1d = new TH1F("H1D_Diff_Time","Diff ADA-ADC Time;Time [ns];Counts",kNTimeDiffBins,kTimeDiffMin,kTimeDiffMax);
   Add2RawsList(h1d,kDiffTime, !expert, image, saveCorr); iHisto++;
 
   h2d = new TH2F("H2D_TimeADA_ADC", "Mean Time in ADC versus ADA;Time ADA [ns];Time ADC [ns]", kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax) ;  
   Add2RawsList(h2d,kTimeADAADC, !expert, image, saveCorr);   iHisto++;
   
-  h2d = new TH2F("H2D_TimeSlewingOff", "Time Vs Charge (no slewing correction);Leading Time[ns];Charge [ADC counts]", kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, 150,0,150) ;  
+  h2d = new TH2F("H2D_TimeSlewingOff", "Time Vs Charge (no slewing correction);Leading Time[ns];Charge [ADC counts]", kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax) ;  
   Add2RawsList(h2d,kTimeSlewingOff, !expert, image, saveCorr);   iHisto++;
   
-  h2d = new TH2F("H2D_TimeSlewingOn", "Time Vs Charge (after slewing correction);Leading Time[ns];Charge [ADC counts]", kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, 150,0,150) ;  
+  h2d = new TH2F("H2D_TimeSlewingOn", "Time Vs Charge (after slewing correction);Leading Time[ns];Charge [ADC counts]", kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax, kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax) ;  
   Add2RawsList(h2d,kTimeSlewingOn, !expert, image, saveCorr);   iHisto++;
   
-  h2d = new TH2F("H2D_WidthSlewing", "Width Vs Charge ;Time Width [ns];Charge [ADC counts]", kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax, 150,0,150) ;  
+  h2d = new TH2F("H2D_WidthSlewing", "Width Vs Charge ;Time Width [ns];Charge [ADC counts]", kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax, kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax) ;  
   Add2RawsList(h2d,kWidthSlewing, !expert, image, saveCorr);   iHisto++;
   
   //Creation of pair coincidence histograms
@@ -582,14 +599,14 @@ void AliADQADataMakerRec::InitRaws()
   Int_t nCorrelation = 0;
   for(Int_t i=0;i<8;i++){
   	for(Int_t j=7;j>i;j--){
-  		h2d = new TH2F(Form("ChargeCorr/H2D_kNChargeCorrADA_%d_%d",i,j),Form("Charge Correlation ADA module%d - module%d",i,j),150,0,150,150,0,150);
+  		h2d = new TH2F(Form("ChargeCorr/H2D_kNChargeCorrADA_%d_%d",i,j),Form("Charge Correlation ADA module%d - module%d",i,j),kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax,kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax);
 		Add2RawsList(h2d,kNChargeCorrADA+nCorrelation, expert, image, saveCorr); iHisto++; nCorrelation++;
 		}
 	}
   nCorrelation = 0;
   for(Int_t i=0;i<8;i++){
   	for(Int_t j=7;j>i;j--){
-  		h2d = new TH2F(Form("ChargeCorr/H2D_kNChargeCorrADC_%d_%d",i,j),Form("Charge Correlation ADC module%d - module%d",i,j),150,0,150,150,0,150);
+  		h2d = new TH2F(Form("ChargeCorr/H2D_kNChargeCorrADC_%d_%d",i,j),Form("Charge Correlation ADC module%d - module%d",i,j),kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax,kNChargeCorrBins, kChargeCorrMin, kChargeCorrMax);
 		Add2RawsList(h2d,kNChargeCorrADC+nCorrelation, expert, image, saveCorr); iHisto++; nCorrelation++;
 		}
 	}
@@ -693,11 +710,9 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  FillRawsData((integrator[offlineCh] == 0 ? kPedestalDiffInt0 : kPedestalDiffInt1),offlineCh,OCDBdiff);
 	}
       }
-
       // Fill Charge EoI histograms
 	   
       adc[offlineCh]    = 0.0;
-
       // Search for the maximum charge in the train of 21 LHC clocks 
       // regardless of the integrator which has been operated:
       Float_t maxadc = 0;
@@ -708,13 +723,12 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	Int_t k = offlineCh+16*iIntegrator;
 
 	adcPedSub[iClock] = rawStream->GetPedestal(iChannel,iClock) - fCalibData->GetPedestal(k);
-	//				if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
-	if(adcPedSub[iClock] <= 2.*fCalibData->GetSigma(k)) {
+	if(adcPedSub[iClock] <= fRecoParam->GetNSigmaPed()*fCalibData->GetSigma(k)) {
 	  adcPedSub[iClock] = 0;
 	  continue;
 	}
-	//		   		if(iClock < GetRecoParam()->GetStartClock() || iClock > GetRecoParam()->GetEndClock()) continue;
-	if(iClock < 8 || iClock > 12) continue;
+	
+	if(iClock < fRecoParam->GetStartClock() || iClock > fRecoParam->GetEndClock()) continue;
 	if(adcPedSub[iClock] > maxadc) {
 	  maxadc = adcPedSub[iClock];
 	  imax   = iClock;
@@ -722,11 +736,9 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
       //printf(Form("Channel %d (online), %d (offline)\n",iChannel,j)); 
       if (imax != -1) {
-	//		   		Int_t start = imax - GetRecoParam()->GetNPreClocks();
-	Int_t start = imax - 2;
+	Int_t start = imax - fRecoParam->GetNPreClocks();
 	if (start < 0) start = 0;
-	//		   		Int_t end = imax + GetRecoParam()->GetNPostClocks();
-	Int_t end = imax + 1;
+	Int_t end = imax + fRecoParam->GetNPostClocks();
 	if (end > 20) end = 20;
 	for(Int_t iClock = start; iClock <= end; iClock++) {
 	  adc[offlineCh] += adcPedSub[iClock];
@@ -763,8 +775,8 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		   
   
       // Fill HPTDC Time Histograms
-      //timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
-      timeCorr[offlineCh] = time[offlineCh];
+      timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
+      //timeCorr[offlineCh] = time[offlineCh];
 
       //const Float_t p1 = 2.50; // photostatistics term in the time resolution
       //const Float_t p2 = 3.00; // sleewing related term in the time resolution
@@ -849,7 +861,6 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     	for(Int_t jChannel=15; jChannel>iChannel; jChannel--) {
 		FillRawsData(kNChargeCorrADA+nCorrelation,adc[iChannel],adc[jChannel]);
 		FillRawsData(kNTimeCorrADA+nCorrelation,time[iChannel],time[jChannel]);
-		//if(time[iChannel]>1e-6 && time[jChannel]>1e-6) printf(Form("Time diff =  %f \n",time[iChannel]-time[jChannel]));
 		if(time[iChannel]>1e-6 && time[jChannel]>1e-6) FillRawsData(kNTimeDiffADA+nCorrelation,time[iChannel]-time[jChannel]);
 		nCorrelation++;
 		}
@@ -919,7 +930,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________ 
-Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float_t /*adc*/) const
+Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float_t adc) const
 {
   // Correct the leading time
   // for slewing effect and
@@ -936,7 +947,7 @@ Float_t AliADQADataMakerRec::CorrectLeadingTime(Int_t /*i*/, Float_t time, Float
   // Slewing correction
   //Float_t thr = fCalibData->GetCalibDiscriThr(i,kTRUE);
   //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
-  //time -= fTimeSlewing->Eval(adc/thr);
+  time -= fTimeSlewing->Eval(adc);
 
   return time;
 }

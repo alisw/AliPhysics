@@ -22,6 +22,7 @@ class TObjArray;
 class AliCDBManager;
 class AliCDBStorage;
 class AliADCalibData;
+class AliADRecoParam;
 
 class AliADQADataMakerRec: public AliQADataMakerRec {
 
@@ -59,6 +60,7 @@ public:
   
 protected: 
   AliADCalibData *fCalibData;        //! calibration data
+  AliADRecoParam *fRecoParam;
    
 private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
