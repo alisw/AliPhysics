@@ -132,6 +132,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fEvSel_HasVtxContributor(0),
       fEvSel_Triggered(0),
       fEvSel_INELgtZERO(0),
+      fEvSel_INELgtZEROStackPrimaries(0),
       fEvSel_INELgtZEROtracklets(0),
       fEvSel_INELgtZERORefMult(0),
       fEvSel_INELgtZERORefMultTracklets(0),
@@ -356,6 +357,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fEvSel_HasVtxContributor(0),
       fEvSel_Triggered(0),
       fEvSel_INELgtZERO(0),
+      fEvSel_INELgtZEROStackPrimaries(0),
       fEvSel_INELgtZEROtracklets(0),
       fEvSel_INELgtZERORefMult(0),
       fEvSel_INELgtZERORefMultTracklets(0),
@@ -1203,6 +1205,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fEvSel_IsNotPileupInMultBins  = kFALSE;
     fEvSel_HasVtxContributor      = kFALSE;
     fEvSel_Triggered              = kFALSE;
+    fEvSel_INELgtZEROStackPrimaries = kFALSE; 
     fEvSel_VtxZ = -100;
     fEvSel_MCType = -100;
     // Connect to the InputEvent
@@ -1394,6 +1397,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
+	if( TMath::Abs(geta) < 1.0 ) fEvSel_INELgtZEROStackPrimaries = kTRUE; 
         if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
         if( 2.8 < geta && geta < 5.1 ) lPtOfParticleInsideVZEROA = particleOne->Pt();
         if( 2.8 < geta && geta < 5.1 ) lPOfParticleInsideVZEROA = particleOne->P();
