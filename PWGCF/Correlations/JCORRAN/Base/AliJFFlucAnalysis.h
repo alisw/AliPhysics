@@ -11,6 +11,7 @@
 #include "AliGenEventHeader.h"
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
+#include "AliVVertex.h"
 
 
 class TClonesArray;
@@ -32,6 +33,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		void SetInputList( TClonesArray *inputarray){fInputList = inputarray;};
 		void SetEventCentrality( float cent ){fCent = cent;};
+		void SetEventVertex( double *vtx ){ fVertex = vtx; };
 		void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; };
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
@@ -57,6 +59,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 //		TDirectory           *fOutput;     // Output
 		Long64_t AnaEntry; 
 		TClonesArray * fInputList;
+		double * fVertex;
 		Float_t		fCent;
 		int			fDebugLevel;
 
@@ -80,14 +83,19 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJBin fBin_k;
 		AliJBin fBin_hh;
 		AliJBin fBin_kk;
-		AliJBin fHistCentBin; 
+		AliJBin fHistCentBin;
+		AliJBin fVertexBin; // x, y, z 
+		AliJBin fCorrBin;
 
 		AliJTH1D fh_cent; // for cent dist
+		AliJTH1D fh_vertex;
 		AliJTH1D fh_pt; // for pt dist of tracks 
 		AliJTH1D fh_eta; // for eta dist of tracks
 		AliJTH1D fh_ntracks; // for number of tracks dist
 		AliJTH1D fh_vn;  // single vn^k  array [ih][ik][iCent]
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
+
+		AliJTH1D fh_correlator; // some more complex correlator
 
 		AliJTH1D fh_vn_test1;
 		AliJTH1D fh_vn_test2;
