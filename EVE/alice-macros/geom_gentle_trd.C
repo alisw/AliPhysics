@@ -19,12 +19,13 @@
 TEveGeoShape* geom_gentle_trd()
 {
   TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_trd.root");
+  //TFile f("/local/cdb/GRP/Geometry/Data/Run0_999999999_v1_s0.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle TRD");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   gEve->AddGlobalElement(gsre);
   f.Close();
 
-  const Int_t smInstalled[]={0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 15, 16, 17};
+  const Int_t smInstalled[]={0, 1, 2, 3,4,5, 6, 7, 8, 9, 10, 11,12,13,14, 15, 16, 17};
   const Int_t nInstalled = static_cast<Int_t>(sizeof(smInstalled)/sizeof(Int_t));
   Int_t sm = 0;
   // Fix visibility, color and transparency
