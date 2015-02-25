@@ -1075,7 +1075,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
 
         //Copy Multiplicity information
         fTreeVariableCentV0M = fCentrality_V0M;
+	fTreeVariableCentV0A = fCentrality_V0A;
+	fTreeVariableCentV0C = fCentrality_V0C;
         fTreeVariableCentV0MEq = fCentrality_V0MEq;
+	fTreeVariableCentV0AEq = fCentrality_V0AEq;
+	fTreeVariableCentV0CEq = fCentrality_V0CEq;
         fTreeVariableRefMultEta8 = fRefMultEta8;
         fTreeVariableRefMultEta5 = fRefMultEta5;
         fTreeVariableRunNumber = fRunNumber;
@@ -1450,7 +1454,11 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
 
         //Copy Multiplicity information
         fTreeCascVarCentV0M = fCentrality_V0M;
+	fTreeCascVarCentV0A = fCentrality_V0A;
+	fTreeCascVarCentV0C = fCentrality_V0C;
         fTreeCascVarCentV0MEq = fCentrality_V0MEq;
+	fTreeCascVarCentV0AEq = fCentrality_V0AEq;
+	fTreeCascVarCentV0CEq = fCentrality_V0CEq;
         fTreeCascVarRefMultEta8 = fRefMultEta8;
         fTreeCascVarRefMultEta5 = fRefMultEta5;
         fTreeCascVarRunNumber = fRunNumber;
