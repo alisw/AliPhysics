@@ -549,230 +549,231 @@ void AliEveEventManager::Open()
     Int_t runNo = -1;
 
     // Open ESD and ESDfriends
+    if(!fOnlineMode)
+      {
+	if ((fESDFile = TFile::Open(fgESDFileName)))
+	  {
+	    fESD = new AliESDEvent();
+
+	    switch(fgESDvisibleTrees){
+	    case AliEveEventManager::kOfflineTree :
+	      fESDTree = readESDTree("esdTree", runNo);
+	      break;
+	    case AliEveEventManager::kHLTTree :
+	      fHLTESDTree = readESDTree("HLTesdTree", runNo);
+	      break;
+	    default:
+	      fESDTree    = readESDTree("esdTree", runNo);
+	      fHLTESDTree = readESDTree("HLTesdTree", runNo);
+	    }
+
+	    if(!fESDTree && !fHLTESDTree){
+	      // both ESD trees are == 0
+	      delete fESDFile; fESDFile = 0;
+	      delete fESD; fESD = 0;
+	    }
+
+
+	  }
+	else // esd file not readable
+	  {
+	    Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());
+	  }
+	if (fESDTree == 0 && fHLTESDTree==0)
+	  {
+	    if (fgAssertESD)
+	      {
+		throw (kEH + "ESD not initialized. Its precence was requested.");
+	      } else {
+	      Warning(kEH, "ESD not initialized.");
+	    }
+	  }
+
+	// Open AOD and registered friends
+	if ( (fAODFile = TFile::Open(fgAODFileName)) )
+	  {
+	    fAOD = new AliAODEvent();
+	    fAODTree = (TTree*) fAODFile->Get("aodTree");
+	    if (fAODTree != 0)
+	      {
+		// Check if AODfriends exist and attach them.
+		TIter       friends(fgAODfriends);
+		TObjString *name;
+		while ((name = (TObjString*) friends()) != 0)
+		  {
+		    TString p(Form("%s/%s", fgAODFileName.Data(), name->GetName()));
+		    if (fgAODFileName.EndsWith(".zip")) p.Form("%s#%s",fgAODFileName.Data(),name->GetName());
+		    if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
+		      {
+			fAODTree->AddFriend("aodTree", name->GetName());
+		      }
+		  }
+
+		fAOD->ReadFromTree(fAODTree);
+
+		if (fAODTree->GetEntry(0) <= 0)
+		  {
+		    delete fAODFile; fAODFile = 0;
+		    delete fAOD;     fAOD     = 0;
+		    Warning(kEH, "failed getting the first entry from addTree.");
+		  }
+		else
+		  {
+		    if (runNo < 0)
+		      runNo = fAOD->GetRunNumber();
+		  }
+	      }
+	    else // aodtree == 0
+	      {
+		delete fAODFile; fAODFile = 0;
+		delete fAOD;     fAOD     = 0;
+		Warning(kEH, "failed getting the aodTree.");
+	      }
+	  }
+	else // aod not readable
+	  {
+	    Warning(kEH, "can not read AOD file '%s'.", fgAODFileName.Data());
+	  }
+	if (fAODTree == 0)
+	  {
+	    if (fgAssertAOD)
+	      {
+		throw (kEH + "AOD not initialized. Its precence was requested.");
+	      } else {
+	      Warning(kEH, "AOD not initialized.");
+	    }
+	  }
+
+	// Open RunLoader from galice.root
+	//    fgGAliceFileName = "/Users/Jerus/galice.root"; // temp
     
-    if ((fESDFile = TFile::Open(fgESDFileName)))
-    {
-        fESD = new AliESDEvent();
+	TFile *gafile = TFile::Open(fgGAliceFileName);
+	cout<<"Opening galice"<<endl;
+	if (gafile)
+	  {
+	    gafile->Close();
+	    delete gafile;
+	    cout<<"SETTING RUN LOADER in Open()"<<endl;
+	    fRunLoader = AliRunLoader::Open(fgGAliceFileName, GetName());
+	    if (fRunLoader)
+	      {
+		TString alicePath(gSystem->DirName(fgGAliceFileName));
+		alicePath.Append("/");
+		fRunLoader->SetDirName(alicePath);
 
-        switch(fgESDvisibleTrees){
-        case AliEveEventManager::kOfflineTree :
-            fESDTree = readESDTree("esdTree", runNo);
-            break;
-        case AliEveEventManager::kHLTTree :
-            fHLTESDTree = readESDTree("HLTesdTree", runNo);
-            break;
-        default:
-            fESDTree    = readESDTree("esdTree", runNo);
-            fHLTESDTree = readESDTree("HLTesdTree", runNo);
-        }
+		if (fRunLoader->LoadgAlice() != 0)
+		  Warning(kEH, "failed loading gAlice via run-loader.");
 
-        if(!fESDTree && !fHLTESDTree){
-            // both ESD trees are == 0
-            delete fESDFile; fESDFile = 0;
-            delete fESD; fESD = 0;
-        }
-
-
-    }
-    else // esd file not readable
-    {
-        Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());
-    }
-    if (fESDTree == 0 && fHLTESDTree==0)
-    {
-        if (fgAssertESD)
-        {
-            throw (kEH + "ESD not initialized. Its precence was requested.");
-        } else {
-            Warning(kEH, "ESD not initialized.");
-        }
-    }
-
-    // Open AOD and registered friends
-    if ( (fAODFile = TFile::Open(fgAODFileName)) )
-    {
-        fAOD = new AliAODEvent();
-        fAODTree = (TTree*) fAODFile->Get("aodTree");
-        if (fAODTree != 0)
-        {
-            // Check if AODfriends exist and attach them.
-            TIter       friends(fgAODfriends);
-            TObjString *name;
-            while ((name = (TObjString*) friends()) != 0)
-            {
-                TString p(Form("%s/%s", fgAODFileName.Data(), name->GetName()));
-                if (fgAODFileName.EndsWith(".zip")) p.Form("%s#%s",fgAODFileName.Data(),name->GetName());
-                if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
-                {
-                    fAODTree->AddFriend("aodTree", name->GetName());
-                }
-            }
-
-            fAOD->ReadFromTree(fAODTree);
-
-            if (fAODTree->GetEntry(0) <= 0)
-            {
-                delete fAODFile; fAODFile = 0;
-                delete fAOD;     fAOD     = 0;
-                Warning(kEH, "failed getting the first entry from addTree.");
-            }
-            else
-            {
-                if (runNo < 0)
-                    runNo = fAOD->GetRunNumber();
-            }
-        }
-        else // aodtree == 0
-        {
-            delete fAODFile; fAODFile = 0;
-            delete fAOD;     fAOD     = 0;
-            Warning(kEH, "failed getting the aodTree.");
-        }
-    }
-    else // aod not readable
-    {
-        Warning(kEH, "can not read AOD file '%s'.", fgAODFileName.Data());
-    }
-    if (fAODTree == 0)
-    {
-        if (fgAssertAOD)
-        {
-            throw (kEH + "AOD not initialized. Its precence was requested.");
-        } else {
-            Warning(kEH, "AOD not initialized.");
-        }
-    }
-
-    // Open RunLoader from galice.root
-//    fgGAliceFileName = "/Users/Jerus/galice.root"; // temp
-    
-    TFile *gafile = TFile::Open(fgGAliceFileName);
-    cout<<"Opening galice"<<endl;
-    if (gafile)
-    {
-        gafile->Close();
-        delete gafile;
-        cout<<"SETTING RUN LOADER in Open()"<<endl;
-        fRunLoader = AliRunLoader::Open(fgGAliceFileName, GetName());
-        if (fRunLoader)
-        {
-            TString alicePath(gSystem->DirName(fgGAliceFileName));
-            alicePath.Append("/");
-            fRunLoader->SetDirName(alicePath);
-
-            if (fRunLoader->LoadgAlice() != 0)
-                Warning(kEH, "failed loading gAlice via run-loader.");
-
-            if (fRunLoader->LoadHeader() == 0)
-            {
-                if (runNo < 0)
-                    runNo = fRunLoader->GetHeader()->GetRun();
-            }
-            else
-            {
-                Warning(kEH, "failed loading run-loader's header.");
-                delete fRunLoader;
-                fRunLoader = 0;
-            }
-        }
-        else // run-loader open failed
-        {
-            Warning(kEH, "failed opening ALICE run-loader from '%s'.", fgGAliceFileName.Data());
-        }
+		if (fRunLoader->LoadHeader() == 0)
+		  {
+		    if (runNo < 0)
+		      runNo = fRunLoader->GetHeader()->GetRun();
+		  }
+		else
+		  {
+		    Warning(kEH, "failed loading run-loader's header.");
+		    delete fRunLoader;
+		    fRunLoader = 0;
+		  }
+	      }
+	    else // run-loader open failed
+	      {
+		Warning(kEH, "failed opening ALICE run-loader from '%s'.", fgGAliceFileName.Data());
+	      }
         
-    }
-    else // galice not readable
-    {
-        Warning(kEH, "can not read '%s'.", fgGAliceFileName.Data());
-    }
-    if (fRunLoader == 0)
-    {
-        if (fgAssertRunLoader)
-            throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");
-        else
-            Warning(kEH, "Bootstraping of run-loader failed.");
-    }
+	  }
+	else // galice not readable
+	  {
+	    Warning(kEH, "can not read '%s'.", fgGAliceFileName.Data());
+	  }
+	if (fRunLoader == 0)
+	  {
+	    if (fgAssertRunLoader)
+	      throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");
+	    else
+	      Warning(kEH, "Bootstraping of run-loader failed.");
+	  }
 
-    // Open raw-data file
+	// Open raw-data file
 
-    TString rawPath;
-    if (fgRawFromStandardLoc)
-    {
-        if (!fgRawFileName.BeginsWith("alien:"))
-            throw kEH + "Standard raw search requested, but the directory is not in AliEn.";
-        if (!fgRawFileName.Contains("/ESDs/"))
-            throw kEH + "Standard raw search requested, but does not contain 'ESDs' directory.";
+	TString rawPath;
+	if (fgRawFromStandardLoc)
+	  {
+	    if (!fgRawFileName.BeginsWith("alien:"))
+	      throw kEH + "Standard raw search requested, but the directory is not in AliEn.";
+	    if (!fgRawFileName.Contains("/ESDs/"))
+	      throw kEH + "Standard raw search requested, but does not contain 'ESDs' directory.";
 
-        TPMERegexp chunk("/([\\d\\.])+/?$");
-        Int_t nm = chunk.Match(fgRawFileName);
-        if (nm != 2)
-            throw kEH + "Standard raw search requested, but the path does not end with chunk-id directory.";
+	    TPMERegexp chunk("/([\\d\\.])+/?$");
+	    Int_t nm = chunk.Match(fgRawFileName);
+	    if (nm != 2)
+	      throw kEH + "Standard raw search requested, but the path does not end with chunk-id directory.";
 
-        TPMERegexp esdstrip("/ESDs/.*");
-        rawPath = fgRawFileName;
-        esdstrip.Substitute(rawPath, "/raw/");
-        rawPath += chunk[0];
-        rawPath += ".root";
+	    TPMERegexp esdstrip("/ESDs/.*");
+	    rawPath = fgRawFileName;
+	    esdstrip.Substitute(rawPath, "/raw/");
+	    rawPath += chunk[0];
+	    rawPath += ".root";
 
-        Info(kEH, "Standard raw search requested, using the following path:\n  %s\n", rawPath.Data());
-    }
-    else
-    {
-        rawPath = fgRawFileName;
-    }
-    // If i use open directly, raw-reader reports an error but i have
-    // no way to detect it.
-    // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
-    AliLog::EType_t oldLogLevel = (AliLog::EType_t) AliLog::GetGlobalLogLevel();
-    if (fgAssertRaw == kFALSE)
-    {
-        AliLog::SetGlobalLogLevel(AliLog::kFatal);
-    }
-    if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE)
-    {
-        fRawReader = AliRawReader::Create(rawPath);
-    }
-    else
-    {
-        fRawReader = AliRawReader::Create(fgRawFileName);
-    }
-    if (fgAssertRaw == kFALSE)
-    {
-        AliLog::SetGlobalLogLevel(oldLogLevel);
-    }
+	    Info(kEH, "Standard raw search requested, using the following path:\n  %s\n", rawPath.Data());
+	  }
+	else
+	  {
+	    rawPath = fgRawFileName;
+	  }
+	// If i use open directly, raw-reader reports an error but i have
+	// no way to detect it.
+	// Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
+	AliLog::EType_t oldLogLevel = (AliLog::EType_t) AliLog::GetGlobalLogLevel();
+	if (fgAssertRaw == kFALSE)
+	  {
+	    AliLog::SetGlobalLogLevel(AliLog::kFatal);
+	  }
+	if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE)
+	  {
+	    fRawReader = AliRawReader::Create(rawPath);
+	  }
+	else
+	  {
+	    fRawReader = AliRawReader::Create(fgRawFileName);
+	  }
+	if (fgAssertRaw == kFALSE)
+	  {
+	    AliLog::SetGlobalLogLevel(oldLogLevel);
+	  }
 
-    if (fRawReader == 0)
-    {
-        if (fgAssertRaw)
-        {
-            throw (kEH + "raw-data not initialized. Its precence was requested.");
-        }
-        else
-        {
-            Warning(kEH, "raw-data not initialized.");
-        }
-    }
+	if (fRawReader == 0)
+	  {
+	    if (fgAssertRaw)
+	      {
+		throw (kEH + "raw-data not initialized. Its precence was requested.");
+	      }
+	    else
+	      {
+		Warning(kEH, "raw-data not initialized.");
+	      }
+	  }
 
-    if (runNo < 0)
-    {
-        if (fRawReader)
-        {
-            if ( ! fRawReader->NextEvent())
-            {
-                throw (kEH + "can not go to first event in raw-reader to determine run-id.");
-            }
-            runNo = fRawReader->GetRunNumber();
-            Info(kEH, "Determining run-no from raw ... run=%d.", runNo);
-            fRawReader->RewindEvents();
-        }
-        else
-        {
-            fExternalCtrl = kTRUE;
-             fEventId = 0;
-            return;
-        }
-    }
-
+	if (runNo < 0)
+	  {
+	    if (fRawReader)
+	      {
+		if ( ! fRawReader->NextEvent())
+		  {
+		    throw (kEH + "can not go to first event in raw-reader to determine run-id.");
+		  }
+		runNo = fRawReader->GetRunNumber();
+		Info(kEH, "Determining run-no from raw ... run=%d.", runNo);
+		fRawReader->RewindEvents();
+	      }
+	    else
+	      {
+		fExternalCtrl = kTRUE;
+		fEventId = 0;
+		return;
+	      }
+	  }
+      }
     // Initialize OCDB ... only in master event-manager
 
     InitOCDB(runNo);
@@ -910,7 +911,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
 
     fEventId++;
     fHasEvent     = kTRUE;
-    fExternalCtrl = kTRUE;
+    //fExternalCtrl = kTRUE;
 
     SetTitle("Online event in memory");
     SetName ("Online Event");
@@ -934,7 +935,7 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
 
     static const TEveException kEH("AliEveEventManager::GetMaxEventId ");
 
-    if (fExternalCtrl || fIsOpen == kFALSE)
+    if (fExternalCtrl || fIsOpen == kFALSE || fOnlineMode)
     {
         return -1;
     }
@@ -1003,7 +1004,13 @@ void AliEveEventManager::GotoEvent(Int_t event)
     }
     if (fExternalCtrl)
     {
-      // throw (kEH + "Event-loop is under external control.");
+        throw (kEH + "Event-loop is under external control.");
+    }
+    else if (!fIsOpen)
+    {
+        throw (kEH + "Event-files not opened.");
+    }
+    
 #ifdef ZMQ
       if(fOnlineMode)
 	{
@@ -1086,11 +1093,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
 	}
 #endif	
 
-    }
-    else if (!fIsOpen)
-    {
-        throw (kEH + "Event-files not opened.");
-    }
+   
 
     fEventInfo.Reset();
 
@@ -1270,13 +1273,13 @@ void AliEveEventManager::NextEvent()
 
     static const TEveException kEH("AliEveEventManager::NextEvent ");
 
-    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
+    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}    
+    if (fExternalCtrl){throw (kEH + "External control");}
     
-    if (fExternalCtrl)
-    {
+    if(fOnlineMode)
+      {
 #ifdef ZMQ
-      if(fOnlineMode)
-	{
+      
 	  if(fIsNewEventAvaliable)
 	    {
 	      fMutex->Lock();
@@ -1303,9 +1306,8 @@ void AliEveEventManager::NextEvent()
 	      cout<<"No new event is avaliable."<<endl;
 	      NoEventLoaded();
 	    }
-	}
 #endif
-    }
+      }
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
       cout<<"There is ESD or HLTESD tree"<<endl;
