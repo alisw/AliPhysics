@@ -131,6 +131,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fEvSel_IsNotPileupInMultBins(0),
       fEvSel_HasVtxContributor(0),
       fEvSel_Triggered(0),
+      fEvSel_INELgtZERO(0),
+      fEvSel_INELgtZEROtracklets(0),
+      fEvSel_INELgtZERORefMult(0),
+      fEvSel_INELgtZERORefMultTracklets(0),
       fEvSel_VtxZ(0),
       fEvSel_MCType(0),
       //---> Variables for fTreeV0
@@ -351,6 +355,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fEvSel_IsNotPileupInMultBins(0),
       fEvSel_HasVtxContributor(0),
       fEvSel_Triggered(0),
+      fEvSel_INELgtZERO(0),
+      fEvSel_INELgtZEROtracklets(0),
+      fEvSel_INELgtZERORefMult(0),
+      fEvSel_INELgtZERORefMultTracklets(0),
       fEvSel_VtxZ(0),
       fEvSel_MCType(0),
       //---> Variables for fTreeV0
@@ -651,6 +659,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
     fTreeEvent->Branch("fEvSel_HasVtxContributor", &fEvSel_HasVtxContributor, "fEvSel_HasVtxContributor/O");
     fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
+    fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
+    fTreeEvent->Branch("fEvSel_INELgtZEROtracklets", &fEvSel_INELgtZEROtracklets, "fEvSel_INELgtZEROtracklets/O");
+    fTreeEvent->Branch("fEvSel_INELgtZERORefMult", &fEvSel_INELgtZERORefMult, "fEvSel_INELgtZERORefMult/O");
+    fTreeEvent->Branch("fEvSel_INELgtZERORefMultTracklets", &fEvSel_INELgtZERORefMultTracklets, "fEvSel_INELgtZERORefMultTracklets/O");
+
     fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
     fTreeEvent->Branch("fEvSel_MCType", &fEvSel_MCType, "fEvSel_MCType/I");
 
@@ -859,163 +872,163 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     }
     //2D Histos for vs Mult calculation
     if(! fHistPtVsRefMultEta5_GenXiMinus ) {
-        fHistPtVsRefMultEta5_GenXiMinus    = new TH2D( "fHistPtVsRefMultEta5_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta5_GenXiMinus    = new TH2D( "fHistPtVsRefMultEta5_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta5_GenXiMinus);
     }
     if(! fHistPtVsRefMultEta5_GenXiPlus ) {
-        fHistPtVsRefMultEta5_GenXiPlus     = new TH2D( "fHistPtVsRefMultEta5_GenXiPlus",        "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta5_GenXiPlus     = new TH2D( "fHistPtVsRefMultEta5_GenXiPlus",        "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta5_GenXiPlus);
     }
     if(! fHistPtVsRefMultEta5_GenOmegaMinus ) {
-        fHistPtVsRefMultEta5_GenOmegaMinus    = new TH2D( "fHistPtVsRefMultEta5_GenOmegaMinus", "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta5_GenOmegaMinus    = new TH2D( "fHistPtVsRefMultEta5_GenOmegaMinus", "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta5_GenOmegaMinus);
     }
     if(! fHistPtVsRefMultEta5_GenOmegaPlus ) {
-        fHistPtVsRefMultEta5_GenOmegaPlus     = new TH2D( "fHistPtVsRefMultEta5_GenOmegaPlus",  "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta5_GenOmegaPlus     = new TH2D( "fHistPtVsRefMultEta5_GenOmegaPlus",  "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta5_GenOmegaPlus);
     }
     if(! fHistPtVsRefMultEta8_GenXiMinus ) {
-        fHistPtVsRefMultEta8_GenXiMinus    = new TH2D( "fHistPtVsRefMultEta8_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta8_GenXiMinus    = new TH2D( "fHistPtVsRefMultEta8_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta8_GenXiMinus);
     }
     if(! fHistPtVsRefMultEta8_GenXiPlus ) {
-        fHistPtVsRefMultEta8_GenXiPlus     = new TH2D( "fHistPtVsRefMultEta8_GenXiPlus",        "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta8_GenXiPlus     = new TH2D( "fHistPtVsRefMultEta8_GenXiPlus",        "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta8_GenXiPlus);
     }
     if(! fHistPtVsRefMultEta8_GenOmegaMinus ) {
-        fHistPtVsRefMultEta8_GenOmegaMinus    = new TH2D( "fHistPtVsRefMultEta8_GenOmegaMinus", "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta8_GenOmegaMinus    = new TH2D( "fHistPtVsRefMultEta8_GenOmegaMinus", "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta8_GenOmegaMinus);
     }
     if(! fHistPtVsRefMultEta8_GenOmegaPlus ) {
-        fHistPtVsRefMultEta8_GenOmegaPlus     = new TH2D( "fHistPtVsRefMultEta8_GenOmegaPlus",  "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+        fHistPtVsRefMultEta8_GenOmegaPlus     = new TH2D( "fHistPtVsRefMultEta8_GenOmegaPlus",  "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsRefMultEta8_GenOmegaPlus);
     }
 
     //Centralities: V0A, V0C, V0M, +Eq
     if(! fHistPtVsCentV0A_GenXiMinus ) {
         fHistPtVsCentV0A_GenXiMinus    = new TH2D(
-            "fHistPtVsCentV0A_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0A_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0A_GenXiMinus);
     }
     if(! fHistPtVsCentV0A_GenXiPlus ) {
         fHistPtVsCentV0A_GenXiPlus    = new TH2D(
-            "fHistPtVsCentV0A_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0A_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0A_GenXiPlus);
     }
     if(! fHistPtVsCentV0A_GenOmegaMinus ) {
         fHistPtVsCentV0A_GenOmegaMinus    = new TH2D(
-            "fHistPtVsCentV0A_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0A_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0A_GenOmegaMinus);
     }
     if(! fHistPtVsCentV0A_GenOmegaPlus ) {
         fHistPtVsCentV0A_GenOmegaPlus    = new TH2D(
-            "fHistPtVsCentV0A_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0A_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0A_GenOmegaPlus);
     }
 
     if(! fHistPtVsCentV0C_GenXiMinus ) {
         fHistPtVsCentV0C_GenXiMinus    = new TH2D(
-            "fHistPtVsCentV0C_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0C_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0C_GenXiMinus);
     }
     if(! fHistPtVsCentV0C_GenXiPlus ) {
         fHistPtVsCentV0C_GenXiPlus    = new TH2D(
-            "fHistPtVsCentV0C_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0C_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0C_GenXiPlus);
     }
     if(! fHistPtVsCentV0C_GenOmegaMinus ) {
         fHistPtVsCentV0C_GenOmegaMinus    = new TH2D(
-            "fHistPtVsCentV0C_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0C_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0C_GenOmegaMinus);
     }
     if(! fHistPtVsCentV0C_GenOmegaPlus ) {
         fHistPtVsCentV0C_GenOmegaPlus    = new TH2D(
-            "fHistPtVsCentV0C_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0C_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0C_GenOmegaPlus);
     }
 
     if(! fHistPtVsCentV0M_GenXiMinus ) {
         fHistPtVsCentV0M_GenXiMinus    = new TH2D(
-            "fHistPtVsCentV0M_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0M_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0M_GenXiMinus);
     }
     if(! fHistPtVsCentV0M_GenXiPlus ) {
         fHistPtVsCentV0M_GenXiPlus    = new TH2D(
-            "fHistPtVsCentV0M_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0M_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0M_GenXiPlus);
     }
     if(! fHistPtVsCentV0M_GenOmegaMinus ) {
         fHistPtVsCentV0M_GenOmegaMinus    = new TH2D(
-            "fHistPtVsCentV0M_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0M_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0M_GenOmegaMinus);
     }
     if(! fHistPtVsCentV0M_GenOmegaPlus ) {
         fHistPtVsCentV0M_GenOmegaPlus    = new TH2D(
-            "fHistPtVsCentV0M_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0M_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0M_GenOmegaPlus);
     }
 
     //Equalized
     if(! fHistPtVsCentV0AEq_GenXiMinus ) {
         fHistPtVsCentV0AEq_GenXiMinus    = new TH2D(
-            "fHistPtVsCentV0AEq_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0AEq_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0AEq_GenXiMinus);
     }
     if(! fHistPtVsCentV0AEq_GenXiPlus ) {
         fHistPtVsCentV0AEq_GenXiPlus    = new TH2D(
-            "fHistPtVsCentV0AEq_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0AEq_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0AEq_GenXiPlus);
     }
     if(! fHistPtVsCentV0AEq_GenOmegaMinus ) {
         fHistPtVsCentV0AEq_GenOmegaMinus    = new TH2D(
-            "fHistPtVsCentV0AEq_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0AEq_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0AEq_GenOmegaMinus);
     }
     if(! fHistPtVsCentV0AEq_GenOmegaPlus ) {
         fHistPtVsCentV0AEq_GenOmegaPlus    = new TH2D(
-            "fHistPtVsCentV0AEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0AEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0AEq_GenOmegaPlus);
     }
 
     if(! fHistPtVsCentV0CEq_GenXiMinus ) {
         fHistPtVsCentV0CEq_GenXiMinus    = new TH2D(
-            "fHistPtVsCentV0CEq_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0CEq_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0CEq_GenXiMinus);
     }
     if(! fHistPtVsCentV0CEq_GenXiPlus ) {
         fHistPtVsCentV0CEq_GenXiPlus    = new TH2D(
-            "fHistPtVsCentV0CEq_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0CEq_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0CEq_GenXiPlus);
     }
     if(! fHistPtVsCentV0CEq_GenOmegaMinus ) {
         fHistPtVsCentV0CEq_GenOmegaMinus    = new TH2D(
-            "fHistPtVsCentV0CEq_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0CEq_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0CEq_GenOmegaMinus);
     }
     if(! fHistPtVsCentV0CEq_GenOmegaPlus ) {
         fHistPtVsCentV0CEq_GenOmegaPlus    = new TH2D(
-            "fHistPtVsCentV0CEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0CEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0CEq_GenOmegaPlus);
     }
 
     if(! fHistPtVsCentV0MEq_GenXiMinus ) {
         fHistPtVsCentV0MEq_GenXiMinus    = new TH2D(
-            "fHistPtVsCentV0MEq_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0MEq_GenXiMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0MEq_GenXiMinus);
     }
     if(! fHistPtVsCentV0MEq_GenXiPlus ) {
         fHistPtVsCentV0MEq_GenXiPlus    = new TH2D(
-            "fHistPtVsCentV0MEq_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0MEq_GenXiPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0MEq_GenXiPlus);
     }
     if(! fHistPtVsCentV0MEq_GenOmegaMinus ) {
         fHistPtVsCentV0MEq_GenOmegaMinus    = new TH2D(
-            "fHistPtVsCentV0MEq_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0MEq_GenOmegaMinus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0MEq_GenOmegaMinus);
     }
     if(! fHistPtVsCentV0MEq_GenOmegaPlus ) {
         fHistPtVsCentV0MEq_GenOmegaPlus    = new TH2D(
-            "fHistPtVsCentV0MEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);
+            "fHistPtVsCentV0MEq_GenOmegaPlus",       "Generated;p_{T} (GeV/c); Mult",200,0,20,200,0,200);
         fListHist->Add(fHistPtVsCentV0MEq_GenOmegaPlus);
     }
 
@@ -1462,6 +1475,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fCentrality_V0AEq = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0AEq" );
     fCentrality_V0CEq = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0CEq" );
     fCentrality_V0MEq = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0MEq" );
+
+    //INEL > 0 check
+    fEvSel_INELgtZERO          = IsINELgtZERO( lESDevent , "tracks"    );
+    fEvSel_INELgtZEROtracklets = IsINELgtZERO( lESDevent , "tracklets" );
+
+    fEvSel_INELgtZERORefMult = kFALSE;
+    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 1.0) >= 1 ) fEvSel_INELgtZERORefMult = kTRUE;
+
+    fEvSel_INELgtZERORefMultTracklets = kFALSE;
+    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE;
+
 
     //Event-level fill
     fTreeEvent->Fill();
@@ -2395,4 +2419,52 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMC::MyRapidity(Double_t rE, Dou
         ReturnValue =  0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
     }
     return ReturnValue;
+}
+
+Bool_t AliAnalysisTaskStrangenessVsMultiplicityMC::IsINELgtZERO(AliESDEvent *lESDevent, TString lType) const
+{
+    // This function checks if there was at least a tracklet within |eta|<1.0
+    // Meant to be a cross-check before a wider implementation of such a check is in place.
+
+    Bool_t lReturnValue = kFALSE; //No track found a priori
+
+    if ( lType == "tracks") {
+        //Step 1: Retrieve array of tracks (requires AliESDTrackCuts with some configuration)
+        TObjArray* list = fESDtrackCuts->GetAcceptedTracks(lESDevent, kFALSE);
+        Int_t nGoodTracks = list->GetEntries();
+
+        // loop over esd tracks
+        for (Int_t i=0; i<nGoodTracks; i++)
+        {
+            //Acquire Track
+            AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+            if (!esdTrack)
+            {
+                AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
+                continue;
+            }
+            //Get Basic Characteristics of track
+            Float_t eta = esdTrack->Eta();
+            Float_t pT  = esdTrack->Pt();
+
+            //Check if the track is in desired phase space
+            if (TMath::Abs(eta) < 1.0 && pT > 0.15) {
+                lReturnValue = kTRUE;
+            }
+        }
+        //don't forget to delete list...
+        delete list;
+    }
+
+    if (lType == "tracklets") //pure tracklets check only...
+    {
+        const AliMultiplicity* spdmult = lESDevent->GetMultiplicity();    // spd multiplicity object
+        for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i)
+        {
+            if (TMath::Abs(spdmult->GetEta(i)) < 1.0)
+                lReturnValue = kTRUE;
+        }
+    }
+
+    return lReturnValue;
 }

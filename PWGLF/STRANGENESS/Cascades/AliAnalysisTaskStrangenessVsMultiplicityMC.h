@@ -54,7 +54,7 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
-    //Bool_t   IsINELgtZERO          (AliESDEvent *lESDevent) const;
+    Bool_t   IsINELgtZERO(AliESDEvent *lESDevent, TString lType) const;
     //Bool_t   IsINELgtZEROPrimOnly  (AliESDEvent *lESDevent, AliStack *lStack) const;
     //Bool_t   IsINELgtZEROGenerator (AliStack *lStack) const;
 
@@ -190,6 +190,12 @@ private:
     Bool_t fEvSel_HasVtxContributor;        //!
     Bool_t fEvSel_Triggered;                //!
 
+    Bool_t fEvSel_INELgtZERO;               //!
+    Bool_t fEvSel_INELgtZEROtracklets;      //!
+
+    Bool_t fEvSel_INELgtZERORefMult;           //!
+    Bool_t fEvSel_INELgtZERORefMultTracklets;  //!
+
     Float_t fEvSel_VtxZ; //! pv z position (cm)
     Int_t fEvSel_MCType; //! type of event (to be used in PYTHIA, specifically)
 
@@ -234,7 +240,7 @@ private:
     Float_t fTreeVariableCentV0MEq;  //!
     Float_t fTreeVariableCentV0AEq;  //!
     Float_t fTreeVariableCentV0CEq;  //!
-    
+
     Int_t   fTreeVariableRefMultEta8;  //!
     Int_t   fTreeVariableRefMultEta5;  //!
     Int_t   fTreeVariableRunNumber; //! //want to re-quantile per run? here's your ticket
@@ -298,7 +304,7 @@ private:
     Float_t fTreeCascVarCentV0MEq;  //!
     Float_t fTreeCascVarCentV0AEq;  //!
     Float_t fTreeCascVarCentV0CEq;  //!
-    
+
     Int_t fTreeCascVarRefMultEta8;  //!
     Int_t fTreeCascVarRefMultEta5;  //!
     Int_t fTreeCascVarTrueMultEta5; //!
