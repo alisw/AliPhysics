@@ -52,7 +52,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Int_t        GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;  
 
   //-------------------------------
-	//Opening angle pair selection
+	// Opening angle pair selection
   //-------------------------------
   void         SwitchOnAngleSelection()         { fUseAngleCut         = kTRUE  ; }
   void         SwitchOffAngleSelection()        { fUseAngleCut         = kFALSE ; }
@@ -67,7 +67,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
   
   //------------------------------------------
-  //Do analysis only with clusters in same SM or different combinations of SM
+  // Do analysis only with clusters in same SM or different combinations of SM
   //------------------------------------------
   void         SwitchOnSameSM()                 { fSameSM              = kTRUE  ; }
   void         SwitchOffSameSM()                { fSameSM              = kFALSE ; }
@@ -76,16 +76,19 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffSMCombinations()        { fFillSMCombinations  = kFALSE ; }
   
   //-------------------------------
-  //Histogram filling options off by default
+  // Histogram filling options off by default
   //-------------------------------
   void         SwitchOnInvPtWeight()            { fMakeInvPtPlots      = kTRUE  ; }
   void         SwitchOffInvPtWeight()           { fMakeInvPtPlots      = kFALSE ; }
   
   void         SwitchOnFillBadDistHisto()       { fFillBadDistHisto    = kTRUE  ; }
   void         SwitchOffFillBadDistHisto()      { fFillBadDistHisto    = kFALSE ; }
+
+  void         SwitchOnFillOnlyMCAcceptanceHisto()  { fFillOnlyMCAcceptanceHisto    = kTRUE  ; }
+  void         SwitchOffFillOnlyMCAcceptanceHisto() { fFillOnlyMCAcceptanceHisto    = kFALSE ; }
   
   //-------------------------------------------
-  //Cuts for multiple analysis, off by default
+  // Cuts for multiple analysis, off by default
   //-------------------------------------------
   void         SwitchOnMultipleCutAnalysis()    { fMultiCutAna         = kTRUE  ; }
   void         SwitchOffMultipleCutAnalysis()   { fMultiCutAna         = kFALSE ; }
@@ -167,6 +170,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           // Fill histograms depending on their origin
   Bool_t   fFillArmenterosThetaStar;   // Fill armenteros histograms
+  Bool_t   fFillOnlyMCAcceptanceHisto; // Do analysis only of MC kinematics input
   
   Bool_t   fCheckAccInSector;          // Check that the decay pi0 falls in the same SM or sector
   
