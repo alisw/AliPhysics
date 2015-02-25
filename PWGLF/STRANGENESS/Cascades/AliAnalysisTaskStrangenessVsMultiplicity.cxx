@@ -89,7 +89,6 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicity.h"
-#include <../../home/daviddc/wonderland/root/include/Rtypes.h>
 
 using std::cout;
 using std::endl;
