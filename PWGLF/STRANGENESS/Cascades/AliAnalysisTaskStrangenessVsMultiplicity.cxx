@@ -100,22 +100,23 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
     : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
       fkSaveV0Tree      ( kFALSE ),
       fkSaveCascadeTree ( kTRUE  ),
+      fkSaveExtendedRefMultInfo ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
       fkApplyTrackletsVsClustersCut(kTRUE),
 //---> Variables for fTreeEvent
       fAmplitude_V0A   (0),
       fAmplitude_V0C   (0),
+      fAmplitude_V0M   (0),
       fAmplitude_V0AEq (0),
       fAmplitude_V0CEq (0),
+      fAmplitude_V0MEq (0),
       fCentrality_V0A(0),
       fCentrality_V0C(0),
       fCentrality_V0M(0),
       fCentrality_V0AEq(0),
       fCentrality_V0CEq(0),
       fCentrality_V0MEq(0),
-      fCustomCentrality_V0M(0),
-      fCustomCentrality_V0MEq(0),
       fRefMultEta5(0),
       fRefMultEta8(0),
       fRunNumber(0),
@@ -166,8 +167,11 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
       fTreeVariableCentV0M(0),
+      fTreeVariableCentV0A(0),
+      fTreeVariableCentV0C(0),
       fTreeVariableCentV0MEq(0),
-      fTreeVariableCustomCentV0M(0),
+      fTreeVariableCentV0AEq(0),
+      fTreeVariableCentV0CEq(0),
       fTreeVariableRefMultEta8(0),
       fTreeVariableRefMultEta5(0),
       fTreeVariableRunNumber(0),
@@ -202,8 +206,11 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fTreeCascVarBachNSigmaPion(0),
       fTreeCascVarBachNSigmaKaon(0),
       fTreeCascVarCentV0M(0),
+      fTreeCascVarCentV0A(0),
+      fTreeCascVarCentV0C(0),
       fTreeCascVarCentV0MEq(0),
-      fTreeCascVarCustomCentV0M(0),
+      fTreeCascVarCentV0AEq(0),
+      fTreeCascVarCentV0CEq(0),
       fTreeCascVarRefMultEta8(0),
       fTreeCascVarRefMultEta5(0),
       fTreeCascVarRunNumber(0),
@@ -219,22 +226,23 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
       fkSaveV0Tree      ( kFALSE ),
       fkSaveCascadeTree ( kTRUE  ),
+      fkSaveExtendedRefMultInfo ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
       fkApplyTrackletsVsClustersCut(kTRUE),
 //---> Variables for fTreeEvent
       fAmplitude_V0A (0),
       fAmplitude_V0C (0),
+      fAmplitude_V0M (0),
       fAmplitude_V0AEq (0),
       fAmplitude_V0CEq (0),
+      fAmplitude_V0MEq (0),
       fCentrality_V0A(0),
       fCentrality_V0C(0),
       fCentrality_V0M(0),
       fCentrality_V0AEq(0),
       fCentrality_V0CEq(0),
       fCentrality_V0MEq(0),
-      fCustomCentrality_V0M(0),
-      fCustomCentrality_V0MEq(0),
       fRefMultEta5(0),
       fRefMultEta8(0),
       fRunNumber(0),
@@ -285,8 +293,11 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
       fTreeVariableCentV0M(0),
+      fTreeVariableCentV0A(0),
+      fTreeVariableCentV0C(0),
       fTreeVariableCentV0MEq(0),
-      fTreeVariableCustomCentV0M(0),
+      fTreeVariableCentV0AEq(0),
+      fTreeVariableCentV0CEq(0),
       fTreeVariableRefMultEta8(0),
       fTreeVariableRefMultEta5(0),
       fTreeVariableRunNumber(0),
@@ -321,8 +332,11 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fTreeCascVarBachNSigmaPion(0),
       fTreeCascVarBachNSigmaKaon(0),
       fTreeCascVarCentV0M(0),
+      fTreeCascVarCentV0A(0),
+      fTreeCascVarCentV0C(0),
       fTreeCascVarCentV0MEq(0),
-      fTreeCascVarCustomCentV0M(0),
+      fTreeCascVarCentV0AEq(0),
+      fTreeCascVarCentV0CEq(0),
       fTreeCascVarRefMultEta8(0),
       fTreeCascVarRefMultEta5(0),
       fTreeCascVarRunNumber(0),
@@ -414,8 +428,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     //--- VZERO Data (Integrated)
     fTreeEvent->Branch("fAmplitude_V0A",&fAmplitude_V0A,"fAmplitude_V0A/F");
     fTreeEvent->Branch("fAmplitude_V0C",&fAmplitude_V0C,"fAmplitude_V0C/F");
+    fTreeEvent->Branch("fAmplitude_V0M",&fAmplitude_V0M,"fAmplitude_V0M/F");
     fTreeEvent->Branch("fAmplitude_V0AEq",&fAmplitude_V0AEq,"fAmplitude_V0AEq/F");
     fTreeEvent->Branch("fAmplitude_V0CEq",&fAmplitude_V0CEq,"fAmplitude_V0CEq/F");
+    fTreeEvent->Branch("fAmplitude_V0MEq",&fAmplitude_V0MEq,"fAmplitude_V0MEq/F");
 
     //Info from AliCentrality (not necessarily 'centrality' per se)
     fTreeEvent->Branch("fCentrality_V0A",&fCentrality_V0A,"fCentrality_V0A/F");
@@ -424,13 +440,14 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeEvent->Branch("fCentrality_V0AEq",&fCentrality_V0AEq,"fCentrality_V0AEq/F");
     fTreeEvent->Branch("fCentrality_V0CEq",&fCentrality_V0CEq,"fCentrality_V0CEq/F");
     fTreeEvent->Branch("fCentrality_V0MEq",&fCentrality_V0MEq,"fCentrality_V0MEq/F");
-    fTreeEvent->Branch("fCustomCentrality_V0M",&fCustomCentrality_V0M,"fCustomCentrality_V0M/F");
-    fTreeEvent->Branch("fCustomCentrality_V0MEq",&fCustomCentrality_V0MEq,"fCustomCentrality_V0MEq/F");
 
     //Official GetReferenceMultiplicity
     fTreeEvent->Branch("fRefMultEta5",&fRefMultEta5,"fRefMultEta5/I");
     fTreeEvent->Branch("fRefMultEta8",&fRefMultEta8,"fRefMultEta8/I");
-    fTreeEvent->Branch("fRefMultDiffEta",fRefMultDiffEta,"fRefMultDiffEta[20]/I");
+
+    //Don't do this if not explicitly requested, takes up too much space
+    if ( fkSaveExtendedRefMultInfo )
+        fTreeEvent->Branch("fRefMultDiffEta",fRefMultDiffEta,"fRefMultDiffEta[20]/I");
 
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
@@ -491,11 +508,16 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
     //-----------MULTIPLICITY-INFO--------------------
     fTreeV0->Branch("fTreeVariableCentV0M",&fTreeVariableCentV0M,"fTreeVariableCentV0M/F");
+    fTreeV0->Branch("fTreeVariableCentV0A",&fTreeVariableCentV0A,"fTreeVariableCentV0A/F");
+    fTreeV0->Branch("fTreeVariableCentV0C",&fTreeVariableCentV0C,"fTreeVariableCentV0C/F");
     fTreeV0->Branch("fTreeVariableCentV0MEq",&fTreeVariableCentV0MEq,"fTreeVariableCentV0MEq/F");
-    fTreeV0->Branch("fTreeVariableCustomCentV0M",&fTreeVariableCustomCentV0M,"fTreeVariableCustomCentV0M/F");
+    fTreeV0->Branch("fTreeVariableCentV0AEq",&fTreeVariableCentV0AEq,"fTreeVariableCentV0AEq/F");
+    fTreeV0->Branch("fTreeVariableCentV0CEq",&fTreeVariableCentV0CEq,"fTreeVariableCentV0CEq/F");
     fTreeV0->Branch("fTreeVariableRefMultEta8",&fTreeVariableRefMultEta8,"fTreeVariableRefMultEta8/I");
     fTreeV0->Branch("fTreeVariableRefMultEta5",&fTreeVariableRefMultEta5,"fTreeVariableRefMultEta5/I");
-    fTreeV0->Branch("fTreeVariableRefMultDiffEta",fTreeVariableRefMultDiffEta,"fTreeVariableRefMultDiffEta[20]/I");
+    //Don't do this if not explicitly requested, takes up too much space
+    if ( fkSaveExtendedRefMultInfo )
+        fTreeV0->Branch("fTreeVariableRefMultDiffEta",fTreeVariableRefMultDiffEta,"fTreeVariableRefMultDiffEta[20]/I");
     fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 
     //------------------------------------------------
@@ -533,11 +555,16 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
     //-----------MULTIPLICITY-INFO--------------------
     fTreeCascade->Branch("fTreeCascVarCentV0M",&fTreeCascVarCentV0M,"fTreeCascVarCentV0M/F");
+    fTreeCascade->Branch("fTreeCascVarCentV0A",&fTreeCascVarCentV0A,"fTreeCascVarCentV0A/F");
+    fTreeCascade->Branch("fTreeCascVarCentV0C",&fTreeCascVarCentV0C,"fTreeCascVarCentV0C/F");
     fTreeCascade->Branch("fTreeCascVarCentV0MEq",&fTreeCascVarCentV0MEq,"fTreeCascVarCentV0MEq/F");
-    fTreeCascade->Branch("fTreeCascVarCustomCentV0M",&fTreeCascVarCustomCentV0M,"fTreeCascVarCustomCentV0M/F");
+    fTreeCascade->Branch("fTreeCascVarCentV0AEq",&fTreeCascVarCentV0AEq,"fTreeCascVarCentV0AEq/F");
+    fTreeCascade->Branch("fTreeCascVarCentV0CEq",&fTreeCascVarCentV0CEq,"fTreeCascVarCentV0CEq/F");
     fTreeCascade->Branch("fTreeCascVarRefMultEta8",&fTreeCascVarRefMultEta8,"fTreeCascVarRefMultEta8/I");
     fTreeCascade->Branch("fTreeCascVarRefMultEta5",&fTreeCascVarRefMultEta5,"fTreeCascVarRefMultEta5/I");
-    fTreeCascade->Branch("fTreeCascVarRefMultDiffEta",fTreeCascVarRefMultDiffEta,"fTreeCascVarRefMultDiffEta[20]/I");
+    //Don't do this if not explicitly requested, takes up too much space
+    if ( fkSaveExtendedRefMultInfo )
+        fTreeCascade->Branch("fTreeCascVarRefMultDiffEta",fTreeCascVarRefMultDiffEta,"fTreeCascVarRefMultDiffEta[20]/I");
     fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
     //-----------DECAY-LENGTH-INFO--------------------
     fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
@@ -828,6 +855,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Copy to Event Tree for extra information
     fAmplitude_V0A = multV0ACorr;
     fAmplitude_V0C = multV0CCorr;
+    fAmplitude_V0M = multV0A + multV0C; // beware unusual difference 
 
     // Equalized signals // From AliCentralitySelectionTask // Updated
     for(Int_t iCh = 32; iCh < 64; ++iCh) {
@@ -840,6 +868,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     }
     fAmplitude_V0AEq = multV0AEq;
     fAmplitude_V0CEq = multV0CEq;
+    fAmplitude_V0MEq = multV0AEq+multV0CEq;
 
     fCentrality_V0A   = -100;
     fCentrality_V0C   = -100;
@@ -852,21 +881,13 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     AliCentrality* centrality;
     centrality = lESDevent->GetCentrality();
     if ( !(centrality->GetQuality()>1) ) {
-        fCentrality_V0A   = centrality->GetCentralityPercentile( "V0A"   );
-        fCentrality_V0C   = centrality->GetCentralityPercentile( "V0C"   );
-        fCentrality_V0M   = centrality->GetCentralityPercentile( "V0M"   );
-        fCentrality_V0AEq = centrality->GetCentralityPercentile( "V0AEq" );
-        fCentrality_V0CEq = centrality->GetCentralityPercentile( "V0CEq" );
-        fCentrality_V0MEq = centrality->GetCentralityPercentile( "V0MEq" );
+        fCentrality_V0A   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0A"   );
+        fCentrality_V0C   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0C"   );
+        fCentrality_V0M   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0M"   );
+        fCentrality_V0AEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0AEq" );
+        fCentrality_V0CEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0CEq" );
+        fCentrality_V0MEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent, "V0MEq" );
     }
-
-    //Cross-check/debug
-    fCustomCentrality_V0M   = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent,"V0M");
-    fCustomCentrality_V0MEq = fPPVsMultUtils->GetMultiplicityPercentile(lESDevent,"V0MEq");
-
-    //Attribution for analysis entries
-    fTreeVariableCustomCentV0M = fCustomCentrality_V0M;
-    fTreeCascVarCustomCentV0M  = fCustomCentrality_V0M;
 
     //Tracklets vs Clusters Exploratory data
     fEvSel_nTracklets     = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
@@ -876,12 +897,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fEvSel_INELgtZERO          = IsINELgtZERO( lESDevent , "tracks"    );
     fEvSel_INELgtZEROtracklets = IsINELgtZERO( lESDevent , "tracklets" );
 
-    fEvSel_INELgtZERORefMult = kFALSE; 
-    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 1.0) >= 1 ) fEvSel_INELgtZERORefMult = kTRUE; 
+    fEvSel_INELgtZERORefMult = kFALSE;
+    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 1.0) >= 1 ) fEvSel_INELgtZERORefMult = kTRUE;
 
-    fEvSel_INELgtZERORefMultTracklets = kFALSE; 
-    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE; 
-    
+    fEvSel_INELgtZERORefMultTracklets = kFALSE;
+    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE;
+
     //Event-level fill
     fTreeEvent->Fill() ;
 
