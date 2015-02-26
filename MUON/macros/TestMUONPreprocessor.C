@@ -161,7 +161,7 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   
-  gSystem->Load("libTestShuttle");
+  gSystem->Load("libTestShuttle.so");
 
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   
@@ -228,6 +228,7 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","GLOBAL","LDC0",Form("%s/TRIGGER/MtgGlobalCrate-1.dat",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LUT","LDC0",Form("%s/TRIGGER/MtgLocalLut-1.dat",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","EXPORTED","LDC0",Form("%s/TRIGGER/ExportedFiles.dat",sourceDirectory));
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","TRIGSCAL","LDC0",Form("%s/TRIGGER/MtgTrigScalers.dat",sourceDirectory));
 
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor

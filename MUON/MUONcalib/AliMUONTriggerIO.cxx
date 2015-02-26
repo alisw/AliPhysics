@@ -31,11 +31,13 @@
 #include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONTriggerCrateConfig.h"
+#include "AliMUONTriggerScalers.h"
 
 #include "AliLog.h"
 
 #include <Riostream.h>
 #include <TSystem.h>
+#include <TClonesArray.h>
 
 /// \class AliMUONTriggerIO
 ///
@@ -411,6 +413,129 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
 
 //_____________________________________________________________________________
 Bool_t 
+AliMUONTriggerIO::ReadTrigScalers(const char* scfile, TClonesArray& scalers) const
+{
+  /// Fill the trigger scalers object from online file
+  
+  FILE* fp = fopen(gSystem->ExpandPathName(scfile),"r");
+  if (!fp)
+  {
+    AliError(Form("Could not read file %s",scfile));
+    return 0;
+  }
+
+  UInt_t nCalibEvents;
+  UInt_t deltaT;
+  UInt_t glSc[6];
+  const Int_t nCathodes = 2;
+  const Int_t nTriChambers = 4;
+  const Int_t nLocBoards = 234;
+  UInt_t locLptScaler[nLocBoards];
+  ULong64_t locStripScaler[nTriChambers][nLocBoards][nCathodes];
+  UInt_t locStripOver[nTriChambers][nLocBoards][nCathodes];
+
+  const Int_t bufflen = 
+    8*sizeof(UInt_t)+
+    nLocBoards*sizeof(UInt_t)+
+    nLocBoards*nCathodes*nTriChambers*(sizeof(UInt_t)+sizeof(ULong64_t));
+  UChar_t buffer[bufflen];
+
+  UInt_t bftmpUI;
+  ULong64_t bftmpUL;
+
+  AliInfo(Form("Data buffer length = %d",bufflen));
+
+  Int_t ibr, isc = 0;
+  while (fread(buffer,bufflen,1,fp)) {
+
+    AliMUONTriggerScalers *scaler = new(scalers[isc++]) AliMUONTriggerScalers();
+
+    ibr = 0;
+
+    // global
+    nCalibEvents = 0;
+    bftmpUI = buffer[ibr++]; nCalibEvents |= (bftmpUI << 24);
+    bftmpUI = buffer[ibr++]; nCalibEvents |= (bftmpUI << 16);
+    bftmpUI = buffer[ibr++]; nCalibEvents |= (bftmpUI <<  8);
+    bftmpUI = buffer[ibr++]; nCalibEvents |= (bftmpUI <<  0);
+    scaler->SetNCalibEvents(nCalibEvents);
+    deltaT = 0;
+    bftmpUI = buffer[ibr++]; deltaT |= (bftmpUI << 24);
+    bftmpUI = buffer[ibr++]; deltaT |= (bftmpUI << 16);
+    bftmpUI = buffer[ibr++]; deltaT |= (bftmpUI <<  8);
+    bftmpUI = buffer[ibr++]; deltaT |= (bftmpUI <<  0);
+    scaler->SetDeltaT(deltaT);
+    for (Int_t bit = 0; bit < 6; bit++) {
+      glSc[bit] = 0;
+      bftmpUI = buffer[ibr++]; glSc[bit] |= (bftmpUI << 24);
+      bftmpUI = buffer[ibr++]; glSc[bit] |= (bftmpUI << 16);
+      bftmpUI = buffer[ibr++]; glSc[bit] |= (bftmpUI <<  8);
+      bftmpUI = buffer[ibr++]; glSc[bit] |= (bftmpUI <<  0);
+      scaler->SetGloScaler(glSc[bit],bit);
+    }
+
+    // local
+    for (Int_t iLoc = 0; iLoc < nLocBoards; iLoc++) {
+
+      locLptScaler[iLoc] = 0;
+      bftmpUI = buffer[ibr++]; locLptScaler[iLoc] |= (bftmpUI << 24);
+      bftmpUI = buffer[ibr++]; locLptScaler[iLoc] |= (bftmpUI << 16);
+      bftmpUI = buffer[ibr++]; locLptScaler[iLoc] |= (bftmpUI <<  8);
+      bftmpUI = buffer[ibr++]; locLptScaler[iLoc] |= (bftmpUI <<  0);
+
+      scaler->SetLocScalerLpt(locLptScaler[iLoc],iLoc);
+
+      for (Int_t iCath = 0; iCath < nCathodes; iCath++) {
+	for (Int_t iCha = 0; iCha < nTriChambers; iCha++) {
+
+	  locStripScaler[iCha][iLoc][iCath] = 0;
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL << 56);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL << 48);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL << 40);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL << 32);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL << 24);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL << 16);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL <<  8);
+	  bftmpUL = buffer[ibr++];
+	  locStripScaler[iCha][iLoc][iCath] |= (bftmpUL <<  0);
+
+	  scaler->SetLocScalerStrip(locStripScaler[iCha][iLoc][iCath],iCath,iCha,iLoc);
+
+	  locStripOver[iCha][iLoc][iCath] = 0;
+	  bftmpUI = buffer[ibr++];
+	  locStripOver[iCha][iLoc][iCath] |= (bftmpUI << 24);
+	  bftmpUI = buffer[ibr++];
+	  locStripOver[iCha][iLoc][iCath] |= (bftmpUI << 16);
+	  bftmpUI = buffer[ibr++];
+	  locStripOver[iCha][iLoc][iCath] |= (bftmpUI <<  8);
+	  bftmpUI = buffer[ibr++];
+	  locStripOver[iCha][iLoc][iCath] |= (bftmpUI <<  0);
+
+	  scaler->SetLocScalerStripOver(locStripOver[iCha][iLoc][iCath],iCath,iCha,iLoc);
+
+	}
+      }
+    }
+
+    //AliInfo("Read from buffer %d bytes",ibr);
+    
+  }
+
+  fclose(fp);
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t 
 AliMUONTriggerIO::ReadConfig(const char* localFile,
                              const char* regionalFile,
                              const char* globalFile,
@@ -514,6 +639,101 @@ AliMUONTriggerIO::WriteLUT(const AliMUONTriggerLut& lut,
   return kTRUE;
 }
 
+
+//_____________________________________________________________________________
+Bool_t 
+AliMUONTriggerIO::WriteTrigScalers(const TClonesArray& scalers, 
+				   const char* scfile) const
+{
+  /// Convert offline scalers into an online (binary) file
+  
+  FILE* fp = fopen(gSystem->ExpandPathName(scfile),"wb");
+  if (!fp) 
+    {
+      AliError(Form("Could not create output local file %s",scfile));
+      return kFALSE;
+    }   
+  
+  UInt_t nCalibEvents;
+  UInt_t deltaT;
+  UInt_t glSc[6];
+  const Int_t nCathodes = 2;
+  const Int_t nTriChambers = 4;
+  const Int_t nLocBoards = 234;
+  UInt_t locLptScaler[nLocBoards];
+  ULong64_t locStripScaler[nTriChambers][nLocBoards][nCathodes];
+  UInt_t locStripOver[nTriChambers][nLocBoards][nCathodes];
+
+  const Int_t bufflen = 
+    8*sizeof(UInt_t)+
+    nLocBoards*sizeof(UInt_t)+
+    nLocBoards*nCathodes*nTriChambers*(sizeof(UInt_t)+sizeof(ULong64_t));
+  UChar_t buffer[bufflen];
+
+  UInt_t bftmpUI;
+  ULong64_t bftmpUL;
+
+  AliInfo(Form("Data buffer length = %d",bufflen));
+
+  Int_t entries = scalers.GetEntries();
+  Int_t ibr, isc = 0;
+  for (; isc < entries; isc++) {
+    ibr = 0;
+    AliMUONTriggerScalers *sc = (AliMUONTriggerScalers*)scalers.At(isc);
+    nCalibEvents = sc->GetNCalibEvents();
+    AliInfo(Form("nCalibEvents = %d",sc->GetNCalibEvents()));
+    buffer[ibr++] = (nCalibEvents >> 24) & 0xFF;
+    buffer[ibr++] = (nCalibEvents >> 16) & 0xFF;
+    buffer[ibr++] = (nCalibEvents >>  8) & 0xFF;
+    buffer[ibr++] = (nCalibEvents >>  0) & 0xFF;
+    deltaT = sc->GetDeltaT();
+    buffer[ibr++] = (deltaT >> 24) & 0xFF;
+    buffer[ibr++] = (deltaT >> 16) & 0xFF;
+    buffer[ibr++] = (deltaT >>  8) & 0xFF;
+    buffer[ibr++] = (deltaT >>  0) & 0xFF;
+    for (Int_t bit = 0; bit < 6; bit++) {
+      glSc[bit] = sc->GetGloScal(bit);
+      buffer[ibr++] = (glSc[bit] >> 24) & 0xFF;
+      buffer[ibr++] = (glSc[bit] >> 16) & 0xFF;
+      buffer[ibr++] = (glSc[bit] >>  8) & 0xFF;
+      buffer[ibr++] = (glSc[bit] >>  0) & 0xFF;
+    }
+    for (Int_t iLoc = 0; iLoc < nLocBoards; iLoc++) {
+      locLptScaler[iLoc] = sc->GetLocScalLpt(iLoc);
+      buffer[ibr++] = (locLptScaler[iLoc] >> 24) & 0xFF;
+      buffer[ibr++] = (locLptScaler[iLoc] >> 16) & 0xFF;
+      buffer[ibr++] = (locLptScaler[iLoc] >>  8) & 0xFF;
+      buffer[ibr++] = (locLptScaler[iLoc] >>  0) & 0xFF;
+      for (Int_t iCath = 0; iCath < nCathodes; iCath++) {
+	for (Int_t iCha = 0; iCha < nTriChambers; iCha++) {
+	  locStripScaler[iCath][iCha][iLoc] = sc->GetLocScalStrip(iCath,iCha,iLoc);
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >> 56) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >> 48) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >> 40) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >> 32) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >> 24) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >> 16) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >>  8) & 0xFF;
+	  buffer[ibr++] = (locStripScaler[iCath][iCha][iLoc] >>  0) & 0xFF;
+	  locStripOver[iCath][iCha][iLoc] = sc->GetLocScalStripOver(iCath,iCha,iLoc);
+	  buffer[ibr++] = (locStripOver[iCath][iCha][iLoc] >> 24) & 0xFF;
+	  buffer[ibr++] = (locStripOver[iCath][iCha][iLoc] >> 16) & 0xFF;
+	  buffer[ibr++] = (locStripOver[iCath][iCha][iLoc] >>  8) & 0xFF;
+	  buffer[ibr++] = (locStripOver[iCath][iCha][iLoc] >>  0) & 0xFF;
+	}
+      }
+    }
+
+    fwrite(buffer,ibr,1,fp);
+    //AliInfo("Read to buffer %d bytes",ibr);
+    
+  }
+
+  fclose(fp);
+
+  return kTRUE;
+
+}
 
 //_____________________________________________________________________________
 Bool_t 

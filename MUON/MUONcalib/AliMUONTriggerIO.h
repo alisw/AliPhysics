@@ -19,8 +19,6 @@
 #include "AliMpExMap.h"
 #include "AliMpRegionalTrigger.h"
 
-
-
 #ifndef ROOT_TArrayI
 #  include <TArrayI.h>
 #endif
@@ -33,7 +31,7 @@ class AliMpTriggerCrate;
 class AliMpLocalBoard;
 class AliMUONGlobalCrateConfig;
 class AliMUONRegionalTriggerConfig;
-
+class AliMUONTriggerScalers;
 
 class AliMUONTriggerIO : public TObject
 {
@@ -50,6 +48,10 @@ public:
                     AliMUONRegionalTriggerConfig* regionalConfig,
                     AliMUONGlobalCrateConfig* globalConfig);
 
+  Bool_t ReadTrigScalers(const char* scfile, TClonesArray& scalers) const;
+  
+  Bool_t WriteTrigScalers(const TClonesArray& scalers, const char* scfile) const;
+  
   Bool_t ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut);
   
   Bool_t WriteLUT(const AliMUONTriggerLut& lut,

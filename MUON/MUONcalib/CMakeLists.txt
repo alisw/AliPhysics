@@ -49,6 +49,7 @@ set(SRCS
     AliMUONTriggerEfficiencyCells.cxx
     AliMUONTriggerIO.cxx
     AliMUONTriggerLut.cxx
+    AliMUONTriggerScalers.cxx
     AliMUONVCalibParam.cxx
     AliMUONVTrackerData.cxx
    )

@@ -35,7 +35,7 @@
 #pragma link C++ class AliMUONGain+;
 #pragma link C++ class AliMUONErrorCounter+;
 #pragma link C++ class AliMUONRejectList+;
-
+#pragma link C++ class AliMUONTriggerScalers+;
 
 #endif
 

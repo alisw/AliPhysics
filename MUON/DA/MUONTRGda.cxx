@@ -65,6 +65,8 @@ extern "C" {
 #include "TPluginManager.h"
 #include "TArrayS.h"
 
+static const TString fileExp("ExportedFiles.dat");
+
 /// class for DA run parameters and DA working space
 class AliDAConfig : TObject {
 
@@ -84,6 +86,7 @@ public:
     fLocalMaskFileName(""),
     fLocalLutFileName(""),
     fSignatureFileName(""),
+    fTrigScalFileName("MtgTrigScalers.dat"),
     fGlobalFileVersion(0),
     fRegionalFileVersion(0),
     fLocalMaskFileVersion(0),
@@ -114,7 +117,9 @@ public:
     fUseFastDecoder(kFALSE),
     fNLocalBoard(AliMpConstants::TotalNofLocalBoards()+1),
     fPatternStoreN(0x0),
-    fPatternStoreD(0x0)
+    fPatternStoreD(0x0),
+    fSaveScalers(kFALSE),
+    fScalerRecTime(600)
   {
     /// default constructor
     for (Int_t ii = 0; ii < kGlobalInputs; ii++) {
@@ -203,8 +208,10 @@ public:
   const Char_t* GetLocalMaskFileName() { return fLocalMaskFileName.Data(); }
      /// transverse momentum Look-Up-Table, file name
   const Char_t* GetLocalLutFileName()  { return fLocalLutFileName.Data(); }
-     /// signature file name
+     /// signature, file name
   const Char_t* GetSignatureFileName() { return fSignatureFileName.Data(); }
+     /// signature, file name
+  const Char_t* GetTrigScalFileName() { return fTrigScalFileName.Data(); }
 
      /// version of the global crate configuration in the detector DB
   Int_t GetGlobalFileVersion()    const { return fGlobalFileVersion; }
@@ -277,6 +284,12 @@ public:
      /// use the high-performance (HP) decoder
   Bool_t UseFastDecoder() const { return fUseFastDecoder; }
 
+     /// save cooked information from scalers
+  Bool_t SaveScalers() const { return fSaveScalers; }
+     /// time between two records, in seconds
+  UInt_t GetScalerRecTime() const { return fScalerRecTime; }
+
+
      /// number of global input words
   Int_t GetGlobalInputs()      const { return kGlobalInputs; }
     /// length in bits of a global input word
@@ -309,6 +322,8 @@ public:
   void SetLocalLutFileName(const Char_t *name)  { fLocalLutFileName = TString(name); }
      /// set the signature file name
   void SetSignatureFileName(const Char_t *name) { fSignatureFileName = TString(name); }
+     /// set the trigger scalers file name
+  void SetTrigScalFileName(const Char_t *name) { fTrigScalFileName = TString(name); }
 
      /// set the version of the global crate configuration in the detector DB
   void SetGlobalFileVersion(Int_t ver)    { fGlobalFileVersion = ver; }
@@ -368,6 +383,10 @@ public:
   void SetWithWarnings() { fWithWarnings = kTRUE; }
      /// set/unset the use of the high-performance (HP) decoder
   void SetUseFastDecoder() { fUseFastDecoder = kTRUE; }
+     /// set/unset the saving of cooked information from scalers
+  void SetSaveScalers(Bool_t val) { fSaveScalers = val; }
+     /// time between two records, in seconds
+  void SetScalerRecTime(Int_t trec) { fScalerRecTime = (UInt_t)trec; }
 
     /// increment version of the global crate configuration file
   void IncGlobalFileVersion() { fGlobalFileVersion++; }
@@ -383,70 +402,74 @@ private:
   /// assignment operator, not implemented
   AliDAConfig& operator=(const AliDAConfig& cfg);
 
-  const TString fDAConfigFileName;    //!< name of the DA configuration file from detector DB
-  const TString fCurrentFileName;     //!< usually MtgCurrent.dat
-  const TString fLastCurrentFileName; //!< usually MtgLastCurrent.dat
+  const TString fDAConfigFileName;    //! name of the DA configuration file from detector DB
+  const TString fCurrentFileName;     //! usually MtgCurrent.dat
+  const TString fLastCurrentFileName; //! usually MtgLastCurrent.dat
 
-  TString fSodName; //!< name of the Start-of-data field in MtgCurrent.dat
-  Int_t   fSodFlag; //!< flag value of the Start-of-data field in MtgCurrent.dat
+  TString fSodName; //! name of the Start-of-data field in MtgCurrent.dat
+  Int_t   fSodFlag; //! flag value of the Start-of-data field in MtgCurrent.dat
 
-  TString fDAName;  //!< name of the Detector Algorithm field in MtgCurrent.dat 
-  Int_t   fDAFlag;  //!< flag value of the Detector Algorithm field in MtgCurrent.dat (enabled/disabled)
-  Int_t   fDAMode;  //!< DA active mode, GLOBAL or GLOBAL+LOCAL
+  TString fDAName;  //! name of the Detector Algorithm field in MtgCurrent.dat 
+  Int_t   fDAFlag;  //! flag value of the Detector Algorithm field in MtgCurrent.dat (enabled/disabled)
+  Int_t   fDAMode;  //! DA active mode, GLOBAL or GLOBAL+LOCAL
 
-  TString fGlobalFileName;      //!< global crate configuration, file name
-  TString fRegionalFileName;    //!< regional crate configuration, file name
-  TString fLocalMaskFileName;   //!< masks for the local cards, file name
-  TString fLocalLutFileName;    //!< transverse momentum Look-Up-Table, file name
-  TString fSignatureFileName;   //!< signature file name
+  TString fGlobalFileName;      //! global crate configuration, file name
+  TString fRegionalFileName;    //! regional crate configuration, file name
+  TString fLocalMaskFileName;   //! masks for the local cards, file name
+  TString fLocalLutFileName;    //! transverse momentum Look-Up-Table, file name
+  TString fSignatureFileName;   //! signature, file name
+  TString fTrigScalFileName;    //! trigger scalers, file name
 
-  Int_t   fGlobalFileVersion;    //!< version of the global crate configuration in the detector DB
-  Int_t   fRegionalFileVersion;  //!< version of the regional crate configuration in the detector DB
-  Int_t   fLocalMaskFileVersion; //!< version of the masks for the local cards in the detector DB
-  Int_t   fLocalLutFileVersion;  //!< version of the transverse momentum Look-Up-Table in the detector DB
-  Int_t   fSignatureFileVersion; //!< version of the signature file in the detector DB
+  Int_t   fGlobalFileVersion;    //! version of the global crate configuration in the detector DB
+  Int_t   fRegionalFileVersion;  //! version of the regional crate configuration in the detector DB
+  Int_t   fLocalMaskFileVersion; //! version of the masks for the local cards in the detector DB
+  Int_t   fLocalLutFileVersion;  //! version of the transverse momentum Look-Up-Table in the detector DB
+  Int_t   fSignatureFileVersion; //! version of the signature file in the detector DB
   
-  Int_t   fGlobalFileLastVersion;    //!< last known version of the global crate configuration
-  Int_t   fRegionalFileLastVersion;  //!< last known version of the regional crate configuration
-  Int_t   fLocalMaskFileLastVersion; //!< last known version of the masks for the local cards
-  Int_t   fLocalLutFileLastVersion;  //!< last known version of the transverse momentum Look-Up-Table
+  Int_t   fGlobalFileLastVersion;    //! last known version of the global crate configuration
+  Int_t   fRegionalFileLastVersion;  //! last known version of the regional crate configuration
+  Int_t   fLocalMaskFileLastVersion; //! last known version of the masks for the local cards
+  Int_t   fLocalLutFileLastVersion;  //! last known version of the transverse momentum Look-Up-Table
 
-  Int_t   fEventsN; //!< number of accumulated PHYSICS events
-  Int_t   fEventsD; //!< number of accumulated CALIBRATION events
+  Int_t   fEventsN; //! number of accumulated PHYSICS events
+  Int_t   fEventsD; //! number of accumulated CALIBRATION events
 
-  Int_t   fPrintLevel;  //!< print verbosity of the DA
+  Int_t   fPrintLevel;  //! print verbosity of the DA
 
-  AliMUONVStore*                fLocalMasks;    //!< store for the masks for the local cards
-  AliMUONVStore*                fLocalMasksDA;  //!< store for the DA-calculated masks for the local cards
-  AliMUONRegionalTriggerConfig* fRegionalMasks; //!< configuration object for the regional crate
-  AliMUONGlobalCrateConfig*     fGlobalMasks;   //!< configuration object for the global crate
+  AliMUONVStore*                fLocalMasks;    //! store for the masks for the local cards
+  AliMUONVStore*                fLocalMasksDA;  //! store for the DA-calculated masks for the local cards
+  AliMUONRegionalTriggerConfig* fRegionalMasks; //! configuration object for the regional crate
+  AliMUONGlobalCrateConfig*     fGlobalMasks;   //! configuration object for the global crate
 
-  AliMUONTriggerIO *fTriggerIO;  //!< read/write masks and LUT to/from online files
+  AliMUONTriggerIO *fTriggerIO;  //! read/write masks and LUT to/from online files
 
-  Bool_t fAlgoNoisyInput; //!< select PHYSICS events for noisy channels analysis
-  Bool_t fAlgoDeadcInput; //!< select CALIBRATION events for dead channels analysis
+  Bool_t fAlgoNoisyInput; //! select PHYSICS events for noisy channels analysis
+  Bool_t fAlgoDeadcInput; //! select CALIBRATION events for dead channels analysis
 
-  Float_t fThrN;           //!< threshold for noisy global inputs (fraction of events)
-  Float_t fThrD;           //!< threshold for dead global inputs (fraction of events)
-  Float_t fThrLocN;        //!< threshold for noisy local strips (fraction of events)
-  Float_t fThrLocD;        //!< threshold for dead local strips (fraction of events)
-  Int_t   fMinEvents;      //!< minumum nr of events for rate calculation
-  Int_t   fSkipEvents;     //!< number of events to skip from start
-  Int_t   fMaxEvents;      //!< maximum number of events to analyze
-  Bool_t  fWithWarnings;   //!< show warnings from the raw data decoder
-  Bool_t  fUseFastDecoder; //!< use the high-performance (HP) decoder
+  Float_t fThrN;           //! threshold for noisy global inputs (fraction of events)
+  Float_t fThrD;           //! threshold for dead global inputs (fraction of events)
+  Float_t fThrLocN;        //! threshold for noisy local strips (fraction of events)
+  Float_t fThrLocD;        //! threshold for dead local strips (fraction of events)
+  Int_t   fMinEvents;      //! minumum nr of events for rate calculation
+  Int_t   fSkipEvents;     //! number of events to skip from start
+  Int_t   fMaxEvents;      //! maximum number of events to analyze
+  Bool_t  fWithWarnings;   //! show warnings from the raw data decoder
+  Bool_t  fUseFastDecoder; //! use the high-performance (HP) decoder
 
-  const Int_t fNLocalBoard; //!< number of local boards
+  const Int_t fNLocalBoard; //! number of local boards
 
-  enum { kGlobalInputs = 4,         //!< number of global input words
-	 kGlobalInputLength = 32    //!< length in bits of a global input word
+  enum { kGlobalInputs = 4,         //! number of global input words
+	 kGlobalInputLength = 32    //! length in bits of a global input word
   };
 
   AliMUONVStore *fPatternStoreN; //! store for local strips patterns
   AliMUONVStore *fPatternStoreD; //! store for local strips patterns
 
-  Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (PHYSICS events)
-  Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (CALIBRATION events)
+  Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //! storage for global input (PHYSICS events)
+  Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //! storage for global input (CALIBRATION events)
+
+  Bool_t fSaveScalers;   //! save cooked information from the trigger scalers
+  Int_t  fScalerRecTime; //! time between two records, in seconds
 
 };
 
@@ -534,6 +557,18 @@ Bool_t ReadDAConfig(AliDAConfig& cfg)
     tmp = tmp(0,pos);
     cfg.SetDAMode(tmp.Atoi());
 
+    in.getline(line,80);  
+    tmp = line;
+    pos = tmp.First(" ");
+    tmp = tmp(0,pos);
+    tmp.Atoi() == 0 ? cfg.SetSaveScalers(kFALSE) : cfg.SetSaveScalers(kTRUE);
+    
+    in.getline(line,80);  
+    tmp = line;
+    pos = tmp.First(" ");
+    tmp = tmp(0,pos);
+    cfg.SetScalerRecTime(tmp.Atoi());
+    
     return kTRUE;
 
 }
@@ -546,7 +581,7 @@ void WriteLastCurrentFile(AliDAConfig& cfg, TString currentFile)
     ofstream out;
     TString file;
     file = currentFile;
-    out.open(file.Data());
+    out.open(file.Data(), std::ofstream::out);
     out << cfg.GetSodName() << " " << cfg.GetSodFlag() << endl;
     out << cfg.GetDAName()  << " " << cfg.GetDAFlag()  << endl;
 
@@ -697,8 +732,8 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     // setenv DATE_DETECTOR_CODE
 
 #ifdef OFFLINE
-    gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-    gSystem->Setenv("DAQDA_TEST_DIR", "/alisoft/FES");
+    gSystem->Setenv("DAQDALIB_PATH", "$DATE_ROOT/infoLogger");
+    gSystem->Setenv("DAQDA_TEST_DIR", "/users_local1/Software/ALICE/AMORE/FES");
 #endif
 
     // update files
@@ -708,10 +743,9 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     Bool_t globalExported = kFALSE;
 
     ofstream out;
-    TString fileExp("ExportedFiles.dat");
     TString file;
 
-    out.open(fileExp.Data());
+    out.open(fileExp.Data(), std::ofstream::out);
     if (!out.good()) {
 	printf("Failed to create file: %s\n",file.Data());
 	return kFALSE;
@@ -786,6 +820,10 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     }
 
+    if (cfg.SaveScalers()) {
+      out << cfg.GetTrigScalFileName() << endl;
+    }
+
     out.close();
 
     // export Exported file to FES anyway
@@ -815,7 +853,7 @@ Bool_t ImportFiles(AliDAConfig& cfg)
     Int_t status = 0;
 
 #ifdef OFFLINE
-    gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+    gSystem->Setenv("DAQDALIB_PATH", "$DATE_ROOT/db");
 #endif
 
     status = daqDA_DB_getFile(cfg.GetDAConfigFileName(), cfg.GetDAConfigFileName());
@@ -907,7 +945,7 @@ void UpdateGlobalMasks(AliDAConfig& cfg)
   /// update the global masks
   
 #ifdef OFFLINE
-  gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+  gSystem->Setenv("DAQDALIB_PATH", "$DATE_ROOT/db");
 #endif
 
   Float_t rateN = 0.0, rateD = 0.0;
@@ -1092,7 +1130,7 @@ void MakePatternStore(AliDAConfig& cfg)
   /// analyse patterns for local strips (calculate occupancy)
   
 #ifdef OFFLINE
-  gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/db");
+  gSystem->Setenv("DAQDALIB_PATH", "$DATE_ROOT/db");
 #endif
 
   AliMUONVCalibParam* pat;
@@ -1311,36 +1349,26 @@ int main(Int_t argc, Char_t **argv)
       return -1;
     }
 
-    if (!cfg.GetDAFlag()) {
-
-      cout << "MUONTRGda: DA enable: " << cfg.GetDAFlag() << endl;
-      cout << "MUONTRGda: Print level: " << cfg.GetPrintLevel() << endl;
-      
-      printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
-
-      return status;
-
-    }
-
     // FET is triggered by CTP
     Bool_t modeFET3 = kTRUE;
     if (GetFetMode(cfg) != 3) {
       printf("FET is not in mode 3. Only PHYSICS events will be analysed (noisy channels)\n");
       modeFET3 = kFALSE;
     }
-
+      
     // All 5 global cards are controlled by the Mts proxy
+    // sans carte JTAG 0x1F ---> 0x0F (!)
     if (cfg.GetGlobalMasks()->GetGlobalCrateEnable() != 0x1F) {
       printf("The MTS proxy does not control all global cards\n");
       return -1;
     }
-
+    
     // The global cards are ON (active on the global inputs)
     if (!cfg.GetGlobalMasks()->GetMasksOn()) {
       printf("Global masks are not ON\n");
       return -1;
     }
-  
+      
     // make sure to catch the "rare" calib events (1 every 50s in physics)
     const Char_t* tableSOD[]  = {"ALL", "yes", "CAL", "all", NULL, NULL};
     monitorDeclareTable(const_cast<char**>(tableSOD));
@@ -1364,14 +1392,52 @@ int main(Int_t argc, Char_t **argv)
 
     cout << "MUONTRGda : Reading data from file " << inputFile <<endl;
 
+    UInt_t nCalibEvents;
+    UInt_t elapsT;
+    UInt_t deltaT;
+    UInt_t glSc[6];
+    Bool_t overFlow, firstCalibEvent = kTRUE;
+    const Int_t nTriChambers = AliMpConstants::NofTriggerChambers();
+    const Int_t nLocBoards = AliMpConstants::NofLocalBoards();
+    const Int_t nCathodes = 2;
+    UInt_t locLptScaler[nLocBoards];
+    ULong64_t locStripScaler[nTriChambers][nLocBoards][nCathodes];
+    UInt_t locStripOver[nTriChambers][nLocBoards][nCathodes];
+
+    const Int_t bufflen = 
+      8*sizeof(UInt_t)+
+      nLocBoards*sizeof(UInt_t)+
+      nLocBoards*nCathodes*nTriChambers*(sizeof(UInt_t)+sizeof(ULong64_t));
+    UChar_t buffer[bufflen];
+    //printf("Buffer length = %d bytes \n",bufflen);
+
+    // reset scalers
+    deltaT = 0.;
+    nCalibEvents = 0;
+    for (Int_t bit = 0; bit < 6; bit++) {
+      glSc[bit] = 0;
+    }
+    for (Int_t iLoc = 0; iLoc < nLocBoards; iLoc++) {
+      locLptScaler[iLoc] = 0;
+      for (Int_t iCath = 0; iCath < nCathodes; iCath++) {
+	for (Int_t iCha = 0; iCha < nTriChambers; iCha++) {
+	  locStripScaler[iCha][iLoc][iCath] = 0;
+	  locStripOver[iCha][iLoc][iCath] = 0;
+	}
+      }
+    }
+
+    FILE* fsc = fopen(cfg.GetTrigScalFileName(),"wb");
+
     UInt_t *globalInput = new UInt_t[4];
     Bool_t doUpdate = kFALSE;
     Int_t runNumber = 0;
     Int_t nEvents = 0;
 
+    // event loop
     while(1) 
     {
-      if (nEvents >= cfg.GetMaxEvents()) break;
+      
       if (cfg.GetPrintLevel()) {
 	if (nEvents && nEvents % 1000 == 0) 	
 	  cout<<"Cumulated events " << nEvents << endl;
@@ -1401,24 +1467,34 @@ int main(Int_t argc, Char_t **argv)
       Int_t eventType = rawReader->GetType();
       runNumber = rawReader->GetRunNumber();
     
-      // L1Swc1
-      // CALIBRATION_EVENT 
-      // SYSTEM_SOFTWARE_TRIGGER_EVENT
-      // DETECTOR_SOFTWARE_TRIGGER_EVENT
-      cfg.SetAlgoNoisyInput(kFALSE);
-      cfg.SetAlgoDeadcInput(kFALSE);
-      if (eventType == PHYSICS_EVENT) {
-	cfg.SetAlgoNoisyInput(kTRUE);
-	doUpdate = kTRUE;
-	cfg.IncNoiseEvent();
-      } else if (modeFET3 && eventType == CALIBRATION_EVENT) {
-	cfg.SetAlgoDeadcInput(kTRUE);
-	doUpdate = kTRUE;
-	cfg.IncDeadcEvent();
-      } else {
-	continue;
+      if (cfg.GetDAFlag() && (nEvents < cfg.GetMaxEvents())) {
+	// L1Swc1
+	// CALIBRATION_EVENT 
+	// SYSTEM_SOFTWARE_TRIGGER_EVENT
+	// DETECTOR_SOFTWARE_TRIGGER_EVENT
+	cfg.SetAlgoNoisyInput(kFALSE);
+	cfg.SetAlgoDeadcInput(kFALSE);
+	if (eventType == PHYSICS_EVENT) {
+	  cfg.SetAlgoNoisyInput(kTRUE);
+	  doUpdate = kTRUE;
+	  cfg.IncNoiseEvent();
+	} else if (modeFET3 && eventType == CALIBRATION_EVENT) {
+	  cfg.SetAlgoDeadcInput(kTRUE);
+	  doUpdate = kTRUE;
+	  cfg.IncDeadcEvent();
+	} else {
+	  continue;
+	}
       }
-      
+      /*      
+      if (eventType == PHYSICS_EVENT) {
+	printf("DBG: PHYSICS_EVENT\n");
+      } else if (modeFET3 && eventType == CALIBRATION_EVENT) {
+	printf("DBG: CALIBRATION_EVENT\n");
+      } else {
+	printf("DBG: OTHER (%d)\n",eventType);
+      }
+      */
       nEvents++;
       if (cfg.GetPrintLevel() == 2) printf("\nEvent # %d\n",nEvents);
 
@@ -1434,6 +1510,8 @@ int main(Int_t argc, Char_t **argv)
       if (!cfg.WithWarnings())
 	rawStream->DisableWarnings();
 
+      // if there is global clock overflow
+      overFlow = kFALSE;
       // loops over DDL 
       while((status = rawStream->NextDDL())) {
 
@@ -1445,6 +1523,29 @@ int main(Int_t argc, Char_t **argv)
 	  for (Int_t ig = 0; ig < cfg.GetGlobalInputs(); ig++) {
 	    globalInput[ig] = darcHeaderHP->GetGlobalInput(ig);
 	  }
+	  // global scalers
+	  if (cfg.SaveScalers() && (eventType == CALIBRATION_EVENT)) {
+	    if (darcHeaderHP->GetGlobalFlag()) {
+	      if (firstCalibEvent) {
+		//printf("Skip first calib event: %x \n",darcHeaderHP->GetGlobalClock());
+		overFlow = kTRUE;
+		firstCalibEvent = kFALSE;
+	      } else {
+		elapsT = darcHeaderHP->GetGlobalClock()/40e6; // [s]
+		if (elapsT > 50) {
+		  //printf("Possible overflow: %x \n",darcHeaderHP->GetGlobalClock());
+		  overFlow = kTRUE;
+		} else {
+		  deltaT += elapsT;
+		  nCalibEvents++;
+		  const UInt_t* globScaler = darcHeaderHP->GetGlobalScaler();
+		  for (Int_t bit = 0; bit < 6; bit++) {
+		    glSc[bit] += (double)(*(globScaler+bit));
+		  }
+		} // end check overflow
+	      } // end first calib event
+	    } // end global flag
+	  } // end scalers calib event
 	  // loop over regional structure
 	  Int_t nReg = (Int_t)static_cast<AliMUONRawStreamTriggerHP*>(rawStream)->GetRegionalHeaderCount();
 	  for(Int_t iReg = 0; iReg < nReg; iReg++) {
@@ -1456,10 +1557,43 @@ int main(Int_t argc, Char_t **argv)
 	      if (localBoardId > 0) {
 		localStructHP->GetXPattern(xPattern);
 		localStructHP->GetYPattern(yPattern);
-		MakePattern(cfg,localBoardId,xPattern,yPattern);
-	      }
- 	    }
-	  }
+		if (cfg.GetDAFlag() && (nEvents < cfg.GetMaxEvents())) {
+		  MakePattern(cfg,localBoardId,xPattern,yPattern);
+		}
+		// local scalers
+		if (cfg.SaveScalers() && (eventType == CALIBRATION_EVENT)) {
+		  if (!overFlow) {
+		    // skip dead and copy cards
+		    if(localBoardId <= nLocBoards) {
+		      locLptScaler[localBoardId-1] += 
+			localStructHP->GetScalars()->fLPtRTrig +
+			localStructHP->GetScalars()->fLPtLTrig +
+			localStructHP->GetScalars()->fLPtSTrig;
+		      Int_t cathode = localStructHP->GetComptXY();
+		      for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {		
+			UInt_t scalerVal[4] = {
+			  localStructHP->GetXY1(ibitxy),
+			  localStructHP->GetXY2(ibitxy),
+			  localStructHP->GetXY3(ibitxy),
+			  localStructHP->GetXY4(ibitxy)
+			};
+
+			for(Int_t ich = 0; ich < nTriChambers; ich++) {
+			  // sum over all strips
+			  if (scalerVal[ich] < 0xffff/2) {
+			    locStripScaler[ich][localBoardId-1][cathode] += 2*scalerVal[ich];
+			  } else {
+			    locStripOver[ich][localBoardId-1][cathode]++;
+			  }
+			} // end chamber loop
+			
+		      } // end strip loop
+		    } // end skip copy cards
+		  } // env check overflow
+		} // end scalers calib event
+	      } // end valid local
+	    } // end loc loop
+	  } // end reg loop
 	} else {
 	  ddlTrigger = rawStream->GetDDLTrigger();
 	  darcHeader = ddlTrigger->GetDarcHeader();
@@ -1477,27 +1611,114 @@ int main(Int_t argc, Char_t **argv)
 	      if (localBoardId > 0) {
 		localStruct->GetXPattern(xPattern);
 		localStruct->GetYPattern(yPattern);
-		MakePattern(cfg,localBoardId,xPattern,yPattern);
+		if (cfg.GetDAFlag() && (nEvents < cfg.GetMaxEvents())) {
+		  MakePattern(cfg,localBoardId,xPattern,yPattern);
+		}
 	      }
 	    }
 	  }
 	}
-	if (rawStream->GetDDL() == 0) {
-	  StoreGlobalInput(cfg,globalInput);
+	if (cfg.GetDAFlag() && (nEvents < cfg.GetMaxEvents())) {
+	  if (rawStream->GetDDL() == 0) {
+	    StoreGlobalInput(cfg,globalInput);
+	  }
 	}
 	
       } // NextDDL
+
+      if (cfg.SaveScalers()) {
+	if (!overFlow && (deltaT > cfg.GetScalerRecTime())) {
+	  //printf("Write scalers after %d events\n",nEvents);
+	  Int_t ibw = 0;
+	  // global
+	  buffer[ibw++] = (nCalibEvents >> 24) & 0xff;
+	  buffer[ibw++] = (nCalibEvents >> 16) & 0xff;
+	  buffer[ibw++] = (nCalibEvents >>  8) & 0xff;
+	  buffer[ibw++] = (nCalibEvents >>  0) & 0xff;
+	  buffer[ibw++] = (deltaT >> 24) & 0xff;
+	  buffer[ibw++] = (deltaT >> 16) & 0xff;
+	  buffer[ibw++] = (deltaT >>  8) & 0xff;
+	  buffer[ibw++] = (deltaT >>  0) & 0xff;
+	  //printf("nev %u time %u \n",nCalibEvents,deltaT);
+	  for (Int_t bit = 0; bit < 6; bit++) {
+	    buffer[ibw++] = (glSc[bit] >> 24) & 0xff;
+	    buffer[ibw++] = (glSc[bit] >> 16) & 0xff;
+	    buffer[ibw++] = (glSc[bit] >>  8) & 0xff;
+	    buffer[ibw++] = (glSc[bit] >>  0) & 0xff;
+	    //printf("glSc %u \n",glSc[bit]);
+	  }
+	  // local
+	  for (Int_t iLoc = 0; iLoc < nLocBoards; iLoc++) {
+	    buffer[ibw++] = (locLptScaler[iLoc] >> 24) & 0xff;
+	    buffer[ibw++] = (locLptScaler[iLoc] >> 16) & 0xff;
+	    buffer[ibw++] = (locLptScaler[iLoc] >>  8) & 0xff;
+	    buffer[ibw++] = (locLptScaler[iLoc] >>  0) & 0xff;
+	    for (Int_t iCath = 0; iCath < nCathodes; iCath++) {
+	      for (Int_t iCha = 0; iCha < nTriChambers; iCha++) {
+		//printf("Ch%1dCath%1dLoc%03d  %u  %u \n",iCha,iCath,iLoc+1,locStripScaler[iCha][iLoc][iCath],locStripOver[iCha][iLoc][iCath]);
+		// strip scalers
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >> 56) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >> 48) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >> 40) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >> 32) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >> 24) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >> 16) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >>  8) & 0xff;
+		buffer[ibw++] = (locStripScaler[iCha][iLoc][iCath] >>  0) & 0xff;
+		// number of strips in overflow
+		buffer[ibw++] = (locStripOver[iCha][iLoc][iCath] >> 24) & 0xff;
+		buffer[ibw++] = (locStripOver[iCha][iLoc][iCath] >> 16) & 0xff;
+		buffer[ibw++] = (locStripOver[iCha][iLoc][iCath] >>  8) & 0xff;
+		buffer[ibw++] = (locStripOver[iCha][iLoc][iCath] >>  0) & 0xff;
+	      }
+	    }
+	  }
+	  //printf("Write to buffer %d bytes.\n",ibw);
+	  fwrite(&buffer,ibw,1,fsc);
+	  // reset
+	  deltaT = 0.;
+	  nCalibEvents = 0;
+	  for (Int_t bit = 0; bit < 6; bit++) {
+	    glSc[bit] = 0;
+	  }
+	  for (Int_t iLoc = 0; iLoc < nLocBoards; iLoc++) {
+	    locLptScaler[iLoc] = 0;
+	    for (Int_t iCath = 0; iCath < nCathodes; iCath++) {
+	      for (Int_t iCha = 0; iCha < nTriChambers; iCha++) {
+		locStripScaler[iCha][iLoc][iCath] = 0;
+		locStripOver[iCha][iLoc][iCath] = 0;
+	      }
+	    }
+	  }
+	}
+      } // end write scalers
 
       delete rawReader;
       delete rawStream;
 
     } // while (1)
 
-    // update configuration files ifrequested event types were found
-    if (doUpdate) {
-      if (cfg.GetDAMode() > 0) UpdateGlobalMasks(cfg);
-      if (cfg.GetDAMode() > 1) MakePatternStore(cfg);
+    if (cfg.GetDAFlag() && (nEvents < cfg.GetMaxEvents())) {
+      // update configuration files ifrequested event types were found
+      if (doUpdate) {
+	if (cfg.GetDAMode() > 0) UpdateGlobalMasks(cfg);
+	if (cfg.GetDAMode() > 1) MakePatternStore(cfg);
+      }
     }
+
+    fclose(fsc);
+
+    if (cfg.SaveScalers()) {
+      //printf("Store scalers to FES, DATE_RUN_NUMBER %s \n",gSystem->Getenv("DATE_RUN_NUMBER"));
+      Int_t stat = 0;
+      TString file = cfg.GetTrigScalFileName();  
+      stat = daqDA_FES_storeFile(file.Data(), "TRIGSCAL");
+      if (stat) {
+	printf("Failed to export file: %s\n",cfg.GetTrigScalFileName());
+	return stat;
+      }
+      if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetTrigScalFileName());
+   }
 
     timers.Stop();
 
@@ -1518,6 +1739,10 @@ int main(Int_t argc, Char_t **argv)
     cout << "MUONTRGda: Show decoder warnings: " << cfg.WithWarnings() << endl;
     cout << "MUONTRGda: Use the fast decoder: " << cfg.UseFastDecoder() << endl;
     cout << "MUONTRGda: DA mode (1=GLOBAL, 2=GLOBAL+LOCAL): " << cfg.GetDAMode() << endl;
+    cout << "MUONTRGda: Save scalers: " << cfg.SaveScalers() << endl;
+    if (cfg.SaveScalers()) {
+      cout << "MUONTRGda: Time to record scalers: " << cfg.GetScalerRecTime() << " seconds" << endl;
+    }
 
     printf("MUONTRGda: Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
