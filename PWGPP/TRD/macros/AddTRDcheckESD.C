@@ -78,14 +78,14 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   //Double_t outerParamRadLimits[51]; for(Int_t i=0;i<=50;++i) outerParamRadLimits[i] = 0.0+Double_t(i)*500.0/50.0;
     
   // BC container
-  cout << "Container 1 :: BunchCrossingsCF" << endl;
+  printf("Container 1 :: BunchCrossingsCF\n");
   Int_t bcSteps[3] = {AliTRDcheckESD::kTPCreference, AliTRDcheckESD::kTRD, AliTRDcheckESD::kTOF};
   UInt_t bcVars[3] = {AliTRDcheckESD::kEventBC, AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackPt};
   TArrayD bcBinning[3] = {TArrayD(3501, bcLimits), TArrayD(181,phiParamLimits), TArrayD(19,ptLimits)};
   checkESD->AddCFContainer("BunchCrossingsCF", "Matching vs bunch crossings", 3, bcSteps, 3, bcVars, bcBinning);
   
   // (phi,eta) matching container
-  cout << "Container 2 :: MatchingPhiEta" << endl;
+  printf("Container 2 :: MatchingPhiEta\n");
   Int_t matchPhiEtaSteps[3] = {AliTRDcheckESD::kTPCreference, AliTRDcheckESD::kTRD, AliTRDcheckESD::kTOF};
   UInt_t matchPhiEtaVars[5] = {AliTRDcheckESD::kTrackCharge,       AliTRDcheckESD::kTrackPhiTRD,    AliTRDcheckESD::kTrackEtaTRD,
                                AliTRDcheckESD::kTrackTrdTracklets, AliTRDcheckESD::kEventTrigger};
@@ -94,7 +94,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("MatchingPhiEta", "(phi,eta) matching CF", 3, matchPhiEtaSteps, 5, matchPhiEtaVars, matchPhiEtaBinning);
   
   // pt matching container
-  cout << "Container 3 :: MatchingPt" << endl;
+  printf("Container 3 :: MatchingPt\n");
   Int_t matchPtSteps[3] = {AliTRDcheckESD::kTPCreference, AliTRDcheckESD::kTRD, AliTRDcheckESD::kTOF};
   UInt_t matchPtVars[6] = {AliTRDcheckESD::kEventMult, AliTRDcheckESD::kTrackCharge,       AliTRDcheckESD::kTrackPhiTRD,
                            AliTRDcheckESD::kTrackPt,   AliTRDcheckESD::kTrackTrdTracklets, AliTRDcheckESD::kEventTrigger};
@@ -103,7 +103,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("MatchingPt", "(pt,phi,multiplicity) matching", 3, matchPtSteps, 6, matchPtVars, matchPtBinning);
   
   // qtot, vs event multiplicity and p
-  cout << "Container 4 :: CentralityCF" << endl;
+  printf("Container 4 :: CentralityCF\n");
   Int_t qtotCentSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t qtotCentVars[3] = {AliTRDcheckESD::kEventMult, AliTRDcheckESD::kTrackP,
                             AliTRDcheckESD::kTrackletQtot};
@@ -112,7 +112,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("CentralityCF", "qtot vs event multiplicity and p", 1, qtotCentSteps, 3, qtotCentVars, qtotCentBinning);
   
   // qtot, vs event multiplicity and p
-  cout << "Container 5 :: ClustersCF" << endl;
+  printf("Container 5 :: ClustersCF\n");
   Int_t clsCentSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t clsCentVars[3] = {AliTRDcheckESD::kEventMult, AliTRDcheckESD::kTrackP,
                            AliTRDcheckESD::kTrackTrdClusters};
@@ -121,7 +121,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("ClustersCF", "clusters/track vs event multiplicity and p", 1, clsCentSteps, 3, clsCentVars, clsCentBinning);
   
   // qtot vs (phi,eta) and layer
-  cout << "Container 6 :: QtotCF" << endl;
+  printf("Container 6 :: QtotCF\n");
   Int_t qtotSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t qtotVars[4] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                         AliTRDcheckESD::kTrackletQtot, AliTRDcheckESD::kTrackletLayer};
@@ -130,7 +130,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("QtotCF", "qtot vs (phi,eta) and layer", 1, qtotSteps, 4, qtotVars, qtotBinning);
   
   // pulse height vs p and slice
-  cout << "Container 7 :: PulseHeightCF" << endl;
+  printf("Container 7 :: PulseHeightCF\n");
   Int_t phSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t phVars[4] = {AliTRDcheckESD::kEventTrigger, AliTRDcheckESD::kTrackletP, 
                       AliTRDcheckESD::kTrackletPHslice, AliTRDcheckESD::kTrackletSlice};
@@ -139,7 +139,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("PulseHeightCF", "PH vs p and slice", 1, phSteps, 4, phVars, phBinning);  
     
   // TRD quality
-  /*cout << "Container 8 :: TRD quality" << endl;
+  /*printf("Container 8 :: TRD quality\n");
   Int_t trdQualitySteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t trdQualityVars[5] = {AliTRDcheckESD::kTrackP, AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD,
                               AliTRDcheckESD::kTrackTrdQuality, AliTRDcheckESD::kTrackCharge};
@@ -149,7 +149,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
 			   5, trdQualityVars, trdQualityBinning);
   */
   // TRD chi2
-  cout << "Container 9 :: TRD chi2" << endl;
+  printf("Container 9 :: TRD chi2\n");
   Int_t trdChi2Steps[1] = {AliTRDcheckESD::kTRD};
   UInt_t trdChi2Vars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD,
                            AliTRDcheckESD::kTrackTrdChi2,
@@ -161,7 +161,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
 			   5, trdChi2Vars, trdChi2Binning);
   
   // TRD material budget
-  cout << "Container 10 :: TRD material budget" << endl;
+  printf("Container 10 :: TRD material budget\n");
   Int_t trdBudgetSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t trdBudgetVars[3] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD,
                              AliTRDcheckESD::kTrackTRDBudget};
@@ -171,7 +171,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
 			   3, trdBudgetVars, trdBudgetBinning);
   
   // ploss vs (phi,eta) and layer
-  cout << "Container 11 :: Momentum loss" << endl;
+  printf("Container 11 :: Momentum loss\n");
   Int_t plossSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t plossVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                          AliTRDcheckESD::kTrackPlossTRDlayer, AliTRDcheckESD::kTrackletLayer,
@@ -182,7 +182,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("Ploss", "p loss vs (phi,eta,layer,charge)", 1, plossSteps, 5, plossVars, plossBinning);
 
   // clusters per tracklet  
-  cout << "Container 12 :: Clusters per tracklet" << endl;
+  printf("Container 12 :: Clusters per tracklet\n");
   Int_t clustersSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t clustersVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                             AliTRDcheckESD::kTrackletLayer, AliTRDcheckESD::kTrackletClusters,
@@ -193,7 +193,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("clustersPerTracklet", "tracklet clusters vs (phi,eta,layer,charge)", 1, clustersSteps, 5, clustersVars, clustersBinning);
 
   // clusters/crossed rows  
-  cout << "Container 13 :: Clusters/crossed rows" << endl;
+  printf("Container 13 :: Clusters/crossed rows\n");
   Int_t clsRowsSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t clsRowsVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                             AliTRDcheckESD::kTrackletLayer, AliTRDcheckESD::kTrackletClustersVsRows,
@@ -204,7 +204,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   checkESD->AddCFContainer("clustersVsRows", "tracklet/rows vs (phi,eta,layer,charge)", 1, clsRowsSteps, 5, clsRowsVars, clsRowsBinning);
 /*  
   // outer param radius  
-  cout << "Container 13 :: Outer param" << endl;
+  printf("Container 13 :: Outer param\n");
   Int_t outerParamSteps[1] = {AliTRDcheckESD::kTPCreference};
   UInt_t outerParamVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                               AliTRDcheckESD::kTrackOuterParamRadius, AliTRDcheckESD::kTrackTrdTracklets,
