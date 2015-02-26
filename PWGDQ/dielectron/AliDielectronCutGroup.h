@@ -39,6 +39,8 @@ public:
   
   virtual ~AliDielectronCutGroup();
   
+  Int_t GetNCuts() const { return fCutGroupList.GetEntries(); }
+  
   //Analysis cuts interface
   //
   virtual void Init();
@@ -49,6 +51,7 @@ public:
   void SetCompOperator(Bool_t compOperator);
 
   virtual void Print(const Option_t* option = "") const;
+  const AliAnalysisCuts* GetCut(Int_t iCut) const;
 
   
 private:
