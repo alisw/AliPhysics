@@ -37,7 +37,7 @@ public:
 		   kPedestalDiffInt0,kPedestalDiffInt1,
 		   kMultiADA,kMultiADC,kChargeADA,kChargeADC,kChargeAD, 
 		   kADATime,kADCTime,kDiffTime,kTimeADAADC,
-		   kNCoincADA,kNCoincADC,kPairTimeDiffMean,kPairTimeDiffRMS,
+		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,kPairTimeDiffMean,kPairTimeDiffRMS,
 		   kNChargeCorrADA,
 		   kNChargeCorrADC = kNChargeCorrADA + 28,
 		   kNTimeCorrADA = kNChargeCorrADC + 28,

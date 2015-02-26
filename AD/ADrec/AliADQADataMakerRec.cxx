@@ -463,16 +463,16 @@ void AliADQADataMakerRec::InitRaws()
   const Float_t kTimeDiffMax =  15.039062;
   
   const Int_t kNChannelBins  =   16;
-  const Float_t kChannelMin    =    0;
-  const Float_t kChannelMax    =   16;
+  const Float_t kChannelMin    =    -0.5;
+  const Float_t kChannelMax    =   15.5;
   
   const Int_t kNPedestalBins =  40;
   const Float_t kPedestalMin   =    0;
   const Float_t kPedestalMax   =  40; 
   
   const Int_t kNPairBins  =   8;
-  const Float_t kPairMin    =    0;
-  const Float_t kPairMax    =   8;
+  const Float_t kPairMin    =    -0.5;
+  const Float_t kPairMax    =   7.5;
   
   TH2I * h2i;
   TH2F * h2d;
@@ -482,9 +482,9 @@ void AliADQADataMakerRec::InitRaws()
   int iHisto =0;
 
   // Creation of Cell Multiplicity Histograms
-  h1i = new TH1I("H1I_Multiplicity_ADA", "Number of fired cells in ADA;# of Cells;Entries", 10, 0, 10) ;  
+  h1i = new TH1I("H1I_Multiplicity_ADA", "Number of channels with charge signal and time ADA;# of Channels;Entries", 9, -0.5, 8.5) ;  
   Add2RawsList(h1i,kMultiADA, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_Multiplicity_ADC", "Number of fired cells in ADC;# of Cells;Entries", 10, 0, 10) ;  
+  h1i = new TH1I("H1I_Multiplicity_ADC", "Number of channels with charge signal and time ADC;# of Channels;Entries", 9, -0.5, 8.5) ;  
   Add2RawsList(h1i,kMultiADC, !expert, image, saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
@@ -492,12 +492,12 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1d,kChargeADA, !expert, image, saveCorr);   iHisto++;
   h1d = new TH1F("H1D_Charge_ADC", "Total Charge in ADC;Charge [ADC counts];Counts", kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
   Add2RawsList(h1d,kChargeADC, !expert, image, saveCorr);   iHisto++;
-  h1d = new TH1F("H1D_Charge_AD", "Total Charge in AD;Charge [ADC counts];Counts", 4000, 0, 80000) ;  
+  h1d = new TH1F("H1D_Charge_AD", "Total Charge in AD;Charge [ADC counts];Counts", 2*kNChargeSideBins, kChargeSideMin, 1+2*kNChargeSideBins) ;  
   Add2RawsList(h1d,kChargeAD, !expert,  image, saveCorr);   iHisto++;
    
 
   // Creation of Charge EoI histogram 
-  h2d = new TH2F("H2D_ChargeEoI", "Charge Event of Interest;Channel Number;Charge [ADC counts]"
+  h2d = new TH2F("H2D_ChargeEoI", "Signal charge per channel(pedestal substracted);Channel Number;Charge [ADC counts]"
 		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
   Add2RawsList(h2d,kChargeEoI, !expert, image, saveCorr); iHisto++;
 
@@ -508,13 +508,13 @@ void AliADQADataMakerRec::InitRaws()
     Add2RawsList(h2i,(iInt == 0 ? kPedestalInt0 : kPedestalInt1), !expert, image, saveCorr); iHisto++;
     
     h2d = new TH2F(Form("H2D_PedestalDiff_Int%d",iInt), Form("Pedestal difference Online - OCDB (Int%d);Channel; Pedestal Online - OCDB",iInt)
-		   ,kNChannelBins, kChannelMin, kChannelMax,81,-40.5,40.5);
+		   ,kNChannelBins, kChannelMin, kChannelMax,81,-10.5,70.5);
     Add2RawsList(h2d,(iInt == 0 ? kPedestalDiffInt0 : kPedestalDiffInt1), !expert, image, saveCorr); iHisto++;
 	
 
     // Creation of Charge EoI histograms 
-    h2i = new TH2I(Form("H2I_ChargeEoI_Int%d",iInt), Form("Charge EoI (Int%d);Channel;Charge [ADC counts]",iInt)
-		   ,kNChannelBins, kChannelMin, kChannelMax, kNChargeChannelBins, kChargeChannelMin, kChargeChannelMax);
+    h2i = new TH2I(Form("H2I_ChargeEoI_Int%d",iInt), Form("Maximum charge per clock (Int%d);Channel;Charge [ADC counts]",iInt)
+		   ,kNChannelBins, kChannelMin, kChannelMax, 1025, 0, 1025);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), !expert, image, saveCorr); iHisto++;
     
   }	
@@ -560,10 +560,15 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h2d,kWidthSlewing, !expert, image, saveCorr);   iHisto++;
   
   //Creation of pair coincidence histograms
-  h1i = new TH1I("H1I_MultiCoincidence_ADA", "Number of coincidences in ADA;# of Coincidences;Entries", 5, -0.5, 4.5) ;  
-  Add2RawsList(h1i,kNCoincADA, !expert, image, saveCorr);   iHisto++;
-  h1i = new TH1I("H1I_MultiCoincidence_ADC", "Number of coincidences in ADC;# of Coincidences;Entries", 5, -0.5, 4.5) ;  
-  Add2RawsList(h1i,kNCoincADC, !expert, image, saveCorr);   iHisto++;
+  h1i = new TH1I("H1I_MultiBBCoincidence_ADA", "Number of BB flag coincidences in ADA;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
+  Add2RawsList(h1i,kNBBCoincADA, !expert, image, saveCorr);   iHisto++;
+  h1i = new TH1I("H1I_MultiBBCoincidence_ADC", "Number of BB flag coincidences in ADC;# of BB Coincidences;Entries", 5, -0.5, 4.5) ;  
+  Add2RawsList(h1i,kNBBCoincADC, !expert, image, saveCorr);   iHisto++;
+  
+  h1i = new TH1I("H1I_MultiBGCoincidence_ADA", "Number of BG flag coincidences in ADA;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
+  Add2RawsList(h1i,kNBGCoincADA, !expert, image, saveCorr);   iHisto++;
+  h1i = new TH1I("H1I_MultiBGCoincidence_ADC", "Number of BG flag coincidences in ADC;# of BG Coincidences;Entries", 5, -0.5, 4.5) ;  
+  Add2RawsList(h1i,kNBGCoincADC, !expert, image, saveCorr);   iHisto++;
   
   h1d = new TH1F("H1D_Pair_TimeDiffMean","Time difference mean for coincidence pair [ns];Pair number;Time mean [ns]",kNPairBins, kPairMin, kPairMax);
   Add2RawsList(h1d,kPairTimeDiffMean, expert, image, saveCorr); iHisto++;
@@ -669,8 +674,10 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   Double_t diffTime=-100000.;
   
-  Int_t	   pmulADA = 0;
-  Int_t	   pmulADC = 0;
+  Int_t	   pBBmulADA = 0;
+  Int_t	   pBBmulADC = 0;
+  Int_t	   pBGmulADA = 0;
+  Int_t	   pBGmulADC = 0;
   Double_t pDiffTime =-100000.;
 
   
@@ -762,7 +769,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
       Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 		  
-      if((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)){ 
+      if((adc[offlineCh] > fRecoParam->GetNSigmaPed()*sigma) && !(time[offlineCh] <1.e-6)){ 
 	if(offlineCh<8) {
 	  mulADC++;
 	  chargeADC += adc[offlineCh];
@@ -829,16 +836,16 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       FillRawsData(kTimeSlewingOn,timeCorr[offlineCh],adc[offlineCh]);
       FillRawsData(kWidthSlewing,width[offlineCh],adc[offlineCh]);
       
-      FillRawsData(kHPTDCTime,offlineCh,timeCorr[offlineCh]);
+      FillRawsData(kHPTDCTime,offlineCh,time[offlineCh]);
       FillRawsData(kWidth,offlineCh,width[offlineCh]);
       //if(flagBB[offlineCh]) {
       if(nbbFlag > 0){
-	FillRawsData(kHPTDCTimeBB,offlineCh,timeCorr[offlineCh]);
+	FillRawsData(kHPTDCTimeBB,offlineCh,time[offlineCh]);
 	FillRawsData(kWidthBB,offlineCh,width[offlineCh]);
       }
       //if(flagBG[offlineCh]) {
       if(nbgFlag > 0){
-	FillRawsData(kHPTDCTimeBG,offlineCh,timeCorr[offlineCh]);
+	FillRawsData(kHPTDCTimeBG,offlineCh,time[offlineCh]);
 	FillRawsData(kWidthBG,offlineCh,width[offlineCh]);
       }
       
@@ -867,11 +874,15 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     	}
 	
     for(Int_t iChannel=0; iChannel<4; iChannel++) {//Loop over pairs
-    		if(flagBB[iChannel] && flagBB[iChannel+4]) pmulADC++;
-		if(flagBB[iChannel+8] && flagBB[iChannel+12]) pmulADA++;
+    		if(flagBB[iChannel] && flagBB[iChannel+4]) pBBmulADC++;
+		if(flagBB[iChannel+8] && flagBB[iChannel+12]) pBBmulADA++;
+		if(flagBG[iChannel] && flagBG[iChannel+4]) pBGmulADC++;
+		if(flagBG[iChannel+8] && flagBG[iChannel+12]) pBGmulADA++;
 		}	
-    FillRawsData(kNCoincADA,pmulADA);
-    FillRawsData(kNCoincADC,pmulADC);
+    FillRawsData(kNBBCoincADA,pBBmulADA);
+    FillRawsData(kNBBCoincADC,pBBmulADC);
+    FillRawsData(kNBGCoincADA,pBGmulADA);
+    FillRawsData(kNBGCoincADC,pBGmulADC);
 	
 	
     if(weightADA>1.e-6) timeADA /= weightADA; 
