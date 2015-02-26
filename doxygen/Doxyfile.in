@@ -776,6 +776,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC/testMC \
                          @CMAKE_SOURCE_DIR@/TPC/TPCbase \
                          @CMAKE_SOURCE_DIR@/MUON \
+                         @CMAKE_SOURCE_DIR@/MUON/DA \
                          @CMAKE_SOURCE_DIR@/MUON/MUONgeometry \
                          @CMAKE_SOURCE_DIR@/MUON/MUONevaluation \
                          @CMAKE_SOURCE_DIR@/MUON/MUONcore \
