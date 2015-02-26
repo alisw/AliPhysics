@@ -39,6 +39,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliESDCaloCluster.h"
 #include "AliVTrack.h"
+#include "AliAnalysisUtils.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
@@ -66,6 +67,11 @@ ClassImp(AliAnalysisTaskJetJTJT)
 		fHistJTPta_all(0),
 		fHistJTBg(0),
 		fHistLogJTBg(0),
+		fHistJTPtaNonInv(0),
+		fHistLogJTPtaNonInv(0),
+		fHistJTPta_allNonInv(0),
+		fHistJTBgNonInv(0),
+		fHistLogJTBgNonInv(0),
 		fHistBgMulti(0),
 		fHistBgPt(0),
 		fHistJetEta(0),
@@ -74,15 +80,20 @@ ClassImp(AliAnalysisTaskJetJTJT)
 		fhTrackingEfficiency(0),
 		fNpttBins(1),
 		fNptaBins(1),
+		fEffMode(1),
 		fJetsCont(0),
 		//fJetsConts(0),
 		//nJetsConts(0),
 		fTracksCont(0),
 		fCaloClustersCont(0),
+	       	fhVertexZ(0),
+		fHistEvtSelection(0),
+		fPrimaryVertex(0),
 		fTracks(0),
 		fTrackArrayName("nonejk"),
 		runPeriod(""),
 		fEfficiency(0),
+		fVertexHelper(0),
 		debug(0)
 
 
@@ -100,6 +111,11 @@ ClassImp(AliAnalysisTaskJetJTJT)
 	fHistJTPta_all      = new TH1***[fNcentBins];
 	fHistJTBg           = new TH1***[fNcentBins];
 	fHistLogJTBg        = new TH1***[fNcentBins];
+	fHistJTPtaNonInv    = new TH1***[fNcentBins];
+	fHistLogJTPtaNonInv = new TH1***[fNcentBins];
+	fHistJTPta_allNonInv  = new TH1***[fNcentBins];
+	fHistJTBgNonInv     = new TH1***[fNcentBins];
+	fHistLogJTBgNonInv  = new TH1***[fNcentBins];
 	fHistBgMulti        = new TH1**[fNcentBins];
 	fHistBgPt           = new TH1**[fNcentBins];	 
 	fHistJetEta	    = new TH1**[fNcentBins];
@@ -115,6 +131,11 @@ ClassImp(AliAnalysisTaskJetJTJT)
 		fHistJTPta_all[i] = 0;
 		fHistJTBg[i] = 0;
 		fHistLogJTBg[i] = 0;
+		fHistJTPtaNonInv[i] = 0;
+		fHistLogJTPtaNonInv[i] = 0;
+		fHistJTPta_allNonInv[i] = 0;
+		fHistJTBgNonInv[i] = 0;
+		fHistLogJTBgNonInv[i] = 0;
 		fHistBackgroundDone[i] = 0;
 		fHistTracksPt[i] = 0;
 		fHistTracksJt[i] = 0;
@@ -149,6 +170,11 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 	fHistJTPta_all(0),
 	fHistJTBg(0),
 	fHistLogJTBg(0),
+	fHistJTPtaNonInv(0),
+	fHistLogJTPtaNonInv(0),
+	fHistJTPta_allNonInv(0),
+	fHistJTBgNonInv(0),
+	fHistLogJTBgNonInv(0),
 	fHistBgMulti(0),
 	fHistBgPt(0),
 	fHistJetEta(0),
@@ -157,15 +183,20 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 	fhTrackingEfficiency(0),
 	fNpttBins(1),
 	fNptaBins(1),
+	fEffMode(1),
 	fJetsCont(0),
 	//fJetsConts(0),
 	//nJetsConts(0),
 	fTracksCont(0),
 	fCaloClustersCont(0),
+	fhVertexZ(0),
+	fHistEvtSelection(0),
+	fPrimaryVertex(0),
 	fTracks(0),
 	fTrackArrayName("nonejk"),
 	runPeriod(""),
 	fEfficiency(0),
+	fVertexHelper(0),
 	debug(0)
 {
 	// Standard constructor.
@@ -180,6 +211,11 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 	fHistJTPta_all	    = new TH1***[fNcentBins];	
 	fHistJTBg	    = new TH1***[fNcentBins];	
 	fHistLogJTBg	    = new TH1***[fNcentBins];	
+	fHistJTPtaNonInv    = new TH1***[fNcentBins];
+	fHistLogJTPtaNonInv = new TH1***[fNcentBins];
+	fHistJTPta_allNonInv  = new TH1***[fNcentBins];
+	fHistJTBgNonInv     = new TH1***[fNcentBins];
+	fHistLogJTBgNonInv  = new TH1***[fNcentBins];
 	fHistBgMulti        = new TH1**[fNcentBins];
 	fHistBgPt           = new TH1**[fNcentBins];
 	fHistJetEta         = new TH1**[fNcentBins];
@@ -195,6 +231,11 @@ AliAnalysisTaskJetJTJT::AliAnalysisTaskJetJTJT(const char *name) :
 		fHistJTPta_all[i] = 0;
 		fHistJTBg[i] = 0;
 		fHistLogJTBg[i] = 0;
+		fHistJTPtaNonInv[i] = 0;
+		fHistLogJTPtaNonInv[i] = 0;
+		fHistJTPta_allNonInv[i] = 0;
+		fHistJTBgNonInv[i] = 0;
+		fHistLogJTBgNonInv[i] = 0;
 		fHistBackgroundDone[i] = 0;
 		fHistTracksPt[i] = 0;
 		fHistTracksJt[i] = 0;
@@ -299,11 +340,25 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 	if(debug > 0)
 		cout << "AliAnalysisTaskJetJTJT::UserCreateOutputObjects: Creating efficiency" << endl;
 	fEfficiency = new JTJTEfficiency;
-	fEfficiency->SetMode( 1 ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
+	fEfficiency->SetMode( fEffMode ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
 	fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data"); // Efficiency root file location local or alien
 
 
+	histname = "fHistVertexZ";
+	fhVertexZ = new TH1F(histname.Data(), histname.Data(), 200, -20., 20.);
+	fhVertexZ->GetXaxis()->SetTitle("#Delta z(cm)");
+	fhVertexZ->GetYaxis()->SetTitle("dN^{Events}/dz");
+	fOutput->Add(fhVertexZ);
 
+	// Event statistics
+	fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 4, -0.5, 4.5);
+	fHistEvtSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
+	fHistEvtSelection->GetXaxis()->SetBinLabel(2,"events IN");
+	fHistEvtSelection->GetXaxis()->SetBinLabel(3,"pile up (rejected)");
+	fHistEvtSelection->GetXaxis()->SetBinLabel(4,"vertex cut (rejected)");
+	//fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
+
+	fOutput->Add(fHistEvtSelection);
 	for (Int_t ic = 0; ic < fNcentBins; ic++) {
 		if (fParticleCollArray.GetEntriesFast()>0) {
 			histname = "fHistTracksPt_";
@@ -336,6 +391,11 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 		fHistJTPta_all[ic] = new TH1**[fNpttBins];
 		fHistJTBg[ic] = new TH1**[fNpttBins];
 		fHistLogJTBg[ic] = new TH1**[fNpttBins];
+		fHistJTPtaNonInv[ic] = new TH1**[fNpttBins];
+		fHistLogJTPtaNonInv[ic] = new TH1**[fNpttBins];
+		fHistJTPta_allNonInv[ic] = new TH1**[fNpttBins];
+		fHistJTBgNonInv[ic] = new TH1**[fNpttBins];
+		fHistLogJTBgNonInv[ic] = new TH1**[fNpttBins];
 		fHistJetsPt[ic] = new TH1*[fNpttBins];
 		fHistBackgroundDone[ic] = new TH1*[fNpttBins];
 		fHistBgMulti[ic] = new TH1*[fNpttBins];
@@ -349,12 +409,23 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 			fHistJTPta_all[ic][j] = new TH1*[fNptaBins];
 			fHistJTBg[ic][j] = new TH1*[fNptaBins];
 			fHistLogJTBg[ic][j] = new TH1*[fNptaBins];
+			fHistJTPtaNonInv[ic][j] = new TH1*[fNptaBins];
+			fHistLogJTPtaNonInv[ic][j] = new TH1*[fNptaBins];
+			fHistJTPta_allNonInv[ic][j] = new TH1*[fNptaBins];
+			fHistJTBgNonInv[ic][j] = new TH1*[fNptaBins];
+			fHistLogJTBgNonInv[ic][j] = new TH1*[fNptaBins];
 			for(Int_t k=0; k < fNptaBins; k++){
 				fHistJTPta[ic][j][k] = 0;
 				fHistLogJTPta[ic][j][k] = 0;
 				fHistJTPta_all[ic][j][k] = 0;
 				fHistJTBg[ic][j][k] = 0;
 				fHistLogJTBg[ic][j][k] = 0;
+
+				fHistJTPtaNonInv[ic][j][k] = 0;
+				fHistLogJTPtaNonInv[ic][j][k] = 0;
+				fHistJTPta_allNonInv[ic][j][k] = 0;
+				fHistJTBgNonInv[ic][j][k] = 0;
+				fHistLogJTBgNonInv[ic][j][k] = 0;
 			}
 			fHistJetsPt[ic][j] = 0;
 			fHistBackgroundDone[ic][j] = 0;
@@ -418,6 +489,56 @@ void AliAnalysisTaskJetJTJT::UserCreateOutputObjects()
 					fHistLogJTBg[ic][iptt][ipta]->GetXaxis()->SetTitle("ln(J_{T,track}/ (GeV/c))");
 					fHistLogJTBg[ic][iptt][ipta]->GetYaxis()->SetTitle("counts");
 					fOutput->Add(fHistLogJTBg[ic][iptt][ipta]);
+
+					histname = "hJTPtaNonInvD00C";
+					//histname += ic;
+					histname += Form("C%02dT%02dA%02d", ic, iptt, ipta);
+					if(debug > 1)
+						cout << histname << endl;
+					fHistJTPtaNonInv[ic][iptt][ipta] = new TH1F(histname.Data(), histname.Data(),NBINSJt, LogBinsJt);
+					fHistJTPtaNonInv[ic][iptt][ipta]->GetXaxis()->SetTitle("J_{T,track} (GeV/c)");
+					fHistJTPtaNonInv[ic][iptt][ipta]->GetYaxis()->SetTitle("counts");
+					fOutput->Add(fHistJTPtaNonInv[ic][iptt][ipta]);
+
+					histname = "hLogJTPtaNonInvD00C";
+					//histname += ic;
+					histname += Form("C%02dT%02dA%02d", ic, iptt, ipta);
+					if(debug > 1)
+						cout << histname << endl;
+					fHistLogJTPtaNonInv[ic][iptt][ipta] = new TH1F(histname.Data(), histname.Data(), NBINSJtW, LimLJtW, LimHJtW);
+					fHistLogJTPtaNonInv[ic][iptt][ipta]->GetXaxis()->SetTitle("ln(J_{T,track}/ (GeV/c))");
+					fHistLogJTPtaNonInv[ic][iptt][ipta]->GetYaxis()->SetTitle("counts");
+					fOutput->Add(fHistLogJTPtaNonInv[ic][iptt][ipta]);
+
+					histname = "hJTPta_allNonInvD00C";
+					//histname += ic;
+					histname += Form("C%02dT%02dA%02d", ic, iptt, ipta);
+					if(debug > 1)
+						cout << histname << endl;
+					fHistJTPta_allNonInv[ic][iptt][ipta] = new TH1F(histname.Data(), histname.Data(), NBINSJt, LogBinsJt);
+					fHistJTPta_allNonInv[ic][iptt][ipta]->GetXaxis()->SetTitle("J_{T,track} (GeV/c)");
+					fHistJTPta_allNonInv[ic][iptt][ipta]->GetYaxis()->SetTitle("counts");
+					fOutput->Add(fHistJTPta_allNonInv[ic][iptt][ipta]);
+
+					histname = "hJTBgNonInv";
+					//histname += ic;
+					histname += Form("C%02dT%02dA%02d", ic, iptt, ipta);
+					if(debug > 1)
+						cout << histname << endl;
+					fHistJTBgNonInv[ic][iptt][ipta] = new TH1F(histname.Data(), histname.Data(), NBINSJt, LogBinsJt);
+					fHistJTBgNonInv[ic][iptt][ipta]->GetXaxis()->SetTitle("J_{T,track} (GeV/c)");
+					fHistJTBgNonInv[ic][iptt][ipta]->GetYaxis()->SetTitle("counts");
+					fOutput->Add(fHistJTBgNonInv[ic][iptt][ipta]);
+
+					histname = "hLogJTBg";
+					//histname += ic;
+					histname += Form("C%02dT%02dA%02d", ic, iptt, ipta);
+					if(debug > 1)
+						cout << histname << endl;
+					fHistLogJTBgNonInv[ic][iptt][ipta] = new TH1F(histname.Data(), histname.Data(), NBINSJtW, LimLJtW, LimHJtW);
+					fHistLogJTBgNonInv[ic][iptt][ipta]->GetXaxis()->SetTitle("ln(J_{T,track}/ (GeV/c))");
+					fHistLogJTBgNonInv[ic][iptt][ipta]->GetYaxis()->SetTitle("counts");
+					fOutput->Add(fHistLogJTBgNonInv[ic][iptt][ipta]);
 
 
 				}
@@ -517,6 +638,7 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 {
 	// Fill histograms.
 
+	fHistEvtSelection->Fill(0); //Count accepted events
 	AliCentrality *aliCent = InputEvent()->GetCentrality();
 	fCentBin = 0;
 	if (aliCent) {
@@ -663,9 +785,9 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 					if(debug > 2)
 						cout << "Filling fHistJetTracksPt C" << fCentBin << " T" << fPttBin << endl;
 					/*Float_t dotproduct = track->Px()*jet->Px()+track->Py()*jet->Py()+track->Pz()*jet->Pz(); // p_track dot p_jet
-					Float_t constp = sqrt(track->Px()*track->Px()+track->Py()*track->Py()+track->Pz()*track->Pz()); // track pT norm
-					Float_t normproduct = constp*jetp; // jet pT norm times track pT norm
-					Float_t costheta2 = dotproduct/normproduct; 
+					  Float_t constp = sqrt(track->Px()*track->Px()+track->Py()*track->Py()+track->Pz()*track->Pz()); // track pT norm
+					  Float_t normproduct = constp*jetp; // jet pT norm times track pT norm
+					  Float_t costheta2 = dotproduct/normproduct; 
 					//Float_t sintheta = sqrt(1-costheta2*costheta2);
 					Float_t jt = constp*sqrt(1-costheta2*costheta2);*/
 					Float_t jt = getJt(track,jet,0);
@@ -674,7 +796,10 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 					if(jt > 0 && 1.0/jt > 0){
 						fHistTracksJt[fCentBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
 						fHistJTPta[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr); //Fill dN/(djT jT)
-						fHistLogJTPta[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/jt*effCorr); //Fill logarithmic dN/(djT jT)
+						fHistLogJTPta[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/jt*effCorr); //Fill logarithmic dN/(dln(jT) jT)
+
+						fHistJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr); //Fill dN/(djT)
+						fHistLogJTPtaNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr); //Fill logarithmic dN/(dln(jT))
 					}
 					if(debug > 1)
 						cout << "Filling JT C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
@@ -723,6 +848,7 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 						double effCorr = 1./fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
 						if(jt > 0 && 1.0/jt > 0){
 							fHistJTPta_all[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
+							fHistJTPta_allNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
 						}
 						for(int ipta = 0 ; ipta < fNptaBins; ipta++){
 							if(track->Pt() > AssocPtBorders[ipta]){
@@ -747,6 +873,9 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 								if(jt > 0 && 1.0/jt > 0){
 									fHistJTBg[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0/jt*effCorr);
 									fHistLogJTBg[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0/jt*effCorr);
+
+									fHistJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(jt,1.0*effCorr);
+									fHistLogJTBgNonInv[fCentBin][fPttBin][fPtaBin]->Fill(TMath::Log(jt),1.0*effCorr);
 								}
 								if(debug > 1)
 									cout << "Filling Background C" << fCentBin << "T" <<  fPttBin << "A" << fPtaBin << " jt:" << jt << " with " << 1.0/jt*effCorr << endl;
@@ -897,8 +1026,8 @@ void AliAnalysisTaskJetJTJT::CheckClusTrackMatching()
 void AliAnalysisTaskJetJTJT::ExecOnce() {
 
 	if(debug > 0){
-	cout << "AliAnalysisTaskJetJTJT::ExecOnce(): " << endl;
-	cout << "Get fTracks from " << fTrackArrayName.Data() << endl;
+		cout << "AliAnalysisTaskJetJTJT::ExecOnce(): " << endl;
+		cout << "Get fTracks from " << fTrackArrayName.Data() << endl;
 	}
 	fTracks =dynamic_cast <TClonesArray*>(InputEvent()->FindListObject( fTrackArrayName.Data() ));
 
@@ -921,13 +1050,33 @@ void AliAnalysisTaskJetJTJT::ExecOnce() {
 	if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
 	if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
 
+	// Initialize helper class (for vertex selection & pile up correction)
+	fVertexHelper = new AliAnalysisUtils();
+	fVertexHelper->SetCutOnZVertexSPD(kTRUE); // kFALSE: no cut; kTRUE: |zvtx-SPD - zvtx-TPC|<0.5cm
+	fVertexHelper->SetMinVtxContr( 2 ); //Copied from Jiri
+	fVertexHelper->SetMaxVtxZ( 10 ); //Copied from Jiri
 }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetJTJT::Run()
 {
 	// Run analysis code here, if needed. It will be executed before FillHistograms().
+	fHistEvtSelection->Fill(1); //Count input event
 
+
+	//Vertex cut, z must be < 10cm
+
+	if(!fVertexHelper || fVertexHelper->IsPileUpEvent(InputEvent())){ 
+		fHistEvtSelection->Fill(2); //count events rejected by pileup
+		return kFALSE;
+	}
+	fPrimaryVertex = InputEvent()->GetPrimaryVertex();
+	if((TMath::Abs(fPrimaryVertex->GetZ()) > 10.0)){
+		fHistEvtSelection->Fill(3); //count events rejected by vertex cut 
+		return kFALSE;
+	}
+
+	fhVertexZ->Fill(fPrimaryVertex->GetZ());
 	return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
 }
 
@@ -953,26 +1102,26 @@ JTJTEfficiency::JTJTEfficiency():
 	fInputRoot(NULL),
 	fCentBinAxis(0x0)
 {
-  for (Int_t i=0; i < 3; i++) fEffDir[i] = 0;
+	for (Int_t i=0; i < 3; i++) fEffDir[i] = 0;
 
 }
 
 JTJTEfficiency::JTJTEfficiency(const JTJTEfficiency& obj) :
-  fMode(obj.fMode),
-  fPeriod(obj.fPeriod),
-  fDataPath(obj.fDataPath),
-  fName(obj.fName),
-  fPeriodStr(obj.fPeriodStr),
-  fMCPeriodStr(obj.fMCPeriodStr),
-  fRunNumber(obj.fRunNumber),
-  fTag(obj.fTag),
-  fInputRootName(obj.fInputRootName),
-  fInputRoot(obj.fInputRoot),
-  fCentBinAxis(obj.fCentBinAxis)
+	fMode(obj.fMode),
+	fPeriod(obj.fPeriod),
+	fDataPath(obj.fDataPath),
+	fName(obj.fName),
+	fPeriodStr(obj.fPeriodStr),
+	fMCPeriodStr(obj.fMCPeriodStr),
+	fRunNumber(obj.fRunNumber),
+	fTag(obj.fTag),
+	fInputRootName(obj.fInputRootName),
+	fInputRoot(obj.fInputRoot),
+	fCentBinAxis(obj.fCentBinAxis)
 {
 	// copy constructor TODO: handling of pointer members
 	JUNUSED(obj);
-  for (Int_t i=0; i < 3; i++) fEffDir[i] = obj.fEffDir[i];
+	for (Int_t i=0; i < 3; i++) fEffDir[i] = obj.fEffDir[i];
 }
 
 JTJTEfficiency& JTJTEfficiency::operator=(const JTJTEfficiency& obj){
@@ -1070,7 +1219,7 @@ bool JTJTEfficiency::Load(){
 	//fInputRoot = new TFile( fInputRootName,"READ");
 	if( !fInputRoot ) {
 		cout << "J_ERROR : %s does not exist" << fInputRootName << endl;
-                return false;
+		return false;
 	}
 
 	//fEffDir[0] = (TDirectory*)fInputRoot->Get("EffRE");
@@ -1080,13 +1229,13 @@ bool JTJTEfficiency::Load(){
 	if( !fEffDir[2] )
 	{
 		cout << "J_ERROR : Directory EFF is not exist"<<endl;
-                return false;
+		return false;
 	}
 
 	fCentBinAxis = (TAxis*)fEffDir[2]->Get("CentralityBin");
 	if( !fCentBinAxis ){
 		cout << "J_ERROR : No CentralityBin in directory" << endl;
-                return false;
+		return false;
 	}
 
 
