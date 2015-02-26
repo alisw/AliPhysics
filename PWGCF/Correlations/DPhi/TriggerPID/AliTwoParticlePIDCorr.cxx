@@ -339,6 +339,7 @@ fCutctauK0s(2.68),
   fRapCutLambda(0.7),
 fDaugNClsTPC(70),
  fFracTPCcls(0),
+ fCutDaughterPtV0(kFALSE),
  TPCSectoredgecut(kTRUE),//high Pt rel. rise TPCPid related variables
  fNclsusedfordEdXdtr(60),
  fPiondeltacutmin(1.0),
@@ -628,6 +629,7 @@ fCutctauK0s(2.68),
   fRapCutLambda(0.7),
 fDaugNClsTPC(70),
    fFracTPCcls(0),
+   fCutDaughterPtV0(kFALSE),
  TPCSectoredgecut(kTRUE),//high Pt rel. rise TPCPid related variables
    fNclsusedfordEdXdtr(60),
    fPiondeltacutmin(1.0),
@@ -2851,7 +2853,6 @@ void AliTwoParticlePIDCorr::doAODevent()
     return;
   }
 
-
   //TString firedTriggerClasses=aod->GetFiredTriggerClasses();
   //if(firedTriggerClasses.Contains("CSH1-B")){
  
@@ -2959,7 +2960,7 @@ if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have co
  fphiSpectraasso->Fill(track->Phi(),track->Pt());
 
  trackscount++;
-
+ 
  //if no applyefficiency , set the eff factor=1.0
  Float_t effmatrix=1.0;
 
@@ -3080,7 +3081,6 @@ if(trackscount<1.0){
  if (fTrigPtJet) fhistJetTrigestimate->Fill(cent_v0,4.0);
 
  Float_t weightval=1.0;
-
 
   
 //fill the centrality/multiplicity distribution of the selected events
@@ -6031,10 +6031,11 @@ if(t1->GetTPCClusterInfo(2,1)<fDaugNClsTPC || t2->GetTPCClusterInfo(2,1)<fDaugNC
     if(!CheckStatusv0Daughter(ptrack,ntrack)) return kFALSE;//daughters need to pass some basic cuts    
 
     if(TMath::Abs(ptrack->Eta()) > fmaxeta || TMath::Abs(ntrack->Eta()) > fmaxeta) return kFALSE; // remove daughters beyond eta bound |0.8|
-
+    if(fCutDaughterPtV0){
     if(ptrack->Pt() < fMinPtDaughter || ntrack->Pt() < fMinPtDaughter) return kFALSE; // remove daughter tracks below minmum p |1.0 GeV/c|
 
     if(ptrack->Pt() > fMaxPtDaughter || ntrack->Pt() > fMaxPtDaughter) return kFALSE; // remove daughter tracks above maximum p ** to make it compatiable with AliHelperPID**|4.0 GeV/C|
+    }
 
     // Daughters: Impact parameter of daughter to prim vtx
     Float_t xy = v1->DcaPosToPrimVertex();
