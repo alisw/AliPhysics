@@ -402,74 +402,74 @@ private:
   /// assignment operator, not implemented
   AliDAConfig& operator=(const AliDAConfig& cfg);
 
-  const TString fDAConfigFileName;    //! name of the DA configuration file from detector DB
-  const TString fCurrentFileName;     //! usually MtgCurrent.dat
-  const TString fLastCurrentFileName; //! usually MtgLastCurrent.dat
+  const TString fDAConfigFileName;    //!< name of the DA configuration file from detector DB
+  const TString fCurrentFileName;     //!< usually MtgCurrent.dat
+  const TString fLastCurrentFileName; //!< usually MtgLastCurrent.dat
 
-  TString fSodName; //! name of the Start-of-data field in MtgCurrent.dat
-  Int_t   fSodFlag; //! flag value of the Start-of-data field in MtgCurrent.dat
+  TString fSodName; //!< name of the Start-of-data field in MtgCurrent.dat
+  Int_t   fSodFlag; //!< flag value of the Start-of-data field in MtgCurrent.dat
 
-  TString fDAName;  //! name of the Detector Algorithm field in MtgCurrent.dat 
-  Int_t   fDAFlag;  //! flag value of the Detector Algorithm field in MtgCurrent.dat (enabled/disabled)
-  Int_t   fDAMode;  //! DA active mode, GLOBAL or GLOBAL+LOCAL
+  TString fDAName;  //!< name of the Detector Algorithm field in MtgCurrent.dat 
+  Int_t   fDAFlag;  //!< flag value of the Detector Algorithm field in MtgCurrent.dat (enabled/disabled)
+  Int_t   fDAMode;  //!< DA active mode, GLOBAL or GLOBAL+LOCAL
 
-  TString fGlobalFileName;      //! global crate configuration, file name
-  TString fRegionalFileName;    //! regional crate configuration, file name
-  TString fLocalMaskFileName;   //! masks for the local cards, file name
-  TString fLocalLutFileName;    //! transverse momentum Look-Up-Table, file name
-  TString fSignatureFileName;   //! signature, file name
-  TString fTrigScalFileName;    //! trigger scalers, file name
+  TString fGlobalFileName;      //!< global crate configuration, file name
+  TString fRegionalFileName;    //!< regional crate configuration, file name
+  TString fLocalMaskFileName;   //!< masks for the local cards, file name
+  TString fLocalLutFileName;    //!< transverse momentum Look-Up-Table, file name
+  TString fSignatureFileName;   //!< signature, file name
+  TString fTrigScalFileName;    //!< trigger scalers, file name
 
-  Int_t   fGlobalFileVersion;    //! version of the global crate configuration in the detector DB
-  Int_t   fRegionalFileVersion;  //! version of the regional crate configuration in the detector DB
-  Int_t   fLocalMaskFileVersion; //! version of the masks for the local cards in the detector DB
-  Int_t   fLocalLutFileVersion;  //! version of the transverse momentum Look-Up-Table in the detector DB
-  Int_t   fSignatureFileVersion; //! version of the signature file in the detector DB
+  Int_t   fGlobalFileVersion;    //!< version of the global crate configuration in the detector DB
+  Int_t   fRegionalFileVersion;  //!< version of the regional crate configuration in the detector DB
+  Int_t   fLocalMaskFileVersion; //!< version of the masks for the local cards in the detector DB
+  Int_t   fLocalLutFileVersion;  //!< version of the transverse momentum Look-Up-Table in the detector DB
+  Int_t   fSignatureFileVersion; //!< version of the signature file in the detector DB
   
-  Int_t   fGlobalFileLastVersion;    //! last known version of the global crate configuration
-  Int_t   fRegionalFileLastVersion;  //! last known version of the regional crate configuration
-  Int_t   fLocalMaskFileLastVersion; //! last known version of the masks for the local cards
-  Int_t   fLocalLutFileLastVersion;  //! last known version of the transverse momentum Look-Up-Table
+  Int_t   fGlobalFileLastVersion;    //!< last known version of the global crate configuration
+  Int_t   fRegionalFileLastVersion;  //!< last known version of the regional crate configuration
+  Int_t   fLocalMaskFileLastVersion; //!< last known version of the masks for the local cards
+  Int_t   fLocalLutFileLastVersion;  //!< last known version of the transverse momentum Look-Up-Table
 
-  Int_t   fEventsN; //! number of accumulated PHYSICS events
-  Int_t   fEventsD; //! number of accumulated CALIBRATION events
+  Int_t   fEventsN; //!< number of accumulated PHYSICS events
+  Int_t   fEventsD; //!< number of accumulated CALIBRATION events
 
-  Int_t   fPrintLevel;  //! print verbosity of the DA
+  Int_t   fPrintLevel;  //!< print verbosity of the DA
 
-  AliMUONVStore*                fLocalMasks;    //! store for the masks for the local cards
-  AliMUONVStore*                fLocalMasksDA;  //! store for the DA-calculated masks for the local cards
-  AliMUONRegionalTriggerConfig* fRegionalMasks; //! configuration object for the regional crate
-  AliMUONGlobalCrateConfig*     fGlobalMasks;   //! configuration object for the global crate
+  AliMUONVStore*                fLocalMasks;    //!< store for the masks for the local cards
+  AliMUONVStore*                fLocalMasksDA;  //!< store for the DA-calculated masks for the local cards
+  AliMUONRegionalTriggerConfig* fRegionalMasks; //!< configuration object for the regional crate
+  AliMUONGlobalCrateConfig*     fGlobalMasks;   //!< configuration object for the global crate
 
-  AliMUONTriggerIO *fTriggerIO;  //! read/write masks and LUT to/from online files
+  AliMUONTriggerIO *fTriggerIO;  //!< read/write masks and LUT to/from online files
 
-  Bool_t fAlgoNoisyInput; //! select PHYSICS events for noisy channels analysis
-  Bool_t fAlgoDeadcInput; //! select CALIBRATION events for dead channels analysis
+  Bool_t fAlgoNoisyInput; //!< select PHYSICS events for noisy channels analysis
+  Bool_t fAlgoDeadcInput; //!< select CALIBRATION events for dead channels analysis
 
-  Float_t fThrN;           //! threshold for noisy global inputs (fraction of events)
-  Float_t fThrD;           //! threshold for dead global inputs (fraction of events)
-  Float_t fThrLocN;        //! threshold for noisy local strips (fraction of events)
-  Float_t fThrLocD;        //! threshold for dead local strips (fraction of events)
-  Int_t   fMinEvents;      //! minumum nr of events for rate calculation
-  Int_t   fSkipEvents;     //! number of events to skip from start
-  Int_t   fMaxEvents;      //! maximum number of events to analyze
-  Bool_t  fWithWarnings;   //! show warnings from the raw data decoder
-  Bool_t  fUseFastDecoder; //! use the high-performance (HP) decoder
+  Float_t fThrN;           //!< threshold for noisy global inputs (fraction of events)
+  Float_t fThrD;           //!< threshold for dead global inputs (fraction of events)
+  Float_t fThrLocN;        //!< threshold for noisy local strips (fraction of events)
+  Float_t fThrLocD;        //!< threshold for dead local strips (fraction of events)
+  Int_t   fMinEvents;      //!< minumum nr of events for rate calculation
+  Int_t   fSkipEvents;     //!< number of events to skip from start
+  Int_t   fMaxEvents;      //!< maximum number of events to analyze
+  Bool_t  fWithWarnings;   //!< show warnings from the raw data decoder
+  Bool_t  fUseFastDecoder; //!< use the high-performance (HP) decoder
 
-  const Int_t fNLocalBoard; //! number of local boards
+  const Int_t fNLocalBoard; //!< number of local boards
 
-  enum { kGlobalInputs = 4,         //! number of global input words
-	 kGlobalInputLength = 32    //! length in bits of a global input word
+  enum { kGlobalInputs = 4,         //!< number of global input words
+	 kGlobalInputLength = 32    //!< length in bits of a global input word
   };
 
-  AliMUONVStore *fPatternStoreN; //! store for local strips patterns
-  AliMUONVStore *fPatternStoreD; //! store for local strips patterns
+  AliMUONVStore *fPatternStoreN; //!< store for local strips patterns
+  AliMUONVStore *fPatternStoreD; //!< store for local strips patterns
 
-  Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //! storage for global input (PHYSICS events)
-  Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //! storage for global input (CALIBRATION events)
+  Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (PHYSICS events)
+  Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (CALIBRATION events)
 
-  Bool_t fSaveScalers;   //! save cooked information from the trigger scalers
-  Int_t  fScalerRecTime; //! time between two records, in seconds
+  Bool_t fSaveScalers;   //!< save cooked information from the trigger scalers
+  Int_t  fScalerRecTime; //!< time between two records, in seconds
 
 };
 
