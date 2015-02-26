@@ -958,7 +958,6 @@ Bool_t AliReconstruction::SetRunNumberFromData()
   fSetRunNumberFromDataCalled = kTRUE;
   
   AliCDBManager* man = AliCDBManager::Instance();
- 
   if(fRawReader) {
     if(fRawReader->NextEvent()) {
       if(man->GetRun() > 0) {
@@ -1495,6 +1494,7 @@ Bool_t AliReconstruction::Run(const char* input)
 
   TChain *chain = NULL;
   if (fRawReader && (chain = fRawReader->GetChain())) {
+    ProcessTriggerAliases();
     Long64_t nEntries = (fLastEvent < 0) ? (TChain::kBigNumber) : (fLastEvent - fFirstEvent + 1);
     // Proof mode
     if (gProof) {
@@ -1609,8 +1609,6 @@ void AliReconstruction::InitRun(const char* input)
   // or the default storage or to activate any further storage!
   SetCDBLock();
   //
-  ProcessTriggerAliases();
-  //  
 }
 
 //_____________________________________________________________________________
@@ -1764,7 +1762,6 @@ void AliReconstruction::SlaveBegin(TTree*)
   // vertexer, trackers, recontructors
   // In proof mode it is executed on the slave
   AliCodeTimerAuto("",0);
-
   TProofOutputFile *outProofFile = NULL;
   if (fInput) {
     if (AliDebugLevel() > 0) fInput->Print();
@@ -1966,6 +1963,9 @@ void AliReconstruction::SlaveBegin(TTree*)
     // Connect ESD tree with the input container
     fAnalysis->GetCommonInputContainer()->SetData(ftree);
   }  
+  //
+  ProcessTriggerAliases();
+  //
   return;
 }
 
@@ -4189,7 +4189,6 @@ Bool_t AliReconstruction::GetEventInfo()
   }
   else {
     fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
-
     if (fRunLoader && (!fRunLoader->LoadTrigger())) {
       aCTP = fRunLoader->GetTrigger();
       fEventInfo.SetTriggerMask(aCTP->GetClassMask());
