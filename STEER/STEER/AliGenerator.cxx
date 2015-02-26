@@ -465,6 +465,5 @@ void AliGenerator::SetSeed(UInt_t seed)
   // 
   // function to set the seed in the random number generator used by this generator
   //
-  
-  AliFatal("Not implemented!");
+  GetRandom()->SetSeed(seed);
 }
