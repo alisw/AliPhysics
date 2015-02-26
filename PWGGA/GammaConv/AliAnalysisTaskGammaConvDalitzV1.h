@@ -169,7 +169,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F									**hMCConvGammaPtR;
 		TH1F 									**hMCConvGammaRSPt;
 		TH1F 									**hMCAllPositronsPt;
+		TH1F									**hMCDecayPositronPi0Pt;
 		TH1F 									**hMCAllElectronsPt;
+		TH1F									**hMCDecayElectronPi0Pt;
 		TH1F 									**hMCConvGammaEta;
 		TH1F									**hMCConvGammaR;
 		TH1F 									**hMCAllPositronsEta;
@@ -225,11 +227,12 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1F 									**hESDTrueSecElectronPt;
 		TH1F 									**hESDTruePi0DalitzConvGammaPt;
 		TH1F 									**hESDTruePi0DalitzPositronPt;
+		TH1F 									**hESDTruePi0DalitzPositronPtMB;
 		TH1F 									**hESDTruePi0DalitzElectronPt;
+		TH1F									**hESDTruePi0DalitzElectronPtMB;
 		TH1F 									**hESDTruePi0DalitzSecConvGammaPt;
 		TH1F 									**hESDTruePi0DalitzSecPositronPt;
 		TH1F 									**hESDTruePi0DalitzSecElectronPt;
-
 		TH1I 									**hNEvents;
 		TH1I 									**hNGoodESDTracks;
 		TH2F 									**hNGoodESDTracksVsNGoodGammas;
