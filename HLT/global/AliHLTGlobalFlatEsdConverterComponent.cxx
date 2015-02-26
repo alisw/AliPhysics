@@ -453,7 +453,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  primaryVertexTracksTmp.SetTitle("vertexITSSAP");
 	  primaryVertexTracks = &primaryVertexTracksTmp;
 	  primaryVertex = primaryVertexTracks;  
-	  err = flatEsd->SetPrimaryVertexSPD( primaryVertexTracks, freeSpace );
+	  err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
 	  freeSpace = maxOutputSize - flatEsd->GetSize();     
 	}
       }
