@@ -1,5 +1,5 @@
-#ifndef ALITWOPARTICLEPIDCORR_H
-#define ALITWOPARTICLEPIDCORR_H
+#ifndef AliTwoParticlePIDCorr_H
+#define AliTwoParticlePIDCorr_H
 
 #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
@@ -286,7 +286,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
 void SetV0TrigCorr(Bool_t V0TrigCorr){fV0TrigCorr=V0TrigCorr;}
 void SetUsev0DaughterPID(Bool_t Usev0DaughterPID){fUsev0DaughterPID=Usev0DaughterPID;}
 
- void SetCutsForV0AndDaughters(Double_t MinPtDaughter,Double_t MaxPtDaughter ,Double_t DCAtoPrimVtx, Double_t MaxDCADaughter,Double_t MinCPA,Double_t MaxBoundary,Double_t DaughNClsTPC,Float_t FracSharedTPCcls)
+ void SetCutsForV0AndDaughters(Double_t MinPtDaughter,Double_t MaxPtDaughter ,Double_t DCAtoPrimVtx, Double_t MaxDCADaughter,Double_t MinCPA,Double_t MaxBoundary,Double_t DaughNClsTPC,Float_t FracSharedTPCcls,Bool_t CutDaughterPtV0)
 {
   //fEtaLimitDaughter=EtaLimit;//0.8
 fMinPtDaughter=MinPtDaughter;//1.0 GeV/c for our AliHelper
@@ -297,6 +297,7 @@ fMinCPA=MinCPA;//0.998
 lMax=MaxBoundary;//100 cm
 fDaugNClsTPC=DaughNClsTPC;//70
 fFracTPCcls=FracSharedTPCcls;//0.4
+fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 particles to constrain them within a Pt range where ttrack by track PID can be applied;kFALSE by defaul
 }
 
 
@@ -634,6 +635,7 @@ TH3F*  fHistFinalPtCentInvAntiLambda;//!
   Double_t fRapCutLambda; 
 Int_t fDaugNClsTPC;
 Float_t fFracTPCcls;
+ Bool_t fCutDaughterPtV0;
 
  Bool_t TPCSectoredgecut;
  Int_t fNclsusedfordEdXdtr;
