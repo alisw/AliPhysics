@@ -265,7 +265,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
   
-  if( simulation || !trigger.Contains("EMC") || !rejectEMCTrig || !reader->IsTriggerPatchMatchedToCluster()) maker->SwitchOffDataControlHistograms();
+  if( simulation || !trigger.Contains("EMC") ) maker->SwitchOffDataControlHistograms();
   
   if(printSettings) maker->Print("");
   
