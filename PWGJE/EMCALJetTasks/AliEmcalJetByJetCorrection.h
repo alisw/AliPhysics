@@ -57,7 +57,7 @@ class AliEmcalJetByJetCorrection : public TNamed
   //book-keeping object filled inside Eval()
   TProfile *fpAppliedEfficiency;               // Control profile efficiency
   TH2F     *fNmissing;                         // number of missing constituents added versus pTjet
-  TH1F     *fAvgNmiss;                         // calculated missing track (average = Nconstituents * (1./eff -1.)), to be compared with the Y projection of fNmissing
+  TH2F     *fAvgNmiss;                         // calculated missing track (average = Nconstituents * (1./eff -1.))
   TList    *fListOfOutput;                     // list containing all histograms
  private:
   ClassDef(AliEmcalJetByJetCorrection, 6) // jet-by-jet correction class
