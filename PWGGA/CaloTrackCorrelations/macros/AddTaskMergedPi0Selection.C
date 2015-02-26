@@ -125,7 +125,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMergedPi0Selection
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
   
-  if( simulation || !trigger.Contains("EMC") || !rejectEMCTrig || !reader->IsTriggerPatchMatchedToCluster()) maker->SwitchOffDataControlHistograms();
+  if( simulation || !trigger.Contains("EMC") ) maker->SwitchOffDataControlHistograms();
   
   if(printSettings) maker->Print("");
   
@@ -248,9 +248,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // Set it in the train configuration page not here for the moment
 //  if(simulation)
 //  {
-//    reader->SwitchOffShowerShapeSmearing(); // Active only on MC
-//    //reader->SetShowerShapeSmearWidth(0.002);
-//    //reader->SetShowerShapeSmearWidth(0.003);
+//    reader->SwitchOffShowerShapeSmearing(); // Active only on MC, off by default
 //    reader->SetShowerShapeSmearWidth(0.005);  
 //  }
 
@@ -340,7 +338,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // Event selection
   //-----------------
   
-  //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
+  //if(!simulation) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
   // Event triggered by EMCal selection settings
   reader->SwitchOffTriggerPatchMatching();
@@ -352,23 +350,22 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SwitchOnTriggerPatchMatching();
     reader->SwitchOnBadTriggerEventsRemoval();
     
-    reader->SetTriggerPatchTimeWindow(8,9);
-    reader->SetEventTriggerL0Threshold(3.);
-    //    if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
-    //    else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
-    //    else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
-    //redefine for other periods, triggers
-    
-    if(rejectEMCTrig == 1)
-    {
-      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
-      printf("\t Old L1 Trigger data format!\n");
-    }
-    else
-    {
-      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
-      printf("\t Current L1 Trigger data format!\n");
-    }
+//    reader->SetTriggerPatchTimeWindow(8,9); // default values
+//    if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
+//    else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
+//    else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
+//    //redefine for other periods, triggers
+//    
+//    if(kRunNumber < 172000)
+//    {
+//      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
+//      printf("\t Old L1 Trigger data format!\n");
+//    }
+//    else
+//    {
+//      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
+//      printf("\t Current L1 Trigger data format!\n");
+//    }
     
     if(clustersArray != "" || tender)
     {
@@ -387,7 +384,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SwitchOnRejectNoTrackEvents();
 
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
-  reader->SwitchOffPileUpEventRejection();  // remove pileup by default
+  reader->SwitchOffPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
   
   if(col=="PbPb") 
   {
@@ -459,7 +456,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   cu->SwitchOffRecalibration(); 
   cu->SwitchOffRunDepCorrection();
   
-  if(!tender)
+  if( !tender )
   {
     cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
     cu->SwitchOnRunDepCorrection();
@@ -468,7 +465,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     calibTime = kTRUE;
   }
   
-  if(simulation)
+  if( simulation )
   {
     calibEner = kFALSE;
     calibTime = kFALSE;
@@ -485,16 +482,14 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
                           calibEner,  // E calib
                           kTRUE,      // bad map
                           calibTime); // time calib   
-  if(calibTime) recou->SetExoticCellDiffTimeCut(50);
   
-  if( nonLinOn ) cu->SwitchOnCorrectClusterLinearity();
-    
-  if(clustersArray == "" && !tender)
-  {
-    printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
-    printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  }
-    
+  if( calibTime ) recou->SetExoticCellDiffTimeCut(50);
+  
+  if( nonLinOn )  cu->SwitchOnCorrectClusterLinearity();
+  
+  printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+  printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
+
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     
