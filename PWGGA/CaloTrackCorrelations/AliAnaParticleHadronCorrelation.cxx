@@ -3263,7 +3263,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   if( naod == 0 )
   {
-    AliWarning("No particle AOD found!");
+    AliDebug(1,"No particle AOD found!");
     return ; // no trigger particles found.
   }
 
