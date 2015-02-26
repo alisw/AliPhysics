@@ -273,7 +273,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 
   // Create task
   
-  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("CaloTrackCorr%s",kAnaGammaHadronCorr.Data()));
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("%s",kAnaGammaHadronCorr.Data()));
   
   task->SetDebugLevel(debug);
 
@@ -392,9 +392,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // Set it in the train configuration page not here for the moment
 //  if(simulation)
 //  {
-//    reader->SwitchOffShowerShapeSmearing(); // Active only on MC
-//    //reader->SetShowerShapeSmearWidth(0.002);
-//    //reader->SetShowerShapeSmearWidth(0.003);
+//    reader->SwitchOffShowerShapeSmearing(); // Active only on MC, off by default
 //    reader->SetShowerShapeSmearWidth(0.005);  
 //  }
 
@@ -435,8 +433,8 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SetTrackStatus(AliVTrack::kITSrefit);
     
     //reader->SwitchOnAODPrimaryTrackSelection(); // Used in preliminary results of QM from Nicolas and Xiangrong?
-    //reader->SwitchOnTrackHitSPDSelection();    // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
-    //reader->SetTrackFilterMask(128);           // Filter bit, not mask, use if off hybrid, TPC only
+    //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
+    //reader->SetTrackFilterMask(128);            // Filter bit, not mask, use if off hybrid, TPC only
   }
   
   //
@@ -480,15 +478,15 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   if(calorimeter == "PHOS") 
   { // Should be on if QA is activated with correlation on
-    reader->SwitchOffPHOSCells();
-    reader->SwitchOffPHOS();
+    reader->SwitchOnPHOSCells();
+    reader->SwitchOnPHOS();
   }
   
   //-----------------
   // Event selection
   //-----------------
   
-  //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
+  //if(!simulation) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
   // Event triggered by EMCal selection settings
   reader->SwitchOffTriggerPatchMatching();
@@ -500,23 +498,22 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SwitchOnTriggerPatchMatching();
     reader->SwitchOnBadTriggerEventsRemoval();
     
-    reader->SetTriggerPatchTimeWindow(8,9);
-    reader->SetEventTriggerL0Threshold(3.);
-    //    if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
-    //    else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
-    //    else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
-    //redefine for other periods, triggers
-    
-    if(rejectEMCTrig == 1)
-    {
-      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
-      printf("\t Old L1 Trigger data format!\n");
-    }
-    else
-    {
-      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
-      printf("\t Current L1 Trigger data format!\n");
-    }
+//    reader->SetTriggerPatchTimeWindow(8,9); // default values
+//    if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
+//    else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
+//    else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
+//    //redefine for other periods, triggers
+//    
+//    if(kRunNumber < 172000)
+//    {
+//      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
+//      printf("\t Old L1 Trigger data format!\n");
+//    }
+//    else
+//    {
+//      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
+//      printf("\t Current L1 Trigger data format!\n");
+//    }
     
     if(clustersArray != "" || tender)
     {
@@ -529,11 +526,11 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   //reader->RejectFastClusterEvents() ;
   
   // For mixing with AliAnaParticleHadronCorrelation switch it off
-  reader->SwitchOnEventTriggerAtSE();
+  reader->SwitchOnEventTriggerAtSE(); // on is default case
   if(mixOn)
   {
     reader->SwitchOffEventTriggerAtSE();
-    UInt_t mask =  SetTriggerMaskFromName(trigger);
+    UInt_t mask = SetTriggerMaskFromName(trigger);
     reader->SetEventTriggerMask(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
     //reader->SetMixEventTriggerMask(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
     reader->SetMixEventTriggerMask(AliVEvent::kINT7); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
@@ -546,7 +543,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SwitchOnRejectNoTrackEvents();
 
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
-  reader->SwitchOffPileUpEventRejection();  // remove pileup by default
+  reader->SwitchOffPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
   
   if(col=="PbPb") 
   {
@@ -618,7 +615,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   cu->SwitchOffRecalibration(); 
   cu->SwitchOffRunDepCorrection();
   
-  if(!tender)
+  if( !tender )
   {
     cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
     cu->SwitchOnRunDepCorrection();
@@ -627,7 +624,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     calibTime = kTRUE;
   }
   
-  if(simulation)
+  if( simulation )
   {
     calibEner = kFALSE;
     calibTime = kFALSE;
@@ -644,15 +641,13 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
                           calibEner,  // E calib
                           kTRUE,      // bad map
                           calibTime); // time calib   
-  if(calibTime) recou->SetExoticCellDiffTimeCut(50);
   
-  if( nonLinOn ) cu->SwitchOnCorrectClusterLinearity();
+  if( calibTime ) recou->SetExoticCellDiffTimeCut(50);
+  
+  if( nonLinOn )  cu->SwitchOnCorrectClusterLinearity();
     
-  if(clustersArray == "" && !tender)
-  {
-    printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
-    printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  }
+  printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+  printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
     
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
@@ -685,7 +680,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
  //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
   if(tm) ana->SwitchOnTrackMatchRejection() ;
-  else    ana->SwitchOffTrackMatchRejection() ;
+  else   ana->SwitchOffTrackMatchRejection() ;
   
   ana->SwitchOnTMHistoFill() ;
   
@@ -718,7 +713,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   // EMCAL
   
   //caloPID->SetEMCALLambda0CutMax(0.27);
-  caloPID->SetEMCALLambda0CutMax(10);
+  caloPID->SetEMCALLambda0CutMax(10); // open, full shower shape needed for isolation studies 
   caloPID->SetEMCALLambda0CutMin(0.10);
   
   // Track matching
@@ -731,7 +726,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   //if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
 
   // Branch AOD settings
-  ana->SetOutputAODName(Form("Photon%s",kAnaGammaHadronCorr.Data()));
+  ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaGammaHadronCorr.Data()));
   ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
@@ -782,7 +777,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   ana->SetCalorimeter(calorimeter);
   
   // Branch AOD settings
-  ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
+  ana->SetOutputAODName(Form("%s%sTrigger_%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
   printf("***Out branch %s***\n",ana->GetOutputAODName().Data());
   ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
  
@@ -797,7 +792,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   ///////////////////////////////////
   if(analysis!=AliAnaPi0EbE::kSSCalo)
   {
-    ana->SetInputAODName(Form("Photon%s",kAnaGammaHadronCorr.Data()));
+    ana->SetInputAODName(Form("PhotonTrigger_%s",kAnaGammaHadronCorr.Data()));
     
     ana->SetM02CutForInvMass(0.1,0.35); // Loose SS cut
 
@@ -809,7 +804,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     {
       ana->SwitchOnSelectIsolatedDecay();
       ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_TM%d_",particle.Data(),opt.Data(),tm));
-      ana->SetOutputAODName(Form("%s%sIsoDecay%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
+      ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
     }
     
     if(calorimeter=="EMCAL" && !simulation) ana->SetPairTimeCut(100);
@@ -868,7 +863,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
       printf("Do not apply SS cut on merged pi0 analysis \n");
       caloPID->SwitchOffSplitShowerShapeCut() ;
       ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_TM%d_",particle.Data(),opt.Data(),tm));
-      ana->SetOutputAODName(Form("%s%s%s_OpenSS",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
+      ana->SetOutputAODName(Form("%s%sTrigger_%s_OpenSS",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
       caloPID->SetClusterSplittingM02Cut(0.1,10);
     }
     else
@@ -890,12 +885,12 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
       if(!useSSIso)
       {
         ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenSS_OpenAsy_TM%d_",particle.Data(),opt.Data(),tm));
-        ana->SetOutputAODName(Form("%s%s%s_OpenSS_OpenAsy",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
+        ana->SetOutputAODName(Form("%s%sTrigger_%s_OpenSS_OpenAsy",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
       }
       else
       {
         ana->AddToHistogramsName(Form("Ana%s%sEbE_OpenAsy_TM%d_",particle.Data(),opt.Data(),tm));
-        ana->SetOutputAODName(Form("%s%s%s_OpenAsy",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
+        ana->SetOutputAODName(Form("%s%sTrigger_%s_OpenAsy",particle.Data(), opt.Data(), kAnaGammaHadronCorr.Data()));
       }
     }
     
@@ -994,8 +989,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   // Branch AOD settings
 
-  ana->SetInputAODName(Form("%s%s",particle.Data(),kAnaGammaHadronCorr.Data()));
-  ana->SetAODObjArrayName(Form("IC%s_%s_R%1.1f_ThMin%1.1f",particle.Data(),kAnaGammaHadronCorr.Data(),cone,pth));
+  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaGammaHadronCorr.Data()));
+  ana->SetAODObjArrayName(Form("IC%sTrigger_%s_R%1.1f_ThMin%1.1f",particle.Data(),kAnaGammaHadronCorr.Data(),cone,pth));
   
   //
   // Do settings for main isolation cut class
@@ -1106,7 +1101,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SetTriggerPtRange(5,100);
   ana->SetAssociatedPtRange(0.2,100);
-  //ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
   ana->SetDeltaPhiCutRange  (TMath::DegToRad()*120.,TMath::DegToRad()*240.);
   
   // Underlying event
@@ -1114,7 +1108,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOnSeveralUECalculation();
   
   ana->SwitchOffAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
-  ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
+  ana->SwitchOffNearSideLeading();  // Select trigger leading particle of all the particles at +-90 degrees, default
   ana->SwitchOffCheckNeutralClustersForLeading();
   
   if(leading >  0 && leading <  3 ) ana->SwitchOnAbsoluteLeading();
@@ -1145,7 +1139,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetLeadHadronPtCut(0.5, 1000);
   
   // if triggering on PHOS and EMCAL is on
-  //if(calorimeter=="PHOS") ana->SwitchOnNeutralCorr();
   ana->SwitchOffNeutralCorr(); // Do only correlation with TPC
   //ana->SetPi0AODBranchName("Pi0EMCAL_TrigEMC7_Cl_TM1");
   
@@ -1240,20 +1233,11 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
     
   }
-  
-  // Same Eta as EMCal, cut in phi if EMCAL was triggering
-  if(particle=="Hadron" || particle.Contains("CTS"))
-  {
-    //if(trigger.Contains("EMC"))
-    //  ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 260, 360) ;
-    //else
-    ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 0, 360) ;
-  }
-  
+    
   // Input / output delta AOD settings
   
-  ana->SetInputAODName(Form("%s%s",particle.Data(),kAnaGammaHadronCorr.Data()));
-  ana->SetAODObjArrayName(Form("%sHadronCorrIso%d_%s",particle.Data(),bIsolated,kAnaGammaHadronCorr.Data()));
+  ana->SetInputAODName(Form("%sTrigger_%s",particle.Data(),kAnaGammaHadronCorr.Data()));
+  ana->SetAODObjArrayName(Form("%sHadronCorrIso%dTrigger_%s",particle.Data(),bIsolated,kAnaGammaHadronCorr.Data()));
   
   //Set Histograms name tag, bins and ranges
   
@@ -1290,10 +1274,9 @@ AliAnaChargedParticles* ConfigureChargedAnalysis( Bool_t simulation, Bool_t prin
   
   // Branch AOD settings
   
-  ana->SetOutputAODName(Form("Hadron%s",kAnaGammaHadronCorr.Data()));
+  ana->SetOutputAODName(Form("HadronTrigger_%s",kAnaGammaHadronCorr.Data()));
   ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
   
-  printf("Set Hadron%s\n",kAnaGammaHadronCorr.Data());
   //Set Histograms name tag, bins and ranges
   
   ana->AddToHistogramsName("AnaHadrons_");
@@ -1339,7 +1322,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
 }
 
 ///
-/// Configure the task filling generated kinematics histograms
+/// Configure the task filling generated particle kinematics histograms
 ///
 AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t cone,      
                                               Float_t pth,  
