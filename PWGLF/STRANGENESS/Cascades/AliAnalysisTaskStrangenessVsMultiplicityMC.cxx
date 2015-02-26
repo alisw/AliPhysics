@@ -662,6 +662,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_HasVtxContributor", &fEvSel_HasVtxContributor, "fEvSel_HasVtxContributor/O");
     fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
     fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
+    fTreeEvent->Branch("fEvSel_INELgtZEROStackPrimaries", &fEvSel_INELgtZEROStackPrimaries, "fEvSel_INELgtZEROStackPrimaries/O");
     fTreeEvent->Branch("fEvSel_INELgtZEROtracklets", &fEvSel_INELgtZEROtracklets, "fEvSel_INELgtZEROtracklets/O");
     fTreeEvent->Branch("fEvSel_INELgtZERORefMult", &fEvSel_INELgtZERORefMult, "fEvSel_INELgtZERORefMult/O");
     fTreeEvent->Branch("fEvSel_INELgtZERORefMultTracklets", &fEvSel_INELgtZERORefMultTracklets, "fEvSel_INELgtZERORefMultTracklets/O");
@@ -808,7 +809,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
 
     // Multiplicity
     if(! fESDtrackCuts ) {
-        fESDtrackCuts = new AliESDtrackCuts();
+        fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,kFALSE);
+        fESDtrackCuts->SetPtRange(0.15);  // adding pt cut
+        fESDtrackCuts->SetEtaRange(-1.0, 1.0);
     }
     //Helper
     if(! fPPVsMultUtils ) {
@@ -1205,7 +1208,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fEvSel_IsNotPileupInMultBins  = kFALSE;
     fEvSel_HasVtxContributor      = kFALSE;
     fEvSel_Triggered              = kFALSE;
-    fEvSel_INELgtZEROStackPrimaries = kFALSE; 
+    fEvSel_INELgtZEROStackPrimaries = kFALSE;
     fEvSel_VtxZ = -100;
     fEvSel_MCType = -100;
     // Connect to the InputEvent
@@ -1397,7 +1400,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
-	if( TMath::Abs(geta) < 1.0 ) fEvSel_INELgtZEROStackPrimaries = kTRUE; 
+        if( TMath::Abs(geta) < 1.0 ) fEvSel_INELgtZEROStackPrimaries = kTRUE;
         if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
         if( 2.8 < geta && geta < 5.1 ) lPtOfParticleInsideVZEROA = particleOne->Pt();
         if( 2.8 < geta && geta < 5.1 ) lPOfParticleInsideVZEROA = particleOne->P();
