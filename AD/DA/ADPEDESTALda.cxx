@@ -3,9 +3,9 @@
 - Link:       http
 - Raw data test file :          
 - Reference run number : 	      
-- Run Type:   PHYSICS
-- DA Type:    MON
-- Number of events needed: >=500
+- Run Type:   PEDESTAL
+- DA Type:    LDC
+- Number of events needed: >=1000
 - Input Files:  argument list
 - Output Files: local files  AD0_Histos.root, AD0_Pedestals_On.dat (Online mapping)
                 FXS file     AD0_Pedestals_Off.dat (Offline mapping)
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
   Double_t pedSigmaOff[32];
        
 //___________________________________________________
-// Get cuts from V00DA.config file
+// Get cuts from AD0_Pedestal_DA.config file
 
   Int_t    kClockMin;   // = 16;   LHC Clock Min for pedestal calculation
   Int_t    kClockMax;   // = 19;   LHC Clock Max for pedestal calculation
@@ -90,11 +90,11 @@ int main(int argc, char **argv) {
   if (status) {
       printf("Failed to get Config file (AD0_Pedestal_DA.config) from DAQ DB, status=%d\n", status);
       printf("Take default values of parameters for pedestal calculation \n");
-      kClockMin  =  16; 
-      kClockMax  =  19; 
+      kClockMin  =  0; 
+      kClockMax  =  20; 
       kLowCut    =  60;   
       kHighCut   =  50;  
-      kClockMinRef  =  16; 
+      kClockMinRef  =  0; 
       kClockMaxRef  =  20; 
       kChi2Max		=  100.;
   } else {
@@ -103,11 +103,11 @@ int main(int argc, char **argv) {
       int res = fscanf(fpConfig,"%d %d %d %d %d %d %f",&kClockMin,&kClockMax,&kLowCut,&kHighCut,&kClockMinRef,&kClockMaxRef,&kChi2Max);
       if(res!=7) {
 	    printf("Failed to get values from Config file (AD0_Pedestal_DA.config): wrong file format - 7 integers are expected - \n");
-	    kClockMin  =  16; 
-        kClockMax  =  19; 
+	    kClockMin  =  0; 
+        kClockMax  =  20; 
     	kLowCut    =  60;   
         kHighCut   =  50; 
-      	kClockMinRef  =  16; 
+      	kClockMinRef  =  0; 
       	kClockMaxRef  =  20; 
       	kChi2Max	  =  100.;
       }
