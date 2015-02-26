@@ -697,23 +697,21 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
 }
 
 //_______________________________________________________________
-void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
-{
-  // Correct cluster energy non linearity
-  
-  clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
+/// Correct cluster energy non linearity.
 
+void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
+{  
+  clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
 }
 
 //________________________________________________________________________________________
+/// For a given CaloCluster, it gets the absId of the cell with maximum energy deposit.
+
 Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, 
                                              Float_t & clusterFraction) const 
-{
-  
-  //For a given CaloCluster gets the absId of the cell 
-  //with maximum energy deposit.
-  
-  if( !clu || !cells ){
+{  
+  if( !clu || !cells )
+  {
     AliInfo("Cluster or cells pointer is null!");
     return -1;
   }
@@ -760,65 +758,68 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVClu
     clusterFraction =1.;
   
   return absId;
-  
 }
 
 //___________________________________________________________________________________
+/// Return the matched track to the cluster given its index.
+/// It is usually just the first match, default value.
+/// Since it is different for ESDs and AODs here it is a wrap method to do it.
+
 AliVTrack * AliCalorimeterUtils::GetMatchedTrack(AliVCluster* cluster,
                                                  AliVEvent* event, Int_t index) const
-{
-  // Get the matched track given its index, usually just the first match
-  // Since it is different for ESDs and AODs here it is a wrap method to do it
+{  
+  AliVTrack *track = 0x0;
   
-  AliVTrack *track = 0;
-  
+  //
   // EMCAL case only when matching is recalculated
+  //
   if(cluster->IsEMCAL() && IsRecalculationOfClusterTrackMatchingOn())
   {
     Int_t trackIndex = fEMCALRecoUtils->GetMatchedTrackIndex(cluster->GetID());
     //printf("track index %d, cluster ID %d \n ",trackIndex,cluster->GetID());
     
     if(trackIndex < 0 )
-    { 
       AliInfo(Form("Wrong track index %d, from recalculation", trackIndex));
-    }
     else 
-    {
       track = dynamic_cast<AliVTrack*> (event->GetTrack(trackIndex));
-    }
 
     return track ;
-    
   }   
   
+  //
   // Normal case, get info from ESD or AOD
+  //
+  
+  // No tracks matched
+  if( cluster->GetNTracksMatched() < 1 ) return 0x0;
+  
+  // At least one match
+  Int_t iTrack = 0; // only one match for AODs with index 0.
+    
   // ESDs
   if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
   {
-    Int_t iESDtrack = cluster->GetTrackMatchedIndex();
-    
-    if(iESDtrack < 0 )
-    { 
-      AliWarning(Form("Wrong track index %d", index));
-      return 0x0;
-    }
-    
-    track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
-    
+    if( index >= 0 ) iTrack = index;
+    else             iTrack = cluster->GetTrackMatchedIndex();
+          
+    track = dynamic_cast<AliVTrack*> ( event->GetTrack(iTrack) );
   }
   else // AODs
-  {
-    if(cluster->GetNTracksMatched() > 0 )
-      track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(index));
+  {        
+    if( index > 0 ) iTrack = index;
+
+    track = dynamic_cast<AliVTrack*>( cluster->GetTrackMatched(iTrack) );
   }
   
   return track ;
-  
 }
+
 //______________________________________________________________________________________________
+/// Correction factor for cell energy in cluster to temptatively match Data and MC.
+/// Not used.
+
 Float_t AliCalorimeterUtils::GetMCECellClusFracCorrection(Float_t eCell, Float_t eCluster) const
 {
-  // Correction factor for cell energy in cluster to temptatively match Data and MC
   if( eCluster <= 0 || eCluster < eCell )
   {
     AliWarning(Form("Bad values eCell=%f, eCluster %f",eCell,eCluster));
