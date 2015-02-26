@@ -301,7 +301,8 @@ public:
   
   TArrayI          GetTriggerPatches(Int_t tmin, Int_t tmax);
   void             MatchTriggerCluster(TArrayI patches);
-
+  void             SetEMCALTriggerThresholds();
+  
   Bool_t           CheckEventTriggers();
   
   Bool_t           IsExoticEvent()                   const { return fIsExoticEvent           ; }
