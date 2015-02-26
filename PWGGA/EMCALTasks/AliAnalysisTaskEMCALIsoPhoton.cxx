@@ -18,6 +18,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloCells.h"
 #include "AliESDCaloCluster.h"
+#include "AliEmcalTriggerPatchInfo.h"
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDInputHandler.h"
@@ -724,6 +725,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   }
   LoopOnCells();
   FollowGamma();
+  CheckTriggerPatch();
   if(fDebug)
     printf("passed calling of FollowGamma\n");
   FillClusHists(); 
@@ -1758,6 +1760,38 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsExotic(AliVCluster *c)
   if((1-Ecross/Emax)>fExoticCut)
     isExo = 1;
   return isExo;
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton::CheckTriggerPatch()
+{
+  printf("inside CheckTriggerPatch......\n");
+  AliVEvent *ve;
+  if(fESD){
+    ve = (AliVEvent*)fESD;
+  }
+  else{
+    if(fAOD)
+      ve = (AliVEvent*)fAOD;
+    else
+      return;
+  }
+  printf("\tevent ok\n");
+  TClonesArray *triPatchInfo = (TClonesArray*)ve->FindListObject("EmcalTriggers");
+  if(!triPatchInfo){
+    printf("no patch info array\n");
+    return;
+  }
+  Int_t nPatch = triPatchInfo->GetEntries();
+  if(nPatch>1)
+    printf("more than one calo trigger patch in this event!\n");
+  for(Int_t ip = 0;ip<nPatch;ip++){
+    AliEmcalTriggerPatchInfo *pti = dynamic_cast<AliEmcalTriggerPatchInfo*>(triPatchInfo->At(ip));
+    if(!pti)
+      continue;
+    printf("\ttrigger patch E=%1.1f\n",pti->GetPatchE());
+    if(!pti->IsLevel0())
+      continue;
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 

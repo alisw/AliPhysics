@@ -51,6 +51,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   bool                   IsMcPi0(Int_t mclabel);
   void                   LoopOnCells();
   bool                   IsExotic(AliVCluster *c);
+  void                   CheckTriggerPatch();
+  //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
