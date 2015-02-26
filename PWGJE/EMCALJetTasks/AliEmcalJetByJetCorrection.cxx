@@ -79,7 +79,7 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   
   fNmissing = new TH2F("fNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added", nBinsPtJ,minPtJ,maxPtJ, 21,0,20);
   
-  fAvgNmiss = new TH1F("fAvgNmiss", "Average number of missing tracks;N_{constituents} #times (1/eff - 1)", 21,0,20);
+  fAvgNmiss = new TH2F("fAvgNmiss", "Average number of missing tracks;N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 21,0,20);
   
   fListOfOutput = new TList();
   fListOfOutput->SetName("JetByJetCorrectionOutput");
@@ -148,7 +148,7 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   fpAppliedEfficiency->Fill(meanPt,eff);
 
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
-  fAvgNmiss->Fill(np);
+  fAvgNmiss->Fill(jet->Pt(),np);
   if(fNpPoisson){
      TRandom3 *rndP=new TRandom3(1234);
      np=rndP->Poisson(np);
