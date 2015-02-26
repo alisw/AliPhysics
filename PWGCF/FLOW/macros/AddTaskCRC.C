@@ -1,4 +1,4 @@
-void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t pTMin, Double_t pTMax, Bool_t UseEtaGap = kFALSE, Double_t EtaGap = 0., Bool_t bNUACorr = kFALSE, Bool_t doQA = kFALSE)
+void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t pTMin, Double_t pTMax, Bool_t UseEtaGap = kTRUE, Double_t EtaGap = 0., Bool_t doQA = kTRUE, Bool_t bUse11h = kFALSE, const char* suffix = "")
 {
  // load libraries
  gSystem->Load("libGeom");
@@ -34,17 +34,17 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  }
  
  // specify charge/CEA in all names
- TString suffix = ":CRC";
+ TString CRCsuffix = ":CRC";
  
  TString HarmName = "_n";
  HarmName += (Int_t)iHarmonic;
- suffix += HarmName;
+ CRCsuffix += HarmName;
  
  TString CentrName = "_";
  CentrName += (Int_t)centrMin;
  CentrName += "-";
  CentrName += (Int_t)centrMax;
- suffix += CentrName;
+ CRCsuffix += CentrName;
  
  TString pTName = "_";
  Int_t rt = (Int_t)(pTMin*10.);
@@ -54,12 +54,12 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  rt = (Int_t)(pTMax*10.);
  r = (Int_t)(pTMax);
  pTName += ( pTMax < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
- suffix += pTName;
+ CRCsuffix += pTName;
  
  TString EtaGapName = "_EG";
  if (!UseEtaGap) { EtaGapName += "NULL"; }
  else            { EtaGapName += Form("0.%i",(Int_t)(EtaGap*10.)); }
- suffix += EtaGapName;
+ CRCsuffix += EtaGapName;
  
  // specify some variables
  // Float_t centrMin = 20.;
@@ -68,6 +68,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  // create instance of the class: because possible qa plots are added in a second output slot,
  // the flow analysis task must know if you want to save qa plots at the time of class construction
  TString taskFEname = "FlowEventTask";
+ taskFEname += CRCsuffix;
  taskFEname += suffix;
  // create instance of the class
  AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", doQA);
@@ -88,8 +89,9 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  // enable the qa plots
  cutsEvent->SetQA(doQA);
  // explicit multiplicity outlier cut
- cutsEvent->SetCutTPCmultiplicityOutliers();
- cutsEvent->SetLHC10h(kTRUE);
+ cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+ if (bUse11h) { cutsEvent->SetLHC11h(kTRUE); }
+ else         { cutsEvent->SetLHC10h(kTRUE); }
  
  // pass these cuts to your flow event task
  taskFE->SetCutsEvent(cutsEvent);
@@ -97,6 +99,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  // create the track cuts for RPs
  //AliFlowTrackCuts* cutsRP = AliFlowTrackCuts::GetAODTrackCutsForFilterBit(768, "RP cuts");
  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("RP cuts");
+ cutsRP->SetMinimalTPCdedx(-999999999);
  cutsRP->SetAODfilterBit(768);
  cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
  cutsRP->SetPtRange(pTMin,pTMax);
@@ -116,6 +119,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  
  // create the track cuts for POIs
  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI cuts");
+ cutsPOI->SetMinimalTPCdedx(-999999999);
  cutsPOI->SetAODfilterBit(768);
  cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
  cutsPOI->SetPtRange(pTMin,pTMax);
@@ -159,6 +163,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  
  // create a data container for the output of the flow event task
  TString taskFECname = "FlowEventContainer";
+ taskFECname += CRCsuffix;
  taskFECname += suffix;
  AliAnalysisDataContainer *coutputFE = mgr->CreateContainer(taskFECname,
                                                             AliFlowEventSimple::Class(),
@@ -173,6 +178,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  if(doQA) {
   TString taskFEQAname = file;
   taskFEQAname += ":CutsQA";
+  taskFEQAname += CRCsuffix;
   taskFEQAname += suffix;
   AliAnalysisDataContainer* coutputFEQA = mgr->CreateContainer(taskFEQAname,
                                                                TList::Class(),
@@ -187,7 +193,10 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
  
  // create the flow analysis tasks
- AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC("AnalysisTask"+suffix, UseParticleWeights);
+ TString taskCRCname = "AnalysisTask";
+ taskCRCname += CRCsuffix;
+ taskCRCname += suffix;
+ AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
  // set thei triggers
  taskQC->SelectCollisionCandidates(AliVEvent::kMB);
  // and set the correct harmonic n
@@ -203,7 +212,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  taskQC->SetCalculateCRCPt(kTRUE);
  taskQC->SetUseEtaGap(UseEtaGap);
  taskQC->SetEtaGap(EtaGap);
- taskQC->SetNUAforCRC(bNUACorr);
+ taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  
  // connect the task to the analysis manager
@@ -211,6 +220,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  
  // initialize output name
  TString outputQC = file;
+ outputQC += CRCsuffix;
  outputQC += suffix;
  // create and connect the output containers
  AliAnalysisDataContainer *coutputQC = mgr->CreateContainer(outputQC.Data(),
