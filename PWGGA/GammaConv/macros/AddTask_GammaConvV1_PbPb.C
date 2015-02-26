@@ -112,7 +112,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
-	if (trainConfig == 135 || trainConfig == 136 || trainConfig == 137 ) Int_t numberOfCuts = 7;
+	if (trainConfig == 135 || trainConfig == 136 || trainConfig == 137 || trainConfig == 146 || trainConfig == 147 || trainConfig == 148) Int_t numberOfCuts = 7;
 	else if (trainConfig == 110) Int_t numberOfCuts = 6;
 	else if (trainConfig == 132) Int_t numberOfCuts = 7;
 	else if (trainConfig == 133) Int_t numberOfCuts = 3;
@@ -999,6 +999,30 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 2] = "5250002"; photonCutArray[ 2] = "00200009230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5250002"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "00200009280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
+	} else if ( trainConfig == 146){ // flow cuts with eta = 0.9, y = 0.85
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "00200009297002208250400000"; mesonCutArray[ 1] = "01525065000000";
+		eventCutArray[ 2] = "5120001"; photonCutArray[ 2] = "00200009297002208250400000"; mesonCutArray[ 2] = "01525065000000";
+		eventCutArray[ 3] = "5230001"; photonCutArray[ 3] = "00200009297002208250400000"; mesonCutArray[ 3] = "01525065000000";
+		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "00200009297002208250400000"; mesonCutArray[ 4] = "01525065000000";
+		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "00200009297002208250400000"; mesonCutArray[ 5] = "01525065000000";
+		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "00200009297002208250400000"; mesonCutArray[ 6] = "01525065000000";
+	} else if ( trainConfig == 147){ // flow cuts with eta = 0.65, y = 0.6
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "03200009297002208250400000"; mesonCutArray[ 0] = "01523065000000";
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "03200009297002208250400000"; mesonCutArray[ 1] = "01523065000000";
+		eventCutArray[ 2] = "5120001"; photonCutArray[ 2] = "03200009297002208250400000"; mesonCutArray[ 2] = "01523065000000";
+		eventCutArray[ 3] = "5230001"; photonCutArray[ 3] = "03200009297002208250400000"; mesonCutArray[ 3] = "01523065000000";
+		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "03200009297002208250400000"; mesonCutArray[ 4] = "01523065000000";
+		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "03200009297002208250400000"; mesonCutArray[ 5] = "01523065000000";
+		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "03200009297002208250400000"; mesonCutArray[ 6] = "01523065000000";
+	} else if ( trainConfig == 148){ // flow cuts with eta = 0.6, y = 0.5
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "01200009297002208250400000"; mesonCutArray[ 0] = "01524065000000";
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "01200009297002208250400000"; mesonCutArray[ 1] = "01524065000000";
+		eventCutArray[ 2] = "5120001"; photonCutArray[ 2] = "01200009297002208250400000"; mesonCutArray[ 2] = "01524065000000";
+		eventCutArray[ 3] = "5230001"; photonCutArray[ 3] = "01200009297002208250400000"; mesonCutArray[ 3] = "01524065000000";
+		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "01200009297002208250400000"; mesonCutArray[ 4] = "01524065000000";
+		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "01200009297002208250400000"; mesonCutArray[ 5] = "01524065000000";
+		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "01200009297002208250400000"; mesonCutArray[ 6] = "01524065000000";  
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
