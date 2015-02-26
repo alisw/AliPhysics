@@ -670,9 +670,6 @@ AliMUONTriggerIO::WriteTrigScalers(const TClonesArray& scalers,
     nLocBoards*nCathodes*nTriChambers*(sizeof(UInt_t)+sizeof(ULong64_t));
   UChar_t buffer[bufflen];
 
-  UInt_t bftmpUI;
-  ULong64_t bftmpUL;
-
   AliInfo(Form("Data buffer length = %d",bufflen));
 
   Int_t entries = scalers.GetEntries();
