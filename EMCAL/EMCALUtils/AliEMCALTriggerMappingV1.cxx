@@ -167,9 +167,9 @@ Bool_t AliEMCALTriggerMappingV1::GetAbsFastORIndexFromPositionInEMCAL(const Int_
     return kFALSE;
   }
 
-  Int_t s = int(iEta / 24) + 2 * int(iPhi / 4);
+  Int_t s = int(iEta / 24) + 2 * int(iPhi / 12);
   Int_t x = iEta % 24;
-  Int_t y = iPhi % 4;
+  Int_t y = iPhi % 12;
   if (GetAbsFastORIndexFromPositionInSM(s, x, y, id)) {
       return kTRUE;
   }

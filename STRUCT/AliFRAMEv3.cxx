@@ -134,7 +134,11 @@ void AliFRAMEv3::CreateGeometry()
   AliMatrix(idrotm[2024], 180.0, 0.0, 90.0, 190.0, 90.0, 100.0);
   AliMatrix(idrotm[2025], 180.0, 0.0, 90.0, 350.0, 90.0,  80.0);
   AliMatrix(idrotm[2026], 180.0, 0.0, 90.0,  10.0, 90.0, 280.0);
+
+  AliMatrix(idrotm[2100], 180.0, 0.0, 90.0, 210.0, 90.0, 120.0);
+  AliMatrix(idrotm[2101], 180.0, 0.0, 90.0, 330.0, 90.0,  60.0);
   
+
   AliMatrix(idrotm[2027],   0.0, 0.0, 90.0,  50.0, 90.0, 320.0);
   AliMatrix(idrotm[2028],   0.0, 0.0, 90.0, 150.0, 90.0,  60.0); 
   AliMatrix(idrotm[2029],   0.0, 0.0, 90.0,  30.0, 90.0, 120.0);
@@ -168,7 +172,6 @@ void AliFRAMEv3::CreateGeometry()
   const Float_t krad2deg = 180. / TMath::Pi();
   const Float_t kdeg2rad = 1. / krad2deg;
   const Float_t sin10    = TMath::Sin(10. * kdeg2rad);
-  const Float_t sin20    = TMath::Sin(20. * kdeg2rad);
   const Float_t tan10    = TMath::Tan(10. * kdeg2rad);
   const Float_t cos10    = TMath::Cos(10. * kdeg2rad);
   // Dimensions
@@ -200,7 +203,7 @@ void AliFRAMEv3::CreateGeometry()
   const Float_t longH  =   6.00;  // Height
   const Float_t longW  =   4.00;  // Width
   // outer longitudianl bars 8 x 8
-  const Float_t longOD =   8.0; 
+  // const Float_t longOD =   8.0; 
   // some extra space for mother volume
   const Float_t dext   =   sin10 * longW/2.+0.01;
   // sector hight with extra space
@@ -488,32 +491,37 @@ void AliFRAMEv3::CreateGeometry()
   dz = (dymodU[1]+dymodU[0])/2.;
   Float_t dz2 =  (dymodU[1]+dymodU[2])/2.;
 
-//
-//  phi = 40
-//
-  Float_t  phi = 40;
-  dx = rd * TMath::Sin(phi*kdeg2rad);
-  dy = rd * TMath::Cos(phi*kdeg2rad);
-  
-
-  TVirtualMC::GetMC()->Gspos("B045", 1, "B077", -dx,  dy,  dz2, idrotm[2019], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 2, "B077", -dx,  dy, -dz2, idrotm[2003], "ONLY"); // ?
-  TVirtualMC::GetMC()->Gspos("B045", 3, "B077",  dx,  dy,  dz2, idrotm[2020], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 4, "B077",  dx,  dy, -dz2, idrotm[2027], "ONLY");
 
 
 //
 //  phi = 60
 //
 
-  phi = 60;
+  Float_t phi = 60;
   dx = rd * TMath::Sin(phi*kdeg2rad);
   dy = rd * TMath::Cos(phi*kdeg2rad);
 
-  TVirtualMC::GetMC()->Gspos("B045", 5, "B077", -dx,  dy,  dz2, idrotm[2021], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 6, "B077", -dx,  dy, -dz2, idrotm[2028], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 7, "B077",  dx,  dy,  dz2, idrotm[2022], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 8, "B077",  dx,  dy, -dz2, idrotm[2029], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 1, "B077", -dx,  dy,  dz2, idrotm[2021], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 2, "B077", -dx,  dy, -dz2, idrotm[2028], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 3, "B077",  dx,  dy,  dz2, idrotm[2022], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 4, "B077",  dx,  dy, -dz2, idrotm[2029], "ONLY");
+
+  TVirtualMC::GetMC()->Gspos("B045", 5, "B077",  dx,  -dy, -dz2, idrotm[2021], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 6, "B077",  dx,  -dy, +dz2, idrotm[2028], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 7, "B077", -dx,  -dy, -dz2, idrotm[2022], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 8, "B077", -dx,  -dy, +dz2, idrotm[2029], "ONLY");
+
+
+
+  TVirtualMC::GetMC()->Gspos("B047", 1, "B077",  -dx,  -dy,  dz, idrotm[2022], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B047", 2, "B077",  -dx,  -dy, -dz, idrotm[2029], "ONLY");
+
+  TVirtualMC::GetMC()->Gspos("B047", 3, "B077",   dx,  -dy,  dz, idrotm[2021], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B047", 4, "B077",   dx,  -dy, -dz, idrotm[2028], "ONLY");
+
+
+  TVirtualMC::GetMC()->Gspos("BM49", 1, "B077",  dx, -dy,  0., idrotm[2101], "ONLY");
+  TVirtualMC::GetMC()->Gspos("BM49", 2, "B077", -dx, -dy,  0., idrotm[2100], "ONLY");
 
 //
 //  phi = 80
@@ -528,18 +536,19 @@ void AliFRAMEv3::CreateGeometry()
   TVirtualMC::GetMC()->Gspos("B047", 15, "B077",  dx, -dy,  dz, idrotm[2012], "ONLY");
   TVirtualMC::GetMC()->Gspos("B047", 16, "B077",  dx, -dy, -dz, idrotm[2011], "ONLY");
 
-  TVirtualMC::GetMC()->Gspos("B045",  9, "B077", -dx,  dy,  dz2, idrotm[2023], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 10, "B077", -dx,  dy, -dz2, idrotm[2031], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 11, "B077",  dx,  dy,  dz2, idrotm[2026], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 12, "B077",  dx,  dy, -dz2, idrotm[2030], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 11, "B077", -dx,  dy,  dz2, idrotm[2023], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 12, "B077", -dx,  dy, -dz2, idrotm[2031], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 13, "B077",  dx,  dy,  dz2, idrotm[2026], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 14, "B077",  dx,  dy, -dz2, idrotm[2030], "ONLY");
 
-  TVirtualMC::GetMC()->Gspos("B045", 13, "B077", -dx, -dy,  dz2, idrotm[2024], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 14, "B077", -dx, -dy, -dz2, idrotm[2032], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 15, "B077",  dx, -dy,  dz2, idrotm[2025], "ONLY");
-  TVirtualMC::GetMC()->Gspos("B045", 16, "B077",  dx, -dy, -dz2, idrotm[2033], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 15, "B077", -dx, -dy,  dz2, idrotm[2024], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 16, "B077", -dx, -dy, -dz2, idrotm[2032], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 17, "B077",  dx, -dy,  dz2, idrotm[2025], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 18, "B077",  dx, -dy, -dz2, idrotm[2033], "ONLY");
 
-  TVirtualMC::GetMC()->Gspos("BM49", 7, "B077",  dx, -dy,  0., idrotm[2025], "ONLY");
-  TVirtualMC::GetMC()->Gspos("BM49", 8, "B077", -dx, -dy,  0., idrotm[2024], "ONLY");
+  TVirtualMC::GetMC()->Gspos("BM49", 3, "B077",  dx, -dy,  0., idrotm[2025], "ONLY");
+  TVirtualMC::GetMC()->Gspos("BM49", 4, "B077", -dx, -dy,  0., idrotm[2024], "ONLY");
+
 
 //
 // The inner frame
@@ -573,8 +582,6 @@ void AliFRAMEv3::CreateGeometry()
   Float_t rout2  = 412.3 - 2. * sin10 + 0.25;
   //
   TString module[18];
-  TGeoVolume* voIF[18];
-
   for (i = 0; i < 18; i++) {
 
       // Create volume i 
@@ -943,18 +950,18 @@ void AliFRAMEv3::CreateGeometry()
    yxtru1[6] = -6.0;
 
    Double_t xxtru2[7];
-   for (Int_t i = 0; i < 7; i++) xxtru2[i]  = -xxtru1[i];
+   for (i = 0; i < 7; i++) xxtru2[i]  = -xxtru1[i];
 
    Double_t xxtru3[5];
    Double_t yxtru3[5];
    Double_t xxtru4[5];
-   for (Int_t i = 0; i < 4; i++) {
+   for (i = 0; i < 4; i++) {
      xxtru3[i] = xxtru1[i];
      yxtru3[i] = yxtru1[i];
    }
    xxtru3[4] = xxtru1[6];
    yxtru3[4] = yxtru1[6];
-   for (Int_t i = 0; i < 5; i++) xxtru4[i]  = -xxtru3[i];
+   for (i = 0; i < 5; i++) xxtru4[i]  = -xxtru3[i];
 
    shBTOFS2->DefinePolygon(7, xxtru1, yxtru1);
    shBTOFS2->DefineSection(0, -4.);
@@ -1012,10 +1019,9 @@ void AliFRAMEv3::CreateGeometry()
    asTOFS01->SetVisibility(1);
 
    for (i = 0; i < 18; i++) {
-     Float_t dx, dy;
      Float_t phi1 = i * 20.;
      Float_t phi2 = 270. + phi1;
-     TGeoRotation* rot1 = new TGeoRotation(Form("TOFS_R1_%d", i),  90.0, phi1, 90., phi2, 0., 0.);  
+     rot1 = new TGeoRotation(Form("TOFS_R1_%d", i),  90.0, phi1, 90., phi2, 0., 0.);  
      dx =  TMath::Sin((phi1+8.95) * kdeg2rad) * (rout2 + 12.);
      dy = -TMath::Cos((phi1+8.95) * kdeg2rad) * (rout2 + 12.);
      if ((i >3 && i < 8) || (i > 10 && i < 15)) { 
@@ -1025,7 +1031,7 @@ void AliFRAMEv3::CreateGeometry()
      }
      dx =  TMath::Sin((phi1-8.95) * kdeg2rad) * (rout2 + 12.);
      dy = -TMath::Cos((phi1-8.95) * kdeg2rad) * (rout2 + 12.);
-     if ((i >3 && i < 8) || (i > 10 && i < 15)) { 
+     if ((i >3 && i < 8) || (i > 10 && i <= 15)) { 
        (gGeoManager->GetVolume("B077"))->AddNode(asTOFS02, i,     new TGeoCombiTrans(dx, dy, 345.-53-0.5, rot1));
      } else {
        (gGeoManager->GetVolume("B077"))->AddNode(asTOFS00, i,     new TGeoCombiTrans(dx, dy, 345.-53-0.5, rot1));
