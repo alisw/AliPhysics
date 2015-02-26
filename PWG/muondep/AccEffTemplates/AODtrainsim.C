@@ -175,6 +175,12 @@ void AddAnalysisTasks(Int_t merge){
       mgr->RegisterExtraFile("AliAOD.Dimuons.root");
     }
     AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, iMUONcopyAOD, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1100,VAR_MUONMCMODE); // others
+    taskesdfilter->DisablePmdClusters();
+    taskesdfilter->DisableCaloClusters();
+    taskesdfilter->DisableCells();
+    taskesdfilter->DisableCaloTrigger("PHOS");
+    taskesdfilter->DisableCaloTrigger("EMCAL");
+    taskesdfilter->SetPropagateTrackToEMCal(kFALSE);
 
     if ( 0 && VAR_USE_ITS_RECO ) /* 0 for the moment to get this macro running also with AliRoot <= .... */
     {
