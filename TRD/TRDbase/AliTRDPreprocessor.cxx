@@ -203,11 +203,11 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
     return kTRUE;
   }
 
-  Int_t nEntries = list->GetEntries ();
+  const Int_t nEntries = list->GetEntries ();
   Log (Form ("%d alias loaded", nEntries));
 		
-  Bool_t * results=new Bool_t [nEntries];
-  Int_t  * nGraph=new Int_t [nEntries];
+  Bool_t results[nEntries];
+  Int_t  nGraph[nEntries];
 		
   for (Int_t iAlias = 0; iAlias < nEntries; iAlias++) {
 			
@@ -218,9 +218,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
 			
     Log(Form("Processing DCS : \"%s\"", oneTRDDCS->GetStoreName ().Data ()));
 			
-    TMap * map;
-
-    map=oneTRDDCS->ExtractDCS (dcsAliasMap);
+    TMap *map=oneTRDDCS->ExtractDCS (dcsAliasMap);
 		
     nGraph [iAlias] = map->GetEntries ();
 		
@@ -228,12 +226,15 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
       Log("No TGraph for this dcsDatapointAlias : not stored");
       results [iAlias] = kFALSE;
       //error  = kTRUE;
+      delete map;
+      map=0;
       continue;
     }
 		
     oneTRDDCS->SetGraph(map);
     results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kFALSE); 
-    delete map;		
+    delete map;
+    map=0;
 
     //results [iAlias] = StoreReferenceData("Calib", oneTRDDCS->GetStoreName ().Data (), oneTRDDCS, &metaData); 
 
@@ -297,9 +298,10 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
   }
   Log ("*********** End of DCS **********");
   
-  delete [] results;
-  delete [] nGraph;
-
+  // Clean up
+  delete list;
+  list=0;
+  
   return error;
 
 }
