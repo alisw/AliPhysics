@@ -40,6 +40,7 @@ void Config()
 {
   // Libraries required by geant321
 #if defined(__CINT__)
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
   gSystem->Load("libgeant321");
 #endif
 
