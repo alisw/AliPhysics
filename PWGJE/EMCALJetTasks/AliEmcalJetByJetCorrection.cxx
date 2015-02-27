@@ -77,9 +77,9 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
 
   fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
   
-  fNmissing = new TH2F("fNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added", nBinsPtJ,minPtJ,maxPtJ, 21,0,20);
+  fNmissing = new TH2F("fNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added", nBinsPtJ,minPtJ,maxPtJ, 80,0,20);
   
-  fAvgNmiss = new TH2F("fAvgNmiss", "Average number of missing tracks;N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 21,0,20);
+  fAvgNmiss = new TH2F("fAvgNmiss", "Average number of missing tracks;#it{p}_{T,jet};N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 80,0,20);
   
   fListOfOutput = new TList();
   fListOfOutput->SetName("JetByJetCorrectionOutput");
