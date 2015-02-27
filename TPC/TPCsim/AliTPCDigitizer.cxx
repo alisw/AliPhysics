@@ -881,7 +881,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   // 1.b) Dump the content of the crossTalk signal to the debug stremer - to be corealted later with the same crosstalk correction
   //      assumed during reconstruction 
   //
-  if (AliTPCReconstructor::StreamLevel()==1) {
+  if ((AliTPCReconstructor::StreamLevel()&kStreamCrosstalk)>0) {
     //
     // dump the crosstalk matrices to tree for further investigation
     //     a.) to estimate fluctuation of pedestal in indiviula wire segments
@@ -1042,9 +1042,9 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       
       
       // fill info for degugging
-      if (AliTPCReconstructor::StreamLevel()==1 && qOrig > zerosup ) {
-        TTreeSRedirector &cstream = *fDebugStreamer;
-	UInt_t uid = AliTPCROC::GetTPCUniqueID(sector, padRow, padNumber);
+      if ( ((AliTPCReconstructor::StreamLevel()&kStreamSignal)>0) && ((qOrig > zerosup)||((AliTPCReconstructor::StreamLevel()&kStreamSignalAll)>0) )) {
+      TTreeSRedirector &cstream = *fDebugStreamer;
+      UInt_t uid = AliTPCROC::GetTPCUniqueID(sector, padRow, padNumber);
         cstream <<"ionTailXtalk"<<
 	  "uid="<<uid<<                        // globla unique identifier
 	  "sector="<< sector<<   

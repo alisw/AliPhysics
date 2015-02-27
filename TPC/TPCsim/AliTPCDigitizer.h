@@ -12,7 +12,12 @@ class AliDigitizationInput;
 
 class AliTPCDigitizer : public AliDigitizer {
  public:    
-    AliTPCDigitizer();
+  enum EStreamFlags{
+    kStreamCrosstalk        =0x1,     // flag: stream crosstalk signal ()
+    kStreamSignal           =0x2,     // flag: stream signal per pad
+    kStreamSignalAll        =0x4      // flag: stream signal per pad dump all signal (without 0 suppression)
+  };
+  AliTPCDigitizer();
     AliTPCDigitizer(AliDigitizationInput * digInput);
     virtual ~AliTPCDigitizer();
     // Initialize merging and digitization
