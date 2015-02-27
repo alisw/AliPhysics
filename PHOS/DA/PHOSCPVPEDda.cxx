@@ -15,6 +15,9 @@ Trigger types used: PHYSICS_EVENT
 #include "event.h"
 #include "monitor.h"
 #include "daqDA.h"
+//AMORE monitoring framework
+#include <AmoreDA.h>
+
 //system
 #include <Riostream.h>
 #include <stdlib.h>
@@ -147,27 +150,47 @@ int main( int argc, char **argv )
   /* report progress */
   daqDA_progressReport(95);
 
-  for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++){
-    if(pedProducer -> CalcPedestal(iDDL)){
-      pedProducer -> WritePedFiles(iDDL);
-      for (int iCC = 0; iCC<AliPHOSCpvParam::kNRows; iCC++){
-      	status=daqDA_DB_storeFile(Form("thr%d_%02d.dat", iDDL, iCC),Form("thr%d_%02d.dat", iDDL, iCC));
-      	if(status) printf("Failed to store thr%d_%02d.dat in DAQ DB!\n",iDDL, iCC);
-      	//status=daqDA_FES_storeFile(Form("thr%d_%02d.dat", iDDL, iCC));
-      	//if(status) printf("Failed to export thr%d_%02d.dat to DAQ FES!\n",iDDL, iCC);
+  pedProducer->WriteAllHistsToFile("CpvPeds.root");
+
+  //send file with histos to amore
+  amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
+  TFile* fSend = TFile::Open("CpvPeds.root");
+  TH2F *pedsMean = (TH2F*)fSend->Get("fPedMeanMap4");
+  pedsMean->SetDrawOption("colz");
+  myAmore->Send("fPedMeanMap4",pedsMean);
+  TH2F *pedsSig = (TH2F*)fSend->Get("fPedSigMap4");
+  pedsSig->SetDrawOption("colz");
+  myAmore->Send("fPedSigMap4",pedsSig);
+  TH1F *h1DPedMean=(TH1F*)fSend->Get("f1DPedMean4");
+  h1DPedMean->GetXaxis()->SetRangeUser(0.,750.);
+  myAmore->Send("f1DPedMean4",h1DPedMean);
+  TH1F *h1DPedSig=(TH1F*)fSend->Get("f1DPedSig4");
+  h1DPedSig->GetXaxis()->SetRangeUser(0.,10.);
+  myAmore->Send("f1DPedSig4",h1DPedSig);
+  fSend->Close();
+
+  if(iPhysEvnt>=1000){//we have enough events to publish data
+    status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
+    if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
+  
+    status = daqDA_FES_storeFile("CpvPeds.root","CpvPeds.root");
+    if(status) printf("Failed to store CpvPeds.root in DAQ FXS!\n");
+
+    for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++){
+      if(pedProducer -> CalcPedestal(iDDL)){
+	pedProducer -> WritePedFiles(iDDL);
+	for (int iCC = 0; iCC<AliPHOSCpvParam::kNRows; iCC++){
+	  status=daqDA_DB_storeFile(Form("thr%d_%02d.dat", iDDL, iCC),Form("thr%d_%02d.dat", iDDL, iCC));
+	  if(status) printf("Failed to store thr%d_%02d.dat in DAQ DB!\n",iDDL, iCC);
+	}
       }
     }
-  }
+  }else return 10;//error code 10 (not enough events!)
 
-  pedProducer->WriteAllHistsToFile("CpvPeds.root");
-  status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
-  if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
-  status = daqDA_FES_storeFile("CpvPeds.root","CpvPeds.root");
-  if(status) printf("Failed to store CpvPeds.root in DAQ FXS!\n");
 
   /* report progress */
   daqDA_progressReport(100);
 
 
-  return status;
+  return 0;
 }

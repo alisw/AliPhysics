@@ -99,7 +99,7 @@ Bool_t AliPHOSCpvRawDigiProducer::LoadPedFiles() {
       FILE * pedFile;
       pedFile = fopen(Form("thr%d_%02d.dat",iDDL,iCC),"r");
       if(!pedFile) {
-	Printf("AliPHOSCpvRawDigiProducer::LoadPedFiles: Error, file thr%d_%02d.dat could not be open",iDDL,iCC);
+	//Printf("AliPHOSCpvRawDigiProducer::LoadPedFiles: Error, file thr%d_%02d.dat could not be open",iDDL,iCC);
 	continue;
       }
       Int_t i3g = 0, iPad = 0;

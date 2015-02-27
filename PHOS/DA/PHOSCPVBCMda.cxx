@@ -3,11 +3,11 @@ CPV BCM DA for processing physics runs and producing bad channel map for further
 
 Contact: Sergey Evdokimov <sevdokim@cern.ch>
 Link: https://twiki.cern.ch/twiki/bin/view/ALICE/CPVda
-Reference run: 
+Reference run: 214340 (/afs/cern.ch/user/s/sevdokim/public/CPV_run214340_standalone.raw)
 Run Type:  PHYSICS
 DA Type: MON
-Number of events needed: ? events
-Input files: thr?_??.dat
+Number of events needed: ~100000 events
+Input files: thr?_??.dat CpvPeds.root PHOSCPVBCMda.cfg
 Output files: CpvBadMap.root
 Trigger types used: PHYSICS_EVENT
 */
@@ -16,6 +16,8 @@ Trigger types used: PHYSICS_EVENT
 #include "event.h"
 #include "monitor.h"
 #include "daqDA.h"
+//AMORE monitoring framework
+#include <AmoreDA.h>
 
 //system
 #include <Riostream.h>
@@ -48,7 +50,8 @@ Trigger types used: PHYSICS_EVENT
 #include "TMath.h"
 #include "TRandom.h"
 
-void FillBadMap(TH2* DigMap, TH2* BadMap);
+Double_t FillNoisyMap(TH2* DigMap, TH2* BadMap); //returns mean occupancy when all bad channels are excluded
+void FillDeadMap(TH2* PedMap, TH2* DigMap, TH2* BadMap);
 
 int main( int argc, char **argv )
 {
@@ -57,8 +60,10 @@ int main( int argc, char **argv )
                                         "TStreamerInfo",
                                         "RIO",
                                         "TStreamerInfo()");
-  Int_t status,print;
+  Int_t status,statusPeds=0,print,statusBadMap=0;
   Int_t sigcut=3;
+  Int_t minAmpl = 10;//minimal amplitude for consideration, to be read from DAQ DB
+  Int_t minOccupancy = 10;//min occupancy for publishing in OCDB, to be read from DAQ DB
   Bool_t turbo = kTRUE;
 
   if (argc!=2) {
@@ -72,6 +77,18 @@ int main( int argc, char **argv )
   /* report progress */
   daqDA_progressReport(0);
 
+  /* retrieve configuration file from DAQ DB */
+  status=daqDA_DB_getFile("PHOSCPVGAINda.cfg", "PHOSCPVGAINda.cfg");
+  if(!status) {
+    char buf[500]; 
+    FILE * fConf = fopen("PHOSCPVGAINda.cfg","r");
+    while(fgets(buf, 500, fConf)){
+      if(buf[0]=='#') continue;//comment indicator
+      if(strstr(buf,"minOccupancy")) sscanf(buf,"%*s %d",&minOccupancy);
+      if(strstr(buf,"minAmpl")) sscanf(buf,"%*s %d",&minAmpl);
+    }
+  }
+
 
   /* retrieve pedestal tables from DAQ DB */
   for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
@@ -80,10 +97,20 @@ int main( int argc, char **argv )
       status=daqDA_DB_getFile(Form("thr%d_%02d.dat", iDDL, iCC),Form("thr%d_%02d.dat", iDDL, iCC));
       if(status!=0) {
 	printf("cannot retrieve file %s from DAQ DB. Exit.\n", Form("thr%d_%02d.dat", iDDL, iCC));
-	//return -1;
+	//return 11;//error code 11 (cannot retrive thr.dat from DAQ DB)
       }
     }
   }
+
+  /* retrieve pedestals in root format to find dead channels */
+  statusPeds=daqDA_DB_getFile("CpvPeds.root", "CpvPeds.root");
+  if(statusPeds) {
+    printf("cannot retrieve CpvPeds.root from DAQ DB! No dead channels will be found.");
+    //return 12; //error code 12 (cannot retrive CpvPeds.root from DAQ DB)
+  }
+  
+  /* retrieve bad map from DAQ DB to see if we have some statistics saved form previous runs */
+  statusBadMap=daqDA_DB_getFile("CpvBadMap.root", "CpvBadMap.root");
 
   /* connecting to raw data */
   status=monitorSetDataSource( argv[1] );
@@ -118,7 +145,7 @@ int main( int argc, char **argv )
   AliPHOSCpvRawDigiProducer* digiProducer = new AliPHOSCpvRawDigiProducer();
   digiProducer->SetTurbo(turbo);
   digiProducer->LoadPedFiles();
-  digiProducer->SetCpvMinAmp(0);
+  digiProducer->SetCpvMinAmp(minAmpl);
 
   //digits
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
@@ -128,16 +155,31 @@ int main( int argc, char **argv )
 
   //maps of digits and bad channels
   TH2F* hMapOfDig[2*AliPHOSCpvParam::kNDDL]; 
-  TH2I *hBadChMap[2*AliPHOSCpvParam::kNDDL]; 
-  for(Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++){
-    hMapOfDig[iDDL] = new TH2F(Form("hMapOfDig%d",iDDL),Form("Map of digits with substructed pedestals, DDL = %d",iDDL),
-			  AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
-			  AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
-    hBadChMap[iDDL] = new TH2I(Form("hBadMap%d",iDDL),Form("Bad Channels Map, DDL= %d",iDDL),
-			  AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
-			  AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
+  TH2I *hBadChMap[2*AliPHOSCpvParam::kNDDL];
+  
+  for (int i = 0;i<2*AliPHOSCpvParam::kNDDL;i++){
+    hMapOfDig[i]= 0x0;
+    hBadChMap[i]= 0x0;
   }
 
+  //any previously gained statistics?
+  TFile *fPreviousStatistics = 0x0;
+  if(!statusBadMap) fPreviousStatistics = TFile::Open("CpvBadMap.root");
+
+  for(Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++){
+    if(!statusBadMap){//we have some statistics from previous runs
+      if(fPreviousStatistics->Get(Form("hMapOfDig%d",iDDL)))
+	hMapOfDig[iDDL] = new TH2F(*(TH2F*)(fPreviousStatistics->Get(Form("hMapOfDig%d",iDDL))));
+    }
+    if(!hMapOfDig[iDDL])
+      hMapOfDig[iDDL] = new TH2F(Form("hMapOfDig%d",iDDL),Form("Map of digits with substructed pedestals, DDL = %d",iDDL),
+				 AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
+				 AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
+      hBadChMap[iDDL] = new TH2I(Form("hBadMap%d",iDDL),Form("Bad Channels Map, DDL= %d",iDDL),
+				 AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
+				 AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
+      
+  }
   /* report progress */
   daqDA_progressReport(10);
 
@@ -203,21 +245,57 @@ int main( int argc, char **argv )
   /* report progress */
   daqDA_progressReport(90);
 
+  TH2* hPedMap[2*AliPHOSCpvParam::kNDDL];
+  //prepare ped maps for dead channels search
+  TFile* fPeds = TFile::Open("CpvPeds.root");
+  for(int iDDL = 0; iDDL< 2*AliPHOSCpvParam::kNDDL; iDDL+=2){
+    if(fPeds->Get(Form("fPedMeanMap%d",iDDL)))
+      hPedMap[iDDL] = new TH2F(*(TH2F*)(fPeds->Get(Form("fPedMeanMap%d",iDDL))));
+    else
+      hPedMap[iDDL] = 0x0;
+  }
+  fPeds->Close();
+
+
+
+  //find noisy channels (i.e. channelOccupancy > 10*meanOccupancy)
   TFile *fSave = TFile::Open("CpvBadMap.root","RECREATE");
 
+  Double_t meanOccupancy = 0;
+  amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
   for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
     if(hMapOfDig[iDDL]->GetEntries()>0) {
-      FillBadMap(hMapOfDig[iDDL],hBadChMap[iDDL]);
+      Double_t Occupancy = FillNoisyMap(hMapOfDig[iDDL],hBadChMap[iDDL]);
+      if(meanOccupancy>0&&Occupancy<meanOccupancy) meanOccupancy = Occupancy;
+      if(meanOccupancy==0) meanOccupancy = Occupancy;
+      if(Occupancy>minOccupancy) FillDeadMap(hPedMap[iDDL],hMapOfDig[iDDL],hBadChMap[iDDL]);
       fSave->WriteObject(hMapOfDig[iDDL],Form("hMapOfDig%d",iDDL));
+      //send digit maps to amore
+      myAmore->Send(Form("hMapOfDig%d",iDDL),hMapOfDig[iDDL]);
       fSave->WriteObject(hBadChMap[iDDL],Form("hBadChMap%d",iDDL));
     }
   }
   fSave->Close();
-  //status = daqDA_DB_storeFile("CpvBadMap.root","CpvBadMap.root");
-  //if(status) printf("Failed to store CpvBadMap.root in DAQ DB!\n");
-  status = daqDA_FES_storeFile("CpvBadMap.root","CpvBadMap.root");
-  if(status) printf("Failed to store CpvBadMap.root in DAQ FXS!\n");
+  cout<< "meanOccupancy = "<<meanOccupancy<<"; minOccupancy = "<<minOccupancy<<endl;
+  
+  if(meanOccupancy>minOccupancy){//send file to FES if only statistics is enough
+    status = daqDA_FES_storeFile("CpvBadMap.root","CpvBadMap.root");
+    if(status) printf("Failed to store CpvBadMap.root in DAQ FXS!\n");
+    //store dummy file in DAQ DB
+    TFile *fDummy = TFile::Open("dummy.root","RECREATE");
+    fDummy->Close();
+    status = daqDA_DB_storeFile("dummy.root","CpvBadMap.root");
+    if(status) printf("Failed to store dummy.root as CpvBadMap.root in DAQ DB!\n");
+    //send bad map to amore as well
+    for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2)
+      if(hMapOfDig[iDDL]->GetEntries()>0)
+	myAmore->Send(Form("hBadChMap%d",iDDL),hBadChMap[iDDL]);
+  }
+  else{//store file with current statistics in DAQ DB for further use.
+    status = daqDA_DB_storeFile("CpvBadMap.root","CpvBadMap.root");
+    if(status) printf("Failed to store CpvBadMap.root in DAQ DB!\n");
 
+  }
 
   /* report progress */
   daqDA_progressReport(100);
@@ -226,7 +304,9 @@ int main( int argc, char **argv )
   return status;
 }
 //==============================================================================
-void FillBadMap(TH2* hDigMap, TH2* hBadChMap){
+Double_t FillNoisyMap(TH2* hDigMap, TH2* hBadChMap){
+  if(!hDigMap)return 0;
+  if(!hBadChMap)return 0;
   Double_t meanOccupancy = hDigMap->GetEntries()/7680.;
   Double_t nDigits=0,nChannels=0;
   int x,y,iterationNumber=1;
@@ -267,6 +347,27 @@ void FillBadMap(TH2* hDigMap, TH2* hBadChMap){
 	}
     
   }
-  cout<<"Total number of bad channels: "<<nBadChannelsTotal<<endl;
+  cout<<"Total number of noisy channels (DDL = 4): "<<nBadChannelsTotal<<endl;
+  return meanOccupancy;
 }
-
+//==============================================================================
+void FillDeadMap(TH2* hPedMap, TH2* hDigMap, TH2* hBadChMap){
+  if(!hPedMap) return;
+  if(!hBadChMap) return;
+  if(!hDigMap)return;
+  Int_t nDeadTotal = 0;
+  for(int ix = 1;ix<=128;ix++)
+    for(int iy = 1;iy<=60;iy++){
+	if(hPedMap->GetBinContent(ix,iy) < 1. && hBadChMap->GetBinContent(ix,iy)==0) {
+	  nDeadTotal++;
+	  hBadChMap->Fill(ix-1,iy-1);
+	  printf("Dead channel found! DDL=4 x=%d y=%d\n",ix-1,iy-1);
+	}
+	if(hDigMap->GetBinContent(ix,iy) < 1. && hBadChMap->GetBinContent(ix,iy)==0) {
+	  nDeadTotal++;
+	  hBadChMap->Fill(ix-1,iy-1);
+	  printf("Dead channel found! DDL=4 x=%d y=%d\n",ix-1,iy-1);
+	}
+    }
+  cout<<"Total number of noisy channels (DDL = 4): "<<nDeadTotal<<endl;
+}

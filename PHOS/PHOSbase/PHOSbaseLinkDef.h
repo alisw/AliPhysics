@@ -61,5 +61,6 @@
 #pragma link C++ class AliPHOSCpvParam+;
 #pragma link C++ class AliPHOSCpv3GConnection+;
 #pragma link C++ class AliPHOSCpvPedProducer+;
+#pragma link C++ class AliPHOSCpvGainCalibDA+;
 
 #endif

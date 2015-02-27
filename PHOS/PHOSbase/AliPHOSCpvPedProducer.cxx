@@ -155,7 +155,7 @@ void AliPHOSCpvPedProducer::WriteAllHistsToFile(const char * name) const
     // }
 	//Printf("iDDL = %d\n", iDDL);
     if ( fPedMeanMap[iDDL])
-      rootF->WriteObject(fPedMeanMap[iDDL], Form("PedMeanMap%d",iDDL));
+      rootF->WriteObject(fPedMeanMap[iDDL], Form("fPedMeanMap%d",iDDL));
     if ( fPedSigMap[iDDL])
       rootF->WriteObject(fPedSigMap [iDDL], Form("fPedSigMap%d",iDDL));
     if ( f1DPedMean[iDDL])
@@ -256,10 +256,10 @@ void AliPHOSCpvPedProducer::CreateErrHist()
 void AliPHOSCpvPedProducer::CreateDDLHistos(Int_t iDDL)
 {
   // creating histograms
-  fPedMeanMap[iDDL] = new TH2F(Form("hPedMeanMap%d",iDDL),"2D mean pedestal map" ,AliPHOSCpvParam::kPadPcX,0.,AliPHOSCpvParam::kPadPcX,AliPHOSCpvParam::kPadPcY,0.,AliPHOSCpvParam::kPadPcY);
-  fPedSigMap [iDDL] = new TH2F(Form("hPedSigMap%d" ,iDDL),"2D pedestal sigma map",AliPHOSCpvParam::kPadPcX,0.,AliPHOSCpvParam::kPadPcX,AliPHOSCpvParam::kPadPcY,0.,AliPHOSCpvParam::kPadPcY);
-  f1DPedMean [iDDL] = new TH1F(Form("h1DPedMean%d" ,iDDL),"1D mean pedestal map" ,5000,0,5000);
-  f1DPedSigma[iDDL] = new TH1F(Form("h1DPedSigma%d",iDDL),"1D pedestal sigma map",100 ,0,100 );
+  fPedMeanMap[iDDL] = new TH2F(Form("hPedMeanMap%d",iDDL),Form("2D pedestal value map, DDL = %d",iDDL) ,AliPHOSCpvParam::kPadPcX,0.,AliPHOSCpvParam::kPadPcX,AliPHOSCpvParam::kPadPcY,0.,AliPHOSCpvParam::kPadPcY);
+  fPedSigMap [iDDL] = new TH2F(Form("hPedSigMap%d" ,iDDL),Form("2D pedestal sigma map, DDL = %d",iDDL),AliPHOSCpvParam::kPadPcX,0.,AliPHOSCpvParam::kPadPcX,AliPHOSCpvParam::kPadPcY,0.,AliPHOSCpvParam::kPadPcY);
+  f1DPedMean [iDDL] = new TH1F(Form("h1DPedMean%d" ,iDDL),Form("pedestal value distribution, DDL = %d",iDDL) ,5000,0,5000);
+  f1DPedSigma[iDDL] = new TH1F(Form("h1DPedSigma%d",iDDL),Form("pedestal sigma distribution, DDL = %d",iDDL),1000 ,0,100 );
 
   // initialization of arrays
   int adr;
