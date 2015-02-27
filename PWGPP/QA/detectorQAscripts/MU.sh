@@ -32,8 +32,10 @@ periodLevelQA()
 
   local fileList="trendList.txt"
   local tmpFileList="tmp${fileList}"
-  local fileNames="QAresults.root QAresults_barrel.root QAresults_outer.root"
-  find -L . -name "QAresults*.root" > $fileList
+#  local fileNames="QAresults.root QAresults_barrel.root QAresults_outer.root"
+#  find -L . -name "QAresults*.root" > $fileList
+  local fileNames="QAresults.root"
+  find -L . -name "QAresults.root" > $fileList
 
   # If no result is found, it means we have an archive as input
   if [ ! -s $fileList ]; then

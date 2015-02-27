@@ -10,11 +10,14 @@
 #include "TKey.h"
 #include "TTree.h"
 #include "TParameter.h"
+#include "TFileMerger.h"
+#include "THashList.h"
 
 // Aliroot includes
 #include "AliAnalysisManager.h"
 #include "AliAnalysisAlien.h"
 #include "AliESDInputHandler.h"
+#include "AliCounterCollection.h"
 
 #define COMPILEMACRO
 
@@ -24,18 +27,20 @@
 //_____________________________________________________________________________
 void LoadLibs()
 {
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libProof");
-
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libOADB");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGmuon");
-  gSystem->Load("libPWGPPMUONlite");
+//  gSystem->Load("libTree");
+//  gSystem->Load("libGeom");
+//  gSystem->Load("libVMC");
+//  gSystem->Load("libPhysics");
+//  gSystem->Load("libProof");
+//
+//  gSystem->Load("libANALYSIS");
+//  gSystem->Load("libOADB");
+//  gSystem->Load("libANALYSISalice");
+//  gSystem->Load("libCORRFW");
+//  gSystem->Load("libPWGmuon");
+  TString libName = "libPWGPPMUONlite";
+  TString getLib = gSystem->GetLibraries(libName.Data(),"",kFALSE);
+  if ( getLib.IsNull() ) gSystem->Load(libName.Data());
 }
 
 
@@ -239,6 +244,53 @@ Bool_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_Chamb
 
 
 //_____________________________________________________________________________
+Bool_t CheckMergedOverlap ( TString fileList )
+{
+  LoadLibs();
+  TObjArray* arr = fileList.Tokenize(" ");
+  THashList triggerList;
+  triggerList.SetOwner();
+  Bool_t hasOverlap = kFALSE;
+  for ( Int_t iarr=0; iarr<arr->GetEntries(); iarr++ ) {
+    TFile* file = TFile::Open(arr->At(iarr)->GetName());
+    AliCounterCollection* eventCounters = (AliCounterCollection*)file->FindObjectAny("eventCounters");
+    if ( eventCounters ) {
+      TString listFromContainer = eventCounters->GetKeyWords("trigger");
+      TObjArray* trigArr = listFromContainer.Tokenize(",");
+      for ( Int_t itrig=0; itrig<trigArr->GetEntries(); itrig++ ) {
+        TString currTrig = trigArr->At(itrig)->GetName();
+        if ( triggerList.FindObject(currTrig.Data()) ) {
+          if ( currTrig != "ANY" ) {
+            printf("Warning: duplicated trigger %s\n", currTrig.Data());
+            hasOverlap = kTRUE;
+          }
+        }
+        else triggerList.Add(new TObjString(currTrig));
+      }
+      delete trigArr;
+    }
+    delete file;
+  }
+  delete arr;
+
+  return hasOverlap;
+}
+
+//_____________________________________________________________________________
+Bool_t GetMergedQAInfo ( TString fileList, TString outFilename = "QAresults.root" )
+{
+  LoadLibs();
+  TObjArray* arr = fileList.Tokenize(" ");
+  TFileMerger fm;
+  fm.OutputFile(outFilename.Data());
+  for ( Int_t iarr=0; iarr<arr->GetEntries(); iarr++ ) {
+    fm.AddFile(arr->At(iarr)->GetName());
+  }
+  delete arr;
+  return fm.Merge();
+}
+
+//_____________________________________________________________________________
 Bool_t AddTreeVariable ( TList& parList, const char* varName, char varType, Float_t val )
 {
   if ( varType == 'D' ) varType = 'F';
@@ -307,6 +359,24 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, UInt
   if ( ! isOk ) return;
 
   TString inFilename = GetBaseName(qaFile);
+
+  if ( inFilename.Contains("barrel") ) {
+    TString outerInFilename(qaFile);
+    outerInFilename.ReplaceAll("barrel","outer");
+    isOk = GetQAInfo(outerInFilename);
+    if ( isOk ) {
+      // Merge outer and barrel
+      TString fileList = GetBaseName(outerInFilename);
+      fileList += " " + inFilename;
+      Bool_t isMergedOk = GetMergedQAInfo(fileList);
+      if ( isMergedOk ) {
+        inFilename = "QAresults.root";
+        printf("Merged files: %s => %s\n",fileList.Data(),inFilename.Data());
+        CheckMergedOverlap(fileList);
+        gSystem->Exec(Form("rm %s",fileList.Data())); // Remove QAresults_barrel and outer
+      }
+    }
+  }
 
   terminateQA(inFilename,isMC,force,mask);
 
