@@ -32,6 +32,7 @@
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCHWCFSpacePointContainer.h"
+#include "AliHLTTPCRawSpacePointContainer.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTComponentBenchmark.h"
 #include "AliHLTCDHWrapper.h"
@@ -150,6 +151,8 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   unsigned rawDataSize=0;
   unsigned rawEventSizeFromRCUtrailer=0;
   unsigned hwclustersDataSize=0;
+  unsigned rawclustersDataSize=0;
+  unsigned nofCompressedClusters=0;
   unsigned nofClusters=0;
   unsigned compDataSize=0; 
   
@@ -158,6 +161,24 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
        pDesc!=NULL; pDesc=GetNextInputBlock()) {
     fFlags|=kHaveRawData;
     rawDataSize+=pDesc->fSize;
+  }
+
+  bool bUseHWCFDataForClusterCalculations=true;
+  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType());
+       pDesc!=NULL; pDesc=GetNextInputBlock()) {
+    // first check the type of input, there has been a change in the input type
+    // of the compression component in Jun 2013, see below
+    // use a local variable here, which in general should do the job because
+    // if there are is data available always HWCF and raw clusters should be
+    // there is in the configuration. There shouldn't be any difference on
+    // event basis.
+    if (pDesc->fSize<sizeof(AliHLTTPCRawClusterData)) continue;
+    const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pDesc->fPtr);
+    if (!clusterData) continue;
+    if (clusterData->fVersion==1) {
+      bUseHWCFDataForClusterCalculations=false;
+      break;
+    }
   }
 
   // check size of HWCF data and add to the MonitoringContainer
@@ -176,7 +197,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	HLTError("data block of type %s corrupted: can not decode format",
 		 AliHLTComponent::DataType2Text(pDesc->fDataType).c_str());
       } else {
-	nofClusters+=fpHWClusterDecoder->GetNumberOfClusters();
+	if (bUseHWCFDataForClusterCalculations) nofClusters+=fpHWClusterDecoder->GetNumberOfClusters();
 	if (fpHWClusterDecoder->GetRCUTrailer()) {
 	  // first word of the RCU trailer contains the payload size in 32bit words
 	  const AliHLTUInt32_t*  pRCUTrailer=reinterpret_cast<const AliHLTUInt32_t*>(fpHWClusterDecoder->GetRCUTrailer());
@@ -187,7 +208,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	}
       }
     }
-    if (fMonitoringContainer) {
+    if (fMonitoringContainer && bUseHWCFDataForClusterCalculations) {
       fMonitoringContainer->AddRawData(pDesc);
     }
   }
@@ -215,10 +236,17 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
       // Note: until r51411 and v5-01-Rev-03 the compressed cluster format was sent with data
       // type {CLUSTRAW,TPC }, the version member indicated the actual type of data
-      // These data do not include the 0.5 shift in pad position, that's wht it has
+      // These data do not include the 0.5 shift in pad position, that's why it has
       // to be added in the unpacking. This is a very special case, this data type and
       // data version==1 only occured in the early TPC data compression test runs with
       // v5-01-Rev-01
+      // Additional correction 2015-02-26: the input data type of the compression component
+      // has been changed to raw clusters instead of HWCF clusters on Jun 27 2013 in commit
+      // 49bdc4660e6b95428c4c1fb9403fc17fad34dc9d. This has implications to the input of the
+      // monitoring coponent. Raw clusters have now to be used to monitor the differences of
+      // original and compressed cluster parameters. The case of reading compressed clusters
+      // with data type {CLUSTRAW,TPC } and version!=1 has been removed as data with
+      // this format have never been recorded.
       if (pDesc->fSize<sizeof(AliHLTTPCRawClusterData)) continue;
       const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pDesc->fPtr);
       if (!clusterData) continue;
@@ -226,16 +254,24 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	// compressed clusters without the pad shift
 	// data type {CLUSTRAW,TPC } with version==1
 	decoder.SetPadShift(0.5);
+        bHaveRawClusters=true;
+        iResult=decoder.ReadClustersPartition(fMonitoringContainer->BeginRemainingClusterBlock(0, pDesc->fSpecification),
+                                              reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
+                                              pDesc->fSize,
+                                              pDesc->fSpecification);
+        if (iResult<0) {
+        HLTError("reading of partition clusters failed with error %d", iResult);
+        }
       } else {
-	decoder.SetPadShift(0.0);
-      }
-      bHaveRawClusters=true;
-      iResult=decoder.ReadClustersPartition(fMonitoringContainer->BeginRemainingClusterBlock(0, pDesc->fSpecification),
-					    reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
-					    pDesc->fSize,
-					    pDesc->fSpecification);
-      if (iResult<0) {
-	HLTError("reading of partition clusters failed with error %d", iResult);
+	rawclustersDataSize+=pDesc->fSize;
+	if (sizeof(AliHLTTPCRawClusterData)+clusterData->fCount*sizeof(AliHLTTPCRawCluster)==pDesc->fSize) {
+	  nofClusters+=clusterData->fCount;
+	  if (fMonitoringContainer) {
+	    fMonitoringContainer->AddRawData(pDesc);
+	  }
+	} else {
+	  ALIHLTERRORGUARD(5, "inconsistent data block of raw clusters");
+	}
       }
     }
 
@@ -248,7 +284,10 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 					    reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
 					    pDesc->fSize,
 					    pDesc->fSpecification);
-      compDataSize+=pDesc->fSize;
+      if (iResult>=0) {
+	compDataSize+=pDesc->fSize;
+	nofCompressedClusters+=iResult;
+      }
     }
 
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
@@ -257,7 +296,10 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 					       reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
 					       pDesc->fSize,
 					       pDesc->fSpecification);
-      compDataSize+=pDesc->fSize;
+      if (iResult>=0) {
+	compDataSize+=pDesc->fSize;
+	nofCompressedClusters+=iResult;
+      }
     }
     } else {
       if (GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType()) ||
@@ -283,8 +325,17 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   float hwcfratio=0;
   float ratio=0;
   float totalratio=0;
+  if (nofClusters==0 && nofCompressedClusters>0) {
+    // no information from original data, skip calculations and print a short message
+    HLTInfo("comp data %d, %d clusters\n", compDataSize, nofCompressedClusters);
+  } else {
+  // the monitoring component can now handle both cases of AliHLTTPCDataCompressionComponent input
+  // 1) HWCF clusters: the original implementation
+  // 2) RAW clusters: changed in commit 49bdc4660e6b95428c4c1fb9403fc17fad34dc9d Jun 27 2013
+  // if there are no raw clusters as input we take the HWCF clusters as reference size
   if (hwclustersDataSize) {hwcfratio=(float)rawDataSize; hwcfratio/=hwclustersDataSize;}
-  if (compDataSize) {ratio=(float)hwclustersDataSize; ratio/=compDataSize;}
+  if (rawclustersDataSize==0) rawclustersDataSize=hwclustersDataSize;
+  if (compDataSize) {ratio=(float)rawclustersDataSize; ratio/=compDataSize;}
   if (compDataSize) {totalratio=(float)rawDataSize; totalratio/=compDataSize;}
   if (fHistoHWCFDataSize)        fHistoHWCFDataSize       ->Fill(rawDataSize/1024, hwclustersDataSize/1024);
   if (fHistoHWCFReductionFactor) fHistoHWCFReductionFactor->Fill(rawDataSize/1024, hwcfratio);
@@ -293,7 +344,8 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   if (fHistoNofClusters)         fHistoNofClusters        ->Fill(rawDataSize/1024, nofClusters);
   if (fHistoNofClustersReductionFactor && nofClusters>0)
     fHistoNofClustersReductionFactor ->Fill(nofClusters, ratio);
-  HLTInfo("raw data %d, hwcf data %d, comp data %d, ratio %f, %d clusters, total compression ratio %f\n", rawDataSize, hwclustersDataSize, compDataSize, ratio, nofClusters, totalratio);
+  HLTInfo("raw data %d, raw/hwcf cluster data %d, comp data %d, ratio %.2f, %d clusters, total compression ratio %.2f\n", rawDataSize, rawclustersDataSize, compDataSize, ratio, nofClusters, totalratio);
+  }
 
   if (iResult>=0 && fPublishingMode!=kPublishOff) {
     iResult=Publish(fPublishingMode);
@@ -760,13 +812,19 @@ AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::iterator& AliHLTTPCD
 
 int AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::AddRawData(const AliHLTComponentBlockData* pDesc)
 {
-  /// add raw data bloack
+  /// add raw data block
   int iResult=0;
-  if (pDesc->fDataType==AliHLTTPCDefinitions::HWClustersDataType()) {
-    if (!fRawData) fRawData=new AliHLTTPCHWCFSpacePointContainer(AliHLTTPCHWCFSpacePointContainer::kModeCreateMap);
+  AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pSpacePointGrid=NULL;
+  if (!fRawData && pDesc->fDataType==AliHLTTPCDefinitions::HWClustersDataType()) {
+    fRawData=new AliHLTTPCHWCFSpacePointContainer(AliHLTTPCHWCFSpacePointContainer::kModeCreateMap);
+    pSpacePointGrid=AliHLTTPCHWCFSpacePointContainer::AllocateIndexGrid();
+  } else if (!fRawData && pDesc->fDataType==AliHLTTPCDefinitions::RawClustersDataType()) {
+    fRawData=new AliHLTTPCRawSpacePointContainer(AliHLTTPCRawSpacePointContainer::kModeCreateMap);
+    pSpacePointGrid=AliHLTTPCRawSpacePointContainer::AllocateIndexGrid();
+  }
+  {
     if (!fRawData) return -ENOMEM;
     if ((iResult=fRawData->AddInputBlock(pDesc))<0) return iResult;
-    AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pSpacePointGrid=AliHLTTPCHWCFSpacePointContainer::AllocateIndexGrid();
     if (pSpacePointGrid) {
       fRawData->PopulateAccessGrid(pSpacePointGrid, pDesc->fSpecification);
       fRawData->SetSpacePointPropertyGrid(pDesc->fSpecification, pSpacePointGrid);
