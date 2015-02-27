@@ -2578,8 +2578,8 @@ void AliZDCv4::StepManager()
     	//
         //printf("\t Track %d: x %1.2f y %1.2f z %1.2f  E %1.2f GeV pz = %1.2f GeV in volume %s -> det %d\n", 
           // gAlice->GetMCApp()->GetCurrentTrackNumber(),x[0],x[1],x[2],p[3],p[2],knamed, vol[0]);
-        printf("\t Track %d: pc %d  E %1.2f GeV pz = %1.2f GeV in volume %s -> det %d\n", 
-           gAlice->GetMCApp()->GetCurrentTrackNumber(),part->GetPdgCode(),p[3],p[2],knamed, vol[0]);
+        //printf("\t Track %d: pc %d  E %1.2f GeV pz = %1.2f GeV in volume %s -> det %d\n", 
+          // gAlice->GetMCApp()->GetCurrentTrackNumber(),part->GetPdgCode(),p[3],p[2],knamed, vol[0]);
         //
         TVirtualMC::GetMC()->StopTrack();
         return;
