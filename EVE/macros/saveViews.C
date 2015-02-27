@@ -126,19 +126,44 @@ void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=
         compositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
         compositeImg->EndPaint();
         //include ALICE Logo
-        tempImg = new TASImage( Form("%s/picts/2012-Jul-04-4_Color_Logo_small_CB.png", gSystem->Getenv("ALICE_ROOT")) );
-        tempImg->Scale(64,86);
+        tempImg = new TASImage( Form("%s/../src/picts/alice_logo_2009_blue_80x80.png", gSystem->Getenv("ALICE_ROOT")) );
+        tempImg->Scale(64,64);
         //tempImg->CopyArea(compositeImg, 0,0, 236, 319, 59, 4);
         compositeImg->Merge(tempImg, "alphablend", 82, 4);
         delete tempImg; tempImg = 0;
     }
     
     // show Information bar
+    
+    AliESDEvent* esd =  AliEveEventManager::AssertESD();
+    TString triggerClasses1 = "";
+    TString triggerClasses2 = "";
+    bool sw=false;
+    for(int i=0;i<100;i++)
+    {
+        if(strcmp(esd->GetESDRun()->GetTriggerClass(i),"")){
+            if (sw)
+            {
+                triggerClasses1 += esd->GetESDRun()->GetTriggerClass(i);
+                triggerClasses1 += "   ";
+                sw=false;
+            }
+            else
+            {
+                triggerClasses2 += esd->GetESDRun()->GetTriggerClass(i);
+                triggerClasses2 += "   ";
+                sw=true;
+            }
+        }
+    }
+    
     TString stringInfo;
     stringInfo = getEventInfo();
     compositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0, height-heightInfoBar, width, heightInfoBar);
     compositeImg->BeginPaint();
     compositeImg->DrawText(10, height-heightInfoBar+15, stringInfo, 28, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(700, height-heightInfoBar+15,triggerClasses1, 18, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(700, height-heightInfoBar+35,triggerClasses2, 18, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->EndPaint();
     
     
@@ -182,13 +207,14 @@ TString getEventInfo()
     else
     {
         AliESDEvent* esd =  AliEveEventManager::AssertESD();
+       
+        
         
         esdInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
                      esd->GetESDRun()->GetBeamType(),
                      esd->GetRunNumber(),
                      AliEveEventManager::CurrentEventId(),
-                     "PHYSICS_EVENT"
-                     /*AliRawEventHeaderBase::GetTypeName(esd->GetEventType())*/
+                     AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
                      );
     }
     

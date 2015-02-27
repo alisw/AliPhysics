@@ -135,7 +135,6 @@ public:
 
     Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
     Bool_t        IsEventAvailable()       const { return fHasEvent;     }
-    Bool_t        IsUnderExternalControl() const { return fExternalCtrl; }
 
     Bool_t        IsOnlineMode() const { return fOnlineMode; }
 
@@ -182,7 +181,6 @@ protected:
 
     Bool_t        fIsOpen;                // Are event-files opened.
     Bool_t        fHasEvent;              // Is an event available.
-    Bool_t        fExternalCtrl;          // Are we under external event-loop.
 
     TMap*         fGlobal;
     Bool_t        fGlobalReplace;         // Are global replace

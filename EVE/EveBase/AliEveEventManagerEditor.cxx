@@ -400,8 +400,8 @@ void AliEveEventManagerWindow::Update(int state)
 {
 
   Bool_t autoLoad = fM->GetAutoLoad();
-  Bool_t extCtrl  = fM->IsUnderExternalControl();
-  Bool_t evNavOn  = !autoLoad && !extCtrl;
+//  Bool_t extCtrl  = fM->IsUnderExternalControl();
+    Bool_t evNavOn  = !autoLoad;// && !extCtrl;
 
 #ifdef ZMQ
 
