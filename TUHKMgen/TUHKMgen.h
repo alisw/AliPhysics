@@ -11,11 +11,11 @@
 #endif
 
 #ifndef INITIALSTATEHYDJET_H
-#include "UHKM/InitialStateHydjet.h"
+#include "InitialStateHydjet.h"
 #endif
 
 #ifndef DATABASE_PDG
-#include "UHKM/DatabasePDG.h"
+#include "DatabasePDG.h"
 #endif
 
 #include <string>
