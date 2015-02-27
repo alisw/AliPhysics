@@ -350,7 +350,7 @@ void Config()
 
     if (iPHOS)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
     }
 
 

@@ -438,7 +438,7 @@ void Config()
     if (iPHOS)
     {
         //=================== PHOS parameters ===========================
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
     }
 
 

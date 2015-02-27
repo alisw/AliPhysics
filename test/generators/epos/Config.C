@@ -1,8 +1,12 @@
 // One can use the configuration macro in compiled mode by
 // root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"ConfigPPR.C++")
+// root [1] gSystem->Load("libpythia6.4.25.so");
+// root [2] gSystem->Load("libqpythia.so");
+// root [3] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE/geant3/TGeant3");
+// root [4] AliSimulation sim
+// root [5] sim.SetConfigFile("Config.C++")
+// root [6] sim.Run()
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -12,49 +16,52 @@
 #include <TGeant3TGeo.h>
 #include <TPDGCode.h>
 #include <TF1.h>
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "STEER/AliGenerator.h"
-#include "STEER/AliLog.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "EVGEN/AliGenHIJINGpara.h"
-#include "THijing/AliGenHijing.h"
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenSlowNucleons.h"
-#include "EVGEN/AliSlowNucleonModelExp.h"
-#include "EVGEN/AliGenParam.h"
-#include "EVGEN/AliGenMUONlib.h"
-#include "EVGEN/AliGenSTRANGElib.h"
-#include "EVGEN/AliGenMUONCocktail.h"
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenGeVSim.h"
-#include "EVGEN/AliGeVSimParticle.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagF.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv3.h"
-#include "ZDC/AliZDCv4.h"
-#include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
-#include "EPOS/AliGenEpos.h"
+#include <TGeoGlobalMagField.h>
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliConfig.h"
+#include "AliGenerator.h"
+#include "AliLog.h"
+#include "AliDecayerPythia.h"
+#include "AliGenHIJINGpara.h"
+#include "AliGenHijing.h"
+#include "AliGenCocktail.h"
+#include "AliGenSlowNucleons.h"
+#include "AliSlowNucleonModelExp.h"
+#include "AliGenParam.h"
+#include "AliGenMUONlib.h"
+#include "AliGenSTRANGElib.h"
+#include "AliGenMUONCocktail.h"
+#include "AliGenCocktail.h"
+#include "AliGenGeVSim.h"
+#include "AliGeVSimParticle.h"
+#include "AliGenPythia.h"
+#include "AliMagF.h"
+#include "AliBODY.h"
+#include "AliMAG.h"
+#include "AliABSOv3.h"
+#include "AliDIPOv3.h"
+#include "AliHALLv3.h"
+#include "AliFRAMEv2.h"
+#include "AliSHILv3.h"
+#include "AliPIPEv3.h"
+#include "AliITSv11.h"
+#include "AliTPCv2.h"
+#include "AliTOFv6T0.h"
+#include "AliHMPIDv3.h"
+#include "AliZDCv4.h"
+#include "AliTRDv1.h"
+#include "AliFMDv1.h"
+#include "AliMUONv1.h"
+#include "AliPHOSv1.h"
+#include "AliPMDv1.h"
+#include "AliT0v1.h"
+#include "AliEMCALv2.h"
+#include "AliACORDEv1.h"
+#include "AliVZEROv7.h"
+#include "AliGenEpos.h"
+#include "AliTRDgeometry.h"
+#include "AliSimulation.h"
 #endif
 
 enum PprTrigConf_t
@@ -356,7 +363,7 @@ void Config()
 
     if (iPHOS)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
     }
 
 
@@ -402,16 +409,6 @@ Float_t EtaToTheta(Float_t arg){
 
 void ProcessEnvironmentVars()
 {
-    // Run type
-    if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
-      for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
-	if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {
-	  srun = (PprRun_t)iRun;
-	  cout<<"Run type set to "<<pprRunName[iRun]<<endl;
-	}
-      }
-    }
-
     // Random Number seed
     if (gSystem->Getenv("CONFIG_SEED")) {
       sseed = atoi(gSystem->Getenv("CONFIG_SEED"));

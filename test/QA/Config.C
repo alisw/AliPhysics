@@ -24,9 +24,13 @@
 
 // One can use the configuration macro in compiled mode by
 // root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"Config_PDC07.C++")
+// root [1] gSystem->Load("libpythia6.4.25.so");
+// root [2] gSystem->Load("libqpythia.so");
+// root [3] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE/geant3/TGeant3");
+// root [4] AliSimulation sim
+// root [5] sim.SetConfigFile("Config.C++")
+// root [6] sim.Run()
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -35,38 +39,41 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeant3TGeo.h>
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenParam.h"
-#include "EVGEN/AliGenMUONlib.h"
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagF.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSgeom.h"
-#include "ITS/AliITSvPPRasymmFMD.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv3.h"
-#include "ZDC/AliZDCv4.h"
-#include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
+#include <TGeoGlobalMagField.h>
+#include "AliGenCocktail.h"
+#include "AliGenParam.h"
+#include "AliGenMUONlib.h"
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliConfig.h"
+#include "AliDecayerPythia.h"
+#include "AliGenPythia.h"
+#include "AliMagF.h"
+#include "AliBODY.h"
+#include "AliMAG.h"
+#include "AliABSOv3.h"
+#include "AliDIPOv3.h"
+#include "AliHALLv3.h"
+#include "AliFRAMEv2.h"
+#include "AliSHILv3.h"
+#include "AliPIPEv3.h"
+#include "AliITSgeom.h"
+#include "AliITSv11.h"
+#include "AliTPCv2.h"
+#include "AliTOFv6T0.h"
+#include "AliHMPIDv3.h"
+#include "AliZDCv4.h"
+#include "AliTRDv1.h"
+#include "AliFMDv1.h"
+#include "AliMUONv1.h"
+#include "AliPHOSv1.h"
+#include "AliPMDv1.h"
+#include "AliT0v1.h"
+#include "AliEMCALv2.h"
+#include "AliACORDEv1.h"
+#include "AliVZEROv7.h"
+#include "AliSimulation.h"
+#include "AliGenerator.h"
 #endif
 
 
@@ -104,6 +111,11 @@ enum TrigConf_t
 {
     kDefaultPPTrig, kDefaultPbPbTrig
 };
+//--- U cut ---
+enum YCut_t
+{
+  kFull, kBarrel, kMuonArm
+};
 
 const char * TrigConfName[] = {
     "p-p","Pb-Pb"
@@ -118,7 +130,7 @@ enum  PprGeo_t
   };
 
 static PprGeo_t geo = kHoles;
-class AliGenPythia ;
+
 //--- Functions ---
 AliGenPythia *PythiaHard(PDC07Proc_t );
 AliGenPythia *PythiaHVQ(PDC07Proc_t );
@@ -130,6 +142,7 @@ void ProcessEnvironmentVars();
 static DecayHvFl_t   decHvFl  = kNature;
 static AliMagF::BMap_t mag    = AliMagF::k5kG;
 static TrigConf_t    trig     = kDefaultPPTrig; // default pp trigger configuration
+static YCut_t    ycut     = kFull; // default pp trigger configuration
 static Int_t         runNumber= 0;
 static Int_t         eventNumber= 0;
 //========================//
@@ -550,7 +563,7 @@ void Config()
 
     if (iPHOS)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
     }
 
 
