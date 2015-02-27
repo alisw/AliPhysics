@@ -100,3 +100,5 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
+install(FILES ${HDRS} DESTINATION include)
+

@@ -83,6 +83,8 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 
+install(FILES ${HDRS} DESTINATION include)
+
 # This custom command installs headers preserving their relative subdirectories
 install_relative(FILES ${HDRS} DESTINATION include)
 
