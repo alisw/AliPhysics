@@ -819,7 +819,7 @@ AliHLTUInt32_t AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FindN
   if (!fRawData) return kAliHLTVoidDataSpec;
   AliHLTUInt32_t key=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
   // FIXME: AliHLTIndexGrid::Index is not declared const
-  AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pGrid=const_cast<AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid*>(fRawData->GetSpacePointPropertyGrid(key));
+  AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pGrid=const_cast<AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid*>(GetClusterSpacePointPropertyGrid(key));
   if (!pGrid) return kAliHLTVoidDataSpec;
   AliHLTUInt32_t clusterId=kAliHLTVoidDataSpec;
   // search a 4x4 matrix out of the 9x9 matrix around the cell addressed by
@@ -859,14 +859,14 @@ AliHLTUInt32_t AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FindN
       for (AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid::iterator& cl=pGrid->begin((float)padrow, cellpad, celltime);
 	   cl!=pGrid->end(); cl++) {
 	if (cl.Data().fTrackId>=0) continue;
-	if (fRawData->GetCharge(cl.Data().fId)!=cluster.GetCharge() ||
-	    fRawData->GetQMax(cl.Data().fId)!=cluster.GetQMax()) continue;
-	if (TMath::Abs(padrow-fRawData->GetX(cl.Data().fId))>=1.) {
-	  HLTError("slice %d, partition %d, cluster 0x%08x: mismatch on padrow: %f  vs. cluster %f", slice, partition, cl.Data().fId, padrow, fRawData->GetX(cl.Data().fId));
+	if (GetClusterCharge(cl.Data().fId)!=cluster.GetCharge() ||
+	    GetClusterQMax(cl.Data().fId)!=cluster.GetQMax()) continue;
+	if (TMath::Abs(padrow-GetClusterX(cl.Data().fId))>=1.) {
+	  HLTError("slice %d, partition %d, cluster 0x%08x: mismatch on padrow: %f  vs. cluster %f", slice, partition, cl.Data().fId, padrow, GetClusterX(cl.Data().fId));
 	  continue;
 	}
-	float clusterpad=fRawData->GetY(cl.Data().fId);
-	float clustertime=fRawData->GetZ(cl.Data().fId);
+	float clusterpad=GetClusterY(cl.Data().fId);
+	float clustertime=GetClusterZ(cl.Data().fId);
 	clusterpad-=pad;
 	clusterpad*=padpitch;
 	clustertime-=time;
@@ -1011,17 +1011,18 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
   bool bResidualError=false;
   int currentRow=fCurrentCluster.GetPadRow();
 
+  if (fRawData) {
     unsigned index=kHistogramDeltaPadrow;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
-	fHistogramPointers[index]->Fill(fCurrentCluster.GetPadRow()-fRawData->GetX(clusterId));
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
+	fHistogramPointers[index]->Fill(fCurrentCluster.GetPadRow()-GetClusterX(clusterId));
       }
     }
 
     index=kHistogramDeltaPad;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
-	float dPad=fCurrentCluster.GetPad()-fRawData->GetY(clusterId);
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
+	float dPad=fCurrentCluster.GetPad()-GetClusterY(clusterId);
 	fHistogramPointers[index]->Fill(dPad);
 	static const float maxdPad=0.015; // better 100um for 4 and 6mm pad width
 	if (TMath::Abs(dPad)>maxdPad) {
@@ -1032,9 +1033,9 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
     }
 
     index=kHistogramDeltaTime;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
-	float dTime=fCurrentCluster.GetTime()-fRawData->GetZ(clusterId);
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
+	float dTime=fCurrentCluster.GetTime()-GetClusterZ(clusterId);
 	fHistogramPointers[index]->Fill(dTime);
 	static const float maxdTime=0.04; // corresponds to 100um
 	if (TMath::Abs(dTime)>maxdTime) {
@@ -1045,10 +1046,10 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
     }
 
     index=kHistogramDeltaSigmaY2;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
 	float factor=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale;
-	float sigma=fRawData->GetYWidth(clusterId)*factor;
+	float sigma=GetClusterYWidth(clusterId)*factor;
 	if (sigma>fMaxSigmaY2Scaled) sigma=fMaxSigmaY2Scaled;
 	sigma/=factor;
 	fHistogramPointers[index]->Fill(fCurrentCluster.GetSigmaPad2()-sigma);
@@ -1056,10 +1057,10 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
     }
 
     index=kHistogramDeltaSigmaZ2;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
 	float factor=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale;
-	float sigma=fRawData->GetZWidth(clusterId)*factor;
+	float sigma=GetClusterZWidth(clusterId)*factor;
 	if (sigma>fMaxSigmaZ2Scaled) sigma=fMaxSigmaZ2Scaled;
 	sigma/=factor;
 	fHistogramPointers[index]->Fill(fCurrentCluster.GetSigmaTime2()-sigma);
@@ -1067,29 +1068,30 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
     }
 
     index=kHistogramDeltaCharge;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
-	fHistogramPointers[index]->Fill(fCurrentCluster.GetCharge()-fRawData->GetCharge(clusterId));
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
+	fHistogramPointers[index]->Fill(fCurrentCluster.GetCharge()-GetClusterCharge(clusterId));
       }
     }
 
     index=kHistogramDeltaQMax;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
-      if (fRawData->Check(clusterId)) {
-	fHistogramPointers[index]->Fill(fCurrentCluster.GetQMax()-fRawData->GetQMax(clusterId));
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
+      if (CheckClusterID(clusterId)) {
+	fHistogramPointers[index]->Fill(fCurrentCluster.GetQMax()-GetClusterQMax(clusterId));
       }
     }
 
     if (bResidualError) {
     index=kHistogramOutOfRange;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL) {
       fHistogramPointers[index]->Fill(currentRow>=0?currentRow:0);
     }
     }
 
     index=kHistogramHWCFPad;
-    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData)
-      fHistogramPointers[index]->Fill(fRawData->GetY(clusterId));
+    if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
+      fHistogramPointers[index]->Fill(GetClusterY(clusterId));
+  }
 }
 
 void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Clear(Option_t * option)

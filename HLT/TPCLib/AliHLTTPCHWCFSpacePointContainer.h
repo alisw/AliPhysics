@@ -55,6 +55,7 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
   virtual float GetZWidth(AliHLTUInt32_t clusterID) const;
   virtual float GetCharge(AliHLTUInt32_t clusterID) const;
   virtual float GetQMax(AliHLTUInt32_t clusterID) const;
+  virtual float GetMaxSignal(AliHLTUInt32_t clusterID) const {return GetQMax(clusterID);}
   virtual float GetPhi(AliHLTUInt32_t clusterID) const;
 
   /// add input block to the collection

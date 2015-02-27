@@ -14,13 +14,13 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCRawCluster.h"
+#include "AliHLTSpacePointContainer.h"
 #include "TString.h"
 
 struct AliHLTTPCClusterMCLabel;
 class AliHLTTPCHWCFData;
 class AliHLTDataInflater;
 class AliHLTTPCTrackGeometry;
-class AliHLTTPCHWCFSpacePointContainer;
 class AliHLTComponentBenchmark;
 class AliHLTTPCDataCompressionDecoder;
 class TH1;
@@ -251,6 +251,47 @@ public:
     /// get the cluster id of the nearest original cluster
     AliHLTUInt32_t FindNearestCluster(int slice, int partition, const AliHLTTPCRawCluster& cluster) const;
 
+    bool CheckClusterID(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->Check(clusterID);
+      return false;
+    }
+    float GetClusterX(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetX(clusterID);
+      return false;
+    }
+    float GetClusterXWidth(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetXWidth(clusterID);
+      return false;
+    }
+    float GetClusterY(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetY(clusterID);
+      return false;
+    }
+    float GetClusterYWidth(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetYWidth(clusterID);
+      return false;
+    }
+    float GetClusterZ(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetZ(clusterID);
+      return false;
+    }
+    float GetClusterZWidth(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetZWidth(clusterID);
+      return false;
+    }
+    float GetClusterCharge(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetCharge(clusterID);
+      return false;
+    }
+    float GetClusterQMax(AliHLTUInt32_t clusterID) const {
+      if (fRawData) return fRawData->GetMaxSignal(clusterID);
+      return false;
+    }
+    const AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* GetClusterSpacePointPropertyGrid(AliHLTUInt32_t mask) const {
+      if (fRawData) return fRawData->GetSpacePointPropertyGrid(mask);
+      return false;
+    }
+
     /// internal cleanup
     virtual void  Clear(Option_t * option="");
     /// get histogram object
@@ -279,7 +320,7 @@ public:
     vector<AliClusterIdBlock> fRemainingClusterIds; //! clusters ids for remaining cluster ids
     AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
     AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
-    AliHLTTPCHWCFSpacePointContainer* fRawData; //! raw data container
+    AliHLTSpacePointContainer* fRawData; //! raw data container
     AliHLTTPCRawCluster fCurrentCluster; //! current cluster
     int fSector; //! sector
     iterator fBegin; //!
