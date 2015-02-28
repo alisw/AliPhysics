@@ -4,29 +4,31 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0,Bool_t finecentbins = kFALSE) {
     TStopwatch timer;
     timer.Start();
-    gSystem->Load("libTree");
-    gSystem->Load("libGeom");
-    gSystem->Load("libVMC");
-    gSystem->Load("libPhysics");
-    gSystem->Load("libXMLIO");
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
+    gSystem->Load("libXMLIO.so");
 
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
+    gSystem->Load("libSTEERBase.so");
+    gSystem->Load("libESD.so");
+    gSystem->Load("libAOD.so");
 
     gSystem->Load("libANALYSIS");
-    gSystem->Load("libOADB");
+    gSystem->Load("libOADB.so");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libPWGUDbase");
+    gSystem->Load("libPWGUDbase.so");
 
-    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-    gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
+    gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGUD");
+//     gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$CMAKE_INSTALL_PREFIX/include");
+//     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
     if(runCompiledVersion){
       cout<<"Using compiled version"<<endl;
-      gSystem->Load("libPWGLFtotEt");
+      gSystem->Load("libPWGLFtotEt.so");
     }
     else{
       cout<<"Not using compiled version"<<endl;
@@ -43,30 +45,92 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
   if(submit){      
-    gSystem->Load("libNetx") ;
-    gSystem->Load("libgapiUI");
-    gSystem->Load("libRAliEn");
+    gSystem->Load("libNetx.so") ; 
+    gSystem->Load("libgapiUI.so");
+    gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
   }
   bool PbPb = false;
   if(dataset ==20100 || dataset==2011){
     bool PbPb = true;
     if(data){
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");//Data Pb+Pb
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.870/AliESDs.root");//Data Pb+Pb
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.880/AliESDs.root");//Data Pb+Pb
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.890/AliESDs.root");//Data Pb+Pb
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.900/AliESDs.root");//Data Pb+Pb
+      chain->Add("/data/LHC10h/pass2/10000137366041.860/AliESDs.root");//Data Pb+Pb
+      chain->Add("/data/LHC10h/pass2/10000137366041.870/AliESDs.root");//Data Pb+Pb
+      chain->Add("/data/LHC10h/pass2/10000137366041.880/AliESDs.root");//Data Pb+Pb
+      chain->Add("/data/LHC10h/pass2/10000137366041.890/AliESDs.root");//Data Pb+Pb
+      chain->Add("/data/LHC10h/pass2/10000137366041.900/AliESDs.root");//Data Pb+Pb
     }
     else{
       //chain->Add("/data/LHC12d3/168464/201/AliESDs.root");//HIJING with embedded signals - works, full acceptance
       //chain->Add("/data/LHC10h2/137161/001/AliESDs.root");//DPMJET
-      chain->Add("/data/LHC11a9a/137366/001/AliESDs.root");//AMPT
+      //chain->Add("/data/LHC11a9a/137366/001/AliESDs.root");//AMPT
 //       chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
       //chain->Add("/data/LHC11a4_bis/137161/999/AliESDs.root");//Hijing Pb+Pb
       //chain->Add("/data/LHC10h12/999/AliESDs.root");//Hijing Pb+Pb
+      cout<<"I am here "<<endl;
+  chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/011/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/013/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/014/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/015/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/016/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/017/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/018/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/019/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/020/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/021/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/022/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/023/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/024/AliESDs.root");
+
+// chain->Add("/data/LHC11a10a_bis/139465/025/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/026/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/027/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/028/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/029/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/030/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/031/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/032/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/033/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/034/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/035/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/036/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/037/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/038/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/039/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/040/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/041/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/042/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/043/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/044/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/045/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/046/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/047/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/048/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/049/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/050/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/051/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/052/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/053/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/054/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/055/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/056/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/057/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/058/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/059/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/060/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/061/AliESDs.root");
+// chain->Add("/data/LHC11a10a_bis/139465/062/AliESDs.root");
+
     }
   } 
   else{
@@ -100,7 +164,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   if(submit){
 
     gROOT->LoadMacro("CreateAlienHandlerHadEt.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale,runCompiledVersion,simflag);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material,altV0Scale,runCompiledVersion,simflag,finecentbins);//integer dataset, boolean isData, bool submit-in-test-mode, bool use alternatve V0 scaling
       if (!alienHandler) return;
       mgr->SetGridHandler(alienHandler);
   }
@@ -115,7 +179,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   }
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro(" $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
   if(!physSelTask) { Printf("no physSelTask"); return; }
   AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
@@ -124,7 +188,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
 
   cerr<<"Hello I am here 108"<<endl;
 
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
 
   AliCentralitySelectionTask *centTask;
   
@@ -141,11 +205,17 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   Int_t pass = 2;
    if(dataset==20100){//PbPb 2.76 TeV
      if(simflag==0){
-       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForData.root","corrections.root",kTRUE);}
-       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForSimulations.root","corrections.root",kTRUE);}
-       if(material==11){//AMPT only available for this run
-	 cout<<"Running AMPT"<<endl;
-	 gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.137366.ForData.root","corrections.root",kTRUE);
+       if(finecentbins){
+	 if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.FineCentralityBins.PbPb.139465.ForData.root","corrections.root",kTRUE);}
+	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.FineCentralityBins.PbPb.139465.ForSimulations.root","corrections.root",kTRUE);}
+       }
+       else{
+	 if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.139465.ForData.root","corrections.root",kTRUE);}
+	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.139465.ForSimulations.root","corrections.root",kTRUE);}
+	 if(material==11){//AMPT only available for this run
+	   cout<<"Running AMPT"<<endl;
+	   gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.137366.ForData.root","corrections.root",kTRUE);
+	 }
        }
      }
      if(simflag==1){
@@ -183,8 +253,14 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
      if(dataset==2011){//PbPb 2.76 TeV 2011
        gSystem->CopyFile("ConfigHadEtMonteCarloPbPb2011.C","ConfigHadEtMonteCarlo.C",kTRUE);
        gSystem->CopyFile("ConfigHadEtReconstructedPbPb2011.C","ConfigHadEtReconstructed.C",kTRUE);
-       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForData.root","corrections.root",kTRUE);}
-       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
+       if(finecentbins){
+	 if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.FineCentralityBins.PbPb.168464.ForData.root","corrections.root",kTRUE);}
+	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.FineCentralityBins.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
+       }
+       else{
+	 if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForData.root","corrections.root",kTRUE);}
+	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
+       }
      }
      if(dataset==2009){//pp 900 GeV
        gSystem->CopyFile("ConfigHadEtMonteCarlopp900GeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
@@ -238,17 +314,17 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
    AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data);//,recoFile,mcFile);
    if(!data) task2->SetMcData();
    //Add thing here to select collision type!!
-     if(dataset==2013){//pPb 5 TeV
-       //task2->SelectCollisionCandidates(AliVEvent::kAnyINT ) ;
-       task2->SelectCollisionCandidates(AliVEvent::kINT7 ) ;
-     }
-     else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}}
+   if(dataset==2013){//pPb 5 TeV
+     //task2->SelectCollisionCandidates(AliVEvent::kAnyINT ) ;
+     task2->SelectCollisionCandidates(AliVEvent::kINT7 ) ;
+   }
+   else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}}
    //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
-//    mgr->ConnectInput(task2,0,cinput1);
-//    mgr->ConnectOutput(task2,1,coutput2);
+   mgr->ConnectInput(task2,0,cinput1);
+   mgr->ConnectOutput(task2,1,coutput2);
    mgr->ConnectInput(task2,0,cinput1);
    mgr->ConnectOutput(task2,1,coutput2);
    
