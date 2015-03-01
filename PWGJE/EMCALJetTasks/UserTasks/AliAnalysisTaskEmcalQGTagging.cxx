@@ -40,7 +40,6 @@
 
 
 #include "AliAODEvent.h"
-
 #include "AliAnalysisTaskEmcalQGTagging.h"
 
 using std::cout;
@@ -62,6 +61,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
+  fSemigoodCorrect(0),
+  fHolePos(0),
+  fHoleWidth(0), 
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -96,6 +98,9 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
+  fSemigoodCorrect(0),
+  fHolePos(0),
+  fHoleWidth(0), 
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -226,12 +231,13 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   if (fJetSelection == kRecoil) {
     //Printf("Recoil jets!!!, fminpTTrig = %f, fmaxpTTrig = %f", fminpTTrig, fmaxpTTrig);
     Int_t triggerHadronLabel = SelectTrigger(fminpTTrig, fmaxpTTrig);
+     
     
     if (triggerHadronLabel==-99999) {
       //Printf ("Trigger Hadron not found, return");
-      return 0;
-    }
-  
+      return 0;}
+
+   
     AliParticleContainer *partContAn = GetParticleContainer(0);
     TClonesArray *trackArrayAn = partContAn->GetArray();
     triggerHadron = static_cast<AliAODTrack*>(trackArrayAn->At(triggerHadronLabel));
@@ -240,7 +246,13 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       //Printf("No Trigger hadron with the found label!!");
       return 0;
     }
-  }
+
+    if(fSemigoodCorrect){
+    Double_t disthole=RelativePhi(triggerHadron->Phi(),fHolePos);
+     if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-fangWindowRecoil){ 
+     return 0;}}
+
+    }
   
   if(jetCont) {
     jetCont->ResetCurrentID();
