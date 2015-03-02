@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 #include "TChain.h"
 #include "TList.h"
 #include "TFile.h"
@@ -37,7 +36,6 @@
 #include <TH2D.h>
 #include <TH3D.h>
 #include "AliAnalysisManager.h"
-
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliInputEventHandler.h"
@@ -47,10 +45,8 @@
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptCorrelations.h"
-
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
@@ -63,8 +59,6 @@
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODMCHeader.h"
-
-
 #include "AliGenHijingEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
@@ -72,8 +66,6 @@
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
 #include "AliPIDCombined.h"
-
-
 
 ClassImp(AliAnalysisTaskDptDptCorrelations)
 
@@ -1250,19 +1242,20 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
-	  /*	  Double_t pos[3];
+	  /* //checking for systematic error due to dca */
+	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
-
+	  
 	  Double_t DCAX = pos[0] - vertexX;
 	  Double_t DCAY = pos[1] - vertexY;
 	  Double_t DCAZ = pos[2] - vertexZ;
-	  	
+	  
 	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
- 	  
+	  
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
 	      DCAXY    >  _dcaXYMax ) continue; 
-	  */
+	  //-------------------------------------
 
 	    //------- Eff. test---------- //just for checking
 	  //Double_t yy = (1 - 0.7)/1.8;
