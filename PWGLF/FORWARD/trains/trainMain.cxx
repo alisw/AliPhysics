@@ -138,6 +138,15 @@ void Usage(const char* progname, std::ostream& o)
   PrintFakeOption(o, "options=OPTIONS",   "Query options for URI");
   PrintFakeOption(o, "anchor=ANCHOR",     "Query anchor for URI");
 }
+/** 
+ * Print version number 
+ * 
+ * @param o Output stream
+ */
+void Version(std::ostream& o)
+{
+  o << "TrainSetup version " << TrainSetup::kVersion << std::endl;
+}
 
 int
 main(int argc, char** argv)
@@ -155,6 +164,7 @@ main(int argc, char** argv)
   Bool_t  help    = false;
   Bool_t  urlSeen = false;
   Bool_t  spawn   = false;
+  Bool_t  version = false;
   // --- Parse options -----------------------------------------------
   for (int i = 1; i < argc; i++) { 
     if (argv[i][0] == '-' && argv[i][1] == '-') { 
@@ -163,22 +173,27 @@ main(int argc, char** argv)
       arg.ReplaceAll("\"'", "");
       Int_t   eq = arg.Index("=");
       if (eq != kNPOS) val = arg(eq+1, arg.Length()-eq-1);
-      if      (arg.BeginsWith("--class"))   cls  = val;
-      else if (arg.BeginsWith("--name"))    name = val;
+      if      (arg.BeginsWith("--class"))   cls     = val;
+      else if (arg.BeginsWith("--name"))    name    = val;
       else if (arg.BeginsWith("--include")) paths.Add(new TObjString(val)); 
       else if (arg.BeginsWith("--define"))  defines.Add(new TObjString(val));
-      else if (arg.BeginsWith("--batch"))   batch  = true;
-      else if (arg.BeginsWith("--help"))    help   = true;
-      else if (arg.BeginsWith("--where"))   where  = val;
-      else if (arg.BeginsWith("--file"))    file   = val;
-      else if (arg.BeginsWith("--opts"))    opts   = val;
-      else if (arg.BeginsWith("--anchor"))  anchor = val;
-      else if (arg.BeginsWith("--spawn"))   spawn  = true;
+      else if (arg.BeginsWith("--batch"))   batch   = true;
+      else if (arg.BeginsWith("--help"))    help    = true;
+      else if (arg.BeginsWith("--where"))   where   = val;
+      else if (arg.BeginsWith("--file"))    file    = val;
+      else if (arg.BeginsWith("--opts"))    opts    = val;
+      else if (arg.BeginsWith("--anchor"))  anchor  = val;
+      else if (arg.BeginsWith("--spawn"))   spawn   = true;
+      else if (arg.BeginsWith("--version")) version = true;
       else {
 	if (arg.BeginsWith("--url")) urlSeen = true;
 	optList.Add(new TObjString(&(argv[i][2])));
       }
     }
+  }
+  if (version) {
+    Version(std::cout);
+    return 0;
   }
   // --- Set batch mode early ----------------------------------------
   // Info("main", "Batch mode is set to %d", batch);

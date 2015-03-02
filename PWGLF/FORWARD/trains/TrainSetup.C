@@ -57,6 +57,12 @@ class AliInputEventHandler;
 struct TrainSetup
 {
   /** 
+   * Version of this framework 
+   */
+  enum {
+    kVersion = 2
+  }; 
+  /** 
    * Constructor 
    * 
    * @param name Name of the train
@@ -79,6 +85,7 @@ struct TrainSetup
     fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
     fOptions.Add("setup", "Only do the setup", false);
     fOptions.Add("branches", "Load only requested branches", false);
+    fOptions.Add("version", "Print version and exit", false);
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -131,6 +138,9 @@ struct TrainSetup
    */
   Bool_t Init()
   {
+    // --- Print the version number ----------------------------------
+    Info("Init", "Running with TrainSetup version %d", kVersion);
+    
     // --- Create the helper -----------------------------------------
     TString  url     = fOptions.Get("url");
     Int_t    verbose = fOptions.AsInt("verbose");
@@ -341,17 +351,31 @@ struct TrainSetup
     if (fRailway) fRailway->Print();
   }
   /** 
+   * Show the version number 
+   *
+   * @param o      Output stream 
+   * 
+   * @return true help wasn't requested
+   */
+  Bool_t Version(std::ostream& o=std::cout)
+  {
+    if (!fOptions.Has("version")) return true;
+
+    o << "TrainSetup version " << kVersion << std::endl;
+    return false;
+  }
+  /** 
    * Show the help 
    * 
    * @param o      Output stream
    * @param asProg If true, output as program options 
    * 
-   * @return 
+   * @return true help wasn't requested
    */
   Bool_t Help(std::ostream& o=std::cout, bool asProg=false)
   {
     if (!fOptions.Has("help")) return true;
-
+    
     if (!asProg) 
       o << "Usage: RunTrain(NAME, CLASS, OPTIONS)";
     
