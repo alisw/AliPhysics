@@ -74,6 +74,7 @@ public:
   // constructor for reinitialisation of vtable
   AliVTrack( AliVConstructorReinitialisationFlag f) :AliVParticle(f){}
 
+  virtual Bool_t  IsPureITSStandalone() const {return kFALSE;}
   virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;

@@ -155,6 +155,7 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Double_t GetTgl()  const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetTgl():kVeryBig;}
   using AliVTrack::GetImpactParameters;
   
+  virtual Bool_t  IsPureITSStandalone() const {return GetStatus()&kITSpureSA;}
   virtual Double_t Px() const {return 0.;}
   virtual Double_t Py() const {return 0.;}
   virtual Double_t Pz() const {return 0.;}
