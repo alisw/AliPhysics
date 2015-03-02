@@ -6,8 +6,9 @@ AliAnalysisGrid* CreateAlienHandler( TString mode )
    plugin->SetRunMode			(mode.Data());
 
    plugin->SetAPIVersion	("V1.1x");
-   plugin->SetROOTVersion	("v5-34-08");
-   plugin->SetAliROOTVersion	("vAN-20150120");
+   plugin->SetROOTVersion	("v5-34-08-7");
+   plugin->SetAliROOTVersion	("vAN-20150118");
+   plugin->SetAliPhysicsVersion	("vAN-20150310");
    //plugin->SetProductionMode	(1);
    plugin->SetAdditionalLibs("PWGGAGammaConv.par");
    plugin->SetAdditionalLibs("libTree.so libVMC.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libGeom.so libPhysics.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libANALYSISalice.so libCDB.so libRAWDatabase.so libSTEER.so libCORRFW.so libPWGflowBase.so libPWGflowTasks.so libPWGGAGammaConv.so");
@@ -24,7 +25,7 @@ AliAnalysisGrid* CreateAlienHandler( TString mode )
    plugin->SetKeepLogs();
    plugin->SetExecutableCommand("root -b -q -x");
    plugin->SetPrice		(1);
-   plugin->SetNtestFiles	(5);
+   plugin->SetNtestFiles	(2);
    plugin->SetNrunsPerMaster(1);
    plugin->SetMergeDirName("");
    plugin->SetMaxMergeFiles(20);

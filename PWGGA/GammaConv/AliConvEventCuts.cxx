@@ -96,6 +96,9 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fUtils(NULL),
 	fEtaShift(0.0),
 	fDoEtaShift(kFALSE),
+	fDoCentralityFlat(0),
+	fPathWeightsFlatCent(""),
+	fNameHistoNotFlatCentrality(""),
 	fDoReweightHistoMCPi0(kFALSE),
 	fDoReweightHistoMCEta(kFALSE),
 	fDoReweightHistoMCK0s(kFALSE),
@@ -108,6 +111,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fNameFitDataK0s(""),
 	fHistoEventCuts(NULL),
 	hCentrality(NULL),
+	hCentralityNotFlat(NULL),
 	hCentralityVsNumberOfPrimaryTracks(NULL),
 	hVertexZ(NULL),
 	hTriggerClass(NULL),
@@ -174,6 +178,9 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fUtils(NULL),
 	fEtaShift(ref.fEtaShift),
 	fDoEtaShift(ref.fDoEtaShift),
+	fDoCentralityFlat(ref.fDoCentralityFlat),
+	fPathWeightsFlatCent(ref.fPathWeightsFlatCent),
+	fNameHistoNotFlatCentrality(ref.fNameHistoNotFlatCentrality),
 	fDoReweightHistoMCPi0(ref.fDoReweightHistoMCPi0),
 	fDoReweightHistoMCEta(ref.fDoReweightHistoMCEta),
 	fDoReweightHistoMCK0s(ref.fDoReweightHistoMCK0s),
@@ -185,9 +192,10 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fNameFitDataEta(ref.fNameFitDataEta),
 	fNameFitDataK0s(ref.fNameFitDataK0s),
 	fHistoEventCuts(NULL),
-	hCentrality(NULL),
-	hCentralityVsNumberOfPrimaryTracks(NULL),
-	hVertexZ(NULL),
+	hCentrality(ref.hCentrality),
+	hCentralityNotFlat(ref.hCentralityNotFlat),
+	hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
+	hVertexZ(ref.hVertexZ),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
 	hReweightMCHistPi0(ref.hReweightMCHistPi0),
@@ -284,8 +292,10 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
    fHistograms->Add(hCentrality);
+      
    hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
-//    fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015
+   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
+   
    hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
    fHistograms->Add(hVertexZ);
    
@@ -495,6 +505,29 @@ Bool_t AliConvEventCuts::UpdateCutString() {
 }
 
 ///________________________________________________________________________
+void AliConvEventCuts::LoadWeightingFlatCentralityFromFile() {
+
+	AliInfo("Entering loading of weights for centrality flattening");
+	TFile *w = TFile::Open(fPathWeightsFlatCent.Data());
+	if(!w){
+		AliError(Form("file for centrality flattening %s not found",fPathWeightsFlatCent.Data()));
+		return;
+	}
+	
+	if (fNameHistoNotFlatCentrality.CompareTo("") != 0 && (fDoCentralityFlat > 0)){
+		cout << "I have to find: " <<  fNameHistoNotFlatCentrality.Data() << endl;
+		TH1D *hCentralityNotFlattemp = (TH1D*)w->Get(fNameHistoNotFlatCentrality.Data());
+		hCentralityNotFlat = new TH1D(*hCentralityNotFlattemp);
+		if (hCentralityNotFlat) AliInfo(Form("%s has been loaded from %s", fNameHistoNotFlatCentrality.Data(),fPathWeightsFlatCent.Data() ));
+		else AliWarning(Form("%s not found in %s", fNameHistoNotFlatCentrality.Data() ,fPathWeightsFlatCent.Data()));
+		hCentralityNotFlat->SetDirectory(0);
+	}
+
+	w->Close();
+	delete w;
+}
+
+///________________________________________________________________________
 void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
 
 	AliInfo("Entering loading of histograms for weighting");
@@ -560,10 +593,16 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
 	// Initialize Cuts from a given Cut string
+	if(fDoCentralityFlat > 0){
+		AliInfo("Centrality flattening was enabled");
+		LoadWeightingFlatCentralityFromFile();		
+	}
+	
 	if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
 		AliInfo("Weighting was enabled");
 		LoadReweightingHistosMCFromFile();
 	}
+		
 
 	AliInfo(Form("Set Event Cut Number: %s",analysisCutSelection.Data()));
 	if(analysisCutSelection.Length()!=kNCuts) {
@@ -2059,6 +2098,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	}	
 		
 	if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
+
 	if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
 	if(hCentralityVsNumberOfPrimaryTracks)
 		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
@@ -2067,6 +2107,73 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 
 	return 0;
 }
+
+
+//_________________________________________________________________________
+Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent){
+
+	AliInfo("Inside the GetWeightForCentralityFlattening function");
+	Double_t centrality = 0;
+	//obtain centrality for ESD or AOD
+	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
+		AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(InputEvent);
+		if(esdEvent){
+			AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
+			if(fDetectorCentrality==0){
+				if (fIsHeavyIon==1){
+					centrality = fESDCentrality->GetCentralityPercentile("V0M"); // default for PbPb
+				} else{
+					return 1;
+				}
+			}
+		}
+	} else if(InputEvent->IsA()==AliAODEvent::Class()){
+		AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(InputEvent);
+		if(aodEvent){
+			if(aodEvent->GetHeader()){
+				centrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();
+			}
+		}
+	}
+				
+	//Get the maximum vlaue from the reference distribution and interpolated value
+	Float_t GetValueForWeight = 1.;
+	Float_t maximum = 1.;
+	
+	//depending on the value of the flag, flattening in different cent. range
+	if ( fDoCentralityFlat == 1){
+		if(centrality > -1. && centrality < 10.0001){
+			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
+			maximum = hCentralityNotFlat->GetMaximum();
+		} else {return 1;}
+	} else if ( fDoCentralityFlat == 2){
+		if(centrality > 9.9999 && centrality < 20.0001){
+			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
+			maximum = hCentralityNotFlat->GetMaximum();
+		} else {return 1;}
+	} else if ( fDoCentralityFlat == 9 ){
+		if(centrality > -1. && centrality < 10.0001){
+			GetValueForWeight = 1.;
+			maximum = 2.;
+		}
+	} else if ( fDoCentralityFlat == 8 ){
+			GetValueForWeight = hCentralityNotFlat->Interpolate(centrality);
+			maximum = hCentralityNotFlat->GetMaximum();
+	}
+
+// 	cout << "maximum: " << maximum << endl;
+// 	cout << "GetValueForWeight: " << GetValueForWeight << endl;
+	Double_t weightCentrality = 1.;
+	if (GetValueForWeight != 0. && maximum !=0. && isfinite(GetValueForWeight) && isfinite(maximum) ){
+			weightCentrality = maximum/GetValueForWeight;
+			if (!isfinite(GetValueForWeight)) weightCentrality = 1.;
+			if (!isfinite(weightCentrality)) weightCentrality = 1.;
+		}
+// 	cout << "weightCentrality: " << weightCentrality << endl;
+	return weightCentrality;
+}
+
+
 
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
