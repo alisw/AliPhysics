@@ -118,7 +118,8 @@ void AliDecayerEvtGen::Decay(Int_t ipart, TLorentzVector *p)
   fGenerator->generateDecay(froot_part);
   fEvtstdhep->init();
   froot_part->makeStdHep(*fEvtstdhep);
-  froot_part->printTree(); //to print the decay chain 
+  if(AliLog::GetDebugLevel("TEvtGen","AliDecayerEvtGen") > 0) 
+    froot_part->printTree(); //to print the decay chain 
   froot_part->deleteTree();
   }
 
