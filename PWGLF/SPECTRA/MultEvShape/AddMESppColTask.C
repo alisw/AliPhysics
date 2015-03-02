@@ -1,11 +1,11 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
-#include "TTree.h"
-#include "TError.h"
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-#include "PWGLF/SPECTRA/MultEvShape/AliMESbaseTask.h"
-#include "PWGLF/SPECTRA/MultEvShape/AliMESppColTask.h"
+#include <TTree.h>
+#include <TError.h>
+#include <AliLog.h>
+#include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
+#include <AliMESbaseTask.h>
+#include <AliMESppColTask.h>
 #endif
 
 void AddMESppColTask(AliAnalysisDataContainer **ci, Bool_t mc)

@@ -31,6 +31,7 @@
 #pragma link C++ class AliFlowLYZEventPlane+;
 
 #pragma link C++ class AliFlowAnalysis+;
+#pragma link C++ class AliFlowAnalysisCRC+;
 #pragma link C++ class AliFlowAnalysisWithMCEventPlane+;
 #pragma link C++ class AliFlowAnalysisWithScalarProduct+;
 #pragma link C++ class AliFlowAnalysisWithLYZEventPlane+;

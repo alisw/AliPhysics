@@ -17,6 +17,7 @@ add_subdirectory(CaloTasks)
 add_subdirectory(CaloTrackCorrelations)
 add_subdirectory(EMCALTasks)
 add_subdirectory(GammaConv)
+add_subdirectory(Hyperon)
 add_subdirectory(PHOSTasks)
 add_subdirectory(PWGGAUtils)
 

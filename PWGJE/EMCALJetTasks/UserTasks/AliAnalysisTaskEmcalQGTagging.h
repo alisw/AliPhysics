@@ -57,7 +57,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
-
+  void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
+  void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
+  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -91,7 +93,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
-
+  Int_t                                fSemigoodCorrect;             //if==1 we run over semigood runs
+  Float_t                             fHolePos;                          //position in radians of the bad TPC sector
+  Float_t                             fHoleWidth;                       //width of the hole in radians 
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value

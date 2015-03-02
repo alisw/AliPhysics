@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 #ifndef ALIANALYSISTASKSE_H
-#include "AliAnalysisTaskSE.h"
+#include <AliAnalysisTaskSE.h>
 #endif
 
 #ifndef ALITRDTRACKINFO_H
@@ -81,6 +81,7 @@ public:
   static Float_t GetMeanStat(TH1 *h, Float_t cut=0., Int_t opt=0, Float_t *sigma=NULL);
   Int_t          GetNRefFigures() const; 
   const Char_t*  GetNameId() const       { return fNameId;}
+  TList*         GetDetFunctors() const  { return fDetFuncList;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   Int_t          GetPtBin(Float_t pt);
   virtual Bool_t GetRefFigure(Int_t ifig);
@@ -105,6 +106,7 @@ public:
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetNameId(const Char_t *nid) {snprintf(fNameId, 10, "%s", nid);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
+  virtual void   SetMomSegmentation(Int_t np) {fNpt = np;}
   static Float_t SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
   static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void           SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
@@ -124,6 +126,7 @@ protected:
   TObjArray             *fContainer;       //! container to store results
   AliTRDeventInfo       *fEvent;           //! Event Info
   TObjArray             *fTracks;          //! Array of tracks
+  TObjArray             *fOnlTracklets;    //! Array of online tracklets
   TObjArray             *fClusters;        //! Array of clusters
   const TObjArray       *fkClusters;       //! current detector clusters array
   const AliTRDtrackV1   *fkTrack;          //! current track
@@ -148,9 +151,9 @@ private:
   static TH1        *fgProjector;          //! Projector histogram for Z statistics
 protected:
   static const Int_t fgNPt = 25;           //! No of debug pt bins
-  static Float_t         fgPt[fgNPt+1];    //! Array with limits for debug pt bins
+  static Float_t     fgPt[fgNPt+1];        //! Array with limits for debug pt bins
 
-  ClassDef(AliTRDrecoTask, 5) // base TRD reconstruction task
+  ClassDef(AliTRDrecoTask, 6) // base TRD reconstruction task
 };
 
 #endif

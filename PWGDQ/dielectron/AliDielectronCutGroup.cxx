@@ -114,11 +114,32 @@ void AliDielectronCutGroup::Print(const Option_t* /*option*/) const
   //
   // Print cuts and the range
   //
-
-  // TODO: add compOperator printout
+  
+  printf("cuts in CutGroup '%s'\n",GetTitle());
+  if (fCompOperator==kCompAND){
+    printf("All Cuts have to be fulfilled (kCompAND)\n");
+  } else {
+    printf("Any Cut has to be fulfilled (kCompOR)\n");
+  }
+  
   TIter listIterator(&fCutGroupList);
   while (AliAnalysisCuts *thisCut = (AliAnalysisCuts*) listIterator()) {
     thisCut->Print();
   }
-
 }
+
+//________________________________________________________________________
+const AliAnalysisCuts* AliDielectronCutGroup::GetCut(Int_t iCut) const
+{
+  //
+  // Return cut object at position iCut
+  //
+  
+  if (iCut > GetNCuts()-1) {
+    printf("AliDielectronCutGroup::GetCut(iCut): out of range! iCut=%i \n", iCut);
+    return 0x0;
+  }
+  AliAnalysisCuts *thisCut = (AliAnalysisCuts*) fCutGroupList.At(iCut);
+  return thisCut;
+}
+

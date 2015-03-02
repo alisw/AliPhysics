@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALIANALYSISTASKSE_H
-#include "AliAnalysisTaskSE.h"
+#include <AliAnalysisTaskSE.h>
 #endif
 
 class AliMEStender;

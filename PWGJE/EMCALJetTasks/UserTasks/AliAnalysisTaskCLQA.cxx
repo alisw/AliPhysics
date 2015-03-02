@@ -19,7 +19,6 @@
 #include <TNtupleD.h>
 #include <TProfile.h>
 #include <TTree.h>
-
 #include "AliESDMuonTrack.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -27,6 +26,7 @@
 #include "AliCentrality.h"
 #include "AliEMCALGeoParams.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
 #include "AliEmcalJet.h"
 #include "AliExternalTrackParam.h"
@@ -79,6 +79,26 @@ AliAnalysisTaskCLQA::~AliAnalysisTaskCLQA()
 }
 
 //________________________________________________________________________
+Double_t AliAnalysisTaskCLQA::DeltaPhi(Double_t phia, Double_t phib,
+                                       Double_t rangeMin, Double_t rangeMax) const
+{
+  // Calculate Delta Phi.
+
+  Double_t dphi = -999;
+  Double_t pi = TMath::Pi();
+  
+  if (phia < 0)         phia += 2*pi;
+  else if (phia > 2*pi) phia -= 2*pi;
+  if (phib < 0)         phib += 2*pi;
+  else if (phib > 2*pi) phib -= 2*pi;
+  dphi = phib - phia;
+  if (dphi < rangeMin)      dphi += 2*pi;
+  else if (dphi > rangeMax) dphi -= 2*pi;
+  
+  return dphi;
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskCLQA::FillHistograms()
 {
   // Fill histograms.
@@ -89,7 +109,7 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
   UInt_t trig = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
   for (Int_t i=0;i<31;++i) {
     if (trig & (1<<i))
-      fHists[0]->Fill(trig);
+      fHists[0]->Fill(i);
   }
 
   Double_t vz  = event->GetPrimaryVertex()->GetZ();
@@ -122,16 +142,23 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
   fHists[10]->Fill(v0acent);
   Double_t znacent = cent->GetCentralityPercentile("ZNA");
   fHists[11]->Fill(znacent);
+  Double_t v0mcent = cent->GetCentralityPercentile("V0M");
+  fHists[12]->Fill(v0mcent);
 
   if (fDoTracking) {
     const Int_t ntracks = fTracks->GetEntries();
     if (fTracks) {
-      for (Int_t i =0; i<ntracks; ++i) {
-        AliVParticle *track = dynamic_cast<AliVParticle*>(fTracks->At(i));
+      for (Int_t i=0; i<ntracks; ++i) {
+        AliVTrack *track = dynamic_cast<AliVTrack*>(fTracks->At(i));
         if (!track)
           continue;
         if (track->Charge()==0)
           continue;
+
+	AliPicoTrack *picot = dynamic_cast<AliPicoTrack*>(track);
+	if (picot && picot->GetTrack()) 
+	  track = picot->GetTrack();
+	
         Double_t phi = track->Phi();
         Double_t eta = track->Eta();
         Double_t pt  = track->Pt();
@@ -142,14 +169,35 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
           fHists[23]->Fill(pt,v0acent);
           fHists[24]->Fill(pt,znacent);
         }
-	AliPicoTrack *picot = dynamic_cast<AliPicoTrack*>(track);
-	if (picot) {
-	  Int_t ttype = picot->GetTrackType();
-	  fHists[25+ttype]->Fill(phi,pt);
-	  if (picot->IsEMCAL()) {
-	    Double_t dphi = TVector2::Phi_mpi_pi(phi-picot->GetTrackPhiOnEMCal());
-	    fHists[28]->Fill(dphi,pt);
+	Int_t ttype = AliPicoTrack::GetTrackType(track);
+	fHists[25+ttype]->Fill(phi,pt);
+	if (track->IsExtrapolatedToEMCAL()) {
+	  Double_t dphi = TVector2::Phi_mpi_pi(phi-track->GetTrackPhiOnEMCal());
+	  fHists[28]->Fill(dphi,pt);
+	} else {
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track,440);
+	  if (track->IsExtrapolatedToEMCAL()) {
+	    Double_t dphi = TVector2::Phi_mpi_pi(phi-track->GetTrackPhiOnEMCal());
+	    fHists[29]->Fill(dphi,pt);
 	  }
+	}
+	if (track->IsEMCAL() && track->IsExtrapolatedToEMCAL()) {
+	  Int_t id = track->GetEMCALcluster();
+	  AliVCluster *clus = InputEvent()->GetCaloCluster(id);
+	  if (id>=0&&clus) {
+	    Float_t pos[3];
+	    clus->GetPosition(pos);
+	    TVector3 vpos(pos);
+	    Double_t dphi = TVector2::Phi_mpi_pi(vpos.Phi()-track->GetTrackPhiOnEMCal());
+	    fHists[30]->Fill(dphi,pt);
+	  }
+	}
+	if (track->IsExtrapolatedToEMCAL()) {
+	  Double_t phi1 = track->GetTrackPhiOnEMCal();
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track,440);
+	  Double_t phi2 = track->GetTrackPhiOnEMCal();
+	  Double_t dphi = TVector2::Phi_mpi_pi(phi1-phi2);
+	  fHists[31]->Fill(dphi,pt);
 	}
       }
     }
@@ -159,8 +207,7 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if (aod) {
       for (Int_t iMu = 0; iMu<aod->GetNumberOfTracks(); ++iMu) {
-        AliAODTrack* muonTrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iMu));
-        if(!muonTrack) AliFatal("Not a standard AOD");
+        AliAODTrack* muonTrack = static_cast<AliAODTrack*>(aod->GetTrack(iMu));
         if (!muonTrack)
           continue;
         if (!muonTrack->IsMuonTrack()) 
@@ -321,6 +368,12 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Int_t pmult=0;
   Double_t v2g=0;
   Double_t v3g=0;
+  Int_t pmult14=0;
+  Double_t v2g14=0;
+  Double_t v3g14=0;
+  Int_t pmult18=0;
+  Double_t v2g18=0;
+  Double_t v3g18=0;
   for (Int_t i=0; i<ntracks; ++i) {
     AliVParticle *track1 = dynamic_cast<AliVParticle*>(fTracks->At(i));
     if (!track1)
@@ -347,18 +400,38 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
       if ((pt2<ptmin) || (pt2>ptmax))
 	continue;
       Double_t deta=TMath::Abs(eta2-eta1);
+      ((TH3*)fHists[128])->Fill(DeltaPhi(phi1,track2->Phi()),deta,M);
+      fHists[129]->Fill(M);
       if(deta<1)
 	continue;
       Double_t dphi=TVector2::Phi_0_2pi(phi1-track2->Phi());
       pmult++;
       v2g+=TMath::Cos(2*dphi);
       v3g+=TMath::Cos(3*dphi);
+      if (deta>1.4) {
+        pmult14++;
+        v2g14+=TMath::Cos(2*dphi);
+        v3g14+=TMath::Cos(3*dphi);
+      }
+      if (deta>1.8) {
+        pmult18++;
+        v2g18+=TMath::Cos(2*dphi);
+        v3g18+=TMath::Cos(3*dphi);
+      }
     }      
   }
 
   if (pmult>0) {
     v2g/=pmult;
     v3g/=pmult;
+  }
+  if (pmult14>0) {
+    v2g14/=pmult14;
+    v3g14/=pmult14;
+  }
+  if (pmult18>0) {
+    v2g18/=pmult18;
+    v3g18/=pmult18;
   }
 
   std::complex<double> q2(Q2r,Q2i);
@@ -492,17 +565,21 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     AliVVZERO *vzero = InputEvent()->GetVZEROData();
     Double_t v0a = vzero->GetMTotV0A();
     Double_t v0c = vzero->GetMTotV0C();
-    //Double_t v0m = vzero->GetMTotV0A()+vzero->GetMTotV0C();
+    Double_t v0m = vzero->GetMTotV0A()+vzero->GetMTotV0C();
     fHists[112]->Fill(Mall);
     fHists[113]->Fill(M);
     fHists[117]->Fill(v0a,M);
     fHists[118]->Fill(v0c,M);
-    fHists[119]->Fill(v0a+v0c,M);
+    fHists[119]->Fill(v0m,M);
     if (M>1) {
       fHists[114]->Fill(M,(Q22-M)/M/(M-1));
       fHists[120]->Fill(M,(Q32-M)/M/(M-1));
       fHists[122]->Fill(M,v2g);
       fHists[123]->Fill(M,v3g);
+      fHists[124]->Fill(M,v2g14);
+      fHists[125]->Fill(M,v3g14);
+      fHists[126]->Fill(M,v2g18);
+      fHists[127]->Fill(M,v3g18);
     }
     if (M>3) {
       Double_t qc4tmp = (Q22*Q22+Q42-2*Q42re-4*(M-2)*Q22+2*M*(M-3));
@@ -593,6 +670,8 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
   fOutput->Add(fHists[10]);
   fHists[11] = new TH1D("fZNACent",";percentile",20,0,100);
   fOutput->Add(fHists[11]);
+  fHists[12] = new TH1D("fV0MCent",";percentile",20,0,100);
+  fOutput->Add(fHists[12]);
 
   if (fDoTracking) {
     fHists[20] = new TH2D("fPhiEtaTracks",";#phi;#eta",60,0,TMath::TwoPi(),20,-2,2);
@@ -622,6 +701,15 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fHists[28] = new TH2D("fDPhiPtTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
     fHists[28]->Sumw2();
     fOutput->Add(fHists[28]);
+    fHists[29] = new TH2D("fDPhiPtTracks2",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+    fHists[29]->Sumw2();
+    fOutput->Add(fHists[29]);
+    fHists[30] = new TH2D("fDPhiPtClusTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+    fHists[30]->Sumw2();
+    fOutput->Add(fHists[30]);
+    fHists[31] = new TH2D("fDPhiPtReTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+    fHists[31]->Sumw2();
+    fOutput->Add(fHists[31]);
   }
 
   if (fDoMuonTracking) {
@@ -694,6 +782,21 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fOutput->Add(fHists[122]);
     fHists[123] = new TProfile("fEtaGapV3",";M",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[123]);
+    fHists[124] = new TProfile("fEtaGapV214",";M",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[124]);
+    fHists[125] = new TProfile("fEtaGapV314",";M",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[125]);
+    fHists[126] = new TProfile("fEtaGapV218",";M",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[126]);
+    fHists[127] = new TProfile("fEtaGapV318",";M",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[127]);
+    fHists[128] = new TH3D("fDPhiDEtaTracks",";#Delta#phi;#Delta#eta;M",64,-0.5*TMath::Pi(),1.5*TMath::Pi(),60,-3,3,
+                           fCumMbins/10,0,fCumMbins);
+    fHists[128]->Sumw2();
+    fOutput->Add(fHists[128]);
+    fHists[129] = new TH1D("fDPhiDEtaTrigs",";M",fCumMbins/10,0,fCumMbins);
+    fHists[129]->Sumw2();
+    fOutput->Add(fHists[129]);
 
     fNtupCum = new TTree("NtupCum", "Ntuple for cumulant analysis");
     if (1) {

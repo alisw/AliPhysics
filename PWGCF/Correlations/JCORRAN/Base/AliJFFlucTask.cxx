@@ -74,7 +74,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t I
 //____________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask(const AliJFFlucTask& ap) :
 	fInputList(ap.fInputList),
-    AliAnalysisTaskSE(ap.GetName()), 
+	AliAnalysisTaskSE(ap.GetName()), 
     fFFlucAna(ap.fFFlucAna),
 	fOutput(ap.fOutput)
 { 
@@ -118,6 +118,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
   fInputList = new TClonesArray("AliJBaseTrack" , 2500);
   fInputList->SetOwner(kTRUE);
 
+
   OpenFile(1);
   fOutput = gDirectory;
   fOutput->cd();
@@ -133,29 +134,41 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry()));
 	// initiaizing variables from last event 
 	fInputList->Clear();
+	
 	float fCent = -999;
+	double fvertex[3] = {-999,-999,-999};	
+
 	fEvtNum++;
+	if(fEvtNum % 100 == 0){ cout << "evt : " << fEvtNum <<endl ;}
 
 	// load current event and save track, event info 
 	AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 
-	ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
-	fCent = 		ReadAODCentrality( currentEvent, "V0M"  ) ; 
+	if( IsGoodEvent( currentEvent )){
 
-	// 
-	Int_t Ntracks = fInputList->GetEntriesFast();
+			ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
+			ReadVertexInfo( currentEvent, fvertex); // read vertex info
+			fCent = 			ReadAODCentrality( currentEvent, "V0M"  ) ; 
+			Int_t Ntracks = fInputList->GetEntriesFast();
 
-
-	// Analysis Part 
-	fFFlucAna->Init();
-	fFFlucAna->SetInputList( fInputList ); 
-	fFFlucAna->SetEventCentrality( fCent );
-	fFFlucAna->SetEtaRange( fEta_min, fEta_max ) ;
-	fFFlucAna->UserExec(""); // doing some analysis here. 
-	// 
-
+			// Analysis Part 
+			fFFlucAna->Init();
+			fFFlucAna->SetInputList( fInputList ); 
+			fFFlucAna->SetEventCentrality( fCent );
+			fFFlucAna->SetEventVertex( fvertex );
+			fFFlucAna->SetEtaRange( fEta_min, fEta_max ) ;
+			fFFlucAna->UserExec(""); // doing some analysis here. 
+			// 
+	}
 }
 
+//______________________________________________________________________________
+void AliJFFlucTask::ReadVertexInfo ( AliAODEvent *aod, double*  fvtx )
+{
+	fvtx[0] = aod->GetPrimaryVertex()->GetX();
+	fvtx[1] = aod->GetPrimaryVertex()->GetY();
+	fvtx[2] = aod->GetPrimaryVertex()->GetZ();
+}
 //______________________________________________________________________________
 float AliJFFlucTask::ReadAODCentrality( AliAODEvent *aod, TString Trig )
 {
@@ -226,10 +239,23 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 }
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
-	Bool_t Trigger_kCentral = kFALSE; // init
-	Trigger_kCentral =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+
+	Bool_t Event_status = kFALSE;
+	// check vertex 
+	AliVVertex *vtx = event->GetPrimaryVertex();
+	if(vtx){
+			if( vtx->GetNContributors() > 0 ){
+					double zVert = vtx->GetZ();
+					if( zVert > -10 && zVert < 10) Event_status = kTRUE;
+			}
+	}
+	return Event_status;
+/*
+//	Bool_t Trigger_kCentral = kFALSE; // init
+//	Trigger_kCentral =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
 ->IsEventSelected() & AliVEvent::kCentral);
-	return Trigger_kCentral;
+//	return Trigger_kCentral;
+//	*/
 }
 //
 //______________________________________________________________________________

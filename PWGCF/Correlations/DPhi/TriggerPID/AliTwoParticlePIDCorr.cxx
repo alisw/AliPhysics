@@ -83,6 +83,7 @@ using namespace std;
 ClassImp(AliTwoParticlePIDCorr)
 ClassImp(LRCParticlePID)
 
+
 const char * kPIDTypeName[]={"TPC","TOF","TPC-TOF"} ;
 const char * kDetectorName[]={"ITS","TPC","TOF"} ;
 const char * kParticleSpeciesName[]={"Pions","Kaons","Protons","Undefined"} ;
@@ -286,6 +287,9 @@ fTwoTrackCutMaxRadius(2.5),
   fNSigmaPID(3),
   fBayesCut(0.8),
  fdiffPIDcutvalues(kFALSE),
+ fPt1(2.0),//set Pt ranges for diff. pid cut values < fPtTOFPIDMax
+ fPt2(3.5),
+ fPt3(4.0),
  fPIDCutval1(0.0),
  fPIDCutval2(0.0),
  fPIDCutval3(0.0),
@@ -334,7 +338,15 @@ fCutctauK0s(2.68),
   fRapCutK0s(0.7),
   fRapCutLambda(0.7),
 fDaugNClsTPC(70),
-fFracTPCcls(0) 
+ fFracTPCcls(0),
+ fCutDaughterPtV0(kFALSE),
+ TPCSectoredgecut(kTRUE),//high Pt rel. rise TPCPid related variables
+ fNclsusedfordEdXdtr(60),
+ fPiondeltacutmin(1.0),
+ fPiondeltacutmax(7.0),  
+ fProtondeltacutmin(-21),//-25 for systematics
+ fProtondeltacutmax(-14),
+ deltapion_val(-999999)
 
 { 
  for ( Int_t i = 0; i < 16; i++) { 
@@ -565,6 +577,9 @@ fTwoTrackCutMaxRadius(2.5),
   fNSigmaPID(3),
   fBayesCut(0.8),
  fdiffPIDcutvalues(kFALSE),
+ fPt1(2.0),
+ fPt2(3.5),
+ fPt3(4.0),
  fPIDCutval1(0.0),
  fPIDCutval2(0.0),
  fPIDCutval3(0.0),
@@ -613,7 +628,16 @@ fCutctauK0s(2.68),
   fRapCutK0s(0.7),
   fRapCutLambda(0.7),
 fDaugNClsTPC(70),
-fFracTPCcls(0)    
+   fFracTPCcls(0),
+   fCutDaughterPtV0(kFALSE),
+ TPCSectoredgecut(kTRUE),//high Pt rel. rise TPCPid related variables
+   fNclsusedfordEdXdtr(60),
+   fPiondeltacutmin(1.0),
+ fPiondeltacutmax(7.0),  
+ fProtondeltacutmin(-21),//-25 for systematics
+   fProtondeltacutmax(-14),
+    deltapion_val(-999999)
+
     
   // The last in the above list should not have a comma after it
      
@@ -749,10 +773,10 @@ void AliTwoParticlePIDCorr::UserCreateOutputObjects()
   //fEventCounter->GetXaxis()->SetBinLabel(8,"Event Analysis finished");
   fOutput->Add(fEventCounter);
   
-fEtaSpectrasso=new TH2F("fEtaSpectraasso","fEtaSpectraasso",180,-0.9,0.9,100,0.,20. );
+fEtaSpectrasso=new TH2F("fEtaSpectraasso","fEtaSpectraasso",180,-0.9,0.9,200,0.0,fmaxPt);
 fOutput->Add(fEtaSpectrasso);
 
-fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),100,0.,20.);
+fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),200,0.0,fmaxPt);
 fOutput->Add(fphiSpectraasso);
 
  if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
@@ -774,7 +798,7 @@ if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V
 
 if(fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleType=="pp_7" && fPPVsMultUtils==kFALSE))
   {
-fhistcentrality=new TH1F("fhistcentrality","referencemultiplicity",30001,-0.5,30000.5);
+fhistcentrality=new TH1F("fhistcentrality","referencemultiplicity",3001,-0.5,30000.5);
 fOutput->Add(fhistcentrality);
   }
  else{
@@ -784,12 +808,14 @@ fOutput->Add(fhistcentrality);
  if(fCentralityMethod=="MC_b"){
 fhistImpactParm=new TH1F("fhistImpactParm","Impact_Parameter",300,0,300);
 fOutput->Add(fhistImpactParm);
-fhistImpactParmvsMult=new TH2F("fhistImpactParmvsMult","fhistImpactParmvsMult",300,0,300,5001,-0.5,50000.5);
+fhistImpactParmvsMult=new TH2F("fhistImpactParmvsMult","fhistImpactParmvsMult",300,0,300,4001,-0.5,40000.5);
 fOutput->Add(fhistImpactParmvsMult);
  }
 
- if(fAnalysisType =="MCAOD" || fAnalysisType =="MC"){
-fNchNpartCorr=new TH2F("fNchNpartCorr","fNchNpartCorr",500,0.0,500.0,5001,-0.5,50000.5);
+ if(fAnalysisType =="MCAOD"){
+fNchNpartCorr=new TH2F("fNchNpartCorr","fNchNpartCorr",500,0.0,500.0,4001,-0.5,40000.5);
+fNchNpartCorr->GetXaxis()->SetTitle("Npart (a.u.)");
+fNchNpartCorr->GetYaxis()->SetTitle("Nch(a.u.)");
 fOutput->Add(fNchNpartCorr);
  }
 
@@ -870,37 +896,37 @@ fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 
  fOutput->Add(fControlConvResoncances);
     }
 
-fHistoTPCdEdx = new TH2F("fHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,10.0,500, 0., 500.);
+fHistoTPCdEdx = new TH2F("fHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,fmaxPt,500, 0., 500.);
 fOutputList->Add(fHistoTPCdEdx);
-fHistoTOFbeta = new TH2F(Form("fHistoTOFbeta"), ";p_{T} (GeV/c);v/c",100, 0., fmaxPt, 500, 0.1, 1.1);
+fHistoTOFbeta = new TH2F(Form("fHistoTOFbeta"), ";p_{T} (GeV/c);v/c",200, 0.0, fmaxPt, 500, 0.1, 1.1);
   fOutputList->Add(fHistoTOFbeta);
   
-   fTPCTOFPion3d=new TH3F ("fTPCTOFpion3d", "fTPCTOFpion3d",100,0., 10., 120,-60.,60.,120,-60.,60);
+   fTPCTOFPion3d=new TH3F ("fTPCTOFpion3d", "fTPCTOFpion3d",200,0.0,fmaxPt, 120,-60.,60.,120,-60.,60);
    fOutputList->Add(fTPCTOFPion3d);
   
-   fTPCTOFKaon3d=new TH3F ("fTPCTOFKaon3d", "fTPCTOFKaon3d",100,0., 10., 120,-60.,60.,120,-60.,60);
+   fTPCTOFKaon3d=new TH3F ("fTPCTOFKaon3d", "fTPCTOFKaon3d",200,0.0,fmaxPt, 120,-60.,60.,120,-60.,60);
    fOutputList->Add(fTPCTOFKaon3d);
 
-   fTPCTOFProton3d=new TH3F ("fTPCTOFProton3d", "fTPCTOFProton3d",100,0., 10., 120,-60.,60.,120,-60.,60);
+   fTPCTOFProton3d=new TH3F ("fTPCTOFProton3d", "fTPCTOFProton3d",200,0.0,fmaxPt, 120,-60.,60.,120,-60.,60);
    fOutputList->Add(fTPCTOFProton3d);
 
 if(ffillhistQAReco)
     {
-    fPionPt = new TH1F("fPionPt","p_{T} distribution",200,0.,10.);
+    fPionPt = new TH1F("fPionPt","p_{T} distribution",200,0.0,fmaxPt);
  fOutputList->Add(fPionPt);
     fPionEta= new TH1F("fPionEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fPionEta);
     fPionPhi = new TH1F("fPionPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fPionPhi);
   
-    fKaonPt = new TH1F("fKaonPt","p_{T} distribution",200,0.,10.);
+    fKaonPt = new TH1F("fKaonPt","p_{T} distribution",200,0.0,fmaxPt);
  fOutputList->Add(fKaonPt);
     fKaonEta= new TH1F("fKaonEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fKaonEta);
     fKaonPhi = new TH1F("fKaonPhi","#phi distribution",340,0,6.8);
  fOutputList->Add(fKaonPhi);
   
-    fProtonPt = new TH1F("fProtonPt","p_{T} distribution",200,0.,10.);
+    fProtonPt = new TH1F("fProtonPt","p_{T} distribution",200,0.0,fmaxPt);
  fOutputList->Add(fProtonPt);
     fProtonEta= new TH1F("fProtonEta","#eta distribution",360,-1.8,1.8);
  fOutputList->Add(fProtonEta);
@@ -916,7 +942,7 @@ if(ffillhistQAReco)
   fHistQA[5] = new TH1F("fHistQAvzA", "Histo Vz After Cut", 50, -25., 25.);
   fHistQA[6] = new TH1F("fHistQADcaXyC", "Histo DCAxy after cut", 50, -5., 5.);
   fHistQA[7] = new TH1F("fHistQADcaZC", "Histo DCAz after cut", 50, -5., 5.);   
-  fHistQA[8] = new TH1F("fHistQAPt","p_{T} distribution",200,0.,10.);
+  fHistQA[8] = new TH1F("fHistQAPt","p_{T} distribution",200,0.0,fmaxPt);
   fHistQA[9] = new TH1F("fHistQAEta","#eta distribution",360,-1.8,1.8);
   fHistQA[10] = new TH1F("fHistQAPhi","#phi distribution",340,0,6.8);
   fHistQA[11] = new TH1F("fHistQANCls","Number of TPC cluster",200,0,200);
@@ -959,7 +985,7 @@ for(Int_t i = 0; i < 16; i++)
   defaultBinningStr =   "eta: -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0\n"
     "p_t_assoc: 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0,10.0\n"
     "p_t_leading_course: 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0,10.0\n"
-    "p_t_eff:0.0,0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0,5.5, 6.0, 7.0, 8.0,9.0,10.0\n"
+    "p_t_eff:0.0,0.2,0.3,0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0,5.5, 6.0, 7.0, 8.0,9.0,10.0,12.0,14.0,16.0,20.0\n"
     "vertex: -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10\n"
   "delta_phi: -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0, 0.087266, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.047198, 1.134464, 1.221730, 1.308997, 1.396263, 1.483530, 1.570796, 1.658063, 1.745329, 1.832596, 1.919862, 2.007129, 2.094395, 2.181662, 2.268928, 2.356194, 2.443461, 2.530727, 2.617994, 2.705260, 2.792527, 2.879793, 2.967060, 3.054326, 3.141593, 3.228859, 3.316126, 3.403392, 3.490659, 3.577925, 3.665191, 3.752458, 3.839724, 3.926991, 4.014257, 4.101524, 4.188790, 4.276057, 4.363323, 4.450590, 4.537856, 4.625123, 4.712389\n" // this binning starts at -pi/2 and is modulo 3 
 	"delta_eta: -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,2.1, 2.2, 2.3, 2.4\n"
@@ -1337,7 +1363,7 @@ axisTitleTrig[dim_val_trig+1]=axisTitlePair[dim_val+2];
 if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   if(ffillhistQATruth)
     {
-  MCtruthpt=new TH1F ("MCtruthpt","ptdistributiontruthprim",100,0.,10.);
+  MCtruthpt=new TH1F ("MCtruthpt","ptdistributiontruthprim",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthpt);
 
   MCtrutheta=new TH1F ("MCtrutheta","etadistributiontruthprim",360,-1.8,1.8);
@@ -1346,7 +1372,7 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthphi=new TH1F ("MCtruthphi","phidisttruthprim",340,0,6.8);
   fOutputList->Add(MCtruthphi);
 
-  MCtruthpionpt=new TH1F ("MCtruthpionpt","MCtruthpionpt",100,0.,10.);
+  MCtruthpionpt=new TH1F ("MCtruthpionpt","MCtruthpionpt",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthpionpt);
 
   MCtruthpioneta=new TH1F ("MCtruthpioneta","MCtruthpioneta",360,-1.8,1.8);
@@ -1355,7 +1381,7 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthpionphi=new TH1F ("MCtruthpionphi","MCtruthpionphi",340,0,6.8);
   fOutputList->Add(MCtruthpionphi);
 
-  MCtruthkaonpt=new TH1F ("MCtruthkaonpt","MCtruthkaonpt",100,0.,10.);
+  MCtruthkaonpt=new TH1F ("MCtruthkaonpt","MCtruthkaonpt",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthkaonpt);
 
   MCtruthkaoneta=new TH1F ("MCtruthkaoneta","MCtruthkaoneta",360,-1.8,1.8);
@@ -1364,7 +1390,7 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthkaonphi=new TH1F ("MCtruthkaonphi","MCtruthkaonphi",340,0,6.8);
   fOutputList->Add(MCtruthkaonphi);
 
-  MCtruthprotonpt=new TH1F ("MCtruthprotonpt","MCtruthprotonpt",100,0.,10.);
+  MCtruthprotonpt=new TH1F ("MCtruthprotonpt","MCtruthprotonpt",200,0.0,fmaxPt);
   fOutputList->Add(MCtruthprotonpt);
 
   MCtruthprotoneta=new TH1F ("MCtruthprotoneta","MCtruthprotoneta",360,-1.8,1.8);
@@ -1373,16 +1399,16 @@ if(fAnalysisType=="MCAOD" || fAnalysisType=="MC"){
   MCtruthprotonphi=new TH1F ("MCtruthprotonphi","MCtruthprotonphi",340,0,6.8);
   fOutputList->Add(MCtruthprotonphi);
     }
- fPioncont=new TH2F("fPioncont", "fPioncont",10,-0.5,9.5,100,0.,10.);
+ fPioncont=new TH2F("fPioncont", "fPioncont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fPioncont);
 
- fKaoncont=new TH2F("fKaoncont","fKaoncont",10,-0.5,9.5,100,0.,10.);
+ fKaoncont=new TH2F("fKaoncont","fKaoncont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fKaoncont);
 
- fProtoncont=new TH2F("fProtoncont","fProtoncont",10,-0.5,9.5,100,0.,10.);
+ fProtoncont=new TH2F("fProtoncont","fProtoncont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fProtoncont);
 
-fUNIDcont=new TH2F("fUNIDcont","fUNIDcont",10,-0.5,9.5,100,0.,10.);
+fUNIDcont=new TH2F("fUNIDcont","fUNIDcont",10,-0.5,9.5,200,0.0,fmaxPt);
   fOutputList->Add(fUNIDcont);
   }
 
@@ -1476,27 +1502,27 @@ fileT->Close();
 
  
 
-   fHistRawPtCentInvK0s= new TH3F("fHistRawPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,100,0.0,10.0,100,0.0,100.);
+   fHistRawPtCentInvK0s= new TH3F("fHistRawPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvK0s);
 
 
- fHistRawPtCentInvLambda= new TH3F("fHistRawPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+ fHistRawPtCentInvLambda= new TH3F("fHistRawPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvLambda);
 
 
- fHistRawPtCentInvAntiLambda= new TH3F("fHistRawPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+ fHistRawPtCentInvAntiLambda= new TH3F("fHistRawPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistRawPtCentInvAntiLambda);
 
 
- fHistFinalPtCentInvK0s= new TH3F("fHistFinalPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,100,0.0,10.0,100,0.0,100.);
+ fHistFinalPtCentInvK0s= new TH3F("fHistFinalPtCentInvK0s", "K^{0}_{s}: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,0.398,0.598,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvK0s);
 
 
- fHistFinalPtCentInvLambda= new TH3F("fHistFinalPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+fHistFinalPtCentInvLambda= new TH3F("fHistFinalPtCentInvLambda", "#Lambda: mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvLambda);
 
 
- fHistFinalPtCentInvAntiLambda= new TH3F("fHistFinalPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,100,0.0,10.0,100,0.0,100.);
+ fHistFinalPtCentInvAntiLambda= new TH3F("fHistFinalPtCentInvAntiLambda", "#bar{#Lambda} : mass vs #it{p}_{T};Mass (GeV/#it{c}^2);#it{p}_{T} (GeV/#it{c});centrality",100,1.065,1.165,200,0.0,fmaxPt,100,0.0,100.);
 fOutput->Add(fHistFinalPtCentInvAntiLambda);
 
  }
@@ -1573,7 +1599,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t miny=-30;
       Double_t maxy=30;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=50;}
-      TH2F *fHistoNSigma=new TH2F(Form("NSigma_%d_%d",ipart,ipid),Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,10,500,miny,maxy);
+      TH2F *fHistoNSigma=new TH2F(Form("NSigma_%d_%d",ipart,ipid),Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1583,11 +1609,11 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
   //nsigmaRec plot
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
     for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-      Double_t miny=-10;
-      Double_t maxy=10;
+      Double_t miny=-15;
+      Double_t maxy=15;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=20;}
       TH2F *fHistoNSigma=new TH2F(Form("NSigmaRec_%d_%d",ipart,ipid),
-				  Form("n#sigma for reconstructed %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,10,500,miny,maxy);
+				  Form("n#sigma for reconstructed %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1603,26 +1629,26 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
     Double_t miny=0.;
     Double_t maxy=1;
     TH2F *fHistoBayes=new TH2F(Form("BayesRec_%d",ipart),
-			       Form("probability for reconstructed %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for reconstructed %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayes->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayes->GetYaxis()->SetTitle(Form("Bayes prob %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayes);
 
 
    TH2F *fHistoBayesTPC=new TH2F(Form("probBayes_TPC_%d",ipart),
-			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayesTPC->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayesTPC->GetYaxis()->SetTitle(Form("Bayes prob TPC %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayesTPC);
 
   TH2F *fHistoBayesTOF=new TH2F(Form("probBayes_TOF_%d",ipart),
-			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for Tracks as %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayesTOF->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayesTOF->GetYaxis()->SetTitle(Form("Bayes prob TOF %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayesTOF);
 
  TH2F *fHistoBayesTPCTOF=new TH2F(Form("probBayes_TPCTOF_%d",ipart),
-			       Form("probability for Tracks as  %s",kParticleSpeciesName[ipart]),200,0,10,500,miny,maxy);
+			       Form("probability for Tracks as  %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,miny,maxy);
     fHistoBayesTPCTOF->GetXaxis()->SetTitle("P_{T} (GeV / c)");
     fHistoBayesTPCTOF->GetYaxis()->SetTitle(Form("Bayes prob TPCTOF %s",kParticleSpeciesName[ipart]));
     fOutputList->Add(fHistoBayesTPCTOF);
@@ -1634,23 +1660,60 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
  Double_t miny=0;
  Double_t maxy=10;
    TH2F *Pi_Ka_sep=new TH2F(Form("Pi_Ka_sep_%d",ipid),
-			       Form("Pi_Ka separation in %s",kPIDTypeName[ipid]),50,0,10,200,miny,maxy);
+			       Form("Pi_Ka separation in %s",kPIDTypeName[ipid]),200,0.0,fmaxPt,200,miny,maxy);
     Pi_Ka_sep->GetXaxis()->SetTitle("P_{T} (GeV/C)");
     Pi_Ka_sep->GetYaxis()->SetTitle(Form("expected seaparation(n#sigma) in %s",kPIDTypeName[ipid]));
     fOutputList->Add(Pi_Ka_sep);
 
    TH2F *Pi_Pr_sep=new TH2F(Form("Pi_Pr_sep_%d",ipid),
-			       Form("Pi_Pr separation in %s",kPIDTypeName[ipid]),50,0,10,200,miny,maxy);
+			       Form("Pi_Pr separation in %s",kPIDTypeName[ipid]),200,0.0,fmaxPt,200,miny,maxy);
     Pi_Pr_sep->GetXaxis()->SetTitle("P_{T} (GeV/C)");
     Pi_Pr_sep->GetYaxis()->SetTitle(Form("expected seaparation(n#sigma) in %s",kPIDTypeName[ipid]));
     fOutputList->Add(Pi_Pr_sep);
 
     TH2F *Ka_Pr_sep=new TH2F(Form("Ka_Pr_sep_%d",ipid),
-			       Form("Ka_Pr separation in %s",kPIDTypeName[ipid]),50,0,10,200,miny,maxy);
+			       Form("Ka_Pr separation in %s",kPIDTypeName[ipid]),200,0.0,fmaxPt,200,miny,maxy);
     Ka_Pr_sep->GetXaxis()->SetTitle("P_{T} (GeV/C)");
     Ka_Pr_sep->GetYaxis()->SetTitle(Form("expected seaparation(n#sigma) in %s",kPIDTypeName[ipid]));
     fOutputList->Add(Ka_Pr_sep);
     }
+    //deltapion histos
+    //before deltapion cut
+    for(Int_t ipart=0;ipart<NSpecies;ipart++){
+      Double_t miny=-40;
+      Double_t maxy=20;
+      if(ipart!=SpPion) continue;//only around pion's mean position;protn and pion's delta in one histo
+      TH2F *fHistodelta=new TH2F(Form("deltapion_%d",ipart),
+				  Form("deltapion %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
+      fHistodelta->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+      fHistodelta->GetYaxis()->SetTitle(Form("deltapion %s",kParticleSpeciesName[ipart]));
+      fOutputList->Add(fHistodelta);
+  }
+
+     //After deltapion cut
+    for(Int_t ipart=0;ipart<NSpecies;ipart++){
+      Double_t miny=-40;
+      Double_t maxy=20;
+      if(ipart!=SpPion) continue;//only around pion's mean position;protn and pion's delta in one histo
+      TH2F *fHistodeltaRec=new TH2F(Form("deltapionRec_%d",ipart),
+				  Form("deltapionRec %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
+      fHistodeltaRec->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+      fHistodeltaRec->GetYaxis()->SetTitle(Form("deltapionRec %s",kParticleSpeciesName[ipart]));
+      fOutputList->Add(fHistodeltaRec);
+  }
+
+    //TRUTHMC PID deltapion
+    if (fAnalysisType == "MCAOD"){
+      for(Int_t ipart=0;ipart<NSpecies;ipart++){
+      Double_t miny=-40;
+      Double_t maxy=20;
+      TH2F *fHistodeltaMC=new TH2F(Form("deltapionMC_%d",ipart),
+				  Form("deltapionMC %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
+      fHistodeltaMC->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+      fHistodeltaMC->GetYaxis()->SetTitle(Form("deltapionMC %s",kParticleSpeciesName[ipart]));
+      fOutputList->Add(fHistodeltaMC);
+  }
+}
 
   //nsigmaDC plot
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
@@ -1659,7 +1722,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=10;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=20;}
       TH2F *fHistoNSigma=new TH2F(Form("NSigmaDC_%d_%d",ipart,ipid),
-				  Form("n#sigma for double counting %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,10,500,miny,maxy);
+				  Form("n#sigma for double counting %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1674,7 +1737,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
       Double_t maxy=30;
       if(ipid==NSigmaTPCTOF){miny=0;maxy=50;}
       TH2F *fHistoNSigma=new TH2F(Form("NSigmaMC_%d_%d",ipart,ipid),
-				  Form("n#sigma for MC %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0,10,500,miny,maxy);
+				  Form("n#sigma for MC %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]),200,0.0,fmaxPt,500,miny,maxy);
       fHistoNSigma->GetXaxis()->SetTitle("P_{T} (GeV / c)");
       fHistoNSigma->GetYaxis()->SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
       fOutputList->Add(fHistoNSigma);
@@ -1686,7 +1749,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
     for(Int_t ipart=0;ipart<NSpecies;ipart++){
       Double_t maxy=500;
       if(idet==fTOF)maxy=1.1;
-      TH2F *fHistoPID=new TH2F(Form("PID_%d_%d",idet,ipart),Form("%s signal - %s",kDetectorName[idet],kParticleSpeciesName[ipart]),200,0,10,500,-maxy,maxy);
+      TH2F *fHistoPID=new TH2F(Form("PID_%d_%d",idet,ipart),Form("%s signal - %s",kDetectorName[idet],kParticleSpeciesName[ipart]),200,0.0,fmaxPt,500,-maxy,maxy);
       fHistoPID->GetXaxis()->SetTitle("P (GeV / c)");
       fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
       fOutputList->Add(fHistoPID);
@@ -1696,7 +1759,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
   for(Int_t idet=0;idet<fNDetectors;idet++){
     Double_t maxy=500;
     if(idet==fTOF)maxy=1.1;
-    TH2F *fHistoPID=new TH2F(Form("PIDAll_%d",idet),Form("%s signal",kDetectorName[idet]),200,0,10,500,-maxy,maxy);
+    TH2F *fHistoPID=new TH2F(Form("PIDAll_%d",idet),Form("%s signal",kDetectorName[idet]),200,0.0,fmaxPt,500,-maxy,maxy);
     fHistoPID->GetXaxis()->SetTitle("P (GeV / c)");
     fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
     fOutputList->Add(fHistoPID);
@@ -1713,7 +1776,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
 void AliTwoParticlePIDCorr::UserExec( Option_t * ){
  
   if(fAnalysisType == "AOD") {
-
+    
     doAODevent();
     
   }//AOD--analysis-----
@@ -1733,9 +1796,9 @@ void AliTwoParticlePIDCorr::doMCAODevent()
 
   // get the event (for generator level: MCEvent())
   AliVEvent* event = NULL;
-  if(fAnalysisType == "MC") {
-    event = dynamic_cast<AliVEvent*>(MCEvent());
-  }
+
+  if(fAnalysisType == "MC")  event = dynamic_cast<AliVEvent*>(MCEvent());
+
   else{
     event = dynamic_cast<AliVEvent*>(InputEvent());     
   }
@@ -1783,6 +1846,8 @@ if(fAnalysisType == "MC"){
 	  cent_v0=GetAcceptedEventMultiplicity((AliVEvent*)gMCEvent,kFALSE); //b value; 2nd argument has no meaning
  
  if(cent_v0<0.) return;//mainly returns impact parameter
+//within proper centrality range having positive value upto the maximum range mentioned in the multiplicity binning of AddTask macro 
+  fEventCounter->Fill(13);
 
  //get the event plane in case of PbPb
    if(fRequestEventPlane){
@@ -1932,13 +1997,15 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
  if(nooftrackstruth>0.0){
 if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
-AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());    
+AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
+/*
  if(collGeometry){
 Float_t NpartProj= collGeometry-> ProjectileParticipants();
 Float_t NpartTarg = collGeometry->TargetParticipants();
  Float_t Npart= (NpartProj + NpartTarg);
-fNchNpartCorr->Fill(Npart,nooftrackstruth);
+fNchNpartCorr->Fill(Npart,nooftrackstruth);//Creating some problem while being written in the TList in outputcontainer:::NOT SOLVED(ONLY in case of"MC", Fine for "MCAOD")
  }
+*/
  }
 
   if (fRandomizeReactionPlane)//only for TRuth MC??
@@ -1953,8 +2020,11 @@ fNchNpartCorr->Fill(Npart,nooftrackstruth);
  Float_t weghtval=1.0;
  Float_t bSign = 0;
 
-if(nooftrackstruth>0.0 && ffilltrigIDassoIDMCTRUTH)
+ if(nooftrackstruth>0.0) 
   {
+//no. of events analyzed
+  fEventCounter->Fill(15);
+ if(ffilltrigIDassoIDMCTRUTH){
  //Fill Correlations for MC truth particles(same event)
 if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)//hadron triggered correlation
   Fillcorrelation(gReactionPlane,tracksMCtruth,0,cent_v0,zVtxmc,weghtval,kFALSE,bSign,fPtOrderMCTruth,kFALSE,kFALSE,"trigIDassoIDMCTRUTH");//mixcase=kFALSE for same event case
@@ -1982,11 +2052,10 @@ for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
 if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership of tracksasso is with pool now, don't delete it
  }
   }
-
+  }
  //still in main event loop
 
 if(tracksMCtruth) delete tracksMCtruth;
-
 
  }//MC type
 
@@ -2072,6 +2141,9 @@ skipParticlesAbove = eventHeader->NProduced();
 
  if(cent_v0<0.) return;
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
+
+//count selected events having centrality betn 0-100%
+ fEventCounter->Fill(13);
 
   //get the event plane in case of PbPb
    if(fRequestEventPlane){
@@ -2234,7 +2306,7 @@ if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentr
    AliGenEventHeader* eventHeader = header->GetCocktailHeader(0);  // get first MC header from either ESD/AOD (including cocktail header if available)
       if (eventHeader)
       {	     
-AliCollisionGeometry* collGeometry = dynamic_cast <AliCollisionGeometry*> (eventHeader);
+AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(eventHeader);
  if(collGeometry){
 Float_t NpartProj= collGeometry-> ProjectileParticipants();
 Float_t NpartTarg = collGeometry->TargetParticipants();
@@ -2462,37 +2534,6 @@ fTrackHistEfficiency[5]->Fill(allrecomatchedpid,2);//for allreco matched
  }
  }
 
-switch(TMath::Abs(pdgCode)){
-  case 2212:
-    if(fFIllPIDQAHistos){
-      for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
-	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpProton,ipid));
-	h->Fill(track->Pt(),fnsigmas[SpProton][ipid]);
-      }
-    }
-    break;
-  case 321:
-    if(fFIllPIDQAHistos){
-      for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
-	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpKaon,ipid));
-	h->Fill(track->Pt(),fnsigmas[SpKaon][ipid]);
-      }
-    }
-    break;
-  case 211:
-    if(fFIllPIDQAHistos){
-      for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
-	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
-	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpPion,ipid));
-	h->Fill(track->Pt(),fnsigmas[SpPion][ipid]);
-      }
-    }
-    break;
-  }
-
-
  //now start the particle identification process:)
 
 Float_t dEdx = PIDtrack->GetTPCsignal();
@@ -2505,12 +2546,66 @@ fHistoTOFbeta->Fill(track->Pt(), beta);
  }
 
  //remove the tracks which don't have proper TOF response-otherwise the misIDentification rate values will be wrong
-if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(PIDtrack)) ) continue;
- 
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!HasTOFPID(PIDtrack)) ) continue;
+
+ //above fPtTOFPIDmax PID is done using rel. rise in TPC only
+ if(track->Pt()>=fPtTOFPIDmax){
+   if (!HasTPCPID(track)) continue;
+   Bool_t TPCsectoredge=TPCCutMIGeo(track,aod);
+   if(TPCSectoredgecut) {if(!TPCsectoredge) continue;}
+ }
 
 //do track identification(nsigma method)
   particletypeMC=GetParticle(PIDtrack,fFIllPIDQAHistos);//******************************problem is here
-
+  
+switch(TMath::Abs(pdgCode)){
+  case 2212:
+    if(fFIllPIDQAHistos){
+      if(track->Pt()<fPtTOFPIDmax){
+      for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
+	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
+	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpProton,ipid));
+	h->Fill(track->Pt(),fnsigmas[SpProton][ipid]);
+      }
+    }
+else{
+	TH2F *h=GetHistogram2D(Form("deltapionMC_%d",SpProton));
+  	h->Fill(track->Pt(),deltapion_val);
+ }      
+    }
+    break;
+  case 321:
+    if(fFIllPIDQAHistos){
+      if(track->Pt()<fPtTOFPIDmax){
+      for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
+	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
+	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpKaon,ipid));
+	h->Fill(track->Pt(),fnsigmas[SpKaon][ipid]);
+      }
+   }
+else{
+	TH2F *h=GetHistogram2D(Form("deltapionMC_%d",SpKaon));
+  	h->Fill(track->Pt(),deltapion_val);
+ }  
+    }
+    break;
+  case 211:
+    if(fFIllPIDQAHistos){
+            if(track->Pt()<fPtTOFPIDmax){
+      for(Int_t ipid=0;ipid<=NSigmaPIDType;ipid++){
+	if((ipid!=NSigmaTPC) && (!HasTOFPID(PIDtrack)))continue;//not filling TOF and combined if no TOF PID
+	TH2F *h=GetHistogram2D(Form("NSigmaMC_%d_%d",SpPion,ipid));
+	h->Fill(track->Pt(),fnsigmas[SpPion][ipid]);
+      }
+   }
+ else{
+	TH2F *h=GetHistogram2D(Form("deltapionMC_%d",SpPion));
+  	h->Fill(track->Pt(),deltapion_val);
+ } 
+    }
+    break;
+  }
+  
 //2-d TPCTOF map(for each Pt interval)
   if(HasTOFPID(PIDtrack)){
  fTPCTOFPion3d->Fill(track->Pt(),fnsigmas[SpPion][NSigmaTOF],fnsigmas[SpPion][NSigmaTPC]);
@@ -2635,9 +2730,6 @@ if(trackscount>0.0)
 
  if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
-//count selected events having centrality betn 0-100%
- fEventCounter->Fill(13);
-
 //***************************************event no. counting
 Bool_t isbaryontrig=kFALSE;
 Bool_t ismesontrig=kFALSE;
@@ -2760,6 +2852,13 @@ void AliTwoParticlePIDCorr::doAODevent()
     AliError("Cannot get the AOD event");
     return;
   }
+
+  //TString firedTriggerClasses=aod->GetFiredTriggerClasses();
+  //if(firedTriggerClasses.Contains("CSH1-B")){
+ 
+ //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSelectBit);
+ //if(!isSelected) return;
+   //cout<<"*************************************************"<<firedTriggerClasses<<endl;
   Double_t Inv_mass=0.0;
 
 // count all events   
@@ -2861,7 +2960,7 @@ if(!PIDtrack) continue;//for safety; so that each of the TPC only tracks have co
  fphiSpectraasso->Fill(track->Phi(),track->Pt());
 
  trackscount++;
-
+ 
  //if no applyefficiency , set the eff factor=1.0
  Float_t effmatrix=1.0;
 
@@ -2907,7 +3006,14 @@ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleT
  }
   
  //remove the tracks which don't have proper TOF response-otherwise the misIDentification rate values will be wrong(in MC)
-if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(PIDtrack)) ) continue;
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!HasTOFPID(PIDtrack)) ) continue;
+
+//above fPtTOFPIDmax PID is done using rel. rise in TPC only
+ if(track->Pt()>=fPtTOFPIDmax){
+   if (!HasTPCPID(track)) continue;
+   Bool_t TPCsectoredge=TPCCutMIGeo(track,aod);
+   if(TPCSectoredgecut) {if(!TPCsectoredge) continue;}
+ }
  
 //track identification(using nsigma method)
      particletype=GetParticle(PIDtrack,fFIllPIDQAHistos);//*******************************change may be required(It should return only pion,kaon, proton and Spundefined; NOT unidentifed***************be careful)
@@ -2975,7 +3081,6 @@ if(trackscount<1.0){
  if (fTrigPtJet) fhistJetTrigestimate->Fill(cent_v0,4.0);
 
  Float_t weightval=1.0;
-
 
   
 //fill the centrality/multiplicity distribution of the selected events
@@ -3822,7 +3927,7 @@ if(parpid==SpPion || parpid==SpKaon)
 	    }
 		}	    
 	    // 	  Printf("%d %d %d %d %f", effVars[0], effVars[1], effVars[2], effVars[3], fEfficiencyCorrectionAssociated->GetBinContent(effVars));
-     if(effvalue==0.) effvalue=1.;
+     if(effvalue<=0.) effvalue=1.;
 
      return effvalue; 
 
@@ -3982,7 +4087,7 @@ Float_t nsigmaTPCkProton =fPID->NumberOfSigmasTPC(track, AliPID::kProton);
 Float_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
 Float_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
 
- if(HasTOFPID(track) && pt>fPtTOFPIDmin)
+ if(HasTOFPID(track) && pt>fPtTOFPIDmin && pt<fPtTOFPIDmax)
    {
 
 nsigmaTOFkPion =fPID->NumberOfSigmasTOF(track, AliPID::kPion);
@@ -4035,7 +4140,7 @@ else{
 Int_t AliTwoParticlePIDCorr::FindMinNSigma(AliAODTrack *track,Bool_t FillQAHistos) 
 {
   //this function is always called after calling the function CalculateNSigmas(AliAODTrack *track)
-if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(track)) )return SpUndefined;//so any track having Pt>0.6 withot having proper TOF response will be defined as SpUndefined
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!HasTOFPID(track)) )return SpUndefined;//so any track having Pt>0.6 withot having proper TOF response will be defined as SpUndefined
 //get the identity of the particle with the minimum Nsigma
   Float_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
   switch (fPIDType){
@@ -4063,10 +4168,10 @@ if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && (!HasTOFPID(track)) )return SpU
 
 
 if(fdiffPIDcutvalues){
-  if(track->Pt()<=4) fNSigmaPID=fPIDCutval1;
-  if(track->Pt()>4 && track->Pt()<=6) fNSigmaPID=fPIDCutval2;
-  if(track->Pt()>6 && track->Pt()<=8) fNSigmaPID=fPIDCutval3;
-  if(track->Pt()>8) fNSigmaPID=fPIDCutval4;
+  if(track->Pt()<=fPt1) fNSigmaPID=fPIDCutval1;
+  if(track->Pt()>fPt1 && track->Pt()<=fPt2) fNSigmaPID=fPIDCutval2;
+  if(track->Pt()>fPt2 && track->Pt()<=fPt3) fNSigmaPID=fPIDCutval3;
+  if(track->Pt()>fPt3) fNSigmaPID=fPIDCutval4;
   }
 
  // guess the particle based on the smaller nsigma (within fNSigmaPID)
@@ -4252,7 +4357,7 @@ for(Int_t ipart=0;ipart<NSpecies;ipart++){
 }
   }
 
-  
+//bayesian PID is basically calculated using TPC-TOF cpmbined info after a particular Pt by default
   Double_t probBayes[AliPID::kSPECIES];
   
   UInt_t detUsed= 0;
@@ -4272,10 +4377,10 @@ for(Int_t ipart=0;ipart<NSpecies;ipart++){
   }
 
   if(fdiffPIDcutvalues){
-  if(trk->Pt()<=4) fBayesCut=fPIDCutval1;
-  if(trk->Pt()>4 && trk->Pt()<=6) fBayesCut=fPIDCutval2;
-  if(trk->Pt()>6 && trk->Pt()<=8) fBayesCut=fPIDCutval3;
-  if(trk->Pt()>8) fBayesCut=fPIDCutval4;
+  if(trk->Pt()<=fPt1) fBayesCut=fPIDCutval1;
+  if(trk->Pt()>fPt1 && trk->Pt()<=fPt2) fBayesCut=fPIDCutval2;
+  if(trk->Pt()>fPt2 && trk->Pt()<=fPt3) fBayesCut=fPIDCutval3;
+  if(trk->Pt()>fPt3) fBayesCut=fPIDCutval4;
   }
 
   
@@ -4308,14 +4413,16 @@ Int_t AliTwoParticlePIDCorr::GetParticle(AliAODTrack * trk, Bool_t FIllQAHistos)
   
   Int_t ID=SpUndefined;
 
+  //calculate nsigmas (used also by the bayesian)
   CalculateNSigmas(trk,FIllQAHistos);//fill the data member fnsigmas with the nsigmas value [ipart][iPID]
 
 
- //Do PID
+ //Do PID eith TPC+TOF(combined TPC+TOFNSigma/TPCNSigma for low Pt or bayesian)
+  if(trk->Pt()<fPtTOFPIDmax){//use any pidmethod mentioned in the enum in .h
   if(fPIDType==Bayes){//use bayesianPID
     
     if(!fPIDCombined) {
-      AliFatal("PIDCombined object has to be set in the steering macro");
+      AliFatal("PIDCombined object not found");
     }
     
     ID = GetIDBayes(trk,FIllQAHistos);
@@ -4331,6 +4438,40 @@ if(fUseExclusiveNSigma){ //if one particle has double counting and exclusive nsi
       }
     }
   }
+}
+  else{//use the deltapion method with rel. rise in TPC only for trk->Pt()>fPtTOFPIDmax
+    Double_t delta_pion=fPID->GetSignalDelta(AliPIDResponse::kTPC,trk, AliPID::kPion, kFALSE);
+     deltapion_val=delta_pion;//globaal variable, can be used anywhere in the code after calling the function GetParticle()
+     	//before deltapion cut
+    for(Int_t ipart=0;ipart<NSpecies;ipart++){
+	  if(ipart!=SpPion) continue;//only around pion's mean position;same histo for Pr and Pi
+     TH2F *h=GetHistogram2D(Form("deltapion_%d",ipart));
+    h->Fill(trk->Pt(),delta_pion);
+    }
+    //deltapion cut
+    if (delta_pion>fPiondeltacutmin && delta_pion<fPiondeltacutmax) {
+	TH2F *h1=GetHistogram2D(Form("NSigmaRec_%d_%d",SpPion,NSigmaTPC));
+	h1->Fill(trk->Pt(),fPID->NumberOfSigmasTPC(trk, AliPID::kPion));
+
+	TH2F *h2=GetHistogram2D(Form("deltapionRec_%d",SpPion));
+        h2->Fill(trk->Pt(),delta_pion);
+        ID = SpPion;
+    }
+     //else if (delta_pion>-2 && delta_pion<0) ID = SpKaon;//no meaning, we can't identify kaons with this method in the high Pt(rel. rise in TPC) range
+    else if (delta_pion>fProtondeltacutmin && delta_pion<fProtondeltacutmax){
+        TH2F *h3=GetHistogram2D(Form("NSigmaRec_%d_%d",SpProton,NSigmaTPC));
+	h3->Fill(trk->Pt(),fPID->NumberOfSigmasTPC(trk, AliPID::kProton));
+
+	TH2F *h4=GetHistogram2D(Form("deltapionRec_%d",SpPion));
+        h4->Fill(trk->Pt(),delta_pion);
+      ID = SpProton;
+    }
+    else ID = SpUndefined;
+   
+   // The TPC PID is based on the observable ∆π = dE/dx − ⟨dE/dx⟩π. Particles with 1 < ∆π <7and−21<∆π <−14(−25<∆π <−14)forpass1(pass2)wereidentified as pions and protons, respectively
+  }//deltapion cut for trk->Pt()>fPtTOFPIDmax
+
+ if(FIllQAHistos){
 //Fill PID signal plot
   if(ID != SpUndefined){
     for(Int_t idet=0;idet<fNDetectors;idet++){
@@ -4347,7 +4488,7 @@ if(fUseExclusiveNSigma){ //if one particle has double counting and exclusive nsi
     if(idet==fTPC)h->Fill(trk->P(),trk->GetTPCsignal()*trk->Charge());
     if(idet==fTOF && HasTOFPID(trk))h->Fill(trk->P(),GetBeta(trk)*trk->Charge());
   }
-  
+ }
   return ID;
 }
 
@@ -4361,7 +4502,7 @@ AliTwoParticlePIDCorr::HasTPCPID(AliAODTrack *track) const
    //ULong_t status=track->GetStatus();
    //if  (!( (status & AliAODTrack::kTPCpid  ) == AliAODTrack::kTPCpid  )) return kFALSE;//remove light nuclei
    //if (track->GetTPCsignal() <= 0.) return kFALSE;
-   // if(track->GetTPCsignalN() < 60) return kFALSE;//tracks with TPCsignalN< 60 have questionable dEdx,cutting on TPCsignalN > 70 or > 60 shouldn't make too much difference in statistics,also  it is IMO safe to use TPC also for MIPs.
+    if(track->GetTPCsignalN() < fNclsusedfordEdXdtr) return kFALSE;//tracks with TPCsignalN< 60 have questionable dEdx,cutting on TPCsignalN > 70 or > 60 shouldn't make too much difference in statistics,also  it is IMO safe to use TPC also for MIPs.
    
   return kTRUE;  
 }
@@ -4375,7 +4516,7 @@ AliTwoParticlePIDCorr::HasTOFPID(AliAODTrack *track) const
   //if  (!( (status & AliAODTrack::kITSin  ) == AliAODTrack::kITSin  )) return kFALSE;
  AliPIDResponse::EDetPidStatus statustof = fPID->CheckPIDStatus(AliPIDResponse::kTOF,track);
  if(statustof!= AliPIDResponse::kDetPidOk) return kFALSE;
-  if(track->Pt()<=fPtTOFPIDmin) return kFALSE;
+  if(track->Pt()<=fPtTOFPIDmin || track->Pt()>=fPtTOFPIDmax) return kFALSE;
  //if(!((status & AliAODTrack::kTOFpid  ) == AliAODTrack::kTOFpid  )) return kFALSE;
  //Float_t probMis = fPIDresponse->GetTOFMismatchProbability(track);
  // if (probMis > 0.01) return kFALSE;
@@ -4773,7 +4914,7 @@ Double_t AliTwoParticlePIDCorr::GetRefMultiOrCentrality(AliVEvent *mainevent, Bo
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")//for PbPb, pPb, pp7TeV(still to be introduced)//data or RecoMC and also for TRUTH
     {
                    
-if(fSampleType=="pp_7" && fPPVsMultUtils)
+      /*if(fSampleType=="pp_7" && fPPVsMultUtils)
    {//for pp 7 TeV case only using Alianalysisutils class
 	if(fAnalysisUtils) cent_v0 = fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,fCentralityMethod);
 	else cent_v0 = -1;
@@ -4784,8 +4925,8 @@ if(fSampleType=="pp_7" && fPPVsMultUtils)
   fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
       }
-              
-else if(fSampleType=="pPb" || fSampleType=="PbPb")
+      */        
+ if(fSampleType=="pPb" || fSampleType=="PbPb")
   {
   AliCentrality *centralityObj=0;
   AliAODHeader *header = (AliAODHeader*) event->GetHeader();
@@ -5890,10 +6031,11 @@ if(t1->GetTPCClusterInfo(2,1)<fDaugNClsTPC || t2->GetTPCClusterInfo(2,1)<fDaugNC
     if(!CheckStatusv0Daughter(ptrack,ntrack)) return kFALSE;//daughters need to pass some basic cuts    
 
     if(TMath::Abs(ptrack->Eta()) > fmaxeta || TMath::Abs(ntrack->Eta()) > fmaxeta) return kFALSE; // remove daughters beyond eta bound |0.8|
-
+    if(fCutDaughterPtV0){
     if(ptrack->Pt() < fMinPtDaughter || ntrack->Pt() < fMinPtDaughter) return kFALSE; // remove daughter tracks below minmum p |1.0 GeV/c|
 
     if(ptrack->Pt() > fMaxPtDaughter || ntrack->Pt() > fMaxPtDaughter) return kFALSE; // remove daughter tracks above maximum p ** to make it compatiable with AliHelperPID**|4.0 GeV/C|
+    }
 
     // Daughters: Impact parameter of daughter to prim vtx
     Float_t xy = v1->DcaPosToPrimVertex();
@@ -5942,6 +6084,53 @@ Bool_t AliTwoParticlePIDCorr::IsTrackFromV0(AliAODEvent* fAOD,AliAODTrack* track
 	return kFALSE;
 }
 
+//________________________________________________________________________
+Bool_t AliTwoParticlePIDCorr::TPCCutMIGeo( AliAODTrack* track,  AliAODEvent* evt)
+{
+  //
+  // TPC Cut MIGeo
+  //
+
+  if (!track || !evt)
+    return kFALSE;
+
+Double_t fgCutGeo = 1.;// Cut variable for TPCCutMIGeo concerning geometry   
+Double_t fgCutNcr = 0.85;// Cut variable for TPCCutMIGeo concerning num crossed rows 
+Double_t fgCutNcl = 0.7;// Cut variable for TPCCutMIGeo concerning num clusters  
+
+//UShort_t fgCutPureNcl = 60;
+
+  const Short_t sign = track->Charge();
+  Double_t xyz[50];
+  Double_t pxpypz[50];
+  Double_t cv[100];
+
+  track->GetXYZ(xyz);
+  track->GetPxPyPz(pxpypz);
+
+  AliExternalTrackParam* par = new AliExternalTrackParam(xyz, pxpypz, cv, sign);
+  const AliESDtrack dummy;
+
+  const Double_t magField = evt->GetMagneticField();
+  Double_t varGeom = dummy.GetLengthInActiveZone(par, 3, 236, magField, 0, 0);
+  Double_t varNcr  = track->GetTPCClusterInfo(3, 1);
+  Double_t varNcls = track->GetTPCsignalN();
+
+  const Double_t varEval = 130. - 5. * TMath::Abs(1. / track->Pt());
+  Bool_t cutGeom   = varGeom > fgCutGeo * varEval;
+  Bool_t cutNcr    = varNcr  > fgCutNcr * varEval;
+  Bool_t cutNcls   = varNcls > fgCutNcl * varEval;
+  // Bool_t cutNcls1 =(track->GetTPCsignalN() >= fgCutPureNcl);//Is it required??
+  
+  Bool_t kout = cutGeom && cutNcr && cutNcls;
+  
+  delete par;
+  
+  return kout;
+}
+
+
+//________________________________________________________________________
 
 
 //----------------------------------------------------------
@@ -5955,3 +6144,4 @@ void AliTwoParticlePIDCorr::Terminate(Option_t *)
   
 }
 //------------------------------------------------------------------ 
+

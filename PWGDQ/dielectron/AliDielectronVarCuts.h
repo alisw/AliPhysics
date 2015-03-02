@@ -67,7 +67,10 @@ public:
   virtual UInt_t GetSelectedCutsMask() const { return fSelectedCutsMask; }
 
   virtual void Print(const Option_t* option = "") const;
-
+  const char*  GetCutName(Int_t iCut) const;
+  Bool_t       IsCutOnVariableX(Int_t iCut, Int_t varNumber) const;
+  Int_t        GetCutLimits(Int_t iCut, Double_t &cutMin, Double_t &cutMax) const;
+  
 
  private:
 

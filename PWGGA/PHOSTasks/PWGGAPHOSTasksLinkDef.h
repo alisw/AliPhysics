@@ -30,6 +30,9 @@
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
 #pragma link C++ class AliAnalysisTaskPi0DiffEfficiency+;
 
+//PHOS_GAFlow
+#pragma link C++ class AliAnalysisTaskThermalGAFlow+;
+
 // PHOS_PbPbQA
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
 

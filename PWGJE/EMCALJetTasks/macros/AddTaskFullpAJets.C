@@ -1,4 +1,4 @@
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", TString Centrality_name="V0A", Double_t scaleFactor = 1.28, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0, Bool_t doNEFSignalOnly=kTRUE, Bool_t doVertexRCut=kTRUE, Bool_t isMCParticleLevel=kFALSE, Double_t jetRAccept = 0.4, Bool_t doTHnSparse = kFALSE, Bool_t doJetRhoDensity = kFALSE)
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", TString Centrality_name="V0A", Double_t scaleFactor = 1.28, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0, Bool_t doNEFSignalOnly=kTRUE, Bool_t doVertexRCut=kTRUE, Bool_t isMCParticleLevel=kFALSE, Double_t jetRAccept = 0.4, Bool_t doTHnSparse = kFALSE, Bool_t doJetRhoDensity = kFALSE, Int_t setTriggerClass = 0)
 {
     char *usedTracks = track_name;
     char *usedClusters = clus_name;
@@ -10,7 +10,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     const Double_t minMCPartPt=0.00;
     
     TString centEst = Centrality_name;
-
+    
     Double_t scaleFac = scaleFactor; // Obtained from previous runs...
     Double_t NEFSignalJetCut = nefJetCut; // Require signal jet to not exceed a Neutral Energy Fraction of this setting...
     
@@ -20,14 +20,14 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     const Int_t cFULLJETS=0;
     const Int_t cCHARGEDJETS=1;
     const Int_t cNEUTRALJETS=2;
-
+    
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr)
     {
         Error("AddTaskJetCommon","No analysis manager found.");
         return 0;
     }
-
+    
     // Determine the int of the jet radius for naming purposes
     Int_t drjet=Int_t(100*jetRadius);
     if (drjet%10 == 0)
@@ -42,16 +42,16 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     // Jet finders (RECONSTRUCTED DATA)
     TString tmpTaskName("");
     AliEmcalJetTask* jetFinderTask = NULL;
-
+    
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
     
     // Add User Task
     AliAnalysisTaskFullpAJets *task = new AliAnalysisTaskFullpAJets(taskName);
-
+    
     // Used for physics selection
     task->SetUseAliAnaUtils(kTRUE);
     task->DoVertexRCut(doVertexRCut);
-
+    
     if (IsMC == kTRUE)
     {
         task->SetTrackName(usedMCParticles);
@@ -78,7 +78,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
         task->SetClusterName(outClusName);
         task->SetTrackPtCut(minTrackPt);
         task->SetClusterPtCut(minClusterPt);
-
+        
         // ########## CHARGED JETS ##########
         jetFinderTask = AddTaskEmcalJet(usedTracks,"",cKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt,0.005,1,"Jet");
         task->SetkTChargedJetName(jetFinderTask->GetName());
@@ -89,11 +89,38 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
         // ########## FULL JETS ##########
         jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt,0.005,1,"Jet");
         task->SetkTFullJetName(jetFinderTask->GetName());
-
+        
         jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt,0.005,1,"Jet");
         task->SetAkTFullJetName(jetFinderTask->GetName());
     }
-
+    
+    // Set Trigger
+    // setTriggerClass == 0 -> MB or kINT7 trigger doesn't need to be set
+    if (setTriggerClass == 1) // i.e. EMCal Jet Trigger kJ1, pT,jet > 20 GeV
+    {
+        task->SetTrigClass("J1");
+    }
+    else if (setTriggerClass == 2) // i.e. EMCal Jet Trigger kJ2, pT,jet > 10 GeV
+    {
+        task->SetTrigClass("J2");
+    }
+    else if (setTriggerClass == 3) // i.e. EMCal Gamma Trigger kG1
+    {
+        task->SetTrigClass("G1");
+    }
+    else if (setTriggerClass == 4) // i.e. EMCal Gamma Trigger kG2
+    {
+        task->SetTrigClass("G2");
+    }
+    else if (setTriggerClass == 5) // i.e. EMCal Trigger kL0
+    {
+        task->SetTrigClass("L0");
+    }
+    else if (setTriggerClass == -1) // i.e. EMCal Jet Trigger not defined
+    {
+        task->SetTrigClass("ND");
+    }
+    
     task->SetRjet(drjet);
     task->SetJetRAcceptance(jetRAccept);
     task->SetCentralityTag(centEst.Data());
@@ -111,10 +138,10 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->DoJetRhoDensity(doJetRhoDensity);
     
     mgr->AddTask(task);
-
+    
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(listName,TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task,1,coutput);
-
+    
     return task;
 }

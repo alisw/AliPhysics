@@ -50,6 +50,7 @@ ClassImp(AliAnaChargedParticles)
     //Histograms
     fhNtracks(0),      fhPt(0),            fhPtNoCut(0),
     fhPtCutDCA(0),     fhPtCutDCABCOK(0),
+    fhPtNotPrimary(),  fhPtNotSharedClusterCut(0),
     fhPhiNeg(0),       fhEtaNeg(0),
     fhPhiPos(0),       fhEtaPos(0), 
     fhEtaPhiPos(0),    fhEtaPhiNeg(0),
@@ -266,6 +267,14 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     outputContainer->Add(fhPtCutDCABCOK);
   }
   
+  fhPtNotPrimary  = new TH1F ("hPtNotPrimary","#it{p}_{T} distribution, not primary", nptbins,ptmin,ptmax); 
+  fhPtNotPrimary->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  outputContainer->Add(fhPtNotPrimary);
+  
+  fhPtNotSharedClusterCut  = new TH1F ("hPtNotSharedClusterCut","#it{p}_{T} distribution, shared clusters cut out", nptbins,ptmin,ptmax); 
+  fhPtNotSharedClusterCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  outputContainer->Add(fhPtNotSharedClusterCut);
+
   fhPhiNeg  = new TH2F ("hPhiNegative","#phi of negative charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiNeg->SetYTitle("#phi (rad)");
@@ -869,6 +878,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
+    
+    if(aodTrack)
+    {
+      Double_t frac = Double_t(aodTrack->GetTPCnclsS()) / Double_t(aodTrack->GetTPCncls());
+      
+      if ( frac > GetReader()->GetTPCSharedClusterFraction() ) 
+        fhPtNotSharedClusterCut->Fill(pt);
+
+      if ( aodTrack->GetType()!= AliAODTrack::kPrimary ) 
+        fhPtNotPrimary->Fill(pt);
+    }
     
     //TOF
     ULong_t status = track->GetStatus();

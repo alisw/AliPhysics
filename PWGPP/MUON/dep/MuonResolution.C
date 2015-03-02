@@ -37,11 +37,13 @@
 #include "AliLHCTagCuts.h"
 #include "AliDetectorTagCuts.h"
 #include "AliEventTagCuts.h"
+#include "AliAnalysisDataContainer.h"
+
+// PHYSICS includes
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
 #include "AliCentralitySelectionTask.h"
-#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskMuonResolution.h"
 
 // MUON includes
@@ -54,6 +56,7 @@
 #include "AliMUONPainterDataRegistry.h"
 #include "AliMUONTrackerDataWrapper.h"
 
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 
 #include "AddTaskMuonResolution.C"
@@ -70,10 +73,11 @@ Bool_t  Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB
 	       Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200],
 	       TGraphErrors* clusterResXVsStep[10], TGraphErrors* clusterResYVsStep[10],
 	       TGraphErrors* halfChShiftXVsStep[20], TGraphErrors* halfChShiftYVsStep[20]);
-void    LoadAlirootOnProof(TString& aaf, TString rootVersion, TString alirootVersion, TString& extraLibs, Int_t iStep);
-AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig,
-						   Bool_t applyAccCut, Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
-						   Double_t clusterResNB[10], Double_t clusterResB[10],
+void    LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVersion, Int_t iStep);
+AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger,
+                                                   Bool_t matchTrig, Bool_t applyAccCut, Bool_t applyPDCACut,
+                                                   Double_t minMomentum, Double_t minPt, Bool_t isMC, Bool_t correctForSystematics,
+						   Int_t extrapMode, Double_t clusterResNB[10], Double_t clusterResB[10],
 						   Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
 						   Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200]);
 Bool_t  GetChamberResolution(Int_t iStep, Double_t clusterResNB[10], Double_t clusterResB[10],
@@ -89,10 +93,10 @@ TChain* CreateChainFromESDList(const char *esdList);
 TChain* CreateChain(Int_t mode, TString input);
 
 //______________________________________________________________________________
-void MuonResolution(TString smode, TString inputFileName, TString rootVersion, TString alirootVersion, Int_t nSteps,
-		    Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig, Bool_t applyAccCut,
-		    Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
-		    Bool_t shiftHalfCh, Bool_t shiftDE, Int_t nevents, TString extraLibs)
+void MuonResolution(TString smode, TString inputFileName, TString rootVersion, TString aliphysicsVersion, Int_t nSteps,
+		    Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig, Bool_t applyAccCut, Bool_t applyPDCACut,
+		    Double_t minMomentum, Double_t minPt, Bool_t isMC, Bool_t correctForSystematics, Int_t extrapMode,
+		    Bool_t shiftHalfCh, Bool_t shiftDE, Int_t nevents)
 {
   /// Compute the cluster resolution by studying cluster-track residual, deconvoluting from track resolution
   
@@ -194,13 +198,13 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
     cout<<"step "<<iStep+1<<"/"<<nSteps<<endl;
     
     // Connect to proof if needed and prepare environment
-    if (mode == kProof) LoadAlirootOnProof(smode, rootVersion, alirootVersion, extraLibs, iStep-firstStep);
+    if (mode == kProof) LoadAlirootOnProof(smode, rootVersion, aliphysicsVersion, iStep-firstStep);
     
     // create the analysis train
-    AliAnalysisTaskMuonResolution *muonResolution = CreateAnalysisTrain(mode, iStep, selectPhysics, selectTrigger,
-				                        matchTrig, applyAccCut, minMomentum, correctForSystematics,
-							extrapMode, clusterResNB, clusterResB, shiftHalfCh,
-							halfChShiftNB, halfChShiftB, shiftDE, deShiftNB, deShiftB);
+    AliAnalysisTaskMuonResolution *muonResolution = CreateAnalysisTrain(mode, iStep, selectPhysics, selectTrigger, matchTrig,
+				                        applyAccCut, applyPDCACut, minMomentum, minPt, isMC,
+                                                        correctForSystematics, extrapMode, clusterResNB, clusterResB,
+                                                        shiftHalfCh, halfChShiftNB, halfChShiftB, shiftDE, deShiftNB, deShiftB);
     if (!muonResolution) return;
     
     // start analysis
@@ -425,7 +429,7 @@ Bool_t Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[
 }
 
 //______________________________________________________________________________
-void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString alirootVersion, TString& extraLibs, Int_t iStep)
+void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVersion, Int_t iStep)
 {
   /// Load aliroot packages and set environment on Proof
   
@@ -434,7 +438,7 @@ void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString alirootVersio
   else gProof->Close("s");
   
   // connect
-  TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster.in2p3.fr"; //"localhost:1093"
+  TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster2.in2p3.fr"; //"localhost:1093"
   TString nWorkers = (aaf == "caf") ? "workers=80" : ""; //"workers=3x"
   TString user = (gSystem->Getenv("alien_API_USER") == NULL) ? "" : Form("%s@",gSystem->Getenv("alien_API_USER"));
   TProof::Mgr(Form("%s%s",user.Data(), location.Data()))->SetROOTVersion(Form("VO_ALICE@ROOT::%s",rootVersion.Data()));
@@ -444,23 +448,19 @@ void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString alirootVersio
   // set environment and load libraries on workers
   TList* list = new TList();
   list->Add(new TNamed("ALIROOT_MODE", ""));
-  list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
-  if (!gSystem->AccessPathName("AliAnalysisTaskMuonResolution.cxx"))
-    list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "MUON:MUON/mapping"));
-  gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootVersion.Data()), list, kTRUE);
-  
-  // compile task on workers
-  if (!gSystem->AccessPathName("AliAnalysisTaskMuonResolution.cxx"))
-    gProof->Load("AliAnalysisTaskMuonResolution.cxx++g", kTRUE);
+  gProof->EnablePackage(Form("VO_ALICE@AliPhysics::%s",aliphysicsVersion.Data()), list, kTRUE);
+//  gProof->UploadPackage("$ALICE_PHYSICS/PARfiles/PWGPPMUONdep.par");
+//  gProof->EnablePackage("$ALICE_PHYSICS/PARfiles/PWGPPMUONdep.par", kTRUE);
   
 }
 
 //______________________________________________________________________________
-AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig,
-						   Bool_t applyAccCut, Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
-						   Double_t clusterResNB[10], Double_t clusterResB[10],
-						   Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
-						   Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200])
+AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger,
+                                                   Bool_t matchTrig, Bool_t applyAccCut, Bool_t applyPDCACut,
+                                                   Double_t minMomentum, Double_t minPt, Bool_t isMC, Bool_t correctForSystematics,
+                                                   Int_t extrapMode, Double_t clusterResNB[10], Double_t clusterResB[10],
+                                                   Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
+                                                   Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200])
 {
   /// create the analysis train and configure it
   
@@ -476,16 +476,19 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   mgr->SetInputEventHandler(esdH);
   
   // event selection
+  UInt_t eventSelectionMask = 0;
   if (selectPhysics) {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
-    if (!gROOT->ProcessLineFast("AddTaskPhysicsSelection()")) {
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+    if (!gROOT->ProcessLineFast(TString::Format("AddTaskPhysicsSelection(%d)", isMC))) {
       Error("CreateAnalysisTrain","AliPhysicsSelectionTask not created!");
       return 0x0;
     }
+    eventSelectionMask |= AliMuonEventCuts::kPhysicsSelected;
   }
+  if (selectTrigger) eventSelectionMask |= AliMuonEventCuts::kSelectedTrig;
   
   // centrality selection
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   if (!gROOT->ProcessLineFast("AddTaskCentrality()")) {
     Error("CreateAnalysisTrain","AliCentralitySelectionTask not created!");
     return 0x0;
@@ -494,7 +497,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   // Muon Resolution analysis
   TString outputFileName = Form("chamberResolution_step%d.root", iStep);
   AliAnalysisManager::SetCommonFileName(outputFileName.Data());
-  AliAnalysisTaskMuonResolution *muonResolution = AddTaskMuonResolution(selectPhysics, selectTrigger, matchTrig, applyAccCut, minMomentum, correctForSystematics, extrapMode);
+  AliAnalysisTaskMuonResolution *muonResolution = AddTaskMuonResolution(minMomentum, minPt, correctForSystematics, extrapMode);
   if (!muonResolution) {
     Error("CreateAnalysisTrain","AliAnalysisTaskMuonResolution not created!");
     return 0x0;
@@ -506,59 +509,9 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
   muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
 //  muonResolution->FitResiduals(kFALSE);
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011","");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavier");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik2");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavier2");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBTest");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavierI");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBJavier2St345");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestQuadrant");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_x_CDB");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_x_CDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00asCDB");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00asCDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x015y015_CDB");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x015y015_CDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x010y015_CDB");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_xypxvzyvz_x010y015_CDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_gc5_x015y015_fix24zIO_CDB");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/j/jcastill/ReAligni00as_gc5_x015y015_fix24zIO_CDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik2St345_B2");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBVanik2St345_B3");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBQuadrant_B2");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/MATFtestCDBQuadrant_B3");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2bis");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_BON_woConst");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_BON_wConst");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_BON_wConst_v2");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/s/shahoian/CorG4Fresmx05y015");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/s/shahoian/CorG4Gresmx05y015");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/s/shahoian/CorG4Gresmx05y015");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_RubenB0");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Fresmx05y015_BOff");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Fresmx05y015");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Gresmx05y015_BOff");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/CorG4Gresmx05y015");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/pbpb11wrk/CorG4Fresmx05y015_pp2PbPb");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "alien://folder=/alice/cern.ch/user/j/jcastill/pp11wrk/CorG4Fresmx05y015_pp2pp");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align1", "");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/RAi00ab_p1_t1b_CDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/RAi00ab_p1_t2b_CDB");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_3ce");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_4cf");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_5cf");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC11Boffp2");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_8dh");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_0");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/j/jcastill/pp12wrk/LHC12h_8di");
-//  muonResolution->ReAlign("", "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_new_0");
-//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2012", "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_new_1");
-  
-  muonResolution->SetAlignStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+//  muonResolution->ImproveTracks(kTRUE);
+//  muonResolution->ReAlign("", -1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_new_0");
+//  muonResolution->SetAlignStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Residual", 5);
   
   if (shiftHalfCh) {
     muonResolution->SetHalfChShift(halfChShiftNB, halfChShiftB);
@@ -570,12 +523,26 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     muonResolution->ShiftDE();
     muonResolution->PrintDEShift();
   }
-//  muonResolution->ImproveTracks(kTRUE);
-  AliMuonTrackCuts trackCuts("stdCuts", "stdCuts");
-  trackCuts.SetAllowDefaultParams();
-  trackCuts.SetIsMC();
-  trackCuts.SetFilterMask(AliMuonTrackCuts::kMuPdca);
-  muonResolution->SetMuonTrackCuts(trackCuts);
+  
+  if (eventSelectionMask != 0) {
+    AliMuonEventCuts eventCuts("muEventCuts", "muEventCuts");
+    eventCuts.SetFilterMask(eventSelectionMask);
+    if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kAny);
+    if (selectTrigger) eventCuts.SetTrigClassPatterns(eventCuts.GetDefaultTrigClassPatterns());
+    muonResolution->SetMuonEventCuts(eventCuts);
+  }
+  
+  UInt_t trackSelectionMask = 0;
+  if (matchTrig) trackSelectionMask |= AliMuonTrackCuts::kMuMatchLpt;
+  if (applyAccCut) trackSelectionMask |= AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs;
+  if (applyPDCACut) trackSelectionMask |= AliMuonTrackCuts::kMuPdca;
+  if (trackSelectionMask != 0) {
+    AliMuonTrackCuts trackCuts("muTrackCuts", "muTrackCuts");
+    trackCuts.SetAllowDefaultParams();
+    if (isMC) trackCuts.SetIsMC();
+    trackCuts.SetFilterMask(trackSelectionMask);
+    muonResolution->SetMuonTrackCuts(trackCuts);
+  }
   
   return muonResolution;
   

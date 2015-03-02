@@ -49,7 +49,8 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation() :
   fAna(0x0),
   fOutputContainer(0x0),
   fConfigName(""), 
-  fCuts(0x0)
+  fCuts(0x0),
+  fLastEvent(0)
 {
   // Default constructor
 }
@@ -60,7 +61,8 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const c
   fAna(0x0),
   fOutputContainer(0x0),
   fConfigName(""), 
-  fCuts(0x0)
+  fCuts(0x0),
+  fLastEvent(0)
 {
   // Default constructor
   
@@ -183,6 +185,8 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
 void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
+  
+  if ( fLastEvent > 0 && Entry() > fLastEvent ) return ;
   
   AliDebug(1,"Begin");
   

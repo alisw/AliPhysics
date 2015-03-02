@@ -1273,39 +1273,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     //Printf("min = %d, max = %d",fNMCProducedMin, fNMCProducedMax);
   }
   
-  //  // monte carlo headers from Philipp
-  //  TList *list = NULL;
-  //  if(esdH)
-  //    list = fEsdEv->GetList();
-  //  else if(aodH)
-  //    list = fAodEv->GetList();
-  //
-  //  //hijingGenHeader = NULL;
-  //  //PythiaGenHeader = NULL;
-  //  if(fMcMode && list){
-  //      //AliGenEventHeader* header = (AliGenEventHeader*)list->FindObject(AliGenEventHeader::StdBranchName());
-  //      AliAODMCHeader* header = (AliAODMCHeader*)list->FindObject(AliAODMCHeader::StdBranchName());
-  //
-  //    if(!header){cout << "no gen event header" << endl;
-  //      return;
-  //    }
-  //      TList* headerList = header->GetCocktailHeaders();
-  //
-  //      for(Int_t i = 0; i < headerList->GetEntries(); i++)
-  //      {
-  //          hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(headerList->At(i));
-  //          if(hijingGenHeader) break;
-  //      }
-  //      if(!hijingGenHeader){
-  //        for(Int_t i = 0; i < headerList->GetEntries(); i++)
-  //        {
-  //          PythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
-  //          if(PythiaGenHeader) break;
-  //        }
-  //      }
-  //  }
-  
-  
   
   UInt_t offtrigger = 0;
   if (fEsdEv) {
@@ -1422,22 +1389,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     }
   }
   
-  /*
-   AliMCEvent* fMC;
-   if(fMcMode)
-   {
-   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-   if (!mcH)
-   {
-   printf("ERROR: Could not get MCInputHandler");
-   //return;
-   }
-   else
-   fMC = mcH->MCEvent();
-   
-   }
-   */
-  
   Int_t cut = 1;
   fHCuts->Fill(cut++);
   
@@ -1480,6 +1431,44 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL"))
       return;
   }
+
+  // in lhc11a, cut on even more events
+  Int_t runnumber = InputEvent()->GetRunNumber();
+  if ((runnumber>=144871) && (runnumber<=146860)) {
+    
+    AliVCaloCells *cells   = InputEvent()->GetEMCALCells();
+    const Short_t nCells   = cells->GetNumberOfCells();
+    
+    if (InputEvent()->IsA()==AliESDEvent::Class()) AliAnalysisManager::GetAnalysisManager()->LoadBranch("EMCALCells.");
+    
+    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!fInputHandler) return;
+    
+    // count cells above threshold
+    Int_t nCellCount[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+    for(Int_t iCell=0; iCell<nCells; ++iCell) {
+      Short_t cellId = cells->GetCellNumber(iCell);
+      Double_t cellE = cells->GetCellAmplitude(cellId);
+      Int_t sm       = cellId / (24*48);
+      if (cellE>0.1) ++nCellCount[sm];
+    }
+    
+    Bool_t fIsLedEvent = kFALSE;
+    if (nCellCount[4] > 100) {
+      fIsLedEvent = kTRUE;
+    } else {
+      if ((runnumber>=146858) && (runnumber<=146860)) {
+	if ((fInputHandler->IsEventSelected() & AliVEvent::kMB) && (nCellCount[3]>=21))
+	  fIsLedEvent = kTRUE;
+	else if ((fInputHandler->IsEventSelected() & AliVEvent::kEMC1) && (nCellCount[3]>=35))
+	  fIsLedEvent = kTRUE;
+      }
+    }
+    if (fIsLedEvent) {
+      return;
+    }
+  }
+
 
   fHCuts->Fill(cut++);
   
@@ -1963,12 +1952,17 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         Int_t imother = 1;
         Int_t ipart = mcP->Label();
         Int_t iit = -1;
+	Int_t idpi0 = -1;
         while(imother >= 0){
           AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ipart));
           if(bprint){
             cout << " pid " << tmppart->Label() << ", type " << tmppart->PdgCode() << ", mid " << tmppart->GetMother() << " ==>";
           }
           imother = tmppart->GetMother();
+	  if(tmppart->PdgCode()==111){
+	    idpi0 = ipart;
+	    //	    cout << "mother of particle with ID " << mcP->PdgCode() << " is pi0 with " << idpi0 << endl;
+	  }
           if(imother >= 0){
             ipart = imother;
           }
@@ -1987,6 +1981,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         bool bGen = kTRUE;
         bool bAddPi0 = kFALSE;
         bool bAddEta = kFALSE;
+
         if(pythiaHeader && fAddedSignal){
           if(ipart > ipymax){
             bGen = kFALSE;
@@ -2014,39 +2009,28 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
 
         // loop up until pi0, then look for mother of pi0
 
-        Int_t idmother = 1;
-        Int_t ithispart = mcP->Label();
-        Int_t iPID = 0;
-        Bool_t bpi0 = 1;
-        Short_t tmpflag = 0;
-        while(idmother != 111){
-          AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ithispart));
-          Int_t itmp = tmppart->GetMother();
-	  if(itmp < 1){
-	      bpi0 = 0;
-	      break;
-	  }
-          AliMCParticle *tmppartmo = static_cast<AliMCParticle*>(mcEvent->GetTrack(itmp));
-          idmother = tmppartmo->PdgCode();
-          ithispart = itmp;
-        }
         // if it is not from a pi0, flag 100
         // from primary pi0, flag 101
         // from secondary pi0, flag 102
         // from K0, flag 103
         // from material, flag 104
         // only for generator, not added signals
+	Int_t tmpflag = 0;
+	Bool_t bpi0 = 1;
+	if(idpi0 < 0)
+	  bpi0 = 0;
 	if(bGen){
 	  if(bpi0 == 0){
 	    tmpflag = 100;
 	  }
 	  else{
-	    AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ithispart));
+	    AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(idpi0));
 	    Int_t itmp = tmppart->GetMother();
-	    if(itmp<nPTracksMC){
+	    if(idpi0<nPTracksMC){
 	      tmpflag = 101;
 	    }
 	    else{
+	      tmpflag = 102;
 	      if( ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  310 ||
 		  ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -310  ){
 		tmpflag = 103;
@@ -2061,12 +2045,9 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
 		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -211 ){    //pi-)
 		tmpflag = 104;
 	      }
-	      else{
-		tmpflag = 102;
-	      }
 	    }
 	  }
-        }
+	}
         // sum of energy of all MC particles in cluster
         Double_t esum = 0;
         for(int ip=0;ip<nl;ip++){

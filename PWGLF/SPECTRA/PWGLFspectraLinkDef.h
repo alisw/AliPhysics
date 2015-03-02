@@ -67,4 +67,18 @@
 #pragma link C++ class DeDxTrackMC+; 
 #pragma link C++ class DeDxEvent+;
 
+// Multiplicity and Event Shape Analysis classes
+#pragma link C++ class AliMESeventInfo+;
+#pragma link C++ class AliMESeventInfo::AliMESevShape+;
+#pragma link C++ class AliMEStrackInfo+;
+#pragma link C++ class AliMEStrackInfo::AliMESpid+;
+#pragma link C++ class AliMEStrackInfo::AliMESfilterParam+;
+#pragma link C++ class AliMESbaseTask+;
+#pragma link C++ class AliMEStender+;
+#pragma link C++ class AliMEStender::AliMESconfigTender+;
+#pragma link C++ class AliMESpidTask+;
+#pragma link C++ class AliMESchgTask+;
+#pragma link C++ class AliMESppColTask+;
+#pragma link C++ class AliMESppColTask::AliMESppColTaskExchange+; 
+#pragma link C++ class AliMESppColTask::AliMESppColMixEvent+; 
 #endif

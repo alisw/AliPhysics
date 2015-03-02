@@ -16,6 +16,7 @@
 /* $Id$ */
 
 // ROOT includes
+#include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -100,11 +101,7 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fPrintClResPerDE(kFALSE),
   fGaus(NULL),
   fMinMomentum(0.),
-  fSelectPhysics(kFALSE),
-  fMatchTrig(kFALSE),
-  fApplyAccCut(kFALSE),
-  fSelectTrigger(kFALSE),
-  fTriggerMask(0),
+  fMinPt(0.),
   fExtrapMode(1),
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
@@ -118,10 +115,14 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fNDE(0),
   fReAlign(kFALSE),
   fOldAlignStorage(""),
+  fOldAlignVersion(-1),
+  fOldAlignSubVersion(-1),
   fNewAlignStorage(""),
+  fNewAlignVersion(-1),
+  fNewAlignSubVersion(-1),
   fOldGeoTransformer(NULL),
   fNewGeoTransformer(NULL),
-  fSelectTriggerClass(NULL),
+  fMuonEventCuts(0x0),
   fMuonTrackCuts(0x0)
 {
   /// Default constructor
@@ -153,11 +154,7 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fPrintClResPerDE(kFALSE),
   fGaus(NULL),
   fMinMomentum(0.),
-  fSelectPhysics(kFALSE),
-  fMatchTrig(kFALSE),
-  fApplyAccCut(kFALSE),
-  fSelectTrigger(kFALSE),
-  fTriggerMask(0),
+  fMinPt(0.),
   fExtrapMode(1),
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
@@ -171,10 +168,14 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fNDE(0),
   fReAlign(kFALSE),
   fOldAlignStorage(""),
+  fOldAlignVersion(-1),
+  fOldAlignSubVersion(-1),
   fNewAlignStorage(""),
+  fNewAlignVersion(-1),
+  fNewAlignSubVersion(-1),
   fOldGeoTransformer(NULL),
   fNewGeoTransformer(NULL),
-  fSelectTriggerClass(NULL),
+  fMuonEventCuts(0x0),
   fMuonTrackCuts(0x0)
 {
   /// Constructor
@@ -221,7 +222,7 @@ AliAnalysisTaskMuonResolution::~AliAnalysisTaskMuonResolution()
   SafeDelete(fGaus);
   SafeDelete(fOldGeoTransformer);
   SafeDelete(fNewGeoTransformer);
-  SafeDelete(fSelectTriggerClass);
+  SafeDelete(fMuonEventCuts);
   SafeDelete(fMuonTrackCuts);
 }
 
@@ -232,15 +233,6 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
   
   // do it once the OCDB has been loaded (i.e. from NotifyRun())
   if (!fOCDBLoaded) return;
-  
-  // set the list of trigger classes that can be selected to fill histograms (in case the physics selection is not used)
-  fSelectTriggerClass = new TList();
-  fSelectTriggerClass->SetOwner();
-  fSelectTriggerClass->AddLast(new TObjString(" CINT1B-ABCE-NOPF-ALL ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString(" CMUS1B-ABCE-NOPF-MUON ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString(" CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString(" CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString(" CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
   
   fResiduals = new TObjArray(1000);
   fResiduals->SetOwner();
@@ -438,14 +430,8 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
   
   if (fShowProgressBar && (++fNEvents)%100 == 0) cout<<"\rEvent processing... "<<fNEvents<<"\r"<<flush;
   
-  // skip events that do not pass the physics selection if required
-  UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
-  if (fSelectPhysics && triggerWord == 0) return;
-  
-  // skip events that do not pass the trigger selection if required
-  TString firedTriggerClasses = esd->GetFiredTriggerClasses();
-  if (!fSelectPhysics) triggerWord = BuildTriggerWord(firedTriggerClasses);
-  if (fSelectTrigger && (triggerWord & fTriggerMask) == 0) return;
+  // skip events that do not pass required selections
+  if (fMuonEventCuts && !fMuonEventCuts->IsSelected(fInputHandler)) return;
   
   // get the centrality
   Float_t centrality = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
@@ -463,19 +449,8 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     // skip ghost tracks
     if (!esdTrack->ContainTrackerData()) continue;
     
-    // skip tracks not matched with trigger if required
-    if (fMatchTrig && !esdTrack->ContainTriggerData()) continue;
-    
-    // skip tracks that do not pass the acceptance cuts if required
-    Double_t thetaAbs = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
-    Double_t eta = esdTrack->Eta();
-    if (fApplyAccCut && (thetaAbs < 2. || thetaAbs > 10. || eta < -4. || eta > -2.5)) continue;
-    
     // apply standard track cuts if any
     if (fMuonTrackCuts && !fMuonTrackCuts->IsSelected(esdTrack)) continue;
-    
-    // skip low momentum tracks
-    if (esdTrack->PUncorrected() < fMinMomentum) continue;
     
     // select positive or negative tracks
     //if (esdTrack->Charge() < 0) continue;
@@ -491,7 +466,7 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     ModifyClusters(track);
     
     // refit the track
-    if (!tracker->RefitTrack(track, fImproveTracks) || (fImproveTracks && !track.IsImproved())) break;
+    if (!tracker->RefitTrack(track, fImproveTracks) || (fImproveTracks && !track.IsImproved())) continue;
     
     // save track unchanged
     AliMUONTrack referenceTrack(track);
@@ -545,6 +520,14 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     ((TH2F*)fTrackRes->UncheckedAt(kSlopeRes))->Fill(pVtx,TMath::Sqrt(trackParamAtVtx.GetCovariances()(1,1)));
     ((TH2F*)fTrackRes->UncheckedAt(kSlopeRes+1))->Fill(pVtx,TMath::Sqrt(trackParamAtVtx.GetCovariances()(3,3)));
     
+    // skip low momentum tracks in the computation of resolution (cut on initial momentum to avoid correlations)
+    if (esdTrack->PUncorrected() < fMinMomentum) continue;
+    
+    // skip low pT tracks in the computation of resolution (cut on initial pT to avoid correlations)
+    Double_t pXUncorr0 = esdTrack->PxUncorrected();
+    Double_t pYUncorr0 = esdTrack->PyUncorrected();
+    if (TMath::Sqrt(pXUncorr0*pXUncorr0+pYUncorr0*pYUncorr0) < fMinPt) continue;
+    
     // loop over clusters
     Int_t nClusters = track.GetNClusters();
     for (Int_t iCluster=0; iCluster<nClusters; iCluster++) {
@@ -558,13 +541,7 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	track.RecursiveDump();
 	break;
       }
-      /*
-      if (trackParam->GetClusterPtr()->GetDetElemId() == 915) continue;
-      if (trackParam->GetClusterPtr()->GetDetElemId() == 710) continue;
-      if (trackParam->GetClusterPtr()->GetDetElemId() == 1025) continue;
-      if (trackParam->GetClusterPtr()->GetDetElemId() == 818) continue;
-      if (trackParam->GetClusterPtr()->GetDetElemId() == 806) continue;
-      */
+      
       // remove mono-cathod clusters on stations 3-4-5 if required
       if (fRemoveMonoCathCl && trackParam->GetClusterPtr()->GetChamberId() > 3) {
 	Bool_t hasBending, hasNonBending;
@@ -766,12 +743,12 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
     
   }
   
+  // recover default storage full name (raw:// cannot be used to set specific storage)
+  TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
+  if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
+  else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
+  
   if (fReAlign) {
-    
-    // recover default storage full name (raw:// cannot be used to set specific storage)
-    TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
-    if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-    else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
     
     // reset existing geometry/alignment if any
     if (cdbm->GetEntryCache()->Contains("GRP/Geometry/Data")) cdbm->UnloadFromCache("GRP/Geometry/Data");
@@ -782,39 +759,28 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
     AliGeomManager::LoadGeometry();
     if (!AliGeomManager::GetGeometry()) return;
     if (fOldAlignStorage != "none") {
-      if (!fOldAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fOldAlignStorage.Data());
-      else cdbm->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
+      cdbm->SetSpecificStorage("MUON/Align/Data", fOldAlignStorage.IsNull() ? defaultStorage.Data() : fOldAlignStorage.Data(), fOldAlignVersion, fOldAlignSubVersion);
       AliGeomManager::ApplyAlignObjsFromCDB("MUON");
     }
     fOldGeoTransformer = new AliMUONGeometryTransformer();
     fOldGeoTransformer->LoadGeometryData();
     
-    // get new geometry transformer
-    cdbm->UnloadFromCache("GRP/Geometry/Data");
-    if (fOldAlignStorage != "none") cdbm->UnloadFromCache("MUON/Align/Data");
-    AliGeomManager::GetGeometry()->UnlockGeometry();
-    AliGeomManager::LoadGeometry();
-    if (!AliGeomManager::GetGeometry()) return;
-    if (!fNewAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fNewAlignStorage.Data());
-    else cdbm->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
-    AliGeomManager::ApplyAlignObjsFromCDB("MUON");
-    fNewGeoTransformer = new AliMUONGeometryTransformer();
-    fNewGeoTransformer->LoadGeometryData();
-    
-  } else {
-    
-    // load geometry to check pads below clusters and for track extrapolation to vertex
-    if (cdbm->GetEntryCache()->Contains("GRP/Geometry/Data")) cdbm->UnloadFromCache("GRP/Geometry/Data");
-    if (cdbm->GetEntryCache()->Contains("MUON/Align/Data")) cdbm->UnloadFromCache("MUON/Align/Data");
-    if (AliGeomManager::GetGeometry()) AliGeomManager::GetGeometry()->UnlockGeometry();
-    AliGeomManager::LoadGeometry();
-    if (!AliGeomManager::GetGeometry()) return;
-    if (!fNewAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fNewAlignStorage.Data());
-    AliGeomManager::ApplyAlignObjsFromCDB("MUON");
-    fNewGeoTransformer = new AliMUONGeometryTransformer();
-    fNewGeoTransformer->LoadGeometryData();
-    
   }
+  
+  // reset existing geometry/alignment if any
+  if (cdbm->GetEntryCache()->Contains("GRP/Geometry/Data")) cdbm->UnloadFromCache("GRP/Geometry/Data");
+  if (cdbm->GetEntryCache()->Contains("MUON/Align/Data")) cdbm->UnloadFromCache("MUON/Align/Data");
+  if (AliGeomManager::GetGeometry()) AliGeomManager::GetGeometry()->UnlockGeometry();
+  
+  // load original or realigned geometry (also used to check pads below clusters and for track extrapolation to vertex)
+  AliGeomManager::LoadGeometry();
+  if (!AliGeomManager::GetGeometry()) return;
+  if (fNewAlignStorage != "none") {
+    cdbm->SetSpecificStorage("MUON/Align/Data", fNewAlignStorage.IsNull() ? defaultStorage.Data() : fNewAlignStorage.Data(), fNewAlignVersion, fNewAlignSubVersion);
+    AliGeomManager::ApplyAlignObjsFromCDB("MUON");
+  }
+  fNewGeoTransformer = new AliMUONGeometryTransformer();
+  fNewGeoTransformer->LoadGeometryData();
   
   // print starting chamber resolution if required
   if (fPrintClResPerCh) {
@@ -826,8 +792,13 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
     printf("\n\n");
   }
   
+  if (fMuonEventCuts) fMuonEventCuts->Print();
+  
   // get the trackCuts for this run
-  if (fMuonTrackCuts) fMuonTrackCuts->SetRun(fInputHandler);
+  if (fMuonTrackCuts) {
+    fMuonTrackCuts->SetRun(fInputHandler);
+    fMuonTrackCuts->Print();
+  }
   
   fOCDBLoaded = kTRUE;
   
@@ -1426,7 +1397,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cResPerCh = new TCanvas("cResPerCh","cResPerCh",1200,500);
   cResPerCh->Divide(4,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cResPerCh->cd(1+4*ia);
+    gROOT->SetSelectedPad(cResPerCh->cd(1+4*ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChMeanClusterOut+ia);
     g->Draw("ap");
     g->SetMarkerColor(2);
@@ -1439,7 +1410,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     if (ia == 0) lResPerChMean->AddEntry(g,"cluster in","PL");
     if (ia == 0) lResPerChMean->Draw();
     else lResPerChMean->DrawClone();
-    cResPerCh->cd(2+4*ia);
+    gROOT->SetSelectedPad(cResPerCh->cd(2+4*ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChSigmaClusterOut+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
@@ -1463,7 +1434,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     if (ia == 0) lResPerChSigma1->AddEntry(g,"combined 1","PL");
     if (ia == 0) lResPerChSigma1->Draw();
     else lResPerChSigma1->DrawClone();
-    cResPerCh->cd(3+4*ia);
+    gROOT->SetSelectedPad(cResPerCh->cd(3+4*ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerChDispersionClusterOut+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
@@ -1483,7 +1454,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     if (ia == 0) lResPerChSigma2->AddEntry(g,"combined 2","PL");
     if (ia == 0) lResPerChSigma2->Draw();
     else lResPerChSigma2->DrawClone();
-    cResPerCh->cd(4+4*ia);
+    gROOT->SetSelectedPad(cResPerCh->cd(4+4*ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerChSigma+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
@@ -1499,7 +1470,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cResPerHalfCh = new TCanvas("cResPerHalfCh","cResPerHalfCh",1200,500);
   cResPerHalfCh->Divide(2,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cResPerHalfCh->cd(1+2*ia);
+    gROOT->SetSelectedPad(cResPerHalfCh->cd(1+2*ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia);
     g->Draw("ap");
     g->SetMarkerColor(2);
@@ -1509,7 +1480,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerColor(4);
     g->SetLineColor(4);
     lResPerChMean->DrawClone();
-    cResPerHalfCh->cd(2+2*ia);
+    gROOT->SetSelectedPad(cResPerHalfCh->cd(2+2*ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerHalfChSigma+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
@@ -1524,7 +1495,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cResPerDE = new TCanvas("cResPerDE","cResPerDE",1200,800);
   cResPerDE->Divide(1,4);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cResPerDE->cd(1+ia);
+    gROOT->SetSelectedPad(cResPerDE->cd(1+ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia);
     g->Draw("ap");
     g->SetMarkerColor(2);
@@ -1534,7 +1505,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
     g->SetMarkerColor(4);
     g->SetLineColor(4);
     lResPerChMean->DrawClone();
-    cResPerDE->cd(3+ia);
+    gROOT->SetSelectedPad(cResPerDE->cd(3+ia));
     g = (TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerDESigma+ia);
     g->Draw("ap");
     g->SetMinimum(0.);
@@ -1549,7 +1520,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cResPerChVsP = new TCanvas("cResPerChVsP","cResPerChVsP");
   cResPerChVsP->Divide(1,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cResPerChVsP->cd(1+ia);
+    gROOT->SetSelectedPad(cResPerChVsP->cd(1+ia));
     mg = (TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsP+ia);
     mg->Draw("ap");
   }
@@ -1558,7 +1529,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cResPerChVsCent = new TCanvas("cResPerChVsCent","cResPerChVsCent");
   cResPerChVsCent->Divide(1,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cResPerChVsCent->cd(1+ia);
+    gROOT->SetSelectedPad(cResPerChVsCent->cd(1+ia));
     mg = (TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsCent+ia);
     mg->Draw("ap");
   }
@@ -1567,7 +1538,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cResPerChVsAngle = new TCanvas("cResPerChVsAngle","cResPerChVsAngle");
   cResPerChVsAngle->Divide(1,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cResPerChVsAngle->cd(1+ia);
+    gROOT->SetSelectedPad(cResPerChVsAngle->cd(1+ia));
     mg = (TMultiGraph*)fChamberRes->UncheckedAt(kCombinedResidualSigmaVsAngle+ia);
     mg->Draw("ap");
   }
@@ -1576,7 +1547,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cShiftPerChVsP = new TCanvas("cShiftPerChVsP","cShiftPerChVsP");
   cShiftPerChVsP->Divide(1,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cShiftPerChVsP->cd(1+ia);
+    gROOT->SetSelectedPad(cShiftPerChVsP->cd(1+ia));
     mg = (TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsP+ia);
     mg->Draw("ap");
   }
@@ -1585,7 +1556,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cShiftPerChVsCent = new TCanvas("cShiftPerChVsCent","cShiftPerChVsCent");
   cShiftPerChVsCent->Divide(1,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cShiftPerChVsCent->cd(1+ia);
+    gROOT->SetSelectedPad(cShiftPerChVsCent->cd(1+ia));
     mg = (TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsCent+ia);
     mg->Draw("ap");
   }
@@ -1594,7 +1565,7 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
   TCanvas* cShiftPerChVsAngle = new TCanvas("cShiftPerChVsAngle","cShiftPerChVsAngle");
   cShiftPerChVsAngle->Divide(1,2);
   for (Int_t ia = 0; ia < 2; ia++) {
-    cShiftPerChVsAngle->cd(1+ia);
+    gROOT->SetSelectedPad(cShiftPerChVsAngle->cd(1+ia));
     mg = (TMultiGraph*)fChamberRes->UncheckedAt(kResidualMeanClusterInVsAngle+ia);
     mg->Draw("ap");
   }
@@ -1682,14 +1653,7 @@ void AliAnalysisTaskMuonResolution::ModifyClusters(AliMUONTrack& track)
     
     // change their resolution
     cl->SetErrXY(fClusterResNB[chId], fClusterResB[chId]);
-    /*
-    //    if (deId == 915 || deId == 710 ||deId == 1025 || deId == 818 || deId == 806) printf("Bad DE!!!\n");
-    if (deId == 915) cl->SetErrXY(10., 10.);
-    if (deId == 710) cl->SetErrXY(10., 10.);
-    if (deId == 1025) cl->SetErrXY(10., 10.);
-    if (deId == 818) cl->SetErrXY(10., 10.);
-    if (deId == 806) cl->SetErrXY(10., 10.);
-    */
+    
     // change their position
     gX = cl->GetX();
     gY = cl->GetY();
@@ -1794,7 +1758,7 @@ void AliAnalysisTaskMuonResolution::GetMeanRMS(TH1* h, Double_t& mean, Double_t&
     h->Fit("fGaus", "WWNQ");
     
     // rebin histo
-    Int_t rebin = TMath::Max(static_cast<Int_t>(0.3*fGaus->GetParameter(2)/h->GetBinWidth(1)),1);
+    Int_t rebin = static_cast<Int_t>(TMath::Min(0.1*h->GetNbinsX(),TMath::Max(0.3*fGaus->GetParameter(2)/h->GetBinWidth(1),1.)));
     while (h->GetNbinsX()%rebin!=0) rebin--;
     h->Rebin(rebin);
     
@@ -1814,9 +1778,12 @@ void AliAnalysisTaskMuonResolution::GetMeanRMS(TH1* h, Double_t& mean, Double_t&
     if (!strstr(h->GetName(),"tmp")) {
       Int_t ia = (strstr(h->GetName(),"ResX")) ? 0 : 1;
       Int_t ib = (strstr(h->GetName(),"ClIn")) ? 0 : 1;
-      if (strstr(h->GetName(),"Half")) ((TCanvas*)fCanvases->UncheckedAt(kDetailResPerHalfCh+ib+2*ia))->cd(i+1);
-      else if (strstr(h->GetName(),"Ch")) ((TCanvas*)fCanvases->UncheckedAt(kDetailResPerCh+ib+2*ia))->cd(i+1);
-      else ((TCanvas*)fCanvases->UncheckedAt(kDetailResPerDE+ib+2*ia))->cd(i+1);
+      if (strstr(h->GetName(),"Half"))
+        gROOT->SetSelectedPad(((TCanvas*)fCanvases->UncheckedAt(kDetailResPerHalfCh+ib+2*ia))->cd(i+1));
+      else if (strstr(h->GetName(),"Ch"))
+        gROOT->SetSelectedPad(((TCanvas*)fCanvases->UncheckedAt(kDetailResPerCh+ib+2*ia))->cd(i+1));
+      else
+        gROOT->SetSelectedPad(((TCanvas*)fCanvases->UncheckedAt(kDetailResPerDE+ib+2*ia))->cd(i+1));
       gPad->SetLogy();
       h->Draw("hist");
       TF1* f = (TF1*)fGaus->DrawClone("same");
@@ -1866,8 +1833,8 @@ void AliAnalysisTaskMuonResolution::FillMeanSigmaClusterVsX(const TH2* hIn, cons
       GetMeanRMS(tmp, dumy1, dumy2, sigmaOut, sigmaOutErr, 0x0, 0x0, 0, 0.);
       delete tmp;
     }
-    Double_t x = 0.5 * (hIn->GetBinLowEdge(j) + hIn->GetBinLowEdge(j+1));
-    Double_t xErr = x - hIn->GetBinLowEdge(j);
+    Double_t x = 0.5 * (hIn->GetXaxis()->GetBinLowEdge(j) + hIn->GetXaxis()->GetBinLowEdge(j+1));
+    Double_t xErr = x - hIn->GetXaxis()->GetBinLowEdge(j);
     if (gMean) {
       gMean->SetPoint(j-1, x, meanIn);
       gMean->SetPointError(j-1, xErr, meanInErr);
@@ -1912,25 +1879,6 @@ void AliAnalysisTaskMuonResolution::Cov2CovP(const AliMUONTrackParam &param, TMa
   // compute covariances in new coordinate system
   TMatrixD tmp(param.GetCovariances(),TMatrixD::kMultTranspose,jacob);
   covP.Mult(jacob,tmp);
-}
-
-//__________________________________________________________________________
-UInt_t AliAnalysisTaskMuonResolution::BuildTriggerWord(const TString& firedTriggerClasses)
-{
-  /// build the trigger word from the fired trigger classes and the list of selectable trigger
-  
-  UInt_t word = 0;
-  
-  TObjString* trigClasseName = 0x0;
-  TIter nextTrigger(fSelectTriggerClass);
-  while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
-    
-    TRegexp GenericTriggerClasseName(trigClasseName->String());
-    if (firedTriggerClasses.Contains(GenericTriggerClasseName)) word |= trigClasseName->GetUniqueID();
-    
-  }
-  
-  return word;
 }
 
 //__________________________________________________________________________

@@ -84,7 +84,7 @@ AliAnalysisCuts(name, title),
   fCentralityClasses(0x0),
   fAnalysisUtils(0x0),
   fEventTriggerMask(0),
-  fSelectedTrigClassesInEvent(new TObjArray())
+  fSelectedTrigClassesInEvent(0x0)
 {
   /// Constructor
   SetDefaultParameters();
@@ -94,7 +94,6 @@ AliAnalysisCuts(name, title),
   SetCentralityClasses();
   fAnalysisUtils = new AliAnalysisUtils();
   fAllSelectedTrigClasses->SetOwner();
-  fSelectedTrigClassesInEvent->SetOwner();
 }
 
 //________________________________________________________________________
@@ -105,16 +104,16 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fVertexVzMin(obj.fVertexVzMin),
   fVertexVzMax(obj.fVertexVzMax),
   fCheckMask(obj.fCheckMask),
-  fSelectedTrigPattern(obj.fSelectedTrigPattern),
-  fRejectedTrigPattern(obj.fRejectedTrigPattern),
-  fSelectedTrigLevel(obj.fSelectedTrigLevel),
-  fSelectedTrigCombination(obj.fSelectedTrigCombination),
-  fTrigInputsMap(obj.fTrigInputsMap),
-  fAllSelectedTrigClasses(obj.fAllSelectedTrigClasses),
-  fCentralityClasses(obj.fCentralityClasses),
-  fAnalysisUtils(obj.fAnalysisUtils),
+  fSelectedTrigPattern(( obj.fSelectedTrigPattern ) ? static_cast<TObjArray*>(obj.fSelectedTrigPattern->Clone() ) : 0x0),
+  fRejectedTrigPattern(( obj.fRejectedTrigPattern ) ? static_cast<TObjArray*>(obj.fRejectedTrigPattern->Clone() ) : 0x0),
+  fSelectedTrigLevel(( obj.fSelectedTrigLevel ) ? static_cast<TObjArray*>(obj.fSelectedTrigLevel->Clone() ) : 0x0),
+  fSelectedTrigCombination(( obj.fSelectedTrigCombination ) ? static_cast<TObjArray*>(obj.fSelectedTrigCombination->Clone() ) : 0x0),
+  fTrigInputsMap(( obj.fTrigInputsMap ) ? static_cast<TList*>(obj.fTrigInputsMap->Clone() ) : 0x0),
+  fAllSelectedTrigClasses(( obj.fAllSelectedTrigClasses ) ? static_cast<TList*>(obj.fAllSelectedTrigClasses->Clone() ) : 0x0),
+  fCentralityClasses(( obj.fCentralityClasses ) ? static_cast<TAxis*>(obj.fCentralityClasses->Clone() ) : 0x0),
+  fAnalysisUtils(( obj.fAnalysisUtils ) ? static_cast<AliAnalysisUtils*>(obj.fAnalysisUtils->Clone() ) : 0x0),
   fEventTriggerMask(obj.fEventTriggerMask),
-  fSelectedTrigClassesInEvent(obj.fSelectedTrigClassesInEvent)
+  fSelectedTrigClassesInEvent(( obj.fSelectedTrigClassesInEvent ) ? static_cast<TObjArray*>(obj.fSelectedTrigClassesInEvent->Clone() ) : 0x0)
 {
   /// Copy constructor
 }
@@ -651,7 +650,7 @@ void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
   
   AliDebug(2,Form("Fired classes: %s  Inputs 0x%x 0x%x 0x%x",firedTrigClasses.Data(),l0Inputs,l1Inputs,l2Inputs));
   
-  if ( fSelectedTrigClassesInEvent) fSelectedTrigClassesInEvent->Delete();
+  if ( fSelectedTrigClassesInEvent ) fSelectedTrigClassesInEvent->Delete();
   else {
     fSelectedTrigClassesInEvent = new TObjArray(0);
     fSelectedTrigClassesInEvent->SetOwner();

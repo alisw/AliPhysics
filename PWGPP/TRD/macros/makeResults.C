@@ -73,16 +73,16 @@
 #include <TGridResult.h>
 #include <TGridCollection.h>
 
-#include "AliLog.h"
+#include <AliLog.h>
 
-#include "PWGPP/TRD/info/AliTRDtrendingManager.h"
-#include "PWGPP/TRD/AliTRDpwgppHelper.h"
-#include "PWGPP/TRD/AliTRDrecoTask.h"
-#include "PWGPP/TRD/AliTRDcheckESD.h"
-#include "PWGPP/TRD/AliTRDinfoGen.h"
+#include <AliTRDtrendingManager.h>
+#include <AliTRDpwgppHelper.h>
+#include <AliTRDrecoTask.h>
+#include <AliTRDcheckESD.h>
+#include <AliTRDinfoGen.h>
 #endif
 
-const Char_t *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libCORRFW", "libTender", "libPWGPP", "libPWGmuon"};
+const Char_t *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libCORRFW", "libTender", "libPWGPP"};
 // define setup
 TCanvas *c(NULL);
 Bool_t mc(kFALSE), friends(kFALSE);

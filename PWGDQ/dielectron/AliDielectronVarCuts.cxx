@@ -265,3 +265,63 @@ void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
     }
   } //loop over cuts
 }
+
+//________________________________________________________________________
+const char* AliDielectronVarCuts::GetCutName(Int_t iCut) const
+{
+  //
+  // Return name of the cut at position iCut
+  //
+  if (iCut > fNActiveCuts-1) {
+    printf("AliDielectronVarCuts::GetCutName(iCut): out of range! iCut=%i \n", iCut);
+    return "ERROR";
+  }
+  Int_t cut=(Int_t)fActiveCuts[iCut];
+  return AliDielectronVarManager::GetValueName((Int_t)cut);
+}
+
+//________________________________________________________________________
+Bool_t AliDielectronVarCuts::IsCutOnVariableX(Int_t iCut, Int_t varNumber) const
+{
+  //
+  // Use it to check if the cut at position iCut is for the variable varNumber (e.g. varNumber = AliDielectronVarManager::kPt)
+  //
+  if (iCut > fNActiveCuts-1) {
+    printf("AliDielectronVarCuts::IsCutOnVariableX(iCut, ...): out of range! iCut=%i \n", iCut);
+    return kFALSE;
+  }
+  Int_t cut=(Int_t)fActiveCuts[iCut];
+  return (varNumber == (Int_t)cut);
+}
+
+//________________________________________________________________________
+Int_t AliDielectronVarCuts::GetCutLimits(Int_t iCut, Double_t &cutMin, Double_t &cutMax) const
+{
+  //
+  // Return min and max of the cut at position iCut
+  //
+  if (iCut > fNActiveCuts-1) {
+    printf("AliDielectronVarCuts::GetCutLimits(iCut, ...): out of range! iCut=%i \n", iCut);
+    return -1;
+  }
+  cutMin = -999;
+  cutMax = -999;
+  
+  //Bool_t inverse=fCutExclude[iCut];
+  Bool_t bitcut=fBitCut[iCut];
+  Bool_t objcut=fUpperCut[iCut];
+  
+  if(!bitcut && !objcut) {
+    // standard cut
+    cutMin = fCutMin[iCut];
+    cutMax = fCutMax[iCut];
+    //if (inverse){}
+  }
+  else { // TODO: add the other possibilities.
+  	printf("Cut %02d: not a standard cut. Not supported by this getter.\n", iCut);
+    return -1;
+  }
+  
+  return iCut;
+}
+

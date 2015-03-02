@@ -11,14 +11,10 @@
 #ifndef ALIMESBASETASK_H
 #include "AliMESbaseTask.h"
 #endif
-#ifndef ALIVParticle_H
-#include "AliVParticle.h"
-#endif
 #define NMAXMULT 100
-#include "AliEventPoolManager.h"
 
-#include "AliMEStrackInfo.h"
-
+class AliMEStrackInfo;
+class AliEventPool;
 class AliEventPoolManager;
 class AliMESppColTask : public AliMESbaseTask
 {

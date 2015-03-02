@@ -82,12 +82,19 @@ void AliT0TenderSupply::Init(){
   // align T0s for LHC10def periods 
   if (fTender->GetRun()>=122195 &&  fTender->GetRun()<=130850){
     Printf("Loading TZERO OCBD entries");
-    fCorrectMeanTime=kTRUE;
+    AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*>  (fTender->GetESDhandler());
+    TTree *tree= (TTree*)esdIH->GetTree();
+    TFile *file= (TFile*)tree->GetCurrentFile();
+    TString fileName(file->GetName());
+    if( fileName.Contains("pass2") )fCorrectMeanTime=kTRUE;
     Printf("fCorrectMeanTime %i \n", fCorrectMeanTime);
- 
+    int ver=0;
+    if(fTender->GetRun()<127102) ver=2;
+    else ver=3;
+    Printf("Will impose version %d for T0/Calib/TimeAdjust object",ver);
     AliCDBManager* ocdbMan = AliCDBManager::Instance();
     ocdbMan->SetRun(fTender->GetRun());    
-    AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
+    AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/",fTender->GetRun(), ver);
     if(entry) {
       AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
       Float_t *t0means = clb->GetT0Means();
@@ -97,7 +104,7 @@ void AliT0TenderSupply::Init(){
       AliWarning("T0Tender no T0 entry found T0shift set to 0");
     }
   }  
-	
+  
   // LHC11h
   fCorrectStartTimeOnAmplSatur = kFALSE;
   fAmplitudeThreshold = 100; //in mips

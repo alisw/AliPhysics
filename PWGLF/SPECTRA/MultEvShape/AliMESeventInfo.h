@@ -10,7 +10,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 #ifndef ROOT_TNamed
-#include "TNamed.h"
+#include <TNamed.h>
 #endif
 #define FW_MAX_ORDER 8
 
@@ -69,8 +69,7 @@ public:
 
   void            Clear(Option_t *opt);
   const AliMESevShape*  GetEventShape() const      { return &fEvShape; }
-//   Int_t           GetMultiplicity(EMESmultId typ) const  { return typ>=0&&typ<kNmult?fMultiplicity[typ]:-1;}
-  Double_t           GetMultiplicity(EMESmultId typ) const  { return typ>=0&&typ<kNmult?fMultiplicity[typ]:-1;}
+  Double_t        GetMultiplicity(EMESmultId typ) const  { return typ>=0&&typ<kNmult?fMultiplicity[typ]:-1;}
   Int_t           GetQuality() const               { return fQuality; }
   Double_t        GetVertexZ() const               { return fVertexZ;}
 
@@ -94,7 +93,6 @@ public:
 
   void            SetEvShape(const AliMESevShape& ev);   // *GETTER=GetEvShape
   void            SetEvShape(Double_t dir[2], Double_t sfr, Double_t tr[2], Double_t rec, Double_t fw[FW_MAX_ORDER], Double_t leadP[2]);
-//   void            SetMultiplicity(Int_t typ, Int_t mult) { if(typ>=0&&typ<kNmult) fMultiplicity[typ] = mult; }  // alex
   void            SetMultiplicity(Int_t typ, Double_t mult) { if(typ>=0&&typ<kNmult) fMultiplicity[typ] = mult; }
   void            SetPileUp(Bool_t set=kTRUE)      { set?SETBIT(fQuality, kPileUp):CLRBIT(fQuality, kPileUp); }
   void            SetQuality(Int_t q)              { fQuality = q; }
@@ -108,8 +106,7 @@ private:
   AliMESeventInfo &operator=(const AliMESeventInfo &event);
 
   UChar_t        fQuality;              // 
-//   Int_t          fMultiplicity[kNmult]; // multiplicity estimators // alex
-  Double_t          fMultiplicity[kNmult]; // multiplicity estimators
+  Double_t       fMultiplicity[kNmult]; // multiplicity estimators
   Double_t       fVertexZ;              // z coordinate of vertex
   AliMESevShape  fEvShape;              // event shape descriptor
   ClassDef(AliMESeventInfo, 1)          // Event summary data for MultiEvShape

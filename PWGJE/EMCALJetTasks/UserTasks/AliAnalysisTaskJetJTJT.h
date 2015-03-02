@@ -9,6 +9,7 @@ class TProfile;
 class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
+class AliAnalysisUtils;
 class JTJTEfficiency;
 
 
@@ -32,6 +33,7 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
   void setCentBinBorders( int n, Double_t *c);
   void setTriggPtBorders( int n, Double_t *c);
   void setAssocPtBorders( int n, Double_t *c);
+  void setEffMode(int m) {fEffMode = m; };
   void setDebug(int n) {debug = n; }
   void setRunPeriod(const char *period) {runPeriod = period; cout << "RunPeriod set to " << runPeriod << endl;}
   //AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
@@ -61,6 +63,13 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
   TH1                       ****fHistJTBg;			//!Jt background
   TH1                       ****fHistLogJTBg;			//!Logarithmic Jt background
 
+  //non-invariant
+  TH1                       ****fHistJTPtaNonInv;			//!Jet Jt spectrum
+  TH1                       ****fHistLogJTPtaNonInv;			//!Logarithmic Jet Jt spectrum
+  TH1                       ****fHistJTPta_allNonInv;			//!All particles Jt spectrum
+  TH1                       ****fHistJTBgNonInv;			//!Jt background
+  TH1                       ****fHistLogJTBgNonInv;			//!Logarithmic Jt background
+
 
   //Background statistics
 
@@ -75,12 +84,16 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
 
   Int_t fNpttBins;
   Int_t fNptaBins;
+  Int_t fEffMode;
 
   AliJetContainer            *fJetsCont;                   //!Jets
   //AliJetContainer            **fJetsConts;              //!Jets
   //Int_t 		     nJetsConts;
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
+
+  TH1F     *fhVertexZ;  //! vertexZ inclusive
+  TH1I	   *fHistEvtSelection; //! Event selection statistics	
 
  private:
   //TVector *EtaGapThresholds;
@@ -89,11 +102,14 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
   //TVector *XeBorders;
 
 
+  const AliVVertex*   fPrimaryVertex;         //! Vertex found per event
+
 
   TClonesArray *fTracks;  //! tracks array
   TString    fTrackArrayName; // track constituents array name
   TString    runPeriod; // run period name
   JTJTEfficiency *fEfficiency; //! AliJ Efficiency
+  AliAnalysisUtils* fVertexHelper;	//! Vertex selection helper
 
 
   //TVector *CentBinBorders;
@@ -114,49 +130,49 @@ class AliAnalysisTaskJetJTJT : public AliAnalysisTaskEmcalJet {
 };
 
 class JTJTEfficiency {  // this part can occurr anywhere inside the outer accolades
-	#define JUNUSED(expr) do { (void)(expr); } while (0)
+#define JUNUSED(expr) do { (void)(expr); } while (0)
 	public:
-        enum Mode { kNotUse, kPeriod, kRunNumber, kAuto };
-        enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJNTrackCuts };
+		enum Mode { kNotUse, kPeriod, kRunNumber, kAuto };
+		enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJNTrackCuts };
 
 
 
-        JTJTEfficiency();
-        JTJTEfficiency(const JTJTEfficiency& obj);
-        JTJTEfficiency& operator=(const JTJTEfficiency& obj);
-        void SetMode( int i ){ fMode = i; }
-        void SetDataPath(TString s ){ fDataPath=s; }
-        void SetPeriodName(TString s ){ fPeriodStr=s; cout << "Eff: Run Period is set to " << fPeriodStr << endl; }
-        TString GetName() const { return fName; }
-        double GetCorrection( double pt, int icut, double cent ) const ;
-        void SetRunNumber( Long64_t runnum ){ fRunNumber=runnum; }
+		JTJTEfficiency();
+		JTJTEfficiency(const JTJTEfficiency& obj);
+		JTJTEfficiency& operator=(const JTJTEfficiency& obj);
+		void SetMode( int i ){ fMode = i; }
+		void SetDataPath(TString s ){ fDataPath=s; }
+		void SetPeriodName(TString s ){ fPeriodStr=s; cout << "Eff: Run Period is set to " << fPeriodStr << endl; }
+		TString GetName() const { return fName; }
+		double GetCorrection( double pt, int icut, double cent ) const ;
+		void SetRunNumber( Long64_t runnum ){ fRunNumber=runnum; }
 
-        TString GetEffName() ;
-        TString GetEffFullName() ;
-        bool   Load();
-        void   PrintOut() const {
-            cout<<fInputRootName<<endl;
-        }
-        //void Write();
+		TString GetEffName() ;
+		TString GetEffFullName() ;
+		bool   Load();
+		void   PrintOut() const {
+			cout<<fInputRootName<<endl;
+		}
+		//void Write();
 
-    private:
-        int      fMode;             // Mode. see enum Mode
-        int      fPeriod;           // Data Period index
-        //AliJTrackCut fTrackCut;     // Track Cut Object. TODO:why not pointer?
-        //AliJRunTable fRunTable;     // run Table. TODO:why not pointer?
+	private:
+		int      fMode;             // Mode. see enum Mode
+		int      fPeriod;           // Data Period index
+		//AliJTrackCut fTrackCut;     // Track Cut Object. TODO:why not pointer?
+		//AliJRunTable fRunTable;     // run Table. TODO:why not pointer?
 
-        TString fDataPath;          // locaction of eff files
-        TString fName;              // name of efficiency. usually empty
-        TString fPeriodStr;         // DATA period
-        TString fMCPeriodStr;       // MC period
-        Long64_t fRunNumber;        // Runnumber
-        TString fTag;               // Tags to distinguish special eff file
-        TString fInputRootName;     // name of input
+		TString fDataPath;          // locaction of eff files
+		TString fName;              // name of efficiency. usually empty
+		TString fPeriodStr;         // DATA period
+		TString fMCPeriodStr;       // MC period
+		Long64_t fRunNumber;        // Runnumber
+		TString fTag;               // Tags to distinguish special eff file
+		TString fInputRootName;     // name of input
 
-        TFile * fInputRoot;         // input file  
-        TDirectory * fEffDir[3];    // root directory of efficiency. only second item of fEffDir with "Efficiency" is being used.
-        TGraphErrors * fCorrection[20][20][20]; // Storage of Correction factor 
-        TAxis * fCentBinAxis;     // Bin of Centrality. replace with AliJBin?
+		TFile * fInputRoot;         // input file  
+		TDirectory * fEffDir[3];    // root directory of efficiency. only second item of fEffDir with "Efficiency" is being used.
+		TGraphErrors * fCorrection[20][20][20]; // Storage of Correction factor 
+		TAxis * fCentBinAxis;     // Bin of Centrality. replace with AliJBin?
 
 
 

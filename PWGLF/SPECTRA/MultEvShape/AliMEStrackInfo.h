@@ -10,10 +10,10 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 #ifndef ALIVParticle_H
-#include "AliVParticle.h"
+#include <AliVParticle.h>
 #endif
 #ifndef ALIPID_H
-#include "AliPID.h"
+#include <AliPID.h>
 #endif
 
 class AliESDtrack;

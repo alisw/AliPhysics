@@ -381,7 +381,7 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
 Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack)
 {   
         if( labelParticle < 0 || labelParticle >= fMCStack->GetNtrack() ) return kFALSE;
-        if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
+        //if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
 
         TParticle* particle = fMCStack->Particle(labelParticle);
 

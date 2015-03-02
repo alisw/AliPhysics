@@ -46,34 +46,37 @@
 #include <TChain.h>
 #include <TParticle.h>
 
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliGeomManager.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
-#include "AliCDBPath.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDInputHandlerRP.h"
-#include "AliMCEventHandler.h"
+#include <AliLog.h>
+#include <AliAnalysisManager.h>
+#include <AliGeomManager.h>
+#include <AliGRPManager.h>
+#include <AliCDBManager.h>
+#include <AliCDBStorage.h>
+#include <AliCDBEntry.h>
+#include <AliCDBPath.h>
+#include <AliESDEvent.h>
+#include <AliMCEvent.h>
+#include <AliESDInputHandler.h>
+#include <AliESDInputHandlerRP.h>
+#include <AliMCEventHandler.h>
 
-#include "AliESDfriend.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDHeader.h"
-#include "AliESDRun.h"
-#include "AliESDtrack.h"
-#include "AliESDv0.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDv0KineCuts.h"
-#include "AliMCParticle.h"
-#include "AliMultiplicity.h"
-#include "AliCentrality.h"
-#include "AliPID.h"
-#include "AliStack.h"
-#include "AliTrackReference.h"
-#include "TTreeStream.h"
+#include <AliESDfriend.h>
+#include <AliESDfriendTrack.h>
+#include <AliESDHeader.h>
+#include <AliESDRun.h>
+#include <AliESDtrack.h>
+#include <AliESDv0.h>
+#include <AliESDkink.h>
+#include <AliESDtrackCuts.h>
+#include <AliESDv0KineCuts.h>
+#include <AliESDTrdTracklet.h>
+#include <AliMCParticle.h>
+#include <AliMultiplicity.h>
+#include <AliCentrality.h>
+#include <AliPID.h>
+#include <AliStack.h>
+#include <AliTrackReference.h>
+#include <TTreeStream.h>
 
 #include <cstdio>
 #include <climits>
@@ -81,15 +84,18 @@
 #include <iostream>
 #include <memory>
 
-#include "AliTRDReconstructor.h"
-#include "AliTRDrecoParam.h"
-#include "AliTRDcalibDB.h"
-#include "AliTRDtrackerV1.h"
-#include "AliTRDpadPlane.h"
-#include "AliTRDgeometry.h"
-#include "AliTRDtrackV1.h"
-#include "AliTRDseedV1.h"
-#include "AliTRDcluster.h"
+#include <AliTRDReconstructor.h>
+#include <AliTRDrecoParam.h>
+#include <AliTRDcalibDB.h>
+#include <AliTRDtrackerV1.h>
+#include <AliTRDpadPlane.h>
+#include <AliTRDgeometry.h>
+#include <AliTRDtrackV1.h>
+#include <AliTRDseedV1.h>
+#include <AliTRDtrackletMCM.h>
+#include <AliTRDtrackletWord.h>
+#include <AliTRDcluster.h>
+
 #include "AliTRDinfoGen.h"
 #include "AliTRDpwgppHelper.h"
 #include "info/AliTRDtrackInfo.h"
@@ -110,6 +116,7 @@ const Float_t AliTRDinfoGen::fgkTrkDCAz   = 1.;
 const Int_t   AliTRDinfoGen::fgkNclTPC    = 70;
 const Float_t AliTRDinfoGen::fgkPt        = 0.2;
 const Float_t AliTRDinfoGen::fgkEta       = 0.9;
+Char_t AliTRDinfoGen::fgOnlSim            = -1;
 AliTRDReconstructor* AliTRDinfoGen::fgReconstructor(NULL);
 AliTRDgeometry* AliTRDinfoGen::fgGeo(NULL);
 //____________________________________________________________________
@@ -130,6 +137,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fTracksSA(NULL)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
+  ,fTracklets(NULL)
   ,fClusters(NULL)
   ,fContainer(NULL)
   ,fRecos(NULL)
@@ -159,6 +167,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fTracksSA(NULL)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
+  ,fTracklets(NULL)
   ,fClusters(NULL)
   ,fContainer(NULL)
   ,fRecos(NULL)
@@ -174,6 +183,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   DefineOutput(AliTRDpwgppHelper::kTracksKink,   TObjArray::Class());
   DefineOutput(AliTRDpwgppHelper::kEventInfo,    AliTRDeventInfo::Class());
   DefineOutput(AliTRDpwgppHelper::kV0List,       TObjArray::Class());
+  DefineOutput(AliTRDpwgppHelper::kTracklets,    TObjArray::Class());
   DefineOutput(AliTRDpwgppHelper::kClusters,     TObjArray::Class());
   DefineOutput(AliTRDpwgppHelper::kMonitor,      TObjArray::Class()); // histogram list
 }
@@ -213,6 +223,10 @@ AliTRDinfoGen::~AliTRDinfoGen()
     delete fV0List;
     fV0List = NULL;
   }
+  if(fTracklets){
+    fTracklets->Delete(); delete fTracklets;
+    fTracklets = NULL;
+  }
   if(fClusters){
     fClusters->Delete(); delete fClusters;
     fClusters = NULL;
@@ -251,6 +265,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fTracksSA     = new TObjArray(20); fTracksSA->SetOwner(kTRUE);
   fTracksKink   = new TObjArray(20); fTracksKink->SetOwner(kTRUE);
   fV0List       = new TObjArray(10); fV0List->SetOwner(kTRUE);
+  fTracklets    = new TObjArray(1200); fTracklets->SetOwner(kTRUE);
   fClusters     = new TObjArray(AliTRDgeometry::kNdet); fClusters->SetOwner(kTRUE);
 
   // define general monitor
@@ -288,11 +303,12 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fContainer->AddAt(chmb, kChmb);
 
   PostData(AliTRDpwgppHelper::kTracksBarrel, fTracksBarrel);
-  PostData(AliTRDpwgppHelper::kTracksITS, fTracksITS);
+  PostData(AliTRDpwgppHelper::kTracksITS,    fTracksITS);
   PostData(AliTRDpwgppHelper::kTracksSA,     fTracksSA);
   PostData(AliTRDpwgppHelper::kTracksKink,   fTracksKink);
   PostData(AliTRDpwgppHelper::kEventInfo,    fEventInfo);
   PostData(AliTRDpwgppHelper::kV0List,       fV0List);
+  PostData(AliTRDpwgppHelper::kTracklets,    fTracklets);
   PostData(AliTRDpwgppHelper::kClusters,     fClusters);
   PostData(AliTRDpwgppHelper::kMonitor,      fContainer);
 }
@@ -322,6 +338,69 @@ Bool_t AliTRDinfoGen::Load(const Char_t *file, const Char_t *dir, const Char_t *
 }
 
 //____________________________________________________________________
+Bool_t AliTRDinfoGen::LoadOnlTracklets(const Option_t *opt)
+{
+  // load tracklets for the current event from file TRD.Tracklets.root
+
+  if(gSystem->AccessPathName("TRD.Tracklets.root")){  // check onl.tracklets file
+    AliDebug(1, "Missing onl.tracklet file.");
+    return kFALSE;
+  }
+
+  // check ESD event
+  if (!fESDev) {
+    AliError("No ESD event !");
+    return kFALSE;
+  }
+  // try open onl.tracklets file
+  TFile *trackletFile(NULL);
+  if (!(trackletFile= TFile::Open("TRD.Tracklets.root"))) {
+    AliWarning("onl.tracklet file corrupt.");
+    return kFALSE;
+  }
+  
+  // try loading tree
+  TTree *trackletTree(NULL);
+  if(!(trackletTree = (TTree*) trackletFile->Get(Form("Event%d/tracklets%s", fESDev->GetEventNumberInFile(), opt)))){
+    AliDebug(2, Form("Missing onl.tracklets tree \"tracklets%s\" for Event[%d].", opt, fESDev->GetEventNumberInFile()));
+    trackletFile->Close(); delete trackletFile;
+    return kFALSE;
+  }
+  
+  Char_t typ[5]="no";
+  if(strcmp(opt, "")==0){              // loading sim.onl.tracklets
+    snprintf(typ, 5, "MC");
+    AliTRDtrackletMCM *trkl(NULL);
+    TBranch *br = trackletTree->GetBranch("mcmtrklbranch");
+    br->SetAddress(&trkl);
+    for (Int_t iTracklet = 0; iTracklet < br->GetEntries(); iTracklet++) {
+      if(!br->GetEntry(iTracklet)) continue;
+      //new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliTRDtrackletMCM(*trkl);
+      fTracklets->Add(new AliTRDtrackletMCM(*trkl));
+    }
+  } else if(strcmp(opt, "_raw")==0){   // loading raw.onl.tracklets
+    snprintf(typ, 5, "RAW");
+    Int_t hc; TClonesArray *trklArray(NULL);
+    trackletTree->SetBranchAddress("hc", &hc);
+    trackletTree->SetBranchAddress("trkl", &trklArray);
+    for (Int_t iHCidx = 0; iHCidx < trackletTree->GetEntries(); iHCidx++) {
+      if(!trackletTree->GetEntry(iHCidx)) continue;
+      if (!trklArray) continue;
+      for (Int_t iTracklet = 0; iTracklet < trklArray->GetEntries(); iTracklet++) {
+        AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) ((*trklArray)[iTracklet]);
+        trklWord->SetDetector(hc/2);
+        //new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliTRDtrackletWord(*trklWord);
+        fTracklets->Add(new AliTRDtrackletWord(*trklWord));
+      }
+    }
+  }
+  AliDebug(1, Form("Ev[%6d] %s.onl.tracklets[%d]", fESDev->GetEventNumberInFile(), typ, (Int_t)fTracklets->GetEntriesFast()));
+  trackletFile->Close(); delete trackletFile;
+
+  return kTRUE;
+}
+
+//____________________________________________________________________
 void AliTRDinfoGen::UserExec(Option_t *){
   //
   // Run the Analysis
@@ -332,6 +411,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   fTracksSA->Delete();
   fTracksKink->Delete();
   fV0List->Delete();
+  fTracklets->Delete();
   fClusters->Delete();
   fEventInfo->Delete("");
 
@@ -364,10 +444,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
         AliGeomManager::ApplyAlignObjsFromCDB("ITS TPC TRD");
       }
       //init magnetic field
-      if(!TGeoGlobalMagField::Instance()->IsLocked() &&
-        !fESDev->InitMagneticField()){
-        AliError("MAGNETIC FIELD failed initialization.");
+      if(!TGeoGlobalMagField::Instance()->GetField() && !TGeoGlobalMagField::Instance()->IsLocked()){
+        AliGRPManager grpManager;
+        if(!grpManager.ReadGRPEntry()) AliError("Cannot get GRP entry"); 
+        if(!grpManager.SetMagField()) AliError("Problem with magnetic field setup"); 
       }
+    
       // set no of time bins
       AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
     }
@@ -391,7 +473,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
 
   AliDebug(2, "+++++++++++++++++++++++++++++++++++++++");
   AliDebug(2, Form("Analyse Ev[%d]", fESDev->GetEventNumberInFile()));
-  
+
   // set reco param valid for this event
   TH1 *h = (TH1I*)fContainer->At(kEvType);
   if(!fRecos){
@@ -409,7 +491,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       else if(es&AliRecoParam::kHighMult){ s="HighMult"; h->Fill(1);}
       else if(es&AliRecoParam::kCosmic){ s="Cosmic"; h->Fill(2);}
       else if(es&AliRecoParam::kCalib){ s="Calib"; h->Fill(3);}
-      else {s="Unknown"; h->Fill(4);}
+      else s="Unknown";
       AliDebug(2, Form("  Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
       break;
     }
@@ -492,7 +574,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliTRDcluster *cl = NULL;
 
 
-  // LOOP 0 - over ESD v0s
+  // LOOP 0.0 - over ESD v0s
   Float_t bField(fESDev->GetMagneticField());
   AliESDv0 *v0(NULL);
   Int_t v0pid[AliPID::kSPECIES];
@@ -520,6 +602,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fV0List->Add(new AliTRDv0Info(*fV0Info));//  kFOUND=kFALSE;
   }
 
+  // LOOP 0.1 - over ESD kinks
+  AliESDkink *kink(NULL);
+  for(Int_t ikink(0); ikink<fESDev->GetNumberOfKinks(); ikink++){
+    if(!(kink = fESDev->GetKink(ikink))) continue;
+    AliDebug(1, Form("Kink[%d] idx[%3d %3d]\n", ikink, kink->GetIndex(0), kink->GetIndex(1)));
+  }
 
   // LOOP 1 - over ESD tracks
   AliTRDv0Info *v0info=NULL;
@@ -722,6 +810,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
           if(fTrackInfo->GetTrack()) nBarrelFriend++;
         }
       } else {
+        AliDebug(1, Form("KinkEv[%3d] Track[%d] Kink[%3d %3d %3d]\n"
+          ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk
+          ,esdTrack->GetKinkIndex(0),esdTrack->GetKinkIndex(1),esdTrack->GetKinkIndex(2)));
         fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
         nKink++;
       }
@@ -765,7 +856,25 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
     fTrackInfo->Delete("");
   }
+
+  // read onl.tracklets
+  Bool_t readOnl(kFALSE);
+  if(LoadOnlTracklets()) readOnl=kTRUE;
+  else { // read from ESD
+    AliESDTrdTracklet *onlTracklet(NULL);
+    for (Int_t iTracklet(0); iTracklet < fESDev->GetNumberOfTrdTracklets(); iTracklet++) {
+      if(!(onlTracklet = fESDev->GetTrdTracklet(iTracklet))) continue;
+      fTracklets->Add(new AliESDTrdTracklet(*onlTracklet));
+    }
+  }
+  if(fgOnlSim<0){// this part is executed only once per conversion
+    fgOnlSim=0;
+    if(readOnl) fgOnlSim=1;
+    AliInfo(Form("Processing onl.tracklets of class \"%s\"", fgOnlSim?"AliTRDtrackletMCM":"AliESDTrdTracklet"));
+  }
+
   // read clusters REC info
+  Int_t nClusters(0);
   TTree * treeR(NULL); AliESDInputHandlerRP *esdRPhandler(NULL);
   if(fInputHandler) esdRPhandler = dynamic_cast<AliESDInputHandlerRP*>(fInputHandler);
   if(esdRPhandler){
@@ -785,6 +894,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
             continue;
           }
           fClusters->AddAt(recPoints->Clone(Form("%03d", c->GetDetector())), c->GetDetector());
+          nClusters+=recPoints->GetEntries();
         }
       } else AliDebug(3, "No TRDcluster branch");
     } else AliDebug(3, "No RecPoints");
@@ -847,13 +957,15 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliDebug(1, Form(
     "\nEv[%3d] Tracks: ESD[%d] MC[%d] V0[%d]\n"
     "        TPCout[%d] ITSout[%d] TRDin[%d] TRDout[%d]\n"
-    "        Barrel[%3d+%3d=%3d] ITS[%3d=%3d] SA[%2d+%2d=%2d] Kink[%2d+%2d=%2d]"
+    "        Barrel[%3d+%3d=%3d] ITS[%3d=%3d] SA[%2d+%2d=%2d] Kink[%2d+%2d=%2d]\n"
+    "        onl.Tracklets[%4d] Clusters[%5d] Detectors[%3d]"
     ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC, fV0List->GetEntries()
     , nTPC, nITS, nTRDin, nTRDout
     ,nBarrel, nBarrelMC, fTracksBarrel->GetEntries()
     ,nBarrelITS, fTracksITS->GetEntries()
     ,nSA, nSAMC, fTracksSA->GetEntries()
     ,nKink, nKinkMC, fTracksKink->GetEntries()
+    ,fTracklets->GetEntries(), nClusters, fClusters->GetEntries()
   ));
   // save track statistics
   h = (TH1I*)fContainer->At(kStatTrk);
@@ -874,11 +986,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
   h->Fill(Float_t(kSAFriend), nSAFriend);
 
   PostData(AliTRDpwgppHelper::kTracksBarrel, fTracksBarrel);
-  PostData(AliTRDpwgppHelper::kTracksITS, fTracksITS);
+  PostData(AliTRDpwgppHelper::kTracksITS,    fTracksITS);
   PostData(AliTRDpwgppHelper::kTracksSA,     fTracksSA);
   PostData(AliTRDpwgppHelper::kTracksKink,   fTracksKink);
   PostData(AliTRDpwgppHelper::kEventInfo,    fEventInfo);
   PostData(AliTRDpwgppHelper::kV0List,       fV0List);
+  PostData(AliTRDpwgppHelper::kTracklets,    fTracklets);
   PostData(AliTRDpwgppHelper::kClusters,     fClusters);
   PostData(AliTRDpwgppHelper::kMonitor,      fContainer);
 }

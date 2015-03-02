@@ -72,6 +72,7 @@ AliEbyENetChargeFluctuationTask *AddAliEbyENetChargeFluctuationTaskSW(const Char
     task->SetTrackFilterBit(aodFilterBit);
   }
   task->SetSystemType(sysii);
+  task->SetEventSelectionBit(AliVEvent::kMB);
   task->SetCentralityEstimator(centralityEstimator);
   task->SetVertexDiamond(vx,vy,vz);
   task->SetKinematicsCuts(ptl,pth,gEta,gRap);

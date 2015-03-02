@@ -130,10 +130,10 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
     TParticle * mother = fStack->Particle(iparton);
     while (iparton > 7)
     {
-      iparton   = mother->GetFirstMother();
+      iparton = mother->GetFirstMother();
       if(iparton < 0)
       {
-        AliWarning("Negative index, skip event");
+        AliDebug(1,"Negative index, skip ESD event");
         return kFALSE;
       }
       mother = fStack->Particle(iparton);
@@ -148,7 +148,7 @@ Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(Int_t   indexTrig,
       iparton   = mother->GetMother();
       if(iparton < 0)
       {
-        AliWarning("Negative index, skip event");
+        AliDebug(1,"Negative index, skip AOD event");
         return kFALSE;
       }
       mother = (AliAODMCParticle*) fAODMCparticles->At(iparton);
