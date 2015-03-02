@@ -177,7 +177,7 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	//************************************************ EMCAL clusters **********************************************************
-	if (trainConfig == 1){ // min energy = 0.3 GeV/c
+	if ( trainConfig == 1){ // min energy = 0.3 GeV/c
         
 	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
 	    eventCutArray[1] = "8005201"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
@@ -185,12 +185,12 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	    eventCutArray[3] = "8005201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043022030000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kEMC7
 	      
 	
-	} if ( trainConfig == 2 ){
+	} else if ( trainConfig == 2 ){
 	  
-	    eventCutArray[ 0] = "8000001"; photonCutArray[ 0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[ 1] = "8006201"; photonCutArray[ 1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
-	    eventCutArray[ 2] = "8000001"; photonCutArray[ 2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[ 3] = "8006201"; photonCutArray[ 3] = "00200009327002008250400000"; clusterCutArray[3] = "20000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
+	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[1] = "8006201"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
+	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[3] = "8006201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "20000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
 	  
 	  
 	} else {
@@ -254,7 +254,6 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 		analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
-		
 		analysisElectronCuts[i] = new AliDalitzElectronCuts();
 		if( !analysisElectronCuts[i]->InitializeCutsFromCutString(electronCutArray[i].Data())) {
 
@@ -264,15 +263,13 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 		ElectronCutList->Add(analysisElectronCuts[i]);
 		analysisElectronCuts[i]->SetFillCutHistograms("",kFALSE,electronCutArray[i].Data()); 
 		
-		
-		
-		
-		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+		
+		
 	}
 
 	task->SetEventCutList(numberOfCuts,EventCutList);
