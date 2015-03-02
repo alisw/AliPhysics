@@ -173,6 +173,8 @@ class AliJJetJtAnalysis{
         AliJTH1D fhFullChdRChJetBin;
         AliJTH2D fh2DFullEvsChEdN0;
         AliJTH2D fh2DFullEvsChEdNnot0;
+        AliJTH2D fhJetEtaPhi;
+        AliJTH2D fhTrackEtaPhi;
 
 
 		//double   fJetPtMinCut;

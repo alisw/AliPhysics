@@ -116,6 +116,9 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
     , fh2DFullEvsChEdN0()
     // x-axis: fulljet E, y: ch jet E when dN != 0
     , fh2DFullEvsChEdNnot0()
+    //Jet eta and Phi 2D dist for each jet finder
+    , fhJetEtaPhi()
+    , fhTrackEtaPhi()
 {
 
 }
@@ -186,6 +189,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
     , fhFullChdRChJetBin()
     , fh2DFullEvsChEdN0()
     , fh2DFullEvsChEdNnot0()
+    , fhJetEtaPhi()
+    , fhTrackEtaPhi()
 {
 
 }
@@ -257,6 +262,8 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
     , fhFullChdRChJetBin(ap.fhFullChdRChJetBin)
     , fh2DFullEvsChEdN0(ap.fh2DFullEvsChEdN0)
     , fh2DFullEvsChEdNnot0(ap.fh2DFullEvsChEdNnot0)
+    , fhJetEtaPhi(ap.fhJetEtaPhi)
+    , fhTrackEtaPhi(ap.fhTrackEtaPhi)
 {
 
 }
@@ -518,6 +525,15 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
         << TH2D("h2DFullEvsChEdNnot0","",NBINS, LogBinsX, NBINS, LogBinsX )  
         <<"END";
 
+    fhJetEtaPhi
+        << TH2D("hJetEtaPhi","jet eta phi dist",70,-0.35,0.35,70,-1*TMath::Pi(),TMath::Pi())
+        << fJetFinderBin<<"END";
+
+    fhTrackEtaPhi
+        << TH2D("hTrackEtaPhi","track eta phi dist",70,-1.,1.,70,-2*TMath::Pi(),2*TMath::Pi())
+        << fJetFinderBin<<"END";
+
+
     fHMG->Print();
     fHMG->WriteConfig();
 
@@ -651,6 +667,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
         AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
         if (!jet) continue;
         if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
+        fhJetEtaPhi[iContainer]->Fill(jet->Eta(),jet->Phi());
         pT = jet->Pt();
         if (pT<(*fJetTriggPtBorders)[1]) continue;
         iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos
@@ -768,6 +785,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer)
             for (int icon = 0; icon<fTracks->GetEntries(); icon++){
                 AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(fTracks->At(icon));
                 if (!track) continue;
+                fhTrackEtaPhi[iContainer]->Fill(track->Eta(),track->Phi());
                 deltaEta = vOrtho.Eta() - track->Eta();
                 deltaPhi = vOrtho.Phi() - track->Phi();
                 deltaR   = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);

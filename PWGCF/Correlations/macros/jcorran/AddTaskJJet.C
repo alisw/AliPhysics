@@ -62,16 +62,16 @@ AliJJetTask* AddTaskJJet(
     trackCont->SetClassName("AliVTrack");
     AliClusterContainer *clusterCont = jtTask->AddClusterContainer(nclusters);
 
-    char *type="EMCAL";  
-    TString strType(type);
+    //char *type="EMCAL";  
+    char *type[]={"EMCAL","EMCAL","EMCAL","TPC","TPC","TPC"};  
     AliJetContainer *jetCont[nJetFinder];
 
     for(int i=0; i<nJetFinder; i++){
-        jetCont[i] = jtTask->AddJetContainer(jetFinderTask[i]->GetName(),strType,aConeSizes[i]);
+        jetCont[i] = jtTask->AddJetContainer(jetFinderTask[i]->GetName(),type[i],aConeSizes[i]);
         if(jetCont[i]) {
             jetCont[i]->SetRhoName(nrho);
             jetCont[i]->ConnectParticleContainer(trackCont);
-            jetCont[i]->ConnectClusterContainer(clusterCont);
+            if (i<3) jetCont[i]->ConnectClusterContainer(clusterCont);
             jetCont[i]->SetZLeadingCut(0.98,0.98);
             jetCont[i]->SetPercAreaCut(0.6);
             jetCont[i]->SetJetPtCut(5);    
