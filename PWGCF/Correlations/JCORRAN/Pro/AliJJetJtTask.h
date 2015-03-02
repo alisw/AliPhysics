@@ -64,6 +64,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   double zVert;
   AliAnalysisUtils *fAnaUtils;
   AliJRunTable *fRunTable;
+  TH1D * fEventHist;
 
   ClassDef(AliJJetJtTask, 1); 
 };
