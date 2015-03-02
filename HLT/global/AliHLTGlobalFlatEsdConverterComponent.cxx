@@ -253,6 +253,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // see header file for class documentation
 
   AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Start");
+  TStopwatch stopwatch;
+  stopwatch.Start();
 	Int_t outsizeEvent = 0, outsizeFriend = 0;
 	
   int iResult=0;
@@ -376,6 +378,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   Int_t err = 0;
   AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr); 
+
+  int numberOfTracks=0;
 
   do{ // single loop for easy break in case of output buffer overflow
 
@@ -607,6 +611,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     if( err ) break;
 
     flatEsd->SetTracksEnd( nTracks, trackSize );
+    numberOfTracks=nTracks;
 
     if( err ) break;
 
@@ -923,6 +928,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   fBenchmark.Stop(0);  
   //HLTWarning( fBenchmark.GetStatistics() );
+  stopwatch.Stop();
+  AliSysInfo::AddStamp("flatConverter",numberOfTracks,1000*stopwatch.RealTime(),1000*stopwatch.CpuTime());
   
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD friend event is not stored", maxOutputSize );
