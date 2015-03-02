@@ -45,6 +45,7 @@ ClassImp(AliAnalysisTaskNucleiYield);
 ///
 /// \param taskname Name of the task
 /// \param partname Name of the analysed particle
+///
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 :AliAnalysisTaskSE(taskname.Data())						//
 ,fList(0x0)
@@ -80,6 +81,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fRequireMaxDCAxy(0.5f)
 ,fRequireMaxDCAz(1.f)
 ,fRequireTPCpidSigmas(3.f)
+,fRequireITSpidSigmas(-1.f)
 ,fParticle(AliPID::kUnknown)
 ,fCentBins(0x0)
 ,fDCABins(0x0)
@@ -124,6 +126,7 @@ AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
 
 /// This function creates all the histograms and all the objects in general used during the analysis
 /// \return void
+///
 void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
   fList = new TList();
   fList->SetOwner(kTRUE);
@@ -189,13 +192,17 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     const float deltaDCAz = 2.f * fDCAzLimit / fDCAzNbins;
     for (int i = 0; i <= fDCAzNbins; ++i)
       dcazBins[i] = i * deltaDCAz - fDCAzLimit;
-    
+    const int nTpcBins = 40;
+    float tpcBins[nTpcBins + 1];
+    for (int i = 0; i <= nTpcBins; ++i) {
+      tpcBins[i] = -4.f + i * 0.2f;
+    }
     
     fATOFsignal = new TH3F("fATOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fATPCcounts = new TH2F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); TPC counts",
-                           nCentBins,centBins,nPtBins,pTbins);
+    fATPCcounts = new TH3F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); ITS ##sigma",
+                           nCentBins,centBins,nPtBins,pTbins,nTpcBins,tpcBins);
     fMDCAxy = new TH3F("fMDCAxy",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
                        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
     fMDCAz = new TH3F("fMDCAz",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
@@ -203,8 +210,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fMTOFsignal = new TH3F("fMTOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); TPC counts",
-                           nCentBins,centBins,nPtBins,pTbins);
+    fMTPCcounts = new TH3F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); ITS ##sigma",
+                           nCentBins,centBins,nPtBins,pTbins,nTpcBins,tpcBins);
     fList->Add(fATOFsignal);
     fList->Add(fATPCcounts);
     fList->Add(fMDCAxy);
@@ -333,10 +340,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       }
     } else {
       if (!PassesPIDSelection(track)) continue;
+      AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
       if (track->Charge() > 0)
-        fMTPCcounts->Fill(centrality, pT);
+        fMTPCcounts->Fill(centrality, pT, itsPidResp.GetNumberOfSigmas(track, fParticle));
       else
-        fATPCcounts->Fill(centrality, pT);
+        fATPCcounts->Fill(centrality, pT, itsPidResp.GetNumberOfSigmas(track, fParticle));
       
       if (beta < 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
@@ -459,15 +467,19 @@ void AliAnalysisTaskNucleiYield::SetPtBins(Int_t nbins, Float_t *bins) {
 
 /// This function allows to set a custom parametrisation for the TPC response function
 ///
-/// \param par[5] Parametrisation values
+/// \param par Array of 5 values corresponding to the Bethe Bloch parametrisation
 /// \param sigma Sigma of the parametrisation
 /// \return void
 ///
-void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t par[5], Float_t sigma) {
-  fCustomTPCpid.Set(6);
-  for (int i = 0; i < 5; ++i)
-    fCustomTPCpid.AddAt(par[i],i);
-  fCustomTPCpid.AddAt(sigma, 5);
+void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
+  if (par == 0x0 && sigma <= 0) {
+    fCustomTPCpid.Set(1);
+  } else {
+    fCustomTPCpid.Set(6);
+    for (int i = 0; i < 5; ++i)
+      fCustomTPCpid.AddAt(par[i],i);
+    fCustomTPCpid.AddAt(sigma, 5);
+  }
 }
 
 /// This function checks if the track passes the PID selection
@@ -478,7 +490,13 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t par[5], Float_t sigma) 
 ///
 Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
   if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
-    return TMath::Abs(fPID->GetTPCResponse().GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
+    bool itsPID = kTRUE;
+    AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
+    AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
+    if (fRequireITSpidSigmas > 0) {
+      itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
+    }
+    return itsPID && TMath::Abs(tpcPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireTPCpidSigmas;
   } else {
     const float p = t->GetTPCmomentum() / fPDGMassOverZ;
     const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
@@ -524,6 +542,7 @@ void AliAnalysisTaskNucleiYield::SetParticleType(AliPID::EParticleType part) {
   fPDGMassOverZ = AliPID::ParticleMassZ(part);
 }
 
+//TODO: avoid hardcoded flattening
 /// This function provides the flattening of the centrality distribution
 ///
 /// \param cent Event centrality

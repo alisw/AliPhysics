@@ -49,12 +49,13 @@ public:
   void SetRequireMaxChi2 (float maxChi2 = 4.f) { fRequireMaxChi2 = maxChi2; }
   void SetRequireMaxDCAxy (float maxDCA) { fRequireMaxDCAxy = maxDCA; }
   void SetRequireMaxDCAz (float maxDCA) { fRequireMaxDCAz = maxDCA; }
-  void SetRequireTPCpidSigmas (float sigmas) { fRequireTPCpidSigmas = (sigmas > 0) ? sigmas : -sigmas; }
+  void SetRequireTPCpidSigmas (float sig) { fRequireTPCpidSigmas = (sig > 0) ? sig : -sig; }
+  void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   
   void SetCentBins(Int_t nbins, Float_t *bins);
   void SetDCABins(Int_t nbins, Float_t min, Float_t max);
   void SetPtBins(Int_t nbins, Float_t *bins);
-  void SetCustomTPCpid(Float_t par[5], Float_t sigma);
+  void SetCustomTPCpid(Float_t *par, Float_t sigma);
   void SetTOFBins(Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins(Int_t nbins, Float_t limit);
   
@@ -113,6 +114,7 @@ private:
   Float_t               fRequireMaxDCAxy;       ///< Cut on tracks: maximum \f$DCA_{xy}\f$ for the track
   Float_t               fRequireMaxDCAz;        ///< Cut on tracks: maximum \f$DCA_{z}\f$ for the track
   Float_t               fRequireTPCpidSigmas;   ///< Cut on TPC PID number of sigmas
+  Float_t               fRequireITSpidSigmas;
   
   AliPID::EParticleType fParticle;              ///< Particle specie
   TArrayF               fCentBins;              ///< Centrality bins
@@ -140,11 +142,11 @@ private:
   
   // Data histograms
   TH3F                 *fATOFsignal;            //!<
-  TH2F                 *fATPCcounts;            //!<
+  TH3F                 *fATPCcounts;            //!<
   TH3F                 *fMDCAxy;                //!<
   TH3F                 *fMDCAz;                 //!<
   TH3F                 *fMTOFsignal;            //!<
-  TH2F                 *fMTPCcounts;            //!<
+  TH3F                 *fMTPCcounts;            //!<
   
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
