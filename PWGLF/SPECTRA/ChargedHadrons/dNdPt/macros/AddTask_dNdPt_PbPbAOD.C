@@ -5,7 +5,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 						Double_t dNClustersTPC = 0,
 						Bool_t bDoCutTPCLength = kTRUE,
 						Double_t dPrefactorLengthInTPC = 0.85,
-						char *centEstimator = "V0M"
+						char *centEstimator = "V0M",
+						char *suffix = ""
 											  )
 {
   // Creates, configures and attaches to the train a cascades check task.
@@ -26,7 +27,9 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   // Create and configure the task
-  AlidNdPtAnalysisPbPbAOD *task = new AlidNdPtAnalysisPbPbAOD("dNdPtPbPbAOD");
+  TString combinedName;
+  combinedName.Form("%s%s",contName, suffix);
+  AlidNdPtAnalysisPbPbAOD *task = new AlidNdPtAnalysisPbPbAOD(combinedName);
   //   UInt_t triggerMask = AliVEvent::kMB;
   //   triggerMask |= AliVEvent::kCentral;
   //   triggerMask |= AliVEvent::kSemiCentral;
@@ -94,7 +97,7 @@ Double_t binsPhi[] = {
   
   mgr->AddTask(task);
   
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s", contName), TList::Class(),  AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s", combinedName), TList::Class(),  AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));
   
   mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput);
