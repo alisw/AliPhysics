@@ -1,8 +1,6 @@
 #ifndef ALIANALYSISTASKEMCAL_H
 #define ALIANALYSISTASKEMCAL_H
 
-// $Id: AliAnalysisTaskEmcal.h 64518 2013-10-14 12:44:52Z loizides $
-
 class TClonesArray;
 class TString;
 class TList;
@@ -40,16 +38,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kND       = -1,
     kJ1       = 0,
     kJ2       = 1,
-    kG1		    = 2,
-    kG2 	    = 3,
+    kG1	      = 2,
+    kG2       = 3,
     kL0       = 4
   };
 
-  enum TriggerCategory {
-    kTriggerLevel0 = 0,      // Online trigger categories
-    kTriggerLevel1Jet = 1,
-    kTriggerLevel1Gamma=2,
-    kTriggerRecalcJet = 3,   // Recalculated max trigger patch; does not need to be above trigger threshold
+  enum TriggerCategory {       // Online trigger categories
+    kTriggerLevel0      = 0,   
+    kTriggerLevel1Jet   = 1,
+    kTriggerLevel1Gamma = 2,
+    kTriggerRecalcJet   = 3,   // Recalculated max trigger patch; does not need to be above trigger threshold
     kTriggerRecalcGamma = 4
   };
 
@@ -78,6 +76,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
@@ -95,12 +94,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
 
- protected:
-  Double_t                    DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2) const;
+ protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
-  Double_t*                   GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
-  void                        GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const;
-  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
   Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
   void                        AddObjectToEvent(TObject *obj);
@@ -116,6 +111,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t		      HasTriggerType(TriggerType triggersel);
   ULong_t 		      GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+
+  // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
   void                        UserExec(Option_t *option);
   Bool_t                      UserNotify();
@@ -125,9 +122,15 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
-  virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
-  virtual Bool_t              Run()                                                { return kTRUE                 ; }
+  virtual Bool_t              FillHistograms()                  { return kTRUE                 ; }
+  virtual Bool_t              Run()                             { return kTRUE                 ; }
+    
+  // Static utilities
+  static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
+  static Double_t*            GenerateFixedBinArray(Int_t n, Double_t min, Double_t max);
+  static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
 
+  // Task configuration
   BeamType                    fForceBeamType;              // forced beam type
   Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
@@ -144,7 +147,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fUseAliAnaUtils;             // used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
   Bool_t                      fRejectPileup;               // Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
   Bool_t                      fTklVsClusSPDCut;            // Apply tracklet-vs-cluster SPD cut to reject background events in pp
-  AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
   TriggerType                 fTriggerTypeSel;             // trigger type to select based on trigger patches
@@ -163,6 +165,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Int_t                       fNcentBins;                  // how many centrality bins
   Bool_t                      fNeedEmcalGeom;              // whether or not the task needs the emcal geometry
+  TObjArray                   fParticleCollArray;          // particle/track collection array
+  TObjArray                   fClusterCollArray;           // cluster collection array
+  ULong_t                     fTriggers;                   // list of fired triggers
+
+  // Service fields
+  AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)
   Bool_t                      fIsEsd;                      //!whether it's an ESD analysis
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
@@ -183,10 +191,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fPtHardBin;                  //!event pt hard bin
   Int_t                       fNTrials;                    //!event trials
   Float_t                     fXsection;                   //!x-section from pythia header
-  TObjArray                   fParticleCollArray;          // particle/track collection array
-  TObjArray                   fClusterCollArray;           // cluster collection array
-  ULong_t                     fTriggers;                   // list of fired triggers
-
   TList                      *fOutput;                     //!output list
   TH1                        *fHistEventCount;             //!incoming and selected events
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
@@ -205,12 +209,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 11) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 12) // EMCAL base analysis task
 };
 
 //________________________________________________________________________
-inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib,
-                                               Double_t rangeMin, Double_t rangeMax) const
+inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib, Double_t rangeMin, Double_t rangeMax) 
 {
   // Calculate Delta Phi.
 
@@ -226,6 +229,24 @@ inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib,
   else if (dphi > rangeMax) dphi -= tpi;
   
   return dphi;
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array)
+{
+  Double_t binWidth = (max-min)/n;
+  array[0] = min;
+  for (Int_t i = 1; i <= n; i++) {
+    array[i] = array[i-1]+binWidth;
+  }
+}
+
+//________________________________________________________________________
+inline Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max)
+{
+  Double_t *array = new Double_t[n+1];
+  GenerateFixedBinArray(n, min, max, array);
+  return array;
 }
 
 #endif
