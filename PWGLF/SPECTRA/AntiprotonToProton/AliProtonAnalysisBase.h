@@ -260,7 +260,7 @@ class AliProtonAnalysisBase : public TObject {
   void SetRatio(Double_t ratio) {fNRatio = ratio;}
   Double_t GetRatio() {return fNRatio;}
   void SetPriorProbabilities(Double_t * const partFrac) {
-    for(Int_t i = 0; i < AliPID::kSPECIESN; i++) fPartFrac[i] = partFrac[i];} 
+    for(Int_t i = 0; i < AliPID::kSPECIESCN; i++) fPartFrac[i] = partFrac[i];}
   void SetPriorProbabilityFunctions(TF1 *const felectron, 
 				    TF1 *const fmuon, 
 				    TF1 *const fpion, 
