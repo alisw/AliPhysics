@@ -1023,7 +1023,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "01200009297002208250400000"; mesonCutArray[ 4] = "01524065000000";
 		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "01200009297002208250400000"; mesonCutArray[ 5] = "01524065000000";
 		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "01200009297002208250400000"; mesonCutArray[ 6] = "01524065000000";  
->>>>>>> added cuts for Andrea with ITS nsigma
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
