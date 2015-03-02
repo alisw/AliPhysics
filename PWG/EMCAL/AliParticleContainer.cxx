@@ -21,6 +21,7 @@ AliParticleContainer::AliParticleContainer():
   fParticleMaxEta(0.9),
   fParticleMinPhi(-10),
   fParticleMaxPhi(10),
+  fPhiOffset(0.),
   fMinDistanceTPCSectorEdge(-1),
   fTrackBitMap(0),
   fMCTrackBitMap(0),
@@ -43,6 +44,7 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fParticleMaxEta(0.9),
   fParticleMinPhi(-10),
   fParticleMaxPhi(10),
+  fPhiOffset(0.),
   fMinDistanceTPCSectorEdge(-1),
   fTrackBitMap(0),
   fMCTrackBitMap(0),
@@ -191,8 +193,13 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
     return kFALSE;
   }
 
+  Double_t phi = vp->Phi() + fPhiOffset;
+  Double_t tpi = TMath::TwoPi();
+  if(phi<0.)  phi+=tpi;
+  if(phi>tpi) phi-=tpi;
+
   if (vp->Eta() < fParticleMinEta || vp->Eta() > fParticleMaxEta || 
-      vp->Phi() < fParticleMinPhi || vp->Phi() > fParticleMaxPhi) {
+      phi < fParticleMinPhi       || phi > fParticleMaxPhi) {
     fRejectionReason |= kAcceptanceCut;
     return kFALSE;
   }

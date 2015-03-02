@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_GAFlow
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb_MC
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPbQA
@@ -52,6 +53,7 @@ set(SRCS
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
     PHOS_embedding/AliPHOSEmbedding.cxx
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
+    PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx

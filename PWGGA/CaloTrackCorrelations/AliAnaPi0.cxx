@@ -67,7 +67,8 @@ fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),      
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),
-fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          fFillArmenterosThetaStar(0),
+fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          
+fFillArmenterosThetaStar(0), fFillOnlyMCAcceptanceHisto(0),
 fCheckAccInSector(kFALSE),
 fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fPi0Mom(),
 fProdVertex(),
@@ -240,11 +241,342 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   // Create histograms to be saved in output file and
   // store them in fOutputContainer
   
-  // Init the number of modules, set in the class AliCalorimeterUtils
-  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
-  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
+  TList * outputContainer = new TList() ;
+  outputContainer->SetName(GetName());
   
-  //create event containers
+  // Set sizes and ranges
+  const Int_t buffersize = 255;
+  char key[buffersize] ;
+  char title[buffersize] ;
+  
+  Int_t nptbins   = GetHistogramRanges()->GetHistoPtBins();
+  Int_t nphibins  = GetHistogramRanges()->GetHistoPhiBins();
+  Int_t netabins  = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();
+  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t etamax  = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();
+  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();
+  Float_t etamin  = GetHistogramRanges()->GetHistoEtaMin();
+  
+  Int_t nmassbins = GetHistogramRanges()->GetHistoMassBins();
+  Int_t nasymbins = GetHistogramRanges()->GetHistoAsymmetryBins();
+  Float_t massmax = GetHistogramRanges()->GetHistoMassMax();
+  Float_t asymmax = GetHistogramRanges()->GetHistoAsymmetryMax();
+  Float_t massmin = GetHistogramRanges()->GetHistoMassMin();
+  Float_t asymmin = GetHistogramRanges()->GetHistoAsymmetryMin();
+  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
+  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
+  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins() ;
+  Float_t tdmax   = GetHistogramRanges()->GetHistoDiffTimeMax();
+  Float_t tdmin   = GetHistogramRanges()->GetHistoDiffTimeMin();
+
+  // Start with pure MC kinematics histograms
+  // In case other tasks just need this info like AliAnaPi0EbE
+  if(IsDataMC())
+  {
+    //Pi0
+    
+    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",nptbins,ptmin,ptmax) ;
+    fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0E   ->SetXTitle("#it{E} (GeV)");
+    fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhPrimPi0E) ;
+    outputContainer->Add(fhPrimPi0AccE) ;
+    
+    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",nptbins,ptmin,ptmax) ;
+    fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0Pt) ;
+    outputContainer->Add(fhPrimPi0AccPt) ;
+    
+    Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
+    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
+    fhPrimPi0Y   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0Y) ;
+    
+    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Yeta   ->SetYTitle("#eta");
+    fhPrimPi0Yeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0Yeta) ;
+    
+    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0YetaYcut   ->SetYTitle("#eta");
+    fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0YetaYcut) ;
+    
+    fhPrimPi0AccY   = new TH2F("hPrimPi0AccRapidity","Rapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
+    fhPrimPi0AccY->SetYTitle("Rapidity");
+    fhPrimPi0AccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0AccY) ;
+    
+    fhPrimPi0AccYeta      = new TH2F("hPrimPi0AccPseudoRapidity","PseudoRapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
+    fhPrimPi0AccYeta   ->SetYTitle("#eta");
+    fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0AccYeta) ;
+    
+    Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
+    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
+    fhPrimPi0Phi->SetYTitle("#phi (deg)");
+    fhPrimPi0Phi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0Phi) ;
+    
+    fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,
+                               nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
+    fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
+    fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimPi0AccPhi) ;
+        
+    //Eta
+    
+    fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",nptbins,ptmin,ptmax) ;
+    fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
+    fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhPrimEtaE) ;
+    outputContainer->Add(fhPrimEtaAccE) ;
+    
+    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
+    fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaPt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaPt) ;
+    outputContainer->Add(fhPrimEtaAccPt) ;
+    
+    fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaY->SetYTitle("#it{Rapidity}");
+    fhPrimEtaY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaY) ;
+    
+    fhPrimEtaYeta      = new TH2F("hPrimEtaPseudoRapidityEta","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYeta->SetYTitle("#it{Rapidity}");
+    fhPrimEtaYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaYeta) ;
+    
+    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYetaYcut->SetYTitle("#it{Pseudorapidity}");
+    fhPrimEtaYetaYcut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaYetaYcut) ;
+    
+    fhPrimEtaAccY   = new TH2F("hPrimEtaAccRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+    fhPrimEtaAccY->SetYTitle("#it{Rapidity}");
+    fhPrimEtaAccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaAccY) ;
+    
+    fhPrimEtaAccYeta  = new TH2F("hPrimEtaAccPseudoRapidity","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+    fhPrimEtaAccYeta->SetYTitle("#it{Pseudorapidity}");
+    fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaAccYeta) ;
+    
+    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
+    fhPrimEtaPhi->SetYTitle("#phi (deg)");
+    fhPrimEtaPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaPhi) ;
+    
+    fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
+    fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
+    fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPrimEtaAccPhi) ;
+    
+    // Create histograms only for PbPb or high multiplicity analysis analysis
+    if( IsHighMultiplicityAnalysisOn() )
+    {
+      fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
+      fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
+      outputContainer->Add(fhPrimPi0PtCentrality) ;
+      outputContainer->Add(fhPrimPi0AccPtCentrality) ;
+      
+      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
+      fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
+      outputContainer->Add(fhPrimEtaPtCentrality) ;
+      outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+      
+      fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
+                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
+      fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+      outputContainer->Add(fhPrimPi0PtEventPlane) ;
+      outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+      
+      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
+      fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+      outputContainer->Add(fhPrimEtaPtEventPlane) ;
+      outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+    }
+    
+    if(fFillAngleHisto)
+    {
+      fhPrimPi0OpeningAngle  = new TH2F
+      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5);
+      fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
+      fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhPrimPi0OpeningAngle) ;
+      
+      fhPrimPi0OpeningAngleAsym  = new TH2F
+      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,100,0,0.5);
+      fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
+      fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
+      
+      fhPrimPi0CosOpeningAngle  = new TH2F
+      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1);
+      fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
+      fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
+      
+      fhPrimEtaOpeningAngle  = new TH2F
+      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,0,0.5);
+      fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
+      fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
+      outputContainer->Add(fhPrimEtaOpeningAngle) ;
+      
+      fhPrimEtaOpeningAngleAsym  = new TH2F
+      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,100,0,0.5);
+      fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
+      fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
+      
+      
+      fhPrimEtaCosOpeningAngle  = new TH2F
+      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
+      fhPrimEtaCosOpeningAngle->SetYTitle("cos (#theta) ");
+      fhPrimEtaCosOpeningAngle->SetXTitle("#it{E}_{ #eta} (GeV)");
+      outputContainer->Add(fhPrimEtaCosOpeningAngle) ;
+    }
+  
+    //Primary origin
+    if(fFillOriginHisto)
+    {
+      // Pi0
+      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhPrimPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtOrigin->SetYTitle("Origin");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances ");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      outputContainer->Add(fhPrimPi0PtOrigin) ;
+      
+      fhPrimNotResonancePi0PtOrigin     = new TH2F("hPrimNotResonancePi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhPrimNotResonancePi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimNotResonancePi0PtOrigin->SetYTitle("Origin");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      outputContainer->Add(fhPrimNotResonancePi0PtOrigin) ;
+      
+      fhPrimPi0PtStatus     = new TH2F("hPrimPi0PtStatus","Primary #pi^{0} #it{p}_{T} vs status",nptbins,ptmin,ptmax,101,-50,50) ;
+      fhPrimPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0PtStatus->SetYTitle("Status");
+      outputContainer->Add(fhPrimPi0PtStatus) ;
+      
+      // Eta
+      fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
+      fhPrimEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaPtOrigin->SetYTitle("Origin");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
+      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime ");
+      outputContainer->Add(fhPrimEtaPtOrigin) ;
+      
+      // Production vertex
+      fhPrimPi0ProdVertex = new TH2F("hPrimPi0ProdVertex","generated #pi^{0} #it{p}_{T} vs production vertex",
+                                     200,0.,20.,5000,0,500) ;
+      fhPrimPi0ProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimPi0ProdVertex->SetYTitle("#it{R} (cm)");
+      outputContainer->Add(fhPrimPi0ProdVertex) ;
+      
+      fhPrimEtaProdVertex = new TH2F("hPrimEtaProdVertex","generated #eta #it{p}_{T} vs production vertex",
+                                     200,0.,20.,5000,0,500) ;
+      fhPrimEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPrimEtaProdVertex->SetYTitle("#it{R} (cm)");
+      outputContainer->Add(fhPrimEtaProdVertex) ;
+      
+    }
+    
+    if(fFillArmenterosThetaStar)
+    {
+      TString ebin[] = {"8 < E < 12 GeV","12 < E < 16 GeV", "16 < E < 20 GeV", "E > 20 GeV" };
+      Int_t narmbins = 400;
+      Float_t armmin = 0;
+      Float_t armmax = 0.4;
+      
+      for(Int_t i = 0; i < 4; i++)
+      {
+        fhArmPrimPi0[i] =  new TH2F(Form("hArmenterosPrimPi0EBin%d",i),
+                                    Form("Armenteros of primary #pi^{0}, %s",ebin[i].Data()),
+                                    200, -1, 1, narmbins,armmin,armmax);
+        fhArmPrimPi0[i]->SetYTitle("#it{p}_{T}^{Arm}");
+        fhArmPrimPi0[i]->SetXTitle("#alpha^{Arm}");
+        outputContainer->Add(fhArmPrimPi0[i]) ;
+        
+        fhArmPrimEta[i] =  new TH2F(Form("hArmenterosPrimEtaEBin%d",i),
+                                    Form("Armenteros of primary #eta, %s",ebin[i].Data()),
+                                    200, -1, 1, narmbins,armmin,armmax);
+        fhArmPrimEta[i]->SetYTitle("#it{p}_{T}^{Arm}");
+        fhArmPrimEta[i]->SetXTitle("#alpha^{Arm}");
+        outputContainer->Add(fhArmPrimEta[i]) ;
+        
+      }
+      
+      // Same as asymmetry ...
+      fhCosThStarPrimPi0  = new TH2F
+      ("hCosThStarPrimPi0","cos(#theta *) for primary #pi^{0}",nptbins,ptmin,ptmax,200,-1,1);
+      fhCosThStarPrimPi0->SetYTitle("cos(#theta *)");
+      fhCosThStarPrimPi0->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhCosThStarPrimPi0) ;
+      
+      fhCosThStarPrimEta  = new TH2F
+      ("hCosThStarPrimEta","cos(#theta *) for primary #eta",nptbins,ptmin,ptmax,200,-1,1);
+      fhCosThStarPrimEta->SetYTitle("cos(#theta *)");
+      fhCosThStarPrimEta->SetXTitle("E_{ #eta} (GeV)");
+      outputContainer->Add(fhCosThStarPrimEta) ;
+      
+    }
+    
+    if(fFillOnlyMCAcceptanceHisto)  return outputContainer;
+  }
+    
+  //
+  // Create mixed event containers
+  //
   fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
   
   for(Int_t ic=0; ic<GetNCentrBin(); ic++)
@@ -260,8 +592,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  TList * outputContainer = new TList() ;
-  outputContainer->SetName(GetName());
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
+  if(GetCalorimeter()==kPHOS && fNModules > 4) fNModules = 4;
   
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
@@ -301,33 +634,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  const Int_t buffersize = 255;
-  char key[buffersize] ;
-  char title[buffersize] ;
-  
-  Int_t nptbins   = GetHistogramRanges()->GetHistoPtBins();
-  Int_t nphibins  = GetHistogramRanges()->GetHistoPhiBins();
-  Int_t netabins  = GetHistogramRanges()->GetHistoEtaBins();
-  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();
-  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();
-  Float_t etamax  = GetHistogramRanges()->GetHistoEtaMax();
-  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();
-  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();
-  Float_t etamin  = GetHistogramRanges()->GetHistoEtaMin();
-  
-  Int_t nmassbins = GetHistogramRanges()->GetHistoMassBins();
-  Int_t nasymbins = GetHistogramRanges()->GetHistoAsymmetryBins();
-  Float_t massmax = GetHistogramRanges()->GetHistoMassMax();
-  Float_t asymmax = GetHistogramRanges()->GetHistoAsymmetryMax();
-  Float_t massmin = GetHistogramRanges()->GetHistoMassMin();
-  Float_t asymmin = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
-  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
-  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
-  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins() ;
-  Float_t tdmax   = GetHistogramRanges()->GetHistoDiffTimeMax();
-  Float_t tdmin   = GetHistogramRanges()->GetHistoDiffTimeMin();
-
   if(fCheckConversion)
   {
     fhReConv = new TH2F("hReConv","Real Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -629,7 +935,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhEventMixBin) ;
   }
   
-  if(GetNCentrBin()>1)
+  if( IsHighMultiplicityAnalysisOn() )
   {
     fhCentrality=new TH1F("hCentralityBin","Number of events in centrality bin",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentrality->SetXTitle("Centrality bin");
@@ -638,10 +944,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhCentralityNoPair=new TH1F("hCentralityBinNoPair","Number of events in centrality bin, with no cluster pairs",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentralityNoPair->SetXTitle("Centrality bin");
     outputContainer->Add(fhCentralityNoPair) ;
-  }
-  
-  if(GetNRPBin() > 1 && GetNCentrBin()>1 )
-  {
+    
     fhEventPlaneResolution=new TH2F("hEventPlaneResolution","Event plane resolution",GetNCentrBin(),0,GetNCentrBin(),100,0.,TMath::TwoPi()) ;
     fhEventPlaneResolution->SetYTitle("Resolution");
     fhEventPlaneResolution->SetXTitle("Centrality Bin");
@@ -700,230 +1003,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhReMCFromMixConversion->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
     outputContainer->Add(fhReMCFromMixConversion) ;
     
-    //Pi0
-    
-    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimPi0E   ->SetXTitle("#it{E} (GeV)");
-    fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhPrimPi0E) ;
-    outputContainer->Add(fhPrimPi0AccE) ;
-    
-    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0Pt) ;
-    outputContainer->Add(fhPrimPi0AccPt) ;
-    
-    Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
-    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
-    fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
-    fhPrimPi0Y   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0Y) ;
-    
-    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
-    fhPrimPi0Yeta   ->SetYTitle("#eta");
-    fhPrimPi0Yeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0Yeta) ;
-    
-    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
-    fhPrimPi0YetaYcut   ->SetYTitle("#eta");
-    fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0YetaYcut) ;
-    
-    fhPrimPi0AccY   = new TH2F("hPrimPi0AccRapidity","Rapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
-    fhPrimPi0AccY->SetYTitle("Rapidity");
-    fhPrimPi0AccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccY) ;
-    
-    fhPrimPi0AccYeta      = new TH2F("hPrimPi0AccPseudoRapidity","PseudoRapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
-    fhPrimPi0AccYeta   ->SetYTitle("#eta");
-    fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccYeta) ;
-    
-    Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
-    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
-    fhPrimPi0Phi->SetYTitle("#phi (deg)");
-    fhPrimPi0Phi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0Phi) ;
-    
-    fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,
-                               nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-    fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
-    fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccPhi) ;
-    
-    fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
-                                         nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
-                                         nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
-    fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
-    outputContainer->Add(fhPrimPi0PtCentrality) ;
-    outputContainer->Add(fhPrimPi0AccPtCentrality) ;
-    
-    fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
-                                         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
-                                         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-    fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
-    outputContainer->Add(fhPrimPi0PtEventPlane) ;
-    outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
-    
-    //Eta
-    
-    fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
-    fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhPrimEtaE) ;
-    outputContainer->Add(fhPrimEtaAccE) ;
-    
-    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimEtaPt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaPt) ;
-    outputContainer->Add(fhPrimEtaAccPt) ;
-    
-    fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
-    fhPrimEtaY->SetYTitle("#it{Rapidity}");
-    fhPrimEtaY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaY) ;
-    
-    fhPrimEtaYeta      = new TH2F("hPrimEtaPseudoRapidityEta","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
-    fhPrimEtaYeta->SetYTitle("#it{Rapidity}");
-    fhPrimEtaYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaYeta) ;
-    
-    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
-    fhPrimEtaYetaYcut->SetYTitle("#it{Pseudorapidity}");
-    fhPrimEtaYetaYcut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaYetaYcut) ;
-    
-    fhPrimEtaAccY   = new TH2F("hPrimEtaAccRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
-    fhPrimEtaAccY->SetYTitle("#it{Rapidity}");
-    fhPrimEtaAccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccY) ;
-    
-    fhPrimEtaAccYeta  = new TH2F("hPrimEtaAccPseudoRapidity","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
-    fhPrimEtaAccYeta->SetYTitle("#it{Pseudorapidity}");
-    fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccYeta) ;
-    
-    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
-    fhPrimEtaPhi->SetYTitle("#phi (deg)");
-    fhPrimEtaPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaPhi) ;
-    
-    fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-    fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
-    fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccPhi) ;
-    
-    fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
-    fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
-    fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
-    outputContainer->Add(fhPrimEtaPtCentrality) ;
-    outputContainer->Add(fhPrimEtaAccPtCentrality) ;
-    
-    fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-    fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-    fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
-    outputContainer->Add(fhPrimEtaPtEventPlane) ;
-    outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
-    
-    if(fFillAngleHisto)
-    {
-      fhPrimPi0OpeningAngle  = new TH2F
-      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5);
-      fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
-      fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-      outputContainer->Add(fhPrimPi0OpeningAngle) ;
-      
-      fhPrimPi0OpeningAngleAsym  = new TH2F
-      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,100,0,0.5);
-      fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
-      fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
-      outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
-      
-      fhPrimPi0CosOpeningAngle  = new TH2F
-      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1);
-      fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
-      fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-      outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
-      
-      fhPrimEtaOpeningAngle  = new TH2F
-      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,0,0.5);
-      fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
-      fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
-      outputContainer->Add(fhPrimEtaOpeningAngle) ;
-      
-      fhPrimEtaOpeningAngleAsym  = new TH2F
-      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,100,0,0.5);
-      fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
-      fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
-      outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
-      
-      
-      fhPrimEtaCosOpeningAngle  = new TH2F
-      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
-      fhPrimEtaCosOpeningAngle->SetYTitle("cos (#theta) ");
-      fhPrimEtaCosOpeningAngle->SetXTitle("#it{E}_{ #eta} (GeV)");
-      outputContainer->Add(fhPrimEtaCosOpeningAngle) ;
-    }
     
     if(fFillOriginHisto)
     {
-      //Prim origin
-      //Pi0
-      fhPrimPi0PtOrigin     = new TH2F("hPrimPi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
-      fhPrimPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0PtOrigin->SetYTitle("Origin");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances ");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
-      fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
-      outputContainer->Add(fhPrimPi0PtOrigin) ;
-      
-      fhPrimNotResonancePi0PtOrigin     = new TH2F("hPrimNotResonancePi0PtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
-      fhPrimNotResonancePi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimNotResonancePi0PtOrigin->SetYTitle("Origin");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
-      fhPrimNotResonancePi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
-      outputContainer->Add(fhPrimNotResonancePi0PtOrigin) ;
-      
-      fhPrimPi0PtStatus     = new TH2F("hPrimPi0PtStatus","Primary #pi^{0} #it{p}_{T} vs status",nptbins,ptmin,ptmax,101,-50,50) ;
-      fhPrimPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0PtStatus->SetYTitle("Status");
-      outputContainer->Add(fhPrimPi0PtStatus) ;
-
       
       fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -959,20 +1041,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtStatus->SetYTitle("Status");
       outputContainer->Add(fhMCPi0PtStatus) ;
-
       
       //Eta
-      fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
-      fhPrimEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimEtaPtOrigin->SetYTitle("Origin");
-      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
-      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
-      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
-      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
-      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
-      fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime ");
-      
-      outputContainer->Add(fhPrimEtaPtOrigin) ;
       
       fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
       fhMCEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -983,7 +1053,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
       fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
       fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime");
-      
       outputContainer->Add(fhMCEtaPtOrigin) ;
       
       fhMCPi0ProdVertex = new TH2F("hMCPi0ProdVertex","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",
@@ -997,18 +1066,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
-      
-      fhPrimPi0ProdVertex = new TH2F("hPrimPi0ProdVertex","generated #pi^{0} #it{p}_{T} vs production vertex",
-                                     200,0.,20.,5000,0,500) ;
-      fhPrimPi0ProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0ProdVertex->SetYTitle("#it{R} (cm)");
-      outputContainer->Add(fhPrimPi0ProdVertex) ;
-      
-      fhPrimEtaProdVertex = new TH2F("hPrimEtaProdVertex","generated #eta #it{p}_{T} vs production vertex",
-                                     200,0.,20.,5000,0,500) ;
-      fhPrimEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimEtaProdVertex->SetYTitle("#it{R} (cm)");
-      outputContainer->Add(fhPrimEtaProdVertex) ;
       
       for(Int_t i = 0; i<13; i++)
       {
@@ -1208,47 +1265,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }//loop combinations
   } // SM combinations
   
-  if(fFillArmenterosThetaStar && IsDataMC())
-  {
-    TString ebin[] = {"8 < E < 12 GeV","12 < E < 16 GeV", "16 < E < 20 GeV", "E > 20 GeV" };
-    Int_t narmbins = 400;
-    Float_t armmin = 0;
-    Float_t armmax = 0.4;
-    
-    for(Int_t i = 0; i < 4; i++)
-    {
-      fhArmPrimPi0[i] =  new TH2F(Form("hArmenterosPrimPi0EBin%d",i),
-                                  Form("Armenteros of primary #pi^{0}, %s",ebin[i].Data()),
-                                  200, -1, 1, narmbins,armmin,armmax);
-      fhArmPrimPi0[i]->SetYTitle("#it{p}_{T}^{Arm}");
-      fhArmPrimPi0[i]->SetXTitle("#alpha^{Arm}");
-      outputContainer->Add(fhArmPrimPi0[i]) ;
-      
-      fhArmPrimEta[i] =  new TH2F(Form("hArmenterosPrimEtaEBin%d",i),
-                                  Form("Armenteros of primary #eta, %s",ebin[i].Data()),
-                                  200, -1, 1, narmbins,armmin,armmax);
-      fhArmPrimEta[i]->SetYTitle("#it{p}_{T}^{Arm}");
-      fhArmPrimEta[i]->SetXTitle("#alpha^{Arm}");
-      outputContainer->Add(fhArmPrimEta[i]) ;
-      
-    }
-    
-    // Same as asymmetry ...
-    fhCosThStarPrimPi0  = new TH2F
-    ("hCosThStarPrimPi0","cos(#theta *) for primary #pi^{0}",nptbins,ptmin,ptmax,200,-1,1);
-    fhCosThStarPrimPi0->SetYTitle("cos(#theta *)");
-    fhCosThStarPrimPi0->SetXTitle("E_{ #pi^{0}} (GeV)");
-    outputContainer->Add(fhCosThStarPrimPi0) ;
-    
-    fhCosThStarPrimEta  = new TH2F
-    ("hCosThStarPrimEta","cos(#theta *) for primary #eta",nptbins,ptmin,ptmax,200,-1,1);
-    fhCosThStarPrimEta->SetYTitle("cos(#theta *)");
-    fhCosThStarPrimEta->SetXTitle("E_{ #eta} (GeV)");
-    outputContainer->Add(fhCosThStarPrimEta) ;
-    
-  }
-  
-  //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
+   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
   //
   //    printf("Histogram %d, name: %s\n ",i, outputContainer->At(i)->GetName());
   //
@@ -1413,9 +1430,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimPi0Pt ->Fill(mesonPt) ;
         fhPrimPi0Phi->Fill(mesonPt, mesonPhi) ;
         
-        fhPrimPi0YetaYcut    ->Fill(mesonPt,mesonYeta) ;
-        fhPrimPi0PtCentrality->Fill(mesonPt,cen) ;
-        fhPrimPi0PtEventPlane->Fill(mesonPt,ep ) ;
+        fhPrimPi0YetaYcut->Fill(mesonPt,mesonYeta) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimPi0PtCentrality->Fill(mesonPt,cen) ;
+          fhPrimPi0PtEventPlane->Fill(mesonPt,ep ) ;
+        }
       }
       
       fhPrimPi0Y   ->Fill(mesonPt, mesonY) ;
@@ -1429,9 +1450,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimEtaPt ->Fill(mesonPt) ;
         fhPrimEtaPhi->Fill(mesonPt, mesonPhi) ;
         
-        fhPrimEtaYetaYcut    ->Fill(mesonPt,mesonYeta) ;
-        fhPrimEtaPtCentrality->Fill(mesonPt,cen) ;
-        fhPrimEtaPtEventPlane->Fill(mesonPt,ep ) ;
+        fhPrimEtaYetaYcut->Fill(mesonPt,mesonYeta) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimEtaPtCentrality->Fill(mesonPt,cen) ;
+          fhPrimEtaPtEventPlane->Fill(mesonPt,ep ) ;
+        }
       }
       
       fhPrimEtaY   ->Fill(mesonPt, mesonY) ;
@@ -1641,8 +1666,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimPi0AccPhi ->Fill(mesonPt, mesonPhi) ;
         fhPrimPi0AccY   ->Fill(mesonPt, mesonY) ;
         fhPrimPi0AccYeta->Fill(mesonPt, mesonYeta) ;
-        fhPrimPi0AccPtCentrality->Fill(mesonPt,cen) ;
-        fhPrimPi0AccPtEventPlane->Fill(mesonPt,ep ) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimPi0AccPtCentrality->Fill(mesonPt,cen) ;
+          fhPrimPi0AccPtEventPlane->Fill(mesonPt,ep ) ;
+        }
         
         if(fFillAngleHisto)
         {
@@ -1658,8 +1687,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimEtaAccPhi ->Fill(mesonPt, mesonPhi) ;
         fhPrimEtaAccY   ->Fill(mesonPt, mesonY) ;
         fhPrimEtaAccYeta->Fill(mesonPt, mesonYeta) ;
-        fhPrimEtaAccPtCentrality->Fill(mesonPt,cen) ;
-        fhPrimEtaAccPtEventPlane->Fill(mesonPt,ep ) ;
+        
+        if( IsHighMultiplicityAnalysisOn() )
+        {
+          fhPrimEtaAccPtCentrality->Fill(mesonPt,cen) ;
+          fhPrimEtaAccPtEventPlane->Fill(mesonPt,ep ) ;
+        }
         
         if(fFillAngleHisto)
         {
@@ -2005,7 +2038,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   // filled with AliAnaPhoton and fill histos with invariant mass
   
   //In case of simulated data, fill acceptance histograms
-  if(IsDataMC())FillAcceptanceHistograms();
+  if(IsDataMC())
+  {
+    FillAcceptanceHistograms();
+  
+    if(fFillOnlyMCAcceptanceHisto) return;
+  }
   
   //if (GetReader()->GetEventNumber()%10000 == 0)
   // printf("--- Event %d ---\n",GetReader()->GetEventNumber());
@@ -2079,12 +2117,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if (evtIndex1 != currentEvtIndex)
     {
       //Fill event bin info
-      if(DoOwnMix()) fhEventBin->Fill(eventbin) ;
-      if(GetNCentrBin() > 1)
+      if( DoOwnMix() ) fhEventBin->Fill(eventbin) ;
+      
+      if( IsHighMultiplicityAnalysisOn() )
       {
         fhCentrality->Fill(curCentrBin);
-        if(GetNRPBin() > 1 && GetEventPlane()) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
+        if( GetEventPlane() ) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
       }
+      
       currentEvtIndex = evtIndex1 ;
     }
     

@@ -38,6 +38,7 @@ AliJetContainer::AliJetContainer():
   fJetMaxEta(0.9),
   fJetMinPhi(-10),
   fJetMaxPhi(10),
+  fPhiOffset(0.),
   fMaxClusterPt(1000),
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
@@ -82,6 +83,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetMaxEta(0.9),
   fJetMinPhi(-10),
   fJetMaxPhi(10),
+  fPhiOffset(0.),
   fMaxClusterPt(1000),
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
@@ -355,8 +357,11 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     return kFALSE;
   }
 
-  Double_t jetPhi = jet->Phi();
   Double_t jetEta = jet->Eta();
+  Double_t jetPhi = jet->Phi() + fPhiOffset;
+  Double_t tpi = TMath::TwoPi();
+  if(jetPhi<0.)  jetPhi+=tpi;
+  if(jetPhi>tpi) jetPhi-=tpi;
    
   // if limits are given in (-pi, pi) range
   if (fJetMinPhi < 0) jetPhi -= TMath::Pi() * 2;

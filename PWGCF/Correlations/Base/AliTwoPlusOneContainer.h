@@ -45,6 +45,7 @@ class AliTwoPlusOneContainer : public TNamed
   void SetAlpha(Double_t value) {fAlpha = value;}
   void SetUseLeadingPt(Bool_t flag) { fUseLeadingPt = flag; }
   void SetUseAllT1(Bool_t flag) { fUseAllT1 = flag; }
+  void SetUseBackgroundSameOneSide(Bool_t flag) { fUseBackgroundSameOneSide = flag; }
 
   AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c);
   AliTwoPlusOneContainer& operator=(const AliTwoPlusOneContainer& c);
@@ -70,9 +71,10 @@ protected:
   Double_t fAlpha;                   //minimum energy for the first trigger particle
   Bool_t fUseLeadingPt;        //decides if all particles of a cone are used as trigger particles or only the leading particles within alpha (apply this on near and away side)
   Bool_t fUseAllT1;                  //use all possible T1 combinations
+  Bool_t fUseBackgroundSameOneSide;  //uses only one side for background same
   Int_t fMergeCount;	             // counts how many objects have been merged together
   
-  ClassDef(AliTwoPlusOneContainer, 6)  // underlying event histogram container
+  ClassDef(AliTwoPlusOneContainer, 7)  // underlying event histogram container
 };
 
 

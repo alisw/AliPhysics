@@ -87,7 +87,14 @@ set(SRCS
   XtAnalysis/AliJCard.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
   IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
-  )
+  MultEvShape/AliMESeventInfo.cxx
+  MultEvShape/AliMEStrackInfo.cxx
+  MultEvShape/AliMESbaseTask.cxx
+  MultEvShape/AliMEStender.cxx
+  MultEvShape/AliMESpidTask.cxx
+  MultEvShape/AliMESchgTask.cxx
+  MultEvShape/AliMESppColTask.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -132,3 +139,5 @@ install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
 install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
 install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
+install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "*.C")
+install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION  PWGLF/SPECTRA/MultEvShape)

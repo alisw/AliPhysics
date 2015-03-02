@@ -827,10 +827,11 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
           trigType1 = "G1";
           trigType2 = "G2";
         }
-        if(objStr.Contains(trigType2) && fired.Contains(trigType1.Data()) && fired.Contains(trigType2.Data())) { //low threshold + overlap
+        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
           match = 1;
           break;
-        } else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
+        } 
+        else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
           match = 1;
           break;
         }

@@ -16,7 +16,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
 						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection,
-                                                     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
+                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
  
 
   
@@ -101,6 +101,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(0.6);
+      if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub) jetContBase->SetAreaEmcCut(-2);
     }    
   }
   

@@ -11,37 +11,25 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeant3TGeo.h>
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "TDPMjet/AliGenDPMjet.h"
-#include "STEER/AliMagFCheb.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11Hybrid.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv3.h"
-#include "ZDC/AliZDCv3.h"
-#include "TRD/AliTRDv1.h"
-#include "TRD/AliTRDgeometry.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PHOS/AliPHOSSimParam.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliConfig.h"
+#include "AliDecayerPythia.h"
+#include "AliGenPythia.h"
+#include "AliBODY.h"
+#include "AliMAG.h"
+#include "AliABSOv3.h"
+#include "AliDIPOv3.h"
+#include "AliHALLv3.h"
+#include "AliFRAMEv2.h"
+#include "AliSHILv3.h"
+#include "AliPIPEv3.h"
+#include "AliITSv11Hybrid.h"
+#include "AliZDCv3.h"
+#include "AliFMDv1.h"
+#include "AliMUONv1.h"
+#include "AliT0v1.h"
+#include "AliVZEROv7.h"
 #endif
 
 
@@ -52,27 +40,8 @@ void Config()
 {
   // Libraries required by geant321
 #if defined(__CINT__)
-  gSystem->Load("VAR_LHAPDF");      // Parton density functions
-  gSystem->Load("libEGPythia6");   // TGenerator interface
-  if ( TString("VAR_GENERATOR").Contains("pythia6",TString::kIgnoreCase) )
-  {
-    std::cout << "Setting up Pythia6 required env. variables" << std::endl;
-    VAR_PYTHIA6_INCLUDES
-    VAR_PYTHIA6_SETENV
-  }
-  else  gSystem->Load("libpythia6");     // Pythia 6.2 (for decayer)
-  gSystem->Load("libAliPythia6");  // ALICE specific implementations
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
   gSystem->Load("libgeant321");
-
-  if ( TString("VAR_GENERATOR").Contains("pythia8",TString::kIgnoreCase) )
-  {
-    std::cout << "Setting up Pythia8 required libraries and env. variables" << std::endl;
-    gSystem->Load("libpythia8");
-    gSystem->Load("libAliPythia8");
-    VAR_PYTHIA8_INCLUDES
-    VAR_PYTHIA8_SETENV
-  }
-
 #endif
 
   
@@ -170,9 +139,6 @@ void Config()
   //AliGenerator* gener = CreateGenerator();
 
   std::cout << "VAR_GENERATOR settings " << std::endl;
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/EVGEN");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/STEER/STEER");
   gROOT->LoadMacro("VAR_GENERATOR.C+");
   AliGenerator* gener = VAR_GENERATOR();
   

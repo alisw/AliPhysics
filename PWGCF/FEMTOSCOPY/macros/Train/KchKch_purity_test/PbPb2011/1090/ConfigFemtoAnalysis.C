@@ -73,7 +73,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //double PhiStarDifferenceMinimum=0.03;//0.017; //[radian]
   //double EtaDifferenceMinimum=0.02;//0.015; //[radian]
    double PhiStarDifferenceMinimum=0.04; //[radian]
-   double EtaDifferenceMinimum=0.02; //[radian]
+   double EtaDifferenceMinimum=0.03; //[radian]
   
   
   //=======Double track cuts=================================================<
@@ -192,7 +192,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  aniter = ichg*5+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();

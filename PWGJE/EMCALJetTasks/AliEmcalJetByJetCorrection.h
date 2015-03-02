@@ -9,6 +9,7 @@
 class TH3;
 class TProfile;
 class AliEmcalJet;
+class TList;
 
 class AliEmcalJetByJetCorrection : public TNamed
 {
@@ -26,6 +27,7 @@ class AliEmcalJetByJetCorrection : public TNamed
   void SetFixedTrackEfficiency(Double_t eff) { fEfficiencyFixed = eff; }
   void SetEfficiencyHist(TH1 *h)             { fhEfficiency     = h  ; }
   void SetCorrectTemplateTrackpT(Bool_t correct=kTRUE) {fCorrectpTtrack = correct;}
+  void SetPoissonianNmissing(Bool_t set=kTRUE) {fNpPoisson=set;}
 
   Int_t        GetJetPtBin(const Double_t jetpt) const;
   Double_t     GetEfficiency(const Double_t pt) const;
@@ -33,7 +35,9 @@ class AliEmcalJetByJetCorrection : public TNamed
 
   TProfile    *GetAppliedEfficiency() const {return fpAppliedEfficiency;}
   Bool_t       GetCorrectTemplateTrackpT() const {return fCorrectpTtrack;}
-
+  Bool_t       GetPoissonianNmissing() const     {return fNpPoisson;}
+  TH2F        *GetAddedNConstituents() const     {return fNmissing;}
+  TList       *GetListOfOutput()       const     {return fListOfOutput;}
   void         Init();
   AliEmcalJet *Eval(const AliEmcalJet *jet, TClonesArray *fTracks);
   
@@ -48,11 +52,14 @@ class AliEmcalJetByJetCorrection : public TNamed
   TH1      *fhEfficiency;                      // single particle efficiency
   TH1D     *fhSmoothEfficiency;                // single particle efficiency smooth (see Init())
   Bool_t   fCorrectpTtrack;                    // if true the templates are corrected by track efficiency
+  Bool_t   fNpPoisson;                        //draw Nmissing particle from a Poissonian with mean Nconst(1/eff-1)
 
   //book-keeping object filled inside Eval()
   TProfile *fpAppliedEfficiency;               // Control profile efficiency
-
+  TH2F     *fNmissing;                         // number of missing constituents added versus pTjet
+  TH2F     *fAvgNmiss;                         // calculated missing track (average = Nconstituents * (1./eff -1.))
+  TList    *fListOfOutput;                     // list containing all histograms
  private:
-  ClassDef(AliEmcalJetByJetCorrection, 3) // jet-by-jet correction class
+  ClassDef(AliEmcalJetByJetCorrection, 6) // jet-by-jet correction class
 };
 #endif

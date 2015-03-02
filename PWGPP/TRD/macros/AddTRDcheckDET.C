@@ -1,17 +1,19 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
-#include "TError.h"
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-
-#include "AliTRDpwgppHelper.h"
-#include "AliTRDcheckDET.h"
-#include "AliTRDcalibration.h"
-#endif
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TError.h>
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDcheckDET.h>
+// #include <AliTRDcalibration.h>
+// #endif
 
 void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Info("AddTRDcheckDET", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName()));
+  Info("AddTRDcheckDET", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName());
   AliAnalysisDataContainer *evInfoContainer = ci[3];
 
   //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
@@ -28,7 +30,8 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
   mgr->ConnectInput ( task, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
   mgr->ConnectInput ( task, 1, ci[trackStatus]);                // conect track info container
   mgr->ConnectInput ( task, 2, evInfoContainer);                // conect event info container
-  mgr->ConnectInput ( task, 3, ci[4]);                          // conect clusters container
+  mgr->ConnectInput ( task, 3, ci[4]);                          // conect onl.tracklets container
+  mgr->ConnectInput ( task, 4, ci[5]);                          // conect clusters container
   mgr->ConnectOutput( task, 1, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   
 

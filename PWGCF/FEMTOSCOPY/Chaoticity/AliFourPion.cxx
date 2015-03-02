@@ -116,6 +116,7 @@ AliAnalysisTaskSE(),
   fDampStep(0),
   fChargeSelection(kFALSE),
   fq2Binning(0),
+  fLowMultBinning(0),
   fq2Index(0),
   fq2CutLow(0.1),
   fq2CutHigh(0.11),
@@ -320,6 +321,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fDampStep(0),
   fChargeSelection(kFALSE),
   fq2Binning(0),
+  fLowMultBinning(0),
   fq2Index(0),
   fq2CutLow(0.1),
   fq2CutHigh(0.11),
@@ -529,6 +531,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fDampStep(obj.fDampStep),
     fChargeSelection(obj.fChargeSelection),
     fq2Binning(obj.fq2Binning),
+    fLowMultBinning(obj.fLowMultBinning),
     fq2Index(obj.fq2Index),
     fq2CutLow(obj.fq2CutLow),
     fq2CutHigh(obj.fq2CutHigh),
@@ -674,6 +677,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fDampStep = obj.fDampStep;
   fChargeSelection = obj.fChargeSelection;
   fq2Binning = obj.fq2Binning;
+  fLowMultBinning = obj.fLowMultBinning;
   fq2Index = obj.fq2Index;
   fq2CutLow = obj.fq2CutLow;
   fq2CutHigh = obj.fq2CutHigh;
@@ -875,7 +879,9 @@ void AliFourPion::ParInit()
   //
   fEventCounter=0;
   fEventsToMix=3;
-  fEventMixingEDbins=81;// was 2 Z-vertex bins by default
+  if(fq2Binning) fEventMixingEDbins=9;// was 81 with q1 and q2 binning
+  else fEventMixingEDbins=2;// for both Z-vertex binning and LowMultBinning
+
   if(fMCcase) fEventMixingEDbins=2;
   
   fTPCTOFboundry = 0.6;// TPC pid used below this momentum, TOF above but below TOF_boundry
@@ -1456,10 +1462,20 @@ void AliFourPion::UserCreateOutputObjects()
 		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuild = new TH2D(nameBuild->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
 		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuild);
 		//
+		TString *nameCumulantBuild=new TString(namePC3->Data());
+		nameCumulantBuild->Append("_CumulantBuild");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuild = new TH2D(nameCumulantBuild->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuild);
+		//
 		TString *nameBuildNeg=new TString(namePC3->Data());
 		nameBuildNeg->Append("_BuildNeg");
 		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuildNeg = new TH2D(nameBuildNeg->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
 		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fBuildNeg);
+		//
+		TString *nameCumulantBuildNeg=new TString(namePC3->Data());
+		nameCumulantBuildNeg->Append("_CumulantBuildNeg");
+		Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuildNeg = new TH2D(nameCumulantBuildNeg->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0.,fQupperBoundQ3);
+		fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fCumulantBuildNeg);
 		//
 		TString *nameBuildErr=new TString(namePC3->Data());
 		nameBuildErr->Append("_BuildErr");
@@ -1734,6 +1750,15 @@ void AliFourPion::UserCreateOutputObjects()
   TH3F *fq2Dist = new TH3F("fq2Dist","",fMbins,.5,fMbins+.5, 4,0.5,4.5, 200,0,10);// Mult, pT bin, q2 bin
   fOutputList->Add(fq2Dist);
 
+  TH2D *fLowPtDist = new TH2D("fLowPtDist","",fMbins,.5,fMbins+.5, 500,0.5,500.5);
+  fOutputList->Add(fLowPtDist);
+  TH3D *fPtMultCrossing1 = new TH3D("fPtMultCrossing1","",fMbins,.5,fMbins+.5, 500,0.5,500.5, 500,0.5,500.5);
+  TH3D *fPtMultCrossing2 = new TH3D("fPtMultCrossing2","",fMbins,.5,fMbins+.5, 500,0.5,500.5, 500,0.5,500.5);
+  TH3D *fPtMultCrossing3 = new TH3D("fPtMultCrossing3","",fMbins,.5,fMbins+.5, 500,0.5,500.5, 500,0.5,500.5);
+  fOutputList->Add(fPtMultCrossing1);
+  fOutputList->Add(fPtMultCrossing2);
+  fOutputList->Add(fPtMultCrossing3);
+
   TH2D *fcumulant2INT = new TH2D("fcumulant2INT","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
   TH2D *fcumulant2DIFF = new TH2D("fcumulant2DIFF","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
   TH2D *fcumulant2EN = new TH2D("fcumulant2EN","", fMbins,.5,fMbins+.5, 40,0.5,40.5);
@@ -1761,6 +1786,7 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fSingleSumSinTotalINT);
   fOutputList->Add(fSingleSumTotalEN);
 
+ 
   ////////////////////////////////////
   ///////////////////////////////////  
   
@@ -1851,7 +1877,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t centralityPercentile=0;
   Float_t cStep=5.0, cStepMixing=5.0, cStart=0;
   Int_t MbinMixing=0;
- 
+  
   if(fAODcase){// AOD case
     if(fCollisionType==0){
       centrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
@@ -1862,13 +1888,14 @@ void AliFourPion::UserExec(Option_t *)
     }
     const AliAODVertex* primaryVertexAOD = (AliAODVertex*)fAOD->GetPrimaryVertex();
     ((TH1F*)fOutputList->FindObject("fMultDist0"))->Fill(fAOD->GetNumberOfTracks());
-
+   
     // Pile-up rejection
     AliAnalysisUtils *AnaUtil=new AliAnalysisUtils();
     if(fCollisionType!=0) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pp and pPb
     else AnaUtil->SetUseMVPlpSelection(kFALSE);
     Bool_t pileUpCase=AnaUtil->IsPileUpEvent(fAOD); 
     if(pileUpCase) return;
+   
     ////////////////////////////////
     // Vertexing
     ((TH1F*)fOutputList->FindObject("fMultDist1"))->Fill(fAOD->GetNumberOfTracks());
@@ -2294,8 +2321,8 @@ void AliFourPion::UserExec(Option_t *)
   for(Int_t i=0; i<myTracks; i++){
     if(fChargeSelection && fTempStruct[i].fCharge !=-1) continue;
 
-    if(fTempStruct[i].fPt < 0.28) qindex=0;
-    else if(fTempStruct[i].fPt < 0.4) qindex=1;
+    if(fTempStruct[i].fPt < 0.25) qindex=0;// was 0.28
+    else if(fTempStruct[i].fPt < 0.35) qindex=1;// was 0.4
     else if(fTempStruct[i].fPt < 0.5) qindex=2;
     else qindex=3;
     
@@ -2315,21 +2342,40 @@ void AliFourPion::UserExec(Option_t *)
     Psi2[i] = atan2(Q2y[i],Q2x[i]) / 2.;// -PI/2 to +PI/2
     Psi2[i] = fabs(Psi2[i]);// 0 to +PI/2
   }
-  
+  ((TH2D*)fOutputList->FindObject("fLowPtDist"))->Fill(fMbin+1, Mq[fq2Index]);
+  ((TH3D*)fOutputList->FindObject("fPtMultCrossing1"))->Fill(fMbin+1, Mq[0], Mq[2]);
+  ((TH3D*)fOutputList->FindObject("fPtMultCrossing2"))->Fill(fMbin+1, Mq[1], Mq[2]);
+  ((TH3D*)fOutputList->FindObject("fPtMultCrossing3"))->Fill(fMbin+1, Mq[2], Mq[3]);
   //
   if(fq2Binning){// bin in q2
     if(qVect2[fq2Index] < fq2CutLow) fEDbin = 0;
     else fEDbin = 1;
+  
+    Int_t Inq1=0;
+    if(qVect1[fq2Index] > 0.5 && qVect1[fq2Index] < 1.5) Inq1=1;
+    else Inq1=2;
+    //
+    Int_t Inq2=0;
+    if(qVect2[fq2Index] > 0.5 && qVect2[fq2Index] < 1.5) Inq2=1;
+    else Inq2=2;
+    //
+    //if(!fMCcase) mixingEDbin = (Inq1*3*3*3) + int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)*3*3 + (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);// q1 and q2
+    if(!fMCcase) mixingEDbin = (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);// q2 only
   }
-  Int_t Inq1=0, Inq2=0;
-  if(qVect1[fq2Index] > 0.5 && qVect1[fq2Index] < 1.5) Inq1=1;
-  else Inq1=2;
   //
-  if(qVect2[fq2Index] > 0.5 && qVect2[fq2Index] < 1.5) Inq2=1;
-  else Inq2=2;
-  //
-  if(!fMCcase) mixingEDbin = (Inq1*3*3*3) + int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)*3*3 + (Inq2*3) + int(Psi2[fq2Index]/(PI/6.) - 0.000001);
-  //cout<<mixingEDbin<<"     "<<Inq1<<"  "<<int(Psi1[fq2Index]/(2*PI/3.) - 0.000001)<<"      "<<Inq2<<"  "<<int(Psi2[fq2Index]/(PI/6.) - 0.000001)<<endl;
+  if(fLowMultBinning){
+    Float_t HighPtMult_L = 300 - 55*fMbin;// approximate binning for 0.35-0.5 counting interval
+    Float_t HighPtMult_H = 330 - 55*fMbin;
+    ////////////////////////////////////////////////////////
+    if(Mq[2] < HighPtMult_L || Mq[2] > HighPtMult_H) return;// remove event completely 
+    ////////////////////////////////////////////////////////
+    Float_t meanLowPtMult[10] ={175, 147, 125, 103, 86, 71, 58, 48, 38, 30};// was 170. - 25.*fMbin;// approximate mean values vs. fMbin
+    //Float_t sigmaLowPtMult = 0.1*meanLowPtMult;// approximate sigma values
+    if(Mq[fq2Index] < meanLowPtMult[fMbin]) fEDbin=0;
+    else fEDbin = 1;
+    //
+    mixingEDbin = fEDbin;
+  }
   
   //////////////////////////////////////////////////////////////////////////
   
@@ -2349,7 +2395,7 @@ void AliFourPion::UserExec(Option_t *)
   else {rBinForTPNMomRes=6;}
 
   //////////////////////////////////////////////////
-  if(!fq2Binning) fEDbin=0;// Extra Dimension bin (Kt3, q2,....)
+  if(!fq2Binning && !fLowMultBinning) fEDbin=0;// Extra Dimension bin (Kt3, q2,....)
   //////////////////////////////////////////////////
   
   
@@ -2428,8 +2474,6 @@ void AliFourPion::UserExec(Option_t *)
   
 
   ////////////////////
-  //Int_t PairCount[7]={0};
-  //Int_t NormPairCount[7]={0};
   Int_t EDindex3=0, EDindex4=0;
 
   // reset to defaults
@@ -2538,6 +2582,7 @@ void AliFourPion::UserExec(Option_t *)
 	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTindex].TwoPT[1].fUnitMultBin->Fill(UnitMultBin, qinv12);
 	    }
 	  }
+
 	  /////////////////////////////////////////////////////
 	  if(fTabulatePairs && en1==0 && en2<=1 && bin1==bin2){
 	    if(fChargeSelection && (fEvt+en1)->fTracks[i].fCharge !=-1) continue;
@@ -2587,8 +2632,7 @@ void AliFourPion::UserExec(Option_t *)
     }
   }
     
-  //cout<<PairCount[0]<<"  "<<PairCount[1]<<"  "<<PairCount[2]<<"  "<<PairCount[3]<<"  "<<PairCount[4]<<"  "<<PairCount[5]<<"  "<<PairCount[6]<<endl;
-  //cout<<NormPairCount[0]<<"  "<<NormPairCount[1]<<"  "<<NormPairCount[2]<<"  "<<NormPairCount[3]<<"  "<<NormPairCount[4]<<"  "<<NormPairCount[5]<<"  "<<NormPairCount[6]<<endl;
+ 
   ///////////////////////////////////////////////////  
   // Do not use pairs from events with too many pairs
   
@@ -2652,7 +2696,7 @@ void AliFourPion::UserExec(Option_t *)
 	      SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
 	      
 	      Float_t KT3 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-	      if(!fq2Binning){
+	      if(!fq2Binning && !fLowMultBinning){
 		if(KT3<=fKT3transition) EDindex3=0;
 		else EDindex3=1;
 	      }else{
@@ -2702,7 +2746,7 @@ void AliFourPion::UserExec(Option_t *)
 		ch4 = Int_t(((fEvt+en4)->fTracks[l].fCharge + 1)/2.);
 		Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
 		
-		if(!fq2Binning){
+		if(!fq2Binning && !fLowMultBinning){
 		  if(KT4<=fKT4transition) EDindex4=0;
 		  else EDindex4=1;
 		}else{
@@ -3020,7 +3064,7 @@ void AliFourPion::UserExec(Option_t *)
 		SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
 		
 		Float_t KT3 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-		if(!fq2Binning){
+		if(!fq2Binning && !fLowMultBinning){
 		  if(KT3<=fKT3transition) EDindex3=0;
 		  else EDindex3=1;
 		}else{
@@ -3204,11 +3248,14 @@ void AliFourPion::UserExec(Option_t *)
 			}
 			weightTotal = 2*G*(1-G)*(T12*t12 + T13*t13 + T23*t23) + pow(1-G,2)*(T12*T12 + T13*T13 + T23*T23);
 			weightTotal += 2*G*pow(1-G,2)*(T12*T13*t23 + T12*T23*t13 + T13*T23*t12) + 2*pow(1-G,3)*T12*T13*T23;
-			
+			weightCumulant = 2*G*pow(1-G,2)*(T12*T13*t23 + T12*T23*t13 + T13*T23*t12) + 2*pow(1-G,3)*T12*T13*T23;
+
 			if(Positive1stTripletWeights){
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fBuild->Fill(FillBin, q3, weightTotal);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fCumulantBuild->Fill(FillBin, q3, weightCumulant);
 			}else{
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fBuildNeg->Fill(FillBin, q3, weightTotal);
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fCumulantBuildNeg->Fill(FillBin, q3, weightCumulant);
 			}
 		      }
 		    }
@@ -3426,7 +3473,7 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		  
 		  Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
-		  if(!fq2Binning){
+		  if(!fq2Binning && !fLowMultBinning){
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
 		  }else{
@@ -4126,7 +4173,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   //Float_t qinvtemp=GetQinv(0,track1, track2);
   //
   Int_t q2bin=0;
-  if(fq2Binning) q2bin = fEDbin;
+  if(fq2Binning || fLowMultBinning) q2bin = fEDbin;
   //
 
   if(kt < fKmeanT[0]) {fKtIndexL=0; fKtIndexH=1;}

@@ -40,6 +40,7 @@ ClassImp(AliJFFlucAnalysis)
 AliJFFlucAnalysis::AliJFFlucAnalysis() 
 	: AliAnalysisTaskSE(), 
 	fInputList(0),
+	fVertex(0),
 	fCent(0),
 	fNJacek(0),	
 	fHMG(NULL),
@@ -49,6 +50,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fBin_kk(),
 	fHistCentBin(),
 	fh_cent(),
+	fh_vertex(),
 	fh_eta(),
 	fh_ntracks(),
 	fh_vn(),
@@ -58,7 +60,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_vn_vn_test1(),
 	fh_vn_vn_test2()	
 {
- 
 	const int NCent = 7;
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
@@ -89,6 +90,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name) 
 	: AliAnalysisTaskSE(name), 
 	fInputList(0),
+	fVertex(0),
 	fCent(0),
 	fNJacek(0),
 	fHMG(NULL),
@@ -98,6 +100,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fBin_kk(),
 	fHistCentBin(),
 	fh_cent(),
+	fh_vertex(),
 	fh_eta(),
 	fh_ntracks(),
 	fh_vn(),
@@ -140,6 +143,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
+	fVertex(a.fVertex),
 	fCent(a.fCent),
 	fHMG(a.fHMG),
 	fBin_h(a.fBin_h),
@@ -148,6 +152,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fBin_kk(a.fBin_kk),
 	fHistCentBin(a.fHistCentBin),
 	fh_cent(a.fh_cent),
+	fh_vertex(a.fh_vertex),
 	fh_eta(a.fh_eta),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
@@ -188,12 +193,18 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fBin_kk .Set("KK","KK","KK:%d", AliJBin::kSingle).SetBin(nKL);
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
+	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(5);
 
 	// set AliJTH1D here //
 	fh_cent
 		<< TH1D("h_cent","h_cent", 100, 0, 100) 
 		<< "END" ;
 
+	fh_vertex
+		<< TH1D("h_vertex","h_vertex", 400, -20, 20)
+		<< fVertexBin
+		<< "END" ;
 	fh_pt
 		<< TH1D("hChargedPtJacek", "", fNJacek, fPttJacek)
 		<< fHistCentBin 
@@ -242,6 +253,12 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
  	 	<< fBin_hh << fBin_kk
  	 	<< fHistCentBin
  	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
+	fh_correlator 
+		<< TH1D("h_corr", "h_corr", 5096, 0, 1)
+		<< fCorrBin
+		<< fHistCentBin
+		<< "END" ;
+
 
 	//AliJTH1D set done.
 	
@@ -273,7 +290,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	int trk_number = fInputList->GetEntriesFast();
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
 	fh_cent->Fill( inputCent ) ; 
-	Fill_QA_plot( -0.8, 0.8 );
+	Fill_QA_plot( -15, 15 );
 
 
 	enum{kSubA, kSubB, kNSub};
@@ -391,7 +408,21 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			}
 		}
 	}
-	///	
+	///	Fill more correlators in manualy
+	TComplex V4V2starv2_2 =	QnA[4] *TComplex::Power( QnB_star[2] ,2) * vn2[2][1] ;
+	TComplex V4V2starv2_4 = QnA[4] * TComplex::Power( QnB_star[2], 2) * vn2[2][2] ;
+	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[2][1] ;
+	TComplex V5V2starV3star = QnA[5] * QnB_star[2] * QnB_star[3] ;
+	TComplex V5V2starV3startv3_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[3][1];
+
+
+	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
+	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
+	fh_correlator[2][fCBin]->Fill( V5V2starV3starv2_2.Re() );
+	fh_correlator[3][fCBin]->Fill( V5V2starV3star.Re() );
+	fh_correlator[4][fCBin]->Fill( V5V2starV3startv3_2.Re() );
+	//
+	//
 
 	AnaEntry++;
 	//higher debug level = detail information
@@ -440,8 +471,9 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 				fh_pt[fCBin]->Fill(pt);	
 			}
 		}
-
-
+	for(int iaxis=0; iaxis<3; iaxis++){
+		fh_vertex[iaxis]->Fill(  fVertex[iaxis] );
+	}
 }
 //________________________________________________________________________
 double AliJFFlucAnalysis::Get_Qn_Img(double eta1, double eta2, int harmonics)

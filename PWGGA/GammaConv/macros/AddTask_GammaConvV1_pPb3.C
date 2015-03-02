@@ -128,9 +128,9 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
 	} else if (trainConfig == 2) {
 		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3  //offline V0Finder
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -163,7 +163,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	EventCutList->SetOwner(kTRUE);
 	AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
-	AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
+	AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 	

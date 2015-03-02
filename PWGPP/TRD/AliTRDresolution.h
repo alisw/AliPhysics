@@ -20,7 +20,7 @@
 #endif
 
 #ifndef Root_TNamed
-#include "TNamed.h"
+#include <TNamed.h>
 #endif
 
 class TH1;
@@ -53,9 +53,11 @@ public:
   enum ETRDresolutionClass {
      kDetector=0      // cluster - detector
     ,kCluster         // cluster - track
+    ,kOnlTracklet     // onl.tracklet - ofl.tracklet residuals/pulls
     ,kTracklet        // tracklet - track residuals/pulls
     ,kTrackIn         // tracklet - track residuals/pulls at lower TRD entrance
     ,kMCcluster       // cluster-mc resolution/pulls
+    ,kMConlTracklet   // onl.tracklet - track refs residuals/pulls
     ,kMCtracklet      // tracklet-mc resolution/pulls
     ,kMCtrackIn       // TPC track monitor
     ,kMCtrack         // TRD track monitor
@@ -94,6 +96,8 @@ public:
 
   AliTRDresolution();
   AliTRDresolution(char* name, Bool_t xchange=kTRUE);
+  AliTRDresolution(const AliTRDresolution&);
+  AliTRDresolution& operator=(const AliTRDresolution&);
   virtual ~AliTRDresolution();
   
   static Bool_t   FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
@@ -101,6 +105,7 @@ public:
   void            UserCreateOutputObjects();
 //  Float_t GetCorrectionX(Int_t det, Int_t tb) const {return fXcorr[det][tb];}
   static void     GetRangeZ(TH2 *h2, Float_t &m, Float_t &M);
+  const Char_t*   GetPrefix() const      { return fPrefix;}
   Float_t         GetPtThreshold() const {return fPtThreshold;}
   Bool_t          GetRefFigure(Int_t ifig);
 
@@ -124,9 +129,10 @@ public:
 
   TH1*            DetCluster(const TObjArray *cl=NULL);
   TH1*            PlotCluster(const AliTRDtrackV1 *t=NULL);
+  //TH1*            PlotOnlTracklet(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotTracklet(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotTrackIn(const AliTRDtrackV1 *t=NULL);
-//  TH1*            PlotTrackOut(const AliTRDtrackV1 *t=NULL);
+  TH1*            PlotKink(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotMC(const AliTRDtrackV1 *t=NULL);
 
   static Bool_t   Process(TH2* const /*h2*/, TGraphErrors **/*g*/, Int_t stat=100){ return Bool_t(stat);}
@@ -135,8 +141,9 @@ public:
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
   void            SetLYselect(Int_t ly=0)               { fLYselect = ly;}
-  void            SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
-  void            SetDump3D(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
+  void            SetProcesses(Bool_t trkin, Bool_t trklt, Bool_t onlTrklt, Bool_t cl, Bool_t det);
+  void            SetPrefix(const char *prefix)         { snprintf(fPrefix, 3, "%s", prefix);}
+  void            SetDump3D(Bool_t trkin, Bool_t trklt, Bool_t onlTrklt, Bool_t cl, Bool_t det);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
 /*  void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
@@ -152,10 +159,12 @@ public:
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
 protected:
-  Bool_t      HasDump3DFor(ETRDresolutionClass cls) const { return TESTBIT(fSteer, 4+cls);}
+  Float_t     GetChargeNTC(AliTRDseedV1 *trklt);
+  Bool_t      HasDump3DFor(ETRDresolutionClass cls) const { return TESTBIT(fSteer, 8+cls);}
   Bool_t      HasProcess(ETRDresolutionClass cls) const   { return TESTBIT(fSteer, cls);}
   Bool_t      MakeProjectionDetector();
   Bool_t      MakeProjectionCluster(Bool_t mc=kFALSE);
+  Bool_t      MakeProjectionOnlTracklet(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTracklet(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTrackIn(Bool_t mc=kFALSE, Bool_t v0=kFALSE);
   Bool_t      MakeProjectionTrack();
@@ -163,13 +172,14 @@ protected:
   Bool_t      Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt) const;
 
   UShort_t              fSteer;           // bit map to steer internal behaviour of class
-                                          // MakeProjection [kTrackIn kTracklet kCluster kDetector]
-                                          // Dump3D [4+kTrackIn 4+kTracklet 4+kCluster 4+kDetector]
+                                          // MakeProjection [kTrackIn kTracklet kOnlTracklet kCluster kDetector]
+                                          // Dump3D [8+kTrackIn 8+kTracklet 8+kOnlTracklet 8+kCluster 8+kDetector]
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Int_t                 fBCbinTOF;        // set/select by TOF BC index
   Int_t                 fBCbinFill;       // set/select by Bunch Fill index
   Int_t                 fLYselect;        // select layer for Tracklet projections (in debug mode)
   Bool_t                fBsign;           // sign of magnetic field (kFALSE[-] kTRUE[+])
+  Char_t                fPrefix[3];       // char identifier for common histograms of various tasks
   static Char_t const  *fgPerformanceName[kNclasses]; //! name of performance plot
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection
   static Double_t const fgkMin[kNdim];    //! low limits for projections
@@ -181,11 +191,7 @@ protected:
   // calibration containers
   TObjArray            *fCl;              //! cluster2track calib
   TObjArray            *fMCcl;            //! cluster2mc calib
-
- private:
-  AliTRDresolution(const AliTRDresolution&);
-  AliTRDresolution& operator=(const AliTRDresolution&);
   
-  ClassDef(AliTRDresolution, 11) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 12) // TRD tracking resolution task
 };
 #endif

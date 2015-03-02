@@ -212,12 +212,12 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnF	    *fCrossCheckAcc[5]; //control histo: {CrossedRows,Ncluster,Chi,Length,CrossedRows/Findable} vs pT,eta,phi,Centrality after cuts
     TH1F	    *fCutPercClusters; // control histo: number of clusters, where the relative cut has been set e-by-e
     TH1F	    *fCutPercCrossed; // control histo: number of crossed rows, where the relative cut has been set e-by-e
-    TH2F	    *fCrossCheckRowsLength; // control histo: number of crossed rows vs length in TPC
-    TH2F	    *fCrossCheckClusterLength; // control histo: number of clusters vs length in TPC
-    TH2F	    *fCrossCheckRowsLengthAcc; // control histo: number of crossed rows vs length in TPC for all accepted tracks
-    TH2F	    *fCrossCheckClusterLengthAcc; // control histo: number of clusters vs length in TPC for all accepted tracks
-    TH2F		*fCrossCheckPtresLength; // control histo: relative pt resolution in 1/pt vs lenght in TPC
-    TH2F		*fCrossCheckPtresRows; // control histo: relative pt resolution in 1/pt vs number of crossed rows in TPC
+    TH3F	    *fCrossCheckRowsLength; // control histo: number of crossed rows vs length in TPC vs cent
+    TH3F	    *fCrossCheckClusterLength; // control histo: number of clusters vs length in TPC vs cent
+    TH3F	    *fCrossCheckRowsLengthAcc; // control histo: number of crossed rows vs length in TPC for all accepted tracks vs cent
+    TH3F	    *fCrossCheckClusterLengthAcc; // control histo: number of clusters vs length in TPC for all accepted tracks vs cent
+    TH3F		*fCrossCheckPtresLength; // control histo: relative pt resolution in 1/pt vs lenght in TPC vs cent
+    TH3F		*fCrossCheckPtresRows; // control histo: relative pt resolution in 1/pt vs number of crossed rows in TPC vs cent
     TH1F        *fCutSettings; // control histo: cut settings
     
     TH1F		*fEventplaneDist; // event plane distribution in phi
@@ -237,6 +237,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 
 	// cross check for event plane determination
 	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
+	TH2F		*fDeltaPhiSymCent; // DeltaPhi:Cent - DeltaPhi in the range from 0 to pi/2
+	
+	TH1F		*fMCRecTracksMult; // number of reconstructed tracks vs reference multiplcity
+	TH1F		*fMCGenTracksMult; // number of generated tracks vs reference multiplcity
 	
 	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
 
@@ -307,7 +311,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,13); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,14); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

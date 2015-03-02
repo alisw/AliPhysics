@@ -71,6 +71,7 @@ void AddAliEbyENetChargeFluctuationTask(const Char_t *taskname="TOFTPC",
     task->SetTrackFilterBit(aodFilterBit);
   }
   task->SetSystemType(sysii);
+  task->SetEventSelectionBit(AliVEvent::kMB);
   task->SetCentralityEstimator(centralityEstimator);
   task->SetVertexDiamond(vx,vy,vz);
   task->SetKinematicsCuts(ptl,pth,gEta,gRap);

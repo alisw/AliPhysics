@@ -225,6 +225,8 @@ namespace RAWMUON {
     	std::cout << Form("DDL %5d (%8s) seen in %7d events",it->first,
     			 AliDAQ::DetectorNameFromDdlID(it->first,dummy),it->second) << std::endl;
     }
+    
+    return 0;
   }
   
 }

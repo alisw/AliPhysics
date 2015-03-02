@@ -71,7 +71,7 @@ fEtaGapMin(-0.5),
 fEtaGapMax(0.5),
 fTrkBit(128),
 fEtaCut(0.8),
-fMinPt(0),
+fMinPt(0.2),
 fMaxPt(20.0),
 fMinTPCNcls(70),
 fFillTHn(kFALSE),
@@ -81,19 +81,13 @@ fQvector_lq(0),
 fQvector_sq(0),
 fResSP(0),
 fResSP_vs_Cent(0),
-f2partCumQA_vs_Cent(0),
-f2partCumQB_vs_Cent(0),
 fEta_vs_Phi_bef(0),
 fEta_vs_PhiA(0),
 fEta_vs_PhiB(0),
 fResSP_lq(0),
 fResSP_vs_Cent_lq(0),
-f2partCumQA_vs_Cent_lq(0),
-f2partCumQB_vs_Cent_lq(0),
 fResSP_sq(0),
 fResSP_vs_Cent_sq(0),
-f2partCumQA_vs_Cent_sq(0),
-f2partCumQB_vs_Cent_sq(0),
 fResSP_inclusive(0),
 fv2SPGap1A_inclusive_mb(0),
 fv2SPGap1B_inclusive_mb(0),
@@ -252,12 +246,6 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   fResSP_vs_Cent = new TProfile("fResSP_vs_Cent", "Resolution; centrality; Resolution", 20., 0., 100.);
   fOutput->Add(fResSP_vs_Cent);
 
-  f2partCumQA_vs_Cent = new TProfile("f2partCumQA_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.);
-  fOutput->Add(f2partCumQA_vs_Cent);
-
-  f2partCumQB_vs_Cent = new TProfile("f2partCumQB_vs_Cent", "Resolution; centrality; Resolution", 100., 0., 100.);
-  fOutput->Add(f2partCumQB_vs_Cent);
-
   fEta_vs_Phi_bef = new TH2D("fEta_vs_Phi_bef","eta vs phi distribution before eta gap;#eta;#phi",200.,-1.,1.,175.,0.,7.);
   fOutput->Add(fEta_vs_Phi_bef);
 
@@ -285,12 +273,6 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
   fResSP_vs_Cent_lq = new TProfile("fResSP_vs_Cent_lq", "Resolution; centrality; Resolution", 20., 0., 100.);
   fOutput_lq->Add(fResSP_vs_Cent_lq);
 
-  f2partCumQA_vs_Cent_lq = new TProfile("f2partCumQA_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.);
-  fOutput_lq->Add(f2partCumQA_vs_Cent_lq);
-
-  f2partCumQB_vs_Cent_lq = new TProfile("f2partCumQB_vs_Cent_lq", "Resolution; centrality; Resolution", 100., 0., 100.);
-  fOutput_lq->Add(f2partCumQB_vs_Cent_lq);
-
   // MC closure test
   fv2SPGap1A_inclusive_lq = new TProfile("fv2SPGap1A_inclusive_lq", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
   fOutput_lq->Add(fv2SPGap1A_inclusive_lq);
@@ -304,12 +286,6 @@ void AliAnalysisTaskV2AllChAOD::UserCreateOutputObjects()
 
   fResSP_vs_Cent_sq = new TProfile("fResSP_vs_Cent_sq", "Resolution; centrality; Resolution", 20., 0., 100.);
   fOutput_sq->Add(fResSP_vs_Cent_sq);
-
-  f2partCumQA_vs_Cent_sq = new TProfile("f2partCumQA_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.);
-  fOutput_sq->Add(f2partCumQA_vs_Cent_sq);
-
-  f2partCumQB_vs_Cent_sq = new TProfile("f2partCumQB_vs_Cent_sq", "Resolution; centrality; Resolution", 100., 0., 100.);
-  fOutput_sq->Add(f2partCumQB_vs_Cent_sq);
 
   // MC closure test
   fv2SPGap1A_inclusive_sq = new TProfile("fv2SPGap1A_inclusive_sq", "v_{2}{2} vs p_{T}; p_{T} (GeV/c); v_{2}{2}", nptBins, ptBins);
@@ -525,35 +501,18 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 
     //main loop on tracks
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
+
       AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
+
       if(!track) AliFatal("Not a standard AOD");
+
       if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
+
       if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
 
+      if ( track->Pt() < fMinPt || track->Pt() > fMaxPt ) continue;
+      
       fEta_vs_Phi_bef->Fill( track->Eta(), track->Phi() );
-
-      //       if (fIsRecoEff){
-      //
-      // 	// 2) reject randomly tracks at high pT until the reconstruction efficiency becomes flat (add the following before the loop == 0 part): (mail by Alexandru)
-      //
-      // 	Double_t recoEff = GetRecoEff(track->Pt(), centV0);
-      //         if (recoEff < 0){
-      // 	  cout<<"No reconstruction efficiency!"<<endl;
-      //           continue;
-      // 	}
-      //
-      // 	Double_t rndPt = gRandom->Rndm();
-      // //         cout<<"rndPt: "<<rndPt<<endl;
-
-      // 	Double_t minRecPt = GetRecoEff(0.200001, centV0);
-      // //         cout<<"minRecPt: "<<minRecPt<<endl;
-
-      // 	if (rndPt > minRecPt/recoEff){
-      // // 	  cout<<"Track rejected: "<<iTracks<<"  from "<<fAOD->GetNumberOfTracks()<<endl;
-      // 	  continue;
-      // 	}
-      //
-      //       } // end fIsRecoEff
 
       if (loop == 0) {
 
@@ -708,21 +667,9 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     fResSP_inclusive->Fill(0., res); //mb v2 for mc closure
     fResSP_vs_Cent->Fill(Cent, res);
 
-    Double_t f2partCumQA = -999.;
-    if(multGap1A>1)
-      f2partCumQA = ( ( (QxGap1A*QxGap1A + QyGap1A*QyGap1A) - (Double_t)multGap1A ) / ((Double_t)multGap1A*((Double_t)multGap1A-1)) );
-    if(f2partCumQA>0)f2partCumQA_vs_Cent->Fill((Double_t)Cent,f2partCumQA);
-
-    Double_t f2partCumQB = -999.;
-    if(multGap1B>1) 
-      f2partCumQB = ( ( (QxGap1B*QxGap1B + QyGap1B*QyGap1B) - (Double_t)multGap1B ) / ((Double_t)multGap1B*((Double_t)multGap1B-1)) );
-    if(f2partCumQB>0)f2partCumQB_vs_Cent->Fill((Double_t)Cent,f2partCumQB);
-
     if (Qvec > fCutLargeQperc && Qvec < 100.){
       fResSP_lq->Fill((Double_t)centV0, res);
       fResSP_vs_Cent_lq->Fill(Cent, res);
-      if(f2partCumQA>0)f2partCumQA_vs_Cent_lq->Fill((Double_t)Cent,f2partCumQA);
-      if(f2partCumQB>0)f2partCumQB_vs_Cent_lq->Fill((Double_t)Cent,f2partCumQB);
 
       fResSP_inclusive->Fill(1., res); //lq v2 for mc closure
     }
@@ -730,16 +677,12 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
     if (Qvec > 0. && Qvec < fCutSmallQperc){
       fResSP_sq->Fill((Double_t)centV0, res);
       fResSP_vs_Cent_sq->Fill(Cent, res);
-      if(f2partCumQA>0)f2partCumQA_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQA);
-      if(f2partCumQB>0)f2partCumQB_vs_Cent_sq->Fill((Double_t)Cent,f2partCumQB);
 
       fResSP_inclusive->Fill(2., res); //sq v2 for mc closure
     }
-  }// end multiplicity if
-
-  //v2 vs qvec
-  if ((multGap1A > 0) && (multGap1B > 0)){
-
+    
+    //_________________________________________________________________
+    //v2 vs qvec
     fResGap1w->Fill(Double_t(centV0), (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/multGap1A/multGap1B, (Double_t)(multGap1A*multGap1B));
 
     Double_t nGap1 = multGap1A*multGap1B;
@@ -749,8 +692,9 @@ void AliAnalysisTaskV2AllChAOD::UserExec(Option_t *)
 
     fResSP_vs_Qvec[centV0]->Fill(Double_t(Qvec), (QxGap1A*QxGap1B + QyGap1A*QyGap1B)/multGap1A/multGap1B, (Double_t)(multGap1A*multGap1B));
     fV2IntGap1wq[centV0]->Fill(Double_t(Qvec), qqGap1, nGap1);
+    
+  }// end multiplicity if
 
-  }
 
   if( fFillTHn ){ 
 

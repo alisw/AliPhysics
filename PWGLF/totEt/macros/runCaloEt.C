@@ -6,12 +6,12 @@
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="simPbPb", // "sim" or "real" etc.
-	       // const char *dataType="realPbPb", // "sim" or "real" etc.
+	       //const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "EMCal",//"EMCal",
+	       const char *det = "EMCal",//EMCal",//"EMCal",//"EMCal",
 	       int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts=0, Bool_t is2011 = kFALSE, Bool_t jethad = kFALSE) // "PHOS" or "EMCAL" or EMCalDetail
 {
-  bool runCompiledVersion = kTRUE;
+  bool runCompiledVersion = kFALSE;
   class AliAnalysisEtCuts;
   TStopwatch timer;
   timer.Start();
@@ -21,8 +21,10 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libPhysics");
   gSystem->Load("libMinuit");
 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");
+//   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$CMAKE_INSTALL_PREFIX/include");
+//   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");
 
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
@@ -32,10 +34,24 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
 
-    gSystem->Load("libTender");
-    gSystem->Load("libTenderSupplies");
-    gSystem->Load("libPWGTools");
-    gSystem->Load("libPWGEMCAL");
+// gSystem->Load("libOADB");
+// gSystem->Load("libCDB");
+// gSystem->Load("libRAWDatabase");
+gSystem->Load("libPHOSUtils");
+gSystem->Load("libPHOSbase");
+gSystem->Load("libPHOSpi0Calib");
+gSystem->Load("libPHOSrec");
+gSystem->Load("libPHOSshuttle");
+gSystem->Load("libPHOSsim");
+gSystem->Load("libPWGGAPHOSTasks");
+
+
+//gSystem->Load("libTENDER.so");
+//  gSystem->Load("libTENDERSupplies.so"); 
+    gSystem->Load("libTender.so");
+    gSystem->Load("libTenderSupplies.so"); 
+    gSystem->Load("libPWGTools.so");
+    gSystem->Load("libPWGEMCAL.so");
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
     //gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
 
@@ -48,7 +64,7 @@ void runCaloEt(bool submit = false, // true or false
   }
    
   if(runCompiledVersion){
-    gSystem->Load("libPWGLFtotEt");
+    gSystem->Load("libPWGLFtotEt.so");
   }
   else{
     gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
@@ -76,46 +92,52 @@ void runCaloEt(bool submit = false, // true or false
   TString detStr(det);
   TString dataStr(dataType);
   if ( detStr.Contains("PHOS") ) {
-    if(is2011){
-      gSystem->CopyFile("calocorrections.2011.PHOS.root","calocorrections.root",kTRUE);
-    }
-    else{
-      gSystem->CopyFile("calocorrections.PHOS.root","calocorrections.root",kTRUE);
-    }
-    if ( dataStr.Contains("sim") ) {
+    if ( dataStr.Contains("sim") ) {      
+      if(is2011){
+	gSystem->CopyFile("calocorrections.2011.PHOS.sim.root","calocorrections.root",kTRUE); 
+      }
+      else{
+	gSystem->CopyFile("calocorrections.PHOS.sim.root","calocorrections.root",kTRUE); 
+      }
       gSystem->CopyFile("ConfigEtMonteCarlo.PHOS.C","ConfigEtMonteCarlo.C",kTRUE);
     }
     else{
+      if(is2011){
+	gSystem->CopyFile("calocorrections.2011.PHOS.root","calocorrections.root",kTRUE); 
+      }
+      else{
+	gSystem->CopyFile("calocorrections.PHOS.root","calocorrections.root",kTRUE); 
+      }
       gSystem->CopyFile("ConfigEtMonteCarlo.PHOS.data.C","ConfigEtMonteCarlo.C",kTRUE);
     }
   }
-  else{
-    if(is2011){
-      gSystem->CopyFile("calocorrections.2011.EMCAL.root","calocorrections.root",kTRUE);
-    }
-    else{
-      gSystem->CopyFile("calocorrections.EMCAL.root","calocorrections.root",kTRUE);
-    }
-    if(is2011){
-      if ( dataStr.Contains("sim") ) {
+  else{//EMCal
+    if ( dataStr.Contains("sim") ) {
+      if(is2011){
 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.C","ConfigEtMonteCarlo.C",kTRUE);
+	gSystem->CopyFile("calocorrections.2011.EMCAL.sim.root","calocorrections.root",kTRUE); 
       }
       else{
-	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.data.C","ConfigEtMonteCarlo.C",kTRUE);
+	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.C","ConfigEtMonteCarlo.C",kTRUE);
+	gSystem->CopyFile("calocorrections.EMCAL.sim.root","calocorrections.root",kTRUE); 
       }
     }
     else{
-      if ( dataStr.Contains("sim") ) {
-	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.C","ConfigEtMonteCarlo.C",kTRUE);
+      if(is2011){
+	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.data.C","ConfigEtMonteCarlo.C",kTRUE);
+	gSystem->CopyFile("calocorrections.2011.EMCAL.root","calocorrections.root",kTRUE); 
       }
       else{
 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.data.C","ConfigEtMonteCarlo.C",kTRUE);
+	gSystem->CopyFile("calocorrections.EMCAL.root","calocorrections.root",kTRUE); 
       }
     }
+
   }
+  
 
   if(is2011){
-      gSystem->CopyFile("ConfigEtReconstructed.2011.C","ConfigEtReconstructed.C",kTRUE);
+    gSystem->CopyFile("ConfigEtReconstructed.2011.C","ConfigEtReconstructed.C",kTRUE);
   }
   else{
       gSystem->CopyFile("ConfigEtReconstructed.2010.C","ConfigEtReconstructed.C",kTRUE);
@@ -186,24 +208,24 @@ void runCaloEt(bool submit = false, // true or false
 //       chain->Add(fileLocation.Data()); // link to local test file
 //      chain->Add("/data/tmp/3682/AliESDs.root");
 //      chain->Add("/data/tmp/2782/AliESDs.root");
-//       chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
+      // chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
 //      chain->Add("/data/LHC14a6/168464/605/AliESDs.root");
 //chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
 //      chain->Add("/data/LHC14a6/168464/605/AliESDs.root");//HIJING with embedded signals
-      chain->Add("/data/LHC12d3/168464/201/AliESDs.root");//HIJING with embedded signals - works, full acceptance
+//      chain->Add("/data/LHC12d3/168464/201/AliESDs.root");//HIJING with embedded signals - works, full acceptance
       //chain->Add("/data/LHC14a6/168464/888/AliESDs.root");//HIJING with embedded signals
-//   chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
-//   chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
-//  chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
+      //      //  chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
+      //chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
+      //chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
 //  chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
 //  chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
 //  chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
 //  chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
-//  chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/011/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
+chain->Add("/data/LHC11a10a_bis/139465/011/AliESDs.root");
+chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/013/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/014/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/015/AliESDs.root");
@@ -273,12 +295,13 @@ void runCaloEt(bool submit = false, // true or false
 
     //      chain->Add("/data/tmp/10000139465010.600/AliESDs.root");
 
-      chain->Add("/data/LHC11h/pass2/000168464/11000168464082.94/AliESDs.root");
-      //chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");
-//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.870/AliESDs.root");
-//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.880/AliESDs.root");
-//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.890/AliESDs.root");
-//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.900/AliESDs.root");
+    //  chain->Add("/data/LHC11h/pass2/000168464/11000168464082.94/AliESDs.root");
+    chain->Add("/data/LHC10h/pass2/139465/10000139465065.990/AliESDs.root");
+//       chain->Add("/data/LHC10h/pass2/10000137366041.860/AliESDs.root");
+//        chain->Add("/data/LHC10h/pass2/10000137366041.870/AliESDs.root");
+//        chain->Add("/data/LHC10h/pass2/10000137366041.880/AliESDs.root");
+//        chain->Add("/data/LHC10h/pass2/10000137366041.890/AliESDs.root");
+//        chain->Add("/data/LHC10h/pass2/10000137366041.900/AliESDs.root");
 //     chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
     //chain->Add("/home/dsilverm/data/E_T/data/2010/LHC10b/000117222/ESDs/pass2/10000117222021.30/AliESDs.root"); // link to local test file
     cout << " not MC " << endl;
@@ -295,9 +318,9 @@ void runCaloEt(bool submit = false, // true or false
     //I set the defaults to the golden run for PbPb because we are focusing on the golden run, however, this should be thought through!!
     //AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
     AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
-    setupTask->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
+    setupTask->SetGeoPath("$ALICE_PHYSICS/OADB/EMCAL");
     setupTask->SetOcdbPath(""); 
 
 //     gROOT->LoadMacro("AddTaskEMCALTenderForEtAnalysis.C");
@@ -325,7 +348,7 @@ void runCaloEt(bool submit = false, // true or false
 //     }
 
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
     TString runPeriod = "LHC10h";
   Bool_t distBC         = kTRUE;   //distance to bad channel
   Bool_t recalibClus    = kTRUE;   //recalibrate cluster energy
@@ -362,15 +385,29 @@ void runCaloEt(bool submit = false, // true or false
     //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosTrgContam", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     //mgr->ConnectOutput(tender,1,coutput3);
     cout<<"Output container name "<<AliAnalysisManager::GetCommonFileName()<<endl;
-  }
+    }
+    else{
+      if(withtender){
+	cout<<"You are running over PHOS data and using the tender supply"<<endl;
+	gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");//isMc
+	TString mcname = "LHC13d2";
+	if(is2011) mcname = "LHC13d2";
+	//AliAnalysisTaskSE *tender = AddAODPHOSTender("PHOSTenderTask","PHOStender",mcname.Data(),2,isMc);//last argument is pass 2, not set to assume MC
+	
+	
+	// one can sellect what collision candidates to use
+	// triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
+	//tender->SelectCollisionCandidates( AliVEvent::kAny );
+      }
+    }
 
   if(isMc) cout<<"I am a MC"<<endl;
-  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   
   AliPhysicsSelectionTask *physicsSelectionTask = AddTaskPhysicsSelection(isMc);//isMC is true when processing monte carlo
   if(isPb){	 
     cout<<"Adding centrality selection task"<<endl;
-    gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+    gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     //gROOT->ProcessLine(".L AliCentralitySelectionTask.cxx++g");
     AliCentralitySelectionTask *centTask = AddTaskCentrality();
     if(isMc){

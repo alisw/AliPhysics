@@ -8,12 +8,13 @@ AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
   const char *nrho               = "Rho",
   Int_t       trigger            = AliVEvent::kMB,
   Int_t       nCentBins          = 1,
-  Double_t    jetradius          = 0.2,
+  Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.6,
   const char *type               = "EMCAL",
   Int_t       leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskJetJTJT",
+  Int_t       effMode		 = 1,	
   Int_t       debug 		 = 0	
 )
 {  
@@ -78,14 +79,16 @@ AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
   }
   jtTask->SetTrackArrayName(ntracks);
   jtTask->setDebug(debug);
+  jtTask->setEffMode(effMode);
   jtTask->setRunPeriod(runPeriod);
   Double_t borders[5] = {0,10,20,40,100};
-  Double_t triggpt[8] = {0,5,10,20,40,80,100,150};
-  Double_t triggpta[2] = {0,100};
+  Double_t triggpt[8] = {0,20,30,40,60,80,100,150};
+  //Double_t triggpta[2] = {0,100};
+  Double_t triggpta[8] = {0,0.5,1,3,10,20,50,100};
   //cout << "Size of {0,10,20,40,100}: " << borders->size() << endl;
   jtTask->setCentBinBorders(5,borders);
   jtTask->setTriggPtBorders(8,triggpt);
-  jtTask->setAssocPtBorders(2,triggpta);
+  jtTask->setAssocPtBorders(8,triggpta);
   jtTask->SelectCollisionCandidates(trigger);
 
   AliParticleContainer *trackCont  = jtTask->AddParticleContainer(ntracks);

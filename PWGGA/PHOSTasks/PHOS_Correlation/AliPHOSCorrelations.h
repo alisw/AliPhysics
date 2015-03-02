@@ -1,12 +1,12 @@
 #ifndef AliPHOSCorrelations_cxx
 #define AliPHOSCorrelations_cxx
 
-/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-// Analysis task for identifion PHOS cluster from Pi0 and extracting pi0-hadron correlation.
+// Analysis task for pi0-hadron correlation whis PHOS detector.
 // Author:  Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
-// 20-Sept-2014
+// 20-Feb-2015
 
 class TClonesArray;
 class AliStack ;
@@ -53,7 +53,8 @@ public:
   TString GetPeriod()                                                       const { return fPeriod                   ; }
 
   void SetCentralityEstimator(const char * centr)                                 { fCentralityEstimator = centr         ; }
-  void SetEventMixingRPBinning(const UInt_t nBins)                                { fNEMRPBins = nBins                   ; }
+  void SetEventMixingRPBinning(const Int_t nBins)                                 { fNEMRPBins = nBins                   ; }
+  void SetEventMixingVtxBinning(const Int_t nBins)                                { fNVtxZBins = nBins                   ; }
   void SetMaxAbsVertexZ(const Float_t z)                                          { fMaxAbsVertexZ = z                   ; }
  
   void SwitchOnPionEfficiency()                                                   { fUseEfficiency = kTRUE               ; }
@@ -86,8 +87,13 @@ public:
   Float_t  GetTPCSharedClusterFraction()                                    const { return fCutTPCSharedClustersFraction ; }
   void     SetTPCSharedClusterFraction(Float_t fr)                                { fCutTPCSharedClustersFraction = fr   ; }
 
-  void     SwitchOnAODHybridTrackSelection()                                      { fSelectHybridTracks = kTRUE  ; } 
-  void     SwitchOffAODHybridTrackSelection()                                     { fSelectHybridTracks = kFALSE ; } 
+  void     SwitchOnAODHybridTrackSelection()                                      { fSelectHybridTracks = kTRUE         ; } 
+  void     SwitchOffAODHybridTrackSelection()                                     { fSelectHybridTracks = kFALSE        ; } 
+
+  void     ShowTaskInfo()  ;
+
+  void     SetEventPlaneMethod(TString m)                                         { fEventPlaneMethod = m               ; }
+  TString  GetEventPlaneMethod()                                            const { return fEventPlaneMethod            ; }
   
 
 protected: 
@@ -238,6 +244,8 @@ private:
   Bool_t    fHaveTPCRP ;                                //! Is TPC RP defined?
   Float_t   fRP ;                                       //! Reaction plane calculated with full TPC
   Int_t     fEMRPBin;                                   //! Event Mixing Reaction Plane Bin
+
+  TString   fEventPlaneMethod;                          //! Name of event plane method, by default "Q"
 
   // Behavior / cuts
   Float_t   fMaxAbsVertexZ;                             // Maximum distence Z component of vertix in cm

@@ -17,7 +17,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
 			Bool_t isMC=kFALSE,
 			Int_t trainId=0, 
 			Bool_t saveHisto=kTRUE,
-			Bool_t includeStartTime=kTRUE,
+			Bool_t checkPIDqa=kTRUE,
 			Bool_t drawAll=kTRUE,
 			Bool_t IsOnGrid = kTRUE)
 {
@@ -45,7 +45,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
     Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
     
     //run post-analysis
-    if (MakeTrendingTOFQAv2(infile,runNumber,isMC,drawAll,IsOnGrid,"raw://", saveHisto, includeStartTime)==0){
+    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, "raw://", IsOnGrid, drawAll, saveHisto, kTRUE)==0){
       filesCounter++;
     } else Printf("Post analysis not run on QA output %s", infile);
   }
@@ -57,11 +57,12 @@ Int_t MakeTrendingTOFQA(char * runlist,
 Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output; set IsOnGrid to prepend "alien://"
 			  Int_t runNumber,          // run number
 			  Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
-			  Bool_t drawAll = kFALSE,  //enable display plots on canvas and save png
+			  Bool_t checkPIDqa=kTRUE, //set to kTRUE to check PIDqa output for TOF 
+			  TString ocdbStorage = "raw://", //set the default ocdb storage
 			  Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
-			  TString ocdbStorage = "raw://",
-			  Bool_t saveHisto=kTRUE, //set the default ocdb storage
-			  Bool_t includeStartTime=kTRUE )
+			  Bool_t drawAll = kFALSE,  //enable display plots on canvas and save png
+			  Bool_t saveHisto=kTRUE,   //set to kTRUE to save histograms in root file
+			  Bool_t savePng=kTRUE )    //set to kTRUE to save histogram to png image
 {
   // macro to generate tree with TOF QA trending variables
   // access qa PWGPP output files  
@@ -428,17 +429,17 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   TH1F * hDiffTimeT0TOFPion1GeV=(TH1F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");  
   TH2F * hDiffTimePi=(TH2F*)pidList->FindObject("hExpTimePiVsP_all"); 
   hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
-  hDiffTimePi->GetYaxis()->SetRangeUser(-5000.,5000.);
+  //hDiffTimePi->GetYaxis()->SetRangeUser(-5000.,5000.);
 
   //Kaon
   TH2F * hDiffTimeKa=(TH2F*)pidList->FindObject("hExpTimeKaVsP_all");  
   hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
-  hDiffTimeKa->GetYaxis()->SetRangeUser(-5000.,5000.);
+  //hDiffTimeKa->GetYaxis()->SetRangeUser(-5000.,5000.);
 
   //Protons
   TH2F * hDiffTimePro=(TH2F*)pidList->FindObject("hExpTimeProVsP_all"); 
   hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
-  hDiffTimePro->GetYaxis()->SetRangeUser(-5000.,5000.);
+  //hDiffTimePro->GetYaxis()->SetRangeUser(-5000.,5000.);
   
   if (saveHisto) {
     trendFile->cd();
@@ -490,47 +491,53 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   hSigmaPro_2->SetLineWidth(2);
 
   TString plotDir(".");
-  if (drawAll){
-    TCanvas *cPidPerformance3= new TCanvas("cPidPerformance3","summary of pid performance - sigmas",1200,500);
-    cPidPerformance3->Divide(3,1);
-    cPidPerformance3->cd(1);
-    gPad->SetLogz();
-    gPad->SetLogx();
-    gPad->SetGridx();
-    gPad->SetGridy();
-    hSigmaPi->Draw("colz");
-    hSigmaPi_1->Draw("same");
-    hSigmaPi_2->Draw("same");
-    cPidPerformance3->cd(2);
-    gPad->SetLogz();
-    gPad->SetLogx();
-    hSigmaKa->Draw("colz");
-    hSigmaKa_1->Draw("same");
-    hSigmaKa_2->Draw("same");
-    cPidPerformance3->cd(3);
-    gPad->SetLogz();
-    gPad->SetLogx();
-    hSigmaPro->Draw("colz");
-    hSigmaPro_1->Draw("same");
-    hSigmaPro_2->Draw("same");
+ 
+  TCanvas *cPidPerformance3= new TCanvas("cPidPerformance3","summary of pid performance - sigmas",1200,500);
+  cPidPerformance3->Divide(3,1);
+  cPidPerformance3->cd(1);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hSigmaPi->GetXaxis()->SetRangeUser(0.2, 5.);
+  hSigmaPi->Draw("colz");
+  hSigmaPi_1->Draw("same");
+  hSigmaPi_2->Draw("same");
+  cPidPerformance3->cd(2);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hSigmaKa->GetXaxis()->SetRangeUser(0.2, 5.);
+  hSigmaKa->Draw("colz");
+  hSigmaKa_1->Draw("same");
+  hSigmaKa_2->Draw("same");
+  cPidPerformance3->cd(3);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hSigmaPro->GetXaxis()->SetRangeUser(0.2, 5.);
+  hSigmaPro->Draw("colz");
+  hSigmaPro_1->Draw("same");
+  hSigmaPro_2->Draw("same");
 
-    cPidPerformance3->Print(Form("%s/%i_PID_sigmas.png", plotDir.Data(), runNumber));
-
-    if (saveHisto){
-      hSigmaPi->Write();
-      hSigmaKa->Write();
-      hSigmaPro->Write();
-    }
-  } 
+  if (savePng) cPidPerformance3->Print(Form("%s/%i_PID_sigmas.png", plotDir.Data(), runNumber));
+  if (saveHisto){
+    hSigmaPi->Write();
+    hSigmaKa->Write();
+    hSigmaPro->Write();
+  }
+  
  //--------------------------------- NSigma PID from PIDqa ----------------------------------//
   TH2F * hSigmaPiT0 = 0x0;
   TH2F * hSigmaKaT0 = 0x0;
   TH2F * hSigmaProT0 = 0x0;
-  if(includeStartTime && pidQAdir){
+  if(checkPIDqa && pidQAdir){
     //Pions pid
     hSigmaPiT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_pion");
     hSigmaPiT0->GetYaxis()->SetRangeUser(-5.,5.);
-    hSigmaPiT0->GetXaxis()->SetRangeUser(0.2,10.);
+    hSigmaPiT0->GetXaxis()->SetRangeUser(0.2, 5.);
     hSigmaPiT0->FitSlicesY();
     
     TH1D * hSigmaPiT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_1");
@@ -544,7 +551,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     //Kaons pid
     hSigmaKaT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_kaon");
     hSigmaKaT0->GetYaxis()->SetRangeUser(-5.,5.);
-    hSigmaKaT0->GetXaxis()->SetRangeUser(0.2,10.);
+    hSigmaKaT0->GetXaxis()->SetRangeUser(0.2, 5.);
     hSigmaKaT0->FitSlicesY();
     TH1D * hSigmaKaT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_1");
     TH1D * hSigmaKaT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_2");
@@ -556,7 +563,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     //protons pid
     hSigmaProT0 = (TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_proton");
     hSigmaProT0->GetYaxis()->SetRangeUser(-5.,5.);
-    hSigmaProT0->GetXaxis()->SetRangeUser(0.2,10.);
+    hSigmaProT0->GetXaxis()->SetRangeUser(0.2, 5.);
     hSigmaProT0->FitSlicesY();
     TH1D * hSigmaProT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_1");
     TH1D * hSigmaProT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_2");
@@ -565,56 +572,55 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     hSigmaProT0_2->SetLineColor(2);
     hSigmaProT0_2->SetLineWidth(2);
 
-    if (drawAll){
-      TLine *l1=new TLine(0.,0.,5.,0.);
-      TLine *l2=new TLine(0.,1.,5.,1.);
-      TCanvas *cPidPerformance3T0 = new TCanvas("cPidPerformance3T0","PID performance from PIDqa - sigmas - with StartTime",1200,500);   
-      cPidPerformance3T0->Divide(3,1);
-      cPidPerformance3T0->cd(1);
-      gPad->SetLogz();
-      gPad->SetLogx();
-      gPad->SetGridx();
-      gPad->SetGridy();
-      hSigmaPiT0->Draw("colz");
-      hSigmaPiT0_1->Draw("same");
-      hSigmaPiT0_2->Draw("same");
-      l1->Draw("same");
-      l2->Draw("same");
-      cPidPerformance3T0->cd(2);
-      gPad->SetLogz();
-      gPad->SetLogx();
-      gPad->SetGridx();
-      gPad->SetGridy();
-      hSigmaKaT0->Draw("colz");
-      hSigmaKaT0_1->Draw("same");
-      hSigmaKaT0_2->Draw("same");
-      l1->Draw("same");
-      l2->Draw("same");
-      cPidPerformance3T0->cd(3);
-      gPad->SetLogz();
-      gPad->SetLogx();
-      gPad->SetGridx();
-      gPad->SetGridy();
-      hSigmaProT0->Draw("colz");
-      hSigmaProT0_1->Draw("same");
-      hSigmaProT0_2->Draw("same");
-      l1->Draw("same");
-      l2->Draw("same");
-      cPidPerformance3T0->Print(Form("%s/%i_PID_sigmasStartTime.png", plotDir.Data(), runNumber));
-    }
-    if (saveHisto) {
-      trendFile->cd();
-      hSigmaPiT0->Write();
-      hSigmaKaT0->Write();
-      hSigmaProT0->Write();
-      hSigmaPiT0_1->Write();
-      hSigmaKaT0_1->Write();
-      hSigmaProT0_1->Write();
-      hSigmaPiT0_2->Write();
-      hSigmaKaT0_2->Write();
-      hSigmaProT0_2->Write();
-    }
+    TLine *l1=new TLine(0.,0.,5.,0.);
+    TLine *l2=new TLine(0.,1.,5.,1.);
+    TCanvas *cPidPerformance3T0 = new TCanvas("cPidPerformance3T0","PID performance from PIDqa - sigmas - with StartTime",1200,500);   
+    cPidPerformance3T0->Divide(3,1);
+    cPidPerformance3T0->cd(1);
+    gPad->SetLogz();
+    gPad->SetLogx();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    hSigmaPiT0->Draw("colz");
+    hSigmaPiT0_1->Draw("same");
+    hSigmaPiT0_2->Draw("same");
+    l1->Draw("same");
+    l2->Draw("same");
+    cPidPerformance3T0->cd(2);
+    gPad->SetLogz();
+    gPad->SetLogx();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    hSigmaKaT0->Draw("colz");
+    hSigmaKaT0_1->Draw("same");
+    hSigmaKaT0_2->Draw("same");
+    l1->Draw("same");
+    l2->Draw("same");
+    cPidPerformance3T0->cd(3);
+    gPad->SetLogz();
+    gPad->SetLogx();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    hSigmaProT0->Draw("colz");
+    hSigmaProT0_1->Draw("same");
+    hSigmaProT0_2->Draw("same");
+    l1->Draw("same");
+    l2->Draw("same");
+    if (savePng) cPidPerformance3T0->Print(Form("%s/%i_PID_sigmasStartTime.png", plotDir.Data(), runNumber));
   }
+  if (saveHisto) {
+    trendFile->cd();
+    hSigmaPiT0->Write();
+    hSigmaKaT0->Write();
+    hSigmaProT0->Write();
+    hSigmaPiT0_1->Write();
+    hSigmaKaT0_1->Write();
+    hSigmaProT0_1->Write();
+    hSigmaPiT0_2->Write();
+    hSigmaKaT0_2->Write();
+    hSigmaProT0_2->Write();
+  }
+  
 
    //--------------------------------- T0 detector ----------------------------------//
    
@@ -735,7 +741,28 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     gPad->SetLogy(); 
     hL->Draw("");
     tLength->Draw(); 
-    
+
+    cPidPerformance= new TCanvas("cPidPerformance","summary of pid performance", 900,500);
+    cPidPerformance->Divide(2,1);
+    cPidPerformance->cd(1);
+    gPad->SetLogz();
+    hBetaP->Draw("colz");   
+    cPidPerformance->cd(2);
+    gPad->SetLogy();
+    hMass->Draw("HIST");
+
+    cT0detector= new TCanvas("cT0detector","T0 detector",800,600);
+    cT0detector->Divide(2,1);
+    cT0detector->cd(1);
+    gPad->SetGridx();
+    hT0AC->Draw("");
+    hT0AC->SetTitle("timeZero measured by T0 detector");
+    hT0A ->Draw("same");
+    hT0C ->Draw("same");
+    lT0->Draw();  
+    cT0detector->cd(2);
+    hT0res->Draw();
+
     // TCanvas *cResiduals= new TCanvas("residuals","residuals", 900,500);
     // cResiduals->Divide(2,1);
     // cResiduals->cd(1);
@@ -750,67 +777,49 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     // hDxNeg4profile->Draw("colz");
     // // profDxNeg->SetLineColor(kBlue);
     // // profDxNeg->Draw("same"); 
+
+    if (savePng) {
+      cTrackProperties->Print(Form("%s/%i_TrackProperties.png",plotDir.Data(), runNumber));
+      cPidPerformance->Print(Form("%s/%i_PID.png",plotDir.Data(), runNumber));
+      cT0detector->Print(Form("%s/%i_T0Detector.png",plotDir.Data(), runNumber));
+    }
+  }
    
-    cProfile = new TCanvas("cProfile","cProfile",50,50, 750,550);
-    cProfile->cd();
-    gPad->SetLogz();
-    hTOFmatchedDzVsStrip->Draw("colz");
-    Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
-    Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
-    TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile",binmin, binmax);
-    hDzProfile->SetLineWidth(3);
-    hDzProfile->Draw("same");
+  cProfile = new TCanvas("cProfile","cProfile",50,50,750,550);
+  cProfile->cd();
+  gPad->SetLogz();
+  hTOFmatchedDzVsStrip->Draw("colz");
+  Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
+  Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
+  TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile",binmin, binmax);
+  hDzProfile->SetLineWidth(3);
+  hDzProfile->Draw("same");
     
-    cMatchingPerformance= new TCanvas("cMatchingPerformance","summary of matching performance",1200,500);
-    cMatchingPerformance->Divide(3,1);
-    cMatchingPerformance->cd(1);
-    hMatchingVsPt->Draw();
-    cMatchingPerformance->cd(2);
-    hMatchingVsEta->Draw();
-    cMatchingPerformance->cd(3);
-    hMatchingVsPhi->Draw();
+  cMatchingPerformance= new TCanvas("cMatchingPerformance","summary of matching performance",1200,500);
+  cMatchingPerformance->Divide(3,1);
+  cMatchingPerformance->cd(1);
+  hMatchingVsPt->Draw();
+  cMatchingPerformance->cd(2);
+  hMatchingVsEta->Draw();
+  cMatchingPerformance->cd(3);
+  hMatchingVsPhi->Draw();
     
-    cPidPerformance= new TCanvas("cPidPerformance","summary of pid performance", 900,500);
-    cPidPerformance->Divide(2,1);
-    cPidPerformance->cd(1);
-    gPad->SetLogz();
-    hBetaP->Draw("colz");   
-    cPidPerformance->cd(2);
-    gPad->SetLogy();
-    hMass->Draw("HIST");
-
-    cPidPerformance2= new TCanvas("cPidPerformance2","summary of pid performance - expected times", 1200, 500);
-    cPidPerformance2->Divide(3,1);
-    cPidPerformance2->cd(1);
-    gPad->SetLogz();
-    hDiffTimePi->Draw("colz");
-    cPidPerformance2->cd(2);
-    gPad->SetLogz();
-    hDiffTimeKa->Draw("colz");
-    cPidPerformance2->cd(3);
-    gPad->SetLogz();
-    hDiffTimePro->Draw("colz");
-
-    cT0detector= new TCanvas("cT0detector","T0 detector",800,600);
-    cT0detector->Divide(2,1);
-    cT0detector->cd(1);
-    gPad->SetGridx();
-    hT0AC->Draw("");
-    hT0AC->SetTitle("timeZero measured by T0 detector");
-    hT0A ->Draw("same");
-    hT0C ->Draw("same");
-    lT0->Draw();  
-    cT0detector->cd(2);
-    hT0res->Draw();
-    
-    cTrackProperties->Print(Form("%s/%i_TrackProperties.png",plotDir.Data(), runNumber));
+  cPidPerformance2= new TCanvas("cPidPerformance2","summary of pid performance - expected times", 1200, 500);
+  cPidPerformance2->Divide(3,1);
+  cPidPerformance2->cd(1);
+  gPad->SetLogz();
+  hDiffTimePi->Draw("colz");
+  cPidPerformance2->cd(2);
+  gPad->SetLogz();
+  hDiffTimeKa->Draw("colz");
+  cPidPerformance2->cd(3);
+  gPad->SetLogz();
+  hDiffTimePro->Draw("colz");
+   
+  if (savePng) {
     cProfile->Print(Form("%s/%i_ProfileDZvsStripNumber.png",plotDir.Data(), runNumber));
     cMatchingPerformance->Print(Form("%s/%i_Matching.png",plotDir.Data(), runNumber));
-    cPidPerformance->Print(Form("%s/%i_PID.png",plotDir.Data(), runNumber));
     cPidPerformance2->Print(Form("%s/%i_PID_ExpTimes.png",plotDir.Data(), runNumber));
-    cT0detector->Print(Form("%s/%i_T0Detector.png",plotDir.Data(), runNumber));
-    //cPidPerformanceTh->Print(Form("%s/PID_theoreticalTimes.png",plotDir.Data()));
-    //cResiduals->Print(Form("%s/%i_Residuals.png",plotDir.Data(), runNumber));
   }
   return  0;
 }

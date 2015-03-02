@@ -14,6 +14,7 @@
 #include <TMatrixD.h>
 #include <TF1.h>
 #include "AliAnalysisTaskSE.h"
+#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 
 class TH1;
@@ -55,22 +56,14 @@ public:
   /// set the minimum momentum value of the tracks used to compute the resolution
   void SetMinMomentum(Double_t val) { fMinMomentum = val; }
   
-  /// set the flag to use only tracks passing the physics selection
-  void SelectPhysics(Bool_t flag = kTRUE) {fSelectPhysics = flag;}
+  /// set the minimum pT value of the tracks used to compute the resolution
+  void SetMinPt(Double_t val) { fMinPt = val; }
   
-  /// set the flag to use only tracks matched with trigger or not
-  void MatchTrigger(Bool_t flag = kTRUE) { fMatchTrig = flag; }
-  
-  /// set the flag to use only tracks passing the acceptance cuts (Rabs, eta)
-  void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
+  // set standard cuts to select events to be considered
+  void SetMuonEventCuts(AliMuonEventCuts &eventCuts);
   
   // set standard cuts to select tracks to be considered
   void SetMuonTrackCuts(AliMuonTrackCuts &trackCuts);
-  
-  /// Select events belonging to at least one of the trigger classes selected by the mask to fill histograms:
-  /// - if the physics selection is used, apply the mask to the trigger word returned by the physics selection
-  /// - if not, apply the mask to the trigger word built by looking for triggers listed in "fSelectTriggerClass"
-  void SelectTrigger(Bool_t flag = kTRUE, UInt_t mask = AliVEvent::kMUON) {fSelectTrigger = flag; fTriggerMask = mask;}
   
   /// set the extrapolation mode to get the track parameters and covariances at a given cluster:
   /// 0 = extrapolate from the closest cluster; 1 = extrapolate from the previous cluster except between stations 2-3-4
@@ -79,10 +72,10 @@ public:
   /// set the flag to add or not the systematic shifts of the residuals to the resolution
   void CorrectForSystematics(Bool_t flag = kTRUE) { fCorrectForSystematics = flag; }
   
-  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
-  void SetAlignStorage(const char* ocdbPath) { fNewAlignStorage = ocdbPath; }
+  void SetAlignStorage(const char* ocdbPath, Int_t version = -1, Int_t subVersion = -1);
   
-  void ReAlign(const char* oldAlignStorage = 0x0, const char* newAlignStorage = "");
+  void ReAlign(const char* oldAlignStorage = 0x0, Int_t oldVersion = -1, Int_t oldSubVersion = -1,
+               const char* newAlignStorage = "", Int_t newVersion = -1, Int_t newSubVersion = -1);
   
   /// return the list of summary canvases
   TObjArray* GetCanvases() {return fCanvases;}
@@ -121,7 +114,6 @@ private:
 		  TGraphErrors* gRMS = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE, Bool_t enableFit = kTRUE);
   void FillMeanSigmaClusterVsX(const TH2* hIn, const TH2* hOut, TGraphErrors* gMean, TGraphErrors* gSigma);
   void Cov2CovP(const AliMUONTrackParam &param, TMatrixD &covP);
-  UInt_t BuildTriggerWord(const TString& FiredTriggerClasses);
   void CheckPads(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
   void CheckPadsBelow(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
   
@@ -255,11 +247,7 @@ private:
   Bool_t   fPrintClResPerDE;       ///< print the cluster resolution per DE
   TF1*     fGaus;                  ///< gaussian function to fit the residuals
   Double_t fMinMomentum;           ///< use only tracks with momentum higher than this value
-  Bool_t   fSelectPhysics;         ///< use only tracks passing the physics selection
-  Bool_t   fMatchTrig;             ///< use only tracks matched with trigger
-  Bool_t   fApplyAccCut;           ///< use only tracks passing the acceptance cuts (Rabs, eta)
-  Bool_t   fSelectTrigger;         ///< use only tracks passing the trigger selection
-  UInt_t   fTriggerMask;           ///< trigger mask to be used when selecting tracks
+  Double_t fMinPt;                 ///< use only tracks with pT higher than this value
   Int_t    fExtrapMode;            ///< extrapolation mode to get the track parameters and covariances at a given cluster
   Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
   Bool_t   fRemoveMonoCathCl;      ///< remove or not the mono-cathod clusters
@@ -275,15 +263,18 @@ private:
   Int_t    fDEIds[200];            //!< ID of DE refered by index in histograms
   Bool_t   fReAlign;               ///< flag telling whether to re-align the spectrometer or not before computing resolution
   TString  fOldAlignStorage;       ///< location of the OCDB storage where to find old MUON/Align/Data (use the default one if empty)
+  Int_t    fOldAlignVersion;       ///< specific version of the old MUON/Align/Data/object to load
+  Int_t    fOldAlignSubVersion;    ///< specific subversion of the old MUON/Align/Data/object to load
   TString  fNewAlignStorage;       ///< location of the OCDB storage where to find new MUON/Align/Data (use the default one if empty)
+  Int_t    fNewAlignVersion;       ///< specific version of the new MUON/Align/Data/object to load
+  Int_t    fNewAlignSubVersion;    ///< specific subversion of the new MUON/Align/Data/object to load
   AliMUONGeometryTransformer* fOldGeoTransformer; //!< geometry transformer used to recontruct the present data
   AliMUONGeometryTransformer* fNewGeoTransformer; //!< new geometry transformer containing the new alignment to be applied
   
-  TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
-  
+  AliMuonEventCuts* fMuonEventCuts; ///< cuts to select events to be considered
   AliMuonTrackCuts* fMuonTrackCuts; ///< cuts to select tracks to be considered
   
-  ClassDef(AliAnalysisTaskMuonResolution, 4); // chamber resolution analysis
+  ClassDef(AliAnalysisTaskMuonResolution, 5); // chamber resolution analysis
 };
 
 //________________________________________________________________________
@@ -374,14 +365,50 @@ inline void AliAnalysisTaskMuonResolution::GetDEShift(Double_t valNB[200], Doubl
 }
 
 //________________________________________________________________________
-inline void AliAnalysisTaskMuonResolution::ReAlign(const char* oldAlignStorage, const char* newAlignStorage)
+inline void AliAnalysisTaskMuonResolution::SetAlignStorage(const char* ocdbPath, Int_t version, Int_t subVersion)
 {
-  /// Set the flag to activate the re-alignment and the specific storage where to find the old/new alignment data.
-  /// If oldAlignStorage = 0x0 we assume the spectrometer was not aligned before (default geometry)
-  /// If old(new)AlignStorage = "" we assume the old(new) alignment data are in the default storage
-  if (oldAlignStorage) fOldAlignStorage = oldAlignStorage;
-  else fOldAlignStorage = "none";
-  fNewAlignStorage = newAlignStorage;
+  /// Set the OCDB path + version/subversion to find the alignment file used in the reco.
+  /// If ocdbPath = 0x0: do not apply any alignment (default geometry)
+  /// If ocdbPath = "" : assume the alignment data are in the default storage
+  /// If version = subversion = -1 the lastest object is loaded
+  if (ocdbPath) {
+    fNewAlignStorage = ocdbPath;
+    fNewAlignVersion = version;
+    fNewAlignSubVersion = subVersion;
+  } else {
+    fNewAlignStorage = "none";
+    fNewAlignVersion = -1;
+    fNewAlignSubVersion = -1;
+  }
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::ReAlign(const char* oldAlignStorage, Int_t oldVersion, Int_t oldSubVersion,
+                                                   const char* newAlignStorage, Int_t newVersion, Int_t newSubVersion)
+{
+  /// Set the flag to activate the re-alignment and set the specific storages where to find
+  /// the old/new alignment files of specified version/subversion.
+  /// If old(new)AlignStorage = 0x0: do not apply any alignment (default geometry)
+  /// If old(new)AlignStorage = "" : assume the old(new) alignment data are in the default storage
+  /// If version = subversion = -1 the lastest object is loaded
+  if (oldAlignStorage) {
+    fOldAlignStorage = oldAlignStorage;
+    fOldAlignVersion = oldVersion;
+    fOldAlignSubVersion = oldSubVersion;
+  } else {
+    fOldAlignStorage = "none";
+    fOldAlignVersion = -1;
+    fOldAlignSubVersion = -1;
+  }
+  if (newAlignStorage) {
+    fNewAlignStorage = newAlignStorage;
+    fNewAlignVersion = newVersion;
+    fNewAlignSubVersion = newSubVersion;
+  } else {
+    fNewAlignStorage = "none";
+    fNewAlignVersion = -1;
+    fNewAlignSubVersion = -1;
+  }
   fReAlign = kTRUE;
 }
 
@@ -393,6 +420,14 @@ inline void AliAnalysisTaskMuonResolution::FitResiduals(Bool_t flag)
   delete fGaus;
   if (flag) fGaus = new TF1("fGaus","gaus");
   else fGaus = NULL;
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonResolution::SetMuonEventCuts(AliMuonEventCuts &eventCuts)
+{
+  /// set standard cuts to select events to be considered
+  delete fMuonEventCuts;
+  fMuonEventCuts = new AliMuonEventCuts(eventCuts);
 }
 
 //________________________________________________________________________

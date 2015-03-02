@@ -54,7 +54,10 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fUseEventCombination(0),
   fCustomBinning(),
   fAlpha(0.2),
-  fUseLeadingPt(1)
+  fUseLeadingPt(1),
+  fUseAllT1(1),
+  fUseBackgroundSameOneSide(0),
+  fUseBackgroundSameFromMixedComb(0)
 {
 
   DefineOutput(1, TList::Class());
@@ -88,6 +91,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fHistos->GetData()->SetTrackEtaCut(fTrackEtaCut);
   fHistos->SetUseLeadingPt(fUseLeadingPt);
   fHistos->SetUseAllT1(fUseAllT1);
+  fHistos->SetUseBackgroundSameOneSide(fUseBackgroundSameOneSide);
 
   fListOfHistos->Add(fHistos);
 
@@ -194,7 +198,8 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 
   fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::k1plus1, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kTRUE, kFALSE);//get number of possible away side triggers in the trigger area and outside of it
 
-  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kTRUE);//background estimation for the same event
+  if(!fUseBackgroundSameFromMixedComb)
+    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kTRUE);//background estimation for the same event
 
   ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
   
@@ -243,6 +248,12 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
       //mixed combinatorics
       fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kFALSE);
       fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE);
+
+      //background same from mixed comb
+      if(fUseBackgroundSameFromMixedComb){
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kTRUE);
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kTRUE);
+      }
     }
     
     

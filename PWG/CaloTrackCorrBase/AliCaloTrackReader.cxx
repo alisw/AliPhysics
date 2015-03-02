@@ -859,8 +859,8 @@ void AliCaloTrackReader::InitParameters()
   fTriggerPatchTimeWindow[1] = 9;
   
   fTriggerClusterBC        = -10000 ;
-  fTriggerL0EventThreshold =  2.;
-  fTriggerL1EventThreshold =  4.;
+  fTriggerL0EventThreshold = -1;
+  fTriggerL1EventThreshold = -1;
   fTriggerClusterIndex     = -1;
   fTriggerClusterId        = -1;
   
@@ -2002,7 +2002,8 @@ void AliCaloTrackReader::FillInputBackgroundJets()
   
 }
 
-//________________________________________________________________________________
+//____________________________________________________________________
+/// Recover the patches that triggered, either L0 or L1.
 TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
 {
   // Select the patches that triggered
@@ -2017,38 +2018,6 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   
   // get object pointer
   AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
-
-  // Recover the threshold of the event that triggered, only possible for L1
-  if(!fTriggerL1EventThresholdFix)
-  {
-    if(fBitEGA==6)
-    {
-      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
-      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
-      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
-      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
-      
-//      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
-//             0.07874*caloTrigger->GetL1Threshold(0),
-//             0.07874*caloTrigger->GetL1Threshold(1),
-//             0.07874*caloTrigger->GetL1Threshold(2),
-//             0.07874*caloTrigger->GetL1Threshold(3));
-    }
-    else
-    {
-      // Old AOD data format, in such case, order of thresholds different!!!
-      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
-      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
-      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
-      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
-      
-//      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
-//             0.07874*caloTrigger->GetL1Threshold(1),
-//             0.07874*caloTrigger->GetL1Threshold(0),
-//             0.07874*caloTrigger->GetL1Threshold(3),
-//             0.07874*caloTrigger->GetL1Threshold(2));
-    }
-  }
 
   //printf("CaloTrigger Entries %d\n",caloTrigger->GetEntries() );
   
@@ -2144,10 +2113,12 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   return patches;
 }
 
-//______________________________________________________________________
+//____________________________________________________________
+/// Finds the cluster that triggered.
+/// It compares the cells of the trigger patches and 
+/// high energy clusters
 void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
 {
-  // Finds the cluster that triggered
   
   // Init info from previous event
   fTriggerClusterIndex = -1;
@@ -2207,18 +2178,25 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
   Int_t   nOfHighECl  = 0 ;
   
+  //
+  // Check what is the trigger threshold
+  // set minimu energym of candidate for trigger cluster
+  //
+  SetEMCALTriggerThresholds();
+  
   Float_t triggerThreshold = fTriggerL1EventThreshold;
   if(IsEventEMCALL0()) triggerThreshold = fTriggerL0EventThreshold;
-  //printf("Threshold %f\n",triggerThreshold);
   Float_t minE = triggerThreshold / 2.;
 
   // This method is not really suitable for JET trigger
   // but in case, reduce the energy cut since we do not trigger on high energy particle
   if(IsEventEMCALL1Jet() || minE < 1) minE = 1;
 
-  //printf("Min trigger Energy threshold %f\n",minE);
+  AliDebug(1,Form("IsL1Trigger %d, IsL1JetTrigger? %d, IsL0Trigger %d, L1 threshold %2.1f, L0 threshold %2.1f, Min cluster E %2.2f",IsEventEMCALL1Jet(), IsEventEMCALL1(), IsEventEMCALL0(), fTriggerL1EventThreshold,fTriggerL0EventThreshold,minE));  
   
+  //
   // Loop on the clusters, check if there is any that falls into one of the patches
+  //
   for (Int_t iclus =  0; iclus <  nclusters; iclus++)
   {
     AliVCluster * clus = 0;
@@ -2368,7 +2346,6 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     // Open time patch time
     TArrayI patchOpen = GetTriggerPatches(7,10);
     
-    
     Int_t patchAbsIdOpenTime = -1;
     for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
     {
@@ -2458,11 +2435,63 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
 }
 
-//________________________________________________________
-void AliCaloTrackReader::Print(const Option_t * opt) const
+//_________________________________________________________
+/// Recover the EMCal L1 trigger threshold from data.
+/// Set the EMCal L0 threshold depending on the run number.
+/// Set the threshold only if requested 
+void AliCaloTrackReader::SetEMCALTriggerThresholds()
 {
+  // Set L1 threshold, if not set by user
+  if(!fTriggerL1EventThresholdFix)
+  {
+    // get object pointer
+    AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
+
+    if ( fBitEGA == 6 )
+    {
+      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+      
+      //      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+      //             0.07874*caloTrigger->GetL1Threshold(0),
+      //             0.07874*caloTrigger->GetL1Threshold(1),
+      //             0.07874*caloTrigger->GetL1Threshold(2),
+      //             0.07874*caloTrigger->GetL1Threshold(3));
+    }
+    else
+    {
+      // Old AOD data format, in such case, order of thresholds different!!!
+      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+      
+      //      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+      //             0.07874*caloTrigger->GetL1Threshold(1),
+      //             0.07874*caloTrigger->GetL1Threshold(0),
+      //             0.07874*caloTrigger->GetL1Threshold(3),
+      //             0.07874*caloTrigger->GetL1Threshold(2));
+    }
+  }
   
-  //Print some relevant parameters set for the analysis
+  // Set L0 threshold, if not set by user
+  if( IsEventEMCALL0() && fTriggerL0EventThreshold < 0)
+  { 
+    // Revise for periods > LHC11d 
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if     (runNumber < 146861) fTriggerL0EventThreshold = 3. ;
+    else if(runNumber < 154000) fTriggerL0EventThreshold = 4. ;
+    else if(runNumber < 165000) fTriggerL0EventThreshold = 5.5;
+    else                        fTriggerL0EventThreshold = 2  ;
+  }  
+}
+
+//________________________________________________________
+/// Print some relevant parameters set for the analysis
+void AliCaloTrackReader::Print(const Option_t * opt) const
+{  
   if(! opt)
     return;
   
@@ -2597,10 +2626,11 @@ void AliCaloTrackReader::ResetLists()
 }
 
 //___________________________________________
+/// Tag event depending on trigger name
+/// Set also the L1 bit defining the EGA or EJE triggers
+/// depending on the trigger class version, if not set by user
 void AliCaloTrackReader::SetEventTriggerBit()
-{
-  // Tag event depeding on trigger name
-	
+{	
   fEventTrigMinBias       = kFALSE;
   fEventTrigCentral       = kFALSE;
   fEventTrigSemiCentral   = kFALSE;
@@ -2733,13 +2763,21 @@ void AliCaloTrackReader::SetEventTriggerBit()
                   fEventTrigEMCALL0 ,     fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2,
                   fEventTrigEMCALL1Jet1 , fEventTrigEMCALL1Jet2));
   
-  if(fBitEGA == 0 && fBitEJE ==0)
+  // L1 trigger bit
+  if( fBitEGA == 0 && fBitEJE == 0 )
   {
-    // Init the trigger bit once, correct depending on AliESDAODCaloTrigger header version
+    // Init the trigger bit once, correct depending on AliESD(AOD)CaloTrigger header version
+    
+    // Simpler way to do it ...
+//    if(  fInputEvent->GetRunNumber() < 172000 )
+//      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
+//    else
+//      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
+    
     // Old values
     fBitEGA = 4;
     fBitEJE = 5;
-    
+        
     TFile* file = AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile();
     
     const TList *clist = file->GetStreamerInfoCache();
@@ -2768,7 +2806,6 @@ void AliCaloTrackReader::SetEventTriggerBit()
     } else AliInfo("AliCaloTrackReader::SetEventTriggerBit() -  Streamer list not available!, bit not changed");
     
   } // set once the EJE, EGA trigger bit
-  
 }
 
 //____________________________________________________________

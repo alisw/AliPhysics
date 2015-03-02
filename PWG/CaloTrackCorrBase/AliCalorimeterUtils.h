@@ -264,7 +264,7 @@ class AliCalorimeterUtils : public TObject {
 
   // *** Track Matching ***
   
-  AliVTrack *   GetMatchedTrack(AliVCluster * cluster, AliVEvent * event, Int_t index = 0) const ;
+  AliVTrack *   GetMatchedTrack(AliVCluster * cluster, AliVEvent * event, Int_t index = -1) const ;
   
   // Recalculation
   void          RecalculateClusterTrackMatching(AliVEvent * event, TObjArray* clusterArray = 0x0) ;

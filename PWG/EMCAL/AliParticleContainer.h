@@ -32,13 +32,14 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
   Int_t                       GetNAcceptedParticles()                   ;
+
   void                        SetClassName(const char *clname);
   void                        SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
   void                        SetMinMCLabelAccept(Int_t s)                      { fMinMCLabelAccept= s ; }
   void                        SetParticlePtCut(Double_t cut)                    { fParticlePtCut = cut ; }
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
-  void                        SetParticlePhiLimits(Double_t min, Double_t max)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; }
+  void                        SetParticlePhiLimits(Double_t min, Double_t max, Double_t offset=0.)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; fPhiOffset = offset;}
   void                        SetMinDistanceTPCSectorEdge(Double_t min)         { fMinDistanceTPCSectorEdge = min; }
   void                        SetTrackBitMap(UInt_t m)                          { fTrackBitMap     = m ; }
   void                        SetMCFlag(UInt_t m)                               { fMCFlag          = m ; }
@@ -54,6 +55,7 @@ class AliParticleContainer : public AliEmcalContainer {
   Double_t                    fParticleMaxEta;                // cut on particle eta
   Double_t                    fParticleMinPhi;                // cut on particle phi
   Double_t                    fParticleMaxPhi;                // cut on particle phi
+  Double_t                    fPhiOffset;                     // phi offset
   Double_t                    fMinDistanceTPCSectorEdge;      // require minimum distance to edge of TPC sector edge
   UInt_t                      fTrackBitMap;                   // bit map of accepted tracks (non MC)
   UInt_t                      fMCTrackBitMap;                 // bit map of accepted MC tracks
@@ -67,7 +69,7 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
-  ClassDef(AliParticleContainer,5);
+  ClassDef(AliParticleContainer,6);
 
 };
 

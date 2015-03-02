@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALIANALYSISTASKSE_H
-#include "AliAnalysisTaskSE.h"
+#include <AliAnalysisTaskSE.h>
 #endif
 
 class AliESDEvent;
@@ -60,7 +60,6 @@ public:
   enum AliTRDinfoGenClasses{
      kStatTrk = 0
     ,kEvType
-//    ,kBCtrack
     ,kBC
     ,kTrigger
     ,kChmb
@@ -77,15 +76,17 @@ public:
   const char* GetOCDB() const {return fOCDB.Data();}
   Bool_t  GetRefFigure(Int_t ifig);
   Bool_t  Load(const Char_t *fn="AnalysisResults.root", const Char_t *dir="TRD_Performance", const Char_t *name=NULL);
+  Bool_t  LoadOnlTracklets(const Option_t *opt="");
 
   Bool_t  HasMCdata() const       { return TestBit(kMCdata);};
   // temporary until check with AliAnalysisTaskSE collision selection mechanism
-  Bool_t  IsInitOCDB() const {return TestBit(kOCDB);}
-  Bool_t  IsCollision() const {return TestBit(kCollision);}
-  Bool_t  HasTrackPoints() const {return TestBit(kTrkPoints);}
+  Bool_t  IsInitOCDB() const                        { return TestBit(kOCDB);}
+  Bool_t  IsCollision() const                       { return TestBit(kCollision);}
+  Bool_t  HasTrackPoints() const                    { return TestBit(kTrkPoints);}
   void    MakeSummary();
-  static const AliTRDReconstructor* Reconstructor() {return fgReconstructor;}
-  static AliTRDgeometry*      Geometry() {return fgGeo;}
+  static  Char_t OnlSim()                           { return fgOnlSim;}
+  static const AliTRDReconstructor* Reconstructor() { return fgReconstructor;}
+  static AliTRDgeometry*      Geometry()            { return fgGeo;}
   void    SetInitOCDB(Bool_t set=kTRUE) {SetBit(kOCDB, set);}
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
   //void    SetLocalEvSelection(const AliTRDeventCuts */*cut*/){;} 
@@ -111,9 +112,13 @@ private:
   // Track selection
   static const Float_t fgkTrkDCAxy; // cm
   static const Float_t fgkTrkDCAz;  // cm
-  static const Int_t   fgkNclTPC;   // N clusters TPC
   static const Float_t fgkPt;       // min. pt
   static const Float_t fgkEta;      // eta range
+  static const Int_t   fgkNclTPC;   // N clusters TPC
+
+  // Track selection
+  static Char_t   fgOnlSim;         // switch for online tracklets class/source (AliTRDtrackletMCM[0], AliESDTrdTracklet[1])
+
   static AliTRDReconstructor   *fgReconstructor; // single instance of TRD reconstructor used by all tasks
   static AliTRDgeometry        *fgGeo;           // single instance of TRD geometry used by all tasks
 
@@ -139,11 +144,12 @@ private:
   TObjArray        *fTracksSA;       //! Array of stand alone tracks
   TObjArray        *fTracksKink;     //! Array of kink tracks
   TObjArray        *fV0List;         //! V0 container
+  TObjArray        *fTracklets;      //! Online tracklets container
   TObjArray        *fClusters;       //! Clusters container
   TObjArray        *fContainer;      //! container to store results
   TObjArray        *fRecos;          //! array of reco params
   TTreeSRedirector *fDebugStream;    //! debug stream
 
-  ClassDef(AliTRDinfoGen, 8)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 9)         // entry to TRD analysis train
 };
 #endif

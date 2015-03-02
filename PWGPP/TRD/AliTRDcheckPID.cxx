@@ -16,42 +16,42 @@
 //
 ///////////////////////////////////////////////////////
 
-#include "TAxis.h"
-#include "TROOT.h"
-#include "TPDGCode.h"
-#include "TCanvas.h"
-#include "TF1.h"
-#include "TH1F.h"
-#include "TH1D.h"
-#include "TH2F.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TGraph.h"
-#include "TGraphErrors.h"
-#include "TLegend.h"
+#include <TAxis.h>
+#include <TROOT.h>
+#include <TPDGCode.h>
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TH1F.h>
+#include <TH1D.h>
+#include <TH2F.h>
+#include <TProfile.h>
+#include <TProfile2D.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TLegend.h>
 
 #include <TClonesArray.h>
 #include <TObjArray.h>
 #include <TList.h>
 
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliTrackReference.h"
+#include <AliESDEvent.h>
+#include <AliESDInputHandler.h>
+#include <AliTrackReference.h>
 
-#include "AliAnalysisTask.h"
+#include <AliAnalysisTask.h>
+#include <AliAnalysisManager.h>
 
-#include "AliTRDtrackerV1.h"
-#include "AliTRDtrackV1.h"
-#include "AliTRDcluster.h"
-#include "AliTRDReconstructor.h"
-#include "AliCDBManager.h"
-#include "AliTRDpidUtil.h"
+#include <AliTRDtrackerV1.h>
+#include <AliTRDtrackV1.h>
+#include <AliTRDcluster.h>
+#include <AliTRDReconstructor.h>
+#include <AliCDBManager.h>
+#include <AliTRDpidUtil.h>
 
-#include "AliTRDCalPID.h"
-#include "AliTRDCalPIDNN.h"
+#include <AliTRDCalPID.h>
+#include <AliTRDCalPIDNN.h>
 #include "AliTRDcheckPID.h"
 #include "AliTRDinfoGen.h"
-#include "AliAnalysisManager.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDpidInfo.h"
 #include "info/AliTRDv0Info.h"
@@ -96,7 +96,7 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
   LocalInit();
   InitFunctorList();
 
-  DefineInput(3, TObjArray::Class());  // v0 list
+  DefineInput(4, TObjArray::Class());  // v0 list
   DefineOutput(2, TObjArray::Class()); // pid info list
 }
 
@@ -147,7 +147,7 @@ void AliTRDcheckPID::UserExec(Option_t *opt)
   // Execution part
   //
 
-  fV0s = dynamic_cast<TObjArray *>(GetInputData(3));
+  fV0s = dynamic_cast<TObjArray *>(GetInputData(4));
   fPID->Delete();
 
   AliTRDrecoTask::UserExec(opt);
@@ -985,10 +985,10 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     ax->SetTitle("p [GeV/c]");
     ax->SetMoreLogLabels();
     ax = h->GetYaxis();
-    ax->SetTitle("Threshold [%]");
+    ax->SetTitle(<Threshold [%]");
     ax->SetRangeUser(5.e-2, 1.);
     h->Draw();
-    content = (TList *)fGraph->FindObject("Thres");
+    content = (TList *)fGraph->FindObject(<Thres");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
     if(!g->GetN()) break;
     g->Draw("pc");
@@ -1109,7 +1109,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
       if(kFIRST){
-        h1->GetXaxis()->SetTitle("t_{drift} [100*ns]");
+        h1->GetXaxis()->SetTitle("T_{drift} [100*ns]");
         h1->GetYaxis()->SetTitle("<dQ/dt> @ 2GeV/c [a.u.]");
         h1->GetYaxis()->CenterTitle();h1->GetYaxis()->SetTitleOffset(1.2);
       }

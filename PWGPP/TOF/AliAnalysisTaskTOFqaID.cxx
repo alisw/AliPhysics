@@ -22,7 +22,10 @@
 #include "AliMCEventHandler.h"
 #include "AliESDpid.h"
 #include "AliTOFPIDParams.h"
+#include "AliTOFChannelOnlineStatusArray.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
 #include "AliTOFcalib.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFT0v1.h"
@@ -32,6 +35,7 @@
 #include "AliLog.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFGeometry.h"
+
 
 ClassImp(AliAnalysisTaskTOFqaID)
 
@@ -67,6 +71,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID() :
   fMatchingMomCut(0.0),
   fMatchingEtaCut(1e10),
   fTof(1e10),
+  fOCDBLocation("local://$ALICE_ROOT/OCDB"),
+  fChannelArray(0x0),
+  fCalib(0x0),
   fHlist(0x0),
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
@@ -118,6 +125,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const char *name) :
   fMatchingMomCut(1.0),
   fMatchingEtaCut(0.8),
   fTof(1e10),
+  fOCDBLocation("local://$ALICE_ROOT/OCDB"),
+  fChannelArray(0x0),
+  fCalib(0x0),
   fHlist(0x0),
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
@@ -183,6 +193,9 @@ AliAnalysisTaskTOFqaID::AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& cop
   fMatchingMomCut(copy.fMatchingMomCut),
   fMatchingEtaCut(copy.fMatchingEtaCut),
   fTof(copy.fTof),
+  fOCDBLocation(copy.fOCDBLocation),
+  fChannelArray(copy.fChannelArray),
+  fCalib(copy.fCalib),
   fHlist(copy.fHlist),
   fHlistTimeZero(copy.fHlistTimeZero),
   fHlistPID(copy.fHlistPID),
@@ -250,6 +263,9 @@ AliAnalysisTaskTOFqaID& AliAnalysisTaskTOFqaID::operator=(const AliAnalysisTaskT
     fMatchingMomCut=copy.fMatchingMomCut;
     fMatchingEtaCut=copy.fMatchingEtaCut;
     fTof=copy.fTof;
+    fOCDBLocation=copy.fOCDBLocation;
+    fChannelArray=copy.fChannelArray;
+    fCalib=copy.fCalib;
     fHlist=copy.fHlist;
     fHlistTimeZero=copy.fHlistTimeZero;
     fHlistPID=copy.fHlistPID;
@@ -270,6 +286,8 @@ AliAnalysisTaskTOFqaID::~AliAnalysisTaskTOFqaID() {
   if (fTOFHeader) delete fTOFHeader;
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
+  if (fChannelArray) delete fChannelArray;
+  if (fCalib) delete fCalib;
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;  
 
   if (fHlist) {
@@ -300,7 +318,7 @@ void AliAnalysisTaskTOFqaID::UserCreateOutputObjects()
   //
   //Define output objects and histograms
   //
-
+ 
   //retrieve PID response object 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if (!man)  AliFatal("Analysis manager needed");
@@ -433,8 +451,12 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   
   // get run number
   Int_t runNb = fESD->GetRunNumber();
-  if (runNb>0) fRunNumber = runNb;  
-
+  if (runNb != fRunNumber) {
+    //retrieve maps of channels from OCDB
+    fRunNumber = runNb;
+    LoadChannelMapsFromOCDB();
+  }
+  
   //reset matched track counters
   for (Int_t j=0;j<3;j++){fNTOFtracks[j]=0;}  
 
@@ -1055,6 +1077,18 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   TH2F* hExpTimeProVsOutPhi = new TH2F(Form("hExpTimeProVsOutPhi%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{p,exp} vs #phi_{TPC out}",cLabel.Data()), 72, 0.0, 360.0, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimeProVsOutPhi,kGreen+2, 1, "colz", "","", "#phi_{TPC out} (deg)","t_{TOF}-t_{p,exp} [ps]");
   list->AddLast(hExpTimeProVsOutPhi);
+
+  TH2F* hExpTimePiVsPgoodCh = new TH2F(Form("hExpTimePiVsPgoodCh%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp} - good channels",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  HistogramMakeUp(hExpTimePiVsPgoodCh,kRed+2, 1, "colz", "","", "p (GeV/c)","t_{TOF}-t_{#pi,exp} [ps]");
+  list->AddLast(hExpTimePiVsPgoodCh);
+  
+  TH2F* hExpTimeKaVsPgoodCh = new TH2F(Form("hExpTimeKaVsPgoodCh%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{K,exp} - good channels",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  HistogramMakeUp(hExpTimeKaVsPgoodCh,kBlue+2, 1, "colz", "","", "p (GeV/c)","t_{TOF}-t_{K,exp} [ps]");
+  list->AddLast(hExpTimeKaVsPgoodCh);
+  
+  TH2F* hExpTimeProVsPgoodCh = new TH2F(Form("hExpTimeProVsPgoodCh%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{p,exp} - good channels",cLabel.Data()), nBinsX, xBins, fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  HistogramMakeUp(hExpTimeProVsPgoodCh,kGreen+2, 1, "colz", "","", "p (GeV/c)","t_{TOF}-t_{p,exp} [ps]");
+  list->AddLast(hExpTimeProVsPgoodCh);
   
   return;
 }
@@ -1407,6 +1441,11 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
 	((TH2F*)fHlistPID->FindObject(Form("hTOFpidSigma%s%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[specie])/fSigmaSpecie[specie]);
 	((TH2F*)fHlistPID->FindObject(Form("hExpTime%sT0SubVsP%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[specie]-timeZeroTOF);  
 	((TH2F*)fHlistPID->FindObject(Form("hExpTime%sVsOutPhi%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[specie]-timeZeroTOF);
+
+	//fill deltas only for good channels
+	if (IsChannelGood(track->GetTOFCalChannel()))
+	  ((TH2F*)fHlistPID->FindObject(Form("hExpTime%sVsPgoodCh%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[specie]);
+	
       }// end check on beta
     } 
  
@@ -1548,6 +1587,55 @@ void AliAnalysisTaskTOFqaID::FillTofTrgHisto(TString suffix)
   ((TH2I*)fHlistTrigger->FindObject(Form("hFiredMaxipadVsTrgPad%s",suffix.Data())))->Fill(nTrgPad,nMaxiPad);
   
   return;
+}
+
+//-----------------------------------------------------------
+void AliAnalysisTaskTOFqaID::LoadChannelMapsFromOCDB()
+{
+  //method to get the channel maps from the OCDB
+  // it is called at the CreatedOutputObject stage
+  // to comply with the CAF environment
+
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(fOCDBLocation.Data());
+  cdb->SetRun(fRunNumber);  
+
+  if(!cdb){
+    AliWarning("No CDB MANAGER, maps can not be loaded");
+    return;
+  }
+  AliCDBPath cdbPath("TOF/Calib/Status");
+  AliCDBEntry *cdbe = cdb->Get(cdbPath, fRunNumber);
+  if (!cdbe) {
+    printf("invalid CDB entry\n");
+    fChannelArray = 0x0;
+    return;
+  }
+
+  fChannelArray = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
+  fCalib = new AliTOFcalib();
+  fCalib->Init();
+  return;
+}
+
+
+//-----------------------------------------------------------
+Bool_t AliAnalysisTaskTOFqaID::IsChannelGood(Int_t channel = -1)
+{
+  // methos to check the given channel
+  // against the status maps
+  // taken from the OCDB
+
+  if (channel<0) 
+    return kFALSE;
+  if (!fChannelArray || !fCalib) {
+    AliError("Array with TOF channel status from OCDB not available.");
+    return kFALSE;
+  }
+  if ( (fChannelArray->GetNoiseStatus(channel) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) ||
+       fCalib->IsChannelProblematic(channel) ) return kFALSE;
+  
+  return kTRUE;
 }
 
 #endif

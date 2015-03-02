@@ -1,21 +1,23 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
-#include "TTree.h"
-#include "TError.h"
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-
-#include "AliTRDpwgppHelper.h"
-#include "AliTRDcheckPID.h"
-#include "AliTRDpidRefMaker.h"
-#include "AliTRDpidRefMakerNN.h"
-#include "AliTRDpidRefMakerLQ.h"
-#endif
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TTree.h>
+// #include <TError.h>
+// 
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDcheckPID.h>
+// #include <AliTRDpidRefMaker.h>
+// #include <AliTRDpidRefMakerNN.h>
+// #include <AliTRDpidRefMakerLQ.h>
+// #endif
 
 void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co)
 {
-  Info("AddTRDcheckPID", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", 
-       ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
+  Info("AddTRDcheckPID", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName());
 
   AliTRDcheckPID *pid(NULL);
   mgr->AddTask(pid = new AliTRDcheckPID((char*)"TRDcheckPID"));
@@ -28,7 +30,8 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
   mgr->ConnectInput (pid, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
   mgr->ConnectInput (pid, 1, ci[0]);                          // connect barrel tracks container
   mgr->ConnectInput (pid, 2, ci[1]);                          // connect event info container
-  mgr->ConnectInput (pid, 3, ci[2]);                          // connect V0s container
+  mgr->ConnectInput (pid, 3, ci[2]);                          // connect online tracklets container
+  mgr->ConnectInput (pid, 4, ci[3]);                          // connect V0s container
   mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   mgr->ConnectOutput(pid, 2, co[0]);
 

@@ -1183,9 +1183,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
             }
 		  } // BIAS histos switch
 
-          if (!fPIDResponse) break; // just return
-          fHistTPCdEdX->Fill(track->Pt(), track->GetTPCsignal());
-
         } // end of check maxtrackpt>ftrackbias or maxclusterpt>fclustbias
 
         // **************************************************************************************************************
@@ -1204,14 +1201,14 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF;
         Double_t nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS;
 
+        if(fPIDResponse) fHistTPCdEdX->Fill(track->Pt(), track->GetTPCsignal());
+
         if(doPID && ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) ){
           // get parameters of track
           charge = track->Charge();    // charge of track
           pt     = track->Pt();        // pT of track
 
-          // extra attempt 
-          AliVEvent *vevent=InputEvent();
-          if (!vevent||!fPIDResponse) return kTRUE; // just return, maybe put at beginning
+          if (!fPIDResponse) return kTRUE; // just return, maybe put at beginning
 
           fHistEventQA->Fill(13); // check for AliVEvent and fPIDresponse objects
 

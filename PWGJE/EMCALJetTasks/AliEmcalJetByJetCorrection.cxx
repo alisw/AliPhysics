@@ -13,6 +13,7 @@
 #include "AliEmcalJet.h"
 #include "AliVParticle.h"
 #include <TF1.h>
+#include <TList.h>
 
 #include "AliEmcalJetByJetCorrection.h"
 
@@ -31,7 +32,10 @@ TNamed(),
   fhEfficiency(0),
   fhSmoothEfficiency(0),
   fCorrectpTtrack(0),
-  fpAppliedEfficiency(0)
+  fNpPoisson(0),
+  fpAppliedEfficiency(0),
+  fNmissing(0),
+  fListOfOutput(0)
 {
   // Dummy constructor.
   fCollTemplates.SetOwner(kTRUE);
@@ -50,7 +54,10 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fhEfficiency(0),
   fhSmoothEfficiency(0),
   fCorrectpTtrack(0),
-  fpAppliedEfficiency(0)
+  fNpPoisson(0),
+  fpAppliedEfficiency(0),
+  fNmissing(0),
+  fListOfOutput(0)
 {
   // Default constructor.
   fCollTemplates.SetOwner(kTRUE);
@@ -64,7 +71,23 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
       binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 1.0;
     }
   }
+  const Int_t nBinsPtJ  = 200;
+  const Double_t minPtJ = -50.;
+  const Double_t maxPtJ = 150.;
+
   fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
+  
+  fNmissing = new TH2F("fNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added", nBinsPtJ,minPtJ,maxPtJ, 80,0,20);
+  
+  fAvgNmiss = new TH2F("fAvgNmiss", "Average number of missing tracks;#it{p}_{T,jet};N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 80,0,20);
+  
+  fListOfOutput = new TList();
+  fListOfOutput->SetName("JetByJetCorrectionOutput");
+  fListOfOutput->SetOwner();
+  fListOfOutput->Add(fpAppliedEfficiency);
+  fListOfOutput->Add(fNmissing);
+  fListOfOutput->Add(fAvgNmiss);
+
 }
 
 //__________________________________________________________________________
@@ -80,7 +103,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fhEfficiency(other.fhEfficiency),
   fhSmoothEfficiency(other.fhSmoothEfficiency),
   fCorrectpTtrack(other.fCorrectpTtrack),
-  fpAppliedEfficiency(other.fpAppliedEfficiency)
+  fpAppliedEfficiency(other.fpAppliedEfficiency),
+  fNmissing(other.fNmissing)
 {
   // Copy constructor.
 }
@@ -102,7 +126,7 @@ AliEmcalJetByJetCorrection& AliEmcalJetByJetCorrection::operator=(const AliEmcal
   fhSmoothEfficiency = other.fhSmoothEfficiency;
   fCorrectpTtrack    = other.fCorrectpTtrack;
   fpAppliedEfficiency= other.fpAppliedEfficiency;
-
+  fNmissing          = other.fNmissing;
   return *this;
 }
 
@@ -124,7 +148,14 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   fpAppliedEfficiency->Fill(meanPt,eff);
 
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
+  fAvgNmiss->Fill(jet->Pt(),np);
+  if(fNpPoisson){
+     TRandom3 *rndP=new TRandom3(1234);
+     np=rndP->Poisson(np);
   
+  }
+  
+  fNmissing->Fill(jet->Pt(), np);
   TLorentzVector corrVec; corrVec.SetPtEtaPhiM(jet->Pt(),jet->Eta(),jet->Phi(),jet->M());
 
   Double_t mass = 0.13957; //pion mass
@@ -148,95 +179,95 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
 
 //__________________________________________________________________________
 void AliEmcalJetByJetCorrection::Init() {
-  //Init templates
-
-  if(!fh3JetPtDRTrackPt) {
-    Printf("%s fh3JetPtDRTrackPt not known",GetName());
-    fInitialized = kFALSE;
-    return;
-  }
-  if(!fhEfficiency){
-     Printf("%s fhEfficiency not known",GetName());
-     fInitialized = kFALSE;
-     return;
-     
-  }
- 
-  fhSmoothEfficiency = (TH1D*) fh3JetPtDRTrackPt->ProjectionZ("fhSmoothEfficiency"); //copy the binning of the pTtrack axis
-  Int_t nBinsEf = fhEfficiency->GetXaxis()->GetNbins();
-  Int_t nBinsEfSmth = fhSmoothEfficiency->GetXaxis()->GetNbins();
-  Double_t smallBinW = 0.9;
-  Double_t pTFitRange[2]={6,100}; //reset in the loop, silent warning
-  for(Int_t ibeff=0;ibeff<nBinsEf;ibeff++){
-     Double_t bw = fhEfficiency->GetBinWidth(ibeff+1);
-     if(bw>smallBinW){
-     	pTFitRange[0] = fhEfficiency->GetBinLowEdge(ibeff);     	 
-     	break;
-     }
-  }
-  pTFitRange[1] = fhEfficiency->GetBinLowEdge(nBinsEf+1);
-  
-  TF1* fitfuncEff = new TF1("fitfuncEff", "[0]+x*[1]", pTFitRange[0], pTFitRange[1]);
-  //fit function in the high pT region to smooth out fluctuations
-  fhEfficiency->Fit("fitfuncEff", "R0");
-  
-  for(Int_t i=0;i<nBinsEfSmth;i++){
-     Double_t binCentreT=fhSmoothEfficiency->GetBinCenter(i+1);
-     Int_t bin = fhEfficiency->FindBin(binCentreT);
-     Double_t binEff = fhEfficiency->GetBinContent(bin);
-     
-     //fill histogram fhSmoothEfficiency by interpolation or function
-     if(fhEfficiency->GetBinWidth(bin) > smallBinW){
-     	fhSmoothEfficiency->SetBinContent(i+1,fitfuncEff->Eval(binCentreT));      
-     } else {
-     	Double_t effInterp = fhEfficiency->Interpolate(binCentreT);
-     	fhSmoothEfficiency ->SetBinContent(i+1,effInterp);
-     	fhSmoothEfficiency ->SetBinError(i+1,0.);
-     	
-     }
-  }
+   //Init templates
    
+   if(!fh3JetPtDRTrackPt) {
+      Printf("%s fh3JetPtDRTrackPt not known",GetName());
+      fInitialized = kFALSE;
+      return;
+   }
+   if(!fhEfficiency && fEfficiencyFixed==1){
+      Printf("%s fhEfficiency not known",GetName());
+      fInitialized = kFALSE;
+      return;
+      
+   }
+   if(fhEfficiency){
+      fhSmoothEfficiency = (TH1D*) fh3JetPtDRTrackPt->ProjectionZ("fhSmoothEfficiency"); //copy the binning of the pTtrack axis
+      Int_t nBinsEf = fhEfficiency->GetXaxis()->GetNbins();
+      Int_t nBinsEfSmth = fhSmoothEfficiency->GetXaxis()->GetNbins();
+      Double_t smallBinW = 0.9;
+      Double_t pTFitRange[2]={6,100}; //reset in the loop, silent warning
+      for(Int_t ibeff=0;ibeff<nBinsEf;ibeff++){
+      	 Double_t bw = fhEfficiency->GetBinWidth(ibeff+1);
+      	 if(bw>smallBinW){
+      	    pTFitRange[0] = fhEfficiency->GetBinLowEdge(ibeff);     	 
+      	    break;
+      	 }
+      }
+      pTFitRange[1] = fhEfficiency->GetBinLowEdge(nBinsEf+1);
+      
+      TF1* fitfuncEff = new TF1("fitfuncEff", "[0]+x*[1]", pTFitRange[0], pTFitRange[1]);
+      //fit function in the high pT region to smooth out fluctuations
+      fhEfficiency->Fit("fitfuncEff", "R0");
+      
+      for(Int_t i=0;i<nBinsEfSmth;i++){
+      	 Double_t binCentreT=fhSmoothEfficiency->GetBinCenter(i+1);
+      	 Int_t bin = fhEfficiency->FindBin(binCentreT);
+      	 Double_t binEff = fhEfficiency->GetBinContent(bin);
+      	 
+      	 //fill histogram fhSmoothEfficiency by interpolation or function
+      	 if(fhEfficiency->GetBinWidth(bin) > smallBinW){
+      	    fhSmoothEfficiency->SetBinContent(i+1,fitfuncEff->Eval(binCentreT));      
+      	 } else {
+      	    Double_t effInterp = fhEfficiency->Interpolate(binCentreT);
+      	    fhSmoothEfficiency ->SetBinContent(i+1,effInterp);
+      	    fhSmoothEfficiency ->SetBinError(i+1,0.);
+      	    
+      	 }
+      }
+   }
    
-  if(fJetPtMax>fh3JetPtDRTrackPt->GetXaxis()->GetXmax())
-    fJetPtMax = fh3JetPtDRTrackPt->GetXaxis()->GetXmax();
-
-  if(fJetPtMin<fh3JetPtDRTrackPt->GetXaxis()->GetXmin())
-    fJetPtMin = fh3JetPtDRTrackPt->GetXaxis()->GetXmin();
-
-  Double_t eps = 0.00001;
-  Int_t counter = 0;
-  for(Double_t ptmin = fJetPtMin; ptmin<fJetPtMax; ptmin+=fBinWidthJetPt) {
-    Int_t binMin = fh3JetPtDRTrackPt->GetXaxis()->FindBin(ptmin+eps);
-    Int_t binMax = fh3JetPtDRTrackPt->GetXaxis()->FindBin(ptmin+fBinWidthJetPt-eps);
-    //    Printf("%d bins: %d - %d -> %f - %f",counter,binMin,binMax,fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax));
-
-    fh3JetPtDRTrackPt->GetXaxis()->SetRange(binMin,binMax);
-    Int_t nBinspTtr = fh3JetPtDRTrackPt->GetZaxis()->GetNbins();
-    Int_t nBinsr = fh3JetPtDRTrackPt->GetYaxis()->GetNbins();
-    TH2D *h2 = dynamic_cast<TH2D*>(fh3JetPtDRTrackPt->Project3D("zy"));
-    if(h2){
-       h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
-       //Printf("Check what it X axis: %s and Y axis: %s", h2->GetXaxis()->GetTitle(), h2->GetYaxis()->GetTitle());
-       if(fCorrectpTtrack) {
-       	  //apply efficiency correction to pTtrack
-       	  for(Int_t ipTtr=0;ipTtr<nBinspTtr;ipTtr++){
-       	     for(Int_t ir=0;ir<nBinsr;ir++){
-       	     	Double_t uncorr = h2->GetBinContent(ir+1,ipTtr+1);
-       	     	Double_t corr = uncorr/GetEfficiency(h2->GetYaxis()->GetBinCenter(ipTtr+1));
-       	     	h2->SetBinContent(ir+1, ipTtr+1, corr);
-       	     }
-       	  
-       	  }
-       
-       }
-    }
-    fCollTemplates.Add(h2);
-    counter++;
-  }
-  //  Int_t nt = TMath::FloorNint((fJetPtMax-fJetPtMin)/fBinWidthJetPt);
-  //  Printf("nt: %d entries fCollTemplates: %d",nt,fCollTemplates.GetEntriesFast());
-
-  fInitialized = kTRUE;
+   if(fJetPtMax>fh3JetPtDRTrackPt->GetXaxis()->GetXmax())
+      fJetPtMax = fh3JetPtDRTrackPt->GetXaxis()->GetXmax();
+   
+   if(fJetPtMin<fh3JetPtDRTrackPt->GetXaxis()->GetXmin())
+      fJetPtMin = fh3JetPtDRTrackPt->GetXaxis()->GetXmin();
+   
+   Double_t eps = 0.00001;
+   Int_t counter = 0;
+   for(Double_t ptmin = fJetPtMin; ptmin<fJetPtMax; ptmin+=fBinWidthJetPt) {
+      Int_t binMin = fh3JetPtDRTrackPt->GetXaxis()->FindBin(ptmin+eps);
+      Int_t binMax = fh3JetPtDRTrackPt->GetXaxis()->FindBin(ptmin+fBinWidthJetPt-eps);
+      //    Printf("%d bins: %d - %d -> %f - %f",counter,binMin,binMax,fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax));
+      
+      fh3JetPtDRTrackPt->GetXaxis()->SetRange(binMin,binMax);
+      Int_t nBinspTtr = fh3JetPtDRTrackPt->GetZaxis()->GetNbins();
+      Int_t nBinsr = fh3JetPtDRTrackPt->GetYaxis()->GetNbins();
+      TH2D *h2 = dynamic_cast<TH2D*>(fh3JetPtDRTrackPt->Project3D("zy"));
+      if(h2){
+      	 h2->SetName(Form("hPtR_%.0f_%.0f",fh3JetPtDRTrackPt->GetXaxis()->GetBinLowEdge(binMin),fh3JetPtDRTrackPt->GetXaxis()->GetBinUpEdge(binMax)));
+      	 //Printf("Check what it X axis: %s and Y axis: %s", h2->GetXaxis()->GetTitle(), h2->GetYaxis()->GetTitle());
+      	 if(fCorrectpTtrack) {
+      	    //apply efficiency correction to pTtrack
+      	    for(Int_t ipTtr=0;ipTtr<nBinspTtr;ipTtr++){
+      	       for(Int_t ir=0;ir<nBinsr;ir++){
+      	       	  Double_t uncorr = h2->GetBinContent(ir+1,ipTtr+1);
+      	       	  Double_t corr = uncorr/GetEfficiency(h2->GetYaxis()->GetBinCenter(ipTtr+1));
+      	       	  h2->SetBinContent(ir+1, ipTtr+1, corr);
+      	       }
+      	       
+      	    }
+      	    
+      	 }
+      }
+      fCollTemplates.Add(h2);
+      counter++;
+   }
+   //  Int_t nt = TMath::FloorNint((fJetPtMax-fJetPtMin)/fBinWidthJetPt);
+   //  Printf("nt: %d entries fCollTemplates: %d",nt,fCollTemplates.GetEntriesFast());
+   
+   fInitialized = kTRUE;
 
 }
 

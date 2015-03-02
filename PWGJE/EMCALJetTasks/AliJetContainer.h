@@ -48,7 +48,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetEtaPhiTPC()   ;
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
-  void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
+  void                        SetJetPhiLimits(Float_t min, Float_t max, Float_t offset=0.) { fJetMinPhi = min, fJetMaxPhi = max ; fPhiOffset = offset;}
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
@@ -135,6 +135,7 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     fJetMaxEta;            //  maximum eta jet acceptance
   Float_t                     fJetMinPhi;            //  minimum phi jet acceptance
   Float_t                     fJetMaxPhi;            //  maximum phi jet acceptance  
+  Float_t                     fPhiOffset;            //  offset to allow cutting
   Float_t                     fMaxClusterPt;         //  maximum cluster constituent pt to accept the jet
   Float_t                     fMaxTrackPt;           //  maximum track constituent pt to accept the jet
   Float_t                     fZLeadingEmcCut;       //  maximum z,leading neutral
@@ -159,7 +160,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,10);
+  ClassDef(AliJetContainer,11);
 
 };
 

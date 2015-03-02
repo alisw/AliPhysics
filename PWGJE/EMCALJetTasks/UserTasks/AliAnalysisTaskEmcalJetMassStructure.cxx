@@ -62,7 +62,7 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure() :
   fhnDeltaMassCorr(0), 
   fSwitchResolutionhn(1),
   fh3JetPtDRTrackPt(0),
-  fpUsedEfficiency(0)
+  fListOfOutputFromClass(0)
 {
   // Default constructor.
 
@@ -109,7 +109,7 @@ AliAnalysisTaskEmcalJetMassStructure::AliAnalysisTaskEmcalJetMassStructure(const
   fhnDeltaMassCorr(0), 
   fSwitchResolutionhn(1),
   fh3JetPtDRTrackPt(0),
-  fpUsedEfficiency(0)
+  fListOfOutputFromClass(0)
 {
   // Standard constructor.
 
@@ -265,9 +265,12 @@ void AliAnalysisTaskEmcalJetMassStructure::UserCreateOutputObjects()
   fhnMassResponseCorr = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
   fOutput->Add(fhnMassResponseCorr);
 
-  if(fEJetByJetCorr) fpUsedEfficiency = fEJetByJetCorr->GetAppliedEfficiency();
-  fOutput->Add(fpUsedEfficiency);
-
+  if(fEJetByJetCorr) {
+     fListOfOutputFromClass = fEJetByJetCorr->GetListOfOutput();
+     fListOfOutputFromClass->ls();
+     fOutput->Add(fListOfOutputFromClass);
+     
+  }
   if(fSwitchResolutionhn){
      histName = "fhnDeltaMass";
      histTitle = Form("%s; #it{M}_{det} - #it{M}_{part} ;(#it{M}_{det} - #it{M}_{part})/#it{M}_{part};  #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}",histName.Data());
