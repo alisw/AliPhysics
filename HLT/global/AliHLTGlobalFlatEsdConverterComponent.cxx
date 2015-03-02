@@ -253,6 +253,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // see header file for class documentation
 
   AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Start");
+  TStopwatch stopwatch;
+  stopwatch.Start();
 	Int_t outsizeEvent = 0, outsizeFriend = 0;
 	
   int iResult=0;
@@ -609,6 +611,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     if( err ) break;
 
     flatEsd->SetTracksEnd( nTracks, trackSize );
+    numberOfTracks=nTracks;
 
     if( err ) break;
 
