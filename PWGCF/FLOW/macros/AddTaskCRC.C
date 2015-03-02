@@ -75,7 +75,8 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  // add the task to the manager
  mgr->AddTask(taskFE);
  // set the trigger selection
- taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+ if (bUse11h) { taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+ else         { taskFE->SelectCollisionCandidates(AliVEvent::kMB); }
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
@@ -180,10 +181,10 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
   taskFEQAname += ":CutsQA";
   taskFEQAname += CRCsuffix;
   taskFEQAname += suffix;
-  AliAnalysisDataContainer* coutputFEQA = mgr->CreateContainer(taskFEQAname,
+  AliAnalysisDataContainer* coutputFEQA = mgr->CreateContainer(taskFEQAname.Data(),
                                                                TList::Class(),
                                                                AliAnalysisManager::kOutputContainer,
-                                                               taskFEQAname.Data());
+                                                               taskFEQAname);
   // and connect the qa output container to the flow event.
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
