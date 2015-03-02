@@ -59,6 +59,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   AliHLTComponent* Spawn() {return new AliHLTGlobalEsdConverterComponent;}
+  void SetMakeFriends(Bool_t make) {fMakeFriends=make;}
 
  protected:
   // interface methods of base class
