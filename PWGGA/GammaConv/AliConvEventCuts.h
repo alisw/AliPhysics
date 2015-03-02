@@ -92,6 +92,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
 																		  if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465 ;
 																		  else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465 ;
 																		  fEtaShift = etaShift									; }
+// 		void GetHistoCentralityFlattening
+		void 		SetUseWeightFlatCentralityFromFile( Int_t doFlattening = 1,
+														TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/InterpValuesAndFlattening.root",
+														TString histoCentNotFlat="")
+															{ 
+																AliInfo(Form("enabled centrality flattening with weights from file: %s",pathC.Data()));
+																fDoCentralityFlat = doFlattening;
+																fPathWeightsFlatCent=pathC;
+																fNameHistoNotFlatCentrality = histoCentNotFlat;
+															}
 		void 		SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, 
 															Bool_t etareweight=kFALSE, 
 															Bool_t k0sreweight=kFALSE, 
@@ -140,6 +150,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TString 	GetSpecialTriggerName()								{ return fSpecialTriggerName							; }
 		AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
 		ULong_t 	GetTriggerList();
+		Float_t 	GetWeightForCentralityFlattening(AliVEvent *InputEvent = 0x0);
 		Float_t 	GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
 		Float_t 	GetCentrality(AliVEvent *event);
 		void 		GetCorrectEtaShiftFromPeriod(TString periodName);
@@ -173,6 +184,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		
 		///Cut functions
 		Int_t 		IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+		
+		void 		LoadWeightingFlatCentralityFromFile ();
 		
 		void 		LoadReweightingHistosMCFromFile ();
 
@@ -223,6 +236,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		AliAnalysisUtils		 	*fUtils;
 		Double_t					fEtaShift;
 		Bool_t 						fDoEtaShift;							// Flag for Etashift
+		Int_t						fDoCentralityFlat;
+		TString						fNameHistoNotFlatCentrality;
+		TString						fPathWeightsFlatCent;
 		Bool_t 						fDoReweightHistoMCPi0; 					// Flag for reweighting Pi0 input with histogram
 		Bool_t						fDoReweightHistoMCEta;					// Flag for reweighting Eta input with histogram
 		Bool_t 						fDoReweightHistoMCK0s;					// Flag for reweighting K0s input with histogram
@@ -236,6 +252,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		// Histograms
 		TH1F 						*fHistoEventCuts;						// bookkeeping for event selection cuts
 		TH1F 						*hCentrality;							// centrality distribution for selected events
+		TH1D						*hCentralityNotFlat;					// centrality distribution loaded for cent. flattening
 		TH2F 						*hCentralityVsNumberOfPrimaryTracks;	// centrality distribution for selected events
 		TH1F 						*hVertexZ; 								// vertex z distribution for selected events
 		TH1F 						*hTriggerClass; 						// fired offline trigger class

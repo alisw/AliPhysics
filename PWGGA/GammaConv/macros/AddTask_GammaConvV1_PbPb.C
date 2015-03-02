@@ -8,7 +8,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 								TString 	periodName 					= "LHC13d2",  						// name of the period for added signals and weighting
 								Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 								Bool_t 		enableUseTHnSparse 			= kTRUE,							// enable THnSparse	for mixed event BG
-								Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								TString		fileNameInputForCentFlattening 	= "InterpValuesAndFlattening.root",
+								Int_t 		doFlattening 				= 1
                            ) {
 
 	// ================= Load Librariers =================================
@@ -1071,8 +1073,26 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	MesonCutList->SetOwner(kTRUE);
 	AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
+
 	for(Int_t i = 0; i<numberOfCuts; i++){
+
 		analysisEventCuts[i] = new AliConvEventCuts();
+		
+		if(periodName.CompareTo("LHC11h") && (doFlattening > 0)){
+			cout << "entering the flattening loop -> searching for file: " << fileNameInputForCentFlattening.Data() << endl;
+			
+			if( fileNameInputForCentFlattening.Contains("Low") ){
+				analysisEventCuts[i]->SetUseWeightFlatCentralityFromFile(doFlattening, fileNameInputForCentFlattening, "CentLowRange");
+			}
+			if( fileNameInputForCentFlattening.Contains("Middle") ){
+				analysisEventCuts[i]->SetUseWeightFlatCentralityFromFile(doFlattening, fileNameInputForCentFlattening, "CentMiddleRange");
+			}
+			if( fileNameInputForCentFlattening.Contains("High") ){
+				analysisEventCuts[i]->SetUseWeightFlatCentralityFromFile(doFlattening, fileNameInputForCentFlattening, "CentHighRange");
+			}
+			
+		}
+		
 		if (trainConfig == 1 ||trainConfig == 5 || trainConfig == 9 || trainConfig == 13 || trainConfig == 17 || trainConfig == 21 || trainConfig == 25 || trainConfig == 29 || trainConfig == 33 || trainConfig == 37){ // || trainConfig == 41 
 			if (i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0005TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M");
 			if (i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0510TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M");
@@ -1254,7 +1274,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoTHnSparse(enableUseTHnSparse);
-	
+	task->SetDoCentFlattening(doFlattening);
+		
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
