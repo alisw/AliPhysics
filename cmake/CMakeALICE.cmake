@@ -218,12 +218,12 @@ macro(createDArpm DETECTOR ALGORITHM)
         set(DA_NAME "daqDA-${DETECTOR}-${ALGORITHM}")
     endif()
 
-    configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${_ALGORITHM}-da.spec" @ONLY)
+    configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${DETECTOR}${_ALGORITHM}-da.spec" @ONLY)
 
     add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da.exe POST_BUILD
-                       COMMAND mkdir ARGS -p da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
-                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da.exe da-${_ALGORITHM}-rpm/root/${DA_PREFIX}/
-                       COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm/root" -bb ${_ALGORITHM}-da.spec
+                       COMMAND mkdir ARGS -p da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da.exe da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+                       COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/root" -bb ${DETECTOR}${_ALGORITHM}-da.spec
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                        COMMENT "RPM creation for ${DETECTOR}-${_ALGORITHM}"
     )
@@ -231,11 +231,11 @@ macro(createDArpm DETECTOR ALGORITHM)
     # make clean will remove also the rpm folder
     # Retrive the current list of file to be deleted - set_directory_property is overwriting, not adding to the list
     get_directory_property(_clean_files ADDITIONAL_MAKE_CLEAN_FILES)
-    set(_clean_files da-${_ALGORITHM}-rpm  ${_clean_files})
+    set(_clean_files da-${DETECTOR}${_ALGORITHM}-rpm  ${_clean_files})
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${_clean_files}")
     
     # install RPM into $CMAKE_INSTALL_PREFIX/darpms
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/da-${_ALGORITHM}-rpm/RPMS/ DESTINATION darpms PATTERN "\\.rpm")
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/RPMS/ DESTINATION darpms PATTERN "\\.rpm")
 endmacro()
 
 

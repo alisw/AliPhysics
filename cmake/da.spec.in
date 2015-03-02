@@ -6,7 +6,7 @@ Release: @GIT_SHORT_SHA1@
 License: CERN Alice DAQ/Offine
 Group: Applications/Alice
 Prefix: /opt/%{name}
-BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/da-@_ALGORITHM@-rpm/root
+BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/da-@DETECTOR@@_ALGORITHM@-rpm/root
 Packager: Alina Grigoras <alina.gabriela.grigoras@cern.ch>
 
 # automatic dependencies

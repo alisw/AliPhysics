@@ -41,10 +41,10 @@ set(STATIC_DEPENDENCIES RAWDatabase-static RAWDatarec-static STEERBase-static)
 generateDA("PHOS" "PED" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES PHOSbase-static RAWDatabase-static RAWDatarec-static STEERBase-static)
-generateDA("PHOS" "CPVPED" "${STATIC_DEPENDENCIES}")
+generateDA("CPV" "PED" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES PHOSbase-static RAWDatabase-static RAWDatarec-static STEERBase-static)
-generateDA("PHOS" "CPVBCM" "${STATIC_DEPENDENCIES}")
+generateDA("CPV" "BCM" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES PHOSbase-static RAWDatabase-static RAWDatarec-static STEERBase-static)
-generateDA("PHOS" "CPVGAIN" "${STATIC_DEPENDENCIES}")
+generateDA("CPV" "GAIN" "${STATIC_DEPENDENCIES}")
