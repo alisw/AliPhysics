@@ -253,7 +253,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoTrueEtaPtOpenAngle;						//! array of histos with validated eta, pt, openAngle
 		// MC validated reconstructed quantities photons
 		TH1F 								**fHistoTrueConvGammaPt;						//! array of histos with validated conversion photon, pt
-		TH1F 								**fHistoTrueConvPi0GammaPt;						//! array of histos with validated conversion photon from pi0, pt
 		TH1F 								**fHistoTrueConvGammaEta;						//! array of histos with validated conversion photon, eta
 		TH2F 								**fHistoCombinatorialPt;						//! array of histos with combinatorial BG, pt, source
 		TH1F 								**fHistoTruePrimaryConvGammaPt;					//! array of histos with validated primary conversion photon, pt  
