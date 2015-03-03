@@ -17,7 +17,8 @@
 set(MODULE EPOS)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/EPOS/epos167
+include_directories(${AliRoot_SOURCE_DIR}/EPOS
+                    ${AliRoot_SOURCE_DIR}/EPOS/epos167
                    )
 
 # Additional include folders in alphabetical order

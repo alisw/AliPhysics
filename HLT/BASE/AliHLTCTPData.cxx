@@ -30,6 +30,7 @@
 #include "AliHLTCDHWrapper.h"
 #include <limits>
 #include <sstream>
+#include <RVersion.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTCTPData)
@@ -299,7 +300,11 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTTrigge
   }
 
   TFormula form("trigger expression", condition);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+  if (form.IsValid()!=0) {
+#else
   if (form.Compile()!=0) {
+#endif
     HLTError("invalid expression %s", expression);
     return false;
   }

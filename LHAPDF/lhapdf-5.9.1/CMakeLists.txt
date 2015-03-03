@@ -14,7 +14,7 @@
 # **************************************************************************
 
 # Module
-set(MODULE lhapdf-5_9_1)
+set(MODULE lhapdf_5_9_1)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf-5.9.1

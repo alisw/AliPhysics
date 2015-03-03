@@ -151,15 +151,14 @@ Bool_t AliADDigitizer::Init()
 
   // check if the digitizer was already initialized
   if (fSignalShape) return kTRUE;
-
   fSignalShape = new TF1("ADSignalShape",this,&AliADDigitizer::SignalShape,0,200,6,"AliADDigitizer","SignalShape");
+  fPMResponse = new TF1("ADPMResponse",this,&AliADDigitizer::PMResponse,-kPMRespTime,2.*kPMRespTime,0,"AliADDigitizer","PMResponse");
+  fSinglePhESpectrum = new TF1("ADSinglePhESpectrum",this,&AliADDigitizer::SinglePhESpectrum,0,20,0,"AliADDigitizer","SinglePhESpectrum");
   //  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
   //  fSignalShape->SetParameters(1.34330e+00,1.13007e+02,-4.95705e-01,
   //			      3.68911e+00,1.01040e+00, 3.94675e-01);
   fSignalShape->SetParameters(-1.07335e+00,2.16002e+01,-1.26133e-01,
 			      1.41619e+00,5.50334e-01,3.86111e-01);
-  fPMResponse = new TF1("ADPMResponse",this,&AliADDigitizer::PMResponse,-kPMRespTime,2.*kPMRespTime,0,"AliADDigitizer","PMResponse");
-  fSinglePhESpectrum = new TF1("ADSinglePhESpectrum",this,&AliADDigitizer::SinglePhESpectrum,0,20,0,"AliADDigitizer","SinglePhESpectrum");
   
   // Now get the CTP L0->L1 delay
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");

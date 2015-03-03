@@ -63,7 +63,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-
+#include <RVersion.h>
 #include <Riostream.h>
 #include <TCanvas.h>
 #include <TF1.h>
@@ -568,8 +568,13 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
 
   // standard models
 
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+  if (fModel == 1) fCurrentForm = fPtFormula->GetFormula();
+  if (fModel > 1 && fModel < 5) fCurrentForm = fPtYFormula[fModel-2]->GetFormula();
+#else
   if (fModel == 1) fCurrentForm = fPtFormula;
   if (fModel > 1 && fModel < 5) fCurrentForm = fPtYFormula[fModel-2];
+#endif
 
 
   // custom model defined by a formula 
@@ -577,12 +582,22 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
   if (fModel == 5) {
     
     fCurrentForm = 0;
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    TF2* tmpTF2 = (TF2*)gROOT->GetFunction(pattern[0]);
+    if (tmpTF2) fCurrentForm = tmpTF2->GetFormula();
+#else
     fCurrentForm = (TF2*)gROOT->GetFunction(pattern[0]);
+#endif
     
     if (!fCurrentForm) {
 
       snprintf(buff, 40, pattern[1], pdg);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+      tmpTF2 = (TF2*)gROOT->GetFunction(buff);
+      if (tmpTF2) fCurrentForm = tmpTF2->GetFormula();
+#else
       fCurrentForm = (TF2*)gROOT->GetFunction(buff);
+#endif
 
       if (!fCurrentForm) Error(where, msg[0], pdg);
     }

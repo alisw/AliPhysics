@@ -53,18 +53,22 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                       )
     else (ROOT_VERSION_MAJOR LESS 6)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
+      add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm
                        COMMAND
                          LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
                        ARGS
                          -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
                          -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap -rml lib${DNAME}
-                         ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS}  ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
+                         ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
                        DEPENDS
                          ${DHDRS} ${LDNAME} ${ROOT_CINT}
                        WORKING_DIRECTORY
                          ${CMAKE_CURRENT_BINARY_DIR}
                       )
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
+    
     endif (ROOT_VERSION_MAJOR LESS 6)
 
 endmacro(generate_dictionary)
