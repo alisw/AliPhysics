@@ -149,7 +149,7 @@ void AliEmcalJetUtilityConstSubtractor::Prepare(AliFJWrapper& fjw)
 //______________________________________________________________________________
 void AliEmcalJetUtilityConstSubtractor::ProcessJet(AliEmcalJet* /*jet*/, Int_t /*ij*/, AliFJWrapper& /*fjw*/)
 {
-  // Proceess each jet.
+  // Process each jet.
 }
 
 //______________________________________________________________________________
@@ -174,7 +174,7 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
       AliEmcalJet *jet_sub = new ((*fJetsSub)[ijet])
         AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
       jet_sub->SetLabel(ijet);
-      
+
       fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
       jet_sub->SetArea(area.perp());
       jet_sub->SetAreaEta(area.eta());
