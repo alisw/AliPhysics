@@ -916,36 +916,43 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
 
       Int_t type = 0;
 
-      AliPicoTrack* ptrack = dynamic_cast<AliPicoTrack*>(track);
-      if (ptrack)
-	type = ptrack->GetTrackType();
+      AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
 
-      if (type >= 0 && type < 3)
+      if (vtrack) {
+        AliPicoTrack* ptrack = dynamic_cast<AliPicoTrack*>(track);
+        if (ptrack) {
+          type = ptrack->GetTrackType();
+        }
+        else {
+          type = AliPicoTrack::GetTrackType(vtrack);
+        }
+      }
+    
+      if (type >= 0 && type < 3) {
 	fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
-      else
+      }
+      else {
 	AliDebug(2,Form("%s: track type %d not recognized!", GetName(), type));
+      }
+
+      if (!vtrack) continue;
+
+      if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
+        fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
+        fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
+      }
+
+      if (fHistTrEmcPhiEta[fCentBin])
+        fHistTrEmcPhiEta[fCentBin]->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());   
+      if (fHistTrEmcPt[fCentBin])
+        fHistTrEmcPt[fCentBin]->Fill(vtrack->GetTrackPtOnEMCal());   
+      if (fHistDeltaEtaPt[fCentBin])
+        fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
+      if (fHistDeltaPhiPt[fCentBin])
+        fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
+      if (fHistDeltaPtvsPt[fCentBin])
+        fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
     }
-
-    AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
-
-    if (!vtrack)
-      continue;
-
-    if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
-      fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
-      fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
-    }
-
-    if (fHistTrEmcPhiEta[fCentBin])
-      fHistTrEmcPhiEta[fCentBin]->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());   
-    if (fHistTrEmcPt[fCentBin])
-      fHistTrEmcPt[fCentBin]->Fill(vtrack->GetTrackPtOnEMCal());   
-    if (fHistDeltaEtaPt[fCentBin])
-      fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
-    if (fHistDeltaPhiPt[fCentBin])
-      fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
-    if (fHistDeltaPtvsPt[fCentBin])
-      fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
   }
 
   if (fHistTrNegativeLabels[fCentBin])
