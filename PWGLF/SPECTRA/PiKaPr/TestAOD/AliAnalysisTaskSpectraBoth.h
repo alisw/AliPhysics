@@ -31,7 +31,7 @@ class AliAnalysisTaskSpectraBoth : public AliAnalysisTaskSE
 public:
 
    // constructors
-  AliAnalysisTaskSpectraBoth() : AliAnalysisTaskSE(), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0), fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1)
+  AliAnalysisTaskSpectraBoth() : AliAnalysisTaskSE(), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0), fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1),fUseEtaCut(kFALSE)
  {}
   AliAnalysisTaskSpectraBoth(const char *name);
    virtual ~AliAnalysisTaskSpectraBoth() {}
@@ -73,11 +73,12 @@ private:
    Bool_t fdotheMCLoopAfterEventCuts; // if true first check the ESD event cuts than loop over MC info , if flase other approach     
    Bool_t fmakePIDQAhisto; // if true makes PIDQA histos
    Int_t fMotherWDPDGcode; //the abs of pdg code of the mother for WD decays , used during systematic studies  	
+   Bool_t fUseEtaCut; // cut on eta in MC 	
 
    AliAnalysisTaskSpectraBoth(const AliAnalysisTaskSpectraBoth&);
    AliAnalysisTaskSpectraBoth& operator=(const AliAnalysisTaskSpectraBoth&);
 
-   ClassDef(AliAnalysisTaskSpectraBoth, 3);
+   ClassDef(AliAnalysisTaskSpectraBoth, 4);
 };
 
 #endif
