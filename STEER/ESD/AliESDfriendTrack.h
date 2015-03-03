@@ -92,6 +92,7 @@ public:
   // VfriendTrack interface
 
   Int_t GetTPCseed( AliTPCseed &) const;
+  void ResetTPCseed( const AliTPCseed* s );
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))

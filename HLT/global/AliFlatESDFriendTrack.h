@@ -64,6 +64,7 @@ class AliFlatESDFriendTrack :public AliVfriendTrack
   Int_t SetFromESDfriendTrack( const AliESDfriendTrack* track, size_t allocatedMemory );
 
   void ResetTrackParamTPCOut( const AliExternalTrackParam *p ){ ResetTrackParam( fTPCOutPointer, p ); }
+  void ResetTPCseed( const AliTPCseed* s );
   
   void SetTrackParamTPCOut( const AliExternalTrackParam *p ){ SetTrackParam( fTPCOutPointer, p ); }
   void SetTrackParamITSOut( const AliExternalTrackParam *p ){ SetTrackParam( fITSOutPointer, p ); }
@@ -142,6 +143,13 @@ inline void AliFlatESDFriendTrack::ResetTrackParam( Long64_t &ptr, const AliExte
   if( ptr<0 || !p ) return;
   AliFlatExternalTrackParam *fp = reinterpret_cast< AliFlatExternalTrackParam* >( fContent + ptr );
   fp->SetExternalTrackParam( p );
+}
+
+inline void AliFlatESDFriendTrack::ResetTPCseed( const AliTPCseed* s )
+{
+  if (!s) return;
+  AliFlatTPCseed* fs = reinterpret_cast<AliFlatTPCseed*>(fContent+fTPCseedPointer);
+  fs->SetFromTPCseed( s );
 }
 
 inline void AliFlatESDFriendTrack::SetTPCseed( const AliTPCseed *p )
