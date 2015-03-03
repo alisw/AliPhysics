@@ -33,6 +33,7 @@ set(SRCS
   AliFemtoAnalysisAzimuthal.cxx
   AliFemtoAnalysisReactionPlane.cxx
   AliFemtoBPLCMS3DCorrFctn.cxx
+  AliFemtoBPLCMS3DCorrFctnKK.cxx
   AliFemtoCorrFctn3DLCMSSym.cxx
   AliFemtoQinvCorrFctn.cxx
   AliFemtoBasicEventCut.cxx
@@ -178,7 +179,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
