@@ -346,21 +346,23 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fOutput->Add(fHistPtHard);
   }
 
-  fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
-  fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
-  fHistCentrality->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistCentrality);
-
   fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
   fHistZVertex->GetXaxis()->SetTitle("z");
   fHistZVertex->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertex);
 
-  fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
-  fHistEventPlane->GetXaxis()->SetTitle("event plane");
-  fHistEventPlane->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistEventPlane);
-
+  if (fForceBeamType != kpp) {
+    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
+    fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
+    fHistCentrality->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistCentrality);
+    
+    fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
+    fHistEventPlane->GetXaxis()->SetTitle("event plane");
+    fHistEventPlane->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistEventPlane);
+  }
+  
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
   fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
   fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
@@ -397,10 +399,13 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistPtHard->Fill(fPtHard);
   }
 
-  fHistCentrality->Fill(fCent);
   fHistZVertex->Fill(fVertex[2]);
-  fHistEventPlane->Fill(fEPV0);
 
+  if (fForceBeamType != kpp) {
+    fHistCentrality->Fill(fCent);
+    fHistEventPlane->Fill(fEPV0);
+  }
+  
   return kTRUE;
 }
 
