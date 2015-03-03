@@ -69,7 +69,7 @@ class AliJetContainer : public AliEmcalContainer {
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
   virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   virtual void                SetRhoMassName(const char *n)                        { fRhoMassName    = n                ; }
-  virtual void                SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n; }
+  virtual void                SetPythiaInfoName(const char *n)                     { fPythiaInfoName = n                ; }
     
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
@@ -111,12 +111,12 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
   Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
   Float_t                     GetJetPtCut()                         const    {return fJetPtCut;}
+
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet) const;
- 
 
  protected:
   void SetEMCALGeometry();
@@ -163,7 +163,6 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
   ClassDef(AliJetContainer,11);
-
 };
 
 #endif
