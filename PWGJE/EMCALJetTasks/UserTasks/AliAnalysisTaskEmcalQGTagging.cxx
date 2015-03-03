@@ -248,11 +248,14 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
     }
 
     if(fSemigoodCorrect){
-    Double_t disthole=RelativePhi(triggerHadron->Phi(),fHolePos);
-     if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-fangWindowRecoil){ 
-     return 0;}}
-
+      Double_t disthole=RelativePhi(triggerHadron->Phi(),fHolePos);
+      if(TMath::Abs(disthole)+fHoleWidth>TMath::Pi()-fangWindowRecoil){
+        return 0;}
     }
+   
+    fhPt->Fill(triggerHadron->Pt());
+
+  }
   
   if(jetCont) {
     jetCont->ResetCurrentID();
@@ -347,7 +350,6 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
         fhpTjetpT->Fill(triggerHadron->Pt(), jet1->Pt());
         //Printf(" ************ FILLING HISTOS****** shapeSub = %d, triggerHadron = %f, jet1 = %f", fJetShapeSub, triggerHadron->Pt(), jet1->Pt());
-        fhPt->Fill(triggerHadron->Pt());
         fhPhi->Fill(RelativePhi(triggerHadron->Phi(), jet1->Phi()));
         
       }
