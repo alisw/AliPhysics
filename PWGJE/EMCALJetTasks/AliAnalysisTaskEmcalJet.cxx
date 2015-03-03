@@ -173,7 +173,6 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   for(Int_t i =0; i<fJetCollArray.GetEntriesFast(); i++) {
     AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
     cont->SetRunNumber(InputEvent()->GetRunNumber());
-    cont->SetEMCALGeometry();
     cont->SetArray(InputEvent());
     cont->LoadRho(InputEvent()); 
     cont->LoadPythiaInfo(InputEvent());
