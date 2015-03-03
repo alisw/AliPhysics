@@ -1265,9 +1265,9 @@ void AliTOFTenderSupply::LoadTOFPIDParams(Int_t runNumber)
   if (fTOFPIDParams) delete fTOFPIDParams;
   fTOFPIDParams=0x0;
   
-  TFile *oadbf = new TFile("$ALICE_ROOT/OADB/COMMON/PID/data/TOFPIDParams.root");
+  TFile *oadbf = new TFile("$ALICE_PHYSICS/OADB/COMMON/PID/data/TOFPIDParams.root");
   if (oadbf && oadbf->IsOpen()) {
-    AliInfo("Loading TOF Params from $ALICE_ROOT/OADB/COMMON/PID/data/TOFPIDParams.root");
+    AliInfo("Loading TOF Params from $ALICE_PHYSICS/OADB/COMMON/PID/data/TOFPIDParams.root");
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
     if (oadbc) fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(runNumber,"TOFparams"));
     oadbf->Close();
