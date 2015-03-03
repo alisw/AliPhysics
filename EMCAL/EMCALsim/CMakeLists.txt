@@ -34,7 +34,6 @@ include_directories(${ROOT_INCLUDE_DIR}
 # Sources in alphabetical order
 set(SRCS
     AliEMCALQADataMakerSim.cxx
-    AliEMCALTick.cxx
     AliEMCALTriggerBoard.cxx
     AliEMCALTriggerElectronics.cxx
     AliEMCALTriggerPatch.cxx
