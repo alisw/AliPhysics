@@ -177,6 +177,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hESDTrueGammaPsiPairDeltaPhi(NULL),
 	hNEvents(NULL),
 	hNGoodESDTracks(NULL),
+	hCentralityVsPrimaryTracks(NULL),
 	hNGammaCandidates(NULL),
 	hNGoodESDTracksVsNGammaCanditates(NULL),
 	hNV0Tracks(NULL),
@@ -334,6 +335,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hESDTrueGammaPsiPairDeltaPhi(NULL),
 	hNEvents(NULL),
 	hNGoodESDTracks(NULL),
+	hCentralityVsPrimaryTracks(NULL),
 	hNGammaCandidates(NULL),
 	hNGoodESDTracksVsNGammaCanditates(NULL),
 	hNV0Tracks(NULL),
@@ -482,6 +484,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	}
 	hNEvents = new TH1I*[fnCuts];
 	hNGoodESDTracks = new TH1I*[fnCuts];
+	hCentralityVsPrimaryTracks = new TH2F*[fnCuts];
 	hNGammaCandidates = new TH1I*[fnCuts];
 	hNGoodESDTracksVsNGammaCanditates = new TH2F*[fnCuts];
 	hNV0Tracks = new TH1I*[fnCuts];
@@ -555,6 +558,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		else if(fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",400,0,400);
 		else hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
 		fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
+		
+		hCentralityVsPrimaryTracks[iCut] = new TH2F("Centrality vs Primary Tracks","Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
+		fESDList[iCut]->Add(hCentralityVsPrimaryTracks[iCut]);
+		
 		if(fIsHeavyIon == 1) hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",100,0,100);
 		else if(fIsHeavyIon == 2) hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",50,0,50);
 		else hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",50,0,50);
@@ -1115,6 +1122,9 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
 		hNEvents[iCut]->Fill(eventQuality); // Should be 0 here
 		hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
+		
+		hCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks());
+		
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
 		else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
 

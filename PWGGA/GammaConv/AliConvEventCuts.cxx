@@ -285,7 +285,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
    fHistograms->Add(hCentrality);
    hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
-   fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
+//    fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015
    hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
    fHistograms->Add(hVertexZ);
    

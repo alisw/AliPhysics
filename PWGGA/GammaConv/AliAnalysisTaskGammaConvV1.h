@@ -197,6 +197,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH2F 								**hESDTrueGammaPsiPairDeltaPhi;						//!
 		TH1I 								**hNEvents;											//!
 		TH1I 								**hNGoodESDTracks;									//!
+		TH2F								**hCentralityVsPrimaryTracks;						//!
 		TH1I 								**hNGammaCandidates;								//!
 		TH2F 								**hNGoodESDTracksVsNGammaCanditates;				//!
 		TH1I 								**hNV0Tracks;										//!
@@ -241,7 +242,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 14);
+		ClassDef(AliAnalysisTaskGammaConvV1, 15);
 };
 
 #endif
