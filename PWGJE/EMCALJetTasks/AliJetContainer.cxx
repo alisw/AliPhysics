@@ -128,7 +128,8 @@ void AliJetContainer::SetArray(AliVEvent *event)
 
 
 //________________________________________________________________________
-void AliJetContainer::SetEMCALGeometry() {
+void AliJetContainer::SetEMCALGeometry()
+{
   fGeom = AliEMCALGeometry::GetInstance();
   if (!fGeom) {
     AliError(Form("%s: Can not create geometry", GetName()));
@@ -551,8 +552,8 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
 {
   //Set default cuts for full jets
 
-  if(!fGeom) SetEMCALGeometry();
-  if(fGeom) {
+  if (!fGeom) SetEMCALGeometry();
+  if (fGeom) {
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
 
     if(fRunNumber>=177295 && fRunNumber<=197470) //small SM masked in 2012 and 2013

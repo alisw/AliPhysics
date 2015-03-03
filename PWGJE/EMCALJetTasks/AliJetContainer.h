@@ -33,9 +33,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer();
   AliJetContainer(const char *name); 
   virtual ~AliJetContainer() {;}
-
-  void SetEMCALGeometry();
-  void SetEMCALGeometry(AliEMCALGeometry *p) {fGeom = p;}
+  
   void LoadRho(AliVEvent *event);
   void LoadLocalRho(AliVEvent *event);
   void LoadRhoMass(AliVEvent *event);
@@ -102,7 +100,7 @@ class AliJetContainer : public AliEmcalContainer {
   Double_t                    GetRhoMassVal()                       const    {if (fRhoMass) return fRhoMass->GetVal(); else return 0;}
   const TString&              GetRhoMassName()                      const    {return fRhoMassName;}
   const TString&              GetPythiaInfoName()                   const    {return fPythiaInfoName;}
-  AliPythiaInfo         *GetPythiaInfo()                  const    {return fPythiaInfo;}
+  AliPythiaInfo              *GetPythiaInfo()                       const    {return fPythiaInfo;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
   Double_t                    GetJetPtCorrLocal(Int_t i)            const;
   Float_t                     GetJetRadius()                        const    {return fJetRadius;}
@@ -119,6 +117,8 @@ class AliJetContainer : public AliEmcalContainer {
  
 
  protected:
+  void SetEMCALGeometry();
+  
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
   Float_t                     fJetRadius;            //  jet radius
   TString                     fRhoName;              //  Name of rho object

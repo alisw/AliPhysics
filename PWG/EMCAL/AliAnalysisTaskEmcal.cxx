@@ -617,7 +617,6 @@ void AliAnalysisTaskEmcal::ExecOnce()
     }
   }
 
-  
   if (fEventPlaneVsEmcal >= 0) {
     if (fGeom) {
       Double_t ep = (fGeom->GetArm1PhiMax() + fGeom->GetArm1PhiMin()) / 2 * TMath::DegToRad() + fEventPlaneVsEmcal - TMath::Pi();
