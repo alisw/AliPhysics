@@ -64,8 +64,8 @@ void alieve_online_new()
     gSystem->cd(Form("%s/../src/",gSystem->Getenv("ALICE_ROOT")));
     gROOT->ProcessLine(".L saveViews.C+");
     gROOT->ProcessLine(".L geom_gentle.C+");
-    gROOT->ProcessLine(".L geom_gentle_muon.C+");
     gROOT->ProcessLine(".L geom_gentle_trd.C+");
+    gROOT->ProcessLine(".L geom_gentle_muon.C+");
     TEveUtil::LoadMacro("saveViews.C");
     gSystem->cd(hack);
     cout<<"Standard macros added"<<endl;
@@ -155,10 +155,12 @@ void alieve_online_new()
     TGLViewer *glv1 = multiView->Get3DView()->GetGLViewer();
     TGLViewer *glv2 = multiView->GetRPhiView()->GetGLViewer();
     TGLViewer *glv3 = multiView->GetRhoZView()->GetGLViewer();
+    TGLViewer *glv4 = multiView->GetMuonView()->GetGLViewer();
     
     glv1->CurrentCamera().RotateRad(-0.4, 0.6);
     glv2->CurrentCamera().Dolly(90, kFALSE, kFALSE);
-    glv3->CurrentCamera().Dolly(1700, kFALSE, kFALSE);
+    glv3->CurrentCamera().Dolly(2300, kFALSE, kFALSE);
+    glv4->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     
     AliEveEventManager::GetMaster()->AddNewEventCommand("alieve_online_on_new_event();");
     gEve->FullRedraw3D();

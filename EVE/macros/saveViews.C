@@ -77,19 +77,33 @@ void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=
         
         // Save OpenGL views in files
         if(index==0){
-            view->GetGLViewer()->SavePictureUsingFBO(viewFilename, width3DView, height3DView);
+            view->GetGLViewer()->SavePictureUsingBB(viewFilename);//, width3DView, height3DView);
         }
         else {
-            view->GetGLViewer()->SavePictureUsingFBO(viewFilename, widthChildView, heightChildView);
+            view->GetGLViewer()->SavePictureUsingBB(viewFilename);//, widthChildView, heightChildView);
         }
         
         tempImg = new TASImage(viewFilename);
         
         // copy view image in the composite image
         if(index==0){
+            if(tempImg->GetWidth()>width3DView)
+            {
+                tempImg->Crop((tempImg->GetWidth()-width3DView)/2,
+                               0,width3DView,height3DView);
+            }
+            if(tempImg->GetHeight()>height3DView)
+            {
+                tempImg->Crop(0,(tempImg->GetHeight()-height3DView)/2,
+                              width3DView,height3DView);
+            }
+            
             tempImg->CopyArea(compositeImg, 0,0, width3DView, height3DView);
         }
         else {
+            tempImg->Crop((tempImg->GetWidth()-widthChildView)/2,
+                          (tempImg->GetHeight()-heightChildView)/2,
+                          widthChildView,heightChildView);
             tempImg->CopyArea(compositeImg, 0,0, widthChildView, heightChildView, x,y);
             
             // draw a border around child views
@@ -136,25 +150,64 @@ void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=
     // show Information bar
     
     AliESDEvent* esd =  AliEveEventManager::AssertESD();
+    ULong64_t triggerMask = esd->GetTriggerMask();
+    ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
+    ULong64_t mask = 0b000001;
+    
     TString triggerClasses1 = "";
     TString triggerClasses2 = "";
-    bool sw=false;
-    for(int i=0;i<100;i++)
+    TString triggerClasses3 = "";
+    int sw=0;
+    for(int i=0;i<50;i++)
     {
-        if(strcmp(esd->GetESDRun()->GetTriggerClass(i),"")){
-            if (sw)
-            {
-                triggerClasses1 += esd->GetESDRun()->GetTriggerClass(i);
-                triggerClasses1 += "   ";
-                sw=false;
-            }
-            else
-            {
-                triggerClasses2 += esd->GetESDRun()->GetTriggerClass(i);
-                triggerClasses2 += "   ";
-                sw=true;
+        if(mask&triggerMask)
+        {
+            if(strcmp(esd->GetESDRun()->GetTriggerClass(i),"")){
+                if (sw==0)
+                {
+                    triggerClasses1 += esd->GetESDRun()->GetTriggerClass(i);
+                    triggerClasses1 += "   ";
+                    sw=1;
+                }
+                else if(sw==1)
+                {
+                    triggerClasses2 += esd->GetESDRun()->GetTriggerClass(i);
+                    triggerClasses2 += "   ";
+                    sw=2;
+                }
+                else if(sw==2)
+                {
+                    triggerClasses3 += esd->GetESDRun()->GetTriggerClass(i);
+                    triggerClasses3 += "   ";
+                    sw=0;
+                }
             }
         }
+        if(mask&triggerMaskNext50)
+        {
+            if(strcmp(esd->GetESDRun()->GetTriggerClass(i+50),""))
+            {
+                if (sw==0)
+                {
+                    triggerClasses1 += esd->GetESDRun()->GetTriggerClass(i+50);
+                    triggerClasses1 += "   ";
+                    sw=1;
+                }
+                else if(sw==1)
+                {
+                    triggerClasses2 += esd->GetESDRun()->GetTriggerClass(i+50);
+                    triggerClasses2 += "   ";
+                    sw=2;
+                }
+                else if(sw==2)
+                {
+                    triggerClasses3 += esd->GetESDRun()->GetTriggerClass(i+50);
+                    triggerClasses3 += "   ";
+                    sw=0;
+                }
+            }
+        }
+        mask = mask<<1;
     }
     
     TString stringInfo;
@@ -162,8 +215,9 @@ void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=
     compositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0, height-heightInfoBar, width, heightInfoBar);
     compositeImg->BeginPaint();
     compositeImg->DrawText(10, height-heightInfoBar+15, stringInfo, 28, "#FFFFFF", "FreeSansBold.otf");
-    compositeImg->DrawText(700, height-heightInfoBar+15,triggerClasses1, 18, "#FFFFFF", "FreeSansBold.otf");
-    compositeImg->DrawText(700, height-heightInfoBar+35,triggerClasses2, 18, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, height-heightInfoBar+4,triggerClasses1, 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, height-heightInfoBar+24,triggerClasses2, 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, height-heightInfoBar+44,triggerClasses3, 16, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->EndPaint();
     
     
@@ -213,7 +267,7 @@ TString getEventInfo()
         esdInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
                      esd->GetESDRun()->GetBeamType(),
                      esd->GetRunNumber(),
-                     AliEveEventManager::CurrentEventId(),
+                     esd->GetEventNumberInFile(),
                      AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
                      );
     }
