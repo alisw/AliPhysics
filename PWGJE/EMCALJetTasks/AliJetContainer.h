@@ -86,6 +86,8 @@ class AliJetContainer : public AliEmcalContainer {
   Bool_t                      AcceptBiasJet(const AliEmcalJet* jet)      ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
+  Int_t                       GetNAcceptedJets()                         ;
+
   Double_t                    GetLeadingHadronPt(const AliEmcalJet* jet)  const;
   void                        GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmcalJet* jet)  const;
   Double_t                    GetZ(const AliEmcalJet *jet, TLorentzVector mom) const;
@@ -152,7 +154,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliRhoParameter            *fRho;                  //! event rho for these jets
   AliLocalRhoParameter       *fLocalRho;             //! event local rho for these jets
   AliRhoParameter            *fRhoMass;              //! event rho mass for these jets
-  AliPythiaInfo         *fPythiaInfo;          //! event parton info
+  AliPythiaInfo              *fPythiaInfo;           //! event parton info
   AliEMCALGeometry           *fGeom;                 //! emcal geometry
   Int_t                       fRunNumber;            //! run number
 
