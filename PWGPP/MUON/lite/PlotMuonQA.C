@@ -2147,14 +2147,16 @@ Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjA
     Int_t nTrig = 0;
     for ( Int_t iTrig = 0; iTrig < triggersInContainer->GetEntriesFast(); iTrig++ ) {
       currTrigName = triggersInContainer->At(iTrig)->GetName();
-      Bool_t keep = kFALSE;
-      if ( ( currTrigName.Contains("-B-") ||  currTrigName.Contains("-ABCE-") ) && 
-	   ( ! ((TString) currTrigName(0)).CompareTo("C") ) && !currTrigName.Contains("WU") && 
-	   !currTrigName.Contains("UP") && !currTrigName.Contains("SPI") && !currTrigName.Contains("PHI") && 
-	   !currTrigName.Contains("EMC") && !currTrigName.Contains("ZED") && !currTrigName.Contains("TRUE") && 
-	   !currTrigName.Contains("SHM")  && !currTrigName.Contains("TPC") && !currTrigName.Contains("BEAM") && 
-	   !currTrigName.Contains("1A") && !currTrigName.Contains("1C")) 
-	keep = kTRUE;//cyn: to be removed once the trigger filtering is carried out in the analysis task
+      Bool_t keep = kTRUE;
+      TString rejectPatterns = "-E- -A- -C- WU UP SPI PHI EMC ZED TRUE SHM TPC BEAM 1A 1C";
+      TObjArray* rejArray = rejectPatterns.Tokenize(" ");
+      for ( Int_t ipat=0; ipat<rejArray->GetEntriesFast(); ipat++ ) {
+        if ( currTrigName.Contains(rejArray->At(ipat)->GetName()) ) {
+          keep = kFALSE;
+          break;
+        }
+      }
+      delete rejArray;
       if (!keep) continue;
       nTrig++;
       for (Int_t ibeam = 0; ibeam < nColumn; ibeam++) {
