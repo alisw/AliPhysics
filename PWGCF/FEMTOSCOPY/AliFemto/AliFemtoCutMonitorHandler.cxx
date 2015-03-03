@@ -17,20 +17,18 @@ ClassImp(AliFemtoCutMonitorHandler)
 #endif
 // ---------------------------------------------------------------------------
 AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler():
-  fCollectionsEmpty(0), fPassColl(0), fFailColl(0)
+  fCollectionsEmpty(kFALSE), fPassColl(NULL), fFailColl(NULL)
 {
   // Default constructor
-  cout << " *** AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler() " << endl;
-  fCollectionsEmpty = 0;
+  //cout << " *** AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler() " << endl;
   fPassColl = new AliFemtoCutMonitorCollection();
   fFailColl = new AliFemtoCutMonitorCollection();
 }
 // ---------------------------------------------------------------------------
 AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler(const AliFemtoCutMonitorHandler& aHan):
-  fCollectionsEmpty(0), fPassColl(0), fFailColl(0)
+  fCollectionsEmpty(aHan.fCollectionsEmpty), fPassColl(NULL), fFailColl(NULL)
 {
   // Copy constructor
-  fCollectionsEmpty = aHan.fCollectionsEmpty;
   fPassColl = new AliFemtoCutMonitorCollection();
   AliFemtoCutMonitorIterator iter;
   for (iter=aHan.fPassColl->begin(); iter!=aHan.fPassColl->end(); iter++){
