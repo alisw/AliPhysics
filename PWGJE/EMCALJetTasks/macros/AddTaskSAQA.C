@@ -62,7 +62,13 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   if (partCont) partCont->SetParticlePtCut(trackptcut);
 
   AliClusterContainer *clusCont = qaTask->AddClusterContainer(nclusters);
-  if (clusCont) clusCont->SetClusPtCut(clusptcut);
+  if (clusCont) {
+    clusCont->SetClusPtCut(clusptcut);
+    qaTask->SetNeedEmcalGeom(kTRUE);
+  }
+  else {
+    qaTask->SetNeedEmcalGeom(kFALSE);
+  }
 
   AliJetContainer *jetCont = qaTask->AddJetContainer(njets,cutType,jetradius);
   if (jetCont) {
