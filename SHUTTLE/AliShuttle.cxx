@@ -1185,36 +1185,6 @@ Bool_t AliShuttle::ContinueProcessing()
 		// CleanLocalStorage(fgkLocalRefStorage);
 		// UpdateTableFailCase();
 		
-		// Send mail to detector expert!
-		Log("SHUTTLE", Form("ContinueProcessing - Sending mail to %s expert...", 
-				    fCurrentDetector.Data()));
-		// det experts in to
-		TString to="";
-		TIter *iterExperts = 0;
-		iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
-		TObjString *anExpert=0;
-		while ((anExpert = (TObjString*) iterExperts->Next()))
-			{
-				to += Form("%s, \n", anExpert->GetName());
-			}
-		delete iterExperts;
-		
-		if (to.Length() > 0)
-			to.Remove(to.Length()-3);
-		AliDebug(2, Form("to: %s",to.Data()));
-
-		if (to.IsNull()) {
-			Log("SHUTTLE", Form("List of %s responsibles not set!", fCurrentDetector.Data()));
-			return kFALSE;
-		}
-
-		Log(fCurrentDetector.Data(), Form("ContinueProcessing - Sending mail to %s expert(s):", 
-				    fCurrentDetector.Data()));
-		Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
-		if (!SendMail(kPPEMail))
-			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
-					    fCurrentDetector.Data()));
-
 	} else {
 		Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. "
 				"Aborted before with %s. Retry number %d.", fCurrentDetector.Data(),
@@ -1630,8 +1600,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				if (fFXSCalled[iSys]) fFXSlist[iSys].Clear();
 			}
 
-			Log("SHUTTLE", Form("Process - Client process of %d - %s is exiting now with %d.",
-							GetCurrentRun(), aDetector->GetName(), success));
+			Log("SHUTTLE", Form("Process - Client process of %d - %s is exiting now with %d (%s).",
+							GetCurrentRun(), aDetector->GetName(), success, success==kFALSE ? "failure" : "success"));
 
 			// the client exits here
 			gSystem->Exit(success);
@@ -1851,7 +1821,7 @@ Int_t AliShuttle::ProcessCurrentDetector()
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
-	fFXSError = -1; // this variable is kTRUE after ::Process if an FXS error occured
+	fFXSError = -1; // this variable is >=0 after ::Process if an FXS error occured (= system with problematic FXS)
 	
 	UInt_t returnValue = aPreprocessor->Process(dcsMap);
 	
@@ -1870,6 +1840,17 @@ Int_t AliShuttle::ProcessCurrentDetector()
 		UpdateShuttleStatus(AliShuttleStatus::kPPError);
 		dcsMap->DeleteAll();
 		delete dcsMap;
+                // If reached max number of retries end mail to detector expert!
+                AliShuttleStatus* status = ReadShuttleStatus();
+                if (status->GetCount() >= fConfig->GetMaxRetries()) {
+                        Log(fCurrentDetector.Data(), Form("ProcessCurrentDetector - Sending mail to %s expert(s):", 
+                                                fCurrentDetector.Data()));
+                        Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
+                        if (!SendMail(kPPEMail, -1, returnValue)) //we pass here the returnValue too, used by SendMail only in the GRP case to derive recipients
+                                Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to %s expert(s)",
+                                                        fCurrentDetector.Data()));
+                }
+
 		return 0;
 	}
 	
@@ -3256,11 +3237,11 @@ AliCDBEntry* AliShuttle::GetFromOCDB(const char* detector, const AliCDBPath& pat
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
+Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system, UInt_t errorCode)
 {
 	//
 	// sends a mail to the subdetector expert in case of preprocessor error
-	//
+	// errorCode is used to differentiate recipients in case of GRP failures
 	
 	if (fTestMode != kNone)
 		return kTRUE;
@@ -3308,15 +3289,32 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 		delete iterExperts;
 	}
 
-	// add subdetector experts	
-	iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
-	TObjString *anExpert=0;
-	while ((anExpert = (TObjString*) iterExperts->Next()))
-	{
-		to += Form("%s,", anExpert->GetName());
-	}
-	delete iterExperts;
-	
+        // add subdetector experts	
+        iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
+        TObjString *anExpert=0;
+        while ((anExpert = (TObjString*) iterExperts->Next()))
+        {
+          if (fCurrentDetector != TString("GRP") ) {
+            to += Form("%s,", anExpert->GetName());
+          } else {
+            TString mailAndErrs = anExpert->String();
+            TString errors = mailAndErrs(mailAndErrs.First(' ')+1, mailAndErrs.Length()); //comma separated list of errors for given responsible
+            TIter *iterErrors = new TIter(errors.Tokenize(','));
+            TObjString *errorCode_os;
+            while ((errorCode_os = (TObjString*) iterErrors->Next()))
+            {
+              if (errorCode_os->String().Atoi() & UInt_t(errorCode) )
+              {
+                to += mailAndErrs(0, mailAndErrs.First(' '));
+                to += ',';
+                break;
+              }
+            }
+            delete iterErrors;
+          }
+        }
+        delete iterExperts;
+
 	if (to.Length() > 0)
 	  to.Remove(to.Length()-1);
 	AliDebug(2, Form("to: %s",to.Data()));
