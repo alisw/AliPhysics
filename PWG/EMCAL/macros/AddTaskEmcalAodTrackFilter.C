@@ -44,7 +44,8 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
 
   TString runPeriod(runperiod);
   runPeriod.ToLower();
-  if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" || 
+  if (runPeriod == "lhc10b" || runPeriod == "lhc10c" || runPeriod == "lhc10d" ||
+      runPeriod == "lhc10e" || runPeriod == "lhc10h" || 
       runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
       runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
       runPeriod == "lhc12f" || runPeriod == "lhc12g" || runPeriod == "lhc12h" ||
@@ -53,8 +54,9 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
       runPeriod == "lhc13g"
       ) {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
-    if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
+    if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h") {
       includeNoITS = kTRUE;
+    }
   } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
 	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix")
 	     ) {
@@ -92,7 +94,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     delete arr;
   } else {
     if (!runPeriod.IsNull())
-      ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
+      ::Warning("AddTaskEmcalAodTrackFilter", Form("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data()));
   }
   aodTask->SetIncludeNoITS(includeNoITS);
   aodTask->SetDoPropagation(doProp);
