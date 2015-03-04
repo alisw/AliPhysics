@@ -124,13 +124,21 @@ if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
   # Generating the ALIROOT_SERIAL using git rev-list
   # Older Git version < 1.7.3 do not have --count option for rev-list
   # We use simple rev-list and count the lines of the output 
+
+  if(CMAKEDEBUG)
+    message(STATUS "DEBUG: GIT_VERSION_STRING = ${GIT_VERSION_STRING}")
+  endif()
   
   # extract major minor and patch from Git version
-  string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" GIT_VERSION_MAJOR "${GIT_VERSION_STRING}")
-  string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" GIT_VERSION_MINOR "${GIT_VERSION_STRING}")
-  string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" GIT_VERSION_PATCH "${GIT_VERSION_STRING}")
+  string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" GIT_VERSION_MAJOR "${GIT_VERSION_STRING}")
+  string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" GIT_VERSION_MINOR "${GIT_VERSION_STRING}")
+  string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" GIT_VERSION_PATCH "${GIT_VERSION_STRING}")
 
-  if(${GIT_VERSION_MAJOR} EQUAL 1 AND ${GIT_VERSION_MINOR} LESS 3)
+  if(CMAKEDEBUG)
+    message(STATUS "DEBUG: GIT_VERSION_MAJOR = ${GIT_VERSION_MAJOR}, GIT_VERSION_MINOR = ${GIT_VERSION_MINOR}, GIT_VERSION_PATCH = ${GIT_VERSION_PATCH}")
+  endif()
+
+  if((${GIT_VERSION_MAJOR} EQUAL 1) AND (${GIT_VERSION_MINOR} LESS 8) AND (${GIT_VERSION_PATCH} LESS 3))
     if(CMAKEDEBUG)
       message(STATUS "DEBUG: cmake version less that 1.7.3!")
     endif()
