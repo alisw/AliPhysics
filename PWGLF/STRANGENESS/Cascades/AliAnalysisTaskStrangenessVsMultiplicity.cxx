@@ -454,7 +454,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
 
     //Don't save this if you're saving V0 or cascade information, only for special executions
     if ( fkSkipEventSelection )
-        fTreeEvent->Branch("fEvent_TrackletEta", fEvent_TrackletEta, "fEvent_TrackletEta[fEvSel_nTracklets]");
+        fTreeEvent->Branch("fEvent_TrackletEta", fEvent_TrackletEta, "fEvent_TrackletEta[fEvSel_nTracklets]/F");
 
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
