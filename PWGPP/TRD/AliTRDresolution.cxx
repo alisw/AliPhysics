@@ -119,7 +119,7 @@ Double_t const AliTRDresolution::fgkMin[kNdim] = {
   -1.5,        /*bc*/
   -TMath::Pi(),/*phi*/
   -0.9,        /*eta*/
-  -1.5,         /*dy*/
+  -0.7,        /*dy*/
   -5.,         /*dphi*/
   -2.5,        /*dz*/
   -2.5,        /*chg*species*/
@@ -129,7 +129,7 @@ Double_t const AliTRDresolution::fgkMax[kNdim] = {
   1.5,        /*bc*/
   TMath::Pi(),/*phi*/
   0.9,        /*eta*/
-  1.5,         /*dy*/
+  0.7,        /*dy*/
   5.,         /*dphi*/
   2.5,        /*dz*/
   2.5,        /*chg*species*/
@@ -651,6 +651,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     AliWarning("No output container defined.");
     return NULL;
   }
+  AliTRDgeometry *geo(AliTRDinfoGen::Geometry());TGeoHMatrix *matrix(NULL);
 
   // read V0 PID
   Int_t v0pid(4);
@@ -665,9 +666,20 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
   for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++){
     if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
     if(!fTracklet->IsOK() || !fTracklet->IsChmbGood()) continue;
+
+    Int_t det(fTracklet->GetDetector());
+    if(!(matrix = geo->GetClusterMatrix(det))){ 
+      AliDebug(1, Form("Missing align matrix for D%03d.", det));
+      continue;
+    }   
+//     // check that the same alignment is used as in reconstruction - useful for MC    
+//     Double_t locTrklt[] = {AliTRDgeometry::AnodePos(), fTracklet->GetLocalY(), fTracklet->GetLocalZ()}, trkTrklt[3];
+//     matrix->LocalToMaster(locTrklt, trkTrklt);
+//     printf("D[%03d] dx[um]=%e dy[um]=%e dz[um]=%e\n", det, 1.e4*(trkTrklt[0]-fTracklet->GetX()), 1.e4*(trkTrklt[1]-fTracklet->GetY()), 1.e4*(trkTrklt[2]-fTracklet->GetZ()));
+
     val [kBC] = il;
     if(cs<-1.){
-      alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha();
+      alpha = (0.5+AliTRDgeometry::GetSector(det))*AliTRDgeometry::GetAlpha();
       cs    = TMath::Cos(alpha);
       sn    = TMath::Sin(alpha);
     }
@@ -677,8 +689,12 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 
     val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:(v0pid*fkTrack->Charge());// fSpecies;
     val[kPt]  = GetPtBin(fPt); 
-    Double_t dyt(fTracklet->GetY() - fTracklet->GetYref()),
-             dzt(fTracklet->GetZ() - fTracklet->GetZref()),
+
+    Double_t trkTrk[] = {fTracklet->GetX(), fTracklet->GetYref(), fTracklet->GetZref()}, locTrk[3];
+    matrix->MasterToLocal(trkTrk, locTrk);
+
+    Double_t dyt(fTracklet->GetLocalY() - locTrk[1]),
+             dzt(fTracklet->GetLocalZ() - locTrk[2]),
              dydx(fTracklet->GetYfit(1)),
              tilt(fTracklet->GetTilt());
     // correct for tilt rotation
@@ -815,10 +831,19 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
       <<"trackIn.=" << tin
       << "\n";
   }
+  Int_t det(fTracklet->GetDetector());
+  AliTRDgeometry *geo(AliTRDinfoGen::Geometry());TGeoHMatrix *matrix(NULL);
+  if(!(matrix = geo->GetClusterMatrix(det))){ 
+    AliDebug(1, Form("Missing align matrix for D%03d.", det));
+    return NULL;
+  }   
 
   //Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
   const Double_t *parR(tin->GetParameter());
-  Double_t dyt(fTracklet->GetY()-parR[0]), dzt(fTracklet->GetZ()-parR[1]),
+  Double_t trkTrkIn[] = {tin->GetX(), parR[0], parR[1]},
+           locTrkIn[3];
+  matrix->MasterToLocal(trkTrkIn, locTrkIn);
+  Double_t dyt(fTracklet->GetLocalY()-locTrkIn[1]), dzt(fTracklet->GetLocalZ()-locTrkIn[2]),
             phit(fTracklet->GetdYdX()),
             tilt(fTracklet->GetTilt()),
             norm(1./TMath::Sqrt((1.-parR[2])*(1.+parR[2])));
@@ -826,13 +851,13 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   // correct for tilt rotation
   Double_t dy  = dyt - dzt*tilt,
            dz  = dzt + dyt*tilt,
-           dx  = dy/(parR[2]*norm-parR[3]*norm*tilt);
+           dx  = locTrkIn[0] - AliTRDgeometry::AnodePos(); //dy/(parR[2]*norm-parR[3]*norm*tilt);
   phit       += tilt*parR[3];
   Double_t dphi = TMath::ATan(phit) - TMath::ASin(parR[2]);
 
   Double_t val[kNdim+2];
   val[kBC]          = fTriggerSlot?fTriggerSlot:v0pid;//bc==0?0:(bc<0?-1.:1.);
-  Double_t alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha(),
+  Double_t alpha = (0.5+AliTRDgeometry::GetSector(det))*AliTRDgeometry::GetAlpha(),
            cs    = TMath::Cos(alpha),
            sn    = TMath::Sin(alpha);
   val[kPhi]         = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
@@ -845,7 +870,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   Float_t pz(0.); if(fTracklet->GetMomentum()-fPt>1.e-5) pz = TMath::Sqrt((fTracklet->GetMomentum()-fPt)*(fTracklet->GetMomentum()+fPt));
   val[kPt]          = fTracklet->IsRowCross()?GetPtBin(pz):GetPtBin(fPt);
   val[kNdim]        = GetPtBin(fTracklet->GetMomentum());
-  val[kNdim+1]      = dx;
+  val[kNdim+1]      = 1.e4*dx;
   //val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
   H->Fill(val);
 
@@ -947,11 +972,11 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   }
 
   TH1 *h(NULL);
-  AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
+  AliTRDgeometry *geo(AliTRDinfoGen::Geometry()); TGeoHMatrix *matrix(NULL);
   AliTRDseedV1 *fTracklet(NULL); TObjArray *clInfoArr(NULL);
   UChar_t s;
   Double_t x, y, z, pt, dydx, dzdx/*, dzdl*/;
-  Float_t pt0, p0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
+  Float_t dx, dy, dz, xc;
   Double_t covR[7]/*, cov[3]*/;
 
   AliExternalTrackParam *tin(NULL);
@@ -960,28 +985,27 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily)))/* ||
        !fTracklet->IsOK())*/ continue;
+    Int_t det(fTracklet->GetDetector());
+    if(!(matrix = geo->GetClusterMatrix(det))){ 
+      AliDebug(1, Form("Missing align matrix for D%03d.", det));
+      continue;
+    }   
 
     x  = fTracklet->GetX();
-    x0 = fTracklet->GetX0();
-    Bool_t rc(fTracklet->IsRowCross()); Float_t eta, phi;
-    if(!fkMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, p0, eta, phi, s)) continue;
-
-    // MC track position at reference radial position
-    dx  = x0 - x;
-    Float_t ymc = y0 - dx*dydx0;
-    Float_t zmc = z0 - dx*dzdx0;
-    //phi -= TMath::Pi();
-
+    Bool_t rc(fTracklet->IsRowCross());
+    Double_t mcOut[10];
+    if(!fkMC->GetDirections(x, sign, matrix, mcOut, s)) continue;
+    
     val[kBC]  = ily;
-    val[kPhi] = phi;
-    val[kEta] = eta;
+    val[kPhi] = mcOut[3];
+    val[kEta] = mcOut[2];
     if(rc) val[kSpeciesChgRC]= 0.;
     else{ 
       if(exactPID<-1||exactPID>1) val[kSpeciesChgRC]= sign*4;
       else val[kSpeciesChgRC]= sign*(exactPID+2);
     }
-    val[kPt]  = GetPtBin(pt0);
-    val[kNdim]= GetPtBin(p0);
+    val[kPt]  = GetPtBin(mcOut[0]);
+    val[kNdim]= GetPtBin(mcOut[1]);
     Double_t tilt(fTracklet->GetTilt());
 
     if(ily==0 && (tin=fkTrack->GetTrackIn())){ // trackIn residuals
@@ -989,11 +1013,11 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       if(TMath::Abs(tin->GetX()-x)>1.e-3) AliDebug(1, Form("TrackIn radial mismatch. dx[cm]=%+4.1f", tin->GetX()-x));
       else{
         val[kBC]          = exactPID;
-        val[kYrez]        = tin->GetY()-ymc;
+        val[kYrez]        = tin->GetY()-mcOut[8];
 //        val[kZrez]        = rc?(tin->GetZ()-zmc):(fTracklet->GetdQdl()*5e-4 - 2.5);
 //        val[kZrez]        = rc?(tin->GetZ()-zmc):(fTracklet->GetCharge(kTRUE)*5e-4/TMath::Sqrt(1. + dydx0*dydx0 + dzdx0*dzdx0) - 2.5);
-        val[kZrez]        = rc?(tin->GetZ()-zmc):(GetChargeNTC(fTracklet)*5e-4/TMath::Sqrt(1. + dydx0*dydx0 + dzdx0*dzdx0) - 2.5);
-        val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(dydx0))*TMath::RadToDeg();
+        val[kZrez]        = rc?(tin->GetZ()-mcOut[9]):(GetChargeNTC(fTracklet)*5e-4/TMath::Sqrt(1. + mcOut[4]*mcOut[4] + mcOut[5]*mcOut[5]) - 2.5);
+        val[kPrez]        = (TMath::ASin(tin->GetSnp())-TMath::ATan(mcOut[4]))*TMath::RadToDeg();
         val[kNdim+1]      = 0.;//dx;
         if((H = (THnSparseI*)fContainer->At(kMCtrackIn)) && exactPID>-3) H->Fill(val);
         val[kBC]          = ily; // reset for subsequent components
@@ -1006,16 +1030,16 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     dzdx = fTracklet->GetZref(1);
     //dzdl = fTracklet->GetTgl();
     y  = fTracklet->GetYref();
-    dy = y - ymc;
+    dy = y - mcOut[8];
     z  = fTracklet->GetZref();
-    dz = z - zmc;
+    dz = z - mcOut[9];
     pt = TMath::Abs(fTracklet->GetPt());
     fTracklet->GetCovRef(covR);
 
     val[kYrez] = dy;
-    val[kPrez] = TMath::ATan((dydx - dydx0)/(1.+ dydx*dydx0))*TMath::RadToDeg();
+    val[kPrez] = TMath::ATan((dydx - mcOut[4])/(1.+ dydx*mcOut[4]))*TMath::RadToDeg();
     val[kZrez] = dz;
-    val[kNdim] = 1.e2*(pt/pt0-1.);
+    val[kNdim] = 1.e2*(pt/mcOut[0]-1.);
     if((H = (THnSparse*)fContainer->At(kMCtrack))) H->Fill(val);
 /*      // theta resolution/ tgl pulls
       Double_t dzdl0 = dzdx0/TMath::Sqrt(1.+dydx0*dydx0),
@@ -1031,17 +1055,16 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     // Fill Debug stream for MC track
     if(DebugLevel()>=4){
-      Int_t det(fTracklet->GetDetector());
       (*DebugStream()) << "MC"
         << "det="     << det
         << "pdg="     << pdg
         << "sgn="     << sign
-        << "pt="      << pt0
-        << "x="       << x0
-        << "y="       << y0
-        << "z="       << z0
-        << "dydx="    << dydx0
-        << "dzdx="    << dzdx0
+        << "pt="      << mcOut[0]
+        << "x="       << x
+        << "y="       << mcOut[8]
+        << "z="       << mcOut[9]
+        << "dydx="    << mcOut[4]
+        << "dzdx="    << mcOut[5]
         << "\n";
 
       // Fill Debug stream for Kalman track
@@ -1058,18 +1081,18 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     }
 
     // tracklet residuals
-    dydx = fTracklet->GetdYdX() + tilt*dzdx0;
-    dzdx = fTracklet->GetdZdX();
-    y  = fTracklet->GetY();
-    dy = y - ymc;
-    z  = fTracklet->GetZ();
-    dz = z - zmc;
+    dydx = fTracklet->GetdYdX() + tilt*mcOut[5]; dzdx = fTracklet->GetdZdX();
+    y  = fTracklet->GetY(); z  = fTracklet->GetZ();
+    Double_t trkTrklt[] = {x, y, z}, locTrklt[3];
+    matrix->MasterToLocal(trkTrklt, locTrklt);
+    dy = locTrklt[1] - mcOut[6];  // r-phi residuals in local coordinates
+    dz = locTrklt[2] - mcOut[7];  // z residuals in local coordinates
     val[kYrez] = dy - dz*tilt;
-    val[kPrez] = TMath::ATan((dydx - dydx0)/(1.+ dydx*dydx0))*TMath::RadToDeg();
+    val[kPrez] = TMath::ATan((dydx - mcOut[4])/(1.+ dydx*mcOut[4]))*TMath::RadToDeg();
     //val[kZrez] = rc?(dz + dy*tilt):(fTracklet->GetdQdl()*5.e-4 - 2.5);
-    val[kZrez] = rc?(dz + dy*tilt):(fTracklet->GetCharge(kTRUE)*5e-4/TMath::Sqrt(1. + dydx0*dydx0 + dzdx0*dzdx0) - 2.5);
+    val[kZrez] = rc?(dz + dy*tilt):(fTracklet->GetCharge(kTRUE)*5e-4/TMath::Sqrt(1. + mcOut[4]*mcOut[4] + mcOut[5]*mcOut[5]) - 2.5);
     val[kNdim] = fEvent?fEvent->GetMultiplicity():0;
-    val[kNdim+1] = GetPtBin(p0);
+    val[kNdim+1] = GetPtBin(mcOut[1]);
     if((H = (THnSparse*)fContainer->At(kMCtracklet))) H->Fill(val);
 
 
@@ -1088,25 +1111,26 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         << "\n";
     }
 
-    AliTRDpadPlane *pp = geo->GetPadPlane(ily, AliTRDgeometry::GetStack(fTracklet->GetDetector()));
+    AliTRDpadPlane *pp = geo->GetPadPlane(ily, AliTRDgeometry::GetStack(det));
     Float_t zr0 = pp->GetRow0() + pp->GetAnodeWireOffset();
     //Double_t exb = AliTRDCommonParam::Instance()->GetOmegaTau(1.5);
 
     H = (THnSparse*)fContainer->At(kMCcluster);
-    val[kPt]  = TMath::ATan(dydx0)*TMath::RadToDeg();
+    val[kPt]  = TMath::ATan(mcOut[4])*TMath::RadToDeg();
     //Float_t corr = 1./TMath::Sqrt(1.+dydx0*dydx0+dzdx0*dzdx0);
     Int_t row0(-1);
     Float_t padCorr(tilt*fTracklet->GetPadLength()),
-            corr(1./TMath::Sqrt(1.+dydx0*dydx0+dzdx0*dzdx0));
+            corr(1./TMath::Sqrt(1.+mcOut[4]*mcOut[4] + mcOut[5]*mcOut[5]));
     fTracklet->ResetClusterIter(kTRUE);
     while((c = fTracklet->NextCluster())){
       if(row0<0) row0 = c->GetPadRow();
-      x = c->GetX();//+fXcorr[c->GetDetector()][c->GetLocalTimeBin()];
-      y = c->GetY()  + padCorr*(c->GetPadRow() - row0);
-      z = c->GetZ();
-      dx = x0 - x;
-      ymc= y0 - dx*dydx0;
-      zmc= z0 - dx*dzdx0;
+      Double_t trkCl[] = {c->GetX(), c->GetY(), c->GetZ()}, locCl[3];
+      matrix->MasterToLocal(trkCl, locCl);
+      y = locCl[1]; // c->GetY()  + padCorr*(c->GetPadRow() - row0);
+      z = locCl[2]; // c->GetZ();
+      dx = AliTRDgeometry::AnodePos()-locCl[0];
+      Double_t ymc= mcOut[6] - dx*mcOut[4],
+               zmc= mcOut[7] - dx*mcOut[5];
       dy = y - ymc;
       dz = z - zmc;
       val[kYrez] = dy - dz*tilt;
@@ -1127,7 +1151,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
       clInfo->SetCluster(c);
       clInfo->SetMC(pdg, label);
-      clInfo->SetGlobalPosition(ymc, zmc, dydx0, dzdx0);
+      clInfo->SetGlobalPosition(ymc, zmc, mcOut[4], mcOut[5]);
       clInfo->SetResolution(dy);
       clInfo->SetAnisochronity(d);
       clInfo->SetDriftLength(dx);
@@ -3452,7 +3476,7 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s%s", fPrefix, fgPerformanceName[kCluster]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     const Int_t mdim(10);
-    const Char_t *clTitle[mdim] = {"layer", fgkTitle[kPhi], fgkTitle[kEta], fgkTitle[kYrez], "#Deltax [cm]", "Q</Q", "Q/angle", "#Phi [deg]", "centrality", triggerBins?"trigger":"no. of pads"};
+    const Char_t *clTitle[mdim] = {"layer", fgkTitle[kPhi], fgkTitle[kEta], fgkTitle[kYrez], "#Deltax [#mum]", "Q</Q", "Q/angle", "#Phi [deg]", "centrality", triggerBins?"trigger":"no. of pads"};
     const Int_t clNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], fgkNbins[kEta], fgkNbins[kYrez], 45, 30, 30, 15, AliTRDeventInfo::kCentralityClasses, triggerBins?triggerBins:kNpads};
     const Double_t clMin[mdim]  = {-0.5, fgkMin[kPhi], fgkMin[kEta], fgkMin[kYrez]/10., -.5, 0.1, -2., -45, -0.5, 0.5},
                    clMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], fgkMax[kYrez]/10., 4., 2.1, 118., 45, AliTRDeventInfo::kCentralityClasses - 0.5, triggerBins?(triggerBins+.5):(kNpads+.5)};
@@ -3496,7 +3520,7 @@ TObjArray* AliTRDresolution::Histos()
     Double_t trMin[mdim]; memcpy(trMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trMax[mdim]; memcpy(trMax, fgkMax, kNdim*sizeof(Double_t));
     // set specific fields
-    v=1.; trMin[kYrez] = -v; trMax[kYrez] = v;
+    v=0.65; trMin[kYrez] = -v; trMax[kYrez] = v;
     v=4.5;trMin[kPrez] = -v; trMax[kPrez] = v;
     v=3.5; trNbins[kSpeciesChgRC] = 7; trMin[kSpeciesChgRC] = -v; trMax[kSpeciesChgRC] = v;
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
@@ -3536,7 +3560,8 @@ TObjArray* AliTRDresolution::Histos()
 //    trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*(kNspc-1)+1; trinMin[kSpeciesChgRC] = -kNspc+0.5; trinMax[kSpeciesChgRC] = kNspc-0.5;
     trinNbins[kPt]=fNpt; trinMin[kPt] = -0.5; trinMax[kPt] = trinMin[kPt]+trinNbins[kPt];
     trinTitle[kNdim]=StrDup("p [bin]"); trinNbins[kNdim] = fNpt; trinMin[kNdim] = -0.5; trinMax[kNdim] = trinMin[kNdim]+trinNbins[kNdim];
-    trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
+    trinTitle[kNdim+1]=StrDup("#Deltax [#mum]"); 
+    trinNbins[kNdim+1]=48; trinMax[kNdim+1]=48.; trinMin[kNdim+1]=-trinMax[kNdim+1]; 
     //trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
     st = "r-#phi/z/angular residuals @ TRD entry;";
     // define minimum info to be saved in non debug mode
@@ -3551,6 +3576,8 @@ TObjArray* AliTRDresolution::Histos()
 
   // Resolution histos
   if(!HasMCdata()) return fContainer;
+  Char_t *title[100]={0}; Int_t nbins[100]={0};
+  Double_t min[100]={0.}, max[100]={0.};
 
   //++++++++++++++++++++++
   // cluster to TrackRef residuals/pulls
@@ -3564,16 +3591,35 @@ TObjArray* AliTRDresolution::Histos()
   // tracklet to TrackRef
   snprintf(hn, nhn, "h%s", fgPerformanceName[kMCtracklet]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
-    H = (THnSparseI*)((THnSparseI*)fContainer->At(kTracklet))->Clone(hn);
-    H->SetTitle("MC tracklet spatial resolution");
+    THnSparseI *h = (THnSparseI*)fContainer->At(kTracklet);
+    Int_t mdim(h->GetNdimensions());
+    st="MC tracklet spatial resolution;";
+    for(Int_t id(0); id<mdim; id++){
+      TAxis *ax(h->GetAxis(id));
+      st += ax->GetTitle(); st+=";";
+      nbins[id] = ax->GetNbins();
+      min[id]   = ax->GetXmin(); max[id]   = ax->GetXmax(); 
+    }
+    max[kYrez] = 0.2; min[kYrez] = -max[kYrez];
+    H = new THnSparseI(hn, st.Data(), mdim, nbins, min, max);
   } else H->Reset();
   fContainer->AddAt(H, kMCtracklet);
   //++++++++++++++++++++++
   // TRDin to TrackRef
   snprintf(hn, nhn, "h%s%s", fPrefix, fgPerformanceName[kMCtrackIn]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
-    H = (THnSparseI*)((THnSparseI*)fContainer->At(kTrackIn))->Clone(hn);
-    H->SetTitle("MC r-#phi/z/angular residuals @ TRD entry");
+    THnSparseI *h = (THnSparseI*)fContainer->At(kTrackIn);
+    Int_t mdim(h->GetNdimensions());
+    st="MC r-#phi/z/angular residuals @ TRD entry;";
+    for(Int_t id(0); id<mdim; id++){
+      TAxis *ax(h->GetAxis(id));
+      st += ax->GetTitle(); st+=";";
+      nbins[id] = ax->GetNbins();
+      min[id]   = ax->GetXmin(); max[id]   = ax->GetXmax(); 
+    }
+    max[kYrez] = 0.5; min[kYrez] = -max[kYrez];
+    max[kPrez] = 1.5; min[kPrez] = -max[kPrez];
+    H = new THnSparseI(hn, st.Data(), mdim, nbins, min, max);
   } else H->Reset();
   fContainer->AddAt(H, kMCtrackIn);
   //++++++++++++++++++++++
@@ -3586,7 +3632,7 @@ TObjArray* AliTRDresolution::Histos()
     Double_t trMax[kNdim+1]; memcpy(trMax, fgkMax, kNdim*sizeof(Double_t));
     // set specific fields
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
-    trMin[kYrez] = -0.9; trMax[kYrez] = -trMin[kYrez];
+    trMin[kYrez] = -0.5; trMax[kYrez] = -trMin[kYrez];
     trMin[kPrez] = -1.5; trMax[kPrez] = -trMin[kPrez];
     trMin[kZrez] = -0.9; trMax[kZrez] = -trMin[kZrez];
     trNbins[kPt] =fNpt; trMin[kPt] = -0.5; trMax[kPt] = trMin[kPt] + trNbins[kPt];
