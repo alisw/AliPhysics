@@ -431,7 +431,10 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalJetMass::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-
+  if(!GetNParticles()) {
+     return kFALSE;
+     
+  }
   return kTRUE;
 }
 
