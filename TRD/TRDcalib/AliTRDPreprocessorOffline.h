@@ -51,7 +51,8 @@ public:
 	 kGainErrorRange = 16,
 	 kVdriftErrorRange = 32,
 	 kTimeOffsetErrorRange = 64,
-	 kChamberStatusErrorRange = 128};  
+	 kChamberStatusErrorRange = 128,
+	 kCalibFailedExport = 256};  
 
 
   AliTRDPreprocessorOffline();
@@ -128,6 +129,8 @@ public:
     { return CheckStatus(fStatusPos, kTimeOffsetErrorRange);  };
   Bool_t      IsChamberStatusErrorRange() const 
     { return CheckStatus(fStatusPos, kChamberStatusErrorRange);  };
+  Bool_t      IsCalibFailedExport() const 
+  { return CheckStatus(fStatusPos, kCalibFailedExport);  };
   
 
   // Back corrections

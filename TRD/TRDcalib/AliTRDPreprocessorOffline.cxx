@@ -1277,6 +1277,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    // Update OCDB entry
    //
 
+   Bool_t status = kTRUE;
+
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalDet");
    metaData->SetResponsible("Raphaelle Bailhache");
@@ -1285,8 +1287,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
 
    AliCDBId id1("TRD/Calib/ChamberGainFactor", startRunNumber, endRunNumber);
    AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kGain);
-   if(calDet) storage->Put(calDet, id1, metaData);
-
+   if(calDet) status = storage->Put(calDet, id1, metaData);
+   if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
 
  }
  //___________________________________________________________________________________________________________________
@@ -1294,6 +1296,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    //
    // Update OCDB entry
    //
+
+   Bool_t status = kTRUE;
 
    Int_t detExB = kLorentzLinear;
    if(!fMethodSecond) return;
@@ -1308,7 +1312,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
 
    AliCDBId id1("TRD/Calib/ChamberExB", startRunNumber, endRunNumber);
    AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detExB);
-   if(calDet) storage->Put(calDet, id1, metaData);
+   if(calDet) status = storage->Put(calDet, id1, metaData);
+   if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
    //if(!calDet) printf("No caldet\n");
 
  }
@@ -1317,6 +1322,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
   //
   // Update OCDB entry
   //
+
+  Bool_t status = kTRUE;
 
   Int_t detExB = kExbAlt;
   if(!fMethodSecond) return;
@@ -1331,7 +1338,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
   AliCDBId id1("TRD/Calib/ChamberExBAlt", startRunNumber, endRunNumber);
   AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detExB);
-  if(calDet) storage->Put(calDet, id1, metaData);
+  if(calDet) status = storage->Put(calDet, id1, metaData);
+  if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
   //if(!calDet) printf("No caldet\n");
 
 }
@@ -1340,6 +1348,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    //
    // Update OCDB entry
    //
+
+   Bool_t status = kTRUE;
 
    Int_t detVdrift = kVdriftPHDet;
 
@@ -1353,7 +1363,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
    AliCDBId id1("TRD/Calib/ChamberVdrift", startRunNumber, endRunNumber);
    AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detVdrift);
-   if(calDet) storage->Put(calDet, id1, metaData);
+   if(calDet) status = storage->Put(calDet, id1, metaData);
+   if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
 
    //
 
@@ -1367,7 +1378,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
      AliCDBId id1Pad("TRD/Calib/LocalVdrift", startRunNumber, endRunNumber);
      AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kVdriftPHPad);
-     if(calPad) storage->Put(calPad, id1Pad, metaDataPad);
+     if(calPad) status = storage->Put(calPad, id1Pad, metaDataPad);
+     if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
 
    }
 
@@ -1377,6 +1389,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    //
    // Update OCDB entry
    //
+
+   Bool_t status = kTRUE;
 
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalDet");
@@ -1398,8 +1412,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
    AliCDBId id1Pad("TRD/Calib/LocalT0", startRunNumber, endRunNumber);
    AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kT0PHPad);
-   if(calPad) storage->Put(calPad, id1Pad, metaDataPad);
-
+   if(calPad) status = storage->Put(calPad, id1Pad, metaDataPad);
+   if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
 
 
  }
@@ -1408,6 +1422,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    //
    // Update OCDB entry
    //
+
+   Bool_t status = kTRUE;
 
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalPad");
@@ -1418,7 +1434,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
    AliCDBId id1("TRD/Calib/PRFWidth", startRunNumber, endRunNumber);
    AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kPRF);
-   if(calPad) storage->Put(calPad, id1, metaData);
+   if(calPad) status = storage->Put(calPad, id1, metaData);
+   if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
 
 
  }
@@ -1428,6 +1445,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRun
   //
   // Update OCDB entry
   //
+  Bool_t status = kTRUE;
+  
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Raphaelle Bailhache and Xianguo Lu");
@@ -1438,7 +1457,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRun
   TObjArray *cobj = (TObjArray *) fCalibObjects->At(kPHQ);
   if(cobj){
     //cobj->Print();
-    storage->Put(cobj, id1, metaData);
+     status = storage->Put(cobj, id1, metaData);
+    if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
   }
 }
 
@@ -1448,6 +1468,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRun
    // Update OCDB entry
    //
 
+   Bool_t status = kTRUE;
+
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalChamberStatus");
    metaData->SetResponsible("Raphaelle Bailhache and Julian Book");
@@ -1456,7 +1478,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRun
 
    AliCDBId id1("TRD/Calib/ChamberStatus", startRunNumber, endRunNumber);
    AliTRDCalChamberStatus *calChamberStatus = (AliTRDCalChamberStatus *) fCalibObjects->At(kChamberStatus);
-   if(calChamberStatus) storage->Put(calChamberStatus, id1, metaData);
+   if(calChamberStatus) status = storage->Put(calChamberStatus, id1, metaData);
+   if (status==kFALSE) fStatusPos = fStatusPos | kCalibFailedExport;
 
 
  }
@@ -1742,6 +1765,7 @@ void AliTRDPreprocessorOffline::PrintStatus() const
   AliInfo(Form("IsVdriftErrorRange? %d",(Int_t)IsVdriftErrorRange()));
   AliInfo(Form("IsTimeOffsetErrorRange? %d",(Int_t)IsTimeOffsetErrorRange()));
   AliInfo(Form("IsChamberStatusErrorRange? %d",(Int_t)IsChamberStatusErrorRange()));
+  AliInfo(Form("IsCalibFailedExport? %d",(Int_t)IsCalibFailedExport()));
 
  
   AliInfo(Form("The info status is %d",fStatusNeg));
@@ -1750,9 +1774,9 @@ void AliTRDPreprocessorOffline::PrintStatus() const
   AliInfo(Form("IsGainNotEnoughStatsNotFill? %d",(Int_t)IsGainNotEnoughStatsNotFill()));
   AliInfo(Form("IsVdriftNotEnoughStatsNotFill? %d",(Int_t)IsVdriftNotEnoughStatsNotFill()));
   AliInfo(Form("IsTimeOffsetNotEnoughStatsNotFill? %d",(Int_t)IsTimeOffsetNotEnoughStatsNotFill()));
-
   AliInfo(Form("IsExBErrorRange? %d",(Int_t)IsExBErrorRange()));
   AliInfo(Form("IsExBErrorOld? %d",(Int_t)IsExBErrorOld()));
+ 
   
 }
 //___________________________________________________________________________________
