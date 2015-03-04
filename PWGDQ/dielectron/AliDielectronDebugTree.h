@@ -21,6 +21,7 @@
 
 #include <TNamed.h>
 #include <TString.h>
+#include <TBits.h>
 
 #include "AliDielectronVarManager.h"
 
@@ -36,16 +37,24 @@ public:
   virtual ~AliDielectronDebugTree();
 
   void SetOutputFileName(const char* file) { fFileName=file; }
-  
-  void AddPairVariable(AliDielectronVarManager::ValueTypes type) { fVariables[fNVars++]=(Int_t)type; }
-  void AddLegVariable(AliDielectronVarManager::ValueTypes type)  { fVariablesLeg[fNVarsLeg++]=(Int_t)type; }
-  
+
+  void AddPairVariable(AliDielectronVarManager::ValueTypes type) {
+    fVariables[fNVars++]=(Int_t)type;
+    fUsedVars->SetBitNumber((Int_t)type,kTRUE);
+  }
+  void AddLegVariable(AliDielectronVarManager::ValueTypes type)  {
+    fVariablesLeg[fNVarsLeg++]=(Int_t)type;
+    fUsedVars->SetBitNumber((Int_t)type,kTRUE);
+  }
+
   void Fill(AliDielectronPair *pair);
 
   void SetDielectron(AliDielectron * const dielectron) { fDielectron=dielectron; }
   
   void DeleteStreamer();
   void WriteTree();
+  TBits *GetUsedVars() const { return fUsedVars; }
+
 private:
   TString fFileName;                                          //output file name
   
@@ -53,6 +62,7 @@ private:
   Int_t  fVariables[AliDielectronVarManager::kNMaxValues];    //configured variables
   Int_t  fNVarsLeg;                                           //number of configured variables
   Int_t  fVariablesLeg[AliDielectronVarManager::kNMaxValues]; //configured variables for the legs
+  TBits     *fUsedVars;            // list of used variables
 
   TTreeSRedirector *fStreamer;     //! Tree Redirector
   AliDielectron *fDielectron;      //! pointer to mother dielectron manager
@@ -61,7 +71,7 @@ private:
   AliDielectronDebugTree &operator=(const AliDielectronDebugTree &c);
 
   
-  ClassDef(AliDielectronDebugTree,1)         // Dielectron DebugTree
+  ClassDef(AliDielectronDebugTree,2)         // Dielectron DebugTree
 };
 
 

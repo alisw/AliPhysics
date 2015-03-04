@@ -1300,6 +1300,7 @@ void AliDielectron::FillDebugTree()
   //
   
   //Fill Debug tree
+  AliDielectronVarManager::SetFillMap(fDebugTree->GetUsedVars());
   for (Int_t i=0; i<10; ++i){
     Int_t ntracks=PairArray(i)->GetEntriesFast();
     for (Int_t ipair=0; ipair<ntracks; ++ipair){
