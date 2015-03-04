@@ -505,34 +505,34 @@ void AliAnalysisTaskFemto:: FinishTaskOutput() {
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader)
 {
-    if (fVerbose)
-  AliInfo("Selecting Femto reader for ESD\n");
+  if (fVerbose)
+    AliInfo("Selecting Femto reader for ESD\n");
   fReader = aReader;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader)
 {
-    if (fVerbose)
-  AliInfo("Selecting Femto reader for ESD with Kinematics information\n");
+  if (fVerbose)
+    AliInfo("Selecting Femto reader for ESD with Kinematics information\n");
   fReader = aReader;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader)
 {
-    if (fVerbose)
-  AliInfo("Selecting Femto reader for AOD\n");
+  if (fVerbose)
+    AliInfo("Selecting Femto reader for AOD\n");
   fReader = aReader;
 }
 void AliAnalysisTaskFemto::SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader)
 {
-    if (fVerbose)
-  AliInfo("Selecting Standard all-purpose Femto reader\n");
+  if (fVerbose)
+    AliInfo("Selecting Standard all-purpose Femto reader\n");
   fReader = aReader;
 }
 void AliAnalysisTaskFemto::SetFemtoReaderKinematics(AliFemtoEventReaderKinematicsChain *aReader)
 {
-    if (fVerbose)
-  printf("Selecting Femto reader for Kinematics (Monte Carlo) information\n");
+  if (fVerbose)
+    printf("Selecting Femto reader for Kinematics (Monte Carlo) information\n");
   fReader = aReader;
 }
 void AliAnalysisTaskFemto::SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader)
@@ -545,24 +545,44 @@ void AliAnalysisTaskFemto::SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinema
 void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
 {
   fManager = aManager;
-  if (fVerbose)
-    AliInfo(Form("Got reader %p\n", (void *) aManager->EventReader()));
 
-  if (AliFemtoEventReaderESDChain *tReaderESDChain = dynamic_cast<AliFemtoEventReaderESDChain *> (aManager->EventReader())) {
-    SetFemtoReaderESD(tReaderESDChain);
-  } else if (AliFemtoEventReaderESDChainKine *tReaderESDChainKine = dynamic_cast<AliFemtoEventReaderESDChainKine *> (aManager->EventReader())) {
-    SetFemtoReaderESDKine(tReaderESDChainKine);
-  } else if (AliFemtoEventReaderAODChain *tReaderAODChain = dynamic_cast<AliFemtoEventReaderAODChain *> (aManager->EventReader())) {
-    SetFemtoReaderAOD(tReaderAODChain);
-  } else if (AliFemtoEventReaderStandard *tReaderStandard = dynamic_cast<AliFemtoEventReaderStandard *> (aManager->EventReader())) {
-    SetFemtoReaderStandard(tReaderStandard);
-  } else if (AliFemtoEventReaderKinematicsChain *tReaderKineChain = dynamic_cast<AliFemtoEventReaderKinematicsChain *> (aManager->EventReader())) {
-    SetFemtoReaderKinematics(tReaderKineChain);
-  } else if (AliFemtoEventReaderKinematicsChainESD *tReaderKineChainESD = dynamic_cast<AliFemtoEventReaderKinematicsChainESD *> (aManager->EventReader())) {
-    SetFemtoReaderKinematicsESD(tReaderKineChainESD);
-  } else {
+  AliFemtoEventReader *eventReader = aManager->EventReader();
+
+  if (fVerbose)
+    AliInfo(Form("Got reader %p\n", (void *)eventReader));
+
+  // Determine the subclass of the AliFemtoManager's event reader. If none of
+  // the dynamic casts resove the event reader, we do NOT add it to the task
+  // and optionally print a warning. The analysis will presumably end.
+  //
+  // I do not know if this is the expected behavior, as the someone could write
+  // their own subclass of AliFemtoEventReader, and not be able to use it in an
+  // analysis as there is no other apparent way to set fReader.
+  if (eventReader == NULL) {
     if (fVerbose)
       AliWarning("No AliFemto event reader created. Will not run femto analysis.\n");
-    return;
+  }
+  else if (dynamic_cast<AliFemtoEventReaderESDChain *> (eventReader) != NULL) {
+    SetFemtoReaderESD((AliFemtoEventReaderESDChain*) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderESDChainKine*> (eventReader) != NULL) {
+    SetFemtoReaderESDKine((AliFemtoEventReaderESDChainKine*) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderAODChain*> (eventReader) != NULL) {
+    SetFemtoReaderAOD((AliFemtoEventReaderAODChain*) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderStandard*> (eventReader) != NULL) {
+    SetFemtoReaderStandard((AliFemtoEventReaderStandard*) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderKinematicsChain *> (eventReader) != NULL) {
+    SetFemtoReaderKinematics((AliFemtoEventReaderKinematicsChain*) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderKinematicsChainESD *> (eventReader) != NULL) {
+    SetFemtoReaderKinematicsESD((AliFemtoEventReaderKinematicsChainESD*) eventReader);
+  }
+  else {
+    if (fVerbose)
+      AliWarning("Specified AliFemto event reader does *not* inherit from an "
+      "approved AliFemtoEventReader subclass. Will not run femto analysis.\n");
   }
 }
