@@ -27,20 +27,20 @@
 
 ClassImp(AliAnalysisTaskFemto)
 
-// Default name for the setup macro of femto analysis  
+// Default name for the setup macro of femto analysis
 // This function MUST be defined in the separate file !!!
 // extern AliFemtoManager *ConfigFemtoAnalysis();
 
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose):
-AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
-  fESD(0), 
+AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
+  fESD(0),
   fESDpid(0),
   fAOD(0),
   fAODpidUtil(0),
   fAODheader(0),
   fStack(0),
-  fOutputList(0), 
+  fOutputList(0),
   fReader(0x0),
   fManager(0x0),
   fAnalysisType(0),
@@ -56,15 +56,15 @@ AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
 
 }
 //________________________________________________________________________
-AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose): 
-    AliAnalysisTaskSE(name), //AliAnalysisTask(name,""), 
-    fESD(0), 
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro="ConfigFemtoAnalysis.C", Bool_t aVerbose):
+    AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
+    fESD(0),
     fESDpid(0),
     fAOD(0),
     fAODpidUtil(0),
     fAODheader(0),
     fStack(0),
-    fOutputList(0), 
+    fOutputList(0),
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
@@ -81,14 +81,14 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro="C
 }
 
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask):
-    AliAnalysisTaskSE(aFemtoTask), //AliAnalysisTask(aFemtoTask), 
-    fESD(0), 
+    AliAnalysisTaskSE(aFemtoTask), //AliAnalysisTask(aFemtoTask),
+    fESD(0),
     fESDpid(0),
     fAOD(0),
     fAODpidUtil(0),
     fAODheader(0),
     fStack(0),
-    fOutputList(0), 
+    fOutputList(0),
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
@@ -97,16 +97,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
     fVerbose(kFALSE)
 {
   // copy constructor
-  fESD = aFemtoTask.fESD; 
-  fESDpid = aFemtoTask.fESDpid; 
-  fAOD = aFemtoTask.fAOD; 
+  fESD = aFemtoTask.fESD;
+  fESDpid = aFemtoTask.fESDpid;
+  fAOD = aFemtoTask.fAOD;
   fAODpidUtil = aFemtoTask.fAODpidUtil;
   fAODheader = aFemtoTask.fAODheader;
   fStack = aFemtoTask.fStack;
-  fOutputList = aFemtoTask.fOutputList;   
-  fReader = aFemtoTask.fReader;       
-  fManager = aFemtoTask.fManager;      
-  fAnalysisType = aFemtoTask.fAnalysisType; 
+  fOutputList = aFemtoTask.fOutputList;
+  fReader = aFemtoTask.fReader;
+  fManager = aFemtoTask.fManager;
+  fAnalysisType = aFemtoTask.fAnalysisType;
 
   fConfigMacro = aFemtoTask.fConfigMacro;
   fConfigParams = aFemtoTask.fConfigParams;
@@ -120,16 +120,16 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   if (this == &aFemtoTask)
     return *this;
 
-  fESD = aFemtoTask.fESD; 
+  fESD = aFemtoTask.fESD;
   fESDpid = aFemtoTask.fESDpid;
-  fAOD = aFemtoTask.fAOD; 
+  fAOD = aFemtoTask.fAOD;
   fAODpidUtil = aFemtoTask.fAODpidUtil;
   fAODheader = aFemtoTask.fAODheader;
   fStack = aFemtoTask.fStack;
-  fOutputList = aFemtoTask.fOutputList;   
-  fReader = aFemtoTask.fReader;       
-  fManager = aFemtoTask.fManager;      
-  fAnalysisType = aFemtoTask.fAnalysisType; 
+  fOutputList = aFemtoTask.fOutputList;
+  fReader = aFemtoTask.fReader;
+  fManager = aFemtoTask.fManager;
+  fAnalysisType = aFemtoTask.fAnalysisType;
 
   fConfigMacro = aFemtoTask.fConfigMacro;
   fConfigParams = aFemtoTask.fConfigParams;
@@ -139,7 +139,7 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   return *this;
 }
 
-AliAnalysisTaskFemto::~AliAnalysisTaskFemto() 
+AliAnalysisTaskFemto::~AliAnalysisTaskFemto()
 {
 }
 
@@ -159,17 +159,17 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
   if (!tree) {
     AliWarning("Could not read chain from input slot 0");
     return;
-  } 
+  }
 
   AliFemtoEventReaderESDChain *femtoReader = dynamic_cast<AliFemtoEventReaderESDChain *> (fReader);
   if ((dynamic_cast<AliFemtoEventReaderESDChain *> (fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+
     if(esdH) {
       if (fVerbose)
 	AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
-      
+
       fESD = esdH->GetEvent();
       fESDpid = esdH->GetESDpid();
       femtoReader->SetESDPid(fESDpid);
@@ -177,7 +177,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
   }
   else if ((dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+
     if(esdH) {
       if (fVerbose)
 	AliInfo("Selected ESD analysis");
@@ -198,9 +198,9 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
   AliFemtoEventReaderESDChainKine *femtoReaderESDKine = dynamic_cast<AliFemtoEventReaderESDChainKine *> (fReader);
   if ((dynamic_cast<AliFemtoEventReaderESDChainKine *> (fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+
     if(esdH) {
-      if (fVerbose)           
+      if (fVerbose)
 	AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
       fESD = esdH->GetEvent();
@@ -213,15 +213,15 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
   //  AliFemtoEventReaderKinematicsChain *femtoReaderKine = dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader);
   if ((dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+
     if(esdH) {
             if (fVerbose)
       AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
-      
+
       //       if (!esdH) {
       // 	AliWarning("Could not get ESDInputHandler");
-      //       } 
+      //       }
       //       else {
       fESD = esdH->GetEvent();
       //fESDpid = esdH->GetESDpid();
@@ -229,12 +229,12 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       //       }
     }
   }
-  
-  
+
+
   AliFemtoEventReaderAODChain *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *> (fReader);
   if (dynamic_cast<AliFemtoEventReaderAODChain *> (fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+
     if (!aodH) {
       TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
             if (fVerbose)
@@ -242,7 +242,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       if( handler && handler->InheritsFrom("AliAODHandler") ) {
                 if (fVerbose)
 	AliInfo("Selected AOD analysis");
-	
+
 	fAOD = ((AliAODHandler*)handler)->GetAOD();
 	fAnalysisType = 2;
       }
@@ -250,12 +250,12 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
                 if (fVerbose)
 	AliWarning("Selected AOD reader but no AOD handler found");
       }
-    } 
+    }
     else {
             if (fVerbose)
       AliInfo("Selected AOD analysis");
       fAnalysisType = 2;
-      
+
       fAOD = aodH->GetEvent();
 
       fAODpidUtil = aodH->GetAODpidUtil(); //correct way
@@ -268,7 +268,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       fAODheader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
       if(!fAODheader) AliFatal("Not a standard AOD");
       femtoReaderAOD->SetAODheader(fAODheader);
-   
+
     }
   }
 
@@ -318,7 +318,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
     Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
     if(!isSelected) {
       if (fVerbose)
-	cout << "AliAnalysisTaskFemto: is not selected" << endl; 
+	cout << "AliAnalysisTaskFemto: is not selected" << endl;
       return;
     }
   }
@@ -329,52 +329,52 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
       return;
     }
     //Get MC data
-    AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
+    AliMCEventHandler*    mctruth = (AliMCEventHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    
+
     AliGenHijingEventHeader *hdh = 0;
     if(mctruth) {
       fStack = mctruth->MCEvent()->Stack();
 
       AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader *> (mctruth->MCEvent()->GenEventHeader());
-      
+
       if (hd) {
-	
+
 	//	AliInfo ("Got MC cocktail event header %p\n", (void *) hd);
 	TList *lhd = hd->GetHeaders();
 	//	AliInfo ("Got list of headers %d\n", lhd->GetEntries());
-	
-	for (int iterh=0; iterh<lhd->GetEntries(); iterh++) 
+
+	for (int iterh=0; iterh<lhd->GetEntries(); iterh++)
 	  {
 	    hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(iterh));
 	    //	    AliInfo ("HIJING header at %i is %p\n", iterh, (void *) hdh);
 	  }
-      }    
+      }
     }
 
     // Get ESD
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+
     if (!esdH) {
       if (fVerbose)
 	AliWarning("Could not get ESDInputHandler");
       return;
-    } 
+    }
     else {
       fESD = esdH->GetEvent();
-      fESDpid = esdH->GetESDpid();   
+      fESDpid = esdH->GetESDpid();
      }
 
     if (fVerbose)
       AliInfo(Form("Tracks in ESD: %d \n",fESD->GetNumberOfTracks()));
 
     if (fESD->GetNumberOfTracks() >= 0) {
-    
+
       if (!fReader) {
 	if (fVerbose)
 	  AliWarning("No ESD reader for ESD analysis !\n");
       }
-      
+
       AliFemtoEventReaderESDChain* fesdc = dynamic_cast<AliFemtoEventReaderESDChain *> (fReader);
       if (fesdc)
 	{
@@ -393,7 +393,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 
 
     AliFemtoEventReaderESDChainKine* fesdck = dynamic_cast<AliFemtoEventReaderESDChainKine *> (fReader);
-    if (fesdck) 
+    if (fesdck)
       {
 	// Process the event with Kine information
 	fesdck->SetESDSource(fESD);
@@ -403,7 +403,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	fManager->ProcessEvent();
       }
 
-     
+
     AliFemtoEventReaderKinematicsChainESD* fkcesd = dynamic_cast<AliFemtoEventReaderKinematicsChainESD *> (fReader);
     if (fkcesd)
       {
@@ -415,7 +415,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
       }
 
     AliFemtoEventReaderStandard* fstd = dynamic_cast<AliFemtoEventReaderStandard *> (fReader);
-    if (fstd) 
+    if (fstd)
       {
 	// Process the event with Kine information
 	fstd->SetESDSource(fESD);
@@ -428,13 +428,13 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	  fstd->SetInputType(AliFemtoEventReaderStandard::kESD);
 	fManager->ProcessEvent();
       }
-  
+
 
     // Post the output histogram list
     PostData(0, fOutputList);
   }
 
-  if (fAnalysisType==2) {    
+  if (fAnalysisType==2) {
     if (!fAOD) {
             if (fVerbose)
       AliWarning("fAOD not available");
@@ -443,11 +443,11 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 
     // Get AOD
 //     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      
+
 //     if (!aodH) {
 //       AliWarning("Could not get AODInputHandler");
 //       return;
-//     } 
+//     }
 //     else {
 
 //       fAOD = aodH->GetEvent();
@@ -458,7 +458,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 
     if (fVerbose)
       AliInfo(Form("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks()));
-    
+
     if (fAOD->GetNumberOfTracks() > 0) {
       if (!fReader) {
 	if (fVerbose)
@@ -481,12 +481,12 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 	  fManager->ProcessEvent();
 	}
       }
-    } 
+    }
 
     // Post the output histogram list
     PostData(0, fOutputList);
   }
-}      
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Terminate(Option_t *) {
@@ -545,25 +545,24 @@ void AliAnalysisTaskFemto::SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinema
 void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
 {
   fManager = aManager;
-    if (fVerbose)
-  AliInfo(Form("Got reader %p\n", (void *) aManager->EventReader()));
-  AliFemtoEventReaderESDChain     *tReaderESDChain     = dynamic_cast<AliFemtoEventReaderESDChain *> (aManager->EventReader());
-  AliFemtoEventReaderESDChainKine *tReaderESDChainKine = dynamic_cast<AliFemtoEventReaderESDChainKine *> (aManager->EventReader());
-  AliFemtoEventReaderAODChain     *tReaderAODChain     = dynamic_cast<AliFemtoEventReaderAODChain *> (aManager->EventReader());
-  AliFemtoEventReaderStandard     *tReaderStandard     = dynamic_cast<AliFemtoEventReaderStandard *> (aManager->EventReader());
-  AliFemtoEventReaderKinematicsChain *tReaderKineChain = dynamic_cast<AliFemtoEventReaderKinematicsChain *> (aManager->EventReader());
-  AliFemtoEventReaderKinematicsChainESD *tReaderKineChainESD = dynamic_cast<AliFemtoEventReaderKinematicsChainESD *> (aManager->EventReader());
+  if (fVerbose)
+    AliInfo(Form("Got reader %p\n", (void *) aManager->EventReader()));
 
- if ((!tReaderESDChain) && (!tReaderESDChainKine) && (!tReaderAODChain) && (!tReaderStandard) && (!tReaderKineChain)  && (!tReaderKineChainESD)) {
-        if (fVerbose)
-    AliWarning("No AliFemto event reader created. Will not run femto analysis.\n");
+  if (AliFemtoEventReaderESDChain *tReaderESDChain = dynamic_cast<AliFemtoEventReaderESDChain *> (aManager->EventReader())) {
+    SetFemtoReaderESD(tReaderESDChain);
+  } else if (AliFemtoEventReaderESDChainKine *tReaderESDChainKine = dynamic_cast<AliFemtoEventReaderESDChainKine *> (aManager->EventReader())) {
+    SetFemtoReaderESDKine(tReaderESDChainKine);
+  } else if (AliFemtoEventReaderAODChain *tReaderAODChain = dynamic_cast<AliFemtoEventReaderAODChain *> (aManager->EventReader())) {
+    SetFemtoReaderAOD(tReaderAODChain);
+  } else if (AliFemtoEventReaderStandard *tReaderStandard = dynamic_cast<AliFemtoEventReaderStandard *> (aManager->EventReader())) {
+    SetFemtoReaderStandard(tReaderStandard);
+  } else if (AliFemtoEventReaderKinematicsChain *tReaderKineChain = dynamic_cast<AliFemtoEventReaderKinematicsChain *> (aManager->EventReader())) {
+    SetFemtoReaderKinematics(tReaderKineChain);
+  } else if (AliFemtoEventReaderKinematicsChainESD *tReaderKineChainESD = dynamic_cast<AliFemtoEventReaderKinematicsChainESD *> (aManager->EventReader())) {
+    SetFemtoReaderKinematicsESD(tReaderKineChainESD);
+  } else {
+    if (fVerbose)
+      AliWarning("No AliFemto event reader created. Will not run femto analysis.\n");
     return;
   }
-  if (tReaderESDChain) SetFemtoReaderESD(tReaderESDChain);
-  if (tReaderESDChainKine) SetFemtoReaderESDKine(tReaderESDChainKine);
-  if (tReaderAODChain) SetFemtoReaderAOD(tReaderAODChain);
-  if (tReaderStandard) SetFemtoReaderStandard(tReaderStandard);
-  if (tReaderKineChain) SetFemtoReaderKinematics(tReaderKineChain);
-  if (tReaderKineChainESD) SetFemtoReaderKinematicsESD(tReaderKineChainESD);
 }
-
