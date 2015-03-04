@@ -43,4 +43,5 @@
 #pragma link C++ class AliHLTTPCCalibManagerComponent+;
 #pragma link C++ class AliHLTESDAnaManagerComponent+;
 #pragma link C++ class AliHLTAnalysisManager+;
+#pragma link C++ class AliHLTTPCCalibProcessor+;
 #endif // __CINT__

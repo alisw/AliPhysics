@@ -80,6 +80,7 @@ set(SRCS
     physics/AliHLTTPCCalibManagerComponent.cxx
     physics/AliHLTESDAnaManagerComponent.cxx
     physics/AliHLTAnalysisManager.cxx
+    physics/AliHLTTPCCalibProcessor.cxx
    )
 
 # Headers from sources
