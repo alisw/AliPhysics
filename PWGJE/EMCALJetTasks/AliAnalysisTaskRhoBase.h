@@ -28,6 +28,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf   ;                   }
   void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s    ;                   }
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a    ;                   }
+  void                   SetSmallSystem(Bool_t setter = kFALSE)                {fIsPbPb = setter; }
 
   const TString&         GetOutRhoName() const                                 { return fOutRhoName;                              }
   const TString&         GetOutRhoScaledName() const                           { return fOutRhoScaledName;                        } 
@@ -48,7 +49,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
   Double_t               fInEventSigmaRho;               // in-event sigma rho
   Bool_t                 fAttachToEvent;                 // whether or not attach rho to the event objects list
-
+  Bool_t                 fIsPbPb;                        // different histogram ranges for pp/pPb and PbPb
+  
   AliRhoParameter       *fOutRho;                        //!output rho object
   AliRhoParameter       *fOutRhoScaled;                  //!output scaled rho object
   AliRhoParameter       *fCompareRho;                    //!rho object to compare
