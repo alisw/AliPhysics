@@ -75,8 +75,6 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fTriggerMask(0),
   fSelectMatched(kFALSE),
   fApplyAccCut(kFALSE),
-  fTriggerClass(0x0),
-  fSelectTriggerClass(0x0),
   fTrackCuts(0x0),
   fMuonTrigIndex()
 {
@@ -97,8 +95,6 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fTriggerMask(0),
   fSelectMatched(kFALSE),
   fApplyAccCut(kFALSE),
-  fTriggerClass(0x0),
-  fSelectTriggerClass(0x0),
   fTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts")),
   fMuonTrigIndex()
 {
@@ -130,8 +126,6 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
     delete fEventCounters;
     delete fListNorm;
   }
-  delete fTriggerClass;
-  delete fSelectTriggerClass;
   delete fTrackCuts;
 }
 
@@ -158,74 +152,6 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
 {
   /// Create histograms and counters
   
-  // set the list of trigger classes with corresponding short names
-  fTriggerClass = new TMap(20);
-  fTriggerClass->SetOwnerKeyValue();
-  // p-p trigger classes
-  fTriggerClass->Add(new TObjString("CBEAMB"), new TObjString("CBEAMB"));
-  fTriggerClass->Add(new TObjString("CINT1B-ABCE-NOPF-ALL"), new TObjString("CINT1B"));
-  fTriggerClass->Add(new TObjString("CMUS1B-ABCE-NOPF-MUON"), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString("CINT1[AC]-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString("CMUS1[AC]-"), new TObjString("CMUS1AC"));
-  fTriggerClass->Add(new TObjString("CINT1-E-"), new TObjString("CINT1E"));
-  fTriggerClass->Add(new TObjString("CINT5-E-"), new TObjString("CINT5E"));
-  fTriggerClass->Add(new TObjString("CMUS1-E-"), new TObjString("CMUS1E"));
-  fTriggerClass->Add(new TObjString("CMUS5-E-"), new TObjString("CMUS5E"));
-  fTriggerClass->Add(new TObjString("CINT1-B-"), new TObjString("CINT1B"));
-  fTriggerClass->Add(new TObjString("CINT5-B-"), new TObjString("CINT5B"));
-  fTriggerClass->Add(new TObjString("CMUS1-B-"), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString("CMUS5-B-"), new TObjString("CMUS5B"));
-  fTriggerClass->Add(new TObjString("CINT1-AC-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString("CINT5-AC-"), new TObjString("CINT5AC"));
-  fTriggerClass->Add(new TObjString("CMUS1-AC-"), new TObjString("CMUS1AC"));
-  fTriggerClass->Add(new TObjString("CMUS5-AC-"), new TObjString("CMUS5AC"));
-  fTriggerClass->Add(new TObjString("CSH1-B-"), new TObjString("CSH1B"));
-
-  TString side_pp[3] = {"B", "AC", "E"};
-  for(Int_t i = 0; i< 3; i++){
-    fTriggerClass->Add(new TObjString(Form("CINT7-%s-", side_pp[i].Data())), new TObjString(Form("CINT7%s",side_pp[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMUSH7-%s-",side_pp[i].Data())), new TObjString(Form("CMUSH7%s",side_pp[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMUL7-%s-",side_pp[i].Data())), new TObjString(Form("CMUL7%s",side_pp[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMUU7-%s-",side_pp[i].Data())), new TObjString(Form("CMUU7%s",side_pp[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMUS7-%s-",side_pp[i].Data())), new TObjString(Form("CMUS7%s",side_pp[i].Data())));
-  }
-  fTriggerClass->Add(new TObjString("CINT7-I-"), new TObjString("CINT7I"));
-
-  // Pb-Pb trigger classes
-  TString side[4] = {"B", "A", "C", "E"};
-  for (Int_t i = 0; i < 4; i++) {
-    fTriggerClass->Add(new TObjString(Form("CMBACS2-%s-", side[i].Data())), new TObjString(Form("CMBACS2-%s", side[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMBS2A-%s-", side[i].Data())), new TObjString(Form("CMBS2A-%s", side[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMBS2C-%s-", side[i].Data())), new TObjString(Form("CMBS2C-%s", side[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("CMBAC-%s-", side[i].Data())), new TObjString(Form("CMBAC-%s", side[i].Data())));
-    fTriggerClass->Add(new TObjString(Form("C0SMH-%s-", side[i].Data())), new TObjString(Form("C0SMH-%s", side[i].Data())));
-  }
-  
-  // set the list of trigger classes that can be selected to fill histograms (in case the physics selection is not used)
-  fSelectTriggerClass = new TList();
-  fSelectTriggerClass->SetOwner();
-  // p-p trigger classes
-  fSelectTriggerClass->AddLast(new TObjString("CINT1B-ABCE-NOPF-ALL")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("CMUS1B-ABCE-NOPF-MUON")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString("CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("CINT5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kCINT5);
-  fSelectTriggerClass->AddLast(new TObjString("CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString("CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kCMUS5);
-  fSelectTriggerClass->AddLast(new TObjString("CINT7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kINT7);
-  fSelectTriggerClass->AddLast(new TObjString("CINT7-I-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kINT7);
-  fSelectTriggerClass->AddLast(new TObjString("CMUSH7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUSH7);
-  fSelectTriggerClass->AddLast(new TObjString("CMUS7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUS7);
-  fSelectTriggerClass->AddLast(new TObjString("CMUU7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUU7);
-  fSelectTriggerClass->AddLast(new TObjString("CMUL7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUL7);
-  fSelectTriggerClass->AddLast(new TObjString("CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
-	
-  // Pb-Pb trigger classes
-  fSelectTriggerClass->AddLast(new TObjString("CMBACS2-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("CMBS2A-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("CMBS2C-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("CMBAC-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("C0SMH-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
-  
   // create histograms
   fList = new TObjArray(2000);
   fList->SetOwner();
@@ -236,9 +162,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   TH1F* hNTracks = new TH1F("hNTracks", "number of tracks;n_{tracks}", 20, 0., 20.);
   fList->AddAtAndExpand(hNTracks, kNTracks);
   
-  Int_t muonTrigIndex[] = { AliVEvent::kMuonUnlikePB, AliVEvent::kMuonLikePB, AliVEvent::kMUSHPB, AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB,
-                            AliVEvent::kMuonUnlikePB | AliVEvent::kMUSHPB, AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB,
-                            AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB};
+  Int_t muonTrigIndex[] = { AliVEvent::kMuonUnlikePB, AliVEvent::kMuonLikePB, AliVEvent::kMUSHPB, AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB, AliVEvent::kMuonUnlikePB | AliVEvent::kMUSHPB, AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB, AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB};
   const Int_t nTrigIndexes = sizeof(muonTrigIndex)/sizeof(muonTrigIndex[0]);
   fMuonTrigIndex.Set(nTrigIndexes, muonTrigIndex);
   TString label[nTrigIndexes] = {"Unlike","Like", "Single Hpt","Like&Unlike","Unlike&Hpt","Like&Hpt","Unlike&Like&Hpt"};
@@ -400,7 +324,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     return;
   }
 
-  //Flag for T0Pileup, SPDPileup and bgID (SPD cluster vs tracket)
+  //Flag for T0Pileup, SPDPileup and bgID (SPD cluster vs tracklet)
   Bool_t t0PileUp = kFALSE, spdPileUp = kFALSE, bgID = kFALSE;
   spdPileUp = fESD->IsPileupFromSPDInMultBins();
   AliPhysicsSelection *physicsSelection = (AliPhysicsSelection*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEventSelection();
@@ -423,14 +347,13 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   selected += spdPileUp ? "/spdpileup:yes" : "/spdpileup:no";
 
   // fill muon trigger cases
-  for ( Int_t idx=0; idx<fMuonTrigIndex.GetSize(); idx++ ) {
-    UInt_t currMask = (UInt_t)fMuonTrigIndex[idx];
+  for ( Int_t idx=0; idx < fMuonTrigIndex.GetSize(); idx++ ) {
+    UInt_t currMask = (UInt_t) fMuonTrigIndex[idx];
     if ( ( triggerWord & currMask ) == currMask ) ((TH1I*)fList->UncheckedAt(kMuonTrig))->Fill(idx);
   }
   
   // check trigger selection 
   TString FiredTriggerClasses = fESD->GetFiredTriggerClasses();
-  if (!fSelectPhysics) triggerWord = BuildTriggerWord(FiredTriggerClasses);
   Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
   
   // get the V0 multiplicity (except for p-p)
@@ -477,7 +400,6 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   // --- fill event counters ---
   
   // build the list of trigger cases
-  //TList* triggerCases = BuildListOfTriggerCases(FiredTriggerClasses);
   TList* triggerCases = BuildListOfAllTriggerCases(FiredTriggerClasses);
 
   // loop over trigger cases
@@ -590,7 +512,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
     // select on trigger before filling histograms
     if (fSelectTrigger && !isTriggerSelected) continue;
-    
+
     // select on track charge
     if (fSelectCharge*esdTrack->Charge() < 0) continue;
     
@@ -662,7 +584,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
   }
   
-  if ((!fSelectPhysics || isPhysicsSelected) && (!fSelectTrigger || isTriggerSelected)) {
+  if ( (!fSelectPhysics || isPhysicsSelected)  && (!fSelectTrigger || isTriggerSelected) ) {
     ((TH1F*)fList->UncheckedAt(kNTracks))->Fill(nSelectedTrackerTracks);
     ((TH1F*)fList->UncheckedAt(kMatchTrig))->Fill(nSelectedTrackMatchTrig);
   } 
@@ -830,24 +752,6 @@ Double_t AliAnalysisTaskMuonQA::ChangeThetaRange(Double_t theta)
 }
 
 
-//________________________________________________________________________
-UInt_t AliAnalysisTaskMuonQA::BuildTriggerWord(TString& FiredTriggerClasses)
-{
-  /// build the trigger word from the fired trigger classes and the list of selectable trigger
-  
-  UInt_t word = 0;
-  
-  TObjString* trigClasseName = 0x0;
-  TIter nextTrigger(fSelectTriggerClass);
-  while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
-    
-    TRegexp GenericTriggerClasseName(trigClasseName->String());
-    if (FiredTriggerClasses.Contains(GenericTriggerClasseName)) word |= trigClasseName->GetUniqueID();
-    
-  }
-  
-  return word;
-}
 
 //________________________________________________________________________
 TList* AliAnalysisTaskMuonQA::BuildListOfAllTriggerCases(TString& FiredTriggerClasses)
@@ -882,76 +786,5 @@ TList* AliAnalysisTaskMuonQA::BuildListOfAllTriggerCases(TString& FiredTriggerCl
 }
 
 
-//________________________________________________________________________
-TList* AliAnalysisTaskMuonQA::BuildListOfSelectedTriggerCases(TString& FiredTriggerClasses)
-{
-  /// build the list of trigger for the counters from the fired trigger classes
-  /// returned TList must be deleted by user
-  
-  TList* list = new TList();
-  list->SetOwner();
-  
-  // add case any
-  list->AddLast(new TObjString("trigger:any"));
-  
-  TObjString* trigClasseName = 0x0;
-  TObjArray *obj = FiredTriggerClasses.Tokenize(" ");
-  if ( obj ){
-    TIter nextTrigger(obj);
-    while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
-			
-      //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
-      //loop on rejected trigger if (trigClasseName.Contains()
-      //Add specific trigger
-      list->AddLast(new TObjString(Form("trigger:%s",trigClasseName->GetName())));
-    }
-    delete obj;
-  }
-  
-  // add case other if no specific trigger was found
-  if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
-	
-  return list;
-}
 
-//________________________________________________________________________
-TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClasses)
-{
-  /// build the list of trigger for the counters from the fired trigger classes and the list of trigger classes
-  /// returned TList must be deleted by user
-  
-  TList* list = new TList();
-  list->SetOwner();
-  Bool_t foundCINT1B = kFALSE;
-  Bool_t foundCMUS1B = kFALSE;
-  
-  // add case any
-  list->AddLast(new TObjString("trigger:any"));
-  
-  TObjString* trigClasseName = 0x0;
-	
-  TIter nextTrigger(fTriggerClass);
-  while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
-    
-    //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
-    //  cout<<"trigger name loop on "<<trigClasseName->GetName()<<" to look for "<<FiredTriggerClasses.Data()<<endl;
-    TRegexp GenericTriggerClasseName(trigClasseName->String());
-    if (FiredTriggerClasses.Contains(GenericTriggerClasseName)) {
-      //AliInfo(Form("trigger names match = %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
-      //cout<<"trigger names match "<<trigClasseName->GetName()<<" and "<<FiredTriggerClasses.Data()<<endl;
-      // add specific trigger case
-      TObjString* trigShortName = static_cast<TObjString*>(fTriggerClass->GetValue(trigClasseName));
-      list->AddLast(new TObjString(Form("trigger:%s",trigShortName->GetName())));
-      
-      // check for CINT1B and CMUS1B trigger
-      if (trigShortName->String() == "CINT1B") foundCINT1B = kTRUE;
-      else if (trigShortName->String() == "CMUS1B") foundCMUS1B = kTRUE;
-    }
-  }
-	
-  // add the special case CINT1B+CMUS1B
-  if (foundCINT1B && foundCMUS1B) list->AddLast(new TObjString("trigger:CINT1B+CMUS1B"));
-	 
-  return list;
-}
 
