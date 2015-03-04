@@ -368,6 +368,10 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
         fRefMultDiffEta[i] = 0;
     }
 
+    for(int i=0; i<500; i++) {
+        fEvent_TrackletEta[i] = -1;
+    }
+
     DefineOutput(1, TList::Class()); // Event Counter Histo
     DefineOutput(2, TTree::Class()); // Event Tree
     DefineOutput(3, TTree::Class()); // V0 Tree
@@ -447,6 +451,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     //Don't do this if not explicitly requested, takes up too much space
     if ( fkSaveExtendedRefMultInfo )
         fTreeEvent->Branch("fRefMultDiffEta",fRefMultDiffEta,"fRefMultDiffEta[20]/I");
+
+    //Don't save this if you're saving V0 or cascade information, only for special executions
+    if ( fkSkipEventSelection )
+        fTreeEvent->Branch("fEvent_TrackletEta", fEvent_TrackletEta, "fEvent_TrackletEta[fEvSel_nTracklets]");
 
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
@@ -653,6 +661,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fEvSel_nSPDPrimVertices = -1;
     fEvSel_distZ = -100;
     fEvSel_VtxZ = -100;
+
+    for(int i=0; i<500; i++) {
+        fEvent_TrackletEta[i] = -1;
+    }
 
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
@@ -886,6 +898,13 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Tracklets vs Clusters Exploratory data
     fEvSel_nTracklets     = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
     fEvSel_nSPDClusters   = lESDevent->GetNumberOfITSClusters(0) + lESDevent->GetNumberOfITSClusters(1);
+
+    //Save information into array of eta values for tracklets
+    const AliMultiplicity* spdmult = lESDevent->GetMultiplicity();    // spd multiplicity object
+    for (Int_t i=0; i<fEvSel_nTracklets; ++i)
+    {
+        fEvent_TrackletEta[i] = spdmult->GetEta(i);
+    }
 
     //INEL > 0 check
     fEvSel_INELgtZERO          = IsINELgtZERO( lESDevent , "tracks"    );
