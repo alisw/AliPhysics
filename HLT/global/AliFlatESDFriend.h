@@ -66,29 +66,26 @@ public:
 
   const AliFlatESDFriendTrack  *GetFlatTrack( Int_t i ) const { 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
-    if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
+    if( i<0 || i>=fNTracks || table[i]<0 ) return NULL;
     return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + table[i] );
   }
  
-  const AliFlatESDFriendTrack  *GetFlatTrackEntry( Int_t i ) const { 
-    const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
-    if( i<0 || i>fNTrackEntries || table[i]<0 ) return NULL;
-    return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + table[i] );
-  }
-  
-  
-
   AliFlatESDFriendTrack  *GetFlatTrackNonConst( Int_t i ){ 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
-    if( i<0 || i>fNTracks || table[i]<0 ) return NULL;
+    if( i<0 || i>=fNTracks || table[i]<0 ) return NULL;
     return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + table[i] );
   }
 
-  AliFlatESDFriendTrack  *GetFlatTrackEntryNonConst( Int_t i ){ 
-    const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
-    if( i<0 || i>fNTrackEntries || table[i]<0 ) return NULL;
-    return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + table[i] );
+  const AliFlatESDFriendTrack  *GetFirstTrackEntry() const { 
+    if( fTracksPointer<0 ) return NULL;
+    return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + fTracksPointer );
   }
+ 
+  AliFlatESDFriendTrack  *GetFirstTrackEntryNonConst(){ 
+    if( fTracksPointer<0 ) return NULL;
+    return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + fTracksPointer );
+  }
+ 
 
   // -- Size methods
 
@@ -158,9 +155,10 @@ inline AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f)
   AliVfriendEvent(f)
 {
   //special constructor, used to restore the vtable pointer
+  AliFlatESDFriendTrack  *tr = GetFirstTrackEntryNonConst();
   for( int i=0; i<fNTrackEntries; i++ ){
-    AliFlatESDFriendTrack  *tr = GetFlatTrackEntryNonConst(i);
-    if( tr ) tr->Reinitialize();
+    tr->Reinitialize();
+    tr = tr->GetNextTrackNonConst();
   }
 }
 #pragma GCC diagnostic warning "-Weffc++" 

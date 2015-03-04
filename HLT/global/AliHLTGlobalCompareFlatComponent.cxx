@@ -428,7 +428,7 @@ Int_t AliHLTGlobalCompareFlatComponent::DoEvent(const AliHLTComponentEventData& 
 	
 	if(flatFriend[0]->GetEntriesInTracks()  && flatFriend[1]->GetEntriesInTracks() ){
 		
-    AliFlatESDFriendTrack * track[2] = { flatFriend[0]->GetFlatTrackEntryNonConst(0), flatFriend[1]->GetFlatTrackEntryNonConst(0)};
+	  AliFlatESDFriendTrack * track[2] = { flatFriend[0]->GetFirstTrackEntryNonConst(), flatFriend[1]->GetFirstTrackEntryNonConst()};
 		
 		
     for( Int_t t = 0; t < flatFriend[0]->GetEntriesInTracks()  && t < flatFriend[1]->GetEntriesInTracks()  ; t++ ){
