@@ -842,12 +842,14 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
   // Parameters:
   //    pp Pre-processor if called from shuttle
   //
-  if (fAltroMap && fAltroMap->TestBit(TObject::kCanDelete)) { 
+  if (fAltroMap && fAltroMap->TestBit(TObject::kCanDelete)) {
+    // Let's remove it from possible CDB manager cache
+    AliCDBManager::Instance()->UnloadFromCache(fgkAltroMap);
     delete fAltroMap;
     fAltroMap = 0;
   }
   AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp, kFALSE);       
-  if (hwMap) {
+  if (hwMap && hwMap->GetObject()) {
     AliFMDDebug(5, ("Got ALTRO map from CDB"));
     fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
     if (fAltroMap) fAltroMap->ResetBit(TObject::kCanDelete);
