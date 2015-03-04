@@ -32,6 +32,7 @@ NOTE: Please use with extream care! Only for debugging and test purposes!!!
 #include <TTreeStream.h>
 #include <TObjString.h>
 #include <TString.h>
+#include <TBits.h>
 
 #include <AliAnalysisManager.h>
 #include <AliESDInputHandler.h>
@@ -51,6 +52,7 @@ AliDielectronDebugTree::AliDielectronDebugTree() :
   fFileName("jpsi_debug.root"),
   fNVars(0),
   fNVarsLeg(0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fStreamer(0x0),
   fDielectron(0x0)
 {
@@ -69,6 +71,7 @@ AliDielectronDebugTree::AliDielectronDebugTree(const char* name, const char* tit
   fFileName("jpsi_debug.root"),
   fNVars(0),
   fNVarsLeg(0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fStreamer(0x0),
   fDielectron(0x0)
 {
@@ -91,6 +94,7 @@ AliDielectronDebugTree::~AliDielectronDebugTree()
     fStreamer->GetFile()->Write();
     delete fStreamer;
   }
+  if (fUsedVars) delete fUsedVars;
 }
 
 //______________________________________________
@@ -154,7 +158,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   Double_t values[AliDielectronVarManager::kNMaxValues];
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
-// fill pair values
+  // fill pair values
   if (fNVars>0){
     AliDielectronVarManager::Fill(pair,values);
 
