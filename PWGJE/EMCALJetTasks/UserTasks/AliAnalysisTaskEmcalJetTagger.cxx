@@ -35,7 +35,6 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fh2PtJet1VsPtJet2(0),
   fh2PtJet2VsRelPt(0),
   fh3PtJetDEtaDPhiConst(0),
-  fh2PtJetDRConst(0),
   fh3PtJetAreaDRConst(0)
 {
   // Default constructor.
@@ -79,7 +78,6 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fh2PtJet1VsPtJet2(0),
   fh2PtJet2VsRelPt(0),
   fh3PtJetDEtaDPhiConst(0),
-  fh2PtJetDRConst(0),
   fh3PtJetAreaDRConst(0)
 {
   // Standard constructor.
@@ -121,14 +119,14 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  const Int_t nBinsPt          = 250;
+  const Int_t nBinsPt          = 40;
   const Int_t nBinsDPhi        = 72;
   const Int_t nBinsDEta        = 100;
   const Int_t nBinsDR          = 50;
   const Int_t nBinsFraction    = 101;
 
   const Double_t minPt       = -50.;
-  const Double_t maxPt       = 200.;
+  const Double_t maxPt       = 150.;
   const Double_t minDPhi     = -0.5;
   const Double_t maxDPhi     =  0.5;
   const Double_t minDEta     = -0.5;
@@ -181,10 +179,7 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   fh3PtJetDEtaDPhiConst = new TH3F("fh3PtJetDEtaDPhiConst","fh3PtJetDEtaDPhiConst;pT;#Delta #eta;#Delta #varphi",nBinsPt,minPt,maxPt,nBinsDEta,-1.,1.,nBinsDPhi,-1.,1.);
   fOutput->Add(fh3PtJetDEtaDPhiConst);
 
-  fh2PtJetDRConst = new TH2F("fh2PtJetDRConst","fh2PtJetDRConst;pT;#Delta R",nBinsPt,minPt,maxPt,100,0.,1.);
-  fOutput->Add(fh2PtJetDRConst);
-
-  fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,100,0.,1.,100,0.,1.);
+  fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,50,0.,1.,50,0.,1.);
   fOutput->Add(fh3PtJetAreaDRConst);
 
   if(fUseSumw2) {
@@ -239,7 +234,6 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
       fh3PtJetDEtaDPhiConst->Fill(ptJet1,dEta,dPhi);
 
       Double_t dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
-      fh2PtJetDRConst->Fill(ptJet1,dR);
       fh3PtJetAreaDRConst->Fill(ptJet1,jet1->Area(),dR);
     }
 
@@ -285,7 +279,7 @@ void AliAnalysisTaskEmcalJetTagger::ResetTagging(const Int_t c) {
     if(fJetTaggingType==kClosest)
       jet->ResetMatching();
     else if(fJetTaggingType==kTag) {
-      jet->SetTaggedJet(0);
+      jet->SetTaggedJet(0x0);
       jet->SetTagStatus(-1);
     }
   }
