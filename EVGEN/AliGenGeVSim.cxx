@@ -568,7 +568,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
 
   // standard models
 
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,3)
   if (fModel == 1) fCurrentForm = fPtFormula->GetFormula();
   if (fModel > 1 && fModel < 5) fCurrentForm = fPtYFormula[fModel-2]->GetFormula();
 #else
@@ -582,7 +582,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
   if (fModel == 5) {
     
     fCurrentForm = 0;
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,3)
     TF2* tmpTF2 = (TF2*)gROOT->GetFunction(pattern[0]);
     if (tmpTF2) fCurrentForm = tmpTF2->GetFormula();
 #else
@@ -592,7 +592,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
     if (!fCurrentForm) {
 
       snprintf(buff, 40, pattern[1], pdg);
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,3)
       tmpTF2 = (TF2*)gROOT->GetFunction(buff);
       if (tmpTF2) fCurrentForm = tmpTF2->GetFormula();
 #else

@@ -1479,7 +1479,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter12(Int_t s1,Int_t s2) {
   TLinearFitter * fitter = GetFitter12(s1,s2);
   if (fitter) return fitter;
   //  fitter =new TLinearFitter(12,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]++x[9]++x[10]++x[11]");
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,3)
   fitter =new TLinearFitter(f12.GetFormula(),"");
 #else
   fitter =new TLinearFitter(&f12,"");
@@ -1500,7 +1500,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter9(Int_t s1,Int_t s2) {
   TLinearFitter * fitter = GetFitter9(s1,s2);
   if (fitter) return fitter;
   //  fitter =new TLinearFitter(9,"x[0]++x[1]++x[2]++x[3]++x[4]++x[5]++x[6]++x[7]++x[8]");
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,3)
   fitter =new TLinearFitter(f9.GetFormula(),"");
 #else
   fitter =new TLinearFitter(&f9,"");

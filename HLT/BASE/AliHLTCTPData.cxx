@@ -300,7 +300,7 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTTrigge
   }
 
   TFormula form("trigger expression", condition);
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
   if (form.IsValid()!=0) {
 #else
   if (form.Compile()!=0) {
