@@ -13,7 +13,7 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor() :
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
-  fRho(0),
+  fRho(1e-6),
   fRhom(1e-6),
   fJetsSub(0x0),
   fParticlesSub(0x0),
@@ -32,7 +32,7 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const char*
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
-  fRho(0),
+  fRho(1e-6),
   fRhom(1e-6),
   fJetsSub(0x0),
   fParticlesSub(0x0),
@@ -139,7 +139,14 @@ void AliEmcalJetUtilityConstSubtractor::Prepare(AliFJWrapper& fjw)
 
   if (fRhoParam) fRho = fRhoParam->GetVal();
   if (fRhomParam) fRhom = fRhomParam->GetVal();
-
+  
+  if(fRho < 1e-6) {
+     fRho = 1e-6;
+  }
+  if(fRhom < 1e-6) {
+     fRhom = 1e-6;
+  }
+ 
   if (fJetsSub) fJetsSub->Delete();
 
   fjw.SetUseExternalBkg(fUseExternalBkg, fRho, fRhom);
