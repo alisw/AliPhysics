@@ -1,6 +1,6 @@
 #!/bin/bash
 
-qaMacroDir="$ALICE_ROOT/PWGPP/MUON/lite"
+qaMacroDir="$ALICE_PHYSICS/PWGPP/MUON/lite"
 
 baseOutDir=`pwd`
 
@@ -74,7 +74,7 @@ outFileSuffix="${lhcPeriod}_${qaProdName}"
 outFileSuffix=${outFileSuffix//"__"/"_"}
 
 loadAnalysisLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGmuon.so\");gSystem->Load(\"libPWGmuondep.so\");"
-includeAliroot="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include -I${ALICE_INSTALL}/include\");"
+includeAliroot="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include -I${ALICE_INSTALL}/include\");"
 includeMuon="gSystem->AddIncludePath(\"-I${ALICE_ROOT}/MUON\");"
 
 
