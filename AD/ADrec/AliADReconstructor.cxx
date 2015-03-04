@@ -94,10 +94,8 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
     return;
   }
 
-  if (!fDigitsArray){
-    fDigitsArray = new TClonesArray("AliADdigit", 16);
-    digitsTree->Branch("ADDigit", &fDigitsArray);
-    }
+  if (!fDigitsArray) fDigitsArray = new TClonesArray("AliADdigit", 16);
+  digitsTree->Branch("ADDigit", &fDigitsArray);
 
   rawReader->Reset();
   AliADRawStream rawStream(rawReader);
