@@ -654,6 +654,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   unsigned lastPadRow=0;
   AliHLTUInt64_t lastPad64=0;
   AliHLTUInt64_t lastTime64=0;
+  pDeflater->StartEncoder();
   AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin();
 
   AliHLTUInt32_t filledBytes = 0;
@@ -794,8 +795,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
     }
     blockout->fCount++;
   }
-  
-
+  pDeflater->StopEncoder();
   AliHLTComponent_BlockData bd;
   AliHLTComponent::FillBlockData(bd);
   bd.fOffset        = offset;
