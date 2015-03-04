@@ -106,14 +106,15 @@ Bool_t AliPHOSCpvGainCalibDA::SetDeadChannelMapFromFile(const char * filename = 
     if(fDeadCh->Get(Form("hBadChMap%d",iDDL)))
       fDeadMap[iDDL] = new TH2I(*(TH2I*)(fDeadCh->Get(Form("hBadChMap%d",iDDL))));
   }
-  fDeadCh->Close();
+  //fDeadCh->Close();
   return 1;
 }//SetDeadChannelMapFromFile()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliPHOSCpvGainCalibDA::WriteA0HistosToFile() const
+void AliPHOSCpvGainCalibDA::WriteA0HistosToFile(const char* filename=0x0) const
 {
+  if(!filename)return;
   //write all A0 amplitude histos and A0 entries maps to CpvCalibrSupply.root
-  TFile * rootF = new TFile("CpvCalibrSupply.root","RECREATE");
+  TFile * rootF = new TFile(filename,"RECREATE");
   rootF->cd();
   
   for(Int_t iDDL=0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
@@ -177,7 +178,7 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
 	continue;//this is not a CPV digit
       }
       int DDL = AliPHOSCpvParam::Mod2DDL(relId[0]);
-      if(IsBad(DDL,relId[2],relId[3])){//let's see if it is a bad pad
+      if(IsBad(DDL,relId[2]-1,relId[3]-1)){//let's see if it is a bad pad
 	nExcludedPoints++; 
 	excludedPoints[iDig]=kTRUE;
 	continue;

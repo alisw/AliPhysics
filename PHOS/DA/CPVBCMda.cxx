@@ -45,13 +45,14 @@ Trigger types used: PHYSICS_EVENT
 #include "TKey.h"
 #include "TH2S.h"
 #include "TH2F.h"
+#include "TH2I.h"
 #include "TObject.h"
 #include "TBenchmark.h"
 #include "TMath.h"
 #include "TRandom.h"
 
-Double_t FillNoisyMap(TH2* DigMap, TH2* BadMap); //returns mean occupancy when all bad channels are excluded
-void FillDeadMap(TH2* PedMap, TH2* DigMap, TH2* BadMap);
+Double_t FillNoisyMap(TH2F* DigMap, TH2I* BadMap); //returns mean occupancy when all bad channels are excluded
+void FillDeadMap(TH2F* PedMap, TH2F* DigMap, TH2I* BadMap,Double_t meanOccupancy);
 
 int main( int argc, char **argv )
 {
@@ -78,17 +79,25 @@ int main( int argc, char **argv )
   daqDA_progressReport(0);
 
   /* retrieve configuration file from DAQ DB */
-  status=daqDA_DB_getFile("PHOSCPVGAINda.cfg", "PHOSCPVGAINda.cfg");
+  status=daqDA_DB_getFile("PHOSCPVBCMda.cfg", "PHOSCPVBCMda.cfg");
+  status = 0;
   if(!status) {
     char buf[500]; 
-    FILE * fConf = fopen("PHOSCPVGAINda.cfg","r");
+    FILE * fConf = fopen("PHOSCPVBCMda.cfg","r");
     while(fgets(buf, 500, fConf)){
       if(buf[0]=='#') continue;//comment indicator
-      if(strstr(buf,"minOccupancy")) sscanf(buf,"%*s %d",&minOccupancy);
-      if(strstr(buf,"minAmpl")) sscanf(buf,"%*s %d",&minAmpl);
+      if(strstr(buf,"minOccupancy")){ 
+	sscanf(buf,"%*s %d",&minOccupancy);
+	cout<<"I read minOccupancy="<<minOccupancy<<" from config file"<<endl;
+      }
+      if(strstr(buf,"minAmpl")) {
+	sscanf(buf,"%*s %d",&minAmpl);
+	cout<<"I read minAmpl="<<minAmpl<<" from config file"<<endl;
+      }
     }
+    fclose(fConf);
   }
-
+  
 
   /* retrieve pedestal tables from DAQ DB */
   for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
@@ -169,10 +178,11 @@ int main( int argc, char **argv )
   for(Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++){
     if(!statusBadMap){//we have some statistics from previous runs
       if(fPreviousStatistics->Get(Form("hMapOfDig%d",iDDL)))
-	hMapOfDig[iDDL] = new TH2F(*(TH2F*)(fPreviousStatistics->Get(Form("hMapOfDig%d",iDDL))));
+	//hMapOfDig[iDDL] = new TH2F(*(TH2F*)(fPreviousStatistics->Get(Form("hMapOfDig%d",iDDL))));
+	hMapOfDig[iDDL] = (TH2F*)(fPreviousStatistics->Get(Form("hMapOfDig%d",iDDL))->Clone());
     }
     if(!hMapOfDig[iDDL])
-      hMapOfDig[iDDL] = new TH2F(Form("hMapOfDig%d",iDDL),Form("Map of digits with substructed pedestals, DDL = %d",iDDL),
+      hMapOfDig[iDDL] = new TH2F(Form("hMapOfDig%d",iDDL),Form("Map of digits with subtructed pedestals, DDL = %d",iDDL),
 				 AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
 				 AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
       hBadChMap[iDDL] = new TH2I(Form("hBadMap%d",iDDL),Form("Bad Channels Map, DDL= %d",iDDL),
@@ -180,6 +190,8 @@ int main( int argc, char **argv )
 				 AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
       
   }
+  //if(!statusBadMap) fPreviousStatistics->Close();
+
   /* report progress */
   daqDA_progressReport(10);
 
@@ -245,30 +257,30 @@ int main( int argc, char **argv )
   /* report progress */
   daqDA_progressReport(90);
 
-  TH2* hPedMap[2*AliPHOSCpvParam::kNDDL];
+  TH2F* hPedMap[2*AliPHOSCpvParam::kNDDL];
+  for(int iDDL = 0; iDDL< 2*AliPHOSCpvParam::kNDDL; iDDL++) hPedMap[iDDL] = 0x0;
   //prepare ped maps for dead channels search
   TFile* fPeds = TFile::Open("CpvPeds.root");
-  for(int iDDL = 0; iDDL< 2*AliPHOSCpvParam::kNDDL; iDDL+=2){
-    if(fPeds->Get(Form("fPedMeanMap%d",iDDL)))
-      hPedMap[iDDL] = new TH2F(*(TH2F*)(fPeds->Get(Form("fPedMeanMap%d",iDDL))));
-    else
-      hPedMap[iDDL] = 0x0;
+  if(fPeds){
+    for(int iDDL = 0; iDDL< 2*AliPHOSCpvParam::kNDDL; iDDL+=2)
+      if(fPeds->Get(Form("fPedMeanMap%d",iDDL)))
+	//hPedMap[iDDL] = new TH2F(*(TH2F*)(fPeds->Get(Form("fPedMeanMap%d",iDDL))));
+	hPedMap[iDDL] = (TH2F*)(fPeds->Get(Form("fPedMeanMap%d",iDDL))->Clone());
+    //fPeds->Close();
   }
-  fPeds->Close();
-
-
-
+  
   //find noisy channels (i.e. channelOccupancy > 10*meanOccupancy)
   TFile *fSave = TFile::Open("CpvBadMap.root","RECREATE");
 
   Double_t meanOccupancy = 0;
+  setenv("AMORE_DA_NAME","CPV-DAs",1);
   amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
   for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
     if(hMapOfDig[iDDL]->GetEntries()>0) {
       Double_t Occupancy = FillNoisyMap(hMapOfDig[iDDL],hBadChMap[iDDL]);
       if(meanOccupancy>0&&Occupancy<meanOccupancy) meanOccupancy = Occupancy;
       if(meanOccupancy==0) meanOccupancy = Occupancy;
-      if(Occupancy>minOccupancy) FillDeadMap(hPedMap[iDDL],hMapOfDig[iDDL],hBadChMap[iDDL]);
+      if(Occupancy>minOccupancy) FillDeadMap(hPedMap[iDDL],hMapOfDig[iDDL],hBadChMap[iDDL],Occupancy);
       fSave->WriteObject(hMapOfDig[iDDL],Form("hMapOfDig%d",iDDL));
       //send digit maps to amore
       myAmore->Send(Form("hMapOfDig%d",iDDL),hMapOfDig[iDDL]);
@@ -304,7 +316,7 @@ int main( int argc, char **argv )
   return status;
 }
 //==============================================================================
-Double_t FillNoisyMap(TH2* hDigMap, TH2* hBadChMap){
+Double_t FillNoisyMap(TH2F* hDigMap, TH2I* hBadChMap){
   if(!hDigMap)return 0;
   if(!hBadChMap)return 0;
   Double_t meanOccupancy = hDigMap->GetEntries()/7680.;
@@ -313,8 +325,8 @@ Double_t FillNoisyMap(TH2* hDigMap, TH2* hBadChMap){
   int nBadChannelsTotal=0,nBadChannelsCurrentIteration=0;
   //1st iteration
   //cout<<"Iteration Number = "<<iterationNumber<<endl;
-  for(int ix = 1;ix<=128;ix++)
-    for(int iy = 1;iy<=60;iy++)
+  for(int ix = 1;ix<=AliPHOSCpvParam::kPadPcX;ix++)
+    for(int iy = 1;iy<=AliPHOSCpvParam::kPadPcY;iy++)
       if(hDigMap->GetBinContent(ix,iy)>meanOccupancy*10.+1.){
 	nBadChannelsCurrentIteration++;
 	hBadChMap->Fill(ix-1,iy-1);
@@ -328,8 +340,8 @@ Double_t FillNoisyMap(TH2* hDigMap, TH2* hBadChMap){
     nBadChannelsTotal+=nBadChannelsCurrentIteration;
     nBadChannelsCurrentIteration=0;
     //1st -- calculate new mean occupancy excluding already badly marked channels  
-    for(int ix = 1;ix<=128;ix++)
-      for(int iy = 1;iy<=60;iy++)
+    for(int ix = 1;ix<=AliPHOSCpvParam::kPadPcX;ix++)
+      for(int iy = 1;iy<=AliPHOSCpvParam::kPadPcY;iy++)
 	if(hBadChMap->GetBinContent(ix,iy)==0){
 	  nDigits+=hDigMap->GetBinContent(ix,iy);
 	  nChannels+=1;
@@ -338,8 +350,8 @@ Double_t FillNoisyMap(TH2* hDigMap, TH2* hBadChMap){
     meanOccupancy=nDigits/nChannels;
     //cout<<"meanOccupancy = "<<meanOccupancy<<endl;
     //2nd -- spot new bad channels
-    for(int ix = 1;ix<=128;ix++)
-      for(int iy = 1;iy<=60;iy++)
+    for(int ix = 1;ix<=AliPHOSCpvParam::kPadPcX;ix++)
+      for(int iy = 1;iy<=AliPHOSCpvParam::kPadPcY;iy++)
 	if(hBadChMap->GetBinContent(ix,iy)==0&&hDigMap->GetBinContent(ix,iy)>meanOccupancy*10.+1.){
 	  nBadChannelsCurrentIteration++;
 	  hBadChMap->Fill(ix-1,iy-1);
@@ -351,23 +363,23 @@ Double_t FillNoisyMap(TH2* hDigMap, TH2* hBadChMap){
   return meanOccupancy;
 }
 //==============================================================================
-void FillDeadMap(TH2* hPedMap, TH2* hDigMap, TH2* hBadChMap){
+void FillDeadMap(TH2F* hPedMap, TH2F* hDigMap, TH2I* hBadChMap, Double_t meanOccupancy){
   if(!hPedMap) return;
   if(!hBadChMap) return;
   if(!hDigMap)return;
   Int_t nDeadTotal = 0;
-  for(int ix = 1;ix<=128;ix++)
-    for(int iy = 1;iy<=60;iy++){
-	if(hPedMap->GetBinContent(ix,iy) < 1. && hBadChMap->GetBinContent(ix,iy)==0) {
+  for(int ix = 1;ix<=AliPHOSCpvParam::kPadPcX;ix++)
+    for(int iy = 1;iy<=AliPHOSCpvParam::kPadPcY;iy++){
+      if((hPedMap->GetBinContent(ix,iy) < 1.) && (hBadChMap->GetBinContent(ix,iy)==0)) {
 	  nDeadTotal++;
 	  hBadChMap->Fill(ix-1,iy-1);
 	  printf("Dead channel found! DDL=4 x=%d y=%d\n",ix-1,iy-1);
 	}
-	if(hDigMap->GetBinContent(ix,iy) < 1. && hBadChMap->GetBinContent(ix,iy)==0) {
+      if((hDigMap->GetBinContent(ix,iy) < meanOccupancy/10.0-1.0) && (hBadChMap->GetBinContent(ix,iy)==0)) {
 	  nDeadTotal++;
 	  hBadChMap->Fill(ix-1,iy-1);
 	  printf("Dead channel found! DDL=4 x=%d y=%d\n",ix-1,iy-1);
 	}
     }
-  cout<<"Total number of noisy channels (DDL = 4): "<<nDeadTotal<<endl;
+  cout<<"Total number of dead channels (DDL = 4): "<<nDeadTotal<<endl;
 }

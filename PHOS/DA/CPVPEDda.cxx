@@ -150,25 +150,6 @@ int main( int argc, char **argv )
   /* report progress */
   daqDA_progressReport(95);
 
-  pedProducer->WriteAllHistsToFile("CpvPeds.root");
-
-  //send file with histos to amore
-  amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
-  TFile* fSend = TFile::Open("CpvPeds.root");
-  TH2F *pedsMean = (TH2F*)fSend->Get("fPedMeanMap4");
-  pedsMean->SetDrawOption("colz");
-  myAmore->Send("fPedMeanMap4",pedsMean);
-  TH2F *pedsSig = (TH2F*)fSend->Get("fPedSigMap4");
-  pedsSig->SetDrawOption("colz");
-  myAmore->Send("fPedSigMap4",pedsSig);
-  TH1F *h1DPedMean=(TH1F*)fSend->Get("f1DPedMean4");
-  h1DPedMean->GetXaxis()->SetRangeUser(0.,750.);
-  myAmore->Send("f1DPedMean4",h1DPedMean);
-  TH1F *h1DPedSig=(TH1F*)fSend->Get("f1DPedSig4");
-  h1DPedSig->GetXaxis()->SetRangeUser(0.,10.);
-  myAmore->Send("f1DPedSig4",h1DPedSig);
-  fSend->Close();
-
   if(iPhysEvnt>=1000){//we have enough events to publish data
     status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
     if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
@@ -185,6 +166,26 @@ int main( int argc, char **argv )
 	}
       }
     }
+    pedProducer->WriteAllHistsToFile("CpvPeds.root");
+
+    //send file with histos to amore
+    setenv("AMORE_DA_NAME","CPV-DAs",1);
+    amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
+    TFile* fSend = TFile::Open("CpvPeds.root");
+    TH2F *pedsMean = (TH2F*)fSend->Get("fPedMeanMap4");
+    pedsMean->SetDrawOption("colz");
+    myAmore->Send("fPedMeanMap4",pedsMean);
+    TH2F *pedsSig = (TH2F*)fSend->Get("fPedSigMap4");
+    pedsSig->SetDrawOption("colz");
+    myAmore->Send("fPedSigMap4",pedsSig);
+    TH1F *h1DPedMean=(TH1F*)fSend->Get("f1DPedMean4");
+    h1DPedMean->GetXaxis()->SetRangeUser(0.,750.);
+    myAmore->Send("f1DPedMean4",h1DPedMean);
+    TH1F *h1DPedSig=(TH1F*)fSend->Get("f1DPedSig4");
+    h1DPedSig->GetXaxis()->SetRangeUser(0.,10.);
+    myAmore->Send("f1DPedSig4",h1DPedSig);
+    fSend->Close();
+
   }else return 10;//error code 10 (not enough events!)
 
 

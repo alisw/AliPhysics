@@ -87,6 +87,7 @@ int main( int argc, char **argv )
       if(strstr(buf,"minOccupancy")) sscanf(buf,"%*s %d",&minOccupancy);
       if(strstr(buf,"minAmpl")) sscanf(buf,"%*s %d",&minAmpl);
     }
+    fclose(fConf);
   }
   
 
@@ -154,7 +155,6 @@ int main( int argc, char **argv )
   TFile *fCalibrSupplyRoot=0x0; 
   if(!statusCalibrSupply) fCalibrSupplyRoot = TFile::Open("CpvCalibrSupply.root");
   fDA->InitCalibration(fCalibrSupplyRoot);
-  if(fCalibrSupplyRoot)fCalibrSupplyRoot->Close();
   if(!statusBadCh)fDA->SetDeadChannelMapFromFile("CpvBadMap.root");
 
   /* report progress */
@@ -210,11 +210,11 @@ int main( int argc, char **argv )
   daqDA_progressReport(90);
 
   /* save collected histos, send files to DBs */
-  fDA->WriteA0HistosToFile();
+  fDA->WriteA0HistosToFile("CpvCalibrSupplyNew.root");
 
   //calculate occupancy
   Double_t Occupancy = 0;
-  TFile* fSave = TFile::Open("CpvCalibrSupply.root");
+  TFile* fSave = TFile::Open("CpvCalibrSupplyNew.root");
   for(Int_t iDDL = 0;iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
     if(iDDL!=4)continue;
     if(fSave->Get(Form("hEntriesMap%d",iDDL))){
@@ -225,18 +225,19 @@ int main( int argc, char **argv )
   fSave->Close();
   cout<<"Occupancy = "<<Occupancy<<"; minOccupancy = "<<minOccupancy<<endl;
   if(Occupancy>minOccupancy){//if we have enough statistics to calculate calibration
-    status = daqDA_FES_storeFile("CpvCalibrSupply.root","CpvCalibrSupply.root");
-    if(status) printf("Failed to store CpvCalibrSupply.root in DAQ FXS!\n");
+    status = daqDA_FES_storeFile("CpvCalibrSupplyNew.root","CpvCalibrSupply.root");
+    if(status) printf("Failed to store CpvCalibrSupplyNew.root in DAQ FXS!\n");
     TFile * fDummy = TFile::Open("dummy.root");
     status = daqDA_DB_storeFile("dummy.root","CpvCalibrSupply.root");
     if(status) printf("Failed to store dummy.root as CpvCalibrSupply.root in DAQ DB!\n");
   }
   else{//store CpvCalibrSupply.root in DAQ DB for future
-    status = daqDA_DB_storeFile("CpvCalibrSupply.root","CpvCalibrSupply.root");
-    if(status) printf("Failed to CpvCalibrSupply.root in DAQ DB!\n");
+    status = daqDA_DB_storeFile("CpvCalibrSupplyNew.root","CpvCalibrSupply.root");
+    if(status) printf("Failed to CpvCalibrSupplyNew.root in DAQ DB!\n");
 
   }
   //send pictures to amore
+  setenv("AMORE_DA_NAME","CPV-DAs",1);
   TList* histos = fDA->GetQAHistos();
   amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
   Int_t iHist = 0;

@@ -28,8 +28,9 @@ public:
   void InitCalibration(TFile *fCalibrSupplyRoot); //run it before analysing data to create calibration coeffs map. input is file where previously created histos are stored.
   void CreateA0Histos(Int_t iDDL);
   Bool_t SetDeadChannelMapFromFile(const char * filename);
-  void WriteA0HistosToFile() const;                  // create and write a new CpvCalibrSupply.root file with hists
+  void WriteA0HistosToFile(const char * filename) const;                  // create and write a new CpvCalibrSupply.root file with hists
   Bool_t IsBad(Int_t ddl, Int_t x, Int_t y) {  // returns true, if the cell is bad
+    if(ddl<0||ddl>2*AliPHOSCpvParam::kNDDL) return kTRUE;
     if(!fDeadMap) return kFALSE;
     if(!fDeadMap[ddl]) return kFALSE;
     if(fDeadMap[ddl] -> GetBinContent(x+1,y+1)) return kTRUE;
