@@ -90,8 +90,8 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   //calibTask->SetThresholdP(1.0);
   calibTask->SetRequirePrimaryVertex(kTRUE);
   calibTask->SetMinNbOfContributors(1);
-  calibTask->SetMaxCluster(100.0);
-  calibTask->SetNbMaxCluster(2);
+  calibTask->SetMaxCluster(400.0);
+  calibTask->SetNbMaxCluster(0);
 
   if ( detStr.Contains("ITSSPD") && (!detStr.Contains("ITSSDD") || !detStr.Contains("ITSSSD"))) calibTask->SetUseSPDVertex();
 
