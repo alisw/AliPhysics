@@ -177,6 +177,9 @@ public:
   void    SetITSdEdxSamples(const Double_t s[4]);
   void    GetITSdEdxSamples(Double_t s[4]) const;
 
+  void    SetITSchi2(Double_t ITSchi2){fITSchi2 = ITSchi2;}
+  void    SetITSNcls(Char_t ITSncls){fITSncls = ITSncls;}
+
   Double_t GetITSchi2() const {return fITSchi2;}
   Double_t GetITSchi2Std(Int_t step) const {return (step>-1&&step<kNITSchi2Std) ? fITSchi2Std[step] : -1;}
   void     SetITSchi2Std(Double_t chi2, Int_t step)  { if (step>-1&&step<kNITSchi2Std) fITSchi2Std[step] = chi2;}
@@ -210,6 +213,8 @@ public:
   void    SetTPCPoints(Float_t points[4]){
      for (Int_t i=0;i<4;i++) fTPCPoints[i]=points[i];
   }
+  void    SetTPCNcls(UChar_t assigned){fTPCncls = assigned;}
+  void    SetTPCchi2(Double_t TPCchi2){fTPCchi2 = TPCchi2;}
   void    SetTPCPointsF(UChar_t  findable){fTPCnclsF = findable;}
   void    SetTPCPointsFIter1(UChar_t  findable){fTPCnclsFIter1 = findable;}
   UShort_t   GetTPCNcls() const { return fTPCncls;}
