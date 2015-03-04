@@ -309,7 +309,10 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   
   AliInfo(Form("Terminate %s:", GetName())) ;
   
-  effMatch=100*fnTrackTrig/ftracktot;
+  if ( ftracktot > 0 )
+  {
+    effMatch=100*fnTrackTrig/ftracktot;
+  }
   
   if(pdc06TriggerResponse)
   {
