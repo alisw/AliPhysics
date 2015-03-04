@@ -992,7 +992,7 @@ TObject* AliTRDtrackV1::Clone(const char* newname) const
   // temporary override TObject::Clone to avoid crashes in reco
   AliTRDtrackV1* src = (AliTRDtrackV1*)this;
   Bool_t isown = src->IsOwner();
-  AliInfo(Form("src_owner %d",isown));
+  //AliInfo(Form("src_owner %d",isown));
   AliTRDtrackV1* dst = new AliTRDtrackV1(*src);
   if (isown) {
     src->SetBit(kOwner);
