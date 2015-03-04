@@ -151,6 +151,12 @@ public:
   /// return unique version of the deflater, base class has version 0
   virtual int GetDeflaterVersion() const {return 0;}
 
+  /// start the encoding of a new sequence
+  virtual int StartEncoder() { return 0; };
+
+  /// stop the encoding current sequence
+  virtual int StopEncoder() { return 0; };
+
 protected:
 
 private:

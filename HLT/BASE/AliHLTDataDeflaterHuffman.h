@@ -37,10 +37,10 @@ public:
   /// init list of decoders
   int InitDecoders(TList* decoderlist);
 
-  /// Stop the encoding
-  virtual void StartEncoder();
+  /// inherited from AliHLTDataDeflater: start the encoding for a new event
+  virtual int StartEncoder();
 
-  /// Stop the encoding
+  /// inherited from AliHLTDataDeflater: stop the encoding for current event
   virtual int StopEncoder();
 
   /// inherited from AliHLTDataDeflater: write bit pattern according to configuration
@@ -95,7 +95,7 @@ private:
 
   bool fTrainingMode; //! indicate training mode
 
-  int  fClusterCount;   //! internal cluster counter
+  vector<unsigned> fParameterClusterCount; // cluster count for every parameter
   vector<unsigned> fBitCount; // bit count for every parameter
 
   ClassDef(AliHLTDataDeflaterHuffman, 0)

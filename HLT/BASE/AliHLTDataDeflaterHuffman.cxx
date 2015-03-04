@@ -29,6 +29,7 @@
 #include "TFile.h"
 #include <memory>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -40,7 +41,7 @@ AliHLTDataDeflaterHuffman::AliHLTDataDeflaterHuffman(bool bTrainingMode)
   , fHuffmanCoders()
   , fHuffmanCoderList(NULL)
   , fTrainingMode(bTrainingMode)
-  , fClusterCount(0)
+  , fParameterClusterCount()
   , fBitCount()
 {
   // see header file for class documentation
@@ -88,6 +89,7 @@ int AliHLTDataDeflaterHuffman::AddParameterDefinition(const char* name, unsigned
 
   fReferenceLength.push_back(refLength>0?refLength:bitLength);
   fHuffmanCoders.push_back(pHuffman);
+  fParameterClusterCount.push_back(0);
   fBitCount.push_back(0);
 
   int memberId=fHuffmanCoders.size()-1;
@@ -137,7 +139,7 @@ bool AliHLTDataDeflaterHuffman::OutputParameterBits( int memberId, AliHLTUInt64_
     return false;
   }
 
-  if (memberId==0) fClusterCount++;
+  fParameterClusterCount[memberId]++;
 
   AliHLTUInt64_t length = 0;
   const std::bitset<64>& v=fHuffmanCoders[memberId]->Encode((value>fHuffmanCoders[memberId]->GetMaxValue())?fHuffmanCoders[memberId]->GetMaxValue():value, length);
@@ -310,28 +312,30 @@ void AliHLTDataDeflaterHuffman::SaveAs(const char *filename, Option_t *option) c
   return AliHLTDataDeflater::SaveAs(filename, remainingOptions);
 }
 
-void AliHLTDataDeflaterHuffman::StartEncoder()
+int AliHLTDataDeflaterHuffman::StartEncoder()
 {
-  fClusterCount=0;
-  for (vector<unsigned>::iterator it = fBitCount.begin(); it!=fBitCount.end(); it++) {
+  int memberId=0;
+  for (vector<unsigned>::iterator it = fBitCount.begin(); it!=fBitCount.end(); it++, memberId++) {
     *it=0;
+    fParameterClusterCount[memberId]=0;
   }
+  return 0;
 }
 
 int AliHLTDataDeflaterHuffman::StopEncoder()
 {
   int memberId=0;
-  if (fClusterCount==0) return 0;
-  for (vector<unsigned>::iterator it = fBitCount.begin(); it!=fBitCount.end(); it++) {
+  for (vector<unsigned>::iterator it = fBitCount.begin(); it!=fBitCount.end(); it++, memberId++) {
+    if (fParameterClusterCount[memberId]==0) continue;
     UInt_t outputByteCount = (*it+7)/8;
 
     float weight=outputByteCount*8.0;
-    weight/=fClusterCount*fReferenceLength[memberId];
-    UInt_t parameterSize=weight*fReferenceLength[memberId];
+    weight/=fParameterClusterCount[memberId];
+    unsigned parameterSize=(unsigned)ceil(weight);
+    weight/=fReferenceLength[memberId];
     FillStatistics(memberId, ~(AliHLTUInt64_t)0, parameterSize, weight);
-
-    memberId++;
   }
+  return GetBitDataOutputSizeBytes();
 }
 
 ostream& operator<<(ostream &out, const AliHLTDataDeflaterHuffman& me)
