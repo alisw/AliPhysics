@@ -347,6 +347,12 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap, Bool_t keepStart)
  //
  TMap *values = new TMap;
  TObjArray * valueSet;
+ // Declare ownership of keys and values
+ // added to the TMap, see
+ // https://root.cern.ch/root/html/TMap.html#TMap:_TMap
+ values->SetOwner();
+ values->SetOwnerValue();
+
  //
  // Keep global start/end times
  //    to avoid extrapolations, the fits will only be valid from first 
