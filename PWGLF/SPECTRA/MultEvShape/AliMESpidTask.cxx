@@ -127,7 +127,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 
 
-	Double_t val[10];
+	Double_t val[10];    	// for hAllESD
+	Double_t valPID[7];	// for hPIDQA
 
 	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(1);
 
@@ -146,7 +147,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	// ---------------------------
 	// get charge
 	val[2] = t->Charge();
-
+	valPID[1] = val[2];
 
 	// ---------------------------
 	// make PID
@@ -163,6 +164,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 	val[3] = maxIndex;    // particle identification
 // 	AliInfo(Form("maxIndex TPC = %i\n\n", maxIndex));
+	valPID[2] = val[3];
 
 	// TOF
 	maxIndex = -9999;
@@ -177,6 +179,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 	val[4] = maxIndex;    // particle identification
 // 		AliInfo(Form("maxIndex TOF = %i\n\n", maxIndex));
+	valPID[3] = val[4];
 
 
 	// ---------------------------
@@ -195,6 +198,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 // 	val[6] = (((t->GetPID()->GetTOFmisProb())<0.01)?1:0);
 	val[6] = (t->GetPID()->GetTOFmisProb());
 // 	printf("misProb = %g\n",t->GetPID()->GetTOFmisProb());
+	valPID[4] = val[6];
 
 
 	if( HasMCdata() ){ // run only on MC
@@ -212,6 +216,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 				}
 			}
 			// 		AliInfo(Form("MC PID = %g", val[4]));
+			valPID[7] = val[7];
 
 			if( (tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) val[9] = 1.;
 			else val[9] = 0.;
@@ -229,6 +234,14 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	// ---------------------------
 	// fill the hSparse
 	hAllESD->Fill(val);
+
+
+	// fill the PID QA sparse
+	THnSparseD *hPIDQA = (THnSparseD*)fHistosQA->At(5);
+	valPID[0] = t->P();
+	valPID[5] = t->GetdEdx();
+	valPID[6] = t->Getbeta();
+	hPIDQA->Fill(valPID);
 
 
 	// THIS IS USED ONLY WHEN RUNNING FOR DCA SHAPES (change AliMEStender.cxx line 146 kTRUE->kFALSE)
@@ -328,6 +341,14 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 // 	AliInfo("\n\nNew event");
 
+	  THnSparseD *hMCmult = (THnSparseD*)fHistosQA->At(4);
+	  Double_t valMCmult[4];
+	  valMCmult[0] = ESDmult;
+	  valMCmult[1] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
+	  valMCmult[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
+	  valMCmult[3] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
+	  hMCmult->Fill(valMCmult);
+
   	for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
 
@@ -413,7 +434,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   // Make QA sparse histos for
   fHistosQA = new TList(); fHistosQA->SetOwner(kTRUE);
 
-  // example
+  // multiplicity estimators correlations
   const Int_t ndim(3);
   const Int_t cldNbins[ndim]   = {150, 100, 150};
   const Double_t cldMin[ndim]  = {0.5, 0., 0.5},
@@ -421,41 +442,59 @@ Bool_t AliMESpidTask::BuildQAHistos()
   THnSparseD *multEst = new THnSparseD("multEst","multEst;combined 0.8;V0M;combined 0.4-0.8",ndim, cldNbins, cldMin, cldMax);
   fHistosQA->AddAt(multEst, 0);
 
+  // generated multiplicity correlations
+  const Int_t ndimMCmult(4);
+  const Int_t cldNbinsMCmult[ndimMCmult]   = {150, 150, 150, 150};
+  const Double_t cldMinMCmult[ndimMCmult]  = {0.5, 0.5, 0.5, 0.5},
+  cldMaxMCmult[ndimMCmult]  = {150.5, 150.5, 150.5, 150.5};
+  THnSparseD *hMCmult = new THnSparseD("MCmult","MCmult;combined 0.8;generated 0.8;combined 0.4-0.8;generated 0.4-0.8",ndimMCmult, cldNbinsMCmult, cldMinMCmult, cldMaxMCmult);
+  fHistosQA->AddAt(hMCmult, 4);
+  
 
-	// use for matching, PID and contaminations efficiency
-	Double_t binLimits[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
+  // use for matching, PID and contaminations efficiency
+  Double_t binLimits[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
 
-	// used for raw spectra and a lot of corrections
-	const Int_t ndimAllESD(10);
-	const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 52, 2, 5, 5, 20, 2, 5, 20, 2};
-	const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0.,-2., -0.5, -0.5, -1., -0.5, -0.5, -1., -0.5},
-	cldMaxAllESD[ndimAllESD]  = {150.5, 5., 2., 4.5, 4.5, 1., 1.5, 4.5, 1.,1.5};
-	THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;multiplicity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
-	hAllESD->GetAxis(1)->Set(52, binLimits);
-	fHistosQA->AddAt(hAllESD, 1);
+  // used for raw spectra and a lot of corrections
+  const Int_t ndimAllESD(10);
+  const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 52, 2, 5, 5, 20, 2, 5, 20, 2};
+  const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0.,-2., -0.5, -0.5, -1., -0.5, -0.5, -1., -0.5},
+  cldMaxAllESD[ndimAllESD]  = {150.5, 5., 2., 4.5, 4.5, 1., 1.5, 4.5, 1.,1.5};
+  THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;multiplicity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
+  hAllESD->GetAxis(1)->Set(52, binLimits);
+  fHistosQA->AddAt(hAllESD, 1);
+  
+  // used for tracking efficiency
+  const Int_t ndimGen(6);
+  const Int_t cldNbinsGen[ndimGen]   = {150, 52, 2, 5, 20, 150};
+  const Double_t cldMinGen[ndimGen]  = {0.5, 0., -2., -0.5, -1., 0.5},
+  cldMaxGen[ndimGen]  = {150.5, 5., 2., 4.5, 1.,150.5};
+  THnSparseD *hGen = new THnSparseD("Gen","Gen;MCmultiplicity;MCp_{T};MCcharge;MCPID;MCy;ESDmultiplicity;",ndimGen, cldNbinsGen, cldMinGen, cldMaxGen);
+  hGen->GetAxis(1)->Set(52, binLimits);
+  fHistosQA->AddAt(hGen, 2);
 
-	// used for tracking efficiency
-	const Int_t ndimGen(6);
-	const Int_t cldNbinsGen[ndimGen]   = {150, 52, 2, 5, 20, 150};
-	const Double_t cldMinGen[ndimGen]  = {0.5, 0., -2., -0.5, -1., 0.5},
-	cldMaxGen[ndimGen]  = {150.5, 5., 2., 4.5, 1.,150.5};
-	THnSparseD *hGen = new THnSparseD("Gen","Gen;MCmultiplicity;MCp_{T};MCcharge;MCPID;MCy;ESDmultiplicity;",ndimGen, cldNbinsGen, cldMinGen, cldMaxGen);
-	hGen->GetAxis(1)->Set(52, binLimits);
-	fHistosQA->AddAt(hGen, 2);
+  // 	TH1D *testCounter = new TH1D("testCounter","testCounter", 4, 0.5, 4.5);
+  // 	fHistosQA->AddAt(testCounter, 3);
 
-// 	TH1D *testCounter = new TH1D("testCounter","testCounter", 4, 0.5, 4.5);
-// 	fHistosQA->AddAt(testCounter, 3);
+  // used for scaling
+  TH2D *fNoEvt = new TH2D("fNoEvt", "Number of processed events", 4, -0.5, 3.5, 150, 0.5, 150.5);
+  // 	fNoEvtMB->GetXaxis()->SetBinLabel(1, "Calls UserExec");
+  // 	fNoEvtMB->GetXaxis()->SetBinLabel(2, "Physics Selection");
+  // 	fNoEvtMB->GetXaxis()->SetBinLabel(3, "Vertex");
+  fNoEvt->GetXaxis()->SetBinLabel(1, "Tender OK");
+  fNoEvt->GetXaxis()->SetBinLabel(2, "Pile-up Rejection");
+  fNoEvt->GetXaxis()->SetBinLabel(3, "Vertex Cut");
+  fNoEvt->GetXaxis()->SetBinLabel(4, "Analyzed");
+  fHistosQA->AddAt(fNoEvt, 3);
 
-	// used for scaling
-	TH2D *fNoEvt = new TH2D("fNoEvt", "Number of processed events", 4, -0.5, 3.5, 150, 0.5, 150.5);
-// 	fNoEvtMB->GetXaxis()->SetBinLabel(1, "Calls UserExec");
-// 	fNoEvtMB->GetXaxis()->SetBinLabel(2, "Physics Selection");
-	// 	fNoEvtMB->GetXaxis()->SetBinLabel(3, "Vertex");
-	fNoEvt->GetXaxis()->SetBinLabel(1, "Tender OK");
-	fNoEvt->GetXaxis()->SetBinLabel(2, "Pile-up Rejection");
-	fNoEvt->GetXaxis()->SetBinLabel(3, "Vertex Cut");
-	fNoEvt->GetXaxis()->SetBinLabel(4, "Analyzed");
-	fHistosQA->AddAt(fNoEvt, 3);
+
+  // PID "QA"
+  const Int_t ndimPID(8);
+  const Int_t cldNbinsPID[ndimPID]   = {52, 2, 5, 5, 2, 100, 100, 5};
+  const Double_t cldMinPID[ndimPID]  = {0., -2., -0.5, -0.5, -0.5, 0., 0., -0.5},
+  cldMaxPID[ndimPID]  = {5., 2., 4.5, 4.5, 1.5, 200., 1.1, 4.5};
+  THnSparseD *hPIDQA = new THnSparseD("PIDQA","PIDQA;p;charge;PID_TPC;PID_TPCTOF;TOFmatching;dEdx;beta;MCPID",ndimPID, cldNbinsPID, cldMinPID, cldMaxPID);
+  hPIDQA->GetAxis(0)->Set(52, binLimits);
+  fHistosQA->AddAt(hPIDQA, 5);
 
 /*
 	// used for DCA corrections
