@@ -386,6 +386,8 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   ULong_t status = track->GetStatus();
   if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return kFALSE;
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return kFALSE;
+  if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return kFALSE;
+  if (track->Y(fPDGMass) < fRequireYmin || track->Y(fPDGMass) > fRequireYmax) return kFALSE;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return kFALSE;
   unsigned int nSPD = 0, nITS = 0;
@@ -413,11 +415,10 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
 Float_t AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track) {
   Bool_t hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   Bool_t hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
-  Float_t length = track->GetIntegratedLength();
-  Bool_t hasTOF = Bool_t(hasTOFout & hasTOFtime) && length > 350.f;
+  const float len = track->GetIntegratedLength();
+  Bool_t hasTOF = Bool_t(hasTOFout & hasTOFtime) && len > 350.f;
   
   if (!hasTOF) return -1.;
-  const float len = track->GetIntegratedLength();
   const float p = track->GetTPCmomentum();
   const float tim = track->GetTOFsignal() - fPID->GetTOFResponse().GetStartTime(p);
   if (tim < len / LIGHT_SPEED) return -1.;
