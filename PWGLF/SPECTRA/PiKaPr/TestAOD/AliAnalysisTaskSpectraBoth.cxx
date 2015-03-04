@@ -87,7 +87,7 @@ void AliAnalysisTaskSpectraBoth::UserCreateOutputObjects()
   fTrackCuts->InitHisto();
   if(fTrackCuts->GetYMax()<fTrackCuts->GetYMin()) 
   	fUseEtaCut=kTRUE;	
-
+  Printf(" eta cut %d  Will be used lack of Y cut",fUseEtaCut);
 
 
   PostData(1, fHistMan  );
