@@ -1,17 +1,4 @@
-# **************************************************************************
-# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
-# *                                                                        *
-# * Author: The ALICE Off-line Project.                                    *
-# * Contributors are mentioned in the code where appropriate.              *
-# *                                                                        *
-# * Permission to use, copy, modify and distribute this software and its   *
-# * documentation strictly for non-commercial purposes is hereby granted   *
-# * without fee, provided that the above copyright notice appears in all   *
-# * copies and that both the copyright notice and this permission notice   *
-# * appear in the supporting documentation. The authors make no claims     *
-# * about the suitability of this software for any purpose. It is          *
-# * provided "as is" without express or implied warranty.                  *
-# **************************************************************************
+# For more instructions please read INSTALLDA.txt
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/HMPID/DA)
@@ -30,26 +17,26 @@ include_directories(
 
 
 set(STATIC_DEPENDENCIES ITSbase ITSrec RAWDatarec)
-generateDA("ITS" "SDDBAS" "${STATIC_DEPENDENCIES}")
+generateDA("SDD" "BAS" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static ITSbase-static RAWDatarec-static)
-generateDA("ITS" "SDDGAIN" "${STATIC_DEPENDENCIES}")
+generateDA("SDD" "GAIN" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static ITSbase-static RAWDatarec-static)
-generateDA("ITS" "SDDINJ" "${STATIC_DEPENDENCIES}")
+generateDA("SDD" "INJ" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static ITSbase-static RAWDatarec-static STEERBase-static)
-generateDA("ITS" "SPDFO" "${STATIC_DEPENDENCIES}")
+generateDA("SPD" "FO" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static ITSbase-static RAWDatarec-static STEERBase-static)
-generateDA("ITS" "SPDPHYS" "${STATIC_DEPENDENCIES}")
+generateDA("SPD" "PHYS" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static ITSbase-static RAWDatarec-static STEERBase-static)
-generateDA("ITS" "SPDSCAN" "${STATIC_DEPENDENCIES}")
+generateDA("SPD" "SCAN" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static RAWDatarec-static STEERBase-static CDB-static)
-generateDA("ITS" "SPDVertexDiamond" "${STATIC_DEPENDENCIES}")
+generateDA("SPD" "VertexDiamond" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSbase-static)
-generateDA("ITS" "SSDPED" "${STATIC_DEPENDENCIES}")
+generateDA("SSD" "PED" "${STATIC_DEPENDENCIES}")
 

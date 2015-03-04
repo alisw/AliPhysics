@@ -1,17 +1,4 @@
-# **************************************************************************
-# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
-# *                                                                        *
-# * Author: The ALICE Off-line Project.                                    *
-# * Contributors are mentioned in the code where appropriate.              *
-# *                                                                        *
-# * Permission to use, copy, modify and distribute this software and its   *
-# * documentation strictly for non-commercial purposes is hereby granted   *
-# * without fee, provided that the above copyright notice appears in all   *
-# * copies and that both the copyright notice and this permission notice   *
-# * appear in the supporting documentation. The authors make no claims     *
-# * about the suitability of this software for any purpose. It is          *
-# * provided "as is" without express or implied warranty.                  *
-# **************************************************************************
+# For more instructions please read INSTALLDA.txt
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/ACORDE/DA)
@@ -30,7 +17,7 @@ include_directories(
 
 
 set(STATIC_DEPENDENCIES HMPIDbase-static RAWDatarecOnline-static RAWDatarec-static RAWDatasim-static)
-generateDA("HMPID" "" "${STATIC_DEPENDENCIES}")
+generateDA("HMP" "" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES HMPIDbase-static RAWDatarecOnline-static RAWDatarec-static)
-generateDA("HMPID" "phys" "${STATIC_DEPENDENCIES}")
+generateDA("HMP" "phys" "${STATIC_DEPENDENCIES}")
