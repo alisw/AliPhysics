@@ -51,13 +51,13 @@ install(TARGETS ${MODULE} RUNTIME DESTINATION bin)
 
 # Creating the AliMDC static library and the rpm
 if(MDCRPM)
-    add_library(AliMDC STATIC $<TARGET_OBJECTS:${MODULE}-object>)
+    add_library(AliMDC STATIC $<TARGET_OBJECTS:${MODULE}-object> $<TARGET_OBJECTS:MDC-object> $<TARGET_OBJECTS:RAWDatarec-object> $<TARGET_OBJECTS:RAWDatabase-object> $<TARGET_OBJECTS:ESD-object> $<TARGET_OBJECTS:STEERBase-object>)
 
     # list of shared dependencies / the name of the variable containing the list of static ones
     generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
     target_link_libraries(AliMDC ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
 
-    set_target_properties(AliMDC PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+    set_target_properties(AliMDC PROPERTIES LINK_FLAGS "-Wl,--whole-archive -Wl,--no-as-needed")
 
     # Installation
     install(TARGETS AliMDC
