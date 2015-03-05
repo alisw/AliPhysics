@@ -20,15 +20,19 @@ AliRoot build and install intructions from INSTALL.txt
 #1. DA files and location                                                  #
 ############################################################################
     - Name - The file name has to follow a predefined pattern.
-        DetectorNameAlgorithmda.cxx
+        OnlineDetectorCodeAlgorithmda.cxx
     Example : EMCALLEDda.cxx
-        DetectorNAme = EMCAL
+        OnlineDetectorCode = EMCAL
         Algorithm = LED
     Example: MUONTRKOCCda.cxx
-        DetectorName = MUON
+        OnlineDetectorCode = MUON
         Algortihm  = TRKOCC
     - Location - The DA files have to be located inside the DetectorName/DA folder.
     Example: EMCAL/DA/EMCALLEDda.cxx
+
+The online detector code can be found here:
+https://aliceinfo.cern.ch/DAQ/alice/detector-names-ids-and-codes
+Note that the detector code can be different than the AliRoot detector folder name.
 
 ############################################################################
 2. DA file structure                                                       #
