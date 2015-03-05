@@ -40,7 +40,7 @@ using namespace std;
 
 // Fit Normalization is fixed to 1.0, explains why Chi2 higher here than in Three-pion radii paper
 //
-int CollisionType_def=1;// PbPb, pPb, pp
+int CollisionType_def=0;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
 bool CumulantFit=kFALSE;// (0) C3, (1) c3
 //
@@ -222,7 +222,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Centspecif->SetTextSize(SizeSpecif);
 
 
- // bin centers from QS+FSI
+  // bin centers from QS+FSI
   double BinCenterPbPbCentral[40]={0.00206385, 0.00818515, 0.0129022, 0.0177584, 0.0226881, 0.027647, 0.032622, 0.0376015, 0.042588, 0.0475767, 0.0525692, 0.0575625, 0.0625569, 0.0675511, 0.0725471, 0.0775436, 0.0825399, 0.0875364, 0.0925339, 0.0975321, 0.102529, 0.107527, 0.112525, 0.117523, 0.122522, 0.12752, 0.132519, 0.137518, 0.142516, 0.147515, 0.152514, 0.157513, 0.162513, 0.167512, 0.172511, 0.177511, 0.18251, 0.187509, 0.192509, 0.197509};
   double BinCenterpPbAndpp[40]={0.00359275, 0.016357, 0.0257109, 0.035445, 0.045297, 0.0552251, 0.0651888, 0.0751397, 0.0851088, 0.0951108, 0.105084, 0.115079, 0.12507, 0.135059, 0.145053, 0.155049, 0.16505, 0.175038, 0.185039, 0.195034, 0.205023, 0.215027, 0.225024, 0.235023, 0.245011, 0.255017, 0.265017, 0.275021, 0.285021, 0.295017, 0.305018, 0.315018, 0.325013, 0.335011, 0.345016, 0.355019, 0.365012, 0.375016, 0.385017, 0.395016};
   if(CollisionType==0){
@@ -765,7 +765,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 
   GenSignalExpected_num[fitIt]->Sumw2();
   GenSignalExpected_num[fitIt]->Divide(GenSignalExpected_den[fitIt]);
- 
+  
+
   TSpline3 *c3Fit1D_ExpanSpline = new TSpline3(GenSignalExpected_num[fitIt]);
   c3Fit1D_ExpanSpline->SetLineWidth(2);
   const int Npoints=500;
@@ -845,7 +846,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   legend1->AddEntry(gr_c3Spline[0],"Fit to #font[12]{#bf{c}}_{3}","l");
   legend1->AddEntry(gr_c3Spline[1],"Fit to #font[12]{C}_{3}","l");
   legend1->Draw("same");
- 
+  cout<<c3_hist->GetBinContent(3)<<"  "<<C3_hist->GetBinContent(3)<<endl;
   // Ratio plot
   pad1_2->cd();
   gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
@@ -862,7 +863,9 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Ratio_C3->GetXaxis()->SetNdivisions(606);
   Ratio_C3->GetYaxis()->SetNdivisions(202);
   Ratio_C3->SetMinimum(0.9); Ratio_C3->SetMaximum(1.045);
-  for(int bin=1; bin<=C3_hist->GetNbinsX()-10; bin++){
+  int BinKill=1;
+  if(CollisionType!=0) BinKill=10;
+  for(int bin=1; bin<=C3_hist->GetNbinsX()-BinKill; bin++){
     double q3 = Ratio_c3->GetXaxis()->GetBinCenter(bin);
     double value = Ratio_c3->GetBinContent(bin);
     double value_e = Ratio_c3->GetBinError(bin);
