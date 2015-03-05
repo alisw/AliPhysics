@@ -84,7 +84,7 @@ if(FASTJET_FOUND)
     add_definitions(${FASTJET_DEFINITIONS})
 
     set(SRC ${SRCS}
-        AliHLTTriggerFastJet.h
+        AliHLTTriggerFastJet.cxx
        )
 endif()
 
@@ -99,9 +99,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTMUON AliHLTTRD TRDbase TRDrec TPCcalib MUONraw GenVector Gpad Graf Smatrix)
-if(FASTJET_FOUND)
-    set(LIBDEPS ${LIBDEPS} ${FASTJET_LIBS})
-endif(FASTJET_FOUND)
+
+# !! TO FIX !!
+# Temporary removing the linking to fastjet libraries as it adds system libraries to the rootmaps
+# Rootmaps should contain only libraries that can be found in the LD_LIBRARY_PATH
+#if(FASTJET_FOUND)
+#    set(LIBDEPS ${LIBDEPS} ${FASTJET_LIBS})
+#endif(FASTJET_FOUND)
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
