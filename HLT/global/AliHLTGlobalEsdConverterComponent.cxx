@@ -121,7 +121,9 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
 	continue;
-      } else {
+      } else if (argument.CompareTo("-make-friends")==0) {
+	fMakeFriends = 1;
+      }	else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
 	break;
@@ -261,6 +263,8 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->String().Data());
 	HLTWarning("argument '-solenoidBz' is deprecated, solenoid field initiaized from CDB settings");
 	continue;
+      } else if (argument.CompareTo("-make-friends")==0) {
+	fMakeFriends = 1;      
       } else if (argument.Contains("-skipobject=")) {
 	argument.ReplaceAll("-skipobject=", "");
 	skipObjects=argument;
