@@ -220,7 +220,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t binsDeltaphiDefault[9] = {  0, 1./16.*TMath::Pi(), 2./16.*TMath::Pi(), 3./16.*TMath::Pi(), 4./16.*TMath::Pi(), 5./16.*TMath::Pi(), 6./16.*TMath::Pi(), 7./16.*TMath::Pi(), 8./16.*TMath::Pi()};
   
   
-  Double_t binsPtCheckDefault[20] = {0.,0.15,0.5,1.0,2.0,3.0,4.0, 5.0, 10.0, 13.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 70.0, 100.0, 150.0, 200.0};  
+  Double_t binsPtCheckDefault[8] = {0.,0.15,1.0,5.0, 10.0, 20.0, 50.0, 200.0};  
   Double_t binsEtaCheckDefault[7] = {-1.0,-0.8,-0.4,0.,0.4,0.8,1.0};
   
   Double_t binsRunNumbers2011[186] = {
@@ -231,7 +231,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   if (!fBinsMult)		{ SetBinsMult(48,binsMultDefault); }
   if (!fBinsPt)			{ SetBinsPt(82,binsPtDefault); }
   if (!fBinsPtCorr)		{ SetBinsPtCorr(51,binsPtCorrDefault); }
-  if (!fBinsPtCheck)	{ SetBinsPtCheck(20,binsPtCheckDefault); }
+  if (!fBinsPtCheck)	{ SetBinsPtCheck(8,binsPtCheckDefault); }
   if (!fBinsEta)		{ SetBinsEta(31,binsEtaDefault); }
   if (!fBinsEtaCheck)	{ SetBinsEtaCheck(7,binsEtaCheckDefault); }
   if (!fBinsZv)			{ SetBinsZv(7,binsZvDefault); }  
@@ -881,7 +881,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   AliCentrality* aCentrality = eventAOD->GetCentrality();
 //   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
   Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
-  
+ 
+  //cout << eventAOD->GetFiredTriggerClasses().Data() << endl;
+
   if( dCentrality < 0 ) return;
   
   // protection for bias on pt spectra if all triggers selected

@@ -29,7 +29,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   // Create and configure the task
   TString combinedName;
   combinedName.Form("%s%s",contName, suffix);
-  AlidNdPtAnalysisPbPbAOD *task = new AlidNdPtAnalysisPbPbAOD(combinedName);
+  ::Info("AddTask_dNdPt_PbPbAOD",Form("Name of Task: %s", combinedName.Data()));
+  AlidNdPtAnalysisPbPbAOD *task = new AlidNdPtAnalysisPbPbAOD(combinedName.Data());
   //   UInt_t triggerMask = AliVEvent::kMB;
   //   triggerMask |= AliVEvent::kCentral;
   //   triggerMask |= AliVEvent::kSemiCentral;
@@ -50,7 +51,7 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
 //   task->SetCutPercMinNClustersTPC(1.0);
 //   task->SetCutPercMinNCrossedRowsTPC(1.0);
   
-  Double_t binsPtCheck[] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 3.0, 4.0, 5.0, 10.0, 13.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 70.0, 100.0, 150.0, 200.0}; 
+  Double_t binsPtCheck[] = {0., 0.15, 1.0, 5.0, 10.0, 50.0, 200.0}; 
   Int_t nBinPtCheck = sizeof(binsPtCheck)/sizeof(Double_t);
   task->SetBinsPtCheck(nBinPtCheck, binsPtCheck);
   
@@ -97,7 +98,7 @@ Double_t binsPhi[] = {
   
   mgr->AddTask(task);
   
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s", combinedName), TList::Class(),  AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s", combinedName.Data()), TList::Class(),  AliAnalysisManager::kOutputContainer, Form("%s:dNdPtHistos", mgr->GetCommonFileName()));
   
   mgr->ConnectInput( task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput);
