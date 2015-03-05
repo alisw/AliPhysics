@@ -1,12 +1,14 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoPair: the Pair object is passed to the PairCuts for           //
-// verification, and then to the AddRealPair and AddMixedPair methods of //
-// the Correlation Functions. It holds pair-specific variables like      //
-// relative momenta and has links to the particles and tracks that form  //
-// the pair.                                                             //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file  AliFemtoPair.h
+/// \class AliFemtoPair
+/// \brief A pair of AliFemtoParticles used for CorrelationFunction analysis
+///
+/// The pair object is passed to the PairCuts for verification, and then to the
+/// AddRealPair and AddMixedPair methods of the Correlation Functions. It holds
+/// pair-specific variables like relative momenta and has links to the particles
+/// and tracks that form the pair.
+///
+
 #ifndef ALIFEMTOPAIR_H
 #define ALIFEMTOPAIR_H
 
@@ -43,7 +45,7 @@ public:
   double QSidePf() const;
   double QOutPf() const;
   double QLongPf() const;
-   
+
   // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
   // - written by Bekele/Humanic
   double QSideCMS() const;
@@ -61,18 +63,17 @@ public:
   double QOutBf(double beta=0.0) const;
   double QLongBf(double beta=0.0) const;
 
-  // Yano-Koonin-Podgoretskii Parametrisation 
+  // Yano-Koonin-Podgoretskii Parametrisation
   // source rest frame (usually lab frame)
   void QYKPCMS(double& qP, double& qT, double& q0) const ;
   // longitudinal comoving frame
-  void QYKPLCMS(double& qP, double& qT, double& q0) const ;
-  // pair rest frame
-  void QYKPPF(double& qP, double& qT, double& q0) const ;
+  void QYKPLCMS(double& qP, double& qT, double& q0) const;
+  void QYKPPF(double& qP, double& qT, double& q0) const; /// Calculate the momentum diffference in the pair rest frame
 
 
   double Quality() const;
 
-  // the following two methods calculate the "nominal" separation of the tracks 
+  // the following two methods calculate the "nominal" separation of the tracks
   // at the inner field cage (EntranceSeparation) and when they exit the TPC,
   // which may be at the outer field cage, or at the endcaps.
   // "nominal" means that the tracks are assumed to start at (0,0,0).  Making this
@@ -96,11 +97,11 @@ public:
 /*   double TpcExitSeparationV0PosV0Neg() const; */
 /*   double TpcEntranceSeparationV0PosV0Neg() const; */
 /*   double TpcAverageSeparationV0PosV0Neg() const;  */
- 
+
 /*   double TpcExitSeparationV0NegV0Pos() const; */
 /*   double TpcEntranceSeparationV0NegV0Pos() const; */
 /*   double TpcAverageSeparationV0NegV0Pos() const;  */
-  
+
 /*   double TpcExitSeparationV0NegV0Neg() const; */
 /*   double TpcEntranceSeparationV0NegV0Neg() const; */
 /*   double TpcAverageSeparationV0NegV0Neg() const;  */
@@ -168,7 +169,7 @@ private:
   mutable double fDKOut;  // momemntum of first particle in PRF - k* out component
   mutable double fDKLong; // momemntum of first particle in PRF - k* long component
   mutable double fCVK;    // cos between velocity and relative momentum k*
-  mutable double fKStarCalc; // momemntum of first particle in PRF - k* 
+  mutable double fKStarCalc; // momemntum of first particle in PRF - k*
   void CalcNonIdPar() const;
 
   mutable short fNonIdParNotCalculatedGlobal; // If global k* was calculated
@@ -184,29 +185,29 @@ private:
   mutable double fFracOfMergedRow;        // Fraction of merged rows
   mutable double fClosestRowAtDCA;        // Row at wchich DCA occurs
 
-  mutable short fMergingParNotCalculatedTrkV0Pos; // merging parameters for track - V0 pos	 
-  mutable double fFracOfMergedRowTrkV0Pos;        // fraction of merged rows for track - V0 pos 
-  mutable double fClosestRowAtDCATrkV0Pos;        // Row at which DCA occurs for track - V0 pos 
+  mutable short fMergingParNotCalculatedTrkV0Pos; // merging parameters for track - V0 pos
+  mutable double fFracOfMergedRowTrkV0Pos;        // fraction of merged rows for track - V0 pos
+  mutable double fClosestRowAtDCATrkV0Pos;        // Row at which DCA occurs for track - V0 pos
 
-  mutable short fMergingParNotCalculatedTrkV0Neg; // merging parameters for track - V0 neg	 
-  mutable double fFracOfMergedRowTrkV0Neg;	  // fraction of merged rows for track - V0 neg 
-  mutable double fClosestRowAtDCATrkV0Neg;	  // Row at which DCA occurs for track - V0 neg 
+  mutable short fMergingParNotCalculatedTrkV0Neg; // merging parameters for track - V0 neg
+  mutable double fFracOfMergedRowTrkV0Neg;	  // fraction of merged rows for track - V0 neg
+  mutable double fClosestRowAtDCATrkV0Neg;	  // Row at which DCA occurs for track - V0 neg
 
-  mutable short fMergingParNotCalculatedV0PosV0Neg; // merging parameters for V0 pos - V0 neg	 
-  mutable double fFracOfMergedRowV0PosV0Neg;	    // fraction of merged rows for V0 pos - V0 neg 
-  mutable double fClosestRowAtDCAV0PosV0Neg;	    // Row at which DCA occurs for V0 pos - V0 neg 
+  mutable short fMergingParNotCalculatedV0PosV0Neg; // merging parameters for V0 pos - V0 neg
+  mutable double fFracOfMergedRowV0PosV0Neg;	    // fraction of merged rows for V0 pos - V0 neg
+  mutable double fClosestRowAtDCAV0PosV0Neg;	    // Row at which DCA occurs for V0 pos - V0 neg
 
-  mutable short fMergingParNotCalculatedV0NegV0Pos; // merging parameters for V0 neg - V0 pos	 
-  mutable double fFracOfMergedRowV0NegV0Pos;	    // fraction of merged rows for V0 neg - V0 pos 
-  mutable double fClosestRowAtDCAV0NegV0Pos;	    // Row at which DCA occurs for V0 neg - V0 pos 
+  mutable short fMergingParNotCalculatedV0NegV0Pos; // merging parameters for V0 neg - V0 pos
+  mutable double fFracOfMergedRowV0NegV0Pos;	    // fraction of merged rows for V0 neg - V0 pos
+  mutable double fClosestRowAtDCAV0NegV0Pos;	    // Row at which DCA occurs for V0 neg - V0 pos
 
-  mutable short fMergingParNotCalculatedV0PosV0Pos; // merging parameters for V0 pos - V0 pos	 
-  mutable double fFracOfMergedRowV0PosV0Pos;	    // fraction of merged rows for V0 pos - V0 pos 
-  mutable double fClosestRowAtDCAV0PosV0Pos;	    // Row at which DCA occurs for V0 pos - V0 pos 
+  mutable short fMergingParNotCalculatedV0PosV0Pos; // merging parameters for V0 pos - V0 pos
+  mutable double fFracOfMergedRowV0PosV0Pos;	    // fraction of merged rows for V0 pos - V0 pos
+  mutable double fClosestRowAtDCAV0PosV0Pos;	    // Row at which DCA occurs for V0 pos - V0 pos
 
-  mutable short fMergingParNotCalculatedV0NegV0Neg; // merging parameters for V0 neg - V0 neg	 
-  mutable double fFracOfMergedRowV0NegV0Neg;	    // fraction of merged rows for V0 neg - V0 neg 
-  mutable double fClosestRowAtDCAV0NegV0Neg;	    // Row at which DCA occurs for V0 neg - V0 neg 
+  mutable short fMergingParNotCalculatedV0NegV0Neg; // merging parameters for V0 neg - V0 neg
+  mutable double fFracOfMergedRowV0NegV0Neg;	    // fraction of merged rows for V0 neg - V0 neg
+  mutable double fClosestRowAtDCAV0NegV0Neg;	    // Row at which DCA occurs for V0 neg - V0 neg
 
   static double fgMaxDuInner; // Minimum cluster separation in x in inner TPC padrow
   static double fgMaxDzInner; // Minimum cluster separation in z in inner TPC padrow
@@ -289,23 +290,23 @@ inline double AliFemtoPair::CVK() const{
 }
 
 inline float AliFemtoPair::PionPairProbability() const{
-  return (fTrack1->Track()->PidProbPion()) * 
+  return (fTrack1->Track()->PidProbPion()) *
          (fTrack2->Track()->PidProbPion());
 }
 inline float AliFemtoPair::ElectronPairProbability() const{
-  return (fTrack1->Track()->PidProbElectron()) * 
+  return (fTrack1->Track()->PidProbElectron()) *
          (fTrack2->Track()->PidProbElectron());
 }
 inline float AliFemtoPair::KaonPairProbability() const{
-  return (fTrack1->Track()->PidProbKaon()) * 
+  return (fTrack1->Track()->PidProbKaon()) *
          (fTrack2->Track()->PidProbKaon());
 }
 inline float AliFemtoPair::ProtonPairProbability() const{
-  return (fTrack1->Track()->PidProbProton()) * 
+  return (fTrack1->Track()->PidProbProton()) *
          (fTrack2->Track()->PidProbProton());
 }
 inline float AliFemtoPair::KaonPionPairProbability() const{
-  return (fTrack1->Track()->PidProbKaon()) * 
+  return (fTrack1->Track()->PidProbKaon()) *
          (fTrack2->Track()->PidProbPion());
 }
 
@@ -313,7 +314,7 @@ inline double AliFemtoPair::GetFracOfMergedRow() const{
   if(fMergingParNotCalculated) CalcMergingPar();
   return fFracOfMergedRow;
 }
-inline double AliFemtoPair::GetClosestRowAtDCA() const { 
+inline double AliFemtoPair::GetClosestRowAtDCA() const {
   if(fMergingParNotCalculated) CalcMergingPar();
   return fClosestRowAtDCA;
 }
