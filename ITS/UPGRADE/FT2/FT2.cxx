@@ -18,8 +18,8 @@
 #include <TParticle.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
-#include <../TPC/TPCbase/AliTPCcalibDB.h>
-#include <../TPC/TPCbase/AliTPCParam.h>
+#include "AliTPCcalibDB.h"
+#include "AliTPCParam.h"
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
 
@@ -64,6 +64,7 @@ fITSRec(0)
   ,fITSPattern(0)
   ,fChi2TPC(0)
   ,fChi2ITS(0)
+  ,fTPCMap()
   ,fSigYITS(3.14e-4) // 5e-4
   ,fSigZITS(3.38e-4) // 5e-4
   ,fNITSLrHit(0)
@@ -226,17 +227,17 @@ void FT2::AddTPC(Float_t sigY, Float_t sigZ, Float_t eff,Float_t scEdge)
       rowRadius =  kTPCRow64Radius + (k-kTPCInnerRows+1)*kTPCMiddleRadialPitch ;
     else if (k>=(kTPCInnerRows+kTPCMiddleRows) && k<kTPCRows )
       rowRadius = kTPCRow128Radius + (k-kTPCInnerRows-kTPCMiddleRows+1)*kTPCOuterRadialPitch ;
-    AddTPCLayer(rowRadius,kRadLPerRow,sigY,sigZ,eff);
+    AddTPCLayer(k,rowRadius,kRadLPerRow,sigY,sigZ,eff);
   }
   //
   fTPCHitLr.resize(fTPCLayers.size());
 }
 
 //____________________________________________________
-void FT2::AddTPCLayer(Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff)
+void FT2::AddTPCLayer(Int_t rowId,Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff)
 {
   // add single TPC layer
-  fTPCLayers.push_back(FT2TPCLayer(x,x2x0,sigY,sigZ,eff));
+  fTPCLayers.push_back(FT2TPCLayer(rowId,x,x2x0,sigY,sigZ,eff));
 }
 
 //____________________________________________________
@@ -396,6 +397,7 @@ Bool_t FT2::InitProbe(TParticle* part)
   // Set AliExternalTrackParam
   fProbe.Set(xref, alpha, param, covar);
   ResetCovMat(&fProbe);
+  fTPCMap.ResetAllBits();
   return kTRUE;
 }
 
@@ -634,6 +636,7 @@ Bool_t FT2::ReconstructProbe()
       if (chi<0) return kFALSE;
       fChi2TPC += chi;
       fNClTPC++;
+      fTPCMap.SetBitNumber(tpcLr.rowId,kTRUE);
     }
     // go to ITS/TPC matching R, accounting for TGeo materials
     if (!PropagateToR(fITS->GetRITSTPCRef(),-1,kTRUE, kFALSE, kTRUE)) return kFALSE;

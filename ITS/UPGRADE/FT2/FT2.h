@@ -1,6 +1,7 @@
 #ifndef FT2_H
 #define FT2_H
 #include <TObject.h>
+#include <TBits.h>
 #include "AliExternalTrackParam.h"
 #include "AliITSUAux.h"
 #include "AliESDpid.h"
@@ -46,9 +47,10 @@ class FT2 : public TObject
  public:
   enum {kMaxITSLr=7, kMaxHitPerLr=2};
   struct FT2TPCLayer {
-  FT2TPCLayer(float xr=0,float x2x=0,float resRPhi=0,float resZ=0,float effL=0) :
-    x(xr),x2x0(x2x),rphiRes(resRPhi),zRes(resZ),eff(effL),isDead(resRPhi>kRidiculous||resZ>kRidiculous),
+  FT2TPCLayer(int id=-1,float xr=0,float x2x=0,float resRPhi=0,float resZ=0,float effL=0) :
+    rowId(id),x(xr),x2x0(x2x),rphiRes(resRPhi),zRes(resZ),eff(effL),isDead(resRPhi>kRidiculous||resZ>kRidiculous),
       hitY(0),hitZ(0),hitSect(-1) {if (isDead) effL=-1;}
+    Int_t    rowId;
     Float_t  x;
     Float_t  x2x0;
     Float_t  rphiRes;
@@ -85,6 +87,7 @@ class FT2 : public TObject
   Int_t    GetNClTPC()  const {return fNClTPC;}
   Double_t GetChi2ITS() const {return fChi2ITS;}
   Double_t GetChi2TPC() const {return fChi2TPC;}
+  const TBits&   GetTPCHitMap() const {return fTPCMap;}
   FTProbe& GetProbe() const {return (FTProbe&)fProbe;}
   AliExternalTrackParam& GetKalmanOut(int i) {return (AliExternalTrackParam&)fKalmanOutward[i];}
   void   SetUseKalmanOut(Bool_t v=kTRUE)  {fUseKalmanOut = v;}
@@ -105,7 +108,7 @@ class FT2 : public TObject
   //
  protected:
   void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=0.99, Float_t scEdge=2.6);
-  void AddTPCLayer(Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
+  void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
   Bool_t InitProbe(TParticle* trc);
   Bool_t PrepareProbe();
   Bool_t ApplyMSEloss(double x2X0, double xrho);
@@ -154,6 +157,7 @@ class FT2 : public TObject
   Int_t                 fITSPattern;     //! pattern for ITS clusters
   Double_t              fChi2TPC;   //! total chi2 in TPC
   Double_t              fChi2ITS;   //! total chi2 in ITS
+  TBits                 fTPCMap;    //! tpc hit map
   //
   // hit info in the ITS
   Double_t fSigYITS,fSigZITS;       // nominal ITS later resolution
