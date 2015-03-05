@@ -8,6 +8,12 @@ void readHit(int nev=-1,int evStart=0)
   TH2F *xyGlob = new TH2F("xyGlob"," X - Y Global coordinates ",100,-50,50,100,-50,50);
   xyGlob->SetXTitle("cm");
   xyGlob->SetMarkerStyle(7);
+  TH2F *xyGlobIB = new TH2F("xyGlobIB"," X - Y Global coordinates IB",100,-6,6,100,-6,6);
+  xyGlobIB->SetXTitle("cm");
+  xyGlobIB->SetMarkerStyle(7);
+  TH1F *rGlob = new TH1F("rGlob"," R Distance from center ",200,0,45);
+  rGlob->SetXTitle("cm");
+//  rGlob->SetMarkerStyle(7);
   TH1F *zGlob  = new TH1F("zGlob", " Z Global coordinates ",200, -100,100 );
   zGlob->SetXTitle("cm");
 
@@ -78,7 +84,10 @@ void readHit(int nev=-1,int evStart=0)
 	pHit->GetPositionG(xg,yg,zg);
 	pHit->GetPositionG0(xg0,yg0,zg0,tg0);
 	xyGlob->Fill(xg,yg);
+	if (lr < 3) xyGlobIB->Fill(xg,yg);
 	zGlob->Fill(zg);
+	Double_t r = TMath::Sqrt(xg*xg + yg*yg);
+	rGlob->Fill(r);
 	printf("Chip %5d | Lr:%2d Stave: %3d, X:[%+.5e:%+.5e] Y:[%+.5e:%+.5e] Z:[%+.5e %+.5e] DE: %.5e TrackID: %d\n",id,lr,ld,
 	       xg0,xg,yg0,yg,zg0,zg,pHit->GetIonization(),pHit->GetTrack());
 	hDeLoss[lr]->Fill(pHit->GetIonization());
@@ -91,6 +100,12 @@ void readHit(int nev=-1,int evStart=0)
   TCanvas *xyCanv =  new TCanvas("xyCanv","Hit X-Y positions",500,500);
   xyCanv->cd();
   xyGlob->Draw();
+  TCanvas *xyCanvIB =  new TCanvas("xyCanvIB","Hit X-Y positions IB",500,500);
+  xyCanvIB->cd();
+  xyGlobIB->Draw();
+  TCanvas *rCanv =  new TCanvas("rCanv","Hit R distance",500,500);
+  rCanv->cd();
+  rGlob->Draw();
   TCanvas *zCanv =  new TCanvas("zCanv","Hit Z positions",500,500);
   zCanv->cd();
   zGlob->Draw();

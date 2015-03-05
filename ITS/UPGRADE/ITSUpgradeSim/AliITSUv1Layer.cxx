@@ -470,6 +470,7 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 // Updated:      12 Jan 2015  Mario Sitta  Fix overlap with new OB space frame
 //                            (by moving the latter, not the sensors to avoid
 //                             spoiling their position in space)
+// Updated:      03 Mar 2015  Mario Sitta  Fix chip position
 //
 
   char volname[30];
@@ -510,13 +511,14 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
   // Now build up the stave
   if (fLayerNumber < fgkNumberOfInnerLayers) {
     TGeoVolume *modVol = CreateStaveInnerB(xlen,ylen,zlen);
-    staveVol->AddNode(modVol, 0);
+    ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY() - fChipThick; // = 0 if not kIBModel4
+    staveVol->AddNode(modVol, 0, new TGeoTranslation(0, ypos, 0));
     fHierarchy[kHalfStave] = 1;
  
   // Mechanical stave structure
     mechStaveVol = CreateStaveStructInnerB(xlen,zlen); 
     if (mechStaveVol) {
-      ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY();
+      ypos = ((TGeoBBox*)(modVol->GetShape()))->GetDY() - ypos;
       if (fStaveModel != AliITSUv1::kIBModel4)
 	ypos += ((TGeoBBox*)(mechStaveVol->GetShape()))->GetDY();
       staveVol->AddNode(mechStaveVol, 1, new TGeoCombiTrans(0, -ypos, 0, new TGeoRotation("",0, 0, 180)));
@@ -618,10 +620,11 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
 //         the module as a TGeoVolume
 //
 // Created:      06 Mar 2014  M. Sitta
+// Updated:      03 Mar 2015  Mario Sitta  FPC in right position (beyond chip)
 //
 
-  Double_t zchip;
-  Double_t zpos;
+  Double_t ytot, zchip;
+  Double_t ypos, zpos;
   char volname[30];
 
   // First create the single chip
@@ -629,18 +632,48 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
   TGeoVolume *chipVol = CreateChipInnerB(xmod, ymod, zchip);
 
   // Then create the module and populate it with the chips
-  TGeoBBox *module = new TGeoBBox(xmod, ymod, zmod);
+  // (and the FPC Kapton and Aluminum in the most recent IB model)
+  ytot = ymod;
+  if (fStaveModel == AliITSUv1::kIBModel4)
+    ytot += 0.5*(fgkIBFlexCableKapThick + fgkIBFlexCableAlThick);
 
-  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+  TGeoBBox *module = new TGeoBBox(xmod, ytot, zmod);
+
+  TGeoBBox *kapCable = new TGeoBBox(xmod, fgkIBFlexCableKapThick/2, zmod);
+  TGeoBBox *aluCable = new TGeoBBox(xmod, fgkIBFlexCableAlThick /2, zmod);
+
+  TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medKapton   = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+  TGeoMedium *medAluminum = mgr->GetMedium("ITS_ALUMINUM$");
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
   TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
 
-  // mm (not used)  zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+  TGeoVolume *kapCableVol = new TGeoVolume("FPCKapton", kapCable, medKapton);
+  kapCableVol->SetLineColor(kBlue);
+  kapCableVol->SetFillColor(kBlue);
+
+  TGeoVolume *aluCableVol = new TGeoVolume("FPCAluminum",
+					   aluCable, medAluminum);
+  aluCableVol->SetLineColor(kCyan);
+  aluCableVol->SetFillColor(kCyan);
+
+  // build up the module
+  ypos = -ytot + ymod; // = 0 if not kIBModel4
   for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
     zpos = -zmod + j*2*zchip + zchip;
-    modVol->AddNode(chipVol, j, new TGeoTranslation(0, 0, zpos));
+    modVol->AddNode(chipVol, j, new TGeoTranslation(0, ypos, zpos));
     fHierarchy[kChip]++;
+  }
+
+  if (fStaveModel == AliITSUv1::kIBModel4) {
+    ypos += (ymod + aluCable->GetDY());
+    if (fBuildLevel < 1)   // Aluminum
+      modVol->AddNode(aluCableVol, 1, new TGeoTranslation(0, ypos, 0));
+
+    ypos += (aluCable->GetDY() + kapCable->GetDY());
+    if (fBuildLevel < 4)   // Kapton
+      modVol->AddNode(kapCableVol, 1, new TGeoTranslation(0, ypos, 0));
   }
 
   // Done, return the module
@@ -1979,6 +2012,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
 // Return:
 //
 // Created:      04 Dec 2014  Mario Sitta
+// Updated:      03 Mar 2015  Mario Sitta  FPC in right position (beyond chip)
 //
 
   
@@ -2004,10 +2038,6 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
 
 
   // First create all needed shapes
-  TGeoBBox *kapCable = new TGeoBBox(xstave, fgkIBFlexCableKapThick/2, zstave);
-
-  TGeoBBox *aluCable = new TGeoBBox(xstave, fgkIBFlexCableAlThick/2, zstave);
-
   TGeoBBox *glue     = new TGeoBBox(xstave, fgkIBGlueThick/2, zstave);
 
   TGeoBBox *fleecbot = new TGeoBBox(xstave, fgkIBCarbonFleeceThick/2, zstave);
@@ -2062,9 +2092,8 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   beta = TMath::ATan(2*sidev->GetDz()/sidev->GetDx2());
   gamma = TMath::PiOver2() - beta;
 
-  layerHeight = 2*(  kapCable->GetDY() + aluCable->GetDY() +   glue->GetDY()
-	           + fleecbot->GetDY() +  cfplate->GetDY() + cpaplr->GetDY()
-	           +  fleeclr->GetDY() );
+  layerHeight = 2*(    glue->GetDY() + fleecbot->GetDY() + cfplate->GetDY()
+                   + cpaplr->GetDY() +  fleeclr->GetDY() );
 
   xv[0] = xstave;
   yv[0] = 0;
@@ -2094,7 +2123,6 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   TGeoMedium *medK13D2U2k     = mgr->GetMedium("ITS_K13D2U2k$");
   TGeoMedium *medFGS003       = mgr->GetMedium("ITS_FGS003$"); 
   TGeoMedium *medCarbonFleece = mgr->GetMedium("ITS_CarbonFleece$"); 
-  TGeoMedium *medAluminum     = mgr->GetMedium("ITS_ALUMINUM$");
 
 
   char volname[30];
@@ -2104,15 +2132,6 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   mechStavVol->SetLineColor(12);
   mechStavVol->SetFillColor(12); 
   mechStavVol->SetVisibility(kFALSE);
-
-  TGeoVolume *kapCableVol = new TGeoVolume("FPCKapton", kapCable, medKapton);
-  kapCableVol->SetLineColor(kBlue);
-  kapCableVol->SetFillColor(kBlue);
-
-  TGeoVolume *aluCableVol = new TGeoVolume("FPCAluminum",
-					   aluCable, medAluminum);
-  aluCableVol->SetLineColor(kCyan);
-  aluCableVol->SetFillColor(kCyan);
 
   TGeoVolume *glueVol = new TGeoVolume("Glue", glue, medGlue);
   glueVol->SetLineColor(kBlack);
@@ -2189,15 +2208,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   
 
   // Now build up the half stave
-  ypos = kapCable->GetDY();
-  if (fBuildLevel < 4)   // Kapton
-    mechStavVol->AddNode(kapCableVol, 1, new TGeoTranslation(0, ypos, 0));
-
-  ypos += (kapCable->GetDY() + aluCable->GetDY());
-  if (fBuildLevel < 1)   // Aluminum
-    mechStavVol->AddNode(aluCableVol, 1, new TGeoTranslation(0, ypos, 0));
-
-  ypos += (aluCable->GetDY() + glue->GetDY());
+  ypos = glue->GetDY();
   if (fBuildLevel < 2)   // Glue
     mechStavVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
 
@@ -3398,7 +3409,8 @@ TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xchip,
   TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medChip;
 
-  if (fBuildLevel < 7)
+  if ( (fLayerNumber <  fgkNumberOfInnerLayers & fBuildLevel < 6) ||
+       (fLayerNumber >= fgkNumberOfInnerLayers & fBuildLevel < 7) )
     medChip = medSi;
   else
     medChip = medAir;

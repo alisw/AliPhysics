@@ -15,9 +15,9 @@ void MakeMatBudPlots(int layer=0)
   // Radii are from last TDR (ALICE-TDR-017.pdf Tab. 1.1, rMid is mean value)
   // TO BE KEPT IN SYNC WITH CreateITSUv1.C MACRO!!!
   const double tdr5dat[kNLr][kNPar] = { 
-    {2.24, 2.34, 2.67,  9., 16.37, 12}, // for each inner layer: rMin,rMid,rMax,NChip/Stave, phi0, nStaves
-    {3.01, 3.15, 3.46,  9., 12.03, 16},
-    {3.78, 3.93, 4.21,  9., 10.02, 20},
+    {2.24, 2.34, 2.67,  9., 16.42, 12}, // for each inner layer: rMin,rMid,rMax,NChip/Stave, phi0, nStaves
+    {3.01, 3.15, 3.46,  9., 12.18, 16},
+    {3.78, 3.93, 4.21,  9.,  9.55, 20},
     {-1,  19.6 ,   -1,  4.,  0.  , 24},  // for others: -, rMid, -, NMod/HStave, phi0, nStaves
     {-1,  24.55, -1,    4.,  0.  , 30},
     {-1,  34.39, -1,    7.,  0.  , 42},
