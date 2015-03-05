@@ -1,19 +1,13 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoDummyPairCut: a summy pair cut. Accepts all pairs             //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \class AliFemtoDummyPairCut
+/// \brief A summy pair cut. Accepts all pairs
+///
+/// A do-nothing pair cut that simply says "true" to every pair
+///
+/// \author Mike Lisa <lisa@mps.ohio-state.edu>, Ohio State
+///
+
 /***************************************************************************
- *
- * $Id$
- *
- * Author: Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a do-nothing pair cut that simply says "true" to every pair           
- *
- ***************************************************************************
  *
  * $Log$
  * Revision 1.2.2.1  2007/10/12 14:28:37  akisiel
@@ -78,14 +72,9 @@
 #ifndef ALIFEMTODUMMYPAIRCUT_H
 #define ALIFEMTODUMMYPAIRCUT_H
 
-// do I need these lines ?
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
-
 #include "AliFemtoPairCut.h"
 
-class AliFemtoDummyPairCut : public AliFemtoPairCut{
+class AliFemtoDummyPairCut : public AliFemtoPairCut {
 public:
   AliFemtoDummyPairCut();
   AliFemtoDummyPairCut(const AliFemtoDummyPairCut&);
@@ -98,11 +87,13 @@ public:
   AliFemtoDummyPairCut* Clone();
 
 private:
-  long fNPairsPassed;  // number of pairs analyzed by this cut that passed
-  long fNPairsFailed;  // number of pairs analyzed by this cut that failed
+  long fNPairsPassed;  ///< number of pairs analyzed by this cut that passed
+  long fNPairsFailed;  ///< number of pairs analyzed by this cut that failed
 
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoDummyPairCut, 1)
+  /// \endcond
 #endif
 };
 
