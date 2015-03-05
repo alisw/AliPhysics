@@ -1105,21 +1105,29 @@ void AliFRAMEv3::CreateGeometry()
   ptrd1[1] = 64.25; 
   ptrd1[2] = 372.6; 
   ptrd1[3] = 14.525/2;
+
   char nameChA[16];
   snprintf(nameChA, 16, "BTOFA");
-  TGeoTrd1 *trd1=new TGeoTrd1(nameChA,ptrd1[0],ptrd1[1],ptrd1[2],ptrd1[3]); 
+  TGeoTrd1 *trd1=new TGeoTrd1(nameChA,ptrd1[0],ptrd1[1],ptrd1[2],ptrd1[3]);
   trd1->SetName("BTOFA"); // just to avoid a warning
+
   char nameChB[16];
   snprintf(nameChB, 16, "BTOFB");
-  TGeoBBox *box1 = new TGeoBBox(nameChB,64.25 ,372.6, 14.525/2);
+  TGeoBBox *box1 = new TGeoBBox(nameChB,64.25, 372.6, 1.0);
   box1->SetName("BTOFB"); // just to avoid a warning
+
+  char nameChC[16];
+  snprintf(nameChC, 16, "BTOFC");
+  TGeoBBox *box2 = new TGeoBBox(nameChC,62.25, 372.6, 6.2625);
+  box2->SetName("BTOFC"); // just to avoid a warning
+
   TGeoTranslation *tr1 = new TGeoTranslation("trnsl1",0, 0, -14.525/2 );
   tr1->RegisterYourself();
-  TGeoTranslation *tr2 = new TGeoTranslation("trnsl2",0, 0, +14.525/2 );
+  TGeoTranslation *tr2 = new TGeoTranslation("trnsl2",0, 0, +1.0 );
   tr2->RegisterYourself();
-  TGeoCompositeShape *btofcs =new TGeoCompositeShape("Btofcs","(BTOFA:trnsl1)+(BTOFB:trnsl2)");
-
-
+  TGeoTranslation *tr3 = new TGeoTranslation("trnsl3",0, 0, 8.2625 );
+  tr3->RegisterYourself();
+  TGeoCompositeShape *btofcs =new TGeoCompositeShape("Btofcs","(BTOFA:trnsl1)+(BTOFB:trnsl2)+(BTOFC:trnsl3)");
   for (i = 0; i < 18; i++) {
     char nameCh[16];
     snprintf(nameCh, 16, "BTOF%d",i);
