@@ -1,12 +1,16 @@
-/***************************************************************************
- *
- * $Id$
- *
- * Author: Frank Laue, BNL, laue@bnl.gov
- ***************************************************************************
- *
- ***************************************************************************
- *
+///
+/// \file AliFemtoTypes.h
+/// \author Frank Laue <laue@bnl.gov>, BNL
+///
+/// This file simply loades other header files with 'AliFemto' datatypes:
+///
+///   * AliFemtoString
+///   * AliFemtoVector
+///   * AliFemtoHelix
+///   * AliFemtoEnumeration
+///
+
+/*
  * $Log$
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
@@ -15,7 +19,7 @@
  * First version on CVS
  *
  * Revision 1.14  2001/06/21 19:15:48  laue
- * Modified fiels:
+ * Modified files:
  *   CTH.h : new constructor added
  *   AliFemtoEvent, AliFemtoKink, AliFemtoTrack : constructors from the persistent
  *                                   (TTree) classes added
@@ -29,10 +33,10 @@
  *   AliFemtoTTreeV0.cxx AliFemtoTTreeV0.h AliFemtoVector.h
  *
  *
- ***************************************************************************/
+ */
 
-// 
-// I split this up into different files, so that I do not have to 
+//
+// I split this up into different files, so that I do not have to
 // load/recompile everything all over again.
 //
 
@@ -41,5 +45,3 @@
 #include "AliFemtoVector.h"
 #include "AliFemtoHelix.h"
 #include "AliFemtoEnumeration.h"
-
-
