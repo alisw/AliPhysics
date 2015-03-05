@@ -152,6 +152,8 @@
 #pragma link C++ class  AliAnalysisTaskZDCpA+;
 // T0
 #pragma link C++ class  AliT0AnalysisTaskQA+;
+// AD
+#pragma link C++ class  AliAnalysisTaskADQA+;
 
 #pragma link C++ class  AliTrackComparison+;
 #pragma link C++ class  AliTrackComparisonESD+;
