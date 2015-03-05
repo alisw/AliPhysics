@@ -29,6 +29,7 @@
 #include <TGeoMatrix.h>
 #include <TGeoPgon.h>
 #include <TGeoTrd1.h>
+#include <TGeoArb8.h>
 #include <TGeoBBox.h>
 #include <TGeoMedium.h>
 #include <TGeoBoolNode.h>
@@ -1129,6 +1130,53 @@ void AliFRAMEv3::CreateGeometry()
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
     TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., 43.525 + zsh, 0, "ONLY"); 
   }
+
+  //Create TOF Rail
+  char nameRaV1[16];
+  snprintf(nameRaV1, 16, "RaV1");
+  TGeoBBox *boxRaV1 = new TGeoBBox(nameRaV1, 0.5 ,350.0, 1.5);
+  char nameRaO1[16];
+  snprintf(nameRaO1, 16, "RaO1");
+  TGeoBBox *boxRaO1 = new TGeoBBox(nameRaO1, 1.5 ,350.0, 0.5);
+  TGeoCompositeShape* C1=(TGeoCompositeShape*) CreateTOFRail(45.61);
+  C1->SetName("C1");
+  TGeoCompositeShape* C2=(TGeoCompositeShape*) CreateTOFRail(61.61);
+  C2->SetName("C2");
+  TGeoCompositeShape* C3=(TGeoCompositeShape*) CreateTOFRail(63.11);
+  C3->SetName("C3");
+  TGeoCompositeShape* C4=(TGeoCompositeShape*) CreateTOFRail(61.61);
+  C4->SetName("C4");
+  TGeoCompositeShape* C5=(TGeoCompositeShape*) CreateTOFRail(45.61);
+  C5->SetName("C5");
+  TGeoTranslation *trRaO1 = new TGeoTranslation("trRaO1",1., 0., -2.);
+  trRaO1->RegisterYourself();
+  TGeoTranslation *trC1 = new TGeoTranslation("trC1",-3.39, -286.6, -0.15);
+  trC1->RegisterYourself();
+  TGeoTranslation *trC2 = new TGeoTranslation("trC2",-3.39, -152., -0.15);
+  trC2->RegisterYourself();
+  TGeoTranslation *trC3 = new TGeoTranslation("trC3",-3.39, +8.5, -0.15);
+  trC3->RegisterYourself();
+  TGeoTranslation *trC4 = new TGeoTranslation("trC4",-3.39, +151.8, -0.15);
+  trC4->RegisterYourself();
+  TGeoTranslation *trC5 = new TGeoTranslation("trC5",-3.39, 286.6, -0.15);
+  trC5->RegisterYourself();
+  
+  TGeoCompositeShape *TOFrail =new TGeoCompositeShape("TOFrail","(RaV1+RaO1:trRaO1)+C1:trC1+C2:trC2+C3:trC3+C4:trC4+C5:trC5");
+  
+  char nameTR[16];
+  snprintf(nameTR, 16, "VolTOFrail");
+  TGeoVolume* VolTOFrail = new TGeoVolume(nameTR, TOFrail, gGeoManager->GetMedium("FRAME_Aluminum"));
+  VolTOFrail->SetName(nameTR); 
+  gGeoManager->GetVolume(nameTR)->SetVisibility(kTRUE);
+  AliMatrix(idrotm[2102],  90.0,   180.0,  90.0, 270.0,   0.0, 180.0);  
+
+  for (i = 0; i < 18; i++) {
+    char nameMo[16];
+    snprintf(nameMo, 16, "BSEGMO%d",i);
+    TVirtualMC::GetMC()->Gspos("VolTOFrail", 2*i,   nameMo, -66.27, 0., +56.33 + zsh, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("VolTOFrail", 2*i+1, nameMo,  66.27, 0., +56.33 + zsh, idrotm[2102], "ONLY");
+  }
+
 //
 //    Geometry of Rails starts here
 //
@@ -1787,3 +1835,38 @@ void AliFRAMEv3::WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t
     gGeoManager->GetVolume(nameI)->SetVisContainers();;
 }
 
+TGeoCompositeShape* AliFRAMEv3::CreateTOFRail (Float_t y)
+{
+   char nameSostA1[16];
+   snprintf(nameSostA1, 16, "SostA1");
+   TGeoBBox *boxSostA1 = new TGeoBBox(nameSostA1, 0.5, y, 2.0);
+   char nameCV[16];
+   snprintf(nameCV, 16, "CV");
+   TGeoArb8 *CV = new TGeoArb8(nameCV, 2.35);
+   CV->SetVertex(0, 0.89, -y);
+   CV->SetVertex(1, 0.89, y);
+   CV->SetVertex(2, 0.09, y);
+   CV->SetVertex(3, 0.09, -y);
+   CV->SetVertex(4, -0.09, -y);
+   CV->SetVertex(5, -0.09, y);
+   CV->SetVertex(6, -0.89, y);
+   CV->SetVertex(7, -0.89, -y);
+   char nameCOB[16];
+   snprintf(nameCOB, 16, "COB");
+   TGeoBBox *boxCOB = new TGeoBBox(nameCOB, 2.0, y, 0.4);
+   char nameCOT[16];
+   snprintf(nameCOT, 16, "COT");
+   TGeoBBox *boxCOT = new TGeoBBox(nameCOT, 1.7, y, 0.4);
+
+
+   TGeoTranslation *trCOB = new TGeoTranslation("trCOB",2.09, 0., -2.75 );
+   trCOB->RegisterYourself();
+   TGeoTranslation *trCOT = new TGeoTranslation("trCOT",0.81, 0., +2.75 );
+   trCOT->RegisterYourself();
+   TGeoTranslation *trSostA1 = new TGeoTranslation("trSostA1", 2.39, 0., -0.35 );
+   trSostA1->RegisterYourself();
+
+   TGeoCompositeShape *btofS1 =new TGeoCompositeShape("BtofS1","CV+(COB:trCOB)+(COT:trCOT)+(SostA1:trSostA1)");
+   return btofS1;
+
+}
