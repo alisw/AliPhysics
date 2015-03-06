@@ -34,7 +34,7 @@ namespace EMCalTriggerPtAnalysis {
 AliEMCalTriggerAnaTriggerDecision::AliEMCalTriggerAnaTriggerDecision() :
     fSwapThresholds(kFALSE),
     fIsMinBias(kFALSE),
-	fUseOfflinePatches(kFALSE),
+    fUseOfflinePatches(kFALSE),
     fDoDebug(kFALSE)
 {
   /*
