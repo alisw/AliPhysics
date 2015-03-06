@@ -1,36 +1,29 @@
-# **************************************************************************
-# * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
-# *                                                                        *
-# * Author: The ALICE Off-line Project.                                    *
-# * Contributors are mentioned in the code where appropriate.              *
-# *                                                                        *
-# * Permission to use, copy, modify and distribute this software and its   *
-# * documentation strictly for non-commercial purposes is hereby granted   *
-# * without fee, provided that the above copyright notice appears in all   *
-# * copies and that both the copyright notice and this permission notice   *
-# * appear in the supporting documentation. The authors make no claims     *
-# * about the suitability of this software for any purpose. It is          *
-# * provided "as is" without express or implied warranty.                  *
-# **************************************************************************
+# Check AliRoot installation
 
 set(AliRoot_FOUND FALSE)
 
+set(ALIROOT CACHE STRING "AliRoot installation location")
 if(ALIROOT)
-
-  # Check if AliRoot is really installed there
-  if(EXISTS ${ALIROOT}/bin/aliroot AND EXISTS ${ALIROOT}/lib AND EXISTS ${ALIROOT}/include)
-
+  # Check for aliroot executable
+  find_program(ALIROOT_EXE NAMES aliroot PATHS ${ALIROOT}/bin NO_DEFAULT_PATH)
+  
+  if(NOT ALIROOT_EXE)
+    set(AliRoot_FOUND FALSE)
+    message(WARNING "AliRoot executable not found in: ${ALIROOT}")
+  else()
+    mark_as_advanced(ALIROOT_EXE)
+  
     include_directories(
       ${ALIROOT}/include
       ${ALIROOT}/include/pythia
     )
 
     link_directories(${ALIROOT}/lib)
-
+    
+    include(${ALIROOT}/etc/AliRoot-config.cmake)
+    message(STATUS "Found AliRoot version : \"${AliRoot_VERSION}\", git hash : \"${AliRoot_REVISION}\"")
     set(AliRoot_FOUND TRUE)
-
-    message(STATUS "Found AliRoot")
-
+    
   endif()
 endif(ALIROOT)
 
