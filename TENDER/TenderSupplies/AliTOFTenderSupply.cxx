@@ -165,6 +165,8 @@ void AliTOFTenderSupply::Init()
     if (!fIsMC) {
       if (fUserRecoPass == 0) DetectRecoPass();
       else fRecoPass = fUserRecoPass;
+    } else {
+      Printf("AliTOF tender running on MC (reco pass is set to %d)",fRecoPass);
     }
     if (run<114737) {
       fTenderNoAction = kTRUE;
@@ -1265,22 +1267,27 @@ void AliTOFTenderSupply::LoadTOFPIDParams(Int_t runNumber)
   if (fTOFPIDParams) delete fTOFPIDParams;
   fTOFPIDParams=0x0;
   
-  TFile *oadbf = new TFile("$ALICE_PHYSICS/OADB/COMMON/PID/data/TOFPIDParams.root");
+  //  TFile *oadbf = new TFile("$ALICE_PHYSICS/OADB/COMMON/PID/data/TOFPIDParams.root");
+  TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/TOFPIDParams.root",AliAnalysisManager::GetOADBPath()));
   if (oadbf && oadbf->IsOpen()) {
-    AliInfo("Loading TOF Params from $ALICE_PHYSICS/OADB/COMMON/PID/data/TOFPIDParams.root");
+    AliInfo(Form("Tender loading TOF OADB Params from %s/COMMON/PID/data/TOFPIDParams.root",AliAnalysisManager::GetOADBPath()));
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
-    if (oadbc) fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(runNumber,"TOFparams"));
+    Int_t passNr = fRecoPass;
+    if (fIsMC) passNr=2;   // this is because tender on MC is used only for pass2 LHC10
+    TString passName = Form("pass%d",passNr);
+    if (oadbc) fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(runNumber,"TOFparams",passName));
     oadbf->Close();
     delete oadbc;
   }
   delete oadbf;
 
   if (!fTOFPIDParams) {
-    AliError("TOFPIDParams.root not found in $ALICE_ROOT/OADB/COMMON/PID/data !!");
-    fTOFPIDParams = new AliTOFPIDParams;
-    fTOFPIDParams->SetTOFresolution(90.);
-    fTOFPIDParams->SetStartTimeMethod(AliESDpid::kTOF_T0);
+    AliError(Form("TOFPIDParams.root not found in %s/COMMON/PID/data !!",AliAnalysisManager::GetOADBPath()));
+    fTOFPIDParams = new AliTOFPIDParams;  // the default is set as pp/pPb with kBest_T0
+    AliInfo("TOFPIDparams taken from default object"); 
+    //    fTOFPIDParams->SetStartTimeMethod(AliESDpid::kTOF_T0);
   }  
+
 }
 
 
