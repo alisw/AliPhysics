@@ -41,8 +41,8 @@ void runNorm(TString inputFileName = "AliAOD.root", Int_t nEvents = 1e6, TString
   gSystem->Load("libPWGmuon"); 
   gSystem->Load("libPWGmuondep"); 
   
-  gSystem->AddIncludePath(Form("-I\"%s/include\"", gSystem->ExpandPathName("$ALICE_ROOT")));
-  gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
+  gSystem->AddIncludePath(Form("-I\"%s/include\" -I\"%s/include\"", gSystem->ExpandPathName("$ALICE_ROOT"),gSystem->ExpandPathName("$ALICE_PHYSICS")));
+  gROOT->ProcessLine(Form(".include %s/include %s/include", gSystem->ExpandPathName("$ALICE_ROOT"), gSystem->ExpandPathName("$ALICE_PHYSICS")));
 
   // Create input chain
   TChain* chain = CreateChain(inputFileName,isESD);
@@ -74,7 +74,7 @@ void runNorm(TString inputFileName = "AliAOD.root", Int_t nEvents = 1e6, TString
   
   // event selection and centrality framework
   if ( isESD ){
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection(isMC);
     if ( !physicsSelection ) {
       Error("runLocal","AliPhysicsSelectionTask not created!");
@@ -83,7 +83,7 @@ void runNorm(TString inputFileName = "AliAOD.root", Int_t nEvents = 1e6, TString
   }
   if ( isESD ){
     // event centrality
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
     if ( !taskCentrality ) {
       Error("runLocal on ESD","AliCentralitySelectionTask not created!");
@@ -93,8 +93,8 @@ void runNorm(TString inputFileName = "AliAOD.root", Int_t nEvents = 1e6, TString
     //taskCentrality->SetPass(1); // remember to set the pass you are processing!!!
   }
   /*else {
-    //Only on full AOD it is possible to reprocess the centrality framework
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+    //Only on full AOD, it is possible to reprocess the centrality framework
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(kTRUE,kTRUE);
     if ( !taskCentrality ) {
       Error("runLocal on AOD","AliCentralitySelectionTask not created!");
@@ -105,7 +105,11 @@ void runNorm(TString inputFileName = "AliAOD.root", Int_t nEvents = 1e6, TString
   
   // Example analysis
   // Create task
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/muon/AddTaskNorm.C");
+  //Analysis task is on working directory
+  //  gROOT->LoadMacro("AliAnalysisTaskNorm.cxx+g");
+  //  gROOT->LoadMacro("AddTaskNorm.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWG/muon/AliAnalysisTaskNorm.cxx+g");
+  gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWG/muon/AddTaskNorm.C");
   AliAnalysisTaskNorm* task = AddTaskNorm(isESD,isMC,beamConf);
   if (!task) {
     Error("runAnalysis","AliAnalysisTaskNorm not created!");
