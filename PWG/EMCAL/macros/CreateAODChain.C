@@ -1,17 +1,16 @@
-/* $Id$ */
-
 // This helper macros creates a chain of AOD files for you. 
 // Source can be either a text file with the file paths or 
 // a directory. In the latter case all AOD files in all 
 // subdirectories are considered.
 //
-// Author: Jan.Fiete.Grosse-Oetringhaus@cern.ch
+// Author: Jan.Fiete.Grosse-Oetringhaus@cern.ch, Salvatore.Aiola@cern.ch
 
 TChain* CreateAODChain(
   const char* aDataDir = "AODfiles.txt", 
   Int_t aRuns          = 20, 
   Int_t offset         = 0, 
-  Bool_t addFileName   = kFALSE, 
+  Bool_t addFileName   = kFALSE,
+  const char* friends  = "",
   const char* check    = 0)
 {
   // creates chain of files in a given directory or file containing a list.
@@ -35,6 +34,8 @@ TChain* CreateAODChain(
 
   TChain* chain = new TChain("aodTree");
   TChain* chainFriend = 0;
+
+  if (strcmp(friends, "") != 0) chainFriend = new TChain("aodTree");
 
   if (flags & 2)
   {
@@ -66,6 +67,7 @@ TChain* CreateAODChain(
       presentDirName += presentDir->GetName();
 
       chain->Add(presentDirName + "/AliAOD.root/aodTree");
+      if (chainFriend) chainFriend->Add(presentDirName + "/" + friends + "/aodTree");
     }
   }
   else
@@ -100,12 +102,13 @@ TChain* CreateAODChain(
 
       TString aodFile(line);
 
-      if (addFileName)
-        aodFile += "/AliAOD.root";
-
-      if (line.EndsWith(".zip"))
+      if (line.EndsWith(".zip")) {
 	aodFile += "#AliAOD.root";
- 
+      }
+      else if (addFileName) {
+        aodFile += "/AliAOD.root";
+      }
+      
       if (check)
       {
         TFile* file = TFile::Open(aodFile);
@@ -117,14 +120,25 @@ TChain* CreateAODChain(
         printf("%s\n", line.Data());
       }        
         
-        // add aod file
+      // add aod file
       chain->Add(aodFile);
-    }
 
+      if (chainFriend) {
+        TString friendFileName(aodFile);
+        friendFileName.ReplaceAll("AliAOD.root", friends);
+        chainFriend->Add(friendFileName);
+      }
+    }
+    
     in.close();
     
-    if (check)
+    if (check) {
       outfile.close();
+    }
+  }
+
+  if (chainFriend) {
+    chain->AddFriend(chainFriend);
   }
 
   return chain;
