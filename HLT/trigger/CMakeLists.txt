@@ -83,7 +83,7 @@ if(FASTJET_FOUND)
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
 
-    set(SRC ${SRCS}
+    set(SRCS ${SRCS}
         AliHLTTriggerFastJet.cxx
        )
 endif()
