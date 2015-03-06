@@ -112,13 +112,17 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Float_t fTrackPt[kTrack];     //
   Float_t fTrackEta[kTrack];    //
   Float_t fTrackPhi[kTrack];    //
+  Float_t fTrackCnDf[kTrack];    //
+
   Float_t fTrackPtM[kTrack];    //
   Float_t fTrackEtaM[kTrack];   //
   Float_t fTrackPhiM[kTrack];   //
   Float_t fTrackDxy[kTrack];    //
   Float_t fTrackDz[kTrack];     //
   Int_t   fTrackPid[kTrack];    //
+  Int_t   fTrackTpcNcl[kTrack];    //
   Int_t   fTrackPidM[kTrack];   //
+
  
 
   //________________________________

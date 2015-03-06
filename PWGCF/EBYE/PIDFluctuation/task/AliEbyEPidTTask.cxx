@@ -161,7 +161,12 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   fPidCont->Branch("fTrackDxy",  fTrackDxy,"fTrackDxy[fNumberOfTracks]/F");
   fPidCont->Branch("fTrackDz",   fTrackDz,"fTrackDz[fNumberOfTracks]/F");
   fPidCont->Branch("fTrackPid",  fTrackPid,"fTrackPid[fNumberOfTracks]/I");
+  fPidCont->Branch("fTrackTpcNcl",  fTrackTpcNcl,"fTrackTpcNcl[fNumberOfTracks]/I");
+  fPidCont->Branch("fTrackCnDf",  fTrackCnDf,"fTrackCnDf[fNumberOfTracks]/I");
   
+
+
+
  if (fHelperPID) {
     fThnList->Add(new TList);
     TList *list =  static_cast<TList*>(fThnList->Last());
@@ -244,6 +249,8 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fCentrality[4] = centrality->GetCentralityPercentile("TKL");
   fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
     
+  //  Printf("%f %f %f %f", fCentrality[0],fCentrality[1],fCentrality[2],fVtx[2]);
+
   fEventCounter->Fill(3);
   fNTracks  = event->GetNumberOfTracks();  
   
@@ -252,21 +259,22 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     AliVTrack *track = static_cast<AliVTrack*>(event->GetTrack(idxTrack)); 
     if(!AcceptTrackL(track)) continue;
     
-    Float_t dca[2], cov[3]; // 
-    if (track->InheritsFrom("AliESDtrack")) {
+    Float_t dca[2], cov[3], ndf; // 
+     if (track->InheritsFrom("AliESDtrack")) {
       (dynamic_cast<AliESDtrack*>(track))->GetImpactParameters(dca, cov);
     } else if (track->InheritsFrom("AliAODTrack")) {
       Double_t dcaa[2] = {-999,-999};
      Double_t cova[3] = {-999,-999,-999};
      AliAODTrack* clone = dynamic_cast<AliAODTrack*>(track->Clone("trk_clone"));
-     Bool_t propagate = clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),100.,dcaa,cova);
+     ndf = clone->Chi2perNDF();
+     Bool_t propagate = clone->PropagateToDCA(vertex,event->GetMagneticField(),100.,dcaa,cova);
      delete clone;  
      if (!propagate) dca[0] = -999;
      else dca[0] = Float_t(dcaa[0]);
-   }
-    
-    if ( TMath::Abs(dca[0]) > fDcaXy ) continue;
-    if ( TMath::Abs(dca[1]) > fDcaZ )  continue;
+     }
+     // Printf("%f %f %f",dca[0], dca[1], ndf);
+     //  if ( TMath::Abs(dca[0]) > fDcaXy ) continue;
+     // if ( TMath::Abs(dca[1]) > fDcaZ )  continue;
 
     Int_t icharge = track->Charge() < 0 ? -1 : 1;
     Int_t a = fHelperPID->GetParticleSpecies(track,kTRUE);
@@ -275,6 +283,10 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     else if (a == 1 ) b = 2;
     else if (a == 2 ) b = 3;
     else              b = 4;    
+
+    fTrackCnDf[iTracks]  =  ndf;
+    fTrackTpcNcl[iTracks] = track->GetTPCClusterInfo(2,1);
+
     fTrackPt[iTracks]  = (Float_t)track->Pt();
     fTrackPhi[iTracks] = (Float_t)track->Phi();
     fTrackEta[iTracks] = (Float_t)track->Eta();
