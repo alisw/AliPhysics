@@ -1845,7 +1845,6 @@ Int_t AliShuttle::ProcessCurrentDetector()
                 if (status->GetCount() >= fConfig->GetMaxRetries()) {
                         Log(fCurrentDetector.Data(), Form("ProcessCurrentDetector - Sending mail to %s expert(s):", 
                                                 fCurrentDetector.Data()));
-                        Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
                         if (!SendMail(kPPEMail, -1, returnValue)) //we pass here the returnValue too, used by SendMail only in the GRP case to derive recipients
                                 Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to %s expert(s)",
                                                         fCurrentDetector.Data()));
