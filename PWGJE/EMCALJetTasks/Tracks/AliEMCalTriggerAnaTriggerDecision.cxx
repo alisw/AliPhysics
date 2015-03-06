@@ -108,8 +108,8 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
   while((mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
 	for(int icase = 0; icase < 4; icase++){
 	  if(SelectTriggerPatch(ETATriggerType(icase), mypatch)){
-		fDecisionFromPatches[icase] = kTRUE;
-        foundpatches[icase]++;
+	    fDecisionFromPatches[icase] = kTRUE;
+      foundpatches[icase]++;
 	  }
 	}
   }
@@ -129,6 +129,7 @@ Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trig
 	 */
 	bool selectPatchType = kFALSE;
 	if(fUseOfflinePatches){
+	  if(!recpatch->IsOfflineSimple()) return kFALSE;
 		switch(trigger){
 		case kTAEMCJHigh: selectPatchType = fSwapThresholds ? recpatch->IsJetLowSimple() :  recpatch->IsJetHighSimple(); break;
 		case kTAEMCJLow: selectPatchType = fSwapThresholds ? recpatch->IsJetHighSimple() :  recpatch->IsJetLowSimple(); break;
@@ -136,6 +137,7 @@ Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trig
 		case kTAEMCGLow: selectPatchType = fSwapThresholds ? recpatch->IsGammaHighSimple() :  recpatch->IsGammaLowSimple(); break;
 		};
 	} else {
+	  if(recpatch->IsOfflineSimple()) return kFALSE;
 		switch(trigger){
 		case kTAEMCJHigh: selectPatchType = fSwapThresholds ? recpatch->IsJetLow() :  recpatch->IsJetHigh(); break;
 		case kTAEMCJLow: selectPatchType = fSwapThresholds ? recpatch->IsJetHigh() :  recpatch->IsJetLow(); break;
