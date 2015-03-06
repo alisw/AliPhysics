@@ -82,9 +82,9 @@ public:
     fMaxnSigmaTOF[2]=smax;
   }
   
-  void SetPriors(Double_t *priors){fPriors=priors;return;}
-  void SetPLimit(Double_t *plim){for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
-  void SetPLimit(Double_t *plim,Int_t npLim){fnPLimit=npLim;for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
+  void SetPriors(Double_t *priors, Int_t npriors);
+  void SetPLimit(Double_t *plim, Int_t npLim);
+
   void SetAsym(Bool_t asym){fAsym=asym;return;}
   void SetUseAsymmnSigmaTOF(Double_t nsmin, Double_t nsmax, Double_t nscompmin, Double_t nscompmax){
     fUseAsymTOF=kTRUE;
