@@ -93,6 +93,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fNRotations(9),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
+  fNRotations3(9),
   fMinAngleForRot3(2*TMath::Pi()/6),
   fMaxAngleForRot3(4*TMath::Pi()/6),
   fCounter(0x0),
@@ -181,6 +182,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fNRotations(9),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
+  fNRotations3(9),
   fMinAngleForRot3(2*TMath::Pi()/6),
   fMaxAngleForRot3(4*TMath::Pi()/6),
   fCounter(0x0),
@@ -422,16 +424,14 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fMassVsPtVsYRot->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRot);
   
-  if(fMeson==kDzero){
-    fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-    fMassVsPtVsYLSpp->Sumw2();
-    fMassVsPtVsYLSpp->SetMinimum(0);
-    fOutput->Add(fMassVsPtVsYLSpp);
-    fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-    fMassVsPtVsYLSmm->Sumw2();
-    fMassVsPtVsYLSmm->SetMinimum(0);
-    fOutput->Add(fMassVsPtVsYLSmm);
-  }
+  fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
+  fMassVsPtVsYLSpp->Sumw2();
+  fMassVsPtVsYLSpp->SetMinimum(0);
+  fOutput->Add(fMassVsPtVsYLSpp);
+  fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
+  fMassVsPtVsYLSmm->Sumw2();
+  fMassVsPtVsYLSmm->SetMinimum(0);
+  fOutput->Add(fMassVsPtVsYLSmm);
   
   fMassVsPtVsYSig=new TH3F("hMassVsPtVsYSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fMassVsPtVsYSig->Sumw2();
@@ -712,18 +712,20 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       py[1] = tmpp[1];
       pz[1] = tmpp[2];
       dgLabels[1]=trPi1->GetLabel();
-      if(chargePi1==chargeK){
-        if(fMeson==kDzero) FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
-        continue;
-      }
       if(fMeson==kDzero){
-        nFiltered++;
-        v2->AddDaughter(trK);
-        v2->AddDaughter(trPi1);
-        tmpRD2->SetSecondaryVtx(v2);
-        Bool_t ok=FillHistos(421,2,tmpRD2,px,py,pz,pdg0,arrayMC,dgLabels);
-        v2->RemoveDaughters();
-        if(ok) nSelected++;
+        if(chargePi1==chargeK){
+	  // LS candidate
+	  FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
+	}else{
+	  // OS candidate
+	  nFiltered++;
+	  v2->AddDaughter(trK);
+	  v2->AddDaughter(trPi1);
+	  tmpRD2->SetSecondaryVtx(v2);
+	  Bool_t ok=FillHistos(421,2,tmpRD2,px,py,pz,pdg0,arrayMC,dgLabels);
+	  v2->RemoveDaughters();
+	  if(ok) nSelected++;
+	}
       }else{
         for(Int_t iTr3=iTr2+1; iTr3<ntracks; iTr3++){
           if((status[iTr3] & 1)==0) continue;
@@ -735,21 +737,23 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	    continue;
 	  }
           Int_t chargePi2=trPi2->Charge();
-          if(chargePi2==chargeK) continue;
-          nFiltered++;
           trPi2->GetPxPyPz(tmpp);
           px[2] = tmpp[0];
           py[2] = tmpp[1];
           pz[2] = tmpp[2];
           dgLabels[2]=trPi2->GetLabel();
-          v3->AddDaughter(trK);
-          v3->AddDaughter(trPi1);
-          v3->AddDaughter(trPi2);
-          tmpRD3->SetSecondaryVtx(v3);
-          Bool_t ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,dgLabels);
-          v3->RemoveDaughters();
-          if(ok) nSelected++;
-        }
+	  if(chargePi1==chargeK && chargePi2==chargeK) FillLSHistos(411,3,tmpRD3,px,py,pz,pdgp,chargePi1);
+	  if(chargePi1!=chargeK && chargePi2!=chargeK){
+	    nFiltered++;
+  	    v3->AddDaughter(trK);
+	    v3->AddDaughter(trPi1);
+	    v3->AddDaughter(trPi2);
+	    tmpRD3->SetSecondaryVtx(v3);
+	    Bool_t ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,dgLabels);
+	    v3->RemoveDaughters();
+	    if(ok) nSelected++;
+	  }
+	}
       }
     }
   }
@@ -909,9 +913,12 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   Double_t ptOrig=pt;
   
   
-  Double_t rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
-  Double_t rotStep3=(fMaxAngleForRot3-fMinAngleForRot3)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
-  
+  Double_t rotStep=0.;
+  if(fNRotations>1) rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
+  if(TMath::Abs(pdgD)==421) fNRotations3=1;
+  Double_t rotStep3=0.;
+  if(fNRotations3>1) rotStep3=(fMaxAngleForRot3-fMinAngleForRot3)/(fNRotations3-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
+
   for(Int_t irot=0; irot<fNRotations; irot++){
     Double_t phirot=fMinAngleForRot+rotStep*irot;
     Double_t tmpx=px[0];
@@ -920,25 +927,27 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
     Double_t tmpy2=py[2];
     px[0]=tmpx*TMath::Cos(phirot)-tmpy*TMath::Sin(phirot);
     py[0]=tmpx*TMath::Sin(phirot)+tmpy*TMath::Cos(phirot);
-    if(pdgD==411 || pdgD==431){
-      Double_t phirot2=fMinAngleForRot3+rotStep3*irot;
-      px[2]=tmpx*TMath::Cos(phirot2)-tmpy*TMath::Sin(phirot2);
-      py[2]=tmpx*TMath::Sin(phirot2)+tmpy*TMath::Cos(phirot2);
-    }
-    tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
-    pt = tmpRD->Pt();
-    minv2 = tmpRD->InvMass2(nProngs,pdgdau);
-    if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
-      Double_t rapid = tmpRD->Y(pdgD);
-      if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-        massRot=TMath::Sqrt(minv2);
-        fMassVsPtVsYRot->Fill(massRot,pt,rapid);
-        nRotated++;
-        fDeltaMass->Fill(massRot-mass);
-        if(fFullAnalysis){
-          Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
-          fDeltaMassFullAnalysis->Fill(pointRot);
-        }
+    for(Int_t irot3=0; irot3<fNRotations3; irot3++){
+      if(pdgD==411 || pdgD==431){
+	Double_t phirot2=fMaxAngleForRot3-rotStep3*irot;
+	px[2]=tmpx*TMath::Cos(phirot2)-tmpy*TMath::Sin(phirot2);
+	py[2]=tmpx*TMath::Sin(phirot2)+tmpy*TMath::Cos(phirot2);
+      }
+      tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
+      pt = tmpRD->Pt();
+      minv2 = tmpRD->InvMass2(nProngs,pdgdau);
+      if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
+	Double_t rapid = tmpRD->Y(pdgD);
+	if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
+	  massRot=TMath::Sqrt(minv2);
+	  fMassVsPtVsYRot->Fill(massRot,pt,rapid);
+	  nRotated++;
+	  fDeltaMass->Fill(massRot-mass);
+	  if(fFullAnalysis){
+	    Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
+	    fDeltaMassFullAnalysis->Fill(pointRot);
+	  }
+	}
       }
     }
     px[0]=tmpx;
