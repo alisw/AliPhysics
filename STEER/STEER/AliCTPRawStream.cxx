@@ -204,7 +204,7 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
   }
 
   // Read IRs
-  Int_t iword = 52;
+  Int_t iword = 72;
   UChar_t level = 0;
   UInt_t *irdata = NULL;
   UInt_t irsize = 0;
