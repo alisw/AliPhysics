@@ -103,7 +103,7 @@ AliRDHFCuts(name),
   Double_t plim[2]={0.6,0.8};
   Double_t nsigma[5]={2.,1.,2.,3.,0.};
   
-  fPidHF->SetPLimit(plim);
+  fPidHF->SetPLimit(plim,2);
   fPidHF->SetAsym(kTRUE);
   fPidHF->SetSigma(nsigma);
   fPidHF->SetMatch(1);
