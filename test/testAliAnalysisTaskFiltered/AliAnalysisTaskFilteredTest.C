@@ -1,7 +1,7 @@
 /*
    Macro to test functionality of the AnliAnalysisTaskFiltered.
    To be used within UnitTest suit
-   $ALICE_ROOT/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+   $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
    To test:
    1.) CPU/Memory/Data volume
    2.) Relative fracion of the information in exported trees
@@ -25,7 +25,7 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
 {
     TStopwatch timer;
     timer.Start();
-
+ 
     printf("\n\n\n");
     printf("scalingTracks=%d\n",scalingTracks);
     printf("scalingV0=%d\n",scalingV0);
@@ -57,7 +57,7 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
     //handler->SetReadTR(kFALSE);
     if (mc) mgr->SetMCtruthEventHandler(handlerMC);
 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AddTaskCDBconnect(ocdb);
 
     if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
@@ -65,7 +65,7 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
       localOCDBaccessConfig();
     }
     // Create input chain
-    gROOT->LoadMacro("$ALICE_ROOT/PWGUD/macros/CreateESDChain.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGUD/macros/CreateESDChain.C");
     TChain* chain = CreateESDChain(esdList, nFiles,firstFile);
 
     if(!chain) {
@@ -76,7 +76,7 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
     //
     // Wagons to run 
     //
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGPP/macros/AddTaskFilteredTree.C");
     AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("Filtered.root");
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);

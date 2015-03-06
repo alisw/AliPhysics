@@ -5,7 +5,7 @@
 #
 #   Macro to test functionality of the AnaliAnalysisTaskFiltered.
 #   To be used within UnitTest suit
-#   $ALICE_ROOT/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+#   $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
 #   To test:
 #   1.) CPU/Memory/Data volume
 #   2.) Relative fracion of the information in exported trees
@@ -16,9 +16,12 @@
 ###############################################################################
 # Test environment has to be configured before
 # To setup: input data path 
-# Setup example config can be found in directory $ALICE_ROOT/test/configuration
-# E.g for GSI setup
-# export UnitTestConfig=$ALICE_ROOT/test/configuration/configGSI.sh 
+# Setup example config can be found in directory $ALICE_ROOT/../src/test/configuration
+# E.g for GSI setup:
+#
+# export UnitTestConfig=$ALICE_ROOT/../src/test/configuration/configGSI.sh 
+# $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+#
 ###############################################################################
 # Steps:
 #  1. define vars
@@ -66,6 +69,6 @@ source $UnitTestConfig
         exit 1
     fi
 #run FilterTask
-    echo aliroot -l -b -q $ALICE_ROOT/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
-    aliroot -l -b -q $ALICE_ROOT/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$filterFriend,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
+    echo aliroot -l -b -q $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
+    aliroot -l -b -q $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.C\($inputListfiles,$filterT,$filterV,$filterFriend,$OCDBpath,$maxFiles,$offsetFile,$maxEvents,$offsetEvent\)
 exit
