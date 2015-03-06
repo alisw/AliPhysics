@@ -1,23 +1,26 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoParticle: main class halding all the necessary information    //
-// about a particle that is required during femtoscopic analysis         //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoParticle.h
+///
+/// \brief Main class halding all the necessary information about a particle
+///        that is required during femtoscopic analysis
+///
 
 #ifndef ALIFEMTOPARTICLE_H
 #define ALIFEMTOPARTICLE_H
 
 //#include "math.h"
+
 #include "AliFemtoTypes.h"
 #include "AliFemtoTrack.h"
 #include "AliFemtoV0.h"
 #include "AliFemtoKink.h"
 #include "AliFemtoXi.h"
 #include "AliFmPhysicalHelixD.h"
+
 // ***
 class AliFemtoHiddenInfo;
 // ***
+
 class AliFemtoParticle {
 public:
   AliFemtoParticle();
@@ -30,45 +33,39 @@ public:
 
   AliFemtoParticle &operator=(const AliFemtoParticle &aParticle);
 
-  const AliFemtoLorentzVector &FourMomentum() const;
+  const AliFemtoLorentzVector& FourMomentum() const;
 
-  AliFmPhysicalHelixD &Helix();
+  AliFmPhysicalHelixD& Helix();
 
   const AliFemtoThreeVector DecayVertexPosition() const;
   unsigned long TopologyMap(const int word) const;
   int NumberOfHits() const;
 
-  int TrackId() const;         // only for particles from tracks
-  int   NegTrackId() const;   // only for particles from v0
-  int   PosTrackId() const;   // only for particles from v0
+  int TrackId() const;      ///< only for particles from tracks
+  int NegTrackId() const;   ///< only for particles from v0
+  int PosTrackId() const;   ///< only for particles from v0
 
-  AliFemtoTrack *Track() const;
-  AliFemtoV0 *V0() const;
-  AliFemtoKink *Kink() const;
+  AliFemtoTrack* Track() const;
+  AliFemtoV0*    V0() const;
+  AliFemtoKink*  Kink() const;
 
   /*   const AliFemtoThreeVector& NominalTpcExitPoint() const;     // position track exits TPC assuming start at (0,0,0) */
   /*   const AliFemtoThreeVector& NominalTpcEntrancePoint() const; // position track crosses IFC assuming start at (0,0,0) */
-  const AliFemtoThreeVector &TpcV0PosExitPoint() const;
-  const AliFemtoThreeVector &TpcV0PosEntrancePoint() const;
-  const AliFemtoThreeVector &TpcV0NegExitPoint() const;
-  const AliFemtoThreeVector &TpcV0NegEntrancePoint() const;
+  const AliFemtoThreeVector& TpcV0PosExitPoint() const;
+  const AliFemtoThreeVector& TpcV0PosEntrancePoint() const;
+  const AliFemtoThreeVector& TpcV0NegExitPoint() const;
+  const AliFemtoThreeVector& TpcV0NegEntrancePoint() const;
 
   // the following method is for explicit internal calculation to fill datamembers.
   // It is invoked automatically if AliFemtoParticle constructed from AliFemtoTrack
   // void CalculateNominalTpcExitAndEntrancePoints();
   // NOTE - this requires the fHelix, so be sure this is filled
 
-
-  /*   AliFemtoThreeVector fNominalPosSample[11];  // I make this public for convenience and speed of AliFemtoPair() */
-  /*   float fZ[45];  // Z position of cluster on padrow */
-  /*   float fU[45];  // U position of cluster on padrow */
-  /*   int fSect[45]; // Sector number of cluster on padrow */
-
   void ResetFourMomentum(const AliFemtoLorentzVector &fourMomentum);
 
-  const AliFemtoHiddenInfo  *HiddenInfo() const;
-  // Fab private
-  AliFemtoHiddenInfo  *GetHiddenInfo() const;
+  const AliFemtoHiddenInfo* HiddenInfo() const;
+
+  AliFemtoHiddenInfo* GetHiddenInfo() const;
   void SetHiddenInfo(AliFemtoHiddenInfo *aHiddenInfo);
   void CalculatePurity();
   double GetPionPurity();
