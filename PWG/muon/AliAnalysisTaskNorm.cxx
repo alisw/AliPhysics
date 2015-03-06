@@ -51,7 +51,7 @@
 #include "AliMuonEventCuts.h"
 
 //PWGmuondep include
-// #include "AliAnalysisTriggerScalers.h"
+//#include "AliAnalysisTriggerScalers.h"
 
 #include "AliAnalysisTaskNorm.h"
 
@@ -136,7 +136,7 @@ void AliAnalysisTaskNorm::UserCreateOutputObjects()
     if ( iCentEst < nCentEst - 1 ) listOfCentEst += Form("/");
   }
 
-  Int_t centTabBin[] = {0,1,5,10,20,40,60,80,100};
+  Int_t centTabBin[] = {0,2,5,10,20,40,60,80,100};
   Int_t nCentBin = sizeof(centTabBin)/sizeof(centTabBin[0]);
   nCentBin -= 1;
   fCentBin.Set(nCentBin+1, centTabBin);
@@ -227,7 +227,8 @@ void AliAnalysisTaskNorm::UserCreateOutputObjects()
   fEventCounters->AddRubric("trigger",1000000);
   fEventCounters->AddRubric("norm", "MBinMB/MSLinMSL/MULinMUL/MSLinMB/MULinMSL/MULinMB/other/any");
   fEventCounters->AddRubric("physsel", "yes/no");
-  fEventCounters->AddRubric("isspdpu", "n3d6/n3d8/n4d6/n4d8/n5d6/n5d8/n6d6/n6d8/multbinstd/mv/any");
+  //  fEventCounters->AddRubric("isspdpu", "n3d6/n4d6/n5d6/mv/any");
+  fEventCounters->AddRubric("isspdpu", "n3d6/n4d6/n5d6/mv/notn4d6/notmv/any");
   //  fEventCounters->AddRubric("ntracklets",listOfTrackletsBin.Data());
   //fEventCounters->AddRubric("v0amult",listOfV0AMultBin.Data());
   //  fEventCounters->AddRubric("outofbunchpileup", "yes/no");
@@ -295,6 +296,9 @@ void AliAnalysisTaskNorm::UserCreateOutputObjects()
   nCentBin2--;
   Int_t nV0ACentBin = 105;
   Float_t v0ACentMin = 0, v0ACentMax = 105;
+  Int_t nTrackletsBin = 300;
+  Int_t nTrackletsMin = 0, nTrackletsMax = 300;
+
 
   TH1F* hV0AMultMB = new TH1F("hV0AMultMB"," V0A mutliplicity for CINT7 trigger",nV0Abin,v0AMin,v0AMax);
   fListV0A->AddAtAndExpand(hV0AMultMB, kV0AMB);
@@ -302,8 +306,16 @@ void AliAnalysisTaskNorm::UserCreateOutputObjects()
   fListV0A->AddAtAndExpand(hV0AMultMUL, kV0AMUL);
   TH1F* hV0ACentMB = new TH1F("hV0ACentMB"," V0A centrality for CINT7 trigger",nV0ACentBin,v0ACentMin,v0ACentMax);
   fListV0A->AddAtAndExpand(hV0ACentMB, kV0ACentMB);
+  TH1F* hV0ACentMBPuCut = new TH1F("hV0ACentMBPuCut"," V0A centrality for CINT7 trigger with SPD pu cut",nV0ACentBin,v0ACentMin,v0ACentMax);
+  fListV0A->AddAtAndExpand(hV0ACentMBPuCut, kV0ACentMBPuCut);
+  TH1F* hV0ACentMBPuCut2 = new TH1F("hV0ACentMBPuCut2"," V0A centrality for CINT7 trigger with MV pu cut",nV0ACentBin,v0ACentMin,v0ACentMax);
+  fListV0A->AddAtAndExpand(hV0ACentMBPuCut2, kV0ACentMBPuCut2);
   TH1F* hV0ACentMUL = new TH1F("hV0ACentMUL"," V0A centrality for CMUL7 trigger",nV0ACentBin,v0ACentMin,v0ACentMax);
   fListV0A->AddAtAndExpand(hV0ACentMUL, kV0ACentMUL);  
+  TH1F* hV0ACentMULPuCut = new TH1F("hV0ACentMULPuCut"," V0A centrality for CMUL7 trigger with SPD pu cut",nV0ACentBin,v0ACentMin,v0ACentMax);
+  fListV0A->AddAtAndExpand(hV0ACentMULPuCut, kV0ACentMULPuCut);
+  TH1F* hV0ACentMULPuCut2 = new TH1F("hV0ACentMULPuCut2"," V0A centrality for CMUL7 trigger with MV pu cut",nV0ACentBin,v0ACentMin,v0ACentMax);
+  fListV0A->AddAtAndExpand(hV0ACentMULPuCut2, kV0ACentMULPuCut2);
   TH2F* hV0AMultvsCentMB = new TH2F("hV0AMultvsCentMB"," V0A centrality vs multiplicity for CINT7 trigger",nV0Abin,v0AMin,v0AMax,200,0,200);
   fListV0A->AddAtAndExpand(hV0AMultvsCentMB, kV0AMultvsCentMB);
   TH2F* hV0ACentvsV0CCentMUL = new TH2F("hV0ACentvsV0CCentMUL"," V0A vs V0C centrality for CMUL7 trigger",nCentBin2,centTabBin2,nCentBin2,centTabBin2);//,centMin,centMax,nCent,centMin,centMax);
@@ -326,16 +338,43 @@ void AliAnalysisTaskNorm::UserCreateOutputObjects()
   hV0CCentvsCL1CentMB->SetXTitle("V0C Event Multiplicity");
   hV0CCentvsCL1CentMB->SetYTitle("CL1 Event Multiplicity");
   fListV0A->AddAtAndExpand(hV0CCentvsCL1CentMB, kV0CCentvsCL1CentMB);
+  TH2F* hV0AvsSPDTrackletsMB = new TH2F("hV0AvsSPDTrackletsMB"," V0A amplitude vs SPD tracklets for CINT7 trigger",nV0Abin,v0AMin,v0AMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hV0AvsSPDTrackletsMB->SetXTitle("V0A amplitude");
+  hV0AvsSPDTrackletsMB->SetYTitle("SPD tracklets nr");
+  fListV0A->AddAtAndExpand(hV0AvsSPDTrackletsMB, kV0AvsSPDTrackletsMB);
+  TH2F* hV0AvsSPDTrackletsMUL = new TH2F("hV0AvsSPDTrackletsMUL"," V0A amplitude vs SPD tracklets for CMUL7 trigger",nV0Abin,v0AMin,v0AMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hV0AvsSPDTrackletsMUL->SetXTitle("V0A amplitude");
+  hV0AvsSPDTrackletsMUL->SetYTitle("SPD tracklets nr");
+  fListV0A->AddAtAndExpand(hV0AvsSPDTrackletsMUL, kV0AvsSPDTrackletsMUL);
 
+TH2F* hV0AvsSPDTrackletsMBPuCut = new TH2F("hV0AvsSPDTrackletsMBPuCut"," V0A amplitude vs SPD tracklets for CINT7 trigger with SPD pu cut",nV0Abin,v0AMin,v0AMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hV0AvsSPDTrackletsMBPuCut->SetXTitle("V0A amplitude");
+  hV0AvsSPDTrackletsMBPuCut->SetYTitle("SPD tracklets nr");
+  fListV0A->AddAtAndExpand(hV0AvsSPDTrackletsMBPuCut, kV0AvsSPDTrackletsMBPuCut);
+  TH2F* hV0AvsSPDTrackletsMULPuCut = new TH2F("hV0AvsSPDTrackletsMULPuCut"," V0A amplitude vs SPD tracklets for CMUL7 trigger with SPD pu cut",nV0Abin,v0AMin,v0AMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hV0AvsSPDTrackletsMULPuCut->SetXTitle("V0A amplitude");
+  hV0AvsSPDTrackletsMULPuCut->SetYTitle("SPD tracklets nr");
+  fListV0A->AddAtAndExpand(hV0AvsSPDTrackletsMULPuCut, kV0AvsSPDTrackletsMULPuCut);
+
+TH2F* hV0AvsSPDTrackletsMBPuCut2 = new TH2F("hV0AvsSPDTrackletsMBPuCut2"," V0A amplitude vs SPD tracklets for CINT7 trigger with MV pu cut",nV0Abin,v0AMin,v0AMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hV0AvsSPDTrackletsMBPuCut2->SetXTitle("V0A amplitude");
+  hV0AvsSPDTrackletsMBPuCut2->SetYTitle("SPD tracklets nr");
+  fListV0A->AddAtAndExpand(hV0AvsSPDTrackletsMBPuCut2, kV0AvsSPDTrackletsMBPuCut2);
+  TH2F* hV0AvsSPDTrackletsMULPuCut2 = new TH2F("hV0AvsSPDTrackletsMULPuCut2"," V0A amplitude vs SPD tracklets for CMUL7 trigger with MV pu cut",nV0Abin,v0AMin,v0AMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hV0AvsSPDTrackletsMULPuCut2->SetXTitle("V0A amplitude");
+  hV0AvsSPDTrackletsMUL->SetYTitle("SPD tracklets nr");
+  fListV0A->AddAtAndExpand(hV0AvsSPDTrackletsMULPuCut2, kV0AvsSPDTrackletsMULPuCut2);
 
   //  histograms for ZN multiplicity
   fListZN = new TObjArray(2000);
   fListZN->SetOwner();
 
-  Int_t nZNbin = 2100;
-  Float_t zNMin = -100 , zNMax = 2000;
-  Int_t nZNCentBin = 105;
-  Float_t zNCentMin = 0, zNCentMax = 105;
+  Int_t nZNbin = 2000;
+  Float_t zNMin = 0 , zNMax = 2000;
+  Int_t nZNCentBin = 110;
+  Float_t zNCentMin = 0, zNCentMax = 110;
+
+  printf("test zNCentMin = %f zNCentMax= %f\n",zNCentMin,zNCentMax);
 
   TH1F* hZNMultMB = new TH1F("hZNMultMB"," ZN mutliplicity for CINT7 trigger",nZNbin,zNMin,zNMax);
   fListZN->AddAtAndExpand(hZNMultMB, kZNMB);
@@ -345,9 +384,41 @@ void AliAnalysisTaskNorm::UserCreateOutputObjects()
   fListZN->AddAtAndExpand(hZNCentMB, kZNCentMB);
   TH1F* hZNCentMUL = new TH1F("hZNCentMUL"," ZN centrality distribution for CMUL7 trigger",nZNCentBin,zNCentMin,zNCentMax);
   fListZN->AddAtAndExpand(hZNCentMUL, kZNCentMUL);
+  TH1F* hZNCentMBPuCut = new TH1F("hZNCentMBPuCut"," ZN centrality distribution for CINT7 trigger with SPD pile-up cut",nZNCentBin,zNCentMin,zNCentMax);
+  fListZN->AddAtAndExpand(hZNCentMBPuCut, kZNCentMBPuCut);
+  TH1F* hZNCentMULPuCut = new TH1F("hZNCentMULPuCut"," ZN centrality distribution for CMUL7 trigger with SPD pile-up cut",nZNCentBin,zNCentMin,zNCentMax);
+  fListZN->AddAtAndExpand(hZNCentMULPuCut, kZNCentMULPuCut);
+ TH1F* hZNCentMBPuCut2 = new TH1F("hZNCentMBPuCut2"," ZN centrality distribution for CINT7 trigger with MV pile-up cut",nZNCentBin,zNCentMin,zNCentMax);
+  fListZN->AddAtAndExpand(hZNCentMBPuCut2, kZNCentMBPuCut2);
+  TH1F* hZNCentMULPuCut2 = new TH1F("hZNCentMULPuCut2"," ZN centrality distribution for CMUL7 trigger with MV pile-up cut",nZNCentBin,zNCentMin,zNCentMax);
+  fListZN->AddAtAndExpand(hZNCentMULPuCut2, kZNCentMULPuCut2);
+
   TH2F* hZNMultvsCentMB = new TH2F("hZNMultvsCentMB"," ZN centrality vs multiplicity for CINT7 trigger",nZNbin,zNMin,zNMax,250,-50,200);
   fListZN->AddAtAndExpand(hZNMultvsCentMB, kZNMultvsCentMB);
-
+  TH2F* hZNvsSPDTrackletsMB = new TH2F("hZNvsSPDTrackletsMB"," ZN multiplicity vs SPD tracklets for CINT7 trigger",nZNbin,zNMin,zNMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hZNvsSPDTrackletsMB->SetXTitle("ZN multiplicity");
+  hZNvsSPDTrackletsMB->SetYTitle("SPD tracklets nr");
+  fListZN->AddAtAndExpand(hZNvsSPDTrackletsMB, kZNvsSPDTrackletsMB);
+  TH2F* hZNvsSPDTrackletsMUL = new TH2F("hZNvsSPDTrackletsMUL"," ZN multiplicity vs SPD tracklets for CMUL7 trigger",nZNbin,zNMin,zNMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hZNvsSPDTrackletsMUL->SetXTitle("ZN multiplicity");
+  hZNvsSPDTrackletsMUL->SetYTitle("SPD tracklets nr");
+  fListZN->AddAtAndExpand(hZNvsSPDTrackletsMUL, kZNvsSPDTrackletsMUL);
+  TH2F* hZNvsSPDTrackletsMBPuCut = new TH2F("hZNvsSPDTrackletsMBPuCut"," ZN multiplicity vs SPD tracklets for CINT7 trigger with SPD pile-up cut",nZNbin,zNMin,zNMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hZNvsSPDTrackletsMBPuCut->SetXTitle("ZN multiplicity");
+  hZNvsSPDTrackletsMBPuCut->SetYTitle("SPD tracklets nr");
+  fListZN->AddAtAndExpand(hZNvsSPDTrackletsMBPuCut, kZNvsSPDTrackletsMBPuCut);
+  TH2F* hZNvsSPDTrackletsMULPuCut = new TH2F("hZNvsSPDTrackletsMULPuCut"," ZN multiplicity vs SPD tracklets for CMUL7 trigger with SPD pile-up cut",nZNbin,zNMin,zNMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hZNvsSPDTrackletsMULPuCut->SetXTitle("ZN multiplicity");
+  hZNvsSPDTrackletsMULPuCut->SetYTitle("SPD tracklets nr");
+  fListZN->AddAtAndExpand(hZNvsSPDTrackletsMULPuCut, kZNvsSPDTrackletsMULPuCut);
+TH2F* hZNvsSPDTrackletsMBPuCut2 = new TH2F("hZNvsSPDTrackletsMBPuCut2"," ZN multiplicity vs SPD tracklets for CINT7 trigger with MV pile-up cut",nZNbin,zNMin,zNMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hZNvsSPDTrackletsMBPuCut2->SetXTitle("ZN multiplicity");
+  hZNvsSPDTrackletsMBPuCut2->SetYTitle("SPD tracklets nr");
+  fListZN->AddAtAndExpand(hZNvsSPDTrackletsMBPuCut2, kZNvsSPDTrackletsMBPuCut2);
+  TH2F* hZNvsSPDTrackletsMULPuCut2 = new TH2F("hZNvsSPDTrackletsMULPuCut2"," ZN multiplicity vs SPD tracklets for CMUL7 trigger with MV pile-up cut",nZNbin,zNMin,zNMax,nTrackletsBin,nTrackletsMin,nTrackletsMax);
+  hZNvsSPDTrackletsMULPuCut2->SetXTitle("ZN multiplicity");
+  hZNvsSPDTrackletsMULPuCut2->SetYTitle("SPD tracklets nr");
+  fListZN->AddAtAndExpand(hZNvsSPDTrackletsMULPuCut2, kZNvsSPDTrackletsMULPuCut2);
 
   PostData(1,fEventCounters);
   PostData(2,fRunCounters);
@@ -381,7 +452,7 @@ void AliAnalysisTaskNorm::UserExec(Option_t *)
   if ( DebugLevel() > 0 ) {
     AliInfo(Form("keepEvent %d - isEsd=%d - isMC=%d - beam conf = %s List of trigger=%s",keepEvent,fIsESD,fIsMC,fBeamConf.Data(),sListOfTrig.Data()));
     fMuonEventCuts->Print();
-  }
+ }
 
   if(!keepEvent) return;
 
@@ -623,18 +694,26 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
   for ( Int_t itrig = 0; itrig < trigClass->GetEntries(); itrig++ ) {
     TString sTrigClassName = ((TObjString*)trigClass->At(itrig))->GetString();
     if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD") ) isMB = kTRUE;
-    if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") ) isMUL = kTRUE; 
+    if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") || sTrigClassName.Contains("CMUL7-B-NOPF-ALLNOTRD") ) isMUL = kTRUE;
   }
 
   // fill histo related to V0A multiplicity
   AliAODEvent *aod = 0;
   AliESDEvent *esd = 0;
   
+  Bool_t spdPu = kFALSE;
+  Bool_t mvPu = kFALSE;
+
   if ( !fIsESD ){
     aod = static_cast<AliAODEvent *> (const_cast<AliVEvent*> (event) );
+    spdPu = aod->IsPileupFromSPD(4,0.6,3.,2.,5.);
+    AliAnalysisUtils analysis;
+    mvPu = analysis.IsPileUpMV( const_cast<AliVEvent*> (event) );
   }
   else {
     esd = dynamic_cast<AliESDEvent *> (const_cast<AliVEvent*> (event) );
+    spdPu = esd->IsPileupFromSPD(4,0.6,3.,2.,5.);
+    mvPu = kFALSE;
   }
   if ( !esd && !aod ){
     AliFatal(Form("ERROR: Could not retrieve ESD (fIsESD=%d) or AOD event. Return!",fIsESD));
@@ -652,19 +731,35 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
   Float_t centValV0C = centrality->GetCentralityPercentileUnchecked("V0C");
   Float_t centValCL1 = centrality->GetCentralityPercentileUnchecked("CL1");
 
+  Int_t nSPDTracklets = 0;
+  AliAODTracklets *trackletsData = (fIsESD) ? 0 : (AliAODTracklets*) aod->GetTracklets();
+  if (trackletsData) nSPDTracklets = trackletsData->GetNumberOfTracklets();
+
   if(isMB) {
     ((TH1F*)fListV0A->UncheckedAt(kV0AMB))->Fill(v0AMult);
     ((TH1F*)fListV0A->UncheckedAt(kV0ACentMB))->Fill(centVal);
+    if (!spdPu)  ((TH1F*)fListV0A->UncheckedAt(kV0ACentMBPuCut))->Fill(centVal);
+    if (!mvPu)  ((TH1F*)fListV0A->UncheckedAt(kV0ACentMBPuCut2))->Fill(centVal);
     ((TH2F*)fListV0A->UncheckedAt(kV0AMultvsCentMB))->Fill(v0AMult,centVal);
     ((TH2F*)fListV0A->UncheckedAt(kV0ACentvsV0CCentMB))->Fill(centVal,centValV0C);
     ((TH2F*)fListV0A->UncheckedAt(kV0ACentvsCL1CentMB))->Fill(centVal,centValCL1);
     ((TH2F*)fListV0A->UncheckedAt(kV0CCentvsCL1CentMB))->Fill(centValV0C,centValCL1);
+    ((TH2F*)fListV0A->UncheckedAt(kV0AvsSPDTrackletsMB))->Fill(v0AMult,nSPDTracklets);
+    if (!spdPu) ((TH2F*)fListV0A->UncheckedAt(kV0AvsSPDTrackletsMBPuCut))->Fill(v0AMult,nSPDTracklets);
+    if (!mvPu) ((TH2F*)fListV0A->UncheckedAt(kV0AvsSPDTrackletsMBPuCut2))->Fill(v0AMult,nSPDTracklets);
+
   }
   if (isMUL){
     ((TH1F*)fListV0A->UncheckedAt(kV0AMUL))->Fill(v0AMult);
     ((TH1F*)fListV0A->UncheckedAt(kV0ACentMUL))->Fill(centVal);
+    if (!spdPu)  ((TH1F*)fListV0A->UncheckedAt(kV0ACentMULPuCut))->Fill(centVal);
+    if (!mvPu)  ((TH1F*)fListV0A->UncheckedAt(kV0ACentMULPuCut2))->Fill(centVal);
     ((TH2F*)fListV0A->UncheckedAt(kV0ACentvsV0CCentMUL))->Fill(centVal,centValV0C);
     ((TH2F*)fListV0A->UncheckedAt(kV0ACentvsCL1CentMUL))->Fill(centVal,centValCL1);
+    ((TH2F*)fListV0A->UncheckedAt(kV0AvsSPDTrackletsMUL))->Fill(v0AMult,nSPDTracklets);
+    if (!spdPu) ((TH2F*)fListV0A->UncheckedAt(kV0AvsSPDTrackletsMULPuCut))->Fill(v0AMult,nSPDTracklets);
+    if(!mvPu)  ((TH2F*)fListV0A->UncheckedAt(kV0AvsSPDTrackletsMULPuCut2))->Fill(v0AMult,nSPDTracklets);
+
   }
   
   //Fill histo related to ZN multiplicity
@@ -672,6 +767,8 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
   Double_t zncTower = 0.;           // common PMT of ZNC 
   Bool_t   znaFired = kFALSE;
   Bool_t   zncFired = kFALSE;
+
+
 
   if (fIsESD) {
     AliESDZDC *esdZDC = esd->GetESDZDC();
@@ -701,6 +798,7 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
     }
   }
 
+
   Double_t zNE = 0;
 
   if ( !fBeamConf.CompareTo("p-Pb") ) zNE = znaTower;
@@ -715,11 +813,25 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
   if(isMB) {
     ((TH1F*)fListZN->UncheckedAt(kZNMB))->Fill(zNE);
     ((TH1F*)fListZN->UncheckedAt(kZNCentMB))->Fill(centVal);
+    //test Cynthia
+    //    printf("test2 zNBins = %d zNCentMax= %f\n",((TH1F*)fListZN->UncheckedAt(kZNCentMB))->GetNbinsX(),((TH1F*)fListZN->UncheckedAt(kZNCentMB))->GetXaxis()->GetXmax());
+    if (!spdPu) ((TH1F*)fListZN->UncheckedAt(kZNCentMBPuCut))->Fill(centVal);
+    if (!mvPu) ((TH1F*)fListZN->UncheckedAt(kZNCentMBPuCut2))->Fill(centVal);
     ((TH2F*)fListZN->UncheckedAt(kZNMultvsCentMB))->Fill(zNE,centVal);
+    ((TH2F*)fListZN->UncheckedAt(kZNvsSPDTrackletsMB))->Fill(zNE,nSPDTracklets);
+    if (!spdPu) ((TH2F*)fListZN->UncheckedAt(kZNvsSPDTrackletsMBPuCut))->Fill(zNE,nSPDTracklets);
+    if (!mvPu) ((TH2F*)fListZN->UncheckedAt(kZNvsSPDTrackletsMBPuCut2))->Fill(zNE,nSPDTracklets);
+
+
   }
   if (isMUL){
     ((TH1F*)fListZN->UncheckedAt(kZNMUL))->Fill(zNE);
     ((TH1F*)fListZN->UncheckedAt(kZNCentMUL))->Fill(centVal);
+    if (!spdPu) ((TH1F*)fListZN->UncheckedAt(kZNCentMULPuCut))->Fill(centVal);
+    if (!mvPu) ((TH1F*)fListZN->UncheckedAt(kZNCentMULPuCut2))->Fill(centVal);
+    ((TH2F*)fListZN->UncheckedAt(kZNvsSPDTrackletsMUL))->Fill(zNE,nSPDTracklets);
+    if (!spdPu) ((TH2F*)fListZN->UncheckedAt(kZNvsSPDTrackletsMULPuCut))->Fill(zNE,nSPDTracklets);
+    if (!mvPu) ((TH2F*)fListZN->UncheckedAt(kZNvsSPDTrackletsMULPuCut2))->Fill(zNE,nSPDTracklets);
   }
 
   return;
@@ -752,25 +864,36 @@ TList* AliAnalysisTaskNorm::BuildListOfPileUp(const AliVEvent *event)
     return 0;
   }
   
-  const Int_t nSpdPileUp = 10;
-  Bool_t spdpileup[nSpdPileUp] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
-  TString sSpdPileUp[nSpdPileUp] = {"n3d6","n3d8","n4d6","n4d8","n5d6","n5d8","n6d6","n6d8","multbinstd","mv"};
+  const Int_t nSpdPileUp = 6;//4 or 6
+  //  Bool_t spdpileup[nSpdPileUp] = {kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t spdpileup[nSpdPileUp] = {kFALSE,kFALSE,kFALSE,kFALSE,kTRUE,kTRUE};
+  //  TString sSpdPileUp[nSpdPileUp] = {"n3d6","n3d8","n4d6","n4d8","n5d6","n5d8","n6d6","n6d8","multbinstd","mv"};
+  //TString sSpdPileUp[nSpdPileUp] = {"n3d6","n4d6","n5d6","mv"};
+  TString sSpdPileUp[nSpdPileUp] = {"n3d6","n4d6","n5d6","mv","notn4d6","notmv"};
   spdpileup[0] =  ( fIsESD ) ? esd->IsPileupFromSPD(3,0.6,3.,2.,5.) : aod->IsPileupFromSPD(3,0.6,3.,2.,5.);
-  spdpileup[1] =  ( fIsESD ) ? esd->IsPileupFromSPD(3,0.8,3.,2.,5.) : aod->IsPileupFromSPD(3,0.8,3.,2.,5.);
-  spdpileup[2] =  ( fIsESD ) ? esd->IsPileupFromSPD(4,0.6,3.,2.,5.) : aod->IsPileupFromSPD(4,0.6,3.,2.,5.);
-  spdpileup[3] =  ( fIsESD ) ? esd->IsPileupFromSPD(4,0.8,3.,2.,5.) : aod->IsPileupFromSPD(4,0.8,3.,2.,5.);
-  spdpileup[4] =  ( fIsESD ) ? esd->IsPileupFromSPD(5,0.6,3.,2.,5.) : aod->IsPileupFromSPD(5,0.6,3.,2.,5.);
-  spdpileup[5] =  ( fIsESD ) ? esd->IsPileupFromSPD(5,0.8,3.,2.,5.) : aod->IsPileupFromSPD(5,0.8,3.,2.,5.);
-  spdpileup[6] =  ( fIsESD ) ? esd->IsPileupFromSPD(6,0.6,3.,2.,5.) : aod->IsPileupFromSPD(6,0.6,3.,2.,5.);
-  spdpileup[7] =  ( fIsESD ) ? esd->IsPileupFromSPD(6,0.8,3.,2.,5.) : aod->IsPileupFromSPD(6,0.8,3.,2.,5.);
-  spdpileup[8] =  kFALSE;
-  AliAODTracklets *tracklets = dynamic_cast<AliAODTracklets*> ((fIsESD) ? 0 : aod->GetTracklets());
-  if (tracklets) {
-    spdpileup[8] = ( fIsESD ) ? esd->IsPileupFromSPDInMultBins() : aod->IsPileupFromSPDInMultBins();
+  //spdpileup[1] =  ( fIsESD ) ? esd->IsPileupFromSPD(3,0.8,3.,2.,5.) : aod->IsPileupFromSPD(3,0.8,3.,2.,5.);
+  Bool_t pileUp = ( fIsESD ) ? esd->IsPileupFromSPD(4,0.6,3.,2.,5.) : aod->IsPileupFromSPD(4,0.6,3.,2.,5.);
+  if (pileUp) {
+    spdpileup[1] = kTRUE;
+    spdpileup[4] = kFALSE;
   }
+  //spdpileup[3] =  ( fIsESD ) ? esd->IsPileupFromSPD(4,0.8,3.,2.,5.) : aod->IsPileupFromSPD(4,0.8,3.,2.,5.);
+  spdpileup[2] =  ( fIsESD ) ? esd->IsPileupFromSPD(5,0.6,3.,2.,5.) : aod->IsPileupFromSPD(5,0.6,3.,2.,5.);
+  //spdpileup[5] =  ( fIsESD ) ? esd->IsPileupFromSPD(5,0.8,3.,2.,5.) : aod->IsPileupFromSPD(5,0.8,3.,2.,5.);
+  //spdpileup[6] =  ( fIsESD ) ? esd->IsPileupFromSPD(6,0.6,3.,2.,5.) : aod->IsPileupFromSPD(6,0.6,3.,2.,5.);
+  //spdpileup[7] =  ( fIsESD ) ? esd->IsPileupFromSPD(6,0.8,3.,2.,5.) : aod->IsPileupFromSPD(6,0.8,3.,2.,5.);
+  //spdpileup[8] =  kFALSE;
+  //AliAODTracklets *tracklets = dynamic_cast<AliAODTracklets*> ((fIsESD) ? 0 : aod->GetTracklets());
+  //if (tracklets) {
+  //  spdpileup[8] = ( fIsESD ) ? esd->IsPileupFromSPDInMultBins() : aod->IsPileupFromSPDInMultBins();
+  //}
   
   AliAnalysisUtils analysis;
-  spdpileup[9] = analysis.IsPileUpMV( const_cast<AliVEvent*> (event) );
+  pileUp = analysis.IsPileUpMV( const_cast<AliVEvent*> (event) );
+  if (pileUp) {
+    spdpileup[3] = kTRUE;
+    spdpileup[5] = kFALSE;
+  }
   
   //  local SPDInMultBins function
   //  spdpileup[9] =  IsPileupFromSPDInMultBins(event);
@@ -849,14 +972,12 @@ TList* AliAnalysisTaskNorm::BuildListOfCentrality(AliCentrality *centrality)
       if(DebugLevel() > 0) {
 	if (centBin !=-1) {
 	  TString sCentBin = ((TObjString*)fSCentBin->At(centBin))->GetString();
-	  printf("test method %s-%s centrality %f bin found %d bin from centrality table %s\n",sMethod.Data(),sMethodCentrality.Data(),centVal,centBin, sCentBin.Data());
+	  printf("method %s-%s centrality %f bin found %d bin from centrality table %s\n",sMethod.Data(),sMethodCentrality.Data(),centVal,centBin, sCentBin.Data());
 	}
-	else 
-	  printf("test method %s centrality %f centbin:other \n",sMethod.Data(),centVal);
       }
        
       if (centBin == -1) {
-	printf("test method %s centrality %f centbin:other \n",sMethod.Data(),centVal);
+	printf("method %s centrality %f centbin:other \n",sMethod.Data(),centVal);
 	list->AddLast(new TObjString(Form("centest:%s/centbin:other",sMethod.Data() )));
 	list->AddLast(new TObjString(Form("centest:%s/centbin:any",sMethod.Data())));
       }
@@ -1138,10 +1259,10 @@ void AliAnalysisTaskNorm::FillEventCounters( Int_t runNr, TList *triggerList, TL
   TIter nextSpdPileUpKey(spdPileUpList);
   TObjString *spdPileUpKey = 0x0;
 
-  TIter nextTrackletsKey(trackletsList);
-  //TObjString *trackletsKey = 0x0;
+  //  TIter nextTrackletsKey(trackletsList);
+  // TObjString *trackletsKey = 0x0;
 
-  TIter nextV0AMultKey(v0AMultList);
+  //TIter nextV0AMultKey(v0AMultList);
   //TObjString *v0AMultKey = 0x0;
 
   TString selected;
@@ -1149,9 +1270,9 @@ void AliAnalysisTaskNorm::FillEventCounters( Int_t runNr, TList *triggerList, TL
   selected += (isVertex) ? "/vertex:yes" : "/vertex:no";
   selected += Form("/%s",sVertexCut.Data());
 
-  TString selected2;
-  selected2 = (outofbunchpileup) ? "/outofbunchpileup:yes" : "/outofbunchpileup:no";
+  //  selected += (outofbunchpileup) ? "/outofbunchpileup:yes" : "/outofbunchpileup:no";
   
+
   //Loop over triggerList
   while ( ( triggerKey = (TObjString*) nextTriggerKey() )  ) {
     

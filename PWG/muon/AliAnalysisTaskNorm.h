@@ -74,7 +74,17 @@ class AliAnalysisTaskNorm : public AliAnalysisTaskSE
     kV0ACentvsCL1CentMB = 6, ///<V0A vs CL1 centrality for CINT7 trigger
     kV0CCentvsCL1CentMB = 7, ///<V0A vs CL1 centrality for CINT7 trigger
     kV0ACentMB  = 8, ///<V0A centrality for CINT7 trigger
-    kV0ACentMUL = 9 ///<V0A centrality for CMUL7 trigger
+    kV0ACentMUL = 9, ///<V0A centrality for CMUL7 trigger
+    kV0AvsSPDTrackletsMB = 10, ///<V0A mult vs SPD tracklets nr for CINT7 trigger
+    kV0AvsSPDTrackletsMUL = 11, ///<V0A mult vs SPD tracklets nr for CMUL7 trigger
+    kV0AvsSPDTrackletsMBPuCut = 12, ///<V0A mult vs SPD tracklets nr for CINT7 trigger
+    kV0AvsSPDTrackletsMULPuCut = 13, ///<V0A mult vs SPD tracklets nr for CMUL7 trigger
+    kV0AvsSPDTrackletsMBPuCut2 = 14, ///<V0A mult vs SPD tracklets nr for CINT7 trigger
+    kV0AvsSPDTrackletsMULPuCut2 = 15, ///<V0A mult vs SPD tracklets nr for CMUL7 trigger
+    kV0ACentMBPuCut  = 16, ///<V0A centrality for CINT7 trigger
+    kV0ACentMULPuCut = 17, ///<V0A centrality for CMUL7 trigger
+    kV0ACentMBPuCut2  = 18, ///<V0A centrality for CINT7 trigger
+    kV0ACentMULPuCut2 = 19 ///<V0A centrality for CMUL7 trigger
   };
   
   enum eListZN {
@@ -82,7 +92,17 @@ class AliAnalysisTaskNorm : public AliAnalysisTaskSE
     kZNMUL = 1, ///<ZN energy for CMUL7 trigger
     kZNCentMB  = 2, ///<ZN cent for CINT7 trigger
     kZNCentMUL = 3, ///<ZN cent for CMUL7 trigger
-    kZNMultvsCentMB = 4 ///<ZN mult vs centrality for CINT7 trigger
+    kZNMultvsCentMB = 4, ///<ZN mult vs centrality for CINT7 trigger
+    kZNvsSPDTrackletsMB = 5, ///<ZN energy vs SPD tracklets nr for CINT7 trigger
+    kZNvsSPDTrackletsMUL = 6, ///<ZN energy vs SPD tracklets nr for CMUL7 trigger
+    kZNvsSPDTrackletsMBPuCut = 7, ///<ZN energy vs SPD tracklets nr for CINT7 trigger w SPD pu
+    kZNvsSPDTrackletsMULPuCut = 8, ///<ZN energy vs SPD tracklets nr for CMUL7 trigger w SPD pu
+    kZNvsSPDTrackletsMBPuCut2 = 9, ///<ZN energy vs SPD tracklets nr for CINT7 trigger w MV pu
+    kZNvsSPDTrackletsMULPuCut2 = 10, ///<ZN energy vs SPD tracklets nr for CMUL7 trigger w MV pu
+    kZNCentMBPuCut  = 11, ///<ZN cent for CINT7 trigger with SPD pu
+    kZNCentMULPuCut = 12, ///<ZN cent for CMUL7 trigger with SPD pu
+    kZNCentMBPuCut2  = 13, ///<ZN cent for CINT7 trigger with MV pu
+    kZNCentMULPuCut2 = 14 ///<ZN cent for CMUL7 trigger with MV pu
    };
 
   enum eListVertex {
