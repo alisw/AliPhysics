@@ -45,7 +45,8 @@ AliJJetTask* AddTaskJJet(
     double aConeSizes[nJetFinder]={0.4,0.5,0.6,0.4,0.5,0.6};
     int aJetType[nJetFinder]={0,0,0,1,1,1}; // 0 :FullJet  1:Charged
     for (int i=0; i<nJetFinder; i++){
-        jetFinderTask[i] = AddTaskEmcalJet(tracksName,clustersCorrName,1,aConeSizes[i],aJetType[i],0.15,0.300,0.005,1,"Jet",5.); // anti-kt
+        if(i<3) jetFinderTask[i] = AddTaskEmcalJet(tracksName,clustersCorrName,1,aConeSizes[i],aJetType[i],0.15,0.300,0.005,1,"Jet",5.); // anti-kt
+        else jetFinderTask[i] = AddTaskEmcalJet(tracksName,"",1,aConeSizes[i],aJetType[i],0.15,0.300,0.005,1,"Jet",5.); // anti-kt
     }
 
     char *ntracks = tracksName;
