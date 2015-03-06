@@ -30,7 +30,9 @@ class AliTOFPIDParams : public TNamed {
   Float_t GetTOFmatchingLossMC(void) const {return fTOFmatchingLossMC;}
   Float_t GetTOFadditionalMismForMC(void) const {return fTOFadditionalMismForMC;}
   Float_t GetTOFtimeOffset(void) const {return fTOFtimeOffset;}
+  const char *GetOADBentryTag() const {return fOADBentryTag.Data();}
 
+  void SetOADBentryTag(const char* entry) {fOADBentryTag=entry;}
   void SetTOFresolution(Float_t res){fTOFresolution = res;}
   void SetStartTimeMethod(AliPIDResponse::EStartTimeType_t method){fStartTime=method;}
   void SetSigPparams(Float_t *params);
@@ -47,8 +49,9 @@ class AliTOFPIDParams : public TNamed {
   Float_t fTOFmatchingLossMC;                       // fraction of tracks (%) MC has to loose to follow reconstructed data performance
   Float_t fTOFadditionalMismForMC;                  // fraction of tracks (%) MC has to add to match mismatch percentage in data
   Float_t fTOFtimeOffset;                           // overall offset to be added to startTime to handle intercalibration issues
+  TString fOADBentryTag;                            // code name (period-pass) for the entry
 
-  ClassDef(AliTOFPIDParams,2);
+  ClassDef(AliTOFPIDParams,3);
 
 };
 

@@ -1641,11 +1641,16 @@ void AliPIDResponse::SetTOFPidResponseMaster()
 
   TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/TOFPIDParams.root",fOADBPath.Data()));
   if (oadbf && oadbf->IsOpen()) {
-    AliInfo(Form("Loading TOF Params from %s/COMMON/PID/data/TOFPIDParams.root", fOADBPath.Data()));
+    Int_t recoPass = fRecoPass;
+    if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) ) recoPass = fRecoPassUser;
+    TString passName = Form("pass%d",recoPass);
+    AliInfo(Form("Loading TOF Params from %s/COMMON/PID/data/TOFPIDParams.root for run %d (pass: %s)", fOADBPath.Data(),fRun,passName.Data()));
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
-    if (oadbc) fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(fRun,"TOFparams"));
+    if (oadbc) fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(fRun,"TOFparams",passName));
     oadbf->Close();
     delete oadbc;
+  } else {
+    AliError(Form("TOF OADB file not found!!! %s/COMMON/PID/data/TOFPIDParams.root",fOADBPath.Data()));
   }
   delete oadbf;
 
@@ -1657,16 +1662,23 @@ void AliPIDResponse::InitializeTOFResponse(){
   //
   // Set PID Params to the TOF PID response
   //
-
-  AliInfo("TOF PID Params loaded from OADB");
+  AliInfo("---------------------------- TOF Response Configuration ----------------------------");
+  AliInfo(Form("TOF PID Params loaded from OADB [entryTag: %s]",fTOFPIDParams->GetOADBentryTag()));
   AliInfo(Form("  TOF resolution %5.2f [ps]",fTOFPIDParams->GetTOFresolution()));
   AliInfo(Form("  StartTime method %d",fTOFPIDParams->GetStartTimeMethod()));
   AliInfo(Form("  TOF res. mom. params: %5.2f %5.2f %5.2f %5.2f",
                fTOFPIDParams->GetSigParams(0),fTOFPIDParams->GetSigParams(1),fTOFPIDParams->GetSigParams(2),fTOFPIDParams->GetSigParams(3)));
+  AliInfo(Form("  Start Time Offset %6.2f ps",fTOFPIDParams->GetTOFtimeOffset()));
   AliInfo(Form("  Fraction of tracks within gaussian behaviour: %6.4f",fTOFPIDParams->GetTOFtail()));
+
+  if (fIsMC) {
+    AliInfo("MC data:");
+    if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) ) {
+      AliInfo(Form("  MC: TuneOnData option enabled for TOF data (target data reco pass is %d)",fRecoPassUser));
+    } else AliInfo("  MC: TuneOnData option NOT enabled for TOF data");
+  }
   AliInfo(Form("  MC: Fraction of tracks (percentage) to cut to fit matching in data: %6.2f%%",fTOFPIDParams->GetTOFmatchingLossMC()));
   AliInfo(Form("  MC: Fraction of random hits (percentage) to add to fit mismatch in data: %6.2f%%",fTOFPIDParams->GetTOFadditionalMismForMC()));
-  AliInfo(Form("  Start Time Offset %6.2f ps",fTOFPIDParams->GetTOFtimeOffset()));
 
   for (Int_t i=0;i<4;i++) {
     fTOFResponse.SetTrackParameter(i,fTOFPIDParams->GetSigParams(i));
@@ -1690,6 +1702,7 @@ void AliPIDResponse::InitializeTOFResponse(){
     fResT0AC=55.;
   }
   AliInfo(Form("  TZERO resolution set to: T0A: %f [ps] T0C: %f [ps] T0AC %f [ps]",fResT0A,fResT0C,fResT0AC));
+  AliInfo("------------------------------------------------------------------------------------");
 
 }
 

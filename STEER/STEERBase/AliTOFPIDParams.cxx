@@ -36,7 +36,11 @@ AliTOFPIDParams::AliTOFPIDParams():
   fTOFadditionalMismForMC(0),                  
   fTOFtimeOffset(0) 
 {
-  for (Int_t i=0;i<kSigPparams;i++) fSigPparams[i]=0;
+  fSigPparams[0]=0.008;
+  fSigPparams[1]=0.008;
+  fSigPparams[2]=0.002;
+  fSigPparams[3]=40.;
+  fOADBentryTag="default";
 }
 
 //_____________________________________________________________________________
@@ -49,7 +53,11 @@ AliTOFPIDParams::AliTOFPIDParams(Char_t *name):
   fTOFadditionalMismForMC(0),                  
   fTOFtimeOffset(0)                           
 {
-  for (Int_t i=0;i<kSigPparams;i++) fSigPparams[i]=0;
+  fSigPparams[0]=0.008;
+  fSigPparams[1]=0.008;
+  fSigPparams[2]=0.002;
+  fSigPparams[3]=40.;
+  fOADBentryTag="default";
 }
 
 //_____________________________________________________________________________
