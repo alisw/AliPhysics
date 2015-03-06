@@ -130,7 +130,7 @@ private:
 	AliShuttleStatus* ReadShuttleStatus();
 	Bool_t WriteShuttleStatus(AliShuttleStatus* status);
 	Bool_t ContinueProcessing();
-	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
+	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE, UInt_t errorCode=0);
 	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
 	Bool_t SendMail(EMailTarget target, Int_t system = -1, UInt_t errorCode = 0);
 	Int_t GetMem(Int_t pid);

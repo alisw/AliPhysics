@@ -1012,7 +1012,7 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount)
+void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount, UInt_t errorCode)
 {
 	//
 	// changes the AliShuttleStatus for the given detector and run to the given status
@@ -1037,6 +1037,9 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
 	Log("SHUTTLE", actionStr);
 	SetLastAction(actionStr);
 
+        if (errorCode!=0) {
+          status->SetUniqueID(errorCode);
+        }
 	status->SetStatus(newStatus);
 	if (increaseCount) status->IncreaseCount();
 
@@ -1171,6 +1174,7 @@ Bool_t AliShuttle::ContinueProcessing()
 
 	// abort conditions
 	if (status->GetCount() >= fConfig->GetMaxRetries()) {
+                UInt_t errorCode = status->GetUniqueID();
 		Log("SHUTTLE", Form("ContinueProcessing - %s failed %d times in status %s - "
 				"Updating Shuttle Logbook", fCurrentDetector.Data(),
 				status->GetCount(), status->GetStatusName()));
@@ -1185,6 +1189,36 @@ Bool_t AliShuttle::ContinueProcessing()
 		// CleanLocalStorage(fgkLocalRefStorage);
 		// UpdateTableFailCase();
 		
+		// Send mail to detector expert!
+		Log("SHUTTLE", Form("ContinueProcessing - Sending mail to %s experts ...", 
+				    fCurrentDetector.Data()));
+		// det experts in to
+		TString to="";
+		TIter *iterExperts = 0;
+		iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
+		TObjString *anExpert=0;
+		while ((anExpert = (TObjString*) iterExperts->Next()))
+			{
+				to += Form("%s, \n", anExpert->GetName());
+			}
+		delete iterExperts;
+		
+		if (to.Length() > 0)
+			to.Remove(to.Length()-3);
+		AliDebug(2, Form("to: %s",to.Data()));
+
+		if (to.IsNull()) {
+			Log("SHUTTLE", Form("List of %s responsibles not set!", fCurrentDetector.Data()));
+			return kFALSE;
+		}
+
+		Log(fCurrentDetector.Data(), Form("ContinueProcessing - Sending mail to %s expert(s):", 
+				    fCurrentDetector.Data()));
+		Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
+		if (!SendMail(kPPEMail, -1, errorCode))
+			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
+					    fCurrentDetector.Data()));
+
 	} else {
 		Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. "
 				"Aborted before with %s. Retry number %d.", fCurrentDetector.Data(),
@@ -1837,19 +1871,9 @@ Int_t AliShuttle::ProcessCurrentDetector()
 	{
 		Log(fCurrentDetector, Form("ProcessCurrentDetector - "
 				"Preprocessor failed. Process returned %d.", returnValue));
-		UpdateShuttleStatus(AliShuttleStatus::kPPError);
+		UpdateShuttleStatus(AliShuttleStatus::kPPError, kFALSE, returnValue);
 		dcsMap->DeleteAll();
 		delete dcsMap;
-                // If reached max number of retries end mail to detector expert!
-                AliShuttleStatus* status = ReadShuttleStatus();
-                if (status->GetCount() >= fConfig->GetMaxRetries()) {
-                        Log(fCurrentDetector.Data(), Form("ProcessCurrentDetector - Sending mail to %s expert(s):", 
-                                                fCurrentDetector.Data()));
-                        if (!SendMail(kPPEMail, -1, returnValue)) //we pass here the returnValue too, used by SendMail only in the GRP case to derive recipients
-                                Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to %s expert(s)",
-                                                        fCurrentDetector.Data()));
-                }
-
 		return 0;
 	}
 	
