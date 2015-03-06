@@ -94,7 +94,7 @@ void AliPHOSCpvGainCalibDA::CreateA0Histos(Int_t iDDL){
       fAmplA0Histo[iDDL][iX][iY]=new TH1F(Form("hAmplA0_DDL%d_iX%d_iY%d",iDDL,iX,iY),Form("Max amplitude in cluster DDL = %d X = %d Y = %d",iDDL,iX,iY),4096,0.,4096.);
 }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliPHOSCpvGainCalibDA::SetDeadChannelMapFromFile(const char * filename = "CpvBadMap.root"){
+Bool_t AliPHOSCpvGainCalibDA::SetDeadChannelMapFromFile(const char * filename){
   //
   //Set Dead Channel Map Cut from the file, if the input file is not present default value is set!
   //Arguments: the name of the Dead Channel Map file 
@@ -110,7 +110,7 @@ Bool_t AliPHOSCpvGainCalibDA::SetDeadChannelMapFromFile(const char * filename = 
   return 1;
 }//SetDeadChannelMapFromFile()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliPHOSCpvGainCalibDA::WriteA0HistosToFile(const char* filename=0x0) const
+void AliPHOSCpvGainCalibDA::WriteA0HistosToFile(const char* filename) const
 {
   if(!filename)return;
   //write all A0 amplitude histos and A0 entries maps to CpvCalibrSupply.root
@@ -132,7 +132,7 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
   // return true in case of success (found at least 1 cluster).
   if(!digits) return kFALSE;
   Int_t nDig = digits->GetEntriesFast();
-  if(nDig < 2) return kFALSE;//why do we need at least 2 digits?
+  if(nDig < 1) return kFALSE;//we need at least 1 digit
   Bool_t stop = kFALSE;
   Int_t nExcludedPoints = 0;
   Bool_t *excludedPoints = new Bool_t[nDig];//points which already belongs to other clusters
@@ -196,8 +196,8 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
     clusterIndex[cluNumber][2][2] = indMax;
     clusterAmplitude[cluNumber][2][2] = qMax;
     clusterDDL[cluNumber] = AliPHOSCpvParam::Mod2DDL(relId[0]);
-    clusterX[cluNumber]=relId[2];
-    clusterY[cluNumber]=relId[3];
+    clusterX[cluNumber]=relId[2]-1;
+    clusterY[cluNumber]=relId[3]-1;
     //let us try to find all other digits which belongs to the same cluster
     Int_t pointsFound = 0;
     do{
@@ -210,10 +210,15 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
 	//see if this current digit has common vertex with 
 	for(int ix = 0;ix<5;ix++)
 	  for(int iy = 0;iy<5;iy++)
-	    if(clusterIndex[cluNumber][ix][iy]>=0&&(TMath::Abs(relId[2]-clusterX[cluNumber]+ix-2)<=1&&TMath::Abs(relId[3]-clusterY[cluNumber]+iy-2)<=1)){//we found a cell!
+	    if(clusterIndex[cluNumber][ix][iy]>=0&&
+	       (TMath::Abs(relId[2]-1-clusterX[cluNumber]-(ix-2))<=1&& // if X neighbor
+		TMath::Abs(relId[3]-1-clusterY[cluNumber]-(iy-2))<=1&& //if Y neighbor
+		TMath::Abs(relId[2]-1-clusterX[cluNumber])<=2&& //if digit is within 5x5 region
+		TMath::Abs(relId[3]-1-clusterY[cluNumber])<=2)){//we found a cell!
 	      pointsFound++;
-	      clusterAmplitude[cluNumber][ix][iy] = digit->GetEnergy();
-	      clusterIndex[cluNumber][ix][iy] = iDig;
+	      
+	      clusterAmplitude[cluNumber][relId[2]-1-clusterX[cluNumber]+2][relId[3]-1-clusterY[cluNumber]+2] = digit->GetEnergy();
+	      clusterIndex[cluNumber][relId[2]-1-clusterX[cluNumber]+2][relId[3]-1-clusterY[cluNumber]+2] = iDig;
 	      //finally, exclude this point from consideration
 	      nExcludedPoints++;
 	      excludedPoints[iDig]=kTRUE;
@@ -236,8 +241,8 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
   for (Int_t iClu = 0; iClu < cluNumber; iClu++){
     if(!fEntriesMap[clusterDDL[iClu]]) CreateA0Histos(clusterDDL[iClu]);
     // cout<<"iClu = "<<iClu<<
-    fAmplA0Histo[clusterDDL[iClu]][clusterX[iClu]-1][clusterY[iClu]-1]->Fill(clusterAmplitude[iClu][2][2]);
-    fEntriesMap[clusterDDL[iClu]]->Fill(clusterX[iClu]-1,clusterY[iClu]-1);
+    fAmplA0Histo[clusterDDL[iClu]][clusterX[iClu]][clusterY[iClu]]->Fill(clusterAmplitude[iClu][2][2]);
+    fEntriesMap[clusterDDL[iClu]]->Fill(clusterX[iClu],clusterY[iClu]);
     fhA0Value->Fill(clusterAmplitude[iClu][2][2]);
     Double_t totAmpl = 0.;
     for(int ix = 0; ix<5; ix++)
@@ -247,6 +252,7 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
 	  fhClusterShape->Fill(ix-2,iy-2);
 	  totAmpl+=clusterAmplitude[iClu][ix][iy];
 	}
+    fhTotalClusterAmplitude->Fill(totAmpl);
   }
 }
 //*************************************************************
