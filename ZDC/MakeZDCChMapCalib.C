@@ -1,5 +1,5 @@
 MakeZDCChMapCalib(){
-   // Create OCDB object for ZDC pedestal
+   // Create OCDB object for ZDC mapping
    const char* macroname = "MakeZDCChMapCalib.C";
  
    const int kNch=48; //const int kNScch=32;
@@ -34,7 +34,7 @@ MakeZDCChMapCalib(){
      }
      Info(macroname,"Saving alignment objects to the file %s", filename);
      f.cd();
-     f.WriteObject(mapCalib,"ZDCPedestals","kSingleKey");
+     f.WriteObject(mapCalib,"ZDCChMap","kSingleKey");
      f.Close();
    }
    else{
@@ -55,7 +55,7 @@ MakeZDCChMapCalib(){
      md->SetResponsible("Chiara Oppedisano");
      md->SetComment("Calibration objects for ZDC mapping");
      md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-     md->SetObjectClassName("AliZDCPedestals");
+     md->SetObjectClassName("AliZDCChMap");
      AliCDBId id("ZDC/Calib/ChMap",0,AliCDBRunRange::Infinity());
      storage->Put(mapCalib,id,md);
    }

@@ -1,18 +1,19 @@
-MakeZDCEnergyCalib(){
-   // Create OCDB object for ZDC energy calibration
-   const char* macroname = "MakeZDCEnergyCalib.C";
+MakeZDCTowerCalib(){
+   // Create OCDB object for ZDC tower calibration
+   const char* macroname = "MakeZDCTowerCalib.C";
  
-   AliZDCEnCalib *enCalib = new AliZDCEnCalib();
-   enCalib->SetEnCalib(0, 1.);
-   enCalib->SetEnCalib(1, 1.);
-   enCalib->SetEnCalib(2, 1.);
-   enCalib->SetEnCalib(3, 1.);
-   enCalib->SetEnCalib(4, 1.);
-   enCalib->SetEnCalib(5, 1.);
+   AliZDCTowerCalib *towerCalib = new AliZDCTowerCalib();
+   
+   for(Int_t j=0; j<5; j++){  
+      towerCalib->SetZN1EqualCoeff(j, 1.);
+      towerCalib->SetZP1EqualCoeff(j, 1.);
+      towerCalib->SetZN2EqualCoeff(j, 1.);
+      towerCalib->SetZP2EqualCoeff(j, 1.);  
+   }
   
    if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
      // save in file
-     const char* filename = "ZDCEnergyCalib.root";
+     const char* filename = "ZDCTowerCalib.root";
      TFile f(filename, "RECREATE");
      if(!f){
        Error(macroname,"cannot open file for output\n");
@@ -20,7 +21,7 @@ MakeZDCEnergyCalib(){
      }
      Info(macroname,"Saving alignment objects to the file %s", filename);
      f.cd();
-     f.WriteObject(enCalib,"ZDCEnergy","kSingleKey");
+     f.WriteObject(towerCalib,"ZDCTower","kSingleKey");
      f.Close();
    }
    else{
@@ -39,13 +40,13 @@ MakeZDCEnergyCalib(){
      }
      AliCDBMetaData* md = new AliCDBMetaData();
      md->SetResponsible("Chiara Oppedisano");
-     md->SetComment("Calibration objects for ZDC energy calibration");
+     md->SetComment("Calibration objects for ZDC saturation calibration");
      md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-     md->SetObjectClassName("AliZDCEnCalib");
-     AliCDBId id("ZDC/Calib/EnergyCalib",0,AliCDBRunRange::Infinity());
-     storage->Put(enCalib,id,md);
+     md->SetObjectClassName("AliZDCTowerCalib");
+     AliCDBId id("ZDC/Calib/TowerCalib",0,AliCDBRunRange::Infinity());
+     storage->Put(towerCalib,id,md);
    }
    
-   enCalib->Delete(); 
+   towerCalib->Delete(); 
 
 }

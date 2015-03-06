@@ -1,18 +1,16 @@
-MakeZDCEnergyCalib(){
-   // Create OCDB object for ZDC energy calibration
-   const char* macroname = "MakeZDCEnergyCalib.C";
+MakeZDCSaturationCalib(){
+   // Create OCDB object for ZDC saturation calibration
+   const char* macroname = "MakeZDCSaturationCalib.C";
  
-   AliZDCEnCalib *enCalib = new AliZDCEnCalib();
-   enCalib->SetEnCalib(0, 1.);
-   enCalib->SetEnCalib(1, 1.);
-   enCalib->SetEnCalib(2, 1.);
-   enCalib->SetEnCalib(3, 1.);
-   enCalib->SetEnCalib(4, 1.);
-   enCalib->SetEnCalib(5, 1.);
+   AliZDCSaturationCalib *satCalib = new AliZDCSaturationCalib();
+   Float_t satcalibZNA[4] = {0.,0.,0.,0.};
+   Float_t satcalibZNC[4] = {0.,0.,0.,0.};
+   satCalib->SetZNASatCalib(satcalibZNA);
+   satCalib->SetZNCSatCalib(satcalibZNC);
   
    if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
      // save in file
-     const char* filename = "ZDCEnergyCalib.root";
+     const char* filename = "ZDCSaturationCalib.root";
      TFile f(filename, "RECREATE");
      if(!f){
        Error(macroname,"cannot open file for output\n");
@@ -20,7 +18,7 @@ MakeZDCEnergyCalib(){
      }
      Info(macroname,"Saving alignment objects to the file %s", filename);
      f.cd();
-     f.WriteObject(enCalib,"ZDCEnergy","kSingleKey");
+     f.WriteObject(satCalib,"ZDCSaturation","kSingleKey");
      f.Close();
    }
    else{
@@ -39,13 +37,13 @@ MakeZDCEnergyCalib(){
      }
      AliCDBMetaData* md = new AliCDBMetaData();
      md->SetResponsible("Chiara Oppedisano");
-     md->SetComment("Calibration objects for ZDC energy calibration");
+     md->SetComment("Calibration objects for ZDC saturation calibration");
      md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-     md->SetObjectClassName("AliZDCEnCalib");
-     AliCDBId id("ZDC/Calib/EnergyCalib",0,AliCDBRunRange::Infinity());
-     storage->Put(enCalib,id,md);
+     md->SetObjectClassName("AliZDCSaturationCalib");
+     AliCDBId id("ZDC/Calib/SaturationCalib",0,AliCDBRunRange::Infinity());
+     storage->Put(satCalib,id,md);
    }
    
-   enCalib->Delete(); 
+   satCalib->Delete(); 
 
 }
