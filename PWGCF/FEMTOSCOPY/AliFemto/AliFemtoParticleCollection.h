@@ -7,7 +7,7 @@
  *
  * Description: part of STAR HBT Framework: AliFemtoMaker package
  *   The ParticleCollection is the main component of the picoEvent
- *   It points to the particle objects in the picoEvent.           
+ *   It points to the particle objects in the picoEvent.
  *
  ***************************************************************************
  *
@@ -36,11 +36,11 @@ using std::list;
 #endif
 
 #ifdef ST_NO_TEMPLATE_DEF_ARGS
-typedef list<AliFemtoParticle*, allocator<AliFemtoParticle*> >            AliFemtoParticleCollection;
-typedef list<AliFemtoParticle*, allocator<AliFemtoParticle*> >::iterator  AliFemtoParticleIterator;
+typedef list<AliFemtoParticle *, allocator<AliFemtoParticle *> >            AliFemtoParticleCollection;
+typedef list<AliFemtoParticle *, allocator<AliFemtoParticle *> >::iterator  AliFemtoParticleIterator;
 #else
-typedef list<AliFemtoParticle*>            AliFemtoParticleCollection;
-typedef list<AliFemtoParticle*>::iterator  AliFemtoParticleIterator;
+typedef list<AliFemtoParticle *>            AliFemtoParticleCollection;
+typedef list<AliFemtoParticle *>::iterator  AliFemtoParticleIterator;
 #endif
 
 #endif
