@@ -309,7 +309,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
       hTriggerClass->GetXaxis()->SetBinLabel( 4,"kHighMult");
-      hTriggerClass->GetXaxis()->SetBinLabel( 5,"kKEMC1");
+      hTriggerClass->GetXaxis()->SetBinLabel( 5,"kEMC1");
       hTriggerClass->GetXaxis()->SetBinLabel( 6,"kCINT5");
       hTriggerClass->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
       hTriggerClass->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
@@ -348,7 +348,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
       hTriggerClassSelected->GetXaxis()->SetBinLabel( 4,"kHighMult");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 5,"kKEMC1");
+      hTriggerClassSelected->GetXaxis()->SetBinLabel( 5,"kEMC1");
       hTriggerClassSelected->GetXaxis()->SetBinLabel( 6,"kCINT5");
       hTriggerClassSelected->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
       hTriggerClassSelected->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
