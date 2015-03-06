@@ -156,6 +156,8 @@ private:
     Float_t fAmplitude_V0A;   //!
     Float_t fAmplitude_V0C;   //!
     Float_t fAmplitude_V0M;   //!
+    Float_t fAmplitude_V0Apartial;   //!
+    Float_t fAmplitude_V0Cpartial;   //!
     Float_t fAmplitude_V0AEq; //!
     Float_t fAmplitude_V0CEq; //!
     Float_t fAmplitude_V0MEq; //!
