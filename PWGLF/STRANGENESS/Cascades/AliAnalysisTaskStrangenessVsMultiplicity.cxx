@@ -435,6 +435,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     //--- VZERO Data (Integrated)
     fTreeEvent->Branch("fAmplitude_V0A",&fAmplitude_V0A,"fAmplitude_V0A/F");
     fTreeEvent->Branch("fAmplitude_V0C",&fAmplitude_V0C,"fAmplitude_V0C/F");
+    fTreeEvent->Branch("fAmplitude_V0Apartial",&fAmplitude_V0Apartial,"fAmplitude_V0Apartial/F");
+    fTreeEvent->Branch("fAmplitude_V0Cpartial",&fAmplitude_V0Cpartial,"fAmplitude_V0Cpartial/F");
     fTreeEvent->Branch("fAmplitude_V0M",&fAmplitude_V0M,"fAmplitude_V0M/F");
     fTreeEvent->Branch("fAmplitude_V0AEq",&fAmplitude_V0AEq,"fAmplitude_V0AEq/F");
     fTreeEvent->Branch("fAmplitude_V0CEq",&fAmplitude_V0CEq,"fAmplitude_V0CEq/F");
