@@ -15,7 +15,7 @@ public:
 	virtual ~AliEMCalTriggerAnaTriggerDecisionConfig() {}
 
 	void SetSwapThresholds(Bool_t doSwap = kTRUE) { fSwapThresholds = doSwap;}
-	void SetUseOfflinePatches(Bool_t doUse = kTRUE ) { fUseOfflinePatches = kTRUE; }
+	void SetUseOfflinePatches(Bool_t doUse = kTRUE ) { fUseOfflinePatches = doUse; }
 	void SetEnergyThreshold(AliEMCalTriggerAnaTriggerDecision::ETATriggerType trigger, double threshold){
 		fEnergyThresholds[trigger] = threshold;
 	}
