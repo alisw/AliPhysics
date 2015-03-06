@@ -78,15 +78,16 @@ set(SRCS
     AliHLTUpcTriggerComponent.cxx
    )
 
-if(FASTJET_FOUND)
-    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
-    link_directories(${FASTJET_LIBS_DIR})
-    add_definitions(${FASTJET_DEFINITIONS})
-
-    set(SRCS ${SRCS}
-        AliHLTTriggerFastJet.cxx
-       )
-endif()
+# TO DO : Check if this is really needed
+#if(FASTJET_FOUND)
+#    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+#    link_directories(${FASTJET_LIBS_DIR})
+#    add_definitions(${FASTJET_DEFINITIONS})
+#
+#    set(SRCS ${SRCS}
+#        AliHLTTriggerFastJet.cxx
+#       )
+#endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
