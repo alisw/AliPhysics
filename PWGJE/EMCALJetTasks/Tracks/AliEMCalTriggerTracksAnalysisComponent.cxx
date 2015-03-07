@@ -36,6 +36,7 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent()
   fBinning(NULL),
   fKineCuts(NULL),
   fTriggerDecision(NULL),
+  fWeightHandler(NULL),
   fComponentDebugLevel(0)
 {
   /*
@@ -58,6 +59,7 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(c
   fBinning(NULL),
   fKineCuts(NULL),
   fTriggerDecision(NULL),
+  fWeightHandler(NULL),
   fComponentDebugLevel(0)
 {
   /*

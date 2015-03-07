@@ -42,6 +42,7 @@
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalTriggerRecTrackAnalysisComponent.h"
+#include "AliEMCalTriggerWeightHandler.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent)
 
@@ -151,6 +152,11 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
   AliVTrack *track(NULL);
   const AliVParticle *assocMC(NULL);
   TIter trackIter(data->GetMatchedTrackContainer());
+
+  double weight = 1.;
+  if(fWeightHandler && data->GetMCEvent()){
+    weight = fWeightHandler->GetEventWeight(data->GetMCEvent());
+  }
   while((track = dynamic_cast<AliVTrack *>(trackIter()))){
     // Apply track selection
     assocMC = NULL;
@@ -169,11 +175,11 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
 
     // Fill histograms
     for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); name++){
-      FillHistogram(Form("hTrackHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE);
-      if(hasCluster) FillHistogram(Form("hTrackInAcceptanceHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE);
+      FillHistogram(Form("hTrackHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
+      if(hasCluster) FillHistogram(Form("hTrackInAcceptanceHist%s", name->c_str()), track, NULL, data->GetRecEvent(), kFALSE, weight);
       if(assocMC){
-        FillHistogram(Form("hMCTrackHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE);
-        if(hasCluster) FillHistogram(Form("hMCTrackInAcceptanceHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE);
+        FillHistogram(Form("hMCTrackHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE, weight);
+        if(hasCluster) FillHistogram(Form("hMCTrackInAcceptanceHist%s", name->c_str()), track, assocMC, data->GetRecEvent(), kTRUE, weight);
       }
     }
   }
@@ -207,7 +213,7 @@ const AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
 void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
     const TString& histname, const AliVTrack* const trk,
     const AliVParticle* assocMC, const AliVEvent* const recev,
-    Bool_t useMCkine) {
+    Bool_t useMCkine, Double_t weight) {
   /*
    *
    */
@@ -218,7 +224,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
   data[2] = useMCkine ? assocMC->Phi() : trk->Phi();
   data[3] = recev->GetPrimaryVertex()->GetZ();
   data[4] = fTriggerDecision->IsMinBias();
-  fHistos->FillTHnSparse(histname.Data(), data);
+  fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

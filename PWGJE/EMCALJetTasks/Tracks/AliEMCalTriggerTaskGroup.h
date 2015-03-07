@@ -14,6 +14,7 @@ class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerEventSelection;
 class AliEMCalTriggerKineCuts;
 class AliEMCalTriggerTracksAnalysisComponent;
+class AliEMCalTriggerWeightHandler;
 
 class AliEMCalTriggerTaskGroup : public TNamed {
 public:
@@ -24,6 +25,7 @@ public:
   void SetEventSelection(const AliEMCalTriggerEventSelection *sel){ fEventSelection = sel; }
   void SetGlobalBinning(const AliEMCalTriggerBinningComponent *const binning) { fBinning = binning; }
   void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger);
+  void SetWeightHandler(const AliEMCalTriggerWeightHandler *handler);
   void SetKineCuts(const AliEMCalTriggerKineCuts *cuts) { fKineCuts = cuts; }
   void AddAnalysisComponent(AliEMCalTriggerTracksAnalysisComponent * const analysis);
 
@@ -35,6 +37,7 @@ protected:
   const AliEMCalTriggerEventSelection         *fEventSelection;
   const AliEMCalTriggerBinningComponent       *fBinning;
   const AliEMCalTriggerKineCuts               *fKineCuts;
+  const AliEMCalTriggerWeightHandler          *fWeightHandler;
 
   ClassDef(AliEMCalTriggerTaskGroup, 1);    // Group of analysis components with common event selection
 };

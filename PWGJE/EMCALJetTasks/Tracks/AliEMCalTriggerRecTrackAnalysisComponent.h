@@ -33,7 +33,7 @@ public:
 
 protected:
   const AliVParticle *IsMCTrueTrack(const AliVTrack *const trk, const AliMCEvent *evnt) const;
-  void FillHistogram(const TString &histname, const AliVTrack *const trk, const AliVParticle *assocMC, const AliVEvent * const recev, Bool_t useMCkine);
+  void FillHistogram(const TString &histname, const AliVTrack *const trk, const AliVParticle *assocMC, const AliVEvent * const recev, Bool_t useMCkine, Double_t weight);
 
   AliEMCalPtTaskVTrackSelection *   fTrackSelection;          // Track selection cuts used in the analysis
   Bool_t                            fSwapEta;                 // Swap eta sign

@@ -42,6 +42,7 @@
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerRecJetAnalysisComponent.h"
+#include "AliEMCalTriggerWeightHandler.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent)
 
@@ -171,6 +172,11 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
       std::cout << "Decision from patches and from strings do not match" << std::endl;
   }
 
+  double weight = 1.;
+  if(fWeightHandler && data->GetMCEvent()){
+    weight = fWeightHandler->GetEventWeight(data->GetMCEvent());
+  }
+
   AliJetContainer *cont = data->GetJetContainerData();
   AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
   AliVTrack *foundtrack(NULL);
@@ -179,7 +185,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
       for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name)
-        FillJetHistogram(Form("hRecJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+        FillJetHistogram(Form("hRecJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ(), weight);
       // Jet selected, loop over particles
       for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
         foundtrack = dynamic_cast<AliVTrack *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
@@ -188,10 +194,10 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
         if(fTrackSelection && !fTrackSelection->IsTrackAccepted(foundtrack)) continue;
         // track selected, fill histogram
         for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name){
-          FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
-          FillTrackHistogramCentrality(Form("hTrackJetCentralityHist%s%s", jetptstring.Data(), name->c_str()), foundtrack, reconstructedJet, centralityHandler->GetCentralityPercentile("V0A"));
+          FillHistogram(Form("hTrackJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ(), weight);
+          FillTrackHistogramCentrality(Form("hTrackJetCentralityHist%s%s", jetptstring.Data(), name->c_str()), foundtrack, reconstructedJet, centralityHandler->GetCentralityPercentile("V0A"), weight);
           if(assocMC){
-            FillHistogram(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name->c_str()), assocMC, reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+            FillHistogram(Form("hMCTrackJetHist%s%s", jetptstring.Data(), name->c_str()), assocMC, reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ(), weight);
           }
         }
       }
@@ -227,28 +233,28 @@ const AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
 //______________________________________________________________________________
 void AliEMCalTriggerRecJetAnalysisComponent::FillHistogram(
     const TString& histname, const AliVParticle* track, const AliEmcalJet* jet,
-    double vz) {
+    double vz, double weight) {
   /*
    * Fill Histogram with relevant information
    */
   if(!fTriggerDecision) return;
   double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
-  fHistos->FillTHnSparse(histname.Data(), data);
+  fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
 //______________________________________________________________________________
 void AliEMCalTriggerRecJetAnalysisComponent::FillJetHistogram(
-    const TString& histname, const AliEmcalJet* recjet, double vz) {
+    const TString& histname, const AliEmcalJet* recjet, double vz, double weight) {
   /*
    * Fill histogram for reconstructed jets with the relevant information
    */
   double data[4] = {TMath::Abs(recjet->Pt()), (fSwapEta ? -1. : 1.) * recjet->Eta(), recjet->Phi(), vz};
-  fHistos->FillTHnSparse(histname.Data(), data);
+  fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
 //______________________________________________________________________________
 void AliEMCalTriggerRecJetAnalysisComponent::FillTrackHistogramCentrality(
-		const TString& histname, const AliVTrack* const trk, const AliEmcalJet* jet, double centpercent) {
+		const TString& histname, const AliVTrack* const trk, const AliEmcalJet* jet, double centpercent, double weight) {
 	/*
 	 * Fill Histogram for tracks with:
 	 * - Track pt
@@ -258,7 +264,7 @@ void AliEMCalTriggerRecJetAnalysisComponent::FillTrackHistogramCentrality(
 	 * - centrality percentile
 	 */
 	double data[5] = { TMath::Abs(trk->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * trk->Eta(), centpercent, jet->DeltaR(trk)};
-	fHistos->FillTHnSparse(histname.Data(), data);
+	fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
