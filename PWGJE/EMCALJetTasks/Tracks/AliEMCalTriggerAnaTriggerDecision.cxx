@@ -101,17 +101,21 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
    */
   TIter patchIter(&listOfPatches);
   AliEmcalTriggerPatchInfo *mypatch(NULL);
-  if(fDoDebug)
+  if(fDoDebug){
     std::cout << "Generating trigger decision from found patches: " << listOfPatches.GetEntries() << std::endl;
+    if(fUseOfflinePatches) std::cout << "Using offline patches\n";
+    else std::cout << "Using online patches\n";
+  }
   int foundpatches[4] = {0,0,0,0};
   int index = -1;
   while((mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-	for(int icase = 0; icase < 4; icase++){
-	  if(SelectTriggerPatch(ETATriggerType(icase), mypatch)){
-	    fDecisionFromPatches[icase] = kTRUE;
-      foundpatches[icase]++;
+    if(fDoDebug) std::cout << "Next patch: " << (mypatch->IsOfflineSimple() ? "offline" : "online:") << std::endl;
+	  for(int icase = 0; icase < 4; icase++){
+	    if(SelectTriggerPatch(ETATriggerType(icase), mypatch)){
+	      fDecisionFromPatches[icase] = kTRUE;
+        foundpatches[icase]++;
+	    }
 	  }
-	}
   }
   if(fDoDebug){
     std::cout << "Found patches:" << std::endl;
