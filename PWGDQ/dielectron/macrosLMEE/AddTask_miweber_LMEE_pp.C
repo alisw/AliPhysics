@@ -46,6 +46,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResul
   Int_t triggerNames=(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);//pp 2010/2011 Min Bias?
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kpp2010All));
   task->SelectCollisionCandidates(triggerNames);
+  task->SetTriggerMask(triggerNames);
   task->SetRejectPileup();
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 
