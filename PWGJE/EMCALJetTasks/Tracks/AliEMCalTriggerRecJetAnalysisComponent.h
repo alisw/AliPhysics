@@ -33,9 +33,9 @@ public:
 
 protected:
   const AliVParticle * IsMCTrueTrack(const AliVTrack* const trk, const AliMCEvent* evnt) const;
-  void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz);
-  void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz);
-  void FillTrackHistogramCentrality(const TString &histname, const AliVTrack * const trk, const AliEmcalJet *jet, double centpercent);
+  void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
+  void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
+  void FillTrackHistogramCentrality(const TString &histname, const AliVTrack * const trk, const AliEmcalJet *jet, double centpercent, double weight);
   AliEMCalPtTaskVTrackSelection     *fTrackSelection;         // Track selection cuts used in the analysis
   Double_t                          fMinimumJetPt;            // Minimum jet pt
   Bool_t                            fRequestMCtrue;           // Request MC true track

@@ -83,6 +83,7 @@ set(SRCS
     Tracks/AliEMCalTriggerRecTrackAnalysisComponent.cxx
     Tracks/AliEMCalTriggerTaskGroup.cxx
     Tracks/AliEMCalTriggerTracksAnalysisComponent.cxx
+    Tracks/AliEMCalTriggerWeightHandler.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx

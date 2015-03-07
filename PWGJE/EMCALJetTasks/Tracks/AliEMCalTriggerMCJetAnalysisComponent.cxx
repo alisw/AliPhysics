@@ -41,6 +41,7 @@
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerMCJetAnalysisComponent.h"
+#include "AliEMCalTriggerWeightHandler.h"
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent)
 
@@ -140,13 +141,18 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
   this->GetMachingTriggerNames(triggernames, fUsePatches);
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
+  double weight = 1.;
+  if(fWeightHandler && data->GetMCEvent()){
+    weight = fWeightHandler->GetEventWeight(data->GetMCEvent());
+  }
+
   AliJetContainer *cont = data->GetJetContainerMC();
   AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
   AliAODMCParticle *foundtrack(NULL);
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){
       for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name)
-        FillJetHistogram(Form("hMCJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+        FillJetHistogram(Form("hMCJetHist%s%s", jetptstring.Data(), name->c_str()), reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ(), weight);
       // Jet selected, loop over particles
       for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
         foundtrack = dynamic_cast<AliAODMCParticle *>(reconstructedJet->TrackAt(ipart, cont->GetParticleContainer()->GetArray()));
@@ -155,7 +161,7 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
         if(!foundtrack->IsPhysicalPrimary()) continue;
         // track selected, fill histogram
         for(std::vector<std::string>::iterator name = triggernames.begin(); name != triggernames.end(); ++name){
-          FillHistogram(Form("hParticleJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ());
+          FillHistogram(Form("hParticleJetHist%s%s", jetptstring.Data(), name->c_str()), foundtrack,  reconstructedJet, data->GetRecEvent()->GetPrimaryVertex()->GetZ(), weight);
         }
       }
     }
@@ -166,22 +172,22 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
 //______________________________________________________________________________
 void AliEMCalTriggerMCJetAnalysisComponent::FillHistogram(
     const TString& histname, const AliVParticle* track, const AliEmcalJet* jet,
-    double vz) {
+    double vz, double weight) {
   /*
    * Fill Histogram with relevant information
    */
   if(!fTriggerDecision) return;
   double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
-  fHistos->FillTHnSparse(histname.Data(), data);
+  fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
 //______________________________________________________________________________
 void AliEMCalTriggerMCJetAnalysisComponent::FillJetHistogram(
-    const TString& histname, const AliEmcalJet* recjet, double vz) {
+    const TString& histname, const AliEmcalJet* recjet, double vz, double weight) {
   /*
    * Fill histogram for reconstructed jets with the relevant information
    */
   double data[4] = {TMath::Abs(recjet->Pt()), recjet->Eta(), recjet->Phi(), vz};
-  fHistos->FillTHnSparse(histname.Data(), data);
+  fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 } /* namespace EMCalTriggerPtAnalysis */
