@@ -79,11 +79,12 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
   if(isMC) trgconf->SetSwapThresholds();
+  //printf("Using offline patches: %s\n", useOfflinePatches ? "yes" :"no");
   trgconf->SetUseOfflinePatches(useOfflinePatches);
   pttriggertask->SetTriggerDecisionConfig(trgconf);
 
   CreateJetPtBinning(pttriggertask);
-  //pttriggertask->SetTriggerDebug(kTRUE);
+//  pttriggertask->SetTriggerDebug(kTRUE);
 
   mgr->AddTask(pttriggertask);
   if(usePythiaHard){
