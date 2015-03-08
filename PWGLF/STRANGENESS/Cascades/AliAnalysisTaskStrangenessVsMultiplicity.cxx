@@ -596,7 +596,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
-    inputHandler->SetNeedField(); 
+    inputHandler->SetNeedField();
 
     // Multiplicity
     if(! fESDtrackCuts ) {
@@ -878,7 +878,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     
     Float_t multV0Apartial = 0; 
     Float_t multV0Cpartial = 0;  
-    for(Int_t iCh = 48; iCh < 64; iCh++){ 
+    for(Int_t iCh = 32; iCh < 48; iCh++){
       Double_t mult = esdV0->GetMultiplicity(iCh); 
       multV0Apartial += mult; 
     }
