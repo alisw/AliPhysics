@@ -71,7 +71,7 @@ AliTRDcalibDB* AliTRDcalibDB::Instance()
   // Singleton implementation
   // Returns an instance of this class, it is created if neccessary
   //
-  
+
   if (fgTerminated != kFALSE) {
     return 0;
   }
@@ -924,7 +924,7 @@ Int_t AliTRDcalibDB::ExtractTimeBinsFromString(TString tbstr)
 {
   // Check if there is any content in the string first
   if (tbstr.Length() == 0) {
-    AliError("Parameter for number of timebins is empty!");
+    AliErrorClass("Parameter for number of timebins is empty!");
     return -1;
   }
 
@@ -932,14 +932,14 @@ Int_t AliTRDcalibDB::ExtractTimeBinsFromString(TString tbstr)
   TString tbident  = "tb";
   TString tbsubstr = tbstr(0,2);
   if (!tbsubstr.EqualTo(tbident)) {
-    AliError(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
+    AliErrorClass(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
     return -1;
   }
 
   tbstr.Remove(0,2);
   // check if there is more than a number
   if (!tbstr.IsDigit()) {
-    AliError(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
+    AliErrorClass(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
     return -1;
   }
 
@@ -1500,7 +1500,7 @@ Int_t AliTRDcalibDB::GetNumberOfOptsDCS(TString cname, Int_t cfgType)
 
   // protect
   if ((nconfig == -1) || (nconfig < cfgType)) {
-    AliError("Not enough parameters in DCS configuration name!");
+    AliErrorClass("Not enough parameters in DCS configuration name!");
     return 0;
   }
 
@@ -1525,11 +1525,11 @@ void AliTRDcalibDB::GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t op
   Int_t nconfig = GetNumberOfParsDCS(cname, cdelim);
   // protect
   if (nconfig == -1) {
-    AliError("DCS configuration name empty!");
+    AliErrorClass("DCS configuration name empty!");
     cfgo = "";
     return;
   } else if (nconfig < cfgType) {
-    AliError(Form("Not enough parameters in DCS configuration name!"
+    AliErrorClass(Form("Not enough parameters in DCS configuration name!"
 		  " Name %s",cname.Data()));
     cfgo = "";
     return;
@@ -1540,7 +1540,7 @@ void AliTRDcalibDB::GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t op
   Int_t noptions = GetNumberOfParsDCS(cfgString, odelim);
   // protect
   if (noptions < option) {
-    AliError(Form("Not enough options in DCS configuration name!"
+    AliErrorClass(Form("Not enough options in DCS configuration name!"
 		  " Name %s",cname.Data()));
     cfgo = "";
     carr->Delete(); delete carr;

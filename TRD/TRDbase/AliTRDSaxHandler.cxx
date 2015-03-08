@@ -154,35 +154,29 @@ void AliTRDSaxHandler::ParseConfigName(TString cfgname) const
 {
   // Evaluate the config name and set the individual parameters
 
-  // protect
-  if (!AliTRDcalibDB::Instance()) {
-    AliError("Could not create an instance of AliTRDcalibDB!");
-    return;
-  }
-
   TString cfg = "", par = "", pars = "";
-  Int_t nPar = AliTRDcalibDB::Instance()->GetNumberOfParsDCS(cfgname);
+  Int_t nPar = AliTRDcalibDB::GetNumberOfParsDCS(cfgname);
   if (nPar == 0) return;
 
   for (Int_t i=1; i<=nPar; i++) {
     // Get the configuration parameter
-    AliTRDcalibDB::Instance()->GetDCSConfigParOption(cfgname, i, 0, cfg);
+    AliTRDcalibDB::GetDCSConfigParOption(cfgname, i, 0, cfg);
 
     // Set Parameters accordingly
     if (i == AliTRDcalibDB::kFltrSet) fDCSFEEObj->SetFilterType(cfg);
     if (i == AliTRDcalibDB::kTrigSet) fDCSFEEObj->SetTriggerSetup(cfg);
     if (i == AliTRDcalibDB::kAddOpti) fDCSFEEObj->SetAddOptions(cfg);
-    if (i == AliTRDcalibDB::kTimebin) fDCSFEEObj->SetNumberOfTimeBins(AliTRDcalibDB::Instance()->ExtractTimeBinsFromString(cfg));
+    if (i == AliTRDcalibDB::kTimebin) fDCSFEEObj->SetNumberOfTimeBins(AliTRDcalibDB::ExtractTimeBinsFromString(cfg));
     if (i == AliTRDcalibDB::kReadout) fDCSFEEObj->SetReadoutParam(cfg);
     if (i == AliTRDcalibDB::kTrkMode) fDCSFEEObj->SetTrackletMode(cfg);
 
     // Set options of parameters accordingly
-    Int_t nOpt = AliTRDcalibDB::Instance()->GetNumberOfOptsDCS(cfgname, i);
+    Int_t nOpt = AliTRDcalibDB::GetNumberOfOptsDCS(cfgname, i);
     if (nOpt == 0) continue;
 
     for (Int_t j=1; j<=nOpt; j++) {
       // Get the parameter option
-      AliTRDcalibDB::Instance()->GetDCSConfigParOption(cfgname, i, j, par);
+      AliTRDcalibDB::GetDCSConfigParOption(cfgname, i, j, par);
 
       if (i == AliTRDcalibDB::kReadout) {
 	if (par.EqualTo("stat")) fDCSFEEObj->SetFastStatNoise(1);
