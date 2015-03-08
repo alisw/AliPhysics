@@ -596,6 +596,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
+    inputHandler->SetNeedField(); 
 
     // Multiplicity
     if(! fESDtrackCuts ) {
