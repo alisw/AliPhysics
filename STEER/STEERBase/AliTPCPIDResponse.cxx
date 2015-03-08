@@ -96,7 +96,7 @@ AliTPCPIDResponse::AliTPCPIDResponse():
                                   0., 0.2);
   fCorrFuncMultiplicityTanTheta = new TF1("fCorrFuncMultiplicityTanTheta", "[0] * (x - [2]) + [1] * (x * x - [2] * [2])", -1.5, 1.5);
   fCorrFuncSigmaMultiplicity = new TF1("fCorrFuncSigmaMultiplicity",
-                                       "TMath::Max(0, [0] + [1]*TMath::Min(x, [3]) + [2] * TMath::Power(TMath::Min(x, [3]), 2))", 0., 0.2);
+                                       "TMath::Max(0.0, [0] + [1]*TMath::Min(x, [3]) + [2] * TMath::Power(TMath::Min(x, [3]), 2))", 0., 0.2);
 
   
   ResetMultiplicityCorrectionFunctions();
