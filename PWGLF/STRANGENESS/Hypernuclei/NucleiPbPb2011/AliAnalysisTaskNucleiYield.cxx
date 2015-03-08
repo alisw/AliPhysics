@@ -402,8 +402,8 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
   Double_t cov[3];
   if (!track->PropagateToDCA(fPrimaryVertex, fMagField, 100, dca, cov)) return kFALSE;
-  if (dca[0] > fRequireMaxDCAxy) return kFALSE;
-  if (dca[1] > fRequireMaxDCAz) return kFALSE;
+  if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
+  if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
   return kTRUE;
 }
 
