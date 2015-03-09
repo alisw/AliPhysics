@@ -59,10 +59,12 @@ TH1D* AliHFCorrelationUtils::ReflectHisto(TH1D *h,Double_t scale){
     }
     Double_t y=h2->GetBinContent(j2);
     Double_t ey=h2->GetBinError(j2);
-    h2->SetBinContent(j2,scale*(y+y0));
-    h2->SetBinError(j2,scale*TMath::Sqrt(ey0*ey0+ey*ey));
+    h2->SetBinContent(j2,(y+y0));
+    h2->SetBinError(j2,TMath::Sqrt(ey0*ey0+ey*ey));  
   }
-  
+  h2->Scale(scale);
+
+
   return h2;
 }
 
