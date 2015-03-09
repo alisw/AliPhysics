@@ -72,6 +72,7 @@ AliStack::AliStack(Int_t size, const char* /*evfoldname*/):
   fTreeK(0),
   fNtrack(0),
   fNprimary(0),
+  fNtransported(0),
   fCurrent(-1),
   fCurrentPrimary(-1),
   fHgwmk(0),
@@ -94,6 +95,7 @@ AliStack::AliStack(const AliStack& st):
     fTreeK((TTree*)(st.fTreeK->Clone())),
     fNtrack(st.GetNtrack()),
     fNprimary(st.GetNprimary()),
+    fNtransported(st.GetNtransported()),
     fCurrent(-1),
     fCurrentPrimary(-1),
     fHgwmk(0),
@@ -219,6 +221,7 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
       particle->SetBit(kDoneBit);
   } else {
       particle->SetBit(kTransportBit);
+      fNtransported++;
   }
   
   
@@ -621,6 +624,7 @@ void  AliStack::Clean(Int_t size)
   
   fNtrack=0;
   fNprimary=0;
+  fNtransported=0;
   fHgwmk=0;
   fLoadPoint=0;
   fCurrent = -1;

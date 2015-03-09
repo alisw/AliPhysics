@@ -72,6 +72,7 @@ class AliStack : public TVirtualMCStack
     // get methods
     virtual Int_t GetNtrack() const;
     Int_t       GetNprimary() const;
+    Int_t       GetNtransported() const;
     virtual Int_t GetCurrentTrackNumber() const;
     virtual Int_t GetCurrentParentTrackNumber() const;
     TParticle*  Particle(Int_t id);
@@ -106,12 +107,13 @@ class AliStack : public TVirtualMCStack
     TTree         *fTreeK;             //! Particle stack  
     Int_t          fNtrack;            //  Number of tracks
     Int_t          fNprimary;          //  Number of primaries
+    Int_t	   fNtransported;      //  Number of particles to be transported
     Int_t          fCurrent;           //! Last track returned from the stack
     Int_t          fCurrentPrimary;    //! Last primary track returned from the stack
     Int_t          fHgwmk;             //! Last track purified
     Int_t          fLoadPoint;         //! Next free position in the particle buffer
     TArrayI        fTrackLabelMap;     //! Map of track labels
-    ClassDef(AliStack,5) //Particles stack
+    ClassDef(AliStack,6) //Particles stack
 };
 
 // inline
@@ -124,6 +126,9 @@ inline Int_t AliStack::GetNtrack() const
 
 inline Int_t AliStack::GetNprimary() const
 { return fNprimary; }
+
+inline Int_t AliStack::GetNtransported() const
+{ return fNtransported; }
 
 inline Int_t AliStack::GetCurrentTrackNumber() const 
 { return fCurrent; }
