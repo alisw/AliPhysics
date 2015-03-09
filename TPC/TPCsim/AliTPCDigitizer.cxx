@@ -623,7 +623,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   // Ion tail simulation:
   //    1.) Needs signal from pad+-1, taking signal from history
   // merge input tree's with summable digits
-  // output stored in TreeTPCD
+  // output stored in TreeTPCD 
   //  
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
@@ -995,7 +995,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       qOrig = q;
       Float_t noisePad = noiseROC->GetValue(padRow,padNumber);
       Float_t noise  = pTPC->GetNoise()*noisePad;
-      if ( (q/16.+noise)> zerosup){
+      if ( (q/16.+noise)> zerosup  || ((AliTPCReconstructor::StreamLevel()&kStreamSignalAll)>0)){
 	// Crosstalk correction 
 	qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
 	qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
@@ -1043,8 +1043,10 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       
       // fill info for degugging
       if ( ((AliTPCReconstructor::StreamLevel()&kStreamSignal)>0) && ((qOrig > zerosup)||((AliTPCReconstructor::StreamLevel()&kStreamSignalAll)>0) )) {
-      TTreeSRedirector &cstream = *fDebugStreamer;
-      UInt_t uid = AliTPCROC::GetTPCUniqueID(sector, padRow, padNumber);
+	TTreeSRedirector &cstream = *fDebugStreamer;
+	UInt_t uid = AliTPCROC::GetTPCUniqueID(sector, padRow, padNumber);
+	qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
+	//
         cstream <<"ionTailXtalk"<<
 	  "uid="<<uid<<                        // globla unique identifier
 	  "sector="<< sector<<   
