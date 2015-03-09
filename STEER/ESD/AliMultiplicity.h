@@ -111,21 +111,22 @@ class AliMultiplicity : public AliVMultiplicity {
     Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;
   }
 
-  Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
-  void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
-
   UInt_t GetNumberOfITSClusters(Int_t layer) const { return layer<6 ? fITSClusters[layer] : 0; }
   UInt_t GetNumberOfITSClusters(Int_t layMin, Int_t layMax) const ;
   void SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
+  //
+  virtual Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
+  virtual void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
+  //
+  virtual void   SetFastOrFiredChips(UInt_t chipKey){fFastOrFiredChips.SetBitNumber(chipKey);}
+  virtual void   SetFastOrFiredChipMap(const TBits& fochips) {fFastOrFiredChips = fochips;}
+  virtual const  TBits & GetFastOrFiredChips() const {return fFastOrFiredChips;}
+  virtual Bool_t TestFastOrFiredChips(UInt_t chipKey) const {return fFastOrFiredChips.TestBitNumber(chipKey);}
 
-  void   SetFastOrFiredChips(UInt_t chipKey){fFastOrFiredChips.SetBitNumber(chipKey);}
-  const TBits & GetFastOrFiredChips() const {return fFastOrFiredChips;}
-  Bool_t TestFastOrFiredChips(UInt_t chipKey) const {return fFastOrFiredChips.TestBitNumber(chipKey);}
-
-  void   SetFiredChipMap(TBits & firedChips){fClusterFiredChips = firedChips;}
-  void   SetFiredChipMap(UInt_t chipKey){fClusterFiredChips.SetBitNumber(chipKey);}
-  const TBits & GetFiredChipMap() const {return fClusterFiredChips;}
-  Bool_t TestFiredChipMap(UInt_t chipKey) const {return fClusterFiredChips.TestBitNumber(chipKey);}
+  virtual void   SetFiredChipMap(const TBits & firedChips) {fClusterFiredChips = firedChips;}
+  virtual void   SetFiredChipMap(UInt_t chipKey){fClusterFiredChips.SetBitNumber(chipKey);}
+  virtual const  TBits & GetFiredChipMap() const {return fClusterFiredChips;}
+  virtual Bool_t TestFiredChipMap(UInt_t chipKey) const {return fClusterFiredChips.TestBitNumber(chipKey);}
 
   Bool_t GetTrackletTrackIDs(Int_t i, Int_t mode, Int_t &spd1, Int_t &spd2) const;
   Int_t  GetTrackletTrackIDsLay(Int_t lr,Int_t i, Int_t mode, UInt_t* refs, UInt_t maxRef) const;

@@ -3,7 +3,7 @@
 
 #include <TNamed.h>
 #include <TMath.h>
-
+class TBits;
 
 //////////////////////////////////////////////////////////
 //                                                      //
@@ -52,6 +52,18 @@ class AliVMultiplicity : public TNamed {
   virtual Double_t* GetDeltPhi()                      const = 0;
   virtual Int_t*    GetLabels()                       const = 0;
   virtual Int_t*    GetLabels2()                      const = 0;
+  //
+  virtual Short_t   GetNumberOfFiredChips(Int_t)      const = 0;
+  virtual void      SetFiredChips(Int_t, Short_t)           = 0;
+  virtual void      SetFastOrFiredChips(UInt_t )            = 0;
+  virtual void      SetFastOrFiredChipMap(const TBits&)     = 0;
+  virtual const TBits& GetFastOrFiredChips()          const = 0;
+  virtual const TBits& GetFastOrFiredChipMap()        const {return GetFastOrFiredChips();}
+  virtual Bool_t    TestFastOrFiredChips(UInt_t)      const = 0;
+  virtual void      SetFiredChipMap(const TBits &)          = 0;
+  virtual void      SetFiredChipMap(UInt_t)                 = 0;
+  virtual const TBits& GetFiredChipMap()              const = 0;
+  virtual Bool_t TestFiredChipMap(UInt_t chipKey)     const = 0;
   //
   virtual void Print(Option_t *opt="")                const = 0;
   //

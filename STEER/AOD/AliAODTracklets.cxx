@@ -26,14 +26,20 @@
 
 ClassImp(AliAODTracklets)
 
-AliAODTracklets::AliAODTracklets() : AliVMultiplicity(), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
+AliAODTracklets::AliAODTracklets() 
+: AliVMultiplicity(), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
+  ,fFastOrFiredChips(),fClusterFiredChips()
 {
+  fFiredChips[0] = fFiredChips[1] = 0;
   // default constructor
 }
 
-AliAODTracklets::AliAODTracklets(const char* name, const char* title) : AliVMultiplicity(name, title), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
+AliAODTracklets::AliAODTracklets(const char* name, const char* title)
+: AliVMultiplicity(name, title), fNTracks(0), fTheta(0), fPhi(0), fDeltaPhi(0), fLabels(0), fLabelsL2(0)
+, fFastOrFiredChips(),fClusterFiredChips()
 {
   // Named constructor
+  fFiredChips[0] = fFiredChips[1] = 0;
 }
 
 AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
@@ -43,7 +49,8 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
     fPhi(0),
     fDeltaPhi(0),
     fLabels(0), 
-    fLabelsL2(0)
+    fLabelsL2(0),
+    fFastOrFiredChips(tracklet.fFastOrFiredChips),fClusterFiredChips(tracklet.fClusterFiredChips)
 {
 // Copy constructor
     fTheta = new Double32_t[fNTracks];
@@ -58,6 +65,8 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
 	fLabels[i]   = tracklet.fLabels[i];
 	fLabelsL2[i]   = tracklet.fLabelsL2[i];
     }
+    fFiredChips[0] = tracklet.fFiredChips[0];
+    fFiredChips[1] = tracklet.fFiredChips[1];
 }
 
 AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
@@ -76,6 +85,10 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
 	fLabels[i]   = tracklet.fLabels[i];
 	fLabelsL2[i]   = tracklet.fLabelsL2[i];
     }
+    fFiredChips[0] = tracklet.fFiredChips[0];
+    fFiredChips[1] = tracklet.fFiredChips[1];
+    fFastOrFiredChips = tracklet.fFastOrFiredChips;
+    fClusterFiredChips = tracklet.fClusterFiredChips;
     return *this;
 }
 
