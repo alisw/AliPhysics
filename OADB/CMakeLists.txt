@@ -39,6 +39,7 @@ set(SRCS
     AliOADBPhysicsSelection.cxx
     AliOADBTrackFix.cxx
     AliOADBTriggerAnalysis.cxx
+    AliPPVsMultUtils.cxx
 )
 
 # Headers from sources
