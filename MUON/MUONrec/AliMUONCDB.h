@@ -32,6 +32,8 @@ namespace AliMUONCDB
   Bool_t CheckOCDB(Bool_t pathOnly = kFALSE);
   Bool_t CheckMapping(Bool_t segmentationOnly = kFALSE);
   
+  Double_t MeanHVValueForDCSAlias(TMap& hvMap, const char* hvChannel);
+
   void CheckHV(Int_t runNumber, Int_t verbose=0);
 
   Bool_t LoadField();

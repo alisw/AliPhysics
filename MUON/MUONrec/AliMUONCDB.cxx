@@ -1745,6 +1745,48 @@ void AliMUONCDB::ShowFaultyBusPatches(const char* runlist, double occLimit,
 }
 
 //______________________________________________________________________________
+Double_t AliMUONCDB::MeanHVValueForDCSAlias(TMap& hvMap, const char* hvChannel)
+{
+
+  TPair* hvPair = static_cast<TPair*>(hvMap.FindObject(hvChannel));
+  if (!hvPair)
+  {
+    AliErrorGeneral("AliMUONCDB::MeanHVValueForDCSAlias",Form("Did not find expected alias (%s)",hvChannel));
+    return 0.0;
+  }
+  else
+  {
+    TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
+    if (!values)
+    {
+      AliErrorGeneral("AliMUONCDB::MeanHVValueForDCSAlias",Form("Could not get values for alias %s",hvChannel));
+      return 0.0;
+    }
+    else
+    {
+      // find out min value, and makes a cut
+      Float_t hv(0.0);
+      Float_t n(0.0);
+      TIter next(values);
+      AliDCSValue* val;
+    
+      while ( ( val = static_cast<AliDCSValue*>(next()) ) )
+      {
+        hv += val->GetFloat();
+        n += 1.0;
+      }
+      
+      if (n>0.0)
+      {
+        hv /= n;
+        return hv;
+      }
+    }
+    return 0.0;
+  }
+}
+
+//______________________________________________________________________________
 void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
 {
   /// Check the HV values in OCDB for a given run
@@ -1783,14 +1825,23 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
   TObjString* s;
   AliMpDCSNamer hvNamer("TRACKER");
   AliMUONLogger log;
+  Double_t meanHVValue(0.0);
+  Double_t nofHVValues(0.0);
   
   while ( ( s = static_cast<TObjString*>(next()) ) )
   {
     TObjArray* a = s->String().Tokenize(":");
     
     TString name(static_cast<TObjString*>(a->At(0))->String());
+
+    TObjArray* b = name.Tokenize(" ");
     
-    if ( name.Contains("sw") || name.Contains("SUMMARY") ) {delete a; continue;}
+    name = static_cast<TObjString*>(b->At(0))->String();
+
+    delete a;
+    delete b;
+    
+    if ( name.Contains("sw") || name.Contains("SUMMARY") ) {continue;}
     
     Int_t index = hvNamer.DCSIndexFromDCSAlias(name.Data());
     
@@ -1801,7 +1852,6 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
     if (!de)
     {
       AliErrorGeneral("AliMUONCDB::CheckHV",Form("Could not get detElemId from dcsAlias %s",name.Data()));
-      delete a;
       continue;
     }
     
@@ -1816,7 +1866,6 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
       
     {
       AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(de->GetBusPatchId(0));
-      
       manuId = bp->GetManuId(0);
     }
     
@@ -1824,11 +1873,13 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
     
     log.Log(AliMUONPadStatusMaker::AsString(status).Data());
     
+    meanHVValue += MeanHVValueForDCSAlias((*cd.HV()),name.Data());
+    
+    nofHVValues += 1.0;
+    
     s->String() += Form(" (DE %4d) ",detElemId);
     s->String() += AliMUONPadStatusMaker::AsString(status).Data();
-    
-    delete a;
-  }    
+  }
   
   TIter nextMessage(&messages);
   TObjString* msg;
@@ -1863,7 +1914,13 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
       AliInfoGeneral("AliMUONCDB::CheckHV",Form("     Problem at %s",msg->String().Data()));      
     }
   }
-   
+  
+  if (nofHVValues)
+  {
+    meanHVValue /= nofHVValues;
+    AliInfoGeneral("AliMUONCDB::CheckHV",Form("Mean HV for run %09d was %7.2f",runNumber,meanHVValue));
+  }
+  
   AliCDBManager::Instance()->ClearCache();
 }
 
