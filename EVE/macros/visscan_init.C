@@ -77,7 +77,7 @@ void visscan_init(const TString& cdburi = "",
   mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz(), 0);
 
   if (showTrd) {
-    TEveUtil::LoadMacro("geom_gentle_trd.C");
+    TEveUtil::LoadMacro("geom_gentle_trd.C+");
     mv->InitGeomGentleTrd(geom_gentle_trd());
   }
 
