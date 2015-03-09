@@ -50,6 +50,7 @@ set(SRCS
     AliHFDhadronCorrSystUnc.cxx	
     AliHFCorrelationFDsubtraction.cxx	
     AliHFDmesonCorrAverage.cxx
+    AliHFCorrelationUtils.cxx
   )
 
 # Headers from sources
