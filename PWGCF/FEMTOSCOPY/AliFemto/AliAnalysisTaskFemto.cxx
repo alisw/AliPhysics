@@ -36,15 +36,15 @@ ClassImp(AliAnalysisTaskFemto)
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
-  fESD(0),
-  fESDpid(0),
-  fAOD(0),
-  fAODpidUtil(0),
-  fAODheader(0),
-  fStack(0),
-  fOutputList(0),
-  fReader(0x0),
-  fManager(0x0),
+  fESD(NULL),
+  fESDpid(NULL),
+  fAOD(NULL),
+  fAODpidUtil(NULL),
+  fAODheader(NULL),
+  fStack(NULL),
+  fOutputList(NULL),
+  fReader(NULL),
+  fManager(NULL),
   fAnalysisType(0),
   fConfigMacro(aConfigMacro),
   fConfigParams(aConfigParams),
@@ -60,15 +60,15 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, T
 //________________________________________________________________________
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro = "ConfigFemtoAnalysis.C", Bool_t aVerbose):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
-  fESD(0),
-  fESDpid(0),
-  fAOD(0),
-  fAODpidUtil(0),
-  fAODheader(0),
-  fStack(0),
-  fOutputList(0),
-  fReader(0x0),
-  fManager(0x0),
+  fESD(NULL),
+  fESDpid(NULL),
+  fAOD(NULL),
+  fAODpidUtil(NULL),
+  fAODheader(NULL),
+  fStack(NULL),
+  fOutputList(NULL),
+  fReader(NULL),
+  fManager(NULL),
   fAnalysisType(0),
   fConfigMacro(aConfigMacro),
   fConfigParams(""),
@@ -84,36 +84,21 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro = 
 
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTask):
   AliAnalysisTaskSE(aFemtoTask), //AliAnalysisTask(aFemtoTask),
-  fESD(0),
-  fESDpid(0),
-  fAOD(0),
-  fAODpidUtil(0),
-  fAODheader(0),
-  fStack(0),
-  fOutputList(0),
-  fReader(0x0),
-  fManager(0x0),
-  fAnalysisType(0),
-  fConfigMacro(0),
-  fConfigParams(0),
-  fVerbose(kFALSE)
+  fESD(aFemtoTask.fESD),
+  fESDpid(aFemtoTask.fESDpid),
+  fAOD(aFemtoTask.fAOD),
+  fAODpidUtil(aFemtoTask.fAODpidUtil),
+  fAODheader(aFemtoTask.fAODheader),
+  fStack(aFemtoTask.fStack),
+  fOutputList(aFemtoTask.fOutputList),
+  fReader(aFemtoTask.fReader),
+  fManager(aFemtoTask.fManager),
+  fAnalysisType(aFemtoTask.fAnalysisType),
+  fConfigMacro(aFemtoTask.fConfigMacro),
+  fConfigParams(aFemtoTask.fConfigParams),
+  fVerbose(aFemtoTask.fVerbose)
 {
   // copy constructor
-  fESD = aFemtoTask.fESD;
-  fESDpid = aFemtoTask.fESDpid;
-  fAOD = aFemtoTask.fAOD;
-  fAODpidUtil = aFemtoTask.fAODpidUtil;
-  fAODheader = aFemtoTask.fAODheader;
-  fStack = aFemtoTask.fStack;
-  fOutputList = aFemtoTask.fOutputList;
-  fReader = aFemtoTask.fReader;
-  fManager = aFemtoTask.fManager;
-  fAnalysisType = aFemtoTask.fAnalysisType;
-
-  fConfigMacro = aFemtoTask.fConfigMacro;
-  fConfigParams = aFemtoTask.fConfigParams;
-
-  fVerbose = aFemtoTask.fVerbose;
 }
 
 
@@ -137,7 +122,6 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   fConfigMacro = aFemtoTask.fConfigMacro;
   fConfigParams = aFemtoTask.fConfigParams;
   fVerbose = aFemtoTask.fVerbose;
-
 
   return *this;
 }
