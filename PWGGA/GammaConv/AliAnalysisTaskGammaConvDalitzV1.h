@@ -168,6 +168,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1F 									**hMCConvGammaPt;
 		TH2F									**hMCConvGammaPtR;
 		TH1F 									**hMCConvGammaRSPt;
+		TH1F									**hMCConvGammaPi0Pt;
 		TH1F 									**hMCAllPositronsPt;
 		TH1F									**hMCDecayPositronPi0Pt;
 		TH1F 									**hMCAllElectronsPt;
