@@ -25,5 +25,6 @@
 #pragma link C++ class AliHFDhadronCorrSystUnc+;	
 #pragma link C++ class AliHFCorrelationFDsubtraction+;	
 #pragma link C++ class AliHFDmesonCorrAverage+;
+#pragma link C++ class AliHFCorrelationUtils+;
 
 #endif
