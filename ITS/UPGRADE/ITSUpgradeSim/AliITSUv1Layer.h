@@ -153,13 +153,16 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkIBCoolPipeInnerD;   // IB cooling inner diameter
     static const Double_t fgkIBCoolPipeThick;    // IB cooling pipe thickness
     static const Double_t fgkIBCoolPipeXDist;    // IB cooling pipe separation
-    static const Double_t fgkIBTopVertexWidth;   // IB TopVertex width
+    static const Double_t fgkIBTopVertexWidth1;  // IB TopVertex width
+    static const Double_t fgkIBTopVertexWidth2;  // IB TopVertex width
     static const Double_t fgkIBTopVertexHeight;  // IB TopVertex height
+    static const Double_t fgkIBTopVertexAngle ;  // IB TopVertex aperture angle
     static const Double_t fgkIBSideVertexWidth;  // IB SideVertex width
     static const Double_t fgkIBSideVertexHeight; // IB SideVertex height
     static const Double_t fgkIBTopFilamentLength;// IB TopFilament length
     static const Double_t fgkIBTopFilamentSide;  // IB TopFilament side
     static const Double_t fgkIBTopFilamentAlpha; // IB TopFilament angle
+    static const Double_t fgkIBTopFilamentGamma; // IB TopFilament angle
 
     static const Double_t fgkIBStaveHeight;      // IB Stave Total Y Height
 

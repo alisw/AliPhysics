@@ -63,15 +63,18 @@ const Double_t AliITSUv1Layer::fgkIBK13D2UThick       =  70.0  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkIBCoolPipeInnerD    =   1.024*fgkmm;
 const Double_t AliITSUv1Layer::fgkIBCoolPipeThick     =  25.4  *fgkmicron;
 const Double_t AliITSUv1Layer::fgkIBCoolPipeXDist     =   5.0  *fgkmm;
-const Double_t AliITSUv1Layer::fgkIBTopVertexWidth    =   0.072*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopVertexWidth1   =   0.258*fgkmm;
+const Double_t AliITSUv1Layer::fgkIBTopVertexWidth2   =   0.072*fgkcm;
 const Double_t AliITSUv1Layer::fgkIBTopVertexHeight   =   0.04 *fgkcm;
-const Double_t AliITSUv1Layer::fgkIBSideVertexWidth   =   0.052*fgkcm;
-const Double_t AliITSUv1Layer::fgkIBSideVertexHeight  =   0.11 *fgkcm;
-const Double_t AliITSUv1Layer::fgkIBTopFilamentLength =   0.844*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopVertexAngle    =  60.0; // Deg
+const Double_t AliITSUv1Layer::fgkIBSideVertexWidth   =   0.05 *fgkcm;
+const Double_t AliITSUv1Layer::fgkIBSideVertexHeight  =   0.074*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBTopFilamentLength =   0.9  *fgkcm;
 const Double_t AliITSUv1Layer::fgkIBTopFilamentSide   =   0.02 *fgkcm;
 const Double_t AliITSUv1Layer::fgkIBTopFilamentAlpha  =  57.0; // Deg
+const Double_t AliITSUv1Layer::fgkIBTopFilamentGamma  =  65.0; // Deg
 
-const Double_t AliITSUv1Layer::fgkIBStaveHeight       =   0.283*fgkcm;
+const Double_t AliITSUv1Layer::fgkIBStaveHeight       =   0.5  *fgkcm;
 
 // Outer Barrel Parameters
 const Int_t    AliITSUv1Layer::fgkOBChipsPerRow       =   7;
@@ -435,7 +438,7 @@ void AliITSUv1Layer::CreateLayerTurbo(TGeoVolume *moth){
 
   // Now build up the layer
   alpha = 360./fNStaves;
-  Double_t r = fLayRadius /* +chip thick ?! */;
+  Double_t r = fLayRadius; // Chip thick taken into account in ITSUModule
   for (Int_t j=0; j<fNStaves; j++) {
     Double_t phi = j*alpha + fPhi0;
     xpos = r*CosD(phi);// r*SinD(-phi);
@@ -2013,6 +2016,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
 //
 // Created:      04 Dec 2014  Mario Sitta
 // Updated:      03 Mar 2015  Mario Sitta  FPC in right position (beyond chip)
+// Updated:      06 Mar 2015  Mario Sitta  Space Frame corrected (C.G. data)
 //
 
   
@@ -2078,29 +2082,36 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   TGeoBBox *fleeclr   = new TGeoBBox(xlen/2, fgkIBCarbonFleeceThick/2, zstave);
 
   // The spaceframe structure
-  TGeoTrd1 *topv  = new TGeoTrd1(0, fgkIBTopVertexWidth/2, zstave,
-				    fgkIBTopVertexHeight/2);
+  TGeoTrd1 *topv  = new TGeoTrd1(fgkIBTopVertexWidth1/2,
+				 fgkIBTopVertexWidth2/2, zstave,
+				 fgkIBTopVertexHeight/2);
 
-  TGeoTrd1 *sidev = new TGeoTrd1(0, fgkIBSideVertexWidth/2, zstave,
-				    fgkIBSideVertexHeight/2);
+  xv[0] = 0;
+  yv[0] = 0;
+  xv[1] = fgkIBSideVertexWidth;
+  yv[1] = yv[0];
+  xv[2] = xv[0];
+  yv[2] = fgkIBSideVertexHeight;
+
+  TGeoXtru *sidev = new TGeoXtru(2);
+  sidev->DefinePolygon(3, xv, yv);
+  sidev->DefineSection(0,-zstave);
+  sidev->DefineSection(1, zstave);
 
   TGeoBBox *topfil = new TGeoBBox(fgkIBTopFilamentLength/2,
 				  fgkIBTopFilamentSide/2,
 				  fgkIBTopFilamentSide/2);
 
   // The half stave container (an XTru to avoid overlaps between neighbours)
-  beta = TMath::ATan(2*sidev->GetDz()/sidev->GetDx2());
-  gamma = TMath::PiOver2() - beta;
-
   layerHeight = 2*(    glue->GetDY() + fleecbot->GetDY() + cfplate->GetDY()
                    + cpaplr->GetDY() +  fleeclr->GetDY() );
 
   xv[0] = xstave;
   yv[0] = 0;
   xv[1] = xv[0];
-  yv[1] = layerHeight + fgkIBSideVertexHeight;
-  xv[2] = fgkIBTopVertexWidth/2;
-  yv[2] = fgkIBStaveHeight + 2*topfil->GetDZ();
+  yv[1] = layerHeight + fgkIBSideVertexHeight + topfil->GetDZ();;
+  xv[2] = fgkIBTopVertexWidth2/2;
+  yv[2] = fgkIBStaveHeight;
   for (Int_t i = 0; i<nv/2; i++) {
     xv[3+i] = -xv[2-i];
     yv[3+i] =  yv[2-i];
@@ -2279,47 +2290,41 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB4(const Double_t xstave,
   ylay += (fgkIBCarbonPaperThick + fgkIBCarbonFleeceThick);
 
   if (fBuildLevel < 5) { // Carbon (spaceframe)
-    ypos = fgkIBStaveHeight - topv->GetDz(); // Due to rotation, z is on Y
+    ypos = fgkIBStaveHeight - fgkIBTopFilamentSide - topv->GetDz(); // Due to rotation, z is on Y
     mechStavVol->AddNode(topvVol, 1,
 			 new TGeoCombiTrans(0, ypos, 0,
 					    new TGeoRotation("",0,-90,0)));
 
-    // beta and gamma were already computed when building mechStruct shape
-    xpos = xstave - TMath::Cos(gamma)*sidev->GetDz();
-    ypos = ylay + TMath::Sin(gamma)*sidev->GetDz();
-    beta *= TMath::RadToDeg();  // beta was rad, we need deg
+    xpos = xstave - sidev->GetX(1);
+    ypos = ylay;
+    mechStavVol->AddNode(sidevVol, 1, new TGeoTranslation( xpos, ypos, 0));
+    mechStavVol->AddNode(sidevVol, 2, new TGeoCombiTrans(-xpos, ypos, 0,
+					    new TGeoRotation("",90,180,-90)));
 
-    mechStavVol->AddNode(sidevVol, 1,
-			 new TGeoCombiTrans(-xpos, ypos, 0,
-					new TGeoRotation("", 180-beta,90,0)));
-    mechStavVol->AddNode(sidevVol, 2,
-			 new TGeoCombiTrans( xpos, ypos, 0,
-					new TGeoRotation("",-180+beta,90,0)));
-
-    gamma *= TMath::RadToDeg();  // gamma was rad, we need deg
+    gamma = fgkIBTopFilamentGamma;
     theta = 90. - fgkIBTopFilamentAlpha;
     xpos = xstave/2 + topfil->GetDZ();
     ypos = ( layerHeight + fgkIBStaveHeight )/2 +
-	   fgkIBSideVertexWidth*TMath::Sin(beta*TMath::DegToRad())/2 ;
+	   fgkIBSideVertexWidth/TMath::Sin(gamma*TMath::DegToRad())/2 ;
     for(int i=0; i<nFilaments; i++){ // i<28 (?)
       // 1) Front Left Top Filament
       zpos = -zstave + (i*2*topFilYLen) + topFilLProj/4; // ?????
       mechStavVol->AddNode(topfilVol, i*4+1,
 			 new TGeoCombiTrans( xpos, ypos, zpos,
-			      new TGeoRotation("", 90, theta, 90-gamma)));
+			      new TGeoRotation("", 90, theta, gamma)));
       // 2) Front Right Top Filament
       mechStavVol->AddNode(topfilVol, i*4+2,
 			 new TGeoCombiTrans(-xpos, ypos, zpos,
-			      new TGeoRotation("", 90,-theta,-90+gamma)));
+			      new TGeoRotation("", 90,-theta,-gamma)));
       // 3) Back Left  Top Filament
       zpos += topFilYLen;
       mechStavVol->AddNode(topfilVol, i*4+3,
 			 new TGeoCombiTrans( xpos, ypos, zpos,
-			      new TGeoRotation("", 90,-theta, 90-gamma)));
+			      new TGeoRotation("", 90,-theta, gamma)));
       // 4) Back Right Top Filament
       mechStavVol->AddNode(topfilVol, i*4+4,
 			 new TGeoCombiTrans(-xpos, ypos, zpos,
-			      new TGeoRotation("", 90, theta,-90+gamma)));
+			      new TGeoRotation("", 90, theta,-gamma)));
     }
   }
 
