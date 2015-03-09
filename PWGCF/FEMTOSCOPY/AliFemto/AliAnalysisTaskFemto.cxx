@@ -281,6 +281,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 
   TList *tOL;
   fOutputList = fManager->Analysis(0)->GetOutputList();
+  fOutputList->SetOwner(kTRUE);
 
   for (unsigned int ian = 1; ian < fManager->AnalysisCollection()->size(); ian++) {
     tOL = fManager->Analysis(ian)->GetOutputList();
