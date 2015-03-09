@@ -16,6 +16,9 @@
 #pragma link C++ class AliEveListAnalyserEditor+;
 #pragma link C++ class AliEveGeneralMacroWizard+;
 
+// AD
+#pragma link C++ class AliEveADModule+;
+
 // EMCAL
 #pragma link C++ class AliEveEMCALData+;
 #pragma link C++ class AliEveEMCALSModuleData+;
