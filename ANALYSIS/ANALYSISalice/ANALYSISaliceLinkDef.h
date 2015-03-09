@@ -38,7 +38,6 @@
 #pragma link C++ class AliUnfolding+;
 
 #pragma link C++ class AliAnalysisTaskBadChunkID+;
-#pragma link C++ class AliPPVsMultUtils+;
 
 // If ROOT was built with XML support
 #ifdef WITHXML

@@ -55,7 +55,6 @@ set(SRCS
     AliKineTrackCuts.cxx
     AliMultiEventInputHandler.cxx
     AliPIDResponseInputHandler.cxx
-    AliPPVsMultUtils.cxx
     AliTagAnalysis.cxx
     AliUnfolding.cxx
     AliVZEROEPSelectionTask.cxx
