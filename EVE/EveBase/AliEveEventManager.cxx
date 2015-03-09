@@ -627,8 +627,10 @@ void AliEveEventManager::Open()
             
             if (fRunLoader->LoadgAlice() != 0){Warning(kEH, "failed loading gAlice via run-loader.");}
             
-            if (fRunLoader->LoadHeader() == 0 && runNo < 0){
+            if (fRunLoader->LoadHeader() == 0){
+	      if(runNo < 0){
                     runNo = fRunLoader->GetHeader()->GetRun();
+	      }
             }
             else{
                 Warning(kEH, "failed loading run-loader's header.");

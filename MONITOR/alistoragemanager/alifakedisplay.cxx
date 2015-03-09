@@ -3,8 +3,6 @@
 #include "AliESDEvent.h"
 #include "AliESDRun.h"
 
-#include "AliRawEventHeaderBase.h"
-
 #include <iostream>
 
 #include <TThread.h>
@@ -65,7 +63,6 @@ int main(int argc, char **argv)
                 cout<<event->GetPeriodNumber()<<endl;
                 cout<<event->GetOrbitNumber()<<endl;
                 cout<<event->GetBunchCrossNumber()<<endl;
-                cout<<AliRawEventHeaderBase::GetTypeName(event->GetEventType())<<endl;
                 for(int i=0;i<100;i++)
                 {
                     if(strcmp(event->GetESDRun()->GetTriggerClass(i),"")){
