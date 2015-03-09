@@ -45,6 +45,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   // general configuration
   void   SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
   void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
+  void   SetfMode( Int_t val ){ fMode = val; }
   void   SetZVertex( Double_t val )    { fZVertex = val; }
   
   // track cuts
@@ -76,9 +77,12 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
 
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
   void AddEventCombination(TObjArray* tracks);
+  AliGenEventHeader* GetFirstHeader();
 
   //general configuration
   Int_t  		fMixingTracks;		// size of track buffer for event mixing
+  Int_t                 fMode; // fMode = 0; data mode
+                               // fMode = 1; mc mode
 
   // Pointers to external UE classes
   AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
@@ -87,6 +91,8 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   // Handlers and events
   AliAODEvent*             fAOD;             //! AOD Event 
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
+  AliMCEvent*              fMcEvent;         //! MC event
+  AliInputEventHandler*    fMcHandler;       //! MCEventHandler 
 
   TObjArray*     fEventCombination;         //reduced tracklist which contains 4 semi central events which have the same multiplicity as 1 central event
   Int_t          fUsedEvents;               //used events in fEventCombination
@@ -124,7 +130,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-  ClassDef(AliAnalysisTaskTwoPlusOne, 5); // two plus one analysis with two trigger particles and particle correlations to these triggers
+  ClassDef(AliAnalysisTaskTwoPlusOne, 6); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif
