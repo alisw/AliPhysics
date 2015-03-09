@@ -235,7 +235,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
     results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kFALSE); 
     delete map;
     map=0;
-
+    oneTRDDCS->ClearGraph();
     //results [iAlias] = StoreReferenceData("Calib", oneTRDDCS->GetStoreName ().Data (), oneTRDDCS, &metaData); 
 
     if (!results[iAlias]) {
