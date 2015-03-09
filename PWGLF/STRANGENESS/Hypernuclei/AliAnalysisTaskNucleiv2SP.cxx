@@ -52,7 +52,7 @@ class AliAODv0;
 #include "AliAnalysisTaskNucleiv2SP.h"
 #include "AliESDtrackCuts.h"
 #include "AliCentrality.h"
-
+#include <TRandom3.h>
 
 ClassImp(AliAnalysisTaskNucleiv2SP)
 
@@ -268,6 +268,21 @@ Float_t AliAnalysisTaskNucleiv2SP::GetPhi0Pi(Float_t phi){
    return result;
 }
 
+//____________________________________________________________________
+
+// Flattening of the centrality distribution
+// true =  means skip event
+
+Bool_t AliAnalysisTaskNucleiv2SP::Flatten(Float_t cent) {
+  float prob[13] = {
+    0.855566,0.846964,0.829618,0.829259,0.830984,
+    0.85094,0.844346,0.851818,0.874758,1,
+    0.374767,0.650491,0.946963
+  };
+  if (cent >= 13.f) return kFALSE;
+  else return gRandom->Rndm() > prob[int(cent)];
+}
+
 //==================DEFINITION OF OUTPUT OBJECTS==============================
 
 void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
@@ -467,7 +482,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   AliCentrality *centrality = lESDevent->GetCentrality();
   Float_t percentile=centrality->GetCentralityPercentile("V0M");
-  
+  if(Flatten(percentile))return;
   Int_t TrackNumber = lESDevent->GetNumberOfTracks();
   fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
   
@@ -485,8 +500,8 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   ULong_t  status=0;
  
-  Double_t pmax  = 10;
-  Double_t ptmax = 10;
+  Double_t pmax  = 10.;
+  Double_t ptmax = 7.;
   // Primary vertex cut
   
   const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
@@ -687,7 +702,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     Double_t ptot = esdtrack->GetInnerParam()->GetP(); // momentum for dEdx determination
  
     //   if(ptot<0.2)continue;
-    if(ptot<0.6)continue;
+    if(ptot<0.75)continue;
     fhBB->Fill(ptot*esdtrack->GetSign(),TPCSignal);
     esdtrack->GetImpactParameters(impactXY, impactZ);
               
@@ -721,48 +736,48 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     if(fptc==3)
       pt = 2*pt;
 
-    if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax){
-      // if(TMath::Abs(pullTPC) <= 3)
+    if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax && TMath::Abs(pullTPC) <= 3){
+      //      if(TMath::Abs(pullTPC) <= 3)
       
       //
       // Process TOF information
       //
-      if(!hasTOF)continue;
-      //      if (hasTOF) {
-      beta = length / (2.99792457999999984e-02 * tof);
-      gamma = 1/TMath::Sqrt(1 - beta*beta);
-      mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
+      // if(!hasTOF)continue;
+      if (hasTOF) {
+	beta = length / (2.99792457999999984e-02 * tof);
+	gamma = 1/TMath::Sqrt(1 - beta*beta);
+	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
   
-      //   cout<<expbeta<<" "<<beta<<" "<<(beta - expbeta)/(0.008*expbeta)<<endl;
-      pullTOF  = (beta - expbeta)/(0.007*expbeta);
+	//   cout<<expbeta<<" "<<beta<<" "<<(beta - expbeta)/(0.008*expbeta)<<endl;
+	pullTOF  = (beta - expbeta)/(0.007*expbeta);
 
-      if(TMath::Abs(ptot)< 2)
-	if(TMath::Abs(pullTPC) > 3)continue;
+     	// if(TMath::Abs(ptot)< 2)
+	//   if(TMath::Abs(pullTPC) > 3)continue;
       
-      // if(TMath::Abs(ptot)< 4)
-      // 	if( beta>1)continue;
-      if(TMath::Abs(pullTOF) > 3)continue;
+	// if(TMath::Abs(ptot)< 4)
+	// 	if( beta>1)continue;
+	//	if(TMath::Abs(pullTOF) > 3)continue;
 
-      if(TMath::Sqrt(esdtrack->GetTOFsignalDz()*esdtrack->GetTOFsignalDz() + esdtrack->GetTOFsignalDx()*esdtrack->GetTOFsignalDx()) > 5.)continue; 
+	// if(TMath::Sqrt(esdtrack->GetTOFsignalDz()*esdtrack->GetTOFsignalDz() + esdtrack->GetTOFsignalDx()*esdtrack->GetTOFsignalDx()) > 5.)continue; 
 
-      if(fptc==1){
-	if(TMath::Abs(mass) > 2.65)continue;
-	if(TMath::Abs(mass) < 1.05)continue;
+	if(fptc==1){
+	  if(TMath::Abs(mass) > 2.65)continue;
+	  if(TMath::Abs(mass) < 1.05)continue;
+	}
+	if(fptc==2){
+	  if(TMath::Abs(mass) > 5.0)continue;
+	  if(TMath::Abs(mass) < 1.8 )continue;
+	}
+	if(fptc==3){
+	  if(TMath::Abs(mass) > 5.0)continue;
+	  if(TMath::Abs(mass) < 1.8)continue;
+	}
+	fhMassTOF->Fill(mass);
       }
-      if(fptc==2){
-	if(TMath::Abs(mass) > 5.0)continue;
-	if(TMath::Abs(mass) < 1.8 )continue;
-      }
-      if(fptc==3){
-	if(TMath::Abs(mass) > 5.0)continue;
-	if(TMath::Abs(mass) < 1.8)continue;
-      }
-      fhMassTOF->Fill(mass);
-      //}
+
       fhTOF->Fill(ptot*esdtrack->GetSign(),beta);
       fhBBDeu->Fill(ptot*esdtrack->GetSign(),TPCSignal);
       
-   
       // Event Plane
       // Remove AutoCorrelation
       
