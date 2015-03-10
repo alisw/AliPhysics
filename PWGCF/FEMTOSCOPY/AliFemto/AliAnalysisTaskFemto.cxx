@@ -279,12 +279,11 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
   else
     SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data())));
 
-  TList *tOL;
   fOutputList = fManager->Analysis(0)->GetOutputList();
   fOutputList->SetOwner(kTRUE);
 
-  for (unsigned int ian = 1; ian < fManager->AnalysisCollection()->size(); ian++) {
-    tOL = fManager->Analysis(ian)->GetOutputList();
+  for (UInt_t ian = 1; ian < fManager->AnalysisCollection()->size(); ian++) {
+    TList* tOL = fManager->Analysis(ian)->GetOutputList();
 
     TIter nextListCf(tOL);
     while (TObject *obj = nextListCf()) {
