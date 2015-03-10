@@ -1,4 +1,4 @@
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", TString Centrality_name="V0A", Double_t scaleFactor = 1.28, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0, Bool_t doNEFSignalOnly=kTRUE, Bool_t doVertexRCut=kTRUE, Bool_t isMCParticleLevel=kFALSE, Double_t jetRAccept = 0.4, Bool_t doTHnSparse = kFALSE, Bool_t doJetRhoDensity = kFALSE, Int_t setTriggerClass = 0)
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius = 0.4, Bool_t IsMC = kFALSE, const char* track_name = "PicoTracks", const char* clus_name = "caloClusters", const char* corrclus_name = "caloClustersCorr", const char* mcpart_name = "MCParticles", TString Centrality_name = "V0A", Double_t scaleFactor = 1.28, Double_t nefJetCut = 1.0, Bool_t doNEF = kFALSE, Bool_t signalTrackBias = kFALSE, Bool_t doTrackQA = kFALSE, Bool_t doClusterQA = kFALSE, Int_t calcRhoJet = 0, Bool_t doNEFSignalOnly = kTRUE, Bool_t doVertexRCut = kTRUE, Bool_t isMCParticleLevel = kFALSE, Double_t jetRAccept = 0.4, Bool_t doTHnSparse = kFALSE, Bool_t doJetRhoDensity = kFALSE, Int_t setTriggerClass = 0, Bool_t do3DHistos = kFALSE)
 {
     char *usedTracks = track_name;
     char *usedClusters = clus_name;
@@ -136,6 +136,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->CalculateRhoJet(calcRhoJet);
     task->DoTHnSparse(doTHnSparse);
     task->DoJetRhoDensity(doJetRhoDensity);
+    task->Do3DPlotting(do3DHistos);
     
     mgr->AddTask(task);
     
