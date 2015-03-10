@@ -282,14 +282,14 @@ def comment_datamember(cursor, comments):
 
   assert found, 'A line that should exist was not found in file' % cursor.location.file
 
-  recomm = r'(//(!|\|\||->)|///?)(\[(.+?)\])?<?\s*(.*?)\s*$'
+  recomm = r'(//(!|\|\||->)|///?)(\[(.+?)\])?<?!?\s*(.*?)\s*$'
   recomm_prevline = r'^\s*///\s*(.*?)\s*$'
 
   mcomm = re.search(recomm, raw)
   if mcomm:
     # If it does not match, we do not have a comment
     member_name = cursor.spelling;
-    comment_flag = mcomm.group(2)
+    comment_flag = mcomm.group(2)  # !, ||, ->
     array_size = mcomm.group(4)
     text = mcomm.group(5)
 
@@ -1115,13 +1115,13 @@ def rewrite_comments(fhin, fhout, comments):
           # they are correctly interpreted by both ROOT and Doxygen
 
           if comm.is_transient():
-            tt = '!'
+            marker = '//!<!'  # compat with ROOT 5 and 6
           else:
-            tt = '/'
+            marker = '///<'
 
-          fhout.write('%s//%s< %s\n' % (
+          fhout.write('%s%s %s\n' % (
             non_comment,
-            tt,
+            marker,
             comm.lines[0]
           ))
 

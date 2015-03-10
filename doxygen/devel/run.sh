@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ScriptDir=$( dirname "$0" )
+ScriptDir=$( cd "$ScriptDir" ; pwd )
 cd "${ALICE_ROOT}"/../src/
 
 [[ $EDITOR == '' ]] && EDITOR=vim
@@ -12,7 +14,7 @@ function remove_trailing_whitespaces() {
 
 # List of files from external source
 Files=$(
-  cat "$(dirname "$0")"/list-of-files-to-process.txt | \
+  cat "$ScriptDir"/list-of-files-to-process.txt | \
   sed -e '/^$/d' | \
   grep -v ^# | \
   sort )
