@@ -40,11 +40,15 @@
 class AliHFCorrelationUtils : public TObject {
 
  public:
- static TH1D* ReflectHisto(TH1D *h,Double_t scale);
- static TH1D* DuplicateHistoTo2piRange(TH1D *h,Double_t scale);
+  
+  enum ETypeOfMeson{kDzero=0,kDstar=1,kDplus=2};
+  enum ETypeOfSystem{kpp=0,kpPb=1};
 
+  static TH1D* ReflectHisto(TH1D *h,Double_t scale);
+  static TH1D* DuplicateHistoTo2piRange(TH1D *h,Double_t scale);
+  
  private:
-
+  
   ClassDef(AliHFCorrelationUtils,1);
 
 };
