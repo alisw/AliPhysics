@@ -48,7 +48,7 @@ public:
   Bool_t   fIs2D;        ///< flag for 2D field
   Bool_t   fUseLinear;   ///< flag to use also linear term of the field
   //
-  TTreeSRedirector * fWorkspace;    //!< workspace
+  TTreeSRedirector * fWorkspace;    //!<! workspace
   TMatrixD  *fFitFunctions;         ///< fit function description
   TVectorD  *fFitParam;             ///< fit parameters - coeficients
   TMatrixD  *fFitCovar;             ///< fit covariance

@@ -69,14 +69,14 @@ private:
   Float_t fAnaMeanDown;             ///< Truncated mean channel analysis - lower cut
   Float_t fAnaMeanUp;               ///< Truncated mean channel analysis - upper cut
 
-  Bool_t  fTimeAnalysis;            //!< Should we use the time dependent analysis? ONLY ON LDC!
+  Bool_t  fTimeAnalysis;            //!<! Should we use the time dependent analysis? ONLY ON LDC!
 
   TObjArray fCalRocArrayPedestal;   ///< Array of AliTPCCalROC class for pedestal values from gaus fit
   TObjArray fCalRocArraySigma;      ///< Array of AliTPCCalROC class for noise values from gaus fit
 
   TObjArray fHistoPedestalArray;    ///< Calibration histograms for Pedestal distribution
 
-  TArrayF **fTimeSignal;            //!< Arrays which hold time dependent signals
+  TArrayF **fTimeSignal;            //!<! Arrays which hold time dependent signals
 
   TObjArray fCalRocArrayMean;       ///< Array of AliTPCCalROC class for pedestal values, simple mean
   TObjArray fCalRocArrayRMS;        ///< Array of AliTPCCalROC class for noise values, simple rms

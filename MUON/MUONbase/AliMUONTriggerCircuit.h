@@ -79,11 +79,11 @@ private:
   TArrayF fYwidth11[235];         ///< width of X strips in MC11
   TArrayF fYwidth21[235];         ///< width of X strips in MC21
 
-  const AliMUONGeometryTransformer* fkTransformer; //!< pointer to transformation
-  const AliMpVSegmentation* fkCurrentSeg;          //!< current segmentation
+  const AliMUONGeometryTransformer* fkTransformer; //!<! pointer to transformation
+  const AliMpVSegmentation* fkCurrentSeg;          //!<! current segmentation
 
-  Int_t fCurrentDetElem;                          //!< current detection elt id
-  Int_t fCurrentLocalBoard;                       //!< current local board id
+  Int_t fCurrentDetElem;                          //!<! current detection elt id
+  Int_t fCurrentLocalBoard;                       //!<! current local board id
 
   ClassDef(AliMUONTriggerCircuit,2) // Trigger Circuit class
 };

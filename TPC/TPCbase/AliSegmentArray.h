@@ -52,14 +52,14 @@ public:
 protected:
   AliSegmentArray(const AliSegmentArray &segment); //copy constructor
   AliSegmentArray &operator = (const AliSegmentArray & segment); //assignment operator
-  TObjArray  * fSegment;  //!< pointer to array of pointers to segment
-  TArrayI    * fTreeIndex; //!< pointers(index) table in tree
+  TObjArray  * fSegment;  //!<! pointer to array of pointers to segment
+  TArrayI    * fTreeIndex; //!<! pointers(index) table in tree
   Int_t      fNSegment; ///< number of alocated segments
-  TTree    * fTree;   //!< tree with segment objects
+  TTree    * fTree;   //!<! tree with segment objects
   Bool_t   fTreeOwner;///< flag determing the ownership of the fTree
-  TBranch  * fBranch; //!< total branch
+  TBranch  * fBranch; //!<! total branch
 private: 
-  TClass  *   fClass;    //!< class type of included objects
+  TClass  *   fClass;    //!<! class type of included objects
 
   /// \cond CLASSIMP
   ClassDef(AliSegmentArray,3)

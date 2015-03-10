@@ -275,7 +275,7 @@ protected:
 
   AliMUONVTrackerData* InteractiveReadOutConfig() const;
   
-  mutable TH1* fHistogram; //!< histogram
+  mutable TH1* fHistogram; //!<! histogram
   
   TMap* fPainterGroups; ///< map of groups
   AliMUONPainterGroup* fResponderGroup; ///< the responder group

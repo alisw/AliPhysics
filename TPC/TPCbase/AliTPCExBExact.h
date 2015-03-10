@@ -34,7 +34,7 @@ private:
   void CalculateDistortion(const Double_t *x,Double_t *dist) const;
   void DGLStep(Double_t *x,Double_t t,Double_t h) const;
   //const AliFieldMap *fkMap; //! the magnetic field map as supplied by the user
-  const AliMagF *fkField;   //!< the magnetic field as supplied by the user
+  const AliMagF *fkField;   //!<! the magnetic field as supplied by the user
   Int_t fkN;        ///< max number of integration steps
   Int_t fkNX;       ///< field mesh points in x direction
   Int_t fkNY;       ///< field mesh points in y direction
@@ -48,8 +48,8 @@ private:
   Int_t fkNLook;    ///< size of the lookup table
   /// the great lookup table
   Double_t *fkLook; //[fkNLook]
-  static const Double_t fgkEM; //!< elementary charge over electron mass (C/kg)
-  static const Double_t fgkDriftField; //!< the TPC drift field (V/m) (modulus)
+  static const Double_t fgkEM; //!<! elementary charge over electron mass (C/kg)
+  static const Double_t fgkDriftField; //!<! the TPC drift field (V/m) (modulus)
 
   /// \cond CLASSIMP
   ClassDef(AliTPCExBExact,1)

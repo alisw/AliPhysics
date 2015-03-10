@@ -60,7 +60,7 @@ private:
   //AliMUONVCluster* Find(Int_t clusterId, Int_t& index) const;
   
 private:
-  TObjArray* fClusters; //!< Array of TClonesArray of VClusters
+  TObjArray* fClusters; //!<! Array of TClonesArray of VClusters
   
   ClassDef(AliMUONClusterStoreV1,1) // Implementation of VClusterStore
 };

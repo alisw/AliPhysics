@@ -86,8 +86,8 @@ private:
 
 private:
   TClonesArray* fDigits; ///< collection of digits
-  AliMUON2DMap* fMap; //!< index map for fast digit retrieval
-  Bool_t fIndexed; //!< whether our internal indices fDEs and fManus are uptodate
+  AliMUON2DMap* fMap; //!<! index map for fast digit retrieval
+  Bool_t fIndexed; //!<! whether our internal indices fDEs and fManus are uptodate
   
   ClassDef(AliMUONDigitStoreVImpl,1) // Implementation of AliMUONVDigitStore
 };

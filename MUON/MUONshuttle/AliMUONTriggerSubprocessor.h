@@ -52,11 +52,11 @@ private:
 			Bool_t& trigScalFile) const;
   
 private:
-  AliMUONRegionalTriggerConfig* fRegionalConfig; //!< regional config
-  AliMUONVStore* fLocalMasks; //!< local masks
-  AliMUONGlobalCrateConfig*     fGlobalConfig;   //!< global config
-  AliMUONTriggerLut* fLUT; //!< look-up table(s)
-  TClonesArray* fTrigScalers; //!< trigger scalers
+  AliMUONRegionalTriggerConfig* fRegionalConfig; //!<! regional config
+  AliMUONVStore* fLocalMasks; //!<! local masks
+  AliMUONGlobalCrateConfig*     fGlobalConfig;   //!<! global config
+  AliMUONTriggerLut* fLUT; //!<! look-up table(s)
+  TClonesArray* fTrigScalers; //!<! trigger scalers
   
   ClassDef(AliMUONTriggerSubprocessor,3) // A shuttle preprocessor for MUON TRK masks
 };

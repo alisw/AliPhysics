@@ -36,12 +36,12 @@ private:
     void CopyTo(AliMUONTOTCAStoreIterator& destination) const;
   
 private:
-  const TObjArray* fkData; //!< Pointer to data accessor
-  Int_t fFirstChamberId;      //!< First chamber to iterate on
-  Int_t fLastChamberId;       //!< Last chamber to iterate on      
-  TClonesArray* fCurrentTCA;    //!< TClonesArray of the current chamber
-  Int_t fCurrentTCAIndex;      //!< Current position within fCurrentTCA array
-  Int_t fCurrentChamberId; //!< current chamber id
+  const TObjArray* fkData; //!<! Pointer to data accessor
+  Int_t fFirstChamberId;      //!<! First chamber to iterate on
+  Int_t fLastChamberId;       //!<! Last chamber to iterate on      
+  TClonesArray* fCurrentTCA;    //!<! TClonesArray of the current chamber
+  Int_t fCurrentTCAIndex;      //!<! Current position within fCurrentTCA array
+  Int_t fCurrentChamberId; //!<! current chamber id
   
   ClassDef(AliMUONTOTCAStoreIterator,0) // Iterator on digits
 };      

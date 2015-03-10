@@ -75,11 +75,11 @@ public:
   Int_t      fLastTimeStamp; ///< last time stamp - used for propagation of parameters
   //static AliTPCkalmanFit* Instance();
   void SetInstance(AliTPCkalmanFit*param){fgInstance = param;}
-  static AliTPCkalmanFit*   fgInstance; //!< Instance of this class (singleton implementation)
+  static AliTPCkalmanFit*   fgInstance; //!<! Instance of this class (singleton implementation)
  private:  
-  Double_t   fCurrentAlpha; //!< current rotation frame
-  Double_t   fCA;           //!< cosine of current angle
-  Double_t   fSA;           //!< sinus of current angle
+  Double_t   fCurrentAlpha; //!<! current rotation frame
+  Double_t   fCA;           //!<! cosine of current angle
+  Double_t   fSA;           //!<! sinus of current angle
   AliTPCkalmanFit&  operator=(const AliTPCkalmanFit&);// not implemented
   AliTPCkalmanFit(const AliTPCkalmanFit&):TNamed(),
                                   fCalibration(0),

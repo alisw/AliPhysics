@@ -72,7 +72,7 @@ private:
   TClonesArray* fLocal; ///< internal array of local trigger information
   TClonesArray* fRegional; ///< internal array of regional trigger information
   TClonesArray* fGlobal; ///< internal array of global trigger information
-  mutable TClonesArray* fEmptyLocal; //!< internal array of empty local trigger
+  mutable TClonesArray* fEmptyLocal; //!<! internal array of empty local trigger
   
   ClassDef(AliMUONTriggerStoreV1,1) // Implementation of AliMUONVTriggerStore
 };

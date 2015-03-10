@@ -49,15 +49,15 @@ private:
 private:
   static const TString& GetDefaultOutFileName(); 
 
-  TString fFileName;   //!< File (galice.root) to read from fro reconstructed data
-  TString fFileNameSim; //!< File (galiceSim.root) for simulated data
-  TString fesdFileName; //!< File (AliESDs.root) to read from
+  TString fFileName;   //!<! File (galice.root) to read from fro reconstructed data
+  TString fFileNameSim; //!<! File (galiceSim.root) for simulated data
+  TString fesdFileName; //!<! File (AliESDs.root) to read from
  
-  const char* fkOutDir;  //!< output data directory
-  TString fOutFileName;  //!< output file name 
+  const char* fkOutDir;  //!<! output data directory
+  TString fOutFileName;  //!<! output file name 
   
-  Int_t   fFirstEvent;  //!< First event to consider
-  Int_t   fLastEvent;   //!< Last event to consider
+  Int_t   fFirstEvent;  //!<! First event to consider
+  Int_t   fLastEvent;   //!<! Last event to consider
 
   ClassDef(AliMUONCheck,0) // Dumper of MUON related data
 }; 

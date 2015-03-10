@@ -44,9 +44,9 @@ private:
   Double_t fCoss[18];  ///< cache the transformation
   Double_t fSins[18];  ///< cache the transformation
   Double_t fPrimVtx[3];///< position of the primary vertex - needed for TOF correction
-  AliTPCRecoParam * fCurrentRecoParam; //!< current reconstruction parameters
-  Int_t    fCurrentRun;                //!< current run
-  UInt_t   fCurrentTimeStamp;          //!< current time stamp
+  AliTPCRecoParam * fCurrentRecoParam; //!<! current reconstruction parameters
+  Int_t    fCurrentRun;                //!<! current run
+  UInt_t   fCurrentTimeStamp;          //!<! current time stamp
   /// \cond CLASSIMP
   ClassDef(AliTPCTransform,1)
   /// \endcond

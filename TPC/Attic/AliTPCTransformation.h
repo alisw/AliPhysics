@@ -103,11 +103,11 @@ public:
   static  Double_t       TPCTiltingZ(Double_t *xyz, const Double_t *const param);
   //
   Bool_t    fInit;          ///< initialization flag
-  GenFuncG  fFormulaX;      //!< x formula
-  GenFuncG  fFormulaY;      //!< y formula
-  GenFuncG  fFormulaZ;      //!< z formula
-  static  GenFuncG    fgFormulas[10000];   //!< array of pointers to formula
-  static  TObjArray*  fgFormulasName;      //!< array of formalas name
+  GenFuncG  fFormulaX;      //!<! x formula
+  GenFuncG  fFormulaY;      //!<! y formula
+  GenFuncG  fFormulaZ;      //!<! z formula
+  static  GenFuncG    fgFormulas[10000];   //!<! array of pointers to formula
+  static  TObjArray*  fgFormulasName;      //!<! array of formalas name
 
   AliTPCTransformation &operator=(const AliTPCTransformation&);    // not implemented
 

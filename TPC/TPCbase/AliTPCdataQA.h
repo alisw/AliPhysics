@@ -143,11 +143,11 @@ private:
   Bool_t fRequireNeighbouringPad;   ///< If clusterer should require a neighbouring pad to accept it
 
 
-  AliTPCAltroMapping **fMapping;    //!< Altro Mapping object
+  AliTPCAltroMapping **fMapping;    //!<! Altro Mapping object
   //
   //
-  AliTPCCalPad * fPedestal;         //!< option to set pedestal cal object
-  AliTPCCalPad * fNoise;            //!< option to set noise cal object
+  AliTPCCalPad * fPedestal;         //!<! option to set pedestal cal object
+  AliTPCCalPad * fNoise;            //!<! option to set noise cal object
   AliTPCCalPad * fNLocalMaxima;     ///< local maximas found
   AliTPCCalPad * fMaxCharge;        ///< max charge
   AliTPCCalPad * fMeanCharge;       ///< mean charge
@@ -155,9 +155,9 @@ private:
   AliTPCCalPad * fNTimeBins;        ///< timebins width of cluster
   AliTPCCalPad * fNPads;            ///< pads with of cluster
   AliTPCCalPad * fTimePosition;     ///< Time position of local maximum
-  AliTPCCalPad * fOverThreshold10;  //!< local maxima with qMax over threshold
-  AliTPCCalPad * fOverThreshold20;  //!< local maxima with qMax over threshold
-  AliTPCCalPad * fOverThreshold30;  //!< local maxima with qMax over threshold
+  AliTPCCalPad * fOverThreshold10;  //!<! local maxima with qMax over threshold
+  AliTPCCalPad * fOverThreshold20;  //!<! local maxima with qMax over threshold
+  AliTPCCalPad * fOverThreshold30;  //!<! local maxima with qMax over threshold
 
   TProfile* fHistQVsTimeSideA;      ///< Q vs time (side A)
   TProfile* fHistQVsTimeSideC;	    ///< Q vs time (side C)
@@ -180,23 +180,23 @@ private:
   //
   //  Expand buffer
   //
-  Float_t** fAllBins;              //!< array for digit using random access
-  Int_t**   fAllSigBins;           //!< array of pointers to the indexes over threshold
-  Int_t*    fAllNSigBins;          //!<
-  Int_t fRowsMax;                  //!< Maximum number of time bins
-  Int_t fPadsMax;                  //!< Maximum number of time bins
-  Int_t fTimeBinsMax;              //!< Maximum number of time bins
+  Float_t** fAllBins;              //!<! array for digit using random access
+  Int_t**   fAllSigBins;           //!<! array of pointers to the indexes over threshold
+  Int_t*    fAllNSigBins;          //!<!
+  Int_t fRowsMax;                  //!<! Maximum number of time bins
+  Int_t fPadsMax;                  //!<! Maximum number of time bins
+  Int_t fTimeBinsMax;              //!<! Maximum number of time bins
 
   // DQM variables
-  Bool_t fIsDQM;                   //!< Is DQM -> Simple output (no 2D!)
-  TProfile* fHistOccVsSector;      //!< Occ vs sector (for DQM only)
-  TProfile2D* fHistOcc2dVsSector;  //!< Occ vs sector 2D (for DQM only)
-  TProfile* fHistQVsSector;        //!< Q vs sector (for DQM only)
-  TProfile* fHistQmaxVsSector;     //!< QMax vs sector (for DQM only)
-  TArrayD* fOccVec;                //!< Occupancy help counter for DQM
-  TArrayD* fOccMaxVec;             //!< Occupancy help normlization for DQM
-  TArrayD* fOccVecFine;            //!< "2D" occupancy help counter for DQM
-  TArrayD* fOccMaxVecFine;         //!< "2D" occupancy help normlization for DQM
+  Bool_t fIsDQM;                   //!<! Is DQM -> Simple output (no 2D!)
+  TProfile* fHistOccVsSector;      //!<! Occ vs sector (for DQM only)
+  TProfile2D* fHistOcc2dVsSector;  //!<! Occ vs sector 2D (for DQM only)
+  TProfile* fHistQVsSector;        //!<! Q vs sector (for DQM only)
+  TProfile* fHistQmaxVsSector;     //!<! QMax vs sector (for DQM only)
+  TArrayD* fOccVec;                //!<! Occupancy help counter for DQM
+  TArrayD* fOccMaxVec;             //!<! Occupancy help normlization for DQM
+  TArrayD* fOccVecFine;            //!<! "2D" occupancy help counter for DQM
+  TArrayD* fOccMaxVecFine;         //!<! "2D" occupancy help normlization for DQM
 
 
   /// \cond CLASSIMP

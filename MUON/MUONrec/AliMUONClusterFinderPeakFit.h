@@ -94,25 +94,25 @@ private:
   static const TVector2 fgkIncreaseSize; ///< idem
   static const TVector2 fgkDecreaseSize; ///< idem
   
-  AliMUONVClusterFinder* fPreClusterFinder; //!< the pre-clustering worker
-  AliMUONCluster* fPreCluster; //!< current pre-cluster
-  TObjArray fClusterList; //!< clusters corresponding to the current pre-cluster
-  AliMUONMathieson* fMathieson; //!< Mathieson to compute the charge repartition
+  AliMUONVClusterFinder* fPreClusterFinder; //!<! the pre-clustering worker
+  AliMUONCluster* fPreCluster; //!<! current pre-cluster
+  TObjArray fClusterList; //!<! clusters corresponding to the current pre-cluster
+  AliMUONMathieson* fMathieson; //!<! Mathieson to compute the charge repartition
   
-  Int_t fEventNumber; //!< current event being processed
-  Int_t fDetElemId; //!< current DE being processed
-  Int_t fClusterNumber; //!< current cluster number
-  Int_t fNMax; //!< number of local maxima
-  TH2D *fHistAnode; //!< histo for local maxima search
+  Int_t fEventNumber; //!<! current event being processed
+  Int_t fDetElemId; //!<! current DE being processed
+  Int_t fClusterNumber; //!<! current cluster number
+  Int_t fNMax; //!<! number of local maxima
+  TH2D *fHistAnode; //!<! histo for local maxima search
   
-  const AliMpVSegmentation *fkSegmentation[2]; //!< new segmentation
+  const AliMpVSegmentation *fkSegmentation[2]; //!<! new segmentation
   
-  TObjArray* fPixArray; //!< collection of pixels
-  Int_t fDebug; //!< debug level
-  Bool_t fPlot; //!< whether we should plot thing (for debug only, quite slow!)
+  TObjArray* fPixArray; //!<! collection of pixels
+  Int_t fDebug; //!<! debug level
+  Bool_t fPlot; //!<! whether we should plot thing (for debug only, quite slow!)
   
-  Int_t fNClusters; //!< total number of clusters
-  Int_t fNAddVirtualPads; //!< number of clusters for which we added virtual pads
+  Int_t fNClusters; //!<! total number of clusters
+  Int_t fNAddVirtualPads; //!<! number of clusters for which we added virtual pads
   
   ClassDef(AliMUONClusterFinderPeakFit,0) // cluster finder in MUON arm of ALICE
 };

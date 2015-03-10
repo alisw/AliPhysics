@@ -162,17 +162,17 @@ private:
 
   Bool_t  fIsZeroSuppressed;        ///< If data is Zero Suppressed -> Don't subtrakt pedestals!
 
-  Int_t     fLastSector;            //!< Last sector processed
+  Int_t     fLastSector;            //!<! Last sector processed
 
-  Float_t   fSecRejectRatio;        //!< Needed percentage of signals in one chamber. Below it will be rejected
+  Float_t   fSecRejectRatio;        //!<! Needed percentage of signals in one chamber. Below it will be rejected
                                       //  This is neede if we do not process a laser event
 
-  AliTPCParam *fParam;              //!< TPC information
+  AliTPCParam *fParam;              //!<! TPC information
 
-  AliTPCCalPad *fPedestalTPC;       //!< Pedestal Information whole TPC
-  AliTPCCalPad *fPadNoiseTPC;       //!< Pad noise Information whole TPC
-  AliTPCCalROC *fPedestalROC;       //!< Pedestal Information for current ROC
-  AliTPCCalROC *fPadNoiseROC;       //!< Pad noise Information for current ROC
+  AliTPCCalPad *fPedestalTPC;       //!<! Pedestal Information whole TPC
+  AliTPCCalPad *fPadNoiseTPC;       //!<! Pad noise Information whole TPC
+  AliTPCCalROC *fPedestalROC;       //!<! Pedestal Information for current ROC
+  AliTPCCalROC *fPadNoiseROC;       //!<! Pad noise Information for current ROC
 
   TObjArray fCalRocArrayT0;         ///< Array of AliTPCCalROC class for Time0 calibration
   TObjArray fCalRocArrayT0Err;      ///< Array of AliTPCCalROC class for the error (rms) of Time0 calibration
@@ -188,7 +188,7 @@ private:
   Float_t   fMeanQrms;              ///< mean of the rms of all pad Q   fits, used as error estimation of Q results
   Float_t   fMeanRMSrms;            ///< mean of the rms of all pad TMS fits, used as error estimation of RMS results
 
-  TObjArray fHistoTmean;            //!< Calibration histograms of the mean CE position for all sectors
+  TObjArray fHistoTmean;            //!<! Calibration histograms of the mean CE position for all sectors
 
   TObjArray fParamArrayEventPol1;   ///< Store mean arrival time parameters for each sector event by event from global plane fit
   TObjArray fParamArrayEventPol2;   ///< Store mean arrival time parameters for each sector event by event from global parabola fit
@@ -198,44 +198,44 @@ private:
   TVectorD  fVEventNumber;          ///< Eventnumbers of the events
   TVectorF  fVTime0SideA;           ///< Mean Time0 for side A for all events
   TVectorF  fVTime0SideC;           ///< Mean Time0 for side C for all events
-  Double_t  fEventId;               //!< Event Id of the current event
-  UInt_t  fOldRunNumber;          //!< Old Run Number
+  Double_t  fEventId;               //!<! Event Id of the current event
+  UInt_t  fOldRunNumber;          //!<! Old Run Number
 
-  TObjArray fPadTimesArrayEvent;    //!< Pad Times for the event, before mean Time0 corrections
-  TObjArray fPadQArrayEvent;        //!< Charge for the event, only needed for debugging streamer
-  TObjArray fPadRMSArrayEvent;      //!< Signal width for the event, only needed for debugging streamer
-  TObjArray fPadPedestalArrayEvent; //!< Signal width for the event, only needed for debugging streamer
+  TObjArray fPadTimesArrayEvent;    //!<! Pad Times for the event, before mean Time0 corrections
+  TObjArray fPadQArrayEvent;        //!<! Charge for the event, only needed for debugging streamer
+  TObjArray fPadRMSArrayEvent;      //!<! Signal width for the event, only needed for debugging streamer
+  TObjArray fPadPedestalArrayEvent; //!<! Signal width for the event, only needed for debugging streamer
 
-  Int_t     fCurrentChannel;        //!< current channel processed
-  Int_t     fCurrentSector;         //!< current sector processed
-  Int_t     fCurrentRow;            //!< current row processed
-  Float_t   fMaxPadSignal;          //!< maximum bin of current pad
-  Int_t     fMaxTimeBin;            //!< time bin with maximum value
-  Float_t   fPadSignal[1024];       //!< signal of current Pad
-  Float_t   fPadPedestal;           //!< Pedestal Value of current pad
-  Float_t   fPadNoise;              //!< Noise Value of current pad
+  Int_t     fCurrentChannel;        //!<! current channel processed
+  Int_t     fCurrentSector;         //!<! current sector processed
+  Int_t     fCurrentRow;            //!<! current row processed
+  Float_t   fMaxPadSignal;          //!<! maximum bin of current pad
+  Int_t     fMaxTimeBin;            //!<! time bin with maximum value
+  Float_t   fPadSignal[1024];       //!<! signal of current Pad
+  Float_t   fPadPedestal;           //!<! Pedestal Value of current pad
+  Float_t   fPadNoise;              //!<! Noise Value of current pad
 
-  TVectorD  fVTime0Offset;          //!< Time0 Offset for each sector;
-  TVectorD  fVTime0OffsetCounter;   //!< Time0 Offset counter for each sector;
-  TVectorD  fVMeanQ;                //!< Mean Q for each sector;
-  TVectorD  fVMeanQCounter;         //!< Mean Q counter for each sector;
+  TVectorD  fVTime0Offset;          //!<! Time0 Offset for each sector;
+  TVectorD  fVTime0OffsetCounter;   //!<! Time0 Offset counter for each sector;
+  TVectorD  fVMeanQ;                //!<! Mean Q for each sector;
+  TVectorD  fVMeanQCounter;         //!<! Mean Q counter for each sector;
 
-  Float_t   fCurrentCETimeRef;      //!< Time refernce of the current sector
+  Float_t   fCurrentCETimeRef;      //!<! Time refernce of the current sector
 
   // new part of the algorithm
   Bool_t      fProcessOld;             ///< Whether to use the old algorithm
   Bool_t      fProcessNew;             ///< Whether to use the new algorithm
-  Bool_t      fAnalyseNew;             //!< Whether to analyse the new part of the algorithm.
+  Bool_t      fAnalyseNew;             //!<! Whether to analyse the new part of the algorithm.
                                        //In the DA this needs to be switched off, in the Preprocessor on...
   enum {kHnBinsDV=5};
-  THnSparseI *fHnDrift;                //!< Histogram digits for each pad and timebin for several timestamps
+  THnSparseI *fHnDrift;                //!<! Histogram digits for each pad and timebin for several timestamps
   TObjArray   fArrHnDrift;             ///< array of sparse histograms for each burst
   TVectorD    fTimeBursts;             ///< time stamps of bursts
   UInt_t      fBinsLastAna[100];       ///< number of bin in the THnSparse during the last analysis
-  UShort_t    fPeaks[14];               //!< Peak position: 4 laser layers and CE
-  UShort_t    fPeakWidths[14];          //!< Peak window widths
+  UShort_t    fPeaks[14];               //!<! Peak position: 4 laser layers and CE
+  UShort_t    fPeakWidths[14];          //!<! Peak window widths
   TObjArray  *fArrFitGraphs;           ///< Fit resut graphs for each parameter
-  UInt_t      fEventInBunch;           //!< event in current bunch
+  UInt_t      fEventInBunch;           //!<! event in current bunch
 
 
   //

@@ -70,7 +70,7 @@ class AliMUONChamber : public TObject
   AliMUONChamber& operator =(const AliMUONChamber& rhs);
 
   Int_t   fId;            ///< chamber number
-  Float_t fCurrentCorrel; //!< charge correlation for current hit.
+  Float_t fCurrentCorrel; //!<! charge correlation for current hit.
 
   AliMUONResponse        *fResponse; ///< pointer to response
   AliMUON                *fMUON;     ///< pointer to MUON

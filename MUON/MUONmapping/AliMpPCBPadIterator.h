@@ -44,13 +44,13 @@ private:
   void SetPad(AliMpPad& pad, Int_t ix, Int_t iy);
   
 private:
-  const AliMpSlat*       fkSlat; //!< the slat we're iterating over
-  AliMpSlatSegmentation* fSlatSegmentation; //!< segmentation pointer
-  MpPair_t fMinIndices; //!< indices of bottom left of region to iterate over
-  MpPair_t fMaxIndices; //!< indices of top right of region to iterate over
-  MpPair_t fOffset; //!< current position
-  AliMpPad fCurrentPad; //!< current pad
-  Bool_t fIsDone; //!< whether we've finished or not
+  const AliMpSlat*       fkSlat; //!<! the slat we're iterating over
+  AliMpSlatSegmentation* fSlatSegmentation; //!<! segmentation pointer
+  MpPair_t fMinIndices; //!<! indices of bottom left of region to iterate over
+  MpPair_t fMaxIndices; //!<! indices of top right of region to iterate over
+  MpPair_t fOffset; //!<! current position
+  AliMpPad fCurrentPad; //!<! current pad
+  Bool_t fIsDone; //!<! whether we've finished or not
   
   ClassDef(AliMpPCBPadIterator,0) // Pad iterator for a zone of constant density, for St345.
 };

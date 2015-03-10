@@ -113,16 +113,16 @@ class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
  private:
 
     AliMUONPayloadTracker* fPayload;         ///< pointer to payload decoder
-    AliMUONDDLTracker* fCurrentDDL;          //!< for iterator: current ddl ptr
-    Int_t fCurrentDDLIndex;                  //!< for iterator: current ddl index
-    AliMUONBlockHeader* fCurrentBlockHeader; //!< for iterator: current block ptr
-    Int_t fCurrentBlockHeaderIndex;          //!< for iterator: current block index    
-    AliMUONDspHeader* fCurrentDspHeader;     //!< for iterator: current dsp ptr
-    Int_t fCurrentDspHeaderIndex;            //!< for iterator: current dsp index    
-    AliMUONBusStruct* fCurrentBusStruct;     //!< for iterator: current bus ptr
-    Int_t fCurrentBusStructIndex;            //!< for iterator: current bus index    
-    Int_t fCurrentDataIndex;                 //!< for iterator: current data index
-    Int_t  fDDL;                             //!< number of DDL
+    AliMUONDDLTracker* fCurrentDDL;          //!<! for iterator: current ddl ptr
+    Int_t fCurrentDDLIndex;                  //!<! for iterator: current ddl index
+    AliMUONBlockHeader* fCurrentBlockHeader; //!<! for iterator: current block ptr
+    Int_t fCurrentBlockHeaderIndex;          //!<! for iterator: current block index    
+    AliMUONDspHeader* fCurrentDspHeader;     //!<! for iterator: current dsp ptr
+    Int_t fCurrentDspHeaderIndex;            //!<! for iterator: current dsp index    
+    AliMUONBusStruct* fCurrentBusStruct;     //!<! for iterator: current bus ptr
+    Int_t fCurrentBusStructIndex;            //!<! for iterator: current bus index    
+    Int_t fCurrentDataIndex;                 //!<! for iterator: current data index
+    Int_t  fDDL;                             //!<! number of DDL
 
     ClassDef(AliMUONRawStreamTracker, 4)    // base class for reading MUON raw digits
 };

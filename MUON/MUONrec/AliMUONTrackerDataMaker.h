@@ -132,11 +132,11 @@ private:
             Double_t xmax=4095.0);
   
 private:
-  AliRawReader* fRawReader; //!< reader of the data (owner or not)
+  AliRawReader* fRawReader; //!<! reader of the data (owner or not)
   AliMUONVTrackerData* fAccumulatedData; ///< data (owner or not)
   Bool_t fIsOwnerOfAccumulatedData; ///< owner or not of fAccumulatedData
   AliMUONVStore* fOneEventData; ///< data for a single event (owner)
-  AliMUONDigitCalibrator* fDigitCalibrator; //!< digit calibrator (if calibrating)
+  AliMUONDigitCalibrator* fDigitCalibrator; //!<! digit calibrator (if calibrating)
   AliMUONCalibrationData* fCalibrationData; ///< calibration data (if calibrating)
   TString fSource; ///< where the data comes from
   TString fOCDBPath; ///< OCDB path (if calibrating)

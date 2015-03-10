@@ -43,9 +43,9 @@ private:
   /// Not implemented
   AliMpIteratorPainter& operator=(const AliMpIteratorPainter&);
   
-  TObjArray* fPads; //!< pads of the iterator
-  TVector2 fPosition; //!< position
-  TVector2 fDimensions; //!< dimension
+  TObjArray* fPads; //!<! pads of the iterator
+  TVector2 fPosition; //!<! position
+  TVector2 fDimensions; //!<! dimension
   
   ClassDef(AliMpIteratorPainter,1) // Painter for a group of pads
 };

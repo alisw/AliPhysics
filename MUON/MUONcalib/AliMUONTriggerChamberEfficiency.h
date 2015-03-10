@@ -60,7 +60,7 @@ private:
     AliMUONTriggerEfficiencyCells* fEfficiencyMap; ///< Efficiency map
 
     TObjArray* fEfficiencyObjects; ///< Collect all efficiency 
-    TList* fDisplayList; //!< List of objects for display
+    TList* fDisplayList; //!<! List of objects for display
 
     ClassDef(AliMUONTriggerChamberEfficiency,0) // Trigger efficiency store
 };

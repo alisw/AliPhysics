@@ -166,29 +166,29 @@ protected:
 private:
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
   Int_t fRunNumber; ///<  The run number for which we hold calibrations
-  mutable AliMUONVStore* fGains; //!< Gains
-  mutable AliMUONVStore* fPedestals; //!< Pedestals
-  mutable TMap* fHV; //!< HV
-  mutable TMap* fTriggerDCS; //!< Trigger HV and Currents
-  mutable AliMUONVStore* fLocalTriggerBoardMasks; //!< Local trigger board maska  
-  mutable AliMUONRegionalTriggerConfig* fRegionalTriggerConfig; //!< Regional trigger config
-  mutable AliMUONGlobalCrateConfig* fGlobalTriggerCrateConfig; //!< Global trigger crate config
+  mutable AliMUONVStore* fGains; //!<! Gains
+  mutable AliMUONVStore* fPedestals; //!<! Pedestals
+  mutable TMap* fHV; //!<! HV
+  mutable TMap* fTriggerDCS; //!<! Trigger HV and Currents
+  mutable AliMUONVStore* fLocalTriggerBoardMasks; //!<! Local trigger board maska  
+  mutable AliMUONRegionalTriggerConfig* fRegionalTriggerConfig; //!<! Regional trigger config
+  mutable AliMUONGlobalCrateConfig* fGlobalTriggerCrateConfig; //!<! Global trigger crate config
   
-  mutable AliMUONTriggerLut* fTriggerLut; //!< TRigger LUTs
-  mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< Trigger efficiency cells
-  mutable AliMUONVStore* fCapacitances; //!< Manu capacitances
-  mutable AliMUONVStore* fNeighbours; //!< list of neighbours for all channels
+  mutable AliMUONTriggerLut* fTriggerLut; //!<! TRigger LUTs
+  mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!<! Trigger efficiency cells
+  mutable AliMUONVStore* fCapacitances; //!<! Manu capacitances
+  mutable AliMUONVStore* fNeighbours; //!<! list of neighbours for all channels
   
-  mutable AliMUONVStore* fOccupancyMap; //!< occupancy map
+  mutable AliMUONVStore* fOccupancyMap; //!<! occupancy map
   
-  mutable AliMUONRejectList* fRejectList; //!< reject list
+  mutable AliMUONRejectList* fRejectList; //!<! reject list
 
   static AliMUONVStore* fgBypassPedestals;
   static AliMUONVStore* fgBypassGains;
   
-  mutable AliMUONVStore* fConfig; //!< configuration of the tracker
+  mutable AliMUONVStore* fConfig; //!<! configuration of the tracker
   
-  static UInt_t fgkDCSSt1Flag; //!< flag to indicate that the DCS alias naming is not messed up in St1
+  static UInt_t fgkDCSSt1Flag; //!<! flag to indicate that the DCS alias naming is not messed up in St1
   
   ClassDef(AliMUONCalibrationData,14) // Storage for all MUON calibration data.
 };

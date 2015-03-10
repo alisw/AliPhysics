@@ -114,14 +114,14 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
     
     // data members 
     AliMUON*  fMUON;   ///< the MUON detector class 
-    Int_t*    fIdtmed; //!< tracking media   
-    Int_t     fIdAir;  //!< medium 1
-    Int_t     fIdAlu1; //!< medium 4
-    Int_t     fIdInox; //!< medium 29 Stainless Steel (18%Cr,9%Ni,Fe)
-    Float_t   fYEnvPsave; //!< add
-    Float_t   fYEnvMsave; //!< add
-    Float_t   fDYsave;    //!< add
-    Float_t   fDXsave;    //!< add
+    Int_t*    fIdtmed; //!<! tracking media   
+    Int_t     fIdAir;  //!<! medium 1
+    Int_t     fIdAlu1; //!<! medium 4
+    Int_t     fIdInox; //!<! medium 29 Stainless Steel (18%Cr,9%Ni,Fe)
+    Float_t   fYEnvPsave; //!<! add
+    Float_t   fYEnvMsave; //!<! add
+    Float_t   fDYsave;    //!<! add
+    Float_t   fDXsave;    //!<! add
     TGeoRotation fRsupportpipe; ///< pipe support rotation 
         
   ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON Trigger stations geometry construction class

@@ -102,7 +102,7 @@ private:
   
   
 private:
-  AliMpRegionalTrigger  fRegionalTrigger; //!< Regional trigger
+  AliMpRegionalTrigger  fRegionalTrigger; //!<! Regional trigger
  
   static const UInt_t  fgkLocalLutSize;  ///< length of the lut for one local board
 

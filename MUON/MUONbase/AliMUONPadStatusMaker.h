@@ -202,29 +202,29 @@ private:
     kDEOccupancyTooHigh = (1<<6)
   };
   
-  const AliMUONCalibrationData& fkCalibrationData; //!< helper class to get data access (not owner)
+  const AliMUONCalibrationData& fkCalibrationData; //!<! helper class to get data access (not owner)
   
-  TVector2 fGainA1Limits; //!< Low and High threshold for gain a0 parameter
-  TVector2 fGainA2Limits; //!< Low and High threshold for gain a1 parameter
-  TVector2 fGainThresLimits; //!< Low and High threshold for gain threshold parameter
+  TVector2 fGainA1Limits; //!<! Low and High threshold for gain a0 parameter
+  TVector2 fGainA2Limits; //!<! Low and High threshold for gain a1 parameter
+  TVector2 fGainThresLimits; //!<! Low and High threshold for gain threshold parameter
 
-  Double_t fHVLimit[10]; //!< Low thresholds for HV
+  Double_t fHVLimit[10]; //!<! Low thresholds for HV
 
-  TVector2 fPedMeanLimits; //!< Low and High threshold for pedestal mean
-  TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma
+  TVector2 fPedMeanLimits; //!<! Low and High threshold for pedestal mean
+  TVector2 fPedSigmaLimits; //!<! Low and High threshold for pedestal sigma
   
-  TVector2 fManuOccupancyLimits; //!< Low and High manu occupancy limits
-  TVector2 fBuspatchOccupancyLimits; //!< Low and High buspatch occupancy limits
-  TVector2 fDEOccupancyLimits; //!< Low and High DE occupancy limits
+  TVector2 fManuOccupancyLimits; //!<! Low and High manu occupancy limits
+  TVector2 fBuspatchOccupancyLimits; //!<! Low and High buspatch occupancy limits
+  TVector2 fDEOccupancyLimits; //!<! Low and High DE occupancy limits
   
-  AliMUONVStore* fStatus; //!< statuses of the pads
+  AliMUONVStore* fStatus; //!<! statuses of the pads
   
-  mutable TExMap* fHV; //!< cache of hv statuses
+  mutable TExMap* fHV; //!<! cache of hv statuses
 
-  AliMUONVStore* fPedestals; //!< pedestal values
-  AliMUONVStore* fGains; //!< gain values
+  AliMUONVStore* fPedestals; //!<! pedestal values
+  AliMUONVStore* fGains; //!<! gain values
   
-  AliMUONVTrackerData* fTrackerData; //!< to get occupancies...
+  AliMUONVTrackerData* fTrackerData; //!<! to get occupancies...
   
   ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,gain,hv
 };

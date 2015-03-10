@@ -68,9 +68,9 @@ private:
   Int_t     fBufType; ///< type of the buffer - define compression algorithm
   Int_t     fThreshold; ///< treshold for zero suppresion
   Int_t     fNelems;  ///< total number of elements
-  Int_t fCurrentRow;   //!< current row  iteration
-  Int_t fCurrentCol;   //!< current column iteration
-  Int_t fCurrentIndex; //!< current index in field
+  Int_t fCurrentRow;   //!<! current row  iteration
+  Int_t fCurrentCol;   //!<! current column iteration
+  Int_t fCurrentIndex; //!<! current index in field
  
   /// \cond CLASSIMP
   ClassDef(AliDigits,2) 

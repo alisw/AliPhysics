@@ -559,7 +559,7 @@ public:
 		const AliMUONLocalInfoStruct* fLocalStruct;  ///< Pointer to the local trigger structure data in the DDL payload.
 		const AliMUONLocalScalarsStruct* fScalars;  ///< Pointer to the local trigger scalars data in the DDL payload.
 		UChar_t fCalculatedId;  ///< Calculated ID value returned by GetId() if fgOverrideId == true.
-		static bool fgOverrideId; //!< Flag indicating if we should return a calculated number in the GetId method.
+		static bool fgOverrideId; //!<! Flag indicating if we should return a calculated number in the GetId method.
 	};
 	
 	/// Returns the DARC and global headers plus scalars if they exist.
@@ -727,40 +727,40 @@ private:
                 /// Not implemented
 		AliDecoderEventHandler& operator = (const AliDecoderEventHandler& /*obj*/);
 
-		AliMUONVRawStreamTrigger* fRawStream; //!< Pointer to the parent raw stream object.
-		const void* fBufferStart;   //!< Pointer to the start of the current DDL payload buffer.
-		UInt_t fDarcHeader; //!< Currently decoded DARC header.
-		const AliMUONDarcScalarsStruct* fDarcScalars; //!< Currently decoded DARC scalars.
-		AliHeader fHeaders;  //!< Headers of the DDL payload.
-		UInt_t fRegionalsCount; //!< Number of regional headers filled in fRegionals.
-		AliRegionalHeader* fRegionals;  //!< Array of regional headers. [0..fMaxRegionals-1]
-		AliLocalStruct* fLocals; //!< Array of decoded local structured. [0..fMaxRegionals*fMaxLocals-1]
-		AliLocalStruct* fEndOfLocals; //!< Marker indicating the position just passed the last filled element in fLocals.
-		AliRegionalHeader* fCurrentRegional; //!< Current regional header position.
-		AliLocalStruct* fCurrentLocal; //!< Current local trigger structure.
-		UInt_t fDarcEoWErrors;    //!< Number of end of DARC word errors.
-		UInt_t fGlobalEoWErrors;  //!< Number of end of global word errors.
-		UInt_t fRegEoWErrors;     //!< Number of end of regional word errors.
-		UInt_t fLocalEoWErrors;   //!< Number of end of local word errors.
-		Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
+		AliMUONVRawStreamTrigger* fRawStream; //!<! Pointer to the parent raw stream object.
+		const void* fBufferStart;   //!<! Pointer to the start of the current DDL payload buffer.
+		UInt_t fDarcHeader; //!<! Currently decoded DARC header.
+		const AliMUONDarcScalarsStruct* fDarcScalars; //!<! Currently decoded DARC scalars.
+		AliHeader fHeaders;  //!<! Headers of the DDL payload.
+		UInt_t fRegionalsCount; //!<! Number of regional headers filled in fRegionals.
+		AliRegionalHeader* fRegionals;  //!<! Array of regional headers. [0..fMaxRegionals-1]
+		AliLocalStruct* fLocals; //!<! Array of decoded local structured. [0..fMaxRegionals*fMaxLocals-1]
+		AliLocalStruct* fEndOfLocals; //!<! Marker indicating the position just passed the last filled element in fLocals.
+		AliRegionalHeader* fCurrentRegional; //!<! Current regional header position.
+		AliLocalStruct* fCurrentLocal; //!<! Current local trigger structure.
+		UInt_t fDarcEoWErrors;    //!<! Number of end of DARC word errors.
+		UInt_t fGlobalEoWErrors;  //!<! Number of end of global word errors.
+		UInt_t fRegEoWErrors;     //!<! Number of end of regional word errors.
+		UInt_t fLocalEoWErrors;   //!<! Number of end of local word errors.
+		Bool_t fWarnings;       //!<! Flag indicating if we should generate a warning for errors.
 		
-		static const AliMUONRegionalHeaderStruct fgkEmptyHeader;  //!< Empty header for skipped regional structures.
+		static const AliMUONRegionalHeaderStruct fgkEmptyHeader;  //!<! Empty header for skipped regional structures.
 	};
 	
-	AliMUONTriggerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!< The decoder for the DDL payload.
-	Int_t fDDL;         //!< The current DDL number being handled.
-	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
-	UChar_t* fBuffer;   //!< This is the buffer in which we store the DDL payload read from AliRawReader.
-	const AliLocalStruct* fkCurrentLocalStruct;  //!< The current local trigger structure being handled by Next().
-	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
-	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
-	mutable AliMUONDDLTrigger* fDDLObject; //!< Temporary DDL object used by GetDDLTrigger() for caching.
-	UInt_t fTotalNumberOfDarcEoWErrors; //!< The total number of end of DARC word errors since the last call to First().
-	UInt_t fTotalNumberOfGlobalEoWErrors; //!< The total number of end of global word errors since the last call to First().
-	UInt_t fTotalNumberOfRegEoWErrors; //!< The total number of end of regional word errors since the last call to First().
-	UInt_t fTotalNumberOfLocalEoWErrors; //!< The total number of end of local word errors since the last call to First().
+	AliMUONTriggerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!<! The decoder for the DDL payload.
+	Int_t fDDL;         //!<! The current DDL number being handled.
+	Int_t fBufferSize;  //!<! This is the buffer size in bytes of fBuffer.
+	UChar_t* fBuffer;   //!<! This is the buffer in which we store the DDL payload read from AliRawReader.
+	const AliLocalStruct* fkCurrentLocalStruct;  //!<! The current local trigger structure being handled by Next().
+	Bool_t fHadError;   //!<! Flag indicating if there was a decoding error or not.
+	Bool_t fDone;       //!<! Flag indicating if the iteration is done or not.
+	mutable AliMUONDDLTrigger* fDDLObject; //!<! Temporary DDL object used by GetDDLTrigger() for caching.
+	UInt_t fTotalNumberOfDarcEoWErrors; //!<! The total number of end of DARC word errors since the last call to First().
+	UInt_t fTotalNumberOfGlobalEoWErrors; //!<! The total number of end of global word errors since the last call to First().
+	UInt_t fTotalNumberOfRegEoWErrors; //!<! The total number of end of regional word errors since the last call to First().
+	UInt_t fTotalNumberOfLocalEoWErrors; //!<! The total number of end of local word errors since the last call to First().
 	
-	static const Int_t  fgkMaxDDL;     //!< Maximum number of DDLs
+	static const Int_t  fgkMaxDDL;     //!<! Maximum number of DDLs
 	
 	ClassDef(AliMUONRawStreamTriggerHP, 0)  // Higher performance decoder class for MUON trigger rawdata.
 };

@@ -31,7 +31,7 @@ class AliTPCAltroMapping: public AliAltroMapping {
   Int_t     fMinPadRow;        ///< Minimum Index of pad-row
   Int_t     fMaxPadRow;        ///< Maximum Index of pad-row
   Int_t     fMaxPad;           ///< Maximum Index of pad inside row
-  Short_t  *fInvMapping;       //!< Inverse of fMapping
+  Short_t  *fInvMapping;       //!<! Inverse of fMapping
 
  private:
 

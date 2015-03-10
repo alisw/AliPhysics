@@ -526,9 +526,9 @@ protected :
   //---------------------------------------------------------------------
   Int_t   fNResponseMax;   ///< maximal dimension of response
   Float_t fResponseThreshold; ///< threshold for accepted response
-  Int_t   fCurrentMax;     //!< current maximal dimension            -calulated
-  Int_t   *fResponseBin;    //!< array with bins                     -calulated
-  Float_t *fResponseWeight; //!< array with response                 -calulated
+  Int_t   fCurrentMax;     //!<! current maximal dimension            -calulated
+  Int_t   *fResponseBin;    //!<! array with bins                     -calulated
+  Float_t *fResponseWeight; //!<! array with response                 -calulated
 
   //---------------------------------------------------------------------
   //   ALICE TPC L1 Parameters

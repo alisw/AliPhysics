@@ -90,17 +90,17 @@ private:
   
     static const Double_t fgkCouplMin; ///< threshold on coupling 
 
-  TObjArray* fPixArray; //!< \todo add comment
-  AliMUONMathieson* fMathieson; //!< Mathieson
-  Int_t fDetElemId; //!< detection element we are working on
-  Int_t fNpar; //!< number of fit parameters
-  Double_t fQtot; //!< total charge
-  Int_t fnCoupled; //!< number of coupled pixels ?
-  Int_t fDebug; //!< debug level
+  TObjArray* fPixArray; //!<! \todo add comment
+  AliMUONMathieson* fMathieson; //!<! Mathieson
+  Int_t fDetElemId; //!<! detection element we are working on
+  Int_t fNpar; //!<! number of fit parameters
+  Double_t fQtot; //!<! total charge
+  Int_t fnCoupled; //!<! number of coupled pixels ?
+  Int_t fDebug; //!<! debug level
   
-  Double_t fLowestPixelCharge; //!< minimum allowed pixel charge
-  Double_t fLowestPadCharge; //!< minimum allowed pad charge
-  Double_t fLowestClusterCharge; //!< minimum allowed cluster charge
+  Double_t fLowestPixelCharge; //!<! minimum allowed pixel charge
+  Double_t fLowestPadCharge; //!<! minimum allowed pad charge
+  Double_t fLowestClusterCharge; //!<! minimum allowed cluster charge
 
   ClassDef(AliMUONClusterSplitterMLEM,2) // Splitter of clusters
 };

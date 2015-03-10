@@ -39,9 +39,9 @@ private:
   Bool_t Init();
   Int_t GetArrayIndex(Int_t cathode, Int_t trigCh, Int_t localCircuit) const;
   
-  AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
-  TArrayI fTriggerStatusMap; //!< Trigger masks
-  AliMUONVDigitStore* fMaskedDigitsStore; //!< Masked digits store
+  AliMUONCalibrationData* fCalibrationData; //!<! pointer to access calib parameters
+  TArrayI fTriggerStatusMap; //!<! Trigger masks
+  AliMUONVDigitStore* fMaskedDigitsStore; //!<! Masked digits store
   
   ClassDef(AliMUONTriggerUtilities,0) // MUON Trigger utilities
 };

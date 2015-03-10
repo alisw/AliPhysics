@@ -85,7 +85,7 @@ private:
 
   AliTPCPointCorrection(const AliTPCPointCorrection&);
   AliTPCPointCorrection& operator=(const AliTPCPointCorrection&);
-  static AliTPCPointCorrection*   fgInstance; //!< Instance of this class (singleton implementation)
+  static AliTPCPointCorrection*   fgInstance; //!<! Instance of this class (singleton implementation)
   /// \cond CLASSIMP
   ClassDef(AliTPCPointCorrection, 3);
   /// \endcond

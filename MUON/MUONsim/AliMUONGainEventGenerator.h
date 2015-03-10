@@ -43,11 +43,11 @@ private:
   void WriteToCDB(TObject* object, Int_t runNumber);
 
 private:
-  Int_t fNofEventsPerFile; //!< number of events to generate per file
-  Int_t fSourcePedestalRunNumber; //!< run number of pedestal to be used
-  TString fDateBaseFileName; //!< base file name of the output file
-  AliMUONVStore* fSourceGains; //!< the gains used to generate the files
-  AliMUONVStore* fSourcePedestals; //!< the pedestals used to generate the fiels
+  Int_t fNofEventsPerFile; //!<! number of events to generate per file
+  Int_t fSourcePedestalRunNumber; //!<! run number of pedestal to be used
+  TString fDateBaseFileName; //!<! base file name of the output file
+  AliMUONVStore* fSourceGains; //!<! the gains used to generate the files
+  AliMUONVStore* fSourcePedestals; //!<! the pedestals used to generate the fiels
   
   ClassDef(AliMUONGainEventGenerator,1) // Generate gain-like files
 };

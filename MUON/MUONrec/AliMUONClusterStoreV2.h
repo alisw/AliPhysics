@@ -67,8 +67,8 @@ private:
   
 private:
   TClonesArray* fClusters; ///< collection of clusters
-  TClonesArray* fMap;      //!< index map for fast cluster retrieval
-  Bool_t        fMapped;   //!< whether our internal indices are uptodate
+  TClonesArray* fMap;      //!<! index map for fast cluster retrieval
+  Bool_t        fMapped;   //!<! whether our internal indices are uptodate
   
   ClassDef(AliMUONClusterStoreV2,1) // Implementation of VClusterStore
 };

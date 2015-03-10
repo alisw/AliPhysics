@@ -52,12 +52,12 @@ private:
   void DumpPreClusters() const;
   
 private:
-  TClonesArray* fClusters; //!< the clusters we've found (owner)
-  const AliMpVSegmentation** fkSegmentations; //!< segmentations (not owner)
-  TObjArray** fPads; //!< the pads corresponding to the digits (not owner)
-  TClonesArray* fPreClusters[2]; //!< the preclusters per cathode (owner)
-  Int_t fDetElemId; //!< which DE we're considering
-  TIterator* fIterator; //!< iterator on fClusters
+  TClonesArray* fClusters; //!<! the clusters we've found (owner)
+  const AliMpVSegmentation** fkSegmentations; //!<! segmentations (not owner)
+  TObjArray** fPads; //!<! the pads corresponding to the digits (not owner)
+  TClonesArray* fPreClusters[2]; //!<! the preclusters per cathode (owner)
+  Int_t fDetElemId; //!<! which DE we're considering
+  TIterator* fIterator; //!<! iterator on fClusters
   
   ClassDef(AliMUONPreClusterFinderV3,2) // A basic pre-cluster finder
 };

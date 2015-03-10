@@ -33,7 +33,7 @@ protected:
   /// array of clusters
   TClonesArray * fClusters; //->
   Int_t  fNclusters;  
-  TClass * fClass; //!< type of cluster class
+  TClass * fClass; //!<! type of cluster class
   ClassDef(AliClusters,1) // Cluster manager
 };
 

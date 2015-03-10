@@ -103,15 +103,15 @@ class AliMUONRawStreamTrigger: public AliMUONVRawStreamTrigger {
  private:
 
     AliMUONPayloadTrigger* fPayload; ///< pointer to payload decoder
-    AliMUONDDLTrigger* fCurrentDDL;          //!< for iterator: current ddl ptr
-    Int_t fCurrentDDLIndex;                  //!< for iterator: current ddl index
-    AliMUONDarcHeader* fCurrentDarcHeader;   //!< for iterator: current darc ptr
-    AliMUONRegHeader* fCurrentRegHeader;     //!< for iterator: current reg ptr
-    Int_t fCurrentRegHeaderIndex;            //!< for iterator: current reg index    
-    AliMUONLocalStruct* fCurrentLocalStruct; //!< for iterator: current local ptr
-    Int_t fCurrentLocalStructIndex;          //!< for iterator: current local index    
-    Bool_t fLocalStructRead;                 //!< flag for read out local structure
-    Int_t fDDL;                              //!< number of DDL    
+    AliMUONDDLTrigger* fCurrentDDL;          //!<! for iterator: current ddl ptr
+    Int_t fCurrentDDLIndex;                  //!<! for iterator: current ddl index
+    AliMUONDarcHeader* fCurrentDarcHeader;   //!<! for iterator: current darc ptr
+    AliMUONRegHeader* fCurrentRegHeader;     //!<! for iterator: current reg ptr
+    Int_t fCurrentRegHeaderIndex;            //!<! for iterator: current reg index    
+    AliMUONLocalStruct* fCurrentLocalStruct; //!<! for iterator: current local ptr
+    Int_t fCurrentLocalStructIndex;          //!<! for iterator: current local index    
+    Bool_t fLocalStructRead;                 //!<! flag for read out local structure
+    Int_t fDDL;                              //!<! number of DDL    
 
 
     Bool_t fNextDDL;      ///< flag for next DDL to be read

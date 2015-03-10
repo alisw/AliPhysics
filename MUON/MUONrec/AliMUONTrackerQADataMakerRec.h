@@ -91,24 +91,24 @@ private:
   /// Not implemented
   AliMUONTrackerQADataMakerRec& operator=(const AliMUONTrackerQADataMakerRec& rhs);
   
-  AliMUONVDigitStore*   fDigitStore; //!< pointer to digits store
-  AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker
-  AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
+  AliMUONVDigitStore*   fDigitStore; //!<! pointer to digits store
+  AliMUONDigitMaker*    fDigitMaker;  //!<! pointer to digit maker
+  AliMUONVClusterStore* fClusterStore; //!<! pointer to cluster store
 	
-  AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
+  AliMUONCalibrationData* fCalibrationData; //!<! Used to load Local, Regional and Global masks
   
-  AliMUONLogger* fLogger; //!< (readout) error logger
+  AliMUONLogger* fLogger; //!<! (readout) error logger
   
-  TH1* fBusPatchConfig; //!< bus patch configuration
+  TH1* fBusPatchConfig; //!<! bus patch configuration
   
-  Double_t fBPxmin; //!< min bin value for bus patch
-  Double_t fBPxmax; //!< max bin value for bus patch
-  Int_t fBPnbins; //!< number of bus patch bins
+  Double_t fBPxmin; //!<! min bin value for bus patch
+  Double_t fBPxmax; //!<! max bin value for bus patch
+  Int_t fBPnbins; //!<! number of bus patch bins
 
-  TObjArray* fTrackerDataMakerArray; //!< tracker data accumulation (Raws)  
-  TObjArray* fTrackerCalDataArray; //!< tracker data accumulation (calibrated digits)  
-  TObjArray* fTrackerRecDataArray; //!< tracker data accumulation (only calibrated digits belonging to reconstructed clusters)
-  TObjArray* fMappingCheckRecPointsArray; //!< mapping cross-checker (RecPoints)  
+  TObjArray* fTrackerDataMakerArray; //!<! tracker data accumulation (Raws)  
+  TObjArray* fTrackerCalDataArray; //!<! tracker data accumulation (calibrated digits)  
+  TObjArray* fTrackerRecDataArray; //!<! tracker data accumulation (only calibrated digits belonging to reconstructed clusters)
+  TObjArray* fMappingCheckRecPointsArray; //!<! mapping cross-checker (RecPoints)  
   
   ClassDef(AliMUONTrackerQADataMakerRec,5)  // MUON Quality assurance data maker
 

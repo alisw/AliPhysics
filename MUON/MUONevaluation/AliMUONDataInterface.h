@@ -113,21 +113,21 @@ private:
   AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
   
   
-  AliLoader* fLoader; //!< Tree accessor
-  AliMUONVDigitStore* fDigitStore; //!< current digit store (owner)
-  AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
-  AliMUONVClusterStore* fClusterStore; //!< current cluster store (owner)
-  Int_t fCurrentEvent; //!< Current event we've read in
-  TString fTreeLetter; //!< The tree letter used in the last call to TriggerStore().
-  Bool_t fIsValid; //!< whether we were initialized properly or not
+  AliLoader* fLoader; //!<! Tree accessor
+  AliMUONVDigitStore* fDigitStore; //!<! current digit store (owner)
+  AliMUONVTriggerStore* fTriggerStore; //!<! current trigger store (owner)
+  AliMUONVClusterStore* fClusterStore; //!<! current cluster store (owner)
+  Int_t fCurrentEvent; //!<! Current event we've read in
+  TString fTreeLetter; //!<! The tree letter used in the last call to TriggerStore().
+  Bool_t fIsValid; //!<! whether we were initialized properly or not
   
-  IteratorType fCurrentIteratorType;  //!< The type of iterator that is currently set.
-  Int_t fCurrentIndex;  //!< A current index number maintained for certain iteration operations.
-  Int_t fDataX; //!< Extra data parameter about the iterator, can be the chamber number or detector element.
-  Int_t fDataY; //!< Extra data parameter about the iterator, can be the cathode number.
-  TIterator* fIterator; //!< Iterator for various iteration operations.
+  IteratorType fCurrentIteratorType;  //!<! The type of iterator that is currently set.
+  Int_t fCurrentIndex;  //!<! A current index number maintained for certain iteration operations.
+  Int_t fDataX; //!<! Extra data parameter about the iterator, can be the chamber number or detector element.
+  Int_t fDataY; //!<! Extra data parameter about the iterator, can be the cathode number.
+  TIterator* fIterator; //!<! Iterator for various iteration operations.
   
-  static Int_t fgInstanceCounter; //!< To build unique folder name for each instance
+  static Int_t fgInstanceCounter; //!<! To build unique folder name for each instance
   
   ClassDef(AliMUONDataInterface, 0)  // An easy to use interface to MUON reconstructed data
 };

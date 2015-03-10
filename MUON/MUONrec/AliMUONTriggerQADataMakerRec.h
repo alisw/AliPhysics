@@ -84,13 +84,13 @@ private:
 
   static const Int_t fgkUpdateRatio4434=50; ///< Event interval between 2 update of the Ratio4434 histos
   
-  AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
-  AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
-  AliMUONTriggerElectronics* fTriggerProcessor; //!< trigger processore to re-compute response
-  AliMUONVDigitStore* fDigitStore; //!< pointer to digits store
-  AliMUONVDigitStore* fDigitStoreFromRaw; //!< pointer to digit store from RAW data
-  AliMUONVTriggerStore* fTriggerStoreFromRaw; //!< pointer to trigger store from input RAW data
-  AliMUONVTriggerStore* fTriggerStoreReprocessRaw; //!< pointer to trigger store from re-computed RAW data
+  AliMUONDigitMaker* fDigitMaker; //!<! pointer to digit maker
+  AliMUONCalibrationData* fCalibrationData; //!<! Used to load Local, Regional and Global masks
+  AliMUONTriggerElectronics* fTriggerProcessor; //!<! trigger processore to re-compute response
+  AliMUONVDigitStore* fDigitStore; //!<! pointer to digits store
+  AliMUONVDigitStore* fDigitStoreFromRaw; //!<! pointer to digit store from RAW data
+  AliMUONVTriggerStore* fTriggerStoreFromRaw; //!<! pointer to trigger store from input RAW data
+  AliMUONVTriggerStore* fTriggerStoreReprocessRaw; //!<! pointer to trigger store from re-computed RAW data
   AliMUONTriggerUtilities* fTriggerUtils; //! trigger utilities (for masks)
   
   ClassDef(AliMUONTriggerQADataMakerRec,3)  // MUON Quality assurance data maker

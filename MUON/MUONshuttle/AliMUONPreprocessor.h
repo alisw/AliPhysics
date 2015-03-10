@@ -88,8 +88,8 @@ protected:
   void Add(AliMUONVSubprocessor* subProcessor, Bool_t processDCS=kFALSE); 
   void ClearSubprocessors();
   
-  Bool_t fIsValid; //!< whether we were correctly initialized
-  Bool_t fIsApplicable; //!< whether we have something to do
+  Bool_t fIsValid; //!<! whether we were correctly initialized
+  Bool_t fIsApplicable; //!<! whether we have something to do
   
 private:
   /// Not implemented
@@ -101,8 +101,8 @@ private:
   
 private:
 
-  TObjArray* fSubprocessors; //!< sub processors to execute
-  Bool_t fProcessDCS; //!< whether the current subprocessor(s) needs DCS or not
+  TObjArray* fSubprocessors; //!<! sub processors to execute
+  Bool_t fProcessDCS; //!<! whether the current subprocessor(s) needs DCS or not
 
   ClassDef(AliMUONPreprocessor,4) // MUON Shuttle preprocessor
 };

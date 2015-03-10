@@ -83,19 +83,19 @@ private:
   
 private:
 
-  mutable AliMUONDigitMaker* fDigitMaker; //!< Raw to Digits converter
-  AliMUONGeometryTransformer* fTransformer; //!< Geometry transformer (local<->global)
-  mutable AliMUONVDigitStore* fDigitStore; //!< Digit container
-  mutable AliMUONTriggerCircuit* fTriggerCircuit; //!< Trigger Circuit
-  mutable AliMUONCalibrationData* fCalibrationData; //!< Calibration data
-  mutable AliMUONDigitCalibrator* fDigitCalibrator; //!<  Digit to calibrate digit converter
-  mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
-  mutable AliMUONVTrackStore* fTrackStore; //!< Track container
-  mutable AliMUONVClusterStore* fClusterStore; //!< cluster store (when not in combined tracking mode)
-  mutable AliMUONTriggerElectronics* fTriggerProcessor; //!< Processor to recalculate trigger response
-  mutable AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
-  mutable TObjArray fClusterServers; //!<  Clusterizers (one per event specie)
-  mutable TObjArray fTrackers; //!< trackers (one per event specie)
+  mutable AliMUONDigitMaker* fDigitMaker; //!<! Raw to Digits converter
+  AliMUONGeometryTransformer* fTransformer; //!<! Geometry transformer (local<->global)
+  mutable AliMUONVDigitStore* fDigitStore; //!<! Digit container
+  mutable AliMUONTriggerCircuit* fTriggerCircuit; //!<! Trigger Circuit
+  mutable AliMUONCalibrationData* fCalibrationData; //!<! Calibration data
+  mutable AliMUONDigitCalibrator* fDigitCalibrator; //!<!  Digit to calibrate digit converter
+  mutable AliMUONVTriggerStore* fTriggerStore; //!<! Trigger container
+  mutable AliMUONVTrackStore* fTrackStore; //!<! Track container
+  mutable AliMUONVClusterStore* fClusterStore; //!<! cluster store (when not in combined tracking mode)
+  mutable AliMUONTriggerElectronics* fTriggerProcessor; //!<! Processor to recalculate trigger response
+  mutable AliMUONTriggerUtilities* fTriggerUtilities; //!<! Trigger utilities for masks
+  mutable TObjArray fClusterServers; //!<!  Clusterizers (one per event specie)
+  mutable TObjArray fTrackers; //!<! trackers (one per event specie)
   mutable Bool_t fShouldCalibrate; // whether the fDigitCalibrator should be non-null
   
   ClassDef(AliMUONReconstructor,12) // Implementation of AliReconstructor

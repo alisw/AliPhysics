@@ -72,7 +72,7 @@ protected:
   void Update1();
   virtual void UpdateSigma();  //recalculate sigma of PRF
   Float_t GetPRFActiv(Float_t xin); //return PRF in point xin and actual y
-  Float_t  * fcharge; //!< field with PRF
+  Float_t  * fcharge; //!<! field with PRF
   Float_t fY1;        ///< position of first "virtual" vire
   Float_t fY2;        ///< position of last virtual vire
   Int_t fNYdiv;       ///< number of wires
@@ -116,8 +116,8 @@ protected:
 
   char  fType[5];       ///< charge type
   Float_t fCurrentY;    ///< in reality we calculate PRF only for one fixed y
-  Float_t fDYtoWire;    //!< used to make PRF calculation faster in GetPRF
-  Float_t fDStepM1;     //!< used in GetPRFActiv to make calculation faster
+  Float_t fDYtoWire;    //!<! used to make PRF calculation faster in GetPRF
+  Float_t fDStepM1;     //!<! used in GetPRFActiv to make calculation faster
   //
   static const Double_t fgkDegtoRad; ///< numeric constant
   static const Double_t fgkSQRT12; ///< numeric constant

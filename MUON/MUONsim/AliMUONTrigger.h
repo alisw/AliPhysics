@@ -32,7 +32,7 @@ private:
    /// Not implemented
    AliMUONTrigger& operator=(const AliMUONTrigger&);
    
-   AliMUONVTriggerStore* fTriggerStore; //!< trigger store
+   AliMUONVTriggerStore* fTriggerStore; //!<! trigger store
    
   ClassDef(AliMUONTrigger,1)  // MUON Trigger Detector class
 };

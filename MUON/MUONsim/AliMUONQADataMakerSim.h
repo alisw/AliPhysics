@@ -52,8 +52,8 @@ private:
   
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list);
 
-  AliMUONVHitStore*   fHitStore;   //!< pointer to hit store
-  AliMUONVDigitStore* fDigitStore; //!< pointer to digit store
+  AliMUONVHitStore*   fHitStore;   //!<! pointer to hit store
+  AliMUONVDigitStore* fDigitStore; //!<! pointer to digit store
                                     
   ClassDef(AliMUONQADataMakerSim,2)  // MUON Quality assurance data maker
 

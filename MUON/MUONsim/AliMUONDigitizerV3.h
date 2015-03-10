@@ -92,21 +92,21 @@ private:
 
 private:
   Bool_t fIsInitialized; ///< are we initialized ?
-  AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
+  AliMUONCalibrationData* fCalibrationData; //!<! pointer to access calib parameters
   AliMUONTriggerElectronics* fTriggerProcessor; ///< pointer to the trigger part of the job
-  TF1* fNoiseFunctionTrig; //!< function to get noise disribution on trig. chambers
-  Int_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker (1) and trigger (2)
+  TF1* fNoiseFunctionTrig; //!<! function to get noise disribution on trig. chambers
+  Int_t fGenerateNoisyDigits; //!<! whether or not we should generate noise-only digits for tracker (1) and trigger (2)
   static Double_t fgNSigmas; ///< \brief number of sigmas above ped to use 
   /// for noise-only digit generation and zero-suppression
-  AliMUONLogger* fLogger; //!< to keep track of messages
-  AliMUONVTriggerStore* fTriggerStore; //!< trigger objects
-  AliMUONVDigitStore* fDigitStore; //!< temporary digits
-  AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
-  TObjArray* fInputDigitStores; //!< input digit stores (one per input file
-  AliMUONRecoParam* fRecoParam; //!< reco params (to know how to decalibrate) (not owner)
-  AliMUONTriggerChamberEfficiency* fTriggerEfficiency; //!< trigger efficiency map
-  AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
-  TArrayI fEfficiencyResponse; //!< Local board efficiency response
+  AliMUONLogger* fLogger; //!<! to keep track of messages
+  AliMUONVTriggerStore* fTriggerStore; //!<! trigger objects
+  AliMUONVDigitStore* fDigitStore; //!<! temporary digits
+  AliMUONVDigitStore* fOutputDigitStore; //!<! digits we'll output to disk
+  TObjArray* fInputDigitStores; //!<! input digit stores (one per input file
+  AliMUONRecoParam* fRecoParam; //!<! reco params (to know how to decalibrate) (not owner)
+  AliMUONTriggerChamberEfficiency* fTriggerEfficiency; //!<! trigger efficiency map
+  AliMUONTriggerUtilities* fTriggerUtilities; //!<! Trigger utilities for masks
+  TArrayI fEfficiencyResponse; //!<! Local board efficiency response
   
   ClassDef(AliMUONDigitizerV3,11) // MUON Digitizer V3-11
 };

@@ -149,7 +149,7 @@ class AliTPCCombinedTrackfit
   void CombineTPCseeds(Bool_t &kswap);
   void Update();
 
-  TTreeSRedirector *fStreamer;     //!< debug streamer
+  TTreeSRedirector *fStreamer;     //!<! debug streamer
   Int_t fDebugLevel;                    ///< debug level
 
   AliTPCseed * fSeedUp;                         ///< TPC seed of upper track

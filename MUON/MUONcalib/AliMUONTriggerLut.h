@@ -64,7 +64,7 @@ private:
   TH3 *fAptMinu; ///< 3-d histogram with 234x32x31 bins All pt Minus  
   TH3 *fAptUnde; ///< 3-d histogram with 234x32x31 bins All pt Undefined    
 
-  TMap* fMap; //!< from name to histo
+  TMap* fMap; //!<! from name to histo
   
   ClassDef(AliMUONTriggerLut,2) // Trigger Look up Table class
 

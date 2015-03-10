@@ -60,9 +60,9 @@ private:
   Int_t FindMCLabel(const AliMUONCluster& cluster, Int_t detElemId, const AliMpVSegmentation* seg[2]) const;
   
 private:
-  AliMUONVDigitStore* fDigitStore; //!< the digit store (not owner)
-  AliMUONVClusterFinder* fClusterFinder; //!< the cluster finder (owner)
-  const AliMUONGeometryTransformer& fkTransformer; //!< the geometry transformer (not owner)
+  AliMUONVDigitStore* fDigitStore; //!<! the digit store (not owner)
+  AliMUONVClusterFinder* fClusterFinder; //!<! the cluster finder (owner)
+  const AliMUONGeometryTransformer& fkTransformer; //!<! the geometry transformer (not owner)
   AliMpExMap* fPads[2]; ///< map of TClonesArray of AliMUONPads
   AliMpExMapIterator* fPadsIterator[2]; ///< iterator for the map of TClonesArray of AliMUONPads
   AliMUONVTriggerTrackStore* fTriggerTrackStore; ///< trigger track store (if bypassing of St45 was requested) (not owner)

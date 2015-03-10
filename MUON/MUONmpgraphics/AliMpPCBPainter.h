@@ -36,7 +36,7 @@ public:
   /// Not implemented
   AliMpPCBPainter&  operator = (const AliMpPCBPainter& right);
 
-  AliMpPCB* fPCB; //!< PCB to be plotted.
+  AliMpPCB* fPCB; //!<! PCB to be plotted.
 
   ClassDef(AliMpPCBPainter,1) // A painter for a PCB of stations 3,4,5
 };

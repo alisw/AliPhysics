@@ -155,19 +155,19 @@ class AliMUONTrack : public TObject
   
   mutable TObjArray* fTrackParamAtCluster; ///< Track parameters at cluster
   
-  Bool_t   fFitWithVertex;   //!< kTRUE if using the vertex to constrain the fit, kFALSE if not
-  Double_t fVertexErrXY2[2]; //!< Vertex resolution square used during the tracking procedure if required
+  Bool_t   fFitWithVertex;   //!<! kTRUE if using the vertex to constrain the fit, kFALSE if not
+  Double_t fVertexErrXY2[2]; //!<! Vertex resolution square used during the tracking procedure if required
   
-  Bool_t fFitWithMCS; //!< kTRUE if accounting for multiple scattering in the fit, kFALSE if not
+  Bool_t fFitWithMCS; //!<! kTRUE if accounting for multiple scattering in the fit, kFALSE if not
   
-  TMatrixD* fClusterWeightsNonBending; //!< weights matrix, in non bending direction, of clusters attached to the track
-				       //!< (accounting for multiple scattering and cluster resolution)
-  TMatrixD* fClusterWeightsBending;    //!< weights matrix, in bending direction, of clusters attached to the track
-				       //!< (accounting for multiple scattering and cluster resolution)
+  TMatrixD* fClusterWeightsNonBending; //!<! weights matrix, in non bending direction, of clusters attached to the track
+				       //!<! (accounting for multiple scattering and cluster resolution)
+  TMatrixD* fClusterWeightsBending;    //!<! weights matrix, in bending direction, of clusters attached to the track
+				       //!<! (accounting for multiple scattering and cluster resolution)
   
   Double_t fGlobalChi2; ///< Global chi2 of the track
   
-  Bool_t fImproved; //!< kTRUE if the track has been improved
+  Bool_t fImproved; //!<! kTRUE if the track has been improved
   
   Int_t fMatchTrigger;  ///<  0 track does not match trigger
                         ///<  1 track match but does not pass pt cut
@@ -177,7 +177,7 @@ class AliMUONTrack : public TObject
   
   Int_t fTrackID; ///< Point to the corresponding MC track
   
-  AliMUONTrackParam* fTrackParamAtVertex; //!< Track parameters at vertex
+  AliMUONTrackParam* fTrackParamAtVertex; //!<! Track parameters at vertex
   
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
   UInt_t fHitsPatternInTrigChTrk; ///< Word containing info on the hits left in trigger chambers (calculated from extrapolated tracker track)

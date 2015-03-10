@@ -241,16 +241,16 @@ protected:
   //
   // Get the corssrun information
   //
-  TMap      fTimeGainSplinesArray; //!< array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
-  TMap      fGRPArray;							//!< array of GRPs  -  per run
-  TMap      fGRPMaps;							//!< array of GRPs maps  -  per run - old data
-  TMap      fGoofieArray;					//!< array of GOOFIE values -per run
-  TMap      fVoltageArray;					//!< array of Chamber HV values -per run
-  TMap      fTemperatureArray;			//!< array of temperature sensors - per run
-  TMap      fVdriftArray;					//!< array of v drift interfaces
-  TMap      fDriftCorrectionArray;                //!< array of drift correction
+  TMap      fTimeGainSplinesArray; //!<! array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
+  TMap      fGRPArray;							//!<! array of GRPs  -  per run
+  TMap      fGRPMaps;							//!<! array of GRPs maps  -  per run - old data
+  TMap      fGoofieArray;					//!<! array of GOOFIE values -per run
+  TMap      fVoltageArray;					//!<! array of Chamber HV values -per run
+  TMap      fTemperatureArray;			//!<! array of temperature sensors - per run
+  TMap      fVdriftArray;					//!<! array of v drift interfaces
+  TMap      fDriftCorrectionArray;                //!<! array of drift correction
 
-  TArrayI        fRunList;							//!< run list - indicates try to get the run param
+  TArrayI        fRunList;							//!<! run list - indicates try to get the run param
   Bool_t         fBHasAlignmentOCDB;                ///< Flag - alignment from the Transformation class
   //
   static AliTPCcalibDB* fgInstance;  ///< singleton control

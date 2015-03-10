@@ -38,7 +38,7 @@ private:
   Int_t ReadFile(const char* filename);
   
 private:
-  AliMUONVStore* fOccupancyMap; //!< Occupancy map (at the manu level) for the MUON TRK
+  AliMUONVStore* fOccupancyMap; //!<! Occupancy map (at the manu level) for the MUON TRK
   
   ClassDef(AliMUONOccupancySubprocessor,1) // A shuttle preprocessor for MUON TRK occupancy  
 };

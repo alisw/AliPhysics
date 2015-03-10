@@ -59,11 +59,11 @@ private:
   void RemoveCluster(AliMUONCluster* cluster);
   
 private:
-  TClonesArray fClusters; //!< the clusters we've found (owner)
-  TObjArray** fPads; //!< the pads corresponding to the digits (not owner)
-  Int_t fDetElemId; //!< which DE we're considering
-  AliMpArea fArea; //!< area into which to consider pads to *start* a cluster
-  Bool_t fShouldAbort; //!< to indicate clustering should stop right now
+  TClonesArray fClusters; //!<! the clusters we've found (owner)
+  TObjArray** fPads; //!<! the pads corresponding to the digits (not owner)
+  Int_t fDetElemId; //!<! which DE we're considering
+  AliMpArea fArea; //!<! area into which to consider pads to *start* a cluster
+  Bool_t fShouldAbort; //!<! to indicate clustering should stop right now
   
   ClassDef(AliMUONPreClusterFinder,4) // A basic pre-cluster finder
 };

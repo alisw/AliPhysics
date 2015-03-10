@@ -45,9 +45,9 @@ private:
   void ComputePosition(AliMUONCluster& cluster);
 
 private:
-    AliMUONVClusterFinder* fClusterFinder; //!< the preclustering we use
-  AliMUONMathieson* fMathieson; //!< Mathieson to compute the charge repartition
-  Double_t fLowestClusterCharge; //!< minimum cluster charge we allow
+    AliMUONVClusterFinder* fClusterFinder; //!<! the preclustering we use
+  AliMUONMathieson* fMathieson; //!<! Mathieson to compute the charge repartition
+  Double_t fLowestClusterCharge; //!<! minimum cluster charge we allow
   
   ClassDef(AliMUONClusterFinderSimpleFit,2) // Basic cluster finder
 };

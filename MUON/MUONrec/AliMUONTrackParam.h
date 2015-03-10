@@ -143,20 +143,20 @@ class AliMUONTrackParam : public TObject
   /// <X,InvP_yz> <SlopeX,InvP_yz> <Y,InvP_yz> <SlopeY,InvP_yz> <InvP_yz,InvP_yz>  </pre>
   mutable TMatrixD *fCovariances; ///< \brief Covariance matrix of track parameters 
   
-  mutable TMatrixD *fPropagator;        //!< Jacobian used to extrapolate the track parameters and covariances to the actual z position
-  mutable TMatrixD *fExtrapParameters;  //!< Track parameters extrapolated to the actual z position (not filtered by Kalman)
-  mutable TMatrixD *fExtrapCovariances; //!< Covariance matrix extrapolated to the actual z position (not filtered by Kalman)
+  mutable TMatrixD *fPropagator;        //!<! Jacobian used to extrapolate the track parameters and covariances to the actual z position
+  mutable TMatrixD *fExtrapParameters;  //!<! Track parameters extrapolated to the actual z position (not filtered by Kalman)
+  mutable TMatrixD *fExtrapCovariances; //!<! Covariance matrix extrapolated to the actual z position (not filtered by Kalman)
   
-  mutable TMatrixD *fSmoothParameters;  //!< Track parameters obtained using smoother
-  mutable TMatrixD *fSmoothCovariances; //!< Covariance matrix obtained using smoother
+  mutable TMatrixD *fSmoothParameters;  //!<! Track parameters obtained using smoother
+  mutable TMatrixD *fSmoothCovariances; //!<! Covariance matrix obtained using smoother
   
-  AliMUONVCluster *fClusterPtr; //!< Pointer to associated cluster if any
-  Bool_t           fOwnCluster; //!< Ownership of the associated cluster
+  AliMUONVCluster *fClusterPtr; //!<! Pointer to associated cluster if any
+  Bool_t           fOwnCluster; //!<! Ownership of the associated cluster
   
-  Bool_t fRemovable; //!< kTRUE if the associated cluster can be removed from the track it belongs to
+  Bool_t fRemovable; //!<! kTRUE if the associated cluster can be removed from the track it belongs to
   
-  Double_t fTrackChi2; //!< Chi2 of the track when the associated cluster was attached
-  Double_t fLocalChi2; //!< Local chi2 of the associated cluster with respect to the track
+  Double_t fTrackChi2; //!<! Chi2 of the track when the associated cluster was attached
+  Double_t fLocalChi2; //!<! Local chi2 of the associated cluster with respect to the track
   
   ClassDef(AliMUONTrackParam, 4) // Track parameters in ALICE dimuon spectrometer
 };

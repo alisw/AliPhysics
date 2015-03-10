@@ -62,8 +62,8 @@ class AliMUONRawStream: public TObject {
      UInt_t fB4:8; ///< fourth byte word
     } RawWord;
 
-    AliRawReader* fRawReader;    //!< object for reading the raw data  
-    Bool_t fEnableErrorLogger;   //!< flag to enable the error info logger
+    AliRawReader* fRawReader;    //!<! object for reading the raw data  
+    Bool_t fEnableErrorLogger;   //!<! flag to enable the error info logger
     
     ClassDef(AliMUONRawStream, 1)    // base class for reading MUON raw digits
 };

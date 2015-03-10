@@ -86,7 +86,7 @@ public:
   TVectorD *fVecLY;       ///< points vectors - localY
   TVectorD *fVecLZ;       ///< points vectors - localZ
 private:
-  static TObjArray* fgArrLaserTracks; //!< Array of all Laser Tracks,
+  static TObjArray* fgArrLaserTracks; //!<! Array of all Laser Tracks,
                                         //  keeps instances of this class;
 
   static const Int_t fgkNLaserTracks    = 336; ///< Number of laser tracks

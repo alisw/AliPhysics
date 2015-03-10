@@ -51,15 +51,15 @@ private:
   void Digits2Raw(Int_t event);
   
 private:
-  AliMUONCalibrationData* fCalibrationData; //!< access to pedestal CDB
-  TString fDateFileName; //!< basefilename of the DATE output file
-  TString fGAliceFileName; //!< absolute path to galice.root file
-  Bool_t fMakeDDL; //!< whether to generate DDL ascii files or not
-  AliLoader* fLoader; //!< to access trees
-  AliMUONVStore* fPedestals; //!< pedestals
-  AliMUONVDigitStore* fDigitStore; //!< digit container
-  AliMUONRawWriter* fRawWriter; //!< to convert digits to raw data
-  static Int_t fgCounter; //!< counter 
+  AliMUONCalibrationData* fCalibrationData; //!<! access to pedestal CDB
+  TString fDateFileName; //!<! basefilename of the DATE output file
+  TString fGAliceFileName; //!<! absolute path to galice.root file
+  Bool_t fMakeDDL; //!<! whether to generate DDL ascii files or not
+  AliLoader* fLoader; //!<! to access trees
+  AliMUONVStore* fPedestals; //!<! pedestals
+  AliMUONVDigitStore* fDigitStore; //!<! digit container
+  AliMUONRawWriter* fRawWriter; //!<! to convert digits to raw data
+  static Int_t fgCounter; //!<! counter 
   
   ClassDef(AliMUONPedestalEventGenerator,3) // Random generator of pedestal events for MUON TRK
 };

@@ -82,22 +82,22 @@ private:
   UInt_t  fNSecTime;                 ///< Number of seconds per bin in time
   UInt_t  fNBinsTime;                ///< Number of bin in time
   //processing information
-  Bool_t    fPadProcessed;           //!< if last pead has already been filled for the current pad
-  Int_t     fCurrentChannel;         //!< current channel processed
-  Int_t     fCurrentSector;          //!< current sector processed
-  Int_t     fLastSector;             //!< current sector processed
-  Int_t     fCurrentRow;             //!< current row processed
-  Int_t     fCurrentPad;             //!< current pad processed
-  Int_t     fLastTimeBinProc;        //!< last time bin processed
-  Int_t     fPeakTimeBin;            //!< time bin with local maximum
-  Int_t     fLastSignal;             //!< last signal processed
-  Int_t     fNOkPlus;                //!< number of processed time bins fullfilling peak criteria
-  Int_t     fNOkMinus;               //!< number of processed time bins fullfilling peak criteria
-  Int_t     fNanoSec;                //!< current nano seconds stamp
+  Bool_t    fPadProcessed;           //!<! if last pead has already been filled for the current pad
+  Int_t     fCurrentChannel;         //!<! current channel processed
+  Int_t     fCurrentSector;          //!<! current sector processed
+  Int_t     fLastSector;             //!<! current sector processed
+  Int_t     fCurrentRow;             //!<! current row processed
+  Int_t     fCurrentPad;             //!<! current pad processed
+  Int_t     fLastTimeBinProc;        //!<! last time bin processed
+  Int_t     fPeakTimeBin;            //!<! time bin with local maximum
+  Int_t     fLastSignal;             //!<! last signal processed
+  Int_t     fNOkPlus;                //!<! number of processed time bins fullfilling peak criteria
+  Int_t     fNOkMinus;               //!<! number of processed time bins fullfilling peak criteria
+  Int_t     fNanoSec;                //!<! current nano seconds stamp
 //
   //L1 phase stuff
-  TVectorF fArrCurrentPhaseDist;       //!< Phase distribution of the current event
-  TVectorF fArrCurrentPhase;           //!< Current phase of all RCUs
+  TVectorF fArrCurrentPhaseDist;       //!<! Phase distribution of the current event
+  TVectorF fArrCurrentPhase;           //!<! Current phase of all RCUs
   TVectorF fArrFailEventNumber;        ///< event numbers of failed events;
   TVectorF fArrALTROL1Phase;           ///< Array of L1 phases on an event bases;
   TObjArray fArrALTROL1PhaseEvent;     ///< L1 phase for each RCU and event

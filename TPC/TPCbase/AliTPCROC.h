@@ -127,7 +127,7 @@ protected:
   Float_t   fYInner[100];     ///< Inner sector, wire-length
   Float_t   fYOuter[100];     ///< Outer sector, wire-length
  protected:
-  static AliTPCROC*   fgInstance; //!< Instance of this class (singleton implementation)
+  static AliTPCROC*   fgInstance; //!<! Instance of this class (singleton implementation)
   /// \cond CLASSIMP
   ClassDef(AliTPCROC,0)    //  TPC ROC class
   /// \endcond

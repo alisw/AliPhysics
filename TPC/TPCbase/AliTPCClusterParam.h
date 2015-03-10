@@ -199,7 +199,7 @@ protected:
   //
   THnBase* fResolutionYMap; ///< Map of resolution in Y
   //
-  static AliTPCClusterParam*   fgInstance; //!< Instance of this class (singleton implementation)
+  static AliTPCClusterParam*   fgInstance; //!<! Instance of this class (singleton implementation)
   /// \cond CLASSIMP
   ClassDef(AliTPCClusterParam,7)    //  TPC Cluster parameter class
   /// \endcond

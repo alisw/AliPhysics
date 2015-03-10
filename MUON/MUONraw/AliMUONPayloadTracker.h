@@ -83,16 +83,16 @@ class AliMUONPayloadTracker: public TObject {
     Int_t fMaxDsp;        ///< maximum number of Dsp per block in DATE file
     Int_t fMaxBus;        ///< maximum number of Buspatch per Dsp in DATE file
 
-    AliMUONDDLTracker*      fDDLTracker;      //!< pointer for buspatch structure
-    AliMUONBusStruct*       fBusStruct;       //!< pointer for local structure
-    AliMUONBlockHeader*     fBlockHeader;     //!< pointer for block structure 
-    AliMUONDspHeader*       fDspHeader;       //!< pointer for dsp structure 
+    AliMUONDDLTracker*      fDDLTracker;      //!<! pointer for buspatch structure
+    AliMUONBusStruct*       fBusStruct;       //!<! pointer for local structure
+    AliMUONBlockHeader*     fBlockHeader;     //!<! pointer for block structure 
+    AliMUONDspHeader*       fDspHeader;       //!<! pointer for dsp structure 
 
-    AliMUONLogger* fLog;                      //!< Map of errors msg;
-    Int_t   fParityErrors;                    //!< number of parity errors;
-    Int_t   fGlitchErrors;                    //!< number of glitch errors;
-    Int_t   fPaddingErrors;                   //!< number of padding word errors;
-    Bool_t  fWarnings;                        //!< flag to enable/disable warnings
+    AliMUONLogger* fLog;                      //!<! Map of errors msg;
+    Int_t   fParityErrors;                    //!<! number of parity errors;
+    Int_t   fGlitchErrors;                    //!<! number of glitch errors;
+    Int_t   fPaddingErrors;                   //!<! number of padding word errors;
+    Bool_t  fWarnings;                        //!<! flag to enable/disable warnings
 
     ClassDef(AliMUONPayloadTracker, 4)    // base class for reading MUON raw digits
 };

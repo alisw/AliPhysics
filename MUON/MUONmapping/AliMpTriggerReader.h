@@ -101,9 +101,9 @@ private:
   static const TString& GetKeywordFlipY();
   
   // data members
-  AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
+  AliMpSlatMotifMap* fMotifMap; //!<! storage for motifTypes and motifs...
   
-  TMap fLocalBoardMap; //!< map of TObjString to TObjString
+  TMap fLocalBoardMap; //!<! map of TObjString to TObjString
 
   ClassDef(AliMpTriggerReader,0) // Reader for trigger slats mapping files 
 };

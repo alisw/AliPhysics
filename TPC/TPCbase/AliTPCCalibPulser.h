@@ -105,15 +105,15 @@ private:
 
   Bool_t  fIsZeroSuppressed;        ///< if data is zero suppressed
 
-  Int_t     fLastSector;            //!< Last sector processed
+  Int_t     fLastSector;            //!<! Last sector processed
 
-  AliTPCParam *fParam;              //!< TPC information
+  AliTPCParam *fParam;              //!<! TPC information
 
-  AliTPCCalPad *fPedestalTPC;       //!< Pedestal Information
-  AliTPCCalPad *fPadNoiseTPC;       //!< Pad noise Information whole TPC
-  AliTPCCalPad *fOutliers;          //!< Outlier information. Those will not be used for calculating the T0
-  AliTPCCalROC *fPedestalROC;       //!< Pedestal Information for current ROC
-  AliTPCCalROC *fPadNoiseROC;       //!< Pad noise Information for current ROC
+  AliTPCCalPad *fPedestalTPC;       //!<! Pedestal Information
+  AliTPCCalPad *fPadNoiseTPC;       //!<! Pad noise Information whole TPC
+  AliTPCCalPad *fOutliers;          //!<! Outlier information. Those will not be used for calculating the T0
+  AliTPCCalROC *fPedestalROC;       //!<! Pedestal Information for current ROC
+  AliTPCCalROC *fPadNoiseROC;       //!<! Pad noise Information for current ROC
 
   TObjArray fCalRocArrayT0;         ///< Array of AliTPCCalROC class for Time0 calibration
   TObjArray fCalRocArrayQ;          ///< Array of AliTPCCalROC class for Charge calibration
@@ -127,23 +127,23 @@ private:
   TH2F *fHMeanTimeSector;           ///< Timing distribution per sector
   TVectorF  fVMeanTimeSector;       ///< Mean time per sector from analysis of fHMeanTimeSector
 
-  TObjArray fPadTimesArrayEvent;    //!< Pad Times for the event, before mean Time0 corrections
-  TObjArray fPadQArrayEvent;        //!< Charge for the event, only needed for debugging streamer
-  TObjArray fPadRMSArrayEvent;      //!< Signal width for the event, only needed for debugging streamer
-  TObjArray fPadPedestalArrayEvent; //!< Signal width for the event, only needed for debugging streamer
+  TObjArray fPadTimesArrayEvent;    //!<! Pad Times for the event, before mean Time0 corrections
+  TObjArray fPadQArrayEvent;        //!<! Charge for the event, only needed for debugging streamer
+  TObjArray fPadRMSArrayEvent;      //!<! Signal width for the event, only needed for debugging streamer
+  TObjArray fPadPedestalArrayEvent; //!<! Signal width for the event, only needed for debugging streamer
 
-  Int_t     fCurrentChannel;         //!< current channel processed
-  Int_t     fCurrentSector;          //!< current sector processed
-  Int_t     fCurrentRow;             //!< current row processed
-  Int_t     fCurrentPad;             //!< current pad processed
-  Float_t   fMaxPadSignal;           //!< maximum bin of current pad
-  Int_t     fMaxTimeBin;             //!< time bin with maximum value
-  TVectorF  fPadSignal;              //!< signal of current Pad
-  Float_t   fPadPedestal;            //!< Pedestal Value of current pad
-  Float_t   fPadNoise;               //!< Noise Value of current pad
+  Int_t     fCurrentChannel;         //!<! current channel processed
+  Int_t     fCurrentSector;          //!<! current sector processed
+  Int_t     fCurrentRow;             //!<! current row processed
+  Int_t     fCurrentPad;             //!<! current pad processed
+  Float_t   fMaxPadSignal;           //!<! maximum bin of current pad
+  Int_t     fMaxTimeBin;             //!<! time bin with maximum value
+  TVectorF  fPadSignal;              //!<! signal of current Pad
+  Float_t   fPadPedestal;            //!<! Pedestal Value of current pad
+  Float_t   fPadNoise;               //!<! Noise Value of current pad
 
-  TVectorF  fVTime0Offset;          //!< Time0 Offset from preprocessing for each sector;
-  TVectorF  fVTime0OffsetCounter;   //!< Time0 Offset from preprocessing for each sector;
+  TVectorF  fVTime0Offset;          //!<! Time0 Offset from preprocessing for each sector;
+  TVectorF  fVTime0OffsetCounter;   //!<! Time0 Offset from preprocessing for each sector;
 
 
   void   FindPedestal(Float_t part=.6);

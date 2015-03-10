@@ -132,22 +132,22 @@ private:
   TObject* FetchObject(TIterator* iter, Int_t index);
   
   
-  AliLoader* fLoader; //!< Tree accessor
-  AliMUONVHitStore* fHitStore; //!< current hit store (owner)
-  AliMUONVDigitStore* fSDigitStore; //!< current sdigit store (owner)
-  AliMUONVDigitStore* fDigitStore; //!< current digit store (owner)
-  AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
-  TClonesArray* fTrackRefs; //!< current trackrefs (owner)
-  Int_t fCurrentEvent; //!< Current event we've read in
-  Bool_t fIsValid; //!< whether we were initialized properly or not
+  AliLoader* fLoader; //!<! Tree accessor
+  AliMUONVHitStore* fHitStore; //!<! current hit store (owner)
+  AliMUONVDigitStore* fSDigitStore; //!<! current sdigit store (owner)
+  AliMUONVDigitStore* fDigitStore; //!<! current digit store (owner)
+  AliMUONVTriggerStore* fTriggerStore; //!<! current trigger store (owner)
+  TClonesArray* fTrackRefs; //!<! current trackrefs (owner)
+  Int_t fCurrentEvent; //!<! Current event we've read in
+  Bool_t fIsValid; //!<! whether we were initialized properly or not
   
-  IteratorType fCurrentIteratorType;  //!< The type of iterator that is currently set.
-  Int_t fCurrentIndex;  //!< A current index number maintained for certain iteration operations.
-  Int_t fDataX; //!< Extra data parameter about the iterator, can be the chamber number, detector element or track number.
-  Int_t fDataY; //!< Extra data parameter about the iterator, can be the cathode number.
-  TIterator* fIterator; //!< Iterator for various iteration operations.
+  IteratorType fCurrentIteratorType;  //!<! The type of iterator that is currently set.
+  Int_t fCurrentIndex;  //!<! A current index number maintained for certain iteration operations.
+  Int_t fDataX; //!<! Extra data parameter about the iterator, can be the chamber number, detector element or track number.
+  Int_t fDataY; //!<! Extra data parameter about the iterator, can be the cathode number.
+  TIterator* fIterator; //!<! Iterator for various iteration operations.
   
-  static Int_t fgInstanceCounter; //!< To build unique folder name for each instance
+  static Int_t fgInstanceCounter; //!<! To build unique folder name for each instance
 
   ClassDef(AliMUONMCDataInterface,0) // Easy to use MC data accessor
 };

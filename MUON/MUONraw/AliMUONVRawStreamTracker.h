@@ -71,7 +71,7 @@ public:
 
 protected:	
 
-	static const Int_t fgkMaxDDL;   //!< maximum number of DDLs
+	static const Int_t fgkMaxDDL;   //!<! maximum number of DDLs
 
 private:
 

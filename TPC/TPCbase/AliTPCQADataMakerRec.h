@@ -62,11 +62,11 @@ public:
 
   virtual void LoadMaps();
 
-  AliTPCAltroMapping *fMapping[6]; //!< Pointers to ALTRO mapping
-  AliTPCdataQA*  fTPCdataQA;//!< TPC calibration object for making raw data QA
+  AliTPCAltroMapping *fMapping[6]; //!<! Pointers to ALTRO mapping
+  AliTPCdataQA*  fTPCdataQA;//!<! TPC calibration object for making raw data QA
 
-  Int_t fRawFirstTimeBin;   //!< First Time bin needed for RAW QA
-  Int_t fRawLastTimeBin;    //!< Last Time bin needed for RAW QA
+  Int_t fRawFirstTimeBin;   //!<! First Time bin needed for RAW QA
+  Int_t fRawLastTimeBin;    //!<! Last Time bin needed for RAW QA
 
   /// \cond CLASSIMP
   ClassDef(AliTPCQADataMakerRec,1)  // TPC Rec Quality Assurance Data Maker

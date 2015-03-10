@@ -46,12 +46,12 @@ private:
   /// not defined
   AliMUONLegacyClusterServer& operator=(const AliMUONLegacyClusterServer& rhs);
 
-  const AliMUONGeometryTransformer& fkTransformer; //!< geometry convertor
-	AliMUONVClusterStore* fClusterStore; //!< cluster store 
-	AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< trigger track store
-	AliMUONTriggerTrackToTrackerClusters* fBypass; //!< bypass 
-	Bool_t fBypassSt4; //!< whether we should bypass station 4
-	Bool_t fBypassSt5; //!< whether we should bypass station 5
+  const AliMUONGeometryTransformer& fkTransformer; //!<! geometry convertor
+	AliMUONVClusterStore* fClusterStore; //!<! cluster store 
+	AliMUONVTriggerTrackStore* fTriggerTrackStore; //!<! trigger track store
+	AliMUONTriggerTrackToTrackerClusters* fBypass; //!<! bypass 
+	Bool_t fBypassSt4; //!<! whether we should bypass station 4
+	Bool_t fBypassSt5; //!<! whether we should bypass station 5
 
   ClassDef(AliMUONLegacyClusterServer,2) // Implementation of AliMUONVClusterServer
 };

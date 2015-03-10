@@ -56,19 +56,19 @@ private:
   
 private:
    
-  AliMUONVStore* fStore; //!< store cluster informations at manu level
+  AliMUONVStore* fStore; //!<! store cluster informations at manu level
   
-  AliMUONGeometryTransformer* fGeometryTransformer;  //!< to go from global to local DE coordinates
+  AliMUONGeometryTransformer* fGeometryTransformer;  //!<! to go from global to local DE coordinates
   
-  AliMUONDigitCalibrator* fDigitCalibrator; //!< to get statusmap
+  AliMUONDigitCalibrator* fDigitCalibrator; //!<! to get statusmap
   
-  Int_t fNumberOfEvents; //!< number of events seen
+  Int_t fNumberOfEvents; //!<! number of events seen
   
-  Int_t fNumberOfClusters; //!< total number of clusters seen
+  Int_t fNumberOfClusters; //!<! total number of clusters seen
   
-  Int_t fNumberOfMonoCathodeClusters; //!< total number of mono-cathode clusters seen
+  Int_t fNumberOfMonoCathodeClusters; //!<! total number of mono-cathode clusters seen
   
-  Int_t fNumberOfLegitimateMonoCathodeClusters; //!< number of mono-cathode that have a reason to be so
+  Int_t fNumberOfLegitimateMonoCathodeClusters; //!<! number of mono-cathode that have a reason to be so
   
   ClassDef(AliMUONQAMappingCheck,1) // QADataMaker helper class
 };

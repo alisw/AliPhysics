@@ -69,16 +69,16 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
   /// Not implemented
   AliMUONChamberCalibrationTask&  operator = (const AliMUONChamberCalibrationTask& right);
 
-  TString fOCDBPath;                    //!< default path to the condition database
-  Calibration_t fCalibChoice;           //!< calibration option
-  TTree* fClusterInfoTree;              //!< TTree filled with the cluster information
-  AliMUONRecoParam* fMuonRecoParam;     //!< reconstruction parameters for track refitting
-  AliMUONClusterInfo* fClusterInfo;     //!< cluster info used to fill the output TTree
-  AliMUONCalibrationData* fCalibData;   //!< needed to access to the calibration data for each pad within each cluster
-  AliMUONESDInterface* fESDInterface;   //!< interface to easily access to the ESD content
-  AliMUONVDigitStore* fDigitStore;      //!< pointer to the digit stored for the current input ESD event 
-  AliESDInputHandler* fESDInputHandler; //!< ESD input handler
-  AliESDEvent* fESDInputEvent;          //!< pointer to the current input ESD event
+  TString fOCDBPath;                    //!<! default path to the condition database
+  Calibration_t fCalibChoice;           //!<! calibration option
+  TTree* fClusterInfoTree;              //!<! TTree filled with the cluster information
+  AliMUONRecoParam* fMuonRecoParam;     //!<! reconstruction parameters for track refitting
+  AliMUONClusterInfo* fClusterInfo;     //!<! cluster info used to fill the output TTree
+  AliMUONCalibrationData* fCalibData;   //!<! needed to access to the calibration data for each pad within each cluster
+  AliMUONESDInterface* fESDInterface;   //!<! interface to easily access to the ESD content
+  AliMUONVDigitStore* fDigitStore;      //!<! pointer to the digit stored for the current input ESD event 
+  AliESDInputHandler* fESDInputHandler; //!<! ESD input handler
+  AliESDEvent* fESDInputEvent;          //!<! pointer to the current input ESD event
 
   ClassDef( AliMUONChamberCalibrationTask, 1 ) // Task to extract cluster information after applying calibration
 

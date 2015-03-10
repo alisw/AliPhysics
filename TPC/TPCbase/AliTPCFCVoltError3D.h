@@ -82,7 +82,7 @@ private:
   Float_t fCopperRodShiftC[36];    ///< only Rod shift
 
   Bool_t fInitLookUp;           ///< flag to check if the Look Up table was created (SUM)
-  Bool_t fInitLookUpBasic[6];   //!< flag if the basic lookup was created (shifted Rod (IFC,OFC) or rotated clip (IFC,OFC))
+  Bool_t fInitLookUpBasic[6];   //!<! flag if the basic lookup was created (shifted Rod (IFC,OFC) or rotated clip (IFC,OFC))
 
 
   TMatrixF *fLookUpErOverEz[kNPhi];   ///< Array to store electric field integral (int Er/Ez)
@@ -100,31 +100,31 @@ private:
   // needed for the faster calculation of the final distortion table
 
   // for Rod and Strip shift
-  TMatrixD *fLookUpBasic1ErOverEz[kPhiSlices];   //!< Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpBasic1EphiOverEz[kPhiSlices]; //!< Array to store electric field integral (int Ephi/Ez)
-  TMatrixD *fLookUpBasic1DeltaEz[kPhiSlices];    //!< Array to store electric field integral (int Ez)
+  TMatrixD *fLookUpBasic1ErOverEz[kPhiSlices];   //!<! Array to store electric field integral (int Er/Ez)
+  TMatrixD *fLookUpBasic1EphiOverEz[kPhiSlices]; //!<! Array to store electric field integral (int Ephi/Ez)
+  TMatrixD *fLookUpBasic1DeltaEz[kPhiSlices];    //!<! Array to store electric field integral (int Ez)
 
-  TMatrixD *fLookUpBasic2ErOverEz[kPhiSlices];   //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic2EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic2DeltaEz[kPhiSlices];    //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic2ErOverEz[kPhiSlices];   //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic2EphiOverEz[kPhiSlices]; //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic2DeltaEz[kPhiSlices];    //!<! Array to store electric field integral
 
   // for rotated clips
-  TMatrixD *fLookUpBasic3ErOverEz[kPhiSlices];   //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic3EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic3DeltaEz[kPhiSlices];    //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic3ErOverEz[kPhiSlices];   //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic3EphiOverEz[kPhiSlices]; //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic3DeltaEz[kPhiSlices];    //!<! Array to store electric field integral
 
-  TMatrixD *fLookUpBasic4ErOverEz[kPhiSlices];   //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic4EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic4DeltaEz[kPhiSlices];    //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic4ErOverEz[kPhiSlices];   //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic4EphiOverEz[kPhiSlices]; //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic4DeltaEz[kPhiSlices];    //!<! Array to store electric field integral
 
   // for (only rod) shift (copper rods)
-  TMatrixD *fLookUpBasic5ErOverEz[kPhiSlices];   //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic5EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic5DeltaEz[kPhiSlices];    //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic5ErOverEz[kPhiSlices];   //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic5EphiOverEz[kPhiSlices]; //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic5DeltaEz[kPhiSlices];    //!<! Array to store electric field integral
 
-  TMatrixD *fLookUpBasic6ErOverEz[kPhiSlices];   //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic6EphiOverEz[kPhiSlices]; //!< Array to store electric field integral
-  TMatrixD *fLookUpBasic6DeltaEz[kPhiSlices];    //!< Array to store electric field integral
+  TMatrixD *fLookUpBasic6ErOverEz[kPhiSlices];   //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic6EphiOverEz[kPhiSlices]; //!<! Array to store electric field integral
+  TMatrixD *fLookUpBasic6DeltaEz[kPhiSlices];    //!<! Array to store electric field integral
 
 
   /// \cond CLASSIMP

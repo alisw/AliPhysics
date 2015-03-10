@@ -63,20 +63,20 @@ private:
 			      UInt_t trigY, UInt_t posY, UInt_t posX, 
 			      UInt_t sdevX, UInt_t devX);
 
-  AliMUONBlockHeader* fBlockHeader;  //!< DDL block header class pointers
-  AliMUONDspHeader*   fDspHeader;    //!< DDL Dsp header class pointers
-  AliMUONDarcHeader*  fDarcHeader;   //!< DDL darc header class pointers
-  AliMUONRegHeader*   fRegHeader;    //!< DDL regional header class pointers
-  AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
+  AliMUONBlockHeader* fBlockHeader;  //!<! DDL block header class pointers
+  AliMUONDspHeader*   fDspHeader;    //!<! DDL Dsp header class pointers
+  AliMUONDarcHeader*  fDarcHeader;   //!<! DDL darc header class pointers
+  AliMUONRegHeader*   fRegHeader;    //!<! DDL regional header class pointers
+  AliMUONLocalStruct* fLocalStruct;  //!<! DDL local structure class pointers
 
-  AliMpDDLStore*            fDDLStore;     //!< DDL store pointer
+  AliMpDDLStore*            fDDLStore;     //!<! DDL store pointer
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 
   AliRawDataHeaderSim*    fHeader;           ///< header of DDL
   
-  Int_t fBufferSize; //!< size of internal data buffer
-  Int_t* fBuffer; //!< internal data buffer
+  Int_t fBufferSize; //!<! size of internal data buffer
+  Int_t* fBuffer; //!<! internal data buffer
 
   ClassDef(AliMUONRawWriter,5) // MUON cluster reconstructor in ALICE
 };

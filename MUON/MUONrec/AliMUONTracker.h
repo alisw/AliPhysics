@@ -75,19 +75,19 @@ private:
   void SetupClusterServer(AliMUONVClusterServer& clusterServer);
   
 private:
-  const AliMUONGeometryTransformer* fkTransformer; //!< geometry transformer (not owner)
-  const AliMUONTriggerCircuit* fkTriggerCircuit; //!< trigger circuit (not owner)
-  AliMUONTrackHitPattern* fTrackHitPatternMaker; //!< trigger hit pattern maker
-  AliMUONVTrackReconstructor* fTrackReco; //!< track reconstructor
-  mutable AliMUONVClusterStore* fClusterStore; //!< cluster container
-  AliMUONVTriggerStore* fTriggerStore; //!< trigger information
-  AliMUONVClusterServer* fClusterServer; //!< to get clusters
-  Bool_t fIsOwnerOfClusterServer; //!< whether we are owner of the cluster server
-  const AliMUONVDigitStore& fkDigitStore; //!< digit info to fill in ESD
-  mutable AliMUONVClusterStore* fInputClusterStore; //!< cluster container
-  mutable AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< trigger track store
-  const AliMUONRecoParam* fkRecoParam; //!< pointer to reco param
-  AliMUONVTrackStore* fInternalTrackStore; //!< internal track store
+  const AliMUONGeometryTransformer* fkTransformer; //!<! geometry transformer (not owner)
+  const AliMUONTriggerCircuit* fkTriggerCircuit; //!<! trigger circuit (not owner)
+  AliMUONTrackHitPattern* fTrackHitPatternMaker; //!<! trigger hit pattern maker
+  AliMUONVTrackReconstructor* fTrackReco; //!<! track reconstructor
+  mutable AliMUONVClusterStore* fClusterStore; //!<! cluster container
+  AliMUONVTriggerStore* fTriggerStore; //!<! trigger information
+  AliMUONVClusterServer* fClusterServer; //!<! to get clusters
+  Bool_t fIsOwnerOfClusterServer; //!<! whether we are owner of the cluster server
+  const AliMUONVDigitStore& fkDigitStore; //!<! digit info to fill in ESD
+  mutable AliMUONVClusterStore* fInputClusterStore; //!<! cluster container
+  mutable AliMUONVTriggerTrackStore* fTriggerTrackStore; //!<! trigger track store
+  const AliMUONRecoParam* fkRecoParam; //!<! pointer to reco param
+  AliMUONVTrackStore* fInternalTrackStore; //!<! internal track store
   
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };

@@ -47,10 +47,10 @@ private:
   void AddPad(AliMUONCluster& cluster, AliMUONPad* pad);
   
 private:
-  TClonesArray* fClusters; //!< the clusters we've found (owner)
-  const AliMpVSegmentation** fkSegmentations; //!< segmentations (not owner)
-  TObjArray** fPads; //!< the pads corresponding to the digits (not owner)
-  Int_t fDetElemId; //!< which DE we're considering
+  TClonesArray* fClusters; //!<! the clusters we've found (owner)
+  const AliMpVSegmentation** fkSegmentations; //!<! segmentations (not owner)
+  TObjArray** fPads; //!<! the pads corresponding to the digits (not owner)
+  Int_t fDetElemId; //!<! which DE we're considering
   
   ClassDef(AliMUONPreClusterFinderV2,2) // A basic pre-cluster finder
 };

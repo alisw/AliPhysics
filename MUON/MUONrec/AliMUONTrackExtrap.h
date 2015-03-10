@@ -77,14 +77,14 @@ class AliMUONTrackExtrap : public TObject
   
   
  private:
-  static const Double_t fgkSimpleBPosition;     //!< position of the dipole
-  static const Double_t fgkSimpleBLength;       //!< length of the dipole
-  static       Double_t fgSimpleBValue;         //!< magnetic field value at the centre
-  static       Bool_t   fgFieldON;              //!< kTRUE if the field is switched ON
-  static const Bool_t   fgkUseHelix;		//!< Tell whether to use Helix or not (default is Runge-Kutta)
-  static const Int_t    fgkMaxStepNumber;	//!< Maximum number of steps for track extrapolation
-  static const Double_t fgkHelixStepLength;	//!< Step lenght for track extrapolation (used in Helix)
-  static const Double_t fgkRungeKuttaMaxResidue;//!< Maximal distance (in Z) to destination to stop the track extrapolation (used in Runge-Kutta)
+  static const Double_t fgkSimpleBPosition;     //!<! position of the dipole
+  static const Double_t fgkSimpleBLength;       //!<! length of the dipole
+  static       Double_t fgSimpleBValue;         //!<! magnetic field value at the centre
+  static       Bool_t   fgFieldON;              //!<! kTRUE if the field is switched ON
+  static const Bool_t   fgkUseHelix;		//!<! Tell whether to use Helix or not (default is Runge-Kutta)
+  static const Int_t    fgkMaxStepNumber;	//!<! Maximum number of steps for track extrapolation
+  static const Double_t fgkHelixStepLength;	//!<! Step lenght for track extrapolation (used in Helix)
+  static const Double_t fgkRungeKuttaMaxResidue;//!<! Maximal distance (in Z) to destination to stop the track extrapolation (used in Runge-Kutta)
   
   // Functions
 

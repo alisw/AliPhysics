@@ -84,17 +84,17 @@ private:
   AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
 private:
-  Bool_t fScalerEvent;       //!< flag to generates scaler event
-  Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger
-  Bool_t fMakeTrackerDigits; //!< whether or not we should generate digits for the tracker
+  Bool_t fScalerEvent;       //!<! flag to generates scaler event
+  Bool_t fMakeTriggerDigits; //!<! whether or not we should generate digits for the trigger
+  Bool_t fMakeTrackerDigits; //!<! whether or not we should generate digits for the tracker
   
-  AliMUONRawStreamTrackerHP* fRawStreamTracker; //!< pointer of raw stream for tracker
-  AliMUONRawStreamTriggerHP* fRawStreamTrigger;  //!< pointer of raw stream for trigger
+  AliMUONRawStreamTrackerHP* fRawStreamTracker; //!<! pointer of raw stream for tracker
+  AliMUONRawStreamTriggerHP* fRawStreamTrigger;  //!<! pointer of raw stream for trigger
 
-  AliMUONVDigitStore* fDigitStore; //!< not owner
-  AliMUONVTriggerStore* fTriggerStore; //!< not owner
+  AliMUONVDigitStore* fDigitStore; //!<! not owner
+  AliMUONVTriggerStore* fTriggerStore; //!<! not owner
 
-  AliMUONLogger* fLogger; //!< to log messages
+  AliMUONLogger* fLogger; //!<! to log messages
   
   ClassDef(AliMUONDigitMaker,8) // MUON digit maker from rawdata
 };

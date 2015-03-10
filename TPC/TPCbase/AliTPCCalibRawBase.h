@@ -88,29 +88,29 @@ protected:
 
   Int_t fNevents;                     ///< Number of processed events
 
-  Int_t fDebugLevel;                  //!< debug level
-  Int_t fStreamLevel;                 //!< level of streamer output
+  Int_t fDebugLevel;                  //!<! debug level
+  Int_t fStreamLevel;                 //!<! level of streamer output
   //
   UInt_t fRunNumber;                  ///< current run number from event header
   UInt_t fFirstTimeStamp;             ///< First event time stamp
   UInt_t fLastTimeStamp;              ///< Last event time stamp
-  UInt_t fTimeStamp;                  //!< time stamp from event header
-  UInt_t fEventType;                  //!< current event Type from event header
+  UInt_t fTimeStamp;                  //!<! time stamp from event header
+  UInt_t fEventType;                  //!<! current event Type from event header
   //
-  Double_t fAltroL1Phase;             //!< L1 Phase
-  Float_t  fAltroL1PhaseTB;           //!< L1 Phase in time bins
-  Int_t    fCurrRCUId;                //!< Current RCU Id
-  Int_t    fPrevRCUId;                //!< Previous RCU Id
-  Int_t    fCurrDDLNum;               //!< Current DDL number
-  Int_t    fPrevDDLNum;               //!< Current DDL number
+  Double_t fAltroL1Phase;             //!<! L1 Phase
+  Float_t  fAltroL1PhaseTB;           //!<! L1 Phase in time bins
+  Int_t    fCurrRCUId;                //!<! Current RCU Id
+  Int_t    fPrevRCUId;                //!<! Previous RCU Id
+  Int_t    fCurrDDLNum;               //!<! Current DDL number
+  Int_t    fPrevDDLNum;               //!<! Current DDL number
   Bool_t   fUseL1Phase;               ///< use L1 Phase information?
   //
-  TTreeSRedirector *fDebugStreamer;   //!< debug streamer
+  TTreeSRedirector *fDebugStreamer;   //!<! debug streamer
   //
-  AliAltroRawStream *fAltroRawStream; //!< pointer to the altro object
-  AliTPCAltroMapping **fMapping;      //!< Altro Mapping object
+  AliAltroRawStream *fAltroRawStream; //!<! pointer to the altro object
+  AliTPCAltroMapping **fMapping;      //!<! Altro Mapping object
 
-  AliTPCROC *fROC;                    //!< ROC information
+  AliTPCROC *fROC;                    //!<! ROC information
 
   virtual void EndEvent() {++fNevents; return; } //fNevents should be updated in the derived classes in a proper place
   virtual void ResetEvent(){ return; }           //Reset Event counters

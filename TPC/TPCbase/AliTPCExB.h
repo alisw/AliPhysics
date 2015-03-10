@@ -58,8 +58,8 @@ public:
   TVectorD *          fMatBrfiBzI0;   ///< param matrix Br/Bz integral  z>0
   TVectorD *          fMatBrfiBzI1;   ///< param matrix Br/Bz integral  z<0
 
-  static AliTPCExB*   fgInstance;  //!< Instance of this class (singleton implementation)
-  static TObjArray    fgArray;     //!< array of magnetic fields
+  static AliTPCExB*   fgInstance;  //!<! Instance of this class (singleton implementation)
+  static TObjArray    fgArray;     //!<! array of magnetic fields
   //
   /// \cond CLASSIMP
   ClassDef(AliTPCExB,2)

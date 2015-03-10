@@ -60,9 +60,9 @@ private:
   
 private:
   
-  Int_t fMaxNumberOfEntries; //!< after this number, print and reset
-  AliMUONStringIntMap* fLog; //!< map from message to number of times the message was issued
-  TString fName; //!< object name
+  Int_t fMaxNumberOfEntries; //!<! after this number, print and reset
+  AliMUONStringIntMap* fLog; //!<! map from message to number of times the message was issued
+  TString fName; //!<! object name
   
   ClassDef(AliMUONLogger,2) // A logger that keeps track of the number of times a message appeared
 };

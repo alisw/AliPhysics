@@ -686,50 +686,50 @@ private:
                 /// Not implemented
 		AliDecoderEventHandler& operator = (const AliDecoderEventHandler& /*obj*/);
 
-		AliMUONRawStreamTrackerHP* fRawStream; //!< Pointer to the parent raw stream object.
-		const void* fBufferStart;   //!< Pointer to the start of the current DDL payload buffer.
-		UInt_t fBlockCount;  //!< Number of blocks filled in fBlocks.
-		AliBlockHeader* fBlocks;  //!< Array of blocks. [0..fMaxBlocks-1]
-		AliDspHeader* fDSPs;      //!< Array of DSPs. [0..fMaxDsps*fMaxBlocks-1]
-		AliBusPatch* fBusPatches; //!< Array of bus patches. [0..fMaxBusPatches*fMaxDsps*fMaxBlocks-1]
-		AliBusPatch* fEndOfBusPatches;  //!< Marks the last bus patch.
-		UInt_t fMaxChannels;   //!< Maximum number of elements that can be stored in fParityOk.
-		Bool_t* fParityOk;     //!< Array of flags for indicating if the parity is good for a raw data word.
-		AliBlockHeader* fCurrentBlock;  //!< Current block in fBlocks.
-		AliDspHeader* fCurrentDSP;      //!< Current DSP in fDSPs.
-		AliBusPatch* fCurrentBusPatch;  //!< Current bus patch in fBusPatches.
-		Bool_t* fCurrentParityOkFlag;  //!< Current parity flag to be set in fParityOk.
-		UInt_t fParityErrors;   //!< Number of parity errors found in DDL.
-		UInt_t fGlitchErrors;   //!< Number of glitch errors found in DDL.
-		UInt_t fPaddingErrors;  //!< Number of padding errors found in DDL.
-		UInt_t fTokenLostErrors;  //!< Number of token lost errors found in DDL.
-		UInt_t fMaxBlocks; //!< max number of blocks
-		UInt_t fMaxDsps; //!< max number of dsps per block
-		UInt_t fMaxBusPatches; //!< max number of buspatches per dsp
+		AliMUONRawStreamTrackerHP* fRawStream; //!<! Pointer to the parent raw stream object.
+		const void* fBufferStart;   //!<! Pointer to the start of the current DDL payload buffer.
+		UInt_t fBlockCount;  //!<! Number of blocks filled in fBlocks.
+		AliBlockHeader* fBlocks;  //!<! Array of blocks. [0..fMaxBlocks-1]
+		AliDspHeader* fDSPs;      //!<! Array of DSPs. [0..fMaxDsps*fMaxBlocks-1]
+		AliBusPatch* fBusPatches; //!<! Array of bus patches. [0..fMaxBusPatches*fMaxDsps*fMaxBlocks-1]
+		AliBusPatch* fEndOfBusPatches;  //!<! Marks the last bus patch.
+		UInt_t fMaxChannels;   //!<! Maximum number of elements that can be stored in fParityOk.
+		Bool_t* fParityOk;     //!<! Array of flags for indicating if the parity is good for a raw data word.
+		AliBlockHeader* fCurrentBlock;  //!<! Current block in fBlocks.
+		AliDspHeader* fCurrentDSP;      //!<! Current DSP in fDSPs.
+		AliBusPatch* fCurrentBusPatch;  //!<! Current bus patch in fBusPatches.
+		Bool_t* fCurrentParityOkFlag;  //!<! Current parity flag to be set in fParityOk.
+		UInt_t fParityErrors;   //!<! Number of parity errors found in DDL.
+		UInt_t fGlitchErrors;   //!<! Number of glitch errors found in DDL.
+		UInt_t fPaddingErrors;  //!<! Number of padding errors found in DDL.
+		UInt_t fTokenLostErrors;  //!<! Number of token lost errors found in DDL.
+		UInt_t fMaxBlocks; //!<! max number of blocks
+		UInt_t fMaxDsps; //!<! max number of dsps per block
+		UInt_t fMaxBusPatches; //!<! max number of buspatches per dsp
 	};
 
-	AliRawReader* fRawReader; //!< Pointer to the raw reader
-	AliMUONLogger* fLogger; //!< Logger object to store error messages.
-	EDetailLevel fDetailLevel;  //!< The logging detail level used in the error messages generated in OnError.
-	Bool_t fEnableMUONErrorLogger; //!< whether or not we log errors to AliMUONLogger
-	Bool_t fEnableRawReaderErrorLogger; //!< whether or not we log errors to the raw reader.
-	Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
-	AliMUONTrackerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!< The decoder for the DDL payload.
-	Int_t fDDL;         //!< The current DDL number being handled.
-	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
-	UChar_t* fBuffer;   //!< This is the buffer in which we store the DDL payload read from AliRawReader.
-	const AliBusPatch* fkCurrentBusPatch;  //!< The current bus patch being handled by Next().
-	const UInt_t* fkCurrentData;  //!< The current data word to return by Next().
-	const UInt_t* fkEndOfData;  //!< The last data word in the current bus patch.
-	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
-	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
-	mutable AliMUONDDLTracker* fDDLObject; //!< Temporary DDL object used by GetDDLTracker() for caching.
-	UInt_t fTotalNumberOfGlitchErrors; //!< number of glitch errors since First() was called
-	UInt_t fTotalNumberOfParityErrors; //!< number of parity errors since First() was called
-	UInt_t fTotalNumberOfPaddingErrors; //!< number of padding errors since First() was called
-	UInt_t fTotalNumberOfTokenLostErrors; //!< number of token lost errors since First() was called
+	AliRawReader* fRawReader; //!<! Pointer to the raw reader
+	AliMUONLogger* fLogger; //!<! Logger object to store error messages.
+	EDetailLevel fDetailLevel;  //!<! The logging detail level used in the error messages generated in OnError.
+	Bool_t fEnableMUONErrorLogger; //!<! whether or not we log errors to AliMUONLogger
+	Bool_t fEnableRawReaderErrorLogger; //!<! whether or not we log errors to the raw reader.
+	Bool_t fWarnings;       //!<! Flag indicating if we should generate a warning for errors.
+	AliMUONTrackerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!<! The decoder for the DDL payload.
+	Int_t fDDL;         //!<! The current DDL number being handled.
+	Int_t fBufferSize;  //!<! This is the buffer size in bytes of fBuffer.
+	UChar_t* fBuffer;   //!<! This is the buffer in which we store the DDL payload read from AliRawReader.
+	const AliBusPatch* fkCurrentBusPatch;  //!<! The current bus patch being handled by Next().
+	const UInt_t* fkCurrentData;  //!<! The current data word to return by Next().
+	const UInt_t* fkEndOfData;  //!<! The last data word in the current bus patch.
+	Bool_t fHadError;   //!<! Flag indicating if there was a decoding error or not.
+	Bool_t fDone;       //!<! Flag indicating if the iteration is done or not.
+	mutable AliMUONDDLTracker* fDDLObject; //!<! Temporary DDL object used by GetDDLTracker() for caching.
+	UInt_t fTotalNumberOfGlitchErrors; //!<! number of glitch errors since First() was called
+	UInt_t fTotalNumberOfParityErrors; //!<! number of parity errors since First() was called
+	UInt_t fTotalNumberOfPaddingErrors; //!<! number of padding errors since First() was called
+	UInt_t fTotalNumberOfTokenLostErrors; //!<! number of token lost errors since First() was called
 	
-	static const Int_t fgkMaxDDL; //!< max number of tracker DDLs
+	static const Int_t fgkMaxDDL; //!<! max number of tracker DDLs
 
 	ClassDef(AliMUONRawStreamTrackerHP, 0) // High performance decoder for reading MUON raw digits from tracking chamber DDL data.
 };

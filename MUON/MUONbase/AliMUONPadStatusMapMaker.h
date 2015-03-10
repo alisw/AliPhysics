@@ -53,7 +53,7 @@ private:
   
 private:
   
-  static Int_t fgkSelfDead; //!< status bit map to tell a pad is bad
+  static Int_t fgkSelfDead; //!<! status bit map to tell a pad is bad
 
   /// Bit numbers
   enum EBitNumbers
@@ -69,12 +69,12 @@ private:
     kRightTopBit = 18
   };
   
-  const AliMUONPadStatusMaker& fkStatusMaker; //!< to access pad statuses
-  Int_t fMask; //!< mask to be tested
-  mutable AliMUONVStore* fStatusMap; //!< status map
-  AliMUONVStore* fRejectProbabilities; //!< reject probabilities (channel based, computed once per run)
-  AliMUONVStore* fRejectList; //!< reject list (which channels should be rejected, might change event-by-event for simulations)
-  Bool_t fComputeOnDemand; //!< whether we authorize to compute things on demand or not
+  const AliMUONPadStatusMaker& fkStatusMaker; //!<! to access pad statuses
+  Int_t fMask; //!<! mask to be tested
+  mutable AliMUONVStore* fStatusMap; //!<! status map
+  AliMUONVStore* fRejectProbabilities; //!<! reject probabilities (channel based, computed once per run)
+  AliMUONVStore* fRejectList; //!<! reject list (which channels should be rejected, might change event-by-event for simulations)
+  Bool_t fComputeOnDemand; //!<! whether we authorize to compute things on demand or not
   
   ClassDef(AliMUONPadStatusMapMaker,0) // Pad status map maker
 };

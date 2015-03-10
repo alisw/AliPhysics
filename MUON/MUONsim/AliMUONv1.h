@@ -64,8 +64,8 @@ class AliMUONv1 : public AliMUON
    Float_t fStepMaxInActiveGas;    ///< Step max in active gas default 0.6cm
 
    // StepManager 
-   Float_t *  fStepSum;   //!< Sum of track steps per chamber
-   Float_t *  fDestepSum; //!< Sum of energy deposits per chamber
+   Float_t *  fStepSum;   //!<! Sum of track steps per chamber
+   Float_t *  fDestepSum; //!<! Sum of energy deposits per chamber
   
    TLorentzVector fTrackMomentum; ///< Momentum of the particle entering in the active gas of chamber
    TLorentzVector fTrackPosition; ///< Position of the particle exiting the active gas of chamber

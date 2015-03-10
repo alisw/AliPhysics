@@ -64,8 +64,8 @@ private:
   static void ReportManu(TList& list, const AliMUONCheckItem& manu);
   
 private:
-  TObjArray* fChambers; //!< Array of AliMUONCheckItem.
-  AliMUONVStore* fStatus; //!< Statuses
+  TObjArray* fChambers; //!<! Array of AliMUONCheckItem.
+  AliMUONVStore* fStatus; //!<! Statuses
   
   ClassDef(AliMUON2DStoreValidator,3) // Validator of 2DStore
 };

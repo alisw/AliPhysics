@@ -71,7 +71,7 @@ class AliMUONVTrackReconstructor : public TObject {
   AliMUONVClusterServer* fClusterServer; ///< reference to our cluster server
 
   const AliMUONRecoParam* fkRecoParam; ///< reference to reco parameters
-  const AliMUONGeometryTransformer* fkTransformer; //!< geometry transformer (not owner)
+  const AliMUONGeometryTransformer* fkTransformer; //!<! geometry transformer (not owner)
   
   Double_t* fMaxMCSAngle2; ///< maximum angle dispersion due to MCS
   

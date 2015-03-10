@@ -185,17 +185,17 @@ class AliMUON : public  AliDetector
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
 	Bool_t fConvertTrigger;     ///< Switch to enable trigger raw2sdigit conversion 
 
-    AliMUONRawWriter* fRawWriter; //!< Raw data writer
+    AliMUONRawWriter* fRawWriter; //!<! Raw data writer
     
-    AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
+    AliMUONDigitMaker* fDigitMaker; //!<! pointer to the digit maker class
 
-    AliMUONVHitStore* fHitStore; //!< container of hits
+    AliMUONVHitStore* fHitStore; //!<! container of hits
     
     TString fDigitStoreConcreteClassName; ///< to be able to select what the sdigitizer uses
     
     AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
 
-  AliMUONDigitCalibrator* fDigitCalibrator; //!< digit calibrator (for raw2sdigits)
+  AliMUONDigitCalibrator* fDigitCalibrator; //!<! digit calibrator (for raw2sdigits)
   
     ClassDef(AliMUON,25)  // MUON Detector base class
 };

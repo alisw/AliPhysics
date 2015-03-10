@@ -48,10 +48,10 @@ private:
   void ComputeDead() const;
   
 private:
-  Int_t fID; //!< identifier of this item
-  mutable Int_t fDead; //!< whether this object is completely dead
-  Int_t fMaximum; //!< maximum number of sub-items possible within this item
-  AliMpExMap* fMissing; //!< pointers to the sub-items
+  Int_t fID; //!<! identifier of this item
+  mutable Int_t fDead; //!<! whether this object is completely dead
+  Int_t fMaximum; //!<! maximum number of sub-items possible within this item
+  AliMpExMap* fMissing; //!<! pointers to the sub-items
   
   ClassDef(AliMUONCheckItem,1) // A composite object
 };

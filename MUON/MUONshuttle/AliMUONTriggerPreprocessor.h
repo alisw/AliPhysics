@@ -33,8 +33,8 @@ private:
   
 
 private:
-  AliMUONTriggerSubprocessor* fTriggerSubprocessor; //!< the real worker class
-  AliMUONTriggerDCSSubprocessor* fTriggerDCSSubprocessor; //!< the real worker class for DCS info
+  AliMUONTriggerSubprocessor* fTriggerSubprocessor; //!<! the real worker class
+  AliMUONTriggerDCSSubprocessor* fTriggerDCSSubprocessor; //!<! the real worker class for DCS info
   
   ClassDef(AliMUONTriggerPreprocessor,2) // MUON Trigger Shuttle preprocessor
 };

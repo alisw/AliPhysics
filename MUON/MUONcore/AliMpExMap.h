@@ -89,7 +89,7 @@ class AliMpExMap : public TObject
                                          ///  of TString to Int_t
     
     // data members
-    mutable TExMap  fMap;     //!<  Transient map class
+    mutable TExMap  fMap;     //!<!  Transient map class
     TObjArray       fObjects; ///<  Array of objects 
     TArrayL         fKeys;    ///<  Array of keys 
 

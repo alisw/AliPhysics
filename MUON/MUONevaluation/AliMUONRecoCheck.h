@@ -121,7 +121,7 @@ private:
 	
   AliMUONGeometryTransformer* fGeometryTransformer; ///< geometry transformer
   AliMUONTriggerCircuit* fTriggerCircuit; ///< trigger circuit
-  AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
+  AliMUONCalibrationData* fCalibrationData; //!<! Used to load Local, Regional and Global masks
   AliMUONTriggerElectronics* fTriggerElectronics; ///< object to re-compute the trigger info
   
   Bool_t fESDEventOwner;         ///< using constructor from the analysis task

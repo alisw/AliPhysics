@@ -99,12 +99,12 @@ private:
   /// Not implemented
   AliMUONTrackHitPattern& operator = (const AliMUONTrackHitPattern& rhs);
 
-  const AliMUONRecoParam* fkRecoParam; //!< pointer to reco parameters
-  const AliMUONGeometryTransformer& fkTransformer; //!< geometry transformer
-  const AliMUONVDigitStore& fkDigitStore; //!< digitStore
-  const AliMUONTriggerUtilities* fkTriggerUtilities; //!< trigger utilities for mapping
+  const AliMUONRecoParam* fkRecoParam; //!<! pointer to reco parameters
+  const AliMUONGeometryTransformer& fkTransformer; //!<! geometry transformer
+  const AliMUONVDigitStore& fkDigitStore; //!<! digitStore
+  const AliMUONTriggerUtilities* fkTriggerUtilities; //!<! trigger utilities for mapping
 
-  const Float_t fkMaxDistance; //!< Maximum distance for reference // obsolete
+  const Float_t fkMaxDistance; //!<! Maximum distance for reference // obsolete
   
   ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };

@@ -45,13 +45,13 @@ private:
   /// Overriden TIterator virtual operator=
   AliMUONDigitStoreVImplIterator& operator=(const TIterator& rhs);
 
-  const AliMUONDigitStoreVImpl* fkStore; //!< store to iterate upon
-  Int_t fFirstDetElemId; //!< first de
-  Int_t fLastDetElemId; //!< last de
-  Int_t fCathode; //!< cathode (-1 for both)
-  TIterator* fStoreIterator; //!< helper iterator
-  AliMUONVCalibParam* fCurrentCalibParam; //!< current CalibParam
-  Int_t fCurrentCalibParamIndex; //!< current index in fCurrentCalibParam
+  const AliMUONDigitStoreVImpl* fkStore; //!<! store to iterate upon
+  Int_t fFirstDetElemId; //!<! first de
+  Int_t fLastDetElemId; //!<! last de
+  Int_t fCathode; //!<! cathode (-1 for both)
+  TIterator* fStoreIterator; //!<! helper iterator
+  AliMUONVCalibParam* fCurrentCalibParam; //!<! current CalibParam
+  Int_t fCurrentCalibParamIndex; //!<! current index in fCurrentCalibParam
   
   ClassDef(AliMUONDigitStoreVImplIterator,1) // Implementation of AliMUONVDataIterator
 };

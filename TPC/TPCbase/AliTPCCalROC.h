@@ -74,7 +74,7 @@ class AliTPCCalROC : public TNamed {
   UInt_t     fSector;          ///< sector number
   UInt_t     fNChannels;       ///< number of channels
   UInt_t     fNRows;           ///< number of rows
-  const UInt_t* fkIndexes;      //!< indexes
+  const UInt_t* fkIndexes;      //!<! indexes
   Float_t  *fData;            ///< [fNChannels] Data
   /// \cond CLASSIMP
   ClassDef(AliTPCCalROC,2)    //  TPC ROC calibration class

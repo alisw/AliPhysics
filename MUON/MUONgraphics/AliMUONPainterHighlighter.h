@@ -36,9 +36,9 @@ private:
   AliMUONPainterHighlighter& operator=(const AliMUONPainterHighlighter& rhs);
   
 private:
-  AliMUONVPainter* fPainter; //!< the painter we should highlight
-  Double_t fX; //!< position within painter to be highlighted
-  Double_t fY; //!< position within painter to be highlighted
+  AliMUONVPainter* fPainter; //!<! the painter we should highlight
+  Double_t fX; //!<! position within painter to be highlighted
+  Double_t fY; //!<! position within painter to be highlighted
   
   ClassDef(AliMUONPainterHighlighter,1) // Painter highlighter
 };

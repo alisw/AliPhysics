@@ -47,8 +47,8 @@ private:
   /// the mean field in y direction upto a certain z value
   Double_t *fkMeanBy; //[fkNMean]
   Double_t fkMeanBz;  ///< the mean field in z direction inside the TPC volume
-  static const Double_t fgkEM; //!< elementary charge over electron mass (C/kg)
-  static const Double_t fgkDriftField; //!< the TPC drift field (V/m) (modulus)
+  static const Double_t fgkEM; //!<! elementary charge over electron mass (C/kg)
+  static const Double_t fgkDriftField; //!<! the TPC drift field (V/m) (modulus)
 
   /// \cond CLASSIMP
   ClassDef(AliTPCExBFirst,2)

@@ -54,7 +54,7 @@ private:
   /// Not implemented
   AliMpSt345Reader& operator=(const AliMpSt345Reader& rhs);
 
-  AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
+  AliMpSlatMotifMap* fMotifMap; //!<! storage for motifTypes and motifs...
   
   ClassDef(AliMpSt345Reader,0) // Reader for slat stations mapping files 
 };
