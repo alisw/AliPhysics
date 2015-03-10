@@ -36,7 +36,6 @@ class AliEmcalJetByJetCorrection : public TNamed
   TProfile    *GetAppliedEfficiency() const {return fpAppliedEfficiency;}
   Bool_t       GetCorrectTemplateTrackpT() const {return fCorrectpTtrack;}
   Bool_t       GetPoissonianNmissing() const     {return fNpPoisson;}
-  TH2F        *GetAddedNConstituents() const     {return fNmissing;}
   TList       *GetListOfOutput()       const     {return fListOfOutput;}
   void         Init();
   AliEmcalJet *Eval(const AliEmcalJet *jet, TClonesArray *fTracks);
@@ -53,13 +52,13 @@ class AliEmcalJetByJetCorrection : public TNamed
   TH1D     *fhSmoothEfficiency;                // single particle efficiency smooth (see Init())
   Bool_t   fCorrectpTtrack;                    // if true the templates are corrected by track efficiency
   Bool_t   fNpPoisson;                        //draw Nmissing particle from a Poissonian with mean Nconst(1/eff-1)
+  TRandom3 *fRndm;                             // TRandom3 object 
 
   //book-keeping object filled inside Eval()
   TProfile *fpAppliedEfficiency;               // Control profile efficiency
-  TH2F     *fNmissing;                         // number of missing constituents added versus pTjet
-  TH2F     *fAvgNmiss;                         // calculated missing track (average = Nconstituents * (1./eff -1.))
+  TH3F     *fNmissing;                         // pTjet vs number of added constituents (depends on settings) versus Nconstituents * (1./eff -1.)
   TList    *fListOfOutput;                     // list containing all histograms
  private:
-  ClassDef(AliEmcalJetByJetCorrection, 6) // jet-by-jet correction class
+  ClassDef(AliEmcalJetByJetCorrection, 8) // jet-by-jet correction class
 };
 #endif
