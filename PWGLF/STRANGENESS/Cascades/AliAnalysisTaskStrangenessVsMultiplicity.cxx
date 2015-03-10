@@ -458,10 +458,6 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     if ( fkSaveExtendedRefMultInfo )
         fTreeEvent->Branch("fRefMultDiffEta",fRefMultDiffEta,"fRefMultDiffEta[20]/I");
 
-    //Don't save this if you're saving V0 or cascade information, only for special executions
-    //if ( fkSkipEventSelection )
-    fTreeEvent->Branch("fEvent_TrackletEta", fEvent_TrackletEta, "fEvent_TrackletEta[fEvSel_nTracklets]/F");
-
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
 
@@ -939,13 +935,6 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Tracklets vs Clusters Exploratory data
     fEvSel_nTracklets     = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
     fEvSel_nSPDClusters   = lESDevent->GetNumberOfITSClusters(0) + lESDevent->GetNumberOfITSClusters(1);
-
-    //Save information into array of eta values for tracklets
-    const AliMultiplicity* spdmult = lESDevent->GetMultiplicity();    // spd multiplicity object
-    for (Int_t i=0; i<fEvSel_nTracklets; ++i)
-    {
-        fEvent_TrackletEta[i] = spdmult->GetEta(i);
-    }
 
     //INEL > 0 check
     fEvSel_INELgtZERO          = IsINELgtZERO( lESDevent , "tracks"    );
