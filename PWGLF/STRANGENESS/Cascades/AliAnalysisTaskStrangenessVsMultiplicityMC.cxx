@@ -1460,11 +1460,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     if( fTrueMultVZEROA == 1 ) fHistVZEROResponseStudyTotal->Fill( lPOfParticleInsideVZEROA , fAmplitude_V0A );
 
     // Equalized signals // From AliCentralitySelectionTask
-    for(Int_t iCh = 4; iCh < 7; ++iCh) {
+    for(Int_t iCh = 32; iCh < 64; ++iCh) {
         Double_t mult = lESDevent->GetVZEROEqMultiplicity(iCh);
         multV0AEq += mult;
     }
-    for(Int_t iCh = 0; iCh < 3; ++iCh) {
+    for(Int_t iCh = 0; iCh < 32; ++iCh) {
         Double_t mult = lESDevent->GetVZEROEqMultiplicity(iCh);
         multV0CEq += mult;
     }
