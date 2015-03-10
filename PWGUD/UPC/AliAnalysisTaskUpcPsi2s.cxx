@@ -1787,6 +1787,11 @@ void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
     part->SetPdgCode(mcPart->PdgCode());
     part->SetUniqueID(imc);
   }//loop over mc particles
+  
+  AliESDVertex *fMCVertex = (AliESDVertex*) mc->GetPrimaryVertex();
+  fMCVtxPos[0] = fMCVertex->GetX();
+  fMCVtxPos[1] = fMCVertex->GetY();
+  fMCVtxPos[2] = fMCVertex->GetZ();
 
 }//RunESDMC
 
