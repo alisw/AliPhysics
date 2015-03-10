@@ -60,7 +60,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   UInt_t fPerNum, fOrbNum;
   //trigger
   Bool_t fTrigger[ntrg];
-  Bool_t fTriggerInputsMC[4];
+  Bool_t fTriggerInputsMC[ntrg];
   UInt_t fL0inputs, fL1inputs;
   Bool_t fTOFtrig1, fTOFtrig2;
   Double_t fTOFphi[4];
