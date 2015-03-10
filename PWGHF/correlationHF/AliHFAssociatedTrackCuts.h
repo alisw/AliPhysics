@@ -75,7 +75,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Double_t *GetZvtxPoolBins() const {return fZvtxBins;}
 	Int_t GetNCentPoolBins() const {return fNCentBins;}
 	Double_t *GetCentPoolBins() const {return fCentBins;}
-	
+	Double_t GetTargetFracTracks() const {return fTargetFracTracks;}	
+
 	Int_t GetNofMCEventType() const {return fNofMCEventType;}
 	Int_t *GetMCEventType() const {return fMCEventType;}
     Int_t GetPoolBin(Double_t multorcent, Double_t zVtx) const;
@@ -120,7 +121,9 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 		fZvtxBins=ZvtxBins; 
 		fCentBins=CentBins;
 	}
-	
+
+	void SetTargetFracTracks(Double_t targetFrac){fTargetFracTracks=targetFrac;}
+
 	// set MC events to process
 	
 	void SetNofMCEventTypes(Int_t k) {fNofMCEventType=k;}
@@ -176,9 +179,10 @@ private:
     TH2D *fTrigEffWeights;     // weight map (pt,mult) to account for trigger efficiency (on data, from c)
 	TH2D *fTrigEffWeightsB;     // weight map (pt,mult) to account for trigger efficiency (from b)
 	Int_t fPoolMaxNEvents; // set maximum number of events in the pool
-	Int_t fPoolMinNTracks; // se minimum number of tracks in the pool
+	Int_t fPoolMinNTracks; // set minimum number of tracks in the pool
 	Int_t fMinEventsToMix; // set the minimum number of events you wanna mix
-	
+        Double_t fTargetFracTracks; // set fraction of max number of tracks in a pool to allow it to be ready
+
 	Int_t fNzVtxBins; // number of z vrtx bins
 	Int_t fNzVtxBinsDim; // number of z vrtx bins +1 : necessary to initialize correctly the array
 	Double_t* fZvtxBins; // [fNzVtxBinsDim]
@@ -202,7 +206,7 @@ private:
 	TString fDescription; // additional description to the cuts
 	
 	
-	ClassDef(AliHFAssociatedTrackCuts,6);
+	ClassDef(AliHFAssociatedTrackCuts,7);
 };
 
 

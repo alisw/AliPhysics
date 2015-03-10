@@ -233,6 +233,14 @@ Bool_t AliHFCorrelator::DefineEventPool(){
 			
 	fPoolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, NofCentBins, CentBins, NofZVrtxBins, ZVrtxBins);
 	if(!fPoolMgr) return kFALSE;
+
+	Double_t targetFrac = fhadcuts->GetTargetFracTracks();
+        for(int i=0;i<NofCentBins;i++) {
+          for(int j=0;j<NofZVrtxBins;j++) {
+             fPoolMgr->GetEventPool(i,j)->SetTargetTrackDepth(MinNofTracks,targetFrac);
+          }
+        }
+
 	return kTRUE;
 }
 //_____________________________________________________
