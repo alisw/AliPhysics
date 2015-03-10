@@ -395,11 +395,18 @@ reformatXMLCollection()
 {
   #parse the xml collection on stdinput
   #output a collection in format: file md5 ctime size
+  local nfields=""
+  local turl=""
+  local md5=""
+  local ctime=""
+  local size=""
+  local x=""
   while read -a fields; do
     nfields=${#fields[*]}
     turl=""
     md5=""
     ctime=""
+    size=""
     for ((x=1;x<=${nfields};x++)); do
       field=${fields[${x}]}
       if [[ "${field}" == "md5="* ]]; then
