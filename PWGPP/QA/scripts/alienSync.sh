@@ -391,6 +391,36 @@ exitScript()
   exit $1
 }
 
+reformatXMLCollection()
+{
+  #parse the xml collection on stdinput
+  #output a collection in format: file md5 ctime size
+  while read -a fields; do
+    nfields=${#fields[*]}
+    turl=""
+    md5=""
+    ctime=""
+    for ((x=1;x<=${nfields};x++)); do
+      field=${fields[${x}]}
+      if [[ "${field}" == "md5="* ]]; then
+        eval ${field}
+      fi
+      if [[ "${field}" == "turl="* ]]; then
+        eval ${field}
+      fi
+      if [[ "${field}" == "ctime="* ]]; then
+        eval "${field} ${fields[((x+1))]}"
+      fi
+      if [[ "${field}" == "size="* ]]; then
+        eval ${field}" "${fields[((x+1))]}
+      fi
+    done
+    ctime=$( date -d "${ctime}" +%s 2>/dev/null)
+    [[ -z $md5 ]] && md5="."
+    [[ -n "$turl" ]] && echo "${turl//"alien://"/} ${md5} ${ctime} ${size}"
+  done
+}
+
 alien_find()
 {
   # like a regular alien_find command
@@ -416,32 +446,7 @@ alien_find()
     offset=$((maxCollectionLength*iterationNumber-1)); 
     [[ $offset -lt 0 ]] && offset=0; 
     $executable -x coll -l ${maxCollectionLength} -o ${offset} "$@" 2>>$logOutputPath/alien_find.err \
-    | while read -a fields;
-    do
-      nfields=${#fields[*]}
-      turl=""
-      md5=""
-      ctime=""
-      size=""
-      for ((x=1;x<=${nfields};x++)); do
-        field=${fields[${x}]}
-        if [[ "${field}" == "md5="* ]]; then
-          eval ${field}
-        fi
-        if [[ "${field}" == "turl="* ]]; then
-          eval ${field}
-        fi
-        if [[ "${field}" == "ctime="* ]]; then
-          eval ${field}" "${fields[((x+1))]}
-        fi
-        if [[ "${field}" == "size="* ]]; then
-          eval ${field}" "${fields[((x+1))]}
-        fi
-      done
-      ctime=$( date -d "${ctime}" +%s 2>/dev/null)
-      [[ -z $md5 ]] && md5="."
-      [[ -n "$turl" ]] && echo "${turl//"alien://"/} ${md5} ${ctime} ${size}" && ((numberOfFiles++))
-    done
+    | reformatXMLCollection
     ((iterationNumber++))
   done
   return 0
@@ -464,26 +469,7 @@ alien_find_split()
 listCollectionContents()
 {
   #find the xml collections and print the list of filenames and hashes
-  while read -a fields; do
-    nfields=${#fields[*]}
-    turl=""
-    md5=""
-    ctime=""
-    for ((x=1;x<=${nfields};x++)); do
-      field=${fields[${x}]}
-      if [[ "${field}" == "md5="* ]]; then
-        eval ${field}
-      fi
-      if [[ "${field}" == "turl="* ]]; then
-        eval ${field}
-      fi
-      if [[ "${field}" == "ctime="* ]]; then
-        eval "${field} ${fields[((x+1))]}"
-      fi
-    done
-    ctime=$( date -d "${ctime}" +%s 2>/dev/null)
-    [[ -n "$turl" ]] && echo "${turl//"alien://"/} ${md5} ${ctime}"
-  done < <(catCollections $1 $2 2>/dev/null)
+  catCollections $1 $2 2>/dev/null | reformatXMLCollection
 }
 
 catCollections()
