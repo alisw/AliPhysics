@@ -213,7 +213,7 @@ fUseAODMerging(kFALSE)
 
     TString p6env;
     
-    p6env += Form("gSystem->Load(\"libpythia6.%s\");",generatorVersion);
+    p6env += Form("gSystem->Load(\"libpythia6_%s\");",generatorVersion);
     
     SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
     
