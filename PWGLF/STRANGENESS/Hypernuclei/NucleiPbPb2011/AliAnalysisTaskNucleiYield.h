@@ -52,12 +52,13 @@ public:
   void SetRequireTPCpidSigmas (float sig) { fRequireTPCpidSigmas = (sig > 0) ? sig : -sig; }
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   
-  void SetCentBins(Int_t nbins, Float_t *bins);
-  void SetDCABins(Int_t nbins, Float_t min, Float_t max);
-  void SetPtBins(Int_t nbins, Float_t *bins);
-  void SetCustomTPCpid(Float_t *par, Float_t sigma);
-  void SetTOFBins(Int_t nbins, Float_t min, Float_t max);
-  void SetDCAzBins(Int_t nbins, Float_t limit);
+  void SetCentBins (Int_t nbins, Float_t *bins);
+  void SetDCABins (Int_t nbins, Float_t min, Float_t max);
+  void SetPtBins (Int_t nbins, Float_t *bins);
+  void SetCustomTPCpid (Float_t *par, Float_t sigma);
+  void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
+  void SetDCAzBins (Int_t nbins, Float_t limit);
+  void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
@@ -89,14 +90,14 @@ private:
   TList                 fAmc;                   ///<
   
   Float_t               fDCAzLimit;             ///<
-  Int_t                 fDCAzNbins;             ///<
+  Int_t                 fDCAzNbins;             ///< Number of bins used for \f$DCA_{z}\f$ distributions
   
-  TArrayF               fPtCorrectionA;         ///<
-  TArrayF               fPtCorrectionM;         ///<
+  TArrayF               fPtCorrectionA;         ///< Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
+  TArrayF               fPtCorrectionM;         ///< Array containing the parametrisation of the \f$p_{T}\$ correction for matter
   
-  Float_t               fTOFlowBoundary;        ///<
-  Float_t               fTOFhighBoundary;       ///<
-  Int_t                 fTOFnBins;              ///<
+  Float_t               fTOFlowBoundary;        ///< Lower limit for the TOF mass spectra histograms
+  Float_t               fTOFhighBoundary;       ///< Upper limit for the TOF mass spectra histograms
+  Int_t                 fTOFnBins;              ///< Number of bins used for the TOF mass spectra
   
   Bool_t                fRequireITSrefit;       ///< Cut on tracks: set true to require ITS refit
   Bool_t                fRequireTPCrefit;       ///< Cut on tracks: set true to require TPC refit
@@ -121,6 +122,7 @@ private:
   TArrayF               fDCABins;               ///< DCA bins
   TArrayF               fPtBins;                ///< Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///< Custom parametrisation of the Bethe-Bloch
+  TArrayF               fFlatteningProbs;       ///< Flattening probabilities
   
   // Event related histograms
   TH1F                 *fCentrality;            //!< Events centrality distribution

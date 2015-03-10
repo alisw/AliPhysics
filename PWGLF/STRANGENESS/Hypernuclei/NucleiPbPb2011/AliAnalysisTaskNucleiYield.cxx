@@ -32,7 +32,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 
-#define LIGHT_SPEED 2.99792457999999984e-02
+#define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF like
 #define EPS 1.e-15
 
 using TMath::TwoPi;
@@ -87,6 +87,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fDCABins(0x0)
 ,fPtBins(0x0)
 ,fCustomTPCpid(0)
+,fFlatteningProbs(0)
 ,fCentrality(0x0)
 ,fFlattenedCentrality(0x0)
 ,fCentralityClasses(0x0)
@@ -543,20 +544,27 @@ void AliAnalysisTaskNucleiYield::SetParticleType(AliPID::EParticleType part) {
   fPDGMassOverZ = AliPID::ParticleMassZ(part);
 }
 
-//TODO: avoid hardcoded flattening
-/// This function provides the flattening of the centrality distribution
+/// This function provides the flattening of the centrality distribution.
+/// Please check hardcoded values! It is better to provide those number by yourself: the probability
+/// is computed as \f[\mathrm{Probability}=\mathrm{C_{i}}{C_{ref}} \f] where \f$C_{i}\f$ is the
+/// centrality in the bin _i_ and \f$C_{ref}\f$ is the centrality of the reference bin (i.e. the
+/// value around you want the centrality to fluctuate).
 ///
 /// \param cent Event centrality
 /// \return Boolean value: true means that the event must be skipped
 ///
 Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
-  float prob[13] = {
-    0.855566,0.846964,0.829618,0.829259,0.830984,
-    0.85094,0.844346,0.851818,0.874758,1,
-    0.374767,0.650491,0.946963
-  };
-  if (cent >= 13.f) return kFALSE;
-  else return gRandom->Rndm() > prob[int(cent)];
+  if (fFlatteningProbs.GetSize() <= 0) {
+    Float_t prob[13] = {
+      0.839266,0.822364,0.807522,0.804727,0.806675,
+      0.828297,0.820842,0.834088,0.861455,1.,
+      0.38112,0.661154,0.953928
+    };
+    fFlatteningProbs.Set(13, prob);
+  }
+  
+  if (cent >= fFlatteningProbs.GetSize()) return kFALSE;
+  else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
 }
 
 /// This function provides the correction for wrongly calculated \f$p_{\mathrm{T}}\f$.
