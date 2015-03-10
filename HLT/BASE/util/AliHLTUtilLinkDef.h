@@ -8,6 +8,7 @@
 
 #pragma link C++ class AliHLTFilePublisher+;
 #pragma link C++ class AliHLTFileWriter+;
+#pragma link C++ class AliHLTFXSFileWriter+;
 #pragma link C++ class AliHLTMCEvent+;
 #pragma link C++ class AliHLTJets+;
 #pragma link C++ class AliHLTRootFilePublisherComponent+;

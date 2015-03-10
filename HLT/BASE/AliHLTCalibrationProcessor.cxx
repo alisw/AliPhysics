@@ -34,7 +34,7 @@
 
 ClassImp(AliHLTCalibrationProcessor);
 
-const AliHLTUInt32_t AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize = 204;
+const AliHLTUInt32_t AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize = sizeof(AliHLTFXSHeader);
 const AliHLTUInt32_t AliHLTCalibrationProcessor::fgkFXSProtocolHeaderVersion = 1;
 
 /*
