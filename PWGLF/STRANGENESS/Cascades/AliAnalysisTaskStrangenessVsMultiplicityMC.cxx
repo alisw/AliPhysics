@@ -806,7 +806,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
-    inputHandler->SetNeedField(); 
+    inputHandler->SetNeedField();
 
     // Multiplicity
     if(! fESDtrackCuts ) {
@@ -1452,9 +1452,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);
 
     //Copy to Event Tree for extra information
-    fAmplitude_V0A = multV0ACorr;
-    fAmplitude_V0C = multV0CCorr;
-
+    fAmplitude_V0A = multV0A;
+    fAmplitude_V0C = multV0C;
+    fAmplitude_V0M = multV0A+multV0C;
+    
     if( fTrueMultVZEROA == 1 ) fHistVZEROResponseStudy->Fill( lPtOfParticleInsideVZEROA , fAmplitude_V0A );
     if( fTrueMultVZEROA == 1 ) fHistVZEROResponseStudyTotal->Fill( lPOfParticleInsideVZEROA , fAmplitude_V0A );
 
@@ -1469,7 +1470,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     }
     fAmplitude_V0AEq = multV0AEq;
     fAmplitude_V0CEq = multV0CEq;
-
+    fAmplitude_V0MEq = multV0AEq+multV0CEq;
+    
     fCentrality_V0A   = -100;
     fCentrality_V0C   = -100;
     fCentrality_V0M   = -100;
