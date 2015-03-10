@@ -31,6 +31,7 @@ include_directories(${AliRoot_SOURCE_DIR}/FIT/FITbase
 # Sources in alphabetical order
 set(SRCS
     AliFITReconstructor.cxx
+    AliFITRecoParam.cxx
    )
 
 # Headers from sources

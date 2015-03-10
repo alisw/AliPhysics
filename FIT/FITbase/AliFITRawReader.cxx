@@ -48,7 +48,7 @@ ClassImp(AliFITRawReader)
   
   fRawReader->Reset();
   fRawReader->Select("FIT"); 
-  for ( Int_t k=0; k<720; k++)   fAllData[k] = -1;
+  for ( Int_t k=0; k<1000; k++)   fAllData[k] = -1;
  
 }
 //_____________________________________________________________________________

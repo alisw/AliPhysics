@@ -26,7 +26,7 @@ class AliFITRawReader : public TTask {
     fPosition(0),
     fBunchID(0),
     fPrintout(kFALSE)
-    { for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;}
+    { for ( Int_t k=0; k<1000; k++)   fAllData[k] = -1;}
   
   AliFITRawReader& operator=(const AliFITRawReader&) { return *this; }
 
@@ -61,7 +61,7 @@ class AliFITRawReader : public TTask {
   Int_t            fPosition;     // current (32 bit) position in fData
   Int_t            fBunchID;       //bunchID from TRM chain header
   Bool_t           fPrintout;      // advanced printout
-  Int_t            fAllData[500]; // container for raw data
+  Int_t            fAllData[1000]; // container for raw data
   
  ClassDef(AliFITRawReader,1) //class for reading FIT Raw data
 };

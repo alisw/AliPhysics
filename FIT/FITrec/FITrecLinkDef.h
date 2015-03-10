@@ -9,4 +9,5 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliFITReconstructor+;
+#pragma link C++ class  AliFITRecoParam+;
 #endif
