@@ -31,7 +31,10 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   TString type = grpData->GetBeamType();
   TString LHCperiod = grpData->GetLHCPeriod();
   Bool_t isLHC10 =  LHCperiod.Contains("LHC10");
-  printf("TRD add macro, LHCperiod:%s\n isLHC10:%d\n",LHCperiod.Data(),(Int_t)isLHC10);
+  Bool_t isLHC11 =  LHCperiod.Contains("LHC11");
+  Bool_t isLHC12 =  LHCperiod.Contains("LHC12");
+  Bool_t isLHC13 =  LHCperiod.Contains("LHC13");
+  printf("TRD add macro, LHCperiod:%s\n isLHC10:%d isLHC11:%d isLHC12:%d isLHC13:%d\n",LHCperiod.Data(),(Int_t)isLHC10,(Int_t)isLHC11,(Int_t)isLHC12,(Int_t)isLHC13);
   
   ////////////////////////////////////////////
   // Number of timebins
@@ -90,8 +93,16 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   //calibTask->SetThresholdP(1.0);
   calibTask->SetRequirePrimaryVertex(kTRUE);
   calibTask->SetMinNbOfContributors(1);
-  calibTask->SetMaxCluster(400.0);
-  calibTask->SetNbMaxCluster(0);
+  if((!isLHC10) && (!isLHC11) && (!isLHC12) && (!isLHC13)) {
+    printf("RunII \n");
+    calibTask->SetMaxCluster(400.0);
+    calibTask->SetNbMaxCluster(0);
+  }
+  else {
+    printf("RunI \n");
+    calibTask->SetMaxCluster(100.0);
+    calibTask->SetNbMaxCluster(2);
+  }
 
   if ( detStr.Contains("ITSSPD") && (!detStr.Contains("ITSSDD") || !detStr.Contains("ITSSSD"))) calibTask->SetUseSPDVertex();
 
