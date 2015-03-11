@@ -154,12 +154,12 @@ Bool_t Setup(const TString& name,
     while ((par = static_cast<TObjString*>(nextPar()))) { 
       TString parName(par->String());
       if (parName.EndsWith(".par")) parName.ReplaceAll(".par", "");
-      if (parName.Contains("STEERBase") ||
-	  parName.Contains("ESD")       ||
-	  parName.Contains("AOD")       ||
-	  parName.Contains("ANALYSIS")  ||
-	  parName.Contains("OADB")      ||
-	  parName.Contains("ANALYSISalice")) continue;
+      if (parName.EqualTo("STEERBase") ||
+	  parName.EqualTo("ESD")       ||
+	  parName.EqualTo("AOD")       ||
+	  parName.EqualTo("ANALYSIS")  ||
+	  parName.EqualTo("OADB")      ||
+	  parName.EqualTo("ANALYSISalice")) continue;
       Bool_t ret = true;
       if (local && localLibsNotPar) 
 	ret = LoadLib(Form("lib%s.so", parName.Data()));
