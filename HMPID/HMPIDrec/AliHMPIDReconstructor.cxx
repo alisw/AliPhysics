@@ -53,8 +53,8 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fDaqSig(0),fDi
   }
  
   AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
-  if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
-  fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+  if(pDaqSigEnt) fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+  else AliFatal("No pedestals from DAQ!");
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
     AliDebug(1,Form("DaqSigCut successfully loaded for chamber %i -> %i ",iCh,(Int_t)fDaqSig->At(iCh)->GetUniqueID()));
   }
