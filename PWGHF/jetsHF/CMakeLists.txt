@@ -1,53 +1,109 @@
-# Generating libPWGHFjetsHF
+# **************************************************************************
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+# *                                                                        *
+# * Author: The ALICE Off-line Project.                                    *
+# * Contributors are mentioned in the code where appropriate.              *
+# *                                                                        *
+# * Permission to use, copy, modify and distribute this software and its   *
+# * documentation strictly for non-commercial purposes is hereby granted   *
+# * without fee, provided that the above copyright notice appears in all   *
+# * copies and that both the copyright notice and this permission notice   *
+# * appear in the supporting documentation. The authors make no claims     *
+# * about the suitability of this software for any purpose. It is          *
+# * provided "as is" without express or implied warranty.                  *
+# **************************************************************************
 
+# Module
 set(MODULE PWGHFjetsHF)
 
+# Module include folder
+include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks)
+
+include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF)
 
+
+# Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-#		    ${AliPhysics_SOURCE_DIR}/PWG/ ....
+	            ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS		
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice	
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
+		    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
-set(SRCS
-   )
 
+
+# Sources in alphabetical order
+set(SRCS
+    AliHFJetsTagging.cxx
+    AliHFJetTaggingIP.cxx		
+    AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
+)
+
+# Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-# Generating dictionary
+# Generate the dictionary
+# It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES)
+set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJE STEERBase PWGTools)
 
-# Generating the ROOT map
-#  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
-set(LIBDEPS ${ROOT_DEPENDENCIES} ${ALIROOT_DEPENDENCIES})
+# Generate the ROOT map
+# Dependecies
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
-# End Generating the ROOT map
 
-# Custom compilation flags
-set(MODULE_COMPILE_FLAGS )
-set(MODULE_LINK_FLAGS )
+# Create an object to be reused in case of static libraries 
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+# Setting the correct headers for the object as gathered from the dependencies
+target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_PROPERTY:${MODULE},COMPILE_DEFINITIONS>)
 
-# Additional compilation flags
-set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+# Public include folders that will be propagated to the dependecies
+target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-# Additional linking flags
-set_target_properties(${MODULE} PROPERTIES LINK_FLAGS ${MODULE_LINK_FLAGS})
+set(MODULE_COMPILE_FLAGS)
+set(MODULE_LINK_FLAGS)
 
-# Link library to dependecies
-target_link_libraries(${MODULE} ${LIBDEPS})
+if(DATE_FOUND)
+    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
+    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
+endif(DATE_FOUND)
 
-# Library installation into $CMAKE_INSTALL_PREFIX/lib
+# Additional compilation and linking flags
+set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
+
+# System dependent: Modify the way the library is build
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
+# Setting compilation flags for the object
+set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+# Setting the linking flags for the library
+set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+
+# Installation
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-# Header installation into $CMAKE_INSTALL_PREFIX/include
 install(FILES ${HDRS} DESTINATION include)
 
-# Macros installation
-#install(DIRECTORY macros DESTINATION ${MODULE})
+# Installing the macros
+install (DIRECTORY macros DESTINATION PWGHF/jetsHF)
