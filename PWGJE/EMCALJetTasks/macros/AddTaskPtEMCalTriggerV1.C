@@ -78,7 +78,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
 
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
-  if(isMC) trgconf->SetSwapThresholds();
+  if(isMC && !useOfflinePatches) trgconf->SetSwapThresholds();
   //printf("Using offline patches: %s\n", useOfflinePatches ? "yes" :"no");
   trgconf->SetUseOfflinePatches(useOfflinePatches);
   pttriggertask->SetTriggerDecisionConfig(trgconf);

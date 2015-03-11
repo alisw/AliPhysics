@@ -134,6 +134,19 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
     fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters", title.c_str()), 5, trackaxes, "s");
   }
 
+  // Correlation Matrix
+  // 1. gen pt
+  // 2. rec pt
+  // 3. rec eta
+  // 4. rec phi
+  const TAxis *corraxes[4] = {
+	  DefineAxis("ptgen", ptbinning),
+	  DefineAxis("ptrec", ptbinning),
+	  DefineAxis("eta", etabinning),
+	  DefineAxis("phi", phibinning)
+  };
+  fHistos->CreateTHnSparse("hTrackPtCorrelation", "Correlation matrix for track pt", 4, corraxes);
+
   for(int iaxis = 0; iaxis < 5; iaxis++) delete trackaxes[iaxis];
 }
 
@@ -145,6 +158,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
    * @param data: the event data
    */
   AliDebug(1, Form("Number of matched tracks: %d", data->GetMatchedTrackContainer()->GetEntries()));
+  if(fRequestMCtrue && !data->GetMCEvent()) return;
 
   std::vector<std::string> triggernames;
   this->GetMachingTriggerNames(triggernames, fUsePatches);
@@ -163,7 +177,10 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
     if(fKineCuts && !fKineCuts->IsSelected(track)) continue;
     if(fTrackSelection && !fTrackSelection->IsTrackAccepted(track)) continue;
 
-    if(fRequestMCtrue && data->GetMCEvent() && !(assocMC = IsMCTrueTrack(track, data->GetMCEvent()))) continue;
+    if(fRequestMCtrue){
+    	if(!(assocMC = IsMCTrueTrack(track, data->GetMCEvent()))) continue;	// Not a true track
+    	this->FillCorrelation(assocMC, track);
+    }
     // Try to match the cluster
     Bool_t hasCluster = kFALSE;
     AliVCluster *clust(NULL);
@@ -225,6 +242,13 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
   data[3] = recev->GetPrimaryVertex()->GetZ();
   data[4] = fTriggerDecision->IsMinBias();
   fHistos->FillTHnSparse(histname.Data(), data, weight);
+}
+
+void AliEMCalTriggerRecTrackAnalysisComponent::FillCorrelation(
+		const AliVParticle* const genparticle,
+		const AliVParticle* const recparticle, double weight) {
+	double data[4] = {recparticle->Eta(), recparticle->Phi(), TMath::Abs(genparticle->Pt()), TMath::Abs(recparticle->Pt())};
+	fHistos->FillTHnSparse("hTrackPtCorrelation", data, weight);
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
