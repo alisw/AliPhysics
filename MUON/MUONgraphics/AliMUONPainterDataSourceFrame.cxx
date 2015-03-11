@@ -46,6 +46,7 @@
 #include <TRegexp.h>
 #include <TString.h>
 #include <TSystem.h>
+#include "AliCDBStorage.h"
 
 ///\class AliMUONPainterDataSourceFrame
 ///
@@ -82,11 +83,11 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fEventRangeButton(new TGCheckButton(fRawSelector23,"Event range")),
   fEventMin(new TGNumberEntry(fRawSelector23,-1,10)),
   fEventMax(new TGNumberEntry(fRawSelector23,-1,10)),
-  fRawOCDBPath(new TGTextEntry(fRawSelector24,"alien://folder=/alice/data/2013/OCDB")),
+  fRawOCDBPath(0x0),
   fOCDBSelector(new TGGroupFrame(this,"OCDB Path",kHorizontalFrame)),
   fDataReaders(new TGGroupFrame(this,"Data sources")),
   fFilePath(new TGTextEntry(fRawSelector21,"")),
-  fOCDBPath(new TGTextEntry(fOCDBSelector,"alien://folder=/alice/data/2013/OCDB")),
+  fOCDBPath(0x0),
   fRunSelector(new TGNumberEntry(fOCDBSelector,0,10)),
   fOCDBTypes(new TGComboBox(fOCDBSelector)),
   fRecentSources(new TGComboBox(fRecentSourceSelector)),
@@ -96,6 +97,12 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fACFTypes(new TGComboBox(fACFSelector))
 {
   /// Ctor
+  
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetDefaultStorage();
+  TString uri = storage->GetURI();
+  
+  fRawOCDBPath = new TGTextEntry(fRawSelector24,uri.Data());
+  fOCDBPath = new TGTextEntry(fOCDBSelector,uri.Data());
   
     AliMUONPainterDataRegistry* reg = AliMUONPainterDataRegistry::Instance();
     
@@ -587,7 +594,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
   }
   else
   {
-    if ( gSystem->AccessPathName(uri.Data()) )
+    if ( gSystem->AccessPathName(uri.Data()) && !uri.BeginsWith("collection://") )
     {
       AliError(Form("File %s does not exist",uri.Data()));
       fFilePath->SetText("");

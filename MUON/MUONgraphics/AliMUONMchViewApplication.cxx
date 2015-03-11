@@ -497,6 +497,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.17");
+  rn->AddLine("");
+  rn->AddLine("Default OCDB is now cvmfs (for the current year) if that mounting point exists");
+  rn->AddLine("");
+  
   rn->AddLine("1.16");
   rn->AddLine("");
   rn->AddLine("Default OCDB is now raw:// (following the fact that 'code' OCDB is not longer installed");
