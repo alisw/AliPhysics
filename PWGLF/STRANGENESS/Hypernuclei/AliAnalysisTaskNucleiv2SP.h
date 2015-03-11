@@ -32,12 +32,12 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
    
   Float_t GetEventPlaneForCandidate(AliESDtrack* track0, const TVector2* q,AliEventplane *pl);
   Float_t GetPhi0Pi(Float_t phi);
-
+  Bool_t  Flatten(Float_t cent);
   void SetIsPrimCut        (Bool_t  isPrimCut           = kFALSE) { fisPrimCut       = isPrimCut;         } 
   void SetParticle         (Float_t ptc                 = 1.    ) { fptc             = ptc;               }
 
  private:
-
+  
   Bool_t         fisPrimCut;                     // Boolean : kTRUE = isprimarycut 
   Float_t        fptc;                           // Selected ptc 1 = d; 2 = t; 3 =3He 
 

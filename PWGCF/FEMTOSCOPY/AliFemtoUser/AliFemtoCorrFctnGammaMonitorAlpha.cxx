@@ -28,20 +28,20 @@ AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(char* title
   // set up numerator
   char tTitNumD[101] = "NumPMinvAlpha";
   strncat(tTitNumD,title, 100);
-  fNumPMinvDAlpha = new TH2D(tTitNumD,title,aMinvBins,0.0,0.025,aDAlphaBins,0.995,1.0);
+  fNumPMinvDAlpha = new TH2D(tTitNumD,title,aMinvBins,0.0,1.0,aDAlphaBins,0.996,1.0);
   // set up denominator
   char tTitDenD[101] = "DenPMinvAlpha";
   strncat(tTitDenD,title, 100);
-  fDenPMinvDAlpha = new TH2D(tTitDenD,title,aMinvBins,0.0,0.025,aDAlphaBins,0.995,1.0);
+  fDenPMinvDAlpha = new TH2D(tTitDenD,title,aMinvBins,0.0,1.0,aDAlphaBins,0.996,1.0);
 
   // set up numerator
   char tTitNumR[101] = "NumNMinvAlpha";
   strncat(tTitNumR,title, 100);
-  fNumNMinvDAlpha = new TH2D(tTitNumR,title,aMinvBins,0.0,0.025,aDAlphaBins,0.995,1.0);
+  fNumNMinvDAlpha = new TH2D(tTitNumR,title,aMinvBins,0.0,1.0,aDAlphaBins,0.996,1.0);
   // set up denominator
   char tTitDenR[101] = "DenNMinvAlpha";
   strncat(tTitDenR,title, 100);
-  fDenNMinvDAlpha = new TH2D(tTitDenR,title,aMinvBins,0.0,0.025,aDAlphaBins,0.995,1.0);
+  fDenNMinvDAlpha = new TH2D(tTitDenR,title,aMinvBins,0.0,1.0,aDAlphaBins,0.996,1.0);
 
   // to enable error bar calculation...
   fNumPMinvDAlpha->Sumw2();

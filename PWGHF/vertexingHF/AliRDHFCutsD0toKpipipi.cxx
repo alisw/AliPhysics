@@ -298,7 +298,7 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelectedFromPID(AliAODRecoDecayHF4Prong *d, Int_
 
   AliAODPidHF* pidObj = new AliAODPidHF();
   pidObj->SetAsym(kTRUE);
-  pidObj->SetPLimit(ptlimit);
+  pidObj->SetPLimit(ptlimit,2);
   pidObj->SetSigma(0,2.);  //TPC sigma, in three pT ranges
   pidObj->SetSigma(1,1.);
   pidObj->SetSigma(2,0.);  

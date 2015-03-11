@@ -2243,8 +2243,13 @@ void AliFourPion::UserExec(Option_t *)
   fMbin=-1;
   if(fCollisionType!=0){
     
-    if(pionCount >= fMultLimits[3] && pionCount < fMultLimits[10]) fMbin=0;// only 1 bin
-    
+    if(fCollisionType==1){// p-Pb
+      if(pionCount >= fMultLimits[3] && pionCount < fMultLimits[10]) fMbin=0;// only 1 bin
+    }
+    if(fCollisionType==2){// pp
+      if(pionCount >= fMultLimits[2] && pionCount < fMultLimits[10]) fMbin=0;// only 1 bin
+    }
+
     for(Int_t i=0; i<fMbinsMixing; i++){// event-mixing M bin
       if( ( pionCount >= fMultLimits[i]) && ( pionCount < fMultLimits[i+1]) ){
 	MbinMixing=i;// 0 = lowest mult

@@ -14,14 +14,14 @@ void AddTaskPIDFlowQC(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Int_t AODfilterBit = 272,
                                    Int_t charge=0,
                                    Int_t MinTPCdedx = 10,
-                                   Int_t ncentralityminlim = 0,//0 start from 0-5cc
-                                   Int_t ncentralitymaxlim = 6,//6 runo over all the full
-                                   Int_t ncentrality = 6,
+                                   Int_t ncentralityminlim = 0,//0 start from 0-1cc
+                                   Int_t ncentralitymaxlim = 6,//6 run over 0-50%
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
                                    Bool_t is2011 = kFALSE,
                                    Bool_t isAOD = kTRUE,
                                    Bool_t UsePIDParContours = kFALSE,
+				   Bool_t UseOldDedx = kTRUE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
 
@@ -32,8 +32,8 @@ Double_t excludeEtaMax = 0.;
 Double_t excludePhiMin = 0.;
 Double_t excludePhiMax = 0.;
     
-int centrMin[9] = {0,1,10,20,30,40,50,60,70};
-int centrMax[9] = {1,2,20,30,40,50,60,70,80};
+int centrMin[8] = {0,0,10,20,30,40,60,60};
+int centrMax[8] = {1,2,20,30,40,50,70,80};
 const int ncentrminlim = ncentralityminlim;
 const int ncentrmaxlim = ncentralitymaxlim;
 
@@ -98,7 +98,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     //=======================QC POI Cuts
     QC_POI[icentr] = DefinePOIcuts();
 
-    QC_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
+    if(UseOldDedx) QC_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
    // QC_POI[icentr]->SetParamType(poitype);
    // QC_POI[icentr]->SetParamMix(poimix);
     QC_POI[icentr]->SetPtRange(0.2,5.);//

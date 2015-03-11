@@ -17,8 +17,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Int_t AODfilterBit = 272,
                       Int_t charge=0,
                       Int_t MinTPCdedx = 10,
-                      Int_t ncentralityminlim = 0,//0 start from 0-5cc
-                      Int_t ncentralitymaxlim = 6,//6 runo over all the full centrlity classes
+                      Int_t ncentralityminlim = 0,//0 start from 0-1cc
+                      Int_t ncentralitymaxlim = 6,//6 runs over 0-50%
                       Int_t maxITSCls = 7,
                       Double_t maxChi2ITSCls = 37,
                       Bool_t doQA=kTRUE,
@@ -27,6 +27,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Bool_t is2011 = kFALSE,
                       Bool_t isAOD = kTRUE,
                       Bool_t UsePIDParContours = kFALSE,
+	              Bool_t UseOldDedx = kTRUE,
                       AliPID::EParticleType particleType=AliPID::kPion,
                       AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
@@ -43,8 +44,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t minB = +0.5*EtaGap;//
     Double_t maxB = +0.8;//
     
-    int centrMin[9] = {0,1,10,20,30,40,50,60,70};
-    int centrMax[9] = {1,2,20,30,40,50,60,70,80};
+    int centrMin[8] = {0,0,10,20,30,40,60,60};
+    int centrMax[8] = {1,2,20,30,40,50,70,80};
     const int ncentrminlim = ncentralityminlim;
     const int ncentrmaxlim = ncentralitymaxlim;
     
@@ -121,7 +122,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         //=======================SP POI Cuts
         SP_POI[icentr] = DefinePOIcuts();
         
-        SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
+        if(UseOldDedx) SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
         if(!isAOD){
             SP_POI[icentr]->SetMaxSharedITSCluster(maxITSCls);
             SP_POI[icentr]->SetMaxChi2perITSCluster(maxChi2ITSCls);

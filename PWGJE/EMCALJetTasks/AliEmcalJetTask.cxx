@@ -539,11 +539,22 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
   for (UInt_t ic = 0; ic < constituents.size(); ++ic) {
 
-    if (flag == 0) uid = constituents[ic].user_index();
-    else{if(constituents[ic].perp()<1.e-10) uid=-1;
-           else uid = GetIndexSub(constituents[ic].phi(), constituents_unsub);
-           if(uid==0) {AliError("correspondence between un/subtracted constituent not found");
-	     continue;}}
+    if (flag == 0) {
+      uid = constituents[ic].user_index();
+    }
+    else {
+      if (constituents[ic].perp()<1.e-10) {
+        uid=-1;
+      }
+      else {
+        uid = GetIndexSub(constituents[ic].phi(), constituents_unsub);
+      }
+      if (uid==0) {
+        AliError("correspondence between un/subtracted constituent not found");
+        continue;
+      }
+    }
+    
     AliDebug(3,Form("Processing constituent %d", uid));
     if (uid == -1) { //ghost particle
       ++gall;

@@ -18,6 +18,7 @@
 
 template <typename Value> class TVectorT;
 typedef class TVectorT<Double_t> TVectorD;
+class TGeoHMatrix;
 class AliTRDseedV1;
 class AliTRDtrackV1;
 class AliTrackReference;
@@ -116,7 +117,7 @@ public:
     Int_t   GetPID() const ;
     Float_t GetPhi() const                                  { return fPhi;}
     Float_t GetPt() const                                   { return fPt;}
-    Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &p, Float_t &eta, Float_t &phi, UChar_t &s) const;
+    Bool_t GetDirections(Float_t x0, Int_t chg, TGeoHMatrix *m, Double_t dir[10], UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const { return fTrackRefs[ref];}
     static Double_t GetKalmanStep()                         { return fgKalmanStep;}
     static Bool_t IsKalmanUpdate()                          { return fgKalmanUpdate;}

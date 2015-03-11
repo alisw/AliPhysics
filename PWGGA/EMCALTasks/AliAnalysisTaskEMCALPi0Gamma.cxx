@@ -2035,14 +2035,14 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
 		  ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -310  ){
 		tmpflag = 103;
 	      }
-	      else if(((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  2212 || //proton
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -2212 || //anti-proton
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  2112 || //neutron
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -2112 || //anti-neutron
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  321  || //K+
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -321  || //K-
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() ==  211  || //pi+
-		      ((AliMCParticle*)mcEvent->GetTrack(mcP->GetMother()))->PdgCode() == -211 ){    //pi-)
+	      else if(((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  2212 || //proton
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -2212 || //anti-proton
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  2112 || //neutron
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -2112 || //anti-neutron
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  321  || //K+
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -321  || //K-
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() ==  211  || //pi+
+		      ((AliMCParticle*)mcEvent->GetTrack(tmppart->GetMother()))->PdgCode() == -211 ){    //pi-)
 		tmpflag = 104;
 	      }
 	    }

@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSED0CORRELATIONS_H
-#define ALIANALYSISTASKSED0CORRELATIONS_H
+#ifndef AliAnalysisTaskSED0Correlations_H
+#define AliAnalysisTaskSED0Correlations_H
 
 /* Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -78,12 +78,21 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetPtBinsLimsCorr(Float_t* ptlims) {for(int i=0;i<=fNPtBinsCorr;i++) {fBinLimsCorr.push_back((Double_t)ptlims[i]);}}
   void SetPtTreshLow(Double_t* pttreshlow) {for(int i=0;i<fNPtBinsCorr;i++) {fPtThreshLow.push_back(pttreshlow[i]);}}
   void SetPtTreshUp(Double_t* pttreshup) {for(int i=0;i<fNPtBinsCorr;i++) {fPtThreshUp.push_back(pttreshup[i]);}}
-
+  void SetLSBLowLim(Double_t* LSBLowLim) {for(int i=0;i<fNPtBinsCorr;i++) {fLSBLowLim.push_back(LSBLowLim[i]);}}
+  void SetLSBHighLim(Double_t* LSBUppLim) {for(int i=0;i<fNPtBinsCorr;i++) {fLSBUppLim.push_back(LSBUppLim[i]);}}  
+  void SetRSBLowLim(Double_t* RSBLowLim) {for(int i=0;i<fNPtBinsCorr;i++) {fRSBLowLim.push_back(RSBLowLim[i]);}}
+  void SetRSBHighLim(Double_t* RSBUppLim) {for(int i=0;i<fNPtBinsCorr;i++) {fRSBUppLim.push_back(RSBUppLim[i]);}}
+  void SetLeftSignReg_LowPt(Double_t leftlow) {fSignLeft_LowPt=leftlow;}
+  void SetRightSignReg_LowPt(Double_t rightlow) {fSignRight_LowPt=rightlow;}
+  void SetLeftSignReg_HighPt(Double_t lefthigh) {fSignLeft_HighPt=lefthigh;}
+  void SetRightSignReg_HighPt(Double_t righthigh) {fSignRight_HighPt=righthigh;}
+  
   void PrintBinsAndLimits();
   Int_t PtBinCorr(Double_t pt) const;
   void SetEvMixing(Bool_t mix) {fMixing=mix;}
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
-
+  void SetSpeed(Bool_t speed) {fSpeed=speed;}
+  
   enum PartType {kTrack,kKCharg,kK0};
   enum FillType {kSE, kME}; //for single event or event mixing histos fill
 
@@ -102,11 +111,15 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
   Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
-
+  
   Int_t             fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
-  std::vector<Double_t>  fPtThreshLow;        // pT treshold of hadrons - low
-  std::vector<Double_t>  fPtThreshUp;         // pT treshold of hadrons - up
+  std::vector<Double_t>  fPtThreshLow;        // pT threshold of hadrons - low
+  std::vector<Double_t>  fPtThreshUp;         // pT threshold of hadrons - up
+  std::vector<Double_t>  fLSBLowLim;          // Left SB lower lim
+  std::vector<Double_t>  fLSBUppLim;          // Left SB lower lim
+  std::vector<Double_t>  fRSBLowLim;          // Right SB upper lim
+  std::vector<Double_t>  fRSBUppLim;          // Right SB upper lim
 
   Int_t     fEvents;		  	// EventCounter
   Bool_t    fAlreadyFilled;	  	// D0 in an event already analyzed (for track distribution plots)
@@ -136,8 +149,14 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
   Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
   Bool_t    fKaonCorr;			// enables correlations of D0-Kcharg and D0-K0
+  Double_t  fSignLeft_LowPt;		// Left bound of "signal region" range - up to 8 GeV/c
+  Double_t  fSignRight_LowPt;		// Right bound of "signal region" range - up to 8 GeV/c
+  Double_t  fSignLeft_HighPt;		// Left bound of "signal region" range - from 8 GeV/c
+  Double_t  fSignRight_HighPt;		// Right bound of "signal region" range - from 8 GeV/c
+  Int_t     fPoolNum;			// Number of the pool for the analyzed event
+  Bool_t    fSpeed;			// Speed up the execution removing bins and histos
 
-  ClassDef(AliAnalysisTaskSED0Correlations,5); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Correlations,6); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

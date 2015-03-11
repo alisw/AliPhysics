@@ -123,7 +123,7 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   TH1I *fHistEvents = new TH1I("fHistNEvents","fHistNEvents",2,0,2);
   fHistEvents->GetXaxis()->SetBinLabel(1,"All events");
 
-  TH1F *fHistPt = new TH1F("fHistPt","p_{T} distribution",15,0.15,10.0);
+  TH1F *fHistPt = new TH1F("fHistPt","p_{T} distribution",39,0.15,10.0);
   fHistPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPt->GetYaxis()->SetTitle("dN/dp_{T} (GeV/c^{-1})");
   fHistPt->SetMarkerStyle(kFullCircle);
@@ -147,7 +147,7 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fHistdNdetaMpi->GetXaxis()->SetTitle("#MPIs");
   fHistdNdetaMpi->GetYaxis()->SetTitle("#eta");
 
-  TH2F *fHistPtMpi = new TH2F("fHistPtMpi","fHistPtMpi",100,-0.5,99.5,15,0.15,10.0);
+  TH2F *fHistPtMpi = new TH2F("fHistPtMpi","fHistPtMpi",100,-0.5,99.5,39,0.15,10.0);
   fHistPtMpi->GetXaxis()->SetTitle("#MPIs");
   fHistPtMpi->GetYaxis()->SetTitle("p_{T} (GeV/c)");
 
@@ -155,11 +155,11 @@ void AliAnalysisTaskPythiaMpi::UserCreateOutputObjects()
   fProfileMpiPt->GetXaxis()->SetTitle("#MPIs");
   fProfileMpiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
 
-  TProfile* fProfilePtMpi = new TProfile("fProfilePtMpi","fProfilePtMpi",15,0.15,10.,-0.5,99.5);
+  TProfile* fProfilePtMpi = new TProfile("fProfilePtMpi","fProfilePtMpi",39,0.15,10.,-0.5,99.5);
   fProfilePtMpi->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fProfilePtMpi->GetYaxis()->SetTitle("#MPIs");
 
-  TH3F *fHistTracks = new TH3F("fHistTracks","fHistTracks",20,-1.,1.,15,0.15,10.0,100,-0.5,99.5);
+  TH3F *fHistTracks = new TH3F("fHistTracks","fHistTracks",20,-1.,1.,39,0.15,10.0,100,-0.5,99.5);
   fHistTracks->GetXaxis()->SetTitle("#eta");
   fHistTracks->GetYaxis()->SetTitle("p_{T} (GeV/c)");
   fHistTracks->GetZaxis()->SetTitle("#MPIs");

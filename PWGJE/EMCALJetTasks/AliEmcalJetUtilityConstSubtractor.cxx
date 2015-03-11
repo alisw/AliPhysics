@@ -13,8 +13,8 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor() :
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
-  fRho(0),
-  fRhom(0),
+  fRho(1e-6),
+  fRhom(1e-6),
   fJetsSub(0x0),
   fParticlesSub(0x0),
   fRhoParam(0),
@@ -32,8 +32,8 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const char*
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
-  fRho(0),
-  fRhom(0),
+  fRho(1e-6),
+  fRhom(1e-6),
   fJetsSub(0x0),
   fParticlesSub(0x0),
   fRhoParam(0),
@@ -139,7 +139,14 @@ void AliEmcalJetUtilityConstSubtractor::Prepare(AliFJWrapper& fjw)
 
   if (fRhoParam) fRho = fRhoParam->GetVal();
   if (fRhomParam) fRhom = fRhomParam->GetVal();
-
+  
+  if(fRho < 1e-6) {
+     fRho = 1e-6;
+  }
+  if(fRhom < 1e-6) {
+     fRhom = 1e-6;
+  }
+ 
   if (fJetsSub) fJetsSub->Delete();
 
   fjw.SetUseExternalBkg(fUseExternalBkg, fRho, fRhom);
@@ -149,7 +156,7 @@ void AliEmcalJetUtilityConstSubtractor::Prepare(AliFJWrapper& fjw)
 //______________________________________________________________________________
 void AliEmcalJetUtilityConstSubtractor::ProcessJet(AliEmcalJet* /*jet*/, Int_t /*ij*/, AliFJWrapper& /*fjw*/)
 {
-  // Proceess each jet.
+  // Process each jet.
 }
 
 //______________________________________________________________________________
@@ -174,7 +181,7 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
       AliEmcalJet *jet_sub = new ((*fJetsSub)[ijet])
         AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
       jet_sub->SetLabel(ijet);
-      
+
       fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
       jet_sub->SetArea(area.perp());
       jet_sub->SetAreaEta(area.eta());

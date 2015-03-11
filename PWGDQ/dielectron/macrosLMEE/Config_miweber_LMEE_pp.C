@@ -7,7 +7,7 @@ TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx};
 
-TString names=("pp2010All_pidITSTPCTOFif_trkSPDfirst_1");
+TString names=("pp2010All_pidITSTPCTOFif_trkSPDfirst_1;pp2010Low_pidITSTPCTOFif_trkSPDfirst_1;pp2010Mid_pidITSTPCTOFif_trkSPDfirst_1;pp2010High_pidITSTPCTOFif_trkSPDfirst_1");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE;//needed for LMEEcutlib
@@ -40,6 +40,27 @@ AliDielectron* Config_miweber_pp(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_
   if (cutDefinition==0) {
     selectedPID = LMEECutLib::kpp2010All_pidITSTPCTOFif_trkSPDfirst_1;
     selectedCentrality = LMEECutLib::kpp2010All;
+    die->SetPreFilterAllSigns();   
+    rejectionStep=kTRUE;
+    LMcutlib->SetEtaCorrection(die, selectedPID, selectedCentrality, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  else if (cutDefinition==1) {
+    selectedPID = LMEECutLib::kpp2010All_pidITSTPCTOFif_trkSPDfirst_1;
+    selectedCentrality = LMEECutLib::kpp2010Low;
+    die->SetPreFilterAllSigns();   
+    rejectionStep=kTRUE;
+    LMcutlib->SetEtaCorrection(die, selectedPID, selectedCentrality, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  else if (cutDefinition==2) {
+    selectedPID = LMEECutLib::kpp2010All_pidITSTPCTOFif_trkSPDfirst_1;
+    selectedCentrality = LMEECutLib::kpp2010Mid;
+    die->SetPreFilterAllSigns();   
+    rejectionStep=kTRUE;
+    LMcutlib->SetEtaCorrection(die, selectedPID, selectedCentrality, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  else if (cutDefinition==3) {
+    selectedPID = LMEECutLib::kpp2010All_pidITSTPCTOFif_trkSPDfirst_1;
+    selectedCentrality = LMEECutLib::kpp2010High;
     die->SetPreFilterAllSigns();   
     rejectionStep=kTRUE;
     LMcutlib->SetEtaCorrection(die, selectedPID, selectedCentrality, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);

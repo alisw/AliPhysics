@@ -662,13 +662,19 @@ Bool_t AliEbyENetChargeFluctuationTask::AcceptTrackLDCA(AliVTrack *track) const 
   if (fESD)
     (dynamic_cast<AliESDtrack*>(track))->GetImpactParameters(dca, cov);
   else  {
-    Double_t dcaa[2] = {-999,-999};
-    Double_t cova[3] = {-999,-999,-999};
-    AliAODTrack* clone =dynamic_cast<AliAODTrack*>(track->Clone("trk_clone"));
-    Bool_t propagate = clone->PropagateToDCA(fAOD->GetPrimaryVertex(),fAOD->GetMagneticField(),100.,dcaa,cova);
-    delete clone;  
-    if (!propagate) dca[0] = -999;
-    else dca[0] = Float_t(dcaa[0]);
+    AliAODTrack* clone = dynamic_cast<AliAODTrack*>(track->Clone("trk_clone"));
+    if(clone->TestBit(AliAODTrack::kIsDCA)){
+      dca[0] = clone->DCA();
+      dca[1] = clone->ZAtDCA();
+    } else {
+      Double_t dcaa[2], cova[3];
+      Double_t gBzKg = fAOD->GetMagneticField();
+      Bool_t propagate = clone->PropagateToDCA(fAOD->GetPrimaryVertex(),gBzKg,1000000.,dcaa,cova);
+      if (!propagate) { dca[0] = -999; dca[1] = -999;}
+      dca[0] = Float_t(dcaa[0]);
+      dca[1] = Float_t(dcaa[1]);
+    }
+    delete clone;
   }
 
   if ( TMath::Abs(dca[0]) > fDcaXy ) return kFALSE;
@@ -692,11 +698,9 @@ Bool_t AliEbyENetChargeFluctuationTask::AcceptTrackL(AliVTrack *track) const {
    AliError("Pointer to dynamic_cast<AliAODTrack*>(track) = ZERO");
    return kFALSE; 
  }
- if (!trackAOD->TestFilterBit(fAODtrackCutBit))
-   return kFALSE;
- } else {      // ESDs
-   if(!fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))  return kFALSE;
- }
+ 
+ if (!trackAOD->TestFilterBit(fAODtrackCutBit)) return kFALSE;}
+ else { if(!fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))  return kFALSE; }
 
  if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE; 
  if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 

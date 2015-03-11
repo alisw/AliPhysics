@@ -204,12 +204,8 @@ fDefaultPriors(pid.fDefaultPriors)
   for(Int_t i=0;i<fnPLimit;i++){
     fPLimit[i]=pid.fPLimit[i];
   }
-  fPriors = new Double_t[fnPriors];
-  for(Int_t i=0;i<fnPriors;i++){
-    fPriors[i]=pid.fPriors[i];
-  }
   for(Int_t i=0;i<AliPID::kSPECIES;i++){
-    fPriorsH[i]=pid.fPriorsH[i];
+    fPriorsH[i] = pid.fPriorsH[i] ? new TH1F(*pid.fPriorsH[i]) : NULL;
   }
   for(Int_t i=0; i<3; i++){ // pi, K, proton
     fMaxnSigmaCombined[i]=pid.fMaxnSigmaCombined[i];
@@ -1027,6 +1023,27 @@ void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
 	GetPidCombined()->GetPriorDistribution(type)->Draw();
 }
 
+//-----------------------------
+void AliAODPidHF::SetPriors(Double_t *priors, Int_t npriors){
+  // Set the values for the priors
+  if (fnPriors != npriors) {
+    if (fPriors) delete fPriors;
+    fPriors = new Double_t[npriors];
+    fnPriors = npriors;
+  }
+  for(Int_t i = 0; i < fnPriors; i++) fPriors[i] = priors[i];
+}
+
+//-----------------------------
+void AliAODPidHF::SetPLimit(Double_t *plim, Int_t npLim) {
+  // Set limits of momentum ranges where different PID selections are applied
+  if (fnPLimit != npLim) {
+    if (fPLimit) delete fPLimit;
+    fPLimit = new Double_t[npLim];
+    fnPLimit = npLim;
+  }
+  for(Int_t i = 0; i < fnPLimit; i++) fPLimit[i] = plim[i];
+}
 //-----------------------------
 void AliAODPidHF::SetPriorsHistos(TString priorFileName){
   // Set histograms with priors

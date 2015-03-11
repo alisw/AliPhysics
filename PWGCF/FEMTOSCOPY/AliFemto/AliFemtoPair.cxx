@@ -16,89 +16,91 @@ double AliFemtoPair::fgMaxDuOuter = 1.4;
 double AliFemtoPair::fgMaxDzOuter = 3.2;
 
 
-AliFemtoPair::AliFemtoPair() :
-  fTrack1(0), fTrack2(0),
-  fPairAngleEP(0),
-  fNonIdParNotCalculated(0),
-  fDKSide(0),
-  fDKOut(0),
-  fDKLong(0),
-  fCVK(0),
-  fKStarCalc(0),
+AliFemtoPair::AliFemtoPair():
+  fTrack1(NULL),
+  fTrack2(NULL),
+  fPairAngleEP(0.0),
+  fNonIdParNotCalculated(0.0),
+  fDKSide(0.0),
+  fDKOut(0.0),
+  fDKLong(0.0),
+  fCVK(0.0),
+  fKStarCalc(0.0),
   fNonIdParNotCalculatedGlobal(0),
   fMergingParNotCalculated(0),
-  fWeightedAvSep(0),
-  fFracOfMergedRow(0),
-  fClosestRowAtDCA(0),
+  fWeightedAvSep(0.0),
+  fFracOfMergedRow(0.0),
+  fClosestRowAtDCA(0.0),
   fMergingParNotCalculatedTrkV0Pos(0),
-  fFracOfMergedRowTrkV0Pos(0),
-  fClosestRowAtDCATrkV0Pos(0),
+  fFracOfMergedRowTrkV0Pos(0.0),
+  fClosestRowAtDCATrkV0Pos(0.0),
   fMergingParNotCalculatedTrkV0Neg(0),
-  fFracOfMergedRowTrkV0Neg(0),
-  fClosestRowAtDCATrkV0Neg(0),
+  fFracOfMergedRowTrkV0Neg(0.0),
+  fClosestRowAtDCATrkV0Neg(0.0),
   fMergingParNotCalculatedV0PosV0Neg(0),
-  fFracOfMergedRowV0PosV0Neg(0),
-  fClosestRowAtDCAV0PosV0Neg(0),
+  fFracOfMergedRowV0PosV0Neg(0.0),
+  fClosestRowAtDCAV0PosV0Neg(0.0),
   fMergingParNotCalculatedV0NegV0Pos(0),
-  fFracOfMergedRowV0NegV0Pos(0),
-  fClosestRowAtDCAV0NegV0Pos(0),
+  fFracOfMergedRowV0NegV0Pos(0.0),
+  fClosestRowAtDCAV0NegV0Pos(0.0),
   fMergingParNotCalculatedV0PosV0Pos(0),
-  fFracOfMergedRowV0PosV0Pos(0),
-  fClosestRowAtDCAV0PosV0Pos(0),
+  fFracOfMergedRowV0PosV0Pos(0.0),
+  fClosestRowAtDCAV0PosV0Pos(0.0),
   fMergingParNotCalculatedV0NegV0Neg(0),
-  fFracOfMergedRowV0NegV0Neg(0),
-  fClosestRowAtDCAV0NegV0Neg(0)
+  fFracOfMergedRowV0NegV0Neg(0.0),
+  fClosestRowAtDCAV0NegV0Neg(0.0)
 {
   // Default constructor
-  fTrack1 = 0;
-  fTrack2 = 0;
   SetDefaultHalfFieldMergingPar();
 }
 
-AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b)
-  : fTrack1(a), fTrack2(b),
-  fPairAngleEP(0),
-  fNonIdParNotCalculated(0),
-  fDKSide(0),
-  fDKOut(0),
-  fDKLong(0),
-  fCVK(0),
-  fKStarCalc(0),
+AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
+  fTrack1(a),
+  fTrack2(b),
+  fPairAngleEP(0.0),
+  fNonIdParNotCalculated(0.0),
+  fDKSide(0.0),
+  fDKOut(0.0),
+  fDKLong(0.0),
+  fCVK(0.0),
+  fKStarCalc(0.0),
   fNonIdParNotCalculatedGlobal(0),
   fMergingParNotCalculated(0),
-  fWeightedAvSep(0),
-  fFracOfMergedRow(0),
-  fClosestRowAtDCA(0),
+  fWeightedAvSep(0.0),
+  fFracOfMergedRow(0.0),
+  fClosestRowAtDCA(0.0),
   fMergingParNotCalculatedTrkV0Pos(0),
-  fFracOfMergedRowTrkV0Pos(0),
-  fClosestRowAtDCATrkV0Pos(0),
+  fFracOfMergedRowTrkV0Pos(0.0),
+  fClosestRowAtDCATrkV0Pos(0.0),
   fMergingParNotCalculatedTrkV0Neg(0),
-  fFracOfMergedRowTrkV0Neg(0),
-  fClosestRowAtDCATrkV0Neg(0),
+  fFracOfMergedRowTrkV0Neg(0.0),
+  fClosestRowAtDCATrkV0Neg(0.0),
   fMergingParNotCalculatedV0PosV0Neg(0),
-  fFracOfMergedRowV0PosV0Neg(0),
-  fClosestRowAtDCAV0PosV0Neg(0),
+  fFracOfMergedRowV0PosV0Neg(0.0),
+  fClosestRowAtDCAV0PosV0Neg(0.0),
   fMergingParNotCalculatedV0NegV0Pos(0),
-  fFracOfMergedRowV0NegV0Pos(0),
-  fClosestRowAtDCAV0NegV0Pos(0),
+  fFracOfMergedRowV0NegV0Pos(0.0),
+  fClosestRowAtDCAV0NegV0Pos(0.0),
   fMergingParNotCalculatedV0PosV0Pos(0),
-  fFracOfMergedRowV0PosV0Pos(0),
-  fClosestRowAtDCAV0PosV0Pos(0),
+  fFracOfMergedRowV0PosV0Pos(0.0),
+  fClosestRowAtDCAV0PosV0Pos(0.0),
   fMergingParNotCalculatedV0NegV0Neg(0),
-  fFracOfMergedRowV0NegV0Neg(0),
-  fClosestRowAtDCAV0NegV0Neg(0)
-{ 
+  fFracOfMergedRowV0NegV0Neg(0.0),
+  fClosestRowAtDCAV0NegV0Neg(0.0)
+{
   // Construct a pair from two particles
   SetDefaultHalfFieldMergingPar();
 }
 
-void AliFemtoPair::SetDefaultHalfFieldMergingPar(){
+void AliFemtoPair::SetDefaultHalfFieldMergingPar()
+{
   fgMaxDuInner = 3;
   fgMaxDzInner = 4.;
   fgMaxDuOuter = 4.;
   fgMaxDzOuter = 6.;
 }
-void AliFemtoPair::SetDefaultFullFieldMergingPar(){
+void AliFemtoPair::SetDefaultFullFieldMergingPar()
+{
   // Set default TPC merging parameters for STAR TPC
   fgMaxDuInner = 0.8;
   fgMaxDzInner = 3.;
@@ -115,85 +117,48 @@ void AliFemtoPair::SetMergingPar(double aMaxDuInner, double aMaxDzInner,
   fgMaxDzOuter = aMaxDzOuter;
 }
 
-AliFemtoPair::~AliFemtoPair() {
+AliFemtoPair::~AliFemtoPair()
+{
   // Destructor
-/* no-op */
+  /* no-op */
 }
 
 AliFemtoPair::AliFemtoPair(const AliFemtoPair &aPair):
-  fTrack1(0), fTrack2(0),
-  fPairAngleEP(0),
-  fNonIdParNotCalculated(0),
-  fDKSide(0),
-  fDKOut(0),
-  fDKLong(0),
-  fCVK(0),
-  fKStarCalc(0),
-  fNonIdParNotCalculatedGlobal(0),
-  fMergingParNotCalculated(0),
-  fWeightedAvSep(0),
-  fFracOfMergedRow(0),
-  fClosestRowAtDCA(0),
-  fMergingParNotCalculatedTrkV0Pos(0),
-  fFracOfMergedRowTrkV0Pos(0),
-  fClosestRowAtDCATrkV0Pos(0),
-  fMergingParNotCalculatedTrkV0Neg(0),
-  fFracOfMergedRowTrkV0Neg(0),
-  fClosestRowAtDCATrkV0Neg(0),
-  fMergingParNotCalculatedV0PosV0Neg(0),
-  fFracOfMergedRowV0PosV0Neg(0),
-  fClosestRowAtDCAV0PosV0Neg(0),
-  fMergingParNotCalculatedV0NegV0Pos(0),
-  fFracOfMergedRowV0NegV0Pos(0),
-  fClosestRowAtDCAV0NegV0Pos(0),
-  fMergingParNotCalculatedV0PosV0Pos(0),
-  fFracOfMergedRowV0PosV0Pos(0),
-  fClosestRowAtDCAV0PosV0Pos(0),
-  fMergingParNotCalculatedV0NegV0Neg(0),
-  fFracOfMergedRowV0NegV0Neg(0),
-  fClosestRowAtDCAV0NegV0Neg(0)
+  fTrack1(aPair.fTrack1),
+  fTrack2(aPair.fTrack2),
+  fPairAngleEP(aPair.fPairAngleEP),
+  fNonIdParNotCalculated(aPair.fNonIdParNotCalculated),
+  fDKSide(aPair.fDKSide),
+  fDKOut(aPair.fDKOut),
+  fDKLong(aPair.fDKLong),
+  fCVK(aPair.fCVK),
+  fKStarCalc(aPair.fKStarCalc),
+  fNonIdParNotCalculatedGlobal(aPair.fNonIdParNotCalculatedGlobal),
+  fMergingParNotCalculated(aPair.fMergingParNotCalculated),
+  fWeightedAvSep(aPair.fWeightedAvSep),
+  fFracOfMergedRow(aPair.fFracOfMergedRow),
+  fClosestRowAtDCA(aPair.fClosestRowAtDCA),
+  fMergingParNotCalculatedTrkV0Pos(aPair.fMergingParNotCalculatedTrkV0Pos),
+  fFracOfMergedRowTrkV0Pos(aPair.fFracOfMergedRowTrkV0Pos),
+  fClosestRowAtDCATrkV0Pos(aPair.fClosestRowAtDCATrkV0Pos),
+  fMergingParNotCalculatedTrkV0Neg(aPair.fMergingParNotCalculatedTrkV0Neg),
+  fFracOfMergedRowTrkV0Neg(aPair.fFracOfMergedRowTrkV0Neg),
+  fClosestRowAtDCATrkV0Neg(aPair.fClosestRowAtDCATrkV0Neg),
+  fMergingParNotCalculatedV0PosV0Neg(aPair.fMergingParNotCalculatedV0PosV0Neg),
+  fFracOfMergedRowV0PosV0Neg(aPair.fFracOfMergedRowV0PosV0Neg),
+  fClosestRowAtDCAV0PosV0Neg(aPair.fClosestRowAtDCAV0PosV0Neg),
+  fMergingParNotCalculatedV0NegV0Pos(aPair.fMergingParNotCalculatedV0NegV0Pos),
+  fFracOfMergedRowV0NegV0Pos(aPair.fFracOfMergedRowV0NegV0Pos),
+  fClosestRowAtDCAV0NegV0Pos(aPair.fClosestRowAtDCAV0NegV0Pos),
+  fMergingParNotCalculatedV0PosV0Pos(aPair.fMergingParNotCalculatedV0PosV0Pos),
+  fFracOfMergedRowV0PosV0Pos(aPair.fFracOfMergedRowV0PosV0Pos),
+  fClosestRowAtDCAV0PosV0Pos(aPair.fClosestRowAtDCAV0PosV0Pos),
+  fMergingParNotCalculatedV0NegV0Neg(aPair.fMergingParNotCalculatedV0NegV0Neg),
+  fFracOfMergedRowV0NegV0Neg(aPair.fFracOfMergedRowV0NegV0Neg),
+  fClosestRowAtDCAV0NegV0Neg(aPair.fClosestRowAtDCAV0NegV0Neg)
 {
   // Copy constructor
-  fTrack1 = aPair.fTrack1;
-  fTrack2 = aPair.fTrack2;
-
-  fNonIdParNotCalculated = aPair.fNonIdParNotCalculated;
-  fDKSide = aPair.fDKSide;
-  fDKOut = aPair.fDKOut;
-  fDKLong = aPair.fDKLong;
-  fCVK = aPair.fCVK;
-  fKStarCalc = aPair.fKStarCalc;
-
-  fNonIdParNotCalculatedGlobal = aPair.fNonIdParNotCalculatedGlobal;
-
-  fMergingParNotCalculated = aPair.fMergingParNotCalculated;
-  fWeightedAvSep = aPair.fWeightedAvSep;
-  fFracOfMergedRow = aPair.fFracOfMergedRow;
-  fClosestRowAtDCA = aPair.fClosestRowAtDCA;
-
-  fMergingParNotCalculatedTrkV0Pos = aPair.fMergingParNotCalculatedTrkV0Pos;
-  fFracOfMergedRowTrkV0Pos = aPair.fFracOfMergedRowTrkV0Pos;
-  fClosestRowAtDCATrkV0Pos = aPair.fClosestRowAtDCATrkV0Pos;
-
-  fMergingParNotCalculatedTrkV0Neg = aPair.fMergingParNotCalculatedTrkV0Neg;
-  fFracOfMergedRowTrkV0Neg = aPair.fFracOfMergedRowTrkV0Neg;
-  fClosestRowAtDCATrkV0Neg = aPair.fClosestRowAtDCATrkV0Neg;
-
-  fMergingParNotCalculatedV0PosV0Neg = aPair.fMergingParNotCalculatedV0PosV0Neg;
-  fFracOfMergedRowV0PosV0Neg = aPair.fFracOfMergedRowV0PosV0Neg;
-  fClosestRowAtDCAV0PosV0Neg = aPair.fClosestRowAtDCAV0PosV0Neg;
-
-  fMergingParNotCalculatedV0NegV0Pos = aPair.fMergingParNotCalculatedV0NegV0Pos;
-  fFracOfMergedRowV0NegV0Pos = aPair.fFracOfMergedRowV0NegV0Pos;
-  fClosestRowAtDCAV0NegV0Pos = aPair.fClosestRowAtDCAV0NegV0Pos;
-
-  fMergingParNotCalculatedV0PosV0Pos = aPair.fMergingParNotCalculatedV0PosV0Pos;
-  fFracOfMergedRowV0PosV0Pos = aPair.fFracOfMergedRowV0PosV0Pos;
-  fClosestRowAtDCAV0PosV0Pos = aPair.fClosestRowAtDCAV0PosV0Pos;
-
-  fMergingParNotCalculatedV0NegV0Neg = aPair.fMergingParNotCalculatedV0NegV0Neg;
-  fFracOfMergedRowV0NegV0Neg = aPair.fFracOfMergedRowV0NegV0Neg;
-  fClosestRowAtDCAV0NegV0Neg = aPair.fClosestRowAtDCAV0NegV0Neg;
+  /* no-op */
 }
 
 AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
@@ -204,6 +169,8 @@ AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
 
   fTrack1 = aPair.fTrack1;
   fTrack2 = aPair.fTrack2;
+
+  fPairAngleEP = aPair.fPairAngleEP;
 
   fNonIdParNotCalculated = aPair.fNonIdParNotCalculated;
   fDKSide = aPair.fDKSide;
@@ -262,8 +229,7 @@ double AliFemtoPair::MInv() const
 double AliFemtoPair::KT() const
 {
   // transverse momentum
-  double  tmp = 
-    (fTrack1->FourMomentum() + fTrack2->FourMomentum()).Perp();
+  double tmp = (fTrack1->FourMomentum() + fTrack2->FourMomentum()).Perp();
   tmp *= .5;
 
   return (tmp);
@@ -272,10 +238,13 @@ double AliFemtoPair::KT() const
 double AliFemtoPair::Rap() const
 {
   // longitudinal pair rapidity : Y = 0.5 ::log( E1 + E2 + pz1 + pz2 / E1 + E2 - pz1 - pz2 )
-  double  tmp = 0.5 * log (
-			   (fTrack1->FourMomentum().e() + fTrack2->FourMomentum().e() + fTrack1->FourMomentum().z() + fTrack2->FourMomentum().z()) / 
-			   (fTrack1->FourMomentum().e() + fTrack2->FourMomentum().e() - fTrack1->FourMomentum().z() - fTrack2->FourMomentum().z()) 
-			   ) ;
+  const AliFemtoLorentzVector &p1 = fTrack1->FourMomentum(),
+                              &p2 = fTrack2->FourMomentum();
+
+  const double E = p1.e() + p2.e(),
+               Z = p1.z() + p2.z(),
+             tmp = 0.5 * log ( (E + Z) / (E - Z) );
+
   return (tmp);
 }
 //_________________
@@ -313,9 +282,9 @@ void AliFemtoPair::QYKPCMS(double& qP, double& qT, double& q0) const
   AliFemtoLorentzVector l2 = fTrack2->FourMomentum() ;
   AliFemtoLorentzVector  l ;
   // random ordering of the particles
-  if ( rand()/(double)RAND_MAX > 0.50 )  
-    { l = l1-l2 ; } 
-  else 
+  if ( rand()/(double)RAND_MAX > 0.50 )
+    { l = l1-l2 ; }
+  else
     { l = l2-l1 ; } ;
   // fill momentum differences into return variables
   qP = l.z() ;
@@ -336,21 +305,21 @@ void AliFemtoPair::QYKPLCMS(double& qP, double& qT, double& q0) const
   double beta2 =  beta*beta ;
   // unfortunately STAR Class lib knows only boost(particle) not boost(beta) :(
   // -> create particle with velocity beta and mass 1.0
-  // actually this is : dummyPz = ::sqrt( (dummyMass*dummyMass*beta2) / (1-beta2) ) ; 
+  // actually this is : dummyPz = ::sqrt( (dummyMass*dummyMass*beta2) / (1-beta2) ) ;
   double dummyPz = ::sqrt( (beta2) / (1-beta2) ) ;
   // boost in the correct direction
   if (beta>0.0) { dummyPz = -dummyPz; } ;
   // create dummy particle
-  AliFemtoLorentzVector  l(0.0, 0.0, dummyPz) ; 
+  AliFemtoLorentzVector  l(0.0, 0.0, dummyPz) ;
   double dummyMass = 1.0 ;
   l.SetE(l.vect().MassHypothesis(dummyMass) );
-  // boost particles along the beam into a frame with velocity beta 
+  // boost particles along the beam into a frame with velocity beta
   AliFemtoLorentzVector l1boosted = l1.boost(l) ;
   AliFemtoLorentzVector l2boosted = l2.boost(l) ;
   // caculate the momentum difference with random ordering of the particle
-  if ( rand()/(double)RAND_MAX >0.50)  
-    { l = l1boosted-l2boosted ; } 
-  else 
+  if ( rand()/(double)RAND_MAX >0.50)
+    { l = l1boosted-l2boosted ; }
+  else
     { l = l2boosted-l1boosted ;} ;
   // fill momentum differences into return variables
   qP = l.z() ;
@@ -361,22 +330,22 @@ void AliFemtoPair::QYKPLCMS(double& qP, double& qT, double& q0) const
 // Yano-Koonin-Podgoretskii Parametrisation in pair rest frame
 void AliFemtoPair::QYKPPF(double& qP, double& qT, double& q0) const
 {
-  ////
-  //  calculate momentum difference in pair rest frame : frame where (pz1 + pz2, py1 + py2, px1 + px2) = (0,0,0)
-  ////
+  ///
+  /// Calculate momentum difference in pair rest frame : frame where (pz1 + pz2, py1 + py2, px1 + px2) = (0,0,0)
+  ///
   AliFemtoLorentzVector l1 = fTrack1->FourMomentum() ;
   AliFemtoLorentzVector l2 = fTrack2->FourMomentum() ;
   // the center of gravity of the pair travels with l
-  AliFemtoLorentzVector  l = l1 + l2 ; 
+  AliFemtoLorentzVector  l = l1 + l2 ;
   l = -l ;
   l.SetE(-l.e()) ;
-  // boost particles  
+  // boost particles
   AliFemtoLorentzVector l1boosted = l1.boost(l) ;
   AliFemtoLorentzVector l2boosted = l2.boost(l) ;
   // caculate the momentum difference with random ordering of the particle
-  if ( rand()/(double)RAND_MAX > 0.50)  
-    { l = l1boosted-l2boosted ; } 
-  else 
+  if ( rand()/(double)RAND_MAX > 0.50)
+    { l = l1boosted-l2boosted ; }
+  else
     { l = l2boosted-l1boosted ;} ;
   // fill momentum differences into return variables
   qP = l.z();
@@ -392,7 +361,7 @@ double AliFemtoPair::QOutCMS() const
 
     double dx = tmp1.x() - tmp2.x();
     double xt = tmp1.x() + tmp2.x();
-    
+
     double dy = tmp1.y() - tmp2.y();
     double yt = tmp1.y() + tmp2.y();
 
@@ -417,7 +386,7 @@ double AliFemtoPair::QSideCMS() const
 
     double xt = x1+x2;  double yt = y1+y2;
     double k1 = ::sqrt(xt*xt+yt*yt);
-    
+
     double tmp;
     if(k1!=0) tmp= 2.0*(x2*y1-x1*y2)/k1;
     else tmp=0;
@@ -451,17 +420,17 @@ double AliFemtoPair::QOutPf() const
   // relative momentum out component in pair frame
   AliFemtoLorentzVector tmp1 = fTrack1->FourMomentum();
   AliFemtoLorentzVector tmp2 = fTrack2->FourMomentum();
-  
+
   double dt = tmp1.t() - tmp2.t();
   double tt = tmp1.t() + tmp2.t();
-  
+
   double xt = tmp1.x() + tmp2.x();
   double yt = tmp1.y() + tmp2.y();
-  
+
   double k1 = ::sqrt(xt*xt + yt*yt);
   double bOut = k1/tt;
   double gOut = 1.0/TMath::Sqrt((1.-bOut)*(1.+bOut));
-  
+
   double temp = gOut*(QOutCMS() - bOut*dt);
   return (temp);
 }
@@ -494,14 +463,14 @@ double AliFemtoPair::QOutBf(double /* beta */) const
 
 double AliFemtoPair::QSideBf(double /* beta */) const
 {
-  // relative momentum side component 
+  // relative momentum side component
  return(this->QSideCMS());
 }
 
 //___________________________________
 double AliFemtoPair::QLongBf(double beta) const
 {
-  // relative momentum long component 
+  // relative momentum long component
     AliFemtoLorentzVector tmp1 = fTrack1->FourMomentum();
     AliFemtoLorentzVector tmp2 = fTrack2->FourMomentum();
 
@@ -514,7 +483,8 @@ double AliFemtoPair::QLongBf(double beta) const
     return (temp);
 }
 
-double AliFemtoPair::Quality() const {
+double AliFemtoPair::Quality() const
+{
   // Calculate split quality of the pair
   unsigned long mapMask0 = 0xFFFFFF00;
   unsigned long mapMask1 = 0x1FFFFF;
@@ -560,7 +530,8 @@ double AliFemtoPair::Quality() const {
 
 }
 
-double AliFemtoPair::Quality2() const {
+double AliFemtoPair::Quality2() const
+{
   // second implementation of split quality
   unsigned long mapMask0 = 0xFFFFFF00;
   unsigned long mapMask1 = 0x1FFFFF;
@@ -609,13 +580,15 @@ double AliFemtoPair::Quality2() const {
 }
 
 
-double AliFemtoPair::NominalTpcExitSeparation() const {
+double AliFemtoPair::NominalTpcExitSeparation() const
+{
   // separation at exit from STAR TPC
   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->Track()->NominalTpcExitPoint();
   return (diff.Mag());
 }
 
-double AliFemtoPair::NominalTpcEntranceSeparation() const {
+double AliFemtoPair::NominalTpcEntranceSeparation() const
+{
   // separation at entrance to STAR TPC
   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->Track()->NominalTpcEntrancePoint();
   return (diff.Mag());
@@ -628,10 +601,10 @@ double AliFemtoPair::NominalTpcEntranceSeparation() const {
 //   int ipt = 0;
 //   if (fTrack1->fNominalPosSample && fTrack2->fNominalPosSample){
 //   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
 // 	 fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
 // 	 ipt<11
 // 	 ){
@@ -645,7 +618,8 @@ double AliFemtoPair::NominalTpcEntranceSeparation() const {
 //   else return -1;
 // }
 
-double AliFemtoPair::OpeningAngle() const {
+double AliFemtoPair::OpeningAngle() const
+{
   // opening angle
  return 57.296* fTrack1->FourMomentum().vect().Angle( fTrack2->FourMomentum().vect() );
 //   AliFemtoThreeVector p1 = fTrack1->FourMomentum().vect();
@@ -657,17 +631,18 @@ double AliFemtoPair::OpeningAngle() const {
 //_________________
 
 
-double AliFemtoPair::KStarFlipped() const {
+double AliFemtoPair::KStarFlipped() const
+{
   // kstar with sign flipped
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
 
   AliFmThreeVectorD qwe = tP1.vect();
   qwe *= -1.; // flip it
   tP1.SetVect(qwe);
-  
+
   AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
   double tMass = abs(tSum);
-  AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect(); 
+  AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect();
   double tGamma = tSum.e()/tMass;
   AliFmThreeVectorD tLongMom  = ((tP1.vect()*tGammaBeta)/
 			      (tGammaBeta*tGammaBeta))*tGammaBeta;
@@ -681,7 +656,7 @@ double AliFemtoPair::KStarFlipped() const {
 //const AliFemtoLorentzVector& tP1 = fTrack1->FourMomentum();
 //AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
 //double tMass = abs(tSum);
-//AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect(); 
+//AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect();
 //double tGamma = tSum.e()/tMass;
 //AliFmThreeVectorD tLongMom  = ((tP1.vect()*tGammaBeta)/
 //		      (tGammaBeta*tGammaBeta))*tGammaBeta;
@@ -690,16 +665,17 @@ double AliFemtoPair::KStarFlipped() const {
 //return (tK.vect())*tGammaBeta/tK.vect().Magnitude()/tGammaBeta.Magnitude();
 //}
 
-double AliFemtoPair::CVKFlipped() const{
+double AliFemtoPair::CVKFlipped() const
+{
   // CVK with sign flipped
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
   AliFmThreeVectorD qwe = tP1.vect();
   qwe *= -1.; // flip it
   tP1.SetVect(qwe);
-  
+
   AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
   double tMass = abs(tSum);
-  AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect(); 
+  AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect();
   double tGamma = tSum.e()/tMass;
   AliFmThreeVectorD tLongMom  = ((tP1.vect()*tGammaBeta)/
 			      (tGammaBeta*tGammaBeta))*tGammaBeta;
@@ -709,7 +685,8 @@ double AliFemtoPair::CVKFlipped() const{
   return (tK.vect())*tGammaBeta/tGamma;
 }
 
-double AliFemtoPair::PInv() const{
+double AliFemtoPair::PInv() const
+{
   // invariant total momentum
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
   AliFemtoLorentzVector tP2 = fTrack2->FourMomentum();
@@ -720,7 +697,8 @@ double AliFemtoPair::PInv() const{
   return ::sqrt(fabs(tP));
 }
 
-double AliFemtoPair::QInvFlippedXY() const{
+double AliFemtoPair::QInvFlippedXY() const
+{
   // qinv with X and Y flipped
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
   tP1.SetX(-1.*tP1.x());
@@ -729,8 +707,9 @@ double AliFemtoPair::QInvFlippedXY() const{
   return ( -1.* tDiff.m());
 }
 
-void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
-  // Calculate generalized relative mometum 
+void AliFemtoPair::CalcNonIdPar() const
+{ // fortran like function! faster?
+  // Calculate generalized relative mometum
   // Use this instead of qXYZ() function when calculating
   // anything for non-identical particles
   fNonIdParNotCalculated=0;
@@ -758,44 +737,44 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
   double tPy = py1+py2;
   double tPz = pz1+pz2;
   double tPE = pE1+pE2;
-      
+
   double tPtrans = tPx*tPx + tPy*tPy;
   double tMtrans = tPE*tPE - tPz*tPz;
   double tPinv =   ::sqrt(tMtrans - tPtrans);
   tMtrans = ::sqrt(tMtrans);
   tPtrans = ::sqrt(tPtrans);
-	
+
   double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
     (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
 
   double tQ = (tParticle1Mass*tParticle1Mass - tParticle2Mass*tParticle2Mass)/tPinv;
   tQ = sqrt ( tQ*tQ - tQinvL);
-	  
+
   fKStarCalc = tQ/2;
 
   // ad 1) go to LCMS
   double beta = tPz/tPE;
   double gamma = tPE/tMtrans;
-	    
+
   double pz1L = gamma * (pz1 - beta * pE1);
   double pE1L = gamma * (pE1 - beta * pz1);
-  
+
   // fill histogram for beam projection ( z - axis )
   fDKLong = pz1L;
 
   // ad 2) rotation px -> tPt
   double px1R = (px1*tPx + py1*tPy)/tPtrans;
   double py1R = (-px1*tPy + py1*tPx)/tPtrans;
-  
+
   //fill histograms for side projection ( y - axis )
   fDKSide = py1R;
 
   // ad 3) go from LCMS to CMS
   beta = tPtrans/tMtrans;
   gamma = tMtrans/tPinv;
-  
+
   double px1C = gamma * (px1R - beta * pE1L);
-  
+
   // fill histogram for out projection ( x - axis )
   fDKOut  = px1C;
 
@@ -823,44 +802,44 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
   double Py = py1+py2;
   double Pz = pz1+pz2;
   double PE = pE1+pE2;
-      
+
   double Ptrans = Px*Px + Py*Py;
   double Mtrans = PE*PE - Pz*Pz;
   double Pinv =   ::sqrt(Mtrans - Ptrans);
   Mtrans = ::sqrt(Mtrans);
   Ptrans = ::sqrt(Ptrans);
-	
+
   double QinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
     (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
 
   double Q = (tParticle1Mass*tParticle1Mass - tParticle2Mass*tParticle2Mass)/Pinv;
   Q = sqrt ( Q*Q - QinvL);
-	  
+
   kStarCalcGlobal = Q/2;
 
   // ad 1) go to LCMS
   double beta = Pz/PE;
   double gamma = PE/Mtrans;
-	    
+
   double pz1L = gamma * (pz1 - beta * pE1);
   double pE1L = gamma * (pE1 - beta * pz1);
-  
+
   // fill histogram for beam projection ( z - axis )
   fDKLongGlobal = pz1L;
 
   // ad 2) rotation px -> Pt
   double px1R = (px1*Px + py1*Py)/Ptrans;
   double py1R = (-px1*Py + py1*Px)/Ptrans;
-  
+
   //fill histograms for side projection ( y - axis )
   fDKSideGlobal = py1R;
 
   // ad 3) go from LCMS to CMS
   beta = Ptrans/Mtrans;
   gamma = Mtrans/Pinv;
-  
+
   double px1C = gamma * (px1R - beta * pE1L);
-  
+
   // fill histogram for out projection ( x - axis )
   fDKOutGlobal  = px1C;
 
@@ -893,7 +872,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //   double r1 = 1/tHelix1.Curvature();
 //   double r2 = 1/tHelix2.Curvature();
 //   double cosAlpha = (r1*r1 + dd*dd - r2*r2)/(2*r1*dd);
-    
+
 //   double x, y, r;
 //   double s;
 //   if (fabs(cosAlpha) < 1) {           // two solutions
@@ -901,14 +880,14 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //     x = tHelix1.XCenter() + r1*(cosAlpha*dx - sinAlpha*dy)/dd;
 //     y = tHelix1.YCenter() + r1*(sinAlpha*dx + cosAlpha*dy)/dd;
 //     r = ::sqrt(x*x+y*y);
-//     if( r > rMin &&  r < rMax && 
+//     if( r > rMin &&  r < rMax &&
 // 	fabs(atan2(y,x)-fTrack1->Track()->NominalTpcEntrancePoint().phi())< 0.5
 // 	){ // first solution inside
 //       s = tHelix1.PathLength(x, y);
 //       tInsideDist=tHelix2.Distance(tHelix1.At(s));
 //       if(tInsideDist<tMinDist) tMinDist = tInsideDist;
 //     }
-//     else{ 
+//     else{
 //       x = tHelix1.XCenter() + r1*(cosAlpha*dx + sinAlpha*dy)/dd;
 //       y = tHelix1.YCenter() + r1*(cosAlpha*dy - sinAlpha*dx)/dd;
 //       r = ::sqrt(x*x+y*y);
@@ -918,7 +897,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //         s = tHelix1.PathLength(x, y);
 //         tInsideDist=tHelix2.Distance(tHelix1.At(s));
 //         if(tInsideDist<tMinDist) tMinDist = tInsideDist;
-//       }     
+//       }
 //     }
 //   }
 //   return tMinDist;
@@ -971,7 +950,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // double AliFemtoPair::TpcExitSeparationTrackV0Pos() const {
 // //________________V0 daughters exit/entrance/average separation calc.
 // //_______1st part is a track 2nd is a V0 considering Pos daughter
-  
+
 //   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->TpcV0PosExitPoint();
 //   return (diff.Mag());
 // }
@@ -991,10 +970,10 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //   int ipt = 0;
 //   if (fTrack1->fNominalPosSample && fTrack2->fNominalPosSample){
 //   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
 // 	 fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fNominalPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
 // 	 (ipt<11)
 // 	 ){
@@ -1025,10 +1004,10 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //   int ipt = 0;
 //   if (fTrack1->fNominalPosSample && fTrack2->fTpcV0NegPosSample){
 //   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
 // 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
 // 	 (ipt<11)
 // 	 ){
@@ -1064,7 +1043,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	(fabs(fTrack2->fNominalPosSample[ipt].x())<9999.) &&
 // 	(fabs(fTrack2->fNominalPosSample[ipt].y())<9999.) &&
 // 	(fabs(fTrack2->fNominalPosSample[ipt].z())<9999.) &&
-// 	 (ipt<11)  
+// 	 (ipt<11)
 // 	){
 //       diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
 //       ipt++;
@@ -1093,10 +1072,10 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //   int ipt = 0;
 //   if (fTrack1->fNominalPosSample && fTrack2->fTpcV0NegPosSample){
 //   while (fabs(fTrack1->fNominalPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack1->fNominalPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack1->fNominalPosSample[ipt].z())<9999. &&
 // 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
-// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. &&
 // 	 fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
 // 	 (ipt<11)
 // 	 ){
@@ -1106,7 +1085,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //   }
 //   tAveSep = tAveSep/(ipt+1.);
 //   return (tAveSep);}
-//   else return -1; 
+//   else return -1;
 // }
 // double AliFemtoPair::TpcExitSeparationV0NegV0Pos() const {
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
@@ -1129,10 +1108,10 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //    int ipt = 0;
 //    if ( fTrack1->fTpcV0NegPosSample &&  fTrack2->fNominalPosSample){
 //      while (fabs(fTrack1->fTpcV0NegPosSample[ipt].x())<9999. &&
-// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. &&
 // 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].z())<9999. &&
 // 	    fabs(fTrack2->fNominalPosSample[ipt].x())<9999. &&
-// 	    fabs(fTrack2->fNominalPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack2->fNominalPosSample[ipt].y())<9999. &&
 // 	    fabs(fTrack2->fNominalPosSample[ipt].z())<9999. &&
 // 	    (ipt<11)
 // 	    ){
@@ -1162,10 +1141,10 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //    int ipt=0;
 //    if (fTrack1->fTpcV0NegPosSample && fTrack2->fTpcV0NegPosSample){
 //      while (fabs(fTrack1->fTpcV0NegPosSample[ipt].x())<9999. &&
-// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].y())<9999. &&
 // 	    fabs(fTrack1->fTpcV0NegPosSample[ipt].z())<9999. &&
 // 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].x())<9999. &&
-// 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. && 
+// 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].y())<9999. &&
 // 	    fabs(fTrack2->fTpcV0NegPosSample[ipt].z())<9999. &&
 // 	    (ipt<11)
 // 	    ){
@@ -1185,7 +1164,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 				   double* tmpFracOfMergedRow,
 // 				   double* tmpClosestRowAtDCA
 // 				   ) const{
-// // calculate heper variables for merging 
+// // calculate heper variables for merging
 //   tmpMergingParNotCalculatedFctn=0;
 //   double tDu, tDz;
 //   int tN = 0;
@@ -1213,7 +1192,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	tDistMax = tDist;
 //       }
 //       //fWeightedAvSep += tDist; // now, wrong but not used
-//     }	
+//     }
 //   }
 //   if(tN>0){
 //     //fWeightedAvSep /= tN;
@@ -1225,4 +1204,3 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 //     //fWeightedAvSep = -1.;
 //   }
 // }
-

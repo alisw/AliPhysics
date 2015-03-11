@@ -1,15 +1,15 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoManager: main class managing femtoscopic analysis             //
-// The Manager is the top-level object that coordinates activities       //
-// and performs event, particle, and pair loops, and checks the          //
-// various Cuts of the Analyses in its AnalysisCollection                //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file  AliFemtoManager.h
+/// \class AliFemtoManager
+/// \brief Main class for managing femtoscopic analyses
+///
+/// The Manager is the top-level object that coordinates activities
+/// and performs event, particle, and pair loops, and checks the
+/// various cuts of the snalyses in its AnalysisCollection
+///
 
 #ifndef ALIFEMTOMANAGER_H
 #define ALIFEMTOMANAGER_H
-
 
 #include "AliFemtoTypes.h"
 #include "AliFemtoAnalysisCollection.h"
@@ -19,12 +19,12 @@
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEventWriter.h"
 
-class AliFemtoManager{
+class AliFemtoManager {
 
 private:
-  AliFemtoAnalysisCollection* fAnalysisCollection;       // Collection of analyzes
-  AliFemtoEventReader*        fEventReader;              // Event reader
-  AliFemtoEventWriterCollection* fEventWriterCollection; // Event writer collection
+  AliFemtoAnalysisCollection* fAnalysisCollection;       ///< Collection of analyzes
+  AliFemtoEventReader*        fEventReader;              ///< Event reader
+  AliFemtoEventWriterCollection* fEventWriterCollection; ///< Event writer collection
 
 public:
   AliFemtoManager();
@@ -35,24 +35,26 @@ public:
 
   // Gets and Sets...
   AliFemtoAnalysisCollection* AnalysisCollection();
-  AliFemtoAnalysis* Analysis(int n);  // Access to Analysis within Collection
+  AliFemtoAnalysis* Analysis(int n);            ///< Access to Analysis within Collection
   void AddAnalysis(AliFemtoAnalysis* a);
 
   AliFemtoEventWriterCollection* EventWriterCollection();
-  AliFemtoEventWriter* EventWriter(int n);// Access to EventWriter within Collection
-  void SetEventWriter(AliFemtoEventWriter* w);  // just for historic reasons
+  AliFemtoEventWriter* EventWriter(int n);      ///< Access to EventWriter within Collection
+  void SetEventWriter(AliFemtoEventWriter* w);  ///< just for historic reasons
   void AddEventWriter(AliFemtoEventWriter* w);
 
   AliFemtoEventReader* EventReader();
   void SetEventReader(AliFemtoEventReader* r);
 
   int Init();
-  int ProcessEvent();   // a "0" return value means success - otherwise quit
+  int ProcessEvent();   ///< a "0" return value means success - otherwise quit
   void Finish();
 
-  AliFemtoString Report(); //!
+  AliFemtoString Report(); //!<
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoManager, 0)
+  /// \endcond
 #endif
 };
 
@@ -66,6 +68,4 @@ inline void AliFemtoManager::SetEventWriter(AliFemtoEventWriter* writer){fEventW
 inline AliFemtoEventReader* AliFemtoManager::EventReader(){return fEventReader;}
 inline void AliFemtoManager::SetEventReader(AliFemtoEventReader* reader){fEventReader = reader;}
 
-
 #endif
-

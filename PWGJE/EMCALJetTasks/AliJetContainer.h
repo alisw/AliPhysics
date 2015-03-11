@@ -33,9 +33,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer();
   AliJetContainer(const char *name); 
   virtual ~AliJetContainer() {;}
-
-  void SetEMCALGeometry();
-  void SetEMCALGeometry(AliEMCALGeometry *p) {fGeom = p;}
+  
   void LoadRho(AliVEvent *event);
   void LoadLocalRho(AliVEvent *event);
   void LoadRhoMass(AliVEvent *event);
@@ -71,7 +69,7 @@ class AliJetContainer : public AliEmcalContainer {
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
   virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   virtual void                SetRhoMassName(const char *n)                        { fRhoMassName    = n                ; }
-  virtual void                SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n; }
+  virtual void                SetPythiaInfoName(const char *n)                     { fPythiaInfoName = n                ; }
     
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
@@ -88,6 +86,8 @@ class AliJetContainer : public AliEmcalContainer {
   Bool_t                      AcceptBiasJet(const AliEmcalJet* jet)      ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
+  Int_t                       GetNAcceptedJets()                         ;
+
   Double_t                    GetLeadingHadronPt(const AliEmcalJet* jet)  const;
   void                        GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmcalJet* jet)  const;
   Double_t                    GetZ(const AliEmcalJet *jet, TLorentzVector mom) const;
@@ -102,7 +102,7 @@ class AliJetContainer : public AliEmcalContainer {
   Double_t                    GetRhoMassVal()                       const    {if (fRhoMass) return fRhoMass->GetVal(); else return 0;}
   const TString&              GetRhoMassName()                      const    {return fRhoMassName;}
   const TString&              GetPythiaInfoName()                   const    {return fPythiaInfoName;}
-  AliPythiaInfo         *GetPythiaInfo()                  const    {return fPythiaInfo;}
+  AliPythiaInfo              *GetPythiaInfo()                       const    {return fPythiaInfo;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
   Double_t                    GetJetPtCorrLocal(Int_t i)            const;
   Float_t                     GetJetRadius()                        const    {return fJetRadius;}
@@ -111,14 +111,16 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
   Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
   Float_t                     GetJetPtCut()                         const    {return fJetPtCut;}
+
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet) const;
- 
 
  protected:
+  void SetEMCALGeometry();
+  
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
   Float_t                     fJetRadius;            //  jet radius
   TString                     fRhoName;              //  Name of rho object
@@ -152,7 +154,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliRhoParameter            *fRho;                  //! event rho for these jets
   AliLocalRhoParameter       *fLocalRho;             //! event local rho for these jets
   AliRhoParameter            *fRhoMass;              //! event rho mass for these jets
-  AliPythiaInfo         *fPythiaInfo;          //! event parton info
+  AliPythiaInfo              *fPythiaInfo;           //! event parton info
   AliEMCALGeometry           *fGeom;                 //! emcal geometry
   Int_t                       fRunNumber;            //! run number
 
@@ -161,7 +163,6 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
   ClassDef(AliJetContainer,11);
-
 };
 
 #endif

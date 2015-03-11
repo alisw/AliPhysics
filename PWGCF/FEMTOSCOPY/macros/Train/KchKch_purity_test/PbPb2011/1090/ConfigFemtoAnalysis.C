@@ -1,4 +1,3 @@
- 
 /********************************************************************* 
  *                                                                   * 
  * ConfigFemtoAnalysis.C - configuration macro for the femtoscopic   * 
@@ -35,6 +34,7 @@
 #include "AliFemtoCorrFctn3DSpherical.h"
 #include "AliFemtoChi2CorrFctn.h"
 #include "AliFemtoCorrFctnTPCNcls.h"
+#include "AliFemtoBPLCMS3DCorrFctnKK.h"
 #include "AliFemtoBPLCMS3DCorrFctn.h"
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 #include "AliFemtoModelBPLCMSCorrFctn.h"
@@ -72,8 +72,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
   //double PhiStarDifferenceMinimum=0.03;//0.017; //[radian]
   //double EtaDifferenceMinimum=0.02;//0.015; //[radian]
-   double PhiStarDifferenceMinimum=0.04; //[radian]
-   double EtaDifferenceMinimum=0.03; //[radian]
+   double PhiStarDifferenceMinimum=0.045; //[radian]
+   double EtaDifferenceMinimum=0.01; //[radian]
   
   
   //=======Double track cuts=================================================<
@@ -165,8 +165,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[20];
 //AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
 //    AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
-  //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
-  AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];//Dhevan's dphi* cut
+  AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
+  // AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];//Dhevan's dphi* cut
   AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
   AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[20*10];//20->20*10 due to kT
   AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
@@ -174,7 +174,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCorrFctnDirectYlm     *cylmkttpc[20*8];
   AliFemtoQinvCorrFctn          *cqinvkttpc[20*8];
  // AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
-  AliFemtoBPLCMS3DCorrFctn  *cq3dlcmskttpc[20*8];
+  AliFemtoBPLCMS3DCorrFctnKK  *cq3dlcmskttpc[20*8];
  
   AliFemtoCorrFctnTPCNcls       *cqinvnclstpc[20];
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
@@ -189,7 +189,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     if (runmults[imult]) {
       for (int ichg=0; ichg<2; ichg++) {
 	if (runch[ichg]) {
-	  aniter = ichg*5+imult;
+	  aniter = ichg*cMu+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(3);
@@ -278,6 +278,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
 	    dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
 	    //      dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+
 	  }
 	  else if (runtype == 2) {
 	    //	    dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
@@ -312,7 +313,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  
           if (ichg < 2) {
 	    //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();//AliFemto dphi* cut
-    	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();  //Dhevan's dphi* cut
+    	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();  //Dhevan's dphi* cut
 	  if (runtype == 0) {
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
@@ -325,14 +326,18 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
         
 	   //--------- km:  eta-phi* Dhevan's custs ----------->>>>
-     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
+  
+
+            sqpcetaphitpc[aniter]->SetMinimumRadius(1.2); //0.8
+            sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
+
+   	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
             sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(EtaDifferenceMinimum);
            //sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);//not need for AliFemtoPairCutRadialDistanceKK()
 	   //--------- km:  eta-phi* Dhevan's custs -----------<<<
 
           //////////////sqpcetaphitpc[aniter]->SetMagneticFieldSign(1);
-	  
-	 
+	  	 
 	    
 	  }
 	  else if (runtype == 1) {
@@ -351,6 +356,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 //  void SetMagneticFieldSign(int magsign);
 
 	   //--------- km:  eta-phi* Dhevan's custs ----------->>>>
+            sqpcetaphitpc[aniter]->SetMinimumRadius(1.2); //0.8
+            sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
      	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
             sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(EtaDifferenceMinimum);
            //sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);//not need for AliFemtoPairCutRadialDistanceKK()
@@ -373,6 +380,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 //ml	    sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.016);
 
 	   //--------- km:  eta-phi* Dhevan's custs ----------->>>>
+
+            sqpcetaphitpc[aniter]->SetMinimumRadius(1.2); //0.8
+            sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
      	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
             sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(EtaDifferenceMinimum);
            //sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);//not need for AliFemtoPairCutRadialDistanceKK()
@@ -417,9 +427,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
-	      cqinvsqtpc[ktm] = new AliFemtoShareQualityCorrFctn(Form("cqinvsq%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
-	      cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-	      anetaphitpc[aniter]->AddCorrFctn(cqinvsqtpc[ktm]);
+//	      cqinvsqtpc[ktm] = new AliFemtoShareQualityCorrFctn(Form("cqinvsq%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+//	      cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+//	      anetaphitpc[aniter]->AddCorrFctn(cqinvsqtpc[ktm]);
 
 //	      cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
 //	      cqinvinnertpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
@@ -436,7 +446,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
         //    AliFemtoBPLCMS3DCorrFctn *cq3dallpiptpc = new AliFemtoBPLCMS3DCorrFctn("cq3dallpiptpc",100,-1.5,1.5);
                                  
-	cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,-0.3,0.3);
+	cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,-0.3,0.3);
 //	cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);

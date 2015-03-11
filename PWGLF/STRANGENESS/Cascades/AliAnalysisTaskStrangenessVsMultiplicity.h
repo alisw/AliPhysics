@@ -156,6 +156,8 @@ private:
     Float_t fAmplitude_V0A;   //!
     Float_t fAmplitude_V0C;   //!
     Float_t fAmplitude_V0M;   //!
+    Float_t fAmplitude_V0Apartial;   //!
+    Float_t fAmplitude_V0Cpartial;   //!
     Float_t fAmplitude_V0AEq; //!
     Float_t fAmplitude_V0CEq; //!
     Float_t fAmplitude_V0MEq; //!
@@ -171,6 +173,9 @@ private:
 
     //Differential reference multiplicity
     Int_t  fRefMultDiffEta[20]; //!
+    
+    //Not to be filled completely: tracklet eta 
+    Float_t fEvent_TrackletEta[500]; //!
 
     //Event Characterization Variables - optional
     Bool_t fEvSel_HasAtLeastSPDVertex;      //!
@@ -287,6 +292,8 @@ private:
 
     //Differential reference multiplicity
     Int_t  fTreeCascVarRefMultDiffEta[20]; //!
+    
+    
 
 //===========================================================================================
 //   Histograms

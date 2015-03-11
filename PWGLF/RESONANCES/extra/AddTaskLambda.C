@@ -6,7 +6,7 @@ AliAnalysisTaskLambdaStar *AddTaskLambda
       Int_t Centmax =10,
       Double_t Nsigma = 3.0,
       Int_t Nmix = 5,
-      Bool_t Nstrong = kFALSE,
+      Bool_t Nstrong = kTRUE,
       Int_t Centp = 510,
       TString  Dirsuffixname = ""
 )
@@ -39,8 +39,8 @@ AliAnalysisTaskLambdaStar *AddTaskLambda
    
   mgr->AddTask(task);
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer(); 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cHistLambda", TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s:lambdastar_%s", AliAnalysisManager::GetCommonFileName(),Dirsuffixname.Data()));
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cHistPrim", TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s:primary_%s", AliAnalysisManager::GetCommonFileName(),Dirsuffixname.Data()));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("cHistLambda_%s",Dirsuffixname.Data()), TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s:lambdastar", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("cHistPrim_%s",Dirsuffixname.Data()), TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s:primary", AliAnalysisManager::GetCommonFileName()));
     
 	mgr->ConnectInput (task, 0, cinput0);
 	mgr->ConnectOutput(task,1,coutput1);

@@ -121,8 +121,9 @@ AliAnalysisTaskSE(),
   fLowmasslimit(1.765),
   fNMassBins(200),
   fRDCutsAnalysis(0),
-  fCounter(0),
+  fCounterC(0),
   fCounterU(0),
+  fCounterCandidates(0),
   fDoImpPar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -216,8 +217,9 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fLowmasslimit(1.765),
   fNMassBins(200),
   fRDCutsAnalysis(cuts),
-  fCounter(0),
+  fCounterC(0),
   fCounterU(0),
+  fCounterCandidates(0),
   fDoImpPar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -271,8 +273,9 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
   delete fListCuts;
   delete fListProfiles;
   delete fRDCutsAnalysis;
-  delete fCounter;
+  delete fCounterC;
   delete fCounterU;
+  delete fCounterCandidates;
   for(Int_t i=0; i<4; i++) {
       if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
   }
@@ -564,19 +567,26 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 
   if(fDoImpPar) CreateImpactParameterHistos();
 
-  fCounter = new AliNormalizationCounter("NormCounterCorrMult");
-  fCounter->SetStudyMultiplicity(kTRUE,1.);
-  fCounter->Init(); 
+  fCounterC = new AliNormalizationCounter("NormCounterCorrMult");
+  fCounterC->SetStudyMultiplicity(kTRUE,1.);
+  fCounterC->Init();
 
   fCounterU = new AliNormalizationCounter("NormCounterUnCorrMult");
   fCounterU->SetStudyMultiplicity(kTRUE,1.);
   fCounterU->Init(); 
+    
+  fCounterCandidates = new AliNormalizationCounter("NormCounterCorrMultCandidates");
+  fCounterCandidates->SetStudyMultiplicity(kTRUE,1.);
+  fCounterCandidates->Init();
 
+    
   fOutputCounters = new TList();
   fOutputCounters->SetOwner();
   fOutputCounters->SetName("OutputCounters");
-  fOutputCounters->Add(fCounter);
+  fOutputCounters->Add(fCounterC);
   fOutputCounters->Add(fCounterU);
+  fOutputCounters->Add(fCounterCandidates);
+
   
   PostData(1,fOutput); 
   PostData(2,fListCuts);
@@ -751,6 +761,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
   }
 
+
+  fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr);
 
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
 
@@ -1121,14 +1133,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   if(fSubtractTrackletsFromDau && nSelCand>0){
     aveMult/=nSelCand;
-    fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001));
+    fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001));
   }else{
-    fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr);
+    fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr);
   }
 
 
-  fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
-  fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
+  fCounterCandidates->StoreCandidates(aod,nSelectedNoPID,kTRUE);
+  fCounterCandidates->StoreCandidates(aod,nSelectedPID,kFALSE);
   fHistNtrUnCorrEvSel->Fill(countMult,nchWeight);
   fHistNtrCorrEvSel->Fill(countCorr,nchWeight);
   if(nSelectedPID>0) {

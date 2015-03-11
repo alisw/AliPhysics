@@ -36,7 +36,8 @@ AliEMCalTriggerTaskGroup::AliEMCalTriggerTaskGroup() :
     fAnalysisComponents(NULL),
     fEventSelection(NULL),
     fBinning(NULL),
-    fKineCuts(NULL)
+    fKineCuts(NULL),
+    fWeightHandler(NULL)
 {
   /*
    * Dummy constructor, not to be used
@@ -49,7 +50,8 @@ AliEMCalTriggerTaskGroup::AliEMCalTriggerTaskGroup(const char* name) :
     fAnalysisComponents(NULL),
     fEventSelection(NULL),
     fBinning(NULL),
-    fKineCuts(NULL)
+    fKineCuts(NULL),
+    fWeightHandler(NULL)
 {
   /*
    * Main constructor: to be used by the users
@@ -82,6 +84,7 @@ TList *AliEMCalTriggerTaskGroup::InitialiseAnalysisComponents() {
   while((ana = dynamic_cast<AliEMCalTriggerTracksAnalysisComponent *>(compIter()))){
     ana->SetBinning(fBinning);
     ana->SetKineCuts(fKineCuts);
+    if(fWeightHandler) ana->SetWeightHandler(fWeightHandler);
     ana->CreateHistos();
     TList *ltmp = ana->GetHistList();
     TIter hiter(ltmp);

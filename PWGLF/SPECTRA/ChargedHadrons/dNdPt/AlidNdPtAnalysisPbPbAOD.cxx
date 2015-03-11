@@ -127,6 +127,7 @@ fCutAcceptKinkDaughters(kFALSE),
 fCutMaxChi2TPCConstrainedGlobal(36.),
 fCutLengthInTPCPtDependent(kFALSE),
 fPrefactorLengthInTPCPtDependent(1),
+fCrossCheckCorrelHisto(kFALSE),
 // binning for THnSparse
 fMultNbins(0),
 fPtNbins(0),
@@ -219,7 +220,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t binsDeltaphiDefault[9] = {  0, 1./16.*TMath::Pi(), 2./16.*TMath::Pi(), 3./16.*TMath::Pi(), 4./16.*TMath::Pi(), 5./16.*TMath::Pi(), 6./16.*TMath::Pi(), 7./16.*TMath::Pi(), 8./16.*TMath::Pi()};
   
   
-  Double_t binsPtCheckDefault[20] = {0.,0.15,0.5,1.0,2.0,3.0,4.0, 5.0, 10.0, 13.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 70.0, 100.0, 150.0, 200.0};  
+  Double_t binsPtCheckDefault[8] = {0.,0.15,1.0,5.0, 10.0, 20.0, 50.0, 200.0};  
   Double_t binsEtaCheckDefault[7] = {-1.0,-0.8,-0.4,0.,0.4,0.8,1.0};
   
   Double_t binsRunNumbers2011[186] = {
@@ -230,7 +231,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   if (!fBinsMult)		{ SetBinsMult(48,binsMultDefault); }
   if (!fBinsPt)			{ SetBinsPt(82,binsPtDefault); }
   if (!fBinsPtCorr)		{ SetBinsPtCorr(51,binsPtCorrDefault); }
-  if (!fBinsPtCheck)	{ SetBinsPtCheck(20,binsPtCheckDefault); }
+  if (!fBinsPtCheck)	{ SetBinsPtCheck(8,binsPtCheckDefault); }
   if (!fBinsEta)		{ SetBinsEta(31,binsEtaDefault); }
   if (!fBinsEtaCheck)	{ SetBinsEtaCheck(7,binsEtaCheckDefault); }
   if (!fBinsZv)			{ SetBinsZv(7,binsZvDefault); }  
@@ -491,75 +492,78 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t dBinMin = 0;
   Double_t dBinMax = 0;
   
-  for(Int_t iCheckQuant = 0; iCheckQuant < cqMax; iCheckQuant++)
+  if(AreCrossCheckCorrelationHistosEnabled())
   {
-	// iCheckQuant: 0 = CrossedRows, 1 = Nclusters, 2 = Chi^2/clusterTPC
-	if(iCheckQuant == cqCrossedRows) 
+	for(Int_t iCheckQuant = 0; iCheckQuant < cqMax; iCheckQuant++)
 	{
-	  snprintf(cTempTitleAxis0All,255, "NcrossedRows before Cut"); 
-	  snprintf(cTempTitleAxis0Acc,255, "NcrossedRows after Cut"); 
-	  snprintf(cTempNameAxis0,255, "CrossedRows");
-	  iNbin = iNbinRowsClusters;
-	  dBinMin = 0;
-	  dBinMax = 159.;
-	}
-	else if(iCheckQuant == cqNcluster) 
-	{
-	  snprintf(cTempTitleAxis0All,255, "Nclusters before Cut"); 
-	  snprintf(cTempTitleAxis0Acc,255, "Nclusters after Cut"); 
-	  snprintf(cTempNameAxis0,255, "Clusters");
-	  iNbin = iNbinRowsClusters;
-	  dBinMin = 0;
-	  dBinMax = 159.;
-	}
-	else if(iCheckQuant == cqChi) 
-	{
-	  snprintf(cTempTitleAxis0All,255, "#Chi^{2}/cluster before Cut"); 
-	  snprintf(cTempTitleAxis0Acc,255, "#Chi^{2}/cluster after Cut"); 
-	  snprintf(cTempNameAxis0,255, "Chi");
-	  iNbin = iNbinChi;
-	  dBinMin = 0;
-	  dBinMax = 10.;
-	}
-	else if(iCheckQuant == cqLength) 
-	{
-	  snprintf(cTempTitleAxis0All,255, "Length in TPC before Cut (cm)"); 
-	  snprintf(cTempTitleAxis0Acc,255, "Length in TPC after Cut (cm)"); 
-	  snprintf(cTempNameAxis0,255, "Length");
-	  iNbin = iNbinLength;
-	  dBinMin = 0;
-	  dBinMax = 165.;
-	}
-	else if(iCheckQuant == cqRowsOverFindable) 
-	{
-	  snprintf(cTempTitleAxis0All,255, "Number of Crossed Rows / Number of Findable Clusters before Cut"); 
-	  snprintf(cTempTitleAxis0Acc,255, "Number of Crossed Rows / Number of Findable Clusters before Cut"); 
-	  snprintf(cTempNameAxis0,255, "RowsOverFindable");
-	  iNbin = iNbinRowsOverClusters;
-	  dBinMin = 0.6;
-	  dBinMax = 1.2;
-	}
-	
-	
-	Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
-	//     Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
-	Double_t minCheckPtEtaPhi[5] = { dBinMin,  0, -1.5, 0., 0, };
-	Double_t maxCheckPtEtaPhi[5] = { dBinMax, 100, 1.5, 2.*TMath::Pi(), 100};
-	
-	snprintf(cFullTempName, 255, "f%sPtEtaPhiAll",cTempNameAxis0);
-	snprintf(cFullTempTitle, 255,"%s;%s;p_{T} (GeV/c);#eta;#phi;Centrality", cFullTempName, cTempTitleAxis0All);
-	fCrossCheckAll[iCheckQuant] = new THnF(cFullTempName, cFullTempTitle, 5, binsCheckPtEtaPhi, minCheckPtEtaPhi, maxCheckPtEtaPhi);
-	fCrossCheckAll[iCheckQuant]->SetBinEdges(1, fBinsPtCheck);
-	fCrossCheckAll[iCheckQuant]->SetBinEdges(2, fBinsEtaCheck);
-	fCrossCheckAll[iCheckQuant]->Sumw2();
-	
-	snprintf(cFullTempName, 255, "f%sPtEtaPhiAcc",cTempNameAxis0);
-	snprintf(cFullTempTitle, 255,"%s;%s;p_{T} (GeV/c);#eta;#phi;Centrality", cFullTempName, cTempTitleAxis0Acc);
-	fCrossCheckAcc[iCheckQuant] = new THnF(cFullTempName, cFullTempTitle, 5, binsCheckPtEtaPhi, minCheckPtEtaPhi, maxCheckPtEtaPhi);
-	fCrossCheckAcc[iCheckQuant]->SetBinEdges(1, fBinsPtCheck);
-	fCrossCheckAcc[iCheckQuant]->SetBinEdges(2, fBinsEtaCheck);
-	fCrossCheckAcc[iCheckQuant]->Sumw2();
-  } // end iCheckQuant
+	  // iCheckQuant: 0 = CrossedRows, 1 = Nclusters, 2 = Chi^2/clusterTPC
+	  if(iCheckQuant == cqCrossedRows) 
+	  {
+		snprintf(cTempTitleAxis0All,255, "NcrossedRows before Cut"); 
+		snprintf(cTempTitleAxis0Acc,255, "NcrossedRows after Cut"); 
+		snprintf(cTempNameAxis0,255, "CrossedRows");
+		iNbin = iNbinRowsClusters;
+		dBinMin = 0;
+		dBinMax = 159.;
+	  }
+	  else if(iCheckQuant == cqNcluster) 
+	  {
+		snprintf(cTempTitleAxis0All,255, "Nclusters before Cut"); 
+		snprintf(cTempTitleAxis0Acc,255, "Nclusters after Cut"); 
+		snprintf(cTempNameAxis0,255, "Clusters");
+		iNbin = iNbinRowsClusters;
+		dBinMin = 0;
+		dBinMax = 159.;
+	  }
+	  else if(iCheckQuant == cqChi) 
+	  {
+		snprintf(cTempTitleAxis0All,255, "#Chi^{2}/cluster before Cut"); 
+		snprintf(cTempTitleAxis0Acc,255, "#Chi^{2}/cluster after Cut"); 
+		snprintf(cTempNameAxis0,255, "Chi");
+		iNbin = iNbinChi;
+		dBinMin = 0;
+		dBinMax = 10.;
+	  }
+	  else if(iCheckQuant == cqLength) 
+	  {
+		snprintf(cTempTitleAxis0All,255, "Length in TPC before Cut (cm)"); 
+		snprintf(cTempTitleAxis0Acc,255, "Length in TPC after Cut (cm)"); 
+		snprintf(cTempNameAxis0,255, "Length");
+		iNbin = iNbinLength;
+		dBinMin = 0;
+		dBinMax = 165.;
+	  }
+	  else if(iCheckQuant == cqRowsOverFindable) 
+	  {
+		snprintf(cTempTitleAxis0All,255, "Number of Crossed Rows / Number of Findable Clusters before Cut"); 
+		snprintf(cTempTitleAxis0Acc,255, "Number of Crossed Rows / Number of Findable Clusters before Cut"); 
+		snprintf(cTempNameAxis0,255, "RowsOverFindable");
+		iNbin = iNbinRowsOverClusters;
+		dBinMin = 0.6;
+		dBinMax = 1.2;
+	  }
+	  
+	  
+	  Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
+	  //     Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
+	  Double_t minCheckPtEtaPhi[5] = { dBinMin,  0, -1.5, 0., 0, };
+	  Double_t maxCheckPtEtaPhi[5] = { dBinMax, 100, 1.5, 2.*TMath::Pi(), 100};
+	  
+	  snprintf(cFullTempName, 255, "f%sPtEtaPhiAll",cTempNameAxis0);
+	  snprintf(cFullTempTitle, 255,"%s;%s;p_{T} (GeV/c);#eta;#phi;Centrality", cFullTempName, cTempTitleAxis0All);
+	  fCrossCheckAll[iCheckQuant] = new THnF(cFullTempName, cFullTempTitle, 5, binsCheckPtEtaPhi, minCheckPtEtaPhi, maxCheckPtEtaPhi);
+	  fCrossCheckAll[iCheckQuant]->SetBinEdges(1, fBinsPtCheck);
+	  fCrossCheckAll[iCheckQuant]->SetBinEdges(2, fBinsEtaCheck);
+	  fCrossCheckAll[iCheckQuant]->Sumw2();
+	  
+	  snprintf(cFullTempName, 255, "f%sPtEtaPhiAcc",cTempNameAxis0);
+	  snprintf(cFullTempTitle, 255,"%s;%s;p_{T} (GeV/c);#eta;#phi;Centrality", cFullTempName, cTempTitleAxis0Acc);
+	  fCrossCheckAcc[iCheckQuant] = new THnF(cFullTempName, cFullTempTitle, 5, binsCheckPtEtaPhi, minCheckPtEtaPhi, maxCheckPtEtaPhi);
+	  fCrossCheckAcc[iCheckQuant]->SetBinEdges(1, fBinsPtCheck);
+	  fCrossCheckAcc[iCheckQuant]->SetBinEdges(2, fBinsEtaCheck);
+	  fCrossCheckAcc[iCheckQuant]->Sumw2();
+	} // end iCheckQuant
+  } // AreCrossCheckCorrelationHistosEnabled
   
   fCutPercClusters = new TH1F("fCutPercClusters","fCutPercClusters;NclustersTPC;counts",160,0,160);
   fCutPercClusters->Sumw2();
@@ -716,10 +720,13 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fDCAPtAccepted);
   fOutputList->Add(fMCDCAPtSecondary);
   fOutputList->Add(fMCDCAPtPrimary);
-  for(Int_t i = 0; i < cqMax; i++)
-  {   
-	fOutputList->Add(fCrossCheckAll[i]);
-	fOutputList->Add(fCrossCheckAcc[i]);
+  if(AreCrossCheckCorrelationHistosEnabled())
+  {
+	for(Int_t i = 0; i < cqMax; i++)
+  	{   
+		fOutputList->Add(fCrossCheckAll[i]);
+		fOutputList->Add(fCrossCheckAcc[i]);
+  	}
   }
   fOutputList->Add(fCutPercClusters);
   fOutputList->Add(fCutPercCrossed);
@@ -874,7 +881,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   AliCentrality* aCentrality = eventAOD->GetCentrality();
 //   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
   Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
-  
+ 
+  //cout << eventAOD->GetFiredTriggerClasses().Data() << endl;
+
   if( dCentrality < 0 ) return;
   
   // protection for bias on pt spectra if all triggers selected
@@ -1469,10 +1478,13 @@ Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_
 {
   if(bIsAccepted)
   {
-	for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+	if(AreCrossCheckCorrelationHistosEnabled())
 	{
-	  Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
-	  fCrossCheckAcc[iCrossCheck]->Fill(dFillIt);
+	  for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+	  {
+		Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
+		fCrossCheckAcc[iCrossCheck]->Fill(dFillIt);
+	  }
 	}
 	
 	fCrossCheckRowsLengthAcc->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows], dCentrality);
@@ -1480,10 +1492,13 @@ Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_
   }
   else
   {
-	for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+	if(AreCrossCheckCorrelationHistosEnabled())
 	{
-	  Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
-	  fCrossCheckAll[iCrossCheck]->Fill(dFillIt);
+	  for(Int_t iCrossCheck = 0; iCrossCheck < cqMax; iCrossCheck++)
+	  {
+		Double_t dFillIt[5] = {dCrossCheckVar[iCrossCheck], dKineVar[0], dKineVar[1], dKineVar[2], dCentrality};
+		fCrossCheckAll[iCrossCheck]->Fill(dFillIt);
+	  }
 	}
 	
 	fCrossCheckRowsLength->Fill(dCrossCheckVar[cqLength], dCrossCheckVar[cqCrossedRows], dCentrality);

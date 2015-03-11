@@ -59,7 +59,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskSpectraBoth)
 
 //________________________________________________________________________
-AliAnalysisTaskSpectraBoth::AliAnalysisTaskSpectraBoth(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1)
+AliAnalysisTaskSpectraBoth::AliAnalysisTaskSpectraBoth(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1),fUseEtaCut(kFALSE)
 
 {
   // Default constructor
@@ -85,6 +85,10 @@ void AliAnalysisTaskSpectraBoth::UserCreateOutputObjects()
   fTrackCuts->SetAliESDtrackCuts(fCuts);
   fEventCuts->InitHisto();
   fTrackCuts->InitHisto();
+  if(fTrackCuts->GetYMax()<fTrackCuts->GetYMin()) 
+  	fUseEtaCut=kTRUE;	
+  Printf(" eta cut %d  Will be used lack of Y cut",fUseEtaCut);
+
 
   PostData(1, fHistMan  );
   PostData(2, fEventCuts);
@@ -165,10 +169,20 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 				  //if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax()){//charged hadron are filled inside the eta acceptance
 				  //Printf("%f     %f-%f",partMC->Eta(),fTrackCuts->GetEtaMin(),fTrackCuts->GetEtaMax());
 				  if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax())
-						fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());					 				 
+				  {
+						fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
+				  }
+				  else 
+				  {
+					if(fUseEtaCut)
+						continue;
+				  }						 				 
 				  //rapidity cut
-				  if(partMC->Y() > fTrackCuts->GetYMax()|| partMC->Y() < fTrackCuts->GetYMin() ) 
-					continue;	
+				  if(!fUseEtaCut)
+				  {		
+				 	 if(partMC->Y() > fTrackCuts->GetYMax()|| partMC->Y() < fTrackCuts->GetYMin() ) 
+						continue;
+				  }		
 				  if(partMC->IsPhysicalPrimary())
 				 	 npar++;    
 				  // check for true PID + and fill P_t histos 
@@ -197,9 +211,19 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 				if(TMath::Abs(partMC->GetPDG(0)->Charge()/3.0)<0.01) 
 					continue;//Skip neutrals
 			 	if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax())
+				{
 					fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),stack->IsPhysicalPrimary(iMC));
-				if(partMC->Y()   > fTrackCuts->GetYMax() ||partMC->Y()   < fTrackCuts->GetYMin()  ) 
-					continue;
+				}
+				else 
+				{
+					if(fUseEtaCut)
+						continue;
+				}
+				if(!fUseEtaCut)
+				{ 		
+					if(partMC->Y()>fTrackCuts->GetYMax() ||partMC->Y()< fTrackCuts->GetYMin()  ) 
+						continue;
+				}
 				if(stack->IsPhysicalPrimary(iMC))
 					 npar++;    
 				  // check for true PID + and fill P_t histos 

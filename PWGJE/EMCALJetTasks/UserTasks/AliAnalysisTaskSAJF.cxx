@@ -146,11 +146,13 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   max[dim] = 1.5;
   dim++;
 
-  title[dim] = "NEF";
-  nbins[dim] = 102;
-  min[dim] = 0;
-  max[dim] = 1.02;
-  dim++;
+  if (fCaloClusters) {
+    title[dim] = "NEF";
+    nbins[dim] = 102;
+    min[dim] = 0;
+    max[dim] = 1.02;
+    dim++;
+  }
 
   title[dim] = "Z";
   nbins[dim] = 102;

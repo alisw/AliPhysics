@@ -1348,6 +1348,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
         // fill histograms
         FillHistograms(track, tpcInnerC, centralityF, (Double_t)chi2(0,0));
+	TVectorD tofClInfo(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
+	tofClInfo[0]=track->GetTOFsignal();
+	tofClInfo[1]=track->GetTOFsignalToT();
+	tofClInfo[2]=track->GetTOFsignalRaw();
+	tofClInfo[3]=track->GetTOFsignalDz();
+	tofClInfo[4]=track->GetTOFsignalDx();
+
 
         if(fTreeSRedirector && dumpToTree && fFillTree) {
           (*fTreeSRedirector)<<"highPt"<<
@@ -1372,6 +1379,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "ntracksITS="<<ntracksITS<<               // total number of the ITS tracks which were refitted
             //
             "esdTrack.="<<track<<                  // esdTrack as used in the physical analysis
+	    "tofClInfo.="<<&tofClInfo<<           // tof info
 	    //            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
             "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack
             "extTPCInnerC.="<<tpcInnerC<<          // ??? 
@@ -1892,6 +1900,21 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
+      
+      TVectorD tofClInfo0(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
+      TVectorD tofClInfo1(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
+      tofClInfo0[0]=track0->GetTOFsignal();
+      tofClInfo0[1]=track0->GetTOFsignalToT();
+      tofClInfo0[2]=track0->GetTOFsignalRaw();
+      tofClInfo0[3]=track0->GetTOFsignalDz();
+      tofClInfo0[4]=track0->GetTOFsignalDx();
+      tofClInfo1[0]=track1->GetTOFsignal();
+      tofClInfo1[1]=track1->GetTOFsignalToT();
+      tofClInfo1[2]=track1->GetTOFsignalRaw();
+      tofClInfo1[3]=track1->GetTOFsignalDz();
+      tofClInfo1[4]=track1->GetTOFsignalDx();
+
+
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
         "isDownscaled="<<isDownscaled<<       //  
@@ -1907,6 +1930,8 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         "kf.="<<&kfparticle<<
         "track0.="<<track0<<                  // track
         "track1.="<<track1<<
+	"tofClInfo0.="<<&tofClInfo0<<
+	"tofClInfo1.="<<&tofClInfo1<<
         "friendTrack0.="<<friendTrackStore0<<
         "friendTrack1.="<<friendTrackStore1<<
         "centralityF="<<centralityF<<

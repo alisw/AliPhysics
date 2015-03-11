@@ -191,7 +191,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoTruePi0PtOpenAngle(NULL),
 	fHistoTrueEtaPtOpenAngle(NULL),
 	fHistoTrueConvGammaPt(NULL),
-	fHistoTrueConvPi0GammaPt(NULL),
 	fHistoTrueConvGammaEta(NULL),
 	fHistoCombinatorialPt(NULL),
 	fHistoTruePrimaryConvGammaPt(NULL),
@@ -395,7 +394,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoTruePi0PtOpenAngle(NULL),
 	fHistoTrueEtaPtOpenAngle(NULL),
 	fHistoTrueConvGammaPt(NULL),
-	fHistoTrueConvPi0GammaPt(NULL),
 	fHistoTrueConvGammaEta(NULL),
 	fHistoCombinatorialPt(NULL),
 	fHistoTruePrimaryConvGammaPt(NULL),
@@ -862,7 +860,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoMCDecayGammaSigmaPt 			= new TH1F*[fnCuts];
 		fHistoMCConvGammaPt 				= new TH1F*[fnCuts];
 		fHistoTrueConvGammaPt 				= new TH1F*[fnCuts];
-		fHistoTrueConvPi0GammaPt 			= new TH1F*[fnCuts];
     
 		fHistoCombinatorialPt 							= new TH2F*[fnCuts];
 		fHistoTruePrimaryConvGammaPt 					= new TH1F*[fnCuts];
@@ -1083,9 +1080,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",250,0,25);
 			fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
       
-            fHistoTrueConvPi0GammaPt[iCut] = new TH1F("ESD_TrueConvPi0Gamma_Pt","ESD_TrueConvPi0Gamma_Pt",250,0,25);
-			fTrueList[iCut]->Add(fHistoTrueConvPi0GammaPt[iCut]);
-      
 			fHistoCombinatorialPt[iCut] = new TH2F("ESD_TrueCombinatorial_Pt","ESD_TrueCombinatorial_Pt",250,0,25,16,-0.5,15.5);
 			fHistoCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 1,"Elec+Elec");
 			fHistoCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 2,"Elec+Pion");
@@ -1169,8 +1163,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoTruePi0InvMassPt[iCut]->SetYTitle("#pi^{0} p_{T} (GeV/c)");
 				fTrueList[iCut]->Add(fHistoTruePi0InvMassPt[iCut]);
 				fHistoTrueEtaInvMassPt[iCut] = new TH2F("ESD_TrueEta_InvMass_Pt","ESD_TrueEta_InvMass_Pt",800,0,0.8,250,0,25);
-				fHistoTruePi0InvMassPt[iCut]->SetXTitle("M_{inv,#eta} (GeV/c^{2})");
-				fHistoTruePi0InvMassPt[iCut]->SetYTitle("#eta p_{T} (GeV/c)");
+                fHistoTrueEtaInvMassPt[iCut]->SetXTitle("M_{inv,#eta} (GeV/c^{2})");
+                fHistoTrueEtaInvMassPt[iCut]->SetYTitle("#eta p_{T} (GeV/c)");
 				fTrueList[iCut]->Add(fHistoTrueEtaInvMassPt[iCut]);
 
 				fHistoTruePrimaryPi0InvMassPt[iCut] = new TH2F("ESD_TruePrimaryPi0_InvMass_Pt", "ESD_TruePrimaryPi0_InvMass_Pt", 800,0,0.8,250,0,25);

@@ -1107,7 +1107,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
   	  	TFile *fGeanFlukaK= TFile::Open(fnameGeanFlukaK.Data());
 	  	if (!fGeanFlukaK)
 		{
-			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.321.root";
+			fnameGeanFlukaK="$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.321.root";
 			fGeanFlukaK= TFile::Open(fnameGeanFlukaK.Data());
 			if (!fGeanFlukaK)
 				return;

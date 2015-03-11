@@ -16,30 +16,25 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Author : A. Grelli,  Utrecht University
+// Author : A. Grelli, Utrecht University
 //          C. Bianchin, Utrecht University
 //          X. Zhang, LBNL
+//          S. Aiola, Yale University
 //-----------------------------------------------------------------------
 
 
-#include <TH2F.h>
-#include "AliAODEvent.h"
-#include "AliPicoTrack.h"
 #include "AliAnalysisTaskSE.h"
 
-class TH3F;
+class TH2;
 class TString;
-class TParticle ;
-class TClonesArray ;
-class AliMCParticle;
-class AliAODMCParticle;
+class TClonesArray;
 class AliRDHFCuts;
 class AliAODRecoCascadeHF;
 
 class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE 
 {
 
- public :
+ public:
 
   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
   
@@ -57,12 +52,12 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   Bool_t DefineHistoForAnalysis();
 
   // set MC usage
-  void   SetMC(Bool_t theMCon) { fUseMCInfo = theMCon; }
-  Bool_t GetMC() const { return fUseMCInfo; }
+  void   SetMC(Bool_t theMCon) { fUseMCInfo = theMCon ; }
+  Bool_t GetMC() const         { return fUseMCInfo    ; }
   
   // set usage of generated or reconstucted quantities (relevant for MC)
-  void SetUseReco(Bool_t useReco=kTRUE) { fUseReco= useReco;}
-  Bool_t GetUseReco() const {return fUseReco;}
+  void SetUseReco(Bool_t useReco=kTRUE) { fUseReco = useReco ; }
+  Bool_t GetUseReco() const             { return fUseReco    ; }
  
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
@@ -72,38 +67,67 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
- private :
+ protected:
+  void ExecOnce();
+  void ProcessD0(AliAODRecoDecayHF* charmCand, Int_t isSelected, Int_t mcLabel);
+  void ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t mcLabel);
+  
+ private:
   
   AliAnalysisTaskSEDmesonsFilterCJ(const AliAnalysisTaskSEDmesonsFilterCJ &source);
   AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
 
-  Bool_t fUseMCInfo;               //  Use MC info
-  Bool_t fUseReco;                 // use reconstructed tracks when running on MC
+  Bool_t          fUseMCInfo;              //  Use MC info
+  Bool_t          fUseReco;                // use reconstructed tracks when running on MC
+  UInt_t          fCandidateType;          //  Dstar or D0
+  TString         fCandidateName;          //  Dstar or D0
+  Int_t           fPDGmother;              //  PDG code of D meson
+  Int_t           fNProngs;                //  number of prong of the decay channel  
+  Int_t           fPDGdaughters[4];        //  PDG codes of daughters
+  Float_t         fSigmaD0[30];            //  D0 sigma for Dstar
+  TString         fBranchName;             //  AOD branch name
+  AliRDHFCuts    *fCuts;                   //  cuts 
+  Double_t        fMinMass;                //  mass lower limit histogram
+  Double_t        fMaxMass;                //  mass upper limit histogram
+  Bool_t          fInhibitTask;            //
+  Bool_t          fInitOk;                 //!
+  AliAODEvent    *fAodEvent;               //!
+  TClonesArray   *fArrayDStartoD0pi;       //!
+  TClonesArray   *fMCarray;                //!
+  TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts
+  TClonesArray   *fSideBandArray;          //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
+  TList          *fOutput;                 //! user output
+  TH1            *fHistStat;               //!
+  TH1            *fHistNSBCandEv;          //!
+  TH1            *fHistNCandEv;            //!
+  TH2            *fHistImpParS;            //!
+  TH2            *fHistImpParB;            //!
+  TH1            *fHistPtPion;             //!
+  TH2            *fHistInvMassPtD;         //!
+  TH1            *fHistInvMassS;           //!
+  TH1            *fHistInvMassB;           //!
+  TH2            *fHistAlphaDDS;           //!
+  TH2            *fHistAlphaDpisS;         //!
+  TH2            *fHistAlphaDpiS;          //!
+  TH2            *fHistAlphaDKS;           //!
+  TH2            *fHistAlphaDDB;           //!
+  TH2            *fHistAlphaDpisB;         //!
+  TH2            *fHistAlphaDpiB;          //!
+  TH2            *fHistAlphaDKB;           //!
+  TH2            *fHistDeltaRDDS;          //!
+  TH2            *fHistDeltaRDpisS;        //!
+  TH2            *fHistDeltaRDpiS;         //!
+  TH2            *fHistDeltaRDKS;          //!
+  TH2            *fHistDeltaRDDB;          //!
+  TH2            *fHistDeltaRDpisB;        //!
+  TH2            *fHistDeltaRDpiB;         //!
+  TH2            *fHistDeltaRDKB;          //!
+  TH2            *fHistAlphaDpiR;          //!
+  TH2            *fHistAlphaDKR;           //!
+  TH2            *fHistDeltaRDpiR;         //!
+  TH2            *fHistDeltaRDKR;          //!
 
-  UInt_t  fCandidateType;          //  Dstar or D0
-  TString fCandidateName;          //  Dstar or D0
-
-  Int_t fPDGmother;                //  PDG code of D meson
-  Int_t fNProngs;                  //  number of prong of the decay channel  
-  Int_t fPDGdaughters[4];          //  PDG codes of daughters
-  Float_t fSigmaD0[30];            //  D0 sigma for Dstar
-
-  TString fBranchName;             //  AOD branch name
-  TList  *fOutput;                 //! user output
-
-  AliRDHFCuts *fCuts;              // Cuts 
-  Double_t fMinMass;               //  mass lower limit histogram
-  Double_t fMaxMass;               //  mass upper limit histogram
-
-  TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
-  TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
-  //Histograms
-  TH2F* fhImpPar;                  //!
-  TH2F* fhImpParB;                 //!
-  TH1F* fhInvMassS;                //!
-  TH1F* fhInvMassB;                //!
-  
-  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ,3); // class for charm-jet correlations
+  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 4); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif

@@ -25,18 +25,19 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "TDatabasePDG.h"
-#include "TPDGCode.h"
-#include "TVectorT.h"
+#include <TDatabasePDG.h>
+#include <TPDGCode.h>
+#include <TVectorT.h>
+#include <TGeoMatrix.h>
 
-#include "AliTrackReference.h"
-#include "AliTrackPointArray.h"
-#include "AliExternalTrackParam.h"
+#include <AliTrackReference.h>
+#include <AliTrackPointArray.h>
+#include <AliExternalTrackParam.h>
 
-#include "AliTRDseedV1.h"
-#include "AliTRDtrackV1.h"
-#include "AliTRDgeometry.h"
-#include "AliTRDtrackerV1.h"
+#include <AliTRDseedV1.h>
+#include <AliTRDtrackV1.h>
+#include <AliTRDgeometry.h>
+#include <AliTRDtrackerV1.h>
 
 #include "AliTRDtrackInfo.h"
 
@@ -545,7 +546,7 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 }
  
 //___________________________________________________
-Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &p, Float_t &eta, Float_t &phi, UChar_t &status) const
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Int_t chg, TGeoHMatrix* matrix, Double_t dir[10], UChar_t &status) const
 {
 // Check for 2 track ref for the tracklet defined bythe radial position x0
 // The "status" is a bit map and gives a more informative output in case of failure:
@@ -554,8 +555,20 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
 //   - BIT(1) : 1 track reference found
 //   - BIT(2) : dx <= 0 between track references
 //   - BIT(3) : dx > 0 && dx < 3.7 - tangent tracks 
-
-  status = 0;
+//
+//   The return array contains the MC info in the following order
+//   [0] - pt (local chamber)
+//   [1] - p (local chamber)
+//   [2] - eta (local chamber)
+//   [3] - phi (local chamber)
+//   [4] - dydx (local chamber - without alignment chamber tilts - between in and out)
+//   [5] - dzdx (local chamber - without alignment chamber tilts - between in and out)
+//   [6] - local y (r-phi position at Anode wire in local chamber coordinates corrected for track curvature)
+//   [7] - local z (z position at Anode wire in local chamber coordinates corrected for track curvature)
+//   [8] - trk y (r-phi position at Anode wire in tracking coordinates corrected for track curvature and radial shift from chamber tilt)
+//   [9] - trk z (z position at Anode wire in local tracking coordinates corrected for track curvature and radial shift from chamber tilt)
+  
+  status = 0; memset(dir, 0, 10*sizeof(Double_t));
   Double_t cw = AliTRDgeometry::CamHght() + AliTRDgeometry::CdrHght();
   Int_t nFound = 0;
   AliTrackReference *tr[2] = {NULL, NULL};
@@ -574,26 +587,68 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     else SETBIT(status, 1);
     return kFALSE;
   }
-  pt=tr[1]->Pt();
-  p =tr[1]->P();
-  if(pt < 1.e-3) return kFALSE;
+  dir[0] = tr[1]->Pt(); Double_t pt(dir[0]); // alias
+  dir[1] = tr[1]->P();
+  if(dir[0] < 1.e-3) return kFALSE;
+  dir[2] =  -TMath::Log(TMath::Tan(0.5 * tr[1]->Theta()));
+  dir[3] =  TMath::ATan2(tr[1]->Y(), tr[1]->X());
 
-  Double_t dx = tr[1]->LocalX() - tr[0]->LocalX();
+  // CORRECT FOR TRACK CURVATURE  
+  // get local chamber coordinates of TRs
+  Double_t  trk_tr0[] = {tr[0]->LocalX(), tr[0]->LocalY(), tr[0]->Z()}, 
+            trk_tr1[] = {tr[1]->LocalX(), tr[1]->LocalY(), tr[1]->Z()}, 
+            loc_tr0[]={1.,1.,1.}, loc_tr1[]={1.,1.,1.};
+  matrix->MasterToLocal(trk_tr0, loc_tr0); matrix->MasterToLocal(trk_tr1, loc_tr1);
+  Double_t dx = loc_tr1[0] - loc_tr0[0];
   if(dx <= 0.){
     AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Track ref with wrong radial distances refX0[%6.3f] refX1[%6.3f]", tr[0]->LocalX(), tr[1]->LocalX()));
     SETBIT(status, 2);
     return kFALSE;
   }
   if(TMath::Abs(dx-AliTRDgeometry::CamHght()-AliTRDgeometry::CdrHght())>1.E-3) SETBIT(status, 3); 
-
-  dydx = (tr[1]->LocalY() - tr[0]->LocalY()) / dx;
-  dzdx = (tr[1]->Z() - tr[0]->Z()) / dx;
-  //Float_t dx0 = tr[1]->LocalX() - x0;
-  y0   =  tr[1]->LocalY()/* - dydx*dx0*/;
-  z0   =  tr[1]->Z()/* - dzdx*dx0*/;
-  x0   =  tr[1]->LocalX();
-  eta  =  -TMath::Log(TMath::Tan(0.5 * tr[1]->Theta()));
-  phi  =  TMath::ATan2(tr[1]->Y(), tr[1]->X());
+  Double_t dydx = (loc_tr1[1] - loc_tr0[1]) / dx,
+           dzdx = (loc_tr1[2] - loc_tr0[2]) / dx;
+  dir[4] = dydx; dir[5] = dzdx; 
+  
+  // find center of track curvature by solving the circle equation for the 2 TRs
+  Double_t  R  = pt/-0.299792458e-3/AliTracker::GetBz(), // local track Radius
+            tgp= (trk_tr1[1] - trk_tr0[1])/(trk_tr1[0] - trk_tr0[0]),
+            a  = .5*(trk_tr1[0] + trk_tr0[0] +tgp*(trk_tr1[1] + trk_tr0[1])),
+            ap = trk_tr1[0]-a,
+            bp = 1./(1.+tgp*tgp),
+            b  = (trk_tr1[1]-ap*tgp)*bp, b2(b*b),
+            c  = (ap*ap+trk_tr1[1]*trk_tr1[1]-R*R)*bp,
+            d  = (b2>c?TMath::Sqrt(b2-c):0.),
+            yc0= b+d, yc1= b-d, yc(0.), xc(0.), ycn(yc0), ycp(yc1);
+  if(yc0>0){ycn=yc1; ycp=yc0;}
+  if(AliTracker::GetBz()>0) yc=chg<0?ycp:ycn; 
+  else yc=chg<0?ycn:ycp; 
+  xc= a-yc*tgp;
+  // find position on the circle for the anode wire
+  Double_t w      = loc_tr1[0] - AliTRDgeometry::AnodePos(),
+           wp     = w*(trk_tr1[0] - trk_tr0[0])/dx,
+           trk_trAn[3] = {trk_tr1[0] - wp, 
+                          0., 
+                          trk_tr1[2]-wp*(trk_tr1[2] - trk_tr0[2])/(trk_tr1[0] - trk_tr0[0])},
+           dxAnTrk= trk_trAn[0] - xc,
+           dyAnTrk= TMath::Sqrt(R*R - dxAnTrk*dxAnTrk),
+           yAnTrk0= yc-dyAnTrk, 
+           yAnTrk1= yc+dyAnTrk;
+  trk_trAn[1]=TMath::Abs(yAnTrk0-trk_tr1[1])<TMath::Abs(yAnTrk1-trk_tr1[1])?yAnTrk0:yAnTrk1;         
+  // go back to local coordinates
+  matrix->MasterToLocal(trk_trAn, loc_tr1);
+  Double_t dxTRD  = AliTRDgeometry::AnodePos() - loc_tr1[0];
+  // compute radial position in tracking coordinates corresponding to local anode wire 
+  Double_t dxTrk(dxTRD*TMath::Sqrt(1. + dydx*dydx)/TMath::Sqrt(1. + tgp*tgp));
+  trk_trAn[0] += dxTrk;          
+  trk_trAn[1] += dxTrk*tgp; 
+  trk_trAn[2] += dxTrk*(trk_tr1[2] - trk_tr0[2])/(trk_tr1[0] - trk_tr0[0]); 
+  // get coordinates also in local coordinates
+  matrix->MasterToLocal(trk_trAn, loc_tr1);
+  dir[6] = loc_tr1[1];  // y local @ anode
+  dir[7] = loc_tr1[2];  // z local @ anode
+  dir[8] = trk_trAn[1]; // y tracking @ anode
+  dir[9] = trk_trAn[2];  // z tracking @ anode
   return kTRUE;
 }
 

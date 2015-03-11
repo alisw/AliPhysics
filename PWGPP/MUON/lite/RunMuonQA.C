@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 // Base macro for submitting muon QA analysis.
 //
-// In case it is not run with full aliroot, it needs the following libraries:
+// It needs the following libraries:
 //  - libSTEERBase
 //  - libESD
 //  - libAOD
@@ -9,7 +9,7 @@
 //  - libANALYSISalice
 //  - libCORRFW
 //  - libPWGmuon
-//
+//  - libPWGPPMUONlite
 // The macro reads ESDs and store outputs in standard output file (AnalysisResults.root)
 //
 // Author: Philippe Pillot - SUBATECH Nantes
@@ -33,20 +33,20 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   }
   
   // Load common libraries
-  gSystem->Load("libVMC");
-  gSystem->Load("libTree");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libXMLParser");
-  gSystem->Load("libGui");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGmuon");
-  gSystem->Load("libPWGPPMUONlite");
+  //gSystem->Load("libVMC");
+  //gSystem->Load("libTree");
+  //gSystem->Load("libPhysics");
+  //gSystem->Load("libMinuit");
+  //gSystem->Load("libXMLParser");
+  //gSystem->Load("libGui");
+  //gSystem->Load("libSTEERBase");
+  //gSystem->Load("libESD");
+  //gSystem->Load("libAOD");
+  //gSystem->Load("libANALYSIS");
+  //gSystem->Load("libANALYSISalice");
+  //gSystem->Load("libCORRFW");
+  //gSystem->Load("libPWGmuon");
+  //gSystem->Load("libPWGPPMUONlite");
   
   // Create input chain
   TChain* chain = CreateChain(inputFileName);
@@ -61,7 +61,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   mgr->SetInputEventHandler(esdH);
   
   // event selection
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection(isMC);
   if(!physicsSelection) {
     Error("RunMuonQA","AliPhysicsSelectionTask not created!");
@@ -69,7 +69,7 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t isMC = kFALSE,
   }
   
   // Muon QA analysis
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
   AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(selectPhysics, selectMatched, applyAccCut, selectTrigger, triggerMask, selectCharge);
   if(!muonQA) {
     Error("RunMuonQA","AliAnalysisTaskMuonQA not created!");

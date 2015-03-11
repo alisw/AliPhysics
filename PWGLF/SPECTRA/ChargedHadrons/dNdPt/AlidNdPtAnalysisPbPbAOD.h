@@ -176,6 +176,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
 	void SetCentralityEstimator(char *c) { fCentEstimator = c; }
 	TString GetCentralityEstimator() { return fCentEstimator; }
+	
+	void EnableCrossCheckCorrelationHistos() { fCrossCheckCorrelHisto = kTRUE; }
+	Bool_t AreCrossCheckCorrelationHistosEnabled() { return fCrossCheckCorrelHisto; }
     
   private :
     
@@ -283,7 +286,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t 	fCutMaxChi2TPCConstrainedGlobal;
     Bool_t	    fCutLengthInTPCPtDependent;
     Double_t	fPrefactorLengthInTPCPtDependent;
-    
+	Bool_t 		fCrossCheckCorrelHisto; //
+	
     //binning for THNsparse
     Int_t       fMultNbins;
     Int_t       fPtNbins;

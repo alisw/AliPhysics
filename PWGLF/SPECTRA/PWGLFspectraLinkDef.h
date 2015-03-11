@@ -81,4 +81,9 @@
 #pragma link C++ class AliMESppColTask+;
 #pragma link C++ class AliMESppColTask::AliMESppColTaskExchange+; 
 #pragma link C++ class AliMESppColTask::AliMESppColMixEvent+; 
+
+// AntiprotonToProton
+#pragma link C++ class AliProtonAnalysisBase+;
+#pragma link C++ class AliProtonQAAnalysis+;
+
 #endif

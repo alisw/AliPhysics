@@ -210,8 +210,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t   fNMassBins;    // nbins for invariant mass histos
 
   AliRDHFCuts *fRDCutsAnalysis; // Cuts for Analysis
-  AliNormalizationCounter *fCounter;  //!Counter for normalization
-  AliNormalizationCounter *fCounterU; //!Counter for normalization, uncorr mult
+  AliNormalizationCounter *fCounterC;           //!Counter for normalization, corrected multiplicity
+  AliNormalizationCounter *fCounterU;           //!Counter for normalization, uncorrected multiplicity
+  AliNormalizationCounter *fCounterCandidates;  //!Counter for normalization, corrected multiplicity for candidates
+
 
   Bool_t fDoImpPar;  //swicth for D impact parameter THnSparse
   Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
@@ -238,7 +240,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   Int_t fDoVZER0ParamVertexCorr; // Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,15); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,16); // D vs. mult task
 };
 
 #endif

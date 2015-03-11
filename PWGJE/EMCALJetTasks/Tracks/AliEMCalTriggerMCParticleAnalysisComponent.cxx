@@ -32,6 +32,7 @@
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerMCParticleAnalysisComponent.h"
+#include "AliEMCalTriggerWeightHandler.h"
 
 
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerMCParticleAnalysisComponent)
@@ -85,6 +86,10 @@ void AliEMCalTriggerMCParticleAnalysisComponent::Process(const AliEMCalTriggerEv
   if(!mc) return;
   AliVEvent *rec = data->GetRecEvent();
   Double_t values[4];
+  double weight = 1.;
+  if(fWeightHandler && data->GetMCEvent()){
+    weight = fWeightHandler->GetEventWeight(data->GetMCEvent());
+  }
   for(int itrk = 0; itrk < mc->GetNumberOfTracks(); itrk++){
     AliVParticle *track = mc->GetTrack(itrk);
     if(!track->Charge()) continue;
@@ -95,7 +100,7 @@ void AliEMCalTriggerMCParticleAnalysisComponent::Process(const AliEMCalTriggerEv
     values[1] = track->Eta();
     values[2] = track->Phi();
     values[3] = rec->GetPrimaryVertex()->GetZ();
-    fHistos->FillTHnSparse("hMCtrueParticles", values);
+    fHistos->FillTHnSparse("hMCtrueParticles", values, weight);
   }
 }
 

@@ -320,6 +320,8 @@ Bool_t AliSpectraBothTrackCuts::CheckEtaCut()
 
 Bool_t AliSpectraBothTrackCuts::CheckYCut(BothParticleSpecies_t species) 
 {
+ if(fYCutMin>fYCutMax) 	
+	return kTRUE;
   // check if the rapidity is within the set range
   Double_t y;
   

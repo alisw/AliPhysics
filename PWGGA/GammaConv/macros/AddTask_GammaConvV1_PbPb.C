@@ -113,7 +113,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	if (trainConfig == 135 || trainConfig == 136 || trainConfig == 137 || trainConfig == 146 || trainConfig == 147 || trainConfig == 148) Int_t numberOfCuts = 7;
-	else if (trainConfig == 110) Int_t numberOfCuts = 6;
+	else if (trainConfig == 110 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145) Int_t numberOfCuts = 6;
 	else if (trainConfig == 132) Int_t numberOfCuts = 7;
 	else if (trainConfig == 133) Int_t numberOfCuts = 3;
     else Int_t numberOfCuts = 5; 
@@ -953,52 +953,56 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "01200009297002008250400000"; mesonCutArray[ 6] = "01524065000000";  
 	} else if ( trainConfig == 138){//cut study for dedx and electron pion line with phi cut 0-10%
 		eventCutArray[ 0] = "5010001"; photonCutArray[ 0] = "00216609297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5010001"; photonCutArray[ 1] = "00216609220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5010001"; photonCutArray[ 1] = "00216609247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "00216609230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5010001"; photonCutArray[ 3] = "00216609250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5010001"; photonCutArray[ 4] = "00216609280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
 	} else if ( trainConfig == 139){//cut study for dedx and electron pion line with phi cut 20-50%
 		eventCutArray[ 0] = "5250001"; photonCutArray[ 0] = "00216609297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5250001"; photonCutArray[ 1] = "00216609220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5250001"; photonCutArray[ 1] = "00216609247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5250001"; photonCutArray[ 2] = "00216609230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5250001"; photonCutArray[ 3] = "00216609250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "00216609280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
+		eventCutArray[ 5] = "5240001"; photonCutArray[ 5] = "00216609247602008250400000"; mesonCutArray[ 5] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 	} else if ( trainConfig == 140){//cut study for dedx and electron pion line with phi cut 0-10% - added signals
 		eventCutArray[ 0] = "5010002"; photonCutArray[ 0] = "00216609297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5010002"; photonCutArray[ 1] = "00216609220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5010002"; photonCutArray[ 1] = "00216609247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "00216609230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5010002"; photonCutArray[ 3] = "00216609250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5010002"; photonCutArray[ 4] = "00216609280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
 	} else if ( trainConfig == 141){//cut study for dedx and electron pion line with phi cut 20-50% -added signals
 		eventCutArray[ 0] = "5250002"; photonCutArray[ 0] = "00216609297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5250002"; photonCutArray[ 1] = "00216609220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5250002"; photonCutArray[ 1] = "00216609247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5250002"; photonCutArray[ 2] = "00216609230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5250002"; photonCutArray[ 3] = "00216609250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "00216609280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
+		eventCutArray[ 5] = "5240002"; photonCutArray[ 5] = "00216609247602008250400000"; mesonCutArray[ 5] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 	} else if ( trainConfig == 142){//cut study for dedx and electron pion line with phi cut 0-10%
 		eventCutArray[ 0] = "5010001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5010001"; photonCutArray[ 1] = "00200009220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5010001"; photonCutArray[ 1] = "00200009247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "00200009230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5010001"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5010001"; photonCutArray[ 4] = "00200009280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
 	} else if ( trainConfig == 143){//cut study for dedx and electron pion line with phi cut 20-50%
 		eventCutArray[ 0] = "5250001"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5250001"; photonCutArray[ 1] = "00200009220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5250001"; photonCutArray[ 1] = "00200009247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5250001"; photonCutArray[ 2] = "00200009230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5250001"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "00200009280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
+		eventCutArray[ 5] = "5240001"; photonCutArray[ 5] = "00200009247602008250400000"; mesonCutArray[ 5] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 	} else if ( trainConfig == 144){//cut study for dedx and electron pion line with phi cut 0-10% - added signals
 		eventCutArray[ 0] = "5010002"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5010002"; photonCutArray[ 1] = "00200009220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5010002"; photonCutArray[ 1] = "00200009247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5010002"; photonCutArray[ 2] = "00200009230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5010002"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5010002"; photonCutArray[ 4] = "00200009280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
 	} else if ( trainConfig == 145){//cut study for dedx and electron pion line with phi cut 20-50% -added signals
 		eventCutArray[ 0] = "5250002"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "01525065000000"; //std 3.0sigma
-		eventCutArray[ 1] = "5250002"; photonCutArray[ 1] = "00200009220002008250400000"; mesonCutArray[ 1] = "01525065000000"; //1.0sigma @ 0.5GeV/c
+		eventCutArray[ 1] = "5250002"; photonCutArray[ 1] = "00200009247602008250400000"; mesonCutArray[ 1] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 		eventCutArray[ 2] = "5250002"; photonCutArray[ 2] = "00200009230002008250400000"; mesonCutArray[ 2] = "01525065000000"; //2.5sigma @ 0.5GeV/c
 		eventCutArray[ 3] = "5250002"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[ 3] = "01525065000000"; //2.0sigma @ 0.5GeV/c
 		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "00200009280602008250400000"; mesonCutArray[ 4] = "01525065000000"; //2.0sigma @ 0.5GeV/c, high pt 1sigma @2.GeV/c
+		eventCutArray[ 5] = "5240002"; photonCutArray[ 5] = "00200009247602008250400000"; mesonCutArray[ 5] = "01525065000000"; //3.0sigma @ 0.4GeV/c, high pt 1sigma @2GeV/c
 	} else if ( trainConfig == 146){ // flow cuts with eta = 0.9, y = 0.85
 		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "01525065000000";
 		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "00200009297002208250400000"; mesonCutArray[ 1] = "01525065000000";
@@ -1023,7 +1027,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 4] = "5340001"; photonCutArray[ 4] = "01200009297002208250400000"; mesonCutArray[ 4] = "01524065000000";
 		eventCutArray[ 5] = "5460001"; photonCutArray[ 5] = "01200009297002208250400000"; mesonCutArray[ 5] = "01524065000000";
 		eventCutArray[ 6] = "5680001"; photonCutArray[ 6] = "01200009297002208250400000"; mesonCutArray[ 6] = "01524065000000";  
->>>>>>> added cuts for Andrea with ITS nsigma
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -1177,6 +1180,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 				if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 				if ( i == 3 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 				if ( i == 4 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+				if ( i == 5 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2040TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M","Eta_Fit_Data_PbPb_2760GeV_2040V0M");
 			}
 		}
 		
@@ -1207,6 +1211,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 				if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 				if ( i == 3 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 				if ( i == 4 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+				if ( i == 5 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2040TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2040TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M","Eta_Fit_Data_PbPb_2760GeV_2040V0M");
 			}
 		}
 			

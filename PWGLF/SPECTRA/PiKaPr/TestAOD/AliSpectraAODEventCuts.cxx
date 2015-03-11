@@ -76,6 +76,7 @@ fqV0Cy(-999.),
 fqV0Ay(-999.),
 fPsiV0C(-999.),
 fPsiV0A(-999.),
+fPsiTPC(-999.),
 fCent(-999.),
 fOutput(0),
 fCalib(0),
@@ -419,7 +420,10 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(){
     Qx2 += TMath::Cos(2*aodTrack->Phi());
     Qy2 += TMath::Sin(2*aodTrack->Phi());
   }
-  if(mult!=0)fqTPC= TMath::Sqrt((Qx2*Qx2 + Qy2*Qy2)/mult);
+  if(mult!=0){
+    fPsiTPC= TMath::ATan2(Qy2, Qx2)/2.;
+    fqTPC= TMath::Sqrt((Qx2*Qx2 + Qy2*Qy2)/mult);
+  }
   delete g;
   return fqTPC;
 }

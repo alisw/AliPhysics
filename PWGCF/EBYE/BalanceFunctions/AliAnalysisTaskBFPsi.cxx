@@ -177,6 +177,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseFlowAfterBurner(kFALSE),
   fExcludeResonancesInMC(kFALSE),
   fExcludeElectronsInMC(kFALSE),
+  fExcludeParticlesExtra(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
   fEventClass("EventPlane"), 
@@ -2142,6 +2143,22 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	//exclude non stable particles
 	if(!(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
+
+
+	// exclude particles with strange behaviour in AMPT
+	// - mothers that have physical primary daughters
+	if(fExcludeParticlesExtra){
+
+	  //exclude particles that are primary and have primary daughters
+	  if(track->GetFirstDaughter()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetFirstDaughter()))
+	      continue;
+	  }
+	  if(track->GetLastDaughter()!=-1){
+	    if(gMCEvent->IsPhysicalPrimary(track->GetLastDaughter()))
+	      continue;
+	  }
+	}
 	
 	vCharge = track->Charge();
 	vEta    = track->Eta();

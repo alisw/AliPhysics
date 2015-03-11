@@ -37,7 +37,12 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   printf("Detectors in the data:\n%s\n",detStr.Data());
   TString LHCperiod = grpData->GetLHCPeriod();
   Bool_t isLHC10 =  LHCperiod.Contains("LHC10");
-  printf("LHCperiod:%s\n isLHC10:%d\n",LHCperiod.Data(),(Int_t)isLHC10);
+  Bool_t isLHC11 =  LHCperiod.Contains("LHC11");
+  Bool_t isLHC12 =  LHCperiod.Contains("LHC12");
+  Bool_t isLHC13 =  LHCperiod.Contains("LHC13");
+  Bool_t isLHC13b =  LHCperiod.Contains("LHC13b");
+  Bool_t isLHC13c =  LHCperiod.Contains("LHC13c");
+  printf("LHCperiod:%s\n isLHC10:%d isLHC11:%d isLHC12:%d isLHC13:%d isLHC13b:%d isLHC13c:%d\n",LHCperiod.Data(),(Int_t)isLHC10,(Int_t)isLHC11,(Int_t)isLHC12,(Int_t)isLHC13,(Int_t)isLHC13b,(Int_t)isLHC13c);
 
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
@@ -148,7 +153,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   if (detStr.Contains("TRD") && detStr.Contains("TPC") && TRD_qf){
     Printf("\n******* Calibrating TRD *******");
     procesTRD = new  AliTRDPreprocessorOffline;
-    if(isLHC10) procesTRD->SetSwitchOnChamberStatus(kFALSE);
+    if(isLHC10 || isLHC13b || isLHC13c) procesTRD->SetSwitchOnChamberStatus(kFALSE);
     procesTRD->SetLinearFitForVdrift(kTRUE);
     procesTRD->SetMinStatsVdriftT0PH(600*10);
     procesTRD->SetMinStatsVdriftLinear(50);
@@ -156,6 +161,10 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     procesTRD->SetLimitValidateNoData(60);
     procesTRD->SetLimitValidateBadCalib(60);
     procesTRD->SetAlternativeDriftVelocityFit(kTRUE);
+    if((!isLHC10) && (!isLHC11) && (!isLHC12) && (!isLHC13)) {
+      printf("Run II\n");
+      procestrd.SetT0Shift1(0.2524132);// release the condition on the first bin and last bins
+    }
     procesTRD->Init("CalibObjects.root");
     Int_t versionVdriftUsed = procesTRD->GetVersionVdriftUsed();
     Int_t subversionVdriftUsed = procesTRD->GetSubVersionVdriftUsed();

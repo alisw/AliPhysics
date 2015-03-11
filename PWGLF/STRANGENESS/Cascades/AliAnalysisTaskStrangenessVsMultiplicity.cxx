@@ -106,6 +106,8 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
 //---> Variables for fTreeEvent
       fAmplitude_V0A   (0),
       fAmplitude_V0C   (0),
+      fAmplitude_V0Apartial   (0),
+      fAmplitude_V0Cpartial   (0),
       fAmplitude_V0M   (0),
       fAmplitude_V0AEq (0),
       fAmplitude_V0CEq (0),
@@ -232,6 +234,8 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
 //---> Variables for fTreeEvent
       fAmplitude_V0A (0),
       fAmplitude_V0C (0),
+      fAmplitude_V0Apartial   (0),
+      fAmplitude_V0Cpartial   (0),
       fAmplitude_V0M (0),
       fAmplitude_V0AEq (0),
       fAmplitude_V0CEq (0),
@@ -368,6 +372,10 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
         fRefMultDiffEta[i] = 0;
     }
 
+    for(int i=0; i<500; i++) {
+        fEvent_TrackletEta[i] = -1;
+    }
+
     DefineOutput(1, TList::Class()); // Event Counter Histo
     DefineOutput(2, TTree::Class()); // Event Tree
     DefineOutput(3, TTree::Class()); // V0 Tree
@@ -427,6 +435,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     //--- VZERO Data (Integrated)
     fTreeEvent->Branch("fAmplitude_V0A",&fAmplitude_V0A,"fAmplitude_V0A/F");
     fTreeEvent->Branch("fAmplitude_V0C",&fAmplitude_V0C,"fAmplitude_V0C/F");
+    fTreeEvent->Branch("fAmplitude_V0Apartial",&fAmplitude_V0Apartial,"fAmplitude_V0Apartial/F");
+    fTreeEvent->Branch("fAmplitude_V0Cpartial",&fAmplitude_V0Cpartial,"fAmplitude_V0Cpartial/F");
     fTreeEvent->Branch("fAmplitude_V0M",&fAmplitude_V0M,"fAmplitude_V0M/F");
     fTreeEvent->Branch("fAmplitude_V0AEq",&fAmplitude_V0AEq,"fAmplitude_V0AEq/F");
     fTreeEvent->Branch("fAmplitude_V0CEq",&fAmplitude_V0CEq,"fAmplitude_V0CEq/F");
@@ -582,6 +592,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
+    inputHandler->SetNeedField();
 
     // Multiplicity
     if(! fESDtrackCuts ) {
@@ -653,6 +664,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fEvSel_nSPDPrimVertices = -1;
     fEvSel_distZ = -100;
     fEvSel_VtxZ = -100;
+
+    for(int i=0; i<500; i++) {
+        fEvent_TrackletEta[i] = -1;
+    }
 
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
@@ -839,6 +854,36 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     Float_t  multV0ACorr  = 0;            //  multiplicity from V0 reco side A
     Float_t  multV0CCorr  = 0;            //  multiplicity from V0 reco side C
 
+    //Special Ring selection (for eta symmetry) 
+    /*
+     * --- Info table --- 
+     * 
+     * V0A Ring 1 =  4.5 to  5.1, channel 32..39
+     * V0A Ring 2 =  3.9 to  4.5, channel 40..47
+     * V0A Ring 3 =  3.4 to  3.9, channel 48..55
+     * V0A Ring 4 =  2.8 to  3.4, channel 56..63
+     * V0C Ring 1 = -3.7 to -3.2, channel 00..07
+     * V0C Ring 2 = -3.2 to -2.7, channel 07..15
+     * V0C Ring 3 = -2.2 to -2.7, channel 16..23
+     * V0C Ring 4 = -1.7 to -2.2, channel 24..31
+     */
+    
+    //Selection we want to perform here: 
+    // --- V0A Rings 3+4
+    // --- V0C Rings 1+2
+    
+    Float_t multV0Apartial = 0; 
+    Float_t multV0Cpartial = 0;  
+    for(Int_t iCh = 32; iCh < 48; iCh++){
+      Double_t mult = esdV0->GetMultiplicity(iCh); 
+      multV0Apartial += mult; 
+    }
+    for(Int_t iCh = 0; iCh < 16; iCh++){ 
+      Double_t mult = esdV0->GetMultiplicity(iCh); 
+      multV0Cpartial += mult; 
+    }    
+    
+    
     //Non-Equalized Signal: copy of multV0ACorr and multV0CCorr from AliCentralitySelectionTask
     //Getters for uncorrected multiplicity
     multV0A=esdV0->GetMTotV0A();
@@ -852,8 +897,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);
 
     //Copy to Event Tree for extra information
-    fAmplitude_V0A = multV0ACorr;
-    fAmplitude_V0C = multV0CCorr;
+    //FIXME: no z-vertex dependence yet, these are raw amplitudes...
+    //FIXME: Would anyhow require OCDB entry
+    fAmplitude_V0A = multV0A;
+    fAmplitude_V0C = multV0C;
+    fAmplitude_V0Apartial = multV0Apartial;
+    fAmplitude_V0Cpartial = multV0Cpartial;
     fAmplitude_V0M = multV0A + multV0C; // beware unusual difference
 
     // Equalized signals // From AliCentralitySelectionTask // Updated
