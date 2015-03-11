@@ -1146,7 +1146,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 		  vertexY = vertex->GetY();
 		  vertexZ = vertex->GetZ();
 		  
-		  if(TMath::Abs(vertexZ) > 10)
+		  if(TMath::Abs(vertexZ) > 6) //10 regular //6 for syst.
 		    {
 		      return;
 		    } // Z-Vertex Cut  
@@ -1154,7 +1154,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	    }
 	}
       
-      //_vertexZ->Fill(vertexZ);
+      // _vertexZ->Fill(vertexZ);
       
       iVertex = int((vertexZ-_min_vertexZ)/_width_vertexZ);
       iVertexP1 = iVertex*_nBins_etaPhiPt_1;
@@ -1429,7 +1429,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   _m4->Fill(_mult4);
   _m5->Fill(_mult5);
   _m6->Fill(_mult6);
-  //_vertexZ->Fill(vertexZ);
+  _vertexZ->Fill(vertexZ);
   
   if (_singlesOnly)
     {
