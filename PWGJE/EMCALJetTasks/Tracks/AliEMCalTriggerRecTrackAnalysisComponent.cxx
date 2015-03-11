@@ -247,7 +247,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
 void AliEMCalTriggerRecTrackAnalysisComponent::FillCorrelation(
 		const AliVParticle* const genparticle,
 		const AliVParticle* const recparticle, double weight) {
-	double data[4] = {recparticle->Eta(), recparticle->Phi(), TMath::Abs(genparticle->Pt()), TMath::Abs(recparticle->Pt())};
+	double data[4] = {TMath::Abs(genparticle->Pt()), TMath::Abs(recparticle->Pt()), recparticle->Eta(), recparticle->Phi()};
 	fHistos->FillTHnSparse("hTrackPtCorrelation", data, weight);
 }
 
