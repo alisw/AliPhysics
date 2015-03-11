@@ -40,6 +40,7 @@ set(SRCS
       AliAnalysisTaskMultiDielectronTG.cxx
       AliAnalysisTaskReducedTree.cxx
       AliAnalysisTaskSingleParticle.cxx
+      AliAnalysisTaskElectronEfficiency.cxx
       AliDielectronBtoJPSItoEleCDFfitFCN.cxx
       AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
       AliDielectronBtoJPSItoEleCDFfitHandler.cxx
