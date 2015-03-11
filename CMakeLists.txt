@@ -325,6 +325,10 @@ else()
         message(FATAL_ERROR "ROOT was not build with MonAlisa support")
     endif()
 
+    if(NOT ROOT_HASLDAP)
+        message(FATAL_ERROR "ROOT was not build with LDAP support")
+    endif()
+
     find_package(ApMon)
 
     if(ROOT_HASALIEN STREQUAL "no")
@@ -334,9 +338,18 @@ else()
     if(DIM_FOUND AND ALIEN)
         add_subdirectory(SHUTTLE)
     else()
-      message(FATAL_ERROR "SHUTTLE enabled! Please specify DIMDIR, ODIR and ALIEN")
+      message(FATAL_ERROR "SHUTTLE not enabled! Please specify DIMDIR, ODIR and ALIEN")
     endif()
   endif(SHUTTLE)
+
+  # Enable SHUTTLE/TestShuttle compilation
+  # independently from SHUTTLE (and from monalisa, ldap, dim)
+  # Setting variables in cache to be accesible by ccmake
+  set(TESTSHUTTLE CACHE STRING "Enable TestShuttle build : ON")
+  if(TESTSHUTTLE)
+    message(STATUS "TestShuttle enabled")
+    add_subdirectory(SHUTTLE/TestShuttle)
+  endif(TESTSHUTTLE)
 
   add_subdirectory(ALIROOT)
 

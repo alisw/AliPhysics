@@ -36,6 +36,7 @@
 # - ROOT_HASOPENGL - ROOT was built with OpenGL support
 # - ROOT_HASXML - ROOT was built with XML support
 # - ROOT_HASMONALISA - ROOT was built with MonAlisa support - needed by SHUTTLE
+# - ROOT_HASLDAP - ROOT was built with ldap support - needed by SHUTTLE
 # - ROOT_FORTRAN - fortran compiler
 
 set(ROOT_FOUND FALSE)
@@ -246,6 +247,22 @@ if(ROOTSYS)
             set(ROOT_HASMONALISA FALSE)
         endif()
     endif(ROOT_HASMONALISA)
+
+    # Checking for ldap support
+    execute_process(COMMAND ${ROOT_CONFIG} --has-ldap OUTPUT_VARIABLE ROOT_HASLDAP ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    if(error)
+        message(FATAL_ERROR "Error checking if ROOT was built with ldap support: ${error}")
+    endif(error)
+    
+    # if defined
+    if(ROOT_HASLDAP)
+        string(STRIP "${ROOT_HASLDAP}" ROOT_HASLDAP)
+        if(ROOT_HASLDAP STREQUAL "yes")
+            set(ROOT_HASLDAP TRUE)
+        else()
+            set(ROOT_HASLDAP FALSE)
+        endif()
+    endif(ROOT_HASLDAP)
 
     # Checking for OpenGL support
     execute_process(COMMAND ${ROOT_CONFIG} --has-opengl OUTPUT_VARIABLE ROOT_HASOPENGL ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )

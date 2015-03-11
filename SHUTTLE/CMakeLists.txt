@@ -13,14 +13,6 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# TestShuttle
-# It needs to be included before the production SHUTTLE in order not to
-# inherit the SHUTTLE environment
-if(TESTSHUTTLE)
-  message(STATUS "TestShuttle enabled")
-  add_subdirectory(TestShuttle)
-endif(TESTSHUTTLE)
-
 # SHUTTLE Module
 set(MODULE SHUTTLE)
 
@@ -61,7 +53,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase CDB Core Eve Gui Hist Minuit2 Minuit Net ProofPlayer RIO Spectrum Thread TMVA)
+set(LIBDEPS STEERBase CDB Core Net RIO Thread RLDAP Monalisa)
 set(LIBDEPS ${LIBDEPS} ${DIM_LIBRARIES})
 
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
