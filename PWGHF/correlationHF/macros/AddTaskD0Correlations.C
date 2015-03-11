@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -205,10 +205,46 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetPtTreshLow(pttreshlow);
   massD0Task->SetPtTreshUp(pttreshup);
 
+  Double_t LeftSignReg_LowPt = 1.7968;
+  Double_t RightSignReg_LowPt = 1.9528;
+  Double_t LeftSignReg_HighPt = 1.7488;
+  Double_t RightSignReg_HighPt = 2.0008;
+
+  massD0Task->SetLeftSignReg_LowPt(LeftSignReg_LowPt);
+  massD0Task->SetRightSignReg_LowPt(RightSignReg_LowPt);
+  massD0Task->SetLeftSignReg_HighPt(LeftSignReg_HighPt);
+  massD0Task->SetRightSignReg_HighPt(RightSignReg_HighPt); 
+ 
+  if(pporpPb_lims) { //pp limits
+    
+    Double_t LSBLowLim[15] = {0.,0.,0.,1.76735,1.74798,1.73740,1.70895,1.71803,1.71424,1.70000,1.71017,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
+    Double_t LSBUppLim[15] = {0.,0.,0.,1.81749,1.80661,1.80134,1.78774,1.79365,1.79213,1.75326,1.76307,0.,0.,0.,0.};
+    Double_t RSBLowLim[15] = {0.,0.,0.,1.91778,1.92387,1.92923,1.94532,1.94489,1.94791,1.97361,1.97469,0.,0.,0.,0.};
+    Double_t RSBUppLim[15] = {0.,0.,0.,1.96792,1.98250,1.99317,2.02411,2.02051,2.02580,2.08378,2.08051,0.,0.,0.,0.};
+ 
+    massD0Task->SetLSBLowLim(LSBLowLim);
+    massD0Task->SetLSBHighLim(LSBUppLim);
+    massD0Task->SetRSBLowLim(RSBLowLim);
+    massD0Task->SetRSBHighLim(RSBUppLim);
+
+  } else { //pPb limits
+
+    Double_t LSBLowLim[15] = {0.,0.,0.,1.79075,1.77639,1.77223,1.76321,1.74707,1.74436,1.77074,1.70250,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
+    Double_t LSBUppLim[15] = {0.,0.,0.,1.82796,1.82062,1.81921,1.81443,1.80673,1.80569,1.80218,1.75621,0.,0.,0.,0.};
+    Double_t RSBLowLim[15] = {0.,0.,0.,1.90239,1.90908,1.91316,1.91686,1.92604,1.92834,1.92792,1.97108,0.,0.,0.,0.};
+    Double_t RSBUppLim[15] = {0.,0.,0.,1.93961,1.95331,1.96014,1.96808,1.98570,1.98967,1.99079,2.07851,0.,0.,0.,0.}; 
+
+    massD0Task->SetLSBLowLim(LSBLowLim);
+    massD0Task->SetLSBHighLim(LSBUppLim);
+    massD0Task->SetRSBLowLim(RSBLowLim);
+    massD0Task->SetRSBHighLim(RSBUppLim);
+  }
+
   //  massD0Task->SetRejectSDDClusters(kTRUE);
   //  massD0Task->SetWriteVariableTree(kTRUE);
 
   massD0Task->PrintBinsAndLimits();
+  massD0Task->SetSpeed(speed);
 
   mgr->AddTask(massD0Task);
   
