@@ -1984,7 +1984,7 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   // Returns -1 if no match is found
   Int_t index = -1;
   
-  if ( TMath::Abs(track->Eta()) > 0.9 ) return index;
+  if ( TMath::Abs(track->Eta()) > 0.9 || !geom ) return index;
   
   // Save some time and memory in case of no DCal present
   if( geom->GetNumberOfSuperModules() < 13 )
@@ -2027,7 +2027,7 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   for (Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
   {
     AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-    if (geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;
+    if (!IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;
     clusterArr->AddAt(cluster,icl);
   }
 
