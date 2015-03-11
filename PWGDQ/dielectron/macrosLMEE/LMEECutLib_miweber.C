@@ -4,7 +4,13 @@ public:
 
   static  enum LMMECutSet {
     kpp2010All_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, all multiplicties, PID like QM2014 preliminaries)
+    kpp2010Low_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, low multiplicties, PID like QM2014 preliminaries)
+    kpp2010Mid_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, mid multiplicties, PID like QM2014 preliminaries)
+    kpp2010High_pidITSTPCTOFif_trkSPDfirst_1,      // Cut set for testing (pp 2010, high multiplicties, PID like QM2014 preliminaries)
     kpp2010All,                              
+    kpp2010Low,                              
+    kpp2010Mid,                              
+    kpp2010High,                              
     kCUTSETMAX
   };
   
@@ -111,6 +117,18 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
   case kpp2010All:
     centCuts = new AliDielectronVarCuts("centCuts","Multiplicitypp2010All");
     centCuts->AddCut(AliDielectronVarManager::kNacc,0.,500.);
+    break;
+  case kpp2010Low:
+    centCuts = new AliDielectronVarCuts("centCuts","Multiplicitypp2010Low");
+    centCuts->AddCut(AliDielectronVarManager::kNacc,0.,19.);
+    break;
+  case kpp2010Mid:
+    centCuts = new AliDielectronVarCuts("centCuts","Multiplicitypp2010Mid");
+    centCuts->AddCut(AliDielectronVarManager::kNacc,20.,39.);
+    break;
+  case kpp2010High:
+    centCuts = new AliDielectronVarCuts("centCuts","Multiplicitypp2010High");
+    centCuts->AddCut(AliDielectronVarManager::kNacc,40.,500.);
     break;
   default: cout << "No Centrality selected" << endl;
   }

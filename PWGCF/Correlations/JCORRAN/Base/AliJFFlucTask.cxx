@@ -139,7 +139,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 	double fvertex[3] = {-999,-999,-999};	
 
 	fEvtNum++;
-	if(fEvtNum % 100 == 0){ cout << "evt : " << fEvtNum <<endl ;}
+//	if(fEvtNum % 100 == 0){ cout << "evt : " << fEvtNum <<endl ;}
 
 	// load current event and save track, event info 
 	AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());

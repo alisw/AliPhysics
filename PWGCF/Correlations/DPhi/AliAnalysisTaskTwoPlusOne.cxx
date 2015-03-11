@@ -12,13 +12,19 @@
 #include "AliTwoPlusOneContainer.h"
 #include "AliUEHist.h"
 
+#include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
+#include "AliInputEventHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliVParticle.h"
 #include "AliCFContainer.h"
 
-#include "AliEventPoolManager.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 
+#include "AliEventPoolManager.h"
 
 ClassImp( AliAnalysisTaskTwoPlusOne )
 
@@ -26,11 +32,14 @@ ClassImp( AliAnalysisTaskTwoPlusOne )
 AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
 : AliAnalysisTaskSE(name),
   fMixingTracks(10000),
+  fMode(0),
   fAnalyseUE(0x0),
 // pointers to UE classes
   fHistos(0x0),
 // handlers and events
   fAOD(0x0),
+  fMcEvent(0x0),
+  fMcHandler(0x0),
   fPoolMgr(0x0),
   fEventCombination(0x0),
   fUsedEvents(0),
@@ -119,6 +128,10 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
 
   fEventCombination = new TObjArray;
+
+  // MC handler
+  if(fMode)
+    fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
 }
 
 //________________________________________________________________________
@@ -134,16 +147,15 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 
   Double_t centrality = 0;
   AliCentrality *centralityObj = 0;
-
-  centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
-
-
- if (centralityObj)
-   centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
- else
-   centrality = -1;
-      
+  
   if (fAOD){
+    centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
+  
+    if (centralityObj)
+      centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+    else
+      centrality = -1;
+
     // remove outliers
     if (centrality == 0)
       {
@@ -160,25 +172,65 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	  }
       }
   }
-
   
+  if (fMcHandler){
+    fMcEvent = fMcHandler->MCEvent();
+  }
+
+  if(fMode){
+      AliGenEventHeader* eventHeader = GetFirstHeader();
+      if (!eventHeader)
+      {
+	// We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+	// (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+	AliError("Event header not found. Skipping this event.");
+	//fHistos->FillEvent(0, AliUEHist::kCFStepAnaTopology);
+	return;
+      }
+      
+      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
+      if (!collGeometry)
+      {
+	eventHeader->Dump();
+	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
+      }
+      
+      centrality = collGeometry->ImpactParameter();
+  }
+
+  // Get MC primaries
+  // triggers
+  Int_t   fParticleSpeciesTrigger = -1;
+  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(fMcEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+  TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
+
+
   AliInfo(Form("Centrality is %f", centrality));
 
 
   // Vertex selection *************************************************
-  if(!fAnalyseUE->VertexSelection(InputEvent(), fnTracksVertex, fZVertex)) return;
+  if(fMode==0 && !fAnalyseUE->VertexSelection(InputEvent(), fnTracksVertex, fZVertex)) return;
 
   // optimization
   if (centrality < 0)
     return;
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(InputEvent(), 0, kTRUE, -1, kTRUE);
+  TObjArray* tracks;
+  if(fMode==0)
+    tracks = fAnalyseUE->GetAcceptedParticles(InputEvent(), 0, kTRUE, -1, kTRUE);
+  else
+    tracks  = tracksMC;
+
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
   TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
   delete tracks;
 
-  const AliVVertex* vertex = InputEvent()->GetPrimaryVertex();
-  Double_t zVtx = vertex->GetZ();
+  Double_t zVtx = 0;
+
+  if(fMode==0){//data mode
+    const AliVVertex* vertex = InputEvent()->GetPrimaryVertex();
+    zVtx = vertex->GetZ();
+  }
 
   //at this point of the code the event is acctepted
   //if this run is used to add 30-50% centrality events to the multiplicity of central events this is done here, all other events are skipped. 
@@ -339,7 +391,29 @@ void  AliAnalysisTaskTwoPlusOne::AddSettingsTree()
   settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
   settingsTree->Branch("fThreeParticleMixed", &fThreeParticleMixed,"fThreeParticleMixed/I");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
+  settingsTree->Branch("fMode", &fMode,"Mode/I");
   
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
 }  
+
+
+//____________________________________________________________________
+AliGenEventHeader* AliAnalysisTaskTwoPlusOne::GetFirstHeader()
+{
+  // get first MC header from either ESD/AOD (including cocktail header if available)
+  
+  if (fMcEvent)
+  {
+    // ESD
+    AliHeader* header = (AliHeader*) fMcEvent->Header();
+    if (!header)
+      return 0;
+      
+    AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
+    if (cocktailHeader)
+      return dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+
+    return dynamic_cast<AliGenEventHeader*> (header->GenEventHeader());
+  }
+}

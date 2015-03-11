@@ -24,6 +24,7 @@
 #pragma link C++ class AliFemtoV0Cut+;
 #pragma link C++ class AliFemtoXiCut+;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctn+;
+#pragma link C++ class AliFemtoBPLCMS3DCorrFctnKK+;
 #pragma link C++ class AliFemtoCorrFctn3DLCMSSym+;
 #pragma link C++ class AliFemtoQinvCorrFctn+;
 #pragma link C++ class AliFemtoCorrFctnNonIdDR+;

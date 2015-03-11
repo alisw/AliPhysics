@@ -59,7 +59,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseAliAnaUtils(kFALSE),
   fRejectPileup(kFALSE),
   fTklVsClusSPDCut(kFALSE),
-  fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
   fTriggerTypeSel(kND),
@@ -78,6 +77,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMCLabelShift(0),
   fNcentBins(4),
   fNeedEmcalGeom(kTRUE),
+  fParticleCollArray(),
+  fClusterCollArray(),
+  fTriggers(0),
+  fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
   fTracks(0),
@@ -97,9 +100,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
-  fParticleCollArray(),
-  fClusterCollArray(),
-  fTriggers(0),
   fOutput(0),
   fHistEventCount(0),
   fHistTrialsAfterSel(0),
@@ -143,7 +143,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseAliAnaUtils(kFALSE),
   fRejectPileup(kFALSE),
   fTklVsClusSPDCut(kFALSE),
-  fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
   fTriggerTypeSel(kND),
@@ -162,6 +161,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMCLabelShift(0),
   fNcentBins(4),
   fNeedEmcalGeom(kTRUE),
+  fParticleCollArray(),
+  fClusterCollArray(),
+  fTriggers(0),
+  fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
   fTracks(0),
@@ -181,9 +184,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
-  fParticleCollArray(),
-  fClusterCollArray(),
-  fTriggers(0),
   fOutput(0),
   fHistEventCount(0),
   fHistTrialsAfterSel(0),
@@ -346,21 +346,23 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fOutput->Add(fHistPtHard);
   }
 
-  fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
-  fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
-  fHistCentrality->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistCentrality);
-
   fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
   fHistZVertex->GetXaxis()->SetTitle("z");
   fHistZVertex->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistZVertex);
 
-  fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
-  fHistEventPlane->GetXaxis()->SetTitle("event plane");
-  fHistEventPlane->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistEventPlane);
-
+  if (fForceBeamType != kpp) {
+    fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 200, 0, 100);
+    fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
+    fHistCentrality->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistCentrality);
+    
+    fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
+    fHistEventPlane->GetXaxis()->SetTitle("event plane");
+    fHistEventPlane->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistEventPlane);
+  }
+  
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
   fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
   fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
@@ -397,10 +399,13 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistPtHard->Fill(fPtHard);
   }
 
-  fHistCentrality->Fill(fCent);
   fHistZVertex->Fill(fVertex[2]);
-  fHistEventPlane->Fill(fEPV0);
 
+  if (fForceBeamType != kpp) {
+    fHistCentrality->Fill(fCent);
+    fHistEventPlane->Fill(fEPV0);
+  }
+  
   return kTRUE;
 }
 
@@ -617,7 +622,6 @@ void AliAnalysisTaskEmcal::ExecOnce()
     }
   }
 
-  
   if (fEventPlaneVsEmcal >= 0) {
     if (fGeom) {
       Double_t ep = (fGeom->GetArm1PhiMax() + fGeom->GetArm1PhiMin()) / 2 * TMath::DegToRad() + fEventPlaneVsEmcal - TMath::Pi();
@@ -1347,26 +1351,6 @@ void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj)
   } else {
     AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), obj->GetName()));
   }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array) const
-{
-  Double_t binWidth = (max-min)/n;
-  array[0] = min;
-  for (Int_t i = 1; i <= n; i++) {
-    array[i] = array[i-1]+binWidth;
-  }
-}
-
-//________________________________________________________________________
-Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const
-{
-  Double_t *array = new Double_t[n+1];
-
-  GenerateFixedBinArray(n, min, max, array);
-
-  return array;
 }
 
 //________________________________________________________________________

@@ -1,59 +1,56 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoV0: special type of particle desling with the specifics       //
-// of the V0 type of particle
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file  AliFemtoV0.h
+/// \class AliFemtoV0
+/// \breif A special type of particle dealing with the specifics of the V0 type
+///  of particle.
+///
+/// This class stores the information both about the V0 itself and about its
+/// daughters. This easily enables cuts on daughter characteristics.
+///
+
 #ifndef ALIFEMTOV0_H
 #define ALIFEMTOV0_H
 
-#include "AliFemtoTypes.h" //same as in AliFemtoTrack.h
+#include "AliFemtoTypes.h"
 #include "AliFmPhysicalHelixD.h" // Gael 12 Sept 02
 #include "AliFemtoThreeVector.h"
 #include "TBits.h"
-#ifdef __ROOT__
-#ifndef __NO_STAR_DEPENDENCE_ALLOWED__
-#include "StStrangeMuDstMaker/StV0MuDst.h"
-#endif
-#endif
-/* Th stuff */
 #include "AliFemtoHiddenInfo.h"
-/***/
 
 class AliFemtoV0 {
 public:
   AliFemtoV0();
-  AliFemtoV0(const AliFemtoV0& v); // copy constructor
+  AliFemtoV0(const AliFemtoV0& v); ///< copy constructor
 #ifdef __ROOT__
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
-  AliFemtoV0( StV0MuDst&); // from strangeness V0 micro dst structure
+  AliFemtoV0( StV0MuDst&); ///< from strangeness V0 micro dst structure
 #endif
 #endif
-  virtual ~AliFemtoV0(){if(fHiddenInfo) delete fHiddenInfo;}
+  virtual ~AliFemtoV0() {if(fHiddenInfo) delete fHiddenInfo;};
   AliFemtoV0& operator=(const AliFemtoV0& aV0);
 
 
-  float DecayLengthV0() const;       // 3-d decay distance						 
-  AliFemtoThreeVector DecayVertexV0() const; // Coordinates of decay vertex				 
-  AliFemtoThreeVector PrimaryVertex() const; // Coordinates of primary vertex				 
-  float DecayVertexV0X() const; // Coordinates of decay vertex						 
-  float DecayVertexV0Y() const; // Coordinates of decay vertex						 
-  float DecayVertexV0Z() const; // Coordinates of decay vertex						 
-  float DcaV0Daughters() const;      // DCA of v0 daughters at Decay vertex				 
-  float DcaV0ToPrimVertex() const;   // DCA of v0 to primary vertex					 
-  float DcaPosToPrimVertex() const;  // DCA of pos v0 daughter to pri vertex				 
-  float DcaNegToPrimVertex() const;  // DCA of neg v0 daughter to pri vertex				 
-  AliFemtoThreeVector MomPos() const;   // Momentum components of pos. daughter				 
-  float MomPosX() const;   // Momentum components of pos. daughter					 
-  float MomPosY() const;   // Momentum components of pos. daughter					 
-  float MomPosZ() const;   // Momentum components of pos. daughter					 
-  AliFemtoThreeVector MomNeg() const;   // Momentum components of neg. daughter				 
-  float MomNegX() const;   // Momentum components of neg. daughter					 
-  float MomNegY() const;   // Momentum components of neg. daughter					 
-  float MomNegZ() const;   // Momentum components of neg. daughter					 
-	
-  float EtaPos() const;//Pseudorapidity V0
-  float EtaNeg() const; //Pseudorapidity V0
+  float DecayLengthV0() const;       ///< 3-d decay distance
+  AliFemtoThreeVector DecayVertexV0() const; ///< Coordinates of decay vertex
+  AliFemtoThreeVector PrimaryVertex() const; ///< Coordinates of primary vertex
+  float DecayVertexV0X() const;         ///< Coordinates of decay vertex
+  float DecayVertexV0Y() const;         ///< Coordinates of decay vertex
+  float DecayVertexV0Z() const;         ///< Coordinates of decay vertex
+  float DcaV0Daughters() const;         ///< DCA of v0 daughters at Decay vertex
+  float DcaV0ToPrimVertex() const;      ///< DCA of v0 to primary vertex
+  float DcaPosToPrimVertex() const;     ///< DCA of pos v0 daughter to pri vertex
+  float DcaNegToPrimVertex() const;     ///< DCA of neg v0 daughter to pri vertex
+  AliFemtoThreeVector MomPos() const;   ///< Momentum components of pos. daughter
+  float MomPosX() const;   ///< Momentum components of pos. daughter
+  float MomPosY() const;   ///< Momentum components of pos. daughter
+  float MomPosZ() const;   ///< Momentum components of pos. daughter
+  AliFemtoThreeVector MomNeg() const;   ///< Momentum components of neg. daughter
+  float MomNegX() const;   ///< Momentum components of neg. daughter
+  float MomNegY() const;   ///< Momentum components of neg. daughter
+  float MomNegZ() const;   ///< Momentum components of neg. daughter
+
+  float EtaPos() const;     ///< Pseudorapidity Positive V0 daughter
+  float EtaNeg() const;     ///< Pseudorapidity Negative V0 daughter
   int TPCNclsPos() const;
   int TPCNclsNeg() const;
   const TBits& TPCclustersPos() const;
@@ -65,86 +62,78 @@ public:
   unsigned long StatusPos() const;
   unsigned long StatusNeg() const;
 
-  
-  int   TpcHitsPos() const;          // Number of TPC hits on pos. daughter				 
-  int   TpcHitsNeg() const;          // Number of TPC hits on neg. daughter				 
-  unsigned long TrackTopologyMapPos(unsigned int word) const;						 
-  unsigned long TrackTopologyMapNeg(unsigned int word) const;						 
-		        	                                                                         
-  AliFemtoThreeVector MomV0() const ;    // Momentum components of V0	
-  double EtaV0() const ;// Pseudorapidity V0
-  double PhiV0() const ;// Phi V0
 
-  double YV0() const;			 
-  float MomV0X() const ;    // Momentum components of V0						 
-  float MomV0Y() const ;    // Momentum components of V0						 
-  float MomV0Z() const ;    // Momentum components of V0						 
-  float AlphaV0() const ;             // Armenteros-Podolanski variable					 
-  float PtArmV0() const ;            // Armenteros-Podolanski variable					 
-  float ELambda() const ;             // Energy assuming lambda hypothesis				 
-  float EK0Short() const ;            // Energy assuming k-short hypothesis				 
-  float EPosProton() const ;          // Energy of pos. daughter assuming proton			 
-  float EPosPion() const ;            // Energy of pos. daughter assuming pion				 
-  float ENegProton() const ;          // Energy of neg. daughter assuming antiproton			 
-  float ENegPion() const ;            // Energy of neg. daughter assuming pion				 
-  float MassLambda() const ;          // Mass assuming lambda hypothesis				 
-  float MassAntiLambda() const ;      // Mass assuming antilambda hypothesis				 
-  float MassK0Short() const ;         // Mass assuming k-short hypothesis				 
-  float RapLambda() const ;           // Rapidity assuming (anti) constlambda				 
-  float RapK0Short() const ;          // Rapidity assuming k-short					 
-  float CTauLambda() const ;          // Lifetime (ctau) const assuming (anti) constlambda		 
-  float CTauK0Short() const ;         // Lifetime (ctau) const assuming k-short				 
-  float PtV0() const ;                // Transverse momentum						 
-  float PtotV0() const ;              // Total momentum			
-  double CosPointingAngle() const;
-  float PtPos() const ;               // Transverse momentum of pos. daughter				 
-  float PtotPos() const ;             // Total momentum of pos. daughter				 
-  float DedxPos() const;              // dedx of Positive track						 
-  float NumdedxPos() const;	                                                                         
-// number of hits in dE/dX track of pos. daughter--Gael04Fev 2002					 
-  float ErrdedxPos() const;              								 
-// error on dedx of Positive track--Gael04Fev 2002							 
-  float LendedxPos() const;              								 
-// Length of dE/dX track of pos. daughter--Gael04Fev 2002						 
-  float PseudoRapPos() const;              								 
-// Length of dE/dX track of neg. daughter--Gael04Fev 2002						 
-		        	                                                                         
-  float PtNeg() const ;               // Transverse momentum of neg. daughter				 
-  float PtotNeg() const ;             // Total momentum of neg. daughter				 
-  float DedxNeg() const;              // dedx of Negative track						 
-  float NumdedxNeg() const;	                                                                         
-// number of hits in dE/dX track of neg. daughter--Gael04Fev 2002					 
-  float ErrdedxNeg() const;              								 
-// error on dedx of Negative track--Gael04Fev 2002							 
-  float LendedxNeg() const;              								 
-// Length of dE/dX track of neg. daughter--Gael04Fev 2002						 
-  float PseudoRapNeg() const;              								 
-// Length of dE/dX track of neg. daughter--Gael04Fev 2002						 
-		        	                                                                         
-  int   IdNeg() const;               // Id of negative track                			 
-  int   IdPos() const;               // Id of positive track					 
-  int   KeyNeg() const;               // Id of negative track				 
-  int   KeyPos() const;               // Id of positive track
+  int   TpcHitsPos() const;          // Number of TPC hits on pos. daughter
+  int   TpcHitsNeg() const;          // Number of TPC hits on neg. daughter
+  unsigned long TrackTopologyMapPos(unsigned int word) const;
+  unsigned long TrackTopologyMapNeg(unsigned int word) const;
 
-  float PosNSigmaTPCK() const ;
-  float PosNSigmaTPCPi() const ;
-  float PosNSigmaTPCP() const ;
-  float NegNSigmaTPCK() const ;
-  float NegNSigmaTPCPi() const ;
-  float NegNSigmaTPCP() const ;
+  AliFemtoThreeVector MomV0() const;    ///< Momentum components of V0
+  double EtaV0() const;                 ///< Pseudorapidity V0
+  double PhiV0() const;                 ///< Phi V0
 
-  float PosNSigmaTOFK() const ;
-  float PosNSigmaTOFPi() const ;
-  float PosNSigmaTOFP() const ;
-  float NegNSigmaTOFK() const ;
-  float NegNSigmaTOFPi() const ;
-  float NegNSigmaTOFP() const ;
+  double YV0() const;               ///< ?
+  float MomV0X() const;             ///< X componenet of V0 momentum
+  float MomV0Y() const;             ///< Y componenet of V0 momentum
+  float MomV0Z() const;             ///< Z componenet of V0 momentum
+  float AlphaV0() const;            ///< Armenteros-Podolanski variable
+  float PtArmV0() const;            ///< Armenteros-Podolanski variable
+  float ELambda() const;            ///< Energy assuming lambda hypothesis
+  float EK0Short() const;           ///< Energy assuming k-short hypothesis
+  float EPosProton() const;         ///< Energy of pos. daughter assuming proton
+  float EPosPion() const;           ///< Energy of pos. daughter assuming pion
+  float ENegProton() const;         ///< Energy of neg. daughter assuming antiproton
+  float ENegPion() const;           ///< Energy of neg. daughter assuming pion
+  float MassLambda() const;         ///< Mass assuming lambda hypothesis
+  float MassAntiLambda() const;     ///< Mass assuming antilambda hypothesis
+  float MassK0Short() const;        ///< Mass assuming k-short hypothesis
+  float RapLambda() const;          ///< Rapidity assuming (anti) constlambda
+  float RapK0Short() const;         ///< Rapidity assuming k-short
+  float CTauLambda() const;         ///< Lifetime (ctau) const assuming (anti) constlambda
+  float CTauK0Short() const;        ///< Lifetime (ctau) const assuming k-short
+  float PtV0() const;               ///< Transverse momentum
+  float PtotV0() const;             ///< Total momentum
+  double CosPointingAngle() const;  ///< Cosine of the calculated pointing angle
+  float PtPos() const;              ///< Transverse momentum of pos. daughter
+  float PtotPos() const;            ///< Total momentum of pos. daughter
+  float DedxPos() const;            ///< dedx of Positive track
+  float NumdedxPos() const;         ///< number of hits in dE/dX track of pos. daughter--Gael04Fev 2002
+  float ErrdedxPos() const;         ///< error on dedx of Positive track--Gael04Fev 2002
+  float LendedxPos() const;         ///< Length of dE/dX track of pos. daughter--Gael04Fev 2002
+  float PseudoRapPos() const;       ///< Length of dE/dX track of neg. daughter--Gael04Fev 2002
+
+  float PtNeg() const;              ///< Transverse momentum of neg. daughter
+  float PtotNeg() const;            ///< Total momentum of neg. daughter
+  float DedxNeg() const;            ///< dedx of Negative track
+  float NumdedxNeg() const;         ///< number of hits in dE/dX track of neg. daughter--Gael04Fev 2002
+  float ErrdedxNeg() const;         ///< error on dedx of Negative track--Gael04Fev 2002
+  float LendedxNeg() const;         ///< Length of dE/dX track of neg. daughter--Gael04Fev 2002
+  float PseudoRapNeg() const;       ///< Length of dE/dX track of neg. daughter--Gael04Fev 2002
+
+  int   IdNeg() const;              ///< Id of negative track
+  int   IdPos() const;              ///< Id of positive track
+  int   KeyNeg() const;             ///< Id of negative track
+  int   KeyPos() const;             ///< Id of positive track
+
+  float PosNSigmaTPCK() const;
+  float PosNSigmaTPCPi() const;
+  float PosNSigmaTPCP() const;
+  float NegNSigmaTPCK() const;
+  float NegNSigmaTPCPi() const;
+  float NegNSigmaTPCP() const;
+
+  float PosNSigmaTOFK() const;
+  float PosNSigmaTOFPi() const;
+  float PosNSigmaTOFP() const;
+  float NegNSigmaTOFK() const;
+  float NegNSigmaTOFPi() const;
+  float NegNSigmaTOFP() const;
 
 
 
   bool OnFlyStatusV0() const;
-				                                                                         
-  const AliFmPhysicalHelixD& HelixPos() const; // Gael 12 Sept 02					 
+
+  const AliFmPhysicalHelixD& HelixPos() const; // Gael 12 Sept 02
   const AliFmPhysicalHelixD& HelixNeg() const; // Gael 12 Sept 02
 
 
@@ -153,29 +142,29 @@ public:
   AliFemtoThreeVector NominalTpcExitPointPos() const;
   AliFemtoThreeVector NominalTpcEntrancePointNeg() const;
   AliFemtoThreeVector NominalTpcPointNeg(int i);
-  AliFemtoThreeVector NominalTpcExitPointNeg() const;                                   
+  AliFemtoThreeVector NominalTpcExitPointNeg() const;
 
   void UpdateV0(); // Fills derived info
-  void SetdecayLengthV0(const float x);  
-  void SetdecayVertexV0(const AliFemtoThreeVector v);  
+  void SetdecayLengthV0(const float x);
+  void SetdecayVertexV0(const AliFemtoThreeVector v);
   void SetdecayVertexV0X(const float x);
   void SetdecayVertexV0Y(const float x);
   void SetdecayVertexV0Z(const float x);
-  void SetdcaV0Daughters(const float x); 
-  void SetdcaV0ToPrimVertex(const float x);  
-  void SetdcaPosToPrimVertex(const float x); 
-  void SetdcaNegToPrimVertex(const float x); 
-  void SetmomPos(const AliFemtoThreeVector v);  
-  void SetmomPosX(const float x);  
-  void SetmomPosY(const float x);  
-  void SetmomPosZ(const float x);  
-  void SetmomNeg(const AliFemtoThreeVector v);  
-  void SetmomNegX(const float x);  
-  void SetmomNegY(const float x);  
-  void SetmomNegZ(const float x);  
+  void SetdcaV0Daughters(const float x);
+  void SetdcaV0ToPrimVertex(const float x);
+  void SetdcaPosToPrimVertex(const float x);
+  void SetdcaNegToPrimVertex(const float x);
+  void SetmomPos(const AliFemtoThreeVector v);
+  void SetmomPosX(const float x);
+  void SetmomPosY(const float x);
+  void SetmomPosZ(const float x);
+  void SetmomNeg(const AliFemtoThreeVector v);
+  void SetmomNegX(const float x);
+  void SetmomNegY(const float x);
+  void SetmomNegZ(const float x);
 
   void SetEtaPos(const float x);
-  void SetEtaNeg(const float x); 
+  void SetEtaNeg(const float x);
   void SetTPCNclsPos(const int x);
   void SetTPCNclsNeg(const int x);
   void SetTPCclustersPos(const TBits& x);
@@ -187,11 +176,11 @@ public:
   void SetStatusPos(const unsigned long x);
   void SetStatusNeg(const unsigned long x);
 
-  void SettpcHitsPos(const int& i);      
-  void SettpcHitsNeg(const int& i);      
+  void SettpcHitsPos(const int& i);
+  void SettpcHitsNeg(const int& i);
 
   void SetTrackTopologyMapPos(unsigned int word, const unsigned long& m);
-  void SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m);      
+  void SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m);
 
   void SetmomV0( AliFemtoThreeVector v);
   void SetEtaV0 (double x);
@@ -200,26 +189,26 @@ public:
   void SetmomV0X( float x);
   void SetmomV0Y( float x);
   void SetmomV0Z( float x);
-  void SetalphaV0( float x);       
-  void SetptArmV0( float x);       
-  void SeteLambda( float x);     
-  void SeteK0Short( float x);    
-  void SetePosProton( float x);  
-  void SetePosPion( float x);    
-  void SeteNegProton( float x);  
-  void SeteNegPion( float x);    
-  void SetmassLambda( float x);  
+  void SetalphaV0( float x);
+  void SetptArmV0( float x);
+  void SeteLambda( float x);
+  void SeteK0Short( float x);
+  void SetePosProton( float x);
+  void SetePosPion( float x);
+  void SeteNegProton( float x);
+  void SeteNegPion( float x);
+  void SetmassLambda( float x);
   void SetmassAntiLambda( float x);
-  void SetmassK0Short( float x);  
-  void SetrapLambda( float x);    
-  void SetrapK0Short( float x);   
-  void SetcTauLambda( float x);   
-  void SetcTauK0Short( float x);  
-  void SetptV0( float x);         
-  void SetptotV0( float x);       
-  void SetptPos( float x);        
-  void SetptotPos( float x);      
-  void SetptNeg( float x);        
+  void SetmassK0Short( float x);
+  void SetrapLambda( float x);
+  void SetrapK0Short( float x);
+  void SetcTauLambda( float x);
+  void SetcTauK0Short( float x);
+  void SetptV0( float x);
+  void SetptotV0( float x);
+  void SetptPos( float x);
+  void SetptotPos( float x);
+  void SetptNeg( float x);
   void SetptotNeg( float x);
   void SetidNeg(const int& i);
   void SetidPos(const int& i);
@@ -234,7 +223,7 @@ public:
   void SetkeyNeg(const int& i);
   void SetkeyPos(const int& i);
   void SetCosPointingAngle(double x);
-     
+
   void SetOnFlyStatusV0(bool x);
   void SetHelixPos(const AliFmPhysicalHelixD& h); // Gael 12 Sept 02
   void SetHelixNeg(const AliFmPhysicalHelixD& h); // Gael 12 Sept 02
@@ -301,83 +290,83 @@ public:
   /***/
 
 protected:
-  float fDecayLengthV0;                     // 3-d decay distance						 \\ V0 decay length                                                                  
-  AliFemtoThreeVector fDecayVertexV0;	    // Coordinates of decay vertex				 
-  AliFemtoThreeVector fPrimaryVertex;	    // Coordinates of primary vertex				 
-  float fDcaV0Daughters;		    // DCA of v0 daughters at Decay vertex				 
-  float fDcaV0ToPrimVertex;		    // DCA of v0 to primary vertex					 
-  float fDcaPosToPrimVertex;		    // DCA of pos v0 daughter to pri vertex				 
-  float fDcaNegToPrimVertex;		    // DCA of neg v0 daughter to pri vertex				 
-  AliFemtoThreeVector fMomPos;		    // Momentum components of pos. daughter				 
-  AliFemtoThreeVector fMomNeg;		    // Momentum components of neg. daughter				 
+  float fDecayLengthV0;                 ///< 3-d decay distance						 \\ V0 decay length
+  AliFemtoThreeVector fDecayVertexV0;	  ///< Coordinates of decay vertex
+  AliFemtoThreeVector fPrimaryVertex;	  ///< Coordinates of primary vertex
+  float fDcaV0Daughters;		            ///< DCA of v0 daughters at Decay vertex
+  float fDcaV0ToPrimVertex;		          ///< DCA of v0 to primary vertex
+  float fDcaPosToPrimVertex;		        ///< DCA of pos v0 daughter to pri vertex
+  float fDcaNegToPrimVertex;		        ///< DCA of neg v0 daughter to pri vertex
+  AliFemtoThreeVector fMomPos;		      ///< Momentum components of pos. daughter
+  AliFemtoThreeVector fMomNeg;		      ///< Momentum components of neg. daughter
 
-  unsigned long  fTrackTopologyMapPos[2];   // Topology map for positive daughter
-  unsigned long  fTrackTopologyMapNeg[2];   // Topology map for negative daughter
-       					    
-  int   fTpcHitsPos;			    // Number of TPC hits for positive daughter
-  int   fTpcHitsNeg;			    // Number of TPC hits for negative daughter
-					    
+  unsigned long fTrackTopologyMapPos[2];  ///< Topology map for positive daughter
+  unsigned long fTrackTopologyMapNeg[2];  ///< Topology map for negative daughter
+
+  int   fTpcHitsPos;			///< Number of TPC hits for positive daughter
+  int   fTpcHitsNeg;			///< Number of TPC hits for negative daughter
+
   bool  fOnFlyStatusV0;
-  float fChi2V0;			    // Fit quality for V0
-  float fClV0;				    // Confidence level for V0
-  float fChi2Pos;			    // Fit quality for positive daughter
-  float fClPos;				    // Confidence level for positive daughter
-  float fChi2Neg;			    // Fit quality for negative daughter
-  float fClNeg;				    // Confidence level for negative daughter
+  float fChi2V0;			        ///< Fit quality for V0
+  float fClV0;				        ///< Confidence level for V0
+  float fChi2Pos;			        ///< Fit quality for positive daughter
+  float fClPos;				        ///< Confidence level for positive daughter
+  float fChi2Neg;			        ///< Fit quality for negative daughter
+  float fClNeg;				        ///< Confidence level for negative daughter
   double fCosPointingAngle;
-					    
-  float fDedxPos;			    // dEdx positive daughter	    
-  float fErrDedxPos;			    // dEdx error positive daughter 
-  float fLenDedxPos;			    // dEdx length positive daughter
-  					    
-  float fDedxNeg;			    // dEdx negative daughter	    
-  float fErrDedxNeg;			    // dEdx error negative daughter 
-  float fLenDedxNeg;			    // dEdx length negative daughter
-					    
-  unsigned short fNufDedxPos;		    // Number of dEdx points positive
-  unsigned short fNufDedxNeg;		    // Number of dEdx points negative
-					    
-  AliFmPhysicalHelixD fHelixPos;            // Helix for positive
-  AliFmPhysicalHelixD fHelixNeg;            // Helix for negative
-					    
-  AliFemtoThreeVector fMomV0;		    // Momentum of the V0
-  double fEtaV0;			    // Pseudorapidity of the V0
-  double fPhiV0;			    // Phi angle of the V0
-  double fYV0;		         	    // Rapidity of the V0;
-  float fAlphaV0;			    // Armenteros-Podolanski variable					 
-  float fPtArmV0;			    // Armenteros-Podolanski variable					 
-  float fELambda;			    // Energy assuming lambda hypothesis				 
-  float fEK0Short;			    // Energy assuming k-short hypothesis				 
-  float fEPosProton;			    // Energy of pos. daughter assuming proton			 
-  float fEPosPion;			    // Energy of pos. daughter assuming pion				 
-  float fENegProton;			    // Energy of neg. daughter assuming antiproton
-  float fENegPion;			    // Energy of neg. daughter assuming pion
-  float fMassLambda;			    // Mass assuming lambda hypothesis				 
-  float fMassAntiLambda;		    // Mass assuming antilambda hypothesis
-  float fMassK0Short;			    // Mass assuming k-short hypothesis				 
-  float fRapLambda;			    // Rapidity assuming (anti) constlambda				 
-  float fRapK0Short;			    // Rapidity assuming k-short					 
-  float fCTauLambda;			    // Lifetime (ctau) assuming (anti)lambda		 
-  float fCTauK0Short;			    // Lifetime (ctau) assuming k-short				 
-  float fPtV0;				    // Total momentum							 
-  float fPtotV0;			    // Transverse momentum						 
-  float fPtPos;				    // Transverse momentum of pos. daughter				 
-  float fPtotPos;			    // Total momentum of pos. daughter				 
-  float fPtNeg;				    // Transverse momentum of neg. daughter				 
-  float fPtotNeg;			    // Total momentum of neg. daughter
 
-  float fEtaPos;			            // Eta of positive daughter
-  float fEtaNeg;			            // Eta of neg. daughter
-  int   fTPCNclsPos;			    // No. of cls of pos daughter
-  int   fTPCNclsNeg;			    // No. of cls of neg daughter
+  float fDedxPos;			    ///< dEdx positive daughter
+  float fErrDedxPos;			///< dEdx error positive daughter
+  float fLenDedxPos;			///< dEdx length positive daughter
+
+  float fDedxNeg;			    ///< dEdx negative daughter
+  float fErrDedxNeg;			///< dEdx error negative daughter
+  float fLenDedxNeg;			///< dEdx length negative daughter
+
+  unsigned short fNufDedxPos;		    ///< Number of dEdx points positive
+  unsigned short fNufDedxNeg;		    ///< Number of dEdx points negative
+
+  AliFmPhysicalHelixD fHelixPos;    ///< Helix for positive
+  AliFmPhysicalHelixD fHelixNeg;    ///< Helix for negative
+
+  AliFemtoThreeVector fMomV0;		    ///< Momentum of the V0
+  double fEtaV0;			    ///< Pseudorapidity of the V0
+  double fPhiV0;			    ///< Phi angle of the V0
+  double fYV0;		        ///< Rapidity of the V0;
+  float fAlphaV0;			    ///< Armenteros-Podolanski variable
+  float fPtArmV0;			    ///< Armenteros-Podolanski variable
+  float fELambda;			    ///< Energy assuming lambda hypothesis
+  float fEK0Short;			  ///< Energy assuming k-short hypothesis
+  float fEPosProton;			///< Energy of pos. daughter assuming proton
+  float fEPosPion;			  ///< Energy of pos. daughter assuming pion
+  float fENegProton;			///< Energy of neg. daughter assuming antiproton
+  float fENegPion;			  ///< Energy of neg. daughter assuming pion
+  float fMassLambda;			///< Mass assuming lambda hypothesis
+  float fMassAntiLambda;	///< Mass assuming antilambda hypothesis
+  float fMassK0Short;			///< Mass assuming k-short hypothesis
+  float fRapLambda;			  ///< Rapidity assuming (anti) constlambda
+  float fRapK0Short;			///< Rapidity assuming k-short
+  float fCTauLambda;			///< Lifetime (ctau) assuming (anti)lambda
+  float fCTauK0Short;			///< Lifetime (ctau) assuming k-short
+  float fPtV0;				    ///< Total momentum
+  float fPtotV0;			    ///< Transverse momentum
+  float fPtPos;				    ///< Transverse momentum of pos. daughter
+  float fPtotPos;			    ///< Total momentum of pos. daughter
+  float fPtNeg;				    ///< Transverse momentum of neg. daughter
+  float fPtotNeg;			    ///< Total momentum of neg. daughter
+
+  float fEtaPos;			    ///< Eta of positive daughter
+  float fEtaNeg;			    ///< Eta of neg. daughter
+  int   fTPCNclsPos;			///< No. of cls of pos daughter
+  int   fTPCNclsNeg;			///< No. of cls of neg daughter
   TBits fClustersPos;
   TBits fClustersNeg;
   TBits fSharingPos;
   TBits fSharingNeg;
-  int   fNdofPos;			            // No. of degrees of freedom of the pos. daughter track
-  int   fNdofNeg;			            // No. of degrees of freedom of the neg. daughter track
-  unsigned long fStatusPos;			    // Status (tpc refit, its refit...)
-  unsigned long fStatusNeg;			    // Status (tpc refit, its refit...)
+  int   fNdofPos;			            ///< No. of degrees of freedom of the pos. daughter track
+  int   fNdofNeg;			            ///< No. of degrees of freedom of the neg. daughter track
+  unsigned long fStatusPos;			  ///< Status (tpc refit, its refit...)
+  unsigned long fStatusNeg;			  ///< Status (tpc refit, its refit...)
 
   float fPosNSigmaTPCK;
   float fPosNSigmaTPCPi;
@@ -392,16 +381,16 @@ protected:
   float fNegNSigmaTOFK;
   float fNegNSigmaTOFPi;
   float fNegNSigmaTOFP;
-					    
-  int   fKeyNeg;		    // Unique key negative
-  int   fKeyPos;		    // Unique key positive
 
-  AliFemtoThreeVector fNominalTpcEntrancePointPos; // Nominal positive daugther track entrance point into TPC
+  int   fKeyNeg;		    ///< Unique key negative
+  int   fKeyPos;		    ///< Unique key positive
+
+  AliFemtoThreeVector fNominalTpcEntrancePointPos; ///< Nominal positive daugther track entrance point into TPC
   AliFemtoThreeVector fNominalTpcPointsPos[9];
-  AliFemtoThreeVector fNominalTpcExitPointPos;     // Nominal positive daughter track exit point from TPC
-  AliFemtoThreeVector fNominalTpcEntrancePointNeg; // Nominal positive daugther track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcExitPointPos;     ///< Nominal positive daughter track exit point from TPC
+  AliFemtoThreeVector fNominalTpcEntrancePointNeg; ///< Nominal positive daugther track entrance point into TPC
   AliFemtoThreeVector fNominalTpcPointsNeg[9];
-  AliFemtoThreeVector fNominalTpcExitPointNeg;     // Nominal positive daughter track exit point from TPC
+  AliFemtoThreeVector fNominalTpcExitPointNeg;     ///< Nominal positive daughter track exit point from TPC
 
   double fTPCMomentumPos;
   double fTPCMomentumNeg;
@@ -414,27 +403,27 @@ protected:
   double fTOFKaonTimeNeg;
 
 
-  float fImpactDprimPos; //impact parameter in xy plane
-  float fImpactDweakPos; //impact parameter in xy plane
-  float fImpactDmatPos; //impact parameter in xy plane
-  float fImpactDprimNeg; //impact parameter in xy plane
-  float fImpactDweakNeg; //impact parameter in xy plane
-  float fImpactDmatNeg; //impact parameter in xy plane
+  float fImpactDprimPos;  // impact parameter in xy plane
+  float fImpactDweakPos;  // impact parameter in xy plane
+  float fImpactDmatPos;   // impact parameter in xy plane
+  float fImpactDprimNeg;  // impact parameter in xy plane
+  float fImpactDweakNeg;  // impact parameter in xy plane
+  float fImpactDmatNeg;   // impact parameter in xy plane
 
-  /* Th stuff */			    
-  // Fab private : add mutable		    
+  /* Th stuff */
+  // Fab private : add mutable
   mutable AliFemtoHiddenInfo* fHiddenInfo; //! Hidden info
-  /***/					    
-					    
-					        	                                                                         
-};					    
-					    
+  /***/
+
+
+};
+
 inline float AliFemtoV0::DecayLengthV0() const { return fDecayLengthV0; }
-inline AliFemtoThreeVector AliFemtoV0::DecayVertexV0() const { return fDecayVertexV0; } 
+inline AliFemtoThreeVector AliFemtoV0::DecayVertexV0() const { return fDecayVertexV0; }
 inline AliFemtoThreeVector AliFemtoV0::PrimaryVertex() const { return fPrimaryVertex; }
-inline float AliFemtoV0::DecayVertexV0X() const { return fDecayVertexV0.x(); } 
-inline float AliFemtoV0::DecayVertexV0Y() const { return fDecayVertexV0.y(); } 
-inline float AliFemtoV0::DecayVertexV0Z() const { return fDecayVertexV0.z(); } 
+inline float AliFemtoV0::DecayVertexV0X() const { return fDecayVertexV0.x(); }
+inline float AliFemtoV0::DecayVertexV0Y() const { return fDecayVertexV0.y(); }
+inline float AliFemtoV0::DecayVertexV0Z() const { return fDecayVertexV0.z(); }
 inline float AliFemtoV0::DcaV0Daughters() const { return fDcaV0Daughters; }
 inline float AliFemtoV0::DcaV0ToPrimVertex() const { return fDcaV0ToPrimVertex; }
 inline float AliFemtoV0::DcaPosToPrimVertex() const { return fDcaPosToPrimVertex; }
@@ -503,9 +492,9 @@ inline unsigned long AliFemtoV0::StatusNeg() const {return fStatusNeg;}
 
 inline unsigned long   AliFemtoV0::TrackTopologyMapPos(unsigned int word) const { return fTrackTopologyMapPos[word]; }
 inline unsigned long   AliFemtoV0::TrackTopologyMapNeg(unsigned int word) const { return fTrackTopologyMapNeg[word]; }
-inline int   AliFemtoV0::IdNeg() const { return fKeyNeg; } 
+inline int   AliFemtoV0::IdNeg() const { return fKeyNeg; }
 inline int   AliFemtoV0::KeyNeg() const { return fKeyNeg; }
-inline int   AliFemtoV0::IdPos() const { return fKeyPos; } 
+inline int   AliFemtoV0::IdPos() const { return fKeyPos; }
 inline int   AliFemtoV0::KeyPos() const { return fKeyPos; }
 inline bool  AliFemtoV0::OnFlyStatusV0() const {return fOnFlyStatusV0;}
 inline float AliFemtoV0::PosNSigmaTPCK() const { return fPosNSigmaTPCK; }
@@ -527,15 +516,15 @@ inline AliFemtoThreeVector AliFemtoV0::NominalTpcExitPointPos() const {return fN
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcEntrancePointNeg() const  {return fNominalTpcEntrancePointNeg;}
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcExitPointNeg() const  {return fNominalTpcExitPointNeg;}
 
-inline void AliFemtoV0::SetdecayLengthV0(const float x){ fDecayLengthV0= x;}   
+inline void AliFemtoV0::SetdecayLengthV0(const float x){ fDecayLengthV0= x;}
 inline void AliFemtoV0::SetdecayVertexV0X(const float x){ fDecayVertexV0.SetX(x);}
 inline void AliFemtoV0::SetdecayVertexV0Y(const float x){ fDecayVertexV0.SetY(x);}
 inline void AliFemtoV0::SetdecayVertexV0Z(const float x){ fDecayVertexV0.SetZ(x);}
 inline void AliFemtoV0::SetdecayVertexV0(const AliFemtoThreeVector v){ fDecayVertexV0 = v; }
-inline void AliFemtoV0::SetdcaV0Daughters(const float x){fDcaV0Daughters= x;} 
-inline void AliFemtoV0::SetdcaV0ToPrimVertex(const float x){fDcaV0ToPrimVertex= x;}   
-inline void AliFemtoV0::SetdcaPosToPrimVertex(const float x){fDcaPosToPrimVertex = x;} 
-inline void AliFemtoV0::SetdcaNegToPrimVertex(const float x){fDcaNegToPrimVertex = x;} 
+inline void AliFemtoV0::SetdcaV0Daughters(const float x){fDcaV0Daughters= x;}
+inline void AliFemtoV0::SetdcaV0ToPrimVertex(const float x){fDcaV0ToPrimVertex= x;}
+inline void AliFemtoV0::SetdcaPosToPrimVertex(const float x){fDcaPosToPrimVertex = x;}
+inline void AliFemtoV0::SetdcaNegToPrimVertex(const float x){fDcaNegToPrimVertex = x;}
 inline void AliFemtoV0::SetmomPos(const AliFemtoThreeVector v){fMomPos = v; }
 inline void AliFemtoV0::SetEtaV0(const double x){fEtaV0=x;}
 inline void AliFemtoV0::SetPhiV0(const double x){fPhiV0=x;}
@@ -548,8 +537,8 @@ inline void AliFemtoV0::SetmomNeg(const AliFemtoThreeVector v){fMomNeg = v; }
 inline void AliFemtoV0::SetmomNegX(const float x){fMomNeg.SetX(x);}
 inline void AliFemtoV0::SetmomNegY(const float x){fMomNeg.SetY(x);}
 inline void AliFemtoV0::SetmomNegZ(const float x){fMomNeg.SetZ(x);}
-inline void AliFemtoV0::SetTrackTopologyMapPos(unsigned int word, const unsigned long& m){fTrackTopologyMapPos[word]=m;} 
-inline void AliFemtoV0::SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m){fTrackTopologyMapNeg[word]=m;} 
+inline void AliFemtoV0::SetTrackTopologyMapPos(unsigned int word, const unsigned long& m){fTrackTopologyMapPos[word]=m;}
+inline void AliFemtoV0::SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m){fTrackTopologyMapNeg[word]=m;}
 inline void AliFemtoV0::SetmomV0(AliFemtoThreeVector v){fMomV0= v; }
 inline void AliFemtoV0::SetmomV0X(const float x){fMomV0.SetX(x);}
 inline void AliFemtoV0::SetmomV0Y(const float x){fMomV0.SetY(x);}
@@ -557,30 +546,30 @@ inline void AliFemtoV0::SetmomV0Z(const float x){fMomV0.SetZ(x);}
 
 inline void AliFemtoV0::SetalphaV0( float x){fAlphaV0= x;}
 inline void AliFemtoV0::SetptArmV0( float x){fPtArmV0 = x;}
-inline void AliFemtoV0::SeteLambda( float x){fELambda= x;}       
+inline void AliFemtoV0::SeteLambda( float x){fELambda= x;}
 inline void AliFemtoV0::SeteK0Short( float x){fEK0Short= x;}
-inline void AliFemtoV0::SetePosProton( float x){fEPosProton= x;}      
-inline void AliFemtoV0::SetePosPion( float x){fEPosPion= x;}      
-inline void AliFemtoV0::SeteNegProton( float x){fENegProton= x;} 
-inline void AliFemtoV0::SeteNegPion( float x){fENegPion= x;}       
-inline void AliFemtoV0::SetmassLambda( float x){fMassLambda = x;} 
-inline void AliFemtoV0::SetmassAntiLambda( float x){fMassAntiLambda= x;} 
-inline void AliFemtoV0::SetmassK0Short( float x){fMassK0Short= x;}  
+inline void AliFemtoV0::SetePosProton( float x){fEPosProton= x;}
+inline void AliFemtoV0::SetePosPion( float x){fEPosPion= x;}
+inline void AliFemtoV0::SeteNegProton( float x){fENegProton= x;}
+inline void AliFemtoV0::SeteNegPion( float x){fENegPion= x;}
+inline void AliFemtoV0::SetmassLambda( float x){fMassLambda = x;}
+inline void AliFemtoV0::SetmassAntiLambda( float x){fMassAntiLambda= x;}
+inline void AliFemtoV0::SetmassK0Short( float x){fMassK0Short= x;}
 inline void AliFemtoV0::SetrapLambda( float x){fRapLambda= x;}
-inline void AliFemtoV0::SetrapK0Short( float x){fRapK0Short = x;}   
-inline void AliFemtoV0::SetcTauLambda( float x){fCTauLambda = x;}   
-inline void AliFemtoV0::SetcTauK0Short( float x){fCTauK0Short = x;}   
-inline void AliFemtoV0::SetptV0( float x){fPtV0 = x;}          
+inline void AliFemtoV0::SetrapK0Short( float x){fRapK0Short = x;}
+inline void AliFemtoV0::SetcTauLambda( float x){fCTauLambda = x;}
+inline void AliFemtoV0::SetcTauK0Short( float x){fCTauK0Short = x;}
+inline void AliFemtoV0::SetptV0( float x){fPtV0 = x;}
 inline void AliFemtoV0::SetptotV0( float x){fPtotV0 = x;}
 inline void AliFemtoV0::SetptPos( float x){fPtPos = x;}
-inline void AliFemtoV0::SetptotPos( float x){fPtotPos = x;}    
-inline void AliFemtoV0::SetptNeg( float x){ fPtNeg= x;}    
+inline void AliFemtoV0::SetptotPos( float x){fPtotPos = x;}
+inline void AliFemtoV0::SetptNeg( float x){ fPtNeg= x;}
 inline void AliFemtoV0::SetptotNeg( float x){ fPtotNeg= x;}
 inline void AliFemtoV0::SetidNeg(const int& s){ fKeyNeg= s;}
 inline void AliFemtoV0::SetidPos(const int& s){ fKeyPos= s;}
 inline void AliFemtoV0::SetkeyNeg(const int& s){ fKeyNeg= s;}
 inline void AliFemtoV0::SetkeyPos(const int& s){ fKeyPos= s;}
-inline void AliFemtoV0::SettpcHitsPos(const int& i){fTpcHitsPos=i;} 
+inline void AliFemtoV0::SettpcHitsPos(const int& i){fTpcHitsPos=i;}
 inline void AliFemtoV0::SettpcHitsNeg(const int& i){fTpcHitsNeg=i;}
 inline void AliFemtoV0::SetdedxNeg(float x){fDedxNeg=x;}
 inline void AliFemtoV0::SeterrdedxNeg(float x){fErrDedxNeg=x;}//Gael 04Fev2002
@@ -589,7 +578,7 @@ inline void AliFemtoV0::SetdedxPos(float x){fDedxPos=x;}
 inline void AliFemtoV0::SeterrdedxPos(float x){fErrDedxPos=x;}//Gael 04Fev2002
 inline void AliFemtoV0::SetlendedxPos(float x){fLenDedxPos=x;}//Gael 04Fev2002
 inline void AliFemtoV0::SetprimaryVertex(const AliFemtoThreeVector v) { fPrimaryVertex = v; }//Gael 24 Sept 02
-         
+
 inline void AliFemtoV0::SetEtaPos(float x) {fEtaPos=x;}
 inline void AliFemtoV0::SetEtaNeg(float x) {fEtaNeg=x;}
 inline void AliFemtoV0::SetTPCNclsPos(int x) {fTPCNclsPos=x;}
@@ -603,7 +592,7 @@ inline void AliFemtoV0::SetNdofNeg(int x) {fNdofNeg=x;}
 inline void AliFemtoV0::SetStatusPos(unsigned long x) {fStatusPos=x;}
 inline void AliFemtoV0::SetStatusNeg(unsigned long x) {fStatusNeg=x;}
 inline void AliFemtoV0::SetOnFlyStatusV0(bool x) {fOnFlyStatusV0=x;}
-            
+
 inline void AliFemtoV0::SetPosNSigmaTPCK(float x){ fPosNSigmaTPCK = x; }
 inline void AliFemtoV0::SetPosNSigmaTPCPi(float x){ fPosNSigmaTPCPi = x;  }
 inline void AliFemtoV0::SetPosNSigmaTPCP(float x) { fPosNSigmaTPCP = x;  }
@@ -659,21 +648,3 @@ inline float AliFemtoV0::ImpactDweakNeg() const {return fImpactDweakNeg;}
 inline float AliFemtoV0::ImpactDmatNeg() const {return fImpactDmatNeg;}
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -164,16 +164,17 @@ void AliJJetTask::UserCreateOutputObjects()
 Bool_t AliJJetTask::FillHistograms()
 {
 
-	{
-		int iTrack =0;
-		AliVTrack *track = static_cast<AliVTrack*>(fTracksCont[0]->GetNextAcceptParticle(0));
-		while(track){
-			new (fJTracks[iTrack]) AliJBaseTrack(track->Px(),track->Py(), track->Pz(), track->E(), iTrack,0,0);
-			track = static_cast<AliVTrack*>(fTracksCont[0]->GetNextAcceptParticle());
 
-			iTrack++;
-		}
-	}    
+
+    for (int itrack = 0; itrack<fTracksCont[0]->GetNParticles(); itrack++){
+        AliVTrack *track = static_cast<AliVTrack*>(fTracksCont[0]->GetParticle(itrack));
+        new (fJTracks[itrack]) AliJBaseTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,0);
+
+    }     
+
+
+
+
 	for (int i=0; i<fNJetFinder; i++){
 		AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet(0);
 		int iJet =0; 

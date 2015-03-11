@@ -323,6 +323,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       for(Int_t i = 0; i<jetContS->GetNJets(); i++) {
 	//if(ifound==1) continue;
 	jetS = jetContS->GetJet(i);
+        if(!jetS) continue;
 	if(jetS->GetLabel()==jet1->GetLabel()) {
 	  ifound++;
 	  if(ifound==1) ilab = i;

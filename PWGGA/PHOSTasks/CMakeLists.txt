@@ -140,5 +140,6 @@ install(DIRECTORY PHOS_PbPbQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
+install(FILES PHOS_GAFlow/AddTaskThermalGAFlow.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)
 install(FILES PHOS_Tagging/AddTaskPHOSTagging.C DESTINATION PWGGA/PHOSTasks/PHOS_Tagging)
 

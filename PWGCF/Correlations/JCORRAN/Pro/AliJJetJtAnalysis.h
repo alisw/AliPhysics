@@ -166,6 +166,12 @@ class AliJJetJtAnalysis{
         AliJTH1D fhBgJtBinLimBin;
         AliJTH1D fhBgJtWeightBinLimBin;
         AliJTH1D fhBgLogJtWeightBinLimBin;
+        AliJTH1D fhTrkPt;
+        AliJTH1D fhTrkPtBin;
+        AliJTH1D fhTrkPtWeightBin;
+        AliJTH1D fhBgTrkPt;
+        AliJTH1D fhBgTrkPtBin;
+        AliJTH1D fhBgTrkPtWeightBin;
         
         AliJTH1D fhdeltaE;
         AliJTH1D fhdeltaN;
@@ -173,6 +179,8 @@ class AliJJetJtAnalysis{
         AliJTH1D fhFullChdRChJetBin;
         AliJTH2D fh2DFullEvsChEdN0;
         AliJTH2D fh2DFullEvsChEdNnot0;
+        AliJTH2D fhJetEtaPhi;
+        AliJTH2D fhTrackEtaPhi;
 
 
 		//double   fJetPtMinCut;

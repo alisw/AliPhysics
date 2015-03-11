@@ -46,7 +46,8 @@ AliJJetJtTask::AliJJetJtTask() :
     zBin(-1),
     zVert(-999),
     fAnaUtils(NULL),
-    fRunTable(NULL)
+    fRunTable(NULL),
+    fEventHist(NULL)
     
 {
   DefineOutput (1, TDirectory::Class());
@@ -65,7 +66,8 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
     zBin(-1),
     zVert(-999),
     fAnaUtils(NULL),
-    fRunTable(NULL)
+    fRunTable(NULL),
+    fEventHist(NULL)
 {
   // Constructor
   AliInfo("---- AliJJetJtTask Constructor ----");
@@ -87,7 +89,8 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
     zBin(-1),
     zVert(-999),
     fAnaUtils(ap.fAnaUtils),
-    fRunTable(ap.fRunTable)
+    fRunTable(ap.fRunTable),
+    fEventHist(ap.fEventHist)
 { 
 
   AliInfo("----DEBUG AliJJetJtTask COPY ----");
@@ -146,6 +149,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
    fJJetJtAnalysis->UserCreateOutputObjects();
 
    fCard->WriteCard(gDirectory);
+   fEventHist = new TH1D("EventHist","event numbers",10,0,10);
 
 
 
@@ -245,13 +249,13 @@ bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
 	} else {
 		Bool_t triggeredEventMB = kFALSE; //init
 
-		//bkfJJetJtAnalysis->GetAliJHistos()->fhEvents->Fill( 0 );
+		fEventHist->Fill( 0 );
 
 		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
 
 		if( triggerkMB ){
 			triggeredEventMB = kTRUE;  //event triggered as minimum bias
-			//fJJetJtAnalysis->GetAliJHistos()->fhEvents->Fill( 1 );
+			fEventHist->Fill( 1 );
 		}
 		//--------------------------------------------------------------
 		// check reconstructed vertex
@@ -263,10 +267,10 @@ bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
 			if(ncontributors > 0){
 				zVert = vtx->GetZ();
 				//cout<<zVert<<endl;
-				//fJJetJtAnalysis->GetAliJHistos()->fhEvents->Fill( 2 );
+				fEventHist->Fill( 2 );
 				if(fCard->VertInZRange(zVert)) {
 					goodRecVertex = kTRUE;
-					//fJJetJtAnalysis->GetAliJHistos()->fhEvents->Fill( 3 );
+					fEventHist->Fill( 3 );
 					zBin  = fCard->GetBin(kZVertType, zVert);
 				}
 			}

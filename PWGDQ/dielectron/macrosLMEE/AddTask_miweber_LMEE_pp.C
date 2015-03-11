@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResult.root"){
+AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_pp"){
 
 
   //get the current analysis manager
@@ -45,6 +45,8 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResul
   //Add event filter
   Int_t triggerNames=(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);//pp 2010/2011 Min Bias?
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kpp2010All));
+  task->SelectCollisionCandidates(triggerNames);
+  task->SetTriggerMask(triggerNames);
   task->SetRejectPileup();
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 
@@ -63,26 +65,26 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResul
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("miweber_LMEE_pp_tree",
+    mgr->CreateContainer(Form("%s_tree",directoryBaseName.Data()),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("miweber_LMEE_pp_out",
+    mgr->CreateContainer(Form("%s_out",directoryBaseName.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("miweber_LMEE_pp_CF",
+    mgr->CreateContainer(Form("%s_CF",directoryBaseName.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   //                         "miweber_LMEE_pp_CF.root");
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("miweber_EventStat",
+    mgr->CreateContainer(Form("%s_EventStat",directoryBaseName.Data()),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());

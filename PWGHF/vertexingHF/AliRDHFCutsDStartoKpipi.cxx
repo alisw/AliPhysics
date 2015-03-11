@@ -583,7 +583,7 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
     //Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
     Double_t prob[5]={1.,1.,1.,1.,1.};
     
-    //fPidHF->SetPriors(priors);
+    //fPidHF->SetPriors(priors,5);
     //    fPidHF->BayesianProbability(track,prob);
     
     Double_t max=0.;
@@ -734,7 +734,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
   //pidObj->SetName("pid4DSatr");
   Int_t mode=1;
   Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
-  pidObj->SetPriors(priors);
+  pidObj->SetPriors(priors,5);
   pidObj->SetMatch(mode);
   pidObj->SetSigma(0,2); // TPC
   pidObj->SetSigma(3,3); // TOF
@@ -849,7 +849,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
   // pidObj->SetName("pid4DSatr");
   Int_t mode=1;
   Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
-  pidObj->SetPriors(priors);
+  pidObj->SetPriors(priors,5);
   pidObj->SetMatch(mode);
   pidObj->SetSigma(0,2); // TPC
   pidObj->SetSigma(3,3); // TOF

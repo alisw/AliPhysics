@@ -28,8 +28,8 @@ public:
   void SetMinimumJetPt(Double_t minpt) { fMinimumJetPt = minpt; }
 
 protected:
-  void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz);
-  void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz);
+  void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
+  void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
 
   Double_t                fMinimumJetPt;                      // Min. pt request for the jet
   Bool_t                  fUsePatches;                        // Use patches for trigger decision

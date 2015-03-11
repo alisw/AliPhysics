@@ -105,7 +105,7 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   if(!file) return;
   file->cd();
   
-  TTree *tree = (TTree*)file->Get("t0QA");
+  TTree *tree = (TTree*)file->Get("trending");
   if(!tree) return;
   int const entries = tree->GetEntries();
   cout<<"number of entries   "<<entries<<endl; 

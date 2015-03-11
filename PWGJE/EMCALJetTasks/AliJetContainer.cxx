@@ -31,12 +31,12 @@ AliJetContainer::AliJetContainer():
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
-  fJetPtCut(1),
+  fJetPtCut(0),
   fJetAreaCut(-1),
-  fAreaEmcCut(0),
+  fAreaEmcCut(-1),
   fJetMinEta(-0.9),
   fJetMaxEta(0.9),
-  fJetMinPhi(-10),
+  fJetMinPhi(0.),
   fJetMaxPhi(10),
   fPhiOffset(0.),
   fMaxClusterPt(1000),
@@ -76,12 +76,12 @@ AliJetContainer::AliJetContainer(const char *name):
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
-  fJetPtCut(1),
+  fJetPtCut(0),
   fJetAreaCut(-1),
-  fAreaEmcCut(0),
+  fAreaEmcCut(-1),
   fJetMinEta(-0.9),
   fJetMaxEta(0.9),
-  fJetMinPhi(-10),
+  fJetMinPhi(0.),
   fJetMaxPhi(10),
   fPhiOffset(0.),
   fMaxClusterPt(1000),
@@ -128,7 +128,8 @@ void AliJetContainer::SetArray(AliVEvent *event)
 
 
 //________________________________________________________________________
-void AliJetContainer::SetEMCALGeometry() {
+void AliJetContainer::SetEMCALGeometry()
+{
   fGeom = AliEMCALGeometry::GetInstance();
   if (!fGeom) {
     AliError(Form("%s: Can not create geometry", GetName()));
@@ -365,7 +366,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
    
   // if limits are given in (-pi, pi) range
   if (fJetMinPhi < 0) jetPhi -= TMath::Pi() * 2;
-   
+
   if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
     AliDebug(11,"Cut rejecting jet: Acceptance");
     fRejectionReason |= kAcceptanceCut;
@@ -551,8 +552,8 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
 {
   //Set default cuts for full jets
 
-  if(!fGeom) SetEMCALGeometry();
-  if(fGeom) {
+  if (!fGeom) SetEMCALGeometry();
+  if (fGeom) {
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
 
     if(fRunNumber>=177295 && fRunNumber<=197470) //small SM masked in 2012 and 2013
@@ -573,14 +574,15 @@ void AliJetContainer::SetJetEtaPhiTPC()
   //Set default cuts for charged jets
 
   SetJetEtaLimits(-0.9+fJetRadius, 0.9-fJetRadius);
-  SetJetPhiLimits(-10, 10);
+  SetJetPhiLimits(0, TMath::TwoPi()+0.1);
 }
 
 //________________________________________________________________________
 void AliJetContainer::PrintCuts() 
 {
   // Reset cuts to default values
-
+  TString arrName = GetArrayName();
+  Printf("Print jet cuts for %s",arrName.Data());
   Printf("PtBiasJetTrack: %f",fPtBiasJetTrack);
   Printf("PtBiasJetClus: %f",fPtBiasJetClus);
   Printf("JetPtCut: %f", fJetPtCut);
@@ -604,19 +606,32 @@ void AliJetContainer::ResetCuts()
   // Reset cuts to default values
 
   fPtBiasJetTrack = 0;
-  fPtBiasJetClus = 0;
-  fJetPtCut = 1;
-  fJetAreaCut = -1;
-  fAreaEmcCut = 0;
-  fJetMinEta = -0.9;
-  fJetMaxEta = 0.9;
-  fJetMinPhi = -10;
-  fJetMaxPhi = 10;
-  fMaxClusterPt = 1000;
-  fMaxTrackPt = 100;
+  fPtBiasJetClus  = 0;
+  fJetPtCut       = 0;
+  fJetAreaCut     = -1;
+  fAreaEmcCut     = -1;
+  fJetMinEta      = -0.9;
+  fJetMaxEta      = 0.9;
+  fJetMinPhi      = 0;
+  fJetMaxPhi      = 10;
+  fMaxClusterPt   = 1000;
+  fMaxTrackPt     = 100;
   fLeadingHadronType = 0;
   fZLeadingEmcCut = 10.;
-  fZLeadingChCut = 10.;
+  fZLeadingChCut  = 10.;
+}
+
+//________________________________________________________________________
+Int_t AliJetContainer::GetNAcceptedJets()
+{
+  // Get number of accepted jets
+
+  Int_t nJet = 0;
+  AliEmcalJet *jet = GetNextAcceptJet(0);
+  if(jet) nJet = 1;
+  while (GetNextAcceptJet())
+    nJet++;
+  return nJet;
 }
 
 //________________________________________________________________________

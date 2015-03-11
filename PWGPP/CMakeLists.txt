@@ -202,6 +202,10 @@ set ( SRCS16
 set ( SRCS17  
   TRD/TRDPID/AliTRDPIDTree.cxx
   TRD/TRDPID/AliTRDPIDmatching.cxx
+  )
+#file ( GLOB SRCS18 "AD/*.cxx" )
+set ( SRCS18
+  AD/AliAnalysisTaskADQA.cxx
   )  
 
 list ( APPEND SRCS 
@@ -222,6 +226,7 @@ list ( APPEND SRCS
   ${SRCS15}
   ${SRCS16}
   ${SRCS17}
+  ${SRCS18}
   )
 
 # Headers from sources
@@ -282,6 +287,7 @@ install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
             TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
          DESTINATION PWGPP/TRD)
 install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
+install(FILES AD/AddTaskADQA.C DESTINATION PWGPP/AD)
 install(FILES PilotTrain/AddTaskMuonQA.C DESTINATION PWGPP/PilotTrain/ )
 install(FILES VZERO/AddTaskVZEROPbPb.C DESTINATION PWGPP/VZERO/)
 install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")

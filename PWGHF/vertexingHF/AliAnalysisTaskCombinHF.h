@@ -79,6 +79,11 @@ public:
     fMinAngleForRot=phimin;
     fMaxAngleForRot=phimax;
   }
+  void ConfigureRotation3rdProng(Int_t n, Double_t phimin, Double_t phimax){
+    fNRotations3=n;
+    fMinAngleForRot3=phimin;
+    fMaxAngleForRot3=phimax;
+  }
   void SetMassWindow(Double_t minMass, Double_t maxMass){fMinMass=minMass; fMaxMass=maxMass;}
   void SetMaxPt(Double_t maxPt){fMaxPt=maxPt;}
   void SetPtBinWidth(Double_t binw){fPtBinWidth=binw;}
@@ -172,6 +177,7 @@ private:
   Int_t fNRotations; // number of rotations
   Double_t fMinAngleForRot; // minimum angle for track rotation
   Double_t fMaxAngleForRot; // maximum angle for track rotation
+  Int_t fNRotations3; // number of rotations (3rd prong)
   Double_t fMinAngleForRot3; // minimum angle for track rotation (3rd prong)
   Double_t fMaxAngleForRot3; // maximum angle for track rotation (3rd prong)
   

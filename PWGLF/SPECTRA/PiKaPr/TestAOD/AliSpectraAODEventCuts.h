@@ -58,6 +58,7 @@ public:
     fqV0Ay(-999.),
     fPsiV0C(-999.),
     fPsiV0A(-999.),
+    fPsiTPC(-999.),
     fCent(-999.),
     fOutput(0),
     fCalib(0),
@@ -131,6 +132,7 @@ public:
   Double_t  GetqV0Ay()  const {  return fqV0Ay; }
   Double_t  GetPsiV0C()  const {  return fPsiV0C; }
   Double_t  GetPsiV0A()  const {  return fPsiV0A; }
+  Double_t  GetPsiTPC()  const {  return fPsiTPC; }
   Double_t  GetCent()  const {  return fCent; }
   TList *GetOutputList()       {return fOutput;};
   TList *GetCalibList()       {return fCalib;};
@@ -220,6 +222,7 @@ private:
   Double_t       fqV0Ay;            //q vector in the VZERO-A, y-comp
   Double_t       fPsiV0C;            //EP from VZERO-C
   Double_t       fPsiV0A;            //EP from VZERO-A
+  Double_t       fPsiTPC;            //EP from TPC
   Double_t       fCent;            //centrality according to fCentralityMethod
   TList            *fOutput;        // output list 
   TList            *fCalib;        // output list 
@@ -255,7 +258,7 @@ private:
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
 
-  ClassDef(AliSpectraAODEventCuts, 11);
+  ClassDef(AliSpectraAODEventCuts, 12);
 
 };
 #endif

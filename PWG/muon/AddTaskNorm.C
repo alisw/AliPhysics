@@ -30,8 +30,8 @@ AliAnalysisTaskNorm *AddTaskNorm ( Bool_t isESD = kFALSE, Bool_t isMC = kFALSE, 
   task->SetIsESD(isESD);
   task->SetBeamConf(sBeamConf);
   ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetFilterMask ( AliMuonEventCuts::kSelectedTrig );
-  ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigInputsMap("0MSL:12,0MUL:14");
-  ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigClassPatterns("CINT7-B-NOPF-ALLNOTRD,CINT7-B-NOPF-ALLNOTRD&0MSL,CINT7-B-NOPF-ALLNOTRD&0MUL,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON&0MUL,CMUL7-B-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD");
+  //  ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigInputsMap();
+  ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigClassPatterns("CINT7-B-NOPF-ALLNOTRD,CINT7-B-NOPF-ALLNOTRD&0MSL,CINT7-B-NOPF-ALLNOTRD&0MUL,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON&0MUL,CMUL7-B-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD","0MSL:12,0MUL:14");
   // Add task to analysis manager
   mgr->AddTask(task);
   

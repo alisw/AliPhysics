@@ -33,6 +33,7 @@ TNamed(),
   fhSmoothEfficiency(0),
   fCorrectpTtrack(0),
   fNpPoisson(0),
+  fRndm(0),
   fpAppliedEfficiency(0),
   fNmissing(0),
   fListOfOutput(0)
@@ -55,6 +56,7 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fhSmoothEfficiency(0),
   fCorrectpTtrack(0),
   fNpPoisson(0),
+  fRndm(0),
   fpAppliedEfficiency(0),
   fNmissing(0),
   fListOfOutput(0)
@@ -77,16 +79,14 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
 
   fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
   
-  fNmissing = new TH2F("fNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added", nBinsPtJ,minPtJ,maxPtJ, 80,0,20);
-  
-  fAvgNmiss = new TH2F("fAvgNmiss", "Average number of missing tracks;#it{p}_{T,jet};N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 80,0,20);
-  
+  fNmissing = new TH3F("fNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added; N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 80,0,20, 80,0,20);
+    
   fListOfOutput = new TList();
   fListOfOutput->SetName("JetByJetCorrectionOutput");
   fListOfOutput->SetOwner();
   fListOfOutput->Add(fpAppliedEfficiency);
   fListOfOutput->Add(fNmissing);
-  fListOfOutput->Add(fAvgNmiss);
+ 
 
 }
 
@@ -104,7 +104,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fhSmoothEfficiency(other.fhSmoothEfficiency),
   fCorrectpTtrack(other.fCorrectpTtrack),
   fpAppliedEfficiency(other.fpAppliedEfficiency),
-  fNmissing(other.fNmissing)
+  fNmissing(other.fNmissing),
+  fRndm(other.fRndm)
 {
   // Copy constructor.
 }
@@ -127,6 +128,7 @@ AliEmcalJetByJetCorrection& AliEmcalJetByJetCorrection::operator=(const AliEmcal
   fCorrectpTtrack    = other.fCorrectpTtrack;
   fpAppliedEfficiency= other.fpAppliedEfficiency;
   fNmissing          = other.fNmissing;
+  fRndm              = other.fRndm;
   return *this;
 }
 
@@ -148,14 +150,14 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   fpAppliedEfficiency->Fill(meanPt,eff);
 
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
-  fAvgNmiss->Fill(jet->Pt(),np);
+  
+  Int_t npc=np;
   if(fNpPoisson){
-     TRandom3 *rndP=new TRandom3(1234);
-     np=rndP->Poisson(np);
+     npc=fRndm->Poisson(np);
   
   }
   
-  fNmissing->Fill(jet->Pt(), np);
+  fNmissing->Fill(jet->Pt(), npc, np);
   TLorentzVector corrVec; corrVec.SetPtEtaPhiM(jet->Pt(),jet->Eta(),jet->Phi(),jet->M());
 
   Double_t mass = 0.13957; //pion mass
@@ -192,6 +194,7 @@ void AliEmcalJetByJetCorrection::Init() {
       return;
       
    }
+   fRndm = new TRandom3(1234);
    if(fhEfficiency){
       fhSmoothEfficiency = (TH1D*) fh3JetPtDRTrackPt->ProjectionZ("fhSmoothEfficiency"); //copy the binning of the pTtrack axis
       Int_t nBinsEf = fhEfficiency->GetXaxis()->GetNbins();

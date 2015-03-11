@@ -26,7 +26,7 @@ TString suffix="c3SigPID_Pt400_EM1";
 TString meson="Dzero";
 const Int_t nPtBins=6;
 Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,6.,8.};
-Double_t sigmas[nPtBins]={0.0075,0.008,0.009,0.009,0.010,0.012};//,0.012,0.015,0.017};// MC values up to 8
+Double_t sigmas[nPtBins]={0.0079,0.0084,0.0092,0.0101,0.0113,0.0129}; // MC values up to 8 (p-Pb pt(track)>400 MeV/c)
 
 // outputfiles
 Bool_t saveCanvasAsRoot=kTRUE;
@@ -1194,7 +1194,10 @@ void ProjectCombinHFAndFit(){
     c2->SaveAs(Form("figures/InvMassSpectra_%s_Rot.eps",suffix.Data()));
     c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.eps",suffix.Data()));
     c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.eps",suffix.Data()));
-    if(tryDirectFit) cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
+    if(tryDirectFit){
+      cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
+      cDataSubtractedReFit->SaveAs(Form("figures/InvMassSpectra_%s_SBsub.eps",suffix.Data()));
+    }
 
     if(saveCanvasAsEps>1){
       c2residuals->SaveAs(Form("figures/ResidualDistribution_%s_Rot.eps",suffix.Data()));

@@ -431,7 +431,10 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalJetMass::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-
+  if(!GetNParticles()) {
+     return kFALSE;
+     
+  }
   return kTRUE;
 }
 
@@ -439,7 +442,6 @@ Bool_t AliAnalysisTaskEmcalJetMass::Run()
 Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 {
   // Fill histograms.
-
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
@@ -456,25 +458,33 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       while (ep < 0) ep += TMath::Pi();
       while (ep >= TMath::Pi()) ep -= TMath::Pi();
 
+      //Printf("useUnsub: %d jet: %d pT: %f M: %f E: %f",fUseUnsubJet,jetCont->GetCurrentID(),ptJet1,mJet1,eJet1);
+
       Double_t fraction = -1.;
       AliEmcalJet *jetUS = NULL;
       if(fUseUnsubJet) {
-	AliJetContainer *jetContUS = GetJetContainer(fContainerUnsub);
-	Int_t ifound = 0;
-	Int_t ilab = -1;
-	for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
-	  jetUS = jetContUS->GetJet(i);
-	  if(jetUS->GetLabel()==jet1->GetLabel()) {
-	    ifound++;
-	    if(ifound==1) ilab = i;
-	  }
-	}
-	if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
-	if(ilab>-1) {
-	  jetUS = jetContUS->GetJet(ilab);
-	  fraction = jetContUS->GetFractionSharedPt(jetUS);
-	  maxTrackPt = jetUS->MaxTrackPt();
-	}
+        AliJetContainer *jetContUS = GetJetContainer(fContainerUnsub);
+        Int_t ifound = 0;
+        Int_t ilab = -1;
+        for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
+          jetUS = jetContUS->GetJet(i);
+          if(jetUS->GetLabel()==jet1->GetLabel()) {
+            ifound++;
+            if(ifound==1) ilab = i;
+          }
+        }
+        if(ifound>1) AliDebug(2,Form("Found %d partners",ifound));
+        if(ilab>-1) {
+          jetUS = jetContUS->GetJet(ilab);
+          if(!jetUS) continue;
+          fraction = jetContUS->GetFractionSharedPt(jetUS);
+          maxTrackPt = jetUS->MaxTrackPt();
+        }
+        //Printf("subtracted jet ijet: %d lab: %d eta: %f phi: %f",jetCont->GetCurrentID(),jet1->GetLabel(),jet1->Eta(),jet1->Phi());
+        //Printf("unsubtracted jet ijet: %d lab: %d eta: %f phi: %f",ilab,jetUS->GetLabel(),jetUS->Eta(),jetUS->Phi());
+        
+        fraction = jetContUS->GetFractionSharedPt(jetUS);
+        maxTrackPt = jetUS->MaxTrackPt();
       } else
 	fraction = jetCont->GetFractionSharedPt(jet1);
 
@@ -525,6 +535,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       }
     }
   }
+ 
   return kTRUE;
 }
 

@@ -16,6 +16,7 @@ class AliEMCalTriggerBinningComponent;
 class AliEMCalTriggerBinningDimension;
 class AliEMCalTriggerEventData;
 class AliEMCalTriggerKineCuts;
+class AliEMCalTriggerWeightHandler;
 
 class AliEMCalTriggerTracksAnalysisComponent : public TNamed {
 public:
@@ -27,9 +28,11 @@ public:
   virtual void Process(const AliEMCalTriggerEventData * const data) = 0;
 
   THashList *GetHistList() const { return fHistos->GetListOfHistograms(); }
+  const AliEMCalTriggerWeightHandler *GetWeightHandler() const { return fWeightHandler; }
   void SetBinning(const AliEMCalTriggerBinningComponent * const binning) { fBinning = binning; }
   void SetKineCuts(const AliEMCalTriggerKineCuts * const cuts) { fKineCuts = cuts; }
   void SetTriggerDecision(const AliEMCalTriggerAnaTriggerDecision *trigger) { fTriggerDecision = trigger; }
+  void SetWeightHandler(const AliEMCalTriggerWeightHandler *handler) { fWeightHandler = handler; }
   void SetComponentDebugLevel(int debuglevel) { fComponentDebugLevel = debuglevel; }
 
 protected:
@@ -42,6 +45,7 @@ protected:
   const AliEMCalTriggerBinningComponent       *fBinning;
   const AliEMCalTriggerKineCuts               *fKineCuts;
   const AliEMCalTriggerAnaTriggerDecision     *fTriggerDecision;
+  const AliEMCalTriggerWeightHandler          *fWeightHandler;
 
   Int_t                                         fComponentDebugLevel;
 

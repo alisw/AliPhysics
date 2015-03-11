@@ -103,6 +103,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
+  void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
 
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
@@ -359,6 +360,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
+  Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"

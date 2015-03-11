@@ -10,7 +10,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
   
 {
   // Default settings (TOF-TPC PbPb)
-  const int	kDefTPCcl	= 130;
+  const int	kDefTPCcl	= 120;
   const int	kDefTPCclPID	=  80;
   const int kDefTPCclshared = 1.1;
   const int	kDefITScl	=   4;
@@ -21,10 +21,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
   const double  kDefEtaIncMin = -0.8;
   const double  kDefEtaIncMax = 0.8;
   const Bool_t   etacorrection   = kFALSE;
-  const Bool_t   multicorrection = kTRUE;
+  const Bool_t   multicorrection = kFALSE;
 
   Double_t dEdxhm[12] = {3.11,3.11,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};  
-  Double_t tpcl1[12]  = {-0.14,-0.14,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3};  
+  Double_t tpcl1[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  
 
   // Default setting for the associated electron for the NonPhotonic Analysis
   const double	kassETAm = -0.8;
@@ -242,10 +242,15 @@ AliAnalysisTask *RegisterTaskNPEPbPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
 
   if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":HFEtask";
+  containerName += appendix.Data();
+  printf("container name: %s\n", containerName.Data());
 
   //create data containers
-  task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("HFE%s.root", appendix.Data())));
-  task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("HFE%s.root", appendix.Data())));
+  task->ConnectOutput(1, mgr->CreateContainer(Form("HFE_Results_%s", appendix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data()));
+  task->ConnectOutput(2, mgr->CreateContainer(Form("HFE_QA_%s", appendix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data()));
   mgr->ConnectInput(task,  0, cinput );
   
   mgr->AddTask(task);

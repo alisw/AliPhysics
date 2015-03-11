@@ -48,6 +48,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
 
   AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
   jetTask->SetVzRange(-10,10);
+  jetTask->SetNeedEmcalGeom(kFALSE);
 
   AliParticleContainer *trackCont = jetTask->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);

@@ -13,6 +13,7 @@
 #pragma link C++ class AliOADBTrackFix+;
 
 #pragma link C++ class AliAnalysisUtils+;
+#pragma link C++ class AliPPVsMultUtils+;
 #pragma link C++ class AliBackgroundSelection+;
 #pragma link C++ class AliCentralitySelectionTask+;
 #pragma link C++ class AliEPSelectionTask+;
