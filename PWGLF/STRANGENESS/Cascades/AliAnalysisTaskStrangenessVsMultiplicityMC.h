@@ -198,7 +198,8 @@ private:
     Bool_t fEvSel_INELgtZERORefMultTracklets;  //!
 
     Float_t fEvSel_VtxZ; //! pv z position (cm)
-    Int_t fEvSel_MCType; //! type of event (to be used in PYTHIA, specifically)
+    Float_t fEvSel_VtxZMC; //! pv z pos from mc record
+	Int_t fEvSel_MCType; //! type of event (to be used in PYTHIA, specifically)
 
 //===========================================================================================
 //   Variables for V0 Tree
