@@ -459,8 +459,12 @@ struct TrainSetup
       // Info("", "URL=%s", train->Options().Get("url").Data());
 
       // Check if we got a help request
-      if (train->Options().Has("help")) { 
-	train->Help(std::cout, asProg);
+      if (!train->Help(std::cout, asProg)) {
+	ret = true;
+	throw TString("");
+      }
+      // Check if we got a version request
+      if (!train->Version(std::cout)) {
 	ret = true;
 	throw TString("");
       }
