@@ -280,7 +280,7 @@ fTwoTrackCutMaxRadius(2.5),
  fPIDCombined(NULL),
  eventno(0),
   fPtTOFPIDmin(0.5),
-  fPtTOFPIDmax(4.0),
+  fPtTOFPIDmax(6.0),
   fRequestTOFPID(kTRUE),
   fPIDType(NSigmaTPCTOF),
  fFIllPIDQAHistos(kTRUE),
@@ -570,7 +570,7 @@ fTwoTrackCutMaxRadius(2.5),
   fPIDCombined(NULL),
   eventno(0),
  fPtTOFPIDmin(0.5),
-  fPtTOFPIDmax(4.0),
+  fPtTOFPIDmax(6.0),
   fRequestTOFPID(kTRUE),
   fPIDType(NSigmaTPCTOF),
   fFIllPIDQAHistos(kTRUE),
@@ -812,7 +812,7 @@ fhistImpactParmvsMult=new TH2F("fhistImpactParmvsMult","fhistImpactParmvsMult",3
 fOutput->Add(fhistImpactParmvsMult);
  }
 
- if(fAnalysisType =="MCAOD"){
+ if(fAnalysisType =="MCAOD"){//for "MC" this creates a lot of problems which were not solved so removed from "MC" case
 fNchNpartCorr=new TH2F("fNchNpartCorr","fNchNpartCorr",500,0.0,500.0,4001,-0.5,40000.5);
 fNchNpartCorr->GetXaxis()->SetTitle("Npart (a.u.)");
 fNchNpartCorr->GetYaxis()->SetTitle("Nch(a.u.)");
@@ -1153,7 +1153,7 @@ Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6
 if(fRequestEventPlanemixing){
     // Event plane angle (Psi) bins for event mixing
   
-    Int_t nPsiBins=-1;; 
+    Int_t nPsiBins=-1; 
     Double_t* psibins = GetBinning(fBinningString, "eventPlanemixing", nPsiBins);
     fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,multmixbin,multmix,NofVrtxBins,ZvrtxBins, nPsiBins, psibins);
     if(psibins)  delete [] psibins; 
@@ -1339,7 +1339,7 @@ axisTitleTrig[dim_val_trig+1]=axisTitlePair[dim_val+2];
     }
     }
  
-  //ThSparse for trigger counting(data & reco MC)
+  //AliTHns for trigger counting(data & reco MC)
   if(ffilltrigassoUNID || ffilltrigUNIDassoID || ffilltrigIDassoUNID || ffilltrigIDassoID)
 	  {
 	    fTHnTrigcount = new  AliTHn("fTHnTrigcount", "fTHnTrigcount", 2, dims, fBinst); //2 steps;;;;0->same event;;;;;1->mixed event
@@ -1682,7 +1682,7 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
     for(Int_t ipart=0;ipart<NSpecies;ipart++){
       Double_t miny=-40;
       Double_t maxy=20;
-      if(ipart!=SpPion) continue;//only around pion's mean position;protn and pion's delta in one histo
+      if(ipart!=SpPion) continue;//only around pion's mean position;proton and pion's delta in one histo
       TH2F *fHistodelta=new TH2F(Form("deltapion_%d",ipart),
 				  Form("deltapion %s",kParticleSpeciesName[ipart]),200,0.0,fmaxPt,600,miny,maxy);
       fHistodelta->GetXaxis()->SetTitle("P_{T} (GeV / c)");
@@ -2139,8 +2139,10 @@ skipParticlesAbove = eventHeader->NProduced();
  cent_v0=GetAcceptedEventMultiplicity((AliVEvent*)aod,kFALSE); //centrality value; 2nd argument has no meaning
  }
 
+
  if(cent_v0<0.) return;
  effcent=cent_v0;// This will be required for efficiency THn filling(specially in case of pp)
+
 
 //count selected events having centrality betn 0-100%
  fEventCounter->Fill(13);
@@ -2569,6 +2571,9 @@ switch(TMath::Abs(pdgCode)){
       }
     }
 else{
+        TH2F *h1=GetHistogram2D(Form("NSigmaMC_%d_%d",SpProton,NSigmaTPC));
+	h1->Fill(track->Pt(),fnsigmas[SpProton][NSigmaTPC]);
+  
 	TH2F *h=GetHistogram2D(Form("deltapionMC_%d",SpProton));
   	h->Fill(track->Pt(),deltapion_val);
  }      
@@ -2584,6 +2589,9 @@ else{
       }
    }
 else{
+        TH2F *h2=GetHistogram2D(Form("NSigmaMC_%d_%d",SpKaon,NSigmaTPC));
+	h2->Fill(track->Pt(),fnsigmas[SpKaon][NSigmaTPC]);
+	
 	TH2F *h=GetHistogram2D(Form("deltapionMC_%d",SpKaon));
   	h->Fill(track->Pt(),deltapion_val);
  }  
@@ -2599,6 +2607,10 @@ else{
       }
    }
  else{
+
+        TH2F *h3=GetHistogram2D(Form("NSigmaMC_%d_%d",SpPion,NSigmaTPC));
+	h3->Fill(track->Pt(),fnsigmas[SpPion][NSigmaTPC]);
+	
 	TH2F *h=GetHistogram2D(Form("deltapionMC_%d",SpPion));
   	h->Fill(track->Pt(),deltapion_val);
  } 
@@ -2843,7 +2855,6 @@ if(fV0TrigCorr) {
 //________________________________________________________________________
 void AliTwoParticlePIDCorr::doAODevent() 
 {
-
   //get AOD
   AliVEvent *event = InputEvent();
   if (!event) { Printf("ERROR: Could not retrieve event"); return; }
@@ -2852,7 +2863,10 @@ void AliTwoParticlePIDCorr::doAODevent()
     AliError("Cannot get the AOD event");
     return;
   }
-
+  // AliAODHeader *header=(AliAODHeader*)InputEvent()->GetHeader();
+  //printf("Run No: %d, ESD File: %s, Event in ESD File: %d\n",header->GetRunNumber(), header->GetESDFileName().Data(),header->GetEventNumberESDFile());
+  
+  
   //TString firedTriggerClasses=aod->GetFiredTriggerClasses();
   //if(firedTriggerClasses.Contains("CSH1-B")){
  
@@ -3028,11 +3042,12 @@ if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!H
 //ignore the Spundefined particles as they also contain pion, kaon, proton outside the nsigma cut(also if tracks don't have proper TOF PID in a certain Pt interval) & these tracks are actually counted when we do the the efficiency correction, so considering them as unidentified particles & doing the efficiency correction(i.e defining unidentified=pion+Kaon+proton+SpUndefined is right only without efficiency correction) for them will be two times wrong!!!!! 
   if (particletype==SpUndefined) continue;//this condition creating a modulated structure in delphi projection in mixed event case(only when we are dealing with identified particles i.e. tracksID)!!!!!!!!!!!
 
+  //cout<<"***************************************************************************************Particle="<<particletype<<endl;
+
     if(fRequestEventPlane){
       FillPIDEventPlane(cent_v0,particletype,track->Phi(),gReactionPlane);
     }
-
-
+    
  //Pt, Eta , Phi distribution of the reconstructed identified particles
 if(ffillhistQAReco)
     {
@@ -4361,7 +4376,7 @@ for(Int_t ipart=0;ipart<NSpecies;ipart++){
   Double_t probBayes[AliPID::kSPECIES];
   
   UInt_t detUsed= 0;
-  if(HasTOFPID(trk) && trk->Pt()>fPtTOFPIDmin){//use TOF information
+  if(trk->Pt()>fPtTOFPIDmin && HasTOFPID(trk)){//use TOF information
     detUsed = CalcPIDCombined(trk, AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC, probBayes);
     if(detUsed != (AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC))return SpUndefined;//check that TPC and TOF are used
   }else{
@@ -4914,19 +4929,26 @@ Double_t AliTwoParticlePIDCorr::GetRefMultiOrCentrality(AliVEvent *mainevent, Bo
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")//for PbPb, pPb, pp7TeV(still to be introduced)//data or RecoMC and also for TRUTH
     {
                    
-      /*if(fSampleType=="pp_7" && fPPVsMultUtils)
+ if(fSampleType=="pp_7" && fPPVsMultUtils==kTRUE)
    {//for pp 7 TeV case only using Alianalysisutils class
-	if(fAnalysisUtils) cent_v0 = fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,fCentralityMethod);
-	else cent_v0 = -1;
+     AliAnalysisUtils *t1;
+     fAnalysisUtils=t1;
+     if(fAnalysisUtils){
+       
+       cent_v0 = fAnalysisUtils->GetMultiplicityPercentile(mainevent,fCentralityMethod);
+       
   fHistCentStats->Fill(0.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0A"));
   fHistCentStats->Fill(1.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0C"));
   fHistCentStats->Fill(2.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0M"));   
   fHistCentStats->Fill(3.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0AEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
+     }
+  	else cent_v0 = -1;
+
       }
-      */        
- if(fSampleType=="pPb" || fSampleType=="PbPb")
+           
+else if(fSampleType=="pPb" || fSampleType=="PbPb")
   {
   AliCentrality *centralityObj=0;
   AliAODHeader *header = (AliAODHeader*) event->GetHeader();
@@ -5041,7 +5063,7 @@ isduplicate=kTRUE;
 
    }//end of MANUAL method
 
- else if ((fAnalysisType == "MCAOD") && (fCentralityMethod == "MC_b"))//TRUTH MC in AOD production
+ else if ((fAnalysisType == "MCAOD") && (fCentralityMethod == "MC_b"))//TRUTH MC in AOD production(Impaact parm is not used in data or RecoMC case)
     {
     AliAODMCHeader* header = (AliAODMCHeader*) event->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (!header)
@@ -5222,10 +5244,10 @@ fHistQA[0]->Fill((gVertexArray.At(0)));fHistQA[1]->Fill((gVertexArray.At(1)));fH
   if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return -1;
    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return -1;
   }
-  else if(fVertextype==2) {//for pp and pb-pb case , taken from Jan's code
+  else if(fVertextype==2) {//for pp and pb-pb case ,used in AliAnalysisTaskPhiCorelations.cxx
 	Int_t nVertex = aod->GetNumberOfVertices();
   	if( nVertex > 0 ) { 
-     trkVtx = aod->GetPrimaryVertex();
+     trkVtx = (AliAODVertex*)aod->GetPrimaryVertex();
 		Int_t nTracksPrim = trkVtx->GetNContributors();
                  zvtx = trkVtx->GetZ();
   		//if (fDebug > 1)AliInfo(Form(" Vertex in = %f with %d particles by  %s data ...",zVertex,nTracksPrim,vertex->GetName()));
