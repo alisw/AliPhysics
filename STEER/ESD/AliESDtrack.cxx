@@ -3445,7 +3445,7 @@ void AliESDtrack::SortTOFcluster(){
 
 //____________________________________________
 const AliTOFHeader* AliESDtrack::GetTOFHeader() const {
-  return fESDEvent->GetTOFHeader();
+  return fESDEvent ? fESDEvent->GetTOFHeader() : 0x0;
 }
 
 //___________________________________________
