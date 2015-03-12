@@ -23,16 +23,16 @@ AliAnalysisHFCorrOnFlySim *AddTaskHFCorrOnFlySim(TString suffixName =""){
     
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-    cout<<"AliAnalysisHFCorrOnFlySim", "No analysis manager to connect to."<<endl;
-    return NULL;
+     Printg("AliAnalysisHFCorrOnFlySim, No analysis manager to connect to.");
+     return NULL;
    }
   
-  if(!mgr->GetMCtruthEventHandler()){
-    ::Error("AliAnalysisHFCorrOnFlySim", "This task requires an input MC event handler");
-    return NULL;
-  }
-
-  mgr->AddTask(clus);
+   if(!mgr->GetMCtruthEventHandler()){
+     Printf("AliAnalysisHFCorrOnFlySim; This task requires an input MC event handler");
+     return NULL;
+   }
+   
+   mgr->AddTask(clus);
   
   // Create containers for input/output
   TString finDirname   = "";
