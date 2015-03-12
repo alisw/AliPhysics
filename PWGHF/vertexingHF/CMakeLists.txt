@@ -92,7 +92,8 @@ set(SRCS
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   upgrade/AliAnalysisTaskSELambdacUp.cxx
   upgrade/AliAnalysisTaskCountLcEta.cxx
-  AliAnalysisTaskSELc2V0bachelorTMVA.cxx 
+  AliAnalysisTaskSELc2V0bachelorTMVA.cxx
+  AliAnalysisTaskSELambdacTMVA.cxx
   )
 
 # Headers from sources
