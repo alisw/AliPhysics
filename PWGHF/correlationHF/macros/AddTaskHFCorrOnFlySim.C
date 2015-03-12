@@ -23,7 +23,7 @@ AliAnalysisHFCorrOnFlySim *AddTaskHFCorrOnFlySim(TString suffixName =""){
     
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-     Printg("AliAnalysisHFCorrOnFlySim, No analysis manager to connect to.");
+     Printf("AliAnalysisHFCorrOnFlySim, No analysis manager to connect to.");
      return NULL;
    }
   
