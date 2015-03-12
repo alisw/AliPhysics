@@ -89,7 +89,8 @@ AliAnalysisTaskSE( name ),
   fIsAOD(kFALSE),
   fDebug(kFALSE),
   fIsQa(kFALSE),
-  
+  fIsTrig(kFALSE),
+
   fRunNumber(0),
   fNumberOfTracks(15000),
   fNumberOfTracksM(15000),
@@ -143,8 +144,8 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   owd->cd();
 
   fPidCont->Branch("fRunNumber", &fRunNumber,  "fRunNumber/I");
-  fPidCont->Branch("cent",fCentrality,"fCentrality[6]/F");
-  fPidCont->Branch("Trigger",fTrigMask,  "fTrigMask[5]/I");
+  fPidCont->Branch("cent",fCentrality,"fCentrality[3]/F");
+  if (fIsTrig) fPidCont->Branch("Trigger",fTrigMask,  "fTrigMask[5]/I");
   fPidCont->Branch("vertex",fVtx,"fVtx[3]/F");
   fPidCont->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
   fPidCont->Branch("fTrackPt",fTrackPt,"fTrackPt[fNumberOfTracks]/F");
@@ -214,29 +215,38 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   AliCentrality *centrality = event->GetCentrality();
  
   if (centrality->GetQuality() != 0) return;
+
   fRunNumber = event->GetRunNumber();
-  fTrigMask[0] = 0;  
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kMB))          
-    fTrigMask[0] = 1;
-  fTrigMask[1] = 0;  
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kCentral))     
-    fTrigMask[1] = 1;
-  fTrigMask[2] = 0;  
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) 
-    fTrigMask[2] = 1;
-  fTrigMask[3] = 0;  
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      
-    fTrigMask[3] = 1;
-  fTrigMask[4] = 0;  
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      
-    fTrigMask[4] = 1;
+
+ 
+ 
+  if (fIsTrig) {
+    fTrigMask[0] = 0;  
+    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kMB))          
+      fTrigMask[0] = 1;
+    fTrigMask[1] = 0;  
+    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kCentral))     
+      fTrigMask[1] = 1;
+    fTrigMask[2] = 0;  
+    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) 
+      fTrigMask[2] = 1;
+    fTrigMask[3] = 0;  
+    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      
+      fTrigMask[3] = 1;
+    fTrigMask[4] = 0;  
+    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      
+      fTrigMask[4] = 1;
+  } else {
+    if (!(fInputEventHandler->IsEventSelected() & AliVEvent::kMB))  return;        
+  }
+
   
   fCentrality[0] = centrality->GetCentralityPercentile("V0M");
   fCentrality[1] = centrality->GetCentralityPercentile("CL1");
   fCentrality[2] = centrality->GetCentralityPercentile("TRK");
-  fCentrality[3] = centrality->GetCentralityPercentile("FMD");
-  fCentrality[4] = centrality->GetCentralityPercentile("TKL");
-  fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
+  // fCentrality[3] = centrality->GetCentralityPercentile("FMD");
+  // fCentrality[4] = centrality->GetCentralityPercentile("TKL");
+  // fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
     
   //  Printf("%f %f %f %f", fCentrality[0],fCentrality[1],fCentrality[2],fVtx[2]);
 

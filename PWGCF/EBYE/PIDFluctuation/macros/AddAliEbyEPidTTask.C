@@ -11,6 +11,7 @@
 AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
 				    Int_t aodFilterBit  = 768, 
 				    Int_t cuttype       = 9,
+				    Bool_t IsKMbOnly    = 0;
 
 				    Int_t pidtype       = 2, 
 				    Int_t requestTofPid = 1,
@@ -65,6 +66,7 @@ AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
   task->SetVertexDiamond(vx,vy,vz);
   task->SetKinematicsCuts(ptl,pth,gEta);
   task->SetDca(dcaxy,dcaz);
+  if (IsKMbOnly) task->SetIsKMb();
   if (!isModeAOD) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
     AliESDtrackCuts *cuts = configureNetChargeTrackCut(taskname,cuttype,10001006, gEta, 2.4,3.2); 
