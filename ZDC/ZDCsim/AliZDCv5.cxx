@@ -384,7 +384,7 @@ if(!fOnlyZEM){
     boxpar[2] = 124.4/2.;
     printf("  AliZDCv5 -> C side injection collimator jaws: apertures +%1.2f/-%1.2f center %1.2f [cm]\n", 
     	fVCollSideCAperture, fVCollSideCApertureNeg,fVCollSideCCentreY);
-    TVirtualMC::GetMC()->Gsvolu("QCVC" , "BOX ", idtmed[13], boxpar, 3); 
+    TVirtualMC::GetMC()->Gsvolu("QCVC" , "BOX ", idtmed[15], boxpar, 3); 
     TVirtualMC::GetMC()->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollSideCAperture+fVCollSideCCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
     TVirtualMC::GetMC()->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollSideCApertureNeg+fVCollSideCCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
   }
@@ -2366,7 +2366,7 @@ void AliZDCv5::CreateMaterials()
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(13,"ZTANT",13, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(14,"ZALUM",14, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(15,"ZALUM",15, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15,"ZGRAP",15, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(16,"ZIRONT",7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
 
 } 
