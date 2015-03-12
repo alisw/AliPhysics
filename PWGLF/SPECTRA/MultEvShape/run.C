@@ -48,7 +48,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   TChain *chain = NULL;
   if(!files) chain = MakeChainLST();
   else chain = MakeChainLST(files);
-  
+
   if(!chain) return;
   chain->Lookup();
   chain->GetListOfFiles()->Print();
@@ -57,14 +57,14 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
 
   // BUILD ANALYSIS MANAGER
   AliAnalysisManager *mgr = new AliAnalysisManager("Multiplicity and Event Shape");
-  AliESDInputHandler *esdH = new AliESDInputHandler(); 
-  AliMCEventHandler *mcH(NULL); 
+  AliESDInputHandler *esdH = new AliESDInputHandler();
+  AliMCEventHandler *mcH(NULL);
   mgr->SetInputEventHandler(esdH);
   if(mc) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
   mgr->SetSkipTerminate(kTRUE);
-  
-  // LOAD tasks     
+
+  // LOAD tasks
   // *******************  PID response  ******************
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   if(!mc) AddTaskPIDResponse();
@@ -74,7 +74,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   AliTender *aliTender(NULL);
   gROOT->LoadMacro("$ALICE_PHYSICS/TENDER/TenderSupplies/AddTaskTender.C");
   if(!mc){    // for DATA
-    aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kFALSE, kTRUE, kFALSE, kFALSE);  
+    aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kFALSE, kTRUE, kFALSE, kFALSE);
        // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
   } else {  // for MC
     aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE);  // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
@@ -87,7 +87,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(mc); // 0 = real data; 1 = MC
   physSelTask->GetPhysicsSelection()->SetComputeBG();
 
-  
+
   // *******************  MES Tender  ******************
 //   AliLog::SetClassDebugLevel("AliMEStender", 2);
 //   AliLog::SetClassDebugLevel("AliMESpidTask", 2);
@@ -98,8 +98,8 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   mgr->AddTask(tender);
   tender->SetDebugLevel(0);
   tender->ConfigTask( AliMEStender::AliMESconfigTender::kStandard,                    // event cuts
-                      AliMEStender::AliMESconfigTender::kStandardITSTPCTrackCuts2010, // track cuts 
-					            AliMEStender::AliMESconfigTender::kIterative);                  // PID priors 
+                      AliMEStender::AliMESconfigTender::kStandardITSTPCTrackCuts2010, // track cuts
+					            AliMEStender::AliMESconfigTender::kIterative);                  // PID priors
 
   // Connect IO slots
   mgr->ConnectInput (tender, 0, mgr->GetCommonInputContainer());
@@ -111,35 +111,35 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
     co[AliMESbaseTask::kMCeventInfo] = mgr->CreateContainer("MCeventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
     co[AliMESbaseTask::kMCtracks]    = mgr->CreateContainer("MCtracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   }
-  for(Int_t ios(0);ios<AliMESbaseTask::kNcontainers;ios++) 
+  for(Int_t ios(0);ios<AliMESbaseTask::kNcontainers;ios++)
     if(co[ios]) mgr->ConnectOutput(tender, ios+1, co[ios]);
 
   // *******************  MES PID task  ******************
-  if(tpid){ 
+  if(tpid){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
     AddMESpidTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
-// 
+//
 //   // *******************  MES CHG task  ******************
-  if(tchg){ 
+  if(tchg){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C");
     AddMESchgTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
-//   
+//
 //   // *******************  MES ppCol task  ******************
-  if(tpp){ 
+  if(tpp){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
-    AddMESppColTask(&co[AliMESbaseTask::kEventInfo], mc);  
+    AddMESppColTask(&co[AliMESbaseTask::kEventInfo], mc);
   }
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local", chain, nev, first);
   timer.Stop();
-  timer.Print();  
+  timer.Print();
   // verbosity
   printf("\tCLEANING TASK LIST:\n");
   mgr->GetTasks()->Delete();
-  
+
   if(mcH) delete mcH;
   delete esdH;
   delete chain;
