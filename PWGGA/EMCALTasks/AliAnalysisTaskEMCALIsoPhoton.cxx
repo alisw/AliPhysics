@@ -155,7 +155,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtEtaCut(0),
   fMaxCellEPhi(0),
   fDetaDphiFromTM(0),
-  fEoverPvsE(0)
+  fEoverPvsE(0),
+  fETrigg(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -273,7 +274,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtEtaCut(0),   
   fMaxCellEPhi(0),
   fDetaDphiFromTM(0),
-  fEoverPvsE(0)
+  fEoverPvsE(0),
+  fETrigg(0)
 {
   // Constructor
 
@@ -485,6 +487,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEoverPvsE = new TH2F("fEoverPvsE","E^{clus}/p^{track} vs E^{clus} (80<TPCsignal<100);E^{clus} [GeV];E^{clus}/p^{track} [c^{-1}]",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,100,0,2);
   fEoverPvsE->Sumw2();
   fQAList->Add(fEoverPvsE);
+
+  fETrigg = new TH1F("fETrigg","TrigPatchInfo->GetPatchE();E [GeV];entries/GeV",100,0,100);
+  fETrigg->Sumw2();
+  fQAList->Add(fETrigg);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -1764,7 +1770,7 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsExotic(AliVCluster *c)
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::CheckTriggerPatch()
 {
-  printf("inside CheckTriggerPatch......\n");
+  //printf("inside CheckTriggerPatch...+++===***===+++...\n");
   AliVEvent *ve;
   if(fESD){
     ve = (AliVEvent*)fESD;
@@ -1775,20 +1781,38 @@ void AliAnalysisTaskEMCALIsoPhoton::CheckTriggerPatch()
     else
       return;
   }
-  printf("\tevent ok\n");
-  TClonesArray *triPatchInfo = (TClonesArray*)ve->FindListObject("EmcalTriggers");
+  if(!ve)
+    return;
+  //printf("\tevent ok\n");
+  TString trigname = "EmcalTrigger";
+  TList *l = (TList*)ve->GetList();
+  if(l){
+    Int_t nentl = l->GetEntries();
+    //printf("There are %d objects in the event list\n",nentl);
+    for(Int_t il=0;il<nentl;il++){
+      TObject *obj = (TObject*)l->At(il);
+      TString oname = Form("%s",obj->GetName());
+      //printf("\t object %d named %s\n",il,oname.Data());
+      if((oname.Contains("Emc") || oname.Contains("EMC")) && (oname.Contains("rigg")))
+	trigname = oname;
+    }
+  }
+  //printf("\t\t trigger name  =  %s\n",trigname.Data()); 
+  TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(ve->FindListObject(trigname));
   if(!triPatchInfo){
-    printf("no patch info array\n");
+    //printf("no patch info array\n");
     return;
   }
+  //printf("made it!!!*****************************\n");
   Int_t nPatch = triPatchInfo->GetEntries();
   if(nPatch>1)
-    printf("more than one calo trigger patch in this event!\n");
+    //printf("more than one calo trigger patch in this event!\n");
   for(Int_t ip = 0;ip<nPatch;ip++){
     AliEmcalTriggerPatchInfo *pti = dynamic_cast<AliEmcalTriggerPatchInfo*>(triPatchInfo->At(ip));
     if(!pti)
       continue;
-    printf("\ttrigger patch E=%1.1f\n",pti->GetPatchE());
+    //printf("\ttrigger patch E=%1.1f\n",pti->GetPatchE());
+    fETrigg->Fill(pti->GetPatchE());
     if(!pti->IsLevel0())
       continue;
   }
