@@ -158,7 +158,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   // tracklet params
   memcpy(fdzdxCorrFactor, ref.fdzdxCorrFactor, 2*sizeof(Double_t));
   memcpy(fdzdxCorrRCbias, ref.fdzdxCorrRCbias, 2*sizeof(Double_t));
-  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 12*sizeof(Double_t));
+  memcpy(fYcorrTailCancel, ref.fYcorrTailCancel, 12*sizeof(Double_t));
   memcpy(fS2Ycorr, ref.fS2Ycorr, 4*sizeof(Double_t));
 }
 
