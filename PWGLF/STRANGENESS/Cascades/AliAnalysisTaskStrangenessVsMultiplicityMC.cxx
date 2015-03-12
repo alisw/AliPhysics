@@ -1205,12 +1205,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     AliMCEvent  *lMCevent  = 0x0;
     AliStack    *lMCstack  = 0x0;
 
-    //Code for the acquisition of the 'perfect' primary vertex position
-    TArrayF mcPrimaryVtx;
-    AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
-    if(!mcHeader) return;
-    mcHeader->PrimaryVertex(mcPrimaryVtx);
-    
     //Zero all booleans, etc
     fEvSel_HasAtLeastSPDVertex    = kFALSE;
     fEvSel_VtxZCut                = kFALSE;
@@ -1247,6 +1241,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
         cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
         return;
     }
+    //Code for the acquisition of the 'perfect' primary vertex position
+    TArrayF mcPrimaryVtx;
+    AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
+    if(!mcHeader) return;
+    mcHeader->PrimaryVertex(mcPrimaryVtx);
+    
 
     lMCstack = lMCevent->Stack();
     if (!lMCstack) {
