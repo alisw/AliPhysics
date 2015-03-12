@@ -22,7 +22,8 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
-#include "AliESDpid.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 #endif
 
 TH1F* CreateHisto(const char* name, const char* title, 
@@ -169,7 +170,20 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 
   // PID
 
-  AliESDpid * pid = new AliESDpid(kTRUE);
+  AliPIDResponse pidResponse(kTRUE); // kTRUE means Monte-Carlo
+  pidResponse.SetOADBPath("$ALICE_ROOT/OADB");
+  
+  AliPIDCombined pidCombined;
+  Int_t maskPID =
+    AliPIDResponse::kDetITS
+    | AliPIDResponse::kDetTPC
+    | AliPIDResponse::kDetTRD
+    | AliPIDResponse::kDetTOF
+    | AliPIDResponse::kDetHMPID
+    | AliPIDResponse::kDetEMCAL
+    | AliPIDResponse::kDetPHOS
+    ;
+  pidCombined.SetDetectorMask(maskPID);
 
   // efficiency and resolution histograms
   Int_t nBinsPt = 15;
@@ -196,7 +210,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   const char* partName[AliPID::kSPECIES+1] = 
     {"electron", "muon", "pion", "kaon", "proton", "other"};
   Double_t partFrac[AliPID::kSPECIES] = 
-    {0.01, 0.01, 0.85, 0.10, 0.05};
+    {0.01, 0.01, 0.83, 0.10, 0.05};
   Int_t identified[AliPID::kSPECIES+1][AliPID::kSPECIES];
   for (Int_t iGen = 0; iGen < AliPID::kSPECIES+1; iGen++) {
     for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
@@ -312,12 +326,13 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       return kFALSE;
     }
 
-    // PID for MC
-    pid->MakePID(esd,kTRUE);
+    // Initialise PID for the current event
+    pidResponse.InitialiseEvent(esd,1,0); //pass=1, run=0
 
     // loop over tracks
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
       AliESDtrack* track = esd->GetTrack(iTrack);
+      track->SetESDEvent(esd); // Needed by TOF PID
 
       // select tracks of selected particles
       Int_t label = TMath::Abs(track->GetLabel());
@@ -339,17 +354,17 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       hResTheta->Fill(1000. * (track->Theta() - particle->Theta()));
 
       // PID
-      if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) continue;
+
       Int_t iGen = 5;
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
 	if (TMath::Abs(particle->GetPdgCode()) == partCode[i]) iGen = i;
       }
       Double_t probability[AliPID::kSPECIES];
-      track->GetESDpid(probability);
+      pidCombined.ComputeProbabilities(track, &pidResponse, probability, partFrac);
+
       Double_t pMax = 0;
       Int_t iRec = 0;
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-	probability[i] *= partFrac[i];
 	if (probability[i] > pMax) {
 	  pMax = probability[i];
 	  iRec = i;
@@ -694,7 +709,6 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   runLoader->UnloadHeader();
   runLoader->UnloadKinematics();
   delete runLoader;
-  delete pid;
 
   // result of check
   Info("CheckESD", "check of ESD was successfull");
