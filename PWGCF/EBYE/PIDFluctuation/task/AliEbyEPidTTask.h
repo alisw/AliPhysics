@@ -54,10 +54,13 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
  void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
    fVxMax = vx;fVyMax = vy; fVzMax = vz;
   }
+
  void SetKinematicsCuts(Double_t ptl, Double_t pth, Double_t eta) {
    fPtMin = ptl; fPtMax = pth; fEtaMin = -eta; fEtaMax = eta; 
   }
- 
+
+ void SetIsKMb() { fIsTrig = kTRUE; } 
+
  static const Int_t kTrack = 15000;
 
  private:
@@ -87,12 +90,12 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
   Bool_t     fDebug;                        // Debug
   Bool_t     fIsQa;                         // Check for QA
-  
+  Bool_t     fIsTrig; //
   Int_t   fRunNumber;           //
   Int_t   fNumberOfTracks;      //
   Int_t   fNumberOfTracksM;     //
   Int_t   fNTracks;            // Number of Tracks of Current Events
-  Float_t fCentrality[6];       //
+  Float_t fCentrality[3];       //
   Float_t fVtx[3];              // 
   Int_t   fTrigMask[5];         //
    
