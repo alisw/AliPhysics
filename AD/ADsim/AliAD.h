@@ -13,6 +13,8 @@
 #include "AliADDigitizer.h"
 #include "AliADTrigger.h"
 
+class AliADCalibData;
+
   
 class AliAD : public AliDetector {
  
@@ -38,11 +40,13 @@ public:
   virtual    void  	SetADCTwoInstalled(Bool_t b){fSetADCTwoInstalled = b;} // ecv
   virtual    Bool_t 	GetADATwoInstalled() const {return fSetADATwoInstalled;}  // ecv
   virtual    Bool_t 	GetADCTwoInstalled() const {return fSetADCTwoInstalled;}  // ecv
+  void                  GetCalibData();
 
 
 private:
                        AliAD(const AliAD&); 
-                       AliAD& operator = (const AliAD&); 
+                       AliAD& operator = (const AliAD&);
+  AliADCalibData *fCalibData;      //! Pointer to the calibration object 
   Bool_t	fSetADATwoInstalled; 
   Bool_t	fSetADCTwoInstalled; 
 

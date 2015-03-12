@@ -34,7 +34,7 @@ public:
     
   void    WriteBeamScalers();
 
-  void    WriteTiming(Float_t time, Float_t width);
+  void    WriteTiming(Short_t time, Short_t width);
   
   void	  WriteEmptyCIU();
 

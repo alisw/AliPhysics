@@ -61,11 +61,13 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliADReconstructor.h"
+#include "AliADCalibData.h"
 
 ClassImp(AliAD)
  //__________________________________________________________________
 AliAD::AliAD()
    : AliDetector(),
+     fCalibData(NULL),
      fSetADATwoInstalled(0),
      fSetADCTwoInstalled(0)
 {
@@ -77,6 +79,7 @@ AliAD::AliAD()
 //_____________________________________________________________________________
 AliAD::AliAD(const char *name, const char *title)
    : AliDetector(name,title),
+     fCalibData(NULL),
      fSetADATwoInstalled(kTRUE),
      fSetADCTwoInstalled(kTRUE)
 
@@ -412,9 +415,11 @@ void AliAD::Hits2SDigits(){
 
 void AliAD::Digits2Raw()
 {
-	   //
+   //
    //  Converts digits of the current event to raw data
    //
+   GetCalibData();
+   
    AliAD *fAD = (AliAD*)gAlice->GetDetector("AD");
    fLoader->LoadDigits();
    TTree* digits = fLoader->TreeD();
@@ -451,8 +456,8 @@ void AliAD::Digits2Raw()
    // dump it into ADC and Time arrays
    Int_t nEntries = Int_t(digits->GetEntries());
    Short_t aADC[16][kNClocks];
-   Float_t aTime[16];
-   Float_t aWidth[16];
+   Short_t aTime[16];
+   Short_t aWidth[16];
    Bool_t  aIntegrator[16];
    Bool_t  aBBflag[16];
    Bool_t  aBGflag[16];
@@ -469,8 +474,9 @@ void AliAD::Digits2Raw()
 	 Int_t iChannel       = fADDigit->PMNumber();
 	 
 	 for(Int_t iClock = 0; iClock < kNClocks; ++iClock) aADC[iChannel][iClock] = fADDigit->ChargeADC(iClock);
-	 aTime[iChannel]      = fADDigit->Time(); //divide by resolution
-	 aWidth[iChannel]     = fADDigit->Width(); //divide by resolution
+	 Int_t board = AliADCalibData::GetBoardNumber(iChannel);
+	 aTime[iChannel]      = TMath::Nint(fADDigit->Time() / fCalibData->GetTimeResolution(board));
+	 aWidth[iChannel]     = TMath::Nint(fADDigit->Width() / fCalibData->GetWidthResolution(board));
 	 aIntegrator[iChannel]= fADDigit->Integrator();
 	 aBBflag[iChannel]    = fADDigit->GetBBflag();
 	 aBGflag[iChannel]    = fADDigit->GetBGflag();
@@ -517,4 +523,18 @@ Bool_t AliAD::Raw2SDigits(AliRawReader* rawReader)
 	// reads raw data to produce sdigits
 	// for AD not implemented yet 
 	return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliAD::GetCalibData()
+{
+  // Gets calibration object for AD set
+  // Do nothing in case it is already loaded
+  if (fCalibData) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("AD/Calib/Data");
+  if (entry) fCalibData = (AliADCalibData*) entry->GetObject();
+  if (!fCalibData)  AliFatal("No calibration data from calibration database !");
+  
+  return;
 }

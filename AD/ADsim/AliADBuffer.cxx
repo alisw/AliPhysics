@@ -228,13 +228,13 @@ void AliADBuffer::WriteBeamScalers() {
 }
 
 //_____________________________________________________________________________
-void AliADBuffer::WriteTiming(Float_t time, Float_t width) {
+void AliADBuffer::WriteTiming(Short_t time, Short_t width) {
   // It writes the timing information into a raw data file. 
   // Being called by Digits2Raw
 
   // Writes the timing information
-  UInt_t data = TMath::Nint(time) & 0xfff;
-  data |= (TMath::Nint(width) & 0x7f) << 12;
+  UInt_t data = time & 0xfff;
+  data |= (width & 0x7f) << 12;
   f->WriteBuffer((char*)&data,sizeof(data));
 }
 
