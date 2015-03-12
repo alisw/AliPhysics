@@ -30,6 +30,10 @@
 //   J. Book (jbook@ikf.uni-frankfurt.de)                                 //
 //   W. Monange   (w.monange@gsi.de)                                      //
 //   F. Kramer    (kramer@ikf.uni-frankfurt.de)                           //
+// Maintainers:                                                           //
+//   Hans.Beck@cern.ch                                                    //
+//   R. Bailhache (R.Bailhache@gsi.de)                                    //
+//                                                                        //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -232,6 +236,19 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
     }
 		
     oneTRDDCS->SetGraph(map);
+
+    // Remove duplicate entries where the value did not change
+    // more than a relative precision. We take a std precision 
+    // of 1e-4 and apply a higher precision for special cases
+    Double_t precision=1e-4;
+    // precision 1e-5 for HV
+    if( oneTRDDCS->GetStoreName().Contains("trd_hvAnodeUmon") ||
+	oneTRDDCS->GetStoreName().Contains("trd_hvDriftUmon") ){
+      precision=1e-5;
+    }
+    oneTRDDCS->RemoveGraphDuplicates(precision);
+
+    // Store the data point
     results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kFALSE); 
     delete map;
     map=0;
