@@ -106,10 +106,15 @@ void AliMESpidTask::UserExec(Option_t *opt)
 // 	printf("tracks = %i\n",fTracks->GetEntries());
 
   THnSparseD *multEst = (THnSparseD*)fHistosQA->At(0);
-  Double_t correl_val[3];
+  Double_t correl_val[6];
   correl_val[0] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);
   correl_val[1] = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);
   correl_val[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
+  if( HasMCdata() ){
+	    correl_val[3] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
+   		correl_val[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
+		correl_val[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
+  }
   multEst->Fill(correl_val);
 
   // ESD track loop
@@ -237,7 +242,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 
 	// fill the PID QA sparse
-	THnSparseD *hPIDQA = (THnSparseD*)fHistosQA->At(5);
+	THnSparseD *hPIDQA = (THnSparseD*)fHistosQA->At(4);
 	valPID[0] = t->P();
 	valPID[5] = t->GetdEdx();
 	valPID[6] = t->Getbeta();
@@ -341,14 +346,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 // 	AliInfo("\n\nNew event");
 
-	  THnSparseD *hMCmult = (THnSparseD*)fHistosQA->At(4);
-	  Double_t valMCmult[4];
-	  valMCmult[0] = ESDmult;
-	  valMCmult[1] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
-	  valMCmult[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
-	  valMCmult[3] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kComb0408);
-	  hMCmult->Fill(valMCmult);
-
   	for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
 
@@ -434,22 +431,13 @@ Bool_t AliMESpidTask::BuildQAHistos()
   // Make QA sparse histos for
   fHistosQA = new TList(); fHistosQA->SetOwner(kTRUE);
 
-  // multiplicity estimators correlations
-  const Int_t ndim(3);
-  const Int_t cldNbins[ndim]   = {150, 100, 150};
-  const Double_t cldMin[ndim]  = {0.5, 0., 0.5},
-  cldMax[ndim]  = {150.5, 100., 150.5};
-  THnSparseD *multEst = new THnSparseD("multEst","multEst;combined 0.8;V0M;combined 0.4-0.8",ndim, cldNbins, cldMin, cldMax);
+  // multiplicity estimators correlations && generated multiplicity
+  const Int_t ndim(6);
+  const Int_t cldNbins[ndim]   = {150, 100, 150, 150, 100, 150};
+  const Double_t cldMin[ndim]  = {0.5, 0., 0.5, 0.5, 0., 0.5},
+  cldMax[ndim]  = {150.5, 100., 150.5, 150.5, 100., 150.5};
+  THnSparseD *multEst = new THnSparseD("multEst","multEst;combined 0.8;V0M;combined 0.4-0.8;generated 0.8;generated V0M;generated 0.4-0.8",ndim, cldNbins, cldMin, cldMax);
   fHistosQA->AddAt(multEst, 0);
-
-  // generated multiplicity correlations
-  const Int_t ndimMCmult(4);
-  const Int_t cldNbinsMCmult[ndimMCmult]   = {150, 150, 150, 150};
-  const Double_t cldMinMCmult[ndimMCmult]  = {0.5, 0.5, 0.5, 0.5},
-  cldMaxMCmult[ndimMCmult]  = {150.5, 150.5, 150.5, 150.5};
-  THnSparseD *hMCmult = new THnSparseD("MCmult","MCmult;combined 0.8;generated 0.8;combined 0.4-0.8;generated 0.4-0.8",ndimMCmult, cldNbinsMCmult, cldMinMCmult, cldMaxMCmult);
-  fHistosQA->AddAt(hMCmult, 4);
-  
 
   // use for matching, PID and contaminations efficiency
   Double_t binLimits[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
@@ -462,7 +450,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;multiplicity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
   hAllESD->GetAxis(1)->Set(52, binLimits);
   fHistosQA->AddAt(hAllESD, 1);
-  
+
   // used for tracking efficiency
   const Int_t ndimGen(6);
   const Int_t cldNbinsGen[ndimGen]   = {150, 52, 2, 5, 20, 150};
@@ -494,7 +482,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   cldMaxPID[ndimPID]  = {5., 2., 4.5, 4.5, 1.5, 200., 1.1, 4.5};
   THnSparseD *hPIDQA = new THnSparseD("PIDQA","PIDQA;p;charge;PID_TPC;PID_TPCTOF;TOFmatching;dEdx;beta;MCPID",ndimPID, cldNbinsPID, cldMinPID, cldMaxPID);
   hPIDQA->GetAxis(0)->Set(52, binLimits);
-  fHistosQA->AddAt(hPIDQA, 5);
+  fHistosQA->AddAt(hPIDQA, 4);
 
 /*
 	// used for DCA corrections

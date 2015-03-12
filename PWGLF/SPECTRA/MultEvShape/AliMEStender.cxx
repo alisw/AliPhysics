@@ -453,6 +453,8 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   fMCevInfo->SetMultiplicity(AliMESeventInfo::kGlob08, MakeMultiplicityMC(fMC));
   // multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
   fMCevInfo->SetMultiplicity(AliMESeventInfo::kComb0408, MakeMultiplicity0408MC(fMC));
+  // multiplicity for eta (-3.7,-1.7) & (2.8, 5.1)  -> V0M
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kV0M, MakeMultiplicityV0MMC(fMC));
 
   memset(val, 0, 7*sizeof(Double_t));
   H = (THnSparse*)fHistosQA->At(kMCtrkInfo);
@@ -656,29 +658,58 @@ Int_t AliMEStender::MakeMultiplicity0408MC(AliMCEvent * const mc)
 {
 	AliStack *stack(NULL);
 	if(!(stack=mc->Stack())) return -1;
-	
+
 	//     Int_t nPrim = stack->GetNprimary();
 	Int_t charged(0);
 	AliMCParticle *particle(NULL);
 	for (Int_t ipart=0; ipart<mc->GetNumberOfTracks(); ipart++) {
 		if(!( particle = dynamic_cast<AliMCParticle*>(mc->GetTrack(ipart)))) continue;
-		
+
 		if(particle->E()-TMath::Abs(particle->Pz()) < 0.){
 			printf(" - E - AliMEStender::MakeMultiplicityMC : pz > E !!\n");
 			continue;
 		}
-		
+
 		if(!(stack->IsPhysicalPrimary(particle->GetLabel()))) continue;
-		
+
 		//  ---------  Charged  ----------
 		if(TMath::Abs(particle->Charge()) < 3) continue;
-		
+
 		if(TMath::Abs(particle->Eta()) > 0.8) continue;
 		if(TMath::Abs(particle->Eta()) < 0.4) continue;
-		
+
 		charged++;
-		
+
 	}//end track loop
-	
+
+	return charged;
+}
+
+Int_t AliMEStender::MakeMultiplicityV0MMC(AliMCEvent * const mc)
+{
+	AliStack *stack(NULL);
+	if(!(stack=mc->Stack())) return -1;
+
+	//     Int_t nPrim = stack->GetNprimary();
+	Int_t charged(0);
+	AliMCParticle *particle(NULL);
+	for (Int_t ipart=0; ipart<mc->GetNumberOfTracks(); ipart++) {
+		if(!( particle = dynamic_cast<AliMCParticle*>(mc->GetTrack(ipart)))) continue;
+
+		if(particle->E()-TMath::Abs(particle->Pz()) < 0.){
+			printf(" - E - AliMEStender::MakeMultiplicityMC : pz > E !!\n");
+			continue;
+		}
+
+		if(!(stack->IsPhysicalPrimary(particle->GetLabel()))) continue;
+
+		//  ---------  Charged  ----------
+		if(TMath::Abs(particle->Charge()) < 3) continue;
+
+		if( particle->Eta() < 5.1 &&  particle->Eta() > 2.8 ) charged++;   // V0A
+		if( particle->Eta() < -1.7 &&  particle->Eta() > -3.7 ) charged++;   // V0C
+
+	}//end track loop
+
 	return charged;
 }
