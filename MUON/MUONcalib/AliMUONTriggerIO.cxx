@@ -216,7 +216,7 @@ AliMUONTriggerIO::ReadLocalMasks(const char* localFile, AliMUONVStore& localMask
   
   Int_t localBoardIndex(0);
     
-  while ( fread ( maskBuffer, 2, 8, fp ) )
+  while ( fread ( maskBuffer, 2, 8, fp ) == 8 )
   {
     Int_t localBoardId = fRegionalTrigger.LocalBoardId(localBoardIndex);
     AliDebug(1,Form("LB %03d X1 %4x X2 %4x X3 %4x X4 %4x "
@@ -288,7 +288,7 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
   Bool_t trigx = kFALSE;
   
   // read two lut addresses at once, 32768/2=16384 times
-  if (fread(buffer,fgkLocalLutSize,1,flut) == 0) {
+  if ( fread ( buffer, fgkLocalLutSize, 1, flut ) == 0 ) {
     AliWarning("Error reading the LUT file");
     return;
   }
@@ -398,7 +398,7 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
 
   UChar_t lutCode = 0xFF;
 
-  if (!fread(&lutCode,1,1,flut)) {
+  if ( fread ( &lutCode, 1, 1, flut ) == 0 ) {
     AliWarning("No LUT info in the file (old version)");
   }
   AliInfo(Form("LUT code: 0x%02x",lutCode));
@@ -446,7 +446,7 @@ AliMUONTriggerIO::ReadTrigScalers(const char* scfile, TClonesArray& scalers) con
   AliInfo(Form("Data buffer length = %d",bufflen));
 
   Int_t ibr, isc = 0;
-  while (fread(buffer,bufflen,1,fp)) {
+  while ( fread ( buffer, bufflen, 1, fp ) == 1 ) {
 
     AliMUONTriggerScalers *scaler = new(scalers[isc++]) AliMUONTriggerScalers();
 
