@@ -20,7 +20,6 @@
 #pragma link C++ class AliAnalysisTaskDielectronFilter+;
 #pragma link C++ class AliAnalysisTaskDielectronEfficiency+;
 #pragma link C++ class AliAnalysisTaskMultiDielectron+;
-#pragma link C++ class AliAnalysisTaskElectronEfficiency+;
 #pragma link C++ class AliDielectronSingleTG+;
 #pragma link C++ class AliAnalysisTaskMultiDielectronTG+;
 #pragma link C++ class AliAnalysisTaskDielectronReadAODBranch+;
@@ -55,4 +54,5 @@
 #pragma link C++ class AliReducedFMD+;
 #pragma link C++ class AliReducedCaloCluster+;
 #pragma link C++ class AliAnalysisTaskReducedTree+;
+
 #endif
