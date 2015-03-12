@@ -799,9 +799,11 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   //
   
   TObjArray   crossTalkSignalArray(nROCs);  // for 36 sectors 
-  TVectorD  * qTotSectorOld  = new TVectorD(nROCs);
+  TVectorD  * qTotSector  = new TVectorD(nROCs);
+  TVectorD  * nTotSector  = new TVectorD(nROCs);
   Float_t qTotTPC = 0.;
   Float_t qTotPerSector = 0.;
+  Float_t nTotPerSector = 0.;
   Int_t nTimeBinsAll = 1100;
   Int_t nWireSegments=11;
   // 1.a) crorstalk matrix initialization
@@ -872,7 +874,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
       q*= gain;
       crossTalkSignal[wireSegmentID][timeBin]+= q/nPadsPerSegment;        // Qtot per segment for a given timebin
-      qTotSectorOld -> GetMatrixArray()[sector] += q;                      // Qtot for each sector
+      qTotSector -> GetMatrixArray()[sector] += q;                      // Qtot for each sector
+      nTotSector -> GetMatrixArray()[sector] += 1;                      // Ntot digit counter for each sector
       qTotTPC += q;                                                        // Qtot for whole TPC       
     } // end of q loop
   } // end of global row loop
@@ -998,7 +1001,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       if ( (q/16.+noise)> zerosup  || ((AliTPCReconstructor::StreamLevel()&kStreamSignalAll)>0)){
 	// Crosstalk correction 
 	qXtalk = (*(TMatrixD*)crossTalkSignalArray.At(sector))[wireSegmentID][timeBin];
-	qTotPerSector = qTotSectorOld -> GetMatrixArray()[sector];    
+	qTotPerSector = qTotSector -> GetMatrixArray()[sector];    
+	nTotPerSector = nTotSector -> GetMatrixArray()[sector];    
 	
 	// Ion tail correction: being elem=padNumber*nTimeBins+timeBin;
 	Int_t lowerElem=elem-nIonTailBins;    
@@ -1058,6 +1062,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
 	  "timeBin="<< timeBin<<               // time bin 
 	  "nPadsPerSegment="<<nPadsPerSegment<<// number of pads per wire segment	  
 	  "qTotPerSector="<<qTotPerSector<<    // total charge in sector 
+	  "nTotPerSector="<<nTotPerSector<<    // total number of digit (above threshold) in sector 
 	  //
 	  "qTotTPC="<<qTotTPC<<                // acumulated charge without crosstalk and ion tail in full TPC
 	  "qOrig="<< qOrig<<                   // charge in given pad-row,pad,time-bin
