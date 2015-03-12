@@ -84,9 +84,10 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
   AliEmcalTriggerPatchInfo *triggerpatch(NULL);
   TIter patchIter(data->GetTriggerPatchContainer());
   while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
+	bool isMain = triggerpatch->IsOfflineSimple() ? triggerpatch->IsMainTriggerSimple() : triggerpatch->IsMainTrigger();
     double triggerpatchinfo[6] = {triggerpatch->GetPatchE(),triggerpatch->GetADCAmpGeVRough(),
         static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(),
-        triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0.};
+        triggerpatch->GetPhiGeo(), isMain ? 1. : 0.};
     if(triggerpatch->IsOfflineSimple()){
       if(triggerpatch->IsJetHighSimple()){
         fHistos->FillTHnSparse("PatchInfoJetHighOffline", triggerpatchinfo);
