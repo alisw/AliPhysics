@@ -19,7 +19,7 @@
 #
 #  Usage:
 #
-#    `thtml2doxy_clang [--stdout|-o] [-d] [--debug=DEBUG_LEVEL] file1 [file2 [file3...]]`
+#    `thtml2doxy [--stdout|-o] [-d] [--debug=DEBUG_LEVEL] file1 [file2 [file3...]]`
 #
 #  Parameters:
 #
