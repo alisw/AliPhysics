@@ -199,10 +199,13 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   }
 
   // Get MC primaries
-  // triggers
-  Int_t   fParticleSpeciesTrigger = -1;
-  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(fMcEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
-  TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
+  TObjArray* tracksMC;
+
+  if(fMode==1){
+    Int_t   fParticleSpeciesTrigger = -1;
+    TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(fMcEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+    tracksMC = CloneAndReduceTrackList(tmpList);
+  }
 
 
   AliInfo(Form("Centrality is %f", centrality));
