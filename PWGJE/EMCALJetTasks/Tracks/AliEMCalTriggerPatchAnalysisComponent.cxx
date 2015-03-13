@@ -105,7 +105,7 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
       fHistos->CreateTHnSparse(Form("PatchInfo%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 6, patchaxes, "s");
       if(strcmp(triggerpatch->c_str(), "Level0")){
         // Add histogram for online-offline of amplitudes
-        fHistos->CreateTHnSparse(Form("PatchAmplitudes%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch amplitudes for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 5, ampaxes, "s");
+        fHistos->CreateTHnSparse(Form("PatchAmplitude%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch amplitudes for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 5, ampaxes, "s");
       }
     }
   }
