@@ -80,6 +80,7 @@ public:
     fQgenIntegral(0), 
     fSplineArrayV0Agen(0),
     fSplineArrayV0Cgen(0),
+    fSplineArrayTPCgen(0),
     fQvecMC(0),
     fNch(0),
     fQvecCalibType(0),
@@ -249,6 +250,7 @@ private:
   TH2D * fQgenIntegral;           // ! Integrated Qvec distribution for generated tracks
   TObjArray * fSplineArrayV0Agen;    // TSpline array for VZERO-A for generated tracks
   TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
+  TObjArray * fSplineArrayTPCgen;    // TSpline array for TPC for generated tracks
   Double_t fQvecMC; //q-vector value from MC
 
   Int_t fNch;
@@ -258,7 +260,7 @@ private:
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
 
-  ClassDef(AliSpectraAODEventCuts, 12);
+  ClassDef(AliSpectraAODEventCuts, 13);
 
 };
 #endif
