@@ -659,8 +659,15 @@ AliExternalTrackParam * AliTrackerBase::MakeSeed( AliTrackPoint &point0, AliTrac
   deltaP=MakeC(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz2[0],xyz2[1]+TMath::Sqrt(p2r.GetCov()[3]))-param[4];
   covar[14]+= deltaP*deltaP;
   
-  covar[14]/=(bz*kB2C)*(bz*kB2C);
-  param[4]/=(bz*kB2C); // transform to 1/pt
+  if (TMath::Abs(bz)>kAlmost0Field) {
+    covar[14]/=(bz*kB2C)*(bz*kB2C);
+    param[4]/=(bz*kB2C); // transform to 1/pt
+  }
+  else { // assign 0.6 GeV pT
+    const double kq2pt = 1./0.6;
+    param[4] = kq2pt;
+    covar[14] = (0.5*0.5)*kq2pt;
+  }
   AliExternalTrackParam * trackParam = new AliExternalTrackParam(xyz0[0],alpha,param, covar);
   if (0) {
     // consistency check  -to put warnings here 
