@@ -13,25 +13,19 @@
  * 
  * @ingroup pwglf_forward_aod
  */
-void
+AliAnalysisTaskSE*
 AddTaskCopyHeader()
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
-
-  // --- Get analysis manager ----------------------------------------
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    Error("AddTaskCopyHeader", "No analysis manager to connect to.");
-    return;
-  }   
+  gROOT->LoadClass("AliCopyHeaderTask", "libPWGLFforward2");
 
   // --- Create task -------------------------------------------------
   AliCopyHeaderTask* task = new AliCopyHeaderTask;
-  mgr->AddTask(task);
-  
-  // --- Connect input -----------------------------------------------
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  if (!task->Connect()) {
+    delete task;
+    task = 0;
+  }
+  return task;
 }
 //
 // EOF

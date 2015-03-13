@@ -31,12 +31,19 @@ struct RefData
     CMS, 
     ALICE, 
     WIP,
+    ATLAS,
     PYTHIA,
     INEL, 
     INELGt0, 
     NSD
   };
-  
+
+  static Bool_t Verbose(Int_t v=-1) 
+  {
+    static Bool_t verbose = false;
+    if (v >= 0) verbose = v;
+    return verbose;
+  }
   //____________________________________________________________________
   /** 
    * Get a pointer to our data file.  @a path is the path to the file
@@ -53,26 +60,45 @@ struct RefData
   static TFile* GetFile(const char* path=0, Bool_t rw=false) { 
     TString base = ((path && path[0] != '\0') ? 
 		    gSystem->BaseName(path) : "other.root");
-      
+    TString realPath;
+    if (path && path[0] != '\0') realPath = gSystem->ExpandPathName(path);
+    if (Verbose() > 2) 
+      ::Info("GetFile", "Looking for %s (%s)", base.Data(), realPath.Data());
     TObject* o = gROOT->GetListOfFiles()->FindObject(base);
-    
+
     TFile* f  = 0;
     if (o) {
       f = static_cast<TFile*>(o);
       if (!rw) return f;
       if (!f->IsWritable() && f->ReOpen("UPDATE") < 0) return 0;
+      if (Verbose() > 2) 
+	::Info("GetFile", "Found file %s in list of open files", base.Data());
       return f;
     }
 
     const char* mode = (rw ? "UPDATE" : "READ");
-    if (path && path[0] != '\0' && !gSystem->AccessPathName(path)) 
+    if (!realPath.IsNull() && !gSystem->AccessPathName(realPath.Data())) {
+      if (Verbose() > 2) 
+	::Info("GetFile", "Trying %s", realPath.Data());
       f = TFile::Open(path, mode);
-    if (!f && !gSystem->AccessPathName("other.root")) 
+    }
+    if (!f && !gSystem->AccessPathName("other.root")) {
+      if (Verbose() > 2) 
+	::Info("GetFile", "Trying other.root");
       f = TFile::Open("other.root", mode);
-    if (!f) 
+    }
+    if (!f) {
+      if (Verbose() > 2) 
+	::Info("GetFile",
+	       "Trying $ALICE_PHYSICS/PWGLF/FORWARD/analysis2/other.root");
       f = TFile::Open("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/other.root",mode);
+    }
     if (!f) 
       ::Error("", "Failed to open file");
+    else {
+      if (Verbose() > 2) 
+	::Info("GetFile", "Opened %s", f->GetName());
+    }
     return f;
   }
   //____________________________________________________________________
@@ -122,10 +148,11 @@ struct RefData
   static const char* CntName(UShort_t trg) 
   {
     switch (trg >> 4) { 
-    case 1: return "V0M_";
-    case 2: return "V0A_";
-    case 4: return "ZNA_";
-    case 8: return "ZNC_";
+    case 0x01: return "V0M_";
+    case 0x02: return "V0A_";
+    case 0x04: return "ZNA_";
+    case 0x08: return "ZNC_";
+    case 0x10: return "V0C_";
     }
     return "";
   }
@@ -168,7 +195,8 @@ struct RefData
    * - 1: CMS 
    * - 2: ALICE (published or pre-print)
    * - 3: ALICE Work-in-progress 
-   * - 4: PYTHIA (or MC)
+   * - 4: ATLAS
+   * - 5: PYTHIA (or MC)
    * 
    * @param which Experiment identifier 
    * 
@@ -181,7 +209,8 @@ struct RefData
     case 1: return "CMS";
     case 2: return "ALICE";
     case 3: return "WIP";
-    case 4: return "PYTHIA";
+    case 4: return "ATLAS";
+    case 5: return "PYTHIA";
     }
     ::Error("", "Unknown experiment: %d", which); 
     return 0;
@@ -192,11 +221,10 @@ struct RefData
    * 
    * @param d        Directory to search
    * @param which    Which experiments to get data from 
-   * @param verbose  Whether to be verbose or not 
    * 
    * @return Graph of data, or null
    */
-  static TMultiGraph* GetExps(TDirectory* d, UShort_t which, Bool_t verbose)
+  static TMultiGraph* GetExps(TDirectory* d, UShort_t which)
   {
     TMultiGraph* ret = 0;
     for (UShort_t w = UA5; w <= PYTHIA; w++) { 
@@ -204,7 +232,11 @@ struct RefData
 
       const char* expName = ExpName(w);
       TDirectory* expDir  = 0;
-      if (!expName || !(expDir = d->GetDirectory(expName))) continue;
+      if (!expName || !(expDir = d->GetDirectory(expName))) {
+	if (Verbose() >= 3)
+	  :: Warning("GetExps","Nothing for %s in %s",expName,d->GetName());
+	continue;
+      }
 
       TObject* o = expDir->Get("data");
       if (o) {
@@ -222,9 +254,11 @@ struct RefData
 	ret->Add(mg);
       }
     }
-    if (!ret && verbose)
-      ::Error("GetExps", "Didn't get any data for exp=0x%x in dir %s", 
-	      which, d->GetPath());
+    if (!ret) {
+      if (Verbose() >= 1)
+	::Error("GetExps", "Didn't get any data for exp=0x%x in dir %s", 
+		which, d->GetPath());
+    }
     return ret;
   }
 
@@ -235,18 +269,16 @@ struct RefData
    * @param d        Directory to seach 
    * @param type     Which triggers 
    * @param which    Which experiments
-   * @param verbose  Whether to be verbose 
    * 
    * @return Graph of data, or null
    */
-  static TMultiGraph* GetTrigs(TDirectory* d, UShort_t type, 
-			       UShort_t which, Bool_t verbose) 
+  static TMultiGraph* GetTrigs(TDirectory* d, UShort_t type, UShort_t which) 
   {
     TMultiGraph* ret = 0;
     for (UShort_t t = INEL; t <= NSD; t++) { 
       UShort_t trg = (1 << (t-INEL));
       if (!(type & trg)) {
-	if (verbose) 
+	if (Verbose() >= 5) 
 	  ::Info("GetTrigs", "Skipping trigger 0x%x (0x%x)", trg, type);
 	continue;
       }
@@ -254,22 +286,23 @@ struct RefData
       const char* trgName = TrgName(trg, 0, 0);
       TDirectory* trgDir  = 0;
       if (!trgName || !(trgDir = d->GetDirectory(trgName))) {
-	if (verbose) 
+	if (Verbose() >= 3)
 	  ::Warning("GetTrigs", "No directory %s for 0x%x in %s", 
 		    trgName, trg, d->GetPath());
 	continue;
       }
 
-      TMultiGraph* g = GetExps(trgDir, which, verbose);
+      TMultiGraph* g = GetExps(trgDir, which);
       if (g) { 
 	if (!ret) ret = new TMultiGraph();
 	ret->Add(g);
       }
     }
-    if (!ret) 
-      ::Error("GetTrigs", 
-	      "Didn't get any data for trigger=0x%x and exp=0x%x in dir %s", 
-	      type, which, d->GetPath());
+    if (!ret)
+      if (Verbose() >= 1) 
+	::Error("GetTrigs", 
+		"Didn't get any data for trigger=0x%x and exp=0x%x in dir %s", 
+		type, which, d->GetPath());
     return ret;
   }
 
@@ -282,13 +315,12 @@ struct RefData
    * @param trigger      Which centrality estimator (possibly 0)
    * @param centLow      Least centrality 
    * @param centHigh     Largetst centrality
-   * @param verbose      Whether to be verbose 
    * 
    * @return Graph of data or null
    */
   static TMultiGraph* GetCents(TDirectory* d, UShort_t experiment, 
 			       UShort_t trigger, UShort_t centLow, 
-			       UShort_t centHigh, Bool_t verbose) 
+			       UShort_t centHigh) 
   {
     // We need to find the bins we can and check for the
     // experiments
@@ -314,20 +346,21 @@ struct RefData
       
       // Info("", "n=%s off=%d c1=%d c2=%d", n.Data(), off, c1, c2);
       if (c1 < centLow || c2 > centHigh) {
-	if (verbose) ::Info("", "Skipping %s in %s", n.Data(),d->GetPath());
+	if (Verbose() >=5)
+	  ::Info("", "Skipping %s in %s", n.Data(),d->GetPath());
 	continue;
       }
       
       TDirectory* centDir = d->GetDirectory(obj->GetName());
       if (!centDir) continue;
       
-      TMultiGraph* exps = GetExps(centDir, experiment, verbose);
+      TMultiGraph* exps = GetExps(centDir, experiment);
       if (exps) {
 	if (!ret) ret = new TMultiGraph();
 	ret->Add(exps);
       }
     } // experiment (key)
-    if (!ret && verbose) 
+    if (!ret && Verbose() >= 1) 
       ::Error("GetCents", "No graphs for centralities %d-%d%% in %s", 
 	      centLow, centHigh, d->GetPath());
     return ret;
@@ -356,13 +389,13 @@ struct RefData
 			      UShort_t triggers=0x1, 
 			      UShort_t centLow=0, 
 			      UShort_t centHigh=0, 
-			      UShort_t experiments=0x7)
+			      UShort_t experiments=0x7,
+			      const char* path=0)
   {
-    Bool_t verbose = false;
-    UShort_t trg = (triggers & 0xF7);
+    UShort_t trg = (triggers & 0x1F7);
     if (triggers & 0x2000) trg |= 0x4;
 
-    TFile* f = GetFile(0,false);
+    TFile* f = GetFile(path,false);
     if (!f) return 0;
 
     TDirectory* sysDir = 0;
@@ -383,23 +416,23 @@ struct RefData
     // If we have a centrality request 
     if (centHigh > centLow) { 
       if (centLow == 0 && centHigh >= 100) 
-	ret = GetCents(sNNDir, experiments, trg, 
-		       centLow, centHigh, verbose);
+	ret = GetCents(sNNDir, experiments, trg, centLow, centHigh);
       else {
 	// Look for specific centrality bin 
-	TDirectory* centDir = sNNDir->GetDirectory(TrgName(trg, 
-							   centLow,centHigh));
+	TString bin(TrgName(trg,centLow,centHigh));
+	TDirectory* centDir=sNNDir->GetDirectory(bin);
 	if (!centDir) {
-	  Warning("", "No directory '%s' (0x%x,%d%d)", 
-		  TrgName(trg, centLow,centHigh), trg, centLow, centHigh);
+	  if (Verbose() >= 3) 
+	    Warning("", "No directory '%s' (0x%x,%d%d)", bin.Data(),
+		    trg, centLow, centHigh);
 	  return 0;
 	}
 
-	return GetExps(centDir, experiments, verbose);
+	return GetExps(centDir, experiments);
       }
     } // centHigh > centLow
     else 
-      ret = GetTrigs(sNNDir, trg, experiments, verbose);
+      ret = GetTrigs(sNNDir, trg, experiments);
 
     if (ret) {
       TString title;
@@ -706,6 +739,9 @@ struct RefData
     const char* expName = ExpName(experiment);
     
     if (!sysName || !sNNName || !trgName || !expName) return false;
+    if (Verbose() > 2)
+      ::Info("Import", "%s @ %s for %s from %s in (%d-%d%%)",
+	     sysName, sNNName, trgName, expName, centLow, centHigh);
     
     TString dirName;
     dirName = Form("%s/%s/%s/%s", sysName, sNNName, trgName, expName);
@@ -714,6 +750,8 @@ struct RefData
     if (!dir) dir = file->mkdir(dirName);
     file->cd(dirName);
 
+    if (Verbose() > 2) 
+      ::Info("Import", "Will write data to %s", dirName.Data());
     if (dir->Get("data")) { 
       ::Warning("", "Already have data in %s", dirName.Data());
       // return false;
@@ -723,6 +761,7 @@ struct RefData
     g->Write();
     
     file->cd();
+    file->Write();
     file->Close();
 
     return true;
