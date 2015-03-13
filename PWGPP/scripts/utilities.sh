@@ -101,17 +101,23 @@ guessRunData()
   local dirDepth=$(( ${#path[*]}-1 ))
   for ((x=${dirDepth};x>=0;x--)); do
 
+    [[ $((x-2)) -ge 0 ]] && local fieldPrevPrev=${path[$((x-2))]}
     [[ $((x-1)) -ge 0 ]] && local fieldPrev=${path[$((x-1))]}
     local field=${path[${x}]}
     local fieldNext=${path[$((x+1))]}
+    local fieldNextNext=${path[$((x+2))]}
 
-    [[ ${field} =~ ^[0-9]*$ && ${fieldNext} =~ (.*\.zip$|.*\.root$) ]] && legoTrainRunNumber=${field}
-    [[ -n ${legoTrainRunNumber} && -z ${pass} ]] && pass=${fieldPrev}
+    [[ -z ${legoTrainRunNumber} && ${field} =~ ^[0-9]*$ && ${fieldNext} =~ (.*\.zip$|.*\.root$) ]] && legoTrainRunNumber=${field}
+    [[ -z ${runNumber} && ${fieldPrev} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${fieldPrev#000}
+    [[ -z ${pass} && -n ${runNumber} ]] && pass=${field}
     [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*} && originalPeriod=${field}
-    [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000}
     [[ ${field} =~ ^[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && shortRunNumber=${field}
     [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
     [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
+    [[ "${field}" =~ "${pass}" && ${fieldNext} =~ AOD ]] && legoTrainRunNumber=""
+
+    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ && ${fieldPrev} =~ ^20[0-9][0-9]$ && ! ${fieldNext} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && pass=${fieldNext}
+
   done
   originalPass=${pass}
 
@@ -132,15 +138,14 @@ guessRunData()
 
   [[ -n ${shortRunNumber} && -z ${runNumber} && -z {dataType} ]] && runNumber=${shortRunNumber}
   [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
-  [[ -z ${legoTrainRunNumber} && ${dataType} == "data" ]] && pass=${path[$((dirDepth-1))]}
   [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
-  
+
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber} ]]
-  then
-    #error condition
-    return 1
-  fi
+  #if [[ -z ${runNumber} ]]
+  #then
+  #  #error condition
+  #  return 1
+  #fi
   
   #ALL OK
   return 0
