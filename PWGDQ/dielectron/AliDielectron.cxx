@@ -136,6 +136,7 @@ AliDielectron::AliDielectron() :
   fDontClearArrays(kFALSE),
   fEventProcess(kTRUE),
   fEstimatorFilename(""),
+  fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
@@ -188,6 +189,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fDontClearArrays(kFALSE),
   fEventProcess(kTRUE),
   fEstimatorFilename(""),
+  fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
@@ -242,6 +244,7 @@ void AliDielectron::Init()
   if (fDebugTree) fDebugTree->SetDielectron(this);
 
   if(fEstimatorFilename.Contains(".root"))        AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
+  if(fEstimatorObjArray)			  AliDielectronVarManager::InitEstimatorObjArrayAvg(fEstimatorObjArray);
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());

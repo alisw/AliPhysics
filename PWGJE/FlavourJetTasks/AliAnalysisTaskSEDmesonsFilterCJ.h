@@ -30,6 +30,7 @@ class TString;
 class TClonesArray;
 class AliRDHFCuts;
 class AliAODRecoCascadeHF;
+class AliAODRecoDecayHF2Prong;
 
 class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE 
 {
@@ -69,7 +70,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
 
  protected:
   void ExecOnce();
-  void ProcessD0(AliAODRecoDecayHF* charmCand, Int_t isSelected, Int_t mcLabel);
+  void ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t mcLabel);
   void ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t mcLabel);
   
  private:

@@ -24,6 +24,7 @@
 #pragma link C++ class AliAnalysisTaskMultiDielectronTG+;
 #pragma link C++ class AliAnalysisTaskDielectronReadAODBranch+;
 #pragma link C++ class AliAnalysisTaskSingleParticle+;
+#pragma link C++ class AliAnalysisTaskElectronEfficiency+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
 #pragma link C++ class AliDielectronTrackCuts+;

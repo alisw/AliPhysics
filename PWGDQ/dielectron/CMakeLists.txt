@@ -40,6 +40,7 @@ set(SRCS
       AliAnalysisTaskMultiDielectronTG.cxx
       AliAnalysisTaskReducedTree.cxx
       AliAnalysisTaskSingleParticle.cxx
+      AliAnalysisTaskElectronEfficiency.cxx
       AliDielectronBtoJPSItoEleCDFfitFCN.cxx
       AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
       AliDielectronBtoJPSItoEleCDFfitHandler.cxx
@@ -138,6 +139,7 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install the macros
 install(DIRECTORY
+		files
                 macros
                 macrosJPSI
                 macrosLMEE

@@ -104,8 +104,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     public:
         AlipAJetHistos();
         AlipAJetHistos(const char *name);
-        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF=kFALSE);
-        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF, Bool_t doNEFSignalOnly, Bool_t doTHnSparse);
+        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF = kFALSE);
+        AlipAJetHistos(const char *name, TString centag, Bool_t doNEF, Bool_t doNEFSignalOnly, Bool_t doTHnSparse, Bool_t do3DPlotting);
 
         virtual ~AlipAJetHistos();
         
@@ -140,6 +140,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         void SetNEFClusterDimensions(Int_t n);
         void SetRhoValue(Double_t value);
         void DoTHnSparse(Bool_t doTHnSparse);
+        void Do3DPlotting(Bool_t do3DPlotting);
         
         // User Defined Functions
         TList* GetOutputHistos();  //!
@@ -266,6 +267,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         Bool_t fDoNEFSignalOnly;
         Bool_t fSignalTrackBias;
         Bool_t fDoTHnSparse;
+        Bool_t fDo3DHistos;
         
         Int_t fNEFBins;
         Double_t fNEFLow;
@@ -473,7 +475,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     inline void DoJetRhoDensity(Bool_t doJetRhoDensity)
     {
         fDoJetRhoDensity = doJetRhoDensity;
-    }
+    };
+    
+    inline void Do3DPlotting(Bool_t do3DPlotting)
+    {
+        fDo3DHistos = do3DPlotting;
+    };
     
     private:
     TList *fOutput; //! Output list
@@ -585,6 +592,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Bool_t fMCPartLevel;
     Bool_t fDoTHnSparse;
     Bool_t fDoJetRhoDensity;
+    Bool_t fDo3DHistos;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;

@@ -1,0 +1,278 @@
+//TString names=("ITSTPCTOFif_trkSPDfirst_1_kSemi;ITSTPCTOFif_trkSPDfirst5cls_4_kSemi;ITS2gevTPCTOFif_trkSPDfirst_5_tight_kSemi;ITSTPCTOFif_trkSPD5orSDD4cls_4_kSemi;ITS2gevTPCTOFif_trkSPDorSDD_5_tight_kSemi;ITS2gevTPCTOFif_trkSPDfirst5cls_6_tight_kSemi;ITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight_kSemi");
+TString names=("ITSTPCTOFif_trkSPDfirst_1;ITSTPCTOFif_trkSPDfirst_1_Pref3_m50t80");
+
+TObjArray*  arrNames=names.Tokenize(";");
+const Int_t nDie=arrNames->GetEntriesFast();
+Int_t       selectedCentrality=-1; // not yet implemented
+// the following settings must be initialized each time SetupTrackCutsAndSettings() is called.
+Int_t       selectedPID;
+Bool_t      isPrefilterCutset;
+Double_t    rejCutMee;
+Double_t    rejCutTheta;
+Double_t    rejCutPhiV;
+// -----
+
+//________________________________________________________________
+// binning of 3D output histograms
+// eta bins
+const Double_t EtaMin   = -1.;
+const Double_t EtaMax   =  1.;
+const Int_t    nBinsEta = 100; //flexible to rebin
+// phi bins
+const Double_t PhiMin   = 0.;
+const Double_t PhiMax   = 6.2832;
+const Int_t    nBinsPhi = 60; //flexible to rebin
+const Double_t PtBins[] = {
+  0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+  1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
+  4.00,5.0,6.0,7.0,8.0
+};
+// run dependency (currently only "TPC_dEdx_P_run")
+// run string must be sorted in increasing order!
+//AOD_115_goodPID //TString sRuns("167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593");
+//MC LHC12a17g_fix at GSI (5.3.2014) (one more run than 17h)
+const TString sRuns("167915, 167920, 167985, 167987, 168069, 168076, 168105, 168107, 168108, 168115, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169965, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593");
+//
+// ^^^^^^^^^^ [/end binning histograms] ^^^^^^^^^^
+
+//________________________________________________________________
+// specify if track tree shall be filled and written to file (only recommended for small checks!)
+const Bool_t    writeTree = kTRUE;
+// specify for which "cutInstance" the support histos should be filled!
+const Int_t     supportedCutInstance = 1;
+//
+//________________________________________________________________
+// settings which are identical for all configs that run together
+// event cuts
+const Bool_t    reqVertex = kTRUE;
+const Double_t  vertexZcut = 10.;
+const Double_t  CentMin =  0.;
+const Double_t  CentMax = 90.;
+// track cuts
+const Bool_t    checkV0dauEle = kFALSE;
+// MC cuts
+const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
+const Double_t  EtaMaxGEN =  1.;
+const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any setting.
+const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
+
+const Bool_t    CutInjectedSignals = kTRUE;
+// ^^^^^^^^^^ [/end common settings] ^^^^^^^^^^
+
+//________________________________________________________________
+//
+// Strategy:  One cutInstance for analysis tracking&PID efficiency (as usual).
+//            Optional, separate cutInstance for prefilter efficiencies: it also produces the usual tracking&PID efficiency
+//            (but of course for the specified prefilter track sample, so mainly for convenience and curiosity),
+//            and then additionally the pair rejection efficiency, using random rejection of pions with the selected electrons.
+//________________________________________________________________
+
+
+// TODO: implement this:
+//
+//AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
+//noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
+//die->GetTrackFilter().AddCuts(noconv);
+
+
+//________________________________________________________________
+AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
+{
+  std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
+  AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
+  // do not change these initial values!
+  selectedPID=-1;
+  isPrefilterCutset=kFALSE;
+  rejCutMee=-1;
+  rejCutTheta=-1;
+  rejCutPhiV=3.2; // relevant are values below pi, so initialization to 3.2 means disabling.
+  
+  // -----
+  // produce analysis filter by using functions in this config:
+  // -----
+  int nCutsUsingConfigFunctions = 0; // set it manually!
+  //
+  if (cutInstance == -1) { // set negative when not needed.
+    anaFilter->AddCuts( SetupTrackCuts(cutInstance) );
+    anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
+    std::cout << "...cuts added!" <<std::endl;
+    //nCutsUsingConfigFunctions++; this is logically not possible, set it manually above!
+  }
+  // -----
+  // produce analysis filter by using LMEECutLib:
+  // -----
+  else // "else" is important to not add additional cuts to previous cutInstance by accident.
+  {
+    LMEECutLib* LMcutlib = new LMEECutLib();
+    
+    if (cutInstance==0+nCutsUsingConfigFunctions) {
+      selectedPID = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting
+      isPrefilterCutset=kFALSE; // (de)activate prefilter efficiency determination.
+    }
+    else if (cutInstance==1+nCutsUsingConfigFunctions) {
+      selectedPID = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
+      isPrefilterCutset=kTRUE;
+    }
+//    else if (cutInstance==1+nCutsUsingConfigFunctions) {
+//      selectedPID = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst5cls_4; // syst 1
+//      isPrefilterCutset=kTRUE;
+//    }
+//    else if (cutInstance==2+nCutsUsingConfigFunctions) {
+//      selectedPID = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst_5_tight; // syst 2
+//      isPrefilterCutset=kFALSE;
+//    }
+//    else if (cutInstance==3+nCutsUsingConfigFunctions) {
+//      selectedPID = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPD5orSDD4cls_4; // syst 3
+//      isPrefilterCutset=kFALSE;
+//    }
+//    else if (cutInstance==4+nCutsUsingConfigFunctions) {
+//      selectedPID = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDorSDD_5_tight; // syst 4
+//      isPrefilterCutset=kFALSE;
+//    }
+//    else if (cutInstance==5+nCutsUsingConfigFunctions) {
+//      selectedPID = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst5cls_6_tight; // syst 5
+//      isPrefilterCutset=kFALSE;
+//    }
+//    else if (cutInstance==6+nCutsUsingConfigFunctions) {
+//      selectedPID = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight; // syst 6
+//      isPrefilterCutset=kFALSE;
+//    }
+    
+    anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna(selectedPID) );
+    if (!isPrefilterCutset) {
+      // the function 'GetPIDCutsAna()' must also call 'GetTrackCutsAna()'!
+      anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+    }
+    else {
+      // the function 'GetPIDCutsPre()' must also call 'GetTrackCutsPre()'!
+      anaFilter->AddCuts( LMcutlib->GetPIDCutsPre(selectedPID) );
+//      // instead, use this for testing consistency compared to no prefiltering (or set 'isPrefilterCutset=kFALSE' above):
+//      anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+    }
+
+  }
+  // -----
+  
+  
+//  std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance <<std::endl;
+//  anaFilter->GetCuts()->Print();
+//  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" <<std::endl;
+//  std::cout << "__________ anaFilter->GetCuts()->Dump() __________ cutInstance = " << cutInstance <<std::endl;
+//  anaFilter->GetCuts()->Dump();
+//  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" <<std::endl;
+  return anaFilter;
+}
+
+
+//________________________________________________________________
+Int_t SetupPrefilterPairCuts(Int_t cutInstance)
+{
+  std::cout << "SetupPrefilterPairCuts()" <<std::endl;
+  
+  if (selectedPID > -1) { // case with LMcutlib
+    LMEECutLib* LMcutlib = new LMEECutLib();
+    
+    AliDielectronCutGroup* cgPairCutsPre = (AliDielectronCutGroup*) LMcutlib->GetPairCutsPre(selectedPID);
+    if(!cgPairCutsPre) {
+      std::cout << "WARNING: no Prefilter PairCuts given (bad cutgroup)!" << std::endl;
+      return -1;
+    }
+    cgPairCutsPre->Print();
+    Double_t dummy=-1;
+    //
+    // using some new (Feb 2015) functions:
+    //   AliDielectronCutGroup::GetNCuts() and ::GetCut()
+    //   AliDielectronVarCuts::IsCutOnVariableX() and ::GetCutLimits()
+    //
+    // this is NOT failsafe!!! needs a cutgroup as top level object and one or more varcuts inside, which have internal cuts on the needed variables.
+    for (Int_t iCutGroupCut=0; iCutGroupCut<cgPairCutsPre->GetNCuts(); iCutGroupCut++) {
+      AliDielectronVarCuts* varcuti = (AliDielectronVarCuts*) cgPairCutsPre->GetCut(iCutGroupCut);
+      
+      for (Int_t iCut=0; iCut<varcuti->GetNCuts(); iCut++) {
+        if ( varcuti->IsCutOnVariableX(iCut, AliDielectronVarManager::kM) ) {
+          if (rejCutMee>-1) { std::cout << "WARNING: rejCutMee was defined two times!" << std::endl; return -1; } // should take the stronger cut in that case...
+          // fill rejCutMee
+          varcuti->GetCutLimits(iCut, dummy, rejCutMee);
+        }
+        if ( varcuti->IsCutOnVariableX(iCut, AliDielectronVarManager::kOpeningAngle) ) {
+          if (rejCutTheta>-1) { std::cout << "WARNING: rejCutTheta was defined two times!" << std::endl; return -1; }
+          // fill rejCutTheta
+          varcuti->GetCutLimits(iCut, dummy, rejCutTheta);
+        }
+        if ( varcuti->IsCutOnVariableX(iCut, AliDielectronVarManager::kPhivPair) ) {
+          if (rejCutPhiV<3.14159) { std::cout << "WARNING: rejCutPhiV was defined two times!" << std::endl; return -1; }
+          // fill rejCutPhiV
+          varcuti->GetCutLimits(iCut, dummy, rejCutPhiV);
+        }
+      }
+    }
+  }
+  else { // case without LMcutlib...
+    switch (cutInstance) {
+      case 0:
+        //rejCutMee=...;
+        //rejCutTheta=...;
+        //break;
+      default:
+        std::cout << "WARNING: no Prefilter PairCuts given!" << std::endl;
+        return -1;
+    }
+  }
+  
+  return 1;
+}    
+
+
+//________________________________________________________________
+AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
+{
+  std::cout << "SetupTrackCuts()" <<std::endl;
+  //AliAnalysisCuts* trackCuts=0x0;
+
+  if(cutInstance == 0) {
+    // reproduce AOD filter bit 4:
+    AliESDtrackCuts *esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    //esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    //esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    // additional or modified cuts: like in LMEECutLib::GetTrackCutsAna()
+    esdTrackCuts->SetMaxDCAToVertexXY(1.);
+    esdTrackCuts->SetMaxDCAToVertexZ(3.);
+    esdTrackCuts->SetMinNClustersITS(4);
+    esdTrackCuts->SetMinNCrossedRowsTPC(100); //default is 70 (in GetStandardITSTPCTrackCuts2011())
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //default is 0.8
+    //
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    
+    // kinematic cuts:
+    esdTrackCuts->SetPtRange(   0.4 , 3.5 );
+    esdTrackCuts->SetEtaRange( -0.9 , 0.9 );
+    //    esdTrackCuts->SetPtRange(   0.399 , 3.499 );
+    //    esdTrackCuts->SetEtaRange( -0.899 , 0.901 ); // on purpose to check if something gets mixed up...
+  }
+  
+  return esdTrackCuts;
+  //  trackCuts = fesdTrackCuts;
+  //  trackCuts->Print();
+  //  return trackCuts;
+}
+
+//________________________________________________________________
+AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
+{
+  std::cout << "SetupPIDcuts()" <<std::endl;
+  AliAnalysisCuts* pidCuts=0x0;
+  
+  if(cutInstance == 0) {
+    AliDielectronPID *pid = new AliDielectronPID("pidXtraPIn","pidXtraPIn");
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -3.  ,3. ,0.0, 100., kTRUE);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5 ,3. ,0.0, 100., kFALSE);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3.  ,3. ,0.0, 1.7 , kFALSE);
+  }
+  
+  pidCuts = pid;
+  //pidCuts->Print();
+  return pidCuts;  
+}

@@ -454,6 +454,7 @@ public:
   static void InitESDpid(Int_t type=0);
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
+  static void InitEstimatorObjArrayAvg(const TObjArray* array);
   static void InitTRDpidEffHistograms(const Char_t* filename);
   static void SetLegEffMap( TObject *map) { fgLegEffMap=map; }
   static void SetPairEffMap(TObject *map) { fgPairEffMap=map; }
@@ -2253,7 +2254,7 @@ inline void AliDielectronVarManager::InitAODpidUtil(Int_t type)
 }
 
 
-inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename)
+inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename) //Not Grid compatible
 {
   //
   // initialize the profile histograms neccessary for the correction of the multiplicity estimators in pp collisions
@@ -2274,6 +2275,23 @@ inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename)
 }
 
 
+inline void AliDielectronVarManager::InitEstimatorObjArrayAvg(const TObjArray* array) //Grid compatible
+{
+  //
+  // initialize the profile histograms neccessary for the correction of the multiplicity estimators in pp collisions
+  //
+  
+  const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
+				     "ITSTPC05", "ITSTPC10", "ITSTPC16", 
+				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
+  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+  
+  for(Int_t ip=0; ip<4; ++ip) {
+    for(Int_t ie=0; ie<9; ++ie) {
+      fgMultEstimatorAvg[ip][ie] = (TProfile*)(array->FindObject(Form("%s_%s",estimatorNames[ie],periodNames[ip]))->Clone(Form("%s_%s_clone",estimatorNames[ie],periodNames[ip])));
+    }
+  }
+}
 inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filename)
 {
   //
