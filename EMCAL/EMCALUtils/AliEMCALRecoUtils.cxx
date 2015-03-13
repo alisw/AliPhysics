@@ -312,6 +312,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   // Reject cell if criteria not passed and calibrate it
   
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  
   if(!geom)
   {
     AliError("No instance of the geometry is available");
@@ -456,6 +457,7 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   //Calculate the energy in the cross around the energy given cell
   
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+  
   if(!geom)
   {
     AliError("No instance of the geometry is available");
@@ -471,8 +473,8 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   Int_t absID1 = -1;
   Int_t absID2 = -1;
   
-  if ( iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
-  if ( iphi > 0 )                                absID2 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+  if ( iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = geom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  if ( iphi > 0 )                                absID2 = geom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
   
   // In case of cell in eta = 0 border, depending on SM shift the cross cell index
   
@@ -553,6 +555,7 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(const AliVCluster *cluster,
   
   // Get highest energy tower
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  
   if(!geom)
   {
     AliError("No instance of the geometry is available");
@@ -1331,7 +1334,8 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom,
 {
   //For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
   
-  if (!clu) {
+  if (!clu)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }
@@ -1375,7 +1379,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (!fCellsRecalibrated) {
+    if (!fCellsRecalibrated) 
+    {
       geom->GetCellIndex(absId,iSM,iTower,iIphi,iIeta); 
       geom->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);      
       if (IsRecalibrationOn()) {
@@ -1847,8 +1852,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     for (Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++) 
     {
       AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-      if (geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) 
-	continue;
+      if (!IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) 
+        continue;
       clusterArray->AddAt(cluster,icl);
     }
   }
@@ -1872,7 +1877,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       if ( TMath::Abs(esdTrack->Eta()) > 0.9 ) continue;
       
       // Save some time and memory in case of no DCal present
-      if( geom->GetNumberOfSuperModules() < 13 )
+      if( geom->GetNumberOfSuperModules() < 13 ) // Run1 10 (12, 2 not active but present)
       {
         Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
         if ( phi <= 10 || phi >= 250 ) continue;
@@ -1907,7 +1912,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       if ( TMath::Abs(aodTrack->Eta()) > 0.9 ) continue;
       
       // Save some time and memory in case of no DCal present
-      if( geom->GetNumberOfSuperModules() < 13 )
+      if( geom->GetNumberOfSuperModules() < 13 ) // Run1 10 (12, 2 not active but present)
       {
         Double_t phi = aodTrack->Phi()*TMath::RadToDeg();
         if ( phi <= 10 || phi >= 250 ) continue;
@@ -1949,7 +1954,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     }
     
     // Save some time and memory in case of no DCal present
-    if ( geom->GetNumberOfSuperModules() < 13 && 
+    if ( geom->GetNumberOfSuperModules() < 13 &&  // Run1 10 (12, 2 not active but present)
         ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())) 
     {
       if ( trackParam && (aodevent || fITSTrackSA) )   delete trackParam;
@@ -2000,10 +2005,10 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   // Returns -1 if no match is found
   Int_t index = -1;
   
-  if ( TMath::Abs(track->Eta()) > 0.9 || !geom ) return index;
+  if ( TMath::Abs(track->Eta()) > 0.9 ) return index;
   
   // Save some time and memory in case of no DCal present
-  if( geom->GetNumberOfSuperModules() < 13 )
+  if( geom->GetNumberOfSuperModules() < 13 ) // Run1 10 (12, 2 not active but present)
   {
     Double_t phiV = track->Phi()*TMath::RadToDeg();
     if ( phiV <= 10 || phiV >= 250 ) return index;
@@ -2031,7 +2036,7 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   }
   
   // Save some time and memory in case of no DCal present
-  if ( geom->GetNumberOfSuperModules() < 13 && 
+  if ( geom->GetNumberOfSuperModules() < 13 &&  // Run1 10 (12, 2 not active but present)
       ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())) 
   {
     if (fITSTrackSA) delete trackParam;
@@ -2127,13 +2132,11 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
   
   // Save some time and memory in case of no DCal present
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
-  if(!geom)
-  {
-    printf("AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface() - No instance of the geometry is available"); // Cannot use AliError/Info/Fatal on static functions?
-    return kFALSE;
-  }
   
-  if ( geom->GetNumberOfSuperModules() < 13 )
+  Int_t       nSupMod = AliEMCALGeoParams::fgkEMCALModules;
+  if ( geom ) nSupMod = geom->GetNumberOfSuperModules();
+  
+  if ( nSupMod < 13 ) // Run1 10 (12, 2 not active but present)
   {
     Double_t phi = track->Phi()*TMath::RadToDeg();
     if ( phi <= 10 || phi >= 250 ) return kFALSE;
@@ -2197,7 +2200,7 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
   if ( TMath::Abs(etaout) > 0.75 ) return kFALSE;
   
   // Save some time and memory in case of no DCal present
-  if ( geom->GetNumberOfSuperModules() < 13 )
+  if ( nSupMod < 13 ) // Run1 10 (12, 2 not active but present)
   {
     if ( (phiout < 70*TMath::DegToRad()) || (phiout > 190*TMath::DegToRad()) )  return kFALSE;
   }
