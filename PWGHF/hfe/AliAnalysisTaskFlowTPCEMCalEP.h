@@ -14,7 +14,7 @@
  **************************************************************************/
 
 #ifndef ALIANALYSISTASKFlowTPCEMCalEP_H
-#define ALIANALYSISTASKFlowTPCEMCalEP_H
+#define ALIANALYSISTASKFlowTPCEMCalEP_HAliPIDResponse.h
 
 class THnSparse;
 class TH2F;
@@ -61,44 +61,45 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
 
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent);
+  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay);
   void InitParameters();
 
   
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
-  Double_t GetPi0weight(Double_t mcPi0pT,Float_t cent) const;
-  Double_t GetEtaweight(Double_t mcEtapT,Float_t cent) const;
-  Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Float_t cent) const;
-  Bool_t   IsElectronFromPi0(TParticle *particle, AliStack * stack, Double_t &weight, Float_t cent);
-  Bool_t   IsElectronFromEta(TParticle *particle, AliStack * stack, Double_t &weight, Float_t cent);
+  Double_t GetPi0weight(Double_t mcPi0pT,Int_t iCent) const;
+  Double_t GetEtaweight(Double_t mcEtapT,Int_t iCent) const;
+  Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Int_t iCent) const;
+  Bool_t   IsElectronFromPi0(TParticle *particle, AliStack * stack, Double_t &weight, Int_t iCent);
+  Bool_t   IsElectronFromEta(TParticle *particle, AliStack * stack, Double_t &weight, Int_t iCent);
+  Bool_t   IsElectronFromGamma(TParticle *particle, AliStack * stack, Double_t &weight, Int_t iCent);
   Bool_t   IsPi0EtaFromHFdecay(TParticle *particle, AliStack* stack);
   Bool_t   IsPi0EtaFromLMdecay(TParticle *particle, AliStack* stack);
-  Bool_t   IsPi0EtaPrimary(TParticle *particle, AliStack* stack);
+  Bool_t   IsPrimary(TParticle *particle, AliStack* stack);
 
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
 
-  AliESDEvent        	*fESD;	            	//! ESD object
+  AliESDEvent        	*fESD;	            	 //! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
   AliVEvent             *fVevent;               //! VEvent
   AliPIDResponse        *fpidResponse;          //! PID response
 
   AliMCEvent            *fMC;                   //! MC object
     
-  TList              	*fOutputList;		//! output list
+  TList              	*fOutputList;		 //! output list
   
-  AliESDtrackCuts     	*fTrackCuts;      	//! ESD track cuts
-  AliHFEcuts 		*fCuts;                 //! Cut Collection
+  AliESDtrackCuts     	*fTrackCuts;      	 //! ESD track cuts
+  AliHFEcuts 		*fCuts;                  //! Cut Collection
   AliSelectNonHFE       *fNonHFE;               //! Select non heavy flavour electrons
 
   Bool_t 		fIdentifiedAsOutInz;    //! Out Of Range in z
   Bool_t 		fPassTheEventCut;       //! Pass The Event Cut
   Bool_t 		fRejectKinkMother;      //! Reject Kink Mother
   Bool_t 		fIsMC;                  //! flag for MC analysis   
-  Bool_t                fIsAOD;                 //! flag for AOD analysis
+  Bool_t                fIsAOD;                //! flag for AOD analysis
   Bool_t		fSetMassConstraint;	//! set mass constraint
 
   Double_t 		fVz;                    //! z position of the primary vertex
@@ -107,9 +108,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
   Double_t 		fOpeningAngleCut;	//! openingAngle cut for non-HFE selection
   Double_t	        fInvmassCut;		//! invariant mass cut  for non-HFE selection
-  Double_t	        fChi2Cut;               //! Chi2 cut  for non-HFE selection
-  Double_t	        fDCAcut;                //! DCA cut  for non-HFE selection
-  TString               fnonHFEalgorithm;       //! algorithm to select non-HFE pairs (KF or DCA) 
+  Double_t	        fChi2Cut;              //! Chi2 cut  for non-HFE selection
+  Double_t	        fDCAcut;               //! DCA cut  for non-HFE selection
+  TString               fnonHFEalgorithm;      //! algorithm to select non-HFE pairs (KF or DCA) 
 
   TH1F		        *fNoEvents;		//! no of events
   TH1F		        *fTrkpt;		//! track pt
@@ -117,10 +118,11 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH2F		        *fTrkEovPAft;		//! track E/p after HFE pid
   TH2F		        *fdEdxBef;		//! track dEdx vs p before HFE pid
   TH2F		        *fdEdxAft;		//! track dEdx vs p after HFE pid
-  TH1F		        *fPhotoElecPt;		//! photonic elec pt 
-  TH1F		        *fSemiInclElecPt;	//! Semi inclusive ele pt
+  TH1F		        *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
+  TH1F		        *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
+  TH1F		        *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
   
-  TH2F                  *fInvmassLS[3];		//! Inv mass of LS (e,e)
+  TH2F                  *fInvmassLS[3];	//! Inv mass of LS (e,e)
   TH2F                  *fInvmassULS[3];	//! Inv mass of ULS (e,e)
   TH2F                  *fOpeningAngleLS[3];	//! opening angle for LS pairs
   TH2F                  *fOpeningAngleULS[3];	//! opening angle for ULS pairs
@@ -134,6 +136,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH1F		        *fTPCsubEPres;		//! TPC event plane resolution
   THnSparse	        *fEPres;		//! event plane resolution
   THnSparse	        *fCorr;			//! correlations
+  THnSparse	        *fElecMC;		//! electron background from MC 
   TH2F		        *feTPCV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (only TPC PID)
   TH2F		        *feV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (TPC + EMCAL PID)
   TH2F		        *fChargPartV2[3];	//! CosDeltaPhi vs pt of charged particle for trigger correction
