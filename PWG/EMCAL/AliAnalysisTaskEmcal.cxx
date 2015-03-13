@@ -364,6 +364,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   }
   
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  fHistEventRejection->SetBit(TH1::kCanRebin);
   fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
   fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
   fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
