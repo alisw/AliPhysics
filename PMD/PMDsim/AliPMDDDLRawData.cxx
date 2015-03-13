@@ -472,10 +472,12 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
       parity = ComputeParity(baseword);      // generate the parity bit
       AliBitPacking::PackWord(parity,baseword,31,31);
 
-      Int_t jj = contentsBus[busno];
-      busPatch[busno][jj] = baseword;
-
-      contentsBus[busno]++;
+      if (busno>-1) {
+	Int_t jj = contentsBus[busno];
+	busPatch[busno][jj] = baseword;
+	
+	contentsBus[busno]++;
+      }
     }
 
 }
