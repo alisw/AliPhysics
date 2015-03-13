@@ -216,10 +216,14 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
   Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
   Double_t refMult = 0.0;   // reference multiplicity
   
-  if(runNo>114930 && runNo<117223) period = 0;
-  if(runNo>119158 && runNo<120830) period = 1;
-  if(runNo>122373 && runNo<126438) period = 2;
-  if(runNo>127711 && runNo<130841) period = 3;
+//  if(runNo>114930 && runNo<117223) period = 0; Org Fred Kramer Analysis
+  if(runNo>114736 && runNo<117224) period = 0; // LHC10b PASS4 2015
+//  if(runNo>119158 && runNo<120830) period = 1; Org Fred Kramer Analysis
+  if(runNo>118358 && runNo<121041) period = 1; // LHC10c PASS4 2015
+//  if(runNo>122373 && runNo<126438) period = 2; Org Fred Kramer Analysis
+  if(runNo>121693 && runNo<126439) period = 2; // LHC10d PASS4 2015
+//  if(runNo>127711 && runNo<130841) period = 3; Org Fred Kramer Analysis
+  if(runNo>127102 && runNo<130851) period = 3; // LHC10e PASS4 2015
   if(period<0 || period>3) return uncorrectedNacc;
 
   if(type<0 || type>8) return uncorrectedNacc;
@@ -237,7 +241,6 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
 
   TProfile* estimatorAvg = AliDielectronVarManager::GetEstimatorHistogram(period, type);
   if(!estimatorAvg) return uncorrectedNacc;
-
   Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
 
   Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);

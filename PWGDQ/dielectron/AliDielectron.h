@@ -131,7 +131,8 @@ public:
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
   static const char* PairClassName(Int_t i)  { return (i>=0&&i<11)?fgkPairClassNames[i]:""; }
 
-  void SetEstimatorFilename(const Char_t* filename) {fEstimatorFilename = filename;}
+  void SetEstimatorFilename(const Char_t* filename) {fEstimatorFilename = filename;} // Does not work on the Grid
+  void SetEstimatorObjArray(TObjArray* array) {fEstimatorObjArray = array;} // Should work on the Grid
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
@@ -222,6 +223,7 @@ private:
   static const char* fgkPairClassNames[11];   //Names for pair arrays
 
   TString fEstimatorFilename;                // name for the pp multiplicity estimators filename
+  TObjArray* fEstimatorObjArray;		     // Grid compatible version of the above
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
@@ -241,7 +243,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,12);
+  ClassDef(AliDielectron,13);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()
