@@ -312,7 +312,12 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   // Reject cell if criteria not passed and calibrate it
   
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
-  
+  if(!geom)
+  {
+    AliError("No instance of the geometry is available");
+    return kFALSE;
+  }
+
   if (absID < 0 || absID >= 24*48*geom->GetNumberOfSuperModules()) 
     return kFALSE;
   
@@ -451,7 +456,12 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   //Calculate the energy in the cross around the energy given cell
   
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
-  
+  if(!geom)
+  {
+    AliError("No instance of the geometry is available");
+    return -1;
+  }
+
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
   geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
@@ -543,6 +553,12 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(const AliVCluster *cluster,
   
   // Get highest energy tower
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  if(!geom)
+  {
+    AliError("No instance of the geometry is available");
+    return kFALSE;
+  }
+
   Int_t iSupMod = -1, absId = -1, ieta = -1, iphi = -1;
   Bool_t shared = kFALSE;
   GetMaxEnergyCell(geom, cells, cluster, absId, iSupMod, ieta, iphi, shared);
@@ -2111,6 +2127,12 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
   
   // Save some time and memory in case of no DCal present
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  if(!geom)
+  {
+    printf("AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface() - No instance of the geometry is available"); // Cannot use AliError/Info/Fatal on static functions?
+    return kFALSE;
+  }
+  
   if ( geom->GetNumberOfSuperModules() < 13 )
   {
     Double_t phi = track->Phi()*TMath::RadToDeg();
