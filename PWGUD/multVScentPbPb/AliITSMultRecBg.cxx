@@ -1,7 +1,7 @@
 #include "AliITSMultRecBg.h"
 #include "AliGeomManager.h"
 #include "AliMultiplicity.h"
-#include "../ITS/AliITSgeomTGeo.h"
+#include "AliITSgeomTGeo.h"
 #include <TH2F.h>
 #include <TTree.h>
 #include <TRandom.h>
@@ -50,6 +50,7 @@ AliITSMultRecBg::AliITSMultRecBg()
 }
 
 //_________________________________________________________________
+/*
 AliITSMultRecBg::AliITSMultRecBg(const AliITSMultRecBg &src) 
   : AliITSMultReconstructor(src),
   fRecType(kData),
@@ -78,7 +79,7 @@ AliITSMultRecBg::AliITSMultRecBg(const AliITSMultRecBg &src)
   }
   //
 }
-
+*/
 //_________________________________________________________________
 AliITSMultRecBg::~AliITSMultRecBg()
 {
@@ -488,9 +489,9 @@ Int_t AliITSMultRecBg::SearchInjTracklet(const Float_t *vtx)
   // reconstruct tracklets which may involve injected cluster
   // fake arrays to be used for injected cluster in MultReco
   Float_t clustersLayInj[kClNPar];
-  Int_t   detectorIndexClustersLayInj[1];
-  Bool_t  overlapFlagClustersLayInj[1];
-  UInt_t  usedClusLayInj[1];
+  //  Int_t   detectorIndexClustersLayInj[1];
+  //  Bool_t  overlapFlagClustersLayInj[1];
+  //  UInt_t  usedClusLayInj[1];
   //
   Bool_t kUseOrig = kFALSE;//kTRUE;
   if (kUseOrig) {
@@ -501,9 +502,9 @@ Int_t AliITSMultRecBg::SearchInjTracklet(const Float_t *vtx)
   }
   else {
     // >> fill cluster data: equivavlent of data fetched in AliITSMultReconstructor::LoadClusterArrays
-    detectorIndexClustersLayInj[0] = fInjCluster.GetDetectorIndex();
-    overlapFlagClustersLayInj[0]   = kFALSE;
-    usedClusLayInj[0]              = 0;
+    //    detectorIndexClustersLayInj[0] = fInjCluster.GetDetectorIndex();
+    //    overlapFlagClustersLayInj[0]   = kFALSE;
+    //    usedClusLayInj[0]              = 0;
     fInjCluster.GetGlobalXYZ( clustersLayInj );
     for (int i=3;i--;) clustersLayInj[kClMC0+i] = fInjCluster.GetLabel(i);
     ClusterPos2Angles(clustersLayInj, vtx); // convert to angles
