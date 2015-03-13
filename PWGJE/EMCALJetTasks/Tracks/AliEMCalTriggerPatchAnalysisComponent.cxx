@@ -135,11 +135,11 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
     if(triggerpatch->IsOfflineSimple()){
       if((!fSwapOfflineThresholds && triggerpatch->IsJetHighSimple()) || (fSwapOfflineThresholds && triggerpatch->IsJetLowSimple())){
         fHistos->FillTHnSparse("PatchInfoJetHighOffline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudesJetHighOffline", amplitudeinfo);
+        fHistos->FillTHnSparse("PatchAmplitudeJetHighOffline", amplitudeinfo);
       }
       if((!fSwapOfflineThresholds && triggerpatch->IsJetLowSimple()) || (fSwapOfflineThresholds && triggerpatch->IsJetHighSimple())){
     	  fHistos->FillTHnSparse("PatchInfoJetLowOffline", triggerpatchinfo);
-    	  fHistos->FillTHnSparse("PatchAmplitudesJetLowOffline", amplitudeinfo);
+    	  fHistos->FillTHnSparse("PatchAmplitudeJetLowOffline", amplitudeinfo);
       }
       if((!fSwapOfflineThresholds && triggerpatch->IsGammaHighSimple()) || (fSwapOfflineThresholds && triggerpatch->IsGammaLowSimple())){
         fHistos->FillTHnSparse("PatchInfoGammaHighOffline", triggerpatchinfo);
