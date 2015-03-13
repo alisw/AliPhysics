@@ -1,0 +1,120 @@
+AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,
+Int_t syst=0, Int_t bit=0, TString postname="")
+{
+  //==============================================================================                                                      
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskLambdac", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+
+  Bool_t stdcuts=kFALSE;
+  TFile* filecuts;
+  if( finname.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(finname.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	AliFatal("Input file not found : check your cut object");
+      }
+  }
+  AliRDHFCutsLctopKpi *analysiscuts = new AliRDHFCutsLctopKpi();
+  // syst = 0 : pp, syst = 1: PbPb, syst = 2 : pPb
+  if(stdcuts) {
+   if(syst==0) analysiscuts->SetStandardCutsPP2010();
+   if(syst==1) analysiscuts->SetStandardCutsPbPb2011();
+   if(syst==2) analysiscuts->SetStandardCutsPPb2013();
+  }
+  else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
+  analysiscuts->SetName("LctopKpiAnalysisCuts");
+  analysiscuts->SetMinPtCandidate(-1.);
+  analysiscuts->SetMaxPtCandidate(10000.);
+
+  // Aanalysis task                                                                                                                     
+  AliAnalysisTaskSELambdacTMVA *lambdacTask = new AliAnalysisTaskSELambdacTMVA("LambdacAnalysis",storeNtuple,analysiscuts);
+  if(storeNtuple<0 || storeNtuple>2) {AliFatal("Invalid storeNtuple argument - check value");}
+  lambdacTask->SetReadMC(readMC);
+  if(MCPid) lambdacTask->SetMCPid();
+  if(resPid) lambdacTask->SetResonantPid();
+  if(realPid) lambdacTask->SetRealPid();
+  lambdacTask->SetAnalysis(kTRUE);
+
+  //bit:0 nocut, 1:LcCut, 2:LcPID, 3: Both
+  lambdacTask->SetUseFilterBitCut(bit==1||bit==3?1:0);
+  lambdacTask->SetUseFilterBitPID(bit>1?1:0);
+
+  lambdacTask->SetDebugLevel(0);
+  mgr->AddTask(lambdacTask);
+
+  //
+  // Create containers for input/output
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG3_D2H_InvMassLambdac";
+
+  TString finDirname="pp";
+  TString inname = "cinputLc";
+  TString outname = "coutputLc";
+  TString cutsname = "coutputLcCuts";
+  TString normname = "coutputLcNorm";
+  TString normnament = "coutputLcNormNt";
+  TString ntuplename = "coutputLc2";
+  TString nev2 = "coutputNev";
+  TString outname2 = "coutputLambdacMC";
+  TString aPrioriname = "coutputAPriori";
+  TString multiplicityname = "coutputMultiplicity";
+  inname += finDirname.Data();
+  outname += finDirname.Data();
+  cutsname += finDirname.Data();
+  normname += finDirname.Data();
+  normnament += finDirname.Data();
+  ntuplename += finDirname.Data();
+  nev2 += finDirname.Data();
+  outname2 += finDirname.Data();
+  aPrioriname += finDirname.Data();
+  multiplicityname += finDirname.Data();
+
+  inname +=  postname.Data();
+  outname +=  postname.Data();
+  cutsname +=  postname.Data();
+  normname += postname.Data();
+  normnament += postname.Data();
+  ntuplename +=  postname.Data();
+  nev2 +=  postname.Data();
+  outname2 +=  postname.Data();
+
+
+  //input container
+  AliAnalysisDataContainer *cinputLambdac = mgr->CreateContainer(inname,TChain::Class(),
+								 AliAnalysisManager::kInputContainer);
+  mgr->ConnectInput(lambdacTask,0,mgr->GetCommonInputContainer());
+
+  
+  AliAnalysisDataContainer *coutputLambdacCuts = mgr->CreateContainer(cutsname,TList::Class(),
+								      AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(lambdacTask,2,coutputLambdacCuts);
+
+  AliAnalysisDataContainer *coutputLambdac = mgr->CreateContainer(outname,TList::Class(),
+								  AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(lambdacTask,1,coutputLambdac);
+
+  AliAnalysisDataContainer *coutputLambdacNev = mgr->CreateContainer(nev2,TH1F::Class(),
+								     AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(lambdacTask,3,coutputLambdacNev);
+
+ 
+  AliAnalysisDataContainer *coutputLambdacNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+
+  mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
+
+  if (storeNtuple) {
+    AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
+								     AliAnalysisManager::kOutputContainer,"InvMassLambdac_nt1.root");
+    coutputLambdac2->SetSpecialOutput();
+    mgr->ConnectOutput(lambdacTask,5,coutputLambdac2);    
+    coutputLambdacNorm = mgr->CreateContainer(normnament,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,"InvMassLambdac_nt1.root");
+    mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
+  }
+
+  return lambdacTask;
+}

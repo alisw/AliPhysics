@@ -51,6 +51,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   bool                   IsMcPi0(Int_t mclabel);
   void                   LoopOnCells();
   bool                   IsExotic(AliVCluster *c);
+  void                   CheckTriggerPatch();
+  //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -197,6 +199,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
   TH2F        *fDetaDphiFromTM;   //!dphi vs deta of track->GetEMCALcluster() clusters
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
+  //trigger histos
+  TH1F        *fETrigg;           //!energy returned by trigger patch info
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

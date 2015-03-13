@@ -75,7 +75,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b()
   fPoolMgr(0x0),
   fMixedEvent(kTRUE),
   fMEMaxPoolEvent(1000),
-  fMEMinTracks(20000),
+  fMEMinTracks(10000),
   fMEMinEventToMix(6),
   fHistTrigDPhi(0x0),
   fControlConvResT1(0x0),
@@ -414,6 +414,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
     AliAODTrack* fAodTracks = (AliAODTrack*)aod->GetTrack(iTracks);
     if (!fAodTracks)continue;
+
     if(fSetFilterBit) if (!fAodTracks->TestFilterBit(fbit)) continue;
     if(fAodTracks->Eta() < -0.8 || fAodTracks->Eta() > 0.8)continue;
     if (fAodTracks->Pt() < 0.5 || fAodTracks->Pt() > 20.)continue;
@@ -549,9 +550,9 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                        Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
                        
                        Double_t ptTrack1 = fAodTracksAS->Pt();
-                       Double_t ptLim_Sparse1 = 0.0;
-                       ptLim_Sparse1 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
-                       if(ptTrack1 > ptLim_Sparse1)ptTrack1 = ptLim_Sparse1-0.01; //filling all pT
+                      // Double_t ptLim_Sparse1 = 0.0;
+                       //ptLim_Sparse1 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg1CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
+                       //if(ptTrack1 > ptLim_Sparse1)ptTrack1 = ptLim_Sparse1-0.01; //filling all pT
                            
                            Double_t CentzVtxDEtaDPhiTrg1[5] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1, ptTrack1};
                            Double_t effvalueT1 = 1.0;// GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult, f3DEffCor);
@@ -593,6 +594,136 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
 }
     
+    ////ftwoplus1 loop ends
+    
+    
+    //f1plus loop begins
+    
+    
+    
+    
+    if(!ftwoplus1)
+    
+    {
+        
+        //if(!fMixedEvent)if(refmaxpT1 < fTrigger1pTLowThr || refmaxpT1 > fTrigger1pTHighThr)return;
+        fHistNEvents->Fill(8);
+        
+        
+        
+        for(Int_t entryT1=0; entryT1<fTrackArray->GetEntries(); entryT1++){
+            
+            
+            
+            TObject* obj = fTrackArray->At(entryT1);
+            
+            AliAODTrack* fAodTracksT1 = (AliAODTrack*)obj;
+            
+            
+            
+            if(fAodTracksT1->Pt() >= fTrigger2pTLowThr && fAodTracksT1->Pt() <= fTrigger1pTHighThr){
+                
+              
+                        Double_t fCentZvtxpT1[3] = {fCentrOrMult, zVertex, fAodTracksT1->Pt()};
+                
+                        if(!fMixedEvent)((THnSparseD*)fOutputCorr->FindObject(Form("ThnCentZvtxpTT1plus1_%s_%s",typeData.Data(), SEorME.Data())))->Fill(fCentZvtxpT1);
+                
+               
+                
+                        Int_t NofEventsinPool = 1, NumberOfTracksStore=0; // SE
+                
+            
+                        if(fMixedEvent){ //ME
+                            Bool_t PoolQuality = ProcessMixedEventPool();
+                            if(!PoolQuality){
+                                AliInfo("Mixed event analysis: pool is not ready");
+                                return;
+                            }
+                            
+                            cout<<"fmixed event"<<" "<< "pool quality checked"<<PoolQuality<<endl;
+                            NofEventsinPool = fPool->GetCurrentNEvents();
+                            
+                            cout<<"NofEventsinPool"<<NofEventsinPool<<endl;
+                        }
+                
+               
+                        TObjArray* SEMEEvtTracks = (TObjArray*)fTrackArray->Clone("SE");
+                
+               
+                        
+                        for (Int_t jMix =0; jMix < NofEventsinPool; jMix++)
+                            
+                        {
+                            if(fMixedEvent)SEMEEvtTracks = fPool->GetEvent(jMix); // replacing from pool
+                            if(!SEMEEvtTracks)return;
+                            
+                            
+                            
+                            NumberOfTracksStore = SEMEEvtTracks->GetEntriesFast();
+                            
+                            
+                            //cout << "Number of Tracks in this event are = " << NumberOfTracksStore << endl;
+                            for(int k=0; k < NumberOfTracksStore; k++){
+                                
+                                TObject* objSEorME = SEMEEvtTracks->At(k);
+                                AliAODTrack* fAodTracksAS = (AliAODTrack*)objSEorME;
+                                if(!fAodTracksAS) continue;
+                                // if (fAodTracksAS->Pt() > fAodTracksT1->Pt())continue;
+                                
+                                if(fMixedEvent){
+                                    if(fAodTracksAS->Eta() < -0.8 || fAodTracksAS->Eta() > 0.8)continue;
+                                    if(fAodTracksAS->Pt() < 0.5 || fAodTracksAS->Pt() > 20)continue;
+                                    if(fSetFilterBit) if (!fAodTracksAS->TestFilterBit(fbit)) continue;
+                                }
+                                
+                                if(fAodTracksAS->Pt() < fAodTracksT1->Pt()){
+                                    
+                                    Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
+                                    if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;
+                                    
+                                    Bool_t CutForTwoTrackEffiTrg1 = TwoTrackEfficiencyCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS, bSign);
+                                    if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
+                                    fHistT1CorrTrack->Fill(4);
+                                    
+                                    Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
+                                    Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
+                                    
+                                    Double_t ptTrig1 = fAodTracksT1->Pt();
+                                    Double_t ptTrack1 = fAodTracksAS->Pt();
+                                   
+                                    
+                                    Double_t CentzVtxDEtaDPhiTrg1[6] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1,ptTrig1,ptTrack1};
+                                    Double_t effvalueT1 = 1.0;// GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult, f3DEffCor);
+                                    ((THnSparseD*)fOutputCorr->FindObject(Form("ThnCentZvtxDEtaDPhipTTpTA1plus1_%s_%s",typeData.Data(), SEorME.Data())))->Fill(CentzVtxDEtaDPhiTrg1, 1/effvalueT1);
+                                    
+                                }
+                                
+                                
+                                
+                            }
+                        }
+                    }
+                
+                
+                
+            }
+        }
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    //f1plus loop ends
+    
+    
+    
+    
+    
+
     TObjArray* tracksClone = NULL;//
     tracksClone = (TObjArray*)fTrackArray->Clone();
     if(fMixedEvent && tracksClone->GetEntriesFast()>0)fPool->UpdatePool(tracksClone);
@@ -803,7 +934,25 @@ if(ftwoplus1){
   }
     }
     
-    else if(!ftwoplus1){
+    
+  else if(!ftwoplus1){
+        
+    if(fRecoOrMontecarlo){
+        if(!fReadMC){ //data
+            
+            nameThnCentZvtxDEtaDPhipTTpTA1plus1  += "_Data";
+            nameThnCentZvtxpTT1plus1  += "_Data";
+           }
+            else {// MC reco
+                nameThnCentZvtxDEtaDPhipTTpTA1plus1  += "_MCrc";
+                nameThnCentZvtxpTT1plus1  += "_MCrc";
+            }
+        }
+        else{ // MC Generations
+            nameThnCentZvtxDEtaDPhipTTpTA1plus1  += "_MCKn";
+            nameThnCentZvtxpTT1plus1  += "_MCKn";
+        }
+        
         if(!fMixedEvent){
         nameThnCentZvtxDEtaDPhipTTpTA1plus1  += "_SE";
         nameThnCentZvtxpTT1plus1  += "_SE";
@@ -838,9 +987,10 @@ if(ftwoplus1){
     
     
   //Catgry2: Correlations Plots for SE and ME (T1, T2)
-  Int_t    fBins12[5] = {12,     10,   16,               36,    11};
+ //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
+  Int_t    fBins12[5] = {12,     10,   16,               36,   11};
   Double_t  fMin12[5] = {0.0,   -10., -1.6, -0.5*TMath::Pi(),  0.5};
-  Double_t  fMax12[5] = {100.0,  10.,  1.6,  1.5*TMath::Pi(), 6.00};
+  Double_t  fMax12[5] = {100.0,  10.,  1.6,  1.5*TMath::Pi(), fTrigger1pTHighThr};
   THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-Trk",5, fBins12, fMin12, fMax12);
   THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-Trk",5, fBins12, fMin12, fMax12);
         
@@ -858,10 +1008,11 @@ if(ftwoplus1){
   Double_t fMaxTrg1plus1[3]   = {100.0,  10.0,   fTrigger1pTHighThr};
   THnCentZvtxpTT1plus1 = new THnSparseD(nameThnCentZvtxpTT1plus1.Data(),"Cent-Zvtx-pTtr1",3, fBinsTrg1plus1, fMinTrg1plus1, fMaxTrg1plus1);
   
-    
+   
+  //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
   Int_t   fBins121plus1[6] = {12,     10,   16,                36,  pTbinTrigger1plus1,  11};
   Double_t  fMin121plus1[6] = {0.0,   -10., -1.6, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
-  Double_t  fMax121plus1[6] = {100.0,  10.,  1.6,  1.5*TMath::Pi(), fTrigger1pTHighThr, 6.00};
+  Double_t  fMax121plus1[6] = {100.0,  10.,  1.6,  1.5*TMath::Pi(), fTrigger1pTHighThr, fTrigger1pTHighThr};
   THnCentZvtxDEtaDPhipTTpTA1plus1   = new THnSparseD(nameThnCentZvtxDEtaDPhipTTpTA1plus1.Data(),"Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
   
     }
@@ -896,7 +1047,7 @@ if(ftwoplus1){
     
 
   //Munual pT tracks Values
-  if(fuseVarPtBins){
+if(fuseVarPtBins){
     const Int_t nvarBinspT = 11;
     Double_t varBinspT[nvarBinspT+1] = {0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0};
       if(ftwoplus1){

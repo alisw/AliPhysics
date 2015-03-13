@@ -82,7 +82,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
  
   int runmults[4] = {0, 1, 1, 1};
   //int multbins[5] = {0, 100, 300, 500, 900};
-  int multbins[5] = {100, 300, 500, 600, 900};
+  int multbins[5] = {100, 300, 500, 550, 900};
 
   //.................................................
 

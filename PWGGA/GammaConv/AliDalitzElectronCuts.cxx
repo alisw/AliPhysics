@@ -1475,6 +1475,10 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
 		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 		break;
 		
+	case 4: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0525+0.175/pt^1.1");
+		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		break;
+		
 	default:
 		cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
 		return kFALSE;

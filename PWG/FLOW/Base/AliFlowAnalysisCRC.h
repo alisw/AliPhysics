@@ -63,6 +63,7 @@ public:
  virtual void InitializeArraysForMixedHarmonics();
  virtual void InitializeArraysForControlHistograms();
  virtual void InitializeArraysForBootstrap();
+ virtual void InitializeCostantsForCRC();
  virtual void InitializeArraysForCRC();
  virtual void InitializeArraysForCRCPt();
  virtual void InitializeArraysForCRCBck();
@@ -149,11 +150,9 @@ public:
  virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
  virtual void EvaluateOtherDiffCorrelatorsWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
  // 2i.) Charge-Rapidity Correlations
- virtual void CalculateCRCCorrPOIRP();
  virtual void CalculateCRCCorrPOIPOI();
  virtual void CalculateCRCPtCorr();
  virtual void CalculateCRCBckCorr();
- virtual void FillCRC(Int_t cw, Int_t ew, Double_t dPhi,  Double_t dPt);
  virtual void FillCRCBck(Int_t cw, Double_t dPhi,  Double_t dEta);
  // 2h.) Various
  virtual void CalculateVarious();
@@ -198,7 +197,6 @@ public:
  // 3f.) Bootstrap:
  virtual void CalculateCumulantsForBootstrap();
  // 3g.) CRC:
- virtual void FinalizeCRCCorrPOIRP();
  virtual void FinalizeCRCCorrPOIPOI();
  virtual void FinalizeCRCPtCorr();
  virtual void FinalizeCRCBckCorr();
@@ -227,7 +225,7 @@ public:
  TProfile* MakeEtaProjection(TProfile2D *profilePtEta) const;
  virtual void WriteHistograms(TString outputFileName);
  virtual void WriteHistograms(TDirectoryFile *outputFileName);
- virtual Double_t Cov2p2p(Int_t c, Int_t y, Int_t c2, Int_t y2, Int_t c3, Int_t y3, Int_t c4, Int_t y4);
+ virtual Int_t GetCRCBin(Int_t c, Int_t y, Int_t c2, Int_t y2);
  
  // **** SETTERS and GETTERS ****
  
@@ -592,7 +590,7 @@ public:
  void SetBootstrapCumulantsVsM(TH2D* const bcpVsM, Int_t const qvti) {this->fBootstrapCumulantsVsM[qvti] = bcpVsM;};
  TH2D* GetBootstrapCumulantsVsM(Int_t qvti) const {return this->fBootstrapCumulantsVsM[qvti];};
  
- // 12.) Charge-Eta Asymmetry
+ // 12.) CRC
  void SetCRCList(TList* const CRCL) {this->fCRCList = CRCL;};
  void SetCRCFlags(TProfile* const CRCF) {this->fCRCFlags = CRCF;};
  TProfile* GetCRCFlags() const {return this->fCRCFlags;};
@@ -607,52 +605,64 @@ public:
  void SetEtaGap(Double_t const etagap) {this->fEtaGap = etagap;};
  Double_t GetEtaGap() const {return this->fEtaGap;};
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
- // 12.a) EbE correlations
- void SetCRCCorrPro(TProfile* const TP, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCorrPro[c][y][c2][y2] = TP;};
- TProfile* GetCRCCorrPro(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCorrPro[c][y][c2][y2];};
- void SetCRCSumWeigHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCSumWeigHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCSumWeigHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCSumWeigHist[c][y][c2][y2];};
- void SetCRCCorrRefPro(TProfile* const TP, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCorrRefPro[c][y][c2][y2] = TP;};
- TProfile* GetCRCCorrRefPro(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCorrRefPro[c][y][c2][y2];};
- void SetCRCSumWeigRefHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCSumWeigRefHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCSumWeigRefHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCSumWeigRefHist[c][y][c2][y2];};
- // 12.b) NUA
- void SetCRCNUATermsPro(TProfile* const TP, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCNUATermsPro[c][y][c2][y2] = TP;};
- TProfile* GetCRCNUATermsPro(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCNUATermsPro[c][y][c2][y2];};
- void SetCRCNUATermsHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCNUATermsHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCNUATermsHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCNUATermsHist[c][y][c2][y2];};
- // 12.c) Covariances
- void SetCRCCorrProd2p2pPro(TProfile* const TP, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCorrProd2p2pPro[c][y][c2][y2] = TP;};
- TProfile* GetCRCCorrProd2p2pPro(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCorrProd2p2pPro[c][y][c2][y2];};
- void SetCRCWeigProd2p2pHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCWeigProd2p2pHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCWeigProd2p2pHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCWeigProd2p2pHist[c][y][c2][y2];};
- void SetCRCCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCorrProdTempHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCCorrProdTempHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCorrProdTempHist[c][y][c2][y2];};
- // 12.d) Final histograms
- void SetCRCCFunctionsHist(TH1D* const CF, Int_t const c, Int_t const y) {this->fCRCCFunctionsHist[c][y] = CF;};
- TH1D* GetCRCCFunctionsHist(Int_t const c, Int_t const y) const {return this->fCRCCFunctionsHist[c][y];};
- void SetCRCCorrHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCorrHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCCorrHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCorrHist[c][y][c2][y2];};
- void SetCRCCorrRefHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCorrRefHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCCorrRefHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCorrRefHist[c][y][c2][y2];};
- void SetCRCCumulantsHist(TH1D* const CRCCumulantsHist, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCCumulantsHist[c][y][c2][y2] = CRCCumulantsHist;};
- TH1D* GetCRCCumulantsHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCCumulantsHist[c][y][c2][y2];};
+ // 12.a) EbE Corr:
+ void SetCRCCorrPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCorrPro[c][eg][h] = TP;};
+ TProfile* GetCRCCorrPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCorrPro[c][eg][h];};
+ void SetCRCSumWeigHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCSumWeigHist[c][eg][h] = TH;};
+ TH1D* GetCRCSumWeigHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCSumWeigHist[c][eg][h];};
+ void SetCRCCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCorrProdTempHist[c][eg][h] = TH;};
+ TH1D* GetCRCCorrProdTempHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCorrProdTempHist[c][eg][h];};
+ // 12.b) Final histo:
+ void SetCRCCorrHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCorrHist[c][eg][h] = TH;};
+ TH1D* GetCRCCorrHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCorrHist[c][eg][h];};
+ void SetCRCCumHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCumHist[c][eg][h] = TH;};
+ TH1D* GetCRCCumHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCumHist[c][eg][h];};
+ void SetCRCCFunHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCFunHist[c][eg][h] = TH;};
+ TH1D* GetCRCCFunHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCFunHist[c][eg][h];};
+ // 12.c) Covariances:
+ void SetCRCCorrProd2p2pPro(TProfile* const TP, Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) {this->fCRCCorrProd2p2pPro[c][c2][eg][h] = TP;};
+ TProfile* GetCRCCorrProd2p2pPro(Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) const {return this->fCRCCorrProd2p2pPro[c][c2][eg][h];};
+ void SetCRCWeigProd2p2pHist(TH1D* const TH, Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) {this->fCRCWeigProd2p2pHist[c][c2][eg][h] = TH;};
+ TH1D* GetCRCWeigProd2p2pHist(Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) const {return this->fCRCWeigProd2p2pHist[c][c2][eg][h];};
+ void SetCRCCovHist(TH1D* const TH, Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) {this->fCRCCovHist[c][c2][eg][h] = TH;};
+ TH1D* GetCRCCovHist(Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) const {return this->fCRCCovHist[c][c2][eg][h];};
+ // 12.d) NUA corrections:
+ void SetCRCNUATermsPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCNUATermsPro[c][eg][h] = TP;};
+ TProfile* GetCRCNUATermsPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[c][eg][h];};
+ void SetCRCNUATermsHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCNUATermsHist[c][eg][h] = TH;};
+ TH1D* GetCRCNUATermsHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsHist[c][eg][h];};
  
  // 13.) CRC Pt differential
- // 13.a) EbE correlations
- void SetCRCPtCorrPro(TProfile* const TP, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCPtCorrPro[c][y][c2][y2] = TP;};
- TProfile* GetCRCPtCorrPro(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCPtCorrPro[c][y][c2][y2];};
- void SetCRCPtSumWeigHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCPtSumWeigHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCPtSumWeigHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCPtSumWeigHist[c][y][c2][y2];};
- void SetCRCPtCorrSqPro(TProfile* const TP, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCPtCorrSqPro[c][y][c2][y2] = TP;};
- TProfile* GetCRCPtCorrSqPro(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCPtCorrSqPro[c][y][c2][y2];};
- void SetCRCPtSumWeigSqHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCPtSumWeigSqHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCPtSumWeigSqHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCPtSumWeigSqHist[c][y][c2][y2];};
- // 13.b) Final histograms
- void SetCRCPtCFunHist(TH1D* const CF, Int_t const c, Int_t const y) {this->fCRCPtCFunHist[c][y] = CF;};
- TH1D* GetCRCPtCFunHist(Int_t const c, Int_t const y) const {return this->fCRCPtCFunHist[c][y];};
- void SetCRCPtCorrHist(TH1D* const TH, Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) {this->fCRCPtCorrHist[c][y][c2][y2] = TH;};
- TH1D* GetCRCPtCorrHist(Int_t const c, Int_t const y, Int_t const c2, Int_t const y2) const {return this->fCRCPtCorrHist[c][y][c2][y2];};
+ // 13.a) EbE Corr:
+ void SetCRCPtCorrPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtCorrPro[c][eg][h] = TP;};
+ TProfile* GetCRCPtCorrPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtCorrPro[c][eg][h];};
+ void SetCRCPtCorrSqPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtCorrSqPro[c][eg][h] = TP;};
+ TProfile* GetCRCPtCorrSqPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtCorrSqPro[c][eg][h];};
+ void SetCRCPtSumWeigHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtSumWeigHist[c][eg][h] = TH;};
+ TH1D* GetCRCPtSumWeigHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtSumWeigHist[c][eg][h];};
+ void SetCRCPtSumWeigSqHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtSumWeigSqHist[c][eg][h] = TH;};
+ TH1D* GetCRCPtSumWeigSqHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtSumWeigSqHist[c][eg][h];};
+ void SetCRCPtCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtCorrProdTempHist[c][eg][h] = TH;};
+ TH1D* GetCRCPtCorrProdTempHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtCorrProdTempHist[c][eg][h];};
+ // 13.b) Final histo:
+ void SetCRCPtCorrHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtCorrHist[c][eg][h] = TH;};
+ TH1D* GetCRCPtCorrHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtCorrHist[c][eg][h];};
+ void SetCRCPtCumHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtCumHist[c][eg][h] = TH;};
+ TH1D* GetCRCPtCumHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtCumHist[c][eg][h];};
+ void SetCRCPtCFunHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCPtCFunHist[c][eg][h] = TH;};
+ TH1D* GetCRCPtCFunHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCPtCFunHist[c][eg][h];};
+ // 13.c) Covariances:
+ void SetCRCPtCorrProd2p2pPro(TProfile* const TP, Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) {this->fCRCPtCorrProd2p2pPro[c][c2][eg][h] = TP;};
+ TProfile* GetCRCPtCorrProd2p2pPro(Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) const {return this->fCRCPtCorrProd2p2pPro[c][c2][eg][h];};
+ void SetCRCPtWeigProd2p2pHist(TH1D* const TH, Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) {this->fCRCPtWeigProd2p2pHist[c][c2][eg][h] = TH;};
+ TH1D* GetCRCPtWeigProd2p2pHist(Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) const {return this->fCRCPtWeigProd2p2pHist[c][c2][eg][h];};
+ void SetCRCPtCovHist(TH1D* const TH, Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) {this->fCRCPtCovHist[c][c2][eg][h] = TH;};
+ TH1D* GetCRCPtCovHist(Int_t const c, Int_t const c2, Int_t const eg, Int_t const h) const {return this->fCRCPtCovHist[c][c2][eg][h];};
+ // 13.d) NUA corrections:
+ void SetCRCPtNUATermsPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) {this->fCRCPtNUATermsPro[c][eg][h][NUA] = TP;};
+ TProfile* GetCRCPtNUATermsPro(Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) const {return this->fCRCPtNUATermsPro[c][eg][h][NUA];};
+ void SetCRCPtNUATermsHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) {this->fCRCPtNUATermsHist[c][eg][h][NUA] = TH;};
+ TH1D* GetCRCPtNUATermsHist(Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) const {return this->fCRCPtNUATermsHist[c][eg][h][NUA];};
  
  //14.) CRC Bck
  void SetCRCBckCorrHist(TH1D* const CF, Int_t const c, Int_t const c2, Int_t const y) {this->fCRCBckCorrHist[c][c2][y] = CF;};
@@ -1011,58 +1021,69 @@ private:
  TH2D *fBootstrapCumulants; //! x-axis => QC{2}, QC{4}, QC{6}, QC{8}; y-axis => subsample #
  TH2D *fBootstrapCumulantsVsM[4]; //! index => QC{2}, QC{4}, QC{6}, QC{8}; x-axis => multiplicity; y-axis => subsample #
  
- // 12.) Charge-Rapidity Correlations
+ // 12.) CRC
+ 
  TList *fCRCList; //! list to hold CRC histograms
  TProfile *fCRCFlags; //! profile to hold all flags for CRC
- Bool_t fCalculateCRC; // calculate charge-eta asymmetry
+ Bool_t fCalculateCRC; // calculate CRC
  Bool_t fCalculateCRCPt;
  Bool_t fUseEtaGap;
  Bool_t fNUAforCRC;
  Double_t fEtaGap;
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
+ const static Int_t fCRCnCR = 16;
+ const static Int_t fCRCnEtaGap = 7;
+ const static Int_t fCRCnEtaBins = 32;
+ const static Int_t fCRCnHarm = 3;
  
- TH1D *fCRCQRe[2][6][2]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCQIm[2][6][2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCMult[2][6][2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
- TProfile *fCRCCorrPro[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCSumWeigHist[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TProfile *fCRCCorrRefPro[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCSumWeigRefHist[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCCorrHist[2][2][2][2]; //! <<2'>>,<<4'>>
- TH1D *fCRCCorrRefHist[2][2][2][2]; //! <<2'>>,<<4'>>
- TH1D *fCRCCumulantsHist[2][2][2][2]; //! QC{2}, QC{4}
- TH1D *fCRCCFunctionsHist[2][2]; //! correlation functions, [c2][c3][y][y2], c=pos,c4=neg
+ TH1D *fCRCQRe[2][fCRCnHarm]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCQIm[2][fCRCnHarm]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCMult[2][fCRCnHarm]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TProfile *fCRCCorrPro[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! correlation profile, [CRCBin][eg]
+ TH1D *fCRCSumWeigHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! correlation weights histo, [CRCBin][eg]
+ TH1D *fCRCCorrProdTempHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! temporary correlation products for covariances, [CRCBin][eg]
+ TH1D *fCRCCorrHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! <<2'>>, [CRCBin][eg]
+ TH1D *fCRCCumHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! QC{2}, [CRCBin][eg]
+ TH1D *fCRCCFunHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! correlation function histo, [CRCBin][eg]
  
- TProfile *fCRCNUATermsPro[2][2][2][2]; //! NUA terms profile
- TH1D *fCRCNUATermsHist[2][2][2][2]; //! NUA terms histo
+ TProfile *fCRCCorrProd2p2pPro[fCRCnCR][fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! correlation products
+ TH1D *fCRCWeigProd2p2pHist[fCRCnCR][fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! weights of correlation products
+ TH1D *fCRCCovHist[fCRCnCR][fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! covariances final histo
  
- TProfile *fCRCCorrProd2p2pPro[2][2][2][2]; //! correlation products
- TH1D *fCRCWeigProd2p2pHist[2][2][2][2]; //! weights products
- TH1D *fCRCCorrProdTempHist[2][2][2][2]; //! weights products
+ TProfile *fCRCNUATermsPro[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! NUA terms profile
+ TH1D *fCRCNUATermsHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! NUA terms final histo
  
  // CRC Pt differential
  
- Double_t fCRCnPtBins;
+ const static Int_t fCRCPtnBins = 3;
  Double_t fCRCPtMin;
  Double_t fCRCPtMax;
- Double_t fCRCPtBinWidth;
- Double_t fCRCPtMinBins[4];
+ Double_t fCRCPtMinBins[fCRCPtnBins+1];
  
- TH1D *fCRCPtQRe[2][6][2]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCPtQIm[2][6][2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCPtMult[2][6][2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
- TProfile *fCRCPtCorrPro[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TProfile *fCRCPtCorrSqPro[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCPtSumWeigHist[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCPtSumWeigSqHist[2][2][2][2]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCPtCorrHist[2][2][2][2]; //! <<2'>>,<<4'>>
- TH1D *fCRCPtCFunHist[2][2]; //! correlation functions, [c2][c3][y][y2], c=pos,c4=neg
+ TH2D *fCRCPtQRe[2][fCRCnHarm]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH2D *fCRCPtQIm[2][fCRCnHarm]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH2D *fCRCPtMult[2][fCRCnHarm]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TProfile *fCRCPtCorrPro[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
+ TProfile *fCRCPtCorrSqPro[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
+ TH1D *fCRCPtSumWeigHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
+ TH1D *fCRCPtSumWeigSqHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
+ TH1D *fCRCPtCorrProdTempHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! temporary correlation products for covariances, [CRCBin][eg]
+ TH1D *fCRCPtCorrHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! <<2'>>,<<4'>>
+ TH1D *fCRCPtCumHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! <<2'>>,<<4'>>
+ TH1D *fCRCPtCFunHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! correlation functions, [c2][c3][y][y2], c=pos,c4=neg
+ 
+ TProfile *fCRCPtCorrProd2p2pPro[fCRCnCR][fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! correlation products
+ TH1D *fCRCPtWeigProd2p2pHist[fCRCnCR][fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! weights of correlation products
+ TH1D *fCRCPtCovHist[fCRCnCR][fCRCnCR][fCRCnEtaGap][fCRCnHarm]; //! covariances final histo
+ 
+ TProfile *fCRCPtNUATermsPro[fCRCnCR][fCRCnEtaGap][fCRCnHarm][4]; //! NUA terms profile
+ TH1D *fCRCPtNUATermsHist[fCRCnCR][fCRCnEtaGap][fCRCnHarm][4]; //! NUA terms final histo
  
  // CRC Background
  
- Int_t fCRCnEtaBins;
- Double_t fCRCEtaBinWidth;
+ const static Int_t fCRCBcknEtaBins = 8;
+ Double_t fCRCBckEtaBinWidth;
  
  TH1D *fCRCBckQRe[2]; //! real part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCRCBckQIm[2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]

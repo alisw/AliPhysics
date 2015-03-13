@@ -1,8 +1,6 @@
 #ifndef AliJetContainer_H
 #define AliJetContainer_H
 
-// $Id$
-
 class TClonesArray;
 class TString;
 

@@ -45,7 +45,6 @@
 #include "AliESDEvent.h"  
 #include "AliESDInputHandler.h"
 #include "AliESDInputHandlerRP.h"
-#include "../EVENTMIX/AliMixEventInputHandler.h"
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -62,7 +61,7 @@
 #include "AliGenEventHeader.h"
 #include "AliCentrality.h"
 #include "../ITS/AliITSRecPoint.h"
-#include "../ITS/AliITSgeomTGeo.h"
+#include "AliITSgeomTGeo.h"
 #include "../ITS/AliITSMultReconstructor.h" 
 
 #include "AliLog.h"
@@ -73,16 +72,14 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliESDtrackCuts.h"
 
 ClassImp(AliTrackletTaskMulti)
 
-// centrality percentile (inverted: 100% - most central)
-//const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,100};//{0,5,10,20,30};
-const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,5,10,20,30,40,50,60,70,80,90};
-  //{0,10,20,30,40,50,60,70,80,90,95,101};
-
-const char* AliTrackletTaskMulti::fgCentSelName[] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
+  
+//                                                     0     1     2     3     4     5    6      7      8        9      10          11        12       13    14
+const char* AliTrackletTaskMulti::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S"};
 
 const char*  AliTrackletTaskMulti::fgkPDGNames[] = {
 "#pi^{+}",
@@ -186,8 +183,6 @@ const int AliTrackletTaskMulti::fgkPDGCodes[] = {
 // unknown
 };
 
-const double kEtaBinWidth=0.25;
-
 //________________________________________________________________________
 /*//Default constructor
 AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
@@ -196,63 +191,70 @@ AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
 //________________________________________________________________________
 AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name) 
   : AliAnalysisTaskSE(name), 
-//
-  fOutput(0), 
-//
-  fDoNormalReco(kFALSE),
-  fDoInjection(kFALSE),
-  fDoRotation(kFALSE),
-  fDoMixing(kFALSE),
-  //
-  fUseMC(kFALSE),
-  fCheckReconstructables(kFALSE),
-//
-  fHistosTrData(0),
-  fHistosTrInj(0),
-  fHistosTrRot(0),
-  fHistosTrMix(0),
-//
-  fHistosTrPrim(0),
-  fHistosTrSec(0),
-  fHistosTrComb(0),
-  fHistosTrCombU(0),
-//
-  fHistosTrRcblPrim(0),
-  fHistosTrRcblSec(0),
-  fHistosCustom(0),
-//
-  fEtaMin(-3.0),
-  fEtaMax(3.0),
-  fZVertexMin(-20),
-  fZVertexMax( 20),
-//
-  fScaleDTBySin2T(kFALSE),
-  fCutOnDThetaX(kFALSE),
-  fNStdDev(1.),
-  fDPhiWindow(0.08),
-  fDThetaWindow(0.025),
-  fDPhiShift(0.0045),
-  fPhiOverlapCut(0.005),
-  fZetaOverlap(0.05),
-  fPhiRot(0.),
-  fInjScale(1.),
-  fRemoveOverlaps(kFALSE),
-//
-  fDPhiSCut(0.06),
-  fNStdCut(1.),
-  fMCV0Scale(0.7520),
-//
-  fMultReco(0),
-  fRPTree(0),
-  fRPTreeMix(0),
-  fStack(0),
-  fMCEvent(0),
-  //
-  fNPart(0),
-  fNBColl(0),
-  fCurrCentBin(-1),
-  fNCentBins(0),
-  fUseCentralityVar(kCentV0M)
+    //
+    fOutput(0), 
+    //
+    fDoNormalReco(kFALSE),
+    fDoInjection(kFALSE),
+    fDoRotation(kFALSE),
+    //
+    fUseMC(kFALSE),
+    fCheckReconstructables(kFALSE),
+    //
+    fHistosTrData(0),
+    fHistosTrInj(0),
+    fHistosTrRot(0),
+    //
+    fHistosTrPrim(0),
+    fHistosTrSec(0),
+    fHistosTrComb(0),
+    fHistosTrCombU(0),
+    //
+    fHistosTrRcblPrim(0),
+    fHistosTrRcblSec(0),
+    fHistosCustom(0),
+    //
+    fEtaMin(-3.0),
+    fEtaMax(3.0),
+    fEtaBin(0.1),
+    fZVertexMin(-20),
+    fZVertexMax( 20),
+    fZVBin(1.),
+    //
+    fScaleDTBySin2T(kFALSE),
+    fCutOnDThetaX(kFALSE),
+    fNStdDev(1.),
+    fDPhiWindow(0.08),
+    fDThetaWindow(0.025),
+    fDPhiShift(0.0045),
+    fPhiOverlapCut(0.005),
+    fZetaOverlap(0.05),
+    fPhiRot(0.),
+    fInjScale(1.),
+    fRemoveOverlaps(kFALSE),
+    //
+    fDPhiSCut(0.06),
+    fNStdCut(1.),
+    fMCV0Scale(1.),
+    //
+    fTrigSel(AliVEvent::kINT7),
+    //
+    fMultReco(0),
+    fRPTree(0),
+    fStack(0),
+    fMCEvent(0),
+    //
+    fNPrimMCeta2(0),
+    fNTreta2(0),
+    fNPart(0),
+    fNBColl(0),
+    fCurrCentBin(-1),
+    fNCentBins(0),
+    fCentPerc(),
+    fUseCentralityVar("V0M"),
+    fIsSelected(kFALSE),
+    fVtxOK(kFALSE),
+    fUseSpecialOutput(kFALSE)
 {
   // Constructor
 
@@ -267,6 +269,10 @@ AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
   SetZetaOverlapCut();
   SetPhiRot();
   SetRemoveOverlaps();
+  //
+  fCentPerc.Set(2);
+  fCentPerc[0] = 0.0;
+  fCentPerc[1] = 100.0;
   //
 }
 
@@ -291,7 +297,6 @@ AliTrackletTaskMulti::~AliTrackletTaskMulti()
   delete fHistosTrCombU;
   delete fHistosTrInj;
   delete fHistosTrRot;
-  delete fHistosTrMix;
   delete fHistosTrRcblPrim;
   delete fHistosTrRcblSec;
   delete fHistosCustom;
@@ -302,47 +307,38 @@ AliTrackletTaskMulti::~AliTrackletTaskMulti()
 void AliTrackletTaskMulti::UserCreateOutputObjects() 
 {
   //
-  OpenFile(1);
+  if (fUseSpecialOutput) OpenFile(1);
   fOutput = new TList();
   fOutput->SetOwner(); 
   //
   //
-  Bool_t needGeom = GetDoNormalReco() || GetDoInjection() || GetDoRotation() || GetDoMixing();
+  Bool_t needGeom = GetDoNormalReco() || GetDoInjection() || GetDoRotation();
   if (needGeom) {
     AliCDBManager *man = AliCDBManager::Instance();
     if (fUseMC) {
-      Bool_t newGeom = kTRUE;
       man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
-      if (newGeom) {
-	// new geom
-	AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130844,8);
-	AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
-	if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130844,6,-1)) AliFatal("Failed to misalign geometry");
-      }
-      else {
-	// old geom
-	AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130845,7);
-	AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
-	if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130845,5,-1)) AliFatal("Failed to misalign geometry");
-      }
+      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",188359);
+      AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
+      if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",188359,-1,-1)) AliFatal("Failed to misalign geometry");
     }
     else {
-      man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB"); //man->SetRun(137366);
-      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",137366);
-      AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
-      if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",137366,-1,-1)) AliFatal("Failed to misalign geometry");
+      man->SetDefaultStorage("alien://Folder=/alice/data/2012/OCDB"); //man->SetRun(137366);
+      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",188359);
+      AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject()); //!!!
+      man->UnsetDefaultStorage();
+      man->SetDefaultStorage("alien://Folder=/alice/cern.ch/user/s/shahoian/ITS_fixSPD72");
+
+      if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",188359,-1,-1)) AliFatal("Failed to misalign geometry");
     }
   }
     //
   // Create histograms
-  fNCentBins = sizeof(fgkCentPerc)/sizeof(Float_t)-1;
   //---------------------------------------------Standard histos per tracklet type--->>
   UInt_t hPattern = 0xffffffff;
   fHistosTrData                      = BookHistosSet("TrData",hPattern);
-  hPattern &= ~(BIT(kHEtaZvSPD1));  // fill single clusters for "data" only
+  //  hPattern &= ~(BIT(kHEtaZvSPD1));  // fill single clusters for "data" only
   if (GetDoInjection()) fHistosTrInj = BookHistosSet("TrInj",hPattern);
   if (GetDoRotation())  fHistosTrRot = BookHistosSet("TrRot",hPattern);
-  if (GetDoMixing())    fHistosTrMix = BookHistosSet("TrMix",hPattern);
   if (fUseMC) {
     fHistosTrPrim  = BookHistosSet("TrPrim",hPattern);
     fHistosTrSec   = BookHistosSet("TrSec",hPattern);
@@ -367,11 +363,7 @@ void AliTrackletTaskMulti::UserCreateOutputObjects()
     ((TH1*)hst)->Sumw2();
   }
   //
-  if (fUseCentralityVar<0||fUseCentralityVar>kNCentTypes) {
-    printf("Wrong centrality type %d\n",fUseCentralityVar);
-    exit(1);
-  }
-  AliInfo(Form("Centrality type selected: %s\n",fgCentSelName[fUseCentralityVar]));
+  AliInfo(Form("Centrality type selected: %s\n",fUseCentralityVar.Data()));
   PostData(1, fOutput);
   //
 }
@@ -387,10 +379,11 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     statOK = kTRUE;
   }
   //
-  Bool_t needRecPoints = GetDoNormalReco() || GetDoInjection() || GetDoRotation() || GetDoMixing();
+  printf("Do: %d %d %d\n",GetDoNormalReco(),GetDoInjection(),GetDoRotation());
+  Bool_t needRecPoints = GetDoNormalReco() || GetDoInjection() || GetDoRotation();
   //
   AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
-  fRPTree = fRPTreeMix = 0;
+  fRPTree = 0;
   AliESDInputHandler *handler = (AliESDInputHandler*)anMan->GetInputEventHandler();
   AliESDInputHandlerRP *handRP = 0;
   if (needRecPoints) {
@@ -400,39 +393,147 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   AliESDEvent *esd  = handler->GetEvent();
   if (!esd) { printf("No AliESDEvent\n"); return; }
   //
+  //
+  if (needRecPoints) {
+    fRPTree = handRP->GetTreeR("ITS");
+    if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
+  }
+  //
   // do we need to initialize the field?
   AliMagF* field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!field && !esd->InitMagneticField()) {printf("Failed to initialize the B field\n");return;}
   //
+  AliMCEventHandler* eventHandler = 0;
+  fMCEvent = 0;
+  fStack = 0;
+  //
+  // ========================== MC EVENT INFO ====================================>>>
+  if (fUseMC) {
+    eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+    if (!eventHandler) { printf("ERROR: Could not retrieve MC event handler\n"); return; }
+    fMCEvent = eventHandler->MCEvent();
+    if (!fMCEvent) { printf("ERROR: Could not retrieve MC event\n"); return; }
+    fStack = fMCEvent->Stack();
+    if (!fStack) { printf("Stack not available\n"); return; }
+  }
+  //
+  // =============================================================================>>>
   //
   TH1* hstat = (TH1*)fHistosCustom->UncheckedAt(kHStat);
   hstat->Fill(kEvTot0); // RS
+  //
+  // MC Generator info
+  AliGenEventHeader* mcGenH = 0;
+  AliGenHijingEventHeader* hHijing=0; 
+  AliGenDPMjetEventHeader* hDpmJet=0;
+  fNPart  = 0;
+  fNBColl = 0;
+  if (fUseMC) {
+    mcGenH = fMCEvent->GenEventHeader();
+    //
+    if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+      TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+      TIter next(headers);
+      AliGenEventHeader* mcGenH1 = 0;
+      while ( (mcGenH1=(AliGenEventHeader*)next()) ) {
+	if (mcGenH1->InheritsFrom(AliGenHijingEventHeader::Class())) {
+	  hHijing = (AliGenHijingEventHeader*)mcGenH1;
+	  break;
+	}
+	if (mcGenH1->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+	  hDpmJet = (AliGenDPMjetEventHeader*)mcGenH1;
+	  break;
+	}
+      } 
+    }
+    //
+    if ( hHijing || mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
+      if (!hHijing) hHijing = (AliGenHijingEventHeader*)mcGenH;
+      fNPart  = (hHijing->ProjectileParticipants()+hHijing->TargetParticipants())/2.;
+      fNBColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+    }
+    else if ( hDpmJet || mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+      if (!hDpmJet) hDpmJet = (AliGenDPMjetEventHeader*)mcGenH;
+      fNPart  = (hDpmJet->ProjectileParticipants()+hDpmJet->TargetParticipants())/2.;
+      fNBColl = hDpmJet->NN()+hDpmJet->NNw()+hDpmJet->NwN()+hDpmJet->NwNw();
+      // Special for SD rejection
+      int npProj = hDpmJet->ProjectileParticipants(); // A
+      //      int npTarg = hDpmJet->TargetParticipants(); // p
+      int nsd1,nsd2,ndd; 
+      hDpmJet->GetNDiffractive(nsd1,nsd2,ndd);
+      if (ndd==0 && (npProj==nsd1 || npProj==nsd2)) {
+	hstat->Fill(kNEvSDMC);
+	return; // reject SD
+      }
+    }
+    else {} // unknown generator
+    //
+    TArrayF vtmc(3);
+    mcGenH->PrimaryVertex(vtmc);
+    for (int i=3;i--;) fVtxMC[i] = vtmc[i];
+  }
+  // =============================================================================>>>
+  //
+  Int_t trg = handler->IsEventSelected();
+  fIsSelected = trg & fTrigSel; //AliVEvent::kINT7;
+  /*
+  if (!fUseMC) {
+    TString trigStr(esd->GetFiredTriggerClasses());
+    if (!trigStr.Contains("CINT5-B-")) return;
+  }
+  AliVVZERO* esdVZERO = esd->GetVZEROData();
+  fIsSelected = !((esdVZERO->GetV0ADecision()!=1) || (esdVZERO->GetV0CDecision()!=1));
+  */
+  /*
+  fIsSelected = kTRUE;
+  AliVVZERO* esdVZERO = esd->GetVZEROData();
+  if ((esdVZERO->GetV0ADecision()!=1) || (esdVZERO->GetV0CDecision()==2)) fIsSelected = kFALSE;
+  if (!fUseMC) {
+    TString trigStr(esd->GetFiredTriggerClasses());
+    if (!trigStr.Contains("CINT5-B-")) fIsSelected = kFALSE;
+  }
+  */
+  //
   const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
   const AliMultiplicity* multESD = esd->GetMultiplicity();
   //
-  if (vtxESD->GetNContributors()<1) return;
-  TString vtxTyp = vtxESD->GetTitle();
-  if (vtxTyp.Contains("vertexer: Z")) {
-    if (vtxESD->GetDispersion()>0.04) return;
-    if (vtxESD->GetZRes()>0.25) return;
-  }
-  //
   AliCentrality *centrality = esd->GetCentrality();  
+  Double_t centPercentile = centrality->GetCentralityPercentileUnchecked(fUseCentralityVar.Data());
+  if (fUseMC && centPercentile==0&&multESD->GetNumberOfITSClusters(0)<1 &&
+      multESD->GetNumberOfITSClusters(1)<1)  {
+    centPercentile = 100;
+    printf("Overriding centrality 0 to 100:\n"
+	   "Cent%s:%.2f Sel:%d Ntrk:%d SPD1:%d SPD2:%d V0A:%f V0C:%f CentV0A:%.2f CentV0M:%.2f CentCl1:%.2f\n",
+	   fUseCentralityVar.Data(),centPercentile,fIsSelected,multESD->GetNumberOfTracklets(),
+	   multESD->GetNumberOfITSClusters(0),multESD->GetNumberOfITSClusters(1),
+	   esd->GetVZEROData()->GetMTotV0A(),esd->GetVZEROData()->GetMTotV0C(),
+	   centrality->GetCentralityPercentileUnchecked("V0A"),
+	   centrality->GetCentralityPercentileUnchecked("V0M"),
+	   centrality->GetCentralityPercentileUnchecked("CL1"));
+  }
+
+  ((TH1*)fHistosCustom->UncheckedAt(kHCentDistNoSel))->Fill(centPercentile);
   //
-  hstat->Fill(kEvTot); // RS
+  /*
+  if (centPercentile<1 || fIsSelected) {
+    printf("Cent%s:%.2f Sel:%d Ntrk:%d SPD1:%d SPD2:%d V0A:%f V0C:%f CentV0A:%.2f CentV0M:%.2f CentCl1:%.2f\n",
+	   fUseCentralityVar.Data(),centPercentile,fIsSelected,multESD->GetNumberOfTracklets(),
+	   multESD->GetNumberOfITSClusters(0),multESD->GetNumberOfITSClusters(1),
+	   esd->GetVZEROData()->GetMTotV0A(),esd->GetVZEROData()->GetMTotV0C(),
+	   centrality->GetCentralityPercentileUnchecked("V0A"),
+	   centrality->GetCentralityPercentileUnchecked("V0M"),
+	   centrality->GetCentralityPercentileUnchecked("CL1"));
+  }
+  */
+  const double kSafeMargin = 1e-3;
+  if (centPercentile<-kSafeMargin) return;
+
+  if (centPercentile<kSafeMargin)     centPercentile = kSafeMargin;
+  if (centPercentile>100-kSafeMargin) centPercentile = 100.-kSafeMargin;
   //
-  Double_t esdvtx[3];
-  vtxESD->GetXYZ(esdvtx);
-  for (int i=3;i--;) fESDVtx[i] = esdvtx[i];
+  fCurrCentBin = GetCentralityBin(centPercentile);
   //
-  float vtxf[3] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ()};
-  //
-  // registed Ntracklets and ZVertex of the event
-  ((TH1*)fHistosCustom->UncheckedAt(kHZVtxNoSel))->Fill(esdvtx[2]);
-  //
-  if(vtxf[2] < fZVertexMin || vtxf[2] > fZVertexMax) return;
-  //
-  //  centrality->Dump();
+  // ==================== STORE SOME GLOBAL INFO FOR ALL EVENTS ==============>>>
   Float_t multV0=0;
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   if (esdV0) {
@@ -449,109 +550,81 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   float zdcEnergy=0,zemEnergy=0;
   if (esdZDC) {
     zdcEnergy = (esdZDC->GetZDCN1Energy() + esdZDC->GetZDCP1Energy() + esdZDC->GetZDCN2Energy()+ esdZDC->GetZDCP2Energy());
-    zemEnergy = (esdZDC->GetZDCEMEnergy(0)+esdZDC->GetZDCEMEnergy(1))/8.; 
+    zemEnergy = (esdZDC->GetZDCEMEnergy(0)+ esdZDC->GetZDCEMEnergy(1))/8.; 
   }
+  // PutZDCSelection
   ((TH2*)fHistosCustom->UncheckedAt(kHZDCZEMNoSel))->Fill(zemEnergy,zdcEnergy);
   //
-  Float_t centPercentile = centrality->GetCentralityPercentileUnchecked(fgCentSelName[fUseCentralityVar]);
-
-  // temporary >>>>>>>>>>>>>>>>>>>>>>>>
-  /*
-  if (fUseCentralityVar==kCentZEMvsZDC) {
-    float zdcEn = zdcEnergy;
-    float zemEn = zemEnergy;
-    Float_t slope;
-    Float_t zdcPercentile;
-    if (zemEn > 295.) {
-      slope = (zdcEn + 15000.)/(zemEn - 295.);
-      slope += 2.23660e+02;
-      zdcPercentile = (TMath::ATan(slope) - 1.56664)/8.99571e-05;
-      if (zdcPercentile<0) zdcPercentile = 0;
-    }
-    else zdcPercentile = 100;
-    centPercentile = zdcPercentile;
-  }
-  else if (fUseMC && fUseCentralityVar==kCentV0M) {
-    static TH1* fHtempV0M = 0;
-    if (!fHtempV0M) {
-      TString flcp = Form("%s/COMMON/CENTRALITY/data/pass%d/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), 2, 139172);
-      gSystem->ExpandPathName(flcp);
-      TFile* flc  = TFile::Open(flcp);
-      fHtempV0M  = (TH1*) (flc->Get("hmultV0_percentile"));
-      fHtempV0M->SetDirectory(0);
-      flc->Close();
-      delete flc;
-      printf("Getting V0 centrality histo from %s -> %p\n",flcp.Data(),fHtempV0M);
-    }
-    if (!fHtempV0M) AliFatal("No V0 centrality histo");
-    centPercentile = fHtempV0M->GetBinContent(fHtempV0M->FindBin((multV0)));
-  }
-  */
-  // temporary >>>>>>>>>>>>>>>>>>>>>>>>
-  
-  fCurrCentBin = GetCentralityBin(centPercentile);
+  // ==================== STORE SOME GLOBAL INFO FOR ALL EVENTS ==============<<<
   //
-  printf("CentPerc: %f : Bin %d ZDC: %f ZEM: %f\n",centPercentile, fCurrCentBin, zdcEnergy,zemEnergy);
+  //  printf("CentPerc: %f : Bin %d ZDC: %f ZEM: %f\n",centPercentile, fCurrCentBin, zdcEnergy,zemEnergy);
   if (fCurrCentBin<0) {
     //printf("Reject: %.1f : V0:%.1f V0Cor:%.1f V0CR:%.1f SPD2c:%.1f\n",mltTst, multV0,multV0Corr,multV0CorrResc,nSPD2Corr);
     return;
   }
+  hstat->Fill(kBinEntries+kEvCentBin + kEntriesPerBin*fCurrCentBin);
   //
+  fVtxOK = kFALSE;
+  for (int i=3;i--;) fESDVtx[i] = 0;
+  if (vtxESD->GetNContributors()>0) {
+    TString vtxTyp = vtxESD->GetTitle();
+    if ( !vtxTyp.Contains("vertexer: Z") || (vtxESD->GetDispersion()<0.04 && vtxESD->GetZRes()<0.25)) {
+      fVtxOK = kTRUE;
+      fESDVtx[0] = vtxESD->GetX();
+      fESDVtx[1] = vtxESD->GetY();
+      fESDVtx[2] = vtxESD->GetZ();
+    }    
+  }
+  //
+  if (fIsSelected) hstat->Fill(kBinEntries+kEvPassPS + kEntriesPerBin*fCurrCentBin);
+  //
+  if (fVtxOK && fIsSelected) {
+    ((TH1*)fHistosCustom->UncheckedAt(kHZVtxNoSel))->Fill(fESDVtx[2]);
+    hstat->Fill(kBinEntries+kEvPassVtx + kEntriesPerBin*fCurrCentBin);
+  }
+  //
+  fVtxOK &= (fESDVtx[2] >= fZVertexMin && fESDVtx[2] <= fZVertexMax);
+  //
+  //  if (!fVtxOK || !fIsSelected) return;
+
+  if (fUseMC) {
+    FillMCPrimaries();
+    ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMCNoPhSel))->Fill(fVtxMC[2],fCurrCentBin);
+    if (fIsSelected) ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMCNoVtSel))->Fill(fVtxMC[2],fCurrCentBin);
+    if ((fVtxMC[2] < fZVertexMin || fVtxMC[2] > fZVertexMax)) hstat->Fill(kBinEntries+kEvInMltBin + kEntriesPerBin*fCurrCentBin);
+    //
+  }
+  if (!fVtxOK || !fIsSelected) return;
+  //
+  // ===================== Store multiplicity estimators ===============================
+  double etaRange = TMath::Abs(fEtaMax-fEtaMin)/2.;
+  double mltE0 = AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSTPC, etaRange);
+  double mltE1 = AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSSA , etaRange);
+  double mltE2 = AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTracklets, etaRange);
+  ((TH1F*)fHistosCustom->UncheckedAt(kHMltEstTrITSTPC))->Fill(mltE0);
+  ((TH1F*)fHistosCustom->UncheckedAt(kHMltEstTrITSSA))->Fill(mltE1);
+  ((TH1F*)fHistosCustom->UncheckedAt(kHMltEstTr))->Fill(mltE2);
+  //
+  // ===================== Process event passing all selections ===============================
+  //
+  ((TH1*)fHistosCustom->UncheckedAt(kHCentDist))->Fill(centPercentile);
+  hstat->Fill(kEvTot); // RS
   ((TH1*)fHistosCustom->UncheckedAt(kHStatCentBin))->Fill(fCurrCentBin);
   ((TH1*)fHistosCustom->UncheckedAt(kHStatCent))->Fill(centPercentile);
   //
-  AliMCEventHandler* eventHandler = 0;
-  fMCEvent = 0;
-  fStack = 0;
-  //
-  if (fUseMC) {
-    eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    if (!eventHandler) { printf("ERROR: Could not retrieve MC event handler\n"); return; }
-    fMCEvent = eventHandler->MCEvent();
-    if (!fMCEvent) { printf("ERROR: Could not retrieve MC event\n"); return; }
-    fStack = fMCEvent->Stack();
-    if (!fStack) { printf("Stack not available\n"); return; }
-  }
-  //
-  if (needRecPoints) {
-    fRPTree = handRP->GetTreeR("ITS");
-    if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
-  }
-  //
-  // =============================================================================>>>
-  // MC Generator info
-  AliGenEventHeader* mcGenH = 0;
-  fNPart  = 0;
-  fNBColl = 0;
-  if (fUseMC) {
-    mcGenH = fMCEvent->GenEventHeader();
-    if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
-      AliGenHijingEventHeader* hHijing = (AliGenHijingEventHeader*)mcGenH;
-      fNPart  = (hHijing->ProjectileParticipants()+hHijing->TargetParticipants())/2.;
-      fNBColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
-    }
-    else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-      AliGenDPMjetEventHeader* hDpmJet = (AliGenDPMjetEventHeader*)mcGenH;
-      fNPart  = (hDpmJet->ProjectileParticipants()+hDpmJet->TargetParticipants())/2.;
-      fNBColl = hDpmJet->NN()+hDpmJet->NNw()+hDpmJet->NwN()+hDpmJet->NwNw();
-    }
-    else {} // unknown generator
-  }
-  //
   // register Ntracklets and ZVertex of the event
-  ((TH2*)fHistosCustom->UncheckedAt(kHZVtx))->Fill(esdvtx[2],fCurrCentBin);
+  if (fUseMC) ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMC))->Fill(fVtxMC[2],fCurrCentBin);
+  ((TH2*)fHistosCustom->UncheckedAt(kHZVtx))->Fill(fESDVtx[2],fCurrCentBin);
   ((TH2*)fHistosCustom->UncheckedAt(kHV0))->Fill(multV0,fCurrCentBin);
   ((TH2*)fHistosCustom->UncheckedAt(kHNClSPD2))->Fill(nSPD2,fCurrCentBin);
   ((TH3*)fHistosCustom->UncheckedAt(kHZDCZEM))->Fill(zemEnergy,zdcEnergy,fCurrCentBin);
-  //
-  if (fUseMC) FillMCPrimaries();
   //
   // normal reconstruction
   hstat->Fill(kBinEntries+kEvProcData + kEntriesPerBin*fCurrCentBin);
   //
   if (GetDoNormalReco() || GetDoInjection()) { // for the injection the normal reco should be done
     InitMultReco();
-    fMultReco->Run(fRPTree, vtxf);
+    fMultReco->Run(fRPTree, fESDVtx);
     printf("Multiplicity Reconstructed:\n");
     AliMultiplicity* mlt = fMultReco->GetMultiplicity();
     if (mlt) mlt->Print();
@@ -561,14 +634,14 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   }
   if (!GetDoNormalReco()) {
     FillHistos(kData,multESD); // fill data histos from ESD
-    FillClusterInfoFromMult(multESD, vtxf[2] );
+    FillClusterInfoFromMult(multESD, fESDVtx[2] );
   }
   //
   // Injection: it must come right after the normal reco since needs its results
   if (GetDoInjection()) {
     if (!fMultReco) InitMultReco(); // in principle, not needed, the reco is created above
     fMultReco->SetRecType(AliITSMultRecBg::kBgInj);
-    fMultReco->Run(fRPTree, vtxf);
+    fMultReco->Run(fRPTree, fESDVtx);
     printf("Multiplicity from Injection:\n");
     AliMultiplicity* mlt = fMultReco->GetMultiplicity();
     if (mlt) mlt->Print();
@@ -581,7 +654,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     InitMultReco();
     fMultReco->SetRecType(AliITSMultRecBg::kBgRot);
     fMultReco->SetPhiRotationAngle(fPhiRot);
-    fMultReco->Run(fRPTree, vtxf);
+    fMultReco->Run(fRPTree, fESDVtx);
     printf("Multiplicity from Rotation:\n");
     AliMultiplicity* mlt = fMultReco->GetMultiplicity();
     if (mlt) mlt->Print();
@@ -589,35 +662,6 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     FillHistos(kBgRot,mlt);
   }
   //
-  if (GetDoMixing()) {
-    /*
-    AliMixEventInputHandler* handToMix = (AliMixEventInputHandler*)handRP->MixingHandler();
-    if (!handToMix) { printf("No Mixing handler\n"); return; }
-    handToMix->GetEntry();
-    if(handToMix->MixedEventNumber()<1) {printf("Mixing: No enough events in pool\n"); return;}
-    AliESDInputHandlerRP* handRPMix = (AliESDInputHandlerRP*) handToMix->InputEventHandler(0);
-
-    if (!handRPMix) { printf("No Mixing RP handler\n"); return; }
-    fRPTreeMix = handRPMix->GetTreeR("ITS");
-    if (!fRPTreeMix) { AliError(" Invalid ITS cluster tree of the 2nd event!\n"); return; }
-    //
-    AliESDEvent *esdMix = handRPMix->GetEvent();
-    const AliESDVertex* vtxESDmix = esdMix->GetVertex();
-    ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMixDiff))->Fill(vtxESDmix->GetZ()-esdvtx[2],fCurrCentBin);
-    ((TH2*)fHistosCustom->UncheckedAt(kHNTrMixDiff) )->
-      Fill(esdMix->GetMultiplicity()->GetNumberOfTracklets() - multESD->GetNumberOfTracklets(),fCurrCentBin);
-    //
-    InitMultReco();
-    fMultReco->SetRecType(AliITSMultRecBg::kBgMix);
-    fMultReco->Run(fRPTree, vtxf,fRPTreeMix);
-    printf("Multiplicity from Mixing:\n");
-    AliMultiplicity* mlt = fMultReco->GetMultiplicity();
-    if (mlt) mlt->Print();
-    hstat->Fill(kBinEntries + kEvProcMix + kEntriesPerBin*fCurrCentBin);
-    FillHistos(kBgMix,mlt);
-    */
-    //
-  }
   // =============================================================================<<<
   //
   if (fMultReco) delete fMultReco; 
@@ -635,7 +679,7 @@ void AliTrackletTaskMulti::RegisterStat()
     Info("Terminate","Registering used settings");
     // fill used settings
     hstat->Fill(kOneUnit,1.);
-    hstat->Fill(kCentVar,fUseCentralityVar);
+    hstat->Fill(kCentVar,1);
     hstat->Fill(kDPhi,fDPhiWindow);
     hstat->Fill(kDTht,fDThetaWindow);
     hstat->Fill(kNStd,fNStdDev);
@@ -705,7 +749,7 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
   //
-  hstat->GetXaxis()->SetBinLabel(kCentVar,  fgCentSelName[fUseCentralityVar]);
+  hstat->GetXaxis()->SetBinLabel(kCentVar,  fUseCentralityVar.Data());
   hstat->GetXaxis()->SetBinLabel(kDPhi,  "#Delta#varphi");
   hstat->GetXaxis()->SetBinLabel(kDTht,  "#Delta#theta");
   hstat->GetXaxis()->SetBinLabel(kNStd,  "N.std");
@@ -727,13 +771,19 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   //
   hstat->GetXaxis()->SetBinLabel(kMCV0Scale,"MC V0 scale");
   //
+  hstat->GetXaxis()->SetBinLabel(kNEvSDMC,"MC PureSD");
+  //
   for (int i=0;i<fNCentBins;i++) {
     TString bnt = "b"; bnt+= i;
     int offs = kBinEntries + i*kEntriesPerBin;
+    hstat->GetXaxis()->SetBinLabel(offs + kEvInMltBin, bnt+" Ev.In.CntBn");
     hstat->GetXaxis()->SetBinLabel(offs + kEvProcData, bnt+" Ev.ProcData");
     hstat->GetXaxis()->SetBinLabel(offs + kEvProcInj,  bnt+" Ev.ProcInj");
     hstat->GetXaxis()->SetBinLabel(offs + kEvProcRot,  bnt+" Ev.ProcRot");
     hstat->GetXaxis()->SetBinLabel(offs + kEvProcMix,  bnt+" Ev.ProcMix");
+    hstat->GetXaxis()->SetBinLabel(offs + kEvCentBin,  bnt+" Ev.CentBinNS");
+    hstat->GetXaxis()->SetBinLabel(offs + kEvPassPS,   bnt+" Ev.CentBinPSTR");
+    hstat->GetXaxis()->SetBinLabel(offs + kEvPassVtx,  bnt+" Ev.CentBinVtx");
     //
   }
   //
@@ -742,23 +792,36 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   AddHisto(histos,hstat,kHStat);
   //
   // ------------------------ events per centrality bin ----------------------
-  TH1D* hCentAx = new TH1D("EvCentr","Events per centrality",fNCentBins,fgkCentPerc);
+  TH1F* hCentAx = new TH1F("EvCentr","Events per centrality",fNCentBins,fCentPerc.GetArray());
   hCentAx->GetXaxis()->SetTitle("Centrality parameter");
   AddHisto(histos,hCentAx,kHStatCent);
   //
-  TH1D* hCentBin = new TH1D("EvCentrBin","Events per centrality bin",fNCentBins,-0.5,fNCentBins-0.5);
+  TH1F* hCentBin = new TH1F("EvCentrBin","Events per centrality bin",fNCentBins,-0.5,fNCentBins-0.5);
   hCentBin->GetXaxis()->SetTitle("Centrality Bin");
   AddHisto(histos,hCentBin,kHStatCentBin);
   //  
+  TH1F* hCentDistNoSel = new TH1F("EvCentrDistNoSel","Events per centrality Before selection",100,0,100);
+  hCentDistNoSel->GetXaxis()->SetTitle("Centrality percentile");
+  AddHisto(histos,hCentDistNoSel,kHCentDistNoSel);
+  //
+  TH1F* hCentDist = new TH1F("EvCentrDist","Events per centrality ",100,0,100);
+  hCentDist->GetXaxis()->SetTitle("Centrality percentile");
+  AddHisto(histos,hCentDist,kHCentDist);
+  //
+
   // ------------ job parameters, statistics ------------------------------<<<
   //
-  //  double etaMn=-3,etaMx=3;
-  double zMn=-30, zMx=30;  
-  //  int nEtaBins = int((etaMx-etaMn)/kEtaBinWidth);
-  //  if (nEtaBins<1) nEtaBins = 1;
   //
-  int nZVBins = int(zMx-zMn);
-  if (nZVBins<1) nZVBins = 1;
+  int nZVBinsS = int((fZVertexMax-fZVertexMin)/fZVBin);
+  if (nZVBinsS<1) nZVBinsS = 1;
+  fZVBin = (fZVertexMax-fZVertexMin)/nZVBinsS; // readjust
+  //
+  int nZVBins = nZVBinsS;
+  double zMn=fZVertexMin, zMx=fZVertexMax;  
+  const double kZVWide=30.;
+  while (zMn>-kZVWide) {zMn -= fZVBin; nZVBins++;}
+  while (zMx<kZVWide)  {zMx += fZVBin; nZVBins++;}
+  AliInfoF("Wide ZV histo will have %d bins in %.2f<Zv<%.2f range",nZVBins,zMn,zMx);
   //
   // Z vertex distribution for events before selection
   TH1F* hzvns = new  TH1F("zvNoSel","Z vertex before selection",nZVBins,zMn,zMx);
@@ -766,8 +829,8 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   AddHisto(histos,hzvns,kHZVtxNoSel);
   //
   // V0 for events before selection
-  int nbmltV0 = 250;
-  double maxmltV0 = 25000;
+  int nbmltV0 = 250; 
+  double maxmltV0 = 2500*0.4; //RSmod
   //
   TH1F* hnV0ns = new  TH1F("V0NoSel","V0 signal Before Cent. Selection",nbmltV0,0,maxmltV0);
   hnV0ns->GetXaxis()->SetTitle("V0 signal");
@@ -775,7 +838,7 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   //
   // N SPD2 clusters
   int nbmltSPD2 = 175;
-  double maxmltSPD2 = 7000;
+  double maxmltSPD2 = 7000*0.4; // RSmod
   TH1F* hncl2ns = new  TH1F("NClustersSPD2NoSel","N Clusters on SPD2 Before Cent Selection",nbmltSPD2,0,maxmltSPD2);
   hncl2ns->GetXaxis()->SetTitle("N Clus SPD2");
   AddHisto(histos,hncl2ns,kHNClSPD2NoSel);
@@ -788,6 +851,61 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   hzdczemns->GetXaxis()->SetTitle("ZDC");
   AddHisto(histos,hzdczemns,kHZDCZEMNoSel);
   //
+  // multiplicity distribution histos
+  TH1F* hmlt;
+  const int kMaxMlt = 300;
+  hmlt = new TH1F("mltTrTPCITS","mltTPCITS",kMaxMlt,0,kMaxMlt);
+  AddHisto(histos,hmlt,kHMltEstTrITSTPC);
+  //
+  hmlt = new TH1F("mltTrITSSA","mltITSSA",kMaxMlt,0,kMaxMlt);
+  AddHisto(histos,hmlt,kHMltEstTrITSSA);
+  //
+  hmlt = new TH1F("mltTracklets","mltTracklets",kMaxMlt,0,kMaxMlt);
+  AddHisto(histos,hmlt,kHMltEstTr);
+  //
+  //
+  if (fUseMC) {
+    hmlt = new TH1F("mltMCTruth","mltMCTruth",kMaxMlt,0,kMaxMlt);
+    AddHisto(histos,hmlt,kHMltMC);
+    //
+    TH2F* hzvMCNoPS = new  TH2F("zvMCNoPS","Z MC vertex Before Ph.Sel per Cent.Bin",nZVBins,zMn,zMx, fNCentBins, -0.5,fNCentBins-0.5);
+    hzvMCNoPS->GetXaxis()->SetTitle("ZvertexMC");
+    hzvMCNoPS->GetYaxis()->SetTitle("Cent.Bin ID");
+    AddHisto(histos,hzvMCNoPS,kHZVtxMCNoPhSel);
+    //
+    TH2F* hzvMCNoVS = new  TH2F("zvMCNoVS","Z MC vertex Before Rec.Vtx.Selection per Cent.Bin",nZVBins,zMn,zMx, fNCentBins, -0.5,fNCentBins-0.5);
+    hzvMCNoVS->GetXaxis()->SetTitle("ZvertexMC");
+    hzvMCNoVS->GetYaxis()->SetTitle("Cent.Bin ID");
+    AddHisto(histos,hzvMCNoVS,kHZVtxMCNoVtSel);
+    //
+    TH2F* hzvMC = new  TH2F("zvMC","Z vertex MC after Selection per Cent.Bin",nZVBins,zMn,zMx, fNCentBins, -0.5,fNCentBins-0.5);
+    hzvMC->GetXaxis()->SetTitle("ZvertexMC");
+    hzvMC->GetYaxis()->SetTitle("Cent.Bin ID");
+    AddHisto(histos,hzvMC,kHZVtxMC);
+    //
+    TH1* hNPrimEta2All = new TH1F("nPrimEta2All","NPrim |#eta|<2, allMC",1000,0.,1000.);
+    hNPrimEta2All->SetXTitle("NPrim");
+    AddHisto(histos,hNPrimEta2All,kHNPrimEta2All);
+    //
+    TH1* hNPrimEta2Vt = new TH1F("nPrimEta2Vt","NPrim |#eta|<2, VtxMC",1000,0.,1000.);
+    hNPrimEta2Vt->SetXTitle("NPrim");
+    AddHisto(histos,hNPrimEta2Vt,kHNPrimEta2Vt);
+    //
+    TH1* hNPrimEta2Sel = new TH1F("nPrimEta2Sel","NPrim |#eta|<2, Sel",1000,0.,1000.);
+    hNPrimEta2Sel->SetXTitle("NPrim");
+    AddHisto(histos,hNPrimEta2Sel,kHNPrimEta2Sel);
+    //
+    TH1* hNPrimEta2SelVt = new TH1F("nPrimEta2SelVt","NPrim |#eta|<2, Sel+VtxMC",1000,0.,1000.);
+    hNPrimEta2SelVt->SetXTitle("NPrim");
+    AddHisto(histos,hNPrimEta2SelVt,kHNPrimEta2SelVt);
+    //
+  }
+  //
+  TH2F* hcorrEta2 = new TH2F("nTrNprEta2","Ntr vs NPrim |#eta|<2, Sel+Vtx",100,0.,100.,100,0.,100.);
+  hcorrEta2->SetXTitle("NPrim");
+  hcorrEta2->SetYTitle("NTracklets");
+  AddHisto(histos,hcorrEta2,kHNCorrMCEta2);
+
   TH2F* hzv = new  TH2F("zv","Z vertex after Selection per Cent.Bin",nZVBins,zMn,zMx, fNCentBins, -0.5,fNCentBins-0.5);
   hzv->GetXaxis()->SetTitle("Zvertex");
   hzv->GetYaxis()->SetTitle("Cent.Bin ID");
@@ -812,12 +930,14 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   AddHisto(histos,hzdczem,kHZDCZEM);
   //
   //----------------------------------------------------------------------
-  int nEtaBinsS = int((fEtaMax-fEtaMin)/kEtaBinWidth);
+  TH2* hetaphi = new TH2F("etaphiTracklets","etaphiTracklets",50,-2.5,2.5, 200, 0,2*TMath::Pi());
+  hetaphi->SetXTitle("#eta");
+  hetaphi->SetYTitle("#phi");
+  AddHisto(histos,hetaphi,kHEtaPhi);
+  //----------------------------------------------------------------------
+  int nEtaBinsS = TMath::Nint((fEtaMax-fEtaMin)/fEtaBin);
   if (nEtaBinsS<1) nEtaBinsS = 1;
   //
-  int nZVBinsS = int(fZVertexMax-fZVertexMin);
-  if (nZVBinsS<1) nZVBinsS = 1;
-
   if (fUseMC) {
     // Z vertex vs Eta distribution for primaries
     char buffn[100],bufft[500];
@@ -828,6 +948,20 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
       hzvetap->GetXaxis()->SetTitle("#eta");
       hzvetap->GetYaxis()->SetTitle("Zvertex");
       AddHisto(histos,hzvetap,kHZVEtaPrimMC+ib);
+      //
+      sprintf(buffn,"b%d_zvrecEtaPrimMCSel",ib);
+      sprintf(bufft,"bin%d ZvertexR vs #eta PrimMC sel evs",ib);
+      TH2F* hzvretap = new  TH2F(buffn,bufft, nEtaBinsS,fEtaMin,fEtaMax,nZVBinsS,fZVertexMin,fZVertexMax);
+      hzvretap->GetXaxis()->SetTitle("#eta");
+      hzvretap->GetYaxis()->SetTitle("Zvertex");
+      AddHisto(histos,hzvretap,kHZVrEtaPrimMC+ib);
+      //
+      sprintf(buffn,"b%d_dZV_ZVGen",ib);
+      sprintf(bufft,"bin%d ZvRec-ZvGen vs ZvGen",ib);
+      TH2F* hdzv = new  TH2F(buffn,bufft,nZVBinsS,fZVertexMin,fZVertexMax, 200,-1.,1);
+      hdzv->GetXaxis()->SetTitle("VZGen");  
+      hdzv->GetYaxis()->SetTitle("VZRec-VZGen");  
+      AddHisto(histos,hdzv,kHZVResMC+ib); 
     }
     //
     // <n> primaries according to MC generator
@@ -881,20 +1015,6 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
     //    
   }
   //
-  if (GetDoMixing()) {
-    //
-    // Difference in Z vertex for mixed events
-    TH2F* hzdiff = new TH2F("MixSPDVertexDiff","SPD #Delta Z Vertex distribution per mult bin ",100,-5,5, fNCentBins, -0.5,fNCentBins-0.5);
-    hzdiff->GetXaxis()->SetTitle("#Delta Z Vertex [cm]");
-    hzdiff->GetYaxis()->SetTitle(Form("Entries / %1.2f [cm] per mult bin",10./100.));
-    AddHisto(histos,hzdiff,kHZVtxMixDiff);
-    //
-    // Difference in N tracklets for mixed events
-    TH2F* hntdiff = new TH2F("MixNTrackletsDiff"," SPD tracklets Diff ",200,-1000,1000, fNCentBins, -0.5,fNCentBins-0.5);
-    hntdiff->GetXaxis()->SetTitle("# tracklet diff");
-    AddHisto(histos,hntdiff,kHNTrMixDiff);
-  }
-  // 
   // --------------------------------------------------
   if (fUseMC) {
     int npdg = sizeof(fgkPDGNames)/sizeof(char*);
@@ -940,11 +1060,14 @@ TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHisto
   const int kNDThtBins = 100;
   int nDistBins = int(fNStdDev)*5;
   //
-  int nEtaBins = int((fEtaMax-fEtaMin)/kEtaBinWidth);
+  int nEtaBins = TMath::Nint((fEtaMax-fEtaMin)/fEtaBin);
   if (nEtaBins<1) nEtaBins = 1;
   //
-  int nZVBins = int(fZVertexMax-fZVertexMin);
+  int nZVBins = int((fZVertexMax-fZVertexMin)/fZVBin);
   if (nZVBins<1) nZVBins = 1;
+  fZVBin = (fZVertexMax-fZVertexMin)/nZVBins; // readjust
+  AliInfoF("%d bin in %.2f<Zv<%.2f (step=%.2f) will be defined",nZVBins,fZVertexMin,fZVertexMax,fZVBin);
+  //
   float dphir = fDPhiWindow*TMath::Sqrt(fNStdDev);
   float dthtr = fDThetaWindow*TMath::Sqrt(fNStdDev);
   //
@@ -995,6 +1118,7 @@ TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHisto
       AddHisto(histos,h1,offs+kHWDist);
     }
     //
+    /*
     if (selHistos & (0x1<<kHEtaZvSPD1) ) {
       sprintf(buffn,"b%d_%s_ZvEtaSPD1",ib,pref);
       sprintf(bufft,"bin%d (%s) Zv vs Eta SPD1 clusters",ib,pref);
@@ -1002,6 +1126,16 @@ TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHisto
       h2->GetXaxis()->SetTitle("#eta");
       h2->GetYaxis()->SetTitle("Zv");
       AddHisto(histos,h2,offs+kHEtaZvSPD1);
+    }
+    */
+    //
+    if (selHistos & (0x1<<kHWDvEta) ) {
+      sprintf(buffn,"b%d_%s_WDvsEta",ib,pref);
+      sprintf(bufft,"bin%d (%s) Wdist vs Eta",ib,pref);
+      h2 = new TH2F(buffn,bufft,nEtaBins,fEtaMin,fEtaMax, 2*nDistBins,0,fNStdDev);
+      h2->GetXaxis()->SetTitle("#eta");
+      h2->GetYaxis()->SetTitle("Wdist");
+      AddHisto(histos,h2,offs+kHWDvEta);
     }
     //
   }
@@ -1029,7 +1163,6 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
   if      (type == kData)  histos = fHistosTrData;
   else if (type == kBgInj) histos = fHistosTrInj;
   else if (type == kBgRot) histos = fHistosTrRot;
-  else if (type == kBgMix) histos = fHistosTrMix;
   //
   Bool_t fillMC = (type==kData) && fUseMC && fStack;
   //
@@ -1046,6 +1179,7 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
   //
   if (!histos) return;
   int ntr = mlt->GetNumberOfTracklets();
+  fNTreta2 = 0;
   for (int itr=ntr;itr--;) {
     //
     //---------------------------------------- CHECK ------------------------------>>>
@@ -1071,7 +1205,6 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
     //
     double theta  = mlt->GetTheta(itr);
     double eta    = -TMath::Log(TMath::Tan(theta/2));
-    if (eta<fEtaMin || eta>fEtaMax) continue;
     //
     double dtheta = mlt->GetDeltaTheta(itr);
     double dThetaX = dtheta;
@@ -1080,11 +1213,23 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
       dThetaX /= (sint*sint);
     }
     if (fCutOnDThetaX && TMath::Abs(dThetaX)>fDThetaWindow) continue;
+    //
     //    double phi    = mlt->GetPhi(itr);
     double dphi   = mlt->GetDeltaPhi(itr);
     double dist   = mlt->CalcDist(itr);
+    double dphiS  = TMath::Abs(dphi) - fDPhiShift; if (dphi<0) dphiS = -dphiS;
     //
-    FillHistosSet(histos,eta,/*phi,theta,*/dphi,dtheta,dThetaX,dist);
+    if (dist<fNStdCut && dphiS<fDPhiSCut && TMath::Abs(eta)<2) fNTreta2++;
+    //
+    //
+    if (eta<fEtaMin || eta>fEtaMax) continue;
+    //
+    Bool_t isSig = FillHistosSet(histos,eta,/*phi,theta,*/dphi,dtheta,dThetaX,dist);
+    //
+    if (type==kData && isSig) {
+      ((TH2*)fHistosCustom->UncheckedAt(kHEtaPhi))->Fill(eta,mlt->GetPhi(itr));
+    }
+    //
     // special handling for mc info
     if (fillMC && fStack) {
       int lab0 = mlt->GetLabel(itr,0);
@@ -1108,14 +1253,19 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
       } // combinatorials
       
       if (dist<fNStdCut) {
-	double dphiS  = TMath::Abs(dphi) - fDPhiShift; if (dphi<0) dphiS = -dphiS;
 	if (dphiS<fDPhiSCut) FillSpecies(typeMC, lab0);
       }
       if (fCheckReconstructables) CheckReconstructables();
     }
   }
+  //
+  if (type==kData) {
+    TH2* hcorr = ((TH2*)fHistosCustom->UncheckedAt(kHNCorrMCEta2));
+    if (hcorr) hcorr->Fill(fNPrimMCeta2,fNTreta2);
+  }
   //  
   //-------------------------------------------------------------TMP RS - singles ------->>>
+  /*
   int offsH = fCurrCentBin*kNStandardH;
   TH2* hSingles = (TH2*)histos->UncheckedAt(offsH+kHEtaZvSPD1);
   if (hSingles) {
@@ -1127,6 +1277,7 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
       hSingles->Fill(etaS,fESDVtx[2]);
     }
   }
+  */
   //-------------------------------------------------------------TMP RS - singles -------<<<
   //
 }
@@ -1135,21 +1286,26 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
 void AliTrackletTaskMulti::FillMCPrimaries()
 {
   // fill all MC primaries Zv vs Eta
-  if (!fStack || !fMCEvent) return;
-
-  //---------------------------------------- CHECK ------------------------------>>>
-  TArrayF vtxMC;
-  AliGenHijingEventHeader* pyHeader = 0;
+  if (!fUseMC || !fStack || !fMCEvent) return;
   //
-  if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
-    pyHeader->PrimaryVertex(vtxMC);
-  }
-  //---------------------------------------- CHECK ------------------------------<<<
+  float zv =  fVtxMC[2]; //fVtxOK ? fESDVtx[2] : fVtxMC[2];
+  float zvr = fESDVtx[2];
+  /*
+  const double kSafeZv = 1e-3
+  if (zv<fZVertexMin+kSafeZv) zv = fZVertexMin+kSafeZv;
+  if (zv>fZVertexMax-kSafeZv) zv = fZVertexMax-kSafeZv;
+  */
   //
   int ntr = fStack->GetNtrack();
-  TH2* hprimEtaZ = (TH2F*)fHistosCustom->UncheckedAt(kHZVEtaPrimMC+fCurrCentBin);
+  TH2* hprimEtaZ  = (TH2F*)fHistosCustom->UncheckedAt(kHZVEtaPrimMC+fCurrCentBin);
+  TH2* hprimEtaZr = (TH2F*)fHistosCustom->UncheckedAt(kHZVrEtaPrimMC+fCurrCentBin);
+  if (fVtxOK) {
+    TH2* hdzv = (TH2F*)fHistosCustom->UncheckedAt(kHZVResMC+fCurrCentBin);
+    hdzv->Fill(fVtxMC[2],fESDVtx[2]-fVtxMC[2]);
+  }
   int nprim = 0;
+  fNPrimMCeta2 = 0;
+  float nprimSel = 0;
   for (int itr=ntr;itr--;) {
     if (!fStack->IsPhysicalPrimary(itr)) continue;
     AliMCParticle *part  = (AliMCParticle*)fMCEvent->GetTrack(itr);
@@ -1165,10 +1321,21 @@ void AliTrackletTaskMulti::FillMCPrimaries()
     Float_t theta = part->Theta();
     if (theta<1e-6 || theta>TMath::Pi()-1e-6) continue;
     Float_t eta = part->Eta();
-    if (eta<fEtaMin || eta>fEtaMax) continue;
-    hprimEtaZ->Fill(eta, fESDVtx[2]);
+    //    if (eta<fEtaMin || eta>fEtaMax) continue;
+    if (TMath::Abs(eta)<2) fNPrimMCeta2++;
+    hprimEtaZ->Fill(eta, zv);
+    if (fVtxOK && fIsSelected) {
+      hprimEtaZr->Fill(eta, zvr);
+      if (eta>fEtaMin && eta<fEtaMax) nprimSel++;
+    }
     nprim++;
   }
+  ((TH1F*)fHistosCustom->UncheckedAt(kHNPrimEta2All))->Fill(fNPrimMCeta2);
+  if (fVtxOK)                ((TH1F*)fHistosCustom->UncheckedAt(kHNPrimEta2Vt))->Fill(fNPrimMCeta2);
+  if (fIsSelected)           ((TH1F*)fHistosCustom->UncheckedAt(kHNPrimEta2Sel))->Fill(fNPrimMCeta2);
+  if (fVtxOK && fIsSelected) ((TH1F*)fHistosCustom->UncheckedAt(kHNPrimEta2SelVt))->Fill(fNPrimMCeta2);
+  //
+  if (fIsSelected)           ((TH1F*)fHistosCustom->UncheckedAt(kHMltMC))->Fill(nprimSel);
   //
   ((TH1*)fHistosCustom->UncheckedAt(kHNPrimMeanMC))->Fill(fCurrCentBin,nprim);
   if (fNPart>0) {
@@ -1187,18 +1354,23 @@ void AliTrackletTaskMulti::FillMCPrimaries()
 }
 
 //_________________________________________________________________________
- void AliTrackletTaskMulti::FillHistosSet(TObjArray* histos, double eta,
+ Bool_t AliTrackletTaskMulti::FillHistosSet(TObjArray* histos, double eta,
 					  //double /*phi*/,double /*theta*/,
 					  double dphi,double dtheta,double dThetaX,
 					  double dist) 
 {
   // fill standard set of histos
-  if (dist>fNStdDev) return;
+  Bool_t res = kFALSE;
+  //
+  int offs = fCurrCentBin*kNStandardH;
+  //
+  if (histos->UncheckedAt(kHWDvEta))
+    ((TH2*)histos->UncheckedAt(offs+kHWDvEta))->Fill(eta,dist);
+  //
+  if (dist>fNStdDev) return res;
   //
   double dphiS  = TMath::Abs(dphi) - fDPhiShift;
   if (dphi<0) dphiS = -dphiS;
-  //
-  int offs = fCurrCentBin*kNStandardH;
   //
   if (histos->UncheckedAt(offs+kHDPhiSDThetaX)) 
     ((TH2*)histos->UncheckedAt(offs+kHDPhiSDThetaX))->Fill(dphiS,dThetaX);
@@ -1209,9 +1381,12 @@ void AliTrackletTaskMulti::FillMCPrimaries()
   if (histos->UncheckedAt(kHWDist))
     ((TH2*)histos->UncheckedAt(offs+kHWDist))->Fill(dist);
   //
-  if (dist<fNStdCut && dphiS<fDPhiSCut && histos->UncheckedAt(offs+kHEtaZvCut))
+  if (dist<fNStdCut && dphiS<fDPhiSCut && histos->UncheckedAt(offs+kHEtaZvCut)) {
     ((TH2*)histos->UncheckedAt(offs+kHEtaZvCut))->Fill(eta,fESDVtx[2]);
+    res = kTRUE;
+  }
   //
+  return res;
 }
  
 //__________________________________________________________________
@@ -1251,7 +1426,7 @@ void AliTrackletTaskMulti::FillSpecies(Int_t primsec, Int_t id)
 Int_t AliTrackletTaskMulti::GetCentralityBin(Float_t perc) const
 {
   // calculate centrality bin
-  for (int i=0;i<fNCentBins;i++) if (perc>=fgkCentPerc[i] && perc<=fgkCentPerc[i+1]) return i;
+  for (int i=0;i<fNCentBins;i++) if (perc>=fCentPerc[i] && perc<=fCentPerc[i+1]) return i;
   return -1;
 }
 
@@ -1490,3 +1665,42 @@ void AliTrackletTaskMulti::FillClusterInfoFromMult(const AliMultiplicity* mlt, d
   //
 }
 
+//______________________________________________
+void AliTrackletTaskMulti::CheckCentralityVar(const char* var)
+{
+  int nv = sizeof(fgCentSelName)/sizeof(char*);
+  for (int i=0;i<nv;i++) {
+    if (!strcmp(var, fgCentSelName[i])) {
+      return;
+    }
+  }
+  AliFatalF("Unknown centrality var: %s",var);
+}
+
+//______________________________________________
+void AliTrackletTaskMulti::SetCentPercentiles(Float_t *arr, Int_t nbins)
+{
+  // set user defined percentiles
+  fCentPerc.Set(nbins+1);
+  fNCentBins = nbins;
+  AliInfoF("Defining %d centrality bins",fNCentBins);
+  for (int i=0;i<=nbins;i++) {
+    fCentPerc[i] = arr[i];
+    if (i<nbins) AliInfoF("CentBin# %.1f-%.1f",arr[i],arr[i+1]);
+  }
+  //
+}
+
+//______________________________________________
+void AliTrackletTaskMulti::SetCentPercentiles(Double_t *arr, Int_t nbins)
+{
+  // set user defined percentiles
+  fCentPerc.Set(nbins+1);
+  fNCentBins = nbins;
+  AliInfoF("Defining %d centrality bins",fNCentBins);
+  for (int i=0;i<=nbins;i++) {
+    fCentPerc[i] = arr[i];
+    if (i<nbins) AliInfoF("CentBin# %.1f-%.1f",arr[i],arr[i+1]);
+  }
+  //
+}
