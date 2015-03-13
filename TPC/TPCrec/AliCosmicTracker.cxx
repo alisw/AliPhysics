@@ -130,6 +130,7 @@ AliCosmicTracker::AliCosmicTracker(const Int_t dlev, const TString tag):
   , fErrFlagESDtrackCut(-999)
   , fErrFlagIsPair(-999)
   , fErrFlagCosmicTrackfit(-999)
+  , fBFieldOn(kTRUE)
 {
   //
   //constructor
@@ -186,7 +187,7 @@ Int_t AliCosmicTracker::Process(const TString tag, const Bool_t kprint)
   //
   //double loop over combinations of esd tracks, cosmic event candidates sotred in fTrackStack
   //
-
+  fBFieldOn = TMath::Abs(AliTrackerBase::GetBz())>1e-3;
   Int_t npair=0;
   const Int_t ntrk = fESDEvent->GetNumberOfTracks();
   Int_t trkcounter[ntrk];
@@ -417,13 +418,15 @@ Bool_t AliCosmicTracker::IsPair(AliESDtrack * trk0, AliESDtrack * trk1)
   fPull[3] = fDelta[3]/TMath::Sqrt(tmptrk[0].GetCovariance()[9] +tmptrk[1].GetCovariance()[9]);
   fPull[4] = fDelta[4]/TMath::Sqrt(tmptrk[0].GetCovariance()[14]+tmptrk[1].GetCovariance()[14]);
 
+  int npCheck = fBFieldOn ? 5:4;
+
   if(fDebugLevel & 2){
-    for(Int_t ii=0; ii<5; ii++){
+    for(Int_t ii=0; ii<npCheck; ii++){
       printf("test %d %e %e -- %e\n", ii, tmptrk[0].GetParameter()[ii], tmptrk[1].GetParameter()[ii], fPull[ii]);
     }
   }
 
-  for(Int_t ii=0; ii<5; ii++){
+  for(Int_t ii=0; ii<npCheck; ii++){
     if( TMath::Abs(fPull[ii])  > fCutPull[ii] ){
       fErrFlagIsPair = 10+ii;
       return kFALSE;

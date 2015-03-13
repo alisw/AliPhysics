@@ -103,6 +103,8 @@ class AliCosmicTracker
   Int_t fErrFlagESDtrackCut;                       //error status in ESDtrackCut()
   Int_t fErrFlagIsPair;                            //error status in IsPair()
   Int_t fErrFlagCosmicTrackfit;                    //error status in fCosmicTrackfit
+  //
+  Bool_t fBFieldOn;                                // flag field ON event
 };
 
 #endif
