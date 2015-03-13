@@ -24,7 +24,7 @@ test_guessRunData()
     yearTrue=("2012" "2012" "2010" "2010" "2010");
     periodTrue=("LHC12g" "LHC12a" "LHC10e"  "LHC10b" "LHC10e" );
     runTrue=("188362" "177011" "127729"  "117086" "");
-    passTrue=("cpass1_tpc_validation" "cpass0_tpc_validation" "pass4" "pass4" "");
+    passTrue=("cpass1_tpc_validation" "cpass0_tpc_validation" "pass4" "pass4" "pass4");
     echo ===================================================================================================
     alilog "RUNNING TEST: test_guessRunData";
     echo ===================================================================================================
