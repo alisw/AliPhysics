@@ -136,13 +136,13 @@ AliAnalysisTaskDmesonJetCorrelations* AddTaskDmesonJetCorr(AliAnalysisTaskDmeson
   contname1 += "_histos";
   AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname1.Data(), 
 							    TList::Class(), AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+							    Form("%s:SA_DmesonJetCorr", AliAnalysisManager::GetCommonFileName()));
 
   TString contname2(name);
   contname2 += "_cuts";
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
                                                             AliRDHFCuts::Class(), AliAnalysisManager::kOutputContainer,
-                                                            Form("%s", AliAnalysisManager::GetCommonFileName()));
+                                                            Form("%s:SA_DmesonJetCorr", AliAnalysisManager::GetCommonFileName()));
   
   TString nameContainerFC2("Dcandidates");
   TString nameContainerFC3("DSBcandidates");
