@@ -38,7 +38,6 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliAODVertex.h"
-#include "AliAODRecoDecay.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliESDtrack.h"
@@ -270,8 +269,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    DefineHistoForAnalysis(); // define histograms
    
    if (fCandidateType == kD0toKpi){
-      fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
-      fSideBandArray = new TClonesArray("AliAODRecoDecayHF",0); 
+      fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",0);
+      fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",0); 
    }
    else if (fCandidateType == kDstartoKpipi) {
       fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",0);
@@ -309,7 +308,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
   fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 
   if (fAodEvent) {
-    fArrayDStartoD0pi = (TClonesArray*)fAodEvent->GetList()->FindObject(fBranchName.Data());
+    fArrayDStartoD0pi = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(fBranchName.Data()));
   }
   else {
     if (AODEvent() && IsStandardAOD()) {
@@ -334,7 +333,18 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     }
   }
    
-  if (!fArrayDStartoD0pi) {
+  if (fArrayDStartoD0pi) {
+    TString objname(fArrayDStartoD0pi->GetClass()->GetName());
+    TClass cls(objname);
+    if (!cls.InheritsFrom("AliAODRecoDecayHF2Prong")) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!", 
+                    GetName(), cls.GetName(), fArrayDStartoD0pi->GetName()));
+      fInhibitTask = kTRUE;
+      fArrayDStartoD0pi = 0;
+      return;
+    }
+  }
+  else {
     AliError(Form("Could not find array %s, skipping the event. Task '%s' will be disabled!", fBranchName.Data(), GetName()));
     fInhibitTask = kTRUE;
     return;
@@ -353,7 +363,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF* charmCand, Int_t isSelected, Int_t mcLabel)
+void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t mcLabel)
 {
   //
   // Process the d0 candidate
@@ -618,7 +628,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
     AliAODRecoCascadeHF* dstar = 0;
     AliAODMCParticle* charmPart = 0;
     
-    AliAODRecoDecayHF* charmCand = (AliAODRecoDecayHF*)fArrayDStartoD0pi->At(icharm); // D candidates
+    AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
     if (!charmCand) continue;
 
     Double_t ptD = charmCand->Pt();
@@ -684,7 +694,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
           AliDebug(2, Form("Now filling background inv mass histogram for charm candidate %d", icharm));
         }
         else if (fCandidateType == kD0toKpi) {
-          new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF(*charmCand);
+          new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF2Prong(*charmCand);
           for (Int_t kd = 0; kd < nprongs; kd++) {
             fHistImpParB->Fill(charmCand->Getd0Prong(kd), charmCand->PtProng(kd));
             AliDebug(2, Form("Prong %d: Getd0Prong = %.3f, PtProng = %.3f", kd, charmCand->Getd0Prong(kd), charmCand->PtProng(kd)));
@@ -708,7 +718,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
           AliDebug(2, Form("Now filling signal inv mass histogram for charm candidate %d (mcLabel = %d, isMCBkg = %d", icharm, mcLabel, isMCBkg));
         }
         else {  //D0
-          new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
+          new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF2Prong(*charmCand);
           for (Int_t kd = 0; kd < nprongs; kd++) {
             fHistImpParS->Fill(charmCand->Getd0Prong(kd), charmCand->PtProng(kd));
             AliDebug(2, Form("Prong %d: Getd0Prong = %.3f, PtProng = %.3f", kd, charmCand->Getd0Prong(kd), charmCand->PtProng(kd)));
