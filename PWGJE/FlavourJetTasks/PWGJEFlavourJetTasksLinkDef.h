@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef __CINT__
  
 #pragma link off all globals;
@@ -22,5 +20,6 @@
 #pragma link C++ class AliAnalysisTaskSEPicoV0Maker+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetFlavourTagExample+;
+#pragma link C++ class AliAnalysisTaskDmesonJetCorrelations+;
 
 #endif
