@@ -1223,6 +1223,10 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
 		if (!fUseEtaCut) fUseEtaCut=1;
 		fMinEtaCut=-2;
 		break;
+	case 4: 
+		if (!fUseEtaCut) fUseEtaCut=1;
+		fMinEtaCut = -0.13;
+		break;
 	default:
 		AliError(Form("MinEta Cut not defined %d",minEta));
 		return kFALSE;
@@ -1251,6 +1255,13 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
 		if (!fUseEtaCut) fUseEtaCut=1;
 		fMaxEtaCut=2;
 		break;
+	case 4: 
+		if (!fUseEtaCut) fUseEtaCut=1;
+		fMaxEtaCut= 0.13;
+		break;
+	  
+	  
+	  
 	default:
 		AliError(Form("MaxEta Cut not defined %d",maxEta));
 		return kFALSE;
@@ -1278,6 +1289,12 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
 		if (!fUsePhiCut) fUsePhiCut=1;
 		fMinPhiCut=2.45;
 		break;
+	case 4: 
+		if( !fUsePhiCut ) fUsePhiCut=1;
+		fMinPhiCut = 4.54;  //PHOS acceptance
+		break;
+		
+	  
 		
 		
 	default:
@@ -1307,7 +1324,10 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
 		if (!fUsePhiCut) fUsePhiCut=1;
 		fMaxPhiCut=2.10;
 		break;
-		
+	case 4: 
+		if( !fUsePhiCut ) fUsePhiCut=1;
+		fMaxPhiCut = 5.59;  //PHOS acceptance
+		break;	
 		
 	default:
 		AliError(Form("Max Phi Cut not defined %d",maxPhi));

@@ -142,6 +142,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	hESDMotherBackInvMassPt(NULL),
 	sESDMotherBackInvMassPtZM(NULL),
 	hMCAllGammaPt(NULL),
+	hMCAllGammaPi0Pt(NULL),
 	hMCConvGammaPt(NULL),
 	hMCConvGammaPtR(NULL),
 	hMCConvGammaRSPt(NULL),
@@ -329,6 +330,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	hESDMotherBackInvMassPt(NULL),
 	sESDMotherBackInvMassPtZM(NULL),
 	hMCAllGammaPt(NULL),
+	hMCAllGammaPi0Pt(NULL),
 	hMCConvGammaPt(NULL),
 	hMCConvGammaPtR(NULL),
 	hMCConvGammaRSPt(NULL),
@@ -921,6 +923,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		hESDTruePi0DalitzSecElectronPt  = new TH1F*[fnCuts];
 
 		hMCAllGammaPt  		= new TH1F*[fnCuts];
+		hMCAllGammaPi0Pt        = new TH1F*[fnCuts];
 		hMCConvGammaPt 		= new TH1F*[fnCuts];
 		hMCConvGammaRSPt 	= new TH1F*[fnCuts];
 		hMCConvGammaPi0Pt       = new TH1F*[fnCuts];
@@ -1009,6 +1012,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
 			hMCAllGammaPt[iCut] = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",250,0,25);
 			fMCList[iCut]->Add(hMCAllGammaPt[iCut]);
+			
+			hMCAllGammaPi0Pt[iCut] = new TH1F("MC_AllGammaPi0_Pt","MC_AllGammaPi0_Pt",250,0,25);
+			fMCList[iCut]->Add(hMCAllGammaPi0Pt[iCut]);
 			
 			hMCConvGammaPt[iCut] = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt",250,0,25);
 			fMCList[iCut]->Add(hMCConvGammaPt[iCut]);
@@ -2565,6 +2571,15 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles()
 		
 		if(((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
 			hMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
+			
+			if( IsPi0DalitzDaughter( i ) == kTRUE ){
+			   
+			    hMCAllGammaPi0Pt[fiCut]->Fill(particle->Pt());
+			   
+			}
+			
+			
+			
 		}
 		
 		if(((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kTRUE)){

@@ -2463,7 +2463,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
 		if (foundExcludedPart){
 // 			if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
 			return kFALSE;
-		} else if (dalitzCand){
+		} else if (dalitzCand && realRadius3D < fSecProdBoundary ){
 // 			if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
 			return kTRUE;
 		} else if (foundShower){
