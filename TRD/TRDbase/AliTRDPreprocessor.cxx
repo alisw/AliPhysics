@@ -247,6 +247,11 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
       precision=1e-5;
     }
     oneTRDDCS->RemoveGraphDuplicates(precision);
+    // Remove HV anode current points below a threshold (in uA)
+    // when both neighbors are also below threshold
+    if(oneTRDDCS->GetStoreName().Contains("trd_hvAnodeImon")){
+      oneTRDDCS->RemoveAbsBelowThreshold(0.010);
+    }
 
     // Store the data point
     results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kFALSE); 
