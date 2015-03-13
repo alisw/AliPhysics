@@ -1238,7 +1238,7 @@ void AliEveEventManager::NextEvent()
             NoEventLoaded();
         }
 #endif
-    }
+    }/*
     else if ((fESDTree!=0) || (fHLTESDTree!=0))
     {
         cout<<"There is ESD or HLTESD tree"<<endl;
@@ -1248,7 +1248,7 @@ void AliEveEventManager::NextEvent()
             cout<<"GotoEvent:"<<nextevent<<endl;
             GotoEvent(nextevent);
         }
-    }
+    }*/
     else if (fEventId < GetMaxEventId(kTRUE))
     {
         cout<<"GotoEvent:"<<fEventId+1<<endl;

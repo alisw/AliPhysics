@@ -417,6 +417,7 @@ void AliEveEventManagerWindow::Update(int state)
       fPrevEvent ->SetEnabled(!autoLoad);
       fLastEvent ->SetEnabled(!autoLoad);
       fNextEvent ->SetEnabled(!autoLoad);
+      fEventId->SetState(!autoLoad);
       fMarkEvent ->SetEnabled(kFALSE);
 
       fInfoLabel->SetText(Form("/ %d", fM->GetMaxEventId()));

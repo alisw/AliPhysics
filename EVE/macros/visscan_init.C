@@ -9,6 +9,41 @@
  
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <AliQAHistViewer.h>
+
+#include <TString.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
+#include <TMath.h>
+#include <TGListTree.h>
+#include <TEveVSDStructs.h>
+#include <TEveManager.h>
+#include <TEveTrackPropagator.h>
+#include <TEnv.h>
+#include <TEveWindowManager.h>
+#include <TGTab.h>
+#include <TTimeStamp.h>
+
+#include <AliESDtrackCuts.h>
+//#include <AliPWG0Helper.h>
+#include <AliESDEvent.h>
+#include <AliESDfriend.h>
+#include <AliESDtrack.h>
+#include <AliESDfriendTrack.h>
+#include <AliExternalTrackParam.h>
+#include <AliEveTrack.h>
+#include <AliEveTrackCounter.h>
+#include <AliEveMagField.h>
+#include <AliEveEventManager.h>
+#include <AliEveEventManagerEditor.h>
+#include <AliEveMultiView.h>
+#include <AliEveMacroExecutor.h>
+#include <AliEveMacro.h>
+#include <AliEveMacroExecutorWindow.h>
+#include <AliEveEventSelectorWindow.h>
+#include <AliEveTrackFitter.h>
+#include <AliCDBManager.h>
+
 #endif
 
 class AliEveMacroExecutor;
@@ -53,7 +88,7 @@ void visscan_init(const TString& cdburi = "",
 
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
 
-  TEveUtil::LoadMacro("alieve_init.C");
+  TEveUtil::LoadMacro("alieve_init.C+");
   alieve_init(cdburi, path, -1, showHLTESDTree);
 
   // TEveLine::SetDefaultSmooth(1);
@@ -137,13 +172,13 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink"));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks",              "esd_tracks.C", "esd_tracks",              "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS standalone",          "esd_tracks.C", "esd_tracks_ITS_standalone",              "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS",          "esd_tracks.C", "esd_tracks_ITS",              "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks TPC",           "esd_tracks.C", "esd_tracks_TPC",              "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MI",           "esd_tracks.C", "esd_tracks_MI",           "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by anal cuts", "esd_tracks.C", "esd_tracks_by_anal_cuts", "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks",              "esd_cosmic_tracks.C", "esd_tracks",              "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS standalone",          "esd_cosmic_tracks.C", "esd_tracks_ITS_standalone",              "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks ITS",          "esd_cosmic_tracks.C", "esd_tracks_ITS",              "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks TPC",           "esd_cosmic_tracks.C", "esd_tracks_TPC",              "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MI",           "esd_cosmic_tracks.C", "esd_tracks_MI",           "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_cosmic_tracks.C", "esd_tracks_by_category",  "", kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by anal cuts", "esd_cosmic_tracks.C", "esd_tracks_by_anal_cuts", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks Lego", "lego.C", "lego", "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks Beams Info", "beams_info.C", "beams_info", "", kFALSE));
 
@@ -180,7 +215,7 @@ void visscan_init(const TString& cdburi = "",
   //==============================================================================
 
   // Macro / data selection
-  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+  TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
   AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
   slot->StopEmbedding("DataSelection");

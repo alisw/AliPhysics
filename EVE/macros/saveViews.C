@@ -33,6 +33,18 @@
 #include <RAW/RAWDatarec/AliRawReader.h>
 #include <RAW/RAWDatabase/AliRawEventHeaderBase.h>
 #include <EVE/EveBase/AliEveEventManager.h>
+#include <STEER/STEERBase/AliDAQ.h>
+#include <MONITOR/alionlinereco/AliOnlineReconstructionUtil.h>
+
+
+#include <TEnv.h>
+#include <TString.h>
+#include <TSQLServer.h>
+#include <TSQLResult.h>
+#include <TSQLRow.h>
+#include <TSystem.h>
+
+#include <iostream>
 
 TString getEventInfo();
 
@@ -140,86 +152,188 @@ void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=
         compositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
         compositeImg->EndPaint();
         //include ALICE Logo
-        tempImg = new TASImage( Form("%s/../src/picts/alice_logo_2009_blue_80x80.png", gSystem->Getenv("ALICE_ROOT")) );
-        tempImg->Scale(64,64);
+//        tempImg = new TASImage(Form("%s/../src/picts/alice_logo_2009_blue_80x80.png", gSystem->Getenv("ALICE_ROOT")) );
+        
+        
+        tempImg = new TASImage("alice_logo.png");
+        
+        tempImg->Scale(64,87);
         //tempImg->CopyArea(compositeImg, 0,0, 236, 319, 59, 4);
         compositeImg->Merge(tempImg, "alphablend", 82, 4);
         delete tempImg; tempImg = 0;
     }
     
-    // show Information bar
+    //---------------------------------------------------
+    //              show Information bar
+    //---------------------------------------------------
+    
+    // read crededentials to logbook from config file:
+    TEnv settings;
+    settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+    const char *dbHost = settings.GetValue("logbook.host", "");
+    Int_t   dbPort =  settings.GetValue("logbook.port", 0);
+    const char *dbName =  settings.GetValue("logbook.db", "");
+    const char *user =  settings.GetValue("logbook.user", "");
+    const char *password = settings.GetValue("logbook.pass", "");
+    
+//    cout<<dbHost<<"\t"<<dbPort<<"\t"<<dbName<<"\t"<<user<<"\t"<<password<<endl;
+    
+    // get entry from logbook:
+    cout<<"creating sql server...";
+    TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
+    cout<<"created"<<endl;
     
     AliESDEvent* esd =  AliEveEventManager::AssertESD();
-    ULong64_t triggerMask = esd->GetTriggerMask();
-    ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
-    ULong64_t mask = 0b000001;
+    int run = esd->GetRunNumber();
+    TString sqlQuery;
+    sqlQuery.Form("SELECT * FROM logbook_trigger_clusters WHERE run = %d",run);
     
+    TSQLResult* result = server->Query(sqlQuery);
+    if (!result){
+        Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+        return;
+    }
+    
+    if (result->GetRowCount() == 0){
+        Printf("ERROR: Run %d not found", run);
+        delete result;
+        return;
+    }
+
+    // read values from logbook entry:
+    vector<int> cluster;
+    vector<ULong64_t> inputDetectorMask;
+    vector<ULong64_t> triggerClassMask0;
+    vector<ULong64_t> triggerClassMask1;
+    
+    TSQLRow* row;
+    int i=0;
+    while(row=result->Next())
+    {
+        cluster.push_back(atoi(row->GetField(2)));
+        inputDetectorMask.push_back(atol(row->GetField(4)));
+        triggerClassMask0.push_back(atol(row->GetField(5)));
+        triggerClassMask1.push_back(atol(row->GetField(6)));
+        i++;
+    }
+
+    ULong64_t mask = 1;
+    
+    // 3 lines of trigger classes
     TString triggerClasses1 = "";
     TString triggerClasses2 = "";
     TString triggerClasses3 = "";
     int sw=0;
-    for(int i=0;i<50;i++)
-    {
-        if(mask&triggerMask)
-        {
-            if(strcmp(esd->GetESDRun()->GetTriggerClass(i),"")){
-                if (sw==0)
-                {
-                    triggerClasses1 += esd->GetESDRun()->GetTriggerClass(i);
-                    triggerClasses1 += "   ";
-                    sw=1;
-                }
-                else if(sw==1)
-                {
-                    triggerClasses2 += esd->GetESDRun()->GetTriggerClass(i);
-                    triggerClasses2 += "   ";
-                    sw=2;
-                }
-                else if(sw==2)
-                {
-                    triggerClasses3 += esd->GetESDRun()->GetTriggerClass(i);
-                    triggerClasses3 += "   ";
-                    sw=0;
-                }
-            }
-        }
-        if(mask&triggerMaskNext50)
-        {
-            if(strcmp(esd->GetESDRun()->GetTriggerClass(i+50),""))
-            {
-                if (sw==0)
-                {
-                    triggerClasses1 += esd->GetESDRun()->GetTriggerClass(i+50);
-                    triggerClasses1 += "   ";
-                    sw=1;
-                }
-                else if(sw==1)
-                {
-                    triggerClasses2 += esd->GetESDRun()->GetTriggerClass(i+50);
-                    triggerClasses2 += "   ";
-                    sw=2;
-                }
-                else if(sw==2)
-                {
-                    triggerClasses3 += esd->GetESDRun()->GetTriggerClass(i+50);
-                    triggerClasses3 += "   ";
-                    sw=0;
-                }
-            }
-        }
-        mask = mask<<1;
-    }
     
+    vector<TString> clustersDescription;
+    TString detectorsInCluster;
+
+    ULong64_t triggerMask = esd->GetTriggerMask();
+    ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
+    
+    for(int k=0;k<i;k++)//loop over all clusters in run
+    {
+        detectorsInCluster="";
+        
+        // get trigger classes for given cluster
+        mask=1;
+        for(int i=0;i<50;i++)
+        {
+            if(mask & triggerMask)
+            {
+                switch (sw) {
+                    case 0:
+                        triggerClasses1+=esd->GetESDRun()->GetTriggerClass(i);
+                        triggerClasses1+=Form("(%d)",cluster[k]);
+                        triggerClasses1+="   ";
+                        sw=1;
+                        break;
+                    case 1:
+                        triggerClasses2+=esd->GetESDRun()->GetTriggerClass(i);
+                        triggerClasses2+=Form("(%d)",cluster[k]);
+                        triggerClasses2+="   ";
+                        sw=2;
+                        break;
+                    case 2:
+                        triggerClasses3+=esd->GetESDRun()->GetTriggerClass(i);
+                        triggerClasses3+=Form("(%d)",cluster[k]);
+                        triggerClasses3+="   ";
+                        sw=0;
+                        break;
+                    default:break;
+                }
+            }
+            if(mask & triggerMaskNext50)
+            {
+                switch (sw) {
+                    case 0:
+                        triggerClasses1+=esd->GetESDRun()->GetTriggerClass(i+50);
+                        triggerClasses1+=Form("(%d)",cluster[k]);
+                        triggerClasses1+="   ";
+                        sw=1;
+                        break;
+                    case 1:
+                        triggerClasses2+=esd->GetESDRun()->GetTriggerClass(i+50);
+                        triggerClasses2+=Form("(%d)",cluster[k]);
+                        triggerClasses2+="   ";
+                        sw=2;
+                        break;
+                    case 2:
+                        triggerClasses3+=esd->GetESDRun()->GetTriggerClass(i+50);
+                        triggerClasses3+=Form("(%d)",cluster[k]);
+                        triggerClasses3+="   ";
+                        sw=0;
+                        break;
+                    default:break;
+                }
+            }
+            mask = mask<<1;
+        }
+        
+        // get trigger detectors in given cluster
+        mask=1;
+        for(int ii=0;ii<20;ii++)
+        {
+            if(inputDetectorMask[k] & mask)
+            {
+                detectorsInCluster+=AliDAQ::fgkDetectorName[ii];
+                detectorsInCluster+=", ";
+            }
+            
+            mask=mask<<1;
+        }
+        clustersDescription.push_back(detectorsInCluster);
+    }
+
+    // put trigger classes in blue bar on the bottom:
     TString stringInfo;
     stringInfo = getEventInfo();
-    compositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0, height-heightInfoBar, width, heightInfoBar);
+    compositeImg->Gradient( 90, "#1B58BF #1D5CDF #0194FF", 0, 0, height-1.33*heightInfoBar, width, heightInfoBar);
     compositeImg->BeginPaint();
-    compositeImg->DrawText(10, height-heightInfoBar+15, stringInfo, 28, "#FFFFFF", "FreeSansBold.otf");
-    compositeImg->DrawText(750, height-heightInfoBar+4,triggerClasses1, 16, "#FFFFFF", "FreeSansBold.otf");
-    compositeImg->DrawText(750, height-heightInfoBar+24,triggerClasses2, 16, "#FFFFFF", "FreeSansBold.otf");
-    compositeImg->DrawText(750, height-heightInfoBar+44,triggerClasses3, 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(10, height-1.33*heightInfoBar+15, stringInfo, 28, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, height-1.33*heightInfoBar+4,triggerClasses1, 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, height-1.33*heightInfoBar+24,triggerClasses2, 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(750, height-1.33*heightInfoBar+44,triggerClasses3, 16, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->EndPaint();
+
     
+    // put clusters description in green bar on the bottom:
+    compositeImg->Gradient( 90, "#1BDD1B #1DDD1D #01DD01", 0, 0, height-0.33*heightInfoBar, width, 0.33*heightInfoBar);
+    compositeImg->BeginPaint();
+    
+    TString cd="";
+    i=0;
+    for (TString desc : clustersDescription) {
+        cd+="Cluster ";
+        cd+=cluster[i];
+        cd+=":";
+        cd+=desc;
+        cd+="\t";
+//        compositeImg->DrawText(10, height-heightInfoBar+4+20*i,cd, 16, "#FFFFFF", "FreeSansBold.otf");
+        i++;
+    }
+    compositeImg->DrawText(10, height-0.33*heightInfoBar+2,cd, 16, "#000000", "FreeSansBold.otf");
+    compositeImg->EndPaint();
     
     // write composite image to disk
     compositeImg->CopyArea(compositeImg, 0,0, width, height);

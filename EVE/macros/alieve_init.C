@@ -10,6 +10,53 @@
 /// \ingroup evemacros
 /// \file alieve_init.C
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <AliQAHistViewer.h>
+
+#include <TString.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
+#include <TMath.h>
+#include <TGListTree.h>
+#include <TEveVSDStructs.h>
+#include <TEveManager.h>
+#include <TEveTrackPropagator.h>
+#include <TEnv.h>
+#include <TEveWindowManager.h>
+#include <TGTab.h>
+#include <TTimeStamp.h>
+#include <TGFileBrowser.h>
+#include <TPRegexp.h>
+#include <TGrid.h>
+#include <TFolder.h>
+#include <TEveMacro.h>
+#include <TSystemDirectory.h>
+
+#include <AliESDtrackCuts.h>
+//#include <AliPWG0Helper.h>
+#include <AliESDEvent.h>
+#include <AliESDfriend.h>
+#include <AliESDtrack.h>
+#include <AliESDfriendTrack.h>
+#include <AliExternalTrackParam.h>
+#include <AliEveTrack.h>
+#include <AliEveTrackCounter.h>
+#include <AliEveMagField.h>
+#include <AliEveEventManager.h>
+#include <AliEveEventManagerEditor.h>
+#include <AliEveMultiView.h>
+#include <AliEveMacroExecutor.h>
+#include <AliEveMacro.h>
+#include <AliEveMacroExecutorWindow.h>
+#include <AliEveEventSelectorWindow.h>
+#include <AliEveTrackFitter.h>
+#include <AliCDBManager.h>
+
+#endif
+
+void alieve_init_import_macros();
+
 void alieve_init(const TString& cdburi = "",
 		 const TString& path   = ".", Int_t event=0,Bool_t showHLTESDTree=kFALSE,
                  const Text_t* esdfile = 0,
@@ -91,7 +138,7 @@ void alieve_init_import_macros()
   void* dirhandle = gSystem->OpenDirectory(macdir.Data());
   if (dirhandle != 0)
   {
-    char* filename;
+    const char* filename;
     TPMERegexp re("\\.C$");
     TObjArray names;
     while ((filename = gSystem->GetDirEntry(dirhandle)) != 0)

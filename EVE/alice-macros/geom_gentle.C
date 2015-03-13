@@ -25,7 +25,7 @@ TEveGeoShape* geom_gentle(Bool_t register_as_global=kTRUE)
 
   TEveElement* elPHOS = gsre->FindChild("PHOS");
   elPHOS->SetRnrState(kTRUE);
-  elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
+//  elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
   elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
 
   if (register_as_global)
@@ -47,7 +47,7 @@ TEveGeoShape* geom_gentle_rphi()
 
   TEveElement* elPHOS = gsre->FindChild("PHOS");
   elPHOS->SetRnrState(kTRUE);
-  elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
+//  elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
   elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
 
   return gsre;
