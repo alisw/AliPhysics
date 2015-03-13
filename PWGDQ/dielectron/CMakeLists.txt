@@ -139,6 +139,7 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install the macros
 install(DIRECTORY
+		files
                 macros
                 macrosJPSI
                 macrosLMEE
