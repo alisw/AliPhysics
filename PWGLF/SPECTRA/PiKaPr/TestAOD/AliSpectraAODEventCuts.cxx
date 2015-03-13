@@ -98,6 +98,7 @@ fSplineArrayTPC(0),
 fQgenIntegral(0),
 fSplineArrayV0Agen(0),
 fSplineArrayV0Cgen(0),
+fSplineArrayTPCgen(0),
 fQvecMC(0),
 fNch(0),
 fQvecCalibType(0),
@@ -142,6 +143,8 @@ fV0Aeff(0)
   fSplineArrayV0Agen->SetOwner();
   fSplineArrayV0Cgen = new TObjArray();
   fSplineArrayV0Cgen->SetOwner();
+  fSplineArrayTPCgen = new TObjArray();
+  fSplineArrayTPCgen->SetOwner();
 
   fOutput->Add(fHistoCuts);
   fOutput->Add(fHistoVtxBefSel);
@@ -774,10 +777,13 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
 //______________________________________________________
 Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side, Int_t type=1){
 
+  //v0side: 0. V0A 1. V0C 2. TPC
+  
   if(!fIsMC) return -999.;
 
   // V0A efficiecy
-  if(type==1){
+  //FIXME no V0C efficiecy at present
+  if( v0side==0 && type==1){
     fV0Aeff = 0x0;
     fV0Aeff = (TH1F*)fQvecIntList->FindObject("vzeroa_efficiency_prim_plus_sec_over_gen");
     if(!fV0Aeff) return -999.;
@@ -793,16 +799,21 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side, Int_t type=1){
 
   Int_t nMC = arrayMC->GetEntries();
 
-  if(type==0){ // type==0: q-vec from tracks in vzero acceptance
+  if(type==0){ // type==0: q2 from generated tracks
 
     // loop on generated
     for (Int_t iMC = 0; iMC < nMC; iMC++){
       AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
       if(!partMC->Charge()) continue;//Skip neutrals
-
+      
       // check vzero side
-      if( CheckVZEROacceptance(partMC->Eta()) != v0side ) continue;
-
+      if( CheckVZEROacceptance(partMC->Eta()) != v0side ) continue; // q2 from tracks in vzero/tpc acceptance
+      
+      if(v0side==2) {
+        if ( partMC->Pt()<0.2 || partMC->Pt()>20.)continue;
+	if (!partMC->IsPhysicalPrimary()) continue;
+      }
+      
       // Calculate Qvec components
       Qx2mc += TMath::Cos(2.*partMC->Phi());
       Qy2mc += TMath::Sin(2.*partMC->Phi());
@@ -813,6 +824,8 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorMC(Int_t v0side, Int_t type=1){
   }//end if on type==0
 
   else if(type==1){ // type==1 (default): q-vec from vzero
+    
+    if(v0side==1 || v0side==2) return -999.; // FIXME available only for v0a
 
     // only used in qgen_vzero
     Double_t multv0mc[64];
@@ -916,9 +929,11 @@ Int_t AliSpectraAODEventCuts::CheckVZEROacceptance(Double_t eta){
 
   // eval VZERO side - FIXME Add TPC!
 
-  if(eta > 2.8  && eta < 5.1) return 0; //VZEROA
+  if(eta > 2.8 && eta < 5.1) return 0; //VZEROA
 
-  else if (eta > -3.7  && eta < -1.7) return 1; //VZEROC
+  if (eta > -3.7 && eta < -1.7) return 1; //VZEROC
+  
+  if (eta >= fEtaTPCmin && eta <= fEtaTPCmax) return 2; //TPC
 
   return -999.;
 
@@ -938,6 +953,7 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side, Int_t type=1)
   if(type==0){
     if(v0side==0/*V0A*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROAgen"); }
     if(v0side==1/*V0C*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROCgen"); }
+    if(v0side==2/*TPC*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("TPCgen"); }
   } else if (type==1){
     if(v0side==0/*V0A*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROAgen_vzero"); }
     if(v0side==1/*V0C*/){ fQgenIntegral = (TH2D*)fQvecIntList->FindObject("VZEROCgen_vzero"); }
@@ -974,6 +990,15 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentileMC(Int_t v0side, Int_t type=1)
       fSplineArrayV0Cgen->AddAtAndExpand(spline,ic);
     }
   }
+  else if(v0side==2/*TPC*/){
+    if( CheckSplineArray(fSplineArrayTPCgen, ic) ) {
+      spline = (TSpline*)fSplineArrayTPCgen->At(ic);
+    } else {
+      spline = new TSpline3(h1D,"sp3");
+      fSplineArrayTPCgen->AddAtAndExpand(spline,ic);
+    }
+  }
+  
   Double_t percentile=-999.;
   if(spline)percentile = 100*spline->Eval(qvec);
 
