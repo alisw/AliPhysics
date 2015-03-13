@@ -1,3 +1,15 @@
+/**
+ * \file AddTaskPtEMCalTriggerV1
+ * \brief Add macro for the analysis task of high-pt tracks in triggered events
+ *
+ * This macro configures the analysis of high-p_{t} tracks in triggered events and adds it to
+ * the analysis manager. The configuration is steered by the main function of the macro,
+ * AddTaskPtEMCalTriggerV1. All other functions are helper functions performing several configuration,
+ * i.e. of analysis components, and not intended for general usage.
+ *
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \date Dec 12, 2014
+ */
 #if !defined (__CINT__) || defined (__MAKECINT__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
@@ -19,6 +31,42 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char *trackCutsName, bool isAOD);
 
+/**
+ * \brief Configuring the analysis of high-p_{t} tracks in triggered events and adds it to the analysis train
+ *
+ * Main function of the macro: Configures the task (enabling components, linking connections, defining output containers)
+ * and adds it to the analysis manager. The macro auto-configures the task for ESD or AOD analysis. The user has to define
+ * only whether the analysis runs on Monte-Carlo, and whether the Monte-Carlo sample is done in p_{t}-hard bins. Sample-
+ * specific settings are steered via the string period.
+ *
+ * The function enables several analysis components. These are:
+ *  - particles: Analysis of MC true particles
+ *  - triggers: Analysis of trigger patches
+ *  - clusters: Analysis of EMCal clusters
+ *  - tracks: Analysis of reconstructed tracks
+ *  - mcjets: Analysis of jets build from MC-true particles
+ *  - recjets: Analysis of jet build from reconstructed tracks
+ *  The string of components (see under parameters) uses : as separator. All analysis components are linked to task groups which
+ *  share a common event selection. The task contains two groups, one without event selection and a second with a standard event
+ *  selection (mainly vertex selection). The trigger patch analysis component, if enabled, is connected to the group without any event
+ *  selection, while all other analyses components are connected to the group with the default event selection. By default all
+ *  components are switched on.
+ *
+ * \param isMC True if MC-truth is available
+ * \param usePythiaHard True in case the analysis is done on a production in pt-hard bins
+ * \param period Name of the period
+ * \param ntrackContainer Name of the track container
+ * \param nclusterContainer Name of the cluster container
+ * \param njetcontainerData Name of the jet container on reconstructed event
+ * \param njetcontainerMC Name of the jet container on true event
+ * \param ntriggerContainer Name of the container having trigger patches
+ * \param jetradius Jet resolution parameter used for both jetfinders
+ * \param ntrackcuts Name of the track cuts used in the selection of reconstructed tracks
+ * \param components Components enabled in the analysis (see above)
+ * \param usePatches Make trigger selection from patches
+ * \param useOfflinePatches True if offline patches are used (only relevant in case patches are used for the trigger decision)
+ * \return The fully configured task
+ */
 AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     bool isMC,
     bool usePythiaHard,
@@ -98,7 +146,9 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   // Add components
   if(doTriggers){
     EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *noselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("noselect");
-    noselect->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis"));
+    EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent * triggercomp = new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchanalysis");
+    if(isMC) triggercomp->SetSwapOnlineThresholds(true);
+    noselect->AddAnalysisComponent(triggercomp);
     pttriggertask->AddAnalysisGroup(noselect);
   }
 
@@ -167,6 +217,15 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   return pttriggertask;
 }
 
+/**
+ * \brief Configuration of analysis component on EMCAL clusters
+ *
+ * Configures the analysis component on EMCAL clusters (calibrated and uncalibrated) and adds it to the parent analysis group. Function
+ * is a helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param group Parent group the component is linked to
+ * \param usePatches True if trigger selection is done using patches
+ */
 void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches){
   EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent *clusteranalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent("clusterAnalysis");
   clusteranalysis->SetEnergyRange(2., 100.);
@@ -174,6 +233,18 @@ void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group
   group->AddAnalysisComponent(clusteranalysis);
 }
 
+/**
+ * \brief Configuration of analysis component on reconstructed tracks
+ *
+ * Configures the analysis component on reconstructed tracks and adds it to its parent analysis group. Function
+ * is a helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param group Parent analysis group
+ * \param trackcuts Cuts used for the track selection
+ * \param isMC True if MC information is available.
+ * \param usePatches True if trigger selection is done using patches
+ * \param isSwapEta True if the \f$ \eta \f$ sign is swapped
+ */
 void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool usePatches, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
   group->AddAnalysisComponent(trackanalysis);
@@ -185,16 +256,42 @@ void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
   if(isSwapEta) trackanalysis->SetSwapEta();
 }
 
+/**
+ * \brief Configuration of event counter component.
+ *
+ * Configures event counter component and adds it to the parent analysis group. Function is a helper function
+ * called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param group Parent group of analysis components
+ * \param usePatches True if trigger selection is done using patches
+ */
 void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, Bool_t usePatches){
   EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent * evcount = new EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent("eventCounter");
   evcount->SetUsePatches(usePatches);
   group->AddAnalysisComponent(evcount);
 }
 
+/**
+ * \brief Configuration of analysis component on MC true events and particles
+ *
+ * Configures the analysis component on MC true events and particles and adds it to the parent analysis group. Function is a
+ * helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param group The parent analysis group
+ */
 void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group){
   group->AddAnalysisComponent(new EMCalTriggerPtAnalysis::AliEMCalTriggerMCParticleAnalysisComponent("partana"));
 }
 
+/**
+ * \brief Configuration of analysis component on MC true jets
+ *
+ * Configures the analysis component on MC true jets (jets from MC true particles in MC true events) and adds it to the analysis group.
+ * Function is a helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param group The parent analysis group
+ * \param minJetPt Lower jet-p_{t} cut of the analysis
+ */
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt){
   EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent(Form("MCJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
@@ -202,6 +299,19 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
   group->AddAnalysisComponent(jetana);
 }
 
+/**
+ * \brief Configuration of analysis on reconstructed jets
+ *
+ * Configures the analysis on reconstructed jets and adds it to the parent analysis group. Function is a
+ * helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param group The parent analysis group
+ * \param trackcuts Track selection applied to particles in reconstructed jets
+ * \param minJetPt Lower jet-p_{t} cut of the analysis
+ * \param isMC True if MC information is available.
+ * \param usePatches True if trigger selection is done using patches
+ * \param isSwapEta True if the \f$ \eta \f$ sign is swapped
+ */
 void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool usePatches, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
@@ -211,6 +321,14 @@ void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group,
   group->AddAnalysisComponent(jetana);
 }
 
+/**
+ * \brief Create binning for jet p_{t} axis
+ *
+ * Create binning for jet p_{t} axis and adds it to the binning factory of the parent task. Function is a
+ * helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param task Task the binning is associated to
+ */
 void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task){
   // Linear binning in steps of 10 GeV/c up to 200 GeV/c
   TArrayD binlimits(21);
@@ -218,6 +336,17 @@ void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 
   task->SetBinning("jetpt", binlimits);
 }
 
+/**
+ * \brief Creation of default (\f$ R_{pPb} \f$) track selection cuts
+ *
+ * Creates the default (\f$ R_{pPb} \f$) track selection for ESD or AOD analysis. In order to be independent of the
+ * analysis type, the track selection is hidden from the analysis flow inside a wrapper for track selections, which
+ * is implemented for ESD and AOD analyses. Function is a  helper function called by AddTaskPtEMCalTriggerV1 and not
+ * intended for general usage.
+ *
+ * \param isAOD True in case the analysis is performed on AOD tracks
+ * \return A virtual track selection using the hybrid track selection cuts
+ */
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD){
   EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
   if(isAOD){
@@ -234,6 +363,17 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
   return trackSelection;
 }
 
+/**
+ * \brief Creation of default (\f$ R_{pPb} \f$) track selection cuts
+ *
+ * Creates the hybrid track selection for ESD or AOD analysis. In order to be independent of the analysis type,
+ * the track selection is hidden from the analysis flow inside a wrapper for track selections, which is implemented
+ * for ESD and AOD analyses. Function is a  helper function called by AddTaskPtEMCalTriggerV1 and not intended for
+ * general usage.
+ *
+ * \param isAOD True in case the analysis is performed on AOD tracks
+ * \return A virtual track selection using the hybrid track selection cuts
+ */
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD){
   EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
   if(isAOD){
@@ -255,6 +395,19 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
   return trackSelection;
 }
 
+/**
+ * \brief Steering function of track cuts creation
+ *
+ * This function steers the creation of the track selection objects and delegates it to other function. Currently
+ * the following track selections are implemented:
+ *  - standard: The standard (\f$ R_{pPb} \f$) track selection
+ *  - hybrid: The hybrid track selection, used in jet analyses
+ * Function is a  helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
+ *
+ * \param trackCutsName Name of the track cuts
+ * \param isAOD True in case the analysis is performed on AOD tracks
+ * \return A virtual track selection object (NULL for invalid track cut names)
+ */
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char* trackCutsName, bool isAOD) {
   if(!strcmp(trackCutsName, "standard")) return CreateDefaultTrackCuts(isAOD);
   else if(!strcmp(trackCutsName, "hybrid")) return CreateHybridTrackCuts(isAOD);
