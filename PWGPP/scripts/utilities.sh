@@ -88,6 +88,7 @@ guessRunData()
   pass=""
   legoTrainRunNumber=""
   dataType=""
+  dataAOD=""
   originalPass=""
   originalPeriod=""
   anchorYear=""
@@ -114,7 +115,7 @@ guessRunData()
     [[ ${field} =~ ^[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && shortRunNumber=${field}
     [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
     [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
-    [[ "${field}" =~ "${pass}" && ${fieldNext} =~ AOD ]] && legoTrainRunNumber=""
+    [[ "${field}" =~ "${pass}" && ${fieldNext} =~ AOD ]] && legoTrainRunNumber="" && dataAOD="AOD"
 
     [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ && ${fieldPrev} =~ ^20[0-9][0-9]$ && ! ${fieldNext} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && pass=${fieldNext}
 
@@ -139,6 +140,7 @@ guessRunData()
   [[ -n ${shortRunNumber} && -z ${runNumber} && -z {dataType} ]] && runNumber=${shortRunNumber}
   [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
   [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
+  [[ -n ${dataAOD} ]] && pass="${pass}_AOD"
 
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
   #if [[ -z ${runNumber} ]]
