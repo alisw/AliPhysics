@@ -1693,15 +1693,44 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 			}
 		}
 		
-		fIsFromMBHeader = kTRUE; 
-		fIsOverlappingWithOtherHeader = kFALSE;
+		fIsFromMBHeader 				= kTRUE; 
+		fIsOverlappingWithOtherHeader 	= kFALSE;
+		TString periodName 				= fV0Reader->GetPeriodName();
 		// test whether largest contribution to cluster orginates in added signals
-		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0) fIsFromMBHeader = kFALSE;
+		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0){
+			if ( (periodName.CompareTo("LHC12f1a") == 0 || periodName.CompareTo("LHC12f1b") == 0) && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 1){	
+				AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+				if(man) {
+					AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+					if (inputHandler){
+						TTree* tree = (TTree*) inputHandler->GetTree();
+						TFile* file = (TFile*) tree->GetCurrentFile();
+						TString fileName(file->GetName());
+						cout << "failed to identify that this is a MB prod: "<<fileName.Data() << endl;
+					}
+				}
+			}	
+			fIsFromMBHeader = kFALSE;
+		}	
 		if (fIsMC ){
 			if (clus->GetNLabels()>1){
 				Int_t* mclabelsCluster = clus->GetLabels();
 				for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
-					if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCStack, fInputEvent) == 0) fIsOverlappingWithOtherHeader = kTRUE;
+					if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCStack, fInputEvent) == 0){
+						if ( (periodName.CompareTo("LHC12f1a") == 0 || periodName.CompareTo("LHC12f1b") == 0) && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 1){
+							AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+							if(man) {
+								AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+								if (inputHandler){
+									TTree* tree = (TTree*) inputHandler->GetTree();
+									TFile* file = (TFile*) tree->GetCurrentFile();
+									TString fileName(file->GetName());
+									cout << "failed to identify that this is a MB prod: " << fileName.Data() << endl;
+								}
+							}
+						}
+						fIsOverlappingWithOtherHeader = kTRUE;
+					}	
 				}	
 			}	
 		}	
