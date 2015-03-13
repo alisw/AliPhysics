@@ -487,7 +487,47 @@ void AliDCSSensorArray::RemoveGraphDuplicates(Double_t tolerance){
    }
 }    
 
+//_____________________________________________________________________________
+void AliDCSSensorArray::RemoveAbsBelowThreshold(const Double_t threshold){
+  //
+  //   Remove points with Abs(y) value below threshold
+  //   (to save space for non-fitted graphs)
+  //   Only remove if the two neighboring points are also
+  //   below threshold t.
+  //   See following figure where x = keep, o = remove
+  //   ^
+  //   | x
+  //   |                             x
+  //   |     x                      x
+  //  t . . . . . . . . . . . . . . . .
+  //   |       x o                x
+  //  0 - - - - - - - - - - - - - - - - - >
+  //   |           o    x   x o o
+  // -t . . . . . . . . . . . . . . . .
+  //   |                  x
+  //
   
+  const Int_t nsensors = fSensors->GetEntries();
+  for (Int_t isensor=0; isensor<nsensors; isensor++) {
+    AliDCSSensor *entry = static_cast<AliDCSSensor*>(fSensors->At(isensor));
+    TGraph *graph = entry->GetGraph();
+    Double_t xa=-999.,ya=-999.,xb=-999.,yb=-999.,xc=-999.,yc=-999.;
+    if (graph) {
+      const Int_t npoints=graph->GetN();
+      for (Int_t i=1;i<npoints-1;i++) {
+	graph->GetPoint(i-1,xa,ya);
+	graph->GetPoint(i,xb,yb);
+	graph->GetPoint(i+1,xc,yc);
+	if ( (TMath::Abs(ya) < threshold) &&
+	     (TMath::Abs(yb) < threshold) &&
+	     (TMath::Abs(yc) < threshold) ) {
+	  graph->RemovePoint(i);
+	}
+      }
+    }
+  }
+}
+
 //_____________________________________________________________________________
 AliDCSSensor* AliDCSSensorArray::GetSensor(Int_t IdDCS) 
 {

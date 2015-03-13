@@ -71,6 +71,7 @@ class AliDCSSensorArray : public TNamed {
   void RemoveSensor(Int_t IdDCS);
   void AddSensors(AliDCSSensorArray *sensors);
   void RemoveGraphDuplicates (Double_t tolerance=1e-6);
+  void RemoveAbsBelowThreshold(const Double_t threshold);
   TArrayI OutsideThreshold(Double_t threshold, UInt_t timeSec=0, Bool_t below=kTRUE) const;
   Int_t NumSensors() const { return fSensors->GetEntries(); }
   Int_t NumFits() const;
