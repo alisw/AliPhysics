@@ -1,8 +1,6 @@
 #ifndef ALIANALYSISTASKEMCALJET_H
 #define ALIANALYSISTASKEMCALJET_H
 
-// $Id$
-
 class TClonesArray;
 class TList;
 class TString;
