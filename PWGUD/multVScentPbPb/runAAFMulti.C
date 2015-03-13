@@ -6,16 +6,16 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
 		 Float_t etaMax     = 0.5,        // max eta range to fill in histos
 		 Float_t zMin       = -7,         // process events with Z vertex min
 		 Float_t zMax       =  7,         //                     max positions
-		 Int_t   useCentVar = 0,          // centrality variable to use: enum {kCentSPD2, kCentV0,  kCentV0CR, kCentTrTPC}
-		 Float_t scaleMCV0  = 0.8,     // rescale MC V0 to match data
+		 Char_t* useCentVar = 0,          // centrality variable to use
+		 Float_t scaleMCV0  = 1.0,     // rescale MC V0 to match data
 		 //
 		 //
 		 Float_t cutSigNStd  = 1.5,       // cut on weighed distance used to extract signal
 		 Float_t cutSigDPhiS = -1,        // cut on dPhi-phiBent used to extract signal (if negative -> dphi*sqrt(cutSigNStd)
 		 Bool_t  useMC  = kTRUE,          // fill MC info (doRec=kTRUE)
 		 //
-		 Bool_t doRec  = kTRUE,//kTRUE,           // fill data histos from new reco
-		 Bool_t doInj  = kTRUE,//kTRUE,           // create Inj. bg
+		 Bool_t doRec  = kFALSE,//kTRUE,           // fill data histos from new reco
+		 Bool_t doInj  = kFALSE,//kTRUE,           // create Inj. bg
 		 Bool_t doRot  = kFALSE,          // create Rot. bg
 		 Bool_t doMix  = kFALSE,//kTRUE,  // create Mix. bg
 		 // 
@@ -41,28 +41,40 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
 		 //
 		 Bool_t checkReconstructables = kFALSE,//kTRUE, // fill histos for reconstructable (needs useMC and doRec) 
 		 //
-		 TString alirootVer = "VO_ALICE@AliRoot::v5-03-24-AN",
-		 TString rootVer    = "VO_ALICE@ROOT::v5-33-02b",
+		 TString alirootVer = "VO_ALICE@AliRoot::vAN-20140409",
+		 //TString rootVer    = "VO_ALICE@ROOT::v5-33-02b",
+		 TString rootVer    = "VO_ALICE@ROOT::v5-34-08-6",
 		 //
 		 //TString proofCluster="shahoian@skaf.saske.sk"
 		 TString proofCluster="shahoian@alice-caf.cern.ch"
 		 ) 
 { 
   //  
+  TString aliver = gSystem->Getenv("ANTAG");
+  if (!aliver.IsNull()) alirootVer = "VO_ALICE@AliRoot::"+aliver;
+  TString roover = gSystem->Getenv("ROOTVER");
+  if (!aliver.IsNull()) rootVer = "VO_ALICE@ROOT::"+roover;
+  //
+  printf("Use %s %s CentVar = %s\n",alirootVer.Data(), rootVer.Data(), useCentVar);
+//  return;
+  printf("Mode: %s %s C(%f %d) %d %d %d %d | %f\n",dataset.Data(), outFName.Data(), cutSigDPhiS,useMC, doRec,doInj,doRot,doMix,phiRot);
   Bool_t runLocal = kFALSE;//kTRUE; // true only for local test mode
   if (runLocal) {
     //    dataset = "/default/shahoian/test_pp";//"/default/shahoian/test";
-    dataset = "default/shahoian/test137366";
+    //    dataset = "/default/shahoian/pA188359";
     proofCluster = "";
     alirootVer = "$ALICE_ROOT/ANALYSIS/macros/AliRootProofLite";
+    //useMC = kFALSE;
     gSystem->ExpandPathName(alirootVer);
-    nEvents = 500;
+    //    nEvents = 500;
   }
   //
+  /*
   if ((!dataset.Contains("alice/sim")) && useMC) {
     printf("Running with read data dataset, switching OFF useMC\n");
     useMC = kFALSE;
   }
+  */
   //
   printf("Requested: %s %s\n",alirootVer.Data(), rootVer.Data());
   printf("Output expected in %s\n",outFName.Data());
@@ -70,9 +82,13 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
   //
   TString alirootMode="REC";
-  TString extraLibs = "ITSrec:CDB:Geom:"; // not needed in default aliroot mode
+  //  TString extraLibs = "ITSrec:CDB:Geom:"; // not needed in default aliroot mode
+  TString extraLibs = "Physics:Minuit:Proof:Geom:STEERBase:ESD:CDB:RAWDatabase:RAWDatarec:AOD:ANALYSIS:"
+    "STEER:STRUCT:ITSbase:ITSrec:OADB:ANALYSISalice";
+ // not needed in default aliroot mode
+
   //extraLibs+= "ANALYSIS:ANALYSISalice";
-  extraLibs+= "ANALYSIS:OADB:ANALYSISalice:EventMixing";
+  //  extraLibs+= "ANALYSIS:OADB:ANALYSISalice:EventMixing";
   TList *list = new TList();
   // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
   list->Add(new TNamed("ALIROOT_MODE"      , alirootMode.Data()));
@@ -82,8 +98,8 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   //
   //REM: same version of AliRoot on client!!!!! Otherwise error!! 
   TProof::Mgr(proofCluster.Data())->SetROOTVersion(rootVer.Data());
-  TProof::Open(proofCluster.Data());//,"workers=10x");
-  //  TProof::Open(proofCluster.Data(),"workers=1x");
+  TProof::Open(proofCluster.Data());//,"workers=1x");
+  if (runLocal) gProof->SetParallel(4);
   if (!gProof) {
     Error("runAAFMulti.C","Connection to AF failed.");
     return;
@@ -93,7 +109,10 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   gProof->SetParameter("PROOF_UseMergers", 0);
   // Lets enable aliroot + extra libs on proof cluster
   if (runLocal) gProof->UploadPackage(alirootVer.Data());
-  gProof->EnablePackage(alirootVer.Data(), list);
+  if ( gProof->EnablePackage(alirootVer.Data(), list) ) {
+    printf("Failed to enable packages\n");
+    return;
+  }
   //  gProof->EnablePackage(alirootVer.Data());
   //
   if (runLocal) {
@@ -108,13 +127,14 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   gROOT->LoadMacro("MyAnalysisMacroTrackletMulti.C");
   TStopwatch sw;
   sw.Start();
+  printf("Mode: %d %d %d %d\n",doRec,doInj,doRot,doMix);
   MyAnalysisMacroTrackletMulti(dataset,outFName,nEvents,etaMin,etaMax,zMin,zMax,useCentVar,
 			       cutSigNStd,cutSigDPhiS,useMC,scaleMCV0,
 			       doRec,doInj,doRot,doMix,
 			       phiRot,injScale,scaleDTheta,nStdDev,dphi,dtht,
 			       phishift,remOvl,ovlPhiCut,ovlZetaCut,nEventsSkip,
 			       ntMin,ntMax,ntMixBinSz,zMixBinSz,
-			       checkReconstructables);
+			       checkReconstructables, runLocal);
   //
   sw.Stop();
   sw.Print();

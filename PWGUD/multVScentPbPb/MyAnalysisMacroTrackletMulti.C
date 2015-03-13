@@ -8,7 +8,7 @@ void MyAnalysisMacroTrackletMulti
  Float_t etaMax     = 0.5,        // max eta range to fill in histos
  Float_t zMin       = -7,         // process events with Z vertex min
  Float_t zMax       =  7,         //                     max positions
- Int_t   useCentVar = 0,          // centrality variable to use: 0=V0, 1=SPD2corr
+ const char* useCentVar = 0,          // centrality variable to use
  //
  Float_t cutSigNStd  = 1.5,        // cut on weighed distance used to extract signal
  Float_t cutSigDPhiS = -1,        // cut on dPhi-phiBent used to extract signal (if negative -> dphi*sqrt(cutSigNStd)
@@ -40,7 +40,8 @@ void MyAnalysisMacroTrackletMulti
  Float_t zMixBinSz  =  14,       //0.1,  // Zv. bin for mixing
  //---------------------------------------------------------------------------------
  //
- Bool_t checkReconstructables = kFALSE//kTRUE, // fill histos for reconstructable (needs useMC and doRec) 
+ Bool_t checkReconstructables = kFALSE, //kTRUE, // fill histos for reconstructable (needs useMC and doRec) 
+ Bool_t runLocal = kFALSE
  //
  )
 {
@@ -51,7 +52,7 @@ void MyAnalysisMacroTrackletMulti
     //
   printf("Start Analysis for %s, max %d Events skipping %d, Event Cuts: %.1f<eta<%.1f, %.2f<Zv<%.2f\n",
 	 dataset.Data(),nEvents,nEventsSkip,etaMin,etaMax,zMin,zMax);
-  printf("Centrality variable: %d\n",useCentVar);
+  printf("Centrality variable: %s\n",useCentVar);
   printf("Tracklet cuts: dPhi:%.3f dTheta:%.3f phiShift:%.4f | Keep %.1f NstDev\n"
 	 "Scale dTheta: %s | Signal Selection: NstDev:%.1f, dPhiS: %.3f\n", 
 	 dphi,dtht,phishift,nStdDev,scaleDTheta ? "ON":"OFF",
@@ -78,21 +79,44 @@ void MyAnalysisMacroTrackletMulti
   InputHandlerSetup(format,useMC);
   if (doMix) MixHandlerSetup(ntMin,ntMax,ntMixBinSz, zMin,zMax,zMixBinSz);
   // compile our task
-  gProof->Load("AliITSMultRecBg.cxx++");
-  gProof->Load("AliTrackletTaskMulti.cxx++");
+  gProof->Load("AliITSMultRecBg.cxx++g");
+  gProof->Load("AliTrackletTaskMulti.cxx++g");
   //
   printf("Loading Centrality task\n");
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+  //  taskCentrality->SetPass(2);
   //  taskCentrality->SetDebugLevel(2);
   if (useMC) taskCentrality->SetMCInput();
   //  taskCentrality->Dump();
+  //
+  //================================================================================
+  printf("Requesting physics selection in %s mode\n",useMC ? "MC":"Data");
+  //  /*
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //gROOT->ProcessLine(".L AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(useMC, 1,0, !runLocal);
+  //
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/PhysicsSelectionOADB_CINT5_pA.C");
+  // AddExtraSel
+  //
+  //
+  //  */
+  /*
+  AliPhysicsSelection* physSel = new AliPhysicsSelection();
+  if (useMC) physSel->SetAnalyzeMC();
+  AliInputEventHandler* handlerInp = dynamic_cast<AliInputEventHandler*> (mgr->GetInputEventHandler());
+  if (handlerInp) handlerInp->SetEventSelection(physSel);
+  */
+  //
+  //==================================================================================
   //
   // load and run AddTask macro
   gROOT->LoadMacro("AddMultTaskTrackletMulti.C");
   //
   // create our task
-  AliTrackletTaskMulti *mltTask = AddMultTaskTrackletMulti(outFName.Data());
+  AliTrackletTaskMulti *mltTask = AddMultTaskTrackletMulti(outFName.Data(), !runLocal);
   //
   mltTask->SetUseCentralityVar(useCentVar);
   mltTask->SetDoNormalReco(doRec);
@@ -123,13 +147,11 @@ void MyAnalysisMacroTrackletMulti
   mltTask->SetInjScale(injScale);
   mltTask->SetRemoveOverlaps(remOvl);
   //
+  //mltTask->SelectCollisionCandidates();//AliVEvent::kMB);
+  //
   printf("new Task: %p\n",mltTask);
   //
-  printf("Requesting physics selection in %s mode\n",useMC ? "MC":"Data");
-  gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(useMC,0);
-  mltTask->SelectCollisionCandidates();//AliVEvent::kMB);
-  //
+  //  */
   // Run analysis
   mgr->InitAnalysis();
   // process dataset  
@@ -158,6 +180,8 @@ TString GetFormatFromDataSet(TString dataset) {
     }
     dsTreeName = ds->GetDefaultTreeName();
   }
+
+  printf("Dataset is : %s\n",dsTreeName.Data());
 
   if (dsTreeName.Contains("esdTree")) {
     Info("runAAF.C","ESD input format detected ...");
@@ -208,6 +232,7 @@ Bool_t InputHandlerSetup(TString format = "esd", Bool_t useKine = kTRUE)
         AliMCEventHandler* mcInputHandler = new AliMCEventHandler();
         mgr->SetMCtruthEventHandler(mcInputHandler);
       }
+      mcInputHandler->SetPreReadMode(AliMCEventHandler::kLmPreRead);
     }
 
   }

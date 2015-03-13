@@ -1,0 +1,112 @@
+#!/bin/bash
+# here we use centrality method V0A=1
+
+run="195483"
+dataSet="/default/shahoian/data_LHC13f_000196433_ESDs"
+#mcSet="/alice/sim/LHC12g4_000${run}_ESDs"
+#mcSet="/alice/sim/LHC12g4a_000${run}_ESDs"
+mcSet="/default/shahoian/sim_LHC14i2_000196433_ESDs"
+
+maxEvData=4000000
+maxEvMC=4000000
+
+prfDT="dtAp0196433"
+prfMC="mcAp0196433"
+
+export ANTAG="vAN-20141201"
+export ROOTVER="v5-34-08-6"
+
+# comment unnecessart selections 
+declare -a centVarSel=(\
+#"V0S" \
+"V0M" \
+#"V0A" \
+#"V0S" \
+#"CL1" \
+#"ZNA" \
+)
+
+
+# Data or MC will be processed only if these flags are set to 1
+doData=1
+doMC=-1
+
+# set 0 to use tracklets from AliMultiplicity, 1 to re-reconstruct them
+doRec=0
+
+# set 0 to not reconstruct injected bg (otherwise doRec will be automatically set to 1)
+doInj=0
+#
+
+trSelStr="kINT7"
+cnSelStr="{0,5,10,20,40,60,80,100}"
+userPref="NSD_"
+
+#rootmode=" -q "
+rootmode=" -q -l -b"
+
+#resetcaf="1"
+
+source /opt/prebuilt/packages/env_aliroot.sh "VO_ALICE@AliRoot::${ANTAG}"
+
+
+echo ${#centVarSel[@]} centrality selections: ${centVarSel[@]}
+
+#=======================================================================
+if [ "${doInj}" -eq 1 ] ; then 
+    doRec=1
+    prfDT="${prfDT}I"
+    prfMC="${prfMC}I"
+    echo Bg injection will be done: output prefix "${prfDT}" "${ptfMC}" 
+else 
+    echo Bg injection will not be done
+fi
+#
+if [ "${doRec}" -eq 1 ] ; then 
+    prfDT="${prfDT}R"
+    prfMC="${prfMC}R"
+    echo Tracklets will be re-reconstructed: output prefix "${prfDT}" "${ptfMC}" 
+else 
+    echo Tracklets will not be re-reconstructed
+fi
+
+
+
+SERVICE='xrootd'
+ 
+if ps ax | grep -v grep | grep $SERVICE > /dev/null
+then
+    echo "$SERVICE service running, everything is fine"
+else
+    echo "$SERVICE is not running, starting"
+    $SERVICE -b
+fi
+
+
+for cntVar in "${centVarSel[@]}"
+do
+   prefix=${userPref}${ANTAG}_${trSelStr}_${cntVar}`echo $cnSelStr | sed -r 's/[,\}]/_/g' | sed -r 's/ //g' | sed -r 's/\{/_cnt/g'`
+   echo "doing $prefix"
+#
+   cp _MyAnalysisMacroTrackletMulti.C MyAnalysisMacroTrackletMulti.C
+   cp _AliTrackletTaskMulti.cxx       AliTrackletTaskMulti.cxx
+   perl -pi -e "s/.*PutTriggerSelection/fIsSelected = handler->IsEventSelected() & AliVEvent::${trSelStr};/g" AliTrackletTaskMulti.cxx
+   perl -pi -e "s/.*PutCentralitySelection/const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = ${cnSelStr};/g" AliTrackletTaskMulti.cxx
+#    
+   if [ ${doData} -eq 1 ] ; then
+       if [ -n "${resetcaf}" ]; then root -q -b ResetAF.C+; fi
+       pref="${prfDT}_${prefix}"
+       root ${rootmode} runAAFMulti.C\(\"${dataSet}\",\"${pref}eta_m23_p23_zv_m18_p18.root\",${maxEvData},-2.3,2.3,-18,18,\"${cntVar}\",1,1.5,-1,0,${doRec},${doInj}\)
+       ./mrg.sh /tmp/myoutput1 $pref DATAraw/ 
+       ./mrg.sh /tmp/myoutput1 Event DATAraw/ sel${pref}
+   fi
+#
+   if [ ${doMC} -eq 1 ] && [ ${cntVar} != "ZNA" ] ; then
+       if [ -n "${resetcaf}" ]; then root -q -b ResetAF.C+; fi
+       pref="${prfMC}_${prefix}"
+       root ${rootmode} runAAFMulti.C\(\"${mcSet}\",\"${pref}eta_m23_p23_zv_m18_p18.root\",${maxEvMC},-2.3,2.3,-18,18,\"${cntVar}\",1,1.5,-1,1,${doRec},${doInj}\)
+       ./mrg.sh /tmp/myoutput1 $pref MCraw/ 
+       ./mrg.sh /tmp/myoutput1 Event MCraw/ sel${pref}
+    fi
+
+done
