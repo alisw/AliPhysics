@@ -27,7 +27,8 @@ public:
    * @param name Name
    */
   AliCopyHeaderTask(const char* name="header") 
-    : AliAnalysisTaskSE(name)
+    : AliAnalysisTaskSE(name),
+      fCalculateRefMult(true)
   {
     fBranchNames = "ESD:AliESDHeader.,AliESDRun.";
   }
@@ -37,7 +38,8 @@ public:
    * @param other Object to copy from 
    */
   AliCopyHeaderTask(const AliCopyHeaderTask& other) 
-    : AliAnalysisTaskSE(other)
+    : AliAnalysisTaskSE(other),
+      fCalculateRefMult(other.fCalculateRefMult)
   {}
   /** 
    * Destructor
@@ -52,19 +54,58 @@ public:
    */
   AliCopyHeaderTask& operator=(const AliCopyHeaderTask& other) 
   {
+    if (this == &other) return *this;
     AliAnalysisTaskSE::operator=(other);
+    fCalculateRefMult = other.fCalculateRefMult;
     return *this;
   }
   /** 
    * @{ 
    * @name Implementation of interface methods
    */
+  /** 
+   * Create output objects.  Called at the beginning of each
+   * (Grid/Proof) sub-job.
+   * 
+   */
   virtual void   UserCreateOutputObjects() {}
+  /** 
+   * Called at the beginning of the master job 
+   * 
+   */  
   virtual void   Init() {}
+  /** 
+   * Called at start of each (Grid/Proof) sub-job
+   */
   virtual void   LocalInit() {Init();}
+  /** 
+   * Called on each event. 
+   * 
+   * @param option Not used 
+   */
   virtual void   UserExec(Option_t *option);
+  /** 
+   * Called at the end of processing on the merged output. 
+   * 
+   * @param option Not used 
+   */
   virtual void   Terminate(Option_t *option);
   /* @} */
+  /** 
+   * Set whether to calculate the reference multiplicity.  This is
+   * optional because the calculation could be processor/memory heavy.
+   * 
+   * @param calc If true, calculate the reference multiplicity (number
+   * of tracks and tracklets) in @f$|\eta|<0.5@f$ and
+   * @f$|\eta|<0.8@f$.
+   */
+  virtual void SetCalculateRefMult(Bool_t calc=true) { fCalculateRefMult=calc;}
+  /** 
+   * Connect this task to the train. 
+   * 
+   * @return true on success. 
+   */
+  virtual Bool_t Connect();
 protected:
   /** 
    * Copy an ESD primary vertex to the AOD 
@@ -75,7 +116,8 @@ protected:
    */
   void CopyVertex(AliAODEvent& aod, const AliESDVertex* vtx, Int_t type); 
 
-  ClassDef(AliCopyHeaderTask,1); // Task to copy header from ESD to AOD
+  Bool_t fCalculateRefMult; // Whether to calculate reference multiplicity
+  ClassDef(AliCopyHeaderTask,2); // Task to copy header from ESD to AOD
 };
 
 #endif
