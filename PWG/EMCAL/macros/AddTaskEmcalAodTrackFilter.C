@@ -54,7 +54,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
       runPeriod == "lhc13g"
       ) {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
-    if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h") {
+    if (runPeriod == "lhc10b" || runPeriod == "lhc10c" || runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h") {
       includeNoITS = kTRUE;
     }
   } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
