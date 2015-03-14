@@ -2107,7 +2107,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
               Int_t entry2 = mcarr[jp];
               AliMCParticle *mcPart2 = static_cast<AliMCParticle*>(mcEvent->GetTrack(entry2));
               Int_t jmother = mcPart2->GetMother();
-              if(imother == jmother){
+              if(imother == jmother && imother >= 0){
                 AliMCParticle* mcMother = static_cast<AliMCParticle*>(mcEvent->GetTrack(imother));
                 if(mcMother->PdgCode() == 111){
                   Double_t mcmop = sqrt(mcMother->P()*mcMother->P() + 0.135*0.135);
