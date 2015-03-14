@@ -117,6 +117,7 @@ AliAnalysisTaskSE(),
   fChargeSelection(kFALSE),
   fq2Binning(0),
   fLowMultBinning(0),
+  fQdirectionBinning(0),
   fq2Index(0),
   fq2CutLow(0.1),
   fq2CutHigh(0.11),
@@ -322,6 +323,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fChargeSelection(kFALSE),
   fq2Binning(0),
   fLowMultBinning(0),
+  fQdirectionBinning(0),
   fq2Index(0),
   fq2CutLow(0.1),
   fq2CutHigh(0.11),
@@ -532,6 +534,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fChargeSelection(obj.fChargeSelection),
     fq2Binning(obj.fq2Binning),
     fLowMultBinning(obj.fLowMultBinning),
+    fQdirectionBinning(obj.fQdirectionBinning),
     fq2Index(obj.fq2Index),
     fq2CutLow(obj.fq2CutLow),
     fq2CutHigh(obj.fq2CutHigh),
@@ -678,6 +681,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fChargeSelection = obj.fChargeSelection;
   fq2Binning = obj.fq2Binning;
   fLowMultBinning = obj.fLowMultBinning;
+  fQdirectionBinning = obj.fQdirectionBinning;
   fq2Index = obj.fq2Index;
   fq2CutLow = obj.fq2CutLow;
   fq2CutHigh = obj.fq2CutHigh;
@@ -904,8 +908,6 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitPbPb;
     fMbins=fCentBins;
     fQcut=0.1;
-    //fNormQcutLow = 0.15;// 0.15
-    //fNormQcutHigh = 0.2;// 0.2
     fRstartMC = 5.0;
     fQbinsQinv3D = 20;
     fQupperBoundQinv3D = 0.1;
@@ -913,8 +915,6 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitpp; 
     fMbins=1; 
     fQcut=0.6;
-    //fNormQcutLow = 0.6;// was 1.0
-    //fNormQcutHigh = 0.8;// was 1.5
     fRstartMC = 1.0;
     fQbinsQinv3D = 60;
     fQupperBoundQinv3D = 0.6;
@@ -1202,26 +1202,26 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fKT4DistTerm13);
 
 
-  TProfile2D *fKT3AvgpT = new TProfile2D("fKT3AvgpT","",fMbins,.5,fMbins+.5, 2,-0.5,1.5, 0.,1.0,"");
+  TProfile2D *fKT3AvgpT = new TProfile2D("fKT3AvgpT","",fMbins,.5,fMbins+.5, 4,-0.5,3.5, 0.,1.0,"");
   fOutputList->Add(fKT3AvgpT);
-  TProfile2D *fKT4AvgpT = new TProfile2D("fKT4AvgpT","",fMbins,.5,fMbins+.5, 2,-0.5,1.5, 0.,1.0,"");
+  TProfile2D *fKT4AvgpT = new TProfile2D("fKT4AvgpT","",fMbins,.5,fMbins+.5, 4,-0.5,3.5, 0.,1.0,"");
   fOutputList->Add(fKT4AvgpT);
-  TH3D* fQ3AvgpTENsum0 = new TH3D("fQ3AvgpTENsum0","", 2,-0.5,1.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
+  TH3D* fQ3AvgpTENsum0 = new TH3D("fQ3AvgpTENsum0","", 4,-0.5,3.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
   fOutputList->Add(fQ3AvgpTENsum0);
-  TH3D* fQ3AvgpTENsum3 = new TH3D("fQ3AvgpTENsum3","", 2,-0.5,1.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
+  TH3D* fQ3AvgpTENsum3 = new TH3D("fQ3AvgpTENsum3","", 4,-0.5,3.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
   fOutputList->Add(fQ3AvgpTENsum3);
-  TH3D* fQ3AvgpTENsum6 = new TH3D("fQ3AvgpTENsum6","", 2,-0.5,1.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
+  TH3D* fQ3AvgpTENsum6 = new TH3D("fQ3AvgpTENsum6","", 4,-0.5,3.5, fQbinsQ3,0,fQupperBoundQ3, 180,0.1,1.0);
   fOutputList->Add(fQ3AvgpTENsum6);
   //
-  TH3D* fQ4AvgpTENsum0 = new TH3D("fQ4AvgpTENsum0","", 2,-0.5,1.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
+  TH3D* fQ4AvgpTENsum0 = new TH3D("fQ4AvgpTENsum0","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
   fOutputList->Add(fQ4AvgpTENsum0);
-  TH3D* fQ4AvgpTENsum1 = new TH3D("fQ4AvgpTENsum1","", 2,-0.5,1.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
+  TH3D* fQ4AvgpTENsum1 = new TH3D("fQ4AvgpTENsum1","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
   fOutputList->Add(fQ4AvgpTENsum1);
-  TH3D* fQ4AvgpTENsum2 = new TH3D("fQ4AvgpTENsum2","", 2,-0.5,1.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
+  TH3D* fQ4AvgpTENsum2 = new TH3D("fQ4AvgpTENsum2","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
   fOutputList->Add(fQ4AvgpTENsum2);
-  TH3D* fQ4AvgpTENsum3 = new TH3D("fQ4AvgpTENsum3","", 2,-0.5,1.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
+  TH3D* fQ4AvgpTENsum3 = new TH3D("fQ4AvgpTENsum3","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
   fOutputList->Add(fQ4AvgpTENsum3);
-  TH3D* fQ4AvgpTENsum6 = new TH3D("fQ4AvgpTENsum6","", 2,-0.5,1.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
+  TH3D* fQ4AvgpTENsum6 = new TH3D("fQ4AvgpTENsum6","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
   fOutputList->Add(fQ4AvgpTENsum6);
 
   TH1D *fMCWeight3DTerm1SC = new TH1D("fMCWeight3DTerm1SC","", 20,0.,0.2);
@@ -1786,7 +1786,14 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fSingleSumSinTotalINT);
   fOutputList->Add(fSingleSumTotalEN);
 
- 
+  TH2D *fQoutSum = new TH2D("fQoutSum","",fQbinsQ4,0.,fQupperBoundQ4, 200, 0,1.0);
+  TH2D *fQsideSum = new TH2D("fQsideSum","",fQbinsQ4,0.,fQupperBoundQ4, 200, 0,1.0);
+  TH2D *fQlongSum = new TH2D("fQlongSum","",fQbinsQ4,0.,fQupperBoundQ4, 200, 0,1.0);
+  fOutputList->Add(fQoutSum);
+  fOutputList->Add(fQsideSum);
+  fOutputList->Add(fQlongSum);
+  
+  
   ////////////////////////////////////
   ///////////////////////////////////  
   
@@ -2434,6 +2441,12 @@ void AliFourPion::UserExec(Option_t *)
   
   Float_t qinv12=0, qinv13=0, qinv14=0, qinv23=0, qinv24=0, qinv34=0;
   Float_t qout=0, qside=0, qlong=0;
+  Float_t qout12=0, qside12=0, qlong12=0;
+  Float_t qout13=0, qside13=0, qlong13=0;
+  Float_t qout14=0, qside14=0, qlong14=0;
+  Float_t qout23=0, qside23=0, qlong23=0;
+  Float_t qout24=0, qside24=0, qlong24=0;
+  Float_t qout34=0, qside34=0, qlong34=0;
   Float_t kT12=0;
   Float_t q3=0, q3MC=0;
   Float_t q4=0, q4MC=0;
@@ -2680,7 +2693,7 @@ void AliFourPion::UserExec(Option_t *)
 	    pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
 	    pVect2[3]=(fEvt+en2)->fTracks[j].fP[2];
 	    ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
-	    
+	   
 	    for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
 	      if(en3==0) {
 		if(fNormQPairSwitch_E0E0[i]->At(k)=='0') continue;
@@ -2779,6 +2792,21 @@ void AliFourPion::UserExec(Option_t *)
   }
     
 
+  TF1 *qOutFcn = new TF1("qOutFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
+  qOutFcn->FixParameter(0,-1.88273e-02);
+  qOutFcn->FixParameter(1,2.33020);
+  qOutFcn->FixParameter(2,-7.57146e-01);
+  qOutFcn->FixParameter(3,-2.93124);
+  TF1 *qSideFcn = new TF1("qSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
+  qSideFcn->FixParameter(0,-4.66201e-03);
+  qSideFcn->FixParameter(1,1.14554);
+  qSideFcn->FixParameter(2,-1.36424e-01);
+  qSideFcn->FixParameter(3,3.65612);
+  TF1 *qLongFcn = new TF1("qLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
+  qLongFcn->FixParameter(0,1.56453e-02);
+  qLongFcn->FixParameter(1,6.43739e-01);
+  qLongFcn->FixParameter(2,4.50230);
+  qLongFcn->FixParameter(3,-1.21551e+01);
   
 
     ///////////////////////////////////////////////////////////////////////
@@ -2830,6 +2858,8 @@ void AliFourPion::UserExec(Option_t *)
 	      ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	      qinv12 = GetQinv(pVect1, pVect2);
 	      kT12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
+	      GetQosl(pVect1, pVect2, qout12, qside12, qlong12);
+
 	      SetFillBins2(ch1, ch2, bin1, bin2);
 	      Int_t kTindex=0;
 	      if(kT12<=0.3) kTindex=0;
@@ -3047,6 +3077,8 @@ void AliFourPion::UserExec(Option_t *)
 		qinv13 = GetQinv(pVect1, pVect3);
 		qinv23 = GetQinv(pVect2, pVect3);
 		q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
+		GetQosl(pVect1, pVect3, qout13, qside13, qlong13);
+		GetQosl(pVect2, pVect3, qout23, qside23, qlong23);
 		Int_t chGroup3[3]={ch1,ch2,ch3};
 		Float_t QinvMCGroup3[3]={0};
 		Float_t kTGroup3[3]={0};
@@ -3450,6 +3482,9 @@ void AliFourPion::UserExec(Option_t *)
 		  qinv24 = GetQinv(pVect2, pVect4);
 		  qinv34 = GetQinv(pVect3, pVect4);
 		  q4 = sqrt(pow(q3,2) + pow(qinv14,2) + pow(qinv24,2) + pow(qinv34,2));
+		  GetQosl(pVect1, pVect4, qout14, qside14, qlong14);
+		  GetQosl(pVect2, pVect4, qout24, qside24, qlong24);
+		  GetQosl(pVect3, pVect4, qout34, qside34, qlong34);
 		  Int_t chGroup4[4]={ch1,ch2,ch3,ch4};
 		  Float_t QinvMCGroup4[6]={0};
 		  Float_t kTGroup4[6]={0};
@@ -3478,14 +3513,35 @@ void AliFourPion::UserExec(Option_t *)
 		  }
 		  
 		  Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
-		  if(!fq2Binning && !fLowMultBinning){
+		  Float_t QoutSum = fabs(qout12) + fabs(qout13) + fabs(qout14) + fabs(qout23) + fabs(qout24) + fabs(qout34);
+		  Float_t QsideSum = fabs(qside12) + fabs(qside13) + fabs(qside14) + fabs(qside23) + fabs(qside24) + fabs(qside34);
+		  Float_t QlongSum = fabs(qlong12) + fabs(qlong13) + fabs(qlong14) + fabs(qlong23) + fabs(qlong24) + fabs(qlong34);
+		  
+		  if(!fq2Binning && !fLowMultBinning && fQdirectionBinning==0){
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
 		  }else{
-		    EDindex4 = fEDbin;
-		    if(KT4>fKT4transition) {
-		      EDindex4=2+fEDbin;
-		    }
+		     if(KT4<=fKT4transition){
+		       ((TH2D*)fOutputList->FindObject("fQoutSum"))->Fill(q4, QoutSum);
+		       ((TH2D*)fOutputList->FindObject("fQsideSum"))->Fill(q4, QsideSum);
+		       ((TH2D*)fOutputList->FindObject("fQlongSum"))->Fill(q4, QlongSum);
+		       if(fQdirectionBinning==1){
+			 if(QoutSum < qOutFcn->Eval(q4)) fEDbin=0;
+			 else fEDbin=1;
+		       }
+		       if(fQdirectionBinning==2){
+			 if(QsideSum < qSideFcn->Eval(q4)) fEDbin=0;
+			 else fEDbin=1;
+		       }
+		       if(fQdirectionBinning==3){
+			 if(QlongSum < qLongFcn->Eval(q4)) fEDbin=0;
+			 else fEDbin=1;
+		       }
+		     }
+		     EDindex4 = fEDbin;
+		     if(KT4>fKT4transition) {
+		       EDindex4=2+fEDbin;
+		     }
 		  }
 		  
 		  FSICorr14 = FSICorrelation(ch1,ch4, qinv14);
