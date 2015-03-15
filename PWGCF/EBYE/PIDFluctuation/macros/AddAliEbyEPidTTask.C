@@ -11,7 +11,8 @@
 AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
 				    Int_t aodFilterBit  = 768, 
 				    Int_t cuttype       = 9,
-				    Bool_t IsKMbOnly    = 0;
+				    Bool_t IsKMbOnly    = 0,
+				    Bool_t IisMC        = 0,
 
 				    Int_t pidtype       = 2, 
 				    Int_t requestTofPid = 1,
@@ -44,7 +45,9 @@ AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
     return NULL;
   }
   
-  Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
+  Bool_t isMC = IisMC;
+
+ // Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
   if (isMC)
     Info("AddTaskNetParticle", "This task has MC.");
   
@@ -81,8 +84,8 @@ AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
     if (ptl != 0 ) help->SetfPtTOFPID(lptfortof);
   }
   
-  if (isMC) help->SetisMC(1); 
-  else help->SetisMC(0);
+//  if (isMC) help->SetisMC(1); 
+//  else help->SetisMC(0);
   
   if (pidtype == 3){
     AliPIDCombined *pidc=new AliPIDCombined();
