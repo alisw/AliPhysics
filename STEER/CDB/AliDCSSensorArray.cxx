@@ -514,7 +514,7 @@ void AliDCSSensorArray::RemoveAbsBelowThreshold(const Double_t threshold){
     Double_t xa=-999.,ya=-999.,xb=-999.,yb=-999.,xc=-999.,yc=-999.;
     if (graph) {
       const Int_t npoints=graph->GetN();
-      for (Int_t i=1;i<npoints-1;i++) {
+      for (Int_t i=npoints-2;i>0;i--) {
 	graph->GetPoint(i-1,xa,ya);
 	graph->GetPoint(i,xb,yb);
 	graph->GetPoint(i+1,xc,yc);
