@@ -474,6 +474,10 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   else
     fSimpleOfflineTriggers->GetPosition(globCol, globRow);
 
+  if(globCol >= kPatchCols || globRow >= kPatchRows){
+    AliError(Form("Invalid patch position: Col[%d], Row[%d]", globCol, globRow));
+  }
+
   // get the absolute trigger ID
   Int_t absId=-1;
   fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
