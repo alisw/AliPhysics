@@ -233,7 +233,7 @@ public:
   void    SetTPCsignal(Float_t signal, Float_t sigma, UChar_t npoints){ 
      fTPCsignal = signal; fTPCsignalS = sigma; fTPCsignalN = npoints;
   }
-  void    SetTPCsignalTunedOnData(Float_t signal){
+  void    SetTPCsignalTunedOnData(Double_t signal){
       fTPCsignalTuned = signal;
   }
   void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
