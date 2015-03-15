@@ -65,11 +65,21 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
 
  private:
  
+ Int_t GetPDG(Int_t i) {
+   if (i == 4)      return 0;  
+   else if (i == 1) return 211;  
+   else if (i == 2) return 321; 
+   else if (i == 3) return 2212;  
+   else return 0;
+ }
+
   Bool_t AcceptTrackLMC(AliVParticle *particle) const;
   Bool_t AcceptTrackL(AliVTrack *track) const;
   TClonesArray         *fArrayMC;           // AOD MC stack
   AliESDtrackCuts      *fESDtrackCuts;      // ESD Track Cuts
-    
+  AliMCEvent           *fMCEvent;           // Current MC Event
+  AliStack             *fMCStack;             // Stak tree   
+ 
   TList        *fThnList;       //!
   Int_t        fAODtrackCutBit; //
   AliHelperPID *fHelperPID;     //
@@ -91,6 +101,7 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Bool_t     fDebug;                        // Debug
   Bool_t     fIsQa;                         // Check for QA
   Bool_t     fIsTrig; //
+
   Int_t   fRunNumber;           //
   Int_t   fNumberOfTracks;      //
   Int_t   fNumberOfTracksM;     //
@@ -98,12 +109,13 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Float_t fCentrality[3];       //
   Float_t fVtx[3];              // 
   Int_t   fTrigMask[5];         //
-   
+  Int_t   fPidStat[kTrack]; //
   Float_t fTrackPt[kTrack];     //
   Float_t fTrackEta[kTrack];    //
   Float_t fTrackPhi[kTrack];    //
   Float_t fTrackCnDf[kTrack];    //
-
+  Int_t   fTrackLabel[kTrack]; //
+  Int_t   fTrackLabelM[kTrack]; //
   Float_t fTrackPtM[kTrack];    //
   Float_t fTrackEtaM[kTrack];   //
   Float_t fTrackPhiM[kTrack];   //
