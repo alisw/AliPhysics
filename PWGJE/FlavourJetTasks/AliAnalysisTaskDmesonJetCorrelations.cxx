@@ -24,6 +24,8 @@
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
+#include <TLorentzVector.h>
+#include <TVector3.h>
 #include <THnSparse.h>
 #include <TParticle.h>
 #include <TMath.h>
@@ -225,15 +227,12 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
     AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icand));
     if (!Dcand) continue;
 
-    Double_t pTD = Dcand->Pt();
-    Double_t etaD = Dcand->Eta();
-    Double_t phiD = Dcand->Phi();
-    Double_t invMassD = 0; 
+    TLorentzVector Dvector;
+    Double_t invMassD = 0;
     Double_t softPionPtD = 0;
     Double_t invMass2prong = 0;
-    Double_t pTjet = 0;
-    Double_t etaJet = 0;
-    Double_t phiJet = 0;
+
+    TLorentzVector jetVector;
     Double_t leadPtJet = 0;
     Double_t areaJet = 0;
     Int_t constJet = 0;
@@ -281,6 +280,8 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
       invMass2prong = DstarCand->InvMassD0();
     }
 
+    Dvector.SetPtEtaPhiM(Dcand->Pt(), Dcand->Eta(), Dcand->Phi(), invMassD);
+
     // Look for D-jet correlation
     AliEmcalJet* jet = 0;
     Double_t deltaR = fMaxR;
@@ -307,16 +308,15 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
     }
 
     if (jet) {
-      pTjet = jet->Pt();
-      etaJet = jet->Eta();
-      phiJet = jet->Phi();
+      jetVector.SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), 0);
+      
       leadPtJet = jet->MaxPartPt();
       areaJet = jet->Area();
       constJet = jet->N();
     }
 
     AliDebug(2,"Filling THnSparse");
-    FillTHnSparse(pTD, etaD, phiD, invMassD, softPionPtD, invMass2prong, pTjet, etaJet, phiJet, leadPtJet, areaJet, constJet);
+    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet);
   }
   
   return kTRUE;
@@ -552,8 +552,8 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(Double_t pTD, Double_t etaD, Double_t phiD, Double_t invMassD, Double_t softPionPtD, Double_t invMass2prong,
-                                                         Double_t pTjet, Double_t etaJet, Double_t phiJet, Double_t leadPtJet, Double_t areaJet, Int_t constJet)
+void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
+                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet)
 {
   // Fill the THnSparse histogram.
 
@@ -564,9 +564,12 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(Double_t pTD, Double_t 
   Double_t deltaPhi = 1.;
   Double_t deltaEta = 1.;
 
-  if (pTjet > 0) {
-    z = pTD / pTjet;
-    deltaPhi = phiD - phiJet;
+  if (jet.Pt() > 0) {
+    TVector3 dvect = D.Vect();
+    TVector3 jvect = jet.Vect();
+    z = (dvect * jvect) / (jvect * jvect);
+    
+    deltaPhi = D.Phi() - jet.Phi();
     if (deltaPhi < 0)               deltaPhi += TMath::TwoPi();
     if (deltaPhi > TMath::TwoPi())  deltaPhi -= TMath::TwoPi();
 
@@ -575,26 +578,26 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(Double_t pTD, Double_t 
 
     while (deltaPhi < fMinDeltaPhiHisto) deltaPhi += TMath::TwoPi();
     while (deltaPhi > fMinDeltaPhiHisto + TMath::TwoPi()) deltaPhi -= TMath::TwoPi();
-    deltaEta = etaD - etaJet;
+    deltaEta = D.Eta() - jet.Eta();
     deltaR = TMath::Sqrt(deltaPhi_min*deltaPhi_min + deltaEta*deltaEta);
   }
   
   for (Int_t i = 0; i < fDmesons->GetNdimensions(); i++) {
     TString title(fDmesons->GetAxis(i)->GetTitle());
-    if      (title=="#it{p}_{T,D} (GeV/#it{c})")                     contents[i] = pTD;
-    else if (title=="#eta_{D}")                                      contents[i] = etaD;
-    else if (title=="#phi_{D} (rad)")                                contents[i] = phiD;
-    else if (title=="#it{M}_{D} (GeV/#it{c}^{2})")                   contents[i] = invMassD;
+    if      (title=="#it{p}_{T,D} (GeV/#it{c})")                     contents[i] = D.Pt();
+    else if (title=="#eta_{D}")                                      contents[i] = D.Eta();
+    else if (title=="#phi_{D} (rad)")                                contents[i] = D.Phi() < 0 ? D.Phi()+TMath::TwoPi() : D.Phi();
+    else if (title=="#it{M}_{D} (GeV/#it{c}^{2})")                   contents[i] = D.M();
     else if (title=="#it{M}_{2-prong} (GeV/#it{c}^{2})")             contents[i] = invMass2prong;
-    else if (title=="#it{M}_{D*} - #it{M}_{D_{0}} (GeV/#it{c}^{2})") contents[i] = invMassD - invMass2prong;
+    else if (title=="#it{M}_{D*} - #it{M}_{D_{0}} (GeV/#it{c}^{2})") contents[i] = D.M() - invMass2prong;
     else if (title=="#it{p}_{T,#pi} (GeV/#it{c})")                   contents[i] = softPionPtD;
     else if (title=="#it{z}_{D}")                                    contents[i] = z;
     else if (title=="#Delta R_{D-jet}")                              contents[i] = deltaR;
     else if (title=="#eta_{D} - #eta_{jet}")                         contents[i] = deltaEta;
     else if (title=="#phi_{D} - #phi_{jet} (rad)")                   contents[i] = deltaPhi;
-    else if (title=="#it{p}_{T,jet} (GeV/#it{c})")                   contents[i] = pTjet;
-    else if (title=="#eta_{jet}")                                    contents[i] = etaJet;
-    else if (title=="#phi_{jet} (rad)")                              contents[i] = phiJet;
+    else if (title=="#it{p}_{T,jet} (GeV/#it{c})")                   contents[i] = jet.Pt();
+    else if (title=="#eta_{jet}")                                    contents[i] = jet.Eta();
+    else if (title=="#phi_{jet} (rad)")                              contents[i] = jet.Phi() < 0 ? jet.Phi()+TMath::TwoPi() : jet.Phi();
     else if (title=="#it{p}_{T,particle}^{leading} (GeV/#it{c})")    contents[i] = leadPtJet;
     else if (title=="#it{A}_{jet}")                                  contents[i] = areaJet;
     else if (title=="No. of constituents")                           contents[i] = constJet; 
