@@ -12,15 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Implementation of track selection in case the analysis runs on AODs
- * For the moment it uses the AliESDtrackCuts and converts AOD tracks to
- * ESD tracks, which might change in the future when an AOD track selection
- * framework becomes available.
- *
- * Author:
- *   Markus Fasel
- */
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
@@ -30,58 +21,70 @@
 #include <AliPicoTrack.h>
 #include "AliEMCalPtTaskTrackSelectionAOD.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Dummy constructor
+	 *
+	 * Main constructor, initialises fields with 0 (or NULL). For ROOT I/O, not intended
+	 * to be used by the users.
+	 */
 	AliEMCalPtTaskTrackSelectionAOD::AliEMCalPtTaskTrackSelectionAOD() :
 		AliEMCalPtTaskVTrackSelection(),
 		fTrackCuts(NULL),
 		fFilterBits(0)
 	{
-		/*
-		 * Main constructor
-		 */
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Main constructor
+	 *
+	 * Main Constructor, initalising also track cuts and filter bits. In case the initial cuts
+	 * is a nullpointer, only filter bits are used for the track selection. This constructor is
+	 * intended to be used by the users.
+	 *
+	 * \param cuts Inital track cut object (of type AliESDtrackCuts, can be a nullpointer)
+	 * \param filterbits Filter bits required
+	 */
 	AliEMCalPtTaskTrackSelectionAOD::AliEMCalPtTaskTrackSelectionAOD(AliESDtrackCuts* cuts, UInt_t filterbits):
 		AliEMCalPtTaskVTrackSelection(),
 		fTrackCuts(cuts),
 		fFilterBits(filterbits)
 	{
-		/*
-		 * Main Constructor, initalising also track cuts
-		 *
-		 * @param cuts: Inital track cut object
-		 */
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Copy constructor
+	 *
+	 * Copy constructor, performs a deep copy of the underlying track cuts (if reference object
+	 * has those).
+	 *
+	 * \param ref AOD track selection as basis for the copy
+	 */
 	AliEMCalPtTaskTrackSelectionAOD::AliEMCalPtTaskTrackSelectionAOD(const AliEMCalPtTaskTrackSelectionAOD& ref) :
 		AliEMCalPtTaskVTrackSelection(ref),
 		fTrackCuts(NULL),
 		fFilterBits(ref.fFilterBits)
 	{
-		/*
-		 * copy constructor
-		 *
-		 * @param ref: AOD track selection as basis for the copy
-		 */
 		if(ref.fTrackCuts) fTrackCuts = new AliESDtrackCuts(*(ref.fTrackCuts));
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Assignment operator
+	 *
+	 * Asignment operator, creates a deep copy of the track cuts(if set)
+	 *
+	 * \param ref: AOD track selection as basis for the copy
+	 * \return: reference to this cut object
+	 */
 	AliEMCalPtTaskTrackSelectionAOD& AliEMCalPtTaskTrackSelectionAOD::operator=(const AliEMCalPtTaskTrackSelectionAOD& ref) {
-		/*
-		 * Assignment operator
-		 *
-		 * @param ref: AOD track selection as basis for the copy
-		 * @return: reference to this cut object
-		 */
 		AliEMCalPtTaskVTrackSelection::operator=(ref);
 		if(this != &ref){
+		  fFilterBits = ref.fFilterBits;
 			if(fTrackCuts) {
 				delete fTrackCuts;
 				fTrackCuts = NULL;
@@ -91,54 +94,50 @@ namespace EMCalTriggerPtAnalysis {
 		return *this;
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Destructor
+	 *
+	 * Destructor, removes the track cuts and the TObjArray of output tracks (if created)
+	 */
 	AliEMCalPtTaskTrackSelectionAOD::~AliEMCalPtTaskTrackSelectionAOD() {
-		/*
-		 * Destructor, removes the track cuts
-		 */
 		if(fTrackCuts) delete fTrackCuts;
+		if(fListOfTracks) delete fListOfTracks;
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Select tracks from an inpt TClonesArray of tracks
+	 *
+	 * Select tracks from a list (TClonesArray) of tracks. The actual selection process
+	 * is delegated to the function IsTrack selected. This function collects all the tracks
+	 * which are accepted and puts them into a TObjArray. Note that this class keeps ownership
+	 * over the resulting TObjArray.
+	 *
+	 * \param tracks TClonesArray of input tracks, under which we select the appropriate ones
+	 * \return TObjArray of selected tracks
+	 */
 	TObjArray* AliEMCalPtTaskTrackSelectionAOD::GetAcceptedTracks(const TClonesArray* const tracks) {
-		/*
-		 * Select tracks from a list (TClonesArray) of tracks. Internally, the tracks are converted
-		 * to ESD tracks and processed by the underlying AliESDtrackCut object
-		 *
-		 * @param tracks: TClonesArray of input tracks, under which we select the appropriate ones
-		 * @return: TObjArray of selected tracks
-		 */
 		if(!fListOfTracks) fListOfTracks = new TObjArray;
 		else fListOfTracks->Clear();
 		TIter trackIter(tracks);
-		TObject *containerObject(NULL);
-		AliPicoTrack *picoTrack(NULL);
-		AliAODTrack *track(NULL);
-		while((track = dynamic_cast<AliAODTrack *>(trackIter()))){
-		  // Handle pico tracks
-		  if((picoTrack = dynamic_cast<AliPicoTrack *>(containerObject)))
-		    track = dynamic_cast<AliAODTrack *>(picoTrack->GetTrack());
-		  else
-		    track = dynamic_cast<AliAODTrack *>(containerObject);
-			// First check filter bits
-			if(fFilterBits && !track->TestFilterBit(fFilterBits)) continue;
-			if(fTrackCuts){
-				AliESDtrack copyTrack(track);
-				if(fTrackCuts->AcceptTrack(&copyTrack)) fListOfTracks->AddLast(track);
-			}
+		AliVTrack *track(NULL);
+		while((track = dynamic_cast<AliVTrack *>(trackIter()))){
+		  if(IsTrackAccepted(track)) fListOfTracks->AddLast(track);
 		}
 		return fListOfTracks;
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * \brief Select tracks from an input event
+	 *
+	 * Select tracks from an input event. The actual selection process is delegated to
+	 * the function IsTrack selected. This function collects all the tracks which are
+	 * accepted and puts them into a TObjArray. Note that this class keeps ownership over
+	 * the resulting TObjArray.
+	 *
+	 * \param tracks TClonesArray of input tracks, under which we select the appropriate ones
+	 * \return TObjArray of selected tracks
+	 */
 	TObjArray* AliEMCalPtTaskTrackSelectionAOD::GetAcceptedTracks(const AliVEvent* const event) {
-		/*
-		 * Select tracks from a list (TClonesArray) of tracks. Internally, the tracks are converted
-		 * to ESD tracks and processed by the underlying AliESDtrackCut object
-		 *
-		 * @param tracks: TClonesArray of input tracks, under which we select the appropriate ones
-		 * @return: TObjArray of selected tracks
-		 */
 		if(!fListOfTracks) fListOfTracks = new TObjArray;
 		else fListOfTracks->Clear();
 		const AliAODEvent *aod = dynamic_cast<const AliAODEvent *>(event);
@@ -146,32 +145,46 @@ namespace EMCalTriggerPtAnalysis {
 			AliError("Event not of type AliAODEvent");
 			return fListOfTracks;
 		}
-		AliAODTrack *track(NULL);
 		for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
-			track = static_cast<AliAODTrack *>(event->GetTrack(itrk));
-			// First check filter bits
-			if(fFilterBits && !track->TestFilterBit(fFilterBits)) continue;
-			if(fTrackCuts){
-				AliESDtrack copyTrack(track);
-				if(fTrackCuts->AcceptTrack(&copyTrack)) fListOfTracks->AddLast(track);
-			}
+		  AliVTrack *trk = dynamic_cast<AliVTrack *>(event->GetTrack(itrk));
+		  if(IsTrackAccepted(trk)) fListOfTracks->AddLast(trk);
 		}
 		return fListOfTracks;
 	}
 
-	//______________________________________________________________________________
+  /**
+   * \brief Check whether track is accepted
+   *
+   * Function checks whether track is accepted under the given track selection cuts.
+   * The function can handle AliAODTrack and AliPicoTrack, while for AliPico track an
+   * AliAODTrack is expected to be the underlying structure. If it is not possible to
+   * access an AOD track from the input track, the object will not be selected. Otherwise
+   * first the status bits are checked (if requested), and if further track cuts (of type
+   * AliESDtrackCuts) are provided, the track is converted to an ESD track for further checks.
+   *
+   * \param trk: Track to check
+   * \return true if selected, false otherwise
+   */
 	bool AliEMCalPtTaskTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk){
-	  /*
-	   * Check whether track is accepted
-	   *
-	   * @param trk: Track to check
-	   * @return: true if selected, false otherwise
-	   */
 	  AliAODTrack *aodt = dynamic_cast<AliAODTrack *>(trk);
-	  if(!aodt) return kFALSE;
+	  if(!aodt){
+	    AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack *>(trk);
+	    if(picotrack) aodt = dynamic_cast<AliAODTrack *>(picotrack->GetTrack());
+	    else{
+	      AliError("Track neither AOD track nor pico track");
+	      return kFALSE;
+	    }
+	  }
+	  if(!aodt){
+	    AliError("Failed getting AOD track");
+	    return kFALSE;
+	  }
 	  if(fFilterBits && !aodt->TestFilterBit(fFilterBits)) return kFALSE;
-	  AliESDtrack copyTrack(aodt);
-	  return fTrackCuts->AcceptTrack(&copyTrack);
+	  if(fTrackCuts){
+	    AliESDtrack copyTrack(aodt);
+	    return fTrackCuts->AcceptTrack(&copyTrack);
+	  }
+	  return kTRUE;
 	}
 
 
