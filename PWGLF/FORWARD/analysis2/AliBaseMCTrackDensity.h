@@ -108,11 +108,17 @@ public:
    */
   virtual void Print(Option_t* option="") const;
   /*
-   * Set wieghts to use 
+   * Set weights to use 
    * 
    * @param weights Weights object to use 
    */	
   void SetWeights(AliBaseMCWeights* weights);
+  /*
+   * Set weights to use 
+   * 
+   * @param weights Weights object to use 
+   */	
+  void SetTruthWeights(AliBaseMCWeights* weights);
 protected:
   /** 
    * Loops over all the particles in the passed event.  If @a primary
@@ -137,6 +143,10 @@ protected:
   /** 
    * Process a single track 
    * 
+   * @note If @a particle refers to a primary particle, then it is
+   * passed as the @a mother argument too.  That is, both arguments
+   * point to the same particle.
+   * 
    * @param particle   Particle 
    * @param mother     Ultimate mother
    * 
@@ -151,7 +161,11 @@ protected:
    */
   virtual Int_t GetDetectorId() const = 0;
   /** 
-   * Process a track reference 
+   * Process a track reference
+   *
+   * @note If @a particle refers to a primary particle, then it is
+   * passed as the @a mother argument too.  That is, both arguments
+   * point to the same particle.
    * 
    * @param particle Particle 
    * @param mother   Ultimate mother (if not primary)
@@ -182,6 +196,9 @@ protected:
   /** 
    * Store a particle hit in Base<i>dr</i>[<i>s,t</i>] in @a output
    * 
+   * @note If @a particle refers to a primary particle, then it is
+   * passed as the @a mother argument too.  That is, both arguments
+   * point to the same particle.
    * 
    * @param particle  Particle to store
    * @param mother    Ultimate mother of particle 
@@ -218,30 +235,36 @@ protected:
    */
   const AliMCParticle* GetMother(Int_t iTr, const AliMCEvent& event) const;
   /** 
-   * Calculate flow weight 
+   * Calculate observed particle weight 
    *
-   * @param eta  Pseudo rapidity 
-   * @param pt   Transverse momemtum 
-   * @param phi  Azimuthal angle 
-   * @param id   Particle PDG code
+   * @param p         Particle
+   * @param isPrimary True if primary
    *
-   * @return Flow weight for the particle
+   * @return Weight for the particle
    */
-  Double_t CalculateWeight(Double_t eta, Double_t pt, 
-			   Double_t phi, Int_t id) const;
-
+  Double_t CalculateWeight(const AliMCParticle* p,
+			   Bool_t isPrimary) const;
+  /** 
+   * Calculate MC truth weight 
+   *
+   * @param p         Particle
+   *
+   * @return Weight for the particle
+   */
+  Double_t CalculateTruthWeight(const AliMCParticle* p) const;
   Bool_t            fUseOnlyPrimary; // Only use primaries 
   TH2D*             fBinFlow;        // eta,phi bin flow 
   TH2D*             fEtaBinFlow;     // dEta vs eta of strip
   TH2D*             fPhiBinFlow;     // dPhi vs phi of strip
   TH1D*             fNRefs;          // Number of track-references per track
   AliBaseMCWeights* fWeights;        // MC weights
+  AliBaseMCWeights* fTruthWeights;   // MC truth weights
   Double_t          fVz;             // IP z-coordinate of this event
   Double_t          fB;              // Impact parameter of this event
   Double_t          fPhiR;           // Reaction plane  of this event
   Bool_t            fDebug;          // Debug flag
 
-  ClassDef(AliBaseMCTrackDensity,4); // Calculate track-ref density
+  ClassDef(AliBaseMCTrackDensity,5); // Calculate track-ref density
 };
 
 #endif

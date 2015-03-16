@@ -13,6 +13,7 @@ public:
     kV0M = 0x1,
     kV0A = 0x2,
     kV0C = 0x4,
+    kCND = 0x8,
     kEq  = 0x100
   };
   /** 
@@ -26,6 +27,7 @@ public:
       fUtilV0MEq(-1),
       fUtilV0AEq(-1),
       fUtilV0CEq(-1),
+      fSelCND(-1),
       fSelV0M(-1),
       fSelV0A(-1),
       fSelV0C(-1),
@@ -63,6 +65,7 @@ public:
    * @return Reference multiplicity 
    */
   Int_t GetMult() const { return fMult; }
+  Float_t GetCND() const { return fSelCND; }
   /** 
    * Get the defined bins 
    * 
@@ -155,6 +158,7 @@ public:
     if      (which & kV0M) return isEq ? GetV0MEq(util) : GetV0M(util);
     else if (which & kV0A) return isEq ? GetV0AEq(util) : GetV0A(util);
     else if (which & kV0C) return isEq ? GetV0CEq(util) : GetV0C(util);
+    else if (which & kCND) return fSelCND;
     return -1;
   }
   /* @} */
@@ -183,6 +187,8 @@ public:
       else 
 	if (util) fUtilV0C   = c; else fSelV0C   = c;
     }
+    else if (which & kCND)
+      fSelCND = c;
   }
   /** 
    * Set the reference multiplicity 
@@ -199,6 +205,7 @@ protected:
   Float_t fUtilV0MEq;  // V0MEq centrality from AliPPVsMultUtils
   Float_t fUtilV0AEq;  // V0MEq centrality from AliPPVsMultUtils
   Float_t fUtilV0CEq;  // V0MEq centrality from AliPPVsMultUtils
+  Float_t fSelCND;
   Float_t fSelV0M;     // V0M centrality from AliCentralitySelector
   Float_t fSelV0A;     // V0A centrality from AliCentralitySelector
   Float_t fSelV0C;     // V0C centrality from AliCentralitySelector

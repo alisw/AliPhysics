@@ -38,10 +38,12 @@ struct ParUtilities
   {
     src = "";
     if (what.IsNull()) return false;
-    
-    TString search = Form(".:..:%s:%s",
- 	         	  gSystem->ExpandPathName("$ALICE_PHYSICS"),
- 	          	  gSystem->ExpandPathName("$ALICE_ROOT"));
+
+    TString aliRoot = gSystem->ExpandPathName("$ALICE_ROOT");
+    TString aliPhys = gSystem->ExpandPathName("$ALICE_PHYSICS");
+    TString search = Form(".:..:%s:%s/PARfiles:%s:%s/PARfiles",
+			  aliPhys.Data(), aliPhys.Data(),
+ 	         	  aliRoot.Data(), aliRoot.Data());
     char* found = gSystem->Which(search.Data(), what.Data());
     if (!found || found[0] == '\0') {
       Error("ParUtilities::Find", "PAR file %s not found in %s",
