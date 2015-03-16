@@ -75,7 +75,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    } else if ( trainConfig >= 54 && trainConfig <= 60  ){   // Warning!!!   Those trains must run in stand-alone mode
    cutnumberPhoton = "00000070004000000500000000";  
    } else {
-   cutnumberPhoton = "06000008400100000500000000";   //Online  V0 finder //change	      
+   cutnumberPhoton = "06000078400100000500000000";   //Online  V0 finder //change	      
    }
    
    TString ElecCuts      = "90005400000002000000";            //Electron Cuts
@@ -469,6 +469,11 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 } else if( trainConfig  == 64 ) {  
 					     
         eventCutArray[0]="8000011"; photonCutArray[0] = "00200009360300007200000000"; ElecCutarray[0] = "90405400233202621710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut    0.60, 0.0 0.12 + pion rejection low 0 -2 weights	
+	
+} else if( trainConfig  == 65 ) {  
+					     
+        eventCutArray[0]="8000011"; photonCutArray[0] = "00200079360300007200000000"; ElecCutarray[0] = "90405400233202621710"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut    0.60, 0.0 0.12 + pion rejection low 0 -2 weights	
+	
 }
 	
 
@@ -515,7 +520,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9  ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
 		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 ||  trainConfig == 31  || trainConfig == 32 || trainConfig == 33 || trainConfig == 37 || trainConfig == 38 || trainConfig == 39 || trainConfig == 40 || trainConfig == 41 || trainConfig == 41 || trainConfig == 43 || trainConfig == 44 ||
 		  trainConfig == 45 || trainConfig == 46 || trainConfig == 47 ||  trainConfig == 48  || trainConfig == 49 || trainConfig == 50 || trainConfig == 51 || trainConfig == 52 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56 || trainConfig == 57 || trainConfig == 58 || trainConfig == 59 || 
-		  trainConfig == 60 || trainConfig == 61 || trainConfig == 63 ||  trainConfig == 64 ) {
+		  trainConfig == 60 || trainConfig == 61 || trainConfig == 63 ||  trainConfig == 64  || trainConfig == 65) {
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){
