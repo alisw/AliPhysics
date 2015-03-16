@@ -37,16 +37,17 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 {
 	//mimic steps in efficiency task for own steps in efficiency
 	enum {
-		kGenerated = 0,
-		kGeneratedFidAcc = 1,
-		kReco3Prong = 2,
-		kLcBit = 3,
-		kIsSelectedTracks = 4,
-		kIsInFidAcc	= 5,
-		kPtRange = 6,
-		kIsSelectedCandidate = 7,
-		kIsSelectedPID = 8,
-		kIsSelectedNtuple = 9 
+		kGeneratedLimAcc = 0,
+		kGenerated = 1,
+		kGeneratedAcc = 2,
+		kReco3Prong = 3,
+		kLcBit = 4,
+		kIsSelectedTracks = 5,
+		kIsInFidAcc	= 6,
+		kPtRange = 7,
+		kIsSelectedCandidate = 8,
+		kIsSelectedPID = 9,
+		kIsSelectedNtuple = 10
 	};	
 
  public:
@@ -64,15 +65,15 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   void SetAnalysis(Bool_t analysis=kTRUE){fAnalysis=analysis;}
   void SetUseFilterBitCut(Bool_t setter)   { fLcCut = setter;	 return; }  
   void SetUseFilterBitPID(Bool_t setter)   { fLcPIDCut = setter; return; }
-  void SetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) {fIsLcResonant=LambdacDaugh(part,arrayMC);} 
+  void SetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC, Bool_t &isInAcc) {fIsLcResonant=LambdacDaugh(part,arrayMC,isInAcc);} 
   void SetIsLc(AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC);
 
-  Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const {return LambdacDaugh(part,arrayMC)>=1 ? kTRUE : kFALSE;} 
+  Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const {Bool_t dummy=kTRUE; return LambdacDaugh(part,arrayMC,dummy)>=1 ? kTRUE : kFALSE;} 
 
   Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Int_t MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
-  Int_t LambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const;
+  Int_t LambdacDaugh(AliAODMCParticle *part,TClonesArray *arrayMC, Bool_t &isInAcc) const;
   void FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, Int_t selection);
   void FillEffHists(Int_t kStep);
 
@@ -94,54 +95,54 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   TH1F    *fHistNEvents; //!hist. for No. of events
   TH1F    *fHistNEventsRejTM; //!hist. for Rejected events from null trigger mask 
   TH1F *fhSelectBit; //! hist for Filter Bit 	
-  TH1F *fhNBkgNI[10];	       //! hist. for n bkg, pT
-  TH1F *fhNLc[10];             //! hist. for n Lc tot., pT
-  TH1F *fhNLcc[10];            //! hist. for n Lc tot. from c, pT
-  TH1F *fhNLcNonRc[10];        //! hist. for n Lc from c non resonant, pT
-  TH1F *fhNLcL1520c[10];       //! hist. for n Lc from c L1520 + pi, pT
-  TH1F *fhNLcKstarc[10];       //! hist. for n Lc from c K* + p, pT
-  TH1F *fhNLcDeltac[10];       //! hist. for n Lc from c Delta++ + K, pT
-  TH1F *fhNLcb[10];            //! hist. for n Lc tot. from b, pT
-  TH1F *fhNLcNonRb[10];        //! hist. for n Lc from b non resonant, pT
-  TH1F *fhNLcL1520b[10];       //! hist. for n Lc from b L1520 + pi, pT
-  TH1F *fhNLcKstarb[10];       //! hist. for n Lc from b K* + p, pT
-  TH1F *fhNLcDeltab[10];       //! hist. for n Lc from b Delta++ + K, pT
-  TH2F *fhPtEtaBkgNI[10];      //! hist. for n bkg, pT vs eta                    
-  TH2F *fhPtEtaLc[10];         //! hist. for n Lc tot., pT vs eta
-  TH2F *fhPtEtaLcc[10];        //! hist. for n Lc tot. from c, pT vs eta
-  TH2F *fhPtEtaLcNonRc[10];    //! hist. for n Lc from c non resonant, pT vs eta
-  TH2F *fhPtEtaLcL1520c[10];   //! hist. for n Lc from c L1520 + pi, pT vs eta
-  TH2F *fhPtEtaLcKstarc[10];   //! hist. for n Lc from c K* + p, pT vs eta
-  TH2F *fhPtEtaLcDeltac[10];   //! hist. for n Lc from c Delta++ + K, pT vs eta
-  TH2F *fhPtEtaLcb[10];        //! hist. for n Lc tot. from b, pT vs eta
-  TH2F *fhPtEtaLcNonRb[10];    //! hist. for n Lc from b non resonant, pT vs eta
-  TH2F *fhPtEtaLcL1520b[10];   //! hist. for n Lc from b L1520 + pi, pT vs eta
-  TH2F *fhPtEtaLcKstarb[10];   //! hist. for n Lc from b K* + p, pT vs eta
-  TH2F *fhPtEtaLcDeltab[10];   //! hist. for n Lc from b Delta++ + K, pT vs eta
-  TH2F *fhPtYBkgNI[10];        //! hist. for n bkg, pT vs rapidity                   
-  TH2F *fhPtYLc[10];           //! hist. for n Lc tot., pT vs rapidity
-  TH2F *fhPtYLcc[10];          //! hist. for n Lc tot. from c, pT vs rapidity
-  TH2F *fhPtYLcNonRc[10];      //! hist. for n Lc from c non resonant, pT vs rapidity
-  TH2F *fhPtYLcL1520c[10];     //! hist. for n Lc from c L1520 + pi, pT vs rapidity
-  TH2F *fhPtYLcKstarc[10];     //! hist. for n Lc from c K* + p, pT vs rapidity
-  TH2F *fhPtYLcDeltac[10];     //! hist. for n Lc from c Delta++ + K, pT vs rapidity
-  TH2F *fhPtYLcb[10];          //! hist. for n Lc tot. from b, pT vs rapidity
-  TH2F *fhPtYLcNonRb[10];      //! hist. for n Lc from b non resonant, pT vs rapidity
-  TH2F *fhPtYLcL1520b[10];     //! hist. for n Lc from b L1520 + pi, pT vs rapidity
-  TH2F *fhPtYLcKstarb[10];     //! hist. for n Lc from b K* + p, pT vs rapidity
-  TH2F *fhPtYLcDeltab[10];     //! hist. for n Lc from b Delta++ + K, pT vs rapidity
-  TH2F *fhPtPhiBkgNI[10];      //! hist. for n bkg, pT vs phi                   
-  TH2F *fhPtPhiLc[10];         //! hist. for n Lc tot., pT vs phi
-  TH2F *fhPtPhiLcc[10];        //! hist. for n Lc tot. from c, pT vs phi
-  TH2F *fhPtPhiLcNonRc[10];    //! hist. for n Lc from c non resonant, pT vs phi
-  TH2F *fhPtPhiLcL1520c[10];   //! hist. for n Lc from c L1520 + pi, pT vs phi
-  TH2F *fhPtPhiLcKstarc[10];   //! hist. for n Lc from c K* + p, pT vs phi
-  TH2F *fhPtPhiLcDeltac[10];   //! hist. for n Lc from c Delta++ + K, pT vs phi
-  TH2F *fhPtPhiLcb[10];        //! hist. for n Lc tot. from b, pT vs phi
-  TH2F *fhPtPhiLcNonRb[10];    //! hist. for n Lc from b non resonant, pT vs phi
-  TH2F *fhPtPhiLcL1520b[10];   //! hist. for n Lc from b L1520 + pi, pT vs phi
-  TH2F *fhPtPhiLcKstarb[10];   //! hist. for n Lc from b K* + p, pT vs phi
-  TH2F *fhPtPhiLcDeltab[10];   //! hist. for n Lc from b Delta++ + K, pT vs phi
+  TH1F *fhNBkgNI[11];	       //! hist. for n bkg, pT
+  TH1F *fhNLc[11];             //! hist. for n Lc tot., pT
+  TH1F *fhNLcc[11];            //! hist. for n Lc tot. from c, pT
+  TH1F *fhNLcNonRc[11];        //! hist. for n Lc from c non resonant, pT
+  TH1F *fhNLcL1520c[11];       //! hist. for n Lc from c L1520 + pi, pT
+  TH1F *fhNLcKstarc[11];       //! hist. for n Lc from c K* + p, pT
+  TH1F *fhNLcDeltac[11];       //! hist. for n Lc from c Delta++ + K, pT
+  TH1F *fhNLcb[11];            //! hist. for n Lc tot. from b, pT
+  TH1F *fhNLcNonRb[11];        //! hist. for n Lc from b non resonant, pT
+  TH1F *fhNLcL1520b[11];       //! hist. for n Lc from b L1520 + pi, pT
+  TH1F *fhNLcKstarb[11];       //! hist. for n Lc from b K* + p, pT
+  TH1F *fhNLcDeltab[11];       //! hist. for n Lc from b Delta++ + K, pT
+  TH2F *fhPtEtaBkgNI[11];      //! hist. for n bkg, pT vs eta                    
+  TH2F *fhPtEtaLc[11];         //! hist. for n Lc tot., pT vs eta
+  TH2F *fhPtEtaLcc[11];        //! hist. for n Lc tot. from c, pT vs eta
+  TH2F *fhPtEtaLcNonRc[11];    //! hist. for n Lc from c non resonant, pT vs eta
+  TH2F *fhPtEtaLcL1520c[11];   //! hist. for n Lc from c L1520 + pi, pT vs eta
+  TH2F *fhPtEtaLcKstarc[11];   //! hist. for n Lc from c K* + p, pT vs eta
+  TH2F *fhPtEtaLcDeltac[11];   //! hist. for n Lc from c Delta++ + K, pT vs eta
+  TH2F *fhPtEtaLcb[11];        //! hist. for n Lc tot. from b, pT vs eta
+  TH2F *fhPtEtaLcNonRb[11];    //! hist. for n Lc from b non resonant, pT vs eta
+  TH2F *fhPtEtaLcL1520b[11];   //! hist. for n Lc from b L1520 + pi, pT vs eta
+  TH2F *fhPtEtaLcKstarb[11];   //! hist. for n Lc from b K* + p, pT vs eta
+  TH2F *fhPtEtaLcDeltab[11];   //! hist. for n Lc from b Delta++ + K, pT vs eta
+  TH2F *fhPtYBkgNI[11];        //! hist. for n bkg, pT vs rapidity                   
+  TH2F *fhPtYLc[11];           //! hist. for n Lc tot., pT vs rapidity
+  TH2F *fhPtYLcc[11];          //! hist. for n Lc tot. from c, pT vs rapidity
+  TH2F *fhPtYLcNonRc[11];      //! hist. for n Lc from c non resonant, pT vs rapidity
+  TH2F *fhPtYLcL1520c[11];     //! hist. for n Lc from c L1520 + pi, pT vs rapidity
+  TH2F *fhPtYLcKstarc[11];     //! hist. for n Lc from c K* + p, pT vs rapidity
+  TH2F *fhPtYLcDeltac[11];     //! hist. for n Lc from c Delta++ + K, pT vs rapidity
+  TH2F *fhPtYLcb[11];          //! hist. for n Lc tot. from b, pT vs rapidity
+  TH2F *fhPtYLcNonRb[11];      //! hist. for n Lc from b non resonant, pT vs rapidity
+  TH2F *fhPtYLcL1520b[11];     //! hist. for n Lc from b L1520 + pi, pT vs rapidity
+  TH2F *fhPtYLcKstarb[11];     //! hist. for n Lc from b K* + p, pT vs rapidity
+  TH2F *fhPtYLcDeltab[11];     //! hist. for n Lc from b Delta++ + K, pT vs rapidity
+  TH2F *fhPtPhiBkgNI[11];      //! hist. for n bkg, pT vs phi                   
+  TH2F *fhPtPhiLc[11];         //! hist. for n Lc tot., pT vs phi
+  TH2F *fhPtPhiLcc[11];        //! hist. for n Lc tot. from c, pT vs phi
+  TH2F *fhPtPhiLcNonRc[11];    //! hist. for n Lc from c non resonant, pT vs phi
+  TH2F *fhPtPhiLcL1520c[11];   //! hist. for n Lc from c L1520 + pi, pT vs phi
+  TH2F *fhPtPhiLcKstarc[11];   //! hist. for n Lc from c K* + p, pT vs phi
+  TH2F *fhPtPhiLcDeltac[11];   //! hist. for n Lc from c Delta++ + K, pT vs phi
+  TH2F *fhPtPhiLcb[11];        //! hist. for n Lc tot. from b, pT vs phi
+  TH2F *fhPtPhiLcNonRb[11];    //! hist. for n Lc from b non resonant, pT vs phi
+  TH2F *fhPtPhiLcL1520b[11];   //! hist. for n Lc from b L1520 + pi, pT vs phi
+  TH2F *fhPtPhiLcKstarb[11];   //! hist. for n Lc from b K* + p, pT vs phi
+  TH2F *fhPtPhiLcDeltab[11];   //! hist. for n Lc from b Delta++ + K, pT vs phi
   TNtuple *fNtupleLambdac; //! output ntuple
   Float_t fCutsKF[2]; // cuts with KF vertexer
   Int_t fIsLc; // is MC Lc - 0=not Lc, 1=Lc from c, 2=Lc from b
@@ -166,7 +167,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 7
 
 
-  ClassDef(AliAnalysisTaskSELambdacTMVA,1); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,2); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif
