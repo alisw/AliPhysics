@@ -38,14 +38,14 @@
  * correct to the on-line value, we need to do
  *
  * @f[ 
- *   c_i = c_i' - \floor{f'\times n_i} + \floor{f\times n_i}
+ *   c_i = c_i' - \lfloor f'\times n_i\rfloor + \lfloor f\times n_i\rfloor
  * @f] 
  * 
  * which gives the correct number of ADC counts over the pedestal. To
  * convert back to the scaled energy loss signal we then need to
  * calculate (noting that @f$ f,f'@f$ are integers)
  *
- * @f{eqnarray}
+ * @f{eqnarray}{
  *    m_i &=& \frac{c_i \times \cos\theta_i}{g_i \times k}\\ 
  *    &=& \left(c_i' - \lfloor f'\times n_i\rfloor + 
  *           \lfloor f\times n_i\rfloor\right)\frac{\cos\theta}{g_i \times k}\\
@@ -53,11 +53,11 @@
  *            \lfloor f'\times n_i\rfloor + \lfloor f\times n_i\rfloor\right)
  *         \frac{\cos\theta}{g_i \times k}\\
  *    &=& m_i' + \frac{1}{g_i \times k}
- *         \left(\lfloor f\times n_i}\rfloor-
+ *         \left(\lfloor f\times n_i\rfloor-
  *             \lfloor f'\times n_i\rfloor\right)\cos\theta\\
  *    &=& m_i' + \frac{\lfloor n_i\rfloor}{g_i \times k}
  *        \left(f-f'\right)\cos\theta
- * @f{eqnarray}
+ * @f}
  * 
  */
 class AliFMDCorrNoiseGain : public TObject 

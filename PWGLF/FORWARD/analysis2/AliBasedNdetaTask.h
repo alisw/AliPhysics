@@ -42,7 +42,6 @@ class TObjArray;
 /**
  * Base class for tasks to determine @f$ dN/d\eta@f$ 
  *
- * @ingroup pwglf_forward_tasks_dndeta
  * @ingroup pwglf_forward_dndeta
  */
 class AliBasedNdetaTask : public AliBaseAODTask
@@ -876,8 +875,6 @@ protected:
      * Get name of result histogram. Note, the returned pointer points
      * to static memory and should be copied/used immediately.
      * 
-     * @param rebin    Whether to get rebinned result
-     * @param sym      Whether to get symmetric extension
      * @param postfix  Possible postfix (e.g., "MC")
      * 
      * @return 
@@ -929,6 +926,7 @@ protected:
      * @param triggerMask  The used trigger mask 
      * @param vzMin        Least @f$ v_z@f$
      * @param vzMax        Largest @f$ v_z@f$
+     * @param checkPileup  If true, faile on pile-up
      * 
      * @return true if the event is to be used 
      */

@@ -43,7 +43,6 @@ class AliFMDCorrELossFit;
  *   - AliFMDDeadCorrection 
  *
  * @ingroup pwglf_forward_algo
- * @ingroup pwglf_forward_aod
  */
 class AliFMDDensityCalculator : public TNamed
 {
@@ -279,7 +278,7 @@ protected:
    * @param cor   Correction
    * @param d     Detector 
    * @param r     Ring 
-   * @param eta   Eta
+   * @param iEta  iEta
    *
    * @return The maximum weight 
    */

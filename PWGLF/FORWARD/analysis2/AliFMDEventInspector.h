@@ -46,7 +46,6 @@ class TVector3;
  *   - None
  *
  * @ingroup pwglf_forward_algo 
- * @ingroup pwglf_forward_aod
  */
 class AliFMDEventInspector : public TNamed
 {

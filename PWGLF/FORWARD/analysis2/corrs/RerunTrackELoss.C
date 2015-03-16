@@ -76,6 +76,7 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  *
  * @param forceSet  Forcibly set things 
  * @param input     Input file 
+ * @param shift     Enable shift 
  * @param output    Output file 
  */
 void RerunTrackELoss(Bool_t forceSet=false, 

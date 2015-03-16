@@ -1,5 +1,5 @@
 /**
- * @file   AddTaskForwardFlow.C
+ * @file   AddTaskFMDEventPlane.C
  * @author Alexander Hansen alexander.hansen@cern.ch 
  * @date   Wed Sep 07 12:14:17 2011
  * 

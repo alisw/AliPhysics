@@ -275,12 +275,16 @@ protected:
    * @name Bethe-bloc 
    */
   /** Scale a graph by density (multiply) and mass (divide). 
-      @param graph Graph to scale 
-      @param density If @c true, scale by the Si density
-      ($\rho=2.33$/cm^3$).  The y axis is assumed to have units of
-      $MeVg^{-1}cm^2$. 
-      @param mass Mass to scale with. The x axis is assumed to be the
-      kinetic energy of the particles in units of $GeV$.  */
+   * 
+   * @param graph Graph to scale 
+   *
+   * @param density If @c true, scale by the Si density
+   * (@f$ \rho=2.33/\mbox{cm}^3@f$).  The y axis is assumed to have units of
+   * @f$ MeVg^{-1}cm^2@f$.
+   * 
+   * @param mass Mass to scale with. The x axis is assumed to be the
+   * kinetic energy of the particles in units of GeV.  
+  */
   void ScaleGraph(TGraph* graph, bool density=true, double mass=1) 
   {
       Double_t*      x   = graph->GetX();

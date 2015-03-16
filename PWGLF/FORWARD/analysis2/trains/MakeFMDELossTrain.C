@@ -87,7 +87,6 @@ protected:
    * Create entrality selection if enabled 
    * 
    * @param mc   Whether this is MC or not
-   * @param mgr  Analysis manager 
    */
   virtual void CreateCentralitySelection(Bool_t mc)
   {

@@ -370,7 +370,7 @@ struct RefData
    * Get a multi graph of data for a given energy and trigger type 
    * 
    * @param sys      Collision system (1: pp, 2: PbPb, 3: pPb)
-   * @param energy   Energy in GeV (900, 2360, 2760, 7000, 8000)
+   * @param sNN      Energy in GeV (900, 2360, 2760, 7000, 8000)
    * @param triggers Bit pattern of trigger type 
    *   - 0x01 INEL 
    *   - 0x02 INEL>0
@@ -379,6 +379,7 @@ struct RefData
    * @param centLow     Low centrality cut (not pp)
    * @param centHigh    High centrality cut (not pp)
    * @param experiments From which experiments 
+   * @param path        Path to database 
    * 
    * @return A multi graph with the selected data. 
    * 
@@ -445,9 +446,9 @@ struct RefData
   /** 
    * Format title of a plot
    * 
-   * @param title     On return, the title 
+   * @param title    On return, the title 
    * @param sys      Collision system (1: pp, 2: PbPb, 3: pPb)
-   * @param energy   Energy in GeV (900, 2360, 2760, 7000, 8000)
+   * @param sNN      Energy in GeV (900, 2360, 2760, 7000, 8000)
    * @param triggers Bit pattern of trigger type 
    *   - 0x01 INEL 
    *   - 0x02 INEL>0
@@ -711,7 +712,6 @@ struct RefData
    * Import a graph into the data base
    * 
    * @param g            Graph
-   * @param title        Title on plot
    * @param experiment   Which experiement
    * @param sys          Collision system
    * @param sNN          Collision energy (in GeV)

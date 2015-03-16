@@ -71,6 +71,7 @@ struct EmpiricalMaker {
    * 
    * @param d     Parent directory
    * @param name  Name of object
+   * @param cl    Class pointer for testing 
    * @param quiet If true, report no errors
    * 
    * @return Pointer to object, or null
@@ -84,7 +85,8 @@ struct EmpiricalMaker {
     }
     TObject* o = d->Get(name.Data());
     if (!o) {					
-      if (!quiet) ::Error("GetObject", "didn't find the object %s in %s", name.Data(), d->GetName());
+      if (!quiet) ::Error("GetObject", "didn't find the object %s in %s",
+			  name.Data(), d->GetName());
       if (!quiet) d->ls();
       return 0;
     }
@@ -98,6 +100,7 @@ struct EmpiricalMaker {
    * @param d     Parent directory
    * @param name  Name of object
    * @param quiet If true, report no errors
+   * @param cl    Class pointer for testing 
    * 
    * @return Pointer to object, or null
    */
@@ -312,6 +315,7 @@ struct EmpiricalMaker {
    * Process a single component
    * 
    * @param d     Parent
+   * @param out   Output 
    * @param name  Name of component
    */
   void ProcessComponent(TDirectory* d, TDirectory* out, const TString& name)
@@ -389,6 +393,7 @@ struct EmpiricalMaker {
    * @param c      Parent
    * @param name   Name of component 
    * @param s      Stack 
+   * @param d      Directory
    */
   void ProcessCent(UShort_t c1, UShort_t c2, TCollection* c, 
 		   const TString& name, THStack* s, TDirectory* d) 

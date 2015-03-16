@@ -28,7 +28,6 @@ class TAxis;
  * of this type.
  * 
  * @ingroup pwglf_forward_corr 
- * @ingroup pwglf_forward_aod
  */
 class AliCentralCorrectionManager : public AliCorrectionManagerBase
 {

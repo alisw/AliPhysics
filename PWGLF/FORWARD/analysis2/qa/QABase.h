@@ -310,7 +310,6 @@ struct QABase
    * Print the canvas to PNG and include it into LaTeX file
    * 
    * @param pngName Base name of PNG
-   * @param runNo   Run number to append
    */
   void PrintCanvas(const char* pngName, UInt_t /*runNo*/)
   {

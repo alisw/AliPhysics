@@ -11,11 +11,10 @@
 
 //====================================================================
 /**
- * Analysis train to make flow@
+ * Analysis train to make flow
  * 
  *
  * @ingroup pwglf_forward_flow
- * @ingroup pwglf_forward_trains
  */
 class MakeFlowTrain : public TrainSetup
 {
@@ -59,7 +58,6 @@ protected:
   /** 
    * Create the tasks 
    * 
-   * @param mgr Manager 
    */
   void CreateTasks(AliAnalysisManager*)
   {

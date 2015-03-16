@@ -155,6 +155,7 @@ public:
    * each query tuple.
    * 
    * @param destination Where to write the new file 
+   * @param verb        Whether to be verbose 
    * 
    * @return true on success, false otherwise 
    */

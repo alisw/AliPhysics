@@ -1,5 +1,5 @@
 /**
- * @file   AliSimpleMCWeights.cxx
+ * @file   AliSimplePidWeights.cxx
  * @author Marek Chojnacki <mchojnac#cern.ch>
  * @date   Wed Feb  4 00:09:32 2015
  * 

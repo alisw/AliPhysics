@@ -138,6 +138,7 @@ AliMultEventClassifier::CreateOutputObjects(TList* l)
 {
   fList = new TList;
   fList->SetOwner(true);
+  fList->SetName(GetName());
   if (l) l->Add(fList);
 
   const Int_t* arr   = AliAODMultEventClass::GetBins();
@@ -184,7 +185,7 @@ AliMultEventClassifier::Process(AliESDEvent* esd,
     ::GetReferenceMultiplicity(esd,
 			       AliESDtrackCuts::kTrackletsITSTPC, 0.8 ) ;
   if (data) data->SetMult(mult);
-  Int_t fill = (mult >= fMax ? fMax+1 : mult);
+  Int_t fill = (mult >= Int_t(fMax) ? fMax+1 : mult);
 
   GetCentrality(esd, data, fill, AliAODMultEventClass::kV0M);
   GetCentrality(esd, data, fill, AliAODMultEventClass::kV0A);

@@ -11,9 +11,9 @@ class TH2;
  * - Using a fixed value @f$ v@f$- AliFMDMultCuts:: SetMultCuts
  * - Using a fraction @f$ f@f$ of the most probably value (@f$ \Delta_p@f$)
  *   from the energy loss fits
- * - Using some number @f$ n@$ of widths (@f$ \xi@f$) below the most
+ * - Using some number @f$ n@f$ of widths (@f$ \xi@f$) below the most
  *   probable value (@f$ \Delta_p@f$) from the energy loss fits 
- * - Using some number @f$ n@$ of widths (@f$ \xi+\sigma@f$) below the
+ * - Using some number @f$ n@f$ of widths (@f$ \xi+\sigma@f$) below the
  *   most probable value (@f$ \Delta_p@f$) from the energy loss fits 
  * - Using the @f$ x@f$ value for which @f$ P(x>p)@f$ given some cut
  *   value @f$ p@f$
@@ -237,6 +237,7 @@ public:
    * helper function to translate a method into a string 
    * 
    * @param method Method identifier 
+   * @param latex  IF true, format for TLatex
    * 
    * @return String 
    */
@@ -253,6 +254,7 @@ protected:
   /** 
    * Set the cut for specified method.
    *
+   * @param what   What to set 
    * @param method Cut method
    * @param fmd1i  Value for FMD1i
    * @param fmd2i  Value for FMD2i (if < 0, use fmd1i) 

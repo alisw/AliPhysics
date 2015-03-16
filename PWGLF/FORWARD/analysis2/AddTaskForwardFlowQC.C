@@ -27,6 +27,7 @@
  * @param etaGap        Size of @f$\eta@f$ gap
  * @param useTracksForRef  Which tracks to use for reference flow
  * @param useCent       Whether to use centrality or impact parameter for MC 
+ * @param ispA          True for pPb 
  * @param useMCVtx      Whether to use vertex info from MC header
  * @param satVtx        Use satellite interactions 
  * @param addFlow       Add flow afterburner (only MC)

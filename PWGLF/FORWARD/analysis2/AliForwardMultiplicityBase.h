@@ -74,7 +74,6 @@ class TProfile;
  *   
  * @par Corrections used 
  * 
- * @ingroup pwglf_forward_tasks
  * @ingroup pwglf_forward_aod
  * 
  */
