@@ -52,7 +52,8 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton 	= "00000008400100001500000000";
+					   //06000078400100001500000000
+	TString cutnumberPhoton 	= "06000078400100001500000000";
 	TString cutnumberEvent 		= "8000000";
 	TString cutnumberElectron     	= "90005400000002000000";            //Electron Cuts
 	
