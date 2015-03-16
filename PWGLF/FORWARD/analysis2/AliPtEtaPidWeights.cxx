@@ -112,14 +112,16 @@ void AliPtEtaPidWeights::AddPDGCode(Int_t  pdg, TH2* weight)
 void AliPtEtaPidWeights::Print(Option_t* option) const
 {
   PFV("MC Weights", "PtEta PID based");
+#if 0
   gROOT->IncreaseDirLevel();
   for (Int_t i = 0; i < fPdgs.GetSize(); i++)  {
     Int_t v = fPdgs.At(i);
     if (v == 0) break;
-    PFV(Form("%d", v));
+    // PFV(Form("%d", v));
     // fWeights.Print("all"); 		
   }
   gROOT->DecreaseDirLevel();
+#endif
 }
 
 //____________________________________________________________________

@@ -45,9 +45,9 @@ public:
    */
   AliMultEventClassifier(const char*)
     : TNamed("multEventClass", "Classifier of pp events"),
-      fList(0),
       fUtil(0),
       fMax(0),
+      fList(0),
       fCorrV0M(0),
       fCorrV0A(0),
       fCorrV0C(0),
@@ -69,9 +69,9 @@ public:
    */
   AliMultEventClassifier(const AliMultEventClassifier& o)
     : TNamed(o),
-      fList(0),
       fUtil(0),
       fMax(0),
+      fList(0),
       fCorrV0M(0),
       fCorrV0A(0),
       fCorrV0C(0),

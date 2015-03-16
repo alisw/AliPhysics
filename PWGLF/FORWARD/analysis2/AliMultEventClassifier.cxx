@@ -56,15 +56,16 @@ AliMultEventClassifier::GetCentrality(AliESDEvent* esd,
 				      Int_t mult,
 				      UShort_t which)
 {
+  Bool_t         isCn = which == AliAODMultEventClass::kCND;
   const char*    meth = GetCentName(which);
-  Float_t        util = (which == AliAODMultEventClass::kCND ? -1 :
-			 fUtil->GetMultiplicityPercentile(esd,meth));
+  Float_t        util = (isCn ? -1:fUtil->GetMultiplicityPercentile(esd,meth));
   Float_t        sel  = -1;
   AliCentrality* cObj = esd->GetCentrality();
   if (cObj)      sel  = cObj->GetCentralityPercentile(meth);  
   TH2*           corr = GetCorr(which);
   TH2*           vs   = GetVs(which);
 
+  if (isCn) util = sel;
   if (corr) corr->Fill(util, sel);
   if (vs)   vs  ->Fill(mult, util);
 
@@ -104,7 +105,8 @@ TH2*
 AliMultEventClassifier::MakeVs(UShort_t which, const TArrayD& bins)
 {
   Bool_t isEq = (which & AliAODMultEventClass::kEq);
-  if ((which & AliAODMultEventClass::kCND) && isEq) return 0;
+  Bool_t isCn = which & AliAODMultEventClass::kCND;
+  if (isCn && isEq) return 0;
   
   const char*  meth = GetCentName(which);
   TH2*         vs   = new TH2D(Form("vs%s", meth),
@@ -115,6 +117,7 @@ AliMultEventClassifier::MakeVs(UShort_t which, const TArrayD& bins)
   vs->SetDirectory(0);
   vs->SetXTitle("Reference multiplicity");
   vs->SetYTitle("Centrality from AliPPVsMultUtils [%]");
+  if (isCn) vs->SetYTitle("Centrality from AliCentrality [%]");
 
   if      (which & AliAODMultEventClass::kV0M)
     if (isEq) fMultV0MEq = vs; else fMultV0M = vs;
