@@ -501,8 +501,19 @@ Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
   return d;
 }
 
-TEveElementList* esd_tracks_by_category()
+TEveElementList* esd_tracks_by_category(Color_t c0=-1,Color_t c1=-1,Color_t c2=-1,Color_t c3=-1,Color_t c4=-1,Color_t c5=-1,Color_t c6=-1,Color_t c7=-1,Color_t c8=-1,bool dashBad=kTRUE)
 {
+    Color_t colors[9] = {3,7,46,41,48,kRed,kGreen,kMagenta-9,kRed+2};
+    if(c0>=0) colors[0]=c0;
+    if(c1>=0) colors[1]=c1;
+    if(c2>=0) colors[2]=c2;
+    if(c3>=0) colors[3]=c3;
+    if(c4>=0) colors[4]=c4;
+    if(c5>=0) colors[5]=c5;
+    if(c6>=0) colors[6]=c6;
+    if(c7>=0) colors[7]=c7;
+    if(c8>=0) colors[8]=c8;
+    
    // Import ESD tracks, separate them into several containers
    // according to primary-vertex cut and ITS&TPC refit status.
 
@@ -522,55 +533,55 @@ TEveElementList* esd_tracks_by_category()
    tl[0] = new TEveTrackList("Sigma < 3");
    tc[0] = 0;
    esd_track_propagator_setup(tl[0]->GetPropagator(), magF, maxR);
-   tl[0]->SetMainColor(3);
+   tl[0]->SetMainColor(colors[0]/*3*/);
    cont->AddElement(tl[0]);
 
    tl[1] = new TEveTrackList("3 < Sigma < 5");
    tc[1] = 0;
    esd_track_propagator_setup(tl[1]->GetPropagator(), magF, maxR);
-   tl[1]->SetMainColor(7);
+   tl[1]->SetMainColor(colors[1]/*7*/);
    cont->AddElement(tl[1]);
 
    tl[2] = new TEveTrackList("5 < Sigma");
    tc[2] = 0;
    esd_track_propagator_setup(tl[2]->GetPropagator(), magF, maxR);
-   tl[2]->SetMainColor(46);
+   tl[2]->SetMainColor(colors[2]/*46*/);
    cont->AddElement(tl[2]);
 
    tl[3] = new TEveTrackList("no ITS refit; Sigma < 5");
    tc[3] = 0;
    esd_track_propagator_setup(tl[3]->GetPropagator(), magF, maxR);
-   tl[3]->SetMainColor(41);
+   tl[3]->SetMainColor(colors[3]/*41*/);
    cont->AddElement(tl[3]);
 
    tl[4] = new TEveTrackList("no ITS refit; Sigma > 5");
    tc[4] = 0;
    esd_track_propagator_setup(tl[4]->GetPropagator(), magF, maxR);
-   tl[4]->SetMainColor(48);
+   tl[4]->SetMainColor(colors[4]/*48*/);
    cont->AddElement(tl[4]);
 
    tl[5] = new TEveTrackList("no TPC refit");
    tc[5] = 0;
    esd_track_propagator_setup(tl[5]->GetPropagator(), magF, maxR);
-   tl[5]->SetMainColor(kRed);
+   tl[5]->SetMainColor(colors[5]/*kRed*/);
    cont->AddElement(tl[5]);
 
    tl[6] = new TEveTrackList("ITS ncl>=3 & SPD Inner");
    tc[6] = 0;
    esd_track_propagator_setup(tl[6]->GetPropagator(), magF, maxR);
-   tl[6]->SetMainColor(kGreen);
+   tl[6]->SetMainColor(colors[6]/*kGreen*/);
    cont->AddElement(tl[6]);
 
    tl[7] = new TEveTrackList("ITS ncl>=3 & b<3 cm");
    tc[7] = 0;
    esd_track_propagator_setup(tl[7]->GetPropagator(), magF, maxR);
-   tl[7]->SetMainColor(kMagenta - 9);
+   tl[7]->SetMainColor(colors[7]/*kMagenta - 9*/);
    cont->AddElement(tl[7]);
 
    tl[8] = new TEveTrackList("ITS others");
    tc[8] = 0;
    esd_track_propagator_setup(tl[8]->GetPropagator(), magF, maxR);
-   tl[8]->SetMainColor(kRed + 2);
+   tl[8]->SetMainColor(colors[8]/*kRed + 2*/);
    cont->AddElement(tl[8]);
 
    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
@@ -643,7 +654,7 @@ TEveElementList* esd_tracks_by_category()
       }
       else
       {
-         if ( ! good_cont)
+         if ( ! good_cont && dashBad)
             tlist->SetLineStyle(6);
       }
    }
