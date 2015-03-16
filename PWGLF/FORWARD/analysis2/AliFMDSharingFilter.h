@@ -52,7 +52,6 @@ class AliFMDFloatMap;
  * 
  *
  * @ingroup pwglf_forward_algo 
- * @ingroup pwglf_forward_aod
  */
 class AliFMDSharingFilter : public TNamed
 {

@@ -549,7 +549,6 @@ public:
    * Backward compatibility mode constructor 
    * 
    * @param keep       Keep temporary files
-   * @param single     Not used  
    * @param prodYear   Period year 
    * @param prodLetter Period letter
    */
@@ -579,8 +578,10 @@ public:
    * 
    * @param keep      Whehter to keep all info 
    * @param dataType  Data stype 
-   * @param prodYear   Production yea4 
-   * @param prodLetter Production letter
+   * @param prodYear  Production year
+   * @param period    Production period
+   * @param pass      Production pass 
+   * @param runNo     Run number 
    */
   QATrender(Bool_t         keep, 
 	    const TString& dataType, 

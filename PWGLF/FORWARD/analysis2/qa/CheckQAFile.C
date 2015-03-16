@@ -11,6 +11,7 @@
  * Script to check a QA file.  Note that this terminates the ROOT session. 
  * 
  * @param filename File to read 
+ * @param type What type 
  * 
  * @ingroup pwglf_forward_qa_scripts
  */

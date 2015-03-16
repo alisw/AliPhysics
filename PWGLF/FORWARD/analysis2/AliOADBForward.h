@@ -678,6 +678,8 @@ protected:
    * @param name   Name of the table 
    * @param mode   Default mode for new table, or override mode 
    *               for existing tables if not default
+   * @param fallback Enable fall-backs
+   * @param verb If true, be verbose 
    * 
    * @return Table or (if rw=true) possibly newly created table
    */

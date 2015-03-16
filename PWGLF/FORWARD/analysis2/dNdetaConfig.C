@@ -1,5 +1,5 @@
 /**
- * @file   ForwarddNdetaConfig.C
+ * @file   dNdetaConfig.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Thu May 15 20:33:03 2014
  * 

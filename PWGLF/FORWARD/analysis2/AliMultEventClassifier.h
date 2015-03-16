@@ -161,6 +161,7 @@ protected:
    * Make a reference multiplicity versus centrality estimator histogram
    * 
    * @param which Which estimator 
+   * @param bins  Bins to use 
    * 
    * @return Pointer to histogram or null
    */

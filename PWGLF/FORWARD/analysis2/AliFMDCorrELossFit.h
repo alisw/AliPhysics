@@ -34,7 +34,6 @@ class TBrowser;
  * These are generated from Monte-Carlo or real ESDs. 
  *
  * @ingroup pwglf_forward_corr
- * @ingroup pwglf_forward_eloss
  */
 class AliFMDCorrELossFit : public TObject 
 {

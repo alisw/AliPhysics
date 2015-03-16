@@ -1,5 +1,5 @@
 /**
- * @file   AddTaskFMDELoss.C
+ * @file   AddTaskFMDMCTracks.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 12:14:03 2011
  * 
@@ -9,17 +9,10 @@
  * @ingroup pwglf_forward_scripts_tasks
  */
 /**
- * @defgroup pwglf_forward_eloss Energy Loss Fits
- *
- * Fitting the energy loss @f$\Delta/\Delta_{mip}@f$ spectra 
- *
- * @ingroup pwglf_forward_topical
- */
-
-/**
  * This is the macro to include the FMD energy fitter in a train.  
  * 
  * @param useTuple  If true, create NTuple of hits
+ * @param maxStrips MAximum number strips 
  * @param debug     Debug level
  *
  * @return Newly created task 

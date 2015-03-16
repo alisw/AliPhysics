@@ -45,7 +45,6 @@ class TArrayD;
  * @image html alice-int-2012-040-eloss_fits.png "Summary of fits"
  * 
  * @ingroup pwglf_forward_algo
- * @ingroup pwglf_forward_eloss
  */
 class AliFMDEnergyFitter : public TNamed
 {

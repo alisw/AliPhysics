@@ -77,6 +77,7 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  * @param forceSet  Forcibly set things 
  * @param input     Input file 
  * @param output    Output file 
+ * @param shift     Enable shift 
  */
 void RerunELossFits(Bool_t forceSet=false, 
 		    const TString& input="forward_eloss.root", 

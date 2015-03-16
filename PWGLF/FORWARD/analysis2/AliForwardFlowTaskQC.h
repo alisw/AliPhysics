@@ -40,7 +40,6 @@ class AliESDEvent;
  * Outputs:
  *   - forward_flow.root
  *
- * @ingroup pwglf_forward_tasks_flow
  * @ingroup pwglf_forward_flow
  *
  */
@@ -128,7 +127,7 @@ public:
     * Get QC type
     *
     * @param flags EFlowFlags
-    * @param prepensUS prepend an underscore
+    * @param prependUS prepend an underscore
     *
     * @return type
     */
@@ -363,12 +362,14 @@ protected:
      * using tracks as input
      *
      * @param trList Array with tracks
-     * @param cent Centrality
+     * @param esd  ESD event
+     * @param trFilter analysis filter 
      * @param mode fill ref/diff or both
      *
      * @return false if bad event (det. hotspot)
      */
-    Bool_t FillTracks(TObjArray* trList, AliESDEvent* esd, AliAnalysisFilter* trFilter, UShort_t mode);
+    Bool_t FillTracks(TObjArray* trList, AliESDEvent* esd,
+		      AliAnalysisFilter* trFilter, UShort_t mode);
     /**
      * Do cumulants calculations for current event with 
      * centrality cent
@@ -420,8 +421,8 @@ protected:
     /** 
      * Calculate reference flow
      *
-     * @param cumu2 QC2 histos
-     * @param cumu4 QC4 histos
+     * @param cumu2h QC2 histos
+     * @param cumu4h QC4 histos
      * @param quality QC Quality diag. histo
      * @param chist Centrality histogram
      * @param dNdetaRef dN/deta histogram
@@ -430,8 +431,8 @@ protected:
     /** 
      * Calculate differential flow
      *
-     * @param cumu2 QC2 histos
-     * @param cumu4 QC4 histos
+     * @param cumu2h QC2 histos
+     * @param cumu4h QC4 histos
      * @param quality QC Quality diag. histo
      * @param dNdetaDiff dN/deta histogram
      */
@@ -439,7 +440,7 @@ protected:
     /** 
      * Calculate 3 correlator ref and fiff flow
      *
-     * @param cumu2 QC2 histos
+     * @param cumu2h QC2 histos
      * @param quality QC Quality diag. histo
      * @param chist Centrality histogram
      * @param dNdetaRef dN/deta histogram
@@ -492,7 +493,7 @@ protected:
     /**
      * Setup NUA axis with labels
      *
-     * @param axis NUA axis
+     * @param a NUA axis
      */
     void SetupNUALabels(TAxis* a) const;
     /**
@@ -570,7 +571,7 @@ protected:
    * Loops of vertex bins in list and runs analysis on those for current vertex
    *
    * @param list List of vertex bins
-   * @param h dN/detadphi histogram
+   * @param h1 dN/detadphi histogram
    * @param vtx Current vertex bin
    * @param flags Extra flags
    */
@@ -672,7 +673,7 @@ protected:
   /**
    * Fill VZERO d^2N/detadphi hist
    *
-   * @param aodvzero: AliAODVZERO object
+   * @param vzero AliAODVZERO object
    */
   void FillVZEROHist(AliVVZERO* vzero);
   /**

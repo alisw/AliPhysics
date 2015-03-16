@@ -601,6 +601,7 @@ protected:
    * @param pname     Name of PDF file to make 
    * @param landscape If true, print in landscape 
    * @param pdf       Make PDF
+   * @param useTop    Make top area
    *
    * @return Created canvas 
    */

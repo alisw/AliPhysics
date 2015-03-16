@@ -218,6 +218,7 @@ struct TestF
    * @param a        Particle weights 
    * @param xMin     Least @f$\Delta @f$ 
    * @param xMax     Largest @f$\Delta@f$
+   * @param pad      Pad to draw in 
    * 
    * @return The test object
    */
@@ -335,7 +336,8 @@ struct TestF
    * Print canvas to output PDF 
    * 
    * @param c      Canvas
-   * @param title  Title of page 
+   * @param xi     @f$ \xi@f$ 
+   * @param sigma  @f$ \sigma@f$ 
    * 
    * @return The full title of the page 
    */
@@ -374,6 +376,7 @@ struct TestF
    * @param j      Second index (if any)
    * @param n      Number of values
    * @param test   Test result
+   * @param nt     NTutple 
    */
   virtual void Step(UShort_t mode, 
 		    Int_t    i, 
@@ -396,10 +399,10 @@ struct TestF
   /** 
    * Scan over a parameter (@f$\xi@f$ or @f$\sigma@f$) 
    * 
-   * @param sigma   If true, scan @f$\sigma@f$, otherwise @f$\xi@f$ 
-   * @param n       Number of values
-   * @param values  Values of the parameters
-   * @param maxN    Number of particles 
+   * @param scanSigma   If true, scan @f$\sigma@f$, otherwise @f$\xi@f$ 
+   * @param n           Number of values
+   * @param values      Values of the parameters
+   * @param maxN        Number of particles 
    */
   void ScanOne(Bool_t          scanSigma, 
 	       Int_t           n, 
@@ -412,9 +415,9 @@ struct TestF
   /** 
    * Scan over a parameter (@f$\xi@f$ or @f$\sigma@f$) 
    * 
-   * @param sigma   If true, scan @f$\sigma@f$, otherwise @f$\xi@f$ 
-   * @param values  Values of the parameters
-   * @param maxN    Number of particles 
+   * @param scanSigma   If true, scan @f$\sigma@f$, otherwise @f$\xi@f$ 
+   * @param values      Values of the parameters
+   * @param maxN        Number of particles 
    */
   void ScanOne(Bool_t         scanSigma, 
 	       const TArrayD& values, 

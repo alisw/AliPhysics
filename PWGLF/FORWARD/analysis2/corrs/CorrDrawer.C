@@ -130,6 +130,7 @@ public:
    * @param field   L3 Field 
    * @param mc      Simulations or not
    * @param sat     Satellite interactions or not 
+   * @param options Options
    * @param local   Local database file 
    */
   void Run(UShort_t    what, 
@@ -282,6 +283,7 @@ public:
    * @param field   L3 magnetic field
    * @param mc      Simulation flag
    * @param sat     Satellite interaction flag
+   * @param options Options 
    * @param local   Local storage
    *
    * @deprecated See Run instead 
@@ -340,7 +342,7 @@ public:
    * Draw a single summary plot multiple plots of the energy loss
    * fits.  A new canvas is created for this.
    * 
-   * @param fits Energy loss fits
+   * @param corr Energy loss fits
    * @param pdf  If true, do multiple plots. Otherwise a single summary plot
    */
   virtual void Summarize(const AliFMDCorrNoiseGain* corr, Bool_t pdf=true) 
@@ -367,7 +369,6 @@ public:
    * A new canvas is created for this.
    * 
    * @param what     What to plot
-   * @param mc       MC input or not
    * @param output   Output of correction pass (must exist)
    * @param local    Local storage of correction
    * @param options  Various options
@@ -389,7 +390,6 @@ public:
    * A new canvas is created for this.
    * 
    * @param what     What to plot
-   * @param mc       MC input or not
    * @param output   Output of correction pass (must exist)
    * @param local    Local storage of correction
    * @param options  Various options
@@ -771,7 +771,8 @@ protected:
    * 
    * @param corr       Correction
    * @param details If true, make a multipage PDF, 
-   *                   otherwise plot the parameters. 
+   *                   otherwise plot the parameters.
+   * @param few     Only a few
    */
   virtual void DrawIt(const AliFMDCorrELossFit* corr, bool details,
 		      bool few=true) 
@@ -942,6 +943,7 @@ protected:
    * @param ra    Ring array 
    * @param dists Distributions (optional)
    * @param resis Residuals (optional)   
+   * @param few   A few
    */
   void DrawELossFits(UShort_t d, Char_t r, TObjArray* ra, 
 		     TList* dists, TList* resis, bool few)

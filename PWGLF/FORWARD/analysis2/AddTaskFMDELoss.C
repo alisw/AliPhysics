@@ -20,10 +20,9 @@
  * This is the macro to include the FMD energy fitter in a train.  
  * 
  * @param mc        Assume MC input 
- * @param useCent   Use centrality information 
  * @param onlyMB    Only collect statistics for MB (INEL) events
- * @param debug     Debug level
- * @param residuals If set, also do residuals 
+ * @param config    Configuration script 
+ * @param corrs     Corrections
  *
  * @return Newly created task 
  *

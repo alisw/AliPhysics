@@ -158,7 +158,6 @@ protected:
    * Create the centrality selection only if requested
    * 
    * @param mc  Monte-Carlo truth flag 
-   * @param mgr Manager
    */
   void CreateCentralitySelection(Bool_t mc)
   {

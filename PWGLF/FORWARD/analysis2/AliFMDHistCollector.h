@@ -39,7 +39,6 @@ class TObjArray;
  *   - AliFMDCorrSecondaryMap
  *
  * @ingroup pwglf_forward_algo
- * @ingroup pwglf_forward_aod
  */
 class AliFMDHistCollector : public TNamed
 {

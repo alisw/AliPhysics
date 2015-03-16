@@ -81,7 +81,6 @@ protected:
   /** 
    * Create the tasks 
    * 
-   * @param mgr  Analysis manager 
    */
   void CreateTasks(AliAnalysisManager*)
   {
@@ -305,7 +304,6 @@ protected:
    * Create the centrality selection only if requested
    * 
    * @param mc  Monte-Carlo truth flag 
-   * @param mgr Manager
    */
   void CreateCentralitySelection(Bool_t mc)
   {

@@ -19,7 +19,6 @@
  * Do one one 
  * 
  * @param runNo Run number 
- * @param which Which one to do 
  */
 void 
 ExtractForRun(Int_t runNo) 

@@ -849,7 +849,9 @@ struct TupleSelector : public TSelector
    * Plot one quantity 
    * 
    * @param which 
-   * @param what 
+   * @param title Title 
+   * @param dir   Directory 
+   * @param opt   Options
    */
   void PlotOne(UShort_t which, const char* title, 
 	       TDirectory* dir=0, Option_t* opt="")
@@ -1108,7 +1110,7 @@ struct TupleSelector : public TSelector
     }
     return chain;
   }
-
+  
   //------------------------------------------------------------------
   /** 
    * Scan directory @a dir (possibly recursive) for tree files to add
@@ -1117,8 +1119,8 @@ struct TupleSelector : public TSelector
    * @param dir        Directory to scan
    * @param chain      Chain to add to
    * @param pattern    File name pattern 
-   * @param anchor     Anchor (tree name)
-   * @param flags      Flags
+   * @param recursive  Be reursive 
+   * @param verbose    Verbosity flags
    *
    * @return true if any files where added 
    */
@@ -1235,6 +1237,7 @@ struct TupleSelector : public TSelector
    * 
    * @param path   Full path to file 
    * @param chain  Chain 
+   * @param verbose Whether to be verbose 
    * 
    * @return true on success, false otherwise
    */
@@ -1326,7 +1329,7 @@ struct TupleSelector : public TSelector
    * 
    * @param maxEvents Maximum number of events 
    * @param title     Optional title 
-   * @param maxFiles  Maximum number of files to put in chain 
+   * @param opt       Options
    * 
    * @return true on sucess 
    */

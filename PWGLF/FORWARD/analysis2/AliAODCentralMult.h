@@ -32,7 +32,6 @@ class TBrowser;
  * histogram and summing the event histograms in that histogram.  One
  * should of course also do proper book-keeping of the accepted event.
  *
- * @ingroup pwglf_forward
  * @ingroup pwglf_forward_aod
  */
 class AliAODCentralMult : public TObject

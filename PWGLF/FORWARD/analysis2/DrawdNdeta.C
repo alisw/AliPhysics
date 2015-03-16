@@ -53,7 +53,6 @@ Double_t myFunc(Double_t* xp, Double_t* pp);
 /**
  * Class to draw dN/deta results 
  * 
- * @ingroup pwglf_forward_tasks_dndeta
  * @ingroup pwglf_forward_dndeta
  */
 struct dNdetaDrawer 
@@ -1355,6 +1354,7 @@ struct dNdetaDrawer
    * Plot the title on a pad 
    * 
    * @param p       Pad to draw in
+   * @param yd      Division height
    * @param bottom  Bottom or top of pad 
    */
   void PlotTitle(TVirtualPad* p, Double_t yd, Bool_t bottom=true) 
@@ -1554,6 +1554,7 @@ struct dNdetaDrawer
    *    
    * @param max       Maximum 
    * @param yd        Bottom position of pad 
+   * @param s         Scaling 
    */
   void PlotResults(Double_t max, Double_t yd, Double_t s) 
   {
@@ -3079,6 +3080,8 @@ Usage()
  * @param vzMax     Largest @f$ v_z@f$
  * @param base      Base name 
  * @param outflg    Output flags 
+ * @param centMin   Least centrality 
+ * @param centMax   Largest centrality 
  *
  * @ingroup pwglf_forward_dndeta
  */

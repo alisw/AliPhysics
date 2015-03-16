@@ -24,7 +24,7 @@
  * @f[ 
  * f(x;\Delta_p,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
  *    \int_{-\infty}^{+\infty} dx' f'_{L}(x',\Delta_p,\xi)
- *    \exp{-\frac{(x-x')^2}{2\sigma'^2}}}
+ *    \exp{-\frac{(x-x')^2}{2\sigma'^2}}
  * @f]
  * 
  * where @f$ f'_{L}@f$ is the Landau distribution, @f$\Delta_p@f$ the
@@ -55,14 +55,14 @@
  * Ideally, one would find an analytic expression for this shift by
  * solving
  *
- * @f{eqnarray}
+ * @f{eqnarray}{
  *   0 &=& \frac{d f_i(x;\Delta_p,\xi,\sigma)}{d\Delta}\\
  *     &=& \frac{d}{d\Delta}\frac{1}{\sigma' \sqrt{2 \pi}}
  *      \int_{-\infty}^{+\infty} dx' f'_{L}(x',\Delta_p,\xi)
- *      \exp{-\frac{(x-x')^2}{2\sigma'^2}}}
- * @f{eqnarray}
+ *      \exp{-\frac{(x-x')^2}{2\sigma'^2}}
+ * @f}
  *
- * for @f$x@f$ as a function of @f$\Delta_p,\xi,\sigma,i@f$. However,
+ * for @f$ x@f$ as a function of @f$\Delta_p,\xi,\sigma,i@f$. However,
  * do to the complex nature of the Landau distribution this is not
  * really feasible.
  *
@@ -83,7 +83,7 @@
  * found to depend on @f$ u@f$ only weakly, and for practical
  * applications where @f$u\approx1@f$, we set @f$ c=p=1/2@f$. 
  *
- * For the evaluating the full energy loss distribution from f@$
+ * For the evaluating the full energy loss distribution from f@f$
  * 1+2+\ldots,n@f$ particles, we evaluate
  *
  * @f[ 
@@ -402,6 +402,8 @@ public:
    * @param sigma  Gaussian variance 
    * @param c2     Secondary weight
    * @param xi2    Secondary with
+   * @param xmin   Least x
+   * @param xmax   Largest x
    * 
    * @return Pointer to newly allocated TF1 object
    */

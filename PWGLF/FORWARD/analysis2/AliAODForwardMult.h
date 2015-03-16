@@ -34,61 +34,61 @@ class TH1I;
  * should of course also do proper book-keeping of the accepted event.
  *
  * @code 
- * TTree* GetAODTree()
- * { 
- *    TFile* file = TFile::Open("AliAODs.root","READ");
- *    TTree* tree = static_cast<TTree*>(file->Get("aodTree"));
- *    return tree;
- * }
- * 
- * void Analyse()
- * { 
- *   TH2D*              sum        = 0;                  // Summed hist
- *   TTree*             tree       = GetAODTree();       // AOD tree
- *   AliAODForwardMult* mult       = 0;                  // AOD object
- *   Int_t              nTriggered = 0;                  // # of triggered ev.
- *   Int_t              nWithVertex= 0;                  // # of ev. w/vertex
- *   Int_t              nAccepted  = 0;                  // # of ev. used
- *   Int_t              nAvailable = tree->GetEntries(); // How many entries
- *   Float_t            vzLow      = -10;                // Lower ip cut
- *   Float_t            vzHigh     =  10;                // Upper ip cut
- *   Int_t              mask       = AliAODForwardMult::kInel;// Trigger mask
- *   tree->SetBranchAddress("forward", &forward);        // Set the address
- * 
- *   for (int i = 0; i < nAvailable; i++) { 
- *     // Create sum histogram on first event - to match binning to input
- *     if (!sum) sum = static_cast<TH2D*>(mult->Clone("d2ndetadphi"));
- * 
- *     tree->GetEntry(i);
- * 
- *     // Other trigger/event requirements could be defined 
- *     if (!mult->IsTriggerBits(mask)) continue; 
- *     nTriggered++;
- *
- *     // Check if we have vertex 
- *     if (!mult->HasIpZ()) continue;
- *     nWithVertex++;
- * 
- *     // Select vertex range (in centimeters) 
- *     if (!mult->InRange(vzLow, vzHigh) continue; 
- *     nAccepted++;
- * 
- *     // Add contribution from this event
- *     sum->Add(&(mult->GetHistogram()));
- *   }
- * 
- *   // Get acceptance normalisation from underflow bins 
- *   TH1D* norm   = sum->ProjectionX("norm", 0, 1, "");
- *   // Project onto eta axis - _ignoring_underflow_bins_!
- *   TH1D* dndeta = sum->Projection("dndeta", 1, -1, "e");
- *   // Normalize to the acceptance 
- *   dndeta->Divide(norm);
- *   // Scale by the vertex efficiency 
- *   dndeta->Scale(Double_t(nWithVertex)/nTriggered, "width");
- *   // And draw the result
- *   dndeta->Draw();
- * }
- * @endcode   
+ TTree* GetAODTree()
+ { 
+    TFile* file = TFile::Open("AliAODs.root","READ");
+    TTree* tree = static_cast<TTree*>(file->Get("aodTree"));
+    return tree;
+ }
+ 
+ void Analyse()
+ { 
+   TH2D*              sum        = 0;                  // Summed hist
+   TTree*             tree       = GetAODTree();       // AOD tree
+   AliAODForwardMult* mult       = 0;                  // AOD object
+   Int_t              nTriggered = 0;                  // # of triggered ev.
+   Int_t              nWithVertex= 0;                  // # of ev. w/vertex
+   Int_t              nAccepted  = 0;                  // # of ev. used
+   Int_t              nAvailable = tree->GetEntries(); // How many entries
+   Float_t            vzLow      = -10;                // Lower ip cut
+   Float_t            vzHigh     =  10;                // Upper ip cut
+   Int_t              mask       = AliAODForwardMult::kInel;// Trigger mask
+   tree->SetBranchAddress("forward", &forward);        // Set the address
+ 
+   for (int i = 0; i < nAvailable; i++) { 
+     // Create sum histogram on first event - to match binning to input
+     if (!sum) sum = static_cast<TH2D*>(mult->Clone("d2ndetadphi"));
+ 
+     tree->GetEntry(i);
+ 
+     // Other trigger/event requirements could be defined 
+     if (!mult->IsTriggerBits(mask)) continue; 
+     nTriggered++;
+ 
+     // Check if we have vertex 
+     if (!mult->HasIpZ()) continue;
+     nWithVertex++;
+ 
+     // Select vertex range (in centimeters) 
+     if (!mult->InRange(vzLow, vzHigh) continue; 
+     nAccepted++;
+ 
+     // Add contribution from this event
+     sum->Add(&(mult->GetHistogram()));
+   }
+ 
+   // Get acceptance normalisation from underflow bins 
+   TH1D* norm   = sum->ProjectionX("norm", 0, 1, "");
+   // Project onto eta axis - _ignoring_underflow_bins_!
+   TH1D* dndeta = sum->Projection("dndeta", 1, -1, "e");
+   // Normalize to the acceptance 
+   dndeta->Divide(norm);
+   // Scale by the vertex efficiency 
+   dndeta->Scale(Double_t(nWithVertex)/nTriggered, "width");
+   // And draw the result
+   dndeta->Draw();
+ }
+ @endcode   
  *     
  * The above code will draw the final @f$ dN_{ch}/d\eta@f$ for the
  * selected event class and vertex range
@@ -96,7 +96,6 @@ class TH1I;
  * The histogram can be used as input for other kinds of analysis too, 
  * like flow, event-plane, centrality, and so on. 
  *
- * @ingroup pwglf_forward 
  * @ingroup pwglf_forward_aod
  */
 class AliAODForwardMult : public TObject
@@ -104,8 +103,10 @@ class AliAODForwardMult : public TObject
 public:
   /** 
    * Bits of the trigger pattern
+   *
+   * @ingroup pwglf_forward_aod
    */
-  enum { 
+  enum ETriggerBits { 
     /** In-elastic collision - really MBOR*/
     kInel        = 0x0001, 
     /** In-elastic collision with at least one SPD tracklet */
@@ -146,8 +147,10 @@ public:
   };
   /** 
    * Bin numbers in trigger histograms 
+   *
+   * @ingroup pwglf_forward_aod
    */
-  enum { 
+  enum ETriggerBins { 
     kBinAll=1,
     kBinInel, 
     kBinInelGt0, 
@@ -168,8 +171,10 @@ public:
   };
   /** 
    * User bits of these objects (bits 14-23 can be used)
+   *
+   * @ingroup pwglf_forward_aod
    */
-  enum {
+  enum EFlags {
     /** Secondary correction maps where applied */
     kSecondary           = (1 << 14), 
     /** Vertex bias correction was applied */
@@ -185,6 +190,8 @@ public:
   };
   /**
    * Return codes of CheckEvent 
+   *
+   * @ingroup pwglf_forward_aod
    */
   enum ECheckStatus {
     /** Event accepted by cuts */

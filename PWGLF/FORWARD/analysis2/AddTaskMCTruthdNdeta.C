@@ -12,15 +12,16 @@
 /** 
  * Create the MCTruth @f$ dN/d\eta@f$ analysis task 
  * 
- * @param trig      Trigger to use 
+ * 
+ * @param config    Configuration script  
+ * @param trig      Trigger 
  * @param vzMin     Smallest @f$ v_z@f$
  * @param vzMax     Biggest @f$ v_z@f$
  * @param cent      Whether to use the centrality or not
  * @param scheme    Normalisation scheme
- * @param cutEdges  Whether to cut edges when rebinning 
  * @param trigEff   Trigger efficiency 
  * @param trigEff0  Trigger efficiency for 0-bin
- * @param corrEmpty Correct for empty bins 
+ * @param satOnly   For satellites
  * 
  * @return Newly created and configured task
  *
