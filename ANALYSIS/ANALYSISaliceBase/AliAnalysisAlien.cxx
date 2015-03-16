@@ -781,7 +781,7 @@ Bool_t AliAnalysisAlien::LoadFriendLibs() const
          Int_t loaded = strlen(gSystem->GetLibraries(lib,"",kFALSE));
          if (!loaded) loaded = gSystem->Load(lib);
          if (loaded < 0) {
-            Error("LoadModules", "Cannot load library for friends %s", lib.Data());
+            Error("LoadFriendLibs", "Cannot load library for friends %s", lib.Data());
             return kFALSE;
          }
       }
