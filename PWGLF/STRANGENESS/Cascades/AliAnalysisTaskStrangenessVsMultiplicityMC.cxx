@@ -1205,12 +1205,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     AliMCEvent  *lMCevent  = 0x0;
     AliStack    *lMCstack  = 0x0;
 
-    //Code for the acquisition of the 'perfect' primary vertex position
-    TArrayF mcPrimaryVtx;
-    AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
-    if(!mcHeader) return;
-    mcHeader->PrimaryVertex(mcPrimaryVtx);
-    
     //Zero all booleans, etc
     fEvSel_HasAtLeastSPDVertex    = kFALSE;
     fEvSel_VtxZCut                = kFALSE;
@@ -1222,7 +1216,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fEvSel_VtxZ = -100;
     fEvSel_MCType = -100;
     
-    fEvSel_VtxZMC = mcPrimaryVtx.At(2); 
+
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
 
@@ -1247,6 +1241,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
         cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
         return;
     }
+    //Code for the acquisition of the 'perfect' primary vertex position
+    TArrayF mcPrimaryVtx;
+    AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
+    if(!mcHeader) return;
+    mcHeader->PrimaryVertex(mcPrimaryVtx);
+    fEvSel_VtxZMC = mcPrimaryVtx.At(2); 
 
     lMCstack = lMCevent->Stack();
     if (!lMCstack) {

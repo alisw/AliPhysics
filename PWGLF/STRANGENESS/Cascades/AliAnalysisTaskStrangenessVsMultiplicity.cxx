@@ -132,6 +132,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_INELgtZERORefMult(0),
       fEvSel_INELgtZERORefMultTracklets(0),
       fEvSel_nTracklets(0),
+      fEvSel_nTrackletsEta10(0),
       fEvSel_nSPDClusters(0),
       fEvSel_VtxZ(0),
       fEvSel_nSPDPrimVertices(0),
@@ -260,6 +261,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_INELgtZERORefMult(0),
       fEvSel_INELgtZERORefMultTracklets(0),
       fEvSel_nTracklets(0),
+      fEvSel_nTrackletsEta10(0),
       fEvSel_nSPDClusters(0),
       fEvSel_VtxZ(0),
       fEvSel_nSPDPrimVertices(0),
@@ -474,7 +476,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_INELgtZERORefMultTracklets", &fEvSel_INELgtZERORefMultTracklets, "fEvSel_INELgtZERORefMultTracklets/O");
 
     //Tracklets vs clusters test
-    fTreeEvent->Branch("fEvSel_nTracklets", &fEvSel_nTracklets, "fEvSel_nTracklets/I");
+    fTreeEvent->Branch("fEvSel_nTracklets",      &fEvSel_nTracklets, "fEvSel_nTracklets/I");
+    fTreeEvent->Branch("fEvSel_nTrackletsEta10", &fEvSel_nTrackletsEta10, "fEvSel_nTrackletsEta10/I");
     fTreeEvent->Branch("fEvSel_nSPDClusters", &fEvSel_nSPDClusters, "fEvSel_nSPDClusters/I");
 
     fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
@@ -944,7 +947,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 1.0) >= 1 ) fEvSel_INELgtZERORefMult = kTRUE;
 
     fEvSel_INELgtZERORefMultTracklets = kFALSE;
-    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE;
+    fEvSel_nTrackletsEta10 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0); 
+    if ( fEvSel_nTrackletsEta10 >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE;
 
     //Event-level fill
     fTreeEvent->Fill() ;
