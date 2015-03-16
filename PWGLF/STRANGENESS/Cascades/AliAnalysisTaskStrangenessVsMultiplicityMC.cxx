@@ -1216,7 +1216,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     fEvSel_VtxZ = -100;
     fEvSel_MCType = -100;
     
-    fEvSel_VtxZMC = mcPrimaryVtx.At(2); 
+
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
 
@@ -1246,7 +1246,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
     if(!mcHeader) return;
     mcHeader->PrimaryVertex(mcPrimaryVtx);
-    
+    fEvSel_VtxZMC = mcPrimaryVtx.At(2); 
 
     lMCstack = lMCevent->Stack();
     if (!lMCstack) {

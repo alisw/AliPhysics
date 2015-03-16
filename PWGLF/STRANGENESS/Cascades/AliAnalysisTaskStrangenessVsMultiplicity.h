@@ -176,6 +176,8 @@ private:
     
     //Not to be filled completely: tracklet eta 
     Float_t fEvent_TrackletEta[500]; //!
+    
+    
 
     //Event Characterization Variables - optional
     Bool_t fEvSel_HasAtLeastSPDVertex;      //!
@@ -192,6 +194,7 @@ private:
 
     //Other Selections: more dedicated filtering to be studied!
     Int_t   fEvSel_nTracklets;              //!
+    Int_t   fEvSel_nTrackletsEta10; //!
     Int_t   fEvSel_nSPDClusters;            //!
     Float_t fEvSel_VtxZ; //! the actual value
     Int_t   fEvSel_nSPDPrimVertices; //! pileup vertices
