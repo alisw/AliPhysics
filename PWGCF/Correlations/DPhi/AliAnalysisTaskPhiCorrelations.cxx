@@ -168,6 +168,7 @@ fPtOrder(kTRUE),
 fTriggersFromDetector(0),
 fAssociatedFromDetector(0),
 fMCUseUncheckedCentrality(kFALSE),
+fCheckCertainSpecies(-1),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -346,6 +347,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH1F("V0SingleCells", "V0 single cell multiplicity;multiplicity;events", 100, -0.5, 99.5));
   if (fTriggersFromDetector == 3 || fAssociatedFromDetector == 3)
     fListOfHistos->Add(new TH1F("DphiTrklets", "tracklets Dphi;#Delta#phi,trklets (mrad);entries", 100, -100, 100));
+  if (fCheckCertainSpecies > 0)
+    fListOfHistos->Add(new TH2F("checkSpecies", ";eta;pt;particles", 20, -1, 1, 40, 0, 10));
   
   PostData(0,fListOfHistos);
   
@@ -463,6 +466,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
   settingsTree->Branch("fAssociatedFromDetector", &fAssociatedFromDetector,"AssociatedFromDetector/I");
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
+  settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -648,6 +652,18 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // Get MC primaries
   // triggers
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
+  
+  if (fCheckCertainSpecies > 0) {
+    for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+      AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+      if (!particle)
+	continue;
+      if (TMath::Abs(particle->PdgCode()) != fCheckCertainSpecies)
+	continue;
+      ((TH2F*) fListOfHistos->FindObject("checkSpecies"))->Fill(particle->Eta(), particle->Pt());
+    }
+  }
+  
   CleanUp(tmpList, mc, skipParticlesAbove);
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
