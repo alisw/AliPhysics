@@ -22,6 +22,7 @@ class AliITSUSeed: public AliExternalTrackParam
   AliITSUSeed &operator=(const AliITSUSeed &src);
   virtual ~AliITSUSeed();
   virtual void    Print(Option_t* option = "") const;
+  void            Reset()                                {ResetBit(0xffffffff);}
   //
   void            SetLrClusterID(Int_t lr, Int_t cl);
   void            SetLr(Int_t lr)                        {SetLrClusterID(lr,-1);} // lr w/o cluster
@@ -54,7 +55,7 @@ class AliITSUSeed: public AliExternalTrackParam
   Float_t         GetChi2ITSSA()                   const {return fChi2ITSSA;}
   Float_t         GetQualityVar()                  const;
   Bool_t          IsKilled()                       const {return TestBit(kKilled);}
-  Bool_t          IsFake()                         const {return TestBit(kFake);}
+  Bool_t          IsFake()                         const {return fClID>=0&&TestBit(kFake);}
   Bool_t          IsSaved()                        const {return TestBit(kSave);}
   Bool_t          IsMarked()                       const {return TestBit(kMark);}
   Bool_t          ContainsFake()                   const;

@@ -1409,8 +1409,9 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
       int ip=0;
       do {
 	int lr, clID = sd->GetLrCluster(lr);
-	if (sd->IsFake()) clfake |= 0x1<<lr;
+	//	if (clID<0 && sd->IsFake()) {printf("Fake non-cluster at lr%d",lr); win->Print("parent etp");}
 	if (clID>=0) {
+	  if (sd->IsFake()) clfake |= 0x1<<lr;
 	  esdTr->SetITSModuleIndex(ip++, sd->GetLrClusterID());
 	  AliITSUClusterPix *cl = (AliITSUClusterPix*)fITS->GetLayerActive(lr)->GetCluster(clID);
 #ifdef  _ITSU_TUNING_MODE_

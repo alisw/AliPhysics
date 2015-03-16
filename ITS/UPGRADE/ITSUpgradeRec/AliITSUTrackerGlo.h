@@ -192,6 +192,7 @@ inline AliITSUSeed* AliITSUTrackerGlo::NewSeedFromPool(const AliITSUSeed* src)
 {
   // create new seed, optionally copying from the source
   AliITSUSeed* sd =  src ? new( NextFreeSeed() ) AliITSUSeed(*src) : new( NextFreeSeed() ) AliITSUSeed();
+  sd->Reset();
   sd->SetPoolID(fLastSeedID);
   return sd;
 }
