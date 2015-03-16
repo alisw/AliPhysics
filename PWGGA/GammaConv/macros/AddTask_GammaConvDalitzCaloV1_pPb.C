@@ -52,7 +52,8 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	Printf("here \n");
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberPhoton 	= "00000008400100001500000000";
+					   //06000078400100001500000000
+	TString cutnumberPhoton 	= "06000078400100001500000000";
 	TString cutnumberEvent 		= "8000000";
 	TString cutnumberElectron     	= "90005400000002000000";            //Electron Cuts
 	
@@ -193,7 +194,23 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	    eventCutArray[3] = "8006201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "20000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
 	  
 	  
-	} else {
+	} else if ( trainConfig == 3){ // min energy = 0.3 GeV/c																	
+							       							  
+	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "11111053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kEMC7
+	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "10000053032230000"; electronCutArray[2] = "90475400233102624110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[3] = "8000001"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "11111053032230000"; electronCutArray[3] = "90475400233102624110"; mesonCutArray[3] = "02631031000000"; //standard cut, kEMC7
+	      
+	
+	} else if ( trainConfig == 4){
+	  
+	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
+	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[3] = "8000001"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "24444048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
+	  
+	  
+	}else {
 		Error(Form("GammaConvDalitzCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
