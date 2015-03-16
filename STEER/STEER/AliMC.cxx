@@ -112,8 +112,8 @@ AliMC::AliMC(const char *name, const char *title) :
   fHitLists(new TList()),
   fTmpTreeTR(0),
   fTmpFileTR(0),
-  fTrackReferences("AliTrackReference", 100),
-  fTmpTrackReferences("AliTrackReference", 100)
+  fTrackReferences(AliTrackReference::Class(), 100),
+  fTmpTrackReferences(AliTrackReference::Class(), 100)
 {
   //constructor
   // Set transport parameters
