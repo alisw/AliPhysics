@@ -273,6 +273,9 @@ install(FILES T0/AddTaskT0QA.C
 	      T0/MakeTrendT0.C
 	      T0/drawPerformanceT0QATrends.C 
 	      DESTINATION PWGPP/T0)
+install(FILES ITS/QA/MakeTrendingITSQA.C
+	      ITS/QA/DrawTrendingITSQA.C
+	      DESTINATION PWGPP/ITS/QA)
 install(FILES TOF/AddTaskTOFQA.C
               TOF/AddTaskTOFqaID.C
 	      TOF/trending/MakeTrendingTOFQA.C
@@ -290,6 +293,9 @@ install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
 install(FILES AD/AddTaskADQA.C DESTINATION PWGPP/AD)
 install(FILES PilotTrain/AddTaskMuonQA.C DESTINATION PWGPP/PilotTrain/ )
 install(FILES VZERO/AddTaskVZEROPbPb.C DESTINATION PWGPP/VZERO/)
+install(FILES VZERO/trending/DrawTrendingV0QA.C 
+ 	      VZERO/trending/MakeTrendingV0QA.C 
+	      DESTINATION PWGPP/VZERO/trending)
 install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
 install(DIRECTORY MUON/dep DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
 install(DIRECTORY scripts DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
