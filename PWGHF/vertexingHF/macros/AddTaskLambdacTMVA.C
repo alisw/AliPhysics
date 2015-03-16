@@ -31,9 +31,9 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   analysiscuts->SetMinPtCandidate(-1.);
   analysiscuts->SetMaxPtCandidate(10000.);
 
-  // Aanalysis task                                                                                                                     
+  // Analysis task                                                                                                                     
   AliAnalysisTaskSELambdacTMVA *lambdacTask = new AliAnalysisTaskSELambdacTMVA("LambdacAnalysis",storeNtuple,analysiscuts);
-  if(storeNtuple<0 || storeNtuple>2) {AliFatal("Invalid storeNtuple argument - check value");}
+  //if(storeNtuple<0 || storeNtuple>2) {AliFatal("Invalid storeNtuple argument - check value");}
   lambdacTask->SetReadMC(readMC);
   if(MCPid) lambdacTask->SetMCPid();
   if(resPid) lambdacTask->SetResonantPid();
@@ -108,11 +108,12 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
 
   if (storeNtuple) {
+		TString foutname = Form("InvMassLambdac_nt1_%s.root",postname.Data());
     AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
-								     AliAnalysisManager::kOutputContainer,"InvMassLambdac_nt1.root");
+								     AliAnalysisManager::kOutputContainer,foutname);
     coutputLambdac2->SetSpecialOutput();
     mgr->ConnectOutput(lambdacTask,5,coutputLambdac2);    
-    coutputLambdacNorm = mgr->CreateContainer(normnament,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,"InvMassLambdac_nt1.root");
+    coutputLambdacNorm = mgr->CreateContainer(normnament,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,foutname);
     mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
   }
 

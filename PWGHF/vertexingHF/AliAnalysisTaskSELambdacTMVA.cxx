@@ -66,8 +66,8 @@
 ClassImp(AliAnalysisTaskSELambdacTMVA)
 
 
-//________________________________________________________________________
-AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA():
+	//________________________________________________________________________
+	AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA():
 		AliAnalysisTaskSE(),
 		fOutput(0), 
 		fHistNEvents(0),
@@ -97,7 +97,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA():
 	// Default constructor
 	//
 
-	for(Int_t i=0;i<10;i++) { 
+	for(Int_t i=0;i<11;i++) { 
 		fhNBkgNI[i]=0x0;
 		fhNLc[i]=0x0;
 		fhNLcc[i]=0x0;
@@ -183,7 +183,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	// Default constructor
 	// Output slot #1 writes into a TList container
 	//
-	for(Int_t i=0;i<10;i++) { 
+	for(Int_t i=0;i<11;i++) { 
 		fhNBkgNI[i]=0x0;
 		fhNLc[i]=0x0;
 		fhNLcc[i]=0x0;
@@ -344,8 +344,8 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fHistNEvents->SetMinimum(0);
 	fOutput->Add(fHistNEvents);
 
-	TString stepnames[10] = {"kGenerated","kGeneratedFidAcc","kReco3Prong","kLcBit","kIsSelectedTracks","kIsInFidAcc","kPtRange","kIsSelectedCandidate","kIsSelectedPID","kIsSelectedNtuple"};
-	for(Int_t i=0;i<10;i++) { // histograms for efficiency cross check
+	TString stepnames[11] = {"GeneratedLimAcc","Generated","GeneratedAcc","Reco3Prong","LcBit","IsSelectedTracks","IsInFidAcc","PtRange","IsSelectedCandidate","IsSelectedPID","IsSelectedNtuple"};
+	for(Int_t i=0;i<11;i++) { // histograms for efficiency cross check
 		//Lc vs Pt histograms
 		hisname.Form("hNBkgNI%i",i);
 		histitle.Form("N Bkg not injected %s",stepnames[i].Data());
@@ -596,10 +596,13 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fCounter->Init();
 	PostData(4,fCounter);
 	if (fFillNtuple) {
-		//Bayesian PID
-		if(fFillNtuple==2)fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:InvMasspK:InvMassKpi:InvMassppi:Ptp:PtK:Ptpi:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:isLcResonant");
+		//basic ntuple
+		if(fFillNtuple==1)       fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp");
 		//NSigma PID
-		else if(fFillNtuple==1)  fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:InvMasspK:InvMassKpi:InvMassppi:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:isLcResonant:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap");
+		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap");
+		//2 prong decay products
+		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
+		else AliFatal("Invalid fill ntuple argument");
 		PostData(5,fNtupleLambdac);
 	}
 
@@ -717,13 +720,12 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 	//loop over MC particles to find Lc generated
 	Int_t pdgcode = 0;
 	Int_t pdgcodemother = 0;
-	Int_t countMC = 0;
-	Int_t countMCLc = 0;
-	Int_t countMCLcb = 0;
 	Bool_t isInFidAcc = kFALSE; 
+	Bool_t isInAcc = kFALSE;
 	if(fReadMC) {
 		for (Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++) { 
 			fIsLc=0;
+			fIsLcResonant=0;
 			AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iPart));
 			if (!mcPart){
 				AliError("Failed casting particle from MC array!, Skipping particle");
@@ -734,6 +736,7 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 			fCandidateVars[1] = mcPart->Eta();
 			fCandidateVars[2] = mcPart->Y();
 			fCandidateVars[3] = mcPart->Phi();
+			//Check whether particle is Lc
 			pdgcode = TMath::Abs(mcPart->GetPdgCode());
 			if(pdgcode==4122) {
 				AliDebug(2,"Found Lc! now check mother");
@@ -750,33 +753,30 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 					if(pdgcodemother == 5122){
 						AliDebug(2,"Lc comes from Lb");
 						fIsLc=2;
-						countMCLcb++;
 					}
 				}
-				SetLambdacDaugh(mcPart,arrayMC);
-				if(fIsLcResonant>0) {
+				//Check daughters
+				SetLambdacDaugh(mcPart,arrayMC,isInAcc);
+				if(fIsLcResonant>=1) {
 					AliDebug(2,"Lc has p K pi in final state");
 					fNentries->Fill(4);
-					if(isInFidAcc) fNentries->Fill(5);
+					if(isInFidAcc){
+						fNentries->Fill(5);
+						if((TMath::Abs(mcPart->Y()) < 0.5)) {//limited acceptance
+							AliDebug(2,"Lc in limited acceptance");
+							FillEffHists(kGeneratedLimAcc);
+						}
+						FillEffHists(kGenerated); //MC generated ---> Should be within fiducial acceptance
+						if(isInAcc) FillEffHists(kGeneratedAcc); //all daughters in acceptance
+					}
 				}
 				else if(fIsLcResonant==0) AliDebug(2,"no p K pi final state");
 				else AliError(Form("Not pKpi or background - should not happen! fIsLcResonant = %i",fIsLcResonant));
-				countMCLc++;
 				delete util;
 			}
-			FillEffHists(kGenerated);
-			if(isInFidAcc){
-				FillEffHists(kGeneratedFidAcc);
-			}
-
-			//AliDebug(1,Form("Found particle with PDG code %i",pdgcode));
-			//else cout<<"Found part with PDG code "<<pdgcode<<endl;
-			countMC++;
 		}
-		//cout<<"found "<<countMC<<" real particles in this event at MC level"<<endl;
-		//cout<<"found "<<countMCLc<<" Lc, "<<countMCLcb<<" from Lb, in this event at MC level"<<endl;
-
 	}
+	
 
 	//Reconstruction level
 	//loop over 3 prong candidates
@@ -821,31 +821,25 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		if (fRDCutsAnalysis->IsInFiducialAcceptance(d->Pt(),d->Y(4122))) {fNentries->Fill(9);}else{continue;}
 		FillEffHists(kIsInFidAcc);
 
-
-
 		Int_t ptbin=fRDCutsAnalysis->PtBin(d->Pt());
 		if(ptbin==-1) {fNentries->Fill(10); continue;} //out of bounds
 		FillEffHists(kPtRange);
+
+		//idproton, pion using isSelectedPID
+		//Bool_t isPID=fRDCutsAnalysis->GetIsUsePID();
+		Int_t isSelectedPID=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kPID,aod);
+		if(isSelectedPID==0 ) fNentries->Fill(12);
+		else if(isSelectedPID==1) fNentries->Fill(13);
+		else if(isSelectedPID==2) fNentries->Fill(14);
+		else fNentries->Fill(15);
+		if(isSelectedPID>0) FillEffHists(kIsSelectedPID);
 
 		Int_t selection=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
 		if(!selection) continue;
 		FillEffHists(kIsSelectedCandidate);
 		fNentries->Fill(11);
 
-		//idproton, pion using isSelectedPID
-		//Bool_t isPID=fRDCutsAnalysis->GetIsUsePID();
-		Int_t isSelectedPIDnt=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kPID,aod);
-		if(isSelectedPIDnt==0 ){
-			fNentries->Fill(12);
-			return;
-		}	
-		else if(isSelectedPIDnt==1) fNentries->Fill(13);
-		else if(isSelectedPIDnt==2) fNentries->Fill(14);
-		else fNentries->Fill(15);
-		FillEffHists(kIsSelectedPID);
-
-
-		if(fFillNtuple && selection>0) FillNtuple(aod,d,arrayMC,selection);
+		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
 		if(fIsLc>=1 && fIsLc <= 2) fNentries->Fill(16);
 		if(unsetvtx) d->UnsetOwnPrimaryVtx();
@@ -933,14 +927,16 @@ Int_t AliAnalysisTaskSELambdacTMVA::MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,
 
 //-----------------------------
 
-Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesArray *arrayMC) const {
+Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC, Bool_t &IsInAcc) const {
 	
 	// 
 	// return value of Lc resonant channel, from AOD MC particle
+	// Also check whether Lc daughters are in acceptance
 	// 0=not Lc, 1=non resonant Lc, 2=via L(1520) + pi, 3=via K* + p, 4=via Delta++ + K  
 	//
 
 	Int_t numberOfLambdac=0;
+	IsInAcc=kTRUE;
 	if(TMath::Abs(part->GetPdgCode())!=4122) return 0;
 	// Int_t daughTmp[2];
 	// daughTmp[0]=part->GetDaughter(0);
@@ -967,6 +963,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 				(number1==2212 && number2==321 && number3==211) ||
 				(number1==2212 && number2==211 && number3==321)) {
 			numberOfLambdac++;
+			if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaugh3->Eta() > 0.9) || pdaugh3->Pt() < 0.1) IsInAcc=kFALSE;
 			AliDebug(2,"Lc decays non-resonantly");
 			return 1;
 		} 
@@ -989,6 +988,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
 				numberOfLambdac++;
+			if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaughK1->Eta() > 0.9) || pdaughK1->Pt() < 0.1
+					|| TMath::Abs(pdaughK2->Eta() > 0.9) || pdaughK2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via K* p");
 				return 3;
 			}
@@ -1003,6 +1005,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
 				numberOfLambdac++;
+			if(    TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaughK1->Eta() > 0.9) || pdaughK1->Pt() < 0.1
+					|| TMath::Abs(pdaughK2->Eta() > 0.9) || pdaughK2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via K* p");
 				return 3;
 			}
@@ -1019,6 +1024,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
 				numberOfLambdac++;
+			if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaughD1->Eta() > 0.9) || pdaughD1->Pt() < 0.1
+					|| TMath::Abs(pdaughD2->Eta() > 0.9) || pdaughD2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Delta++ k");
 				return 4;
 			}
@@ -1032,6 +1040,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
 				numberOfLambdac++;
+			if(    TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaughD1->Eta() > 0.9) || pdaughD1->Pt() < 0.1
+					|| TMath::Abs(pdaughD2->Eta() > 0.9) || pdaughD2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Delta++ k");
 				return 4;
 			}
@@ -1049,6 +1060,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
 				numberOfLambdac++;
+				if(    TMath::Abs(pdaugh2->Eta() > 0.9) || pdaugh2->Pt() < 0.1
+					|| TMath::Abs(pdaughL1->Eta() > 0.9) || pdaughL1->Pt() < 0.1
+					|| TMath::Abs(pdaughL2->Eta() > 0.9) || pdaughL2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Lambda(1520) pi");
 				return 2;
 			}
@@ -1062,10 +1076,12 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part,TClonesA
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
 				numberOfLambdac++;
+				if(    TMath::Abs(pdaugh1->Eta() > 0.9) || pdaugh1->Pt() < 0.1
+					|| TMath::Abs(pdaughL1->Eta() > 0.9) || pdaughL1->Pt() < 0.1
+					|| TMath::Abs(pdaughL2->Eta() > 0.9) || pdaughL2->Pt() < 0.1) IsInAcc=kFALSE;
 				AliDebug(2,"Lc decays via Lambda(1520) pi");
 				return 2;
 			}
-
 		}
 	}
 
@@ -1176,7 +1192,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	//fill ntuple
 	// 1 - loose pid
 	// 2 - bayesian pid
-	Float_t tmp[37];
+	Float_t tmp[41];
 	//Is Lc
 	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
 	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
@@ -1184,109 +1200,24 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	else if(IsInjected && IsLc==0) tmp[0]=3; //injected bkg
 	else tmp[0]=-99; //should not happen
 
-	AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
-	AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
-	AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
-
-	//bayesian probabilities
-	Double_t prob0[AliPID::kSPECIES];
-	Double_t prob1[AliPID::kSPECIES];
-	Double_t prob2[AliPID::kSPECIES];
-	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
-		if (!track0 || !track1 || !track2) return;
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
-		//if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
-		//if(prob1[AliPID::kKaon] < 0.3) return;
-		//if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
-		tmp[18]=prob0[AliPID::kPion];			//track 0, pion
-		tmp[19]=prob0[AliPID::kKaon];     		//kaon
-		tmp[20]=prob0[AliPID::kProton];			//proton
-		tmp[21]=prob1[AliPID::kPion];			//track 1, pion		
-		tmp[22]=prob1[AliPID::kKaon];     		//kaon
-		tmp[23]=prob1[AliPID::kProton];			//proton
-		tmp[24]=prob2[AliPID::kPion];			//track 2, pion
-		tmp[25]=prob2[AliPID::kKaon];     		//kaon
-		tmp[26]=prob2[AliPID::kProton];			//proton
-	}
-	else {
-		//fill w 0
-		for(Int_t iprob=18;iprob<27;iprob++) {
-			tmp[iprob]=-1;
-		}
-	}
-
-	if(fFillNtuple==1) {
-		//invariant mass
-		tmp[2]=part->InvMassLcpiKp();
-		tmp[1]=part->InvMassLcpKpi(); 
-		//pt of decay products
-		tmp[6]=part->PtProng(0);
-		tmp[8]=part->PtProng(2);
-
-		//Inv Mass 2 decay products
-		if(prob0[AliPID::kProton]*prob2[AliPID::kPion] > prob0[AliPID::kPion]*prob2[AliPID::kProton]) {//pKpi
-			tmp[3]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
-			tmp[4]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
-			tmp[5]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
-		}
-		else {
-			tmp[3]=part->InvMass2Prongs(1,2,321,2212); //inv mass pK
-			tmp[4]=part->InvMass2Prongs(0,1,211,321); //inv mass Kpi
-			tmp[5]=part->InvMass2Prongs(0,2,211,2212);//inv mass ppi
-		}
-		tmp[28]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kPion);			//track 0, pion
-		tmp[29]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kKaon);     		//kaon
-		tmp[30]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kProton);			//proton
-		tmp[31]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kPion);			//track 1, pion		
-		tmp[32]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kKaon);     		//kaon
-		tmp[33]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kProton);			//proton
-		tmp[34]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kPion);			//track 2, pion
-		tmp[35]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kKaon);     		//kaon
-		tmp[36]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kProton);	
-	}
-	else if(fFillNtuple==2) { //for bayesian PID
-		//invariant mass pKpi
-		if(invMasspiKp>0.) {
-			tmp[1]=invMasspiKp;
-			tmp[6]=part->PtProng(2);
-			tmp[8]=part->PtProng(0);
-			tmp[3]=part->InvMass2Prongs(1,2,321,2212); //inv mass pK
-			tmp[4]=part->InvMass2Prongs(0,1,211,321); //inv mass Kpi
-			tmp[5]=part->InvMass2Prongs(0,2,211,2212); //inv mass ppi
-		}
-		else if(invMasspKpi>0.) {
-			tmp[1]=invMasspKpi;
-			tmp[6]=part->PtProng(0);
-			tmp[8]=part->PtProng(2);
-			tmp[3]=part->InvMass2Prongs(0,1,2212,321); //inv mass pK
-			tmp[4]=part->InvMass2Prongs(1,2,321,211); //inv mass Kpi
-			tmp[5]=part->InvMass2Prongs(0,2,2212,211); //inv mass ppi
-		}
-		else {
-			tmp[1]=-9;
-			tmp[6]=-9;
-			tmp[8]=-9;
-			tmp[3]=-9;
-			tmp[4]=-9;
-			tmp[5]=-9;
-		}
-		tmp[2]=0.;
-	}
-
-	tmp[7]=part->PtProng(1); //pt kaon
-	tmp[9]=part->Pt();
-	tmp[10]=part->CosPointingAngle();
-	tmp[11]=part->DecayLength();
-	tmp[12]=part->NormalizedDecayLength();
-	tmp[13]=TMath::Min(part->GetDist12toPrim(),part->GetDist23toPrim());
-	tmp[14]=part->GetSigmaVert();
+	//invariant mass
+	tmp[2]=part->InvMassLcpiKp();
+	tmp[1]=part->InvMassLcpKpi(); 
+	//pt of decay products
+	tmp[3]=part->PtProng(0);
+	tmp[4]=part->PtProng(1); //pt kaon
+	tmp[5]=part->PtProng(2);
+	tmp[6]=part->Pt();
+	tmp[7]=part->CosPointingAngle();
+	tmp[8]=part->DecayLength();
+	tmp[9]=part->NormalizedDecayLength();
+	tmp[10]=TMath::Min(part->GetDist12toPrim(),part->GetDist23toPrim());
+	tmp[11]=part->GetSigmaVert();
 	Double_t dcas[3]={0};
 	part->GetDCAs(dcas);
-	tmp[15]=TMath::Max(dcas[0],TMath::Max(dcas[1],dcas[2]));
-	tmp[16]=part->DecayLengthXY();
-	tmp[17]=part->NormalizedDecayLengthXY();
+	tmp[12]=TMath::Max(dcas[0],TMath::Max(dcas[1],dcas[2]));
+	tmp[13]=part->DecayLengthXY();
+	tmp[14]=part->NormalizedDecayLengthXY();
 	/*tmp[18]=part->Getd0Prong(0);
 		tmp[19]=part->Getd0Prong(1);
 		tmp[20]=part->Getd0Prong(2);
@@ -1295,7 +1226,66 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 		tmp[23]=(Float_t)runNumber;*/
 
 	//Check resonant decays for efficiencies
-	tmp[27]=fIsLcResonant; // bkg
+	tmp[15]=fIsLcResonant; // bkg
+	//PID selection
+	tmp[16]=selection;
+
+	AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
+	AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
+	AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
+	if(fFillNtuple>=1) {
+		if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
+			//bayesian probabilities
+			Double_t prob0[AliPID::kSPECIES];
+			Double_t prob1[AliPID::kSPECIES];
+			Double_t prob2[AliPID::kSPECIES];
+
+			if (!track0 || !track1 || !track2) {
+				AliError("AliVTrack missing - wont fill Ntuple");
+				return;
+			}
+			fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
+			fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
+			fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
+			//if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
+			//if(prob1[AliPID::kKaon] < 0.3) return;
+			//if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
+			tmp[17]=prob0[AliPID::kPion];			//track 0, pion
+			tmp[18]=prob0[AliPID::kKaon];     		//kaon
+			tmp[19]=prob0[AliPID::kProton];			//proton
+			tmp[20]=prob1[AliPID::kPion];			//track 1, pion		
+			tmp[21]=prob1[AliPID::kKaon];     		//kaon
+			tmp[22]=prob1[AliPID::kProton];			//proton
+			tmp[23]=prob2[AliPID::kPion];			//track 2, pion
+			tmp[24]=prob2[AliPID::kKaon];     		//kaon
+			tmp[25]=prob2[AliPID::kProton];			//proton
+		}
+		else {
+			//fill w 0
+			for(Int_t iprob=17;iprob<=25;iprob++) {
+				tmp[iprob]=-1;
+			}
+		}
+	}
+	if(fFillNtuple>=2) {
+		tmp[26]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kPion);			//track 0, pion
+		tmp[27]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kKaon);     		//kaon
+		tmp[28]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kProton);			//proton
+		tmp[29]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kPion);			//track 1, pion		
+		tmp[30]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kKaon);     		//kaon
+		tmp[31]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kProton);			//proton
+		tmp[32]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kPion);			//track 2, pion
+		tmp[33]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kKaon);     		//kaon
+		tmp[34]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kProton);	
+	}
+	if(fFillNtuple>=3) {
+		tmp[35]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
+		tmp[36]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
+		tmp[37]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
+		tmp[38]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
+		tmp[39]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
+		tmp[40]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
+	}
 
 	fNtupleLambdac->Fill(tmp);
 	PostData(5,fNtupleLambdac);
