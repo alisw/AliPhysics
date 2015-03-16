@@ -185,7 +185,7 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
   
   for(Int_t iTrack2 = 0; iTrack2 < fVevent->GetNumberOfTracks(); iTrack2++) 
     {
-      if(iTrack1==iTrack2) continue;
+      //if(iTrack1==iTrack2) continue;
 		
       AliVParticle* Vtrack2 = fVevent->GetTrack(iTrack2);
       if (!Vtrack2) 
@@ -258,7 +258,15 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
 	  }
 	  
 	  if(!hasdcaT1 || !hasdcaT2) AliWarning("It could be a problem in the extrapolation");
-	  
+    
+       //added by Cris to not take same track  for tender case
+      if(p1[0]==p2[0] && p1[1]==p2[1] && p1[2]==p2[2]){
+            printf("Track %d was rejected when combined with main track %d", iTrack2, iTrack1);
+            continue;
+        
+      }
+        
+        
 	  //track1-track2 Invariant Mass
 	  Double_t eMass = 0.000510998910; //Electron mass in GeV
 	  Double_t pP1 = sqrt(p1[0]*p1[0]+p1[1]*p1[1]+p1[2]*p1[2]); //Track 1 momentum
