@@ -32,6 +32,7 @@ public:
       fCorrV0MEq(0),
       fCorrV0AEq(0),
       fCorrV0CEq(0),
+      fMultCND(0),
       fMultV0M(0),
       fMultV0A(0),
       fMultV0C(0),
@@ -53,6 +54,7 @@ public:
       fCorrV0MEq(0),
       fCorrV0AEq(0),
       fCorrV0CEq(0),
+      fMultCND(0),
       fMultV0M(0),
       fMultV0A(0),
       fMultV0C(0),
@@ -76,6 +78,7 @@ public:
       fCorrV0MEq(0),
       fCorrV0AEq(0),
       fCorrV0CEq(0),
+      fMultCND(0),
       fMultV0M(0),
       fMultV0A(0),
       fMultV0C(0),
@@ -171,6 +174,7 @@ protected:
   TH2*   fCorrV0MEq;   // Correlation of V0MEq estimator 
   TH2*   fCorrV0AEq;   // Correlation of V0AEq estimator 
   TH2*   fCorrV0CEq;   // Correlation of V0CEq estimator 
+  TH2*   fMultCND;     // Reference Mult vs V0M estimator 
   TH2*   fMultV0M;     // Reference Mult vs V0M estimator 
   TH2*   fMultV0A;     // Reference Mult vs V0A estimator 
   TH2*   fMultV0C;     // Reference Mult vs V0C estimator 

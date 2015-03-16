@@ -25,6 +25,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity()
     fPhiBinFlow(0),
     fNRefs(0),
     fWeights(0),
+    fTruthWeights(0),
     fVz(0), 
     fB(0),
     fPhiR(0),
@@ -43,6 +44,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
     fPhiBinFlow(0),
     fNRefs(0),
     fWeights(0),
+    fTruthWeights(0),
     fVz(0), 
     fB(0),
     fPhiR(0),
@@ -61,6 +63,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const AliBaseMCTrackDensity& o)
     fPhiBinFlow(o.fPhiBinFlow),
     fNRefs(o.fNRefs),
     fWeights(o.fWeights),
+    fTruthWeights(o.fTruthWeights),
     fVz(o.fVz), 
     fB(o.fB),
     fPhiR(o.fPhiR),
@@ -85,6 +88,7 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
   fNRefs                = o.fNRefs;
   fDebug                = o.fDebug;
   fWeights              = o.fWeights;
+  fTruthWeights         = o.fTruthWeights;
   fVz                   = o.fVz;
   fB                    = o.fB;
   fPhiR                 = o.fPhiR;
@@ -100,6 +104,16 @@ AliBaseMCTrackDensity::SetWeights(AliBaseMCWeights* w)
     fWeights = 0;
   }
   fWeights = w;
+}
+//____________________________________________________________________
+void
+AliBaseMCTrackDensity::SetTruthWeights(AliBaseMCWeights* w)
+{
+  if (fTruthWeights) {
+    delete fTruthWeights;
+    fTruthWeights = 0;
+  }
+  fTruthWeights = w;
 }
 //____________________________________________________________________
 void
@@ -160,17 +174,26 @@ AliBaseMCTrackDensity::StoreParticle(AliMCParticle*       particle,
 				     const AliMCParticle* mother, 
 				     AliTrackReference*   ref) const
 {
+  // Store this particle
+  //
+  // Note: If particle refers to a primary, then particle and mother
+  // refers to the same particle (the address are the same)
+  // 
   DGUARD(fDebug,3,"MC track density store particle");
   // Store a particle. 
   if (!ref) return 0;
 
   Double_t weight = 1;
   if (fWeights) {
+#if 0
     Double_t phi = (mother ? mother->Phi() : particle->Phi());
     Double_t eta = (mother ? mother->Eta() : particle->Eta());
     Double_t pt  = (mother ? mother->Pt() : particle->Pt());
     Int_t    id  = (mother ? mother->PdgCode() : 2212);
     weight       = CalculateWeight(eta, pt, phi, id);
+#else
+    weight       = CalculateWeight(mother, (mother == particle));
+#endif
   }
 
   // Get track-reference stuff 
@@ -249,7 +272,11 @@ Bool_t
 AliBaseMCTrackDensity::ProcessTrack(AliMCParticle* particle, 
 				    const AliMCParticle* mother)
 {
-  // Check the returned particle 
+  // Check the returned particle
+  //
+  // Note: If particle refers to a primary, then particle and mother
+  // refers to the same particle (the address are the same)
+  // 
   DGUARD(fDebug,3,"MC track density Process a track");
   if (!particle) return false;
     
@@ -325,14 +352,20 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
     Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
     
     // Fill 'dn/deta' histogram 
-    if (isPrimary && primary) 
-      primary->Fill(particle->Eta(), particle->Phi());
+    if (isPrimary && primary) {
+      Double_t w = 1;
+      if (fTruthWeights) w = CalculateTruthWeight(particle);
+      primary->Fill(particle->Eta(), particle->Phi(), w);
+    }
 
     // Bail out if we're only processing primaries - perhaps we should
     // track back to the original primary?
     if (fUseOnlyPrimary && !isPrimary) continue;
 
     const AliMCParticle* mother = isPrimary ? particle : GetMother(iTr, event);
+
+    // IF the track corresponds to a primary, pass that as both
+    // arguments.
     ProcessTrack(particle, mother);
 
   } // Loop over tracks
@@ -342,10 +375,18 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
   
 //____________________________________________________________________
 Double_t
-AliBaseMCTrackDensity::CalculateWeight(Double_t eta, Double_t pt, 
-				       Double_t phi, Int_t id) const
+AliBaseMCTrackDensity::CalculateWeight(const AliMCParticle* p,
+				       Bool_t isPrimary) const
 {
-  return fWeights->CalcWeight(eta, pt, phi, id, fPhiR, fB);
+  // Note, it is always the ultimate mother that is passed here.
+  return fWeights->CalcWeight(p, isPrimary, fPhiR, fB);
+}
+//____________________________________________________________________
+Double_t
+AliBaseMCTrackDensity::CalculateTruthWeight(const AliMCParticle* p) const
+{
+  // Note, it is always the ultimate mother that is passed here.
+  return fTruthWeights->CalcWeight(p, true, fPhiR, fB);
 }
 
 #define PF(N,V,...)					\

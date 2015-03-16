@@ -116,8 +116,8 @@ void AliPtEtaPidWeights::Print(Option_t* option) const
   for (Int_t i = 0; i < fPdgs.GetSize(); i++)  {
     Int_t v = fPdgs.At(i);
     if (v == 0) break;
-    //PFV(Form("%d", v));
-    fWeights.Print("all"); 		
+    PFV(Form("%d", v));
+    // fWeights.Print("all"); 		
   }
   gROOT->DecreaseDirLevel();
 }

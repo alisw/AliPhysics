@@ -8,6 +8,7 @@
  * 
  */
 #include "AliBaseMCWeights.h"
+#include "AliMCParticle.h"
 #include "AliForwardUtil.h"
 #include <iostream>
 //____________________________________________________________________
@@ -36,6 +37,16 @@ AliBaseMCWeights::Print(Option_t* option) const
   PFV("MC weights", "Not specified");
 }
 
+//____________________________________________________________________
+Double_t
+AliBaseMCWeights::CalcWeight(const AliMCParticle* p,
+			     Bool_t,
+			     Double_t phiR,
+			     Double_t b) const
+{
+  if (!p) return 1;
+  return CalcWeight(p->Eta(), p->Pt(), p->Phi(), p->PdgCode(), phiR, b);
+}
 //____________________________________________________________________
 //
 // EOF

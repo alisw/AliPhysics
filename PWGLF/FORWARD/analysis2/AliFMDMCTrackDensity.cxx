@@ -173,6 +173,12 @@ AliFMDMCTrackDensity::ProcessRef(AliMCParticle*       particle,
 				 const AliMCParticle* mother,
 				 AliTrackReference*   ref)
 {
+  // Process track references of a track 
+  //
+  // Note: If particle refers to a primary, then particle and mother
+  // refers to the same particle (the address are the same)
+  // 
+
   // Get the detector coordinates 
   UShort_t d, s, t;
   Char_t r;
