@@ -49,11 +49,11 @@ class AliHFMassFitter : public TNamed {
   void     SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;} // change the default value of the sigma
   void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;} // consider only side bands
   void     SetFixParam(Bool_t *fixpar){fFixPar=fixpar;}
-  void     SetDefaultFixParam();
-  Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
-  void     SetFixGaussianMean(Double_t mean=1.865,Bool_t fixpar=kTRUE){SetInitialGaussianMean(mean); SetFixThisParam(fNFinalPars-2,fixpar);}
-  void     SetFixGaussianSigma(Double_t sigma=0.012, Bool_t fixpar=kTRUE){SetInitialGaussianSigma(sigma); SetFixThisParam(fNFinalPars-1,fixpar);}
-
+  virtual void     SetDefaultFixParam();
+  virtual  Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
+  virtual  void     SetFixGaussianMean(Double_t mean=1.865,Bool_t fixpar=kTRUE){SetInitialGaussianMean(mean); SetFixThisParam(fNFinalPars-2,fixpar);}
+  virtual  void     SetFixGaussianSigma(Double_t sigma=0.012, Bool_t fixpar=kTRUE){SetInitialGaussianSigma(sigma); SetFixThisParam(fNFinalPars-1,fixpar);}
+  
   //getters
   TH1F*    GetHistoClone() const; //return the histogram
   void     GetRangeFit(Double_t &minvalue, Double_t &maxvalue) const {minvalue=fminMass; maxvalue=fmaxMass;}
@@ -85,29 +85,29 @@ class AliHFMassFitter : public TNamed {
   TNtuple* NtuParamOneShot(TString ntuname="ntupar"); // the three functions above all together
   void     WriteHisto(TString path="./") const; // write the histogram
   void     WriteNtuple(TString path="./") const; // write the TNtuple
-  void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=3,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
+  virtual  void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=3,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
   void     DrawHere(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1) const;
   void     DrawFit(Double_t nsigma=3) const;
   void     Reset();
-
-  void     IntS(Float_t *valuewitherror) const;    // integral of signal given my the fit with error
-  Double_t IntTot() const {return fhistoInvMass->Integral("width");}  // return total integral of the histogram
-  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; // signal in nsigma with error 
-  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; // signal in (min, max) with error 
-  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; // backgournd in nsigma with error 
-  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; // backgournd in (min, max) with error 
+  
+  virtual void     IntS(Float_t *valuewitherror) const;    // integral of signal given my the fit with error
+  virtual  Double_t IntTot() const {return fhistoInvMass->Integral("width");}  // return total integral of the histogram
+  virtual  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; // signal in nsigma with error 
+  virtual  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; // signal in (min, max) with error 
+  virtual  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; // backgournd in nsigma with error 
+  virtual  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; // backgournd in (min, max) with error 
   void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const; // significance in nsigma with error 
   void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const; // significance in (min, max) with error 
-
-  Double_t FitFunction4MassDistr (Double_t* x, Double_t* par);
-  Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
-  Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
-  Bool_t   MassFitter(Bool_t draw=kTRUE);
-  Bool_t   RefitWithBkgOnly(Bool_t draw=kTRUE);
-  void     RebinMass(Int_t bingroup=1);
-  TF1*     GetBackgroundFullRangeFunc(){
-    return fhistoInvMass->GetFunction("funcbkgFullRange");
-  }
+  
+ virtual Double_t FitFunction4MassDistr (Double_t* x, Double_t* par);
+ virtual  Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
+ virtual  Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
+ virtual  Bool_t   MassFitter(Bool_t draw=kTRUE);
+ virtual  Bool_t   RefitWithBkgOnly(Bool_t draw=kTRUE);
+ void     RebinMass(Int_t bingroup=1);
+ TF1*     GetBackgroundFullRangeFunc(){
+   return fhistoInvMass->GetFunction("funcbkgFullRange");
+ }
   TF1*     GetBackgroundRecalcFunc(){
     return fhistoInvMass->GetFunction("funcbkgRecalc");
   }
@@ -118,16 +118,16 @@ class AliHFMassFitter : public TNamed {
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
   void SetUseChi2Fit(){fFitOption="E";}
   void SetFitOption(TString opt){fFitOption=opt.Data();};
- private:
-
-  void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1)const;
-
-  void     ComputeParSize();
-  void     ComputeNFinalPars();
+ protected:
+  
+  virtual void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1)const;
+  
+  virtual  void     ComputeParSize();
+  virtual  void     ComputeNFinalPars();
   Bool_t   SideBandsBounds();
-  Bool_t   CheckRangeFit();
-  void     AddFunctionsToHisto();
-
+  virtual  Bool_t   CheckRangeFit();
+  virtual  void     AddFunctionsToHisto();
+  
   TH1F*     fhistoInvMass;     // histogram to fit
   Double_t  fminMass;          // lower mass limit
   Double_t  fmaxMass;          // upper mass limit

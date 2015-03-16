@@ -12,12 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Track analysis component: Loops over tracks from the EMCal track container and
- * counts the tracks in histograms
- *
- *   Author: Markus Fasel
- */
 #include <map>
 #include <string>
 #include <vector>
@@ -44,11 +38,17 @@
 #include "AliEMCalTriggerRecTrackAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * \brief Dummy constructor
+ *
+ * Dummy constructor. For ROOT I/O. Not intended to be used by the users.
+ */
 AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisComponent() :
   AliEMCalTriggerTracksAnalysisComponent(),
   fTrackSelection(NULL),
@@ -56,12 +56,14 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   fUsePatches(kFALSE),
   fRequestMCtrue(kFALSE)
 {
-  /*
-   * Dummy (I/O) constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * \brief Main constructor
+ *
+ * Main constructor, initialises component with a component name. To be used by the users to
+ * create the component object.
+ */
 AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisComponent(const char *name) :
   AliEMCalTriggerTracksAnalysisComponent(name),
   fTrackSelection(NULL),
@@ -69,28 +71,33 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   fUsePatches(kFALSE),
   fRequestMCtrue(kFALSE)
 {
-  /*
-   * Main constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * \brief Destructor
+ *
+ * Destructor, taking care of the track selection.
+ */
 AliEMCalTriggerRecTrackAnalysisComponent::~AliEMCalTriggerRecTrackAnalysisComponent() {
-  /*
-   * Destructor, taking care of the track selection
-   */
   if(fTrackSelection) delete fTrackSelection;
 }
 
-//______________________________________________________________________________
+/**
+ * \brief Creating histograms for the analysis component
+ *
+ * Create histograms of the track analysis component and add it to the list of
+ * histograms. For each trigger class we have
+ * - tracks with esd information
+ * - tracks with MC information
+ * - tracks with clusters and esd information
+ * - tracks with clusters and MC information
+ * In addition, a correlation matrix (THnSparse) for the correlation beween generated
+ * and reconstructed \f$ p_{t} \f$ is created.
+ *
+ * This function is the implementation of the abstract method CreateHistos
+ * declared in AliEMCalTriggerTracksAnalysisComponent.
+ */
 void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
-  /*
-   * Create histograms of the track analysis component. For each trigger class we have
-   * - tracks with esd information
-   * - tracks with MC information
-   * - tracks with clusters and esd information
-   * - tracks with clusters and MC information
-   */
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
   // Create trigger definitions
@@ -150,13 +157,24 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
   for(int iaxis = 0; iaxis < 5; iaxis++) delete trackaxes[iaxis];
 }
 
-//______________________________________________________________________________
+/**
+ * \brief Run track loop on list of matching tracks
+ *
+ * Analyses all particles at reconstruction level in an event, and fill a track based
+ * histogram for all triggers which selected the event. Following steps are performed:
+ *  -# Get a list of all triggers which selected the event
+ *  -# Iterate over pre-selected tracks
+ *      - Check kinematics and track selection cuts
+ *      - Check whether the track is a true signal track (if MC information is available). If yes,
+ *        fill correlation matrix
+ *      - Fill histogram at track level (and if an associated particle is available also at MC-truth level)
+ *      - Find cluster matched to track. If cluster is available, fill histograms for tracks with clusters
+ * This function is the implementation of the abstract method Process declared
+ * in AliEMCalTriggerTracksAnalysisComponent.
+ *
+ * \param data the event data
+ */
 void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
-  /*
-   * Run track loop on list of matching tracks
-   *
-   * @param data: the event data
-   */
   AliDebug(1, Form("Number of matched tracks: %d", data->GetMatchedTrackContainer()->GetEntries()));
   if(fRequestMCtrue && !data->GetMCEvent()) return;
 
@@ -165,6 +183,10 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
 
   AliVTrack *track(NULL);
   const AliVParticle *assocMC(NULL);
+  if(!data->GetMatchedTrackContainer()){
+    AliError("No container for matched tracks");
+    return;
+  }
   TIter trackIter(data->GetMatchedTrackContainer());
 
   double weight = 1.;
@@ -175,7 +197,10 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
     // Apply track selection
     assocMC = NULL;
     if(fKineCuts && !fKineCuts->IsSelected(track)) continue;
-    if(fTrackSelection && !fTrackSelection->IsTrackAccepted(track)) continue;
+    if(fTrackSelection && !fTrackSelection->IsTrackAccepted(track)){
+      AliDebug(2, "Track not accepted");
+      continue;
+    }
 
     if(fRequestMCtrue){
     	if(!(assocMC = IsMCTrueTrack(track, data->GetMCEvent()))) continue;	// Not a true track
@@ -202,18 +227,18 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
   }
 }
 
-//______________________________________________________________________________
+/**
+ * \brief Check whether track is a true signal track
+ *
+ * Check according to the associated MC information whether the track is a MC true track,
+ * and whether it is physical primary
+ *
+ * \param trk track to check
+ * \param evnt MC event information necessary for the check
+ * \return the associated MC particle (NULL if not MC true)
+ */
 const AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
     const AliVTrack* const trk, const AliMCEvent* evnt) const {
-  /*
-   * Check according to the associated MC information whether the track is a MC true track,
-   * and whether it is physical primary
-   *
-   * @param trk: track to check
-   * @param evnt: MC event information necessary for the check
-   *
-   * @return: the associated MC particle (NULL if not MC true)
-   */
   int label = TMath::Abs(trk->GetLabel());
   const AliVParticle *mcpart = evnt->GetTrack(label);
   if(!mcpart) return NULL;
@@ -226,14 +251,29 @@ const AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
   return mcpart;
 }
 
-//______________________________________________________________________________
+/**
+ * \brief Fill main track-based histogram
+ *
+ * Fill main track-based histogram defined by its name with
+ *  -# \f$ p_{t} \f$
+ *  -# \f$ \eta \f$
+ *  -# \f$ \phi \f$
+ *  -# z-position of the primary vertex
+ *  -# status flag signalizing that the event was also a minimum bias event
+ * If useMCkine is set to true, the kinematic quantities will be obtained from the
+ * associated MC particle.
+ *
+ * \param histname Name of the THnSparse to fill
+ * \param trk Reconstructed track
+ * \param assocMC The associated MC track
+ * \param recev Reconstructed event
+ * \param useMCkine If true we fill histogram with MC truth information
+ * \param weight Event weight (optional)
+ */
 void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
     const TString& histname, const AliVTrack* const trk,
     const AliVParticle* assocMC, const AliVEvent* const recev,
     Bool_t useMCkine, Double_t weight) {
-  /*
-   *
-   */
   if(useMCkine && !assocMC) return;
   double data[5];
   data[0] = useMCkine ? TMath::Abs(assocMC->Pt()) : TMath::Abs(trk->Pt());
@@ -244,6 +284,17 @@ void AliEMCalTriggerRecTrackAnalysisComponent::FillHistogram(
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
+/**
+ * \brief Fill correlation matrix between generated and reconstructed particle information
+ *
+ * Fills the correlation matrix between \f$ p_{t} \f$ at generation and at reconstruction level
+ * using information from the reconstructed track and the associated generated track. In
+ * addition the postion of the track in \f$ \eta \f$ and \$ \phi \f$ is saved as well.
+ *
+ * \param genparticle Particle at generation level
+ * \param recparticle Particle at reconstruction level
+ * \param weight Event weight (optional)
+ */
 void AliEMCalTriggerRecTrackAnalysisComponent::FillCorrelation(
 		const AliVParticle* const genparticle,
 		const AliVParticle* const recparticle, double weight) {
