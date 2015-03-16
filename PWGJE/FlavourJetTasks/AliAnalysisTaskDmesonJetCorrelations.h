@@ -22,6 +22,7 @@
 class TClonesArray;
 class THnSparse;
 class TH2;
+class TLorentzVector;
 class AliRDHFCuts;
 class AliAODEvent;
 
@@ -67,8 +68,8 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
  protected:
 
   void             AllocateTHnSparse();
-  void             FillTHnSparse(Double_t pTD, Double_t etaD, Double_t phiD, Double_t invMassD, Double_t softPionPtD, Double_t invMass2prong,
-                                 Double_t pTjet, Double_t etaJet, Double_t phiJet, Double_t leadPtJet, Double_t areaJet, Int_t constJet);
+  void             FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
+                                 TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet);
 
   AliRDHFCuts     *fCuts               ; //  Analysis cuts     
   ECandidateType   fCandidateType      ; //  Candidate type, D0 or D*

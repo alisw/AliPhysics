@@ -109,6 +109,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetChargeSelection(Bool_t cs) {fChargeSelection = cs;}
   void Setq2Binning(Bool_t qb) {fq2Binning = qb;}
   void SetLowMultBinning(Bool_t lmb) {fLowMultBinning = lmb;}
+  void SetQdirectionBinning(Int_t qdb) {fQdirectionBinning = qdb;}
   void Setq2Index(Int_t q2i) {fq2Index = q2i;}
   void Setq2CutLow(Float_t q2l) {fq2CutLow = q2l;}
   void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
@@ -330,6 +331,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fChargeSelection;
   Bool_t fq2Binning;
   Bool_t fLowMultBinning;
+  Int_t fQdirectionBinning;
   Int_t fq2Index;
   Float_t fq2CutLow;
   Float_t fq2CutHigh;

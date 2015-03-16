@@ -94,6 +94,7 @@ set(SRCS
   upgrade/AliAnalysisTaskCountLcEta.cxx
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
+  AliHFMassFitterVAR.cxx
   )
 
 # Headers from sources

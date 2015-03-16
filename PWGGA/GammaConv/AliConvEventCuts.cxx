@@ -1722,62 +1722,62 @@ TString AliConvEventCuts::GetCutNumber(){
 ///________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent){
 
-	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+	TString periodName 					= ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
 
 	if(fNotRejectedStart){
 		delete[] fNotRejectedStart;
-		fNotRejectedStart = NULL;
+		fNotRejectedStart 				= NULL;
 	}
 	if(fNotRejectedEnd){
 		delete[] fNotRejectedEnd;
-		fNotRejectedEnd = NULL;
+		fNotRejectedEnd 				= NULL;
 	}
 	if(fGeneratorNames){
 		delete[] fGeneratorNames;
-		fGeneratorNames = NULL;
+		fGeneratorNames 				= NULL;
 	}
 
 	if(rejection == 0) return; // No Rejection
 
-	AliGenCocktailEventHeader *cHeader = 0x0;
-	AliAODMCHeader *cHeaderAOD = 0x0;
-	Bool_t headerFound = kFALSE;
-	AliStack *fMCStack = 0x0;
-	TClonesArray *fMCStackAOD = 0x0;
+	AliGenCocktailEventHeader *cHeader 	= 0x0;
+	AliAODMCHeader *cHeaderAOD 			= 0x0;
+	Bool_t headerFound 					= kFALSE;
+	AliStack *fMCStack 					= 0x0;
+	TClonesArray *fMCStackAOD 			= 0x0;
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if(dynamic_cast<AliMCEvent*>(MCEvent)){
-			cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-			if(cHeader) headerFound = kTRUE;
-			fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+			cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+			if(cHeader) headerFound 	= kTRUE;
+			fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
 		}	
 	}
 	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-		cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-		fMCStackAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-		if(cHeaderAOD) headerFound = kTRUE;
+		cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+		fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if(cHeaderAOD) headerFound 		= kTRUE;
 	}
 
 // 	cout << "event starts here" << endl;
 	if(headerFound){
-		TList *genHeaders = 0x0;
-		if(cHeader) genHeaders = cHeader->GetHeaders();
+		TList *genHeaders 				= 0x0;
+		if(cHeader) genHeaders 			= cHeader->GetHeaders();
 		if(cHeaderAOD){
-			genHeaders = cHeaderAOD->GetCocktailHeaders();
+			genHeaders 					= cHeaderAOD->GetCocktailHeaders();
 			if(genHeaders->GetEntries()==1){
 				SetRejectExtraSignalsCut(0);
 				return;
 			}
 		}
-		AliGenEventHeader* gh = 0;
-		fnHeaders = 0;
-		Int_t firstindexA = 0;
-		Int_t lastindexA =  -1;
+		AliGenEventHeader* gh 			= 0;
+		fnHeaders 						= 0;
+		Int_t firstindexA 				= 0;
+		Int_t lastindexA 				=  -1;
 		if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
 		if(rejection == 2){ // TList of Headers Names
 			for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-				gh = (AliGenEventHeader*)genHeaders->At(i);
-				TString GeneratorName = gh->GetName();
-				lastindexA = lastindexA + gh->NProduced();
+				gh 						= (AliGenEventHeader*)genHeaders->At(i);
+				TString GeneratorName 	= gh->GetName();
+				lastindexA 				= lastindexA + gh->NProduced();
 // 				cout << i << "\t" << GeneratorName.Data() << endl;
 				for(Int_t j = 0; j<HeaderList->GetEntries();j++){
 					TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
@@ -1829,30 +1829,30 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 						continue;
 					}
 				}
-				firstindexA = firstindexA + gh->NProduced();
+				firstindexA 			= firstindexA + gh->NProduced();
 			}
 		}
 // 		cout << "number of headers: " <<fnHeaders << endl;
 		
-		fNotRejectedStart = new Int_t[fnHeaders];
-		fNotRejectedEnd = new Int_t[fnHeaders];
-		fGeneratorNames = new TString[fnHeaders];
+		fNotRejectedStart 				= new Int_t[fnHeaders];
+		fNotRejectedEnd 				= new Int_t[fnHeaders];
+		fGeneratorNames 				= new TString[fnHeaders];
 
 		if(rejection == 1 || rejection == 3){
-			fNotRejectedStart[0] = 0;
-			fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
-			fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+			fNotRejectedStart[0] 		= 0;
+			fNotRejectedEnd[0] 			= ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
+			fGeneratorNames[0] 			= ((AliGenEventHeader*)genHeaders->At(0))->GetName();
 			return;
 		}
 
-		Int_t firstindex = 0;
-		Int_t lastindex =  -1;
-		Int_t number = 0;
+		Int_t firstindex 				= 0;
+		Int_t lastindex 				=  -1;
+		Int_t number 					= 0;
 		
 		for(Int_t i = 0; i<genHeaders->GetEntries();i++){
 			gh = (AliGenEventHeader*)genHeaders->At(i);
-			TString GeneratorName = gh->GetName();
-			lastindex = lastindex + gh->NProduced();
+			TString GeneratorName 		= gh->GetName();
+			lastindex 					= lastindex + gh->NProduced();
 			for(Int_t j = 0; j<HeaderList->GetEntries();j++){
 				TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
 // 				cout << i << "\t" << GeneratorName.Data() << endl;
@@ -1915,21 +1915,26 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 					
 				}
 			}
-			firstindex = firstindex + gh->NProduced();
+			firstindex 					= firstindex + gh->NProduced();
 		}
 // 		for (Int_t i = 0; i < number; i++){
 // 			cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
 // 		}	
 	
 	} else { // No Cocktail Header Found
-		fNotRejectedStart = new Int_t[1];
-		fNotRejectedEnd = new Int_t[1];
+		fNotRejectedStart 				= new Int_t[1];
+		fNotRejectedEnd 				= new Int_t[1];
 
-		fnHeaders = 1;
-		fNotRejectedStart[0] = 0;
-		fNotRejectedEnd[0] = static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
-		fGeneratorNames = new TString[1];
-		fGeneratorNames[0] = "NoCocktailGeneratorFound";
+		fnHeaders 						= 1;
+		fNotRejectedStart[0] 			= 0;
+		fNotRejectedEnd[0] 				= static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
+		if (rejection > 1){
+			fNotRejectedStart[0] 		= -1;
+			fNotRejectedEnd[0] 			= -1;
+		}	
+		
+		fGeneratorNames 				= new TString[1];
+		fGeneratorNames[0] 				= "NoCocktailGeneratorFound";
 		SetRejectExtraSignalsCut(0);
 	}
 	
@@ -2458,7 +2463,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
 		if (foundExcludedPart){
 // 			if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
 			return kFALSE;
-		} else if (dalitzCand){
+		} else if (dalitzCand && realRadius3D < fSecProdBoundary ){
 // 			if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
 			return kTRUE;
 		} else if (foundShower){

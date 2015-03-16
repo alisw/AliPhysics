@@ -191,6 +191,7 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;				//! array of histos for header names
 		TH1F 								**fHistoMCAllGammaPt;				//! array of histos with all gamma, pT
+		TH1F								**fHistoMCAllGammaPi0Pt;                        //! array of histos with all gamma from pi0->dalitz, pT
 		TH1F 								**fHistoMCAllGammaEMCALAccPt;			//! array of histos with all gamma in EMCAL acceptance, pT
 		TH1F 								**fHistoMCDecayGammaPi0Pt;			//! array of histos with decay gamma from pi0, pT
 		TH1F 								**fHistoMCDecayGammaRhoPt;			//! array of histos with decay gamma from rho, pT
@@ -202,6 +203,10 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCConvGammaPt;				//! array of histos with converted gamma, pT
 		TH1F 								**fHistoMCConvGammaR;				//! array of histos with converted gamma, R
 		TH1F 								**fHistoMCConvGammaEta;				//! array of histos with converted gamma, Eta
+		TH1F								**fHistoMCAllPositronsPt;                       //! array of histos with positrons, pT
+		TH1F								**fHistoMCDecayPositronPi0Pt;                   //! array of histos with positrons from Pi0->Dalitz, pT
+		TH1F								**fHistoMCAllElectronsPt;			//! array of histos with electrons, pT
+		TH1F								**fHistoMCDecayElectronPi0Pt;                   //! arrau of histos with positrons form Pi0->Dalitz, pT
 		TH1F 								**fHistoMCPi0GGPt;				//! array of histos with weighted pi0, pT
 		TH1F 								**fHistoMCPi0GGWOWeightPt;			//! array of histos with unweighted pi0, pT
 		TH1F 								**fHistoMCPi0Pt;				//! array of histos with weighted pi0, pT
@@ -301,6 +306,8 @@ class AliAnalysisTaskGammaConvCaloDalitzV1 : public AliAnalysisTaskSE {
 		TH1F								**fHistoTrueNLabelsInClus;						//! array of histos with number of labels in cluster 
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary cluster, pt
 		TH2F								**fHistoTruePrimaryClusGammaESDPtMCPt;			//! array of histos with validated primary cluster, rec Pt, MC pt
+		TH1F								**fHistoTruePi0DalitzClusGammaPt;			//! array of histos with validate primary cluster from pi0->dalitz, rec Pt
+		TH1F								**fHistoTruePi0DalitzClusGammaMCPt;			//! array of histos with validate primary cluster from pi0->dalitz, rec Pt
 		TH2F				 				**fHistoTruePrimaryPi0PhotonPairPtconv;			//! array of histos with validated primary pi0's vs conversion photon pT
 		TH1F				 				**fHistoTruePrimaryPi0DCPtconv;					//! array of histos with validated primary pi0's vs conversion photon pT, double counting
 		TH1F				 				**fHistoTruePrimaryPi0MissingPtconv;			//! array of histos with validated primary pi0's vs conversion photon pT, missing

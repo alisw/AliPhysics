@@ -126,6 +126,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
 	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoMCHeaders(NULL),
 	fHistoMCAllGammaPt(NULL),
+	fHistoMCAllGammaPi0Pt(NULL),
 	fHistoMCAllGammaEMCALAccPt(NULL),
 	fHistoMCDecayGammaPi0Pt(NULL),
 	fHistoMCDecayGammaRhoPt(NULL),
@@ -137,6 +138,10 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
 	fHistoMCConvGammaPt(NULL),
 	fHistoMCConvGammaR(NULL),
 	fHistoMCConvGammaEta(NULL),
+	fHistoMCAllPositronsPt(NULL),
+	fHistoMCDecayPositronPi0Pt(NULL),
+	fHistoMCAllElectronsPt(NULL),
+	fHistoMCDecayElectronPi0Pt(NULL),
 	fHistoMCPi0GGPt(NULL),
 	fHistoMCPi0GGWOWeightPt(NULL),
 	fHistoMCPi0Pt(NULL),
@@ -234,6 +239,8 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(): Al
 	fHistoTrueNLabelsInClus(NULL),
 	fHistoTruePrimaryClusGammaPt(NULL),
 	fHistoTruePrimaryClusGammaESDPtMCPt(NULL),
+	fHistoTruePi0DalitzClusGammaPt(NULL),
+	fHistoTruePi0DalitzClusGammaMCPt(NULL),
 	fHistoTruePrimaryPi0PhotonPairPtconv(NULL),
 	fHistoTruePrimaryPi0DCPtconv(NULL),
 	fHistoTruePrimaryPi0MissingPtconv(NULL),
@@ -345,6 +352,7 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
 	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoMCHeaders(NULL),
 	fHistoMCAllGammaPt(NULL),
+	fHistoMCAllGammaPi0Pt(NULL),
 	fHistoMCAllGammaEMCALAccPt(NULL),
 	fHistoMCDecayGammaPi0Pt(NULL),
 	fHistoMCDecayGammaRhoPt(NULL),
@@ -356,6 +364,10 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
 	fHistoMCConvGammaPt(NULL),
 	fHistoMCConvGammaR(NULL),
 	fHistoMCConvGammaEta(NULL),
+	fHistoMCAllPositronsPt(NULL),
+	fHistoMCDecayPositronPi0Pt(NULL),
+	fHistoMCAllElectronsPt(NULL),
+	fHistoMCDecayElectronPi0Pt(NULL),
 	fHistoMCPi0GGPt(NULL),
 	fHistoMCPi0GGWOWeightPt(NULL),
 	fHistoMCPi0Pt(NULL),
@@ -453,6 +465,8 @@ AliAnalysisTaskGammaConvCaloDalitzV1::AliAnalysisTaskGammaConvCaloDalitzV1(const
 	fHistoTrueNLabelsInClus(NULL),
 	fHistoTruePrimaryClusGammaPt(NULL),
 	fHistoTruePrimaryClusGammaESDPtMCPt(NULL),
+	fHistoTruePi0DalitzClusGammaPt(NULL),
+	fHistoTruePi0DalitzClusGammaMCPt(NULL),
 	fHistoTruePrimaryPi0PhotonPairPtconv(NULL),
 	fHistoTruePrimaryPi0DCPtconv(NULL),
 	fHistoTruePrimaryPi0MissingPtconv(NULL),
@@ -824,6 +838,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 		fHeaderNameList 				= new TList*[fnCuts];
 		fHistoMCHeaders 				= new TH1I*[fnCuts];
 		fHistoMCAllGammaPt 				= new TH1F*[fnCuts];
+		fHistoMCAllGammaPi0Pt                           = new TH1F*[fnCuts];
 		fHistoMCAllGammaEMCALAccPt 			= new TH1F*[fnCuts];
 		fHistoMCDecayGammaPi0Pt 			= new TH1F*[fnCuts];
 		fHistoMCDecayGammaRhoPt 			= new TH1F*[fnCuts];
@@ -833,6 +848,11 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoMCDecayGammaPhiPt 			= new TH1F*[fnCuts];
 		fHistoMCDecayGammaSigmaPt 			= new TH1F*[fnCuts];
 		fHistoMCConvGammaPt 				= new TH1F*[fnCuts];
+		fHistoMCAllPositronsPt                          = new TH1F*[fnCuts];
+		fHistoMCDecayPositronPi0Pt                      = new TH1F*[fnCuts];
+		fHistoMCAllElectronsPt                          = new TH1F*[fnCuts];
+		fHistoMCDecayElectronPi0Pt                      = new TH1F*[fnCuts];
+		
 		fHistoTrueConvGammaPt 				= new TH1F*[fnCuts];
 		fHistoTrueConvPi0GammaPt 			= new TH1F*[fnCuts];
 		fHistoTruePositronPt				= new TH1F*[fnCuts];
@@ -856,6 +876,9 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoTrueClusGammaPt 				= new TH1F*[fnCuts];
 		fHistoTruePrimaryClusGammaPt 			= new TH1F*[fnCuts];
 		fHistoTruePrimaryClusGammaESDPtMCPt 		= new TH2F*[fnCuts];
+		
+		fHistoTruePi0DalitzClusGammaPt			= new TH1F*[fnCuts];
+		fHistoTruePi0DalitzClusGammaMCPt		= new TH1F*[fnCuts];
 
 		if (fDoPhotonQA > 0){
 		  
@@ -988,6 +1011,10 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 			fMCList[iCut]->Add(fHistoMCHeaders[iCut]);
 			fHistoMCAllGammaPt[iCut] = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
+			
+			fHistoMCAllGammaPi0Pt[iCut] = new TH1F("MC_AllGammaPi0_Pt","MC_AllGammaPi0_Pt",250,0,25);
+			fMCList[iCut]->Add(fHistoMCAllGammaPi0Pt[iCut]);
+			
 			fHistoMCAllGammaEMCALAccPt[iCut] = new TH1F("MC_AllGammaEMCALAcc_Pt","MC_AllGammaEMCALAcc_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCAllGammaEMCALAccPt[iCut]);
 			fHistoMCDecayGammaPi0Pt[iCut] = new TH1F("MC_DecayGammaPi0_Pt","MC_DecayGammaPi0_Pt",250,0,25);
@@ -1006,6 +1033,23 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 			fMCList[iCut]->Add(fHistoMCDecayGammaSigmaPt[iCut]);
 			fHistoMCConvGammaPt[iCut] = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt",250,0,25);
 			fMCList[iCut]->Add(fHistoMCConvGammaPt[iCut]);
+			
+			fHistoMCAllPositronsPt[iCut] = new TH1F("MC_AllPositrons_Pt","MC_AllPositrons_Pt",1000,0,25);
+			fMCList[iCut]->Add(fHistoMCAllPositronsPt[iCut]);
+			
+			
+			fHistoMCDecayPositronPi0Pt[iCut] = new TH1F("MC_DecayPositronPi0_Pt","MC_DecayPositronPi0_Pt",1000,0,25);
+			fMCList[iCut]->Add(fHistoMCDecayPositronPi0Pt[iCut]);
+			
+			fHistoMCAllElectronsPt[iCut] = new TH1F("MC_AllElectrons_Pt","MC_AllElectrons_Pt",1000,0,25);
+			fMCList[iCut]->Add(fHistoMCAllElectronsPt[iCut]);
+			
+			fHistoMCDecayElectronPi0Pt[iCut] = new TH1F("MC_DecayElectronPi0_Pt","MC_DecayElectronPi0_Pt",1000,0,25);
+			fMCList[iCut]->Add(fHistoMCDecayElectronPi0Pt[iCut]);
+			
+			
+			
+			
       
 			if (fDoPhotonQA > 0){
 			  
@@ -1145,7 +1189,12 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 			fHistoTruePrimaryClusGammaESDPtMCPt[iCut] = new TH2F("TruePrimaryClusGamma_Pt_MCPt","ESD_TruePrimaryClusGamma_MCPt",250,0,25,250,0,25);
 			fClusterOutputList[iCut]->Add(fHistoTruePrimaryClusGammaESDPtMCPt[iCut]);
 			
-			
+			 fHistoTruePi0DalitzClusGammaPt[fiCut] = new TH1F("TruePi0DalitzClusGamma_Pt","fHistoTruePi0DalitzClusGamma_Pt",250,0,25);
+			 fClusterOutputList[iCut]->Add(fHistoTruePi0DalitzClusGammaPt[iCut]);
+			 
+	       	         fHistoTruePi0DalitzClusGammaMCPt[fiCut]= new TH1F("TruePi0DalitzClusGamma_MCPt","fHistoTruePi0DalitzClusGamma_MCPt",250,0,25);
+			 fClusterOutputList[iCut]->Add(fHistoTruePi0DalitzClusGammaMCPt[iCut]);
+			 
 			
 			
 			
@@ -1881,6 +1930,14 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidates(AliAODCo
 		if(fIsFromMBHeader){
 			fHistoTruePrimaryClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			fHistoTruePrimaryClusGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),Photon->Pt()); // Allways Filled
+			
+			 if( IsPi0DalitzDaughter( TruePhotonCandidate->GetCaloPhotonMCLabel(0) ) == kTRUE ) {
+			   
+			  fHistoTruePi0DalitzClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
+			  fHistoTruePi0DalitzClusGammaMCPt[fiCut]->Fill(Photon->Pt());
+			  
+			 }
+			
 		}
 	}	
 	return;
@@ -2117,6 +2174,8 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 	// Loop over all primary MC particle
 	for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
 	  
+	  
+	 
 	  if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 		
 		TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -2132,11 +2191,54 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 		}
 		
 		
+		
 		if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
+		
+		
+		if (  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(particle,fMCStack) == kTRUE ){
+		  
+			fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
+			
+			
+			if( IsPi0DalitzDaughter ( i ) == kTRUE ) {
+			  
+			       fHistoMCAllGammaPi0Pt[fiCut]->Fill(particle->Pt());
+			}
+		  
+		}
+		
+		if(((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(i,fMCStack) == kTRUE){
+		  	if( particle->GetPdgCode() == -11) {
+				fHistoMCAllPositronsPt[fiCut]->Fill(particle->Pt()); // All positrons
+				
+				
+				if ( particle->GetMother(0) > -1 ) {
+				    
+				      if( IsPi0DalitzDaughter( i ) == kTRUE ){
+					fHistoMCDecayPositronPi0Pt[fiCut]->Fill(particle->Pt()); //Positrons from Pi0->Dalitz
+				      }
+				  
+				}
+			}
+			if( particle->GetPdgCode() ==  11){
+			  
+				fHistoMCAllElectronsPt[fiCut]->Fill(particle->Pt()); // All electrons
+				
+				if (  particle->GetMother(0) > -1 ) {
+				    
+				      if( IsPi0DalitzDaughter( i ) == kTRUE ){
+					fHistoMCDecayElectronPi0Pt[fiCut]->Fill(particle->Pt()); //Electrons from Pi0->Dalitz
+				      }
+				  
+				}
+
+			}		
+		}
+		
 		
 		if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
 		  
-			fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
+			
 			
 			if ( abs(particle->Eta()) < 0.66 ){
 				if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt());
@@ -2249,8 +2351,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 			
 			
 			      if( kDaughElectIsPrim && kDaughPositIsPrim && kDaughGammaIsPrim &&				
-				 ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma,fMCStack,kFALSE) &&
-				 ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(gamma->Phi(),fEventPlaneAngle,kFALSE) &&
+				 ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma,fMCStack) &&
 				 ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(labelelectron,fMCStack) &&
 				 ((AliDalitzElectronCuts*)fElectronCutArray->At(fiCut))->ElectronIsSelectedMC(labelpositron,fMCStack) ) {
 				
@@ -2258,7 +2359,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessMCParticles()
 					fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt() , weighted); // MC Pi0Dalitz with gamma and e+e- in acc
 				  }
 				  if(particle->GetPdgCode() == 221){ 
-					fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(), weighted ); // MC EtaDalitz with gamma and e+e- in acc
+					fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),  weighted); // MC EtaDalitz with gamma and e+e- in acc
 					
 				  }
 			  }	
