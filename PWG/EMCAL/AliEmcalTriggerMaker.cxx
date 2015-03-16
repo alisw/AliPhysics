@@ -171,11 +171,14 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
 
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
+    const char *patchtypes[2] = {"Online", "Offline"};
 
     for(int itype = 0; itype < 5; itype++){
-      fQAHistos->CreateTH2(Form("RCPos%s", fgkTriggerTypeNames[itype].Data()), Form("Lower edge position of %s patches (col-row)", fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
-      fQAHistos->CreateTH2(Form("EPCentPos%s", fgkTriggerTypeNames[itype].Data()), Form("Center position of the %s trigger patches", fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 100, 1., 4.);
-      fQAHistos->CreateTH2(Form("PatchADCvsE%s", fgkTriggerTypeNames[itype].Data()), Form("Patch ADC value for trigger type %s", fgkTriggerTypeNames[itype].Data()), 200, 0., 200, 200, 0., 200);
+      for(const char **patchtype = patchtypes; patchtype < patchtypes + 2; ++patchtype){
+        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row)", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
+        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 100, 1., 4.);
+        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s", *patchtype, fgkTriggerTypeNames[itype].Data()), 200, 0., 200, 200, 0., 200);
+      }
     }
     fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches", 64, -0.5, 63.5);
     fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches", 64, -0.5, 63.5);
@@ -663,9 +666,10 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   trigger->SetEdgeCell(globCol*2, globRow*2); // from triggers to cells
   //if(isOfflineSimple)trigger->SetOfflineSimple();
   if(fDoQA){
-    fQAHistos->FillTH2(Form("RCPos%s", fgkTriggerTypeNames[type].Data()), globCol, globRow);
-    fQAHistos->FillTH2(Form("EPCentPos%s", fgkTriggerTypeNames[type].Data()), centerGeo.Eta(), centerGeo.Phi());
-    fQAHistos->FillTH2(Form("PatchADCvsE%s", fgkTriggerTypeNames[type].Data()), adcAmp, trigger->GetPatchE());
+    TString patchtype = isOfflineSimple ? "Offline" : "Online";
+    fQAHistos->FillTH2(Form("RCPos%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), globCol, globRow);
+    fQAHistos->FillTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), centerGeo.Eta(), centerGeo.Phi());
+    fQAHistos->FillTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), adcAmp, trigger->GetPatchE());
     // Redo checking of found trigger bits after masking of unwanted triggers
     for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
       if(tBits & (1 << ibit)){
@@ -713,8 +717,8 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   Int_t maxRow = fGeom->GetNTotalTRU()*2;
   Int_t isMC = MCEvent() ? 1 : 0;
   Int_t bitOffSet = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
-  for (Int_t i = 0; i < (maxCol-16); i += 4) {
-    for (Int_t j = 0; j < (maxRow-16); j += 4) {
+  for (Int_t i = 0; i <= (maxCol-16); i += 4) {
+    for (Int_t j = 0; j <= (maxRow-16); j += 4) {
       Double_t tSumOffline  = 0;
       Int_t tSum  = 0;
       Int_t tBits = 0;
@@ -762,8 +766,8 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   maxPatchADC = -1;
   maxPatchADCoffline = -1;
 
-  for (Int_t i = 0; i < (maxCol-2); ++i) {
-    for (Int_t j = 0; j < (maxRow-2); ++j) {
+  for (Int_t i = 0; i <= (maxCol-2); ++i) {
+    for (Int_t j = 0; j <= (maxRow-2); ++j) {
       Int_t tSum = 0;
       Double_t tSumOffline = 0;
       Int_t tBits = 0;
