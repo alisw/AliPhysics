@@ -31,6 +31,7 @@ set(SRCS_analysis2
   analysis2/AliAODCentralMult.cxx
   analysis2/AliAODForwardEP.cxx
   analysis2/AliAODForwardMult.cxx
+  analysis2/AliAODMultEventClass.cxx
   # Interface to OADB backed by a TTree 
   analysis2/AliOADBForward.cxx
   # Correction managers 
@@ -72,6 +73,7 @@ set(SRCS_analysis2
   analysis2/AliFMDHistCollector.cxx
   analysis2/AliFMDESDFixer.cxx
   analysis2/AliFMDSharingFilter.cxx
+  analysis2/AliMultEventClassifier.cxx
   # FMD MC algorithms
   analysis2/AliFMDMCCorrector.cxx
   analysis2/AliFMDMCDensityCalculator.cxx
@@ -103,7 +105,9 @@ set(SRCS_analysis2
   analysis2/AliBaseMCWeights.cxx	
   analysis2/AliForwardFlowWeights.cxx
   analysis2/AliSimplePidWeights.cxx
-  analysis2/AliPtEtaPidWeights.cxx	
+  analysis2/AliPtEtaPidWeights.cxx
+  # Other
+  analysis2/AliMultEventClassifierTask.cxx
 )
 
 # Sources under GEO/ - alphabetical order

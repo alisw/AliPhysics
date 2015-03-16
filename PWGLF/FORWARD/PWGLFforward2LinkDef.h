@@ -42,6 +42,7 @@
 #pragma link C++ class AliAODCentralMult+;
 #pragma link C++ class AliAODForwardEP+;
 #pragma link C++ class AliAODForwardMult+; 
+#pragma link C++ class AliAODMultEventClass+;
 
 
 // Interface to OADB backed by a TTree 
@@ -127,6 +128,7 @@
 #if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #endif
+#pragma link C++ class AliMultEventClassifier+;
 
 // FMD MC algorithms
 #pragma link C++ class AliFMDMCCorrector+;
@@ -186,6 +188,8 @@
 #pragma link C++ class AliBaseMCWeights+;
 #pragma link C++ class AliSimplePidWeights+;
 #pragma link C++ class AliPtEtaPidWeights+;
+
+#pragma link C++ class AliMultEventClassifierTask;
 #endif
 //
 // EOF
