@@ -56,8 +56,8 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fAODEP(false),
     fRingSums(),
     fDoTiming(false),
-  fHTiming(0),
-  fHStatus(0),
+    fHTiming(0),
+    fHStatus(0),
     fAddMask(AliAODForwardMult::kInel)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
