@@ -60,6 +60,7 @@ set(SRCS
   AliAnalysisTaskSEDs.cxx 
   AliAnalysisTaskSELambdac.cxx 
   AliAnalysisTaskSED0Mass.cxx 
+  AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx 
   AliAnalysisTaskSELc2V0bachelor.cxx 
   AliAnalysisTaskSEDvsMultiplicity.cxx
@@ -72,6 +73,7 @@ set(SRCS
   AliCFVertexingHFCascade.cxx 
   AliCFVertexingHFLctoV0bachelor.cxx
   AliCFTaskVertexingHF.cxx 
+  AliCFTaskVertexingHFCutVarFDSub.cxx
   AliCFTaskForDStarAnalysis.cxx 
   AliAnalysisTaskSEDStarJets.cxx 
   AliAnalysisTaskSEDStarSpectra.cxx 
@@ -81,6 +83,7 @@ set(SRCS
   AliSignificanceCalculator.cxx 
   AliHFMassFitter.cxx 
   AliHFPtSpectrum.cxx 
+  AliHFsubtractBFDcuts.cxx
   AliNormalizationCounter.cxx 
   AliAnalysisTaskSEMonitNorm.cxx 
   AliAnalysisTaskSEBkgLikeSignD0.cxx 
