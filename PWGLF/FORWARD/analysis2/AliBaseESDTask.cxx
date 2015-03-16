@@ -85,7 +85,8 @@ AliBaseESDTask::Connect(const char* sumFile,
 
   // Connect sum list unless the output 'none' is specified
   if (!sumOut.EqualTo("none", TString::kIgnoreCase)) {
-    TString sumName(Form("%s%s", old ? "Forward" : GetName(), old ? "" : "Sums"));
+    TString sumName(Form("%s%s", old ? "Forward" : GetName(),
+			 old ? "" : "Sums"));
     AliAnalysisDataContainer* sumCon = 
       mgr->CreateContainer(sumName, TList::Class(), 
 			   AliAnalysisManager::kOutputContainer, sumOut);
