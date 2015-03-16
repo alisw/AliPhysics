@@ -187,7 +187,7 @@ public:
       else 
 	if (util) fUtilV0C   = c; else fSelV0C   = c;
     }
-    else if (which & kCND)
+    else if (which & kCND && !util)
       fSelCND = c;
   }
   /** 
