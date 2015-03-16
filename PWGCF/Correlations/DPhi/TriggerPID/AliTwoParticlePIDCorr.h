@@ -402,6 +402,8 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
     TH3F* fTwoTrackDistancePtmix[2];    //! control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
 
     TH2D* fCentralityCorrelation;  //! centrality vs Tracks multiplicity
+    TH2D* fCentralityCorrelationMC;  //! centrality vs Tracks multiplicity in MC
+
  //VZERO calibration
   TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map

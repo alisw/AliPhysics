@@ -185,6 +185,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
 fTwoTrackDistancePtdip(0x0),
 fTwoTrackDistancePtdipmix(0x0),
   fCentralityCorrelation(0x0),
+   fCentralityCorrelationMC(0x0),
  fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
  fHistVZEROChannelGainEqualizationMap(0),
@@ -475,6 +476,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
 fTwoTrackDistancePtdip(0x0),
 fTwoTrackDistancePtdipmix(0x0),
   fCentralityCorrelation(0x0),
+     fCentralityCorrelationMC(0x0),
  fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
    fHistVZEROChannelGainEqualizationMap(0),
@@ -779,8 +781,17 @@ fOutput->Add(fEtaSpectrasso);
 fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),200,0.0,fmaxPt);
 fOutput->Add(fphiSpectraasso);
 
- if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
-      fOutput->Add(fCentralityCorrelation);
+ if(fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b"){
+   if  (fAnalysisType =="MCAOD" ||  fAnalysisType =="MC"){
+     fCentralityCorrelationMC = new TH2D("fCentralityCorrelationMC", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
+     fOutput->Add(fCentralityCorrelationMC);
+   }
+
+   if  (fAnalysisType =="MCAOD" ||  fAnalysisType =="AOD"){
+     fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality_ImpactParam;multiplicity", 101, 0, 101, 20000, 0,40000);
+     fOutput->Add(fCentralityCorrelation);
+   }
+      
  }
 
 if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V0C" || fCentralityMethod=="CL1" || fCentralityMethod=="ZNA" || fCentralityMethod=="V0AEq" || fCentralityMethod=="V0CEq" || fCentralityMethod=="V0MEq")
@@ -1995,7 +2006,7 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
  }//track loop ends
 
  if(nooftrackstruth>0.0){
-if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
 AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
 /*
@@ -2303,7 +2314,7 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
   }
  
 if(nooftrackstruth>0.0){
-if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelation->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
    AliGenEventHeader* eventHeader = header->GetCocktailHeader(0);  // get first MC header from either ESD/AOD (including cocktail header if available)
       if (eventHeader)
@@ -4931,18 +4942,24 @@ if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V
                    
  if(fSampleType=="pp_7" && fPPVsMultUtils==kTRUE)
    {//for pp 7 TeV case only using Alianalysisutils class
-     AliAnalysisUtils *t1;
-     fAnalysisUtils=t1;
+     //AliAnalysisUtils *t1;
+     //fAnalysisUtils=t1;
+
+     if(!fAnalysisUtils)
+     fAnalysisUtils=new AliAnalysisUtils();
+     
      if(fAnalysisUtils){
        
-       cent_v0 = fAnalysisUtils->GetMultiplicityPercentile(mainevent,fCentralityMethod);
+       cent_v0 = fAnalysisUtils->GetMultiplicityPercentile(mainevent,fCentralityMethod.Data());
        
   fHistCentStats->Fill(0.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0A"));
   fHistCentStats->Fill(1.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0C"));
-  fHistCentStats->Fill(2.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0M"));   
+  fHistCentStats->Fill(2.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0M"));
+  /*
   fHistCentStats->Fill(3.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0AEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(4.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0CEq"));//only available for LHC10d at present (Quantile info)
   fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
+  */
      }
   	else cent_v0 = -1;
 
