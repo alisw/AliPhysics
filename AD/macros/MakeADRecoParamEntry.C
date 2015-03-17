@@ -3,7 +3,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
 //
 // Steering macro for AD reconstruction parameters
 //
-// Author: Brigitte Cheynis
+// Author: Michal Broz
 //
 //========================================================================
 
@@ -19,14 +19,17 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
   {
     AliADRecoParam * ADRecoParam = new AliADRecoParam;
     ADRecoParam->SetEventSpecie(AliRecoParam::kCosmic);
+    ADRecoParam->SetStartClock(0);
+    ADRecoParam->SetEndClock(20);
+    ADRecoParam->SetNPreClocks(3);
+    ADRecoParam->SetNPostClocks(1);
     recoParamArray->AddLast(ADRecoParam);
   }
   {
     AliADRecoParam * ADRecoParam = new AliADRecoParam;
-    // the following two settings are needed to high lumi runs in 2011
-    ADRecoParam->SetStartClock(9);
-    ADRecoParam->SetEndClock(11);
-    ADRecoParam->SetNPreClocks(1);
+    ADRecoParam->SetStartClock(0);
+    ADRecoParam->SetEndClock(20);
+    ADRecoParam->SetNPreClocks(3);
     ADRecoParam->SetNPostClocks(1);
     ADRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     recoParamArray->AddLast(ADRecoParam);

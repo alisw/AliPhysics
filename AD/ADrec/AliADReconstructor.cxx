@@ -192,13 +192,12 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	  Bool_t iIntegrator = (iClock%2 == 0) ? integrator : !integrator;
 	  Int_t k = pmNumber + 16*iIntegrator;
 	  adcPedSub[iClock] = (Float_t)charge - fCalibData->GetPedestal(k);
-	  //if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
-	  if(adcPedSub[iClock] <= 2*fCalibData->GetSigma(k)) {
+	  if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
 	    adcPedSub[iClock] = 0;
 	    continue;
 	  }
-	  //if(iClock < GetRecoParam()->GetStartClock() || iClock > GetRecoParam()->GetEndClock()) continue;
-	  if(iClock < 8 || iClock > 12) continue;
+	  
+	  if(iClock < GetRecoParam()->GetStartClock() || iClock > GetRecoParam()->GetEndClock()) continue;
 	  if(adcPedSub[iClock] > maxadc) {
 	    maxadc = adcPedSub[iClock];
 	    imax   = iClock;
@@ -206,11 +205,9 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	}
 
 	if (imax != -1) {
-	  //Int_t start = imax - GetRecoParam()->GetNPreClocks();
-	  Int_t start = imax - 2;
+	  Int_t start = imax - GetRecoParam()->GetNPreClocks();
 	  if (start < 0) start = 0;
-	  //Int_t end = imax + GetRecoParam()->GetNPostClocks();
-	  Int_t end = imax + 1;
+	  Int_t end = imax + GetRecoParam()->GetNPostClocks();
 	  if (end > 20) end = 20;
 	  for(Int_t iClock = start; iClock <= end; iClock++) {
 	    adc[pmNumber] += adcPedSub[iClock];
