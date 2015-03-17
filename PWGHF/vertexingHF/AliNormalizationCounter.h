@@ -65,6 +65,8 @@ class AliNormalizationCounter : public TNamed
   TH1D* DrawRatio(TString candle1="candid(filter)",TString candle2="triggered");
   void PrintRubrics();
   Double_t GetSum(TString candle="triggered");
+  Double_t GetSum(TString candle,Int_t minmultiplicity, Int_t maxmultiplicity);
+
   TH2F* GetHist(Bool_t filtercuts=kTRUE,Bool_t spdtracklets=kTRUE,Bool_t drawHist=kFALSE);
   Double_t GetNEventsForNorm();
   Double_t GetNEventsForNorm(Int_t runnumber);
