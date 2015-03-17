@@ -150,6 +150,7 @@ struct ProofRailway : public Railway
    * 
    * @param name   Name 
    * @param slaves If true, also load on slaves
+   * @param forcePar if true, force load as PAR 
    * 
    * @return true on success 
    */

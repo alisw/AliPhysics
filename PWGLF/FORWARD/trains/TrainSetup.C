@@ -884,12 +884,16 @@ protected:
 			     const OptionList* uopts)
   {
     std::ofstream o(Form("%s.sh", out.Data()));
+    TString url = opts.Get("url");
+    OptionList tmp(opts);
+    tmp.Set("url", "${url}");
     o << "#!/bin/bash\n\n"
       << "class=\"" << cls << "\"\n"
-      << "name=\"" << name << "\"\n\n"
+      << "name=\"" << name << "\"\n"
+      << "url=\"" << url << "\"\n\n" 
       << "# Available options\n"
       << "# \n";
-    opts.Help(o, "#    --");
+    tmp.Help(o, "#    --");
     if (uopts) {
       o << "#\n"
 	<< "# Available URI options\n"
@@ -899,7 +903,7 @@ protected:
     o << "#\n"
       << "opts=(--class=$class \\\n"
       << "  --name=$name";
-    opts.Store(o, " \\\n  --", "", true);
+    tmp.Store(o, " \\\n  --", "", true);
     o << ")\n\n"
       << "echo \"Running runTrain ${opts[@]} $@\"\n"
       << "runTrain \"${opts[@]}\" $@\n\n"
