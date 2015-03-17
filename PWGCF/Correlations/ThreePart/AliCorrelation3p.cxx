@@ -46,6 +46,7 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   , fMaxAssociatedPt(fMinTriggerPt)
   , fhPhiEtaDeltaPhi12Cut1(0.5*TMath::Pi())
   , fhPhiEtaDeltaPhi12Cut2(0.25*TMath::Pi())
+  , fAcceptanceCut(0.8)
   , fMixedEvent(NULL)
   , fMBinEdges(MBinEdges)
   , fZBinEdges(ZBinEdges)
@@ -68,6 +69,7 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fMaxAssociatedPt(other.fMaxAssociatedPt)
   , fhPhiEtaDeltaPhi12Cut1(other.fhPhiEtaDeltaPhi12Cut1)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
+  , fAcceptanceCut(other.fAcceptanceCut)  
   , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p(*other.fMixedEvent)):NULL))
   , fMBinEdges(other.fMBinEdges)
   , fZBinEdges(other.fZBinEdges)
@@ -210,11 +212,11 @@ int AliCorrelation3p::Init(const char* arguments)
     a->AddAt(new TH1D(GetNameHist("hApT"			     ,i,j),"Associated pT"					      			,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)),GetNumberHist(kHistAssociatedpT		,i,j));
     a->AddAt(new TH1D(GetNameHist("hAphi"			     ,i,j),"Associated phi"					      			,270,-.5*Pii ,2.5*Pii						       ),GetNumberHist(kHistAssociatedPhi		,i,j));
     a->AddAt(new TH1D(GetNameHist("hAeta"			     ,i,j),"Associated eta"					      			,100,-3.0    ,3.0						       ),GetNumberHist(kHistAssociatedEta		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hNAssoc"			     ,i,j),"Number of associated"							,1000,0	     ,2000						       ),GetNumberHist(kHistNassoc			,i,j));
+    a->AddAt(new TH1D(GetNameHist("hNAssoc"			     ,i,j),"Number of associated"							,1000,0	     ,5000						       ),GetNumberHist(kHistNassoc			,i,j));
     a->AddAt(new TH1D(GetNameHist("hNTriggers"                       ,i,j),"Number of triggers in this bin filled."                                     ,1   ,0      ,1                                                        ),GetNumberHist(kHistNTriggers                   ,i,j));
-    a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	     ,i,j),"#Delta#Phi vs #Delta#eta"				     			,63 ,-1.6,1.6    ,36	    ,-0.5*Pii,1.5*Pii			       ),GetNumberHist(khPhiEta				,i,j));//"classical" 2 particle correlation
-    a->AddAt(new TH3D(GetNameHist("hDeltaPhiVsDeltaPhiVsDeltaEta"    ,i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12}"                            ,63 ,-1.6,1.6    ,36        ,-0.5*Pii,1.5*Pii  ,36 ,-0.5*Pii,1.5*Pii   ),GetNumberHist(khPhiPhiDEta                     ,i,j));//3d, DPhiDPhiDEta
-    a->AddAt(new TH3D(GetNameHist("hDeltaPhiVsDeltaPhiVsDEtaScaled"  ,i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12} scaled with # associated"   ,63 ,-1.6,1.6    ,36        ,-0.5*Pii,1.5*Pii  ,36 ,-0.5*Pii,1.5*Pii   ),GetNumberHist(khPhiPhiDEtaScaled               ,i,j));//3d, DPhiDPhiDEta scaled
+    a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	     ,i,j),"#Delta#Phi vs #Delta#eta"				     			,63 ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut    ,36	  ,-0.5*Pii,1.5*Pii			       ),GetNumberHist(khPhiEta				,i,j));//"classical" 2 particle correlation
+    a->AddAt(new TH3D(GetNameHist("hDeltaPhiVsDeltaPhiVsDeltaEta"    ,i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12}"                            ,63 ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut    ,36        ,-0.5*Pii,1.5*Pii  ,36 ,-0.5*Pii,1.5*Pii   ),GetNumberHist(khPhiPhiDEta                     ,i,j));//3d, DPhiDPhiDEta
+    a->AddAt(new TH3D(GetNameHist("hDeltaPhiVsDeltaPhiVsDEtaScaled"  ,i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12} scaled with # associated"   ,63 ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut    ,36        ,-0.5*Pii,1.5*Pii  ,36 ,-0.5*Pii,1.5*Pii   ),GetNumberHist(khPhiPhiDEtaScaled               ,i,j));//3d, DPhiDPhiDEta scaled
     a->AddAt(new TH1D(GetNameHist("khQAtocheckadressing"             ,i,j),"Will be filled once per event. Should match the centvzbin histogram."       ,1  ,0 ,2                                                              ),GetNumberHist(khQAtocheckadressing             ,i,j));
     }
   }
@@ -285,6 +287,7 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
 {
   /// fill histograms from particles, fills each histogram exactly once.
   if (!ptrigger || !p1 || !p2) {cout << "failed fill"<<endl;return -EINVAL;}
+  if ((ptrigger->Pt()<=p1->Pt())||(ptrigger->Pt()<=p2->Pt())) {return 0;}
   const double Pii=TMath::Pi();
   HistFill(GetNumberHist(kHistNassoc,fMBin,fVzBin),weight);
   // phi difference associated 1 to trigger particle
@@ -301,6 +304,27 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
   }
   // eta difference
   Double_t DeltaEta12 = p1      ->Eta() - p2->Eta();
+  if(abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&abs(DeltaEta12)<1.0E-10) {
+    Double_t phi1=p1->Phi() ;
+    while(phi1<-0.5*Pii||phi1>1.5*Pii){
+      if (phi1<-0.5*Pii) phi1 += 2*Pii;
+      if (phi1>1.5*Pii)  phi1 -= 2*Pii;}
+//     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p1->Eta(),phi1);
+    return 0;}//Track duplicate, reject.
+  if(abs(p1->Eta()-ptrigger->Eta())<1.0E-10){
+    Double_t phi1=p1->Phi() ;
+    while(phi1<-0.5*Pii||phi1>1.5*Pii){
+      if (phi1<-0.5*Pii) phi1 += 2*Pii;
+      if (phi1>1.5*Pii)  phi1 -= 2*Pii;}
+//     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p1->Eta(),phi1);  
+    return 0;}//Track duplicate, reject.
+  if(abs(p2->Eta()-ptrigger->Eta())<1.0E-10){
+    Double_t phi2=p2->Phi() ;
+    while(phi2<-0.5*Pii||phi2>1.5*Pii){
+      if (phi2<-0.5*Pii) phi2 += 2*Pii;
+      if (phi2>1.5*Pii)  phi2 -= 2*Pii;}
+//     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p2->Eta(),phi2);  
+    return 0;}//Track duplicate, reject.
   HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2);
   if(weight>1)  HistFill(GetNumberHist(khPhiPhiDEtaScaled,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2,1.0/(weight-1));
   return 0;
@@ -310,6 +334,7 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
 {
   /// fill histograms from particles
   if (!ptrigger || !p1) return -EINVAL;
+  if (ptrigger->Pt()<=p1->Pt()) return 0;
   const double Pii=TMath::Pi();
   // phi difference associated  to trigger particle
   Double_t DeltaPhi = ptrigger->Phi() - p1->Phi();
@@ -609,6 +634,33 @@ TH2D* AliCorrelation3p::slice(TH3D* hist, const char* option, Int_t firstbin, In
   }  
   return Slice;
 }
+
+TH2D* AliCorrelation3p::DetaDphiAss(TH3D* hist, const char* name)
+{
+  Double_t Pii = TMath::Pi();
+  TH2D * DetaDphiAss = (TH2D*)hist->Project3D("yx")->Clone(name);DetaDphiAss->Reset("m");
+  for(int x = 1;x<hist->GetNbinsX();x++){for(int y=1;y<hist->GetNbinsY();y++){for(int z=1;z<hist->GetNbinsZ();z++){
+    Double_t content = hist->GetBinContent(x,y,z);
+    Double_t DPhi1 = hist->GetYaxis()->GetBinCenter(y);
+    Double_t DPhi2 = hist->GetZaxis()->GetBinCenter(z);
+    Double_t DPhi12 = DPhi1 - DPhi2;
+    while(DPhi12<-0.5*Pii||DPhi12>1.5*Pii){
+      if (DPhi12<-0.5*Pii) DPhi12 += 2*Pii;
+      if (DPhi12>1.5*Pii)  DPhi12 -= 2*Pii;
+    }
+    Int_t Dphibin = DetaDphiAss->GetYaxis()->FindBin(DPhi12);
+    content += DetaDphiAss->GetBinContent(x,Dphibin);
+    DetaDphiAss->SetBinContent(x,Dphibin,content);
+  }}}
+  for(int x = 1;x<DetaDphiAss->GetNbinsX();x++){for(int y=1;y<DetaDphiAss->GetNbinsY();y++){
+    Double_t content = DetaDphiAss->GetBinContent(x,y);
+    if(content<0.5){continue;}
+    Double_t error = 1.0/TMath::Sqrt(content);
+    DetaDphiAss->SetBinError(x,y,error);
+  }}
+  return DetaDphiAss;
+}
+
 
 TH2D* AliCorrelation3p::DeltaEtaCut(TH3D* hist, const char* option, const char* name, Bool_t baverage) const
 {
@@ -1027,18 +1079,40 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
 }
 
 
-int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
+int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,bool all)
 {//This function makes a new file that contains all the histograms in all versions possible.
   TFile * outfile;
   TString dir = TString(scalingmethod);
   TDirectory * mixeddir=NULL;
-  if(dir.CompareTo("")==0){ outfile = new TFile("results.root","RECREATE");outfile->cd();cout << "Recreate"<<endl;}
+  if(recreate){ outfile = new TFile("results.root","RECREATE");outfile->cd();cout << "Recreate"<<endl;}
   else{
     outfile = new TFile("results.root","UPDATE");
     mixeddir = outfile->mkdir(dir.Data());
     dir.Append("/");
     mixeddir->cd();
   }
+  if(TString("").CompareTo(scalingmethod)!=0){
+    if(dir.Contains("/")){
+      TObjArray *dirs=dir.Tokenize("/");
+      if(dirs->GetEntries()>0){
+	TDirectory * processdir;
+	processdir = outfile->GetDirectory((dirs->At(0))->GetName());
+	processdir->cd();
+	mixeddir = processdir->GetDirectory((dirs->At(1))->GetName());
+	if(mixeddir){processdir->rmdir((dirs->At(1))->GetName());}
+	mixeddir = processdir->mkdir((dirs->At(1))->GetName());	
+	mixeddir->cd();
+      }
+    }
+    else{
+      mixeddir = outfile->GetDirectory(dir.Data());
+      if(mixeddir) outfile->rmdir(dir.Data());
+      mixeddir = outfile->mkdir(dir.Data());
+      dir.Append("/");
+      mixeddir->cd();
+    }
+  }
+  
   TDirectory * dirmzbin = NULL;
   TDirectory * binstats = NULL;
   TDirectory * dirmzbinsig=NULL;
@@ -1055,6 +1129,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
   Double_t navm, nav;
   Long_t NTriggers=0;
   Bool_t setAverage = kTRUE;  
+  
   for(int mb =0;mb<fMBinEdges.GetSize()-1;mb++){
     for(int zb=0;zb<fZBinEdges.GetSize()-1;zb++){
       if(mixeddir) mixeddir->cd();
@@ -1071,6 +1146,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	savehist1->GetXaxis()->SetTitle("pT [GeV/c]");
 	savehist1->GetYaxis()->SetTitle("# particles");
 	savehist1->Write();
+
 	if(mb == 0&&zb == 0)HistpT = savehist1;
 	else HistpT->Add(savehist1);
 	TH1D* savehist2 = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistPhi,mb,zb))->Clone("total_Phi"));
@@ -1133,6 +1209,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	tempcanvas->Write();
 	delete tempcanvas;
 	tempcanvas=NULL;
+	if(!(mb==0&&zb==0)){delete savehist1;delete savehist2;delete savehist3;delete savehist4;delete savehist5;delete savehist6;delete savehist7;delete savehist8;delete savehist9;}
 	
 	TH1D* savehist = dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kHistNassoc,mb,zb))->Clone("number_of_associated"));
 	savehist->SetTitle("Number of associated per trigger");
@@ -1165,6 +1242,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	savehist->GetXaxis()->SetTitle("");
 	savehist->GetYaxis()->SetTitle("# triggers");
 	savehist->Write();
+	delete savehist;
       }
 /////////same event histograms
 	dirmzbinsig->cd();
@@ -1182,15 +1260,28 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	DPHIDPHIDETA->SetTitleOffset(1.2,"xy");
 	DPHIDPHIDETA->SetTitleOffset(0.9,"z");
 	DPHIDPHIDETA->Write();
-	TH3D* DPHIDPHIDETAscaled = dynamic_cast<TH3D*>(fHistograms->At(GetNumberHist(khPhiPhiDEtaScaled,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12scaled"));
-	DPHIDPHIDETAscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
-	DPHIDPHIDETAscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	DPHIDPHIDETAscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	DPHIDPHIDETAscaled->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	DPHIDPHIDETAscaled->SetTitleSize(0.045,"xyz");
-	DPHIDPHIDETAscaled->SetTitleOffset(1.2,"xy");
-	DPHIDPHIDETAscaled->SetTitleOffset(0.9,"z");
-	DPHIDPHIDETAscaled->Write();
+	
+	TH2D* DPhi12DEta12 = DetaDphiAss(DPHIDPHIDETA,"DPhi_12_DEta_12");
+	DPhi12DEta12->SetTitle("#Delta#Phi_{12} vs #Delta#eta_{12}");
+	DPhi12DEta12->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	DPhi12DEta12->GetYaxis()->SetTitle("#Delta#Phi_{12} [rad]");
+	DPhi12DEta12->SetTitleSize(0.045,"xyz");
+	DPhi12DEta12->SetTitleOffset(1.2,"xy");
+	DPhi12DEta12->SetTitleOffset(0.9,"z");
+	DPhi12DEta12->Write();
+	
+	TH3D* DPHIDPHIDETAscaled;
+	if(all){
+	  DPHIDPHIDETAscaled= dynamic_cast<TH3D*>(fHistograms->At(GetNumberHist(khPhiPhiDEtaScaled,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12scaled"));
+	  DPHIDPHIDETAscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
+	  DPHIDPHIDETAscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	  DPHIDPHIDETAscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	  DPHIDPHIDETAscaled->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	  DPHIDPHIDETAscaled->SetTitleSize(0.045,"xyz");
+	  DPHIDPHIDETAscaled->SetTitleOffset(1.2,"xy");
+	  DPHIDPHIDETAscaled->SetTitleOffset(0.9,"z");
+	  DPHIDPHIDETAscaled->Write();
+	}
 /////////DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3 = slice(DPHIDPHIDETA,"yz",1,DPHIDPHIDETA->GetNbinsX(),"DPhi_1_DPHI_2",kFALSE);
 	  DPHIDPHI3->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
@@ -1200,14 +1291,17 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  DPHIDPHI3->SetTitleSize(0.045,"xyz");
 	  DPHIDPHI3->SetTitleOffset(1.2,"xyz");
 	  DPHIDPHI3->Write();
-	  TH2D* DPHIDPHI3scaled = slice(DPHIDPHIDETAscaled,"yz",1,DPHIDPHIDETA->GetNbinsX(),"DPhi_1_DPHI_2_scaled",kFALSE);
-	  DPHIDPHI3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
-	  DPHIDPHI3scaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3scaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3scaled->GetZaxis()->SetTitle("# Associated");
-	  DPHIDPHI3scaled->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3scaled->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3scaled->Write();
+	  TH2D* DPHIDPHI3scaled;
+	  if(all){
+	    DPHIDPHI3scaled = slice(DPHIDPHIDETAscaled,"yz",1,DPHIDPHIDETA->GetNbinsX(),"DPhi_1_DPHI_2_scaled",kFALSE);
+	    DPHIDPHI3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
+	    DPHIDPHI3scaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3scaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3scaled->GetZaxis()->SetTitle("# Associated");
+	    DPHIDPHI3scaled->SetTitleSize(0.045,"xyz");
+	    DPHIDPHI3scaled->SetTitleOffset(1.2,"xyz");
+	    DPHIDPHI3scaled->Write();
+	  }
 	  TH2D* DPHIDPHI3near = slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-0.4),DPHIDPHIDETA->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near",kFALSE);
 	  DPHIDPHI3near->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
 	  DPHIDPHI3near->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
@@ -1216,14 +1310,17 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  DPHIDPHI3near->SetTitleSize(0.045,"xyz");
 	  DPHIDPHI3near->SetTitleOffset(1.2,"xyz");
 	  DPHIDPHI3near->Write();
-	  TH2D* DPHIDPHI3nearscaled = slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-0.4),DPHIDPHIDETA->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near_scaled",kFALSE);
-	  DPHIDPHI3nearscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
-	  DPHIDPHI3nearscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3nearscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3nearscaled->GetZaxis()->SetTitle("# Associated");
-	  DPHIDPHI3nearscaled->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3nearscaled->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3nearscaled->Write();
+	  TH2D* DPHIDPHI3nearscaled;
+	  if(all){
+	    DPHIDPHI3nearscaled = slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-0.4),DPHIDPHIDETA->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near_scaled",kFALSE);
+	    DPHIDPHI3nearscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
+	    DPHIDPHI3nearscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3nearscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3nearscaled->GetZaxis()->SetTitle("# Associated");
+	    DPHIDPHI3nearscaled->SetTitleSize(0.045,"xyz");
+	    DPHIDPHI3nearscaled->SetTitleOffset(1.2,"xyz");
+	    DPHIDPHI3nearscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3mid = slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-1),DPHIDPHIDETA->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid",kFALSE);
 	  DPHIDPHI3mid->Add(slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETA->GetXaxis()->FindBin(1),"temphist1",kFALSE));
 	  DPHIDPHI3mid->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
@@ -1233,15 +1330,18 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  DPHIDPHI3mid->SetTitleSize(0.045,"xyz");
 	  DPHIDPHI3mid->SetTitleOffset(1.2,"xyz");
 	  DPHIDPHI3mid->Write();
-	  TH2D* DPHIDPHI3midscaled = slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-1),DPHIDPHIDETA->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid_scaled",kFALSE);
-	  DPHIDPHI3midscaled->Add(slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETA->GetXaxis()->FindBin(1),"temphist3",kFALSE));
-	  DPHIDPHI3midscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
-	  DPHIDPHI3midscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3midscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3midscaled->GetZaxis()->SetTitle("# Associated");
-	  DPHIDPHI3midscaled->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3midscaled->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3midscaled->Write();
+	  TH2D* DPHIDPHI3midscaled;
+	  if(all){
+	    DPHIDPHI3midscaled = slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(-1),DPHIDPHIDETA->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid_scaled",kFALSE);
+	    DPHIDPHI3midscaled->Add(slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETA->GetXaxis()->FindBin(1),"temphist3",kFALSE));
+	    DPHIDPHI3midscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
+	    DPHIDPHI3midscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3midscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3midscaled->GetZaxis()->SetTitle("# Associated");
+	    DPHIDPHI3midscaled->SetTitleSize(0.045,"xyz");
+	    DPHIDPHI3midscaled->SetTitleOffset(1.2,"xyz");
+	    DPHIDPHI3midscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3far = slice(DPHIDPHIDETA,"yz",1,DPHIDPHIDETA->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
 	  DPHIDPHI3far->Add(slice(DPHIDPHIDETA,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist2",kFALSE));
 	  DPHIDPHI3far->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
@@ -1251,21 +1351,26 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  DPHIDPHI3far->SetTitleSize(0.045,"xyz");
 	  DPHIDPHI3far->SetTitleOffset(1.2,"xyz");
 	  DPHIDPHI3far->Write();      
-	  TH2D* DPHIDPHI3farscaled = slice(DPHIDPHIDETAscaled,"yz",1,DPHIDPHIDETA->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far_scaled",kFALSE);
-	  DPHIDPHI3farscaled->Add(slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist4",kFALSE));
-	  DPHIDPHI3farscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
-	  DPHIDPHI3farscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3farscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3farscaled->GetZaxis()->SetTitle("# Associated");
-	  DPHIDPHI3farscaled->SetTitleSize(0.045,"xyz");
-	  DPHIDPHI3farscaled->SetTitleOffset(1.2,"xyz");
-	  DPHIDPHI3farscaled->Write();      
+	  TH2D* DPHIDPHI3farscaled;
+	  if(all){
+	    DPHIDPHI3farscaled = slice(DPHIDPHIDETAscaled,"yz",1,DPHIDPHIDETA->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far_scaled",kFALSE);
+	    DPHIDPHI3farscaled->Add(slice(DPHIDPHIDETAscaled,"yz",DPHIDPHIDETA->GetXaxis()->FindBin(1)+1,DPHIDPHIDETA->GetNbinsX(),"temphist4",kFALSE));
+	    DPHIDPHI3farscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
+	    DPHIDPHI3farscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3farscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3farscaled->GetZaxis()->SetTitle("# Associated");
+	    DPHIDPHI3farscaled->SetTitleSize(0.045,"xyz");
+	    DPHIDPHI3farscaled->SetTitleOffset(1.2,"xyz");
+	    DPHIDPHI3farscaled->Write();      
+	  }
 	  tempcanvas= Makecanvas(DPHIDPHI3,DPHIDPHI3near,DPHIDPHI3mid,DPHIDPHI3far,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  tempcanvas= Makecanvas(DPHIDPHI3scaled,DPHIDPHI3nearscaled,DPHIDPHI3midscaled,DPHIDPHI3farscaled,"DPHIDPHIscaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;	  
+	  if(all){
+	    tempcanvas= Makecanvas(DPHIDPHI3scaled,DPHIDPHI3nearscaled,DPHIDPHI3midscaled,DPHIDPHI3farscaled,"DPHIDPHIscaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;	  
+	  }
 /////////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
 	  DPHIDETA12_3->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
@@ -1278,17 +1383,20 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  TH2D* DPHIDETA12_3scaled = slice(DPHIDPHIDETAscaled,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12_scaled",kFALSE);
-	  DPHIDETA12_3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
-	  DPHIDETA12_3scaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12_3scaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12_3scaled->GetZaxis()->SetTitle("# Associated");
-	  DPHIDETA12_3scaled->SetTitleSize(0.045,"xyz");
-	  DPHIDETA12_3scaled->SetTitleOffset(1.2,"xyz");
-	  DPHIDETA12_3scaled->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12_3scaled,"DPHIDEta12_scaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+	  TH2D* DPHIDETA12_3scaled;
+	  if(all){
+	    DPHIDETA12_3scaled= slice(DPHIDPHIDETAscaled,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12_scaled",kFALSE);
+	    DPHIDETA12_3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
+	    DPHIDETA12_3scaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	    DPHIDETA12_3scaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDETA12_3scaled->GetZaxis()->SetTitle("# Associated");
+	    DPHIDETA12_3scaled->SetTitleSize(0.045,"xyz");
+	    DPHIDETA12_3scaled->SetTitleOffset(1.2,"xyz");
+	    DPHIDETA12_3scaled->Write();
+	    tempcanvas= Makecanvas(DPHIDETA12_3scaled,"DPHIDEta12_scaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	  }
 	  TH2D* DPHIDETA12DPHI12L2PI_3 = DeltaEtaCut(DPHIDPHIDETA,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
 	  DPHIDETA12DPHI12L2PI_3->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi");
 	  DPHIDETA12DPHI12L2PI_3->GetXaxis()->SetTitle("#Delta#eta_{12} []");
@@ -1322,17 +1430,20 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3,"DPHIDEta12_SameSide_3d",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  TH2D* DPHIDETA12SameSide_3scaled =DeltaEtaCut(DPHIDPHIDETAscaled,"sameside","DPhi_1_DEta_12_SameSide_scaled",kFALSE);
-	  DPHIDETA12SameSide_3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
-	  DPHIDETA12SameSide_3scaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12SameSide_3scaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12SameSide_3scaled->GetZaxis()->SetTitle("# Associated");
-	  DPHIDETA12SameSide_3scaled->SetTitleSize(0.045,"xyz");
-	  DPHIDETA12SameSide_3scaled->SetTitleOffset(1.2,"xyz");
-	  DPHIDETA12SameSide_3scaled->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3scaled,"DPHIDEta12_SameSide_scaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+	  TH2D* DPHIDETA12SameSide_3scaled;	  
+	  if(all){
+	    DPHIDETA12SameSide_3scaled =DeltaEtaCut(DPHIDPHIDETAscaled,"sameside","DPhi_1_DEta_12_SameSide_scaled",kFALSE);
+	    DPHIDETA12SameSide_3scaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
+	    DPHIDETA12SameSide_3scaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	    DPHIDETA12SameSide_3scaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDETA12SameSide_3scaled->GetZaxis()->SetTitle("# Associated");
+	    DPHIDETA12SameSide_3scaled->SetTitleSize(0.045,"xyz");
+	    DPHIDETA12SameSide_3scaled->SetTitleOffset(1.2,"xyz");
+	    DPHIDETA12SameSide_3scaled->Write();
+	    tempcanvas= Makecanvas(DPHIDETA12SameSide_3scaled,"DPHIDEta12_SameSide_scaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	  }
 	  TH2D* DPHIDETA = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
 	  DPHIDETA->SetTitle("#Delta#Phi vs #Delta#eta");
 	  DPHIDETA->GetXaxis()->SetTitle("#Delta#eta []");
@@ -1362,15 +1473,29 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	DPHIDPHIDETAm->SetTitleOffset(1.2,"xy");
 	DPHIDPHIDETAm->SetTitleOffset(0.9,"z");
 	DPHIDPHIDETAm->Write();
-	TH3D* DPHIDPHIDETAmscaled = dynamic_cast<TH3D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiPhiDEtaScaled,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12scaled"));
-	DPHIDPHIDETAmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
-	DPHIDPHIDETAmscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	DPHIDPHIDETAmscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	DPHIDPHIDETAmscaled->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	DPHIDPHIDETAmscaled->SetTitleSize(0.045,"xyz");
-	DPHIDPHIDETAmscaled->SetTitleOffset(1.2,"xy");
-	DPHIDPHIDETAmscaled->SetTitleOffset(0.9,"z");
-	DPHIDPHIDETAmscaled->Write();
+	
+	TH2D* DPhi12DEta12m = DetaDphiAss(DPHIDPHIDETAm,"DPhi_12_DEta_12");
+	DPhi12DEta12m->SetTitle("#Delta#Phi_{12} vs #Delta#eta_{12}");
+	DPhi12DEta12m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	DPhi12DEta12m->GetYaxis()->SetTitle("#Delta#Phi_{12} [rad]");
+	DPhi12DEta12m->SetTitleSize(0.045,"xyz");
+	DPhi12DEta12m->SetTitleOffset(1.2,"xy");
+	DPhi12DEta12m->SetTitleOffset(0.9,"z");
+	if(GetPoint(DPhi12DEta12m,0.0,0.0)>LeastContent){DPhi12DEta12m->Scale(1.0/GetPoint(DPhi12DEta12m,0.0,0.0));}
+	DPhi12DEta12m->Write();
+	
+	TH3D* DPHIDPHIDETAmscaled;
+	if(all){
+	  DPHIDPHIDETAmscaled = dynamic_cast<TH3D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiPhiDEtaScaled,mb,zb))->Clone("DPhi_1_DPhi_2_DEta_12scaled"));
+	  DPHIDPHIDETAmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} vs #Delta#eta_{12}");
+	  DPHIDPHIDETAmscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	  DPHIDPHIDETAmscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	  DPHIDPHIDETAmscaled->GetZaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	  DPHIDPHIDETAmscaled->SetTitleSize(0.045,"xyz");
+	  DPHIDPHIDETAmscaled->SetTitleOffset(1.2,"xy");
+	  DPHIDPHIDETAmscaled->SetTitleOffset(0.9,"z");
+	  DPHIDPHIDETAmscaled->Write();
+	}
 //////////DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3m = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetNbinsX(),"DPhi_1_DPHI_2",kFALSE);
 	  DPHIDPHI3m->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
@@ -1382,16 +1507,19 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  if(GetPoint(DPHIDPHI3m,0.0,0.0)>LeastContent){DPHIDPHI3m->Scale(1.0/GetPoint(DPHIDPHI3m,0.0,0.0));}
 	  else DPHIDPHI3m->Scale(0.0);
 	  DPHIDPHI3m->Write();
-	  TH2D* DPHIDPHI3mscaled = slice(DPHIDPHIDETAmscaled,"yz",1,DPHIDPHIDETAmscaled->GetNbinsX(),"DPhi_1_DPHI_2_scaled",kFALSE);
-	  DPHIDPHI3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
-	  DPHIDPHI3mscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3mscaled->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3mscaled->SetTitleOffset(1.2,"xy");
-	  //Scaling
-  	  if(GetPoint(DPHIDPHI3mscaled,0.0,0.0)>LeastContent){DPHIDPHI3mscaled->Scale(1.0/GetPoint(DPHIDPHI3mscaled,0.0,0.0));}
-	  else DPHIDPHI3mscaled->Scale(0.0);
-	  DPHIDPHI3mscaled->Write();
+	  TH2D* DPHIDPHI3mscaled;
+	  if(all){
+	    DPHIDPHI3mscaled = slice(DPHIDPHIDETAmscaled,"yz",1,DPHIDPHIDETAmscaled->GetNbinsX(),"DPhi_1_DPHI_2_scaled",kFALSE);
+	    DPHIDPHI3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2}");
+	    DPHIDPHI3mscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3mscaled->SetTitleSize(0.045,"xy");
+	    DPHIDPHI3mscaled->SetTitleOffset(1.2,"xy");
+	    //Scaling
+	    if(GetPoint(DPHIDPHI3mscaled,0.0,0.0)>LeastContent){DPHIDPHI3mscaled->Scale(1.0/GetPoint(DPHIDPHI3mscaled,0.0,0.0));}
+	    else DPHIDPHI3mscaled->Scale(0.0);
+	    DPHIDPHI3mscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3nearm = slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4),DPHIDPHIDETAm->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near",kFALSE);
 	  DPHIDPHI3nearm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
 	  DPHIDPHI3nearm->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
@@ -1402,16 +1530,19 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  if(GetPoint(DPHIDPHI3nearm,0.0,0.0)>LeastContent){DPHIDPHI3nearm->Scale(1.0/GetPoint(DPHIDPHI3nearm,0.0,0.0));}
 	  else DPHIDPHI3nearm->Scale(0.0);	  
 	  DPHIDPHI3nearm->Write();
-	  TH2D* DPHIDPHI3nearmscaled = slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4),DPHIDPHIDETAm->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near_scaled",kFALSE);
-	  DPHIDPHI3nearmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
-	  DPHIDPHI3nearmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3nearmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3nearmscaled->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3nearmscaled->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3nearmscaled,0.0,0.0)>LeastContent){DPHIDPHI3nearmscaled->Scale(1.0/GetPoint(DPHIDPHI3nearmscaled,0.0,0.0));}
-	  else DPHIDPHI3nearmscaled->Scale(0.0);
-	  DPHIDPHI3nearmscaled->Write();
+	  TH2D* DPHIDPHI3nearmscaled;
+	  if(all){
+	    DPHIDPHI3nearmscaled = slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4),DPHIDPHIDETAm->GetXaxis()->FindBin(0.4),"DPhi_1_DPHI_2_near_scaled",kFALSE);
+	    DPHIDPHI3nearmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}<=0.4");
+	    DPHIDPHI3nearmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3nearmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3nearmscaled->SetTitleSize(0.045,"xy");
+	    DPHIDPHI3nearmscaled->SetTitleOffset(1.2,"xy");
+	    //Scaling
+	    if(GetPoint(DPHIDPHI3nearmscaled,0.0,0.0)>LeastContent){DPHIDPHI3nearmscaled->Scale(1.0/GetPoint(DPHIDPHI3nearmscaled,0.0,0.0));}
+	    else DPHIDPHI3nearmscaled->Scale(0.0);
+	    DPHIDPHI3nearmscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3midm = slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-1),DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid",kFALSE);
 	  DPHIDPHI3midm->Add(slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist1",kFALSE));
 	  DPHIDPHI3midm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
@@ -1423,17 +1554,20 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  if(GetPoint(DPHIDPHI3midm,0.0,0.0)>LeastContent){DPHIDPHI3midm->Scale(1.0/GetPoint(DPHIDPHI3midm,0.0,0.0));}
 	  else DPHIDPHI3midm->Scale(0.0);
 	  DPHIDPHI3midm->Write();
-	  TH2D* DPHIDPHI3midmscaled = slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-1),DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid_scaled",kFALSE);
-	  DPHIDPHI3midmscaled->Add(slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist3",kFALSE));
-	  DPHIDPHI3midmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
-	  DPHIDPHI3midmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3midmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3midmscaled->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3midmscaled->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3midmscaled,0.0,0.0)>LeastContent){DPHIDPHI3midmscaled->Scale(1.0/GetPoint(DPHIDPHI3midmscaled,0.0,0.0));}
-	  else DPHIDPHI3midmscaled->Scale(0.0);	  
-	  DPHIDPHI3midmscaled->Write();
+	  TH2D* DPHIDPHI3midmscaled;
+	  if(all){
+	    DPHIDPHI3midmscaled = slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(-1),DPHIDPHIDETAm->GetXaxis()->FindBin(-0.4)-1,"DPhi_1_DPHI_2_mid_scaled",kFALSE);
+	    DPHIDPHI3midmscaled->Add(slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(0.4)+1,DPHIDPHIDETAm->GetXaxis()->FindBin(1),"temphist3",kFALSE));
+	    DPHIDPHI3midmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for 0.4<#Delta#eta_{12}<=1");
+	    DPHIDPHI3midmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3midmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3midmscaled->SetTitleSize(0.045,"xy");
+	    DPHIDPHI3midmscaled->SetTitleOffset(1.2,"xy");
+	    //Scaling
+	    if(GetPoint(DPHIDPHI3midmscaled,0.0,0.0)>LeastContent){DPHIDPHI3midmscaled->Scale(1.0/GetPoint(DPHIDPHI3midmscaled,0.0,0.0));}
+	    else DPHIDPHI3midmscaled->Scale(0.0);	  
+	    DPHIDPHI3midmscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3farm = slice(DPHIDPHIDETAm,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far",kFALSE);
 	  DPHIDPHI3farm->Add(slice(DPHIDPHIDETAm,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist2",kFALSE));
 	  DPHIDPHI3farm->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
@@ -1445,23 +1579,28 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  if(GetPoint(DPHIDPHI3farm,0.0,0.0)>LeastContent){DPHIDPHI3farm->Scale(1.0/GetPoint(DPHIDPHI3farm,0.0,0.0));}
 	  else DPHIDPHI3farm->Scale(0.0);	  
 	  DPHIDPHI3farm->Write();      
-	  TH2D* DPHIDPHI3farmscaled = slice(DPHIDPHIDETAmscaled,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far_scaled",kFALSE);
-	  DPHIDPHI3farmscaled->Add(slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist4",kFALSE));
-	  DPHIDPHI3farmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
-	  DPHIDPHI3farmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDPHI3farmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
-	  DPHIDPHI3farmscaled->SetTitleSize(0.045,"xy");
-	  DPHIDPHI3farmscaled->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDPHI3farmscaled,0.0,0.0)>LeastContent){DPHIDPHI3farmscaled->Scale(1.0/GetPoint(DPHIDPHI3farmscaled,0.0,0.0));}
-	  else DPHIDPHI3farmscaled->Scale(0.0);	
-	  DPHIDPHI3farmscaled->Write();      
+	  TH2D* DPHIDPHI3farmscaled;
+	  if(all){
+	    DPHIDPHI3farmscaled = slice(DPHIDPHIDETAmscaled,"yz",1,DPHIDPHIDETAm->GetXaxis()->FindBin(-1)-1,"DPhi_1_DPHI_2_far_scaled",kFALSE);
+	    DPHIDPHI3farmscaled->Add(slice(DPHIDPHIDETAmscaled,"yz",DPHIDPHIDETAm->GetXaxis()->FindBin(1)+1,DPHIDPHIDETAm->GetNbinsX(),"temphist4",kFALSE));
+	    DPHIDPHI3farmscaled->SetTitle("#Delta#Phi_{1} vs #Delta#Phi_{2} for #Delta#eta_{12}>1");
+	    DPHIDPHI3farmscaled->GetXaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDPHI3farmscaled->GetYaxis()->SetTitle("#Delta#Phi_{2} [rad]");
+	    DPHIDPHI3farmscaled->SetTitleSize(0.045,"xy");
+	    DPHIDPHI3farmscaled->SetTitleOffset(1.2,"xy");
+	    //Scaling
+	    if(GetPoint(DPHIDPHI3farmscaled,0.0,0.0)>LeastContent){DPHIDPHI3farmscaled->Scale(1.0/GetPoint(DPHIDPHI3farmscaled,0.0,0.0));}
+	    else DPHIDPHI3farmscaled->Scale(0.0);	
+	    DPHIDPHI3farmscaled->Write();      
+	  }
 	  tempcanvas= Makecanvas(DPHIDPHI3m,DPHIDPHI3nearm,DPHIDPHI3midm,DPHIDPHI3farm,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  tempcanvas= Makecanvas(DPHIDPHI3mscaled,DPHIDPHI3nearmscaled,DPHIDPHI3midmscaled,DPHIDPHI3farmscaled,"DPHIDPHIscaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;	  
+	  if(all){
+	    tempcanvas= Makecanvas(DPHIDPHI3mscaled,DPHIDPHI3nearmscaled,DPHIDPHI3midmscaled,DPHIDPHI3farmscaled,"DPHIDPHIscaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;	  
+	  }
 /////////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
 // 	  DPHIDETA12_3m->Sumw2();
@@ -1477,22 +1616,25 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  TH2D* DPHIDETA12_3mscaled = slice(DPHIDPHIDETAmscaled,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12_scaled",kFALSE);
-	  DPHIDETA12_3mscaled->Sumw2();
-	  DPHIDETA12_3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
-	  DPHIDETA12_3mscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12_3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12_3mscaled->SetTitleSize(0.045,"xy");
-	  DPHIDETA12_3mscaled->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETA12_3mscaled,0.0,0.0)>LeastContent){DPHIDETA12_3mscaled->Scale(1.0/GetPoint(DPHIDETA12_3mscaled,0.0,0.0));}
-	  else DPHIDETA12_3mscaled->Scale(0.0);	  
-	  DPHIDETA12_3mscaled->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12_3mscaled,"DPHIDEta12_scaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+	  TH2D* DPHIDETA12_3mscaled;
+	  if(all){
+	    DPHIDETA12_3mscaled = slice(DPHIDPHIDETAmscaled,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12_scaled",kFALSE);
+// 	    DPHIDETA12_3mscaled->Sumw2();
+	    DPHIDETA12_3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12}");
+	    DPHIDETA12_3mscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	    DPHIDETA12_3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDETA12_3mscaled->SetTitleSize(0.045,"xy");
+	    DPHIDETA12_3mscaled->SetTitleOffset(1.2,"xy");
+	    //Scaling
+	    if(GetPoint(DPHIDETA12_3mscaled,0.0,0.0)>LeastContent){DPHIDETA12_3mscaled->Scale(1.0/GetPoint(DPHIDETA12_3mscaled,0.0,0.0));}
+	    else DPHIDETA12_3mscaled->Scale(0.0);	  
+	    DPHIDETA12_3mscaled->Write();
+	    tempcanvas= Makecanvas(DPHIDETA12_3mscaled,"DPHIDEta12_scaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	  }
 	  TH2D* DPHIDETA12DPHI12L2PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-	  DPHIDETA12DPHI12L2PI_3m->Sumw2();
+// 	  DPHIDETA12DPHI12L2PI_3m->Sumw2();
 	  DPHIDETA12DPHI12L2PI_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi");
 	  DPHIDETA12DPHI12L2PI_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
 	  DPHIDETA12DPHI12L2PI_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
@@ -1506,7 +1648,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHIDETA12DPHI12L4PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-	  DPHIDETA12DPHI12L4PI_3m->Sumw2();
+// 	  DPHIDETA12DPHI12L4PI_3m->Sumw2();
 	  DPHIDETA12DPHI12L4PI_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi");
 	  DPHIDETA12DPHI12L4PI_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
 	  DPHIDETA12DPHI12L4PI_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
@@ -1520,7 +1662,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3m =DeltaEtaCut(DPHIDPHIDETAm,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
-	  DPHIDETA12SameSide_3m->Sumw2();
+// 	  DPHIDETA12SameSide_3m->Sumw2();
 	  DPHIDETA12SameSide_3m->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
 	  DPHIDETA12SameSide_3m->GetXaxis()->SetTitle("#Delta#eta_{12} []");
 	  DPHIDETA12SameSide_3m->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
@@ -1533,22 +1675,25 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3m,"DPHIDEta12_SameSide",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  TH2D* DPHIDETA12SameSide_3mscaled =DeltaEtaCut(DPHIDPHIDETAmscaled,"sameside","DPhi_1_DEta_12_SameSide_scaled",kFALSE);
-	  DPHIDETA12SameSide_3mscaled->Sumw2();
-	  DPHIDETA12SameSide_3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
-	  DPHIDETA12SameSide_3mscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
-	  DPHIDETA12SameSide_3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
-	  DPHIDETA12SameSide_3mscaled->SetTitleSize(0.045,"xy");
-	  DPHIDETA12SameSide_3mscaled->SetTitleOffset(1.2,"xy");
-	  //Scaling
-	  if(GetPoint(DPHIDETA12SameSide_3mscaled,0.0,0.0)>LeastContent){DPHIDETA12SameSide_3mscaled->Scale(1.0/GetPoint(DPHIDETA12SameSide_3mscaled,0.0,0.0));}
-	  else DPHIDETA12SameSide_3mscaled->Scale(0.0);	  
-	  DPHIDETA12SameSide_3mscaled->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3mscaled,"DPHIDEta12_SameSide_scaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;	  
+	  TH2D* DPHIDETA12SameSide_3mscaled;
+	  if(all){
+	    DPHIDETA12SameSide_3mscaled=DeltaEtaCut(DPHIDPHIDETAmscaled,"sameside","DPhi_1_DEta_12_SameSide_scaled",kFALSE);
+// 	    DPHIDETA12SameSide_3mscaled->Sumw2();
+	    DPHIDETA12SameSide_3mscaled->SetTitle("#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side");
+	    DPHIDETA12SameSide_3mscaled->GetXaxis()->SetTitle("#Delta#eta_{12} []");
+	    DPHIDETA12SameSide_3mscaled->GetYaxis()->SetTitle("#Delta#Phi_{1} [rad]");
+	    DPHIDETA12SameSide_3mscaled->SetTitleSize(0.045,"xy");
+	    DPHIDETA12SameSide_3mscaled->SetTitleOffset(1.2,"xy");
+	    //Scaling
+	    if(GetPoint(DPHIDETA12SameSide_3mscaled,0.0,0.0)>LeastContent){DPHIDETA12SameSide_3mscaled->Scale(1.0/GetPoint(DPHIDETA12SameSide_3mscaled,0.0,0.0));}
+	    else DPHIDETA12SameSide_3mscaled->Scale(0.0);	  
+	    DPHIDETA12SameSide_3mscaled->Write();
+	    tempcanvas= Makecanvas(DPHIDETA12SameSide_3mscaled,"DPHIDEta12_SameSide_scaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	  }	  
 	  TH2D* DPHIDETAm = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEta,mb,zb))->Clone("DPhi_DEta"));
-	  DPHIDETAm->Sumw2();
+// 	  DPHIDETAm->Sumw2();
 	  DPHIDETAm->SetTitle("#Delta#Phi vs #Delta#eta");
 	  DPHIDETAm->GetXaxis()->SetTitle("#Delta#eta []");
 	  DPHIDETAm->GetYaxis()->SetTitle("#Delta#Phi [rad]");
@@ -1573,185 +1718,241 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
 	TH1D* scalinghistdiv = (TH1D*)scalinghist->Clone("number_of_triggers");
 	scalinghistdiv->Divide(scalinghistm);
 	scalinghistdiv->Write();
+	delete scalinghistdiv;
  	TH3D* DPHIDPHIDETAdiv = (TH3D*)DPHIDPHIDETA->Clone("DPhi_1_DPhi_2_DEta_12");
 	DPHIDPHIDETAdiv->Divide(DPHIDPHIDETAm);
 	if(setAverage)DPHIDPHIDETAdiv->Scale(resultscalingfactor);
 	DPHIDPHIDETAdiv->Write();
-	DPHIDPHIDETAdiv->SetBit(TH3D::kIsAverage,setAverage);
-	if(!hPhiPhiDEtadiv) hPhiPhiDEtadiv=DPHIDPHIDETAdiv;
-	else AddHists(setAverage,hPhiPhiDEtadiv,DPHIDPHIDETAdiv);
-	DPHIDPHIDETAdiv->SetBit(TH3D::kIsAverage,kFALSE);
-	TH3D* DPHIDPHIDETAdivscaled = (TH3D*)DPHIDPHIDETAscaled->Clone("DPhi_1_DPhi_2_DEta_12scaled");
-	DPHIDPHIDETAdivscaled->Divide(DPHIDPHIDETAm);
-	if(setAverage)DPHIDPHIDETAdivscaled->Scale(resultscalingfactor);
-	DPHIDPHIDETAdivscaled->Write();
-	DPHIDPHIDETAdivscaled->SetBit(TH3D::kIsAverage,setAverage);
-	if(!hPhiPhiDEtadivscaled) hPhiPhiDEtadivscaled=DPHIDPHIDETAdivscaled;
-	else AddHists(setAverage,hPhiPhiDEtadivscaled,DPHIDPHIDETAdivscaled);
-	DPHIDPHIDETAdivscaled->SetBit(TH3D::kIsAverage,kFALSE);
+	delete DPHIDPHIDETAdiv;
+// 	DPHIDPHIDETAdiv->SetBit(TH3D::kIsAverage,setAverage);
+// 	if(!hPhiPhiDEtadiv) hPhiPhiDEtadiv=DPHIDPHIDETAdiv;
+// 	else AddHists(setAverage,hPhiPhiDEtadiv,DPHIDPHIDETAdiv);
+// 	DPHIDPHIDETAdiv->SetBit(TH3D::kIsAverage,kFALSE);
+	TH2D* DPhi12DEta12div = (TH2D*)DPhi12DEta12->Clone("DPhi_12_DEta_12");
+	DPhi12DEta12div->Divide(DPhi12DEta12m);
+	DPhi12DEta12div->Write();
+	delete DPhi12DEta12div;
+	TH3D* DPHIDPHIDETAdivscaled;
+	if(all){
+	  DPHIDPHIDETAdivscaled= (TH3D*)DPHIDPHIDETAscaled->Clone("DPhi_1_DPhi_2_DEta_12scaled");
+	  DPHIDPHIDETAdivscaled->Divide(DPHIDPHIDETAm);
+	  if(setAverage)DPHIDPHIDETAdivscaled->Scale(resultscalingfactor);
+	  DPHIDPHIDETAdivscaled->Write();
+	  delete DPHIDPHIDETAdivscaled;
+// 	  DPHIDPHIDETAdivscaled->SetBit(TH3D::kIsAverage,setAverage);
+// 	  if(!hPhiPhiDEtadivscaled) hPhiPhiDEtadivscaled=DPHIDPHIDETAdivscaled;
+// 	  else AddHists(setAverage,hPhiPhiDEtadivscaled,DPHIDPHIDETAdivscaled);
+// 	  DPHIDPHIDETAdivscaled->SetBit(TH3D::kIsAverage,kFALSE);
+	}
 	//DPHIDPHI histograms:
 	  TH2D* DPHIDPHI3div = (TH2D*)DPHIDPHI3->Clone("DPhi_1_DPHI_2");
 	  DPHIDPHI3div->Divide(DPHIDPHI3m);
 	  if(setAverage) DPHIDPHI3div->Scale(resultscalingfactor);
-	  DPHIDPHI3div->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhidiv) hDeltaPhidiv=DPHIDPHI3div;
-	  else AddHists(setAverage,hDeltaPhidiv,DPHIDPHI3div);
-	  DPHIDPHI3div->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  DPHIDPHI3div->SetBit(TH2D::kIsAverage,setAverage);
+// 	  if(!hDeltaPhidiv) hDeltaPhidiv=DPHIDPHI3div;
+// 	  else AddHists(setAverage,hDeltaPhidiv,DPHIDPHI3div);
+// 	  DPHIDPHI3div->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDPHI3div->Scale(resultscalingfactor);
 	  DPHIDPHI3div->Write();
-	  TH2D* DPHIDPHI3divscaled = (TH2D*)DPHIDPHI3scaled->Clone("DPhi_1_DPHI_2_scaled");
-	  DPHIDPHI3divscaled->Divide(DPHIDPHI3mscaled);
-	  if(setAverage)DPHIDPHI3divscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3divscaled->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhidivscaled) hDeltaPhidivscaled=DPHIDPHI3divscaled;
-	  else AddHists(setAverage,hDeltaPhidivscaled,DPHIDPHI3divscaled);
-	  DPHIDPHI3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDPHI3divscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3divscaled->Write();
+	  TH2D* DPHIDPHI3divscaled;
+	  if(all){
+	    DPHIDPHI3divscaled = (TH2D*)DPHIDPHI3scaled->Clone("DPhi_1_DPHI_2_scaled");
+	    DPHIDPHI3divscaled->Divide(DPHIDPHI3mscaled);
+	    if(setAverage)DPHIDPHI3divscaled->Scale(resultscalingfactor);
+// 	    DPHIDPHI3divscaled->SetBit(TH2D::kIsAverage,setAverage);
+// 	    if(!hDeltaPhidivscaled) hDeltaPhidivscaled=DPHIDPHI3divscaled;
+// 	    else AddHists(setAverage,hDeltaPhidivscaled,DPHIDPHI3divscaled);
+// 	    DPHIDPHI3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
+	    if(!setAverage)DPHIDPHI3divscaled->Scale(resultscalingfactor);
+	    DPHIDPHI3divscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3neardiv = (TH2D*)DPHIDPHI3near->Clone("DPhi_1_DPHI_2_near");
 	  DPHIDPHI3neardiv->Divide(DPHIDPHI3nearm);
 	  if(setAverage)DPHIDPHI3neardiv->Scale(resultscalingfactor);
-	  DPHIDPHI3neardiv->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhineardiv) hDeltaPhineardiv=DPHIDPHI3neardiv;
-	  else AddHists(setAverage,hDeltaPhineardiv,DPHIDPHI3neardiv);
-	  DPHIDPHI3neardiv->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  DPHIDPHI3neardiv->SetBit(TH2D::kIsAverage,setAverage);
+// 	  if(!hDeltaPhineardiv) hDeltaPhineardiv=DPHIDPHI3neardiv;
+// 	  else AddHists(setAverage,hDeltaPhineardiv,DPHIDPHI3neardiv);
+// 	  DPHIDPHI3neardiv->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDPHI3neardiv->Scale(resultscalingfactor);
 	  DPHIDPHI3neardiv->Write();
-	  TH2D* DPHIDPHI3neardivscaled = (TH2D*)DPHIDPHI3nearscaled->Clone("DPhi_1_DPHI_2_near_scaled");
-	  DPHIDPHI3neardivscaled->Divide(DPHIDPHI3nearmscaled);
-	  if(setAverage)DPHIDPHI3neardivscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3neardivscaled->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhineardivscaled) hDeltaPhineardivscaled=DPHIDPHI3neardivscaled;
-	  else AddHists(setAverage,hDeltaPhineardivscaled,DPHIDPHI3neardivscaled);
-	  DPHIDPHI3neardivscaled->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDPHI3neardivscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3neardivscaled->Write();
+	  TH2D* DPHIDPHI3neardivscaled;
+	  if(all){
+	    DPHIDPHI3neardivscaled = (TH2D*)DPHIDPHI3nearscaled->Clone("DPhi_1_DPHI_2_near_scaled");
+	    DPHIDPHI3neardivscaled->Divide(DPHIDPHI3nearmscaled);
+	    if(setAverage)DPHIDPHI3neardivscaled->Scale(resultscalingfactor);
+// 	    DPHIDPHI3neardivscaled->SetBit(TH2D::kIsAverage,setAverage);
+// 	    if(!hDeltaPhineardivscaled) hDeltaPhineardivscaled=DPHIDPHI3neardivscaled;
+// 	    else AddHists(setAverage,hDeltaPhineardivscaled,DPHIDPHI3neardivscaled);
+// 	    DPHIDPHI3neardivscaled->SetBit(TH2D::kIsAverage,kFALSE);
+	    if(!setAverage)DPHIDPHI3neardivscaled->Scale(resultscalingfactor);
+	    DPHIDPHI3neardivscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3middiv = (TH2D*)DPHIDPHI3mid->Clone("DPhi_1_DPHI_2_mid");
 	  DPHIDPHI3middiv->Divide(DPHIDPHI3midm);
 	  if(setAverage)DPHIDPHI3middiv->Scale(resultscalingfactor);
-	  DPHIDPHI3middiv->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhimiddiv) hDeltaPhimiddiv=DPHIDPHI3middiv;
-	  else AddHists(setAverage,hDeltaPhimiddiv,DPHIDPHI3middiv);
-	  DPHIDPHI3middiv->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  DPHIDPHI3middiv->SetBit(TH2D::kIsAverage,setAverage);
+// 	  if(!hDeltaPhimiddiv) hDeltaPhimiddiv=DPHIDPHI3middiv;
+// 	  else AddHists(setAverage,hDeltaPhimiddiv,DPHIDPHI3middiv);
+// 	  DPHIDPHI3middiv->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDPHI3middiv->Scale(resultscalingfactor);
 	  DPHIDPHI3middiv->Write();
-	  TH2D* DPHIDPHI3middivscaled = (TH2D*)DPHIDPHI3mid->Clone("DPhi_1_DPHI_2_mid_scaled");
-	  DPHIDPHI3middivscaled->Divide(DPHIDPHI3midmscaled);
-	  if(setAverage)DPHIDPHI3middivscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3middivscaled->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhimiddivscaled) hDeltaPhimiddivscaled=DPHIDPHI3middivscaled;
-	  else AddHists(setAverage,hDeltaPhimiddivscaled,DPHIDPHI3middivscaled);
-	  DPHIDPHI3middivscaled->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDPHI3middivscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3middivscaled->Write();
+	  TH2D* DPHIDPHI3middivscaled;
+	  if(all){
+	    DPHIDPHI3middivscaled = (TH2D*)DPHIDPHI3mid->Clone("DPhi_1_DPHI_2_mid_scaled");
+	    DPHIDPHI3middivscaled->Divide(DPHIDPHI3midmscaled);
+	    if(setAverage)DPHIDPHI3middivscaled->Scale(resultscalingfactor);
+// 	    DPHIDPHI3middivscaled->SetBit(TH2D::kIsAverage,setAverage);
+// 	    if(!hDeltaPhimiddivscaled) hDeltaPhimiddivscaled=DPHIDPHI3middivscaled;
+// 	    else AddHists(setAverage,hDeltaPhimiddivscaled,DPHIDPHI3middivscaled);
+// 	    DPHIDPHI3middivscaled->SetBit(TH2D::kIsAverage,kFALSE);
+	    if(!setAverage)DPHIDPHI3middivscaled->Scale(resultscalingfactor);
+	    DPHIDPHI3middivscaled->Write();
+	  }
 	  TH2D* DPHIDPHI3fardiv = (TH2D*)DPHIDPHI3far->Clone("DPhi_1_DPHI_2_far");
 	  DPHIDPHI3fardiv->Divide(DPHIDPHI3farm);
 	  if(setAverage)DPHIDPHI3fardiv->Scale(resultscalingfactor);
-	  DPHIDPHI3fardiv->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhifardiv) hDeltaPhifardiv=DPHIDPHI3fardiv;
-	  else AddHists(setAverage,hDeltaPhifardiv,DPHIDPHI3fardiv);
-	  DPHIDPHI3fardiv->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  DPHIDPHI3fardiv->SetBit(TH2D::kIsAverage,setAverage);
+// 	  if(!hDeltaPhifardiv) hDeltaPhifardiv=DPHIDPHI3fardiv;
+// 	  else AddHists(setAverage,hDeltaPhifardiv,DPHIDPHI3fardiv);
+// 	  DPHIDPHI3fardiv->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDPHI3fardiv->Scale(resultscalingfactor);
 	  DPHIDPHI3fardiv->Write();      
-	  TH2D* DPHIDPHI3fardivscaled = (TH2D*)DPHIDPHI3farscaled->Clone("DPhi_1_DPHI_2_far_scaled");
-	  DPHIDPHI3fardivscaled->Divide(DPHIDPHI3farmscaled);
-	  if(setAverage)DPHIDPHI3fardivscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3fardivscaled->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hDeltaPhifardivscaled) hDeltaPhifardivscaled=DPHIDPHI3fardivscaled;
-	  else AddHists(setAverage,hDeltaPhifardivscaled,DPHIDPHI3fardivscaled);
-	  DPHIDPHI3fardivscaled->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDPHI3fardivscaled->Scale(resultscalingfactor);
-	  DPHIDPHI3fardivscaled->Write();
+	  TH2D* DPHIDPHI3fardivscaled;
+	  if(all){
+	    DPHIDPHI3fardivscaled = (TH2D*)DPHIDPHI3farscaled->Clone("DPhi_1_DPHI_2_far_scaled");
+	    DPHIDPHI3fardivscaled->Divide(DPHIDPHI3farmscaled);
+	    if(setAverage)DPHIDPHI3fardivscaled->Scale(resultscalingfactor);
+// 	    DPHIDPHI3fardivscaled->SetBit(TH2D::kIsAverage,setAverage);
+// 	    if(!hDeltaPhifardivscaled) hDeltaPhifardivscaled=DPHIDPHI3fardivscaled;
+// 	    else AddHists(setAverage,hDeltaPhifardivscaled,DPHIDPHI3fardivscaled);
+// 	    DPHIDPHI3fardivscaled->SetBit(TH2D::kIsAverage,kFALSE);
+	    if(!setAverage)DPHIDPHI3fardivscaled->Scale(resultscalingfactor);
+	    DPHIDPHI3fardivscaled->Write();
+	  }
 	  tempcanvas= Makecanvas(DPHIDPHI3div,DPHIDPHI3neardiv,DPHIDPHI3middiv,DPHIDPHI3fardiv,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  tempcanvas= Makecanvas(DPHIDPHI3divscaled,DPHIDPHI3neardivscaled,DPHIDPHI3middivscaled,DPHIDPHI3fardivscaled,"DPHIDPHIscaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+	  delete DPHIDPHI3div;delete DPHIDPHI3neardiv;delete DPHIDPHI3middiv;delete DPHIDPHI3fardiv;
+
+	  
+	  if(all){
+	    tempcanvas= Makecanvas(DPHIDPHI3divscaled,DPHIDPHI3neardivscaled,DPHIDPHI3middivscaled,DPHIDPHI3fardivscaled,"DPHIDPHIscaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	    delete DPHIDPHI3divscaled;delete DPHIDPHI3neardivscaled;delete DPHIDPHI3middivscaled;delete DPHIDPHI3fardivscaled;
+	  }
+
+
+	  
 //////////DPHI DETA HISTOGRAMS:
 	  TH2D* DPHIDETA12_3div = (TH2D*) DPHIDETA12_3->Clone("DPhi_1_DEta_12");
 	  DPHIDETA12_3div->Divide(DPHIDETA12_3m);
 	  if(setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
-	  if(!hPhiEta12div) hPhiEta12div=DPHIDETA12_3div;
-	  else AddHists(setAverage,hPhiEta12div,DPHIDETA12_3div);
+// 	  if(!hPhiEta12div) hPhiEta12div=DPHIDETA12_3div;
+// 	  else AddHists(setAverage,hPhiEta12div,DPHIDETA12_3div);
 	  if(!setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
 	  DPHIDETA12_3div->Write();
 	  tempcanvas= Makecanvas(DPHIDETA12_3div,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
-	  delete tempcanvas;	  
-	  TH2D* DPHIDETA12_3divscaled = (TH2D*) DPHIDETA12_3scaled->Clone("DPhi_1_DEta_12_scaled");
-	  DPHIDETA12_3divscaled->Divide(DPHIDETA12_3mscaled);
-	  if(setAverage)DPHIDETA12_3divscaled->Scale(resultscalingfactor);
-	  DPHIDETA12_3divscaled->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hPhiEta12_divscaled) hPhiEta12_divscaled=DPHIDETA12_3divscaled;
-	  else AddHists(setAverage,hPhiEta12_divscaled,DPHIDETA12_3divscaled);
-	  DPHIDETA12_3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDETA12_3divscaled->Scale(resultscalingfactor);
-	  DPHIDETA12_3divscaled->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12_3divscaled,"DPHIDEta12_scaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;	
+	  delete tempcanvas;	 
+	  delete DPHIDETA12_3div;
+	  TH2D* DPHIDETA12_3divscaled;
+	  if(all){
+	    DPHIDETA12_3divscaled = (TH2D*) DPHIDETA12_3scaled->Clone("DPhi_1_DEta_12_scaled");
+	    DPHIDETA12_3divscaled->Divide(DPHIDETA12_3mscaled);
+	    if(setAverage)DPHIDETA12_3divscaled->Scale(resultscalingfactor);
+// 	    DPHIDETA12_3divscaled->SetBit(TH2D::kIsAverage,setAverage);
+// 	    if(!hPhiEta12_divscaled) hPhiEta12_divscaled=DPHIDETA12_3divscaled;
+// 	    else AddHists(setAverage,hPhiEta12_divscaled,DPHIDETA12_3divscaled);
+// 	    DPHIDETA12_3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
+	    if(!setAverage)DPHIDETA12_3divscaled->Scale(resultscalingfactor);
+	    DPHIDETA12_3divscaled->Write();
+	    tempcanvas= Makecanvas(DPHIDETA12_3divscaled,"DPHIDEta12_scaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	    delete DPHIDETA12_3divscaled;
+	  }
 	  TH2D* DPHIDETA12DPHI12L2PI_3div = (TH2D*)DPHIDETA12DPHI12L2PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_2PI");
 	  DPHIDETA12DPHI12L2PI_3div->Divide(DPHIDETA12DPHI12L2PI_3m);
 	  if(setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
 	  DPHIDETA12DPHI12L2PI_3div->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hPhiEta12_cut1div) hPhiEta12_cut1div=DPHIDETA12DPHI12L2PI_3div;
-	  else AddHists(setAverage,hPhiEta12_cut1div,DPHIDETA12DPHI12L2PI_3div);
-	  DPHIDETA12DPHI12L2PI_3div->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  if(!hPhiEta12_cut1div) hPhiEta12_cut1div=DPHIDETA12DPHI12L2PI_3div;
+// 	  else AddHists(setAverage,hPhiEta12_cut1div,DPHIDETA12DPHI12L2PI_3div);
+// 	  DPHIDETA12DPHI12L2PI_3div->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
 	  DPHIDETA12DPHI12L2PI_3div->Write();
 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3div,"DPHIDEta12_DPHI12less2Pi",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
+	  delete DPHIDETA12DPHI12L2PI_3div;
 	  TH2D* DPHIDETA12DPHI12L4PI_3div = (TH2D*)DPHIDETA12DPHI12L4PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_4PI");
 	  DPHIDETA12DPHI12L4PI_3div->Divide(DPHIDETA12DPHI12L4PI_3m);
 	  if(setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
 	  DPHIDETA12DPHI12L4PI_3div->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hPhiEta12_cut2div) hPhiEta12_cut2div=DPHIDETA12DPHI12L4PI_3div;
-	  else AddHists(setAverage,hPhiEta12_cut2div,DPHIDETA12DPHI12L4PI_3div);
-	  DPHIDETA12DPHI12L4PI_3div->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  if(!hPhiEta12_cut2div) hPhiEta12_cut2div=DPHIDETA12DPHI12L4PI_3div;
+// 	  else AddHists(setAverage,hPhiEta12_cut2div,DPHIDETA12DPHI12L4PI_3div);
+// 	  DPHIDETA12DPHI12L4PI_3div->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
 	  DPHIDETA12DPHI12L4PI_3div->Write();
 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3div,"DPHIDEta12_DPHI12less4Pi",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
+	  delete DPHIDETA12DPHI12L4PI_3div;
 	  TH2D* DPHIDETA12SameSide_3div = (TH2D*)DPHIDETA12SameSide_3->Clone("DPhi_1_DEta_12_SameSide");
 	  DPHIDETA12SameSide_3div->Divide(DPHIDETA12SameSide_3m);
 	  if(setAverage)DPHIDETA12SameSide_3div->Scale(resultscalingfactor);
-	  DPHIDETA12SameSide_3div->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hPhiEta12_samesidediv) hPhiEta12_samesidediv=DPHIDETA12SameSide_3div;
-	  else AddHists(setAverage,hPhiEta12_samesidediv,DPHIDETA12SameSide_3div);
-	  DPHIDETA12SameSide_3div->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  DPHIDETA12SameSide_3div->SetBit(TH2D::kIsAverage,setAverage);
+// 	  if(!hPhiEta12_samesidediv) hPhiEta12_samesidediv=DPHIDETA12SameSide_3div;
+// 	  else AddHists(setAverage,hPhiEta12_samesidediv,DPHIDETA12SameSide_3div);
+// 	  DPHIDETA12SameSide_3div->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDETA12SameSide_3div->Scale(resultscalingfactor);
 	  DPHIDETA12SameSide_3div->Write();
 	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3div,"DPHIDEta12_SameSide",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-	  TH2D* DPHIDETA12SameSide_3divscaled = (TH2D*)DPHIDETA12SameSide_3scaled->Clone("DPhi_1_DEta_12_SameSide_scaled");
-	  DPHIDETA12SameSide_3divscaled->Divide(DPHIDETA12SameSide_3mscaled);
-	  if(setAverage)DPHIDETA12SameSide_3divscaled->Scale(resultscalingfactor);
-	  DPHIDETA12SameSide_3divscaled->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hPhiEta12_sameside_divscaled) hPhiEta12_sameside_divscaled=DPHIDETA12SameSide_3divscaled;
-	  else AddHists(setAverage,hPhiEta12_sameside_divscaled,DPHIDETA12SameSide_3divscaled);
-	  DPHIDETA12SameSide_3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
-	  if(!setAverage)DPHIDETA12SameSide_3divscaled->Scale(resultscalingfactor);
-	  DPHIDETA12SameSide_3divscaled->Write();
-	  tempcanvas= Makecanvas(DPHIDETA12SameSide_3divscaled,"DPHIDEta12_SameSide_scaled",kFALSE);
-	  tempcanvas->Write();
-	  delete tempcanvas;
+	  delete DPHIDETA12SameSide_3div;
+	  TH2D* DPHIDETA12SameSide_3divscaled;
+	  if(all){
+	    DPHIDETA12SameSide_3divscaled = (TH2D*)DPHIDETA12SameSide_3scaled->Clone("DPhi_1_DEta_12_SameSide_scaled");
+	    DPHIDETA12SameSide_3divscaled->Divide(DPHIDETA12SameSide_3mscaled);
+	    if(setAverage)DPHIDETA12SameSide_3divscaled->Scale(resultscalingfactor);
+// 	    DPHIDETA12SameSide_3divscaled->SetBit(TH2D::kIsAverage,setAverage);
+// 	    if(!hPhiEta12_sameside_divscaled) hPhiEta12_sameside_divscaled=DPHIDETA12SameSide_3divscaled;
+// 	    else AddHists(setAverage,hPhiEta12_sameside_divscaled,DPHIDETA12SameSide_3divscaled);
+// 	    DPHIDETA12SameSide_3divscaled->SetBit(TH2D::kIsAverage,kFALSE);
+	    if(!setAverage)DPHIDETA12SameSide_3divscaled->Scale(resultscalingfactor);
+	    DPHIDETA12SameSide_3divscaled->Write();
+	    tempcanvas= Makecanvas(DPHIDETA12SameSide_3divscaled,"DPHIDEta12_SameSide_scaled",kFALSE);
+	    tempcanvas->Write();
+	    delete tempcanvas;
+	    delete DPHIDETA12SameSide_3divscaled;
+	  }
 	  TH2D* DPHIDETAdiv = (TH2D*)DPHIDETA->Clone("DPhi_DEta");
 	  DPHIDETAdiv->Divide(DPHIDETAm);
 	  if(setAverage)DPHIDETAdiv->Scale(resultscalingfactor);
-	  DPHIDETAdiv->SetBit(TH2D::kIsAverage,setAverage);
-	  if(!hPhiEtadiv) hPhiEtadiv=DPHIDETAdiv;
-	  else AddHists(setAverage,hPhiEtadiv,DPHIDETAdiv);
-	  DPHIDETAdiv->SetBit(TH2D::kIsAverage,kFALSE);
+// 	  DPHIDETAdiv->SetBit(TH2D::kIsAverage,setAverage);
+// 	  if(!hPhiEtadiv) hPhiEtadiv=DPHIDETAdiv;
+// 	  else AddHists(setAverage,hPhiEtadiv,DPHIDETAdiv);
+// 	  DPHIDETAdiv->SetBit(TH2D::kIsAverage,kFALSE);
 	  if(!setAverage)DPHIDETAdiv->Scale(resultscalingfactor);
 	  DPHIDETAdiv->Write();
 	  tempcanvas= Makecanvas(DPHIDETAdiv,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
+	  delete DPHIDETAdiv;
       }
+      delete scalinghist;delete scalinghistm;
+      delete DPHIDPHIDETA;delete DPHIDPHIDETAm;
+      delete DPhi12DEta12;delete DPhi12DEta12m;
+      delete DPHIDPHI3;delete DPHIDPHI3near;delete DPHIDPHI3mid;delete DPHIDPHI3far;delete DPHIDPHI3m;delete DPHIDPHI3nearm;delete DPHIDPHI3midm;delete DPHIDPHI3farm;
+      delete DPHIDETA12_3;delete DPHIDETA12DPHI12L2PI_3;delete DPHIDETA12DPHI12L4PI_3;delete DPHIDETA12SameSide_3;delete DPHIDETA12_3m;delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;delete DPHIDETA12SameSide_3m;
+      delete DPHIDETA;delete DPHIDETAm;
+      if(all){
+	delete DPHIDPHIDETAscaled;delete DPHIDPHIDETAmscaled;
+	delete DPHIDPHI3scaled;delete DPHIDPHI3nearscaled;delete DPHIDPHI3scaled;delete DPHIDPHI3farscaled;delete DPHIDPHI3mscaled;delete DPHIDPHI3nearmscaled;delete DPHIDPHI3midmscaled;delete DPHIDPHI3farmscaled;
+	delete DPHIDETA12_3scaled;delete DPHIDETA12SameSide_3scaled;delete DPHIDETA12_3mscaled;delete DPHIDETA12SameSide_3mscaled;
+      }
+      
     }
   }
   {//Binstats
@@ -1769,6 +1970,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod)
     tempcanvas->Write();
     delete tempcanvas;
     tempcanvas=NULL;
+    delete HistpT;delete HistPhi;delete HistEta;delete HistTriggerpT;delete HistTriggerPhi;delete HistTriggerEta;delete HistAssociatedpT;delete HistAssociatedPhi;delete HistAssociatedEta;
   }
   outfile->Close();
   delete outfile;

@@ -70,6 +70,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
+  , fefficiencies(kFALSE)
   , fRandom(NULL)
   , fMcArray(NULL)
   , fTrackCuts(NULL)
@@ -134,6 +135,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
+  , fefficiencies(kFALSE)
   , fRandom(NULL)
   , fMcArray(NULL)
   , fTrackCuts(NULL)
@@ -242,6 +244,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
   poolMgr->SetTargetValues(MinNofTracks,0.1,1.0);
   correlator->InitEventMixing(poolMgr);
   
+  
   //initialize track worker and add to the output if appropriate
   TString tracksname;
   if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) tracksname = Form("tracktrigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
@@ -252,12 +255,13 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
   
   TString triggerinit = Form("minTriggerPt=%.1f maxTriggerPt=%.1f minAssociatedPt=%.1f maxAssociatedPt=%.1f collisiontype=%s triggertype=%s", fMinTriggerPt, fMaxTriggerPt, fMinAssociatedPt, fMaxAssociatedPt,collisiontype.Data(),triggertype.Data());
   AliCorrelation3p* workertracktrigger =new AliCorrelation3p(tracksname, fMBinEdges, fZBinEdges);
+  workertracktrigger->SetAcceptanceCut(fAcceptancecut);
   workertracktrigger->Init(triggerinit);
   correlator->Add(workertracktrigger);
   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
-  fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
+//   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
   fOutput->Add(workertracktrigger);
   
   // all tasks must post data once for all outputs
@@ -267,7 +271,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 {
   if(fgenerate){execgenerate();return;}//Toy MC generator, skips all data processing.
-  
+  if(fefficiencies){return;}//efficiencies only.
   // process the event
   TObject* pInput=InputEvent();
   if (!pInput) {AliError("failed to get input");return;}

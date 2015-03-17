@@ -113,6 +113,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
+  Bool_t 	    fefficiencies;//if true, only histograms for measured and MC tracks are collected.
   TRandom3 *	    fRandom;
   TClonesArray*     fMcArray;
   //Objects that contain needed/used objects for the task:
