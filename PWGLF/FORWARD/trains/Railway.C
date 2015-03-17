@@ -114,6 +114,7 @@ struct Railway
    * 
    * @param name   Name of library 
    * @param slave  If true also load on slaves
+   * @param forcePar if true, force load as PAR 
    * 
    * @return true on success, false otherwise 
    */
