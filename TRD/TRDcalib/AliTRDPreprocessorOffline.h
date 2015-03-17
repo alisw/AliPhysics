@@ -92,6 +92,7 @@ public:
   void     SetBeginFitCharge(Float_t beginFitCharge)                 { fBeginFitCharge = beginFitCharge;};
   void     SetT0Shift0(Float_t t0Shift0)                             { fT0Shift0 = t0Shift0;};
   void     SetT0Shift1(Float_t t0Shift1)                             { fT0Shift1 = t0Shift1;};
+  void     SetMaxValueT0(Float_t maxValueT0)                         { fMaxValueT0   = maxValueT0;};
 
 
 
@@ -269,6 +270,7 @@ public:
   Float_t  fBeginFitCharge;               // Fit Begin Charge starts at mean/fBeginFitCharge
   Float_t  fT0Shift0;                    // T0 Shift with the maximum positive slope
   Float_t  fT0Shift1;                    // T0 Shift with the maximum of the amplification region
+  Float_t  fMaxValueT0;                 // Max possible t0
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;
@@ -283,7 +285,7 @@ private:
   Bool_t fPHQon;                 //switch of PHQ
   Bool_t fDebugPHQon;                 //switch of DebugPHQ
 
-  ClassDef(AliTRDPreprocessorOffline,5)
+  ClassDef(AliTRDPreprocessorOffline,6)
 };
 
 #endif

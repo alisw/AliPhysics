@@ -136,6 +136,7 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   ,fTakeTheMaxPH(kTRUE)
   ,fT0Shift0(0.124797)
   ,fT0Shift1(0.267451)
+  ,fMaxValueT0(5.)
   ,fRangeFitPRF(1.0)
   ,fAccCDB(kFALSE)
   ,fMinEntries(800)
@@ -200,6 +201,7 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
 ,fTakeTheMaxPH(c.fTakeTheMaxPH)
 ,fT0Shift0(c.fT0Shift0)
 ,fT0Shift1(c.fT0Shift1)
+,fMaxValueT0(c.fMaxValueT0)
 ,fRangeFitPRF(c.fRangeFitPRF)
 ,fAccCDB(c.fAccCDB)
 ,fMinEntries(c.fMinEntries)
@@ -5285,7 +5287,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     if (fPhdt0 >= 0.0) {
       fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
       //printf("Value of timeoffset %f\n",fCurrentCoef2[0]);
-      if (fCurrentCoef2[0] < -3.0) {
+      if ((fCurrentCoef2[0] < -3.0) || (fCurrentCoef2[0] > fMaxValueT0)) {
         fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
       }
     }
@@ -5301,7 +5303,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
        (put)) {
       if (fPhdt0 >= 0.0) {
 	fCurrentCoef2[0] = (fPhdt0 - t0Shift) / widbins;
-	if (fCurrentCoef2[0] < -3.0) {
+	if ((fCurrentCoef2[0] < -3.0) || (fCurrentCoef2[0] > fMaxValueT0)) {
 	  fCurrentCoef2[0] = fCurrentCoef2[1] + 100.0;
 	}
 	else fNumberFitSuccess++;

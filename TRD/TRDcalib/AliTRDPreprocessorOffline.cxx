@@ -132,6 +132,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fBeginFitCharge(3.5),
   fT0Shift0(0.124797),
   fT0Shift1(0.267451),
+  fMaxValueT0(5.),
   fPHQon(kTRUE),
   fDebugPHQon(kFALSE)
 {
@@ -750,6 +751,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetT0Shift0(fT0Shift0);
   calibra->SetT0Shift1(fT0Shift1);
+  calibra->SetMaxValueT0(fMaxValueT0);
   calibra->SetMinEntries(fMinStatsVdriftT0PH); // If there is less than 1000 entries in the histo: no fit
   calibra->AnalysePH(fPH2d); 
   //calibra->SetDebugLevel(2);

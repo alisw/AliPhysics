@@ -123,7 +123,8 @@ class AliTRDCalibraFit : public TObject {
   void     SetPeriodeFitPH(Int_t periodeFitPH);   
   void     SetTakeTheMaxPH()                                         { fTakeTheMaxPH   = kTRUE;        }
   void     SetT0Shift0(Float_t t0Shift0); 
-  void     SetT0Shift1(Float_t t0Shift1); 
+  void     SetT0Shift1(Float_t t0Shift1);
+  void     SetMaxValueT0(Float_t maxValueT0)                         { fMaxValueT0   = maxValueT0;     }
   void     SetRangeFitPRF(Float_t rangeFitPRF);     
   void     SetAccCDB()                                               { fAccCDB         = kTRUE;        }
   void     SetMinEntries(Int_t minEntries);                    
@@ -215,6 +216,7 @@ class AliTRDCalibraFit : public TObject {
        Bool_t       fTakeTheMaxPH;          // Take the Max for the T0 determination
        Float_t      fT0Shift0;              // T0 Shift with the maximum positive slope
        Float_t      fT0Shift1;              // T0 Shift with the maximum of the amplification region
+       Float_t      fMaxValueT0;            // Max possible t0
        Float_t      fRangeFitPRF;           // The fit range for the PRF is -fRangeFitPRF +fRangeFitPRF
        Bool_t       fAccCDB;                // If there is a calibration database to be compared with....
        Int_t        fMinEntries;            // Min Entries to fit the histo
@@ -377,7 +379,7 @@ class AliTRDCalibraFit : public TObject {
        virtual ~AliTRDCalibraFit();
        
        
-  ClassDef(AliTRDCalibraFit,3)                 // TRD Calibration class
+  ClassDef(AliTRDCalibraFit,4)                 // TRD Calibration class
 	 
 };
   
