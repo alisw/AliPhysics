@@ -1192,29 +1192,6 @@ Bool_t AliShuttle::ContinueProcessing()
 		// Send mail to detector expert!
 		Log("SHUTTLE", Form("ContinueProcessing - Sending mail to %s experts ...", 
 				    fCurrentDetector.Data()));
-		// det experts in to
-		TString to="";
-		TIter *iterExperts = 0;
-		iterExperts = new TIter(fConfig->GetResponsibles(fCurrentDetector));
-		TObjString *anExpert=0;
-		while ((anExpert = (TObjString*) iterExperts->Next()))
-			{
-				to += Form("%s, \n", anExpert->GetName());
-			}
-		delete iterExperts;
-		
-		if (to.Length() > 0)
-			to.Remove(to.Length()-3);
-		AliDebug(2, Form("to: %s",to.Data()));
-
-		if (to.IsNull()) {
-			Log("SHUTTLE", Form("List of %s responsibles not set!", fCurrentDetector.Data()));
-			return kFALSE;
-		}
-
-		Log(fCurrentDetector.Data(), Form("ContinueProcessing - Sending mail to %s expert(s):", 
-				    fCurrentDetector.Data()));
-		Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
 		if (!SendMail(kPPEMail, -1, errorCode))
 			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
 					    fCurrentDetector.Data()));
@@ -3346,6 +3323,9 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system, UInt_t errorCode)
 		Log("SHUTTLE", Form("List of %d responsibles not set!", (Int_t) target));
 		return kFALSE;
 	}
+        Log(fCurrentDetector.Data(), Form("SendMail - Sending mail to %s expert(s):", 
+              fCurrentDetector.Data()));
+        Log(fCurrentDetector.Data(), Form("\n%s", to.Data()));
 
 	// SHUTTLE responsibles in cc
 	TString cc="";
