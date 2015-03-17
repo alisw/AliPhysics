@@ -12,13 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Helper structure: Particle map with correlation generated particle -> reconstructed particle,
- * sorted according to the MC label
- *
- * Author:
- *   Markus Fasel <markus.fasel@cern.ch>
- */
 #include <iostream>
 
 #include <TMath.h>
@@ -30,13 +23,25 @@
 
 namespace HighPtTracks {
 
+/**
+ * \brief Destructor
+ *
+ * Clean up all particle lists
+ */
 AliParticleMap::~AliParticleMap() {
-	// Clean up all particle lists
 	for(std::map<int, AliParticleList *>::iterator it = fParticles.begin(); it != fParticles.end(); ++it){
 		delete it->second;
 	}
 }
 
+/**
+ * \brief Add new particle to the list
+ *
+ * Add particle to the list. In case the same label is already existing in the list, the particle is just added to the list,
+ * otherwise a new entry for the label is created.
+ *
+ * \param track particle to be added
+ */
 void AliParticleMap::AddParticle(AliVTrack *track){
 	int label = TMath::Abs(track->GetLabel());
 	std::map<int, AliParticleList *>::iterator it = fParticles.find(label);
@@ -50,6 +55,14 @@ void AliParticleMap::AddParticle(AliVTrack *track){
 	}
 }
 
+/**
+ * \brief Get paritcles for assocaiated label.
+ *
+ * Get list of all reconstructed particles associated with a given Monte-Carlo Label.
+ *
+ * \param label Label of the particle
+ * \return List of reconstructed particles (NULL if not found)
+ */
 AliParticleList* AliParticleMap::GetParticles(int label) const {
 	AliParticleList *result = NULL, *content = NULL;
 	std::map<int, AliParticleList *>::const_iterator found = fParticles.find(label);
@@ -59,6 +72,9 @@ AliParticleList* AliParticleMap::GetParticles(int label) const {
 	return result;
 }
 
+/**
+ * \brief Print status of the particle map.
+ */
 void AliParticleMap::Print() const {
 	for(std::map<int, AliParticleList *>::const_iterator it = fParticles.begin(); it != fParticles.end(); ++it){
 		std::cout << "Particle with label " << it->first << ", number of reconstructed assigned: " << it->second->GetNumberOfParticles() << std::endl;
