@@ -52,6 +52,9 @@ ClassImp(AliAnalysisTaskCorrelation3p)
 // Paul Baetzing || pbatzing@cern.ch
 //
 
+using std::string;
+using std::cin;
+using std::stringstream;
 
 AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   : AliAnalysisTaskSE("AliAnalysisTaskCorrelation3p")
