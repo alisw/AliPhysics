@@ -20,10 +20,12 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    Bool_t      isMC = kFALSE,
    Bool_t      isPP = kFALSE,
    Int_t       aodFilterBit = 5,
-   AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-   AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-   Float_t     nsigmaPr = 2.0,
-   Float_t     nsigmaKa = 2.0,
+   AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011,
+   AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011,
+   Float_t     nsigmaPrTPC = 3.0,
+   Float_t     nsigmaKaTPC = 3.0,
+   Float_t     nsigmaPrTOF = 3.0,
+   Float_t     nsigmaKaTOF = 3.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
    UInt_t      triggerMask = AliVEvent::kMB,
@@ -51,14 +53,12 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    TString taskName = Form("TPCLStar%s%s_%i%i_%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPrCandidate,(Int_t)cutKaCandidate,outNameSuffix.Data()  );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
-     
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
-         task->SetUseCentralityPatch(aodN==49);
+     task->SetUseCentralityPatch(aodN==49);
    }
     //if(is2011PbPb)
    //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
    //else
-  
    task->SelectCollisionCandidates(triggerMask);
   
 
@@ -132,9 +132,8 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarPbPb.C");
-   if (!ConfigLambdaStarPbPb(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0; 
-   
-   
+   if (!ConfigLambdaStarPbPb(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPrTPC, nsigmaKaTPC, nsigmaPrTOF, nsigmaKaTOF, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0; 
+  
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
    //
