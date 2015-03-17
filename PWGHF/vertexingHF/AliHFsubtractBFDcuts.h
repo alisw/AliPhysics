@@ -51,6 +51,10 @@ public:
 
 private:
 
+  AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts &source);
+  AliHFsubtractBFDcuts& operator=(const AliHFsubtractBFDcuts& source); 
+ 
+
   Bool_t   fisMC;        // flag for MC/Data
   TH1F *fPtMCGenStep;    //! histo with spectrum at generation level
   THnSparseF *fcutsData; //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
