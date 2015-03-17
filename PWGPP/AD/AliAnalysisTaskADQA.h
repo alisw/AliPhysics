@@ -41,7 +41,7 @@ class AliAnalysisTaskADQA : public AliAnalysisTaskSE {
 private:
 
   TList       *fListHist;                       //! List of histograms
- 
+  
   TH1F        *fHistTotalChargePerEventADA;
   TH1F        *fHistTotalChargePerEventADC;
   TH2F        *fHistChargePerPM;
@@ -58,6 +58,13 @@ private:
   TH1F	      *fHistChargeNoFlag;
   TH1F	      *fHistTimeNoFlag;
   TH1F	      *fHistChargeNoTime;
+  
+  TH2F	      *fHistChargeVsClockInt0;
+  TH2F	      *fHistChargeVsClockInt1;
+  TH2F	      *fHistBBFlagVsClock;
+  TH2F	      *fHistBGFlagVsClock;
+  TH2F	      *fHistBBFlagPerChannel;
+  TH2F	      *fHistBGFlagPerChannel;
   
   
    

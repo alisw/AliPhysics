@@ -40,7 +40,8 @@ ClassImp(AliAnalysisTaskADQA)
 AliAnalysisTaskADQA::AliAnalysisTaskADQA() 
   : AliAnalysisTaskSE(),fListHist(0),fHistTotalChargePerEventADA(0),fHistTotalChargePerEventADC(0),fHistChargePerPM(0),fHistTimePerPM(0),fHistWidthPerPM(0),fHistTimeVsCharge(0),fHistWidthVsCharge(0),fHistNBBflagsADA(0),fHistNBBflagsADC(0),fHistNBBflagsADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),
-    fHistNCoincidencesADA(0),fHistNCoincidencesADC(0),fHistNCoincidencesADAVsADC(0)
+    fHistNCoincidencesADA(0),fHistNCoincidencesADC(0),fHistNCoincidencesADAVsADC(0),
+    fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0)
 {
   // Dummy constructor
 }
@@ -48,7 +49,8 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA()
 AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name) 
   : AliAnalysisTaskSE(name),fListHist(0),fHistTotalChargePerEventADA(0),fHistTotalChargePerEventADC(0),fHistChargePerPM(0),fHistTimePerPM(0),fHistWidthPerPM(0),fHistTimeVsCharge(0),fHistWidthVsCharge(0),fHistNBBflagsADA(0),fHistNBBflagsADC(0),fHistNBBflagsADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0),fHistChargeNoTime(0),
-    fHistNCoincidencesADA(0),fHistNCoincidencesADC(0),fHistNCoincidencesADAVsADC(0)
+    fHistNCoincidencesADA(0),fHistNCoincidencesADC(0),fHistNCoincidencesADAVsADC(0),
+    fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0)
 {
   // Constructor
   // Output slot #1 writes into a TList container
@@ -132,8 +134,33 @@ if (!fHistTimeNoFlag) {
 if (!fHistChargeNoTime) {
     fHistChargeNoTime = CreateHist1D("fHistChargeNoTime","Charge in PM without time measurement",300,0,300,"Charge","Entries");
     fListHist->Add(fHistChargeNoTime);
-  } 
+  }
 
+if (!fHistChargeVsClockInt0) {
+    fHistChargeVsClockInt0 = CreateHist2D("fHistChargeVsClockInt0","Charge Vs Clock (Int0)",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
+    fListHist->Add(fHistChargeVsClockInt0);
+  }  
+if (!fHistChargeVsClockInt1) {
+    fHistChargeVsClockInt1 = CreateHist2D("fHistChargeVsClockInt1","Charge Vs Clock (Int1)",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
+    fListHist->Add(fHistChargeVsClockInt1);
+  }  
+if (!fHistBBFlagVsClock) {
+    fHistBBFlagVsClock = CreateHist2D("fHistBBFlagVsClock","BB Flag Vs Clock",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
+    fListHist->Add(fHistBBFlagVsClock);
+  } 
+if (!fHistBGFlagVsClock) {
+    fHistBGFlagVsClock = CreateHist2D("fHistBGFlagVsClock","BG Flag Vs Clock",16,-0.5, 15.5, 21, -10.5, 10.5,"Channel","LHC clock");
+    fListHist->Add(fHistBGFlagVsClock);
+  } 
+if (!fHistBBFlagPerChannel) {
+    fHistBBFlagPerChannel = CreateHist2D("fHistBBFlagPerChannel","Number of BB flags per channel",16,-0.5, 15.5, 25, -0.5, 21.5,"Channel","BB Flags Count");
+    fListHist->Add(fHistBBFlagPerChannel);
+  } 
+if (!fHistBGFlagPerChannel) {
+    fHistBGFlagPerChannel = CreateHist2D("fHistBGFlagPerChannel","Number of BG flags per channel",16,-0.5, 15.5, 25, -0.5, 21.5,"Channel","BG Flags Count");
+    fListHist->Add(fHistBGFlagPerChannel);
+  } 
+  
   // Post output data.
   PostData(1, fListHist);
 }
@@ -158,26 +185,20 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
     Printf("ERROR: No ESD AD");
     return;
   }
-  /*/
   AliESDfriend *fESDfriend = fESD->FindFriend();
   if (!fESDfriend) {
     Printf("ERROR: No ESD friend");
     return;
   }
-  
   AliESDADfriend* esdADfriend = fESDfriend->GetADfriend();
-  if (!esdADfriend) {
-    Printf("ERROR: No ESD AD friend");
-    return;
-  }
-  /*/
 
+    
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
   Int_t nBBflagsADA = 0;
   Int_t nBBflagsADC = 0;
   
-  for(Int_t i=0; i<16; i++){
+  for(Int_t i=0; i<16; i++){ 
   	if(i<8)totChargeADC += esdAD->GetAdc(i);
 	if(i>7)totChargeADA += esdAD->GetAdc(i);
 	if(i<8 && esdAD->GetBBFlag(i)) nBBflagsADC++;
@@ -192,8 +213,28 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 		fHistChargeNoFlag->Fill(esdAD->GetAdc(i));
 		fHistTimeNoFlag->Fill(esdAD->GetTime(i));
 		}
-	if(esdAD->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(esdAD->GetAdc(i));	
-	}
+	if(esdAD->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(esdAD->GetAdc(i));
+	
+	if(esdADfriend){
+		Int_t nbbFlag = 0;
+      		Int_t nbgFlag = 0;
+		for(Int_t iClock=0; iClock<21; iClock++){
+			Int_t charge = esdADfriend->GetPedestal(i,iClock);
+			Bool_t intgr = esdADfriend->GetIntegratorFlag(i,iClock);
+			Bool_t bbFlag = esdADfriend->GetBBFlag(i, iClock);
+			Bool_t bgFlag = esdADfriend->GetBGFlag(i,iClock);
+			if(bbFlag) nbbFlag++;
+			if(bgFlag) nbgFlag++;
+	
+			if(!intgr)fHistChargeVsClockInt0->Fill(i,iClock-10,charge);
+			if(intgr)fHistChargeVsClockInt1->Fill(i,iClock-10,charge);
+			fHistBBFlagVsClock->Fill(i,iClock-10, bbFlag);
+			fHistBGFlagVsClock->Fill(i,iClock-10, bgFlag);
+			}
+		fHistBBFlagPerChannel->Fill(i,nbbFlag);
+		fHistBGFlagPerChannel->Fill(i,nbgFlag);
+		}
+  }
 	
   Int_t nCoincidencesADA = 0;
   Int_t nCoincidencesADC = 0;
