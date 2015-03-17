@@ -82,6 +82,8 @@ private:
     Bool_t ConversionResonanceCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, TH2F*fControlConvResT, TH1F* fHistTCorrTrack);
     Bool_t TwoTrackEfficiencyCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, Float_t bSigntmp);
  
+    TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
+
 
     
     //______________________________|  DPhi Star
@@ -243,4 +245,56 @@ private:
     ClassDef(AliAnalysisTaskDiJetCorrelationsAllb2b, 1); // example of analysis
 };
 
+
+class AliDPhiBasicParticleDiJet : public AliVParticle
+{
+public:
+    AliDPhiBasicParticleDiJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    {
+    }
+    ~AliDPhiBasicParticleDiJet() {}
+    
+    // kinematics
+    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pt() const { return fpT; }
+    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
+    
+    
+    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+    // PID
+    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
+    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
+    
+    virtual void SetPhi(Double_t phi) { fPhi = phi; }
+    
+private:
+    Float_t fEta;      // eta
+    Float_t fPhi;      // phi
+    Float_t fpT;       // pT
+    Short_t fCharge;   // charge
+    
+    ClassDef( AliDPhiBasicParticleDiJet, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+};
 #endif
