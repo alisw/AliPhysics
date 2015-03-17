@@ -746,11 +746,14 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
   
   if ( combo->GetUniqueID() == kComboFormula ) {
     TFormula formula("TriggerClassFormulaCheck", comp.Data());
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,3,0)
     if ( formula.Compile() > 0 ) {
       AliError(Form("Could not evaluate formula %s",comp.Data()));
       ok = kFALSE;
     }
-    else ok = formula.Eval(0);
+    else
+#endif
+      ok = formula.Eval(0);
   }
   
   AliDebug(2,Form("tname %s => %d comp=%s  inputs 0x%x 0x%x 0x%x",combo->GetName(),ok,comp.Data(),l0Inputs, l1Inputs, l2Inputs));
