@@ -16,11 +16,13 @@ Bool_t ConfigLambdaStarPbPb
     Bool_t                 isPP ,
     const char             *suffix,
     AliRsnCutSet           *cutsPair,
-    Int_t                  aodFilterBit = 5,
-    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-    Float_t                nsigmaPr = 2.0,
-    Float_t                nsigmaKa = 2.0,
+    Int_t                  aodFilterBit = 10,
+    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011,
+    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011,
+    Float_t                nsigmaPrTPC = 3.0,
+    Float_t                nsigmaKaTPC = 3.0,
+    Float_t                nsigmaPrTOF = 3.0,
+    Float_t                nsigmaKaTOF = 3.0,
     Bool_t                 enableMonitor = kTRUE,
     Bool_t                 IsMcTrueOnly = kFALSE,
     Int_t                  aodN = 0
@@ -34,9 +36,9 @@ Bool_t ConfigLambdaStarPbPb
   AliRsnCutSetDaughterParticle * cutSetPr;
   AliRsnCutSetDaughterParticle * cutSetK;
 
-  cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kKaon, -1.0, aodFilterBit);
-  cutSetPr = new AliRsnCutSetDaughterParticle(Form("cutProtonTPCPbPb_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
-  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPCPbPb_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+  cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kKaon, -1.0, -1.0, aodFilterBit, kTRUE);
+  cutSetPr = new AliRsnCutSetDaughterParticle(Form("cutPro_%2.1fsTPC_%2.1fsTOF",nsigmaPrTPC, nsigmaPrTOF), cutPrCandidate, AliPID::kProton, nsigmaPrTPC, nsigmaPrTOF, aodFilterBit, kTRUE); 
+  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKa_%2.1fsTPC_%2.1fsTOF",nsigmaKaTPC, nsigmaKaTOF), cutKaCandidate, AliPID::kKaon, nsigmaKaTPC, nsigmaKaTOF, aodFilterBit, kTRUE);
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPr = task->AddTrackCuts(cutSetPr);
@@ -55,8 +57,8 @@ Bool_t ConfigLambdaStarPbPb
   /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-  /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
-  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
+  // /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
+  // /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -64,7 +66,7 @@ Bool_t ConfigLambdaStarPbPb
   // [1] = mixing
   // [2] = like ++
   // [3] = like --
-  Bool_t  use     [10] = { !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly ,  !IsMcTrueOnly, !IsMcTrueOnly,  isMC   ,   isMC   ,  isMC   ,   isMC   };
+  Bool_t  use     [10] = { !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly ,  !IsMcTrueOnly, !IsMcTrueOnly,  isMC   ,   isMC   ,  isMC   ,   isMC  };
   Bool_t  useIM   [10] = { 1       ,  1       ,  1       ,  1       ,  1      ,  1      ,  1      ,   1      ,  0      ,   0      };
   TString name    [10] = {"UnlikePM", "UnlikeMP", "MixingPM", "MixingMP", "LikePP", "LikeMM", "TruesPM",  "TruesMP", "ResPM"  ,  "ResMP"  };
   TString comp    [10] = {"PAIR"   , "PAIR"   , "MIX"    , "MIX"    , "PAIR"  , "PAIR"  , "TRUE"  ,  "TRUE"  , "TRUE"  ,  "TRUE"  };
@@ -90,24 +92,47 @@ Bool_t ConfigLambdaStarPbPb
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 900, 1.3, 2.2);
-    //else
-    //out->AddAxis(resID, 200, -0.02, 0.02);
-    
+      out->AddAxis(imID, 400, 1.4, 1.8);
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 500, 0.0, 50.0);
-    
+    out->AddAxis(ptID, 300, 0.0, 30.0);    
     // axis Z: centrality-multiplicity
     if (!isPP)
       out->AddAxis(centID, 100, 0.0, 100.0);
     else 
-      out->AddAxis(centID, 400, 0.0, 400.0);
+      out->AddAxis(centID, 400, 0.0, 400.0); 
+  }
+  
+  if (isMC){   
+    //get mothers for L* PDG = 3124
+    AliRsnMiniOutput *outm = task->CreateOutput(Form("Ls_Mother%s", suffix), "SPARSE", "MOTHER");
+    outm->SetDaughter(0, AliRsnDaughter::kProton);
+    outm->SetDaughter(1, AliRsnDaughter::kKaon);
+    outm->SetMotherPDG(3124);
+    outm->SetMotherMass(1.520);
+    outm->SetPairCuts(cutsPair);
+    outm->AddAxis(imID, 400, 1.4, 1.8);
+    outm->AddAxis(ptID, 300, 0.0, 30.0);
+    if (!isPP){
+      outm->AddAxis(centID, 100, 0.0, 100.0);
+    }   else    { 
+      outm->AddAxis(centID, 400, 0.0, 400.0);
+    }
     
-    // axis W: pseudorapidity
-    //    out->AddAxis(etaID, 20, -1.0, 1.0);
-    // axis J: rapidity
-    // out->AddAxis(yID, 10, -0.5, 0.5);
-    
-  }   
+    //get mothers for antiL* PDG = -3124
+    AliRsnMiniOutput *outam = task->CreateOutput(Form("antiLs_Mother%s", suffix), "SPARSE", "MOTHER");
+    outam->SetDaughter(0, AliRsnDaughter::kProton);
+    outam->SetDaughter(1, AliRsnDaughter::kKaon);
+    outam->SetMotherPDG(-3124);
+    outam->SetMotherMass(1.520);
+    outam->SetPairCuts(cutsPair);
+    outam->AddAxis(imID, 400, 1.4, 1.8);
+    outam->AddAxis(ptID, 300, 0.0, 30.0);
+    if (!isPP){
+      outam->AddAxis(centID, 100, 0.0, 100.0);
+    }   else    { 
+      outam->AddAxis(centID, 400, 0.0, 400.0);
+    }
+  }
+   
   return kTRUE;
 }

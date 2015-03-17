@@ -54,6 +54,7 @@ public:
     kTPCRejPtDepTOFNsigma,
     kTPCNsigmaTOFVetoPtDep,
     kTPCTOFpidLstar,//cuts for L* in pA
+    kTPCTOFpidLstarPbPb2011,//cuts for L* in AA
     kNDaughterCuts
   };
 
@@ -79,6 +80,15 @@ public:
                                 Float_t nsigmaFast,
                                 Int_t AODfilterBit,
 				Bool_t useTPCCrossedRows);
+
+   AliRsnCutSetDaughterParticle(const char *name,
+                                AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID,
+                                AliPID::EParticleType pid,
+                                Float_t nsigmaFastTPC,
+				Float_t nsigmaFastTOF,
+                                Int_t AODfilterBit,
+				Bool_t useTPCCrossedRows);
+
    AliRsnCutSetDaughterParticle(const char *name, 
 				AliRsnCutTrackQuality *rsnTrackQualityCut, 
 				AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, 

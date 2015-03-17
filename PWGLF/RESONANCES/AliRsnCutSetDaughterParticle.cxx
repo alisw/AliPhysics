@@ -69,6 +69,43 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
 }
 
 //__________________________________________________________________________________________________
+AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, AliPID::EParticleType pid, Float_t nSigmaFastTPC = -1.0, Float_t nSigmaFastTOF = -1.0, Int_t AODfilterBit = 0, Bool_t useTPCCrossedRows=kTRUE) :
+   AliRsnCutSet(name, AliRsnTarget::kDaughter),
+   fPID(pid),
+   fAppliedCutSetID(cutSetID),
+   fNsigmaTPC(nSigmaFastTPC),
+   fNsigmaTOF(nSigmaFastTOF),
+   fCutQuality(new AliRsnCutTrackQuality("CutQuality")),
+   fAODTrkCutFilterBit(AODfilterBit),
+   fCheckOnlyFilterBit(kTRUE),
+   fUseCustomQualityCuts(kFALSE),
+   fIsUse2011stdQualityCuts(kFALSE),  
+   fIsUse2011stdQualityCutsHighPt(kFALSE)
+{
+  //
+  // Constructor
+  //
+  //set here pt and eta range
+  SetPtRange(0.15, 20.0);
+  SetEtaRange(-0.8, 0.8);
+  
+  //if nsigma not specified, sets "no-PID" cuts
+  if (nSigmaFastTPC<=0){
+    fNsigmaTPC=1e20;
+    AliWarning("Requested fast n-sigma TPC PID with negative value for n. --> Setting n = 1E20");
+  }
+  if (nSigmaFastTOF<=0){
+    fNsigmaTOF=1e20;
+    AliWarning("Requested fast n-sigma TOF PID with negative value for n. --> Setting n = 1E20");
+  }
+  
+  //initialize quality std and PID cuts
+  InitStdQualityCuts(useTPCCrossedRows);
+  Init();
+}
+
+
+//__________________________________________________________________________________________________
 AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, AliRsnCutTrackQuality *rsnTrackQualityCut, AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, AliPID::EParticleType pid, Float_t nSigmaFast = -1.0) :
   AliRsnCutSet(name, AliRsnTarget::kDaughter),
   fPID(pid),
@@ -175,6 +212,7 @@ void AliRsnCutSetDaughterParticle::Init()
   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
   //define PID cuts
   AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
+  AliRsnCutPIDNSigma *iCutTPCNSigmaElectronRejection = new AliRsnCutPIDNSigma("CutTPCNSigmaElectronRejection", AliPID::kElectron, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
   AliRsnCutPIDNSigma *iCutTPCTOFNSigma = new AliRsnCutPIDNSigma("CutTPCTOFNSigma", fPID, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
   AliRsnCutPIDNSigma *iCutTOFNSigma    = new AliRsnCutPIDNSigma("CutTOFNSigma", fPID, AliRsnCutPIDNSigma::kTOF);//, AliRsnCutPIDNSigma::kP );
   //define phi (azimuthal angle) cuts for TRD presence
@@ -628,6 +666,40 @@ void AliRsnCutSetDaughterParticle::Init()
       SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
       break;
       
+    case  AliRsnCutSetDaughterParticle::kTPCTOFpidLstarPbPb2011 :
+      if (fNsigmaTPC <= 0.0) {
+	AliWarning(Form("Invalid number of sigmas required for %s. Setting default nSigma = 10",iCutTPCNSigma->GetName()));
+	SetNsigmaForFastTPCpid(10.0);
+      }
+
+      // Set electron rejection cut - 3sigma TPC
+      iCutTPCNSigmaElectronRejection->SinglePIDRange(3.0);
+
+      //Set TPC Nsigma cut
+      iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);      
+
+      /* set mismatch rejection cut for TOF PID*/
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+
+      //set TOF PID
+      if (fPID==AliPID::kProton) {
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 1.2, 1E20);
+      }
+      
+      if (fPID==AliPID::kKaon) {
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.65, 1E20);
+      }
+
+      AddCut(fCutQuality);
+      AddCut(iCutTPCNSigmaElectronRejection);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      // scheme:
+      // quality & (!electron) & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+      SetCutScheme( Form("%s&(!%s)&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+      break;
     default :
       break;
     }
