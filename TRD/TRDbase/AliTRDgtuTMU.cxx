@@ -1133,6 +1133,8 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
   Float_t c = 0;
   Float_t x1;
   Float_t x2;
+  Int_t s = 0;
+  Int_t d = 0;
 
   AliDebug(5,Form("There are %i tracklets in this track.", track->GetNTracklets()));
 
@@ -1150,12 +1152,17 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
     a += (((fGtuParam->GetAki(track->GetTrackletMask(), layer) * trk->GetYPrime()) >> 7) + 1) >> 1;
     b += fGtuParam->GetBki(track->GetTrackletMask(), layer) * trk->GetYPrime() * fGtuParam->GetBinWidthY();
     c += fGtuParam->GetCki(track->GetTrackletMask(), layer) * trk->GetYPrime() * fGtuParam->GetBinWidthY();
+    s += fGtuParam->GetPki(track->GetTrackletMask(), layer) * trk->GetYbin() ;
   }
+
+  s *= fGtuParam->GetLengthNorm(track->GetTrackletMask());
+
   if (a < 0)
       a += 3;
   a = a >> 2;
 
   track->SetFitParams(a << 2, b, c);
+  track->SetInvPtDev( a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - s ); 
 
   fGtuParam->GetIntersectionPoints(track->GetTrackletMask(), x1, x2);
 
@@ -1164,7 +1171,6 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
 
   return kTRUE;
 }
-
 
 Bool_t AliTRDgtuTMU::Uniquifier(const TList *inlist, TList *outlist)
 {

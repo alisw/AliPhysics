@@ -65,6 +65,10 @@ const Int_t 	AliTRDgtuParam::fgkBitExcessYProj = 2;
 // pt higher than the one for smallest possible a != 0
 const Int_t    AliTRDgtuParam::fgkPtInfinity      = std::numeric_limits<Int_t>::max();
 
+// ---- pt cut via sagitta method -----
+      Float_t   AliTRDgtuParam::fgPtCut   = .62;
+      Int_t     AliTRDgtuParam::fgShiftLengthNorm = 1000000;
+
 // ----- geometry constants used in GTU -----
 const Bool_t    AliTRDgtuParam::fgZChannelMap[5][16][6][16] = {
 
@@ -1264,8 +1268,10 @@ AliTRDgtuParam::AliTRDgtuParam() :
     fAki[iLayer] = 0.;
     fBki[iLayer] = 0.;
     fCki[iLayer] = 0.;
+    fPki[iLayer] = 0;
   }
-
+  fLengthNorm = 0;
+  fc1Inv = 0;
   GenerateZChannelMap();
 }
 
@@ -1491,6 +1497,42 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
   TMatrix b(3, GetNLayers());
   TMatrix c(3, 3);
 
+  const Int_t maskIdLut[64] = {
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,
+    -1, -1, -1, -1, -1, -1, -1,  1, -1, -1, -1,  2, -1,  3,  4,  5,
+    -1, -1, -1, -1, -1, -1, -1,  6, -1, -1, -1,  7, -1,  8,  9, 10,
+    -1, -1, -1, 11, -1, 12, 13, 14, -1, 15, 16, 17, 18, 19, 20, 21
+  };
+
+  const Int_t c1Lut[32] = {
+    -2371, -2474, -2474, -2474, -2563, -2448, -2578, -2578,
+    -2578, -2670, -2557, -2578, -2578, -2670, -2557, -2578,
+    -2670, -2557, -2763, -2557, -2644, -2523,    -1,    -1,
+    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1
+  };
+  /* correction factor for sagitta (not used at the moment)
+  const Float_t epsCorrLut[32] = {
+    1.12499, 1.18589, 1.18516, 1.18447, 1.12499, 1.06665, 1.30387, 1.15774,
+    1.15741, 1.18596, 1.09696, 1.30201, 1.15703, 1.18516, 1.09662, 1.130026,
+    1.18443, 1.09630, 1.12499, 1.09600, 1.06665, 1.04164,      -1,      -1,
+    -1,      -1,      -1,      -1,      -1,      -1,      -1,      -1
+  };*/ 
+
+  Int_t layerMaskId = maskIdLut[trackletMask];
+  Int_t c1 = c1Lut[layerMaskId];
+  //Float_t epsCorr = epsCorrLut[layerMaskId];
+
+  fc1Inv = -GetShiftLengthNorm()/c1;
+
+  Int_t firstHitLayer = 0 ,lastHitLayer = 5;
+  while ((trackletMask & (1 << firstHitLayer)) == 0) firstHitLayer++;
+  while ((trackletMask & (1 << lastHitLayer)) == 0) lastHitLayer--;
+  Float_t dX = fGeo->Cheight() + fGeo->Cspace(); // distance between two consecutive layers
+  fLengthNorm = (Int_t) (-4e3 * dX/ TMath::Power(((lastHitLayer - firstHitLayer) * dX), 3) * GetShiftLengthNorm() * GetBinWidthY());
+  //fLengthNorm *= epsCorr;
+
+  CalculatePrefactors(trackletMask);
+
   for (Int_t layer = 0; layer < GetNLayers(); layer++) {
       if ( (trackletMask & (1 << layer)) == 0) {
 	  a(layer, 0) = 0;
@@ -1514,6 +1556,46 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
       fBki[layer] = b.GetMatrixArray()[GetNLayers() + layer];
       fCki[layer] = b.GetMatrixArray()[2 * GetNLayers() + layer];
     }
+  return kTRUE;
+}
+
+Bool_t AliTRDgtuParam::CalculatePrefactors(Int_t trackletMask)
+{
+  fPki[0] = -4;
+  fPki[1] =  2;
+  fPki[2] =  2;
+  fPki[3] =  2;
+  fPki[4] =  2;
+  fPki[5] = -4;
+  Int_t firstHitLayer = 0;
+  Int_t lastHitLayer = 5;
+  for (Int_t layer = 0; layer < GetNLayers(); layer++) {
+      if ( (trackletMask & (1 << layer)) == 0) {
+        fPki[layer] = 0;
+        if (layer == firstHitLayer){
+          fPki[GetNLayers()-1]++;
+          fPki[layer+1] = fPki[GetNLayers()-1];
+          firstHitLayer++;
+        }
+        else if (layer == lastHitLayer){
+          fPki[firstHitLayer]++;
+          if (fPki[layer-1] != 0) fPki[layer-1] = fPki[firstHitLayer];
+          if (fPki[layer-1] == 0){
+            fPki[firstHitLayer]++; 
+            fPki[layer-2] = fPki[firstHitLayer];
+          }
+          if (fPki[layer-2] == 0) fPki[layer-1]++;
+        }
+        else if (fPki[layer-1] == 0){
+          fPki[layer-2]++;
+          fPki[layer+1] += 2;
+        }
+        else {
+          fPki[layer-1]++;
+          fPki[layer+1]++;
+        }
+    }
+  }
   return kTRUE;
 }
 
@@ -1548,6 +1630,30 @@ Float_t AliTRDgtuParam::GetCki(Int_t k, Int_t i)
     GenerateRecoCoefficients(k);
 
   return fCki[i];
+}
+
+Int_t AliTRDgtuParam::GetPki(Int_t k, Int_t i)
+{
+  // get P_ki for the calculation of the sagitta
+  if (fCurrTrackletMask != k)
+    GenerateRecoCoefficients(k);
+  return fPki[i];
+}
+
+Int_t AliTRDgtuParam::GetLengthNorm(Int_t k)
+{
+  // get length normalization to obtain 1/pt from sagitta
+  if (fCurrTrackletMask != k)
+    GenerateRecoCoefficients(k);
+  return fLengthNorm;
+}
+
+Int_t AliTRDgtuParam::Getc1Inv(Int_t k)
+{
+  // get invers c1 for mask independent cut on pt deviation
+  if (fCurrTrackletMask != k)
+    GenerateRecoCoefficients(k);
+  return fc1Inv;
 }
 
 /*

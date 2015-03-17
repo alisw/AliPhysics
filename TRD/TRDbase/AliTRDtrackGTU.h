@@ -30,7 +30,7 @@ class AliTRDtrackGTU : public TObject {
   Int_t    GetPID() const { return fPID; }
   Int_t    GetSector() const { return fSector; }
   Int_t    GetStack() const { return fStack; }
-  Int_t GetLabel() const { return fLabel; }
+  Int_t    GetLabel() const { return fLabel; }
 
   AliESDTrdTrack* CreateTrdTrack() const;
 
@@ -45,6 +45,7 @@ class AliTRDtrackGTU : public TObject {
   Float_t GetA() const { return fA; }
   Float_t GetB() const { return fB; }
   Float_t GetC() const { return fC; }
+  Int_t GetInvPtDev() const { return fInvPtDev; }
   Int_t GetZChannel() const { return fZChannel; }
   Int_t GetZSubChannel();
   Int_t GetRefLayer() const { return AliTRDgtuParam::GetRefLayer(fRefLayerIdx); }
@@ -64,6 +65,7 @@ class AliTRDtrackGTU : public TObject {
 //  void SetInnerIntPoint(Float_t *x);
 //  void SetOuterIntPoint(Float_t *x);
   void SetFitParams(Float_t a, Float_t b, Float_t c);
+  void SetInvPtDev(Int_t invPtDev) { fInvPtDev = invPtDev; }
 
   Bool_t CookLabel();
 
@@ -85,6 +87,8 @@ class AliTRDtrackGTU : public TObject {
   Float_t fA; // fit parameter of y' = a + b*x + c*z
   Float_t fB; // fit parameter of y' = a + b*x + c*z
   Float_t fC; // fit parameter of y' = a + b*x + c*z
+
+  Int_t fInvPtDev; // 1/pt deviation from determination via linear fit and via sagitta
 
   Int_t fLabel; // MC label
 

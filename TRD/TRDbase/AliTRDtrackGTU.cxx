@@ -53,6 +53,7 @@ AliTRDtrackGTU::AliTRDtrackGTU() :
   fA(0),
   fB(0),
   fC(0),
+  fInvPtDev(0),
   fLabel(-1)
 {
 // default ctor
@@ -77,6 +78,7 @@ AliTRDtrackGTU::AliTRDtrackGTU(const AliTRDtrackGTU &rhs) :
   fA(rhs.fA),
   fB(rhs.fB),
   fC(rhs.fC),
+  fInvPtDev(rhs.fInvPtDev),
   fLabel(rhs.fLabel)
 {
   fTracklets = new TClonesArray("AliTRDtrackletGTU", 6);
@@ -99,6 +101,7 @@ AliTRDtrackGTU& AliTRDtrackGTU::operator=(const AliTRDtrackGTU &rhs)
     fA             = rhs.fA;
     fB             = rhs.fB;
     fC             = rhs.fC;
+    fInvPtDev      = rhs.fInvPtDev;
     fLabel         = rhs.fLabel;
     for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++)
       new ((*fTracklets)[iTracklet]) AliTRDtrackletGTU(*((AliTRDtrackletGTU*)(*(rhs.fTracklets))[iTracklet])); 
@@ -244,6 +247,9 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
   trk->SetStack(fStack);
   trk->SetSector(fSector);
   trk->SetLabel(fLabel);
+
+  if ( TMath::Abs(fInvPtDev) > AliTRDgtuParam::GetPtCut() )
+    trk->SetFlags(1 << 5);
 
   for (Int_t iLayer = 0; iLayer < AliTRDgtuParam::GetNLayers(); iLayer++) {
     AliTRDtrackletGTU *trklGTU = GetTracklet(iLayer);

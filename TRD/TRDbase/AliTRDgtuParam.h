@@ -59,6 +59,8 @@ class AliTRDgtuParam : public TObject {
   Int_t GetYt(Int_t stack, Int_t layer, Int_t zrow) const;
   Int_t GetDeltaY() const { return fgDeltaY; }
   Int_t GetDeltaAlpha() const { return fgDeltaAlpha; }
+  static Int_t GetPtCut()  {return ( (Int_t) fgPtCut * fgShiftLengthNorm); }
+  static Int_t GetShiftLengthNorm()  {return fgShiftLengthNorm; }
   Int_t GetZSubchannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
   static Int_t GetRefLayer(Int_t refLayerIdx);
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
@@ -71,6 +73,9 @@ class AliTRDgtuParam : public TObject {
 
   static void SetDeltaY(Int_t dy) { fgDeltaY = dy; }
   static void SetDeltaAlpha(Int_t da) { fgDeltaAlpha = da; }
+
+  static void SetPtCut(Float_t dPt) {fgPtCut = dPt; }
+  static void SetShiftLengthNorm(Int_t shiftLengthNorm) {fgShiftLengthNorm = shiftLengthNorm; }
 
   static void SetUseGTUconst(Bool_t b) { fgUseGTUconst = b; }
   static Bool_t GetUseGTUconst() { return fgUseGTUconst; }
@@ -90,9 +95,13 @@ class AliTRDgtuParam : public TObject {
 
   // variables for pt-reconstruction (not used at the moment)
   Bool_t GenerateRecoCoefficients(Int_t trackletMask);
+  Bool_t CalculatePrefactors(Int_t trackletMask);
   Int_t   GetAki(Int_t k, Int_t i);
   Float_t GetBki(Int_t k, Int_t i);
   Float_t GetCki(Int_t k, Int_t i);
+  Int_t   GetPki(Int_t k, Int_t i);
+  Int_t   GetLengthNorm(Int_t k);
+  Int_t   Getc1Inv(Int_t k);
 //  Float_t GetD(Int_t k) const;
 
   // B-field
@@ -120,6 +129,9 @@ class AliTRDgtuParam : public TObject {
   static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
   static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
 
+  static       Float_t fgPtCut;     // max deviation from straight line fit 1/pt to sagitta 1/pt
+  static       Int_t fgShiftLengthNorm;  // shift normalization factor for integer calculation
+
   static       Int_t fgRefLayers[3];    // reference layers for track finding
 
   static       Bool_t fgUseGTUconst;    // use constants as in the GTU for the calculations
@@ -145,6 +157,9 @@ class AliTRDgtuParam : public TObject {
   Float_t fAki[6]; // coefficients used for the fit, calculated for the current tracklet mask
   Float_t fBki[6]; // coefficients used for the fit, calculated for the current tracklet mask
   Float_t fCki[6]; // coefficients used for the fit, calculated for the current tracklet mask
+  Int_t   fPki[6]; // prefactor for sagitte calculation, calculated for the current tracklet mask
+  Int_t fLengthNorm; // normalize track sagitta to length of track inside the TRD to obtain 1/pt
+  Int_t fc1Inv; // inverse of the c1 coefficients to calculate 1/pt from fit parameter a
 
   Float_t fMagField;            // magnetic field in T
 
