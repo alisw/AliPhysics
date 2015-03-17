@@ -40,6 +40,7 @@ using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskDiJetCorrelationsAllb2b)
+ClassImp(AliDPhiBasicParticleDiJet)
 
 //_____________________| Constructor
 AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b():
@@ -282,11 +283,14 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
   
   DefineHistoNames();
   
+  if(fMixedEvent){
+      
   Bool_t DefPool = DefineMixedEventPool();
   if(!DefPool){
     AliInfo("UserCreateOutput: Pool is not define properly");
     return;
   }
+    }
   
   PostData(1,fOutputQA);
   PostData(2,fOutputCorr);
@@ -297,6 +301,7 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
 void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *) 
 {
   
+    
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!aod && AODEvent() && IsStandardAOD()) {
         aod = dynamic_cast<AliAODEvent*> (AODEvent());
@@ -306,6 +311,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     }
   
   fHistNEvents->Fill(0);
+    
     
   if(!fRecoOrMontecarlo){ // MC Kine
     farrayMC = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -326,6 +332,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
   bSign = (aod->GetMagneticField() > 0) ? 1 : -1;
   fHistNEvents->Fill(1);
   
+    
   AliCentrality *centralityObj = 0x0;
   if(fSetSystemValue){ // pPb, PbPb
     centralityObj = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
@@ -345,6 +352,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     fCentrOrMult = count;
   }
   fHistNEvents->Fill(2); //
+    
   
   AliAODVertex *vtxPrm = (AliAODVertex*)aod->GetPrimaryVertex();
   Bool_t isGoodVtx=kFALSE;
@@ -354,11 +362,13 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     fHistNEvents->Fill(3);
   }
   if(!isGoodVtx) return;
+    
   
   Float_t zVertex = vtxPrm->GetZ();
   if (TMath::Abs(zVertex) > 10) return;
   fHistQA[0]->Fill(zVertex);
-  
+    
+    
   const AliAODVertex* vtxSPD = aod->GetPrimaryVertexSPD();
   if(vtxSPD->GetNContributors()<=0) return;
   TString vtxTyp = vtxSPD->GetTitle();
@@ -367,15 +377,15 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
   Double_t zRes = TMath::Sqrt(cov[5]);
   if(vtxTyp.Contains("vertexer:Z") && (zRes > 0.25)) return;
   if(TMath::Abs(vtxSPD->GetZ() - vtxPrm->GetZ()) > 0.5) return;
+    
   fHistNEvents->Fill(4);
    
   TObjArray* fTrackArray = new TObjArray;
-  fTrackArray->SetOwner(kTRUE);
- /*
-  Double_t refmaxpT1 = -999, refmaxpT2 = -999;
-  Double_t etaMaxpT1 = -999, etaMaxpT2 = -999;
-  Double_t phiMaxpT1 = -999, phiMaxpT2 = -999;
-  Short_t Charge1 = -999, Charge2 = -999;*/
+  
+    
+    
+  TObjArray*  SEMEEvtTracks = new TObjArray;
+    
   
   TString typeData = "";
   TString SEorME = "";
@@ -409,18 +419,20 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
       return;
     }
   }
-  
+    
   for (Int_t iTracks = 0; iTracks < aod->GetNumberOfTracks(); iTracks++){
+      
     
     AliAODTrack* fAodTracks = (AliAODTrack*)aod->GetTrack(iTracks);
+      
+      
     if (!fAodTracks)continue;
-
+      
     if(fSetFilterBit) if (!fAodTracks->TestFilterBit(fbit)) continue;
     if(fAodTracks->Eta() < -0.8 || fAodTracks->Eta() > 0.8)continue;
     if (fAodTracks->Pt() < 0.5 || fAodTracks->Pt() > 20.)continue;
     
-      
-    fHistNEvents->Fill(5); 
+    fHistNEvents->Fill(5);
     fHistQA[1]->Fill(fAodTracks->GetTPCClusterInfo(2,1));
     fHistQA[3]->Fill(fAodTracks->DCA());
     fHistQA[4]->Fill(fAodTracks->ZAtDCA());
@@ -429,6 +441,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     fHistQA[7]->Fill(fAodTracks->Phi());
     fHistQA[8]->Fill(fAodTracks->Eta());
     
+      
     if(fRecoOrMontecarlo){ // reconstruction of data and MC
       if(fReadMC){
 	// is track associated to particle ? if yes + implimenting the physical primary..
@@ -445,6 +458,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
 	fTrackArray->Add(fAodTracks); //Storing all tracks for Data
     }
     
+     // cout<<"ftrackarray filled"<<endl;
    /* if(fAodTracks->Pt() >= fTrigger1pTLowThr && fAodTracks->Pt()  <= fTrigger1pTHighThr){
       if(fAodTracks->Pt() > refmaxpT1){
 	refmaxpT1 = fAodTracks->Pt();
@@ -455,10 +469,8 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
       fHistNEvents->Fill(6);
     
   }
-    
-    
-    
-     ////ftwoplus1 loop begins
+
+////ftwoplus1 loop begins
     if(ftwoplus1){
     
   //if(!fMixedEvent)if(refmaxpT1 < fTrigger1pTLowThr || refmaxpT1 > fTrigger1pTHighThr)return;
@@ -468,6 +480,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
         TObject* obj = fTrackArray->At(entryT1);
         AliAODTrack* fAodTracksT1 = (AliAODTrack*)obj;
+        if(!fAodTracksT1) continue;
 	
       if(fAodTracksT1->Pt() >= fTrigger1pTLowThr && fAodTracksT1->Pt() <= fTrigger1pTHighThr){
       
@@ -514,13 +527,14 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
 	     NofEventsinPool = fPool->GetCurrentNEvents();
       }
       
-           TObjArray* SEMEEvtTracks = (TObjArray*)fTrackArray->Clone("SE");
+          SEMEEvtTracks = (TObjArray*)fTrackArray->Clone("SE");
+               
            
            for (Int_t jMix =0; jMix < NofEventsinPool; jMix++)
           
            {
                if(fMixedEvent)SEMEEvtTracks = fPool->GetEvent(jMix); // replacing from pool
-                   if(!SEMEEvtTracks)return;
+                   if(!SEMEEvtTracks)continue;
                
                NumberOfTracksStore = SEMEEvtTracks->GetEntriesFast();
                //cout << "Number of Tracks in this event are = " << NumberOfTracksStore << endl;
@@ -573,10 +587,10 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                        Double_t deltaPhi2 =  AssignCorrectPhiRange(fAodTracksT2->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta2 = fAodTracksT2->Eta() - fAodTracksAS->Eta();
                        
-                       Double_t ptLim_Sparse2 = 0.0;
+                     //  Double_t ptLim_Sparse2 = 0.0;
                        Double_t ptTrack2 = fAodTracksAS->Pt();
-                       ptLim_Sparse2 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
-                       if(ptTrack2 > ptLim_Sparse2) ptTrack2 = ptLim_Sparse2-0.01; //filling all the pT in last bin
+                     //  ptLim_Sparse2 =((THnSparseD*)fOutputCorr->FindObject(Form("ThnTrg2CentZvtxDEtaDPhi_%s_%s",typeData.Data(), SEorME.Data())))->GetAxis(4)->GetXmax();
+                       //if(ptTrack2 > ptLim_Sparse2) ptTrack2 = ptLim_Sparse2-0.01; //filling all the pT in last bin
                            
                            Double_t CentzVtxDEtaDPhiTrg2[5] = {fCentrOrMult, zVertex, deltaEta2, deltaPhi2,ptTrack2};
                            Double_t effvalueT2 =1.0;// GetTrackbyTrackEffValue(fAodTracksAS, fCentrOrMult,f3DEffCor);
@@ -600,7 +614,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     //f1plus loop begins
     
     
-    
+   
     
     if(!ftwoplus1)
     
@@ -640,22 +654,21 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                                 return;
                             }
                             
-                            cout<<"fmixed event"<<" "<< "pool quality checked"<<PoolQuality<<endl;
+                          //  cout<<"fmixed event"<<" "<< "pool quality checked"<<PoolQuality<<endl;
                             NofEventsinPool = fPool->GetCurrentNEvents();
                             
-                            cout<<"NofEventsinPool"<<NofEventsinPool<<endl;
+                            //cout<<"NofEventsinPool"<<NofEventsinPool<<endl;
                         }
                 
                
-                        TObjArray* SEMEEvtTracks = (TObjArray*)fTrackArray->Clone("SE");
-                
+                        SEMEEvtTracks = (TObjArray*)fTrackArray->Clone("SE");
                
                         
                         for (Int_t jMix =0; jMix < NofEventsinPool; jMix++)
                             
                         {
                             if(fMixedEvent)SEMEEvtTracks = fPool->GetEvent(jMix); // replacing from pool
-                            if(!SEMEEvtTracks)return;
+                            if(!SEMEEvtTracks)continue;
                             
                             
                             
@@ -722,19 +735,30 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
     
     
-    
-
-    TObjArray* tracksClone = NULL;//
-    tracksClone = (TObjArray*)fTrackArray->Clone();
-    if(fMixedEvent && tracksClone->GetEntriesFast()>0)fPool->UpdatePool(tracksClone);
-    
-    PostData(1, fOutputQA);
-    PostData(2, fOutputCorr);    
+    if(fMixedEvent){
+        
+        TObjArray* tracksClone = CloneAndReduceTrackList(fTrackArray);
+       // delete fTrackArray;
+   // TObjArray* tracksClone = NULL;//
+   // tracksClone = (TObjArray*)fTrackArray->Clone();
+        fPool->UpdatePool(tracksClone);
+    }
+   
+    if(!fMixedEvent){
+       
+        delete fTrackArray;
+        delete SEMEEvtTracks;
+        
+        
+    }
+  
 }
 
 //_____________________|Terminate
 void AliAnalysisTaskDiJetCorrelationsAllb2b::Terminate(Option_t *){
   
+    
+   // cout<<"terminate loop"<<endl;
   fOutputQA = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputQA) {
     printf("ERROR: Output list not available\n");
@@ -1080,6 +1104,25 @@ if(fuseVarPtBins){
    fOutputCorr->Add(THnCentZvtxDEtaDPhipTTpTA1plus1);
     }
     
+}
+
+//________________Reduced tracklist to reduce memory in event mixing_______________
+TObjArray* AliAnalysisTaskDiJetCorrelationsAllb2b::CloneAndReduceTrackList(TObjArray* tracks)
+{
+    // clones a track list by using AliDPhiBasicParticleDiJet which uses much less memory (used for event mixing)
+    
+    TObjArray* tracksClone = new TObjArray;
+    tracksClone->SetOwner(kTRUE);
+    
+    for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+    {
+        AliVParticle* particle = (AliVParticle*) tracks->UncheckedAt(i);
+        AliDPhiBasicParticleDiJet* copy = new AliDPhiBasicParticleDiJet(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+        copy->SetUniqueID(particle->GetUniqueID());
+        tracksClone->Add(copy);
+    }
+    
+    return tracksClone;
 }
 
 
