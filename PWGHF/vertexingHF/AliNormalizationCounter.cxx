@@ -431,7 +431,7 @@ Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t minmultiplicity, Int_t
   for (Int_t ibin=0; ibin<=nmultbins; ibin++) {
     //    cout << " Looking at bin "<< ibin+minmultiplicity<<endl;
     if(!listofruns.Contains(Form("%d",ibin+minmultiplicity))){
-      AliInfo(Form("WARNING: %d is not a valid multiplicity number. \n",ibin+minmultiplicity));
+      //      AliInfo(Form("WARNING: %d is not a valid multiplicity number. \n",ibin+minmultiplicity));
       continue;
     }
     TString suffix;suffix.Form("/Multiplicity:%d",ibin+minmultiplicity);
@@ -446,6 +446,30 @@ Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t minmultiplicity, Int_t
   }
   Double_t noVtxzGT10 = sumPv>0. ? sumnoPV * sumZvtx / sumPv : 0.;
   return sumEvtNorm - noVtxzGT10;
+}
+
+//___________________________________________________________________________
+Double_t AliNormalizationCounter::GetSum(TString candle,Int_t minmultiplicity, Int_t maxmultiplicity){
+  // counts events of given type in a given multiplicity range
+
+  if(!fMultiplicity) {
+    AliInfo("Sorry, you didn't activate the multiplicity in the counter!");
+    return 0.;
+  }
+
+  TString listofruns = fCounters.GetKeyWords("Multiplicity");
+  Double_t sum=0.;
+  for (Int_t ibin=minmultiplicity; ibin<=maxmultiplicity; ibin++) {
+    //    cout << " Looking at bin "<< ibin+minmultiplicity<<endl;
+    if(!listofruns.Contains(Form("%d",ibin))){
+      //      AliInfo(Form("WARNING: %d is not a valid multiplicity number. \n",ibin));
+      continue;
+    }
+    TString suffix=Form("/Multiplicity:%d",ibin);
+    TString name=Form("%s%s",candle.Data(),suffix.Data());
+    sum += GetSum(name.Data());
+  }
+  return sum;
 }
 
 //___________________________________________________________________________
