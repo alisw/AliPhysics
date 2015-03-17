@@ -75,11 +75,11 @@ void AliTPCExBConical::Init() {
 
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
-  Double_t bzField = magF->SolenoidField()/10.; ///< field in T
+  Double_t bzField = magF->SolenoidField()/10.; // field in T
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   if (!param) AliError("Parameters - not initialized");
-  Double_t vdrift = param->GetDriftV()/1000000.; ///< [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t ezField = 400; ///< [V/cm]   // to be updated: never (hopefully)
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
@@ -92,11 +92,11 @@ void AliTPCExBConical::Update(const TTimeStamp &/*timeStamp*/) {
 
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
-  Double_t bzField = magF->SolenoidField()/10.; ///< field in T
+  Double_t bzField = magF->SolenoidField()/10.; // field in T
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   if (!param) AliError("Parameters - not initialized");
-  Double_t vdrift = param->GetDriftV()/1000000.; ///< [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t ezField = 400; ///< [V/cm]   // to be updated: never (hopefully)
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);

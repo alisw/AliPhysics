@@ -3,11 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTPCCalROC.h -1   */
-
 /// \class AliTPCCalROC
-///
-///  TPC calibration base class for one ROC
+/// \brief TPC calibration base class for one ROC
 
 #include <TObject.h>
 #include <TMath.h>
@@ -75,7 +72,9 @@ class AliTPCCalROC : public TNamed {
   UInt_t     fNChannels;       ///< number of channels
   UInt_t     fNRows;           ///< number of rows
   const UInt_t* fkIndexes;      //!<! indexes
-  Float_t  *fData;            ///< [fNChannels] Data
+  /// Data
+  Float_t  *fData;            //[fNChannels]
+
   /// \cond CLASSIMP
   ClassDef(AliTPCCalROC,2)    //  TPC ROC calibration class
   /// \endcond
