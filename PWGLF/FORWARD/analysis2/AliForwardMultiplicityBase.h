@@ -18,6 +18,7 @@
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
 #include "AliAODForwardEP.h"
+#include "AliAODMultEventClass.h"
 // class AliFMDEnergyFitter;
 class AliFMDESDFixer;
 class AliFMDSharingFilter;
@@ -25,6 +26,7 @@ class AliFMDDensityCalculator;
 class AliFMDCorrector;
 class AliFMDHistCollector;
 class AliFMDEventPlaneFinder;
+class AliMultEventClassifier;
 class AliAODHandler;
 class AliESDEvent;
 class TH2D;
@@ -146,6 +148,20 @@ public:
    * @{ 
    * @name Access to sub-algorithms 
    */
+  /** 
+   * Get a reference to the event inspector. User must override this
+   * to return proper object
+   * 
+   * @return Reference to the event inspector 
+   */
+  virtual AliMultEventClassifier& GetMultEventClassifier() = 0;
+  /** 
+   * Get a reference to the event inspector. User must override this
+   * to return proper object
+   * 
+   * @return Reference to the event inspector 
+   */
+  virtual const AliMultEventClassifier& GetMultEventClassifier() const = 0;
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -259,6 +275,7 @@ protected:
       fHistos(),
       fAODFMD(),
       fAODEP(),
+      fAODRef(),
       fRingSums(),
       fDoTiming(false), 
       fHTiming(0),
@@ -336,6 +353,7 @@ protected:
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
   AliAODForwardEP        fAODEP;        // Output object
+  AliAODMultEventClass   fAODRef;       // Reference multiplicity
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
   Bool_t                 fDoTiming;     // Whether to do timing or not
   TProfile*              fHTiming;      // Timing histogram 

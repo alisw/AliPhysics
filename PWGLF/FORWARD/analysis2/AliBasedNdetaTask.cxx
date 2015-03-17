@@ -11,6 +11,7 @@
 #include <AliAODInputHandler.h>
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
+#include "AliAODMultEventClass.h"
 #include <TFile.h>
 #include <TStyle.h>
 #include <TROOT.h>
@@ -169,6 +170,8 @@ AliBasedNdetaTask::ParseNormalizationScheme(const char* what)
   UShort_t    scheme = 0;
   TString     twhat(what);
   twhat.ToUpper();
+  if (twhat.EqualTo("DEFAULT"))
+    return kTriggerEfficiency|kEventLevel;
   TObjString* opt;
   TObjArray* token = twhat.Tokenize(" ,|");
   TIter       next(token);
@@ -274,9 +277,12 @@ AliBasedNdetaTask::GetCentMethodID(const TString& meth)
   else if (m.BeginsWith("V0C"))      ret = kCentV0C;
   else if (m.BeginsWith("V0A123"))   ret = kCentV0A123;
   else if (m.BeginsWith("V0A"))      ret = kCentV0A;
-  else if (m.BeginsWith("V0M"))      ret = kCentV0M;
+  else if (m.BeginsWith("MULTV0A"))  ret = kMultV0A;
+  else if (m.BeginsWith("MULTV0M"))  ret = kMultV0M;
+  else if (m.BeginsWith("MULTV0C"))  ret = kMultV0C;
+  else if (m.BeginsWith("MULT"))     ret = kMult;
   if (m.Contains("TRUE"))            ret |= kCentTrue;
-  if (m.Contains("EG"))              ret |= kCentEq;
+  if (m.Contains("EQ"))              ret |= kCentEq;
   
   return ret;
 }
@@ -307,6 +313,10 @@ AliBasedNdetaTask::GetCentMethod(UShort_t id)
   case kCentV0MvsFMD:	ret = "V0MvsFMD";	break;
   case kCentTklvsV0M:	ret = "TKLvsV0M";	break;
   case kCentZEMvsZDC:	ret = "ZEMvsZDC";	break;
+  case kMult:           ret = "MULT";           break;
+  case kMultV0A:        ret = "MULTV0A";        break;
+  case kMultV0M:        ret = "MULTV0M";        break;
+  case kMultV0C:        ret = "MULTV0C";        break;
   default:              ret = "";               break;
   }
   Bool_t tru = id & kCentTrue;
@@ -377,7 +387,13 @@ AliBasedNdetaTask::Book()
 Bool_t
 AliBasedNdetaTask::CheckEvent(const AliAODForwardMult& fwd) 
 {
-  AliBaseAODTask::CheckEvent(fwd);
+
+  if (!fCentMethod.BeginsWith("MULT")) 
+    AliBaseAODTask::CheckEvent(fwd);
+  else
+    fwd.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
+		   0, 0, fTriggers, fEventStatus);
+  
   // Check full AOD mask 
   if (fPileupMask & kPileupFull && 
       fwd.IsTriggerBits(AliAODForwardMult::kPileUp)) 
@@ -408,6 +424,32 @@ AliBasedNdetaTask::CheckEvent(const AliAODForwardMult& fwd)
   return true;
 }
 
+//____________________________________________________________________
+Double_t
+AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
+				 AliAODForwardMult* forward)
+{
+  Double_t       cent    = forward->GetCentrality();
+  if (!fCentMethod.IsNull()) {
+    if (fCentMethod.BeginsWith("MULT")) {
+      AliAODMultEventClass* mult = GetMultClass(event);
+      if (mult) 
+	cent = mult->GetCentrality(fCentMethod);
+    }
+    else {
+      AliAODHeader* hdr = dynamic_cast<AliAODHeader*>(event.GetHeader());
+      if(!hdr) AliFatal("Not a standard AOD");
+      if (hdr) { 
+	AliCentrality* cP = hdr->GetCentralityP();
+	if (cP) { 
+	  cent = cP->GetCentralityPercentile(fCentMethod);
+	}
+      }
+    }
+  }
+  return cent;
+
+}
 //____________________________________________________________________
 Bool_t
 AliBasedNdetaTask::Event(AliAODEvent& aod) 
@@ -448,19 +490,9 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   if (allBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, fMaxIpZ, 
 			   data, dataMC, checkPileup)) taken = true;
   
-  // Find this centrality bin 
+  // Find this centrality bin
   if (HasCentrality()) {
-    Double_t       cent    = forward->GetCentrality();
-    if (!fCentMethod.IsNull()) { 
-      AliAODHeader* hdr = dynamic_cast<AliAODHeader*>(aod.GetHeader());
-      if(!hdr) AliFatal("Not a standard AOD");
-      if (hdr) { 
-	AliCentrality* cP = hdr->GetCentralityP();
-	if (cP) { 
-	  cent = cP->GetCentralityPercentile(fCentMethod);
-	}
-      }
-    }
+    Double_t       cent    = GetCentrality(aod, forward);
     Int_t          icent   = fCentAxis.FindBin(cent);
     CentralityBin* thisBin = 0;
     if (icent >= 1 && icent <= fCentAxis.GetNbins()) 
@@ -806,6 +838,13 @@ AliBasedNdetaTask::Finalize()
   do {							\
     AliForwardUtil::PrintName(N);			\
     std::cout << (VALUE) << std::endl; } while(false)
+namespace {
+  void appendBit(TString& str, const char* bit)
+  {
+    if (!str.IsNull()) str.Append("|");
+    str.Append(bit);
+  }
+}
 
 //________________________________________________________________________
 void 
@@ -817,6 +856,17 @@ AliBasedNdetaTask::Print(Option_t* option) const
   AliBaseAODTask::Print(option);
   TString schemeString(NormalizationSchemeString(fNormalizationScheme));
 
+  TString pileUp;
+  if (fPileupMask == kPileupNormal) pileUp = "AOD";
+  else {
+    if (fPileupMask & kPileupSPD)    appendBit(pileUp, "SPD");
+    if (fPileupMask & kPileupTrk)    appendBit(pileUp, "tracks");
+    if (fPileupMask & kPileupBC)     appendBit(pileUp, "bunch-xing");
+    if (fPileupMask & kPileupFull)   appendBit(pileUp, "AOD");
+    if (fPileupMask & kPileupIgnore) appendBit(pileUp, "ignored");
+    if (fPileupMask & kPileupUtil)   appendBit(pileUp, "util");
+  }
+
   gROOT->IncreaseDirLevel();
   PFB("Use TH2::ProjectionX",    fUseROOTProj);
   PFB("Correct for empty",       fCorrEmpty);
@@ -825,7 +875,7 @@ AliBasedNdetaTask::Print(Option_t* option) const
   PFV("Bin-0 Trigger efficiency", fTriggerEff0);
   PFV("Centrality estimator",    (fCentMethod.IsNull() ? 
 				  "-default-" : fCentMethod.Data()));
-  PF("Pile-up mask", "0x%x",     fPileupMask);
+  PFV("Pile-up mask",            pileUp);
   PFB("Check SPD outlier",       fCheckSPDOutlier);
   gROOT->DecreaseDirLevel();  
 }

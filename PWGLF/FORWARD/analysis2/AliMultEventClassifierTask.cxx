@@ -123,6 +123,11 @@ AliMultEventClassifierTask::UserExec(Option_t*)
 
   fClassifier.Process(esd, &fData);
 
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler*      ah = 
+    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
+  if (ah) ah->SetFillAOD(kTRUE);
+  
   PostData(1,fList);
 }
 //____________________________________________________________________

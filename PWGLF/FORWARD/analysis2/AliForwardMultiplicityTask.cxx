@@ -45,6 +45,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
   : AliForwardMultiplicityBase(),
     fESDFMD(),
     fEventInspector(),
+    fMultEventClassifier(),
     fESDFixer(),
     fSharingFilter(),
     fDensityCalculator(),
@@ -63,6 +64,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   : AliForwardMultiplicityBase(name),
     fESDFMD(),
     fEventInspector("event"),
+    fMultEventClassifier("multClass"),
     fESDFixer("esdFizer"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
@@ -120,6 +122,7 @@ AliForwardMultiplicityTask::PreEvent()
   fESDFMD.Clear();
   fAODFMD.Clear();
   fAODEP.Clear();
+  fAODRef.Clear();
   return true;
 }
 //____________________________________________________________________
@@ -148,6 +151,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   UShort_t nClusters = 0;
   UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
+  fMultEventClassifier.Process(&esd,&fAODRef);
   FILL_SW(individual,kTimingEventInspector);
 
   if (found & AliFMDEventInspector::kNoEvent)    { 

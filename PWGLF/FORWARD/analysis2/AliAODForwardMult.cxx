@@ -324,6 +324,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     else if (s.CompareTo("E")          == 0) trgMask |= kE;
     else if (s.CompareTo("NCLUSTER>0") == 0) trgMask |= kNClusterGt0;
     else if (s.CompareTo("CENT")       == 0) trgMask |= kInel;
+    else if (s.CompareTo("MULT")       == 0) trgMask |= kInel;
     else if (s.CompareTo("OFFLINE")    == 0) trgMask |= kOffline;
     // trgMask &= ~(kInel|kInelGt0|kNSD|kV0AND|kMCNSD);
     else 

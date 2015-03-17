@@ -5,6 +5,7 @@
 class AliAODEvent;
 class AliAODForwardMult;
 class AliAODCentralMult;
+class AliAODMultEventClass;
 class TList;
 
 /**
@@ -73,6 +74,18 @@ public:
    * @param bins  Bin limits 
    */
   void SetCentralityAxis(UShort_t n, Short_t* bins);
+  /** 
+   * Set the centrality bins to use. 
+   * 
+   * @code 
+   *   UShort_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+   *   task->SetCentralityBins(11, bins);
+   * @endcode 
+   * 
+   * @param n     Number of bins (elements in @a bins minus 1)
+   * @param bins  Bin limits 
+   */
+  void SetCentralityAxis(UShort_t n, Double_t* bins);
   /** 
    * Define a single centrality bin from @a low to @a high 
    * 
@@ -216,6 +229,16 @@ protected:
 				Bool_t mc=false, 
 				Bool_t verb=true);
   /** 
+   * Get the Mult event class object from the AOD 
+   * 
+   * @param aod AOD event 
+   * @param verb If truem be verbose
+   * 
+   * @return Forward object or null
+   */
+  AliAODMultEventClass* GetMultClass(const AliAODEvent& aod, 
+				      Bool_t verb=true);
+  /** 
    * Get the central object from the AOD 
    * 
    * @param aod  AOD event 
@@ -262,6 +285,26 @@ protected:
 	    fCentAxis.GetXbins() && 
 	    fCentAxis.GetXbins()->GetArray()); 
   }
+  /** 
+   * Get the centrality 
+   * 
+   * @param event    Our event 
+   * @param forward  Our FMD event 
+   *  
+   * @return The centrality percentage 
+   */
+  virtual Double_t GetCentrality(AliAODEvent& event,
+				 AliAODForwardMult* forward);
+  /** 
+   * Get the Z coordinate of the interaction point 
+   * 
+   * @param event    Our event
+   * @param forward  Our FMD event
+   * 
+   * @return The z coordinate of the interaction point 
+   */
+  virtual Double_t GetIpZ(AliAODEvent& event,
+			  AliAODForwardMult* forward); 
   /** 
    * Get the name of the default configuration script to use.
    * Sub-classes can override this to give another default

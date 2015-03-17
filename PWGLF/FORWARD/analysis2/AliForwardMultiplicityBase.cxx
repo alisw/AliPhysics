@@ -21,6 +21,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliFMDEventInspector.h"
+#include "AliMultEventClassifier.h"
 #include "AliFMDESDFixer.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
@@ -54,6 +55,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fHistos(),
     fAODFMD(false),
     fAODEP(false),
+    fAODRef(),
     fRingSums(),
     fDoTiming(false),
     fHTiming(0),
@@ -106,12 +108,13 @@ AliForwardMultiplicityBase::Book()
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
   fNeededCorrections = what;
 
-  GetESDFixer()         .CreateOutputObjects(fList);
-  GetSharingFilter()	.CreateOutputObjects(fList);
-  GetDensityCalculator().CreateOutputObjects(fList);
-  GetCorrections()	.CreateOutputObjects(fList);
-  GetHistCollector()	.CreateOutputObjects(fList);
-  GetEventPlaneFinder()	.CreateOutputObjects(fList);
+  GetMultEventClassifier().CreateOutputObjects(fList);
+  GetESDFixer()           .CreateOutputObjects(fList);
+  GetSharingFilter()	  .CreateOutputObjects(fList);
+  GetDensityCalculator()  .CreateOutputObjects(fList);
+  GetCorrections()	  .CreateOutputObjects(fList);
+  GetHistCollector()	  .CreateOutputObjects(fList);
+  GetEventPlaneFinder()	  .CreateOutputObjects(fList);
 
   TAxis tmp(1, 0, 1);
   fHistos.Init(tmp);
@@ -180,6 +183,7 @@ AliForwardMultiplicityBase::CreateBranches(AliAODHandler* ah)
 {
   TObject* obj   = &fAODFMD; ah->AddBranch("AliAODForwardMult", &obj);
   TObject* epobj = &fAODEP;  ah->AddBranch("AliAODForwardEP", &epobj);
+  TObject* rmobj = &fAODRef; ah->AddBranch("AliAODMultEventClass", &rmobj);
 
   if (!fStorePerRing) return;
   
@@ -604,12 +608,13 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   PFB("Make timing histogram", fDoTiming);
   PFV("Trigger mask for adding", AliAODForwardMult::GetTriggerString(fAddMask));
   // gROOT->IncreaseDirLevel();
-  GetESDFixer()         .Print(option);        
-  GetSharingFilter()    .Print(option);
-  GetDensityCalculator().Print(option);
-  GetCorrections()      .Print(option);
-  GetHistCollector()    .Print(option);
-  GetEventPlaneFinder() .Print(option);
+  GetMultEventClassifier().Print(option);
+  GetESDFixer()           .Print(option);        
+  GetSharingFilter()      .Print(option);
+  GetDensityCalculator()  .Print(option);
+  GetCorrections()        .Print(option);
+  GetHistCollector()      .Print(option);
+  GetEventPlaneFinder()   .Print(option);
   // gROOT->DecreaseDirLevel();
   gROOT->DecreaseDirLevel();
 }

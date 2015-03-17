@@ -2,6 +2,7 @@
 #define ALIAODMULTEVENTCLASS_H
 
 #include <TObject.h>
+class TAxis;
 
 class AliAODMultEventClass : public TObject
 {
@@ -65,6 +66,12 @@ public:
    * @return Reference multiplicity 
    */
   Int_t GetMult() const { return fMult; }
+  /** 
+   * Get the "candle" centrality estimator from AliCentrality.  This
+   * is based on the number of reference tracks
+   * 
+   * @return 
+   */
   Float_t GetCND() const { return fSelCND; }
   /** 
    * Get the defined bins 
@@ -72,77 +79,25 @@ public:
    * @return Pointer to defined bins 
    */
   static const Int_t* GetBins();
+  /** 
+   * Return standard axis 
+   * 
+   * @return Pointer to axis (static object)
+   */
+  static const TAxis* GetAxis();
   /* @} */
   /** 
    * @{ 
    * @name Getters 
    */
-  /**
-   * Get V0M centrality 
-   *
-   * @param util If true, from AliPPVsMultUtils, otherwise
-   * AliCentralitySelector
-   *
-   * @return V0M Centrality
+  /** 
+   * General function to get the centrality 
+   * 
+   * @param which String selecting the type
+   * 
+   * @return The centrality 
    */
-  Float_t GetV0M(Bool_t util=true) const { return util ? fUtilV0M : fSelV0M; }
-  /**
-   * Get V0A centrality 
-   *
-   * @param util If true, from AliPPVsMultUtils, otherwise
-   * AliCentralitySelector
-   *
-   * @return V0A Centrality
-   */
-  Float_t GetV0A(Bool_t util=true) const { return util ? fUtilV0A : fSelV0A; }
-  /**
-   * Get V0C centrality 
-   *
-   * @param util If true, from AliPPVsMultUtils, otherwise
-   * AliCentralitySelector
-   *
-   * @return V0C Centrality
-   */
-  Float_t GetV0C(Bool_t util=true) const
-  {
-    return util ? fUtilV0C : fSelV0C;
-  }
-  /**
-   * Get V0MEq centrality 
-   *
-   * @param util If true, from AliPPVsMultUtils, otherwise
-   * AliCentralitySelector
-   *
-   * @return V0MEq Centrality
-   */
-  Float_t GetV0MEq(Bool_t util=true) const
-  {
-    return util ? fUtilV0MEq : fSelV0MEq;
-  }
-  /**
-   * Get V0AEq centrality 
-   *
-   * @param util If true, from AliPPVsMultUtils, otherwise
-   * AliCentralitySelector
-   *
-   * @return V0AEq Centrality
-   */
-  Float_t GetV0AEq(Bool_t util=true) const
-  {
-    return util ? fUtilV0AEq : fSelV0AEq;
-  }
-  /**
-   * Get V0CEq centrality 
-   *
-   * @param util If true, from AliPPVsMultUtils, otherwise
-   * AliCentralitySelector
-   *
-   * @return V0CEq Centrality
-   */
-  Float_t GetV0CEq(Bool_t util=true) const
-  {
-    return util ? fUtilV0CEq : fSelV0CEq;
-  }
+  Float_t GetCentrality(const TString& which) const;
   /** 
    * General function to get the centrality 
    * 
@@ -152,44 +107,13 @@ public:
    * 
    * @return 
    */
-  Float_t GetCentrality(UShort_t which, Bool_t util) const
-  {
-    Bool_t isEq = (which & kEq);
-    if      (which & kV0M) return isEq ? GetV0MEq(util) : GetV0M(util);
-    else if (which & kV0A) return isEq ? GetV0AEq(util) : GetV0A(util);
-    else if (which & kV0C) return isEq ? GetV0CEq(util) : GetV0C(util);
-    else if (which & kCND) return fSelCND;
-    return -1;
-  }
+  Float_t GetCentrality(UShort_t which, Bool_t util) const;
   /* @} */
   /** 
    * @{ 
    * @name Setters 
    */
-  void SetCentrality(UShort_t which, Bool_t util, Float_t c)
-  {
-    Bool_t isEq = (which & kEq);
-    if      (which & kV0M) {
-      if (isEq) 
-	if (util) fUtilV0MEq = c; else fSelV0MEq = c;
-      else 
-	if (util) fUtilV0M   = c; else fSelV0M   = c;
-    }
-    else if (which & kV0A) {
-      if (isEq) 
-	if (util) fUtilV0AEq = c; else fSelV0AEq = c;
-      else 
-	if (util) fUtilV0A   = c; else fSelV0A   = c;
-    }
-    else if (which & kV0C) {
-      if (isEq) 
-	if (util) fUtilV0CEq = c; else fSelV0CEq = c;
-      else 
-	if (util) fUtilV0C   = c; else fSelV0C   = c;
-    }
-    else if (which & kCND && !util)
-      fSelCND = c;
-  }
+  void SetCentrality(UShort_t which, Bool_t util, Float_t c);
   /** 
    * Set the reference multiplicity 
    * 

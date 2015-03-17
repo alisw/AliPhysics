@@ -408,6 +408,7 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
   //    option Not used
   //
   AliBaseESDTask::Print(option);
+  gROOT->IncreaseDirLevel();
   PFB("Use secondary correction", fUseSecondary);
   PFB("Use acceptance correction", fUseAcceptance);
   
@@ -429,12 +430,7 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
       }
     }
   }
-
-  gROOT->IncreaseDirLevel();
-  ccm.Print(option);
-  // fInspector.Print(option);
   gROOT->DecreaseDirLevel();
-  
 }
 
 //====================================================================
