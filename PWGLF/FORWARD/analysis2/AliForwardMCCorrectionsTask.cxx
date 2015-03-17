@@ -89,7 +89,7 @@ AliForwardMCCorrectionsTask::ProcessESD(const AliESDEvent& esd,
 					Double_t          vz)
 {
   AliESDFMD* esdFMD = esd.GetFMDData();
-
+  const Float_t maxMult = 100;
   fTrackDensity.Calculate(*esdFMD, mc, vz, fESDFMD, bin.fPrimary);
   bin.fCounts->Fill(0.5);
 
@@ -109,7 +109,7 @@ AliForwardMCCorrectionsTask::ProcessESD(const AliESDEvent& esd,
 	for (UShort_t t=0; t<nt; t++) {
 	  Float_t mult = fESDFMD.Multiplicity(d,r,s,t);
 	  
-	  if (mult == 0 || mult > 20) continue;
+	  if (mult == 0 || mult > maxMult) continue;
 
 	  Float_t phi = fESDFMD.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t eta = fESDFMD.Eta(d,r,s,t);

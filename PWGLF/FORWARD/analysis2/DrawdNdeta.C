@@ -203,6 +203,7 @@ struct dNdetaDrawer
       fExtTriggerEff(false), // True if fTriggerEff was read 
       fCentMin(0),           // Least centrality to plot
       fCentMax(100),         // Largest centrality to plot
+      fCentSeen(0x0),        // 32bits of centtraliy seen flags
       // Resulting plots 
       fResults(0),           // Stack of results 
       fRatios(0),            // Stack of ratios 
@@ -210,8 +211,8 @@ struct dNdetaDrawer
       fOthers(0),            // Older data 
       fTriggers(0),          // Number of triggers
       fTruth(0),             // Pointer to truth 
-    fRangeParam(0),        // Parameter object for range zoom 
-    fEmpCorr(0)
+      fRangeParam(0),        // Parameter object for range zoom 
+      fEmpCorr(0)
   {
     fRangeParam = new RangeParam;
     fRangeParam->fMasterAxis = 0;
@@ -523,6 +524,7 @@ struct dNdetaDrawer
       SetVertexRange(vzMin,vzMax); // Collision vertex range (cm)
     SetCentralityRange(centMin,centMax); // Collision vertex range (cm)
 
+    fCentSeen         = 0;
     fOptions          = flags;
     fFormats          = formats;
     SetForwardSysError(flags & kShowSysError ? 0.076 : 0);
@@ -896,7 +898,7 @@ struct dNdetaDrawer
       TString centTxt("none");
       if (fCentAxis) { 
 	Int_t nCent = fCentAxis->GetNbins();
-	centTxt = Form("%d bins", nCent);
+	centTxt = Form("%s %d bins", fCentMeth->GetTitle(), nCent);
 	for (Int_t i = 0; i <= nCent; i++) 
 	  centTxt.Append(Form("%c%d", i == 0 ? ' ' : '-', 
 			      int(fCentAxis->GetXbins()->At(i))));
@@ -1018,6 +1020,7 @@ struct dNdetaDrawer
 			 FetchOthers(centLow,centHigh), col, 
 			 centTxt.Data(), max, rmax, amax, tt);
       if (!h) continue;
+      fCentSeen |= (1 << i);
 
       if (tt != ot) { 
 	truths.AddAt(tt, i);
@@ -1118,6 +1121,13 @@ struct dNdetaDrawer
 			Double_t&     amax, 
 			TH1*&         truth)
   {
+    TH1* norm        = FetchHistogram(list, Form("norm%s", name));
+    if (!norm) return 0;
+    if (norm->GetMaximum() < 1000) {
+      Warning("FetchCentResults", "Too few events in %s: %d",
+	      list->GetName(), norm->GetMaximum());
+      return 0;
+    }
     
     TH1* dndeta      = FetchHistogram(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchHistogram(list, Form("dndeta%sMC", name));
@@ -1506,6 +1516,8 @@ struct dNdetaDrawer
   {
     if (!HasCent()) return;
 
+    Printf("Centralities seen 0x%x", fCentSeen);
+    
     if (fCentAxis->GetNbins() <= 4) y1 += .15;
     TLegend* l = new TLegend(x1,y1,x2,y2);
     l->SetNColumns(1);
@@ -1515,13 +1527,17 @@ struct dNdetaDrawer
     l->SetTextFont(kFont);
     l->SetTextColor(kAliceBlue);
 
+    TString centMeth(fCentMeth->GetTitle());
+    const char* suf = (centMeth.EqualTo("MULT") ? "" : "%");
     Int_t n = fCentAxis->GetNbins();
-    for (Int_t i = 1; i <= n; i++) { 
+    for (Int_t i = 1; i <= n; i++) {
+      if (!(fCentSeen & (1 << (i-1)))) continue;
       Double_t low = fCentAxis->GetBinLowEdge(i);
       Double_t upp = fCentAxis->GetBinUpEdge(i);
       TLegendEntry* e = l->AddEntry(Form("dummy%02d", i),
-				    Form("%3d%% - %3d%%", 
-					 int(low), int(upp)), "pl");
+				    Form("%3d%s - %3d%s", 
+					 int(low), suf,
+					 int(upp), suf), "pl");
       e->SetMarkerColor(GetCentralityColor(i));
     }
     l->Draw();
@@ -1656,8 +1672,12 @@ struct dNdetaDrawer
     else                      eS = Form("%.2fTeV", float(snn)/1000);
     Bool_t nn = (fSysString->GetUniqueID() != 1);
     TString tS(fTrigString->GetTitle());
-    if (HasCent()) { 
-      tS  = "by centrality";
+    if (HasCent()) {
+      TString centMeth(fCentMeth->GetTitle());
+      if (centMeth.EqualTo("MULT"))
+	tS = "by N_{#lower[-.2]{ch}} |#it{#eta}|<0.8";
+      else 
+	tS  = "by centrality";
       UShort_t trg = fTrigString->GetUniqueID();
       switch (trg) { 
       case 0x10: tS.Append(" (V0M)"); break;
@@ -1794,6 +1814,7 @@ struct dNdetaDrawer
     yL -= dt->GetTextSize()+.01;
 
     // --- Possible centrality legend --------------------------------
+    if (fSysString->GetUniqueID() == 1) { xL += .2; yL = y1; }
     BuildCentLegend(xL, yL-.4, xL+.23, yL);
 
     // --- Attach Zoom executor --------------------------------------
@@ -2876,6 +2897,7 @@ struct dNdetaDrawer
   Bool_t       fExtTriggerEff;// True if read externally 
   UShort_t     fCentMin;      // Least centrality to plot
   UShort_t     fCentMax;      // Largest centrality to plot
+  UInt_t       fCentSeen;     // List of seen centralities
   /* @} */
   /** 
    * @{ 

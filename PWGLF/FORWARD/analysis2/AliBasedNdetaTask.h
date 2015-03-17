@@ -131,7 +131,7 @@ public:
     kCentTkl,       // Tracklets
     kCentCL0,       // Clusters in SPD-0
     kCentCL1,       // Clusters in SPD-1
-    kCentCND,       // Clusters
+    kCentCND,       // Candle - tracks+tracklets
     kCentZNA,       // ZDC neutrons A-side
     kCentZNC,       // ZDC neutrons C-side
     kCentZPA,       // ZDC protons A-side
@@ -140,6 +140,10 @@ public:
     kCentV0MvsFMD,  // V0M vs FMD
     kCentTklvsV0M,  // Tracks vs V0M
     kCentZEMvsZDC,  // ZDC veto vs neutrons
+    kMult,          // Reference multiplicity in @f$|\eta|<0.8@f$ 
+    kMultV0A,       // HMTF V0A
+    kMultV0M,       // HMTF V0M
+    kMultV0C,       // HMTF V0C 
     kCentTrue = 0x100, 
     kCentEq   = 0x200
   };
@@ -506,7 +510,17 @@ protected:
 
   static Int_t GetCentMethodID(const TString& meth);
   static const char* GetCentMethod(UShort_t id);
-
+  /** 
+   * Get the centrality 
+   * 
+   * @param event    Our event 
+   * @param forward  Our FMD event 
+   * @param bin      On return, the centrality bin 
+   *  
+   * @return The centrality percentage 
+   */
+  Double_t GetCentrality(AliAODEvent& event,
+			 AliAODForwardMult* forward);
   //==================================================================
   /**
    * Class that holds the sum of the data - possibly split into 0 or

@@ -8,7 +8,7 @@
 #include <TH2.h>
 #include <AliCentrality.h>
 #include <AliESDtrackCuts.h>
-
+#include "AliForwardUtil.h"
 //____________________________________________________________________
 const char*
 AliMultEventClassifier::GetCentName(UShort_t which) const
@@ -69,10 +69,12 @@ AliMultEventClassifier::GetCentrality(AliESDEvent* esd,
   if (corr) corr->Fill(util, sel);
   if (vs)   vs  ->Fill(mult, util);
 
-  if (data) return;
+  if (!data) return;
   data->SetCentrality(which, true,  util);
   data->SetCentrality(which, false, sel);
-  
+
+  // TString m(Form("MULT%s", meth));
+  // Printf("%s: %f (%f) (%f)", meth, data->GetCentrality(m), util, sel);
 }
 //____________________________________________________________________
 TH2* 
@@ -89,12 +91,15 @@ AliMultEventClassifier::MakeCorr(UShort_t which)
   corr->SetYTitle("Centrality from AliCentralitySelector [%]");
 
   Bool_t isEq = (which & AliAODMultEventClass::kEq);
-  if      (which & AliAODMultEventClass::kV0M)
+  if      (which & AliAODMultEventClass::kV0M) {
     if (isEq) fCorrV0MEq = corr; else fCorrV0M = corr;
-  else if (which & AliAODMultEventClass::kV0A) 
+  }
+  else if (which & AliAODMultEventClass::kV0A) {
     if (isEq) fCorrV0AEq = corr; else fCorrV0A = corr;
-  else if (which & AliAODMultEventClass::kV0C) 
+  }
+  else if (which & AliAODMultEventClass::kV0C) {
     if (isEq) fCorrV0CEq = corr; else fCorrV0C = corr;
+  }
 
   fList->Add(corr);
   return corr;
@@ -109,11 +114,10 @@ AliMultEventClassifier::MakeVs(UShort_t which, const TArrayD& bins)
   if (isCn && isEq) return 0;
   
   const char*  meth = GetCentName(which);
-  TH2*         vs   = new TH2D(Form("vs%s", meth),
-			       Form("Refernce multiplicity vs %s estimator",
-				    meth),
-			       bins.GetSize()-1,bins.GetArray(),
-			       101, -1.5, 100.5);
+  TH2*         vs   = 0;
+  vs = new TH2D(Form("vs%s", meth),
+		Form("Reference multiplicity vs %s estimator", meth),
+		bins.GetSize()-1,bins.GetArray(), 101, -1.5, 100.5);  
   vs->SetDirectory(0);
   vs->SetXTitle("Reference multiplicity");
   vs->SetYTitle("Centrality from AliPPVsMultUtils [%]");
@@ -197,6 +201,15 @@ AliMultEventClassifier::Process(AliESDEvent* esd,
   GetCentrality(esd, data, fill, AliAODMultEventClass::kV0C|
 		AliAODMultEventClass::kEq);
   GetCentrality(esd, data, fill, AliAODMultEventClass::kCND);
+
+  // if (data) data->Print();
+}
+
+//____________________________________________________________________
+void
+AliMultEventClassifier::Print(Option_t*) const
+{
+  AliForwardUtil::PrintTask(*this);
 }
 
 //____________________________________________________________________

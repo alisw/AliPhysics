@@ -2,6 +2,7 @@
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
+#include "AliAODMultEventClass.h"
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 #include <AliAODEvent.h>
@@ -115,6 +116,13 @@ AliBaseAODTask::SetCentralityAxis(UShort_t n, Short_t* bins)
   for (UShort_t i = 0; i <= n; i++) 
     dbins[i] = (bins[i] == 100 ? 100.1 : bins[i]);
   fCentAxis.Set(n, dbins.GetArray());
+}
+//________________________________________________________________________
+void 
+AliBaseAODTask::SetCentralityAxis(UShort_t n, Double_t* bins)
+{
+  DGUARD(fDebug,3,"Set centrality axis, %d bins", n);
+  fCentAxis.Set(n, bins);
 }
 //________________________________________________________________________
 void 
@@ -269,6 +277,34 @@ AliBaseAODTask::GetForward(const AliAODEvent& aod, Bool_t mc, Bool_t verb)
   return forward;
 }
 //____________________________________________________________________
+AliAODMultEventClass*
+AliBaseAODTask::GetMultClass(const AliAODEvent& aod, Bool_t verb)
+{
+  // Get the forward object that contains our event selection stuff 
+  TObject* obj = aod.FindListObject("MultClass");
+  if (!obj) { 
+    if (verb) AliWarning("No multiplicity event class object found");
+    return 0;
+  }
+  AliAODMultEventClass* multClass = static_cast<AliAODMultEventClass*>(obj);
+  return multClass;
+}
+//____________________________________________________________________
+Double_t
+AliBaseAODTask::GetCentrality(AliAODEvent&,
+			      AliAODForwardMult* forward)
+{
+  return forward->GetCentrality();
+}
+//____________________________________________________________________
+Double_t
+AliBaseAODTask::GetIpZ(AliAODEvent&,
+		       AliAODForwardMult* forward)
+{
+  return forward->GetIpZ();
+}
+
+//____________________________________________________________________
 AliAODCentralMult*
 AliBaseAODTask::GetCentral(const AliAODEvent& aod, Bool_t mc, Bool_t verb)
 {
@@ -324,8 +360,8 @@ AliBaseAODTask::UserExec(Option_t *)
   }
 
   // Get our ip_z and centrality 
-  Double_t vtx   = forward->GetIpZ();
-  Float_t  cent  = forward->GetCentrality();
+  Double_t vtx   = GetIpZ(*aod, forward);
+  Float_t  cent  = GetCentrality(*aod, forward);
   fVertex->Fill(vtx);
   fCent->Fill(cent);
 

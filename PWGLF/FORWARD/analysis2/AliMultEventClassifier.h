@@ -111,7 +111,12 @@ public:
    */
   void Process(AliESDEvent* esd,
 	       AliAODMultEventClass* data);
-    
+  /** 
+   * Print the task 
+   * 
+   * @param option Not used
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * Get a centrality from both algorithms, histogram, and store 
