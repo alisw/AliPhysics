@@ -257,7 +257,7 @@ AliMUONPainterMasterFrame::ShowPainterMatrix(AliMUONPainterMatrix* painterMatrix
   
   AliMUONPainterRegistry::Instance()->AddToHistory(painterMatrix);
   
-  Layout();
+  //Layout();
 }
 
 //_____________________________________________________________________________

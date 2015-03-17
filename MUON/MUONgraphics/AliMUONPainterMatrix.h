@@ -21,6 +21,7 @@
 #ifndef ALIMUONATTPAINTER_H
 #  include "AliMUONAttPainter.h"
 #endif
+#include <string>
 
 class AliMUONVPainter;
 class AliMUONVTrackerData;
@@ -53,10 +54,7 @@ public:
   void GetDataRange(Double_t& dataMin, Double_t& dataMax) const;
 
   /// Get matrix name
-  virtual const char* GetName() const { return Name(); }
-
-  /// Get our name
-  virtual const char* Name() const;
+  virtual const char* GetName() const { return fName.Data(); }
 
   /// Base name (short name)
   const char* Basename() const { return fBasename.Data(); }
@@ -98,7 +96,7 @@ public:
   /// Normalize attributes
   AliMUONAttPainter Validate(const AliMUONAttPainter& att) const;
   
-  static TString NameIt(const char* what, const char* basename, const AliMUONAttPainter& att);
+  static std::string NameIt(const char* what, const char* basename, const AliMUONAttPainter& att);
 
   void Draw(Option_t* opt="");
   
@@ -110,6 +108,7 @@ private:
   /// Not implemented
   AliMUONPainterMatrix& operator=(const AliMUONPainterMatrix& rhs);
 
+  void SetName();
   void UpdateAttributes();
   
 private:
@@ -119,8 +118,9 @@ private:
   Int_t fNy; ///< number of columns
   TObjArray* fPainters; ///< painters in that matrix
   AliMUONAttPainter fAttributes; ///< attributes of our painter(s)
+  TString fName; ///< our name
   
-  ClassDef(AliMUONPainterMatrix,2) // Matrix of AliMUONVPainter
+  ClassDef(AliMUONPainterMatrix,3) // Matrix of AliMUONVPainter
 };
 
 #endif

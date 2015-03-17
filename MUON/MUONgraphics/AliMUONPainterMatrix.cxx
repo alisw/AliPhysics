@@ -54,7 +54,8 @@ AliMUONPainterMatrix::AliMUONPainterMatrix(const char* name, Int_t nx, Int_t ny)
   fNx(nx),
   fNy(ny),
   fPainters(new TObjArray(fNx*fNy)),
-  fAttributes()
+  fAttributes(),
+  fName()
 {
   /// ctor
   
@@ -63,6 +64,7 @@ AliMUONPainterMatrix::AliMUONPainterMatrix(const char* name, Int_t nx, Int_t ny)
   {
     fAttributes.SetSingle(kFALSE);
   }
+  SetName();
 }
 
 //_____________________________________________________________________________
@@ -81,74 +83,41 @@ AliMUONPainterMatrix::Adopt(AliMUONVPainter* painter)
   UpdateAttributes();
 }
 
+
 //_____________________________________________________________________________
-void
-AliMUONPainterMatrix::UpdateAttributes()
+AliMUONPainterMatrix*
+AliMUONPainterMatrix::Clone(const AliMUONAttPainter& attributes) const
 {
-  /// Update our attributes (using our painters' attributes)
+  /// Clone with given attributes
   
-  Bool_t cathode0(kFALSE);
-  Bool_t cathode1(kFALSE);
-  Bool_t bending(kFALSE);
-  Bool_t nonbending(kFALSE);
-  Bool_t front(kFALSE);
-  Bool_t back(kFALSE);
-  Bool_t cathplaneexclusive(kFALSE);
-  Bool_t cathplanedisabled(kFALSE);
-  
+  AliMUONPainterMatrix* clone = new AliMUONPainterMatrix(Basename(),Nx(),Ny());
+
   for ( Int_t i = 0; i < Size(); ++i )
   {
-    AliMUONAttPainter att = Painter(i)->Attributes();
-    
-    if ( att.IsCathodeDefined() ) 
-    {
-      if ( att.IsCathode0() ) cathode0 = kTRUE;
-      if ( att.IsCathode1() ) cathode1 = kTRUE;
-    }
+    AliMUONVPainter* oldPainter = Painter(i);
 
-    if ( att.IsPlaneDefined() ) 
+    AliMUONVPainter* newPainter(0x0);
+
+    newPainter = AliMUONVPainter::CreatePainter(oldPainter->ClassName(),
+                                                attributes,
+                                                oldPainter->ID0(),
+                                                oldPainter->ID1());
+    
+    if (newPainter)
     {
-      if ( att.IsBendingPlane() ) bending = kTRUE;
-      if ( att.IsNonBendingPlane() ) nonbending = kTRUE;
+      newPainter->UpdateGroupsFrom(*(oldPainter->Master()));
+      clone->Adopt(newPainter);
     }
-    
-    if ( att.IsFrontView() ) front = kTRUE;
-    if ( att.IsBackView() ) back = kTRUE;
-    
-    if ( att.IsCathodeAndPlaneMutuallyExclusive() ) cathplaneexclusive = kTRUE;
-    
-    if ( att.IsCathodeAndPlaneDisabled() ) cathplanedisabled = kTRUE;
+    else
+    {
+      AliError(Form("Failed to create painter of class %s ID0 %d ID1 %d",
+                    oldPainter->ClassName(),
+                    oldPainter->ID0(),
+                    oldPainter->ID1()));
+    }
   }
   
-  fAttributes.SetCathode(cathode0,cathode1);
-  fAttributes.SetPlane(bending,nonbending);
-  fAttributes.SetViewPoint(front,back);
-  fAttributes.SetCathodeAndPlaneMutuallyExclusive(cathplaneexclusive);
-  fAttributes.SetCathodeAndPlaneDisabled(cathplanedisabled);
-}
-
-//_____________________________________________________________________________
-const char*
-AliMUONPainterMatrix::Name() const
-{
-  /// Build our name
-  
-  return NameIt(fWhatname.Data(),fBasename.Data(),fAttributes).Data();
-}
-
-//_____________________________________________________________________________
-TString
-AliMUONPainterMatrix::NameIt(const char* whatname, const char* basename, const AliMUONAttPainter& att)
-{
-  /// Build a name 
-  if ( strlen(whatname) > 0 ) 
-  {
-    return Form("%s-%s-%s",whatname,basename,att.Name().Data());
-  }
-  else
-  {
-    return Form("noda-%s-%s",basename,att.Name().Data());
-  }
+  return clone;
 }
 
 //_____________________________________________________________________________
@@ -238,7 +207,7 @@ AliMUONPainterMatrix::CreateCanvas(Int_t x, Int_t y, Int_t w, Int_t h)
   Int_t mw = ( w <= 0 ? TMath::Nint(gClient->GetDisplayWidth()*0.9) : w );
   Int_t mh = ( h <= 0 ? TMath::Nint(gClient->GetDisplayHeight()*0.9) : h );
   
-  TString name(Name());
+  TString name(GetName());
   
   TCanvas* d = new TCanvas(name.Data(),name.Data(),x,y,mw,mh);
 
@@ -401,44 +370,6 @@ AliMUONPainterMatrix::GetTypes(TObjArray& types) const
 
 
 //_____________________________________________________________________________
-void
-AliMUONPainterMatrix::Draw(Option_t*)
-{
-  /// Append our painters to the current pad
-
-  if (!gPad) 
-  {
-    gROOT->MakeDefCanvas();
-  }
-  
-  TVirtualPad* pad = gPad;
-
-  gPad->Divide(Nx(),Ny());
-  
-  for ( Int_t i = 0; i < Size(); ++i ) 
-  {
-    AliMUONVPainter* painter = Painter(i);
-    pad->cd(i+1);
-    painter->Draw("R");
-  }  
-  
-  AppendPad("");
-}
-
-//_____________________________________________________________________________
-AliMUONVPainter* 
-AliMUONPainterMatrix::Painter(Int_t index) const
-{
-  /// Get a given painter
-  
-  if ( index <= fPainters->GetLast() ) 
-  {
-    return static_cast<AliMUONVPainter*>(fPainters->At(index));
-  }
-  return 0x0;
-}
-
-//_____________________________________________________________________________
 AliMUONVTrackerData* 
 AliMUONPainterMatrix::Data() const
 {
@@ -467,6 +398,68 @@ AliMUONPainterMatrix::DataIndex() const
 
 //_____________________________________________________________________________
 void
+AliMUONPainterMatrix::Draw(Option_t*)
+{
+  /// Append our painters to the current pad
+
+  if (!gPad)
+  {
+    gROOT->MakeDefCanvas();
+  }
+
+  TVirtualPad* pad = gPad;
+
+  gPad->Divide(Nx(),Ny());
+
+  for ( Int_t i = 0; i < Size(); ++i )
+  {
+    AliMUONVPainter* painter = Painter(i);
+    pad->cd(i+1);
+    painter->Draw("R");
+  }
+
+  AppendPad("");
+}
+
+//_____________________________________________________________________________
+std::string
+AliMUONPainterMatrix::NameIt(const char* whatname, const char* basename, const AliMUONAttPainter& att)
+{
+  /// Build a name
+  if ( strlen(whatname) > 0 )
+  {
+    return Form("%s-%s-%s",whatname,basename,att.GetName());
+  }
+  else
+  {
+    return Form("nodata-%s-%s",basename,att.GetName());
+  }
+}
+
+//_____________________________________________________________________________
+AliMUONVPainter*
+AliMUONPainterMatrix::Painter(Int_t index) const
+{
+  /// Get a given painter
+
+  if ( index <= fPainters->GetLast() )
+  {
+    return static_cast<AliMUONVPainter*>(fPainters->At(index));
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterMatrix::Print(Option_t*) const
+{
+  /// Printout
+  cout << "Whatname=" << fWhatname.Data() << " Basename=" << fBasename.Data()
+  << " Nx=" << fNx << " Ny=" << fNy << " Att=" << fAttributes.GetName() << endl;
+}
+
+//_____________________________________________________________________________
+void
 AliMUONPainterMatrix::SetData(const char* pattern, AliMUONVTrackerData* d,
                               Int_t indexInData)
 {
@@ -486,6 +479,7 @@ AliMUONPainterMatrix::SetData(const char* pattern, AliMUONVTrackerData* d,
   {
     fWhatname = "";
   }
+  SetName();
 }
 
 //_____________________________________________________________________________
@@ -506,21 +500,22 @@ AliMUONPainterMatrix::SetDataRange(Double_t dataMin, Double_t dataMax)
 }
 
 //_____________________________________________________________________________
-Int_t 
-AliMUONPainterMatrix::Size() const
+void AliMUONPainterMatrix::SetName()
 {
-  /// Return the number of painters we actually handle
-  return fPainters->GetLast()+1;
+	/// Build our name
+//	fName = NameIt(fWhatname.Data(),fBasename.Data(),fAttributes);
+	fName = "nodata";
+
+	if ( fWhatname.Length() > 0 )
+	{
+		fName = fWhatname;
+	}
+	fName += "-";
+	fName += fBasename;
+	fName += "-";
+	fName += fAttributes.GetName();
 }
 
-//_____________________________________________________________________________
-void
-AliMUONPainterMatrix::Print(Option_t*) const
-{
-  /// Printout
-  cout << "Whatname=" << fWhatname.Data() << "Basename=" << fBasename.Data() 
-  << " Nx=" << fNx << " Ny=" << fNy << " Att=" << fAttributes.GetName() << endl;
-}
 
 //_____________________________________________________________________________
 //void 
@@ -536,41 +531,6 @@ AliMUONPainterMatrix::Print(Option_t*) const
 //  //  }
 //}
 
-//_____________________________________________________________________________
-AliMUONPainterMatrix*
-AliMUONPainterMatrix::Clone(const AliMUONAttPainter& attributes) const
-{
-  /// Clone with given attributes
-  
-  AliMUONPainterMatrix* clone = new AliMUONPainterMatrix(Basename(),Nx(),Ny());
-
-  for ( Int_t i = 0; i < Size(); ++i ) 
-  {
-    AliMUONVPainter* oldPainter = Painter(i);
-    
-    AliMUONVPainter* newPainter(0x0);
-    
-    newPainter = AliMUONVPainter::CreatePainter(oldPainter->ClassName(),
-                                                attributes,
-                                                oldPainter->ID0(),
-                                                oldPainter->ID1());
-    
-    if (newPainter)
-    {
-      newPainter->UpdateGroupsFrom(*(oldPainter->Master()));
-      clone->Adopt(newPainter);
-    }
-    else
-    {
-      AliError(Form("Failed to create painter of class %s ID0 %d ID1 %d",
-                    oldPainter->ClassName(),
-                    oldPainter->ID0(),
-                    oldPainter->ID1()));
-    }
-  }
-  
-  return clone;
-}
 
 //_____________________________________________________________________________
 void
@@ -593,6 +553,62 @@ AliMUONPainterMatrix::SetResponder(const char* pattern)
   {
     Painter(i)->SetResponder(pattern);
   }
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONPainterMatrix::Size() const
+{
+  /// Return the number of painters we actually handle
+  return fPainters->GetLast()+1;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterMatrix::UpdateAttributes()
+{
+  /// Update our attributes (using our painters' attributes)
+
+  Bool_t cathode0(kFALSE);
+  Bool_t cathode1(kFALSE);
+  Bool_t bending(kFALSE);
+  Bool_t nonbending(kFALSE);
+  Bool_t front(kFALSE);
+  Bool_t back(kFALSE);
+  Bool_t cathplaneexclusive(kFALSE);
+  Bool_t cathplanedisabled(kFALSE);
+
+  for ( Int_t i = 0; i < Size(); ++i )
+  {
+    AliMUONAttPainter att = Painter(i)->Attributes();
+
+    if ( att.IsCathodeDefined() )
+    {
+      if ( att.IsCathode0() ) cathode0 = kTRUE;
+      if ( att.IsCathode1() ) cathode1 = kTRUE;
+    }
+
+    if ( att.IsPlaneDefined() )
+    {
+      if ( att.IsBendingPlane() ) bending = kTRUE;
+      if ( att.IsNonBendingPlane() ) nonbending = kTRUE;
+    }
+
+    if ( att.IsFrontView() ) front = kTRUE;
+    if ( att.IsBackView() ) back = kTRUE;
+
+    if ( att.IsCathodeAndPlaneMutuallyExclusive() ) cathplaneexclusive = kTRUE;
+
+    if ( att.IsCathodeAndPlaneDisabled() ) cathplanedisabled = kTRUE;
+  }
+
+  fAttributes.SetCathode(cathode0,cathode1);
+  fAttributes.SetPlane(bending,nonbending);
+  fAttributes.SetViewPoint(front,back);
+  fAttributes.SetCathodeAndPlaneMutuallyExclusive(cathplaneexclusive);
+  fAttributes.SetCathodeAndPlaneDisabled(cathplanedisabled);
+
+  SetName();
 }
 
 //_____________________________________________________________________________

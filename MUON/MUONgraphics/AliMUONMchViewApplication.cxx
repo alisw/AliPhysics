@@ -497,6 +497,13 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.18");
+  rn->AddLine("");
+  rn->AddLine("- Do not connect to the Grid by default if OCDB is from cvmfs");
+  rn->AddLine("- Add disableAutoPedCanvas: 1|0 option to .mchviewrc to disable auto generation of pedestal canvases when opening a ped data source");
+
+  rn->AddLine("");
+
   rn->AddLine("1.17");
   rn->AddLine("");
   rn->AddLine("Default OCDB is now cvmfs (for the current year) if that mounting point exists");

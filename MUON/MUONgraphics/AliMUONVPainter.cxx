@@ -286,7 +286,7 @@ AliMUONVPainter::ContourName() const
   TString name(PathName());
 
   name += "-";
-  name += fAttributes.Name();
+  name += fAttributes.GetName();
   
   return name;
 }

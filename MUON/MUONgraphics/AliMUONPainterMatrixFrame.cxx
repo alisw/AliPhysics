@@ -153,9 +153,8 @@ AliMUONPainterMatrixFrame::~AliMUONPainterMatrixFrame()
 void
 AliMUONPainterMatrixFrame::ChangeTitle(const TString& title)
 {
-  /// Change title
-  
-  TitleHasChanged(title.Data());
+	/// Change title
+    TitleHasChanged(title.Data());
 }
 
 //_____________________________________________________________________________
@@ -166,7 +165,7 @@ AliMUONPainterMatrixFrame::ChangeTitle(AliMUONVPainter* painter,
 {
   /// Change the title according to painter
   
-  TString name;
+  std::string name;
   
   if (painter) 
   {
@@ -192,10 +191,10 @@ AliMUONPainterMatrixFrame::ChangeTitle(AliMUONVPainter* painter,
   }
   else
   {
-    name = fPainterMatrix->Name();
+    name = fPainterMatrix->GetName();
   }
   
-  TitleHasChanged(name.Data());
+  TitleHasChanged(name.c_str());
 }
 
 //_____________________________________________________________________________
@@ -414,7 +413,7 @@ AliMUONPainterMatrixFrame::MouseLeave(const AliMUONVPainter* painter)
 {
   /// Emit a signal to notify that mouse pointer is leaving a given painter
   
-  ChangeTitle(fPainterMatrix->Name());
+  ChangeTitle(fPainterMatrix->GetName());
 
   Long_t params[] = { (Long_t)painter };
   
@@ -637,7 +636,7 @@ AliMUONPainterMatrixFrame::Use(AliMUONPainterMatrix* group)
   
   UpdateInterface(kTRUE);
   
-  ChangeTitle(fPainterMatrix->Name());
+  ChangeTitle(fPainterMatrix->GetName());
   
   fView->GetCanvas()->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",
                               "AliMUONPainterMatrixFrame",this, 

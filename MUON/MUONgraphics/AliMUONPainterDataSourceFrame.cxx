@@ -465,7 +465,12 @@ AliMUONPainterDataSourceFrame::RegisterDataSource(AliMUONVTrackerDataMaker* read
       
       if ( name.Contains("PED") )
       {
-        CreatePedestalCanvases(reader->Data());
+    	  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+
+    	  if ( env->Integer("disableAutoPedCanvas",0)==0)
+    	  {
+    		  CreatePedestalCanvases(reader->Data());
+    	  }
       }
     }
   }  

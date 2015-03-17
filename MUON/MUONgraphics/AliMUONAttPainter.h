@@ -41,9 +41,7 @@ public:
   virtual ~AliMUONAttPainter();
   
   /// Return our name
-  virtual const char* GetName() const { return Name(); }
-  
-  TString Name() const;
+  virtual const char* GetName() const { return fName.Data(); }
   
   TString CathodeName() const;
   
@@ -80,39 +78,41 @@ public:
   
   void Invert();
   
-  /// Set our cathode states
-  void SetCathode(Bool_t cath0, Bool_t cath1) { SetBit(kIsCathode0,cath0); SetBit(kIsCathode1,cath1); }
-  
-  /// Set our plane states
-  void SetPlane(Bool_t bending, Bool_t nonBending) { SetBit(kIsBendingPlane,bending); SetBit(kIsNonBendingPlane,nonBending); }
-  
-  /// Set single status
-  void SetSingle(Bool_t value) { SetBit(kIsSinglePainter,value); }
-  
+
   /// Whether the painter is to be represented from front (as seen from IP)
   Bool_t IsFrontView() const { return TestBit(kIsFrontView); }
   
   /// Whether the painter is to be represented from back (as seen from IP)
   Bool_t IsBackView() const { return TestBit(kIsBackView); }
   
-  /// Set view point
-  void SetViewPoint(Bool_t front, Bool_t back) { SetBit(kIsFrontView,front); SetBit(kIsBackView,back); }
-  
-  /// Set mutually exclusive flag
-  void SetCathodeAndPlaneMutuallyExclusive(Bool_t value) { SetBit(kIsCathodeAndPlaneMutuallyExclusive,value); }
-  
-  /// Set valid flag
-  void SetValid(Bool_t value) { SetBit(kIsValid,value); }
-  
+
   /// Whether we represent attributes of a single painter (if false, means it's a painter group)
   Bool_t IsSinglePainter() const { return TestBit(kIsSinglePainter); }
   
-  /// Set cathode & plane disable flag
-  void SetCathodeAndPlaneDisabled(Bool_t value) { SetBit(kIsCathodeAndPlaneDisabled,value); }
 
   void Print(Option_t* opt="") const;
   
-  ClassDef(AliMUONAttPainter,1) // Basic attributes of painters
+    void SetCathode(Bool_t cath0, Bool_t cath1);
+
+    void SetPlane(Bool_t bending, Bool_t nonBending);
+
+    void SetSingle(Bool_t value);
+
+     void SetViewPoint(Bool_t front, Bool_t back);
+
+     void SetCathodeAndPlaneMutuallyExclusive(Bool_t value);
+
+     void SetValid(Bool_t value);
+
+      void SetCathodeAndPlaneDisabled(Bool_t value);
+
+private:
+  void SetName();
+
+private:
+  TString fName; ///< name of the attributes
+
+  ClassDef(AliMUONAttPainter,2) // Basic attributes of painters
 };
 
 #endif

@@ -100,11 +100,11 @@ int main(int argc, char** argv)
     }
   }
   
-  if (!gGrid)
+  if (!gGrid && !defaultOCDB.Contains("/cvmfs/") )
   {
     TGrid::Connect("alien://");
   }
-  
+
   for ( Int_t i = 0; i <= args.GetLast(); ++i )
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
