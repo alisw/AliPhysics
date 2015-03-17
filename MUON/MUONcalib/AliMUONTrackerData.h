@@ -213,7 +213,7 @@ private:
   /// The number of values we actually *store* for each item
   Int_t Dimension() const { return fDimension; }
     
-  Bool_t InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bool_t replace);
+  Bool_t InternalAdd(const AliMUONVStore& store, TArrayI* nevents);
 
   void GetDEManu(const AliMUONVCalibParam& param,
                   Int_t& detElemId, Int_t& manuId) const;
