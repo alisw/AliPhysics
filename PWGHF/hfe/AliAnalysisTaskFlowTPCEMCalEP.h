@@ -14,7 +14,7 @@
  **************************************************************************/
 
 #ifndef ALIANALYSISTASKFlowTPCEMCalEP_H
-#define ALIANALYSISTASKFlowTPCEMCalEP_HAliPIDResponse.h
+#define ALIANALYSISTASKFlowTPCEMCalEP_H
 
 class THnSparse;
 class TH2F;
