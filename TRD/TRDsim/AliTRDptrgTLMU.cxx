@@ -370,6 +370,8 @@ void AliTRDptrgTLMU::GetInputBits() {
     }
   }
 
+  delete [] map;
+
   // handle input mask
   for (Int_t iSM = 0; iSM < 18; iSM++) {
     AliDebug(5, Form("fInputTOFinputBits[%d]=0x%x", iSM, 
