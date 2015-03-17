@@ -12,13 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Tree creation for tracking efficiency studies as function of the distance
- * to the main jet axis
- *
- * Author:
- *   Markus Fasel <markus.fasel@cern.ch>
- */
 #include <iostream>
 #include <sstream>
 
@@ -40,6 +33,7 @@
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliTrackReference.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -52,16 +46,23 @@
 #include "AliReducedJetEvent.h"
 #include "AliReducedJetInfo.h"
 #include "AliReducedJetParticle.h"
+#include "AliReducedMatchedTrack.h"
 
 #include "AliHighPtReconstructionEfficiency.h"
 
+/// \cond CLASSIMP
 ClassImp(HighPtTracks::AliHighPtReconstructionEfficiency)
+/// \endcond
 
 namespace HighPtTracks {
 
+/**
+ * \brief Dummy constructor
+ *
+ * Dummy (I/O) constructor. Not to be used
+ */
 AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency() :
 	AliAnalysisTaskSE(),
-	fTrackCuts(NULL),
 	fParticleMap(NULL),
 	fJetTree(NULL),
 	fJetEvent(NULL),
@@ -74,11 +75,19 @@ AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency() :
 	fPtHardBin(0),
 	fTaskDebugMode(false)
 {
+  memset(fTrackCuts, 0, sizeof(AliESDtrackCuts *) * 2);
 }
 
+/**
+ * \brief Main constructor
+ *
+ * Main constructor, initialises relevant settings for the task. Setting default values for
+ * kinematic track selection
+ *
+ * \param name Name of the task
+ */
 AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency(const char* name):
 	AliAnalysisTaskSE(name),
-	fTrackCuts(NULL),
 	fParticleMap(NULL),
 	fJetTree(NULL),
 	fJetEvent(NULL),
@@ -92,17 +101,27 @@ AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency(const char*
 	fTaskDebugMode(false)
 {
 	DefineOutput(1, TNtuple::Class());
+  memset(fTrackCuts, 0, sizeof(AliESDtrackCuts *) * 2);
 }
 
+/**
+ * \brief Destructor
+ *
+ * Destructor, cleaning up memory allocated by the task.
+ */
 AliHighPtReconstructionEfficiency::~AliHighPtReconstructionEfficiency() {
-	if(fTrackCuts) delete fTrackCuts;
+  for(int icut = 0; icut < 2; icut++)
+    if(fTrackCuts[icut]) delete fTrackCuts[icut];
 	if(fParticleMap) delete fParticleMap;
 }
 
+/**
+ * \brief Prepare output objects and track selection
+ *
+ * Preparing output objects and track selection: create a new TTree and
+ * reduced event object, and set the branch address to the new reduced event.
+ */
 void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
-	/*
-	 * Prepare output objects and track selection
-	 */
 	OpenFile(1);
 
 	fJetTree = new TTree("JetEvent","A tree with jet information");
@@ -112,9 +131,14 @@ void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
 	PostData(1, fJetTree);
 }
 
+/**
+ * \brief Function informing user when a new file is read in
+ *
+ * Function informing the user when a new file starts. Used to
+ *
+ * \return True if the function is executed successfully, false in case of errors
+ */
 bool AliHighPtReconstructionEfficiency::UserNotify(){
-	// Read Pythia cross section, incorporated from AliAnalysisTaskEmcal
-
 	TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
 	if (!tree) {
 		AliError(Form("%s - UserNotify: No current tree!",GetName()));
@@ -132,17 +156,21 @@ bool AliHighPtReconstructionEfficiency::UserNotify(){
 	return kTRUE;
 }
 
-void AliHighPtReconstructionEfficiency::UserExec(Option_t*) {
-	/*
-	 * Event loop:
-	 * 1. Filter particles used for the jet finding
-	 * 2. Filter MC-true particles and create lookup of particles with matching reconstructed particle,
-	 *    based on the MC label
-	 * 3. Find jets
-	 * 4. Create Output event structure with output jets, and match the pre-filtered particles to the jet,
-	 *    select only those with a distance smaller than the distance cut
-	 * 5. Write out the event into a TTree
-	 */
+/**
+ * \brief Runs event loop and creates reconstructed event
+ *
+ * Event loop:
+ *  -# Filter particles used for the jet finding
+ *  -# Filter MC-true particles and create lookup of particles with matching reconstructed particle,
+ *     based on the MC label
+ *  -# Find jets
+ *  -# Create Output event structure with output jets, and match the pre-filtered particles to the jet,
+ *     select only those with a distance smaller than the distance cut
+ *  -# Write out the event into a TTree
+ *
+ * \param option Opitional settings, not used here
+ */
+void AliHighPtReconstructionEfficiency::UserExec(Option_t* /*option*/) {
 	TList listforjets;
 	SelectParticlesForJetfinding(listforjets);
 
@@ -171,7 +199,7 @@ void AliHighPtReconstructionEfficiency::UserExec(Option_t*) {
 		int nparticlesGen = 0, nparticlesRec = 0;
 		for(std::vector<AliReconstructedParticlePair>::iterator pairiter = selectedParticles.begin(); pairiter != selectedParticles.end(); ++pairiter){
 			if(pairiter->GetMCTrueParticle()) nparticlesGen++;
-			if(pairiter->GetRecTrack()) nparticlesRec++;
+			if(pairiter->GetRecTracks().GetNumberOfParticles()) nparticlesRec++;
 		}
 		AliDebug(1, Form("Among %d selected particles we find %d reconstructed particles.", nparticlesGen, nparticlesRec));
 	}
@@ -188,34 +216,57 @@ void AliHighPtReconstructionEfficiency::UserExec(Option_t*) {
 	PostData(1, fJetTree);
 }
 
-bool AliHighPtReconstructionEfficiency::IsSelected(const AliVTrack* const track) const {
+/**
+ * \brief Checks if particle is accepted by a give cut type.
+ *
+ * Checks if particle is accepted by a give cut type. Currently implemented cut types are the \f$ R_{AA} \f$
+ * standard cuts and the hybrid track cuts.
+ *
+ * \param track
+ * \param cuttype
+ * \return True if particle survived the cut, false otherwise
+ */
+bool AliHighPtReconstructionEfficiency::IsSelected(const AliVTrack* const track, CutType_t cuttype) const {
 	/*
 	 * Select reconstructed particle by applying track cuts
 	 */
+	if(!fTrackCuts[cuttype]) return kTRUE;
 	const AliESDtrack *inputtrack = dynamic_cast<const AliESDtrack *>(track);
 	if(inputtrack){
-		return fTrackCuts->AcceptTrack(inputtrack);
+		return fTrackCuts[cuttype]->AcceptTrack(inputtrack);
 	} else {
 		// AOD track: Use copy
 		AliESDtrack copytrack(track);
-		return fTrackCuts->AcceptTrack(&copytrack);
+		return fTrackCuts[cuttype]->AcceptTrack(&copytrack);
 	}
 }
 
+/**
+ * \brief Selects particle as true particle.
+ *
+ * Selects particle as MC-true particle. At this level, the particle \f$ p_{t} \f$ and \f$ \eta \f$
+ * are checked. Only charged particles are accepted.
+ *
+ * \param track Particle to be checked
+ * \return True if particle is accepted as true particle according to the truth defintion
+ */
 bool AliHighPtReconstructionEfficiency::IsTrueSelected(const AliVParticle* const track) const {
-	/*
-	 * Accept particle as MC-true particle
-	 */
 	if(TMath::Abs(track->Eta()) > fMaxEtaParticles) return false;
 	if(TMath::Abs(track->Pt()) < fMinPtParticles) return false;
 	if(!track->Charge()) return false;
 	return true;
 }
 
+/**
+ * \brief Select particles which are used during jet finding.
+ *
+ * Select particles at generation level which are the input for the jet finder. Particles are
+ * requested to be within the kinematic acceptance and physical primary. Both charged and neutral
+ * particles are accepted for jet finding.
+ *
+ * \param particles Which are used as input for the jet finder, filled by this function.
+ */
 void AliHighPtReconstructionEfficiency::SelectParticlesForJetfinding(TList& particles) const {
-	/*
-	 * Pre-fileter particles for the jet reconstruction
-	 */
 	AliVParticle *part = 0;
 	particles.Clear();
 	for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
@@ -227,22 +278,32 @@ void AliHighPtReconstructionEfficiency::SelectParticlesForJetfinding(TList& part
 	}
 }
 
+/**
+ * \brief Associated reconstructed particles to Monte-Carlo true particles.
+ *
+ * This function associates reconstructed particles with Monte-Carlo true particles. For this,
+ * a lookup tables which maps all reconstructed particles to a label is used internally. The
+ * lookup table is created when the event starts and belongs to the event. Only tracks which
+ * are physical primary signal tracks and in the kinematic acceptance are selected. The result
+ * is a vector of particle pairs, which store a pointer to the Monte-Carlo particle and a list of
+ * reconstructed tracks associated.
+ *
+ * \return Vector of reconstructed particle sets
+ */
 std::vector<AliReconstructedParticlePair> AliHighPtReconstructionEfficiency::SelectParticles() const {
-	/*
-	 * Select particles to be matched with the reconstructed jet
-	 */
-	const AliVParticle *part(NULL);
-	AliVTrack *track(NULL);
+	AliVParticle *part(NULL);
+	AliParticleList tracks;
 	std::vector<AliReconstructedParticlePair> result;
 	for(int ipart = 0; ipart <fMCEvent->GetNumberOfTracks(); ipart++){
 		part = fMCEvent->GetTrack(ipart);
 		if(!IsPhysicalPrimary(part)) continue;
 		if(!IsTrueSelected(part)) continue;
-		track = FindReconstructedParticleFast(ipart);
+		const AliParticleList *tmptracks = FindReconstructedParticleFast(ipart);
+		if(tmptracks) tracks = *tmptracks;
 		if(fTaskDebugMode){
 			std::stringstream debugmessage;
 			debugmessage << "Accepted particle with label " << ipart;
-			if(track)
+			if(tracks.GetNumberOfParticles())
 				debugmessage << " - found reconstructed track";
 			else
 				debugmessage << " - did not find reconstructed track";
@@ -251,103 +312,124 @@ std::vector<AliReconstructedParticlePair> AliHighPtReconstructionEfficiency::Sel
 
 		AliReconstructedParticlePair foundpair;
 		foundpair.SetMCTrueParticle(part);
-		foundpair.SetRecParticle(track);
+		foundpair.SetRecParticles(tracks);
 		result.push_back(foundpair);
 	}
 	return result;
 }
 
+/**
+ * \brief Calculate distance to the main jet axis
+ *
+ * Calculates the distance between a particle and the main jet axis.
+ *
+ * \param recjet Jet where the particle is associated to
+ * \param inputtrack Paricle to check
+ * \return Distance between jet main axis and particle
+ */
 double AliHighPtReconstructionEfficiency::GetDR(const fastjet::PseudoJet& recjet, const AliVParticle* const inputtrack) const {
-	/*
-	 * Calculte distance to the main jet axis
-	 */
 	return recjet.delta_R(fastjet::PseudoJet(inputtrack->Px(), inputtrack->Py(), inputtrack->Pz(), inputtrack->E()));
 }
 
-AliVTrack* AliHighPtReconstructionEfficiency::FindReconstructedParticle(int label) const {
-	/*
-	 * Find matching reconstructed particle for a given MC label (slow version)
-	 */
-	AliVTrack *selected(NULL), *tmp(NULL);
-	for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++){
-		tmp = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
-		if(TMath::Abs(tmp->GetLabel()) == label){
-			if(IsSelected(tmp)){
-				selected = tmp;
-				break;
-			}
-		}
-	}
-	return selected;
-}
-
-void AliHighPtReconstructionEfficiency::ProcessJet(
-		AliReducedJetInfo * const recjet,
-		const std::vector<AliReconstructedParticlePair>& particles
-		) const
+/**
+ * \brief Fill reduced jet information with associated particles
+ *
+ * Fill reduced jet information with associated particles at generator and reconstruction level. Only
+ * particles within a maximum distance to the jet are selected to be added to the jet structure. Also
+ * all particles reconstructed with a minimum requirement (TPC refit and ITS refit) are added to a particle
+ * at this step.
+ *
+ * \param recjet Jet to be filled
+ * \param particles List of particle pairs containing particle at generator level and associated reconstruced tracks
+ */
+void AliHighPtReconstructionEfficiency::ProcessJet(AliReducedJetInfo * const recjet,
+    const std::vector<AliReconstructedParticlePair>& particles) const
 {
-	/*
-	 * Select particles with radius to the jet less than the maximum allowed radius and adds them to the reconstructed jet info
-	 */
 	double pvec[4];
 	recjet->GetPxPyPxE(pvec[0], pvec[1], pvec[2], pvec[3]);
 	fastjet::PseudoJet frecjet(pvec[0], pvec[1], pvec[2], pvec[3]);		// For distance to the main jet axis
-	const AliVParticle *mcpart(NULL);
+	AliVParticle *mcpart(NULL);
 	const AliVTrack *rectrack(NULL);
 	for(std::vector<AliReconstructedParticlePair>::const_iterator partiter = particles.begin(); partiter != particles.end(); ++partiter){
 		mcpart = partiter->GetMCTrueParticle();
-		rectrack = partiter->GetRecTrack();
+		const AliParticleList &matchedTracks = partiter->GetRecTracks();
 		double dr = GetDR(frecjet, mcpart);
 		if(dr < fMaxDR){
 			// Create new Particle and add it to the jet reconstructed jet
-			AliReducedJetParticle * part = new AliReducedJetParticle(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), mcpart->PdgCode(),rectrack ? true : false);
+			AliReducedJetParticle * part = new AliReducedJetParticle(mcpart->Px(), mcpart->Py(), mcpart->Pz(), mcpart->E(), mcpart->PdgCode());
+			part->SetNumberOfTPCtrackReferences(GetNumberOfTPCTrackReferences(mcpart));
 			part->SetDistanceToMainJetAxis(dr);
-			if(rectrack){
-				part->SetDeltaPt(TMath::Abs(mcpart->Pt()) - TMath::Abs(rectrack->Pt()));
-				part->SetNumberOfClustersTPC(static_cast<unsigned char>(rectrack->GetTPCNcls()));
+			for(int itrk = 0; itrk < matchedTracks.GetNumberOfParticles(); itrk++){
+			  rectrack = matchedTracks.GetParticle(itrk);
+			  AliReducedMatchedTrack *matchedTrack = new AliReducedMatchedTrack(rectrack->Px(), rectrack->Py(), rectrack->Pz());
+			  matchedTrack->SetNumberOfClustersTPC(rectrack->GetTPCNcls());
+				if(rectrack->GetLabel() >= 0) matchedTrack->SetGoodTrackLabel(true);
+				// FilterTrackCuts
+				if(IsSelected(rectrack, kRJStandardCuts)) matchedTrack->SetSurvivedTrackCuts(AliReducedMatchedTrack::kHighPtStandard);
+				if(IsSelected(rectrack, kRJHybridCuts)) matchedTrack->SetSurvivedTrackCuts(AliReducedMatchedTrack::kHighPtHybrid);
+				part->AddMatchedTrack(matchedTrack);
 			}
 			recjet->AddParticleInCone(part);
 		}
 	}
 }
 
+/**
+ * \brief Creates lookup tables for particles associated to MC label
+ *
+ * Creates a lookup table where particles are associated to MC labels and stores it in the event.
+ */
 void AliHighPtReconstructionEfficiency::CreateRectrackLookup() {
-	/*
-	 * Create lookup table of particles and reconstructed tracks according to the MC label
-	 */
 	if(fParticleMap) delete fParticleMap;
 	fParticleMap = new AliParticleMap;
 	for(int ipart = 0; ipart < fInputEvent->GetNumberOfTracks(); ipart++){
 		AliVTrack *mytrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(ipart));
-		if(!IsSelected(mytrack)) continue;
+		// Only apply a minimum selection: TPC refit and ITS refit
+		// check particle cuts on tree level
+		if(!((mytrack->GetStatus() & AliVTrack::kITSrefit) && (mytrack->GetStatus() & AliVTrack::kTPCrefit))) continue;
+		//if(!IsSelected(mytrack)) continue;
 		fParticleMap->AddParticle(mytrack);
 	}
 }
 
-AliVTrack* AliHighPtReconstructionEfficiency::FindReconstructedParticleFast(int label) const {
-	/*
-	 * Find reconstructed particle for a given MC label using the lookup table (fast version)
-	 */
-	AliParticleList *particles = fParticleMap->GetParticles(label);
-	if(!particles) return NULL;
-	return particles->GetParticle(0);			// Always return the first occurrence
+/**
+ * \brief Find reconstructed particles for a given label
+ *
+ * Find all reconstructed particles associated with a reconstruced track. Uses a lookup table which is
+ * created at the start of the event.
+ *
+ * \param label Label to check
+ * \return List of reconstructed particles (NULL if label is not found)
+ */
+const AliParticleList * AliHighPtReconstructionEfficiency::FindReconstructedParticleFast(int label) const {
+  return fParticleMap->GetParticles(label);
 }
 
+/**
+ * \brief Checks if the particle is a physical primary particle
+ *
+ * Function checks whether particle is a physical primary particle. Handles ESD and AOD MC particles.
+ *
+ * \param part Particle to check.
+ * \return True if the particle is a physical primary particle, false otherwise
+ */
 bool AliHighPtReconstructionEfficiency::IsPhysicalPrimary(const AliVParticle* const part) const {
-	/*
-	 * Method checking whether particle is physical primary, blind to ESD and AOD particles
-	 */
 	const AliAODMCParticle *aodpart = dynamic_cast<const AliAODMCParticle *>(part);
 	if(aodpart) return aodpart->IsPhysicalPrimary();	// AOD MC particle
 	else if (dynamic_cast<const AliMCParticle *>(part)) return fMCEvent->IsPhysicalPrimary(part->GetLabel());		// ESD MC particle
 	return false;
 }
 
-void AliHighPtReconstructionEfficiency::ConvertConstituents(
-		AliReducedJetInfo* const recjet, const fastjet::PseudoJet& inputjet) {
-	/*
-	 * Convert jet constituents into reduced format
-	 */
+/**
+ * \brief Convert jet constituents into reduced format
+ *
+ * Convert jet constituents at jet finder level to the reduced format and adds it to the reduced
+ * reconstructed jet.
+ *
+ * \param recjet Reconstructed jet the consituent is associated to
+ * \param inputjet A jet constituent to be added to the reconstructed jet
+ */
+void AliHighPtReconstructionEfficiency::ConvertConstituents(AliReducedJetInfo* const recjet, const fastjet::PseudoJet& inputjet) {
 	std::vector<fastjet::PseudoJet> constituents = inputjet.constituents();
 	for(std::vector<fastjet::PseudoJet>::const_iterator citer = constituents.begin(); citer != constituents.end(); ++citer){
 		AliVParticle *mcpart = fMCEvent->GetTrack(citer->user_index());
@@ -356,11 +438,20 @@ void AliHighPtReconstructionEfficiency::ConvertConstituents(
 	}
 }
 
+/**
+ * \brief Extract cross section and number of trials
+ *
+ * Extract cross section and number of trials from a root file created at generation level
+ * and fills it to the fieds added in the parameter list. Function is called once a new file is
+ * loaded via the function UserNotify. From AliAnalysisTaskEmcal.
+ *
+ * \param currFile File with PYTHIA hard informatino
+ * \param fXsec Output field for cross section
+ * \param fTrials Output field for number of trials
+ * \param pthard Output field for generated \f$ p_{t} \f$ of the hard interaction
+ * \return Success status (false in case of any error)
+ */
 bool AliHighPtReconstructionEfficiency::PythiaInfoFromFile(const char* currFile, double &fXsec, double &fTrials, int &pthard) const {
-	/*
-	 * From AliAnalysisTaskEmcal: Get Pythia Hard information
-	 */
-
 	TString file(currFile);
 	fXsec = 0;
 	fTrials = 1;
@@ -427,5 +518,26 @@ bool AliHighPtReconstructionEfficiency::PythiaInfoFromFile(const char* currFile,
 	}
 	return kTRUE;
  }
+
+/**
+ * \brief Get the number of track references for a MC-true track
+ *
+ * Get the number of track references for a MC-true track
+ *
+ * \param trk the MC particle to check
+ * \return The number of track references
+ */
+unsigned short AliHighPtReconstructionEfficiency::GetNumberOfTPCTrackReferences(AliVParticle* const trk) const {
+  unsigned short nref = 0;
+  if(trk->IsA() == AliMCParticle::Class()){
+    AliMCParticle *part = dynamic_cast<AliMCParticle *>(trk);
+    AliTrackReference *tref(NULL);
+    for(int iref = 0; iref < part->GetNumberOfTrackReferences(); ++iref){
+      tref = part->GetTrackReference(iref);
+      if(tref->DetectorId() == AliTrackReference::kTPC) nref++;
+    }
+  }
+  return nref;
+}
 
 }

@@ -130,5 +130,6 @@
 #pragma link C++ class HighPtTracks::AliReducedJetInfo+;
 #pragma link C++ class HighPtTracks::AliReducedJetParticle+;
 #pragma link C++ class HighPtTracks::AliReducedJetConstituent+;
+#pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #endif
 #endif
