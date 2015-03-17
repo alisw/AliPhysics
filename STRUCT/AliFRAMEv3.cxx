@@ -23,6 +23,7 @@
 
 #include <TGeoBBox.h>
 #include <TGeoXtru.h>
+#include <TGeoArb8.h>
 #include <TGeoCompositeShape.h>
 #include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
@@ -31,6 +32,7 @@
 #include <TGeoTrd1.h>
 #include <TGeoArb8.h>
 #include <TGeoBBox.h>
+#include <TGeoTube.h>
 #include <TGeoMedium.h>
 #include <TGeoBoolNode.h>
 #include <TGeoCompositeShape.h>
@@ -163,7 +165,9 @@ void AliFRAMEv3::CreateGeometry()
 // Constants 
 //
   // Materials
-  const TGeoMedium* kMedAir =  gGeoManager->GetMedium("FRAME_Air");
+  const TGeoMedium* kMedAir   =  gGeoManager->GetMedium("FRAME_Air");
+  const TGeoMedium* kMedSteel =  gGeoManager->GetMedium("FRAME_Steel");
+  const TGeoMedium* kMedAlu   =  gGeoManager->GetMedium("FRAME_Aluminum");
   const Int_t   kAir   = idtmed[2004];
   const Int_t   kSteel = idtmed[2064];
   const Int_t   kAlu   = idtmed[2008];
@@ -787,6 +791,7 @@ void AliFRAMEv3::CreateGeometry()
       TVirtualMC::GetMC()->Gspos("BA59", 2*jmod+1, module[jmod],  dx, 0.0, dz, idrotm[2096], "ONLY");
       TVirtualMC::GetMC()->Gspos("BA59", 2*jmod+2, module[jmod], -dx, 0.0, dz, idrotm[2087], "ONLY");
     }
+
   //
   // Rails for TRD
   //
@@ -901,7 +906,158 @@ void AliFRAMEv3::CreateGeometry()
      if (index > 1) TVirtualMC::GetMC()->Gspos("BTRDR_3", 2*jmod+1, module[jmod],   50.96-5-2.,  0.0, dz+3.7, 0, "ONLY");
      if (index < 7) TVirtualMC::GetMC()->Gspos("BTRDR_3", 2*jmod+2, module[jmod],  -50.96+5+2.,  0.0, dz+3.7, 0, "ONLY");
    }
+   //
+   // Fixation Blocks with tie anchors
+   // 
+   // inner
+   Float_t thetFB1 = 10./180. * TMath::Pi();
+   Float_t thetFB2 = 40./180. * TMath::Pi();
+   // half height of the block
+   Double_t dzFB = 6.;
+   // half width of the block
+   Float_t dyFB = 3.9/2.;
+   // lenth upper face
+   Float_t dxFB = 44.1;
+   // lower face
+   Float_t dx1FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB1);
+   Float_t dx2FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB2);
 
+   TGeoArb8* shFB1 = new TGeoArb8(dzFB);
+   shFB1->SetVertex(0, -dyFB/2., -dxFB/2.);
+   shFB1->SetVertex(1, -dyFB/2.,  dxFB/2.);
+   shFB1->SetVertex(2,  dyFB/2.,  dxFB/2.);
+   shFB1->SetVertex(3,  dyFB/2., -dxFB/2.);
+   
+   shFB1->SetVertex(4, -dyFB/2.,  -dx1FB);
+   shFB1->SetVertex(5, -dyFB/2.,   dx2FB);
+   shFB1->SetVertex(6,  dyFB/2.,   dx2FB);
+   shFB1->SetVertex(7,  dyFB/2.,  -dx1FB);
+
+   TGeoVolume* volFB1   = new TGeoVolume("BTRD_FB1", shFB1, kMedAlu);
+   //
+   // tie anchors rectangular profile 4 x 8
+   TGeoVolume* volTAR11 = new TGeoVolume("BTRD_TAR11", 
+					 new TGeoBBox(dyFB/2., dxFB/2.-0.7, 4.), 
+					 kMedAlu);
+   TGeoVolume* volTAR12 = new TGeoVolume("BTRD_TAR12", 
+					 new TGeoBBox(dyFB/2.-0.25, dxFB/2., 3.-0.5), 
+					 kMedAir);
+   volTAR11->AddNode(volTAR12,  1, new TGeoTranslation(0.25, 0.,  0.0));
+   // clamp (about twice the length of the block), 6 mm thick (read off from a foto)
+   TGeoVolume* volTAR13 = new TGeoVolume("BTRD_TAR13", 
+					 new TGeoBBox(0.3, dxFB, 3.), 
+					 kMedAlu);
+   // square block with screw r = 0.9 cm
+   TGeoVolume* volTAR141 = new TGeoVolume("BTRD_TAR141", 
+					 new TGeoBBox(1., 2., 6.), 
+					 kMedAir);
+   TGeoVolume* volTAR142 = new TGeoVolume("BTRD_TAR142", 
+					 new TGeoBBox(1., 2., 6.), 
+					 kMedAir);
+
+   TGeoVolume* volTAR15 = new TGeoVolume("BTRD_TAR15", new TGeoBBox(1., 2., 3.), kMedAlu);
+   TGeoVolume* volTAR16 = new TGeoVolume("BTRD_TAR16", new TGeoTubeSeg(0., 0.9, 1.5, 90., 270.), kMedSteel);
+   TGeoVolume* volTAR17 = new TGeoVolume("BTRD_TAR17", new TGeoTubeSeg(0., 0.9, 1.5, 0., 180.), kMedSteel);
+   volTAR141->AddNode(volTAR15,  1, new TGeoTranslation(0, 0, 0));
+   volTAR141->AddNode(volTAR16,  1, new TGeoTranslation(1., 0, +4.5));
+   volTAR141->AddNode(volTAR16,  2, new TGeoTranslation(1., 0, -4.5));
+
+   volTAR142->AddNode(volTAR15,  1, new TGeoTranslation(0, 0, 0));
+   volTAR142->AddNode(volTAR17,  1, new TGeoTranslation(-1., 0, +4.5));
+   volTAR142->AddNode(volTAR17,  2, new TGeoTranslation(-1., 0, -4.5));
+
+   TGeoVolumeAssembly* asFB1 = new TGeoVolumeAssembly("BTRD_FBAS1");
+   TGeoVolumeAssembly* asFB2 = new TGeoVolumeAssembly("BTRD_FBAS2");
+   asFB1->AddNode(volFB1,   1, gGeoIdentity);
+   asFB1->AddNode(volTAR11, 1, new TGeoTranslation(0., 0., -dzFB - 3.));
+   asFB1->AddNode(volTAR13, 1, new TGeoTranslation(-1.36, 0., -dzFB-3.));
+   asFB1->AddNode(volTAR141, 1, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
+   asFB1->AddNode(volTAR141, 2, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+
+   asFB2->AddNode(volFB1,   2, gGeoIdentity);
+   asFB2->AddNode(volTAR11, 2, new TGeoTranslation(0., 0., -dzFB - 3.));
+   asFB2->AddNode(volTAR13, 2, new TGeoTranslation(1.36, 0., -dzFB-3.));
+   asFB2->AddNode(volTAR142, 3, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
+   asFB2->AddNode(volTAR142, 4, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+   //
+   // Fixation block outer
+   //
+   thetFB1 = 20./180. * TMath::Pi();
+   thetFB2 = 27./180. * TMath::Pi();
+
+   dxFB = 41.0;
+
+   dx1FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB1);
+   dx2FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB2);
+
+   TGeoArb8* shFB2 = new TGeoArb8(dzFB);
+   shFB2->SetVertex(0, -dyFB/2., -dxFB/2.);
+   shFB2->SetVertex(1, -dyFB/2.,  dxFB/2.);
+   shFB2->SetVertex(2,  dyFB/2.,  dxFB/2.);
+   shFB2->SetVertex(3,  dyFB/2., -dxFB/2.);
+   
+   shFB2->SetVertex(4, -dyFB/2.,  -dx1FB);
+   shFB2->SetVertex(5, -dyFB/2.,   dx2FB);
+   shFB2->SetVertex(6,  dyFB/2.,   dx2FB);
+   shFB2->SetVertex(7,  dyFB/2.,  -dx1FB);
+
+   TGeoVolume* volFB2 = new TGeoVolume("BTRD_FB2", shFB2, kMedAlu);
+   TGeoVolume* volTAR21 = new TGeoVolume("BTRD_TAR21", 
+					 new TGeoBBox(dyFB/2., dxFB/2., 3.), 
+					 kMedAlu);
+   TGeoVolume* volTAR22 = new TGeoVolume("BTRD_TAR22", 
+					 new TGeoBBox(dyFB/2.-0.25, dxFB/2., 3.-0.5), 
+					 kMedAir);
+   volTAR21->AddNode(volTAR22,  1, new TGeoTranslation(-0.25, 0.,  0.0));
+   // tie anchor
+   TGeoVolume* volTAR23 = new TGeoVolume("BTRD_TAR23", new TGeoBBox(0.3, dxFB, 3.), kMedAlu); 
+
+
+   TGeoVolumeAssembly* asFB3 = new TGeoVolumeAssembly("BTRD_FBAS3");
+   TGeoVolumeAssembly* asFB4 = new TGeoVolumeAssembly("BTRD_FBAS4");
+   asFB3->AddNode(volFB2,   1, gGeoIdentity);
+   asFB3->AddNode(volTAR21, 1, new TGeoTranslation(0., 0., -dzFB - 3.));
+   asFB3->AddNode(volTAR23, 1, new TGeoTranslation(-1.36, 0., -dzFB-3.));
+   asFB3->AddNode(volTAR141, 1, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
+   asFB3->AddNode(volTAR141, 2, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+
+   asFB4->AddNode(volFB2,   2, gGeoIdentity);
+   asFB4->AddNode(volTAR21, 2, new TGeoTranslation(0., 0., -dzFB - 3.));
+   asFB4->AddNode(volTAR23, 2, new TGeoTranslation(1.36, 0., -dzFB-3.));
+   asFB4->AddNode(volTAR142, 3, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
+   asFB4->AddNode(volTAR142, 4, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+
+   Float_t zTA1  = 23.;
+   Float_t yFB1  = 87.;
+   Float_t yFB2  = 231.4;
+   dx = ((hR - longH/2. + iFrH0 / 2. ) - dext + zTA1) * tan10 -3.9/4.; 
+
+   for (Int_t index = 0; index < 11; index++) {
+     Int_t imod = isec_1[index];
+     if (imod !=5)   
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS2",      index, module[imod],   dx,  -yFB1, zTA1, idrotm[2097] , "ONLY");
+
+     if (imod != 13)
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS1",   11+index, module[imod],  -dx,  -yFB1, zTA1, idrotm[2087] , "ONLY");
+
+     if (imod != 5) 
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS1",   22+index, module[imod],   dx,   yFB1, zTA1, idrotm[2096] , "ONLY");
+
+     if (imod != 13)
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS2",   33+index, module[imod],  -dx,   yFB1, zTA1, idrotm[2086] , "ONLY");
+
+     if (imod != 5) 
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS4",    index, module[imod],   dx,  -yFB2, zTA1, idrotm[2097] , "ONLY");
+
+     if (imod !=13)
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS3",   11+index, module[imod],  -dx,  -yFB2, zTA1, idrotm[2087] , "ONLY");
+
+     if (imod != 5)
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS3",   22+index, module[imod],   dx,   yFB2, zTA1, idrotm[2096] , "ONLY");
+
+     if (imod !=13)
+       TVirtualMC::GetMC()->Gspos("BTRD_FBAS4",   33+index, module[imod],  -dx,   yFB2, zTA1, idrotm[2086] , "ONLY");
+   }
 
 //                                                                                                                                
 // TOF Support Structures
