@@ -99,6 +99,7 @@ _get_file_list()
     mess 2 "alien_find ${path} ${search}"
     files=`alien_find ${path} ${search} | grep -v "\(does not\|files found\)" 2>> ${redir}` 
     rm -f .list
+    numf=0
     for i in $files ; do 
 	echo $i >> .list 
 	let numf=$numf+1
@@ -133,9 +134,11 @@ _download_file()
     local max=$1    ; shift
     local redir=$1  ; shift
     local noact=$1  ; shift
-    local o=${store}/ 
+    local o=${store}/
+    local file=`basename $source`
     case $file in 
 	*.root)
+	    mess 3 "Forming output file name: file=$file r=$r"
 	    o=${o}`basename $file .root`_`printf %04d ${r}`.root 
 	    ;;
 	*.zip)
@@ -191,6 +194,10 @@ _download_file()
     return 0
 }
 
+check_file()
+{
+    return 0
+}
 # --- Submit run analysis to background ------------------------------
 # $1: Output directory
 # $2: Sarting off-set
@@ -211,13 +218,17 @@ submit_jobs()
     for i in $@ ; do 
 	let cur=$sta+$counter
 
-	local b=`echo $i | sed -e "s,${path},,"` 
-	local r=`echo $b | sed -e "s,/.*,,"` 
-
-
+	local b=`echo $i | sed -e "s,${path}/,,"`
+	local r=
+	case $b in
+	    ESDs/*) r=`echo $b | sed -e 's,.*/*\.\([0-9]*\)/.*,\1,'` ;;
+	    *)      r=`echo $b | sed -e "s,/.*,," | sed 's/0*//'`;;
+	esac
+	
 	let counter=$counter+1
 
-	download_file $i $out $cur $maxf $noact&
+	mess 3 "i=$i out=$out r=$r cur=$cur max=$max noact=$noact (b=$b)"
+	download_file $i $out $r $cur $maxf $noact&
 	j=`jobs %% | sed -e 's/^[^0-9]*//' -e 's/[^0-9]*$//'` 
 	joblist="$joblist $j"
     done
