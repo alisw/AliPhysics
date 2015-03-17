@@ -85,6 +85,10 @@
 
 
 ClassImp(AliAnalysisTaskFlowTPCEMCalEP)
+
+using std::cout;
+using std::endl;
+
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)

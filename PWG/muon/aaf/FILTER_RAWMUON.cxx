@@ -19,6 +19,8 @@
 #include <string>
 #include "AliDAQ.h"
 
+using std::cout;
+using std::endl;
 namespace AAF {
   
 namespace RAWMUON {

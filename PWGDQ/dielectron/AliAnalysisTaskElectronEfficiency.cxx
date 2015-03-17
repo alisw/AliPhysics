@@ -67,6 +67,9 @@
 
 ClassImp(AliAnalysisTaskElectronEfficiency)
 
+using std::cout;
+using std::endl;
+
 //________________________________________________________________________
 AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency(const char *name) : 
 AliAnalysisTaskSE(name),
