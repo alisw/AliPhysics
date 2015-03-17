@@ -401,8 +401,10 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
   }
   
   TFormula formula("formula", trigger);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,3,0)
   if (formula.Compile() > 0)
     AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
+#endif
   Bool_t result = formula.Eval(0);
   
   AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
