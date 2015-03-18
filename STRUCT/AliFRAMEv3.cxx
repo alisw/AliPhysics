@@ -956,7 +956,7 @@ void AliFRAMEv3::CreateGeometry()
 					 kMedAir);
 
    TGeoVolume* volTAR15 = new TGeoVolume("BTRD_TAR15", new TGeoBBox(1., 2., 3.), kMedAlu);
-   TGeoVolume* volTAR16 = new TGeoVolume("BTRD_TAR16", new TGeoTubeSeg(0., 0.9, 1.5, 90., 270.), kMedSteel);
+   TGeoVolume* volTAR16 = new TGeoVolume("BTRD_TAR16", new TGeoTubeSeg(0., 0.9, 1.5, 180., 360.), kMedSteel);
    TGeoVolume* volTAR17 = new TGeoVolume("BTRD_TAR17", new TGeoTubeSeg(0., 0.9, 1.5, 0., 180.), kMedSteel);
    volTAR141->AddNode(volTAR15,  1, new TGeoTranslation(0, 0, 0));
    volTAR141->AddNode(volTAR16,  1, new TGeoTranslation(1., 0, +4.5));
