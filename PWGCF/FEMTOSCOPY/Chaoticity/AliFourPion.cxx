@@ -1786,9 +1786,9 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fSingleSumSinTotalINT);
   fOutputList->Add(fSingleSumTotalEN);
 
-  TH2D *fQoutSum = new TH2D("fQoutSum","",fQbinsQ4,0.,fQupperBoundQ4, 200, 0,1.0);
-  TH2D *fQsideSum = new TH2D("fQsideSum","",fQbinsQ4,0.,fQupperBoundQ4, 200, 0,1.0);
-  TH2D *fQlongSum = new TH2D("fQlongSum","",fQbinsQ4,0.,fQupperBoundQ4, 200, 0,1.0);
+  TH2D *fQoutSum = new TH2D("fQoutSum","",fQbinsQ4,0.,fQupperBoundQ4, 100, 0,1.0);
+  TH2D *fQsideSum = new TH2D("fQsideSum","",fQbinsQ4,0.,fQupperBoundQ4, 100, 0,1.0);
+  TH2D *fQlongSum = new TH2D("fQlongSum","",fQbinsQ4,0.,fQupperBoundQ4, 100, 0,1.0);
   fOutputList->Add(fQoutSum);
   fOutputList->Add(fQsideSum);
   fOutputList->Add(fQlongSum);
@@ -2407,7 +2407,7 @@ void AliFourPion::UserExec(Option_t *)
   else {rBinForTPNMomRes=6;}
 
   //////////////////////////////////////////////////
-  if(!fq2Binning && !fLowMultBinning) fEDbin=0;// Extra Dimension bin (Kt3, q2,....)
+  if(!fq2Binning && !fLowMultBinning && fQdirectionBinning==0) fEDbin=0;// Extra Dimension bin (Kt3, q2,....)
   //////////////////////////////////////////////////
   
   
@@ -2793,21 +2793,22 @@ void AliFourPion::UserExec(Option_t *)
     
 
   TF1 *qOutFcn = new TF1("qOutFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  qOutFcn->FixParameter(0,-1.88273e-02);
-  qOutFcn->FixParameter(1,2.33020);
-  qOutFcn->FixParameter(2,-7.57146e-01);
-  qOutFcn->FixParameter(3,-2.93124);
+  qOutFcn->FixParameter(0,-5.92014e-02);
+  qOutFcn->FixParameter(1,3.94631);
+  qOutFcn->FixParameter(2,-1.64167e+01);
+  qOutFcn->FixParameter(3,4.52617e+01);
   TF1 *qSideFcn = new TF1("qSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  qSideFcn->FixParameter(0,-4.66201e-03);
-  qSideFcn->FixParameter(1,1.14554);
-  qSideFcn->FixParameter(2,-1.36424e-01);
-  qSideFcn->FixParameter(3,3.65612);
+  qSideFcn->FixParameter(0,2.50516e-02);
+  qSideFcn->FixParameter(1,5.57635e-01);
+  qSideFcn->FixParameter(2,5.11656);
+  qSideFcn->FixParameter(3,-1.11254e+01);
   TF1 *qLongFcn = new TF1("qLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  qLongFcn->FixParameter(0,1.56453e-02);
-  qLongFcn->FixParameter(1,6.43739e-01);
-  qLongFcn->FixParameter(2,4.50230);
-  qLongFcn->FixParameter(3,-1.21551e+01);
+  qLongFcn->FixParameter(0,1.52078e-02);
+  qLongFcn->FixParameter(1,1.04319);
+  qLongFcn->FixParameter(2,3.95044e-01);
+  qLongFcn->FixParameter(3,8.70069e-01);
   
+ 
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////
@@ -3521,27 +3522,25 @@ void AliFourPion::UserExec(Option_t *)
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
 		  }else{
-		     if(KT4<=fKT4transition){
-		       ((TH2D*)fOutputList->FindObject("fQoutSum"))->Fill(q4, QoutSum);
-		       ((TH2D*)fOutputList->FindObject("fQsideSum"))->Fill(q4, QsideSum);
-		       ((TH2D*)fOutputList->FindObject("fQlongSum"))->Fill(q4, QlongSum);
-		       if(fQdirectionBinning==1){
-			 if(QoutSum < qOutFcn->Eval(q4)) fEDbin=0;
-			 else fEDbin=1;
-		       }
-		       if(fQdirectionBinning==2){
-			 if(QsideSum < qSideFcn->Eval(q4)) fEDbin=0;
-			 else fEDbin=1;
-		       }
-		       if(fQdirectionBinning==3){
-			 if(QlongSum < qLongFcn->Eval(q4)) fEDbin=0;
-			 else fEDbin=1;
-		       }
-		     }
-		     EDindex4 = fEDbin;
-		     if(KT4>fKT4transition) {
-		       EDindex4=2+fEDbin;
-		     }
+		    /*if(KT4<=fKT4transition){
+		      if(ch1==ch2 && ch1==ch3 && ch1==ch4){
+		      ((TH2D*)fOutputList->FindObject("fQoutSum"))->Fill(q4, QoutSum);
+		      ((TH2D*)fOutputList->FindObject("fQsideSum"))->Fill(q4, QsideSum);
+		      ((TH2D*)fOutputList->FindObject("fQlongSum"))->Fill(q4, QlongSum);
+		      }}*/
+		    if(fQdirectionBinning==1){
+		      if(QoutSum < qOutFcn->Eval(q4)) fEDbin=0;
+		      else fEDbin=1;
+		    }else if(fQdirectionBinning==2){
+		      if(QsideSum < qSideFcn->Eval(q4)) fEDbin=0;
+		      else fEDbin=1;
+		    }else if(fQdirectionBinning==3){
+		      if(QlongSum < qLongFcn->Eval(q4)) fEDbin=0;
+		      else fEDbin=1;
+		    }else {}
+		    //
+		    EDindex4 = fEDbin;
+		    if(KT4>fKT4transition) EDindex4=2+fEDbin;
 		  }
 		  
 		  FSICorr14 = FSICorrelation(ch1,ch4, qinv14);
