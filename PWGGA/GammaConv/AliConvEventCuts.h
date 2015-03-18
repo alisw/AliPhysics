@@ -129,6 +129,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TString * 	GetAcceptedHeaderNames()							{ return fGeneratorNames								; }
 		Int_t * 	GetAcceptedHeaderStart()							{ return fNotRejectedStart								; }
 		Int_t * 	GetAcceptedHeaderEnd()								{ return fNotRejectedEnd								; }
+		Int_t  		GetAcceptedHeaderStart(Int_t headernumber)			{ if (headernumber < fnHeaders) 
+																			return fNotRejectedStart[headernumber]				; }
+		Int_t  		GetAcceptedHeaderEnd(Int_t headernumber)			{ if (headernumber < fnHeaders) 
+																			return fNotRejectedEnd[headernumber]				; }
 		TList* 		GetAcceptedHeader()									{ return fHeaderList									; }
 		Int_t 		GetNumberOfContributorsVtx(AliVEvent *event);
 		Double_t 	GetEtaShift() 										{ return fEtaShift										; }
@@ -263,7 +267,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		
 	private:
 
-		ClassDef(AliConvEventCuts,4)
+		ClassDef(AliConvEventCuts,5)
 };
 
 
