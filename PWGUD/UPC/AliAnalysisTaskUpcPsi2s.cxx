@@ -1531,8 +1531,11 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
       Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
       if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
       trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[0]) > 0.2) continue;
+      if(!isMC){
+      	if(TMath::Abs(dca[1]) > 2) continue;
+      	Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+        if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+	}
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -1626,7 +1629,11 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
       Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
       if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
       trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
+      if(!isMC){
+      	if(TMath::Abs(dca[1]) > 2) continue;
+      	Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+        if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+	}
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
