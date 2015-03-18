@@ -10,272 +10,6 @@
 #include "TNamed.h"
 // #include <ZTrees.h>
 //Run with aliroot  -b -l ../run-single-task.C'("compile", "AliAnalysisTaskCorrelation3p.cxx")' DrawThreeParticleCorrelations.C
-void Correct(const char* histname, TDirectory* SameDir, TDirectory* METADir, TDirectory* METriggerdir, TFile* resultsfile)
-{
-  TDirectory* ResultsSame=resultsfile->GetDirectory("Same");
-  TDirectory * ResultsMinusMETA=resultsfile->GetDirectory("ResultMinusMETA");
-  TDirectory * ResultsMinusMETrigger = resultsfile->GetDirectory("ResultMinusMETrigger");
-  TDirectory * ResultsMinusBoth = resultsfile->GetDirectory("ResultsMinusBoth");
-  TDirectory * Compare = resultsfile->GetDirectory("Compare");
-
-  if(!ResultsSame) ResultsSame=resultsfile->mkdir("Same");
-  if(!ResultsMinusMETA) ResultsMinusMETA=resultsfile->mkdir("ResultMinusMETA");
-  if(!ResultsMinusMETrigger) ResultsMinusMETrigger=resultsfile->mkdir("ResultMinusMETrigger");
-  if(!ResultsMinusBoth) ResultsMinusBoth=resultsfile->mkdir("ResultsMinusBoth");
-  if(!Compare) Compare = resultsfile->mkdir("Compare");
-  
-  TH2D * SameHist = dynamic_cast<TH2D*>(SameDir->Get(histname)->Clone(Form("%s%s",histname,"Same")));
-  TH2D * SameMinusMETA = dynamic_cast<TH2D*>(SameHist->Clone(Form("%s%s",histname,"SameMinusMETA")));
-  SameMinusMETA->SetTitle(Form("%s%s",SameMinusMETA->GetTitle()," with the corrected Mixed event with trigger and first associated from same event substracted."));
-  TH2D * SameMinusMETrigger = dynamic_cast<TH2D*>(SameHist->Clone(Form("%s%s",histname,"SameMinusMETrigger")));
-  SameMinusMETrigger->SetTitle(Form("%s%s",SameMinusMETrigger->GetTitle()," with the corrected Mixed event with both associated from same event substracted."));
-  TH2D * SameMinusBoth = dynamic_cast<TH2D*>(SameHist->Clone(Form("%s%s",histname,"SameMinusBoth")));
-  SameMinusBoth->SetTitle(Form("%s%s",SameMinusBoth->GetTitle()," with both mixed event correlations substracted."));
-  TH2D * METAhist = dynamic_cast<TH2D*>(METADir->Get(histname)->Clone(Form("%s%s",histname,"META")));
-  TH2D * METriggerhist = dynamic_cast<TH2D*>(METriggerdir->Get(histname)->Clone(Form("%s%s",histname,"METrigger")));
-
-  SameMinusMETA->Add(METAhist,-1.0);
-  SameMinusMETrigger->Add(METriggerhist,-1.0);
-  SameMinusBoth->Add(METAhist,-1.0);
-  SameMinusBoth->Add(METriggerhist,-1.0);
-  TCanvas * c1 = new TCanvas(Form("%s%s",histname,"Canvas"));
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameHist->Draw("surf2");
-  ResultsSame->cd();
-  SameHist->Write(histname);
-  c1->cd(2);
-  SameMinusMETA->Draw("surf2");
-  ResultsMinusMETA->cd(); 
-  SameMinusMETA->Write(histname);
-  c1->cd(3);
-  SameMinusMETrigger->Draw("surf2");
-  ResultsMinusMETrigger->cd();
-  SameMinusMETrigger->Write(histname);
-  c1->cd(4);
-  SameMinusBoth->Draw("surf2"); 
-  ResultsMinusBoth->cd();
-  SameMinusBoth->Write(histname);
-  Compare->cd();
-  c1->Write(histname);
-
-  c1->Clear();
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameMinusBoth->Draw("surf2"); 
-  c1->cd(2);
-  SameMinusBoth->Draw("surf3"); 
-  c1->cd(3);
-  Int_t binpihn = SameMinusBoth->GetYaxis()->FindBin(0+0.2);
-  Int_t binpiln = SameMinusBoth->GetYaxis()->FindBin(0-0.2);
-  TH1D* projY = SameMinusBoth->ProjectionX(Form("%s%s",SameMinusBoth->GetName(),"_nearside"),binpiln,binpihn);
-  projY->SetStats(0);
-  projY->GetYaxis()->SetRangeUser(0., 1.1*projY->GetBinContent(projY->GetMaximumBin()));
-  projY->SetTitle("Integral over the near side peak with #Delta#eta_{12} = 0#pm 0.2");
-  projY->GetYaxis()->SetTitle(SameMinusBoth->GetZaxis()->GetTitle());
-  projY->SetTitleSize(0.04,"xy");
-  projY->SetTitleOffset(1.05,"xy");
-  projY->Draw("E");
-  c1->cd(4);
-  Int_t binpih = SameMinusBoth->GetYaxis()->FindBin(TMath::Pi()+0.2);
-  Int_t binpil = SameMinusBoth->GetYaxis()->FindBin(TMath::Pi()-0.2);
-  TH1D* projX = SameMinusBoth->ProjectionX(Form("%s%s",SameMinusBoth->GetName(),"_px"),binpil,binpih);
-  projX->SetStats(0);
-  projX->SetTitle("Integral over a slice of the away side peak around with #Delta#eta_{12} = #pi#pm 0.2");
-  projX->GetYaxis()->SetTitle(SameMinusBoth->GetZaxis()->GetTitle());
-  projX->SetTitleSize(0.04,"xy");
-  projX->SetTitleOffset(1.05,"xy");
-  projX->Draw("E");
-
-  ResultsMinusBoth->cd();
-  c1->Write(Form("%s%s",histname,"Canvas"));
-  delete c1;
-}
-
-void Correct(const char* histname1,const char* histname2,const char* histname3,const char* histname4, TDirectory* SameDir, TDirectory* METADir, TDirectory* METriggerdir, TFile* resultsfile, bool ispp=false, bool isPbPb=false, Double_t * METAscale=NULL, Double_t * METriggerscale =NULL)
-{
-  TDirectory* ResultsSame=resultsfile->GetDirectory("Same");
-  TDirectory * ResultsMinusMETA=resultsfile->GetDirectory("ResultMinusMETA");
-  TDirectory * ResultsMinusMETrigger = resultsfile->GetDirectory("ResultMinusMETrigger");
-  TDirectory * ResultsMinusBoth = resultsfile->GetDirectory("ResultsMinusBoth");
-  TDirectory * Compare = resultsfile->GetDirectory("Compare");
-  if(!ResultsSame) ResultsSame=resultsfile->mkdir("Same");
-  if(!ResultsMinusMETA) ResultsMinusMETA=resultsfile->mkdir("ResultMinusMETA");
-  if(!ResultsMinusMETrigger) ResultsMinusMETrigger=resultsfile->mkdir("ResultMinusMETrigger");
-  if(!ResultsMinusBoth) ResultsMinusBoth=resultsfile->mkdir("ResultsMinusBoth");
-  if(!Compare) Compare = resultsfile->mkdir("Compare");
-  
-  TH2D * SameHist1 = dynamic_cast<TH2D*>(SameDir->Get(histname1)->Clone(Form("%s%s",histname1,"Same")));
-  TH2D * SameMinusMETA1 = dynamic_cast<TH2D*>(SameHist1->Clone(Form("%s%s",histname1,"SameMinusMETA")));
-  SameMinusMETA1->SetTitle(Form("%s%s",SameMinusMETA1->GetTitle()," with the corrected Mixed event with trigger and first associated from same event substracted."));
-  TH2D * SameMinusMETrigger1 = dynamic_cast<TH2D*>(SameHist1->Clone(Form("%s%s",histname1,"SameMinusMETrigger")));
-  SameMinusMETrigger1->SetTitle(Form("%s%s",SameMinusMETrigger1->GetTitle()," with the corrected Mixed event with both associated from same event substracted."));
-  TH2D * SameMinusBoth1 = dynamic_cast<TH2D*>(SameHist1->Clone(Form("%s%s",histname1,"SameMinusBoth")));
-  SameMinusBoth1->SetTitle(Form("%s%s",SameMinusBoth1->GetTitle()," with both mixed event correlations substracted."));
-  TH2D * METAhist1 = dynamic_cast<TH2D*>(METADir->Get(histname1)->Clone(Form("%s%s",histname1,"META")));
-  TH2D * METriggerhist1 = dynamic_cast<TH2D*>(METriggerdir->Get(histname1)->Clone(Form("%s%s",histname1,"METrigger")));
-  if(ispp){
-    METAscale = SameHist1->Integral(SameHist1->GetXaxis()->FindBin(0),SameHist1->GetXaxis()->FindBin(0),1,SameHist1->GetYaxis()->FindBin(-1));
-    METAscale +=SameHist1->Integral(1,SameHist1->GetXaxis()->FindBin(-1),SameHist1->GetYaxis()->FindBin(0),SameHist1->GetYaxis()->FindBin(0));
-    Double_t Divideby = METAhist1->Integral(METAhist1->GetXaxis()->FindBin(0),METAhist1->GetXaxis()->FindBin(0),1,METAhist1->GetYaxis()->FindBin(-1));
-    Divideby +=METAhist1->Integral(1,METAhist1->GetXaxis()->FindBin(-1),METAhist1->GetYaxis()->FindBin(0),METAhist1->GetYaxis()->FindBin(0));
-    if(Divideby >0) METAscale = METAscale/Divideby;
-    else METAscale = 0.0;
-    METAhist1->Scale(METAscale);
-    METriggerscale = SameHist1->Integral(SameHist1->GetXaxis()->FindBin(1.0),SameHist1->GetXaxis()->FindBin(2.0),SameHist1->GetYaxis()->FindBin(1.0),SameHist1->GetYaxis()->FindBin(2.0));
-    Double_t Divideby2 = METriggerhist1->Integral(METriggerhist1->GetXaxis()->FindBin(1.0),METriggerhist1->GetXaxis()->FindBin(2.0),METriggerhist1->GetYaxis()->FindBin(1.0),METriggerhist1->GetYaxis()->FindBin(2.0));
-    if(Divideby2 >0) METriggerscale = METriggerscale/Divideby2;
-    else METriggerscale = 0.0;
-    METriggerhist1->Scale(METriggerscale);
-  }
-  
-  
-  TH2D * SameHist2 = dynamic_cast<TH2D*>(SameDir->Get(histname2)->Clone(Form("%s%s",histname2,"Same")));
-  TH2D * SameMinusMETA2 = dynamic_cast<TH2D*>(SameHist2->Clone(Form("%s%s",histname2,"SameMinusMETA")));
-  SameMinusMETA2->SetTitle(Form("%s%s",SameMinusMETA2->GetTitle()," with the corrected Mixed event with trigger and first associated from same event substracted."));
-  TH2D * SameMinusMETrigger2 = dynamic_cast<TH2D*>(SameHist2->Clone(Form("%s%s",histname2,"SameMinusMETrigger")));
-  SameMinusMETrigger2->SetTitle(Form("%s%s",SameMinusMETrigger2->GetTitle()," with the corrected Mixed event with both associated from same event substracted."));
-  TH2D * SameMinusBoth2 = dynamic_cast<TH2D*>(SameHist2->Clone(Form("%s%s",histname2,"SameMinusBoth")));
-  SameMinusBoth2->SetTitle(Form("%s%s",SameMinusBoth2->GetTitle()," with both mixed event correlations substracted."));
-  TH2D * METAhist2 = dynamic_cast<TH2D*>(METADir->Get(histname2)->Clone(Form("%s%s",histname2,"META")));
-  TH2D * METriggerhist2 = dynamic_cast<TH2D*>(METriggerdir->Get(histname2)->Clone(Form("%s%s",histname2,"METrigger")));
-  
-  TH2D * SameHist3 = dynamic_cast<TH2D*>(SameDir->Get(histname3)->Clone(Form("%s%s",histname3,"Same")));
-  TH2D * SameMinusMETA3 = dynamic_cast<TH2D*>(SameHist3->Clone(Form("%s%s",histname3,"SameMinusMETA")));
-  SameMinusMETA3->SetTitle(Form("%s%s",SameMinusMETA3->GetTitle()," with the corrected Mixed event with trigger and first associated from same event substracted."));
-  TH2D * SameMinusMETrigger3 = dynamic_cast<TH2D*>(SameHist3->Clone(Form("%s%s",histname3,"SameMinusMETrigger")));
-  SameMinusMETrigger3->SetTitle(Form("%s%s",SameMinusMETrigger3->GetTitle()," with the corrected Mixed event with both associated from same event substracted."));
-  TH2D * SameMinusBoth3 = dynamic_cast<TH2D*>(SameHist3->Clone(Form("%s%s",histname3,"SameMinusBoth")));
-  SameMinusBoth3->SetTitle(Form("%s%s",SameMinusBoth3->GetTitle()," with both mixed event correlations substracted."));
-  TH2D * METAhist3 = dynamic_cast<TH2D*>(METADir->Get(histname3)->Clone(Form("%s%s",histname3,"META")));
-  TH2D * METriggerhist3 = dynamic_cast<TH2D*>(METriggerdir->Get(histname3)->Clone(Form("%s%s",histname3,"METrigger")));
-  
-  TH2D * SameHist4 = dynamic_cast<TH2D*>(SameDir->Get(histname4)->Clone(Form("%s%s",histname4,"Same")));
-  TH2D * SameMinusMETA4 = dynamic_cast<TH2D*>(SameHist4->Clone(Form("%s%s",histname4,"SameMinusMETA")));
-  SameMinusMETA4->SetTitle(Form("%s%s",SameMinusMETA4->GetTitle()," with the corrected Mixed event with trigger and first associated from same event substracted."));
-  TH2D * SameMinusMETrigger4 = dynamic_cast<TH2D*>(SameHist4->Clone(Form("%s%s",histname4,"SameMinusMETrigger")));
-  SameMinusMETrigger4->SetTitle(Form("%s%s",SameMinusMETrigger4->GetTitle()," with the corrected Mixed event with both associated from same event substracted."));
-  TH2D * SameMinusBoth4 = dynamic_cast<TH2D*>(SameHist4->Clone(Form("%s%s",histname4,"SameMinusBoth")));
-  SameMinusBoth4->SetTitle(Form("%s%s",SameMinusBoth4->GetTitle()," with both mixed event correlations substracted."));
-  TH2D * METAhist4 = dynamic_cast<TH2D*>(METADir->Get(histname4)->Clone(Form("%s%s",histname4,"META")));
-  TH2D * METriggerhist4 = dynamic_cast<TH2D*>(METriggerdir->Get(histname4)->Clone(Form("%s%s",histname4,"METrigger")));
-  
-  SameMinusMETA1->Add(METAhist1,-1.0);
-  SameMinusMETrigger1->Add(METriggerhist1,-1.0);
-  SameMinusBoth1->Add(METAhist1,-1.0);
-  SameMinusBoth1->Add(METriggerhist1,-1.0);
-  TCanvas * c1 = new TCanvas("shosw");
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameHist1->Draw("surf2");
-  ResultsSame->cd();
-  SameHist1->Write(histname1);
-  c1->cd(2);
-  SameMinusMETA1->Draw("surf2");
-  ResultsMinusMETA->cd(); 
-  SameMinusMETA1->Write(histname1);
-  c1->cd(3);
-  SameMinusMETrigger1->Draw("surf2");
-  ResultsMinusMETrigger->cd();
-  SameMinusMETrigger1->Write(histname1);
-  c1->cd(4);
-  SameMinusBoth1->Draw("surf2"); 
-  ResultsMinusBoth->cd();
-  SameMinusBoth1->Write(histname1);
-  Compare->cd();
-  c1->Write(histname1);
-  
-  c1->Clear();
-  SameMinusMETA2->Add(METAhist2,-1.0);
-  SameMinusMETrigger2->Add(METriggerhist2,-1.0);
-  SameMinusBoth2->Add(METAhist2,-1.0);
-  SameMinusBoth2->Add(METriggerhist2,-1.0);
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameHist2->Draw("surf2");
-  ResultsSame->cd();
-  SameHist2->Write(histname2);
-  c1->cd(2);
-  SameMinusMETA2->Draw("surf2");
-  ResultsMinusMETA->cd(); 
-  SameMinusMETA2->Write(histname2);
-  c1->cd(3);
-  SameMinusMETrigger2->Draw("surf2");
-  ResultsMinusMETrigger->cd();
-  SameMinusMETrigger2->Write(histname2);
-  c1->cd(4);
-  SameMinusBoth2->Draw("surf2"); 
-  ResultsMinusBoth->cd();
-  SameMinusBoth2->Write(histname2);
-  Compare->cd();
-  c1->Write(histname2);
-  
-  c1->Clear();
-  SameMinusMETA3->Add(METAhist3,-1.0);
-  SameMinusMETrigger3->Add(METriggerhist3,-1.0);
-  SameMinusBoth3->Add(METAhist3,-1.0);
-  SameMinusBoth3->Add(METriggerhist3,-1.0);
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameHist3->Draw("surf2");
-  ResultsSame->cd();
-  SameHist3->Write(histname3);
-  c1->cd(2);
-  SameMinusMETA3->Draw("surf2");
-  ResultsMinusMETA->cd(); 
-  SameMinusMETA3->Write(histname3);
-  c1->cd(3);
-  SameMinusMETrigger3->Draw("surf2");
-  ResultsMinusMETrigger->cd();
-  SameMinusMETrigger3->Write(histname3);
-  c1->cd(4);
-  SameMinusBoth3->Draw("surf2"); 
-  ResultsMinusBoth->cd();
-  SameMinusBoth3->Write(histname3);
-  Compare->cd();
-  c1->Write(histname3);
-  
-  c1->Clear();
-  SameMinusMETA4->Add(METAhist4,-1.0);
-  SameMinusMETrigger4->Add(METriggerhist4,-1.0);
-  SameMinusBoth4->Add(METAhist4,-1.0);
-  SameMinusBoth4->Add(METriggerhist4,-1.0);
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameHist4->Draw("surf2");
-  ResultsSame->cd();
-  SameHist4->Write(histname4);
-  c1->cd(2);
-  SameMinusMETA4->Draw("surf2");
-  ResultsMinusMETA->cd(); 
-  SameMinusMETA4->Write(histname4);
-  c1->cd(4);
-  SameMinusMETrigger4->Draw("surf2");
-  ResultsMinusMETrigger->cd();
-  SameMinusMETrigger4->Write(histname4);
-  c1->cd(4);
-  SameMinusBoth4->Draw("surf2"); 
-  ResultsMinusBoth->cd();
-  SameMinusBoth4->Write(histname4);
-  Compare->cd();
-  c1->Write(histname4);
-  
-  c1->Clear();
-  c1->Divide(2,2);
-  c1->cd(1);
-  SameMinusBoth1->Draw("surf2"); 
-  c1->cd(2);
-  SameMinusBoth2->Draw("surf2"); 
-  c1->cd(3);
-  SameMinusBoth3->Draw("surf2"); 
-  c1->cd(4);
-  SameMinusBoth4->Draw("surf2"); 
-  
-  ResultsMinusBoth->cd();
-  c1->Write(Form("%s%s",histname1,"Canvas"));
-  delete c1;
-}
-
 void DrawThreeParticleCorrelations(const char* options="")
 {
   bool bdrawbins=true;
@@ -285,7 +19,6 @@ void DrawThreeParticleCorrelations(const char* options="")
   bool makefilemixed =false;
   bool makefiletriggermixed =false;
   bool makefilegen =false;
-  bool removeextracor =false;
   bool ispp = false;
   bool isPbPb = false;
   TString underdirectory("");
@@ -342,12 +75,6 @@ void DrawThreeParticleCorrelations(const char* options="")
       makefilegen=true;
       continue;
     }    
-    key="correct";
-    if(argument.CompareTo(key)==0){
-      bdrawbins=false;
-      removeextracor=true;
-      continue;
-    }
     key="pp";
     if(argument.CompareTo(key)==0){
       ispp=true;
@@ -359,61 +86,9 @@ void DrawThreeParticleCorrelations(const char* options="")
       continue;
     }
   }
-  if(removeextracor){
-    TFile * rfile = TFile::Open("results.root","READ");
-    TFile * corrected = new TFile("corrected.root","RECREATE");
-    if(!rfile){cout << "Run with makefile, makefilemixed, makefiletriggermixed or makefilegen first." <<endl;return;}
-    TDirectory * sameventdiv = rfile->GetDirectory("divided");
-    TDirectory * METAdiv = rfile->GetDirectory("META/divided");
-    TDirectory * METriggerdiv = rfile->GetDirectory("METrigger/divided");
-    Double_t * METAscale, METriggerscale;
-    if(!ispp&&!isPbPb){
-      Correct("DPhi_1_DPHI_2_from3D","DPhi_1_DPHI_2_near_from3D","DPhi_1_DPHI_2_mid_from3D","DPhi_1_DPHI_2_far_from3D",sameventdiv,METAdiv,METriggerdiv,corrected);
-      Correct("DPhi_1_DEta_12_from3D",sameventdiv,METAdiv,METriggerdiv,corrected);
-      Correct("DPhi_1_DEta_12_SameSide_from3D",sameventdiv,METAdiv,METriggerdiv,corrected);
-    }
-    else{
-      Correct("DPhi_1_DPHI_2_from3D","DPhi_1_DPHI_2_near_from3D","DPhi_1_DPHI_2_mid_from3D","DPhi_1_DPHI_2_far_from3D",sameventdiv,METAdiv,METriggerdiv,corrected,ispp,isPbPb,METAscale,METriggerscale);
-      Correct("DPhi_1_DEta_12_from3D",sameventdiv,METAdiv,METriggerdiv,corrected);
-      Correct("DPhi_1_DEta_12_SameSide_from3D",sameventdiv,METAdiv,METriggerdiv,corrected);      
-      cout << METAscale<<endl;
-    }
-
-	
-//     TCanvas * c1 = new TCanvas("show");
-//     c1->Divide(2,2);
-//     sameventdiv->cd();
-// //     sameventdiv->ls();
-//     TH2D * DPHIDPHIs	 = dynamic_cast<TH2D*>(sameventdiv->Get("DPhi_1_DPHI_2_from2D")->Clone("DPhi_1_DPHI_2_from2Dsame"));
-//     TH2D * DPHIDPHIscor1 = dynamic_cast<TH2D*>(DPHIDPHIs->Clone("DPhi_1_DPHI_2_from2Dcor1"));
-//     TH2D * DPHIDPHIscor2 = dynamic_cast<TH2D*>(DPHIDPHIs->Clone("DPhi_1_DPHI_2_from2Dcor2"));
-//     TH2D * DPHIDPHIscor3 = dynamic_cast<TH2D*>(DPHIDPHIs->Clone("DPhi_1_DPHI_2_from2Dcor3"));
-// 
-//     c1->cd(1);
-//     DPHIDPHIs->Draw("colz");
-//     METAdiv->cd();
-//     TH2D * DPHIDPHIMETA;
-//     METAdiv->GetObject("DPhi_1_DPHI_2_from2D",DPHIDPHIMETA);
-//     METriggerdiv->cd();
-//     TH2D * DPHIDPHIMETrigger;
-//     METriggerdiv->GetObject("DPhi_1_DPHI_2_from2D",DPHIDPHIMETrigger);
-//     
-//     DPHIDPHIscor1->Add(DPHIDPHIMETA,-1.0);
-//     DPHIDPHIscor3->Add(DPHIDPHIMETA,-1.0);
-//     c1->cd(2);
-//     DPHIDPHIscor1->Draw("colz");
-//     DPHIDPHIscor2->Add(DPHIDPHIMETrigger,-1.0);
-//     DPHIDPHIscor3->Add(DPHIDPHIMETrigger,-1.0);
-//     c1->cd(3);
-//     DPHIDPHIscor2->Draw("colz");
-//     c1->cd(4);
-//     DPHIDPHIscor3->Draw("colz");
-    rfile->Close();corrected->Close();
-    return;
-  }
-  
   TFile * ffile = TFile::Open("AnalysisResults.root", "READ");
   if(!ffile) return;  
+
   if(makefilegen){
     TDirectory * dir = ffile->GetDirectory("ThreePartGenerator");
     TList* fList;
@@ -422,10 +97,91 @@ void DrawThreeParticleCorrelations(const char* options="")
     if(!(makefilemixed||makefiletriggermixed)) {generated = dynamic_cast<AliCorrelation3p*>fList->FindObject("tracktrigger_correlation_4_8");generated->MakeResultsFile("");}
     if(makefilemixed){generated = dynamic_cast<AliCorrelation3p*>fList->FindObject("tracktrigger_correlation_4_8META");generated->MakeResultsFile("META");}
     if(makefiletriggermixed)  {generated = dynamic_cast<AliCorrelation3p*>fList->FindObject("tracktrigger_correlation_4_8METrigger");generated->MakeResultsFile("METrigger");}
-
-//     generated->MakeResultsFile("");
     return;
   }
+  
+  TList * folderlist = ffile->GetListOfKeys();
+  
+  
+  for(int i = 0;i<folderlist->GetEntries();i++){
+    if(TString(folderlist->At(i)->GetName()).BeginsWith("ThreePart")){
+      const char* foldername = folderlist->At(i)->GetName();
+      TDirectory * folderdir = ffile->GetDirectory(foldername);
+      TList * Containerlist = folderdir->GetListOfKeys();
+      for(int j=0;j<Containerlist->GetEntries();j++){
+	if(TString(Containerlist->At(j)->GetName()).BeginsWith("ThreePart")){
+	  const char* containername = Containerlist->At(j)->GetName();
+	  cout << containername<<endl;
+	  TList * containterdir = dynamic_cast<TList*>(folderdir->Get(containername));
+	  for(int k = 0;k<containterdir->GetEntries();k++){
+	    if(TString(containterdir->At(k)->GetName()).Contains("trigger_correlation")){
+	      if(!TString(containterdir->At(k)->GetName()).Contains("ME")&&makefile){
+		AliCorrelation3p* signaltrack;
+// 		if(!isPbPb){
+// 		  		cout << "2"<<endl;
+// 
+// 		  signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k));
+// 		  		cout << "3"<<endl;
+// 
+// 		}
+// 		if(isPbPb){
+		  signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k)->Clone(Form("%sclone",containterdir->At(k)->GetName())));
+		  for(int l =0;l<containterdir->GetEntries();l++){
+		     if(TString(containterdir->At(l)->GetName()).Contains("trigger_correlation")&&TString(containterdir->At(l)->GetName()).Contains("MEAllfull")){
+		       AliCorrelation3p * mixed = dynamic_cast<AliCorrelation3p*>(containterdir->At(l));
+		       mixed->SetMixedEvent(NULL);
+		       signaltrack->SetMixedEvent(mixed);
+		    }}
+// 		}		       
+		signaltrack->MakeResultsFile(Form("%s",containername));
+		delete signaltrack;
+	      }
+	      
+	      if(TString(containterdir->At(k)->GetName()).Contains("META")&&makefilemixed){
+		AliCorrelation3p* signaltrack;
+// 		if(!isPbPb){signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k));}
+// 		if(isPbPb){
+		  signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k)->Clone(Form("%sclone",containterdir->At(k)->GetName())));
+		  for(int l =0;l<containterdir->GetEntries();l++){
+		     if(TString(containterdir->At(l)->GetName()).Contains("trigger_correlation")&&TString(containterdir->At(l)->GetName()).Contains("MEAllfull")){
+		       signaltrack->SetMixedEvent(dynamic_cast<AliCorrelation3p*>(containterdir->At(l)));}}
+// 	      }
+		signaltrack->MakeResultsFile(Form("%s/META",containername));
+		delete signaltrack;
+	      }
+	      
+	      if(TString(containterdir->At(k)->GetName()).Contains("METrigger")&&makefiletriggermixed){
+		AliCorrelation3p* signaltrack;
+// 		if(!isPbPb){signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k));}
+// 		if(isPbPb){
+		  signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k)->Clone(Form("%sclone",containterdir->At(k)->GetName())));
+		  for(int l =0;l<containterdir->GetEntries();l++){
+		     if(TString(containterdir->At(l)->GetName()).Contains("trigger_correlation")&&TString(containterdir->At(l)->GetName()).Contains("MEAllfull")){
+		       signaltrack->SetMixedEvent(dynamic_cast<AliCorrelation3p*>(containterdir->At(l)));}}
+		
+// 	      }		
+		  signaltrack->MakeResultsFile(Form("%s/METrigger",containername));
+		  delete signaltrack;
+	      }	      
+// 	      if(TString(containterdir->At(k)->GetName()).Contains("MEAllfull")&&makefiletriggermixed){
+// 		AliCorrelation3p* signaltrack;
+// 		if(!isPbPb){
+// 		  signaltrack = dynamic_cast<AliCorrelation3p*>(containterdir->At(k));
+// 		}
+// 		if(isPbPb){continue;}		
+// 		  signaltrack->MakeResultsFile(Form("%s/MEALL",containername));
+// 	      }
+	    }
+	  }
+	}
+      }
+      
+//       delete Containerlist;
+    }
+  }
+//   delete folderlist;
+  ffile->Close();
+  /*
   
   TStringToken triggers("Tracks pi0s"," ");
   while(triggers.NextToken()) {
@@ -445,7 +201,6 @@ void DrawThreeParticleCorrelations(const char* options="")
 	c->Divide(2,2);
 	c->cd(1);
 	gPad->SetLogy();
-// 	if(i==0)ntrig->GetXaxis()->SetRange(0,15);
 	ntrig->GetXaxis()->SetTitle("N_{triggers}");
 	ntrig->SetStats(0);
 	ntrig->Draw("E");
@@ -456,15 +211,11 @@ void DrawThreeParticleCorrelations(const char* options="")
 	double ratio = eventswithatrigger/(eventwithoutatrigger+eventwithoutatrigger)*100;
 	c->cd(2);
 	gPad->SetLogy();
-// 	if(i ==0 ) nass->GetXaxis()->SetRange(0,25);
-// 	if(i ==1 ) nass->GetXaxis()->SetRange(0,100);
 	nass->GetXaxis()->SetTitle("N_{associated}");
 	nass->SetStats(0);
 	nass->Draw("E");
 	c->cd(3);
 	gPad->SetLogy();
-// 	if(i==0)nasstrig->GetXaxis()->SetRange(0,25);
-// 	if(i==1)nasstrig->GetXaxis()->SetRange(0,100);
 	nasstrig->GetXaxis()->SetTitle("N_{associated}");
 	nasstrig->SetTitle("Number of Associated in Events that contain at least one trigger.");
 	nasstrig->SetStats(0);
@@ -508,7 +259,6 @@ void DrawThreeParticleCorrelations(const char* options="")
 	TH1D* multafterselection = (TH1D*) eventsafterselection->Project3D("y");
 	multafterselection->SetTitle("multiplicity after event selection");
 	if(i==0)multafterselection->GetXaxis()->SetRange(1,multafterselection->GetXaxis()->FindBin(200));
-// 	if(i==1)multafterselection->GetYaxis()->SetRange(0,multafterselection->GetXaxis()->FindBin(500));
 	TH1D* vertexafterselection = (TH1D*)  eventsafterselection->Project3D("x");
 	vertexafterselection->SetTitle("vertex after event selection");
 	TH1D* centralityafterselection = (TH1D*)  eventsafterselection->Project3D("z");
@@ -517,7 +267,6 @@ void DrawThreeParticleCorrelations(const char* options="")
 	c->Divide(2,2);
 	c->cd(1);
 	if(i==0)multvertexbeforeselection->GetYaxis()->SetRange(1,multvertexafterselection->GetYaxis()->FindBin(200));
-// 	if(i==1)multvertexbeforeselection->GetYaxis()->SetRange(0,multvertexafterselection->GetYaxis()->FindBin(500));
 	multvertexbeforeselection->Draw("surf3");
 	multvertexbeforeselection->SetStats(0);
 	gPad->SetTheta(30); // default is 30
@@ -525,7 +274,6 @@ void DrawThreeParticleCorrelations(const char* options="")
 	gPad->Update();
 	c->cd(2);
 	if(i==0)multvertexafterselection->GetYaxis()->SetRange(1,multvertexafterselection->GetYaxis()->FindBin(200));
-// 	if(i==1)multvertexafterselection->GetXaxis()->SetRange(0,multafterselection->GetXaxis()->FindBin(500));
 	multvertexafterselection->Draw("surf3");
 	multvertexafterselection->SetStats(0);
 	gPad->SetTheta(30); // default is 30
@@ -607,23 +355,6 @@ void DrawThreeParticleCorrelations(const char* options="")
 	if(makefiletriggermixed&&0) mixedtriggertrack->MakeResultsFile("METrigger");
 	if(makefiletriggermixed&&1) mixedtriggertrack->MakeResultsFile("METrigger");	
       }
-//       if(triggers.CompareTo("pi0s")==0){
-// 	AliCorrelation3ppi0* signalpi0 = fList->FindObject(corobj.Data());
-// 	if(!signalpi0) continue;
-// 	corobj.Append("ME");
-// 	AliCorrelation3ppi0* mixedpi0 = fList->FindObject(corobj.Data());
-// 	if(!mixedpi0)continue;
-// 	corobj.Append("Trigger");
-// 	AliCorrelation3ppi0* triggermixedpi0 = fList->FindObject(corobj.Data());
-// 	if(!triggermixedpi0)continue;
-//       }
     }
-  }
+  }*/
 }
-
-//Prepare the local directories needed:
-//   gSystem->MakeDirectory("imgs");
-      //prepare the specific folders
-//       gSystem->MakeDirectory(Form("imgs/%s",Directory.Data()));
-//       if(underdirectory.CompareTo("")!=0){Directory.Append(underdirectory);gSystem->MakeDirectory(Form("imgs/%s",Directory.Data()));}
-//       if((underdirectory.CompareTo("/rawmixed")!=0)&&(underdirectory.CompareTo("/binstats")!=0))){gSystem->MakeDirectory(Form("imgs/%s/corrected",Directory.Data()));}
