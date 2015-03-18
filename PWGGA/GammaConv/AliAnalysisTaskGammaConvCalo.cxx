@@ -1706,7 +1706,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 						TTree* tree = (TTree*) inputHandler->GetTree();
 						TFile* file = (TFile*) tree->GetCurrentFile();
 						TString fileName(file->GetName());
-						cout << "failed to identify that this is a MB prod: "<<fileName.Data() << endl;
+						AliInfo(Form("************************ SOMETHING WENT SERIOUSLY WRONG ****************************************"));
+						AliInfo(Form("failed to identify that this is a MB prod: %s, event number %i",fileName.Data(),((AliESDEvent*)fInputEvent)->GetEventNumberInFile() ));
+						AliInfo(Form("MB header from %i to %i, particle: %i", ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderStart(0), 
+								((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderEnd(0), PhotonCandidate->GetCaloPhotonMCLabel(0)));
+						AliFatal("************************** THIS IS IMPOSSIBLE FOR A PURE MB PRODUCTION *******************************");
 					}
 				}
 			}	
@@ -1725,7 +1729,15 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 									TTree* tree = (TTree*) inputHandler->GetTree();
 									TFile* file = (TFile*) tree->GetCurrentFile();
 									TString fileName(file->GetName());
-									cout << "failed to identify that this is a MB prod: " << fileName.Data() << endl;
+									AliInfo(Form("************************ SOMETHING WENT SERIOUSLY WRONG ****************************************"));
+									AliInfo(Form("failed to identify that this is a MB prod: %s, event number %i",fileName.Data(),((AliESDEvent*)fInputEvent)->GetEventNumberInFile() ));
+									AliInfo(Form("MB header from %i to %i, particle: %i", ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderStart(0), 
+											((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderEnd(0), mclabelsCluster[l]));
+									for (Int_t k = 0; k < (Int_t)clus->GetNLabels(); k++ ){
+										AliInfo(Form("label %i: %i of %i", k, mclabelsCluster[k], (Int_t)clus->GetNLabels()));
+									} 
+									
+									AliFatal("************************** THIS IS IMPOSSIBLE FOR A PURE MB PRODUCTION *******************************");
 								}
 							}
 						}
