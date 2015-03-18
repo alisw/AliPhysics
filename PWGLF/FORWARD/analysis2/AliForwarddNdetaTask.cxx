@@ -48,7 +48,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
 
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin*
-AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l,Short_t h) 
+AliForwarddNdetaTask::MakeCentralityBin(const char* name, Float_t l,Float_t h) 
   const 
 {
   // 

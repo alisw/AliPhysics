@@ -789,12 +789,14 @@ struct dNdetaDrawer
 	if (!(fOptions & kMirror)) continue;
 
 	TH1* tmp2 = Symmetrice(tmp);
-	tmp2->SetFillColor(tmp->GetFillColor());
-	tmp2->SetFillStyle(tmp->GetFillStyle());
-	tmp2->SetMarkerStyle(tmp->GetMarkerStyle());
-	tmp2->SetLineWidth(tmp->GetLineWidth());
-	fResults->GetHists()->AddFirst(tmp2, "e5");
-	fResults->Modified();
+	if (tmp2) {
+	  tmp2->SetFillColor(tmp->GetFillColor());
+	  tmp2->SetFillStyle(tmp->GetFillStyle());
+	  tmp2->SetMarkerStyle(tmp->GetMarkerStyle());
+	  tmp2->SetLineWidth(tmp->GetLineWidth());
+	  fResults->GetHists()->AddFirst(tmp2, "e5");
+	  fResults->Modified();
+	}
       }
     }
     delete fwdA;
@@ -1002,17 +1004,19 @@ struct dNdetaDrawer
     TObjArray* a = new TObjArray;
     truths.Expand(n);
     for (UShort_t i = 0; i < n; i++) { 
-      UShort_t centLow  = 0;
-      UShort_t centHigh = 0;
+      Float_t  centLow  = 0;
+      Float_t  centHigh = 0;
       TString  lname    = "all";
       Int_t    col      = -1000;
       TString  centTxt  = "";
       if (HasCent()) {
 	centLow  = fCentAxis->GetBinLowEdge(i+1);
 	centHigh = fCentAxis->GetBinUpEdge(i+1);
-	lname    = Form("cent%03d_%03d", centLow, centHigh);
+	lname    = Form("cent%03dd%02d_%03dd%02d",
+			Int_t(centLow),  Int_t(centLow *100)%100,
+			Int_t(centHigh), Int_t(centHigh*100)%100);
 	col      = GetCentralityColor(i+1);
-        centTxt  = Form("%3d%%-%3d%% central", centLow, centHigh);
+        centTxt  = Form("%6.2f%%-%6.2f%% central", centLow, centHigh);
       }
       TH1* tt = static_cast<TH1*>(truths.At(i));
       TH1* ot = tt;
@@ -1503,6 +1507,13 @@ struct dNdetaDrawer
     
     l->Draw();
   }
+  const char* CentLimitName(Bool_t isMult, Float_t v)
+  {
+    if (isMult) return Form("%3d", Int_t(v));
+    if ((Int_t(v*100) % 100) == 0) return Form("%3d%%", Int_t(v));
+    if ((Int_t(v*100)  % 10) == 0) return Form("%5.1f%%", v);
+    return Form("%6.2f%%", v);
+  }
   //__________________________________________________________________
   /** 
    * Build centrality legend 
@@ -1530,17 +1541,18 @@ struct dNdetaDrawer
     TString centMeth(fCentMeth->GetTitle());
     Bool_t      isMult   = centMeth.EqualTo("MULT");
     Int_t       lowOff   = (isMult ? 1 : 0);
-    const char* suf      = (isMult ? "" : "%");
     Int_t       nextOff  = 0;
     Int_t n = fCentAxis->GetNbins();
     for (Int_t i = 1; i <= n; i++) {
-      if (!(fCentSeen & (1 << (i-1)))) continue;
+      if (!(fCentSeen & (1 << (i-1)))) { nextOff = 0; continue; }
       Double_t low  = fCentAxis->GetBinLowEdge(i) + lowOff + nextOff;
       Double_t upp  = fCentAxis->GetBinUpEdge(i);
-      TString  txt  = Form("%3d%s - %3d%s", int(low), suf, int(upp), suf);
+      TString  txt  = Form("%s - %s",
+			   CentLimitName(isMult,low),
+			   CentLimitName(isMult,upp));
       if (isMult && upp == low) {
 	nextOff = -1;
-	txt     = Form("%3d%s", int(low-1), suf);
+	txt     = CentLimitName(isMult,low-1);
       }
       else
 	nextOff = 0;
@@ -2202,6 +2214,7 @@ struct dNdetaDrawer
    */
   TH1* Symmetrice(const TH1* h) const
   {
+    if (!h) return 0;
     Int_t nBins = h->GetNbinsX();
     TH1* s = static_cast<TH1*>(h->Clone(Form("%s_mirror", h->GetName())));
     s->SetTitle(Form("%s (mirrored)", h->GetTitle()));
@@ -2659,6 +2672,7 @@ struct dNdetaDrawer
   TH1* 
   Merge(const TH1* cen, const TH1* fwd, Double_t& xlow, Double_t& xhigh)
   {
+    if (!fwd || !cen) return 0;
     TH1* tmp = static_cast<TH1*>(fwd->Clone("tmp"));
     TString name(fwd->GetName());
     name.ReplaceAll("Forward", "Merged");
@@ -2707,6 +2721,7 @@ struct dNdetaDrawer
   TF1* 
   FitMerged(TH1* tmp, Double_t xlow, Double_t xhigh)
   {
+    if (!tmp) return 0;
     TF1* tmpf  = new TF1("tmpf", "gaus", xlow, xhigh);
     tmp->Fit(tmpf, "NQ", "");
     tmp->SetDirectory(0);
@@ -2737,6 +2752,7 @@ struct dNdetaDrawer
   void
   MakeSysError(TH1* tmp, TH1* cen, TH1* fwd, TF1* fit)
   {
+    if (!tmp || !fwd || !fit) return;
     for (Int_t i = 1; i <= tmp->GetNbinsX(); i++) {
       Double_t tc = tmp->GetBinContent(i);
       if (tc < 0.01) continue;
