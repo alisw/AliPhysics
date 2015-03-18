@@ -63,7 +63,7 @@ void AliPHOSTriggerUtils::SetEvent(AliVEvent * event){
    fRun = runNumber ;
      // 
     AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
-    badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+    badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
 //    badmapContainer.InitFromFile("$PHOSTrigBadMaps.root","phosTrigBadMap");
     TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosTriggerBadMap");
     if(!maps){
@@ -173,12 +173,13 @@ Bool_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
     Int_t ix = relid[2];
     Int_t iz = relid[3];
         
-    if(!TestBadMap(mod,ix,iz))
+    if(!TestBadMap(mod,ix,iz)){
       return kFALSE ;
-  
+    }
   
     //Now etimate probability from the parameterization
-    return (gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) ;
+    Bool_t result = (gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) ;
+    return result ;
 
 }
 //-----------------------------------------------------------------------  
@@ -241,7 +242,7 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t 
 
 
   if (eClu >= ent[module]){
-    Double_t denom= ar[module][1]*TMath::Power(eClu,-ar[module][2]) + ar[module][3]*TMath::Power(eClu,-ar[module][4]) + ar[module][5]*TMath::Power(eClu,-ar[module][6]) ;
+    Double_t denom= 1.+ ar[module][1]*TMath::Power(eClu,-ar[module][2]) + ar[module][3]*TMath::Power(eClu,-ar[module][4]) + ar[module][5]*TMath::Power(eClu,-ar[module][6]) ;
     if(denom>0)
       return ar[module][0]/denom ;
     else
