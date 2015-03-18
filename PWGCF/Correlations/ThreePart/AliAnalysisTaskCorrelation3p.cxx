@@ -32,6 +32,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "THn.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "TFile.h"
@@ -215,55 +216,59 @@ AliAnalysisTaskCorrelation3p::~AliAnalysisTaskCorrelation3p()
 void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 {
   // create result objects and add to output list
-  MakeRunNumbers();//Needs to be done once in the beginning
-  TH1::SetDefaultSumw2(kTRUE);//want the collection of weights on all histograms.
-  TString collisiontype;
-  if(fCollisionType==pp) collisiontype.Append("pp");
-  if(fCollisionType==PbPb) collisiontype.Append("PbPb");
-  fOutput = new THashList;
-  fOutput->SetOwner();
+    MakeRunNumbers();//Needs to be done once in the beginning
+    TH1::SetDefaultSumw2(kTRUE);//want the collection of weights on all histograms.
+    TString collisiontype;
+    if(fCollisionType==pp) collisiontype.Append("pp");
+    if(fCollisionType==PbPb) collisiontype.Append("PbPb");
+    fOutput = new THashList;
+    fOutput->SetOwner();
+  if(!fefficiencies){
+    //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
+    AliThreeParticleCorrelator<AliCorrelation3p>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p>;
+    fCorrelator=correlator;
 
-  //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
-  AliThreeParticleCorrelator<AliCorrelation3p>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p>;
-  fCorrelator=correlator;
+    //Initialize QA histograms and add them to fOutput
+    InitializeQAhistograms();
 
-  //Initialize QA histograms and add them to fOutput
-  InitializeQAhistograms();
-
-  //Intitialize the Multiplicity and ZVertex bins.
-  const Int_t    MaxNofEvents=fMaxNEventMix;
-  const Int_t    MinNofTracks=fMinNofTracksMix;
-  const Int_t    nofMBins=fMBinEdges.GetSize()-1;
-  Double_t 	 MBinsTemp[nofMBins+1];
-  for(int i=0; i<=nofMBins; ++i) MBinsTemp[i] = fMBinEdges.At(i);
-  const Int_t    nofZBins=fZBinEdges.GetSize()-1;//5;
-  Double_t 	 ZBinsTemp[nofZBins+1];
-  for(int i=0; i<=nofZBins; ++i) ZBinsTemp[i] = fZBinEdges.At(i);
-  //Create the AliEventPoolManager 
-  AliEventPoolManager* poolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, nofMBins, (Double_t*)MBinsTemp, nofZBins, (Double_t*)ZBinsTemp);
-  poolMgr->SetTargetValues(MinNofTracks,0.1,1.0);
-  correlator->InitEventMixing(poolMgr);
-  
-  
-  //initialize track worker and add to the output if appropriate
-  TString tracksname;
-  if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) tracksname = Form("tracktrigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
-  if(ftrigger == AliAnalysisTaskCorrelation3p::pi0)    tracksname = Form("pi0trigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
-  TString triggertype;
-  if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) triggertype = "tracks";
-  if(ftrigger == AliAnalysisTaskCorrelation3p::pi0) triggertype = "pi0";
-  
-  TString triggerinit = Form("minTriggerPt=%.1f maxTriggerPt=%.1f minAssociatedPt=%.1f maxAssociatedPt=%.1f collisiontype=%s triggertype=%s", fMinTriggerPt, fMaxTriggerPt, fMinAssociatedPt, fMaxAssociatedPt,collisiontype.Data(),triggertype.Data());
-  AliCorrelation3p* workertracktrigger =new AliCorrelation3p(tracksname, fMBinEdges, fZBinEdges);
-  workertracktrigger->SetAcceptanceCut(fAcceptancecut);
-  workertracktrigger->Init(triggerinit);
-  correlator->Add(workertracktrigger);
-  fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
-  fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
-  fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
-//   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
-  fOutput->Add(workertracktrigger);
-  
+    //Intitialize the Multiplicity and ZVertex bins.
+    const Int_t    MaxNofEvents=fMaxNEventMix;
+    const Int_t    MinNofTracks=fMinNofTracksMix;
+    const Int_t    nofMBins=fMBinEdges.GetSize()-1;
+    Double_t 	 MBinsTemp[nofMBins+1];
+    for(int i=0; i<=nofMBins; ++i) MBinsTemp[i] = fMBinEdges.At(i);
+    const Int_t    nofZBins=fZBinEdges.GetSize()-1;//5;
+    Double_t 	 ZBinsTemp[nofZBins+1];
+    for(int i=0; i<=nofZBins; ++i) ZBinsTemp[i] = fZBinEdges.At(i);
+    //Create the AliEventPoolManager 
+    AliEventPoolManager* poolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, nofMBins, (Double_t*)MBinsTemp, nofZBins, (Double_t*)ZBinsTemp);
+    poolMgr->SetTargetValues(MinNofTracks,0.1,1.0);
+    correlator->InitEventMixing(poolMgr);
+    
+    
+    //initialize track worker and add to the output if appropriate
+    TString tracksname;
+    if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) tracksname = Form("tracktrigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
+    if(ftrigger == AliAnalysisTaskCorrelation3p::pi0)    tracksname = Form("pi0trigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
+    TString triggertype;
+    if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) triggertype = "tracks";
+    if(ftrigger == AliAnalysisTaskCorrelation3p::pi0) triggertype = "pi0";
+    
+    TString triggerinit = Form("minTriggerPt=%.1f maxTriggerPt=%.1f minAssociatedPt=%.1f maxAssociatedPt=%.1f collisiontype=%s triggertype=%s", fMinTriggerPt, fMaxTriggerPt, fMinAssociatedPt, fMaxAssociatedPt,collisiontype.Data(),triggertype.Data());
+    AliCorrelation3p* workertracktrigger =new AliCorrelation3p(tracksname, fMBinEdges, fZBinEdges);
+    workertracktrigger->SetAcceptanceCut(fAcceptancecut);
+    workertracktrigger->Init(triggerinit);
+    correlator->Add(workertracktrigger);
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
+  //   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
+    fOutput->Add(workertracktrigger);
+  }
+  else{cout << "correct"<<endl;
+    InitializeQAhistograms();
+    InitializeEffHistograms();
+  }
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
 }
@@ -271,12 +276,15 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 {
   if(fgenerate){execgenerate();return;}//Toy MC generator, skips all data processing.
-  if(fefficiencies){return;}//efficiencies only.
   // process the event
   TObject* pInput=InputEvent();
   if (!pInput) {AliError("failed to get input");return;}
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
   if(!pEvent){AliError(Form("input of wrong class type %s, expecting AliVEvent", pInput->ClassName()));return;}
+  //In the MC case, get the Array.
+  if(fefficiencies)GetMCArray();
+  //if it is not found, return without doing anything:
+  if(!fMcArray) return;
   //Find out if it is AOD or ESD.  
   fisESD=pEvent->IsA()==AliESDEvent::Class();
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
@@ -309,11 +317,13 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   //If VZERO data, fill the Multiplicity histograms.
   AliVVZERO* pVZERO=pEvent->GetVZEROData();
   if (pVZERO) {FillHistogram("vzeroMult",pVZERO->GetMTotV0A()+pVZERO->GetMTotV0C());}
-  if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
-  if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
-  //Do the actual correlations.
-  if(!((fNTriggers+fNAssociated)==0))fCorrelator->Execute(NULL, &allrelevantParticles);//correlate for events that contain at least one trigger or associated.
-  //Post the output 
+  if(!fefficiencies){
+    if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
+    if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
+    //Do the actual correlations.
+    if(!((fNTriggers+fNAssociated)==0))fCorrelator->Execute(NULL, &allrelevantParticles);//correlate for events that contain at least one trigger or associated.
+    //Post the output
+  }
   PostData(1, fOutput);
 }
 
@@ -344,6 +354,9 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedTheta",t->Theta());
     if (!IsSelected(t)) continue;
     allrelevantParticles->Add(t);
+    if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::pp){FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    
     FillHistogram("selectedTracksperRun",fRunFillValue);
     FillHistogram("trackPt",t->Pt());
     FillHistogram("trackPhi",t->Phi());
@@ -361,6 +374,22 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
       FillHistogram("trackAssociatedTheta",t->Theta());
     }
   }
+  
+  
+  if(fMcArray&&fefficiencies){
+    int nofMCParticles = fMcArray->GetEntriesFast();
+    for (int i=0;i<nofMCParticles;i++){
+      AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
+      if (!t) continue;
+      if( t->Charge()!=0){//check if they are physical primary particles
+	if (!IsSelected(t)) continue;
+	if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){FillHistogram("hnTracksinBinsMC",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+	if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){FillHistogram("hnTracksinBinsMC",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+	
+      }
+    }
+  }
+
   return nofTracks;
 }
 void AliAnalysisTaskCorrelation3p::GetPi0s(TObjArray* allrelevantParticles, AliVEvent* pEvent)
@@ -477,6 +506,7 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelected(AliVParticle* p)
   if (p->IsA()==AliCFPI0::Class()) return IsSelectedTrigger(p);
   if (p->IsA()==AliESDtrack::Class() && IsSelectedTrackESD(p)) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
   if (p->IsA()==AliAODTrack::Class() && IsSelectedTrackAOD(p)) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
+  if (p->IsA()==AliAODMCParticle::Class() && dynamic_cast<AliAODMCParticle*>(p)->IsPhysicalPrimary()) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
   return kFALSE;
 }
 
@@ -534,6 +564,20 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackAOD(AliVParticle* t)
 Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackESD(AliVParticle* t)
 {
   return fTrackCuts->IsSelected(t);
+}
+
+void AliAnalysisTaskCorrelation3p::GetMCArray()
+{//Gets the MCarray if we are in AOD.
+    fMcArray = 0;
+    AliAODInputHandler* aodHandler=dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (aodHandler){
+      AliAODEvent *aod=aodHandler->GetEvent();
+      if (aod && fefficiencies) {
+	fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (!fMcArray) AliError("Could not retrieve MC array!");
+      }
+      else AliError("Could not retrieve AOD event! MC is only supported in AOD.");
+    }
 }
 
 void AliAnalysisTaskCorrelation3p::GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrack* AODt)
@@ -739,6 +783,36 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
     fOutput->Add(EmcalSelectedPionsperRun);}
 }
 
+void AliAnalysisTaskCorrelation3p::InitializeEffHistograms()
+{
+  //Function that initializes the Efficiency histogram
+  Int_t    nofMBins=2*(fMBinEdges.GetSize()-1);
+  Double_t MBinmined=fMBinEdges.At(0);
+  Double_t MBinmaxed=fMBinEdges.At(fMBinEdges.GetSize()-1);
+  Int_t    nofZBins=2*(fZBinEdges.GetSize()-1);
+  Double_t ZBinmined=fZBinEdges.At(0);
+  Double_t ZBinmaxed=fZBinEdges.At(fZBinEdges.GetSize()-1);
+  Int_t nphi = 72;
+  Double_t phimin = 0.0;
+  Double_t phimax = 2.0*TMath::Pi();
+  Int_t nEta = 126;
+  Double_t EtaMin = -0.9;
+  Double_t EtaMax =  0.9;
+  Double_t pTmin = fMinAssociatedPt;
+  Double_t pTmax = fMaxTriggerPt;
+  Int_t npT = (pTmax-pTmin)/0.1 - 0.5;//rounding up
+
+  Int_t  bins[5]   = {nofMBins, nofZBins,nphi,nEta,npT};
+  Double_t xmin[5] = {MBinmined,ZBinmined,phimin,EtaMin,pTmin};
+  Double_t xmax[5] = {MBinmaxed,ZBinmaxed,phimax,EtaMax,pTmax};
+
+  
+  fOutput->Add(new THnD("hnTracksinBins","Tracks in different bins.",5,bins,xmin,xmax));
+  fOutput->Add(new THnD("hnTracksinBinsMC","Tracks in different bins, MC truth for charged particles.",5,bins,xmin,xmax));
+
+}
+
+
 void AliAnalysisTaskCorrelation3p::MakeRunNumbers()
 {
   //Initialize array for run numbers.
@@ -842,6 +916,15 @@ void AliAnalysisTaskCorrelation3p::FillHistogram(const char* key, Double_t x, Do
   else AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
 }
 
+void AliAnalysisTaskCorrelation3p::FillHistogram(const char* key, Double_t x, Double_t y, Double_t z,Double_t a, Double_t b)
+{
+  THnD * hist = dynamic_cast<THnD*>(fOutput->FindObject(key)) ;
+  if(hist){
+    Double_t s[5] = {x,y,z,a,b};
+    hist->Fill(s) ;
+  }
+  else AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
+}
 void AliAnalysisTaskCorrelation3p::execgenerate()
 {//This function is called once for every event, and generates the particle array, and then executes the 3p correlations. Should be run locally.
   delete gRandom;

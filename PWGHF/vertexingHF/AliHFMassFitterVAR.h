@@ -80,7 +80,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 /*   void     WriteHisto(TString path="./") const; // write the histogram */
 /*   void     WriteNtuple(TString path="./") const; // write the TNtuple */
   void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=3,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
-/*   void     DrawHere(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1) const; */
+  void     DrawHere(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1); 
 /*   void     DrawFit(Double_t nsigma=3) const; */
 /*   void     Reset(); */
   
@@ -124,7 +124,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 
  private:
 
-  void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1)const;
+  void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1);
 
   //  void     ComputeParSize();
   void     ComputeNFinalPars();
