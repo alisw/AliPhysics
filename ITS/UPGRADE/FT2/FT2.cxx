@@ -1231,7 +1231,9 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
   double dYsearch = 2*TMath::Max(0.00001,TMath::Sqrt((trCov[0]+yzcov[0])*chi2Cut));
   double dZsearch = 2*TMath::Max(0.00001,TMath::Sqrt((trCov[2]+yzcov[2])*chi2Cut));
   int nFakeCand = gRandom->Poisson(rho*dYsearch*dZsearch); // expected number of surrounding hits
+#if DEBUG>1
   printf("Lr:%d NF:%3d rho:%f S:%.3fx%.3f\n",ilr,nFakeCand,rho,dYsearch,dZsearch);
+#endif
   if (nFakeCand) {
     AliITSUGeomTGeo* gm = fITS->GetGeom();
     const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
