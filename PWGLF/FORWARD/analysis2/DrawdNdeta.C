@@ -1124,8 +1124,8 @@ struct dNdetaDrawer
     TH1* norm        = FetchHistogram(list, Form("norm%s", name));
     if (!norm) return 0;
     if (norm->GetMaximum() < 1000) {
-      Warning("FetchCentResults", "Too few events in %s: %d",
-	      list->GetName(), norm->GetMaximum());
+      Warning("FetchCentResults", "Too few events in %s: %ld",
+	      list->GetName(), Long_t(norm->GetMaximum()));
       return 0;
     }
     
@@ -1528,16 +1528,23 @@ struct dNdetaDrawer
     l->SetTextColor(kAliceBlue);
 
     TString centMeth(fCentMeth->GetTitle());
-    const char* suf = (centMeth.EqualTo("MULT") ? "" : "%");
+    Bool_t      isMult   = centMeth.EqualTo("MULT");
+    Int_t       lowOff   = (isMult ? 1 : 0);
+    const char* suf      = (isMult ? "" : "%");
+    Int_t       nextOff  = 0;
     Int_t n = fCentAxis->GetNbins();
     for (Int_t i = 1; i <= n; i++) {
       if (!(fCentSeen & (1 << (i-1)))) continue;
-      Double_t low = fCentAxis->GetBinLowEdge(i);
-      Double_t upp = fCentAxis->GetBinUpEdge(i);
-      TLegendEntry* e = l->AddEntry(Form("dummy%02d", i),
-				    Form("%3d%s - %3d%s", 
-					 int(low), suf,
-					 int(upp), suf), "pl");
+      Double_t low  = fCentAxis->GetBinLowEdge(i) + lowOff + nextOff;
+      Double_t upp  = fCentAxis->GetBinUpEdge(i);
+      TString  txt  = Form("%3d%s - %3d%s", int(low), suf, int(upp), suf);
+      if (isMult && upp == low) {
+	nextOff = -1;
+	txt     = Form("%3d%s", int(low-1), suf);
+      }
+      else
+	nextOff = 0;
+      TLegendEntry* e = l->AddEntry(Form("dummy%02d", i), txt, "pl");
       e->SetMarkerColor(GetCentralityColor(i));
     }
     l->Draw();
