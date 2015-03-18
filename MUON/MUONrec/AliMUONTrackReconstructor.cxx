@@ -572,7 +572,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInChamber(AliMUONTrack &trackCandid
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
         cout << "FollowTrackInStation: added the best cluster in chamber(1..): " << bestTrackParamAtCluster.GetClusterPtr()->GetChamberId()+1 << endl;
-        if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
+        if (AliLog::GetGlobalDebugLevel() >= 3) trackCandidate.RecursiveDump();
       }
       
     } else return kFALSE;
@@ -877,7 +877,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
         cout << "FollowTrackInStation: added the two best clusters in station(1..): " << nextStation+1 << endl;
-        if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
+        if (AliLog::GetGlobalDebugLevel() >= 3) trackCandidate.RecursiveDump();
       }
       
     } else if (foundOneCluster) {
@@ -886,7 +886,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
         cout << "FollowTrackInStation: added the best cluster in chamber(1..): " << bestTrackParamAtCluster1.GetClusterPtr()->GetChamberId()+1 << endl;
-        if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
+        if (AliLog::GetGlobalDebugLevel() >= 3) trackCandidate.RecursiveDump();
       }
       
     } else {
