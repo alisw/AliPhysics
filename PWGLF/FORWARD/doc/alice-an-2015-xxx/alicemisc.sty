@@ -1,0 +1,239 @@
+%%
+%% This is file `alicemisc.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% alice_template.dtx  (with options: `misc')
+%% 
+%% Copyright (c) 2013 ALICE Collaboration.
+%% 
+%% See the file alice_template.dtx for further comments and documentation.
+%% 
+
+\ProvidesPackage{alicemisc}
+
+\RequirePackage{units}
+\RequirePackage{fixltx2e}
+\RequirePackage{pifont}
+\RequirePackage{xcolor}
+\definecolor{alicered}{rgb}{0.89,0.00,0.10}
+\definecolor{aliceyellow}{rgb}{0.93,0.49,0.07}
+\definecolor{alicepurple}{rgb}{0.79,0.28,0.26}
+\definecolor{alicegray}{rgb}{0.16,0.22,0.27}
+\definecolor{alicetopleft}{rgb}{0.357,0.396,0.454}
+\definecolor{alicebottomright}{rgb}{0.043,0.047,0.055}
+
+\DeclareRobustCommand\alice@at[1]{\ifmmode\relax\mbox{#1}\else #1\fi}
+\def\name@font#1{\alice@at{\begingroup\mdseries\scshape#1\endgroup}}
+\def\alice@name#1{\alice@at{#1}}
+\def\alice@@name#1{\alice@@@name{#1}{#1}}
+\def\alice@@@name#1#2{\alice@at{#1}}%
+\DeclareRobustCommand{\QGP}{\name@font{Qgp}}
+\DeclareRobustCommand{\sQGP}{\name@font{sQgp}}
+\DeclareRobustCommand{\QCD}{\name@font{Qcd}}
+\DeclareRobustCommand{\pQCD}{\name@font{pQcd}}
+\DeclareRobustCommand{\CGC}{\name@font{Cgc}}
+\DeclareRobustCommand{\BNL}{\name@font{Bnl}}
+\DeclareRobustCommand{\RHIC}{\name@font{Rhic}}
+\DeclareRobustCommand{\AGS}{\name@font{Ags}}
+\DeclareRobustCommand{\CERN}{\name@font{Cern}}
+\DeclareRobustCommand{\LHC}{\name@font{Lhc}}
+\DeclareRobustCommand{\LEP}{\name@font{Lep}}
+\DeclareRobustCommand{\SPS}{\name@font{Sps}}
+\DeclareRobustCommand{\BRAHMS}{\name@font{Brahms}}
+\DeclareRobustCommand{\PHENIX}{\name@font{Phenix}}
+\DeclareRobustCommand{\PHOBOS}{\name@font{Phobos}}
+\DeclareRobustCommand{\STAR}{\name@font{Star}}
+\DeclareRobustCommand{\ATLAS}{\name@font{Atlas}}
+\DeclareRobustCommand{\CMS}{\name@font{Cms}}
+\DeclareRobustCommand{\LHCb}{\name@font{Lhc}b}
+\DeclareRobustCommand{\ALICE}{\name@font{Alice}}
+\DeclareRobustCommand{\NA}[1]{\name@font{Na{\small #1}}}
+\DeclareRobustCommand{\WA}[1]{\name@font{Wa{\small #1}}}
+\DeclareRobustCommand{\HERA}{\name@font{HERA}}
+\DeclareRobustCommand{\ROOT}{\name@font{Root}}
+\DeclareRobustCommand{\HIJING}{\name@font{Hijing}}
+\DeclareRobustCommand{\AMPT}{\name@font{Ampt}}
+\def\Ali@@Root{\name@font{aliroot}}
+\DeclareRobustCommand\ALIROOT[1]{\ifx|#1|\Ali@@Root\else\Ali@@Root~#1\fi}
+\let\AliROOT\ALIROOT
+\def\@@GEANT{\name@font{geant}}
+
+\DeclareRobustCommand\GEANT[1]{\ifx|#1|\@@GEANT\else\@@GEANT~#1\fi}
+\def\@@PYTHIA{\name@font{pythia}}
+\DeclareRobustCommand\PYTHIA[1]{\ifx|#1|\@@PYTHIA\else\@@PYTHIA~#1\fi}
+\DeclareRobustCommand\DIM{\alice@@name{DIM}}
+\DeclareRobustCommand\SMI{\alice@@name{SMI}}
+\DeclareRobustCommand\LDC{\alice@@name{LDC}}
+\DeclareRobustCommand\GDC{\alice@@name{GDC}}
+\DeclareRobustCommand\PDC{\alice@@name{PDC}}
+\DeclareRobustCommand\DCS{\alice@@name{DCS}}
+\DeclareRobustCommand\TTC{\alice@@name{TTC}}
+\DeclareRobustCommand\ITS{\alice@@name{ITS}}
+\DeclareRobustCommand\TPC{\alice@@name{TPC}}
+\DeclareRobustCommand\TRD{\alice@@name{TRD}}
+\DeclareRobustCommand\TOF{\alice@@name{TOF}}
+\DeclareRobustCommand\HMPID{\alice@@name{HMPID}}
+\DeclareRobustCommand\EMCAL{\alice@@name{EMCAL}}
+\DeclareRobustCommand\PHOS{\alice@@name{PHOS}}
+\DeclareRobustCommand\PMD{\alice@@name{PMD}}
+\DeclareRobustCommand\SPD{\alice@@name{SPD}}
+\DeclareRobustCommand\SDD{\alice@@name{SDD}}
+\DeclareRobustCommand\SSD{\alice@@name{SSD}}
+\DeclareRobustCommand\FWD{\alice@@name{FWD}}
+\DeclareRobustCommand\MUON{\alice@@name{MUON}}
+\DeclareRobustCommand\LTHREE{\alice@@@name{L3}{LTHREE}}
+\DeclareRobustCommand\LVL[1]{LVL#1}
+\DeclareRobustCommand\CTP{\alice@@name{CTP}}
+\DeclareRobustCommand\CAEN{\alice@@name{CAEN}}
+\DeclareRobustCommand\TZERO[1]{%
+  \alice@@@name{T0}{TZERO}\ifx|#1|\else\alice@name{{--#1}}\fi}
+\DeclareRobustCommand\VZERO[1]{%
+  \alice@@@name{V0}{VZERO}\ifx|#1|\else\alice@name{{--#1}}\fi}
+\DeclareRobustCommand\FMD[1]{%
+  \alice@@@name{FMD}{FMD}\ifx|#1|\else\alice@name{{#1}}\fi}
+\DeclareRobustCommand\PbPbCol{\alice@at{Pb\nolinebreak-\nolinebreak Pb}}
+\DeclareRobustCommand\pPbCol{\alice@at{p\nolinebreak-\nolinebreak Pb}}
+\DeclareRobustCommand\dAuCol{\alice@at{d\nolinebreak-\nolinebreak Au}}
+\DeclareRobustCommand\AuAuCol{\alice@at{Au\nolinebreak-\nolinebreak Au}}
+\DeclareRobustCommand\ArArCol{\alice@at{Ar\nolinebreak-\nolinebreak Ar}}
+\DeclareRobustCommand\CaCaCol{\alice@at{Ca\nolinebreak-\nolinebreak Ca}}
+\DeclareRobustCommand\CuCuCol{\alice@at{Cu\nolinebreak-\nolinebreak Cu}}
+\DeclareRobustCommand\AACol{\alice@at{A\nolinebreak-\nolinebreak A}}
+\DeclareRobustCommand\NNCol{\alice@at{N\nolinebreak-\nolinebreak N}}
+\DeclareRobustCommand\ppCol{\alice@at{p\nolinebreak p}}
+\DeclareRobustCommand\pACol{\alice@at{p\nolinebreak-\nolinebreak A}}
+\def\alice@eV{e\kern-.05em V}
+\def\alice@mu#1{\ifmmode\mathrm{#1}\else$\mathrm{#1}$\fi}
+\def\alice@unit#1#2{%
+  \unit[\ifmmode#1\else$#1$\fi]{\alice@mu{#2}}}
+\DeclareRobustCommand{\eV}[1][]{\alice@unit{#1}{\alice@eV}}
+\DeclareRobustCommand{\GeV}[1][]{\alice@unit{#1}{G\alice@eV}}
+\DeclareRobustCommand{\AGeV}[1][]{\alice@unit{#1}{AG\alice@eV}}
+\DeclareRobustCommand{\TeV}[1][]{\alice@unit{#1}{T\alice@eV}}
+\DeclareRobustCommand{\keVu}[1][]{\alice@unit{#1}{k\alice@eV/u}}
+\DeclareRobustCommand{\MeVu}[1][]{\alice@unit{#1}{M\alice@eV/u}}
+\DeclareRobustCommand{\GeVu}[1][]{\alice@unit{#1}{G\alice@eV/u}}
+\DeclareRobustCommand{\TeVu}[1][]{\alice@unit{#1}{T\alice@eV/u}}
+\DeclareRobustCommand{\procent}[1][]{\unit[#1]{\%}}
+\DeclareRobustCommand{\percent}[1][]{\unit[#1]{\%}}
+\DeclareRobustCommand{\permill}[1][]{\unit[#1]{\perthousand}}
+\DeclareRobustCommand{\MHz}[1][]{\alice@unit{#1}{MHz}}
+\DeclareRobustCommand{\kHz}[1][]{\alice@unit{#1}{kHz}}
+\DeclareRobustCommand{\Hz}[1][]{\alice@unit{#1}{Hz}}
+\DeclareRobustCommand{\degree}[1][]{\unit[#1]{%
+    \ifmmode\relax^\circ\else${}^\circ$\fi}}
+\DeclareRobustCommand{\Celcius}[1][]{\unit[#1]{%
+    \ifmmode\relax^\circ\else${}^\circ$\fi C}}
+\DeclareRobustCommand\Tesla[1][]{\alice@unit{#1}{T}}
+\DeclareRobustCommand\Ohm[1][]{\unit[#1]{
+    \ifmmode\relax\Omega\else$\Omega$\fi}}
+\DeclareRobustCommand\megaOhm[1][]{\unit[#1]{
+    M\ifmmode\relax\Omega\else$\Omega$\fi}}
+\DeclareRobustCommand\pF[1][]{\alice@unit{#1}{pF}}
+\DeclareRobustCommand\pFcm[1][]{\alice@unit{#1}{pF/cm}}
+\DeclareRobustCommand\Kelvin[1][]{\alice@unit{#1}{K}}
+\DeclareRobustCommand\nAmp[1][]{\alice@unit{#1}{nA}}
+\DeclareRobustCommand\Amp[1][]{\alice@unit{#1}{A}}
+\DeclareRobustCommand\bit[1][]{\alice@unit{#1}{bit}}
+\DeclareRobustCommand\byte[1][]{\alice@unit{#1}{B}}
+\DeclareRobustCommand\kilobyte[1][]{\alice@unit{#1}{KB}}
+\DeclareRobustCommand\megabyte[1][]{\alice@unit{#1}{MB}}
+\DeclareRobustCommand\gigabyte[1][]{\alice@unit{#1}{GB}}
+\DeclareRobustCommand\gigabytesecond[1][]{\alice@unit{#1}{GB/s}}
+\DeclareRobustCommand\terabyte[1][]{\alice@unit{#1}{TB}}
+\newcommand{\isotopestyle}{\rm}
+\newcommand{\isotope@atomicnumber}{}
+\newcommand{\isotope@nuclearnumber}{}
+\newcommand{\isotope}[1][]{%
+  \begingroup%
+  \renewcommand{\isotope@nuclearnumber}{#1}%
+  \isotope@two}%
+  \newcommand{\isotope@two}[2][]{%
+  \renewcommand{\isotope@atomicnumber}{#1}%
+  {\m@th%
+  \settowidth\@tempdimb{\ensuremath{%
+    \isotopestyle\scriptstyle\isotope@nuclearnumber}}%
+  \settowidth\@tempdimc{\ensuremath{%
+    \isotopestyle\scriptstyle\isotope@atomicnumber}}%
+  \ifdim\@tempdimb<\@tempdimc\@tempdimb=\@tempdimc\fi%
+  \ensuremath{{}%
+    ^{\ensuremath{%
+       \isotopestyle\scriptstyle\isotope@nuclearnumber}}%
+   {\isotopestyle#2}^%_
+   {\ensuremath{%
+       \isotopestyle\scriptstyle\isotope@atomicnumber}}%
+    %\isotopestyle#2
+    }%
+  }%
+  \endgroup%
+}%
+
+\def\def@measure#1#2{%
+  \DeclareRobustCommand{#1}[1][]{{%
+      \ifmmode\ifx|##1|##1\,\fi#2\else$\ifx|##1|##1\,\fi#2$\fi}}}
+\def\def@symbol#1#2{
+  \DeclareRobustCommand{#1}{\ifmmode#2\else$#2$\fi}}
+\def\@mean#1{\left\langle#1\right\rangle}
+\DeclareRobustCommand\mean[1]{\ifmmode\@mean{#1}\else$\@mean{#1}$\fi}
+\def\@average#1{
+  \kern.1em\overline{\kern-.1em{#1}\kern-.1em}\kern.1em}
+\DeclareRobustCommand\average[1]{\ifmmode\@average{#1}\else$\@average{#1}$\fi}
+\def\@spread#1{s^2_{#1}}
+\DeclareRobustCommand{\spread}[1]{\ifmmode\@spread{#1}\else$\@spread{#1}$\fi}
+\def@symbol\Pt{p_{\mathrm{T}}}
+\def@symbol\Pl{p_{\mathrm{L}}}
+\def@symbol\Et{E_{\mathrm{T}}}
+\def@symbol\Mt{m_{\mathrm{T}}}
+\def@symbol\Nch{{N_{\mathrm{ch}}}}
+\def\@sqrtS#1#2{\sqrt{s} \ifx|#2|\else=\csname #1\endcsname[#2]{}\fi}
+\DeclareRobustCommand{\sqrtS}[2][GeV]{%
+  \ifmmode\@sqrtS{#1}{#2}\else$\@sNN{#1}{#2}$\fi}
+\def\@sNN#1#2{\sqrt{s_{_{NN}}} \ifx|#2|\else=\csname #1\endcsname[#2]{}\fi}
+\DeclareRobustCommand{\sNN}[2][GeV]{%
+  \ifmmode\@sNN{#1}{#2}\else$\@sNN{#1}{#2}$\fi}
+\def\@sAGeV#1{\sqrt{s} \ifx|#1|\else=\AGeV[#1]{}\fi}
+\DeclareRobustCommand{\sAGeV}[1]{\ifmmode\@sAGeV{#1}\else$\@sAGeV{#1}$\fi}
+\def\@flow#1#2{v_{#2}\ifx|#1|\else\{#1\}\fi}
+\DeclareRobustCommand{\flow}[2][]{\ifmmode\@flow{#1}{#2}\else%
+  $\@flow{#1}{#2}$\fi}
+\DeclareRobustCommand\todo{%
+  \makebox[.9em][l]{$\square$}}
+\DeclareRobustCommand\done{%
+  \makebox[0pt][l]{$\square$}%
+  \raisebox{.2ex}{\hspace{0.1em}{\color{alicered}$\checkmark$}}}
+\gdef\@formatTeV#1#2#3#4{%
+  #1%
+  \ifnum#2#3#4=0\else.#2#3\fi}
+\gdef\@@formatTeV#1#2#3#4#5{%
+  #1#2%
+  \ifnum#3#4#5=0\else.#3#4\fi}
+\def\alice@usNN#1#2#3{%
+  \sqrt{s\ifx#1\relax\else_{NN}\fi}=\unit[#2]{#3}}
+\DeclareRobustCommand\usNN[2]{%
+  \ifnum#2>999\let\@eV\TeV\else\let\@eV\GeV\fi%
+  \ifnum#2>9999\let\@eat\@@formatTeV\else%
+  \ifnum#2>999\let\@eat\@formatTeV\else\let\@eat\@gobble\fi\fi%
+  \ifmmode\alice@usNN{#1}{\@eat#2}{\@eV}%
+  \else$\alice@usNN{#1}{\@eat#2}{\@eV}$\fi
+}
+\let\pT\Pt
+\def\alice@Diff#1{\ensuremath\mathrm{d}#1}
+\def\diffFrac#1#2{\frac{\alice@Diff{#1}}{\alice@Diff{#2}}}
+\def\diffTextFrac#1#2{\alice@Diff{#1}/\alice@Diff{#2}}
+\DeclareRobustCommand\dndeta{\ifmmode\diffFrac{\Nch}{\eta}\else%
+  $\diffTextFrac{\Nch}{\eta}$\fi}
+\DeclareRobustCommand\ndndeta{\ifmmode\frac1N\,\diffFrac{\Nch}{\eta}\else%
+  $1/N\,\diffTextFrac{\Nch}{\eta}$\fi}
+\let\dNdeta\dndeta
+\let\ndNdeta\ndndeta
+\DeclareRobustCommand\alice@always@text[1]{%
+  \ifmmode\relax\text{#1}\else#1\fi}
+\DeclareRobustCommand*{\IPz}{\ensuremath\alice@always@text{IP}_z}
+\DeclareRobustCommand*{\subIPz}{\ensuremath\alice@always@text{\textsc{ip}}_z}
+\DeclareRobustCommand*{\MC}{\alice@always@text{MC}}
+\DeclareRobustCommand*{\subMC}{\alice@always@text{\textsc{mc}}}
+\endinput
+%%
+%% End of file `alicemisc.sty'.
