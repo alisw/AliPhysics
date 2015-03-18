@@ -418,13 +418,13 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
   if (fShowPositionD) {
     title[dim] = "#eta_{D}";
-    nbins[dim] = 100;
+    nbins[dim] = 50;
     min[dim] = -1;
     max[dim] = 1;
     dim++;
 
     title[dim] = "#phi_{D} (rad)";
-    nbins[dim] = 201;
+    nbins[dim] = 101;
     min[dim] = 0;
     max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
     dim++;
@@ -508,13 +508,13 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
   if (fShowPositionJet) {
     title[dim] = "#eta_{jet}";
-    nbins[dim] = 100;
+    nbins[dim] = 50;
     min[dim] = -1;
     max[dim] = 1;
     dim++;
 
     title[dim] = "#phi_{jet} (rad)";
-    nbins[dim] = 201;
+    nbins[dim] = 101;
     min[dim] = 0;
     max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
     dim++;
