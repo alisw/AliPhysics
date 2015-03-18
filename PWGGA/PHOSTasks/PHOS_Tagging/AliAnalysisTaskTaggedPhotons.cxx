@@ -568,7 +568,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
 
   //Prepare PHOS trigger utils if necessary
-  if(!fIsMB || fIsMC)
+  if(!fIsMB )
    fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ; 
   
   
@@ -607,10 +607,11 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   if(fPHOSgeom==0){
     InitGeometry() ;
   }
-  
-  if(!fIsFastMC){
-    if(!fUtils) 
+
+  if(!fUtils) 
       fUtils = new AliAnalysisUtils();
+  
+  if((!fIsFastMC) && (!fIsMC)){
 
     Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
     Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
@@ -794,12 +795,15 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetFiducialArea(fidArea) ;
 
     //Mark photons fired trigger
-    if(!fIsMB && !fIsMC) 
-      p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
-    if(fIsMC)
-      p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)) ;    
-
-    if(fIsMB || !fIsMB && p->IsTrig()){
+    if(!fIsMB){   
+      if(fIsMC){
+        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)) ;    
+      }
+      else
+        p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
+    }
+    
+    if(fIsMB || (!fIsMB && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
       FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
       if(fidArea>1){
@@ -1701,7 +1705,7 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
     fPHOSgeom = AliPHOSGeometry::GetInstance("IHEP","");
 
     AliOADBContainer geomContainer("phosGeo");
-    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(170000,"PHOSRotationMatrixes");
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) continue;
@@ -1712,7 +1716,7 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
   //Read BadMap for MC simulations
   Int_t runNumber=196208 ; //LHC13bcdef
   AliOADBContainer badmapContainer(Form("phosBadMap"));
-  badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+  badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
   TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosBadMap");
   if(!maps){
       AliError("TaggedPhotons: Can not read Bad map\n") ;    
