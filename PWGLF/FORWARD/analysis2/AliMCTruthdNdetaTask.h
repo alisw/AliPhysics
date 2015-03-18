@@ -94,7 +94,7 @@ protected:
    * @return Newly allocated object (of our type)
    */
   AliBasedNdetaTask::CentralityBin* 
-  MakeCentralityBin(const char* name, Short_t l, Short_t h) const;
+  MakeCentralityBin(const char* name, Float_t l, Float_t h) const;
 
   /**
    * Class that holds data for a single centrality bin 
@@ -114,7 +114,7 @@ protected:
      * @param low  Lower centrality cut in percent 
      * @param high Upper centrality cut in percent 
      */
-    CentralityBin(const char* name, Short_t low, Short_t high)
+    CentralityBin(const char* name, Float_t low, Float_t high)
       : AliBasedNdetaTask::CentralityBin(name, low, high), 
 	fSumTruth(0)
     {}
@@ -188,10 +188,10 @@ protected:
 		     TList*      truthlist);
   protected: 
     TH2D*           fSumTruth;    //  Sum of primary histograms
-    ClassDef(CentralityBin,2); // A centrality bin     
+    ClassDef(CentralityBin,3); // A centrality bin     
   };
   Bool_t fHasData; // whether we actually have data or not 
-  ClassDef(AliMCTruthdNdetaTask,2); // Determine multiplicity in forward region
+  ClassDef(AliMCTruthdNdetaTask,3); // Determine multiplicity in forward region
 };
 
 #endif

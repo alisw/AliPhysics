@@ -38,7 +38,7 @@ AliMCTruthdNdetaTask::AliMCTruthdNdetaTask(const char* /* name */)
 
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin*
-AliMCTruthdNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h) 
+AliMCTruthdNdetaTask::MakeCentralityBin(const char* name, Float_t l, Float_t h) 
   const 
 {
   // 

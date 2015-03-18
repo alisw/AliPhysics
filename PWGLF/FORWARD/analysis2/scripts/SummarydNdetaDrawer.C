@@ -45,8 +45,8 @@ public:
     TCollection* c   = GetCollection(file, ColName("Forward", false));
     GetParameter(c, "sys", sys); 
     if (sys == 1) {
-      onlyMB = true;
-      Info("Run", "Found sys==1 -> Forcing MB");
+      // onlyMB = true;
+      // Info("Run", "Found sys==1 -> Forcing MB");
     }
 
     // --- Test of MC --------------------------------------------------
@@ -106,8 +106,8 @@ protected:
   //____________________________________________________________________
   TCollection* GetCentCollection(const TCollection* sums, 
 				 const TString&     base, 
-				 Int_t              cLow, 
-				 Int_t              cHigh,
+				 Float_t            cLow, 
+				 Float_t            cHigh,
 				 TString&           title)
   {
     TString folder; 
@@ -117,8 +117,10 @@ protected:
       title.Append("All selected events");
     }
     else {
-      folder.Form("cent%03d_%03d", cLow, cHigh);
-      title.Append(Form("%3d%% - %3d%%", cLow, cHigh));
+      folder.Form("cent%03dd%02d_%03dd%02d",
+		  Int_t(cLow), Int_t(cLow*100) % 100,
+		  Int_t(cHigh), Int_t(cHigh*100) % 100);
+      title.Append(Form("%6.2f%% - %6.2f%%", cLow, cHigh));
     }
     
     return GetCollection(sums, folder);
@@ -347,7 +349,7 @@ protected:
   }
   //____________________________________________________________________
   void DrawCentSum(const TCollection* sums, const TString& base, 
-		   Int_t cLow, Int_t cHigh)
+		   Float_t cLow, Float_t cHigh)
   {
     // Info("DrawCentSum", "Drawing centrality sum [%d,%d] in %s (%s)",
     //      cLow, cHigh, sums->GetName(), base.Data());
@@ -392,9 +394,9 @@ protected:
       size = 0.03;
       for (Int_t i = 1; i <= centAxis->GetNbins(); i++) { 
 	DrawParameter(y, (i == 1 ? "Centrality classes" : ""),
-		      Form("%3d%% - %3d%%", 
-			   Int_t(centAxis->GetBinLowEdge(i)), 
-			   Int_t(centAxis->GetBinUpEdge(i))), size);
+		      Form("%6.2f%% - %6.2f%%", 
+			   centAxis->GetBinLowEdge(i), 
+			   centAxis->GetBinUpEdge(i)), size);
       }
     }
     TObject* oSNN = GetObject(c, "sNN");
@@ -515,7 +517,7 @@ protected:
       
   //____________________________________________________________________
   void DrawCentRes(const TCollection* sums, const TString& base, 
-		   Int_t cLow, Int_t cHigh)
+		   Float_t cLow, Float_t cHigh)
   {
     // Info("DrawCentRes", "Drawing centrality results [%d,%d] in %s (%s)",
     //      cLow, cHigh, sums->GetName(), base.Data());

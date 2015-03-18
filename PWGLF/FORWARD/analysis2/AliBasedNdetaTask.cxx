@@ -15,6 +15,7 @@
 #include <TFile.h>
 #include <TStyle.h>
 #include <TROOT.h>
+#include <TParameter.h>
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
@@ -96,7 +97,7 @@ AliBasedNdetaTask::SetDebugLevel(Int_t lvl)
 
 //________________________________________________________________________
 void 
-AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
+AliBasedNdetaTask::AddCentralityBin(UShort_t at, Float_t low, Float_t high)
 {
   // 
   // Add a centrality bin 
@@ -105,11 +106,11 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
   //    low  Low cut
   //    high High cut
   //
-  DGUARD(fDebug,3,"Add a centrality bin [%d,%d] @ %d", low, high, at);
+  DGUARD(fDebug,3,"Add a centrality bin [%6.2f,%6.2f] @ %d", low, high, at);
   CentralityBin* bin = MakeCentralityBin(GetName(), low, high);
   if (!bin) { 
     Error("AddCentralityBin", 
-	  "Failed to create centrality bin for %s [%d,%d] @ %d", 
+	  "Failed to create centrality bin for %s [%6.2f,%6.2f] @ %d", 
 	  GetName(), low, high, at);
     return;
   }
@@ -121,7 +122,7 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
 //________________________________________________________________________
 AliBasedNdetaTask::CentralityBin*
 AliBasedNdetaTask::MakeCentralityBin(const char* name, 
-				     Short_t low, Short_t high) const
+				     Float_t low, Float_t high) const
 {
   // 
   // Make a centrality bin 
@@ -134,7 +135,7 @@ AliBasedNdetaTask::MakeCentralityBin(const char* name,
   // Return:
   //    A newly created centrality bin 
   //
-  DGUARD(fDebug,3,"Make a centrality bin %s [%d,%d]", name, low, high);
+  DGUARD(fDebug,3,"Make a centrality bin %s [%6.2f,%6.2f]", name, low, high);
   return new CentralityBin(name, low, high);
 }
 
@@ -343,7 +344,7 @@ AliBasedNdetaTask::InitializeCentBins()
     const TArrayD* bins = fCentAxis.GetXbins();
     Int_t          nbin = fCentAxis.GetNbins(); 
     for (Int_t i = 0; i < nbin; i++) 
-      AddCentralityBin(i+1,  Short_t((*bins)[i]), Short_t((*bins)[i+1]));
+      AddCentralityBin(i+1,  (*bins)[i], (*bins)[i+1]);
   }
 }
 
@@ -379,7 +380,7 @@ AliBasedNdetaTask::Book()
 		    "Mean absolute signal versus centrality",
 		    400, 0, 20, 100, 0, 100);
   fSums->Add(fMeanVsC);
-
+  // fSums->ls();
   return true;
 }
 
@@ -877,6 +878,8 @@ AliBasedNdetaTask::Print(Option_t* option) const
 				  "-default-" : fCentMethod.Data()));
   PFV("Pile-up mask",            pileUp);
   PFB("Check SPD outlier",       fCheckSPDOutlier);
+  if (fListOfCentralities && fListOfCentralities->GetEntries() > 0)
+    fListOfCentralities->Print(option);
   gROOT->DecreaseDirLevel();  
 }
 
@@ -1153,9 +1156,11 @@ AliBasedNdetaTask::CentralityBin::CentralityBin()
   //
   DGUARD(fDebug,3,"Default CTOR of AliBasedNdeta::CentralityBin");
 }
+#define TRUNC(X) (Int_t(X) + Float_t(Int_t(X*100)%100)/100)
+
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name, 
-						Short_t low, Short_t high)
+						Float_t low, Float_t high)
   : TNamed(name, ""), 
     fSums(0), 
     fOutput(0),
@@ -1163,8 +1168,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
     fSumMC(0), 
     fTriggers(0),
     fStatus(0),
-    fLow(low), 
-    fHigh(high),
+    fLow(TRUNC(low)), 
+    fHigh(TRUNC(high)),
     fDoFinalMCCorrection(false), 
     fSatelliteVertices(false),
     fDebug(0)
@@ -1177,17 +1182,17 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
   //    low  Lower centrality cut in percent 
   //    high Upper centrality cut in percent 
   //
-  DGUARD(fDebug,3,"Named CTOR of AliBasedNdeta::CentralityBin: %s [%3d,%3d]",
-	 name,low,high);
+  DGUARD(fDebug,3,"Named CTOR of AliBasedNdeta::CentralityBin: "
+	 "%s [%6.2f,%6.2f]",name, fLow, fHigh);
   if (low <= 0 && high <= 0) { 
     fLow  = 0; 
     fHigh = 0;
     SetTitle("All centralities");
   }
   else {
-    fLow  = low;
-    fHigh = high;
-    SetTitle(Form("Centrality bin from %3d%% to %3d%%", low, high));
+    fLow  = TRUNC(low);
+    fHigh = TRUNC(high);
+    SetTitle(Form("Centrality bin from %6.2f%% to %6.2f%%", low, high));
   }
 }
 //____________________________________________________________________
@@ -1266,6 +1271,7 @@ AliBasedNdetaTask::CentralityBin::GetColor(Int_t fallback) const
   Int_t    col      = gStyle->GetColorPalette(icol);
   return col;
 }
+
 //____________________________________________________________________
 const char* 
 AliBasedNdetaTask::CentralityBin::GetListName() const
@@ -1276,8 +1282,11 @@ AliBasedNdetaTask::CentralityBin::GetListName() const
   // Return:
   //    List Name 
   //
-  if (IsAllBin()) return "all"; 
-  return Form("cent%03d_%03d", fLow, fHigh);
+  if (IsAllBin()) return "all";
+  return Form("cent%03dd%02d_%03dd%02d",
+	      Int_t(fLow),  Int_t(fLow*100)  % 100, 
+	      Int_t(fHigh), Int_t(fHigh*100) % 100);
+
 }
 //____________________________________________________________________
 void
@@ -1303,6 +1312,9 @@ AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir, Int_t mask)
 
   fSums->Add(fTriggers);
   fSums->Add(fStatus);
+
+  fSums->Add(new TParameter<float>("low",  fLow,  'f'));
+  fSums->Add(new TParameter<float>("high", fHigh, 'f'));
 }
 //____________________________________________________________________
 void
@@ -1317,13 +1329,13 @@ AliBasedNdetaTask::CentralityBin::SetDebugLevel(Int_t lvl)
 Bool_t
 AliBasedNdetaTask::CentralityBin::ReadSum(TList* list, bool mc)
 {
-  const char* post = (mc ? "MC" : "");
-  TString     sn   = Sum::GetHistName(GetName(),0,post);
-  TString     sn0  = Sum::GetHistName(GetName(),1,post);
-  TString     ev   = Sum::GetHistName(GetName(),2,post);
-  TH2D* sum        = static_cast<TH2D*>(list->FindObject(sn));
-  TH2D* sum0       = static_cast<TH2D*>(list->FindObject(sn0));
-  TH1I* events     = static_cast<TH1I*>(list->FindObject(ev));
+  const char* post   = (mc ? "MC" : "");
+  TString     sn     = Sum::GetHistName(GetName(),0,post);
+  TString     sn0    = Sum::GetHistName(GetName(),1,post);
+  TString     ev     = Sum::GetHistName(GetName(),2,post);
+  TH2D*       sum    = static_cast<TH2D*>(list->FindObject(sn));
+  TH2D*       sum0   = static_cast<TH2D*>(list->FindObject(sn0));
+  TH1I*       events = static_cast<TH1I*>(list->FindObject(ev));
   if (!sum || !sum0 || !events) {
     if (!mc)
       AliWarningF("Failed to find one or more histograms: "
@@ -1446,7 +1458,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   //    trigEff From MC
   //    ntotal  On return, contains the number of events. 
   //
-  DGUARD(fDebug,1,"Normalize centrality bin %s [%3d-%3d%%] with %s", 
+  DGUARD(fDebug,1,"Normalize centrality bin %s [%6.2f-%6.2f%%] with %s", 
 	 GetName(), fLow, fHigh, t.GetName());
   Double_t nAll        = t.GetBinContent(AliAODForwardMult::kBinAll);
   Double_t nB          = t.GetBinContent(AliAODForwardMult::kBinB);
@@ -1604,7 +1616,7 @@ AliBasedNdetaTask::CentralityBin::GetResult(const char* postfix,
 					    Bool_t      verbose) const
 {
   if (!fOutput) { 
-    AliWarningF("No output list defined in %s [%3d,%3d]", GetName(), 
+    AliWarningF("No output list defined in %s [%6.2f,%6.2f]", GetName(), 
 		fLow, fHigh);
     return 0;
   }
@@ -1895,6 +1907,8 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   }
   fOutput->Add(fTriggers->Clone());
   fOutput->Add(new TNamed("normCalc", text.Data()));
+  fOutput->Add(new TParameter<float>("low", fLow,  'f'));
+  fOutput->Add(new TParameter<float>("high",fHigh, 'f'));
 
   // --- Make result and store ---------------------------------------
   MakeResult(sum, "", rootProj, corrEmpty, scaler, marker, color, 

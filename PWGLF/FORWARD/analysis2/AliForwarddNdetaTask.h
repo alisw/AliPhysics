@@ -94,7 +94,7 @@ protected:
    * @return Newly allocated object (of our type)
    */
   AliBasedNdetaTask::CentralityBin* 
-  MakeCentralityBin(const char* name, Short_t l, Short_t h) const;
+  MakeCentralityBin(const char* name, Float_t l, Float_t h) const;
 
   /**
    * A structure holding the per-centrality bin information 
@@ -114,7 +114,7 @@ protected:
      * @param low  Lower centrality cut in percent 
      * @param high Upper centrality cut in percent 
      */
-    CentralityBin(const char* name, Short_t low, Short_t high)
+    CentralityBin(const char* name, Float_t low, Float_t high)
       : AliBasedNdetaTask::CentralityBin(name, low, high)
     {}
     /** 
@@ -163,10 +163,10 @@ protected:
 		     TList*      mclist,
 		     TList*      truthlist);
   protected: 
-    ClassDef(CentralityBin,3); // A centrality bin     
+    ClassDef(CentralityBin,4); // A centrality bin     
   };
 
-  ClassDef(AliForwarddNdetaTask,3); // Determine multiplicity in forward region
+  ClassDef(AliForwarddNdetaTask,4); // Determine multiplicity in forward region
 };
 
 #endif

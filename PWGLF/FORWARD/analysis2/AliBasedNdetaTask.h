@@ -491,7 +491,7 @@ protected:
    * @param low  Low cut
    * @param high High cut
    */
-  void AddCentralityBin(UShort_t at, Short_t low, Short_t high);
+  void AddCentralityBin(UShort_t at, Float_t low, Float_t high);
   /** 
    * Make a centrality bin 
    * 
@@ -501,8 +501,8 @@ protected:
    * 
    * @return A newly created centrality bin 
    */
-  virtual CentralityBin* MakeCentralityBin(const char* name, Short_t low, 
-					   Short_t high) const;
+  virtual CentralityBin* MakeCentralityBin(const char* name, Float_t low, 
+					   Float_t high) const;
   
   // function which applies empirical correction to the AOD object 
   Bool_t ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data);
@@ -652,7 +652,7 @@ protected:
      * @param low  Lower centrality cut in percent 
      * @param high Upper centrality cut in percent 
      */
-    CentralityBin(const char* name, Short_t low, Short_t high);
+    CentralityBin(const char* name, Float_t low, Float_t high);
     /** 
      * Copy constructor 
      * 
@@ -955,13 +955,13 @@ protected:
     Sum*     fSumMC;     // MC sum histogram
     TH1I*    fTriggers;  // Trigger histogram 
     TH1I*    fStatus;    // Trigger histogram 
-    UShort_t fLow;       // Lower limit (inclusive)
-    UShort_t fHigh;      // Upper limit (exclusive)
+    Float_t  fLow;       // Lower limit (inclusive)
+    Float_t  fHigh;      // Upper limit (exclusive)
     Bool_t   fDoFinalMCCorrection; //Do final MC correction
     Bool_t   fSatelliteVertices; // Satellite vertex flag
     Int_t    fDebug;    // Debug level 
 
-    ClassDef(CentralityBin,4); // A centrality bin 
+    ClassDef(CentralityBin,5); // A centrality bin 
   };
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX
@@ -977,7 +977,7 @@ protected:
   UShort_t        fPileupMask;    // Pile-up checks 
   AliAnalysisUtils fAnaUtil;      // Analysis utility 
   Bool_t          fCheckSPDOutlier; // Check for SPD outliers 
-  ClassDef(AliBasedNdetaTask,17); // Determine charged particle density
+  ClassDef(AliBasedNdetaTask,18); // Determine charged particle density
 };
 
 #endif
