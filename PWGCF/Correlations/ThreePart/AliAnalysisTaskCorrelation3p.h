@@ -67,6 +67,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setphospi0s(bool phos) {fphospions = phos;}
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
+  void SetEfficiencies(){fefficiencies=kTRUE;}
   void Askforgensettings();
   TF1* pTdistribution(TH1D* hist, const char* name);
   
@@ -82,17 +83,19 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   int 			DefineSlots();
   void 		    	UsePeriod();
   void 		    	InitializeQAhistograms();
+  void 			InitializeEffHistograms();
   void 		    	MakeRunNumbers();
   void 			FillHistogram(const char * key,Double_t x);
   void 			FillHistogram(const char * key,Double_t x,Double_t y);
   void 			FillHistogram(const char * key,Double_t x,Double_t y,Double_t z);
+  void 			FillHistogram(const char * key,Double_t x,Double_t y,Double_t z,Double_t a,Double_t b);
   Bool_t 		SelectEvent();
   void 			execgenerate();
   //Functions to make the array of associated and triggers:
   Int_t 	    	GetTracks(TObjArray *allrelevantParticles, AliVEvent* pEvent);
   void 		    	GetPi0s(TObjArray* allrelevantParticles, AliVEvent* pEvent);
   void 			GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrack* AODt);
-//   void 			GetMCArray();
+  void 			GetMCArray();
   void 			GetCentralityAndVertex();
   Bool_t	    	GoodCluster(AliVCluster *clu);
   Bool_t	    	IsSelected(AliVParticle * p);
@@ -164,7 +167,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   static const Int_t fNRunsP11a = 58;
   static const Int_t fNRunsP11h = 108;
   //Class definition.
-  ClassDef(AliAnalysisTaskCorrelation3p, 1);
+  ClassDef(AliAnalysisTaskCorrelation3p, 2);
 };
 
 #endif

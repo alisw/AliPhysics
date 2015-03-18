@@ -60,8 +60,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   //-------Single track cuts------------------------------------------------->
   //STANDART
-  double DCAxy=1.9; //2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
-  double DCAz =2.5;  //3.0;//cm // our standard is 0.15 cm;
+  double DCAxy=2.9; //1.9; //2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
+  double DCAz =3.5;  //2.5;  //3.0;//cm // our standard is 0.15 cm;
  //test //ptdependent cut
   //double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
   //double DCAz =2.0;//cm // our standard is 0.15 cm;

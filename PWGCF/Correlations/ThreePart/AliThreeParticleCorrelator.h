@@ -308,8 +308,8 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if (*assoc==(*i)->GetTrigger()) continue;//Trigger and associated pointer are the same particle.
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=assoc+1, eassoc2 = associated.end(); assoc2 !=eassoc2;assoc2++){
-	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){cout << "well this should never happen assnotthere"<<endl;continue;}//do not fill if either is not an associated
-	  if(*assoc2==(*i)->GetTrigger()) {cout << "well this should never happen trig"<<endl;continue;}//Do not fill if they are the same or one is the trigger
+	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){continue;}//do not fill if either is not an associated
+	  if(*assoc2==(*i)->GetTrigger()) {continue;}//Do not fill if they are the same or one is the trigger
 	  if(*assoc==*assoc2) continue;
 	  (*i)->Correlate(*assoc,*assoc2, NAssociated);
 	  (*i)->Correlate(*assoc2,*assoc, NAssociated);

@@ -54,6 +54,8 @@ namespace EmcalHJetMassAnalysis {
     fRandom(0),
     fEmbConstSel(0),
     fMarkMCLabel(-1),
+    fGapPhiMin(-1),
+    fGapPhiMax(-1),
     fh1PtHadron(0),
     fh1PtHadronMatch(0),
     fh3PtHPtJDPhi(0),
@@ -129,6 +131,8 @@ namespace EmcalHJetMassAnalysis {
     fRandom(0),
     fEmbConstSel(0),
     fMarkMCLabel(-1),
+    fGapPhiMin(-1),
+    fGapPhiMax(-1),
     fh1PtHadron(0),
     fh1PtHadronMatch(0),
     fh3PtHPtJDPhi(0),
@@ -391,6 +395,17 @@ namespace EmcalHJetMassAnalysis {
     Double_t rnd = fRandom->Uniform() * counter;
     Int_t trigID = arr.At(TMath::FloorNint(rnd));
     vp = pCont->GetParticle(trigID);
+    if(fGapPhiMin>-1.) {
+      //check if trigger track opposite side of TPC hole dphi<fDPhiHJetMax
+      Double_t phiOp = vp->Phi()+TMath::Pi();
+      if(phiOp>TMath::TwoPi()) phiOp-=TMath::TwoPi();
+      Double_t phiOpMin = phiOp - fDPhiHJetMax;
+      if(phiOpMin<0.) phiOpMin+=TMath::TwoPi();
+      Double_t phiOpMax = phiOp + fDPhiHJetMax;
+      if(phiOpMax>TMath::TwoPi()) phiOpMax-=TMath::TwoPi();
+      if(phiOpMin > fGapPhiMin && phiOpMin < fGapPhiMax) return NULL;
+      if(phiOpMax > fGapPhiMin && phiOpMax < fGapPhiMax) return NULL;
+    }
     return vp;
   }
 

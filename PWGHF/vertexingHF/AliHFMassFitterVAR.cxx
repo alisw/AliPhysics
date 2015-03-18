@@ -797,7 +797,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   }
   
   /*Fit Bkg*/
-  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitter","FitFunction4Bkg");
+  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
   //   TF1 *funcbkg = GetBackgroundFunc();
   cout<<"Function name = "<<funcbkg->GetName()<<endl<<endl;
   
@@ -1109,11 +1109,11 @@ void AliHFMassFitterVAR::AddFunctionsToHisto(){
     
     
     bkgnamesave += "Recalc";
-
+    
     TF1 *blastpar;
     if(ftypeOfFit4Sgn<2)blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
-    else blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4Bkg");
-
+    else blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4BkgAndReflDraw");
+  
     TF1 *mass=fhistoInvMass->GetFunction("funcmass");
 
     if (!mass){
@@ -1208,7 +1208,15 @@ void AliHFMassFitterVAR::WriteCanvas(TString userIDstring,TString path,Double_t 
 
 //_________________________________________________________________________
 
-void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo)const{
+void AliHFMassFitterVAR::DrawHere(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo){
+  //draws histogram together with fit functions with default nice colors in user canvas
+  PlotFit(pd,nsigma,writeFitInfo);
+
+  pd->Draw();
+ 
+}
+//_________________________________________________________________________
+void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo){
   //plot histogram, fit functions and write parameters according to verbosity level (0,1,>1)
   gStyle->SetOptStat(0);
   gStyle->SetCanvasColor(0);
@@ -1271,8 +1279,8 @@ void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitI
   pd->cd();
   hdraw->SetMarkerStyle(20);
   hdraw->DrawClone("PE");
-//   if(hdraw->GetFunction("funcbkgFullRange")) hdraw->GetFunction("funcbkgFullRange")->DrawClone("same");
-//   if(hdraw->GetFunction("funcbkgRecalc")) hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
+  //   if(hdraw->GetFunction("funcbkgFullRange")) hdraw->GetFunction("funcbkgFullRange")->DrawClone("same");
+  //   if(hdraw->GetFunction("funcbkgRecalc")) hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
   if(hdraw->GetFunction("funcmass")) hdraw->GetFunction("funcmass")->DrawClone("same");
 
   if(writeFitInfo > 0){
@@ -1301,7 +1309,7 @@ void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitI
       TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
       pinfom->AddText(str);
     }
-    
+  
     pd->cd();
     pinfom->DrawClone();
 
@@ -1332,19 +1340,22 @@ void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitI
       TF1 *fitBkgRec=hdraw->GetFunction("funcbkgRecalc");
       fitBkgRec->SetLineColor(14); // does not work
       fitBkgRec->SetLineStyle(2); // does not work
-      TF1 *fitCp = new TF1("ciccio",this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitter","FitFunction4Bkg");
-      //      TF1 *fitCp=(TF1*)fitBkgRec->Clone("funcbkgRecalcNoRefl");
-      fitCp->SetParameter(fNparBack,0);
-      for(Int_t ibk=0;ibk<fNparBack;ibk++){
-	fitCp->SetParameter(ibk,fitBkgRec->GetParameter(ibk));
+
+      TF1 *fitCp;
+      if(ftypeOfFit4Sgn==2){// drawing background function w/o reflection contribution
+	fitCp= new TF1("fbackcpfordrawing",this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4BkgAndReflDraw");
+	fitCp->SetParameter(fNparBack,0);// set to 0 reflection normalization
+	
+	for(Int_t ibk=0;ibk<fNparBack;ibk++){
+	  fitCp->SetParameter(ibk,fitBkgRec->GetParameter(ibk));
+	}
+	fitCp->SetLineColor(kMagenta);
+	fitCp->SetLineStyle(7);
+	fitCp->SetLineWidth(2);
+	fitCp->DrawCopy("Lsame");
+	//Printf("WHERE I SHOULD BE: npars func=%d; par 0=%f, par1=%f,par2=%f",fitCp->GetNpar(),fitCp->GetParameter(0),fitCp->GetParameter(1),fitCp->GetParameter(2));
+	delete fitCp;
       }
-      fitCp->SetLineColor(kGreen);
-      fitCp->SetLineStyle(9);
-
-
-      fitCp->Draw("same");
-      //Printf("WHERE I SHOULD BE: npars func=%d; par 0=%f, par1=%f,par2=%f",fitCp->GetNpar(),fitCp->GetParameter(0),fitCp->GetParameter(1),fitCp->GetParameter(2));
-
     }
     
     if(writeFitInfo > 1){
