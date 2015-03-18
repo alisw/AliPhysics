@@ -210,8 +210,8 @@ add_custom_command( OUTPUT doc/alice-int-2012-040.pdf
 		    COMMAND pdflatex alice-int-2012-040
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/doc
 		    COMMAND mv alice-int-2012-040.pdf ${CMAKE_CURRENT_BINARY_DIR}/doc/
-		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
-		    MAIN_DEPENDENCY doc/alice-int-2012-040.tex)
+		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/alice-int-2012-040
+		    MAIN_DEPENDENCY doc/alice-int-2012-040/alice-int-2012-040.tex)
 
 add_custom_command( OUTPUT doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/doc
