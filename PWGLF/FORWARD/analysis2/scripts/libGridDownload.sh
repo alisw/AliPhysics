@@ -138,11 +138,11 @@ _download_file()
     local file=`basename $source`
     case $file in 
 	*.root)
-	    mess 3 "Forming output file name: file=$file r=$r"
-	    o=${o}`basename $file .root`_`printf %04d ${r}`.root 
+	    mess 3 "Forming output file name: file=$file cur=$cur"
+	    o=${o}`basename $file .root`_`printf %09d_%04d ${r} ${cur}`.root 
 	    ;;
 	*.zip)
-	    local d=`printf %04d ${r}` 
+	    local d=`printf %09d_%04d ${r} ${cur}` 
 	    mkdir -p ${o}/${d}
 	    o=${o}/${d}/${file}
 	    ;;
@@ -211,24 +211,24 @@ submit_jobs()
     local max=$1 ; shift
     local maxf=$1 ; shift
     local noact=$1 ; shift
-    
+    local prx=`echo "$path" | sed 's,//,/,g'` 
     local joblist=
     local counter=0
     mess 5 "Submitting $maxjobs jobs from $sta/$maxf" 
     for i in $@ ; do 
 	let cur=$sta+$counter
 
-	local b=`echo $i | sed -e "s,${path}/,,"`
+	local b=`echo $i | sed -e "s,${prx}/,,"`
 	local r=
 	case $b in
-	    ESDs/*) r=`echo $b | sed -e 's,.*/*\.\([0-9]*\)/.*,\1,'` ;;
+	    ESDs/*) r=`echo $b | sed -e 's,.*/\([0-9]*\)...\..*/.*,\1,'` ;;
 	    *)      r=`echo $b | sed -e "s,/.*,," | sed 's/0*//'`;;
 	esac
 	
 	let counter=$counter+1
 
-	mess 3 "i=$i out=$out r=$r cur=$cur max=$max noact=$noact (b=$b)"
-	download_file $i $out $r $cur $maxf $noact&
+	mess 3 "i=$i out=$out r=$r cur=$cur max=$max noact=$noact (b=$b path=$path)"
+	download_file $i $out $r $cur $maxf $noact &
 	j=`jobs %% | sed -e 's/^[^0-9]*//' -e 's/[^0-9]*$//'` 
 	joblist="$joblist $j"
     done

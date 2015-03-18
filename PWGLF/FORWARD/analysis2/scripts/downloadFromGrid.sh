@@ -87,7 +87,7 @@ download_file()
     #  $5: Maximum
     #  $6: redirect
     #  $7: noact
-    echo "_download_file src=$1 out=$2 number=$3 current=$4 max=$5 redir=$redir noact=$6" 
+    # echo "_download_file src=$1 out=$2 number=$3 current=$4 max=$5 redir=$redir noact=$6" 
     _download_file "$1" "$2" "$3" "$4" "$5" "$redir" $6 
 }
 
