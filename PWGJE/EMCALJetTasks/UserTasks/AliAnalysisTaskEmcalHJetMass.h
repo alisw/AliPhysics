@@ -50,6 +50,7 @@ namespace EmcalHJetMassAnalysis {
     void AddTriggerTrackPtCuts(Float_t min, Float_t max);
     void SelectConstituents(UInt_t constSel)                           { fEmbConstSel = constSel  ; }
     void SetMarkMCLabel(Int_t l)                                       { fMarkMCLabel = l         ; }
+    void SetGapPhiLimits(Double_t min, Double_t max)                   { fGapPhiMin = min; fGapPhiMax = max; }
 
   protected:
     Bool_t                              RetrieveEventObjects();
@@ -77,6 +78,8 @@ namespace EmcalHJetMassAnalysis {
     TRandom3                           *fRandom;                     //! Random number generator
     UInt_t                              fEmbConstSel;                // select embedded constituents using bit
     Int_t                               fMarkMCLabel;                // select embedded constituents using label
+    Double_t                            fGapPhiMin;                  // min phi of acceptance gap
+    Double_t                            fGapPhiMax;                  // max phi of acceptance gap
 
     TH1F            **fh1PtHadron;                        //!pt of hadrons
     TH1F            **fh1PtHadronMatch;                   //!pt of hadrons matched to MC
@@ -100,7 +103,7 @@ namespace EmcalHJetMassAnalysis {
     AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
     AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalHJetMass, 7)
+    ClassDef(AliAnalysisTaskEmcalHJetMass, 8)
       };
 }
 #endif
