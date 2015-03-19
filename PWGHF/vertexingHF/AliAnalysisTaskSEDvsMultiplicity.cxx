@@ -141,7 +141,7 @@ AliAnalysisTaskSE(),
   fPdgMeson(411),
   fMultiplicityEstimator(kNtrk10),
   fMCPrimariesEstimator(kEta10),
-  fDoVZER0ParamVertexCorr(0)
+  fDoVZER0ParamVertexCorr(1)
 {
    // Default constructor
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
@@ -237,7 +237,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fPdgMeson(pdgMeson),
   fMultiplicityEstimator(kNtrk10),
   fMCPrimariesEstimator(kEta10),
-  fDoVZER0ParamVertexCorr(0)
+  fDoVZER0ParamVertexCorr(1)
 {
   // 
   // Standard constructor
