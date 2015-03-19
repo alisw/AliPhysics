@@ -100,6 +100,13 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
+  /** 
+   * Get a reference to the event inspector. User must override this
+   * to return proper object
+   * 
+   * @return Reference to the event inspector 
+   */
+  AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -142,14 +149,7 @@ public:
    * 
    * @return Reference to the event inspector 
    */
-  virtual AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
-  /** 
-   * Get a reference to the event inspector. User must override this
-   * to return proper object
-   * 
-   * @return Reference to the event inspector 
-   */
-  virtual const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
+  const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 

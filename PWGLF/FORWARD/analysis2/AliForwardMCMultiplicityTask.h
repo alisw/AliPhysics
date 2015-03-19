@@ -15,6 +15,7 @@
  */
 #include "AliForwardMultiplicityBase.h"
 #include "AliFMDMCEventInspector.h"
+#include "AliMultEventClassifier.h"
 #include "AliFMDESDFixer.h"
 #include "AliFMDMCSharingFilter.h"
 #include "AliFMDMCDensityCalculator.h"
@@ -116,6 +117,13 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
+  /** 
+   * Get a reference to the event inspector. User must override this
+   * to return proper object
+   * 
+   * @return Reference to the event inspector 
+   */
+  AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -164,6 +172,13 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
+  /** 
+   * Get a reference to the event inspector. User must override this
+   * to return proper object
+   * 
+   * @return Reference to the event inspector 
+   */
+  const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -253,6 +268,7 @@ protected:
   TH2D*                  fPrimary;      // Per event primary particles 
 
   AliFMDMCEventInspector    fEventInspector;    // Algorithm
+  AliMultEventClassifier    fMultEventClassifier;//Event class
   AliFMDESDFixer            fESDFixer;          // Algorithm
   AliFMDMCSharingFilter     fSharingFilter;     // Algorithm
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm
@@ -260,7 +276,7 @@ protected:
   AliFMDHistCollector       fHistCollector;     // Algorithm
   AliFMDEventPlaneFinder    fEventPlaneFinder;  // Algorithm
 
-  ClassDef(AliForwardMCMultiplicityTask,4) // Forward multiplicity class
+  ClassDef(AliForwardMCMultiplicityTask,5) // Forward multiplicity class
 };
 
 #endif
