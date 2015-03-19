@@ -18,6 +18,7 @@ set(MODULE PWGGAPHOSTasks)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/AutoTrendQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
@@ -142,4 +143,5 @@ install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTa
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
 install(FILES PHOS_GAFlow/AddTaskThermalGAFlow.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)
 install(FILES PHOS_Tagging/AddTaskPHOSTagging.C DESTINATION PWGGA/PHOSTasks/PHOS_Tagging)
-
+install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
+install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
