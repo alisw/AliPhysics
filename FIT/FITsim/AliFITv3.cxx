@@ -461,6 +461,9 @@ void AliFITv3::StepManager()
 	Float_t ttime=TVirtualMC::GetMC()->TrackTime();
 	hits[5]=ttime*1e12;
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
+      //charge particle TrackReference
+      if ( TVirtualMC::GetMC()->TrackCharge() )
+	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
 	//	printf(" volumes pmt %i mcp %i vol %i x %f y %f z %f particle %i all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
       }
     }    
