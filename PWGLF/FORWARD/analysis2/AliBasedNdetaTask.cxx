@@ -68,6 +68,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
   fMinIpZ             = -10;
   fMaxIpZ             = +10;
   fListOfCentralities = new TObjArray(1);
+  fListOfCentralities->SetName("centralityBins");
+  // fListOfCentralities->SetTitle("Centrality bins");
   
   // Set the normalisation scheme 
   SetNormalizationScheme(kFull);
@@ -278,6 +280,7 @@ AliBasedNdetaTask::GetCentMethodID(const TString& meth)
   else if (m.BeginsWith("V0C"))      ret = kCentV0C;
   else if (m.BeginsWith("V0A123"))   ret = kCentV0A123;
   else if (m.BeginsWith("V0A"))      ret = kCentV0A;
+  else if (m.BeginsWith("V0M"))      ret = kCentV0M;
   else if (m.BeginsWith("MULTV0A"))  ret = kMultV0A;
   else if (m.BeginsWith("MULTV0M"))  ret = kMultV0M;
   else if (m.BeginsWith("MULTV0C"))  ret = kMultV0C;
@@ -444,6 +447,8 @@ AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
 	AliCentrality* cP = hdr->GetCentralityP();
 	if (cP) { 
 	  cent = cP->GetCentralityPercentile(fCentMethod);
+	  Info("GetCentrality", "Got %f%% centrality from %s",
+	       cent, fCentMethod.Data());
 	}
       }
     }
@@ -878,8 +883,16 @@ AliBasedNdetaTask::Print(Option_t* option) const
 				  "-default-" : fCentMethod.Data()));
   PFV("Pile-up mask",            pileUp);
   PFB("Check SPD outlier",       fCheckSPDOutlier);
-  if (fListOfCentralities && fListOfCentralities->GetEntries() > 0)
-    fListOfCentralities->Print(option);
+
+  TString opt(option);
+  opt.ToUpper();
+  if (opt.Contains("R") &&
+      fListOfCentralities &&
+      fListOfCentralities->GetEntries() > 0) {
+    TIter next(fListOfCentralities);
+    TObject* bin = 0;
+    while ((bin = next())) bin->Print(option);
+  }
   gROOT->DecreaseDirLevel();  
 }
 
@@ -1134,6 +1147,17 @@ AliBasedNdetaTask::Sum::CalcSum(TList*       output,
 #endif
  
   return ret;
+}
+//____________________________________________________________________
+void
+AliBasedNdetaTask::Sum::Print(Option_t*) const
+{
+  PFV("dN/deta sum bin", GetName());
+  gROOT->IncreaseDirLevel();
+  PF("Normal sum", "%s (%p)", GetHistName(0).Data(), fSum);
+  PF("0-bin sum",  "%s (%p)", GetHistName(1).Data(), fSum0);
+  PF("Event count","%s (%p)", GetHistName(2).Data(), fEvents);
+  gROOT->DecreaseDirLevel();
 }
 
 //====================================================================
@@ -1925,6 +1949,27 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
 }
 //____________________________________________________________________
+void
+AliBasedNdetaTask::CentralityBin::Print(Option_t* option) const
+{
+  PFV("Centrality bin", GetTitle());
+  gROOT->IncreaseDirLevel();
+  PF("Range", "%6.2f - %6.2f%%", fLow, fHigh);
+  PFB("All bin", IsAllBin());
+  PFB("Final MC", fDoFinalMCCorrection);
+  PFB("Satellite collisions", fSatelliteVertices);
+
+  TString opt(option);
+  opt.ToUpper();
+  if (opt.Contains("R")) {
+    if (fSum)   fSum->Print(option);
+    if (fSumMC) fSumMC->Print(option);
+  }
+
+  gROOT->DecreaseDirLevel();
+}
+
+//====================================================================
 Bool_t 
 AliBasedNdetaTask::ApplyEmpiricalCorrection(const AliAODForwardMult* aod,
 					    TH2D* data)
