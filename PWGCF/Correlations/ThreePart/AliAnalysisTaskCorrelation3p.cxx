@@ -354,8 +354,14 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedTheta",t->Theta());
     if (!IsSelected(t)) continue;
     allrelevantParticles->Add(t);
-    if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::pp){FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
-    if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::pp){
+      FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());
+      if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    }
+    if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){
+      FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());
+      if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    }
     
     FillHistogram("selectedTracksperRun",fRunFillValue);
     FillHistogram("trackPt",t->Pt());
@@ -806,8 +812,8 @@ void AliAnalysisTaskCorrelation3p::InitializeEffHistograms()
   Double_t xmin[5] = {MBinmined,ZBinmined,phimin,EtaMin,pTmin};
   Double_t xmax[5] = {MBinmaxed,ZBinmaxed,phimax,EtaMax,pTmax};
 
-  
   fOutput->Add(new THnD("hnTracksinBins","Tracks in different bins.",5,bins,xmin,xmax));
+  fOutput->Add(new THnD("hnTracksinBinsRecPP","Tracks in different bins from reconstruction that originate from a PhysicalPrimary MC particle.",5,bins,xmin,xmax));
   fOutput->Add(new THnD("hnTracksinBinsMC","Tracks in different bins, MC truth for charged particles.",5,bins,xmin,xmax));
 
 }

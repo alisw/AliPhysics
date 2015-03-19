@@ -1497,6 +1497,8 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 	
 	fInputEvent = InputEvent();
 	
+// 	cout << "new event" << endl; 
+	
 	if(fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){
 		fMCStack = fMCEvent->Stack();
 		if(fMCStack == NULL) fIsMC = kFALSE;
@@ -1522,7 +1524,8 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 
 	for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 		
-		fiCut = iCut;
+		fiCut = iCut;		
+// 		cout << ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber() << "_" <<  ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber() << endl;
 		
 		Bool_t isRunningEMCALrelAna = kFALSE;
 		if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
@@ -1704,50 +1707,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters()
 		fIsOverlappingWithOtherHeader 	= kFALSE;
 		TString periodName 				= fV0Reader->GetPeriodName();
 		// test whether largest contribution to cluster orginates in added signals
-		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0){
-			if ( (periodName.CompareTo("LHC12f1a") == 0 || periodName.CompareTo("LHC12f1b") == 0) && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 1){	
-				AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-				if(man) {
-					AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-					if (inputHandler){
-						TTree* tree = (TTree*) inputHandler->GetTree();
-						TFile* file = (TFile*) tree->GetCurrentFile();
-						TString fileName(file->GetName());
-						AliInfo(Form("************************ SOMETHING WENT SERIOUSLY WRONG ****************************************"));
-						AliInfo(Form("failed to identify that this is a MB prod: %s, event number %i",fileName.Data(),((AliESDEvent*)fInputEvent)->GetEventNumberInFile() ));
-						AliInfo(Form("MB header from %i to %i, particle: %i", ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderStart(0), 
-								((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderEnd(0), PhotonCandidate->GetCaloPhotonMCLabel(0)));
-						AliFatal("************************** THIS IS IMPOSSIBLE FOR A PURE MB PRODUCTION *******************************");
-					}
-				}
+		if (fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+			if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0){
+				fIsFromMBHeader = kFALSE;
 			}	
-			fIsFromMBHeader = kFALSE;
-		}	
-		if (fIsMC ){
 			if (clus->GetNLabels()>1){
 				Int_t* mclabelsCluster = clus->GetLabels();
 				for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
 					if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCStack, fInputEvent) == 0){
-						if ( (periodName.CompareTo("LHC12f1a") == 0 || periodName.CompareTo("LHC12f1b") == 0) && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 1){
-							AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-							if(man) {
-								AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-								if (inputHandler){
-									TTree* tree = (TTree*) inputHandler->GetTree();
-									TFile* file = (TFile*) tree->GetCurrentFile();
-									TString fileName(file->GetName());
-									AliInfo(Form("************************ SOMETHING WENT SERIOUSLY WRONG ****************************************"));
-									AliInfo(Form("failed to identify that this is a MB prod: %s, event number %i",fileName.Data(),((AliESDEvent*)fInputEvent)->GetEventNumberInFile() ));
-									AliInfo(Form("MB header from %i to %i, particle: %i", ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderStart(0), 
-											((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetAcceptedHeaderEnd(0), mclabelsCluster[l]));
-									for (Int_t k = 0; k < (Int_t)clus->GetNLabels(); k++ ){
-										AliInfo(Form("label %i: %i of %i", k, mclabelsCluster[k], (Int_t)clus->GetNLabels()));
-									} 
-									
-									AliFatal("************************** THIS IS IMPOSSIBLE FOR A PURE MB PRODUCTION *******************************");
-								}
-							}
-						}
 						fIsOverlappingWithOtherHeader = kTRUE;
 					}	
 				}	

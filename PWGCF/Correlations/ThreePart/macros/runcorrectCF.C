@@ -290,7 +290,7 @@ void runcorrectCF(const char* options = "")
 
   if(correctforME)	correct(option);
   if(correctforMEscan)	ScanCorrections(option);
-  if(makeyield)		yield();
+  if(makeyield)		yield(option);
   if(result)		draw(option);
   if(checkmixed)        Checkmixed(option);
   if(periods)		Periods();
