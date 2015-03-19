@@ -295,9 +295,9 @@ public:
   /** 
    * Print information 
    * 
-   * @param option Not used
+   * @param option If it contains R, print recursive
    */
-  void Print(Option_t* option="") const;
+  void Print(Option_t* option="R") const;
   /** @{ 
    *  @name Task interface 
    */
@@ -507,8 +507,22 @@ protected:
   // function which applies empirical correction to the AOD object 
   Bool_t ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data);
 
-
+  /** 
+   * Static member to get a simple ID from a centrality esitmator
+   * string.  Used to check the validity of the centrality estimator 
+   * 
+   * @param meth Method string 
+   * 
+   * @return Id or negative value in case of invalid estimator 
+   */
   static Int_t GetCentMethodID(const TString& meth);
+  /** 
+   * Get the estimator string from simple ID
+   * 
+   * @param id Simple ID
+   * 
+   * @return Estimator string 
+   */
   static const char* GetCentMethod(UShort_t id);
   /** 
    * Get the centrality 
@@ -630,6 +644,12 @@ protected:
 		  Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
 		  Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
 
+    /** 
+     * Print this sum container 
+     * 
+     * @param option Not used
+     */
+    virtual void Print(Option_t* option="") const;
     ClassDef(Sum,2); // Summed histograms
   };
     
@@ -916,6 +936,14 @@ protected:
      * @param satVtx
      */
     void SetSatelliteVertices(Bool_t satVtx) { fSatelliteVertices = satVtx; }
+    /** 
+     * Print this centrality bin. 
+     * 
+     * @param option Options. 
+     *
+     * - R  Also print sums 
+     */
+    virtual void Print(Option_t* option="") const;
   protected:
     /** 
      * Read in sum hisotgram from list 

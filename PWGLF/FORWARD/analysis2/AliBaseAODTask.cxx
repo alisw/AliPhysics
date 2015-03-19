@@ -462,11 +462,12 @@ AliBaseAODTask::Print(Option_t* /*option=""*/) const
   PFV("Trigger mask",  AliAODForwardMult::GetTriggerString(fTriggerMask));
   PF("IP z range", "%++6.1f - %+6.1f", fMinIpZ, fMaxIpZ);
   PFV("Centrality bins", (HasCentrality() ? "" : "none"));
+  gROOT->IndentLevel();
   if (HasCentrality()) {
     Int_t           nBins = fCentAxis.GetNbins();
     const Double_t* bins  = fCentAxis.GetXbins()->GetArray();
     for (Int_t i = 0; i <= nBins; i++) 
-      std::cout << (i==0 ? "" : "-") << bins[i];
+      std::cout << (i==0 ? " " : "-") << bins[i];
     std::cout << std::endl;
   }
   gROOT->DecreaseDirLevel();
