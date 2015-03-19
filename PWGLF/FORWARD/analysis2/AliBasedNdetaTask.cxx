@@ -447,8 +447,8 @@ AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
 	AliCentrality* cP = hdr->GetCentralityP();
 	if (cP) { 
 	  cent = cP->GetCentralityPercentile(fCentMethod);
-	  Info("GetCentrality", "Got %f%% centrality from %s",
-	       cent, fCentMethod.Data());
+	  // Info("GetCentrality", "Got %f%% centrality from %s",
+	  //      cent, fCentMethod.Data());
 	}
       }
     }
