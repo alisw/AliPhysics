@@ -370,32 +370,66 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 Int_t AliAnalysisManager::GetRunFromAlienPath(const char *path)
 {
 // Attempt to extract run number from input data path. Works only for paths to
-// alice data in alien.
-//    sim:  /alice/sim/<production>/run_no/...
-//    data: /alice/data/year/period/000run_no/... (ESD or AOD)
-   TString type = "unknown";
-   TString s(path);
-   if (s.Contains("/alice/data")) type = "real";
-   else if (s.Contains("/alice/sim")) type = "simulated";
-   TString srun;
-   Int_t ind1, ind2;
-   ind1 = s.Index("/00");
-   if (ind1>0) {
-      ind2 = s.Index("/",ind1+1);
-      if (ind2-ind1>8) srun = s(ind1+1, ind2-ind1-1);
-   }   
-   if (srun.IsNull()) {
-      ind1 = s.Index("/LHC");
-      if (ind1>0) {
-         ind1 = s.Index("/",ind1+1);
-         if (ind1>0) {
-            ind2 = s.Index("/",ind1+1);
-            if (ind2>0) srun = s(ind1+1, ind2-ind1-1);
-         }
+// ALICE data in AliEn. It extracts the first number between slashes (/) greater
+// than or equal to 18000 that appears after the /LHC.../ directory. This covers
+// also some borderline cases, apart from the conventional ones:
+//
+//  * Simulation: /alice/sim/ <production>/run_no/...
+//  * Data: /alice/data/ year/period/000run_no/... (ESD or AOD)
+//
+// Returns -9999 in case of error, or the run number on success.
+
+   Int_t run;
+   TString spath(path);
+   TString tok;
+   Ssiz_t from = 0;
+   Int_t expect = 0;  // 0:alice, 1:data|sim, 2:LHC*, 3:num>18000, 4:ok!
+   Bool_t isData;
+
+   while ( spath.Tokenize(tok, from, "/") ) {
+      //::Info("AliAnalysisManager::GetRunFromAlienPath", "Token: {%s}", tok.Data());
+
+      switch (expect) {
+
+         case 0:
+            if (tok == "alice") expect = 1;
+         break;
+
+         case 1:
+            if (tok == "sim") {
+               expect = 2;
+               isData = kFALSE;
+            }
+            else if (tok == "data") {
+               expect = 2;
+               isData = kTRUE;
+            }
+         break;
+
+         case 2:
+            if (tok.BeginsWith("LHC")) expect = 3;
+         break;
+
+         case 3:
+            run = tok.Atoi();
+            if (run >= 18000) expect = 4;
+         break;
       }
-   }         
-   Int_t run = srun.Atoi();
-   if (run>0) printf("=== GetRunFromAlienPath: run %d of %s data ===\n", run, type.Data());
+
+      if (expect == 4) break;
+   }
+
+   if (expect == 4) {
+      const char *type;
+      if (isData) type = "real";
+      else type = "simulated";
+      ::Info("AliAnalysisManager::GetRunFromAlienPath", "Run %d of %s data", run, type);
+   }
+   else {
+      ::Error("AliAnalysisManager::GetRunFromAlienPath", "Invalid AliEn path string");
+      run = -9999;
+   }
+
    return run;
 }   
 
