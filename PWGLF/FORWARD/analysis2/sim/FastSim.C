@@ -29,6 +29,7 @@
 # include <TProofOutputFile.h>
 # include <TCanvas.h>
 # include <TTimer.h>
+# include <TRandom.h>
 # include <TUrl.h>
 # include <fstream>
 #else
@@ -360,6 +361,10 @@ struct FastSim : public TSelector
    */
   Bool_t SetupOutput()
   {
+    Printf("=== Output =============================\n"
+	   " File name: %s\n"
+	   "========================================", FileName());
+
     // Info("SetupOutput", "First the file");
     Bool_t isProof = false;
     if (fInput && fInput->FindObject("PROOF_Ordinal"))
@@ -478,6 +483,27 @@ struct FastSim : public TSelector
 
     return true;
   }
+  /** 
+   * Set our seed.  This will read a UInt_t worth of data from
+   * /dev/urandom
+   * 
+   */
+  void SetupSeed()
+  {
+    std::ifstream in("/dev/urandom");
+    UInt_t seed = 0;
+    in.read(reinterpret_cast<char*>(&seed), sizeof(seed));
+    in.close();
+    Printf("=== Random =============================\n"
+	   " Random number seed: %d\n"
+	   "========================================", seed);
+    gRandom->SetSeed(seed);
+  }
+  /** 
+   * Set-up the generator. 
+   * 
+   * @return true on success 
+   */
   Bool_t SetupGen()
   {
     Printf(" === Setup ==============================");
@@ -547,6 +573,9 @@ struct FastSim : public TSelector
       new AliRun("gAlice", "The ALICE Off-line framework");
 
     Long64_t nev = (fNEvents <= 0 ? 0xFFFFFFFF : fNEvents);
+    Printf("=== Run ================================\n"
+	   " Number of events: %lld\n"
+	   "========================================", nev);
     // --- Run-loader, stack, etc  -----------------------------------
     // Info("SetupRun", "Set-up run Loader");    
     fRunLoader = AliRunLoader::Open("galice.root", "FASTRUN", "RECREATE");
@@ -633,6 +662,7 @@ struct FastSim : public TSelector
    */
   void SlaveBegin(TTree*)
   {
+    SetupSeed();
     SetupGen();
     SetupOutput();
     SetupRun();
