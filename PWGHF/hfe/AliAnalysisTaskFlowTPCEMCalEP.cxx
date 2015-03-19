@@ -85,10 +85,6 @@
 
 
 ClassImp(AliAnalysisTaskFlowTPCEMCalEP)
-
-using std::cout;
-using std::endl;
-
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)
@@ -97,6 +93,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fVevent(0)
   ,fpidResponse(0)
   ,fMC(0)
+  ,fStack(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
@@ -112,7 +109,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fPID(0)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(1000.)
-  ,fInvmassCut(0.05)
+  ,fInvmassCut(0.14)
   ,fChi2Cut(3.5)
   ,fDCAcut(999)
   ,fnonHFEalgorithm("KF")
@@ -158,6 +155,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
     fElecPtULSInvmassCut[k] = NULL;
     fElecPtLSInvmassCut[k] = NULL;
     fElecPtInvmassCut[k] = NULL;
+    fInclElec[k] = NULL;
     fInvmassLS[k] = NULL;
     fInvmassULS[k] = NULL;
     fOpeningAngleLS[k] = NULL;
@@ -206,6 +204,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fVevent(0)
   ,fpidResponse(0)
   ,fMC(0)
+  ,fStack(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
@@ -221,7 +220,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fPID(0)       
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(1000.)
-  ,fInvmassCut(0.05)	
+  ,fInvmassCut(0.14)	
   ,fChi2Cut(3.5)
   ,fDCAcut(999)
   ,fnonHFEalgorithm("KF")
@@ -268,6 +267,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
     fElecPtULSInvmassCut[k] = NULL;
     fElecPtLSInvmassCut[k] = NULL;
     fElecPtInvmassCut[k] = NULL;
+    fInclElec[k] = NULL;
     fInvmassLS[k] = NULL;
     fInvmassULS[k] = NULL;
     fOpeningAngleLS[k] = NULL;
@@ -364,8 +364,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   }
 
   if(fIsMC)fMC = MCEvent();
-  AliStack* stack = NULL;
-  if(fIsMC && fMC) stack = fMC->Stack();
+  if(fIsMC && fMC) fStack = fMC->Stack();
  
   Int_t fNOtrks =fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
@@ -481,19 +480,19 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   fEPres->Fill(evPlaneRes);
 
   // Selection of primary pi0 and eta in MC to compute the weight
-  if(fIsMC && fMC && stack){
-    Int_t nParticles = stack->GetNtrack();
+  if(fIsMC && fMC && fStack){
+    Int_t nParticles = fStack->GetNtrack();
     for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
-      TParticle* particle = stack->Particle(iParticle);
+      TParticle* particle = fStack->Particle(iParticle);
       int fPDG = particle->GetPdgCode(); 
       double pTMC = particle->Pt();
 
       Double_t etaMC = particle->Eta();
       if (TMath::Abs(etaMC)>1.2)continue;
 
-      Bool_t isMotherPrimary = IsPrimary(particle,stack);
-      Bool_t isFromLMdecay = IsPi0EtaFromLMdecay(particle,stack);
-      Bool_t isFromHFdecay = IsPi0EtaFromHFdecay(particle,stack);
+      Bool_t isMotherPrimary = IsPrimary(particle);
+      Bool_t isFromLMdecay = IsPi0EtaFromLMdecay(particle);
+      Bool_t isFromHFdecay = IsPi0EtaFromHFdecay(particle);
 
       if (isMotherPrimary && !isFromHFdecay && !isFromLMdecay){
         if(fPDG==111) fPi0Pt[iCent]->Fill(pTMC); //pi0
@@ -589,11 +588,12 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Double_t partPt = -99.;
     Bool_t MChijing; 
 
-    if(fIsMC && fMC && stack){
+    if(fIsMC && fMC && fStack){
       if(fTPCnSigma < -1 || fTPCnSigma > 3) continue;
+      if(fEMCalnSigma < 0 || fEMCalnSigma > 3) continue;
       Int_t label = track->GetLabel();
       if(label!=0){
-        TParticle *particle = stack->Particle(TMath::Abs(label));	
+        TParticle *particle = fStack->Particle(TMath::Abs(label));	
         if(particle){
           partPDG = particle->GetPdgCode();
           partPt = particle->Pt();
@@ -606,9 +606,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	  //Check which decay and calculate the weight
 	  Int_t iDecay = 0;
 	  
-	  Bool_t iPi0Decay  = IsElectronFromPi0(particle,stack,weight,iCent);
-	  Bool_t iEtaDecay  = IsElectronFromEta(particle,stack,weight,iCent);
-	  Bool_t iGammaDecay = IsElectronFromGamma(particle,stack,weight,iCent);
+	  Bool_t iPi0Decay  = IsElectronFromPi0(particle,weight,iCent);
+	  Bool_t iEtaDecay  = IsElectronFromEta(particle,weight,iCent);
+	  Bool_t iGammaDecay = IsElectronFromGamma(particle,weight,iCent);
 	  
           if(iPi0Decay) iDecay = 1;
           if(iEtaDecay) iDecay = 2;
@@ -623,26 +623,26 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     }//end MC
 
     if(fTPCnSigma >= 1.5 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
-    Int_t pidpassed = 1;
     
     //--- track accepted
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
     hfetrack.SetRecTrack(track);
     hfetrack.SetPbPb();
-    if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
-
+    if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) continue;
+       
     if (m20>0.02 && m02>0.02){
       Double_t corr[7]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi};
       fCorr->Fill(corr);
     }
-  
+
+    if(!fIsMC && fTPCnSigma>-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3){ 
+      SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0);
+      fInclElec[iCent]->Fill(pt);
+    }
+    
     fChargPartV2[iCent]->Fill(iPt,cosdphi); 
     if (clsE>0) fMtcPartV2[iCent]->Fill(iPt,cosdphi); 
-
-    if (pidpassed==0) continue;
-
-    if(!fIsMC) SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,weight,iCent,0,0); // analysis with data
     
     if (fTPCnSigma>=-5 && fTPCnSigma<-3.2) fEoverPbcg[iCent][iPt][iDeltaphi]->Fill(EovP);
     if (fTPCnSigma>=-0.5 && fTPCnSigma<3) feTPCV2[iCent]->Fill(iPt,cosdphi); 
@@ -777,6 +777,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
     
     fElecPtInvmassCut[i] = new TH1F(Form("fElecPtInvmassCut%d",i), "electron pt, invariant mass cut", 100,0,50);
     fOutputList->Add(fElecPtInvmassCut[i]);
+    
+    fInclElec[i] = new TH1F(Form("fInclElec%d",i), "inclusive electron pt", 100,0,50);
+    fOutputList->Add(fInclElec[i]);
     
     fInvmassLS[i] = new TH2F(Form("fInvmassLS%d",i), "Inv mass of LS (e,e); mass(GeV/c^2); counts;", 500,0,0.5,100,0,50);
     fOutputList->Add(fInvmassLS[i]);
@@ -1015,7 +1018,7 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetSigmaEMCal(Double_t EoverP, Double_t 
   return NumberOfSigmasEMCal;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromHFdecay(TParticle *particle, AliStack* stack) 
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromHFdecay(TParticle *particle) 
 {
   // Check if the mother comes from heavy-flavour decays
 
@@ -1026,7 +1029,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromHFdecay(TParticle *particle, A
 
   Int_t idMother = particle->GetFirstMother();
   if (idMother>0){
-    TParticle *mother = stack->Particle(idMother);
+    TParticle *mother = fStack->Particle(idMother);
     Int_t motherPDG = mother->GetPdgCode();
 
     // c decays
@@ -1039,7 +1042,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromHFdecay(TParticle *particle, A
   return isHFdecay;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromLMdecay(TParticle *particle, AliStack* stack) 
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromLMdecay(TParticle *particle) 
 {
   // Check if the mother comes from light-meson decays
 
@@ -1050,7 +1053,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromLMdecay(TParticle *particle, A
 
   Int_t idMother = particle->GetFirstMother();
   if (idMother>0){
-    TParticle *mother = stack->Particle(idMother);
+    TParticle *mother = fStack->Particle(idMother);
     Int_t motherPDG = mother->GetPdgCode();
 
     if(motherPDG == 111 || motherPDG == 221 || motherPDG==223 || motherPDG==333 || motherPDG==331 || (TMath::Abs(motherPDG)==113) || (TMath::Abs(motherPDG)==213) || (TMath::Abs(motherPDG)==313) || (TMath::Abs(motherPDG)==323)) isLMdecay = kTRUE;
@@ -1059,7 +1062,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromLMdecay(TParticle *particle, A
   return isLMdecay;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(TParticle *particle, AliStack* stack) 
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(TParticle *particle) 
 {
   // Check if the particle is primary
 
@@ -1071,7 +1074,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(TParticle *particle, AliStack* s
   return isprimary;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromGamma(TParticle *particle, AliStack* stack, Double_t &weight, Int_t iCent) 
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromGamma(TParticle *particle, Double_t &weight, Int_t iCent) 
 {
   Bool_t isGammaDecay = kFALSE;
   weight = 1.;
@@ -1081,11 +1084,11 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromGamma(TParticle *particle, A
 
   Int_t idMother = particle->GetFirstMother();
   if (idMother>0){
-    TParticle *mother = stack->Particle(idMother);
+    TParticle *mother = fStack->Particle(idMother);
     Int_t motherPDG = mother->GetPdgCode();
     Double_t motherPt = mother->Pt();
 
-    Bool_t isMotherPrimary = IsPrimary(mother,stack);
+    Bool_t isMotherPrimary = IsPrimary(mother);
 
     if (motherPDG==22 && isMotherPrimary){ // gamma -> e 
       isGammaDecay = kTRUE; 
@@ -1096,7 +1099,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromGamma(TParticle *particle, A
   return isGammaDecay;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromPi0(TParticle *particle, AliStack* stack, Double_t &weight, Int_t iCent) 
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromPi0(TParticle *particle,  Double_t &weight, Int_t iCent) 
 {
   // Check if electron comes from primary pi0 not from light-meson and heavy-flavour decays
 
@@ -1108,13 +1111,13 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromPi0(TParticle *particle, Ali
 
   Int_t idMother = particle->GetFirstMother();
   if (idMother>0){
-    TParticle *mother = stack->Particle(idMother);
+    TParticle *mother = fStack->Particle(idMother);
     Int_t motherPDG = mother->GetPdgCode();
     Double_t motherPt = mother->Pt();
 
-    Bool_t isMotherPrimary = IsPrimary(mother,stack);
-    Bool_t isMotherFromHF = IsPi0EtaFromHFdecay(mother,stack);
-    Bool_t isMotherFromLM = IsPi0EtaFromLMdecay(mother,stack);
+    Bool_t isMotherPrimary = IsPrimary(mother);
+    Bool_t isMotherFromHF = IsPi0EtaFromHFdecay(mother);
+    Bool_t isMotherFromLM = IsPi0EtaFromLMdecay(mother);
 
     if (motherPDG==111 && (isMotherPrimary || (!isMotherFromHF && !isMotherFromLM))){ // pi0 -> e 
       isPi0Decay = kTRUE; 
@@ -1123,13 +1126,13 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromPi0(TParticle *particle, Ali
 
     Int_t idSecondMother = particle->GetSecondMother(); 
     if (motherPDG==22 && idSecondMother>0){
-      TParticle *secondMother = stack->Particle(idSecondMother);
+      TParticle *secondMother = fStack->Particle(idSecondMother);
       Int_t secondMotherPDG = secondMother->GetPdgCode();
       Double_t secondMotherPt = secondMother->Pt();
     
-      Bool_t isSecondMotherPrimary = IsPrimary(secondMother,stack);
-      Bool_t isSecondMotherFromHF = IsPi0EtaFromHFdecay(secondMother,stack);
-      Bool_t isSecondMotherFromLM = IsPi0EtaFromLMdecay(secondMother,stack);
+      Bool_t isSecondMotherPrimary = IsPrimary(secondMother);
+      Bool_t isSecondMotherFromHF = IsPi0EtaFromHFdecay(secondMother);
+      Bool_t isSecondMotherFromLM = IsPi0EtaFromLMdecay(secondMother);
 
       if (secondMotherPDG==111 && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //pi0 -> gamma -> e 
         isPi0Decay = kTRUE;
@@ -1140,7 +1143,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromPi0(TParticle *particle, Ali
   return isPi0Decay;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromEta(TParticle *particle, AliStack* stack, Double_t &weight, Int_t iCent)
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromEta(TParticle *particle,  Double_t &weight, Int_t iCent)
 {
   // Check if electron comes from primary eta not from light-meson and heavy-flavour decays
 
@@ -1152,13 +1155,13 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromEta(TParticle *particle, Ali
 
   Int_t idMother = particle->GetFirstMother();
   if (idMother>0){
-    TParticle *mother = stack->Particle(idMother);
+    TParticle *mother = fStack->Particle(idMother);
     Int_t motherPDG = mother->GetPdgCode();
     Double_t motherPt = mother->Pt();
 
-    Bool_t isMotherPrimary = IsPrimary(mother,stack);
-    Bool_t isMotherFromHF = IsPi0EtaFromHFdecay(mother,stack);
-    Bool_t isMotherFromLM = IsPi0EtaFromLMdecay(mother,stack);
+    Bool_t isMotherPrimary = IsPrimary(mother);
+    Bool_t isMotherFromHF = IsPi0EtaFromHFdecay(mother);
+    Bool_t isMotherFromLM = IsPi0EtaFromLMdecay(mother);
     
     if (motherPDG==221  && (isMotherPrimary || (!isMotherFromHF && !isMotherFromLM))){ //primary eta -> e
       isEtaDecay = kTRUE; 
@@ -1167,13 +1170,13 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromEta(TParticle *particle, Ali
 
     Int_t idSecondMother = mother->GetFirstMother();	
     if ((motherPDG==22 || motherPDG==111) && idSecondMother>0){
-      TParticle *secondMother = stack->Particle(idSecondMother);
+      TParticle *secondMother = fStack->Particle(idSecondMother);
       Int_t secondMotherPDG = secondMother->GetPdgCode();
       Double_t secondMotherPt = secondMother->Pt();
 
-      Bool_t isSecondMotherPrimary = IsPrimary(secondMother,stack);
-      Bool_t isSecondMotherFromHF = IsPi0EtaFromHFdecay(secondMother,stack);
-      Bool_t isSecondMotherFromLM = IsPi0EtaFromLMdecay(secondMother,stack);
+      Bool_t isSecondMotherPrimary = IsPrimary(secondMother);
+      Bool_t isSecondMotherFromHF = IsPi0EtaFromHFdecay(secondMother);
+      Bool_t isSecondMotherFromLM = IsPi0EtaFromLMdecay(secondMother);
 
       if (secondMotherPDG==221  && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //eta -> pi0/g-> e
         isEtaDecay = kTRUE; 
@@ -1181,13 +1184,13 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsElectronFromEta(TParticle *particle, Ali
       }
       Int_t idThirdMother = secondMother->GetFirstMother();
       if (idThirdMother>0){
-        TParticle *thirdMother = stack->Particle(idThirdMother);
+        TParticle *thirdMother = fStack->Particle(idThirdMother);
         Int_t thirdMotherPDG = thirdMother->GetPdgCode();
         Double_t thirdMotherPt = thirdMother->Pt();
 
-        Bool_t isThirdMotherPrimary = IsPrimary(thirdMother,stack);
-        Bool_t isThirdMotherFromHF = IsPi0EtaFromHFdecay(thirdMother,stack);
-        Bool_t isThirdMotherFromLM = IsPi0EtaFromLMdecay(thirdMother,stack);
+        Bool_t isThirdMotherPrimary = IsPrimary(thirdMother);
+        Bool_t isThirdMotherFromHF = IsPi0EtaFromHFdecay(thirdMother);
+        Bool_t isThirdMotherFromLM = IsPi0EtaFromLMdecay(thirdMother);
 
         if (motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG==221 && (isThirdMotherPrimary || (!isThirdMotherFromHF && !isThirdMotherFromLM))){//p eta->pi0->g-> e 
           isEtaDecay = kTRUE; 
@@ -1232,18 +1235,27 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDt
     Double_t pt=-999., ptAsso=-999., nTPCsigmaAsso=-999.;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
     Double_t openingAngle = -999., mass=999., width = -999;
-    Int_t chargeAsso = 0, charge = 0;
+    Int_t chargeAsso = 0, charge = 0, pdgAsso = 0;
     
     nTPCsigmaAsso = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
     pt = track->Pt();
     ptAsso = trackAsso->Pt();
     chargeAsso = trackAsso->Charge();
     charge = track->Charge();
-    
-    if(ptAsso <0.5) continue;
+        
+    if(ptAsso <1.) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(TMath::Abs(nTPCsigmaAsso)>3) continue;
     
+    Int_t labelAsso = trackAsso->GetLabel();
+    if(labelAsso!=0){
+      TParticle *particleAsso = fStack->Particle(TMath::Abs(labelAsso));	
+      if(particleAsso){
+	pdgAsso = particleAsso->GetPdgCode();
+	if(!(TMath::Abs(pdgAsso)==11)) continue;
+      }
+    }
+      
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;
     if(chargeAsso>0) fPDGe2 = -11;
