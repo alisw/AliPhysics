@@ -208,6 +208,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fHistoTrueSecondaryClusConvGammaFromXFromEtasPt(NULL),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
+	fHistoVertexZ(NULL),
 	fHistoNGammaCandidates(NULL),
 	fHistoNGoodESDTracksVsNGammaCanditates(NULL),
 	fHistoNV0Tracks(NULL),
@@ -222,8 +223,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fDoClusterQA(0),
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
-    fIsMC(kFALSE),
-    fDoTHnSparse(kTRUE)
+	fIsMC(kFALSE),
+	fDoTHnSparse(kTRUE)
 {
   
 }
@@ -379,6 +380,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fHistoTrueSecondaryClusConvGammaFromXFromEtasPt(NULL),
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
+	fHistoVertexZ(NULL),
 	fHistoNGammaCandidates(NULL),
 	fHistoNGoodESDTracksVsNGammaCanditates(NULL),
 	fHistoNV0Tracks(NULL),
@@ -393,8 +395,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fDoClusterQA(0),
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
-    fIsMC(kFALSE),
-    fDoTHnSparse(kTRUE)
+	fIsMC(kFALSE),
+	fDoTHnSparse(kTRUE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -451,23 +453,23 @@ void AliAnalysisTaskGammaCalo::InitBack(){
 				centMax = ((centMax*5)+45);
 			}
 			
-            if(fDoTHnSparse){
-                fBackList[iCut] = new TList();
-                fBackList[iCut]->SetName(Form("%s_%s_%s Back histograms",cutstringEvent.Data(),cutstringCalo.Data(), cutstringMeson.Data()));
-                fBackList[iCut]->SetOwner(kTRUE);
-                fCutFolder[iCut]->Add(fBackList[iCut]);
+			if(fDoTHnSparse){
+				fBackList[iCut] = new TList();
+				fBackList[iCut]->SetName(Form("%s_%s_%s Back histograms",cutstringEvent.Data(),cutstringCalo.Data(), cutstringMeson.Data()));
+				fBackList[iCut]->SetOwner(kTRUE);
+				fCutFolder[iCut]->Add(fBackList[iCut]);
 
-                fSparseMotherBackInvMassPtZM[iCut] = new THnSparseF("Back_Back_InvMass_Pt_z_m","Back_Back_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
-                fBackList[iCut]->Add(fSparseMotherBackInvMassPtZM[iCut]);
+				fSparseMotherBackInvMassPtZM[iCut] = new THnSparseF("Back_Back_InvMass_Pt_z_m","Back_Back_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
+				fBackList[iCut]->Add(fSparseMotherBackInvMassPtZM[iCut]);
 
-                fMotherList[iCut] = new TList();
-                fMotherList[iCut]->SetName(Form("%s_%s_%s Mother histograms",cutstringEvent.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
-                fMotherList[iCut]->SetOwner(kTRUE);
-                fCutFolder[iCut]->Add(fMotherList[iCut]);
+				fMotherList[iCut] = new TList();
+				fMotherList[iCut]->SetName(Form("%s_%s_%s Mother histograms",cutstringEvent.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+				fMotherList[iCut]->SetOwner(kTRUE);
+				fCutFolder[iCut]->Add(fMotherList[iCut]);
 
-                fSparseMotherInvMassPtZM[iCut] = new THnSparseF("Back_Mother_InvMass_Pt_z_m","Back_Mother_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
-                fMotherList[iCut]->Add(fSparseMotherInvMassPtZM[iCut]);
-            }
+				fSparseMotherInvMassPtZM[iCut] = new THnSparseF("Back_Mother_InvMass_Pt_z_m","Back_Mother_InvMass_Pt_z_m",nDim,nBins,xMin,xMax);
+				fMotherList[iCut]->Add(fSparseMotherInvMassPtZM[iCut]);
+			}
 
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
 				fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
@@ -503,6 +505,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
 	fHistoNEvents = new TH1I*[fnCuts];
 	fHistoNGoodESDTracks = new TH1I*[fnCuts];
+	fHistoVertexZ = new TH1F*[fnCuts];
 	fHistoNGammaCandidates = new TH1I*[fnCuts];
 	fHistoNGoodESDTracksVsNGammaCanditates = new TH2F*[fnCuts];
 	fHistoNV0Tracks = new TH1I*[fnCuts];
@@ -568,6 +571,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		else if(fIsHeavyIon == 2) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",400,0,400);
 		else fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
 		fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
+
+		fHistoVertexZ[iCut] = new TH1F("VertexZ","VertexZ",1000,-50,50);
+		fESDList[iCut]->Add(fHistoVertexZ[iCut]);
+
 		if(fIsHeavyIon == 1) fHistoNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",600,0,600);
 		else if(fIsHeavyIon == 2) fHistoNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",400,0,400);
 		else fHistoNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",100,0,100);
@@ -1202,6 +1209,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 
 		fHistoNEvents[iCut]->Fill(eventQuality); // Should be 0 here
 		fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
+		fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
 			else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
 
