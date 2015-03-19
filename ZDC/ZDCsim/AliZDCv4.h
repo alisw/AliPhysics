@@ -28,10 +28,10 @@ public:
   
   void SetVCollSideCAperture(Float_t aperture)
   	{if(aperture<3.5) fVCollSideCAperture = aperture; 
-	 else printf("\n\n AliZDCv4: WARNING! SideC TCTVB aperture set to max. value: 3.5 cm\n\n");}
+	 else printf("\n\n AliZDCv4: WARNING! TCLIA aperture set to max. value: 3.5 cm\n\n");}
   void SetVCollSideCApertureNeg(Float_t aperture)
   	{if(aperture<3.5) fVCollSideCApertureNeg = aperture; 
-	 else printf("\n\n AliZDCv4: WARNING! SideC TCTVB aperture set to max. value: -3.5 cm\n\n");}
+	 else printf("\n\n AliZDCv4: WARNING! TCLIA aperture set to max. value: -3.5 cm\n\n");}
   void SetVCollSideCCentre(Float_t centre) {fVCollSideCCentreY = centre;}
   
   virtual void SetTCDDAperturePos(Float_t aperture) 

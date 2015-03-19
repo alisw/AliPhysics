@@ -12,9 +12,9 @@ Contact: Chiara.Oppedisano@to.infn.it
 Link: 
 Run Type: PHYSICS
 DA Type: MON
-Number of events needed: at least 50% 
+Number of events needed:  
 Input Files:  none
-Output Files: ZDCChMapping.dat
+Output Files: ZDCChMapping.dat ZDCTDCCalib.dat ZDCTDCHisto.root
 Trigger Types Used: different trigger types are used
 
 */
