@@ -179,10 +179,12 @@ void AliT0Parameters::InitIfOnline()
   // configuration for test Jun07.
   fgLookUp = new AliT0CalibData("T0");
   
-  fNumberOfTRMs = 1;
+  fNumberOfTRMs = 2;
   fgLookUp-> SetNumberOfTRMs(fNumberOfTRMs);
-  Int_t trm=7; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
-  for (Int_t ik=0; ik<105; ik++)
+  Int_t trm=7;
+  Int_t tdc=0;  Int_t channel=0;
+  Int_t ikey=0; Int_t chain=0;
+  for (Int_t ik=0; ik<211; ik++)
     {
       AliT0LookUpKey * lookkey= new AliT0LookUpKey();
       AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
@@ -191,26 +193,16 @@ void AliT0Parameters::InitIfOnline()
       lookvalue->SetChain(chain);
       lookvalue->SetChannel(channel);
       lookkey->SetKey(ik);
-      fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
+      fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);
+      printf(" LookUp ik %i trm %i chain %i tdc %i  channel %i\n",ik, trm, chain, tdc, channel);	
       if (channel<6) channel +=2;
       else {channel = 0; tdc++;}
-      if(ik==56) { tdc=0; channel=0; chain = 1;}
-    }
-  //2 recent open channels
-  trm=7; tdc=14; channel=2; chain=0; 
-  for (Int_t ik=105; ik<107; ik++)
-    {
-      AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-      AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
-      
-      lookvalue->SetTRM(trm);
-      lookvalue->SetTDC(tdc);
-      lookvalue->SetChain(chain);
-      lookvalue->SetChannel(channel);
-      lookkey->SetKey(ik);
-      fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
-      if (channel<6) channel +=2;
-      else {channel = 0; tdc++;}
+      if (ik==104) {trm=7; chain=0; tdc=14; channel=2;}
+      if (ik==105) {trm=7; chain=0; tdc=14; channel=4;}
+      if (ik==56) {trm=7; chain=1; tdc=0; channel=0;}
+      if (ik==106) { trm=9; chain=0; tdc=0; channel=0;}
+      if (ik==162) { trm=9; chain=1; tdc=0; channel=0;}
+       ikey++;     
     }
   
   fIsInit=kTRUE;
