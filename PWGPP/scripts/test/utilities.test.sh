@@ -20,11 +20,12 @@ test_guessRunData()
                "http://aliqatpc.web.cern.ch/aliqatpc/data/2010/LHC10e/pass4/000127729/TPC_dEdx_track_info.png" \
                 "/hera/alice/local/filtered/toMerge/alice/data/2010/LHC10b/000117086/pass4/AOD/017/FilterEvents_Trees.root" \
         	"http://aliqatpc.web.cern.ch/aliqatpc/data/2010/LHC10e/pass4/meanTPCncl_vs_run.png" \
+          "/hera/alice/local/filtered/alice/data/2010/LHC10e/000127712/ESDs/pass2/140/root_archive.zip"
                );
-    yearTrue=("2012" "2012" "2010" "2010" "2010");
-    periodTrue=("LHC12g" "LHC12a" "LHC10e"  "LHC10b" "LHC10e" );
-    runTrue=("188362" "177011" "127729"  "117086" "");
-    passTrue=("cpass1_tpc_validation" "cpass0_tpc_validation" "pass4" "pass4_AOD" "pass4");
+    yearTrue=("2012" "2012" "2010" "2010" "2010" "2010");
+    periodTrue=("LHC12g" "LHC12a" "LHC10e"  "LHC10b" "LHC10e" "LHC10e" );
+    runTrue=("188362" "177011" "127729"  "117086" "" "127712");
+    passTrue=("cpass1_tpc_validation" "cpass0_tpc_validation" "pass4" "pass4_AOD" "pass4" "pass2_lego140");
     echo ===================================================================================================
     alilog "RUNNING TEST: test_guessRunData";
     echo ===================================================================================================
