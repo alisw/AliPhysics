@@ -13,7 +13,7 @@
 #  - dependent libraries: used to generate the rootmap
 #  - extra include paths (optional): passed during compilation
 #
-# To generate a parfile, if enabled in its CMakeLists.txt, go to the build directory and run:
+# To generate a PARfile, if enabled in its CMakeLists.txt, go to the build directory and run:
 #   make BLAHBLAH.par
 
 function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
@@ -40,44 +40,64 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
     #message(STATUS "[add_target_parfile] Extra Includes (space-separated): ${PAREXTRAINCLUDES}")
   endif()
 
-  # PARfile output directory (the one we will tar)
-  set(PARDIR ${CMAKE_CURRENT_BINARY_DIR}/PARfiles/${PARMODULE})
+  # PARfile temporary directory
+  set(PARTMP ${CMAKE_CURRENT_BINARY_DIR}/PARfiles)
 
-  # Create base directory for this module's PARfile: this is the directory we will tar
-  # This works as "mkdir -p" (i.e. it's recursive and creates parents)
-  file(MAKE_DIRECTORY ${PARDIR}/PROOF-INF)
+  # PARfile output directory (the one we will tar)
+  set(PARDIR ${PARTMP}/${PARMODULE})
+
+  # PARfile meta directory
+  set(PARMETADIR ${PARTMP}/${PARMODULE}/PROOF-INF)
+
+  # Destination PARfile (full path)
+  set(PARFILE ${CMAKE_CURRENT_BINARY_DIR}/${PARMODULE}.par)
 
   # Create Makefile
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/Makefile.in
-      ${PARDIR}/Makefile
+      ${PARTMP}/Makefile
       @ONLY
   )
 
   # Create BUILD.sh
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/BUILD.sh.in
-      ${PARDIR}/PROOF-INF/BUILD.sh
+      ${PARTMP}/BUILD.sh
       @ONLY
   )
-  execute_process(COMMAND chmod a+x ${PARDIR}/PROOF-INF/BUILD.sh)
+  execute_process(COMMAND chmod a+x ${PARTMP}/BUILD.sh)
 
   # Create SETUP.C
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/SETUP.C.in
-      ${PARDIR}/PROOF-INF/SETUP.C
+      ${PARTMP}/SETUP.C
       @ONLY
   )
 
   # Target for creating PARfile (would stop after the first failed COMMAND)
   add_custom_target("${PARMODULE}.par"
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARDIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PARDIR}
+
+    # TODO: cmake -E copy unfortunately does not handle multiple files
     COMMAND rsync --relative ${PARSOURCES} ${PARHEADERS} ${PARLINKDEF} ${PARDIR}/
-    COMMAND tar -C ${PARDIR}/.. -czf ${PARDIR}/../${PARMODULE}.par ${PARMODULE}/
+
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/Makefile ${PARDIR}/Makefile
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/SETUP.C ${PARMETADIR}/SETUP.C
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/BUILD.sh ${PARMETADIR}/BUILD.sh
+
+    COMMAND ${CMAKE_COMMAND} -E chdir ${PARTMP}
+            ${CMAKE_COMMAND} -E tar czf ${PARFILE} ${PARMODULE}/
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARDIR}
+
+    COMMENT "Building PAR file ${PARMODULE}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
   # Install target
-  install(FILES ${PARDIR}/../${PARMODULE}.par DESTINATION PARfiles OPTIONAL)
+  install(FILES ${PARFILE} DESTINATION PARfiles OPTIONAL)
 
   # Add this module to the list of generated PARfiles
   list(APPEND ALIPARFILES ${PARMODULE})
