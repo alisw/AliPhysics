@@ -3,14 +3,15 @@
 # Automatically generated BUILD.sh for @PARMODULE@
 
 npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null || echo 0`
-if [ "$npar" == 0 ] ; then
+if test $npar -eq 0 2> /dev/null ; then
+  # Assume we are on OS X
   npar=`sysctl hw.ncpu | cut -b10 2> /dev/null`
 fi
 if test "$npar" -gt 0 2> /dev/null ; then
   npar=$(( $npar + 1 ))
-  echo "Building PARfile using $npar parallel thread(s)"
+  echo "Building PARfile @PARMODULE@ using $npar parallel thread(s)"
   exec make -j$npar
 else
-  echo "Building PARfile"
+  echo "Building PARfile @PARMODULE@"
   exec make
 fi
