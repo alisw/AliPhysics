@@ -5,56 +5,38 @@
 
 class AliVEvent;
 class AliVVertex;
-class AliESDEvent;
+class AliESDEvent; 
 class AliAODEvent;
 
 class AliPPVsMultUtils : public TObject {
-
+    
 public:
-
+    
     AliPPVsMultUtils();
-    virtual ~AliPPVsMultUtils() {};
-
+    virtual ~AliPPVsMultUtils(){};
+    
     //Extra const
     AliPPVsMultUtils(const AliPPVsMultUtils& pd);
     AliPPVsMultUtils &operator=(const AliPPVsMultUtils &c);
 
     //Utility functions
     //for the base virtual event class: all methods are common
-    Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M", Bool_t lEmbedEventSelection = kTRUE);
-
-    //Called internally (automatically)
+    Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M");
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
-
-    //EvSel Snippets
-    Bool_t IsINELgtZERO             (AliVEvent *event);
-    Bool_t IsAcceptedVertexPosition (AliVEvent *event);
-    Bool_t IsNotPileupSPDInMultBins (AliVEvent *event);
-    Bool_t IsEventSelected(AliVEvent *event);
-    Float_t MinVal( Float_t A, Float_t B ); 
-
+    
 private:
-
+    
     Int_t fRunNumber; // for control of run changes
     Bool_t fCalibrationLoaded; // control flag
-
-    //To store calibration boundaries
+    
     TH1F *fBoundaryHisto_V0M;
     TH1F *fBoundaryHisto_V0A;
     TH1F *fBoundaryHisto_V0C;
     TH1F *fBoundaryHisto_V0MEq;
     TH1F *fBoundaryHisto_V0AEq;
     TH1F *fBoundaryHisto_V0CEq;
-    TH1F *fBoundaryHisto_V0B;
-    TH1F *fBoundaryHisto_V0Apartial;
-    TH1F *fBoundaryHisto_V0Cpartial;
-    TH1F *fBoundaryHisto_V0S;
-    TH1F *fBoundaryHisto_V0SB;
-
-    //To Store <V0A>, <V0C>, <V0Apartial> and <V0Cpartial> on a run-per-run basis
-    TH1D *fAverageAmplitudes; 
     
-    ClassDef(AliPPVsMultUtils,2) // base helper class
+    ClassDef(AliPPVsMultUtils,1) // base helper class
 };
 #endif
 
