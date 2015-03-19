@@ -59,7 +59,7 @@ protected:
     Float_t  fPtHard;                    // pT hard
     Float_t  fXsection;                  // Cross-section
 
-    ClassDef(AliGenPythiaEventHeader,7)  // Event header for Pythia event
+    ClassDef(AliGenPythiaEventHeader,8)  // Event header for Pythia event
 };
 	
 	
