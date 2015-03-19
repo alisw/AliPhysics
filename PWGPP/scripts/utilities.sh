@@ -119,6 +119,8 @@ guessRunData()
 
     [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ && ${fieldPrev} =~ ^20[0-9][0-9]$ && ! ${fieldNext} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && pass=${fieldNext}
 
+    [[ ${field} =~ "ESDs" && ${fieldPrev} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ && ${fieldPrevPrev} =~ ^LHC[0-9][0-9][a-z].*$ ]] && pass=${fieldNext}
+
   done
   originalPass=${pass}
 
