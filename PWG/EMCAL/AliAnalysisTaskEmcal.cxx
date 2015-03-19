@@ -768,9 +768,12 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
 Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 {
   // Check if event has a given trigger type
+  if(trigger==kND) {
+    AliWarning(Form("%s: Requesting undefined trigger type!", GetName())); 
+    return kFALSE;
+  }
   //MV: removing this logic which as far as I can see doesn't make any sense
   // if(trigger & kND){
-  //   Printf("Resetting fTriggers %d %d",trigger,kND);
   //   return fTriggers == 0;
   // }
   return TESTBIT(fTriggers, trigger);
@@ -857,44 +860,10 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   }
 
   if (fTriggerTypeSel != kND) {
-
-    /*
-    //Dirty business: keeping debugging block for now. Will remove once confirmed.
-    //    fTriggers = GetTriggerList();
-    //loop over patches to define trigger type of event
-    Int_t nG1 = 0;
-    Int_t nG2 = 0;
-    Int_t nJ1 = 0;
-    Int_t nJ2 = 0;
-    Int_t nL0 = 0;
-    AliEmcalTriggerPatchInfo *patch;
-    Int_t nPatch = fTriggerPatchInfo->GetEntries();
-    for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-      patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-      if (patch->IsGammaHigh()) nG1++;
-      if (patch->IsGammaLow())  nG2++;
-      if (patch->IsJetHigh()) nJ1++;
-      if (patch->IsJetLow())  nJ2++;
-      if (patch->IsLevel0())  nL0++;
-    }
-    
-    Printf("New event");
-    Printf( "Patch summary: ");
-    Printf( "Number of patches: %d", nPatch);
-    Printf( "Jet:   low[%d], high[%d]" ,nJ2, nJ1);
-    Printf( "Gamma: low[%d], high[%d]" ,nG2, nG1);
-    
-    Printf("TESTBIT kJ1 %d -> %d",kJ1,TESTBIT(fTriggers, kJ1));
-    Printf("TESTBIT kJ2 %d -> %d",kJ2,TESTBIT(fTriggers, kJ2));
-
-    Printf("Requesting fTriggerTypeSel: %d",fTriggerTypeSel);
-    */
     if (!HasTriggerType(fTriggerTypeSel)) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
-      //   Printf("Not found fTriggerTypeSel: %d\n",fTriggerTypeSel);
       return kFALSE;
     }
-    //    Printf("Found fTriggerTypeSel: %d\n",fTriggerTypeSel);
   }
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
