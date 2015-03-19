@@ -233,13 +233,13 @@ protected:
   /** 
    * Copy constructor - not implemented
    */
-  AliFMDSharingFilter(const AliFMDSharingFilter& o){;}
+  AliFMDSharingFilter(const AliFMDSharingFilter& o) : TNamed(o) {}
   /** 
    * Assignment operator  - not implemented
    * 
    * @return Reference to this 
    */
-  AliFMDSharingFilter& operator=(const AliFMDSharingFilter& o){return *this;}
+  AliFMDSharingFilter& operator=(const AliFMDSharingFilter&){return *this;}
   /** 
    * Internal data structure to keep track of the histograms
    */

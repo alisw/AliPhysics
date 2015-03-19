@@ -48,7 +48,11 @@ namespace {
   AliPhysicsSelection* GetPhysicsSelection()
   {
     AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-
+    if (!am) {
+      Warning("GetPhysicsSelection", "No analysis manager");
+      return 0;
+    }
+    
     // Get the input handler - should always be there 
     AliInputEventHandler* ih = 
       dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
@@ -99,24 +103,24 @@ AliFMDEventInspector::AliFMDEventInspector()
     fVtxMethod(kNormal),
     // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
-  fPileupFlags(0x5),
+    fPileupFlags(0x5),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
-// fUseDisplacedVertices(false),
+    // fUseDisplacedVertices(false),
     fDisplacedVertex(),
     fCollWords(),
     fBgWords(),
     fCentMethod("default"),
     fMinCent(-1.0),
     fMaxCent(-1.0),
-// fUsepA2012Vertex(false),
+    // fUsepA2012Vertex(false),
     fRunNumber(0),
     fMC(false),
-  fProdYear(-1),
-  fProdLetter('?'),
-  fProdPass(-1),
-  fProdSVN(-1),
-  fProdMC(false)
+    fProdYear(-1),
+    fProdLetter('?'),
+    fProdPass(-1),
+    fProdSVN(-1),
+    fProdMC(false)
 {
   // 
   // Constructor 
@@ -186,7 +190,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
 	     " AliPhysicsSelection registered with the input handler.\n\n"
 	     " Please check our train setup\n"
 	     "=======================================================\n");
-}
+  }
 }
 
 //____________________________________________________________________

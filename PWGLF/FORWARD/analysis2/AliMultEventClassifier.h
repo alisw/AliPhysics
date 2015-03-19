@@ -89,11 +89,9 @@ public:
   /** 
    * Assignement operator 
    * 
-   * @param o Object to assign from 
-   * 
    * @return Reference to this 
    */
-  AliMultEventClassifier& operator=(const AliMultEventClassifier& o)
+  AliMultEventClassifier& operator=(const AliMultEventClassifier&)
   {
     return *this;
   }
