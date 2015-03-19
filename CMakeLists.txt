@@ -59,100 +59,127 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
-# AliRoot Core mandatory
-find_package(AliRoot REQUIRED)
-
-# ROOT configuration mandatory
-if(ROOTSYS)
-    find_package(ROOT REQUIRED)
-
-    # ROOT must be build with XML2 support
-    if(NOT ROOT_HASXML)
-        message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
-    endif(NOT ROOT_HASXML)
-else()
-    message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
-endif(ROOTSYS)
-
-# ROOT dictionaries and maps
-include(CMakeALICE)
-
-# Checking first for DIM, DATE, AMORE and daqDA 
-# in case ROOT Extra static library needs to be enabled
-
-# DATE
-# date-config needs DIMDIR and ODIR set
-if(DATE_CONFIG)
-    if(DIMDIR AND ODIR)
-        find_package(DATE)
-    else()
-        message(FATAL_ERROR "DATE enabled but no DIMDIR and ODIR set. Please set DIMDIR and ODIR")
-    endif()
-endif()
-
-# If no Fortran, i.e on Windows
-# We need to specify ROOT fortran
-# (f95 comes before gfortran in default module)
-include(CheckLanguage)
-
-if(ROOT_FORTRAN)
-  message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-  set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-else()
-  message(STATUS "Using default system Fortran compiler")
-endif(ROOT_FORTRAN)
-
-check_language(Fortran)
-if(CMAKE_Fortran_COMPILER)
-  enable_language(Fortran OPTIONAL)
-else()
-  message(STATUS "No Fortran support.")
-endif()
-
 # Optional: Doxygen for reference doc generation
 find_package(Doxygen)
 if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
-    message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
-    set(CAN_GENERATE_DOC TRUE)
+  message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
+  set(CAN_GENERATE_DOC TRUE)
+elseif(DOXYGEN_ONLY)
+  message(FATAL_ERROR "Doxygen and Graphviz not found. Cannot generate documentation")
 else()
-    message(STATUS "Doxygen and Graphviz not found. Disabling support for documentation generation")
-endif(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
+  message(STATUS "Doxygen and Graphviz not found. Disabling support for documentation generation")
+endif()
 
-# FastJet
-find_package(FASTJET)
+# Doxygen documentation is always included
+add_subdirectory(doxygen)
 
-# ZEROMQ
-find_package(ZeroMQ)
+if(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
+  # In this case we do not prepare targets for the rest, but for Doxygen only.
+  # This is useful because no checks are performed, and it means that Doxygen
+  # documentation can be generated on a relatively "dumb" server that has as
+  # requirements only cmake, doxygen and graphviz.
+  message(WARNING "Preparing build for Doxygen documentation only as requested. AliPhysics will not be built!")
+else()
 
-# General flags -> Should be moved into a configuration file
-set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
+  # Standard CMake inclusions and checks if we are actually building AliRoot,
+  # i.e. not only the documentation
 
-# List of modules for which PARfiles are enabled -- use the cache as global scope and clean it
-set(ALIPARFILES "" CACHE INTERNAL "ALIPARFILES" FORCE)
+  # AliRoot Core mandatory
+  find_package(AliRoot REQUIRED)
 
-# AliRoot modules
-add_subdirectory(CORRFW)
-if(ZeroMQ_FOUND)
-  add_subdirectory(EVEANALYSIS)
-endif(ZeroMQ_FOUND)
-add_subdirectory(EVENTMIX)
-add_subdirectory(HLTANALYSIS)
-add_subdirectory(JETAN)
-add_subdirectory(OADB)
-add_subdirectory(TENDER)
+  # ROOT configuration mandatory
+  if(ROOTSYS)
+      find_package(ROOT REQUIRED)
 
-# PWG libraries
-add_subdirectory(PWG)
-add_subdirectory(PWGCF)
-add_subdirectory(PWGGA)
-add_subdirectory(PWGDQ)
-add_subdirectory(PWGHF)
-add_subdirectory(PWGJE)
-add_subdirectory(PWGLF)
-add_subdirectory(PWGPP)
-add_subdirectory(PWGUD)
+      # ROOT must be build with XML2 support
+      if(NOT ROOT_HASXML)
+          message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+      endif(NOT ROOT_HASXML)
+  else()
+      message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
+  endif(ROOTSYS)
 
-# List modules with PARfiles
-string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
-message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
+  # ROOT dictionaries and maps
+  include(CMakeALICE)
+
+  # Checking first for DIM, DATE, AMORE and daqDA 
+  # in case ROOT Extra static library needs to be enabled
+
+  # DATE
+  # date-config needs DIMDIR and ODIR set
+  if(DATE_CONFIG)
+      if(DIMDIR AND ODIR)
+          find_package(DATE)
+      else()
+          message(FATAL_ERROR "DATE enabled but no DIMDIR and ODIR set. Please set DIMDIR and ODIR")
+      endif()
+  endif()
+
+  # If no Fortran, i.e on Windows
+  # We need to specify ROOT fortran
+  # (f95 comes before gfortran in default module)
+  include(CheckLanguage)
+
+  if(ROOT_FORTRAN)
+    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
+    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
+  else()
+    message(STATUS "Using default system Fortran compiler")
+  endif(ROOT_FORTRAN)
+
+  check_language(Fortran)
+  if(CMAKE_Fortran_COMPILER)
+    enable_language(Fortran OPTIONAL)
+  else()
+    message(STATUS "No Fortran support.")
+  endif()
+
+  # Optional: Doxygen for reference doc generation
+  find_package(Doxygen)
+  if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
+      message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
+      set(CAN_GENERATE_DOC TRUE)
+  else()
+      message(STATUS "Doxygen and Graphviz not found. Disabling support for documentation generation")
+  endif(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
+
+  # FastJet
+  find_package(FASTJET)
+
+  # ZEROMQ
+  find_package(ZeroMQ)
+
+  # General flags -> Should be moved into a configuration file
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+  set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
+
+  # List of modules for which PARfiles are enabled -- use the cache as global scope and clean it
+  set(ALIPARFILES "" CACHE INTERNAL "ALIPARFILES" FORCE)
+
+  # AliRoot modules
+  add_subdirectory(CORRFW)
+  if(ZeroMQ_FOUND)
+    add_subdirectory(EVEANALYSIS)
+  endif(ZeroMQ_FOUND)
+  add_subdirectory(EVENTMIX)
+  add_subdirectory(HLTANALYSIS)
+  add_subdirectory(JETAN)
+  add_subdirectory(OADB)
+  add_subdirectory(TENDER)
+
+  # PWG libraries
+  add_subdirectory(PWG)
+  add_subdirectory(PWGCF)
+  add_subdirectory(PWGGA)
+  add_subdirectory(PWGDQ)
+  add_subdirectory(PWGHF)
+  add_subdirectory(PWGJE)
+  add_subdirectory(PWGLF)
+  add_subdirectory(PWGPP)
+  add_subdirectory(PWGUD)
+
+  # List modules with PARfiles
+  string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
+  message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
+
+endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
