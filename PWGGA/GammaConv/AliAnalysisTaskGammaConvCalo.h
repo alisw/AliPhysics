@@ -57,9 +57,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
-        void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
+		void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 
-	    // Setting the cut lists for the conversion photons
+		// Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
 			fnCuts = nCuts;
 			fEventCutArray = CutArray;
@@ -167,8 +167,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoMotherEtaPtAlpha;			//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
 		TH2F 								**fHistoMotherPi0PtOpenAngle;		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
 		TH2F 								**fHistoMotherEtaPtOpenAngle;		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
-        TH2F                                **fHistoMotherPi0ConvPhotonEtaPhi;  //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
-        TH2F                                **fHistoMotherEtaConvPhotonEtaPhi;  //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
+		TH2F								**fHistoMotherPi0ConvPhotonEtaPhi;	//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
+		TH2F								**fHistoMotherEtaConvPhotonEtaPhi;	//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
 		TH2F								**fHistoMotherInvMassECalib;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
 		TH2F								**fHistoMotherInvMassECalibalpha;	//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster, alpha cut 0.1
 
@@ -273,8 +273,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F								**fHistoTrueClusDalitzMergedPt;					//! array of histos with validated Dalitz decay, more than one decay product in cluster, pt
 		TH1F								**fHistoTrueClusPhotonFromElecMotherPt;			//! array of histos with validated photon from electron, pt
 		TH1F								**fHistoTrueClusShowerPt;						//! array of histos with validated shower, pt
-        TH1F                                **fHistoTrueClusSubLeadingPt;                   //! array of histos with pi0/eta/eta_prime in subleading contribution
-        TH1I                                **fHistoTrueClusNParticles;                     //! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
+		TH1F								**fHistoTrueClusSubLeadingPt;					//! array of histos with pi0/eta/eta_prime in subleading contribution
+		TH1I								**fHistoTrueClusNParticles;						//! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
 		TH1F								**fHistoTrueClusEMNonLeadingPt;					//! array of histos with cluster with largest energy by hadron
 		TH1F								**fHistoTrueNLabelsInClus;						//! array of histos with number of labels in cluster 
 		TH1F								**fHistoTruePrimaryClusGammaPt;					//! array of histos with validated primary cluster, pt
@@ -293,8 +293,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		// event histograms
 		TH1I 								**fHistoNEvents;								//! array of histos with event information
 		TH1I 								**fHistoNGoodESDTracks;							//! array of histos with number of good tracks (2010 Standard track cuts)
+		TH1F								**fHistoVertexZ;									//! array of histos with vertex z distribution for selected events
 		TH1I 								**fHistoNGammaCandidates;						//! array of histos with number of gamma candidates per event
-		TH2F 								**fHistoNGoodESDTracksVsNGammaCanditates;		//! array of histos with number of good tracks vs gamma candidates
+		TH2F 								**fHistoNGoodESDTracksVsNGammaCandidates;		//! array of histos with number of good tracks vs gamma candidates
 		TH1I 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
 		
@@ -321,7 +322,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
-        Bool_t                              fDoTHnSparse;                       // flag for using THnSparses for background estimation
+		Bool_t								fDoTHnSparse;						// flag for using THnSparses for background estimation
 
 		
 	private:
