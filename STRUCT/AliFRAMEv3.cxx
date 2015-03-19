@@ -917,7 +917,7 @@ void AliFRAMEv3::CreateGeometry()
    // half width of the block
    Float_t dyFB = 3.9/2.;
    // lenth upper face
-   Float_t dxFB = 44.1;
+   Float_t dxFB = 46.; // was 44.1
    // lower face
    Float_t dx1FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB1);
    Float_t dx2FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB2);
@@ -940,7 +940,7 @@ void AliFRAMEv3::CreateGeometry()
 					 new TGeoBBox(dyFB/2., dxFB/2.-0.7, 4.), 
 					 kMedAlu);
    TGeoVolume* volTAR12 = new TGeoVolume("BTRD_TAR12", 
-					 new TGeoBBox(dyFB/2.-0.25, dxFB/2., 3.-0.5), 
+					 new TGeoBBox(dyFB/2.-0.25, 45., 3.-0.5), 
 					 kMedAir);
    volTAR11->AddNode(volTAR12,  1, new TGeoTranslation(0.25, 0.,  0.0));
    // clamp (about twice the length of the block), 6 mm thick (read off from a foto)
@@ -956,8 +956,8 @@ void AliFRAMEv3::CreateGeometry()
 					 kMedAir);
 
    TGeoVolume* volTAR15 = new TGeoVolume("BTRD_TAR15", new TGeoBBox(1., 2., 3.), kMedAlu);
-   TGeoVolume* volTAR16 = new TGeoVolume("BTRD_TAR16", new TGeoTubeSeg(0., 0.9, 1.5, 180., 360.), kMedSteel);
-   TGeoVolume* volTAR17 = new TGeoVolume("BTRD_TAR17", new TGeoTubeSeg(0., 0.9, 1.5, 0., 180.), kMedSteel);
+   TGeoVolume* volTAR16 = new TGeoVolume("BTRD_TAR16", new TGeoTubeSeg(0., 0.78, 1.5, 90., 270.), kMedSteel);
+   TGeoVolume* volTAR17 = new TGeoVolume("BTRD_TAR17", new TGeoTubeSeg(0., 0.78, 1.5, -90, 90.), kMedSteel);
    volTAR141->AddNode(volTAR15,  1, new TGeoTranslation(0, 0, 0));
    volTAR141->AddNode(volTAR16,  1, new TGeoTranslation(1., 0, +4.5));
    volTAR141->AddNode(volTAR16,  2, new TGeoTranslation(1., 0, -4.5));
@@ -970,22 +970,22 @@ void AliFRAMEv3::CreateGeometry()
    TGeoVolumeAssembly* asFB2 = new TGeoVolumeAssembly("BTRD_FBAS2");
    asFB1->AddNode(volFB1,   1, gGeoIdentity);
    asFB1->AddNode(volTAR11, 1, new TGeoTranslation(0., 0., -dzFB - 3.));
-   asFB1->AddNode(volTAR13, 1, new TGeoTranslation(-1.36, 0., -dzFB-3.));
-   asFB1->AddNode(volTAR141, 1, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
-   asFB1->AddNode(volTAR141, 2, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+   asFB1->AddNode(volTAR13, 1, new TGeoTranslation(-1.36, 4.5, -dzFB-3.));
+   asFB1->AddNode(volTAR141, 1, new TGeoTranslation(0.,  dxFB-2.+4.5, -dzFB-3.));
+   asFB1->AddNode(volTAR141, 2, new TGeoTranslation(0., -dxFB+2.+4.5, -dzFB-3.));
 
    asFB2->AddNode(volFB1,   2, gGeoIdentity);
    asFB2->AddNode(volTAR11, 2, new TGeoTranslation(0., 0., -dzFB - 3.));
-   asFB2->AddNode(volTAR13, 2, new TGeoTranslation(1.36, 0., -dzFB-3.));
-   asFB2->AddNode(volTAR142, 3, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
-   asFB2->AddNode(volTAR142, 4, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+   asFB2->AddNode(volTAR13, 2, new TGeoTranslation(1.36, 4.5, -dzFB-3.));
+   asFB2->AddNode(volTAR142, 3, new TGeoTranslation(0.,  dxFB-2.+4.5, -dzFB-3.));
+   asFB2->AddNode(volTAR142, 4, new TGeoTranslation(0., -dxFB+2.+4.5, -dzFB-3.));
    //
    // Fixation block outer
    //
    thetFB1 = 20./180. * TMath::Pi();
    thetFB2 = 27./180. * TMath::Pi();
 
-   dxFB = 41.0;
+   dxFB = 42.0;
 
    dx1FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB1);
    dx2FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB2);
@@ -1010,7 +1010,7 @@ void AliFRAMEv3::CreateGeometry()
 					 kMedAir);
    volTAR21->AddNode(volTAR22,  1, new TGeoTranslation(-0.25, 0.,  0.0));
    // tie anchor
-   TGeoVolume* volTAR23 = new TGeoVolume("BTRD_TAR23", new TGeoBBox(0.3, dxFB, 3.), kMedAlu); 
+   TGeoVolume* volTAR23 = new TGeoVolume("BTRD_TAR23", new TGeoBBox(0.3, 40., 3.), kMedAlu); 
 
 
    TGeoVolumeAssembly* asFB3 = new TGeoVolumeAssembly("BTRD_FBAS3");
@@ -1023,12 +1023,12 @@ void AliFRAMEv3::CreateGeometry()
 
    asFB4->AddNode(volFB2,   2, gGeoIdentity);
    asFB4->AddNode(volTAR21, 2, new TGeoTranslation(0., 0., -dzFB - 3.));
-   asFB4->AddNode(volTAR23, 2, new TGeoTranslation(1.36, 0., -dzFB-3.));
-   asFB4->AddNode(volTAR142, 3, new TGeoTranslation(0.,  dxFB-2., -dzFB-3.));
-   asFB4->AddNode(volTAR142, 4, new TGeoTranslation(0., -dxFB+2., -dzFB-3.));
+   asFB4->AddNode(volTAR23, 2, new TGeoTranslation(1.36, 0.5, -dzFB-3.));
+   asFB4->AddNode(volTAR142, 3, new TGeoTranslation(0.,  dxFB-2.+0.5, -dzFB-3.));
+   asFB4->AddNode(volTAR142, 4, new TGeoTranslation(0., -dxFB+2.+0.5, -dzFB-3.));
 
-   Float_t zTA1  = 23.;
-   Float_t yFB1  = 87.;
+   Float_t zTA1  = 21.1;
+   Float_t yFB1  = 87.6;
    Float_t yFB2  = 231.4;
    dx = ((hR - longH/2. + iFrH0 / 2. ) - dext + zTA1) * tan10 -3.9/4.; 
 
