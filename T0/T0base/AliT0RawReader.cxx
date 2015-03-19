@@ -182,7 +182,7 @@ Bool_t  AliT0RawReader::Next()
 	      }
 	    fBunchID=AliBitPacking::UnpackWord(word,4,15);
 	    if(fPrintout)
-	      cout<<" chain "<< ichain<<" header:: BunchID  "<<fBunchID;
+	      cout<<" chain "<< ichain<<" header:: BunchID  "<<fBunchID<<endl;
 	    word = GetNextWord();
 	    //   cout<<" next word "<<word<<endl;
 	    tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
