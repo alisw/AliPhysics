@@ -14,7 +14,7 @@
  **************************************************************************/
 
 #ifndef ALIANALYSISTASKFlowTPCEMCalEP_H
-#define ALIANALYSISTASKFlowTPCEMCalEP_H
+#define ALIANALYSISTASKFlowTPCEMCalEP_H AliPIDResponse.h
 
 class THnSparse;
 class TH2F;
@@ -70,12 +70,12 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetPi0weight(Double_t mcPi0pT,Int_t iCent) const;
   Double_t GetEtaweight(Double_t mcEtapT,Int_t iCent) const;
   Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Int_t iCent) const;
-  Bool_t   IsElectronFromPi0(TParticle *particle, AliStack * stack, Double_t &weight, Int_t iCent);
-  Bool_t   IsElectronFromEta(TParticle *particle, AliStack * stack, Double_t &weight, Int_t iCent);
-  Bool_t   IsElectronFromGamma(TParticle *particle, AliStack * stack, Double_t &weight, Int_t iCent);
-  Bool_t   IsPi0EtaFromHFdecay(TParticle *particle, AliStack* stack);
-  Bool_t   IsPi0EtaFromLMdecay(TParticle *particle, AliStack* stack);
-  Bool_t   IsPrimary(TParticle *particle, AliStack* stack);
+  Bool_t   IsElectronFromPi0(TParticle *particle,  Double_t &weight, Int_t iCent);
+  Bool_t   IsElectronFromEta(TParticle *particle,  Double_t &weight, Int_t iCent);
+  Bool_t   IsElectronFromGamma(TParticle *particle, Double_t &weight, Int_t iCent);
+  Bool_t   IsPi0EtaFromHFdecay(TParticle *particle);
+  Bool_t   IsPi0EtaFromLMdecay(TParticle *particle);
+  Bool_t   IsPrimary(TParticle *particle);
 
  private:
   
@@ -88,6 +88,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   AliPIDResponse        *fpidResponse;          //! PID response
 
   AliMCEvent            *fMC;                   //! MC object
+  AliStack		*fStack;		//! stack
     
   TList              	*fOutputList;		 //! output list
   
@@ -121,6 +122,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH1F		        *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
   TH1F		        *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
   TH1F		        *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
+  TH1F		        *fInclElec[3];   	 //! inclusive electron pt
   
   TH2F                  *fInvmassLS[3];	//! Inv mass of LS (e,e)
   TH2F                  *fInvmassULS[3];	//! Inv mass of ULS (e,e)

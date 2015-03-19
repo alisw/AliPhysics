@@ -167,6 +167,11 @@ private:
     Float_t fCentrality_V0AEq;       //!
     Float_t fCentrality_V0CEq;       //!
     Float_t fCentrality_V0MEq;       //!
+    Float_t fCentrality_V0B;         //!
+    Float_t fCentrality_V0Apartial;  //!
+    Float_t fCentrality_V0Cpartial;  //!
+    Float_t fCentrality_V0S;         //!
+    Float_t fCentrality_V0SB;        //!
     Int_t fRefMultEta5;              //!
     Int_t fRefMultEta8;              //!
     Int_t fRunNumber;                //!
@@ -240,6 +245,11 @@ private:
     Float_t fTreeVariableCentV0MEq;  //!
     Float_t fTreeVariableCentV0AEq;  //!
     Float_t fTreeVariableCentV0CEq;  //!
+    Float_t fTreeVariableCentV0B;  //!
+    Float_t fTreeVariableCentV0Apartial;  //!
+    Float_t fTreeVariableCentV0Cpartial;  //!
+    Float_t fTreeVariableCentV0S;  //!
+    Float_t fTreeVariableCentV0SB;  //!
     Int_t   fTreeVariableRefMultEta8;  //!
     Int_t   fTreeVariableRefMultEta5;  //!
     Int_t   fTreeVariableRunNumber; //! //want to re-quantile per run? here's your ticket
@@ -289,6 +299,11 @@ private:
     Float_t fTreeCascVarCentV0MEq;  //!
     Float_t fTreeCascVarCentV0AEq;  //!
     Float_t fTreeCascVarCentV0CEq;  //!
+    Float_t fTreeCascVarCentV0B;  //!
+    Float_t fTreeCascVarCentV0Apartial;  //!
+    Float_t fTreeCascVarCentV0Cpartial;  //!
+    Float_t fTreeCascVarCentV0S;  //!
+    Float_t fTreeCascVarCentV0SB;  //!
     Int_t fTreeCascVarRefMultEta8;  //!
     Int_t fTreeCascVarRefMultEta5;  //!
     Int_t fTreeCascVarRunNumber;    //! //want to re-quantile per run? here's your ticket
