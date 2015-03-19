@@ -15,6 +15,9 @@
 #
 # To generate a PARfile, if enabled in its CMakeLists.txt, go to the build directory and run:
 #   make BLAHBLAH.par
+#
+# To test a PARfile (see if it builds and loads properly):
+#   make check-BLAHBLAH.par
 
 function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
 
@@ -52,6 +55,12 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
   # Destination PARfile (full path)
   set(PARFILE ${CMAKE_CURRENT_BINARY_DIR}/${PARMODULE}.par)
 
+  # Test macro (full path)
+  set(PARTESTMACRO ${CMAKE_CURRENT_BINARY_DIR}/CheckPar${PARMODULE}.C)
+
+  # Macro sandbox (full path)
+  set(PARTESTDIR ${PARTMP}/checksandbox-${PARMODULE})
+
   # Create Makefile
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/Makefile.in
@@ -71,6 +80,13 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/SETUP.C.in
       ${PARTMP}/SETUP.C
+      @ONLY
+  )
+
+  # Create the PARfile test macro
+  configure_file(
+      ${PROJECT_SOURCE_DIR}/cmake/PARfiles/CheckPar.C.in
+      ${PARTESTMACRO}
       @ONLY
   )
 
@@ -94,6 +110,28 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
 
     COMMENT "Building PAR file ${PARMODULE}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
+  # Target to check if the PARfile works. This uses PROOF Lite with an isolated sandbox in order to
+  # reproduce the actual usage scenario. Note that the environment to run ROOT and to find ALICE
+  # libraries does not need to be set: it is set properly according to the CMake variables
+  add_custom_target("check-${PARMODULE}.par"
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARTESTDIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PARTESTDIR}
+
+    COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Contents of ${PARMODULE}.par"
+    COMMAND ${CMAKE_COMMAND} -E tar tf ${PARFILE}
+
+    COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Enabling ${PARMODULE} from ROOT"
+    COMMAND env LD_LIBRARY_PATH=${ROOT_LIBDIR}:${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH} PATH=${ROOTSYS}/bin:$ENV{PATH} ALICE_ROOT=${CMAKE_INSTALL_PREFIX} root -l -b -q ${PARTESTMACRO}
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARTESTDIR}
+
+    DEPENDS "${PARMODULE}.par"
+    COMMENT "Testing PAR file ${PARMODULE}"
+
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 
   # Install target
