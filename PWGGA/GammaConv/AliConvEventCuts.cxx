@@ -1738,7 +1738,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 	}
 
 	if(rejection == 0) return; // No Rejection
-
+	
 	AliGenCocktailEventHeader *cHeader 	= 0x0;
 	AliAODMCHeader *cHeaderAOD 			= 0x0;
 	Bool_t headerFound 					= kFALSE;
@@ -1861,7 +1861,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 						if(fMCStack){
 							if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 								if (fMCStack->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
-									cout << "produced " << gh->NProduced() << " with box generator" << endl;
+// 									cout << "produced " << gh->NProduced() << " with box generator" << endl;
 									if (gh->NProduced() > 10 && fMCStack->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
 // 										cout << "one of them was a pi0 or eta" <<  endl;
 										fNotRejectedStart[number] = firstindex;
@@ -1935,7 +1935,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 		
 		fGeneratorNames 				= new TString[1];
 		fGeneratorNames[0] 				= "NoCocktailGeneratorFound";
-		SetRejectExtraSignalsCut(0);
+// 		SetRejectExtraSignalsCut(0);
 	}
 	
 }
@@ -1943,6 +1943,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
 
+// 	cout << index << endl;
 	if(index < 0) return 0; // No Particle
 
 	Int_t accepted = 0;
@@ -1952,7 +1953,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
 			return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
 		}
 		for(Int_t i = 0;i<fnHeaders;i++){
+// 			cout << "header " << i << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
 			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
+// 				cout << "accepted" << endl;
 				accepted = 1;
 				if(i == 0) accepted = 2; // MB Header
 			}
