@@ -13,8 +13,11 @@
 #  - dependent libraries: used to generate the rootmap
 #  - extra include paths (optional): passed during compilation
 #
-# To generate a parfile, if enabled in its CMakeLists.txt, go to the build directory and run:
+# To generate a PARfile, if enabled in its CMakeLists.txt, go to the build directory and run:
 #   make BLAHBLAH.par
+#
+# To test a PARfile (see if it builds and loads properly):
+#   make check-BLAHBLAH.par
 
 function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEPS)
 
@@ -40,44 +43,104 @@ function(add_target_parfile PARMODULE PARSOURCES PARHEADERS PARLINKDEF PARLIBDEP
     #message(STATUS "[add_target_parfile] Extra Includes (space-separated): ${PAREXTRAINCLUDES}")
   endif()
 
-  # PARfile output directory (the one we will tar)
-  set(PARDIR ${CMAKE_CURRENT_BINARY_DIR}/PARfiles/${PARMODULE})
+  # PARfile temporary directory
+  set(PARTMP ${CMAKE_CURRENT_BINARY_DIR}/PARfiles)
 
-  # Create base directory for this module's PARfile: this is the directory we will tar
-  # This works as "mkdir -p" (i.e. it's recursive and creates parents)
-  file(MAKE_DIRECTORY ${PARDIR}/PROOF-INF)
+  # PARfile output directory (the one we will tar)
+  set(PARDIR ${PARTMP}/${PARMODULE})
+
+  # PARfile meta directory
+  set(PARMETADIR ${PARTMP}/${PARMODULE}/PROOF-INF)
+
+  # Destination PARfile (full path)
+  set(PARFILE ${CMAKE_CURRENT_BINARY_DIR}/${PARMODULE}.par)
+
+  # Test macro (full path)
+  set(PARTESTMACRO ${CMAKE_CURRENT_BINARY_DIR}/CheckPar${PARMODULE}.C)
+
+  # Macro sandbox (full path)
+  set(PARTESTDIR ${PARTMP}/checksandbox-${PARMODULE})
 
   # Create Makefile
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/Makefile.in
-      ${PARDIR}/Makefile
+      ${PARTMP}/Makefile
       @ONLY
   )
 
   # Create BUILD.sh
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/BUILD.sh.in
-      ${PARDIR}/PROOF-INF/BUILD.sh
+      ${PARTMP}/BUILD.sh
       @ONLY
   )
-  execute_process(COMMAND chmod a+x ${PARDIR}/PROOF-INF/BUILD.sh)
+  execute_process(COMMAND chmod a+x ${PARTMP}/BUILD.sh)
 
   # Create SETUP.C
   configure_file(
       ${PROJECT_SOURCE_DIR}/cmake/PARfiles/SETUP.C.in
-      ${PARDIR}/PROOF-INF/SETUP.C
+      ${PARTMP}/SETUP.C
+      @ONLY
+  )
+
+  # Create the PARfile test macro
+  configure_file(
+      ${PROJECT_SOURCE_DIR}/cmake/PARfiles/CheckPar.C.in
+      ${PARTESTMACRO}
       @ONLY
   )
 
   # Target for creating PARfile (would stop after the first failed COMMAND)
   add_custom_target("${PARMODULE}.par"
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARDIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PARDIR}
+
+    # TODO: cmake -E copy unfortunately does not handle multiple files
     COMMAND rsync --relative ${PARSOURCES} ${PARHEADERS} ${PARLINKDEF} ${PARDIR}/
-    COMMAND tar -C ${PARDIR}/.. -czf ${PARDIR}/../${PARMODULE}.par ${PARMODULE}/
+
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/Makefile ${PARDIR}/Makefile
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/SETUP.C ${PARMETADIR}/SETUP.C
+    COMMAND ${CMAKE_COMMAND} -E copy ${PARTMP}/BUILD.sh ${PARMETADIR}/BUILD.sh
+
+    COMMAND ${CMAKE_COMMAND} -E chdir ${PARTMP}
+            ${CMAKE_COMMAND} -E tar czf ${PARFILE} ${PARMODULE}/
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARDIR}
+
+    COMMENT "Building PAR file ${PARMODULE}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
+  # Target to check if the PARfile works. This uses PROOF Lite with an isolated sandbox in order to
+  # reproduce the actual usage scenario. Note that the environment to run ROOT and to find ALICE
+  # libraries does not need to be set: it is set properly according to the CMake variables
+  add_custom_target("check-${PARMODULE}.par"
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARTESTDIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PARTESTDIR}
+
+    COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Contents of ${PARMODULE}.par"
+    COMMAND ${CMAKE_COMMAND} -E tar tf ${PARFILE}
+
+    COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Enabling ${PARMODULE} from ROOT"
+    COMMAND env
+      LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH}
+      PATH=${ROOTSYS}/bin:$ENV{PATH}
+      ALICE_ROOT=${ALIROOT}
+      ALICE_PHYSICS=${CMAKE_INSTALL_PREFIX}
+      root -l -b -q ${PARTESTMACRO}
+
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PARTESTDIR}
+
+    DEPENDS "${PARMODULE}.par"
+    COMMENT "Testing PAR file ${PARMODULE}"
+
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+
   # Install target
-  install(FILES ${PARDIR}/../${PARMODULE}.par DESTINATION PARfiles OPTIONAL)
+  install(FILES ${PARFILE} DESTINATION PARfiles OPTIONAL)
 
   # Add this module to the list of generated PARfiles
   list(APPEND ALIPARFILES ${PARMODULE})

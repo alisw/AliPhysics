@@ -1,7 +1,6 @@
 // Automatically generated SETUP.C for @PARMODULE@
 
-Int_t SETUP()
-{
+Int_t SETUP() {
   TString buf;
   const char *wd = gSystem->WorkingDirectory();
 
