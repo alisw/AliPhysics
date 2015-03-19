@@ -362,7 +362,7 @@ void AliAnalyseLeadingTrackUE::RemoveWeakDecays(TObjArray* tracks, TObject* mcOb
 }
 
 //-------------------------------------------------------------------
-TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks, Double_t evtPlane)
+TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts, Bool_t speciesOnTracks, Double_t evtPlane, Bool_t onlyCharged)
 {
   // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
   // particleSpecies: -1 all particles are returned
@@ -383,7 +383,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
  
   // Loop over tracks or jets
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
-    AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, (speciesOnTracks) ? particleSpecies : -1);
+    AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, (speciesOnTracks) ? particleSpecies : -1, onlyCharged);
     if (!part) continue;
     
     if (TMath::Abs(evtPlane)<=TMath::Pi()/2) { //evtPlane range: (-pi/2,pi/2)
@@ -418,7 +418,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
       if (hasOwnership)
 	delete part;
       // re-define part as the matched MC particle
-      part = ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies);
+      part = ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies, onlyCharged);
       if (!part)continue;
     }
     
@@ -562,7 +562,7 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
 }
 
 //-------------------------------------------------------------------
-AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries, Int_t particleSpecies)
+AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t onlyCharged)
 {
   // Returns track or MC particle at position "ipart" if passes selection criteria
   // particleSpecies: -1 all particles are returned
@@ -846,7 +846,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	}
   
   // only charged
-  if (!part->Charge())return 0;
+  if (onlyCharged && !part->Charge())return 0;
   
   part->SetUniqueID(fEventCounter * 100000 + ipart);
   return part;

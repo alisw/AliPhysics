@@ -648,12 +648,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
     return;
   }
-  
-  // Get MC primaries
-  // triggers
-  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
-  
+
+  // debug for certain species
   if (fCheckCertainSpecies > 0) {
+    // need to get also neutral particles here
+    TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, -999., kFALSE);
     for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
       AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
       if (!particle)
@@ -662,8 +661,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	continue;
       ((TH2F*) fListOfHistos->FindObject("checkSpecies"))->Fill(particle->Eta(), particle->Pt());
     }
+    delete tmpList;
   }
   
+  // Get MC primaries
+  // triggers
+  TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
   CleanUp(tmpList, mc, skipParticlesAbove);
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
