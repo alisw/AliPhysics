@@ -78,27 +78,42 @@ void makeInputAliAnalysisTaskSEXicPlus2XiPiPi()
   RDHFXicPlus->SetMaxVtxZ(10.);
 
 	//The following cuts are used before object creation
-  RDHFXicPlus->SetProdTrackPtMin(0.2);
+  RDHFXicPlus->SetProdTrackPtMin(1.0);
   RDHFXicPlus->SetProdTrackEtaRange(0.8);
   RDHFXicPlus->SetProdUseAODFilterBit(kTRUE);
   RDHFXicPlus->SetProdMassTolLambda(0.008);
   RDHFXicPlus->SetProdMassTolXi(0.012);
+  RDHFXicPlus->SetProdMassRejOmega(0.000);
   RDHFXicPlus->SetProdRfidMinV0(0.6);
-  RDHFXicPlus->SetProdRfidMaxV0(100.);
-  RDHFXicPlus->SetProdRfidMinXi(0.6);
-  RDHFXicPlus->SetProdRfidMaxXi(100.);
-  RDHFXicPlus->SetProdDcaXiDaughtersMax(100.0);
-  RDHFXicPlus->SetProdDcaV0DaughtersMax(100.0);
-  RDHFXicPlus->SetProdDcaBachToPrimVertexMin(0.00);
-  RDHFXicPlus->SetProdDcaV0ToPrimVertexMin(0.00);
-  RDHFXicPlus->SetProdDcaPosToPrimVertexMin(0.00);
-  RDHFXicPlus->SetProdDcaNegToPrimVertexMin(0.00);
-  RDHFXicPlus->SetProdXiCosineOfPoiningAngleMin(-1.);
-  RDHFXicPlus->SetProdV0CosineOfPoiningAngleXiMin(-1.);
-
+  RDHFXicPlus->SetProdRfidMaxV0(9000.);
+  RDHFXicPlus->SetProdRfidMinXi(1.2);
+  RDHFXicPlus->SetProdRfidMaxXi(9000.);
+  RDHFXicPlus->SetProdCascProperDecayLengthMax(4.9*3.);
+  RDHFXicPlus->SetProdDcaXiDaughtersMax(1.3);
+  RDHFXicPlus->SetProdDcaV0DaughtersMax(1.5);
+  RDHFXicPlus->SetProdDcaBachToPrimVertexMin(0.04);
+  RDHFXicPlus->SetProdDcaV0ToPrimVertexMin(0.06);
+  RDHFXicPlus->SetProdDcaV0PrToPrimVertexMin(0.03);
+  RDHFXicPlus->SetProdDcaV0PiToPrimVertexMin(0.04);
+  RDHFXicPlus->SetProdXiCosineOfPoiningAngleMin(0.97);
+  RDHFXicPlus->SetProdV0CosineOfPoiningAngleXiMin(0.97);
+  RDHFXicPlus->SetProdCascNTPCClustersMin(70.);
   RDHFXicPlus->SetProdLikeSignDcaMax(0.5);
   RDHFXicPlus->SetProdRoughMassTol(0.25);
   RDHFXicPlus->SetProdRoughPtMin(3.0);
+
+  RDHFXicPlus->SetUseCascadePID(kTRUE);
+  AliAODPidHF* pidObjcascpi=new AliAODPidHF();
+  Double_t sigmascascpi[5]={4.,0.,0.,0.,0.};
+  pidObjcascpi->SetSigma(sigmascascpi);
+  pidObjcascpi->SetTPC(kTRUE);
+  RDHFXicPlus->SetPidCascPi(pidObjcascpi);
+
+  AliAODPidHF* pidObjcascpr=new AliAODPidHF();
+  Double_t sigmascascpr[5]={4.,0.,0.,0.,0.};
+  pidObjcascpr->SetSigma(sigmascascpr);
+  pidObjcascpr->SetTPC(kTRUE);
+  RDHFXicPlus->SetPidCascPr(pidObjcascpr);
 
   cout<<"This is the (anal) object I'm going to save:"<<endl;
   RDHFXicPlus->PrintAll();

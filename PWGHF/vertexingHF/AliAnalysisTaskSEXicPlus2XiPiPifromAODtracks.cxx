@@ -129,6 +129,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistonSigmaTOFpi(0),
   fHistoProbPion(0),
   fHistoXiMassvsPtRef(0),
+  fHistoXiMassvsPtRef2(0),
+  fHistoXiMassvsPtRef3(0),
+  fHistoXiMassvsPtRef4(0),
+  fHistoXiMassvsPtRef5(0),
+  fHistoXiMassvsPtRef6(0),
   fHistoPiPtRef(0)
 {
   //
@@ -185,6 +190,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistonSigmaTOFpi(0),
   fHistoProbPion(0),
   fHistoXiMassvsPtRef(0),
+  fHistoXiMassvsPtRef2(0),
+  fHistoXiMassvsPtRef3(0),
+  fHistoXiMassvsPtRef4(0),
+  fHistoXiMassvsPtRef5(0),
+  fHistoXiMassvsPtRef6(0),
   fHistoPiPtRef(0)
 {
   //
@@ -732,6 +742,19 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	fCandidateVariables[55] = -9999;
 	fCandidateVariables[56] = -9999;
 	fCandidateVariables[57] = -9999;
+	fCandidateVariables[65] = -9999;
+	fCandidateVariables[66] = -9999;
+	fCandidateVariables[67] = -9999;
+	fCandidateVariables[68] = -9999;
+	fCandidateVariables[69] = -9999;
+	fCandidateVariables[70] = -9999;
+	fCandidateVariables[71] = -9999;
+	fCandidateVariables[72] = -9999;
+	fCandidateVariables[73] = -9999;
+	fCandidateVariables[74] = -9999;
+	fCandidateVariables[75] = -9999;
+	fCandidateVariables[76] = -9999;
+
 	if(fUseMCInfo){
 		if(mcpart){
 			fCandidateVariables[48] = mcpart->Label();
@@ -758,6 +781,18 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
         fCandidateVariables[55] = mcdaughter1->Pt();
         fCandidateVariables[56] = mcdaughter2->Pt();
         fCandidateVariables[57] = mcdaughterxi->Pt();
+        fCandidateVariables[65] = mcpart->Px();
+        fCandidateVariables[66] = mcpart->Py();
+        fCandidateVariables[67] = mcpart->Pz();
+        fCandidateVariables[68] = mcdaughter1->Px();
+        fCandidateVariables[69] = mcdaughter1->Py();
+        fCandidateVariables[70] = mcdaughter1->Pz();
+        fCandidateVariables[71] = mcdaughter2->Px();
+        fCandidateVariables[72] = mcdaughter2->Py();
+        fCandidateVariables[73] = mcdaughter2->Pz();
+        fCandidateVariables[74] = mcdaughterxi->Px();
+        fCandidateVariables[75] = mcdaughterxi->Py();
+        fCandidateVariables[76] = mcdaughterxi->Pz();
       }
 		}
 	}
@@ -777,6 +812,19 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
     fCandidateVariables[63] = casc->MomNegZ();
   }
   fCandidateVariables[64] = xicobj->BachelorsCosPointingAngle();
+
+  fCandidateVariables[77] = casc->DecayVertexV0X();
+  fCandidateVariables[78] = casc->DecayVertexV0Y();
+  fCandidateVariables[79] = casc->DecayVertexV0Z();
+  fCandidateVariables[80] = casc->DecayVertexXiX();
+  fCandidateVariables[81] = casc->DecayVertexXiY();
+  fCandidateVariables[82] = casc->DecayVertexXiZ();
+  fCandidateVariables[83] = xicobj->GetSecondaryVtx()->GetX();
+  fCandidateVariables[84] = xicobj->GetSecondaryVtx()->GetY();
+  fCandidateVariables[85] = xicobj->GetSecondaryVtx()->GetZ();
+
+	if(fUseMCInfo){
+  }
 
 
 
@@ -830,7 +878,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 65;
+  Int_t nVar = 86;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -908,6 +956,29 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[63]="ProtonPz";
   fCandidateVariableNames[64]="BachelorsCosPAXY";
 
+  fCandidateVariableNames[65]="mcxicpx";
+  fCandidateVariableNames[66]="mcxicpy";
+  fCandidateVariableNames[67]="mcxicpz";
+  fCandidateVariableNames[68]="mcpi1px";
+  fCandidateVariableNames[69]="mcpi1py";
+  fCandidateVariableNames[70]="mcpi1pz";
+  fCandidateVariableNames[71]="mcpi2px";
+  fCandidateVariableNames[72]="mcpi2py";
+  fCandidateVariableNames[73]="mcpi2pz";
+  fCandidateVariableNames[74]="mcxipx";
+  fCandidateVariableNames[75]="mcxipy";
+  fCandidateVariableNames[76]="mcxipz";
+
+  fCandidateVariableNames[77]="LambdaVertX";
+  fCandidateVariableNames[78]="LambdaVertY";
+  fCandidateVariableNames[79]="LambdaVertZ";
+  fCandidateVariableNames[80]="XiVertX";
+  fCandidateVariableNames[81]="XiVertY";
+  fCandidateVariableNames[82]="XiVertZ";
+  fCandidateVariableNames[83]="XicVertX";
+  fCandidateVariableNames[84]="XicVertY";
+  fCandidateVariableNames[85]="XicVertZ";
+
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -962,13 +1033,28 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
 
-  fHistoXiMassvsPtRef = new TH2F("fHistoXiMassvsPtRef","Reference #Xi spectrum",30,1.322-0.03,1.322+0.03,10,0.,10.);
+  Double_t binx[101];
+  for(Int_t ib=0;ib<101;ib++){
+    binx[ib] = 1.322-0.05 + 0.1/100.*(Double_t)ib ;
+  }
+  Double_t biny[21]={0.0,0.60,0.80,0.90,1.00,1.1,1.2,1.3,1.4,1.5,1.7,1.9,2.2,2.6,3.1,3.9,4.9,6.0,7.2,8.5,10.};
+  fHistoXiMassvsPtRef = new TH2F("fHistoXiMassvsPtRef","Reference #Xi spectrum",100,binx,20,biny);
+  fHistoXiMassvsPtRef2 = new TH2F("fHistoXiMassvsPtRef2","Reference #Xi spectrum",100,binx,20,biny);
+  fHistoXiMassvsPtRef3 = new TH2F("fHistoXiMassvsPtRef3","Reference #Xi spectrum",100,binx,20,biny);
+  fHistoXiMassvsPtRef4 = new TH2F("fHistoXiMassvsPtRef4","Reference #Xi spectrum",100,binx,20,biny);
+  fHistoXiMassvsPtRef5 = new TH2F("fHistoXiMassvsPtRef5","Reference #Xi spectrum",100,binx,20,biny);
+  fHistoXiMassvsPtRef6 = new TH2F("fHistoXiMassvsPtRef6","Reference #Xi spectrum",100,binx,20,biny);
   fHistoPiPtRef = new TH1F("fHistoPiPtRef","Reference #pi spectrum",20,0.,10.);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
   fOutput->Add(fHistoXiMassvsPtRef);
+  fOutput->Add(fHistoXiMassvsPtRef2);
+  fOutput->Add(fHistoXiMassvsPtRef3);
+  fOutput->Add(fHistoXiMassvsPtRef4);
+  fOutput->Add(fHistoXiMassvsPtRef5);
+  fOutput->Add(fHistoXiMassvsPtRef6);
   fOutput->Add(fHistoPiPtRef);
 
   return;
@@ -1088,8 +1174,27 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectCascade( const AliVEven
 	seleCascFlags[icasc] = kTRUE;
 	nSeleCasc++;
       }
-      if(fAnalCuts->SingleCascadeCutsRef(casc,primVtx)){
+      if(fAnalCuts->SingleCascadeCutsRef(casc,primVtx))
+      {
+        Double_t rapxi = casc->RapXi();
+        if(rapxi>-1.5&&rapxi<-1.0){
+  fHistoXiMassvsPtRef2->Fill(casc->MassXi(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+        }
+        if(rapxi>-1.0&&rapxi<-0.5){
+  fHistoXiMassvsPtRef3->Fill(casc->MassXi(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+        }
+        if(rapxi>-0.5&&rapxi<0.0){
   fHistoXiMassvsPtRef->Fill(casc->MassXi(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+        }
+        if(rapxi>0.0&&rapxi<0.5){
+  fHistoXiMassvsPtRef4->Fill(casc->MassXi(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+        }
+        if(rapxi>0.5&&rapxi<1.0){
+  fHistoXiMassvsPtRef5->Fill(casc->MassXi(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+        }
+        if(rapxi>1.0&&rapxi<1.5){
+  fHistoXiMassvsPtRef6->Fill(casc->MassXi(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+        }
       }
     }
 }

@@ -51,23 +51,29 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   AliRDHFCuts(name),
   fPIDStrategy(kNSigmaCuts),
   fCombinedPIDThreshold(0.),
+  fUseCascadePID(kFALSE),
+  fPidObjCascPi(0),
+  fPidObjCascPr(0),
   fProdTrackPtMin(0.),
   fProdTrackEtaRange(9999.),
   fProdUseAODFilterBit(kTRUE),
   fProdMassTolLambda(0.010),
   fProdMassTolXi(0.008),
+  fProdMassRejOmega(0.008),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
   fProdRfidMinXi(0.6),
   fProdRfidMaxXi(100.0),
+  fProdCascProperDecayLengthMax(100.0),
   fProdDcaXiDaughtersMax(100.),
   fProdDcaV0DaughtersMax(100.),
   fProdDcaBachToPrimVertexMin(0.),
   fProdDcaV0ToPrimVertexMin(0.),
-  fProdDcaPosToPrimVertexMin(0.),
-  fProdDcaNegToPrimVertexMin(0.),
+  fProdDcaV0PrToPrimVertexMin(0.),
+  fProdDcaV0PiToPrimVertexMin(0.),
   fProdXiCosineOfPoiningAngleMin(-1.),
   fProdV0CosineOfPoiningAngleXiMin(-1.),
+  fProdCascNTPCClustersMin(0.0),
   fProdLikeSignDcaMax(2.0),
   fProdRoughMassTol(0.25),
   fProdRoughPtMin(0.0)
@@ -133,23 +139,29 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   AliRDHFCuts(source),
   fPIDStrategy(source.fPIDStrategy),
   fCombinedPIDThreshold(source.fCombinedPIDThreshold),
+  fUseCascadePID(source.fUseCascadePID),
+  fPidObjCascPi(source.fPidObjCascPi),
+  fPidObjCascPr(source.fPidObjCascPr),
   fProdTrackPtMin(source.fProdTrackPtMin),
   fProdTrackEtaRange(source.fProdTrackEtaRange),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolXi(source.fProdMassTolXi),
+  fProdMassRejOmega(source.fProdMassRejOmega),
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
   fProdRfidMinXi(source.fProdRfidMinXi),
   fProdRfidMaxXi(source.fProdRfidMaxXi),
+  fProdCascProperDecayLengthMax(source.fProdCascProperDecayLengthMax),
   fProdDcaXiDaughtersMax(source.fProdDcaXiDaughtersMax),
   fProdDcaV0DaughtersMax(source.fProdDcaV0DaughtersMax),
   fProdDcaBachToPrimVertexMin(source.fProdDcaBachToPrimVertexMin),
   fProdDcaV0ToPrimVertexMin(source.fProdDcaV0ToPrimVertexMin),
-  fProdDcaPosToPrimVertexMin(source.fProdDcaPosToPrimVertexMin),
-  fProdDcaNegToPrimVertexMin(source.fProdDcaNegToPrimVertexMin),
+  fProdDcaV0PrToPrimVertexMin(source.fProdDcaV0PrToPrimVertexMin),
+  fProdDcaV0PiToPrimVertexMin(source.fProdDcaV0PiToPrimVertexMin),
   fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
   fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
+  fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
   fProdLikeSignDcaMax(source.fProdLikeSignDcaMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin)
@@ -172,23 +184,28 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks &AliRDHFCutsXicPlustoXiPiPifromAODtracks
 
   fPIDStrategy = source.fPIDStrategy;
   fCombinedPIDThreshold = source.fCombinedPIDThreshold;
+  fUseCascadePID = source.fUseCascadePID;
+  fPidObjCascPi = source.fPidObjCascPi;
+  fPidObjCascPr = source.fPidObjCascPr;
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fProdTrackPtMin = source.fProdTrackPtMin;
   fProdTrackEtaRange = source.fProdTrackEtaRange;
   fProdMassTolLambda = source.fProdMassTolLambda;
   fProdMassTolXi = source.fProdMassTolXi;
+  fProdMassRejOmega = source.fProdMassRejOmega;
   fProdRfidMinV0 = source.fProdRfidMinV0;
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
   fProdRfidMinXi = source.fProdRfidMinXi;
-  fProdRfidMaxXi = source.fProdRfidMaxXi;
+  fProdCascProperDecayLengthMax = source.fProdCascProperDecayLengthMax;
   fProdDcaXiDaughtersMax = source.fProdDcaXiDaughtersMax;
   fProdDcaV0DaughtersMax = source.fProdDcaV0DaughtersMax;
   fProdDcaBachToPrimVertexMin = source.fProdDcaBachToPrimVertexMin;
   fProdDcaV0ToPrimVertexMin = source.fProdDcaV0ToPrimVertexMin;
-  fProdDcaPosToPrimVertexMin = source.fProdDcaPosToPrimVertexMin;
-  fProdDcaNegToPrimVertexMin = source.fProdDcaNegToPrimVertexMin;
+  fProdDcaV0PrToPrimVertexMin = source.fProdDcaV0PrToPrimVertexMin;
+  fProdDcaV0PiToPrimVertexMin = source.fProdDcaV0PiToPrimVertexMin;
   fProdXiCosineOfPoiningAngleMin = source.fProdXiCosineOfPoiningAngleMin;
   fProdV0CosineOfPoiningAngleXiMin = source.fProdV0CosineOfPoiningAngleXiMin;
+  fProdCascNTPCClustersMin = source.fProdCascNTPCClustersMin;
   fProdLikeSignDcaMax = source.fProdLikeSignDcaMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
@@ -512,16 +529,29 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade 
   
   if(!ptrack||!ntrack||!btrack) return kFALSE;
 
+  if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+
+
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+  Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
   
   Double_t massLambda = casc->MassLambda();
   Double_t massAntiLambda = casc->MassAntiLambda();
   if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
     return kFALSE;
+
+  Bool_t isparticle = kTRUE;
+  if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
   
   Double_t massXi = casc->MassXi();
   if(TMath::Abs(massXi-mxiPDG)>fProdMassTolXi)
+    return kFALSE;
+
+  Double_t massOmega = casc->MassOmega();
+  if(TMath::Abs(massOmega-momegaPDG)<fProdMassRejOmega)
     return kFALSE;
   
   Double_t lPosXi[3];
@@ -538,6 +568,10 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade 
   if(decayvertV0<fProdRfidMinV0 || decayvertV0>fProdRfidMaxV0) return kFALSE;
   if(decayvertXi<fProdRfidMinXi || decayvertXi>fProdRfidMaxXi) return kFALSE;
 
+  Double_t ptotxi = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)+pow(casc->MomXiZ(),2));
+  Double_t properdl = casc->DecayLengthXi(primvert[0],primvert[1],primvert[2])*mxiPDG/ptotxi;
+  if(properdl>fProdCascProperDecayLengthMax) return kFALSE;
+
 	Double_t lDcaXiDaughters = casc->DcaXiDaughters();
 	Double_t lDcaV0Daughters = casc->DcaV0Daughters();
 	if(lDcaXiDaughters > fProdDcaXiDaughtersMax) return kFALSE;
@@ -549,14 +583,51 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade 
 	Double_t lDcaNegToPrimVertex = casc->DcaNegToPrimVertex();
 	if(lDcaBachToPrimVertex < fProdDcaBachToPrimVertexMin) return kFALSE;
 	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
-	if(lDcaPosToPrimVertex < fProdDcaPosToPrimVertexMin) return kFALSE;
-	if(lDcaNegToPrimVertex < fProdDcaNegToPrimVertexMin) return kFALSE;
+  if(isparticle){
+    if(lDcaPosToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
+    if(lDcaNegToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
+  }else{
+    if(lDcaPosToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
+    if(lDcaNegToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
+  }
 
 	Double_t lXiCosineOfPointingAngle = casc->CosPointingAngleXi(primvert[0],primvert[1],primvert[2]);
 	Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
 
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
+
+  if(fUseCascadePID)
+  {
+    if(fPidObjCascPi->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjCascPi->SetPidResponse(pidResp);
+    }
+    if(fPidObjCascPr->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjCascPr->SetPidResponse(pidResp);
+    }
+    if(isparticle){
+      Int_t isProton=fPidObjCascPr->MakeRawPid(ptrack,4); 
+      Int_t isPion1 =fPidObjCascPi->MakeRawPid(btrack,2); 
+      Int_t isPion2 =fPidObjCascPi->MakeRawPid(ntrack,2); 
+      if(isProton<1) return kFALSE;
+      if(isPion1<1) return kFALSE;
+      if(isPion2<1) return kFALSE;
+    }else{
+      Int_t isProton=fPidObjCascPr->MakeRawPid(ntrack,4); 
+      Int_t isPion1 =fPidObjCascPi->MakeRawPid(btrack,2); 
+      Int_t isPion2 =fPidObjCascPi->MakeRawPid(ptrack,2); 
+      if(isProton<1) return kFALSE;
+      if(isPion1<1) return kFALSE;
+      if(isPion2<1) return kFALSE;
+    }
+  }
+
   
   return kTRUE;
 }
@@ -565,6 +636,7 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCutsRef(AliAODcasca
 {
   //
   //  Single Cascade Cut (without Xi mass selection)
+  //  Kinematical cut is applied to compare with cascade analysis note
   //
 	
   if(!casc) return kFALSE;
@@ -575,13 +647,34 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCutsRef(AliAODcasca
   
   if(!ptrack||!ntrack||!btrack) return kFALSE;
 
+  //Kinematical cut
+  //if(TMath::Abs(ptrack->Eta())>0.8) return kFALSE;
+  //if(TMath::Abs(ntrack->Eta())>0.8) return kFALSE;
+  //if(TMath::Abs(btrack->Eta())>0.8) return kFALSE;
+  //if(casc->RapXi()<-0.5) return kFALSE;
+  //if(casc->RapXi()>0.0) return kFALSE;
+
+  if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+
+  Double_t massXi = casc->MassXi();
+  Double_t massOmega = casc->MassOmega();
+  if(TMath::Abs(massOmega-momegaPDG)<fProdMassRejOmega)
+    return kFALSE;
+
   
   Double_t massLambda = casc->MassLambda();
   Double_t massAntiLambda = casc->MassAntiLambda();
   if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
     return kFALSE;
+
+  Bool_t isparticle = kTRUE;
+  if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
   
   Double_t lPosXi[3];
   lPosXi[0] = casc->DecayVertexXiX();
@@ -597,6 +690,10 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCutsRef(AliAODcasca
   if(decayvertV0<fProdRfidMinV0 || decayvertV0>fProdRfidMaxV0) return kFALSE;
   if(decayvertXi<fProdRfidMinXi || decayvertXi>fProdRfidMaxXi) return kFALSE;
 
+  Double_t ptotxi = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)+pow(casc->MomXiZ(),2));
+  Double_t properdl = casc->DecayLengthXi(primvert[0],primvert[1],primvert[2])*mxiPDG/ptotxi;
+  if(properdl>fProdCascProperDecayLengthMax) return kFALSE;
+
 	Double_t lDcaXiDaughters = casc->DcaXiDaughters();
 	Double_t lDcaV0Daughters = casc->DcaV0Daughters();
 	if(lDcaXiDaughters > fProdDcaXiDaughtersMax) return kFALSE;
@@ -608,14 +705,50 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCutsRef(AliAODcasca
 	Double_t lDcaNegToPrimVertex = casc->DcaNegToPrimVertex();
 	if(lDcaBachToPrimVertex < fProdDcaBachToPrimVertexMin) return kFALSE;
 	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
-	if(lDcaPosToPrimVertex < fProdDcaPosToPrimVertexMin) return kFALSE;
-	if(lDcaNegToPrimVertex < fProdDcaNegToPrimVertexMin) return kFALSE;
+  if(isparticle){
+    if(lDcaPosToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
+    if(lDcaNegToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
+  }else{
+    if(lDcaPosToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
+    if(lDcaNegToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
+  }
 
 	Double_t lXiCosineOfPointingAngle = casc->CosPointingAngleXi(primvert[0],primvert[1],primvert[2]);
 	Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
 
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
+
+  if(fUseCascadePID)
+  {
+    if(fPidObjCascPi->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjCascPi->SetPidResponse(pidResp);
+    }
+    if(fPidObjCascPr->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjCascPr->SetPidResponse(pidResp);
+    }
+    if(isparticle){
+      Int_t isProton=fPidObjCascPr->MakeRawPid(ptrack,4); 
+      Int_t isPion1 =fPidObjCascPi->MakeRawPid(btrack,2); 
+      Int_t isPion2 =fPidObjCascPi->MakeRawPid(ntrack,2); 
+      if(isProton<1) return kFALSE;
+      if(isPion1<1) return kFALSE;
+      if(isPion2<1) return kFALSE;
+    }else{
+      Int_t isProton=fPidObjCascPr->MakeRawPid(ntrack,4); 
+      Int_t isPion1 =fPidObjCascPi->MakeRawPid(btrack,2); 
+      Int_t isPion2 =fPidObjCascPi->MakeRawPid(ptrack,2); 
+      if(isProton<1) return kFALSE;
+      if(isPion1<1) return kFALSE;
+      if(isPion2<1) return kFALSE;
+    }
+  }
   
   return kTRUE;
 }
