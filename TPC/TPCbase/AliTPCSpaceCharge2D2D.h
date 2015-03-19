@@ -1,20 +1,19 @@
-#ifndef ALITPCSPACECHARGE3D_H
-#define ALITPCSPACECHARGE3D_H
+#ifndef ALITPCSPACECHARGE2D2D_H
+#define ALITPCSPACECHARGE2D2D_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/// \class AliTPCSpaceCharge3D
-/// \author Stefan Rossegger, Marian Ivanov
+/// \class AliTPCSpaceCharge2D2D
+/// \author Stefan Rossegger
 
 #include "AliTPCCorrection.h"
 class TH3F;
-class TH3;
 
-class AliTPCSpaceCharge3D : public AliTPCCorrection {
+class AliTPCSpaceCharge2D2D : public AliTPCCorrection {
 public:
-  AliTPCSpaceCharge3D();
-  virtual ~AliTPCSpaceCharge3D();
+  AliTPCSpaceCharge2D2D();
+  virtual ~AliTPCSpaceCharge2D2D();
 
   // initialization and update functions
   virtual void Init();
@@ -34,30 +33,23 @@ public:
   void SetCorrectionFactor(Float_t correctionFactor) {fCorrectionFactor=correctionFactor;}
   Float_t GetCorrectionFactor() const {return fCorrectionFactor;}
 
+  void  SetSCDataFileName(TString fname);
+  const char* GetSCDataFileName() { return fSCDataFileName.Data(); }
+
   void InitSpaceCharge3DDistortion();       // faster model and more accurate ;-)
   void InitSpaceCharge3DDistortionCourse(); // real 3D but not accurate enough
   void ForceInitSpaceCharge3DDistortion() { fInitLookUp=kFALSE; InitSpaceCharge3DDistortion(); }
 
-  void InitSpaceCharge3DPoisson     (Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations);
-  void ForceInitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations)
-                                    { fInitLookUp=kFALSE; InitSpaceCharge3DPoisson(kRows,kColumns,kPhiSlices,kIterations); }
-  Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z);
-  TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100);
-  TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100);
+  Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode=0);
+  TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100, Int_t mode=0);
+  TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100, Int_t mode=0);
 
 
   void WriteChargeDistributionToFile(const char* fname = "SC-Alice.root");
 
   virtual void Print(const Option_t* option="") const;
-  // MI - Add the "real" 3D histogram as an optional input (26.06.2013)
-  //
-  void    SetInputSpaceCharge(TH3 * hisSpaceCharge3D, Double_t norm);
-  void    SetInputSpaceCharge3D(TH3 * hisSpaceCharge3D){SetInputSpaceCharge(hisSpaceCharge3D, 1);}
 
-  const TH3 *   GetInputSpaceCharge3D(){return fSpaceChargeHistogram3D;}       // MI add
-  const TH2 *   GetInputSpaceChargeRPhi(){return fSpaceChargeHistogramRPhi;}       // MI add
-  const TH2 *   GetInputSpaceChargeRZ(){return fSpaceChargeHistogramRZ;}       // MI add
-
+protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:
@@ -67,8 +59,8 @@ private:
   enum {kNPhiSlices= 144 }; // the maximum of phi-slices so far = (8 per sector)
   enum {kNColumns= 130 };   // the maximum on column-slices so  ~ 2cm slicing
 
-  AliTPCSpaceCharge3D(const AliTPCSpaceCharge3D &);               // not implemented
-  AliTPCSpaceCharge3D &operator=(const AliTPCSpaceCharge3D &);    // not implemented
+  AliTPCSpaceCharge2D2D(const AliTPCSpaceCharge2D2D &);               // not implemented
+  AliTPCSpaceCharge2D2D &operator=(const AliTPCSpaceCharge2D2D &);    // not implemented
 
   Float_t fC0; ///< coefficient C0                 (compare Jim Thomas's notes for definitions)
   Float_t fC1; ///< coefficient C1                 (compare Jim Thomas's notes for definitions)
@@ -89,14 +81,12 @@ private:
 
 
   TMatrixF *fSCdensityDistribution[kNPhi]; ///< 3D space charge distribution
-  TMatrixD *fSCdensityInRZ;              ///< (r,z) space charge distribution
-  TMatrixD *fSCdensityInRPhiA;           ///< (r,phi) space charge distribution
-  TMatrixD *fSCdensityInRPhiC;           ///< (r,phi) space charge distribution
-  TH3 *    fSpaceChargeHistogram3D;      ///< Histogram with the input space charge histogram - used as an optional input
-  TH2 *    fSpaceChargeHistogramRPhi;    ///< Histogram with the input space charge histogram - used as an optional input
-  TH2 *    fSpaceChargeHistogramRZ;      ///< Histogram with the input space charge histogram - used as an optional input
+  TMatrixD *fSCdensityInRZ;        ///< (r,z) space charge distribution
+  TMatrixD *fSCdensityInRPhiA;     ///< (r,phi) space charge distribution
+  TMatrixD *fSCdensityInRPhiC;     ///< (r,phi) space charge distribution
+
   /// \cond CLASSIMP
-  ClassDef(AliTPCSpaceCharge3D,2);
+  ClassDef(AliTPCSpaceCharge2D2D,1);
   /// \endcond
 };
 
