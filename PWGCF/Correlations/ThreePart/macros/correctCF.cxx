@@ -474,7 +474,7 @@ void removeconstant(TH1D * hist, Double_t plateau, Double_t erroronit){
   }
 }
 
-void fitwith(TDirectory * dir, const char* type, TH2D * histo){
+void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit){
   //Fit the hist with the method specified in type.
   //Types: fitfunc/rebin:
   //Fitfunc: fgauspol1 , fgauspol2 , fgauspol0
@@ -665,8 +665,8 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo){
     deta12ss->Write(Form("%sflatg_%i_first",deta12ss->GetName(),dphi));
     fitbg->FixParameter(1,0.0);
 //     if(3.0*fitsig->GetParameter(2)<1.0) cout << fitsig->GetParameter(2);
-    if(3.0*fitsig->GetParameter(2)<1.4)gEtasigRange = 3.0*fitsig->GetParameter(2);//set the range to 3*/sigma
-    else gEtasigRange = 1.4;
+    if(3.0*fitsig->GetParameter(2)<etalimit)gEtasigRange = 3.0*fitsig->GetParameter(2);//set the range to 3*/sigma
+    else gEtasigRange = etalimit;
     
     if(fitsig->GetParameter(0)<1.0E-6) gEtasigRange = 0.5;//if there is no peak, most of it.
     TFitResultPtr bkgresult = deta12ss->Fit(fitbg,"SQ","",-gkEtaFitRange,gkEtaFitRange);
@@ -680,14 +680,8 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo){
     if(dynamic_cast<TObjString*>(types->At(0))->GetString().CompareTo("fgauspol2")==0){fitsig->FixParameter(5,fitbg->GetParameter(3));rembg->SetParameter(2,fitbg->GetParameter(3));}
     
     fillwithbinnr(hist,deta12ssbinc,dphi);
-//     deta12ssbinc->Add(rembg,-1.0);
     Double_t ErrBg = 0.0;
     if(fitbg->GetNDF()!=0)ErrBg= fitbg->GetParError(0)*fitbg->GetChisquare()/fitbg->GetNDF();
-//     for(int i=1;i<deta12ssbinc->GetNbinsX();i++){
-//       deta12ssbinc->SetBinError(i,TMath::Sqrt(deta12ssbinc->GetBinError(i)*deta12ssbinc->GetBinError(i)+ErrBg*ErrBg));
-//     }
-
-//     deta12ssbinc->ResetStats();
     removeconstant(deta12ssbinc,-1.0*fitbg->GetParameter(0),ErrBg);
     
     Double_t binerr;
@@ -746,7 +740,7 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo){
 
 
 
-void extractbinyield(TDirectory* dir, TDirectory* yielddir){
+void extractbinyield(TDirectory* dir, TDirectory* yielddir, Double_t etalimit){
   if(!dir||!yielddir)return;
   TDirectory * bindir = resultsdirectory(yielddir,"original_binning");
   TDirectory * binrebindir = resultsdirectory(yielddir,"Rebinned_3_to_1");
@@ -763,8 +757,8 @@ void extractbinyield(TDirectory* dir, TDirectory* yielddir){
   else return;
   yielddir->cd();
 
-  fitwith(bindir,"fgauspol0/1",dphideta12ss);
-  fitwith(binrebindir,"fgauspol0/3",dphideta12ss);
+  fitwith(bindir,"fgauspol0/1",dphideta12ss,etalimit);
+  fitwith(binrebindir,"fgauspol0/3",dphideta12ss,etalimit);
 //   fitwith(bindir,"fgauspol1/1",dphideta12ss);
 //   fitwith(binrebindir,"fgauspol1/3",dphideta12ss);
   //  gkEtaFitRange = 1.6;
@@ -3685,7 +3679,31 @@ void ScanCorrections(const char* options)
   rfile->Close();
 }
 
-void yield(){
+void yield(const char* options){
+  bool ispp = false;
+  bool isPbPb = false;
+  TString delimiter(" ");
+  TStringToken token(options, delimiter);
+  while (token.NextToken()) {
+    TString argument=token;
+    if (argument.CompareTo("-h")==0 ||argument.CompareTo("--help")==0) {
+      cout<<Form(" options:"
+		    "\n\t  pp   - uses pp fitting ranges to substract the correlated background."
+		    "\n\t  PbPb     - uses PbPb fitting ranges to substract the correlated background."
+		    )<<endl;
+      return;
+      }
+    if(argument.CompareTo("pp")==0){
+      ispp = true;
+      isPbPb = false;
+      
+    }
+    if(argument.CompareTo("PbPb")==0){
+      isPbPb = true;
+      ispp = false;
+   }
+  }
+  if(!(ispp||isPbPb))return;
   TFile * rfile = TFile::Open("results.root","UPDATE");
   TObjArray * dirarray = new TObjArray();
   TObjArray * yieldarray = new TObjArray();
@@ -3732,12 +3750,15 @@ void yield(){
 //     if(tmp){ dirarray->Add(tmp);
 // 	     yieldarray->Add(resultsdirectory(folderdir->GetDirectory("Collected"),"yield"));
 //     }
+    Double_t etalimit = 0.0;
+    if(ispp) etalimit = 1.4;
+    if(isPbPb) etalimit = 1.0;
     TDirectory * dir;
     TDirectory * yielddir;
     for(int i=0;i<dirarray->GetEntriesFast();i++){
       dir = dynamic_cast<TDirectory*>(dirarray->At(i));
       yielddir = dynamic_cast<TDirectory*>(yieldarray->At(i));
-      extractbinyield(dir,yielddir);
+      extractbinyield(dir,yielddir,etalimit);
     }
   }
 }
