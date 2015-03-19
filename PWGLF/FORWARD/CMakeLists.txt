@@ -275,6 +275,7 @@ install ( FILES analysis2/AddTaskCentraldNdeta.C
 		analysis2/ForwardAODConfig.C
 		analysis2/CentralAODConfig.C
 		analysis2/dNdetaConfig.C
+		analysis2/elossFitConfig.C
                 analysis2/MakeAOD.C
 		analysis2/MakedNdeta.C
                 analysis2/MakeELossFits.C
