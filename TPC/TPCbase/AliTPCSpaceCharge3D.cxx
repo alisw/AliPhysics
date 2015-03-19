@@ -1520,7 +1520,7 @@ void AliTPCSpaceCharge3D::Print(const Option_t* option) const {
 
 
 void AliTPCSpaceCharge3D::InitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices,
-                                                   Int_t kIterations){
+                                                   Int_t kIterations, IntegrationType integrationType/*=kIntegral*/){
   /// MI extension  - calculate E field
   /// - inspired by  AliTPCROCVoltError3D::InitROCVoltError3D()
   /// Initialization of the Lookup table which contains the solutions of the
@@ -1620,7 +1620,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, 
       PoissonRelaxation3D( arrayofArrayV, arrayofCharge,
 			   arrayofEroverEz, arrayofEphioverEz, arrayofDeltaEz,
 			   kRows, kColumns, kPhiSlices, gridSizePhi, kIterations,
-                           symmetry) ;
+                           symmetry, kTRUE,integrationType ) ;
 
       //Interpolate results onto a custom grid which is used just for these calculations.
       Double_t  r, phi, z ;
