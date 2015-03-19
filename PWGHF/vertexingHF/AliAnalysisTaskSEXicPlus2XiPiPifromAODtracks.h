@@ -128,9 +128,14 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistoProbPion;                     //! Probability to be pion
 
   TH2F*  fHistoXiMassvsPtRef;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef2;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef3;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef4;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef5;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef6;                    //! Reference Xi mass spectra 
   TH1F*  fHistoPiPtRef;                      //! Reference pi spectra 
   
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,4); // class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,5); // class for Xic->Xipipi
 };
 #endif
 
