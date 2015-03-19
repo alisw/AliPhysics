@@ -917,7 +917,7 @@ void AliFRAMEv3::CreateGeometry()
    // half width of the block
    Float_t dyFB = 3.9/2.;
    // lenth upper face
-   Float_t dxFB = 46.; // was 44.1
+   Float_t dxFB = 46.; 
    // lower face
    Float_t dx1FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB1);
    Float_t dx2FB = dxFB/2. - 2. * dzFB * TMath::Tan(thetFB2);
@@ -940,12 +940,12 @@ void AliFRAMEv3::CreateGeometry()
 					 new TGeoBBox(dyFB/2., dxFB/2.-0.7, 4.), 
 					 kMedAlu);
    TGeoVolume* volTAR12 = new TGeoVolume("BTRD_TAR12", 
-					 new TGeoBBox(dyFB/2.-0.25, 45., 3.-0.5), 
+					 new TGeoBBox(dyFB/2.-0.25, dxFB/2., 3.-0.5), 
 					 kMedAir);
    volTAR11->AddNode(volTAR12,  1, new TGeoTranslation(0.25, 0.,  0.0));
    // clamp (about twice the length of the block), 6 mm thick (read off from a foto)
    TGeoVolume* volTAR13 = new TGeoVolume("BTRD_TAR13", 
-					 new TGeoBBox(0.3, dxFB, 3.), 
+					 new TGeoBBox(0.3, 45., 3.), 
 					 kMedAlu);
    // square block with screw r = 0.9 cm
    TGeoVolume* volTAR141 = new TGeoVolume("BTRD_TAR141", 
