@@ -7,6 +7,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class  AliHFEtools+;
+#pragma link C++ class  AliHFEparamBag+;
 #pragma link C++ class  AliHFEcollection+;
 #pragma link C++ class  AliHFEvarManager+;
 #pragma link C++ class  AliHFEvarManager::AliHFEvariable+;
