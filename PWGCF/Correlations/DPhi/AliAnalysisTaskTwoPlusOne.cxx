@@ -195,7 +195,38 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
       }
       
-      centrality = collGeometry->ImpactParameter();
+      double impact_parameter = collGeometry->ImpactParameter();
+      //put centrality on the middle of the bin
+      if(impact_parameter<1.60)
+	centrality = 0.5;
+      else if(impact_parameter<2.27)
+	centrality = 1.5;
+      else if(impact_parameter<2.79)
+	centrality = 2.5;
+      else if(impact_parameter<3.22)
+	centrality = 3.5;
+      else if(impact_parameter<3.60)
+	centrality = 4.5;
+      else if(impact_parameter<5.09)
+	centrality = 7.5;
+      else if(impact_parameter<7.20)
+	centrality = 15;
+      else if(impact_parameter<8.83)
+	centrality = 25;
+      else if(impact_parameter<10.20)
+	centrality = 35;
+      else if(impact_parameter<11.40)
+	centrality = 45;
+      else if(impact_parameter<12.49)
+	centrality = 55;
+      else if(impact_parameter<13.49)
+	centrality = 65;
+      else if(impact_parameter<14.44)
+	centrality = 75;
+      else if(impact_parameter<15.46)
+	centrality = 85;
+      else 
+	centrality = 95;
   }
 
   // Get MC primaries
