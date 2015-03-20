@@ -1,0 +1,2838 @@
+/**
+ * @file   GraphSysErr.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Aug 14 13:51:05 2014
+ * 
+ * @brief  An (X,Y) graph with configurable errors 
+ * 
+ * Copyright (c) 2014 Christian Holm Christensen. 
+ *
+ * Licensed under the LGPL-3 
+ */
+# include <TNamed.h>
+# include <TAttMarker.h>
+# include <TAttLine.h>
+# include <TAttFill.h>
+#ifndef GraphSysErr_C
+# define GraphSysErr_C
+# include <TList.h>
+# ifndef __CINT__
+#  include <TStyle.h>
+#  include <TGraph.h>
+#  include <TGraphErrors.h>
+#  include <TGraphAsymmErrors.h>
+#  include <TMultiGraph.h>
+#  include <TH1.h>
+#  include <TMath.h>
+#  include <TFitResultPtr.h>
+#  include <TF1.h>
+#  include <TROOT.h>
+#  include <TSystem.h>
+#  include <TDatime.h>
+#  include <TList.h>
+#  include <TBrowser.h>
+#  include <iostream>
+#  include <iomanip>
+#  include <fstream>
+// #  define TOKEN(C,I) static_cast<TObjString*>(C->At(I))->String()
+# else 
+# include <iosfwd>
+class TGraph;
+class TGraphErrors;
+class TGraphAsymmErrors;
+class TMultiGraph;
+class TFitResultPtr;
+class TF1;
+class TList;
+class TBrowser;
+# endif
+
+
+/**
+ * This class defines an (X,Y) with any number of error sources.  
+ * 
+ * Sources that can be specified are 
+ *
+ *   1 set Statistical errors 
+ *   N sets of common systematic errors 
+ *   M sets of point-to-point systematic errors. 
+ *
+ * Systematic errors can be defined to relative to the point value or
+ * absolute numbers.
+ *
+ * There are various options for drawing this data set (see Draw).  A
+ * function can also be fitted to the data set, talking various kinds
+ * of errors into consideration (see Fit).  The data set can be export
+ * to a format more or less acceptable by the Durham database (see
+ * Export), and one can import data sets from Durham database input
+ * formatted files (see Import)
+ *
+ */
+class GraphSysErr : public TNamed, public TAttMarker, 
+		    public TAttLine, public TAttFill 
+{
+public:
+  enum { 
+    kDraw    = 0x1,
+    kImport  = 0x2, 
+    kExport  = 0x4, 
+    kVerbose = 0  // Set to OR of above to enable verbose/debug output 
+  };
+  /** A short-hand type definition */
+  typedef TGraphAsymmErrors Graph;
+  /** 
+   * Drawing options.  We re-encode them here as distinct enums. 
+   */
+  enum EDrawOption_t { 
+    kNormal = 0, //     - Line with ticks
+    kNoTick = 1, // Z0  - Line with no ticks 
+    kArrow  = 2, // >0  - Linw with arrows 
+    kRect   = 3, // 20  - Rectangle w/fill
+    kBox    = 4, // 50  - Rectangle w/fill & line 
+    kFill   = 5, // 30  - Filled area 
+    kCurve  = 6, // 40  - Filled smoothed area 
+    kHat    = 7, // []0 - Hats 
+    kBar    = 8, // ||0 - A bar 
+    kNone   = 9  // XP  - No errors
+  };
+  /** 
+   * @{ 
+   * @name Allocation, dealloction, copy, and assignment 
+   */
+  /** 
+   * Default CTOR - use only for I/O
+   */
+  GraphSysErr() 
+    : TNamed(), 
+      TAttMarker(1,20,1), 
+      TAttLine(1,1,1),
+      TAttFill(0,0),
+      fPoint2Point(), 
+      fCommon(), 
+      fData(0), 
+      fDrawn(0),
+      fCounter(0),
+      fSumFill(0,0),
+      fSumLine(1,1,1),
+      fSumTitle(),
+      fSumOption(0),
+      fDataOption(0), 
+      fXTitle(""),
+      fYTitle(""),
+      fMap(0),
+      fStatRelative(false)
+  {
+    
+  }
+  /** 
+   * CTOR with number of points
+   * 
+   * @param n Number of points to pre-allocate 
+   */
+  GraphSysErr(Int_t n) 
+    : TNamed("sysErrGraph","Data"), 
+      TAttMarker(1,20,1), 
+      TAttLine(1,1,1),
+      TAttFill(0,0),
+      fPoint2Point(), 
+      fCommon(), 
+      fData(0), 
+      fDrawn(0),
+      fCounter(0),
+      fSumFill(0,0),
+      fSumLine(1,1,1),
+      fSumTitle("Errors"),
+      fSumOption(0),
+      fDataOption(0), 
+      fXTitle(""),
+      fYTitle(""),
+      fMap(0),
+      fStatRelative(false)
+  {
+    fPoint2Point.SetName("point2point");
+    fPoint2Point.SetOwner();
+    fCommon.SetName("common");
+    fCommon.SetOwner();
+    MakeDataGraph(n);
+  }
+  /** 
+   * Constructor with name, title, and optional pre-allocated size 
+   * 
+   * @param name   Name
+   * @param title  Title 
+   * @param n      Pre-allocated points
+   */
+  GraphSysErr(const char* name, const char* title, Int_t n=0)
+    : TNamed(name,title), 
+      TAttMarker(1,20,1), 
+      TAttLine(1,1,1),
+      TAttFill(0,0),
+      fPoint2Point(), 
+      fCommon(), 
+      fData(0), 
+      fDrawn(0),
+      fCounter(0),
+      fSumFill(0,0),
+      fSumLine(1,1,1),
+      fSumTitle("Errors"),
+      fSumOption(0),
+      fDataOption(0), 
+      fXTitle(""),
+      fYTitle(""),
+      fMap(0),
+      fStatRelative(false)
+  {
+    fPoint2Point.SetOwner();
+    fCommon.SetOwner();
+    fCommon.SetName("common");
+    fPoint2Point("point2point");
+    MakeDataGraph(n);
+  }
+  /** 
+   * Copy CTOR 
+   * 
+   * @param other Object to copy from 
+   */
+  GraphSysErr(const GraphSysErr& other) 
+    : TNamed(other), 
+      TAttMarker(other), 
+      TAttLine(other),
+      TAttFill(other),
+      fPoint2Point(), 
+      fCommon(), 
+      fData(0),
+      fDrawn(0),
+      fCounter(0),
+      fSumFill(other.fSumFill),
+      fSumLine(other.fSumLine),
+      fSumTitle(other.fSumTitle),
+      fSumOption(other.fSumOption),
+      fDataOption(other.fDataOption), 
+      fXTitle(other.fXTitle),
+      fYTitle(other.fYTitle),
+      fMap(0),
+      fStatRelative(false)
+  {
+    if (other.fData) 
+      fData = static_cast<Graph*>(other.fData->Clone());
+ 
+    fPoint2Point.SetOwner();
+    fCommon.SetOwner();
+    fCommon.SetName(other.GetName());
+    fPoint2Point(other.GetName());
+
+    TIter nextC(&other.fCommon);
+    HolderCommon* common = 0;
+    while ((common = static_cast<HolderCommon*>(nextC()))) 
+      fCommon.Add(new HolderCommon(*common));
+
+    TIter nextP(&other.fPoint2Point);
+    HolderP2P* p2p = 0;
+    while ((p2p = static_cast<HolderP2P*>(nextP()))) 
+      fPoint2Point.Add(new HolderP2P(*p2p));    
+
+    if (other.fMap) fMap = static_cast<TList*>(other.fMap->Clone());
+  }
+  /**
+   * DTOR
+   */
+  virtual ~GraphSysErr()
+  {
+    fPoint2Point.Delete();
+    fCommon.Delete();
+    if (fData)  delete fData;
+    if (fDrawn) delete fDrawn;
+    if (fMap)   delete fMap;
+  }
+  /** 
+   * Assignment operator
+   * 
+   * @param other Object to copy from 
+   * 
+   * @return reference to this 
+   */
+  GraphSysErr& operator=(const GraphSysErr& other) 
+  {
+    if (&other == this) return *this;
+    
+    other.TNamed::Copy(*this);
+    other.TAttMarker::Copy(*this);
+    other.TAttLine::Copy(*this);
+    other.TAttFill::Copy(*this);
+    fPoint2Point.Clear();
+    fCommon.Clear();
+    
+    if (fData) delete fData;
+    fData = 0;
+    if (other.fData)
+      fData = static_cast<Graph*>(other.fData->Clone());
+
+    if (fDrawn) { delete fDrawn; fDrawn = 0; }
+
+    fCounter = other.fCounter;
+
+    other.fSumFill.Copy(fSumFill);
+    other.fSumLine.Copy(fSumLine);
+    fSumTitle     = other.fSumTitle;
+    fXTitle       = other.fXTitle;
+    fYTitle       = other.fYTitle;
+    fStatRelative = other.fStatRelative;
+
+    TIter nextC(&other.fCommon);
+    HolderCommon* common = 0;
+    while ((common = static_cast<HolderCommon*>(nextC()))) 
+      fCommon.Add(new HolderCommon(*common));
+
+    TIter nextP(&other.fPoint2Point);
+    HolderP2P* p2p = 0;
+    while ((p2p = static_cast<HolderP2P*>(nextP()))) 
+      fPoint2Point.Add(new HolderP2P(*p2p));    
+
+    if (fMap) delete fMap;
+    fMap = 0;
+    if (other.fMap) fMap = static_cast<TList*>(other.fMap->Clone());
+
+    return *this;
+  }
+  /* @} */
+
+  /** 
+   * @{ 
+   * @name TObject functions 
+   */
+  /** 
+   * List the content 
+   * 
+   * @param option option (not used)
+   */
+  virtual void ls(Option_t* option) const
+  {
+    std::cout << GetName() << ": " << GetTitle() << std::endl;
+    gROOT->IncreaseDirLevel();
+
+    if (fMap) {
+      gROOT->IndentLevel();
+      std::cout << "Key/value pairs: " << std::endl;
+      gROOT->IncreaseDirLevel();
+      fMap->ls(option);
+      gROOT->DecreaseDirLevel();
+    }
+
+    gROOT->IndentLevel();
+    std::cout << "Commons: " << std::endl;
+    gROOT->IncreaseDirLevel();
+    fCommon.ls(option);
+    gROOT->DecreaseDirLevel();
+
+    gROOT->IndentLevel();
+    std::cout <<  "Point-to-point: " << std::endl;
+    gROOT->IncreaseDirLevel();
+    fPoint2Point.ls(option);
+    gROOT->DecreaseDirLevel();
+
+    gROOT->DecreaseDirLevel();
+  }
+  /** 
+   * Print this. 
+   * 
+   * @param option not used
+   */
+  virtual void Print(Option_t* option) const //*MENU*
+  {
+    ls(option);
+  }
+  /** 
+   * Say that this should be shown as a folder
+   * 
+   * @return true
+   */
+  virtual Bool_t IsFolder() const { return true; }
+  /** 
+   * Browse this object 
+   * 
+   * @param b Browser to use 
+   */
+  virtual void Browse(TBrowser* b)
+  {
+    if (fMap) b->Add(fMap);
+    b->Add(&fCommon);
+    b->Add(&fPoint2Point);
+    if (fData)  b->Add(fData);
+    if (fDrawn) b->Add(fDrawn);
+  }
+  /* @} */
+  /** 
+   * @{ 
+   * @name Drawing/Fitting 
+   */
+  /** 
+   * Draw this data 
+   *
+   * Options: 
+   *
+   *   - STACK/COMBINED    Either errors are stacked or combined 
+   *   - QUADRATIC/DIRECT  Add errors in quadrature or direct 
+   *   - STAT              Add statistical errors to systematics 
+   *   - COMMON            Add common errors to points
+   *   - SPLIT             Without COMMON - do not stack common errors
+   *   - MIN               Without COMMON - put common near minimum
+   *   - MAX               Without COMMON - put common near maximum
+   *   - WEST/EAST         Without COMMON - put common west/east
+   *   - AXIS              Paint axis 
+   *
+   * If option COMMON isn't given and neither MIN nor MAX is not
+   * given, then the common errors are displayed near the middle of
+   * the Y range
+   *
+   * some examples are shown in the image below
+   *
+   * @image html DrawStyles.png
+   *
+   */
+  void Draw(Option_t* option="")
+  {
+    TString opt(option);
+    opt.ToUpper();
+    Bool_t   clear   = opt.Contains("CLEAR");
+    Bool_t   axis    = opt.Contains("AXIS");
+    // --- Optionally clear old stack --------------------------------
+    if (clear && fDrawn) { 
+      delete fDrawn;
+      fDrawn = 0;
+    }
+
+    fDrawn = MakeMulti(option);
+    if (!fDrawn) return;
+
+    fDrawn->Draw(axis ? "A" : "");
+    if (axis) { 
+      fDrawn->GetHistogram()->SetXTitle(fXTitle);
+      fDrawn->GetHistogram()->SetYTitle(fYTitle);
+    }
+  }
+  /** 
+   * Fit a function to the data.  Which errors are considered depends
+   * on the options given in drawOption i.e., 
+   *
+   * - STAT COMMON: Statistical, common, and point-to-point errors 
+   *                are factored in 
+   * - STAT:        Statistical and point-to-point errors are factored in, 
+   *                but common errors are not 
+   * - COMMON:      Common and point-to-point errors are factored in, 
+   *                but statistical errors are not 
+   * - otherwise:   Ppoint-to-point errors are factored in, 
+   *                but statistical and common errors are not   
+   * 
+   * @param f1         Pointer to function objet 
+   * @param fitOption  The fit options (See TGraph::Fit)
+   * @param drawOption Draw options (See Draw)
+   * @param min        Least X value to consider
+   * @param max        Largest X value to consider
+   * 
+   * @return See TGraph::Fit
+   */
+  TFitResultPtr Fit(TF1* f1, Option_t* fitOption, Option_t* drawOption, 
+		    Axis_t min=0, Axis_t max=0)
+  {
+    TString dOpt(drawOption);
+    dOpt.ToUpper();
+    Bool_t   clear   = dOpt.Contains("CLEAR");
+    Bool_t   axis    = dOpt.Contains("AXIS");
+
+    if (clear && fDrawn) { 
+      delete fDrawn;
+      fDrawn = 0;
+    }
+
+    fDrawn = MakeMulti(drawOption);
+    if (!fDrawn || 
+	!fDrawn->GetListOfGraphs() || 
+	!fDrawn->GetListOfGraphs()->First()) 
+      return TFitResultPtr(-1);
+    // fDrawn->GetListOfGraphs()->ls();
+    Graph* g = static_cast<Graph*>(fDrawn->GetListOfGraphs()->First());
+    
+    TString fOpt(fitOption);
+    fOpt.ToUpper();
+    Bool_t noStore = fOpt.Contains("N");
+    Bool_t noDraw  = fOpt.Contains("0"); 
+    Bool_t range   = fOpt.Contains("R"); 
+    fOpt.Append("N0");
+    TFitResultPtr r = g->Fit(f1, fOpt.Data(), "", min, max);
+
+    if (!noStore) {
+      Int_t status = r;
+      if (status == 0) {
+	if (min < max && !range) f1->SetRange(min, max);
+	fDrawn->GetListOfFunctions()->Add(f1);
+      }
+    }
+
+    if (!noStore && !noDraw) {
+      fDrawn->Draw(axis ? "A" : "");
+      if (axis) { 
+	fDrawn->GetHistogram()->SetXTitle(fXTitle);
+	fDrawn->GetHistogram()->SetYTitle(fYTitle);
+      }
+    }
+
+    return r;
+  }
+  /** 
+   * Fit a function to the data.  Which errors are considered depends
+   * on the options given in drawOption i.e., 
+   *
+   * - STAT COMMON: Statistical, common, and point-to-point errors 
+   *                are factored in 
+   * - STAT:        Statistical and point-to-point errors are factored in, 
+   *                but common errors are not 
+   * - COMMON:      Common and point-to-point errors are factored in, 
+   *                but statistical errors are not 
+   * - otherwise:   Ppoint-to-point errors are factored in, 
+   *                but statistical and common errors are not   
+   * 
+   * @param formula    The fit formula 
+   * @param fitOption  The fit options (See TGraph::Fit)
+   * @param drawOption Draw options (See Draw)
+   * @param min        Least X value to consider
+   * @param max        Largest X value to consider
+   * 
+   * @return See TGraph::Fit
+   */
+  TFitResultPtr Fit(const char* formula, 
+		    Option_t* fitOption, Option_t* drawOption, 
+		    Axis_t min=0, Axis_t max=0)
+  {
+    TString fname(formula);
+    Bool_t  linear = fname.Contains("++");
+    TF1*    f1     = 0;
+    if (linear) f1 = new TF1(formula,formula,min,max);
+    else { 
+      f1 = static_cast<TF1*>(gROOT->GetFunction(formula));
+      if (!f1) Warning("Fit", "Unknown function %s", formula);
+    }
+    if (!f1) return -1;
+    
+    return Fit(f1, fitOption, drawOption, min, max);
+  }
+  /** 
+   * Get last drawn multigraph or create a new one 
+   * 
+   * @param option Options 
+   * 
+   * @return The multi graph
+   */
+  TMultiGraph* GetMulti(Option_t* option="") 
+  {
+    if (!fDrawn) fDrawn = MakeMulti(option);
+    return fDrawn;
+  }
+  /* @} */
+  /** 
+   * @{
+   * @name Import/export 
+   */
+  /** 
+   * Dump on stream a table suitable (After some editing) for
+   * uploading to the Durham database.
+   * 
+   * If one has many objects that should be uploaded together, one 
+   * can do 
+   * 
+   * @code 
+   TList l;
+   l.Add(new GraphSysErr(...));
+   ...
+
+   std::ofstream out("export");
+   TIter next(&l);
+   GraphSysErr* g = 0;
+   Bool_t first = true;
+   while ((g = static_cast<GraphSysErr*>(next()))) {
+     g->Export(first, out);
+     first = false;
+   }
+   out.close();
+   * @endcode 
+   * 
+   * @param header If true, also generate header 
+   * @param out    Output stream to write to. 
+   */
+  void Export(Bool_t header=true, std::ostream& out=std::cout)
+  {
+    out << "# Generated by GraphSysErr\n"
+	<< "# See also\n"
+	<< "# \n"
+	<< "#  http://hepdata.cedar.ac.uk/resource/sample.input\n"
+	<< "#  http://hepdata.cedar.ac.uk/submittingdata\n"
+	<< "# \n"
+	<< "# Please fill in missing fields\n";
+    if (header) { 
+      TDatime now;
+      UserGroup_t* u = gSystem->GetUserInfo();
+      TString     author = GetKey("author");
+      TString     ref    = GetKey("reference");
+      const char* doi    = GetKey("doi");
+      const char* lab    = GetKey("laboratory");
+      const char* accel  = GetKey("accelerator");
+      const char* exper  = GetKey("detector");
+      const char* insp   = GetKey("inspireId");
+      const char* cds    = GetKey("cdsId");
+      const char* tit    = GetKey("title");
+      const char* abs    = GetKey("abstract");
+      const char* months[] = {"JAN","FEB","MAR","APR",
+			      "MAY","JUN","JUL","AUG",
+			      "SEP","OCT","NOV","DEC"};
+      if (author.IsNull()) author = "<surname of first author>";
+      author.ToUpper();
+      out << "*author: "<< author << std::endl;
+      if (ref.IsNull()) 
+	out << "*reference: <journal/archive ref> : <year>" << std::endl;
+      else { 
+	TIter nextK(fMap);
+	TObject* obj = 0;
+	while ((obj = nextK())) { 
+	  TString k(obj->GetName());
+	  if (!k.EqualTo("reference")) continue;
+	  out << '*' << obj->GetName() << ": " << obj->GetTitle() << std::endl;
+	}
+      }
+      out << "*doi: " << (doi ? doi : "<DOI number>") << '\n'
+	  << "*status: Encoded " 
+	  << std::setw(2) << now.GetDay() <<' '<< months[now.GetMonth()-1]<<' '
+	  << std::setw(4) << now.GetYear() << " by "<< u->fRealName.Data()<<"\n"
+	  << "*experiment: " << (lab ? lab : "<lab>") << '-' 
+	  << (accel ? accel : "<accelerator>") << '-' 
+	  << (exper ? exper : "<experiment>") << '\n'
+	  << "*detector: " << (exper ? exper : "<experiment>") << '\n'
+	  << "*inspireId: " << (insp ? insp : "<inSpire identifier>") << '\n'
+	  << "*cdsId: " << (cds ? cds : "<CERN Document Server identifier>") 
+	  << '\n'
+	  << "*durhamId: <fill on submission> \n"
+	  << "*title: " << (tit ? tit : "<title of paper>") << '\n'
+	  << "*comment: " << (lab ? lab : "<lab>") << '-' 
+	  << (accel ? accel : "<accelerator>") << ". " 
+	  << (abs ? abs : "<abstract>") << "\n"
+	  << std::endl;
+    }
+    const char* fill = "<please fill in>";
+    out << "# Start of dataset\n"
+	<< "*dataset:" << "\n"
+	<< "*dscomment: " << GetTitle() << std::endl;
+    const char* fields[] = { "location",
+			     "reackey", 
+			     "obskey", 
+			     "qual", 			     
+			     0 };
+    const char** pfld = fields;
+    while (*pfld) { 
+      Bool_t gotit = false;
+      if (fMap) { 
+	TIter nextK(fMap);
+	TObject* obj = 0;
+	while ((obj = nextK())) { 
+	  TString k(obj->GetName());
+	  if (!k.EqualTo(*pfld)) continue;
+	  gotit = true;
+	  out << '*' << obj->GetName() << ": " << obj->GetTitle() << std::endl;
+	}
+      }
+      if (!gotit) 
+	out << "*" << *pfld << ": " << fill << std::endl;
+      pfld++;
+    }
+    out << "*xheader: " << (fXTitle.IsNull() ? fill : fXTitle.Data())  << "\n"
+	<< "*yheader: " << (fYTitle.IsNull() ? fill : fYTitle.Data())  
+	<< std::endl;
+    TIter nextC(&fCommon);
+    HolderCommon* holderCommon = 0;
+    while ((holderCommon = static_cast<HolderCommon*>(nextC()))) { 
+      Bool_t rel = holderCommon->IsRelative();
+      out << "*dserror: +" << holderCommon->GetYUp(rel ? 100 : 1) 
+	  << (rel ? " PCT" : "")
+	  << ", -" << holderCommon->GetYDown(rel ? 100 : 1) 
+	  << (rel ? " PCT" : "")
+	  << " : " << holderCommon->GetTitle() << std::endl;
+    }
+    out  << "*data: x : y" << std::endl;
+    Int_t n = GetN();
+    for (Int_t i = 0; i < n; i++) { 
+      Double_t x       = GetX(i);
+      Double_t y       = GetY(i);
+      Double_t fy      = (fStatRelative ? (y == 0 ? 0 : 100./y) : 1);
+      const char* post = (fStatRelative ? " PCT" : "");
+      Double_t eyl     = GetStatErrorDown(i) * fy;
+      Double_t eyh     = GetStatErrorUp(i)   * fy;
+      Double_t exl     = fData->GetErrorXlow(i);
+      Double_t exh     = fData->GetErrorXlow(i);
+      out << ' ' << std::setprecision(4) 
+	  << x << " +" << exh << ",-" << exl << "; " 
+	  << y << " +" << eyh << post << ",-" << eyl << post << std::flush;
+
+      if (fPoint2Point.GetEntries() > 0) {
+	out  << " (" << std::flush;
+	TIter       nextP(&fPoint2Point);
+	HolderP2P*  holderP2P = 0;
+	Bool_t      first = true;
+	while ((holderP2P = static_cast<HolderP2P*>(nextP()))) { 
+	  Bool_t rel = holderP2P->IsRelative();
+	  fy         = (rel ? (y == 0 ? 0 : 100./y) : 1);
+	  post       = (rel ? " PCT" : "");
+	  if (!first) out << ',';
+	  out << "DSYS=+" << holderP2P->GetYUp(i)  *fy << post 
+	      << ",-"     << holderP2P->GetYDown(i)*fy << post
+	      << ':'      << holderP2P->GetTitle() << std::flush;
+	  first = false;
+	}
+	out << '}';
+      }
+      out << ';' << std::endl;
+      
+    }
+    out << "*dataend:\n" 
+	<< "# End of dataset\n" << std::endl;
+  }
+  /** 
+   * Import all data sets from a Durham input formatted file.  The
+   * data sets are returned in a flat collection.  The collection owns
+   * the contained the objects and it is the responsibility of the
+   * caller to manage the returned collection.  
+   * 
+   * The returned GraphSysErr objects are named like 
+   *
+   * @verbatim 
+   *   ds_INDEX_SUB-INDEX  
+   * @endverbatim 
+   *
+   * @param fileName Name of file to read. 
+   * 
+   * @return Pointer to newly allocated collection of graphs, or 0 in
+   * case of errors.  Note that the returned collection may be empty
+   */
+  static TSeqCollection* Import(const TString& fileName)
+  {
+    std::ifstream in(fileName.Data());
+    if (!in) {
+      ::Warning("Import", "Failed to open \"%s\"", fileName.Data());
+      return 0;
+    }
+    TList* ret = new TList;
+    ret->SetOwner();
+    GraphSysErr* g = 0;
+    Int_t id = 0;
+    do {
+      Int_t sub = 1;
+      do {
+	int cur = in.tellg();
+	if (!(g = Import(in, sub))) break;
+	in.seekg(cur, in.beg);
+	g->SetName(Form("ds_%d_%d", id, sub-1));
+	ret->Add(g);
+	sub++;
+      } while(true);
+      id++;
+    } while (!in.eof());
+    return ret;
+  }
+  /** 
+   * Import data from <i>input</i> formatted Durham database file. 
+   * 
+   * @image html dndeta_pa.png 
+   *
+   * @note This is not omnipotent.  While the function works for most
+   * typical inputs. it can fail for particular inputs.
+   *
+   * To read multiple graphs, simple put this in a loop and keep
+   * calling until end of file is reached.
+   *
+   * @code 
+   std::ifstream in("file");
+   TFile* out = TFile::Open("out.root","RECREATE");
+   GraphSysErr* g = 0;
+   Int_t id = 0;
+   do {
+     Int_t sub = 1;
+     do { 
+       int cur = in.tellg();
+       if (!(g = GraphSysErr::Import(in, sub))) break;
+       in.seekg(cur, in.beg());
+       g->SetName(Form("ds_%d_%d", id, sub));
+       g->Write();
+       sub++;
+     } while (true);
+     id++;
+   } while (!in.eof())
+   * @endcode 
+   *
+   * @param in  Input stream
+   * @param idx Column of data set to import. 
+   * 
+   * @return Newly allocated object or null
+   *
+   */
+  static GraphSysErr* Import(std::istream& in, UShort_t idx=0)
+  {
+    GraphSysErr* ret    = 0;
+    Int_t        n      = 0;
+    Bool_t       inSet  = false;
+    Bool_t       inData = false;
+    TString      tit    = "";
+    TString      xtit   = "";
+    TString      ytit   = "";
+    TString      tmp    = "";
+    TString      last   = "";
+    TList        keys;
+    Int_t        isty   = 0;
+    do {
+      TString line;
+      line.ReadLine(in);
+      tmp = line.Strip(TString::kBoth, ' '); line = tmp;
+      if (line.IsNull()) continue; 
+      if (line[0] == '#') continue;
+      if (line[0] == '*') { // We have some sort of header stuff 
+	Int_t colon = line.Index(":"); 
+	if (colon == kNPOS) continue;
+	Int_t   len   = line.Length()-colon-1;
+	TString value = line(colon+1,len);
+	tmp = value.Strip(TString::kBoth, ' '); value = tmp;
+	last = line(1,colon-1);
+	if (kVerbose & kImport) 
+	  ::Info("Import", "Got a key '%s' -> '%s'", last.Data(), value.Data());
+
+	if (last.BeginsWith("dataset", TString::kIgnoreCase)) {
+	  inSet = true;
+	  inData = false;
+	  isty  = 0;
+	}
+	else if (last.BeginsWith("dataend", TString::kIgnoreCase)) {
+	  inSet = false;
+	  inData = false;
+	  // Always terminate on the end of a data set
+	  break;
+	}
+	else if (last.BeginsWith("dscomment",TString::kIgnoreCase)) {
+	  tit = value;
+	}
+	else if (last.BeginsWith("xheader", TString::kIgnoreCase)) {
+	  xtit = value;
+	}
+	else if (last.BeginsWith("yheader", TString::kIgnoreCase)) {
+	  ytit = value;
+	}
+	else if (last.BeginsWith("dserror", TString::kIgnoreCase)) {
+	  // Common systematic error 
+	  if (kVerbose & kImport) 
+	    ::Info("Import", "Got common error line: '%s'", line.Data());
+	  TObjArray* tokens = value.Tokenize(":");
+	  Double_t el = 0, eh = 0;
+	  Bool_t   rel = false;
+	  if (ImportError(Token(tokens, 0), el, eh, rel)) { 
+	    if (rel) { el /= 100.; eh /= 100.; }
+	    TString& nam = Token(tokens, 1);
+	    if (!ret) ret = new GraphSysErr("imported", tit);
+	    Int_t id = ret->DefineCommon(nam, rel, el, eh, kRect);
+	    ret->SetSysLineColor(id, (isty % 6) + 2);
+	    ret->SetSysFillColor(id, (isty % 6) + 2);
+	    ret->SetSysFillStyle(id, 3001 + (isty % 10));
+	    isty++;
+	  }
+	}
+	else if (last.BeginsWith("data", TString::kIgnoreCase)) {
+	  if (kVerbose & kImport) 
+	    ::Info("Import", "Got start of data line: '%s'", line.Data());
+	  // These are the field we can deal with 
+	  // Let's get the header field value 
+	  TObjArray* tokens = value.Tokenize(":");
+	  if (tokens->GetEntriesFast() > 2 && idx < 1) { 
+	    idx = 1;
+	    ::Warning("Import", "Can only import one data set at a time, "
+		      "selecting the %d column", idx);
+	  }
+	  else if (idx >= 1 && idx >= tokens->GetEntriesFast()) { 
+	    ::Warning("Import", "column %d not available for this data set",
+		      idx);
+	    inSet = false;
+	  }
+	  // We do nothing to the tokens here. 
+	  tokens->Delete();
+	  inData = true;
+	}
+	else {	 
+	  // some other key. 
+	  if (kVerbose & kImport) 
+	    ::Info("Import", "Got pair line '%s' (%s -> %s)", line.Data(), 
+		   last.Data(), value.Data());
+	  keys.Add(new TNamed(last, value));
+	}
+	continue; 
+      }
+      if (!inData) { 
+	if (kVerbose & kImport) 
+	  ::Info("Import", "Got a possible contiuation line '%s'", line.Data());
+	// Probably a continuation line. 
+	if (last.IsNull()) 
+	  // No last key or no map 
+	  continue; 
+
+	if (kVerbose & kImport) 
+	  ::Info("Import", "Got some other line: '%s'", line.Data());
+
+	TNamed* ptr = static_cast<TNamed*>(keys.FindObject(last));
+	if (!ptr) 
+	  // Key is not added, do nothing to this line 
+	  continue; 
+
+	TString tt(ptr->GetTitle());
+	if (!tt.EndsWith(" ") && !tt.EndsWith("\t") && !tt.EndsWith("\n")) 
+	  // If value does not end in a white-space, add it. 
+	  tt.Append("\n");
+
+	// Append our line, and set the title
+	tt.Append(line);
+	ptr->SetTitle(tt);
+
+	continue;
+      }
+      if (!inSet) { 
+	// We're outside a data-set so do nothing
+	continue;
+      }
+      if (idx < 1) idx = 1;
+
+      if (kVerbose & kImport) 
+	::Info("Import", "Got a data line: '%s'", line.Data());
+      TObjArray* tokens = line.Tokenize(";");
+      if (tokens->GetEntriesFast() < idx+1) {
+	::Warning("Import", "Too few columns %d<%0d in line: %s", 
+		  tokens->GetEntriesFast(), idx+1, line.Data());
+	tokens->Delete();
+	continue;
+      }
+      TString& xCol = static_cast<TObjString*>(tokens->At(0))->String();
+      TString& yCol = static_cast<TObjString*>(tokens->At(idx))->String();
+      if (kVerbose & kImport) 
+	::Info("Import", "xColumn: '%s', yColumn: '%s'", 
+	       xCol.Data(), yCol.Data());
+
+      tmp = xCol.Strip(TString::kBoth, ' '); xCol = tmp;
+      tmp = yCol.Strip(TString::kBoth, ' '); yCol = tmp;
+      TString yFull = yCol;
+
+      Int_t chop = yCol.Last('(');
+      if (chop != kNPOS) {
+	yCol.Remove(chop, yCol.Length()-chop);
+	yCol.Remove(TString::kBoth, ' ');
+      }
+      if (kVerbose & kImport) 
+	::Info("Import", "xColumn: '%s', yColumn: '%s'", 
+	       xCol.Data(), yCol.Data());
+
+      if (xCol.IsNull()) { 
+	::Warning("Import", "Empty X column in line: %s", line.Data());
+	tokens->Delete();
+	continue;
+      }
+      if (yCol.IsNull()) { 
+	::Warning("Import", "Empty Y column in line: %s", line.Data());
+	tokens->Delete();
+	continue;
+      }
+      Bool_t rel = false;
+      Double_t x = 0, exl = 0, exh = 0;
+      if (!ImportPoint(xCol, x, exl, exh, rel)) { 
+	::Warning("Import", "Failed to import X value in line: %s",line.Data());
+	tokens->Delete();
+	continue;
+      }
+      Double_t y = 0, eyl = 0, eyh = 0;
+      if (!ImportPoint(yCol, y, eyl, eyh, rel)) {
+	::Warning("Import", "Failed to import X value in line: %s",line.Data());
+	tokens->Delete();
+	continue;
+      }
+      if (!ret) ret = new GraphSysErr("imported", tit);
+      if (rel) ret->SetStatRelative(true);
+      ret->SetPoint(n, x, y);
+      ret->SetPointError(n, exl, exh);
+
+      if (ret->IsStatRelative()) { eyl /= 100; eyh /= 100; }
+      ret->SetStatError(n, eyl, eyh);
+
+      Int_t lparen = yFull.Index("(");
+      Int_t rparen = yFull.Index(")");
+      if (lparen == rparen) { 
+	n++;
+	continue;
+      }
+      TString    rem  = yFull(lparen+1, rparen-lparen-1);
+      if (kVerbose & kImport) 
+	::Info("Import", "Got systematic errors: '%s'", rem.Data());
+
+      TObjArray* stok = rem.Tokenize("D");
+      Int_t      isys = 0;
+      for (Int_t i = 0; i < stok->GetEntriesFast(); i++) {
+	TString t = Token(stok,i);
+	if (!t.BeginsWith("SYS=",TString::kIgnoreCase)) { 
+	  ::Warning("Import", "Ignoring unknown spec %s (@ %d) in %s",
+		    t.Data(), i, rem.Data());
+	  continue;
+	}
+	t.Remove(0,4);
+	if (t[t.Length()-1] == ',') t.Remove(t.Length()-1,1);
+	tmp = t.Strip(TString::kBoth, ' '); t = tmp;
+
+	Double_t el = 0, eh = 0;
+	rel = false;
+	if (!ImportError(t, el, eh, rel)) continue;
+
+	Int_t colon = t.Index(":");
+	TString nam(Form("sys%d", isys));
+	if (colon != kNPOS) nam = t(colon+1, t.Length()-colon-1);
+	  
+	UInt_t id = ret->FindId(nam);
+	if (id == 0) { 
+	  id = ret->DeclarePoint2Point(nam, rel, kRect);
+	  ret->SetSysLineColor(id, (isty % 6) + 2);
+	  ret->SetSysFillColor(id, (isty % 6) + 2);
+	  ret->SetSysFillStyle(id, 3001 + (isty % 10));
+	  isty++;
+	}
+	HolderP2P* p = ret->FindP2P(id);
+	if (p->IsRelative()) { el /= 100.; eh /= 100.; }
+	ret->SetSysError(id, n, exl, exh, el, eh);
+	isys++;
+      }
+      stok->Delete();
+
+      n++;      
+    } while (!in.eof());
+    if (ret) {
+      if (!xtit.IsNull()) ret->SetXTitle(xtit);
+      if (!ytit.IsNull()) ret->SetYTitle(ytit);
+      if (!tit.IsNull())  ret->SetTitle(tit);
+
+      TIter next(&keys);
+      TObject* pair = 0;
+      while ((pair = next())) {
+	ret->SetKey(pair->GetName(),pair->GetTitle());
+      }
+    }
+    keys.SetOwner();
+    keys.Delete();
+    return ret;
+  }
+  /* @} */
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Declaring systematic errors
+   */
+  /** 
+   * Define a common systematic error 
+   * 
+   * @param title     Title of error 
+   * @param relative  True if this relative to data 
+   * @param ey        Error     
+   * @param option    Options
+   * 
+   * @return Indentifier of systematic error
+   */
+  Int_t DefineCommon(const char* title, Bool_t relative, 
+		     Double_t ey, EDrawOption_t option=kFill)
+  {
+    return DefineCommon(title, relative, ey, ey, option);
+  }
+  /** 
+   * Define a common systematic error 
+   * 
+   * @param title     Title of error 
+   * @param relative  True if this relative to data 
+   * @param eyl       Error     
+   * @param eyh       Error     
+   * @param option    Options
+   * 
+   * @return Indentifier of systematic error
+   */
+  UInt_t DefineCommon(const char* title, Bool_t relative, 
+		      Double_t eyl, Double_t eyh, 
+		      EDrawOption_t option=kRect)
+  {
+    UInt_t  id = ++fCounter;
+    TString name(Form("common_%08x", id));
+
+    HolderCommon* h = new HolderCommon(name, title, relative, option, id);
+    h->Set(eyl, eyh);
+    
+    fCommon.AddLast(h);
+    return id;
+  }
+  /** 
+   * Delcare a point-to-point systematic error 
+   * 
+   * @param title     Title
+   * @param relative  Relative error mission
+   * @param option    Options
+   * 
+   * @return Indentifier of systematic error
+   */
+  UInt_t DeclarePoint2Point(const char* title, Bool_t relative, 
+			    EDrawOption_t option=kBar)
+  {
+    UInt_t  id = ++fCounter; 
+    TString name(Form("p2p_%08x", id));
+
+    Holder* h = new HolderP2P(name, title, relative, option, id);
+
+    fPoint2Point.AddLast(h);
+    return id;
+  }
+  /** 
+   * Find the ID of an error with the given title 
+   * 
+   * @param title Title 
+   * 
+   * @return ID or null
+   */
+  UInt_t FindId(const char* title) 
+  { 
+    TString tit(title);
+
+    TIter nextC(&fCommon);
+    Holder* holder = 0;
+    while ((holder = static_cast<Holder*>(nextC()))) {
+      if (tit.EqualTo(holder->GetTitle())) return holder->GetUniqueID();
+    }
+
+    TIter nextP(&fPoint2Point);
+    while ((holder = static_cast<Holder*>(nextP()))) {
+      if (tit.EqualTo(holder->GetTitle())) return holder->GetUniqueID();
+    }
+    // fCommon.ls();
+    // fPoint2Point.ls();
+    return 0;
+  }
+
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Setting the data and errors 
+   */
+  /** 
+   * Set the ith data point
+   * 
+   * @param i 
+   * @param x 
+   * @param y 
+   */
+  void SetPoint(Int_t i, Double_t x, Double_t y) 
+  {
+    if (!fData) return;
+    fData->SetPoint(i, x, y);
+  }
+  /** 
+   * Set the X error (bin width) of the ith point. 
+   * 
+   * @param i    Point 
+   * @param ex   Error 
+   */
+  void SetPointError(Int_t i, Double_t ex)
+  {
+    SetPointError(i, ex, ex);
+  }
+  /** 
+   * Set the X error (bin width) of the ith point. 
+   * 
+   * @param i    Point 
+   * @param exl  Lower error 
+   * @param exh  Upper error 
+   */
+  void SetPointError(Int_t i, Double_t exl, Double_t exh)
+  {
+    if (!fData) return;
+    fData->SetPointError(i, exl, exh, 
+			 fData->GetErrorYlow(i),
+			 fData->GetErrorYhigh(i));
+  }
+  /** 
+   * Set whether statistical errors should be considered relative.
+   * 
+   * @param rel If true, statistical errors are specified relative to
+   * the y values.
+   */
+  void SetStatRelative(Bool_t rel) { fStatRelative = rel; }
+  Bool_t IsStatRelative() const { return fStatRelative; }
+  /** 
+   * Set the statistical error on the ith data point
+   * 
+   * @param i   Point number 
+   * @param ey  Error on Y
+   */
+  void SetStatError(Int_t i, Double_t ey) 
+  {
+    SetStatError(i, ey, ey);
+  }
+  /*
+   * Set the statistical error on the ith data point
+   * 
+   * @param i   Point number 
+   * @param eyl Lower error on Y
+   * @param eyh Higher error on Y
+   */
+  void SetStatError(Int_t i, Double_t eyl, Double_t eyh) 
+  {
+    if (!fData) return;
+    if (fStatRelative) { 
+      eyl *= fData->GetY()[i];
+      eyh *= fData->GetY()[i];
+    }
+    fData->SetPointError(i,
+ 			 fData->GetErrorXlow(i),
+			 fData->GetErrorXhigh(i),
+			 eyl, eyh);
+  }
+  /** 
+   * Set the systematic error identified by id on the ith data point 
+   * 
+   * @param id   Systematic error identifier 
+   * @param i    Point number (starting at 0)
+   * @param ex   X error 
+   * @param ey   Y error
+   */
+  void SetSysError(Int_t id, Int_t i, Double_t ex, Double_t ey)
+  {
+    HolderP2P* h = FindP2P(id);
+    if (!h) return;
+    h->Set(i, fData, ex, ey);
+  }
+  /** 
+   * Set the systematic error identified by id on the ith data point 
+   * 
+   * @param id   Systematic error identifier 
+   * @param i    Point number (starting at 0)
+   * @param exl  Left X error 
+   * @param exh  Right X error 
+   * @param eyl  Lower Y error 
+   * @param eyh  Upper Y error
+   */
+  void SetSysError(Int_t id, Int_t i, Double_t exl, Double_t exh,
+		   Double_t eyl, Double_t eyh) 
+  {
+    HolderP2P* h = FindP2P(id);
+    if (!h) return;
+    h->Set(i, fData, exl, exh, eyl, eyh);
+  }
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Getting information 
+   */
+  /** 
+   * @return number of points
+   */  
+  Int_t    GetN() const { return fData ? fData->GetN() : 0; }
+  /** 
+   * @param point Point
+   * 
+   * @return X at point
+   */
+  Double_t GetX(Int_t point) const { return fData->GetX()[point]; }
+  /** 
+   * @param point Point
+   * 
+   * @return Y at point
+   */
+  Double_t GetY(Int_t point) const { return fData->GetY()[point]; }
+  /** 
+   * @param point Point
+   * 
+   * @return statistical error at point
+   */
+  Double_t GetStatError(Int_t point) const { return fData->GetErrorY(point); }
+  /** 
+   * @param point Point
+   * 
+   * @return statistical error at point
+   */
+  Double_t GetStatErrorUp(Int_t point) const { 
+    return fData->GetErrorYhigh(point); 
+  }
+  /** 
+   * @param point Point
+   * 
+   * @return statistical error at point
+   */
+  Double_t GetStatErrorDown(Int_t point)const{return fData->GetErrorYlow(point);}
+  /**
+   * @param id
+   * @param point Point
+   * 
+   * @return systematic error from id at point
+   */
+  Double_t GetSysErrorX(Int_t id, Int_t point) const 
+  { 
+    HolderP2P* h = FindP2P(id);
+    if (!h) return 0;
+    return h->GetX(point);
+  }
+  /**
+   * @param id
+   * @param point Point
+   * 
+   * @return systematic error from id at point
+   */
+  Double_t GetSysErrorY(Int_t id, Int_t point) const 
+  { 
+    HolderP2P* h = FindP2P(id);
+    if (!h) return 0;
+    return h->GetY(point);
+  }
+  /**
+   * @param id
+   * @param point Point
+   * 
+   * @return systematic error from id at point
+   */
+  Double_t GetSysErrorXLeft(Int_t id, Int_t point) const 
+  { 
+    HolderP2P* h = FindP2P(id);
+    if (!h) return 0;
+    return h->GetXLeft(point);
+  }
+  /**
+   * @param id
+   * @param point Point
+   * 
+   * @return systematic error from id at point
+   */
+  Double_t GetSysErrorXRight(Int_t id, Int_t point) const 
+  { 
+    HolderP2P* h = FindP2P(id);
+    if (!h) return 0;
+    return h->GetXRight(point);
+  }
+  /**
+   * @param id
+   * @param point Point
+   * 
+   * @return systematic error from id at point
+   */
+  Double_t GetSysErrorYUp(Int_t id, Int_t point) const 
+  { 
+    HolderP2P* h = FindP2P(id);
+    if (h) return h->GetYUp(point);
+    HolderCommon* c = FindCommon(id);
+    if (c) return c->GetYUp(GetY(point));
+    return 0;
+  }
+  /**
+   * @param id
+   * @param point Point
+   * 
+   * @return systematic error from id at point
+   */
+  Double_t GetSysErrorYDown(Int_t id, Int_t point) const 
+  { 
+    HolderP2P* h = FindP2P(id);
+    if (h) return h->GetYDown(point);
+    HolderCommon* c = FindCommon(id);
+    if (c) return c->GetYDown(GetY(point));
+    return 0;
+  }
+  /* @} */
+
+  //__________________________________________________________________
+  /**
+   * @{ 
+   * @name Setting attributes on systematic errors 
+   */
+  /** 
+   * Set the line color of the systematice error identified by ID
+   * 
+   * @param id    Systematic error identifier 
+   * @param color Line color 
+   */
+  void SetSysLineColor(Int_t id, Color_t color) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetLineColor(color);
+  }
+  /** 
+   * Set the line style of the systematice error identified by ID
+   * 
+   * @param id    Systematic error identifier 
+   * @param style Line style 
+   */
+  void SetSysLineStyle(Int_t id, Style_t style) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetLineStyle(style);
+  }
+  /** 
+   * Set the line width of the systematice error identified by ID
+   * 
+   * @param id    Systematic error identifier 
+   * @param width Line width
+   */
+  void SetSysLineWidth(Int_t id, Width_t width) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetLineWidth(width);
+  }
+  /** 
+   * Set the fill color of the systematice error identified by ID
+   * 
+   * @param id    Systematic error identifier 
+   * @param color Color 
+   */
+  void SetSysFillColor(Int_t id, Color_t color) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetFillColor(color);
+  }
+  /** 
+   * Set the fill style of the systematice error identified by ID
+   * 
+   * @param id    Systematic error identifier 
+   * @param style Fill style
+   */
+  void SetSysFillStyle(Int_t id, Style_t style) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetFillStyle(style);
+  }
+  /** 
+   * Set the systematic error title 
+   * 
+   * @param id    Systematic error identifier 
+   * @param name  The title 
+   */
+  void SetSysTitle(Int_t id, const char* name) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetTitle(name);
+  }    
+  /** 
+   * Set the draw option for a specific systematic error 
+   * 
+   * @param id  Systematic error identifier 
+   * @param opt Draw option 
+   */
+  void SetSysOption(Int_t id, EDrawOption_t opt) //*MENU*
+  {
+    Holder* h = Find(id);
+    if (!h) return;
+    h->SetDOption(opt);
+  }
+  /* @} */
+
+  //__________________________________________________________________
+  /**
+   * @{ 
+   * @name Set drawing options 
+   */
+  /** 
+   * Set the draw option for the data and statistical errors
+   * 
+   * @param opt Draw option 
+   */
+  void SetDataOption(EDrawOption_t opt) { fDataOption = opt; } //*MENU*
+  /** 
+   * Set title on X axis
+   * 
+   * @param title 
+   */
+  void SetXTitle(const char* title) { fXTitle = title; } //*MENU*
+  /** 
+   * Set title on y axis
+   * 
+   * @param title 
+   */
+  void SetYTitle(const char* title) { fYTitle = title; } //*MENU*
+  /** 
+   * Set a key/value pair.  This can be used to fill out fields in a
+   * Durham input file for uploading.
+   * @code 
+   GraphSysErr g("foo","bar");
+   // Over all header keys 
+   g.SetKey("cdsId",       "1483543");
+   g.SetKey("spiresId",    "9808736");
+   g.SetKey("inspireId",   "1190545");
+   g.SetKey("durhamId",    "6047");
+   g.SetKey("reference",   "ARXIV:1210.3615 : 2012");
+   g.SetKey("reference",   "CERN-PH-EP-2012-307 : 2012");
+   g.SetKey("laboratory",  "CERN");
+   g.SetKey("accelerator", "LHC");
+   g.SetKey("detector",    "ALICE");
+   g.SetKey("title",       "Pseudorapidity density of charged particles "
+                           "in p-Pb collisions at sqrt{s_{NN}}=5.02");
+   g.SetKey("author",      "ABELEV");
+   // Data set specific keys 
+   g.SetKey("reackey", "P PB --> CHARGED X");
+   g.SetKey("obskey"   "DN/DETARAP");
+   g.SetKey("qual"     "RE : P PB --> CHARGED X");
+   g.SetKey("qual"     "SQRT(S)/NUCLEON in GEV : 5020.0")
+
+   ...
+   g.Export();
+   * @endcode
+   *
+   * @param key   Key.
+   * @param value Value.
+   */
+  void SetKey(const char* key, const char* value) //*MENU*
+  {
+    if (!fMap) { 
+      fMap = new TList();
+      fMap->SetOwner();
+      fMap->SetName("keys");
+      // fMap->SetTitle("key/value pairs");
+    }
+    TString k(key);
+    TString v(value);
+    TString t =  v.Strip(TString::kBoth);
+    v = t;
+    if (k.EqualTo("experiment",TString::kIgnoreCase)) {
+      TObjArray* l = v.Tokenize("-");
+      t = Token(l, 0); TString lab = t.Strip(TString::kBoth);
+      t = Token(l, 1); TString acc = t.Strip(TString::kBoth);
+      t = Token(l, 2); TString exp = t.Strip(TString::kBoth);
+      fMap->Add(new TNamed("laboratory",  lab.Data()));
+      fMap->Add(new TNamed("accelerator", acc.Data()));
+      fMap->Add(new TNamed("detector",    exp.Data()));
+      l->Delete();
+    }
+    if (k.EqualTo("comment", TString::kIgnoreCase)) { 
+      TString l(GetKey("laboratory"));
+      TString a(GetKey("accelerator"));
+      if (!l.IsNull() && !a.IsNull())
+	v.Remove(0, l.Length()+1+a.Length()+1);
+      t = v.Strip(TString::kBoth);
+      fMap->Add(new TNamed("abstract", t.Data()));
+    }      
+    else 
+      fMap->Add(new TNamed(k, v));
+  }
+  const char* GetKey(const char* key) const 
+  {
+    if (!fMap) return 0;
+    TObject* o = fMap->FindObject(key);
+    if (!o) return 0;
+    return o->GetTitle();
+  }
+  /** 
+   * Set the draw option for summed errors
+   * 
+   * @param opt Draw option 
+   */
+  void SetSumOption(EDrawOption_t opt) { fSumOption = opt; } //*MENU*
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Setting attributes on summed errors 
+   */
+  /** 
+   * Set the title uses for summed errors
+   * 
+   * @param title Title
+   */
+  void SetSumTitle(const char* title) { fSumTitle = title; } //*MENU*
+  /** 
+   * Set the line color of the sumtematice error identified by ID
+   * 
+   * @param color Line Color 
+   */
+  void SetSumLineColor(Color_t color) { fSumLine.SetLineColor(color); } //*MENU*
+  /** 
+   * Set the line style of the sumtematice error identified by ID
+   * 
+   * @param style Line style 
+   */
+  void SetSumLineStyle(Style_t style){ fSumLine.SetLineStyle(style); } //*MENU*
+  /** 
+   * Set the line width of the sumtematice error identified by ID
+   * 
+   * @param width Line width in pixels
+   */
+  void SetSumLineWidth(Width_t width){ fSumLine.SetLineWidth(width); }//*MENU*
+  /** 
+   * Set the fill color of the sumtematice error identified by ID
+   * 
+   * @param color Fill color 
+   */
+  void SetSumFillColor(Color_t color){ fSumFill.SetFillColor(color); }//*MENU*
+  /** 
+   * Set the fill style of the sumtematice error identified by ID
+   * 
+   * @param style Fill style  
+   */
+  void SetSumFillStyle(Style_t style){ fSumFill.SetFillStyle(style); }//*MENU*
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * Base class to hold systematic errors
+   */
+  struct Holder : public TNamed, TAttLine, TAttFill 
+  {
+    /** Containing class is a friemd */
+    friend struct GraphSysErr;
+    /** 
+     * CTOR
+     */
+    Holder() 
+      : TNamed(), 
+	TAttLine(),
+	TAttFill(),
+	fRelative(true),
+	fOption(kRect)
+    {}
+    /**
+     * DTOR
+     */
+    virtual ~Holder() {}
+  protected:
+    /** 
+     * CTOR with name and title
+     * 
+     * @param name   Name 
+     * @param title  Title 
+     * @param rel    Relative or absolue 
+     * @param option Draw Option 
+     * @param id     Identifier 
+     */
+    Holder(const char* name, const char* title, Bool_t rel,
+	   UInt_t option, UInt_t id)
+      : TNamed(name, title), 
+	TAttLine(0,0,0),
+	TAttFill(0,0),
+	fRelative(rel),
+	fOption(option)
+    {
+      SetUniqueID(id);
+    }
+    /** 
+     * Copy constructorr 
+     * 
+     * @param other Object to copy from
+     */
+    Holder(const Holder& other) 
+      : TNamed(other), 
+	TAttLine(other),
+	TAttFill(other),
+	fRelative(other.fRelative),
+	fOption(other.fOption)
+    {
+      SetUniqueID(other.GetUniqueID());
+    }
+    /** 
+     * Assignment operator
+     * 
+     * @param other Object to assign from
+     *
+     * @return reference to this object
+     */
+    Holder& operator=(const Holder& other) 
+    {
+      if (&other == this) return *this;
+
+      other.TNamed::Copy(*this);
+      other.TAttLine::Copy(*this);
+      other.TAttFill::Copy(*this);
+
+      fRelative = other.fRelative;
+      fOption   = other.fOption;
+    
+      SetUniqueID(other.GetUniqueID());
+
+      return *this;
+    }
+    
+    /** 
+     * Create new graph with stacked errors
+     *  
+     * @param g          Previous errors
+     * @param ignoreErr  If true, ignore previous errors
+     * @param quad       If true, add in quadrature 
+     * 
+     * @return Newly allocated graph 
+     */
+    virtual Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) = 0;
+    /** 
+     * Sum errors at point. Point i of g is updated
+     * 
+     * @param g            Where to sum
+     * @param i            Point
+     * @param ignoreErr    If true, ignore exusisting errros
+     * @param quad         Add in quadrature
+     * @param opt          Option
+     */
+    virtual void SumError(Graph* g, Int_t i, Bool_t ignoreErr, 
+			  Bool_t quad, UInt_t opt) = 0;
+    /** 
+     * @return Get the Option
+     */
+    virtual UInt_t GetDOption() const { return fOption; }
+    /** 
+     * Set the draw option
+     * 
+     * @param opt Option
+     */
+    virtual void SetDOption(EDrawOption_t opt) { fOption = opt; }
+    /** 
+     * Check if this is a relative error
+     * 
+     * @return true if declared relative 
+     */
+    virtual Bool_t IsRelative() const { return fRelative; }
+
+    virtual void Print(Option_t*) const
+    {
+      gROOT->IndentLevel();
+      Printf("%s/%s (ID # %d)", GetName(), GetTitle(), GetUniqueID());
+    }
+    virtual void ls(Option_t* option) const 
+    {
+      Print(option);
+    }
+  protected:
+    /** 
+     * Add errors together at point
+     * 
+     * @param i            Point
+     * @param g            Current errors
+     * @param quad         If true, add in quadrature
+     * @param ignoreErr    If true, ignore errors on g
+     * @param sqOld        If true and quad true, square old
+     * @param exl          On return, the left-hand X errors
+     * @param exh          On return, the right-hand X errors
+     * @param eyl          On return, the downward Y errors
+     * @param eyh          On return, the upward Y errors 
+     */
+    void DoAdd(Int_t     i, 
+	       Graph*    g, 
+	       Bool_t    quad, 
+	       Bool_t    ignoreErr,
+	       Bool_t    sqOld,
+	       Double_t& exl, 
+	       Double_t& exh, 
+	       Double_t& eyl, 
+	       Double_t& eyh) 
+    {
+      if (kVerbose & kDraw) 
+	printf("%-20s Point %3d -> %f/%f/%f/%f",GetTitle(),i,exl,exh,eyl,eyh);
+      // Double_t oexl = exl;
+      // Double_t oexh = exh;
+      if (quad) { 
+	eyl  *= eyl;
+	eyh  *= eyh;
+	if (kVerbose & kDraw) printf(" (%f/%f)",eyl,eyh);
+      }
+
+      if (ignoreErr) {
+	switch (fOption) {
+	case kNormal:
+	case kNoTick:
+	case kFill:
+	case kCurve:
+	  break;
+	case kArrow: // In these cases, do no add errors along X
+	case kHat:
+	case kBar:
+	  exl = 0;
+	  exh = 0;
+	  // if (oexl <= 0) exl = 0;
+	  // if (oexh <= 0) exh = 0;
+	case kNone:
+	  break;
+	case kRect:// In these cases, make sure we have errors along X
+	case kBox:
+	  if (exl <= 0) exl = gStyle->GetErrorX()/2;
+	  if (exh <= 0) exh = gStyle->GetErrorX()/2;
+	}
+	if (kVerbose & kDraw) Printf("= %f/%f/%f/%f (%d)",exl,exh,eyl,eyh,quad);
+	return;
+      }
+	
+      Double_t e2xl = g->GetErrorXlow(i);
+      Double_t e2xh = g->GetErrorXhigh(i);
+      Double_t e2yl = g->GetErrorYlow(i);
+      Double_t e2yh = g->GetErrorYhigh(i);
+      if (kVerbose & kDraw) printf("+ %f/%f/%f/%f", e2xl,e2xh,e2yl,e2yh);
+      if (quad && sqOld) {
+	e2yl *= e2yl;
+	e2yh *= e2yh;
+	if (kVerbose & kDraw) printf(" (%f/%f)",e2yl,e2yh);
+      }
+
+	
+      exl  = TMath::Max(exl, e2xl);
+      exh  = TMath::Max(exh, e2xh);
+      eyl  += e2yl;
+      eyh  += e2yh;
+
+      switch (fOption) {
+      case kNormal:
+      case kNoTick:
+      case kFill:
+      case kCurve:
+	break;
+      case kArrow: // In these cases, do no add errors along X
+      case kHat:
+      case kBar:
+	exl = 0;
+	exh = 0;
+	// if (oexl <= 0) exl = 0;
+	// if (oexh <= 0) exh = 0;
+      case kNone:
+	break;
+      case kRect:// In these cases, make sure we have errors along X
+      case kBox:
+	if (exl <= 0) exl = gStyle->GetErrorX()/2;
+	if (exh <= 0) exh = gStyle->GetErrorX()/2;
+      }
+
+      if (kVerbose & kDraw) 
+	Printf("= %f/%f/%f/%f (%d,%d)",exl,exh,eyl,eyh,quad,sqOld);
+    }
+    /** 
+     * Set attributes
+     * 
+     * @param g on graph
+     */
+    void SetAttributes(Graph* g) 
+    {
+      if (!g) return;
+      this->TAttLine::Copy(*g);
+      this->TAttFill::Copy(*g);
+      g->SetMarkerColor(0);
+      g->SetMarkerStyle(0);
+      g->SetMarkerSize(0);
+    }
+    /** Relative error flag */
+    Bool_t  fRelative;
+    /** Options */
+    UInt_t fOption;
+    ClassDef(Holder,1);
+  };
+  //__________________________________________________________________
+  /** 
+   * A holder for Point-to-Point systematic errors
+   */
+  struct HolderP2P : public Holder
+  {
+    /** Containing class is a friemd */
+    friend struct GraphSysErr;
+    /** 
+     * CTOR
+     */
+    HolderP2P()
+      : Holder(),
+	fGraph(0)
+    {}
+  protected:
+    /** 
+     * CTOR with name and title
+     * 
+     * @param name   Name 
+     * @param title  Title 
+     * @param rel    Relative or absolue 
+     * @param opt    Draw Option 
+     * @param id     Identifier 
+     */
+    HolderP2P(const char* name, const char* title, Bool_t rel,
+	      UInt_t  opt, UInt_t id)
+      : Holder(name, title, rel, opt, id),
+	fGraph(0)
+    {
+      fGraph = new Graph();
+      fGraph->SetName(name);
+      fGraph->SetTitle(title);
+      SetAttributes(fGraph);
+    }
+    /** 
+     * Copy CTOR
+     * 
+     * @param other Object ot copy from
+     */
+    HolderP2P(const HolderP2P& other)
+      : Holder(other),
+	fGraph(0)
+    {
+      if (other.fGraph) 
+	fGraph = static_cast<Graph*>(other.fGraph->Clone());
+
+      if (fGraph) SetAttributes(fGraph);
+    }
+    /** 
+     * Assignement operator
+     * 
+     * @param other Object to assign from
+     * 
+     * @return 
+     */
+    HolderP2P& operator=(const HolderP2P& other)
+    {
+      if (&other == this) return *this;
+      
+      this->Holder::operator=(other);
+      if (fGraph) delete fGraph;
+      fGraph = 0;
+      if (other.fGraph) 
+	fGraph = static_cast<Graph*>(other.fGraph->Clone());
+      if (fGraph) SetAttributes(fGraph);
+      
+      return *this;
+    }
+
+    /** 
+     * @{ 
+     * @name Setting errors 
+     */
+    /** 
+     * Set errors at point 
+     * 
+     * @param point  Point
+     * @param g      Graph
+     * @param ex     Symmetric error along X
+     * @param ey     Symmetric error along Y
+     */
+    void Set(Int_t point, Graph* g, Double_t ex, Double_t ey) 
+    {
+      Set(point, g, ex, ex, ey, ey);
+    }
+    /** 
+     * Set errors at point 
+     * 
+     * @param point Point
+     * @param g     Graph
+     * @param ex1   Low erros along X
+     * @param ex2   High errors along X
+     * @param ey1   Low erros along Y
+     * @param ey2   High errors along Y
+     */
+    void Set(Int_t point, Graph* g, Double_t ex1, Double_t ex2, 
+	     Double_t ey1, Double_t ey2) 
+    {
+      if (!fGraph) return;
+      if (!g) return;
+      if (point >= g->GetN()) return;
+      Double_t x = g->GetX()[point];
+      Double_t y = g->GetY()[point];
+      fGraph->SetPoint(point, x, y);
+      if (fRelative) { ey1 *= y; ey2 *= y; }
+      fGraph->SetPointError(point, ex1, ex2, ey1, ey2);
+    }
+    /* @} */
+
+    /** 
+     * @{ 
+     * @name Get information 
+     */
+    /** 
+     * Get symmetric errors along X at point 
+     * 
+     * @param point Point
+     * 
+     * @return Symmetric errors along X at point
+     */
+    Double_t GetX(Int_t point) const 
+    {
+      if (!fGraph) return 0;
+      return fGraph->GetErrorX(point);
+    }
+    /** 
+     * Get errors to the left along X at point
+     * 
+     * @param point Point
+     * 
+     * @return Errors to the left along X at point
+     */
+    Double_t GetXLeft(Int_t point) const 
+    {
+      if (!fGraph) return 0;
+      return fGraph->GetErrorXlow(point);
+    }
+    /** 
+     * Get errors to the right along X at point
+     * 
+     * @param point Point
+     * 
+     * @return Errors to the right along X at point
+     */
+    Double_t GetXRight(Int_t point) const 
+    {
+      if (!fGraph) return 0;
+      return fGraph->GetErrorXhigh(point);
+    }
+    /** 
+     * Get symmetric errors along Y at point 
+     * 
+     * @param point Point
+     * 
+     * @return Symmetric errors along Y at point
+     */
+    Double_t GetY(Int_t point) const 
+    {
+      if (!fGraph) return 0;
+      return fGraph->GetErrorY(point);
+    }
+    /** 
+     * Get errors downward along Y at point
+     * 
+     * @param point Point
+     * 
+     * @return Errors downward along Y at point
+     */
+    Double_t GetYDown(Int_t point) const 
+    {
+      if (!fGraph) return 0;
+      return fGraph->GetErrorYlow(point);
+    }
+    /** 
+     * Get errors upward along Y at point
+     * 
+     * @param point Point
+     * 
+     * @return Errors upward along Y at point
+     */
+    Double_t GetYUp(Int_t point) const 
+    {
+      if (!fGraph) return 0;
+      return fGraph->GetErrorYhigh(point);
+    }
+    /* @} */
+
+    /** 
+     * @{ 
+     * @name Sum, add, stack 
+     */
+    /** 
+     * Add errors together at point
+     * 
+     * @param i            Point
+     * @param g            Current errors
+     * @param quad         If true, add in quadrature
+     * @param ignoreErr    If true, ignore errors on g
+     * @param sqOld        If true and quad true, square old
+     * @param exl          On return, the left-hand X errors
+     * @param exh          On return, the right-hand X errors
+     * @param eyl          On return, the downward Y errors
+     * @param eyh          On return, the upward Y errors 
+     */
+    void AddError(Int_t     i, 
+		  Graph*    g, 
+		  Bool_t    quad, 
+		  Bool_t    ignoreErr,
+		  Bool_t    sqOld,
+		  Double_t& exl, 
+		  Double_t& exh, 
+		  Double_t& eyl, 
+		  Double_t& eyh) 
+    {
+      exl           = fGraph->GetErrorXlow(i);
+      exh           = fGraph->GetErrorXhigh(i);
+      eyl           = fGraph->GetErrorYlow(i);
+      eyh           = fGraph->GetErrorYhigh(i);
+      if (exl <= 0) {
+	exl = g->GetErrorXlow(i);
+      }
+      if (exh <= 0) {
+	exh = g->GetErrorXhigh(i);
+      }
+
+      DoAdd(i, g, quad, ignoreErr, sqOld, exl, exh, eyl, eyh);
+    }
+    /** 
+     * Create new graph with stacked errors
+     *  
+     * @param g          Previous errors
+     * @param ignoreErr  If true, ignore previous errors
+     * @param quad       If true, add in quadrature 
+     * 
+     * @return Newly allocated graph 
+     */
+    Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) 
+    {
+      Graph* ga = new Graph(g->GetN());
+      for (Int_t i = 0; i < g->GetN(); i++) { 
+	Double_t x    = g->GetX()[i];	  
+	Double_t y    = g->GetY()[i];
+	Double_t exl, exh, eyl, eyh;
+	AddError(i, g, quad, ignoreErr, true, exl, exh, eyl, eyh);
+	ga->SetPoint(i, x, y);
+	ga->SetPointError(i, exl,exh,eyl,eyh);
+      }
+      SetAttributes(ga);
+      ga->SetTitle(GetTitle());
+      ga->SetName(Form("stack_%08x", GetUniqueID()));
+      return ga;
+    }
+    /** 
+     * Sum errors at point. Point i of g is updated
+     * 
+     * @param g            Where to sum
+     * @param i            Point
+     * @param ignoreErr    If true, ignore exusisting errros
+     * @param quad         Add in quadrature
+     * @param opt          Option
+     */
+    void SumError(Graph* g, Int_t i, Bool_t ignoreErr, Bool_t quad, UInt_t opt) 
+    {
+      Double_t exl, exh, eyl, eyh;
+      UInt_t save = fOption;
+      fOption     = opt;
+      AddError(i, g, quad, false, ignoreErr, exl, exh, eyl, eyh);
+      g->SetPointError(i, exl,exh,eyl,eyh);
+      fOption = save;
+    }
+    /* @} */
+    /** Our data */
+    Graph* fGraph;
+
+    ClassDef(HolderP2P,1);
+  };
+  //__________________________________________________________________
+  /**
+   * Holder of common errors 
+   * 
+   */
+  struct HolderCommon : public Holder 
+  {
+    /** Containing class is a friemd */
+    friend struct GraphSysErr;
+    /** 
+     * CTOR
+     */
+    HolderCommon()
+      : Holder(), fEyl(0), fEyh(0)
+    {}
+  protected:
+    /** 
+     * CTOR with name and title
+     * 
+     * @param name   Name 
+     * @param title  Title 
+     * @param rel    Relative or absolue 
+     * @param opt    Draw Option 
+     * @param id     Identifier 
+     */
+    HolderCommon(const char* name, const char* title, Bool_t rel,
+		 UInt_t opt, UInt_t id)
+      : Holder(name, title, rel, opt, id), fEyl(0), fEyh(0)
+    {
+    }
+    /** 
+     * Copy CTOR
+     * 
+     * @param other Object to copy from 
+     */
+    HolderCommon(const HolderCommon& other)
+      : Holder(other),
+	fEyl(other.fEyl), 
+	fEyh(other.fEyh)
+    {
+    }
+    /** 
+     * Assignment operator 
+     * 
+     * @param other Object to assign from
+     * 
+     * @return Reference to this 
+     */
+    HolderCommon& operator=(const HolderCommon& other)
+    {
+      if (&other == this) return *this;
+      this->Holder::operator=(other);
+      fEyl = other.fEyl;
+      fEyh = other.fEyh;
+      return *this;
+    }
+
+    /** 
+     * @{ 
+     * @name Setting errors 
+     */
+    /** 
+     * Set symmetric error 
+     * 
+     * @param ey Error
+     */
+    void Set(Double_t ey) { Set(ey, ey); }
+    /** 
+     * Set error
+     * 
+     * @param eyl Downward error along Y
+     * @param eyh Upward error along Y
+     */
+    void Set(Double_t eyl, Double_t eyh)
+    {
+      fEyl = eyl;
+      fEyh = eyh;
+    }
+    /** 
+     * Get the down error 
+     * 
+     * @param y Value to evaluate at if the error is relative 
+     * 
+     * @return The down error 
+     */ 
+   Double_t GetYDown(Double_t y=0) const 
+    {
+      return (fRelative ? y : 1) * fEyl;
+    }
+    /** 
+     * Get the up error 
+     * 
+     * @param y Value to evaluate at if the error is relative 
+     * 
+     * @return The up error 
+     */
+    Double_t GetYUp(Double_t y=0) const 
+    {
+      return (fRelative ? y : 1) * fEyh;
+    }
+    /* @} */
+
+    /** 
+     * @{ 
+     * @name Sum, add, stack 
+     */
+    /** 
+     * Add errors together at point
+     * 
+     * @param i            Point
+     * @param g            Current errors
+     * @param quad         If true, add in quadrature
+     * @param ignoreErr    If true, ignore errors on g
+     * @param sqOld        If true and quad true, square old
+     * @param y            Y value at point 
+     * @param exl          On return, the left-hand X errors
+     * @param exh          On return, the right-hand X errors
+     * @param eyl          On return, the downward Y errors
+     * @param eyh          On return, the upward Y errors 
+     */
+    void AddError(Int_t     i, 
+		  Graph*    g, 
+		  Bool_t    quad, 
+		  Bool_t    ignoreErr,
+		  Bool_t    sqOld,
+		  Double_t  y,
+		  Double_t& exl, 
+		  Double_t& exh, 
+		  Double_t& eyl, 
+		  Double_t& eyh) 
+    {
+      //exl         = (i   == 0        ? 0 :(g->GetX()[i]  -g->GetX()[i-1])/2);
+      //exh         = (i+1 >= g->GetN()? 0 :(g->GetX()[i+1]-g->GetX()[i])/2);
+      exl = (g ? g->GetErrorXlow(i) : 0);
+      exh = (g ? g->GetErrorXhigh(i) : 0);
+      if (exl <= 0) exl = gStyle->GetErrorX()/2;
+      if (exh <= 0) exh = gStyle->GetErrorX()/2;
+
+      eyl           = GetYDown(y);
+      eyh           = GetYUp(y);
+
+      DoAdd(i, g, quad, ignoreErr, sqOld, exl, exh, eyl, eyh);
+    }
+    /** 
+     * Make a graph for showing next to data 
+     * 
+     * @param p     PRevious errors
+     * @param quad  If true, add in quadrature 
+     * @param x     Middle X coordinate 
+     * @param y     Middle Y coordinate 
+     * 
+     * @return Newly allocated graph
+     */
+    Graph* BarError(Graph* p, Bool_t quad, Double_t x, Double_t y)
+    {
+      Double_t exl, exh, eyl, eyh;
+      AddError(0, p, quad, !p, quad, y, exl, exh, eyl, eyh);
+
+      Graph* r = new Graph(1);
+      r->SetPoint(0, x, y);
+      r->SetPointError(0, exl, exh, eyl, eyh);
+      
+      SetAttributes(r);
+      r->SetTitle(GetTitle());
+      r->SetName(Form("bar_%08x", GetUniqueID()));
+
+      return r;
+    }
+    /** 
+     * Create new graph with stacked errors
+     *  
+     * @param g          Previous errors
+     * @param ignoreErr  If true, ignore previous errors
+     * @param quad       If true, add in quadrature 
+     * 
+     * @return Newly allocated graph 
+     */
+    Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) 
+    {
+      Graph* ga = new Graph(g->GetN());
+      for (Int_t i = 0; i < g->GetN(); i++) { 
+	Double_t x    = g->GetX()[i];
+	Double_t y    = g->GetY()[i];	
+	Double_t exl, exh, eyl, eyh;
+	AddError(i, g, quad, ignoreErr, true, y, exl, exh, eyl, eyh);
+	ga->SetPoint(i, x, y);
+	ga->SetPointError(i, exl,exh,eyl,eyh);
+      }
+      SetAttributes(ga);
+      ga->SetTitle(GetTitle());
+      ga->SetName(Form("stack_%08x", GetUniqueID()));
+      return ga;
+    }
+    /** 
+     * Sum errors at point. Point i of g is updated
+     * 
+     * @param g            Where to sum
+     * @param i            Point
+     * @param ignoreErr    If true, ignore exusisting errros
+     * @param quad         Add in quadrature
+     * @param opt          Option
+     */
+    void SumError(Graph* g, Int_t i, Bool_t ignoreErr, Bool_t quad,
+		  UInt_t opt) 
+    {
+      Double_t exl, exh, eyl, eyh;
+      UInt_t save = fOption;
+      fOption     = opt;
+      AddError(i, g, quad, ignoreErr, false, g->GetY()[i], exl, exh, eyl, eyh);
+      // Printf("Point %3d -> %f/%f/%f/%f", i, exl,exh,eyl,eyh);
+      g->SetPointError(i, exl,exh,eyl,eyh);
+      fOption = save;
+    }
+    /* @} */
+    /** Down errors */
+    Double_t fEyl;
+    /** Up errors */
+    Double_t fEyh;
+
+    ClassDef(HolderCommon,1);
+  };
+protected:
+  /** 
+   * Get the ith token from the array of tokens c. 
+   *  
+   * @param c         Array of tokens
+   * @param idx       Which to get 
+   * @param verbose   Be verbose 
+   * 
+   * @return Rererence to the token, or the empty string 
+   */
+  static TString& Token(TObjArray* c, UShort_t idx, Bool_t verbose=true)
+  {
+    static TString empty("");
+    if (idx >= c->GetEntriesFast()) { 
+      if (verbose) {
+	::Error("Token", "Token %d does not exist in array", idx);
+	c->ls();
+      }
+      return empty;
+    }
+    return static_cast<TObjString*>(c->At(idx))->String();
+  }
+  /** 
+   * Import errors from a string 
+   * 
+   * @param s     String to parse
+   * @param el    On return, the low error
+   * @param eh    On return, the high error
+   * @param rel   On returm, true if relative
+   * 
+   * @return true on success
+   */
+  static Bool_t ImportError(const TString& s, 
+			    Double_t& el, Double_t& eh, Bool_t& rel)
+  {
+    TString tmp(s);
+    // ::Info("ImportError", "Parsing '%s' for errors", s.Data());
+    // Allow for PCT (any case) and % as relative markers 
+    if (tmp.Contains("PCT", TString::kIgnoreCase) || tmp.Contains("%")) 
+      rel = true;
+    if (tmp.BeginsWith("+-") || tmp.BeginsWith("-+")) {
+      el = eh = tmp.Atof();
+      // ::Info("ImportError", "Got symmetric %f,%f", el, eh);
+      return true;
+    }
+    TObjArray* tokens = tmp.Tokenize(",");
+    for (Int_t i = 0; i < tokens->GetEntriesFast(); i++) { 
+      TString& t = Token(tokens, i);
+      if (t.IsNull()) continue;
+      t.Remove(TString::kBoth, ' ');
+      Double_t v = t.Atof();
+      // ::Info("ImportError", "Got token '%s' -> %f", t.Data(), v);
+      if (t[0] != '-' && t[0] != '+') {
+	// ::Info("ImportError", "First char not + or -: %c", t.Data()[0]);
+	el = eh = TMath::Abs(v);
+      }
+      else if (v < 0) {
+	// ::Info("ImportError", "Value %f < 0 -> setting el=%f", v, -v);
+	if (el > 0) { 
+	  Double_t max = TMath::Max(el, -v);
+	  ::Warning("ImportError", 
+		    "Lower error already set to %f, chosing the maximum of "
+		    "(%f,%f) -> %f", el, el, -v, max);
+	  v = -max;
+	}
+	el = -v;
+      }
+      else {
+	// ::Info("ImportError", "Value %f >= 0 -> setting eh=%f", v, v);
+	if (eh > 0) { 
+	  Double_t max = TMath::Max(eh, v);
+	  ::Warning("ImportError", 
+		    "Lower error already set to %f, chosing the maximum of "
+		    "(%f,%f) -> %f", eh, eh, v, max);
+	  v = max;
+	}
+	eh = v;
+      }
+    }
+    // ::Info("ImportError", "Got a-symmetric %f,%f", el, eh);
+    tokens->Delete();
+    delete tokens;
+    return true;
+  }
+      
+  /** 
+   * Service function to import a point value (X or Y) with errors. 
+   * 
+   * @param s     String to parse
+   * @param v     On return, the value 
+   * @param el    On return, the lower error
+   * @param eh    On return, the higher error
+   * @param rel   On return, true if the errors are relative to the value
+   * 
+   * @return true on success 
+   */      
+  static Bool_t ImportPoint(const TString& s, 
+			    Double_t&      v, 
+			    Double_t&      el, 
+			    Double_t&      eh, 
+			    Bool_t&        rel)
+  {
+    // ::Info("ImportPoint", "s=%s", s.Data());
+    rel            = s.Contains("PCT");
+    TObjArray* tok = s.Tokenize(" ,");
+    if (tok->GetEntriesFast() >= 4 && 
+	Token(tok,2).EqualTo("TO", TString::kIgnoreCase) && 
+	Token(tok,1).Contains("BIN", TString::kIgnoreCase)) {
+      v = Token(tok,0).Atof();
+      TString tmp = Token(tok,1);
+      TString s1  = tmp.Strip(TString::kBoth, '(');
+      s1.ReplaceAll("BIN=","");
+      Double_t v1 = s1.Atof();
+      tmp         = Token(tok,3);
+      s1          = tmp.Strip(TString::kBoth, ')');
+      Double_t v2 = s1.Atof();
+      el          = (v-v1);
+      eh          = (v2-v);            
+    }
+    else if (tok->GetEntriesFast() >= 3 && 
+	Token(tok,1).EqualTo("TO", TString::kIgnoreCase)) {
+      Double_t v1 = Token(tok,0).Atof();
+      Double_t v2 = Token(tok,2).Atof();
+      v           = (v1+v2)/2;
+      el          = (v-v1);
+      eh          = (v2-v);
+    }
+    else {
+      v  = Token(tok,0).Atof();
+      if (tok->GetEntriesFast() >= 2 && 
+	  (Token(tok,1).BeginsWith("+-") || 
+	   Token(tok,1).BeginsWith("-+"))) {
+	TString t = Token(tok,1);
+	if (t.Length() > 2) {
+	  t.Remove(0,2);
+	  // ::Info("ImportPoint", "Extract from %s", t.Data());
+	  el = eh = t.Atof();
+	}
+	else {
+	  // ::Info("ImportPoint","Extract from next %s",Token(tok, 2).Data());
+	  el = eh = Token(tok,2).Atof();
+	}
+      }
+      else {
+	for (Int_t i = 1; i < tok->GetEntriesFast(); i++) {
+	  TString t = Token(tok, i);
+	  Char_t  m = t[0];
+	  // ::Info("ImportPoint", "%s -> %c", t.Data(), m);
+	  if (m != '+' && m != '-') continue;
+	  if (t.Length() == 1) t = Token(tok, ++i); // Take next
+	  else                 t.Remove(0,1);       // Remove sign
+	  // ::Info("ImportPoint", "%s -> %f", t.Data(), t.Atof());
+	  if (m == '-') el = t.Atof();
+	  else          eh = t.Atof(); 
+	}
+      }
+    }
+    tok->Delete();
+    delete tok;
+    return true;
+  }
+
+  /** 
+   * Take the square root of the errors at point
+   * 
+   * @param g Graph
+   * @param i Point
+   */
+  void SqrtPoint(Graph* g, Int_t i) 
+  {
+    if (kVerbose & kDraw) 
+      printf("%20s Point %3d %f,%f -> ","",
+	     i,g->GetEYlow()[i],g->GetEYhigh()[i]);
+
+    g->GetEYlow()[i]  = TMath::Sqrt(g->GetEYlow()[i]);
+    g->GetEYhigh()[i] = TMath::Sqrt(g->GetEYhigh()[i]);
+
+    if (kVerbose & kDraw)
+      Printf("%f,%f", g->GetEYlow()[i], g->GetEYhigh()[i]);
+  }
+  /** 
+   * Take the square root of the errors 
+   * 
+   * @param g Graph
+   */
+  void SqrtGraph(Graph* g) 
+  {
+    for (Int_t i = 0; i < g->GetN(); i++) 
+      SqrtPoint(g, i);
+  }
+  /** 
+   * Parse options 
+   * 
+   * @param opt Options to parse 
+   */
+  const char* FormatOption(UInt_t opt)
+  {
+    static TString ret;
+    ret = "";
+    switch (opt) {
+    case kNormal: ret = "";     break; // Line with ticks
+    case kNoTick: ret = "Z0";	break; // Line with no ticks 
+    case kArrow:  ret = ">0";	break; // Linw with arrows 
+    case kRect:   ret = "20";	break; // Rectangle w/fill
+    case kBox:    ret = "50";	break; // Rectangle w/fill & line 
+    case kFill:   ret = "30";	break; // Filled area 
+    case kCurve:  ret = "40";	break; // Filled smoothed area 
+    case kHat:    ret = "[]0";	break; // Hats 
+    case kBar:    ret = "||0";	break; // A bar 
+    case kNone:   ret = "XP";	break; // No errors
+    }
+    return ret.Data();
+  }
+  
+  //__________________________________________________________________
+  /** 
+   * Find a point-2-point error graph
+   * 
+   * @param id identifier
+   * 
+   * @return Point-to-point systematic error holder or null
+   */
+  HolderP2P* FindP2P(UInt_t id) const
+  {
+    TIter next(&fPoint2Point);
+    TObject* o = 0;
+    while ((o = next())) {
+      if (o->GetUniqueID() != id) continue;
+      return static_cast<HolderP2P*>(o);
+    }
+    return 0;
+  }
+  /** 
+   * Find a common error graph
+   * 
+   * @param id identifier 
+   * 
+   * @return Common systematic error holder or null
+   */
+  HolderCommon* FindCommon(UInt_t id) const
+  {
+    TIter next(&fCommon);
+    TObject* o = 0;
+    while ((o = next())) {
+      if (o->GetUniqueID() != id) continue;
+      return static_cast<HolderCommon*>(o);
+    }
+    return 0;
+  }
+  /** 
+   * Find any error
+   * 
+   * @param id Identifier
+   * 
+   * @return Holder object or null
+   */
+  Holder* Find(UInt_t id) const
+  {
+    Holder* h = FindP2P(id);
+    if (h) return h;
+    TIter nextC(&fCommon);
+    TObject* o = 0;
+    while ((o = nextC())) {
+      if (o->GetUniqueID() != id) continue;
+      return static_cast<Holder*>(o);
+    }
+    return 0;
+  }
+  /** 
+   * Make our data graph
+   * 
+   * @param n Optional number of pre-allocated points
+   */
+  void MakeDataGraph(Int_t n)
+  {
+    fData = new Graph(n);
+    fData->SetName(Form("%s_data", fName.Data()));
+    fData->SetTitle(GetTitle());
+  }
+  /** 
+   * Make our stack 
+   *
+   * @param option Options - See method Draw for more
+   *
+   * @return Pointer to stack 
+   */
+  TMultiGraph* MakeMulti(Option_t* option)
+  {
+
+    // --- Process options -------------------------------------------
+    TString opt(option);
+    opt.ToUpper();
+
+    Bool_t   cmn     = opt.Contains("COMMON");
+    Bool_t   combine = opt.Contains("COMBINED");
+    Bool_t   stat    = opt.Contains("STAT");
+    Bool_t   quad    = opt.Contains("QUAD");
+    combine          = !opt.Contains("STACK");
+    quad             = !opt.Contains("DIRECT");
+    Bool_t   split   = opt.Contains("SPLIT");
+    Int_t    xpos    = (opt.Contains("WEST") ? -1 : 1);
+    Int_t    ypos    = (opt.Contains("MIN") ? -1 : 
+			opt.Contains("MAX") ?  1 : 0);
+
+    // --- Find location for common errors ---------------------------
+    Int_t    n       = fData->GetN();
+    Double_t dx      = TMath::Max(gStyle->GetErrorX(),0.0001F);
+    Double_t xBase   = ((xpos < 0 ? 
+			 fData->GetX()[0]   - fData->GetEXlow()[0]: 
+			 fData->GetX()[n-1] + fData->GetEXhigh()[n-1])
+			+ xpos * 1.2 * dx);
+    Double_t yBase   = fData->GetY()[0];
+    for (Int_t i = 0; i < n; i++) { 
+      Double_t y = fData->GetY()[i];
+      yBase      = (ypos < 0 ? TMath::Min(yBase, y) : 
+		    ypos > 0 ? TMath::Max(yBase, y) : yBase + y);
+    }
+    if (ypos == 0) yBase /= n;
+
+    // --- Create stack and temp collection --------------------------
+    TList drawn;
+    drawn.SetOwner(false);
+
+    Graph* prev = 0;
+    if (!combine) { 
+      // If we're not combining, we basically copy the graphs to the
+      // draw list, but modify the errors to show progresive larger
+      // errors.
+      prev = fData;
+      if (cmn) { 
+	// If we should add common errors, do that first 
+	TIter next(&fCommon);
+	Holder* h = 0;
+	while ((h = static_cast<Holder*>(next()))) {
+	  Graph* g = h->StackError(prev, (!stat ? prev == fData : false), quad);
+	  if (!g) continue;
+
+	  if (quad) SqrtGraph(g);
+	  prev = g;
+	  drawn.AddFirst(g, FormatOption(h->GetDOption()));
+	}
+      }
+      TIter next(&fPoint2Point);
+      Holder* h = 0;
+      while ((h = static_cast<Holder*>(next()))) {
+	Graph* g = h->StackError(prev, (!stat ? prev == fData : false), quad);
+	if (!g) continue;
+	
+	if (quad) SqrtGraph(g);
+	prev = g;
+	drawn.AddFirst(g, FormatOption(h->GetDOption()));
+      }
+    }
+    else { 
+      // Otherwise, we are adding all selected errors togethter 
+      Graph* g = static_cast<Graph*>(fData->Clone("error"));
+      g->SetTitle(fSumTitle);
+      Holder* h = 0;
+      for (Int_t i = 0; i < n; i++) {
+	if (!stat) {
+	  g->SetPointError(i, g->GetEXlow()[i],
+			   g->GetEXhigh()[i],0,0);
+	}
+	else if (quad) {
+	  g->GetEXlow()[i] *= g->GetEXlow()[i];
+	  g->GetEYlow()[i] *= g->GetEYlow()[i];
+	  g->GetEXhigh()[i] *= g->GetEXhigh()[i];
+	  g->GetEYhigh()[i] *= g->GetEYhigh()[i];
+	}
+	  
+
+	if (cmn) { 
+	  TIter nextC(&fCommon);
+	  while ((h = static_cast<Holder*>(nextC()))) {
+	    h->SumError(g, i, false, quad, fSumOption);
+	    
+	  }
+	}
+	TIter nextP(&fPoint2Point);
+	while ((h = static_cast<Holder*>(nextP()))) 
+	  h->SumError(g, i, false, quad, fSumOption);
+
+	// Printf("Point # %d", i);
+	if (quad) SqrtPoint(g, i);
+      }
+      fSumLine.Copy(*g);
+      fSumFill.Copy(*g);
+      g->SetMarkerStyle(0);
+      g->SetMarkerSize(0);
+      g->SetMarkerColor(0);
+
+      drawn.AddFirst(g, FormatOption(fSumOption));
+    }
+    // --- Show common errors on the side, if requested --------------
+    if (!cmn) {
+      TIter nextC(&fCommon);
+      HolderCommon* hc = 0;
+      prev = 0;
+      while ((hc = static_cast<HolderCommon*>(nextC()))) {
+	Graph* g = hc->BarError(prev, quad && !split, xBase, yBase);
+	if (!g) {
+	  Warning("MakeMulti", "Got no graph for common error %s", 
+		  hc->GetTitle());
+	  continue;
+	}
+
+	if (quad && !split) SqrtGraph(g);
+
+	if (split) xBase += xpos * 1.2 * dx;
+	if (!prev)
+	  drawn.AddLast(g, FormatOption(hc->GetDOption()));
+	else {
+	  // Here, we use the underling linked list of the list so
+	  // that we can add an object before another including the
+	  // possible options 
+	  TObjLink* f = drawn.FirstLink();
+	  TObjLink* p = 0;
+	  while (f && f->GetObject()) { 
+	    if (f->GetObject() == prev) {
+	      if (p) new TObjOptLink(g, p, FormatOption(hc->GetDOption()));
+	      else   new TObjOptLink(g, FormatOption(hc->GetDOption()));
+	      break;
+	      }
+	    p = f;
+	    f = f->Next();
+	  }
+	}
+	prev = (split ? 0 : g);
+      }
+    }
+    // --- Copy attributes to data copy ------------------------------
+    this->TAttLine::Copy(*fData);
+    this->TAttFill::Copy(*fData);
+    this->TAttMarker::Copy(*fData);
+
+    // --- Get the options for drawing the data ----------------------
+    TString dopt = FormatOption(fDataOption);
+    dopt.Append(" p same");
+    // if (stat && combine) dopt.Append(" X");
+
+    // --- Add copy of data to stack ---------------------------------
+    drawn.AddLast(fData->Clone("data"), dopt.Data());
+
+    // --- Now copy objects from temp collection to stack ------------
+    TMultiGraph* ret = new TMultiGraph("drawn", GetTitle());
+    TIter nextG(&drawn);
+    TGraph* gg = 0;
+    while ((gg = static_cast<TGraph*>(nextG()))) {
+      if (kVerbose & kDraw)
+	Printf("%-20s:%-20s %20s "
+	       "(line:%3d/%d/%d, marker:%3d/%2d/%4f, fill:%3d/%4d)", 
+	       gg->GetName(), gg->GetTitle(), nextG.GetOption(),
+	       gg->GetLineColor(),   gg->GetLineStyle(),   gg->GetLineWidth(),
+	       gg->GetMarkerColor(), gg->GetMarkerStyle(), gg->GetMarkerSize(),
+	       gg->GetFillColor(),   gg->GetFillStyle());
+      ret->Add(gg, nextG.GetOption());
+    }
+    return ret;
+  }
+
+  /** List of graphs */
+  TList fPoint2Point;
+  /** List of common errors */
+  TList fCommon;
+  /** Our data points */
+  Graph* fData;
+  /** The drawn graphs */
+  TMultiGraph* fDrawn;
+  /** Counter */
+  UInt_t fCounter;
+  /** Attributes of summed errors */
+  TAttFill fSumFill;
+  /** Attributes of summed errors */
+  TAttLine fSumLine;
+  /** Title on summed errors */
+  TString fSumTitle;
+  // Drawin option for sums 
+  UInt_t  fSumOption;
+  // Drawing options for data
+  UInt_t  fDataOption;
+  /** X title  */
+  TString fXTitle;
+  /** Y title */
+  TString fYTitle;
+  /** Map */
+  TList* fMap;
+  /** Whether statistical errors are relative */
+  Bool_t fStatRelative;
+  ClassDef(GraphSysErr,1); 
+};
+/** 
+ * @example TestImport.C
+ * 
+ * Example of simple import of simple dataset.
+ */
+/** 
+ * @example TestMultiImport.C
+ *
+ * Example of complex import reading all datasets 
+ */
+/** 
+ * @example Example.C
+ *
+ * Example of using this class 
+ */
+ 
+
+#endif
+// 
+// EOF
+// 
+

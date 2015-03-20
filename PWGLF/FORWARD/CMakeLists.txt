@@ -254,6 +254,11 @@ install ( DIRECTORY analysis2/dndeta
 	  DESTINATION PWGLF/FORWARD/analysis2 
 	  USE_SOURCE_PERMISSIONS
 	  PATTERN "*~"    EXCLUDE)
+# install GraphSysErr scripts 
+install ( DIRECTORY analysis2/gse
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  USE_SOURCE_PERMISSIONS
+	  PATTERN "*~"    EXCLUDE)
 # Install other scripts
 install ( FILES analysis2/AddTaskCentraldNdeta.C
   		analysis2/AddTaskCentralMCCorr.C
