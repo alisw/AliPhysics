@@ -175,15 +175,14 @@ int main(int argc, char **argv) {
     
     /* get next event (blocking call until timeout) */
     status=monitorGetEventDynamic((void **)&event);
-    cout<<" status "<<status<<endl;
-    if (status==(int)MON_ERR_EOF) {
+     if (status==(int)MON_ERR_EOF) {
       printf ("End of File detected\n");
       break; /* end of monitoring file has been reached */
     }
     
     if (status!=0) {
       printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-  //    break;
+      break;
     }
     
     /* retry if got no event */
