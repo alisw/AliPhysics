@@ -206,5 +206,5 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, A
         
     AliDebug(1,Form("FIT: SPDshift %f Vertex %f  FITsignal %f ps FITA %f ps FITC %f ps \n",shift, vertexFIT, firsttime[0], firsttime[1],firsttime[2]));
   }
-   if (pESD)    pESD->SetFITData(fESDFIT); 
+  //   if (pESD)    pESD->SetFITData(fESDFIT); 
 }
