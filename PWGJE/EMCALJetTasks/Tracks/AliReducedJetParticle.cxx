@@ -23,8 +23,6 @@ ClassImp(HighPtTracks::AliReducedJetParticle)
 namespace HighPtTracks {
 
 /**
- * \brief Dummy constructor
- *
  * Dummy (I/O) constructor, not to be used
  */
 AliReducedJetParticle::AliReducedJetParticle() :
@@ -43,8 +41,6 @@ AliReducedJetParticle::AliReducedJetParticle() :
 }
 
 /**
- * \brief Main constructor
- *
  * Main constructor, initializes the particle with the moment vector, the particle energy and
  * the PDG code. Also creates a container for tracks matched to the particle via the Monte-Carlo
  * label, which takes ownership over the matched tracks.
@@ -71,8 +67,6 @@ AliReducedJetParticle::AliReducedJetParticle(double px, double py, double pz, do
 }
 
 /**
- * \brief Copy constructor
- *
  * Copy constructor. For each matched track, a copy is created and stored in the
  * new object.
  *
@@ -99,8 +93,6 @@ AliReducedJetParticle::AliReducedJetParticle(const AliReducedJetParticle& ref):
 }
 
 /**
- * \brief Assignment operator
- *
  * Assignment operator. For each matched track, a copy is created and stored in the
  * new object.
  *
@@ -124,8 +116,6 @@ AliReducedJetParticle& AliReducedJetParticle::operator=(const AliReducedJetParti
 }
 
 /**
- * \brief Destructor
- *
  * Destructor. Deletes all matched tracks associated to the particle.
  */
 AliReducedJetParticle::~AliReducedJetParticle() {
@@ -133,8 +123,6 @@ AliReducedJetParticle::~AliReducedJetParticle() {
 }
 
 /**
- * \brief Access particle kine information
- *
  * Access to the particle kinematics information via a TLorentzVector which is filled
  * inside the function
  *
@@ -145,8 +133,6 @@ void AliReducedJetParticle::FillLorentzVector(TLorentzVector& ref) const {
 }
 
 /**
- * \brief Add matched reconstructed track
- *
  * Adds a new matched reconstructed track to the jet particle. Tracks are matched via the
  * Monte-Carlo label.
  *
@@ -157,8 +143,6 @@ void AliReducedJetParticle::AddMatchedTrack(AliReducedMatchedTrack *trk) {
 }
 
 /**
- * \brief Get \f$ \Delta p_{t}\f$ for a given matched track
- *
  * Calculate the difference between reconstructed and generated \f$ p_{t} \f$ relative to the
  * generated \f$ p_{t} \f$ . If no matching track is found for the index, returns -1000.
  *

@@ -26,8 +26,6 @@ ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent)
 namespace EMCalTriggerPtAnalysis {
 
 /**
- * \brief Default constructor
- *
  * Dummy constructor, only for ROOT I/O, not to be used by the users. Sets as default swapping of
  * the trigger thresholds to false for both types of patches.
  */
@@ -39,8 +37,6 @@ AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent() :
 }
 
 /**
- * \brief Main constructor
- *
  * Main constructor, to be used to create the analysis component. Sets as default swapping of
  * the trigger thresholds to false for both types of patches.
  *
@@ -54,8 +50,6 @@ AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent(con
 }
 
 /**
- * \brief Create histograms for the trigger patch analysis
- *
  * Create histograms for the trigger patch analysis. Two types of histograms are currently defined.
  *  -# A histogram correlating different energy values (amplitude, estimated energy, calibrated energy)
  *  -# A histogram correlating online amplitude and offline amplitude
@@ -112,8 +106,6 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
 }
 
 /**
- * \brief Performs analysis on trigger patches found in the event
- *
  * Perform analysis on the event data set. Loops over all trigger patches found by the trigger patch
  * maker and fill relevant histograms for the different trigger types associated with the trigger patch. In
  * case the thresholds are requested to be swapped (separately for online and offline patches), then low

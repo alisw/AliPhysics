@@ -13,6 +13,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            Bool_t UseDEffic = kFALSE, // flag to use Dmeson track eff (kTRUE = YES, kFALSE = NO)
                                                            Bool_t useDStarSidebands = kFALSE, // flag to use sidebands from D0 (kFALSE) or sidebands from Dstar (kTRUE)
                                                            Bool_t useOnlyOneDStarPerEvent, // use only one D* per event (kTRUE) or all of them (kFALSE)
+                                                           Bool_t limitaccept, // kTRUE to run only with acceptance cut on MC kine
                                                            AliAnalysisTaskDStarCorrelations::DEffVariable var, // variable to use in D mesn efficiency correction besides pt
                                                            Int_t trackselect =1, // correlate with hadrons (1), kaons (2), kzeros (3)
                                                            Int_t usedispl =0, // don't use displacement (0), use absolute displacement (1) or relative (normalized by impac.par resol.) displacement (2)
@@ -187,7 +188,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
     
 
-	
+	// task->SetUseCentrality(kTRUE);
     task->SetNofPhiBins(nbins);
 	task->SetMonteCarlo(theMCon);
 	task->SetUseMixing(mixing);
@@ -202,6 +203,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetUseEfficiencyCorrection(UseEffic);
     task->SetUseDmesonEfficiencyCorrection(UseDEffic);
     task->SetUseRemoveMoreThanOneCDmesonCandidate(useOnlyOneDStarPerEvent);
+    task->SetLimitAcceptanceForMC(limitaccept);
     
     task->SetEfficiencyVariable(var);
     task->SetMaxDStarEta(eta);

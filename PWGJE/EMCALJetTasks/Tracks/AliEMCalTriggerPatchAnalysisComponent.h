@@ -1,15 +1,10 @@
-///
-/// \class AliEMCalTriggerPatchAnalysisComponent
-/// \brief Analysis component for EMCAL trigger patches
-///
-/// Analysis components for trigger patches. Fills THnSparses with the different energy definitions
-/// (amplitude, estimated (rough) patch energy, calibrated (offline) energy and the patch position on
-/// the EMCAL surface for EMCAL trigger patches of different categories created by the EMCAL trigger
-/// patch maker. Main patches defined as the patches of a given type with the highest energy.
-///
-/// \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
-/// \date Dec 12, 2014
-///
+/**
+ * \file AliEMCalTriggerPatchAnalysisComponent.h
+ * \brief Analysis component for EMCAL trigger patches
+ *
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \date Dec 12, 2014
+ */
 #ifndef ALIEMCALTRIGGERPATCHANALYSISCOMPONENT_H
 #define ALIEMCALTRIGGERPATCHANALYSISCOMPONENT_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
@@ -19,15 +14,24 @@
 
 /**
  * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-p_{t} tracks in triggered events
+ * \brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
  *
- * This namespace contains classes for the analysis of high-p_{t} tracks in
+ * This namespace contains classes for the analysis of high-\f$ p_{t} \f$ tracks in
  * triggered events.
  */
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerEventData;
 
+/**
+ * \class AliEMCalTriggerPatchAnalysisComponent
+ * \brief Analysis component for EMCAL trigger patches
+ *
+ * Analysis components for trigger patches. Fills THnSparses with the different energy definitions
+ * (amplitude, estimated (rough) patch energy, calibrated (offline) energy and the patch position on
+ * the EMCAL surface for EMCAL trigger patches of different categories created by the EMCAL trigger
+ * patch maker. Main patches defined as the patches of a given type with the highest energy.
+ */
 class AliEMCalTriggerPatchAnalysisComponent: public AliEMCalTriggerTracksAnalysisComponent {
 public:
   AliEMCalTriggerPatchAnalysisComponent();
@@ -67,8 +71,8 @@ public:
 
 protected:
 
-  Bool_t                        fSwapOnlineThresholds;          /// Swap trigger thresholds for online patches
-  Bool_t                        fSwapOfflineThresholds;         /// Swap trigger thresholds for offline patches
+  Bool_t                        fSwapOnlineThresholds;          ///< Swap trigger thresholds for online patches
+  Bool_t                        fSwapOfflineThresholds;         ///< Swap trigger thresholds for offline patches
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerPatchAnalysisComponent, 1);     // Component for trigger patch analysis

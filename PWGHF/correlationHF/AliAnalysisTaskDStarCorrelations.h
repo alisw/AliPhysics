@@ -96,6 +96,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     void SetUseCentrality (Bool_t j) {fUseCentrality = j;} // switch for centrality (kTRUE)/multiplicity(kFALSE)
     void SetUseHadronicChannelAtKineLevel (Bool_t use){fUseHadronicChannelAtKineLevel = use;}
     void SetUseRemoveMoreThanOneCDmesonCandidate (Bool_t use){fRemoveMoreThanOneDmesonCandidate = use;}
+    void SetLimitAcceptanceForMC (Bool_t use){fLimitAcceptanceForMC = use;}
    
     
     void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;} // number of delta phi bins
@@ -153,6 +154,7 @@ private:
   Bool_t fUseCentrality;// boolean to switch in between centrality or multiplicity
   Bool_t fUseHadronicChannelAtKineLevel; //
   Bool_t fRemoveMoreThanOneDmesonCandidate; // flag to remove a second, 3rd etc candidate if there is any - useful in PbPb
+  Bool_t fLimitAcceptanceForMC; // flag to remove a second, 3rd etc candidate if there is any - useful in PbPb
  
   Int_t fPhiBins;
   Int_t fEvents; //! number of event
@@ -182,7 +184,7 @@ private:
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
   
-  ClassDef(AliAnalysisTaskDStarCorrelations,8); // class for D meson correlations
+  ClassDef(AliAnalysisTaskDStarCorrelations,9); // class for D meson correlations
   
 };
 
