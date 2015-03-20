@@ -20,13 +20,13 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   // Create standard QA plots and trending tree in the current directory
   
   // Load needed libraries
-  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_ROOT/TRD");
+  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT -I$ALICE_PHYSICS -I$ALICE_ROOT/TRD");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libSTAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libTENDERSupplies");
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGPP");
   
@@ -40,7 +40,7 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
     TGrid::Connect("alien://");
   
   // trending values from the ESD task ------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TRD/macros/makeResults.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TRD/macros/makeResults.C");
   Double_t esdTrendValues[100]; 
   for(Int_t i=0;i<100;i++) esdTrendValues[i]=0.0;
   makeSummaryESD(qaFile.Data(), esdTrendValues, 1);

@@ -24,9 +24,7 @@
 namespace HighPtTracks {
 
 /**
- * \brief Destructor
- *
- * Clean up all particle lists
+ * Destructor. Clean up all particle lists.
  */
 AliParticleMap::~AliParticleMap() {
 	for(std::map<int, AliParticleList *>::iterator it = fParticles.begin(); it != fParticles.end(); ++it){
@@ -35,8 +33,6 @@ AliParticleMap::~AliParticleMap() {
 }
 
 /**
- * \brief Add new particle to the list
- *
  * Add particle to the list. In case the same label is already existing in the list, the particle is just added to the list,
  * otherwise a new entry for the label is created.
  *
@@ -56,8 +52,6 @@ void AliParticleMap::AddParticle(AliVTrack *track){
 }
 
 /**
- * \brief Get paritcles for assocaiated label.
- *
  * Get list of all reconstructed particles associated with a given Monte-Carlo Label.
  *
  * \param label Label of the particle
@@ -73,7 +67,7 @@ AliParticleList* AliParticleMap::GetParticles(int label) const {
 }
 
 /**
- * \brief Print status of the particle map.
+ * Print status of the particle map.
  */
 void AliParticleMap::Print() const {
 	for(std::map<int, AliParticleList *>::const_iterator it = fParticles.begin(); it != fParticles.end(); ++it){

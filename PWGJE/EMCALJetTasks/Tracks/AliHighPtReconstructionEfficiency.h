@@ -1,11 +1,7 @@
 /**
- * \class AliHighPtReconstructionEfficiency
- * \brief Analysis task producing filtered trees with reconstructed jets at generator level
- *
- * Analysis task creating reduced jet events. Each event contains reduced jets, which associate
- * constituents and reconstructed track. Constituents are particles associated by the jet finder
- * while tracks are all charged particles in a cone within a maximum radius (can be larger than R set
- * in the jet finder).
+ * \file AliHighPtReconstructionEfficiency.h
+ * \brief Definition of the analysis task producing filtered trees with reconstructed
+ * jets at generator level
  *
  * \author: Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  * \date Jan 28, 2015
@@ -47,6 +43,15 @@ namespace HighPtTracks {
 class AliReducedJetEvent;
 class AliReducedJetInfo;
 
+/**
+ * \class AliHighPtReconstructionEfficiency
+ * \brief Analysis task producing filtered trees with reconstructed jets at generator level
+ *
+ * Analysis task creating reduced jet events. Each event contains reduced jets, which associate
+ * constituents and reconstructed track. Constituents are particles associated by the jet finder
+ * while tracks are all charged particles in a cone within a maximum radius (can be larger than R set
+ * in the jet finder).
+ */
 class AliHighPtReconstructionEfficiency : public AliAnalysisTaskSE {
 public:
   /**
@@ -54,8 +59,8 @@ public:
    * \brief Declaration of cut types
    */
   enum CutType_t{
-    kRJStandardCuts = 0,//!< kRJStandardCuts
-    kRJHybridCuts = 1   //!< kRJHybridCuts
+    kRJStandardCuts = 0,      ///< Standard track cuts
+    kRJHybridCuts = 1         ///< Hybrid track cuts
   };
 	AliHighPtReconstructionEfficiency();
 	AliHighPtReconstructionEfficiency(const char *name);
@@ -67,21 +72,21 @@ public:
 	void Terminate(Option_t* /*option*/) {}
 
 	/**
-	 * \brief Set maximum \f$ \eta \f$ for particles and reconstructed tracks
+	 * Set maximum \f$ \eta \f$ for particles and reconstructed tracks
 	 *
 	 * \param maxeta The maximum allowed \f$ \eta \f$
 	 */
 	void SetMaxEtaParticles(double maxeta) { fMaxEtaParticles = maxeta; }
 
 	/**
-	 * \brief Set maximum \f$ \eta \f$ for jets
+	 * Set maximum \f$ \eta \f$ for jets
 	 *
 	 * \param maxeta The maximum allowed \f$ \eta \f$
 	 */
 	void SetMaxEtaJets(double maxeta) { fMaxEtaJets = maxeta; }
 
 	/**
-	 * \brief Set minimum allowed \f$ p_{t} \f$ for particles and tracks
+	 * Set minimum allowed \f$ p_{t} \f$ for particles and tracks
 	 *
 	 * \param minpt
 	 */
@@ -95,21 +100,21 @@ public:
 	void SetMaxDR(double maxdr) { fMaxDR = maxdr; }
 
 	/**
-	 * \brief Set standard track cuts
+	 * Set standard track cuts
 	 *
 	 * \param cuts Standard track cuts
 	 */
 	void SetStandardTrackCuts(AliESDtrackCuts *const cuts) { SetTrackCuts(cuts, kRJStandardCuts); }
 
 	/**
-	 * \brief Set hybrid track cuts
+	 * Set hybrid track cuts
 	 *
 	 * \param cuts Hybrid track cuts
 	 */
 	void SetHybridTrackCuts(AliESDtrackCuts *const cuts) { SetTrackCuts(cuts, kRJHybridCuts); }
 
 	/**
-	 * \brief Set task into debug mode
+	 * Set task into debug mode
 	 */
 	void SetTaskDebugMode() { fTaskDebugMode = true; }
 
@@ -132,24 +137,24 @@ private:
 	AliHighPtReconstructionEfficiency(const AliHighPtReconstructionEfficiency &);
 	AliHighPtReconstructionEfficiency &operator=(const AliHighPtReconstructionEfficiency &);
 
-	AliESDtrackCuts					*fTrackCuts[2];				/// List of track cuts
+	AliESDtrackCuts					*fTrackCuts[2];				///< List of track cuts
 	/// Map of reconstructed particles associate to a Monte-Carlo label
 	AliParticleMap					*fParticleMap;				//!
 
 	// Output objects
-	TTree							        *fJetTree;          /// Output tree
-	AliReducedJetEvent				*fJetEvent;         /// Output jet event
+	TTree							        *fJetTree;          ///< Output tree
+	AliReducedJetEvent				*fJetEvent;         ///< Output jet event
 
-	double 							fMaxEtaJets;              /// \f$ \eta \f$ cut for jets
-	double							fMaxEtaParticles;         /// \f$ \eta \f$ cut for particles
-	double 							fMinPtParticles;          /// minimium \f$ p_{t} \f$ cut for particles
-	double							fMaxDR;                   /// maximum distance of a particle to the main jet axis
+	double 							fMaxEtaJets;              ///< \f$ \eta \f$ cut for jets
+	double							fMaxEtaParticles;         ///< \f$ \eta \f$ cut for particles
+	double 							fMinPtParticles;          ///< minimium \f$ p_{t} \f$ cut for particles
+	double							fMaxDR;                   ///< maximum distance of a particle to the main jet axis
 
-	double							fCrossSection;            /// Cross section from PYTHIA
-	double							fNtrials;                 /// Number of trials from PYTHIA
-	int								fPtHardBin;                 /// \f$ p_{t} \f$-hard bin of the event
+	double							fCrossSection;            ///< Cross section from PYTHIA
+	double							fNtrials;                 ///< Number of trials from PYTHIA
+	int								fPtHardBin;                 ///< \f$ p_{t} \f$-hard bin of the event
 
-	bool 							fTaskDebugMode;             /// Switch for debug mode
+	bool 							fTaskDebugMode;             ///< Switch for debug mode
 
 	/// \cond CLASSIMP
 	ClassDef(AliHighPtReconstructionEfficiency, 1);
