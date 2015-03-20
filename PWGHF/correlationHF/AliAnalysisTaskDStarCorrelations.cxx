@@ -80,6 +80,7 @@ fUseDmesonEfficiencyCorrection(kFALSE),
 fUseCentrality(kFALSE),
 fUseHadronicChannelAtKineLevel(kFALSE),
 fRemoveMoreThanOneDmesonCandidate(kFALSE),
+fLimitAcceptanceForMC(kFALSE),
 fPhiBins(32),
 fEvents(0),
 fDebugLevel(0),
@@ -423,6 +424,35 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     
     
     
+    // run checks on tracks only
+    
+    if(fFullmode){
+    TObjArray * tracksarray = fCorrelator->AcceptAndReduceTracks(aodEvent);
+    //cout << "test 1 " << endl;
+        Double_t phi ;
+    for(Int_t k = 0; k<tracksarray->GetEntriesFast(); k++){
+        
+        AliReducedParticle* partdummy = (AliReducedParticle*)tracksarray->At(k);
+        //cout << "DCA = " << partdummy->GetImpPar() << endl;
+        if(fmontecarlo){
+        Int_t label = partdummy->GetLabel();
+        
+            AliAODMCParticle *part = (AliAODMCParticle*)fmcArray->At(label);
+            if(!part) continue;
+            if(fReco && !fmixing){
+                    if (part->IsPhysicalPrimary()) ((TH1D*)fOutputMC->FindObject("isPhysPrimDCA"))->Fill(partdummy->GetImpPar()); // fill isphysicalprimary
+                if (!part->IsPhysicalPrimary()) ((TH1D*)fOutputMC->FindObject("isSecondaryDCA"))->Fill(partdummy->GetImpPar()); // fill isnotphysicalprimary
+            }
+        }
+        phi = fCorrelator->SetCorrectPhiRange(partdummy->Phi());
+        ((TH2D*)fEMOutput->FindObject("EtaVsMultForTracks"))->Fill(partdummy->Eta(),MultipOrCent);
+      if(!fmixing)  ((TH2D*)fTracksOutput->FindObject("AllTracksPhiEtaDistribution"))->Fill(phi,partdummy->Eta());
+      if(!fmixing)   ((TH1D*)fTracksOutput->FindObject("AllTracksPtDistribution"))->Fill(partdummy->Pt());
+        
+    } // end for loop
+      //  cout << "I didn't crash :)" << endl;
+    }// end if full mode
+    
      // ********************************************** D * selection  ****************************************************
     
     
@@ -466,6 +496,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	
 	//Bool_t isDStarCand = kFALSE;
     Bool_t isDfromB = kFALSE;
+    Bool_t isQuarkFound = kFALSE;
 	Bool_t isEventMixingFilledPeak = kFALSE;
 	Bool_t isEventMixingFilledSB = kFALSE;
     Bool_t EventHasDStarCandidate = kFALSE;
@@ -556,14 +587,10 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             if(fEfficiencyVariable == kNone) efficiencyvariable = 0;
            
             
-            // if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue; // skip candidates outside the defined eta range
             
             phiDStar = fCorrelator->SetCorrectPhiRange(phiDStar); // set the Phi of the D* in the range defined a priori (-0.5 Pi - 1.5 Pi)
             ptbin=fCuts->PtBin(dstarD0pi->Pt()); // get the pt bin of the D*
-            
-           // cout << "DStar pt = " << ptDStar << endl;
-           //  cout << "pt bin = " << ptbin << endl;
-          //  if(ptbin<3) continue;
+         
             
              Double_t mD0Window= fD0Window[ptbin]/3;
              invMassDZero = dstarD0pi->InvMassD0();
@@ -582,6 +609,26 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
          
             // using montecarlo on reconstruction
             Int_t mcLabelDStar = -999;
+            
+           /* if(fmontecarlo){
+                while (mother > 0){
+                    AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+                    if (mcMoth){
+                        pdgGranma = mcMoth->GetPdgCode();
+                        abspdgGranma = TMath::Abs(pdgGranma);
+                        if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+                            isDfromB=kTRUE;
+                        }
+                        if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+                        mother = mcMoth->GetMother();
+                    }else{
+                        AliError("Failed casting the mother particle!");
+                        break;
+                    }
+                }
+   
+            }
+            */
             if(fmontecarlo){
                 // find associated MC particle for D* ->D0toKpi
                 mcLabelDStar = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,fmcArray/*,kFALSE*/);
@@ -591,13 +638,27 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                 AliAODMCParticle *MCDStar = (AliAODMCParticle*)fmcArray->At(mcLabelDStar);
                 //check if DStar from B
                 Int_t labelMother = MCDStar->GetMother();
-                AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
-                if(!mother) continue;
-                Int_t motherPDG =TMath::Abs(mother->PdgCode());
-                if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
+                    AliAODMCParticle * mother = NULL;
+                    
+                    while(labelMother>0){
+                        mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
+                        Int_t motherPDG =TMath::Abs(mother->PdgCode());
+                        if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
+                        if(motherPDG==4 || motherPDG==5) isQuarkFound=kTRUE;
+                        labelMother = mother->GetMother();
+                    }
+                    
+                    
                 }
+                
+                
+                if(fmontecarlo && isQuarkFound){
+                    if(!isDfromB) ((TH1D*)fOutputMC->FindObject("DmesonSourceCounter"))->Fill(1);
+                     if(isDfromB) ((TH1D*)fOutputMC->FindObject("DmesonSourceCounter"))->Fill(2);
+                }
+                  if(fmontecarlo && !isQuarkFound) ((TH1D*)fOutputMC->FindObject("DmesonSourceCounter"))->Fill(0);
+               // if(!isQuarkFound) continue;
             }
-            
             
             // fill mass histograms
            // cout << "crash here 1" << endl;
@@ -721,7 +782,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             if(PDG !=413) continue; // skip if it is not a DStar
            // cout << "PDG = " << PDG << endl;
             // check fiducial acceptance
-            if(!fCuts->IsInFiducialAcceptance(DStarMC->Pt(),DStarMC->Y())) continue;
+            if(fLimitAcceptanceForMC && !fCuts->IsInFiducialAcceptance(DStarMC->Pt(),DStarMC->Y())) continue;
           //  cout << "2 - Have D* in fiducial acceptance " << endl;
             
             if(DStarMC->Pt()<fCuts->GetMinPtCandidate()||DStarMC->Pt()>fCuts->GetMaxPtCandidate()) continue;
@@ -729,10 +790,33 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
            //  cout << "3 - Have D* in ptrange acceptance " << endl;
             //check if DStar from B
             Int_t labelMother = DStarMC->GetMother();
-            AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
-            if(!mother) continue;
-            Int_t motherPDG =TMath::Abs(mother->PdgCode());
-            if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
+          //  AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
+          //  if(!mother) continue;
+          //  Int_t motherPDG =TMath::Abs(mother->PdgCode());
+          //  if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
+            
+           
+            
+                //check if DStar from B
+            //    Int_t labelMother = DStarMC->GetMother();
+                AliAODMCParticle * mother = NULL;
+                
+                while(labelMother>0){
+                    mother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelMother));
+                    Int_t motherPDG =TMath::Abs(mother->PdgCode());
+                    if((motherPDG>=500 && motherPDG <600) || (motherPDG>=5000 && motherPDG<6000 )) isDfromB = kTRUE;
+                    if(motherPDG==4 || motherPDG==5) isQuarkFound=kTRUE;
+                    labelMother = mother->GetMother();
+                }
+            
+            if(fmontecarlo && isQuarkFound){
+                if(!isDfromB) ((TH1D*)fOutputMC->FindObject("DmesonSourceCounter"))->Fill(1);
+                if(isDfromB) ((TH1D*)fOutputMC->FindObject("DmesonSourceCounter"))->Fill(2);
+            }
+            if(fmontecarlo && !isQuarkFound) ((TH1D*)fOutputMC->FindObject("DmesonSourceCounter"))->Fill(0);
+            
+                if(!isQuarkFound) continue;
+            
             
             
             Bool_t isDZero = kFALSE;
@@ -762,6 +846,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                             Int_t labelD0daugh = mcDaughter->GetDaughter(k);
                             AliAODMCParticle* mcGrandDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelD0daugh));
                             if(!mcGrandDaughter) continue;
+                            if(fLimitAcceptanceForMC && mcGrandDaughter->Eta()>0.8) continue;
                             Int_t granddaugh_pdg = TMath::Abs(mcGrandDaughter->GetPdgCode());
                             if(granddaugh_pdg==321) isKaon = kTRUE;
                             if(granddaugh_pdg==211) isPion = kTRUE;
@@ -773,6 +858,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                     if(daugh_pdg == 211) {
                         isSoftPi = kTRUE;
                         daughtercharge = mcDaughter->Charge();
+                        if(fLimitAcceptanceForMC && mcDaughter->Eta()>0.8) continue;
                         trackidsoftPi = daugh_label;}
                 } // end loop on D* daughters
                 if(!isDZero || !isSoftPi) continue; // skip if not correct decay channel
@@ -784,10 +870,24 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             
              phiDStar = fCorrelator->SetCorrectPhiRange(phiDStar);
             
-            if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
+           if(fLimitAcceptanceForMC) if(TMath::Abs(etaDStar) > fMaxEtaDStar) continue;
            // cout << "Dstars are selected" << endl;
             
         }// end if pure MC information
+        
+        if(ptDStar>3 && ptDStar<=5){
+        if(isInPeak)((TH2D*)fEMOutput->FindObject("EtaVsMultForDCand3to5"))->Fill(etaDStar,MultipOrCent);
+        if(EventHasDZeroSideBandCandidate || EventHasDStarSideBandCandidate)((TH2D*)fEMOutput->FindObject("EtaVsMultForSB3to5"))->Fill(etaDStar,MultipOrCent);
+        }
+        if(ptDStar>5 && ptDStar<=8){
+            if(isInPeak)((TH2D*)fEMOutput->FindObject("EtaVsMultForDCand5to8"))->Fill(etaDStar,MultipOrCent);
+            if(EventHasDZeroSideBandCandidate || EventHasDStarSideBandCandidate)((TH2D*)fEMOutput->FindObject("EtaVsMultForSB5to8"))->Fill(etaDStar,MultipOrCent);
+        }
+        if(ptDStar>8 && ptDStar<=16){
+            if(isInPeak)((TH2D*)fEMOutput->FindObject("EtaVsMultForDCand8to16"))->Fill(etaDStar,MultipOrCent);
+            if(EventHasDZeroSideBandCandidate || EventHasDStarSideBandCandidate)((TH2D*)fEMOutput->FindObject("EtaVsMultForSB8to16"))->Fill(etaDStar,MultipOrCent);
+        }
+      
         
         // check kinematics for tagged D*
         if(fmontecarlo && !fmixing)	((TH2F*)fOutputMC->FindObject("MCTagEtaInclusiveDStar"))->Fill(etaDStar,ptDStar); // fill phi, eta
@@ -795,9 +895,12 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
         
         
         // getting the number of triggers in the MCtag D* case
-        if(fmontecarlo && isDStarMCtag) ((TH1F*)fOutputMC->FindObject("MCtagPtDStar"))->Fill(ptDStar,DmesonWeight);
-        if(fmontecarlo && isDStarMCtag && !isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromCharm"))->Fill(ptDStar,DmesonWeight);
-        if(fmontecarlo && isDStarMCtag && isDfromB) ((TH1D*)fOutputMC->FindObject("MCtagPtDStarfromBeauty"))->Fill(ptDStar,DmesonWeight);
+        
+        if(!fReco) deltainvMDStar = 0.1454;
+        
+        if(fmontecarlo && isDStarMCtag && isQuarkFound) ((TH2F*)fOutputMC->FindObject("MCtagPtDStar"))->Fill(ptDStar,deltainvMDStar,DmesonWeight);
+        if(fmontecarlo && isDStarMCtag && isQuarkFound && !isDfromB) ((TH2D*)fOutputMC->FindObject("MCtagPtDStarfromCharm"))->Fill(ptDStar,deltainvMDStar,DmesonWeight);
+        if(fmontecarlo && isDStarMCtag && isQuarkFound && isDfromB) ((TH2D*)fOutputMC->FindObject("MCtagPtDStarfromBeauty"))->Fill(ptDStar,deltainvMDStar,DmesonWeight);
         
         
         fCorrelator->SetTriggerParticleProperties(ptDStar,phiDStar,etaDStar); // pass to the object the necessary trigger part parameters
@@ -846,6 +949,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
         Int_t NofEventsinPool = 1;
         if(fmixing) NofEventsinPool = fCorrelator->GetNofEventsInPool();
         
+        Bool_t *trackOrigin = NULL;
        // cout << "crash here 5" << endl;
         //************************************************** LOOP ON EVENTS IN EVENT POOL *****************************************************
         
@@ -869,7 +973,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
             if(fBkgMethod == kDStarSB &&  EventHasDStarSideBandCandidate) ((TH1D*)fTracksOutput->FindObject("TracksPerSBcandidate"))->Fill(NofTracks);
             if(fBkgMethod == kDZeroSB &&  EventHasDZeroSideBandCandidate) ((TH1D*)fTracksOutput->FindObject("TracksPerSBcandidate"))->Fill(NofTracks);
             
-            if(isDStarMCtag && fmontecarlo) ((TH1D*)fTracksOutput->FindObject("TracksPerDMC"))->Fill(NofTracks);
+            if(isDStarMCtag && fmontecarlo && isQuarkFound) ((TH1D*)fTracksOutput->FindObject("TracksPerDMC"))->Fill(NofTracks);
             }
             
              //************************************************** LOOP ON TRACKS *****************************************************
@@ -902,6 +1006,17 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  if(fmontecarlo){
                      AliAODMCParticle *part = (AliAODMCParticle*)fmcArray->At(label);
                      if(!part) continue;
+                     
+                     if(fReco && !fmixing){
+                       
+                         if (part->IsPhysicalPrimary()) ((TH2D*)fOutputMC->FindObject("isPhysPrimDCAbsDphi"))->Fill(DeltaPhi,hadron->GetImpPar()); // fill isphysicalprimary
+                         if (!part->IsPhysicalPrimary()) ((TH2D*)fOutputMC->FindObject("isSecondaryDCAbsDphi"))->Fill(DeltaPhi,hadron->GetImpPar()); // fill isnotphysicalprimary
+                         //if(!MCAODTrack) ((TH2D*)fOutputMC->FindObject("isSecondaryDCAbsDphi"))->Fill(DeltaPhi,-0.005);
+                         //cout << "the DCA is = " << MCAODTrack->DCA() << endl;
+                        
+                         
+                     }
+                     
                      if (!part->IsPhysicalPrimary()) continue; // removing secondary tracks
                      if(!fmixing && !fReco){
                          if(IsDDaughter(DStarMC, part)) continue; // skipping D* daughter
@@ -921,7 +1036,6 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
               
                  
-		 Bool_t *trackOrigin = NULL;
                  
                  if(fmontecarlo) {trackOrigin = fAssocCuts->IsMCpartFromHF(label,fmcArray);
                      if(trackOrigin[4]) {/*cout << "Something is wrong with hadron in MC - skipping" << endl; */continue;}
@@ -1009,9 +1123,9 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                  
                      
                  
-                 if(fmontecarlo){
+                 if(fmontecarlo && isQuarkFound){
                      // add the montecarlos
-                       if(!fReco && TMath::Abs(etaHad)>0.8) continue;
+                       if(!fReco && fLimitAcceptanceForMC && TMath::Abs(etaHad)>0.8) continue;
                      if(!isDfromB){
                      //cout << "Filling correlations from charm  " << endl;
                      //    cout << "Ik zoek op " << Form("CorrelationsMCfromCharmHadron_%d",ptbin) << endl;
@@ -1029,7 +1143,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
                      }
                  }
                  
-		 delete [] trackOrigin;
+                 
              } // end loop on associated tracks
             
         } // end loop on events in event pool
@@ -1212,11 +1326,11 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
         }
         
         if(fmontecarlo){
-        MCCorrelationsCharm = new THnSparseF(MCSparseNameCharm.Data(),"Correlations for DStar from charm; #Delta#Phi; invariant mass;  #Delta #eta;AssocTrk p_{T}",6,nbinsSparseMC,binLowLimitSparseMC,binUpLimitSparseMC);
+        MCCorrelationsCharm = new THnSparseF(MCSparseNameCharm.Data(),"Correlations for DStar from charm; #Delta#Phi;   #Delta #eta;AssocTrk p_{T}",6,nbinsSparseMC,binLowLimitSparseMC,binUpLimitSparseMC);
         MCCorrelationsCharm->Sumw2();
         fOutputMC->Add(MCCorrelationsCharm);
             
-        MCCorrelationsBeauty = new THnSparseF(MCSparseNameBeauty.Data(),"Correlations for DStar from beauty; #Delta#Phi; invariant mass;  #Delta #eta;AssocTrk p_{T}",6,nbinsSparseMC,binLowLimitSparseMC,binUpLimitSparseMC);
+        MCCorrelationsBeauty = new THnSparseF(MCSparseNameBeauty.Data(),"Correlations for DStar from beauty; #Delta#Phi;   #Delta #eta;AssocTrk p_{T}",6,nbinsSparseMC,binLowLimitSparseMC,binUpLimitSparseMC);
             MCCorrelationsBeauty->Sumw2();
             fOutputMC->Add(MCCorrelationsBeauty);
         }
@@ -1279,6 +1393,12 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     
     
     TString nameDZeroMass = "", nameDStarMass = "", nameDStarFromSBMass = "", nameDZerovsDStarMass = "";
+    // add mass histos for MC
+    TH1F * DStarMassFromCharm = NULL;
+    TH1F * DStarMassFromBeauty = NULL;
+    
+    TString nameDStarMassFromCharm = "";
+    TString nameDStarMassFromBeauty = "";
     
     Int_t nofPtBins = fCuts->GetNPtBins();// number of ptbins
     Float_t * ptbinlims = fCuts->GetPtBinLimits();
@@ -1287,8 +1407,6 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     
     
     for(Int_t iBin =0; iBin < nofPtBins; iBin++){ // create a mass histogram for each ptbin
-        
-        
         
         if(ptbinlims[iBin]<fCuts->GetMinPtCandidate() || ptbinlims[iBin]>fCuts->GetMaxPtCandidate())continue;
         
@@ -1336,6 +1454,11 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
             DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
             DZerovsDStarMassWeighted = new TH2D(nameDZerovsDStarMass.Data(),Form("Delta invariant mass for sideband in bin %d; M(K#pi) GeV/c^{2};M(K#pi#pi)- M(K#pi) GeV/c^{2}",iBin),200,1.75,1.95,200,0.1,0.2);
             
+            D0massWeighted->Sumw2();
+            DStarMassWeighted->Sumw2();
+            DStarFromSBMassWeighted->Sumw2();
+            DZerovsDStarMassWeighted->Sumw2();
+            
             if(!fmixing){
                 fDmesonOutput->Add(D0massWeighted);
                 fDmesonOutput->Add(DStarMassWeighted);
@@ -1343,6 +1466,23 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
                 fDmesonOutput->Add(DZerovsDStarMassWeighted);
             }
         }
+        
+        /*if(fmontecarlo){
+        nameDStarMassFromCharm = "histDStarMassFromCharm_";
+        nameDStarMassFromBeauty = "histDStarMassFromBeauty_";
+        
+        nameDStarMassFromCharm+=Form("%d",iBin);
+        nameDStarMassFromBeauty+=Form("%d",iBin);
+            
+            DStarMassFromCharm = new TH1F(nameDStarMassFromCharm.Data(), Form("Delta invariant mass for candidates from Charm in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+            DStarMassFromBeauty = new TH1F(nameDStarMassFromBeauty.Data(), Form("Delta invariant mass for candidates from Beauty in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+            if(!fmixing){
+                fOutputMC->Add(DStarMassFromCharm);
+                fOutputMC->Add(DStarMassFromBeauty);
+              
+            }
+        }*/
+        
     }// end loop on pt bins
     
     
@@ -1384,6 +1524,11 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     TH1D * TracksPerSBcandidate = new TH1D("TracksPerSBcandidate","Distribution of number of tracks per sideband candidate; N tracks; counts",20000,-0.5,19999.5);
     TH1D * TracksPerDMC = new TH1D("TracksPerDMC","Distribution of number of tracks per tagged D ; N tracks; counts",20000,-0.5,19999.5);
     
+    TH2D * AllTracksPhiEtaDistribution = new TH2D("AllTracksPhiEtaDistribution","Azimuthal and pseudorapiity distribution of all tracks; #varphi; #eta; entries",100,lowcorrbin,upcorrbin,200,-2,2);
+    TH1D * AllTracksPtDistribution = new TH1D("AllTracksPtDistribution","pt distribution of all tracks; p_{T}; entries",200,0,20);
+    
+    
+    
     if(!fmixing) fTracksOutput->Add(PhiInclusiveTracks);
     if(!fmixing) fTracksOutput->Add(PhiSidebandTracks);
     if(!fmixing) fTracksOutput->Add(EtaInclusiveTracks);
@@ -1392,16 +1537,18 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     if(!fmixing) fTracksOutput->Add(TracksPerDcandidate);
     if(!fmixing) fTracksOutput->Add(TracksPerSBcandidate);
     if(!fmixing && fmontecarlo) fTracksOutput->Add(TracksPerDMC);
+    if(!fmixing && fFullmode) fTracksOutput->Add(AllTracksPhiEtaDistribution);
+    if(!fmixing && fFullmode) fTracksOutput->Add(AllTracksPtDistribution);
     
     
     // Montecarlo for D*
-    TH1D *MCtagPtDStarfromCharm = new TH1D("MCtagPtDStarfromCharm","RECO pt of MCtagged DStars from charm",50,0,50);
+    TH2D *MCtagPtDStarfromCharm = new TH2D("MCtagPtDStarfromCharm","RECO pt of MCtagged DStars from charm",50,0,50,200,0.1,0.2);
     if(fmontecarlo) fOutputMC->Add(MCtagPtDStarfromCharm);
     
-    TH1D *MCtagPtDStarfromBeauty = new TH1D("MCtagPtDStarfromBeauty","RECO pt of MCtagged DStars from beauty",50,0,50);
+    TH2D *MCtagPtDStarfromBeauty = new TH2D("MCtagPtDStarfromBeauty","RECO pt of MCtagged DStars from beauty",50,0,50,200,0.1,0.2);
     if(fmontecarlo) fOutputMC->Add(MCtagPtDStarfromBeauty);
 	
-	TH1F *MCtagPtDStar = new TH1F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",50,0,50);
+	TH2F *MCtagPtDStar = new TH2F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",50,0,50,200,0.1,0.2);
 	if(fmontecarlo) fOutputMC->Add(MCtagPtDStar);
     
     TH2F * MCTagEtaInclusiveDStar = new TH2F("MCTagEtaInclusiveDStar","MC Tag eta distributions of Inclusive Dmesons; #eta; pT;Entries",20,-1,1,50,0,50);
@@ -1410,7 +1557,22 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     TH2F * MCTagPhiInclusiveDStar = new TH2F("MCTagPhiInclusiveDStar","MC Tag Azimuthal distributions of Inclusive Dmesons; #eta; pT;Entries",20,-0.5*TMath::Pi(),1.5*TMath::Pi(),50,0,50);
     if(fmontecarlo && !fmixing) fOutputMC->Add(MCTagPhiInclusiveDStar);
     
+    TH2D * isPhysPrimDCAbsDphi = new TH2D("isPhysPrimDCAbsDphi","DCA vs Dphi for PhysicalPrimary; #dphi; DCA (cm);Entries",32,-0.5*TMath::Pi(),1.5*TMath::Pi(),5000,0,5);
+    TH2D * isSecondaryDCAbsDphi = new TH2D("isSecondaryDCAbsDphi","DCA vs Dphi for non PhysicalPrimary; #dphi; DCA (cm);Entries",32,-0.5*TMath::Pi(),1.5*TMath::Pi(),5000,0,5);
+      if(fmontecarlo && !fmixing) fOutputMC->Add(isPhysPrimDCAbsDphi);
+      if(fmontecarlo && !fmixing) fOutputMC->Add(isSecondaryDCAbsDphi);
     
+    TH1D * isPhysPrimDCA = new TH1D("isPhysPrimDCA","DCA for PhysicalPrimary;  DCA (cm);Entries",5000,0,5);
+    TH1D * isSecondaryDCA = new TH1D("isSecondaryDCA","DCA  for non PhysicalPrimary;  DCA (cm);Entries",5000,0,5);
+    if(fmontecarlo && !fmixing) fOutputMC->Add(isPhysPrimDCA);
+    if(fmontecarlo && !fmixing) fOutputMC->Add(isSecondaryDCA);
+    
+    TH1D * DmesonSourceCounter = new TH1D("DmesonSourceCounter","Origin of D meson",3,-0.5,2.5);
+    DmesonSourceCounter->GetXaxis()->SetBinLabel(1,"Fake Counts");
+    DmesonSourceCounter->GetXaxis()->SetBinLabel(2,"Is from c");
+    DmesonSourceCounter->GetXaxis()->SetBinLabel(3,"Is from b");
+    fOutputMC->Add(DmesonSourceCounter);
+ 
     
     
     
@@ -1436,6 +1598,25 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
      
      TH2D * EventDistributionPerPoolBin  = new TH2D("EventDistributionPerPoolBin","Pool Bin Checks; PoolBin; Entry",nPoolBins,-0.5,nPoolBins-0.5,maxevents+2,0,maxevents+2);
    if(fmixing)  fEMOutput->Add(EventDistributionPerPoolBin);
+    
+    
+     TH2D * EtaVsMultForTracks = new TH2D("EtaVsMultForTracks","Eta Vs Mult For Tracks; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    
+    TH2D * EtaVsMultForDCand3to5 = new TH2D("EtaVsMultForDCand3to5","Eta Vs Mult For D*, 3<D* p_{T}<5 GeV/c; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    TH2D * EtaVsMultForSB3to5 = new TH2D("EtaVsMultForSB3to5","Eta Vs Mult For SB,3<D* p_{T}<5 GeV/c; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    
+    TH2D * EtaVsMultForDCand5to8 = new TH2D("EtaVsMultForDCand5to8","Eta Vs Mult For D* 5<D* p_{T}<8 GeV/c; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    TH2D * EtaVsMultForSB5to8 = new TH2D("EtaVsMultForSB5to8","Eta Vs Mult For SB 5<D* p_{T}<8 GeV/c; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    
+    TH2D * EtaVsMultForDCand8to16 = new TH2D("EtaVsMultForDCand8to16","Eta Vs Mult For D* 8<D* p_{T}<16 GeV/c; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    TH2D * EtaVsMultForSB8to16 = new TH2D("EtaVsMultForSB8to16","Eta Vs Mult For SB 8<D* p_{T}<16 GeV/c; #eta; SPD tracklets;Entries",80,-0.8,0.8,1000,0,1000);
+    fEMOutput->Add(EtaVsMultForTracks);
+    fEMOutput->Add(EtaVsMultForDCand3to5);
+    fEMOutput->Add(EtaVsMultForSB3to5);
+    fEMOutput->Add(EtaVsMultForDCand5to8);
+    fEMOutput->Add(EtaVsMultForSB5to8);
+    fEMOutput->Add(EtaVsMultForDCand8to16);
+    fEMOutput->Add(EtaVsMultForSB8to16);
     
 }
 
