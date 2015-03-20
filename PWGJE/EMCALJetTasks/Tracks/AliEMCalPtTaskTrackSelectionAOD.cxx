@@ -28,8 +28,6 @@ ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD)
 namespace EMCalTriggerPtAnalysis {
 
 	/**
-	 * \brief Dummy constructor
-	 *
 	 * Main constructor, initialises fields with 0 (or NULL). For ROOT I/O, not intended
 	 * to be used by the users.
 	 */
@@ -41,8 +39,6 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
 	/**
-	 * \brief Main constructor
-	 *
 	 * Main Constructor, initalising also track cuts and filter bits. In case the initial cuts
 	 * is a nullpointer, only filter bits are used for the track selection. This constructor is
 	 * intended to be used by the users.
@@ -58,8 +54,6 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
 	/**
-	 * \brief Copy constructor
-	 *
 	 * Copy constructor, performs a deep copy of the underlying track cuts (if reference object
 	 * has those).
 	 *
@@ -74,8 +68,6 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
 	/**
-	 * \brief Assignment operator
-	 *
 	 * Asignment operator, creates a deep copy of the track cuts(if set)
 	 *
 	 * \param ref: AOD track selection as basis for the copy
@@ -95,8 +87,6 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
 	/**
-	 * \brief Destructor
-	 *
 	 * Destructor, removes the track cuts and the TObjArray of output tracks (if created)
 	 */
 	AliEMCalPtTaskTrackSelectionAOD::~AliEMCalPtTaskTrackSelectionAOD() {
@@ -105,8 +95,6 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
 	/**
-	 * \brief Select tracks from an inpt TClonesArray of tracks
-	 *
 	 * Select tracks from a list (TClonesArray) of tracks. The actual selection process
 	 * is delegated to the function IsTrack selected. This function collects all the tracks
 	 * which are accepted and puts them into a TObjArray. Note that this class keeps ownership
@@ -127,14 +115,12 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
 	/**
-	 * \brief Select tracks from an input event
-	 *
 	 * Select tracks from an input event. The actual selection process is delegated to
 	 * the function IsTrack selected. This function collects all the tracks which are
 	 * accepted and puts them into a TObjArray. Note that this class keeps ownership over
 	 * the resulting TObjArray.
 	 *
-	 * \param tracks TClonesArray of input tracks, under which we select the appropriate ones
+	 * \param event Input event under which we select the appropriate tracks
 	 * \return TObjArray of selected tracks
 	 */
 	TObjArray* AliEMCalPtTaskTrackSelectionAOD::GetAcceptedTracks(const AliVEvent* const event) {
@@ -153,8 +139,6 @@ namespace EMCalTriggerPtAnalysis {
 	}
 
   /**
-   * \brief Check whether track is accepted
-   *
    * Function checks whether track is accepted under the given track selection cuts.
    * The function can handle AliAODTrack and AliPicoTrack, while for AliPico track an
    * AliAODTrack is expected to be the underlying structure. If it is not possible to

@@ -12,11 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Weight handler for event-dependent reweighting
- *
- *   Author: Markus Fasel
- */
 #include <TF1.h>
 
 #include "AliEMCalTriggerWeightHandler.h"
@@ -24,13 +19,15 @@
 #include "AliLog.h"
 #include "AliMCEvent.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-///
-/// \brief Constructor
-///
+/**
+ * Constructor
+ */
 AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler() :
   fWeightModel(NULL),
   fUsePtHard(kTRUE)
@@ -38,11 +35,11 @@ AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler() :
 
 }
 
-///
-/// \brief Get weight for event
-/// \param event: Input event
-/// \return the weight calculated for the event
-///
+/**
+ * Get weight for event
+ * \param event Input event
+ * \return the weight calculated for the event
+ */
 double AliEMCalTriggerWeightHandler::GetEventWeight(const AliMCEvent* const event) const {
   if(!fWeightModel) {
     AliError("Weight model not set - returning 1");

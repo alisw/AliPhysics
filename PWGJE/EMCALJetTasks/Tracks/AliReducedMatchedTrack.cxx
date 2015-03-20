@@ -22,8 +22,6 @@ ClassImp(HighPtTracks::AliReducedMatchedTrack);
 namespace HighPtTracks {
 
 /**
- * \brief Dummy constructor
- *
  * Dummy (I/O) constructor, not to be used
  */
 AliReducedMatchedTrack::AliReducedMatchedTrack() :
@@ -38,8 +36,6 @@ AliReducedMatchedTrack::AliReducedMatchedTrack() :
 }
 
 /**
- * \brief Main constructor
- *
  * Main constructor, initializing 3-vector of the momentum
  *
  * \param px x-component of the 3-vector
@@ -58,8 +54,6 @@ AliReducedMatchedTrack::AliReducedMatchedTrack(double px, double py, double pz):
 }
 
 /**
- * \brief Get track \f$ p_{t} \f$
- *
  *  Get track \f$ p_{t} \f$ from the track 3-momentum
  *
  * \return track \f$ p_{t} \f$
@@ -70,8 +64,6 @@ double AliReducedMatchedTrack::Pt() const {
 }
 
 /**
- * \brief Get track \f$ \eta \f$
- *
  *  Get track \f$ \eta \f$ from the track 3-momentum
  *
  * \return track \f$ \eta \f$
@@ -82,8 +74,6 @@ double AliReducedMatchedTrack::Eta() const {
 }
 
 /**
- * \brief Get track \f$ \phi \f$
- *
  *  Get track \f$ \phi \f$ from the track 3-momentum
  *
  * \return track \f$ \phi \f$
@@ -94,8 +84,6 @@ double AliReducedMatchedTrack::Phi() const {
 }
 
 /**
- * \brief Fill 3-vector with momentum information
- *
  * Fill 3-vector with momentum information
  *
  * \param vec The vector to be filled
