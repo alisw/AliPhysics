@@ -32,6 +32,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliHFEtools.cxx 
+  AliHFEparamBag.cxx 
   AliHFEcollection.cxx 
   AliHFEvarManager.cxx 
   AliHFEcontainer.cxx 
