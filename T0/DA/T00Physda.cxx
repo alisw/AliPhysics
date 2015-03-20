@@ -7,11 +7,7 @@ Number of events needed: 10000
 Input Files: inPhys.dat, external parameters, T0/Calib/Slewing_Walk
 Output Files: daPhys.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
-------------------------------Alla
-Now trigger type changed to CALICRATION_EVENT
-to have data during test.
-SOULD BE CHANGED BACK BEFORE BEAM
-------------------------------- Alla
+
 */
 
 #define FILE_OUT "daPhys.root"
@@ -132,16 +128,17 @@ int main(int argc, char **argv) {
       return -1;
     }
   }
-
-  status = daqDA_DB_getFile("T0/Calib/Slewing_Walk","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
+  status = daqDA_DB_getFile("T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
   if (status) {
-    printf("Failed to get geometry file (GRP/Geometry/Data) from DAQdetDB, status=%d\n", status);
+    printf("Failed to get  file T0/Calib/Slewing_Walk() from DAQdetDB, status=%d\n", status);
     return -1;
   }
+ 
   TGraph *gr[24]; TGraph *gramp[24];
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://localOCDB");
   man->SetRun(runNr);
+  cout<<" run number "<<runNr<<endl;
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("T0/Calib/Slewing_Walk");
   if(entry) {
     AliT0CalibWalk *fParam = (AliT0CalibWalk*)entry->GetObject();
@@ -178,6 +175,7 @@ int main(int argc, char **argv) {
     
     /* get next event (blocking call until timeout) */
     status=monitorGetEventDynamic((void **)&event);
+    cout<<" status "<<status<<endl;
     if (status==(int)MON_ERR_EOF) {
       printf ("End of File detected\n");
       break; /* end of monitoring file has been reached */
@@ -185,7 +183,7 @@ int main(int argc, char **argv) {
     
     if (status!=0) {
       printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-      break;
+  //    break;
     }
     
     /* retry if got no event */
@@ -204,8 +202,8 @@ int main(int argc, char **argv) {
     case END_OF_RUN:
       break;
       
-    case PHYSICS_EVENT:
-	  //    case CALIBRATION_EVENT:
+  case PHYSICS_EVENT:
+      //	 	 case CALIBRATION_EVENT: for test
       iev++;
       
       if(iev==1){
@@ -218,9 +216,9 @@ int main(int argc, char **argv) {
       // Enable the following two lines in case of real-data
       reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
-      
+      start->SetPrintout(kTRUE);
       // Read raw data
-      Int_t allData[110][5];
+      Int_t allData[107][5];
       for(Int_t i0=0;i0<107;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 	  allData[i0][j0] = 0;
@@ -232,7 +230,10 @@ int main(int argc, char **argv) {
 	  }
 	}
       }
-      
+      if (allData[50][0] == 0) {
+        cout<<" no TVDC trigger "<<endl;
+        continue;
+      }
       // Fill the histograms
       walk = adc = amp = -999;
       for (Int_t in=0; in<12;  in++)
@@ -257,27 +258,28 @@ int main(int argc, char **argv) {
 	   }
 	   if(gramp[ik])
 	     amp = gramp[ik]->Eval(Double_t(adc));
-	   if(amp < 0.8) continue;
+	  // if(amp < 0.1) continue;
 	   if(gr[ik]) 
 	     walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
 	   
 	   if(ik<12 && allData[ik+1][0]>0 && allData[knpmtC][0]>0 ){
 	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
 	     if( walk >-100) hCFD[ik]->Fill(allData[ik+1][0] - walk);
-	     // cout<<ik<<" "<<allData[ik+1][0]<<" adc "<<adc<<" walk "<<walk<<endl;
 	   }
 	   
 	   if(ik>11 && allData[ik+45][0]>0 && allData[56+knpmtA][0]>0 )
 	     {
 	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
 	      if( walk >-100) hCFD[ik]->Fill(allData[ik+45][0] - walk);
-	      // cout<<ik<<" "<<allData[ik+1][0]<<" adc "<<adc<<" walk "<<walk<<endl;
 	     }
+	  /*   
 	   if(iev == 10000) {	
 	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean(); 
 	     if(ik==knpmtC || ik==(56+knpmtA)) meanShift[ik]=0;
 	   }
+	   */
 	 }
+	 /*
       //fill  mean time _ fast reconstruction
       if (iev > 10000 )
 	{
@@ -303,6 +305,7 @@ int main(int argc, char **argv) {
 	     hVertex->Fill(t0);
 	   }
 	}
+	*/
 	   
      delete start;
      start = 0x0;
