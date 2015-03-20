@@ -57,8 +57,8 @@ private:
 	int fXmlServerPort;
 	int fItsPointsServerPort;
 	
-	zmq::context_t *fContexts[NUMBER_OF_SOCKETS];
-	zmq::socket_t *fSockets[NUMBER_OF_SOCKETS];
+	zmq::context_t *fContexts[7];
+	zmq::socket_t *fSockets[7];
 
 	AliStorageEventManager(const AliStorageEventManager&);
 	AliStorageEventManager& operator=(const AliStorageEventManager&);

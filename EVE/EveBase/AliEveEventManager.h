@@ -11,7 +11,6 @@
 #define AliEveEventManager_H
 
 #include <TEveEventManager.h>
-#include <AliEveSaveViews.h>
 #include <TQObject.h>
 #include <TObjArray.h>
 #include <TThread.h>
@@ -65,8 +64,6 @@ public:
     static void SetCdbUri     (const TString& cdb);
     static void SetSpecificCdbUri(const TString& path,const TString& value);
     static void SetGAliceFileName(const TString& galice);
-
-    void SetSaveViews(bool save){fSaveViews=save;};
 
     // set Local Directory or URL where the files are located
     // it can also be a path to root_archive.zip
@@ -255,9 +252,6 @@ private:
     Bool_t fStorageDown;
     Bool_t fFinished;
 
-    Bool_t fSaveViews;
-    AliEveSaveViews *fViewsSaver;
-    
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
     

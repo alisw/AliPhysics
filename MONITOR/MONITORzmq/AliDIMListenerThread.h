@@ -17,8 +17,8 @@ public:
 private:
     void InitDIMListeners();
     
-    AliDimIntNotifier *fDimSORListener; //now listening just in PHYSICS_1
-    AliDimIntNotifier *fDimEORListener;
+    AliDimIntNotifier *fDimSORListener;//[5]; //now listening just in PHYSICS_1
+    AliDimIntNotifier *fDimEORListener;//[5];
 
     std::string fOnlineReconstructionHostname;
     std::string fOnlineReconstructionUsername;

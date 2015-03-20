@@ -152,8 +152,7 @@ fWritingToEventIndex(0),
 fIsNewEventAvaliable(false),
 fOnlineMode(kFALSE),
 fStorageDown(false),
-fFinished(false),
-fSaveViews(false)
+fFinished(false)
 {
     // Constructor with event-id.
     if (0 == name.CompareTo("online")) {fOnlineMode = kTRUE;}
@@ -385,8 +384,6 @@ void AliEveEventManager::InitInternals()
     fPEventSelector = new AliEveEventSelector(this);
     
     fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
-    
-    fViewsSaver = new AliEveSaveViews();
 }
 
 /******************************************************************************/
@@ -1955,12 +1952,6 @@ void AliEveEventManager::AfterNewEventLoaded()
     
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
-    
-    if(fSaveViews)
-    {
-        fViewsSaver->Save();
-        fViewsSaver->SendToAmore();
-    }
     
     if (this == fgMaster && fSubManagers != 0)
     {
