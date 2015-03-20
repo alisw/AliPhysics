@@ -166,7 +166,10 @@ AliAnalysisTaskSE(),
   fNormQPairSwitch_E2E3(),
   fMomResC2SC(0x0),
   fMomResC2MC(0x0),
-  fWeightmuonCorrection(0x0)
+  fWeightmuonCorrection(0x0),
+  fqOutFcn(0x0),
+  fqSideFcn(0x0),
+  fqLongFcn(0x0)
 {
   // Default constructor
   for(Int_t mb=0; mb<fMbins; mb++){
@@ -372,7 +375,10 @@ AliFourPion::AliFourPion(const Char_t *name)
   fNormQPairSwitch_E2E3(),
   fMomResC2SC(0x0),
   fMomResC2MC(0x0),
-  fWeightmuonCorrection(0x0)
+  fWeightmuonCorrection(0x0),
+  fqOutFcn(0x0),
+  fqSideFcn(0x0),
+  fqLongFcn(0x0)
 {
   // Main constructor
   fAODcase=kTRUE;
@@ -583,7 +589,10 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fNormQPairSwitch_E2E3(),
     fMomResC2SC(obj.fMomResC2SC),
     fMomResC2MC(obj.fMomResC2MC),
-    fWeightmuonCorrection(obj.fWeightmuonCorrection)
+    fWeightmuonCorrection(obj.fWeightmuonCorrection),
+    fqOutFcn(obj.fqOutFcn),
+    fqSideFcn(obj.fqSideFcn),
+    fqLongFcn(obj.fqLongFcn)
 {
   // Copy Constructor
   
@@ -613,7 +622,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
       }
     }
   }
-
+  
 }
 //________________________________________________________________________
 AliFourPion &AliFourPion::operator=(const AliFourPion &obj) 
@@ -712,6 +721,9 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fMomResC2SC = obj.fMomResC2SC;
   fMomResC2MC = obj.fMomResC2MC;
   fWeightmuonCorrection = obj.fWeightmuonCorrection;
+  fqOutFcn = obj.fqOutFcn;
+  fqSideFcn = obj.fqSideFcn;
+  fqLongFcn = obj.fqLongFcn;
   
   for(Int_t i=0; i<2; i++){
     fPbPbc3FitEA[i]=obj.fPbPbc3FitEA[i];
@@ -738,7 +750,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
       }
     }
   }
-
+ 
   return (*this);
 }
 //________________________________________________________________________
@@ -868,9 +880,11 @@ AliFourPion::~AliFourPion()
       }
     }
   }
+  if(fqOutFcn) delete fqOutFcn;
+  if(fqSideFcn) delete fqSideFcn;
+  if(fqLongFcn) delete fqLongFcn;
  
 }
-
 //________________________________________________________________________
 void AliFourPion::ParInit()
 {
@@ -1049,6 +1063,24 @@ void AliFourPion::ParInit()
       }
     }
   }
+
+  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
+  fqOutFcn->FixParameter(0,-5.92014e-02);
+  fqOutFcn->FixParameter(1,3.94631);
+  fqOutFcn->FixParameter(2,-1.64167e+01);
+  fqOutFcn->FixParameter(3,4.52617e+01);
+  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
+  fqSideFcn->FixParameter(0,2.50516e-02);
+  fqSideFcn->FixParameter(1,5.57635e-01);
+  fqSideFcn->FixParameter(2,5.11656);
+  fqSideFcn->FixParameter(3,-1.11254e+01);
+  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
+  fqLongFcn->FixParameter(0,1.52078e-02);
+  fqLongFcn->FixParameter(1,1.04319);
+  fqLongFcn->FixParameter(2,3.95044e-01);
+  fqLongFcn->FixParameter(3,8.70069e-01);
+  
+
   /////////////////////////////////////////////
   /////////////////////////////////////////////
  
@@ -2792,21 +2824,6 @@ void AliFourPion::UserExec(Option_t *)
   }
     
 
-  TF1 *qOutFcn = new TF1("qOutFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  qOutFcn->FixParameter(0,-5.92014e-02);
-  qOutFcn->FixParameter(1,3.94631);
-  qOutFcn->FixParameter(2,-1.64167e+01);
-  qOutFcn->FixParameter(3,4.52617e+01);
-  TF1 *qSideFcn = new TF1("qSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  qSideFcn->FixParameter(0,2.50516e-02);
-  qSideFcn->FixParameter(1,5.57635e-01);
-  qSideFcn->FixParameter(2,5.11656);
-  qSideFcn->FixParameter(3,-1.11254e+01);
-  TF1 *qLongFcn = new TF1("qLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  qLongFcn->FixParameter(0,1.52078e-02);
-  qLongFcn->FixParameter(1,1.04319);
-  qLongFcn->FixParameter(2,3.95044e-01);
-  qLongFcn->FixParameter(3,8.70069e-01);
   
  
 
@@ -3529,13 +3546,13 @@ void AliFourPion::UserExec(Option_t *)
 		      ((TH2D*)fOutputList->FindObject("fQlongSum"))->Fill(q4, QlongSum);
 		      }}*/
 		    if(fQdirectionBinning==1){
-		      if(QoutSum < qOutFcn->Eval(q4)) fEDbin=0;
+		      if(QoutSum < fqOutFcn->Eval(q4)) fEDbin=0;
 		      else fEDbin=1;
 		    }else if(fQdirectionBinning==2){
-		      if(QsideSum < qSideFcn->Eval(q4)) fEDbin=0;
+		      if(QsideSum < fqSideFcn->Eval(q4)) fEDbin=0;
 		      else fEDbin=1;
 		    }else if(fQdirectionBinning==3){
-		      if(QlongSum < qLongFcn->Eval(q4)) fEDbin=0;
+		      if(QlongSum < fqLongFcn->Eval(q4)) fEDbin=0;
 		      else fEDbin=1;
 		    }else {}
 		    //
