@@ -19,6 +19,8 @@
 //   - if successful: the name of the expected input TTre (esdTree or aodTree)
 //   - if failed    : NULL
 //
+Bool_t doRho = 1;
+
 TString Setup
 (
    Int_t       nmix,
@@ -70,7 +72,7 @@ TString Setup
    
    gSystem->Load("libPWGLFresonances");
 
-//   // load development RSN library
+//   //load development RSN library
 //   if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return "";
 
    //
@@ -154,24 +156,20 @@ TString Setup
       }
       AddTaskEventplane();
    }
-//   //
-//   // === PID RESPONSE =============================================================================
-//   //
-//
-//   gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDResponse.C");
-//   AddTaskPIDResponse(isMC);
-//
-//   //gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDqa.C ");
-//   //AddTaskPIDqa();
-   
+
    //
    // === OTHER TASKS ==============================================================================
    //
    
    // add RSN task
-   gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMini.C", macroPath));
-   if (!AddAnalysisTaskRsnMini(isMC, isPP, macroPath, nmix)) return "";
    
+   if (doRho) {
+     gROOT->LoadMacro(Form("%s/AddTaskRhoPP7TeV.C", macroPath));
+     if (!AddTaskRhoPP7TeV()) return "";
+   } else {
+     gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMini.C", macroPath));
+     if (!AddAnalysisTaskRsnMini(isMC, isPP, macroPath, nmix)) return "";
+   }
    ::Info("AnalysisSetup", "Setup successful");
    return out;
 }

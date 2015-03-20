@@ -50,7 +50,7 @@ void runPlugin
    
    // execute the general setup from the apposite macro
    // it returns also a TString value with the input tree name
-   gROOT->LoadMacro("../AnalysisSetupRsnMini.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AnalysisSetupRsnMini.C");
    TString out = Setup(nmix, options, "analysis.root", macroPath);
    if (out.Length() < 1) return;
    
@@ -59,7 +59,7 @@ void runPlugin
    //
 
    // load macro for plugin setup
-   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
    gROOT->LoadMacro("SetupPlugin.C++g");
    
    // define inputs
