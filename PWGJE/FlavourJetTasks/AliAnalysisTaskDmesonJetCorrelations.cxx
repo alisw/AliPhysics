@@ -255,12 +255,12 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
       else if (isSelected == 3) { // selected as a D0bar/D0 (PID on K and pi undecisive)
         AliDebug(2,"Selected as either D0 or D0bar");
         Double_t massD0 = Dcand->InvMassD0();
-        Double_t massD0bar = Dcand->InvMassD0();
+        Double_t massD0bar = Dcand->InvMassD0bar();
 
         TParticlePDG* D0part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421));
         Float_t pdgMass = D0part->Mass();
 
-        AliDebug(2,Form("D0 inv mass = %.3f, D0 inv mass = %.3f, PDG mass = %.3f", massD0, massD0bar, pdgMass));
+        AliDebug(2,Form("D0 inv mass = %.3f, D0bar inv mass = %.3f, PDG mass = %.3f", massD0, massD0bar, pdgMass));
         
         // Select D0 or D0bar depending on which one gives a mass closest to the PDG value
         if (TMath::Abs(massD0 - pdgMass) < TMath::Abs(massD0bar - pdgMass)) {
