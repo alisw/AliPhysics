@@ -213,6 +213,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		// MC validated reconstructed quantities mesons
 		TH2F 								**fHistoTruePi0InvMassPt;						//! array of histos with validated pi0, invMass, pt
 		TH2F 								**fHistoTrueEtaInvMassPt;						//! array of histos with validated eta, invMass, pt
+		TH2F								**fHistoTruePi0MatchedInvMassPt;				//! array of histos with rejected pi0, invMass, pt
+		TH2F								**fHistoTrueEtaMatchedInvMassPt;				//! array of histos with rejected eta, invMass, pt
 		TH2F 								**fHistoTruePi0CaloPhotonInvMassPt;				//! array of histos with validated pi0, photon leading, invMass, pt
 		TH2F 								**fHistoTrueEtaCaloPhotonInvMassPt;				//! array of histos with validated eta, photon leading, invMass, pt
 		TH2F 								**fHistoTruePi0CaloConvertedPhotonInvMassPt;	//! array of histos with validated pi0, converted photon leading, invMass, pt
