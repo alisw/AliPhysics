@@ -249,6 +249,11 @@ install ( DIRECTORY trains
 	  DESTINATION PWGLF/FORWARD 
 	  FILES_MATCHING PATTERN "*.C"
 	  PATTERN "*~"        EXCLUDE)
+# install dN/deta scripts 
+install ( DIRECTORY analysis2/dndeta
+	  DESTINATION PWGLF/FORWARD/analysis2 
+	  USE_SOURCE_PERMISSIONS
+	  PATTERN "*~"    EXCLUDE)
 # Install other scripts
 install ( FILES analysis2/AddTaskCentraldNdeta.C
   		analysis2/AddTaskCentralMCCorr.C
