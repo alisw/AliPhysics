@@ -1251,15 +1251,17 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDt
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(TMath::Abs(nTPCsigmaAsso)>3) continue;
     
-    Int_t labelAsso = trackAsso->GetLabel();
-    if(labelAsso!=0){
-      TParticle *particleAsso = fStack->Particle(TMath::Abs(labelAsso));	
-      if(particleAsso){
-	pdgAsso = particleAsso->GetPdgCode();
-	if(!(TMath::Abs(pdgAsso)==11)) continue;
+    if(fIsMC && fMC && fStack){
+      Int_t labelAsso = trackAsso->GetLabel();
+      if(labelAsso!=0){
+	TParticle *particleAsso = fStack->Particle(TMath::Abs(labelAsso));	
+	if(particleAsso){
+	  pdgAsso = particleAsso->GetPdgCode();
+	  if(!(TMath::Abs(pdgAsso)==11)) continue;
+	}
       }
     }
-      
+    
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;
     if(chargeAsso>0) fPDGe2 = -11;

@@ -58,6 +58,7 @@ namespace EmcalHJetMassAnalysis {
     fGapPhiMax(-1),
     fh1PtHadron(0),
     fh1PtHadronMatch(0),
+    fh1PhiHadron(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
     fh3PtJet1VsMassVsHPtAllSelMatch(0),
@@ -76,6 +77,7 @@ namespace EmcalHJetMassAnalysis {
 
     fh1PtHadron                       = new TH1F*[fNcentBins];
     fh1PtHadronMatch                  = new TH1F*[fNcentBins];
+    fh1PhiHadron                      = new TH1F*[fNcentBins];
     fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSelMatch   = new TH3F*[fNcentBins];
@@ -93,6 +95,7 @@ namespace EmcalHJetMassAnalysis {
     for (Int_t i = 0; i < fNcentBins; i++) {
       fh1PtHadron[i]                       = 0;
       fh1PtHadronMatch[i]                  = 0;
+      fh1PhiHadron[i]                      = 0;
       fh3PtHPtJDPhi[i]                     = 0;
       fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
       fh3PtJet1VsMassVsHPtAllSelMatch[i]   = 0;
@@ -135,6 +138,7 @@ namespace EmcalHJetMassAnalysis {
     fGapPhiMax(-1),
     fh1PtHadron(0),
     fh1PtHadronMatch(0),
+    fh1PhiHadron(0),
     fh3PtHPtJDPhi(0),
     fh3PtJet1VsMassVsHPtAllSel(0),
     fh3PtJet1VsMassVsHPtAllSelMatch(0),
@@ -153,6 +157,7 @@ namespace EmcalHJetMassAnalysis {
 
     fh1PtHadron                       = new TH1F*[fNcentBins];
     fh1PtHadronMatch                  = new TH1F*[fNcentBins];
+    fh1PhiHadron                      = new TH1F*[fNcentBins];
     fh3PtHPtJDPhi                     = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSel        = new TH3F*[fNcentBins];
     fh3PtJet1VsMassVsHPtAllSelMatch   = new TH3F*[fNcentBins];
@@ -170,6 +175,7 @@ namespace EmcalHJetMassAnalysis {
     for (Int_t i = 0; i < fNcentBins; i++) {
       fh1PtHadron[i]                       = 0;
       fh1PtHadronMatch[i]                  = 0;
+      fh1PhiHadron[i]                      = 0;
       fh3PtHPtJDPhi[i]                     = 0;
       fh3PtJet1VsMassVsHPtAllSel[i]        = 0;
       fh3PtJet1VsMassVsHPtAllSelMatch[i]   = 0;
@@ -248,6 +254,11 @@ namespace EmcalHJetMassAnalysis {
       histTitle = TString::Format("%s;#it{p}_{T,h}",histName.Data());
       fh1PtHadronMatch[i] = new TH1F(histName.Data(),histTitle.Data(),200.,0.,200.);
       fOutput->Add(fh1PtHadronMatch[i]);
+
+      histName = TString::Format("fh1PhiHadron_%d",i);
+      histTitle = TString::Format("%s;#varphi",histName.Data());
+      fh1PhiHadron[i] = new TH1F(histName.Data(),histTitle.Data(),nBinsPhi,0.,TMath::TwoPi());
+      fOutput->Add(fh1PhiHadron[i]);
 
       histName = TString::Format("fh3PtHPtJDPhi_%d",i);
       histTitle = TString::Format("%s;#it{p}_{T,h};#it{p}_{T,jet};#Delta#varphi_{h,jet}",histName.Data());
@@ -342,15 +353,16 @@ namespace EmcalHJetMassAnalysis {
       pCont->ResetCurrentID();
       while((vp = pCont->GetNextAcceptParticle())) {
         fh1PtHadron[fCentBin]->Fill(vp->Pt()); //all hadrons
+        fh1PhiHadron[fCentBin]->Fill(vp->Phi()); //all hadrons
         if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel )
-          fh1PtHadronMatch[fCentBin]->Fill(vp->Pt()); //hadrons matched to MC
+          fh1PtHadronMatch[fCentBin]->Fill(vp->Pt()); //hadrons matched to MC: now done in paticle container
         AliEmcalJet* jet = NULL;
         if(jCont) {
           jCont->ResetCurrentID();
           while((jet = jCont->GetNextAcceptJet())) {
-            Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
+            Double_t dphi = GetDeltaPhi(vp,jet);
             fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
-            if(dphi>fDPhiHJetMax) continue;
+            if(TMath::Abs(dphi-TMath::Pi())>fDPhiHJetMax) continue;
             FillHJetHistograms(vp,jet);
           }
         }
@@ -361,14 +373,15 @@ namespace EmcalHJetMassAnalysis {
        vp = GetSingleInclusiveTT(pCont,fPtTTMin->At(it),fPtTTMax->At(it));
        if(!vp) continue;
        fh1PtHadron[fCentBin]->Fill(vp->Pt()); //all trigger tracks
-        if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel )
-          fh1PtHadronMatch[fCentBin]->Fill(vp->Pt()); //hadrons matched to MC
+       fh1PhiHadron[fCentBin]->Fill(vp->Phi()); //all hadrons
+       if(fMarkMCLabel>0 && TMath::Abs(vp->GetLabel()) >= fMarkMCLabel )
+         fh1PtHadronMatch[fCentBin]->Fill(vp->Pt()); //hadrons matched to MC: now done in paticle container
        AliEmcalJet* jet = NULL;
        jCont->ResetCurrentID();
        while((jet = jCont->GetNextAcceptJet())) {
-         Double_t dphi = GetDeltaPhi(vp,jet)-TMath::Pi();
+         Double_t dphi = GetDeltaPhi(vp,jet);
          fh3PtHPtJDPhi[fCentBin]->Fill(vp->Pt(),jet->Pt() - GetRhoVal(fContainerBase)*jet->Area(),dphi);
-         if(dphi>fDPhiHJetMax) continue;
+         if(TMath::Abs(dphi-TMath::Pi())>fDPhiHJetMax) continue;
          FillHJetHistograms(vp,jet);
        }
      }//trigger track types

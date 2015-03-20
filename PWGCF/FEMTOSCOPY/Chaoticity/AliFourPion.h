@@ -153,8 +153,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   AliFourPionEventStruct *fEvt; //!
   AliFourPionTrackStruct *fTempStruct; //!
   TRandom3* fRandomNumber; //!
-
   
+
  
   //////////////////////////////
   // histogram structures
@@ -396,7 +396,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH3F *fNormWeight[fKbinsT][fCentBins];
   TH3F *fNormWeight2[fKbinsT][fCentBins];
   TF1 *ExchangeAmp[7][50][2];
-  
+  TF1 *fqOutFcn;
+  TF1 *fqSideFcn;
+  TF1 *fqLongFcn;
+
   ClassDef(AliFourPion, 1); 
 };
 
