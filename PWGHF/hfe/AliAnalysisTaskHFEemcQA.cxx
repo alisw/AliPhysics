@@ -47,6 +47,9 @@
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
 
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
+
 #include "AliAnalysisTaskHFEemcQA.h"
 
 using std::cout;
@@ -111,6 +114,8 @@ fEleCanSPD1(0),
 fEleCanSPD2(0),
 fEleCanSPDBoth(0),
 fEleCanSPDOr(0),
+fInvmassULS(0),
+fInvmassLS(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -182,6 +187,8 @@ fEleCanSPD1(0),
 fEleCanSPD2(0),
 fEleCanSPDBoth(0),
 fEleCanSPDOr(0),
+fInvmassULS(0),
+fInvmassLS(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -368,6 +375,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fEleCanSPDOr = new TH2F("fEleCanSPDOr","Tracks with hits on both SPD layer;p_{T} (GeV/c);Hit",200,0,20,1,0,1);
     fOutputList->Add(fEleCanSPDOr);
     
+    fInvmassLS = new TH1F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
+    fOutputList->Add(fInvmassLS);
+    
+    fInvmassULS = new TH1F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
+    fOutputList->Add(fInvmassULS);
+    
     Int_t bins[6]={8,500,200,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02
     Double_t xmin[6]={-0.5,0,-10,0,0,0};
     Double_t xmax[6]={7.5,25,10,2,2,2};
@@ -416,6 +429,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
     esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
     esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+    esdTrackCutsH->SetMinNClustersTPC(80);
+    esdTrackCutsH->SetMinNClustersITS(3);
+    esdTrackCutsH->SetRequireTPCRefit(kTRUE);
+    esdTrackCutsH->SetRequireITSRefit(kTRUE);
+    esdTrackCutsH->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCutsH->SetMaxChi2PerClusterITS(6); //test.....
+
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if (fAOD) {
@@ -717,10 +738,15 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 fSparseElectron->Fill(fvalueElectron);
             }
             
+            Bool_t fFlagNonHFE=kFALSE;
             ////////////////////////////////////////////////
             //Track properties of EMCAL electron cadidates//
             ///////////////////////////////////////////////
             if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){
+                
+                //-----Identify Non-HFR
+                SelectPhotonicElectron(iTracks,track,fFlagNonHFE);
+                
                 fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
                 fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
                 
@@ -741,7 +767,99 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     } //track loop 
     
     PostData(1, fOutputList);
-}      
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec)
+{
+    ///////////////////////////////////////////
+    //////Non-HFE - Invariant mass method//////
+    ///////////////////////////////////////////
+    
+    AliESDtrackCuts* esdTrackCutsAsso = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    esdTrackCutsAsso->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCutsAsso->SetRequireTPCRefit(kTRUE);
+    esdTrackCutsAsso->SetRequireITSRefit(kTRUE);
+    esdTrackCutsAsso->SetEtaRange(-0.9,0.9);
+    esdTrackCutsAsso->SetMaxChi2PerClusterTPC(4);
+    esdTrackCutsAsso->SetMinNClustersTPC(70);
+    esdTrackCutsAsso->SetMaxDCAToVertexZ(3.2);
+    esdTrackCutsAsso->SetMaxDCAToVertexXY(2.4);
+    esdTrackCutsAsso->SetDCAToVertex2D(kTRUE);
+    
+    Bool_t flagPhotonicElec = kFALSE;
+    
+    Int_t ntracks = -999;
+    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+    if(fUseTender) ntracks = fTracks_tender->GetEntries();
+    
+    for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
+        AliVParticle* VAssotrack = 0x0;
+        if(!fUseTender) VAssotrack  = fVevent->GetTrack(jtrack);
+        if(fUseTender) VAssotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+        
+        if (!VAssotrack) {
+            printf("ERROR: Could not receive track %d\n", jtrack);
+            continue;
+        }
+
+        AliVTrack *Assotrack = dynamic_cast<AliVTrack*>(VAssotrack);
+        AliESDtrack *eAssotrack = dynamic_cast<AliESDtrack*>(VAssotrack);
+        AliAODTrack *aAssotrack = dynamic_cast<AliAODTrack*>(VAssotrack);
+
+        //------reject same track
+        if(jtrack==itrack) continue;
+
+        Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+        Double_t ptAsso=-999., nsigma=-999.0, mass=-999., width = -999;
+        Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
+
+        nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kElectron);
+        ptAsso = Assotrack->Pt();
+        Int_t chargeAsso = Assotrack->Charge();
+        Int_t charge = track->Charge();
+        if(charge>0) fPDGe1 = -11;
+        if(chargeAsso>0) fPDGe2 = -11;
+        if(charge == chargeAsso) fFlagLS = kTRUE;
+        if(charge != chargeAsso) fFlagULS = kTRUE;
+        
+        //------track cuts applied
+        if(fAOD) {
+            if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            if(aAssotrack->GetTPCNcls() < 70) continue;
+            if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        }
+        else{
+            if(!esdTrackCutsAsso->AcceptTrack(eAssotrack)) continue;
+        }
+        
+        //-------loose cut on partner electron
+        if(ptAsso <0.2) continue;
+        if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
+        if(nsigma < -3 || nsigma > 3) continue;
+        
+        //-------define KFParticle to get mass
+        AliKFParticle::SetField(fVevent->GetMagneticField());
+        AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
+        AliKFParticle ge2 = AliKFParticle(*Assotrack, fPDGe2);
+        AliKFParticle recg(ge1, ge2);
+        
+        if(recg.GetNDF()<1) continue;
+        Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+        
+        //-------Get mass
+        Int_t MassCorrect;
+        MassCorrect = recg.GetMass(mass,width);
+
+        if(fFlagLS)
+            if(track->Pt()>1) fInvmassLS->Fill(mass);
+        if(fFlagULS)
+            if(track->Pt()>1) fInvmassULS->Fill(mass);
+        
+        if(mass<100 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+    }
+    fFlagPhotonicElec = flagPhotonicElec;
+}
 //________________________________________________________________________
 void AliAnalysisTaskHFEemcQA::Terminate(Option_t *) 
 {
