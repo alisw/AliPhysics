@@ -40,6 +40,7 @@ protected:
   Double_t CheckRaws(TObjArray * list) const ;
   Double_t CheckEsds(TObjArray * list) const;
   
+  virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ;  
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;
   
 private:

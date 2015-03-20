@@ -27,6 +27,9 @@
 #include <TIterator.h> 
 #include <TKey.h> 
 #include <TFile.h> 
+#include <TCanvas.h>
+#include <TPaveText.h>
+#include <TLatex.h>
 
 // --- Standard library ---
 
@@ -36,6 +39,7 @@
 #include "AliQAChecker.h"
 #include "AliADQAChecker.h"
 #include "AliADQADataMakerRec.h"
+
 
 ClassImp(AliADQAChecker)
 
@@ -144,4 +148,138 @@ void AliADQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
     }
   }
 }
+
+//____________________________________________________________________________ 
+void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) 
+{
+  // makes the QA image for sim and rec
+  TObjArray tmpArr;  // array to store flat version of original array (which may contain clones)
+  //
+  for (Int_t esIndex = 0; esIndex < AliRecoParam::kNSpecies; esIndex++) {
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) continue;
+    Int_t nImages = 0;
+    TIter next(list[esIndex]);
+    TObject* hdata = NULL;
+    tmpArr.Clear();
+    while ( (hdata=(next())) ) { // count histos and transfere to flat array
+      if (hdata->InheritsFrom(TH1::Class()) && hdata->TestBit(AliQAv1::GetImageBit()) ) {  // histo, not cloned
+	nImages++; 
+	tmpArr.AddLast(hdata); 
+	continue;
+      }
+      if (!hdata->TestBit(AliQAv1::GetClonedBit())) continue;  // not an array of clones, unknown object
+      TIter nextCl((TObjArray*)hdata);   // array of histo clones
+      TObject* hcl = 0;
+      while ((hcl=nextCl())) if (hcl->InheritsFrom(TH1::Class()) && hcl->TestBit(AliQAv1::GetImageBit())) {tmpArr.AddLast(hcl); nImages++;}
+    }
+    //
+    if ( nImages == 0 ) {
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)));  
+      continue;
+    }
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data(),AliRecoParam::GetEventSpecieName(esIndex)));  
+    //        
+    const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
+    //
+    if ( !fImage[esIndex] ) fImage[esIndex] = new TCanvas(title, title,1000,1500);
+    //
+    fImage[esIndex]->Clear(); 
+    fImage[esIndex]->SetTitle(title); 
+    fImage[esIndex]->cd(); 
+    TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
+    someText.AddText(title) ;
+    someText.SetFillColor(0);
+    someText.SetFillStyle(0);
+    someText.SetBorderSize(0);
+    someText.SetTextColor(kRed+1);
+    someText.Draw() ; 
+    TString outName(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()));
+    fImage[esIndex]->Print(outName, "ps") ; 
+
+    // Now set some parameters on the canvas 
+    fImage[esIndex]->Clear(); 
+    
+    const char* topT = Form("%s, %s, Run: %d", AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex),AliQAChecker::Instance()->GetRunNumber());
+    TLatex* topText = new TLatex(0.5, 0.99, topT);
+    topText->SetTextAlign(23);
+    topText->SetTextSize(.038);
+    topText->SetTextFont(42);
+    topText->SetTextColor(kBlue+3);
+    topText->SetNDC();
+    topText->Draw();
+
+    TVirtualPad* pCharge = 0;
+    TVirtualPad* pTime  = 0;
+    TVirtualPad* pClock  = 0;
+    TVirtualPad* pCoinc  = 0;
+    TVirtualPad* pPed  = 0;
+    TVirtualPad* pMaxCh  = 0;
+    TVirtualPad* pDebug  = 0;
+
+    TPad* pCh = new TPad("Charge", "Charge Pad", 0, 0.83, 1.0, 0.95);
+    fImage[esIndex]->cd();
+    pCh->Draw();
+    pCharge = pCh;
+
+    TPad* pT = new TPad("Time", "Time Pad", 0, 0.59, 1.0, 0.83);
+    fImage[esIndex]->cd();
+    pT->Draw();
+    pTime = pT;
+    
+    TPad* pCl = new TPad("Clock", "Clock Pad", 0, 0.47, 1.0, 0.59);
+    fImage[esIndex]->cd();
+    pCl->Draw();
+    pClock = pCl;
+    
+    TPad* pCo = new TPad("Coincidences", "Coincidences Pad", 0, 0.35, 1.0, 0.47);
+    fImage[esIndex]->cd();
+    pCo->Draw();
+    pCoinc = pCo;
+    
+    TPad* pP = new TPad("Pedestal", "Pedestal Pad", 0.25, 0.23, 0.75, 0.35);
+    fImage[esIndex]->cd();
+    pP->Draw();
+    pPed = pP;
+    
+    TPad* pM = new TPad("Max Charge", "Max Charge Pad", 0.25, 0.11, 0.75, 0.23);
+    fImage[esIndex]->cd();
+    pM->Draw();
+    pMaxCh = pM;
+
+    pCharge->Divide(3, 1);
+    pTime->Divide(4, 1);
+    pClock->Divide(4, 1);
+    pCoinc->Divide(4, 1);
+    pPed->Divide(2, 1);
+    pMaxCh->Divide(2, 1);
+
   
+    TIter nexthist(&tmpArr);
+    Int_t npad = 1; 
+    TH1* histo = 0;
+    while ( npad < 20) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
+      histo=(TH1*)nexthist();
+      histo->SetStats(kFALSE);
+      TVirtualPad* pad = 0;
+       
+      if(npad<4) pad = pCharge->cd(npad);
+      if(npad>3 && npad<8) pad = pTime->cd(npad-3);
+      if(npad>7 && npad<12) pad = pClock->cd(npad-7);
+      if(npad>11 && npad<16) pad = pCoinc->cd(npad-11);
+      if(npad>15 && npad<18) pad = pPed->cd(npad-15);
+      if(npad>17 && npad<20) pad = pMaxCh->cd(npad-17);
+      
+      pad->SetRightMargin(0.10);
+      pad->SetLeftMargin(0.10);
+      pad->SetBottomMargin(0.10);
+      
+      if(npad ==1 || npad==2 || npad==12 || npad==13 || npad==14 || npad==15) gPad->SetLogy();
+      if(npad ==3 || npad ==18 || npad ==19) gPad->SetLogz();
+      histo->DrawCopy("colz");  
+     
+      npad++; 
+    }
+    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
+  }
+}
+ 
