@@ -78,7 +78,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   216,  // TPC
   18,   // TRD
   72,   // TOF
-  20,   // HMPID
+  14,   // HMPID
   20,   // PHOS
   10,   // CPV
   6,    // PMD
@@ -89,9 +89,9 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   1,    // VZERO
   1,    // ZDC
   1,    // ACORDE
-  1,    // TRG
-  46,   // EMCAL
-  1,    // DAQ_TEST
+  2,    // TRG
+  40,   // EMCAL (including DCal)
+  12,   // DAQ_TEST
   0,    // EMPTY
   1,    // AD
   10,   // MFT
@@ -100,31 +100,31 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
 };
 
 Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
-  4,    // ITSSPD
-  4,    // ITSSDD
-  4,    // ITSSSD
+  7,    // ITSSPD
+  8,    // ITSSDD
+  6,    // ITSSSD
   36,   // TPC
-  3,    // TRD
-  12,   // TOF
-  4,    // HMPID
-  4,    // PHOS
-  2,    // CPV
-  1,    // PMD
-  5,    // MUONTRK
+  9,    // TRD
+  24,   // TOF
+  5,    // HMPID
+  8,    // PHOS
+  1,    // CPV
+  2,    // PMD
+  7,    // MUONTRK
   1,    // MUONTRG
   1,    // FMD
-  0.5,  // T0
-  0.5,  // VZERO
+  1,    // T0
+  1,    // VZERO
   1,    // ZDC
   1,    // ACORDE
   1,    // TRG
-  8,    // EMCAL
-  1,    // DAQ_TEST
+  15,   // EMCAL
+  2,    // DAQ_TEST
   0,    // EMPTY
   1,    // AD
   1,    // MFT
   1,    // FIT
-  7     // HLT
+  14    // HLT
 };
 
 const char* AliDAQ::fgkOfflineModuleName[AliDAQ::kNDetectors] = {
