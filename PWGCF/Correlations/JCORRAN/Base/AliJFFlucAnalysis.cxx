@@ -194,7 +194,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(5);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(6);
 
 	// set AliJTH1D here //
 	fh_cent
@@ -411,6 +411,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	///	Fill more correlators in manualy
 	TComplex V4V2starv2_2 =	QnA[4] *TComplex::Power( QnB_star[2] ,2) * vn2[2][1] ;
 	TComplex V4V2starv2_4 = QnA[4] * TComplex::Power( QnB_star[2], 2) * vn2[2][2] ;
+	TComplex V4V2star = QnA[4] * TComplex::Power( QnB_star[2], 2 ); 
 	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[2][1] ;
 	TComplex V5V2starV3star = QnA[5] * QnB_star[2] * QnB_star[3] ;
 	TComplex V5V2starV3startv3_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[3][1];
@@ -418,9 +419,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
 	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
-	fh_correlator[2][fCBin]->Fill( V5V2starV3starv2_2.Re() );
-	fh_correlator[3][fCBin]->Fill( V5V2starV3star.Re() );
-	fh_correlator[4][fCBin]->Fill( V5V2starV3startv3_2.Re() );
+	fh_correlator[2][fCBin]->Fill( V4V2star.Re() ) ; // added 2015.3.18
+	fh_correlator[3][fCBin]->Fill( V5V2starV3starv2_2.Re() );
+	fh_correlator[4][fCBin]->Fill( V5V2starV3star.Re() );
+	fh_correlator[5][fCBin]->Fill( V5V2starV3startv3_2.Re() );
 	//
 	//
 
