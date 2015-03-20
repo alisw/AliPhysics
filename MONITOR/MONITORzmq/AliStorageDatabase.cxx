@@ -58,15 +58,17 @@ AliStorageDatabase::AliStorageDatabase() :
 		if(configFile.eof()){configFile.clear();}
 		configFile.close();
 	}
-	else{cout << "DATABASE -- Unable to open file" <<endl;}
-	TThread::UnLock();
+	else{cout << "\n\nDATABASE -- Unable to open file!!\n\n" <<endl;}
 
-    cout<<"DATABASE -- connecting to server:"<<Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str())<<fUID.c_str()<<fPassword.c_str()<<endl;
+    cout<<"DATABASE -- connecting to server:"<<Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str())<<fUID.c_str()<<endl;
 	fServer = TSQLServer::Connect(Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str()),fUID.c_str(),fPassword.c_str());
     cout<<"Connected"<<endl;
+    TThread::UnLock();
 }
 
-AliStorageDatabase::~AliStorageDatabase(){
+AliStorageDatabase::~AliStorageDatabase()
+{
+    cout<<"\n\n~AliStorageDatabase()\n\n"<<endl;
   if (fServer) {delete fServer;}
 }
 
@@ -76,14 +78,20 @@ void AliStorageDatabase::InsertEvent(int runNumber,
                                      int multiplicity,
                                      char *filePath)
 {
+    if(!fServer){
+        cout<<"\n\nDATABASE -- mysql server not initialised!!\n\n"<<endl;
+        return;
+    }
+    
+    TThread::Lock();
     TSQLResult *res = fServer->Query(Form("select * FROM %s WHERE run_number = %d AND event_number = %d AND permanent = 1;",fTable.c_str(),runNumber,eventNumber));
     TSQLRow *row = res->Next();
-
     if(!row)
     {
         res = fServer->Query(Form("REPLACE INTO %s (run_number,event_number,system,multiplicity,permanent,file_path) VALUES (%d,%d,'%s',%d,0,'%s');",fTable.c_str(),runNumber,eventNumber,system,multiplicity,filePath));
     }
-
+    TThread::UnLock();
+    
     delete row;
     delete res;
 }
@@ -213,11 +221,20 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
 	AliESDEvent *data;
 	tmpFile->cd(Form("run%d",event.runNumber));
 	data = (AliESDEvent*)gDirectory->Get(Form("event%d;1",event.eventNumber));
-
-
     tmpFile->Close();
     delete tmpFile;
     
+    if(!data)
+    {
+        cout<<"DATABASE -- no data in the file"<<endl;
+        return NULL;
+    }
+    /*
+    if(data->GetRunNumber()<0)
+    {
+        cout<<"DATABASE -- AliESDEvent corrupted"<<endl;
+        return NULL;
+    }*/
 	return data;
 }
 
