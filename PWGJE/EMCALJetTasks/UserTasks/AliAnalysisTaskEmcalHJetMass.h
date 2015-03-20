@@ -83,6 +83,7 @@ namespace EmcalHJetMassAnalysis {
 
     TH1F            **fh1PtHadron;                        //!pt of hadrons
     TH1F            **fh1PtHadronMatch;                   //!pt of hadrons matched to MC
+    TH1F            **fh1PhiHadron;                       //!phi of hadrons
     TH3F            **fh3PtHPtJDPhi;                      //!pt hadron vs pt jet vs delta phi
     TH3F            **fh3PtJet1VsMassVsHPtAllSel;         //!all jets after std selection pt vs mass vs track pt
     TH3F            **fh3PtJet1VsMassVsHPtAllSelMatch;    //!all jets after std selection pt vs mass vs track pt matched to MC
@@ -103,7 +104,7 @@ namespace EmcalHJetMassAnalysis {
     AliAnalysisTaskEmcalHJetMass(const AliAnalysisTaskEmcalHJetMass&);            // not implemented
     AliAnalysisTaskEmcalHJetMass &operator=(const AliAnalysisTaskEmcalHJetMass&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalHJetMass, 8)
+    ClassDef(AliAnalysisTaskEmcalHJetMass, 9)
       };
 }
 #endif
