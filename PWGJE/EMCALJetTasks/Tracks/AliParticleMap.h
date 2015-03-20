@@ -49,39 +49,39 @@ namespace HighPtTracks {
 class AliParticleList{
 public:
   /**
-   * \brief Constructor
+   * Constructor
    */
 	AliParticleList():
 		fParticles()
 	{}
 
 	/**
-	 * \brief Destructor
+	 * Destructor
 	 */
 	~AliParticleList(){}
 
 	/**
-	 * \brief Add new particle to the list
+	 * Add new particle to the list
 	 * \param track Track to be added
 	 */
 	void AddParticle(AliVTrack *track) { fParticles.push_back(track); }
 
 	/**
-	 * \brief Access to particle in the list with a given index
+	 * Access to particle in the list with a given index
 	 * \param itrack Index of the particle
 	 * \return Track at the given index
 	 */
 	AliVTrack *GetParticle(int itrack) const { return fParticles[itrack]; }
 
 	/**
-	 * \brief Get the number of particles stored in the list
+	 * Get the number of particles stored in the list
 	 * \return Number of particles
 	 */
 	int GetNumberOfParticles() const { return fParticles.size(); }
 
 private:
-	/// Vector of reconstructed particles
-	std::vector<AliVTrack *> 			fParticles;
+
+	std::vector<AliVTrack *> 			fParticles;       ///< Vector of reconstructed particles
 };
 
 /**
@@ -94,7 +94,7 @@ private:
 class AliReconstructedParticlePair{
 public:
   /**
-   * \brief Constructor
+   *  Constructor
    */
 	AliReconstructedParticlePair():
 		fTrueParticle(NULL),
@@ -102,9 +102,7 @@ public:
 	{}
 
 	/**
-	 * \brief Copy constructor
-	 *
-	 * Creates new pair from a reference object. Does not take ownership of pointers.
+	 * Copy constructor. Creates new pair from a reference object. Does not take ownership of pointers.
 	 *
 	 * \param ref Reference for the copy
 	 */
@@ -112,10 +110,9 @@ public:
 		fTrueParticle(ref.fTrueParticle),
 		fRecParticles(ref.fRecParticles)
 	{}
+
 	/**
-	 * \brief Assignment operator
-	 *
-	 * Assigns values stored in reference object to this object.
+	 * Assignment operator. Assigns values stored in reference object to this object.
 	 *
 	 * \param ref Reference for the copy
 	 * \return This object
@@ -129,39 +126,38 @@ public:
 	}
 
 	/**
-	 * \brief Destructor
+	 * Destructor
 	 */
 	~AliReconstructedParticlePair(){}
 
 	/**
-	 * \brief Access to true particle
+	 * Access to true particle
 	 * \return The true MC particle
 	 */
 	AliVParticle *GetMCTrueParticle() const { return fTrueParticle; }
 
 	/**
-	 * \brief Access to reconstructed particles
+	 * Access to reconstructed particles
 	 * \return List of reconstructed particles matched to this particle
 	 */
 	const AliParticleList &GetRecTracks() const { return fRecParticles; }
 
 	/**
-	 * \brief Set the particle at generator level
+	 * Set the particle at generator level
 	 * \param part MC-true particle
 	 */
 	void SetMCTrueParticle(AliVParticle *const part) { fTrueParticle = part; }
 
 	/**
-	 * \brief Set the list of reconstructed particles associated to this particle
+	 * Set the list of reconstructed particles associated to this particle
 	 * \param tracks List of reconstructed tracks
 	 */
 	void SetRecParticles(const AliParticleList &tracks) { fRecParticles = tracks; }
 
 private:
-	/// True selected particle
-	AliVParticle 			       *fTrueParticle;
-	/// List of all matched particles according to the Monte-Carlo label
-	AliParticleList 	        fRecParticles;
+
+	AliVParticle 			       *fTrueParticle;            ///< True selected particle
+	AliParticleList 	        fRecParticles;            ///< List of all matched particles according to the Monte-Carlo label
 };
 
 /**
@@ -174,8 +170,6 @@ private:
 class AliParticleMap{
 public:
   /**
-   * \brief Constructor
-   *
    * Constructor
    */
 	AliParticleMap():
@@ -187,8 +181,6 @@ public:
 	AliParticleList *GetParticles(int label) const;
 
 	/**
-	 * \brief Get number of entries in the map
-	 *
 	 * Get the number of true particles (according to stored labels)
 	 *
 	 * \return Number of entries
@@ -198,7 +190,7 @@ public:
 	void Print() const;
 
 private:
-	std::map<int, AliParticleList *> 				fParticles;         /// connection of particles to labels
+	std::map<int, AliParticleList *> 				fParticles;         ///< connection of particles to labels
 };
 
 } /* namespace HighPtTracks */

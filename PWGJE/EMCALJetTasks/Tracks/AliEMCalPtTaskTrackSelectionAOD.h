@@ -1,11 +1,6 @@
 /**
- * \class AliEMCalPtTaskTrackSelectionAOD.h
+ * \file AliEMCalPtTaskTrackSelectionAOD.h
  * \brief Implement virtual track selection for AOD analysis
- *
- * Implementation of track selection in case the analysis runs on AODs
- * For the moment it uses the AliESDtrackCuts and converts AOD tracks to
- * ESD tracks, which might change in the future when an AOD track selection
- * framework becomes available.
  *
  * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  * \date Dec 12, 2014
@@ -22,13 +17,22 @@ class AliVTrack;
 
 /**
  * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-p_{t} tracks in triggered events
+ * \brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
  *
- * This namespace contains classes for the analysis of high-p_{t} tracks in
+ * This namespace contains classes for the analysis of high-\f$ p_{t} \f$ tracks in
  * triggered events.
  */
 namespace EMCalTriggerPtAnalysis {
 
+/**
+ * \class AliEMCalPtTaskTrackSelectionAOD
+ * \brief Implement virtual track selection for AOD analysis
+ *
+ * Implementation of track selection in case the analysis runs on AODs
+ * For the moment it uses the AliESDtrackCuts and converts AOD tracks to
+ * ESD tracks, which might change in the future when an AOD track selection
+ * framework becomes available.
+ */
 class AliEMCalPtTaskTrackSelectionAOD: public AliEMCalPtTaskVTrackSelection {
 public:
 	AliEMCalPtTaskTrackSelectionAOD();
@@ -42,8 +46,6 @@ public:
 	virtual bool IsTrackAccepted(AliVTrack * const trk);
 
 	/**
-	 * \brief Get the track cuts
-	 *
 	 * Get the track cuts.
 	 *
 	 * \return The track cuts (NULL if not defined).
@@ -51,8 +53,6 @@ public:
 	virtual TObject *GetTrackCuts() { return fTrackCuts; }
 
 	/**
-	 * \brief Add a new filter bit
-	 *
 	 * Add a new filter bit to the track selection. Multiple filter bits can be set
 	 * at the same time (via the bitwise or operator |).
 	 *
@@ -61,8 +61,6 @@ public:
 	void AddFilterBit(UInt_t filterbits) { fFilterBits |= filterbits; }
 
 	/**
-	 * \brief Set the track cuts
-	 *
 	 * Set the track cuts object (of type AliESDtrackCuts)
 	 *
 	 * \param trackCuts
@@ -70,8 +68,8 @@ public:
 	void SetTrackCuts(AliESDtrackCuts *trackCuts) { fTrackCuts = trackCuts; }
 
 private:
-	AliESDtrackCuts *fTrackCuts;				/// Track cuts
-	UInt_t			fFilterBits;				    /// Track filter bits
+	AliESDtrackCuts *fTrackCuts;				///< Track cuts
+	UInt_t			fFilterBits;				    ///< Track filter bits
 
 	/// \cond CLASSIMP
 	ClassDef(AliEMCalPtTaskTrackSelectionAOD, 1);		// Track selection class for AOD analysis

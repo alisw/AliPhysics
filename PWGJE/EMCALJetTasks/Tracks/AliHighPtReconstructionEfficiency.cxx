@@ -57,8 +57,6 @@ ClassImp(HighPtTracks::AliHighPtReconstructionEfficiency)
 namespace HighPtTracks {
 
 /**
- * \brief Dummy constructor
- *
  * Dummy (I/O) constructor. Not to be used
  */
 AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency() :
@@ -79,8 +77,6 @@ AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency() :
 }
 
 /**
- * \brief Main constructor
- *
  * Main constructor, initialises relevant settings for the task. Setting default values for
  * kinematic track selection
  *
@@ -105,8 +101,6 @@ AliHighPtReconstructionEfficiency::AliHighPtReconstructionEfficiency(const char*
 }
 
 /**
- * \brief Destructor
- *
  * Destructor, cleaning up memory allocated by the task.
  */
 AliHighPtReconstructionEfficiency::~AliHighPtReconstructionEfficiency() {
@@ -116,8 +110,6 @@ AliHighPtReconstructionEfficiency::~AliHighPtReconstructionEfficiency() {
 }
 
 /**
- * \brief Prepare output objects and track selection
- *
  * Preparing output objects and track selection: create a new TTree and
  * reduced event object, and set the branch address to the new reduced event.
  */
@@ -132,8 +124,6 @@ void AliHighPtReconstructionEfficiency::UserCreateOutputObjects() {
 }
 
 /**
- * \brief Function informing user when a new file is read in
- *
  * Function informing the user when a new file starts. Used to
  *
  * \return True if the function is executed successfully, false in case of errors
@@ -157,9 +147,7 @@ bool AliHighPtReconstructionEfficiency::UserNotify(){
 }
 
 /**
- * \brief Runs event loop and creates reconstructed event
- *
- * Event loop:
+ * Runs event loop and creates reconstructed event:
  *  -# Filter particles used for the jet finding
  *  -# Filter MC-true particles and create lookup of particles with matching reconstructed particle,
  *     based on the MC label
@@ -217,8 +205,6 @@ void AliHighPtReconstructionEfficiency::UserExec(Option_t* /*option*/) {
 }
 
 /**
- * \brief Checks if particle is accepted by a give cut type.
- *
  * Checks if particle is accepted by a give cut type. Currently implemented cut types are the \f$ R_{AA} \f$
  * standard cuts and the hybrid track cuts.
  *
@@ -242,8 +228,6 @@ bool AliHighPtReconstructionEfficiency::IsSelected(const AliVTrack* const track,
 }
 
 /**
- * \brief Selects particle as true particle.
- *
  * Selects particle as MC-true particle. At this level, the particle \f$ p_{t} \f$ and \f$ \eta \f$
  * are checked. Only charged particles are accepted.
  *
@@ -258,8 +242,6 @@ bool AliHighPtReconstructionEfficiency::IsTrueSelected(const AliVParticle* const
 }
 
 /**
- * \brief Select particles which are used during jet finding.
- *
  * Select particles at generation level which are the input for the jet finder. Particles are
  * requested to be within the kinematic acceptance and physical primary. Both charged and neutral
  * particles are accepted for jet finding.
@@ -279,8 +261,6 @@ void AliHighPtReconstructionEfficiency::SelectParticlesForJetfinding(TList& part
 }
 
 /**
- * \brief Associated reconstructed particles to Monte-Carlo true particles.
- *
  * This function associates reconstructed particles with Monte-Carlo true particles. For this,
  * a lookup tables which maps all reconstructed particles to a label is used internally. The
  * lookup table is created when the event starts and belongs to the event. Only tracks which
@@ -319,8 +299,6 @@ std::vector<AliReconstructedParticlePair> AliHighPtReconstructionEfficiency::Sel
 }
 
 /**
- * \brief Calculate distance to the main jet axis
- *
  * Calculates the distance between a particle and the main jet axis.
  *
  * \param recjet Jet where the particle is associated to
@@ -332,8 +310,6 @@ double AliHighPtReconstructionEfficiency::GetDR(const fastjet::PseudoJet& recjet
 }
 
 /**
- * \brief Fill reduced jet information with associated particles
- *
  * Fill reduced jet information with associated particles at generator and reconstruction level. Only
  * particles within a maximum distance to the jet are selected to be added to the jet structure. Also
  * all particles reconstructed with a minimum requirement (TPC refit and ITS refit) are added to a particle
@@ -375,8 +351,6 @@ void AliHighPtReconstructionEfficiency::ProcessJet(AliReducedJetInfo * const rec
 }
 
 /**
- * \brief Creates lookup tables for particles associated to MC label
- *
  * Creates a lookup table where particles are associated to MC labels and stores it in the event.
  */
 void AliHighPtReconstructionEfficiency::CreateRectrackLookup() {
@@ -421,8 +395,6 @@ bool AliHighPtReconstructionEfficiency::IsPhysicalPrimary(const AliVParticle* co
 }
 
 /**
- * \brief Convert jet constituents into reduced format
- *
  * Convert jet constituents at jet finder level to the reduced format and adds it to the reduced
  * reconstructed jet.
  *
@@ -439,8 +411,6 @@ void AliHighPtReconstructionEfficiency::ConvertConstituents(AliReducedJetInfo* c
 }
 
 /**
- * \brief Extract cross section and number of trials
- *
  * Extract cross section and number of trials from a root file created at generation level
  * and fills it to the fieds added in the parameter list. Function is called once a new file is
  * loaded via the function UserNotify. From AliAnalysisTaskEmcal.
@@ -520,8 +490,6 @@ bool AliHighPtReconstructionEfficiency::PythiaInfoFromFile(const char* currFile,
  }
 
 /**
- * \brief Get the number of track references for a MC-true track
- *
  * Get the number of track references for a MC-true track
  *
  * \param trk the MC particle to check
