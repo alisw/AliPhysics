@@ -66,6 +66,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
+  fNCand(0),
+  fNSBCand(0),
   fOutput(0),
   fHistStat(0),
   fHistNSBCandEv(0),
@@ -125,6 +127,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
+  fNCand(0),
+  fNSBCand(0),
   fOutput(0),
   fHistStat(0),
   fHistNSBCandEv(0),
@@ -267,18 +271,24 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    fOutput = new TList();
    fOutput->SetOwner();
    DefineHistoForAnalysis(); // define histograms
-   
-   if (fCandidateType == kD0toKpi){
-      fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",0);
-      fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",0); 
-   }
-   else if (fCandidateType == kDstartoKpipi) {
-      fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",0);
-      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); 
+
+   if (fUseReco) {
+     if (fCandidateType == kD0toKpi){
+       fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",0);
+       fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",0); 
+     }
+     else if (fCandidateType == kDstartoKpipi) {
+       fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",0);
+       fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0);
+     }
+     else {
+       AliWarning(Form("Candidate type %d not recognized!", fCandidateType));
+       return;
+     }
    }
    else {
-     AliWarning(Form("Candidate type %d not recognized!", fCandidateType));
-     return;
+     fCandidateArray = new TClonesArray("AliAODMCParticle",0);
+     fSideBandArray = new TClonesArray("TObject",0); // not used
    }
    
    fCandidateArray->SetOwner();
@@ -291,6 +301,116 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    PostData(1, fOutput);
    PostData(3, fCandidateArray);
    PostData(4, fSideBandArray);
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
+{
+  //
+  // Analysis execution
+  //
+ 
+  if (!fInitOk) ExecOnce();
+  if (fInhibitTask) return;
+
+  AliDebug(2, "Entering UserExec()");
+  
+  fHistStat->Fill(0);
+  
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return;
+   
+  //Event selection
+  Bool_t iseventselected = fCuts->IsEventSelected(fAodEvent);
+  if (!iseventselected) return;
+  fHistStat->Fill(1);
+
+  AliDebug(2, "Event selected");
+  
+  const Int_t nD = fArrayDStartoD0pi->GetEntriesFast();
+  AliDebug(2, Form("Found %d vertices", nD));
+  if (!fUseMCInfo) fHistStat->Fill(2, nD);
+
+  Int_t pdgMeson = 413;
+  if (fCandidateType == kD0toKpi) pdgMeson = 421;
+
+  //clear the TClonesArray from the previous event
+  fCandidateArray->Clear();
+  fSideBandArray->Clear();
+  AliDebug(2, "TClonesArray cleared");
+
+  fNCand = 0;
+  fNSBCand = 0;
+  
+  for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
+    Int_t isSelected = 0;
+    
+    AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
+    if (!charmCand) continue;
+
+    Int_t nprongs = charmCand->GetNProngs();
+    AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
+
+    AliAODRecoCascadeHF* dstar = 0;
+
+    if (fCandidateType == kDstartoKpipi) {
+      dstar = dynamic_cast<AliAODRecoCascadeHF*>(charmCand);
+      if (!dstar) {
+        Error("AliAnalysisTaskSEDmesonsFilterCJ::UserExec","Candidate type is D* but object type is wrong (should be AliAODRecoCascadeHF)");
+        continue;
+      }
+    }
+
+    // region of interest + cuts
+    if (!fCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(pdgMeson))) continue;
+    
+    if (!fUseMCInfo && fCandidateType == kDstartoKpipi) {
+      FillDstarSideBands(dstar);
+    }
+
+    //candidate selected by cuts and PID
+    isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
+    
+    if (fCandidateType == kDstartoKpipi) {
+      ProcessDstar(dstar, isSelected);
+    }
+    else {
+      ProcessD0(charmCand, isSelected);
+    }
+  } // end of D cand loop
+
+  AliDebug(2, "Loop done");
+  
+  fHistNCandEv->Fill(fCandidateArray->GetEntriesFast());
+  if (fCandidateType == kDstartoKpipi || fUseMCInfo) {
+    Int_t nsbcand = fSideBandArray->GetEntriesFast();
+    fHistStat->Fill(4, nsbcand);
+    fHistNSBCandEv->Fill(nsbcand);
+  }
+
+  PostData(1, fOutput);
+  PostData(3, fCandidateArray);
+  PostData(4, fSideBandArray);
+
+  AliDebug(2, "Exiting method");
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskSEDmesonsFilterCJ::Terminate(Option_t*)
+{
+  // The Terminate() function is the last function to be called during
+  // a query. It always runs on the client, it can be used to present
+  // the results graphically or save the results to file.
+   
+  Info("Terminate"," terminate");
+  AliAnalysisTaskSE::Terminate();
+   
+  fOutput = dynamic_cast<TList*>(GetOutputData(1));
+  if (!fOutput) {
+    AliError("fOutput not available");
+    return;
+  }
 }
 
 //_______________________________________________________________________________
@@ -363,432 +483,333 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t mcLabel)
+void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected)
 {
-  //
-  // Process the d0 candidate
-  //
+  // Process the D0 candidate.
 
-  Double_t masses[2] = {0.};
 
-  //D0 from D0 bar
-  Int_t pdgdaughtersD0[2] = { 211, 321 };     // pi,K 
-  Int_t pdgdaughtersD0bar[2] = { 321, 211 };  // K,pi 
-
-  //needed quantities
-  masses[0] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0); //D0
-  masses[1] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0bar); //D0bar
-  fHistStat->Fill(3);
-
-  Double_t ptD = charmCand->Pt();
-      	 
-  // mass vs pt
-  if (isSelected == 1 || isSelected == 3) fHistInvMassPtD->Fill(masses[0], ptD);
-  if (isSelected >= 2) fHistInvMassPtD->Fill(masses[1], ptD);
-      	         	
-  if (fUseMCInfo) {  //fill histograms of kinematics, using MC truth
-    Double_t aD = charmCand->Phi();
-    Double_t adaugh[2] = {charmCand->PhiProng(0), charmCand->PhiProng(1)};
-    AliAODTrack* p0 = (AliAODTrack*)charmCand->GetDaughter(0); 
-    AliAODTrack* p1 = (AliAODTrack*)charmCand->GetDaughter(1);
-    Float_t dR0 = DeltaR(charmCand, p0);
-    Float_t dR1 = DeltaR(charmCand, p1);
-
-    Bool_t isMCBkg = (mcLabel <= 0);
-    
-    if (isMCBkg) { //background
-      if (isSelected == 1 || isSelected == 3) { // selected as D0
-        fHistAlphaDKB->Fill(aD-adaugh[0],ptD);
-        fHistAlphaDpiB->Fill(aD-adaugh[1],ptD);
-
-        fHistDeltaRDKB->Fill(dR0,ptD);
-        fHistDeltaRDpiB->Fill(dR1,ptD);   
-      }
-      if (isSelected >= 2) { //selected as D0bar
-        fHistAlphaDpiB->Fill(aD-adaugh[0],ptD);
-        fHistAlphaDKB->Fill(aD-adaugh[1],ptD);
-            
-        fHistDeltaRDpiB->Fill(dR0,ptD);
-        fHistDeltaRDKB->Fill(dR1,ptD);
-      }
-    }
-    else { //signal and reflections
-      AliAODMCParticle* charmPart = (AliAODMCParticle*)fMCarray->At(TMath::Abs(mcLabel));
-      if (!charmPart) {
-        AliError("Could not find MC particle associated with charm candidate!");
-        return;
-      }
+  // For MC analysis look for the AOD MC particle associated with the charm candidate
+  AliAODMCParticle* charmPart = 0;
+  if (fUseMCInfo) {
+    Int_t mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
       
+    if (mcLabel >= 0) {
+      charmPart = static_cast<AliAODMCParticle*>(fMCarray->At(mcLabel));
+    }
+  }
+
+  if (charmPart) {
+    fHistStat->Fill(5);
+  }
+  else {
+    fHistStat->Fill(2);
+  }
+
+  if (!isSelected) return;
+  
+  // For MC background fill fSideBandArray
+  if (fUseMCInfo && !charmPart) { 
+    if (fUseReco) {
+      new ((*fSideBandArray)[fNSBCand]) AliAODRecoDecayHF2Prong(*charmCand);
+      fNSBCand++;
+
+      fHistImpParB->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
+      fHistImpParB->Fill(charmCand->Getd0Prong(1), charmCand->PtProng(1));
+      fHistInvMassB->Fill(charmCand->InvMassD0());
+      fHistInvMassB->Fill(charmCand->InvMassD0bar());
+    }
+  }
+  // For data or MC signal fill fCandidateArray
+  else {
+    // For data or MC with the requirement fUseReco fill with candidates	       
+    if (fUseReco) {
+      new ((*fCandidateArray)[fNCand]) AliAODRecoDecayHF2Prong(*charmCand);
+
+      fHistImpParS->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
+      fHistImpParS->Fill(charmCand->Getd0Prong(1), charmCand->PtProng(1));
+      fHistInvMassS->Fill(charmCand->InvMassD0());
+      fHistInvMassS->Fill(charmCand->InvMassD0bar());
+    }
+    // For MC with requirement particle level fill with AliAODMCParticle
+    else { 
+      new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
+    }
+    fHistStat->Fill(3);      	 
+    fNCand++;
+  }
+
+  // Now filling some more histograms
+
+  // mass vs pt
+  if (isSelected == 1 || isSelected == 3) fHistInvMassPtD->Fill(charmCand->InvMassD0(), charmCand->Pt());
+  if (isSelected >= 2) fHistInvMassPtD->Fill(charmCand->InvMassD0bar(), charmCand->Pt());
+  
+  if (fUseMCInfo) {  //fill histograms of kinematics, using MC truth
+    Int_t isD0 = 0;
+    if (charmPart) {
       Int_t pdgCode = charmPart->GetPdgCode();
         
-      Bool_t isD0 = kFALSE;
       if (pdgCode ==  421)  {
-        isD0 = kTRUE;
+        isD0 = 1;
       }
       else if (pdgCode == -421)  {
-        isD0 = kFALSE;
+        isD0 = -1;
       }
       else {
         AliDebug(2, "Not a D0/D0bar meson!");
         return;
       }
-      
-      if (isD0) { //D0
-        fHistAlphaDKS->Fill(aD-adaugh[0],ptD);
-        fHistAlphaDpiS->Fill(aD-adaugh[1],ptD);
-
-        fHistDeltaRDKS->Fill(dR0,ptD);
-        fHistDeltaRDpiS->Fill(dR1,ptD);
-            
-        if (isSelected == 3) { // selected as both D0bar/D0
-          fHistAlphaDpiR->Fill(aD-adaugh[0],ptD);
-          fHistAlphaDKR->Fill(aD-adaugh[1],ptD);
-
-          fHistDeltaRDpiR->Fill(dR0,ptD);
-          fHistDeltaRDKR->Fill(dR1,ptD);
-        }
-      }
-      else { //D0bar
-        fHistAlphaDKS->Fill(aD-adaugh[1],ptD);
-        fHistAlphaDpiS->Fill(aD-adaugh[0],ptD);
-
-        fHistDeltaRDKS->Fill(dR1,ptD);
-        fHistDeltaRDpiS->Fill(dR0,ptD);
-
-        if (isSelected == 3) { // selected as both D0bar/D0
-          fHistAlphaDpiR->Fill(aD-adaugh[1],ptD);
-          fHistAlphaDKR->Fill(aD-adaugh[0],ptD);
-
-          fHistDeltaRDpiR->Fill(dR1, ptD);
-          fHistDeltaRDKR->Fill(dR0, ptD);
-        }
-      }
-    } //end signal and reflections 
-  }// end MC
+    }
+    
+    FillD0MCTruthKinHistos(charmCand, isSelected, isD0);
+  }
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t mcLabel)
+void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t isSelected)
 {
-  //
-  // Process the d star candidate
-  //
+  // Process the D* candidate.
 
   AliDebug(2, "Entering method");
   
-  //softpion from D* decay
-  AliAODTrack *track2 = (AliAODTrack*)dstar->GetBachelor();
+  // For MC analysis look for the AOD MC particle associated with the charm candidate
+  AliAODMCParticle* charmPart = 0;
+  if (fUseMCInfo) {
+    //D* and D0 prongs needed to MatchToMC method
+    Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
+    Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
 
-  Double_t mPDGD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    Int_t mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
+  
+    if (mcLabel >= 0) {
+      charmPart = static_cast<AliAODMCParticle*>(fMCarray->At(mcLabel));
+    }
+  }
 
-  Double_t ptD = dstar->Pt();
-      
+  if (charmPart) {
+    fHistStat->Fill(5);
+  }
+  else {
+    fHistStat->Fill(2);
+  }
+
+  if (!isSelected) return;
+  
+  AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
+
+  // For MC background fill fSideBandArray
+  if (fUseMCInfo && !charmPart) {
+    if (fUseReco) {
+      new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
+      fNSBCand++;
+          
+      fHistInvMassB->Fill(dstar->DeltaInvMass());
+      fHistImpParB->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
+      fHistImpParB->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
+      fHistImpParB->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
+    }
+  }
+  // For data and MC signal fill fCandidateArray
+  else {
+    // For data or MC signal with the requirement fUseReco fill with candidates    
+    if (fUseReco) {
+      new ((*fCandidateArray)[fNCand]) AliAODRecoCascadeHF(*dstar);
+    } 
+    // For MC signal with requirement particle level fill with AliAODMCParticle
+    else { 
+      new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
+    }
+    fNCand++;
+    
+    fHistInvMassS->Fill(dstar->DeltaInvMass());
+    fHistImpParS->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
+    fHistImpParS->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
+    fHistImpParS->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
+    fHistStat->Fill(3);
+  }
+
+  // Now filling some more histograms.
+
   // select D* in the D0 window.
   // In the cut object window is loose to allow for side bands
       
   // retrieve the corresponding pt bin for the candidate
   // and set the expected D0 width (x3)
-
-  Int_t bin = fCuts->PtBin(ptD);
-  if (bin < 0 || bin >= fCuts->GetNPtBins()) {
+  
+  Double_t mPDGD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t mPDGDstar = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+  Double_t invMassPDG = mPDGDstar - mPDGD0;
+  
+  Double_t ptD = dstar->Pt();
+  Int_t ptDbin = fCuts->PtBin(ptD);
+  if (ptDbin < 0 || ptDbin >= fCuts->GetNPtBins()) {
     AliError(Form("Pt %.3f out of bounds", ptD));
     return;
   }
       	 
-  AliDebug(1, Form("Pt bin %d and sigma D0 %.4f", bin, fSigmaD0[bin]));
-  //consider the Dstar candidates only if the mass of the D0 is in 3 sigma wrt the PDG value
-  if ((dstar->InvMassD0()>=(mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0()<=(mPDGD0+3.*fSigmaD0[bin]))) {
+  AliDebug(1, Form("Pt bin %d and sigma D0 %.4f", ptDbin, fSigmaD0[ptDbin]));
+  //consider the D* candidates only if the mass of the D0 is in 3 sigma wrt the PDG value
+  if ((dstar->InvMassD0()>=(mPDGD0-3.*fSigmaD0[ptDbin])) && (dstar->InvMassD0()<=(mPDGD0+3.*fSigmaD0[ptDbin]))) {
     AliDebug(2, "D0 mass within 3 sigma");
       	    
     // D* delta mass
     AliDebug(2, "Filling invariant mass vs pt histogram");
     fHistInvMassPtD->Fill(dstar->DeltaInvMass(), ptD); // 2 D slice for pt bins
       	    
-    // D* pt and soft pion pt for good candidates  	      	
-    Double_t mPDGDstar = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+    // Soft pion pt for good candidates  	      	
     Double_t invmassDelta = dstar->DeltaInvMass();
-    if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))<0.0021) {
+    if (TMath::Abs(invmassDelta - invMassPDG) < 0.0021) {
       AliDebug(2, "Filling pion pt histogram");
-      fHistPtPion->Fill(track2->Pt());
+      //softpion from D* decay
+      AliAODTrack *softPionTrack = static_cast<AliAODTrack*>(dstar->GetBachelor());
+      if (softPionTrack) fHistPtPion->Fill(softPionTrack->Pt());
     }
   }
 
   if (fUseMCInfo) { //fill histograms of kinematics, using MC truth
-    Double_t aD  = dstar->Phi();
-    Double_t apis= track2->Phi();
-      	             
-    AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
-    Double_t aD0    = D0fromDstar->Phi();
-    Int_t    isD0   = D0fromDstar->Charge()>0 ? kTRUE : kFALSE;
-    Double_t aK     = isD0 ? D0fromDstar->PhiProng(0) : D0fromDstar->PhiProng(1);
-    Double_t api    = isD0 ? D0fromDstar->PhiProng(1) : D0fromDstar->PhiProng(0);
-    Double_t dRDD0  = DeltaR(dstar,D0fromDstar);
-    Double_t dRDpis = DeltaR(dstar,track2);
-    Double_t dRDpi  = DeltaR(dstar, isD0 ? (AliVParticle*)D0fromDstar->GetDaughter(1) : (AliVParticle*)D0fromDstar->GetDaughter(0));
-    Double_t dRDK   = DeltaR(dstar, isD0 ? (AliVParticle*)D0fromDstar->GetDaughter(0) : (AliVParticle*)D0fromDstar->GetDaughter(1));
+    Int_t isDstar = charmPart == NULL ? 0 : 1;
+    FillDStarMCTruthKinHistos(dstar, isDstar, isSelected);
+  }
 
-    Bool_t isMCBkg = (mcLabel <= 0);
-      	    
-    if (isMCBkg) {
-      fHistAlphaDDB  ->Fill(aD-aD0, ptD);
-      fHistAlphaDpisB->Fill(aD-apis, ptD);
-      fHistAlphaDpiB ->Fill(aD-api, ptD);
-      fHistAlphaDKB  ->Fill(aD-aK, ptD);
-      	    
-      fHistDeltaRDDB  ->Fill(dRDD0, ptD);
-      fHistDeltaRDpisB->Fill(dRDpis, ptD);
-      fHistDeltaRDpiB ->Fill(dRDpi, ptD);
-      fHistDeltaRDKB  ->Fill(dRDK, ptD);
-    
-      fHistImpParB->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
-      fHistImpParB->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
-      fHistImpParB->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
+  AliDebug(2, "Exiting method");
+}
+
+//_______________________________________________________________________________
+void AliAnalysisTaskSEDmesonsFilterCJ::FillD0MCTruthKinHistos(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t isD0)
+{
+  // Fill some histogram with kinematic information of the D0 candidate.
+  
+  Double_t ptD = charmCand->Pt();  
+  Double_t aD = charmCand->Phi();
+  Double_t adaugh[2] = {charmCand->PhiProng(0), charmCand->PhiProng(1)};
+  AliAODTrack* p0 = static_cast<AliAODTrack*>(charmCand->GetDaughter(0));
+  AliAODTrack* p1 = static_cast<AliAODTrack*>(charmCand->GetDaughter(1));
+  Float_t dR0 = DeltaR(charmCand, p0);
+  Float_t dR1 = DeltaR(charmCand, p1);
+  
+  if (isD0 == 0) {  //background
+    if (isSelected == 1 || isSelected == 3) { // selected as D0
+      fHistAlphaDKB->Fill(aD-adaugh[0],ptD);
+      fHistAlphaDpiB->Fill(aD-adaugh[1],ptD);
+
+      fHistDeltaRDKB->Fill(dR0,ptD);
+      fHistDeltaRDpiB->Fill(dR1,ptD);   
     }
-    else {
-      fHistAlphaDDS  ->Fill(aD-aD0, ptD);
-      fHistAlphaDpisS->Fill(aD-apis, ptD);
-      fHistAlphaDpiS ->Fill(aD-api, ptD);
-      fHistAlphaDKS  ->Fill(aD-aK, ptD);
-      	    
-      fHistDeltaRDDS  ->Fill(dRDD0, ptD);
-      fHistDeltaRDpisS->Fill(dRDpis, ptD);
-      fHistDeltaRDpiS ->Fill(dRDpi, ptD);
-      fHistDeltaRDKS  ->Fill(dRDK, ptD);
-      
-      fHistImpParS->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
-      fHistImpParS->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
-      fHistImpParS->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));   
+    if (isSelected >= 2) { //selected as D0bar
+      fHistAlphaDpiB->Fill(aD-adaugh[0],ptD);
+      fHistAlphaDKB->Fill(aD-adaugh[1],ptD);
+            
+      fHistDeltaRDpiB->Fill(dR0,ptD);
+      fHistDeltaRDKB->Fill(dR1,ptD);
     }
+  }
+  else if (isD0 == 1) { //D0
+    fHistAlphaDKS->Fill(aD-adaugh[0],ptD);
+    fHistAlphaDpiS->Fill(aD-adaugh[1],ptD);
+
+    fHistDeltaRDKS->Fill(dR0,ptD);
+    fHistDeltaRDpiS->Fill(dR1,ptD);
+            
+    if (isSelected == 3) { // selected as both D0bar/D0
+      fHistAlphaDpiR->Fill(aD-adaugh[0],ptD);
+      fHistAlphaDKR->Fill(aD-adaugh[1],ptD);
+
+      fHistDeltaRDpiR->Fill(dR0,ptD);
+      fHistDeltaRDKR->Fill(dR1,ptD);
+    }
+  }
+  else if (isD0 == -1) { //D0bar
+    fHistAlphaDKS->Fill(aD-adaugh[1],ptD);
+    fHistAlphaDpiS->Fill(aD-adaugh[0],ptD);
+
+    fHistDeltaRDKS->Fill(dR1,ptD);
+    fHistDeltaRDpiS->Fill(dR0,ptD);
+
+    if (isSelected == 3) { // selected as both D0bar/D0
+      fHistAlphaDpiR->Fill(aD-adaugh[1],ptD);
+      fHistAlphaDKR->Fill(aD-adaugh[0],ptD);
+
+      fHistDeltaRDpiR->Fill(dR1, ptD);
+      fHistDeltaRDKR->Fill(dR0, ptD);
+    }
+  }
+}
+ 
+//_______________________________________________________________________________
+void AliAnalysisTaskSEDmesonsFilterCJ::FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar)
+{
+  // Fill some histogram with kinematic information of the D0 candidate.
+  
+  AliAODTrack *softPionTrack = static_cast<AliAODTrack*>(dstar->GetBachelor());
+  Double_t ptD  = dstar->Pt();
+  Double_t aD  = dstar->Phi();
+  Double_t apis= softPionTrack->Phi();
+      	             
+  AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
+  Double_t aD0    = D0fromDstar->Phi();
+  Int_t    isD0   = D0fromDstar->Charge()>0 ? kTRUE : kFALSE;
+  Double_t aK     = isD0 ? D0fromDstar->PhiProng(0) : D0fromDstar->PhiProng(1);
+  Double_t api    = isD0 ? D0fromDstar->PhiProng(1) : D0fromDstar->PhiProng(0);
+  Double_t dRDD0  = DeltaR(dstar,D0fromDstar);
+  Double_t dRDpis = DeltaR(dstar,softPionTrack);
+  Double_t dRDpi  = DeltaR(dstar, isD0 ? static_cast<AliVParticle*>(D0fromDstar->GetDaughter(1)) : static_cast<AliVParticle*>(D0fromDstar->GetDaughter(0)));
+  Double_t dRDK   = DeltaR(dstar, isD0 ? static_cast<AliVParticle*>(D0fromDstar->GetDaughter(0)) : static_cast<AliVParticle*>(D0fromDstar->GetDaughter(1)));
+  
+  if (isDstar) {
+    fHistAlphaDDS  ->Fill(aD-aD0, ptD);
+    fHistAlphaDpisS->Fill(aD-apis, ptD);
+    fHistAlphaDpiS ->Fill(aD-api, ptD);
+    fHistAlphaDKS  ->Fill(aD-aK, ptD);
+      	    
+    fHistDeltaRDDS  ->Fill(dRDD0, ptD);
+    fHistDeltaRDpisS->Fill(dRDpis, ptD);
+    fHistDeltaRDpiS ->Fill(dRDpi, ptD);
+    fHistDeltaRDKS  ->Fill(dRDK, ptD);
   }
   else {
-    fHistImpParS->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
-    AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
-    fHistImpParS->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
-    fHistImpParS->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
+    fHistAlphaDDB  ->Fill(aD-aD0, ptD);
+    fHistAlphaDpisB->Fill(aD-apis, ptD);
+    fHistAlphaDpiB ->Fill(aD-api, ptD);
+    fHistAlphaDKB  ->Fill(aD-aK, ptD);
+      	    
+    fHistDeltaRDDB  ->Fill(dRDD0, ptD);
+    fHistDeltaRDpisB->Fill(dRDpis, ptD);
+    fHistDeltaRDpiB ->Fill(dRDpi, ptD);
+    fHistDeltaRDKB  ->Fill(dRDK, ptD);
   }
-
-  AliDebug(2, "Exiting method");
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *)
+void AliAnalysisTaskSEDmesonsFilterCJ::FillDstarSideBands(AliAODRecoCascadeHF* dstar)
 {
-  //
-  // Analysis execution
-  //
- 
-  if (!fInitOk) ExecOnce();
-  if (fInhibitTask) return;
+  // Fills the array of Dstar side band candidates.
 
-  AliDebug(2, "Entering UserExec()");
+  //select by track cuts the side band candidates (don't want mass cut)
+  Int_t isSelected = fCuts->IsSelected(dstar, AliRDHFCuts::kTracks, fAodEvent); 
+  if (!isSelected) return;
   
-  fHistStat->Fill(0);
-  
-  // fix for temporary bug in ESDfilter 
-  // the AODs with null vertex pointer didn't pass the PhysSel
-  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return;
-   
-  //Event selection
-  Bool_t iseventselected = fCuts->IsEventSelected(fAodEvent);
-  if (!iseventselected) return;
-  fHistStat->Fill(1);
-
-  AliDebug(2, "Event selected");
-  
-  const Int_t nD = fArrayDStartoD0pi->GetEntriesFast();
-  AliDebug(2, Form("Found %d vertices", nD));
-  if (!fUseMCInfo) fHistStat->Fill(2, nD);
-
-  //D* and D0 prongs needed to MatchToMC method
-  Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
-  Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
-   
-  //D0 from D0 bar
-  Int_t pdgdaughtersD0[2] = { 211, 321 };     // pi,K 
-  Int_t pdgdaughtersD0bar[2] = { 321, 211 };  // K,pi 
+  //add a reasonable cut on the invariant mass (e.g. (+-2\sigma, +-10 \sigma), with \sigma = fSigmaD0[bin])
+  Int_t bin = fCuts->PtBin(dstar->Pt());
+  if (bin < 0 || bin >= fCuts->GetNPtBins()) {
+    AliError(Form("Pt %.3f out of bounds", dstar->Pt()));
+    return;
+  }
 
   const Double_t mPDGD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-  
-  Int_t pdgMeson = 413;
-  if (fCandidateType == kD0toKpi) pdgMeson = 421;
-
-  //clear the TClonesArray from the previous event
-  fCandidateArray->Clear();
-  fSideBandArray->Clear();
-  AliDebug(2, "TClonesArray cleared");
-
-  Int_t iCand = 0;
-  Int_t iSBCand = 0;
-  
-  for (Int_t icharm=0; icharm<nD; icharm++) {   //loop over D candidates
-    Bool_t isMCBkg = kFALSE;
-    Int_t mcLabel = -9999;
-    Int_t isSelected = 0;
-
-    AliAODRecoCascadeHF* dstar = 0;
-    AliAODMCParticle* charmPart = 0;
-    
-    AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
-    if (!charmCand) continue;
-
-    Double_t ptD = charmCand->Pt();
-
-    // region of interest + cuts
-    if (!fCuts->IsInFiducialAcceptance(ptD, charmCand->Y(pdgMeson))) continue;
-    
-    if (fCandidateType == kDstartoKpipi) dstar = (AliAODRecoCascadeHF*)charmCand;
       
-    if (fUseMCInfo) { // Look in MC, try to simulate the z
-      if (fCandidateType == kDstartoKpipi) {
-        mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
-      }
-      else if (fCandidateType == kD0toKpi) {
-        mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
-      }
-      
-      if (mcLabel <= 0) {
-        AliDebug(2, Form("Charm candidate %d is background", icharm));
-        isMCBkg = kTRUE;
-        fHistStat->Fill(5);
-      }
-      else {
-        AliDebug(2, Form("Charm candidate %d is *NOT* background", icharm));
-        isMCBkg = kFALSE;  // this is redundant, but better keep it!
-        charmPart = (AliAODMCParticle*)fMCarray->At(mcLabel);
-        fHistStat->Fill(2);  
-      }
-    } // if fUseMCInfo
-      
-    if (!fUseMCInfo && fCandidateType == kDstartoKpipi) {
-      //select by track cuts the side band candidates (don't want mass cut)
-      isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kTracks, fAodEvent); 
-      if (!isSelected) continue;
-      //add a reasonable cut on the invariant mass (e.g. (+-2\sigma, +-10 \sigma), with \sigma = fSigmaD0[bin])
-      Int_t bin = fCuts->PtBin(ptD);
-      if (bin < 0 || bin >= fCuts->GetNPtBins()) {
-        AliError(Form("Pt %.3f out of bounds", ptD));
-        continue;
-      }
-      
-      //if data and Dstar from D0 side band
-      if (((dstar->InvMassD0()<=(mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0()>(mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/   ||
-          ((dstar->InvMassD0()>=(mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0()<(mPDGD0+10.*fSigmaD0[bin]))) /*right side band*/) {	
+  //if data and Dstar from D0 side band
+  if (((dstar->InvMassD0() < (mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0() > (mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/   ||
+      ((dstar->InvMassD0() > (mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0() < (mPDGD0+10.*fSigmaD0[bin]))) /*right side band*/) {	
       	    
-        new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
-        iSBCand++;
-      }
-    }
-    
-    //candidate selected by cuts and PID
-    isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
-    if (!isSelected) continue;
-      
-    Int_t nprongs = charmCand->GetNProngs();
-    AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
-    //for MC background fill fSideBandArray (which is instead filled above for DStar in case of data for the side bands candidates)
-    if (fUseMCInfo && isMCBkg) { 
-      if (fUseReco) {
-        if (fCandidateType == kDstartoKpipi) {
-          new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
-          fHistInvMassB->Fill(dstar->DeltaInvMass());
-          AliDebug(2, Form("Now filling background inv mass histogram for charm candidate %d", icharm));
-        }
-        else if (fCandidateType == kD0toKpi) {
-          new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF2Prong(*charmCand);
-          for (Int_t kd = 0; kd < nprongs; kd++) {
-            fHistImpParB->Fill(charmCand->Getd0Prong(kd), charmCand->PtProng(kd));
-            AliDebug(2, Form("Prong %d: Getd0Prong = %.3f, PtProng = %.3f", kd, charmCand->Getd0Prong(kd), charmCand->PtProng(kd)));
-          }
-          Double_t masses[2];
-          masses[0] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0); //D0
-          masses[1] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0bar); //D0bar
-          fHistInvMassB->Fill(masses[0]);
-          fHistInvMassB->Fill(masses[1]);
-        }
-        iSBCand++;
-      }
-    }
-    //for data and MC signal fill fCandidateArray
-    else {
-      // for data or MC with the requirement fUseReco fill with candidates	       
-      if (fUseReco) {
-        if (fCandidateType == kDstartoKpipi) {  // D*
-          new ((*fCandidateArray)[iCand]) AliAODRecoCascadeHF(*dstar);
-          fHistInvMassS->Fill(dstar->DeltaInvMass());
-          AliDebug(2, Form("Now filling signal inv mass histogram for charm candidate %d (mcLabel = %d, isMCBkg = %d", icharm, mcLabel, isMCBkg));
-        }
-        else {  //D0
-          new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF2Prong(*charmCand);
-          for (Int_t kd = 0; kd < nprongs; kd++) {
-            fHistImpParS->Fill(charmCand->Getd0Prong(kd), charmCand->PtProng(kd));
-            AliDebug(2, Form("Prong %d: Getd0Prong = %.3f, PtProng = %.3f", kd, charmCand->Getd0Prong(kd), charmCand->PtProng(kd)));
-          }
-          Double_t masses[2];
-          masses[0] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0); //D0
-          masses[1] = charmCand->InvMass(fNProngs, (UInt_t*)pdgdaughtersD0bar); //D0bar
-          fHistInvMassS->Fill(masses[0]);
-          fHistInvMassS->Fill(masses[1]);
-        } // if (fCandidateType == kDstartoKpipi)
-        
-        fHistStat->Fill(3);
-      } 
-      // for MC with requirement particle level fill with AliAODMCParticle
-      else { 
-        new ((*fCandidateArray)[iCand]) AliAODMCParticle(*charmPart);
-        fHistStat->Fill(3);
-      } // if (fUseReco)
-      	 
-      iCand++;	
-    } // if (fUseMCInfo && isMCBkg)
-
-    
-    if (fCandidateType == kDstartoKpipi) { //D*->D0pi->Kpipi
-      ProcessDstar(dstar, mcLabel);
-    }
-    else if (fCandidateType==kD0toKpi) { //D0->Kpi
-      ProcessD0(charmCand, isSelected, mcLabel);
-    }
-  } // end of D cand loop
-
-  AliDebug(2, "Loop done");
-  
-  fHistNCandEv->Fill(fCandidateArray->GetEntriesFast());
-  if (fCandidateType == kDstartoKpipi || fUseMCInfo) {
-    Int_t nsbcand = fSideBandArray->GetEntriesFast();
-    fHistStat->Fill(4, nsbcand);
-    fHistNSBCandEv->Fill(nsbcand);
-  }
-
-  PostData(1, fOutput);
-  PostData(3, fCandidateArray);
-  PostData(4, fSideBandArray);
-
-  AliDebug(2, "Exiting method");
-}
-
-//_______________________________________________________________________________
-void AliAnalysisTaskSEDmesonsFilterCJ::Terminate(Option_t*)
-{
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
-   
-  Info("Terminate"," terminate");
-  AliAnalysisTaskSE::Terminate();
-   
-  fOutput = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fOutput) {
-    AliError("fOutput not available");
-    return;
+    new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
+    fNSBCand++;
   }
 }
 
 //_______________________________________________________________________________
 void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t range, Int_t pdg)
 {
-  //
-  // AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits
-  //
+  // Set the mass limits using the PDG code and the given range.
    
   Float_t mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg))->Mass();
    
@@ -808,9 +829,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t range, Int_t pdg)
 //_______________________________________________________________________________
 void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t lowlimit, Double_t uplimit)
 {
-  //
-  // AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits
-  //
+  // Set the mass limits.
    
   if (uplimit>lowlimit) {
     fMinMass = lowlimit;
@@ -824,11 +843,9 @@ void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t lowlimit, Double_t
 }
 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar(Int_t nptbins, Float_t *width)
+Bool_t AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar(Int_t nptbins, Float_t* width)
 {
-  //
-  // AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar
-  //
+  // Set the D0 width for the D* analysis.
    
   if (nptbins > 30) {
     AliWarning("Maximum number of bins allowed is 30!");
@@ -836,7 +853,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar(Int_t nptbins, Float
   }
    
   if (!width) return kFALSE;
-  for (Int_t ipt=0; ipt<nptbins; ipt++) fSigmaD0[ipt] = width[ipt];
+  for (Int_t ipt=0; ipt < nptbins; ipt++) fSigmaD0[ipt] = width[ipt];
    
   return kTRUE;
 }
@@ -844,9 +861,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar(Int_t nptbins, Float
 //_______________________________________________________________________________
 Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
 {
-  //
-  // AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis
-  //
+  // Allocate the histograms for the analysis.
    
   // Statistics 
   fHistStat = new TH1I("fHistStat", "Statistics",6,-0.5,5.5);
@@ -1006,17 +1021,22 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
 //_______________________________________________________________________________
 Float_t AliAnalysisTaskSEDmesonsFilterCJ::DeltaR(AliVParticle *p1, AliVParticle *p2) const
 {
-  //Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
+  // Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
    
-  if(!p1 || !p2) return -1;
-  Double_t phi1=p1->Phi(),eta1=p1->Eta();
-  Double_t phi2 = p2->Phi(),eta2 = p2->Eta() ;
+  if (!p1 || !p2) return -1;
+  
+  Double_t phi1 = p1->Phi();
+  Double_t eta1 = p1->Eta();
+  Double_t phi2 = p2->Phi();
+  Double_t eta2 = p2->Eta();
    
-  Double_t dPhi=phi1-phi2;
-  if(dPhi<=-(TMath::Pi())/2) dPhi = dPhi+2*(TMath::Pi());
-  if(dPhi>(3*(TMath::Pi()))/2) dPhi = dPhi-2*(TMath::Pi());
+  Double_t dPhi = phi1 - phi2;
+  if(dPhi < -(TMath::Pi())/2)    dPhi = dPhi + TMath::TwoPi();
+  if(dPhi > (3*(TMath::Pi()))/2) dPhi = dPhi - TMath::TwoPi();
    
-  Double_t dEta=eta1-eta2;
-  Double_t deltaR=TMath::Sqrt(dEta*dEta + dPhi*dPhi );
+  Double_t dEta = eta1 - eta2;
+  
+  Double_t deltaR = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+  
   return deltaR;
 }

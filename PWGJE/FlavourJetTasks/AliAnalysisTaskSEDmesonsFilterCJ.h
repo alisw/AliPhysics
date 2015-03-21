@@ -70,13 +70,11 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
 
  protected:
   void ExecOnce();
-  void ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t mcLabel);
-  void ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t mcLabel);
-  
- private:
-  
-  AliAnalysisTaskSEDmesonsFilterCJ(const AliAnalysisTaskSEDmesonsFilterCJ &source);
-  AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
+  void ProcessD0(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected);
+  void ProcessDstar(AliAODRecoCascadeHF* dstar, Int_t isSelected);
+  void FillD0MCTruthKinHistos(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t isD0);
+  void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar);
+  void FillDstarSideBands(AliAODRecoCascadeHF* dstar);
 
   Bool_t          fUseMCInfo;              //  Use MC info
   Bool_t          fUseReco;                // use reconstructed tracks when running on MC
@@ -97,6 +95,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   TClonesArray   *fMCarray;                //!
   TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts
   TClonesArray   *fSideBandArray;          //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
+  Int_t           fNCand;                  //! number of selected D candidates already added to fCandidateArray
+  Int_t           fNSBCand;                //! number of selected side-band D candidates already added to fSideBandArray
   TList          *fOutput;                 //! user output
   TH1            *fHistStat;               //!
   TH1            *fHistNSBCandEv;          //!
@@ -127,6 +127,11 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   TH2            *fHistAlphaDKR;           //!
   TH2            *fHistDeltaRDpiR;         //!
   TH2            *fHistDeltaRDKR;          //!
+
+ private:
+  
+  AliAnalysisTaskSEDmesonsFilterCJ(const AliAnalysisTaskSEDmesonsFilterCJ &source);
+  AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
 
   ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 4); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
