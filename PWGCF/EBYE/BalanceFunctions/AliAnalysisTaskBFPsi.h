@@ -104,6 +104,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
   void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
+  void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
 
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
@@ -363,6 +364,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
+  Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
