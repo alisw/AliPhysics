@@ -57,11 +57,14 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
     if (runPeriod == "lhc10b" || runPeriod == "lhc10c" || runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h") {
       includeNoITS = kTRUE;
     }
-  } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
+  } else if (runPeriod == "lhc10f7a"    || runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
 	     runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix")
 	     ) {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
     isMC = kTRUE;
+    if (runPeriod == "lhc10f7a") {
+      includeNoITS = kTRUE;
+    }
   } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
     includeNoITS = kTRUE;
