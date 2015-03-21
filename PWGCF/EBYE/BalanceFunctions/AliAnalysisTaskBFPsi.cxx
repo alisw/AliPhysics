@@ -180,6 +180,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fExcludeParticlesExtra(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
+  fExcludeResonancePDGInMC(-1),
   fEventClass("EventPlane"), 
   fCustomBinning(""),
   fHistVZEROAGainEqualizationMap(0),
@@ -2229,6 +2230,35 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
 	}
+
+
+
+	//Exclude resonances with a specific PDG value
+	if(fExcludeResonancePDGInMC > -1) {
+
+	  TParticle *particle = track->Particle();
+	  if(!particle) continue;
+	  
+	  Bool_t kExcludeParticle = kFALSE;
+	  Int_t gMotherIndex = particle->GetFirstMother();
+	  if(gMotherIndex != -1) {
+	    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      TParticle *motherParticle = motherTrack->Particle();
+	      if(motherParticle) {
+
+		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+		if( TMath::Abs(pdgCodeOfMother) == fExcludeResonancePDGInMC ){
+		  kExcludeParticle = kTRUE;
+		}
+	      }
+	    }
+	  }
+	  
+	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	  if(kExcludeParticle) continue;
+	}
+
 
 	//Exclude electrons with PDG
 	if(fExcludeElectronsInMC) {
