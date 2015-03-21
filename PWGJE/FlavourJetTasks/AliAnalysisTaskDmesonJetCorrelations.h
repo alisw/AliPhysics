@@ -66,15 +66,18 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   virtual void     Terminate(Option_t *);
 
  protected:
-
+  
   void             AllocateTHnSparse();
   void             FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
                                  TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet);
+
+  static void      CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
   AliRDHFCuts     *fCuts               ; //  Analysis cuts     
   ECandidateType   fCandidateType      ; //  Candidate type, D0 or D*
   Double_t         fMinMass            ; //  Min mass in histogram axis
   Double_t         fMaxMass            ; //  Max mass in histogram axis
+  Int_t            fNBinsMass          ; //  Number of bins in mass axis
   Double_t         fMaxR               ; //  Max distance between D and jet axis
   Bool_t           fShowPositionD      ; //  Add the D meson eta/phi axis in the THnSparse
   Bool_t           fShowInvMass        ; //  Add the invariant mass axis in the THnSparse
