@@ -1,4 +1,5 @@
 AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
+                                           UInt_t clusterizer  = AliEMCALRecParam::kClusterizerv2,
 					   const char *pass    = 0 /*should not be needed; will be recovered from path of AOD/ESD; no need to specify by user; */
 					   ) {
 
@@ -33,7 +34,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   Bool_t reclusterize   = kFALSE;
   Float_t seedthresh    = 0.1;      // 100 MeV
   Float_t cellthresh    = 0.05;     // 50 MeV 
-  UInt_t clusterizer    = 0;
+  UInt_t clusterizerT   = 0;
   Bool_t trackMatch     = kFALSE;
   Bool_t updateCellOnly = kFALSE;
   Float_t timeMin       = -50e-9;   // minimum time of physical signal in a cell/digit
@@ -53,10 +54,9 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
   AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus,
 						 fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
-						 cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
+						 cellthresh, clusterizerT, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
 
   //----------------------- Add clusterizer -------------------------------------------------------
-  clusterizer    = AliEMCALRecParam::kClusterizerv2;
   remExoticCell  = kTRUE;
   TString tmpClusters = "tmpCaloClusters";
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
