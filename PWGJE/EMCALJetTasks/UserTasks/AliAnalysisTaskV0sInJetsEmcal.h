@@ -1,9 +1,11 @@
 #ifndef AliAnalysisTaskV0sInJetsEmcal_cxx
 #define AliAnalysisTaskV0sInJetsEmcal_cxx
 
-// task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
-// fork of AliAnalysisTaskV0sInJets for the EMCal framework
-// Author: Vit Kucera (vit.kucera@cern.ch)
+//-------------------------------------------------------------------------
+//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+//     fork of AliAnalysisTaskV0sInJets for the EMCal framework
+//     Author: Vit Kucera (vit.kucera@cern.ch)
+//-------------------------------------------------------------------------
 
 class TH1D;
 class TH2D;
@@ -52,7 +54,7 @@ public:
   void SetCutCPAMin(Double_t val = 0.998) {fdCutCPAMin = val;}
   void SetCutNTauMax(Double_t val = 5.) {fdCutNTauMax = val;}
 
-  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ = kFALSE, Double_t dDeltaZMax = 100.);
+  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax = -1);
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
@@ -72,12 +74,12 @@ public:
   static const Int_t fgkiNBinsPtJetInit; // initial number of bins (uniform binning)
   // axis: K0S invariant mass
   static const Int_t fgkiNBinsMassK0s; // number of bins (uniform binning)
-  static const Double_t fgkdMassK0sMin; // minimum
-  static const Double_t fgkdMassK0sMax; // maximum
+  static const Double_t fgkdMassK0sMin; // minimum K0S mass
+  static const Double_t fgkdMassK0sMax; // maximum K0S mass
   // axis: Lambda invariant mass
   static const Int_t fgkiNBinsMassLambda; // number of bins (uniform binning)
-  static const Double_t fgkdMassLambdaMin; // minimum
-  static const Double_t fgkdMassLambdaMax; // maximum
+  static const Double_t fgkdMassLambdaMin; // minimum Lambda mass
+  static const Double_t fgkdMassLambdaMax; // maximum Lambda mass
 
 protected:
   void ExecOnce();
@@ -111,8 +113,6 @@ private:
   // EMCal containers
   AliJetContainer* fJetsCont; //! Signal Jets
   AliJetContainer* fJetsBgCont; //! Background Jets
-//  AliParticleContainer* fTracksCont; //! Tracks
-//  AliClusterContainer* fCaloClustersCont; //! Clusters
 
   // event cuts
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
@@ -367,7 +367,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 4) // example of analysis
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 4) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
