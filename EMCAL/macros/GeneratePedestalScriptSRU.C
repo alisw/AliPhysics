@@ -1,6 +1,6 @@
 // some global var/constants
-const Int_t kNSM = 12; // 
-const Int_t kNRCU = 2;
+const Int_t kNSM = 20; // number of SuperModules
+const Int_t kNRCU = 2; // number of readout crates (and DDLs) per SM
 const Int_t kNDTC = 40; // links for full SRU (corresponding to two readout crates or RCUs)
 AliCaloAltroMapping *fMapping[4]; // 1 for each side (A/C) and each RCU (0/1), i.e. 2*2 total
 const Int_t kNBranch = 2;
@@ -152,14 +152,14 @@ PrintScript(const int runno)
   sprintf(dirname,"scriptsSRU_Run%d", runno);
 
   char cmd[500];
-  sprintf(cmd,"mkdir -p %s/SM{A,C}{0,1,2,3,4,5}", dirname);
+  sprintf(cmd,"mkdir -p %s/SM{A,C}{0,1,2,3,4,5,9,10,11,12}", dirname);
   gSystem->Exec(cmd);
 
   sprintf(cmd,"echo \"cp info.txt GeneratePedestalScriptSRU.C %s/.\" > scp.sh", dirname);
   gSystem->Exec(cmd);
-  sprintf(cmd,"echo \"scp -r -p %s aldaqacr50:pedestals/.\" >> scp.sh", dirname);
+  sprintf(cmd,"echo \"scp -r -p %s arc24:pedestals/.\" >> scp.sh", dirname);
   gSystem->Exec(cmd);
-  sprintf(cmd,"echo \"ssh -t aldaqacr50 \'cd pedestals; scp -r -p %s emc@alidcscom702:srudcs/scripts/pedestals/.\'\" >> scp.sh", dirname);
+  sprintf(cmd,"echo \"ssh -t arc24 \'cd pedestals; scp -r -p %s emc@alidcscom702:controls/pedestals/.\'\" >> scp.sh", dirname);
   gSystem->Exec(cmd);
 
   char filename[100];
@@ -177,20 +177,31 @@ PrintScript(const int runno)
   for (iSM=0; iSM<kNSM; iSM++) {
     int iside = iSM % 2;
     int isect = iSM / 2;
+    if (iSM>11) isect += 3; // skip non-installed sectors
 
     char IP[100];
-    if (iSM == 0) { sprintf(IP, "10.160.132.100"); } // SMA0 
-    else if (iSM == 1) { sprintf(IP, "10.160.132.102"); } // SMC0
-    else if (iSM == 2) { sprintf(IP, "10.160.132.104"); } // SMA1 
-    else if (iSM == 3) { sprintf(IP, "10.160.132.106"); } // SMC1
-    else if (iSM == 4) { sprintf(IP, "10.160.132.108"); } // SMA2 
-    else if (iSM == 5) { sprintf(IP, "10.160.132.110"); } // SMC2
-    else if (iSM == 6) { sprintf(IP, "10.160.132.112"); } // SMA3 
-    else if (iSM == 7) { sprintf(IP, "10.160.132.114"); } // SMC3
-    else if (iSM == 8) { sprintf(IP, "10.160.132.116"); } // SMA4 
-    else if (iSM == 9) { sprintf(IP, "10.160.132.118"); } // SMC4
-    else if (iSM == 10) { sprintf(IP, "10.160.36.155"); } // SMA5
-    else if (iSM == 11) { sprintf(IP, "10.160.36.156"); } // SMC5
+    if (iSM == 0) { sprintf(IP, "10.160.36.158"); } // SMA0 
+    else if (iSM == 1) { sprintf(IP, "10.160.36.159"); } // SMC0
+    else if (iSM == 2) { sprintf(IP, "10.160.36.160"); } // SMA1 
+    else if (iSM == 3) { sprintf(IP, "10.160.36.161"); } // SMC1
+    else if (iSM == 4) { sprintf(IP, "10.160.36.162"); } // SMA2 
+    else if (iSM == 5) { sprintf(IP, "10.160.36.163"); } // SMC2
+    else if (iSM == 6) { sprintf(IP, "10.160.36.164"); } // SMA3 
+    else if (iSM == 7) { sprintf(IP, "10.160.36.165"); } // SMC3
+    else if (iSM == 8) { sprintf(IP, "10.160.36.166"); } // SMA4 
+    else if (iSM == 9) { sprintf(IP, "10.160.36.167"); } // SMC4
+    else if (iSM == 10) { sprintf(IP, "10.160.36.168"); } // SMA5
+    else if (iSM == 11) { sprintf(IP, "10.160.36.169"); } // SMC5
+    else if (iSM == 12) { sprintf(IP, "10.160.36.170"); } // SMA9
+    else if (iSM == 13) { sprintf(IP, "10.160.36.171"); } // SMC9
+    else if (iSM == 14) { sprintf(IP, "10.160.36.172"); } // SMA10
+    else if (iSM == 15) { sprintf(IP, "10.160.36.173"); } // SMC10
+    else if (iSM == 16) { sprintf(IP, "10.160.36.174"); } // SMA11
+    else if (iSM == 17) { sprintf(IP, "10.160.36.175"); } // SMC11
+    else if (iSM == 18) { sprintf(IP, "10.160.36.176"); } // SMA12
+    else if (iSM == 19) { sprintf(IP, "10.160.36.177"); } // SMC12
+
+    // printf("iSM %d iside %d isect %d IP %s\n", iSM, iside, isect, IP);
 
     // only do instrumented parts..
     int activeDTC[kNDTC] = {0};
@@ -199,21 +210,25 @@ PrintScript(const int runno)
 	activeDTC[iDTC] = 0;
       } 
       else {
-	if (iSM<10) { // not special third SM
+	if (iSM<10) { // not special third SMs or DCal SMs
 	  activeDTC[iDTC] = 1;
 	}
 	else {
-	  if (iSM==10) { // SMA5
+	  if (iSM==10 || iSM==19) { // SMA5 or SMC12
 	    if (iDTC<14) { activeDTC[iDTC] = 1; }
 	    else { activeDTC[iDTC] = 0; }
 	  }
-	  else if (iSM==11) { // SMC5
+	  else if (iSM==11 || iSM==18) { // SMC5 or SMA12
 	    if (iDTC==0 || iDTC>=27) { activeDTC[iDTC] = 1; }
 	    else { activeDTC[iDTC] = 0; }
 	  }
-
-	}
-      }
+	  else {
+	    // DCal... no FECs in  9,11-13, 23-26, 36-39
+	    if ( (iDTC>=9 && iDTC<=13) || (iDTC>=23 && iDTC<=26) || (iDTC>=36 && iDTC<=39) ) { activeDTC[iDTC] = 0; }
+	    else { activeDTC[iDTC] = 1; }
+	  } // DCal
+	} // non-EMCal
+      } // non-TRU
     }
 
     // OK, let's generate the files for all active FECs/DTCs
