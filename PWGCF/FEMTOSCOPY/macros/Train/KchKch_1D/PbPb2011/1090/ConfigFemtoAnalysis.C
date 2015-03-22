@@ -72,8 +72,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
   //double PhiStarDifferenceMinimum=0.03;//0.017; //[radian]
   //double EtaDifferenceMinimum=0.02;//0.015; //[radian]
-   double PhiStarDifferenceMinimum=0.04; //[radian]
-   double EtaDifferenceMinimum=0.03; //[radian]
+   double PhiStarDifferenceMinimum=0.017; //[radian]
+   double EtaDifferenceMinimum=0.015; //[radian]
   
   
   //=======Double track cuts=================================================<
@@ -240,7 +240,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  dtc1etaphitpc[aniter]->SetMostProbableKaon();  //!!!!!!
 	  //------------------- November 2013 -----------------------------------< 
 	  //New class in AliFemo: PWGCF/FEMTOSCOPY/AliFemtoUser/AliFemtoKKTrackCut.cxx
-	  dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	  //dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	  dtc1etaphitpc[aniter]->SetNsigmaTPCle250(1.5);
 	  dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
 	  dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
