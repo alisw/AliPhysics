@@ -13,9 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
-// fork of AliAnalysisTaskV0sInJets for the EMCal framework
-// Author: Vit Kucera (vit.kucera@cern.ch)
+//-------------------------------------------------------------------------
+//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+//     fork of AliAnalysisTaskV0sInJets for the EMCal framework
+//     Author: Vit Kucera (vit.kucera@cern.ch)
+//-------------------------------------------------------------------------
 
 #include "TChain.h"
 #include "TTree.h"
@@ -30,8 +32,8 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
-#include <TDatabasePDG.h>
-#include <TPDGCode.h>
+#include "TDatabasePDG.h"
+#include "TPDGCode.h"
 #include "AliPIDResponse.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCHeader.h"
@@ -105,8 +107,6 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
 
   fJetsCont(0),
   fJetsBgCont(0),
-//  fTracksCont(0),
-//  fCaloClustersCont(0),
 
   fdCutVertexZ(10),
   fdCutVertexR2(1),
@@ -353,8 +353,6 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
 
   fJetsCont(0),
   fJetsBgCont(0),
-//  fTracksCont(0),
-//  fCaloClustersCont(0),
 
   fdCutVertexZ(10),
   fdCutVertexR2(1),
@@ -594,22 +592,21 @@ AliAnalysisTaskV0sInJetsEmcal::~AliAnalysisTaskV0sInJetsEmcal()
 void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
-//  printf("AliAnalysisTaskV0sInJetsEmcal: ExecOnce\n");
 
-  if(fJetsCont && fJetsCont->GetArray() == 0)
-    fJetsCont = 0;
-  if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
-    fJetsBgCont = 0;
-//  if(fTracksCont && fTracksCont->GetArray() == 0)
-//    fTracksCont = 0;
-//  if(fCaloClustersCont && fCaloClustersCont->GetArray() == 0)
-//    fCaloClustersCont = 0;
+  if(fbJetSelection)
+  {
+
+    if(fJetsCont && fJetsCont->GetArray() == 0)
+      fJetsCont = 0;
+    if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
+      fJetsBgCont = 0;
+  }
 }
 
 Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
 {
-  // Run analysis code here, if needed. It will be executed before FillHistograms().
-//  printf("AliAnalysisTaskV0sInJetsEmcal: Run\n");
+// Run analysis code here, if needed. It will be executed before FillHistograms().
+
   return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
 }
 
@@ -618,24 +615,12 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   // Called once
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-//  printf("AliAnalysisTaskV0sInJetsEmcal: UserCreateOutputObjects\n");
 
-  fJetsCont = GetJetContainer(0);
-  fJetsBgCont = GetJetContainer(1);
-//  if(fJetsCont) //get particles and clusters connected to jets
-//  {
-//    fTracksCont = fJetsCont->GetParticleContainer();
-//    fCaloClustersCont = fJetsCont->GetClusterContainer();
-//  }
-//  else //no jets, just analysis tracks and clusters
-//  {
-//    fTracksCont = GetParticleContainer(0);
-//    fCaloClustersCont = GetClusterContainer(0);
-//  }
-//  if(fTracksCont)
-//    fTracksCont->SetClassName("AliVTrack");
-//  if(fCaloClustersCont)
-//    fCaloClustersCont->SetClassName("AliVCluster");
+  if(fbJetSelection)
+  {
+    fJetsCont = GetJetContainer(0);
+    fJetsBgCont = GetJetContainer(1);
+  }
 
   // Initialise random-number generator
   fRandom = new TRandom3(0);
@@ -1271,21 +1256,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1EventCounterCut->Fill(1);
 
   // Event selection
-  if(!IsSelectedForJets(fAODIn, fdCutVertexZ, fdCutVertexR2, fdCutCentLow, fdCutCentHigh, 1, 0.1)) // cut on |delta z| in 2011 data between SPD vertex and nominal primary vertex
-//  if (!IsSelectedForJets(fAODIn,fdCutVertexZ,fdCutVertexR2,fdCutCentLow,fdCutCentHigh)) // no need for cutting in 2010 data
+  if(!IsSelectedForJets(fAODIn, fdCutVertexZ, fdCutVertexR2, fdCutCentLow, fdCutCentHigh, 0.1))
   {
     if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event rejected\n");
     return kFALSE;
   }
-
-//  fdCentrality = fAODIn->GetHeader()->GetCentrality(); // event centrality
-  fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
+  if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event accepted by IsSelectedForJets: cent. %g\n", fdCentrality);
   if(!fbIsPbPb)
     fdCentrality = 0.;
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
   if(iCentIndex < 0)
   {
-    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event is out of histogram range\n");
+    if(fDebug > 5) printf("TaskV0sInJetsEmcal: Event is out of histogram range: cent: %g\n", fdCentrality);
     return kFALSE;
   }
   fh1EventCounterCut->Fill(2); // selected events (vertex, centrality)
@@ -1411,7 +1393,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     bLeadingJetOnly = 0;
   }
 
-  if(fJetsCont)
+  if(fbJetSelection && fJetsCont)
   {
 //    fJetsCont->SetJetPtCut(fdCutPtJetMin); // needs to be applied on the pt after bg subtraction
     fJetsCont->SetPtBiasJetTrack(fdCutPtTrackMin);
@@ -2807,6 +2789,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::OverlapWithJets(const TClonesArray* array,
 AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const
 {
 // generate a random cone which does not overlap with selected jets
+
 //  printf("Generating random cone...\n");
   TLorentzVector vecCone;
   AliAODJet* part = 0;
@@ -2927,60 +2910,84 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::AreaCircSegment(Double_t dRadius, Double
   return dR * dR * TMath::ACos(dD / dR) - dD * TMath::Sqrt(dR * dR - dD * dD);
 }
 
-Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ, Double_t dDeltaZMax)
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax)
 {
 // event selection
   AliAODVertex* vertex = fAOD->GetPrimaryVertex();
   if(!vertex)
+  {
+    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: No vertex\n");
     return kFALSE;
+  }
   Int_t iNContribMin = 3;
   if(!fbIsPbPb)
     iNContribMin = 2;
   if(vertex->GetNContributors() < iNContribMin)
+  {
+    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Not enough contributors, %d\n", vertex->GetNContributors());
     return kFALSE;
+  }
   TString vtxTitle(vertex->GetTitle());
   if(vtxTitle.Contains("TPCVertex"))
+  {
+    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: TPC vertex\n");
     return kFALSE;
+  }
   Double_t zVertex = vertex->GetZ();
   if(TMath::Abs(zVertex) > dVtxZCut)
+  {
+    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Cut on z, %g\n", zVertex);
     return kFALSE;
-  if(bCutDeltaZ)
+  }
+  if(dDeltaZMax > 0.) // cut on |delta z| in 2011 data between SPD vertex and nominal primary vertex
   {
     AliAODVertex* vertexSPD = fAOD->GetPrimaryVertexSPD();
     if(!vertexSPD)
     {
-//          printf("IsSelectedForJets: Error: No SPD vertex\n");
+      if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: No SPD vertex\n");
       return kFALSE;
     }
     Double_t zVertexSPD = vertexSPD->GetZ();
     if(TMath::Abs(zVertex - zVertexSPD) > dDeltaZMax)
     {
-//          printf("IsSelectedForJets: Rejecting event due to delta z = %f - %f = %f\n",zVertex,zVertexSPD,zVertex-zVertexSPD);
+      if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Cut on Delta z = %g - %g = %g\n", zVertex, zVertexSPD, zVertex - zVertexSPD);
       return kFALSE;
     }
-//      printf("IsSelectedForJets: Event OK: %f - %f = %f\n",zVertex,zVertexSPD,zVertex-zVertexSPD);
   }
   Double_t xVertex = vertex->GetX();
   Double_t yVertex = vertex->GetY();
   Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
   if(radiusSq > dVtxR2Cut)
+  {
+    if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Cut on r, %g\n", radiusSq);
     return kFALSE;
-  Double_t centrality;
-//  centrality = fAOD->GetHeader()->GetCentrality();
-  centrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+  }
+  fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
   if(fbIsPbPb)
   {
-    if(centrality < 0)
+    if(fdCentrality < 0)
+    {
+      if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Negative centrality\n");
       return kFALSE;
+    }
     if((dCentCutUp < 0) || (dCentCutLo < 0) || (dCentCutUp > 100) || (dCentCutLo > 100) || (dCentCutLo > dCentCutUp))
+    {
+      if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Wrong centrality limits\n");
       return kFALSE;
-    if((centrality < dCentCutLo) || (centrality > dCentCutUp))
+    }
+    if((fdCentrality < dCentCutLo) || (fdCentrality > dCentCutUp))
+    {
+      if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Centrality cut, %g\n", fdCentrality);
       return kFALSE;
+    }
   }
   else
   {
-    if(centrality != -1)
+    if(fdCentrality != -1)
+    {
+      if(fDebug > 2) printf("AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets: Wrong centrality, %g\n", fdCentrality);
       return kFALSE;
+    }
   }
   return kTRUE;
 }
