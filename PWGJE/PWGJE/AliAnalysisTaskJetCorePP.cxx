@@ -1276,13 +1276,14 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       AliInputEventHandler* inputHandler = (AliInputEventHandler*)
            ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 
-      if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
-         if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
-         fHistEvtSelection->Fill(2);
-         PostData(1, fOutputList);
-         return;
+      if(fOfflineTrgMask > 0){
+         if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
+            if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
+            fHistEvtSelection->Fill(2);
+            PostData(1, fOutputList);
+            return;
+         }
       }
-
    //check AOD pointer
       if(!aod){
          if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
