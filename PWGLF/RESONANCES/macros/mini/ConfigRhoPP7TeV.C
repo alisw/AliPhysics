@@ -13,8 +13,8 @@ Bool_t ConfigRhoPP7TeV
     AliRsnCutSet           *cutsPair,
     Int_t                  aodFilterBit = 38,
     Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
-    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
-    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
+    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPi1Candidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
+    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPi2Candidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
     Float_t                nsigmaPi1 = 3.0,
     Float_t                nsigmaPi2 = 3.0,
     Bool_t                 enableMonitor = kTRUE,
@@ -29,21 +29,21 @@ Bool_t ConfigRhoPP7TeV
   
   // set daughter cuts
   AliRsnCutSetDaughterParticle * cutSetQ;
-  AliRsnCutSetDaughterParticle * cutSetPi11;
+  AliRsnCutSetDaughterParticle * cutSetPi1;
   AliRsnCutSetDaughterParticle * cutSetPi2;
   
   AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality("myQualityCut");
   if (SetCustomQualityCut(trkQualityCut, customQualityCutsID, aodFilterBit)) {
     //Set custom quality cuts for systematic checks
     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0);
-    cutSetPi1 = new AliRsnCutSnsigmaKaetDaughterParticle(Form("cutPi1_%i_%2.1fsigma",cutPiCandidate, nsigmaPi1), trkQualityCut, cutPiCandidate, AliPID::kPion, nsigmaPi1);
-    cutSetPi2  = new AliRsnCutSetDaughterParticle(Form("cutPi2_%i_%2.1fsigma",cutPiCandidate, nsigmaPi2), trkQualityCut, cutKaCandidate, AliPID::kPion, nsigmaPi2);
+    cutSetPi1 = new AliRsnCutSetDaughterParticle(Form("cutPi1_%i_%2.1fsigma",cutPi1Candidate, nsigmaPi1), trkQualityCut, cutPi1Candidate, AliPID::kPion, nsigmaPi1);
+    cutSetPi2  = new AliRsnCutSetDaughterParticle(Form("cutPi2_%i_%2.1fsigma",cutPi2Candidate, nsigmaPi2), trkQualityCut, cutPi2Candidate, AliPID::kPion, nsigmaPi2);
   } else {
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2010, AliPID::kPion, -1.0, aodFilterBit, useCrossedRows);
-    cutSetPi1 = new AliRsnCutSetDaughterParticle(Form("cutPi1_%i_%2.1fsigma",cutPiCandidate, nsigmaPi1), cutPiCandidate, AliPID::kPion, nsigmaPi1, aodFilterBit, useCrossedRows);
-    cutSetPi2  = new AliRsnCutSetDaughterParticle(Form("cutPi2_%i_%2.1fsigma",cutPiCandidate, nsigmaPi2), cutKaCandidate, AliPID::kPion, nsigmaPi2, aodFilterBit, useCrossedRows);
+    cutSetPi1 = new AliRsnCutSetDaughterParticle(Form("cutPi1_%i_%2.1fsigma",cutPi1Candidate, nsigmaPi1), cutPi1Candidate, AliPID::kPion, nsigmaPi1, aodFilterBit, useCrossedRows);
+    cutSetPi2  = new AliRsnCutSetDaughterParticle(Form("cutPi2_%i_%2.1fsigma",cutPi2Candidate, nsigmaPi2), cutPi2Candidate, AliPID::kPion, nsigmaPi2, aodFilterBit, useCrossedRows);
   }
   
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
