@@ -31,6 +31,7 @@
 #  include <TDatime.h>
 #  include <TList.h>
 #  include <TBrowser.h>
+#  include <TObjString.h>
 #  include <iostream>
 #  include <iomanip>
 #  include <fstream>
@@ -1266,6 +1267,19 @@ public:
    * @return statistical error at point
    */
   Double_t GetStatErrorDown(Int_t point)const{return fData->GetErrorYlow(point);}
+  
+  const char* GetSysName(Int_t id) const 
+  {
+    Holder* h = Find(id);
+    if (!h) return 0;
+    return h->GetName();
+  }
+  const char* GetSysTitle(Int_t id) const 
+  {
+    Holder* h = Find(id);
+    if (!h) return 0;
+    return h->GetTitle();
+  }
   /**
    * @param id
    * @param point Point
@@ -2618,11 +2632,11 @@ protected:
     opt.ToUpper();
 
     Bool_t   cmn     = opt.Contains("COMMON");
-    Bool_t   combine = opt.Contains("COMBINED");
+    Bool_t   combine = (opt.Contains("COMBINED") &&
+			!opt.Contains("STACK"));
     Bool_t   stat    = opt.Contains("STAT");
-    Bool_t   quad    = opt.Contains("QUAD");
-    combine          = !opt.Contains("STACK");
-    quad             = !opt.Contains("DIRECT");
+    Bool_t   quad    = (opt.Contains("QUAD") &&
+			!opt.Contains("DIRECT"));
     Bool_t   split   = opt.Contains("SPLIT");
     Int_t    xpos    = (opt.Contains("WEST") ? -1 : 1);
     Int_t    ypos    = (opt.Contains("MIN") ? -1 : 
