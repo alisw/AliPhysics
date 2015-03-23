@@ -1,3 +1,24 @@
+/// \file AddTaskEmcalJetCDF.C
+/// \brief Adds a AliAnalysisTaskEmcalJetCDF analysis task and coresponding containers
+///
+/// Analysis of leading jets distribution of pt and multiplicity, R distribution
+/// N80 and Pt80 and Toward, Transverse, Away UE histos
+///
+/// \author Adrian SEVCENCO <Adrian.Sevcenco@cern.ch>, Institute of Space Science, Romania
+/// \date Mar 23, 2015
+
+/// Add a AliAnalysisTaskEmcalJetCDF task - detailed signature
+/// \param const char *ntracks
+/// \param const char *nclusters
+/// \param const char *njets
+/// \param const char *nrho
+/// \param Double_t jetradius
+/// \param Double_t jetptcut
+/// \param Double_t jetareacut
+/// \param const char *type ; either TPC, EMCAL or USER
+/// \param Int_t leadhadtype ; 0 = charged, 1 = neutral, 2 = both
+/// \param const char *taskname
+/// \return AliAnalysisTaskEmcalJetCDF* task
 AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
@@ -89,6 +110,16 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
   return jetTask;
   }
 
+
+/// Add a AliAnalysisTaskEmcalJetCDF task - info from AliEmcalJetTask*
+/// \param AliEmcalJetTask *jetFinderTask
+/// \param Double_t jetptcut
+/// \param Double_t jetareacut
+/// \param const char *type ; either TPC, EMCAL or USER
+/// \param Int_t leadhadtype ; 0 = charged, 1 = neutral, 2 = both
+/// \param const char *nrho
+/// \param const char *taskname
+/// \return AliAnalysisTaskEmcalJetCDF* task
 AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF ( AliEmcalJetTask *jetFinderTask,
     Double_t     jetptcut     = 1.,
     Double_t     jetareacut   = 0.001,
