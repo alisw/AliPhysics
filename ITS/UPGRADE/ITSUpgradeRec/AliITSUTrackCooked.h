@@ -35,6 +35,8 @@ public:
     void SetChi2(Double_t chi2) { AliKalmanTrack::SetChi2(chi2); }
     void SetClusterIndex(Int_t layer, Int_t index);
     void ResetClusters();
+
+    Bool_t IsBetter(const AliKalmanTrack *best, Double_t maxChi2) const;
     
 private:
     Int_t fIndex[2*AliITSUTrackerCooked::kNLayers]; // indices of associated clusters

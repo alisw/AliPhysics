@@ -13,6 +13,10 @@
 #include "AliITSUTrackCooked.h" 
 #include "AliITSUReconstructor.h" 
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 ClassImp(AliITSUTrackerCooked)
 
 //************************************************
@@ -51,9 +55,6 @@ AliITSUTrackerCooked::AliITSUlayer
 AliITSUTrackerCooked::AliITSUTrackerCooked(AliITSUReconstructor *rec): 
 AliITSUTrackerGlo(rec),
 fSeeds(0),
-fI(kNLayers-1),
-fBestTrack(0), 
-fTrackToFollow(0),
 fSAonly(kTRUE) 
 {
   //--------------------------------------------------------------------
@@ -72,22 +73,6 @@ fSAonly(kTRUE)
 
 }
 
-void AliITSUTrackerCooked::ResetTrackToFollow(const AliITSUTrackCooked &t) {
-  //--------------------------------------------------------------------
-  // Prepare to follow a new track seed
-  //--------------------------------------------------------------------
-     delete fTrackToFollow;
-     fTrackToFollow = new AliITSUTrackCooked(t);
-}
-  
-void AliITSUTrackerCooked::ResetBestTrack() {
-  //--------------------------------------------------------------------
-  // Replace the best track branch
-  //--------------------------------------------------------------------
-     delete fBestTrack;
-     fBestTrack = new AliITSUTrackCooked(*fTrackToFollow);
-}
-  
 AliITSUTrackerCooked::~AliITSUTrackerCooked() 
 {
   //--------------------------------------------------------------------
@@ -95,8 +80,6 @@ AliITSUTrackerCooked::~AliITSUTrackerCooked()
   //--------------------------------------------------------------------
 
   if (fSeeds) fSeeds->Delete(); delete fSeeds; 
-  delete fBestTrack;
-  delete fTrackToFollow;
 
 }
 
@@ -211,7 +194,7 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     Double_t xx0 = 0.008; // Rough layer thickness
     Double_t radl= 9.36;  // Radiation length of Si [cm]
     Double_t rho = 2.33;  // Density of Si [g/cm^3] 
-    Double_t mass= 0.139;// Pion
+    Double_t mass= 0.139; // Pion
     if (!seed->CorrectForMeanMaterial(xx0, xx0*radl*rho, mass, kTRUE)) {
        delete seed; return kFALSE;
     }
@@ -220,6 +203,7 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     seed->SetClusterIndex(l2,i2);
     seed->SetClusterIndex(l3,i3);
 
+#pragma omp critical
     fSeeds->AddLast(seed);
 
     return kTRUE;
@@ -245,6 +229,7 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
    Int_t nClusters1=layer1.GetNumberOfClusters();
    Int_t nClusters2=layer2.GetNumberOfClusters();
    Int_t nClusters3=layer3.GetNumberOfClusters();
+#pragma omp parallel for
    for (Int_t n1=0; n1<nClusters1; n1++) {
      AliCluster *c1=layer1.GetCluster(n1);
      //
@@ -310,6 +295,78 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
    return fSeeds->GetEntriesFast();
 }
 
+void AliITSUTrackerCooked::LoopOverSeeds(Int_t idx[], Int_t n) {
+  //--------------------------------------------------------------------
+  // Loop over a subset of track seeds
+  //--------------------------------------------------------------------
+  AliITSUthreadData data[kSeedingLayer2];
+
+  for (Int_t i=0; i<n; i++) {
+      Int_t s=idx[i];
+      const AliITSUTrackCooked *track=(AliITSUTrackCooked*)fSeeds->At(s);
+
+      Double_t x=track->GetX();
+      Double_t y=track->GetY();
+      Double_t phi=track->GetAlpha() + TMath::ATan2(y,x);
+      const Float_t pi2 = 2.*TMath::Pi();
+      if (phi<0.) phi+=pi2;
+      else if (phi >= pi2) phi-=pi2;
+
+      for (Int_t l=0; l<kSeedingLayer2; l++) {
+        Double_t z;
+        track->GetZAt(fgLayers[l].GetR(),GetBz(),z);
+        data[l].Nsel()=0;
+        data[l].ResetSelectedClusters();
+        fgLayers[l].SelectClusters
+           (data[l].Nsel(),data[l].Index(), phi,kRoadY,z,kRoadZ);
+      }
+
+      AliITSUTrackCooked *best = new AliITSUTrackCooked(*track);
+
+      Int_t volID=-1;
+      Int_t ci=-1;
+      AliITSUTrackCooked t3(*track);
+      while ((ci=data[3].GetNextClusterIndex()) >= 0) {
+        if (!AttachCluster(volID, 3, ci, t3, *track)) continue;
+
+	AliITSUTrackCooked t2(t3);
+        while ((ci=data[2].GetNextClusterIndex()) >= 0) {
+	  if (!AttachCluster(volID, 2, ci, t2, t3)) continue;
+
+	  AliITSUTrackCooked t1(t2);
+          while ((ci=data[1].GetNextClusterIndex()) >= 0) {
+            if (!AttachCluster(volID, 1, ci, t1, t2)) continue;
+
+	    AliITSUTrackCooked t0(t1);
+            while ((ci=data[0].GetNextClusterIndex()) >= 0) {
+              if (!AttachCluster(volID, 0, ci, t0, t1)) continue;
+              if (t0.IsBetter(best,kmaxChi2PerTrack)) {
+		 delete best;
+                 best=new AliITSUTrackCooked(t0);
+	      }
+	    }
+            data[0].ResetSelectedClusters();
+	  }
+          data[1].ResetSelectedClusters();
+        }
+        data[2].ResetSelectedClusters();
+      }
+
+      if (best->GetNumberOfClusters() >= kminNumberOfClusters) {
+	//UseClusters(best);
+        Int_t noc=best->GetNumberOfClusters();
+        for (Int_t i=3; i<noc; i++) {
+          Int_t index=best->GetClusterIndex(i);
+          Int_t l=(index & 0xf0000000) >> 28, c=(index & 0x0fffffff);
+          data[l].UseCluster(c);
+	}
+      }
+      delete fSeeds->RemoveAt(s);
+      fSeeds->AddAt(best,s);
+  }
+}
+
+
 Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This is the main tracking function
@@ -342,50 +399,73 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   }
   fSeeds->Sort();
   Int_t nSeeds=fSeeds->GetEntriesFast();
+  Info("Clusters2Tracks","Seeds: %d",nSeeds);
 
-  // Possibly, icrement the seeds with additional clusters (Kalman)
 
-  // Possibly, (re)fit the found tracks 
+#ifdef _OPENMP
+   Int_t nThreads=1;
+
+   #pragma omp parallel
+   nThreads=omp_get_num_threads();
+
+   Int_t *idx = new Int_t[nThreads*nSeeds];
+   Int_t *n   = new Int_t[nThreads];
+   for (Int_t i=0; i<nThreads; i++) n[i]=0;
+
+   for (Int_t i=0; i<nSeeds; i++) {
+      AliITSUTrackCooked *track=(AliITSUTrackCooked*)fSeeds->At(i);
+
+      Int_t noc=track->GetNumberOfClusters();
+      Int_t ci=track->GetClusterIndex(noc-1);
+      Int_t l=(ci & 0xf0000000) >> 28, c=(ci & 0x0fffffff);
+      Float_t phi=fgLayers[l].GetClusterPhi(c);
+      Float_t bin=2*TMath::Pi()/nThreads;
+
+      bin=2*(2*TMath::Pi())/nThreads;
+      if (track->GetZ()>0) phi+=2*TMath::Pi();
+
+      Int_t id=phi/bin;
+
+      idx[id*nSeeds + n[id]] = i;
+      n[id]++;
+    }
+
+   #pragma omp parallel
+   {
+   Int_t id=omp_get_thread_num();
+
+   Float_t f=n[id]/Float_t(nSeeds);
+   #pragma omp critical
+   Info("Clusters2Tracks","ThreadID %d  Seed fraction %f", id, f);
+
+   LoopOverSeeds((idx + id*nSeeds),n[id]);
+   }
+
+   delete[] idx;
+   delete[] n;
+#else
+   Int_t *idx=new Int_t[nSeeds];
+   for (Int_t i=0; i<nSeeds; i++) idx[i]=i;
+   LoopOverSeeds(idx,nSeeds);
+   delete[] idx;
+#endif
 
   Int_t ngood=0;
   for (Int_t s=0; s<nSeeds; s++) {
-      const AliITSUTrackCooked *track=(AliITSUTrackCooked*)fSeeds->At(s);
- 
-      Double_t x=track->GetX();
-      Double_t y=track->GetY();
-      Double_t phi=track->GetAlpha() + TMath::ATan2(y,x);
-      const Float_t pi2 = 2.*TMath::Pi();
-      if (phi<0.) phi+=pi2;
-      else if (phi >= pi2) phi-=pi2;
-      for (Int_t n=0; n<kNLayers-3; n++) {
-        Double_t z;
-        track->GetZAt(fgLayers[n].GetR(),GetBz(),z);
-        fgLayers[n].SelectClusters(phi,kRoadY,z,kRoadZ);
-      }
-      
-      ResetTrackToFollow(*track);
-      ResetBestTrack();
-      fI=kSeedingLayer2;
-      fgLayers[fI].ResetTrack(*track);
+      AliITSUTrackCooked *track=(AliITSUTrackCooked*)fSeeds->At(s);
 
-      for (FollowProlongation(); fI<kSeedingLayer2; fI++) {
-          while (TakeNextProlongation()) FollowProlongation();
-      }
+      if (track->GetNumberOfClusters() < kminNumberOfClusters) continue;
 
-      if (fBestTrack->GetNumberOfClusters() < kminNumberOfClusters) continue;
-
-      CookLabel(fBestTrack,0.); //For comparison only
-      Int_t label=fBestTrack->GetLabel();
+      CookLabel(track,0.); //For comparison only
+      Int_t label=track->GetLabel();
       if (label>0) ngood++;
 
       AliESDtrack iotrack;
-      iotrack.UpdateTrackParams(fBestTrack,AliESDtrack::kITSin);
+      iotrack.UpdateTrackParams(track,AliESDtrack::kITSin);
       iotrack.SetLabel(label);
       event->AddTrack(&iotrack);
-      UseClusters(fBestTrack);
   }
 
-  Info("Clusters2Tracks","Seeds: %d",nSeeds);
   if (nSeeds)
   Info("Clusters2Tracks","Good tracks/seeds: %f",Float_t(ngood)/nSeeds);
 
@@ -393,87 +473,6 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   fSeeds=0;
     
   return 0;
-}
-
-void AliITSUTrackerCooked::FollowProlongation() {
-  //--------------------------------------------------------------------
-  // Push this track tree branch towards the primary vertex
-  //--------------------------------------------------------------------
-  while (fI) {
-    fI--;
-    fgLayers[fI].ResetSelectedClusters();  
-    if (!TakeNextProlongation()) return;
-  } 
-
-  //deal with the best track
-  Int_t ncl=fTrackToFollow->GetNumberOfClusters();
-  Int_t nclb=fBestTrack->GetNumberOfClusters();
-  if (ncl >= nclb) {
-     Double_t chi2=fTrackToFollow->GetChi2();
-     if (chi2 < kmaxChi2PerTrack) {        
-        if (ncl > nclb || chi2 < fBestTrack->GetChi2()) {
-	   ResetBestTrack();
-        }
-     }
-  }
-
-}
-
-Int_t AliITSUTrackerCooked::TakeNextProlongation() {
-  //--------------------------------------------------------------------
-  // Switch to the next track tree branch
-  //--------------------------------------------------------------------
-  AliITSUlayer &layer=fgLayers[fI];
-
-  const AliCluster *c=0; Int_t ci=-1;
-  const AliCluster *cc=0; Int_t cci=-1;
-  UShort_t volId=-1;
-  Double_t z=0., dz=0., y=0., dy=0., chi2=0.; 
-  while ((c=layer.GetNextCluster(ci))!=0) {
-    Int_t id=c->GetVolumeId();
-    if (id != volId) {
-       volId=id;
-       const AliITSUTrackCooked *t = fgLayers[fI+1].GetTrack();
-       ResetTrackToFollow(*t);
-       Double_t x=layer.GetXRef(ci);
-       Double_t alpha=layer.GetAlphaRef(ci);
-       if (!fTrackToFollow->Propagate(alpha, x, GetBz())) {
-         //Warning("TakeNextProlongation","propagation failed !\n");
-          continue;
-       }
-       dz=7*TMath::Sqrt(fTrackToFollow->GetSigmaZ2() + kSigma2);
-       dy=7*TMath::Sqrt(fTrackToFollow->GetSigmaY2() + kSigma2);
-       z=fTrackToFollow->GetZ();
-       y=fTrackToFollow->GetY();
-    }
-
-    //if (TMath::Abs(fTrackToFollow.GetZ()-GetZ())>layer.GetR()+dz) continue;
-
-    if (TMath::Abs(z - c->GetZ()) > dz) continue;
-    if (TMath::Abs(y - c->GetY()) > dy) continue;
-
-    Double_t ch2=fTrackToFollow->GetPredictedChi2(c); 
-    if (ch2 > kmaxChi2PerCluster) continue;
-    chi2=ch2;
-    cc=c; cci=ci;
-    break;
-  }
-
-  if (!cc) return 0;
-
-  if (!fTrackToFollow->Update(cc,chi2,(fI<<28)+cci)) {
-     //Warning("TakeNextProlongation","filtering failed !\n");
-     return 0;
-  }
-  Double_t xx0 = (fI > 2) ? 0.008 : 0.003;  // Rough layer thickness
-  Double_t x0  = 9.36; // Radiation length of Si [cm]
-  Double_t rho = 2.33; // Density of Si [g/cm^3] 
-  Double_t mass = fTrackToFollow->GetMass();
-  fTrackToFollow->CorrectForMeanMaterial(xx0, xx0*x0*rho, mass, kTRUE);
-  layer.ResetTrack(*fTrackToFollow); 
-
-
-  return 1;
 }
 
 Int_t AliITSUTrackerCooked::PropagateBack(AliESDEvent *event) {
@@ -484,6 +483,8 @@ Int_t AliITSUTrackerCooked::PropagateBack(AliESDEvent *event) {
   Int_t n=event->GetNumberOfTracks();
   Int_t ntrk=0;
   Int_t ngood=0;
+
+#pragma omp parallel for reduction (+:ntrk,ngood)
   for (Int_t i=0; i<n; i++) {
       AliESDtrack *esdTrack=event->GetTrack(i);
 
@@ -491,18 +492,16 @@ Int_t AliITSUTrackerCooked::PropagateBack(AliESDEvent *event) {
       if ( esdTrack->IsOn(AliESDtrack::kTPCin)) continue;//skip a TPC+ITS track
 
       AliITSUTrackCooked track(*esdTrack);
+      AliITSUTrackCooked toRefit(track);
 
-      ResetTrackToFollow(track);
+      toRefit.ResetCovariance(10.); toRefit.ResetClusters();
+      if (RefitAt(40., &toRefit, &track)) {
 
-      fTrackToFollow->ResetCovariance(10.); fTrackToFollow->ResetClusters();
-      if (RefitAt(40., fTrackToFollow, &track)) {
-
-         CookLabel(fTrackToFollow, 0.); //For comparison only
-         Int_t label=fTrackToFollow->GetLabel();
+         CookLabel(&toRefit, 0.); //For comparison only
+         Int_t label=toRefit.GetLabel();
          if (label>0) ngood++;
 
-         esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSout);
-         //UseClusters(fTrackToFollow);
+         esdTrack->UpdateTrackParams(&toRefit,AliESDtrack::kITSout);
          ntrk++;
       }
   }
@@ -582,6 +581,8 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
   Int_t n=event->GetNumberOfTracks();
   Int_t ntrk=0;
   Int_t ngood=0;
+
+#pragma omp parallel for reduction (+:ntrk,ngood)
   for (Int_t i=0; i<n; i++) {
       AliESDtrack *esdTrack=event->GetTrack(i);
 
@@ -589,20 +590,19 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
       if ( esdTrack->IsOn(AliESDtrack::kTPCin)) continue;//skip a TPC+ITS track
 
       AliITSUTrackCooked track(*esdTrack);
-      ResetTrackToFollow(track);
+      AliITSUTrackCooked toRefit(track);
 
-      fTrackToFollow->ResetCovariance(10.); fTrackToFollow->ResetClusters();
-      if (!RefitAt(2.1, fTrackToFollow, &track)) continue;
+      toRefit.ResetCovariance(10.); toRefit.ResetClusters();
+      if (!RefitAt(2.1, &toRefit, &track)) continue;
       //Cross the beam pipe
-      if (!fTrackToFollow->PropagateTo(1.8, 2.27e-3, 35.28*1.848)) continue;
+      if (!toRefit.PropagateTo(1.8, 2.27e-3, 35.28*1.848)) continue;
 
-      CookLabel(fTrackToFollow, 0.); //For comparison only
-      Int_t label=fTrackToFollow->GetLabel();
+      CookLabel(&toRefit, 0.); //For comparison only
+      Int_t label=toRefit.GetLabel();
       if (label>0) ngood++;
 
-      esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSrefit);
+      esdTrack->UpdateTrackParams(&toRefit,AliESDtrack::kITSrefit);
       //esdTrack->RelateToVertex(event->GetVertex(),GetBz(),33.);
-      //UseClusters(fTrackToFollow);
       ntrk++;
   }
 
@@ -627,18 +627,12 @@ Int_t AliITSUTrackerCooked::LoadClusters(TTree *cTree) {
 
   AliITSUTrackerGlo::LoadClusters(cTree);
 
+  Bool_t glo[kNLayers]={0};
+  glo[kSeedingLayer1]=glo[kSeedingLayer2]=glo[kSeedingLayer3]=kTRUE;
+#pragma omp parallel for
   for (Int_t i=0; i<kNLayers; i++) {
       TClonesArray *clusters=fReconstructor->GetClusters(i);
-      switch (i) {
-      case kSeedingLayer1: 
-      case kSeedingLayer2: 
-      case kSeedingLayer3: 
-	 fgLayers[i].InsertClusters(clusters,kTRUE,fSAonly);
-         break;
-      default:
-	 fgLayers[i].InsertClusters(clusters,kFALSE,fSAonly);
-         break;
-      }
+      fgLayers[i].InsertClusters(clusters,glo[i],fSAonly);
   }
 
   return 0;
@@ -663,33 +657,22 @@ AliCluster *AliITSUTrackerCooked::GetCluster(Int_t index) const {
 
 AliITSUTrackerCooked::AliITSUlayer::AliITSUlayer():
   fR(0),
-  fN(0),
-  fNsel(0),
-  fI(0),
-  fTrack(0) 
+  fN(0)
 {
   //--------------------------------------------------------------------
   // This default constructor needs to be provided
   //--------------------------------------------------------------------
   for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
-  for (Int_t i=0; i<kMaxSelected; i++) fIndex[i]=-1;
 }
 
-AliITSUTrackerCooked::AliITSUlayer::~AliITSUlayer()
+AliITSUTrackerCooked::AliITSUthreadData::AliITSUthreadData()
+  :fNsel(0)
+  ,fI(0)
 {
   //--------------------------------------------------------------------
-  // Simple destructor
+  // Default constructor
   //--------------------------------------------------------------------
-  delete fTrack;
-}
-
-void 
-AliITSUTrackerCooked::AliITSUlayer::ResetTrack(const AliITSUTrackCooked &t) {
-  //--------------------------------------------------------------------
-  // Replace the track estimate at this layer
-  //--------------------------------------------------------------------
-   delete fTrack;
-   fTrack=new AliITSUTrackCooked(t);
+  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fUsed[i]=kFALSE;
 }
 
 void AliITSUTrackerCooked::AliITSUlayer::
@@ -775,41 +758,56 @@ AliITSUTrackerCooked::AliITSUlayer::FindClusterIndex(Double_t z) const {
   return m;
 }
 
-void AliITSUTrackerCooked::AliITSUlayer::
-SelectClusters(Float_t phi, Float_t dy, Float_t z, Float_t dz) {
+void AliITSUTrackerCooked::AliITSUlayer::SelectClusters
+(Int_t &n, Int_t idx[], Float_t phi, Float_t dy, Float_t z, Float_t dz) {
   //--------------------------------------------------------------------
   // This function selects clusters within the "road"
   //--------------------------------------------------------------------
-  fNsel=0;
-
   Float_t dphi=dy/fR; 
   Float_t phiMin=phi-dphi;
   Float_t phiMax=phi+dphi;
   Float_t zMin=z-dz;
   Float_t zMax=z+dz;
  
-  Int_t i=FindClusterIndex(zMin), imax=FindClusterIndex(zMax);
-  for (; i<imax; i++) {
+  Int_t imin=FindClusterIndex(zMin), imax=FindClusterIndex(zMax);
+  for (Int_t i=imin; i<imax; i++) {
       Float_t cphi=fPhi[i];
       if (cphi <= phiMin) continue;
       if (cphi >  phiMax) continue;
-      AliCluster *c=fClusters[i];
-      if (c->IsClusterUsed()) continue;
 
-      fIndex[fNsel++]=i;
-      if (fNsel>=kMaxSelected) break;
+      idx[n++]=i;
+      if (n >= kMaxSelected) return;
   } 
+
 }
 
-const AliCluster *AliITSUTrackerCooked::AliITSUlayer::GetNextCluster(Int_t &ci){
-  //--------------------------------------------------------------------
-  // This function returns clusters within the "road" 
-  //--------------------------------------------------------------------
-  if (fI<fNsel) {
-      ci=fIndex[fI++];
-      return fClusters[ci];       
-  }
-  ci=-1;
-  return 0; 
-}
+Bool_t
+AliITSUTrackerCooked::AttachCluster
+(Int_t &volID, Int_t nl, Int_t ci, AliKalmanTrack &t, const AliKalmanTrack &o) const {
 
+   AliITSUlayer &layer=fgLayers[nl];
+   AliCluster *c=layer.GetCluster(ci);
+
+   Int_t vid=c->GetVolumeId();
+
+   if (vid != volID) {
+      volID=vid;
+      t=o;
+      Double_t x=layer.GetXRef(ci);
+      Double_t alpha=layer.GetAlphaRef(ci);
+      if (!t.Propagate(alpha, x, GetBz())) return kFALSE;
+   }
+
+   Double_t chi2=t.GetPredictedChi2(c);
+   if (chi2 > kmaxChi2PerCluster) return kFALSE;
+
+   if ( !t.Update(c,chi2,(nl<<28)+ci) ) return kFALSE;
+
+   Double_t xx0 = (nl > 2) ? 0.008 : 0.003;  // Rough layer thickness
+   Double_t x0  = 9.36; // Radiation length of Si [cm]
+   Double_t rho = 2.33; // Density of Si [g/cm^3]
+   Double_t mass = t.GetMass();
+   t.CorrectForMeanMaterial(xx0, xx0*x0*rho, mass, kTRUE);
+
+   return kTRUE;
+}

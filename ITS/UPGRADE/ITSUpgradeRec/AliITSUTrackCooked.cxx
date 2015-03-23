@@ -168,3 +168,20 @@ GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
 
   return kTRUE;
 }
+
+Bool_t
+AliITSUTrackCooked::IsBetter(const AliKalmanTrack *best, Double_t maxChi2)
+const {
+  Int_t ncl=GetNumberOfClusters();
+  Int_t nclb=best->GetNumberOfClusters();
+
+  if (ncl >= nclb) {
+     Double_t chi2=GetChi2();
+     if (chi2 < maxChi2) {
+        if (ncl > nclb || chi2 < best->GetChi2()) {
+	   return kTRUE;
+        }
+     }
+  }
+  return kFALSE;
+}
