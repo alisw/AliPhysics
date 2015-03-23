@@ -129,6 +129,8 @@ struct PluginRailway : public Railway
 			     Bool_t slaves=true,
 			     Bool_t forcePar=false)
   {
+    Info("LoadLibrary", "Loading %s (slaves=%d, forcePar=%d)",
+	 name.Data(), slaves, forcePar);
     if (!fUsePars && !forcePar) {
       TString fullName(MakeLibraryName(name));
       Int_t ret = gSystem->Load(fullName);
@@ -138,12 +140,14 @@ struct PluginRailway : public Railway
 	fExtraLibs.Add(new TObjString(fullName));
       }
     }
-    else { 
+    else {
+      Info("LoadLibrary", "Looking for PAR %s", name.Data());
       if (!ParUtilities::Find(name)) { 
 	Error("PluginRailway::LoadLibrary", "Failed to find PAR file %s", 
 	      name.Data());
 	return false;
       }
+      Info("LoadLibrary", "Building PAR %s", name.Data());
       if (fTestBuild && !ParUtilities::Build(name)) { 
 	Error("PluginRailway::LoadLibrary", "Failed to build PAR file %s", 
 	      name.Data());
