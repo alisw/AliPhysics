@@ -98,6 +98,17 @@ class FT2 : public TObject
   static float GetMaxStepTGeo() {return fgMaxStepTGeo;}
   static void  SetMaxStepTGeo(float stp=1.) {fgMaxStepTGeo = stp;}
   //
+  void     SetAllocCorrelatedITSFakes(Bool_t v=kTRUE) {fAllocCorrelatedITSFakes=v;}
+  Bool_t   GetAllocCorrelatedITSFakes()               {return fAllocCorrelatedITSFakes;}
+  //
+  Double_t GetNCorrelITSFakes(Int_t lr) const         {return fNCorrelITSFakes[lr];}
+  Double_t GetCorrelITSFakesSigY(Int_t lr) const      {return fCorrelITSFakesSigY[lr];}
+  Double_t GetCorrelITSFakesSigZ(Int_t lr) const      {return fCorrelITSFakesSigZ[lr];}
+  //
+  void     SetNCorrelITSFakes(Int_t lr, double v)     {fNCorrelITSFakes[lr] = v;}
+  void     SetCorrelITSFakesSigY(Int_t lr, double v)  {fCorrelITSFakesSigY[lr] = v;}
+  void     SetCorrelITSFakesSigZ(Int_t lr, double v)  {fCorrelITSFakesSigZ[lr] = v;}
+  //
   void     SetdNdY(double v=-1) {fdNdY = v;}
   Double_t GetdNdY() const {return fdNdY;}
   Double_t HitDensity(double r2, double tgl) const;
@@ -173,7 +184,11 @@ class FT2 : public TObject
   AliITSURecoSens* fITSSensCand[kMaxITSLr][AliITSURecoLayer::kMaxSensMatching]; //! hit sensor candidates
   Double_t fITSHitYZ[kMaxITSLr][kMaxHitPerLr][2]; //! tracking Y,Z of each hit
   //
-  Double_t fdNdY;             //! if positive, use it for fakes simulation
+  Double_t fdNdY;             // if positive, use it for fakes simulation
+  Bool_t   fAllocCorrelatedITSFakes; // simulate noise hits accompanying the probe
+  Double_t fNCorrelITSFakes[kMaxITSLr]; // av.number of accompanying hits
+  Double_t fCorrelITSFakesSigY[kMaxITSLr]; // their width in Y
+  Double_t fCorrelITSFakesSigZ[kMaxITSLr]; // their width in Z
   //
   static float fgMaxStepTGeo; // max step for tracking accounting for TGeo materials
 	

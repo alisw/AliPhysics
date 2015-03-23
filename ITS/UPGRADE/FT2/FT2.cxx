@@ -73,11 +73,22 @@ fITSRec(0)
   ,fITSerrSclZ(1.0)
   ,fNITSLrHit(0)
   ,fdNdY(-1)
+  ,fAllocCorrelatedITSFakes(kTRUE)
 {
   //
   AliInfo("Default Constructor");
-
+  //
   memset(fITSSensHit,0,kMaxITSLr*2*sizeof(AliITSURecoSens*));
+  //
+  const double accAmp[kMaxITSLr]  = {0.017,0.013,0.013,0.014,0.016,0.015,0.015};
+  const double accSigY[kMaxITSLr] = { 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2};
+  const double accSigZ[kMaxITSLr] = { 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2, 9e-2};
+  for (int i=0;i<kMaxITSLr;i++) {
+    fNCorrelITSFakes[i] = accAmp[i];    // integral of accompanying hits
+    fCorrelITSFakesSigY[i] = accSigY[i]; // width in rphi
+    fCorrelITSFakesSigZ[i] = accSigZ[i]; // width in z
+  }
+  //
 }
 
 //________________________________________________
@@ -1230,16 +1241,28 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
   double nstd = TMath::Sqrt(chi2Cut);
   double dYsearch = 2*TMath::Max(0.00001,TMath::Sqrt((trCov[0]+yzcov[0])*chi2Cut));
   double dZsearch = 2*TMath::Max(0.00001,TMath::Sqrt((trCov[2]+yzcov[2])*chi2Cut));
-  int nFakeCand = gRandom->Poisson(rho*dYsearch*dZsearch); // expected number of surrounding hits
+  int nFakeCandRnd = gRandom->Poisson(rho*dYsearch*dZsearch); // expected number of surrounding hits
+  int nFakeCandCorr = 0;
+  if (fAllocCorrelatedITSFakes) nFakeCandCorr = gRandom->Poisson(GetNCorrelITSFakes(ilr));
+  int nFakeCandTot = nFakeCandCorr + nFakeCandRnd;
+    //
 #if DEBUG>1
-  printf("Lr:%d NF:%3d rho:%f S:%.3fx%.3f\n",ilr,nFakeCand,rho,dYsearch,dZsearch);
+    printf("Lr:%d NF:%3d NFC:%3d rho:%f S:%.3fx%.3f\n",ilr,nFakeCandRnd,nFakeCandCorr,rho,dYsearch,dZsearch);
 #endif
-  if (nFakeCand) {
+  if (nFakeCandTot) {
     AliITSUGeomTGeo* gm = fITS->GetGeom();
     const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
-    for (int ifc=nFakeCand;ifc--;) {
-      yzf[0] = trPos[0] + (gRandom->Rndm()-0.5)*dYsearch;
-      yzf[1] = trPos[1] + (gRandom->Rndm()-0.5)*dZsearch;
+    for (int ifc=nFakeCandTot;ifc--;) {
+      if (ifc<nFakeCandRnd) { // flat component
+	yzf[0] = trPos[0] + (gRandom->Rndm()-0.5)*dYsearch;
+	yzf[1] = trPos[1] + (gRandom->Rndm()-0.5)*dZsearch;
+      }
+      else { // correlated component
+	double sy,sz;
+	gRandom->Rannor(sy,sz);
+	yzf[0] = trPos[0] + sy*GetCorrelITSFakesSigY(ilr);
+	yzf[1] = trPos[1] + sz*GetCorrelITSFakesSigZ(ilr);
+      }
       //      double chi2 = fProbe.GetPredictedChi2(yzf,yzcov);
       double chi2 = trSmooth->GetPredictedChi2(yzf,yzcov);
       if (chi2>chi2Best) continue;
