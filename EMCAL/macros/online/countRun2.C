@@ -45,7 +45,7 @@ const int kNCHANTot = kNCHANDDL0 + kNCHANDDL1; // per SuperModule
 
 const int kMARGIN = 50; // +/- bin margin for TH2F plotting
  
-void countOfflineRun2(
+void countRun2(
 		      //const char * gdcNameStr = "15000213939011.12.root",
 const char * gdcNameStr = "@gdc-EMCal-00:",
 	   const int kMaxEvents=100,
