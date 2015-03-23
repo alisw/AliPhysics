@@ -12,12 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Base class for anaysis components. Inheriting classes have to implement the
- * functions CreateHistos and Process.
- *
- *   Author: Markus Fasel
- */
 #include <iostream>
 
 #include <TAxis.h>
@@ -25,11 +19,15 @@
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Dummy (I/O) constructor, not to be used
+ */
 AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent() :
   TNamed(),
   fHistos(NULL),
@@ -39,20 +37,19 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent()
   fWeightHandler(NULL),
   fComponentDebugLevel(0)
 {
-  /*
-   * Dummy (I/O) constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Destructor, release histogram container
+ */
 AliEMCalTriggerTracksAnalysisComponent::~AliEMCalTriggerTracksAnalysisComponent() {
-  /*
-   * Release histogram container
-   */
   if(fHistos) delete fHistos;
 }
 
-//______________________________________________________________________________
+/**
+ * Main constructor, to be called by the user. Initializes all fields with NULL.
+ * \param name: component name
+ */
 AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(const char* name) :
   TNamed(name,""),
   fHistos(NULL),
@@ -62,90 +59,85 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(c
   fWeightHandler(NULL),
   fComponentDebugLevel(0)
 {
-  /*
-   * Main constructor, to be called by the user
-   *
-   * @param name: component name
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Create Container for histograms. Inheriting classes overwrite this method, in which they call
+ * this and add the histograms of their choise.
+ */
 void AliEMCalTriggerTracksAnalysisComponent::CreateHistos() {
-  /*
-   * Create Container for histograms. Inheriting classes overwrite this method, in which they call
-   * this and add the histograms of their choise.
-   */
   fHistos = new AliEMCalHistoContainer(Form("Histos%s", GetName()));
   fHistos->ReleaseOwner();
 }
 
-//______________________________________________________________________________
+/**
+ * Create and define axis
+ *
+ * \param name Name of the axis
+ * \param binning binning information
+ * \return the new axis
+ */
 TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, const AliEMCalTriggerBinningDimension* binning) {
-  /*
-   * Create and define axis
-   *
-   * @param name: Name of the axis
-   * @param binning: binning information
-   * @return: the new axis
-   */
   TAxis *result = new TAxis(binning->GetNumberOfBins(), binning->GetBinLimits());
   result->SetName(name);
   return result;
 }
 
-//______________________________________________________________________________
+/**
+ * Create and define axis
+ * \param name Name of the axis
+ * \param nbins number of bins
+ * \param min min. range
+ * \param max max. range
+ * \return the new axis
+ */
 TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, int nbins, double min, double max) {
-  /*
-   * Create and define axis
-   *
-   * @param name: Name of the axis
-   * @param nbins: number of bins
-   * @param min: min. range
-   * @param max: max. range
-   * @return: the new axis
-   */
   TAxis *result = new TAxis(nbins, min, max);
   result->SetName(name);
   return result;
 }
 
-//______________________________________________________________________________
-void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<std::string>& triggernames, Bool_t usePatches) {
-  /*
-   * Get a set of names of trigger strings that is matching with the trigger decision.
-   *
-   * @param triggernames: output container for selected trigger names
-   * @param usePatches: determines whether we use the trigger decision from patches
-   */
+/**
+ * Get a set of names of trigger strings that is matching with the trigger decision.
+ *
+ * \param triggernames: output container for selected trigger names
+ * \param usePatches: determines whether we use the trigger decision from patches
+ */
+void AliEMCalTriggerTracksAnalysisComponent::GetMachingTriggerNames(std::vector<std::string>& triggernames, ETriggerMethod_t method) {
   triggernames.clear();
   if(!fTriggerDecision) return;
   if(fTriggerDecision->IsMinBias()) triggernames.push_back("MinBias");
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, usePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCJHigh, method)){
     triggernames.push_back("EMCJHigh");
-    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, usePatches))
+    if(fTriggerDecision->IsTriggered(kTAEMCGHigh, method))
       triggernames.push_back("EMCHighBoth");
     else
       triggernames.push_back("EMCHighJetOnly");
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, usePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCJLow, method)){
     triggernames.push_back("EMCJLow");
-    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, usePatches))
+    if(fTriggerDecision->IsTriggered(kTAEMCGLow, method))
       triggernames.push_back("EMCLowBoth");
     else
       triggernames.push_back("EMCLowJetOnly");
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, usePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCGHigh, method)){
     triggernames.push_back("EMCGHigh");
-    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, usePatches))
+    if(!fTriggerDecision->IsTriggered(kTAEMCJHigh, method))
       triggernames.push_back("EMCHighGammaOnly");
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, usePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCGLow, method)){
     triggernames.push_back("EMCGLow");
-    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, usePatches))
+    if(!fTriggerDecision->IsTriggered(kTAEMCJLow, method))
       triggernames.push_back("EMCLowGammaOnly");
   }
 }
 
+/**
+ * Helper function to print the names of the selected trigger classes. For debugging purposes.
+ * \param triggernames Selected trigger names
+ * \param componentName Name of the component responsible for the printout
+ */
 void EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent::PrintTriggerNames(
     const std::vector<std::string>& triggernames, const std::string& componentName) const {
 

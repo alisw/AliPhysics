@@ -53,7 +53,7 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   AliEMCalTriggerTracksAnalysisComponent(),
   fTrackSelection(NULL),
   fSwapEta(kFALSE),
-  fUsePatches(kFALSE),
+  fTriggerMethod(kTriggerString),
   fRequestMCtrue(kFALSE)
 {
 }
@@ -68,7 +68,7 @@ AliEMCalTriggerRecTrackAnalysisComponent::AliEMCalTriggerRecTrackAnalysisCompone
   AliEMCalTriggerTracksAnalysisComponent(name),
   fTrackSelection(NULL),
   fSwapEta(kFALSE),
-  fUsePatches(kFALSE),
+  fTriggerMethod(kTriggerString),
   fRequestMCtrue(kFALSE)
 {
 }
@@ -179,7 +179,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::Process(const AliEMCalTriggerEven
   if(fRequestMCtrue && !data->GetMCEvent()) return;
 
   std::vector<std::string> triggernames;
-  this->GetMachingTriggerNames(triggernames, fUsePatches);
+  this->GetMachingTriggerNames(triggernames, fTriggerMethod);
 
   AliVTrack *track(NULL);
   const AliVParticle *assocMC(NULL);

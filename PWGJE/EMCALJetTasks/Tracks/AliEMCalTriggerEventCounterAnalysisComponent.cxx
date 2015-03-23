@@ -12,12 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Analysis component counting events for different trigger classes. Task needs
- * to be grouped with a global event selection
- *
- *   Author: Markus Fasel
- */
 #include <map>
 #include <string>
 
@@ -30,35 +24,34 @@
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCalTriggerEventCounterAnalysisComponent.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Default (I/O) constructor, not to be used
+ */
 AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysisComponent():
   AliEMCalTriggerTracksAnalysisComponent(),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Default (I/O) constructor, not to be used
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Main constructor
+ */
 AliEMCalTriggerEventCounterAnalysisComponent::AliEMCalTriggerEventCounterAnalysisComponent(const char *name):
   AliEMCalTriggerTracksAnalysisComponent(name),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Main constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Create event counter histograms
+ */
 void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
-  /*
-   * Create event counter histograms
-   */
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
   // Create trigger definitions
@@ -98,11 +91,12 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
   fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
 }
 
-//______________________________________________________________________________
+/**
+ * Do event counting
+ *  -# Select trigger class and fill vertex distribution
+ *  -# Fill also correlation histogram
+ */
 void AliEMCalTriggerEventCounterAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
-  /*
-   * Do event counting
-   */
   if(!fTriggerDecision) return;
 
   double vz = data->GetRecEvent()->GetPrimaryVertex()->GetZ();
@@ -115,57 +109,56 @@ void AliEMCalTriggerEventCounterAnalysisComponent::Process(const AliEMCalTrigger
     triggerCorrelation[0] = 1.;
     fHistos->FillTH1("hEventHistMinBias", vz);
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, fUsePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCJHigh, fTriggerMethod)){
     triggerCorrelation[2] = 1.;
     fHistos->FillTH1("hEventHistEMCJHigh", vz);
     // Check whether also the gamma high-threshold trigger fired
-    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, fUsePatches)){
+    if(fTriggerDecision->IsTriggered(kTAEMCGHigh, fTriggerMethod)){
       fHistos->FillTH1("hEventHistEMCHighBoth", vz);
     } else {
       fHistos->FillTH1("hEventHistEMCHighJetOnly", vz);
     }
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, fUsePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCJLow, fTriggerMethod)){
     triggerCorrelation[1] = 1.;
     fHistos->FillTH1("hEventHistEMCJLow", vz);
     // Check whether also the gamma high-threshold trigger fired
-    if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, fUsePatches)){
+    if(fTriggerDecision->IsTriggered(kTAEMCGLow, fTriggerMethod)){
       fHistos->FillTH1("hEventHistEMCLowBoth", vz);
     } else {
       fHistos->FillTH1("hEventHistEMCLowJetOnly", vz);
     }
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGHigh, fUsePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCGHigh, fTriggerMethod)){
     triggerCorrelation[3] = 1.;
     fHistos->FillTH1("hEventHistEMCGHigh", vz);
-    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJHigh, fUsePatches))
+    if(!fTriggerDecision->IsTriggered(kTAEMCJHigh, fTriggerMethod))
       fHistos->FillTH1("hEventHistEMCHighGammaOnly", vz);
   }
-  if(fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCGLow, fUsePatches)){
+  if(fTriggerDecision->IsTriggered(kTAEMCGLow, fTriggerMethod)){
     triggerCorrelation[4] = 1.;
     fHistos->FillTH1("hEventHistEMCGLow", vz);
-    if(!fTriggerDecision->IsTriggered(AliEMCalTriggerAnaTriggerDecision::kTAEMCJLow, fUsePatches))
+    if(!fTriggerDecision->IsTriggered(kTAEMCJLow, fTriggerMethod))
       fHistos->FillTH1("hEventHistEMCLowGammaOnly", vz);
   }
 
   fHistos->FillTHnSparse("hEventTriggers", triggerCorrelation);
 }
 
-//______________________________________________________________________________
+/**
+ * Define an axis with number of bins from min to max
+ *
+ * \param axis Axis to be defined
+ * \param name Name of the axis
+ * \param title Title of the axis
+ * \param nbins Number of bins
+ * \param min lower limit of the axis
+ * \param max upper limit of the axis
+ * \param labels array of bin labels (optional)
+ */
 void AliEMCalTriggerEventCounterAnalysisComponent::DefineAxis(TAxis& axis, const char* name,
     const char* title, int nbins, double min, double max,
     const char** labels) const {
-  /*
-   * Define an axis with number of bins from min to max
-   *
-   * @param axis: Axis to be defined
-   * @param name: Name of the axis
-   * @param title: Title of the axis
-   * @param nbins: Number of bins
-   * @param min: lower limit of the axis
-   * @param max: upper limit of the axis
-   * @param labels (@optional): array of bin labels
-   */
   axis.Set(nbins, min, max);
   axis.SetName(name);
   axis.SetTitle(title);

@@ -1,11 +1,20 @@
+/**
+ * \file AliEMCalTriggerRecJetAnalysisComponent.h
+ * \brief Declaration of the analysis component on reconstructed jets
+ *
+ * This class defines the analysis components of reconstructed particles
+ * in reconstructed jets.
+ *
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \date Dec 12, 2014
+ */
 #ifndef ALIEMCALTRIGGERRECJETANALYSISCOMPONENT_H
 #define ALIEMCALTRIGGERRECJETANALYSISCOMPONENT_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Author: Markus Fasel
-
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 class TString;
 class AliEmcalJet;
@@ -24,6 +33,14 @@ namespace EMCalTriggerPtAnalysis {
 class AliEMCalPtTaskVTrackSelection;
 class AliEMCalTriggerEventData;
 
+/**
+ * \class AliEMCalTriggerRecJetAnalysisComponent
+ * \brief Analysis component for tracks in reconstructed jets
+ *
+ * Analysis component for tracks in reconstructed jets: Connects reconstructed
+ * particles to jets, and fills track based histograms for tracks in jet with
+ * a minimum jet \f$ p_{t} \f$.
+ */
 class AliEMCalTriggerRecJetAnalysisComponent: public AliEMCalTriggerTracksAnalysisComponent {
 public:
   AliEMCalTriggerRecJetAnalysisComponent();
@@ -33,9 +50,28 @@ public:
   virtual void CreateHistos();
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
-  void SetUsePatches(Bool_t doUse = kTRUE) { fUsePatches = doUse; }
+  /**
+   * Set the method used to select triggered events
+   * \param method Trigger method used
+   */
+  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
+
+  /**
+   * Set the minimum \f$ p_{t} \f$ allowed to select reconstructed jets.
+   * \param minpt The minimum jet \f$ p_{t} \f$
+   */
   void SetMinimumJetPt(Double_t minpt) { fMinimumJetPt = minpt; }
+
+  /**
+   * Set quality cuts used to select reconstructed tracks.
+   * \param trackcuts Track selection cuts used in this analysis component.
+   */
   void SetSingleTrackCuts(AliEMCalPtTaskVTrackSelection * trackcuts) { fTrackSelection = trackcuts; }
+
+  /**
+   * Defines whether we swap the sign of \f$ eta\f$.
+   * \param doSwap If true we swap the sign of \f$ eta\f$
+   */
   void SetSwapEta(Bool_t doSwap = kTRUE) { fSwapEta = doSwap; }
 
 protected:
@@ -43,13 +79,15 @@ protected:
   void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
   void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
   void FillTrackHistogramCentrality(const TString &histname, const AliVTrack * const trk, const AliEmcalJet *jet, double centpercent, double weight);
-  AliEMCalPtTaskVTrackSelection     *fTrackSelection;         // Track selection cuts used in the analysis
-  Double_t                          fMinimumJetPt;            // Minimum jet pt
-  Bool_t                            fRequestMCtrue;           // Request MC true track
-  Bool_t                            fSwapEta;                 // Swap eta sign on request
-  Bool_t                            fUsePatches;              // Use patches for trigger decision
+  AliEMCalPtTaskVTrackSelection     *fTrackSelection;         ///< Track selection cuts used in the analysis
+  Double_t                          fMinimumJetPt;            ///< Minimum jet \f$ p_{t} \f$
+  Bool_t                            fRequestMCtrue;           ///< Request MC true track
+  Bool_t                            fSwapEta;                 ///< Swap eta sign on request
+  ETriggerMethod_t                  fTriggerMethod;           ///< Method used for the trigger decision
 
+  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerRecJetAnalysisComponent, 1);        // Analysis component for reconstructed Jets
+  /// \endcond
 };
 
 } /* namespace EMCalTriggerPtAnalysis */
