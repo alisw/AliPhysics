@@ -191,6 +191,8 @@ AliMultEventClassifier::Process(AliESDEvent* esd,
   if (data) data->SetMult(mult);
   Int_t fill = (mult >= Int_t(fMax) ? fMax+1 : mult);
 
+  if (!fUseCentrality) return;
+  
   GetCentrality(esd, data, fill, AliAODMultEventClass::kV0M);
   GetCentrality(esd, data, fill, AliAODMultEventClass::kV0A);
   GetCentrality(esd, data, fill, AliAODMultEventClass::kV0C);

@@ -38,7 +38,8 @@ public:
       fMultV0C(0),
       fMultV0MEq(0),
       fMultV0AEq(0),
-      fMultV0CEq(0)
+      fMultV0CEq(0),
+      fUseCentrality(true)
   {}
   /** 
    * Constructor 
@@ -60,7 +61,8 @@ public:
       fMultV0C(0),
       fMultV0MEq(0),
       fMultV0AEq(0),
-      fMultV0CEq(0)
+      fMultV0CEq(0),
+      fUseCentrality(true)
   {}
   /** 
    * Copy constructor 
@@ -84,7 +86,8 @@ public:
       fMultV0C(0),
       fMultV0MEq(0),
       fMultV0AEq(0),
-      fMultV0CEq(0)
+      fMultV0CEq(0),
+      fUseCentrality(true)
   {}
   /** 
    * Assignement operator 
@@ -115,6 +118,13 @@ public:
    * @param option Not used
    */
   void Print(Option_t* option="") const;
+  /** 
+   * Set whether to estimate the centrality using the code of
+   * AliPPVsMultUtils.
+   * 
+   * @param use If true, also do centrality, otherwise not 
+   */
+  void SetUseCentrality(Bool_t use) { fUseCentrality = use; }
 protected:
   /** 
    * Get a centrality from both algorithms, histogram, and store 
@@ -185,8 +195,9 @@ protected:
   TH2*   fMultV0MEq;   // Reference Mult vs V0MEq estimator 
   TH2*   fMultV0AEq;   // Reference Mult vs V0AEq estimator 
   TH2*   fMultV0CEq;   // Reference Mult vs V0CEq estimator
-
-  ClassDef(AliMultEventClassifier,1);
+  Bool_t fUseCentrality; // Whether to do centrality
+  
+  ClassDef(AliMultEventClassifier,2);
 };
 
 #endif
