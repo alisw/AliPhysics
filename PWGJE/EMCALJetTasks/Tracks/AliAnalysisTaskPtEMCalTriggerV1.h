@@ -32,7 +32,7 @@ class AliEMCalTriggerEventData;
 class AliEMCalTriggerTaskGroup;
 
 /**
- * \class AliAnalysisTaskPtEMcalTriggerV1
+ * \class AliAnalysisTaskPtEMCalTriggerV1
  * \brief Re-structured analysis task of high-\f$ p_{t} \f$ tracks in triggered events.
  *
  * Re-structured analysis task of the pt analysis on EMCal-triggered events:
