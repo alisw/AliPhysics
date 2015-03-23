@@ -175,6 +175,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fAcceptanceParameterization(0),
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
+  fExcludeWeakDecaysInMC(kFALSE),
   fExcludeResonancesInMC(kFALSE),
   fExcludeElectronsInMC(kFALSE),
   fExcludeParticlesExtra(kFALSE),
@@ -2194,7 +2195,31 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
 	    continue;
 	}
-	
+
+	//Exclude weak decay products (if not done by IsPhysicalPrimary)
+	if(fExcludeWeakDecaysInMC) {
+	  TParticle *particle = track->Particle();
+	  if(!particle) continue;
+	  
+	  Bool_t kExcludeParticle = kFALSE;
+	  Int_t gMotherIndex = particle->GetFirstMother();
+	  if(gMotherIndex != -1) {
+	    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      TParticle *motherParticle = motherTrack->Particle();
+	      if(motherParticle) {
+		if(IsThisAWeakDecayingParticle(motherParticle)){
+		  kExcludeParticle = kTRUE;
+		}
+	      }
+	    }
+	  }
+	  
+	  //Exclude from the analysis decay products of weakly decaying particles
+	  if(kExcludeParticle) continue;
+	}
+
+
 	//Exclude resonances
 	if(fExcludeResonancesInMC) {
 	  TParticle *particle = track->Particle();
@@ -2446,6 +2471,29 @@ Bool_t AliAnalysisTaskBFPsi::AcceptEventCentralityWeight(Double_t centrality)
   AliInfo(Form("Centrality: %f; Digits: %f; Weight: %f; Result: %d", centrality, centralityDigits, weight, result));
   
   return result;
+}
+
+//____________________________________________________________________
+Bool_t AliAnalysisTaskBFPsi::IsThisAWeakDecayingParticle(TParticle *thisGuy)
+{
+  // In order to prevent analyzing daughters from weak decays 
+  // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
+
+ Int_t pdgcode = TMath::Abs( thisGuy->GetPdgCode() );
+
+ Int_t myWeakParticles[7] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+			       3122, 3112, // Lambda0 Sigma+-
+			       130, 310 // K_L0 K_S0
+ };
+
+ Bool_t found = kFALSE;
+ for(Int_t i=0; i!=7; ++i)
+   if( myWeakParticles[i] == pdgcode ) {
+     found = kTRUE;
+     break;
+   }
+ 
+ return found;
 }
 
 //________________________________________________________________________

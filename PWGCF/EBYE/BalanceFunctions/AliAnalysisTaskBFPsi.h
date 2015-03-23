@@ -10,6 +10,7 @@ class TH2F;
 class TH3F; 
 class TF1;
 class TH3D;
+class TParticle;
 
 class AliBalancePsi;
 class AliESDtrackCuts;
@@ -101,6 +102,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fDifferentialV2 = gDifferentialV2;
     fUseFlowAfterBurner = kTRUE;
   }
+
+  void ExcludeWeakDecaysInMC() {fExcludeWeakDecaysInMC = kTRUE;}
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
   void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
@@ -141,8 +144,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
-
   
+  // function to exclude the weak decay products
+  Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
+    
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
     fAcceptanceParameterization = parameterization;}
@@ -359,6 +364,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
 
+  Bool_t fExcludeWeakDecaysInMC;//flag to exclude the weak decay products (if not done by IsPhysicalPrimary) from the MC analysis
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
