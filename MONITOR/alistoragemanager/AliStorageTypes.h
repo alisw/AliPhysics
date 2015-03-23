@@ -44,12 +44,22 @@ enum requestType{
 	REQUEST_GET_PARAMS
 };
 
-struct clientRequestStruct{
-	int messageType;
-	int maxStorageSize;
-	int maxOccupation;
-	int removeEvents;
-	int eventsInChunk;
+struct clientRequestStruct
+{
+    clientRequestStruct(){};
+    clientRequestStruct(const clientRequestStruct& crs){
+        messageType = crs.messageType;
+        maxStorageSize =crs.maxStorageSize;
+        maxOccupation = crs.maxOccupation;
+        removeEvents = crs.removeEvents;
+        eventsInChunk = crs.eventsInChunk;
+    }
+    
+	int messageType = -1;
+	int maxStorageSize = -1;
+	int maxOccupation = -1;
+	int removeEvents=-1;
+	int eventsInChunk=-1;
 };
 
 struct eventStruct{
@@ -65,7 +75,14 @@ struct listRequestStruct{
 	char system[2][20];
 };
 
-struct serverRequestStruct{
+struct serverRequestStruct
+{
+    serverRequestStruct(){};
+    serverRequestStruct(const serverRequestStruct& src){
+        messageType = src.messageType;
+        event = src.event;
+        list = src.list;
+    }
 	int messageType;
 	struct eventStruct event;
 	struct listRequestStruct list;

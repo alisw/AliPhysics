@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "zmq.h"
+
 #include <TThread.h>
 #include <TFile.h>
 
@@ -215,6 +217,116 @@ int main(int argc, char **argv)
             }
             else{iter=0;}
         }
+    }
+    else if(atoi(argv[1])==4)
+    {
+        cout<<"***************************"<<endl;
+        cout<<"simulation of server thread"<<endl;
+        cout<<"***************************"<<endl;
+        socket = SERVER_COMMUNICATION_REP;
+        manager->CreateSocket(socket);
+       
+        
+        int request = manager->GetLong(socket);
+        cout<<"\nreceived request:"<<request<<endl;
+        
+        if(request==55)
+        {
+            vector<serverListStruct> eventsVector;
+            
+            for(int i=0;i<5;i++)
+            {
+                serverListStruct resultList;
+                
+                resultList.runNumber = i;
+                resultList.eventNumber = i;
+                strcpy(resultList.system, "pp");
+                resultList.multiplicity = 77;
+                resultList.marked = 0;
+                
+                eventsVector.push_back(resultList);
+            }
+            manager->Send(eventsVector,socket);
+            cout<<"sent reply"<<endl;
+        }
+        
+        cout<<"waiting for bool"<<endl;
+        bool boolMessage = manager->GetBool(socket);
+        cout<<"received bool:"<<boolMessage<<endl;
+        
+        cout<<"sending server request struct"<<endl;
+        struct serverRequestStruct *srs = new struct serverRequestStruct;
+       
+        srs->messageType = REQUEST_GET_EVENT;
+        struct eventStruct es;
+        es.runNumber = 197669;
+        es.eventNumber = 123;
+        srs->event = es;
+        
+        manager->Send(srs,socket);
+        cout<<"server request struct sent"<<endl;
+        
+        cout<<"waiting for client struct"<<endl;
+        struct clientRequestStruct *crs = manager->GetClientStruct(socket);
+        cout<<"received client request struct:"<<crs->messageType<<"\tmaxOcc:"<<crs->maxOccupation<<"\tmaxsize:"<<crs->maxStorageSize<<endl;
+        
+        
+        cout<<"sending AliESDevent"<<endl;
+        TFile *esdFile = TFile::Open("~/Desktop/AliESDs.root");
+        AliESDEvent *event = new AliESDEvent();
+        TTree *esdTree = (TTree*)esdFile->Get("esdTree");
+        event->ReadFromTree(esdTree);
+        
+        esdTree->GetEvent(0);
+        cout<<"run number:"<<event->GetRunNumber()<<endl;
+        cout<<"tracks:"<<event->GetNumberOfTracks()<<endl;
+        
+        manager->Send(event,socket);
+        cout<<"event sent"<<endl;
+    }
+    else if(atoi(argv[1])==5)
+    {
+        cout<<"****************"<<endl;
+        cout<<"simulation of ED"<<endl;
+        cout<<"****************"<<endl;
+        socket = SERVER_COMMUNICATION_REQ;
+        manager->CreateSocket(socket);
+        
+        cout<<"\nsending long request"<<endl;
+        manager->Send((long)55,socket);
+        
+        vector<serverListStruct> result = manager->GetServerListVector(socket);
+        
+        cout<<"received vector list:"<<endl;
+        for(serverListStruct list : result)
+        {
+            cout<<list.runNumber<<"\t"<<list.system<<endl;
+        }
+        cout<<"sending bool message:"<<true<<endl;
+        manager->Send(true,socket);
+        cout<<"bool message sent"<<endl;
+        
+        cout<<"waiting for server request struct"<<endl;
+        struct serverRequestStruct *srs = manager->GetServerStruct(socket);
+        
+        cout<<"received server request struct:"<<srs->messageType<<"\trun:"<<srs->event.runNumber<<"\tevent:"<<srs->event.eventNumber<<endl;
+        
+        cout<<"sending client request struct"<<endl;
+        struct clientRequestStruct *crs = new struct clientRequestStruct;
+        
+        crs->messageType = REQUEST_SAVING;
+        crs->maxStorageSize = 234;
+        crs->maxOccupation = 0;
+        crs->removeEvents = 0;
+        crs->eventsInChunk = 0;
+        
+        manager->Send(crs,socket);
+        cout<<"client request struct sent"<<endl;
+        
+        cout<<"waiting for AliESDevent"<<endl;
+        AliESDEvent *event = manager->GetEvent(socket);
+        
+        cout<<"received event with run number"<<event->GetRunNumber()<<"\ttracks:"<<event->GetNumberOfTracks()<<endl;
     }
     
     return 0;
