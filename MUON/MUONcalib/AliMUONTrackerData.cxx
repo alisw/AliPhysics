@@ -65,6 +65,35 @@ ClassImp(AliMUONTrackerData)
 const Int_t AliMUONTrackerData::fgkExtraDimension = 2;
 const Int_t AliMUONTrackerData::fgkVirtualExtraDimension = 1;
 
+namespace
+{
+  
+#define PRECISION 1E-12
+  
+  Double_t Difference(Double_t v1, Double_t v2)
+  {
+    Double_t d = v1-v2;
+    return TMath::Abs(d) < PRECISION ? 0.0 : d;
+  }
+  
+  Double_t AbsoluteDifference(Double_t v1, Double_t v2)
+  {
+    return TMath::Abs(Difference(v1,v2));
+  }
+  
+  
+  Double_t RelativeDifference(Double_t v1, Double_t v2)
+  {
+    if ( TMath::Abs(v1) < PRECISION ) return 0.0;
+    return (v1-v2)/v1;
+  }
+  
+  Double_t AbsoluteRelativeDifference(Double_t v1, Double_t v2)
+  {
+    return TMath::Abs(RelativeDifference(v1,v2));
+  }
+}
+
 //_____________________________________________________________________________
 AliMUONTrackerData::AliMUONTrackerData(const char* name, const char* title,
                                        Int_t dimension,
@@ -1288,6 +1317,117 @@ AliMUONTrackerData::Clear(Option_t*)
   NumberOfEventsChanged();
 }
 
+//______________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONTrackerData::CompareData(const AliMUONVTrackerData& d1,
+                                const AliMUONVTrackerData& d2,
+                                const char* outnamebase,
+                                AliMUONTrackerData::EDiffType difftype)
+{
+  /// Make a new tracker data by computing the difference between d1 and d2
+  /// How the difference is exactly made (relative vs absolute for instance)
+  /// is determined by the difftype parameter
+  
+  Double_t (*difffunction)(Double_t,Double_t)=0x0;
+  TString suffix("unknown");
+
+  if ( difftype == kDifference )
+  {
+    difffunction = Difference;
+    suffix = "D";
+  }
+  if ( difftype == kAbsoluteDifference )
+  {
+    difffunction = AbsoluteDifference;
+    suffix = "AD";
+  }
+  if ( difftype == kRelativeDifference )
+  {
+    difffunction = RelativeDifference;
+    suffix = "RD";
+  }
+  if ( difftype == kAbsoluteRelativeDifference )
+  {
+    difffunction = AbsoluteRelativeDifference;
+    suffix = "ARD";
+  }
+
+  TString outname;
+  
+  outname.Form("%s:%s",outnamebase,suffix.Data());
+  
+  if (difffunction)
+  {
+    return CompareData(d1,d2,outname.Data(),difffunction);
+  }
+  else
+  {
+    return 0x0;
+  }
+}
+
+//______________________________________________________________________________
+AliMUONVTrackerData*
+AliMUONTrackerData::CompareData(const AliMUONVTrackerData& d1,
+                                 const AliMUONVTrackerData& d2,
+                                 const char* outname,
+                                 Double_t(*diff)(Double_t,Double_t))
+{
+  /// Compare two data objects, using the diff method
+  
+  if ( d1.NumberOfDimensions() != d2.NumberOfDimensions() )
+  {
+    AliErrorClass("Cannot compare data of incompatible dimensions");
+    return 0x0;
+  }
+  
+  AliMpManuIterator it;
+  Int_t detElemId, manuId;
+  
+  AliMUONVStore* store = new AliMUON2DMap(kTRUE);
+  
+  while ( it.Next(detElemId,manuId) )
+  {
+    if ( d1.HasDetectionElement(detElemId) && d2.HasDetectionElement(detElemId) &&
+        d1.HasManu(detElemId,manuId) && d2.HasManu(detElemId,manuId) )
+    {
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+      
+      AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(store->FindObject(detElemId,manuId));
+      
+      if (!param)
+      {
+        param = new AliMUONCalibParamND(d1.ExternalDimension(),64,detElemId,manuId,
+                                        AliMUONVCalibParam::InvalidFloatValue());
+        store->Add(param);
+      }
+      
+      for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i )
+      {
+        if ( de->IsConnectedChannel(manuId,i) )
+        {
+          for ( Int_t k = 0; k < d1.ExternalDimension(); ++k )
+          {
+            
+            Double_t d = diff(d1.Channel(detElemId,manuId,i,k),
+                              d2.Channel(detElemId,manuId,i,k));
+            
+            param->SetValueAsDouble(i,k,d);
+          }
+        }
+      }
+    }
+  }
+  
+  AliMUONVTrackerData* d = new AliMUONTrackerData(outname,outname,d1.ExternalDimension(),kTRUE);
+  for ( Int_t k = 0; k < d1.ExternalDimension(); ++k )
+  {
+    d->SetDimensionName(k,Form("D:%s",d1.ExternalDimensionName(k).Data()));
+  }
+  d->Add(*store);
+  
+  return d;
+}
 //_____________________________________________________________________________
 Double_t 
 AliMUONTrackerData::Count(Int_t detElemId, Int_t manuId, 
@@ -1297,6 +1437,7 @@ AliMUONTrackerData::Count(Int_t detElemId, Int_t manuId,
   
   return Channel(detElemId,manuId,manuChannel,IndexOfNumberDimension());
 }
+
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*

@@ -16,7 +16,9 @@
 #  include "TGFrame.h"
 #endif
 
-class AliMUONVTrackerData;
+#include "AliMUONTrackerData.h"
+
+
 class TGButtonGroup;
 class TGComboBox;
 class TGCompositeFrame;
@@ -38,12 +40,7 @@ private:
   /// not defined
   AliMUONTrackerDataCompareDialog& operator=(const AliMUONTrackerDataCompareDialog& rhs);
 
-  void CompareData(const char* d1name, const char* d2name, Int_t difftype) const;
-  
-  AliMUONVTrackerData* CompareData(const AliMUONVTrackerData& d1,
-                                   const AliMUONVTrackerData& d2,
-                                   const char* outname,
-                                   Double_t (*difffunction)(Double_t,Double_t)) const;
+  void CompareData(const char* d1name, const char* d2name, AliMUONTrackerData::EDiffType difftype) const;
   
 private:
 
@@ -59,13 +56,7 @@ private:
   TGTextButton* fOK; ///< ok button
   TGTextButton* fCancel; ///< cancel button
   
-  static const Int_t fgkDifference; ///< D1-D2
-  static const Int_t fgkAbsoluteDifference; ///< |D1-D2|
-  static const Int_t fgkRelativeDifference; ///< (D1-D2)/D1
-  static const Int_t fgkAbsoluteRelativeDifference; ///< | (D1-D2) | / | D1 |
-  static const Int_t fgkAll; ///< All four differences at once
-  
-  ClassDef(AliMUONTrackerDataCompareDialog,1) // Dialog to select two data sources to compare
+  ClassDef(AliMUONTrackerDataCompareDialog,2) // Dialog to select two data sources to compare
 };
 
 #endif

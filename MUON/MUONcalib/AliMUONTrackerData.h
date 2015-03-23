@@ -55,6 +55,25 @@ public:
   
   virtual void Clear(Option_t* opt="");
   
+  enum EDiffType
+  {
+    kDifference = 1, ///< D1-D2
+    kAbsoluteDifference = 2 , ///< |D1-D2|
+    kRelativeDifference = 3, ///< (D1-D2)/D1
+    kAbsoluteRelativeDifference = 4, ///< | (D1-D2) | / | D1 |
+    kAll = 5 ///< All four differences at once
+  };
+  
+  static AliMUONVTrackerData* CompareData(const AliMUONVTrackerData& d1,
+                                          const AliMUONVTrackerData& d2,
+                                          const char* outname,
+                                          Double_t(*diff)(Double_t,Double_t));
+
+  static AliMUONVTrackerData* CompareData(const AliMUONVTrackerData& d1,
+                                          const AliMUONVTrackerData& d2,
+                                          const char* outnamebase,
+                                          AliMUONTrackerData::EDiffType diffType);
+
   virtual Double_t Count(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
   
   virtual Double_t DetectionElement(Int_t detElemId, Int_t dim=0) const;
