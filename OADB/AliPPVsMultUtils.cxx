@@ -322,31 +322,19 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
 
     //AliInfo("Casting");
     fBoundaryHisto_V0M        = dynamic_cast<TH1F *>(lCalibFile_V0M  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0M->SetName("fBoundaryHisto_V0M");
     fBoundaryHisto_V0A        = dynamic_cast<TH1F *>(lCalibFile_V0A  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0A->SetName("fBoundaryHisto_V0A");
     fBoundaryHisto_V0C        = dynamic_cast<TH1F *>(lCalibFile_V0C  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0C->SetName("fBoundaryHisto_V0C");
     fBoundaryHisto_V0MEq      = dynamic_cast<TH1F *>(lCalibFile_V0MEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0MEq->SetName("fBoundaryHisto_V0MEq");
     fBoundaryHisto_V0AEq      = dynamic_cast<TH1F *>(lCalibFile_V0AEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0AEq->SetName("fBoundaryHisto_V0AEq");
     fBoundaryHisto_V0CEq      = dynamic_cast<TH1F *>(lCalibFile_V0CEq  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0CEq->SetName("fBoundaryHisto_V0CEq");
     fBoundaryHisto_V0B        = dynamic_cast<TH1F *>(lCalibFile_V0B  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0B->SetName("fBoundaryHisto_V0B");
     fBoundaryHisto_V0Apartial = dynamic_cast<TH1F *>(lCalibFile_V0Apartial  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0Apartial->SetName("fBoundaryHisto_V0Apartial");
     fBoundaryHisto_V0Cpartial = dynamic_cast<TH1F *>(lCalibFile_V0Cpartial  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0Cpartial->SetName("fBoundaryHisto_V0Cpartial");
     fBoundaryHisto_V0S        = dynamic_cast<TH1F *>(lCalibFile_V0S  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0S->SetName("fBoundaryHisto_V0S");
     fBoundaryHisto_V0SB       = dynamic_cast<TH1F *>(lCalibFile_V0SB  -> Get(Form("histocalib%i",lLoadThisCalibration)) );
-    fBoundaryHisto_V0SB->SetName("fBoundaryHisto_V0SB");
 
     //Average Amplitudes for weighting
     fAverageAmplitudes       = dynamic_cast<TH1D *>(lCalibFile_Averages  -> Get(Form("hcalib_averages_%i",lLoadThisCalibration)) );
-    fAverageAmplitudes->SetName("fBoundaryHisto_V0SB");
 
     if ( !fBoundaryHisto_V0M   || !fBoundaryHisto_V0A   || !fBoundaryHisto_V0C ||
             !fBoundaryHisto_V0MEq || !fBoundaryHisto_V0AEq || !fBoundaryHisto_V0CEq || !fBoundaryHisto_V0B || !fBoundaryHisto_V0Apartial || !fBoundaryHisto_V0Cpartial ||
@@ -415,6 +403,19 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
         fRunNumber = lLoadThisCalibration;
         return kFALSE; //return denial
     }
+    
+    fBoundaryHisto_V0M->SetName("fBoundaryHisto_V0M");
+    fBoundaryHisto_V0A->SetName("fBoundaryHisto_V0A");
+    fBoundaryHisto_V0C->SetName("fBoundaryHisto_V0C");
+    fBoundaryHisto_V0MEq->SetName("fBoundaryHisto_V0MEq");
+    fBoundaryHisto_V0AEq->SetName("fBoundaryHisto_V0AEq");
+    fBoundaryHisto_V0CEq->SetName("fBoundaryHisto_V0CEq");
+    fBoundaryHisto_V0B->SetName("fBoundaryHisto_V0B");
+    fBoundaryHisto_V0Apartial->SetName("fBoundaryHisto_V0Apartial");
+    fBoundaryHisto_V0Cpartial->SetName("fBoundaryHisto_V0Cpartial");
+    fBoundaryHisto_V0S->SetName("fBoundaryHisto_V0S");
+    fBoundaryHisto_V0SB->SetName("fBoundaryHisto_V0SB");
+    fAverageAmplitudes->SetName("fBoundaryHisto_V0SB");
 
     //Careful with manual cleanup if needed: to be implemented
     fBoundaryHisto_V0M->SetDirectory(0);
