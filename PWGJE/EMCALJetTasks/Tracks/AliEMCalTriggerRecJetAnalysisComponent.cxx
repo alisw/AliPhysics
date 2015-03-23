@@ -12,11 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Analysis component inspecting tracks with a minimum given jet pt
- *
- *   Author: Markus Fasel
- */
 #include <iostream>
 #include <string>
 #include <vector>
@@ -44,51 +39,50 @@
 #include "AliEMCalTriggerRecJetAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Dummy (I/O) constructor, not to be used
+ */
 AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent() :
   AliEMCalTriggerTracksAnalysisComponent(),
   fTrackSelection(NULL),
   fMinimumJetPt(20.),
   fRequestMCtrue(kFALSE),
   fSwapEta(kFALSE),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Dummy (I/O) constructor, not to be used
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Main constructor for the users. Initializes all fields with default values.
+ * \param name Name of the analysis component
+ */
 AliEMCalTriggerRecJetAnalysisComponent::AliEMCalTriggerRecJetAnalysisComponent(const char* name) :
   AliEMCalTriggerTracksAnalysisComponent(name),
   fTrackSelection(NULL),
   fMinimumJetPt(20.),
   fRequestMCtrue(kFALSE),
   fSwapEta(kFALSE),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Main constructor for the users
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Destructor, deletes elements the component has ownership over.
+ */
 AliEMCalTriggerRecJetAnalysisComponent::~AliEMCalTriggerRecJetAnalysisComponent() {
-  /*
-   * Destructor
-   */
   if(fTrackSelection) delete fTrackSelection;
 }
 
-//______________________________________________________________________________
+/**
+ * Create histrogram for the jet pt analysis
+ */
 void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
-  /*
-   * Create histrogram for the jet pt analysis
-   */
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
@@ -155,13 +149,21 @@ void AliEMCalTriggerRecJetAnalysisComponent::CreateHistos() {
 
 }
 
-//______________________________________________________________________________
+/**
+ * Run the event loop
+ * -# Select reconstructed jets
+ * -# Fill jet based histogram
+ * -# Associated particles to the jet and make a track selection
+ * -# Fill track based histogram with reconstructed information
+ * -# If we have Monte-Carlo information an the track has an associated true particle, fill track based histogram with true information.
+ * \param data All data for the given event
+ */
 void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
   /*
    * Analyse tracks from jets with a given minimum pt
    */
   std::vector<std::string> triggernames;
-  this->GetMachingTriggerNames(triggernames, fUsePatches);
+  this->GetMachingTriggerNames(triggernames, fTriggerMethod);
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
   // Debugging:
@@ -206,18 +208,15 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   }
 }
 
-//______________________________________________________________________________
+/**
+ * Check according to the associated MC information whether the track is a MC true track,
+ * and whether it is physical primary
+ * \param trk track to check
+ * \param evnt MC event information necessary for the check
+ * \return the associated MC particle (NULL if not MC true)
+ */
 const AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
     const AliVTrack* const trk, const AliMCEvent* evnt) const {
-  /*
-   * Check according to the associated MC information whether the track is a MC true track,
-   * and whether it is physical primary
-   *
-   * @param trk: track to check
-   * @param evnt: MC event information necessary for the check
-   *
-   * @return: the associated MC particle (NULL if not MC true)
-   */
   int label = TMath::Abs(trk->GetLabel());
   const AliVParticle *mcpart = evnt->GetTrack(label);
   if(!mcpart) return NULL;
@@ -230,38 +229,52 @@ const AliVParticle * AliEMCalTriggerRecJetAnalysisComponent::IsMCTrueTrack(
   return mcpart;
 }
 
-//______________________________________________________________________________
+/**
+ * Fill histogram for tracks with relevant information
+ * @param histname Name of the histogram to be fille
+ * @param track Reconstructed selected particle
+ * @param jet Jet in which the particle was found
+ * @param vz z-position of the primary vertex
+ * @param weight Event weight
+ */
 void AliEMCalTriggerRecJetAnalysisComponent::FillHistogram(
     const TString& histname, const AliVParticle* track, const AliEmcalJet* jet,
     double vz, double weight) {
-  /*
-   * Fill Histogram with relevant information
-   */
+
   if(!fTriggerDecision) return;
   double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill histogram for reconstructed jets with the relevant information
+ * \param histname Name of the histogram to be filled
+ * \param recjet Reconstructed jet
+ * \param vz z-position of the primary vertex
+ * \param weight Event weight
+ */
 void AliEMCalTriggerRecJetAnalysisComponent::FillJetHistogram(
     const TString& histname, const AliEmcalJet* recjet, double vz, double weight) {
-  /*
-   * Fill histogram for reconstructed jets with the relevant information
-   */
   double data[4] = {TMath::Abs(recjet->Pt()), (fSwapEta ? -1. : 1.) * recjet->Eta(), recjet->Phi(), vz};
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill Histogram for tracks with:
+ * - Track pt
+ * - Jet pt
+ * - Track eta
+ * - distance to the main jet axis
+ * - centrality percentile
+ * \param histname Name of the histogram to be filled
+ * \param trk Reconstructed and selected tracl
+ * \param jet Reconstricted jet
+ * \param centpercent Centrality percentile
+ * \param weight Event weight
+ */
 void AliEMCalTriggerRecJetAnalysisComponent::FillTrackHistogramCentrality(
 		const TString& histname, const AliVTrack* const trk, const AliEmcalJet* jet, double centpercent, double weight) {
 	/*
-	 * Fill Histogram for tracks with:
-	 * - Track pt
-	 * - Jet pt
-	 * - Track eta
-	 * - distance to the main jet axis
-	 * - centrality percentile
 	 */
 	double data[5] = { TMath::Abs(trk->Pt()), TMath::Abs(jet->Pt()), (fSwapEta ? -1. : 1.) * trk->Eta(), centpercent, jet->DeltaR(trk)};
 	fHistos->FillTHnSparse(histname.Data(), data, weight);

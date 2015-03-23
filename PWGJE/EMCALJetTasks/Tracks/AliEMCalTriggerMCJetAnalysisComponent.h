@@ -1,11 +1,20 @@
+/**
+ * \file AliEMCalTriggerMCJetAnalysisComponent.h
+ * \brief Definition of class AliEMCalTriggerMCJetAnalysisComponent
+ *
+ * This class contains the definition of the component analysing jets and
+ * particles in jets at generator level.
+ *
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \date Dec. 12, 2014
+ */
 #ifndef ALIEMCALTRIGGERMCJETANALYSISCOMPONENT_H
 #define ALIEMCALTRIGGERMCJETANALYSISCOMPONENT_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Author: Markus Fasel
-
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 class TString;
 class AliVParticle;
@@ -22,6 +31,13 @@ namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerEventData;
 
+/**
+ * \class AliEMCalTriggerMCJetAnalysisComponent
+ * \brief Analysis component for particles in jets at generator level.
+ *
+ * Analysis component for tracks in jets of MC particles where the jet has a given
+ * minimum pt
+ */
 class AliEMCalTriggerMCJetAnalysisComponent: public AliEMCalTriggerTracksAnalysisComponent {
 public:
   AliEMCalTriggerMCJetAnalysisComponent();
@@ -31,17 +47,28 @@ public:
   virtual void CreateHistos();
   virtual void Process(const AliEMCalTriggerEventData * const data);
 
-  void SetUsePatches(Bool_t doUse = kTRUE) { fUsePatches = doUse; }
+  /**
+   * Specify method used to select trigger patches.
+   * \param method Method used to select trigger patches
+   */
+  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
+
+  /**
+   * Specify minimum \f$ p_{t} \f$ for selected jets.
+   * \param minpt The minimum \f$ p_{t} \f$
+   */
   void SetMinimumJetPt(Double_t minpt) { fMinimumJetPt = minpt; }
 
 protected:
   void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
   void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
 
-  Double_t                fMinimumJetPt;                      // Min. pt request for the jet
-  Bool_t                  fUsePatches;                        // Use patches for trigger decision
+  Double_t                fMinimumJetPt;                      ///< Min. \f$ p_{t} \f$ request for the jet
+  ETriggerMethod_t        fTriggerMethod;                     ///< Method used to select triggered events
 
+  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerMCJetAnalysisComponent, 1);         // Analysis component for MC Jets
+  /// \endcond
 };
 
 } /* namespace EMCalTriggerPtAnalysis */

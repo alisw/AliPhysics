@@ -12,14 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Re-structured analysis task of the pt analysis on EMCal-triggered events:
- * Analysis steps are moved to analysis components, which are grouped by a common
- * event selection. The analysis task steers the event builder, runs each group,
- * and collects the output of all groups.
- *
- *   Author: Markus Fasel
- */
 #include "AliInputEventHandler.h"
 #include "AliParticleContainer.h"
 #include "AliJetContainer.h"
@@ -31,15 +23,18 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
-#include "AliEMCalTriggerAnaTriggerDecisionConfig.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Dummy (I/O) constructor, not to be used.
+ */
 AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     AliAnalysisTaskEmcalJet(),
     fTaskGroups(NULL),
@@ -50,25 +45,22 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1() :
     fSwapTriggerThresholds(kFALSE),
     fDoTriggerDebug(kFALSE)
 {
-  /*
-   * Dummy constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Main Constructor: Initialises all values with default values. Generating also output container.
+ * \param name Name of the component
+ */
 AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* name) :
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fTaskGroups(NULL),
     fBinning(NULL),
-	fTriggerDecisionConfig(NULL),
+    fTriggerDecisionConfig(NULL),
     fMCJetContainer(),
     fDataJetContainer(),
     fSwapTriggerThresholds(kFALSE),
     fDoTriggerDebug(kFALSE)
 {
-  /*
-   * Main Constructor
-   */
   fTaskGroups = new TObjArray;
   fTaskGroups->SetOwner();
   fBinning = new AliEMCalTriggerBinningComponent();
@@ -76,20 +68,19 @@ AliAnalysisTaskPtEMCalTriggerV1::AliAnalysisTaskPtEMCalTriggerV1(const char* nam
   SetCaloTriggerPatchInfoName("EmcalTriggers");   // Default settings here, to be able to override it in the wagon configuration
 }
 
-//______________________________________________________________________________
+/**
+ * Destructor
+ */
 AliAnalysisTaskPtEMCalTriggerV1::~AliAnalysisTaskPtEMCalTriggerV1() {
-  /*
-   * Destructor
-   */
   delete fTaskGroups;
   delete fBinning;
 }
 
-//______________________________________________________________________________
-void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
-  /*
-   * Initialise all analysis components
+  /**
+   * Initialise all analysis components. Collect histograms from all components
+   * and store them in a combined list.
    */
+void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   AliEMCalTriggerBinningFactory binmaker;
@@ -112,17 +103,17 @@ void AliAnalysisTaskPtEMCalTriggerV1::UserCreateOutputObjects() {
 
 }
 
-//______________________________________________________________________________
+/**
+ * Run the analysis:
+ *  -# Build the event data shared among the tasks
+ *  -# Create the trigger decision and forward it to all components
+ *  -# Loop over task groups and execute all components connected to the task group
+ */
 Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
-  /*
-   * Run the analysis:
-   * 1st build the event data shared among the tasks
-   * 2nd loop over task groups and run them
-   */
   AliEMCalTriggerEventData *event = BuildEvent();
   AliEMCalTriggerAnaTriggerDecision triggerDecision;
   if(fDoTriggerDebug) triggerDecision.SetDebugMode();
-  if(fTriggerDecisionConfig) fTriggerDecisionConfig->ConfigureTriggerDecision(triggerDecision);
+  if(fTriggerDecisionConfig) triggerDecision.ConfigureTriggerDecision(*fTriggerDecisionConfig);
   triggerDecision.Create(event);
   triggerDecision.SetIsMinBias(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
   TIter groupIter(fTaskGroups);
@@ -138,36 +129,33 @@ Bool_t AliAnalysisTaskPtEMCalTriggerV1::Run() {
   return kTRUE;
 }
 
-//______________________________________________________________________________
+/**
+ * Set binning for a give dimension. Binning is handed over to the binning handler.
+ *
+ * \param dimname name of the axis
+ * \param nbins number of bins
+ * \param binning the bin limits
+ */
 void AliAnalysisTaskPtEMCalTriggerV1::SetBinning(const char* dimname, int nbins, double* binning) {
-  /*
-   * Set binning for a give dimension
-   *
-   * @param dimname: name of the axis
-   * @param nbins: number of bins
-   * @param binning: the bin limits
-   */
   fBinning->SetBinning(dimname, nbins, binning);
 }
 
-//______________________________________________________________________________
+/**
+ * Set binning for a give dimension. Binning is handed over to the binning handler.
+ *
+ * \param binning the bin limits
+ */
 void AliAnalysisTaskPtEMCalTriggerV1::SetBinning(const char* dimname, const TArrayD &binning) {
-  /*
-   * Set binning for a give dimension
-   *
-   * @param binning: the bin limits
-   */
   fBinning->SetBinning(dimname, binning);
 }
 
-//______________________________________________________________________________
+/**
+ * Build event structure. Take the information about the different containers
+ * from the base analysis task.
+ *
+ * \return the resulting event structure
+ */
 AliEMCalTriggerEventData* AliAnalysisTaskPtEMCalTriggerV1::BuildEvent() const {
-  /*
-   * Build event structure. Take the information about the different containers
-   * from the base analysis task.
-   *
-   * @return: the resulting event structure
-   */
   AliEMCalTriggerEventData *eventstruct = new AliEMCalTriggerEventData;
   eventstruct->SetRecEvent(fInputEvent);
   eventstruct->SetMCEvent(fMCEvent);
@@ -186,13 +174,11 @@ AliEMCalTriggerEventData* AliAnalysisTaskPtEMCalTriggerV1::BuildEvent() const {
   return eventstruct;
 }
 
-//______________________________________________________________________________
+/**
+ * Add group of analysis components to the task
+ * \param taskGroup Group of analysis components
+ */
 void AliAnalysisTaskPtEMCalTriggerV1::AddAnalysisGroup(AliEMCalTriggerTaskGroup *taskGroup) {
-  /*
-   * Add group of analysis components to the task
-   *
-   * @param taskGroup: Group of analysis components
-   */
   fTaskGroups->Add(taskGroup);
 }
 

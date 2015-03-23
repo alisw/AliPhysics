@@ -12,12 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Class performing the selection of triggered events
- *
- * Author:
- *    Markus Fasel
- */
 #include <iostream>
 #include <TClonesArray.h>
 #include <TString.h>
@@ -26,37 +20,39 @@
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerEventData.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision)
+ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Dummy (I/O) and main constructor
+ */
 AliEMCalTriggerAnaTriggerDecision::AliEMCalTriggerAnaTriggerDecision() :
-    fSwapThresholds(kFALSE),
     fIsMinBias(kFALSE),
-    fUseOfflinePatches(kFALSE),
     fDoDebug(kFALSE)
 {
-  /*
-   * Main constructor
-   */
   Reset();
-  memset(fEnergyThresholds, 0, sizeof(double) * 4);
 }
 
-//______________________________________________________________________________
+/**
+ * Steer creation of the trigger decision. Delegates the creation of the trigger
+ * decision from trigger strings to the function MakeDecisionFromString and of
+ * the decision from patches to the function MakeDecisionFromPatches.
+ *
+ * \param data all event information
+ */
 void AliEMCalTriggerAnaTriggerDecision::Create(const AliEMCalTriggerEventData* const data) {
-  /*
-   * Steer creation of the trigger decision
-   *
-   * @param data: all event information
-   */
   Reset();
   MakeDecisionFromPatches(*(data->GetTriggerPatchContainer()));
   MakeDecisionFromString(data->GetRecEvent()->GetFiredTriggerClasses());
 }
 
-//______________________________________________________________________________
+/**
+ * Reset trigger decisions stored in this object
+ */
 void AliEMCalTriggerAnaTriggerDecision::Reset() {
   for(int itrg = 0; itrg < 4; itrg++){
     fDecisionFromPatches[itrg] = kFALSE;
@@ -64,26 +60,25 @@ void AliEMCalTriggerAnaTriggerDecision::Reset() {
   }
 }
 
-//______________________________________________________________________________
+/**
+ * Create trigger decision from trigger string. For each trigger class we only check if the
+ * name of the trigger class appears in the trigger string.
+ *
+ * \param triggerstring the trigger string stored in the reconstructed event.
+ */
 void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromString(const TString& triggerstring) {
-  /*
-   * Create trigger decision from trigger string
-   *
-   * @param triggerstring: the trigger string
-   */
   if(triggerstring.Contains("EJ1")) fDecisionFromString[kTAEMCJHigh]  = kTRUE;
   if(triggerstring.Contains("EJ2")) fDecisionFromString[kTAEMCJLow]   = kTRUE;
   if(triggerstring.Contains("EG1")) fDecisionFromString[kTAEMCGHigh]  = kTRUE;
   if(triggerstring.Contains("EG2")) fDecisionFromString[kTAEMCGLow]   = kTRUE;
 }
 
-//______________________________________________________________________________
+/**
+ * Check whether the trigger decision from the trigger strings and the trigger patches are the same
+ *
+ * \return result of the comparison
+ */
 bool AliEMCalTriggerAnaTriggerDecision::CheckConsistency() const{
-  /*
-   * Check whether the trigger decision from the trigger strings and the trigger patches are the same
-   *
-   * @return: result of the comparison
-   */
   bool result = true;
   for(int icls = 0; icls < 4; icls++){
     if(fDecisionFromString[icls] != fDecisionFromPatches[icls]) result = false;
@@ -91,19 +86,18 @@ bool AliEMCalTriggerAnaTriggerDecision::CheckConsistency() const{
   return result;
 }
 
-//______________________________________________________________________________
+/**
+ * Create trigger decision from trigger patches. In case swap thresholds is requested, the low threshold
+ * triggers are replaced by the high threshold triggers and vice versa
+ *
+ * \param listOfPatches the TClonesArray of the trigger patches, created by the trigger patch maker
+ */
 void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArray& listOfPatches) {
-  /*
-   * Create trigger decision from trigger patches. In case swap thresholds is requested, the low threshold
-   * triggers are replaced by the high threshold triggers and vice versa
-   *
-   * @param triggerstring: the TClonesArray of the trigger patches, created by the trigger patch maker
-   */
   TIter patchIter(&listOfPatches);
   AliEmcalTriggerPatchInfo *mypatch(NULL);
   if(fDoDebug){
     std::cout << "Generating trigger decision from found patches: " << listOfPatches.GetEntries() << std::endl;
-    if(fUseOfflinePatches) std::cout << "Using offline patches\n";
+    if(fConfiguration.IsUsingOfflinePatches()) std::cout << "Using offline patches\n";
     else std::cout << "Using online patches\n";
   }
   int foundpatches[4] = {0,0,0,0};
@@ -126,45 +120,68 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
   }
 }
 
-//______________________________________________________________________________
+/**
+ * Select trigger patch for a given trigger type:
+ *  -# Check whether the patch is of patch type (online/offline) we require
+ *  -# Check if the patch belongs to the given trigger class.
+ *  -# If required perform additional selection of patches avbove energy.
+ *
+ * \param trigger Type of the trigger class
+ * \param recpatch Patch to accept
+ * \return True if the patch is selected, false otherwise
+ */
 Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trigger, const AliEmcalTriggerPatchInfo* const recpatch) const {
-	/*
-	 *
-	 */
+  bool swapThresholds = fConfiguration.IsSwapThresholds();
 	bool selectPatchType = kFALSE;
-	if(fUseOfflinePatches){
+	if(fConfiguration.IsUsingOfflinePatches()){
 	  if(!recpatch->IsOfflineSimple()) return kFALSE;
 		switch(trigger){
-		case kTAEMCJHigh: selectPatchType = fSwapThresholds ? recpatch->IsJetLowSimple() :  recpatch->IsJetHighSimple(); break;
-		case kTAEMCJLow: selectPatchType = fSwapThresholds ? recpatch->IsJetHighSimple() :  recpatch->IsJetLowSimple(); break;
-		case kTAEMCGHigh: selectPatchType = fSwapThresholds ? recpatch->IsGammaLowSimple() :  recpatch->IsGammaHighSimple(); break;
-		case kTAEMCGLow: selectPatchType = fSwapThresholds ? recpatch->IsGammaHighSimple() :  recpatch->IsGammaLowSimple(); break;
+		case kTAEMCJHigh: selectPatchType = swapThresholds ? recpatch->IsJetLowSimple() :  recpatch->IsJetHighSimple(); break;
+		case kTAEMCJLow: selectPatchType = swapThresholds ? recpatch->IsJetHighSimple() :  recpatch->IsJetLowSimple(); break;
+		case kTAEMCGHigh: selectPatchType = swapThresholds ? recpatch->IsGammaLowSimple() :  recpatch->IsGammaHighSimple(); break;
+		case kTAEMCGLow: selectPatchType = swapThresholds ? recpatch->IsGammaHighSimple() :  recpatch->IsGammaLowSimple(); break;
 		};
 	} else {
 	  if(recpatch->IsOfflineSimple()) return kFALSE;
 		switch(trigger){
-		case kTAEMCJHigh: selectPatchType = fSwapThresholds ? recpatch->IsJetLow() :  recpatch->IsJetHigh(); break;
-		case kTAEMCJLow: selectPatchType = fSwapThresholds ? recpatch->IsJetHigh() :  recpatch->IsJetLow(); break;
-		case kTAEMCGHigh: selectPatchType = fSwapThresholds ? recpatch->IsGammaLow() :  recpatch->IsGammaHigh(); break;
-		case kTAEMCGLow: selectPatchType = fSwapThresholds ? recpatch->IsGammaHigh() :  recpatch->IsGammaLow(); break;
+		case kTAEMCJHigh: selectPatchType = swapThresholds ? recpatch->IsJetLow() :  recpatch->IsJetHigh(); break;
+		case kTAEMCJLow: selectPatchType = swapThresholds ? recpatch->IsJetHigh() :  recpatch->IsJetLow(); break;
+		case kTAEMCGHigh: selectPatchType = swapThresholds ? recpatch->IsGammaLow() :  recpatch->IsGammaHigh(); break;
+		case kTAEMCGLow: selectPatchType = swapThresholds ? recpatch->IsGammaHigh() :  recpatch->IsGammaLow(); break;
 		};
 	}
 
 	if(!selectPatchType) return kFALSE;
 
-	if(fEnergyThresholds[trigger]){
+	if(fConfiguration.HasEnergyThreshold(trigger)){
 		// Additional threshold on energy requested to select the patch
-		return recpatch->GetPatchE() > fEnergyThresholds[trigger];
+		return GetPatchEnergy(fConfiguration.GetPatchEnergyType(), recpatch) > fConfiguration.GetEnergyThreshold(trigger);
 	}
 	return kTRUE;
 }
+/**
+ * Retrieve patch energy from the reconstruced patch according to the energy definition specified.
+ * \param energytype Energy type
+ * \param patch The reconstructed patch
+ * \return The patch energy
+ */
+Double_t AliEMCalTriggerAnaTriggerDecision::GetPatchEnergy(EPatchEnergyType_t energytype, const AliEmcalTriggerPatchInfo *const patch) const {
+  Double_t energy = 0.;
+  switch(energytype){
+  case kAmplitudeOnline:      energy = patch->GetADCAmp(); break;
+  case kAmplitudeOffline:     energy = patch->GetADCOfflineAmp(); break;
+  case kEnergyOnline:         energy = patch->GetADCAmpGeVRough(); break;
+  case kEnergyOffline:        energy = patch->GetPatchE(); break;
+  };
+  return energy;
+}
 
-
-//______________________________________________________________________________
+/**
+ * Print status of the trigger decision
+ *
+ * \param Parameter required by the interface, not used here
+ */
 void AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
-  /*
-   * Print status of the trigger decision
-   */
   std::cout << "Trigger decision" << std::endl;
   std::cout << "===============================" << std::endl;
   std::cout << "MinBias:                   " << (fIsMinBias ? "yes" : "no") << std::endl;
@@ -174,6 +191,22 @@ void AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
         << "], Patches[" << (fDecisionFromPatches[icase] ? "yes" : "no") << "]" << std::endl;
   }
 }
+
+/*
+ * Resources of class AliEMCalTriggerAnaTriggerDecisionConfig
+ */
+
+/**
+ * Default constructor
+ */
+AliEMCalTriggerAnaTriggerDecisionConfig::AliEMCalTriggerAnaTriggerDecisionConfig():
+	fSwapThresholds(kFALSE),
+	fUseOfflinePatches(kFALSE),
+	fEnergyType(kAmplitudeOnline)
+{
+	memset(fEnergyThresholds, 0, sizeof(double) * 4);
+}
+
 
 } /* namespace EMCalTriggerPtAnalysis */
 

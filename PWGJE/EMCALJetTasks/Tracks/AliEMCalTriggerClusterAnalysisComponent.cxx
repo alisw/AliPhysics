@@ -12,11 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Analysis component for EMCal clusters. Loops over calibrated and uncalibrated clusters
- *
- *   Author: Markus Fasel
- */
 #include <map>
 #include <string>
 #include <vector>
@@ -34,39 +29,38 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerClusterAnalysisComponent.h"
 
-
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Dummy (I/O) constructor, not to be used by the user
+ */
 AliEMCalTriggerClusterAnalysisComponent::AliEMCalTriggerClusterAnalysisComponent() :
   AliEMCalTriggerTracksAnalysisComponent(),
   fEnergyRange(),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Dummy (I/O) constructor
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Main constructor, initializes all elements with default values
+ * \param name Name of the component
+ */
 AliEMCalTriggerClusterAnalysisComponent::AliEMCalTriggerClusterAnalysisComponent(const char* name) :
   AliEMCalTriggerTracksAnalysisComponent(name),
   fEnergyRange(),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Main constructor
-   */
   fEnergyRange.SetLimits(0., 1000.);
 }
 
-//______________________________________________________________________________
+/**
+ * Create histos for clusters in different event categories
+ */
 void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
-  /*
-   * Create histos for clusters in different event categories
-   */
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
   // Create trigger definitions
@@ -117,11 +111,11 @@ void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
   for(int iaxis = 0; iaxis < 5; iaxis++) delete clusteraxes[iaxis];
 }
 
-//______________________________________________________________________________
+/**
+ * Run loop over calibrated and uncalibrated clusters
+ * \param data All data of the event
+ */
 void AliEMCalTriggerClusterAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
-  /*
-   * Run loop over calibrated and uncalibrated clusters
-   */
 
   // First loop over uncalibrated clusters
   AliDebug(1, Form("Number of calibrated clusters: %d", data->GetClusterContainer()->GetEntries()));
@@ -129,7 +123,7 @@ void AliEMCalTriggerClusterAnalysisComponent::Process(const AliEMCalTriggerEvent
   AliVCluster *clust(NULL);
   AliVEvent *recEv = data->GetRecEvent();
   std::vector<std::string> triggerNames;
-  this->GetMachingTriggerNames(triggerNames, fUsePatches);
+  this->GetMachingTriggerNames(triggerNames, fTriggerMethod);
   for(int iclust = 0; iclust < recEv->GetNumberOfCaloClusters(); iclust++){
     clust = recEv->GetCaloCluster(iclust);
     if(!clust->IsEMCAL()) continue;
@@ -150,16 +144,14 @@ void AliEMCalTriggerClusterAnalysisComponent::Process(const AliEMCalTriggerEvent
   }
 }
 
-//______________________________________________________________________________
+/**
+ * Fill Histogram for cluster
+ * \param histname the histogram to fill
+ * \param clust the cluster analysed
+ * \param event reconstructed event information
+ * \param inMB true if event fulfills min bias condition
+ */
 void AliEMCalTriggerClusterAnalysisComponent::FillHistogram(const TString& histname, const AliVCluster* clust, AliVEvent *ev, Bool_t inMB) {
-  /*
-   * Fill Histogram for cluster
-   *
-   * @param histname: the histogram to fill
-   * @param clust: the cluster analysed
-   * @param event: reconstructed event information
-   * @param inMB: true if event fulfills min bias condition
-   */
   TLorentzVector vec;
   double xyz[3];
   ev->GetPrimaryVertex()->GetXYZ(xyz);

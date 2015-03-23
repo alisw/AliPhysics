@@ -11,6 +11,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 class TString;
 class AliVParticle;
@@ -62,7 +63,7 @@ public:
    *
    * \param doUse If true, patches are used for the trigger selection, otherwise the trigger string
    */
-  void SetUsePatches(Bool_t doUse = kTRUE) { fUsePatches = doUse; }
+  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
 
   /**
    * Defines whether tracks are required to be MC-true tracks, defined as track with
@@ -88,7 +89,7 @@ protected:
 
   AliEMCalPtTaskVTrackSelection *   fTrackSelection;          ///< Track selection cuts used in the analysis
   Bool_t                            fSwapEta;                 ///< Swap eta sign
-  Bool_t                            fUsePatches;              ///< Use patches for trigger decision
+  ETriggerMethod_t                  fTriggerMethod;           ///< Method used for trigger decision
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
 
   /// \cond CLASSIMP

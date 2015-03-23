@@ -12,12 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * Analysis component for tracks in jets of MC particles where the jet has a given
- * minimum pt
- *
- *   Author: Markus Fasel
- */
 #include <string>
 #include <vector>
 
@@ -43,37 +37,37 @@
 #include "AliEMCalTriggerMCJetAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-//______________________________________________________________________________
+/**
+ * Dummy (I/O) constructor, not to be used
+ */
 AliEMCalTriggerMCJetAnalysisComponent::AliEMCalTriggerMCJetAnalysisComponent():
   AliEMCalTriggerTracksAnalysisComponent(),
   fMinimumJetPt(20.),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Dummy (I/O) constructor, not to be used
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Main constructor, initialising component with default values.
+ * \param name Name of the component
+ */
 AliEMCalTriggerMCJetAnalysisComponent::AliEMCalTriggerMCJetAnalysisComponent(const char* name) :
   AliEMCalTriggerTracksAnalysisComponent(name),
   fMinimumJetPt(20.),
-  fUsePatches(kFALSE)
+  fTriggerMethod(kTriggerString)
 {
-  /*
-   * Main constructor, to be used
-   */
 }
 
-//______________________________________________________________________________
+/**
+ * Create histograms for the MC jet analysis
+ */
 void AliEMCalTriggerMCJetAnalysisComponent::CreateHistos() {
-  /*
-   * Create histograms for the MC jet analysis
-   */
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
@@ -128,17 +122,19 @@ void AliEMCalTriggerMCJetAnalysisComponent::CreateHistos() {
   for(int iaxis = 0; iaxis < 6; iaxis++) delete trackaxes[iaxis];
 }
 
-//______________________________________________________________________________
+/**
+ * Analyse particles in a jet with a given minimum jet \f$ p_{t} \f$
+ *  -# Select jets with a minimum \f$ p_{t} \f$
+ *  -# Fill track-based histograms only for particles found in the given jet
+ * \param data Event data
+ */
 void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
-  /*
-   * Analyse particles in a jet with a given minimum jet pt
-   */
   if(!data->GetJetContainerMC()){
     AliError("No Jet container for MC found");
     return;
   }
   std::vector<std::string> triggernames;
-  this->GetMachingTriggerNames(triggernames, fUsePatches);
+  this->GetMachingTriggerNames(triggernames, fTriggerMethod);
   TString jetptstring = Form("jetPt%03d", int(fMinimumJetPt));
 
   double weight = 1.;
@@ -169,24 +165,31 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
   }
 }
 
-//______________________________________________________________________________
+/**
+ * Fill track-based Histogram with relevant information
+ * \param histname Name of the histogram
+ * \param track Particle associated to the jet
+ * \param jet Reconstructed jet
+ * \param vz z-position of the primary vertex
+ * \param weight Event weight
+ */
 void AliEMCalTriggerMCJetAnalysisComponent::FillHistogram(
     const TString& histname, const AliVParticle* track, const AliEmcalJet* jet,
     double vz, double weight) {
-  /*
-   * Fill Histogram with relevant information
-   */
   if(!fTriggerDecision) return;
   double data[6] = {TMath::Abs(track->Pt()), TMath::Abs(jet->Pt()), track->Eta(), track->Phi(), vz, fTriggerDecision->IsMinBias() ? 1. : 0.};
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill jet-based histogram for reconstructed jets with the relevant information
+ * \param histname Name of the histogram
+ * \param recjet Reconstructed jet
+ * \param vz z-position of the primary vertex
+ * \param weight Event weight
+ */
 void AliEMCalTriggerMCJetAnalysisComponent::FillJetHistogram(
     const TString& histname, const AliEmcalJet* recjet, double vz, double weight) {
-  /*
-   * Fill histogram for reconstructed jets with the relevant information
-   */
   double data[4] = {TMath::Abs(recjet->Pt()), recjet->Eta(), recjet->Phi(), vz};
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
