@@ -106,7 +106,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPP7TeV
   //
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddAnalysisTaskTOFKStar", "No analysis manager to connect to.");
+      ::Error("AddAnalysisTaskRho", "No analysis manager to connect to.");
       return NULL;
    } 
 
@@ -139,7 +139,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPP7TeV
    
    if (isPP && (!isMC)) { 
      cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
-     ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));   
+     ::Info("AddAnalysisTaskRho", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));   
    }
    
    // define and fill cut set for event cut
@@ -185,7 +185,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPP7TeV
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigRhoPP7TeV.C");
-   if (!ConfigKStarPP7TeV(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPi1Candidate, cutPi2Candidate, nsigmaPi1, nsigmaPi2, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, yaxisvar)) return 0x0;
+   if (!ConfigRhoPP7TeV(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPi1Candidate, cutPi2Candidate, nsigmaPi1, nsigmaPi2, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, yaxisvar)) return 0x0;
    
    
    //
