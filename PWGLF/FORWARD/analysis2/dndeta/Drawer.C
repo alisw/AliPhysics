@@ -27,6 +27,7 @@
 # include <vector>
 # include "Combiner.C"
 #else 
+class TLatex;
 class TCanvas;
 class THStack;
 class TMultiGraph;
@@ -36,6 +37,7 @@ class TGraphAsymmErrors;
 class TLegend;
 class TH1;
 class TPair;
+class TString;
 #endif
 
 /**
@@ -608,20 +610,21 @@ struct Drawer {
     return stack;
   }
   /** 
-   * Draw a result
+   * Make a canvas 
    * 
-   * @param system          Collision system
-   * @param sNN             Collision energy [GeV]
-   * @param trigger         Trigger 
-   * @param rebinned        If to get rebinned result
-   * @param empirical       If to get empirical result 
+   * @param system    System 
+   * @param sNN       Energy
+   * @param trigger   Trigger 
+   * @param rebinned  Rebin 
+   * @param empirical Empirical 
+   * 
+   * @return 
    */
-  static void Draw(const TString&  system, 
-		   UShort_t        sNN, 
-		   const TString&  trigger,
-		   const Option_t* option="e3",
-		   Bool_t          rebinned=true, 
-		   Bool_t          empirical=true)
+  static TCanvas* MakeCanvas(const TString&  system, 
+			     UShort_t        sNN, 
+			     const TString&  trigger,
+			     Bool_t          rebinned=true, 
+			     Bool_t          empirical=true)
   {
     TString e = SNNString(system, sNN);
     TString t(Form("%s %s %s", system.Data(), e.Data(), trigger.Data()));
@@ -637,20 +640,78 @@ struct Drawer {
     canvas->SetFillStyle(0);
     canvas->SetBorderMode(0);
     canvas->SetBorderSize(0);
+    
+    return canvas;
+  }
+  /** 
+   * Print canvas
+   * 
+   * @param canvas canvas
+   * @param types  file types 
+   */
+  static void PrintCanvas(TCanvas* canvas, const TString& types)
+  {
+    if (types.IsNull()) return;
 
+    canvas->Modified();
+    canvas->Update();
+    canvas->cd();
+
+    TObjArray*  tokens = types.Tokenize(" ,");
+    TObject*    token  = 0;
+    TIter       next(tokens);
+    while ((token = next())) {
+      canvas->Print(Form("%s/%s.%s", PlotPrefix(), canvas->GetName(), 
+			 token->GetName()));
+    }
+    tokens->Delete();
+    delete tokens;
+  }
+  static Double_t* FixTriggerEff(const TString&  sys, 
+				 UShort_t        sNN, 
+				 TString&        trigger)
+  {
+    if (sNN != 8000 || !sys.EqualTo("pp", TString::kIgnoreCase))
+      return 0;
+    
+    Double_t* ret = new Double_t[2];
+    ret[1] = 0;
+    if (trigger.EqualTo("INEL",TString::kIgnoreCase)) { 
+      ret[0] = 0.85;
+      return ret;
+    }
+    if (trigger.EqualTo("NSD", TString::kIgnoreCase) ||
+	trigger.EqualTo("V0AND", TString::kIgnoreCase)) { 
+      trigger = "NSD";
+      ret[0]  = 0.93;
+      return ret;
+    }
+    return 0;
+  }
+			    
+  /** 
+   * Draw a result
+   * 
+   * @param system          Collision system
+   * @param sNN             Collision energy [GeV]
+   * @param trigger         Trigger 
+   * @param rebinned        If to get rebinned result
+   * @param empirical       If to get empirical result 
+   */
+  static void Draw(const TString&  system, 
+		   UShort_t        sNN, 
+		   const TString&  trigger,
+		   const Option_t* option="e3",
+		   Bool_t          rebinned=true, 
+		   Bool_t          empirical=true)
+  {
+    TCanvas* canvas = MakeCanvas(system,sNN,trigger,rebinned, empirical);
+
+    TString     trg     = trigger; 
+    Double_t*   effs    = FixTriggerEff(system,sNN,trg);
     const char* trigs[] = { trigger, 0 };
     const char* exps[]  = { "ALICE", "WIP", 0 };
-    Double_t*   effs    = 0;
-    if (sNN == 8000 && system.EqualTo("pp", TString::kIgnoreCase)) {
-      effs = new Double_t[2];
-      effs[1] = 0;
-      if (trigger.EqualTo("INEL",TString::kIgnoreCase))
-	effs[0] = 0.85;
-      else if (trigger.EqualTo("NSD",TString::kIgnoreCase) ||
-	       trigger.EqualTo("V0AND",TString::kIgnoreCase))
-	trigs[0] = "NSD";
-	effs[0] = 0.93;
-    }
+
     TLegend* l = 0;
     TObjArray u;
     TPair* dataOther = GetDataOther(l, u, system, sNN, trigs, exps, option,
@@ -672,12 +733,7 @@ struct Drawer {
     data->GetXaxis()->SetTitle("#eta");
     data->GetYaxis()->SetTitle("1/#it{N} d#it{N}_{ch}/d#it{#eta}");
     
-    canvas->Modified();
-    canvas->Update();
-    canvas->cd();
-
-    canvas->Print(Form("%s/%s.pdf", PlotPrefix(), canvas->GetName()));
-    canvas->Print(Form("%s/%s.png", PlotPrefix(), canvas->GetName()));
+    PrintCanvas(canvas, "pdf png");
   }
   /** 
    * Combine some graphs together 
@@ -800,11 +856,9 @@ struct Drawer {
     TFile* f = TFile::Open(n, "RECREATE");
     THStack* s = GetStack(0, system, sNN, trigger, rebinned, empirical);
 
-    Double_t eff = (system.EqualTo("pp", TString::kIgnoreCase) && sNN == 8000 ?
-		    (trigger.EqualTo("INEL", TString::kIgnoreCase) ? 0.85 :
-		     trigger.EqualTo("NSD", TString::kIgnoreCase) ? 0.93  :
-		     trigger.EqualTo("V0AND", TString::kIgnoreCase) ? 0.93 : 1)
-		    : 1);
+    TString trg = trigger;
+    Double_t* effs = FixTriggerEff(system, sNN, trg);
+    Double_t  eff  = (effs? effs[0] : 1);
     TDirectory* fmd = f->mkdir("fmd");
 
     TMultiGraph* gf = new TMultiGraph("all","All Graphs");
@@ -929,6 +983,12 @@ struct Drawer {
     f->Write();
     Info("Export", "Exported data to %s", f->GetName());
   }
+  /** 
+   * Add the systematics 
+   * 
+   * @param stack Stack
+   * @param sys   Systematic error 
+   */
   static void AddSystematics(THStack* stack, Double_t sys)
   {
     TIter next(stack->GetHists());
@@ -1083,19 +1143,7 @@ struct Drawer {
     TString  system2("Pbp");
     UShort_t sNN  = 5023;
     TString  e    = SNNString(system, sNN);
-    TString  t(Form("%s %s %s", system.Data(), e.Data(), trigger.Data()));
-    TCanvas* canvas = new TCanvas(Form("%s_%04d_%s_%s_%s_sym",
-				  system.Data(), sNN, trigger.Data(), 
-				  (rebinned ? "coarse" : "full"), 
-				  (empirical ? "empirical" : "mc")), 
-			     t.Data(),
-			     1200, 1200);
-    canvas->SetTopMargin(0.01);
-    canvas->SetRightMargin(0.01);
-    canvas->SetFillColor(0);
-    canvas->SetFillStyle(0);
-    canvas->SetBorderMode(0);
-    canvas->SetBorderSize(0);
+    TCanvas* canvas = MakeCanvas(system, sNN, trigger);
 
     TString t1(trigger); t1.ReplaceAll("X", "A");
     TString t2(trigger); t2.ReplaceAll("X", "C");
@@ -1127,12 +1175,7 @@ struct Drawer {
 	      system.Data(),sNN,trigger.Data());
 
 
-    canvas->Modified();
-    canvas->Update();
-    canvas->cd();
-
-    canvas->Print(Form("%s/%s.pdf", PlotPrefix(), canvas->GetName()));
-    canvas->Print(Form("%s/%s.png", PlotPrefix(), canvas->GetName()));
+    PrintCanvas(canvas, "pdf png");
   }
   /** 
    * Draw a result scaled by pp result 
@@ -1202,17 +1245,12 @@ struct Drawer {
     TString t(Form("%s scaled by %s", tTgt.Data(), tpp.Data()));
     ratios->SetTitle(t);
 
-    TCanvas* canvas = new TCanvas(Form("%s_%04d_%s_pp_%04d_%s",
-				       system.Data(), sNN, trigger.Data(), 
-				       ppsNN, ppTrigger.Data()),
-				  t.Data(), 1200, 1200);
-    canvas->SetTopMargin(0.01);
-    canvas->SetRightMargin(0.01);
-    canvas->SetLeftMargin(0.15);
-    canvas->SetFillColor(0);
-    canvas->SetFillStyle(0);
-    canvas->SetBorderMode(0);
-    canvas->SetBorderSize(0);
+    TCanvas* canvas = MakeCanvas(system, sNN, trigger);
+    canvas->SetName(Form("%s_%04d_%s_pp_%04d_%s",
+			 system.Data(), sNN, trigger.Data(), 
+			 ppsNN, ppTrigger.Data()));
+    canvas->SetTitle(t);
+
     ratios->Draw("nostack");
     ratios->GetXaxis()->SetTitle(Form("#eta%s", 
 				   (TMath::Abs(etaShift) < 1e-6 
@@ -1256,12 +1294,7 @@ struct Drawer {
       Warning("", "No other data for %s,%d,%s", 
 	      system.Data(),sNN,trigger.Data());
 
-    canvas->Modified();
-    canvas->Update();
-    canvas->cd();
-
-    canvas->Print(Form("%s/%s.pdf", PlotPrefix(), canvas->GetName()));
-    canvas->Print(Form("%s/%s.png", PlotPrefix(), canvas->GetName()));
+    PrintCanvas(canvas,"pdf png");
 
     if (!write) return;
     TFile* out = TFile::Open(Form("%s/%s.root", PlotPrefix(),
@@ -1355,17 +1388,12 @@ struct Drawer {
     TString t(Form("%s scaled by %s", tTgt.Data(), tpp.Data()));
     ratios->SetTitle(t);
 
-    TCanvas* canvas = new TCanvas(Form("%s_%04d_%s_pp_%04d_%s_sym",
-				       system.Data(), sNN, trigger.Data(), 
-				       ppsNN, ppTrigger.Data()),
-				  t.Data(), 1200, 1200);
-    canvas->SetTopMargin(0.01);
-    canvas->SetRightMargin(0.01);
-    canvas->SetLeftMargin(0.15);
-    canvas->SetFillColor(0);
-    canvas->SetFillStyle(0);
-    canvas->SetBorderMode(0);
-    canvas->SetBorderSize(0);
+    TCanvas* canvas = MakeCanvas(system, sNN, trigger);
+    canvas->SetName(Form("%s_%04d_%s_pp_%04d_%s_sym",
+			 system.Data(), sNN, trigger.Data(), 
+			 ppsNN, ppTrigger.Data()));
+    canvas->SetTitle(t.Data());
+
     ratios->Draw(Form("nostack %s", option));
     ratios->GetXaxis()->SetTitle("#eta");
     const char* dNdeta = "1/#it{N} d#it{N}_{ch}/d#it{#eta}";
@@ -1425,12 +1453,7 @@ struct Drawer {
       outOther->GetHistogram()->SetYTitle(ratios->GetYaxis()->GetTitle());
     }
 
-    canvas->Modified();
-    canvas->Update();
-    canvas->cd();
-
-    canvas->Print(Form("%s/%s.pdf", PlotPrefix(), canvas->GetName()));
-    canvas->Print(Form("%s/%s.png", PlotPrefix(), canvas->GetName()));
+    PrintCanvas(canvas, "png pdf");
 
     if (!write) return;
     TFile* out = TFile::Open(Form("%s/%s.root",PlotPrefix(),
@@ -1616,7 +1639,47 @@ struct Drawer {
       ly1 = 0.5;
     }
       
-    TLegend* uleg = new TLegend(lx1, ly1, lx1+lw, ly2 /*0.23*/);
+    TLegend* uleg = MakeUniqueLegend(lx1,ly1,lx1+lw,ly2,unique, nSNN);
+    TVirtualPad* q = c->cd(nPad);
+    q->SetRightMargin(0.01);
+    uleg->Draw();
+
+    PrintCanvas(c, "pdf png");
+    c->SaveAs(Form("%s/%s.root", PlotPrefix(), out.Data()));
+    
+  }
+  static TLatex* MakeTitle(Double_t x, Double_t y, 
+			   const TString& system, 
+			   UShort_t       sNN, 
+			   const TString& trigger)
+  {
+    TString e = SNNString(system, sNN);
+    TString t = trigger;
+    if (t.Contains("CENT")) { 
+      t.ReplaceAll("CENT", "by centrality (");
+      t.Append(")");
+    }
+    TString txt(Form("%s @ %s %s", 
+		     system.Data(), e.Data(), t.Data()));
+    TLatex* ltx = new TLatex(x, y, txt);
+    ltx->SetTextFont(42);
+    ltx->SetTextColor(AliceBlue());
+    ltx->SetNDC();
+    
+    ltx->Draw();
+    
+    return ltx;
+  }
+  static TLegend* MakeUniqueLegend(Double_t x1, 
+				   Double_t y1, 
+				   Double_t x2, 
+				   Double_t y2, 
+				   TObjArray unique,
+				   Int_t     nSNN)
+  {
+    const Color_t kAliceBlue   = AliceBlue();
+
+    TLegend* uleg = new TLegend(x1, y1, x2, y2 /*0.23*/);
     uleg->SetNColumns(1 /*2*/);
     uleg->SetFillColor(0);
     uleg->SetFillStyle(0);
@@ -1626,6 +1689,7 @@ struct Drawer {
 
     TIter nextU(&unique);
     TLegendEntry* e = 0;
+    TParameter<int>* u = 0;
     while ((u = static_cast<TParameter<int>*>(nextU()))) {
       e = uleg->AddEntry("dummy", u->GetName(), nSNN == 1 ? "p" : "f");
       e->SetMarkerStyle(u->GetVal());
@@ -1635,49 +1699,8 @@ struct Drawer {
       e->SetFillStyle(1001);    
       e->SetLineColor(kBlack); // u->GetUniqueID());    
     }
-    TVirtualPad* q = c->cd(nPad);
-    q->SetRightMargin(0.01);
-    uleg->Draw();
-
-#if 0
-    TLatex* ltx = new TLatex(0.15, 0.98, "Work in progress");
-    ltx->SetTextFont(62);
-    ltx->SetTextColor(kAliceRed);
-    ltx->SetTextAlign(13);
-    ltx->SetNDC();				
-    ltx->Draw();
-    
-    TDatime now;
-    ltx = new TLatex(0.15, 0.92, now.AsSQLString()); 
-    ltx->SetTextFont(42);
-    ltx->SetTextColor(kAliceBlue);
-    ltx->SetTextAlign(13);			
-    ltx->SetTextSize(0.04);
-    ltx->SetNDC();				
-    ltx->Draw();
-      
-
-    if (!gROOT->GetClass("AliceLogo"))
-      gROOT->LoadMacro("$ANA_SRC/scripts/AliceLogo.C+");
-
-    TPad* p = new TPad("","",.85,.8,.97,.97);
-    p->SetFillStyle(0);
-    p->SetFillColor(0);
-    p->Draw();
-
-    gROOT->ProcessLine("AliceLogo* al = new AliceLogo();");
-    gROOT->ProcessLine(Form("al->Draw((TVirtualPad*)%p,0,0,1,0,0);", p));
-#endif
-    
-    c->Modified();
-    c->Update();
-    c->cd();
-
-    c->Print(Form("%s/%s.pdf", PlotPrefix(), out.Data()));
-    c->Print(Form("%s/%s.png", PlotPrefix(), out.Data()));
-    c->SaveAs(Form("%s/%s.root", PlotPrefix(), out.Data()));
-    
-  }
+    return uleg;
+  }			    
   /** 
    * Get the marker size based on marker type 
    * 
@@ -1824,6 +1847,10 @@ struct Drawer {
       return ret;
     }
 
+    if (leg) { 
+      leg->SetTextFont(42);
+      leg->SetTextColor(AliceBlue());
+    }
     if (seSeen && leg) { 
       e = leg->AddEntry("dummy", "7.6% sys. error", "f");
       e->SetFillColor(fill);
