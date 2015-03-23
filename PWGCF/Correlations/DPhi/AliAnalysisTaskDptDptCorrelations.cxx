@@ -1113,19 +1113,19 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	}
       
       
-      /* if ( centrality < _centralityMin ||  
-	   centrality > _centralityMax ||
-	   fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
-	{
-	  return;
-	  }*/
-
       if ( centrality < _centralityMin ||  
-	   centrality > _centralityMax )       //only for pPb centrality
+	   centrality > _centralityMax ||
+	   fabs(v0Centr-trkCentr)>5.0)         
 	{
 	  return;
-	}
-
+	} //only for pPb centrality
+      
+      /* if ( centrality < _centralityMin ||  
+	 centrality > _centralityMax )       
+	 {
+	 return;
+	 }*/ //only for pPb centrality
+      
 
       _eventAccounting->Fill(2);// count all events with right centrality
       
