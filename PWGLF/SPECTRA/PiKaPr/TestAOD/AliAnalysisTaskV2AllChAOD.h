@@ -77,6 +77,7 @@ public:
   fv2SPGap1Bmc_inclusive_sq(0),
   fResGap1w(0),
   fV2IntGap1w(0),
+  fResSP_qbin(0),
   fIsRecoEff(0),
   fRecoEffList(0),
   fQvecGen(0),
@@ -120,6 +121,11 @@ public:
 
       fResSP_vs_Qvec[j]=0x0;
       fV2IntGap1wq[j]=0x0;
+    }
+    
+    for(Int_t j=0; j<10; j++){
+      fv2SPGap1A_qbin[j]=0x0;
+      fv2SPGap1B_qbin[j]=0x0;
     }
 }
   AliAnalysisTaskV2AllChAOD(const char *name);
@@ -287,6 +293,12 @@ private:
   TProfile*     fV2IntGap1w;         //! integrated v2 for gap 0.8 w
   TProfile*     fResSP_vs_Qvec[9];   //! TBD
   TProfile*     fV2IntGap1wq[9];     //!
+  
+  // v2 vs pt in q-vec bins
+  
+  TProfile*     fResSP_qbin;                //! resolution
+  TProfile*     fv2SPGap1A_qbin[10];         //! v2{2} eta gap 1 for all events
+  TProfile*     fv2SPGap1B_qbin[10];         //! v2{2} eta gap 1 for all events
 
   Bool_t fIsRecoEff;   // TBD
   TList * fRecoEffList; // reconstruction efficiency file
@@ -301,7 +313,7 @@ private:
   AliAnalysisTaskV2AllChAOD(const AliAnalysisTaskV2AllChAOD&);
   AliAnalysisTaskV2AllChAOD& operator=(const AliAnalysisTaskV2AllChAOD&);
 
-  ClassDef(AliAnalysisTaskV2AllChAOD, 17);
+  ClassDef(AliAnalysisTaskV2AllChAOD, 18);
 };
 
 #endif
