@@ -36,6 +36,8 @@
 #include <bitset>
 
 ClassImp(AliEmcalTriggerMaker)
+ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition)
+ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer)
 
 using namespace std;
 
@@ -241,6 +243,8 @@ Bool_t AliEmcalTriggerMaker::Run()
       // A0 left bottom (0,0)
       Int_t globCol=-1, globRow=-1;
       fCaloTriggers->GetPosition(globCol, globRow);
+      // exclude channel completely if it is masked as hot channel
+      if(fBadChannels.HasChannel(globCol, globRow)) continue;
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those 
       Int_t adcAmp=-1;
@@ -857,4 +861,27 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
     if (nvalid != 4) return false;
     return true;
   }
+}
+
+/**
+ * Add a new channel with the postion in column and row to the container, In case the channel
+ * is already listed in the trigger channel container we don't add it again.
+ * \param col Column of the channel
+ * \param row Row of the channel
+ */
+void AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer::AddChannel(int col, int row){
+  if(HasChannel(col, row)) return;
+  fChannels.Add(new AliEmcalTriggerChannelPosition(col, row));
+}
+
+/**
+ * Check whether channel with the position (col, row) is listed in the trigger channel container
+ * \param col Column of the channel
+ * \param row Row of the channel
+ * \return True if the channel is listed, false otherwise
+ */
+Bool_t AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer::HasChannel(int col, int row){
+  AliEmcalTriggerChannelPosition refChannel;
+  if(fChannels.FindObject(&refChannel)) return true;
+  return false;
 }
