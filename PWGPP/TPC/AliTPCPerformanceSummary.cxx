@@ -2230,7 +2230,7 @@ deltaPtC_Err = fptRatioC.GetParError(1);
   TH3* dcaz_pos3=0;
   TH3* dcar_neg3=0;
   TH3* dcaz_neg3=0;
-
+  static TGraphErrors * graphEtaProfile[4]={0};
   static Double_t dcar_posA_0=0; 
   static Double_t dcar_posA_1=0; 
   static Double_t dcar_posA_2=0; 
@@ -2402,9 +2402,28 @@ deltaPtC_Err = fptRatioC.GetParError(1);
   dcaz_negC_0_Err = fit.GetParError(0);
   dcaz_negC_1_Err = fit.GetParError(1);
   dcaz_negC_2_Err = fit.GetParError(2);  
-    
+  //
+  //
+  //
+  TH2 *hisTemp2D=0;
+  TH3 * hisEtaInput[4]={dcar_pos3, dcar_neg3, dcaz_pos3, dcaz_neg3};
+  for (Int_t igr=0;igr<4; igr++){
+    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D("xy")));
+    hisTemp2D->GetXaxis()->SetRangeUser(-1,1);
+    if (graphEtaProfile[igr]) delete graphEtaProfile[igr];
+    graphEtaProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
+    delete hisTemp2D;
+  }
+
+
 
 // store results (shift in dca) in ttree
+  (*pcstream)<<"tpcQA"<<      
+    "grdcar_pos_Eta.="<<graphEtaProfile[0]<<
+    "grdcar_neg_Eta.="<<graphEtaProfile[1]<<
+    "grdcaz_pos_Eta.="<<graphEtaProfile[2]<<
+    "grdcaz_neg_Eta.="<<graphEtaProfile[3]<<
+    
     
     (*pcstream)<<"tpcQA"<<      
       "dcar_posA_0="<< dcar_posA_0<<
@@ -2478,8 +2497,10 @@ deltaPtC_Err = fptRatioC.GetParError(1);
       "dcar_negC_0_Err="<< dcar_negC_0_Err<<
       "dcar_negC_1_Err="<< dcar_negC_1_Err<<
       "dcar_negC_2_Err="<< dcar_negC_2_Err;                 
+
       
       return 0;
+
 }
 
 //_____________________________________________________________________________                                                                                                  
