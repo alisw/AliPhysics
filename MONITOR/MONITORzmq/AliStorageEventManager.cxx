@@ -454,7 +454,7 @@ long AliStorageEventManager::GetLong(storageSockets socket)
 // ZMQ methods wrappers:
 void AliStorageEventManager::zmqInit(zmq_msg_t *msg,size_t size)
 {
-    if(size<0){
+    if(size==0){
         if(zmq_msg_init(msg) != 0){
             if(zmq_errno() != EAGAIN){
                 cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;

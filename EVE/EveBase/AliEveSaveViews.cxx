@@ -90,7 +90,7 @@ void AliEveSaveViews::ChangeRun()
     // read values from logbook entry:
     TSQLRow* row;
     int i=0;
-    while(row=result->Next())
+    while((row=result->Next()))
     {
         fCluster.push_back(atoi(row->GetField(2)));
         fInputDetectorMask.push_back(atol(row->GetField(4)));
@@ -355,7 +355,7 @@ void AliEveSaveViews::BuildClustersInfoString()
         fClustersInfo+="Cluster ";
         fClustersInfo+=fCluster[i++];
         fClustersInfo+=":";
-        fClustersInfo+=desc[i];
+        fClustersInfo+=clustersDescription[i];
         fClustersInfo+="\t";
     }
 }

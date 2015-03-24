@@ -442,7 +442,6 @@ void AliStorageAdministratorPanelListEvents::SetOfflineMode(Bool_t ison)
     if(ison != fOnlineMode){fOnlineMode = ison;}
     else{return;}
     
-    cout<<"\n\ListEvents -- SetOfflineMode\n\n"<<endl;
   if (ison) {
     fPPcheckbox->SetDisabledAndSelected(ison);
     fPbPbcheckbox->SetDisabledAndSelected(ison);
