@@ -1,7 +1,30 @@
+/**
+ * \file AliEmcalTriggerMaker.h
+ * \brief Class to make array of trigger patch objects in AOD/ESD events.
+ *
+ * Class to make array of trigger patch objects in AOD/ESD events.
+ * The input for the process are:
+ *   - AliCaloTrigger objects from ESS/AOD, which contain raw trigger information
+ *   - the CaloCells, which contain offline/FEE information
+ *
+ * The output is a list of AliEmcalTriggerPatchInfo objects which is stored in ESD/AOD (Use event->FindListObject to get them) with three types of trigger patches:
+ *  -# Online trigger info
+ *  -# Trigger info based on the offline FEE ADCs (SimpleOffline)
+ *  -# The highest gamma and jet patch in the event, even if it does
+ *     not pass the threshold (RecalcJet and RecalcGamma); with two versions
+ *     -# based on the online trigger information
+ *     -# based offline FEE information
+ * The different types of patches are distinguished by bitflags according
+ * to the enum AliEmcalTriggerPatchInfo::TriggerMakerBits and
+ *   EMCAL/AliEmcalTriggerTypes.h
+ *
+ * \author Jiri Kral <>, University of Jyv&aumlskul&auml
+ * \date Jun 26, 2013
+ */
 #ifndef ALIEMCALTRIGGERMAKER_H
 #define ALIEMCALTRIGGERMAKER_H
-
-// $Id: AliEmcalTriggerMaker.h 64593 2013-10-18 10:23:58Z loizides $
+/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
 class AliEmcalTriggerSetupInfo;
@@ -167,6 +190,12 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
   void SetTriggerBitConfig(const AliEmcalTriggerBitConfig *conf) { fTriggerBitConfig = conf; }
 
+  /**
+   * Switch on rejection of patches which leave the EMCAL acceptance in \f$ \eta \f$ and \f$ \phi \f$
+   * \param doReject If true we reject patches outside the EMCAL acceptance
+   */
+  void SetRejectOffAcceptancePatches(Bool_t doReject = kTRUE) { fRejectOffAcceptancePatches = doReject; }
+
   Bool_t IsEJE(Int_t tBits) const { if( tBits & ( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) | 1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) )) return kTRUE; else return kFALSE; }
   Bool_t IsEGA(Int_t tBits) const { if( tBits & ( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) | 1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()) )) return kTRUE; else return kFALSE; }
   Bool_t IsLevel0(Int_t tBits) const { if( tBits & (1 << (fTriggerBitConfig->GetLevel0Bit() + fTriggerBitConfig->GetLevel0Bit()) | (1 << fTriggerBitConfig->GetLevel0Bit()))) return kTRUE; return kFALSE; }
@@ -212,6 +241,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Int_t                      fITrigger;                 //!
   Bool_t                     fRunTriggerType[5];        ///< Run patch maker for a given trigger type
   Bool_t                     fDoQA;                     ///< Fill QA histograms
+  Bool_t                     fRejectOffAcceptancePatches;     ///< Switch for rejection of patches outside the acceptance
   /// Histograms for QA
   THistManager              *fQAHistos;                 //!
   /// Histogram name tags
