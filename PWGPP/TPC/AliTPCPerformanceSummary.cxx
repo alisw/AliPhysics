@@ -39,6 +39,7 @@
 #include "AliPerformanceDEdx.h"
 #include "AliPerformanceDCA.h"
 #include "AliPerformanceMatch.h"
+#include "TGraphErrors.h"
 
 #include "AliTPCPerformanceSummary.h"
 
@@ -2231,6 +2232,7 @@ deltaPtC_Err = fptRatioC.GetParError(1);
   TH3* dcar_neg3=0;
   TH3* dcaz_neg3=0;
   static TGraphErrors * graphEtaProfile[4]={0};
+  static TGraphErrors * graphPhiProfile[4]={0};
   static Double_t dcar_posA_0=0; 
   static Double_t dcar_posA_1=0; 
   static Double_t dcar_posA_2=0; 
@@ -2406,13 +2408,20 @@ deltaPtC_Err = fptRatioC.GetParError(1);
   //
   //
   TH2 *hisTemp2D=0;
+  TH1 *hisTemp1D=0;
   TH3 * hisEtaInput[4]={dcar_pos3, dcar_neg3, dcaz_pos3, dcaz_neg3};
+  
   for (Int_t igr=0;igr<4; igr++){
     hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D("xy")));
     hisTemp2D->GetXaxis()->SetRangeUser(-1,1);
     if (graphEtaProfile[igr]) delete graphEtaProfile[igr];
     graphEtaProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
     delete hisTemp2D;
+    //
+    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D("xz")));
+    if (graphPhiProfile[igr]) delete graphPhiProfile[igr];
+    graphPhiProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
+    delete hisTemp2D;    
   }
 
 
@@ -2423,6 +2432,10 @@ deltaPtC_Err = fptRatioC.GetParError(1);
     "grdcar_neg_Eta.="<<graphEtaProfile[1]<<
     "grdcaz_pos_Eta.="<<graphEtaProfile[2]<<
     "grdcaz_neg_Eta.="<<graphEtaProfile[3]<<
+    "grdcar_pos_Phi.="<<graphPhiProfile[0]<<
+    "grdcar_neg_Phi.="<<graphPhiProfile[1]<<
+    "grdcaz_pos_Phi.="<<graphPhiProfile[2]<<
+    "grdcaz_neg_Phi.="<<graphPhiProfile[3];
     
     
     (*pcstream)<<"tpcQA"<<      
