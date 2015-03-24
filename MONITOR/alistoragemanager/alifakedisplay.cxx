@@ -298,9 +298,9 @@ int main(int argc, char **argv)
         vector<serverListStruct> result = manager->GetServerListVector(socket);
         
         cout<<"received vector list:"<<endl;
-        for(serverListStruct list : result)
+        for(int i=0;i<result.size();i++)
         {
-            cout<<list.runNumber<<"\t"<<list.system<<endl;
+            cout<<result[i].runNumber<<"\t"<<result[i].system<<endl;
         }
         cout<<"sending bool message:"<<true<<endl;
         manager->Send(true,socket);

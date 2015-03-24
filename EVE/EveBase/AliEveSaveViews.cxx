@@ -351,11 +351,11 @@ void AliEveSaveViews::BuildClustersInfoString()
         clustersDescription.push_back(clustersInfo);
     }
 
-    for (TString desc : clustersDescription) {
+    for (int i=0;i<clustersDescription.size();i++) {
         fClustersInfo+="Cluster ";
         fClustersInfo+=fCluster[i++];
         fClustersInfo+=":";
-        fClustersInfo+=desc;
+        fClustersInfo+=desc[i];
         fClustersInfo+="\t";
     }
 }

@@ -55,11 +55,11 @@ struct clientRequestStruct
         eventsInChunk = crs.eventsInChunk;
     }
     
-	int messageType = -1;
-	int maxStorageSize = -1;
-	int maxOccupation = -1;
-	int removeEvents=-1;
-	int eventsInChunk=-1;
+	int messageType;
+	int maxStorageSize;
+	int maxOccupation;
+	int removeEvents;
+	int eventsInChunk;
 };
 
 struct eventStruct{
