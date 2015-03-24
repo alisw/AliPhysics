@@ -126,9 +126,11 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fRefMultEta8(0),
       fTrueMultEta5(0),
       fTrueMultEta8(0),
+      fTrueMultEta10(0),
       fTrueMultVZEROA(0),
       fTrueMultVZEROC(0),
       fRunNumber(0),
+      fEvSel_nTrackletsEta10(0), 
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -367,9 +369,11 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fRefMultEta8(0),
       fTrueMultEta5(0),
       fTrueMultEta8(0),
+      fTrueMultEta10(0),
       fTrueMultVZEROA(0),
       fTrueMultVZEROC(0),
       fRunNumber(0),
+      fEvSel_nTrackletsEta10(0), 
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -684,11 +688,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
 
     fTreeEvent->Branch("fTrueMultEta5",&fTrueMultEta5,"fTrueMultEta5/I");
     fTreeEvent->Branch("fTrueMultEta8",&fTrueMultEta8,"fTrueMultEta8/I");
+    fTreeEvent->Branch("fTrueMultEta10",&fTrueMultEta10,"fTrueMultEta10/I");
     fTreeEvent->Branch("fTrueMultVZEROA",&fTrueMultVZEROA,"fTrueMultVZEROA/I");
     fTreeEvent->Branch("fTrueMultVZEROC",&fTrueMultVZEROC,"fTrueMultVZEROC/I");
 
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+    fTreeEvent->Branch("fEvSel_nTrackletsEta10", &fEvSel_nTrackletsEta10, "fEvSel_nTrackletsEta10/I");
 
     //Booleans for Event Selection
     fTreeEvent->Branch("fEvSel_HasAtLeastSPDVertex", &fEvSel_HasAtLeastSPDVertex, "fEvSel_HasAtLeastSPDVertex/O");
@@ -1445,6 +1451,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
     Long_t lNchEta5   = 0;
     Long_t lNchEta8   = 0;
+    Long_t lNchEta10  = 0;
     Long_t lNchVZEROA = 0;
     Long_t lNchVZEROC = 0;
 
@@ -1466,6 +1473,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
+	if( TMath::Abs(geta) < 0.8 ) lNchEta10++;
         if( TMath::Abs(geta) < 1.0 ) fEvSel_INELgtZEROStackPrimaries = kTRUE;
         if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
         if( 2.8 < geta && geta < 5.1 ) lPtOfParticleInsideVZEROA = particleOne->Pt();
@@ -1474,8 +1482,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     }//End of loop on tracks
 
     //Attribution
-    fTrueMultEta5 = lNchEta5;
-    fTrueMultEta8 = lNchEta8;
+    fTrueMultEta5  = lNchEta5;
+    fTrueMultEta8  = lNchEta8;
+    fTrueMultEta10 = lNchEta10;
     fTrueMultVZEROA = lNchVZEROA;
     fTrueMultVZEROC = lNchVZEROC;
     //----- End Loop on Stack ------------------------------------------------------------
@@ -1569,8 +1578,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 1.0) >= 1 ) fEvSel_INELgtZERORefMult = kTRUE;
 
     fEvSel_INELgtZERORefMultTracklets = kFALSE;
-    if ( fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE;
-
+    fEvSel_nTrackletsEta10 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0);
+    if ( fEvSel_nTrackletsEta10 >= 1 ) fEvSel_INELgtZERORefMultTracklets = kTRUE;
 
     //Event-level fill
     fTreeEvent->Fill();

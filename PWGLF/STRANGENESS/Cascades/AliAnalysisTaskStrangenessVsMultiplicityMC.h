@@ -179,9 +179,12 @@ private:
     Int_t fRefMultEta8;              //!
     Int_t fTrueMultEta5;             //!
     Int_t fTrueMultEta8;             //!
+    Int_t fTrueMultEta10;             //!
     Int_t fTrueMultVZEROA;           //!
     Int_t fTrueMultVZEROC;           //!
     Int_t fRunNumber;                //!
+    
+    Int_t fEvSel_nTrackletsEta10; //!
 
     //Differential reference multiplicity
     Int_t  fRefMultDiffEta[20]; //!
