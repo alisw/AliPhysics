@@ -1189,10 +1189,10 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::UserCreateOutputObjects(){
 			fHistoTruePrimaryClusGammaESDPtMCPt[iCut] = new TH2F("TruePrimaryClusGamma_Pt_MCPt","ESD_TruePrimaryClusGamma_MCPt",250,0,25,250,0,25);
 			fClusterOutputList[iCut]->Add(fHistoTruePrimaryClusGammaESDPtMCPt[iCut]);
 			
-			 fHistoTruePi0DalitzClusGammaPt[fiCut] = new TH1F("TruePi0DalitzClusGamma_Pt","fHistoTruePi0DalitzClusGamma_Pt",250,0,25);
+			 fHistoTruePi0DalitzClusGammaPt[iCut] = new TH1F("TruePi0DalitzClusGamma_Pt","fHistoTruePi0DalitzClusGamma_Pt",250,0,25);
 			 fClusterOutputList[iCut]->Add(fHistoTruePi0DalitzClusGammaPt[iCut]);
 			 
-	       	         fHistoTruePi0DalitzClusGammaMCPt[fiCut]= new TH1F("TruePi0DalitzClusGamma_MCPt","fHistoTruePi0DalitzClusGamma_MCPt",250,0,25);
+	       	         fHistoTruePi0DalitzClusGammaMCPt[iCut]= new TH1F("TruePi0DalitzClusGamma_MCPt","fHistoTruePi0DalitzClusGamma_MCPt",250,0,25);
 			 fClusterOutputList[iCut]->Add(fHistoTruePi0DalitzClusGammaMCPt[iCut]);
 			 
 			
@@ -1935,6 +1935,7 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessTrueClusterCandidates(AliAODCo
 			fHistoTruePrimaryClusGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),Photon->Pt()); // Allways Filled
 			
 			 if( IsPi0DalitzDaughter( TruePhotonCandidate->GetCaloPhotonMCLabel(0) ) == kTRUE ) {
+			    
 			   
 			  fHistoTruePi0DalitzClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			  fHistoTruePi0DalitzClusGammaMCPt[fiCut]->Fill(Photon->Pt());
