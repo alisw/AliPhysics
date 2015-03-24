@@ -59,10 +59,11 @@ AliStorageDatabase::AliStorageDatabase() :
 		configFile.close();
 	}
 	else{cout << "DATABASE -- Unable to open file" <<endl;}
-	TThread::UnLock();
 
     cout<<"DATABASE -- connecting to server:"<<Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str())<<fUID.c_str()<<fPassword.c_str()<<endl;
 	fServer = TSQLServer::Connect(Form("mysql://%s:%s/%s",fHost.c_str(),fPort.c_str(),fDatabase.c_str()),fUID.c_str(),fPassword.c_str());
+    
+    TThread::UnLock();
     cout<<"Connected"<<endl;
 }
 
@@ -89,8 +90,8 @@ void AliStorageDatabase::InsertEvent(int runNumber,
 }
 
 bool AliStorageDatabase::MarkEvent(struct eventStruct event)
-{  
-  TSQLResult* res;
+{
+  TSQLResult *res;
   res = fServer->Query(Form("UPDATE %s SET permanent = 1 WHERE run_number = %d AND event_number = %d;",fTable.c_str(),event.runNumber,event.eventNumber));
   if(!res) 
     {

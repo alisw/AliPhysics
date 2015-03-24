@@ -17,7 +17,8 @@
 
 #include <AliEventInfo.h>
 #include <AliESDEvent.h>
-#include "AliStorageTypes.h"
+#include <AliStorageTypes.h>
+#include <AliEveSaveViews.h>
 
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
@@ -132,7 +133,9 @@ public:
     void          SetLoopMarked(Bool_t loopMarked);
     void          SetTrigSel(Int_t trig);
     void          AutoLoadNextEvent();
-
+    void          SetSaveViews(bool save){fSaveViews=save;}
+    
+    
     Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
     Bool_t        IsEventAvailable()       const { return fHasEvent;     }
 
@@ -252,6 +255,9 @@ private:
     Bool_t fStorageDown;
     Bool_t fFinished;
 
+    AliEveSaveViews *fViewsSaver;
+    bool fSaveViews;
+    
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
     

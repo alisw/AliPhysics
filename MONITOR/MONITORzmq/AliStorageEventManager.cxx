@@ -226,8 +226,6 @@ bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSoc
   if(poll (&items[0], 1, timeout)==0){return 0;}
   }*/
     
-    cout<<"MANAGER -- sending client struct:"<<request->messageType<<"\tmaxOcc:"<<request->maxOccupation<<"\tmaxsize"<<request->maxStorageSize<<endl;
-    
     fZmqError=false;
     
     zmq_msg_t buffer;

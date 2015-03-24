@@ -62,6 +62,8 @@ private:
     
 	AliESDEvent *fCurrentEvent;
 	
+    bool fOnlineMode;
+    
 	AliStorageAdministratorPanelListEvents(const AliStorageAdministratorPanelListEvents&);
 	AliStorageAdministratorPanelListEvents& operator=(const AliStorageAdministratorPanelListEvents&);
 	

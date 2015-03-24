@@ -152,7 +152,9 @@ fWritingToEventIndex(0),
 fIsNewEventAvaliable(false),
 fOnlineMode(kFALSE),
 fStorageDown(false),
-fFinished(false)
+fFinished(false),
+fViewsSaver(0),
+fSaveViews(false)
 {
     // Constructor with event-id.
     if (0 == name.CompareTo("online")) {fOnlineMode = kTRUE;}
@@ -170,8 +172,8 @@ fFinished(false)
         fEventListenerThread = new TThread("fEventListenerThread",DispatchEventListener,(void*)this);
         fEventListenerThread->Run();
         
-        // fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
-        //fStorageManagerWatcherThread->Run();
+        fStorageManagerWatcherThread = new TThread("fStorageManagerWatcherThread",DispatchStorageManagerWatcher,(void*)this);
+        fStorageManagerWatcherThread->Run();
     }
 #else
     cout<<"NO ZMQ FOUND. Online events not avaliable."<<endl;
@@ -384,6 +386,8 @@ void AliEveEventManager::InitInternals()
     fPEventSelector = new AliEveEventSelector(this);
     
     fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
+    
+    fViewsSaver = new AliEveSaveViews();
 }
 
 /******************************************************************************/
@@ -934,14 +938,8 @@ void AliEveEventManager::GotoEvent(Int_t event)
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
     
-    if (fAutoLoadTimerRunning)
-    {
-        throw (kEH + "Event auto-load timer is running.");
-    }
-    else if (!fIsOpen)
-    {
-        throw (kEH + "Event-files not opened.");
-    }
+    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
+    else if (!fIsOpen && !fOnlineMode){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
 #ifdef ZMQ
     if(fOnlineMode)
@@ -1953,6 +1951,12 @@ void AliEveEventManager::AfterNewEventLoaded()
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
     
+    if(fSaveViews)
+    {
+        fViewsSaver->Save();
+        fViewsSaver->SendToAmore();
+    }
+        
     if (this == fgMaster && fSubManagers != 0)
     {
         TIter next(fSubManagers);

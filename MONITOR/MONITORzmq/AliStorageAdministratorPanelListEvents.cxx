@@ -57,7 +57,8 @@ AliStorageAdministratorPanelListEvents::AliStorageAdministratorPanelListEvents()
   fEventsListVector(0),
   fServerSocket(SERVER_COMMUNICATION_REQ),
   fEventManager(0),
-  fCurrentEvent(0)
+  fCurrentEvent(0),
+  fOnlineMode(0)
 {
 	fEventManager = AliStorageEventManager::GetEventManagerInstance();
 	fEventManager->CreateSocket(fServerSocket);
@@ -367,7 +368,7 @@ void AliStorageAdministratorPanelListEvents::onMarkButton()
 	}
 	else
 	{
-		fStatusLabel->SetText("Couldn't mark this event");
+		fStatusLabel->SetText("Error!");
 		cout<<"ADMIN PANEL -- Could not matk event"<<endl;
 	}
 }
@@ -438,7 +439,10 @@ Bool_t AliStorageAdministratorPanelListEvents::ProcessMessage(Long_t msg, Long_t
 	
 void AliStorageAdministratorPanelListEvents::SetOfflineMode(Bool_t ison)
 {
-
+    if(ison != fOnlineMode){fOnlineMode = ison;}
+    else{return;}
+    
+    cout<<"\n\ListEvents -- SetOfflineMode\n\n"<<endl;
   if (ison) {
     fPPcheckbox->SetDisabledAndSelected(ison);
     fPbPbcheckbox->SetDisabledAndSelected(ison);
@@ -450,10 +454,10 @@ void AliStorageAdministratorPanelListEvents::SetOfflineMode(Bool_t ison)
     fPbPbcheckbox->SetEnabled(!ison);
     fTemporaryCheckbox->SetEnabled(!ison);
     fPermanentCheckbox->SetEnabled(!ison);
-    fPPcheckbox->SetOn();
-    fPbPbcheckbox->SetOn();
-    fTemporaryCheckbox->SetOn();
-    fPermanentCheckbox->SetOn();
+//    fPPcheckbox->SetOn();
+//    fPbPbcheckbox->SetOn();
+//    fTemporaryCheckbox->SetOn();
+//    fPermanentCheckbox->SetOn();
   }
 
   fRunMinEntry->SetState(!ison);

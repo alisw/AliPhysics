@@ -72,6 +72,7 @@ set(SRCS
     AliEveMagField.cxx
     AliEveMainWindow.cxx
     AliEveMultiView.cxx
+    AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx
     AliEveTrack.cxx

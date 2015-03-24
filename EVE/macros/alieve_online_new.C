@@ -62,11 +62,11 @@ void alieve_online_new()
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     alieve_init_import_macros();
     gSystem->cd(Form("%s/../src/",gSystem->Getenv("ALICE_ROOT")));
-    gROOT->ProcessLine(".L saveViews.C+");
+//    gROOT->ProcessLine(".L saveViews.C+");
     gROOT->ProcessLine(".L geom_gentle.C+");
     gROOT->ProcessLine(".L geom_gentle_trd.C+");
     gROOT->ProcessLine(".L geom_gentle_muon.C+");
-    TEveUtil::LoadMacro("saveViews.C");
+//    TEveUtil::LoadMacro("saveViews.C");
     gSystem->cd(hack);
     cout<<"Standard macros added"<<endl;
     
@@ -177,6 +177,7 @@ void alieve_online_new()
     
     // set autoload by default
     AliEveEventManager::GetMaster()->SetAutoLoad(true);
+    AliEveEventManager::GetMaster()->SetSaveViews(true);
 }
 
 void alieve_online_on_new_event()
@@ -218,8 +219,8 @@ void alieve_online_on_new_event()
     
 	
 	// Register image to amore.
-	  TString id;      id.Form("online-viz-%03d", g_pic_id);
-	  TString pic(id); pic += ".png";
+//	  TString id;      id.Form("online-viz-%03d", g_pic_id);
+//	  TString pic(id); pic += ".png";
      
 	  //printf("In image dump: file='%s'.\n", pic.Data());
      
@@ -228,14 +229,14 @@ void alieve_online_on_new_event()
 	  gSystem->ProcessEvents();
  
 	  // create screenshots from OpenGL views
-	  saveViews(pic.Data());
+//	  saveViews(pic.Data());
      
 	  // send screenshot to AMORE
-	  int status = gSystem->Exec(Form("SendImageToAmore %s %s %d",id.Data(),pic.Data(),esd->GetRunNumber()));
-	    printf("Post AMORE reg -- status=%d, run=%d.\n", status, esd->GetRunNumber());
+//	  int status = gSystem->Exec(Form("SendImageToAmore %s %s %d",id.Data(),pic.Data(),esd->GetRunNumber()));
+//	    printf("Post AMORE reg -- status=%d, run=%d.\n", status, esd->GetRunNumber());
      
-	  if (++g_pic_id >= g_pic_max) g_pic_id = 0;
-	  g_pic_prev.Set();
+//	  if (++g_pic_id >= g_pic_max) g_pic_id = 0;
+//	  g_pic_prev.Set();
       }
 }
 
