@@ -32,7 +32,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPP7TeV
  Int_t       evtCutSetID = 0,
  Int_t       pairCutSetID = 0,
  Int_t       mixingConfigID = 0,
- Int_t       aodFilterBit = 38,
+ Int_t       aodFilterBit = 5,
  Int_t       customQualityCutsID = -1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPi1Candidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPi2Candidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
