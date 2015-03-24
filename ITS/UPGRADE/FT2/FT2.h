@@ -39,7 +39,7 @@ class FTProbe : public AliExternalTrackParam
   Double_t fAbsPdgCode;	// pdg code of particle
   Int_t fAbsPdgCodeForTracking;
   ClassDef(FTProbe,1)
-    };
+};
 
 
 class FT2 : public TObject
@@ -121,6 +121,7 @@ class FT2 : public TObject
   void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=0.99, Float_t scEdge=2.6);
   void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
   Bool_t InitProbe(TParticle* trc);
+  Bool_t MakeITSKalmanOut();
   Bool_t PrepareProbe();
   Bool_t ApplyMSEloss(double x2X0, double xrho);
   Bool_t PropagateToX(double xTgt, int dir,Bool_t propErr,Bool_t simMat,Bool_t useTGeo);
@@ -158,6 +159,7 @@ class FT2 : public TObject
   Double_t fDCA[2],fDCACov[3];   //! dca to vertex and its covariance
   //
   FTProbe fProbe;  // track
+  AliExternalTrackParam fProbeIni;       //! initial probe kinematics
   AliExternalTrackParam* fKalmanOutward; //! parameters of outward kalman 
   Bool_t  fUseKalmanOut;                 //! use KalmanOut estimate for fakes
   //Double_t              fProbeMass; // probe mass
