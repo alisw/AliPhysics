@@ -1832,16 +1832,19 @@ void AliAnalysisTaskGammaConvCaloDalitzV1::ProcessClusters()
 		fIsFromMBHeader = kTRUE; 
 		fIsOverlappingWithOtherHeader = kFALSE;
 		// test whether largest contribution to cluster orginates in added signals
-		if ( fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0 ) fIsFromMBHeader = kFALSE;
 		
-		if (fIsMC ){
+		if ( fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0 ){
+		
+		    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCStack, fInputEvent) == 0 ) fIsFromMBHeader = kFALSE;
+		
+		  
 			if (clus->GetNLabels()>1){
 				Int_t* mclabelsCluster = clus->GetLabels();
 				for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
 					if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCStack, fInputEvent) == 0) fIsOverlappingWithOtherHeader = kTRUE;
 				}	
 			}	
-		}	
+		}
 
 		if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
 			fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
