@@ -17,7 +17,7 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     virtual ~AliGenPythiaEventHeader() {}
     // Getters
     Int_t    ProcessType() const {return fProcessType;}
-    Int_t    SetNMPI(Int_t mpi) {fNMPI = mpi;}
+    void     SetNMPI(Int_t mpi) {fNMPI = mpi;}
     // Setters
     void     SetProcessType(Int_t type)  {fProcessType = type;}
     Int_t    Trials() const {return fTrials;}
