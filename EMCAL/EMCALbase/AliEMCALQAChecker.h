@@ -92,7 +92,7 @@ private:
   TLine *     fLineRow[fgknSectLines]       ; //! line to distinguish the different SM sectors (0-5, 9-12) 
   TPaveText * fText          ;  //! Information text for the quality of each SM
 	TPaveText * fTextL1[3];       //! Information text for the quality of L1 plots (3 plots in total)
-  ClassDef(AliEMCALQAChecker,4)  // description 
+  ClassDef(AliEMCALQAChecker,5)  // description 
 
 };
 
