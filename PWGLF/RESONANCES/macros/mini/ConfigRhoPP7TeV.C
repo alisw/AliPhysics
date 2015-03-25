@@ -47,8 +47,8 @@ Bool_t ConfigRhoPP7TeV
   }
   
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
-  Int_t iCutPi = task->AddTrackCuts(cutSetPi1);
-  Int_t iCutK = task->AddTrackCuts(cutSetPi2);
+  Int_t iCutPi1 = task->AddTrackCuts(cutSetPi1);
+  Int_t iCutPi2 = task->AddTrackCuts(cutSetPi2);
   
   if (enableMonitor){
     Printf("======== Cut monitoring enabled");
