@@ -57,8 +57,10 @@ AliMultEventClassifier::GetCentrality(AliESDEvent* esd,
 				      UShort_t which)
 {
   Bool_t         isCn = which == AliAODMultEventClass::kCND;
+  Bool_t         isUt = fUseCentrality;
   const char*    meth = GetCentName(which);
-  Float_t        util = (isCn ? -1:fUtil->GetMultiplicityPercentile(esd,meth));
+  Float_t        util = (isCn ? -1:
+			 isUt ? fUtil->GetMultiplicityPercentile(esd,meth):-1);
   Float_t        sel  = -1;
   AliCentrality* cObj = esd->GetCentrality();
   if (cObj)      sel  = cObj->GetCentralityPercentile(meth);  

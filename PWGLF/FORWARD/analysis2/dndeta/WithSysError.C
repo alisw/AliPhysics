@@ -28,8 +28,8 @@ WithSysError(const TString&  system,
 
 
   TCanvas* c = new TCanvas("C", "C");
-  c->SetTopMargin(0.02);
-  c->SetRightMargin(0.02);
+  c->SetTopMargin(0.01);
+  c->SetRightMargin(0.01);
 
   Double_t    ly1     = 0.7;
   Double_t    ly2     = 0.9;

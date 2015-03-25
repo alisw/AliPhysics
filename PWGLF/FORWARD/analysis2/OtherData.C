@@ -115,6 +115,7 @@ struct RefData
     case 1: return "pp";
     case 2: return "PbPb";
     case 3: return "pPb";
+    case 4: return "Pbp";
     }
     ::Error("", "Unknown system: %d", sys);
     return 0;
@@ -153,8 +154,9 @@ struct RefData
     case 0x04: return "ZNA_";
     case 0x08: return "ZNC_";
     case 0x10: return "V0C_";
+    case 0x20: return "CL1_";
     }
-    return "";
+    return "V0M_"; // Default
   }
   //____________________________________________________________________
   /** 
@@ -164,10 +166,10 @@ struct RefData
    *
    * The meaning of the bits are 
    *
-   * - 0x01 INEL
-   * - 0x02 INEL>0
-   * - 0x04 NSD 
-   * - 0xf0 Mask for centrality estimator. 
+   * - 0x001 INEL
+   * - 0x002 INEL>0
+   * - 0x004 NSD 
+   * - 0x3f0 Mask for centrality estimator. 
    * 
    * @param trg Trigger mask.  
    * @param c1  Least centrality @f$ c_1@f$ 
@@ -205,12 +207,12 @@ struct RefData
   static const char* ExpName(UShort_t which) 
   {
     switch (which) { 
-    case 0: return "UA5";
-    case 1: return "CMS";
-    case 2: return "ALICE";
-    case 3: return "WIP";
-    case 4: return "ATLAS";
-    case 5: return "PYTHIA";
+    case UA5:   return "UA5";
+    case CMS:   return "CMS";
+    case ALICE: return "ALICE";
+    case WIP:   return "WIP";
+    case ATLAS: return "ATLAS";
+    case PYTHIA: return "PYTHIA";
     }
     ::Error("", "Unknown experiment: %d", which); 
     return 0;
@@ -372,10 +374,10 @@ struct RefData
    * @param sys      Collision system (1: pp, 2: PbPb, 3: pPb)
    * @param sNN      Energy in GeV (900, 2360, 2760, 7000, 8000)
    * @param triggers Bit pattern of trigger type 
-   *   - 0x01 INEL 
-   *   - 0x02 INEL>0
-   *   - 0x04 NSD 
-   *   - 0xF0 Mask for centrality estimator 
+   *   - 0x001 INEL 
+   *   - 0x002 INEL>0
+   *   - 0x004 NSD 
+   *   - 0x3F0 Mask for centrality estimator 
    * @param centLow     Low centrality cut (not pp)
    * @param centHigh    High centrality cut (not pp)
    * @param experiments From which experiments 
@@ -401,8 +403,9 @@ struct RefData
 
     TDirectory* sysDir = 0;
     const char* sysName = SysName(sys);
-    if (!sysName || !(sysDir = f->GetDirectory(sysName))) { 
+    if (!sysName || !(sysDir = f->GetDirectory(sysName))) {
       ::Error("", "Invalid system %d (%s)", sys, sysName);
+      f->ls();
       return 0;
     }
 
@@ -450,10 +453,10 @@ struct RefData
    * @param sys      Collision system (1: pp, 2: PbPb, 3: pPb)
    * @param sNN      Energy in GeV (900, 2360, 2760, 7000, 8000)
    * @param triggers Bit pattern of trigger type 
-   *   - 0x01 INEL 
-   *   - 0x02 INEL>0
-   *   - 0x04 NSD 
-   *   - 0xF0 Mask for centrality estimator 
+   *   - 0x001 INEL 
+   *   - 0x002 INEL>0
+   *   - 0x004 NSD 
+   *   - 0x3F0 Mask for centrality estimator 
    * @param centLow  Low centrality cut (not pp)
    * @param centHigh High centrality cut (not pp)
    * @param seenUA5  If true and sys=1, then put in p-pbar
@@ -474,8 +477,10 @@ struct RefData
     else if ((sNN % 1000) == 0) en.Append(Form("%dTeV",  (sNN/1000)));
     else                        en.Append(Form("%.2fTeV",  Float_t(sNN)/1000));
     TString tn;
-    if (centHigh > centLow) 
-      tn = Form("%d%% - %d%% central", centLow, centHigh);
+    if (centHigh > centLow) {
+      TString cn(CntName(triggers)); cn.Remove(3,1);
+      tn = Form("%d%% - %d%% central (%s)", centLow, centHigh, cn.Data());
+    }
     else { 
       for (UShort_t t = INEL; t <= NSD; t++) { 
 	UShort_t trg = (1 << (t-INEL));
