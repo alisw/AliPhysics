@@ -101,7 +101,9 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   }
   void     SetFixGaussianMean(Double_t mean=1.865,Bool_t fixpar=kTRUE){fFixParSignExternalValue[1]=fixpar;     fparSignFixExt[1]=mean;} 
   void     SetFixGaussianSigma(Double_t sigma=0.012, Bool_t fixpar=kTRUE){fFixParSignExternalValue[2]=fixpar;     fparSignFixExt[2]=sigma;} 
-
+  void SetBackHighPolDegree(Int_t deg);
+  Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
+  Bool_t PrepareHighPolFit(TF1 *fback);
 
   Double_t FitFunction4MassDistr (Double_t* x, Double_t* par);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
@@ -126,7 +128,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 
   void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1);
 
-  //  void     ComputeParSize();
+  void     ComputeParSize();
   void     ComputeNFinalPars();
   Bool_t   SideBandsBounds();
   Bool_t   CheckRangeFit();
@@ -150,6 +152,8 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   Double_t *fparBackFixExt; //external values to fix back parameters
   Double_t *fparReflFixExt; //external values to fix refl parameters
   Double_t fRawYieldHelp;   // internal variable used when fitting with reflections
+  Int_t fpolbackdegreeTay; // degree of polynomial expansion for back fit (option 6 for back)
+  Int_t   fpolbackdegreeTayHelp; // help variable
 /*   TH1F*     fhistoInvMass;     // histogram to fit */
 /*   Double_t  fminMass;          // lower mass limit */
 /*   Double_t  fmaxMass;          // upper mass limit */
@@ -177,7 +181,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 /*   Int_t     fcounter;          // internal counter */
 /*   TList*    fContourGraph;     // TList of TGraph containing contour plots */
 
-  ClassDef(AliHFMassFitterVAR,1); // class for invariant mass fit
+  ClassDef(AliHFMassFitterVAR,2); // class for invariant mass fit
 };
 
 #endif

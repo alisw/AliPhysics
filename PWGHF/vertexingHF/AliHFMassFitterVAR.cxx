@@ -74,7 +74,9 @@ AliHFMassFitter(),
   fparSignFixExt(0x0),
   fparBackFixExt(0x0),
   fparReflFixExt(0x0),
-  fRawYieldHelp(0)
+  fRawYieldHelp(0),
+  fpolbackdegreeTay(4),
+  fpolbackdegreeTayHelp(-1)
 {
   // default constructor
  
@@ -104,7 +106,9 @@ AliHFMassFitterVAR::AliHFMassFitterVAR (const TH1F *histoToFit, Double_t minvalu
   fparSignFixExt(0x0),
   fparBackFixExt(0x0),
   fparReflFixExt(0x0),
-  fRawYieldHelp(0)
+  fRawYieldHelp(0),
+  fpolbackdegreeTay(4),
+  fpolbackdegreeTayHelp(-1)
 {
   // standard constructor
 
@@ -117,7 +121,7 @@ AliHFMassFitterVAR::AliHFMassFitterVAR (const TH1F *histoToFit, Double_t minvalu
   CheckRangeFit();
   ftypeOfFit4Bkg=fittypeb;
   ftypeOfFit4Sgn=fittypes;
-  if(ftypeOfFit4Bkg!=0 && ftypeOfFit4Bkg!=1 && ftypeOfFit4Bkg!=2 && ftypeOfFit4Bkg!=4 && ftypeOfFit4Bkg!=5) fWithBkg=kFALSE;
+  if(ftypeOfFit4Bkg!=0 && ftypeOfFit4Bkg!=1 && ftypeOfFit4Bkg!=2 && ftypeOfFit4Bkg!=4 && ftypeOfFit4Bkg!=5&& ftypeOfFit4Bkg!=6) fWithBkg=kFALSE;
   else fWithBkg=kTRUE;
   if (!fWithBkg) cout<<"Fit Histogram of Signal only"<<endl;
   else  cout<<"Type of fit For Background = "<<ftypeOfFit4Bkg<<endl;
@@ -154,7 +158,9 @@ AliHFMassFitterVAR::AliHFMassFitterVAR(const AliHFMassFitterVAR &mfit):
   fparSignFixExt(0x0),
   fparBackFixExt(0x0),
   fparReflFixExt(0x0),
-  fRawYieldHelp(mfit.fRawYieldHelp)
+  fRawYieldHelp(mfit.fRawYieldHelp),
+  fpolbackdegreeTay(mfit.fpolbackdegreeTay),
+  fpolbackdegreeTayHelp(mfit.fpolbackdegreeTayHelp)
 {
   //copy constructor
   fSignParNames=new TString[fNparSignal];
@@ -205,7 +211,7 @@ AliHFMassFitterVAR::AliHFMassFitterVAR(const AliHFMassFitterVAR &mfit):
 AliHFMassFitterVAR::~AliHFMassFitterVAR() {
   //destructor
 
-  delete fhTemplRefl;
+  if(fhTemplRefl) delete fhTemplRefl;
   delete [] fSignParNames;
   delete [] fBackParNames;
   delete [] fReflParNames;
@@ -242,6 +248,8 @@ AliHFMassFitterVAR& AliHFMassFitterVAR::operator=(const AliHFMassFitterVAR &mfit
 
   fSmoothRefl=mfit.fSmoothRefl;
   fRawYieldHelp=mfit.fRawYieldHelp;
+  fpolbackdegreeTay=mfit.fpolbackdegreeTay;
+  fpolbackdegreeTayHelp=mfit.fpolbackdegreeTayHelp;
 
   delete [] fSignParNames;
   delete [] fBackParNames;
@@ -312,6 +320,17 @@ AliHFMassFitterVAR& AliHFMassFitterVAR::operator=(const AliHFMassFitterVAR &mfit
   
   return *this;
 }
+
+void AliHFMassFitterVAR::SetBackHighPolDegree(Int_t deg){
+  Printf("AliHFMassFitterVAR::SetBackHighPolDegree, remeber that this method has to be called after the constructor");
+  fpolbackdegreeTay=deg;
+  if(fFitPars)delete fFitPars;
+  ComputeParSize();
+  ComputeNFinalPars();
+  fFitPars=new Float_t[fParsSize];
+  SetDefaultFixParam();
+}
+
 
 TH1F*  AliHFMassFitterVAR::SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange){
   fhTemplRefl=(TH1F*)h->Clone("hTemplRefl");  
@@ -456,15 +475,24 @@ Double_t AliHFMassFitterVAR::FitFunction4MassDistr (Double_t *x, Double_t *par){
   Double_t bkg=0,sgn=0,refl=0.;
   Double_t parbkg[fNparBack];
   sgn = FitFunction4Sgn(x,&par[fNparBack]);  
-  
-  if(ftypeOfFit4Sgn==2)  parbkg[0]=par[0]-par[fNparBack]-par[fNparBack+fNparSignal]*par[fNparBack];
-  else  parbkg[0]=par[0]-par[fNparBack];
+  if(ftypeOfFit4Sgn==2){
+    if(ftypeOfFit4Bkg==6){
+      parbkg[0]=par[0];
+    }
+    else  parbkg[0]=par[0]-par[fNparBack]-par[fNparBack+fNparSignal]*par[fNparBack];
+  }
+  else  {
+    if(ftypeOfFit4Bkg==6){
+      parbkg[0]=par[0];
+    }
+    else parbkg[0]=par[0]-par[fNparBack];
+  }
   for(Int_t jb=1;jb<fNparBack;jb++){
     parbkg[jb]=par[jb];
   }  
   bkg = FitFunction4Bkg(x,parbkg);
 
-
+  
   if(ftypeOfFit4Sgn==2)refl=FitFunction4Refl(x,&par[fNparBack+fNparSignal]);
   
   return sgn+bkg+refl;
@@ -517,6 +545,17 @@ Double_t AliHFMassFitterVAR::FitFunction4Refl(Double_t *x,Double_t *par){
   
 }
 
+/// _______________________________________________________________________
+Double_t AliHFMassFitterVAR::BackFitFuncPolHelper(Double_t *x,Double_t *par){
+  Double_t back=par[0];
+  for(Int_t it=1;it<=fpolbackdegreeTayHelp;it++){
+    back+=par[it]*TMath::Power(x[0]-fMass,it)/TMath::Factorial(it);
+  }
+  return back;
+  
+
+}
+
 //__________________________________________________________________________
 
 Double_t AliHFMassFitterVAR::FitFunction4Bkg(Double_t *x, Double_t *par){
@@ -529,7 +568,7 @@ Double_t AliHFMassFitterVAR::FitFunction4Bkg(Double_t *x, Double_t *par){
   }
 
   Int_t firstPar=0;
-  Double_t gaus2=0,total=-1;
+  Double_t gaus2=0.,total=-1.;
   if(ftypeOfFit4Sgn == 1){
     firstPar=3;
     //gaussian = A/(sigma*sqrt(2*pi))*exp(-(x-mean)^2/2/sigma^2)
@@ -595,6 +634,24 @@ Double_t AliHFMassFitterVAR::FitFunction4Bkg(Double_t *x, Double_t *par){
 
     total = par[1+firstPar]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[2+firstPar]*(x[0]-mpi));
     } 
+    break;
+  case 6:
+    // the following comment must be removed
+    //     // pol 3, following convention for pol 2
+    //     //y=a+b*x+c*x**2+d*x**3 -> integral = a(max-min) + 1/2*b*(max^2-min^2) +
+    //     //+ 1/3*c*(max^3-min^3) + 1/4 d * (max^4-min^4) -> 
+    //     //a = (integral-1/2*b*(max^2-min^2)-1/3*c*(max^3-min^3) - 1/4 d * (max^4-min^4) )/(max-min)
+    //     // * [0] = integralBkg;
+    //     // * [1] = b;
+    //     // * [2] = c;
+    //     // * [3] = d;
+    {
+      total=par[0+firstPar];
+      for(Int_t it=1;it<=fpolbackdegreeTay;it++){
+	total+=par[it+firstPar]*TMath::Power(x[0]-fMass,it)/TMath::Factorial(it);
+      }
+      
+    }
     break;
 //   default:
 //     Types of Fit Functions for Background:
@@ -739,12 +796,12 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   Bool_t isBkgOnly=kFALSE;
   Double_t slope1=-1,slope2=1,slope3=1;
   Double_t diffUnderBands=0;
-  
+  TF1* func; 
   Int_t fit1status=RefitWithBkgOnly(kFALSE);
   if(fit1status){
     Int_t checkinnsigma=4;
     Double_t range[2]={fMass-checkinnsigma*fSigmaSgn,fMass+checkinnsigma*fSigmaSgn};
-    TF1* func=GetHistoClone()->GetFunction("funcbkgonly");
+    func=fhistoInvMass->GetFunction("funcbkgonly");
     Double_t intUnderFunc=func->Integral(range[0],range[1]);
     Double_t intUnderHisto=fhistoInvMass->Integral(fhistoInvMass->FindBin(range[0]),fhistoInvMass->FindBin(range[1]),"width");
     cout<<"Pick zone: IntFunc = "<<intUnderFunc<<"; IntHist = "<<intUnderHisto<<"\tDiff = "<<intUnderHisto-intUnderFunc<<"\tRelDiff = "<<(intUnderHisto-intUnderFunc)/intUnderFunc<<endl;
@@ -803,10 +860,25 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   
   funcbkg->SetLineColor(2); //red
   
-
   //   cout<<"\nBACKGROUND FIT - only combinatorial"<<endl;
   Int_t ftypeOfFit4SgnBkp=ftypeOfFit4Sgn;
-  Double_t parBackInit[3]={totInt,slope1,slope2};
+  Double_t *parBackInit=new Double_t[fNparBack];
+  if(func){
+    for(Int_t j=0;j<fNparBack;j++){
+      parBackInit[j]=func->GetParameter(j);
+    }
+  }
+  else {
+    Print("First fit background function not present");
+    delete funcbkg;
+    delete parBackInit;
+    return kFALSE;
+  }
+
+  if(ftypeOfFit4Bkg!=6){// THIS IS LIKELY UNNECESSARY
+    parBackInit[0]=totInt;// this and the following 2 lines are from previous AliHFMassFitter version... can be removed 
+  }
+  
   for(Int_t j=0;j<fNparBack;j++){
     //    Printf(" HERE back %d",j);
     funcbkg->SetParName(j,fBackParNames[j]);
@@ -819,11 +891,13 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
     }
   }
 
+
+
    Double_t intbkg1=0,conc1=0;
-  //if only signal and reflection: skip
+   //if only signal and reflection: skip
   if (!(ftypeOfFit4Bkg==3 && ftypeOfFit4Sgn==1)) {
     //    ftypeOfFit4Sgn=0;
-    fhistoInvMass->Fit(bkgname.Data(),"R,L,E,0");
+    fhistoInvMass->Fit(funcbkg,Form("R,%s,0",fFitOption.Data()));
    
     fSideBands = kFALSE;
     //intbkg1 = funcbkg->GetParameter(0);
@@ -835,9 +909,16 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
  
 
     //cout<<"First fit: \nintbkg1 = "<<intbkg1<<"\t(Compare with par0 = "<<funcbkg->GetParameter(0)<<")\nslope1= "<<slope1<<"\nconc1 = "<<conc1<<endl;
-  } 
+  }
   else cout<<"\t\t//"<<endl;
-
+  if(ftypeOfFit4Bkg==6){
+     // THE FOLLOWING LINES ARE NEEDED FOR THE FOLLOWING REASON:
+     // when a histogram is fitted with the function TF1 *f, the function that is added to the list of function is a clone of f,
+     // so the pointers are different
+     // Conversely, if the function is added to the list as f, of course the pointers remain the same
+     TF1 *fh=fhistoInvMass->GetFunction(bkgname.Data());
+     PrepareHighPolFit(fh);
+   } 
 
 
 
@@ -911,13 +992,15 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
 
   Int_t status;
   Printf("Fitting");
-  status = fhistoInvMass->Fit(massname.Data(),"R,L,E,+,0");
+  status = fhistoInvMass->Fit(massname.Data(),Form("R,%s,+,0",fFitOption.Data()));
   if (status != 0){
     cout<<"Minuit returned "<<status<<endl;
+    delete funcbkg;
+    delete parBackInit;
     return kFALSE;
   }
   Printf("Fitted");
-
+  Printf("MassFitter: Value of func at 1.800: %f",funcmass->Eval(1.8000));
   cout<<"fit done"<<endl;
   //reset value of fMass and fSigmaSgn to those found from fit
   fMass=funcmass->GetParameter(fNparBack+1);
@@ -943,6 +1026,9 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   
   if(funcmass->GetParameter(fNparBack+2) <0 || funcmass->GetParameter(fNparBack+1) <0 || funcmass->GetParameter(fNparBack) <0 ) {
     cout<<"IntS or mean or sigma negative. You may tray to SetInitialGaussianSigma(..) and SetInitialGaussianMean(..)"<<endl;
+    delete funcbkg;
+    delete parBackInit;
+    delete funcmass;
     return kFALSE;
   }
   
@@ -950,18 +1036,79 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   fcounter++;
 
   
+  delete parBackInit;
   delete funcbkg;
   delete funcmass;
   
-  Printf("Now calling add functions to hist in MassFitter");
+  //  Printf("Now calling add functions to hist in MassFitter");
   AddFunctionsToHisto();
-  Printf("After calling add functions to hist in MassFitter");
+  //  Printf("After calling add functions to hist in MassFitter");
   if (draw) DrawFit();
- 
+  //  Printf("After Draw Fit");
   
   return kTRUE;
 }
+//________________________________________________________________________
+Bool_t AliHFMassFitterVAR::PrepareHighPolFit(TF1 *fback){
+  // Perform intermediate fit steps up to fpolbackdegreeTay-1
+  TH1F *hCp=(TH1F*)fhistoInvMass->Clone("htemp");
+  Double_t estimatecent=0.5*(hCp->GetBinContent(hCp->FindBin(fMass-3.5*fSigmaSgn))+hCp->GetBinContent(hCp->FindBin(fMass+3.5*fSigmaSgn)));// just a first rough estimate
+  Double_t estimateslope=(hCp->GetBinContent(hCp->FindBin(fMass+3.5*fSigmaSgn))-hCp->GetBinContent(hCp->FindBin(fMass-3.5*fSigmaSgn)))/(7*fSigmaSgn);// first rough estimate
+  
+  for(Int_t j=1;j<=hCp->GetNbinsX();j++){
+    //    h->SetBinContent(j,f->Eval(h->GetBinCenter(j))+fSignal->Integral(h->GetBinLowEdge(j),h->GetBinLowEdge(j+1)));
+    //    h->SetBinError(j,TMath::Sqrt(h->GetBinContent(j)));
+    Double_t binCenter=hCp->GetBinCenter(j);
+    if(binCenter>(fMass-2.5*fSigmaSgn) && binCenter<(fMass+2.5*fSigmaSgn)){//ranges are ok for D0 up to 16 GeV/c
+      hCp->SetBinContent(j,0);
+      hCp->SetBinError(j,0);
+    }
+  }
+  
+  fpolbackdegreeTayHelp=2;
+  TF1 *funcbkg,*funcPrev=0x0;  
+  while(fpolbackdegreeTayHelp<=fpolbackdegreeTay){        
+    funcbkg = new TF1(Form("temp%d",fpolbackdegreeTayHelp),this,&AliHFMassFitterVAR::BackFitFuncPolHelper,fminMass,fmaxMass,fpolbackdegreeTayHelp+1,"AliHFMassFitterVAR","BackFitFuncPolHelper");
+    if(funcPrev){
+      for(Int_t j=0;j<fpolbackdegreeTayHelp;j++){// now is +1 degree w.r.t. previous fit funct
+	funcbkg->SetParameter(j,funcPrev->GetParameter(j));
+      }
+      delete funcPrev;
+    }
+    else{
+      funcbkg->SetParameter(0,estimatecent);
+      funcbkg->SetParameter(1,estimateslope);
+      
+    }
+    hCp->Fit(funcbkg,"REMIN","");
+    funcPrev=(TF1*)funcbkg->Clone("ftemp");
+    delete funcbkg;
+    fpolbackdegreeTayHelp++;
+  }
+  
+  //  TString name=fback->GetName();
+  //  funcbkg->Copy(*fback);
+  //  fback->SetName(name.Data());
+  for(Int_t j=0;j<=fpolbackdegreeTay;j++){
+    fback->SetParameter(j,funcPrev->GetParameter(j));
+    fback->SetParError(j,funcPrev->GetParError(j));
+  }
+  hCp->Fit(fback,"REMIN","");// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
 
+
+  // The following lines might be useful for debugging
+  //   TCanvas *cDebug=new TCanvas();
+  //   cDebug->cd();
+  //   hCp->Draw();
+  //   TString strout=Form("Test%d.root",(Int_t)fhistoInvMass->GetBinContent(fhistoInvMass->FindBin(fMass)));
+  //   cDebug->Print(strout.Data());
+  // delete cDebug;
+
+  delete funcPrev;
+  delete hCp;
+  return kTRUE;
+
+}
 //______________________________________________________________________________
 
 Bool_t AliHFMassFitterVAR::RefitWithBkgOnly(Bool_t draw){
@@ -1008,15 +1155,30 @@ Bool_t AliHFMassFitterVAR::RefitWithBkgOnly(Bool_t draw){
     funcbkg->SetParNames("BkgInt","Coef1","Coef2");
     funcbkg->SetParameters(integral,-10.,5.);
     break;
+  case 6:
+    for(Int_t ipb=0;ipb<=fpolbackdegreeTay;ipb++){
+      funcbkg->SetParName(ipb,Form("Coef%d",ipb));      
+    }
+    break;
   default:
     cout<<"Wrong choise of ftypeOfFit4Bkg ("<<ftypeOfFit4Bkg<<")"<<endl;
+    ftypeOfFit4Sgn=typesSave;
+    delete funcbkg;
     return kFALSE;
     break;
   }
 
-
-  Int_t status=fhistoInvMass->Fit(bkgname.Data(),"R,L,E,+,0");
+  Int_t status=0;
+  if(ftypeOfFit4Bkg==6){
+    if(PrepareHighPolFit(funcbkg)){
+      
+      fhistoInvMass->GetListOfFunctions()->Add(funcbkg);
+      fhistoInvMass->GetFunction(funcbkg->GetName())->SetBit(1<<9,kTRUE);
+    }
+  }
+  else status=fhistoInvMass->Fit(bkgname.Data(),Form("R,%s,+,0",fFitOption.Data()));
   if (status != 0){
+    ftypeOfFit4Sgn=typesSave;
     cout<<"Minuit returned "<<status<<endl;
     return kFALSE;
   }
@@ -1053,6 +1215,8 @@ void AliHFMassFitterVAR::AddFunctionsToHisto(){
   TString bkgname = "funcbkg";
 
   Bool_t done1=kFALSE,done2=kFALSE;
+  Printf(" AddFunctionsToHisto #############    LISTING ALL FUNCTIONS #################");
+  fhistoInvMass->GetListOfFunctions()->Print();   
 
   TString bkgnamesave=bkgname;
   TString testname=bkgname;
@@ -1118,22 +1282,31 @@ void AliHFMassFitterVAR::AddFunctionsToHisto(){
 
     if (!mass){
       cout<<"funcmass doesn't exist "<<endl;
+      delete bfullrange;
+      delete blastpar;
       return;
     }
 
   
 
     //intBkg=intTot-intS
+    if(ftypeOfFit4Bkg==6){
+      blastpar->SetParameter(0,mass->GetParameter(0));
+      blastpar->SetParError(0,mass->GetParError(0));
+    }
+    else{
     blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNparBack));
     blastpar->SetParError(0,mass->GetParError(fNparBack));
+    }
     for(Int_t jb=1;jb<fNparBack;jb++){
       blastpar->SetParameter(jb,mass->GetParameter(jb));
       blastpar->SetParError(jb,mass->GetParError(jb));
     }
     if(ftypeOfFit4Sgn==2){
-      blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNparBack)-mass->GetParameter(fNparBack+fNparSignal)*mass->GetParameter(fNparBack));
-      blastpar->SetParError(0,mass->GetParError(fNparBack));
-
+      if(ftypeOfFit4Bkg!=6){
+	blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNparBack)-mass->GetParameter(fNparBack+fNparSignal)*mass->GetParameter(fNparBack));
+	blastpar->SetParError(0,mass->GetParError(fNparBack));
+      }
       blastpar->SetParameter(fNparBack,mass->GetParameter(fNparBack+fNparSignal));
       for(Int_t jr=1;jr<fNparRefl;jr++){
 	blastpar->SetParameter(jr+fNparBack,mass->GetParameter(fNparBack+fNparSignal+jr));
@@ -1577,11 +1750,66 @@ void AliHFMassFitterVAR::Significance(Double_t min, Double_t max, Double_t &sign
   return;
 }
 
+void AliHFMassFitterVAR::ComputeParSize() {
+
+  //compute the size of the parameter array and set the data member
+
+  switch (ftypeOfFit4Bkg) {//npar background func
+  case 0:
+    fParsSize = 2*3;
+    break;
+  case 1:
+    fParsSize = 2*3;
+    break;
+  case 2:
+    fParsSize = 3*3;
+    break;
+  case 3:
+    fParsSize = 1*3;
+    break;
+  case 4:
+    fParsSize = 2*3; 
+    break;
+  case 5:
+    fParsSize = 3*3; 
+    break;
+  case 6:
+    fParsSize = (fpolbackdegreeTay+1)*3; 
+    break;
+
+  default:
+    cout<<"AliHFMassFitterVAR, Error in computing fParsSize: check ftypeOfFit4Bkg"<<endl;
+    break;
+  }
+
+  fParsSize += 3; // npar refl
+  fParsSize += 3; // npar signal gaus
+
+  fParsSize*=2;   // add errors
+  cout<<"Parameters array size "<<fParsSize<<endl;
+}
+
 
 void AliHFMassFitterVAR::ComputeNFinalPars() {
 
   //compute the number of parameters of the total (signal+bgk) function
   cout<<"Info:ComputeNFinalPars... ";
+  delete [] fBackParNames;
+  delete [] fFixParBack;
+  delete [] fFixParBackExternalValue;
+  delete [] fparBackFixExt;
+
+  delete [] fSignParNames;
+  delete [] fFixParSign;
+  delete [] fFixParSignExternalValue;
+  delete [] fparSignFixExt;
+
+  delete [] fReflParNames;  
+  delete [] fFixParRefl;
+  delete [] fFixParReflExternalValue;
+  delete [] fparReflFixExt;
+
+
   switch (ftypeOfFit4Bkg) {//npar background func
   case 0:
     fNparBack=2;
@@ -1620,8 +1848,15 @@ void AliHFMassFitterVAR::ComputeNFinalPars() {
     fBackParNames[1]="Coef1";
     fBackParNames[2]="Coef2";
     break;
+  case 6:
+    fNparBack=fpolbackdegreeTay+1;
+    fBackParNames=new TString[fNparBack];
+    for(Int_t j=0;j<fNparBack;j++){
+      fBackParNames[j]=Form("Coef%d",j);
+    }
+    break;
   default:
-    cout<<"Error in computing fNparBack: check ftypeOfFit4Bkg"<<endl;
+    cout<<"AliHFMassFitterVAR, Error in computing fNparBack: check ftypeOfFit4Bkg"<<endl;
     break;
   }
   
@@ -1659,10 +1894,18 @@ void AliHFMassFitterVAR::ComputeNFinalPars() {
     fReflParNames[0]="ReflOverS";
   }
 
-  fFixParRefl=new Bool_t[fNparRefl];
-  fFixParReflExternalValue=new Bool_t[fNparRefl];
-  fparReflFixExt=new Double_t[fNparRefl];
 
+  if(fNparRefl>0){
+    fFixParRefl=new Bool_t[fNparRefl];
+    fFixParReflExternalValue=new Bool_t[fNparRefl];
+    fparReflFixExt=new Double_t[fNparRefl];
+  }
+  else {
+    fFixParRefl=0x0;
+    fparReflFixExt=0x0;
+    fparReflFixExt=0x0;
+  }
+  
 
   for(Int_t ib=0;ib<fNparRefl;ib++){
     fFixParRefl[ib]=kFALSE;
