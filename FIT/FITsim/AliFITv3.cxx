@@ -82,7 +82,7 @@ AliFITv3::AliFITv3(const char *name, const char *title):
 
 {
   //
-  // Standart constructor for T0 Detector version 0
+  // Standart constructor for FIT Detector version 0
   //
   fIshunt = 2; 
   SetPMTeff();
@@ -395,7 +395,6 @@ void AliFITv3::StepManager()
   static Int_t vol[3];
   TLorentzVector pos;
   TLorentzVector mom;
-  
   //   TClonesArray &lhits = *fHits;
   
   if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
@@ -424,22 +423,24 @@ void AliFITv3::StepManager()
       hits[5]=ttime*1e12;
       if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
 	{
-	  //	  if(RegisterPhotoE(vol[1]-1,hits[3])) {
 	  if(RegisterPhotoE(hits[3])) {
+	    fIshunt = 2;
 	    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
 	    // Create a track reference at the exit of photocatode
 	  }	    
 	}
       //charge particle HITS
-    if ( TVirtualMC::GetMC()->TrackCharge() )
-	    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
-      
-      
+      if ( TVirtualMC::GetMC()->TrackCharge() ) {
+	fIshunt = 0;
+	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
+	//	printf("T0 :::volumes pmt %i mcp %i vol %i x %f y %f z %f particle %f all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
+      }
+            
       //charge particle TrackReference
       if ( TVirtualMC::GetMC()->TrackCharge() )
 	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
       
-     }// trck entering		
+    }// trck entering		
   } //sensitive
   //V0A
   if(id==fIdSens2 ) { 
@@ -460,14 +461,14 @@ void AliFITv3::StepManager()
 	hits[4]=partID;
 	Float_t ttime=TVirtualMC::GetMC()->TrackTime();
 	hits[5]=ttime*1e12;
+	fIshunt = 0;
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
+	//	printf(" V0 ::: volumes pmt %i mcp %i vol %i x %f y %f z %f particle %f all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
       //charge particle TrackReference
-      if ( TVirtualMC::GetMC()->TrackCharge() )
-	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
-	//	printf(" volumes pmt %i mcp %i vol %i x %f y %f z %f particle %i all \n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2], hits[4]);
-      }
-    }    
-  }
+      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
+    }
+  }    
+}
 
 }
 
