@@ -154,7 +154,10 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
    */
   struct AliEmcalTriggerChannelContainer : public TObject {
   public:
-    AliEmcalTriggerChannelContainer();
+    /**
+     * Constructor
+     */
+    AliEmcalTriggerChannelContainer(): fChannels() {}
 
     /**
      * Destructor, cleans up the container
