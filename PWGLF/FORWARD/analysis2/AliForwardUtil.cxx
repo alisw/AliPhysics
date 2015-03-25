@@ -131,7 +131,8 @@ AliForwardUtil::ParseCollisionSystem(const char* sys)
   // we do pA first to avoid pp catch on ppb string (AH)
   if (s.Contains("p-pb")  || s.Contains("ppb"))   return AliForwardUtil::kPPb;
   if (s.Contains("p-a")   || s.Contains("pa"))    return AliForwardUtil::kPPb;
-  if (s.Contains("a-p")   || s.Contains("ap"))    return AliForwardUtil::kPPb;
+  if (s.Contains("pb-p")  || s.Contains("pbp"))   return AliForwardUtil::kPbp;
+  if (s.Contains("a-p")   || s.Contains("ap"))    return AliForwardUtil::kPbp;
   if (s.Contains("p-p")   || s.Contains("pp"))    return AliForwardUtil::kPP; 
   if (s.Contains("pb-pb") || s.Contains("pbpb"))  return AliForwardUtil::kPbPb;
   if (s.Contains("a-a")   || s.Contains("aa"))    return AliForwardUtil::kPbPb;
@@ -146,8 +147,10 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
   // 
   // Parameters:
   //    sys  Collision system 
-  // - kPP -> "pp"
-  // - kPbPb -> "PbPb" 
+  // - kPP   -> "pp"
+  // - kPbPb -> "PbPb"
+  // - kPPb  -> "pPb"
+  // - kPbp  -> "Pbp"
   // - anything else gives "unknown"
   // 
   // Return:
@@ -157,6 +160,7 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
   case AliForwardUtil::kPP:   return "pp";
   case AliForwardUtil::kPbPb: return "PbPb";
   case AliForwardUtil::kPPb:  return "pPb";
+  case AliForwardUtil::kPbp:  return "Pbp";
   }
   return "unknown";
 }
@@ -237,11 +241,15 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t beam)
   // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
   if (sys == AliForwardUtil::kPPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 1, 1);
+  if (sys == AliForwardUtil::kPbp) 
+    energy = CenterOfMassEnergy(beam, 1, 1, 82, 208);
   else if (sys == AliForwardUtil::kPbPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 82, 208);
   UShort_t ret = CheckSNN(energy);
   if (ret > 1) return ret;
-  if (sys == AliForwardUtil::kPbPb || sys == AliForwardUtil::kPPb) {
+  if (sys == AliForwardUtil::kPbPb ||
+      sys == AliForwardUtil::kPPb  ||
+      sys == AliForwardUtil::kPbp) {
     ret = CheckSNN(beam);
   }
   return ret;

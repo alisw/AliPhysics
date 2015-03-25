@@ -1996,9 +1996,9 @@ struct dNdetaDrawer
       case 6: return kYellow+2;
       }
     }
-    UShort_t centLow  = fCentAxis->GetBinLowEdge(bin);
-    UShort_t centHigh = fCentAxis->GetBinUpEdge(bin);
-    Float_t  fc       = (centLow+double(centHigh-centLow)/2) / 100;
+    Double_t centLow  = fCentAxis->GetBinLowEdge(bin);
+    Double_t centHigh = fCentAxis->GetBinUpEdge(bin);
+    Float_t  fc       = (centLow+(centHigh-centLow)/2) / 100;
     Int_t    nCol     = gStyle->GetNumberOfColors();
     Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
     Int_t    col      = gStyle->GetColorPalette(icol);

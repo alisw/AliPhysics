@@ -35,8 +35,9 @@ struct SysErrorAdder
     gse->SetSysFillColor(id,gse->GetMarkerColor());
     gse->SetSysLineColor(id,gse->GetMarkerColor());
     gse->SetSysLineWidth(id, 1);
+    gse->SetSysLineStyle(id, 1);
     gse->SetSysFillStyle(id, fill);
-    gse->SetSysOption(id, GraphSysErr::kBox);
+    gse->SetSysOption(id, GraphSysErr::kRect);
     
     if (!l) return;
     TLegendEntry* e = l->AddEntry(Form("sys%02d", id),
