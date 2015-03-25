@@ -28,6 +28,8 @@
 #pragma link C++ class AliEmcalTrackingQATask+;
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
 #pragma link C++ class AliEmcalTriggerMaker+;
+#pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition+;
+#pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer+;
 #pragma link C++ class AliEmcalTriggerPatchInfo+;
 #pragma link C++ class AliEmcalTriggerSetupInfo+;
 #pragma link C++ class AliEsdSkimTask+;

@@ -1,21 +1,17 @@
-//
-// Class to make array of trigger patch objects in AOD/ESD events.
-// The input for the process are:
-//   - AliCaloTrigger objects from ESS/AOD, which contain raw trigger information
-//   - the CaloCells, which contain offline/FEE information
-//
-// The output is a list of AliEmcalTriggerPatchInfo objects which is stored in ESD/AOD (Use event->FindListObject to get them) with three types of trigger patches:
-//  1) Online trigger info
-//  2) Trigger info based on the offline FEE ADCs (SimpleOffline)
-//  3) The highest gamma and jet patch in the event, even if it does 
-//     not pass the threshold (RecalcJet and RecalcGamma); with two versions
-//     a) based on the online trigger information
-//     b) based offline FEE information
-// The different types of patches are distinguished by bitflags according 
-// to the enum AliEmcalTriggerPatchInfo::TriggerMakerBits and 
-//   EMCAL/AliEmcalTriggerTypes.h
-//
-// Author: J.Kral
+/**************************************************************************
+ * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include <TClonesArray.h>
 #include <TArrayI.h>
 #include <THashList.h>
@@ -35,12 +31,19 @@
 
 #include <bitset>
 
+/// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMaker)
+ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition)
+ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer)
+/// \endcond
 
 using namespace std;
 
 const TString AliEmcalTriggerMaker::fgkTriggerTypeNames[5] = {"EJE", "EGA", "EL0", "REJE", "REGA"};
-//________________________________________________________________________
+
+/**
+ * Dummy constructor
+ */
 AliEmcalTriggerMaker::AliEmcalTriggerMaker() : 
   AliAnalysisTaskEmcal("AliEmcalTriggerMaker",kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
@@ -53,10 +56,10 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fSimpleOfflineTriggers(0),
   fV0(0),
   fITrigger(0),
+  fRejectOffAcceptancePatches(kFALSE),
   fDoQA(kFALSE),
   fQAHistos(NULL)
 {
-  // Constructor.
   fRunTriggerType[kTMEMCalJet] = kTRUE;
   fRunTriggerType[kTMEMCalGamma] = kTRUE;
   fRunTriggerType[kTMEMCalLevel0] = kTRUE;
@@ -69,7 +72,11 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 }
 
-//________________________________________________________________________
+/**
+ * Named constructor.
+ * \param name Name of the trigger maker task
+ * \param doQA Switch on/off QA
+ */
 AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   AliAnalysisTaskEmcal(name,doQA),
   fCaloTriggersOutName("EmcalTriggers"),
@@ -82,6 +89,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fSimpleOfflineTriggers(0),
   fV0(0),
   fITrigger(0),
+  fRejectOffAcceptancePatches(kFALSE),
   fDoQA(doQA),
   fQAHistos(NULL)
 {
@@ -98,18 +106,19 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalTriggerMaker::~AliEmcalTriggerMaker()
 {
-  // Destructor.
   if(fTriggerBitConfig) delete fTriggerBitConfig;
 }
 
-//________________________________________________________________________
+/**
+ * Init the analysis.
+ */
 void AliEmcalTriggerMaker::ExecOnce()
 {
-  // Init the analysis.
-
   AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
@@ -163,10 +172,11 @@ void AliEmcalTriggerMaker::ExecOnce()
   fSimpleOfflineTriggers->Allocate(0);
 }
 
-//________________________________________________________________________
+/**
+ * Do basic QA monitoring (if requested)
+ */
 void AliEmcalTriggerMaker::UserCreateOutputObjects()
 {
-  // Do basic QA monitoring (if requested)
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   if(fDoQA && fOutput){
@@ -187,11 +197,12 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Create and fill the patch array.
+ * \return Always true.
+ */
 Bool_t AliEmcalTriggerMaker::Run() 
 {
-  // Create and fill the patch array.
-
   AliEmcalTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
   AliEmcalTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
 
@@ -241,6 +252,8 @@ Bool_t AliEmcalTriggerMaker::Run()
       // A0 left bottom (0,0)
       Int_t globCol=-1, globRow=-1;
       fCaloTriggers->GetPosition(globCol, globRow);
+      // exclude channel completely if it is masked as hot channel
+      if(fBadChannels.HasChannel(globCol, globRow)) continue;
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those 
       Int_t adcAmp=-1;
@@ -439,11 +452,15 @@ Bool_t AliEmcalTriggerMaker::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Process and fill trigger patch.
+ * check if jet trigger low or high
+ * \param type Type of the patch (Jet, gamma, Level0)
+ * \param isOfflineSimple Switch between online and offline patches
+ * \return The new patch (NULL in case of failure)
+ */
 AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple)
 {
-  // Process and fill trigger patch.
-  // check if jet trigger low or high
   Int_t tBits=-1;
   if (!isOfflineSimple)
     fCaloTriggers->GetTriggerBits(tBits);
@@ -478,7 +495,15 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     fSimpleOfflineTriggers->GetPosition(globCol, globRow);
 
   if(globCol >= kPatchCols || globRow >= kPatchRows){
-    AliError(Form("Invalid patch position: Col[%d], Row[%d]", globCol, globRow));
+  }
+
+  if(fRejectOffAcceptancePatches){
+    int patchsize = 2;
+    if(type == kTMEMCalJet || type == kTMEMCalRecalcJet) patchsize = 16;
+    if((globCol + patchsize >= kPatchCols) || (globCol + patchsize >= kPatchRows)){
+      AliError(Form("Invalid patch position for patch type %s: Col[%d], Row[%d] - patch rejected", fgkTriggerTypeNames[type].Data(), globCol, globRow));
+      return NULL;
+    }
   }
 
   // get the absolute trigger ID
@@ -680,15 +705,16 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   return trigger;
 }
 
-//________________________________________________________________________
+/**
+ * Runs a simple algorithm to calculate patch energies based on
+ * the offline/FEE ADC values (useOffline = kTRUE) or
+ * the online/trigger values (useOffline = kFALSE.
+ *
+ *  It creates separate patches for jet and gamma triggers
+ *  on the same positions (different from STU reconstruction behavior)
+ */
 void AliEmcalTriggerMaker::RunSimpleOfflineTrigger() 
 {
-  // Runs a simple algorithm to calculate patch energies based on 
-  // the offline/FEE ADC values (useOffline = kTRUE) or 
-  // the online/trigger values (useOffline = kFALSE.
-  //
-  // It creates separate patches for jet and gamma triggers
-  // on the same positions (different from STU reconstruction behavior)
 
   TArrayI tBitsArray(4), rowArray(4), colArray(4);
   
@@ -819,10 +845,13 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Get next trigger. Forwards the pointer of the trigger object inside the trigger maker
+ * \param isOfflineSimple Switch between online and ofline patches
+ * \return True if successful, false otherwise
+ */
 Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple) 
 {
-  // Get next trigger
   
   isOfflineSimple = kFALSE;
   Bool_t loopContinue = fCaloTriggers->Next();
@@ -833,7 +862,15 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
   return loopContinue;
 }
 
-//________________________________________________________________________
+/**
+ * Accept trigger patch as Level0 patch. Different handlings are needed for Data and
+ * Monte Carlo:
+ *  - In Monte-Carlo the patch is accepted if the Level0 bit is set
+ *  - In Data the Level0 bit is not set. Therefor patches are accepted if this FASTOR
+ *    and the neighboring FASTORS have proper Level0 times set
+ * \param trg Triggers object with the pointer set to the patch to inspect
+ * \return True if the patch is accepted, false otherwise.
+ */
 Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
   // Check whether the patch is a level0 patch
   if(MCEvent()){
@@ -857,4 +894,27 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
     if (nvalid != 4) return false;
     return true;
   }
+}
+
+/**
+ * Add a new channel with the postion in column and row to the container, In case the channel
+ * is already listed in the trigger channel container we don't add it again.
+ * \param col Column of the channel
+ * \param row Row of the channel
+ */
+void AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer::AddChannel(int col, int row){
+  if(HasChannel(col, row)) return;
+  fChannels.Add(new AliEmcalTriggerChannelPosition(col, row));
+}
+
+/**
+ * Check whether channel with the position (col, row) is listed in the trigger channel container
+ * \param col Column of the channel
+ * \param row Row of the channel
+ * \return True if the channel is listed, false otherwise
+ */
+Bool_t AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer::HasChannel(int col, int row){
+  AliEmcalTriggerChannelPosition refChannel;
+  if(fChannels.FindObject(&refChannel)) return true;
+  return false;
 }
