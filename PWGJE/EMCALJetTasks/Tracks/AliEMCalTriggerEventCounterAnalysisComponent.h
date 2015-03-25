@@ -45,7 +45,7 @@ public:
    * Specify method to select triggered events
    * \param method Method applied
    */
-  void SetUsePatches(ETriggerMethod_t method) { fTriggerMethod = method; }
+  void SetTriggerMethod(ETriggerMethod_t method) { fTriggerMethod = method; }
 
 protected:
   void DefineAxis(TAxis& axis, const char* name,

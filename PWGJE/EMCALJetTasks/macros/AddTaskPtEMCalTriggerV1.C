@@ -20,16 +20,18 @@
 #include <cstring>
 #endif
 
-void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches);
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, bool isMC, bool usePatches, bool isSwapEta);
+void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, bool isMC, bool isSwapEta);
 void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
-void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches);
+void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt);
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool usePatches, bool isSwapEta);
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
 void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
 EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char *trackCutsName, bool isAOD);
+
+EMCalTriggerPtAnalysis::ETriggerMethod_t gEventSelection;
 
 /**
  * \brief Configuring the analysis of high-p_{t} tracks in triggered events and adds it to the analysis train
@@ -78,9 +80,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *ntriggerContainer = "",
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
-	const char *components = "particles:clusters:tracks:mcjets:recjets:triggers",
-	bool usePatches = kFALSE,
-	bool useOfflinePatches = kFALSE
+    const char *components = "particles:clusters:tracks:mcjets:recjets:triggers",
+    bool useOfflinePatches = kFALSE
 )
 {
   //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
@@ -125,10 +126,24 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
 
+  /*
+   * Set event selection
+   */
+  if(isMC) gEventSelection = EMCalTriggerPtAnalysis::kTriggerPatches;
+  else gEventSelection = EMCalTriggerPtAnalysis::kTriggerMixed;
+
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
   if(isMC && !useOfflinePatches) trgconf->SetSwapThresholds();
   //printf("Using offline patches: %s\n", useOfflinePatches ? "yes" :"no");
   trgconf->SetUseOfflinePatches(useOfflinePatches);
+  if(!useOfflinePatches){
+    // Cut further in amplitude calibrated amplituded on the trigger patches
+    trgconf->SetPatchEnergyType(EMCalTriggerPtAnalysis::kAmplitudeOffline);
+    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCGHigh, 140);
+    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCGLow, 89);
+    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCJHigh, 260);
+    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCJLow, 127);
+  }
   pttriggertask->SetTriggerDecisionConfig(trgconf);
 
   CreateJetPtBinning(pttriggertask);
@@ -158,7 +173,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts *kineCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts();
   kineCuts->SetPtRange(2., 100.);
   defaultselect->SetKineCuts(kineCuts);
-  AddEventCounterComponent(defaultselect, usePatches);
+  AddEventCounterComponent(defaultselect);
   if(isMC){
     if(doMCParticles) AddMCParticleComponent(defaultselect);
     if(doMCJets) AddMCJetComponent(defaultselect, 20.);
@@ -167,9 +182,9 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
       AddMCJetComponent(defaultselect, jetpt[ijpt]);
     */
   }
-  if(doClusters) 	AddClusterComponent(defaultselect, usePatches);
-  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), isMC, usePatches, isSwapEta);
-  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), 20., isMC, usePatches, isSwapEta);
+  if(doClusters) 	AddClusterComponent(defaultselect);
+  if(doTracks) 		AddTrackComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), isMC, isSwapEta);
+  if(doRecJets) 	AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts, isAOD), 20., isMC, isSwapEta);
   /*
    * for(int ijpt = 0; ijpt < 4; ijpt++)
        AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), jetpt[ijpt], isMC, isSwapEta);
@@ -224,12 +239,11 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
  * is a helper function called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
  *
  * \param group Parent group the component is linked to
- * \param usePatches True if trigger selection is done using patches
  */
-void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, bool usePatches){
+void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group){
   EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent *clusteranalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent("clusterAnalysis");
   clusteranalysis->SetEnergyRange(2., 100.);
-  clusteranalysis->SetUsePatches(usePatches);
+  clusteranalysis->SetTriggerMethod(gEventSelection);
   group->AddAnalysisComponent(clusteranalysis);
 }
 
@@ -242,17 +256,16 @@ void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group
  * \param group Parent analysis group
  * \param trackcuts Cuts used for the track selection
  * \param isMC True if MC information is available.
- * \param usePatches True if trigger selection is done using patches
  * \param isSwapEta True if the \f$ \eta \f$ sign is swapped
  */
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool usePatches, bool isSwapEta){
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
   group->AddAnalysisComponent(trackanalysis);
   // Create charged hadrons pPb standard track cuts
   trackanalysis->SetTrackSelection(trackcuts);
 
   if(isMC) trackanalysis->SetRequestMCtrueTracks();
-  if(usePatches) trackanalysis->SetUsePatches();
+  trackanalysis->SetTriggerMethod(gEventSelection);
   if(isSwapEta) trackanalysis->SetSwapEta();
 }
 
@@ -263,11 +276,10 @@ void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
  * called by AddTaskPtEMCalTriggerV1 and not intended for general usage.
  *
  * \param group Parent group of analysis components
- * \param usePatches True if trigger selection is done using patches
  */
-void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, Bool_t usePatches){
+void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group){
   EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent * evcount = new EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent("eventCounter");
-  evcount->SetUsePatches(usePatches);
+  evcount->SetTriggerMethod(gEventSelection);
   group->AddAnalysisComponent(evcount);
 }
 
@@ -295,7 +307,7 @@ void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *gr
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt){
   EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent(Form("MCJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
-  jetana->SetUsePatches();
+  jetana->SetTriggerMethod(EMCalTriggerPtAnalysis::kTriggerPatches);
   group->AddAnalysisComponent(jetana);
 }
 
@@ -309,13 +321,12 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
  * \param trackcuts Track selection applied to particles in reconstructed jets
  * \param minJetPt Lower jet-p_{t} cut of the analysis
  * \param isMC True if MC information is available.
- * \param usePatches True if trigger selection is done using patches
  * \param isSwapEta True if the \f$ \eta \f$ sign is swapped
  */
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool usePatches, bool isSwapEta){
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
-  jetana->SetUsePatches(usePatches);
+  jetana->SetTriggerMethod(gEventSelection);
   jetana->SetSingleTrackCuts(trackcuts);
   //jetana->SetComponentDebugLevel(2);
   group->AddAnalysisComponent(jetana);
