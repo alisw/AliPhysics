@@ -34,7 +34,7 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 add_executable(alieve ${SRCS})
-target_link_libraries(alieve STEERBase EveBase)
+target_link_libraries(alieve STEERBase EveBase ASImage)
 
 if(ZEROMQ_FOUND)
     target_link_libraries(alieve MONITORzmq)
@@ -47,7 +47,7 @@ set(SRCSHLT
 )
 
 add_executable(alihlteve ${SRCSHLT})
-target_link_libraries(alihlteve EveBase)
+target_link_libraries(alihlteve EveBase ASImage)
 
 if(ZEROMQ_FOUND)
     target_link_libraries(alihlteve EveBase MONITORzmq)

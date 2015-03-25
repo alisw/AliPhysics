@@ -40,9 +40,9 @@ class AliSysInfo;
 TH2D *V0StateHistogram;
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
-Int_t      g_pic_id  = 0;
-Int_t      g_pic_max = 100;
-TTimeStamp g_pic_prev(0, 0);
+//Int_t      g_pic_id  = 0;
+//Int_t      g_pic_max = 100;
+//TTimeStamp g_pic_prev(0, 0);
 
 void alieve_init_import_macros();
 
