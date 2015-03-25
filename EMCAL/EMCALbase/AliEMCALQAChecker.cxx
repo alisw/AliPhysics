@@ -65,25 +65,25 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
   fLineCol->SetLineColor(1);
   fLineCol->SetLineWidth(2);
 
-  fTextSM[0]= new TText(20, 12, "SM A0");
-  fTextSM[1]= new TText(20, 36, "SM A1");
-  fTextSM[2]= new TText(20, 60, "SM A2");
-  fTextSM[3]= new TText(20, 84, "SM A3");
-  fTextSM[4]= new TText(20, 108,"SM A4");
-  fTextSM[5]= new TText(20, 132,"SM A5");
+  for(int iSM = 0; iSM < fgknSM; iSM++) {
+    int iside = iSM % 2;
+    int isect = iSM / 2;
+    int isectNum = isect;
+    if (isectNum > 5) isectNum += 3; // DCal
 
-  fTextSM[6]= new TText(64, 12, "SM C0");
-  fTextSM[7]= new TText(64, 36, "SM C1");
-  fTextSM[8]= new TText(64, 60, "SM C2");
-  fTextSM[9]= new TText(64, 84, "SM C3");
-  fTextSM[10]= new TText(64, 108,"SM C4");
-  fTextSM[11]= new TText(64, 132,"SM C5");
+    if (iside == 0) { // A side
+      fTextSM[iSM]= new TText(20, 12+24*isect, Form("SM A%d",isectNum) );
+    }
+    else { // C side
+      fTextSM[iSM]= new TText(64, 12+24*isect, Form("SM C%d",isectNum) );
+    }
+  }
 
-	for(int i = 0; i < 5; i++) {
+  for(int i = 0; i < fgknSectLines; i++) {
 		fLineRow[i] = new TLine(-0.5,23.5+(24*i),95.5,23.5+(24*i));
 		fLineRow[i]->SetLineColor(1);
 		fLineRow[i]->SetLineWidth(2);
-	}
+  }
 
 	for(int i = 0; i < 3; i++) {
 		fTextL1[i] = new TPaveText(0.2,0.8,0.8,0.9,"NDC");
@@ -230,7 +230,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  
 	  //adding the lines to distinguish different SMs
 	  lstF->Add(fLineCol->Clone()); 
-	  for(Int_t iLine = 0; iLine < 5; iLine++) {
+	  for(Int_t iLine = 0; iLine < fgknSectLines; iLine++) {
 	    lstF->Add(fLineRow[iLine]->Clone());
 	  } 
 	  //Now adding the text to for each SM
