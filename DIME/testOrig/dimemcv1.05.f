@@ -1,4 +1,4 @@
-      subroutine dimeinit
+      program DimeMC
 
       implicit double precision(a-y)       
       implicit complex*16(z)
@@ -10,22 +10,16 @@
      &,hh,lmax
       character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
      &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
-      integer iin,nch,isuc
+      integer iin,nch
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
       common/mom/q
       common/int/ip
       common/mompt/pt1,pt2,ptx
-      common/vars/s,rts,mmes,yx,iin
-ccc new
-      common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
-     &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
-     &              bjac, bp 
-      common /ivars/ ncut, ll, icut, nev, num, ntotal
-ccc new
+      common/vars/s,rts,mmes,yx
       common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
-      common/flags/ pflag, fsi, ppbar, output, cuts, unw
+      common/flags/pflag
       common/gluons/g1,g2,kt1,kt2
       common/levicivita/epsilon
       common/ang/cost,costa,costb
@@ -58,8 +52,7 @@ ccccc Les Houches  Event Common Block
 ccccc rambo variables
       integer npart,nrun
       double precision pin(4),am(100),pout(4,100),wt,ein
-      common/ramboc/ pin, am, pout, wt, ein,
-     &npart, nrun
+ 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c                                                         c
 c     Dime MC for the central exclusive production of     c
@@ -120,51 +113,33 @@ c     arXiv:1312.4553                                     c
 c                                                         c 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-ccAM      open(35,file='exerec1.dat') ! event record
+      open(35,file='exerec1.dat') ! event record
       
-ccAM      rts=1.96d3         ! centre of mass energy
+      rts=7.0d3         ! centre of mass energy
+
 cccc  Some basic cuts, imposed in subtroutine 'icut'. Other user defined cuts can readily be implemented in subroutine
 cccc  note: in rhorho case these cuts are imposed on rho's, and not their decay productions. Cuts on the decay products
 cccc  can be imposed by editing 'icut'
 
-ccAM      rmax=1.8d1        ! max meson rapidity
-ccAM      rmin=-1.8d1       ! min meson rapidity
-ccAM      ecut=2d0          ! min meson p_t
+      rmax=2.0d0        ! max meson rapidity
+      rmin=-2.0d0       ! min meson rapidity
+      ecut=0.2d0        ! min meson p_t
 
 c -- physics parameters 
 
-ccAM      pflag='rho'    ! Process generated - see preamble for options
-ccAM      fsi='true'      ! phenomenological model for exclusive suppression in Pom Pom --> meson pair. To turn on/off --> 'true/false'
-ccAM      formf='orexp'   ! meson - pomeron form factor.
-ccAM      ppbar='false'   ! set true if ppbar collisions
-          output='lhe' ! Event record style, HEPEVT or LHE
-ccAM      cuts='true'     ! Impose cuts or not
-ccAM      unw='true'      ! Set = 'true' for unweighted events
-ccAM      iin=1           ! Model for soft survival factor, as described in arXiv:1306.2149. Default = 1
-          write(6,*) "*************************************************"
-          write(6,*) "Initialising DIME with:"
-          if (ppbar.eq.'true') then
-             write(6,*) "ppbar collisions"
-          else 
-             write(6,*) "pp collisions"
-          endif
-          write(6,*) "Centre of Mass Energy            = ", rts
-          write(6,*) "Physics models:"
-          write(6,*) "Process                          = ", pflag
-          write(6,*) "Exclusive suppression in Pom Pom = ", fsi
-          write(6,*) "Meson - Pomeron form factor      = ", formf
-cc          write(6,*) "Unweighted events                = ", unw ! always  unweighted + weighted
-          write(6,*) "Model for soft survival factor   = ", iin
-          write(6,*) "*************************************************"
-          write(6,*) "Using cuts                      = ", cuts
-          write(6,*) "Maximum meson rapidity =", rmax
-          write(6,*) "Minimum meson rapidity =", rmin
-          write(6,*) "Minimum meson pT (GeV) =", ecut          
-          write(6,*) "*************************************************"
+      pflag='pipm'    ! Process generated - see preamble for options
+      fsi='true'      ! phenomenological model for exclusive suppression in Pom Pom --> meson pair. To turn on/off --> 'true/false'
+      formf='orexp'   ! meson - pomeron form factor.
+      ppbar='false'   ! set true if ppbar collisions
+      output='lhe'    ! Event record style, HEPEVT or LHE
+      cuts='true'     ! Impose cuts or not
+      unw='true'      ! Set = 'true' for unweighted events
+      iin=1           ! Model for soft survival factor, as described in arXiv:1306.2149. Default = 1
+
 cccccccc
 
-          ntotal=100000              ! no. of runs for weighted events
-cc        nev=100                    ! no. of unweighted events generated to event record
+      ntotal=100000          ! no. of runs for weighted events
+      nev=100                 ! no. of unweighted events generated to event record
 
 ccccccccc
 
@@ -186,6 +161,7 @@ cccccccccccccccccccccccccccccccccccccc
       call initpars(iin)   ! Initialise soft survival parameters
       call calcop          ! proton opacity 
       call calcscreen      ! screening amplitude
+
       if(pflag.eq.'pipm')then
          mmes=0.13957018d0      ! pi+/- mass, PDG 2011 value
          sig0=13.63d0
@@ -474,9 +450,11 @@ cccc  outgoing initial info
       spinup(4)=9
 
 ccc   HEPEVT
+
       if(output.eq.'hepevt')then
-        
+
       nhep=nup
+      
       do k=1,5
          phep(k,1)=pup(k,1)
          phep(k,2)=pup(k,2)
@@ -512,124 +490,32 @@ ccc   HEPEVT
       else
          lmax=1
       endif
-c
-c
-c     1. generate weighted events first
-c ------------------------------------------------------------------------
-      ll = 1 
+
+      do ll=1,lmax
+
+      if(ll.eq.2)then
+c         ntotal=nev*10
+         ntotal=10000000
+      endif
+
       ip=ntotal+1
-      write(6,*)'Generating weighted events...'
-      do i=1, ntotal
-         isuc = 0
-         call dimegenerate(isuc)
-      enddo
 
-c     2. print integrated cross section
-c ------------------------------------------------------------------------
-      sigma = sum/dfloat(ntotal)
-      sigma1 = sum1/dfloat(ntotal)
-      sigmaerr = dsqrt((sigma1 - sigma**2)/dfloat(ntotal))
-      eff = 1d0*(ntotal-ncut)/dfloat(ntotal)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                       c
+c     Start of event loop                               c
+c                                                       c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-      write(6,223)ntotal,sigma,sigmaerr
+      if(ll.eq.1)then
+         write(6,*)'Generating weighted events...'
+      else
+        write(6,*)'Generating unweighted events...'
+      endif
 
- 223  format(/,
-     .       3x,'Number of events          : ',i9,/,
-     .       3x,'Sigma (nb)                : ',f15.5,'  +-  ',f15.5,
-     .   /)
+      do i=1,ntotal
 
-      call cpu_time(timelapse)
-      print*,'Time elapsed = ', timelapse, ' sec'
-      print*,' '
-
-c     3. prepare for unweighted generation
-c ------------------------------------------------------------------------      
-      ll = 2
-      write(6,*)'Generating unweighted events...'
-
-      return
-      end
-      
-
-
-
-      subroutine dimegenerate(isuccess)
-      implicit none
-      
-ccccc hepevt output
-      integer nmxhep,kk
-      parameter (nmxhep=4000)
-      integer nevhep,nhep,isthep,idhep,jmohep,jdahep
-      double precision phep,vhep
-      common /hepevt/ nevhep,nhep,isthep(nmxhep),idhep(nmxhep),
-     &jmohep(2,nmxhep),jdahep(2,nmxhep),phep(5,nmxhep),vhep(4,nmxhep)
-ccccc Les Houches  Event Common Block
-      INTEGER MAXNUP
-      PARAMETER (MAXNUP=500)
-      INTEGER NUP,IDPRUP,IDUP,ISTUP,MOTHUP,ICOLUP
-      DOUBLE PRECISION XWGTUP,SCALUP,AQEDUP,AQCDUP,PUP,VTIMUP,SPINUP
-      COMMON/HEPEUP/NUP,IDPRUP,XWGTUP,SCALUP,AQEDUP,AQCDUP,
-     &              IDUP(MAXNUP),ISTUP(MAXNUP),MOTHUP(2,MAXNUP),
-     &              ICOLUP(2,MAXNUP),PUP(5,MAXNUP),VTIMUP(MAXNUP),
-     &              SPINUP(MAXNUP)
-ccccc rambo variables
-      integer npart,nrun
-      double precision pin(4), am(100), pout(4,100), wt, ein
-      common/ramboc/ pin, am, pout, wt, ein,
-     &npart, nrun
-
-ccccc
-      double precision etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,
-     &rmin,mcut
-      common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
-ccccc
-      double precision q(4,20)
-      common /mom/ q
-ccccc
-      double precision pt1(2), pt2(2), ptx(2)
-      common/mompt/pt1,pt2,ptx
-ccccc
-      double precision s, rts, mmes, yx
-      double precision bjac, bp 
-      double precision mf127, mf1525
-
-      double precision m0, mmes0, mmes1, mmes2, mp, mwidth, pi, rt2,
-     &ebeam, sh, th, uh, sum, sum1, weightm
-
-      integer id(20), ncut, ll, icut, nev, num, iin, ntotal
-
-      common/vars/s,rts,mmes,yx, iin
-      common/hvars/sh,th,uh
-      common/vars0/ mf127, mf1525, m0, mmes0, mmes1, mmes2, mp, 
-     &              mwidth, pi, rt2, ebeam, sum, sum1, weightm,
-     &              bjac, bp 
-      common /ivars/ ncut, ll, icut, nev, num, ntotal
-ccccc
-      character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
-     &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
-      common/flags/ pflag, fsi, ppbar, output, cuts, unw
-      common/ff/formf
-ccccc
-      double precision ep, norm, sigo, asp
-      double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
-      common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccc local variables ...
-      double precision aa1, aa2, al1, al2, almax, almin, c, cc1, cc2, 
-     & msmax, msmin, cont, exn, mmesp, mwidth1, mwidth2,
-     & p1m, p1p, p2m, p2p, phi1, phi2, phix1, pt1sq, pt1x, pt1y,
-     & pt2sq, pt2x, pt2y, ptxsq1, ptxsq2, ptxsqmax, ptxsqmin,
-     & ran0, ran1, ran2, ran3, ran4, ran5, ran6, ranhist, ranx1,
-     & ranx2, ranx3, ranx4, rm1, rm2, rmx1, rmx2,
-     & root1sq, root2sq, snp, t1, t2, weight, weight0, weight1,
-     & weight2, wthist, x1, x2, ymax1, ymax2, ymin1, ymin2, yx1,
-     & yx2
-      double precision pboo(4), pcm(4), plb(4)
-      double precision svec(4)
-      complex*16 zmat
-      integer h, i, j, k, isuccess
       weight=0d0
-      isuccess = 0
+
       call r2455(ran0)
       call r2455(ran1)
       call r2455(ran2)
@@ -861,6 +747,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                else
                   mmesp=mmes2
                endif
+
                call rambo(npart,mmesp,am,pout,wt) ! call RAMBO  
               
                do j=1,4
@@ -888,6 +775,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c      place cuts
 
          if(cuts.eq.'true')then
+
             call cut(icut)
             
             if(icut.eq.0)then
@@ -1059,7 +947,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccc
          xwgtup=weight
 
          wthist=weight/dfloat(ntotal)
-
+         
          call binit(wthist)
          
       else
@@ -1067,7 +955,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccc
          call r2455(ranhist)
          
          if(ranhist.lt.weight/weightm)then
-            isuccess = 1
+            
             xwgtup=1d0
 
             num=num+1
@@ -1075,7 +963,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccc
             
 c            call binit(sumt/nev)
 
-            write(35,302) num, nup
+            write(35,302)num,nup
             
             if(output.eq.'lhe')then
 
@@ -1101,24 +989,41 @@ c            call binit(sumt/nev)
 
       endif
 
-
       if(ll.eq.2)then
 
       if(num.gt.nev-1)then  ! exit loop once required no. of unweighted events generated
+
          ntotal=i
-         return
+         goto 888
+
       endif
       endif
 
  700  sum=sum+weight
       sum1=sum1+weight**2
 
-
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c                                                                    c                                                                      
 c     End of event loop                                              c
 c                                                                    c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      enddo
+   
+ 888  sum=sum/dfloat(ntotal)
+      sum1=sum1/dfloat(ntotal)
+      var=dsqrt((sum1-sum**2)/dfloat(ntotal))
+      EFF=1d0*(ntotal-ncut)/ntotal  
+
+      if(ll.eq.1)then
+         print*,'...done!'
+         write(6,*)
+         sumt=sum
+      else
+         print*,'...done!'
+         write(6,*)
+      endif
+
 
  300  format(i4,1x,i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,
      &E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6)
@@ -1127,7 +1032,75 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &,E13.6)
  302  format(1x,i8,1x,i5,1x,E13.6)
 
-      return
+ccccc     create histograms
+
+      if(ll.eq.1)then
+
+      do i=1,nhist
+           call histo2(i,0)
+      enddo
+
+      endif
+      
+      if(ll.eq.1)then
+      if(pflag.eq.'pipm')then
+         write(6,*) 
+         write(6,*)'pi+pi- production'
+      elseif(pflag.eq.'pi0')then
+         write(6,*) 
+         write(6,*)'pi0pi0 production'
+      elseif(pflag.eq.'kpkm')then
+         write(6,*)
+         write(6,*)'K+K- production'
+      elseif(pflag.eq.'ks')then
+         write(6,*)
+         write(6,*)'K0K0 production'
+      elseif(pflag.eq.'rho')then
+         write(6,*)
+         write(6,*)'rho0rho0 production'
+      endif
+      endif
+
+      if(ll.eq.1)then
+         if(pflag.eq.'rho')then
+         write(6,221)rts,ntotal,sum,var
+      else
+         write(6,222)rts,mmes,ntotal,sum,var
+      endif
+      else
+         if(output.eq.'lhe')then
+            print*,'LHE output'
+         else
+            print*,'HEPEVT output'
+         endif
+         write(6,223)nev,sum,var
+      endif
+
+      enddo
+
+      close(35)
+
+ 221  format(/,
+     .       3x,'collider energy  (GeV)    : ',f10.3,/,
+     .       3x,'number of events          : ',i9,/,
+     .       3x,'sigma (nb)                : ',f15.5,'  +-  ',f15.5,
+     .   /)
+
+ 222  format(/,
+     .       3x,'collider energy  (GeV)    : ',f10.3,/,
+     .       3x,'meson mass (GeV)          : ',f10.5,/,
+     .       3x,'number of events          : ',i9,/,
+     .       3x,'sigma (nb)                : ',f15.5,'  +-  ',f15.5,
+     .   /)
+
+ 223  format(3x,'number of events          : ',i9,/,
+     .       3x,'sigma (nb)                : ',f15.5,'  +-  ',f15.5,
+     .   /)
+
+      call cpu_time(t2)
+      print*,'time elapsed = ', t2, ' s'
+
+      stop
       end
 
 ccccc Pomeron -- (off-shell) meson form factor
@@ -1135,7 +1108,7 @@ ccccc Pomeron -- (off-shell) meson form factor
       function fpi(x)             
       implicit double precision(a-y)
       character formf*10
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
       common/ff/formf
       common/ffpars/bexp,ao,bo,aoo,boo
 
@@ -1156,19 +1129,17 @@ ccccccc  Pom Pom --> meson pair amplitude
       implicit double precision(a-y)
       implicit complex*16(z)
       double precision q(4,20),svec(4),tvec(4),uvec(4),v1(4),v2(4)
-      integer k, iin
+      integer k
+      character*10 mregge,pflag
       complex*16 matt
       common/mom/q
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
       common/wvars/sig0,bb,t1,t2
       common/alphas/alphap,alpha0,alphapr,alpha0r,alphapm,alpha0m
       common/sec/cpom,cf,crho,aff,ar
       common/hvars/sh,th,uh
       common/regge/mregge
-      character prefix*50,fsp*10,order*10,pflag*10,fsi*10,formf*10
-     &,ppbar*10,output*10,mregge*10,cuts*10,unw*10
-      common/flags/ pflag, fsi, ppbar, output, cuts, unw
-
+      common/flags/pflag
 
       zi=(0d0,1d0)
       pi=dacos(-1d0)
@@ -1227,13 +1198,13 @@ ccccccc  Pom Pom --> meson pair amplitude
           zmu=(zi*dexp(-bu1*t11/2d0)*cpom*shu1**alpha0
      &         +((aff+zi)*cf*shu1**alpha0r-(ar-zi)*crho*shu1**alpha0r)
      &         *dexp(-bu1r*t11/2d0))
-          
           zmu=zmu*(zi*dexp(-bu2*t22/2d0)*cpom*shu2**alpha0
      &         +((aff+zi)*cf*shu2**alpha0r+(ar-zi)*crho*shu2**alpha0r)
      &         *dexp(-bu2r*t22/2d0))
           zmu=zmu*fpi(uh)**2/(mmes**2-uh)
           
           matt=zmu+zmt
+      
        return
        end
 
@@ -1244,7 +1215,7 @@ c     binning subroutine
       double precision q(4,20),pt1(2),pt2(2),ptx(2)
       common/mom/q
       common/mompt/pt1,pt2,ptx     
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
       common/vars1/ptgam,etagam,ptel2,ptel1,etael1,etael2
       common/vars2/ptpi1,etapi1,ptpi2,etapi2 
       common/ang/cost,costa,costb
@@ -1273,7 +1244,7 @@ ccccc
       double precision q(4,20)
       integer icut
       common/mom/q
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
       common/vars1/ptgam,etagam,ptel2,ptel1,etael1,etael2
       common/vars2/ptpi1,etapi1,ptpi2,etapi2      
       common/cuts/etaelmax,etaelmin,ptelmin,ptphmin,ecut,rmax,rmin,mcut
@@ -1411,9 +1382,10 @@ cccc  Initializes soft model parameters
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
 
       pi=dacos(-1d0)
+
       if(in.eq.1)then
 
          ep=0.13d0
@@ -1557,6 +1529,7 @@ cccc  Initializes soft model parameters
       enddo
       
       norm=sum
+
       return
       end
 
@@ -1773,11 +1746,13 @@ cccc  Integrates round Pomeron loop (to calculate screened amplitude)
 
            call screeningint(i1,i2,tp2,sc,sc1)     
            call wev(x0,a1,a2)
+
             x0=x0*pp0(i1)*pp0(i2)/dble(nch)**2
             x0=x0*dexp(-((t12+0.08d0+bb0(i1))*bex(i1))**cc0(i1)+
      &     (bex(i1)*(bb0(i1)+0.08d0))**cc0(i1))
             x0=x0*dexp(-((t22+0.08d0+bb0(i2))*bex(i2))**cc0(i2)+
      &     (bex(i2)*(bb0(i2)+0.08d0))**cc0(i2)) 
+
             out=out+x0*wt*sc
             
          enddo
@@ -1843,7 +1818,7 @@ ccccc Pomeron -- diffrative eignstate i form factor
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
 
       pi=dacos(-1d0)
 
@@ -1880,7 +1855,7 @@ ccccc Pomeron -- diffrative eignstate i form factor
       double precision cc0(5),bm(5),bb0(5),pp0(5),bex(5),gaa(5)
       common/pars/cc0,bm,bb0,pp0,bex,asp,sigo,gaa,ep,norm
       common/ipars/nch
-      common/vars/s,rts,mmes,yx, iin
+      common/vars/s,rts,mmes,yx
 
       pi=dacos(-1d0)
 

@@ -1,0 +1,339 @@
+// Configuration file of DIME MC + AliROOT Sim/Rec
+//
+// mikael.mieskolainen@cern.ch
+
+
+// Function declarations
+void ProcessEnvironmentVars();
+
+// This part for configuration
+static AliMagF::BMap_t smag        = AliMagF::k5kG;
+static Double_t        energy      = 7000.0; // CMS energy
+static Double_t        pBeamEnergy = 3500.0;  // proton beam energy
+
+// Comment line
+static TString comment;
+
+//========================//
+// Set Random Number seed //
+//========================//
+TDatime dt;
+static UInt_t seed = dt.Get();
+
+// Main function
+void Config() {
+
+    gSystem->Load("libgeant321");
+    gSystem->Load("libEG.so");
+    gSystem->Load("libdime.so");
+    gSystem->Load("libTDime.so");
+
+    // =====================================================================
+
+    // Get settings from environment variables
+    ProcessEnvironmentVars();
+
+    // Set random number seed
+    gRandom->SetSeed(seed);
+    cout <<"Seed for random number generation= " << seed << endl;
+
+    // Geant3 Geometry
+    new TGeant3TGeo("C++ Interface to Geant3");
+
+    //=======================================================================
+
+    // Create the output file
+    AliRunLoader* rl = 0x0;
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "", "", "Config()",
+                    " ConfigPPR.C", __LINE__);
+
+    rl = AliRunLoader::Open("galice.root",
+			    AliConfig::GetDefaultEventFolderName(),
+			    "recreate");
+    if (rl == 0x0) {
+	gAlice->Fatal("Config.C", "Can not instatiate the Run Loader");
+	return;
+    }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(1000);
+    gAlice->SetRunLoader(rl);
+
+    // Set the trigger configuration
+    AliSimulation::Instance()->SetTriggerConfig("p-p");
+    cout << "Trigger configuration is set to: " << "p-p" << endl;
+
+    //=======================================================================
+    // ************* STEERING parameters FOR ALICE SIMULATION **************
+    // --- Specify event type to be tracked through the ALICE setup
+    // --- All positions are in cm, angles in degrees, and P and E in GeV
+
+    gMC->SetProcess("DCAY",1);
+    gMC->SetProcess("PAIR",1);
+    gMC->SetProcess("COMP",1);
+    gMC->SetProcess("PHOT",1);
+    gMC->SetProcess("PFIS",0);
+    gMC->SetProcess("DRAY",0);
+    gMC->SetProcess("ANNI",1);
+    gMC->SetProcess("BREM",1);
+    gMC->SetProcess("MUNU",1);
+    gMC->SetProcess("CKOV",1);
+    gMC->SetProcess("HADR",1);
+    gMC->SetProcess("LOSS",2);
+    gMC->SetProcess("MULS",1);
+    gMC->SetProcess("RAYL",1);
+
+    Float_t cut = 1.e-3;        // 1 MeV cut by default
+    Float_t tofmax = 1.e10;
+
+    gMC->SetCut("CUTGAM", cut);
+    gMC->SetCut("CUTELE", cut);
+    gMC->SetCut("CUTNEU", cut);
+    gMC->SetCut("CUTHAD", cut);
+    gMC->SetCut("CUTMUO", cut);
+    gMC->SetCut("BCUTE",  cut);
+    gMC->SetCut("BCUTM",  cut);
+    gMC->SetCut("DCUTE",  cut);
+    gMC->SetCut("DCUTM",  cut);
+    gMC->SetCut("PPCUTM", cut);
+    gMC->SetCut("TOFMAX", tofmax);
+
+    //=========================//
+    // Generator Configuration //
+    //=========================//
+    AliGenerator* gener = 0x0;
+
+    // 1. Create AliGenDime object
+    AliGenDime* dime = new AliGenDime(1000*1000);
+
+    // 2. Setup parameters of DIME MC
+    dime->GetTDime()->SetEnergyCMS(energy);
+    dime->GetTDime()->SetProcess("pipm      ");
+    //dime->GetTDime()->SetProcess("rho       ");
+    dime->GetTDime()->SetMinPt(0.2);
+
+    // 3. Create AliGenerator object and setup parameters
+    AliGenerator* gener = dime;
+    gener->SetOrigin(0, 0, 0);     // vertex position
+    gener->SetSigma(0, 0, 0);      // Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetCutVertexZ(1.0);     // Truncate at 1 sigma
+    gener->SetVertexSmear(kPerEvent);
+    gener->SetTrackingFlag(1);
+    gener->Init();
+
+    if (smag == AliMagF::k2kG) {
+	comment = comment.Append(" | L3 field 0.2 T");
+    } else if (smag == AliMagF::k5kG) {
+	comment = comment.Append(" | L3 field 0.5 T");
+    }
+
+    printf("\n \n Comment: %s \n \n", comment.Data());
+
+    // B-Field
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., smag));
+
+    rl->CdGAFile();
+
+    Int_t iABSO  = 1;
+    Int_t iACORDE= 1;
+    Int_t iDIPO  = 1;
+    Int_t iEMCAL = 1;
+    Int_t iFMD   = 1;
+    Int_t iFRAME = 1;
+    Int_t iHALL  = 1;
+    Int_t iITS   = 1;
+    Int_t iMAG   = 1;
+    Int_t iMUON  = 1;
+    Int_t iPHOS  = 1;
+    Int_t iPIPE  = 1;
+    Int_t iPMD   = 1;
+    Int_t iHMPID = 1;
+    Int_t iSHIL  = 1;
+    Int_t iT0    = 1;
+    Int_t iTOF   = 1;
+    Int_t iTPC   = 1;
+    Int_t iTRD   = 1;
+    Int_t iVZERO = 1;
+    Int_t iZDC   = 1;
+
+    //=================== Alice BODY parameters =============================
+    AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
+
+    if (iMAG)
+    {
+        //=================== MAG parameters ============================
+        // --- Start with Magnet since detector layouts may be depending ---
+        // --- on the selected Magnet dimensions ---
+        AliMAG *MAG = new AliMAG("MAG", "Magnet");
+    }
+
+    if (iABSO)
+    {
+        //=================== ABSO parameters ============================
+        AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
+    }
+
+    if (iDIPO)
+    {
+        //=================== DIPO parameters ============================
+
+        AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 3");
+    }
+
+    if (iHALL)
+    {
+        //=================== HALL parameters ============================
+
+        AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
+    }
+
+
+    if (iFRAME)
+    {
+        //=================== FRAME parameters ============================
+
+        AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+	FRAME->SetHoles(1);
+    }
+
+    if (iSHIL)
+    {
+        //=================== SHIL parameters ============================
+
+        AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
+    }
+
+    if (iPIPE)
+    {
+        //=================== PIPE parameters ============================
+
+        AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
+    }
+
+    if (iITS)
+    {
+        //=================== ITS parameters ============================
+
+	AliITS *ITS  = new AliITSv11("ITS","ITS v11");
+    }
+
+    if (iTPC)
+    {
+      //===================== TPC parameters ============================
+        AliTPC *TPC = new AliTPCv2("TPC", "Default");
+    }
+
+    if (iTOF) {
+        //=================== TOF parameters ============================
+	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
+    }
+
+
+    if (iHMPID)
+    {
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
+
+    }
+
+    if (iZDC)
+    {
+        //=================== ZDC parameters ============================
+        AliZDC *ZDC = new AliZDCv4("ZDC", "normal ZDC");
+    }
+
+    if (iTRD)
+    {
+        //=================== TRD parameters ============================
+        AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+    }
+
+    if (iFMD)
+    {
+        //=================== FMD parameters ============================
+	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+    }
+
+    if (iMUON)
+    {
+        //=================== MUON parameters ===========================
+        // New MUONv1 version (geometry defined via builders)
+        AliMUON *MUON = new AliMUONv1("MUON", "default");
+    }
+
+    if (iPHOS)
+    {
+        //=================== PHOS parameters ===========================
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+    }
+
+    if (iPMD)
+    {
+        //=================== PMD parameters ============================
+        AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
+    }
+
+    if (iT0)
+    {
+        //=================== T0 parameters ============================
+        AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
+    }
+
+    if (iEMCAL)
+    {
+        //=================== EMCAL parameters ============================
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
+    }
+
+    if (iACORDE)
+    {
+        //=================== ACORDE parameters ============================
+        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
+    }
+
+    if (iVZERO)
+    {
+        //=================== VZERO parameters ============================
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
+    }
+}
+
+
+void ProcessEnvironmentVars() {
+
+    // Run type
+    if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
+      for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
+	if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {
+	  srun = (PprRun_t)iRun;
+	  cout<<"Run type set to "<<pprRunName[iRun]<<endl;
+	}
+      }
+    }
+  // Field
+  if (gSystem->Getenv("CONFIG_FIELD")) {
+    for (Int_t iField = 0; iField < kFieldMax; iField++) {
+      if (strcmp(gSystem->Getenv("CONFIG_FIELD"), pprField[iField])==0) {
+        mag = (Mag_t)iField;
+        cout<<"Field set to "<<pprField[iField]<<endl;
+      }
+    }
+  }
+  // Energy
+  if (gSystem->Getenv("CONFIG_ENERGY")) {
+    energy = atoi(gSystem->Getenv("CONFIG_ENERGY"));
+    cout<<"Energy set to "<<energy<<" GeV"<<endl;
+  }
+  // Random Number seed
+  if (gSystem->Getenv("CONFIG_SEED")) {
+    seed = atoi(gSystem->Getenv("CONFIG_SEED"));
+  }
+  // Run number
+  if (gSystem->Getenv("DC_RUN")) {
+    runNumber = atoi(gSystem->Getenv("DC_RUN"));
+  }
+  // Event offset
+  if (gSystem->Getenv("DC_EVENT")) {
+    eventOffset = 400*(atoi(gSystem->Getenv("DC_EVENT")) - 1); // 400 events per job (->sim.C)
+    std::cout << "eventOffset= " << eventOffset << std::endl;
+  }
+}

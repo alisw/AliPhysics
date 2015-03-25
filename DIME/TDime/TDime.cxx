@@ -43,27 +43,27 @@ extern "C" void type_of_call dimegenerate(int& success);
 ClassImp(TDime)
 
 
-TDime::TDime(): 
+TDime::TDime():
     TGenerator("Dime","Dime"),
-  fEfrm(5500.),
-  fProcess("rho       "),
-  fEcut(0),
-  fRmin(-1.8),
-  fRmax(1.8)
+    fEfrm(7000.0),
+    fProcess("pipm      "), // 10 characters!
+    fEcut(0.0),
+    fRmin(-2.0),
+    fRmax(2.0)
 {
-// Default constructor 
+// Default constructor
 }
 
 //______________________________________________________________________________
 TDime::TDime(Double_t efrm) :
     TGenerator("Dime","Dime"),
     fEfrm(efrm),
-    fProcess("rho      "),
-    fEcut(0.),
-    fRmin(-1.8),
-    fRmax(1.8)
+    fProcess("pipm      "), // 10 characters!
+    fEcut(0.0),
+    fRmin(-2.0),
+    fRmax(2.0)
 {
-// TDime constructor: 
+// TDime constructor:
 // Note that there may be only one functional TDime object
 // at a time, so it's not use to create more than one instance of it.
 }
@@ -76,8 +76,8 @@ TDime::~TDime()
 
   void  TDime::Initialize()
 {
-    VARS.rts = fEfrm;  
-    CUTS.rmax = fRmax; 
+    VARS.rts = fEfrm;
+    CUTS.rmax = fRmax;
     CUTS.rmin = fRmin;
     CUTS.ecut = fEcut;
     Int_t len = 10;
@@ -98,7 +98,7 @@ void  TDime::GenerateEvent()
   while(!ok)
     dimegenerate(ok);
    //for (Int_t i = 0; i < HEPEUP.NUP; i++) {
-   //printf("%5d %5d %5d %5d %5d %13.3f %13.3f\n", i, 
+   //printf("%5d %5d %5d %5d %5d %13.3f %13.3f\n", i,
    //	 HEPEUP.IDUP[i], HEPEUP.ISTUP[i], HEPEUP.MOTHUP[i][0],
    //	 HEPEUP.ICOLUP[i][0], HEPEUP.PUP[i][2], HEPEUP.VTIMUP[i]);
    //}
@@ -126,37 +126,37 @@ TObjArray* TDime::ImportParticles(Option_t *option)
 
     if (!strcmp(option,"") || !strcmp(option,"Final")) {
 	for (Int_t i = 0; i < numpart; i++) {
-	  
+
 	    if (HEPEUP.ISTUP[i] == 1) {
 //
 //  Use the common block values for the TParticle constructor
 //
 		nump++;
 		TParticle* p = new TParticle(
-					     HEPEUP.IDUP[i], HEPEUP.MOTHUP[i][0], HEPEUP.MOTHUP[i][1] ,
-		    -1, -1, -1,
+					     HEPEUP.IDUP[i], HEPEUP.ISTUP[i], HEPEUP.MOTHUP[i][0], HEPEUP.MOTHUP[i][1] ,
+		    -1, -1,
 		    HEPEUP.PUP[i][0], HEPEUP.PUP[i][1], HEPEUP.PUP[i][2], HEPEUP.PUP[i][3] ,
-		    0., 0., 0., 0.0);
+		    0.0, 0.0, 0.0, 0.0);
 		fParticles->Add(p);
 	    }
 	}
     }
     else if (!strcmp(option,"All")) {
-	nump = numpart; 
+	nump = numpart;
 	for (Int_t i = 0; i < numpart; i++) {
            Int_t iParent = HEPEUP.MOTHUP[i][0]-1;
 	    if (iParent >= 0) {
-                TParticle *mother = (TParticle*) (fParticles->UncheckedAt(iParent));	   
+                TParticle *mother = (TParticle*) (fParticles->UncheckedAt(iParent));
 		mother->SetLastDaughter(i);
 		if (mother->GetFirstDaughter()==-1)
 		    mother->SetFirstDaughter(i);
 	    }
-	    
+
 	    TParticle* p = new TParticle(
-					 HEPEUP.IDUP[i], HEPEUP.MOTHUP[i][0]-1, HEPEUP.MOTHUP[i][1]-1 ,
-		    -1, -1, -1,
+					 HEPEUP.IDUP[i], HEPEUP.ISTUP[i], HEPEUP.MOTHUP[i][0]-1, HEPEUP.MOTHUP[i][1]-1 ,
+		    -1, -1,
 		    HEPEUP.PUP[i][0], HEPEUP.PUP[i][1], HEPEUP.PUP[i][2], HEPEUP.PUP[i][3] ,
-		    0., 0., 0., 0.);
+		    0.0, 0.0, 0.0, 0.0);
 	    fParticles->Add(p);
 	}
     }
@@ -183,7 +183,7 @@ Int_t TDime::ImportParticles(TClonesArray *particles, Option_t *option)
 
   Int_t numpart = HEPEUP.NUP;
   printf("\n TDime: DIME stack contains %d particles.", numpart);
- 
+
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
       for (Int_t i = 0; i < numpart; i++) {
 	if (HEPEUP.ISTUP[i] == 1) {
@@ -191,36 +191,34 @@ Int_t TDime::ImportParticles(TClonesArray *particles, Option_t *option)
 //  Use the common block values for the TParticle constructor
 //
 	    nump++;
-	    new(particlesR[i]) 
+	    new(particlesR[i])
 	      TParticle(
-			HEPEUP.IDUP[i], HEPEUP.MOTHUP[i][0], HEPEUP.MOTHUP[i][1] ,
-			-1, -1, -1,
+			HEPEUP.IDUP[i], HEPEUP.ISTUP[i], HEPEUP.MOTHUP[i][0], HEPEUP.MOTHUP[i][1] ,
+			-1, -1,
 			HEPEUP.PUP[i][0], HEPEUP.PUP[i][1], HEPEUP.PUP[i][2], HEPEUP.PUP[i][3] ,
-			0., 0., 0., 0.0);
+			0.0, 0.0, 0.0, 0.0);
 	  }
       }
   }
   else if (!strcmp(option,"All")) {
-      nump = numpart; 
+      nump = numpart;
       for (Int_t i = 0; i < numpart; i++) {
 
 	Int_t iParent = HEPEUP.MOTHUP[i][0]-1;
-	
+
 	if (iParent >= 0) {
-	  TParticle *mother = (TParticle*) (particlesR.UncheckedAt(iParent));	   
+	  TParticle *mother = (TParticle*) (particlesR.UncheckedAt(iParent));
 	  mother->SetLastDaughter(i);
 	  if (mother->GetFirstDaughter()==-1)
 	    mother->SetFirstDaughter(i);
 	}
 
 	  new(particlesR[i]) TParticle(
-				       HEPEUP.IDUP[i], HEPEUP.MOTHUP[i][0], HEPEUP.MOTHUP[i][1] ,
-				       -1, -1, -1,
+				       HEPEUP.IDUP[i], HEPEUP.ISTUP[i], HEPEUP.MOTHUP[i][0], HEPEUP.MOTHUP[i][1] ,
+				       -1, -1,
 				       HEPEUP.PUP[i][0], HEPEUP.PUP[i][1], HEPEUP.PUP[i][2], HEPEUP.PUP[i][3] ,
-				       0., 0., 0., 0.0
-				       );
+				       0.0, 0.0, 0.0, 0.0);
       }
   }
   return nump;
 }
-
