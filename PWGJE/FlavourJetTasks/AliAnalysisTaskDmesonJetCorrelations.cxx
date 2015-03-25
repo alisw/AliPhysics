@@ -54,7 +54,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fCandidateType(kDstartoKpipi),
   fMinMass(0.),
   fMaxMass(1.),
-  fNBinsMass(151),
+  fNBinsMass(195),
   fMaxR(0.2),
   fShowPositionD(kTRUE),
   fShowInvMass(kFALSE),
@@ -87,7 +87,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fCandidateType(cand),
   fMinMass(0.),
   fMaxMass(1.),
-  fNBinsMass(151),
+  fNBinsMass(195),
   fMaxR(0.2),
   fShowPositionD(kTRUE),
   fShowInvMass(kFALSE),
@@ -116,13 +116,13 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   DefineOutput(2, AliRDHFCuts::Class()); // my cuts
 
   if (fCandidateType == kDstartoKpipi) {
-    SetMassLimits(0.15, 413);   // Set mass limits of the D*
+    SetMassLimits(0.40, 413);   // Set mass limits of the D*
     SetShowInvMass(kFALSE);
     SetShowDeltaInvMass(kTRUE);
     SetShowSoftPionPt(kTRUE);
   }
   else if (fCandidateType == kD0toKpi) {
-    SetMassLimits(0.15, 421);   // Set mass limits of the D0
+    SetMassLimits(0.40, 421);   // Set mass limits of the D0
     SetShowInvMass(kTRUE);
     SetShowDeltaInvMass(kFALSE);
     SetShowSoftPionPt(kFALSE);
@@ -420,15 +420,15 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
   if (fShowPositionD) {
     title[dim] = "#eta_{D}";
-    nbins[dim] = 80;
+    nbins[dim] = 50;
     min[dim] = -1;
     max[dim] = 1;
     dim++;
 
     title[dim] = "#phi_{D} (rad)";
-    nbins[dim] = 126;
+    nbins[dim] = 150;
     min[dim] = 0;
-    max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
+    max[dim] = TMath::TwoPi();
     dim++;
   }
 
@@ -450,7 +450,7 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
   if (fShowDeltaInvMass) {
     title[dim] = "#it{M}_{D*} - #it{M}_{D_{0}} (GeV/#it{c}^{2})";
     nbins[dim] = fNBinsMass;
-    CalculateMassLimits(0.04, 413, fNBinsMass, min[dim], max[dim]);
+    CalculateMassLimits(0.08, 413, fNBinsMass, min[dim], max[dim]);
 
     // subtract mass of D0
     Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
@@ -508,15 +508,15 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
   if (fShowPositionJet) {
     title[dim] = "#eta_{jet}";
-    nbins[dim] = 80;
+    nbins[dim] = 50;
     min[dim] = -1;
     max[dim] = 1;
     dim++;
 
     title[dim] = "#phi_{jet} (rad)";
-    nbins[dim] = 126;
+    nbins[dim] = 150;
     min[dim] = 0;
-    max[dim] = 2*TMath::Pi()*nbins[dim]/(nbins[dim]-1);
+    max[dim] = TMath::TwoPi();
     dim++;
   }
 
@@ -616,8 +616,15 @@ void AliAnalysisTaskDmesonJetCorrelations::CalculateMassLimits(Double_t range, I
   
   Float_t mass = part->Mass();
 
-  minMass = mass - range;
-  maxMass = mass + range;
+  // To make sure that the PDG mass value is not at the edge of a bin
+  if (nbins % 2 == 0) {
+    minMass = mass - range / 2 - range / nbins / 2;
+    maxMass = mass + range / 2 - range / nbins / 2;
+  }
+  else {
+    minMass = mass - range / 2;
+    maxMass = mass + range / 2;
+  }
 }
 
 //_______________________________________________________________________________
