@@ -1058,7 +1058,68 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       "slopeCTPCncl="<< slopeCTPCncl<<
       "slopeATPCnclErr="<< slopeATPCnclErr<<
       "slopeCTPCnclErr="<< slopeCTPCnclErr;
-    
+    //
+    // Get ncl:sector map estimator without having ncl map
+    //
+    TH3F * hisNclpos = dynamic_cast<TH3F*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
+    TH3F * hisNclneg = dynamic_cast<TH3F*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
+    TH3F * hisNcl= 0;
+    //new TH3F(*hisNclpos);
+    //
+    static TGraphErrors * graphNclPhiProfile[5]={0};
+    static TGraphErrors * graphNclPhiProfileSector[6]={0};
+    Double_t vecNcl[144];
+    Double_t vecNclSector[18];
+    Double_t vecSector[18];
+
+    hisNcl=new TH3F(*hisNclpos);
+    hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
+    graphNclPhiProfile[0]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
+    hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
+    graphNclPhiProfile[2]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
+    hisNcl=new TH3F(*hisNclneg);
+    hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
+    graphNclPhiProfile[1]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
+    hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
+    graphNclPhiProfile[3]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
+    graphNclPhiProfile[4]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
+      //
+    Int_t nbins=graphNclPhiProfile[0]->GetN();
+    for (Int_t igr=0;igr<nbins; igr++){      
+      graphNclPhiProfile[0]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4)%nbins]/TMath::Pi();   // correct phi for the mean curvature
+      graphNclPhiProfile[1]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4)%nbins]/TMath::Pi();
+      graphNclPhiProfile[2]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4+nbins)%nbins]/TMath::Pi();
+      graphNclPhiProfile[3]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4+nbins)%nbins]/TMath::Pi();
+    }
+    for (Int_t igr=0;igr<4; igr++){
+      for (Int_t isec=0; isec<18; isec++){
+	Int_t bins=0;
+	for (Int_t ibin=0;ibin<nbins; ibin++){    
+	  if (TMath::Abs(graphNclPhiProfile[igr]->GetX()[ibin]-isec-0.5)>0.4) continue;
+	  vecNcl[bins]=graphNclPhiProfile[igr]->GetY()[ibin];
+	  bins++;
+	}
+	vecSector[isec]=isec;
+	vecNclSector[isec]=TMath::MinElement(bins, vecNcl);
+      }
+      graphNclPhiProfileSector[igr]=new TGraphErrors(18, vecSector, vecNclSector);      
+      graphNclPhiProfileSector[igr+2]=new TGraphErrors(18, vecSector, vecNclSector);      
+    }
+    for (Int_t igr=4;igr<6; igr++){
+      for (Int_t isec=0; isec<18; isec++){
+	graphNclPhiProfileSector[igr]->GetY()[isec]=TMath::Max(graphNclPhiProfileSector[(igr%2)*2]->GetY()[isec], graphNclPhiProfileSector[(igr%2)*2+1]->GetY()[isec]);
+      }
+    }    
+    for (Int_t igr=0;igr<4; igr++){
+      graphNclPhiProfile[igr]->SetMarkerStyle(21+igr);
+      graphNclPhiProfile[igr]->SetMarkerColor(1+igr);
+      graphNclPhiProfileSector[igr]->SetMarkerStyle(21+igr);
+      graphNclPhiProfileSector[igr]->SetMarkerColor(1+igr);
+    } 
+    (*pcstream)<<"tpcQA"<<
+      "grNclSectorC.="<<graphNclPhiProfile[4]<<
+      "grNclSectorA.="<<graphNclPhiProfile[5];
+    //
     return 0;
 }
 
@@ -2412,13 +2473,13 @@ deltaPtC_Err = fptRatioC.GetParError(1);
   TH3 * hisEtaInput[4]={dcar_pos3, dcar_neg3, dcaz_pos3, dcaz_neg3};
   
   for (Int_t igr=0;igr<4; igr++){
-    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D("xy")));
+    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D(TString::Format("xy_%d",igr).Data())));
     hisTemp2D->GetXaxis()->SetRangeUser(-1,1);
     if (graphEtaProfile[igr]) delete graphEtaProfile[igr];
     graphEtaProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
     delete hisTemp2D;
     //
-    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D("xz")));
+    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D(TString::Format("xz_%d",igr).Data())));
     if (graphPhiProfile[igr]) delete graphPhiProfile[igr];
     graphPhiProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
     delete hisTemp2D;    
