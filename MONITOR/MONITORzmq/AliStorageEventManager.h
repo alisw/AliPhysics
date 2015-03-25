@@ -43,6 +43,7 @@ private:
     void zmqInit(zmq_msg_t *msg,size_t size=0);
     void zmqSend(zmq_msg_t *msg,void *socket,int flags);
     void zmqRecv(zmq_msg_t *msg,void *socket,int flags);
+    void zmqPoll(void *socket,int timeout);
     bool fZmqError; // if something went wrong in the above methods, this will be set to true
     
     // hostnames and ports read from config file:

@@ -194,7 +194,10 @@ void AliEventsCollectorThread::CollectorHandle()
                                        event->GetMultiplicity()->GetNumberOfTracklets(),
                                        Form("%s/run%d/event%d.root",fManager->fStoragePath.c_str(),
                                             event->GetRunNumber(),
-                                            eventsInChunk));
+                                            eventsInChunk),
+                                       event->GetTriggerMask(),
+                                       event->GetTriggerMaskNext50()
+                                       );
 		TThread::UnLock();
                 currentEvent.runNumber = event->GetRunNumber();
                 currentEvent.eventNumber = event->GetEventNumberInFile();

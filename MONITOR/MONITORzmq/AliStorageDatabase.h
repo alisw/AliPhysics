@@ -19,7 +19,9 @@ public:
 			 int eventNumber,
 			 char *system,
 			 int multiplicity,
-			 char *filePath); //more parameters of the event can be added to this method
+			 char *filePath,
+             ULong64_t triggerMask,
+             ULong64_t triggerMaskNext50); //more parameters of the event can be added to this method
 
 	bool MarkEvent(struct eventStruct event);
 	bool UpdateEventPath(struct eventStruct event,const char *newPath);

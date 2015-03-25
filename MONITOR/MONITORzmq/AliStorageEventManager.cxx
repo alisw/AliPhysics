@@ -201,11 +201,11 @@ void AliStorageEventManager::Send(vector<serverListStruct> list,storageSockets s
 
 bool AliStorageEventManager::Send(struct serverRequestStruct *request,storageSockets socket,int timeout)
 {
+    //check timeout
     fZmqError=false; // clean old errors
-    //    if(timeout>=0){
-    //        pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}};
-    //        if(poll (&items[0], 1, timeout)==0){return 0;}
-    //    }
+    zmqPoll(fSockets[socket],timeout);
+    if(fZmqError){return 0;}
+    
     
     int sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
     
@@ -220,17 +220,18 @@ bool AliStorageEventManager::Send(struct serverRequestStruct *request,storageSoc
 }
 
 bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSockets socket,int timeout)
-{/*
-  if(timeout>=0){
-  pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}};
-  if(poll (&items[0], 1, timeout)==0){return 0;}
-  }*/
-    
+{
+    //check timeout
     fZmqError=false;
+    zmqPoll(fSockets[socket],timeout);
+    if(fZmqError){return 0;}
     
+    //put clientRequestStruct in buffer
     zmq_msg_t buffer;
     zmqInit(&buffer,sizeof(struct clientRequestStruct));
     memcpy(zmq_msg_data(&buffer),request,sizeof(struct clientRequestStruct));
+    
+    //send buffer
     zmqSend(&buffer,fSockets[socket],0);
     zmq_msg_close(&buffer);
     
@@ -332,8 +333,10 @@ void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
 
 vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSockets socket, int timeout)
 {
-    //    pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}} ;
-    //    if(timeout>=0){if(poll (&items[0], 1, timeout)==0){vector<serverListStruct> emptyVector;return emptyVector;}}
+    //check timeout
+    fZmqError=false;
+    zmqPoll(fSockets[socket],timeout);
+    if(fZmqError){vector<serverListStruct> emptyVector;return emptyVector;}
     
     //get size of the incomming message
     zmq_msg_t buffer;
@@ -357,22 +360,18 @@ vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSock
 
 AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
 {
-    //    pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}} ;
-    //    if(timeout>=0){
-    //        try{(poll (&items[0], 1, timeout)==0);}
-    //        catch(const zmq::error_t &e){
-    //            cout<<"EVENT MANAGER -- GetEvent():"<<e.what()<<endl;
-    //            return NULL;
-    //        }
-    //    }
+    //check timeout
     fZmqError=false;
+    zmqPoll(fSockets[socket],timeout);
+    if(fZmqError){return NULL;}
     
+    //reveive buffer
     zmq_msg_t buffer;
     zmqInit(&buffer);
     zmqRecv(&buffer,fSockets[socket],0);
-    
     if(fZmqError){return NULL;}
     
+    //read buffer to TMessage
     TBufferFile *mess = new TBufferFile(TBuffer::kRead,
                                         zmq_msg_size(&buffer)+sizeof(UInt_t),
                                         zmq_msg_data(&buffer));
@@ -381,8 +380,8 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
     mess->SetBufferOffset(sizeof(UInt_t) + sizeof(kMESS_OBJECT));
     mess->ResetMap();
     
+    //read ESDEvent from TMessage
     AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
-    
     if (data)
     {
         data->GetStdContent();
@@ -493,6 +492,23 @@ void AliStorageEventManager::zmqRecv(zmq_msg_t *msg,void *socket,int flags)
         }
     }
 }
+
+void AliStorageEventManager::zmqPoll(void *socket,int timeout)
+{
+    if(timeout>=0)
+    {
+        zmq_pollitem_t items[1] =  {{socket,0,ZMQ_POLLIN,0}};
+        if(zmq_poll(&items[0],1, timeout)!=0)
+        {
+            if(zmq_errno() != EAGAIN)
+            {
+                cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
+                fZmqError=true;
+            }
+        }
+    }
+}
+
 
 
 

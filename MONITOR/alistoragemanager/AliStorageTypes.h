@@ -73,6 +73,8 @@ struct listRequestStruct{
 	int marked[2];
 	int multiplicity[2];
 	char system[2][20];
+    ULong64_t triggerMask;
+    ULong64_t triggerMaskNext50;
 };
 
 struct serverRequestStruct
@@ -98,6 +100,8 @@ typedef struct serverListStruct{
 	char system[20];
 	int multiplicity;
 	int marked;
+    ULong64_t triggerMask;
+    ULong64_t triggerMaskNext50;
 }serverListStruct;
 
 #endif
