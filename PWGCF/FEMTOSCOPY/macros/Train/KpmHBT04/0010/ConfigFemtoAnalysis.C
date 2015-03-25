@@ -360,6 +360,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      //... double ratio ...>
 	      cfdourat[ktm] = new 
 		AliFemtoCorrFctnNonIdDR(Form("cfKstr%stpcM%ikT%i", chrgs[ichg], imult, ikt), 60, 0, 0.3);//AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, const float& QinvLo, const float& QinvHi)
+	      cfdourat[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cfdourat[ktm]);// add CF histos
 	      //... double ratio ...<
 
