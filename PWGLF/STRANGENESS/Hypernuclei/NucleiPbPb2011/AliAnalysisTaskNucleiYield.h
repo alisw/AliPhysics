@@ -82,9 +82,9 @@ private:
   Bool_t                fIsMC;                  ///< Switch between MC and data
   Bool_t                fFillOnlyEventHistos;   ///< Set treu to fill only event related histograms
   
-  AliPIDResponse       *fPID;                   //!< PID response class
+  AliPIDResponse       *fPID;                   //!<! PID response class
   Float_t               fMagField;              ///<  Magnetic field value for the current event
-  AliVVertex           *fPrimaryVertex;         //!< Primary vertex of the current event
+  AliVVertex           *fPrimaryVertex;         //!<! Primary vertex of the current event
   
   TList                 fMmc;                   ///<
   TList                 fAmc;                   ///<
@@ -125,30 +125,34 @@ private:
   TArrayF               fFlatteningProbs;       ///< Flattening probabilities
   
   // Event related histograms
-  TH1F                 *fCentrality;            //!< Events centrality distribution
-  TH1F                 *fFlattenedCentrality;   //!< Events centrality distribution after the flattening
-  TH1F                 *fCentralityClasses;     //!< Events statistics per centrality classes
+  TH1F                 *fCentrality;            //!<! Events centrality distribution
+  TH1F                 *fFlattenedCentrality;   //!<! Events centrality distribution after the flattening
+  TH1F                 *fCentralityClasses;     //!<! Events statistics per centrality classes
   
   // MC only histograms
-  TH1F                 *fProduction;            //!< *MC only* Total number of produced particles
-  TH2F                 *fAITS_TPC;              //!< *MC only* Tracks reconstructed in ITS-TPC acceptance
-  TH2F                 *fAITS_TPC_TOF;          //!< *MC only* Tracks reconstructed in ITS-TPC-TOF acceptance
-  TH2F                 *fATotal;                //!< *MC only*
-  TH2F                 *fAPtCorrection;         //!< *MC only* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for anti-matter
-  TH2F                 *fMITS_TPC;              //!< *MC only*
-  TH2F                 *fMITS_TPC_TOF;          //!< *MC only*
-  TH2F                 *fMTotal;                //!< *MC only*
-  TH2F                 *fMPtCorrection;         //!< *MC only* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for matter
-  TH3F                 *fMDCAPrimary;           //!< *MC only*
-  TH3F                 *fMDCASecondary;         //!< *MC only*
+  TH1F                 *fProduction;            //!<! *MC only* Total number of produced particles
+  TH2F                 *fAITS_TPC;              //!<! *MC only* Tracks reconstructed in ITS-TPC acceptance
+  TH2F                 *fAITS_TPC_TOF;          //!<! *MC only* Tracks reconstructed in ITS-TPC-TOF acceptance
+  TH2F                 *fATotal;                //!<! *MC only*
+  TH2F                 *fAPtCorrection;         //!<! *MC only* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for anti-matter
+  TH2F                 *fMITS_TPC;              //!<! *MC only*
+  TH2F                 *fMITS_TPC_TOF;          //!<! *MC only*
+  TH2F                 *fMTotal;                //!<! *MC only*
+  TH2F                 *fMPtCorrection;         //!<! *MC only* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for matter
+  TH3F                 *fMDCAPrimaryTPC;        //!<! *MC only*
+  TH3F                 *fMDCASecondaryTPC;      //!<! *MC only*
+  TH3F                 *fMDCAPrimaryTOF;        //!<! *MC only*
+  TH3F                 *fMDCASecondaryTOF;      //!<! *MC only*
   
   // Data histograms
-  TH3F                 *fATOFsignal;            //!<
-  TH3F                 *fATPCcounts;            //!<
-  TH3F                 *fMDCAxy;                //!<
-  TH3F                 *fMDCAz;                 //!<
-  TH3F                 *fMTOFsignal;            //!<
-  TH3F                 *fMTPCcounts;            //!<
+  TH3F                 *fATOFsignal;            //!<!
+  TH2F                 *fATPCcounts;            //!<!
+  TH3F                 *fMDCAxyTPC;             //!<!
+  TH3F                 *fMDCAzTPC;              //!<!
+  TH3F                 *fMDCAxyTOF;             //!<!
+  TH3F                 *fMDCAzTOF;              //!<!
+  TH3F                 *fMTOFsignal;            //!<!
+  TH2F                 *fMTPCcounts;            //!<!
   
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);

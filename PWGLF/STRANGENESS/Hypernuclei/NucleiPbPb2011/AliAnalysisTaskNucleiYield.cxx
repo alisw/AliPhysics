@@ -100,14 +100,19 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fMITS_TPC_TOF(0x0)
 ,fMTotal(0x0)
 ,fMPtCorrection(0x0)
-,fMDCAPrimary(0x0)
-,fMDCASecondary(0x0)
+,fMDCAPrimaryTPC(0x0)
+,fMDCASecondaryTPC(0x0)
+,fMDCAPrimaryTOF(0x0)
+,fMDCASecondaryTOF(0x0)
 ,fATOFsignal(0x0)
 ,fATPCcounts(0x0)
-,fMDCAxy(0x0)
-,fMDCAz(0x0)
+,fMDCAxyTPC(0x0)
+,fMDCAzTPC(0x0)
+,fMDCAxyTOF(0x0)
+,fMDCAzTOF(0x0)
 ,fMTOFsignal(0x0)
 ,fMTPCcounts(0x0) {
+  gRandom->SetSeed(0);
   Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
   Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
   fPtCorrectionA.Set(3, aCorrection);
@@ -159,9 +164,13 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                              nCentBins,centBins,nPtBins,pTbins);
     fAITS_TPC_TOF = new TH2F("fAITS_TPC_TOF",";Centrality (%);p_{T} (GeV/c); Counts",
                              nCentBins,centBins,nPtBins,pTbins);
-    fMDCAPrimary = new TH3F("fMDCAPrimary",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+    fMDCAPrimaryTPC = new TH3F("fMDCAPrimaryTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
                             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCASecondary = new TH3F("fMDCASecondary",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+    fMDCASecondaryTPC = new TH3F("fMDCASecondaryTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+                              nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+    fMDCAPrimaryTOF = new TH3F("fMDCAPrimaryTOF",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+                            nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+    fMDCASecondaryTOF = new TH3F("fMDCASecondaryTOF",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
                               nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
     fAPtCorrection = new TH2F("fAPtCorrection",
                               ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
@@ -178,8 +187,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fList->Add(fAITS_TPC);
     fList->Add(fMITS_TPC_TOF);
     fList->Add(fAITS_TPC_TOF);
-    fList->Add(fMDCAPrimary);
-    fList->Add(fMDCASecondary);
+    fList->Add(fMDCAPrimaryTPC);
+    fList->Add(fMDCASecondaryTPC);
+    fList->Add(fMDCAPrimaryTOF);
+    fList->Add(fMDCASecondaryTOF);
     fList->Add(fAPtCorrection);
     fList->Add(fMPtCorrection);
   
@@ -202,21 +213,27 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fATOFsignal = new TH3F("fATOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fATPCcounts = new TH3F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); ITS ##sigma",
-                           nCentBins,centBins,nPtBins,pTbins,nTpcBins,tpcBins);
-    fMDCAxy = new TH3F("fMDCAxy",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+    fATPCcounts = new TH2F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
+                           nCentBins,centBins,nPtBins,pTbins);
+    fMDCAxyTPC = new TH3F("fMDCAxyTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
                        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCAz = new TH3F("fMDCAz",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
+    fMDCAzTPC = new TH3F("fMDCAzTPC",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
+                      nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
+    fMDCAxyTOF = new TH3F("fMDCAxyTOF",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+                       nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+    fMDCAzTOF = new TH3F("fMDCAzTOF",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
                       nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
     fMTOFsignal = new TH3F("fMTOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fMTPCcounts = new TH3F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); ITS ##sigma",
-                           nCentBins,centBins,nPtBins,pTbins,nTpcBins,tpcBins);
+    fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
+                           nCentBins,centBins,nPtBins,pTbins);
     fList->Add(fATOFsignal);
     fList->Add(fATPCcounts);
-    fList->Add(fMDCAxy);
-    fList->Add(fMDCAz);
+    fList->Add(fMDCAxyTPC);
+    fList->Add(fMDCAzTPC);
+    fList->Add(fMDCAxyTOF);
+    fList->Add(fMDCAzTOF);
     fList->Add(fMTOFsignal);
     fList->Add(fMTPCcounts);
   }
@@ -230,6 +247,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
 /// \return void
 ///
 void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
+  /// What is inside this function:
   AliVEvent *ev = dynamic_cast<AliVEvent*> (InputEvent());
   
   // Check event selection mask
@@ -266,7 +284,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   fMagField = ev->GetMagneticField();
   
   fCentrality->Fill(centrality);
-  if (Flatten(centrality) && !fIsMC) {
+  if (Flatten(centrality)) {
     PostData(1, fList);
     return;
   }
@@ -288,7 +306,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       return;
     }
     
-    // Making the list of deuterons in acceptance
+    /// Making the list of deuterons in acceptance
     fMmc.SetOwner(kFALSE);
     fAmc.SetOwner(kFALSE);
     for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
@@ -296,7 +314,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int pdg = part->GetPdgCode();
       if (pdg == fPDG) fProduction->Fill(part->P());
       else if (pdg == -fPDG) fProduction->Fill(-part->P());
-      if (part->Eta() > fRequireEtaMax || part->Eta() < fRequireEtaMin) continue;
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (pdg == fPDG) {
         if (part->IsPhysicalPrimary()) fMTotal->Fill(centrality,part->Pt());
@@ -308,7 +325,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
   }
   
-  // Checking how many deuterons in acceptance are reconstructed well
+  /// Checking how many deuterons in acceptance are reconstructed well
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
     if (track->GetID() <= 0) continue;
@@ -320,19 +337,21 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (fIsMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
       if (!part) continue;
-      if (part->GetPdgCode() > 0) {
-        if (!fMmc.Contains(part)) continue;
-        if (part->IsPhysicalPrimary()) fMITS_TPC->Fill(centrality,pT);
-        else fMDCASecondary->Fill(centrality,pT,dca[0]);
+      if (part->GetPdgCode() == fPDG) {
+        if (part->IsPhysicalPrimary()) {
+          fMITS_TPC->Fill(centrality,pT);
+          fMDCAPrimaryTPC->Fill(centrality,part->Pt(),dca[0]);
+        } else fMDCASecondaryTPC->Fill(centrality,part->Pt(),dca[0]);
         fMPtCorrection->Fill(pT,part->Pt() - pT);
         if (beta > 0) {
           if (part->IsPhysicalPrimary()) {
-            fMDCAPrimary->Fill(centrality,pT,dca[0]);
+            fMDCAPrimaryTOF->Fill(centrality,part->Pt(),dca[0]);
             fMITS_TPC_TOF->Fill(centrality,part->Pt());
+          } else {
+            fMDCASecondaryTOF->Fill(centrality,part->Pt(),dca[0]);
           }
         }
-      } else {
-        if (!fAmc.Contains(part)) continue;
+      } else if (part->GetPdgCode() == -fPDG) {
         fAPtCorrection->Fill(pT,part->Pt() - pT);
         if (part->IsPhysicalPrimary()) {
           fAITS_TPC->Fill(centrality,part->Pt());
@@ -341,18 +360,19 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       }
     } else {
       if (!PassesPIDSelection(track)) continue;
-      AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
-      if (track->Charge() > 0)
-        fMTPCcounts->Fill(centrality, pT, itsPidResp.GetNumberOfSigmas(track, fParticle));
-      else
-        fATPCcounts->Fill(centrality, pT, itsPidResp.GetNumberOfSigmas(track, fParticle));
+      if (track->Charge() > 0) {
+        fMDCAxyTPC->Fill(centrality, pT, dca[0]);
+        fMDCAzTPC->Fill(centrality, pT, dca[1]);
+        fMTPCcounts->Fill(centrality, pT);
+      } else
+        fATPCcounts->Fill(centrality, pT);
       
       if (beta < 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m = track->GetTPCmomentum() * (TMath::Sqrt(1.f - beta * beta) / beta);
       if (track->Charge() > 0) {
-        fMDCAxy->Fill(centrality, pT, dca[0]);
-        fMDCAz->Fill(centrality, pT, dca[1]);
+        fMDCAxyTOF->Fill(centrality, pT, dca[0]);
+        fMDCAzTOF->Fill(centrality, pT, dca[1]);
         fMTOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
       } else {
         fATOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
@@ -546,7 +566,7 @@ void AliAnalysisTaskNucleiYield::SetParticleType(AliPID::EParticleType part) {
 
 /// This function provides the flattening of the centrality distribution.
 /// Please check hardcoded values! It is better to provide those number by yourself: the probability
-/// is computed as \f[\mathrm{Probability}=\mathrm{C_{i}}{C_{ref}} \f] where \f$C_{i}\f$ is the
+/// is computed as \f[\mathrm{Probability}=\frac{C_{i}}{C_{ref}} \f] where \f$C_{i}\f$ is the
 /// centrality in the bin _i_ and \f$C_{ref}\f$ is the centrality of the reference bin (i.e. the
 /// value around you want the centrality to fluctuate).
 ///
@@ -562,9 +582,13 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
     };
     fFlatteningProbs.Set(13, prob);
   }
-  
-  if (cent >= fFlatteningProbs.GetSize()) return kFALSE;
-  else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
+  if (!fIsMC) {
+    if (cent >= fFlatteningProbs.GetSize()) return kFALSE;
+    else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
+  } else {
+    // This flattening is required since a strange peak in VOM distribution is observed in MC
+    return (cent < 1) && gRandom->Rndm() > 0.35;
+  }
 }
 
 /// This function provides the correction for wrongly calculated \f$p_{\mathrm{T}}\f$.
