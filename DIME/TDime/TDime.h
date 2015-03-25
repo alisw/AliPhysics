@@ -17,7 +17,7 @@ class TObjArray;
 
 class TDime : public TGenerator {
 public:
-   
+
    TDime();
    TDime(Double_t efrm);
    virtual            ~TDime();
@@ -38,14 +38,7 @@ public:
    Float_t      fEcut;     // min meson pt
    Float_t      fRmin;     // min meson eta
    Float_t      fRmax;     // max meson eta
-   ClassDef(TDime,1)  //Interface to Dime Event Generator
+   ClassDef(TDime,1)       //Interface to Dime Event Generator
 };
 
 #endif
-
-
-
-
-
-
-

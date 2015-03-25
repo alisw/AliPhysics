@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIR})
 # Sources - alphabetical order
 set(SRCS
   TDime.cxx
+  AliGenDime.cxx
 )
 
 # Headers from sources
