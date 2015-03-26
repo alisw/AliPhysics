@@ -1360,3 +1360,9 @@ Bool_t FT2::MakeITSKalmanOut()
   fProbe.AliExternalTrackParam::operator=(prbSav);  // restore
   return kTRUE;
 }
+
+//_________________________________________________________
+Double_t FT2::GetITSRMin() const 
+{
+  return fITS->GetRMin();
+}
