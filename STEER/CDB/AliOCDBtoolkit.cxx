@@ -82,7 +82,6 @@
 
  */
 
-using namespace std;
 
 // STD
 #include <iostream>
@@ -108,6 +107,11 @@ using namespace std;
 #include "AliOCDBtoolkit.h"
 #include "AliCDBStorage.h"
 #include "TRegexp.h"
+
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::exception;
 
 void AliOCDBtoolkit::MakeDiffExampleUseCase(){
   //
