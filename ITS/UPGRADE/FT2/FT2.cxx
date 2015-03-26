@@ -71,6 +71,7 @@ fITSRec(0)
   ,fITSerrSclZ(1.0)
   ,fNITSLrHit(0)
   ,fdNdY(-1)
+  ,fTPCClsLossProb(0)
   ,fAllocCorrelatedITSFakes(kTRUE)
 {
   //
@@ -99,24 +100,14 @@ FT2::~FT2()
 }
 
 //________________________________________________
-void FT2::InitTPCSignalFiles(const char *TPCsignalElectrons,const char *TPCsignalMuons,const char *TPCsignalPions,const char *TPCsignalKaons,const char *TPCsignalProtons)
+void FT2::InitTPCParaFile(const char *TPCParaFile)
 {
-  AliInfo("Setting Files");
+	AliInfo("Setting Files");
 	
-  fTPCSignalElectron = TFile::Open(TPCsignalElectrons);
-  if(fTPCSignalElectron->IsZombie()) AliFatal("Problem with opening TPC signal file for electrons - File not available!");
+	fTPCParaFile = TFile::Open(TPCParaFile);
+	if(fTPCParaFile->IsZombie()) AliFatal("Problem with opening TPC Parameterization File - File not available!");
 	
-  fTPCSignalMuon = TFile::Open(TPCsignalMuons);
-  if(fTPCSignalMuon->IsZombie()) AliFatal("Problem with opening TPC signal file for muons - File not available!");
-	
-  fTPCSignalPion = TFile::Open(TPCsignalPions);
-  if(fTPCSignalPion->IsZombie()) AliFatal("Problem with opening TPC signal file for pions - File not available!");
-	
-  fTPCSignalKaon = TFile::Open(TPCsignalKaons);
-  if(fTPCSignalKaon->IsZombie()) AliFatal("Problem with opening TPC signal file for kaons - File not available!");
-	
-  fTPCSignalProton = TFile::Open(TPCsignalProtons);
-  if(fTPCSignalProton->IsZombie()) AliFatal("Problem with opening TPC signal file for protons - File not available!");
+	fTPCClsLossProb = (TF1*)fTPCParaFile->Get("TPCClsLossProbability");
 }
 //________________________________________________
 void FT2::InitDetector(Bool_t addTPC, Float_t sigYTPC,Float_t sigZTPC,Float_t effTPC,Float_t scEdge)
@@ -550,43 +541,43 @@ Bool_t FT2::ReconstructProbe()
 	TH1* hdedx;
 	AliPID::EParticleType typePID=AliPID::EParticleType(2);
 
-	if(fProbe.fAbsPdgCode==11)
-	  {
-	    int pbin = ((TH1*)fTPCSignalElectron->Get("hMomentumAxis"))->FindBin(p);
-	    hdedx = (TH1*)fTPCSignalElectron->Get(Form("electronDEDX%i",pbin));
+		  if(fProbe.fAbsPdgCode==11)
+		  {
+	    int pbin = ((TH1*)fTPCParaFile->Get("hMomentumAxis"))->FindBin(p);
+	    hdedx = (TH1*)fTPCParaFile->Get(Form("electronDEDX%i",pbin));
 	    typePID=AliPID::EParticleType(0);
-	  }
-	else if(fProbe.fAbsPdgCode==13)
-	  {
-	    int pbin = ((TH1*)fTPCSignalMuon->Get("hMomentumAxis"))->FindBin(p);
-	    hdedx = (TH1*)fTPCSignalMuon->Get(Form("muonDEDX%i",pbin));
+		  }
+		  else if(fProbe.fAbsPdgCode==13)
+		  {
+	    int pbin = ((TH1*)fTPCParaFile->Get("hMomentumAxis"))->FindBin(p);
+	    hdedx = (TH1*)fTPCParaFile->Get(Form("muonDEDX%i",pbin));
 	    typePID=AliPID::EParticleType(1);
-	  }
-	else if(fProbe.fAbsPdgCode==211)
-	  {
-	    int pbin = ((TH1*)fTPCSignalPion->Get("hMomentumAxis"))->FindBin(p);
-	    hdedx = (TH1*)fTPCSignalPion->Get(Form("pionDEDX%i",pbin));
+		  }
+		  else if(fProbe.fAbsPdgCode==211)
+		  {
+	    int pbin = ((TH1*)fTPCParaFile->Get("hMomentumAxis"))->FindBin(p);
+	    hdedx = (TH1*)fTPCParaFile->Get(Form("pionDEDX%i",pbin));
 	    typePID=AliPID::EParticleType(2);
-	  }
-	else if(fProbe.fAbsPdgCode==321)
-	  {
-	    int pbin = ((TH1*)fTPCSignalKaon->Get("hMomentumAxis"))->FindBin(p);
-	    hdedx = (TH1*)fTPCSignalKaon->Get(Form("kaonDEDX%i",pbin));
+		  }
+		  else if(fProbe.fAbsPdgCode==321)
+		  {
+	    int pbin = ((TH1*)fTPCParaFile->Get("hMomentumAxis"))->FindBin(p);
+	    hdedx = (TH1*)fTPCParaFile->Get(Form("kaonDEDX%i",pbin));
 	    typePID=AliPID::EParticleType(3);
-	  }
-	else if(fProbe.fAbsPdgCode==2212)
-	  {
-	    int pbin = ((TH1*)fTPCSignalProton->Get("hMomentumAxis"))->FindBin(p);
-	    hdedx = (TH1*)fTPCSignalProton->Get(Form("protonDEDX%i",pbin));
+		  }
+		  else if(fProbe.fAbsPdgCode==2212)
+		  {
+	    int pbin = ((TH1*)fTPCParaFile->Get("hMomentumAxis"))->FindBin(p);
+	    hdedx = (TH1*)fTPCParaFile->Get(Form("protonDEDX%i",pbin));
 	    typePID=AliPID::EParticleType(4);
-	  }
-	else {hdedx=0;AliFatal("PDC Code %4.f cannot be treated in the code - This case should not be possible here!");}
+		  }
+		  else {hdedx=0;AliFatal("PDC Code %4.f cannot be treated in the code - This case should not be possible here!");}
 #if DEBUG>5
-	AliInfo(Form("PDG code of Probe: %4.f",fProbe.fAbsPdgCode));
-	AliInfo(Form("Momentum of Probe: %f",fProbe.fTPCmomentum));
+		  AliInfo(Form("PDG code of Probe: %4.f",fProbe.fAbsPdgCode));
+		  AliInfo(Form("Momentum of Probe: %f",fProbe.fTPCmomentum));
 #endif
-	if(hdedx->Integral()>0){ signalTPC = ((TH1*)hdedx)->GetRandom();} //30
-	else{
+		  if(hdedx->Integral()>0){ signalTPC = ((TH1*)hdedx)->GetRandom();} //30
+		  else{
 					
 	  Double_t mean = fPIDResponse->GetTPCResponse().GetExpectedSignal(&fProbe,typePID,AliTPCPIDResponse::kdEdxDefault,kFALSE,kFALSE);
 	  fProbe.fTPCSignalN = (UShort_t)mean;
@@ -649,6 +640,16 @@ Bool_t FT2::ReconstructProbe()
       if (tpcLr.x2x0>0 && !fProbe.CorrectForMeanMaterial(tpcLr.x2x0,0,fProbe.fProbeMass) ) return kFALSE;
       //
       if (tpcLr.isDead) continue;
+	  // TPC cluter pickup probability
+	  Double_t TPCdEdxFT2 = AliTPCParam::BetheBlochAleph(fProbe.P()/TDatabasePDG::Instance()->GetParticle(fProbe.fAbsPdgCode)->Mass());
+	  Double_t snp = fProbe.GetSnp();
+	  Double_t tgl = fProbe.GetTgl();
+	  Double_t xTPCdEDxFT2 = TPCdEdxFT2*TMath::Sqrt(1+snp*snp+tgl*tgl);
+#if DEBUG>5
+		AliInfo(Form("TPC Cluster Loss Probability: Pdg %f - dEdx %f - Prob. %f",fProbe.fAbsPdgCode,TPCdEdxFT2,fTPCClsLossProb->Eval(xTPCdEDxFT2)));
+#endif
+	  if(gRandom->Rndm()<fTPCClsLossProb->Eval(xTPCdEDxFT2)){continue;}
+
       double chi = UpdateKalman(&fProbe,tpcLr.hitY,tpcLr.hitZ,tpcLr.rphiRes,tpcLr.zRes,kTRUE);
       if (chi<0) return kFALSE;
       fChi2TPC += chi;
