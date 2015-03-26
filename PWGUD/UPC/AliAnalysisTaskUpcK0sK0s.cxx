@@ -565,8 +565,8 @@ void AliAnalysisTaskUpcK0sK0s::RunESDtree()
         		Double_t r2=x*x + y*y;
 
 			Float_t cpa=vertex.GetV0CosineOfPointingAngle(fVtxPos[0],fVtxPos[1],fVtxPos[2]);
-			std::cout<<"DCA between = "<<dca<<" Radius = "<<(xn+xp)<<std::endl;
-			std::cout<<"CPA = "<<cpa<<" Radius 2D = "<<r2<<std::endl;
+			//std::cout<<"DCA between = "<<dca<<" Radius = "<<(xn+xp)<<std::endl;
+			//std::cout<<"CPA = "<<cpa<<" Radius 2D = "<<r2<<std::endl;
 			
 			if (cpa < fCPAmin) continue;
 			if (dca > fDCAmax) continue;	
@@ -604,7 +604,7 @@ void AliAnalysisTaskUpcK0sK0s::RunESDtree()
 		AliExternalTrackParam cParam;
       		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
 
-		new((*fK0sESDTracks)[i]) AliESDtrack(*trk);	
+		new((*fK0sESDTracks)[i+2]) AliESDtrack(*trk);	
   		}
   fK0sTree->Fill();
   }
