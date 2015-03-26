@@ -37,6 +37,11 @@ public:
   void SetITSchi2perNDF(Double_t chi2) {fITSchi2perNDF=chi2;}
   void SetITSClusterMap(UChar_t cmap) {fITSClusterMap=cmap;}
 
+  void SetTOFsignal(Double_t signal) {fTOFsignal=signal;}
+
+  void SetNSigmasTPC(Int_t i, Float_t sig) {fNSigmasTPC[i]=sig;}
+  void SetNSigmasTOF(Int_t i, Float_t sig) {fNSigmasTOF[i]=sig;}
+
   void SetImpactParameters(Float_t *p, Float_t *cov);
   void SetImpactParametersSPD(Float_t *p, Float_t *cov);
   void SetImpactParametersIP(Float_t *p, Float_t *cov);
@@ -60,6 +65,11 @@ public:
   Double_t GetITSchi2perNDF(void) const { return fITSchi2perNDF; }
   UChar_t GetITSClusterMap(void) const { return fITSClusterMap; }
   Int_t GetITSNcls(void) const;
+
+  Double_t GetTOFsignal(void) const { return fTOFsignal; }
+
+  Float_t GetNSigmasTPC(Int_t i) const { return fNSigmasTPC[i]; }
+  Float_t GetNSigmasTOF(Int_t i) const { return fNSigmasTOF[i]; }
 
   void GetImpactParameters(Double_t &xy, Double_t &z) const {xy = (Double_t) fDZ[0]; z = (Double_t) fDZ[1];}
   void GetImpactParameters(Double_t *p, Double_t *cov) const;
@@ -87,12 +97,15 @@ protected:
   UShort_t fTPCnclsS; // number of shared clusters in the TPC
   Double_t fITSchi2perNDF; // chi2 in ITS per cluster
   UChar_t fITSClusterMap; // map of clusters, one bit per a layer
+  Double_t fTOFsignal; // TOF PID signal
   Float_t fDZ[2]; // impact parameters in XY and Z to default primary vertex
   Float_t fCov[3]; // Covariance matrix of the impact parameters
   Float_t fdzSPD[2]; // SPD impact parameters in XY and Z
   Float_t fCovSPD[3]; // Covariance matrix of the impact parameters to the SPD vertex
   Float_t fdzIP[2]; // impact parameters in XY and Z to nominal interaction point
   Float_t fCovIP[3]; // Covariance matrix of the impact parameters to nominal interaction point
+  Float_t fNSigmasTPC[5]; // TPC PID per species, kElectron = 0,  kMuon = 1,  kPion = 2,  kKaon = 3,  kProton = 4
+  Float_t fNSigmasTOF[5]; // TOF PID
 
   ClassDef(AliUPCTrack,1)
 };
