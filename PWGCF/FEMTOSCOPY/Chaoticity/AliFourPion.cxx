@@ -90,7 +90,7 @@ AliAnalysisTaskSE(),
   fMinPt(0.16),
   fMaxPt(1.0),
   fQcut(0),
-  fQLowerCut(0),
+  fQLowerCut(0.005),
   fNormQcutLow(0.15),
   fNormQcutHigh(0.2),
   fKupperBound(0),
@@ -299,7 +299,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fMinPt(0.16),
   fMaxPt(1.0),
   fQcut(0),
-  fQLowerCut(0),
+  fQLowerCut(0.005),
   fNormQcutLow(0.15),
   fNormQcutHigh(0.2),
   fKupperBound(0),
@@ -934,7 +934,7 @@ void AliFourPion::ParInit()
     fQupperBoundQinv3D = 0.6;
   }
   
-  fQLowerCut = 0.005;// 0.005
+  //fQLowerCut = 0.005;
   fKupperBound = 1.0;
   //
   fKstepY[0] = 1.6;
