@@ -240,7 +240,8 @@ void FitPi0(TH1* h, Double_t &nraw, Double_t &enraw,
     nraw = enraw = 0;
     mass = emass = 0;
     sigma = esigma = 0;
-    
+
+    if(!h) return;
     if (h->GetEntries() == 0) return;
     
     if (rebin > 1) h->Rebin(rebin);
