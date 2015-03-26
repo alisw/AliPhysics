@@ -169,6 +169,7 @@ fTriggersFromDetector(0),
 fAssociatedFromDetector(0),
 fMCUseUncheckedCentrality(kFALSE),
 fCheckCertainSpecies(-1),
+fRemoveWeakDecaysInMC(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -467,6 +468,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fAssociatedFromDetector", &fAssociatedFromDetector,"AssociatedFromDetector/I");
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
+  settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -1451,6 +1453,66 @@ void AliAnalysisTaskPhiCorrelations::CleanUp(TObjArray* tracks, TObject* mcObj, 
     fAnalyseUE->RemoveWeakDecays(tracks, mcObj);
   if (fRemoveDuplicates)
     RemoveDuplicates(tracks);
+  if (fRemoveWeakDecaysInMC)
+    RemoveWeakDecaysInMC(tracks, mcObj);
+}
+
+void AliAnalysisTaskPhiCorrelations::RemoveWeakDecaysInMC(TObjArray* tracks, TObject* mcObj)
+{
+  // Exclude weak decay products (if not done by IsPhysicalPrimary)
+  // In order to prevent analyzing daughters from weak decays 
+  // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
+  
+  const Int_t kNWeakParticles = 7;
+  const Int_t kWeakParticles[kNWeakParticles] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+						  3122, 3112, // Lambda0 Sigma+-
+						  130, 310 // K_L0 K_S0
+  };
+
+  AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(mcObj);
+  if (!mcEvent)
+    return;
+  
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i) {
+    AliMCParticle* mcParticle = dynamic_cast<AliMCParticle*> (tracks->UncheckedAt(i));
+    if (!mcParticle)
+      continue;
+    
+    TParticle *particle = mcParticle->Particle();
+    if (!particle) 
+      continue;
+  
+    Bool_t kExcludeParticle = kFALSE;
+    Int_t motherIndex = particle->GetFirstMother();
+    if (motherIndex == -1)
+      continue;
+    
+    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherIndex));
+    if (!motherTrack) 
+      continue;
+
+    TParticle *motherParticle = motherTrack->Particle();
+    if (!motherParticle)
+      continue;
+    
+    Int_t pdgcode = TMath::Abs(motherParticle->GetPdgCode());
+    
+    for (Int_t j=0; j != kNWeakParticles; ++j) {
+      if (kWeakParticles[j] == pdgcode) {
+	AliInfo(Form("Removing particle %d (pdg code %d; mother %d)", i, particle->GetPdgCode(), motherParticle->GetPdgCode()));
+	TObject* object = tracks->RemoveAt(i);
+	if (tracks->IsOwner())
+	  delete object;
+	break;
+      }
+    }
+  }
+  
+  tracks->Compress();  
+  if (before > tracks->GetEntriesFast())
+    AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
 
 //____________________________________________________________________
