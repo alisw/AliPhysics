@@ -55,7 +55,7 @@ class AliITSUSeed: public AliExternalTrackParam
   Float_t         GetChi2ITSSA()                   const {return fChi2ITSSA;}
   Float_t         GetQualityVar()                  const;
   Bool_t          IsKilled()                       const {return TestBit(kKilled);}
-  Bool_t          IsFake()                         const {return fClID>=0&&TestBit(kFake);}
+  Bool_t          IsFake()                         const {return fClID>0&&TestBit(kFake);}
   Bool_t          IsSaved()                        const {return TestBit(kSave);}
   Bool_t          IsMarked()                       const {return TestBit(kMark);}
   Bool_t          ContainsFake()                   const;
