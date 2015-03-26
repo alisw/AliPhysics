@@ -18,7 +18,7 @@ class TParticle;
 class AliVertex;
 
 const float kRidiculous = 999999;
-const float kMaxZTPC = 250;
+const float kMaxZTPC = 220; // 250
 const double kTrackToler = 1.e-6; // tracking tolerance
 
 class FTProbe : public AliExternalTrackParam
@@ -69,16 +69,16 @@ class FT2 : public TObject
   virtual ~FT2();
 	
   void InitEnvLocal();
-  void InitTPCSignalFiles(const char *TPCsignalElectrons,const char *TPCsignalMuons,const char *TPCsignalPions,const char *TPCsignalKaons,const char *TPCsignalProtons);
+  void InitTPCParaFile(const char *TPCparaFile);
   void InitTPCPIDResponse();
   void InitDetector(Bool_t addTPC=kTRUE, Float_t sigYTPC=0.1, Float_t sigZTPC=0.1,
-		    Float_t effTPC=0.99, Float_t scEdge=2.6);
+		    Float_t effTPC=1.00, Float_t scEdge=2.6); // effTPC = 0.99
   //
   void PrintLayout();
   //
   Bool_t ProcessTrack(TParticle* trc, AliVertex* vtx);
   void   SetSimMat(Bool_t v=kTRUE) {fSimMat = v;}
-  void   SetMinTPCHits(int v=60)  {fMinTPCHits=v;}
+  void   SetMinTPCHits(int v=70)  {fMinTPCHits=v;} // 60
   void   SetMinITSLrHit(int v=4)  {fMinITSLrHit=v;}
   void   SetUsePIDForTracking(Bool_t usePID) {fUsePIDForTracking=usePID;}
   //
@@ -120,7 +120,7 @@ class FT2 : public TObject
   Double_t GetITSRMin() const;
   //
  protected:
-  void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=0.99, Float_t scEdge=2.6);
+  void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=1.00, Float_t scEdge=2.6); // eff=0.99
   void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
   Bool_t InitProbe(TParticle* trc);
   Bool_t MakeITSKalmanOut();
@@ -146,6 +146,7 @@ class FT2 : public TObject
   Bool_t fUsePIDForTracking;
   Bool_t fIsTPC;                 // TPC added
   AliPIDResponse* fPIDResponse;
+  TFile *fTPCParaFile;
   TFile *fTPCSignalElectron;
   TFile *fTPCSignalMuon;
   TFile *fTPCSignalPion;
@@ -189,6 +190,7 @@ class FT2 : public TObject
   Double_t fITSHitYZ[kMaxITSLr][kMaxHitPerLr][2]; //! tracking Y,Z of each hit
   //
   Double_t fdNdY;             // if positive, use it for fakes simulation
+  TF1 *fTPCClsLossProb;
   Bool_t   fAllocCorrelatedITSFakes; // simulate noise hits accompanying the probe
   Double_t fNCorrelITSFakes[kMaxITSLr]; // av.number of accompanying hits
   Double_t fCorrelITSFakesSigY[kMaxITSLr]; // their width in Y
