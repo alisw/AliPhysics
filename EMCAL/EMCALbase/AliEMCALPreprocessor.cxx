@@ -50,7 +50,7 @@ const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kStandAloneRunType = "STANDALONE_BC"; // standalone run identifier
-const TString kAmandaTemp = "PT_%02d.Temperature"; // Amanda string for temperature entries
+const TString kAmandaTemp = "EMC_PT_%02d.Temperature"; // Amanda string for temperature entries
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required 
 const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits during commissioning 
 
