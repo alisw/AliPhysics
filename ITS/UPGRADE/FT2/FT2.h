@@ -117,6 +117,8 @@ class FT2 : public TObject
   Int_t  GetITSPattern() const {return fITSPattern;}
   Int_t  GetITSPatternFakes() const {return fITSPatternFake;}
   //
+  Double_t GetITSRMin() {return fITS->GetRMin();}
+  //
  protected:
   void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=0.99, Float_t scEdge=2.6);
   void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
