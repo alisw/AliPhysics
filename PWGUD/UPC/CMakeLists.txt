@@ -27,15 +27,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskUpcFilterSemiforward.cxx
     AliAnalysisTaskUpcK0sK0s.cxx
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUpcPsi2s.cxx
     AliAnalysisTaskUpcTree.cxx
-    AliUPCEvent.cxx
-    AliUPCMuonTrack.cxx
     AliUpcParticle.cxx
-    AliUPCTrack.cxx
    )
 
 # Headers from sources
