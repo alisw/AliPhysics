@@ -163,7 +163,7 @@ private:
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
-  /// \endcond CLASSDEF
+  /// \endcond
 };
 
 #endif /* defined(__AliAnalysisTaskNucleiYield__) */

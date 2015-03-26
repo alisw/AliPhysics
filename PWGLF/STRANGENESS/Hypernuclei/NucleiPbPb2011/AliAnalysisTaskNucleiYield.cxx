@@ -39,7 +39,7 @@ using TMath::TwoPi;
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskNucleiYield);
-/// \endcond CLASSIMP
+/// \endcond
 
 /// Standard and default constructor of the class.
 ///
