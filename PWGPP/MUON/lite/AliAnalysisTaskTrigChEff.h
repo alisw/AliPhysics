@@ -17,6 +17,7 @@ class AliVParticle;
 class TList;
 class TObjArray;
 class TString;
+class TH1;
 
 class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
  public:
@@ -77,8 +78,9 @@ class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
   };
 
   TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod);
-  Bool_t FillEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection, TList* outList = 0x0);
+  Bool_t FillEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection, TList* outList );
   void InitLocalKeys();
+  TH1* GetCountHisto ( Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod );
  
   TObjArray* fTrackSelKeys;   ///< Selection names
   TObjArray* fCountTypeKeys;  ///< Count type keys
