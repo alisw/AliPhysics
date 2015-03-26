@@ -126,7 +126,6 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   /// in a backward compatible way
   
   if ( ! fMergeableCollection ) return kFALSE;
-  if ( ! outList ) outList = fList;
   TString histoName = "";
   TString histoPattern = "";
   TH1* histo = 0x0;
@@ -138,10 +137,13 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
     if ( histo ) {
       histo->SetName(histoName.Data());
       histo->SetTitle(histoName.Data());
-      histo->SetDirectory(0);
-      outList->Add(histo);
     }
-    else isOk = kFALSE;
+    else {
+      histo = GetCountHisto(kHchamberEff, icount, -1, -1, -1, -1);
+      isOk = kFALSE;
+    }
+    histo->SetDirectory(0);
+    outList->Add(histo);
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
@@ -151,10 +153,13 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
       if ( histo ) {
         histo->SetName(histoName.Data());
         histo->SetTitle(histoName.Data());
-        histo->SetDirectory(0);
-        outList->Add(histo);
       }
-      else isOk = kFALSE;
+      else {
+        histo = GetCountHisto(kHslatEff, icount, ich, -1, -1, -1);
+        isOk = kFALSE;
+      }
+      histo->SetDirectory(0);
+      outList->Add(histo);
     }
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
@@ -165,10 +170,13 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
       if ( histo ) {
         histo->SetName(histoName.Data());
         histo->SetTitle(histoName.Data());
-        histo->SetDirectory(0);
-        outList->Add(histo);
       }
-      else isOk = kFALSE;
+      else {
+        histo = GetCountHisto(kHboardEff, icount, ich, -1, -1, -1);
+        isOk = kFALSE;
+      }
+      histo->SetDirectory(0);
+      outList->Add(histo);
     }
   }
   
@@ -178,10 +186,12 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   if ( histo ) {
     histo->SetName(histoName.Data());
     histo->SetTitle(histoName.Data());
-    histo->SetDirectory(0);
-    outList->Add(histo);
   }
-  else isOk = kFALSE;
+  else {
+    histo = GetCountHisto(kHcheckBoard, -1, -1, -1, -1, -1);
+  }
+  histo->SetDirectory(0);
+  outList->Add(histo);
   
   return isOk;
 }
@@ -264,80 +274,80 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
   //
   /// Create prototype objects for mergeable collection
   //
-  
-  const Char_t* yAxisTitle = "counts";
-  
-  Int_t nChamberBins = 4;
-  Float_t chamberLow = 11.-0.5, chamberHigh = (Float_t)(nChamberBins)+11.-0.5;
-  const Char_t* chamberName = "chamber";
-  
-  Int_t nSlatBins = 18;
-  Float_t slatLow = 0.-0.5, slatHigh = (Float_t)nSlatBins-0.5;
-  const Char_t* slatName = "slat";
-  
-  Int_t nBoardBins = 234;
-  Float_t boardLow = 1.-0.5, boardHigh = (Float_t)nBoardBins+1.-0.5;
-  const Char_t* boardName = "board";
-  
-  TString baseName, histoName, histoTitle;
-  
-  TH1* histo;
-  TH2F* histo2D;
-  
+
+  TString histoName = "";
+  TH2F* histo2D = 0x0;
+
   for ( Int_t itrackSel = 0; itrackSel<kNtrackSel; ++itrackSel ) {
     for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
       for ( Int_t imatch = 0; imatch<kNtrigMatch; ++imatch ) {
         for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-          histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imatch, imethod);
-          histo = new TH1F(histoName, histoName,
-                           nChamberBins, chamberLow, chamberHigh);
-          histo->GetXaxis()->SetTitle(chamberName);
-          histo->GetYaxis()->SetTitle(yAxisTitle);
-          AddObjectToCollection(histo);
-        } // loop on counts
-      
-        for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+          AddObjectToCollection(GetCountHisto(kHchamberEff, icount, -1, itrackSel, imatch, imethod));
           for ( Int_t ich=0; ich<4; ++ich ) {
-            histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imatch, imethod);
-            histo = new TH1F(histoName, histoName,
-                             nSlatBins, slatLow, slatHigh);
-            histo->GetXaxis()->SetTitle(slatName);
-            histo->GetYaxis()->SetTitle(yAxisTitle);
-            AddObjectToCollection(histo);
-          } // loop on chamber
+            AddObjectToCollection(GetCountHisto(kHslatEff, icount, ich, itrackSel, imatch, imethod));
+            AddObjectToCollection(GetCountHisto(kHboardEff, icount, ich, itrackSel, imatch, imethod));
+          }
         } // loop on counts
-      
-        for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-          for ( Int_t ich=0; ich<4; ++ich ) {
-            histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imatch, imethod);
-            histo = new TH1F(histoName, histoName,
-                             nBoardBins, boardLow, boardHigh);
-            histo->GetXaxis()->SetTitle(boardName);
-            histo->GetYaxis()->SetTitle(yAxisTitle);
-            AddObjectToCollection(histo);
-          } // loop on chamber
-        } // loop on counts
-      
-        histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imatch, imethod);
-        histo2D = new TH2F(histoName.Data(), "Rejected tracks motivation",
-                           5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
-        histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
-        histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
-        histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
-        histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
-        histo2D->GetXaxis()->SetBinLabel(5,"Masked board");
-        histo2D->GetYaxis()->SetTitle(boardName);
-        AddObjectToCollection(histo2D);
+
+        AddObjectToCollection(GetCountHisto(kHcheckBoard, -1, -1, itrackSel, imatch, imethod));
       } // loop on trig match
     } // loop on eff method
   } // loop on track selection
 
   fMuonTrackCuts->Print();
-  
+
   fList = new TList();
   fList->SetOwner();
   PostData(2, fList);
+}
 
+//___________________________________________________________________________
+TH1* AliAnalysisTaskTrigChEff::GetCountHisto ( Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod )
+{
+  //
+  /// Get histogram with counts for efficiency calculation
+  //
+
+  Int_t nBoardBins = 234;
+  Float_t boardLow = 1.-0.5, boardHigh = (Float_t)nBoardBins+1.-0.5;
+  const Char_t* boardName = "board";
+
+  TString histoName = "";
+  TH1* histo = 0x0;
+  switch ( itype ) {
+    case kHchamberEff:
+      histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imatch, imethod);
+      histo = new TH1F(histoName, histoName, 4, 11.-0.5, 4.+11.-0.5);
+      histo->GetXaxis()->SetTitle("chamber");
+      histo->GetYaxis()->SetTitle("counts");
+      break;
+    case kHslatEff:
+      histoName = GetHistoName(kHslatEff, icount, ichamber, itrackSel, imatch, imethod);
+      histo = new TH1F(histoName, histoName, 18, 0.-0.5, 18.-0.5);
+      histo->GetXaxis()->SetTitle("slat");
+      histo->GetYaxis()->SetTitle("counts");
+      break;
+    case kHboardEff:
+      histoName = GetHistoName(kHboardEff, icount, ichamber, itrackSel, imatch, imethod);
+      histo = new TH1F(histoName, histoName, nBoardBins, boardLow, boardHigh);
+      histo->GetXaxis()->SetTitle(boardName);
+      histo->GetYaxis()->SetTitle("counts");
+      break;
+    case kHcheckBoard:
+      histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imatch, imethod);
+      histo = new TH2F(histoName.Data(), "Rejected tracks motivation", 5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
+      histo->GetXaxis()->SetBinLabel(1,"Many pads");
+      histo->GetXaxis()->SetBinLabel(2,"Few pads");
+      histo->GetXaxis()->SetBinLabel(3,"Outside geom");
+      histo->GetXaxis()->SetBinLabel(4,"Tracker track");
+      histo->GetXaxis()->SetBinLabel(5,"Masked board");
+      histo->GetYaxis()->SetTitle(boardName);
+      break;
+    default:
+      return 0x0;
+  }
+
+  return histo;
 }
 
 //___________________________________________________________________________
