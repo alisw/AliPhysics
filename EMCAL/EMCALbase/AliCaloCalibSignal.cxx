@@ -527,7 +527,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliRawReader *rawReader)
   // if fMapping is NULL the rawstream will crate its own mapping
   AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);  
   if (fDetType == kEmCal) {
-    rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL range 
+    rawReader->Select("EMCAL") ; //select EMCAL DDL range 
   }
 
   return ProcessEvent( &rawStream, rawReader->GetTimestamp() );

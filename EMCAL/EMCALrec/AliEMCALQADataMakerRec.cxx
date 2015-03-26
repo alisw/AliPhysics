@@ -573,7 +573,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // setup
   rawReader->Reset() ;
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
-  rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL's 
+  rawReader->Select("EMCAL") ; //select EMCAL DDL's 
 
   AliRecoParam::EventSpecie_t saveSpecie = fEventSpecie ;
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
@@ -1082,7 +1082,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
   AliEMCALTriggerSTURawStream* inSTU = new AliEMCALTriggerSTURawStream(rawReader);
 	
   rawReader->Reset();
-  rawReader->Select("EMCAL", 44);
+  rawReader->Select("EMCAL",AliDAQ::NumberOfDdls("EMCAL")-1);
 
   //L1 segmentation
   Int_t sizeL1gsubr = 1;

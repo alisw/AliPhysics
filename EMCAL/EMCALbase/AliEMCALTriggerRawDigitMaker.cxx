@@ -44,6 +44,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliRawEvent.h"
 #include "AliRawVEquipment.h"
 #include "AliRawEquipmentHeader.h"
+#include "AliDAQ.h"
 
 #include "Riostream.h"
 
@@ -290,7 +291,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	AliEMCALTriggerRawDigit* dig = 0x0;
 
 	fRawReader->Reset();
-	fRawReader->Select("EMCAL",44);	
+	fRawReader->Select("EMCAL",AliDAQ::NumberOfDdls("EMCAL")-1);	
 
 	Bool_t isSTUin = kFALSE;
 	

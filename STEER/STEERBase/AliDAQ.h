@@ -68,6 +68,9 @@ class AliDAQ: public TObject {
   static const char *OnlineName(const char *detectorName);
   static const char *OnlineName(Int_t detectorID);
 
+  static void SetRun1();
+  static void SetRun2();
+  
   enum {
     kNDetectors = 25,    // Number of detectors
     kHLTId = 30          // HLT detector index
