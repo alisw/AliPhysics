@@ -24,6 +24,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 #include "AliEMCALTriggerSTURawStream.h"
 #include "AliRawReader.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 
 #include "Riostream.h"
@@ -118,7 +119,7 @@ fFwVersion(0)
 {
 	//
 	fRawReader->Reset();
-	fRawReader->Select("EMCAL",44);
+	fRawReader->Select("EMCAL",AliDAQ::NumberOfDdls("EMCAL")-1);
 	//
 	for (int i = 0; i < 2; i++) {
 		//

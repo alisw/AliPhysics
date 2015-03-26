@@ -544,3 +544,54 @@ const char *AliDAQ::OnlineName(Int_t detectorID)
   return fgkOnlineName[detectorID];
 }
 
+void AliDAQ::SetRun1(){
+  // Change the default values to the ones used in Run1
+  // DDL
+  fgkNumberOfDdls[6] = 20; // HMPID in Run1
+  fgkNumberOfDdls[17] = 1; // TRG
+  fgkNumberOfDdls[18] = 46; // EMCAL
+  fgkNumberOfDdls[19] = 1; // DAQ_TEST
+
+  // LDC
+  fgkNumberOfLdcs[0] = 4; // ITSSPD
+  fgkNumberOfLdcs[1] = 4; // ITSSDD
+  fgkNumberOfLdcs[2] = 4; // ITSSSD
+  fgkNumberOfLdcs[4] = 3; // TRD
+  fgkNumberOfLdcs[5] = 12; // TOF
+  fgkNumberOfLdcs[6] = 4; // HMPID
+  fgkNumberOfLdcs[7] = 4; // PHOS
+  fgkNumberOfLdcs[8] = 2; // CPV
+  fgkNumberOfLdcs[9] = 1; // PMD
+  fgkNumberOfLdcs[10] = 5; // MUONTRK
+  fgkNumberOfLdcs[13] = 0.5; // T0
+  fgkNumberOfLdcs[14] = 0.5; // VZERO
+  fgkNumberOfLdcs[18] = 8; // EMCAL
+  fgkNumberOfLdcs[19] = 1; // DAQ_TEST
+  fgkNumberOfLdcs[24] = 7; // HLT
+}
+
+void AliDAQ::SetRun2(){
+  // Change the default values to the ones used in Run2
+  // DDL
+  fgkNumberOfDdls[6] = 14; // HMPID in Run2
+  fgkNumberOfDdls[17] = 2; // TRG
+  fgkNumberOfDdls[18] = 40; // EMCAL
+  fgkNumberOfDdls[19] = 12; // DAQ_TEST
+
+  // LDC
+  fgkNumberOfLdcs[0] = 7; // ITSSPD
+  fgkNumberOfLdcs[1] = 8; // ITSSDD
+  fgkNumberOfLdcs[2] = 6; // ITSSSD
+  fgkNumberOfLdcs[4] = 9; // TRD
+  fgkNumberOfLdcs[5] = 24; // TOF
+  fgkNumberOfLdcs[6] = 5; // HMPID
+  fgkNumberOfLdcs[7] = 8; // PHOS
+  fgkNumberOfLdcs[8] = 1; // CPV
+  fgkNumberOfLdcs[9] = 2; // PMD
+  fgkNumberOfLdcs[10] = 7; // MUONTRK
+  fgkNumberOfLdcs[13] = 1; // T0
+  fgkNumberOfLdcs[14] = 1; // VZERO
+  fgkNumberOfLdcs[18] = 15; // EMCAL
+  fgkNumberOfLdcs[19] = 2; // DAQ_TEST
+  fgkNumberOfLdcs[24] = 14; // HLT
+}
