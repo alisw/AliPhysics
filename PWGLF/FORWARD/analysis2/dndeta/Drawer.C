@@ -74,7 +74,7 @@ struct Drawer {
 			       UShort_t       sNN,
 			       UShort_t       trg,
 			       UShort_t       exps=0xf,
-			       Int_t          verbose=0)
+			       Int_t          verbose=3)
   {
     UShort_t c1  = 0;
     UShort_t c2  = 0;
@@ -84,7 +84,8 @@ struct Drawer {
     case 0x020:
     case 0x040:
     case 0x080:
-    case 0x100: c2 = 100; break;
+    case 0x100:
+    case 0x200: c2 = 100; break;
     }
 
     LoadOther();
@@ -144,11 +145,7 @@ struct Drawer {
     if      (s.EqualTo("PP"))   sys = 1;
     else if (s.EqualTo("PPB"))  sys = 3;
     else if (s.EqualTo("PBPB")) sys = 2;
-    else if (s.EqualTo("PBP")) {
-      sys = 3;
-      // Warning("", "So far, no Pbp data available");
-      // return 0;
-    }
+    else if (s.EqualTo("PBP"))  sys = 4;
 
     TString e(exps);
     e.ToUpper();
@@ -168,11 +165,11 @@ struct Drawer {
     else if (t.BeginsWith("CENT")) { 
       if      (t.EndsWith("V0M")) trg |= 0x010;
       else if (t.EndsWith("V0A")) trg |= 0x020;
-      else if (t.EndsWith("V0X")) trg |= 0x020;
+      else if (t.EndsWith("V0X")) trg |= (sys == 3 ? 0x020 : 0x100);
       else if (t.EndsWith("ZNA")) trg |= 0x040;
       else if (t.EndsWith("ZNC")) trg |= 0x080;
       else if (t.EndsWith("V0C")) trg |= 0x100;
-      else if (t.EndsWith("ZNX")) trg |= 0x040;
+      else if (t.EndsWith("ZNX")) trg |= (sys == 3 ? 0x040 : 0x80);
       else if (t.EndsWith("MB"))  { trg =  0x4; exp = 0x4; }
     }
 
@@ -1670,12 +1667,12 @@ struct Drawer {
     
     return ltx;
   }
-  static TLegend* MakeUniqueLegend(Double_t x1, 
-				   Double_t y1, 
-				   Double_t x2, 
-				   Double_t y2, 
-				   TObjArray unique,
-				   Int_t     nSNN)
+  static TLegend* MakeUniqueLegend(Double_t   x1, 
+				   Double_t   y1, 
+				   Double_t   x2, 
+				   Double_t   y2, 
+				   TObjArray& unique,
+				   Int_t      nSNN)
   {
     const Color_t kAliceBlue   = AliceBlue();
 
@@ -1687,6 +1684,10 @@ struct Drawer {
     uleg->SetTextColor(kAliceBlue);
     uleg->SetTextFont(42);
 
+    return MakeUniqueLegend(uleg, unique, nSNN);
+  }
+  static TLegend* MakeUniqueLegend(TLegend* uleg, TObjArray& unique, Int_t nSNN)
+  {
     TIter nextU(&unique);
     TLegendEntry* e = 0;
     TParameter<int>* u = 0;
@@ -1717,6 +1718,13 @@ struct Drawer {
     }
     ::Warning("", "Marker style %d maps to default", style);
     return 1.6;
+  }
+  static const char* CentLimitName(Bool_t isMult, Float_t v)
+  {
+    if (isMult)                    return Form("%3d", Int_t(v));
+    if ((Int_t(v*100) % 100) == 0) return Form("%3d%%", Int_t(v)); 
+    if ((Int_t(v*100)  % 10) == 0) return Form("%5.1f%%", v);
+    return Form("%6.2f%%", v);
   }
   /** 
    * REturn a pair of a stack (data) and multi-graph (other)
@@ -1815,11 +1823,21 @@ struct Drawer {
 	    // Info("", "Centralty %s", ct.Data());
 	    Int_t idx = ct.Index("cent");
 	    if (idx != kNPOS) {
-	      TString t1 = ct(idx+4, 3);
-	      TString t2 = ct(idx+4+3+1, 4);
-	      TString c1 = t1.Strip(TString::kLeading, '0');
-	      TString c2 = t2.Strip(TString::kLeading, '0');
-	      nm = Form("%3d-%3d%%", c1.Atoi(), c2.Atoi());
+	      ct.Remove(0,idx+4);
+	      TObjArray* tokens = ct.Tokenize("_");
+	      TString    t1     = tokens->At(0)->GetName();
+	      TString    t2     = tokens->At(1)->GetName();
+	      TString    s1     = t1.Strip(TString::kLeading, '0');
+	      TString    s2     = t2.Strip(TString::kLeading, '0');
+	      s1.ReplaceAll("d", ".");
+	      s2.ReplaceAll("d", ".");
+	      TString    c1     = CentLimitName(false, s1.Atof());
+	      TString    c2     = CentLimitName(false, s2.Atof());
+	      nm = Form("%s-%s", c1.Data(), c2.Data());
+	      Printf("Got name=%s t1=%s t2=%s c1=%s c2=%s -> %s",
+		     ct.Data(), t1.Data(), t2.Data(), s1.Data(), s2.Data(),
+		     nm.Data());
+	      tokens->Delete();
 	      // Printf("%s (%s %s -> %s %s)", nm.Data(),
 	      //        t1.Data(), c1.Data(),
 	      //        t2.Data(), c2.Data());
@@ -1851,7 +1869,7 @@ struct Drawer {
       leg->SetTextFont(42);
       leg->SetTextColor(AliceBlue());
     }
-    if (seSeen && leg) { 
+    if (false && seSeen && leg) { 
       e = leg->AddEntry("dummy", "7.6% sys. error", "f");
       e->SetFillColor(fill);
       e->SetFillStyle(style);

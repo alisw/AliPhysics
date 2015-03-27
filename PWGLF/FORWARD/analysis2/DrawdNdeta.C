@@ -339,6 +339,7 @@ struct dNdetaDrawer
     fSysString = new TNamed("sys", (sys == 1 ? "pp" : 
 				    sys == 2 ? "PbPb" : 
 				    sys == 3 ? "pPb" : 
+				    sys == 4 ? "Pbp" : 
 				    "unknown"));
     fSysString->SetUniqueID(sys);
   }
@@ -842,6 +843,8 @@ struct dNdetaDrawer
     }
     if (!fCentMeth) 
       fCentMeth = results->FindObject("centEstimator");
+    if (!fCentMeth && HasCent())
+      fCentMeth = new TNamed("centEstimator", "V0M");
 
     if (fTriggerEff < 0) { 
       // Allow complete overwrite by passing negative number 
@@ -898,9 +901,10 @@ struct dNdetaDrawer
 
     if (true /*fOptions & kVerbose*/) {
       TString centTxt("none");
-      if (fCentAxis) { 
+      TString centMeth(fCentMeth ? fCentMeth->GetTitle() : "V0M");
+      if (fCentAxis) {
 	Int_t nCent = fCentAxis->GetNbins();
-	centTxt = Form("%s %d bins", fCentMeth->GetTitle(), nCent);
+	centTxt = Form("%s %d bins", centMeth.Data(), nCent);
 	for (Int_t i = 0; i <= nCent; i++) 
 	  centTxt.Append(Form("%c%d", i == 0 ? ' ' : '-', 
 			      int(fCentAxis->GetXbins()->At(i))));
@@ -1070,12 +1074,21 @@ struct dNdetaDrawer
 		Double_t&     amax,
 		TH1*&         truth)
   {
+    TString foldName(folderName);
     TList* folder = (fOptions & kOldFormat ? const_cast<TList*>(list) :
-		     static_cast<TList*>(list->FindObject(folderName)));
+		     static_cast<TList*>(list->FindObject(foldName)));
     if (!folder) {
-      Error("FetchOne", "Couldn't find list '%s' in %s", 
-	    folderName, list->GetName());
-      return 0;
+      Warning("FetchOne", "Couldn't find list '%s' in %s, trying w/o decimals", 
+	      foldName.Data(), list->GetName());
+      foldName.ReplaceAll("d00", "");
+      foldName.ReplaceAll("d10", "");
+      folder = (fOptions & kOldFormat ? const_cast<TList*>(list) :
+		static_cast<TList*>(list->FindObject(foldName)));
+      if (!folder) {
+	Error("FetchOne", "Couldn't find list '%s' in %s", 
+	      foldName.Data(), list->GetName());	
+	return 0;
+      }
     }
     TList* mcFolder = 0;
     if (mcList) {
@@ -1692,7 +1705,7 @@ struct dNdetaDrawer
     Bool_t nn = (fSysString->GetUniqueID() != 1);
     TString tS(fTrigString->GetTitle());
     if (HasCent()) {
-      TString centMeth(fCentMeth->GetTitle());
+      TString centMeth(fCentMeth ? fCentMeth->GetTitle() : "CENTV0M");
       if (centMeth.EqualTo("MULT"))
 	tS = "by N_{#lower[-.2]{ch}} |#it{#eta}|<0.8";
       else 
@@ -2672,7 +2685,7 @@ struct dNdetaDrawer
   TH1* 
   Merge(const TH1* cen, const TH1* fwd, Double_t& xlow, Double_t& xhigh)
   {
-    if (!fwd || !cen) return 0;
+    if (!fwd) return 0;
     TH1* tmp = static_cast<TH1*>(fwd->Clone("tmp"));
     TString name(fwd->GetName());
     name.ReplaceAll("Forward", "Merged");
@@ -2824,6 +2837,18 @@ struct dNdetaDrawer
     }
     Info("Export", "Exporting data to %s", fname.Data());
     outf << "// Create by dNdetaDrawer\n"
+	 << "// Setting for this draw\n"
+	 << "//\n" 
+	 << "//  Draw(\"\",\"" << fTitle << "\"," << fRebin << ",0x"
+	 << std::hex << fShowOthers << ",0x" << fOptions << ","
+	 << std::dec << fSNNString->GetUniqueID() << ","
+	 << fSysString->GetUniqueID() << ","
+	 << std::hex << fTrigString->GetUniqueID() << ","
+	 << std::dec << fTriggerEff << "," << fCentMin << "," << fCentMax << ","
+	 << fVtxAxis->GetXmin() << "," << fVtxAxis->GetXmax() << ",\""
+	 << fBase << "\",0x" << std::hex << fFormats
+	 << std::dec << ");\n"
+	 << "//\n"
 	 << "void " << bname << "(THStack* stack, TLegend* l, Int_t m)\n"
 	 << "{"
 	 << "   Int_t ma[] = { 24, 25, 26, 32,\n"
@@ -2863,6 +2888,16 @@ struct dNdetaDrawer
 	 << "    e->SetMarkerColor(kBlack);\n"
 	 << "  }\n"
 	 << "}\n" << std::endl;
+
+    TString tgt(fRebin > 1 ? "rebin" : "full");
+    TString clean(Form("sed -e 's/\\(_[0-9]\\{3\\}d[0-9]\\{2\\}\\)"
+		       "\\(_[ac]\\|\\)"
+		       "_[0-9a-f]\\{4\\}"
+		       "\\(__[0-9]\\{2,3\\}\\|\\)/\\1\\2/g' "
+		       "-e 's/%s/%s/g' < %s > %s.C",
+		       bname.Data(), tgt.Data(), fname.Data(), tgt.Data()));
+    Printf("Execute \"%s\"", clean.Data());
+    gSystem->Exec(clean);
   }
   /* @} */ 
   /** 
