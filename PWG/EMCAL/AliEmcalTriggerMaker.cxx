@@ -237,14 +237,15 @@ Bool_t AliEmcalTriggerMaker::Run()
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
 
+  // zero the arrays
+  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
+
   // first run over the patch array to compose a map of 2x2 patch energies
   // which is then needed to construct the full patch ADC energy
   // class is not empty
   if (fCaloTriggers->GetEntries() > 0) {
-    // zero the arrays
-    memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-    memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
-    memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 
     // go throuth the trigger channels
     while (fCaloTriggers->Next()) {
@@ -887,7 +888,7 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
       if(row + ipos >= kPatchRows) continue;    // boundary check
       for(int jpos = 0; jpos < 2; jpos++){
         if(col + jpos >= kPatchCols) continue;  // boundary check
-        const Char_t &l0times = fLevel0TimeMap[col + jpos][row + ipos];
+        Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
         if(l0times > 7 && l0times < 10) nvalid++;
       }
     }
