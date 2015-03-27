@@ -29,7 +29,8 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity()
     fVz(0), 
     fB(0),
     fPhiR(0),
-    fDebug(false)
+    fDebug(false),
+    fTrackGammaToPi0(false)
 {
   // Default constructor 
   DGUARD(fDebug, 3,"Default CTOR of AliBasMCTrackDensity");
@@ -48,7 +49,8 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
     fVz(0), 
     fB(0),
     fPhiR(0),
-    fDebug(false)
+    fDebug(false),
+    fTrackGammaToPi0(false)
 {
   // Normal constructor constructor 
   DGUARD(fDebug, 3,"Named CTOR of AliBasMCTrackDensity: %s", name);
@@ -67,7 +69,8 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const AliBaseMCTrackDensity& o)
     fVz(o.fVz), 
     fB(o.fB),
     fPhiR(o.fPhiR),
-    fDebug(o.fDebug)
+    fDebug(o.fDebug),
+    fTrackGammaToPi0(o.fTrackGammaToPi0)
 {
   // Normal constructor constructor 
   DGUARD(fDebug, 3,"Copy CTOR of AliBasMCTrackDensity");
@@ -92,6 +95,7 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
   fVz                   = o.fVz;
   fB                    = o.fB;
   fPhiR                 = o.fPhiR;
+  fTrackGammaToPi0      = o.fTrackGammaToPi0;
   return *this;
 }
 
@@ -184,17 +188,9 @@ AliBaseMCTrackDensity::StoreParticle(AliMCParticle*       particle,
   if (!ref) return 0;
 
   Double_t weight = 1;
-  if (fWeights) {
-#if 0
-    Double_t phi = (mother ? mother->Phi() : particle->Phi());
-    Double_t eta = (mother ? mother->Eta() : particle->Eta());
-    Double_t pt  = (mother ? mother->Pt() : particle->Pt());
-    Int_t    id  = (mother ? mother->PdgCode() : 2212);
-    weight       = CalculateWeight(eta, pt, phi, id);
-#else
-    weight       = CalculateWeight(mother, (mother == particle));
-#endif
-  }
+  if (fWeights) 
+    weight = CalculateWeight(mother, (mother == particle));
+  
 
   // Get track-reference stuff 
   Double_t x      = ref->X();
@@ -244,15 +240,40 @@ AliBaseMCTrackDensity::GetMother(Int_t     iTr,
   // 
   // Track down primary mother 
   // 
-  Int_t i  = iTr;
+  Int_t  i                       = iTr;
+  Bool_t               gammaSeen = false;
+  const AliMCParticle* candidate = 0;
   do { 
     const AliMCParticle* p = static_cast<AliMCParticle*>(event.GetTrack(i));
-    if (const_cast<AliMCEvent&>(event).Stack()->IsPhysicalPrimary(i)) return p;
+    if (gammaSeen && TMath::Abs(p->PdgCode()) == 111) 
+      // If we're looking for a mother pi0 of gamma, and we find it
+      // here, we return it - irrespective of whether it's flagged as
+      // a primary or not.
+      return p;
+
+    if (const_cast<AliMCEvent&>(event).Stack()->IsPhysicalPrimary(i)) {
+      if (fTrackGammaToPi0 && TMath::Abs(p->PdgCode()) == 22) {
+	// If we want to track gammas back to a possible pi0, we flag
+	// the gamma seen, and store it as a candidate in case we do
+	// not find a pi0 in the stack
+	candidate = p;
+	gammaSeen = true;
+      }
+      else 
+	return p;
+    }
     
+    // We get here if the current track isn't a primary, or it was a
+    // primary gamma and we want to track back to a pi0.
     i = p->GetMother();
   } while (i > 0);
 
-  return 0;
+  // Return our candidate (gamma) if we find no mother pi0.  Note, we
+  // should never get here with a null pointer, so we issue a warning
+  // in that case.
+  if (!candidate) 
+    AliWarningF("GetMother", "No mother found for track # %d", iTr);
+  return candidate;
 }  
 
 //____________________________________________________________________
@@ -363,7 +384,6 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
     if (fUseOnlyPrimary && !isPrimary) continue;
 
     const AliMCParticle* mother = isPrimary ? particle : GetMother(iTr, event);
-
     // IF the track corresponds to a primary, pass that as both
     // arguments.
     ProcessTrack(particle, mother);
@@ -379,6 +399,7 @@ AliBaseMCTrackDensity::CalculateWeight(const AliMCParticle* p,
 				       Bool_t isPrimary) const
 {
   // Note, it is always the ultimate mother that is passed here.
+  if (!p) return 0;
   return fWeights->CalcWeight(p, isPrimary, fPhiR, fB);
 }
 //____________________________________________________________________
