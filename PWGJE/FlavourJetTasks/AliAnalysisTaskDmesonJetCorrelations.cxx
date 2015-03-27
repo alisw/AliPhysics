@@ -42,6 +42,7 @@
 // Aliroot EMCal jet framework
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
+#include "AliParticleContainer.h"
 
 #include "AliAnalysisTaskDmesonJetCorrelations.h"
 
@@ -69,11 +70,17 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fShowLeadingPt(kFALSE),
   fShowJetArea(kFALSE),
   fShowJetConstituents(kFALSE),
-  fMinDeltaPhiHisto(-TMath::Pi()),
+  fShowMatchingLevel(kTRUE),
   fInhibitTask(kFALSE),
+  fMatchingType(kGeometricalMatching),
+  fOnlyAcceptedJets(kTRUE),
+  fOnlySingleMatches(kFALSE),
+  fCheckTrackColl(kTRUE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
+  fHistTracksNotInJetsPt(0),
+  fHistTracksNotInJetsEtaPhi(0),
   fDmesons(0)
 {
   // Default ctor
@@ -102,11 +109,17 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fShowLeadingPt(kFALSE),
   fShowJetArea(kFALSE),
   fShowJetConstituents(kFALSE),
-  fMinDeltaPhiHisto(-TMath::Pi()),
+  fShowMatchingLevel(kTRUE),
   fInhibitTask(kFALSE),
+  fMatchingType(kGeometricalMatching),
+  fOnlyAcceptedJets(kTRUE),
+  fOnlySingleMatches(kFALSE),
+  fCheckTrackColl(kTRUE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
+  fHistTracksNotInJetsPt(0),
+  fHistTracksNotInJetsEtaPhi(0),
   fDmesons(0)
 {
   // Constructor.
@@ -141,26 +154,26 @@ AliAnalysisTaskDmesonJetCorrelations::~AliAnalysisTaskDmesonJetCorrelations()
 //_______________________________________________________________________________
 void AliAnalysisTaskDmesonJetCorrelations::Init()
 {
-   // Initialization.
+  // Initialization.
    
   Info("AliAnalysisTaskDmesonJetCorrelations::Init()", "Entering method");
    
-   switch (fCandidateType) {
-   case kD0toKpi: 
-      {
-   	 AliRDHFCutsD0toKpi* copyfCutsDzero = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
-   	 copyfCutsDzero->SetName("AnalysisCutsDzero");
-   	 PostData(2, copyfCutsDzero);  // Post the data
-      } break;
-   case kDstartoKpipi: 
-      {
-      	 AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-      	 copyfCutsDstar->SetName("AnalysisCutsDStar");
-      	 PostData(2, copyfCutsDstar); // Post the cuts
-      } break;
-   default:
-     return;
-   }
+  switch (fCandidateType) {
+  case kD0toKpi: 
+    {
+      AliRDHFCutsD0toKpi* copyfCutsDzero = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
+      copyfCutsDzero->SetName("AnalysisCutsDzero");
+      PostData(2, copyfCutsDzero);  // Post the data
+    } break;
+  case kDstartoKpipi: 
+    {
+      AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
+      copyfCutsDstar->SetName("AnalysisCutsDStar");
+      PostData(2, copyfCutsDstar); // Post the cuts
+    } break;
+  default:
+    return;
+  }
 }
 
 //_______________________________________________________________________________
@@ -174,13 +187,30 @@ void AliAnalysisTaskDmesonJetCorrelations::UserCreateOutputObjects()
   // define histograms
   // the TList fOutput is already defined in  AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
-  TString histname("fHistRejectionReason");
+  TString histname;
+  
+  histname = "fHistRejectionReason";
   fHistRejectionReason = new TH2F(histname, histname, 32, 0, 32, 100, 0, 250);
   fHistRejectionReason->GetXaxis()->SetTitle("Rejection reason");
   fHistRejectionReason->GetYaxis()->SetTitle("#it{p}_{T,jet} (GeV/#it{c})");
   fHistRejectionReason->GetZaxis()->SetTitle("counts");
   SetRejectionReasonLabels(fHistRejectionReason->GetXaxis());
   fOutput->Add(fHistRejectionReason);
+
+  if (fCheckTrackColl) {
+    histname = "fHistTracksNotInJetsPt";
+    fHistTracksNotInJetsPt = new TH1F(histname, histname, 100, 0, 50);
+    fHistTracksNotInJetsPt->GetXaxis()->SetTitle("#it{p}_{T,track} (GeV/#it{c})");
+    fHistTracksNotInJetsPt->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistTracksNotInJetsPt);
+
+    histname = "fHistTracksNotInJetsEtaPhi";
+    fHistTracksNotInJetsEtaPhi = new TH2F(histname, histname, 50, -1, 1, 150, 0, TMath::TwoPi());
+    fHistTracksNotInJetsEtaPhi->GetXaxis()->SetTitle("#eta_{track}");
+    fHistTracksNotInJetsEtaPhi->GetYaxis()->SetTitle("#phi_{track}");
+    fHistTracksNotInJetsEtaPhi->GetZaxis()->SetTitle("counts");
+    fOutput->Add(fHistTracksNotInJetsEtaPhi);
+  }
 
   AllocateTHnSparse();
    
@@ -217,11 +247,13 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 {
   // Fill the histograms.
 
-  AliJetContainer *jets = GetJetContainer(0);
-
   const Int_t nDcand = fCandidateArray->GetEntriesFast();
 
-  Bool_t fillRejReason = kTRUE;
+  TArrayD matchingLevel(5);
+  TList matchedJets;
+  matchedJets.SetOwner(kFALSE);
+
+  AliJetContainer* jets = GetJetContainer(0);
 
   AliDebug(2,"Starting D meson candidate loop");
   for (Int_t icand = 0; icand < nDcand; icand++) {
@@ -285,43 +317,230 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
     Dvector.SetPtEtaPhiM(Dcand->Pt(), Dcand->Eta(), Dcand->Phi(), invMassD);
 
     // Look for D-jet correlation
+    Int_t n = FindMatchedJet(fMatchingType, Dcand, matchingLevel, matchedJets);
+
     AliEmcalJet* jet = 0;
-    Double_t deltaR = fMaxR;
-    if (jets) {
-      AliEmcalJet* jet_new = 0;
-      jets->ResetCurrentID();
-      AliDebug(2,"Starting jet loop");
-      while ((jet_new = jets->GetNextJet())) {
-        AliDebug(2,Form("Jet %d", jets->GetCurrentID()));
-        
-        if (!jets->AcceptJet(jet_new)) {
-          if (fillRejReason) fHistRejectionReason->Fill(jets->GetRejectionReasonBitPosition(), jet_new->Pt());
-          AliDebug(2, Form("Rejecting jet %d, pT = %.3f, eta = %.3f, phi = %.3f, reason = %d", jets->GetCurrentID(), jet_new->Pt(), jet_new->Eta(), jet_new->Phi(), jets->GetRejectionReasonBitPosition()));
-          continue;
-        }
-        
-        Double_t deltaR_new = jet_new->DeltaR(Dcand);
-        if (deltaR_new < deltaR) {
-          jet = jet_new;
-          deltaR = deltaR_new;
-        }
-      }
-      fillRejReason = kFALSE;
+    Int_t matchingStatus = kNotMatched;
+ 
+    if (n == 1) {
+      matchingStatus = kSingleMatch;
+    }
+    else if (n > 1) {
+      matchingStatus = kMultipleMatches;
     }
 
+    if (matchingStatus == kSingleMatch || (matchingStatus == kMultipleMatches && !fOnlySingleMatches)) {
+      jet = static_cast<AliEmcalJet*>(matchedJets.At(0));
+    }
+    
     if (jet) {
-      jetVector.SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), 0);
-      
-      leadPtJet = jet->MaxPartPt();
-      areaJet = jet->Area();
-      constJet = jet->N();
+      // Check if the jet passes the cuts
+      Bool_t acceptedJet = jets->AcceptJet(jet);
+      if (!acceptedJet) {
+        fHistRejectionReason->Fill(jets->GetRejectionReasonBitPosition(), jet->Pt());
+        matchingStatus = kJetNotAccepted;
+      }
+      if (acceptedJet || !fOnlyAcceptedJets) {
+        jetVector.SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), 0);
+        
+        leadPtJet = jet->MaxPartPt();
+        areaJet = jet->Area();
+        constJet = jet->N();
+      }
     }
 
     AliDebug(2,"Filling THnSparse");
-    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet);
+    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel[0]);
   }
   
   return kTRUE;
+}
+
+//_______________________________________________________________________________
+Int_t AliAnalysisTaskDmesonJetCorrelations::FindMatchedJet(EMatchingType matchType, AliAODRecoDecay* cand, TArrayD& matchingLevel, TList& matchedJets)
+{
+  // Find jet matched to a reconstructed decay candidate, using a constituent-based algorithm.
+  // The returned value is the number of jets found that share the decay products.
+
+  Int_t nj = 0;
+
+  matchingLevel.Reset(1);
+  matchedJets.Clear();
+  
+  AliJetContainer* jets = GetJetContainer(0);
+  AliEmcalJet* jet = 0;
+
+  AliDebug(2, Form("D candidate pt = %.3f eta = %.3f phi = %.3f", cand->Pt(), cand->Eta(), cand->Phi()));
+
+  jets->ResetCurrentID();
+  Bool_t reset = kTRUE;
+  while ((jet = jets->GetNextJet())) {
+    Double_t m = CalculateMatchingLevel(matchType, cand, jet, reset);
+    reset = kFALSE;
+    
+    if (m >= 1) continue; // jet is not matched
+
+    if (m < 0) break; // this is the signal from CalculateMatchingLevel that the search is completed
+
+    if (nj >= matchingLevel.GetSize()) {
+      matchingLevel.Set(nj*2+1);
+    }
+
+    Int_t pos = nj;
+    
+    while (pos >= 0) {
+      if (pos == 0 || matchingLevel[pos-1] < m) {
+        matchingLevel[pos] = m;
+        break;
+      }
+      matchingLevel[pos] = matchingLevel[pos-1];
+      pos--;
+    }
+    
+    matchedJets.AddAt(jet, pos);
+    nj++;
+  }
+
+  AliDebug(2, Form("Matching levels\n%.3f\n%.3f\n%.3f", matchingLevel[0], matchingLevel[1], matchingLevel[2]));
+  AliDebug(2, Form("Final number of matched jets %d",nj));
+    
+  return nj;
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateMatchingLevel(EMatchingType matchType, AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset)
+{
+  // Calculate the matchin level between cand and jet.
+  
+  Double_t m = 1;
+  
+  if (matchType == kGeometricalMatching) {    
+    m = CalculateGeometricalMatchingLevel(cand, jet);
+  }
+  else if (matchType == kConstituentMatching) {
+    m = CalculateConstituentMatchingLevel(cand, jet, reset);
+  }
+  else {
+    AliWarning(Form("Matching algorithm type %d not implemented!", matchType));  
+  }
+
+  return m;
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateGeometricalMatchingLevel(AliVTrack* cand, AliEmcalJet* jet)
+{
+  // Calculate the matching level using a geometrical algorithm.
+  // The matching level is the inverse of the distance.
+
+  Double_t deltaR = jet->DeltaR(cand);
+  Double_t m = deltaR / fMaxR;
+  if (m < 0) m = 1;
+  
+  return m;
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset)
+{
+  // Calculate the matching level using a constituent-based algorithm.
+  // If the jet is not provided but reset==kTRUE then it only initializes the daughters list.
+  // The matching level is the sum of the pt of the decay products contained in the jet.
+  
+  if (!cand) return 1;
+
+  static AliAODRecoDecay* prevCand = 0;
+  static TObjArray daughters(5);
+  static Double_t ptTot = 0;
+  
+  if (prevCand != cand || reset) {
+    daughters.Clear();
+    ptTot = AddDaughters(cand, daughters);
+    prevCand = cand;
+
+    if (fCheckTrackColl) {
+      AliParticleContainer* tracks = GetParticleContainer(0);
+      TClonesArray* trackArray = 0;
+      if (tracks) trackArray = tracks->GetArray();
+
+      if (trackArray) {
+        AliVTrack* daughter = 0;
+        TIter next(&daughters);
+        while ((daughter = static_cast<AliVTrack*>(next()))) {
+          if (!trackArray->Contains(daughter)) {
+            fHistTracksNotInJetsPt->Fill(daughter->Pt());
+            fHistTracksNotInJetsEtaPhi->Fill(daughter->Eta(), daughter->Phi());
+          }
+        }
+      }
+    }
+  }
+
+  if (!jet) return 1;
+
+  Int_t nt = daughters.GetEntriesFast();
+  if (nt == 0 || ptTot == 0) return -1;  // this will end the search for matched jets
+
+  AliParticleContainer* tracks = GetParticleContainer(0);
+  if (!tracks) return 1;
+
+  // To save computation time, if the jet is too far from the candidate, let's skip it
+  Double_t mlg = CalculateGeometricalMatchingLevel(cand, jet);
+  if (mlg >= 1.) return 1.;
+  
+  Double_t pt = 0;
+
+  for (Int_t it = 0; it < nt; it++) {
+    AliVTrack* track = static_cast<AliVTrack*>(daughters.At(it));
+    if (!track) continue;
+    // Check if the jet contains the track
+    if (jet->ContainsTrack(track, tracks->GetArray()) >= 0) {
+      pt += track->Pt();
+      AliDebug(2, Form("Jet pt = %.3f eta = %.3f phi = %.3f contains daughter pT = %.3f eta = %.3f phi = %.3f", jet->Pt(), jet->Eta(), jet->Phi(), track->Pt(), track->Eta(), track->Phi()));
+      daughters.RemoveAt(it);
+    }
+  }
+
+  Double_t m = 1 - pt / ptTot;
+  
+  return m;
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskDmesonJetCorrelations::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
+{
+  // Add all the dauthers of cand in an array. Follows all the decay cascades.
+  
+  Int_t n = cand->GetNDaughters();
+
+  //Printf("AddDaughters: the number of dauhters is %d", n);
+  
+  Int_t ntot = 0;
+  Double_t pt = 0;
+  for (Int_t i = 0; i < n; i++) {
+    AliVTrack* track = dynamic_cast<AliVTrack*>(cand->GetDaughter(i));
+    if (!track) continue;
+
+    AliAODRecoDecay* cand2 = dynamic_cast<AliAODRecoDecay*>(track);
+
+    if (cand2) {
+      //Printf("Daughter pT = %.3f --> ", track->Pt());
+      pt += AddDaughters(cand2, daughters);
+    }
+    else {
+      if (!track->InheritsFrom("AliAODTrack")) {
+        Printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.");
+      }
+      //Printf("Daughter pT = %.3f", track->Pt());
+      daughters.AddLast(track);
+      pt += track->Pt();
+      ntot++;
+    }
+  }
+
+  //Printf("Total pt of the daughters = %.3f", pt);
+  
+  return pt;
 }
 
 //_______________________________________________________________________________
@@ -480,23 +699,23 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
     title[dim] = "#Delta R_{D-jet}";
     nbins[dim] = 100;
     min[dim] = 0;
-    max[dim] = fMaxR*1.1;
+    max[dim] = fMaxR * 1.1;
     dim++;
   }
 
   if (fShowDeltaEta) {
     title[dim] = "#eta_{D} - #eta_{jet}";
-    nbins[dim] = 80;
-    min[dim] = -1;
-    max[dim] = 1;
+    nbins[dim] = 100;
+    min[dim] = -fMaxR * 1.1;
+    max[dim] = fMaxR * 1.1;
     dim++;
   }
   
   if (fShowDeltaPhi) {
     title[dim] = "#phi_{D} - #phi_{jet} (rad)";
-    nbins[dim] = 251;
-    min[dim] = fMinDeltaPhiHisto;
-    max[dim] = TMath::TwoPi()*nbins[dim]/(nbins[dim]-1) + fMinDeltaPhiHisto;
+    nbins[dim] = 100;
+    min[dim] = -fMaxR * 1.1;
+    max[dim] = fMaxR * 1.1;
     dim++;
   }
 
@@ -544,6 +763,20 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
     dim++;
   }
 
+  title[dim] = "Matching status";
+  nbins[dim] = 4;
+  min[dim] = 0;
+  max[dim] = 4;
+  dim++;
+
+  if (fShowMatchingLevel) {
+    title[dim] = "Matching level";
+    nbins[dim] = 50;
+    min[dim] = 0;
+    max[dim] = 1;
+    dim++;
+  }
+
   fDmesons = new THnSparseD("fDmesons","fDmesons",dim,nbins,min,max);
   fOutput->Add(fDmesons);
   for (Int_t i = 0; i < dim; i++) {
@@ -553,7 +786,7 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
 //_______________________________________________________________________________
 void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Double_t softPionPtD, Double_t invMass2prong,
-                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet)
+                                                         TLorentzVector jet, Double_t leadPtJet, Double_t areaJet, Int_t constJet, Int_t matchingStatus, Double_t matchingLevel)
 {
   // Fill the THnSparse histogram.
 
@@ -569,17 +802,10 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Doubl
     TVector3 jvect = jet.Vect();
     z = (dvect * jvect) / (jvect * jvect);
     
-    deltaPhi = D.Phi() - jet.Phi();
-    if (deltaPhi < 0)               deltaPhi += TMath::TwoPi();
-    if (deltaPhi > TMath::TwoPi())  deltaPhi -= TMath::TwoPi();
-
-    Double_t deltaPhi_min = deltaPhi;
-    if (deltaPhi_min > TMath::Pi()) deltaPhi_min -= TMath::TwoPi();
-
-    while (deltaPhi < fMinDeltaPhiHisto) deltaPhi += TMath::TwoPi();
-    while (deltaPhi > fMinDeltaPhiHisto + TMath::TwoPi()) deltaPhi -= TMath::TwoPi();
+    deltaPhi = TVector2::Phi_mpi_pi(D.Phi() - jet.Phi());
     deltaEta = D.Eta() - jet.Eta();
-    deltaR = TMath::Sqrt(deltaPhi_min*deltaPhi_min + deltaEta*deltaEta);
+    
+    deltaR = TMath::Sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
   }
   
   for (Int_t i = 0; i < fDmesons->GetNdimensions(); i++) {
@@ -600,7 +826,9 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Doubl
     else if (title=="#phi_{jet} (rad)")                              contents[i] = jet.Phi() < 0 ? jet.Phi()+TMath::TwoPi() : jet.Phi();
     else if (title=="#it{p}_{T,particle}^{leading} (GeV/#it{c})")    contents[i] = leadPtJet;
     else if (title=="#it{A}_{jet}")                                  contents[i] = areaJet;
-    else if (title=="No. of constituents")                           contents[i] = constJet; 
+    else if (title=="No. of constituents")                           contents[i] = constJet;
+    else if (title=="Matching status")                               contents[i] = matchingStatus;
+    else if (title=="Matching level")                                contents[i] = matchingLevel;
     else AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
 
