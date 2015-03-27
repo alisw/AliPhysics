@@ -13,6 +13,12 @@ class TLegend;
 
 struct SysErrorAdder
 {
+  enum {
+    kTriggerFill = 1001, // 3144
+    kMergingFill = 3001, // 3001,
+    kDensityFill = 3002, // 3002,
+    kEmpiricalFill = 3144 // 3244
+  };
   TString fSys;
   UShort_t fSNN;
   TString fTrig;
@@ -37,12 +43,14 @@ struct SysErrorAdder
     gse->SetSysLineWidth(id, 1);
     gse->SetSysLineStyle(id, 1);
     gse->SetSysFillStyle(id, fill);
-    gse->SetSysOption(id, GraphSysErr::kRect);
+    gse->SetSysOption(id, GraphSysErr::kBox);
     
+    AddLegend(l, id, gse->GetSysTitle(id), fill);
+  }
+  void AddLegend(TLegend* l, Int_t id, const char* title, Style_t fill) const
+  {
     if (!l) return;
-    TLegendEntry* e = l->AddEntry(Form("sys%02d", id),
-				  gse->GetSysTitle(id), 
-				  "f");
+    TLegendEntry* e = l->AddEntry(Form("sys%02d", id), title, "f");
     e->SetFillStyle(fill);
     e->SetFillColor(kBlack);
     e->SetLineColor(kBlack);
@@ -62,7 +70,7 @@ struct SysErrorAdder
     if (low == 0 && high == 0) return -1;
     
     Int_t id = gse->DefineCommon(GetTriggerName(), true, low, high);
-    ModError(gse, id, 3144, l);
+    ModError(gse, id, kTriggerFill, l);
     return id;
   }
   /** 
@@ -76,7 +84,7 @@ struct SysErrorAdder
   {
     if (GetMerging() <= 0) return -1;
     Int_t id = gse->DeclarePoint2Point("Merging", true); 
-    ModError(gse, id, 3001, l);
+    ModError(gse, id, kMergingFill, l);
     return id;
   }
   /** 
@@ -90,7 +98,7 @@ struct SysErrorAdder
   {
     if (GetDensity() <= 0) return -1;
     Int_t id = gse->DeclarePoint2Point("Density", true);
-    ModError(gse, id, 3002, l);
+    ModError(gse, id, kDensityFill, l);
     return id;
   }
   /** 
@@ -104,7 +112,7 @@ struct SysErrorAdder
   {
     if (GetEmpirical() <= 0) return -1;
     Int_t id = gse->DeclarePoint2Point("Empirical", true); 
-    ModError(gse, id, 3244, l);
+    ModError(gse, id, kEmpiricalFill, l);
     return id;
   }
   /** 
@@ -323,7 +331,7 @@ struct CENTAdder : public SysErrorAdder
   virtual void GetTrigger(Double_t& low, Double_t& high) const
   {
     low = high = (fCent/100) * (fMax-fMin) + fMin;
-    Printf("Trigger error for centrality = %f -> %f", fCent, low);
+    // Printf("Trigger error for centrality = %f -> %f", fCent, low);
   }
   /** 
    * Get centrality 
@@ -348,6 +356,22 @@ struct CENTAdder : public SysErrorAdder
     Printf("Centrality from %s -> [%f,%f] -> %f", h->GetName(), 
 	   low, high, fCent);
     return fCent;
+  }
+  /** 
+   * Declare the systematic error from the empirical correction 
+   * 
+   * @param gse Graph 
+   * 
+   * @return Id of systmatic error or -1
+   */
+  virtual Int_t MakeEmpirical(GraphSysErr* gse, TLegend* l) const
+  {
+    if (GetEmpirical() <= 0) return -1;
+    if (fCent >= 0)
+      return SysErrorAdder::MakeEmpirical(gse, l);
+
+    AddLegend(l, 0, "Empirical", kEmpiricalFill);
+    return -1;
   }
   
   /** 

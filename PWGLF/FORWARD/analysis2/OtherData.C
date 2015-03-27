@@ -156,7 +156,7 @@ struct RefData
     case 0x10: return "V0C_";
     case 0x20: return "CL1_";
     }
-    return "V0M_"; // Default
+    return ""; // V0M_"; // Default
   }
   //____________________________________________________________________
   /** 

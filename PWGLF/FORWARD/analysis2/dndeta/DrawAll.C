@@ -44,5 +44,12 @@ void DrawAll(UShort_t which=1)
     Drawer::DrawAll(s, e, t, 0x1);
   }
     break;
+  case 5: {
+    const char* s[] = { "pPb", "Pbp", 0 };         
+    UShort_t    e[] = { 5023, 0 };                 
+    const char* t[] = { "CENTV0M", 0 };
+    Drawer::DrawAll(s, e, t, 0x1);
+  }
+    break;
   }
 }
