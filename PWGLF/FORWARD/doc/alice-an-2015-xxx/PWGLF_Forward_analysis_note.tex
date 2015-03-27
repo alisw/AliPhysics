@@ -97,14 +97,16 @@
 \renewcommand*{\thefootnote}{\arabic{footnote}}
 \begin{abstract}
   \noindent
-  This note details the analysis for \ndndeta{} over the widest possible
-  $\eta$ range possible with \ALICE{} (and \LHC{} for that matter).
-  The analysis uses tracklets from the \SPD{} and signals from the
-  \FMD{}.  All possible collision systems and energies are analyzed,
-  and for \ppCol{} \ndndeta{} is determined for the three trigger
-  classes \INEL{}, \INELGt{}, and \NSD{}.  Secondary particles
-  produced in surrounding material and decays are removed from the
-  \FMD{} signal using an \emph{empirical} correction based on results
+  This note details the analysis for \ndndeta{} over the widest
+  possible $\eta$ range possible with \ALICE{} (and \LHC{} for that
+  matter).  The analysis uses tracklets from the \SPD{} and signals
+  from the \FMD{}.  All possible collision systems and energies are
+  analysed.  For \ppCol{} \ndndeta{} is determined for the three
+  trigger classes \INEL{}, \INELGt{}, and \NSD{}.  For \PbPbCol{},
+  \pPbCol{}, and \PbpCol{} \ndndeta{} is determined in centrality
+  bins. Secondary particles produced in surrounding material and
+  decays are removed from the \FMD{} signal using an \emph{empirical}
+  correction based on results
   from \cite{Abbas:2013bpa}. \\
   
   \noindent
@@ -132,64 +134,69 @@ and \FMD{3}, each consisting of 1 (\FMD{1}) or 2 (\FMD{2} and~3)
 \emph{rings}.  The rings fall into two types: \emph{Inner} or
 \emph{outer} rings.  Each ring is in turn azimuthally divided into
 \emph{sectors}, and each sector is radially divided into
-\emph{strips}.  The number of sectors, strips, as well as the $\eta$
-coverage for each ring are given in \tablename~\ref{tab:fmd:overview}.
+\emph{strips}.  The number of sectors, strips, as well as the nominal
+$\eta$ coverage for each ring are given in
+\tablename~\ref{tab:fmd:overview}.
 
 \begin{table}[htbp]
   \begin{center}
     \caption{Physical dimensions of Si segments and strips.}
     \label{tab:fmd:overview}
     \vglue0.2cm
-    \begin{tabular}{|c|cc|cr@{\space--\space}l|r@{\space--\space}l|}
+    \begin{tabular}{|c|cc|crcl|rcl|}
       \hline
       \headColor%
       \textbf{Sub--detector/} &
       \textbf{Azimuthal}&
       \textbf{Radial} &
       $z$ &
-      \multicolumn{2}{c|}{\textbf{$r$}} &
-      \multicolumn{2}{c|}{\textbf{$\eta$}} \\ 
+      \multicolumn{3}{c|}{\textbf{$r$}} &
+      \multicolumn{3}{c|}{\textbf{$\eta$}} \\ 
       \rowcolor{alicered!25!white}
       \textbf{Ring}&  
       \textbf{sectors} &
       \textbf{strips} & 
       \textbf{[cm]} &
-      \multicolumn{2}{c|}{\textbf{range [cm]}} &
-      \multicolumn{2}{c|}{\textbf{coverage}} \\
+      \multicolumn{3}{c|}{\textbf{range [cm]}} &
+      \multicolumn{3}{c|}{\textbf{coverage}} \\
       \hline
-      FMD1i & 20& 512& 320  &  4.2& 17.2& 3.68&  5.03\\
+      FMD1i & 20& 512& 320  &  4.2&--&17.2& 3.68&--&5.03\\
       \altRowColor{}%
-      FMD2i & 20& 512&  83.4&  4.2& 17.2& 2.28&  3.68\\
-      FMD2o & 40& 256&  75.2& 15.4& 28.4& 1.70&  2.29\\
-      \altRowColor()%
-      FMD3i & 20& 512& -75.2&  4.2& 17.2&-2.29& -1.70\\
-      FMD3o & 40& 256& -83.4& 15.4& 28.4&-3.40& -2.01\\
+      FMD2i & 20& 512&  83.4&  4.2&--&17.2& 2.28&--&3.68\\
+      FMD2o & 40& 256&  75.2& 15.4&--&28.4& 1.70&--&2.29\\
+      \altRowColor{}%
+      FMD3i & 20& 512& -75.2&  4.2&--&17.2&-2.29&--&-1.70\\
+      FMD3o & 40& 256& -83.4& 15.4&--&28.4&-3.40&--&-2.01\\
       \hline
     \end{tabular}
   \end{center}
 \end{table}
 
 The \FMD{} \ESD{} object contains the scaled energy deposited
-$\Delta_t\equiv\Delta /\DeltaMip$ for each of the 51,200 strips.
-This is determined in the reconstruction pass.  The scaling to
-$\DeltaMip$ is done using calibration factors extracted in
-designated pulser runs.  In these runs, the front-end electronics is
-pulsed with an increasing known pulse size, and the conversion factor
-from ADC counts to $\DeltaMip$ is determined \cite{cholm:2009}.
+$\Delta_t\equiv\Delta /\DeltaMip$ for each of the 51,200 strips.  This
+is determined in the reconstruction pass.  The scaling to $\DeltaMip$
+is done using calibration factors extracted in designated pulser runs.
+In these runs, the front--end electronics is pulsed with an increasing
+known pulse size, and the conversion factor from ADC counts to
+$\DeltaMip$ is determined \cite{cholm:2009}.
 
 The \SPD{} is used for determination of the position of the primary
 interaction point.
 
 The analysis is performed as a two--step process.  
 \begin{enumerate}
-\item The Event--Summary--Data (\ESD{}) is processed event--by--event
-  and passed through a number of algorithms, and
-  $\dndetadphi$ for each event is output to an Analysis--Object--Data
-  (\AOD{}) tree (see \secref{sec:gen_aod}).
+\item The Event--Summary--Data (\ESD{}) is processed event--by--event.
+  On each event, the data is passed through a number of algorithms,
+  and $\dndetadphi$ for each event is output to an
+  Analysis--Object--Data (\AOD{}) tree (see \secref{sec:gen_aod}).
 \item The \AOD{} data is read in and the sub--sample of the data under
-  investigation is selected (e.g., \INEL{}, \INELONE{}, \NSD{} in p+p data, or
-  some centrality class in Pb+Pb data) and the $\dndetadphi$ histogram read for
-  those events to build up $\dndeta$ (see \secref{sec:ana_aod}).
+  investigation is selected. For \ppCol{} we select of for example
+  \INEL{}, \INELONE{}, and \NSD{}\footnote{Recently, capability to
+    select on other estimators relevant for high--multiplicity studies
+    have been implemented.}. For \PbPbCol{}, \pPbCol{}, and \PbpCol{}
+  we select on centrality estimators.  The $\dndetadphi$ histogram
+  read for the selected events is used to build up $\dndeta$ (see
+  \secref{sec:ana_aod}).
 \end{enumerate}
 The details of each step above will be expanded upon in the
 following. 
@@ -210,31 +217,39 @@ event $i$ and FMD ring $r$.
     interchangeably in the text, since there is no ambiguity with
     particle production vertex in this analysis.} $z$ coordinate (see
   \secref{sec:sub:event_inspection}).
-\item[ESD fix-up] Addition of missing noise component, and filtering
+\item[\ESD{} fix-up] Addition of missing noise component, and filtering
   of `bad' strips (see \secref{sec:sub:fixer}).
 \item[Sharing filter] The \ESD{} object is read in and corrected for
   sharing.  The result is a new \ESD{} object (see
   \secref{sec:sub:sharing_filter}).
-\item[Density calculator] The (possibly un--corrected) \ESD{} object
-  is then inspected and an inclusive (primary \emph{and} secondary
-  particles), per--ring number of charged particles
-  $\dndetadphi[incl,r,\subIPz{},i]$ is calculated.  The output of this
-  step are 5 $\etaphi$ histograms --- one per \FMD{} ring.  This
-  calculation depends in general upon the interaction vertex position
-  along the $z$ axis $v_z$ (see \secref{sec:sub:density_calculator}).
+\item[Density calculator] The sharing corrected\footnote{Optionally,
+    the sharing filter can be turned off, in which case the density
+    calculator will receive the output of the \ESD{} fixer.} \ESD{}
+  object is then inspected and an inclusive\footnote{By `inclusive' we
+    mean primary \emph{and} secondary particles.}, per--ring number of
+  charged particles $\dndetadphi[incl,r,\subIPz{},i]$ is calculated.
+  The output of this step are 5 $\etaphi$ histograms --- one per
+  \FMD{} ring.  This calculation depends in general upon the
+  interaction vertex position along the $z$ axis $\IPz{}$ (see
+  \secref{sec:sub:density_calculator}).
 \item[Corrections] The 5 $\dndetadphi[incl,r,\subIPz{},i]$ histograms
   are corrected for secondary production and acceptance.  The
   correction for the secondary particle production is highly dependent
   on the vertex $z$ coordinate.  The result is a per--ring, number of
   charged primary particles $\dndetadphi[r,\subIPz{},i]$ (see
-  \secref{sec:sub:corrector}).
+  \secref{sec:sub:corrector}).  Note, that this step is omitted when
+  the correction for secondaries is done using the empirical
+  correction.   In that case, the output of the density calculator is
+  passed straight to the next step. 
 \item[Histogram collector] Finally, the 5 $\dndetadphi[r,\subIPz{},i]$
-  histograms are summed into a single $\dndetadphi[\subIPz{},i]$
-  histogram, taking care of the overlaps between the detector rings.
-  In principle, this histogram is independent of the vertex, except
-  that the pseudo--rapidity range, and possible holes in that range,
-  depends on $\IPz{}$ --- or rather the bin in which the $\IPz{}$
-  falls (see \secref{sec:sub:hist_collector}).
+  (or $\dndetadphi[incl,r,\subIPz{},i]$ if the previous step was
+  omitted) histograms are summed into a single
+  $\dndetadphi[\subIPz{},i]$ histogram, taking care of the overlaps
+  between the detector rings.  In principle, this histogram is
+  independent of the vertex, except that the pseudo--rapidity range,
+  and possible holes in that range, depends on $\IPz{}$ --- or rather
+  the bin in which the $\IPz{}$ falls (see
+  \secref{sec:sub:hist_collector}).
 \end{description}
 
 Each of these steps will be detailed in the following. 
@@ -242,9 +257,31 @@ Each of these steps will be detailed in the following.
 \subsection{Event inspection}
 \label{sec:sub:event_inspection}
 
+\paragraph{Trigger} 
 The first thing to do, is to inspect the event for triggers.  A number
 of trigger bits, like \INEL{} (Minimum Bias for Pb+Pb), \INELONE{},
 \NSD{}, and so on is then propagated to the \AOD{} output.
+
+\paragraph{Pile--up} 
+The event is checked for pile-up using up three different methods
+\begin{itemize}
+\item \SPD{} pile--up flag from multiple interaction points
+\item Track pile--up flag from multiple interaction points
+\item Out--of--bunch pile--up flag from the beam parameters 
+\end{itemize}
+The pile--up status is propagated to the \AOD{} output.  
+
+\paragraph{\SPD{} outlier} 
+The number of clusters in the \SPD{} is compared to the number of
+tracklets from the \SPD{}, and events with too many clusters compared
+to the number of tracklets is flagged in the \AOD{} as an outlier
+event.
+
+\paragraph{Interaction point $z$ coordinate ($\IPz$)} 
+Depending on the settings, the interaction point coordinates is
+queried from the input \ESD{} and propagated to the \AOD{}.  In
+general, and \SPD{} primary vertex is required, but this can be
+changed if needed. 
 
 Just after the sharing filter (see \secref{sec:sub:sharing_filter})
 but before any further processing, the interaction point information
@@ -256,14 +293,14 @@ further processing of that event takes place.
 \label{sec:sub:sub:dispvtx}
 
 The analysis can be set up to run on the `displaced vertices' that
-occur during LHC \PbPbCol{} running. Details on the displaced
-vertices, and their selection can be found in the VZERO analysis note
+occur during \LHC{} 2010 \PbPbCol{} running. Details on the displaced
+vertices, and their selection can be found in the \VZERO{} analysis note
 \cite{maxime} (see also \secref{sec:sub:empirical}).
 
-\subsection{ESD fix-up}
+\subsection{\ESD{} fix-up}
 \label{sec:sub:fixer} 
 
-The \FMD{} strip signals in the ESD are not aligned at the real zero,
+The \FMD{} strip signals in the \ESD{} are not aligned at the real zero,
 due to a bug in the reconstruction code.  In the reconstruction pass
 only a $1\times\sigma$ ($\sigma$ is the noise in a given strip) was
 added, but the electronics had suppressed $4\times\sigma$.  To align
@@ -289,7 +326,7 @@ A particle originating from the vertex can, because of its incident
 angle on the \FMD{} sensors traverse more than one strip (see
 \figref{fig:share_fraction}).  This means that the energy loss of the
 particle is distributed over 1 or more strips.  The signal in each
-strip should therefore possibly be merged with its neighboring strip
+strip should therefore possibly be merged with its neighbouring strip
 signals to properly reconstruct the energy loss of a single particle.
 
 \begin{figure}[htbp]
@@ -300,11 +337,17 @@ signals to properly reconstruct the energy loss of a single particle.
   \label{fig:share_fraction}
 \end{figure}
 
+\iffalse
+%% 
+%% Since we no longer distinguish between high or low flux events,
+%% this paragraph is largely irrelevant and therefor removed
+%%
 The effect is most pronounced in low--flux\footnote{Events with a low
   hit density.} events, like proton--proton collisions or peripheral
 Pb--Pb collisions, while in high--flux events the hit density is so
 high that most likely each and every strip will be hit and the effect
 cancels out on average.
+\fi
 
 Since the particles travel more or less in straight lines toward the
 \FMD{} sensors, the sharing effect is predominantly in the $r$ or
@@ -315,7 +358,7 @@ therefore investigated for this effect.
   \centering
   \figinput[.8\linewidth]{sharing}
   \caption{The effect of the sharing filter.  The light distributions
-    are from the reconstruction, while the darker distribtions are
+    are from the reconstruction, while the darker distributions are
     after the algorithm has been applied.  The yellow band indicates
     the lower excluded region, while the cyan band illustrates the
     spread of the high cut. }
@@ -419,16 +462,17 @@ this algorithm:
 \item[\FuncSty{GetLowCut}] Signals below this cut is considered
   pedestal remnants and are never merged. 
 \item[\FuncSty{GetHighCut}] Signals above this cut are considered
-  isolated hits, but can be merged with a neighboring signal below
+  isolated hits, but can be merged with a neighbouring signal below
   this cut. 
 \end{description}
 
 The exact value returned by the two functions  \FuncSty{GetLowCut} and
 \FuncSty{GetHighCut} and how it those values are obtained can be
-varied in the analysis (see also \secref{sec:cuts}).  The result of
-this pass is a new \ESD{} object where signals that are spread of two
-strips have been merged into one (see also
-\figref{fig:sharing:effect}). 
+varied in the analysis (see also \secref{sec:cuts}).  
+
+The result of this pass is a new \ESD{} object where signals that are
+spread of two strips have been merged into one (see also
+\figref{fig:sharing:effect}).
 %% \clearpage
 
 \subsection{Density calculator}
@@ -446,6 +490,7 @@ depends on settings, but default values are listed in
 
 \begin{table}[h!tbp]
   \centering
+  \caption{Default $\etaphi$ binning}
   \begin{tabular}[t]{|c|ccc|ccc|}
     \hline
     \headColor%
@@ -454,12 +499,11 @@ depends on settings, but default values are listed in
     \headColor%
     \textbf{detector} & \# bins & Min. & Max. & \# bins & Min. & Max. \\
     \hline
-    \FMD{1i},2i,3i & 200 & -4  & 6 & 20 & 0 & $\pi$ \\
+    \FMD{1i},2i,3i & 200 & -4  & 6 & 20 & 0 & $2\pi$ \\
     \altRowColor%
-    \FMD{2o},3o    & 200 & -4  & 6 & 40 & 0 & $\pi$ \\
+    \FMD{2o},3o    & 200 & -4  & 6 & 40 & 0 & $2\pi$ \\
     \hline
   \end{tabular}
-  \caption{Default $\etaphi$ binning}
   \label{tab:etaphi:binning}
 \end{table}
 
@@ -475,22 +519,17 @@ reconstructed (possibly merged) energy loss $\Delta_t$ of the strip
 That is, the $\Nch$ weighted average of the fit to the energy loss
 distributions at the given energy loss $\Delta_t$. 
 
-\FIXME{This paragraph is horrible and misleading}
-Before the signal $n_t$ can be added to the corresponding $\etaphi$
-bin in one of the 5 per--ring histograms, it needs to be corrected for
-the $\varphi$ acceptance of the strip.
+The sensors of the \FMD{} are not perfect arc--segments
+\cite{cholm:2009} --- the two top corners are cut off to allow the
+largest possible sensor on a 6'' Si-wafer.  This means, however, that
+the strips in these outer regions do not fully cover $2\pi$ in
+azimuth, and there is therefore a need to correct for this limited
+acceptance.
 
-\FIXME{Perhaps an illustration} The sensors of the \FMD{} are not
-perfect arc--segments \cite{cholm:2009} --- the two top corners are
-cut off to allow the largest possible sensor on a 6'' Si-wafer.  This
-means, however, that the strips in these outer regions do not fully
-cover $2\pi$ in azimuth, and there is therefore a need to correct for
-this limited acceptance.
-
-This acceptance correction is only applicable where the strip length
-does not cover the full sector.  This is the case for the outer strips
-in both the inner and outer type rings.  The acceptance correction is
-then simply 
+The correction is only applicable where the strip length does not
+cover the full sector.  This is the case for the outer strips in both
+the inner and outer type rings.  The acceptance correction is then
+simply
 \begin{align}
   \label{eq:acc_corr}
   \Corners{} &=
@@ -563,23 +602,24 @@ given set of strips $R$ we then define
   \Ntotal{} &= \sum_t^{t\in R\wedge\ t_{hit}\neq\text{undefined}}\quad,\\
 \end{align*}
 that is, the number of strips in $R$ with a valid signal below the
-threshold and the number of strips with a valid signal. 
+threshold and the number of strips with a valid (possibly 0) signal. 
 
 Now, assume in the region $R$ the $\mult$ is distributed according to
-a Poisson distribution with mean $\muR$.  This means that the
+a Poisson distribution with mean $\muR$.  This implies the
 probability of $\mult=n$ is:
 \begin{equation}
   P(n) = \frac{\muR^n e^{-\muR}}{n!} \label{eq:PoissonDef}
 \end{equation}
-In particular we have that 
+In particular we have 
 \begin{align*}
   \frac{\Nempty{}}{\Ntotal{}} &=   P(0) = e^{-\muR} \\
-\intertext{implying}
+\intertext{and we find}
    \muR &= -\log\left(\frac{\Nempty{}}{\Ntotal{}}\right) = -\log(f)\quad,
 \end{align*}
 with $f=\Nempty{}/\Ntotal{}$.  That means we can calculate the mean
 number of particles per $\etaphi$ bin of a larger $\etaphi$ region by
-simply count the number of strips with no signal.
+simply count the number of strips with no signal\footnote{Or rather, a
+  signal below threshold.}.
 
 The expected number of particles in a strip \emph{with a signal above
   threshold} is then given by
@@ -613,16 +653,24 @@ where $\Nhit{}$ is the number of strips in the given $\etaphi$ bin
 \emph{with} a signal above the defined threshold.
 
 The size of the regions used can be varied in the analysis.  The
-default $\unit[32]{strips}\times\unit[4]{sectors}$ (see also
+default is $\unit[32]{strips}\times\unit[4]{sectors}$ (see also
 \tabref{tab:fmd:overview}).  The exact definition of the threshold can
 likewise be varied (see also \secref{sec:cuts}). 
 
+\begin{figure}[htbp]
+  \centering
+  \figinput[.8\linewidth]{corr_method}
+  \caption{Correlation of the two methods to estimate
+    $\dndetadphi[incl,r,\subIPz,i]$.  The spread for all sub--detectors is
+    less than 1\%.}
+  \label{fig:density:corr}
+\end{figure}
 
-\FIXME{Perhaps a plot of the correlation}
+
 The Poisson method and the energy fits method have been compared in
 \cite{hhd:2009} where it is found that the two methods are in good
 agreement. The residual difference between the methods contributes to
-the systematic error.
+the systematic error (see also \figref{fig:density:corr}).
 
 \subsubsection{Azimuthal ($\varphi$) Acceptance} 
 
@@ -631,7 +679,7 @@ $\dndetadphi[incl,r,\subIPz,i]$ also counts the number of strips with
 $t_{hit}\neq\text{undefined}$ and the total number of strips, and then
 forms the ratio
 \begin{align}
-  \label{eq:underflow}
+  \label{eq:overflow}
   \phiAcc &= \frac{\sum_t^{t\in\eta \wedge
       t\neq\text{undefined}}}{\sum_t^{t\in\eta}} \quad,
 \end{align}
@@ -688,6 +736,30 @@ within an $\etaphi$ bin for a given vertex bin
     \sum_i^{\NV[,\subIPz]}\mult[,\text{\FMD{}},i]\etaphi}\quad,
 \end{align}
 where 
+
+\begin{tabular}[T]{p{.18\linewidth}p{.78\linewidth}}
+  $\NV[,\subIPz]$ & is the number of events with a valid trigger
+                    and a vertex in bin $\IPz$.\\ 
+  $\dndetadphi[\FMD{},i]$ & is the total number of charged
+                            particles that hit the \FMD{} in event $i$
+                            in the specified $\etaphi$ bin.  This
+                            number is counted from the simulation, and
+                            not  after the
+                            reconstruction\footnote{Technically, we 
+                            are counting `track references' within the
+                            $\etaphi$ bin for a given
+                            sub-detector.}.\\  
+  $\dndetadphi[\text{primary},i]$ & is number of primary charged
+                                    particles in event $i$ within the
+                                    specified $\etaphi$ bin.  This is
+                                    counted \emph{at the time of the
+                                    collision} as defined in the
+                                    simulation code.  That is, it is
+                                    the number of primaries within the
+                                    $\etaphi$ bin at the collision
+                                    point --- not at the \FMD{}. 
+\end{tabular}
+\iffalse
 \begin{description}
 \item[] $\NV[,\subIPz]$ is the number of events with a valid trigger
   and a vertex in bin $\IPz$.
@@ -703,6 +775,7 @@ where
   simulation code.  That is, it is the number of primaries within the
   $\etaphi$ bin at the collision point --- not at the \FMD{}.
 \end{description}
+\fi
 
 $\SecMap$ varies from $\approx 1.5$ for the most forward bins to
 $\approx 3$ for the more central bins. Figure \ref{secondaries} shows
@@ -717,14 +790,50 @@ secondaries.
     \SPD{}, with origin of secondaries shown.}
   \label{secondaries}
 \end{figure} 
+
+\begin{figure}[]
+  \centering
+  \figinput[.8\textwidth]{secmap_pp_aa_one}
+  \caption{Top shows projection of $\SecMap$ onto the $\eta$ axis for
+    one interaction point bin ($\unit[0]{cm}<\IPz{}<\unit[2]{cm}$).
+    The different colours correspond the 5 \FMD{} rings.  The
+    different symbols correspond to different collisions systems
+    simulated in \texttt{LHC14i2}.  The bottom shows the ratio
+    $\SecMap$ for each collision system to the average $\SecMap$ over
+    all collision systems. All systems fall with--in 5\%, except
+    \PbpCol{} and \PbPbCol{} in \FMD{1} which deviates with up to
+    10\%. }
+  \label{fig:secmap:all}
+\end{figure} 
  
+The systematics of the secondary correction was evaluated through a
+comprehensive simulation production
+(\href{https://alimonitor.cern.ch/job_details.jsp?jt_field1=LHC14i2}{\texttt{LHC14i2}})
+where all collision systems where simulated with the same underlying
+geometric description. An example of that study is shown in
+\figref{fig:secmap:all}.  It is seen, that the secondary map is
+independent of the particle multiplicity, as one would expect from how
+the track propagation code (\GEANT{3}) works: Each track is propagated
+independent of other particles --- \textit{i.e.}, one will get the
+same value of $\SecMap$ from $N$ events with $n$ particles as one
+would from a single event with $N\times n$ particles, or $N\times n$
+events with a single particle.
+
+
+However, there are some other small differences between between the
+systems as can be seen from \figref{fig:secmap:all}.  Most notable is
+the discrepancy between \PbpCol{} and \PbPbCol{} and all other system
+in \FMD{1}. 
+\FIXME{Marek, we should somehow either refer to another section, or
+  add your studies here.} 
+
 %For pp, different event
 %generators were used and found to give compatible results within
 %3--5\%.   
 For \ppCol{}, at least some millions of events must be accumulated to
 reach satisfactory statistics.  For \PbPbCol{} where the general hit
 density is larger, reasonable statistics can be achieved with less
-simulated data.
+simulated data. \pPbCol{}/\PbpCol{} sits somewhere in between. 
 
 \subsubsection{Acceptance due to dead channels}
 
@@ -764,6 +873,16 @@ dependent, per--ring histograms of the primary charged particle
 density $\dndetadphi[r,\subIPz,i]$ into a single vertex dependent
 histogram of the charged particle density $\dndetadphi[\subIPz,i]$.
 
+In case the secondary map correction was turned off, as in the case
+when the empirical correction is applied, the histogram collector
+receives the 5 vertex dependent, per--ring histograms of the
+\emph{inclusive} charged particle density
+$\dndetadphi[incl,r,\subIPz,i]$ and collect these into a single vertex
+dependent histogram of the \emph{inclusive} charged particle density
+$\dndetadphi[incl,\subIPz,i]$.  In either case, the same algorithm is
+applied, and one can substitute the inclusive histograms for primary
+histogram in the below description. 
+
 To do this, it first calculates, for each vertex bin, the $\eta$ bin
 range to use for each ring.  It investigates the secondary correction
 maps $\SecMap{}$ to find the edges of each map.  The edges are given
@@ -780,7 +899,7 @@ the errors in quadrature\footnote{While not explicitly checked, it was
   found that the histograms agrees within error bars in the
   overlapping region}.
 
-The output vertex dependent histogram of the primary
+The output, vertex dependent, histogram of the primary
 charged particle density is then given by
 \begin{align}
   \label{eq:superhist}
@@ -795,11 +914,22 @@ charged particle density is then given by
 where $N_{r\in\etaphi}$ is the number of overlapping histograms
 in the given $\etaphi$ bin. 
 
+If the secondary map correction was turned of, this becomes 
+\begin{align}
+  \label{eq:superhist:2}
+  \dndetadphi[incl,\subIPz,i] &=
+  \frac{1}{N_{r\in\etaphi}}\sum_{r}^{r\in\etaphi}  
+  \dndetadphi[incl,r,\subIPz,i]\\
+  \delta\left[\dndetadphi[incl,\subIPz,i]\right] &=
+  \frac{1}{N_{r\in\etaphi}}\sqrt{\sum_{r}^{r\in\etaphi}   
+    \delta\left[\dndetadphi[incl,r,\subIPz,i]\right]^2}
+\end{align}
+
 The histogram collector stores the found $\eta$ ranges in the
-underflow bin of the histogram produced.  The content of the overflow
+underflow bin of the histogram produced.  The content of the underflow
 bins are 
 \begin{align}
-  \label{eq:overflow}
+  \label{eq:underflow}
   \etaCov &= 
   \frac{1}{N_{r\in(\eta)}}
   \sum_{r}^{r\in(\eta)} \left\{\begin{array}{cl} 
@@ -825,20 +955,134 @@ depends on the current interaction point of event $i$.
   \label{fig:steps}
 \end{figure} 
 
-All the steps involved are summarized in \figref{fig:steps}.  
+All the steps involved are summarised in \figref{fig:steps}. 
+
+\subsection{The final \AOD{} output} 
+
+The final \FMD{} \AOD{} is stored on a separate branch\footnote{The
+  branch name is \texttt{Forward} for normal data, and
+  \texttt{ForwardMC} for simulated data. Both branches store a single
+  \texttt{AliAODForwardMult} object per event.} and contains 
+
+\begin{tabular}[T]{p{.2\linewidth}p{.76\linewidth}}
+  $\dndetadphi[\subIPz,i]$ & A 2--dimensional histogram of the
+                             exclusive number of charged primary
+                             particles per $\etaphi$ bin
+                             \eqref{eq:superhist}, \emph{or}\\ 
+  $\dndetadphi[incl,\subIPz,i]$ & A 2--dimensional histogram of the
+                                  inclusive number of charged primary
+                                  and secondary particles per
+                                  $\etaphi$ bin \eqref{eq:superhist:2}
+                                  in case the secondary map correction
+                                  was turned off.\\   
+  $\phiAcc{}$ & A 1--dimensional histogram of the $\varphi$ acceptance
+                per $\eta$ bin \eqref{eq:overflow}. \\
+  $\IPz$ & The $z$ coordinate of the interaction point used in the
+           above steps.\\
+  Trigger bits & A bit field of seen triggers and conditions
+                 (pile--up, \SPD{} outlier, etc.) during the above steps.\\ 
+\end{tabular}
+
 
 %% === AOD analysis ==================================================
 \clearpage
 \section{Building the final $\dndeta$}
 \label{sec:ana_aod}
 
+\subsection{Event selection}
+
+To build the final $\dndeta$ for a given event selection $X$ we loop
+over the events stored in the \AOD{} and extract the per--event,
+vertex dependent, exclusive or inclusive number of charged particles
+per $\etaphi$ bin.   Generally, the event selection consists of 
+
+\begin{enumerate}
+\item Selecting events with a primary interaction that has a $z$
+  coordinate $\IPz$ within some specified range --- typically
+  $|\IPz|\le\unit[10]{cm}$. 
+\item Rejecting events that have been flagged as containing pile--up.
+  Typically, the \SPD{} tracklet pile--up flag is used. 
+\item Rejecting events that have been flagged as an \SPD{} outlier
+  event. 
+\item Selecting events that have a given trigger type.
+  \begin{itemize}
+  \item A trigger type $X$ can be simple triggers like \texttt{MBOR},
+    \texttt{MBOR} and at least one tracklet in the \SPD{} within
+    $|\eta|<1$ (a.k.a.~\INELGT{}), or \texttt{V0AND}. 
+  \item Alternatively, the trigger $X$ can depend on some event
+    characteristic e.g., centrality or reference multiplicity. In that
+    case, we select on the quantity and perform the analysis in bins
+    of that quantity.
+  \end{itemize}
+\end{enumerate}
+
+All standard centrality estimators are supported.  Furthermore, the
+reference multiplicity\footnote{The number of unique tracks and
+  tracklets within $|\eta|<0.8$.} is supported, as well as the special
+\ppCol{} centrality estimators developed for the RunII
+High--Multiplicity Task--Force.
+
+\paragraph{\ppCol{} event classes and trigger efficiencies} 
+
+When determining $\dndeta$ for physical event classes, such as
+the full in--elastic cross--section, or the non--single--diffractive
+events, in \ppCol{} we choose the underlying hardware and replayed
+software trigger that gives the highest efficiency for that event
+class.  \tabref{tab:dndeta:ppclasses} summarises the interesting
+physical event classes in \ppCol{}, together with the underlying
+trigger and its corresponding efficiency for each of the studied
+collision energies.  Note, that the event class \INELGT{} is a pure
+experimental event class, and as such the trigger efficiency is by
+definition unity. 
+
+\begin{table}[hbtp]
+  \centering
+  \caption{The \ppCol{} event classes and their corresponding
+    underlying trigger and the efficiency \cite{pwgud:2015}.}
+  \begin{tabular}{|cc|cccc|}
+    \hline 
+    \headColor%
+    \textbf{Event} 
+    & \textbf{Underlying} 
+    & \multicolumn{4}{c|}{\textbf{Trigger efficiency}}\\
+    \headColor%
+    \textbf{class} 
+    & \textbf{trigger} 
+    & \multicolumn{4}{c|}{$\mathbf{\sqrt{s}}$}\\
+    \headColor%
+    &
+    & \GeV[900]{}
+    & \TeV[2.76]{} 
+    & \TeV[7]{} 
+    & \TeV[8]{}\\
+    \hline
+    \INEL{} & \texttt{MBOR} 
+    & $0.91^{+0.03}_{-0.01}$ 
+    & $0.88^{+0.06}_{-0.035}$ 
+    & $0.85^{+0.06}_{-0.03}$ 
+    & $0.85^{+0.06}_{-0.03}$\\
+    \altRowColor{}%
+    \INELGT{} & \texttt{MBOR} \& $N_{\text{tracklet},|\eta|<1}\ge1$ 
+    & \multicolumn{4}{c|}{1} \\
+    \NSD{} & \texttt{V0AND} 
+    & $0.94\pm0.02$ 
+    & $0.93\pm0.03$ 
+    & $0.93\pm0.02$ 
+    & $0.93\pm0.02$ \\
+    \hline
+  \end{tabular}
+  \label{tab:dndeta:ppclasses}
+\end{table}
+
+
+\subsection{Summing $\dndeta$ and normalisation} 
 
 To build the final $\dndeta$ distribution it is enough to sum
-\eqref{eq:superhist} and \eqref{eq:underflow} over all accepted
-events, $\NA$, and correct for the
-acceptance$\PhiAcc{}\,$\footnote{Since $\phiAcc$ is 1 or slightly
-  less, we have that $\PhiAcc$ is roughly equal to (but not bigger
-  than) $\NA$.}
+\eqref{eq:superhist} (\eqref{eq:superhist:2} if the secondary map
+correction was turned off) and \eqref{eq:overflow} over all accepted
+events, $\NA$, and correct for the acceptance
+$\PhiAcc{}\,$\footnote{Since $\phiAcc$ is 1 or slightly less, we have
+  that $\PhiAcc$ is roughly equal to (but not bigger than) $\NA$.}
 \begin{align}
   \dndetadphi &= \sum_i^{\NA}\dndetadphi[i,\subIPz]\\ 
   \PhiAcc &= \sum_i^{\NA}\phiAcc\\
@@ -847,8 +1091,8 @@ acceptance$\PhiAcc{}\,$\footnote{Since $\phiAcc$ is 1 or slightly
   \frac{\NA}{\N{X}{}} \frac1{\Delta\eta} \int_0^{2\pi} \text{d}\varphi
   \frac{\dndetadphi}{\PhiAcc}\quad,\label{eq:eventnormdndeta}
 \end{align}
-where $\NA/\N{X}{}$ is the trigger normalization.  The trigger
-normalization is given by 
+where $\NA/\N{X}{}$ is the trigger normalisation.  The trigger
+normalisation is given by 
 \begin{align}
   \N{X}{} &= \frac{1}{\epsilon_X}\left[\NA +
     \alpha(\NnotV -
@@ -863,8 +1107,8 @@ normalization is given by
 where
 \begin{description}
 \item[$\epsilon_X$]  is the trigger efficiency for type
-  $X\in\{\INEL,\INELONE,\NSD\}$ for \ppCol{} data and $CENT$
-  for \PbPbCol{} and \pPbCol{} data
+  $X\in\{\INEL,\INELONE,\NSD\}$ for \ppCol{} data and $\text{CENT}$
+  for \PbPbCol{} and \pPbCol{}/\PbpCol{} data
 \item[$\epsilon_V=\frac{\NV{}}{\NT{}}$] is the primary vertex
   efficiency evaluated over the data.
 \item[$\NA$] is the number of events with a trigger \emph{and} a valid
@@ -924,13 +1168,13 @@ The precision of the simulation based correction for secondary
 particle production $\SecMap{}$ depends strongly on the accuracy with
 which the material is specified in the simulation.  If there is not
 enough or too much material (compared to the actual experiment)
-specified in the simulations, we will end up with a too low or to high
+specified in the simulations, we will calculate a too low or to high
 value for $\SecMap$.  If the correct amount of material \emph{is}
-present, but that it is not placed correctly, we will end up of with a
-wrong distribution in $\SecMap$.   Since there are many parts in
-the various detectors, some of which are hard to build descriptions
-of, it is very unlikely that we will ever reach a high accuracy that
-$\SecMap$ is not associated with very large uncertainties. 
+present, but placed incorrectly, we will have a wrong distribution of
+$\SecMap$.  Since there are many parts in the various detectors, some
+of which are hard to describe, it is very unlikely that we will ever
+reach a high enough accuracy so that $\SecMap$ is not associated with
+very large uncertainties.
 
 \begin{figure}[th!bp]
   \centering
@@ -939,11 +1183,11 @@ $\SecMap$ is not associated with very large uncertainties.
     the \ITS{}, \FMD{}, and \VZERO{} and the midpoints of the
     locations of the nominal and `satellite' interaction points. The
     long--dashed line designates a region of dense material designed
-    to absorb all particles except muons. The short-dashed line
+    to absorb all particles except $\mu^{\pm}$. The short-dashed line
     indicates the region of the \ALICE{} \ITS{}, which has dense
     material for its services on the surfaces near \FMD{2} and
     \FMD{3}. The area between \FMD{2}, \FMD{1} and \VZERO{}-A contains
-    only the beryllium beam pipe. The dark gray shaded areas denote
+    only the beryllium beam pipe. The dark grey shaded areas denote
     the paths particles would follow from $z=\unit[0]{\text{cm}}$ and
     $z=\unit[225]{\text{cm}}$ to \FMD{2} and \VZERO{}-A such that it
     is evident which material they would traverse
@@ -952,30 +1196,31 @@ $\SecMap$ is not associated with very large uncertainties.
 \end{figure}
 
 \paragraph{Satellite Collisions} 
-However, in the \PbPbCol{} running of 2010 (LHC10h period) we were
-fortunate enough that the machine provided collisions of beams at
-so-called \emph{satellite} locations.  
+However, in the \PbPbCol{} running of 2010\footnote{The
+  \texttt{LHC10h} period.} we were fortunate that the machine provided
+collisions of beams at so--called \emph{satellite} locations.
 
 These collisions happened at
 $$
-z\approx-187.5,-150,\ldots,-37.5,37.5,75,\ldots,300,\unit[337.5]{\text{cm}}\quad,
+z \approx -187.5, -150, \ldots, -37.5, 37.5, 75, \ldots, 300,
+\unit[337.5]{\text{cm}} \quad, 
 $$ 
 and were a consequence of the so-called `debunching effect'
 \cite{maxime}.  Particles produced in these off--nominal interaction
 point collisions pass through very different regions of \ALICE{}, as
 illustrated in \figref{fig:satellite_geom}.  
 
-As shown in \figref{fig:satellite_geom}, particles produced in
+As illustrated in \figref{fig:satellite_geom}, particles produced in
 collisions at say $z\approx\unit[225]{\text{cm}}$ pass through a lot
 less material than particles produced at the nominal interaction
-region ($z\approx\unit[10]{\text{cm}}$), and the material they do pass
+region ($z\approx\unit[0]{\text{cm}}$), and the material they do pass
 through is a lot simpler and much better described in the simulations.
 This was exploited to produce the \ndndeta{} distributions for
 \PbPbCol{} at \usNN{PbPb}{2760} for centrality bins $0-5-10-20-30\%$
-\cite{Abbas:2013bpa}.  Another benefit of this approach was that there
-is a clear overlap between the \FMD{} and \VZERO{} acceptance, and
-that the \VZERO{} and \FMD{} results could be checked against the
-results from using the \SPD{} tracklets.
+\cite{Abbas:2013bpa}.  Another benefit of this approach was the
+overlap between the \FMD{} and \VZERO{} acceptance, and that the
+\VZERO{} and \FMD{} results could be checked against the results from
+the \SPD{} tracklets.
 
 \begin{figure}[h!tbp]
   \centering
@@ -1001,9 +1246,9 @@ secondaries) analysis for the pseudo--rapidity density
 (\ndndeta{}$|_{\text{nominal,inclusive}}$) for \PbPbCol{} at
 \usNN{PbPb}{2760} at nominal interaction points
 ($z\in[\unit[-10]{\text{cm}},\unit[+10]{\text{cm}}]$) by turning off
-the secondary correction $\SecMap$ (see \secref{sec:sub:sub:secmap})
-when we build the event--by--event $\dndetadphi[i,\subIPz]$.  The
-\emph{empirical correction} is then defined as
+the secondary correction $\SecMap$ (see
+\secref{sec:sub:sub:secmap}).The \emph{empirical correction} is then
+defined as
 
 \begin{equation}
   \label{eq:empirical:cent}
@@ -1050,6 +1295,16 @@ depends on the material distribution.
     \usNN{pp}{0900}. }
   \label{fig:empirical:methods}
 \end{figure}
+
+In principle we could form the ratio of \eqref{eq:empirical:cent} in
+separate $\IPz$ bins and separately for each \FMD{} ring.  We would
+then apply that correction $\EmpCor[\subIPz,r]{}$ instead of $\SecMap$
+as outlined in \secref{sec:sub:sub:secmap}.  A comparison of the two
+methods is shown in \figref{fig:empirical:methods}.  We see that the
+difference in using either the single correction $\EmpCor$ or the
+interaction point, ring dependent correction $\EmpCor[\subIPz,r]{}$ is
+less than 2\%.
+
 \begin{figure}[h!tbp]
   \centering
   \figinput[.9\linewidth]{empcor_stable}
@@ -1060,28 +1315,28 @@ depends on the material distribution.
   \label{fig:empirical:empcor_stable}
 \end{figure}
 
+The empirical correction shown in \figref{fig:empirical:methods} comes
+from analysing a single run (138190) to obtain the numerator of
+\eqref{eq:empirical:cent}.  To access the stability of the correction
+with respect to the reference data, all of the \PbPbCol{} data from
+2010 was analysed.  The result is shown in
+\figref{fig:empirical:empcor_stable}.  Apart from the problematic runs
+before run 138190, the resulting corrections all fall within
+$\pm5\%$. 
 
 
 \paragraph{Universality} The empirical correction $\EmpCor$ as a
 correction for secondary particle production is by nature
-\emph{universal}.  That is, we can apply that to \emph{any} collision
-system and energy since it clearly depends only on the material in
-\ALICE{}.  In principle we could form the ratio of
-\eqref{eq:empirical:cent} in separate $\IPz$ bins and separately for
-each \FMD{} ring.  We would then apply that correction
-$\EmpCor[\subIPz,r]{}$ instead of $\SecMap$ as outlined in
-\secref{sec:sub:sub:secmap}.  A comparison of the two methods is shown
-in \figref{fig:empirical:methods}.  We see that the difference in
-using either the single correction $\EmpCor$ or the interaction point,
-ring dependent correction $\EmpCor[\subIPz,r]{}$ is less than 2\%. 
+\emph{universal}.  That is, it can be applied to \emph{any} collision
+system and energy since it depends only on the material in \ALICE{}.
+Howver, as shown in \figref{fig:secmap:all} there is a residual
+uncertainty from the hadron chemistry which especially effects
+\FMD{1}.  This forces us to assign a systematic error of the order of
+a few percent more in the \FMD{1} region than what we would otherwise
+to in the remaining regions. 
+\FIXME{Marek, if your studies show we can ignore this, then this
+  should be reformulated}
 
-The empirical correction shown in \figref{fig:empirical:methods} comes
-from analyzing a single run (138190) to obtain the numerator of
-\eqref{eq:empirical:cent}.  To access the stability of the correction
-with respect to the reference data, all of the \PbPbCol{} data from
-2010 was analyzed.  The result is shown in
-\figref{fig:empirical:empcor_stable}.  Apart from the problematic runs
-before run 138190, the resulting corrections all fall within $\pm5\%$.
 
 The empirical correction is seen to be stable and known to within
 $\pm5\%$.  
@@ -1100,29 +1355,61 @@ find the \emph{primary} charged particle pseudo--rapidity density
 \subsection{Systematic Errors}
 \label{sec:sub:dndeta:syserr}
 
-\tabref{tab:syserr} summarizes the systematic error sources and
+\tabref{tab:syserr} summarises the systematic error sources and
 sizes. 
 
 
 \begin{table}[h!tbp]
   \centering
+  \caption[Summary of systematic errors]{Summary of systematic
+    errors. Errors on the 
+    event selection in \ppCol{} are taken from \cite{pwgud:2015}.
+    Errors on the centrality selection in \pPbCol{} and \PbpCol{} from
+    \cite{Adam:2014qja}.  \PbPbCol{} systematics from
+    \cite{PbPbCent:XXX}. \newline
+    %% 
+    \textsuperscript{*}These
+    entries are not directly calculated into the total. \newline
+    \textsuperscript{**}These are estimated from the difference to the
+    empirical correction. \newline
+    \textsuperscript{***}The additional 2\% in the FMD1 region
+    should be added in quadrature and stems from the additional
+    sensitivity to the hadron chemistry discussed elsewhere
+    in \secref{sec:sub:sub:secmap}.} 
   \small
   \begin{tabular}[t]{|cc|c|cccc|cc|c|}
     \hline
     \headColor%
-    \multicolumn{2}{|l|}{\textbf{System}} & Corre- & 
-    \multicolumn{4}{c|}{\ppCol{}} & 
-    \pPbCol{} & Pb-p & \PbPbCol{}\\
+    \multicolumn{2}{|l|}{\textbf{System}} 
+    & Corre- 
+    & \multicolumn{4}{c|}{\ppCol{}} 
+    & \pPbCol{} 
+    & Pb-p 
+    & \PbPbCol{}\\
     \headColor%
-    \multicolumn{2}{|l|}{\textbf{Source}} & lated & 
-    900 & 2760 & 7000 & 8000 & 5023 & 5023 & 2760\\
+    \multicolumn{2}{|l|}{\textbf{Source}} 
+    & lated 
+    & \GeV[900]{}
+    & \TeV[2.76]{} 
+    & \TeV[7]{}
+    & \TeV[8]{}
+    & \multicolumn{2}{c|}{\TeV[5.02]{}}
+    & \TeV[2.76]{}\\
     \hline
-    & \INEL   & y & ${}_{-0.1}^{+0.3}\%$ 
+    & \INEL   
+    & y 
+    & ${}_{-0.1}^{+0.3}\%$ 
     & ${}_{-0.35}^{+0.6}\%$ 
     & ${}_{-0.3}^{+0.6}\%$ 
-    & ${}_{-0.3}^{+0.6}$ & n/a & n/a & n/a \\
+    & ${}_{-0.3}^{+0.6}\%$ 
+    & \multicolumn{2}{c|}{n/a}
+    & n/a \\
     \altRowColor \cellcolor{white}
-    & \INELGT & y & negl. & negl. & negl. & negl. & n/a & n/a & n/a \\
+    & \INELGT 
+    & y 
+    & \multicolumn{4}{c|}{negl.} 
+    & \multicolumn{2}{c|}{n/a} 
+    & n/a \\
     & \NSD    & y & $\pm2\%$ 
     & $\pm3\%$  
     & $\pm2\%$ 
@@ -1130,35 +1417,84 @@ sizes.
     & 1--2\% & 1--2\% & n/a \\
     \altRowColor\cellcolor{white}
     \multirow{-4}{*}{\minitab[c]{\rowcolor{white}Event\\ selection}} 
-    & Centrality & y & n/a & n/a & n/a & n/a 
-    & 2--4\% & 3--6\% & 1--2\% \\
+    & Centrality 
+    & y 
+    & \multicolumn{4}{c|}{n/a} 
+    & 2--4\% 
+    & 3--6\% 
+    & 1--2\% \\
     \hline 
-    & Merging & n & \multicolumn{4}{c|}{1\%} &
-    \multicolumn{2}{c|}{1\%} & 1\%\\ 
+    & Merging 
+    & n 
+    & \multicolumn{4}{c|}{1\%} 
+    & \multicolumn{2}{c|}{1\%} 
+    & 1\%\\ 
     \altRowColor\cellcolor{white}
-    \multirow{-2}{*}{Analysis} & Density & n & 
-    \multicolumn{4}{c|}{1\%} & \multicolumn{2}{c|}{1\%} & 1\%\\ 
+    \multirow{-2}{*}{Analysis} 
+    & Density 
+    & n 
+    & \multicolumn{4}{c|}{1\%} 
+    & \multicolumn{2}{c|}{1\%} 
+    & 1\%\\ 
     \hline
+    \multicolumn{2}{|c|}{Secondary map\textsuperscript{*}\hspace*{3em}} 
+    & n 
+    & \multicolumn{7}{c|}{5-15\%\textsuperscript{**}}\\
+    \hline
+    \altRowColor{}\cellcolor{white} 
     & Satellite\textsuperscript{*} 
-                & n & \multicolumn{4}{c|}{5.8-7.1\%?} 
-                    & \multicolumn{2}{c|}{5.8-7.1\%?} 
-                    & 5.8-7.1\%?\\ 
-    \altRowColor\cellcolor{white} \multirow{-2}{*}{Empirical} 
-    & Reference & n & 
-    \multicolumn{4}{c|}{5\%?} & \multicolumn{2}{c|}{5\%?} & 5\%?\\ 
+    & n 
+    & \multicolumn{7}{c|}{3.5-7.5\%} \\
+    & Reference\textsuperscript{*}  
+    & n 
+    & \multicolumn{4}{c|}{4\%} 
+    & \multicolumn{2}{c|}{4\%} 
+    & 5\%?\\ 
+    \altRowColor{}\cellcolor{white} 
+    \multirow{-3}{*}{Empirical} 
+    & As--applied\textsuperscript{***} 
+    & n 
+    & \multicolumn{4}{c|}{6.1\% (+2\% \FMD{1})} 
+    & \multicolumn{2}{c|}{6.1\% (+2\% \FMD{1})} 
+    & 6.1\%\\ 
     \hline
-    \minitab[c]{Secondary\\ map\textsuperscript{*}} & & n & 
-    \multicolumn{4}{c|}{5-15\%?} & \multicolumn{2}{c|}{5-15\%?} &
-    5-15\%?\\ 
-    \hline
+    &   \INEL{}
+    & 
+    &
+    &
+    &
+    &
+    & \multicolumn{2}{c|}{n/a}
+    & n/a 
+    \\
     \altRowColor\cellcolor{white}
-    &  & & \multicolumn{4}{c|}{7.2\%} & 7.3--7.4\% & 7.3--7.4\% & n/a\\
-    \multirow{-2}{*}{Total} & Centrality & & \multicolumn{4}{c|}{n/a} &
-    7.5--8.2\% & 7.8--9.4\% & 7.3--7.4\% \\ 
+    & \INELGT{}
+    & 
+    & 
+    & 
+    & 
+    & 
+    & \multicolumn{2}{c|}{n/a}
+    & n/a \\
+    & \NSD{}
+    & 
+    & 
+    & 
+    & 
+    &
+    & 
+    & 
+    & n/a \\
+    \altRowColor\cellcolor{white}
+    \multirow{-2}{*}{Total} 
+    & Centrality 
+    & 
+    & \multicolumn{4}{c|}{n/a} 
+    & 
+    &
+    & \\
     \hline
   \end{tabular}
-  \caption{Summary of systematic errors.  \textsuperscript{*}These
-    entries are not directly calculated into the total.}
   \label{tab:syserr}
 \end{table}
 
@@ -1169,13 +1505,15 @@ sizes.
     mainly the estimated error on the trigger selection, as well as
     the estimated error on the vertex reconstruction.  Other sources
     include pile-up.  Of these sources, the most dominant is the
-    trigger efficiency and the rest are considered negligible.
+    trigger efficiency and the rest are considered negligible
+    \cite{pwgud:2015}.
   \item[\INELGT{}] Since this trigger is purely experimentally defined
     there is not or very small errors associated with the trigger
     efficiency, and the remaining contributions from vertex
-    reconstruction and pile-up are negligible.
-  \item[Centrality] The ranges given here are from most central (low
-    systematic error) to most peripheral (higher systematic error). 
+    reconstruction and pile-up are negligible \cite{pwgud:2015}.
+  \item[Centrality] The ranges given here are from most central (lower
+    systematic error) to most peripheral (higher systematic error)
+    \cite{Adam:2014qja,PbPbCent:XXX}.
   \end{description}
 \item[Analysis] \hbox{}\hfill
   \begin{description}
@@ -1186,29 +1524,154 @@ sizes.
   \item[Density] This comes from the estimation of the inclusive
     number of charge particles per $\etaphi$--bin.  The size of this
     error is estimated by evaluating the correlation between the two
-    available methods for obtaining $\dndetadphi[incl,r,\subIPz,i]$ (see
-    \secref{sec:sub:density_calculator}). 
+    available methods for obtaining $\dndetadphi[incl,r,\subIPz,i]$
+    (see \secref{sec:sub:density_calculator}), and by varying the
+    threshold cut and cut definitions (see \secref{sec:cuts}). 
   \end{description}
 \item[Empirical] \hbox{}\hfill 
   \begin{description}
   \item[Satellite] These are the systematic errors from the published
     $\ndndeta$ based on an analysis of satellite collisions
-    \cite{Abbas:2013bpa}.  The variation in the number is stems the
+    \cite{Abbas:2013bpa}.  The variation in the number stems from the
     uncertainty in the centrality determination, which presumably
     biases both the denominator and numerator of
-    \eqref{eq:empirical:cent} in the same direction. Subtracting the
-    centrality from the systematic error leaves us with an error of
-    5.7\%.  Of these another 2\% from particle composition and weak
-    decays are correlated and subtracting leaves us with the
-    uncorrelated systematic error of 5.4\%. 
+    \eqref{eq:empirical:cent} in the same direction. The effect on the
+    empirical correction is discussed in \secref{sec:dndeta:sys:emp}. 
   \item[Reference] As shown in \figref{fig:empirical:cent} and
     \ref{fig:empirical:methods} the variation of chosen reference run
-    and the choice of method results in a 5\% systematic error. 
+    and the choice of method results in a 5\% systematic error. The
+    effect on the empirical correction is discussed in
+    \secref{sec:dndeta:sys:emp}.
+  \item[As--applied] This is the systematic error as applied to the
+    data in the this analysis. The error is discussed in
+    \secref{sec:dndeta:sys:emp}.
   \end{description}
 \item[Secondary map] This row is mainly included for historical
   reasons and apply only in the case where the $\SecMap$ correction is
   applied to the data (see \secref{sec:sub:sub:secmap}). 
 \end{description}
+
+\subsubsection{Systematics error on the Empirical Correction} 
+\label{sec:dndeta:sys:emp}
+
+The \ndndeta{} in centrality bins from 0 to 30\% previously published
+\cite{Abbas:2013bpa} is based on three measurements: \SPD{} tracklets,
+\VZERO{} amplitude match to the \SPD{}, and the \FMD{} signals.  Each
+of these measurements carried their own set of systematic errors, as
+well as some common ones. \tabref{tab:satellite:syserrs} summarises
+the various contributions. 
+
+\begin{table}[htbp]
+  \centering
+  \caption{The systematic errors of the published \ndndeta{}.  Adapted
+    from \cite{Abbas:2013bpa}.}
+  \begin{tabular}[T]{|clc|}
+    \hline 
+    \headColor
+    \textbf{Detector} 
+    & \textbf{Source} 
+    & \textbf{Error}\\ 
+    \hline 
+    Common 
+    & Centrality 
+    & 1--2\%\\
+    \hline 
+    % SPD 
+    & Background subtraction   
+    & 0.1--2\%\\
+    \altRowColor{}\cellcolor{white} % SPD    
+    & Particle composition
+    & 1\%\\
+    % SPD
+    & Weak decays 
+    & 1\%\\
+    \altRowColor{}\cellcolor{white}\multirow{-4}*{\SPD}
+    & Extrapolation to $p=0$ 
+    & 2\%\\                              
+    \hline 
+    & Material budget 
+    & 4\%\\
+    \altRowColor{}\cellcolor{white}
+    \multirow{-2}*{\minitab[c]{%
+    \cellcolor{white}\FMD{}\\
+    \cellcolor{white}\& \VZERO{}}} 
+    & ZEM scaling 
+    & 4\% \\    
+    \hline
+    & Particle composition, spectra, weak decays 
+    & 2\%\\
+    \altRowColor{}\cellcolor{white} 
+    & Variation of cuts 
+    & 3\%\\
+    \multirow{-3}*{\FMD{}} 
+    & Analysis method 
+    & 2\%\\ 
+    \hline
+    \altRowColor{}\cellcolor{white} 
+    & Variation between rings 
+    & 3\%\\
+    \multirow{-2}*{\VZERO{}}
+    & Calibration by \SPD{} 
+    & 3--4\%\\
+    \hline 
+  \end{tabular}
+  \label{tab:satellite:syserrs}
+\end{table}
+
+The 3 measurements was then added up using the non--common systematic
+errors as weights, and finally the common systematics errors are added
+in quadrature.  The result is shown in the top of
+\figref{fig:dndeta:sat:results}. Subtracting the common error from the
+centrality estimate from the systematic error leaves us with an error
+of 7.2\% in the high limit, and 3.6\% in the low limit.
+ 
+\begin{figure}[h!tbp]
+  \centering
+  \figinput[.9\linewidth]{satellites_dndeta}
+  \caption{Top shows the \ndndeta{} from satellite collisions after
+    summing the 3 measurements, and adding the common systematics in
+    quadrature \cite{Abbas:2013bpa}.  The bottom panel shows the
+    result relative systematic error for each centrality bin. For the
+    points relevant for the forward analysis we see a variation from
+    3.75\% --- for the most central --- up to 7.5\% --- for the most
+    peripheral.  The dashed line indicates the centrality weighted
+    mean. }
+  \label{fig:dndeta:sat:results}
+\end{figure}
+
+As outlined in \secref{sec:sub:empirical}, the empirical correction is
+formed by averaging over the available centralities 
+\begin{equation}
+  \EmpCor{} = \frac{\sum_c \Delta c\EmpCor[c]{}}{\sum_c \Delta c}
+  \tag{\ref{eq:empirical}}
+\end{equation}
+where $\EmpCor[c]{}$ is given by \eqref{eq:empirical:cent}.  That
+means, we should consider the centrality weighted systematic error (as
+shown in \figref{fig:dndeta:sat:results}), and we find a low value of
+$\sqrt{4.2^2-1.5^2}=3.9\%$ and a high value of
+$\sqrt{4.9^2-1.5^2}=4.7\%$, with an average of
+$\sqrt{4.5^2-1.5^2}=4.2$ in the $\eta$ regions relevant for this
+analysis. 
+
+The error on the numerator of \eqref{eq:empirical:cent} is given by
+the run--to--run variation illustrated in
+\figref{fig:empirical:empcor_stable}, and amounts to 4\%.  Adding this
+up in quadrature gives the final systematic on the empirical
+correction to be 
+\begin{align}
+  \label{eq:empcorr:syserr}
+  \min{\delta\EmpCor{}} &= \sqrt{3.9^2+4^2} = 5.6\%\nonumber\\
+  \max{\delta\EmpCor{}} &= \sqrt{4.7^2+4^2} = 6.1\%\nonumber\\
+  \langle\delta\EmpCor{}\rangle &= 5.8\%\quad.\\
+\end{align}
+Considering the overall variation across $\eta$ is relatively small,
+we err on the side caution and choose $\delta\EmpCor{}=6.1\%$ for the
+systematic error of empirical correction. 
+
+
+\section{Result plots} 
+
+\FIXME{To come very soon}
 
 
 %% === Section on energy loss fits ===================================
@@ -1339,7 +1802,7 @@ parameter $X$:
   some number (not necessarily integer) Landau widths below the most
   probably value obtained in the energy loss fits. Cuts defined this
   way are not used in the analysis. 
-\item[\emph{Landau and Gaus width} $c=\Delta_p - X(\xi+\sigma)$] The
+\item[\emph{Landau and Gauss width} $c=\Delta_p - X(\xi+\sigma)$] The
   cut is defined as some number (not necessarily integer) Landau and
   Gaussian widths below the most probably value obtained in the energy
   loss fits. This type of cuts is typically used in the sharing filter
@@ -1352,7 +1815,7 @@ parameter $X$:
     P(x<c) &= \int_0^c\text{d}x f(x;\Delta_p;\xi;\sigma) < X\quad.
   \end{align*}
   Although mathematically sound, it is slow to compute and adds very
-  little in terms of signal quality over the \emph{Landau and Gaus
+  little in terms of signal quality over the \emph{Landau and Gauss
     width}  cut type.  It is not used in the analysis.
 \end{description}
 In the above $\Delta_p,\xi,\sigma,$ and $\mathbf{a}$ refers to the
@@ -1384,14 +1847,14 @@ and $f$ is defined in \eqref{eq:f}.
 \bibitem{FWD:2004mz} \ALICE{} Collaboration, Bearden, I.~G.\
   \textit{et al} \textit{ALICE technical design report on forward
     detectors: FMD, T0 and V0}, \CERN{}, 2004, CERN-LHCC-2004-025
-\bibitem{cholm:2009} Christensen, C.~H., \textit{The ALICE Forward
+\bibitem{cholm:2009} C.H.~Christensen, \textit{The ALICE Forward
     Multiplicity Detector --- From Design to Installation},
   Ph.D.~thesis, University of Copenhagen, 2009,
   \url{http://www.nbi.dk/~cholm/}.
-\bibitem{maxime} Guilbaud, M. \textit{et al}, \textit{Measurement of
+\bibitem{maxime} M.~Guilbaud \textit{et al}, \textit{Measurement of
     the charged-particle multiplicity density at forward rapidity with
     ALICE VZERO detector in central Pb-Pb collision at
-    $\sqrt{s_{NN}}=\TeV{2.76}$}, ALICE internal note, 2012,
+    $\usNN{PbPb}{2760}$}, ALICE internal note, 2012,
   \url{https://aliceinfo.cern.ch/Notes/node/17/}.
 \bibitem{nim:b1:16}
 %% \bibitem{Hancock:1983ry}
@@ -1405,10 +1868,24 @@ and $f$ is defined in \eqref{eq:f}.
   Energy Straggling Of Protons And Pions In The Momentum Range
   0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615,
   \url{http://cdsweb.cern.ch/record/145395/files/PhysRevA.28.615.pdf}.
-\bibitem{hhd:2009} Dalsgaard, H.~H., \textit{Pseudorapidity Densities
+\bibitem{hhd:2009} H.H.~Dalsgaard, \textit{Pseudorapidity Densities
     in p+p and Pb+Pb collisions at LHC measured with the ALICE
     experiment}, Ph.D.~thesis, University of Copenhagen, 2011,
   \url{http://www.nbi.dk/~canute/thesis.pdf}.
+\bibitem{pwgud:2015} \ALICE{} Collaboration, ``Charged--particle
+  multiplicities in proton–-proton collisions at $\sqrt{s} = 0.9$ to
+  \TeV[8]{}, with ALICE at the LHC'', draft paper,
+\url{https://aliceinfo.cern.ch/ArtSubmission/node/228}
+%\cite{Adam:2014qja}
+\bibitem{Adam:2014qja}
+  J.~Adam {\it et al.}  [\ALICE{} Collaboration],
+  ``Centrality dependence of particle production in p-Pb collisions at
+  $\usNN{pPb}{5023}$,''
+  \href{http://arxiv.org/abs/1412.6828}{arXiv:1412.6828 [nucl-ex]}, 
+  \url{https://aliceinfo.cern.ch/ArtSubmission/node/1155}
+\bibitem{PbPbCent:XXX}
+  \ALICE{} Collaboration, ``Centrality determination in \PbPbCol{}'',
+  \textbf{{\color{alicered} Need reference}}
 \end{thebibliography}
 
 \appendix 
@@ -1491,5 +1968,11 @@ and $f$ is defined in \eqref{eq:f}.
 \end{table}
 
 \end{document}
-
-%  LocalWords:  tracklets azimuthal
+%% Local Variables:
+%%   ispell-dictionary: "british"
+%% End:
+%% 
+%  LocalWords:  tracklets azimuthal outlier tracklet azimuthally FMD
+%  LocalWords:  pulser pre OCDB AliFMDSharingFilter algo GetHighCut
+%  LocalWords:  radians systematics debunching centralities
+%  LocalWords:  pseudorapidity
