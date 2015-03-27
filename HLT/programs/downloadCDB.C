@@ -23,9 +23,23 @@ void downloadCDB(Int_t runnr,
 {
   AliCDBManager* man=AliCDBManager::Instance();
   man->SetDefaultStorage(from);
+  man->SetRun(runnr);
   man->SetDrain(to);
   AliCDBPath cdbpath(path);
   man->GetAll(path, runnr);
+
+  if(TString(getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE"))
+  {
+    TString snapshotFile(getenv("OCDB_SNAPSHOT_FILENAME"));
+
+    TString snapshotFileOut = "OCDB.root";
+    if(!(snapshotFile.IsNull() || snapshotFile.IsWhitespace()))
+    {
+      snapshotFileOut = snapshotFile;
+    }
+
+    man->DumpToSnapshotFile("OCDB.root",kFALSE);
+  }
 }
 
 void downloadCDB()
