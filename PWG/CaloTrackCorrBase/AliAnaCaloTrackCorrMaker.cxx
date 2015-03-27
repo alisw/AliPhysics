@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_____________________________________________________________________________
-// Steering class for particle (gamma, hadron) identification and correlation
-// analysis. It is called by the task class AliAnalysisTaskCaloTrackCorrelation
-// and it connects the input (ESD/AOD/MonteCarlo) got with AliCaloTrackReader
-// (produces TClonesArrays of AODs (TParticles in MC case if requested)), with
-// the analysis classes that derive from AliAnaCaloTrackCorrBaseClass
-//
-// -- Author: Gustavo Conesa (INFN-LNF, LPSC-Grenoble)
-
 #include <cstdlib>
 
 // --- ROOT system ---
@@ -40,9 +31,13 @@
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliLog.h"
 
-ClassImp(AliAnaCaloTrackCorrMaker)
+/// \cond CLASSIMP
+ClassImp(AliAnaCaloTrackCorrMaker) ;
+/// \endcond
 
-
+//__________________________________________________
+/// Default constructor.
+/// Initialize parameters, pointers and arrays.
 //__________________________________________________
 AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker() :
 TObject(),
@@ -66,7 +61,7 @@ fhEMCalBCEvent(0),            fhEMCalBCEventCut(0),
 fhTrackBCEvent(0),            fhTrackBCEventCut(0),
 fhPrimaryVertexBC(0),         fhTimeStampFraction(0),
 fhNPileUpVertSPD(0),          fhNPileUpVertTracks(0),
-
+// EMCal trigger control histograms
 fhClusterTriggerBC(0),                  fhClusterTriggerBCExotic(0),
 fhClusterTriggerBCBadCell(0),           fhClusterTriggerBCBadCellExotic(0),
 fhClusterTriggerBCBadCluster(0),        fhClusterTriggerBCBadClusterExotic(0),
@@ -76,7 +71,6 @@ fhClusterTriggerBCBadClusterUnMatch(0), fhClusterTriggerBCBadClusterExoticUnMatc
 fhClusterTriggerBCEventBC(0),           fhClusterTriggerBCEventBCUnMatch(0),
 fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0)
 {
-  //Default Ctor
   AliDebug(1,"*** Analysis Maker Constructor ***");
   
   for(Int_t i = 0; i < 3; i++)
@@ -85,10 +79,11 @@ fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0
     fhClusterTriggerBCExoticUnMatchReMatch[0] = 0;
   }
   
-  //Initialize parameters, pointers and histograms
   InitParameters();
 }
 
+//________________________________________________________________________________________
+/// Copy constructor.
 //________________________________________________________________________________________
 AliAnaCaloTrackCorrMaker::AliAnaCaloTrackCorrMaker(const AliAnaCaloTrackCorrMaker & maker) :
 TObject(),
@@ -142,21 +137,19 @@ fhClusterTriggerBCEventBC(maker.fhClusterTriggerBCEventBC),
 fhClusterTriggerBCEventBCUnMatch(maker.fhClusterTriggerBCEventBCUnMatch),
 fhClusterTriggerBCExoticEventBC(maker.fhClusterTriggerBCExoticEventBC),
 fhClusterTriggerBCExoticEventBCUnMatch(maker.fhClusterTriggerBCExoticEventBCUnMatch)
-
 {
   for(Int_t i = 0; i < 3; i++)
   {
     fhClusterTriggerBCUnMatchReMatch      [i] = maker.fhClusterTriggerBCUnMatchReMatch      [i];
     fhClusterTriggerBCExoticUnMatchReMatch[i] = maker.fhClusterTriggerBCExoticUnMatchReMatch[i];
   }
-  // cpy ctor
 }
 
 //___________________________________________________
+/// Destructor. Remove only owned pointers.
+//___________________________________________________
 AliAnaCaloTrackCorrMaker::~AliAnaCaloTrackCorrMaker()
 {
-  // Remove all owned pointers.
-  
   //  Do not delete it here, already done somewhere else, need to understand where.
   //  if (fOutputContainer) {
   //    fOutputContainer->Clear();
@@ -177,14 +170,13 @@ AliAnaCaloTrackCorrMaker::~AliAnaCaloTrackCorrMaker()
 	  fCuts->Delete();
 	  delete fCuts;
   }
-	
 }
 
 //__________________________________________________________________
-void    AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n)
-{
-  // Add analysis depending on AliAnaCaloTrackCorrBaseClass to list
-  
+/// Add analysis depending on AliAnaCaloTrackCorrBaseClass to list.
+//__________________________________________________________________
+void AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n)
+{  
   if ( fAnalysisContainer)
   {
     fAnalysisContainer->AddAt(ana,n);
@@ -196,13 +188,12 @@ void    AliAnaCaloTrackCorrMaker::AddAnalysis(TObject* ana, Int_t n)
 }
 
 //_________________________________________________________
+/// \return list with any new output AOD branches from analysis.
+/// The list is filled in the maker, and new branch passed to the 
+/// main analysis task AliAnalysisTaskCaloTrackCorrelation.
+//_________________________________________________________
 TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
 {
-	
-  // Get any new output AOD branches from analysis and put them in a list
-  // The list is filled in the maker, and new branch passed to the analysis frame
-  // AliAnalysisTaskCaloTrackCorrelation
-  
   TList *aodBranchList = fReader->GetAODBranchList() ;
   
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
@@ -212,14 +203,13 @@ TList * AliAnaCaloTrackCorrMaker::FillAndGetAODBranchList()
   }
   
   return aodBranchList ;
-  
 }
 
 //____________________________________________________
+/// Fill here event control histograms.
+//____________________________________________________
 void AliAnaCaloTrackCorrMaker::FillControlHistograms()
-{
-  // Event control histograms
-  
+{  
   AliVEvent* event =  fReader->GetInputEvent();
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
@@ -331,6 +321,8 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
 }
 
 //___________________________________________________________
+/// Fill here EMCal triggered events control histograms.
+//___________________________________________________________
 void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
 {
   if(!fFillDataControlHisto) return;
@@ -419,17 +411,14 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
     if(!exotic) fhClusterTriggerBCEventBCUnMatch      ->Fill(triggerBC,eventBC%4);
     else        fhClusterTriggerBCExoticEventBCUnMatch->Fill(triggerBC,eventBC%4);
   }
-  
 }
 
-
+//_______________________________________________________
+/// \return the list of the cuts (strings) used for the analysis.
+/// The list is filled in the maker, called by the task in LocalInit() and posted there
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 {
-  
-  // Get the list of the cuts used for the analysis
-  // The list is filled in the maker, called by the task in LocalInit() and posted there
-  
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
@@ -439,14 +428,15 @@ TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
   }
   
   return fCuts ;
-  
 }
 
 //___________________________________________________
+/// Fill the output list of histograms during the CreateOutputObjects stage.
+/// Get/create the histograms of the different analysis tasks and add them to the 
+/// common output list. Event control histograms are also created and added here. 
+//___________________________________________________
 TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 {
-  // Fill the output list of histograms during the CreateOutputObjects stage.
-  
   //Initialize calorimeters  geometry pointers
   //GetCaloUtils()->InitPHOSGeometry();
   //GetCaloUtils()->InitEMCALGeometry();
@@ -823,11 +813,13 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
 }
 
 //___________________________________
+/// Init container histograms and other common variables
+/// Fill the output list of histograms during the CreateOutputObjects stage.
+/// Pass to the list of analysis classes the pointers to AliCaloTrackReader and AliCalorimeterUtils, 
+/// and call the Init of those analysis.
+//___________________________________
 void AliAnaCaloTrackCorrMaker::Init()
-{
-  //Init container histograms and other common variables
-  // Fill the output list of histograms during the CreateOutputObjects stage.
-  
+{  
   // Activate debug level in maker
   if( fAnaDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fAnaDebug);
@@ -859,31 +851,24 @@ void AliAnaCaloTrackCorrMaker::Init()
     
     ana->Init();
     ana->InitDebug();
-    
-//    // Activate debug level in analysis
-//    if( ana->GetDebug() >= 0 )
-//      (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(ana->ClassName(),ana->GetDebug());
-
   }//Loop on analysis defined
-  
 }
 
 //_____________________________________________
+/// Init data members
+//_____________________________________________
 void AliAnaCaloTrackCorrMaker::InitParameters()
-{
-  //Init data members
-  
+{  
   fMakeHisto  = kTRUE;
   fMakeAOD    = kTRUE;
-  fAnaDebug   = 0; // No debugging info displayed by default
-	
+  fAnaDebug   = 0; // No debugging info displayed by default	
 }
 
 //______________________________________________________________
+/// Print some relevant parameters set for the analysis
+//______________________________________________________________
 void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
-{
-  //Print some relevant parameters set for the analysis
-	
+{	
   if(! opt)
     return;
   
@@ -905,16 +890,22 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
     fReader->Print("");
     printf("Print analysis Calorimeter Utils settings :\n") ;
     fCaloUtils->Print("");
-    
   }
-  
 }
 
 //_____________________________________________________________________________________
+/// Main method, analysis are executed here:
+/// * 1) Clean-up arrays and stuff, access OADB (once), geometry (once), etc.
+/// * 2) Event selection, track filtering and cluster filtering in AliCaloTrackReader. 
+/// * 3) Process different defined analysis for this event. 
+/// * 4) Event selection for mixing studies.
+/// * 5) Control histograms filling
+/// * 6) Loop on the defined analysis list and execute the analysis defined steps
+/// * 7) Reset lists, fill more control histograms
+/// 
+//_____________________________________________________________________________________
 void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFileName)
-{
-  //Process analysis for this event
-  
+{  
   if(fMakeHisto && !fOutputContainer)
     AliFatal("Histograms not initialized");
   
@@ -922,7 +913,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   AliDebug(2,Form("Current File Name : %s", currentFileName));
   //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
   
-  //Each event needs an empty branch
+  // Each event needs an empty branch
   TList * aodList = fReader->GetAODBranchList();
   Int_t nAODBranches = aodList->GetEntries();
   for(Int_t iaod = 0; iaod < nAODBranches; iaod++)
@@ -931,16 +922,16 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
 	  if(tca) tca->Clear("C");
   }
   
-  //Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
+  // Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
   fCaloUtils->AccessGeometry(fReader->GetInputEvent());
   
-  //Set the AODB calibration, bad channels etc. parameters at least once
+  // Set the AODB calibration, bad channels etc. parameters at least once
   fCaloUtils->AccessOADB(fReader->GetInputEvent());
   
-  //Tell the reader to fill the data in the 3 detector lists
+  // Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   
-  //Access pointers, and trigger mask check needed in mixing case
+  // Access pointers, and trigger mask check needed in mixing case
   AliAnalysisManager   *manager      = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
@@ -967,7 +958,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
     return ;
   }
   
-  //Magic line to write events to file
+  // Magic line to write events to file
   if(fReader->WriteDeltaAODToFile())AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
   
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
@@ -977,7 +968,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   if ( !TGeoGlobalMagField::Instance()->GetField() && fReader->GetInputEvent() )
       (fReader->GetInputEvent())->InitMagneticField();
   
-  //Loop on analysis algorithms
+  // Loop on analysis algorithms
   
   AliDebug(1,"*** Begin analysis ***");
   
@@ -1019,15 +1010,14 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   //gObjectTable->Print();
 	
   AliDebug(1,"*** End analysis ***");
-  
 }
 
 //__________________________________________________________
+/// Execute Terminate of analysis.
+/// Do some final plots.
+//__________________________________________________________
 void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
 {
-  //Execute Terminate of analysis
-  //Do some final plots.
-  
   if (!outputList)
   {
     AliError("No output list");
@@ -1036,11 +1026,10 @@ void AliAnaCaloTrackCorrMaker::Terminate(TList * outputList)
   
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
-    
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     if(ana->MakePlotsOn())ana->Terminate(outputList);
-    
-  }//Loop on analysis defined
-  
+  } // Loop on analysis defined
 }
+
+
 

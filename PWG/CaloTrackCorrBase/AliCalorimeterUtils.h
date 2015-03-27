@@ -4,12 +4,18 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class utility for Calorimeter specific selection methods                ///
-//
-//
-//
-//-- Author: Gustavo Conesa (LPSC-Grenoble) 
-//////////////////////////////////////////////////////////////////////////////
+/// \class AliCalorimeterUtils
+/// \brief Class with utils specific to calorimeter clusters/cells.
+///
+/// Class containing utility methods for calorimeters. It performs calibration,
+/// cluster splitting (EMCal), geometry initialization, OADB initialization, 
+/// plus other goodies.
+/// For EMCal, it relys heavyly in AliEMCALRecoUtils.
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT system ---
 #include <TObject.h> 
@@ -81,8 +87,10 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOnMCECellClusFracCorrection()        { fMCECellClusFracCorrOn = kTRUE  ; }
   void          SwitchOffMCECellClusFracCorrection()       { fMCECellClusFracCorrOn = kFALSE ; }
 
+  //------------------------------
+  // Calorimeters Geometry Methods
+  //------------------------------
   
-  //Calorimeters Geometry Methods
   AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo             ; }
   TString       EMCALGeometryName()                  const { return fEMCALGeoName         ; }  
   void          SetEMCALGeometryName(TString name)         { fEMCALGeoName = name         ; }
@@ -114,7 +122,10 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOffLoadOwnPHOSGeometryMatrices()     { fLoadPHOSMatrices = kFALSE   ; }
   void          SetPHOSGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fPHOSMatrix[i] = m   ; }
   
+  //------------------------------
   // Bad channels
+  //------------------------------
+
   Bool_t        IsBadChannelsRemovalSwitchedOn()     const { return fRemoveBadChannels                                ; }
   void          SwitchOnBadChannelsRemoval ()              { fRemoveBadChannels = kTRUE   ; 
                                                              fEMCALRecoUtils->SwitchOnBadChannelsRemoval(); 
@@ -164,13 +175,18 @@ class AliCalorimeterUtils : public TObject {
                   else printf("Not set, position larger than allocated set size first")                               ; }
   Bool_t        MaskFrameCluster(Int_t iSM, Int_t ieta) const ;
   
-  
-  //Calorimeter indexes information
+  //------------------------------
+  // Calorimeter indexes information
+  //------------------------------
+
   Int_t         GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent* inputEvent) const;
   Int_t         GetModuleNumber(AliVCluster * cluster) const;
   Int_t         GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
-  //Modules fiducial region
+  //------------------------------
+  // Modules fiducial region
+  //------------------------------
+
   Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) const ;
   Bool_t        CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent* /**/, Int_t /**/)
                 { return CheckCellFiducialRegion(cluster, cells) ; } // Stupid thing to do but just to avoid compilation break in AliTrackComparisonESD while I find the authors
@@ -182,7 +198,10 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOffNoFiducialBorderInEMCALEta0()     { fEMCALRecoUtils->SwitchOffNoFiducialBorderInEMCALEta0()  ; }
   Bool_t        IsEMCALNoBorderAtEta0()              const { return fEMCALRecoUtils->IsEMCALNoBorderAtEta0()          ; }
   
+  //------------------------------
   // Recalibration
+  //------------------------------
+
   Bool_t        IsRecalibrationOn()                  const { return fRecalibration                                    ; }
   void          SwitchOnRecalibration()                    { fRecalibration = kTRUE ; 
                   InitPHOSRecalibrationFactors(); fEMCALRecoUtils->SwitchOnRecalibration()                            ; }
@@ -220,13 +239,17 @@ class AliCalorimeterUtils : public TObject {
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
   Float_t       RecalibrateClusterEnergyWeightCell(AliVCluster* cluster, AliVCaloCells * cells, Float_t energyOrg);
 
+  //------------------------------
   // Run dependent energy calibrations (EMCAL)
-  
+  //------------------------------
+
   void          SwitchOffRunDepCorrection()                              {  fRunDependentCorrection = kFALSE  ; }
   void          SwitchOnRunDepCorrection()                               {  fRunDependentCorrection = kTRUE   ; }
   
+  //------------------------------
   // Time Recalibration (EMCAL)
-  
+  //------------------------------
+
   Bool_t       IsTimeRecalibrationOn()                             const { return fEMCALRecoUtils->IsTimeRecalibrationOn() ; }
   void         SwitchOffTimeRecalibration()                              { fEMCALRecoUtils->SwitchOffTimeRecalibration()   ; }
   void         SwitchOnTimeRecalibration()                               { fEMCALRecoUtils->SwitchOnTimeRecalibration()    ; }
@@ -241,7 +264,10 @@ class AliCalorimeterUtils : public TObject {
   void         SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)     { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(map)        ; }
   void         SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h) { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(bc , h)     ; }
   
-  //EMCAL specific utils for the moment
+  //------------------------------
+  // EMCAL specific utils for the moment
+  //------------------------------
+
   void          SetEMCALRecoUtils(AliEMCALRecoUtils * ru)  { fEMCALRecoUtils = ru          ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()             const { return fEMCALRecoUtils        ; }
   
@@ -262,17 +288,23 @@ class AliCalorimeterUtils : public TObject {
   
   void          RecalculateClusterPID(AliVCluster* clu)    { fEMCALRecoUtils->RecalculateClusterPID(clu)              ; }
 
+  //------------------------------
   // *** Track Matching ***
-  
+  //------------------------------
+
   AliVTrack *   GetMatchedTrack(AliVCluster * cluster, AliVEvent * event, Int_t index = -1) const ;
   
   // Recalculation
+
   void          RecalculateClusterTrackMatching(AliVEvent * event, TObjArray* clusterArray = 0x0) ;
     
   void          GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {
                   if (fRecalculateMatching) fEMCALRecoUtils->GetMatchedResiduals(index,dR,dZ)   ; }
   
-  //This could be used for PHOS ...
+  //------------------------------
+  // This could be used for PHOS ...
+  //------------------------------
+
   void          SwitchOnRecalculateClusterTrackMatching()       { fRecalculateMatching = kTRUE  ; } 
   void          SwitchOffRecalculateClusterTrackMatching()      { fRecalculateMatching = kFALSE ; } 
   Bool_t        IsRecalculationOfClusterTrackMatchingOn() const { return fRecalculateMatching   ; }
@@ -292,8 +324,11 @@ class AliCalorimeterUtils : public TObject {
   Float_t       GetCutPhi()                               const { return fCutPhi                ; } // EMCAL only
   void          SetCutPhi(Float_t p)                            { fCutPhi = p                   ;   // EMCAL only
                                                                   fEMCALRecoUtils->SetCutPhi(p) ; }
-  // OADB options settings
   
+  //------------------------------
+  // OADB options settings
+  //------------------------------
+
   void          AccessOADB(AliVEvent * event) ;
   
   TString       GetPass() ;
@@ -307,69 +342,113 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALOADBFilePath(TString path)              { fOADBFilePathEMCAL  = path    ; }
   void          SetPHOSOADBFilePath (TString path)              { fOADBFilePathPHOS   = path    ; }
 
+  //------------------------------
   // Other settings
-  
+  //------------------------------
+
   void          SetNumberOfSuperModulesUsed(Int_t nSM)          { fNSuperModulesUsed  = nSM     ; }
   Int_t         GetNumberOfSuperModulesUsed()             const { return fNSuperModulesUsed     ; }
 
   void          SetRunNumber(Int_t run)                         { fRunNumber  = run             ; }
   Int_t         GetRunNumber()                            const { return fRunNumber             ; }
 
-  
   enum detector { kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
   
  private:
 
-  Int_t              fDebug;                 //  Debugging level
-  TString            fEMCALGeoName;          //  Name of geometry to use for EMCAL.
-  TString            fPHOSGeoName;           //  Name of geometry to use for PHOS.	
-  AliEMCALGeometry * fEMCALGeo ;             //! EMCAL geometry pointer
-  AliPHOSGeoUtils  * fPHOSGeo  ;             //! PHOS  geometry pointer  
-  Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
-  Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS
-  Bool_t             fLoadEMCALMatrices;     //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  TGeoHMatrix *      fEMCALMatrix[12];       //  Geometry matrices with alignments
-  Bool_t             fLoadPHOSMatrices;      //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  TGeoHMatrix *      fPHOSMatrix[5];         //  Geometry matrices with alignments
-  Bool_t             fRemoveBadChannels;     //  Check the channel status provided and remove clusters with bad channels
-  TObjArray        * fPHOSBadChannelMap;     //  Array of histograms with map of bad channels, PHOS
-  Int_t              fNCellsFromPHOSBorder;  //  Number of cells from PHOS  border the cell with maximum amplitude has to be.
-  Int_t              fNMaskCellColumns;      //  Number of masked columns
-  Int_t*             fMaskCellColumns;       //[fNMaskCellColumns] list of masked cell collumn
-  Bool_t             fRecalibration;         //  Switch on or off the recalibration
-  Bool_t             fRunDependentCorrection;//  Switch on or off the recalibration dependent on T
-  TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
-  AliEMCALRecoUtils* fEMCALRecoUtils;        //  EMCAL utils for cluster rereconstruction
-  Bool_t             fRecalculatePosition;   //  Recalculate cluster position
-  Bool_t             fCorrectELinearity  ;   //  Correct cluster energy linearity
-  Bool_t             fRecalculateMatching;   //  Recalculate cluster position
-  Float_t            fCutR;                  //  dR cut on matching (PHOS)
-  Float_t            fCutZ;                  //  dZ cut on matching (EMCAL/PHOS)
-  Float_t            fCutEta;                //  dEta cut on matching (EMCAL)
-  Float_t            fCutPhi;                //  dPhi cut on matching (EMCAL)
-  Float_t            fLocMaxCutE;            //  Local maxima cut must have more than this energy
-  Float_t            fLocMaxCutEDiff;        //  Local maxima cut, when aggregating cells, next can be a bit higher
-  Bool_t             fPlotCluster;           //  Plot cluster in splitting method
-  Bool_t             fOADBSet ;              //  AODB parameters already set
-  Bool_t             fOADBForEMCAL ;         //  Get calibration from OADB for EMCAL
-  Bool_t             fOADBForPHOS ;          //  Get calibration from OADB for PHOS
-  TString            fOADBFilePathEMCAL ;    //  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change
-  TString            fOADBFilePathPHOS ;     //  Default path $ALICE_PHYSICS/OADB/PHOS, if needed change
-  Bool_t             fImportGeometryFromFile;// Import geometry settings in geometry.root file
-  TString            fImportGeometryFilePath;// path fo geometry.root file
+  Int_t              fDebug;                    ///<  Debugging level.
 
-  Int_t              fNSuperModulesUsed;     // Number of supermodules to be used in analysis, can be different than the real geo,
-                                             // to be used at initialization of histograms
-  Int_t              fRunNumber;             // Run number of the data, take it from data itself unless set by user
+  TString            fEMCALGeoName;             ///<  Name of geometry to use for EMCAL.
+  
+  TString            fPHOSGeoName;              ///<  Name of geometry to use for PHOS.	
 
-  Bool_t             fMCECellClusFracCorrOn; // Correct or not the weight of cells in cluster
-  Float_t            fMCECellClusFracCorrParam[4]; // Parameters for the function correcting the weight of the cells in the cluster
+  AliEMCALGeometry * fEMCALGeo ;                //!<! EMCAL geometry pointer.
+
+  AliPHOSGeoUtils  * fPHOSGeo  ;                //!<! PHOS  geometry pointer. 
+
+  Bool_t             fEMCALGeoMatrixSet;        ///<  Check if the transformation matrix is set for EMCAL.
+
+  Bool_t             fPHOSGeoMatrixSet ;        ///<  Check if the transformation matrix is set for PHOS.
+
+  Bool_t             fLoadEMCALMatrices;        ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
+
+  TGeoHMatrix *      fEMCALMatrix[12];          ///<  Geometry matrices with alignments.
+
+  Bool_t             fLoadPHOSMatrices;         ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
+
+  TGeoHMatrix *      fPHOSMatrix[5];            ///<  Geometry matrices with alignments.
+
+  Bool_t             fRemoveBadChannels;        ///<  Check the channel status provided and remove clusters with bad channels.
+
+  TObjArray        * fPHOSBadChannelMap;        ///<  Array of histograms with map of bad channels, PHOS.
+
+  Int_t              fNCellsFromPHOSBorder;     ///<  Number of cells from PHOS  border the cell with maximum amplitude has to be.
+
+  Int_t              fNMaskCellColumns;         ///<  Number of masked columns.
   
+  /// List of masked cells collumn index.
+  Int_t            * fMaskCellColumns;          //[fNMaskCellColumns] 
+
+  Bool_t             fRecalibration;            ///<  Switch on or off the recalibration.
+
+  Bool_t             fRunDependentCorrection;   ///<  Switch on or off the recalibration dependent on T.
+
+  TObjArray        * fPHOSRecalibrationFactors; ///<  Array of histograms with map of recalibration factors, PHOS.
+
+  AliEMCALRecoUtils* fEMCALRecoUtils;           ///<  EMCAL utils for cluster rereconstruction.
+
+  Bool_t             fRecalculatePosition;      ///<  Recalculate cluster position.
+ 
+  Bool_t             fCorrectELinearity  ;      ///<  Correct cluster energy linearity.
   
-  AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
-  AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
+  Bool_t             fRecalculateMatching;      ///<  Recalculate cluster position.
   
-  ClassDef(AliCalorimeterUtils,18)
+  Float_t            fCutR;                     ///<  dR cut on matching (PHOS).
+  
+  Float_t            fCutZ;                     ///<  dZ cut on matching (EMCAL/PHOS).
+  
+  Float_t            fCutEta;                   ///<  dEta cut on matching (EMCAL).
+  
+  Float_t            fCutPhi;                   ///<  dPhi cut on matching (EMCAL).
+  
+  Float_t            fLocMaxCutE;               ///<  Local maxima cut must have more than this energy.
+  
+  Float_t            fLocMaxCutEDiff;           ///<  Local maxima cut, when aggregating cells, next can be a bit higher.
+  
+  Bool_t             fPlotCluster;              ///<  Plot cluster in splitting method.
+  
+  Bool_t             fOADBSet ;                 ///<  AODB parameters already set.
+  
+  Bool_t             fOADBForEMCAL ;            ///<  Get calibration from OADB for EMCAL.
+  
+  Bool_t             fOADBForPHOS ;             ///<  Get calibration from OADB for PHOS.
+  
+  TString            fOADBFilePathEMCAL ;       ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
+  
+  TString            fOADBFilePathPHOS ;        ///<  Default path $ALICE_PHYSICS/OADB/PHOS, if needed change.
+  
+  Bool_t             fImportGeometryFromFile;   ///<  Import geometry settings in geometry.root file.
+  
+  TString            fImportGeometryFilePath;   ///<  Path fo geometry.root file.
+
+  Int_t              fNSuperModulesUsed;        ///<  Number of supermodules to be used in analysis, can be different than the real geo, to be used at initialization of histograms.
+  
+  Int_t              fRunNumber;                ///<  Run number of the data, take it from data itself unless set by user.
+
+  Bool_t             fMCECellClusFracCorrOn;    ///<  Correct or not the weight of cells in cluster.
+  
+  Float_t            fMCECellClusFracCorrParam[4]; ///<  Parameters for the function correcting the weight of the cells in the cluster.
+  
+  /// Copy constructor not implemented.
+  AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ;
+  
+  /// Assignment operator not implemented.
+  AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; 
+  
+  /// \cond CLASSIMP
+  ClassDef(AliCalorimeterUtils,18) ;
+  /// \endcond
+
 } ;
 
 

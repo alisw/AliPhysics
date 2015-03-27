@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and
-// Central Barrel Tracking detectors (CTS).
-// Not all MC particles/tracks/clusters are kept, some kinematical/fiducial restrictions are done.
-// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TObjArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackMCReader : Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS)
-//-- Author: Gustavo Conesa (LNF-INFN)
-//////////////////////////////////////////////////////////////////////////////
-
-
 // --- ROOT system ---
 #include <TFile.h>
 #include <TGeoManager.h>
@@ -61,9 +50,12 @@
 #include "AliAODJet.h"
 #include "AliAODJetEventBackground.h"
 
-ClassImp(AliCaloTrackReader)
+/// \cond CLASSIMP
+ClassImp(AliCaloTrackReader) ;
+/// \endcond
 
-
+//________________________________________
+/// Constructor. Initialize parameters.
 //________________________________________
 AliCaloTrackReader::AliCaloTrackReader() :
 TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
@@ -138,23 +130,23 @@ fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0), fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum()
 {
-  //Ctor
-  
-  //Initialize parameters
   InitParameters();
 }
+
+//_______________________________________
+/// Destructor.
 //_______________________________________
 AliCaloTrackReader::~AliCaloTrackReader()
 {
-  // Dtor
   DeletePointers();
 }
 
 //_______________________________________
+/// Destructor. Called by the destructors  
+/// of this class and derived classes.
+//_______________________________________
 void AliCaloTrackReader::DeletePointers()
-{
-  // Dtor
-  
+{  
   delete fFiducialCut ;
 	
   if(fAODBranchList)
@@ -220,29 +212,29 @@ void AliCaloTrackReader::DeletePointers()
   //  if(fMC)          delete fMC ;
   //  Pointer not owned, deleted by maker
   //  if (fCaloUtils) delete fCaloUtils ;
-  
 }
 
-//________________________________________________________________________
+//____________________________________________________________
+/// Accept track if DCA is smaller than function.
+/// \param pt of track.
+/// \param dca of track.
+//____________________________________________________________
 Bool_t  AliCaloTrackReader::AcceptDCA(Float_t pt, Float_t dca)
-{
-  // Accept track if DCA is smaller than function
-  
+{  
   Float_t cut = fTrackDCACut[0]+fTrackDCACut[1]/TMath::Power(pt,fTrackDCACut[2]);
   
   if(TMath::Abs(dca) < cut)
     return kTRUE;
   else
     return kFALSE;
-  
 }
 
 //_____________________________________________________
+/// Accept events that pass the physics selection
+/// depending on an array of trigger bits set during the configuration.
+//_____________________________________________________
 Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
-{
-  // Accept events that pass the physics selection
-  // depending on an array of trigger bits set during the configuration
-  
+{  
   Int_t nAccept = fAcceptEventsWithBit.GetSize();
   
   //printf("N accept %d\n", nAccept);
@@ -261,15 +253,14 @@ Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
   }
   
   return kFALSE ; // reject the event
-  
 }
 
 //_____________________________________________________
+/// Reject events that pass the physics selection
+/// depending on an array of trigger bits set during the configuration.
+//_____________________________________________________
 Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
 {
-  // Reject events that pass the physics selection
-  // depending on an array of trigger bits set during the configuration
-
   Int_t nReject = fRejectEventsWithBit.GetSize();
   
   //printf("N reject %d\n", nReject);
@@ -288,15 +279,15 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
   }
   
   return kTRUE ; // accept the event
-  
 }
 
 //_____________________________________________
+/// Do different selection of the event
+/// depending on trigger name, event type, 
+/// goodness of the EMCal trigger ...
+//_____________________________________________
 Bool_t AliCaloTrackReader::CheckEventTriggers()
-{
-  // Do different selection of the event
-  // depending on trigger name, event type, goodness of the EMCal trigger ...
-  
+{  
   //-----------------------------------------------------------
   // Reject events depending on the trigger name and event type
   //-----------------------------------------------------------
@@ -450,11 +441,13 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
 }
 
 //________________________________________________
+/// Check the MC PYTHIA event, if the requested 
+/// pT-hard is much smaller than the jet pT, then,
+/// there can be a problem in the tails of the 
+/// distributions and the event should be rejected.
+//________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
-{
-  // Check the event, if the requested ptHard is much smaller than the jet pT, then there is a problem.
-  // Only for PYTHIA.
-  
+{  
   //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
   
   if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
@@ -487,15 +480,16 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
   }
   
   return kTRUE ;
-  
 }
 
-//____________________________________________________________________
+//____________________________________________________
+/// Check the MC PYTHIA event, if the requested 
+/// pT-hard is smaller than the calorimeter cluster E, 
+/// there can be a problem in the tails of the 
+/// distributions and the event should be rejected.
+//____________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
-{
-  // Check the event, if the requested ptHard is smaller than the calorimeter cluster E, then there is a problem.
-  // Only for PYTHIA.
-  
+{  
   if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
   {
     AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
@@ -518,13 +512,13 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
   }
   
   return kTRUE ;
-  
 }
 
 //____________________________________________
+/// \return pointer to stack (AliStack)
+//____________________________________________
 AliStack* AliCaloTrackReader::GetStack() const
 {
-  //Return pointer to stack
   if(fMC)
     return fMC->Stack();
   else
@@ -535,9 +529,10 @@ AliStack* AliCaloTrackReader::GetStack() const
 }
 
 //______________________________________________
+/// \return pointer to header (AliHeader)
+//______________________________________________
 AliHeader* AliCaloTrackReader::GetHeader() const
 {
-  //Return pointer to header
   if(fMC)
   {
     return fMC->Header();
@@ -550,12 +545,12 @@ AliHeader* AliCaloTrackReader::GetHeader() const
 }
 
 //____________________________________________________
+/// In case of access only to hijing particles in cocktail
+/// get the min and max labels
+/// TODO: Check when generator is not the first one ...
+//____________________________________________________
 void AliCaloTrackReader::SetGeneratorMinMaxParticles()
-{
-  // In case of access only to hijing particles in cocktail
-  // get the min and max labels
-  // TODO: Check when generator is not the first one ...
-  
+{  
   fNMCProducedMin = 0;
   fNMCProducedMax = 0;
   
@@ -615,13 +610,12 @@ void AliCaloTrackReader::SetGeneratorMinMaxParticles()
   }
 }
 
-
+//______________________________________________________________
+/// \return pointer to Generated event header (AliGenEventHeader)
+/// If requested and cocktail, search for the HIJING generator.
 //______________________________________________________________
 AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
 {
-  // Return pointer to Generated event header
-  // If requested and cocktail, search for the hijing generator
-  
   if     (ReadStack() && fMC)
   {
     AliGenEventHeader * eventHeader = fMC->GenEventHeader();
@@ -682,37 +676,44 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
 }
 
 //_________________________________________________________
+/// \return list of particles in AOD, 
+/// Implemented in AliCaloTrackAODReader.
+//_________________________________________________________
 TClonesArray* AliCaloTrackReader::GetAODMCParticles() const
-{
-  //Return list of particles in AOD, implemented in AliCaloTrackAODReader.
-  
+{  
   AliInfo("Input are not AODs");
   
   return NULL ;
 }
 
 //________________________________________________________
+/// \return MC header in AOD. 
+/// Implemented in AliCaloTrackAODReader.
+//________________________________________________________
 AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader() const
-{
-  //Return MC header in AOD, implemented in AliCaloTrackAODReader.
-  
+{  
   AliInfo("Input are not AODs");
   
   return NULL ;
 }
 
 //___________________________________________________________
+/// \return vertex Bunch Cross Number.
+/// In old AODs BC not stored, recalculate it here,
+/// loop over the global track and select those which have 
+/// small DCA to primary vertex (e.g. primary).
+/// If at least one of these primaries has valid BC != 0, then 
+/// this vertex is a pile-up candidate.
+/// Execute after CTS filtering.
+//___________________________________________________________
 Int_t AliCaloTrackReader::GetVertexBC(const AliVVertex * vtx)
-{
-  // Get the vertex BC
-  
+{  
   Int_t vertexBC=vtx->GetBC();
+  
   if(!fRecalculateVertexBC) return vertexBC;
   
-  // In old AODs BC not stored, recalculate it
-  // loop over the global track and select those which have small DCA to primary vertex (e.g. primary).
-  // If at least one of these primaries has valid BC != 0, then this vertex is a pile-up candidate.
-  // Execute after CTS
+  // Value not available, recalculate it.
+  
   Double_t bz  = fInputEvent->GetMagneticField();
   Bool_t   bc0 = kFALSE;
   Int_t    ntr = GetCTSTracks()->GetEntriesFast();
@@ -746,27 +747,27 @@ Int_t AliCaloTrackReader::GetVertexBC(const AliVVertex * vtx)
   else      vertexBC = AliVTrack::kTOFBCNA ;
   
   return vertexBC;
-  
 }
 
 //_____________________________
+/// Init the reader. 
+/// Method to be called in AliAnaCaloTrackCorrMaker.
+//_____________________________
 void AliCaloTrackReader::Init()
-{
-  //Init reader. Method to be called in AliAnaCaloTrackCorrMaker
-  
+{  
   if(fReadStack && fReadAODMCParticles)
   {
     AliInfo("Cannot access stack and mcparticles at the same time, change them");
     fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
-  
 }
 
 //_______________________________________
+/// Initialize the parameters with default.
+//_______________________________________
 void AliCaloTrackReader::InitParameters()
 {
-  //Initialize the parameters of the analysis.
   fDataType   = kESD ;
   fCTSPtMin   = 0.1 ;
   fEMCALPtMin = 0.1 ;
@@ -872,16 +873,17 @@ void AliCaloTrackReader::InitParameters()
   fFillInputBackgroundJetBranch = kFALSE; 
   if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
 
-  fSmearShowerShapeWidth = 0.002;
-  
+  fSmearShowerShapeWidth = 0.005;
 }
 
-//________________________________________________________________________
+//___________________________________________________
+/// Find if cluster/track was generated by HIJING
+/// or it was an added signal.
+/// \param label of the cluster/track primary particle
+/// \return kTRUE if HIJING origin
+//___________________________________________________
 Bool_t AliCaloTrackReader::IsHIJINGLabel(Int_t label)
 {
- 
-  // Find if cluster/track was generated by HIJING
-  
   AliGenHijingEventHeader*  hijingHeader =  dynamic_cast<AliGenHijingEventHeader *> (GetGenEventHeader());
   
   //printf("header %p, label %d\n",hijingHeader,label);
@@ -970,10 +972,11 @@ Bool_t AliCaloTrackReader::IsHIJINGLabel(Int_t label)
 }
 
 //__________________________________________________________________________
+/// Select the cluster depending on a time window, either a simple
+/// range or a parametrization depending on the energy.
+//__________________________________________________________________________
 Bool_t AliCaloTrackReader::IsInTimeWindow(Double_t tof, Float_t energy) const
-{
-  // Cluster time selection window
-  
+{  
   // Parametrized cut depending on E
   if(fUseParamTimeCut)
   {
@@ -990,69 +993,81 @@ Bool_t AliCaloTrackReader::IsInTimeWindow(Double_t tof, Float_t energy) const
 }
 
 //________________________________________________
+/// Check if event is from pile-up determined by SPD.
+/// Default values: (3, 0.8, 3., 2., 5.).
+//________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromSPD() const
 {
-  // Check if event is from pile-up determined by SPD
-  // Default values: (3, 0.8, 3., 2., 5.)
   return fInputEvent->IsPileupFromSPD((Int_t) fPileUpParamSPD[0] , fPileUpParamSPD[1] ,
                                       fPileUpParamSPD[2] , fPileUpParamSPD[3] , fPileUpParamSPD[4] );
   //printf("Param : %d, %2.2f, %2.2f, %2.2f, %2.2f\n",(Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
-  
 }
 
 //__________________________________________________
+/// Check if event is from pile-up determined by EMCal
+//__________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromEMCal() const
 {
-  // Check if event is from pile-up determined by EMCal
   if(fNPileUpClusters > fNPileUpClustersCut) return kTRUE ;
   else                                       return kFALSE;
 }
 
 //________________________________________________________
+/// Check if event is from pile-up determined by SPD and EMCal.
+//________________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromSPDAndEMCal() const
 {
-  // Check if event is from pile-up determined by SPD and EMCal
   if( IsPileUpFromSPD() && IsPileUpFromEMCal()) return kTRUE ;
   else                                          return kFALSE;
 }
 
 //_______________________________________________________
+/// Check if event is from pile-up determined by SPD or EMCal.
+//_______________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromSPDOrEMCal() const
 {
-  // Check if event is from pile-up determined by SPD or EMCal
   if( IsPileUpFromSPD() || IsPileUpFromEMCal()) return kTRUE ;
   else                                          return kFALSE;
 }
 
 //___________________________________________________________
+/// Check if event is from pile-up determined by SPD and not by EMCal.
+//___________________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromSPDAndNotEMCal() const
 {
-  // Check if event is from pile-up determined by SPD and not by EMCal
   if( IsPileUpFromSPD() && !IsPileUpFromEMCal()) return kTRUE ;
   else                                          return kFALSE;
 }
 
 //___________________________________________________________
+/// Check if event is from pile-up determined by EMCal, not by SPD.
+//___________________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromEMCalAndNotSPD() const
 {
-  // Check if event is from pile-up determined by EMCal, not by SPD
   if( !IsPileUpFromSPD() && IsPileUpFromEMCal()) return kTRUE ;
   else                                           return kFALSE;
 }
 
 //______________________________________________________________
+/// Check if event not from pile-up determined neither by SPD nor by EMCal.
+//______________________________________________________________
 Bool_t AliCaloTrackReader::IsPileUpFromNotSPDAndNotEMCal() const
 {
-  // Check if event not from pile-up determined neither by SPD nor by EMCal
   if( !IsPileUpFromSPD() && !IsPileUpFromEMCal()) return kTRUE ;
   else                                            return kFALSE;
 }
 
 //___________________________________________________________________________________
+/// Event and tracks/clusters filtering method. Main steps:
+/// * Accept/reject the event looking to the triggers, vertex, pile-up, time stamps, 
+/// PYTHIA pT hard, centrality etc.
+/// * Filter the tracks and calorimeter clusters, even correct the clusters if requested
+/// and put them in lists.
+///
+/// Called by the analysis maker.
+//___________________________________________________________________________________
 Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileName*/)
-{
-  //Fill the event counter and input lists that are needed, called by the analysis maker.
-  
+{  
   fEventNumber         = iEntry;
   fTriggerClusterIndex = -1;
   fTriggerClusterId    = -1;
@@ -1244,52 +1259,50 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
 }
 
 //__________________________________________________
+/// \return Current event centrality bin. 
+/// Different percentile options and centrality class can be requested.
+//__________________________________________________
 Int_t AliCaloTrackReader::GetEventCentrality() const
-{
-  //Return current event centrality
+{  
+  if( !GetCentrality() ) return -1;
   
-  if(GetCentrality())
+  if     (fCentralityOpt==100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
+  else if(fCentralityOpt==10)  return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
+  else if(fCentralityOpt==20)  return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
+  else
   {
-    if     (fCentralityOpt==100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
-    else if(fCentralityOpt==10)  return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
-    else if(fCentralityOpt==20)  return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
-    else
-    {
-      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt));
-      return -1;
-    }
+    AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt));
+    return -1;
   }
-  else return -1;
-  
 }
 
 //_____________________________________________________
+/// \return Current event plane angle.
+/// Different methods options can be requested.
+//_____________________________________________________
 Double_t AliCaloTrackReader::GetEventPlaneAngle() const
-{
-  //Return current event centrality
+{  
+  if( !GetEventPlane() ) return -1000;
   
-  if(GetEventPlane())
+  Float_t ep =  GetEventPlane()->GetEventplane(GetEventPlaneMethod(), GetInputEvent());
+  
+  if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi()))
   {
-    Float_t ep =  GetEventPlane()->GetEventplane(GetEventPlaneMethod(), GetInputEvent());
-    
-    if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi()))
+    AliDebug(1,Form("Bad EP for <Q> method : %f\n",ep));
+    return -1000;
+  }
+  else if(GetEventPlaneMethod().Contains("V0")  )
+  {
+    if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
     {
-      AliDebug(1,Form("Bad EP for <Q> method : %f\n",ep));
+      AliDebug(1,Form("Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep));
       return -1000;
     }
-    else if(GetEventPlaneMethod().Contains("V0")  )
-    {
-      if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
-      {
-        AliDebug(1,Form("Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep));
-        return -1000;
-      }
-      
-      ep+=TMath::Pi()/2; // put same range as for <Q> method
-      
-    }
     
-    AliDebug(3,Form("Event plane angle %f",ep));
+    ep+=TMath::Pi()/2; // put same range as for <Q> method
+  }
+  
+  AliDebug(3,Form("Event plane angle %f",ep));
     
 //    if(fDebug > 0 )
 //    {
@@ -1297,40 +1310,36 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
 //      else if(ep < 0          ) printf("AliCaloTrackReader::GetEventPlaneAngle() - Negative angle = %f\n" ,ep);
 //    }
     
-    return ep;
-  }
-  else
-  {
-    return -1000;
-  }
-  
+  return ep;
 }
 
 //__________________________________________________________
+/// \return Vertex position to be used for single event analysis.
+//__________________________________________________________
 void AliCaloTrackReader::GetVertex(Double_t vertex[3]) const
 {
-  //Return vertex position to be used for single event analysis
-  vertex[0]=fVertex[0][0];
-  vertex[1]=fVertex[0][1];
-  vertex[2]=fVertex[0][2];
+  vertex[0] = fVertex[0][0];
+  vertex[1] = fVertex[0][1];
+  vertex[2] = fVertex[0][2];
 }
 
 //__________________________________________________________________________
+/// \return Vertex position for mixed event, recover the vertex in a particular event.
+//__________________________________________________________________________
 void AliCaloTrackReader::GetVertex(Double_t vertex[3], Int_t evtIndex) const
-{
-  //Return vertex position for mixed event, recover the vertex in a particular event.
-  
-  vertex[0]=fVertex[evtIndex][0];  vertex[1]=fVertex[evtIndex][1];  vertex[2]=fVertex[evtIndex][2];
-  
+{  
+  vertex[0] = fVertex[evtIndex][0];  
+  vertex[1] = fVertex[evtIndex][1];  
+  vertex[2] = fVertex[evtIndex][2];
 }
 
 //________________________________________
+/// Fill data member fVertex. 
+/// In case of Mixed event, multiple vertices.
+//________________________________________
 void AliCaloTrackReader::FillVertexArray()
-{
-  //Fill data member with vertex
-  //In case of Mixed event, multiple vertices
-  
-  //Delete previous vertex
+{  
+  // Delete previous vertex
   if(fVertex)
   {
     for (Int_t i = 0; i < fNMixedEvent; i++)
@@ -1350,7 +1359,7 @@ void AliCaloTrackReader::FillVertexArray()
   }
   
   if (!fMixedEvent)
-  { //Single event analysis
+  { // Single event analysis
     if(fDataType!=kMC)
     {
       
@@ -1365,7 +1374,7 @@ void AliCaloTrackReader::FillVertexArray()
       }//Primary vertex pointer do not exist
       
     } else
-    {//MC read event
+    {// MC read event
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
     
@@ -1383,14 +1392,17 @@ void AliCaloTrackReader::FillVertexArray()
       AliDebug(1,Form("Multi Event %d Vertex : %f,%f,%f",iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]));
     }
   }
-  
 }
 
 //_____________________________________
+/// Fill the array with Central Tracking System (CTS) 
+/// filtered tracks. To select the tracks, kinematic cuts, DCA, 
+/// re-fit status and timing cuts are applied. 
+/// Other more ESD/AOD dependent cuts are applied in *SelectTrack()* method,
+/// see AliCaloTrackAODReader and AliCaloTrackESDReader.
+//_____________________________________
 void AliCaloTrackReader::FillInputCTS()
-{
-  //Return array with Central Tracking System (CTS) tracks
-  
+{  
   AliDebug(1,"Begin");
   
   Double_t pTrack[3] = {0,0,0};
@@ -1509,14 +1521,18 @@ void AliCaloTrackReader::FillInputCTS()
   }
   
   AliDebug(1,Form("AOD entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult));//fCTSTracksNormalInputEntries);
-  
 }
 
 //_______________________________________________________________________________
+/// Correct, if requested, and select here the EMCal cluster.
+/// If selected add it to the EMCal clusters array.
+/// \param clus: AliVCaloCluster pointer
+/// \param iclus: cluster index, only needed in case of mixing frame (not used recently)
+///
+/// Method called by *FillInputEMCAL()*
+//_______________________________________________________________________________
 void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
 {
-  //Fill the EMCAL data in the array, do it
-  
   // Accept clusters with the proper label, TO DO, use the new more General methods!!!
   if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel( clus->GetLabel() )) return ;
   
@@ -1688,14 +1704,18 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Fill the corresponding array. Usually just filling EMCal array with upper or lower clusters is enough, but maybe we want to do EMCal-DCal correlations.
   if     (bEMCAL) fEMCALClusters->Add(clus);
   else if(bDCAL ) fDCALClusters ->Add(clus);
-  
 }
 
 //_______________________________________
+/// Fill the array with EMCAL clusters. 
+/// Source of clusters can be different, 
+/// external branch, output of some other 
+/// analysis task or the standard.
+/// External branch is requested when providing 
+/// its name in *fEMCALClustersListName*.
+//_______________________________________
 void AliCaloTrackReader::FillInputEMCAL()
-{
-  //Return array with EMCAL clusters in aod format
-  
+{  
   AliDebug(1,"Begin");
   
   // First recalibrate cells, time or energy
@@ -1820,14 +1840,13 @@ void AliCaloTrackReader::FillInputEMCAL()
   }
   
   AliDebug(1,Form("AOD entries %d, n pile-up clusters %d, n non pile-up %d", fEMCALClusters->GetEntriesFast(),fNPileUpClusters,fNNonPileUpClusters));
-  
 }
 
-//______________________________________
+//_______________________________________
+/// Fill the array with PHOS filtered clusters. 
+//_______________________________________
 void AliCaloTrackReader::FillInputPHOS()
-{
-  //Return array with PHOS clusters in aod format
-  
+{  
   AliDebug(1,"Begin");
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
@@ -1886,27 +1905,27 @@ void AliCaloTrackReader::FillInputPHOS()
 }
 
 //____________________________________________
+/// Connects the array with EMCAL cells and the pointer.
+//____________________________________________
 void AliCaloTrackReader::FillInputEMCALCells()
-{
-  //Return array with EMCAL cells in aod format
-  
+{  
   fEMCALCells = fInputEvent->GetEMCALCells();
-  
 }
 
 //___________________________________________
+/// Connects the array with PHOS cells and the pointer.
+//___________________________________________
 void AliCaloTrackReader::FillInputPHOSCells()
-{
-  //Return array with PHOS cells in aod format
-  
+{  
   fPHOSCells = fInputEvent->GetPHOSCells();
-  
 }
 
 //_______________________________________
+/// Fill VZERO information in data member, 
+/// add all the channels information.
+//_______________________________________
 void AliCaloTrackReader::FillInputVZERO()
 {
-  //Fill VZERO information in data member, add all the channels information.
   AliVVZERO* v0 = fInputEvent->GetVZEROData();
   //printf("Init V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
   
@@ -1934,13 +1953,12 @@ void AliCaloTrackReader::FillInputVZERO()
 }
 
 //_________________________________________________
+/// Fill array with non standard jets
+///
+/// Author: Adam T. Matyja
+//_________________________________________________
 void AliCaloTrackReader::FillInputNonStandardJets()
-{
-  //
-  //fill array with non standard jets
-  //
-  // Adam T. Matyja
-  
+{  
   AliDebug(2,"Begin");
   
   //
@@ -1964,17 +1982,15 @@ void AliCaloTrackReader::FillInputNonStandardJets()
   {
     AliDebug(1,Form("AOD input jets %d", fNonStandardJets->GetEntriesFast()));
   }
-  
 }
 
 //_________________________________________________
+/// Fill array with Background jets
+///
+/// Author: Adam T. Matyja
+//_________________________________________________
 void AliCaloTrackReader::FillInputBackgroundJets()
 {
-  //
-  //fill array with Background jets
-  //
-  // Adam T. Matyja
-  
   AliDebug(1,"Begin");
   //
   //check if branch name is given
@@ -1999,17 +2015,14 @@ void AliCaloTrackReader::FillInputBackgroundJets()
     AliDebug(1,"FillInputBackgroundJets");
     fBackgroundJets->Print("");
   }
-  
 }
 
 //____________________________________________________________________
 /// Recover the patches that triggered, either L0 or L1.
+//____________________________________________________________________
 TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
 {
-  // Select the patches that triggered
-  // Depend on L0 or L1
-	
-  // some variables
+  // init some variables
   Int_t  trigtimes[30], globCol, globRow,ntimes, i;
   Int_t  absId  = -1; //[100];
   Int_t  nPatch = 0;
@@ -2116,10 +2129,10 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
 //____________________________________________________________
 /// Finds the cluster that triggered.
 /// It compares the cells of the trigger patches and 
-/// high energy clusters
+/// high energy clusters.
+//____________________________________________________________
 void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
 {
-  
   // Init info from previous event
   fTriggerClusterIndex = -1;
   fTriggerClusterId    = -1;
@@ -2432,16 +2445,15 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     
   }// No trigger match found
   //printf("Trigger BC %d, Id %d, Index %d\n",fTriggerClusterBC,fTriggerClusterId,fTriggerClusterIndex);
-  
 }
 
 //_________________________________________________________
 /// Recover the EMCal L1 trigger threshold from data.
 /// Set the EMCal L0 threshold depending on the run number.
-/// Set the threshold only if requested 
+/// Set the threshold only if requested. 
+//_________________________________________________________
 void AliCaloTrackReader::SetEMCALTriggerThresholds()
 {
-  // Set L1 threshold, if not set by user
   if(!fTriggerL1EventThresholdFix)
   {
     // get object pointer
@@ -2490,6 +2502,7 @@ void AliCaloTrackReader::SetEMCALTriggerThresholds()
 
 //________________________________________________________
 /// Print some relevant parameters set for the analysis
+//________________________________________________________
 void AliCaloTrackReader::Print(const Option_t * opt) const
 {  
   if(! opt)
@@ -2532,15 +2545,15 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
   
   printf("    \n") ;
-  
 }
 
 //__________________________________________
+/// LED Events in period LHC11a contaminated 
+/// EMCAL clusters sample, simple method
+/// to reject such events.
+//__________________________________________
 Bool_t  AliCaloTrackReader::RejectLEDEvents()
 {
-  // LED Events in period LHC11a contaminated sample, simple method
-  // to reject such events
-  
   // Count number of cells with energy larger than 0.1 in SM3, cut on this number
   Int_t ncellsSM3 = 0;
   for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
@@ -2561,14 +2574,15 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
   }
   
   return kFALSE;
-  
 }
 
 //_________________________________________________________
+/// MC label for Cells not remapped after ESD filtering, do it here.
+/// Needed for old MC/data productions done with AliRoot older 
+/// than v5-02-Rev09 (more or less, not sure)
+//_________________________________________________________
 void AliCaloTrackReader::RemapMCLabelForAODs(Int_t & label)
-{
-  // MC label for Cells not remapped after ESD filtering, do it here.
-  
+{  
   if(label < 0) return ;
   
   AliAODEvent  * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
@@ -2604,15 +2618,13 @@ void AliCaloTrackReader::RemapMCLabelForAODs(Int_t & label)
   label = -1;
   
   //printf("AliCaloTrackReader::RemapMCLabelForAODs() - Label not found set to -1 \n");
-  
 }
 
-
+//___________________________________
+/// Reset lists, called in AliAnaCaloTrackCorrMaker.
 //___________________________________
 void AliCaloTrackReader::ResetLists()
-{
-  //  Reset lists, called by the analysis maker
-  
+{  
   if(fCTSTracks)       fCTSTracks     -> Clear();
   if(fEMCALClusters)   fEMCALClusters -> Clear("C");
   if(fPHOSClusters)    fPHOSClusters  -> Clear("C");
@@ -2622,13 +2634,13 @@ void AliCaloTrackReader::ResetLists()
   
   if(fNonStandardJets) fNonStandardJets -> Clear("C");
   fBackgroundJets->Reset();
-
 }
 
 //___________________________________________
-/// Tag event depending on trigger name
-/// Set also the L1 bit defining the EGA or EJE triggers
-/// depending on the trigger class version, if not set by user
+/// Tag event depending on trigger name.
+/// Set also the L1 bit defining the EGA or EJE triggers.
+/// depending on the trigger class version, if not set by user.
+//___________________________________________
 void AliCaloTrackReader::SetEventTriggerBit()
 {	
   fEventTrigMinBias       = kFALSE;
@@ -2808,6 +2820,9 @@ void AliCaloTrackReader::SetEventTriggerBit()
   } // set once the EJE, EGA trigger bit
 }
 
+//____________________________________________________________
+/// Define here the input event and mixed event.
+/// Called in AliAnaCaloTrackCorrMaker.
 //____________________________________________________________
 void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
 {
