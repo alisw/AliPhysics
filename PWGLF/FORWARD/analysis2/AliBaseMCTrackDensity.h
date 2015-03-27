@@ -89,6 +89,12 @@ public:
    */  
   void SetUseFlowWeights(Bool_t use);
   /** 
+   * Set whether to try to track primary @f$ \gamma@f$ back to a @f$\pi^0@f$
+   * 
+   * @param use If true, try to track @f$\gamma@f$ to @f$\pi^0@f$ 
+   */
+  void SetTrackGammaToPi0(Bool_t use) { fTrackGammaToPi0 = use; }
+  /** 
    * Set whether to print debug messages.  Please note this will
    * produce a lot of output. 
    * 
@@ -263,8 +269,8 @@ protected:
   Double_t          fB;              // Impact parameter of this event
   Double_t          fPhiR;           // Reaction plane  of this event
   Bool_t            fDebug;          // Debug flag
-
-  ClassDef(AliBaseMCTrackDensity,5); // Calculate track-ref density
+  Bool_t            fTrackGammaToPi0;// If true, try to track gamma to pi0
+  ClassDef(AliBaseMCTrackDensity,6); // Calculate track-ref density
 };
 
 #endif
