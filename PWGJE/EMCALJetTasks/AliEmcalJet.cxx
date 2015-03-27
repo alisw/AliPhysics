@@ -589,3 +589,21 @@ void AliEmcalJet::PrintGR()
     Printf("num[%d] = %f", i, fGRNumerator.At(i));
   }
 }
+
+//__________________________________________________________________________________________________
+Int_t AliEmcalJet::ContainsTrack(Int_t it) const
+{
+  for (Int_t i = 0; i < fTrackIDs.GetSize(); i++) {
+    if (it == fTrackIDs[i]) return i;
+  }
+  return -1;
+}
+
+//__________________________________________________________________________________________________
+Int_t AliEmcalJet::ContainsCluster(Int_t ic) const
+{
+  for (Int_t i = 0; i < fClusterIDs.GetSize(); i++) {
+    if (ic == fClusterIDs[i]) return i;
+  }
+  return -1;
+}
