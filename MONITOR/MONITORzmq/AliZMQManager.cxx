@@ -1,4 +1,4 @@
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <iostream>
 #include <sstream>
@@ -23,12 +23,10 @@
 
 using namespace std;
 
-AliStorageEventManager *AliStorageEventManager::fManagerInstance = 0;
+AliZMQManager *AliZMQManager::fManagerInstance = 0;
 
-AliStorageEventManager::AliStorageEventManager()
+AliZMQManager::AliZMQManager()
 {
-    fZmqError = false;
-    
     //read config file
     TThread::Lock();
     ifstream configFile (GetConfigFilePath());
@@ -79,106 +77,84 @@ AliStorageEventManager::AliStorageEventManager()
     TThread::UnLock();
     
     for(int i=0;i<NUMBER_OF_SOCKETS;i++){fContexts[i] = zmq_ctx_new();}
+    CreateSockets();
 }
-AliStorageEventManager::~AliStorageEventManager()
+AliZMQManager::~AliZMQManager()
 {
-    if(fManagerInstance){delete fManagerInstance;fManagerInstance=0;}
+    // close sockets and destroy contexts
+    for (int i=0; i<NUMBER_OF_SOCKETS; i++)
+    {
+        zmq_close(fSockets[i]);
+        zmq_ctx_destroy(fContexts[i]);
+    }
 }
 
-AliStorageEventManager* AliStorageEventManager::GetEventManagerInstance()
+AliZMQManager* AliZMQManager::GetInstance()
 {
     TThread::Lock();
     if(fManagerInstance==0)
     {
-        fManagerInstance = new AliStorageEventManager();
+        fManagerInstance = new AliZMQManager();
     }
     TThread::UnLock();
     return fManagerInstance;
 }
 
-bool AliStorageEventManager::CreateSocket(storageSockets socket)
+void AliZMQManager::CreateSockets()
 {
-    cout<<"Creating socket:"<<socket<<endl;
-    int connectionStatus=-1,optionStatus=-1;
+    cout<<"Creating sockets"<<endl;
     
-    switch(socket)
-    {
-        case SERVER_COMMUNICATION_REQ:
-        {
-            fSockets[SERVER_COMMUNICATION_REQ] = zmq_socket(fContexts[SERVER_COMMUNICATION_REQ],ZMQ_REQ);
-            connectionStatus = zmq_connect(fSockets[SERVER_COMMUNICATION_REQ],
-                                           Form("tcp://%s:%d",fStorageServer.c_str(),fStorageServerPort));
-            break;
-        }
-        case SERVER_COMMUNICATION_REP:
-        {
-            fSockets[SERVER_COMMUNICATION_REP] = zmq_socket(fContexts[SERVER_COMMUNICATION_REP],ZMQ_REP);
-            connectionStatus = zmq_bind(fSockets[SERVER_COMMUNICATION_REP],Form("tcp://*:%d",fStorageServerPort));
-            break;
-        }
-        case CLIENT_COMMUNICATION_REQ:
-        {
-            fSockets[CLIENT_COMMUNICATION_REQ] = zmq_socket(fContexts[CLIENT_COMMUNICATION_REQ],ZMQ_REQ);
-            connectionStatus = zmq_connect(fSockets[CLIENT_COMMUNICATION_REQ],Form("tcp://%s:%d",fStorageServer.c_str(), fStorageClientPort));
-            break;
-        }
-        case CLIENT_COMMUNICATION_REP:
-        {
-            fSockets[CLIENT_COMMUNICATION_REP] = zmq_socket(fContexts[CLIENT_COMMUNICATION_REP],ZMQ_REP);
-            connectionStatus = zmq_bind(fSockets[CLIENT_COMMUNICATION_REP],Form("tcp://*:%d",fStorageClientPort));
-            break;
-        }
-        case EVENTS_SERVER_PUB:
-        {
-            fSockets[EVENTS_SERVER_PUB] = zmq_socket(fContexts[EVENTS_SERVER_PUB],ZMQ_PUB);
-            connectionStatus = zmq_bind(fSockets[EVENTS_SERVER_PUB],Form("tcp://*:%d",fEventServerPort));
-            break;
-        }
-        case EVENTS_SERVER_SUB:
-        {
-            fSockets[EVENTS_SERVER_SUB] = zmq_socket(fContexts[EVENTS_SERVER_SUB],ZMQ_SUB);
-            if(zmq_setsockopt(fSockets[EVENTS_SERVER_SUB],ZMQ_SUBSCRIBE,"",0)!=0)
-            {
-                cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-                return 0;
-            }
-            connectionStatus = zmq_connect(fSockets[EVENTS_SERVER_SUB],Form("tcp://%s:%d",fEventServer.c_str(),fEventServerPort));
-            break;
-        }
-        case XML_PUB:
-        {
-            fSockets[XML_PUB] = zmq_socket(fContexts[XML_PUB],ZMQ_PUB);
-            connectionStatus = zmq_bind(fSockets[XML_PUB],Form("tcp://*:%d",fXmlServerPort));
-            break;
-        }
-        case ITS_POINTS_PUB:
-        {
-            fSockets[ITS_POINTS_PUB] = zmq_socket(fContexts[ITS_POINTS_PUB],ZMQ_PUB);
-            connectionStatus = zmq_bind(fSockets[ITS_POINTS_PUB],Form("tcp://*:%d",fItsPointsServerPort));
-            break;
-        }
-        case ITS_POINTS_SUB:
-        {
-            fSockets[ITS_POINTS_SUB] = zmq_socket(fContexts[ITS_POINTS_SUB],ZMQ_SUB);
-            if(zmq_setsockopt(fSockets[ITS_POINTS_SUB],ZMQ_SUBSCRIBE,"",0)!=0)
-            {
-                cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-                return 0;
-            }
-            connectionStatus = zmq_connect(fSockets[ITS_POINTS_SUB],Form("tcp://%s:%d",fEventServer.c_str(),fItsPointsServerPort));
-            break;
-        }
-        default:break;
-    }
+    // server communication - REQ
+    fSockets[SERVER_COMMUNICATION_REQ] = zmq_socket(fContexts[SERVER_COMMUNICATION_REQ],ZMQ_REQ);
+    if(0 != zmq_connect(fSockets[SERVER_COMMUNICATION_REQ],Form("tcp://%s:%d",fStorageServer.c_str(),fStorageServerPort)))
+    {cout<<"MANAGER -- create socket 1 -- "<<zmq_strerror(zmq_errno())<<endl;}
     
-    if (connectionStatus!=0) {
-        cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-        return 0;
-    }
-    return 1;
+    // server communication - REP
+    fSockets[SERVER_COMMUNICATION_REP] = zmq_socket(fContexts[SERVER_COMMUNICATION_REP],ZMQ_REP);
+    if(0 != zmq_bind(fSockets[SERVER_COMMUNICATION_REP],Form("tcp://*:%d",fStorageServerPort)))
+    {cout<<"MANAGER -- create socket 2 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // client communication - REQ
+    fSockets[CLIENT_COMMUNICATION_REQ] = zmq_socket(fContexts[CLIENT_COMMUNICATION_REQ],ZMQ_REQ);
+    if(0 != zmq_connect(fSockets[CLIENT_COMMUNICATION_REQ],Form("tcp://%s:%d",fStorageServer.c_str(), fStorageClientPort)))
+    {cout<<"MANAGER -- create socket 3 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // client communication - REP
+    fSockets[CLIENT_COMMUNICATION_REP] = zmq_socket(fContexts[CLIENT_COMMUNICATION_REP],ZMQ_REP);
+    if(0 != zmq_bind(fSockets[CLIENT_COMMUNICATION_REP],Form("tcp://*:%d",fStorageClientPort)))
+    {cout<<"MANAGER -- create socket 4 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // events publisher
+    fSockets[EVENTS_SERVER_PUB] = zmq_socket(fContexts[EVENTS_SERVER_PUB],ZMQ_PUB);
+    if(0 != zmq_bind(fSockets[EVENTS_SERVER_PUB],Form("tcp://*:%d",fEventServerPort)))
+    {cout<<"MANAGER -- create socket 5 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // events subscriber
+    fSockets[EVENTS_SERVER_SUB] = zmq_socket(fContexts[EVENTS_SERVER_SUB],ZMQ_SUB);
+    if(0 != zmq_setsockopt(fSockets[EVENTS_SERVER_SUB],ZMQ_SUBSCRIBE,"",0))
+    {cout<<"MANAGER -- create socket 6 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    if(0 != zmq_connect(fSockets[EVENTS_SERVER_SUB],Form("tcp://%s:%d",fEventServer.c_str(),fEventServerPort)))
+    {cout<<"MANAGER -- create socket 6a -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // xml publisher
+    fSockets[XML_PUB] = zmq_socket(fContexts[XML_PUB],ZMQ_PUB);
+    if(0 != zmq_bind(fSockets[XML_PUB],Form("tcp://*:%d",fXmlServerPort)))
+    {cout<<"MANAGER -- create socket 7 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // ITS recpoints publisher
+    fSockets[ITS_POINTS_PUB] = zmq_socket(fContexts[ITS_POINTS_PUB],ZMQ_PUB);
+    if(0 != zmq_bind(fSockets[ITS_POINTS_PUB],Form("tcp://*:%d",fItsPointsServerPort)))
+    {cout<<"MANAGER -- create socket 8 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    
+    // ITS recpoints subscriber
+    fSockets[ITS_POINTS_SUB] = zmq_socket(fContexts[ITS_POINTS_SUB],ZMQ_SUB);
+    if(zmq_setsockopt(fSockets[ITS_POINTS_SUB],ZMQ_SUBSCRIBE,"",0)!=0)
+    {cout<<"MANAGER -- create socket 9 -- "<<zmq_strerror(zmq_errno())<<endl;}
+    if(0 != zmq_connect(fSockets[ITS_POINTS_SUB],Form("tcp://%s:%d",fEventServer.c_str(),fItsPointsServerPort)))
+    {cout<<"MANAGER -- create socket 9a -- "<<zmq_strerror(zmq_errno())<<endl;}
 }
 
-void AliStorageEventManager::Send(vector<serverListStruct> list,storageSockets socket)
+void AliZMQManager::Send(vector<serverListStruct> list,storageSockets socket)
 {
     //send size of the struct first
     int numberOfRecords = list.size();
@@ -199,51 +175,52 @@ void AliStorageEventManager::Send(vector<serverListStruct> list,storageSockets s
     zmq_msg_close(&message);
 }
 
-bool AliStorageEventManager::Send(struct serverRequestStruct *request,storageSockets socket,int timeout)
+bool AliZMQManager::Send(struct serverRequestStruct *request,storageSockets socket,int timeout)
 {
     //check timeout
-    fZmqError=false; // clean old errors
-    zmqPoll(fSockets[socket],timeout);
-    if(fZmqError){return 0;}
-    
+    if(!zmqPoll(fSockets[socket],timeout)){return false;}
     
     int sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
     
     zmq_msg_t buffer;
-    zmqInit(&buffer,sizeOfRequest);
+    if(!zmqInit(&buffer,sizeOfRequest)){return false;}
+    cout<<"MANAGER -- sending request:"<<request->messageType<<endl;
     memcpy(zmq_msg_data(&buffer),request,sizeOfRequest);
-    zmqSend(&buffer,fSockets[socket],0);
+    if(!zmqSend(&buffer,fSockets[socket],0)){return false;}
     zmq_msg_close(&buffer);
     
-    if(fZmqError){return 0;} // if there were errors while sending message
-    return 1;
+    return true;
 }
 
-bool AliStorageEventManager::Send(struct clientRequestStruct *request,storageSockets socket,int timeout)
+bool AliZMQManager::Send(struct clientRequestStruct *request,storageSockets socket,int timeout)
 {
     //check timeout
-    fZmqError=false;
-    zmqPoll(fSockets[socket],timeout);
-    if(fZmqError){return 0;}
+    cout<<"MANAGER -- send client struct"<<endl;
+    cout<<"MANAGER -- checking timeout"<<endl;
+    if(!zmqPoll(fSockets[socket],timeout)){
+        cout<<"MANAGER -- errors in timeout"<<endl;
+        return false;
+    }
     
     //put clientRequestStruct in buffer
     zmq_msg_t buffer;
-    zmqInit(&buffer,sizeof(struct clientRequestStruct));
+    if(!zmqInit(&buffer,sizeof(struct clientRequestStruct))){return false;}
     memcpy(zmq_msg_data(&buffer),request,sizeof(struct clientRequestStruct));
     
     //send buffer
-    zmqSend(&buffer,fSockets[socket],0);
-    zmq_msg_close(&buffer);
-    
-    if(fZmqError) // if there were errors while sending message
+    cout<<"MANAGER -- sending client request"<<endl;
+    if(!zmqSend(&buffer,fSockets[socket],0))
     {
         if(fSockets[socket]){zmq_close(fSockets[socket]);fSockets[socket]=0;}
-        CreateSocket(socket);
-        return 0;
+        CreateSockets();
+        return false;
     }
-    return 1;
+    zmq_msg_close(&buffer);
+    cout<<"MANAGER -- request sent"<<endl;
+    
+    return true;
 }
-void AliStorageEventManager::Send(long message,storageSockets socket)
+void AliZMQManager::Send(long message,storageSockets socket)
 {
     zmq_msg_t buffer;
     zmqInit(&buffer,sizeof(long));
@@ -251,7 +228,7 @@ void AliStorageEventManager::Send(long message,storageSockets socket)
     zmqSend(&buffer,fSockets[socket],0);
     zmq_msg_close(&buffer);
 }
-void AliStorageEventManager::Send(bool message,storageSockets socket)
+void AliZMQManager::Send(bool message,storageSockets socket)
 {
     zmq_msg_t buffer;
     zmqInit(&buffer,sizeof(bool));
@@ -259,10 +236,16 @@ void AliStorageEventManager::Send(bool message,storageSockets socket)
     zmqSend(&buffer,fSockets[socket],0);
     zmq_msg_close(&buffer);
 }
-void AliStorageEventManager::Send(AliESDEvent *event, storageSockets socket)
+void AliZMQManager::Send(AliESDEvent *event, storageSockets socket)
 {
-    if(!event){return;}
+    cout<<"MANAGER -- send ESD event"<<endl;
+    if(!event)
+    {
+        cout<<"MANAGER -- no event"<<endl;
+        return;
+    }
     
+    cout<<"MANAGER -- writing to TMessage"<<endl;
     TMessage tmess(kMESS_OBJECT);
     tmess.Reset();
     tmess.WriteObject(event);
@@ -272,11 +255,38 @@ void AliStorageEventManager::Send(AliESDEvent *event, storageSockets socket)
     zmq_msg_t buffer;
     zmqInit(&buffer,bufsize);
     memcpy(zmq_msg_data(&buffer),tmess.Buffer(),bufsize);
+    cout<<"MANAGER -- sending event"<<endl;
     zmqSend(&buffer,fSockets[socket],0);
+    
+    //
+    cout<<"MANAGER -- reading back from buffer"<<endl;
+    
+    TBufferFile *mess = new TBufferFile(TBuffer::kRead,
+                                        zmq_msg_size(&buffer)+sizeof(UInt_t),
+                                        zmq_msg_data(&buffer));
+    mess->InitMap();
+    mess->ReadClass();// get first the class stored in message
+    mess->SetBufferOffset(sizeof(UInt_t) + sizeof(kMESS_OBJECT));
+    mess->ResetMap();
+    
+    //read ESDEvent from TMessage
+    AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
+    if (data)
+    {
+        cout<<"MANAGER -- ESD event ok"<<endl;
+        data->GetStdContent();
+        cout<<"MANAGER -- run number:"<<data->GetRunNumber()<<endl;
+        delete data;
+    }
+
+    
+    
+    //
     zmq_msg_close(&buffer);
+    cout<<"MANAGER -- message sent"<<endl;
 }
 
-void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
+void AliZMQManager::SendAsXml(AliESDEvent *event,storageSockets socket)
 {
     // to be tested from online reconstruction !!
     
@@ -296,7 +306,7 @@ void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
         bufferStream << "\t pid=\""<<track->PID()<<"\"";
         bufferStream << "\t energy=\""<<track->E()<<"\"";
         bufferStream << "\t volumeID=\""<<array->GetVolumeID()<<"\">" <<endl;
- 
+        
         if(array)
         {
             const float *x = array->GetX();
@@ -331,12 +341,10 @@ void AliStorageEventManager::SendAsXml(AliESDEvent *event,storageSockets socket)
     cout<<"xml sent"<<endl;
 }
 
-vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSockets socket, int timeout)
+vector<serverListStruct> AliZMQManager::GetServerListVector(storageSockets socket, int timeout)
 {
     //check timeout
-    fZmqError=false;
-    zmqPoll(fSockets[socket],timeout);
-    if(fZmqError){vector<serverListStruct> emptyVector;return emptyVector;}
+    if(!zmqPoll(fSockets[socket],timeout)){vector<serverListStruct> emptyVector;return emptyVector;}
     
     //get size of the incomming message
     zmq_msg_t buffer;
@@ -352,25 +360,27 @@ vector<serverListStruct> AliStorageEventManager::GetServerListVector(storageSock
     //get list of events
     zmqRecv(&buffer,fSockets[socket],0);
     void *tmp = zmq_msg_data(&buffer);
+    
+    // vector's range constructor rebuilding vector from void*
     vector<serverListStruct> receivedList(static_cast<serverListStruct*>(tmp),
                                           static_cast<serverListStruct*>(tmp)+numberOfRecords);
     zmq_msg_close(&buffer);
     return receivedList;
 }
 
-AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
+AliESDEvent* AliZMQManager::GetESDEvent(storageSockets socket,int timeout)
 {
+    cout<<"MANAGER -- get ESD event"<<endl;
     //check timeout
-    fZmqError=false;
-    zmqPoll(fSockets[socket],timeout);
-    if(fZmqError){return NULL;}
+    if(!zmqPoll(fSockets[socket],timeout)){return NULL;}
     
+    cout<<"MANAGER -- timeout ok"<<endl;
     //reveive buffer
     zmq_msg_t buffer;
     zmqInit(&buffer);
-    zmqRecv(&buffer,fSockets[socket],0);
-    if(fZmqError){return NULL;}
+    if(!zmqRecv(&buffer,fSockets[socket],0)){return NULL;}
     
+    cout<<"MANAGER -- received message"<<endl;
     //read buffer to TMessage
     TBufferFile *mess = new TBufferFile(TBuffer::kRead,
                                         zmq_msg_size(&buffer)+sizeof(UInt_t),
@@ -380,40 +390,48 @@ AliESDEvent* AliStorageEventManager::GetEvent(storageSockets socket,int timeout)
     mess->SetBufferOffset(sizeof(UInt_t) + sizeof(kMESS_OBJECT));
     mess->ResetMap();
     
+    cout<<"MANAGER -- reading ESD event from buffer"<<endl;
     //read ESDEvent from TMessage
     AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
     if (data)
     {
+        cout<<"MANAGER -- ESD event ok"<<endl;
         data->GetStdContent();
         zmq_msg_close(&buffer);
         return data;
     }
     else
     {
+        cout<<"MANAGER -- ESD event corrupted"<<endl;
         zmq_msg_close(&buffer);
         return NULL;
     }
 }
 
-struct serverRequestStruct* AliStorageEventManager::GetServerStruct(storageSockets socket)
+struct serverRequestStruct* AliZMQManager::GetServerStruct(storageSockets socket)
 {
-    fZmqError=false;
     struct serverRequestStruct *request;
     
     zmq_msg_t buffer;
     zmqInit(&buffer);
-    zmqRecv(&buffer,fSockets[socket],0);
-    
-    if(fZmqError){ //if there were errors when receiving message
+    if(!zmqRecv(&buffer,fSockets[socket],0))
+    {
+        cout<<"MANAGER -- problems receiving server struct"<<endl;
+//        if(fSockets[socket]){zmq_close(fSockets[socket]);fSockets[socket]=0;}
+//        CreateSockets();
         request = new struct serverRequestStruct;
         request->messageType = -1;
     }
-    else{request = new struct serverRequestStruct(*(static_cast<struct serverRequestStruct*>(zmq_msg_data(&buffer))));}
+    else
+    {
+        request = new struct serverRequestStruct(*(static_cast<struct serverRequestStruct*>(zmq_msg_data(&buffer))));
+        cout<<"MANAGER -- reveived request:"<<request->messageType<<endl;
+    }
     zmq_msg_close(&buffer);
     return request;
 }
 
-struct clientRequestStruct* AliStorageEventManager::GetClientStruct(storageSockets socket,int timeout)
+struct clientRequestStruct* AliZMQManager::GetClientStruct(storageSockets socket,int timeout)
 {
     //  pollitem_t items[1] =  {{*fSockets[socket],0,ZMQ_POLLIN,0}} ;
     //  if(timeout>=0){if(poll (&items[0], 1, timeout)==0){return NULL;}}
@@ -428,7 +446,7 @@ struct clientRequestStruct* AliStorageEventManager::GetClientStruct(storageSocke
     return request;
 }
 
-bool AliStorageEventManager::GetBool(storageSockets socket)
+bool AliZMQManager::GetBool(storageSockets socket)
 {
     zmq_msg_t buffer;
     zmqInit(&buffer);
@@ -439,7 +457,7 @@ bool AliStorageEventManager::GetBool(storageSockets socket)
     return result;
 }
 
-long AliStorageEventManager::GetLong(storageSockets socket)
+long AliZMQManager::GetLong(storageSockets socket)
 {
     zmq_msg_t buffer;
     zmqInit(&buffer);
@@ -451,13 +469,13 @@ long AliStorageEventManager::GetLong(storageSockets socket)
 }
 
 // ZMQ methods wrappers:
-void AliStorageEventManager::zmqInit(zmq_msg_t *msg,size_t size)
+bool AliZMQManager::zmqInit(zmq_msg_t *msg,size_t size)
 {
     if(size==0){
         if(zmq_msg_init(msg) != 0){
             if(zmq_errno() != EAGAIN){
                 cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-                fZmqError=true;
+                return false;
             }
         }
     }
@@ -465,48 +483,49 @@ void AliStorageEventManager::zmqInit(zmq_msg_t *msg,size_t size)
         if(zmq_msg_init_size(msg,size) != 0){
             if(zmq_errno() != EAGAIN){
                 cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-                fZmqError=true;
+                return false;
             }
         }
     }
+    return true;
 }
 
-void AliStorageEventManager::zmqSend(zmq_msg_t *msg,void *socket,int flags)
+bool AliZMQManager::zmqSend(zmq_msg_t *msg,void *socket,int flags)
 {
     if(zmq_msg_send(msg,socket,flags) != 0){
         if(zmq_errno() != EAGAIN)
         {
             cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-            fZmqError=true;
+            return false;
         }
     }
+    return true;
 }
 
-void AliStorageEventManager::zmqRecv(zmq_msg_t *msg,void *socket,int flags)
+bool AliZMQManager::zmqRecv(zmq_msg_t *msg,void *socket,int flags)
 {
     if(zmq_msg_recv(msg,socket,flags) != 0){
         if(zmq_errno() != EAGAIN)
         {
             cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-            fZmqError=true;
+            return false;
         }
     }
+    return true;
 }
 
-void AliStorageEventManager::zmqPoll(void *socket,int timeout)
+bool AliZMQManager::zmqPoll(void *socket,int timeout)
 {
     if(timeout>=0)
     {
         zmq_pollitem_t items[1] =  {{socket,0,ZMQ_POLLIN,0}};
-        if(zmq_poll(&items[0],1, timeout)!=0)
+        if(zmq_poll(items,1,timeout)<=0)
         {
-            if(zmq_errno() != EAGAIN)
-            {
-                cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
-                fZmqError=true;
-            }
+            cout<<"MANAGER -- "<<zmq_strerror(zmq_errno())<<endl;
+            return false;
         }
     }
+    return true;
 }
 
 

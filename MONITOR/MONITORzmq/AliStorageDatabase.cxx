@@ -229,6 +229,8 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
     cout<<"database - get event:"<<event.runNumber<<"\t"<<event.eventNumber<<endl;
     string pathToFile = GetFilePath(event);
     
+    cout<<"DATABASE -- path to file:"<<pathToFile<<endl;
+    
     if(!strcmp(pathToFile.c_str(),""))
     {
         cout<<"DATABASE -- no such file in database"<<endl;
@@ -241,13 +243,19 @@ AliESDEvent* AliStorageDatabase::GetEvent(struct eventStruct event)
         cout<<"DATABASE -- couldn't open temp file"<<endl;
         return NULL;
     }
-    AliESDEvent *data;
     tmpFile->cd(Form("run%d",event.runNumber));
-    data = (AliESDEvent*)gDirectory->Get(Form("event%d;1",event.eventNumber));
-    
-    
+    AliESDEvent *data = (AliESDEvent*)gDirectory->Get(Form("event%d;1",event.eventNumber));
     tmpFile->Close();
     delete tmpFile;
+    
+    if(data)
+    {
+        cout<<"DATABASE -- read event:"<<data->GetEventNumberInFile()<<endl;
+    }
+    else
+    {
+        cout<<"DATABASE -- event is corrupted"<<endl;
+    }
     
     return data;
 }

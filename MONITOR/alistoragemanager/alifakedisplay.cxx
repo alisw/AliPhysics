@@ -1,4 +1,4 @@
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 #include "AliStorageTypes.h"
 #include "AliESDEvent.h"
 #include "AliESDRun.h"
@@ -11,14 +11,6 @@
 #include <TFile.h>
 
 using namespace std;
-
-/* parameters:
- 
- 0 - connect directly to reconstruction socket
- 1 - connect to Storage Manager and ask for last event
- 2 - connect to alieventserver, receive in thread and use in main thread
- 
- */
 
 // global variables:
 AliESDEvent *currentEvent[2];
@@ -39,24 +31,22 @@ int main(int argc, char **argv)
         cout<<"mode:"<<endl;
         cout<<"0 - connect directly to reconstruction socket"<<endl;
         cout<<"1 - connect to Storage Manager and ask for last event"<<endl;
+        cout<<"2 - connect to alieventserver, receive in thread and use in main thread"<<endl;
         cout<<"3 - connect to Storage Manager, download list of perm events and ask for them in loop"<<endl;
         return 0;
     }
     
     storageSockets socket;
-    AliStorageEventManager *manager = AliStorageEventManager::GetEventManagerInstance();
+    AliZMQManager *manager = AliZMQManager::GetInstance();
     AliESDEvent *event;
     struct recPointsStruct *files;
     
     if(atoi(argv[1])==0)
     {
-        manager->CreateSocket(EVENTS_SERVER_SUB);
-	manager->CreateSocket(ITS_POINTS_SUB);
-        cout<<"Socket created"<<endl;
         while(1)
         {
             cout<<"waiting for event..."<<flush;
-            event = manager->GetEvent(EVENTS_SERVER_SUB);
+            event = manager->GetESDEvent(EVENTS_SERVER_SUB);
             
             if(event)
             {
@@ -105,14 +95,13 @@ int main(int argc, char **argv)
     else if(atoi(argv[1])==1)
     {
         socket = SERVER_COMMUNICATION_REQ;
-        manager->CreateSocket(socket);
         while(1)
         {
             struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
             requestMessage->messageType = REQUEST_GET_LAST_EVENT;
             
             manager->Send(requestMessage,socket);
-            event = manager->GetEvent(socket);
+            event = manager->GetESDEvent(socket);
             if(event)
             {
                 cout<<"Last event - Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
@@ -162,8 +151,6 @@ int main(int argc, char **argv)
     else if(atoi(argv[1])==3)
     {
         socket = SERVER_COMMUNICATION_REQ;
-        manager->CreateSocket(socket);
-        
         
         struct listRequestStruct list;
         list.runNumber[0]=0;
@@ -202,7 +189,7 @@ int main(int argc, char **argv)
                 requestMessage->event = mark;
                 
                 manager->Send(requestMessage,socket);
-                event = manager->GetEvent(socket);
+                event = manager->GetESDEvent(socket);
              
                 if(event)
                 {
@@ -224,8 +211,6 @@ int main(int argc, char **argv)
         cout<<"simulation of server thread"<<endl;
         cout<<"***************************"<<endl;
         socket = SERVER_COMMUNICATION_REP;
-        manager->CreateSocket(socket);
-       
         
         int request = manager->GetLong(socket);
         cout<<"\nreceived request:"<<request<<endl;
@@ -290,7 +275,6 @@ int main(int argc, char **argv)
         cout<<"simulation of ED"<<endl;
         cout<<"****************"<<endl;
         socket = SERVER_COMMUNICATION_REQ;
-        manager->CreateSocket(socket);
         
         cout<<"\nsending long request"<<endl;
         manager->Send((long)55,socket);
@@ -324,7 +308,7 @@ int main(int argc, char **argv)
         cout<<"client request struct sent"<<endl;
         
         cout<<"waiting for AliESDevent"<<endl;
-        AliESDEvent *event = manager->GetEvent(socket);
+        AliESDEvent *event = manager->GetESDEvent(socket);
         
         cout<<"received event with run number"<<event->GetRunNumber()<<"\ttracks:"<<event->GetNumberOfTracks()<<endl;
     }
@@ -334,8 +318,7 @@ int main(int argc, char **argv)
 
 void* GetNextEvent(void*)
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     currentEvent[0]=0;
     currentEvent[1]=0;
@@ -346,7 +329,7 @@ void* GetNextEvent(void*)
     while(1)
     {
         //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
-        tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB);
+        tmpEvent = eventManager->GetESDEvent(EVENTS_SERVER_SUB);
         
         if(tmpEvent)
         {

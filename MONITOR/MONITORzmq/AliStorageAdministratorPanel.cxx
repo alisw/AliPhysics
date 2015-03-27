@@ -61,9 +61,7 @@ AliStorageAdministratorPanel::AliStorageAdministratorPanel() :
 	InitWindow();
     
 	//create event manager
-	fEventManager = AliStorageEventManager::GetEventManagerInstance();
-	fEventManager->CreateSocket(fServerSocket);
-	fEventManager->CreateSocket(fCommunicationSocket);
+	fEventManager = AliZMQManager::GetInstance();
 
 	// start communication with client thread
 	fCommunicationThread = new TThread("fCommunicationThread",
@@ -417,7 +415,7 @@ void AliStorageAdministratorPanel::onServerGetEvent()
 	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	AliESDEvent *resultEvent = fEventManager->GetEvent(fServerSocket);
+	AliESDEvent *resultEvent = fEventManager->GetESDEvent(fServerSocket);
 	
 	if(resultEvent)
 	{
@@ -444,7 +442,7 @@ void AliStorageAdministratorPanel::onServerGetNextEvent()
 	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	AliESDEvent* resultEvent= fEventManager->GetEvent(fServerSocket);	
+	AliESDEvent* resultEvent= fEventManager->GetESDEvent(fServerSocket);
 	if(resultEvent)
 	{
 		cout<<"ADMIN -- received event. Run no:"<<resultEvent->GetRunNumber()<<"\tEvent no in file:"<<resultEvent->GetEventNumberInFile()<<endl;
@@ -462,7 +460,7 @@ void AliStorageAdministratorPanel::onServerGetLastEvent()
 	requestMessage->messageType = REQUEST_GET_LAST_EVENT;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	AliESDEvent* resultEvent= fEventManager->GetEvent(fServerSocket);
+	AliESDEvent* resultEvent= fEventManager->GetESDEvent(fServerSocket);
 
 	if(resultEvent)
 	{

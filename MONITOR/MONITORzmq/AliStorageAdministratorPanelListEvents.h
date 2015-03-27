@@ -2,10 +2,11 @@
 #define AliStorageAdministratorPanelListEvents_H
 
 #include "AliStorageTypes.h"
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <TGLabel.h>
 #include <TGNumberEntry.h>
+#include <TGComboBox.h>
 #include <TGDoubleSlider.h>
 #include <TGSlider.h>
 #include <TGListBox.h>
@@ -43,6 +44,8 @@ private:
 	TGTextButton *fGetListButton;
 	TGTextButton *fMarkButton;
 	TGTextButton *fLoadButton;
+    
+    TGComboBox *fTriggerBox;
 
 	TGListBox *fListBox;
 	
@@ -58,7 +61,7 @@ private:
 	void CloseWindow();
 
 	storageSockets fServerSocket;
-	AliStorageEventManager *fEventManager;
+	AliZMQManager *fEventManager;
     
 	AliESDEvent *fCurrentEvent;
 	

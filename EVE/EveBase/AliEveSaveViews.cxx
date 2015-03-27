@@ -148,19 +148,22 @@ void AliEveSaveViews::Save()
         // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
         view->GetGLViewer()->SavePictureUsingBB(viewFilename);
         fTempImg = new TASImage(viewFilename);
-
+        
+//        fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
+        
+        
         // Second option is to use FBO instead of BB
         // This improves the quality of pictures in some specific cases
         // but is causes a bug (moving mouse over views makes them disappear
         // on new event being loaded
-        /*
-        if(index==0){
-            fTempImg = (TASImage*)view->GetGLViewer()->SavePictureUsingFBO(viewFilename, width3DView, height3DView);
-        }
-        else {
-            fTempImg = (TASImage*)view->GetGLViewer()->SavePictureUsingFBO(viewFilename, widthChildView, heightChildView);
-        }
-        */
+        
+//         if(index==0){
+//         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+//         }
+//         else {
+//         fTempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+//         }
+//        
         
         // copy view image in the composite image
         int currentWidth = fTempImg->GetWidth();
@@ -175,10 +178,10 @@ void AliEveSaveViews::Save()
             {
                 fTempImg->Crop((currentWidth-currentHeight*aspectRatio)*0.5,0,currentHeight*aspectRatio,currentHeight);
             }
-        
+            
             fTempImg->Scale(width3DView,height3DView);
             fTempImg->CopyArea(fCompositeImg, 0,0, width3DView, height3DView);
-             
+            
         }
         else {
             fTempImg->Crop((currentWidth-widthChildView)*0.5,
@@ -218,9 +221,12 @@ void AliEveSaveViews::Save()
         fCompositeImg->EndPaint();
         //include ALICE Logo
         fTempImg = new TASImage(Form("%s/EVE/alice-data/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
-        fTempImg->Scale(64,87);
-        fCompositeImg->Merge(fTempImg, "alphablend", 82, 4);
-        if(fTempImg){delete fTempImg;fTempImg=0;}
+        if(fTempImg)
+        {
+            fTempImg->Scale(64,87);
+            fCompositeImg->Merge(fTempImg, "alphablend", 82, 4);
+            delete fTempImg;fTempImg=0;
+        }
     }
     
     //---------------------------------------------------
@@ -350,13 +356,13 @@ void AliEveSaveViews::BuildClustersInfoString()
         }
         clustersDescription.push_back(clustersInfo);
     }
-
+    
     for (int i=0;i<clustersDescription.size();i++) {
         fClustersInfo+="Cluster ";
-        fClustersInfo+=fCluster[i++];
+        fClustersInfo+=fCluster[i];
         fClustersInfo+=":";
         fClustersInfo+=clustersDescription[i];
-        fClustersInfo+="\t";
+        fClustersInfo+="   ";
     }
 }
 

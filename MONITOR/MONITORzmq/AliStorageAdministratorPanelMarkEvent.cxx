@@ -33,8 +33,7 @@ AliStorageAdministratorPanelMarkEvent::AliStorageAdministratorPanelMarkEvent() :
 	fServerSocket(SERVER_COMMUNICATION_REQ),
 	fEventManager(0)
 {
-	fEventManager = AliStorageEventManager::GetEventManagerInstance();
-	fEventManager->CreateSocket(fServerSocket);
+	fEventManager = AliZMQManager::GetInstance();
 	InitWindow();
 }
 

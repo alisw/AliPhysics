@@ -1,5 +1,5 @@
 #include "AliCommunicationThread.h"
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <iostream>
 #include <fstream>
@@ -33,21 +33,20 @@ void AliCommunicationThread::Kill()
 
 void AliCommunicationThread::CommunicationHandle()
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     storageSockets socket = CLIENT_COMMUNICATION_REP;
-    eventManager->CreateSocket(socket);
     
     struct clientRequestStruct *request;
     struct clientRequestStruct *response = new struct clientRequestStruct;
     
-    cout<<"CLIENT -- Communication stated"<<endl;
+    cout<<"COMMUNICATION -- Communication stated"<<endl;
     
     // mutex mtx;
     
     while(!fFinished)
     {
-        request = eventManager->GetClientStruct(socket,5000);
-        
+        cout<<"COMMUNICATION -- waiting for requests"<<endl;
+        request = eventManager->GetClientStruct(socket);
         if(request)
         {
 	  //      lock_guard<mutex> lock(mtx);

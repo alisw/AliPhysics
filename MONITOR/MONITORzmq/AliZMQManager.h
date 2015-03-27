@@ -1,5 +1,5 @@
-#ifndef AliStorageEventManager_H
-#define AliStorageEventManager_H
+#ifndef AliZMQManager_H
+#define AliZMQManager_H
 
 #include "AliESDEvent.h"
 #include "AliStorageTypes.h"
@@ -13,11 +13,10 @@
 #include <TMessage.h>
 #include <TFile.h>
 
-class AliStorageEventManager
+class AliZMQManager
 {
 public:
-	static AliStorageEventManager* GetEventManagerInstance();
-	bool CreateSocket(storageSockets socket);
+	static AliZMQManager* GetInstance();
     
 	void Send(std::vector<serverListStruct> list,storageSockets socket);
 	bool Send(struct serverRequestStruct *request,storageSockets socket,int timeout = -1);
@@ -28,23 +27,23 @@ public:
 	void SendAsXml(AliESDEvent *event,storageSockets socket);
 	
 	std::vector<serverListStruct> GetServerListVector(storageSockets socket,int timeout=-1);
-	AliESDEvent* GetEvent(storageSockets socket,int timeout=-1);
+	AliESDEvent* GetESDEvent(storageSockets socket,int timeout=-1);
 	struct serverRequestStruct* GetServerStruct(storageSockets socket);
 	struct clientRequestStruct* GetClientStruct(storageSockets socket,int timeout=-1);
 	long GetLong(storageSockets socket);
 	bool GetBool(storageSockets socket);
 
 private:
-	AliStorageEventManager();
-	~AliStorageEventManager();
-	static AliStorageEventManager *fManagerInstance;
+	AliZMQManager();
+	~AliZMQManager();
+	static AliZMQManager *fManagerInstance;
+    void CreateSockets();
     
     // ZMQ methods wrappers:
-    void zmqInit(zmq_msg_t *msg,size_t size=0);
-    void zmqSend(zmq_msg_t *msg,void *socket,int flags);
-    void zmqRecv(zmq_msg_t *msg,void *socket,int flags);
-    void zmqPoll(void *socket,int timeout);
-    bool fZmqError; // if something went wrong in the above methods, this will be set to true
+    bool zmqInit(zmq_msg_t *msg,size_t size=0);             // these methids return true on success
+    bool zmqSend(zmq_msg_t *msg,void *socket,int flags);
+    bool zmqRecv(zmq_msg_t *msg,void *socket,int flags);
+    bool zmqPoll(void *socket,int timeout);
     
     // hostnames and ports read from config file:
 	std::string fStorageServer;
@@ -59,8 +58,8 @@ private:
 	void *fContexts[NUMBER_OF_SOCKETS];
 	void *fSockets[NUMBER_OF_SOCKETS];
 
-	AliStorageEventManager(const AliStorageEventManager&);
-	AliStorageEventManager& operator=(const AliStorageEventManager&);
+	AliZMQManager(const AliZMQManager&);
+	AliZMQManager& operator=(const AliZMQManager&);
 };
 
 #endif

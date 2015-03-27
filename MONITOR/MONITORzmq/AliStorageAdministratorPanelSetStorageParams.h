@@ -1,7 +1,7 @@
 #ifndef AliStorageAdministratorPanelSetStorageParams_H
 #define AliStorageAdministratorPanelSetStorageParams_H
 
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <TGLabel.h>
 #include <TGNumberEntry.h>
@@ -38,7 +38,7 @@ private:
 	void CloseWindow();
 	
 	storageSockets fClientSocket;
-	AliStorageEventManager *fEventManager;
+	AliZMQManager *fEventManager;
 
 	AliStorageAdministratorPanelSetStorageParams(const AliStorageAdministratorPanelSetStorageParams&);
 	AliStorageAdministratorPanelSetStorageParams& operator=(const AliStorageAdministratorPanelSetStorageParams&);

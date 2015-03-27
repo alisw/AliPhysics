@@ -1,5 +1,5 @@
 #include "AliEventsCollectorThread.h"
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <TSystemDirectory.h>
 
@@ -48,9 +48,7 @@ void AliEventsCollectorThread::Kill()
 
 void AliEventsCollectorThread::CollectorHandle()
 {
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    if(eventManager->CreateSocket(EVENTS_SERVER_SUB)){fManager->fConnectionStatus=STATUS_OK;}
-    else{fManager->fConnectionStatus=STATUS_ERROR;}
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     int chunkNumber=0;
     int previousChunkNumber=-1;
@@ -63,7 +61,7 @@ void AliEventsCollectorThread::CollectorHandle()
     while(!fFinished)
     {
         cout<<"CLIENT -- waiting for event..."<<endl;
-        event = eventManager->GetEvent(EVENTS_SERVER_SUB,5000);
+        event = eventManager->GetESDEvent(EVENTS_SERVER_SUB,5000);
         
         if(event)
         {

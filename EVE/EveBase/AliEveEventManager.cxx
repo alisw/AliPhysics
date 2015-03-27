@@ -62,7 +62,7 @@
 #include <TROOT.h>
 
 #ifdef ZMQ
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 #include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
 #endif
@@ -223,9 +223,7 @@ void AliEveEventManager::GetNextEvent()
     if(!fOnlineMode){return;}
     cout<<"\n\nGet next event called\n\n"<<endl;
     
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    eventManager->CreateSocket(EVENTS_SERVER_SUB);
-    eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
@@ -246,6 +244,7 @@ void AliEveEventManager::GetNextEvent()
     strcpy(list.system[0],"p-p");
     strcpy(list.system[1],"");
     
+    
     struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
     requestMessage->messageType = REQUEST_LIST_EVENTS;
     requestMessage->list = list;
@@ -265,7 +264,7 @@ void AliEveEventManager::GetNextEvent()
         if(!fLoopMarked || receivedList.size()<=0)
         {
             cout<<"Waiting for event from online reconstruction...";
-            tmpEvent = eventManager->GetEvent(EVENTS_SERVER_SUB,5000);
+            tmpEvent = eventManager->GetESDEvent(EVENTS_SERVER_SUB,5000);
             cout<<"received.";
             if(!tmpEvent){sleep(1);}
         }
@@ -282,7 +281,7 @@ void AliEveEventManager::GetNextEvent()
                 requestMessage->event = mark;
                 cout<<"Waiting for event from Storage Manager...";
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-                tmpEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+                tmpEvent = eventManager->GetESDEvent(SERVER_COMMUNICATION_REQ);
                 cout<<"received.";
                 iter++;
                 sleep(1);
@@ -301,6 +300,34 @@ void AliEveEventManager::GetNextEvent()
                 cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
                 if(fCurrentEvent[fWritingToEventIndex])
                 {
+                    TList *tmpList = fCurrentEvent[fWritingToEventIndex]->GetList();
+                    if(tmpList){
+                        cout<<"EVENT DISPLAY -- there is a list"<<endl;
+                    }
+                    else
+                    {
+                        cout<<"EVENT DISPLAY -- no list"<<endl;
+                    }
+                    AliESDHeader *tmpHeader = fCurrentEvent[fWritingToEventIndex]->GetHeader();
+                    if(tmpHeader){
+                        cout<<"EVENT DISPLAY -- there is a header"<<endl;
+                    }
+                    else
+                    {
+                        cout<<"EVENT DISPLAY -- no header"<<endl;
+                    }
+                    
+                    
+                    
+                    const AliTriggerScalersRecordESD *tmpScalers = tmpHeader->GetTriggerScalersRecord();
+                    if(tmpScalers){
+                        cout<<"EVENT DISPLAY -- there are scalers"<<endl;
+                    }
+                    else
+                    {
+                        cout<<"EVENT DISPLAY -- no scalers"<<endl;
+                    }
+                    
                     delete fCurrentEvent[fWritingToEventIndex];
                     fCurrentEvent[fWritingToEventIndex]=0;
                 }
@@ -326,17 +353,17 @@ void AliEveEventManager::CheckStorageStatus()
     AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
     configManager->ConnectEventManagerSignals();
     
-    AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-    eventManager->CreateSocket(CLIENT_COMMUNICATION_REQ);
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     struct clientRequestStruct *request = new struct clientRequestStruct;
     request->messageType = REQUEST_CONNECTION;
     
     while (!fFinished)
     {
-        if(eventManager->Send(request,CLIENT_COMMUNICATION_REQ,5000))
+        if(eventManager->Send(request,CLIENT_COMMUNICATION_REQ,10000))
         {
             StorageManagerOk();
+            cout<<"EVENT DISPLAY -- Storage Manager is OK!!"<<endl;
             long response = eventManager->GetLong(CLIENT_COMMUNICATION_REQ);
             fStorageDown = kFALSE;
         }
@@ -968,16 +995,14 @@ void AliEveEventManager::GotoEvent(Int_t event)
             requestMessage->event = eventToLoad;
             
             // create event manager:
-            AliStorageEventManager *eventManager =
-            AliStorageEventManager::GetEventManagerInstance();
+            AliZMQManager *eventManager = AliZMQManager::GetInstance();
             AliESDEvent *resultEvent = NULL;
             
-            eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
             fMutex->Lock();
             
             // send request and receive event:
             eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-            resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+            resultEvent = eventManager->GetESDEvent(SERVER_COMMUNICATION_REQ);
             
             if(resultEvent)
             {
@@ -1002,13 +1027,12 @@ void AliEveEventManager::GotoEvent(Int_t event)
             struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
             requestMessage->messageType = REQUEST_GET_LAST_EVENT;
             
-            AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-            eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+            AliZMQManager *eventManager = AliZMQManager::GetInstance();
             AliESDEvent *resultEvent = NULL;
             
             fMutex->Lock();
             eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-            resultEvent = eventManager->GetEvent(SERVER_COMMUNICATION_REQ);
+            resultEvent = eventManager->GetESDEvent(SERVER_COMMUNICATION_REQ);
             
             if(resultEvent)
             {
@@ -1300,9 +1324,7 @@ void AliEveEventManager::MarkCurrentEvent()
     requestMessage->messageType = REQUEST_MARK_EVENT;
     requestMessage->event = mark;
     
-    AliStorageEventManager *eventManager =
-    AliStorageEventManager::GetEventManagerInstance();
-    eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+    AliZMQManager *eventManager = AliZMQManager::GetInstance();
     
     /*
      std::future<bool> unused = std::async([]()

@@ -1,7 +1,7 @@
 #ifndef AliStorageServerThread_H
 #define AliStorageServerThread_H
 
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 #include "AliStorageDatabase.h"
 
 class AliStorageServerThread

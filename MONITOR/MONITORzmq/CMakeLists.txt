@@ -43,7 +43,7 @@ set(SRCS
     AliStorageAdministratorPanelSetStorageParams.cxx
     AliStorageClientThread.cxx
     AliStorageDatabase.cxx
-    AliStorageEventManager.cxx
+    AliZMQManager.cxx
     AliStorageServerThread.cxx
    )
 

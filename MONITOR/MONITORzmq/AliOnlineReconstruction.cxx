@@ -8,7 +8,7 @@
 
 #include "AliOnlineReconstruction.h"
 #include "AliOnlineReconstructionUtil.h"
-#include "AliStorageEventManager.h"
+#include "AliZMQManager.h"
 
 #include <TSQLServer.h>
 #include <TSQLResult.h>
@@ -183,10 +183,7 @@ cout<<"Set specific storage 2"<<endl;
 void AliOnlineReconstruction::ReconstructionLoop()
 {
   cout<<"\n\nCreating sockets\n\n"<<endl;
-	AliStorageEventManager *eventManager = AliStorageEventManager::GetEventManagerInstance();
-	eventManager->CreateSocket(EVENTS_SERVER_PUB);
-	eventManager->CreateSocket(XML_PUB);
-	eventManager->CreateSocket(ITS_POINTS_PUB);
+	AliZMQManager *eventManager = AliZMQManager::GetInstance();
 
 	cout<<"\n\nStarting reconstruction\n\n"<<endl;
 	fAliReco->Begin(NULL);
