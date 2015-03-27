@@ -63,8 +63,22 @@ void AliMultiplictyLoaderTask::UserExec(Option_t *)
 		cent=fESD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());	
 	
 	AliESDtrackCuts::MultEstTrackType estType = fESD->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
-        Int_t ncharged05=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.5);
-	Int_t ncharged08=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8);
+        Int_t ncharged05=-10;
+	Int_t ncharged08=-10;
+	if(fUseAliPPVsMultUtils)
+	{
+		if(fAliPPVsMultUtils->IsEventSelected(fESD))
+		{
+			ncharged05=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.5);
+			ncharged08=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8);
+		}
+	}
+	else
+	{
+		ncharged05=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.5);
+		ncharged08=AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8);
+	}
+
 	fcentvalue->SetVal(cent);
 	fncharged05value->SetVal(ncharged05);
 	fncharged08value->SetVal(ncharged08);

@@ -206,8 +206,8 @@ void AddTask_GammaConvDalitzCaloV1_pPb(  Int_t trainConfig = 1,  //change differ
 	  
 	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "02631031000000"; //standart cut, kINT7
 	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "02631031000000"; //standard cut, kPHI7
-	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
-	    eventCutArray[3] = "8000001"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "24444048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
+	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102624110"; mesonCutArray[2] = "02631031000000"; //standart cut, kINT7
+	    eventCutArray[3] = "8000001"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "24444048033200000"; electronCutArray[3] = "90475400233102624110"; mesonCutArray[3] = "02631031000000"; //standard cut, kPHI7
 	  
 	  
 	}else {

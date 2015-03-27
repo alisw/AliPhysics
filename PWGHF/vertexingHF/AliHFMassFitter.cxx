@@ -951,7 +951,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   if(fit1status){
     Int_t checkinnsigma=4;
     Double_t range[2]={fMass-checkinnsigma*fSigmaSgn,fMass+checkinnsigma*fSigmaSgn};
-    TF1* func=GetHistoClone()->GetFunction("funcbkgonly");
+    TF1* func=fhistoInvMass->GetFunction("funcbkgonly");
     Double_t intUnderFunc=func->Integral(range[0],range[1]);
     Double_t intUnderHisto=fhistoInvMass->Integral(fhistoInvMass->FindBin(range[0]),fhistoInvMass->FindBin(range[1]),"width");
     cout<<"Pick zone: IntFunc = "<<intUnderFunc<<"; IntHist = "<<intUnderHisto<<"\tDiff = "<<intUnderHisto-intUnderFunc<<"\tRelDiff = "<<(intUnderHisto-intUnderFunc)/intUnderFunc<<endl;
@@ -1413,6 +1413,7 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
     break;
   default:
     cout<<"Wrong choise of ftypeOfFit4Bkg ("<<ftypeOfFit4Bkg<<")"<<endl;
+    delete funcbkg;
     return kFALSE;
     break;
   }

@@ -39,12 +39,7 @@ enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};
 
   // Constructors
  AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
-fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), 
-fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),
-fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),	
-fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),
-fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
-
+fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0),fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
 {
 
 }
@@ -92,6 +87,7 @@ fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCu
    void AddMCProcessType(Int_t type,Int_t index);
   void SetCheckTypeofVeretx(Bool_t flag) {fchecktypeofveretxbytitle=flag;}
  void SetVertexSelection(Int_t flag){fvertexselection=flag;}  
+void SetDotheeventcutsinmultselection(Bool_t flag) {fDotheeventcutsinmultselection=flag;}
 
   UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
@@ -130,7 +126,7 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
  Bool_t  GetEventMCProcessTypeIncluded() const {return fEventMCProcessTypeIncluded;}
  Bool_t  GetCheckTypeofVeretx() const {return fchecktypeofveretxbytitle;}
  Int_t  GetVertexSelection()const {return fvertexselection;} 
- 
+ Bool_t GetDotheeventcutsinmultselection() const {return fDotheeventcutsinmultselection;}
 
 
   void InitHisto();	
@@ -140,6 +136,8 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   Float_t  NumberOfEvents()     { return fHistoCuts->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return fHistoCuts->GetBinContent(kProcessedEvents+1); }
   Float_t  NumberOfPhysSelEvents()     { return fHistoCuts->GetBinContent(kPhysSelEvents+1); }
+  Bool_t CheckifESDorAODEvent();
+  Bool_t CheckSDDPatchforLHC11a();		
 
   Long64_t Merge(TCollection* list);
 
@@ -177,7 +175,8 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   Int_t 	  *fEventMCProcessType;   //[fNMCProcessType] process typ cut 				  
   Bool_t 	  fEventMCProcessTypeIncluded; // if false those process are excluded if true they are included  
   Bool_t          fchecktypeofveretxbytitle; // if 1 type of veretx check using the title
-  Int_t  	   fvertexselection; // -1= no check 0=not track not SPD 1= only track 2=only spd 3= track + SPD		 
+  Int_t  	   fvertexselection; // -1= no check 0=not track not SPD 1= only track 2=only spd 3= track + SPD
+  Bool_t 	   fDotheeventcutsinmultselection; // if true it assume that pile-up/veretx/inel cut are done during the centrality multiplicty selection by AliPPVsMultUtils or loader task 			 
   TH1I            *fHistoCuts;        // Cuts statistics
   TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection 	
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
@@ -200,7 +199,8 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   AliSpectraBothEventCuts(const AliSpectraBothEventCuts&);
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
-  ClassDef(AliSpectraBothEventCuts, 14);
+  
+  ClassDef(AliSpectraBothEventCuts, 15);
   
 };
 #endif

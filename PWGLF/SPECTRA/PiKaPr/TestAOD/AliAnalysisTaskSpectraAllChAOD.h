@@ -47,7 +47,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fQst(1),
     fQtrk(0),
     fQgenType(0),
-    fDoCentrSystCentrality(0)
+    fDoCentrSystCentrality(0),
+    fEtaGap(0.5)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -99,6 +100,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetQgenType(Int_t val) { fQgenType = val ; } // type==0 qgen from tracks - type==1 qgen from vzero
   
   void SetDoCentrSystCentrality(Bool_t val) { fDoCentrSystCentrality = val; } //enable systematic for centrality
+  
+  void SetEtaGap(Double_t val) { fEtaGap = val; }
 
  private:
   
@@ -129,10 +132,12 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   
   Bool_t fDoCentrSystCentrality; //systematic check on centrality estimation
   
+  Double_t fEtaGap;
+  
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 12);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 13);
 };
 
 #endif

@@ -9,6 +9,7 @@
 #define NTRG 24
 #include "TObject.h"
 
+class TBits;
 class TParticle;
 class AliUPCTrack;
 class AliUPCMuonTrack;
@@ -43,6 +44,7 @@ public:
   void SetNumberOfTracklets(Int_t tcklets) {fNTracklets=tcklets;}
   void SetNSPDfiredInner(Int_t nInner) {fNSPDfiredInner=nInner;}
   void SetNSPDfiredOuter(Int_t nOuter) {fNSPDfiredOuter=nOuter;}
+  void SetFastOrFiredChips(TBits *map) {fFOmap=map;}
 
   void SetV0ADecision(Int_t decision) {fV0ADecision=decision;}
   void SetV0CDecision(Int_t decision) {fV0CDecision=decision;}
@@ -53,10 +55,18 @@ public:
   void SetZPCEnergy(Double_t energy) {fZPCEnergy = energy;}
   void SetZNAEnergy(Double_t energy) {fZNAEnergy = energy;}
   void SetZPAEnergy(Double_t energy) {fZPAEnergy = energy;}
+
   void SetZNCtdc(Bool_t tdc) {fZNCtdc = tdc;}
   void SetZPCtdc(Bool_t tdc) {fZPCtdc = tdc;}
   void SetZNAtdc(Bool_t tdc) {fZNAtdc = tdc;}
   void SetZPAtdc(Bool_t tdc) {fZPAtdc = tdc;}
+
+  void SetZNCtdcData(Int_t tdc) {fZNCtdcData = tdc;}
+  void SetZPCtdcData(Int_t tdc) {fZPCtdcData = tdc;}
+  void SetZNAtdcData(Int_t tdc) {fZNAtdcData = tdc;}
+  void SetZPAtdcData(Int_t tdc) {fZPAtdcData = tdc;}
+  void SetZNCTime(Float_t tdc) {fZNCTime = tdc;}
+  void SetZNATime(Float_t tdc) {fZNATime = tdc;}
 
   AliUPCTrack *AddTrack(void);
   AliUPCMuonTrack *AddMuonTrack(void);
@@ -85,6 +95,10 @@ public:
   Int_t GetNumberOfTracklets(void) const { return fNTracklets; }
   Int_t GetNSPDfiredInner(void) const { return fNSPDfiredInner; }
   Int_t GetNSPDfiredOuter(void) const { return fNSPDfiredOuter; }
+  TBits *GetFastOrFiredChips(void) const { return fFOmap;}
+  Bool_t Get0SMB(void) const;
+  Bool_t Get0SH1(void) const;
+  Bool_t Get0STP(void) const;
 
   Int_t GetV0ADecision(void) const { return fV0ADecision; }
   Int_t GetV0CDecision(void) const { return fV0CDecision; }
@@ -97,11 +111,19 @@ public:
   Double_t GetZPCEnergy(void) const { return fZPCEnergy; }
   Double_t GetZNAEnergy(void) const { return fZNAEnergy; }
   Double_t GetZPAEnergy(void) const { return fZPAEnergy; }
+
   Bool_t GetZNCtdc(void) const { return fZNCtdc; }
   Bool_t GetZPCtdc(void) const { return fZPCtdc; }
   Bool_t GetZNAtdc(void) const { return fZNAtdc; }
   Bool_t GetZPAtdc(void) const { return fZPAtdc; }
   Bool_t GetAllZDCtdc(void) const;
+
+  Int_t GetZNCtdcData(void) const { return fZNCtdcData; }
+  Int_t GetZPCtdcData(void) const { return fZPCtdcData; }
+  Int_t GetZNAtdcData(void) const { return fZNAtdcData; }
+  Int_t GetZPAtdcData(void) const { return fZPAtdcData; }
+  Float_t GetZNCTime(void) const { return fZNCTime; }
+  Float_t GetZNATime(void) const { return fZNATime; }
 
   Int_t GetNumberOfTracks(void) const { return fNtracks; }
   AliUPCTrack *GetTrack(Int_t iTrack) const;
@@ -136,6 +158,7 @@ protected:
   Int_t fNTracklets; // number of SPD tracklets
   Int_t fNSPDfiredInner; // number of fired SPD FO chips, inner layer
   Int_t fNSPDfiredOuter; // number of fired SPD FO chips, outer layer
+  TBits *fFOmap; //-> map of FastOr fired chips
   Int_t fV0ADecision; // V0A decision, set by enumeration: kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake
   Int_t fV0CDecision; // V0C decision
   UInt_t fBBtriggerV0C; // offline beam-beam flags in V0C one bit per cell
@@ -148,6 +171,12 @@ protected:
   Bool_t fZPCtdc; // ZDC TDC data, PC
   Bool_t fZNAtdc; // ZDC TDC data, NA
   Bool_t fZPAtdc; // ZDC TDC data, PA
+  Int_t fZNCtdcData; // sum of ZNC TDC, ESD
+  Int_t fZPCtdcData; // sum of ZPC TDC
+  Int_t fZNAtdcData; // sum of ZNA TDC
+  Int_t fZPAtdcData; // sum of ZPA TDC
+  Float_t fZNCTime; // ZNC TDC sum in ns corrected 4 phase shift, AOD
+  Float_t fZNATime; // ZNA TDC sum in ns corrected 4 phase shift
   TClonesArray *fUPCTracks; //-> array of central upc tracks
   Int_t fNtracks; // number of central upc tracks in event
   TClonesArray *fUPCMuonTracks; //-> array of muon upc tracks

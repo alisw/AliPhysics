@@ -9,11 +9,12 @@
 #define NTRG 24
 #include "AliAnalysisTaskSE.h"
 
+class AliUPCEvent;
 class AliAODMCHeader;
 class AliMuonTrackCuts;
-class AliTriggerAnalysis;
 class AliESDtrackCuts;
-class AliUPCEvent;
+class AliPIDResponse;
+class AliTriggerAnalysis;
 
 class AliAnalysisTaskUpcFilterSemiforward : public AliAnalysisTaskSE {
  public:
@@ -41,6 +42,7 @@ class AliAnalysisTaskUpcFilterSemiforward : public AliAnalysisTaskSE {
   AliMuonTrackCuts *fMuonCuts; // class for muon track cuts, used for pDCA
   AliTriggerAnalysis *fTriggerAna; // class for trigger analysis, used for fired SPD FO
   AliESDtrackCuts **fCutsList; // array of pointers to filtering task for ESD tracks
+  AliPIDResponse *fPIDResponse;     // PID response object
 
   TList *fHistList; // list of output histograms
   TH1I *fCounter; // analysis counter

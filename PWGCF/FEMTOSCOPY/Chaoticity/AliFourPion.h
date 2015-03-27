@@ -113,9 +113,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   void Setq2Index(Int_t q2i) {fq2Index = q2i;}
   void Setq2CutLow(Float_t q2l) {fq2CutLow = q2l;}
   void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
+  void SetQinvMin(Float_t qim) {fQLowerCut = qim;}
   //
   
-
+  
  private:
 
   void ParInit();
@@ -399,7 +400,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   TF1 *fqOutFcn;
   TF1 *fqSideFcn;
   TF1 *fqLongFcn;
-
+ 
   ClassDef(AliFourPion, 1); 
 };
 
