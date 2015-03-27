@@ -705,3 +705,55 @@ Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::Pseudo
 
   return 0;
 }
+
+//______________________________________________________________________________________
+Bool_t AliEmcalJetTask::IsLocked() const
+{
+  if (fLocked) {
+    AliFatal("Jet finder task is locked! Changing properties is not allowed."); 
+    return kTRUE;
+  } 
+  else {
+    return kFALSE;
+  }
+}
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SelectCollisionCandidates(UInt_t offlineTriggerMask)
+{
+  if(!fIsPSelSet) {
+    fIsPSelSet = kTRUE;
+    fOfflineTriggerMask = offlineTriggerMask;
+  }
+  else {
+    AliWarning("Manually setting the event selection for jet finders is not allowed! Using trigger=old_trigger | your_trigger");  
+    fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
+  }
+}
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SetRadius(Double_t r)            
+{ 
+  if (IsLocked()) return; 
+  fRadius = r; 
+  if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) {
+    AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet).");
+  }
+}
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SetType(Int_t t)                 
+{ 
+  if(IsLocked()) return; 
+  if (t==0) fJetType |= kFullJet; 
+  else if (t==1) fJetType |= kChargedJet; 
+  else if (t==2) fJetType |= kNeutralJet; 
+} // for backward compatibility only
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SelectPhysicalPrimaries(Bool_t s)    
+{ 
+  if(IsLocked()) return; 
+  if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim; 
+  else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim; 
+}
