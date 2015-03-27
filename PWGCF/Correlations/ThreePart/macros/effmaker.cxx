@@ -198,7 +198,123 @@ void MakeEffHists(){
   multptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   multptEffRecPP->Write();
   
+  
+  
+  
+  //make more meaningful axes:
+  //mult: keep for now, unsure how it actually should look.
+  //vz: 4 cm bins from -6 to 6,6-8,8-10 and the same on the other side:
+  Double_t  vzaxisArray[8] = {-10.0,-8.0,-6.0,-2.0,2.0,6.0,8.0,10.0};
+  //phi need all the bins I can get... 
+  //eta: rebin by two
+  //pt: 0.1GeV/c up to 3 GeV/c = 25 bins, 0.5GeV/c up to 5 GeV/c = 4 bins, then 1 5GeV/c bin and one 6GeV/c bin: total 31 bins
+  Double_t  pTaxisArray[32] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0,4.5,5.0,10.0,16.0};
+  
+  Int_t newaxes[5] = {multaxis->GetNbins(),7,phiaxis->GetNbins(),Etaaxis->GetNbins()/2,31};
+  Double_t xmin[5] = {multaxis->GetBinLowEdge(1),vzaxisArray[0],phiaxis->GetBinLowEdge(1),Etaaxis->GetBinLowEdge(1),pTaxisArray[0]};
+  Double_t xmax[5] = {multaxis->GetBinUpEdge(multaxis->GetNbins()),vzaxisArray[7],phiaxis->GetBinUpEdge(phiaxis->GetNbins()),Etaaxis->GetBinUpEdge(Etaaxis->GetNbins()),pTaxisArray[31]};
+  THnF * weights =  new THnF("hnWeights","Weights for filling.",5,newaxes,xmin,xmax);
+  weights->GetAxis(1)->Set(7,vzaxisArray);
+  weights->GetAxis(4)->Set(31,pTaxisArray);
+
+  
+  THnF * RebinRec =  new THnF("hnRebinRec","Counts in Reconstruction.",5,newaxes,xmin,xmax);
+  RebinRec->GetAxis(1)->Set(7,vzaxisArray);
+  RebinRec->GetAxis(4)->Set(31,pTaxisArray);  
+  THnF * RebinMC =  new THnF("hnRebinMC","Counts produced.",5,newaxes,xmin,xmax);
+  RebinMC->GetAxis(1)->Set(7,vzaxisArray);
+  RebinMC->GetAxis(4)->Set(31,pTaxisArray);  
+  
+  for(int mult = 1;mult<=hnTracksInBins->GetAxis(0)->GetNbins();mult++){
+    Int_t multindex = weights->GetAxis(0)->FindBin(hnTracksInBins->GetAxis(0)->GetBinCenter(mult));
+    for(int vz = 1;vz<=hnTracksInBins->GetAxis(1)->GetNbins();vz++){
+      Int_t vzindex = weights->GetAxis(1)->FindBin(hnTracksInBins->GetAxis(1)->GetBinCenter(vz));
+      for(int phi = 1;phi<=hnTracksInBins->GetAxis(2)->GetNbins();phi++){
+	Int_t phiindex = weights->GetAxis(2)->FindBin(hnTracksInBins->GetAxis(2)->GetBinCenter(phi));
+	for(int eta=1;eta<=hnTracksInBins->GetAxis(3)->GetNbins();eta++){
+	  Int_t etaindex = weights->GetAxis(3)->FindBin(hnTracksInBins->GetAxis(3)->GetBinCenter(eta));
+	  for(int pT=1;pT<=hnTracksInBins->GetAxis(4)->GetNbins();pT++){
+	    Int_t ptindex = weights->GetAxis(4)->FindBin(hnTracksInBins->GetAxis(4)->GetBinCenter(pT));
+	    Int_t indexold[5] = {mult,vz,phi,eta,pT};
+	    Int_t index[5] = {multindex,vzindex,phiindex,etaindex,ptindex};
+	    Double_t BinContentRec = hnTracksInBins->GetBinContent(indexold) ;
+	    Double_t BinContentMC = hnTracksInBinsMC->GetBinContent(indexold) ;
+	    Double_t BinContent = 0.0;
+	    Double_t BinError = 0.0;
+	    if(!BinContentRec<0.5){
+	      BinContent = BinContentRec;
+	      BinError = BinContentRec;
+	    }
+	    RebinRec->SetBinContent(index,BinContent);
+	    if(BinError >1.0E-10)RebinRec->SetBinError2(RebinRec->GetBin(index),BinError);
+	    BinContent = 0.0;
+	    BinError = 0.0;
+	    if(!BinContentMC<0.5){
+	      BinContent = BinContentMC;
+	      BinError = BinContentMC;
+	    }
+	    RebinMC->SetBinContent(index,BinContent);
+	    if(BinError >1.0E-10)RebinMC->SetBinError2(RebinMC->GetBin(index),BinError);
+	    
+	  }
+	}
+      }
+    }
+  }
+  for(int mult = 1;mult<=weights->GetAxis(0)->GetNbins();mult++){
+    for(int vz = 1;vz<=weights->GetAxis(1)->GetNbins();vz++){
+      for(int phi = 1;phi<=weights->GetAxis(2)->GetNbins();phi++){
+	for(int eta=1;eta<=weights->GetAxis(3)->GetNbins();eta++){
+	  for(int pT=1;pT<=weights->GetAxis(4)->GetNbins();pT++){
+	    Int_t index[5] = {mult,vz,phi,eta,pT};
+	    Double_t BinContentRec = RebinRec->GetBinContent(index) ;
+	    Double_t BinContentMC = RebinMC->GetBinContent(index) ;
+	    Double_t BinContent = 0.0;
+	    Double_t BinError = 0.0;
+	    if(!BinContentRec<0.5){
+	      BinContent = BinContentMC/BinContentRec;
+	      BinError = BinContent*BinContent*(RebinRec->GetBinError2(RebinRec->GetBin(index))/(BinContentRec*BinContentRec) + RebinMC->GetBinError2(RebinMC->GetBin(index))/(BinContentMC*BinContentMC));
+	    }
+	    weights->SetBinContent(index,BinContent);
+	    if(BinError >1.0E-10)weights->SetBinError2(weights->GetBin(index),BinError);
+	  }
+	}
+      }
+    }
+  }
+  RebinRec->Write();
+  RebinMC->Write();
+  weights->Write();
+  
   outfile->Close();
   infile->Close();
 //   delete multEffRec;delete multEffRecPP;
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
