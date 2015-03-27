@@ -67,7 +67,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetMCFlag(UInt_t m)                        { if (IsLocked()) return; fMCFlag           = m     ; }
   void                   SelectHIJING(Bool_t s)                     { if (IsLocked()) return; if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
-  void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex   = i     ; }
+  void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex     = i     ; }
+  void                   SetFilterHybridTracks(Bool_t f)            { if (IsLocked()) return; fFilterHybridTracks = f     ; }
 
   AliEmcalJetUtility*    AddUtility(AliEmcalJetUtility* utility);
 
@@ -150,6 +151,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   UInt_t                 fMCFlag;                 // select MC particles with flags (e.g. to select physical primaries)
   Short_t                fGeneratorIndex;         // select MC particles with generator index (default = -1 to switch off selection)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
+  Bool_t                 fFilterHybridTracks;     // filter hybrid tracks (only works with AOD tracks)
   Bool_t                 fLocked;                 // true if lock is set
  
   Bool_t                 fIsInit;                 //!=true if already initialized
