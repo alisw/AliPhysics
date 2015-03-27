@@ -57,7 +57,7 @@ AliJFFlucTask::AliJFFlucTask():
 
 
 //______________________________________________________________________________
-AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC):
+AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t ExcludeWeakDecay):
 	fInputList(0),
     AliAnalysisTaskSE(name), 
     fFFlucAna(0x0),
@@ -200,18 +200,35 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
 				if(!track) { Error("ReadEventAODMC", "Could not receive particle %d",(int) it); continue; };
 				if( track->IsPhysicalPrimary() ){
-						// insert eta cut here // 
+						// insert AMTP weak decay switch here
+						if(ExcludeWeakDecay == kTRUE){
+								Bool_t kExcludeParticle = kFALSE;
+								Int_t gMotherIndex = track->GetMother(); // check and ask about this to DJ changed to mother from firstmother
+								if(gMotherIndex != -1) {
+										AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(aod->GetTrack(gMotherIndex));
+										if(motherTrack) {
+												TParticle *motherParticle = motherTrack->Particle();
+												if(motherParticle) {
+														if(IsThisAWeakDecayingParticle(motherParticle)){
+																kExcludeParticle = kTRUE;
+														}
+												}
+										}
+								}
+								//Exclude from the analysis decay products of weakly decaying particles
+								if(kExcludeParticle) continue;
+						} // weak decay particles are excluded
 						double track_abs_eta = TMath::Abs( track->Eta() );
 						//if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
-								//if( track->Pt() < 0.2 || track->Pt() > 5 ) continue ; // test pt cut
-								Int_t pdg = track->GetPdgCode();
-								Char_t ch = (Char_t) track->Charge();
-								Int_t label = track->GetLabel();
-								AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
-								itrack->SetLabel( label );
-								itrack->SetParticleType( pdg);
-								itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
-								itrack->SetCharge(ch) ;
+						//if( track->Pt() < 0.2 || track->Pt() > 5 ) continue ; // test pt cut
+						Int_t pdg = track->GetPdgCode();
+						Char_t ch = (Char_t) track->Charge();
+						Int_t label = track->GetLabel();
+						AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
+						itrack->SetLabel( label );
+						itrack->SetParticleType( pdg);
+						itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
+						itrack->SetCharge(ch) ;
 						//}; no eta cut in task file
 				}
 		}
@@ -264,4 +281,24 @@ void AliJFFlucTask::Terminate(Option_t *)
 //    fFFlucAna->Terminate("");
 	// Processing when the event loop is ended
 	cout<<"AliJFFlucTask Analysis DONE !!"<<endl; 
+}
+
+
+//______________________________________________________________________________
+Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(TParticle *thisGuy)
+{
+  // In order to prevent analyzing daughters from weak decays 
+  // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
+Int_t pdgcode = TMath::Abs( thisGuy->GetPdgCode() );
+ Int_t myWeakParticles[7] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+                              3122, 3112, // Lambda0 Sigma+-
+                              130, 310 // K_L0 K_S0
+ };
+ Bool_t found = kFALSE;
+ for(Int_t i=0; i!=7; ++i)
+   if( myWeakParticles[i] == pdgcode ) {
+     found = kTRUE;
+     break;
+   }
+ return found;
 }
