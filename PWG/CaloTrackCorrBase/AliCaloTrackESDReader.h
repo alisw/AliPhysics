@@ -4,13 +4,17 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class for reading data (ESDs) in order to do prompt gamma 
-//  or other particle identification and correlations
-// 
-//
-//
-//
-//*-- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliCaloTrackESDReader
+/// \brief Class for event, clusters and tracks filtering and preparation for the ESD analysis.
+///
+/// Class for accessing/filtering ESD data. Most of the job is done in the mother class
+/// here only very specific methods of the ESD format are implemented.
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
+
 
 class AliESDEvent;
 
@@ -43,17 +47,21 @@ public:
 	 
 private:
   
-  Bool_t           fConstrainTrack;            // Constrain Track to vertex
-  AliESDtrackCuts* fESDtrackCuts ;             // Track cut
-  AliESDtrackCuts* fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
+  Bool_t           fConstrainTrack;            ///< Constrain Track to vertex.
+  AliESDtrackCuts* fESDtrackCuts ;             ///< Track cut machinery.
+  AliESDtrackCuts* fESDtrackComplementaryCuts; ///< Track cut machinery for complementary cuts for hybrids.
   
-  AliCaloTrackESDReader(              const AliCaloTrackESDReader & r) ; // cpy ctor
-  AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & r) ; // cpy assignment
+  /// Copy constructor not implemented.
+  AliCaloTrackESDReader(              const AliCaloTrackESDReader & r) ; 
   
-  ClassDef(AliCaloTrackESDReader,2)
+  /// Assignment operator not implemented.
+  AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & r) ; 
   
-} ;
+  /// \cond CLASSIMP
+  ClassDef(AliCaloTrackESDReader,2) ;
+  /// \endcond 
 
+} ;
 
 #endif //ALICALOTRACKESDREADER_H
 

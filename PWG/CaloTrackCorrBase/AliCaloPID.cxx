@@ -13,33 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class for PID selection with calorimeters
-// The Output of the main method GetIdentifiedParticleType is a PDG number identifying the cluster, 
-// being kPhoton, kElectron, kPi0 ... as defined in the header file
-//   - GetIdentifiedParticleType(const AliVCluster * cluster) 
-//      Assignes a PID tag to the cluster, right now there is the possibility to : use bayesian weights from reco, 
-//      recalculate them (EMCAL) or use other procedures not used in reco.
-//      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
-//      and do SwitchOnBayesianRecalculation().
-//      To change the PID parameters from Low to High like the ones by default, use the constructor 
-//      AliCaloPID(flux)
-//      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
-//      If it is necessary to change the parameters use the constructor 
-//      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
-
-//   - GetGetIdentifiedParticleTypeFromBayesian(const Double_t * pid, const Float_t energy)
-//      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle, 
-//      executed when bayesian is ON by GetIdentifiedParticleType(const AliVCluster * cluster) 
-//   - SetPIDBits: Simple PID, depending on the thresholds fLOCut fTOFCut and even the
-//     result of the PID bayesian a different PID bit is set. 
-//
-//   - IsTrackMatched(): Independent method that needs to be combined with GetIdentifiedParticleType to know if the cluster was matched
-//
-//*-- Author: Gustavo Conesa (INFN-LNF)
-//////////////////////////////////////////////////////////////////////////////
-
-
 // --- ROOT system ---
 #include <TMath.h>
 #include <TString.h>
@@ -58,9 +31,13 @@
 // ---- Detector ----
 #include "AliEMCALPIDUtils.h"
 
-ClassImp(AliCaloPID)
+/// \cond CLASSIMP
+ClassImp(AliCaloPID) ;
+/// \endcond
 
-
+//________________________
+/// Default constructor.
+/// Initialize parameters.
 //________________________
 AliCaloPID::AliCaloPID() : 
 TObject(),                fDebug(-1),                  fParticleFlux(kLow),
@@ -90,12 +67,14 @@ fMassPhoMin(0),           fMassPhoMax(0),
 fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 {
-  //Ctor
-  
-  //Initialize parameters
   InitParameters();
 }
 
+//________________________________________
+/// Constructor.
+/// \param flux: high or low particle environment. 
+/// To be used when recalculating bayesian PID. Not used currently.
+/// Initialize parameters.
 //________________________________________
 AliCaloPID::AliCaloPID(Int_t flux) :
 TObject(),                fDebug(-1),                  fParticleFlux(flux),
@@ -125,13 +104,14 @@ fMassPhoMin(0),           fMassPhoMax(0),
 fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 {
-  //Ctor
-	
-  //Initialize parameters
   InitParameters();
-  
 }
 
+//_______________________________________________
+/// Constructor.
+/// \param emcalpid: pointer to EMCal class to recalculate PID weights. 
+/// To be used when recalculating bayesian PID and need different parameters. Not used currently.
+/// Initialize parameters.
 //_______________________________________________
 AliCaloPID::AliCaloPID(const TNamed * emcalpid) : 
 TObject(),                   fDebug(-1),                  fParticleFlux(kLow),
@@ -163,28 +143,24 @@ fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 
 {
-  //Ctor
-  
-  //Initialize parameters
   InitParameters();
 }
 
 //_______________________
+// Destructor.
+//_______________________
 AliCaloPID::~AliCaloPID() 
-{
-  //Dtor
-  
+{  
   delete fPHOSPhotonWeightFormula ;
   delete fPHOSPi0WeightFormula ;
   delete fEMCALPIDUtils ;
-  
 }
 
 //_______________________________
+// Initialize the parameters of the PID.
+//_______________________________
 void AliCaloPID::InitParameters()
-{
-  //Initialize the parameters of the PID.
-  
+{  
   // Bayesian
   fEMCALPhotonWeight   = 0.6 ;
   fEMCALPi0Weight      = 0.6 ;
@@ -330,16 +306,18 @@ void AliCaloPID::InitParameters()
   
   
   fSplitWidthSigma = 3. ;
-  
 }
 
 
 //_________________________________________________________________________________________
+/// Select the appropriate asymmetry range for pi0 selection in splitting method.
+/// \param energy: of the cluster.
+/// \param asy: asymmetry after splitting.
+/// \param nlm: number of local maxima of the cluster.
+/// \return kTRUE if asy is within the defined range.
+//_________________________________________________________________________________________
 Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy, Int_t nlm) const
 {
-  // Select the appropriate mass range for pi0 selection in splitting method
-  // No used yet in splitting ID decision
-  
   if(!fUseSplitAsyCut) return kTRUE ;
   
   Float_t abasy = TMath::Abs(asy);
@@ -360,14 +338,17 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy, Int_t
   
   if(abasy < cut) return kTRUE;
   else            return kFALSE;
-  
 }
 
 //______________________________________________________________________________________
+/// Select the appropriate mass range for pi0 selection in splitting method
+/// \param energy: of the cluster.
+/// \param mass: mass after splitting.
+/// \param nlm: number of local maxima of the cluster.
+/// \return kTRUE if mass is within the defined range.
+//______________________________________________________________________________________
 Bool_t AliCaloPID::IsInPi0SplitMassRange(Float_t energy, Float_t mass, Int_t nlm) const
 {
-  // Select the appropriate mass range for pi0 selection in splitting method
-  
   if(fUseSimpleMassCut)
   {
     if(mass < fMassPi0Max && mass > fMassPi0Min) return kTRUE;
@@ -403,27 +384,31 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(Float_t energy, Float_t mass, Int_t nlm
   
   if(mass < maxMass && mass > minMass) return kTRUE;
   else                                 return kFALSE;
-  
 }
 
 //________________________________________________
+/// Select the appropriate shower shape range, simple fix range, not energy dependent.
+/// \param m02: shower shape main axis of the cluster.
+/// \return kTRUE if m02 is within the defined range
+//________________________________________________
 Bool_t AliCaloPID::IsInM02Range(Float_t m02) const
-{
-  // Select the appropriate m02 range, fix cut, not E dependent 
-    
+{    
   Float_t minCut = fSplitM02MinCut;
   Float_t maxCut = fSplitM02MaxCut;
 
   if(m02 < maxCut && m02 > minCut) return kTRUE;
   else                             return kFALSE;
-  
 }
 
 //_______________________________________________________________________________
+/// Select the appropriate shower shape range in splitting method for pi0
+/// \param energy: of the cluster.
+/// \param m02: shower shape main axis of the cluster.
+/// \param nlm: number of local maxima of the cluster.
+/// \return kTRUE if m02 is within the defined range.
+//_______________________________________________________________________________
 Bool_t AliCaloPID::IsInPi0M02Range(Float_t energy, Float_t m02,  Int_t nlm) const
 {
-  // Select the appropriate m02 range in splitting method for pi0
-  
   if(!fUseSplitSSCut) return kTRUE ;
 
   //First check the absolute minimum and maximum
@@ -459,16 +444,19 @@ Bool_t AliCaloPID::IsInPi0M02Range(Float_t energy, Float_t m02,  Int_t nlm) cons
   }
   
   else return kTRUE;
-  
 }
 
 
 //______________________________________________________________________________
+// Select the appropriate shower shape range in splitting method to select eta's
+// Use same parametrization as pi0, just shift the distributions (to be tuned)
+/// \param energy: of the cluster.
+/// \param m02: shower shape main axis of the cluster.
+/// \param nlm: number of local maxima of the cluster.
+/// \return kTRUE if m02 is within the defined range.
+//______________________________________________________________________________
 Bool_t AliCaloPID::IsInEtaM02Range(Float_t energy, Float_t m02, Int_t nlm) const
-{
-  // Select the appropriate m02 range in splitting method to select eta's
-  // Use same parametrization as pi0, just shift the distributions (to be tuned)
-  
+{  
   if(!fUseSplitSSCut) return kTRUE ;
   
   //First check the absolute minimum and maximum
@@ -512,15 +500,18 @@ Bool_t AliCaloPID::IsInEtaM02Range(Float_t energy, Float_t m02, Int_t nlm) const
   }
   
   else return kTRUE;
-  
 }
 
 //______________________________________________________________________________
+/// Select the appropriate shower shape range in splitting method for converted photons
+/// Just minimum limit for pi0s is max for conversion.
+/// \param energy: of the cluster.
+/// \param m02: shower shape main axis of the cluster.
+/// \param nlm: number of local maxima of the cluster.
+/// \return kTRUE if m02 is within the defined range.
+//______________________________________________________________________________
 Bool_t AliCaloPID::IsInConM02Range(Float_t energy, Float_t m02, Int_t nlm) const
 {
-  // Select the appropriate m02 range in splitting method for converted photons
-  // Just min limit for pi0s is max for conversion.
-  
   if(!fUseSplitSSCut) return kTRUE ;
   
   Float_t minCut = 0.1;
@@ -544,21 +535,22 @@ Bool_t AliCaloPID::IsInConM02Range(Float_t energy, Float_t m02, Int_t nlm) const
 }
 
 //______________________________________________
+/// \return pointer to AliEMCALPIDUtils, create it if needed.
+//______________________________________________
 AliEMCALPIDUtils *AliCaloPID::GetEMCALPIDUtils() 
-{
-  // return pointer to AliEMCALPIDUtils, create it if needed
-  
+{  
   if(!fEMCALPIDUtils) fEMCALPIDUtils = new AliEMCALPIDUtils ; 
+ 
   return fEMCALPIDUtils ; 
-  
 }
 
 
 //________________________________________________________________ 
+/// \return PDG number corresponding to the likely ID of the cluster
+/// \param cluster: input cluster pointer
+//________________________________________________________________ 
 Int_t AliCaloPID::GetIdentifiedParticleType(AliVCluster * cluster)
-{
-  // Returns a PDG number corresponding to the likely ID of the cluster
-  
+{  
   Float_t energy  = cluster->E();	
   Float_t lambda0 = cluster->GetM02();
   Float_t lambda1 = cluster->GetM20();
@@ -606,14 +598,16 @@ Int_t AliCaloPID::GetIdentifiedParticleType(AliVCluster * cluster)
     if(TestPHOSDispersion(energy,lambda0,lambda1) < fPHOSDispersionCut) return kPhoton;
     else                                                                return kNeutralUnknown;
   }
-  
 }
 
 //_________________________________________________________________________________________________________
+/// \return most probable identity (PDG) of the particle after bayesian weights calculated in reconstruction.
+/// \param isEMCAL: which calo.
+/// \param pid: array with bayesian weights
+/// \param energy: of the cluster
+//_________________________________________________________________________________________________________
 Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(Bool_t isEMCAL, Double_t * pid, Float_t energy)
-{
-  //Return most probable identity of the particle after bayesian weights calculated in reconstruction
-  
+{  
   if(!pid)
   { 
     AliFatal("pid pointer not initialized!!!");
@@ -680,6 +674,25 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(Bool_t isEMCAL, Doub
 }
 
 //____________________________________________________________________________________________________________
+/// Split the cluster in 2, do invariant mass, get the mass and decide 
+/// if this is a photon, pi0, eta, .... Only implemented for EMCal, for now.
+/// \param cluster: input cluster pointer.
+/// \param cells: list of calorimeter cells.
+/// \param caloutils: pointer to AliCalorimeterUtils, the split is implemented in this class.
+/// \param vertex: Event vertex array.
+/// \param nMax: number of local maxima of the input cluster, output.
+/// \param mass: splitted cluster mass, output.  
+/// \param angle: opening angle of sub-clusters, output.
+/// \param l1: sub-cluster kinematics, output.
+/// \param l2: sub-cluster kinematics, output.
+/// \param absId1: sub-cluster main cell index, output.
+/// \param absId2: sub-cluster main cell index, output.
+/// \param distbad1: sub-cluster distance to bad channel, output. 
+/// \param distbad2: sub-cluster distance to bad channel, output.
+/// \param fidcut1: sub-cluster close to border, output.  
+/// \param fidcut2: sub-cluster close to border, output. 
+/// \return kTRUE if cluster type: kPi0, kEta, kPhoton, kNeutralUnknown
+//____________________________________________________________________________________________________________
 Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* cluster, 
                                                                 AliVCaloCells* cells,
                                                                 AliCalorimeterUtils * caloutils,
@@ -690,10 +703,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 Int_t   & absId1,   Int_t   & absId2,
                                                                 Float_t & distbad1, Float_t & distbad2,
                                                                 Bool_t  & fidcut1,  Bool_t  & fidcut2  ) const
-{
-  // Split the cluster in 2, do invariant mass, get the mass and decide 
-  // if this is a photon, pi0, eta, ...
-  
+{  
   Float_t eClus  = cluster->E();
   Float_t m02    = cluster->GetM02();
   const Int_t nc = cluster->GetNCells();
@@ -875,10 +885,10 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
 }
 
 //_________________________________________
+/// Put data member values in string to keep in output container.
+//_________________________________________
 TString  AliCaloPID::GetPIDParametersList()  
-{
-  //Put data member values in string to keep in output container
-  
+{  
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -947,14 +957,13 @@ TString  AliCaloPID::GetPIDParametersList()
   
   
   return parList;
-  
 }
 
 //________________________________________________
+/// Print some relevant parameters set for the analysis
+//________________________________________________
 void AliCaloPID::Print(const Option_t * opt) const
 {
-  
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -993,14 +1002,13 @@ void AliCaloPID::Print(const Option_t * opt) const
   printf("phot: %2.2f<m<%2.2f \n",      fMassPhoMin,fMassPhoMax);
   
   printf(" \n");
-  
 } 
 
 //_________________________________________________________________
+// Print PID of cluster, (AliVCluster*)cluster->GetPID()
+//_________________________________________________________________
 void AliCaloPID::PrintClusterPIDWeights(const Double_t * pid) const
-{
-  // print PID of cluster, (AliVCluster*)cluster->GetPID()
-  
+{  
   printf("AliCaloPID::PrintClusterPIDWeights() \n \t ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, \n \t \
          pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
          pid[AliVCluster::kPhoton],    pid[AliVCluster::kPi0],
@@ -1008,17 +1016,16 @@ void AliCaloPID::PrintClusterPIDWeights(const Double_t * pid) const
          pid[AliVCluster::kPion],      pid[AliVCluster::kKaon], 
          pid[AliVCluster::kProton],
          pid[AliVCluster::kNeutron],   pid[AliVCluster::kKaon0]);
-  
 }
 
+//___________________________________________________________________________
+/// Set Bits for PID selection
 //___________________________________________________________________________
 void AliCaloPID::SetPIDBits(AliVCluster * cluster, 
                             AliAODPWG4Particle * ph, AliCalorimeterUtils* cu, 
                             AliVEvent* event) 
-{
-  //Set Bits for PID selection
-  
-  //Dispersion/lambdas
+{  
+  // Dispersion/lambdas
   //Double_t disp= cluster->GetDispersion()  ;
   Double_t l1  = cluster->GetM20() ;
   Double_t l0  = cluster->GetM02() ; 
@@ -1053,12 +1060,16 @@ void AliCaloPID::SetPIDBits(AliVCluster * cluster,
 }
 
 //_________________________________________________________
+/// Check if there is any track attached to this cluster.
+/// \param cluster: pointer to calorimeter cluster.
+/// \param cu: pointer to AliCalorimeterUtils, needed if track matching is recalculated in the fly
+/// \param event: AliVEvent pointer. Needed to get the tracks or the magnetic field.
+/// \return kTRUE if cluster is matched by a track.
+//_________________________________________________________
 Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
                                   AliCalorimeterUtils * cu,
                                   AliVEvent* event) const
-{
-  //Check if there is any track attached to this cluster
-  
+{  
   Int_t nMatches = cluster->GetNTracksMatched();
   AliVTrack * track = 0;
   
@@ -1119,15 +1130,19 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     
   } // more than 1 match, at least one track in array
   else return kFALSE;
-  
 }
 
 //___________________________________________________________________________________________________
-Float_t AliCaloPID::TestPHOSDispersion(const Double_t pt, const Double_t l1, const Double_t l2) const
+/// Check if PHOS cluster is photon-like. Uses photon cluster parameterization in real pp data.
+/// \param pt: cluster momentum
+/// \param l1: first ellipse axis
+/// \param l2: sencond ellipse axis
+/// \return distance in sigmas. 
+///
+/// Recommended cut 2.5
+//___________________________________________________________________________________________________
+Float_t AliCaloPID::TestPHOSDispersion(Double_t pt, Double_t l1, Double_t l2) const
 {
-  //Check if cluster photon-like. Uses photon cluster parameterization in real pp data
-  //Returns distance in sigmas. Recommended cut 2.5
-  
   Double_t l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
   Double_t l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
   Double_t l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
@@ -1140,23 +1155,27 @@ Float_t AliCaloPID::TestPHOSDispersion(const Double_t pt, const Double_t l1, con
   AliDebug(1,Form("PHOS SS R %f < %f?", TMath::Sqrt(r2), fPHOSDispersionCut));
   
   return TMath::Sqrt(r2) ;
-  
 }
 
 //_______________________________________________________________________________________________
-Float_t AliCaloPID::TestPHOSChargedVeto(const Double_t dx,  const Double_t dz, const Double_t pt, 
-                                        const Int_t charge, const Double_t mf) const 
+/// Checks distance to the closest track. Takes into account 
+/// non-perpendicular incidence of tracks.
+/// \param dx: track-cluster residual x.
+/// \param dz: track-cluster residual z.
+/// \param pt: cluster (or track?) pt.
+/// \param charge: sign of charge.
+/// \param mf: magnetic field sign.
+/// \return distance in sigmas. Recommended cut: 2.
+///
+/// Requires (sign) of magnetic filed. onc can find it for example as following
+///   Double_t mf=0. ;
+///   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+///   if(event)
+///     mf = event->GetMagneticField(); //Positive for ++ and negative for --
+//_______________________________________________________________________________________________
+Float_t AliCaloPID::TestPHOSChargedVeto(Double_t dx,  Double_t dz, Double_t pt, 
+                                        Int_t charge, Double_t mf) const 
 {
-  //Checks distance to the closest track. Takes into account 
-  //non-perpendicular incidence of tracks.
-  //returns distance in sigmas. Recommended cut: 2.
-  //Requires (sign) of magnetic filed. onc can find it for example as following
-  //  Double_t mf=0. ;
-  //  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
-  //  if(event)
-  //    mf = event->GetMagneticField(); //Positive for ++ and negative for --
-  
-  
   Double_t meanX = 0.;
   Double_t meanZ = 0.;
   Double_t sx = TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
@@ -1190,6 +1209,5 @@ Float_t AliCaloPID::TestPHOSChargedVeto(const Double_t dx,  const Double_t dz, c
   AliDebug(1,Form("PHOS Matching R %f < %f",TMath::Sqrt(rx*rx+rz*rz), fPHOSRCut));
   
   return TMath::Sqrt(rx*rx+rz*rz) ;
-  
 }
 

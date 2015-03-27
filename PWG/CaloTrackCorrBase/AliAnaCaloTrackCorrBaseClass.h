@@ -4,11 +4,21 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Base class for CaloTrackCorr analysis algorithms
-//-- Author: Gustavo Conesa (INFN-LNF, LPSC-Grenoble)
-//-- Add the possibility for event selection analysis based on 
-//   vertex and multiplicity bins (Yaxian Mao, 10/10/2010)
-//
+/// \class AliAnaCaloTrackCorrBaseClass
+/// \brief Base class for CaloTrackCorr analysis algorithms
+/// 
+/// All analysis classes in the package CaloTrackCorrelations
+/// must derive from this class.
+/// Common data members and methods are defined here
+/// The main methods of the class that must be declared in the 
+/// daughter analysis classes are
+/// * *GetCreateOutputObjects()*: All histograms are declared here 
+/// * *MakeAnalysisFillAOD()*: If a particle object is created/filtered, it has to be done here
+/// * *MakeAnalysisFillHistograms()*: The loop on clusters/tracks/filtered particles is done here, histograms filled
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
 //_________________________________________________________________________
 
 #include <cstdlib>
@@ -42,16 +52,17 @@ class AliEventplane;
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 
-//jets
+// Jets
 class AliAODJetEventBackground;
 
 class AliAnaCaloTrackCorrBaseClass : public TObject {
 	
 public:   
+  
   AliAnaCaloTrackCorrBaseClass() ;          // default ctor
   virtual ~AliAnaCaloTrackCorrBaseClass() ; // virtual dtor
   
-  //General methods, to be declared in deriving classes if needed
+  // General methods, to be declared in deriving classes if needed
   
   virtual TList *        GetCreateOutputObjects()               { return (new TList)          ; }
   
@@ -69,7 +80,7 @@ public:
   
   virtual void           Terminate(TList * /*outputList*/)      { ; }
 
-  //Histograms, cuts 
+  // Histograms, cuts 
 	
   virtual void           AddToHistogramsName(TString add)       { fAddToHistogramsName = add  ; }
   virtual TString        GetAddedHistogramsStringToName() const { return fAddToHistogramsName ; }
@@ -77,27 +88,32 @@ public:
   virtual TObjString *   GetAnalysisCuts()                      { return 0x0                  ; }
   virtual TString	       GetBaseParametersList();
   
-  //Getters, setters
+  // Getters, setters
+  
   virtual Int_t          GetDebug()                       const { return fDebug               ; }
   virtual void           SetDebug(Int_t d)                      { fDebug = d                  ; }
   
   virtual Int_t          GetEventNumber() const ;
   
   // Track multiplicity
+  
   virtual Int_t GetTrackMultiplicity()                     const { return fReader->GetTrackMultiplicity() ; }
   
-  //Centrality
+  // Centrality
+  
   virtual AliCentrality* GetCentrality()                   const { return fReader->GetCentrality()       ; }
   virtual Int_t          GetEventCentrality()              const { if(fUseTrackMultBins)
                                                                         return GetTrackMultiplicity();
                                                                    else return fReader->GetEventCentrality(); }
   
-  //Event plane
+  // Event plane
+  
   virtual AliEventplane* GetEventPlane()                   const { return fReader->GetEventPlane()       ; }           
   virtual Double_t       GetEventPlaneAngle()              const { return fReader->GetEventPlaneAngle()  ; }           
   virtual TString        GetEventPlaneMethod()             const { return fReader->GetEventPlaneMethod() ; }
   
-  //AOD branch
+  // AOD branch
+  
   virtual void           AddAODParticle(AliAODPWG4Particle part) ;
   
   virtual void           ConnectInputOutputAODBranches();
@@ -122,7 +138,8 @@ public:
   virtual TClonesArray * GetOutputAODBranch()              const { if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ; }
   virtual TClonesArray * GetAODBranch(const TString & aodBranchName) const ;
 	
-  //Track cluster arrays access methods
+  // Track cluster arrays access methods
+  
   virtual TClonesArray*  GetAODCaloClusters()              const ; // Output AOD clusters, not used?
   virtual TClonesArray*  GetAODTracks()                    const ; // Output AOD tracks,   not used?
   virtual AliVCaloCells* GetPHOSCells()                    const { return fReader->GetPHOSCells()  ; }
@@ -131,8 +148,8 @@ public:
   virtual TObjArray*     GetEMCALClusters()                const ;
   virtual TObjArray*     GetPHOSClusters()                 const ;
   
-
-  //jets
+  // Jets
+  
   virtual TClonesArray*  GetNonStandardJets()              const { return fReader->GetNonStandardJets() ;}
   virtual AliAODJetEventBackground*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
 
@@ -192,15 +209,17 @@ public:
   virtual void           SetMinEnergy(Float_t e)                 { fMinPt = e    ; }
   virtual void           SetEnergyCutRange(Double_t mi, Double_t ma) { fMaxPt = ma;   fMinPt = mi; }
   
-  //Cluster Pairs Time cut  
+  // Cluster Pairs Time cut  
+  
   virtual void           SetPairTimeCut(Float_t t)               { fPairTimeCut  = t   ; } //ns
   virtual Float_t        GetPairTimeCut()                  const { return fPairTimeCut ; } //ns
   
   // Number of TRD modules in front of EMCAL (year <=2012)
+  
   Int_t                  GetFirstSMCoveredByTRD()          const { return fTRDSMCovered ; }
   void                   SetFirstSMCoveredByTRD(Int_t n)         { fTRDSMCovered    = n ; }
   
-  //Getters / Setters for parameters of event buffers
+  // Getters / Setters for parameters of event buffers
   
   virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } // number of bins in vertex
   virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } // number of bins in reaction plain
@@ -231,31 +250,38 @@ public:
   virtual Bool_t         DoOwnMix()                        const { return fDoOwnMix           ; }
   virtual Bool_t         UseTrackMultBins()                const { return fUseTrackMultBins   ; }
 
-  //Mixed event  
+  // Mixed event 
+  
   virtual Int_t           CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel) ;
+  
   virtual AliMixedEvent * GetMixedEvent()                  const { return GetReader()->GetMixedEvent()  ; }
+  
   virtual Int_t           GetNMixedEvent()                 const { return GetReader()->GetNMixedEvent() ; } 
   
-  //Vertex methods
+  // Vertex methods
+  
   virtual void           GetVertex(Double_t vertex[3])     const { GetReader()->GetVertex(vertex)       ; } 
+  
   virtual Double_t*      GetVertex(Int_t evtIndex)         const { return GetReader()->GetVertex(evtIndex) ; }
+  
   virtual void           GetVertex(Double_t vertex[3],
                                    Int_t evtIndex)         const { GetReader()->GetVertex(vertex,evtIndex) ; }
-  //VZERO
+  // VZERO
   
   virtual Int_t GetV0Signal(Int_t i )                      const { return fReader->GetV0Signal(i)         ; }
   
   virtual Int_t GetV0Multiplicity(Int_t i )                const { return fReader->GetV0Multiplicity(i)   ; }
   
   
-  //MC event acces methods
+  // MC event acces methods
+  
   virtual AliStack *                 GetMCStack()          const ;
   
   virtual AliHeader*                 GetMCHeader()         const ;
   
   virtual AliGenEventHeader        * GetMCGenEventHeader() const ;
   
-  //Analysis helpers classes pointers setters and getters
+  // Analysis helpers classes pointers setters and getters
   
   virtual AliCaloPID               * GetCaloPID()                { if(!fCaloPID) fCaloPID = new AliCaloPID();               return  fCaloPID ; }
   
@@ -293,7 +319,7 @@ public:
   
   virtual void                       SetReader(AliCaloTrackReader * reader)                         { fReader = reader                    ; }
   
-  //Calorimeter specific access methods and calculations
+  // Calorimeter specific access methods and calculations
     
   virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) {
    return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event) ; } 
@@ -311,55 +337,60 @@ public:
 
 private:    
   
-  Bool_t                     fDataMC ;             // Flag to access MC data when using ESD or AOD     
-  Int_t                      fDebug ;              // Debug level
-  Int_t                      fCalorimeter ;        // Calorimeter selection
-  TString                    fCalorimeterString ;  // Calorimeter selection
-  Bool_t                     fCheckFidCut ;        // Do analysis for clusters in defined region
-  Bool_t                     fCheckRealCaloAcc ;   // When analysis of MC particle kinematics, check their hit in Calorimeter in Real Geometry or use FidCut
-  Bool_t                     fCheckCaloPID ;       // Do analysis for calorimeters
-  Bool_t                     fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
-  Float_t                    fMinPt ;              // Maximum pt of (trigger) particles in the analysis
-  Float_t                    fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
-  Float_t                    fPairTimeCut;         // Maximum difference between time of cluster pairs (ns)
-  Int_t                      fTRDSMCovered;        // From which SM EMCal is covered by TRD
+  Bool_t                     fDataMC ;             ///< Flag to access MC data when using ESD or AOD.    
+  Int_t                      fDebug ;              ///< Debug level.
+  Int_t                      fCalorimeter ;        ///< Calorimeter selection.
+  TString                    fCalorimeterString ;  ///< Calorimeter selection.
+  Bool_t                     fCheckFidCut ;        ///< Do analysis for clusters in defined region.
+  Bool_t                     fCheckRealCaloAcc ;   ///< When analysis of MC particle kinematics, check their hit in Calorimeter in Real Geometry or use AliFiducialCut.
+  Bool_t                     fCheckCaloPID ;       ///< Do analysis for calorimeters.
+  Bool_t                     fRecalculateCaloPID ; ///< Recalculate PID or use PID weights in calorimeters.
+  Float_t                    fMinPt ;              ///< Maximum pt of (trigger) particles in the analysis.
+  Float_t                    fMaxPt ;              ///< Minimum pt of (trigger) particles in the analysis.
+  Float_t                    fPairTimeCut;         ///< Maximum difference between time of cluster pairs (ns).
+  Int_t                      fTRDSMCovered;        ///< From which SM EMCal is covered by TRD.
   
-  Int_t                      fNZvertBin ;	         // Number of bins in event container for vertex position
-  Int_t                      fNrpBin ;	           // Number of bins in event container for reaction plain
-  Int_t                      fNCentrBin ;	         // Number of bins in event container for centrality
-  Int_t                      fNmaxMixEv ;	         // Maximal number of events stored in buffer for mixing
-  Bool_t                     fDoOwnMix;            // Do combinatorial background not the one provided by the frame
-  Bool_t                     fUseTrackMultBins;    // Use track multiplicity and not centrality bins in mixing
-  Int_t                      fTrackMultBins[20];   // Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
-  Bool_t                     fFillPileUpHistograms;   // Fill pile-up related histograms
-  Bool_t                     fFillHighMultHistograms; // Histograms with centrality and event plane for triggers pT
-  Bool_t                     fMakePlots   ;        // Print plots
+  Int_t                      fNZvertBin ;	         ///< Number of bins in event container for vertex position.
+  Int_t                      fNrpBin ;	           ///< Number of bins in event container for reaction plain.
+  Int_t                      fNCentrBin ;	         ///< Number of bins in event container for centrality.
+  Int_t                      fNmaxMixEv ;	         ///< Maximal number of events stored in buffer for mixing.
+  Bool_t                     fDoOwnMix;            ///< Do combinatorial background not the one provided by the frame.
+  Bool_t                     fUseTrackMultBins;    ///< Use track multiplicity and not centrality bins in mixing.
+  Int_t                      fTrackMultBins[20];   ///< Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
+  Bool_t                     fFillPileUpHistograms;   ///< Fill pile-up related histograms.
+  Bool_t                     fFillHighMultHistograms; ///< Histograms with centrality and event plane for triggers pT.
+  Bool_t                     fMakePlots   ;        ///< Print plots.
     
-  TClonesArray*              fInputAODBranch ;     //! Selected input particles branch
-  TString                    fInputAODName ;       //  Name of input AOD branch;
-  TClonesArray*              fOutputAODBranch ;    //! Selected output particles branch
-  Bool_t                     fNewAOD ;             //  Flag, new aod branch added to the analysis or not.
-  TString                    fOutputAODName ;      //  Name of output AOD branch;
-  TString                    fOutputAODClassName;  //  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...)	
-  TString                    fAODObjArrayName ;    //  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
-  TString                    fAddToHistogramsName; //  Add this string to histograms name
+  TClonesArray*              fInputAODBranch ;     //!<! Selected input particles branch.
+  TString                    fInputAODName ;       ///<  Name of input AOD branch.
+  TClonesArray*              fOutputAODBranch ;    //!<! Selected output particles branch.
+  Bool_t                     fNewAOD ;             ///<  Flag, new aod branch added to the analysis or not.
+  TString                    fOutputAODName ;      ///<  Name of output AOD branch.
+  TString                    fOutputAODClassName;  ///<  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...).	
+  TString                    fAODObjArrayName ;    ///<  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track. references.
+  TString                    fAddToHistogramsName; ///<  Add this string to histograms name.
   
-  //Analysis helper classes access pointers
-  AliCaloPID               * fCaloPID;             // PID calculation
-  AliCalorimeterUtils      * fCaloUtils ;          // Pointer to CalorimeterUtils
-  AliFiducialCut           * fFidCut;              // Acceptance cuts
-  AliHistogramRanges       * fHisto ;              // Histogram ranges container
-  AliIsolationCut          * fIC;                  // Isolation cut 
-  AliMCAnalysisUtils       * fMCUtils;             // MonteCarlo Analysis utils 
-  AliNeutralMesonSelection * fNMS;                 // Neutral Meson Selection
-  AliCaloTrackReader       * fReader;              // Acces to ESD/AOD/MC data
+  // Analysis helper classes access pointers
+  AliCaloPID               * fCaloPID;             ///< PID calculation utils.
+  AliCalorimeterUtils      * fCaloUtils ;          ///< Pointer to Calorimeter Utils.
+  AliFiducialCut           * fFidCut;              ///< Acceptance cuts detector dependent.
+  AliHistogramRanges       * fHisto ;              ///< Histogram ranges container.
+  AliIsolationCut          * fIC;                  ///< Isolation cut utils. 
+  AliMCAnalysisUtils       * fMCUtils;             ///< MonteCarlo Analysis utils. 
+  AliNeutralMesonSelection * fNMS;                 ///< Neutral Meson Selection utities.
+  AliCaloTrackReader       * fReader;              ///< Access to ESD/AOD/MC data and other utilities.
 
-  AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
-  AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
+  /// Copy constructor not implemented.
+  AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,26)
+  /// Assignment operator not implemented.
+  AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
+  
+  /// \cond CLASSIMP
+  ClassDef(AliAnaCaloTrackCorrBaseClass,26) ;
+  /// \endcond
+
 } ;
-
 
 #endif //ALIANACALOTRACKCORRBASECLASS_H
 

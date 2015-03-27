@@ -1,13 +1,11 @@
 #ifndef __CINT__
-#include "AliAnalysisTaskCorrelation3p.h"
+#include "AliAnalysisTaskCorrelation3p_lightefficiency.h"
 #endif
-AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficienciesPbPb (const char* name = "ThreePartTrackEfficienciesPbPb",
+AliAnalysisTaskCorrelation3p_lightefficiency* AddTaskThreePartTrackEfficienciesPbPb (const char* name = "ThreePartTrackEfficienciesPbPb",
 						      const char* options = "",
 						      const char* centrality = "V0M",
-						      const Double_t MinTriggerPt = 0.5,
-						      const Double_t MaxTriggerPt = 4.0,
-						      const Double_t MinAssociatedPt = 0.5,
-						      const Double_t MaxAssociatedPt = 4.0,
+						      const Double_t MinPt = 0.5,
+						      const Double_t MaxPt = 16.0,
 						      const Double_t Acceptancecut = 0.9,
 						      const char* period = "10h",
 						      UInt_t offlineTriggerMask = AliVEvent::kMB,
@@ -45,18 +43,17 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficienciesPbPb (const char*
     return NULL;
   }
   
-  const char* fname = Form("%s_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
-  const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
-  AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), options);
+  const char* fname = Form("%s_%1.0f_%1.0f",name,MinPt,MaxPt);
+  const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinPt,MaxPt);
+  AliAnalysisTaskCorrelation3p_lightefficiency* task = new AliAnalysisTaskCorrelation3p_lightefficiency(Form("%sTask", tname), options);
 
   task->SetCentralityEstimator(centrality);
-  task->SetTrigger(AliAnalysisTaskCorrelation3p::tracks);
-  task->SetMinTriggerPt(MinTriggerPt);
-  task->SetMaxTriggerPt(MaxTriggerPt);
-  task->SetMinAssociatedPt(MinAssociatedPt);
-  task->SetMaxAssociatedPt(MaxAssociatedPt);
+  task->SetMinPt(MinPt);
+  task->SetMaxPt(MaxPt);
   task->SetAcceptanceCut(Acceptancecut);
-  task->SetEfficiencies();
+  task->SetCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::PbPb);
+  
+
   
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];
@@ -80,11 +77,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficienciesPbPb (const char*
   TArrayD tZbin(NZBins+1, Zbin);  
   task->SetMixingScheme(MaxNEventsMix,MinNTracksMix,tMbin,tZbin);
   
-  if( TString(period).Contains("10h") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P10h);
-  if( TString(period).Contains("11h") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P11h);
-  task->SelectCollisionCandidates(offlineTriggerMask);
+
 
   
   mgr->AddTask(task);

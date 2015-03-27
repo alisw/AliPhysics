@@ -103,16 +103,16 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliVEvent *event, TString lM
 //  --- V0M: Sum of amplitudes in V0A and V0C
 //  --- V0A: VZERO amplitudes (A side) 
 //  --- V0C: VZERO amplitudes (C side) 
-//  --- V0M: Sum of amplitudes in V0A and V0C, equalized (experimental)
-//  --- V0A: VZERO amplitudes (A side), equalized (experimental) 
-//  --- V0C: VZERO amplitudes (C side) 
+//  --- V0MEq: Sum of amplitudes in V0A and V0C, equalized (experimental)
+//  --- V0AEq: VZERO amplitudes (A side), equalized (experimental) 
+//  --- V0CEq: VZERO amplitudes (C side) 
 //  --- V0B: Simultaneous selection in V0A and V0C 
 //           ( implemented via (V0A/<V0A>) > x and (V0C/<V0C>) > x ) 
 //  --- V0Apartial: 2 rings selected such that  2.8 < eta <  3.9
 //  --- V0Cpartial: 2 rings selected such that -3.7 < eta < -2.7
 //  --- V0S: Symmetrized selection in V0A and V0C 
 //           ( implemented via (V0Apartial/<V0Apartial> + V0Cpartial/<V0Cpartial>) > x ) 
-//  --- V0S: Symmetrized simultaneous selection in V0A and V0C 
+//  --- V0SB: Symmetrized simultaneous selection in V0A and V0C 
 //           ( implemented via (V0Apartial/<V0A>) > x and (V0Cpartial/<V0Cpartial>) > x ) 
 //
 //  This getter automatically includes event selection by default and will return negative 

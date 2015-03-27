@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Analysis task that executes the analysis classes
-// that depend on the CaloTrackCorr frame, frame for Particle identification 
-// with calorimeters and tracks and correlations.
-// Specially designed for calorimeters but also can be used for charged tracks
-// Input of this task is a configuration file that contains all the settings 
-// of the analysis
-//
-// -- Author: Gustavo Conesa (INFN-LNF, LPSC-Grenoble)
-
 #include <cstdlib>
 
 // --- Root ---
@@ -45,8 +35,12 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliLog.h"
 
-ClassImp(AliAnalysisTaskCaloTrackCorrelationM)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskCaloTrackCorrelationM) ;
+/// \endcond
 
+//__________________________________________________________________________
+/// Default constructor.
 //__________________________________________________________________________
 AliAnalysisTaskCaloTrackCorrelationM::AliAnalysisTaskCaloTrackCorrelationM() :
   AliAnalysisTaskME(),
@@ -56,9 +50,10 @@ AliAnalysisTaskCaloTrackCorrelationM::AliAnalysisTaskCaloTrackCorrelationM() :
   fCuts(0x0), 
   fInputEvent(NULL)
 {
-  // Default constructor
 }
 
+//__________________________________________________________________________________________
+/// Default constructor.
 //__________________________________________________________________________________________
 AliAnalysisTaskCaloTrackCorrelationM::AliAnalysisTaskCaloTrackCorrelationM(const char* name) :
   AliAnalysisTaskME(name),
@@ -67,33 +62,32 @@ AliAnalysisTaskCaloTrackCorrelationM::AliAnalysisTaskCaloTrackCorrelationM(const
   fConfigName(""), 
   fCuts(0x0), 
   fInputEvent(NULL)
-{
-  // Default constructor
-  
+{  
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
-//___________________________________________________________________________
+//_________________________________________________________________________
+/// Destructor.
+//_________________________________________________________________________
 AliAnalysisTaskCaloTrackCorrelationM::~AliAnalysisTaskCaloTrackCorrelationM() 
-{
-  // Remove all pointers
-	
-  //  // Do not delete it here, already done somewhere else, need to understand where.
+{	
   //  if(fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
   //    fOutputContainer->Clear() ; 
   //    delete fOutputContainer ;
   //  }
   
   delete fInputEvent ; 
-  if(fAna) delete fAna;
   
+  if(fAna) delete fAna;
 }
 
-//__________________________________________________________________
+//_________________________________________________________________
+/// Create the output container, recover it from the maker 
+/// (*AliAnaCaloTrackMaker fAna*) pointer.
+//_________________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects()
 {
-  // Create the output container
   AliDebug(1,"Begin");
   
   //Get list of aod arrays, add each aod array to analysis frame 
@@ -128,21 +122,20 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserCreateOutputObjects()
 	
 }
 
-//____________________________________________________
+//___________________________________________________
+/// Local Initialization.
+/// Call the Init to initialize the configuration of the analysis.
+//___________________________________________________
 void AliAnalysisTaskCaloTrackCorrelationM::LocalInit()
 {
-	// Local Initialization
-	
-	//Call the Init to initialize the configuration of the analysis
-	Init();
-	
+	Init();	
 }
 
-//_______________________________________________
+//______________________________________________
+/// Analysis configuration, if provided, and initialization.
+//______________________________________________
 void AliAnalysisTaskCaloTrackCorrelationM::Init()
-{
-  // Initialization
-  
+{  
   AliDebug(1,"Begin");
   
   fInputEvent = new AliMixedEvent() ; 
@@ -177,15 +170,13 @@ void AliAnalysisTaskCaloTrackCorrelationM::Init()
 	  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile((fAna->GetReader())->GetDeltaAODFileName());
   
   AliDebug(1,"End");
-  
 }
 
-
+//_______________________________________________________________________
+/// Execute analysis for current event.
 //_______________________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
-{
-  // Execute analysis for current event
-  
+{  
   AliDebug(1,"Begin");
   
   //Get the type of data, check if type is correct
@@ -231,15 +222,13 @@ void AliAnalysisTaskCaloTrackCorrelationM::UserExec(Option_t */*option*/)
   AliDebug(1,"End");
 
   //gObjectTable->Print();
-  
 }
 
 //________________________________________________________________________
+/// Terminate analysis. Do some plots (plotting not used so far).
+//________________________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelationM::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
-  // Do some plots
-  
   // Get merged histograms from the output container
   // Propagate histagrams to maker
   fAna->Terminate((TList*)GetOutputData(1));
@@ -250,6 +239,5 @@ void AliAnalysisTaskCaloTrackCorrelationM::Terminate(Option_t */*option*/)
   
 	// Post Data
 	PostData(2, fCuts);
-  
 }
 

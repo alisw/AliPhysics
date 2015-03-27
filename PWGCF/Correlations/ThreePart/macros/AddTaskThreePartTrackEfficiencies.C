@@ -1,29 +1,27 @@
 #ifndef __CINT__
-#include "AliAnalysisTaskCorrelation3p.h"
+#include "AliAnalysisTaskCorrelation3p_lightefficiency.h"
 #endif
-AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficiencies (const char* name = "AddTaskThreePartTrackEfficiencies",
+AliAnalysisTaskCorrelation3p_lightefficiency* AddTaskThreePartTrackEfficiencies (const char* name = "AddTaskThreePartTrackEfficiencies",
 						      const char* options = "",
 						      const char* centrality = "V0M",
-						      const Double_t MinTriggerPt = 0.5,
-						      const Double_t MaxTriggerPt = 2.0,
-						      const Double_t MinAssociatedPt = 0.5,
-						      const Double_t MaxAssociatedPt = 2.0,
+						      const Double_t MinPt = 0.5,
+						      const Double_t MaxPt = 16.0,
 						      const Double_t Acceptancecut = 0.9,
-						      const Double_t MaxNumberOfTracks = 200,
+						      const Double_t MaxNumberOfTracks = 300,
 						      const char* period = "10b",
 						      UInt_t offlineTriggerMask = AliVEvent::kMB,
 						      const Int_t MaxNEventsMix = 1000,
 						      const Int_t MinNTracksMix = 100,
-						      const Int_t NMBins = 7,
+						      const Int_t NMBins = 5,
 						      const Int_t NZBins = 5,
 						      const Double_t Mbin0 = 0.,
-						      const Double_t Mbin1 = 5.,
-						      const Double_t Mbin2 = 10.,
-						      const Double_t Mbin3 = 20.,
-						      const Double_t Mbin4 = 40.,
-						      const Double_t Mbin5 = 60.,
-						      const Double_t Mbin6 = 80.,
-						      const Double_t Mbin7 = 90.,
+						      const Double_t Mbin1 = 20.,
+						      const Double_t Mbin2 = 40.,
+						      const Double_t Mbin3 = 60.,
+						      const Double_t Mbin4 = 80.,
+						      const Double_t Mbin5 = 90.,
+						      const Double_t Mbin6 = 95.,
+						      const Double_t Mbin7 = 99.,
 						      const Double_t Zbin0 = -10.,
 						      const Double_t Zbin1 = -5.,
 						      const Double_t Zbin2 = -2.0.,
@@ -44,20 +42,17 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficiencies (const char* nam
     ::Error("AddTaskThreePartTracks", "This task requires an input event handler");
     return NULL;
   }
-  const char* fname = Form("%s_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
-  const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
+  const char* fname = Form("%s_%1.0f_%1.0f",name,MinPt,MaxPt);
+  const char* tname = Form("%s_%1.0f_%1.0f",name,MinPt,MaxPt);
 
-  AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), options);
+  AliAnalysisTaskCorrelation3p_lightefficiency* task = new AliAnalysisTaskCorrelation3p_lightefficiency(Form("%sTask", tname), options);
 
   task->SetCentralityEstimator(centrality);
-  task->SetTrigger(AliAnalysisTaskCorrelation3p::tracks);
-  task->SetMinTriggerPt(MinTriggerPt);
-  task->SetMaxTriggerPt(MaxTriggerPt);
-  task->SetMinAssociatedPt(MinAssociatedPt);
-  task->SetMaxAssociatedPt(MaxAssociatedPt);
+  task->SetMinPt(MinPt);
+  task->SetMaxPt(MaxPt);
   task->SetAcceptanceCut(Acceptancecut);
   task->SetMaxNumberOfTracks(MaxNumberOfTracks);
-  task->SetEfficiencies();
+  task->SetCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::pp);
   
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];
@@ -68,7 +63,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficiencies (const char* nam
   if(NMBins>3) Mbin[4] = Mbin4;
   if(NMBins>4) Mbin[5] = Mbin5;
   if(NMBins>5) Mbin[6] = Mbin6;
-  if(NMBins>6) Mbin[7] = Mbin6;
+  if(NMBins>6) Mbin[7] = Mbin7;
   TArrayD tMbin(NMBins+1, Mbin);
   Double_t *Zbin = new Double_t[NZBins+1];
   Zbin[0] = Zbin0;
@@ -80,16 +75,6 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTrackEfficiencies (const char* nam
   TArrayD tZbin(NZBins+1, Zbin);  
   task->SetMixingScheme(MaxNEventsMix,MinNTracksMix,tMbin,tZbin);
 
-  if( TString(period).Contains("10b") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P10b);
-  if( TString(period).Contains("10c") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P10c);
-  if( TString(period).Contains("10d") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P10d);  
-  if( TString(period).Contains("10e") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P10e);
-  if( TString(period).Contains("11a") )
-    task->SetPeriod(AliAnalysisTaskCorrelation3p::P11a);
   task->SelectCollisionCandidates(offlineTriggerMask);
 
   

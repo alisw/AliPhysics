@@ -4,13 +4,19 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class for analysis utils for MC data
-// stored in stack or event header.
-// Contains:
-//  - method to check the origin of a given track/cluster
-//  - method to obtain the generated jets
-//
-//*-- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliMCAnalysisUtils
+/// \brief Class with analysis utils for simulations.
+///
+/// Class containing utility methods for  analysis of simulations, ESD or AOD format.
+/// Contains:
+///  * method to check the origin of a given track/cluster, in several levels of ancestry
+///  * methods to check if a cluster contains several particles, particularly decay photons pairs form same neutral meson.
+///  * method to obtain the generated jets
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT system ---
 #include <TObject.h>
@@ -26,19 +32,21 @@ class AliStack ;
 class AliMCAnalysisUtils : public TObject {
 	
  public: 
-  AliMCAnalysisUtils() ; // ctor
-  virtual ~AliMCAnalysisUtils() ;//virtual dtor
+  
+  AliMCAnalysisUtils() ;          // ctor
+  
+  virtual ~AliMCAnalysisUtils() ; // virtual dtor
     
   //--------------------------------------
-  //Enum with tag for origin of particles
+  // Enum with tag for origin of particles
   //--------------------------------------
   
-  //"Mostly" photon parent types on line 1,
-  //                                                  
-  //then "mostly" electron parent types on line 3, (e.g. electrons can
-  //come from pi0 decay)                              
-  //then charged particles on line 4,                                                                                    
-  //followed by other and unknown on line 5                                                                              
+  /// "Mostly" photon parent types on line 1,
+  ///                                                  
+  /// then "mostly" electron parent types on line 3, (e.g. electrons can
+  /// come from pi0 decay)                              
+  /// then charged particles on line 4,                                                                                    
+  /// followed by other and unknown on line 5                                                                              
   enum mcTypes { kMCPhoton,     kMCPrompt,      kMCFragmentation, kMCISR,    
                  kMCPi0Decay,   kMCEtaDecay,    kMCOtherDecay,
                  kMCDecayPairLost, kMCDecayPairInCalo,
@@ -119,21 +127,34 @@ class AliMCAnalysisUtils : public TObject {
   void    PrintMCTag(Int_t tag) const;
 
  private:
-  Int_t   fCurrentEvent;        // Current Event
-  Int_t   fDebug;               // Debug level
-  TList * fJetsList;            // List of jets
-  Int_t   fMCGenerator;         // MC generator used to generate data in simulation
-  TString fMCGeneratorString;   // MC generator used to generate data in simulation
+
+  Int_t          fCurrentEvent;        ///<  Current Event number
   
-  TLorentzVector fDaughMom;     //! particle momentum
-  TLorentzVector fDaughMom2;    //! particle momentum
-  TLorentzVector fMotherMom;    //! particle momentum
-  TLorentzVector fGMotherMom;   //! particle momentum
+  Int_t          fDebug;               ///<  Debug level
   
-  AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & mcu) ; // cpy assignment
-  AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; // cpy ctor
+  TList        * fJetsList;            ///<  List of jets
   
-  ClassDef(AliMCAnalysisUtils,6)
+  Int_t          fMCGenerator;         ///<  MC generator used to generate data in simulation
+  
+  TString        fMCGeneratorString;   ///<  MC generator used to generate data in simulation
+  
+  TLorentzVector fDaughMom;            //!<! particle momentum
+  
+  TLorentzVector fDaughMom2;           //!<! particle momentum
+  
+  TLorentzVector fMotherMom;           //!<! particle momentum
+  
+  TLorentzVector fGMotherMom;          //!<! particle momentum
+  
+  /// Copy constructor not implemented.
+  AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & mcu) ; 
+  
+  /// Assignment operator not implemented.
+  AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; 
+  
+  /// \cond CLASSIMP
+  ClassDef(AliMCAnalysisUtils,6) ;
+  /// \endcond
 
 } ;
 
