@@ -10,6 +10,11 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliUPCEvent;
+class AliAODMCHeader;
+class AliMuonTrackCuts;
+class AliESDtrackCuts;
+class AliPIDResponse;
+class AliTriggerAnalysis;
 
 class AliAnalysisTaskUpcFilterSemiforward : public AliAnalysisTaskSE {
  public:
