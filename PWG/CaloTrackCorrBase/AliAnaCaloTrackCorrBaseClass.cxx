@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Base class for CaloTrackCorr analysis algorithms
-//-- Author: Gustavo Conesa (LNF-INFN, LPSC-Grenoble) 
-//
-//
-//_________________________________________________________________________
-
-
 // --- ROOT system ---
 #include <TClonesArray.h>
 //#include <Riostream.h>
@@ -39,9 +31,13 @@
 #include "AliAODHandler.h"
 #include "AliAODPWG4Particle.h"
 
-ClassImp(AliAnaCaloTrackCorrBaseClass)
+/// \cond CLASSIMP
+ClassImp(AliAnaCaloTrackCorrBaseClass) ;
+/// \endcond
 
-
+//__________________________________________________________
+/// Default constructor.
+/// Initialize parameters.
 //__________________________________________________________
 AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() : 
 TObject(), 
@@ -65,17 +61,14 @@ fFidCut(0x0),                 fHisto(0x0),
 fIC(0x0),                     fMCUtils(0x0),                
 fNMS(0x0),                    fReader(0x0)
 {
-  //Default Ctor
-  
-  //Initialize parameters
   InitParameters();
 }
 
 //___________________________________________________________
+/// Destructor.
+//___________________________________________________________
 AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass() 
-{
-  // Remove all pointers except analysis output pointers.
-  
+{  
   //delete fCaloUtils ; //Already deleted in maker
   //delete fReader ;    //Already deleted in maker
 	
@@ -88,10 +81,11 @@ AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass()
 }
 
 //______________________________________________________________________
+/// Put cluster/track or created particle object
+/// in the AODParticleCorrelation array.
+//______________________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
-{
-  //Put AOD calo cluster in the AODParticleCorrelation array
-  
+{  
   if(!fOutputAODBranch)
   {
     AliFatal("No AOD branch available!!!\n");
@@ -112,14 +106,16 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
   {
     AliFatal(Form("Cannot add an object of type < %s >, to the AOD TClonesArray \n", fOutputAODBranch->GetClass()->GetName()));
   }
-  
 }
 
 //__________________________________________________________________________________________
+/// Check vertex in mixed events. Input:
+/// \param caloLabel: Index of cluster.
+/// \param trackLabel: Index of track.
+/// \return bool with quality of vertex, kFALSE not ok.
+//__________________________________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel)
-{
-  // Check vertex in mixed events
-  
+{  
   if (!GetMixedEvent()) return 1; // Not mixed event continue normal processing
   
   Int_t evt = -1;
@@ -141,15 +137,14 @@ Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(Int_t caloLabel, Int_t
   if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut())  return -1; // Vertex out of range process next event
   
   return 1 ; // continue processing normally
-  
 }
 
 //________________________________________________________________
+/// Recover ouput and input AOD pointers for each event in the maker.
+/// put them in the corresponding pointer.
+//________________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() 
-{
-  //Recover ouput and input AOD pointers for each event in the maker
-	
-  //Delta AODs
+{	
   AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>\n",fInputAODName.Data(),fOutputAODName.Data()));
   
   //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
@@ -215,11 +210,17 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
 }
 
 //_____________________________________________________________________________________
+/// Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster 
+/// and its index in the array. Input parameters:
+/// \param clusters: Full TObjarray of clusters.
+/// \param id: Integer with the searched cluster ID.
+/// \param iclus: Integer with index of cluster in cluster array.
+/// \param first: Integer with the first index to consider in the array of clusters.
+/// \return pointer to cluster.
+//_____________________________________________________________________________________
 AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int_t id,
                                                         Int_t & iclus, Int_t first)
-{
-  // Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster and its index in the array
-  
+{  
   if(!clusters) return 0x0;
   
   for(iclus = first; iclus < clusters->GetEntriesFast(); iclus++)
@@ -235,16 +236,13 @@ AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int
   }// calorimeter clusters loop
   
   return 0x0;
-  
 }
 
 //______________________________________________________________________________________
+/// Recover ouput and input AOD pointers for each event in AliCaloTrackMaker.
+//______________________________________________________________________________________
 TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodName) const
 {
-	//Recover ouput and input AOD pointers for each event in the maker
-	
-	//Delta AODs
-  
 	AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>; \n",aodName.Data()));
 	
   //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
@@ -279,59 +277,54 @@ TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodNam
     if(outAOD) return (TClonesArray *)  fReader->GetOutputEvent()->FindListObject(aodName);
     else       return  (TClonesArray *) fReader->GetInputEvent() ->FindListObject(aodName);
   }
-  
 }
 
 //_____________________________________________________________
+/// \return list of filtered Tracks from AliCaloTrackReader.
+//_____________________________________________________________
 TObjArray *  AliAnaCaloTrackCorrBaseClass::GetCTSTracks() const 
-{
-  //Get list of referenced tracks from reader
-  
+{  
   return fReader->GetCTSTracks(); 
-  
 }
 
 //________________________________________________________________
+/// \return list of PHOS filtered caloClusters from AliCaloTrackReader.
+//________________________________________________________________
 TObjArray *  AliAnaCaloTrackCorrBaseClass::GetPHOSClusters() const 
-{
-  //Get list of PHOS reference caloclusters from reader
-  
+{  
   return fReader->GetPHOSClusters(); 
-  
 }
 
 //_________________________________________________________________
+/// \return list of EMCAL filtered caloClusters from AliCaloTrackReader.
+//_________________________________________________________________
 TObjArray *  AliAnaCaloTrackCorrBaseClass::GetEMCALClusters() const 
-{
-  //Get list of emcal referenced caloclusters from reader
-  
+{  
   return fReader->GetEMCALClusters(); 
-  
 }
 
 //______________________________________________________________________
+/// \return list of all caloClusters in AOD output file.
+//______________________________________________________________________
 TClonesArray *  AliAnaCaloTrackCorrBaseClass::GetAODCaloClusters() const 
-{
-  //Get list of all caloclusters in AOD output file 
-  
+{  
   return fReader->GetOutputEvent()->GetCaloClusters(); 
-  
 }
 
 //________________________________________________________________
+/// \return list of all tracks in AOD output file. 
+//________________________________________________________________
 TClonesArray *  AliAnaCaloTrackCorrBaseClass::GetAODTracks() const 
-{
-  //Get list of all tracks in AOD output file 
-  
+{  
   return fReader->GetOutputEvent()->GetTracks(); 
-  
 }
 
 //____________________________________________________________
+/// Put data member values in string to keep in output container.
+/// \return String with list of parameters.
+//____________________________________________________________
 TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()  
 {
-  //Put data member values in string to keep in output container
-  
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -368,65 +361,63 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
   parList+=onePar ;	
 	
   return parList; 
-  
 }
 
 //_____________________________________________________________________
+/// Create AOD branch filled in the analysis.
+//_____________________________________________________________________
 TClonesArray * AliAnaCaloTrackCorrBaseClass::GetCreateOutputAODBranch() 
-{
-  //Create AOD branch filled in the analysis
-  
+{  
   AliInfo(Form("Create AOD branch of %s objects and with name < %s >\n",
           fOutputAODClassName.Data(),fOutputAODName.Data())) ;
   
   TClonesArray * aodBranch = new TClonesArray(fOutputAODClassName, 0);
-  aodBranch->SetName(fOutputAODName);
-  return aodBranch ;
   
+  aodBranch->SetName(fOutputAODName);
+  
+  return aodBranch ;
 }
 
 //________________________________________________________
+/// \return Current event number.
+//________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventNumber() const 
-{
-  //Get current event number
-  
+{  
   return fReader->GetEventNumber() ; 
-  
 }
-
 
 //__________________________________________________________
+/// \return  Stack pointer from AliCaloTrackReader.
+//__________________________________________________________
 AliStack *  AliAnaCaloTrackCorrBaseClass::GetMCStack() const 
-{
-  //Get stack pointer from reader
-  
+{  
   return fReader->GetStack(); 
-  
 }
+
+//____________________________________________________________
+/// \return Header pointer from AliCaloTrackReader.
 //____________________________________________________________
 AliHeader *  AliAnaCaloTrackCorrBaseClass::GetMCHeader() const
-{
-  //Get header pointer from reader
-  
+{  
   return fReader->GetHeader(); 
-  
 }
 
 //____________________________________________________________________________
+/// \return AliGenEventHeader pointer from AliCaloTrackReader.
+//____________________________________________________________________________
 AliGenEventHeader *  AliAnaCaloTrackCorrBaseClass::GetMCGenEventHeader() const
-{
-  //Get GenEventHeader pointer from reader
-  
+{  
   return fReader->GetGenEventHeader(); 
-  
 }
 
-
+//_________________________________________________________________
+/// Tag the event within a given track multiplicity bin.
+/// Bin range defined in multiplicity limit array fTrackMultBins.
+/// Multiplicity got from AliCaloTrackReader.
+/// \return event track multiplicity bin.
 //_________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() const
-{
-  // Track multiplicity bins
-  
+{  
   //curCentrBin = (GetTrackMultiplicity()-1)/5;
   //if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
   Int_t trackMult = GetReader()->GetTrackMultiplicity();
@@ -442,11 +433,12 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() const
 }
 
 //________________________________________________________________
+/// Define the centrality bin for mixing.
+/// In pp collisions analysis hardcoded track multiplicities.
+/// \return centrality bin
+//________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
 {
-  // Define the centrality bin for mixing
-  // In pp collisions analysis hardcoded track multiplicities
-  
   Int_t curCentrBin = 0;
   
   if(fUseTrackMultBins) // pp collisions
@@ -478,14 +470,13 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
   }
   
   return curCentrBin;
-  
 }
 
 //_______________________________________________________
+/// \return Reaction plane bin.
+//_______________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin() const
 {
-  //Reaction plane bin
-  
   Int_t curRPBin  = 0 ;
   
   if(GetNRPBin() > 1 && GetEventPlane())
@@ -506,15 +497,14 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin() const
   }  
   
   return curRPBin ;
-  
 }
 
 //_______________________________________________________
+/// \return Vz bin, divide vertex in GetNZvertBin() bins, 
+/// depending on the vertex cut
+//_______________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin() const
 {
-  // Return Vz bin, divide vertex in GetNZvertBin() bins, 
-  // depending on the vertex cut
-  
   Double_t v[3] = {0,0,0}; //vertex 
   GetReader()->GetVertex(v);
   
@@ -527,10 +517,10 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin() const
 }
 
 //________________________________________________________________________________________
+/// \return  Event mixing bin, combination of vz, centrality and reaction plane bins.
+//________________________________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const
-{
-  // Event mixing bin, combination of vz, centrality and reaction plane bins
-  
+{  
   if(iCen<0 || iVz < 0 || iRP < 0)
     return -1;
   else
@@ -538,10 +528,10 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t 
 }
 
 //________________________________________________________
+/// \return  Event mixing bin, combination of vz, centrality and reaction plane bins.
+//________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() const
-{
-  // Event mixing bin, combination of vz, centrality and reaction plane bins
-  
+{  
   //Get vertex z bin
   Int_t iVz =  GetEventVzBin();
   
@@ -557,16 +547,14 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() const
                   iCen,iVz, iRP, eventBin, GetNZvertBin()*GetNRPBin()*GetNCentrBin()));
   
   return eventBin;
-  
 }
 
 //____________________________________________
+/// Init once the debugging level, if requested.
+/// Activate debug level in analysis.
+//____________________________________________
 void AliAnaCaloTrackCorrBaseClass::InitDebug()
 {
-  // Init once the debugging level, if requested
-  
-  // Activate debug level in analysis
-
   if( fDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
   
@@ -577,13 +565,13 @@ void AliAnaCaloTrackCorrBaseClass::InitDebug()
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()   ->ClassName(),GetIsolationCut()->GetDebug());
   
   //printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
-
 }
 
 //_________________________________________________
+/// Initialize the parameters of the analysis.
+//_________________________________________________
 void AliAnaCaloTrackCorrBaseClass::InitParameters()
 { 
-  //Initialize the parameters of the analysis.
   fDataMC              = kFALSE;
   fDebug               = 0;
   fCheckCaloPID        = kTRUE ;
@@ -612,14 +600,13 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fInputAODName        = "CaloTrackCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName     = "Ref";
-  
 }
 
 //__________________________________________________________________
+/// Print some relevant parameters set for the analysis.
+//__________________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
 {
-  //Print some relevant parameters set for the analysis
-  
   if(! opt)
     return;
 	
@@ -641,14 +628,13 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   printf("Debug Level         =     %d\n",    fDebug);
   
   printf("    \n") ;
-  
 } 
 
 //_______________________________________________________________
+/// Set the calorimeter for the analysis. A string.
+//_______________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
 {
-  // Set the calorimeter for the analysis
-  
   fCalorimeterString = calo;
   
   if     (calo=="EMCAL") fCalorimeter = kEMCAL;
@@ -660,11 +646,11 @@ void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
 
 }
 
-//___________________________________________________________
+//_______________________________________________________________
+/// Set the calorimeter for the analysis. An integer.
+//_______________________________________________________________
 void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(Int_t calo)
-{
-  // Set the calorimeter for the analysis
-  
+{  
   fCalorimeter = calo;
   
   if     (calo==kEMCAL)    fCalorimeterString = "EMCAL";
@@ -673,7 +659,6 @@ void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(Int_t calo)
   else if(calo==kDCAL)     fCalorimeterString = "DCAL";
   else if(calo==kDCALPHOS) fCalorimeterString = "DCAL_PHOS";
   else AliFatal(Form("Detector < %d > not known!", calo));
-
 }
 
 

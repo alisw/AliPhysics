@@ -4,14 +4,18 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class containing methods for the isolation cut. 
-// An AOD candidate (AliAODPWG4ParticleCorrelation type)
-// is passed. Look in a cone around the candidate and study
-// the hadronic activity inside to decide if the candidate is isolated
-//
-// -- Author: Gustavo Conesa (INFN-LNF)
-//
-// -- Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
+/// \class AliIsolationCut
+/// \brief Class with utils to perform Isolation Cuts.
+///
+/// Class containing methods for the isolation cut. 
+/// An AOD candidate (AliAODPWG4ParticleCorrelation type)
+/// is passed. Look in a cone around the candidate and study
+/// the hadronic activity inside to decide if the candidate is isolated
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT system --- 
 #include <TObject.h>
@@ -27,8 +31,10 @@ class AliIsolationCut : public TObject {
   
  public: 
   
-  AliIsolationCut() ;            // default ctor
-  virtual ~AliIsolationCut() {;} // virtual dtor
+  AliIsolationCut() ;  // default ctor
+  
+  /// Virtual destructor.
+  virtual ~AliIsolationCut() { ; } 
  
   // Enums 
   
@@ -68,7 +74,7 @@ class AliIsolationCut : public TObject {
   void       CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,     Float_t   etaC,  Float_t phiC,
                                                  Float_t   phiUEptsumTrack,       Float_t   etaUEptsumTrack,
                                                  Float_t & phiUEptsumTrackNorm,   Float_t & etaUEptsumTrackNorm,
-                                                 Float_t & excessFracEta,         Float_t & excessFracPhi              )   const ;
+                                                 Float_t & excessFracEta,         Float_t & excessFracPhi              ) const ;
 
   void 	     GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
                                  AliCaloTrackReader * reader,
@@ -101,32 +107,41 @@ class AliIsolationCut : public TObject {
   void       SetFracIsThresh(Bool_t f )     { fFracIsThresh   = f    ; }
  private:
   
-  Float_t    fConeSize ;         // Size of the isolation cone
-  Float_t    fPtThreshold ;      // Mimium pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
-  Float_t    fPtThresholdMax ;   // Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
-  Float_t    fSumPtThreshold ;   // Minimum of sum pt of the particles in the cone (UE sum in the forward region cone)
-  Float_t    fSumPtThresholdMax ;// Maximum of sum pt of the particles in the cone (UE sum in the forward region cone)
-  Float_t    fPtFraction ;       // Fraction of the momentum of particles in cone or sum in cone
-  Int_t      fICMethod ;         // Isolation cut method to be used
-                                 // kPtIC: Pt threshold method
-                                 // kSumPtIC: Cone pt sum method
-                                 // kPtFracIC:   Pt threshold, fraction of candidate pt, method
-                                 // kSumPtFracIC:   Cone pt sum , fraction of cone sum, method
-  Int_t      fPartInCone;        // Type of particles inside cone:
-                                 // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
+  Float_t    fConeSize ;         ///< Size of the isolation cone
 
-  Int_t      fDebug;             // Debug level
-  Bool_t     fFracIsThresh;      // Use threshold instead of fraction when pt leading is small
+  Float_t    fPtThreshold ;      ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
   
-  TLorentzVector fMomentum;      //! momentum of cluster
-  TVector3       fTrackVector;   //! track moment
+  Float_t    fPtThresholdMax ;   ///< Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
   
-  AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
+  Float_t    fSumPtThreshold ;   ///< Minimum of sum pt of the particles in the cone (UE sum in the forward region cone)
+  
+  Float_t    fSumPtThresholdMax ;///< Maximum of sum pt of the particles in the cone (UE sum in the forward region cone)
+  
+  Float_t    fPtFraction ;       ///< Fraction of the momentum of particles in cone or sum in cone.
+
+  Int_t      fICMethod ;         ///< Isolation cut method to be used: kPtIC, kSumPtIC, kPtFracIC, kSumPtFracIC.
+  
+  Int_t      fPartInCone;        ///< Type of particles inside cone: kNeutralAndCharged, kOnlyNeutral, kOnlyCharged.
+
+  Int_t      fDebug;             ///< Debug level.
+  
+  Bool_t     fFracIsThresh;      ///< Use threshold instead of fraction when pt leading is small.
+  
+  TLorentzVector fMomentum;      //!<! Momentum of cluster, temporal object.
+  
+  TVector3   fTrackVector;       //!<! Track moment, temporal object.
+  
+  /// Copy constructor not implemented.
+  AliIsolationCut(              const AliIsolationCut & g) ;
+  
+  /// Assignment operator not implemented.
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,9)
-} ;
+  /// \cond CLASSIMP
+  ClassDef(AliIsolationCut,9) ;
+  /// \endcond
 
+} ;
 
 #endif //ALIISOLATIONCUT_H
 

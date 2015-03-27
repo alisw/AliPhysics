@@ -5,14 +5,20 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class containing histogram settings:
-//    - Number of bins
-//    - Min and max of range
-//
-//-- Author: Gustavo Conesa (LPSC-Grenoble)
-//
+/// \class AliHistogramRanges
+/// \brief Class containing more common histogram axis types.
+///
+/// Class containing more common histogram type settings:
+/// * Number of bins.
+/// * Minimum and maximum histograms axis.
+/// The types are the pT, time, energy, phi, eta, etc.
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
-//ROOT
+// ROOT
 #include <TObject.h>
 
 class AliHistogramRanges : public TObject {
@@ -310,106 +316,111 @@ public:
   
 private:    
   
-  Int_t    fHistoPtBins   ;                   // Number of bins in pt axis
-  Float_t  fHistoPtMax    ;                   // Maximum value of pt histogram range
-  Float_t  fHistoPtMin    ;                   // Minimum value of pt histogram range
-  Int_t    fHistoPhiBins  ;                   // Number of bins in phi axis
-  Float_t  fHistoPhiMax   ;                   // Maximum value of phi histogram range
-  Float_t  fHistoPhiMin   ;                   // Minimum value of phi histogram range
-  Int_t    fHistoEtaBins  ;                   // Number of bins in eta axis
-  Float_t  fHistoEtaMax   ;                   // Maximum value of eta histogram range
-  Float_t  fHistoEtaMin   ;                   // Minimum value of eta histogram range
-  Int_t    fHistoDeltaPhiBins  ;              // Number of bins in delta phi axis
-  Float_t  fHistoDeltaPhiMax   ;              // Maximum value of delta phi histogram range
-  Float_t  fHistoDeltaPhiMin   ;              // Minimum value of delta phi histogram range
-  Int_t    fHistoDeltaEtaBins  ;              // Number of bins in delta eta axis
-  Float_t  fHistoDeltaEtaMax   ;              // Maximum value of delta eta histogram range
-  Float_t  fHistoDeltaEtaMin   ;              // Minimum value of delta eta histogram range
+  Int_t    fHistoPtBins   ;                   ///< Number of bins in pt axis.
+  Float_t  fHistoPtMax    ;                   ///< Maximum value of pt histogram range.
+  Float_t  fHistoPtMin    ;                   ///< Minimum value of pt histogram range.
+  Int_t    fHistoPhiBins  ;                   ///< Number of bins in phi axis.
+  Float_t  fHistoPhiMax   ;                   ///< Maximum value of phi histogram range.
+  Float_t  fHistoPhiMin   ;                   ///< Minimum value of phi histogram range.
+  Int_t    fHistoEtaBins  ;                   ///< Number of bins in eta axis.
+  Float_t  fHistoEtaMax   ;                   ///< Maximum value of eta histogram range.
+  Float_t  fHistoEtaMin   ;                   ///< Minimum value of eta histogram range.
+  Int_t    fHistoDeltaPhiBins  ;              ///< Number of bins in delta phi axis.
+  Float_t  fHistoDeltaPhiMax   ;              ///< Maximum value of delta phi histogram range.
+  Float_t  fHistoDeltaPhiMin   ;              ///< Minimum value of delta phi histogram range.
+  Int_t    fHistoDeltaEtaBins  ;              ///< Number of bins in delta eta axis.
+  Float_t  fHistoDeltaEtaMax   ;              ///< Maximum value of delta eta histogram range.
+  Float_t  fHistoDeltaEtaMin   ;              ///< Minimum value of delta eta histogram range.
 
-  Int_t    fHistoMassBins ;                   // Number of bins in mass axis
-  Float_t  fHistoMassMax  ;                   // Maximum value of mass histogram range
-  Float_t  fHistoMassMin  ;                   // Minimum value of mass histogram range
-  Int_t    fHistoAsymBins ;                   // Number of bins in asymmetry axis
-  Float_t  fHistoAsymMax  ;                   // Maximum value of asymmetry histogram range
-  Float_t  fHistoAsymMin  ;                   // Minimum value of asymmetry histogram range
-  Int_t    fHistoV0SBins  ;                   // Number of bins in V0 signal axis
-  Int_t    fHistoV0SMax   ;                   // Maximum value of V0 signal histogram range
-  Int_t    fHistoV0SMin   ;                   // Minimum value of V0 signal histogram range
-  Int_t    fHistoV0MBins  ;                   // Number of bins in V0 multiplicity axis
-  Int_t    fHistoV0MMax   ;                   // Maximum value of V0 multiplicity histogram range
-  Int_t    fHistoV0MMin   ;                   // Minimum value of V0 multiplicity histogram range
-  Int_t    fHistoTrMBins  ;                   // Number of bins in V0 multiplicity axis
-  Int_t    fHistoTrMMax   ;                   // Maximum value of track multiplicity histogram range
-  Int_t    fHistoTrMMin   ;                   // Minimum value of track multiplicity histogram range
-  Int_t    fHistoFinePtBins;                  // fine binning for fhAmpId histogram
-  Float_t  fHistoFinePtMax;                   // maximum pt value for fhAmpId histogram
-  Float_t  fHistoFinePtMin;                   // minimum pt value for fhAmpId histogram
-  Int_t    fHistoPOverEBins;                  // p/E histogram number of bins
-  Float_t  fHistoPOverEMax;                   // p/E maximum value
-  Float_t  fHistoPOverEMin;                   // p/E minimum value
-  Int_t    fHistodEdxBins;                    // dEdx histogram number of bins
-  Float_t  fHistodEdxMax;                     // dEdx maximum value
-  Float_t  fHistodEdxMin;                     // dEdx minimum value
-  Int_t    fHistodRBins;                      // dR histogram number of bins
-  Float_t  fHistodRMax;                       // dR maximum value
-  Float_t  fHistodRMin;                       // dR minimum value
-  Int_t    fHistoTimeBins;                    // cell time histogram number of bins
-  Float_t  fHistoTimeMax;                     // cell time maximum value
-  Float_t  fHistoTimeMin;                     // cell time minimum value
-  Int_t    fHistoNClusCellBins;               // number of cells per cluster histogram number of bins
-  Int_t    fHistoNClusCellMax;                // number of cells per cluster maximum value
-  Int_t    fHistoNClusCellMin;                // number of cells per cluster minimum value
-  Int_t    fHistoNCellsBins;                  // number of cells histogram number of bins
-  Int_t    fHistoNCellsMax;                   // number of cells maximum value
-  Int_t    fHistoNCellsMin;                   // number of cells minimum value
-  Int_t    fHistoNClustersBins;               // number of clusters histogram number of bins
-  Int_t    fHistoNClustersMax;                // number of clusters maximum value
-  Int_t    fHistoNClustersMin;                // number of clusters minimum value  
-  Int_t    fHistoRatioBins;                   // ratio histogram number of bins
-  Float_t  fHistoRatioMax;                    // ratio maximum value
-  Float_t  fHistoRatioMin;                    // ratio minimum value
-  Int_t    fHistoHBPBins;                     // hump-backed plateau histogram number of bins
-  Float_t  fHistoHBPMax;                      // hump-backed plateau maximum value
-  Float_t  fHistoHBPMin;                      // hump-backed plateau minimum value
-  Int_t    fHistoVertexDistBins;              // vertex distance histogram number of bins
-  Float_t  fHistoVertexDistMax;               // vertex distance maximum value
-  Float_t  fHistoVertexDistMin;               // vertex distance minimum value	
-  Int_t    fHistoRBins;                       // r =sqrt(x^2+y^2+z^2) (cm) position histogram number of bins
-  Float_t  fHistoRMax;                        // r =sqrt(x^2+y^2+z^2) (cm)  maximum value
-  Float_t  fHistoRMin;                        // r =sqrt(x^2+y^2+z^2) (cm)  minimum value	
-  Int_t    fHistoXBins;                       // x (cm) position histogram number of bins
-  Float_t  fHistoXMax;                        // x (cm) position maximum value
-  Float_t  fHistoXMin;                        // x (cm) position minimum value
-  Int_t    fHistoYBins;                       // y (cm) position histogram number of bins
-  Float_t  fHistoYMax;                        // y (cm) position maximum value
-  Float_t  fHistoYMin;                        // y (cm) position minimum value
-  Int_t    fHistoZBins;                       // z (cm) position histogram number of bins
-  Float_t  fHistoZMax;                        // z (cm) position maximum value
-  Float_t  fHistoZMin;                        // z (cm) position minimum value
-  Int_t    fHistoSSBins;                      // Shower Shape parameter histogram number of bins
-  Float_t  fHistoSSMax;                       // Shower Shape parameter position maximum value
-  Float_t  fHistoSSMin;                       // Shower Shape parameter position minimum value
-  Int_t    fHistoDiffTimeBins;                // Difference cluster pair time parameter histogram number of bins
-  Float_t  fHistoDiffTimeMax;                 // Difference cluster pair time parameter position maximum value
-  Float_t  fHistoDiffTimeMin;                 // Difference cluster pair time parameter position minimum value  
-  Int_t    fHistoTrackResidualEtaBins ;       // Number of bins in dEta (cluster-track) axis
-  Float_t  fHistoTrackResidualEtaMax  ;       // Maximum value of dEta (cluster-track) histogram range
-  Float_t  fHistoTrackResidualEtaMin  ;       // Minimum value of dEta (cluster-track) histogram range		
-  Int_t    fHistoTrackResidualPhiBins ;       // Number of bins in dPhi axis
-  Float_t  fHistoTrackResidualPhiMax  ;       // Maximum value of dPhi (cluster-track) histogram range
-  Float_t  fHistoTrackResidualPhiMin  ;       // Minimum value of dPhi (cluster-track) histogram range
-  Int_t    fHistoNPtSumBins;                  // Number of bins in Isolation PtSum histograms
-  Float_t  fHistoPtSumMax;                    // Isolation PtSum maximum in histogram
-  Float_t  fHistoPtSumMin;	                  // Isolation PtSum minimum in histogram
-  Int_t    fHistoNPtInConeBins;               // Number of bins in Isolation PtInCone histogram
-  Float_t  fHistoPtInConeMax;                 // Isolation PtInCone maximum in histogram
-  Float_t  fHistoPtInConeMin;                 // Isolation PtInCone maximum in histogram
+  Int_t    fHistoMassBins ;                   ///< Number of bins in mass axis.
+  Float_t  fHistoMassMax  ;                   ///< Maximum value of mass histogram range.
+  Float_t  fHistoMassMin  ;                   ///< Minimum value of mass histogram range.
+  Int_t    fHistoAsymBins ;                   ///< Number of bins in asymmetry axis.
+  Float_t  fHistoAsymMax  ;                   ///< Maximum value of asymmetry histogram range.
+  Float_t  fHistoAsymMin  ;                   ///< Minimum value of asymmetry histogram range.
+  Int_t    fHistoV0SBins  ;                   ///< Number of bins in V0 signal axis.
+  Int_t    fHistoV0SMax   ;                   ///< Maximum value of V0 signal histogram range.
+  Int_t    fHistoV0SMin   ;                   ///< Minimum value of V0 signal histogram range.
+  Int_t    fHistoV0MBins  ;                   ///< Number of bins in V0 multiplicity axis.
+  Int_t    fHistoV0MMax   ;                   ///< Maximum value of V0 multiplicity histogram range.
+  Int_t    fHistoV0MMin   ;                   ///< Minimum value of V0 multiplicity histogram range.
+  Int_t    fHistoTrMBins  ;                   ///< Number of bins in V0 multiplicity axis.
+  Int_t    fHistoTrMMax   ;                   ///< Maximum value of track multiplicity histogram range.
+  Int_t    fHistoTrMMin   ;                   ///< Minimum value of track multiplicity histogram range.
+  Int_t    fHistoFinePtBins;                  ///< fine binning for fhAmpId histogram
+  Float_t  fHistoFinePtMax;                   ///< maximum pt value for fhAmpId histogram
+  Float_t  fHistoFinePtMin;                   ///< minimum pt value for fhAmpId histogram
+  Int_t    fHistoPOverEBins;                  ///< p/E histogram number of bins.
+  Float_t  fHistoPOverEMax;                   ///< p/E maximum value.
+  Float_t  fHistoPOverEMin;                   ///< p/E minimum value.
+  Int_t    fHistodEdxBins;                    ///< dEdx histogram number of bins.
+  Float_t  fHistodEdxMax;                     ///< dEdx maximum value.
+  Float_t  fHistodEdxMin;                     ///< dEdx minimum value.
+  Int_t    fHistodRBins;                      ///< dR histogram number of bins.
+  Float_t  fHistodRMax;                       ///< dR maximum value.
+  Float_t  fHistodRMin;                       ///< dR minimum value.
+  Int_t    fHistoTimeBins;                    ///< Cell time histogram number of bins.
+  Float_t  fHistoTimeMax;                     ///< Cell time maximum value.
+  Float_t  fHistoTimeMin;                     ///< Cell time minimum value.
+  Int_t    fHistoNClusCellBins;               ///< Number of cells per cluster histogram number of bins.
+  Int_t    fHistoNClusCellMax;                ///< Number of cells per cluster maximum value.
+  Int_t    fHistoNClusCellMin;                ///< Number of cells per cluster minimum value.
+  Int_t    fHistoNCellsBins;                  ///< Number of cells histogram number of bins.
+  Int_t    fHistoNCellsMax;                   ///< Number of cells maximum value.
+  Int_t    fHistoNCellsMin;                   ///< Number of cells minimum value.
+  Int_t    fHistoNClustersBins;               ///< Number of clusters histogram number of bins.
+  Int_t    fHistoNClustersMax;                ///< Number of clusters maximum value.
+  Int_t    fHistoNClustersMin;                ///< Number of clusters minimum value.  
+  Int_t    fHistoRatioBins;                   ///< Ratio histogram number of bins.
+  Float_t  fHistoRatioMax;                    ///< Ratio maximum value.
+  Float_t  fHistoRatioMin;                    ///< Ratio minimum value.
+  Int_t    fHistoHBPBins;                     ///< Hump-backed plateau histogram number of bins.
+  Float_t  fHistoHBPMax;                      ///< Hump-backed plateau maximum value.
+  Float_t  fHistoHBPMin;                      ///< Hump-backed plateau minimum value.
+  Int_t    fHistoVertexDistBins;              ///< Vertex distance histogram number of bins.
+  Float_t  fHistoVertexDistMax;               ///< Vertex distance maximum value.
+  Float_t  fHistoVertexDistMin;               ///< Vertex distance minimum value.	
+  Int_t    fHistoRBins;                       ///< r =sqrt(x^2+y^2+z^2) (cm) position histogram number of bins.
+  Float_t  fHistoRMax;                        ///< r =sqrt(x^2+y^2+z^2) (cm)  maximum value.
+  Float_t  fHistoRMin;                        ///< r =sqrt(x^2+y^2+z^2) (cm)  minimum value.	
+  Int_t    fHistoXBins;                       ///< x (cm) position histogram number of bins.
+  Float_t  fHistoXMax;                        ///< x (cm) position maximum value.
+  Float_t  fHistoXMin;                        ///< x (cm) position minimum value.
+  Int_t    fHistoYBins;                       ///< y (cm) position histogram number of bins.
+  Float_t  fHistoYMax;                        ///< y (cm) position maximum value.
+  Float_t  fHistoYMin;                        ///< y (cm) position minimum value.
+  Int_t    fHistoZBins;                       ///< z (cm) position histogram number of bins.
+  Float_t  fHistoZMax;                        ///< z (cm) position maximum value.
+  Float_t  fHistoZMin;                        ///< z (cm) position minimum value.
+  Int_t    fHistoSSBins;                      ///< Shower Shape parameter histogram number of bins.
+  Float_t  fHistoSSMax;                       ///< Shower Shape parameter position maximum value.
+  Float_t  fHistoSSMin;                       ///< Shower Shape parameter position minimum value.
+  Int_t    fHistoDiffTimeBins;                ///< Difference cluster pair time parameter histogram number of bins.
+  Float_t  fHistoDiffTimeMax;                 ///< Difference cluster pair time parameter position maximum value.
+  Float_t  fHistoDiffTimeMin;                 ///< Difference cluster pair time parameter position minimum value.  
+  Int_t    fHistoTrackResidualEtaBins ;       ///< Number of bins in dEta (cluster-track) axis.
+  Float_t  fHistoTrackResidualEtaMax  ;       ///< Maximum value of dEta (cluster-track) histogram range.
+  Float_t  fHistoTrackResidualEtaMin  ;       ///< Minimum value of dEta (cluster-track) histogram range.		
+  Int_t    fHistoTrackResidualPhiBins ;       ///< Number of bins in dPhi axis.
+  Float_t  fHistoTrackResidualPhiMax  ;       ///< Maximum value of dPhi (cluster-track) histogram range.
+  Float_t  fHistoTrackResidualPhiMin  ;       ///< Minimum value of dPhi (cluster-track) histogram range.
+  Int_t    fHistoNPtSumBins;                  ///< Number of bins in Isolation PtSum histograms.
+  Float_t  fHistoPtSumMax;                    ///< Isolation PtSum maximum in histogram.
+  Float_t  fHistoPtSumMin;	                  ///< Isolation PtSum minimum in histogram.
+  Int_t    fHistoNPtInConeBins;               ///< Number of bins in Isolation PtInCone histogram.
+  Float_t  fHistoPtInConeMax;                 ///< Isolation PtInCone maximum in histogram.
+  Float_t  fHistoPtInConeMin;                 ///< Isolation PtInCone maximum in histogram.
 
+  /// Copy constructor not implemented.
+  AliHistogramRanges(              const AliHistogramRanges & h) ; 
   
-  AliHistogramRanges(              const AliHistogramRanges & h) ; // cpy ctor
-  AliHistogramRanges & operator = (const AliHistogramRanges & h) ; // cpy assignment
+  /// Assignment operator not implemented.
+  AliHistogramRanges & operator = (const AliHistogramRanges & h) ; 
   
-  ClassDef(AliHistogramRanges,5)
+  /// \cond CLASSIMP
+  ClassDef(AliHistogramRanges,5) ;
+  /// \endcond
+
 } ;
 
 

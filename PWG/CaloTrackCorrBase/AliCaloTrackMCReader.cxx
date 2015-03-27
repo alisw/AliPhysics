@@ -13,20 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class for reading data (Kinematics) in order to do prompt gamma 
-// or other particle identification and correlations
-// Separates generated particles into charged (CTS) 
-// and neutral (PHOS or EMCAL acceptance)
-// Now, it only works with data stored in Kinematics.root and 
-// not in filtered Kinematics branch in AODs
-//
-//*-- Author: Gustavo Conesa (LNF-INFN) 
-//////////////////////////////////////////////////////////////////////////////
-
-
 // --- ROOT system ---
-
 #include <TParticle.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
@@ -44,8 +31,12 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliLog.h"
 
-ClassImp(AliCaloTrackMCReader)
+/// \cond CLASSIMP
+ClassImp(AliCaloTrackMCReader) ;
+/// \endcond 
 
+//____________________________________________
+/// Default constructor. Initialize parameters
 //____________________________________________
 AliCaloTrackMCReader::AliCaloTrackMCReader() : 
 AliCaloTrackReader(),        fDecayPi0(0), 
@@ -56,41 +47,38 @@ fIndex2ndPhoton(0),          fOnlyGeneratorParticles(kTRUE),
 fMomentum(),                 fPi0Momentum(),
 fGamDecayMom1(),             fGamDecayMom2()
 {
-  //Ctor
-  
-  //Initialize parameters
   InitParameters();
 }
+
+//___________________________________________
+/// Destructor.
 //___________________________________________
 AliCaloTrackMCReader::~AliCaloTrackMCReader()
 {
-  //Dtor
-  
+  AliCaloTrackReader::DeletePointers();
+
   if(fChargedParticlesArray) delete fChargedParticlesArray ;
   if(fNeutralParticlesArray) delete fNeutralParticlesArray ;
   if(fStatusArray)           delete fStatusArray ;
-  
 }
 
 //________________________________________________________
+/// \return Vertex position from header.
+//________________________________________________________
 void AliCaloTrackMCReader::GetVertex(Double_t  v[3]) const 
-{
-  //Return vertex position
-  
+{  
   TArrayF pv;
   GetGenEventHeader()->PrimaryVertex(pv);
   v[0]=pv.At(0);
   v[1]=pv.At(1);
   v[2]=pv.At(2);
-  
 }
 
 //_________________________________________
+/// Initialize the parameters of the analysis.
+//_________________________________________
 void AliCaloTrackMCReader::InitParameters()
 {
-  
-  //Initialize the parameters of the analysis.
-  
   fDecayPi0 = kFALSE;
   
   fChargedParticlesArray = new TArrayI(1);
@@ -118,14 +106,14 @@ void AliCaloTrackMCReader::InitParameters()
   fCTSTracks    ->SetOwner(kTRUE); 
   fEMCALClusters->SetOwner(kTRUE); 
   fPHOSClusters ->SetOwner(kTRUE); 
-  
 }
 
+//____________________________________________________________________________________
+/// Check overlap of decay photons
 //____________________________________________________________________________________
 void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
                                          Int_t & iPrimary, Int_t & index, Int_t & pdg)
 {
-  //Check overlap of decay photons
   if( fIndex2ndPhoton==iPrimary )
   {
     fIndex2ndPhoton=-1;
@@ -168,13 +156,14 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
         
       }
     }
-  }//Meson Decay with 2 photon daughters
+  } // Meson Decay with 2 photon daughters
 }
 
 //__________________________________________________________________________________
+/// Fill CaloClusters or TParticles lists of PHOS or EMCAL.
+//__________________________________________________________________________________
 void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle)
 {
-  //Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
   Char_t  ttype          = 0;
   Float_t overAngleLimit = 100;
   
@@ -203,7 +192,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
   Int_t labels[] = {index};
   Double_t x[] = {fMomentum.X(), fMomentum.Y(), fMomentum.Z()};
   
-  //Create object and write it to file
+  // Create object and write it to file
   AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,fMomentum.E(), x, NULL, ttype, 0);
   
   SetCaloClusterPID(pdg,calo) ;
@@ -211,18 +200,17 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
   AliDebug(3,Form("PHOS %d?, EMCAL %d? : Selected cluster pdg %d, E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
                   fFillPHOS, fFillEMCAL, pdg,fMomentum.E(), fMomentum.Pt(), fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
   
-  //reference the selected object to the list
+  // Reference the selected object to the list
   if(fFillPHOS)fPHOSClusters ->Add(calo);
   else         fEMCALClusters->Add(calo);
-  
 }
 
 //___________________________________________________________________________
+/// Fill the event counter and input lists that are needed, called by AliAnaCaloTrackCorrMaker.
+//___________________________________________________________________________
 Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
                                             const char * /*currentFileName*/)
-{
-  //Fill the event counter and input lists that are needed, called by the analysis maker.
-  
+{  
   fEventNumber     = iEntry;
   //fCurrentFileName = TString(currentFileName);
   fTrackMult       = 0;
@@ -345,14 +333,14 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
   fIndex2ndPhoton = -1; //In case of overlapping studies, reset for each event	
  	
   return kTRUE;	
-  
 }
 
 //_____________________________________________________________________
+/// Check if status requiered for the particles is equal to one of the list.
+/// These particles will be used in analysis.
+//_____________________________________________________________________
 Bool_t AliCaloTrackMCReader::KeepParticleWithStatus(Int_t status) const 
 {
-  //Check if status is equal to one of the  list
-  //These particles will be used in analysis.
   if(!fKeepAllStatus)
   {
     for(Int_t i= 0; i < fStatusArray->GetSize(); i++)
@@ -365,22 +353,24 @@ Bool_t AliCaloTrackMCReader::KeepParticleWithStatus(Int_t status) const
 }
 
 //________________________________________________________________
+/// Check if pdg is equal to one of the charged particles list
+/// These particles will be added to the calorimeters lists.
+//________________________________________________________________
 Bool_t AliCaloTrackMCReader::KeepChargedParticles(Int_t pdg) const 
 {
-  //Check if pdg is equal to one of the charged particles list
-  //These particles will be added to the calorimeters lists.
-  
   for(Int_t i= 0; i < fChargedParticlesArray->GetSize(); i++)
+  {
     if(TMath::Abs(pdg) ==  fChargedParticlesArray->At(i)) return kTRUE ;
+  }
   
   return kFALSE; 
-  
 }
 
 //__________________________________________________________
+/// Print some relevant parameters set for the analysis.
+//__________________________________________________________
 void AliCaloTrackMCReader::Print(const Option_t * opt) const
 {
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -406,17 +396,15 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
   for(Int_t i= 0; i < fChargedParticlesArray->GetSize(); i++)
     printf(" %d ; ", fChargedParticlesArray->At(i));
   printf("\n");
-  
 }
 
 //_______________________________________
-void AliCaloTrackMCReader::MakePi0Decay()
-//, Double_t &angle)
-{ 
-  // Perform isotropic decay pi0 -> 2 photons
-  // fPi0Momentum is pi0 4-momentum (ipnut)
-  // fGamDecayMom1 and fGamDecayMom2 are photon 4-momenta (output)
-  
+/// Perform isotropic decay pi0 -> 2 photons.
+/// fPi0Momentum is pi0 4-momentum (ipnut).
+/// fGamDecayMom1 and fGamDecayMom2 are photon 4-momenta (output).
+//_______________________________________
+void AliCaloTrackMCReader::MakePi0Decay() //, Double_t &angle)
+{   
   //  cout<<"Boost vector"<<endl;
   Double_t mPi0 = TDatabasePDG::Instance()->GetParticle(111)->Mass();
   TVector3 b = fPi0Momentum.BoostVector();
@@ -453,34 +441,36 @@ void AliCaloTrackMCReader::MakePi0Decay()
 }
 
 //__________________________________________________________________
+/// Connect the input data pointer.
+//__________________________________________________________________
 void AliCaloTrackMCReader::SetInputOutputMCEvent(AliVEvent* /*esd*/, 
                                                  AliAODEvent* aod, 
                                                  AliMCEvent* mc) 
 {
-  // Connect the data pointer
   SetMC(mc);
   SetOutputEvent(aod);
 }
 
 //________________________________________________________________
+/// Check if pdg is equal to one of the neutral particles list
+/// These particles will be skipped from analysis.
+//________________________________________________________________
 Bool_t AliCaloTrackMCReader::SkipNeutralParticles(Int_t pdg) const 
 {
-  //Check if pdg is equal to one of the neutral particles list
-  //These particles will be skipped from analysis.
-  
   for(Int_t i= 0; i < fNeutralParticlesArray->GetSize(); i++)
+  {
     if(TMath::Abs(pdg) ==  fNeutralParticlesArray->At(i)) return kTRUE ;
+  }
   
   return kFALSE; 
-  
 }
 
 //_______________________________________________________________________
+/// Give a PID weight for tracks equal to 1 depending on the particle type.
+//_______________________________________________________________________
 void AliCaloTrackMCReader::SetTrackChargeAndPID(Int_t pdgCode,
                                                 AliAODTrack *track) const 
-{
-  //Give a PID weight for tracks equal to 1 depending on the particle type
-  
+{  
   Float_t pid[10] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
   
   switch (pdgCode) 
@@ -717,11 +707,11 @@ void AliCaloTrackMCReader::SetTrackChargeAndPID(Int_t pdgCode,
 }
 
 //____________________________________________________________________
+/// Give a PID weight for CaloClusters equal to 1 depending on the particle type.
+//____________________________________________________________________
 void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode, 
                                              AliVCluster *calo) const 
-{
-  //Give a PID weight for CaloClusters equal to 1 depending on the particle type
-  
+{  
   Float_t pid[13] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
   
   switch (pdgCode) 
@@ -922,6 +912,6 @@ void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode,
       calo->SetPID(pid);
   }
   
-  
   return;
 }
+

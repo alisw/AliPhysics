@@ -4,28 +4,33 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class for PID selection with calorimeters
-// The Output of the main method GetIdentifiedParticleType is a PDG number identifying the cluster, 
-// being kPhoton, kElectron, kPi0 ... as defined in the header file
-//   - GetIdentifiedParticleType(const AliVCluster * cluster) 
-//      Assignes a PID tag to the cluster, right now there is the possibility to : use bayesian weights from reco, 
-//      recalculate them (EMCAL) or use other procedures not used in reco.
-//      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
-//      and do SwitchOnBayesianRecalculation().
-//      To change the PID parameters from Low to High like the ones by default, use the constructor 
-//      AliCaloPID(flux)
-//      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
-//      If it is necessary to change the parameters use the constructor 
-//      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
-
-//   - GetGetIdentifiedParticleTypeFromBayesian(const Double_t * pid, const Float_t energy)
-//      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle, 
-//      executed when bayesian is ON by GetIdentifiedParticleType(const AliVCluster * cluster) 
-//   - SetPIDBits: Simple PID, depending on the thresholds fLOCut fTOFCut and even the
-//     result of the PID bayesian a different PID bit is set. 
-//
-//
-//*-- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliCaloPID
+/// \brief Class for PID selection with calorimeters
+///
+/// Class for PID selection with calorimeters
+/// The Output of the main method GetIdentifiedParticleType is a PDG number identifying the cluster, 
+/// being *kPhoton, kElectron, kPi0 ...* as defined in the header file
+///   * *GetIdentifiedParticleType(const AliVCluster * cluster)* 
+///      Assignes a PID tag to the cluster, right now there is the possibility to : use bayesian weights from reco, 
+///      recalculate them (EMCAL) or use other procedures not used in reco.
+///      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
+///      and do SwitchOnBayesianRecalculation().
+///      To change the PID parameters from Low to High like the ones by default, use the constructor 
+///      AliCaloPID(flux)
+///      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
+///      If it is necessary to change the parameters use the constructor 
+///      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
+///
+///   * *GetGetIdentifiedParticleTypeFromBayesian(const Double_t * pid, const Float_t energy)*
+///      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle, 
+///      executed when bayesian is ON by GetIdentifiedParticleType(const AliVCluster * cluster) 
+///   * *SetPIDBits*: Simple PID, depending on the thresholds fLOCut fTOFCut and even the
+///     result of the PID bayesian a different PID bit is set. 
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT system ---
 #include <TObject.h> 
@@ -48,9 +53,12 @@ class AliCaloPID : public TObject {
  public: 
   
   AliCaloPID() ; // ctor
-  AliCaloPID(Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
-  AliCaloPID(const TNamed * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
-  virtual ~AliCaloPID() ;//virtual dtor
+  
+  AliCaloPID(Int_t particleFlux) ; 
+  
+  AliCaloPID(const TNamed * emcalpid) ; 
+  
+  virtual ~AliCaloPID() ;
   	
   enum PidType 
   {
@@ -65,12 +73,10 @@ class AliCaloPID : public TObject {
     kChargedUnknown = 321
   };
   
-  enum TagType {kPi0Decay, kEtaDecay, kOtherDecay, kConversion, kNoTag = -1};
+  enum TagType { kPi0Decay, kEtaDecay, kOtherDecay, kConversion, kNoTag = -1 } ;
   
   // Main methods
   
-  //  TList *   GetCreateOutputObjects(); // Not implemented
-
   void      InitParameters();
   
   Bool_t    IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy,  Int_t nlm) const;
@@ -107,11 +113,8 @@ class AliCaloPID : public TObject {
   
   void      PrintClusterPIDWeights(const Double_t * pid) const;
   
-  //Check if cluster photon-like. Uses photon cluster parameterization in real pp data 
-  //Returns distance in sigmas. Recommended cut 2.5
   Float_t TestPHOSDispersion(Double_t pt, Double_t m20, Double_t m02) const ;
-  //Checks distance to the closest track. Takes into account 
-  //non-perpendicular incidence of tracks.
+
   Float_t TestPHOSChargedVeto(Double_t dx, Double_t dz, Double_t ptTrack,
                               Int_t chargeTrack, Double_t mf) const ;
   
@@ -120,10 +123,13 @@ class AliCaloPID : public TObject {
   void    SetDebug(Int_t deb)                  { fDebug = deb                 ; }
   Int_t   GetDebug()                     const { return fDebug                ; }	
 
-  enum    eventType{kLow,kHigh};
+  enum    eventType { kLow, kHigh } ;
+  
+  /// Not really used, only for bayesian recalculation in EMCAL, but could be useful in future
   void    SetLowParticleFlux()                 { fParticleFlux        = kLow  ; }
+  
+  /// Not really used, only for bayesian recalculation in EMCAL, but could be useful in future
   void    SetHighParticleFlux()                { fParticleFlux        = kHigh ; }  
-  // not really used, only for bayesian recalculation in EMCAL, but could be useful in future
   
   // Bayesian
   
@@ -134,7 +140,8 @@ class AliCaloPID : public TObject {
   
   AliEMCALPIDUtils * GetEMCALPIDUtils() ; 
   
-  //Weight getters
+  // Weight getters
+  
   Float_t GetEMCALPhotonWeight()         const { return fEMCALPhotonWeight    ; }
   Float_t GetEMCALPi0Weight()            const { return fEMCALPi0Weight       ; }
   Float_t GetEMCALElectronWeight()       const { return fEMCALElectronWeight  ; }
@@ -163,7 +170,8 @@ class AliCaloPID : public TObject {
   TString  GetPHOSPhotonWeightFormulaExpression() const { return fPHOSPhotonWeightFormulaExpression ; } 
   TString  GetPHOSPi0WeightFormulaExpression()    const { return fPHOSPi0WeightFormulaExpression    ; } 
   
-  //Weight setters
+  // Weight setters
+  
   void    SetEMCALPhotonWeight  (Float_t  w)   { fEMCALPhotonWeight   = w     ; }
   void    SetEMCALPi0Weight     (Float_t  w)   { fEMCALPi0Weight      = w     ; }
   void    SetEMCALElectronWeight(Float_t  w)   { fEMCALElectronWeight = w     ; }
@@ -179,7 +187,7 @@ class AliCaloPID : public TObject {
   void    SetPHOSPhotonWeightFormulaExpression(TString ph) { fPHOSPhotonWeightFormulaExpression = ph ; } 
   void    SetPHOSPi0WeightFormulaExpression   (TString pi) { fPHOSPi0WeightFormulaExpression    = pi ; }
   
-  //PID cuts 
+  // PID cuts 
   
   void    SetEMCALLambda0CutMax(Float_t lcut ) { fEMCALL0CutMax     = lcut    ; }
   Float_t GetEMCALLambda0CutMax()        const { return fEMCALL0CutMax        ; }   
@@ -264,73 +272,81 @@ class AliCaloPID : public TObject {
     
 private:
   
-  Int_t	    fDebug;                             // Debug level
-  Int_t     fParticleFlux;                      // Particle flux for setting PID parameters
+  Int_t	    fDebug;                             ///<  Debug level.
+  Int_t     fParticleFlux;                      ///<  Particle flux for setting PID parameters.
 
   // Bayesian
-  AliEMCALPIDUtils * fEMCALPIDUtils;            // Pointer to EMCALPID to redo the PID Bayesian calculation
-  Bool_t    fUseBayesianWeights;                // Select clusters based on weights calculated in reconstruction
-  Bool_t    fRecalculateBayesian;               // Recalculate PID bayesian or use simple PID?
-
-  Float_t   fEMCALPhotonWeight;                 // Bayesian PID weight for photons in EMCAL 
-  Float_t   fEMCALPi0Weight;                    // Bayesian PID weight for pi0 in EMCAL 
-  Float_t   fEMCALElectronWeight;               // Bayesian PID weight for electrons in EMCAL 
-  Float_t   fEMCALChargeWeight;                 // Bayesian PID weight for charged hadrons in EMCAL 
-  Float_t   fEMCALNeutralWeight;                // Bayesian PID weight for neutral hadrons in EMCAL 
-  Float_t   fPHOSPhotonWeight;                  // Bayesian PID weight for photons in PHOS 
-  Float_t   fPHOSPi0Weight;                     // Bayesian PID weight for pi0 in PHOS 
-  Float_t   fPHOSElectronWeight;                // Bayesian PID weight for electrons in PHOS 
-  Float_t   fPHOSChargeWeight;                  // Bayesian PID weight for charged hadrons in PHOS 
-  Float_t   fPHOSNeutralWeight;                 // Bayesian PID weight for neutral hadrons in PHOS 
   
-  Bool_t    fPHOSWeightFormula ;                // Use parametrized weight threshold, function of energy
-  TFormula *fPHOSPhotonWeightFormula ;          // Formula for photon weight
-  TFormula *fPHOSPi0WeightFormula ;             // Formula for pi0 weight
-  TString   fPHOSPhotonWeightFormulaExpression; // Photon weight formula in string
-  TString   fPHOSPi0WeightFormulaExpression;    // Pi0 weight formula in string
+  AliEMCALPIDUtils * fEMCALPIDUtils;            ///<  Pointer to EMCALPID to redo the PID Bayesian calculation.
+  Bool_t    fUseBayesianWeights;                ///<  Select clusters based on weights calculated in reconstruction.
+  Bool_t    fRecalculateBayesian;               ///<  Recalculate PID bayesian or use simple PID?
+
+  Float_t   fEMCALPhotonWeight;                 ///<  Bayesian PID weight for photons in EMCAL. 
+  Float_t   fEMCALPi0Weight;                    ///<  Bayesian PID weight for pi0 in EMCAL. 
+  Float_t   fEMCALElectronWeight;               ///<  Bayesian PID weight for electrons in EMCAL. 
+  Float_t   fEMCALChargeWeight;                 ///<  Bayesian PID weight for charged hadrons in EMCAL. 
+  Float_t   fEMCALNeutralWeight;                ///<  Bayesian PID weight for neutral hadrons in EMCAL. 
+  Float_t   fPHOSPhotonWeight;                  ///<  Bayesian PID weight for photons in PHOS. 
+  Float_t   fPHOSPi0Weight;                     ///<  Bayesian PID weight for pi0 in PHOS.
+  Float_t   fPHOSElectronWeight;                ///<  Bayesian PID weight for electrons in PHOS. 
+  Float_t   fPHOSChargeWeight;                  ///<  Bayesian PID weight for charged hadrons in PHOS. 
+  Float_t   fPHOSNeutralWeight;                 ///<  Bayesian PID weight for neutral hadrons in PHOS. 
+  
+  Bool_t    fPHOSWeightFormula ;                ///<  Use parametrized weight threshold, function of energy.
+  TFormula *fPHOSPhotonWeightFormula ;          ///<  Formula for photon weight.
+  TFormula *fPHOSPi0WeightFormula ;             ///<  Formula for pi0 weight.
+  TString   fPHOSPhotonWeightFormulaExpression; ///<  Photon weight formula in string.
+  TString   fPHOSPi0WeightFormulaExpression;    ///<  Pi0 weight formula in string.
 
   // PID calculation
-  Float_t   fEMCALL0CutMax;                     // Max Cut on shower shape lambda0, used in PID evaluation, only EMCAL
-  Float_t   fEMCALL0CutMin;                     // Min Cut on shower shape lambda0, used in PID evaluation, only EMCAL
-  Float_t   fEMCALDEtaCut;                      // Track matching cut on Dz
-  Float_t   fEMCALDPhiCut;                      // Track matching cut on Dx
-
-  Float_t   fTOFCut;                            // Cut on TOF, used in PID evaluation
   
-  Float_t   fPHOSDispersionCut;                 // Shower shape elipse radious cut
-  Float_t   fPHOSRCut;                          // Track-Cluster distance cut for track matching in PHOS  
+  Float_t   fEMCALL0CutMax;                     ///<  Max Cut on shower shape lambda0, used in PID evaluation, only EMCAL.
+  Float_t   fEMCALL0CutMin;                     ///<  Min Cut on shower shape lambda0, used in PID evaluation, only EMCAL.
+  Float_t   fEMCALDEtaCut;                      ///<  Track matching cut on Dz.
+  Float_t   fEMCALDPhiCut;                      ///<  Track matching cut on Dx.
+
+  Float_t   fTOFCut;                            ///<  Cut on TOF, used in PID evaluation.
+  
+  Float_t   fPHOSDispersionCut;                 ///<  Shower shape elipse radious cut.
+  Float_t   fPHOSRCut;                          ///<  Track-Cluster distance cut for track matching in PHOS.  
   
   // Cluster splitting mass ranges
-  Bool_t    fUseSimpleMassCut;                  // Use simple min-max pi0 mass cut
-  Bool_t    fUseSimpleM02Cut;                   // Use simple min-max M02 cut
-  Bool_t    fUseSplitAsyCut ;                   // Remove splitted clusters with too large asymmetry
-  Bool_t    fUseSplitSSCut  ;                   // Remove splitted clusters out of shower shape band
-  Float_t   fSplitM02MaxCut ;                   // Study clusters with l0 smaller than cut
-  Float_t   fSplitM02MinCut ;                   // Study clusters with l0 larger than cut  // simple case
-  Int_t     fSplitMinNCells ;                   // Study clusters with ncells larger than cut  
-  Float_t   fMassEtaMin  ;                      // Min Eta mass
-  Float_t   fMassEtaMax  ;                      // Max Eta mass  
-  Float_t   fMassPi0Min  ;                      // Min Pi0 mass // simple cut case
-  Float_t   fMassPi0Max  ;                      // Min Pi0 mass // simple cut case
-  Float_t   fMassPhoMin  ;                      // Min Photon mass
-  Float_t   fMassPhoMax  ;                      // Min Photon mass
-  Float_t   fMassPi0Param [2][6] ;              // mean mass param, 2 regions in energy
-  Float_t   fWidthPi0Param[2][6] ;              // width param, 2 regions in energy
-  Float_t   fM02MinParam[2][5] ;                // 5 param for expo + pol fit on M02 minimum for pi0 selection (maximum for conversions)
-  Float_t   fM02MaxParam[2][5] ;                // 5 param for expo + pol fit on M02 maximum for pi0 selection
-  Float_t   fM02MaxParamShiftNLMN;              // shift of max M02 for NLM>2
-  Float_t   fAsyMinParam[2][4] ;                // 3 param for fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
-  Float_t   fSplitEFracMin[3]  ;                // Do not use clusters with too large energy in cluster compared
-                                                // to energy in splitted clusters, depeding on NLM
-  Float_t   fSubClusterEMin[3]  ;               // Do not use sub-clusters with too low energy depeding on NLM
-  Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma
-  Float_t   fMassShiftHighECell;                // Shift cuts 5 MeV for Ecell > 150 MeV, default Ecell > 50 MeV
+  
+  Bool_t    fUseSimpleMassCut;                  ///<  Use simple min-max pi0 mass cut.
+  Bool_t    fUseSimpleM02Cut;                   ///<  Use simple min-max M02 cut.
+  Bool_t    fUseSplitAsyCut ;                   ///<  Remove splitted clusters with too large asymmetry.
+  Bool_t    fUseSplitSSCut  ;                   ///<  Remove splitted clusters out of shower shape band.
+  Float_t   fSplitM02MaxCut ;                   ///<  Study clusters with l0 smaller than cut.
+  Float_t   fSplitM02MinCut ;                   ///<  Study clusters with l0 larger than cut, simple case.
+  Int_t     fSplitMinNCells ;                   ///<  Study clusters with ncells larger than cut  
+  Float_t   fMassEtaMin  ;                      ///<  Min Eta mass.
+  Float_t   fMassEtaMax  ;                      ///<  Max Eta mass.  
+  Float_t   fMassPi0Min  ;                      ///<  Min Pi0 mass, simple cut case.
+  Float_t   fMassPi0Max  ;                      ///<  Min Pi0 mass, simple cut case.
+  Float_t   fMassPhoMin  ;                      ///<  Min Photon mass.
+  Float_t   fMassPhoMax  ;                      ///<  Min Photon mass.
+  Float_t   fMassPi0Param [2][6] ;              ///<  Mean mass param, 2 regions in energy.
+  Float_t   fWidthPi0Param[2][6] ;              ///<  Width param, 2 regions in energy.
+  Float_t   fM02MinParam[2][5] ;                ///<  5 param for expo + pol fit on M02 minimum for pi0 selection (maximum for conversions).
+  Float_t   fM02MaxParam[2][5] ;                ///<  5 param for expo + pol fit on M02 maximum for pi0 selection.
+  Float_t   fM02MaxParamShiftNLMN;              ///<  shift of max M02 for NLM>2.
+  Float_t   fAsyMinParam[2][4] ;                ///<  4 param for fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2.
+  Float_t   fSplitEFracMin[3]  ;                ///<  Do not use clusters with too large energy in cluster compared.
+                                                ///<  to energy in splitted clusters, depeding on NLM.
+  Float_t   fSubClusterEMin[3]  ;               ///<  Do not use sub-clusters with too low energy depeding on NLM.
+  Float_t   fSplitWidthSigma;                   ///<  Cut on mass+-width*fSplitWidthSigma.
+  Float_t   fMassShiftHighECell;                ///<  Shift cuts 5 MeV for Ecell > 150 MeV, default Ecell > 50 MeV.
 
-  AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
-  AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
+  /// Copy constructor not implemented.
+  AliCaloPID & operator = (const AliCaloPID & cpid) ; 
   
-  ClassDef(AliCaloPID,22)
+  /// Assignment operator not implemented.
+  AliCaloPID(              const AliCaloPID & cpid) ; 
   
+  /// \cond CLASSIMP
+  ClassDef(AliCaloPID,22) ;
+  /// \endcond
+
 } ;
 
 

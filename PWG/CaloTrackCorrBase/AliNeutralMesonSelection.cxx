@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class that contains methods to select candidate pairs to neutral meson 
-// 2 main selections, invariant mass around pi0 (also any other mass),
-// apperture angle to distinguish from combinatorial.
-//-- Author: Gustavo Conesa (INFN-LNF)
-
 // --- ROOT system ---
 #include <TLorentzVector.h>
 #include <TH2.h>
@@ -28,43 +22,43 @@
 #include "AliNeutralMesonSelection.h" 
 #include "AliLog.h"
 
-ClassImp(AliNeutralMesonSelection)
+/// \cond CLASSIMP
+ClassImp(AliNeutralMesonSelection) ;
+/// \endcond
   
-  
-//______________________________________________________
-  AliNeutralMesonSelection::AliNeutralMesonSelection() : 
-    TObject(),             fAsymmetryCut(1),                
-    fUseAsymmetryCut(0),   fM(0),                 
-    fInvMassMaxCut(0.),    fInvMassMinCut(0.),   
-    fLeftBandMinCut(0.),   fLeftBandMaxCut(0.),            
-    fRightBandMinCut(0.),  fRightBandMaxCut(0.),              
-    fAngleMaxParam(),      fUseAngleCut(0),       
-    fKeepNeutralMesonHistos(0),
-    fParticle(""),         fDecayBit(0),
-    // histograms
-    fhAnglePairNoCut(0),          fhAnglePairOpeningAngleCut(0),   
-    fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 
-    fhInvMassPairNoCut(0),        fhInvMassPairOpeningAngleCut(0), 
-    fhInvMassPairAsymmetryCut(0), fhInvMassPairAllCut(0),
-    fhAsymmetryNoCut(0),          fhAsymmetryOpeningAngleCut(0),   
-    fhAsymmetryAllCut(0),
-    // histogram ranges and bins
-    fHistoNEBins(0),       fHistoEMax(0.),                  fHistoEMin(0.),
-    fHistoNAngleBins(0),   fHistoAngleMax(0.),              fHistoAngleMin(0.),
-    fHistoNIMBins(0),      fHistoIMMax(0.),                 fHistoIMMin(0.)
+//____________________________________________________
+/// Default constructor. Initialize parameters
+//____________________________________________________
+AliNeutralMesonSelection::AliNeutralMesonSelection() : 
+TObject(),             fAsymmetryCut(1),                
+fUseAsymmetryCut(0),   fM(0),                 
+fInvMassMaxCut(0.),    fInvMassMinCut(0.),   
+fLeftBandMinCut(0.),   fLeftBandMaxCut(0.),            
+fRightBandMinCut(0.),  fRightBandMaxCut(0.),              
+fAngleMaxParam(),      fUseAngleCut(0),       
+fKeepNeutralMesonHistos(0),
+fParticle(""),         fDecayBit(0),
+// histograms
+fhAnglePairNoCut(0),          fhAnglePairOpeningAngleCut(0),   
+fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 
+fhInvMassPairNoCut(0),        fhInvMassPairOpeningAngleCut(0), 
+fhInvMassPairAsymmetryCut(0), fhInvMassPairAllCut(0),
+fhAsymmetryNoCut(0),          fhAsymmetryOpeningAngleCut(0),   
+fhAsymmetryAllCut(0),
+// histogram ranges and bins
+fHistoNEBins(0),       fHistoEMax(0.),                  fHistoEMin(0.),
+fHistoNAngleBins(0),   fHistoAngleMax(0.),              fHistoAngleMin(0.),
+fHistoNIMBins(0),      fHistoIMMax(0.),                 fHistoIMMin(0.)
 {
-  //Default Ctor
-  
-  //Initialize parameters
   InitParameters();
 }
 
 //_________________________________________________________
+/// Create histograms to be saved in output file and 
+/// store them in outputContainer of the analysis class that calls this class.
+//_________________________________________________________
 TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
-{  
-  // Create histograms to be saved in output file and 
-  // store them in outputContainer of the analysis class that calls this class.
-  
+{    
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("MesonDecayHistos") ; 
   
@@ -169,14 +163,13 @@ TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
   }
   
   return outputContainer;
-
 }
 
 //_____________________________________________
+/// Initialize the parameters of the analysis.
+//_____________________________________________
 void AliNeutralMesonSelection::InitParameters()
-{
-  
-  //Initialize the parameters of the analysis.
+{  
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.Reset(0.);
 
@@ -190,17 +183,15 @@ void AliNeutralMesonSelection::InitParameters()
   fHistoNAngleBins = 200 ;
   fHistoAngleMax   = 0.5 ;
   fHistoAngleMin   = 0.  ;
-
 }
 
 //______________________________________________________________________________
+/// Check if the opening angle of the candidate pairs is inside 
+/// our selection window.
+/// Attention, only valid for Pi0, if needed for Eta need to revise max angle function or change parameters
+//______________________________________________________________________________
 Bool_t AliNeutralMesonSelection::IsAngleInWindow(Float_t angle, Float_t e) const
 {
- 
-  // Check if the opening angle of the candidate pairs is inside 
-  // our selection window
-  // Attention, only valid for Pi0, if needed for Eta need to revise max angle function or change parameters
-  	
   Double_t max =  fAngleMaxParam.At(0)*TMath::Exp(fAngleMaxParam.At(1)*e)
     +fAngleMaxParam.At(2)+fAngleMaxParam.At(3)*e;
   Double_t arg = (e*e-2*fM*fM)/(e*e);
@@ -214,13 +205,16 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(Float_t angle, Float_t e) const
 }
 
 //_________________________________________________________________
+/// Search for the neutral pion within selection cuts.
+/// \param gammai: kinematics of first photon cluster.
+/// \param gammaj: kinematics of second photon cluster.
+/// \param calo: calorimeter ID.
+/// \return pair is pi0/eta whithing selection range.
+//_________________________________________________________________
 Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, 
                                              TLorentzVector gammaj, 
                                              Int_t calo)
 {  
-  
-  //Search for the neutral pion within selection cuts
-  
   fDecayBit = 0;
   
   //  Double_t pt  = (gammai+gammaj).Pt();
@@ -366,14 +360,13 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai,
       return kFALSE;
     }
   }
-  
 }
 
 //_______________________________________________________________
+/// Set some default parameters for selection of pi0 or eta
+//_______________________________________________________________
 void  AliNeutralMesonSelection::SetParticle(TString particleName)
 {
-  // Set some default parameters for selection of pi0 or eta
-
   fParticle = particleName ;
 
   if(particleName.Contains("Pi0"))
@@ -432,14 +425,13 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName)
   }
   else 
     printf("AliAnaNeutralMesonSelection::SetParticle(%s) *** Particle NOT defined (Pi0 or Eta), Pi0 settings by default *** \n",particleName.Data());
-  
 }
 
 //______________________________________________________________
+/// Print some relevant parameters set for the analysis.
+//______________________________________________________________
 void AliNeutralMesonSelection::Print(const Option_t * opt) const
 {
-
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -469,5 +461,4 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
     printf("Histograms: %3.1f < angle < %3.1f, Nbin = %d\n", fHistoAngleMin, fHistoAngleMax, fHistoNAngleBins);
     printf("Histograms: %3.1f < IM < %3.1f, Nbin = %d\n",    fHistoIMMin,    fHistoIMMax,    fHistoNIMBins);    
   }
-  
 } 

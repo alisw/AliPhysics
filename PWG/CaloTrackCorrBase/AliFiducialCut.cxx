@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class for track/cluster acceptance selection
-// Selection in Central barrel, EMCAL and PHOS
-//  
-// Several selection regions possible for the different
-// detectors
-//
-//*-- Author: Gustavo Conesa (LNF-INFN) 
-//////////////////////////////////////////////////////////////////////////////
-
-
 // --- ROOT system ---
 #include <TMath.h>
 //#include <TLorentzVector.h>
@@ -33,9 +22,13 @@
 #include "AliFiducialCut.h"
 #include <AliLog.h>
 
-ClassImp(AliFiducialCut)
+/// \cond CLASSIMP
+ClassImp(AliFiducialCut) ;
+/// \endcond
 
-
+//________________________________
+/// Default constructor. 
+/// Initialize parameters
 //________________________________
 AliFiducialCut::AliFiducialCut() : 
 TObject(),
@@ -45,18 +38,14 @@ fEMCALFidCutMinEta(0x0),fEMCALFidCutMinPhi(0x0),fEMCALFidCutMaxEta(0x0), fEMCALF
 fPHOSFidCutMinEta(0x0), fPHOSFidCutMinPhi(0x0), fPHOSFidCutMaxEta(0x0),  fPHOSFidCutMaxPhi(0x0),
 fDCALFidCutMinEta(0x0), fDCALFidCutMinPhi(0x0), fDCALFidCutMaxEta(0x0),  fDCALFidCutMaxPhi(0x0)
 {
-  //Ctor
-  
-  //Initialize parameters
   InitParameters();
-  
 }
 
 //_______________________________
+/// Destructor
+//_______________________________
 AliFiducialCut::~AliFiducialCut()
-{
-  //Dtor
-  
+{  
   if(fCTSFidCutMinEta)   delete fCTSFidCutMinEta ;
   if(fCTSFidCutMinPhi)   delete fCTSFidCutMinPhi ;
   if(fCTSFidCutMaxEta)   delete fCTSFidCutMaxEta ;
@@ -78,31 +67,16 @@ AliFiducialCut::~AliFiducialCut()
   if(fDCALFidCutMaxPhi)  delete fDCALFidCutMaxPhi ;
 }
 
-
-////________________________________________________________________________________
-//Bool_t AliFiducialCut::IsInFiducialCut(TLorentzVector momentum, TString det) const
-//{
-//  // Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
-//  Int_t idet = -1;
-//  if     (det=="EMCAL") idet = kEMCAL;
-//  else if(det=="PHOS" ) idet = kPHOS;
-//  else if(det=="CTS")   idet = kCTS;
-//  else if(det=="DCAL")  idet = kDCAL;
-//  else if(det.Contains("DCAL") && det.Contains("PHOS")) idet = kDCALPHOS;
-//  else
-//  {
-//    AliFatal(Form("Detector < %s > not known!", det.Data()));
-//    return kFALSE;
-//  }
-//  
-//  return IsInFiducialCut(momentum.Eta(), momentum.Phi(), idet);
-//}
-
+//________________________________________________________________________________
+/// Select EMCAL or PHOS cluster or CTS track or particle 
+/// if it is inside eta-phi defined regions
+/// \param eta: track/cluster/particle pseudorapidity
+/// \param phi: track/cluster/particle azimuthal angle
+/// \param det: detector tag where region is checked
+/// \return kTRUE if cluster/track is in une of the defined regions
 //________________________________________________________________________________
 Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) const
-{
-  // Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
-  
+{  
   if(det == kCTS)
   {
 	  if(!fCTSFiducialCut)  
@@ -136,16 +110,23 @@ Bool_t AliFiducialCut::IsInFiducialCut(Float_t eta, Float_t phi, Int_t det) cons
     return kFALSE;
     AliFatal(Form("Detector < %d > not known!", det));
   }
-  
 }
 
+//___________________________________________________________________________________________
+/// Given the selection regions in Eta and Phi, check if particle is in the region 
+/// defined by the TArray.
+/// \param eta: track/cluster/particle pseudorapidity.
+/// \param phiOrg: track/cluster/particle azimuthal angle.
+/// \param minphi: array with list of minimum azimuthal angle regions.
+/// \param maxphi: array with list of maximum azimuthal angle regions.
+/// \param mineta: array with list of minimum pseudorapidity regions.
+/// \param maxeta: array with list of maximum pseudorapidity regions.
+/// \return kTRUE if track/cluster/particle is in one of the regions
 //___________________________________________________________________________________________
 Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
                                            const TArrayF* minphi, const TArrayF* maxphi, 
                                            const TArrayF* mineta, const TArrayF* maxeta) const 
-{
-  //Given the selection regions in Eta and Phi, check if particle is in this region.
-  
+{  
   Float_t phi = phiOrg;
 	if(phi < 0) phi+=TMath::TwoPi() ;
   
@@ -157,36 +138,41 @@ Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
 		printf("AliFiducialCut::IsInFiducialCut() - Wrong number of fiducial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
            netaregions, mineta->GetSize(),  nphiregions, minphi->GetSize());
 	
-	//Eta fiducial cut
+	// Eta fiducial cut
 	Bool_t bInEtaFidCut = kFALSE;
 	for(Int_t ieta = 0; ieta < netaregions; ieta++)
+  {
 		if(eta > mineta->GetAt(ieta) && eta < maxeta->GetAt(ieta)) bInEtaFidCut = kTRUE;
+  }
   
-	if(bInEtaFidCut){
+	if(bInEtaFidCut)
+  {
 		//printf("Eta cut passed\n");
 		//Phi fiducial cut
 		Bool_t bInPhiFidCut = kFALSE;
 		for(Int_t iphi = 0; iphi < nphiregions; iphi++)
 			if(phi > minphi->GetAt(iphi) *TMath::DegToRad()&& phi < maxphi->GetAt(iphi)*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
 	  
-		if(bInPhiFidCut) {
+		if(bInPhiFidCut) 
+    {
 			//printf("IsInFiducialCut:: %s cluster/track accepted\n",det.Data());
 			return kTRUE;
 		}
 		else return kFALSE;
     
-	}//In eta fid cut
+	} // In eta fid cut
 	else
+  {
     return kFALSE;
+  }
 }
 
 
-//_______________________________________________________________
+//____________________________________________
+/// Initialize the parameters.
+//____________________________________________
 void AliFiducialCut::InitParameters()
 {
-  
-  //Initialize the parameters of the analysis.
-  
   fEMCALFiducialCut = kTRUE ;  
   fPHOSFiducialCut  = kTRUE ;
   fCTSFiducialCut   = kTRUE ;
@@ -254,15 +240,14 @@ void AliFiducialCut::InitParameters()
   fDCALFidCutMaxPhi->SetAt(320.,0);
   fDCALFidCutMaxPhi->SetAt(320.,0);
   fDCALFidCutMaxPhi->SetAt(327.,0);
-
 }
 
 
 //________________________________________________________________
+/// Print some relevant parameters set.
+//________________________________________________________________
 void AliFiducialCut::Print(const Option_t * opt) const
-{
-  
-  //Print some relevant parameters set for the analysis
+{  
   if(! opt)
     return;
   
@@ -317,15 +302,16 @@ void AliFiducialCut::Print(const Option_t * opt) const
   else printf(">>No fiducial cuts in DCAL\n");
   
   printf("    \n") ;
-  
 } 
 
 //_______________________________________________________________________________________
+/// Define simple acceptance cut to tracks.
+/// \param eta: absolute maximum value of track pseudorapidity.
+/// \param minphi track minimum azimuthal angle.
+/// \param maxphi track maximum azimuthal angle.
+//_______________________________________________________________________________________
 void AliFiducialCut::SetSimpleCTSFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
 {
-  
-  //Method to set simple acceptance cut to CTS
-  
   fCTSFidCutMinEta->Set(1);
   fCTSFidCutMaxEta->Set(1);
   fCTSFidCutMinPhi->Set(1);
@@ -335,14 +321,16 @@ void AliFiducialCut::SetSimpleCTSFiducialCut(Float_t eta, Float_t minphi, Float_
   fCTSFidCutMaxEta->SetAt( eta,0);
   fCTSFidCutMinPhi->SetAt(minphi,0);
   fCTSFidCutMaxPhi->SetAt(maxphi,0);
-  
 }
 
 //_________________________________________________________________________________________
+/// Define simple acceptance cut to EMCal clusters.
+/// \param eta: absolute maximum value of cluster pseudorapidity.
+/// \param minphi cluster minimum azimuthal angle.
+/// \param maxphi cluster maximum azimuthal angle.
+//_________________________________________________________________________________________
 void AliFiducialCut::SetSimpleEMCALFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
-{
-  //Method to set simple acceptance cut to EMCAL
-  
+{  
   fEMCALFidCutMinEta->Set(1);
   fEMCALFidCutMaxEta->Set(1);
   fEMCALFidCutMinPhi->Set(1);
@@ -352,14 +340,16 @@ void AliFiducialCut::SetSimpleEMCALFiducialCut(Float_t eta, Float_t minphi, Floa
   fEMCALFidCutMaxEta->SetAt( eta,0);
   fEMCALFidCutMinPhi->SetAt(minphi,0);
   fEMCALFidCutMaxPhi->SetAt(maxphi,0);
-  
 }
 
-//________________________________________________________________________________________
+//_______________________________________________________________________________________
+/// Define simple acceptance cut to PHOS clusters.
+/// \param eta: absolute maximum value of cluster pseudorapidity.
+/// \param minphi cluster minimum azimuthal angle.
+/// \param maxphi cluster maximum azimuthal angle.
+//_______________________________________________________________________________________
 void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
-{
-  //Method to set simple acceptance cut to PHOS
-  
+{  
   fPHOSFidCutMinEta->Set(1);
   fPHOSFidCutMaxEta->Set(1);
   fPHOSFidCutMinPhi->Set(1);
@@ -369,14 +359,16 @@ void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t minphi, Float
   fPHOSFidCutMaxEta->SetAt(eta,0);
   fPHOSFidCutMinPhi->SetAt(minphi,0);
   fPHOSFidCutMaxPhi->SetAt(maxphi,0);
-  
 }
 
 //_________________________________________________________________________________________
+/// Define simple acceptance cut to DCal clusters.
+/// \param eta: absolute maximum value of cluster pseudorapidity.
+/// \param minphi cluster minimum azimuthal angle.
+/// \param maxphi cluster maximum azimuthal angle.
+//_________________________________________________________________________________________
 void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
-{
-  //Method to set simple acceptance cut to DCAL
-  
+{  
   fDCALFidCutMinEta->Set(1);
   fDCALFidCutMaxEta->Set(1);
   fDCALFidCutMinPhi->Set(1);
@@ -386,7 +378,6 @@ void AliFiducialCut::SetSimpleDCALFiducialCut(Float_t eta, Float_t minphi, Float
   fDCALFidCutMaxEta->SetAt( eta,0);
   fDCALFidCutMinPhi->SetAt(minphi,0);
   fDCALFidCutMaxPhi->SetAt(maxphi,0);
-  
 }
 
 

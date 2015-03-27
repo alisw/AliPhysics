@@ -12,21 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-//_________________________________________________________________________
-// Class containing methods for the isolation cut. 
-// An AOD candidate (AliAODPWG4ParticleCorrelation type)
-// is passed. Look in a cone around the candidate and study
-// the hadronic activity inside to decide if the candidate is isolated
-//
-//
-//*-- Author: Gustavo Conesa (LNF-INFN) 
-
-//-Yaxian Mao (add the possibility for different IC method with different pt range, 01/10/2010)
-//-Yaxian Mao (check the candidate particle is the leading particle or not at the same hemishere)
-
-//////////////////////////////////////////////////////////////////////////////
-  
   
 // --- ROOT system --- 
 #include <TObjArray.h>
@@ -44,8 +29,12 @@
 #include "AliCaloPID.h"
 #include "AliLog.h"
 
-ClassImp(AliIsolationCut)
-  
+/// \cond CLASSIMP
+ClassImp(AliIsolationCut) ;
+/// \endcond
+
+//____________________________________
+/// Default constructor. Initialize parameters
 //____________________________________
 AliIsolationCut::AliIsolationCut() : 
 TObject(),
@@ -62,21 +51,17 @@ fFracIsThresh(1),
 fMomentum(),
 fTrackVector()
 {
-  //default ctor
-  
-  //Initialize parameters
-  InitParameters();
-  
+  InitParameters();  
 }
 
+//_________________________________________________________________________________________________________________________________
+/// Get normalization of cluster background band.
 //_________________________________________________________________________________________________________________________________
 void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /*reader*/, Float_t   etaC, Float_t /*phiC*/,
                                                            Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
                                                            Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
                                                            Float_t & excessFracEta,         Float_t & excessFracPhi         ) const
-{
-  // Normalize cluster background band
-  
+{  
   Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
   
   //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
@@ -107,17 +92,16 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /
     if(((2*fConeSize-excess)*emcPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excess)*emcPhiSize)-coneA)));
     if(( 2*fConeSize        *emcEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((( 2*fConeSize        *emcEtaSize)-coneA)));
   }
-  
 }
 
+//________________________________________________________________________________________________________________________________
+/// Get normalization of track background band.
 //________________________________________________________________________________________________________________________________
 void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,    Float_t   etaC, Float_t /*phiC*/,
                                                           Float_t   phiUEptsumTrack,      Float_t   etaUEptsumTrack,
                                                           Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
                                                           Float_t & excessFracEta,        Float_t & excessFracPhi          ) const
-{
-  // Normalize track background band
-  
+{  
   Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
   
   // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
@@ -150,16 +134,16 @@ void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * r
     //UE band is also out of acceptance, need to estimate corrected area
     if(((2*fConeSize-excess)*tpcPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excess)*tpcPhiSize)-coneA)));
     if(( 2*fConeSize        *tpcEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize        *tpcEtaSize)-coneA)));
-  }
-  
+  }  
 }
 
 //________________________________________________________________________
+/// If isolation cone are is outside a detector, calculate the area in excess.
+/// \param excess: cone size minus acceptance of detector.
+/// \return Area of a circunference segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R).
+//________________________________________________________________________
 Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess) const
-{
-  // Area of a circunference segment segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R)
-  
-  
+{  
   Float_t angle   = 2*TMath::ACos( (fConeSize-excess) / fConeSize );
   
   Float_t coneA   = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
@@ -175,12 +159,12 @@ Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess) const
   }
 }
 
-//_______________________________________________________________________________________
+//_________________________________________________________________________________
+/// Get good cell density (number of active cells over all cells in cone).
+//_________________________________________________________________________________
 Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandidate,
                                         AliCaloTrackReader * reader) const
-{
-  // Get good cell density (number of active cells over all cells in cone)
-  
+{  
   Double_t coneCells    = 0.; //number of cells in cone with radius fConeSize
   Double_t coneCellsBad = 0.; //number of bad cells in cone with radius fConeSize
   Double_t cellDensity  = 1.;
@@ -256,18 +240,17 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
   }
 
   return cellDensity;
-  
 }
 
-//__________________________________________________________________________________
+//___________________________________________________________________________________
+/// Get good cell density (number of active cells over all cells in cone).
+//___________________________________________________________________________________
 void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
                                           AliCaloTrackReader * reader,
                                           Float_t &  coneBadCellsCoeff,
                                           Float_t &  etaBandBadCellsCoeff,
                                           Float_t & phiBandBadCellsCoeff)
-{
-  // Get good cell density (number of active cells over all cells in cone)
-  
+{  
   Double_t coneCells    = 0.; //number of cells in cone with radius fConeSize
   Double_t phiBandCells = 0.; //number of cells in band phi
   Double_t etaBandCells = 0.; //number of cells in band eta
@@ -350,16 +333,15 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
       etaBandBadCellsCoeff = (etaBandCells-etaBandBadCellsCoeff)/etaBandCells;
       // printf("etaBandBadCellsCoeff = %.2f\n",etaBandBadCellsCoeff);
     }
-    
   }
-  
 }
 
 //____________________________________________
+// Put data member values in string to keep 
+// in output container.
+//____________________________________________
 TString AliIsolationCut::GetICParametersList()
-{
-  //Put data member values in string to keep in output container
-  
+{  
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -385,10 +367,10 @@ TString AliIsolationCut::GetICParametersList()
 }
 
 //____________________________________
+// Initialize the parameters of the analysis.
+//____________________________________
 void AliIsolationCut::InitParameters()
-{
-  //Initialize the parameters of the analysis.
-  
+{  
   fConeSize       = 0.4 ; 
   fPtThreshold    = 0.5  ;
   fPtThresholdMax = 10000.  ;
@@ -400,6 +382,23 @@ void AliIsolationCut::InitParameters()
   fFracIsThresh   = 1; 
 }
 
+//________________________________________________________________________________
+/// Declare a candidate particle isolated depending on the
+/// cluster or track particle multiplicity and/or momentum.
+///
+/// \param plCTS: List of tracks.
+/// \param plNe: List of clusters.
+/// \param reader: pointer to AliCaloTrackReader. Needed to access event info.
+/// \param pid: pointer to AliCaloPID. Needed to reject matched clusters in isolation cone.
+/// \param bFillAOD: Indicate if particles in cone must be added to AOD particle object.
+/// \param pCandidate: Kinematics and + of candidate particle for isolation.
+/// \param aodArrayRefName: Name of array where list of tracks/clusters in cone is stored.
+/// \param n: number of tracks/clusters above threshold in cone, output.
+/// \param nfrac: 1 if fraction pT cluster-track / pT trigger in cone avobe threshold, output.
+/// \param coneptsum: total momentum energy in cone (track+cluster), output.
+/// \param ptLead: momentum of leading cluster or track in cone, output.
+/// \param isolated: final bool with decission on isolation of candidate particle.
+///
 //________________________________________________________________________________
 void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS, 
                                         TObjArray * plNe, 
@@ -413,7 +412,6 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         Float_t & coneptsum, Float_t & ptLead,
                                         Bool_t  & isolated) 
 {
-  //Search in cone around a candidate particle if it is isolated 
   Float_t ptC   = pCandidate->Pt() ;
   Float_t phiC  = pCandidate->Phi() ;
   if(phiC<0) phiC+=TMath::TwoPi();
@@ -834,14 +832,13 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       isolated  =  kTRUE  ;
 
   }
-  
 }
 
 //_____________________________________________________
+/// Print some relevant parameters set for the analysis.
+//_____________________________________________________
 void AliIsolationCut::Print(const Option_t * opt) const
 {
-  
-  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
@@ -855,15 +852,18 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("particle type in cone =  %d\n",    fPartInCone ) ;
   printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
   printf("    \n") ;
-  
 } 
 
-//___________________________________________________________________________
+//______________________________________________________________
+/// Calculate the distance to trigger from any particle.
+/// \param etaC: pseudorapidity of candidate particle.
+/// \param phiC: azimuthal angle of candidate particle.
+/// \param eta: pseudorapidity of track/cluster to be considered in cone.
+/// \param phi: azimuthal angle of track/cluster to be considered in cone.
+//______________________________________________________________
 Float_t AliIsolationCut::Radius(Float_t etaC, Float_t phiC,
                                 Float_t eta , Float_t phi) const
 {
-  // Calculate the distance to trigger from any particle
-
   Float_t dEta = etaC-eta;
   Float_t dPhi = phiC-phi;
   
@@ -871,7 +871,6 @@ Float_t AliIsolationCut::Radius(Float_t etaC, Float_t phiC,
     dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
   
   return TMath::Sqrt( dEta*dEta + dPhi*dPhi );
-  
 }
 
 
