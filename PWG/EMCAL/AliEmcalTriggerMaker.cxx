@@ -187,7 +187,7 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
       for(const char **patchtype = patchtypes; patchtype < patchtypes + 2; ++patchtype){
         fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
         fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches;#eta;#phi", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 100, 1., 4.);
-        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", *patchtype, fgkTriggerTypeNames[itype].Data()), 200, 0., 200, 200, 0., 200);
+        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", *patchtype, fgkTriggerTypeNames[itype].Data()), 2000, 0., 2000, 200, 0., 200);
       }
     }
     fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
