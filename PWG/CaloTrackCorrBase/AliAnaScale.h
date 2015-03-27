@@ -3,11 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-//______________________________________________________________________________
-// An post event loop analysis task that scales the input histograms 
-//
-//*-- Yves Schutz 
-//////////////////////////////////////////////////////////////////////////////
+//_________________________________________________________________________
+/// \class AliAnaScale
+/// \brief Scale input histograms
+///
+/// Take histograms output of other tasks and scale them.
+///
+/// \author Yves Schutz <Yves.Schutz@cern.ch>, CNRS-CERN
+//_________________________________________________________________________
 
 #include "AliAnalysisTask.h"  
 class TH1F ; 
@@ -15,8 +18,12 @@ class TH1F ;
 class AliAnaScale : public AliAnalysisTask {
 
 public:
+  
   AliAnaScale() ;
+  
   AliAnaScale(const char *name) ;
+  
+  /// Destructor not implemented.
   virtual ~AliAnaScale() { ; }
    
   virtual void ConnectInputData(Option_t * = "");
@@ -37,21 +44,30 @@ public:
 
 private:
   
-  AliAnaScale(           const AliAnaScale&); // Not implemented
-  AliAnaScale& operator=(const AliAnaScale&); // Not implemented
+  /// Copy constructor not implemented.
+  AliAnaScale(           const AliAnaScale&); 
+  
+  /// Assignment operator not implemented.
+  AliAnaScale& operator=(const AliAnaScale&); 
 
-  // input and output
-  Int_t     fDebug ;  // Debug flag
-  // task parameters
-  Float_t   fScale ;  // Scaling factor 
+  Int_t     fDebug ;      ///< Debug flag.
+  
+  Float_t   fScale ;      ///< Scaling factor. 
 
   // Histograms
-  TList   * fInputList ;  //! input data list
-  TList   * fOutputList ; //! output data list
-  Bool_t    fSumw2;       //  compute sum of squares of weights for bin content error calculation
-  TH1F *    fhCount;      //! counter histogram for file merging
 
-  ClassDef(AliAnaScale, 2); // a post event loop scaling 
+  TList   * fInputList  ; //!<! Input data list.
+  
+  TList   * fOutputList ; //!<! Output data list.
+  
+  Bool_t    fSumw2 ;      ///<  Compute sum of squares of weights for bin content error calculation.
+  
+  TH1F *    fhCount;      //!<! Counter histogram for file merging.
+
+  /// \cond CLASSIMP
+  ClassDef(AliAnaScale, 2) ; 
+  /// \endcond
+
 };
 
 #endif // ALIANASCALE_H

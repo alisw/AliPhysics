@@ -14,16 +14,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class for reading data (AODs) in order to do prompt gamma
-//  or other particle identification and correlations.
-// This part is commented: Mixing analysis can be done, input AOD with events
-// is opened in the AliCaloTrackReader::Init()
-// 
-//
-//*-- Author: Gustavo Conesa (LNF-INFN) 
-//////////////////////////////////////////////////////////////////////////////
-
 //---- ANALYSIS system ----
 #include "AliCaloTrackAODReader.h" 
 #include "AliAODInputHandler.h"
@@ -33,18 +23,19 @@
 #include "AliAODEvent.h"
 #include "AliLog.h"
 
-ClassImp(AliCaloTrackAODReader)
+/// \cond CLASSIMP
+ClassImp(AliCaloTrackAODReader) ;
+/// \endcond
 
-//____________________________________________________________________________
+//______________________________________________
+/// Default constructor. Initialize parameters
+//______________________________________________
 AliCaloTrackAODReader::AliCaloTrackAODReader() : 
   AliCaloTrackReader(),   fOrgInputEvent(0x0),
   fSelectHybridTracks(0), fSelectPrimaryTracks(0),
   fTrackFilterMask(0),    fTrackFilterMaskComplementary(0),
   fSelectFractionTPCSharedClusters(0), fCutTPCSharedClustersFraction(0)
 {
-  //Default Ctor
-  
-  //Initialize parameters
   fDataType = kAOD;
   
   fReadStack          = kTRUE;
@@ -55,14 +46,14 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   
   fSelectFractionTPCSharedClusters = kTRUE;
   fCutTPCSharedClustersFraction    = 0.4;
-  
 }
 
 //_________________________________________________________
+/// Check if the vertex was well reconstructed.
+/// Copy method of PCM group.
+//_________________________________________________________
 Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
-{
-  //Check if the vertex was well reconstructed, copy of conversion group
-  
+{  
   AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
   if(!aodevent) return kFALSE;
   
@@ -89,14 +80,13 @@ Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
   }
   
   return kFALSE;
-  
 }
 
 //____________________________________________________________
+/// \return list of MC particles in AOD. Do it for the corresponding input event.
+//____________________________________________________________
 TClonesArray* AliCaloTrackAODReader::GetAODMCParticles() const
-{
-  //Return list of particles in AOD. Do it for the corresponding input event.
-  
+{  
   TClonesArray * particles = NULL ;
 
   AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent) ;
@@ -106,10 +96,10 @@ TClonesArray* AliCaloTrackAODReader::GetAODMCParticles() const
 }
 
 //___________________________________________________________
+/// \return MC header in AOD. Do it for the corresponding input event.
+//___________________________________________________________
 AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
-{
-  //Return MC header in AOD. Do it for the corresponding input event.
-  
+{  
   AliAODMCHeader *mch = NULL;
   
   AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
@@ -118,12 +108,11 @@ AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
   return mch;
 }
 
-
+//_____________________________________________________________________________
+/// Select AOD track using the AOD filter bits or predefined selection methods.
 //_____________________________________________________________________________
 Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
-{
-  // Select AOD track using the AOD filter bits
-  
+{  
   AliAODTrack *aodtrack = dynamic_cast <AliAODTrack*>(track);
   
   if(!aodtrack) return kFALSE;
@@ -182,18 +171,16 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   track->GetPxPyPz(pTrack) ;
   
   return kTRUE;
-  
 }
 
-
+//_________________________________________________________________
+/// Connect the data pointers
+/// If input is AOD, do analysis with input, if not, do analysis with the output aod.
 //_________________________________________________________________
 void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input,
                                                   AliAODEvent* aod,
                                                   AliMCEvent* mc)
 {
-  // Connect the data pointers
-  // If input is AOD, do analysis with input, if not, do analysis with the output aod.
-  
   //printf("AODInputHandler %p, MergeEvents %d \n",aodIH, aodIH->GetMergeEvents());
   
   Bool_t tesd = kFALSE ; 
@@ -224,7 +211,6 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input,
     taod = kTRUE ; 
   }
   
-  
   if(tesd)   
   {
     SetInputEvent(aod);
@@ -254,6 +240,5 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input,
   }
   
   SetMC(mc);
-  
 }
 

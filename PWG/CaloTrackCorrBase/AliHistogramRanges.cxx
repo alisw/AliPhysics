@@ -13,21 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class containing histogram settings:
-//    - Number of bins
-//    - Min and max of range
-//
-//-- Author: Gustavo Conesa (LPSC-Grenoble)
-//
-
 #include "TMath.h"
 
 #include "AliHistogramRanges.h"
 
-ClassImp(AliHistogramRanges)
+/// \cond CLASSIMP
+ClassImp(AliHistogramRanges) ;
+/// \endcond
 
-
+//_______________________________________________
+/// Default constructor. Initialize parameters.
 //_______________________________________________
 AliHistogramRanges::AliHistogramRanges() : 
 TObject(), 
@@ -63,18 +58,14 @@ fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPh
 fHistoNPtSumBins(0),          fHistoPtSumMax(0.),          fHistoPtSumMin(0.),
 fHistoNPtInConeBins(0),       fHistoPtInConeMax(0.),       fHistoPtInConeMin(0.)
 {
-  //Default Ctor
-  
-  //Initialize parameters
   InitParameters();
-  
 }
 
 //_______________________________________
+/// Initialize histogram parameters
+//_______________________________________
 void AliHistogramRanges::InitParameters()
-{ 
-  //Initialize histogram parameters
-  
+{   
   fHistoPtBins           = 240 ;  fHistoPtMax           = 120   ; fHistoPtMin           = 0.  ;
   fHistoPhiBins          = 120 ;  fHistoPhiMax          = TMath::TwoPi(); fHistoPhiMin  = 0.  ;
   fHistoEtaBins          = 100 ;  fHistoEtaMax          = 1     ; fHistoEtaMin          = -1  ;
@@ -106,14 +97,13 @@ void AliHistogramRanges::InitParameters()
   
   fHistoTrackResidualEtaBins = 100 ; fHistoTrackResidualEtaMax = 0.15 ; fHistoTrackResidualEtaMin = -0.15;
   fHistoTrackResidualPhiBins = 100 ; fHistoTrackResidualPhiMax = 0.15 ; fHistoTrackResidualPhiMin = -0.15;
-
 }
 
 //________________________________________________________
+// Print histogram parameters
+//________________________________________________________
 void AliHistogramRanges::Print(const Option_t * /*opt*/) const
-{
-  //Print some relevant parameters set for the analysis
-  	
+{  	
   printf("Histograms: %3.1f < pT  < %3.1f,  Nbin = %d\n"             , fHistoPtMin,          fHistoPtMax,          fHistoPtBins);
   printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n"              , fHistoPhiMin,         fHistoPhiMax,         fHistoPhiBins);
   printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n"              , fHistoEtaMin,         fHistoEtaMax,         fHistoEtaBins);
@@ -144,7 +134,6 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %2.2f < Residual Phi(R,X) < %2.2f, Nbin = %d\n", fHistoTrackResidualPhiMin, fHistoTrackResidualPhiMax,fHistoTrackResidualPhiBins);
   
   printf("    \n") ;
-  
 } 
 
 

@@ -13,19 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// A basic analysis task to scale histograms to a given cross section
-//
-//*-- Yves Schutz 
-//////////////////////////////////////////////////////////////////////////////
-
-//Root system
+// Root system
 #include <TH1.h>
 #include <TH1F.h>
 
-//Analysis system
+// Analysis system
 #include "AliAnaScale.h" 
 
+/// \cond CLASSIMP
+ClassImp(AliAnaScale) ;
+/// \endcond
+
+//__________________________
+/// Default constructor.
 //__________________________
 AliAnaScale::AliAnaScale() : 
   fDebug(0),
@@ -35,9 +35,10 @@ AliAnaScale::AliAnaScale() :
   fSumw2(0),
   fhCount() 
 {
-  //Default constructor
 }
 
+//__________________________________________
+/// Default constructor.
 //__________________________________________
 AliAnaScale::AliAnaScale(const char *name) : 
   AliAnalysisTask(name,""),  
@@ -47,9 +48,7 @@ AliAnaScale::AliAnaScale(const char *name) :
   fOutputList(0x0), 
   fSumw2(0),
   fhCount(0) 
-{
-  // Constructor
-  
+{  
   // Called only after the event loop
   SetPostEventLoop(kTRUE);
   
@@ -58,24 +57,23 @@ AliAnaScale::AliAnaScale(const char *name) :
   
   // Output slot 
   DefineOutput(0,  TList::Class()) ;
-  
 }
 
 //_________________________________________________
+/// Initialisation of branch container with histograms. 
+//_________________________________________________
 void AliAnaScale::ConnectInputData(const Option_t*)
 {
-  // Initialisation of branch container and histograms 
-    
   if(fDebug > 1) printf("*** Initialization of %s \n", GetName()) ; 
-  fInputList     = dynamic_cast<TList*>(GetInputData(0)) ; 
   
+  fInputList = dynamic_cast<TList*>(GetInputData(0)) ; 
 }
 
 //_____________________________________
+/// Create the outputs containers.
+//_____________________________________
 void AliAnaScale::CreateOutputObjects()
 {  
-  // Create the outputs containers
-
   fOutputList = new TList() ; 
   fOutputList->SetName(GetName()) ; 
 
@@ -85,14 +83,13 @@ void AliAnaScale::CreateOutputObjects()
   fOutputList->SetOwner(kTRUE);
   
   PostData(0, fOutputList);
-  
 }
 
 //________________________________
+/// Do the histogram scaling.
+//________________________________
 void AliAnaScale::Exec(Option_t *) 
 {
-  // Do the Scaling
-  
   if(fDebug > 0 ) printf(">>>>> Scaling factor %e, do Sumw2 %d <<<<< \n",fScale,fSumw2) ;
   
   const Int_t buffersize = 255;
@@ -126,16 +123,13 @@ void AliAnaScale::Exec(Option_t *)
   fhCount->Fill(0);
   
   PostData(0, fOutputList);
-  
 }
 
-
+//______________________
+/// Intialization of parameters.
 //______________________
 void AliAnaScale::Init()
-{
-  // Intialisation of parameters
-  
+{  
   if(fDebug > 0 )printf("No initialization in scale class \n") ;
-
 }
 

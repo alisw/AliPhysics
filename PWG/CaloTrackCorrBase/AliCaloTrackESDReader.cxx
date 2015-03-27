@@ -14,17 +14,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Class for reading data (ESDs) in order to do prompt gamma 
-// or other particle identification and correlations
-//
-//
-//
-//
-//*-- Author: Gustavo Conesa (LNF-INFN) 
-//////////////////////////////////////////////////////////////////////////////
-
-
 //---- ANALYSIS system ----
 #include "AliCaloTrackESDReader.h" 
 #include "AliAODEvent.h"
@@ -35,29 +24,28 @@
 #include "AliESDtrackCuts.h"
 #include "AliLog.h"
 
-ClassImp(AliCaloTrackESDReader)
+/// \cond CLASSIMP
+ClassImp(AliCaloTrackESDReader) ;
+/// \endcond 
 
+//______________________________________________
+/// Default constructor. Initialize parameters.
 //______________________________________________
 AliCaloTrackESDReader::AliCaloTrackESDReader() : 
 AliCaloTrackReader(), fConstrainTrack(0),
 fESDtrackCuts(0), fESDtrackComplementaryCuts(0)
 {
-  //Default Ctor
-  
-  //Initialize parameters
   fDataType           = kESD;
   fReadStack          = kTRUE;
   fReadAODMCParticles = kFALSE;
   fConstrainTrack     = kFALSE ; // constrain tracks to vertex
-
 }
 
 //_____________________________________________
+/// Default destructor.
+//_____________________________________________
 AliCaloTrackESDReader::~AliCaloTrackESDReader()
-{
-  //Dtor
-  
-  //AliCaloTrackReader::~AliCaloTrackReader();
+{  
   AliCaloTrackReader::DeletePointers();
   
   delete fESDtrackCuts;
@@ -65,10 +53,11 @@ AliCaloTrackESDReader::~AliCaloTrackESDReader()
 }
 
 //_________________________________________________________
+/// Check if the vertex was well reconstructed.
+/// Copy method of PCM group.
+//_________________________________________________________
 Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
-{
-  //Check if the vertex was well reconstructed, copy of conversion group
-  
+{  
   AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (fInputEvent);
   if(!esdevent) return kFALSE;
   
@@ -92,14 +81,13 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
   }
 
   return kFALSE;
-
 }
 
 //________________________________
+/// Init reader. Method to be called in AliAnaCaloTrackCorrMaker.
+//________________________________
 void AliCaloTrackESDReader::Init()
-{
-  //Init reader. Method to be called in AliAnaCaloTrackCorrMaker
-  
+{  
   AliCaloTrackReader::Init();
   
   if(!fESDtrackCuts)
@@ -107,11 +95,11 @@ void AliCaloTrackESDReader::Init()
 }
 
 //______________________________________________________________________________
+/// Select ESD track using the cuts declared in *fESDtrackCuts*.
+/// In case of hybrid tracks, 2 different sets of cuts defined.
+//______________________________________________________________________________
 Bool_t AliCaloTrackESDReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
-{
-  // Select ESD track using the cuts declared in fESDtrackCuts
-  // in case of hybrid tracks, 2 different sets of cuts defined.
-  
+{  
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (track);
   
   if(!esdTrack) return kFALSE;
@@ -151,34 +139,32 @@ Bool_t AliCaloTrackESDReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
 }
 
 //_______________________________________________________________
+/// Set Track cuts.
+//_______________________________________________________________
 void  AliCaloTrackESDReader::SetTrackCuts(AliESDtrackCuts * cuts)
-{
-  // Set Track cuts
-  
+{  
   if(fESDtrackCuts) delete fESDtrackCuts ;
   
   fESDtrackCuts = cuts ;
-  
 }
 
 //____________________________________________________________________________
+/// Set Track cuts for complementary tracks (hybrids).
+//____________________________________________________________________________
 void  AliCaloTrackESDReader::SetTrackComplementaryCuts(AliESDtrackCuts * cuts)
-{
-  // Set Track cuts for complementary tracks (hybrids)
-  
+{  
   if(fESDtrackComplementaryCuts) delete fESDtrackComplementaryCuts ;
   
   fESDtrackComplementaryCuts = cuts ;
-  
 }
 
+//_________________________________________________________________
+/// Connect the data pointers.
 //_________________________________________________________________
 void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd,
                                                   AliAODEvent* aod,
                                                   AliMCEvent* mc) 
-{
-  // Connect the data pointers
-  
+{  
   Bool_t tesd = kFALSE ; 
   
   if ( strcmp(esd->GetName(), "AliMixedEvent") == 0 ) 
@@ -210,7 +196,6 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd,
   SetInputEvent(esd);
   SetOutputEvent(aod);
   SetMC(mc);
-  
 }
 
 

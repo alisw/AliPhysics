@@ -4,13 +4,18 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class for track/cluster acceptance selection
-// Selection in Central barrel, DCAL and PHOS
-//  
-// Several selection regions possible for the different
-// detectors
-//
-//*-- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliFiducialCut
+/// \brief Store the acceptance cuts for clusters and tracks or particle objects
+///
+/// Class for track/cluster/particle acceptance selection
+/// Selection in Central barrel, DCAL and PHOS.
+///  
+/// Several selection regions possible for the different detectors
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT system ---
 #include <TObject.h> 
@@ -19,10 +24,10 @@
 class TString ;
 //class TLorentzVector ;
 
-
 class AliFiducialCut : public TObject {
   
 public: 
+  
   AliFiducialCut() ; // ctor
   virtual  ~AliFiducialCut() ;//virtual dtor
   
@@ -32,7 +37,6 @@ public:
                                 const TArrayF* minphi, const TArrayF* maxphi,
                                 const TArrayF* mineta, const TArrayF* maxeta) const ;
 
-  //Bool_t    IsInFiducialCut    (TLorentzVector lv, TString det) const ;
   Bool_t    IsInFiducialCut    (Float_t eta, Float_t phi, Int_t det) const ;
   
   void      DoCTSFiducialCut  (Bool_t b)     { fCTSFiducialCut   = b    ; }
@@ -116,41 +120,47 @@ public:
   { fDCALFidCutMinPhi->Set(size,array) ; }
   TArrayF * GetDCALFidCutMinPhiArray() const { return fDCALFidCutMinPhi           ; }
 
-  enum detector {kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
+  enum detector { kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 } ;
   
 private:
   
-  //Detector acceptance cuts
-  Bool_t    fEMCALFiducialCut ;  // Apply fiducial cuts to EMCAL clusters
-  Bool_t    fDCALFiducialCut  ;  // Apply fiducial cuts to DCAL clusters
-  Bool_t    fPHOSFiducialCut  ;  // Apply fiducial cuts to PHOS clusters
-  Bool_t    fCTSFiducialCut   ;  // Apply fiducial cuts to  CTS tracks
+  // Detector acceptance cuts
   
-  TArrayF * fCTSFidCutMinEta ;   // Take particles in CTS with eta > fCTSFidCutMinEta
-  TArrayF * fCTSFidCutMinPhi ;   // Take particles in CTS with phi > fCTSFidCutMinPhi
-  TArrayF * fCTSFidCutMaxEta ;   // Take particles in CTS with eta < fCTSFidCutMaxEta
-  TArrayF * fCTSFidCutMaxPhi ;   // Take particles in CTS with phi > fCTSFidCutMaxPhi
+  Bool_t    fEMCALFiducialCut  ; ///< Apply fiducial cuts to EMCAL clusters
+  Bool_t    fDCALFiducialCut   ; ///< Apply fiducial cuts to DCAL clusters
+  Bool_t    fPHOSFiducialCut   ; ///< Apply fiducial cuts to PHOS clusters
+  Bool_t    fCTSFiducialCut    ; ///< Apply fiducial cuts to  CTS tracks
   
-  TArrayF * fEMCALFidCutMinEta ; // Take particles in EMCAL with eta > fEMCALFidCutMinEta
-  TArrayF * fEMCALFidCutMinPhi ; // Take particles in EMCAL with phi > fEMCALFidCutMinPhi
-  TArrayF * fEMCALFidCutMaxEta ; // Take particles in EMCAL with eta < fEMCALFidCutMaxEta
-  TArrayF * fEMCALFidCutMaxPhi ; // Take particles in EMCAL with phi > fEMCALFidCutMaxPhi
+  TArrayF * fCTSFidCutMinEta   ; ///< Take particles in CTS with eta > fCTSFidCutMinEta
+  TArrayF * fCTSFidCutMinPhi   ; ///< Take particles in CTS with phi > fCTSFidCutMinPhi
+  TArrayF * fCTSFidCutMaxEta   ; ///< Take particles in CTS with eta < fCTSFidCutMaxEta
+  TArrayF * fCTSFidCutMaxPhi   ; ///< Take particles in CTS with phi > fCTSFidCutMaxPhi
   
-  TArrayF * fPHOSFidCutMinEta ;  // Take particles in PHOS with eta > fPHOSFidCutMinEta
-  TArrayF * fPHOSFidCutMinPhi ;  // Take particles in PHOS with phi > fPHOSFidCutMinPhi
-  TArrayF * fPHOSFidCutMaxEta ;  // Take particles in PHOS with eta < fPHOSFidCutMaxEta
-  TArrayF * fPHOSFidCutMaxPhi ;  // Take particles in PHOS with phi > fPHOSFidCutMaxPhi
+  TArrayF * fEMCALFidCutMinEta ; ///< Take particles in EMCAL with eta > fEMCALFidCutMinEta
+  TArrayF * fEMCALFidCutMinPhi ; ///< Take particles in EMCAL with phi > fEMCALFidCutMinPhi
+  TArrayF * fEMCALFidCutMaxEta ; ///< Take particles in EMCAL with eta < fEMCALFidCutMaxEta
+  TArrayF * fEMCALFidCutMaxPhi ; ///< Take particles in EMCAL with phi > fEMCALFidCutMaxPhi
   
-  TArrayF * fDCALFidCutMinEta ; // Take particles in DCAL with eta > fDCALFidCutMinEta
-  TArrayF * fDCALFidCutMinPhi ; // Take particles in DCAL with phi > fDCALFidCutMinPhi
-  TArrayF * fDCALFidCutMaxEta ; // Take particles in DCAL with eta < fDCALFidCutMaxEta
-  TArrayF * fDCALFidCutMaxPhi ; // Take particles in DCAL with phi > fDCALFidCutMaxPhi
+  TArrayF * fPHOSFidCutMinEta  ; ///< Take particles in PHOS with eta > fPHOSFidCutMinEta
+  TArrayF * fPHOSFidCutMinPhi  ; ///< Take particles in PHOS with phi > fPHOSFidCutMinPhi
+  TArrayF * fPHOSFidCutMaxEta  ; ///< Take particles in PHOS with eta < fPHOSFidCutMaxEta
+  TArrayF * fPHOSFidCutMaxPhi  ; ///< Take particles in PHOS with phi > fPHOSFidCutMaxPhi
+
+  TArrayF * fDCALFidCutMinEta  ; ///< Take particles in DCAL with eta > fDCALFidCutMinEta
+  TArrayF * fDCALFidCutMinPhi  ; ///< Take particles in DCAL with phi > fDCALFidCutMinPhi
+  TArrayF * fDCALFidCutMaxEta  ; ///< Take particles in DCAL with eta < fDCALFidCutMaxEta
+  TArrayF * fDCALFidCutMaxPhi  ; ///< Take particles in DCAL with phi > fDCALFidCutMaxPhi
   
-  AliFiducialCut(              const AliFiducialCut & g) ; // cpy ctor
-  AliFiducialCut & operator = (const AliFiducialCut & g) ; // cpy assignment
+  /// Copy constructor not implemented.
+  AliFiducialCut(              const AliFiducialCut & fc) ; 
   
-  ClassDef(AliFiducialCut,2)
+  /// Assignment operator not implemented.
+  AliFiducialCut & operator = (const AliFiducialCut & fc) ; 
   
+  /// \cond CLASSIMP
+  ClassDef(AliFiducialCut,2) ;
+  /// \endcond
+
 } ;
 
 

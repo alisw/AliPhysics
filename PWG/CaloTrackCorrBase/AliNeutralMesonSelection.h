@@ -4,11 +4,18 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class that contains methods to select candidate pairs to neutral meson 
-// 2 main selections, invariant mass around pi0 (also any other mass),
-// apperture angle to distinguish from combinatorial.
-// There is a 3rd cut based on the gamma correlation on phi or pt.
-//-- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliNeutralMesonSelection
+/// \brief Class that contains methods to select candidate cluster pairs to neutral meson.
+///
+/// Class that contains methods to select candidate pairs to neutral meson. 
+/// 2 main selections, invariant mass around pi0 (also any other mass),
+/// apperture angle to distinguish from combinatorial.
+/// There is a 3rd cut based on the gamma correlation on phi or pt.
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 // --- ROOT system ---
 #include<TObject.h>
@@ -23,7 +30,9 @@ class AliNeutralMesonSelection : public TObject {
   
  public: 
   AliNeutralMesonSelection() ; // default ctor
-  virtual ~AliNeutralMesonSelection() { ; } //virtual dtor  
+  
+  /// Virtual destructor.
+  virtual ~AliNeutralMesonSelection() { ; }   
 
   // General
 
@@ -149,62 +158,93 @@ class AliNeutralMesonSelection : public TObject {
   
  private:
   
-  Float_t  fAsymmetryCut  ;               // Asymmetry cut
-  Bool_t   fUseAsymmetryCut;              // Use the asymmetry cut
+  Float_t  fAsymmetryCut  ;               ///<  Asymmetry cut.
+  
+  Bool_t   fUseAsymmetryCut;              ///<  Use the asymmetry cut.
 
-  Double_t fM ;                           // Mass of the neutral meson
-  Double_t fInvMassMaxCut ;               // Invariant Mass cut maximum
-  Double_t fInvMassMinCut ;               // Invariant Masscut minimun
-  Double_t fInvMassMaxCutParam[3];        // Variable invariant mass max cut, for pi0 in EMCAL
+  Double_t fM ;                           ///<  Mass of the neutral meson.
   
-  Double_t fLeftBandMinCut  ;             // Side Band selection, min left  band cut
-  Double_t fLeftBandMaxCut  ;             // Side Band selection, max left  band cut
-  Double_t fRightBandMinCut ;             // Side Band selection, min right band cut
-  Double_t fRightBandMaxCut ;             // Side Band selection, max right band cut
+  Double_t fInvMassMaxCut ;               ///<  Invariant Mass cut maximum.
   
-  TArrayD  fAngleMaxParam ;               // Max opening angle selection parameters
-  Bool_t   fUseAngleCut   ;               // Select pairs depending on their opening angle
-  Float_t  fShiftMinAngle[2] ;            // Correction shift for min angle from true kinematic limit, resolution effects
+  Double_t fInvMassMinCut ;               ///<  Invariant Masscut minimun.
   
-  Bool_t   fKeepNeutralMesonHistos ;      // Keep neutral meson selection histograms
+  Double_t fInvMassMaxCutParam[3];        ///<  Variable invariant mass max cut, for pi0 in EMCAL.
   
-  TString  fParticle ;                    // neutral meson name (Pi0, Eta, +SideBand)
-  UInt_t   fDecayBit;                     // Decay type flag, set while selecting, depending on fParticle and side range
-                                          // see enum decayTypes for possible bits
+  Double_t fLeftBandMinCut  ;             ///<  Side Band selection, min left  band cut.
+  
+  Double_t fLeftBandMaxCut  ;             ///<  Side Band selection, max left  band cut.
+  
+  Double_t fRightBandMinCut ;             ///<  Side Band selection, min right band cut.
+  
+  Double_t fRightBandMaxCut ;             ///<  Side Band selection, max right band cut.
+  
+  TArrayD  fAngleMaxParam ;               ///<  Maximum opening angle selection parameters.
+  
+  Bool_t   fUseAngleCut   ;               ///<  Select pairs depending on their opening angle.
+  
+  Float_t  fShiftMinAngle[2] ;            ///<  Correction shift for min angle from true kinematic limit, resolution effects.
+  
+  Bool_t   fKeepNeutralMesonHistos ;      ///<  Keep neutral meson selection histograms.
+  
+  TString  fParticle ;                    ///<  Meutral meson name (Pi0, Eta, +SideBand).
+  
+  UInt_t   fDecayBit;                     ///<  Decay type flag, set while selecting, depending on fParticle and side range. See enum decayTypes for possible bits.
 
   //Histograms
-  TH2F *   fhAnglePairNoCut ;             //! Aperture angle of decay photons, no cuts
-  TH2F *   fhAnglePairOpeningAngleCut ;   //! Aperture angle of decay photons, cut on opening angle
-  TH2F *   fhAnglePairAsymmetryCut ;      //! Aperture angle of decay photons, asymmetry cut
-  TH2F *   fhAnglePairAllCut ;            //! Aperture angle of decay photons, all cuts
+  TH2F *   fhAnglePairNoCut ;             //!<! Aperture angle of decay photons, no cuts.
   
-  TH2F *   fhInvMassPairNoCut ;           //! Invariant mass of decay photons, no cuts
-  TH2F *   fhInvMassPairOpeningAngleCut ; //! Invariant mass of decay photons, cut on opening angle
-  TH2F *   fhInvMassPairAsymmetryCut ;    //! Invariant mass of decay photons, asymmetry cut  
-  TH2F *   fhInvMassPairAllCut ;          //! Invariant mass of decay photons, all cuts
+  TH2F *   fhAnglePairOpeningAngleCut ;   //!<! Aperture angle of decay photons, cut on opening angle.
+  
+  TH2F *   fhAnglePairAsymmetryCut ;      //!<! Aperture angle of decay photons, asymmetry cut.
+  
+  TH2F *   fhAnglePairAllCut ;            //!<! Aperture angle of decay photons, all cuts.
+  
+  
+  TH2F *   fhInvMassPairNoCut ;           //!<! Invariant mass of decay photons, no cuts.
+  
+  TH2F *   fhInvMassPairOpeningAngleCut ; //!<! Invariant mass of decay photons, cut on opening angle.
+  
+  TH2F *   fhInvMassPairAsymmetryCut ;    //!<! Invariant mass of decay photons, asymmetry cut.  
+  
+  TH2F *   fhInvMassPairAllCut ;          //!<! Invariant mass of decay photons, all cuts.
 
-  TH2F *   fhAsymmetryNoCut ;             //! Asymmetry of decay photons, no cuts
-  TH2F *   fhAsymmetryOpeningAngleCut ;   //! Asymmetry of decay photons, cut on opening angle
-  TH2F *   fhAsymmetryAllCut ;            //! Asymmetry of decay photons, all cuts
+  TH2F *   fhAsymmetryNoCut ;             //!<! Asymmetry of decay photons, no cuts.
+  
+  TH2F *   fhAsymmetryOpeningAngleCut ;   //!<! Asymmetry of decay photons, cut on opening angle.
+  
+  TH2F *   fhAsymmetryAllCut ;            //!<! Asymmetry of decay photons, all cuts.
+  
   
   //Histograms binning and range    
-  Int_t    fHistoNEBins ;                 // Number of bins in pi0 E axis
-  Float_t  fHistoEMax ;                   // Maximum value of pi0 E histogram range
-  Float_t  fHistoEMin ;                   // Minimum value of pi0 E histogram range
+  Int_t    fHistoNEBins ;                 ///< Number of bins in pi0 E axis.
   
-  Int_t    fHistoNAngleBins ;             // Number of bins in angle axis
-  Float_t  fHistoAngleMax ;               // Maximum value of angle histogram range
-  Float_t  fHistoAngleMin ;               // Minimum value of angle histogram range
+  Float_t  fHistoEMax ;                   ///< Maximum value of pi0 E histogram range.
   
-  Int_t    fHistoNIMBins ;                // Number of bins in Invariant Mass axis
-  Float_t  fHistoIMMax ;                  // Maximum value of Invariant Mass histogram range
-  Float_t  fHistoIMMin ;                  // Minimum value of Invariant Mass histogram range  
+  Float_t  fHistoEMin ;                   ///< Minimum value of pi0 E histogram range.
   
-  AliNeutralMesonSelection(              const AliNeutralMesonSelection & g) ; // cpy ctor
-  AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ; // cpy assignment
+  Int_t    fHistoNAngleBins ;             ///< Number of bins in angle axis.
   
-  ClassDef(AliNeutralMesonSelection,8)
-    
+  Float_t  fHistoAngleMax ;               ///< Maximum value of angle histogram range.
+  
+  Float_t  fHistoAngleMin ;               ///< Minimum value of angle histogram range.
+  
+  
+  Int_t    fHistoNIMBins ;                ///< Number of bins in Invariant Mass axis.
+  
+  Float_t  fHistoIMMax ;                  ///< Maximum value of Invariant Mass histogram range.
+  
+  Float_t  fHistoIMMin ;                  ///< Minimum value of Invariant Mass histogram range. 
+  
+  /// Copy constructor not implemented.
+  AliNeutralMesonSelection(              const AliNeutralMesonSelection & nm) ;
+  
+  /// Assignment operator not implemented.
+  AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & nm) ; 
+  
+  /// \cond CLASSIMP
+  ClassDef(AliNeutralMesonSelection,8) ;
+  /// \endcond
+
 } ;
 
 #endif //ALINEUTRALMESONSELECTION_H

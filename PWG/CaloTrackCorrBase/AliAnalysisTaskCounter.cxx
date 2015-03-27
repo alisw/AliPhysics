@@ -13,31 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// Count events with different selections
-//
-// It produces a histogram with the number of events with 9 bins:
-// 0: all events (that passed the physics selection if it was on)
-// 1: same but cross check that event pointer did exist
-// 2: passes vertex cut
-// 3: passes track number cut, tracks for eta < 0.8
-// 4: 3 && 2
-// 5: pass V0AND
-// 6: 5 && 2
-// 7: 5 && 3
-// 8: 5 && 3 && 2
-// 9: not pileup from SPD
-// 10: Good vertex
-// 11: 10 && 5
-// 12: 10 && 3
-// 13: 10 && 2
-// 14: 10 && 2 && 3 && 5
-// 15: 10 && 9
-// 16: 9  && 5
-//
-// Author: Gustavo Conesa Balbastre (LPSC)
-//         
-//_________________________________________________________________________
 #include <TSystem.h>
 #include <TFile.h>
 #include <TKey.h>
@@ -56,8 +31,13 @@
 #include "AliInputEventHandler.h"
 
 #include "AliAnalysisTaskCounter.h"
-ClassImp(AliAnalysisTaskCounter)
 
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskCounter) ;
+/// \endcond
+
+//______________________________________________________________
+/// Constructor.
 //______________________________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name) 
 : AliAnalysisTaskSE(name), 
@@ -75,11 +55,12 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fhCentrality(0), fhEventPlaneAngle(0),
   fh1Xsec(0),      fh1Trials(0)
 {
-  //ctor
   DefineOutput(1, TList::Class());
 }
 
 //______________________________________________
+/// Constructor.
+//_______________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskCounter"),
     fAcceptFastCluster(kTRUE),
@@ -96,15 +77,14 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fhCentrality(0), fhEventPlaneAngle(0),
     fh1Xsec(0),      fh1Trials(0)
 {
-  // ctor
   DefineOutput(1, TList::Class());
 }
 
-//__________________________________________________
+//_______________________________________________
+/// Destructor.
+//_______________________________________________
 AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
-{
-  //Destructor
-  
+{  
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   
   if(fOutputContainer)
@@ -120,10 +100,10 @@ AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
 
 
 //____________________________________________________
+// Init histogram pointers and add them to container.
+//____________________________________________________
 void AliAnalysisTaskCounter::UserCreateOutputObjects()
-{
-  // Init histograms
-  
+{  
   fOutputContainer = new TList();
   
   if(fCheckMCCrossSection)
@@ -175,7 +155,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhNEvents->GetXaxis()->SetBinLabel(1 ,"1  = PS");
   fhNEvents->GetXaxis()->SetBinLabel(2 ,"2  = 1  & ESD");
   fhNEvents->GetXaxis()->SetBinLabel(3 ,"3  = 2  & |Z|<10");
-  fhNEvents->GetXaxis()->SetBinLabel(4 ,"4  = 2  & |eta|<0.8");
+  fhNEvents->GetXaxis()->SetBinLabel(4 ,"4  = 2  & !track?");
   fhNEvents->GetXaxis()->SetBinLabel(5 ,"5  = 3  & 4");
   fhNEvents->GetXaxis()->SetBinLabel(6 ,"6  = 2  & V0AND");
   fhNEvents->GetXaxis()->SetBinLabel(7 ,"7  = 3  & 6");
@@ -189,11 +169,10 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhNEvents->GetXaxis()->SetBinLabel(15,"15 = 9  & 11");
   fhNEvents->GetXaxis()->SetBinLabel(16,"16 = 10 & 11");
   fhNEvents->GetXaxis()->SetBinLabel(17,"17 = 6  & 10");
-  fhNEvents->GetXaxis()->SetBinLabel(17,"17 = 1  & |Z|<50");  
   fhNEvents->GetXaxis()->SetBinLabel(18,"18 = Reject EMCAL 1");
-  fhNEvents->GetXaxis()->SetBinLabel(19,"19 = 18 & 2");
+  fhNEvents->GetXaxis()->SetBinLabel(19,"19 = 18 & 3");
   fhNEvents->GetXaxis()->SetBinLabel(20,"20 = Reject EMCAL 2");
-  fhNEvents->GetXaxis()->SetBinLabel(21,"21 = 20 & 2");
+  fhNEvents->GetXaxis()->SetBinLabel(21,"21 = 20 & 3");
 
   fOutputContainer->Add(fhNEvents);
 
@@ -205,11 +184,13 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
 
 
 //_______________________________________________
+/// Main event loop
+/// It does the event counting, depending on different cuts
+/// (see criteria in class description). 
+/// It fills the event vertex, centrality and plane histograms 
+//_______________________________________________
 void AliAnalysisTaskCounter::UserExec(Option_t *) 
 {
-  // Main loop
-  // Called for each event
-  
   //printf("___ Event __ %d __\n",(Int_t)Entry());
   
   Notify();
@@ -366,7 +347,8 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   for (Int_t i = 0; i < InputEvent()->GetNumberOfCaloClusters(); i++)
   {
     AliVCluster *clus = InputEvent()->GetCaloCluster(i);
-    if(clus->IsEMCAL()){    
+    if(clus->IsEMCAL())
+    {    
       if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200)  
       {
         
@@ -409,11 +391,12 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 
 }
 
-
+//____________________________________________________
+/// Check if the vertex was well reconstructed, 
+/// copy of PCM.
 //____________________________________________________
 Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy of conversion group
   
   AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (InputEvent());
   AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -468,12 +451,11 @@ Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 
 }
 
-
-//_____________________________________________________
+//_____________________________________________
+/// Put in the output some event summary histograms
+//_____________________________________________
 void AliAnalysisTaskCounter::FinishTaskOutput()
-{
-  // Put in the output some event summary histograms
-  
+{  
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputH = dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
   if (!inputH) return; 
@@ -489,15 +471,14 @@ void AliAnalysisTaskCounter::FinishTaskOutput()
   
 }
 
-
+//_____________________________________
+//
+/// Implemented Notify() to read the cross sections
+/// and number of trials from pyxsec.root, values stored
+/// in specific histograms.
 //_____________________________________
 Bool_t AliAnalysisTaskCounter::Notify()
 {
-  //
-  // Implemented Notify() to read the cross sections
-  // and number of trials from pyxsec.root
-  //
-  
   if(!fCheckMCCrossSection) return kTRUE;
 
   // Fetch the aod also from the input in,
@@ -544,13 +525,16 @@ Bool_t AliAnalysisTaskCounter::Notify()
   return kTRUE;
 }
 
-//_____________________________________________________________________________________________________
+//_____________________________________________________________________________________________
+/// This method gets and returns the 
+/// \param file : either pyxsec.root (ESDs) or pysec_hists.root (AODs) files
+/// \param xsec : cross section 
+/// \param trials : number of event trials 
+/// that should be located where the main data file is.
+/// This is called in Notify and should provide the path to the AOD/ESD file
+//_____________________________________________________________________________________________
 Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Float_t & trials)
 {
-  //
-  // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
-  // This is to called in Notify and should provide the path to the AOD/ESD file
-    
   xsec   = 0;
   trials = 1;
   
@@ -611,7 +595,7 @@ Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Fl
     }
     
     UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
+    Double_t xsection = 0;
     xtree->SetBranchAddress("xsection",&xsection);
     xtree->SetBranchAddress("ntrials",&ntrials);
     xtree->GetEntry(0);

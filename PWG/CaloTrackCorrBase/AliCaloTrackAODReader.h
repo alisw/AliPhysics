@@ -4,13 +4,16 @@
  * See cxx source for full Copyright notice     */
 
 //_________________________________________________________________________
-// Class for reading data (AODs) in order to do prompt gamma or other particle
-// identification and correlations.
-// This part is commented: Mixing analysis can be done, input AOD with events
-// is opened in the AliCaloTrackReader::Init()
-//
-//
-// -- Author: Gustavo Conesa (INFN-LNF)
+/// \class AliCaloTrackAODReader
+/// \brief Class for event, clusters and tracks filtering and preparation for the AOD analysis.
+///
+/// Class for accessing/filtering AOD data. Most of the job is done in the mother class
+/// here only very specific methods of the AOD format are implemented.
+///
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+///
+/// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+//_________________________________________________________________________
 
 class AliAODEvent;
 
@@ -24,20 +27,20 @@ public:
   
   virtual    ~AliCaloTrackAODReader() {;} // virtual dtor
   
-  Bool_t      CheckForPrimaryVertex() const ;
+  Bool_t      CheckForPrimaryVertex()  const ;
   
   TClonesArray   * GetAODMCParticles() const ;
   AliAODMCHeader * GetAODMCHeader   () const ;
   
-  AliVEvent * GetOriginalInputEvent() const { return fOrgInputEvent; }
+  AliVEvent * GetOriginalInputEvent()            const { return fOrgInputEvent        ; }
   
   Bool_t      SelectTrack(AliVTrack* track, Double_t* pTrack);
 
   ULong_t     GetTrackFilterMask()               const { return fTrackFilterMask      ; }
   void        SetTrackFilterMask(ULong_t bit)          { fTrackFilterMask = bit       ; }
   
-  ULong_t     GetTrackFilterMaskComplementary()  const { return fTrackFilterMaskComplementary      ; }
-  void        SetTrackFilterMaskComplementary(ULong_t bit) {   fTrackFilterMaskComplementary = bit ; }
+  ULong_t     GetTrackFilterMaskComplementary()  const { return fTrackFilterMaskComplementary       ; }
+  void        SetTrackFilterMaskComplementary(ULong_t bit) {    fTrackFilterMaskComplementary = bit ; }
   
   void        SwitchOnAODHybridTrackSelection()        { fSelectHybridTracks  = kTRUE  ; }
   void        SwitchOffAODHybridTrackSelection()       { fSelectHybridTracks  = kFALSE ; }
@@ -55,21 +58,25 @@ public:
   
 private:
   
-  AliVEvent * fOrgInputEvent;                   //! Original input event, not from filtering
+  AliVEvent * fOrgInputEvent;                   //!<! Original input event, not from filtering
   
-  Bool_t      fSelectHybridTracks;              // Select CTS tracks of type hybrid
-  Bool_t      fSelectPrimaryTracks;             // Select CTS tracks of type primary
-  ULong_t     fTrackFilterMask;                 // Track selection bit, for AODs (any difference with track status?)
-  ULong_t     fTrackFilterMaskComplementary;    // Complementary Track selection bit, for AODs in case hybrid option selected
-  Bool_t      fSelectFractionTPCSharedClusters; // Accept only TPC tracks with over a given fraction of shared clusters
-  Float_t     fCutTPCSharedClustersFraction;    // Fraction of TPC shared clusters to be accepted.
+  Bool_t      fSelectHybridTracks;              ///< Select CTS tracks of type hybrid
+  Bool_t      fSelectPrimaryTracks;             ///< Select CTS tracks of type primary
+  ULong_t     fTrackFilterMask;                 ///< Track selection bit, for AODs (any difference with track status?)
+  ULong_t     fTrackFilterMaskComplementary;    ///< Complementary Track selection bit, for AODs in case hybrid option selected
+  Bool_t      fSelectFractionTPCSharedClusters; ///< Accept only TPC tracks with over a given fraction of shared clusters
+  Float_t     fCutTPCSharedClustersFraction;    ///< Fraction of TPC shared clusters to be accepted.
 
+  /// Copy constructor not implemented.
+  AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; 
   
-  AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; // cpy ctor
-  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & r) ; // cpy assignment
+  /// Assignment operator not implemented.
+  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & r) ; 
   
-  ClassDef(AliCaloTrackAODReader,7)
-  
+  /// \cond CLASSIMP
+  ClassDef(AliCaloTrackAODReader,7) ;
+  /// \endcond
+
 } ;
 
 #endif //ALICALOTRACKAODREADER_H

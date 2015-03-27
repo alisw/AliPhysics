@@ -44,6 +44,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fCent(0),
 	fNJacek(0),	
 	fHMG(NULL),
+	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
 	fBin_hh(),
@@ -52,6 +53,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_cent(),
 	fh_vertex(),
 	fh_eta(),
+	fh_phi(),
+	fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
 	fh_vn_vn(),
@@ -94,6 +97,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fCent(0),
 	fNJacek(0),
 	fHMG(NULL),
+	fBin_Subset(),
 	fBin_h(),
 	fBin_k(),
 	fBin_hh(),
@@ -102,6 +106,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_cent(),
 	fh_vertex(),
 	fh_eta(),
+	fh_phi(),
+	fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
 	fh_vn_vn(),
@@ -146,6 +152,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fVertex(a.fVertex),
 	fCent(a.fCent),
 	fHMG(a.fHMG),
+	fBin_Subset(a.fBin_Subset),
 	fBin_h(a.fBin_h),
 	fBin_k(a.fBin_k),
 	fBin_hh(a.fBin_hh),
@@ -154,6 +161,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fh_cent(a.fh_cent),
 	fh_vertex(a.fh_vertex),
 	fh_eta(a.fh_eta),
+	fh_phi(a.fh_phi),
+	fh_Qvector(a.fh_Qvector),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
 	fh_vn_vn(a.fh_vn_vn),
@@ -186,6 +195,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 
 	// set AliJBin here // 
+	fBin_Subset .Set("Sub","Sub","Sub:%d", AliJBin::kSingle).SetBin(2);
 	fBin_h .Set("NH","NH","NH:%d", AliJBin::kSingle).SetBin(kNH);
 	fBin_k .Set("K","K","K:%d", AliJBin::kSingle).SetBin(nKL);
 
@@ -194,7 +204,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(6);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(9);
 
 	// set AliJTH1D here //
 	fh_cent
@@ -214,6 +224,16 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< TH1D("h_eta", "h_eta", 300, -15, 15 )
 		<< fHistCentBin
 		<< "END" ;
+	fh_phi
+		<< TH1D("h_phi", "h_phi", 300, -10, 10)
+		<< fHistCentBin << fBin_Subset
+		<< "END" ;
+	fh_Qvector
+		<< TH1D("h_QVector", "h_QVector", 300, -10, 10)
+		<< fHistCentBin << fBin_Subset
+		<< fBin_h 
+		<< "END" ;
+
 
 	fh_ntracks 
 		<< TH1D("h_tracks", "h_tracks", 1000, 0, 30000)
@@ -318,9 +338,11 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 					double QAReal = Get_Qn_Real( Eta_config[kSubA][0], Eta_config[kSubA][1], ih );
 					double QAImag = Get_Qn_Img(  Eta_config[kSubA][0], Eta_config[kSubA][1], ih );
 					QnA[ih]= TComplex(QAReal, QAImag);
+					fh_Qvector[fCBin][0][ih]->Fill( QnA[ih].Theta() );
 					double QBReal = Get_Qn_Real( Eta_config[kSubB][0], Eta_config[kSubB][1], ih );
 					double QBImag = Get_Qn_Img(  Eta_config[kSubB][0], Eta_config[kSubB][1], ih );
 					QnB[ih]= TComplex(QBReal, QBImag);
+					fh_Qvector[fCBin][1][ih]->Fill( QnB[ih].Theta() );	
 					QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
 	}
 	//-------------- Fill histos with below Values ----
@@ -415,6 +437,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[2][1] ;
 	TComplex V5V2starV3star = QnA[5] * QnB_star[2] * QnB_star[3] ;
 	TComplex V5V2starV3startv3_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[3][1];
+	TComplex V6V2star_3 = QnA[6] * TComplex::Power( QnB_star[2] , 3) ;
+	TComplex V6V3star_2 = QnA[6] * TComplex::Power( QnB_star[3], 2) ;
+	TComplex V7V2star_2V3star = QnA[7] * TComplex::Power( QnB_star[2] , 2) * QnB_star[3]; 
 
 
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
@@ -423,6 +448,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[3][fCBin]->Fill( V5V2starV3starv2_2.Re() );
 	fh_correlator[4][fCBin]->Fill( V5V2starV3star.Re() );
 	fh_correlator[5][fCBin]->Fill( V5V2starV3startv3_2.Re() );
+	fh_correlator[6][fCBin]->Fill( V6V2star_3.Re() );
+	fh_correlator[7][fCBin]->Fill( V6V3star_2.Re() );
+	fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re() ) ;
+
 	//
 	//
 
@@ -492,6 +521,8 @@ double AliJFFlucAnalysis::Get_Qn_Img(double eta1, double eta2, int harmonics)
 					Sub_Ntrk++;
 					double phi = itrack->GetTwoPiPhi();
 					Qn_img += TMath::Sin( nh * phi);
+					if( harmonics==2 && eta <0 ) fh_phi[fCBin][0]->Fill( phi );
+					if( harmonics==2 && eta >0 ) fh_phi[fCBin][1]->Fill( phi );
 			}
 		}
 		Qn_img /= Sub_Ntrk;
