@@ -292,11 +292,14 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   fRun = pEvent->GetRunNumber();
 /*  TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
   if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinUpEdge(RunBin)-0.5*runnumberaxis->GetBinLowEdge(RunBin);} */  
+
   GetCentralityAndVertex();
+
   if(!SelectEvent()) return;//events are rejected.
   if(fCollisionType==AliAnalysisTaskCorrelation3p::pp) FillHistogram("centVsZVertex",fMultiplicity,fVertex[2]);//only fill with selected events.
   if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb) FillHistogram("centVsZVertex",fCentralityPercentile,fVertex[2]);
   //initialize the period dependent cuts.
+
   UsePeriod();  
   //Fill Events/run histogram.
 //   FillHistogram("EventsperRun", fRunFillValue);
@@ -305,7 +308,8 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   fNTriggers=0;//Reset fNTriggers
   fNAssociated=0;//Reset fNAssociated
   //Fill all the tracks
-//   FillHistogram("centVsNofTracks",fCentralityPercentile, GetTracks(&allrelevantParticles, pEvent));
+   GetTracks(&allrelevantParticles, pEvent);
+//   FillHistogram("centVsNofTracks",fCentralityPercentile,);
   //Fill all the pi0 candidates if appropriate
   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0) GetPi0s(&allrelevantParticles, pEvent);
   
