@@ -10,6 +10,9 @@
 #include "TObject.h"
 
 class TBits;
+class TParticle;
+class AliUPCTrack;
+class AliUPCMuonTrack;
 
 class AliUPCEvent : public TObject
 {
