@@ -37,7 +37,7 @@
 //
 enum {kD0toKpi, kDplusKpipi, kDStarD0pi, kDsKKpi};
 enum {kBoth, kParticleOnly, kAntiParticleOnly};
-enum {kExpo=0, kThrExpo=5, kLinear, kPol2};
+enum {kExpo=0, kLinear, kPol2, kThrExpo=5};
 enum {kGaus=0, kDoubleGaus};
 
 

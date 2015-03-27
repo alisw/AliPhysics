@@ -50,7 +50,7 @@ ClassImp(AliSpectraBothEventCuts)
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.8),fUseAliPPVsMultUtils(false),
-fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),
+fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
 fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
@@ -178,129 +178,122 @@ void AliSpectraBothEventCuts::InitHisto()
 Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts* trackcuts,Bool_t isMC,Double_t mcZ,TH1F* managerhisteventcuts)
 {
   // Returns true if Event Cuts are selected and applied
-  fAOD = aod;
-  fTrackCuts = trackcuts;
-  fHistoCuts->Fill(kProcessedEvents);
-  if(managerhisteventcuts)
-	managerhisteventcuts->Fill(0);
-  fHistoRunNumbers->Fill(aod->GetRunNumber());
-  Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
-  if(!IsPhysSel)
-	return IsPhysSel;
-  if(fAnalysisUtils) // we check for pile-up
+	
+	fIsSelected =kFALSE;
+  	fAOD = aod;
+	if(!CheckifESDorAODEvent())
+		return kFALSE;
+  	fTrackCuts = trackcuts;
+  	fHistoCuts->Fill(kProcessedEvents);
+  	if(managerhisteventcuts)
+		managerhisteventcuts->Fill(0);
+	  fHistoRunNumbers->Fill(aod->GetRunNumber());
+  	Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
+  	if(!IsPhysSel)
+		return IsPhysSel;
+	  if(fAnalysisUtils&&(!fDotheeventcutsinmultselection)) // we check for pile-up
+	  {	
 		 IsPhysSel = (!fAnalysisUtils->IsPileUpEvent(fAOD));
-  if(!IsPhysSel)
-	return IsPhysSel;
+	}
+ 	 if(!IsPhysSel)
+		return IsPhysSel;
  	
-  if(isMC)	
-   	fHistoVtxalltriggerEventswithMCz->Fill(mcZ);
-   //loop on tracks, before event selection, filling QA histos
-  AliESDEvent* esdevent=0x0;
-  AliAODEvent* aodevent=0x0;
-  Bool_t isSDD=kFALSE;
-  TString nameoftrack(fAOD->ClassName());  
-    if(!nameoftrack.CompareTo("AliESDEvent"))
-    {
-		fAODEvent=AliSpectraBothTrackCuts::kESDobject;
+ 	 if(isMC)	
+   		fHistoVtxalltriggerEventswithMCz->Fill(mcZ);
+   	 if(fUseSDDPatchforLHC11a!=kDoNotCheckforSDD)
+		if(!CheckSDDPatchforLHC11a())
+			return kFALSE;
+
+    	fHistoCuts->Fill(kPhysSelEvents);
+   	if(managerhisteventcuts)
+		managerhisteventcuts->Fill(1);
+
+
+	if(fDotheeventcutsinmultselection)
+	{
+		const AliVVertex * vertex = fAOD->GetPrimaryVertex();
+ 	 	if(vertex)
+			fHistoVtxBefSel->Fill(vertex->GetZ());
+
+		if( CheckCentralityCut() && CheckMultiplicityCut() && CheckQVectorCut())
+			fIsSelected=kTRUE;
+		else
+			fIsSelected=kFALSE;	
 		
-		if(fUseSDDPatchforLHC11a!=kDoNotCheckforSDD)
-		{
-			esdevent=dynamic_cast<AliESDEvent*>(fAOD);
-			if(!esdevent)
-				return kFALSE;
-			if(esdevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
-				isSDD=kTRUE;
-		}	
+ 	 	
+ 	 	if(fIsSelected&&vertex)
+ 	 	{
+  			fHistoVtxAftSelwithoutZvertexCut->Fill(vertex->GetZ());
+      			if(isMC)
+        			fHistoVtxAftSelwithoutZvertexCutusingMCz->Fill(mcZ);	
+     			if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
+     			{
+				fHistoVtxAftSel->Fill(vertex->GetZ());
+     			}
+  		}
 	}
-	else if(!nameoftrack.CompareTo("AliAODEvent"))
+	else
 	{
-		fAODEvent=AliSpectraBothTrackCuts::kAODobject;
-		if(fUseSDDPatchforLHC11a!=kDoNotCheckforSDD)
-		{
-			aodevent=dynamic_cast<AliAODEvent*>(fAOD);
-			if(!aodevent)
-				return kFALSE;
-			if(aodevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
-				isSDD=kTRUE;	
-		}	
+   		const AliVVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated	
+ 	 	if(vertex)
+			fHistoVtxBefSel->Fill(vertex->GetZ());
+ 	 	if(CheckVtx())
+ 	 	{ //selection on vertex
+ 	 	  	fIsSelected=kTRUE;
+ 	 	}
+ 	 	if(fIsSelected&&vertex)
+ 	 	{
+  			fHistoVtxAftSelwithoutZvertexCut->Fill(vertex->GetZ());
+      			if(isMC)
+        			fHistoVtxAftSelwithoutZvertexCutusingMCz->Fill(mcZ);	
+     			if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
+     			{
+				fIsSelected=kTRUE;
+				fHistoVtxAftSel->Fill(vertex->GetZ());
+     			}
+    			else	
+    			{
+				fIsSelected=kFALSE;
+    			}	
+  		}
+  		if(fIsSelected)
+  		{
+			if( CheckCentralityCut() && CheckMultiplicityCut() && CheckQVectorCut())
+				fIsSelected=kTRUE;
+			else
+				fIsSelected=kFALSE;	
+  		}	
 	}
-	else
-		return false; 
-      if(fUseSDDPatchforLHC11a==kwithSDD&&isSDD==kFALSE)
-		return false;
-     if(fUseSDDPatchforLHC11a==kwithoutSDD&&isSDD==kTRUE)
-		return false;
-
-    fHistoCuts->Fill(kPhysSelEvents);
-   if(managerhisteventcuts)
-	managerhisteventcuts->Fill(1);
 
 
-
-
-   const AliVVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated	
-
-  if(vertex)
-	fHistoVtxBefSel->Fill(vertex->GetZ());
-  fIsSelected =kFALSE;
-  if(CheckVtx())
-   { //selection on vertex
-
-    fIsSelected=kTRUE;
-  }
-  if(fIsSelected&&vertex)
-  {
-  	fHistoVtxAftSelwithoutZvertexCut->Fill(vertex->GetZ());
-      	if(isMC)
-        	fHistoVtxAftSelwithoutZvertexCutusingMCz->Fill(mcZ);	
-     	if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
-     	{
-		fIsSelected=kTRUE;
-		fHistoVtxAftSel->Fill(vertex->GetZ());
-     	}
-    	else	
-    	{
-		fIsSelected=kFALSE;
-    	}	
-  }
-  if(fIsSelected)
-  {
-	if( CheckCentralityCut() && CheckMultiplicityCut() && CheckQVectorCut())
-		fIsSelected=kTRUE;
-	else
-		fIsSelected=kFALSE;	
-  }	
-
-
-
-  Int_t Nch=0;
-  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) 
-  {
-   	 AliVTrack* track =dynamic_cast<AliVTrack*>(fAOD->GetTrack(iTracks));
-   /* if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
-		track=dynamic_cast<AliVTrack*>(esdevent->GetTrack(iTracks));
-     else if (fAODEvent==AliSpectraBothTrackCuts::kAODobject)
-		track=dynamic_cast<AliVTrack*>(aodevent->GetTrack(iTracks));
-     else return false;*/
+  	Int_t Nch=0;
+  	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) 
+  	{
+   		 AliVTrack* track =dynamic_cast<AliVTrack*>(fAOD->GetTrack(iTracks));
+   	/* if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+			track=dynamic_cast<AliVTrack*>(esdevent->GetTrack(iTracks));
+		     else if (fAODEvent==AliSpectraBothTrackCuts::kAODobject)
+			track=dynamic_cast<AliVTrack*>(aodevent->GetTrack(iTracks));
+     	else return false;*/
      
-   	 if (!fTrackCuts->IsSelected(track,kFALSE)) 
-		continue;
-    	fHistoEtaBefSel->Fill(track->Eta());
-   	 if(fIsSelected)
-	{
-      		fHistoEtaAftSel->Fill(track->Eta());
-      		Nch++;
-    	}
-  }
-  if(fIsSelected)
-  {	
-  	fHistoNChAftSel->Fill(Nch);
-	fHistoCuts->Fill(kAcceptedEvents);
-	if(managerhisteventcuts)
-		managerhisteventcuts->Fill(2);
+   		 if (!fTrackCuts->IsSelected(track,kFALSE)) 
+			continue;
+  	  	fHistoEtaBefSel->Fill(track->Eta());
+  	 	 if(fIsSelected)
+		{
+      			fHistoEtaAftSel->Fill(track->Eta());
+      			Nch++;
+    		}
+  	}
+  	if(fIsSelected)
+  	{	
+  		fHistoNChAftSel->Fill(Nch);
+		fHistoCuts->Fill(kAcceptedEvents);
+		if(managerhisteventcuts)
+			managerhisteventcuts->Fill(2);
 
-  }	
-  return fIsSelected;
+	}	
+  	return fIsSelected;
 }
 
 //______________________________________________________
@@ -400,48 +393,47 @@ Bool_t AliSpectraBothEventCuts::CheckVtx()
 Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
- if ( fCentralityCutMax<0.0  &&  fCentralityCutMin<0.0 )  
-	return kTRUE;
-  Double_t cent=0;
-  Bool_t validcent=kFALSE;	
-  if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
-  {
-	
-	TString par1name("cent");
-	par1name+=fCentEstimator;
-	TParameter<Double_t>* par= dynamic_cast<TParameter<Double_t>*>(fAOD->FindListObject(par1name.Data()));
-	if(par)
-	{
-		validcent=kTRUE;
-		cent=par->GetVal();
-	}
+	 if ( fCentralityCutMax<0.0  &&  fCentralityCutMin<0.0 )  
+		return kTRUE;
+	  Double_t cent=0;
+	  Bool_t validcent=kFALSE;	
+	  if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+	  {
+		TString par1name("cent");
+		par1name+=fCentEstimator;
+		TParameter<Double_t>* par= dynamic_cast<TParameter<Double_t>*>(fAOD->FindListObject(par1name.Data()));
+		if(par)
+		{
+			validcent=kTRUE;
+			cent=par->GetVal();
+		}
 
-  }
-  if(!validcent)
-  {			
-  	if(fUseAliPPVsMultUtils)
-  	{
-		if(!fAliPPVsMultUtils)
-			fAliPPVsMultUtils=new AliPPVsMultUtils();
-		cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fAOD,fCentEstimator.Data());
-  	}	
-  	else
-  	{
-  		if(!fUseCentPatchAOD049)
-			cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
-  		else 
-			cent=ApplyCentralityPatchAOD049();
   	}
-  }	
-  fHistoCentrality->Fill(0.5,cent);	
-  if ( (cent < fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
-  {
-	 fHistoCentrality->Fill(1.5,cent);	
-  	return kTRUE;
-  }	   
-  fHistoCuts->Fill(kVtxCentral);
+  	if(!validcent)
+  	{			
+  		if(fUseAliPPVsMultUtils)
+  		{
+			if(!fAliPPVsMultUtils)
+				fAliPPVsMultUtils=new AliPPVsMultUtils();
+			cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fAOD,fCentEstimator.Data());
+  		}	
+  		else
+  		{
+  			if(!fUseCentPatchAOD049)
+				cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
+  			else 
+				cent=ApplyCentralityPatchAOD049();
+  		}
+  	}	
+  	fHistoCentrality->Fill(0.5,cent);	
+  	if ( (cent < fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
+  	{
+		 fHistoCentrality->Fill(1.5,cent);	
+  		return kTRUE;
+  	}	   
+  	fHistoCuts->Fill(kVtxCentral);
 
-  return kFALSE;
+  	return kFALSE;
 }
 
 //______________________________________________________
@@ -502,20 +494,21 @@ Bool_t AliSpectraBothEventCuts::CheckMultiplicityCut()
 	else
 		return kFALSE;	 
 
-   fHistoMultiplicty->Fill(0.5,Ncharged);
-   if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)
-   { 
-	fHistoMultiplicty->Fill(1.5,Ncharged);
-  	return kTRUE;
-   }
-  fHistoCuts->Fill(kVtxCentral);
-  return kFALSE;
+   	fHistoMultiplicty->Fill(0.5,Ncharged);
+   	if(Ncharged>=fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)
+   	{ 
+		fHistoMultiplicty->Fill(1.5,Ncharged);
+	  	return kTRUE;
+	 }
+	fHistoCuts->Fill(kVtxCentral);
+	return kFALSE;
 }
 
 //______________________________________________________
 Bool_t AliSpectraBothEventCuts::CheckQVectorCut()
 {
-	 if(fQVectorCutMin<0.0 && fQVectorCutMax<0.0)return kTRUE;
+	 if(fQVectorCutMin<0.0 && fQVectorCutMax<0.0)
+		return kTRUE;
   // Check qvector cut
   /// FIXME: Q vector
   // //Selection on QVector, before ANY other selection on the event
@@ -856,4 +849,50 @@ void AliSpectraBothEventCuts::AddMCProcessType(Int_t type,Int_t index)
 	if(index<fNMCProcessType)
 		fEventMCProcessType[index]=type;
 }
-
+//__________________________________________________________________________________________________________________________
+Bool_t AliSpectraBothEventCuts::CheckifESDorAODEvent()
+{
+	TString nameoftrack(fAOD->ClassName());  
+    	if(!nameoftrack.CompareTo("AliESDEvent"))
+    	{
+		fAODEvent=AliSpectraBothTrackCuts::kESDobject;	
+		return true;
+	}
+	else if(!nameoftrack.CompareTo("AliAODEvent"))
+	{
+		fAODEvent=AliSpectraBothTrackCuts::kAODobject;
+		return true;
+	}
+	else
+		return false; 
+}
+//______________________________________________________________________________________________________________________________
+Bool_t AliSpectraBothEventCuts::CheckSDDPatchforLHC11a()
+{
+	Bool_t isSDD=kFALSE;
+	if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+	{
+		AliESDEvent* esdevent=0x0;
+		esdevent=dynamic_cast<AliESDEvent*>(fAOD);
+		if(!esdevent)
+			return kFALSE;
+		if(esdevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
+			isSDD=kTRUE;
+	}		
+	else if(fAODEvent==AliSpectraBothTrackCuts::kAODobject)
+	{	
+		AliAODEvent* aodevent=0x0;
+		aodevent=dynamic_cast<AliAODEvent*>(fAOD);
+		if(!aodevent)
+			return kFALSE;
+		if(aodevent->GetFiredTriggerClasses().Contains("ALLNOTRD"))
+			isSDD=kTRUE;	
+	}	
+	else
+		return false;
+      	if(fUseSDDPatchforLHC11a==kwithSDD&&isSDD==kFALSE)
+		return false;
+    	if(fUseSDDPatchforLHC11a==kwithoutSDD&&isSDD==kTRUE)
+		return false;
+	return kTRUE;
+}

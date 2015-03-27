@@ -132,6 +132,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetAssociatedFromDetector(Int_t flag) { fAssociatedFromDetector = flag; }
     void   SetMCUseUncheckedCentrality(Bool_t flag) { fMCUseUncheckedCentrality = flag; }
     void   SetCheckCertainSpecies(Int_t species) { fCheckCertainSpecies = species; }
+    void   SetRemoveWeakDecaysInMC(Bool_t flag) { fRemoveWeakDecaysInMC = flag; }
     
     AliHelperPID* GetHelperPID() { return fHelperPID; }
     void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -153,6 +154,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
     void RemoveDuplicates(TObjArray* tracks);
     void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
+    void RemoveWeakDecaysInMC(TObjArray* tracks, TObject* mcObj);
     void SelectCharge(TObjArray* tracks);
     AliGenEventHeader* GetFirstHeader();
     Bool_t AcceptEventCentralityWeight(Double_t centrality);
@@ -251,10 +253,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons
     Bool_t fMCUseUncheckedCentrality; // use unchecked centrality (only applies to MC); default: kFALSE
     Int_t fCheckCertainSpecies;    // make eta,pt distribution of MC particles with the label of fCheckCertainSpecies, by default switched off (value: -1)
+    Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 48); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 49); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

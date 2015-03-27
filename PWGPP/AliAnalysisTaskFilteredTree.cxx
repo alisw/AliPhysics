@@ -730,6 +730,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++){
       AliESDtrack *track = esdEvent->GetTrack(iTrack);
       if(!track) continue;
+      if (track->GetTPCInnerParam()==NULL) continue;
       if(track->GetTPCInnerParam()) countLaserTracks++;      
       AliESDfriendTrack* friendTrack=NULL;
       // suppress beam background and CE random reacks

@@ -90,7 +90,7 @@ AliAnalysisTaskSE(),
   fMinPt(0.16),
   fMaxPt(1.0),
   fQcut(0),
-  fQLowerCut(0),
+  fQLowerCut(0.005),
   fNormQcutLow(0.15),
   fNormQcutHigh(0.2),
   fKupperBound(0),
@@ -299,7 +299,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fMinPt(0.16),
   fMaxPt(1.0),
   fQcut(0),
-  fQLowerCut(0),
+  fQLowerCut(0.005),
   fNormQcutLow(0.15),
   fNormQcutHigh(0.2),
   fKupperBound(0),
@@ -934,7 +934,7 @@ void AliFourPion::ParInit()
     fQupperBoundQinv3D = 0.6;
   }
   
-  fQLowerCut = 0.005;// was 0.005
+  //fQLowerCut = 0.005;
   fKupperBound = 1.0;
   //
   fKstepY[0] = 1.6;
@@ -1064,21 +1064,27 @@ void AliFourPion::ParInit()
     }
   }
 
-  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  fqOutFcn->FixParameter(0,-5.92014e-02);
-  fqOutFcn->FixParameter(1,3.94631);
-  fqOutFcn->FixParameter(2,-1.64167e+01);
-  fqOutFcn->FixParameter(3,4.52617e+01);
-  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  fqSideFcn->FixParameter(0,2.50516e-02);
-  fqSideFcn->FixParameter(1,5.57635e-01);
-  fqSideFcn->FixParameter(2,5.11656);
-  fqSideFcn->FixParameter(3,-1.11254e+01);
-  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3)",0,1.0);
-  fqLongFcn->FixParameter(0,1.52078e-02);
-  fqLongFcn->FixParameter(1,1.04319);
-  fqLongFcn->FixParameter(2,3.95044e-01);
-  fqLongFcn->FixParameter(3,8.70069e-01);
+  
+  // mean +- RMS
+  fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x - ([2] + [3]*x)",0,1.0);
+  fqOutFcn->FixParameter(0, 5.25711e-03);// mean
+  fqOutFcn->FixParameter(1, 2.07835);// mean
+  fqOutFcn->FixParameter(2, -1.82312e-03);// rms
+  fqOutFcn->FixParameter(3, 8.74446e-01);// rms
+  fqSideFcn = new TF1("fqSideFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) - ([4] + [5]*x)",0,1.0);
+  fqSideFcn->FixParameter(0, 1.47222e-02);// mean
+  fqSideFcn->FixParameter(1, 8.42044e-01);// mean
+  fqSideFcn->FixParameter(2, 2.82436);// mean
+  fqSideFcn->FixParameter(3, -5.47032);// mean
+  fqSideFcn->FixParameter(4, 1.92920e-03);// rms
+  fqSideFcn->FixParameter(5, 3.91368e-01);// rms
+  fqLongFcn = new TF1("fqLongFcn","[0] + [1]*x + [2]*pow(x,2) + [3]*pow(x,3) - ([4] + [5]*x)",0,1.0);
+  fqLongFcn->FixParameter(0, 1.94838e-02);// mean 
+  fqLongFcn->FixParameter(1, 9.22609e-01);// mean
+  fqLongFcn->FixParameter(2, 1.32699);// mean
+  fqLongFcn->FixParameter(3, -1.24812);// mean
+  fqLongFcn->FixParameter(4, -2.23316e-04);// rms
+  fqLongFcn->FixParameter(5, 3.98127e-01);// rms
   
 
   /////////////////////////////////////////////
@@ -3052,10 +3058,10 @@ void AliFourPion::UserExec(Option_t *)
 		    Int_t indexq2 = qinv12 / 0.005;
 		    if(indexq2 >=200) indexq2=199; 
 		    Float_t WSpectrum = 1.0;
-		    if(fCollisionType==0) {
-		      WSpectrum = HIJINGq2WeightsSC[indexq2];
-		      if(ch1!=ch2) WSpectrum = HIJINGq2WeightsMC[indexq2];
-		    }		    
+		    //if(fCollisionType==0) {
+		    //WSpectrum = HIJINGq2WeightsSC[indexq2];
+		    //if(ch1!=ch2) WSpectrum = HIJINGq2WeightsMC[indexq2];
+		    //}		    
 		    // momentum resolution
 		    for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 		      Float_t Rvalue = fRstartMC+Riter;
@@ -3365,7 +3371,7 @@ void AliFourPion::UserExec(Option_t *)
 		
 
 		
-		if(fMCcase && ENsum==6 && FilledMCpair12){// for momentum resolution and muon correction
+		if(fMCcase && ENsum==6 && FilledMCpair12 && q3>0.015){// for momentum resolution and muon correction
 		  if((fEvt+en3)->fTracks[k].fLabel < (fEvt+en3)->fMCarraySize){
 		    
 		    pVect3MC[0]=sqrt(pow((fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
@@ -3443,10 +3449,10 @@ void AliFourPion::UserExec(Option_t *)
 		    Int_t indexq3 = q3 / 0.005;
 		    if(indexq3 >=35) indexq3=34; 
 		    Float_t WSpectrum = 1;
-		    if(fCollisionType==0){
-		      WSpectrum = HIJINGq3WeightsSC[indexq3];
-		      if(ch1!=ch2 || ch1!=ch3) WSpectrum = HIJINGq3WeightsMC[indexq3];
-		    }
+		    //if(fCollisionType==0){
+		      //WSpectrum = HIJINGq3WeightsSC[indexq3];
+		      //if(ch1!=ch2 || ch1!=ch3) WSpectrum = HIJINGq3WeightsMC[indexq3];
+		    //}
 		    // 3-pion momentum resolution
 		    for(Int_t term=1; term<=5; term++){
 		      for(Int_t Riter=0; Riter<fRVALUES; Riter++){
@@ -3539,12 +3545,13 @@ void AliFourPion::UserExec(Option_t *)
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
 		  }else{
-		    /*if(KT4<=fKT4transition){
+		    if(KT4<=fKT4transition){
 		      if(ch1==ch2 && ch1==ch3 && ch1==ch4){
-		      ((TH2D*)fOutputList->FindObject("fQoutSum"))->Fill(q4, QoutSum);
-		      ((TH2D*)fOutputList->FindObject("fQsideSum"))->Fill(q4, QsideSum);
-		      ((TH2D*)fOutputList->FindObject("fQlongSum"))->Fill(q4, QlongSum);
-		      }}*/
+			((TH2D*)fOutputList->FindObject("fQoutSum"))->Fill(q4, QoutSum);
+			((TH2D*)fOutputList->FindObject("fQsideSum"))->Fill(q4, QsideSum);
+			((TH2D*)fOutputList->FindObject("fQlongSum"))->Fill(q4, QlongSum);
+		      }
+		    }
 		    if(fQdirectionBinning==1){
 		      if(QoutSum < fqOutFcn->Eval(q4)) fEDbin=0;
 		      else fEDbin=1;
@@ -3983,11 +3990,11 @@ void AliFourPion::UserExec(Option_t *)
 		      Int_t indexq4 = q4 / 0.005;
 		      if(indexq4 >=50) indexq4=49; 
 		      Float_t WSpectrum = 1.0;
-		      if(fCollisionType==0){
-			WSpectrum = HIJINGq4WeightsSC[indexq4];
-			if((ch1+ch2+ch3+ch4)==3 || (ch1+ch2+ch3+ch4)==1) WSpectrum = HIJINGq4WeightsMC1[indexq4];
-			if((ch1+ch2+ch3+ch4)==2) WSpectrum = HIJINGq4WeightsMC2[indexq4];
-		      }		      
+		      //if(fCollisionType==0){
+		      //WSpectrum = HIJINGq4WeightsSC[indexq4];
+		      //if((ch1+ch2+ch3+ch4)==3 || (ch1+ch2+ch3+ch4)==1) WSpectrum = HIJINGq4WeightsMC1[indexq4];
+		      //if((ch1+ch2+ch3+ch4)==2) WSpectrum = HIJINGq4WeightsMC2[indexq4];
+		      //}		      
 		      // 4-pion momentum resolution
 		      for(Int_t term=1; term<=13; term++){
 			for(Int_t Riter=0; Riter<fRVALUES; Riter++){

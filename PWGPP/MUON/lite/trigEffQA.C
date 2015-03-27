@@ -116,7 +116,7 @@ Int_t GetRunNumber(TString filePath)
 }
 
 //_____________________________________________________________________________
-Bool_t ChangeFilenames ( TObjArray &fileNameArray )
+TObjArray* ChangeFilenames ( const TObjArray &fileNameArray )
 {
   /// Use custom output
   /// We used to perform the QA on the MTR chamber efficiency
@@ -124,6 +124,8 @@ Bool_t ChangeFilenames ( TObjArray &fileNameArray )
   /// it is not that good for QA since we are dependent on the tracker status.
   /// In recent versions, the task also calculates the efficiency from all trigger tracks
   /// (including ghosts). Analyse this output instead.
+  TObjArray* outArray = new TObjArray(fileNameArray.GetEntries());
+  outArray->SetOwner();
   TString newBaseName = "trigChEff_ANY_Apt_allTrig.root";
   for ( Int_t ifile=0; ifile<fileNameArray.GetEntries(); ifile++ ) {
     TObjString* currObjString = static_cast<TObjString*>(fileNameArray.At(ifile));
@@ -143,13 +145,20 @@ Bool_t ChangeFilenames ( TObjArray &fileNameArray )
       newFilename = Form("%s/terminateRuns/%i/%s",dirName.Data(),runNum,newBaseName.Data());
     }
     if ( gSystem->AccessPathName(newFilename.Data()) ) {
-      printf("New output not found. Use the standard efficiency instead\n");
-      return kFALSE;
+      printf("New output not found in %s.\n", currFile.Data());
+      delete outArray;
+      outArray = 0x0;
+      break;
     }
-    else printf("Using re-built output in %s\n",newBaseName.Data());
-    currObjString->SetString(newFilename);
+    outArray->AddAt(new TObjString(newFilename),ifile);
   }
-  return kTRUE;
+
+  if ( outArray ) printf("Using re-built output in %s\n",newBaseName.Data());
+  else {
+    outArray = static_cast<TObjArray*>(fileNameArray.Clone());
+    printf("Using default output\n");
+  }
+  return outArray;
 }
 
 //_____________________________________________________________________________
@@ -990,8 +999,7 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
   
   // Instead of using the efficiency stored in the QA output
   // search for the new efficiency produced with trigger tracks only
-  TObjArray tmpArray = fileNameArray;
-  TObjArray* finalFileNameArray =  ChangeFilenames(tmpArray) ? &tmpArray : &fileNameArray;
+  TObjArray* finalFileNameArray =  ChangeFilenames(fileNameArray);
   
   TList outCanList, outList;
   TrigEffTrending(runNumArray, *finalFileNameArray, outCanList, outList);
@@ -1006,9 +1014,11 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
       }
     }
   }
-  
+
+  delete finalFileNameArray;
+
   if ( outFilename.IsNull() ) return;
-  
+
   TString outCanName = outFilename;
   outCanName.ReplaceAll(".root",".pdf");
   for ( Int_t ican=0; ican<outCanList.GetEntries(); ican++ ) {

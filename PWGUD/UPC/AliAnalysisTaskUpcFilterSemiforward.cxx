@@ -44,6 +44,7 @@
 #include "AliAODPid.h"
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
+#include "AliPIDResponse.h"
 
 // my headers
 #include "AliAnalysisTaskUpcFilterSemiforward.h"
@@ -62,7 +63,7 @@ ClassImp(AliAnalysisTaskUpcFilterSemiforward);
 //_____________________________________________________________________________
 AliAnalysisTaskUpcFilterSemiforward::AliAnalysisTaskUpcFilterSemiforward(const char *name)
  :AliAnalysisTaskSE(name),
-  fIsESD(0), fIsMC(0), fMuonCuts(0x0), fTriggerAna(0x0), fCutsList(0x0),
+  fIsESD(0), fIsMC(0), fMuonCuts(0x0), fTriggerAna(0x0), fCutsList(0x0), fPIDResponse(0x0),
   fHistList(0x0), fCounter(0x0), fTriggerCounter(0x0),
   fUPCEvent(0x0), fUPCTree(0x0)
 {
@@ -87,6 +88,7 @@ AliAnalysisTaskUpcFilterSemiforward::~AliAnalysisTaskUpcFilterSemiforward()
   if(fMuonCuts) {delete fMuonCuts; fMuonCuts = 0x0;}
   if(fTriggerAna) {delete fTriggerAna; fTriggerAna = 0x0;}
   if(fCutsList) {delete[] fCutsList; fCutsList=0x0;}
+  if(fPIDResponse) {delete fPIDResponse; fPIDResponse=0x0;}
 
 }//~AliAnalysisTaskUpcFilterSemiforward
 
@@ -103,6 +105,11 @@ void AliAnalysisTaskUpcFilterSemiforward::UserCreateOutputObjects()
   //trigger analysis for SPD FO fired chips in MC
   fTriggerAna = new AliTriggerAnalysis();
   fTriggerAna->SetAnalyzeMC( fIsMC );
+
+  //PID response, input handler from AliAnalysisTaskSE
+  //fPIDResponse = fInputHandler->GetPIDResponse();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) ( AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler() );
+  fPIDResponse = inputHandler->GetPIDResponse();
 
   //ESD track cuts
   if( fIsESD ) {
@@ -168,10 +175,13 @@ void AliAnalysisTaskUpcFilterSemiforward::UserCreateOutputObjects()
   //output histograms
   fHistList = new TList();
   fHistList->SetOwner();
-  fCounter = new TH1I("fCounter", "fCounter", 30, 1, 31);
+  fCounter = new TH1I("fCounter", "fCounter", 100, 1, 101);
   fHistList->Add(fCounter);
   fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 44000, 154000, 198000, NTRG+1, 0, NTRG+1);
   fHistList->Add(fTriggerCounter);
+
+  //errors in counter start at 51
+  if( !fPIDResponse ) fCounter->Fill( 51 ); // no PID response
 
   //output tree
   fUPCEvent  = new AliUPCEvent();
@@ -348,13 +358,14 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
   Int_t nmun=0, ncen=0;
   // AOD tracks loop
   for(Int_t itr=0; itr<aodEvent->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(itr));
+    AliAODTrack *trk = dynamic_cast<AliAODTrack *>(aodEvent->GetTrack(itr));
     if( !trk ) continue;
 
     //muon track
     if( trk->IsMuonTrack() ) {
 
       AliUPCMuonTrack *upcMuon = fUPCEvent->AddMuonTrack();
+      fCounter->Fill( 31 ); // 31 = added muon track
       upcMuon->SetPtEtaPhi( trk->Pt(), trk->Eta(), trk->Phi() );
       upcMuon->SetCharge( trk->Charge() );
       upcMuon->SetMatchTrigger( trk->GetMatchTrigger() );
@@ -373,6 +384,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
       if( trk->HasPointOnITSLayer(1) )                 { maskMan |= 1 << 1; }
       if( trk->GetStatus() & AliESDtrack::kITSrefit )  { maskMan |= 1 << 2; }
       if( trk->GetStatus() & AliESDtrack::kTPCrefit )  { maskMan |= 1 << 3; }
+      if( trk->GetTOFsignal() < 99999. && trk->GetTOFsignal() > 0. )  { maskMan |= 1 << 4; }
 
       //selection for at least one point in ITS and TPC refit
       //if( !(maskMan & (1 << 0)) && !(maskMan & (1 << 1)) ) continue;
@@ -397,6 +409,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
       if(!apid) continue;
 
       AliUPCTrack *upcTrack = fUPCEvent->AddTrack();
+      fCounter->Fill( 32 ); // 32 = added central track
       upcTrack->SetPxPyPz( pxpypz );
       upcTrack->SetMaskMan( maskMan );
       upcTrack->SetFilterMap( trk->GetFilterMap() );
@@ -409,6 +422,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
       upcTrack->SetTPCNclsF( trk->GetTPCNclsF() );
       upcTrack->SetTPCNclsS( trk->GetTPCnclsS() );
       upcTrack->SetITSClusterMap( trk->GetITSClusterMap() );
+      upcTrack->SetTOFsignal( trk->GetTOFsignal() );
 
       //array for DCA
       //trackArray->Clear("C");
@@ -445,7 +459,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
   }// AOD tracks loop
 
   //selection for at least one muon or central track
-  if( nmun + ncen < 1 ) return kFALSE;
+  //if( nmun + ncen < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;
@@ -462,12 +476,16 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunAOD()
   if(!dataZDCAOD) {PostData(2, fHistList); return kFALSE;}
 
   Bool_t znctdc = kFALSE, znatdc = kFALSE;
-  if( dataZDCAOD->GetZNCTime() != 0. ) znctdc = kTRUE;
-  if( dataZDCAOD->GetZNATime() != 0. ) znatdc = kTRUE;
+  //if( dataZDCAOD->GetZNCTime() != 0. ) znctdc = kTRUE;
+  //if( dataZDCAOD->GetZNATime() != 0. ) znatdc = kTRUE;
+  if( TMath::Abs(dataZDCAOD->GetZNCTime()) > 20. ) znctdc = kTRUE;
+  if( TMath::Abs(dataZDCAOD->GetZNATime()) > 20. ) znatdc = kTRUE;
   fUPCEvent->SetZNCtdc( znctdc );
   fUPCEvent->SetZNAtdc( znatdc );
   fUPCEvent->SetZPCtdc( kFALSE );
   fUPCEvent->SetZPAtdc( kFALSE );
+  fUPCEvent->SetZNCTime( dataZDCAOD->GetZNCTime() );
+  fUPCEvent->SetZNATime( dataZDCAOD->GetZNATime() );
 
   //SPD primary vertex in AOD
   AliAODVertex *vtx = aodEvent->GetPrimaryVertexSPD();
@@ -524,8 +542,10 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
   fCounter->Fill( 21 ); // 21 = ESD analyzed events
 
   if(fIsMC) {
+    //SPD FO fired chips
     fUPCEvent->SetNSPDfiredInner( fTriggerAna->SPDFiredChips(esdEvent,1,kFALSE,1) );
     fUPCEvent->SetNSPDfiredOuter( fTriggerAna->SPDFiredChips(esdEvent,1,kFALSE,2) );
+    fUPCEvent->SetFastOrFiredChips( (TBits*) &esdEvent->GetMultiplicity()->GetFastOrFiredChips() );
 
     RunESDMC();
   }
@@ -554,7 +574,8 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
     if( eTrack->HasPointOnITSLayer(1) )                 { maskMan |= 1 << 1; }
     if( eTrack->GetStatus() & AliESDtrack::kITSrefit )  { maskMan |= 1 << 2; }
     if( eTrack->GetStatus() & AliESDtrack::kTPCrefit )  { maskMan |= 1 << 3; }
-    if( eTrack->GetKinkIndex(0) > 0 )                   { maskMan |= 1 << 4; } // bit set if track is kink candidate
+    if( eTrack->GetTOFsignal() < 99999. && eTrack->GetTOFsignal() > 0. )  { maskMan |= 1 << 4; }
+    if( eTrack->GetKinkIndex(0) > 0 )                   { maskMan |= 1 << 5; } // bit set if track is kink candidate
 
     //selection for at least one point in ITS and TPC refit
     //if( !(maskMan & (1 << 0)) && !(maskMan & (1 << 1)) ) continue;
@@ -586,8 +607,9 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
 
     eTrack->GetPxPyPz(pxpypz);
 
-    //fill UPC track
+    //fill the UPC track
     AliUPCTrack *upcTrack = fUPCEvent->AddTrack();
+    fCounter->Fill( 32 ); // 32 = added central track
     upcTrack->SetPxPyPz( pxpypz );
     upcTrack->SetMaskMan( maskMan );
     upcTrack->SetFilterMap( filterMap );
@@ -601,6 +623,21 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
     upcTrack->SetTPCNclsS( eTrack->GetTPCnclsS() );
     upcTrack->SetITSchi2perNDF( eTrack->GetITSchi2()/((Double_t) eTrack->GetNcls(0)) );
     upcTrack->SetITSClusterMap( eTrack->GetITSClusterMap() );
+    upcTrack->SetTOFsignal( eTrack->GetTOFsignal() );
+
+    //TPC PID
+    // AliPID::EParticleType = { kElectron = 0,  kMuon = 1,  kPion = 2,  kKaon = 3,  kProton = 4 .... }
+    if( fPIDResponse && (maskMan & (1 << 3)) ) {
+      for(Int_t itype=0; itype<=4; itype++) {
+        upcTrack->SetNSigmasTPC( itype, fPIDResponse->NumberOfSigmasTPC( eTrack, (AliPID::EParticleType) itype ) );
+      }
+    }
+    //TOF PID
+    if( fPIDResponse && (maskMan & (1 << 4)) ) {
+      for(Int_t itype=0; itype<=4; itype++) {
+        upcTrack->SetNSigmasTOF( itype, fPIDResponse->NumberOfSigmasTOF( eTrack, (AliPID::EParticleType) itype ) );
+      }
+    }
 
     //DCA to default primary vertex
     eTrack->GetImpactParameters(b, cov);
@@ -630,6 +667,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
     if( !mTrack ) continue;
 
     AliUPCMuonTrack *upcMuon = fUPCEvent->AddMuonTrack();
+    fCounter->Fill( 31 ); // 31 = added muon track
     upcMuon->SetPtEtaPhi( mTrack->Pt(), mTrack->Eta(), mTrack->Phi() );
     upcMuon->SetCharge( mTrack->Charge() );
     upcMuon->SetMatchTrigger( mTrack->GetMatchTrigger() );
@@ -642,7 +680,7 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
   } //muon tracks loop
 
   //selection for at least one muon or central track
-  if( nmun + ncen < 1 ) return kFALSE;
+  //if( nmun + ncen < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;
@@ -658,16 +696,35 @@ Bool_t AliAnalysisTaskUpcFilterSemiforward::RunESD()
   if(!dataZDCESD) {PostData(2, fHistList); return kFALSE;}
 
   Bool_t znctdc = kFALSE, zpctdc = kFALSE, znatdc = kFALSE, zpatdc = kFALSE;
+  Int_t tdcsum[4] = {0,0,0,0};
+  Float_t znctime = 0., znatime = 0.;
   for(Int_t iz=0;iz<4;iz++) {
+    for(Int_t i=0; i<4; i++) tdcsum[i] += dataZDCESD->GetZDCTDCData(10+i,iz);
+    znctime += dataZDCESD->GetZDCTDCCorrected(10,iz);
+    znatime += dataZDCESD->GetZDCTDCCorrected(12,iz);
+  }
+  if( tdcsum[0] != 0 ) znctdc = kTRUE;
+  if( tdcsum[1] != 0 ) zpctdc = kTRUE;
+  if( tdcsum[2] != 0 ) znatdc = kTRUE;
+  if( tdcsum[3] != 0 ) zpatdc = kTRUE;
+/*
+
     if( dataZDCESD->GetZDCTDCData(10,iz) ) znctdc = kTRUE;
     if( dataZDCESD->GetZDCTDCData(11,iz) ) zpctdc = kTRUE;
     if( dataZDCESD->GetZDCTDCData(12,iz) ) znatdc = kTRUE;
     if( dataZDCESD->GetZDCTDCData(13,iz) ) zpatdc = kTRUE;
-  }
+
+*/
   fUPCEvent->SetZNCtdc( znctdc );
   fUPCEvent->SetZPCtdc( zpctdc );
   fUPCEvent->SetZNAtdc( znatdc );
   fUPCEvent->SetZPAtdc( zpatdc );
+  fUPCEvent->SetZNCtdcData( tdcsum[0] );
+  fUPCEvent->SetZPCtdcData( tdcsum[1] );
+  fUPCEvent->SetZNAtdcData( tdcsum[2] );
+  fUPCEvent->SetZPAtdcData( tdcsum[3] );
+  fUPCEvent->SetZNCTime( znctime );
+  fUPCEvent->SetZNATime( znatime );
 
   //SPD primary vertex in ESD
   const AliESDVertex *vtx = esdEvent->GetPrimaryVertexSPD();

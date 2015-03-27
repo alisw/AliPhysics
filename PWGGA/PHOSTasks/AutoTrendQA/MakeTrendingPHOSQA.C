@@ -97,42 +97,43 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   Double_t nraw, enraw, mass, emass, sigma, esigma;
   Int_t sm; TH1* hm;
   char name[20],leaf[20];
-    
+
+
   sm = 1;
   hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
-    
-  Float_t avPi0NumSM1   =-9999., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
-  Float_t avPi0NumErrSM1=-9999., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
+
+  Float_t avPi0NumSM1   =0., avPi0MassSM1   =-9999., avPi0SigmaSM1   =-9999.;
+  Float_t avPi0NumErrSM1=0., avPi0MassErrSM1=-9999., avPi0SigmaErrSM1=-9999.;
     
   sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
   ttree->Branch(name,&avPi0NumSM1,leaf);
     
   sprintf(name,"avPi0MassSM%d",sm); sprintf(leaf,"avPi0MassSM%d/F",sm);
   ttree->Branch(name,&avPi0MassSM1,leaf);
-    
+  
   sprintf(name,"avPi0SigmaSM%d",sm); sprintf(leaf,"avPi0SigmaSM%d/F",sm);
   ttree->Branch(name,&avPi0SigmaSM1,leaf);
-    
+  
   sprintf(name,"avPi0NumErrSM%d",sm); sprintf(leaf,"avPi0NumErrSM%d/F",sm);
   ttree->Branch(name,&avPi0NumErrSM1,leaf);
-    
+  
   sprintf(name,"avPi0MassErrSM%d",sm); sprintf(leaf,"avPi0MassErrSM%d/F",sm);
   ttree->Branch(name,&avPi0MassErrSM1,leaf);
-    
+  
   sprintf(name,"avPi0SigmaErrSM%d",sm); sprintf(leaf,"avPi0SigmaErrSM%d/F",sm);
   ttree->Branch(name,&avPi0SigmaErrSM1,leaf);
-    
-  FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
-    
-  avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
-  avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma;
-    
   
+  FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
+  
+  if(nEvents) avPi0NumSM1 = nraw/nEvents; avPi0MassSM1 = mass; avPi0SigmaSM1 = sigma;
+  if(nEvents) avPi0NumErrSM1 = enraw/nEvents; avPi0MassErrSM1 = emass; avPi0SigmaErrSM1 = esigma; 
+  
+
   sm = 2;
   hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
   
-  Float_t avPi0NumSM2   =-9999., avPi0MassSM2   =-9999., avPi0SigmaSM2   =-9999.;
-  Float_t avPi0NumErrSM2=-9999., avPi0MassErrSM2=-9999., avPi0SigmaErrSM2=-9999.;
+  Float_t avPi0NumSM2   =0., avPi0MassSM2   =-9999., avPi0SigmaSM2   =-9999.;
+  Float_t avPi0NumErrSM2=0., avPi0MassErrSM2=-9999., avPi0SigmaErrSM2=-9999.;
   
   sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
   ttree->Branch(name,&avPi0NumSM2,leaf);
@@ -154,15 +155,15 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   
   FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
   
-  avPi0NumSM2 = nraw/nEvents; avPi0MassSM2 = mass; avPi0SigmaSM2 = sigma;
-  avPi0NumErrSM2 = enraw/nEvents; avPi0MassErrSM2 = emass; avPi0SigmaErrSM2 = esigma;
+  if(nEvents) avPi0NumSM2 = nraw/nEvents; avPi0MassSM2 = mass; avPi0SigmaSM2 = sigma;
+  if(nEvents) avPi0NumErrSM2 = enraw/nEvents; avPi0MassErrSM2 = emass; avPi0SigmaErrSM2 = esigma;
   
-  
+
   sm = 3;
   hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
     
-  Float_t avPi0NumSM3   =-9999., avPi0MassSM3   =-9999., avPi0SigmaSM3   =-9999.;
-  Float_t avPi0NumErrSM3=-9999., avPi0MassErrSM3=-9999., avPi0SigmaErrSM3=-9999.;
+  Float_t avPi0NumSM3   =0., avPi0MassSM3   =-9999., avPi0SigmaSM3   =-9999.;
+  Float_t avPi0NumErrSM3=0., avPi0MassErrSM3=-9999., avPi0SigmaErrSM3=-9999.;
     
   sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
   ttree->Branch(name,&avPi0NumSM3,leaf);
@@ -184,14 +185,14 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   
   FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
     
-  avPi0NumSM3 = nraw/nEvents; avPi0MassSM3 = mass; avPi0SigmaSM3 = sigma;
-  avPi0NumErrSM3 = enraw/nEvents; avPi0MassErrSM3 = emass; avPi0SigmaErrSM3 = esigma;
+  if(nEvents) avPi0NumSM3 = nraw/nEvents; avPi0MassSM3 = mass; avPi0SigmaSM3 = sigma;
+  if(nEvents) avPi0NumErrSM3 = enraw/nEvents; avPi0MassErrSM3 = emass; avPi0SigmaErrSM3 = esigma;
   
   sm = 4;
   hm = (TH1*)listAnyInt->FindObject(Form("run%i_hPi0MassSM%iSM%i",runNumber,sm,sm));
   
-  Float_t avPi0NumSM4   =-9999., avPi0MassSM4   =-9999., avPi0SigmaSM4   =-9999.;
-  Float_t avPi0NumErrSM4=-9999., avPi0MassErrSM4=-9999., avPi0SigmaErrSM4=-9999.;
+  Float_t avPi0NumSM4   =0., avPi0MassSM4   =-9999., avPi0SigmaSM4   =-9999.;
+  Float_t avPi0NumErrSM4=0., avPi0MassErrSM4=-9999., avPi0SigmaErrSM4=-9999.;
   
   sprintf(name,"avPi0NumSM%d",sm); sprintf(leaf,"avPi0NumSM%d/F",sm);
   ttree->Branch(name,&avPi0NumSM4,leaf);
@@ -213,8 +214,8 @@ void MakeTrendingPHOSQA(const char* file="QAresults.root", Int_t runNumber, Bool
   
   FitPi0(hm, nraw, enraw, mass, emass, sigma, esigma);
   
-  avPi0NumSM4 = nraw/nEvents; avPi0MassSM4 = mass; avPi0SigmaSM4 = sigma;
-  avPi0NumErrSM4 = enraw/nEvents; avPi0MassErrSM4 = emass; avPi0SigmaErrSM4 = esigma;
+  if(nEvents) avPi0NumSM4 = nraw/nEvents; avPi0MassSM4 = mass; avPi0SigmaSM4 = sigma;
+  if(nEvents) avPi0NumErrSM4 = enraw/nEvents; avPi0MassErrSM4 = emass; avPi0SigmaErrSM4 = esigma;
   
   
   //---------------------------------------------------------------------------------------------------
@@ -240,7 +241,8 @@ void FitPi0(TH1* h, Double_t &nraw, Double_t &enraw,
     nraw = enraw = 0;
     mass = emass = 0;
     sigma = esigma = 0;
-    
+
+    if(!h) return;
     if (h->GetEntries() == 0) return;
     
     if (rebin > 1) h->Rebin(rebin);

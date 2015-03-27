@@ -185,13 +185,13 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
 
     for(int itype = 0; itype < 5; itype++){
       for(const char **patchtype = patchtypes; patchtype < patchtypes + 2; ++patchtype){
-        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row)", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
-        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 100, 1., 4.);
-        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s", *patchtype, fgkTriggerTypeNames[itype].Data()), 200, 0., 200, 200, 0., 200);
+        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
+        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches;#eta;#phi", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 100, 1., 4.);
+        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", *patchtype, fgkTriggerTypeNames[itype].Data()), 2000, 0., 2000, 200, 0., 200);
       }
     }
-    fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches", 64, -0.5, 63.5);
-    fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches", 64, -0.5, 63.5);
+    fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
+    fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches;bit nr", 64, -0.5, 63.5);
     fOutput->Add(fQAHistos->GetListOfHistograms());
     PostData(1, fOutput);
   }
@@ -237,14 +237,15 @@ Bool_t AliEmcalTriggerMaker::Run()
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
 
+  // zero the arrays
+  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
+  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
+  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
+
   // first run over the patch array to compose a map of 2x2 patch energies
   // which is then needed to construct the full patch ADC energy
   // class is not empty
   if (fCaloTriggers->GetEntries() > 0) {
-    // zero the arrays
-    memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-    memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
-    memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 
     // go throuth the trigger channels
     while (fCaloTriggers->Next()) {
@@ -694,7 +695,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     TString patchtype = isOfflineSimple ? "Offline" : "Online";
     fQAHistos->FillTH2(Form("RCPos%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), globCol, globRow);
     fQAHistos->FillTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), centerGeo.Eta(), centerGeo.Phi());
-    fQAHistos->FillTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), adcAmp, trigger->GetPatchE());
+    fQAHistos->FillTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), isOfflineSimple ? adcOfflineAmp : adcAmp, trigger->GetPatchE());
     // Redo checking of found trigger bits after masking of unwanted triggers
     for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
       if(tBits & (1 << ibit)){
@@ -887,7 +888,7 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
       if(row + ipos >= kPatchRows) continue;    // boundary check
       for(int jpos = 0; jpos < 2; jpos++){
         if(col + jpos >= kPatchCols) continue;  // boundary check
-        const Char_t &l0times = fLevel0TimeMap[col + jpos][row + ipos];
+        Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
         if(l0times > 7 && l0times < 10) nvalid++;
       }
     }

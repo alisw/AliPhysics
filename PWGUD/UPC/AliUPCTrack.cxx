@@ -18,13 +18,14 @@ AliUPCTrack::AliUPCTrack()
   fCharge(0), fMaskMan(0), fFilterMap(0), fChi2perNDF(0),
   fTPCmomentum(0), fTPCsignal(0), fTPCncls(0),
   fTPCrows(0), fTPCnclsF(0), fTPCnclsS(0),
-  fITSchi2perNDF(0), fITSClusterMap(0)
+  fITSchi2perNDF(0), fITSClusterMap(0), fTOFsignal(0.)
 {
 
   // Default constructor
 
   for(Int_t i=0; i<2; i++) {fDZ[i] = 0.; fdzSPD[i] = 0.; fdzIP[i] = 0.;}
   for(Int_t i=0; i<3; i++) {fP[i] = 0.; fCov[i] = 0.; fCovSPD[i] = 0.; fCovIP[i] = 0.;}
+  for(Int_t i=0; i<5; i++) {fNSigmasTPC[i] = -9999.; fNSigmasTOF[i] = -9999.;}
 }
 
 //_____________________________________________________________________________
@@ -34,6 +35,7 @@ void AliUPCTrack::Clear(Option_t *)
 
   fMaskMan = 0;
   fFilterMap = 0;
+  for(Int_t i=0; i<5; i++) {fNSigmasTPC[i] = -9999.; fNSigmasTOF[i] = -9999.;}
 }
 
 //_____________________________________________________________________________

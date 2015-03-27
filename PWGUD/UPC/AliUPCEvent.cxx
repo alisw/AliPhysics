@@ -11,6 +11,7 @@
 #include "TString.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
+#include "TBits.h"
 
 #include "AliUPCTrack.h"
 #include "AliUPCMuonTrack.h"
@@ -30,10 +31,11 @@ AliUPCEvent::AliUPCEvent()
   fDataFilnam(0x0), fEvtNum(0), fRunNum(0),
   fVtxChi2perNDF(0), fVtxNContributors(0), fVtxTitle(0x0),
   fVtxSPDchi2perNDF(0), fVtxSPDnContributors(0), fVtxSPDtitle(0x0),
-  fNTracklets(0), fNSPDfiredInner(0), fNSPDfiredOuter(0),
+  fNTracklets(0), fNSPDfiredInner(0), fNSPDfiredOuter(0), fFOmap(0x0),
   fV0ADecision(0), fV0CDecision(0), fBBtriggerV0C(0), fBBFlagV0C(0),
   fZNCEnergy(0), fZPCEnergy(0), fZNAEnergy(0), fZPAEnergy(0),
   fZNCtdc(0), fZPCtdc(0), fZNAtdc(0), fZPAtdc(0),
+  fZNCtdcData(0), fZPCtdcData(0), fZNAtdcData(0), fZPAtdcData(0), fZNCTime(0), fZNATime(0),
   fUPCTracks(0x0), fNtracks(0), fUPCMuonTracks(0x0), fNmuons(0),
   fMCParticles(0x0), fNmc(0)
 {
@@ -324,6 +326,57 @@ void AliUPCEvent::GetPrimaryVertexMC(Float_t *pos) const
   // get generated primary vertex
 
   for(Int_t i=0; i<3; i++) pos[i] = fVtxMCpos[i];
+}
+
+//_____________________________________________________________________________
+Bool_t AliUPCEvent::Get0SMB(void) const
+{
+  // get trigger input 0SMB
+
+  if( fNSPDfiredInner + fNSPDfiredOuter >= 1 ) return kTRUE;
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliUPCEvent::Get0SH1(void) const
+{
+  // get trigger input 0SH1
+
+  if( fNSPDfiredOuter >= 7 ) return kTRUE;
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliUPCEvent::Get0STP(void) const
+{
+  // get trigger input 0STP
+  // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/0STPTrigger
+
+  if(!fFOmap) return kFALSE;
+
+  Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
+  Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+
+  for (Int_t i=0; i<400; ++i)
+    if (fFOmap->TestBitNumber(i))
+      ++vPhiInner[i/20];
+
+  for (Int_t i=400; i<1200; ++i)
+    if (fFOmap->TestBitNumber(i))
+      ++vPhiOuter[(i-400)/20];
+
+  Int_t fired(0);
+  for (Int_t i=0; i<10; ++i) {
+    for (Int_t j=0; j<2; ++j) {
+      const Int_t k(2*i+j);
+      fired += (   (vPhiOuter[k]    || vPhiOuter[k+1]       || vPhiOuter[k+2])
+                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] || vPhiOuter[(k+22)%40])
+                && (vPhiInner[i]    || vPhiInner[i+1])
+                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+    }
+  }
+  return fired;
+
 }
 
 //_____________________________________________________________________________

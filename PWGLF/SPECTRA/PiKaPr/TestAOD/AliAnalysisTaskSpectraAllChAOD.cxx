@@ -75,7 +75,8 @@ fDCAzCut(999999.),
 fQst(1),
 fQtrk(0),
 fQgenType(0),
-fDoCentrSystCentrality(0)
+fDoCentrSystCentrality(0),
+fEtaGap(0.5)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -317,7 +318,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       if(dcaz >= fDCAzCut) continue;
 
       //if the q vector is done using the TPC, we avoid overlap
-      if (fVZEROside==2 && TMath::Abs(track->Eta())<0.5)continue;
+      if (fEtaGap>0. && TMath::Abs(track->Eta())<fEtaGap)continue;
 
       //pt     cent    Q vec     IDrec     IDgen       isph      y
       //      Double_t varTrk[8];
