@@ -46,12 +46,13 @@ class AliMCEvent;
 class AliAnalysisFilter;
 class AliJTrack;
 class AliJEventHeader;
+class TParticle;
 
 class AliJFFlucTask : public AliAnalysisTaskSE {
 
  public:
   AliJFFlucTask();
-  AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC);
+  AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t ExcludeWeakDecay);
   AliJFFlucTask(const AliJFFlucTask& ap);   
   AliJFFlucTask& operator = (const AliJFFlucTask& ap);
   virtual ~AliJFFlucTask();
@@ -76,6 +77,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void SetFFlucTaskName(TString taskname){fTaskName = taskname;};
   TString GetFFlucTaskName(){return fTaskName;};
   void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
+  Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
 
  private:
   TString fTaskName;
@@ -85,6 +87,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   double fEta_min;
   double fEta_max;
   Bool_t IsMC;
+  Bool_t ExcludeWeakDecay;
   TClonesArray * fInputList;  // tracklist  
   AliJFFlucAnalysis *fFFlucAna; // analysis code
   TDirectory *fOutput;     // output

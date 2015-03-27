@@ -79,6 +79,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		AliJHistManager * fHMG;
 
+		AliJBin fBin_Subset;
 		AliJBin fBin_h; 
 		AliJBin fBin_k;
 		AliJBin fBin_hh;
@@ -91,6 +92,9 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_vertex;
 		AliJTH1D fh_pt; // for pt dist of tracks 
 		AliJTH1D fh_eta; // for eta dist of tracks
+		AliJTH1D fh_phi; // for phi dist [ic][isub]
+		AliJTH1D fh_Qvector; // for Q-Vector dist [ic][isub][ih]
+
 		AliJTH1D fh_ntracks; // for number of tracks dist
 		AliJTH1D fh_vn;  // single vn^k  array [ih][ik][iCent]
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
