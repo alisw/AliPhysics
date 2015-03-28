@@ -91,8 +91,11 @@ void OneBin(Int_t bin,
 
 void Interpolate(const TString& trigger="INEL")
 {
-  gROOT->SetMacroPath(Form("%s:%s", gROOT->GetMacroPath(),
-			   "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dndeta"));
+  if (gSystem->Getenv("$FWD"))
+    fwd = gSystem->Getenv("$FWD");
+  else 
+    fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
+  gROOT->SetMacroPath(Form("%s/dndeta:%s", gROOT->GetMacroPath(),fwd));
 
   if (!gROOT->GetClass("Drawer"))  gROOT->LoadMacro("Drawer.C+");
 

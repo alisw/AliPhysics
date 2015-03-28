@@ -17,7 +17,8 @@ struct SysErrorAdder
     kTriggerFill = 1001, // 3144
     kMergingFill = 3001, // 3001,
     kDensityFill = 3002, // 3002,
-    kEmpiricalFill = 3144 // 3244
+    kEmpiricalFill = 3144, // 3244
+    kHadronFill = 3244
   };
   TString fSys;
   UShort_t fSNN;
@@ -115,6 +116,13 @@ struct SysErrorAdder
     ModError(gse, id, kEmpiricalFill, l);
     return id;
   }
+  virtual Int_t MakeHadron(GraphSysErr* gse, TLegend* l) const
+  {
+    if (GetHadron(4) <= 0) return -1;
+    Int_t id = gse->DeclarePoint2Point("Hadron chemistry", true); 
+    ModError(gse, id, kHadronFill, l);
+    return id;
+  }
   /** 
    * @return The systematic error from merging 
    */
@@ -126,7 +134,16 @@ struct SysErrorAdder
   /** 
    * @return The systematic error from empirical correction 
    */
-  virtual Double_t GetEmpirical() const { return 0.05; }
+  virtual Double_t GetEmpirical() const { return 0.061; }
+  /** 
+   * @return The systematic error from empirical correction 
+   */
+  virtual Double_t GetHadron(Double_t eta) const
+  {
+    Double_t ret = (eta >= 3.6 ? 0.02 : 0);
+    /// Printf("Eta=%f -> %f", eta, ret);
+    return ret;
+  }
   /** 
    * Get trigger systematic error 
    * 
@@ -161,6 +178,7 @@ struct SysErrorAdder
     Int_t idMerge = MakeMerging(gse, l); 
     Int_t idDens  = MakeDensity(gse, l); 
     Int_t idEmp   = MakeEmpirical(gse, l);
+    Int_t idHad   = MakeHadron(gse, l);
 
     Int_t cnt = 0;
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
@@ -177,6 +195,7 @@ struct SysErrorAdder
       if (idMerge>=0) gse->SetSysError(idMerge, cnt, ex, GetMerging());
       if (idDens >=0) gse->SetSysError(idDens,  cnt, ex, GetDensity());
       if (idEmp  >=0) gse->SetSysError(idEmp,   cnt, ex, GetEmpirical());
+      if (idHad  >=0) gse->SetSysError(idHad,   cnt, ex, GetHadron(x));
       cnt++;
     }
     return gse;
@@ -330,7 +349,7 @@ struct CENTAdder : public SysErrorAdder
    */
   virtual void GetTrigger(Double_t& low, Double_t& high) const
   {
-    low = high = (fCent/100) * (fMax-fMin) + fMin;
+    low = high = ((fCent-2.5)/100) * (fMax-fMin) + fMin;
     // Printf("Trigger error for centrality = %f -> %f", fCent, low);
   }
   /** 
@@ -353,8 +372,6 @@ struct CENTAdder : public SysErrorAdder
     Double_t    low    = first->String().Atof();
     Double_t    high   = second->String().Atof();
     fCent              = (low+high)/2;
-    Printf("Centrality from %s -> [%f,%f] -> %f", h->GetName(), 
-	   low, high, fCent);
     return fCent;
   }
   /** 
