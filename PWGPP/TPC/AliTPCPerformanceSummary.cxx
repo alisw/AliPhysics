@@ -157,7 +157,7 @@ void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const 
     
     if (!outfile) return;
     TTreeSRedirector* pcstream = 0;
-    pcstream = new TTreeSRedirector(outfile);
+    pcstream = new TTreeSRedirector(outfile,"recreate");
     if (!pcstream) return;
     WriteToTTreeSRedirector(pTPC, pTPCgain, pMatch, pPull, pConstrain, pcstream, run);
     if (pcstream) { delete pcstream; pcstream = 0; }    
@@ -1060,11 +1060,13 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       "slopeCTPCnclErr="<< slopeCTPCnclErr;
     //
     // Get ncl:sector map estimator without having ncl map
-    //
-    TH3F * hisNclpos = dynamic_cast<TH3F*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
-    TH3F * hisNclneg = dynamic_cast<TH3F*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
-    TH3F * hisNcl= 0;
+    TH3D * hisNclpos = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
+    TH3D * hisNclneg = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
+    TH3D * hisNcl= 0;
     //new TH3F(*hisNclpos);
+    //
+    //
+    // 1.) Profile estimator
     //
     static TGraphErrors * graphNclPhiProfile[5]={0};
     static TGraphErrors * graphNclPhiProfileSector[6]={0};
@@ -1072,12 +1074,12 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     Double_t vecNclSector[18];
     Double_t vecSector[18];
 
-    hisNcl=new TH3F(*hisNclpos);
+    hisNcl=new TH3D(*hisNclpos);
     hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
     graphNclPhiProfile[0]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
     hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
     graphNclPhiProfile[2]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl=new TH3F(*hisNclneg);
+    hisNcl=new TH3D(*hisNclneg);
     hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
     graphNclPhiProfile[1]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
     hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
@@ -1086,7 +1088,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       //
     Int_t nbins=graphNclPhiProfile[0]->GetN();
     for (Int_t igr=0;igr<nbins; igr++){      
-      graphNclPhiProfile[0]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4)%nbins]/TMath::Pi();   // correct phi for the mean curvature
+      graphNclPhiProfile[0]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4)%nbins]/TMath::Pi();   // correct phi for the mean curvature and express it in the sector coordinates
       graphNclPhiProfile[1]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4)%nbins]/TMath::Pi();
       graphNclPhiProfile[2]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4+nbins)%nbins]/TMath::Pi();
       graphNclPhiProfile[3]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4+nbins)%nbins]/TMath::Pi();
@@ -1117,9 +1119,32 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       graphNclPhiProfileSector[igr]->SetMarkerColor(1+igr);
     } 
     (*pcstream)<<"tpcQA"<<
-      "grNclSectorC.="<<graphNclPhiProfile[4]<<
-      "grNclSectorA.="<<graphNclPhiProfile[5];
+      "grNclSectorC.="<<graphNclPhiProfileSector[4]<<
+      "grNclSectorA.="<<graphNclPhiProfileSector[5];
     //
+    // 2.) As an estimator most probable value of the ncl/nclfindable used
+    //
+    static TGraphErrors * graphNclMostProbPhiProfile[5]={0};
+    static TGraphErrors * graphNclMostProbPhiProfileSector[5]={0};
+
+    for (Int_t igr=0; igr<4; igr++){
+      TVectorD vecPhi(nbins);
+      TVectorD vecMostProb(nbins);
+      hisNcl= ((igr%2==0)) ?  new TH3D(*hisNclpos) : new TH3D(*hisNclneg);   // track sign
+      if (igr<2) {
+	hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);   // A side
+      }else{
+	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2); // C side
+      }
+      for (Int_t ibin=1; ibin<=nbins; ibin++){
+	
+      }
+      delete hisNcl;
+      hisNcl=0;
+    }
+
+
+
     return 0;
 }
 
