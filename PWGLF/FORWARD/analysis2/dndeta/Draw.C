@@ -7,8 +7,11 @@ void Draw(const TString&  system,
 	  Bool_t          empirical=true,
 	  Bool_t          symmetrice=false)
 {
-  gROOT->SetMacroPath(Form("%s:%s", gROOT->GetMacroPath(),
-			   "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dndeta"));
+  if (gSystem->Getenv("$FWD"))
+    fwd = gSystem->Getenv("$FWD");
+  else 
+    fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
+  gROOT->SetMacroPath(Form("%s/dndeta:%s", gROOT->GetMacroPath(),fwd));
 
   if (!gROOT->GetClass("Drawer"))  gROOT->LoadMacro("Drawer.C+g");
 

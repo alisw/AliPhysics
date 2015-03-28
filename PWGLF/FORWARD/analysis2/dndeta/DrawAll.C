@@ -10,8 +10,12 @@ const char*  APTrg() { const char* x[] = { "CENTV0X", 0 };            return x;}
 
 void DrawAll(UShort_t which=1)
 {
-  gROOT->SetMacroPath(Form("%s:%s", gROOT->GetMacroPath(),
-			   "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dndeta"));
+  const char* fwd = 0;
+  if (gSystem->Getenv("$FWD"))
+    fwd = gSystem->Getenv("$FWD");
+  else 
+    fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
+  gROOT->SetMacroPath(Form("%s/dndeta:%s", gROOT->GetMacroPath(), fwd));
 
   if (!gROOT->GetClass("Drawer"))  gROOT->LoadMacro("Drawer.C+g");
 

@@ -52,8 +52,12 @@ struct Drawer {
    */
   static void LoadOther() { 
     if (gROOT->GetClass("RefData")) return;
-
-    const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+    const char* fwd = 0;
+    if (gSystem->Getenv("$FWD"))
+      fwd = gSystem->Getenv("$FWD");
+    else 
+      fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
+    gROOT->SetMacroPath(Form("%s:%s", gROOT->GetMacroPath(),fwd));
     TString path(gROOT->GetMacroPath());
     // if (!path.Contains(fwd)) {
     path.Append(Form(":%s", fwd));
@@ -1834,9 +1838,9 @@ struct Drawer {
 	      TString    c1     = CentLimitName(false, s1.Atof());
 	      TString    c2     = CentLimitName(false, s2.Atof());
 	      nm = Form("%s-%s", c1.Data(), c2.Data());
-	      Printf("Got name=%s t1=%s t2=%s c1=%s c2=%s -> %s",
-		     ct.Data(), t1.Data(), t2.Data(), s1.Data(), s2.Data(),
-		     nm.Data());
+	      // Printf("Got name=%s t1=%s t2=%s c1=%s c2=%s -> %s",
+	      //        ct.Data(), t1.Data(), t2.Data(), s1.Data(), s2.Data(),
+	      //        nm.Data());
 	      tokens->Delete();
 	      // Printf("%s (%s %s -> %s %s)", nm.Data(),
 	      //        t1.Data(), c1.Data(),

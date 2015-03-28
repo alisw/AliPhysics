@@ -17,11 +17,13 @@ WithSysError(const TString&  system,
 	     Bool_t          empirical=true)
 {
   // --- Search path -------------------------------------------------
-  const char* fwd =
-    gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
+  const char* fwd = 0;
+  if (gSystem->Getenv("$FWD"))
+    fwd = gSystem->Getenv(G"$FWD");
+  else 
+    fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
   gROOT->SetMacroPath(Form("%s:%s/dndeta:%s/gse:%s/scripts",
-			   gROOT->GetMacroPath(),
-			   fwd, fwd, fwd));
+			   gROOT->GetMacroPath(), fwd, fwd, fwd));
   gSystem->AddIncludePath(Form("-I%s/dndeta -I%s/gse", fwd,fwd));
 
   // --- Load code ---------------------------------------------------
@@ -182,7 +184,7 @@ WithSysError(const TString&  system,
   c->Print(Form("%s.png", base.Data()));
 
   if (trigLegTitle.IsNull()) return;
-
+  
   frame->SetMinimum(5);
   frame->SetMaximum(3*frame->GetMaximum());
   c->SetLogy();
