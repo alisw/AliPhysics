@@ -464,10 +464,10 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
       if (tracks) trackArray = tracks->GetArray();
 
       if (trackArray) {
-        AliVTrack* daughter = 0;
+        AliAODTrack* daughter = 0;
         TIter next(&daughters);
-        while ((daughter = static_cast<AliVTrack*>(next()))) {
-          if (!trackArray->Contains(daughter)) {
+        while ((daughter = static_cast<AliAODTrack*>(next()))) {
+          if (!trackArray->Contains(daughter) || !daughter->IsHybridGlobalConstrainedGlobal()) {
             fHistTracksNotInJetsPt->Fill(daughter->Pt());
             fHistTracksNotInJetsEtaPhi->Fill(daughter->Eta(), daughter->Phi());
           }
@@ -530,6 +530,7 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::AddDaughters(AliAODRecoDecay* can
     else {
       if (!track->InheritsFrom("AliAODTrack")) {
         Printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.");
+        continue;
       }
       //Printf("Daughter pT = %.3f", track->Pt());
       daughters.AddLast(track);
