@@ -112,6 +112,12 @@ private:
   //********************************************
   Bool_t Init_TRU_offset()  ;
   Bool_t Init_SM_offset()   ;
+  
+  //********************************************
+  //convert AbsFastORIndex from type-A(B) to type-B(A)
+  //********************************************
+  Int_t ConvAbsFastORIndexA2B(  const Int_t idA) const  ;
+  Int_t ConvAbsFastORIndexB2A(  const Int_t idB) const  ;
 
   //********************************************
   //SM type
