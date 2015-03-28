@@ -12,6 +12,7 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TClass.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -25,6 +26,7 @@
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliEmcalJetUtility.h"
+#include "AliAODTrack.h"
 
 using std::cout;
 using std::endl;
@@ -63,6 +65,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fMCFlag(0),
   fGeneratorIndex(-1),
   fUtilities(0),
+  fFilterHybridTracks(kFALSE),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -113,6 +116,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fMCFlag(0),
   fGeneratorIndex(-1),
   fUtilities(0),
+  fFilterHybridTracks(kFALSE),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -235,6 +239,11 @@ void AliEmcalJetTask::FindJets()
       AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(iTracks));
 
       if (!t) continue;
+
+      if (fFilterHybridTracks) {
+        AliAODTrack* aodTrack = static_cast<AliAODTrack*>(t);
+        if (!aodTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      }
 
       if (t->Pt() < fMinJetTrackPt) continue;
       Double_t eta = t->Eta();
@@ -448,6 +457,14 @@ Bool_t AliEmcalJetTask::DoInit()
     if (!fTracks) {
       AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
       return 0;
+    }
+
+    if (fFilterHybridTracks) {
+      TClass* cl = fTracks->GetClass();
+      if (!cl->InheritsFrom("AliAODTrack")) {
+        AliWarning(Form("Track collection contains objects of type '%s' that does not derive from 'AliAODTrack'. The hybrid track filter will not be applied.", cl->GetName()));
+        fFilterHybridTracks = kFALSE;
+      }
     }
   }
 
@@ -704,4 +721,56 @@ Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::Pseudo
   }
 
   return 0;
+}
+
+//______________________________________________________________________________________
+Bool_t AliEmcalJetTask::IsLocked() const
+{
+  if (fLocked) {
+    AliFatal("Jet finder task is locked! Changing properties is not allowed."); 
+    return kTRUE;
+  } 
+  else {
+    return kFALSE;
+  }
+}
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SelectCollisionCandidates(UInt_t offlineTriggerMask)
+{
+  if(!fIsPSelSet) {
+    fIsPSelSet = kTRUE;
+    fOfflineTriggerMask = offlineTriggerMask;
+  }
+  else {
+    AliWarning("Manually setting the event selection for jet finders is not allowed! Using trigger=old_trigger | your_trigger");  
+    fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
+  }
+}
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SetRadius(Double_t r)            
+{ 
+  if (IsLocked()) return; 
+  fRadius = r; 
+  if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) {
+    AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet).");
+  }
+}
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SetType(Int_t t)                 
+{ 
+  if(IsLocked()) return; 
+  if (t==0) fJetType |= kFullJet; 
+  else if (t==1) fJetType |= kChargedJet; 
+  else if (t==2) fJetType |= kNeutralJet; 
+} // for backward compatibility only
+
+//______________________________________________________________________________________
+void AliEmcalJetTask::SelectPhysicalPrimaries(Bool_t s)    
+{ 
+  if(IsLocked()) return; 
+  if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim; 
+  else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim; 
 }
