@@ -36,7 +36,7 @@
 \newcommand{\tabref}[1]{Table~\ref{#1}}
 \newcommand{\figref}[1]{Figure~\ref{#1}}
 \newcommand{\DeltaMip}{\ensuremath\Delta_{\text{mip}}}
-\newcommand{\minitab}[2][l]{\begin{tabular}{#1}#2\end{tabular}}
+\newcommand{\minitab}[2][l]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
 % \newcommand{\dndetadphi}[1][]{{\ensuremath% 
 %     \ifx|#1|\else\left.\fi%
 %       \frac{\mathrm{d}^2\Nch{}}{\mathrm{d}\eta\mathrm{d}\varphi}
@@ -1371,12 +1371,8 @@ sizes.
     \textsuperscript{*}These
     entries are not directly calculated into the total. \newline
     \textsuperscript{**}These are estimated from the difference to the
-    empirical correction. \newline
-    \textsuperscript{***}The additional 2\% in the FMD1 region
-    should be added in quadrature and stems from the additional
-    sensitivity to the hadron chemistry discussed elsewhere
-    in \secref{sec:sub:sub:secmap}.} 
-  \small
+    empirical correction.}
+  \footnotesize
   \begin{tabular}[t]{|cc|c|cccc|cc|c|}
     \hline
     \headColor%
@@ -1437,7 +1433,7 @@ sizes.
     & \multicolumn{2}{c|}{1\%} 
     & 1\%\\ 
     \hline
-    \multicolumn{2}{|c|}{Secondary map\textsuperscript{*}\hspace*{3em}} 
+    \multicolumn{2}{|c|}{Secondary map\textsuperscript{*}\hspace*{4em}} 
     & n 
     & \multicolumn{7}{c|}{5-15\%\textsuperscript{**}}\\
     \hline
@@ -1452,47 +1448,45 @@ sizes.
     & 5\%?\\ 
     \altRowColor{}\cellcolor{white} 
     \multirow{-3}{*}{Empirical} 
-    & As--applied\textsuperscript{***} 
+    & As--applied
     & n 
-    & \multicolumn{4}{c|}{6.1\% (+2\% \FMD{1})} 
-    & \multicolumn{2}{c|}{6.1\% (+2\% \FMD{1})} 
+    & \multicolumn{4}{c|}{6.1\%} 
+    & \multicolumn{2}{c|}{6.1\%} 
     & 6.1\%\\ 
     \hline
+    \multicolumn{2}{|c|}{Hadron chemistry\hspace*{4em}}
+    & n 
+    & \multicolumn{4}{c|}{2\%(?)} 
+    & \multicolumn{2}{c|}{2\%(?)} 
+    & 2\%\\ 
+    \hline
+    \altRowColor\cellcolor{white}
     &   \INEL{}
     & 
-    &
-    &
-    &
-    &
+    & \multicolumn{4}{c|}{6.3\% (6.6\%)}
     & \multicolumn{2}{c|}{n/a}
     & n/a 
     \\
-    \altRowColor\cellcolor{white}
     & \INELGT{}
     & 
-    & 
-    & 
-    & 
-    & 
+    & \multicolumn{4}{c|}{6.3\% (6.6\%)}
     & \multicolumn{2}{c|}{n/a}
     & n/a \\
+    \altRowColor\cellcolor{white}
     & \NSD{}
     & 
-    & 
-    & 
-    & 
-    &
-    & 
-    & 
+    & \minitab[c]{6.6\%\\(6.9\%)}
+    & \minitab[c]{6.9\%\\(7.2\%)}
+    & \multicolumn{2}{c|}{\minitab[c]{6.6\%\\(6.9\%)}}
+    & \multicolumn{2}{c|}{\minitab[c]{6.6\%\\(6.9\%)}}
     & n/a \\
-    \altRowColor\cellcolor{white}
-    \multirow{-2}{*}{Total} 
+    \multirow{-4}{*}{Total} 
     & Centrality 
     & 
     & \multicolumn{4}{c|}{n/a} 
-    & 
-    &
-    & \\
+    & \minitab[c]{6.6--7.4\%\\(6.9--7.7\%)}
+    & \minitab[c]{6.9--8.7\%\\(7.2--8.9\%)}
+    & \minitab[c]{6.3--6.6\%\\(6.6--6.9\%)} \\
     \hline
   \end{tabular}
   \label{tab:syserr}
@@ -1528,6 +1522,9 @@ sizes.
     (see \secref{sec:sub:density_calculator}), and by varying the
     threshold cut and cut definitions (see \secref{sec:cuts}). 
   \end{description}
+\item[Secondary map] This row is mainly included for historical
+  reasons and apply only in the case where the $\SecMap$ correction is
+  applied to the data (see \secref{sec:sub:sub:secmap}). 
 \item[Empirical] \hbox{}\hfill 
   \begin{description}
   \item[Satellite] These are the systematic errors from the published
@@ -1546,9 +1543,12 @@ sizes.
     data in the this analysis. The error is discussed in
     \secref{sec:dndeta:sys:emp}.
   \end{description}
-\item[Secondary map] This row is mainly included for historical
-  reasons and apply only in the case where the $\SecMap$ correction is
-  applied to the data (see \secref{sec:sub:sub:secmap}). 
+\item[Hadron Chemistry] An additional 2\% in the \FMD{1} region should
+  be added in quadrature and stems from the additional sensitivity to
+  the hadron chemistry discussed elsewhere in
+  \secref{sec:sub:sub:secmap}.
+\FIXME{Note that the systematic error on the empirical correction
+  already contain 2-3\% error on this in the FMD region --- see \tabref{tab:satellite:syserrs}.} 
 \end{description}
 
 \subsubsection{Systematics error on the Empirical Correction} 
@@ -1627,7 +1627,7 @@ of 7.2\% in the high limit, and 3.6\% in the low limit.
  
 \begin{figure}[h!tbp]
   \centering
-  \figinput[.9\linewidth]{satellites_dndeta}
+  \figinput[.8\linewidth]{satellites_dndeta}
   \caption{Top shows the \ndndeta{} from satellite collisions after
     summing the 3 measurements, and adding the common systematics in
     quadrature \cite{Abbas:2013bpa}.  The bottom panel shows the
@@ -1671,7 +1671,71 @@ systematic error of empirical correction.
 
 \section{Result plots} 
 
-\FIXME{To come very soon}
+\subsection{\PbPbCol{}}
+
+\begin{table}
+  \caption{Parameters of analysis}
+  \centering
+  \begin{tabular}[t]{|rlc|}
+    \hline
+    \headColor{} 
+    \textbf{Parameter}
+    & \textbf{Description}
+    & \textbf{Value}\\
+    \hline 
+    $\IPz$ 
+    & interaction point $z$ 
+    & \unit[-10]{cm} -- \unit[+10]{cm}\\
+    \altRowColor{}
+    $\max{\delta\IPz}$ 
+    & Largest $\IPz$ uncertainty 
+    & \unit[0.2]{cm}\\
+    $\text{CENT}$ 
+    & Centrality estimator 
+    & \texttt{V0M}\\
+    \altRowColor{}
+    $\min{N_{\text{pileup,contrib}}}$ 
+    & Least number of pile--up contributors 
+    & 5\\
+    $\min{d_{\text{pileup}}}$ 
+    & Least pile-up distance 
+    & \unit[0.8]{cm}\\
+    \hline 
+    \altRowColor{}
+    $L_{\text{sharing}}$ 
+    & Low sharing cut 
+    & 0.15\\
+    $H_{\text{sharing}}$ 
+    & High sharing cut 
+    & $\Delta_p-1(\xi+\sigma)$ \\
+    \altRowColor{}
+    $T_{\text{poisson}}$ 
+    & Poisson threshold 
+    & $\Delta_p-1(\xi+\sigma)$ \\
+    $R_{\text{poisson}}$ 
+    & Poisson region size 
+    & $\unit[4]{sectors} \times \unit[32]{strips}$\\
+    \hline 
+    \altRowColor{}
+    Runs 
+    & \multicolumn{2}{r|}{138190 138225 138469 138666 138872 139038
+      139173 139329 139503}\\ 
+    \hline
+  \end{tabular}
+  \label{tab:param:pbpb}
+\end{table}
+\begin{figure}[htbp]
+  \centering
+  \figinput[\linewidth]{PbPb_2760_CENTV0M}
+  \caption{\dndeta{} result for \PbPbCol{} collisions at
+    $\usNN{PbPb}{2760}$ in centrality bins.  Open points are the
+    previously published result \cite{Abbas:2013bpa}. Shown are also
+    the systematic errors.}
+  \label{fig:PbPb:result}
+\end{figure}
+
+
+\FIXME{Central come very soon}
 
 
 %% === Section on energy loss fits ===================================
