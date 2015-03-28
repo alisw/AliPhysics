@@ -49,7 +49,9 @@ public:
                                          // converts local PHOS-module (x, z) coordinates to relId 
   void RelPosInAlice(Int_t AbsId, TVector3 &  pos) const ;             
                                          // gets the position of element (pad or Xtal) relative to Alice
-
+  void GetCrystalsEdges(Int_t mod, Float_t & xmin, Float_t &zmin, Float_t &xmax, Float_t &zmax) ;
+                                         // Reterns edges of crystal matrix in local frame  
+  
   void Local2Global(Int_t module, Float_t x, Float_t z, TVector3 &globaPos) const ;
 
   void TestSurvey(Int_t module, const Float_t *point, TVector3 &globaPos) const ; //method used in PHOS alignment check
