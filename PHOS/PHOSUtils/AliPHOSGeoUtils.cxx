@@ -290,6 +290,29 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
   
 }
 //____________________________________________________________________________
+void AliPHOSGeoUtils::GetCrystalsEdges(Int_t mod, Float_t & xmin, Float_t &zmin, Float_t &xmax, Float_t &zmax){
+  //return coordinated of crystal matrix edges in local frame
+  Int_t relid[4]={mod,0.,1.,1} ;
+  relid[0]=mod ;
+  //check if this is 1/2 of the module 
+  Bool_t halfMod=kFALSE ;
+  if(gGeoManager){
+    if (gGeoManager->CheckPath(Form("/ALIC_1/PHOH_%d",mod))){  
+      halfMod=kTRUE ;
+    }
+  }
+  else{ //hardcoded!
+     halfMod=(mod==4) ;
+  }
+  if(halfMod)
+    relid[2]=33 ;
+  RelPosInModule(relid,xmin,zmin) ; //coordinate of the corner cell
+  relid[2]=64 ;
+  relid[3]=56 ;
+  RelPosInModule(relid,xmax,zmax) ; //coordinate of the corner cell
+ 
+}
+//____________________________________________________________________________
 void AliPHOSGeoUtils::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & absId) const
 {
   // converts local PHOS-module (x, z) coordinates to absId 

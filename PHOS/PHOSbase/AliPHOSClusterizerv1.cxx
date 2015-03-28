@@ -1089,19 +1089,23 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
   TVector3 gposBadChannel; // global position of bad crystal
   TVector3 dR;
 
-  Float_t dist,minDist;
+  Float_t dist=0.,minDist=0.;
   Int_t relid[4]={0,0,0,0} ;
   TVector3 lpos ;
   for(Int_t iRP=0; iRP<fEMCRecPoints->GetEntries(); iRP++){
     rp = (AliPHOSEmcRecPoint*)fEMCRecPoints->At(iRP);
     //evaluate distance to border
     relid[0]=rp->GetPHOSMod() ;
+    relid[1]=0 ;
     relid[2]=1 ;
     relid[3]=1 ;
-    Float_t xcorner,zcorner;
-    fGeom->RelPosInModule(relid,xcorner,zcorner) ; //coordinate of the corner cell
+    Float_t xcorner=0,zcorner=0.;
+    Float_t xmin,xmax,zmin,zmax ;
+    fGeom->GetCrystalsEdges(rp->GetPHOSMod(),xmin, zmin, xmax, zmax) ;
     rp->GetLocalPosition(lpos) ;
-    minDist = 2.2+TMath::Min(-xcorner-TMath::Abs(lpos.X()),-zcorner-TMath::Abs(lpos.Z())); //2.2 - crystal size
+    Float_t minDistX = 2.2+TMath::Min(lpos.X()-xmin,xmax-lpos.X()); //2.2 - crystal size
+    Float_t minDistZ = 2.2+TMath::Min(lpos.Z()-zmin,zmax-lpos.Z()); //2.2 - crystal size
+    minDist=TMath::Min(minDistX,minDistZ) ;
     for(Int_t iBad=0; iBad<fgCalibData->GetNumOfEmcBadChannels(); iBad++) {
       fGeom->AbsToRelNumbering(badIds[iBad],relid)  ;
       if(relid[0]!=rp->GetPHOSMod()) //We can not evaluate global position directly since 
