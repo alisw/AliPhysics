@@ -174,7 +174,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
 		// histograms for rec photons tagged by Calo
 		TH2F				 				**fHistoPhotonPairPtconv;			//! array of histo for pairs vs. pt of converted photon
-		TH2F				 				**fHistoPhotonPairMixedEventPtconv;			//! array of histo for pairs vs. pt of converted photon
+		TH2F				 				**fHistoPhotonPairMixedEventPtconv;	//! array of histo for pairs vs. pt of converted photon
 		// histograms for rec photon clusters
 		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
 		TH1F								** fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
@@ -198,11 +198,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCEtaPt;					//! array of histos with weighted eta, pT
 		TH1F 								**fHistoMCEtaWOWeightPt;			//! array of histos with unweighted eta, pT
 		TH1F 								**fHistoMCPi0InAccPt;				//! array of histos with weighted pi0 in acceptance, pT
+		TH1F 								**fHistoMCPi0WOWeightInAccPt;		//! array of histos without weight pi0 in acceptance, pT
 		TH1F 								**fHistoMCEtaInAccPt;				//! array of histos with weighted eta in acceptance, pT
+		TH1F 								**fHistoMCEtaWOWeightInAccPt;		//! array of histos without weight eta in acceptance, pT
 		TH2F 								**fHistoMCPi0PtY;					//! array of histos with weighted pi0, pT, Y
 		TH2F 								**fHistoMCEtaPtY;					//! array of histos with weighted eta, pT, Y
-		TH2F 								**fHistoMCPi0PtAlpha;					//! array of histos with weighted pi0, pT, alpha
-		TH2F 								**fHistoMCEtaPtAlpha;					//! array of histos with weighted eta, pT, alpha
+		TH2F 								**fHistoMCPi0PtAlpha;				//! array of histos with weighted pi0, pT, alpha
+		TH2F 								**fHistoMCEtaPtAlpha;				//! array of histos with weighted eta, pT, alpha
 		TH1F 								**fHistoMCK0sPt;					//! array of histos with weighted K0s, pT
 		TH1F 								**fHistoMCK0sWOWeightPt;			//! array of histos with unweighted K0s, pT
 		TH2F 								**fHistoMCK0sPtY;					//! array of histos with weighted K0s, pT, Y
@@ -331,7 +333,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 5);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 6);
 };
 
 #endif
