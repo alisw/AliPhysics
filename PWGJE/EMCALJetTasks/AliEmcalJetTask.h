@@ -67,7 +67,8 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetMCFlag(UInt_t m)                        { if (IsLocked()) return; fMCFlag           = m     ; }
   void                   SelectHIJING(Bool_t s)                     { if (IsLocked()) return; if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
-  void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex   = i     ; }
+  void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex     = i     ; }
+  void                   SetFilterHybridTracks(Bool_t f)            { if (IsLocked()) return; fFilterHybridTracks = f     ; }
 
   AliEmcalJetUtility*    AddUtility(AliEmcalJetUtility* utility);
 
@@ -105,53 +106,11 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
 
   Int_t                  GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub);
 
-  Bool_t IsLocked() 
-  {
-    if (fLocked) {
-      AliFatal("Jet finder task is locked! Changing properties is not allowed."); 
-      return kTRUE;
-    } 
-    else {
-      return kFALSE;
-    }
-  }
-
-  void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB)
-  {
-    if(!fIsPSelSet)
-    {
-      fIsPSelSet = kTRUE;
-      fOfflineTriggerMask = offlineTriggerMask;
-    }
-    else
-    {
-      AliWarning("Manually setting the event selection for jet finders is not allowed! Using trigger=old_trigger | your_trigger");  
-      fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
-    }
-  }
-
-  void SetRadius(Double_t r)            
-  { 
-    if (IsLocked()) return; 
-    fRadius = r; 
-    if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) 
-      AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet)."); 
-  }
-
-  void SetType(Int_t t)                 
-  { 
-    if(IsLocked()) return; 
-    if (t==0) fJetType |= kFullJet; 
-    else if (t==1) fJetType |= kChargedJet; 
-    else if (t==2) fJetType |= kNeutralJet; 
-  } // for backward compatibility only
-
-  void SelectPhysicalPrimaries(Bool_t s)    
-  { 
-    if(IsLocked()) return; 
-    if (s) fMCFlag |=  AliAODMCParticle::kPhysicalPrim; 
-    else   fMCFlag &= ~AliAODMCParticle::kPhysicalPrim; 
-  }
+  Bool_t                 IsLocked() const;
+  void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
+  void                   SetRadius(Double_t r);
+  void                   SetType(Int_t t);           
+  void                   SelectPhysicalPrimaries(Bool_t s);
 
  protected:
 
@@ -192,6 +151,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   UInt_t                 fMCFlag;                 // select MC particles with flags (e.g. to select physical primaries)
   Short_t                fGeneratorIndex;         // select MC particles with generator index (default = -1 to switch off selection)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
+  Bool_t                 fFilterHybridTracks;     // filter hybrid tracks (only works with AOD tracks)
   Bool_t                 fLocked;                 // true if lock is set
  
   Bool_t                 fIsInit;                 //!=true if already initialized
