@@ -81,6 +81,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
     const char *components = "particles:clusters:tracks:mcjets:recjets:triggers",
+    EMCalTriggerPtAnalysis::ETriggerMethod_t triggermethod =  EMCalTriggerPtAnalysis::kTriggerString,
     bool useOfflinePatches = kFALSE
 )
 {
@@ -129,8 +130,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   /*
    * Set event selection
    */
-  if(isMC) gEventSelection = EMCalTriggerPtAnalysis::kTriggerPatches;
-  else gEventSelection = EMCalTriggerPtAnalysis::kTriggerMixed;
+  gEventSelection = triggermethod;
 
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
   if(isMC && !useOfflinePatches) trgconf->SetSwapThresholds();

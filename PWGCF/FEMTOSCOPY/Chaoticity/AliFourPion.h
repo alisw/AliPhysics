@@ -383,7 +383,10 @@ class AliFourPion : public AliAnalysisTaskSE {
   TArrayC *fNormQPairSwitch_E1E3[kMultLimitPbPb];//!
   TArrayC *fNormQPairSwitch_E2E3[kMultLimitPbPb];//!
 
-  
+  TF1 *fqOutFcn; //!
+  TF1 *fqSideFcn; //!
+  TF1 *fqLongFcn; //!
+
 
  public:
   TH2D *fMomResC2SC;
@@ -397,9 +400,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH3F *fNormWeight[fKbinsT][fCentBins];
   TH3F *fNormWeight2[fKbinsT][fCentBins];
   TF1 *ExchangeAmp[7][50][2];
-  TF1 *fqOutFcn;
-  TF1 *fqSideFcn;
-  TF1 *fqLongFcn;
+
  
   ClassDef(AliFourPion, 1); 
 };
