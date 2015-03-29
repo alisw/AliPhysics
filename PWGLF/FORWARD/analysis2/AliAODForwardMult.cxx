@@ -93,6 +93,43 @@ AliAODForwardMult::Clear(Option_t* option)
   fIpZ       = fgkInvalidIpZ;
   fNClusters = 0;
 }
+
+//____________________________________________________________________
+TH1*
+AliAODForwardMult::GetEtaCoverage() const
+{
+  Int_t bin = GetEtaCoverageBin();
+  TH1*  ret = fHist.ProjectionX(Form("%s_etacov", fHist.GetName()),
+				bin, bin, "e");
+  ret->SetDirectory(0);
+  ret->SetYTitle("#it{#eta} coverage");
+  return ret;
+}
+//____________________________________________________________________
+TH1*
+AliAODForwardMult::GetPhiAcceptance() const
+{
+  Int_t bin = GetPhiAcceptanceBin();
+  TH1*  ret = fHist.ProjectionX(Form("%s_phiacc", fHist.GetName()),
+				bin, bin, "e");
+  ret->SetDirectory(0);
+  ret->SetYTitle("#it{#varphi} acceptance");
+  return ret;
+}
+//____________________________________________________________________
+void
+AliAODForwardMult::FillEtaCoverage(TH1& h) const
+{
+  TH1* hh = GetEtaCoverage();
+  h.Add(hh);
+}
+//____________________________________________________________________
+void
+AliAODForwardMult::FillPhiAcceptance(TH1& h) const
+{
+  TH1* hh = GetPhiAcceptance();
+  h.Add(hh);
+}
 //____________________________________________________________________
 void
 AliAODForwardMult::SetSNN(UShort_t snn)

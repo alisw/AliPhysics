@@ -142,8 +142,9 @@ public:
     /** Track pile-up */
     kPileupTrack = 0x20000,
     /** Out of bunch pileup */
-    kPileupBC    = 0x40000
-    
+    kPileupBC    = 0x40000,
+    /** SPD pile-up in mult bins */
+    kPileupBins  = 0x80000
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -233,6 +234,10 @@ public:
    */
   void Init(const TAxis& etaAxis);
   /** 
+   * @{ 
+   * @name Get the Nch 
+   */
+  /** 
    * Get the @f$ d^2N_{ch}/d\eta d\phi@f$ histogram, 
    *
    * @return @f$ d^2N_{ch}/d\eta d\phi@f$ histogram, 
@@ -243,7 +248,161 @@ public:
    *
    * @return @f$ d^2N_{ch}/d\eta d\phi@f$ histogram, 
    */  
-  TH2D& GetHistogram() { return fHist; } // Get histogram 
+  TH2D& GetHistogram() { return fHist; } // Get histogram
+  /** 
+   * Get which bin the @f$\eta@f$ coverage is stored in 
+   * 
+   * @return The bin (in phi) that stores the coverage 
+   */
+  Int_t GetEtaCoverageBin() const { return 0; }
+  /** 
+   * Get which bin the @f$\varphi@f$ acceptance is stored in 
+   * 
+   * @return The bin (in phi) that stores the acceptance 
+   */
+  Int_t GetPhiAcceptanceBin() const { return fHist.GetNbinsY()+1; }
+  /** 
+   * Get the @f$\eta@f$ coverage. User must manage return 
+   * 
+   * @return The @f$\eta@f$ coverage. 
+   */
+  TH1* GetEtaCoverage() const;
+  /** 
+   * Get the @f$\varphi@f$ acceptance. User must manage return 
+   * 
+   * @return The @f$\var@f$ acceptance. 
+   */
+  TH1* GetPhiAcceptance() const;
+  /** 
+   * Get the @f$\eta@f$ coverage.  Note, the histogram is not resst by
+   * this function, thus allowing to accumulate in the passed
+   * histogram.
+   * 
+   * @param h On return, the @f$\eta@f$ coverage. 
+   */
+  void FillEtaCoverage(TH1& h) const;
+  /** 
+   * Get the @f$\varphi@f$ acceptance. Note, the histogram is not
+   * resst by this function, thus allowing to accumulate in the passed
+   * histogram.
+   * 
+   * @param h On return, the @f$\var@f$ acceptance. 
+   */
+  void FillPhiAcceptance(TH1& h) const;
+  /* @} */
+  /** 
+   * @{ 
+   * @name Prinary interaction point 
+   */
+  /** 
+   * Set the z coordinate of the interaction point
+   * 
+   * @param ipZ Interaction point z coordinate
+   */
+  void SetIpZ(Float_t ipZ) { fIpZ = ipZ; } // Set Ip's Z coordinate
+  /** 
+   * Set the z coordinate of the interaction point
+   * 
+   * @return Interaction point z coordinate
+   */
+  Float_t GetIpZ() const { return fIpZ; } // Get Ip's Z coordinate 
+  /** 
+   * Check if we have a valid z coordinate of the interaction point
+   *
+   * @return True if we have a valid interaction point z coordinate
+   */
+  Bool_t HasIpZ() const;
+  /** 
+   * Check if the z coordinate of the interaction point is within the
+   * given limits.  Note that the convention used corresponds to the
+   * convention used in ROOTs TAxis.
+   * 
+   * @param low  Lower cut (inclusive)
+   * @param high Upper cut (exclusive)
+   * 
+   * @return true if @f$ low \ge ipz < high@f$ 
+   */
+  Bool_t InRange(Float_t low, Float_t high) const;
+  /* @} */
+  /** 
+   * @{ 
+   * @name Collision system
+   */
+  /** 
+   * Set the center of mass energy per nucleon-pair.  This is stored 
+   * in the (0,0) of the histogram 
+   * 
+   * @param sNN Center of mass energy per nucleon pair (GeV)
+   */
+  void SetSNN(UShort_t sNN); 
+  /** 
+   * Get the collision system number
+   * - 0: Unknown 
+   * - 1: pp
+   * - 2: PbPb
+   * 
+   * @param sys Collision system number
+   */
+  void SetSystem(UShort_t sys);
+  /** 
+   * Get the center of mass energy per nucleon pair (GeV)
+   * 
+   * @return Center of mass energy per nucleon pair (GeV)
+   */
+  UShort_t GetSNN() const;
+  /** 
+   * Get the collision system number
+   * - 0: Unknown 
+   * - 1: pp
+   * - 2: PbPb
+   * 
+   * @return Collision system number
+   */
+  UShort_t GetSystem() const;
+  /** 
+   * @{ 
+   * @name Centrality 
+   */
+  /** 
+   * Set the event centrality 
+   * 
+   * @param c Centrality 
+   */
+  void SetCentrality(Float_t c) { fCentrality = c; }
+  /** 
+   * Get the event centrality 
+   * 
+   * @return Centrality 
+   */
+  Float_t GetCentrality() const { return fCentrality; }
+  /** 
+   * Check if we have a valid centrality 
+   * 
+   * @return true if the centrality information is valid 
+   */
+  Bool_t  HasCentrality() const { return !(fCentrality  < 0); }
+  /* @} */
+  /** 
+   * @{ 
+   * @name SPD clusters 
+   */   
+  /** 
+   * Get the number of SPD clusters seen in @f$ |\eta|<1@f$ 
+   * 
+   * @return Number of SPD clusters seen
+   */
+  UShort_t GetNClusters() const { return fNClusters; }
+  /** 
+   * Set the number of SPD clusters seen in @f$ |\eta|<1@f$ 
+   * 
+   * @param n Number of SPD clusters 
+   */
+  void SetNClusters(UShort_t n) { fNClusters = n; }
+  /* @} */
+  /** 
+   * @{ 
+   * @name Trigger information 
+   */
   /** 
    * Get the trigger bits 
    * 
@@ -291,23 +450,152 @@ public:
    */
   Bool_t HasTrigger() const { return fTriggers != 0; } // Check for triggers
   /** 
-   * Clear all data 
+   * Get a string correspondig to the trigger mask
    * 
-   * @param option  Passed on to TH2::Reset verbatim
+   * @param mask Trigger mask 
+   * 
+   * @return Static string (copy before use)
    */
-  void Clear(Option_t* option="");
+  static const Char_t* GetTriggerString(UInt_t mask);
   /** 
-   * browse this object 
+   * Utility function to make a trigger mask from the passed string. 
    * 
-   * @param b Browser 
+   * The string is a comma or space seperated list of case-insensitive
+   * strings
+   * 
+   * - INEL 
+   * - INEL>0
+   * - NSD 
+   * 
+   * @param what Which triggers to put in the mask. 
+   * 
+   * @return The generated trigger mask. 
    */
-  void Browse(TBrowser* b);
+  static UInt_t MakeTriggerMask(const char* what);
+  /* @} */
   /** 
-   * This is a folder 
-   * 
-   * @return Always true
+   * @{ 
+   * @name Check specific trigger bits 
    */
-  Bool_t IsFolder() const { return kTRUE; } // Always true 
+  /**
+   * Check for In-elastic collision - really MBOR*
+   * 
+   * @return true if kInel bit is set 
+   */
+  Bool_t IsInel() const { return (fTriggers & kInel); } 
+  /**
+   * Check for In-elastic collision with at least one SPD tracklet *
+   * 
+   * @return true if kInelGt0 bit is set 
+   */
+  Bool_t IsInelGt0() const { return (fTriggers & kInelGt0); } 
+  /**
+   * Check for Non-single diffractive collision - (V0AND||FASTOR>5) *
+   * 
+   * @return true if kNSD bit is set 
+   */
+  Bool_t IsNSD() const { return (fTriggers & kNSD); } 
+  /**
+   * Check for Empty bunch crossing *
+   * 
+   * @return true if kEmpty bit is set 
+   */
+  Bool_t IsEmpty() const { return (fTriggers & kEmpty); } 
+  /**
+   * Check for A-side trigger *
+   * 
+   * @return true if kA bit is set 
+   */
+  Bool_t IsBeamEmpty() const { return (fTriggers & kA); } 
+  /**
+   * Check for B(arrel) trigger *
+   * 
+   * @return true if kB bit is set 
+   */
+  Bool_t IsBeamBeam() const { return (fTriggers & kB); } 
+  /**
+   * Check for C-side trigger *
+   * 
+   * @return true if kC bit is set 
+   */
+  Bool_t IsEmptyBeam() const { return (fTriggers & kC); }  
+  /**
+   * Check for Empty trigger *
+   * 
+   * @return true if kE bit is set 
+   */
+  Bool_t IsEmptyEmpty() const { return (fTriggers & kE); }
+  /**
+   * Check for pileup from SPD *
+   * 
+   * @return true if kPileUp bit is set 
+   */
+  Bool_t IsPileUp() const { return (fTriggers & kPileUp); }    
+  /**
+   * Check for true NSD from MC *
+   * 
+   * @return true if kMCNSD bit is set 
+   */
+  Bool_t IsMCNSD() const { return (fTriggers & kMCNSD); }    
+  /**
+   * Check for Offline MB triggered *
+   * 
+   * @return true if kOffline bit is set 
+   */
+  Bool_t IsOffline() const { return (fTriggers & kOffline); }
+  /**
+   * Check for At least one SPD cluster *
+   * 
+   * @return true if kNClusterGt0 bit is set 
+   */
+  Bool_t IsNClusterGt0() const { return (fTriggers & kNClusterGt0); }
+  /**
+   * Check for V0-AND trigger *
+   * 
+   * @return true if kV0AND bit is set 
+   */
+  Bool_t IsV0AND() const { return (fTriggers & kV0AND); } 
+  /**
+   * Check for Satellite event *
+   * 
+   * @return true if kSatellite bit is set 
+   */
+  Bool_t IsSatellite() const { return (fTriggers & kSatellite); }
+  /**
+   * Check for SPD outlier event *
+   * 
+   * @return true if kSPDOutlier bit is set 
+   */
+  Bool_t IsSPDOutlier() const { return (fTriggers & kSPDOutlier); }
+  /**
+   * Check for SPD pile-up *
+   * 
+   * @return true if kPileupSPD bit is set 
+   */
+  Bool_t IsPileupSPD() const { return (fTriggers & kPileupSPD); }
+  /**
+   * Check for Track pile-up *
+   * 
+   * @return true if kPileupTrack bit is set 
+   */
+  Bool_t IsPileupTrack() const { return (fTriggers & kPileupTrack); }
+  /**
+   * Check for Out of bunch pileup *
+   * 
+   * @return true if kPileupBC bit is set 
+   */
+  Bool_t IsPileupBC() const { return (fTriggers & kPileupBC); }
+  /**
+   * Check for SPD pile-up in mult bins *
+   * 
+   * @return true if kPileupBins bit is set 
+   */
+  Bool_t IsPileupBins() const { return (fTriggers & kPileupBins); }
+  /* @} */
+  /** 
+   * @{
+   * @name Check flags 
+   */
   /** 
    * Check if the data has been secondary corrected by MC maps 
    * 
@@ -348,108 +636,52 @@ public:
    * regions.
    */
   Bool_t IsSumSignal() const { return TestBit(kSum); }
+  /* @} */
   /** 
-   * Print content 
-   * 
-   * @param option Passed verbatim to TH2::Print 
+   * @{ 
+   * @name Other services 
    */
-  void Print(Option_t* option="") const;
-  /** 
-   * Set the z coordinate of the interaction point
-   * 
-   * @param ipZ Interaction point z coordinate
-   */
-  void SetIpZ(Float_t ipZ) { fIpZ = ipZ; } // Set Ip's Z coordinate
-  /** 
-   * Set the center of mass energy per nucleon-pair.  This is stored 
-   * in the (0,0) of the histogram 
-   * 
-   * @param sNN Center of mass energy per nucleon pair (GeV)
-   */
-  void SetSNN(UShort_t sNN); 
-  /** 
-   * Get the collision system number
-   * - 0: Unknown 
-   * - 1: pp
-   * - 2: PbPb
-   * 
-   * @param sys Collision system number
-   */
-  void SetSystem(UShort_t sys);
-  /** 
-   * Set the event centrality 
-   * 
-   * @param c Centrality 
-   */
-  void SetCentrality(Float_t c) { fCentrality = c; }
-  /** 
-   * Set the z coordinate of the interaction point
-   * 
-   * @return Interaction point z coordinate
-   */
-  Float_t GetIpZ() const { return fIpZ; } // Get Ip's Z coordinate 
-  /** 
-   * Check if we have a valid z coordinate of the interaction point
-   *
-   * @return True if we have a valid interaction point z coordinate
-   */
-  Bool_t HasIpZ() const;
-  /** 
-   * Get the center of mass energy per nucleon pair (GeV)
-   * 
-   * @return Center of mass energy per nucleon pair (GeV)
-   */
-  UShort_t GetSNN() const;
-  /** 
-   * Get the collision system number
-   * - 0: Unknown 
-   * - 1: pp
-   * - 2: PbPb
-   * 
-   * @return Collision system number
-   */
-  UShort_t GetSystem() const;
-  /** 
-   * Check if the z coordinate of the interaction point is within the
-   * given limits.  Note that the convention used corresponds to the
-   * convention used in ROOTs TAxis.
-   * 
-   * @param low  Lower cut (inclusive)
-   * @param high Upper cut (exclusive)
-   * 
-   * @return true if @f$ low \ge ipz < high@f$ 
-   */
-  Bool_t InRange(Float_t low, Float_t high) const;
-  /** 
-   * Get the event centrality 
-   * 
-   * @return Centrality 
-   */
-  Float_t GetCentrality() const { return fCentrality; }
-  /** 
-   * Check if we have a valid centrality 
-   * 
-   * @return true if the centrality information is valid 
-   */
-  Bool_t  HasCentrality() const { return !(fCentrality  < 0); }
-  /** 
-   * Get the number of SPD clusters seen in @f$ |\eta|<1@f$ 
-   * 
-   * @return Number of SPD clusters seen
-   */
-  UShort_t GetNClusters() const { return fNClusters; }
-  /** 
-   * Set the number of SPD clusters seen in @f$ |\eta|<1@f$ 
-   * 
-   * @param n Number of SPD clusters 
-   */
-  void SetNClusters(UShort_t n) { fNClusters = n; }
   /** 
    * Get the name of the object 
    * 
    * @return Name of object 
    */
   const Char_t* GetName() const { return (fIsMC ? "ForwardMC" : "Forward"); }
+  /** 
+   * Clear all data 
+   * 
+   * @param option  Passed on to TH2::Reset verbatim
+   */
+  void Clear(Option_t* option="");
+  /** 
+   * browse this object 
+   * 
+   * @param b Browser 
+   */
+  void Browse(TBrowser* b);
+  /** 
+   * This is a folder 
+   * 
+   * @return Always true
+   */
+  Bool_t IsFolder() const { return kTRUE; } // Always true 
+  
+  /** 
+   * Print content 
+   * 
+   * @param option Passed verbatim to TH2::Print 
+   */
+  void Print(Option_t* option="") const;
+  /* @} */
+  /** 
+   * @{
+   * @name Setters 
+   */
+  /* @} */
+  /** 
+   * @{ 
+   * @name Generalt tests 
+   */
   /** 
    * Check if event meets the passses requirements.   
    *
@@ -485,14 +717,6 @@ public:
 		    TH1*     status=0,
 		    Bool_t   removePileup=true) const;
   /** 
-   * Get a string correspondig to the trigger mask
-   * 
-   * @param mask Trigger mask 
-   * 
-   * @return Static string (copy before use)
-   */
-  static const Char_t* GetTriggerString(UInt_t mask);
-  /** 
    * Make a histogram to record triggers in. 
    *
    * The bins defined by the trigger enumeration in this class.  One
@@ -516,21 +740,7 @@ public:
    * @return Newly allocated histogram 
    */
   static TH1I* MakeStatusHistogram(const char* name="status");
-  /** 
-   * Utility function to make a trigger mask from the passed string. 
-   * 
-   * The string is a comma or space seperated list of case-insensitive
-   * strings
-   * 
-   * - INEL 
-   * - INEL>0
-   * - NSD 
-   * 
-   * @param what Which triggers to put in the mask. 
-   * 
-   * @return The generated trigger mask. 
-   */
-  static UInt_t MakeTriggerMask(const char* what);
+  /* @} */
 protected: 
   /** From MC or not */
   Bool_t   fIsMC;       // Whether this is from MC 
@@ -546,7 +756,7 @@ protected:
   UShort_t fNClusters;  // Number of SPD clusters in |eta|<1
   /** Invalid value for interaction point @f$z@f$ coordiante */
   static const Float_t fgkInvalidIpZ; // Invalid IpZ value 
-  ClassDef(AliAODForwardMult,5); // AOD forward multiplicity 
+  ClassDef(AliAODForwardMult,6); // AOD forward multiplicity 
 };
 
 //____________________________________________________________________

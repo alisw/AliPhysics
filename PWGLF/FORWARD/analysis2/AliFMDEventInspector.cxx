@@ -103,7 +103,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fVtxMethod(kNormal),
     // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
-    fPileupFlags(0x5),
+    fPileupFlags(kSPD|kOutOfBunch|kSPDBins),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
     // fUseDisplacedVertices(false),
@@ -1124,6 +1124,12 @@ AliFMDEventInspector::CheckPileup(const AliESDEvent& esd,
     fHPileup->Fill(2.5, 1);
     locTrig |= AliAODForwardMult::kPileupBC;
   }
+  // check SPD by multiplicity bin
+  if ((fPileupFlags & kSPDBins) &&
+      (esd.IsPileupFromSPDInMultBins())) {
+    locTrig |= AliAODForwardMult::kPileupBins;
+  }
+    
   
   // Our result
   triggers      |= locTrig;

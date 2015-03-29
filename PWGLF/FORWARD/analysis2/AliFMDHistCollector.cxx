@@ -811,7 +811,7 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
 	  t->SetBinError(iEta,iPhi,0);
 	}
       }
-      // Fill under-flow bins with eta coverage 
+      // Fill under-flow bins with eta coverage
       for (Int_t iEta = first; iEta <= last; iEta++) 
 	t->SetBinContent(iEta,0,1);
       if (eta2phi) {
