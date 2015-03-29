@@ -108,13 +108,22 @@
   decays are removed from the \FMD{} signal using an \emph{empirical}
   correction based on results
   from \cite{Abbas:2013bpa}. \\
-  
+
+  \noindent 
+  The focus in this note is on the results from \PbPbCol{} at
+  $\usNN{PbPb}{2760}$ over all centrality bins.  Work--in--progress
+  results for other systems are also shown here, but they are not
+  finalised.  Separate follow--up notes will handle those systems. \\
+
   \noindent
   This notes details the forward (\FMD{}) part of the analysis only.
   A separate note on the \SPD{} tracklet analysis exists elsewhere
   \cite{spdnote}.  The content of this note is in many places the same
   as in an older analysis note \cite{oldnote}, but is otherwise
-  independent and can be read on its own.
+  independent and can be read on its own.\\
+
+  \noindent
+  {\small TWiki page: \url{http://cern.ch/go/fm8C}}
 \end{abstract}
 
 \cleardoublepage
@@ -1671,7 +1680,11 @@ systematic error of empirical correction.
 
 \section{Result plots} 
 
-\subsection{\PbPbCol{}}
+In the follow sub--section the \ndndeta{} results for some collision
+systems will be presented.  Here, only the \PbPbCol{} result is
+finalised, and the final results on other systems will be addressed in
+follow--up notes.   The common parameters are listed in
+\tabref{tab:common:params}. 
 
 \begin{table}
   \caption{Parameters of analysis}
@@ -1690,31 +1703,60 @@ systematic error of empirical correction.
     $\max{\delta\IPz}$ 
     & Largest $\IPz$ uncertainty 
     & \unit[0.2]{cm}\\
-    $\text{CENT}$ 
-    & Centrality estimator 
-    & \texttt{V0M}\\
-    \altRowColor{}
     $\min{N_{\text{pileup,contrib}}}$ 
     & Least number of pile--up contributors 
     & 5\\
+    \altRowColor{}
     $\min{d_{\text{pileup}}}$ 
     & Least pile-up distance 
     & \unit[0.8]{cm}\\
     \hline 
-    \altRowColor{}
     $L_{\text{sharing}}$ 
     & Low sharing cut 
     & 0.15\\
+    \altRowColor{}
     $H_{\text{sharing}}$ 
     & High sharing cut 
     & $\Delta_p-1(\xi+\sigma)$ \\
-    \altRowColor{}
     $T_{\text{poisson}}$ 
     & Poisson threshold 
     & $\Delta_p-1(\xi+\sigma)$ \\
+    \altRowColor{}
     $R_{\text{poisson}}$ 
     & Poisson region size 
     & $\unit[4]{sectors} \times \unit[32]{strips}$\\
+    \hline 
+  \end{tabular}
+  \label{tab:PbPb:param}
+\end{table}
+
+
+Each result is accompanied by a summary table of parameters used in
+the particular analysis, including the selected runs.  The results are
+plotted with individual systematic errors stacked up, and the common
+systematic errors split off to the side.  For papers, the format could
+be different, and one could consider symmetrisation, averaging with
+central points,  and so on. 
+
+
+\subsection{\PbPbCol{}}
+
+See \tabref{tab:PbPb:params} and \figref{fig:PbPb:results} for results
+based on the \texttt{V0M} centrality estimator. 
+
+\begin{table}[h!tbp]
+  \caption{Parameters of the \PbPbCol{} $\usNN{PbPb}{2760}$ analysis}
+  \centering
+  \begin{tabular}[t]{|rlc|}
+    \hline
+    \headColor{} 
+    \textbf{Parameter}
+    & \textbf{Description}
+    & \textbf{Value}\\
+    \hline 
+    $\text{CENT}$ 
+    & Centrality estimator 
+    & \texttt{V0M}\\
     \hline 
     \altRowColor{}
     Runs 
@@ -1722,20 +1764,144 @@ systematic error of empirical correction.
       139173 139329 139503}\\ 
     \hline
   \end{tabular}
-  \label{tab:param:pbpb}
+  \label{tab:PbPb:params}
 \end{table}
-\begin{figure}[htbp]
+  \FIXME{Central come very soon}
+\begin{figure}[h!tbp]
   \centering
   \figinput[\linewidth]{PbPb_2760_CENTV0M}
-  \caption{\dndeta{} result for \PbPbCol{} collisions at
+  \caption{\ndndeta{} result for \PbPbCol{} collisions at
     $\usNN{PbPb}{2760}$ in centrality bins.  Open points are the
     previously published result \cite{Abbas:2013bpa}. Shown are also
     the systematic errors.}
-  \label{fig:PbPb:result}
+  \label{fig:PbPb:results}
 \end{figure}
 
+\subsection{\pPbCol{}}
 
-\FIXME{Central come very soon}
+See \tabref{tab:pPb:params} and \figref{fig:pPb:results} for results
+based on the \texttt{ZNA} and \texttt{V0C} centrality estimator. 
+\FIXME{V0M, CL1 estimators coming soon}.
+\FIXME{Pbp results coming soon}
+
+\begin{table}[h!tbp]
+  \caption{Parameters of the \pPbCol{} $\usNN{PbPb}{5023}$ analysis}
+  \centering
+  \begin{tabular}[t]{|rlc|}
+    \hline
+    \headColor{} 
+    \textbf{Parameter}
+    & \textbf{Description}
+    & \textbf{Value}\\
+    \hline 
+    $\text{CENT}$ 
+    & Centrality estimator 
+    & \texttt{ZNA}\\
+    \altRowColor{}
+    & 
+    & \texttt{V0A}\\
+    \hline 
+    Runs 
+    & \multicolumn{2}{r|}{}\\ 
+    \hline
+  \end{tabular}
+  \label{tab:pPb:params}
+\end{table}
+
+\begin{figure}[h!tbp]
+  \centering
+  \begin{tabular}[T]{@{}c@{}c@{}}
+    \figinput[.5\linewidth]{pPb_5023_CENTV0A}
+    & \figinput[.5\linewidth]{pPb_5023_CENTZNA}
+    \\
+  \end{tabular}
+  \caption{\ndndeta{} result for \pPbCol{} collisions at
+    $\usNN{pPb}{5023}$. Central points from \cite{Adam:2014qja}.} 
+  \label{fig:pPb:results}
+\end{figure}
+
+\subsection{\ppCol{}}
+
+See \tabref{tab:pp:params} and \figref{fig:pp:results:0900} to
+\ref{fig:pp:results:8000} for results for the \INEL{}, \INELGT{},
+and \NSD{} event classes.  
+\FIXME{\INELGT coming soon}
+
+\begin{table}[h!tbp]
+  \caption{Parameters of the \ppCol{} $\usNN{pp}{0900}, 2.76, 7,
+    \text{and} \TeV[8]{}$ analysis}
+  \centering
+  \begin{tabular}[t]{|rlc|}
+    \hline
+    \headColor{} 
+    \textbf{Parameter}
+    & \textbf{Description}
+    & \textbf{Value}\\
+    \hline 
+    $\text{TRIG}$ 
+    & Trigger
+    & \INEL\\
+    \altRowColor{}
+    & 
+    & \INELGT\\
+    \hline 
+    & 
+    & \NSD\\
+    \hline 
+    \altRowColor{}
+    Runs 
+    & \multicolumn{2}{r|}{}\\ 
+    \hline
+  \end{tabular}
+  \label{tab:pp:params}
+\end{table}
+
+\begin{figure}[h!tbp]
+  \centering
+  \begin{tabular}[T]{@{}c@{}c@{}}
+    \figinput[.5\linewidth]{pp_0900_INEL}
+    & \figinput[.5\linewidth]{pp_0900_NSD}
+    \\
+  \end{tabular}
+  \caption{\ndndeta{} result for \ppCol{} collisions at
+    $\usNN{pp}{0900}$. Central results from the draft paper
+    \cite{pwgud:2015}. Also shown are the previous published results
+    \cite{Aamodt:2010ft}}
+  \label{fig:pp:results:0900}
+\end{figure}
+\begin{figure}[h!tbp]
+  \centering
+  \begin{tabular}[T]{@{}c@{}c@{}}
+    \figinput[.5\linewidth]{pp_2760_INEL}
+    & \figinput[.5\linewidth]{pp_2760_NSD}
+    \\
+  \end{tabular}
+  \caption{\ndndeta{} result for \ppCol{} collisions at
+    $\usNN{pp}{2760}$. Central results from \cite{pwgud:2015}.} 
+  \label{fig:pp:results:2760}
+\end{figure}
+\begin{figure}[h!tbp]
+  \centering
+  \begin{tabular}[T]{@{}c@{}c@{}}
+    \figinput[.5\linewidth]{pp_7000_INEL}
+    & \figinput[.5\linewidth]{pp_7000_NSD}
+    \\
+  \end{tabular}
+  \caption{\ndndeta{} result for \ppCol{} collisions at
+    $\usNN{pp}{7000}$. Central results from \cite{pwgud:2015}.} 
+  \label{fig:pp:results:7000}
+\end{figure}
+\begin{figure}[h!tbp]
+  \centering
+  \begin{tabular}[T]{@{}c@{}c@{}}
+    \figinput[.5\linewidth]{pp_8000_INEL}
+    & \figinput[.5\linewidth]{pp_8000_NSD}
+    \\
+  \end{tabular}
+  \caption{\ndndeta{} result for \ppCol{} collisions at
+    $\usNN{pp}{8000}$. Central results from \cite{pwgud:2015}.} 
+  \label{fig:pp:results:8000}
+\end{figure}
 
 
 %% === Section on energy loss fits ===================================
@@ -1939,12 +2105,17 @@ and $f$ is defined in \eqref{eq:f}.
 \bibitem{pwgud:2015} \ALICE{} Collaboration, ``Charged--particle
   multiplicities in proton–-proton collisions at $\sqrt{s} = 0.9$ to
   \TeV[8]{}, with ALICE at the LHC'', draft paper,
-\url{https://aliceinfo.cern.ch/ArtSubmission/node/228}
-%\cite{Adam:2014qja}
+  \url{https://aliceinfo.cern.ch/ArtSubmission/node/228}
+\bibitem{Aamodt:2010ft}
+  K.~Aamodt {\it et al.}  [ALICE Collaboration],
+  ``Charged-particle multiplicity measurement in proton-proton collisions at $\sqrt{s}=0.9$ and 2.36 TeV with ALICE at LHC,''
+  \textit{Eur.Phys.J.} \textbf{C68} (2010) 89, 
+  \href{http://arxiv.org/abs/1004.3034}{arXiv:1004.3034 [hep-ex]},
+  \url{http://aliceinfo.cern.ch/ArtSubmission/node/56} 
 \bibitem{Adam:2014qja}
   J.~Adam {\it et al.}  [\ALICE{} Collaboration],
   ``Centrality dependence of particle production in p-Pb collisions at
-  $\usNN{pPb}{5023}$,''
+  $\usNN{pPb}{5023}$,'',
   \href{http://arxiv.org/abs/1412.6828}{arXiv:1412.6828 [nucl-ex]}, 
   \url{https://aliceinfo.cern.ch/ArtSubmission/node/1155}
 \bibitem{PbPbCent:XXX}
