@@ -87,6 +87,13 @@ struct RefData
 	::Info("GetFile", "Trying other.root");
       f = TFile::Open("other.root", mode);
     }
+    if (!f && gSystem->Getenv("FWD")) {
+      TString tfwd(gSystem->Getenv("FWD"));
+      tfwd.Append("/other.root");
+      if (Verbose() > 2)
+	::Info("GetFile", "Trying %s", tfwd.Data());
+      f = TFile::Open(tfwd, mode);
+    }
     if (!f) {
       if (Verbose() > 2) 
 	::Info("GetFile",

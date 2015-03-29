@@ -53,8 +53,8 @@ struct Drawer {
   static void LoadOther() { 
     if (gROOT->GetClass("RefData")) return;
     const char* fwd = 0;
-    if (gSystem->Getenv("$FWD"))
-      fwd = gSystem->Getenv("$FWD");
+    if (gSystem->Getenv("FWD"))
+      fwd = gSystem->Getenv("FWD");
     else 
       fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
     gROOT->SetMacroPath(Form("%s:%s", gROOT->GetMacroPath(),fwd));
