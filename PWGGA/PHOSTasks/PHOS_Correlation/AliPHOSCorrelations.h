@@ -12,24 +12,20 @@ class TClonesArray;
 class AliStack ;
 class AliESDtrackCuts;
 class AliPHOSGeometry;
-class AliTriggerAnalysis;
-class AliESDEvent ;
-class AliPIDResponse;
-class AliPHOSCalibData ;
-class AliESDCaloCluster ;
 class AliESDEvent ;
 class AliESDtrack ;
 class AliAODTrack ;
-class AliVCluster ;
 class AliAnalysisUtils;
-class AliEPFlattener;
 class AliAODInputHandler;
 class AliESDInputHandler;
-class AliVTrack;
 
-
-#include "TArrayD.h"
+#ifndef ROOT_TAliAnalysisTaskSE
 #include "AliAnalysisTaskSE.h"
+#endif
+
+#ifndef ROOT_TArrayD
+#include "TArrayD.h"
+#endif
 
 class AliPHOSCorrelations : public AliAnalysisTaskSE 
 {
@@ -39,6 +35,7 @@ public:
                               kHasPHOSClusters, kHasTPCTracks, kPHOSEvent, 
                               kMBEvent, kTotalSelected, kHasAbsVertex } ;
   enum PID                  { kPidAll, kPidCPV, kPidDisp, kPidBoth} ;
+  enum PbPbTriggerSelection { kCentAndSCent, kCent, kSCent } ;
 
 
 public:
@@ -49,12 +46,12 @@ public:
   virtual void   UserCreateOutputObjects() ;
   virtual void   UserExec(Option_t *option) ;
 
-  void SetPeriodName(const TString str)                                           { fPeriod = str                    ; }
-  TString GetPeriod()                                                       const { return fPeriod                   ; }
+  void SetPeriodName(const TString str)                                           { fPeriod = str                        ; }
+  TString GetPeriod()                                                       const { return fPeriod                       ; }
 
   void SetCentralityEstimator(const char * centr)                                 { fCentralityEstimator = centr         ; }
   void SetEventMixingRPBinning(const Int_t nBins)                                 { fNEMRPBins = nBins                   ; }
-  void SetEventMixingVtxBinning(const Int_t nBins)                                { fNVtxZBins = nBins                   ; }
+  void SetEventMixingVtxBinning(const Int_t nBins) ;
   void SetMaxAbsVertexZ(const Float_t z)                                          { fMaxAbsVertexZ = z                   ; }
  
   void SwitchOnPionEfficiency()                                                   { fUseEfficiency = kTRUE               ; }
@@ -69,6 +66,7 @@ public:
   void SetPtAssocBins(TArrayD * arr)                                              { fAssocBins.Set(arr->GetSize(), arr->GetArray()) ; } 
   void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed) ;
   void SetCentralityBorders(const Double_t& downLimit , const Double_t& upLimit) ;
+  
   void SwitchOnMassParametrisation()                                              { fUseMassWindowParametrisation = true ; }
   void SwitchOffMassParametrisation()                                             { fUseMassWindowParametrisation = false; }
 
@@ -94,6 +92,8 @@ public:
 
   void     SetEventPlaneMethod(TString m)                                         { fEventPlaneMethod = m               ; }
   TString  GetEventPlaneMethod()                                            const { return fEventPlaneMethod            ; }
+
+  void SetTriggerSelectionInPbPb(PbPbTriggerSelection s)                          { fTriggerSelectionPbPb = s           ; }
   
 
 protected: 
@@ -218,34 +218,34 @@ private:
   TObjArray *     fCaloPhotonsPHOSLists;                //! array of TList, Containers for events with PHOS photons
   TObjArray *     fTracksTPCLists;                      //! array of TList, Containers for events with TPC tracks
 
+  TString   fPeriod;                                    //  Event period name
   Int_t     fRunNumber;                                 //! Run number
   Int_t     fInternalRunNumber ;                        //! Current internal run number 
-  TString   fPeriod;
 
-  Bool_t    fPHOSEvent;                                 //! PHOS event trigger.
+  PbPbTriggerSelection fTriggerSelectionPbPb;           //  Selection trigger mask in central PbPb collisions.
+  Bool_t    isREALEvent;                                //! PHOS event trigger.
   Bool_t    fMBEvent;                                   //! MB event trigger.
 
   // Binning [vtx, centrality, reaction-plane]
   Int_t     fNVtxZBins;                                 // Number of Z vertex bins
-  TArrayD   fVtxEdges;                                  //! Vertex bin Lower edges
-  TArrayD   fCentEdges;                                 //! Centrality Bin Lower edges
+  TArrayD   fVtxEdges;                                  // Vertex bin Lower edges
+  TString   fCentralityEstimator;                       // Centrality estimator ("V0M", "ZNA")
+  TArrayD   fCentEdges;                                 // Centrality Bin Lower edges
   TArrayI   fCentNMixed;                                // Number of mixed events for each centrality bin
+  TString   fEventPlaneMethod;                          // Name of event plane method, by default "Q"
   UInt_t    fNEMRPBins;                                 // Binning of Reaction plane
-  TArrayD   fAssocBins;                                 //! Assoc Pt Bin Lower edges  
+  TArrayD   fAssocBins;                                 // Assoc Pt Bin Lower edges  
 
   Double_t  fVertex[3];                                 //! Event vertex
   TVector3  fVertexVector;                              //! The same
   Int_t     fVtxBin;                                    //! Vertex bin
 
-  TString   fCentralityEstimator;                       //! Centrality estimator ("V0M", "ZNA")
   Float_t   fCentrality ;                               //! Centrality of the current event
   Int_t     fCentBin ;                                  //! Current centrality bin
 
   Bool_t    fHaveTPCRP ;                                //! Is TPC RP defined?
   Float_t   fRP ;                                       //! Reaction plane calculated with full TPC
   Int_t     fEMRPBin;                                   //! Event Mixing Reaction Plane Bin
-
-  TString   fEventPlaneMethod;                          //! Name of event plane method, by default "Q"
 
   // Behavior / cuts
   Float_t   fMaxAbsVertexZ;                             // Maximum distence Z component of vertix in cm
@@ -287,8 +287,7 @@ private:
   Bool_t    fSelectFractionTPCSharedClusters ;          // Accept only TPC tracks with over a given fraction of shared clusters
   Float_t   fCutTPCSharedClustersFraction    ;          // Fraction of TPC shared clusters to be accepted.
 
-
-  ClassDef(AliPHOSCorrelations, 2);                     // PHOS analysis task
+  ClassDef(AliPHOSCorrelations, 5);                     // PHOS analysis task
 };
 
 #endif
