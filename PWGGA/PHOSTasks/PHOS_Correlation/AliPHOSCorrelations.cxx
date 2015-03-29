@@ -33,29 +33,22 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliPHOSCorrelations.h"
+#include "AliOADBContainer.h"
+#include "AliInputEventHandler.h"
+
 #include "AliPHOSGeometry.h"
-#include "AliESDEvent.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDVertex.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
-#include "AliVTrack.h"
-#include "AliPID.h"
-#include "AliTriggerAnalysis.h"
-#include "AliPIDResponse.h"
-#include "AliPHOSEsdCluster.h"
-#include "AliCDBManager.h"
-#include "AliPHOSCalibData.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
-#include "AliOADBContainer.h"
+
+#include "AliESDEvent.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDtrack.h"
+
 #include "AliAODEvent.h"
-#include "AliAODCaloCells.h"
-#include "AliAODCaloCluster.h"
+#include "AliAODTrack.h"
+
+#include "AliVTrack.h"
 #include "AliCaloPhoton.h"
-#include "AliAODVertex.h"
-#include "AliInputEventHandler.h"
 
 using std::cout;
 using std::endl;
@@ -78,7 +71,8 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fRunNumber(-999),
     fInternalRunNumber(0),
     fPeriod("0x0"),
-    fPHOSEvent(false),
+    fTriggerSelectionPbPb(kCentAndSCent),
+    isREALEvent(false),
     fMBEvent(false),
     fNVtxZBins(5),
     fVtxEdges(10),
@@ -94,7 +88,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
     fHaveTPCRP(0),
     fRP(0.),
     fEMRPBin(0),
-    fEventPlaneMethod(""),
+    fEventPlaneMethod("V0"),
     fMaxAbsVertexZ(10.),
     fCentralityLowLimit(0.),
     fCentralityHightLimit(90),
@@ -162,7 +156,8 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fRunNumber(-999),
     fInternalRunNumber(0),
     fPeriod("0x0"),
-    fPHOSEvent(false),
+    fTriggerSelectionPbPb(kCentAndSCent),
+    isREALEvent(false),
     fMBEvent(false),
     fNVtxZBins(5),
     fVtxEdges(10),
@@ -178,7 +173,7 @@ AliPHOSCorrelations::AliPHOSCorrelations(const char *name)
     fHaveTPCRP(0),
     fRP(0.),
     fEMRPBin(0),
-    fEventPlaneMethod(""),
+    fEventPlaneMethod("V0"),
     fMaxAbsVertexZ(10.),
     fCentralityLowLimit(0.),
     fCentralityHightLimit(90),
@@ -555,6 +550,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     // Step 1(done once):  
     if( fRunNumber != fEvent->GetRunNumber() )
     {
+        ShowTaskInfo();
         fRunNumber = fEvent->GetRunNumber();
         fInternalRunNumber = ConvertToInternalRunNumber(fRunNumber);
         SetGeometry();
@@ -584,7 +580,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     LogProgress(3);
 
     // Step 3: Event trigger selection
-    // fPHOSEvent, fMBEvent
+    // isREALEvent, fMBEvent
     if( RejectTriggerMaskSelection() ) 
     {
         PostData(1, fOutputContainer);
@@ -611,9 +607,10 @@ void AliPHOSCorrelations::UserExec(Option_t *)
         return; // Reject!
     }
     LogProgress(6);
-    if(fPHOSEvent)     FillHistogram( "hCentralityTriggerEvent",    fCentrality, fInternalRunNumber-0.5 ) ;
+    if(isREALEvent)  FillHistogram( "hCentralityTriggerEvent",    fCentrality, fInternalRunNumber-0.5 ) ;
     if(fMBEvent)     FillHistogram( "hCentralityMBEvent",        fCentrality, fInternalRunNumber-0.5 ) ;
     FillHistogram( "hCentrality", fCentrality, fInternalRunNumber-0.5 ) ;
+
 
     // Step 6: Reaction Plane
     // fHaveTPCRP, fRP, fRPV0A, fRPV0C, fRPBin
@@ -639,7 +636,7 @@ void AliPHOSCorrelations::UserExec(Option_t *)
     SelectTriggerPi0ME();
 
     // Step 11: Start correlation analysis.
-    if (fPHOSEvent)
+    if (isREALEvent)
     {
         ConsiderPi0s(); // Consider the most energetic Pi0 in this event with all tracks of this event.
         LogProgress(8);
@@ -651,12 +648,13 @@ void AliPHOSCorrelations::UserExec(Option_t *)
         LogProgress(9);
     }
 
-    // Filling mixing histograms:
+     // Filling mixing histograms:
+    ConsiderPi0sMix();      // Make background for extracting pi0 mass.
+    ConsiderTracksMix();    // Compare only one most energetic pi0 candidate with all tracks from previous MB events.
+
+    // Update pull
     if (fMBEvent)
     {
-        ConsiderPi0sMix();      // Make background for extracting pi0 mass.
-        ConsiderTracksMix();    // Compare only one most energetic pi0 candidate with all tracks from previous MB events.
-
         // Update pull using MB events only!
         UpdatePhotonLists();    // Updating pull of photons.
         UpdateTrackLists();     // Updating pull of tracks.
@@ -1293,7 +1291,7 @@ Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
     Bool_t isMIXEvent       = false;
 
     // TODO: Set false by default.
-    fPHOSEvent  = false ;
+    isREALEvent  = false ;
     fMBEvent    = false ;
 
     // Choosing triggers for different periods.
@@ -1306,8 +1304,14 @@ Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
 
     if(GetPeriod().Contains("11h"))
     {
+        if(fTriggerSelectionPbPb == kCentAndSCent)
+            isTriggerEvent = isCentral || isSemiCentral ;
+        if(fTriggerSelectionPbPb == kCent)
+             isTriggerEvent = isCentral ;
+        if(fTriggerSelectionPbPb == kSCent)
+             isTriggerEvent = isSemiCentral ;
+
         // Working: The same trigger in real and mixed events.
-        isTriggerEvent = isCentral || isSemiCentral ;
         isMIXEvent     = isCentral || isSemiCentral ;
     }
 
@@ -1317,7 +1321,7 @@ Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
         if ( isTriggerEvent )
         {
             FillHistogram("hTriggerPassedEvents", 17.);
-            fPHOSEvent = true;
+            isREALEvent = true;
         }
 
         if ( isMIXEvent )
@@ -1419,10 +1423,10 @@ void AliPHOSCorrelations::SetVertexBinning()
     // Define vertex bins by their edges
     const int nbins = fNVtxZBins+1;
     const double binWidth = 2*fMaxAbsVertexZ/fNVtxZBins;
-    Double_t edges[nbins+1];
+    Double_t edges[nbins];
     for (int i = 0; i < nbins; ++i)
     {
-        edges[i] = -1.*fNVtxZBins + binWidth*(double)i;
+        edges[i] = -1.*fMaxAbsVertexZ + binWidth*(double)i;
     }
 
     TArrayD vtxEdges(nbins, edges);
@@ -1488,13 +1492,11 @@ void AliPHOSCorrelations::SetCentralityBinning(const TArrayD& edges, const TArra
 {
     // Define centrality bins by their edges
     for(int i=0; i<edges.GetSize()-1; ++i)
-    {
         if(edges.At(i) > edges.At(i+1)) AliFatal("edges are not sorted");
-        if( edges.GetSize() != nMixed.GetSize()+1) AliFatal("edges and nMixed don't have appropriate relative sizes");
+    if( edges.GetSize() != nMixed.GetSize()+1) AliFatal("edges and nMixed don't have appropriate relative sizes");
       
-        fCentEdges = edges;
-        fCentNMixed = nMixed;
-    }
+    fCentEdges = edges;
+    fCentNMixed = nMixed;
 }
 
 //_______________________________________________________________________________
@@ -2420,12 +2422,12 @@ void AliPHOSCorrelations::SetMassSigmaParametrs(const Double_t par[3])
 void AliPHOSCorrelations::FillEventBiningProperties() const
 {
     // Fill fCentBin, fEMRPBin, fVtxBin.
-    if(fPHOSEvent || fMBEvent)
+    if(isREALEvent || fMBEvent)
     {
         FillHistogram( "hCentralityBining", fCentBin) ;
         FillHistogram( "phiRPflatBining",   fEMRPBin) ;
         FillHistogram( "hVertexZBining",    fVtxBin)  ;
-        if(fPHOSEvent) 
+        if(isREALEvent) 
         {
             FillHistogram( "hCentralityBiningTrigger", fCentBin) ;
             FillHistogram( "phiRPflatBiningTrigger",   fEMRPBin) ;
@@ -2440,6 +2442,12 @@ void AliPHOSCorrelations::FillEventBiningProperties() const
     }
 }
 
+void AliPHOSCorrelations::SetEventMixingVtxBinning(const Int_t nBins) 
+{ 
+    fNVtxZBins = nBins ; 
+    SetVertexBinning();
+}
+
 //_____________________________________________________________________________
 void AliPHOSCorrelations::ShowTaskInfo()
 {
@@ -2448,16 +2456,18 @@ void AliPHOSCorrelations::ShowTaskInfo()
     AliInfo(Form("Period: %s", fPeriod.Data()));
     
     AliInfo("Bining:");
+    AliInfo(Form("Number Of Centrality Bins = %i", GetNumberOfCentralityBins()));
     AliInfo(Form("fNVtxZBins = %i", fNVtxZBins));
-   // AliInfo(Form("fCentNMixed = %i", fCentNMixed));
     AliInfo(Form("fNEMRPBins = %i", fNEMRPBins));
-    AliInfo(" ");
+
     AliInfo(Form("fCentralityEstimator = %s", fCentralityEstimator.Data()));
+    AliInfo(Form("fEventPlaneMethod = %s", fEventPlaneMethod.Data()));
     
     AliInfo("Global event cuts:");
-    AliInfo(Form("fMaxAbsVertexZ = %f", fMaxAbsVertexZ));
+    if (GetPeriod().Contains("11h")) AliInfo(Form("fTriggerSelectionPbPb = %i (Info: kCentAndSCentCS=0; kCent=1; kSCent=2)", fTriggerSelectionPbPb ));
     AliInfo(Form("fCentralityLowLimit = %f", fCentralityLowLimit));
     AliInfo(Form("fCentralityHightLimit = %f", fCentralityHightLimit));
+    AliInfo(Form("fMaxAbsVertexZ = %f", fMaxAbsVertexZ));
     
     AliInfo("PHOS claster cuts:");
     AliInfo(Form("fMinClusterEnergy = %f", fMinClusterEnergy));
@@ -2474,11 +2484,12 @@ void AliPHOSCorrelations::ShowTaskInfo()
 
     AliInfo("Track cuts:");
     AliInfo(Form("fSelectHybridTracks = %i", fSelectHybridTracks));
-    // AliInfo(Form("fTrackStatus = %f", fTrackStatus));
-    // AliInfo(Form("fTrackFilterMask = %f", fTrackFilterMask));
     AliInfo(Form("fSelectSPDHitTracks = %i", fSelectSPDHitTracks));
     AliInfo(Form("fSelectFractionTPCSharedClusters = %i", fSelectFractionTPCSharedClusters));
     AliInfo(Form("fCutTPCSharedClustersFraction = %f", fCutTPCSharedClustersFraction));
 
-    AliInfo(Form("Parametrization: Maen [%f, %f], Sigma[%f, %f, %f]", fMassMean[0], fMassMean[1], fMassSigma[0], fMassSigma[1], fMassSigma[2]));
+    AliInfo("Mass cuts:");
+    if (fUseMassWindowParametrisation) AliInfo(Form("Parametrization: Maen [%f, %f], Sigma[%f, %f, %f]", fMassMean[0], fMassMean[1], fMassSigma[0], fMassSigma[1], fMassSigma[2]));
+    else  AliInfo( Form("Class will use default mass window: from %f to %f GeV.", fMassInvMeanMin, fMassInvMeanMax ) ); 
+    AliInfo(Form("fNSigmaWidth = %f", fNSigmaWidth));
 }

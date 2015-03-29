@@ -39,6 +39,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
+		task->SetTriggerSelectionInPbPb(AliPHOSCorrelations::kCent);
 	}
 	else
 	if( downCentLimit == 0 && upCentLimit == 20 ) 
@@ -50,6 +51,19 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		Int_t    nMixed[nbins] = {10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
+		task->SetTriggerSelectionInPbPb(AliPHOSCorrelations::kCentAndSCent);
+	}
+	else
+	if( downCentLimit == 10 && upCentLimit == 20 ) 
+	{
+		//Central
+		const int nbins = 5;
+		Double_t cbin[nbins+1] = {10., 12., 14., 16., 18., 20.};
+		TArrayD tbin(nbins+1, cbin);
+		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10};
+		TArrayI tNMixed(nbins, nMixed);
+		task->SetCentralityBinning(tbin, tNMixed);
+		task->SetTriggerSelectionInPbPb(AliPHOSCorrelations::kSCent);
 	}
 	else
 	if( downCentLimit == 20 && upCentLimit == 40 ) 
@@ -59,6 +73,17 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		Double_t cbin[nbins+1] = {20., 25., 30., 35., 40.};
 		TArrayD tbin(nbins+1, cbin);
 		Int_t    nMixed[nbins] = {10, 10, 10, 10,};
+		TArrayI tNMixed(nbins, nMixed);
+		task->SetCentralityBinning(tbin, tNMixed);
+	}
+	else
+	if( downCentLimit == 20 && upCentLimit == 50 ) 
+	{
+		// SemiCentral
+		const int nbins = 6;
+		Double_t cbin[nbins+1] = {20., 25., 30., 35., 40., 45., 50.};
+		TArrayD tbin(nbins+1, cbin);
+		Int_t    nMixed[nbins] = {10, 10, 10, 10, 10, 10};
 		TArrayI tNMixed(nbins, nMixed);
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
@@ -91,14 +116,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	}
 
 
-	if( TString(options).Contains("10h") )	
-	{
-		task->SetCentralityEstimator("V0M");
-
-		::Error("AddTaskPi0Correlations", "No support for 10h period. Skip");
-		return NULL;
-	}
-	else
+	// Period depended properties
 	if( TString(options).Contains("11h") )	
 	{
 		task->SetCentralityEstimator("V0M");
@@ -152,7 +170,8 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	task->SelectCollisionCandidates(AliVEvent::kAny);
 	task->SetCentralityBorders((Double_t)downCentLimit , (Double_t)upCentLimit) ;
 	task->SetEventPlaneMethod("V0");
-	task->SetEventMixingRPBinning(3);
+	// Mixing
+	task->SetEventMixingRPBinning(5);
 	task->SetEventMixingVtxBinning(5);
 	// Clasters
 	task->EnableTOFCut(false, 100.e-9);
