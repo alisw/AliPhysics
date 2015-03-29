@@ -784,7 +784,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     }
 
     file = cfg.GetGlobalFileName();
-    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || modified || initFES) {
+    if ((cfg.GetGlobalFileLastVersion() != cfg.GetGlobalFileVersion()) || modified || initFES || cfg.SaveScalers()) {
       modified = kTRUE;
       globalExported = kTRUE;
       status = daqDA_FES_storeFile(file.Data(), "GLOBAL");
@@ -797,7 +797,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
     }
 
     file = cfg.GetRegionalFileName();
-    if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES) {
+    if ( (cfg.GetRegionalFileLastVersion() != cfg.GetRegionalFileVersion()) || modified || initFES || cfg.SaveScalers()) {
       status = daqDA_FES_storeFile(file.Data(), "REGIONAL");
       if (status) {
 	printf("Failed to export file: %s\n",cfg.GetRegionalFileName());
