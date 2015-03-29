@@ -3371,7 +3371,7 @@ void AliFourPion::UserExec(Option_t *)
 		
 
 		
-		if(fMCcase && ENsum==6 && FilledMCpair12 && q3>0.015){// for momentum resolution and muon correction
+		if(fMCcase && ENsum==6 && FilledMCpair12){// for momentum resolution and muon correction
 		  if((fEvt+en3)->fTracks[k].fLabel < (fEvt+en3)->fMCarraySize){
 		    
 		    pVect3MC[0]=sqrt(pow((fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
@@ -3389,10 +3389,10 @@ void AliFourPion::UserExec(Option_t *)
 		    //if(ch1==ch3 && qinv13>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv13);
 		    //if(ch2==ch3 && qinv23>0.006) TripletWeightTTC *= SCpairWeight->Eval(qinv23);
 		    
-		    		    
+		    
 		    Pparent3[0]=pVect3MC[0]; Pparent3[1]=pVect3MC[1]; Pparent3[2]=pVect3MC[2]; Pparent3[3]=pVect3MC[3];
 		    pionParent3=kFALSE;
-		  
+		    
 		    if(abs((fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPdgCode)==13){// muon check
 		      Int_t MotherLabel3 = (fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fMotherLabel;
 		      if(abs((fEvt+en3)->fMCtracks[MotherLabel3].fPdgCode)==211) {
@@ -3405,7 +3405,7 @@ void AliFourPion::UserExec(Option_t *)
 		    parentQinv13 = GetQinv(Pparent1, Pparent3);
 		    parentQinv23 = GetQinv(Pparent2, Pparent3);
 		    parentQ3 = sqrt(pow(parentQinv12,2) + pow(parentQinv13,2) + pow(parentQinv23,2));
-		   
+		    
 		    if(parentQinv12 > 0.001 && parentQinv13 > 0.001 && parentQinv23 > 0.001 && parentQ3 < 0.5){
 		      FilledMCtriplet123=kTRUE;
 		      if(pionParent1 || pionParent2 || pionParent3) {// want at least one pion-->muon
@@ -3419,56 +3419,56 @@ void AliFourPion::UserExec(Option_t *)
 			((TH2D*)fOutputList->FindObject("fAvgQ12VersusQ3"))->Fill(parentQ3, parentQinv12);
 			((TH2D*)fOutputList->FindObject("fAvgQ13VersusQ3"))->Fill(parentQ3, parentQinv13);
 			((TH2D*)fOutputList->FindObject("fAvgQ23VersusQ3"))->Fill(parentQ3, parentQinv23);
-
-			for(Int_t term=1; term<=4; term++){
-			  if(term==1) {}
-			  else if(term==2) {if(!pionParent1 && !pionParent2) continue;}
-			  else if(term==3) {if(!pionParent1 && !pionParent3) continue;}
-			  else {if(!pionParent2 && !pionParent3) continue;}
-			  for(Int_t Riter=0; Riter<fRVALUES; Riter++){
-			    Float_t Rvalue = fRstartMC+Riter;
-			    Float_t WInput = MCWeight3(term, Rvalue, 1.0, chGroup3, parentQinvGroup3, parentkTGroup3);
-			    Float_t WInputParentFSI = MCWeightFSI3(term, Rvalue, 1.0, chGroup3, parentQinvGroup3);
-			    Float_t WInputFSI = MCWeightFSI3(term, Rvalue, 1.0, chGroup3, QinvMCGroup3);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(1, Rvalue, q3MC, WInput);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(1, Rvalue, parentQ3, WInput);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(1, Rvalue, q3MC, WInputFSI);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(1, Rvalue, parentQ3, WInputParentFSI);
-			    //
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(2, Rvalue, q3MC);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(2, Rvalue, parentQ3);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(2, Rvalue, q3MC);
-			    Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(2, Rvalue, parentQ3);
-			  }// Riter
-			}// term loop
-		    
+			
+			if(q3MC>=sqrt(3.)*fQLowerCut){
+			  for(Int_t term=1; term<=4; term++){
+			    if(term==1) {}
+			    else if(term==2) {if(!pionParent1 && !pionParent2) continue;}
+			    else if(term==3) {if(!pionParent1 && !pionParent3) continue;}
+			    else {if(!pionParent2 && !pionParent3) continue;}
+			    for(Int_t Riter=0; Riter<fRVALUES; Riter++){
+			      Float_t Rvalue = fRstartMC+Riter;
+			      Float_t WInput = MCWeight3(term, Rvalue, 1.0, chGroup3, parentQinvGroup3, parentkTGroup3);
+			      Float_t WInputParentFSI = MCWeightFSI3(term, Rvalue, 1.0, chGroup3, parentQinvGroup3);
+			      Float_t WInputFSI = MCWeightFSI3(term, Rvalue, 1.0, chGroup3, QinvMCGroup3);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(1, Rvalue, q3MC, WInput);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(1, Rvalue, parentQ3, WInput);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(1, Rvalue, q3MC, WInputFSI);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(1, Rvalue, parentQ3, WInputParentFSI);
+			      //
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonSmeared->Fill(2, Rvalue, q3MC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonIdeal->Fill(2, Rvalue, parentQ3);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fMuonPionK3->Fill(2, Rvalue, q3MC);
+			      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[0].ThreePT[term-1].fPionPionK3->Fill(2, Rvalue, parentQ3);
+			    }// Riter
+			  }// term loop
+			}// q3MC min
 		      }// pion parent check
 		    }// parentQ check (muon correction)
-
+		      
 		    
 		    Int_t indexq3 = q3 / 0.005;
 		    if(indexq3 >=35) indexq3=34; 
 		    Float_t WSpectrum = 1;
 		    //if(fCollisionType==0){
-		      //WSpectrum = HIJINGq3WeightsSC[indexq3];
-		      //if(ch1!=ch2 || ch1!=ch3) WSpectrum = HIJINGq3WeightsMC[indexq3];
+		    //WSpectrum = HIJINGq3WeightsSC[indexq3];
+		    //if(ch1!=ch2 || ch1!=ch3) WSpectrum = HIJINGq3WeightsMC[indexq3];
 		    //}
 		    // 3-pion momentum resolution
 		    for(Int_t term=1; term<=5; term++){
 		      for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			Float_t Rvalue = fRstartMC+Riter;
 			Float_t WInput = MCWeight3(term, Rvalue, ffcSqMRC, chGroup3, QinvMCGroup3, kTGroup3);
-			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[EDindex3].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput*WSpectrum);
+			if(q3MC>=sqrt(3.)*fQLowerCut) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[EDindex3].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput*WSpectrum);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[EDindex3].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput*WSpectrum);
 		      }
 		    }
-		    
 		  }// 3rd particle label check
 		}// MCcase and ENsum==6
 		
 		
 		
-	
+		
 		/////////////////////////////////////////////////////////////
 		for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
 		  if(en4==0){
