@@ -116,7 +116,11 @@ public:
     /** 
      * Use analysis utility class 
      */
-    kPileupUtil = 0x20 
+    kPileupUtil = 0x20,
+    /** 
+     * Also accept pileup 
+     */
+    kPileupBins = 0x40,
   };
 
   enum ECentralityEstimator { 

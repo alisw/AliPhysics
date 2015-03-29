@@ -104,7 +104,8 @@ public:
   enum EPileupType { 
     kSPD          = 0x1, 
     kTracks       = 0x2,
-    kOutOfBunch   = 0x4
+    kOutOfBunch   = 0x4,
+    kSPDBins      = 0x8
   };
   /** 
    * Centrality methods 
@@ -710,7 +711,7 @@ protected:
   Int_t    fProdSVN;              // AliROOT revision used in production
   Bool_t   fProdMC;               // True if anchor production
 
-  ClassDef(AliFMDEventInspector,14); // Inspect the event 
+  ClassDef(AliFMDEventInspector,15); // Inspect the event 
 };
 
 #endif

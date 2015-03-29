@@ -418,6 +418,11 @@ AliBasedNdetaTask::CheckEvent(const AliAODForwardMult& fwd)
       fwd.IsTriggerBits(AliAODForwardMult::kPileupBC)) 
     return false;
 
+  // Check for out of bunc pile-up 
+  if (fPileupMask & kPileupBins   && 
+      fwd.IsTriggerBits(AliAODForwardMult::kPileupBins)) 
+    return false;
+  
   // Check for SPD outlier (N_cluster > 65 + 4 * N_tracklet)
   if (fCheckSPDOutlier && fwd.IsTriggerBits(AliAODForwardMult::kSPDOutlier))
     return false;
