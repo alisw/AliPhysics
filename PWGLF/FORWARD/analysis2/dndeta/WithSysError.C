@@ -18,8 +18,8 @@ WithSysError(const TString&  system,
 {
   // --- Search path -------------------------------------------------
   const char* fwd = 0;
-  if (gSystem->Getenv("$FWD"))
-    fwd = gSystem->Getenv(G"$FWD");
+  if (gSystem->Getenv("FWD"))
+    fwd = gSystem->Getenv("FWD");
   else 
     fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
   gROOT->SetMacroPath(Form("%s:%s/dndeta:%s/gse:%s/scripts",

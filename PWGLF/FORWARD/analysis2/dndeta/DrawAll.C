@@ -11,8 +11,8 @@ const char*  APTrg() { const char* x[] = { "CENTV0X", 0 };            return x;}
 void DrawAll(UShort_t which=1)
 {
   const char* fwd = 0;
-  if (gSystem->Getenv("$FWD"))
-    fwd = gSystem->Getenv("$FWD");
+  if (gSystem->Getenv("FWD"))
+    fwd = gSystem->Getenv("FWD");
   else 
     fwd = gSystem->ExpandPathName("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
   gROOT->SetMacroPath(Form("%s/dndeta:%s", gROOT->GetMacroPath(), fwd));
