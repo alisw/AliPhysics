@@ -85,8 +85,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
 
   fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
   
-  fhNmissing = new TH3F("fhNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added; N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 80,0,20, 80,0,20);
-  fhCmpNmissStrategy = new TH2F("fhCmpNmissStrategy", "Compare different way of obtaining N missing; N = (1./eff -1.) #times N_{constituents}; N from truth", 80,0,20, 80,0,20);
+  fhNmissing = new TH3F("fhNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added; N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 21,0,20, 21,0,20);
+  fhCmpNmissStrategy = new TH2F("fhCmpNmissStrategy", "Compare different way of obtaining N missing; N = (1./eff -1.) #times N_{constituents}; N from truth", 21,0,20, 21,0,20);
   
   fListOfOutput = new TList();
   fListOfOutput->SetName("JetByJetCorrectionOutput");
@@ -161,12 +161,14 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
   Int_t np = TMath::FloorNint((double)jet->GetNumberOfTracks() * (1./eff -1.));
   
   
-  Int_t npc=np;
-  if(fNpPoisson){
+  
+  if(fExternalNmissed) {
      fhCmpNmissStrategy->Fill(np, fNMissedTracks);
-     if(fExternalNmissed) np = fNMissedTracks; //if the number of missed tracks was calculated from external sources
-     
-     npc=fRndm->Poisson(np);
+     np = fNMissedTracks; //if the number of missed tracks was calculated from external sources
+  }
+  Int_t npc=np; //take the particle missed as particle added
+  if(fNpPoisson){
+     npc=fRndm->Poisson(np); // smear the particle missed with a poissonian to get the number of added
   }
   
   fhNmissing->Fill(jet->Pt(), npc, np);
@@ -174,7 +176,7 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
 
   Double_t mass = 0.13957; //pion mass
 
-  for(Int_t i = 0; i<np; i++) {
+  for(Int_t i = 0; i<npc; i++) {
     Double_t r;
     Double_t pt;
     hTemplate->GetRandom2(r,pt);
