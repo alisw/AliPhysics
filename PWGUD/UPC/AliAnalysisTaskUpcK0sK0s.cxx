@@ -62,7 +62,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s() 
-  : AliAnalysisTaskSE(),fType(0),fK0sTree(0),
+  : AliAnalysisTaskSE(),fType(0),fPIDResponse(0),fK0sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
@@ -80,7 +80,7 @@ AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s(const char *name) 
-  : AliAnalysisTaskSE(name),fType(0),fK0sTree(0),
+  : AliAnalysisTaskSE(name),fType(0),fPIDResponse(0),fK0sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
@@ -151,6 +151,11 @@ AliAnalysisTaskUpcK0sK0s::~AliAnalysisTaskUpcK0sK0s()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcK0sK0s::UserCreateOutputObjects()
 {
+
+  //PID response
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
 
     //vertices
   fK0sAODv0s = new TClonesArray("AliAODv0", 1000);
@@ -593,7 +598,20 @@ void AliAnalysisTaskUpcK0sK0s::RunESDtree()
 		AliExternalTrackParam cParam;
       		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
 
-		new((*fK0sESDTracks)[i]) AliESDtrack(*trk);	
+		new((*fK0sESDTracks)[i]) AliESDtrack(*trk);
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		fPIDTOFMuon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		fPIDTOFElectron[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		fPIDTOFPion[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		fPIDTOFKaon[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		fPIDTOFProton[i] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+			
   		}
 	for(Int_t i=0; i<2; i++){
 	  	AliESDtrack *trk = esd->GetTrack(PosTrackIndex[i]);
@@ -605,6 +623,19 @@ void AliAnalysisTaskUpcK0sK0s::RunESDtree()
       		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
 
 		new((*fK0sESDTracks)[i+2]) AliESDtrack(*trk);	
+		
+		fPIDTPCMuon[i+2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i+2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i+2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i+2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i+2] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		fPIDTOFMuon[i+2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kMuon);
+		fPIDTOFElectron[i+2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		fPIDTOFPion[i+2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kPion);
+		fPIDTOFKaon[i+2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kKaon);
+		fPIDTOFProton[i+2] = fPIDResponse->NumberOfSigmasTOF(trk,AliPID::kProton);
+		
   		}
   fK0sTree->Fill();
   }
