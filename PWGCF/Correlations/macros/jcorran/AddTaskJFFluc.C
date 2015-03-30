@@ -1,8 +1,9 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, int debuglevel){
+AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,Int_t FilterBit = 768 , double eta_min, double eta_max, int debuglevel){
     // Load Custom Configuration and parameters
     // override values with parameters
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
+	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
 
 	//==== Get the pointer to the Analyis mgr
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -22,10 +23,11 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName,Bool_t IsMC = kFALSE, Int_t Filt
 
     //==== JCORRAN TASK
     int CollisionCandidates = AliVEvent::kCentral;
-    AliJFFlucTask *FFtask = new AliJFFlucTask( taskName , CollisionCandidates, IsMC );
+    AliJFFlucTask *FFtask = new AliJFFlucTask( taskName , CollisionCandidates, IsMC, IsWeakExclude );
 
 	FFtask->SetFFlucTaskName( taskName ) ;
 	FFtask->SetIsMC( IsMC );
+	FFtask->SetIsWeakDeacyExclude( IsWeakExclude ) ;
 	FFtask->SetTestFilterBit( FilterBit ) ;
 	FFtask->SetEtaRange( eta_min, eta_max);
 	FFtask->SetDebugLevel( debuglevel ) ; 
