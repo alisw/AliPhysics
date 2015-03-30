@@ -10,6 +10,7 @@ class TTree;
 class TH1;
 class TH2;
 class TList;
+class AliPIDResponse;
 
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
@@ -30,6 +31,8 @@ class AliAnalysisTaskUpcK0sK0s : public AliAnalysisTaskSE {
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
+  
+  AliPIDResponse *fPIDResponse;
   
   //event tree
   TTree *fK0sTree;
