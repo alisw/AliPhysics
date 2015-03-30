@@ -33,6 +33,8 @@
 #include <TROOT.h>
 #include <TVirtualPad.h>
 #include <float.h>
+#include "AliMUONPainterEnv.h"
+#include <cassert>
 
 ///\class AliMUONPainterMatrix
 ///
@@ -40,9 +42,7 @@
 ///
 ///\author Laurent Aphecetche, Subatech
 
-using std::cout;
-using std::endl;
-///\cond CLASSIMP 
+///\cond CLASSIMP
 ClassImp(AliMUONPainterMatrix)
 ///\endcond
 
@@ -148,12 +148,6 @@ AliMUONPainterMatrix::ComputeDataRange()
         dataMax = TMath::Max(max,dataMax);
       }
     }
-
-    AliDebug(1,Form("painter %s group %s min %e max %e dataMin,Max=%7.3f,%7.3f",
-                    p->GetName(),
-                    g ? g->Type() : "none",
-                    min,max,
-                    dataMin,dataMax));
   }
 
   if ( dataMin > dataMax && atLeastOnePlotter ) 
@@ -162,8 +156,6 @@ AliMUONPainterMatrix::ComputeDataRange()
                     dataMin,dataMax));
     dataMin = dataMax = 0.0;
   }
-  
-  AliDebug(1,Form("Final dataMin,Max=%7.3f,%7.3f",dataMin,dataMax));
   
   SetDataRange(dataMin,dataMax);
 }
@@ -454,8 +446,8 @@ void
 AliMUONPainterMatrix::Print(Option_t*) const
 {
   /// Printout
-  cout << "Whatname=" << fWhatname.Data() << " Basename=" << fBasename.Data()
-  << " Nx=" << fNx << " Ny=" << fNy << " Att=" << fAttributes.GetName() << endl;
+  std::cout << "Whatname=" << fWhatname.Data() << " Basename=" << fBasename.Data()
+  << " Nx=" << fNx << " Ny=" << fNy << " Att=" << fAttributes.GetName() << std::endl;
 }
 
 //_____________________________________________________________________________
@@ -479,7 +471,28 @@ AliMUONPainterMatrix::SetData(const char* pattern, AliMUONVTrackerData* d,
   {
     fWhatname = "";
   }
+  
   SetName();
+  
+  // get the data source range, if any is given
+  
+  if ( d )
+  {
+    AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+    
+    TString desc = env->DataSourceDescriptor(d->GetName());
+    TString dimensionName = d->DimensionName(DataIndex());
+    
+    Double_t xmin,xmax;
+
+    Bool_t ok = env->Ranges2DimensionRange(env->Descriptor2Ranges(desc),dimensionName.Data(),xmin,xmax);
+    
+    if (ok)
+    {
+      SetDataRange(xmin,xmax);
+      env->Save();
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -496,7 +509,18 @@ AliMUONPainterMatrix::SetDataRange(Double_t dataMin, Double_t dataMax)
     {
       g->SetDataRange(dataMin,dataMax);
     }
-  }       
+  }
+  
+  AliMUONVTrackerData* data = Data();
+  
+  if ( data )
+  {
+    AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+    
+    TString dimensionName = data->DimensionName(DataIndex());
+    env->SetDimensionRange(data->GetName(),dimensionName,dataMin,dataMax);
+  }
+  
 }
 
 //_____________________________________________________________________________

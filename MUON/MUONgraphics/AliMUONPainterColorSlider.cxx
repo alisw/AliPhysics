@@ -41,7 +41,9 @@ AliMUONPainterColorSlider::AliMUONPainterColorSlider(const TGWindow* p,
   fMin(FLT_MAX),
   fMax(-FLT_MAX),
   fAutoButton(new TGTextButton(this,"Auto")),
-  fLockButton(new TGTextButton(this,"Lock"))
+  fLockButton(new TGTextButton(this,"Lock")),
+  fDefaultButton(new TGTextButton(this,"Back to default")),
+  fSetDefaultButton(new TGTextButton(this,"Set as default"))
 {
     /// ctor
     Int_t ndivisions(20);
@@ -83,7 +85,15 @@ AliMUONPainterColorSlider::AliMUONPainterColorSlider(const TGWindow* p,
   AddFrame(fLockButton,new TGLayoutHints(kLHintsExpandX,0,0,topBorder,0));
   
   fLockButton->Connect("Clicked()","AliMUONPainterColorSlider",this,"LockButtonWasClicked()");
-  
+
+  AddFrame(fDefaultButton,new TGLayoutHints(kLHintsExpandX,0,0,topBorder,0));
+
+  fDefaultButton->Connect("Clicked()","AliMUONPainterColorSlider",this,"DefaultButtonWasClicked()");
+
+  AddFrame(fSetDefaultButton,new TGLayoutHints(kLHintsExpandX,0,0,topBorder,0));
+
+  fSetDefaultButton->Connect("Clicked()","AliMUONPainterColorSlider",this,"SetDefaultButtonWasClicked(Double_t*)");
+
   fEntryMax->Connect("ValueSet(Long_t)","AliMUONPainterColorSlider",this,"DataRangeWasChanged(Double_t*)");
   fEntryMin->Connect("ValueSet(Long_t)","AliMUONPainterColorSlider",this,"DataRangeWasChanged(Double_t*)");
 }
@@ -99,7 +109,6 @@ void
 AliMUONPainterColorSlider::DataRangeAutoRequested()
 {
   /// Signal that the "Auto" button was clicked
-  AliDebug(1,"");
   Emit("DataRangeAutoRequested()");
 }
 
@@ -113,9 +122,26 @@ AliMUONPainterColorSlider::DataRangeWasChanged(Double_t*)
   
   Long_t param[] = { (Long_t)values };
   
-  AliDebug(1,Form("double min %e max %e",values[0],values[1]));
-  
   Emit("DataRangeWasChanged(Double_t*)",param);
+}
+
+//_____________________________________________________________________________
+void AliMUONPainterColorSlider::DefaultButtonWasClicked()
+{
+  /// Signal that the "Default" button was clicked
+  Emit("DefaultButtonWasClicked()");
+}
+
+//_____________________________________________________________________________
+void AliMUONPainterColorSlider::SetDefaultButtonWasClicked(Double_t*)
+{
+  /// Signal that the "SetDefault" button was clicked
+  
+  Double_t values[] = { fEntryMin->GetNumber(), fEntryMax->GetNumber() };
+  
+  Long_t param[] = { (Long_t)values };
+  
+  Emit("SetDefaultButtonWasClicked(Double_t*)",param);
 }
 
 //_____________________________________________________________________________
@@ -125,6 +151,20 @@ AliMUONPainterColorSlider::IsLocked() const
   /// Whether our range is locked or not
 
   return (fLockButton->GetString() == "Unlock"); // if we can unlock it means we are locked...
+}
+
+//_____________________________________________________________________________
+void AliMUONPainterColorSlider::LockDefaultButtons()
+{
+  fDefaultButton->SetEnabled(kFALSE);
+  fSetDefaultButton->SetEnabled(kFALSE);
+}
+
+//_____________________________________________________________________________
+void AliMUONPainterColorSlider::UnlockDefaultButtons()
+{
+  fDefaultButton->SetEnabled(kTRUE);
+  fSetDefaultButton->SetEnabled(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -140,6 +180,7 @@ AliMUONPainterColorSlider::LockButtonWasClicked()
     fEntryMin->SetState(kTRUE);
     fEntryMax->SetState(kTRUE);
     fAutoButton->SetEnabled(kTRUE);
+    UnlockDefaultButtons();
   }
   else
   {
@@ -148,6 +189,7 @@ AliMUONPainterColorSlider::LockButtonWasClicked()
     fEntryMin->SetState(kFALSE);
     fEntryMax->SetState(kFALSE);
     fAutoButton->SetEnabled(kFALSE);
+    LockDefaultButtons();
   }
 }
 
@@ -157,9 +199,7 @@ AliMUONPainterColorSlider::SetRange(Double_t min, Double_t max, Bool_t emit)
 {
   /// Set the data range
   
-  AliDebug(1,Form("min %e max %e emit %d",min,max,emit));
-  
-  if ( !IsLocked() ) 
+  if ( !IsLocked() )
   {
     fMin = min;
     fMax = max;

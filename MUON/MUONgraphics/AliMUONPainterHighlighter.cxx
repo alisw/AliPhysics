@@ -51,7 +51,6 @@ AliMUONPainterHighlighter::SetPainter(AliMUONVPainter* painter, Double_t x, Doub
 {
   /// Set the painte we should highlight
   
-  AliDebug(1,Form("painter=%s x=%e y=%e",(painter ? painter->GetName() : ""),x,y));
   fPainter = painter;
   fX = x;
   fY = y;
@@ -64,7 +63,6 @@ AliMUONPainterHighlighter::Paint(Option_t*)
   /// Actually highlight our painter, if we have one
   if ( fPainter ) 
   {
-    AliDebug(1,Form("painter=%s fX=%e fY=%e",fPainter->GetName(),fX,fY));
     fPainter->PaintOutline(5,5,fX,fY);
   }
 }

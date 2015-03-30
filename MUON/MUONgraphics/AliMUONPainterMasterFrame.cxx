@@ -135,8 +135,6 @@ fAttPainterSelectorFrame(0x0)
   AliMUONPainterInterfaceHelper::SetBackgroundColor("MasterFrame.Navigation",*fNavigationFrame);
   AliMUONPainterInterfaceHelper::SetBackgroundColor("MasterFrame.Main",*this);
   
-  AliDebug(1,Form("fNavigation=%p",&fNavigation));
-  
   AliMUONPainterRegistry::Instance()->Connect("PainterMatrixWantToShow(AliMUONPainterMatrix*)",
                                               "AliMUONPainterMasterFrame",
                                               this,
@@ -158,8 +156,6 @@ AliMUONPainterMasterFrame::AddPainterMatrix(AliMUONPainterMatrix* painterMatrix)
 {
   /// array is adopted (by the registry)
 
-  AliDebug(1,Form("matrix=%p %s",painterMatrix,painterMatrix->GetName()));
-  
   Int_t i = AliMUONPainterRegistry::Instance()->Register(painterMatrix);
 
   SetNavigation(i);
@@ -172,8 +168,6 @@ AliMUONPainterMasterFrame::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
   /// FIXME: should check whether we are the active window before
   /// responding to this message ?
 
-  AliDebug(1,Form("group=%p %s",group,group->GetName()));
-  
   Int_t i = AliMUONPainterRegistry::Instance()->FindIndexOf(group);
 
   Int_t alreadyThere(-1);

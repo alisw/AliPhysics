@@ -90,9 +90,6 @@ fBusPatchId(busPatchId)
   
   AliMUONContour* bpContour = h->GetContour(ContourName());
   
-  AliDebug(1,Form("BusPatchId %04d bending %d DE %4d bpContour(%s)=%p nofManus=%d",
-                  fBusPatchId,att.IsBendingPlane(),detElemId,ContourName().Data(),bpContour,busPatch->GetNofManus()));
-  
   Double_t xmin(FLT_MAX), ymin(FLT_MAX), xmax(-FLT_MAX), ymax(-FLT_MAX);
   
   TObjArray contours;
@@ -114,11 +111,6 @@ fBusPatchId(busPatchId)
       if ( ( manuId & mask ) == mask ) correctPlane = kFALSE;
     }
 
-    AliDebug(1,Form("Adding Manu %04d to BusPatch %04d (DE %04d) "
-                    "manu & mask = %d correctPlane %d planeType %s",
-                    manuId,fBusPatchId,busPatch->GetDEId(),
-                    (manuId & mask),correctPlane,AliMp::PlaneTypeName(planeType).Data()));
-        
     if (!correctPlane) continue;
     
     ++nmanus;
@@ -150,7 +142,6 @@ fBusPatchId(busPatchId)
     
   if (!bpContour)
   {
-    AliDebug(1,Form("Creating contour %s",ContourName().Data()));
     bpContour = h->MergeContours(contours,ContourName());
     if (!bpContour)
     {

@@ -84,8 +84,6 @@ AliMUONPainterRegistry::HistoryMenuActivated(Int_t i)
 {
   /// A painterMatrix was chosen from the history menu
   
-  AliDebug(1,Form("i=%d",i));
-  
   TGMenuEntry* entry = fHistoryMenu->GetEntry(i);
   
   AliMUONPainterMatrix* group = reinterpret_cast<AliMUONPainterMatrix*>(entry->GetUserData());
@@ -144,8 +142,6 @@ AliMUONPainterRegistry::AddToHistory(AliMUONPainterMatrix* group)
     fHistoryMenu->Connect("Activated(Int_t)",
                           "AliMUONPainterRegistry",this,
                           "HistoryMenuActivated(Int_t)");
-    
-    AliDebug(1,Form("HistoryMenu create at %p",fHistoryMenu));
   }
   
   if ( fHistoryMenu ) 

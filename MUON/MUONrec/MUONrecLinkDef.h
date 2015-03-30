@@ -61,6 +61,7 @@
 #pragma link C++ class AliMUONVTrackerDataMaker+;
 #pragma link C++ class AliMUONTrackerDataMaker+;
 #pragma link C++ class AliMUONTrackerConditionDataMaker+;
+#pragma link C++ class AliMUONTrackerDataSourceTypes+;
 
 #pragma link C++ class AliMUONQAMappingCheck+;
 

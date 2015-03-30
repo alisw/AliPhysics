@@ -87,8 +87,6 @@ AliMUONPCBPainter::AliMUONPCBPainter(const AliMUONAttPainter& att,
   for ( Int_t imp = 0 ; imp < pcb->GetSize(); ++imp ) 
   {
     AliMpMotifPosition* mp = pcb->GetMotifPosition(imp);
-    AliDebug(1,Form("Adding manu %d to PCB %d of DE %d",
-                    mp->GetID(),fPCBIndex,fDetElemId));
     AliMUONVPainter* painter = new AliMUONManuPainter(Attributes(),fDetElemId,mp->GetID());
     Add(painter);
     if (!contour)

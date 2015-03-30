@@ -25,6 +25,10 @@ public:
   AliMUONPainterColorSlider(const TGWindow* p, UInt_t w, UInt_t h);
   virtual ~AliMUONPainterColorSlider();
 
+  void DefaultButtonWasClicked(); // *SIGNAL*
+
+  void SetDefaultButtonWasClicked(Double_t* range); // *SIGNAL*
+
   void DataRangeAutoRequested(); // *SIGNAL*
 
   void DataRangeWasChanged(Double_t* range); // *SIGNAL*
@@ -40,6 +44,9 @@ private:
   AliMUONPainterColorSlider(const AliMUONPainterColorSlider& rhs);
   /// Not implemented
   AliMUONPainterColorSlider& operator=(const AliMUONPainterColorSlider& rhs);
+
+  void LockDefaultButtons();
+  void UnlockDefaultButtons();
   
 private:
   TGNumberEntry* fEntryMin; ///< textbox for min value to be represented
@@ -48,8 +55,10 @@ private:
   Double_t fMax; ///< max value to be represented
   TGTextButton* fAutoButton; ///< to toggle data range computation
   TGTextButton* fLockButton; ///< to toggle locking of range
+  TGTextButton* fDefaultButton; ///< to get back to default range (if defined)
+  TGTextButton* fSetDefaultButton; ///< to set the default for the current source
   
-  ClassDef(AliMUONPainterColorSlider,2) // A painter color palette
+  ClassDef(AliMUONPainterColorSlider,3) // A painter color palette
 };
 
 #endif

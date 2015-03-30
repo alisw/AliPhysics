@@ -146,17 +146,12 @@ fDetElemId(detElemId)
     
   AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(fDetElemId);
   
-  AliDebug(1,Form("de %p n %d",de,de->GetNofBusPatches()));
-  
-  for ( Int_t i = 0; i < de->GetNofBusPatches(); ++i ) 
+  for ( Int_t i = 0; i < de->GetNofBusPatches(); ++i )
   {
     AliMUONBusPatchPainter* painter = new AliMUONBusPatchPainter(Attributes(),de->GetBusPatchId(i));
                                                                  
     if ( !painter->IsValid() ) 
     {
-      AliDebug(1,Form("Skipping BP %d which seem to have no manu in plane %s",
-                   de->GetBusPatchId(i),
-                   Attributes().IsBendingPlane() ? "bending" : "non bending"));
       delete painter;
       continue;
     }
@@ -344,8 +339,6 @@ AliMUONDEPainter::SetResponder(Int_t depth)
 {
   /// Select as responder the *first* group that has a given depth
 
-  AliDebug(1,Form("depth=%d",depth));
-  
   if (!fPainterGroups)
   {
     CreateGroups();
@@ -361,8 +354,6 @@ AliMUONDEPainter::SetResponder(Int_t depth)
     AliMUONPainterGroup* group = static_cast<AliMUONPainterGroup*>(fPainterGroups->GetValue(str));
     if ( str->String() == "BUSPATCH" ) 
     {
-      AliDebug(1,Form("group %s is indeed buspatch, using as responder %d",
-                      group->Type(),depth));
       group->SetResponder(kTRUE);
       fResponderGroup = group;
       break;

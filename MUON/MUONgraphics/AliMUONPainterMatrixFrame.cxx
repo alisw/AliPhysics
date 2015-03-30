@@ -40,6 +40,8 @@
 #include <TString.h>
 #include <cassert>
 #include <float.h>
+#include "AliMUONPainterEnv.h"
+#include "AliMUONPainterHelper.h"
 
 /// \class AliMUONPainterMatrixFrame
 ///
@@ -131,7 +133,17 @@ AliMUONPainterMatrixFrame::AliMUONPainterMatrixFrame(const TGWindow* window,
                           "AliMUONPainterMatrixFrame",
                          this,
                          "DataRangeAutoRequested()");
-    
+  
+    fColorSlider->Connect("DefaultButtonWasClicked()",
+                          "AliMUONPainterMatrixFrame",
+                          this,
+                          "ColorSliderDefaultButtonWasClicked()");
+
+  fColorSlider->Connect("SetDefaultButtonWasClicked(Double_t*)",
+                        "AliMUONPainterMatrixFrame",
+                        this,
+                        "ColorSliderSetDefaultButtonWasClicked(Double_t*)");
+
     // Set the colors (mainly for debugging frame layout)
 
     AliMUONPainterInterfaceHelper::SetBackgroundColor("MatrixFrame.Main",*this);
@@ -177,13 +189,7 @@ AliMUONPainterMatrixFrame::ChangeTitle(AliMUONVPainter* painter,
     
     AliMUONPainterGroup* group = master->PlotterGroup();
 
-    AliDebug(1,Form("Painter is %s plotterGroup is %p %s",
-                    painter->PathName().Data(),
-                    group,
-                    ( group ? group->Type() : "")));
-    
-    
-    if ( group && group->Data() ) 
+    if ( group && group->Data() )
     {
       name += "\n";
       name += painter->Describe(*(group->Data()),group->DataIndex(),x,y);
@@ -218,14 +224,71 @@ AliMUONPainterMatrixFrame::Clear(Option_t*)
 }
 
 //_____________________________________________________________________________
+void AliMUONPainterMatrixFrame::ColorSliderDefaultButtonWasClicked()
+{
+  /// Get here when the button "Default" under the color scale was clicked
+  /// We must then reset the data range to its default (if available)
+  
+  AliMUONVTrackerData* data = fPainterMatrix->Data();
+  if (!data)
+  {
+    // no data : nothing to do
+    return;
+  }
+  
+  TString dimName = data->DimensionName(fPainterMatrix->DataIndex());
+  
+  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+  
+  env->ForceDataSourceToDefaultRange(data->GetName(),dimName.Data());
+
+  Double_t xmin, xmax;
+
+  TString desc = env->DataSourceDescriptor(data->GetName());
+  
+  Bool_t ok = env->Ranges2DimensionRange(env->Descriptor2Ranges(desc),dimName.Data(),xmin,xmax);
+
+  if (ok)
+  {
+    fColorSlider->SetRange(xmin,xmax);
+  }
+  else
+  {
+    AliError(Form("Could not get xmin,xmax for data source %s dimension %s",data->GetName(),dimName.Data()));
+  }
+}
+
+//_____________________________________________________________________________
+void AliMUONPainterMatrixFrame::ColorSliderSetDefaultButtonWasClicked(Double_t* range)
+{
+  /// Use the current values of the color slider as default range for the
+  /// current dimension of the current data (if any)
+  
+  AliMUONVTrackerData* data = fPainterMatrix->Data();
+  if (!data)
+  {
+    // no data : nothing to do
+    return;
+  }
+
+  TString dimName = data->DimensionName(fPainterMatrix->DataIndex());
+  
+  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
+  
+  TString dataSourceID = env->DataSourceID(data->GetName());
+  
+  TString dataSourceType = env->ID2Type(dataSourceID);
+  
+  env->SetDefaultRange(dataSourceType.Data(),dimName.Data(),range[0],range[1]);
+  
+  env->Save();
+}
+
+//_____________________________________________________________________________
 void 
 AliMUONPainterMatrixFrame::CreateButtons()
 {
   /// Create the interface buttons
-  
-  AliDebug(1,"");
-  
-//  AliMUONVPainter* painter = fPainterMatrix->Painter(0);
   
   /// create buttons    
   TObjArray types;
@@ -257,13 +320,9 @@ AliMUONPainterMatrixFrame::DataRangeAutoRequested()
   
   Double_t dataMin, dataMax;
 
-  AliDebug(1,"");
-  
   fPainterMatrix->ComputeDataRange();
 
   fPainterMatrix->GetDataRange(dataMin,dataMax);
-  
-  AliDebug(1,Form("dataMin,Max for SetRange=%e,%e",dataMin,dataMax));
   
   Bool_t emit(kTRUE);
   
@@ -278,8 +337,6 @@ AliMUONPainterMatrixFrame::DataRangeWasChanged(Double_t* range)
 {
   /// Get there when the data range is changed
   
-  AliDebug(1,Form("range=%e,%e",range[0],range[1]));
-
   fPainterMatrix->SetDataRange(range[0],range[1]);
   
   if ( !fColorSlider->IsLocked() )
@@ -298,9 +355,6 @@ AliMUONPainterMatrixFrame::DataSourceWasChanged(const char* type,
  
   TString pattern(type);
 
-  AliDebug(1,Form("type=%s data=%s index=%d",type,
-                  (data ? data->GetName() : "null"),indexInData));
-    
   AliMUONVTrackerData* d = data;
   
   if ( !d || !data || indexInData < 0 || pattern == "" )
@@ -311,7 +365,7 @@ AliMUONPainterMatrixFrame::DataSourceWasChanged(const char* type,
   }
   
   fPainterMatrix->SetData(pattern,d,indexInData);
-    
+  
   Update();
   
   ChangeTitle(fPainterMatrix->Painter(0));
@@ -325,10 +379,7 @@ AliMUONPainterMatrixFrame::EventInfo(Int_t event, Int_t px ,Int_t py, TObject* o
   
   if (!gPad || !object) return;
   
-//  cout << "EventInfo : event " << event << " px " << px << " py " << py
-//    << " object " << object << " " << object->GetName() << endl;
-// 
-  if ( event == 7 ) 
+  if ( event == 7 )
   {
     if ( object->InheritsFrom("AliMUONVPainter") )
     {
@@ -397,8 +448,6 @@ AliMUONPainterMatrixFrame::MouseEnter(AliMUONVPainter* painter)
 {
   /// Emit a signal to notify that mouse pointer is entering a given painter
 
-  AliDebug(1,Form("painter=%p %s",painter,painter->PathName().Data()));
-  
   ChangeTitle(painter);
 
   Long_t params[] = { (Long_t)painter };
@@ -493,24 +542,24 @@ AliMUONPainterMatrixFrame::TitleHasChanged(const char* title)
   Emit("TitleHasChanged(const char*)",params);
 }
 
-
 //_____________________________________________________________________________
 void
 AliMUONPainterMatrixFrame::Update()
 {
   /// Force update of all canvases
 
-  UpdateDataRange();
+  Bool_t colorSlider = ( fPainterMatrix->Data() != 0x0 );
+  
+  if ( colorSlider )
+  {
+    UpdateDataRange();
+  }
   
   fView->GetCanvas()->SetEditable(kTRUE);
-  
-  Bool_t colorSlider = ( fPainterMatrix->Data() != 0x0 );
   
   ViewModified();
 
   fView->GetCanvas()->SetEditable(kFALSE);
-  
-  AliDebug(1,Form("colorSlider=%d",colorSlider));
   
   if ( colorSlider )
   {
@@ -531,7 +580,7 @@ AliMUONPainterMatrixFrame::UpdateDataRange()
 {
   /// Update the data range
 
-  if ( fColorSlider->IsLocked() ) 
+  if ( fColorSlider->IsLocked() )
   {
     fColorSlider->SetRange(0,0,kTRUE);
     return;
@@ -541,10 +590,10 @@ AliMUONPainterMatrixFrame::UpdateDataRange()
 
   fPainterMatrix->GetDataRange(min,max);
 
-  AliDebug(1,Form("min %e max %e",min,max));
-
-  if ( min > max ) 
+  if ( min > max )
   {
+    // range was not computed already
+    
     fPainterMatrix->ComputeDataRange();
     fPainterMatrix->GetDataRange(min,max);
   }

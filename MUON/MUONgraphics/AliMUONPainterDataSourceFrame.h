@@ -18,6 +18,7 @@
 
 class AliMUONAttPainter;
 class AliMUONPainterDataSourceItem;
+class AliMUONPainterEnv;
 class AliMUONPainterMatrix;
 class AliMUONVTrackerDataMaker;
 class AliMUONVTrackerData;
@@ -81,13 +82,15 @@ private:
   
   void CreateOCDBDataSource(const TString& uri);
 
-  void CreateOCDBDataSource(const TString& cdbPath, Int_t runNumber, const TString& type);
+  void CreateOCDBDataSource(const TString& cdbPath, Int_t runNumber, const TString& type, const TString& ranges);
 
   void CreateACFDataSource(const TString& uri);
 
   void CreateACFDataSource(const TString& acfPath, const TString& type);
   
   void RegisterDataSource(AliMUONVTrackerDataMaker* reader, const char* dsName);
+  
+  AliMUONPainterEnv* Env();
   
 private:
     
@@ -118,16 +121,15 @@ private:
   TGNumberEntry* fRunSelector; ///< OCDB run number entry widget
   TGComboBox* fOCDBTypes; ///< OCDB type combo box entry widget  
   TGComboBox* fRecentSources; ///< recent sources combo box  
+  TGTextButton* fCreateRecentButton; ///< button to create a recent data source
   TObjArray* fItems; ///< list of data readers we handle
   
   TGGroupFrame* fACFSelector; ///< to select ACF (ASCII calibration files)
   TGTextEntry* fACFPath; ///< path to ASCII calibration file
   TGComboBox* fACFTypes; ///< types of ASCII calibration files 
 
-  static const char* fgkNumberOfDataSourcesKey; ///< key used to store the # of data sources in the resource file
-  static const char* fgkDataSourceURIKey; ///< key usde to store the data source URIs in the resource file
-
-  ClassDef(AliMUONPainterDataSourceFrame,5) // Data source selection frame
+  
+  ClassDef(AliMUONPainterDataSourceFrame,6) // Data source selection frame
 };
 
 #endif
