@@ -104,7 +104,8 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   void SetBackHighPolDegree(Int_t deg);
   Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
   Bool_t PrepareHighPolFit(TF1 *fback);
-
+  void SetParticlePdgMass(Double_t mass){fMassParticle=mass;}
+  Double_t GetParticlePdgMass(){return fMassParticle;}
   Double_t FitFunction4MassDistr (Double_t* x, Double_t* par);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
@@ -126,7 +127,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 
  private:
 
-  void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1);
+  void     PlotFitVAR(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1);
 
   void     ComputeParSize();
   void     ComputeNFinalPars();
@@ -154,6 +155,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   Double_t fRawYieldHelp;   // internal variable used when fitting with reflections
   Int_t fpolbackdegreeTay; // degree of polynomial expansion for back fit (option 6 for back)
   Int_t   fpolbackdegreeTayHelp; // help variable
+  Double_t fMassParticle;       // pdg value of particle mass
 /*   TH1F*     fhistoInvMass;     // histogram to fit */
 /*   Double_t  fminMass;          // lower mass limit */
 /*   Double_t  fmaxMass;          // upper mass limit */

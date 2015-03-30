@@ -13,8 +13,8 @@
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TDatabasePDG.h>
-
 #include "AliHFMassFitter.h"
+#include "AliHFMassFitterVAR.h"
 #include "AliNormalizationCounter.h"
 #endif
 
@@ -22,23 +22,26 @@ enum Method{kME,kRot,kLS,kSB};
 
 // input files and pt binning
 TString fileName="AnalysisResults_train543544.root";
+TString fileNameMC="AnalysisResultsMC_train471472.root";
 TString suffix="c3SigPID_Pt400_EM1";
 TString meson="Dzero";
-const Int_t nPtBins=6;
-Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,6.,8.};
-Double_t sigmas[nPtBins]={0.0079,0.0084,0.0092,0.0101,0.0113,0.0129}; // MC values up to 8 (p-Pb pt(track)>400 MeV/c)
+const Int_t nPtBins=8;
+Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
+Double_t sigmas[nPtBins]={0.0079,0.0084,0.0092,0.0101,
+			  0.0109,0.0118,0.0129,0.0145}; // MC values up to 12 (p-Pb pt(track)>400 MeV/c)
 
 // outputfiles
 Bool_t saveCanvasAsRoot=kTRUE;
 Int_t saveCanvasAsEps=2;   //0=none, 1=main ones, 2=all
 
 // fit configuration
-Int_t rebin=5;
+Int_t rebin[nPtBins]={5,5,5,5,5,5,5,5};
 Bool_t fixSigma=kTRUE;
 Bool_t fixMean=kFALSE;
 Double_t minMass=1.74;
 Double_t maxMass=2.04;
 Int_t optForNorm=1;
+TString fitoption="E";
 Bool_t useEMwithLS=kTRUE;
 Int_t typeb=2;
 Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
@@ -46,21 +49,17 @@ Double_t massD;
 
 Int_t smoothLS=0;
 
+// reflection option
+TString reflopt="2gaus";
+Bool_t correctForRefl=kFALSE;
+Double_t rOverSmodif=1;
+
 // objects and options related to side-band fit method
 Bool_t tryDirectFit=kTRUE;
-TCanvas *cDataSubtractedFit;
-TCanvas *cDataSubtractedReFit;
-TCanvas **cDataFitRes;
-TCanvas *cPullsDirect;
-TCanvas *cPullsDirectTrendVsMass;
-TCanvas *cResidualsDirect;
-TCanvas *cResidualDirectTrendVsMass;
 
-TF1 **fFitSB;
-TF1 *fback;// pointer to "current" background function
 Int_t nparback=0;
-Double_t fitrangelow[nPtBins]={1.74,1.74,1.74,1.72,1.72,1.72};
-Double_t fitrangeup[nPtBins]={2.0,2.0,2.0,2.0,2.0,2.0};
+Double_t fitrangelow[nPtBins]={1.74,1.74,1.74,1.72,1.72,1.72,1.72,1.72};
+Double_t fitrangeup[nPtBins]={2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};
 Bool_t refitWithSignal=kTRUE;  // kFALSE: the background is obtained by fitting the side-bands only and then subtracted. The residual distribution is fittied with a pol0+gaus 
 // using the min chi2 ROOT option
                                // kTRUE: the fit of the side-bands is used to initialize the background function parameters, then the whole distribution is fitted with sign+back, susing the max likelihood option accounting properly for poissonian uncertainties
@@ -69,9 +68,11 @@ Bool_t fixBackParFromFirstFit=kFALSE; // if kTRUE, in the case refitWithSignal=k
 Double_t nsigmaSubBackFit=2.5;      // defines the mass window for excluding the signal region for the side-band fit
 Int_t nDegreeBackPol=4;             // degree of polynomial function describing the background
 
-// SMEARING PART
+TH1D* hMCReflPtBin;
+TH1D* hMCSigPtBin;
 
 void WriteFitInfo(AliHFMassFitter *fitter, TH1D* histo);
+TH1* AdaptRangesAndBinning(const TH1 *hRef,TH1 *h1);
 
 AliHFMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
@@ -82,6 +83,54 @@ AliHFMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin){
   fitter->SetInitialGaussianSigma(sigmas[iPtBin]);
   if(fixSigma) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
   if(fixMean) fitter->SetFixGaussianMean(massD);
+  return fitter;
+}
+
+AliHFMassFitterVAR* ConfigureFitterVAR(TH1D* histo, Int_t iPtBin,Int_t typeback=6,Bool_t saveReflModifPlot=kTRUE){
+  
+  TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
+  AliHFMassFitterVAR* fitter;
+  if(!correctForRefl){
+    fitter=new AliHFMassFitterVAR(histof,fitrangelow[iPtBin],fitrangeup[iPtBin],1,typeback,0); 
+    if(typeback==6)fitter->SetBackHighPolDegree(nDegreeBackPol);
+  }
+  else {
+    fitter=new AliHFMassFitterVAR(histof,fitrangelow[iPtBin],fitrangeup[iPtBin],1,typeback,2); 
+    if(typeback==6)fitter->SetBackHighPolDegree(nDegreeBackPol);
+
+
+    TCanvas *cTest=new TCanvas("cTest","cTest",800,800);    
+    TH1F *hmasstemp=fitter->GetHistoClone();
+    TH1F *hReflModif=(TH1F*)AdaptRangesAndBinning(hmasstemp,hMCReflPtBin);
+    TH1F *hSigModif=(TH1F*)AdaptRangesAndBinning(hmasstemp,hMCSigPtBin);
+    hReflModif->SetLineColor(kRed);
+    hSigModif->SetLineColor(kBlue);
+    hSigModif->Draw();
+    hReflModif->Draw("same");
+    if(saveReflModifPlot){  
+      cTest->SaveAs(Form("cTest%d.root",iPtBin));
+    }
+ 
+    delete hmasstemp;
+    Double_t fixSoverRefAt=rOverSmodif*(hReflModif->Integral(hReflModif->FindBin(fitrangelow[iPtBin]*1.0001),hReflModif->FindBin(fitrangeup[iPtBin]*0.999))/hSigModif->Integral(hSigModif->FindBin(fitrangelow[iPtBin]*1.0001),hSigModif->FindBin(fitrangeup[iPtBin]*0.999)));
+    if(!fitter->SetTemplateReflections(hReflModif,reflopt,fitrangelow[iPtBin],fitrangeup[iPtBin])){
+      Printf("SOMETHING WENT WRONG WHILE SETTINGS REFLECTIONS TEMPLATE");
+      delete hReflModif;
+      delete hSigModif;
+      delete cTest; 
+      return 0x0;
+    }
+    fitter->SetFixReflOverS(fixSoverRefAt,kTRUE);//fixSoverRefAt[iBin]);
+    delete cTest; 
+    delete hReflModif;
+    delete hSigModif;
+  }
+  fitter->SetReflectionSigmaFactor(0);
+  fitter->SetInitialGaussianMean(massD);
+  fitter->SetInitialGaussianSigma(sigmas[iPtBin]);
+  if(fixSigma) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
+  if(fixMean) fitter->SetFixGaussianMean(massD);
+  fitter->SetFitOption(fitoption.Data());
   return fitter;
 }
 
@@ -141,6 +190,63 @@ Double_t GetSignalBinCounting(TH1 *h,TF1 *fbackground,Double_t &err,Double_t nsi
   }
   err=TMath::Sqrt(err);
   return sign; 
+}
+
+TH1* AdaptRangesAndBinning(const TH1 *hRef,TH1 *h1){
+  
+  Double_t min=hRef->GetBinLowEdge(1);
+  Double_t max=hRef->GetBinLowEdge(hRef->GetNbinsX())+hRef->GetBinWidth(hRef->GetNbinsX());
+
+  Int_t binmin=h1->FindBin(min*1.00001);
+  Int_t binmax=h1->FindBin(max*0.99999);
+
+  if(binmin<1||binmax>h1->GetNbinsX()){
+    Printf("Cannot adapt range: different bins: Ref histo min, max = %f, %f, hist 1 min %f -> bin min %d , max %f -> bin max %d, nbins= %d",min,max,h1->GetBinLowEdge(1),binmin,h1->GetBinLowEdge(h1->GetNbinsX())+h1->GetBinWidth(1),binmax,h1->GetNbinsX());
+    return 0x0;
+  }
+  if(TMath::Abs(h1->GetBinLowEdge(binmin)-min)>0.0001*min||TMath::Abs(h1->GetBinLowEdge(binmax)+h1->GetBinWidth(binmax)-max)>0.0001*max){
+    Printf("Cannot adapt range and rebin histo");
+    return 0x0;
+  }
+  Double_t *binsNew=new Double_t[binmax-binmin+2];
+  for(Int_t j=binmin;j<=binmax;j++){
+    binsNew[j-binmin]=h1->GetBinLowEdge(j);
+  }
+  binsNew[binmax-binmin+1]=binsNew[binmax-binmin]+h1->GetBinWidth(binmax-binmin);
+  TH1 *hOut;
+  TString stype=h1->ClassName();
+  if(!stype.Contains("TH1F")){
+    hOut=(TH1F*)h1->Rebin(binmax-binmin+1,Form("%s_reb",h1->GetName()),binsNew);
+  }
+  else if(!stype.Contains("TH1D")){
+    hOut=(TH1D*)h1->Rebin(binmax-binmin+1,Form("%s_reb",h1->GetName()),binsNew);
+  }
+  
+
+  Double_t width=h1->GetBinWidth(binmin);
+  Double_t widthRef=hRef->GetBinWidth(1);
+  Int_t rebinh=1;
+  if((TMath::Abs(width-widthRef)<0.00001*widthRef)){
+    rebinh=1;
+  }
+  else{
+    Double_t wr;
+    if(width>widthRef){
+      Printf("Should rebin the reference histo by %d",(Int_t)(width/widthRef));
+      return 0x0;
+    }
+    else{
+      wr=widthRef/width;
+      if(TMath::Abs(wr-(Int_t)wr)>0.00001){
+	Printf("Cannot adapt histo: rebin issue, width ref = %f, width h1=%f",widthRef,width);
+	return 0x0;
+      }
+      else rebinh=(Int_t)wr;
+    }
+  }
+  hOut->Rebin(rebinh);
+   
+  return hOut;
 }
 
 Bool_t QuadraticSmooth(TH1 *h,Int_t ntimes=1){// quadratic fit of 5 points
@@ -296,6 +402,10 @@ void DivideCanvas(TCanvas *c,Int_t ndivisions){
       c->Divide(3,2);
 
     }
+    else if(ndivisions<=8){
+      c->Divide(4,2);
+
+    }
     else if(ndivisions<10){
       c->Divide(3,3);
 
@@ -333,368 +443,6 @@ TF1 *GausPlusLine(Double_t minRange=1.72,Double_t maxRange=2.05){
 }
 
 
-TH1D* FitBackgroundAndSubtract(TH1 *h,Int_t binNumber,Int_t binID=-1){
-  // TO-DO: REWRITE IT IN A MORE CLEVER WAY (but inside Mass Fitter)
-  
-  if(binID<0)binID=binNumber;
-
-  TF1 *fpol3 = new TF1(Form("mypol3Bin%d",binID),"pol3",0.,3.);
-  fpol3->SetParameter(0,1.3e+11);
-  fpol3->SetParameter(1,-0.35);
-
-  TF1 *fpol4 = new TF1(Form("mypol4Bin%d",binID),"pol4",0.,3.);
-  fpol4->SetParameter(0,1.3e+11);
-  fpol4->SetParameter(1,-0.35);
-
-  TF1 *fpol5 = new TF1(Form("mypol5Bin%d",binID),"pol5",0.,3.);
-  fpol5->SetParameter(0,1.3e+11);
-  fpol5->SetParameter(1,-0.35);
-
-  TF1 *fpol6 = new TF1(Form("mypol6Bin%d",binID),"pol6",0.,3.);
-  fpol6->SetParameter(0,1.3e+11);
-  fpol6->SetParameter(1,-0.35);
-
-  TF1 *fpol7 = new TF1(Form("mypol7Bin%d",binID),"pol7",0.,3.);
-  fpol7->SetParameter(0,1.3e+11);
-  fpol7->SetParameter(1,-0.35);
-
-  TF1 *fpol8 = new TF1(Form("mypol8Bin%d",binID),"pol8",0.,3.);
-  fpol8->SetParameter(0,1.3e+11);
-  fpol8->SetParameter(1,-0.35);
-
-  TF1 *fpol2mine = new TF1(Form("mypol2Bin%d",binID),"[0]+[1]*x+[2]*x*x",0.,3.);
-  fpol2mine->SetParameter(0,1.3e+11);
-  fpol2mine->SetParameter(1,-0.35);
-  fpol2mine->SetParameter(2,0.001);
-
-  TH1D *h2=(TH1D*)h->Clone(Form("%sSubtrBin%d",h->GetName(),binID));//new TH1D("h2","h2",50,1.7,2.2);
-  TH1D *h3=(TH1D*)h->Clone(Form("%sCutBin%d",h->GetName(),binID));//,"h3",50,1.7,2.2);
-  
-  for(Int_t j=1;j<=h->GetNbinsX();j++){
-    Double_t binCenter=h->GetBinCenter(j);
-    Int_t j2=h2->FindBin(binCenter);
-    if(binCenter>(massD-nsigmaSubBackFit*sigmas[binNumber]) && binCenter<(massD+nsigmaSubBackFit*sigmas[binNumber])){
-      h3->SetBinContent(j2,0);
-      h3->SetBinError(j2,0);
-    }
-  }
-  
-  if(nDegreeBackPol<2){
-    Printf("%d order pol background fit not implemented: do you think it can work?",nDegreeBackPol);
-    delete h2;
-    delete h3;
-    return 0x0;
-  }
-  
-  if(nDegreeBackPol>=2){    
-    h3->Fit(fpol2mine,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-    if(nDegreeBackPol==2){
-	fback=fpol2mine;
-	if(refitWithSignal)nparback=3;
-    }
-    if(nDegreeBackPol>=3){    
-      fpol3->SetParameter(0,fpol2mine->GetParameter(0));
-      fpol3->SetParameter(1,fpol2mine->GetParameter(1));
-      fpol3->SetParameter(2,fpol2mine->GetParameter(2));
-
-      h3->Fit(fpol3,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-      if(nDegreeBackPol==3){
-	  fback=fpol3;
-	  if(refitWithSignal)nparback=4;
-      }
-      
-      if(nDegreeBackPol>=4){    
-	fpol4->SetParameter(0,fpol3->GetParameter(0));
-	fpol4->SetParameter(1,fpol3->GetParameter(1));
-	fpol4->SetParameter(2,fpol3->GetParameter(2));
-	fpol4->SetParameter(3,fpol3->GetParameter(3));
-	h3->Fit(fpol4,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-	if(nDegreeBackPol==4){
-	  fback=fpol4;
-	  if(refitWithSignal)nparback=5;
-	}
-	
-	if(nDegreeBackPol>=5){    
-	  fpol5->SetParameter(0,fpol4->GetParameter(0));
-	  fpol5->SetParameter(1,fpol4->GetParameter(1));
-	  fpol5->SetParameter(2,fpol4->GetParameter(2));
-	  fpol5->SetParameter(3,fpol4->GetParameter(3));
-	  fpol5->SetParameter(4,fpol4->GetParameter(4));
-	  h3->Fit(fpol5,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-	  if(nDegreeBackPol==5){
-	    fback=fpol5;
-	    if(refitWithSignal)nparback=6;
-	  }
-	  if(nDegreeBackPol>=6){    
-	    fpol6->SetParameter(0,fpol5->GetParameter(0));
-	    fpol6->SetParameter(1,fpol5->GetParameter(1));
-	    fpol6->SetParameter(2,fpol5->GetParameter(2));
-	    fpol6->SetParameter(3,fpol5->GetParameter(3));
-	    fpol6->SetParameter(4,fpol5->GetParameter(4));
-	    fpol6->SetParameter(5,fpol5->GetParameter(5));
-	    h3->Fit(fpol6,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-	    if(nDegreeBackPol==6){
-	      fback=fpol6;
-		if(refitWithSignal)nparback=7;
-	    }
-	    if(nDegreeBackPol>=7){    
-	      fpol7->SetParameter(0,fpol6->GetParameter(0));
-	      fpol7->SetParameter(1,fpol6->GetParameter(1));
-	      fpol7->SetParameter(2,fpol6->GetParameter(2));
-	      fpol7->SetParameter(3,fpol6->GetParameter(3));
-	      fpol7->SetParameter(4,fpol6->GetParameter(4));
-	      fpol7->SetParameter(5,fpol6->GetParameter(5));
-	      fpol7->SetParameter(6,fpol6->GetParameter(6));
-	      h3->Fit(fpol7,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-	      if(nDegreeBackPol==7){
-		fback=fpol7;
-		if(refitWithSignal)nparback=8;
-	      }
-	      if(nDegreeBackPol>=8){    
-		fpol8->SetParameter(0,fpol7->GetParameter(0));
-		fpol8->SetParameter(1,fpol7->GetParameter(1));
-		fpol8->SetParameter(2,fpol7->GetParameter(2));
-		fpol8->SetParameter(3,fpol7->GetParameter(3));
-		fpol8->SetParameter(4,fpol7->GetParameter(4));
-		fpol8->SetParameter(5,fpol7->GetParameter(5));
-		fpol8->SetParameter(6,fpol7->GetParameter(6));
-		fpol8->SetParameter(7,fpol7->GetParameter(7));
-		h3->Fit(fpol8,"REMIN0","",fitrangelow[binNumber],fitrangeup[binNumber]);
-		
-		if(nDegreeBackPol==8){
-		  fback=fpol8;
-		  if(refitWithSignal)nparback=9;
-		}
-		else{
-		  Printf("Too high pol order for back fit (%d): not yet implemented",nDegreeBackPol);
-		  delete h2;
-		  delete h3;	       
-		  return 0x0;
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-  }
-  for(Int_t k=1;k<=h2->GetNbinsX();k++){
-    if(!refitWithSignal)h2->SetBinContent(k,h2->GetBinContent(k)-fback->Eval(h2->GetBinCenter(k)));
-  }
-  delete h3;
-  return h2;
-}
-
-
-
-
-Bool_t DirectFit(TH1D *hUnSubtracted, Int_t iptbin, TH1F* hRawYieldSBfit){
-  
-  TH1D *hSubtractedSB=FitBackgroundAndSubtract(hUnSubtracted,iptbin);
-  TH1F *hsubTemp;
-  TH1F *hsubTempAllRange;
-  if(nPtBins>1)cDataSubtractedFit->cd(iptbin+1);
-  else cDataSubtractedFit->cd();
-  hSubtractedSB->Draw();
-  TF1 *fgl=0x0;
-  if(refitWithSignal){
-    fgl=GausPlusLine(fitrangelow[iptbin],fitrangeup[iptbin]);
-    fgl->SetParameter(3,0);
-    fgl->SetParameter(4,0);
-    fgl->SetName(Form("fgl%d",iptbin));
-    fFitSB[iptbin]=new TF1(Form("fFitSB%d",iptbin),Form("%s+%s",fback->GetName(),fgl->GetName()),fitrangelow[iptbin],fitrangeup[iptbin]);
-    if(fixBackParFromFirstFit)for(Int_t j=0;j<9;j++)fFitSB[iptbin]->FixParameter(j,fback->GetParameter(j));
-    fFitSB[iptbin]->SetParLimits(1+nparback,1.83,1.89);
-    
-    
-    // fast bin counting to initialize fit param
-    Int_t binlbc=hSubtractedSB->FindBin(massD-3.*sigmas[iptbin]);
-    Int_t binrbc=hSubtractedSB->FindBin(massD+3.*sigmas[iptbin]);
-    Double_t backest=fback->Integral(hSubtractedSB->GetBinLowEdge(binlbc),hSubtractedSB->GetBinLowEdge(binrbc+1))/hSubtractedSB->GetBinWidth(1);
-    Double_t fastbcestimate=(hSubtractedSB->Integral(binlbc,binrbc)-backest)*hSubtractedSB->GetBinWidth(1);
-    fFitSB[iptbin]->SetParameter(nparback,fastbcestimate);
-    fFitSB[iptbin]->SetParLimits(nparback,0.1*fastbcestimate,fastbcestimate*10.);    
-    if(fixSigma)fFitSB[iptbin]->FixParameter(2+nparback,sigmas[iptbin]);
-    else fFitSB[iptbin]->SetParameter(2+nparback,sigmas[iptbin]);
-    if(fixMean)fFitSB[iptbin]->FixParameter(1+nparback,massD);
-    else fFitSB[iptbin]->SetParameter(1+nparback,massD);    
-    fFitSB[iptbin]->FixParameter(3+nparback,0);// These are the linear terms in GausPlusLine
-    fFitSB[iptbin]->FixParameter(4+nparback,0);
-  }
-  else{
-    fFitSB[iptbin]=GausPlusLine(fitrangelow[iptbin],fitrangeup[iptbin]);
-    fFitSB[iptbin]->SetName(Form("fFitSB%d",iptbin));
-    if(fixSigma)fFitSB[iptbin]->FixParameter(2,sigmas[iptbin]);
-    else fFitSB[iptbin]->SetParameter(2,sigmas[iptbin]);
-    if(fixMean)fFitSB[iptbin]->FixParameter(1+nparback,massD);
-    else fFitSB[iptbin]->SetParameter(1+nparback,massD);
-  }
-  fFitSB[iptbin]->SetRange(fitrangelow[iptbin],fitrangeup[iptbin]);
-  if(refitWithSignal){
-    hSubtractedSB->Fit(fFitSB[iptbin],"RLEM","");
-    for(Int_t j=0;j<nparback;j++){
-      fback->SetParameter(j,fFitSB[iptbin]->GetParameter(j));
-      fback->SetParError(j,fFitSB[iptbin]->GetParError(j));
-      fback->SetLineColor(kGreen);
-      fback->SetLineStyle(2);
-      //	  hSubtractedSB->GetListOfFunctions()->Add(fFitSB[iptbin]);
-    }
-    fback->Draw("same");
-    fFitSB[iptbin]->Draw("same");
-    if(nPtBins>1)cDataSubtractedReFit->cd(iptbin+1);
-    else cDataSubtractedReFit->cd();
-    hsubTemp=(TH1F*)hSubtractedSB->Clone(Form("%sSubBack",hSubtractedSB->GetName()));
-    hsubTempAllRange=(TH1F*)hSubtractedSB->Clone(Form("%sSubBackAllRange",hSubtractedSB->GetName()));
-    for(Int_t jst=1;jst<=hsubTemp->GetNbinsX();jst++){
-      hsubTemp->SetBinContent(jst,hsubTemp->GetBinContent(jst)-fback->Integral(hsubTemp->GetBinLowEdge(jst),hsubTemp->GetBinLowEdge(jst)+hsubTemp->GetBinWidth(jst))/hsubTemp->GetBinWidth(jst));
-      hsubTempAllRange->SetBinContent(jst,hsubTempAllRange->GetBinContent(jst)-fFitSB[iptbin]->Integral(hsubTemp->GetBinLowEdge(jst),hsubTempAllRange->GetBinLowEdge(jst)+hsubTempAllRange->GetBinWidth(jst))/hsubTempAllRange->GetBinWidth(jst));
-    }
-    hsubTemp->SetLineColor(kBlue);
-    hsubTempAllRange->SetLineColor(kGray+2);
-    // check better range for graphical purposes
-    hsubTemp->GetXaxis()->SetRangeUser(fitrangelow[iptbin]-0.1*(fitrangeup[iptbin]-fitrangelow[iptbin]),fitrangeup[iptbin]+0.1*(fitrangeup[iptbin]-fitrangelow[iptbin]));
-    Double_t minst,maxst;
-    Int_t binst=hsubTemp->FindBin(fitrangelow[iptbin]-0.1*(fitrangeup[iptbin]-fitrangelow[iptbin]));
-    Int_t binstm=hsubTemp->FindBin(fitrangeup[iptbin]+0.1*(fitrangeup[iptbin]-fitrangelow[iptbin]));
-    minst=hsubTemp->GetBinContent(binst)-hsubTemp->GetBinError(binst);
-    maxst=hsubTemp->GetBinContent(binstm)+hsubTemp->GetBinError(binstm);
-    for(Int_t stbin=binst;stbin<=binstm;stbin++){
-      Double_t valb=hsubTemp->GetBinContent(stbin)-hsubTemp->GetBinError(stbin);
-      if(valb<minst)minst=valb;
-      valb=hsubTemp->GetBinContent(stbin)+hsubTemp->GetBinError(stbin);
-      if(valb>maxst)maxst=valb;
-    }
-    if(minst<0)minst*=1.2;
-    else minst*=0.8;
-    if(maxst<0)maxst*=0.8;
-    else maxst*=1.2;
-    hsubTemp->GetYaxis()->SetRangeUser(minst,maxst);
-    hsubTemp->Draw();
-    hsubTempAllRange->Draw("same");
-    hsubTemp->Draw("same");
-    fgl->SetParameter(0,fFitSB[iptbin]->GetParameter(nparback));
-    fgl->SetParameter(1,fFitSB[iptbin]->GetParameter(nparback+1));
-    fgl->SetParameter(2,fFitSB[iptbin]->GetParameter(nparback+2));
-    fgl->Draw("same");
-  
-    if(nPtBins>1)cDataSubtractedFit->cd(iptbin+1);
-    else cDataSubtractedFit->cd();
-  }
-  else hSubtractedSB->Fit(fFitSB[iptbin],"REMI","");
-  
-  hSubtractedSB->SetStats(kFALSE);
-  hSubtractedSB->GetXaxis()->SetRangeUser(fitrangelow[iptbin],fitrangeup[iptbin]);
-  
-  // FITTING PART FINISHED
-  // NOW DRAW PARAMETERS AND EXTRACT RAW YIELDS
-  Double_t signif,signal,errsignal,total,sigma,mean;
-  mean=fFitSB[iptbin]->GetParameter(1+nparback);
-  sigma=fFitSB[iptbin]->GetParameter(2+nparback);
-  TPaveText *pinfo=new TPaveText(0.5,0.65,0.9,0.9,"NDC");
-  pinfo->SetBorderSize(0);
-  pinfo->SetFillStyle(0);  
-  pinfo->AddText(Form("#mu = %.3f#pm%.3f",mean,fFitSB[iptbin]->GetParError(1+nparback)));
-  pinfo->AddText(Form("#sigma = %.3f#pm%.3f",sigma,fFitSB[iptbin]->GetParError(2+nparback)));
-  pinfo->AddText(Form("#chi^{2}/NDOF = %.1f/%d",fFitSB[iptbin]->GetChisquare(),fFitSB[iptbin]->GetNDF()));
-  pinfo->AddText(Form("prob =%.3f",fFitSB[iptbin]->GetProb()));
-  pinfo->SetTextColor(4);
-  pinfo->Draw();
-  Int_t binMinTot=hUnSubtracted->FindBin((mean-3.*sigma)*1.0001);
-  Int_t binMaxTot=hUnSubtracted->FindBin((mean+3.*sigma)*0.9999);
-  total= hUnSubtracted->Integral(binMinTot,binMaxTot);
-  signal=fFitSB[iptbin]->GetParameter(0+nparback)/hSubtractedSB->GetBinWidth(1);
-  errsignal=fFitSB[iptbin]->GetParError(0+nparback)/hSubtractedSB->GetBinWidth(1);
-
-  //  signalbc=GetSignalBinCounting(hSubtractedSB,fFitSB[iptbin],errsignbc,nsigmaBinCounting);
-  
-  //  hRawYieldBinCountBackSubFit->SetBinContent(ib+1,signalbc);
-  //  hRawYieldBinCountBackSubFit->SetBinError(ib+1,errsignbc);
-
-  //  hRawYieldBackSubFit->SetBinContent(ib+1,signal);
-  //  hRawYieldBackSubFit->SetBinError(ib+1,errsignal);
-  Double_t signifT=signal/TMath::Sqrt(total);
-  signif=signifT;
-  Double_t backfit=-1;
-  if(refitWithSignal){
-    backfit=fback->Integral(mean-3.*sigma,mean+3.*sigma)/hSubtractedSB->GetBinWidth(1);
-    signif=signal/TMath::Sqrt(signal+backfit);
-  }
-  hRawYieldSBfit->SetBinContent(iptbin+1,signal);
-  hRawYieldSBfit->SetBinError(iptbin+1,errsignal);
-  
-  // background values
-  //  binMinTot=hUnSubtracted->FindBin((massD-3.*sigmas[iptbin])*1.00001);// the 1.00001 is useless...
-  //  binMaxTot=hUnSubtracted->FindBin((massD+3.*sigmas[iptbin])*0.9999);// same for hte 0.9999
-  //    Printf("Min bin and max bin are: ");
-  //hTotYieldSignalRegion->SetBinContent(ib+1,hUnSubtracted->Integral(binMinTot,binMaxTot));// this is not backfit, I simply do not need more variables
-  //  if(hTotYieldSignalRegion->GetBinContent(ib+1)>0.){
-  //    hTotYieldSignalRegion->SetBinError(ib+1,TMath::Sqrt(hTotYieldSignalRegion->GetBinContent(ib+1)));
-  //  }
-  //  hBackBCSignalRegion->SetBinContent(ib+1,total-signal);
-  //    if(total-signal>0.){
-  //      hBackBCSignalRegion->SetBinError(ib+1,TMath::Sqrt(hBackBCSignalRegion->GetBinContent(ib+1)));
-  //    }
-  //    hBackfitSignalRegion->SetBinContent(ib+1,backfit);
-  //    if(backfit>0.){
-  //      hBackfitSignalRegion->SetBinError(ib+1,TMath::Sqrt(backfit));
-  //    }
-
-  TPaveText *pinfo2=new TPaveText(0.1,0.1,0.5,0.4,"NDC");
-  pinfo2->SetBorderSize(0);
-  pinfo2->SetFillStyle(0);
-  TString str=Form("S(%d#sigma)= %.0f #pm %.0f ",3,signal,errsignal);
-  pinfo2->AddText(str);
-  str=Form("S/#sigma(S) = %.1f ",signal/errsignal);
-  pinfo2->AddText(str);
-  str=Form("S/#sqrt{Tot}= %.1f ",signifT);
-  pinfo2->AddText(str);
-  str=Form("signif(fit)= %.1f ",signif);
-  pinfo2->AddText(str);
-  if(backfit>1.e-9){
-    str=Form("S/B(3#sigma)= %.1f#times 10^{-3} ",signal/backfit*1.e+3);
-  }
-  else {
-    str=Form("S/B(3#sigma)= %.1f#times 10^{-3} ",signal/(total-signal)*1.e+3);
-  }
-  pinfo2->AddText(str);
-  pinfo2->SetTextColor(2);
-  pinfo2->Draw();
-        
-  cDataFitRes[iptbin]->cd(1);
-  hSubtractedSB->Draw();
-  hSubtractedSB->SetStats(kFALSE);
-  TList *lf=hSubtractedSB->GetListOfFunctions();
-  if(refitWithSignal){
-    lf->Add(fgl);
-    fback->Draw("same");
-  }
-  fFitSB[iptbin]->Draw("same");
-  pinfo->Draw("same");
-  pinfo2->Draw("same");
-  cDataFitRes[iptbin]->cd(2);
-  if(refitWithSignal){  
-    hsubTemp->Draw("same");
-    
-    TLine *tlin=new TLine(hsubTemp->GetBinLowEdge(1),0.,fitrangeup[iptbin]+0.1*(fitrangeup[iptbin]-fitrangelow[iptbin]),0.);
-    tlin->SetLineColor(kBlue);
-    tlin->SetLineStyle(2);
-    tlin->Draw("same");
-    hsubTemp->SetMarkerColor(kBlack);
-    hsubTemp->SetMarkerStyle(20);
-    hsubTemp->SetMarkerSize(0.7);
-    hsubTemp->SetLineColor(kBlack);
-    hsubTemp->SetStats(kFALSE);
-    hsubTempAllRange->SetStats(kFALSE);
-    hsubTempAllRange->Draw("same");
-    hsubTemp->Draw("same");
-    fgl->Draw("same");
-  }
-  
-
-
-  return kTRUE;
-}
-
 
 
 void ProjectCombinHFAndFit(){
@@ -709,6 +457,12 @@ void ProjectCombinHFAndFit(){
 
   TFile* fil=new TFile(fileName.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get(dirName.Data());
+  
+  TFile* filMC;
+  TDirectoryFile* dfMC;
+  TList* lMC;
+  TH3F* h3drefl;
+  TH3F* h3dmcsig;
   
   AliNormalizationCounter *nC=(AliNormalizationCounter*)df->Get("NormalizationCounter");
   TH1F* hnEv=new TH1F("hEvForNorm","events for normalization",1,0,1);
@@ -728,30 +482,15 @@ void ProjectCombinHFAndFit(){
   TH3F* h3dlsp=(TH3F*)l->FindObject("hMassVsPtVsYLSpp");
   TH3F* h3dlsm=(TH3F*)l->FindObject("hMassVsPtVsYLSmm");
 
-  // Side-band fit method initialization
-  if(tryDirectFit){
-    fback=0x0;
-    fFitSB=new TF1*[nPtBins];
-    cDataSubtractedFit=new TCanvas("cDataSubtractedFit","cDataSubtractedFit",800,800);
-    cDataSubtractedReFit=new TCanvas("cDataSubtractedReFit","cDataSubtractedReFit",800,800);
-    cPullsDirect=new TCanvas("cPullsDirect","cPullsDirect",800,800);
-    cPullsDirectTrendVsMass=new TCanvas("cPullsDirectTrendVsMass","cPullsDirectTrendVsMass",800,800);
-    cResidualsDirect=new TCanvas("cResidualsDirect","cResidualsDirect",800,800);
-    cResidualDirectTrendVsMass=new TCanvas("cResidualDirectTrendVsMass","cResidualDirectTrendVsMass",800,800);
+  if(correctForRefl){
+    filMC=new TFile(fileNameMC.Data());
+    dfMC=(TDirectoryFile*)filMC->Get(dirName.Data());
 
-    DivideCanvas(cDataSubtractedFit,nPtBins);
-    DivideCanvas(cDataSubtractedReFit,nPtBins);
-    DivideCanvas(cPullsDirect,nPtBins);
-    DivideCanvas(cPullsDirectTrendVsMass,nPtBins);
-    DivideCanvas(cResidualsDirect,nPtBins);
-    DivideCanvas(cResidualDirectTrendVsMass,nPtBins);
-    cDataFitRes=new TCanvas*[nPtBins];
-    for(Int_t ib=0;ib<nPtBins;ib++){
-      cDataFitRes[ib]=new TCanvas(Form("cDataSBFitResBin%d",ib),Form("cDataSBFitResBin%d",ib),800,800);
-      cDataFitRes[ib]->Divide(1,2);
-    }
-    
+    lMC=(TList*)dfMC->Get(lstName.Data());
+    h3drefl=(TH3F*)lMC->FindObject("hMassVsPtVsYRefl");
+    h3dmcsig=(TH3F*)lMC->FindObject("hMassVsPtVsYSig");
   }
+
 
   TCanvas* cem=new TCanvas("cem","Pools",1200,600);
   cem->Divide(2,1);
@@ -772,40 +511,62 @@ void ProjectCombinHFAndFit(){
 
 
   TCanvas* c1=new TCanvas("c1","Mass",1200,800);
-  c1->Divide(3,2);
+  DivideCanvas(c1,nPtBins);
 
   TCanvas* c2=new TCanvas("c2","Mass-Bkg Rot",1200,800);
-  c2->Divide(3,2);
+  DivideCanvas(c2,nPtBins);
   TCanvas* c2pulls=new TCanvas("c2pulls","Mass-Bkg Rot pulls",1200,800);
-  c2pulls->Divide(3,2);
+  DivideCanvas(c2pulls,nPtBins);
   TCanvas* c2residuals=new TCanvas("c2residuals","Mass-Bkg Rot residuals",1200,800);
-  c2residuals->Divide(3,2);
+  DivideCanvas(c2residuals,nPtBins);
   TCanvas* c2residualTrend=new TCanvas("c2residualTrend","Mass-Bkg Rot residual trend vs. mass",1200,800);
-  c2residualTrend->Divide(3,2);
+  DivideCanvas(c2residualTrend,nPtBins);
   TCanvas* c2pullTrend=new TCanvas("c2pullTrend","Mass-Bkg Rot pull trend vs. mass",1200,800);
-  c2pullTrend->Divide(3,2);
+  DivideCanvas(c2pullTrend,nPtBins);
 
   TCanvas* c3=new TCanvas("c3","Mass-Bkg LS",1200,800);
-  c3->Divide(3,2);
+  DivideCanvas(c3,nPtBins);
   TCanvas* c3pulls=new TCanvas("c3pulls","Mass-Bkg LS pulls",1200,800);
-  c3pulls->Divide(3,2);
+  DivideCanvas(c3pulls,nPtBins);
   TCanvas* c3residuals=new TCanvas("c3residuals","Mass-Bkg LS residuals",1200,800);
-  c3residuals->Divide(3,2);
+  DivideCanvas(c3residuals,nPtBins);
   TCanvas* c3residualTrend=new TCanvas("c3residualTrend","Mass-Bkg LS residual trend vs. mass",1200,800);
-  c3residualTrend->Divide(3,2);
+  DivideCanvas(c3residualTrend,nPtBins);
   TCanvas* c3pullTrend=new TCanvas("c3pullTrend","Mass-Bkg LS pull trend vs. mass",1200,800);
-  c3pullTrend->Divide(3,2);
+  DivideCanvas(c3pullTrend,nPtBins);
 
   TCanvas* c4=new TCanvas("c4","Mass-Bkg EM",1200,800);
-  c4->Divide(3,2);
+  DivideCanvas(c4,nPtBins);
   TCanvas* c4pulls=new TCanvas("c4pulls","Mass-Bkg EM pulls",1200,800);
-  c4pulls->Divide(3,2);
+  DivideCanvas(c4pulls,nPtBins);
   TCanvas* c4residuals=new TCanvas("c4residuals","Mass-Bkg EM residuals",1200,800);
-  c4residuals->Divide(3,2);
+  DivideCanvas(c4residuals,nPtBins);
   TCanvas* c4residualTrend=new TCanvas("c4residualTrend","Mass-Bkg EM residual trend vs. mass",1200,800);
-  c4residualTrend->Divide(3,2);
+  DivideCanvas(c4residualTrend,nPtBins);
   TCanvas* c4pullTrend=new TCanvas("c4pullTrend","Mass-Bkg EM pull trend vs. mass",1200,800);
-  c4pullTrend->Divide(3,2);
+  DivideCanvas(c4pullTrend,nPtBins);
+
+  TCanvas *c5=0x0;
+  TCanvas *c5sub=0x0;
+  TCanvas *c5pulls=0x0;
+  TCanvas *c5residuals=0x0;
+  TCanvas *c5residualTrend=0x0;
+  TCanvas *c5pullTrend=0x0;
+
+  if(tryDirectFit){
+    c5=new TCanvas("c5","Mass SB Fit",1200,800);
+    DivideCanvas(c5,nPtBins);
+    c5sub=new TCanvas("c5sub","Mass-Bkg SB",1200,800);
+    DivideCanvas(c5sub,nPtBins);
+    c5pulls=new TCanvas("c5pulls","Mass-Bkg SB pulls",1200,800);
+    DivideCanvas(c5pulls,nPtBins);
+    c5residuals=new TCanvas("c5residuals","Mass-Bkg SB residuals",1200,800);
+    DivideCanvas(c5residuals,nPtBins);
+    c5residualTrend=new TCanvas("c5residualTrend","Mass-Bkg SB residual trend vs. mass",1200,800);
+    DivideCanvas(c5residualTrend,nPtBins);
+    c5pullTrend=new TCanvas("c5pullTrend","Mass-Bkg SB pull trend vs. mass",1200,800);
+    DivideCanvas(c5pullTrend,nPtBins);    
+  }
 
   TCanvas *cCompareResidualTrends=new TCanvas("cCompareResidualTrends","cCompareResidualTrends",1200,800);
   DivideCanvas(cCompareResidualTrends,nPtBins);  
@@ -814,6 +575,7 @@ void ProjectCombinHFAndFit(){
   AliHFMassFitter* fitterRot[nPtBins];
   AliHFMassFitter* fitterLS[nPtBins];
   AliHFMassFitter* fitterME[nPtBins];
+  AliHFMassFitterVAR* fitterSB[nPtBins];
 
   TH1F* hRawYieldRot=new TH1F("hRawYieldRot","",nPtBins,binLims);
   TH1F* hRawYieldLS=new TH1F("hRawYieldLS","",nPtBins,binLims);
@@ -825,7 +587,6 @@ void ProjectCombinHFAndFit(){
   TH1F* hRawYieldMEBC=new TH1F("hRawYieldMEBC","BC yield (mixed-event background)",nPtBins,binLims);
   TH1F* hRawYieldSBfitBC=new TH1F("hRawYieldSBfitBC","BC yield (direct fit background)",nPtBins,binLims);
 
-
   TLatex* tME=new TLatex(0.65,0.82,"MixEv +- pairs");
   tME->SetNDC();
   TLatex* tMEpp=new TLatex(0.65,0.75,"MixEv ++ pairs");
@@ -833,9 +594,12 @@ void ProjectCombinHFAndFit(){
   TLatex* tMEmm=new TLatex(0.65,0.68,"MixEv -- pairs");
   tMEmm->SetNDC();
 
+  TF1 *fpeak=new TF1("fpeak","[0]*1./(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))",minMass,maxMass);
+
   TDirectory *current = gDirectory;
   TFile* fout=new TFile(Form("outputMassFits_%s.root",suffix.Data()),"recreate");
   current->cd();
+
 
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
 
@@ -847,6 +611,13 @@ void ProjectCombinHFAndFit(){
     TH1D* hMassPtBinme=h3dme->ProjectionX(Form("hMassPtBinme%d",iPtBin),bin1,bin2);
     TH1D* hMassPtBinmeLSpp=h3dmepp->ProjectionX(Form("hMassPtBinmeLSpp%d",iPtBin),bin1,bin2);
     TH1D* hMassPtBinmeLSmm=h3dmemm->ProjectionX(Form("hMassPtBinmeLSmm%d",iPtBin),bin1,bin2);
+
+    if(correctForRefl){
+      Int_t bin1MC=h3drefl->GetYaxis()->FindBin(binLims[iPtBin]);
+      Int_t bin2MC=h3drefl->GetYaxis()->FindBin(binLims[iPtBin+1]-0.0001);
+      hMCReflPtBin=h3drefl->ProjectionX(Form("hMCReflPtBin%d",iPtBin),bin1MC,bin2MC);
+      hMCSigPtBin=h3dmcsig->ProjectionX(Form("hMCMassPtBin%d",iPtBin),bin1MC,bin2MC);
+    }
 
     TH1D* hMassPtBinlsp=0x0;
     TH1D* hMassPtBinlsm=0x0;
@@ -1023,13 +794,20 @@ void ProjectCombinHFAndFit(){
     if(hMassPtBinls) hMassSubLS->Write();
     current->cd();
 
-    hMassSubRot->Rebin(rebin);
-    hMassSubME->Rebin(rebin);
-    if(hMassPtBinls) hMassSubLS->Rebin(rebin);
+    hMassSubRot->Rebin(rebin[iPtBin]);
+    hMassSubME->Rebin(rebin[iPtBin]);
+    if(hMassPtBinls) hMassSubLS->Rebin(rebin[iPtBin]);
  
-    fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin);
-    if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin);
-    fitterME[iPtBin]=ConfigureFitter(hMassSubME,iPtBin);
+    if(!correctForRefl){
+      fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin);
+      if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin);
+      fitterME[iPtBin]=ConfigureFitter(hMassSubME,iPtBin);
+    }
+    else {
+      fitterRot[iPtBin]=ConfigureFitterVAR(hMassSubRot,iPtBin,typeb);
+      if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitterVAR(hMassSubLS,iPtBin,typeb);
+      fitterME[iPtBin]=ConfigureFitterVAR(hMassSubME,iPtBin,typeb);  
+    }
 
     Bool_t out1=fitterRot[iPtBin]->MassFitter(0);
     Bool_t out2=kFALSE;
@@ -1039,46 +817,98 @@ void ProjectCombinHFAndFit(){
     Bool_t out4=kFALSE;
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
-      hMassDirectFit->Rebin(rebin);
-      out4=DirectFit(hMassDirectFit,iPtBin,hRawYieldSBfit);
+      hMassDirectFit->Rebin(rebin[iPtBin]);
+      fitterSB[iPtBin]=ConfigureFitterVAR(hMassDirectFit,iPtBin);
+      out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSBfit);
+
       if(out4){
+	c5->cd(iPtBin+1);
+	if(!correctForRefl)fitterSB[iPtBin]->DrawHere(gPad,3,0);
+	else fitterSB[iPtBin]->DrawHere(gPad,3,1);
+	hRawYieldSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
+	hRawYieldSBfit->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
+	//	if(!correctForRefl)
+	WriteFitInfo(fitterSB[iPtBin],hMassPtBin);
+	
+
+	c5sub->cd(iPtBin+1);
+	TH1F* hsubTemp=(TH1F*)hMassDirectFit->Clone(Form("%sSubBack%d",hMassDirectFit->GetName(),iPtBin));
+	TH1F* hsubTempAllRange=(TH1F*)hMassDirectFit->Clone(Form("%sSubBackAllRange%d",hMassDirectFit->GetName(),iPtBin));
+	TF1* funcAll=fitterSB[iPtBin]->GetMassFunc();
+	TF1* funcBkg=fitterSB[iPtBin]->GetBackgroundRecalcFunc();
+	TF1* funcBkg2=fitterSB[iPtBin]->GetBackgroundFullRangeFunc();	
+	for(Int_t jst=1;jst<=hsubTemp->GetNbinsX();jst++){
+	  Double_t backg=funcBkg->Integral(hsubTemp->GetBinLowEdge(jst),hsubTemp->GetBinLowEdge(jst)+hsubTemp->GetBinWidth(jst))/hsubTemp->GetBinWidth(jst);
+	  Double_t tot=funcAll->Integral(hsubTempAllRange->GetBinLowEdge(jst),hsubTempAllRange->GetBinLowEdge(jst)+hsubTempAllRange->GetBinWidth(jst))/hsubTempAllRange->GetBinWidth(jst);
+	  hsubTemp->SetBinContent(jst,hsubTemp->GetBinContent(jst)-backg);
+	  hsubTempAllRange->SetBinContent(jst,hsubTempAllRange->GetBinContent(jst)-tot);
+	}
+	hsubTemp->SetLineColor(kBlue);
+	hsubTempAllRange->SetLineColor(kGray+2);
+	Double_t ymin=0;
+	Double_t ymax=1;
+	for(Int_t ibs=1; ibs<hsubTemp->GetNbinsX(); ibs++){
+	  Double_t binc=hsubTemp->GetBinCenter(ibs);
+	  if(binc>fitrangelow[iPtBin] && binc<fitrangeup[iPtBin]){
+	    Double_t yl=hsubTemp->GetBinContent(ibs)-hsubTemp->GetBinError(ibs);
+	    Double_t yu=hsubTemp->GetBinContent(ibs)+hsubTemp->GetBinError(ibs);
+	    if(yl<ymin) ymin=yl;
+	    if(yu>ymax) ymax=yu;
+	  }
+	}
+	if(ymax>0) ymax*=1.2;
+	else ymax*=0.8;
+	if(ymin<0) ymin*=1.2;
+	else ymin*=0.8;
+	hsubTemp->GetXaxis()->SetRangeUser(fitrangelow[iPtBin],fitrangeup[iPtBin]);
+	hsubTemp->SetMinimum(ymin);
+	hsubTemp->SetMaximum(ymax);
+	hsubTemp->DrawCopy();
+	hsubTempAllRange->DrawCopy("same");
+	hsubTemp->DrawCopy("same");
+	fpeak->SetParameter(0,funcAll->GetParameter(nDegreeBackPol+1));
+	fpeak->SetParameter(1,funcAll->GetParameter(nDegreeBackPol+2));
+	fpeak->SetParameter(2,funcAll->GetParameter(nDegreeBackPol+3));
+	fpeak->DrawCopy("same");
+
 	Double_t errbc;
-	Double_t bc=GetSignalBinCounting(hMassDirectFit,fback,errbc,nsigmaBinCounting,fFitSB[iPtBin]->GetParameter(2+nparback),-1.*fitrangelow[iPtBin],-1.*fitrangeup[iPtBin]);
+	Double_t bc=GetSignalBinCounting(hMassDirectFit,fitterSB[iPtBin]->GetBackgroundRecalcFunc(),errbc,nsigmaBinCounting,fitterSB[iPtBin]->GetSigma(),-1.*fitrangelow[iPtBin],-1.*fitrangeup[iPtBin]);
 	hRawYieldSBfitBC->SetBinContent(iPtBin+1,bc);
 	hRawYieldSBfitBC->SetBinError(iPtBin+1,errbc);
       
-
-	cPullsDirect->cd(iPtBin+1);
+	c5pulls->cd(iPtBin+1);
 	TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
 	TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
 	TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
-	TH1F *hResiduals=(TH1F*)GetResidualsAndPulls(hMassDirectFit,fFitSB[iPtBin],fitrangelow[iPtBin],fitrangeup[iPtBin],hPulls,hResidualTrend,hPullsTrend);
+	TH1F *hResiduals=(TH1F*)GetResidualsAndPulls(hMassDirectFit,fitterSB[iPtBin]->GetMassFunc(),fitrangelow[iPtBin],fitrangeup[iPtBin],hPulls,hResidualTrend,hPullsTrend);
 
 	hPulls->Draw();
 	
-	cResidualsDirect->cd(iPtBin+1);
+	c5residuals->cd(iPtBin+1);
 	hResiduals->Draw();
 	
 	SetStyleHisto(hResidualTrend,kSB);
 	cCompareResidualTrends->cd(iPtBin+1);
 	hResidualTrend->Draw();
 
-	cResidualDirectTrendVsMass->cd(iPtBin+1);
+	c5residualTrend->cd(iPtBin+1);
 	hResidualTrend->Draw();
 	
-	cPullsDirectTrendVsMass->cd(iPtBin+1);
+	c5pullTrend->cd(iPtBin+1);
 	hPullsTrend->Draw();
 	//TPaveStats *tp=(TPaveStats*)hPulls->FindObject("stats");
 	//      tp->SetOptStat("remnpcev");
 	delete hMassDirectFit;
       }
     }
-    
+
     c2->cd(iPtBin+1);
     if(out1){
-      fitterRot[iPtBin]->DrawHere(gPad,3,0);
+      if(!correctForRefl)fitterRot[iPtBin]->DrawHere(gPad,3,0);
+      else static_cast<AliHFMassFitterVAR*>(fitterRot[iPtBin])->AliHFMassFitterVAR::DrawHere(gPad,3,1);
       hRawYieldRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield());
       hRawYieldRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError());
+      //      if(!correctForRefl)
       WriteFitInfo(fitterRot[iPtBin],hMassPtBin);
       
       Double_t errbc;
@@ -1113,10 +943,12 @@ void ProjectCombinHFAndFit(){
 
     c3->cd(iPtBin+1);
     if(out2){
-      fitterLS[iPtBin]->DrawHere(gPad,3,0); 
+      if(!correctForRefl)fitterLS[iPtBin]->DrawHere(gPad,3,0); 
+      else static_cast<AliHFMassFitterVAR*>(fitterLS[iPtBin])->AliHFMassFitterVAR::DrawHere(gPad,3,1); 
       hRawYieldLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield());
       hRawYieldLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError());
-      WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
+      //      if(!correctForRefl)
+WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
 
       Double_t errbc;
       Double_t bc=GetSignalBinCounting(hMassSubLS,fitterLS[iPtBin]->GetBackgroundRecalcFunc(),errbc,nsigmaBinCounting,fitterLS[iPtBin]->GetSigma(),-1.*minMass,-1.*maxMass);
@@ -1149,10 +981,12 @@ void ProjectCombinHFAndFit(){
 
     c4->cd(iPtBin+1);
     if(out3){ 
-      fitterME[iPtBin]->DrawHere(gPad,3,0); 
+      if(!correctForRefl)fitterME[iPtBin]->DrawHere(gPad,3,0); 
+      else static_cast<AliHFMassFitterVAR*>(fitterME[iPtBin])->AliHFMassFitterVAR::DrawHere(gPad,3,1); 
       hRawYieldME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield());
       hRawYieldME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetRawYieldError());
-      WriteFitInfo(fitterME[iPtBin],hMassPtBin);
+      //      if(!correctForRefl)
+WriteFitInfo(fitterME[iPtBin],hMassPtBin);
 
       Double_t errbc;
       Double_t bc=GetSignalBinCounting(hMassSubME,fitterME[iPtBin]->GetBackgroundRecalcFunc(),errbc,nsigmaBinCounting,fitterME[iPtBin]->GetSigma(),-1.*minMass,-1.*maxMass);
@@ -1182,6 +1016,10 @@ void ProjectCombinHFAndFit(){
       hPullsTrend->Draw();
     }
     else hMassSubME->Draw("");
+    if(correctForRefl){
+      delete hMCReflPtBin;
+      delete hMCSigPtBin;
+    }
 
   }
   TString path(gSystem->pwd());
@@ -1195,8 +1033,8 @@ void ProjectCombinHFAndFit(){
     c3->SaveAs(Form("figures/InvMassSpectra_%s_LS.eps",suffix.Data()));
     c4->SaveAs(Form("figures/InvMassSpectra_%s_EM.eps",suffix.Data()));
     if(tryDirectFit){
-      cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
-      cDataSubtractedReFit->SaveAs(Form("figures/InvMassSpectra_%s_SBsub.eps",suffix.Data()));
+      c5->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
+      c5sub->SaveAs(Form("figures/InvMassSpectra_%s_SBsub.eps",suffix.Data()));
     }
 
     if(saveCanvasAsEps>1){
@@ -1217,10 +1055,10 @@ void ProjectCombinHFAndFit(){
       c4pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_EM.eps",suffix.Data()));
 
       if(tryDirectFit){
-	cResidualsDirect->SaveAs(Form("figures/ResidualDistribution_%s_SB.eps",suffix.Data()));
-	cResidualDirectTrendVsMass->SaveAs(Form("figures/residualTrendvsMass_%s_SB.eps",suffix.Data()));
-	cPullsDirect->SaveAs(Form("figures/PullDistribution_%s_SB.eps",suffix.Data()));
-	cPullsDirectTrendVsMass->SaveAs(Form("figures/pullTrendvsMass_%s_SB.eps",suffix.Data()));
+	c5residuals->SaveAs(Form("figures/ResidualDistribution_%s_SB.eps",suffix.Data()));
+	c5residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_SB.eps",suffix.Data()));
+	c5pulls->SaveAs(Form("figures/PullDistribution_%s_SB.eps",suffix.Data()));
+	c5pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_SB.eps",suffix.Data()));
       }
     }
   }
@@ -1248,11 +1086,11 @@ void ProjectCombinHFAndFit(){
     c4pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_EM.root",suffix.Data()));
 
     if(tryDirectFit){
-      cDataSubtractedFit->SaveAs(Form("figures/InvMassSpectra_%s_SB.root",suffix.Data()));
-      cResidualsDirect->SaveAs(Form("figures/ResidualDistribution_%s_SB.root",suffix.Data()));
-      cResidualDirectTrendVsMass->SaveAs(Form("figures/residualTrendvsMass_%s_SB.root",suffix.Data()));
-      cPullsDirect->SaveAs(Form("figures/PullDistribution_%s_SB.root",suffix.Data()));
-      cPullsDirectTrendVsMass->SaveAs(Form("figures/pullTrendvsMass_%s_SB.root",suffix.Data()));
+      c5->SaveAs(Form("figures/InvMassSpectra_%s_SB.root",suffix.Data()));
+      c5residuals->SaveAs(Form("figures/ResidualDistribution_%s_SB.root",suffix.Data()));
+      c5residualTrend->SaveAs(Form("figures/residualTrendvsMass_%s_SB.root",suffix.Data()));
+      c5pulls->SaveAs(Form("figures/PullDistribution_%s_SB.root",suffix.Data()));
+      c5pullTrend->SaveAs(Form("figures/pullTrendvsMass_%s_SB.root",suffix.Data()));
     }
   }
 
