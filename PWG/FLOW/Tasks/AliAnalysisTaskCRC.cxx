@@ -82,8 +82,8 @@ fUseBootstrap(kFALSE),
 fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kFALSE),
-fUseEtaGap(kFALSE),
-fEtaGap(0.),
+fCalculateCRCPt(kFALSE),
+fCalculateCRCBck(kFALSE),
 fUseNUAforCRC(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.)
@@ -176,8 +176,8 @@ fUseBootstrap(kFALSE),
 fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kFALSE),
-fUseEtaGap(kFALSE),
-fEtaGap(0.),
+fCalculateCRCPt(kFALSE),
+fCalculateCRCBck(kFALSE),
 fUseNUAforCRC(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.)
@@ -244,8 +244,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow);
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances);
  fQC->SetExactNoRPs(fExactNoRPs);
- fQC->SetUseEtaGap(fUseEtaGap);
- fQC->SetEtaGap(fEtaGap);
+ fQC->SetCalculateCRCPt(fCalculateCRCPt);
+ fQC->SetCalculateCRCBck(fCalculateCRCBck);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
  // Multiparticle correlations vs multiplicity:
