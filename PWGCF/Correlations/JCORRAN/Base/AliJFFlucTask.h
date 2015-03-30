@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <iomanip>
 
+#include "AliAODMCParticle.h"
 #include "AliJHistManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliJConst.h"
@@ -52,14 +53,14 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 
  public:
   AliJFFlucTask();
-  AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t ExcludeWeakDecay);
+  AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t IsExcludeWeakDecay);
   AliJFFlucTask(const AliJFFlucTask& ap);   
   AliJFFlucTask& operator = (const AliJFFlucTask& ap);
   virtual ~AliJFFlucTask();
 
   // methods to fill from AliAnalysisTaskSE
   virtual void UserCreateOutputObjects(); 
-  virtual void Init();   
+ virtual void Init();   
   virtual void LocalInit() { Init(); }
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t* opt=""  );
@@ -70,14 +71,15 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void SetDebugLevel(int debuglevel){fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;};
   float ReadAODCentrality( AliAODEvent* aod, TString Trig );
   Bool_t IsGoodEvent( AliAODEvent* aod);
-  void SetIsMC( Bool_t ismc){ IsMC = ismc; cout << "Settint IsMC = " << ismc << endl; };
+  void SetIsMC( Bool_t ismc){ IsMC = ismc; cout << "Setting IsMC = " << ismc << endl; };
+  void SetIsWeakDeacyExclude( Bool_t WeakDecay){ IsExcludeWeakDecay=WeakDecay; cout << "Setting Exclude Weak Decay Particles = " << WeakDecay << endl;}
   void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl; };
   void SetEtaRange( double eta_min, double eta_max ){ fEta_min=eta_min; fEta_max=eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " << fEta_max << endl;};
   inline void DEBUG(int level, TString msg){ if(level < fDebugLevel){ std::cout<< level << "\t" << msg << endl;}};
   void SetFFlucTaskName(TString taskname){fTaskName = taskname;};
   TString GetFFlucTaskName(){return fTaskName;};
   void ReadVertexInfo( AliAODEvent *aod , double* fvertex);
-  Bool_t IsThisAWeakDecayingParticle(TParticle *thisGuy);
+  Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 
  private:
   TString fTaskName;
@@ -87,7 +89,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   double fEta_min;
   double fEta_max;
   Bool_t IsMC;
-  Bool_t ExcludeWeakDecay;
+  Bool_t IsExcludeWeakDecay;
   TClonesArray * fInputList;  // tracklist  
   AliJFFlucAnalysis *fFFlucAna; // analysis code
   TDirectory *fOutput;     // output
