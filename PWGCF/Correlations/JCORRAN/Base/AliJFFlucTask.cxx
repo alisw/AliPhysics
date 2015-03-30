@@ -57,7 +57,7 @@ AliJFFlucTask::AliJFFlucTask():
 
 
 //______________________________________________________________________________
-AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t ExcludeWeakDecay):
+AliJFFlucTask::AliJFFlucTask(const char *name, int CollisionCandidates, Bool_t IsMC, Bool_t IsExcludeWeakDecay):
 	fInputList(0),
     AliAnalysisTaskSE(name), 
     fFFlucAna(0x0),
@@ -201,17 +201,14 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				if(!track) { Error("ReadEventAODMC", "Could not receive particle %d",(int) it); continue; };
 				if( track->IsPhysicalPrimary() ){
 						// insert AMTP weak decay switch here
-						if(ExcludeWeakDecay == kTRUE){
+						if(IsExcludeWeakDecay == kTRUE){
 								Bool_t kExcludeParticle = kFALSE;
 								Int_t gMotherIndex = track->GetMother(); // check and ask about this to DJ changed to mother from firstmother
 								if(gMotherIndex != -1) {
-										AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(aod->GetTrack(gMotherIndex));
-										if(motherTrack) {
-												TParticle *motherParticle = motherTrack->Particle();
-												if(motherParticle) {
-														if(IsThisAWeakDecayingParticle(motherParticle)){
-																kExcludeParticle = kTRUE;
-														}
+										AliAODMCParticle *motherParticle = (AliAODMCParticle*)mcArray->At(gMotherIndex);
+										if(motherParticle) {
+												if(IsThisAWeakDecayingParticle(motherParticle)){
+													kExcludeParticle = kTRUE;
 												}
 										}
 								}
@@ -285,7 +282,7 @@ void AliJFFlucTask::Terminate(Option_t *)
 
 
 //______________________________________________________________________________
-Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(TParticle *thisGuy)
+Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 {
   // In order to prevent analyzing daughters from weak decays 
   // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
