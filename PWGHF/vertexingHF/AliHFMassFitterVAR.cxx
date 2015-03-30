@@ -76,7 +76,8 @@ AliHFMassFitter(),
   fparReflFixExt(0x0),
   fRawYieldHelp(0),
   fpolbackdegreeTay(4),
-  fpolbackdegreeTayHelp(-1)
+  fpolbackdegreeTayHelp(-1),
+  fMassParticle(1.864)
 {
   // default constructor
  
@@ -108,7 +109,8 @@ AliHFMassFitterVAR::AliHFMassFitterVAR (const TH1F *histoToFit, Double_t minvalu
   fparReflFixExt(0x0),
   fRawYieldHelp(0),
   fpolbackdegreeTay(4),
-  fpolbackdegreeTayHelp(-1)
+  fpolbackdegreeTayHelp(-1),
+  fMassParticle(1.864)
 {
   // standard constructor
 
@@ -160,7 +162,8 @@ AliHFMassFitterVAR::AliHFMassFitterVAR(const AliHFMassFitterVAR &mfit):
   fparReflFixExt(0x0),
   fRawYieldHelp(mfit.fRawYieldHelp),
   fpolbackdegreeTay(mfit.fpolbackdegreeTay),
-  fpolbackdegreeTayHelp(mfit.fpolbackdegreeTayHelp)
+  fpolbackdegreeTayHelp(mfit.fpolbackdegreeTayHelp),
+  fMassParticle(mfit.fMassParticle)
 {
   //copy constructor
   fSignParNames=new TString[fNparSignal];
@@ -250,6 +253,8 @@ AliHFMassFitterVAR& AliHFMassFitterVAR::operator=(const AliHFMassFitterVAR &mfit
   fRawYieldHelp=mfit.fRawYieldHelp;
   fpolbackdegreeTay=mfit.fpolbackdegreeTay;
   fpolbackdegreeTayHelp=mfit.fpolbackdegreeTayHelp;
+
+  fMassParticle=mfit.fMassParticle;
 
   delete [] fSignParNames;
   delete [] fBackParNames;
@@ -350,7 +355,7 @@ TH1F*  AliHFMassFitterVAR::SetTemplateReflections(const TH1 *h, TString opt,Doub
     f->SetParameter(1,1.865);
     f->SetParameter(2,0.050);
 
-    fhTemplRefl->Fit(f,"RELMI","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fhTemplRefl->Fit(f,"REM","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
     for(Int_t j=1;j<=fhTemplRefl->GetNbinsX();j++){
       fhTemplRefl->SetBinContent(j,f->Integral(fhTemplRefl->GetBinLowEdge(j),fhTemplRefl->GetXaxis()->GetBinUpEdge(j))/fhTemplRefl->GetBinWidth(j));
       if(fhTemplRefl->GetBinContent(j)>=0.&&TMath::Abs(h->GetBinError(j)*h->GetBinError(j)-h->GetBinContent(j))>0.1*h->GetBinContent(j))isPoissErr=kFALSE;
@@ -382,7 +387,7 @@ TH1F*  AliHFMassFitterVAR::SetTemplateReflections(const TH1 *h, TString opt,Doub
     f->SetParameter(4,1.88);
     f->SetParameter(5,0.050);
 
-    fhTemplRefl->Fit(f,"RELMI","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fhTemplRefl->Fit(f,"REM","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
     for(Int_t j=1;j<=fhTemplRefl->GetNbinsX();j++){
       fhTemplRefl->SetBinContent(j,f->Integral(fhTemplRefl->GetBinLowEdge(j),fhTemplRefl->GetXaxis()->GetBinUpEdge(j))/fhTemplRefl->GetBinWidth(j));
       if(fhTemplRefl->GetBinContent(j)>=0.&&TMath::Abs(h->GetBinError(j)*h->GetBinError(j)-h->GetBinContent(j))>0.1*h->GetBinContent(j))isPoissErr=kFALSE;
@@ -407,7 +412,7 @@ TH1F*  AliHFMassFitterVAR::SetTemplateReflections(const TH1 *h, TString opt,Doub
     //    f->SetParLimits(0,0,100.*h->Integral());
     // Hard to initialize the other parameters...
     for(Int_t nf=0;nf<10;nf++){
-      fhTemplRefl->Fit(f,"RELMI","");
+      fhTemplRefl->Fit(f,"REM","");
       //,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
     }
     //    Printf("We USED %d POINTS in the Fit",f->GetNumberFitPoints());
@@ -549,7 +554,7 @@ Double_t AliHFMassFitterVAR::FitFunction4Refl(Double_t *x,Double_t *par){
 Double_t AliHFMassFitterVAR::BackFitFuncPolHelper(Double_t *x,Double_t *par){
   Double_t back=par[0];
   for(Int_t it=1;it<=fpolbackdegreeTayHelp;it++){
-    back+=par[it]*TMath::Power(x[0]-fMass,it)/TMath::Factorial(it);
+    back+=par[it]*TMath::Power(x[0]-fMassParticle,it)/TMath::Factorial(it);
   }
   return back;
   
@@ -648,7 +653,7 @@ Double_t AliHFMassFitterVAR::FitFunction4Bkg(Double_t *x, Double_t *par){
     {
       total=par[0+firstPar];
       for(Int_t it=1;it<=fpolbackdegreeTay;it++){
-	total+=par[it+firstPar]*TMath::Power(x[0]-fMass,it)/TMath::Factorial(it);
+	total+=par[it+firstPar]*TMath::Power(x[0]-fMassParticle,it)/TMath::Factorial(it);
       }
       
     }
@@ -897,7 +902,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
    //if only signal and reflection: skip
   if (!(ftypeOfFit4Bkg==3 && ftypeOfFit4Sgn==1)) {
     //    ftypeOfFit4Sgn=0;
-    fhistoInvMass->Fit(funcbkg,Form("R,%s,0",fFitOption.Data()));
+    fhistoInvMass->Fit(funcbkg,"R,E,0");
    
     fSideBands = kFALSE;
     //intbkg1 = funcbkg->GetParameter(0);
@@ -1080,7 +1085,7 @@ Bool_t AliHFMassFitterVAR::PrepareHighPolFit(TF1 *fback){
       funcbkg->SetParameter(1,estimateslope);
       
     }
-    hCp->Fit(funcbkg,"REMIN","");
+    hCp->Fit(funcbkg,"REMN","");
     funcPrev=(TF1*)funcbkg->Clone("ftemp");
     delete funcbkg;
     fpolbackdegreeTayHelp++;
@@ -1093,7 +1098,7 @@ Bool_t AliHFMassFitterVAR::PrepareHighPolFit(TF1 *fback){
     fback->SetParameter(j,funcPrev->GetParameter(j));
     fback->SetParError(j,funcPrev->GetParError(j));
   }
-  hCp->Fit(fback,"REMIN","");// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
+  hCp->Fit(fback,"REMN","");// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
 
 
   // The following lines might be useful for debugging
@@ -1176,7 +1181,7 @@ Bool_t AliHFMassFitterVAR::RefitWithBkgOnly(Bool_t draw){
       fhistoInvMass->GetFunction(funcbkg->GetName())->SetBit(1<<9,kTRUE);
     }
   }
-  else status=fhistoInvMass->Fit(bkgname.Data(),Form("R,%s,+,0",fFitOption.Data()));
+  else status=fhistoInvMass->Fit(bkgname.Data(),"R,E,+,0");
   if (status != 0){
     ftypeOfFit4Sgn=typesSave;
     cout<<"Minuit returned "<<status<<endl;
@@ -1383,13 +1388,13 @@ void AliHFMassFitterVAR::WriteCanvas(TString userIDstring,TString path,Double_t 
 
 void AliHFMassFitterVAR::DrawHere(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo){
   //draws histogram together with fit functions with default nice colors in user canvas
-  PlotFit(pd,nsigma,writeFitInfo);
+  PlotFitVAR(pd,nsigma,writeFitInfo);
 
   pd->Draw();
  
 }
 //_________________________________________________________________________
-void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo){
+void AliHFMassFitterVAR::PlotFitVAR(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo){
   //plot histogram, fit functions and write parameters according to verbosity level (0,1,>1)
   gStyle->SetOptStat(0);
   gStyle->SetCanvasColor(0);
@@ -1492,8 +1497,7 @@ void AliHFMassFitterVAR::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitI
 
     Double_t signif, signal, bkg, errsignif, errsignal, errbkg;
 
-    signal=fRawYield;
-    errsignal=fRawYieldErr;//    Signal(nsigma,signal,errsignal);
+    Signal(nsigma,signal,errsignal);
     Background(nsigma,bkg, errbkg);
     AliVertexingHFUtils::ComputeSignificance(signal,errsignal,bkg,errbkg,signif,errsignif);
 
