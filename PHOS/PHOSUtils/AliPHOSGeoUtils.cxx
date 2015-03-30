@@ -255,16 +255,28 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 
     Int_t mod = relid[0] ;
     const TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
-    m2->LocalToMaster(pos,posC);
-
+    if(m2)
+      m2->LocalToMaster(pos,posC);
+    else{ //shold not happen!
+      AliError(Form("Can not find matrix for mod=%d, strip=%d",mod, strip)) ;
+      //posC contains fixed valued to identify problem in analysis
+    }  
     //Return to PHOS local system  
     Double_t posL2[3]={posC[0],posC[1],posC[2]};
     const TGeoHMatrix *mPHOS2 = GetMatrixForModule(mod) ;
-
-    mPHOS2->MasterToLocal(posC,posL2);
-    x=posL2[0] ;
-    z=-posL2[2];
-    return ;
+    if(mPHOS2){
+      mPHOS2->MasterToLocal(posC,posL2);
+      x=posL2[0] ;
+      z=-posL2[2];
+      return ;
+    }
+    else{
+      AliError(Form("Can not find matrix for mod=%d",mod)) ;
+      //Return wrong fixed value to notice in analysis 
+      x=0. ;
+      z=0.;
+      return ;
+    }
   }
   else{//CPV
     //first calculate position with respect to CPV plain 
@@ -277,15 +289,28 @@ void AliPHOSGeoUtils::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 
     //now apply possible shifts and rotations
     const TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
-    m->LocalToMaster(pos,posC);
+    if(m)
+      m->LocalToMaster(pos,posC);
+    else{
+      AliError(Form("Can not find CPV matrix for mod=%d",relid[0])) ;
+      //posC contains fixed valued to identify problem in analysis
+    }  
     //Return to PHOS local system
     Double_t posL[3]={0.,0.,0.,} ;
     const TGeoHMatrix *mPHOS = GetMatrixForPHOS(relid[0]) ;
-    mPHOS->MasterToLocal(posC,posL);
-    x=posL[0] ;
-    z=posL[1];
-    return ;
- 
+    if(mPHOS){
+      mPHOS->MasterToLocal(posC,posL);
+      x=posL[0] ;
+      z=posL[1];
+      return ;
+    }
+    else{
+      AliError(Form("Can not find (CPV) matrix for mod=%d",relid[0])) ;
+      //Return wrong fixed value to notice in analysis 
+      x=0. ;
+      z=0.;
+      return ;
+    }
   }
   
 }
@@ -427,12 +452,18 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
  
     Int_t mod = relid[0] ;
     const TGeoHMatrix * m2 = GetMatrixForStrip(mod, strip) ;
-    m2->LocalToMaster(ps,psC);
-    pos.SetXYZ(psC[0],psC[1],psC[2]) ; 
- 
+    if(m2){
+      m2->LocalToMaster(ps,psC);
+      pos.SetXYZ(psC[0],psC[1],psC[2]) ; 
+    }
+    else{
+      AliError(Form("Can not find matrix for mod=%d, strip=%d",mod,strip)) ;
+      //Return wrong fixed value to notice in analysis 
+      pos.SetXYZ(0.,0.,0.) ;
+    }
   }
   else{
-    //first calculate position with respect to CPV plain
+    //first calculate position with respect to CPV plane
     Int_t row        = relid[2] ; //offset along x axis
     Int_t column     = relid[3] ; //offset along z axis
     Double_t ps[3]= {0.0,fCPVBoxSizeY/2.,0.}; //Position on top of CPV
@@ -442,8 +473,16 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
  
     //now apply possible shifts and rotations
     const TGeoHMatrix *m = GetMatrixForCPV(relid[0]) ;
-    m->LocalToMaster(ps,psC);
-    pos.SetXYZ(psC[0],psC[1],-psC[2]) ; 
+    if(m){
+      m->LocalToMaster(ps,psC);
+      pos.SetXYZ(psC[0],psC[1],-psC[2]) ; 
+    }
+    else{
+      AliError(Form("Can not find (CPV) matrix for mod=%d",relid[0])) ;
+      //Return wrong fixed value to notice in analysis 
+      pos.SetXYZ(0.,0.,0.) ;
+      
+    }
   }
 } 
 
@@ -774,7 +813,13 @@ void AliPHOSGeoUtils::TestSurvey(Int_t module, const Float_t *point, TVector3 &g
   Double_t posL[3]={-x0+point[0],-fCrystalShift-point[1],z0-point[2]} ; 
   Double_t posG[3] ;
   const TGeoHMatrix *mPHOS = GetMatrixForModule(module) ;
-  mPHOS->LocalToMaster(posL,posG);
-  globaPos.SetXYZ(posG[0],posG[1],posG[2]) ;
- 
+  if(mPHOS){
+    mPHOS->LocalToMaster(posL,posG);
+    globaPos.SetXYZ(posG[0],posG[1],posG[2]) ;
+  }
+  else{
+     AliError(Form("Can not find matrix for mod=%d",module)) ;
+      //Return wrong fixed value to notice in analysis 
+      globaPos.SetXYZ(0.,0.,0.) ;
+  }
 }
