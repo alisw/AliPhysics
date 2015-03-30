@@ -86,7 +86,7 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fpAppliedEfficiency = new TProfile("fpAppliedEfficiency","fpAppliedEfficiency",nBinPt,binLimitsPt);
   
   fhNmissing = new TH3F("fhNmissing", "Track Added per jet;#it{p}_{T,jet};N constituents added; N_{constituents} #times (1/eff - 1)", nBinsPtJ,minPtJ,maxPtJ, 80,0,20, 80,0,20);
-  fhCmpNmissStrategy = new TH2F("fhCmpNmissStrategy", "Compare different way of obtaining N missing", 80,0,20, 80,0,20);
+  fhCmpNmissStrategy = new TH2F("fhCmpNmissStrategy", "Compare different way of obtaining N missing; N = (1./eff -1.) #times N_{constituents}; N from truth", 80,0,20, 80,0,20);
   
   fListOfOutput = new TList();
   fListOfOutput->SetName("JetByJetCorrectionOutput");
