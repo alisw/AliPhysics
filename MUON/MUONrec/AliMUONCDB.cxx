@@ -1729,19 +1729,26 @@ void AliMUONCDB::ShowFaultyBusPatches(const char* runlist, double occLimit,
   
   outfile.close();
   
-  const char* name = "BPfailureRate";
+  if ( bpValues.GetSize() == 0 )
+  {
+    cout << Form("Great. No faulty bus patch (at the %g occupancy limit) found.",occLimit) << endl;
+    gSystem->Exec(Form("rm %s.txt",outputBaseName));
+  }
+  else
+  {
+    const char* name = "BPfailureRate";
+    
+    AliMUONTrackerData* mpData = new AliMUONTrackerData(name,name,bpValues,2);
+    mpData->SetDimensionName(0,name);
   
-  AliMUONTrackerData* mpData = new AliMUONTrackerData(name,name,bpValues,2);
-  mpData->SetDimensionName(0,name);
+    TFile f(Form("%s.root",outputBaseName),"recreate");
+    mpData->Write();
+    f.Close();
   
-  TFile f(Form("%s.root",outputBaseName),"recreate");
-  mpData->Write();
-  f.Close();
-  
-  cout << Form("Results are in %s.txt and %s.root",outputBaseName,outputBaseName) << endl;
-  
-  gSystem->Exec(Form("cat %s.txt",outputBaseName));
-  
+    cout << Form("Results are in %s.txt and %s.root",outputBaseName,outputBaseName) << endl;
+    
+    gSystem->Exec(Form("cat %s.txt",outputBaseName));
+  }  
 }
 
 //______________________________________________________________________________
