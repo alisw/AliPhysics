@@ -70,6 +70,9 @@ class AliDAQ: public TObject {
 
   static void SetRun1();
   static void SetRun2();
+  static Int_t GetRunPeriod()  {return fgkRunPeriod;}
+  static Int_t GetFirstSTUDDL() {return fgkFirstSTUDDL;}
+  static Int_t GetLastSTUDDL() {return fgkLastSTUDDL;}
   
   enum {
     kNDetectors = 25,    // Number of detectors
@@ -97,8 +100,11 @@ class AliDAQ: public TObject {
   static Float_t     fgkNumberOfLdcs[kNDetectors]; // Number of LDCs per detector (not fixed - used only for the raw data simulation)
   static const char* fgkOfflineModuleName[kNDetectors]; // Names of the offline modules corresponding to the detectors
   static const char* fgkOnlineName[kNDetectors]; // Online (DAQ/ECS) detector names
+  static Int_t fgkRunPeriod; // 1 corresponds to Run1, 1 - to Run2
+  static Int_t fgkFirstSTUDDL; // ID of the first STU DDLwithin the EMCAL range
+  static Int_t fgkLastSTUDDL; // ID of the last STU DDL within the EMCAL range
 
-  ClassDef(AliDAQ, 5)   // ALICE DAQ Configuration class
+  ClassDef(AliDAQ, 6)   // ALICE DAQ Configuration class
 };
 
 #endif

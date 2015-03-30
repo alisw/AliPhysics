@@ -49,6 +49,7 @@
 
 //The include file
 #include "AliCaloCalibPedestal.h"
+#include "AliDAQ.h"
 
 ClassImp(AliCaloCalibPedestal)
 
@@ -558,7 +559,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliRawReader *rawReader)
   // if fMapping is NULL the rawstream will crate its own mapping
   AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
   if (fDetType == kEmCal) {
-    rawReader->Select("EMCAL") ; //select EMCAL DDL range 
+    rawReader->Select("EMCAL",0,AliDAQ::GetFirstSTUDDL()-1) ; //select EMCAL DDL range 
   }
   return ProcessEvent(&rawStream);
 }

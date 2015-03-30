@@ -119,7 +119,7 @@ fFwVersion(0)
 {
 	//
 	fRawReader->Reset();
-	fRawReader->Select("EMCAL",AliDAQ::NumberOfDdls("EMCAL")-1);
+	fRawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL());
 	//
 	for (int i = 0; i < 2; i++) {
 		//
