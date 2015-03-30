@@ -1,8 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCutMonitorV0                                                       //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoCutMonitorV0
+/// \brief AliFemtoCutMonitorV0
+
 #include "AliFemtoCutMonitorV0.h"
 #include <TH1D.h>
 #include <TH2D.h>
@@ -35,7 +33,8 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fParticleOrigin(0),
   fParticleId(0)
 {
-  // Default constructor
+  /// Default constructor
+
   fLambdaMass = new TH1F("LambdaMass", "Mass Assuming Lambda Hypothesis", 10000, 0, 5);
   fAntiLambdaMass = new TH1F("AntiLambdaMass", "Mass Assuming AntiLambda Hypothesis", 10000, 0, 5);
   fK0ShortMass= new TH1F("K0ShortMass", "Mass Assuming K0 short Hypothesis", 500, 0, 5);
@@ -111,7 +110,8 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fParticleOrigin(0),
   fParticleId(0)
 {
-  // Normal constructor
+  /// Normal constructor
+
   char name[200];
   snprintf(name, 200, "LambdaMass%s", aName);
   fLambdaMass = new TH1F(name, "Mass Assuming Lambda Hypothesis", 10000, 0, 5);
@@ -210,7 +210,8 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fParticleOrigin(0),
   fParticleId(0)
 {
-  // copy constructor
+  /// copy constructor
+
   if (fLambdaMass) delete fLambdaMass;
   fLambdaMass = new TH1F(*aCut.fLambdaMass);
   if (fAntiLambdaMass) delete fAntiLambdaMass;
@@ -283,7 +284,8 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
 
 AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
 {
-  // Destructor
+  /// Destructor
+
   delete fLambdaMass;
   delete fAntiLambdaMass;
   delete fK0ShortMass;
@@ -312,7 +314,8 @@ AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
 
 AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0& aCut)
 {
-  // assignment operator
+  /// assignment operator
+
   if (this == &aCut)
     return *this;
 
@@ -389,7 +392,8 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
 }
 
 AliFemtoString AliFemtoCutMonitorV0::Report(){
-  // Prepare report from the execution
+  /// Prepare report from the execution
+
   string stemp = "*** AliFemtoCutMonitorV0 report";
   AliFemtoString returnThis = stemp;
   return returnThis;
@@ -397,7 +401,8 @@ AliFemtoString AliFemtoCutMonitorV0::Report(){
 
 void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
 {
-  // Fill momentum resolution histograms for the particle
+  /// Fill momentum resolution histograms for the particle
+
   fLambdaMass->Fill(aV0->MassLambda());
   fAntiLambdaMass->Fill(aV0->MassAntiLambda());
   fK0ShortMass->Fill(aV0->MassK0Short());
@@ -434,7 +439,8 @@ void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
 
 void AliFemtoCutMonitorV0::Write()
 {
-  // Write out the relevant histograms
+  /// Write out the relevant histograms
+
   fLambdaMass->Write();
   fAntiLambdaMass->Write();
   fK0ShortMass->Write();
@@ -463,7 +469,8 @@ void AliFemtoCutMonitorV0::Write()
 
 TList *AliFemtoCutMonitorV0::GetOutputList()
 {
-  // Get the list of histograms to write
+  /// Get the list of histograms to write
+
   TList *tOutputList = new TList();
   tOutputList->Add(fLambdaMass);
   tOutputList->Add(fAntiLambdaMass);
