@@ -93,6 +93,7 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fListOfOutput->SetOwner();
   fListOfOutput->Add(fpAppliedEfficiency);
   fListOfOutput->Add(fhNmissing);
+  fListOfOutput->Add(fhCmpNmissStrategy);
  
 
 }
