@@ -1666,7 +1666,7 @@ void AliPIDResponse::InitializeTOFResponse(){
   AliInfo(Form("TOF PID Params loaded from OADB [entryTag: %s]",fTOFPIDParams->GetOADBentryTag()));
   AliInfo(Form("  TOF resolution %5.2f [ps]",fTOFPIDParams->GetTOFresolution()));
   AliInfo(Form("  StartTime method %d",fTOFPIDParams->GetStartTimeMethod()));
-  AliInfo(Form("  TOF res. mom. params: %5.2f %5.2f %5.2f %5.2f",
+  AliInfo(Form("  TOF res. mom. params: %6.3f %6.3f %6.3f %6.3f",
                fTOFPIDParams->GetSigParams(0),fTOFPIDParams->GetSigParams(1),fTOFPIDParams->GetSigParams(2),fTOFPIDParams->GetSigParams(3)));
   AliInfo(Form("  Start Time Offset %6.2f ps",fTOFPIDParams->GetTOFtimeOffset()));
   AliInfo(Form("  Fraction of tracks within gaussian behaviour: %6.4f",fTOFPIDParams->GetTOFtail()));
