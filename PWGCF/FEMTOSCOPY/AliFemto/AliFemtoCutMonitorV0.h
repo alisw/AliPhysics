@@ -1,8 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCutMonitorV0 -                                                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoCutMonitorV0
+/// \brief AliFemtoCutMonitorV0 -
+
 #ifndef AliFemtoCutMonitorV0_H
 #define AliFemtoCutMonitorV0_H
 
@@ -44,11 +42,11 @@ public:
   virtual TList *GetOutputList();
 
 private:
-  TH1F *fLambdaMass;     // Mass assuming lambda hypothesis
-  TH1F *fAntiLambdaMass; // Mass assuming antilambda hypothesis
-  TH1F *fK0ShortMass;    // Mass assuming k-short hypothesis
-  TH1F *fDcaDaughters;   // DCA of v0 daughters at Decay vertex
-  TH1F *fDcaV0ToPrimVertex;// DCA of v0 to primary vertex
+  TH1F *fLambdaMass;     ///< Mass assuming lambda hypothesis
+  TH1F *fAntiLambdaMass; ///< Mass assuming antilambda hypothesis
+  TH1F *fK0ShortMass;    ///< Mass assuming k-short hypothesis
+  TH1F *fDcaDaughters;   ///< DCA of v0 daughters at Decay vertex
+  TH1F *fDcaV0ToPrimVertex;///< DCA of v0 to primary vertex
   TH1F *fDcaPosToPrimVertex;
   TH1F *fDcaNegToPrimVertex;
   TH1F *fCosPointingAngle;
@@ -68,8 +66,8 @@ private:
   TH1D *fnsigmaPosAL;
   TH1D *fnsigmaNegAL;
 
-  TH1D *fParticleOrigin; //particle origin from MC
-  TH1D *fParticleId;     //true particle identification from MC
+  TH1D *fParticleOrigin; ///< particle origin from MC
+  TH1D *fParticleId;     ///< true particle identification from MC
 };
 
 #endif
