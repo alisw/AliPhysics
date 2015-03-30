@@ -112,8 +112,6 @@ AliMUONPainterPlotSelector::BackupDimensionButtons()
   
   TString name = fDataSourceDimensions->GetTitle();
 
-  AliDebug(1,Form("name %s",name.Data()));
-
   if ( name !=  fgkDefaultSourceName )
   {
     TGButtonGroup* group = static_cast<TGButtonGroup*>(fDimensionButtonMap->GetValue(name));
@@ -140,8 +138,6 @@ AliMUONPainterPlotSelector::CreateDimensionButtons(const char* dataSourceName)
 {
   /// Create the dimension button group for a given data source
   
-  AliDebug(1,Form("Creating dimension buttons for dataSource %s",dataSourceName));
-  
   AliMUONVTrackerData* data = AliMUONPainterDataRegistry::Instance()->DataSource(dataSourceName);
 
   TGButtonGroup* bg = new TGButtonGroup(this,0,3,5,0,dataSourceName);
@@ -157,9 +153,6 @@ AliMUONPainterPlotSelector::CreateDimensionButtons(const char* dataSourceName)
   }
   
   fDimensionButtonMap->Add(new TObjString(dataSourceName),bg);
-  
-  AliDebug(1,Form("bg is %p Count=%d",bg,bg->GetCount()));
-  StdoutToAliDebug(1,AliMUONPainterInterfaceHelper::Dump(*bg));
   
   bg->Connect("Clicked(Int_t)","AliMUONPainterPlotSelector",this,
                                 "DimensionButtonWasClicked(Int_t)");
@@ -202,11 +195,6 @@ AliMUONPainterPlotSelector::DataSourceWasChanged(const char* type,
                                                  Int_t dataIndex)
 {
   /// Emit a signal to tell data source was changed
-  AliDebug(1,Form("type=%s data=%s (%s)",
-                  type,
-                  ( data ? data->GetName() : "" ),
-                  ( ( data && dataIndex >= 0 ) ? data->DimensionName(dataIndex).Data() :
-                    "")));
   
 	UpdateTypeButton();
 	
@@ -221,8 +209,6 @@ void
 AliMUONPainterPlotSelector::DataSourceWasRegistered(AliMUONVTrackerData* data)
 {
   /// A new data source has been registered : add it to the interface
-  
-  AliDebug(1,Form("Registering %s",data->GetName()));
   
   AliMUONPainterInterfaceHelper::AddRadioButton(*fDataSourceNames,
                                                 data->GetName(),
@@ -301,8 +287,6 @@ AliMUONPainterPlotSelector::DimensionButtonWasClicked(Int_t id)
 {
   /// One dim button was clicked
   
-  AliDebug(1,Form("id=%d",id));
-  
   TGTextButton* button = (TGTextButton*)fDataSourceDimensions->GetButton(id);
   
   SetCurrentDimension(reinterpret_cast<Long_t>(button->GetUserData()));
@@ -313,9 +297,6 @@ AliMUONPainterPlotSelector::DimensionButtonWasClicked(Int_t id)
     AliMUONPainterInterfaceHelper::Select(*fTypes,fCurrentType.Data(),kFALSE);
     fTypes->Show();
   }
-  
-  AliDebug(1,Form("fCurrentDimension=%ld fCurrentData=%p fCurrentType=%s",
-                  fCurrentDimension,fCurrentData,fCurrentType.Data()));
   
   DataSourceWasChanged();
 }
@@ -343,7 +324,6 @@ AliMUONPainterPlotSelector::RestoreDimensionButtons(const char* dataSourceName,
 {
   /// Restore (i.e. contrary of Backup) a given dimension button group
   
-  AliDebug(1,Form("name %s",dataSourceName));
   TGButtonGroup* group = static_cast<TGButtonGroup*>(fDimensionButtonMap->GetValue(dataSourceName));
   
   AliMUONPainterInterfaceHelper::Copy(*group,*fDataSourceDimensions);
@@ -373,7 +353,6 @@ void
 AliMUONPainterPlotSelector::SetCurrentData(AliMUONVTrackerData* data)
 {
   /// Set the current data pointer
-  AliDebug(1,Form("fCurrentData %p -> %p",fCurrentData,data));
   fCurrentData = data;
 }
 
@@ -382,7 +361,6 @@ void
 AliMUONPainterPlotSelector::SetCurrentDimension(Long_t i)
 {
   /// Set the current dimension
-  AliDebug(1,Form("fCurrentDimension %ld -> %ld",fCurrentDimension,i));
   fCurrentDimension = i;
 }
 
@@ -391,7 +369,6 @@ void
 AliMUONPainterPlotSelector::SetCurrentType(const char* type)
 {
   /// Set the current type
-  AliDebug(1,Form("fCurrentType %s -> %s",fCurrentType.Data(),type));
   fCurrentType = type;
 }
 
@@ -400,16 +377,12 @@ void
 AliMUONPainterPlotSelector::SourceButtonWasClicked(Int_t id)
 {
   /// A source button was clicked
-  AliDebug(1,Form("BEGIN id %d fCurrentDimension=%ld fCurrentData=%p fCurrentType=%s",
-                  id,
-                  fCurrentDimension,fCurrentData,fCurrentType.Data()));
 
   BackupDimensionButtons();
   
   TGButton* button = fDataSourceNames->GetButton(id);
   if ( !button ) 
   {
-    StdoutToAliDebug(1,AliMUONPainterInterfaceHelper::Dump(*fDataSourceNames));
     AliFatal(Form("Could not get DataSource button id=%d",id));
   }
   
@@ -441,9 +414,6 @@ AliMUONPainterPlotSelector::SourceButtonWasClicked(Int_t id)
   Resize();
   Layout();
   
-  AliDebug(1,Form("END fCurrentDimension=%ld fCurrentData=%p fCurrentType=%s",
-                  fCurrentDimension,fCurrentData,fCurrentType.Data()));
-
   DataSourceWasChanged();
 }
 
@@ -452,14 +422,8 @@ void
 AliMUONPainterPlotSelector::TypeButtonWasClicked(Int_t id)
 {
   /// A type button was clicked
-  AliDebug(1,Form("fCurrentDimension=%ld fCurrentData=%p",
-                  fCurrentDimension,fCurrentData));
-
   TGTextButton* button = (TGTextButton*)fTypes->GetButton(id);
   SetCurrentType(button->GetTitle());
-  
-  AliDebug(1,Form("fCurrentType=%s",fCurrentType.Data()));
-  
   DataSourceWasChanged();
 }
 
@@ -468,8 +432,6 @@ void AliMUONPainterPlotSelector::Update(const AliMUONPainterMatrix& painterMatri
 {
   /// Update ourselves from a new painter matrix
   
-  AliDebug(1,"BEGIN");
-
   SetCurrentType("");
   SetCurrentData(0x0);
   SetCurrentDimension(-1);
@@ -500,24 +462,14 @@ void AliMUONPainterPlotSelector::Update(const AliMUONPainterMatrix& painterMatri
     }
   }
   
-  AliDebug(1,Form("After update type=%s data=%p dim=%ld",
-                  fCurrentType.Data(),fCurrentData,fCurrentDimension));
-
   // the *order* of the 3 following lines is *very* important
 
-  AliDebug(1,"Will update source buttons");
   UpdateSourceButton();
-  AliDebug(1,"Will update dimension buttons");
   UpdateDimensionButton();
-  AliDebug(1,"Will update type buttons");
   UpdateTypeButton();
   
   Resize();
   Layout();
-  
-  AliDebug(1,Form("END fCurrentType=%s fCurrentData=%p fCurrentDimension=%ld",
-                  fCurrentType.Data(),fCurrentData,
-                  fCurrentDimension));
 }
 
 //_____________________________________________________________________________
@@ -569,8 +521,6 @@ AliMUONPainterPlotSelector::UpdateTypeButton()
 {
   /// Update the type buttons
 	
-  AliDebug(1,Form("fCurrentType=%s",fCurrentType.Data()));
-  
 	if (!fCurrentData)
   {
     AliMUONPainterInterfaceHelper::SetState(*fTypes,kFALSE);

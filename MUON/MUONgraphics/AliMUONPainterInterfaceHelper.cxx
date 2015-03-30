@@ -124,13 +124,6 @@ void
 AliMUONPainterInterfaceHelper::Copy(const TGButtonGroup& src, TGButtonGroup& dest)
 {
   /// Copy a button group into another one
-  AliDebugClass(1,Form("src=%p (%s) count=%d dest=%p (%s) count=%d",
-                       &src,src.GetTitle(),src.GetCount(),
-                       &dest,dest.GetTitle(),dest.GetCount()));
-
-  StdoutToAliDebugClass(1,cout << "---copying:" << endl; Dump(src);
-                        cout << "---to:" << endl; Dump(dest));
-  
   ClearButtons(dest);
   
   dest.SetTitle(src.GetTitle());
@@ -222,14 +215,11 @@ AliMUONPainterInterfaceHelper::FindDownButton(const TGButtonGroup& bg)
 {
   /// Find which button is down (in a radio group)
   
-  AliDebugClass(1,Form("bg %s",bg.GetTitle()));
-  
   for ( Int_t i = ButtonStartingId(); i < ButtonStartingId() + bg.GetCount(); ++i )
   {
     TGButton* button = bg.GetButton(i);
     if ( button->IsOn() ) 
     {
-      AliDebugClass(1,Form("button %s",button->GetTitle()));
       return button;
     }
   }
@@ -251,7 +241,6 @@ AliMUONPainterInterfaceHelper::SetBackgroundColor(const char* resourceBaseName,
   if ( ok ) 
   {
     window.SetBackgroundColor(color);
-    AliDebugClass(1,Form("Setting %s color to %s",rs.Data(),colorName.Data()));
   }
 }
 
@@ -287,8 +276,6 @@ AliMUONPainterInterfaceHelper::Select(TGButtonGroup& bg,
                                       Bool_t emit)
 {
   /// Select which button should be on
-  
-  AliDebugClass(1,Form("bg %s buttonName %s",bg.GetTitle(),buttonName.Data()));
   
   for ( Int_t i = ButtonStartingId(); i < ButtonStartingId() + bg.GetCount(); ++i ) 
   {

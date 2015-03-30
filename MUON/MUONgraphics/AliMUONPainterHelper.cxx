@@ -374,7 +374,6 @@ AliMUONPainterHelper::RegisterContour(AliMUONContour* contour, Bool_t explodedVi
 {
   /// contour is adopted by contourMaker
   AliCodeTimerAuto("",0)
-  AliDebug(1,contour->GetName());
   AliMUONContourHandler* ch = fReal;
   if ( explodedView ) 
   {

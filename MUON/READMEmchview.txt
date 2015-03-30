@@ -7,14 +7,10 @@ A visualisation program, \link mchview.cxx mchview \endlink, is now available to
  
 \section mchview_install Installing the program
 
-\em mchview should be installed together with the rest of AliRoot. Two points should be noted though.
- \em mchview is using two external files to run properly. One is a resource file $HOME/.mchviewrc, used
+\em mchview should be installed together with the rest of AliRoot. One point should be noted though.
+\em mchview is using one external file to run properly : a resource file $HOME/.mchviewrc, used
  to "configure" the program and keep some history of the user interaction with it (e.g. the list of recent
- data sources used). The other one is a Root file, padstore.root (default name, can be changed with the resource file), 
- which contains lots of precomputed information (like the contours that are being displayed, the geometry transformations,
- etc...). By default, \em mchview will look for this file in the current directory. If it's not there, it will
- ask if it's OK to create it. Be warned that this will take a while (but is only done once). 
- If you install a new version of \em mchview, it is recommended to delete this file first, before lauching \em mchview again.
+ data sources used). If you install a new version of \em mchview, it is recommended to delete this file first, before lauching \em mchview again.
  
 \section mchview_navigation Navigating the display
 
@@ -141,6 +137,25 @@ From the File menu of the \em mchview application, you can use SaveAs and PrintA
 the program and start again with the same filled data sources, without having to rerun on the source) and print the current display.
 Printing needs a little bit of polishing (e.g. getting a nice and descriptive title would help a lot), but it's better than nothing.
 Note that the \em mchview application now has a \em --use option to reload a previously saved .root file (same effect as using the File/Open menu).
+
+\section mchview_resource Resource file format
+
+The resource file $HOME/.mchviewrc is a normal Root resource file (see TEnv), i.e. a list of "Key:value(s)" lines.
+
+You should avoid to edit it by hand, as most of it is handled by the mchview program itself.
+
+But for information the defined keys so far are :
+
+disableAutoPedCanvas: 1
+
+Use this one to disable the feature that will open automatically 4 canvases each time you open a data source of type "Pedestals".
+
+defaultRange: PED;Mean;0;500|PED;Sigma;0;10|OCC;occ;0;0.01
+
+Use this one to define default ranges for some data sources and their dimensions. In the example above all the pedestals data source will get a display ranging from 0 to 500 for the mean value and 0 to 10 for the sigma value; the occupancy data source (occ dimension) will range from 0 to 0.01.
+Those defaults are normally set using, from mchview program (painter master frame tab), using the "Set as default" button, located below the color palette.
+
+In addition, the NumberOfDataSources and DataSource.# (where # ranges from 0 to NumberOfDataSources-1) are used to described the recent opened sources. But those ones should not be edited by hand unless you really know what you are doing.
 
 \section mchview_warnings Important warnings. Please read.
 

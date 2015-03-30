@@ -399,16 +399,12 @@ AliMUONVPainter::Detach() const
 {
   /// Make this a new top painter (i.e. a master)
   
-  AliDebug(1,Form("Detaching %s",GetName()));
-           
   AliMUONVPainter* p = static_cast<AliMUONVPainter*>(Clone());
   
   AliMUONVPainter* master = Master();
   
   if ( master )
   {
-    AliDebug(1,Form("UpdatingGroups of the detached painter %s from its master %s",
-                    p->GetName(),master->GetName()));
     p->UpdateGroupsFrom(*master);
   }
   
@@ -1081,8 +1077,6 @@ AliMUONVPainter::SetOutlined(const char* pattern, Bool_t flag)
   /// Decide whether or not painters which type matches pattern 
   /// should be outlined
   
-  AliDebug(1,Form("pattern=%s flag=%d",pattern,flag));
-  
   if (!fPainterGroups)
   {
     CreateGroups();
@@ -1107,8 +1101,6 @@ AliMUONVPainter::SetResponder(const char* pattern)
 {
   /// Set the painters matching pattern to be the responder
   
-  AliDebug(1,Form("pattern=%s",pattern));
-  
   if (!fPainterGroups)
   {
     CreateGroups();
@@ -1124,8 +1116,6 @@ AliMUONVPainter::SetResponder(const char* pattern)
     AliMUONPainterGroup* group = static_cast<AliMUONPainterGroup*>(fPainterGroups->GetValue(str));
     if ( group->Matches(pattern) )
     {
-      AliDebug(1,Form("group %s is matching pattern %s : setting to responder",
-                      group->Type(),pattern));
       group->SetResponder(kTRUE);
       fResponderGroup = group;
     }
@@ -1142,8 +1132,6 @@ AliMUONVPainter::SetResponder(Int_t depth)
 {
   /// Select as responder the *first* group that has a given depth
   
-  AliDebug(1,Form("depth=%d",depth));
-  
   if (!fPainterGroups)
   {
     CreateGroups();
@@ -1159,8 +1147,6 @@ AliMUONVPainter::SetResponder(Int_t depth)
     AliMUONPainterGroup* group = static_cast<AliMUONPainterGroup*>(fPainterGroups->GetValue(str));
     if ( group->Depth() == depth ) 
     {
-      AliDebug(1,Form("group %s has correct depth = %d, using as responder",
-                      group->Type(),depth));
       group->SetResponder(kTRUE);
       fResponderGroup = group;
       break;
@@ -1177,8 +1163,7 @@ void
 AliMUONVPainter::SetVisible(const char* pattern, Bool_t flag)
 {
   /// Decide whether the painters matching pattern should be visible or not
-  AliDebug(1,Form("pattern=%s flag=%d",pattern,flag));
-  
+
   if (!fPainterGroups)
   {
     CreateGroups();

@@ -55,6 +55,10 @@ public:
 
   void OutlineButtonWasClicked(Int_t id); 
   
+  void ColorSliderDefaultButtonWasClicked();
+  
+  void ColorSliderSetDefaultButtonWasClicked(Double_t* range);
+  
   void Use(AliMUONPainterMatrix* group);
   
   void TitleHasChanged(const char* newTitle); // *SIGNAL*

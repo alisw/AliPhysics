@@ -251,13 +251,6 @@ AliMUONManuPadPainter::PaintArea(const AliMUONVTrackerData& data,
       
       Int_t color = h->ColorFromValue(value,min,max);
       
-      if ( value > 0 )
-      {
-        AliDebug(1,Form("DE %d manuId %d channel %d value %e min %e max %e color %d",
-                        fDetElemId,fManuId,i,value,min,max,
-                        color));
-      }
-
       gVirtualX->SetFillColor(color);
       
       PaintPad(pad);

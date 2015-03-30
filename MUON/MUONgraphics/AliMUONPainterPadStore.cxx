@@ -172,10 +172,6 @@ AliMUONPainterPadStore::GetPadGeometry(Int_t padId,
   dimensions.Set(param->ValueAsDouble(manuChannel,2),
                  param->ValueAsDouble(manuChannel,3));
   
-  AliDebug(3,Form("DE %4d Manu %4d Channel %2d Pos %e %e Dim %e %e",
-                       detElemId,manuId,manuChannel,
-                       position.X(),position.Y(),
-                       dimensions.X(),dimensions.Y()));                       
 }
 
 //_____________________________________________________________________________

@@ -31,6 +31,12 @@ ClassImp(AliMUONTrackerConditionDataMaker)
 #include "AliCDBStorage.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
+#include "AliMpArrayI.h"
+#include "AliMpConstants.h"
+#include "AliMpDCSNamer.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
 #include "AliMpManuIterator.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
@@ -42,20 +48,15 @@ ClassImp(AliMUONTrackerConditionDataMaker)
 #include "AliMUONPadStatusMapMaker.h"
 #include "AliMUONRejectList.h"
 #include "AliMUONTrackerData.h"
+#include "AliMUONTrackerDataSourceTypes.h"
 #include "AliMUONTrackerIO.h"
-#include "AliMpArrayI.h"
-#include "AliMpConstants.h"
-#include "AliMpDCSNamer.h"
-#include "AliMpDDLStore.h"
-#include "AliMpDEManager.h"
-#include "AliMpDetElement.h"
+#include "Riostream.h"
 #include "TClass.h"
 #include "TMap.h"
 #include "TObjString.h"
-#include "Riostream.h"
 #include "TString.h"
-#include <sstream>
 #include "TSystem.h"
+#include <sstream>
 
 //_____________________________________________________________________________
 AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker():
@@ -80,15 +81,11 @@ fIsOwnerOfData(kTRUE)
 	
 	AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
 
-  TString stype(type);
-  stype.ToUpper();
-  
-  if ( stype == "REJECTLIST" ) 
+  Int_t startOfValidity;
+
+  if ( AliMUONTrackerDataSourceTypes::IsRejectList(type) )
   {
-    
-    Int_t startOfValidity(0);
-    
-    AliMUONRejectList* rl = AliMUONCalibrationData::CreateRejectList(runNumber,&startOfValidity);    
+    AliMUONRejectList* rl = AliMUONCalibrationData::CreateRejectList(runNumber,&startOfValidity);
 
     if (rl)
     {
@@ -99,24 +96,53 @@ fIsOwnerOfData(kTRUE)
   }
   else
   {
-    Int_t startOfValidity;
     AliMUONVStore* store = CreateStore(runNumber,ocdbPath,type,startOfValidity);
+    
     AliDebug(1,Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
                     runNumber,ocdbPath,type,startOfValidity,store));
     if ( store )
     {
       fData = CreateData(type,*store,startOfValidity);
     }
+
+    AliDebug(1,Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
+                    runNumber,ocdbPath,type,startOfValidity,store));
+
     delete store;
   }
 
   if ( fData )
   {
-    TString name(fData->GetName());
-    name += "(";
-    name += ocdbPath;
-    name += ")";
-    fData->SetName(name);
+    TString shortName(fData->GetName());
+    TString cdbPath(ocdbPath);
+    
+    shortName = type;
+    
+    shortName += Form("%d",startOfValidity);
+    
+    shortName += "(";
+    
+    if ( cdbPath.Contains("cvmfs/alice") )
+    {
+      shortName += "cvmfs";
+    }
+    else if ( cdbPath.BeginsWith("alien://folder=/alice/data") )
+    {
+      shortName += "alien";
+    }
+    else if ( cdbPath.BeginsWith("alien") && cdbPath.Contains("user") )
+    {
+      shortName.ReplaceAll("/alice.cern.ch/user/","...");
+    }
+    else
+    {
+      shortName += cdbPath;
+    }
+    
+    shortName += ")";
+    
+    
+    fData->SetName(shortName);
   }
   
   AliCDBManager::Instance()->SetDefaultStorage(storage);
@@ -195,24 +221,21 @@ AliMUONTrackerConditionDataMaker::CreateData(const char* type, AliMUONVStore& st
   /// Create the data source 
   AliMUONVTrackerData* data(0x0);
   
-  TString stype(type);
-  stype.ToUpper();
-  
-  if ( stype == "CAPACITANCES" )
-  {    
-    data = new AliMUONTrackerData(Form("CAPA%d",startOfValidity),"Capacitances",2,kTRUE);
+  if ( AliMUONTrackerDataSourceTypes::IsCapacitances(type))
+  {
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForCapacitances(),startOfValidity),"Capacitances",2,kTRUE);
     data->SetDimensionName(0,"Capa");
     data->SetDimensionName(1,"Injection gain");    
   }
-  else if ( stype == "CONFIG" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsConfig(type ) )
   {
-    data = new AliMUONTrackerData(Form("CONFIG%d",startOfValidity),"Configuration",1);
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForConfig(),startOfValidity),"Configuration",1);
     data->SetDimensionName(0,"there");
     data->DisableChannelLevel();
   }
-  else if ( stype == "GAINS" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsGains(type) )
   {
-    data = new AliMUONTrackerData(Form("GAIN%d",startOfValidity),"Gains",7,kTRUE);
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForGains(),startOfValidity),"Gains",7,kTRUE);
     data->SetDimensionName(0,"gain");
     data->SetDimensionName(1,"a1");
     data->SetDimensionName(2,"a2");
@@ -221,31 +244,31 @@ AliMUONTrackerConditionDataMaker::CreateData(const char* type, AliMUONVStore& st
     data->SetDimensionName(5,"qual2");
     data->SetDimensionName(6,"sat");    
   }
-  else if ( stype == "HV" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsHV(type) )
   {
-    data = new AliMUONTrackerData(Form("HV%d",startOfValidity),"High Voltages",1); //,!isSingleEvent);
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForHV(),startOfValidity),"High Voltages",1); //,!isSingleEvent);
 		data->SetDimensionName(0,"HV");
   }
-  else if ( stype == "OCCUPANCY" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsOccupancy(type) )
   {
-    data = new AliMUONTrackerData(Form("OCC%d",startOfValidity),"OccupancyMap",store);
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForOccupancy(),startOfValidity),"OccupancyMap",store);
     data->SetDimensionName(0,"One");
     return data; // important to return now to avoid the data->Add(store) later on...
   }
-  else if ( stype == "PEDESTALS" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsPedestals(type) )
   {
-    data  = new AliMUONTrackerData(Form("PED%d",startOfValidity),"Pedestals",2,kTRUE);
+    data  = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForPedestals(),startOfValidity),"Pedestals",2,kTRUE);
     data->SetDimensionName(0,"Mean");
     data->SetDimensionName(1,"Sigma");    
   }
-  else if ( stype == "STATUS" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsStatus(type) )
   {
-    data = new AliMUONTrackerData(Form("STATUS%d",startOfValidity),"Status",1,kTRUE);
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForStatus(),startOfValidity),"Status",1,kTRUE);
     data->SetDimensionName(0,"Bits");
   }
-  else if ( stype == "STATUSMAP" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsStatusMap(type) )
   {
-    data = new AliMUONTrackerData(Form("STATUSMAP%d",startOfValidity),"Status map",2,kTRUE);
+    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForStatusMap(),startOfValidity),"Status map",2,kTRUE);
     data->SetDimensionName(0,"Bits");
     data->SetDimensionName(1,"Dead");
   }
@@ -430,16 +453,13 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
 {
   /// Create the store by reading it from OCDB or from an ASCII file
   
-  TString stype(type);
-  stype.ToUpper();
-  
   AliMUONVStore* store(0x0);
   
   startOfValidity = 0;
   
   Bool_t ocdb = (runNumber>=0);
   
-  if ( stype == "CAPACITANCES" )
+  if ( AliMUONTrackerDataSourceTypes::IsCapacitances(type) )
   {    
     if ( ocdb ) 
     {
@@ -451,7 +471,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
       AliMUONTrackerIO::DecodeCapacitances(source,*store);
     }
   }
-  else if ( stype == "CONFIG" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsConfig(type) )
   {
     AliMUONVStore* tmp(0x0);
     if ( ocdb ) 
@@ -469,7 +489,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
     }
     delete tmp;
   }
-  else if ( stype == "GAINS" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsGains(type) )
   {
     AliMUONVStore* gains(0x0);
     if ( ocdb ) 
@@ -485,7 +505,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
     store = PatchGainStore(*gains);
     delete gains;
   }
-  else if ( stype == "OCCUPANCY" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsOccupancy(type) )
   {
     if ( ocdb ) 
     {
@@ -498,7 +518,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
       AliMUONTrackerIO::DecodeOccupancy(source,*store);
     }
   }
-  else if ( stype == "PEDESTALS" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsPedestals(type) )
   {
     if ( ocdb ) 
     {
@@ -517,17 +537,17 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
     return 0x0;
   }
   
-  if ( stype == "HV" ) 
+  if ( AliMUONTrackerDataSourceTypes::IsHV(type) )
   {
     TMap* m = AliMUONCalibrationData::CreateHV(runNumber,&startOfValidity);
 		store = CreateHVStore(*m);
     delete m;
   }
-  else if ( stype == "STATUS" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsStatus(type) )
   {
     store = CreateStatusStore(runNumber);
   }
-  else if ( stype == "STATUSMAP" ) 
+  else if ( AliMUONTrackerDataSourceTypes::IsStatusMap(type) )
   {
     store = CreateStatusMapStore(runNumber);
   }
@@ -567,7 +587,7 @@ AliMUONTrackerConditionDataMaker::ExpandConfig(const AliMUONVStore& manuConfig)
 }
 
 //_____________________________________________________________________________
-Long64_t 
+Long64_t
 AliMUONTrackerConditionDataMaker::Merge(TCollection*)
 {
   /// Merge

@@ -83,6 +83,7 @@ set(SRCS
     AliMUONVTrackReconstructor.cxx
     AliMUONVTrackStore.cxx
     AliMUONVTriggerTrackStore.cxx
+    AliMUONTrackerDataSourceTypes.cxx
    )
 
 # Headers from sources
