@@ -828,13 +828,53 @@ same value of $\SecMap$ from $N$ events with $n$ particles as one
 would from a single event with $N\times n$ particles, or $N\times n$
 events with a single particle.
 
-
-However, there are some other small differences between between the
+However, there are some other differences, on the level smaller than  10\% between the
 systems as can be seen from \figref{fig:secmap:all}.  Most notable is
-the discrepancy between \PbpCol{} and \PbPbCol{} and all other system
+the discrepancy between \PbpCol{} and \PbPbCol{} and all other systems
 in \FMD{1}. 
-\FIXME{Marek, we should somehow either refer to another section, or
-  add your studies here.} 
+This effect was studied in detail and it was found that it is a consequence of differences between
+primary particle hadronchemistry in the systems. 
+To prove that a weighting procedure, allowing to change the primary particle  hadronchemistry  during 
+the calculation of secondary maps, was developed. 
+It was decided to change the primary particle hadronchemistry of  each system to the one for pp collision at 900 GeV.
+In that procedure each particle (primary and secondary) entering Equation \ref{eq:secondary}  was weighted.
+Weight to a primary particle was assigned based on particle pseudorapidity and transverse momentum.
+Weight to a secondary particle was assigned based  on pseudorapidity and transverse momentum 
+of the primary particle which caused production of that secondary particle (it could be secondary particle mother, grandmother, great-grandmother, ....).
+It was decided to use weights for following particles and antiparticles: $\gamma$, $e$, $\mu$,$\pi^{+}$,$K^{0}_{s}$, $K^{+}$,$p$,$n$ $\Lambda$,$\Sigma^{+}$, $\Sigma^{-}$,$\Omega^{-}$,$\Xi^{-}$,$\Xi^{0}$ \footnote{The weights for $e$, $\mu$, were the same. 
+Most of the primary photons come from $pi^{0}$ decays so it is possible to weight neutral pions produced by the event generator not photons.}.
+Weight for a particle of type \textit{i} for the system \textit{j} was defined according to the following equation: 
+\begin{align}
+  \label{eq:weights}
+  %W_{i}= {\frac{1}{N_{ch}}\frac{{1}{2}}} \Big/ {\frac{b_1}{b_2}} {\rm d}^{2} N}{{\rm d} p_{\rm{T}} {\rm d} y}
+  W_{i}= \left( {\frac{1}{N_{ch}}\frac{{\rm d}^{2}N_{i}}{{\rm d} p_{\rm{T}} {\rm d} y}} \right)_{pp900GeV} \Big/ \left( {\frac{1}{N_{ch}}\frac{{\rm d}^{2}N_{i}}{{\rm d} p_{\rm{T}} {\rm d} y}}\right)_{j}
+\end{align}.
+\begin{figure}[]
+  \centering
+  \figinput[.7\textwidth]{310weights}
+  \caption{The $K^{0}_{s}$  weights for PbPb collisions calculated based on equation \ref{eq:weights}. 
+The bottom panels show the averaged weights for some pseudorapidity and transverse momentum regions.}
+  \label{fig:weights}
+\end{figure} 
+
+%\begin{figure}[]
+ % \centering
+  %\figinput[.8\textwidth]{}
+  %\caption{Top shows projection of the weighted to the pp 900 GeV $\SecMap$ and pp 900 GeV $\SecMap$ onto the $\eta$ axis for
+   % one interaction point bin ($\unit[0]{cm}<\IPz{}<\unit[2]{cm}$).
+   % The different colours correspond the 5 \FMD{} rings.  The
+   % different symbols correspond to different collisions systems
+   % simulated in \texttt{LHC14i2}.  The bottom shows the ratio
+   % those $\SecMap$ for each collision system to the average $\SecMap$ over
+   % all collision systems. All systems fall with--in 1\%, which weights  compress the discrepancies from Figure \ref{fig:secmap:all}. }
+  %\label{fig:secmapweighted:all}
+%\end{figure} 
+
+The binning of weights depended on available statistic for that particle species.   
+Figure \ref {fig:secmapweighted:all} shows an example of the weights for $K^{0}_{s}$  between the PbPb and pp 900 GeV collisions.
+Figure ... shows comparison of the secondary maps from the weighted procedure for all the system compare to the nominal pp collisions 900 GeV.
+It is clear that all discrepancies observed in Figure \ref{fig:secmap:all} 
+are compressed by the weighting procedure.
 
 %For pp, different event
 %generators were used and found to give compatible results within
