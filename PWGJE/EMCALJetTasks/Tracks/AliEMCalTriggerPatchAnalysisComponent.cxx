@@ -12,6 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <map>
+#include <memory>
+#include <string>
+#include <sstream>
+#include <vector>
 #include <TClonesArray.h>
 
 #include "AliEmcalTriggerPatchInfo.h"
@@ -32,7 +37,9 @@ namespace EMCalTriggerPtAnalysis {
 AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent() :
   AliEMCalTriggerTracksAnalysisComponent(),
   fSwapOnlineThresholds(kFALSE),
-  fSwapOfflineThresholds(kFALSE)
+  fSwapOfflineThresholds(kFALSE),
+  fWithEventSelection(kFALSE),
+  fTriggerMethod(kTriggerString)
 {
 }
 
@@ -41,11 +48,14 @@ AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent() :
  * the trigger thresholds to false for both types of patches.
  *
  * \param name Name of the component
+ * \param withEventSelection In case of true, histograms are created for different event selection classes
  */
-AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent(const char *name) :
+AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent(const char *name, Bool_t withEventSelection) :
   AliEMCalTriggerTracksAnalysisComponent(name),
   fSwapOnlineThresholds(kFALSE),
-  fSwapOfflineThresholds(kFALSE)
+  fSwapOfflineThresholds(kFALSE),
+  fWithEventSelection(withEventSelection),
+  fTriggerMethod(kTriggerString)
 {
 }
 
@@ -90,16 +100,41 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
      DefineAxis("isMain", 2, -0.5, 1.5)
   };
 
+  // Create trigger definitions
+  std::map<std::string, std::string> triggerCombinations;
+  const char *triggernames[11] = {"MinBias", "EMCJHigh", "EMCJLow", "EMCGHigh",
+      "EMCGLow", "EMCHighBoth", "EMCHighGammaOnly", "EMCHighJetOnly",
+      "EMCLowBoth", "EMCLowGammaOnly", "EMCLowJetOnly"};
+  // Define names and titles for different triggers in the histogram container
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[0], "min. bias events"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[1], "jet-triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[2], "jet-triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[3], "gamma-triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[4], "gamma-triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[5], "jet and gamma triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[6], "exclusively gamma-triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[7], "exclusively jet-triggered events (high threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[8], "jet and gamma triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[9], "exclusively gamma-triggered events (low threshold)"));
+  triggerCombinations.insert(std::pair<std::string,std::string>(triggernames[10], "exclusively-triggered events (low threshold)"));
+
   std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
   std::string triggermodes[] = {"Online", "Offline"};
   for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
     for(std::string *triggermode = triggermodes; triggermode < triggermodes + sizeof(triggermodes)/sizeof(std::string); ++triggermode){
-      if((!strcmp(triggermode->c_str(), "Offline")) && (!strcmp(triggerpatch->c_str(), "Level0"))) continue; // Don't process L0 in case of offline
-      printf("Adding patch for trigger %s in case of %s\n", triggerpatch->c_str(), triggermode->c_str());
-      fHistos->CreateTHnSparse(Form("PatchInfo%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 6, patchaxes, "s");
-      if(strcmp(triggerpatch->c_str(), "Level0")){
-        // Add histogram for online-offline of amplitudes
-        fHistos->CreateTHnSparse(Form("PatchAmplitude%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch amplitudes for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 5, ampaxes, "s");
+      if(fWithEventSelection){
+        for(std::map<std::string, std::string>::iterator trgiter = triggerCombinations.begin(); trgiter != triggerCombinations.end(); ++trgiter){
+          printf("Adding patch for trigger %s in case of %s for event selection %s\n", triggerpatch->c_str(), triggermode->c_str(), trgiter->second.c_str());
+          fHistos->CreateTHnSparse(Form("PatchInfo%s%s%s", triggerpatch->c_str(), triggermode->c_str(), trgiter->first.c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 6, patchaxes, "s");
+        }
+      } else {
+        if((!strcmp(triggermode->c_str(), "Offline")) && (!strcmp(triggerpatch->c_str(), "Level0"))) continue; // Don't process L0 in case of offline
+        printf("Adding patch for trigger %s in case of %s\n", triggerpatch->c_str(), triggermode->c_str());
+        fHistos->CreateTHnSparse(Form("PatchInfo%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch energy for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 6, patchaxes, "s");
+        if(strcmp(triggerpatch->c_str(), "Level0")){
+          // Add histogram for online-offline of amplitudes
+          fHistos->CreateTHnSparse(Form("PatchAmplitude%s%s", triggerpatch->c_str(), triggermode->c_str()), Form("Patch amplitudes for %s %s trigger patches", triggerpatch->c_str(), triggermode->c_str()), 5, ampaxes, "s");
+        }
       }
     }
   }
@@ -119,50 +154,169 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
   AliEmcalTriggerPatchInfo *triggerpatch(NULL);
   TIter patchIter(data->GetTriggerPatchContainer());
   while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
-	bool isMain = triggerpatch->IsOfflineSimple() ? triggerpatch->IsMainTriggerSimple() : triggerpatch->IsMainTrigger();
-    double triggerpatchinfo[6] = {triggerpatch->GetPatchE(),triggerpatch->GetADCAmpGeVRough(),
-        static_cast<double>(triggerpatch->IsOfflineSimple() ? triggerpatch->GetADCOfflineAmp() : triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(),
-        triggerpatch->GetPhiGeo(), isMain ? 1. : 0.};
-    double amplitudeinfo[5] = {triggerpatch->GetADCAmp(), triggerpatch->GetADCOfflineAmp(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), isMain ? 1. : 0.};
-    if(triggerpatch->IsOfflineSimple()){
-      if((!fSwapOfflineThresholds && triggerpatch->IsJetHighSimple()) || (fSwapOfflineThresholds && triggerpatch->IsJetLowSimple())){
-        fHistos->FillTHnSparse("PatchInfoJetHighOffline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeJetHighOffline", amplitudeinfo);
+    if(fWithEventSelection){
+      std::vector<std::string> triggernames;
+      GetMachingTriggerNames(triggernames, fTriggerMethod);
+      for(std::vector<std::string>::iterator trgclassit = triggernames.begin(); trgclassit != triggernames.end(); ++trgclassit){
+        FillStandardMonitoring(triggerpatch, trgclassit->c_str());
       }
-      if((!fSwapOfflineThresholds && triggerpatch->IsJetLowSimple()) || (fSwapOfflineThresholds && triggerpatch->IsJetHighSimple())){
-    	  fHistos->FillTHnSparse("PatchInfoJetLowOffline", triggerpatchinfo);
-    	  fHistos->FillTHnSparse("PatchAmplitudeJetLowOffline", amplitudeinfo);
-      }
-      if((!fSwapOfflineThresholds && triggerpatch->IsGammaHighSimple()) || (fSwapOfflineThresholds && triggerpatch->IsGammaLowSimple())){
-        fHistos->FillTHnSparse("PatchInfoGammaHighOffline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeGammaHighOffline", amplitudeinfo);
-      }
-      if((!fSwapOfflineThresholds && triggerpatch->IsGammaLowSimple()) || (fSwapOfflineThresholds && triggerpatch->IsGammaHighSimple())){
-        fHistos->FillTHnSparse("PatchInfoGammaLowOffline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeGammaLowOffline", amplitudeinfo);
-      }
-    } else{
-      if((!fSwapOnlineThresholds && triggerpatch->IsJetHigh()) || (fSwapOnlineThresholds && triggerpatch->IsJetLow())){
-        fHistos->FillTHnSparse("PatchInfoJetHighOnline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeJetHighOnline", amplitudeinfo);
-      }
-      if((!fSwapOnlineThresholds && triggerpatch->IsJetLow()) || (fSwapOnlineThresholds && triggerpatch->IsJetHigh())){
-        fHistos->FillTHnSparse("PatchInfoJetLowOnline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeJetLowOnline", amplitudeinfo);
-      }
-      if((!fSwapOnlineThresholds && triggerpatch->IsGammaHigh()) || (fSwapOnlineThresholds && triggerpatch->IsGammaLow())){
-        fHistos->FillTHnSparse("PatchInfoGammaHighOnline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeGammaHighOnline", amplitudeinfo);
-      }
-      if((!fSwapOnlineThresholds && triggerpatch->IsGammaLow()) || (fSwapOnlineThresholds && triggerpatch->IsGammaHigh())){
-        fHistos->FillTHnSparse("PatchInfoGammaLowOnline", triggerpatchinfo);
-        fHistos->FillTHnSparse("PatchAmplitudeGammaLowOnline", amplitudeinfo);
-      }
-      if(triggerpatch->IsLevel0()){
-        fHistos->FillTHnSparse("PatchInfoLevel0Online", triggerpatchinfo);
+    } else {
+      FillStandardMonitoring(triggerpatch);
+    }
+  }
+}
+
+/**
+ * Fill monitoring of the trigger patches (energies and amplitudes). If event type is specified, only the general histogram
+ * will be filled. Otherwise all histograms of classes which are fulfilled by the histogram are filled
+ * \param patch Trigger patch to be processed
+ * \param eventType Trigger class the event was selected by (optional)
+ */
+void AliEMCalTriggerPatchAnalysisComponent::FillStandardMonitoring(const AliEmcalTriggerPatchInfo* const patch, TString eventType) {
+  std::vector<TString> triggerclasses;
+  triggerclasses.push_back("JetHigh");
+  triggerclasses.push_back("JetLow");
+  triggerclasses.push_back("GammaHigh");
+  triggerclasses.push_back("GammaLow");
+  triggerclasses.push_back("Level0");
+  AliEmcalTriggerPatchHandlerFactory mypatchhandler(fSwapOnlineThresholds, fSwapOfflineThresholds);
+  for(std::vector<TString>::iterator trgclassit = triggerclasses.begin(); trgclassit != triggerclasses.end(); ++trgclassit){
+    if(mypatchhandler.IsPatchOfType(patch, *trgclassit)){
+      std::stringstream infohistname;
+      infohistname << "PatchInfo" << trgclassit->Data() << (patch->IsOfflineSimple() ? "Offline" : "Online");
+      if(eventType.Length()) infohistname << eventType.Data();
+      FillTriggerInfoHistogram(infohistname.str().c_str(), patch);
+      if((!eventType.Length()) &&(*trgclassit != "Level0")){
+        std::stringstream amphistname;
+        amphistname << "PatchAmplitude" << trgclassit->Data() << (patch->IsOfflineSimple() ? "Offline" : "Online");
+        FillAmplitudeHistogram(amphistname.str().c_str(), patch);
       }
     }
   }
 }
 
+/**
+ * Fill standard trigger patch info histogram
+ * \param histo Name of the histogram to fill
+ * \param patch Patch with information
+ */
+void AliEMCalTriggerPatchAnalysisComponent::FillTriggerInfoHistogram(TString histo, const AliEmcalTriggerPatchInfo* const patch) {
+	bool isMain = patch->IsOfflineSimple() ? patch->IsMainTriggerSimple() : patch->IsMainTrigger();
+	double triggerpatchinfo[6] = {patch->GetPatchE(),patch->GetADCAmpGeVRough(),
+	    static_cast<double>(patch->IsOfflineSimple() ? patch->GetADCOfflineAmp() : patch->GetADCAmp()), patch->GetEtaGeo(),
+	    patch->GetPhiGeo(), isMain ? 1. : 0.};
+	fHistos->FillTHnSparse(histo.Data(), triggerpatchinfo);
+}
+
+
+/**
+ * Fill histogram for patch amplitude
+ * \param histo Name of the histogram to fill
+ * \param patch Patch with information
+ */
+void AliEMCalTriggerPatchAnalysisComponent::FillAmplitudeHistogram(TString histo, const AliEmcalTriggerPatchInfo* const patch) {
+	bool isMain = patch->IsOfflineSimple() ? patch->IsMainTriggerSimple() : patch->IsMainTrigger();
+  double amplitudeinfo[5] = {patch->GetADCAmp(), patch->GetADCOfflineAmp(), patch->GetEtaGeo(), patch->GetPhiGeo(), isMain ? 1. : 0.};
+  fHistos->FillTHnSparse(histo.Data(), amplitudeinfo);
+}
+
+//
+// Implementation of patch handlers and patch handler factory
+//
+
+/**
+ * Patch handler for trigger class Jet Low: checks if the patch is a jet low patch. Handles online and offline patches and swapping of the
+ * threshold.
+ * \param patch The patch to check
+ * \return True if it is a jet low patch, false otherwise
+ */
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerJetLow::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+  Bool_t result = false;
+  if(patch->IsOfflineSimple()){
+    result = ((!fPatchSwapThresholdsOffline && patch->IsJetLowSimple()) || (fPatchSwapThresholdsOffline && patch->IsJetHighSimple()));
+  } else {
+    result = ((!fPatchSwapThresholdsOnline && patch->IsJetLow()) || (fPatchSwapThresholdsOnline && patch->IsJetHigh()));
+  }
+  return result;
+}
+
+/**
+ * Patch handler for trigger class Jet High: checks if the patch is a jet low patch. Handles online and offline patches and swapping of the
+ * threshold.
+ * \param patch The patch to check
+ * \return True if it is a jet high patch, false otherwise
+ */
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerJetHigh::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+  Bool_t result = false;
+  if(patch->IsOfflineSimple()){
+    result = ((!fPatchSwapThresholdsOffline && patch->IsJetHighSimple()) || (fPatchSwapThresholdsOffline && patch->IsJetLowSimple()));
+  } else {
+    result = ((!fPatchSwapThresholdsOnline && patch->IsJetHigh()) || (fPatchSwapThresholdsOnline && patch->IsJetLow()));
+  }
+  return result;
+}
+
+/**
+ * Patch handler for trigger class Gamma Low: checks if the patch is a jet low patch. Handles online and offline patches and swapping of the
+ * threshold.
+ * \param patch The patch to check
+ * \return True if it is a gamma low patch, false otherwise
+ */
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerGammaLow::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+  Bool_t result = false;
+  if(patch->IsOfflineSimple()){
+    result = ((!fPatchSwapThresholdsOffline && patch->IsGammaLowSimple()) || (fPatchSwapThresholdsOffline && patch->IsGammaHighSimple()));
+  } else {
+    result = ((!fPatchSwapThresholdsOnline && patch->IsGammaLow()) || (fPatchSwapThresholdsOnline && patch->IsGammaHigh()));
+  }
+  return result;
+}
+
+/**
+ * Patch handler for trigger class Gamma High: checks if the patch is a jet low patch. Handles online and offline patches and swapping of the
+ * threshold.
+ * \param patch The patch to check
+ * \return True if it is a gamma high patch, false otherwise
+ */
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerGammaHigh::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+  Bool_t result = false;
+  if(patch->IsOfflineSimple()){
+    result = ((!fPatchSwapThresholdsOffline && patch->IsGammaHighSimple()) || (fPatchSwapThresholdsOffline && patch->IsGammaLowSimple()));
+  } else {
+    result = ((!fPatchSwapThresholdsOnline && patch->IsGammaHigh()) || (fPatchSwapThresholdsOnline && patch->IsGammaLow()));
+  }
+  return result;
+}
+
+/**
+ * Patch handler for trigger class Gamma High: checks if the patch is a jet low patch. Handles online and offline patches and swapping of the
+ * threshold.
+ * \param patch The patch to check
+ * \return True if it is a gamma high patch, false otherwise
+ */
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerLevel0::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+  if(patch->IsLevel0()) return true;
+  return false;
+}
+
+/**
+ *
+ * \param patch The patch to check
+ * \param patchtype The trigger class to check
+ * \return True if the trigger class is
+ */
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::IsPatchOfType(
+    const AliEmcalTriggerPatchInfo* const patch, TString patchtype) const {
+  Bool_t result = false;
+  std::auto_ptr<AliEmcalTriggerPatchHandler> myhandler(NULL);
+  if (patchtype == "JetHigh") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "JetLow") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "GammaHigh") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerJetHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "GammaLow") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerJetLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "Level0") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerLevel0(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  if(!myhandler.get()) return false;
+  return myhandler->IsOfType(patch);
+}
+
 } /* namespace EMCalTriggerPtAnalysis */
+
