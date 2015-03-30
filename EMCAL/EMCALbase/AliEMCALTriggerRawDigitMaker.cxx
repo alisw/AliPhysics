@@ -291,7 +291,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	AliEMCALTriggerRawDigit* dig = 0x0;
 
 	fRawReader->Reset();
-	fRawReader->Select("EMCAL",AliDAQ::NumberOfDdls("EMCAL")-1);	
+	fRawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL());
 
 	Bool_t isSTUin = kFALSE;
 	

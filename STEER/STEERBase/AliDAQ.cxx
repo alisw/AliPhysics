@@ -90,7 +90,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   1,    // ZDC
   1,    // ACORDE
   2,    // TRG
-  40,   // EMCAL (including DCal)
+  46,   // EMCAL (including DCal)
   12,   // DAQ_TEST
   0,    // EMPTY
   1,    // AD
@@ -182,6 +182,10 @@ const char* AliDAQ::fgkOnlineName[AliDAQ::kNDetectors] = {
   "FIT",
   "HLT"
 };
+
+Int_t AliDAQ::fgkRunPeriod = 1;
+Int_t AliDAQ::fgkFirstSTUDDL = 44;
+Int_t AliDAQ::fgkLastSTUDDL = 45;
 
 AliDAQ::AliDAQ(const AliDAQ& source) :
   TObject(source)
@@ -545,6 +549,12 @@ const char *AliDAQ::OnlineName(Int_t detectorID)
 }
 
 void AliDAQ::SetRun1(){
+  // Set RunPeriod
+  fgkRunPeriod = 1;
+  // STU
+  fgkFirstSTUDDL=44;
+  fgkLastSTUDDL=44;
+  
   // Change the default values to the ones used in Run1
   // DDL
   fgkNumberOfDdls[6] = 20; // HMPID in Run1
@@ -571,11 +581,17 @@ void AliDAQ::SetRun1(){
 }
 
 void AliDAQ::SetRun2(){
+  // Set RunPeriod
+  fgkRunPeriod = 2;
+  // STU
+  fgkFirstSTUDDL=44;
+  fgkLastSTUDDL=45;
+ 
   // Change the default values to the ones used in Run2
   // DDL
   fgkNumberOfDdls[6] = 14; // HMPID in Run2
   fgkNumberOfDdls[17] = 2; // TRG
-  fgkNumberOfDdls[18] = 40; // EMCAL
+  fgkNumberOfDdls[18] = 46; // EMCAL
   fgkNumberOfDdls[19] = 12; // DAQ_TEST
 
   // LDC

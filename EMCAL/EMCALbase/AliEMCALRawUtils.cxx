@@ -289,7 +289,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   if (!reader) {Error("Raw2Digits", "no raw reader found !");return;}
   AliEMCALTriggerSTURawStream inSTU(reader);
   AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);	
-  reader->Select("EMCAL");
+  reader->Select("EMCAL",0,AliDAQ::GetFirstSTUDDL()-1);
   fTriggerRawDigitMaker->Reset();	
   fTriggerRawDigitMaker->SetIO(reader, in, inSTU, digitsTRG, trgData);
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
