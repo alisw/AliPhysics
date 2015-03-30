@@ -28,7 +28,9 @@ class AliEmcalJetByJetCorrection : public TNamed
   void SetEfficiencyHist(TH1 *h)             { fhEfficiency     = h  ; }
   void SetCorrectTemplateTrackpT(Bool_t correct=kTRUE) {fCorrectpTtrack = correct;}
   void SetPoissonianNmissing(Bool_t set=kTRUE) {fNpPoisson=set;}
-
+  void SetNMissedTracks(Double_t number) {fNMissedTracks = number;}
+  void SetExternalDefinitionOfNmissed(Bool_t set=kTRUE) {fExternalNmissed=set;}
+  
   Int_t        GetJetPtBin(const Double_t jetpt) const;
   Double_t     GetEfficiency(const Double_t pt) const;
   Double_t     GetMeanPtConstituents(const AliEmcalJet *jet, TClonesArray *fTracks) const;
@@ -36,6 +38,7 @@ class AliEmcalJetByJetCorrection : public TNamed
   TProfile    *GetAppliedEfficiency() const {return fpAppliedEfficiency;}
   Bool_t       GetCorrectTemplateTrackpT() const {return fCorrectpTtrack;}
   Bool_t       GetPoissonianNmissing() const     {return fNpPoisson;}
+  Bool_t       GetExternalDefinitionOfNmissed() const {return fExternalNmissed;}
   TList       *GetListOfOutput()       const     {return fListOfOutput;}
   void         Init();
   AliEmcalJet *Eval(const AliEmcalJet *jet, TClonesArray *fTracks);
@@ -52,11 +55,15 @@ class AliEmcalJetByJetCorrection : public TNamed
   TH1D     *fhSmoothEfficiency;                // single particle efficiency smooth (see Init())
   Bool_t   fCorrectpTtrack;                    // if true the templates are corrected by track efficiency
   Bool_t   fNpPoisson;                        //draw Nmissing particle from a Poissonian with mean Nconst(1/eff-1)
-  TRandom3 *fRndm;                             // TRandom3 object 
+  Bool_t   fExternalNmissed;                   ///< Set to true if want to give Nmissing from the MassStructureTask
+  TRandom3 *fRndm;                             // TRandom3 object
+  Int_t    fNMissedTracks;                     ///< Track missed in reconstruction calculated from external input (to be improved)
+  //  -- now done in the analysis task from the difference of the integral of the pt distr of the constituents of the particle level jet and the reco level jet
 
   //book-keeping object filled inside Eval()
   TProfile *fpAppliedEfficiency;               // Control profile efficiency
-  TH3F     *fNmissing;                         // pTjet vs number of added constituents (depends on settings) versus Nconstituents * (1./eff -1.)
+  TH3F     *fhNmissing;                        // pTjet vs number of added constituents (depends on settings) versus Nmissed constituents
+  TH2F     *fhCmpNmissStrategy;                ///< QA of N missing with two methods
   TList    *fListOfOutput;                     // list containing all histograms
  private:
   ClassDef(AliEmcalJetByJetCorrection, 8) // jet-by-jet correction class
