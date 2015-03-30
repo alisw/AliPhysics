@@ -153,7 +153,6 @@ public:
  virtual void CalculateCRCCorrPOIPOI();
  virtual void CalculateCRCPtCorr();
  virtual void CalculateCRCBckCorr();
- virtual void FillCRCBck(Int_t cw, Double_t dPhi,  Double_t dEta);
  // 2h.) Various
  virtual void CalculateVarious();
  
@@ -226,6 +225,7 @@ public:
  virtual void WriteHistograms(TString outputFileName);
  virtual void WriteHistograms(TDirectoryFile *outputFileName);
  virtual Int_t GetCRCBin(Int_t c, Int_t y, Int_t c2, Int_t y2);
+ virtual Int_t GetCRCBckBin(Int_t c, Int_t c2);
  
  // **** SETTERS and GETTERS ****
  
@@ -598,12 +598,10 @@ public:
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
  void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
- void SetUseEtaGap(Bool_t const cCRC) {this->fUseEtaGap = cCRC;};
- Bool_t GetUseEtaGap() const {return this->fUseEtaGap;};
+ void SetCalculateCRCBck(Bool_t const cCRC) {this->fCalculateCRCBck = cCRC;};
+ Bool_t GetCalculateCRCBck() const {return this->fCalculateCRCBck;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fNUAforCRC;};
- void SetEtaGap(Double_t const etagap) {this->fEtaGap = etagap;};
- Double_t GetEtaGap() const {return this->fEtaGap;};
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
  // 12.a) EbE Corr:
  void SetCRCCorrPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCorrPro[c][eg][h] = TP;};
@@ -665,12 +663,16 @@ public:
  TH1D* GetCRCPtNUATermsHist(Int_t const c, Int_t const eg, Int_t const h, Int_t const NUA) const {return this->fCRCPtNUATermsHist[c][eg][h][NUA];};
  
  //14.) CRC Bck
- void SetCRCBckCorrHist(TH1D* const CF, Int_t const c, Int_t const c2, Int_t const y) {this->fCRCBckCorrHist[c][c2][y] = CF;};
- TH1D* GetCRCBckCorrHist(Int_t const c, Int_t const c2, Int_t const y) const {return this->fCRCBckCorrHist[c][c2][y];};
- void SetCRCBckCorrPro(TProfile* const CF, Int_t const c, Int_t const c2, Int_t const y) {this->fCRCBckCorrPro[c][c2][y] = CF;};
- TProfile* GetCRCBckCorrPro(Int_t const c, Int_t const c2, Int_t const y) const {return this->fCRCBckCorrPro[c][c2][y];};
- void SetCRCBckSumWeigHist(TH1D* const CF, Int_t const c, Int_t const c2, Int_t const y) {this->fCRCBckSumWeigHist[c][c2][y] = CF;};
- TH1D* GetCRCBckSumWeigHist(Int_t const c, Int_t const c2, Int_t const y) const {return this->fCRCBckSumWeigHist[c][c2][y];};
+ void SetCRCBckCorrHist(TH1D* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckCorrHist[c][eb][h][eg] = CF;};
+ TH1D* GetCRCBckCorrHist(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckCorrHist[c][eb][h][eg];};
+ void SetCRCBckCorrPro(TProfile* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckCorrPro[c][eb][h][eg] = CF;};
+ TProfile* GetCRCBckCorrPro(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckCorrPro[c][eb][h][eg];};
+ void SetCRCBckCorrSqPro(TProfile* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckCorrSqPro[c][eb][h][eg] = CF;};
+ TProfile* GetCRCBckCorrSqPro(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckCorrSqPro[c][eb][h][eg];};
+ void SetCRCBckSumWeigHist(TH1D* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckSumWeigHist[c][eb][h][eg] = CF;};
+ TH1D* GetCRCBckSumWeigHist(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckSumWeigHist[c][eb][h][eg];};
+ void SetCRCBckSumWeigSqHist(TH1D* const CF, Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) {this->fCRCBckSumWeigSqHist[c][eb][h][eg] = CF;};
+ TH1D* GetCRCBckSumWeigSqHist(Int_t const c, Int_t const eb, Int_t const h, Int_t const eg) const {return this->fCRCBckSumWeigSqHist[c][eb][h][eg];};
  
  // 15.) Various
  void SetVariousList(TList* const Various) {this->fVariousList = Various;};
@@ -1027,9 +1029,8 @@ private:
  TProfile *fCRCFlags; //! profile to hold all flags for CRC
  Bool_t fCalculateCRC; // calculate CRC
  Bool_t fCalculateCRCPt;
- Bool_t fUseEtaGap;
+ Bool_t fCalculateCRCBck;
  Bool_t fNUAforCRC;
- Double_t fEtaGap;
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
  const static Int_t fCRCnCR = 16;
@@ -1082,15 +1083,15 @@ private:
  
  // CRC Background
  
- const static Int_t fCRCBcknEtaBins = 8;
- Double_t fCRCBckEtaBinWidth;
+ const static Int_t fCRCBcknCR = 4;
+ const static Int_t fCRCBcknEBWidth = 3; // etabin width goes from 0.1 to 0.1*fCRCBcknEBWidth
+ const static Int_t fCRCBcknEtaGap = 6; // etagap width goes from 0 to 0.1*(fCRCBcknEtaGap-1)
  
- TH1D *fCRCBckQRe[2]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCBckQIm[2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCBckMult[2]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
- TProfile *fCRCBckCorrPro[2][2][4]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCBckSumWeigHist[2][2][4]; //! [0=pos,1=neg][0=back,1=forw][0=pos,1=neg][0=back,1=forw]
- TH1D *fCRCBckCorrHist[2][2][4]; //! <<2'>>,<<4'>>
+ TProfile *fCRCBckCorrPro[fCRCBcknCR][fCRCBcknEBWidth][fCRCnHarm][fCRCBcknEtaGap]; //!
+ TProfile *fCRCBckCorrSqPro[fCRCBcknCR][fCRCBcknEBWidth][fCRCnHarm][fCRCBcknEtaGap]; //!
+ TH1D *fCRCBckSumWeigHist[fCRCBcknCR][fCRCBcknEBWidth][fCRCnHarm][fCRCBcknEtaGap]; //!
+ TH1D *fCRCBckSumWeigSqHist[fCRCBcknCR][fCRCBcknEBWidth][fCRCnHarm][fCRCBcknEtaGap]; //!
+ TH1D *fCRCBckCorrHist[fCRCBcknCR][fCRCBcknEBWidth][fCRCnHarm][fCRCBcknEtaGap]; //!
  
  ClassDef(AliFlowAnalysisCRC, 4);
  

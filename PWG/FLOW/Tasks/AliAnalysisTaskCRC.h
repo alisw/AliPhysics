@@ -149,10 +149,8 @@ public:
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
  void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
- void SetUseEtaGap(Bool_t const cCRC) {this->fUseEtaGap = cCRC;};
- Bool_t GetUseEtaGap() const {return this->fUseEtaGap;};
- void SetEtaGap(Double_t const etagap) {this->fEtaGap = etagap;};
- Double_t GetEtaGap() const {return this->fEtaGap;};
+ void SetCalculateCRCBck(Bool_t const cCRC) {this->fCalculateCRCBck = cCRC;};
+ Bool_t GetCalculateCRCBck() const {return this->fCalculateCRCBck;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
@@ -217,8 +215,7 @@ private:
  // Charge-Eta Asymmetry
  Bool_t fCalculateCRC; // calculate CRC quantities
  Bool_t fCalculateCRCPt;
- Bool_t fUseEtaGap;
- Double_t fEtaGap;
+ Bool_t fCalculateCRCBck;
  Bool_t fUseNUAforCRC;
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;

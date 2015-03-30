@@ -235,9 +235,8 @@ fCRCList(NULL),
 fCRCFlags(NULL),
 fCalculateCRC(kFALSE),
 fCalculateCRCPt(kFALSE),
-fUseEtaGap(kTRUE),
+fCalculateCRCBck(kFALSE),
 fNUAforCRC(kFALSE),
-fEtaGap(0.),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.)
 {
@@ -403,8 +402,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
  Int_t nBinsPhi = 0;
  Int_t nBinsEta = 0;
  Int_t cw = 0;
- Double_t dEtaRange = (((fCRCEtaMax-fCRCEtaMin)/2.)-fEtaGap)/2.;
- Double_t dEtaSymm = fEtaGap/2.;
  
  // determine phi weight for POI && RP particle:
  if(fUsePhiWeights && fPhiWeightsRPs && fPhiBinWidth) {
@@ -643,7 +640,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     
     // Charge-Rapidity Correlations
     if(fCalculateCRC) {
-     if (dEta > fCRCEtaMin && dEta < fCRCEtaMax) {FillCRCBck(cw,dPhi,dEta);}
      for (Int_t h=0;h<fCRCnHarm;h++) {
       fCRCQRe[cw][h]->Fill(dEta,TMath::Cos((h+1)*dPhi));
       fCRCQIm[cw][h]->Fill(dEta,TMath::Sin((h+1)*dPhi));
@@ -818,7 +814,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
  // i.2) Calculate CRC quantities:
  if(fCalculateCRC) {
   this->CalculateCRCCorrPOIPOI();
-  this->CalculateCRCBckCorr();
+  if(fCalculateCRCBck) {
+   this->CalculateCRCBckCorr();
+  }
   if(fCalculateCRCPt) {
    this->CalculateCRCPtCorr();
   }
@@ -840,15 +838,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
  this->ResetEventByEventQuantities();
  
 } // end of AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
-
-//=======================================================================================================================
-
-void AliFlowAnalysisCRC::FillCRCBck(Int_t cw, Double_t dPhi, Double_t dEta)
-{
- fCRCBckQRe[cw]->Fill(dEta,TMath::Cos(fHarmonic*dPhi));
- fCRCBckQIm[cw]->Fill(dEta,TMath::Sin(fHarmonic*dPhi));
- fCRCBckMult[cw]->Fill(dEta);
-}
 
 //=======================================================================================================================
 
@@ -919,6 +908,7 @@ void AliFlowAnalysisCRC::Finish()
  fnSubsamples = (Int_t)fBootstrapFlags->GetBinContent(3);
  fCalculateCRC = (Bool_t)fCRCFlags->GetBinContent(1);
  fCalculateCRCPt = (Bool_t)fCRCFlags->GetBinContent(2);
+ fCalculateCRCBck = (Bool_t)fCRCFlags->GetBinContent(3);
  
  // d) Calculate reference cumulants (not corrected for detector effects):
  this->FinalizeCorrelationsIntFlow();
@@ -1042,9 +1032,11 @@ void AliFlowAnalysisCRC::Finish()
  // o) Calculate charge-rapidity correlations:
  if(fCalculateCRC) {
   this->FinalizeCRCCorrPOIPOI();
-  this->FinalizeCRCBckCorr();
   if(fCalculateCRCPt) {
    this->FinalizeCRCPtCorr();
+  }
+  if(fCalculateCRCBck) {
+   this->FinalizeCRCBckCorr();
   }
  }
  
@@ -15723,8 +15715,6 @@ void AliFlowAnalysisCRC::InitializeCostantsForCRC()
  fCRCPtMinBins[3] = 5.0;
  
  // CRCBck
- //fCRCBcknEtaBins = 8;
- fCRCBckEtaBinWidth = (fCRCEtaMax-fCRCEtaMin)/fCRCBcknEtaBins;
  
 } // end of AliFlowAnalysisCRC::InitializeCostantsForCRC()
 
@@ -15802,21 +15792,19 @@ void AliFlowAnalysisCRC::InitializeArraysForCRCPt()
 
 void AliFlowAnalysisCRC::InitializeArraysForCRCBck()
 {
- for(Int_t c=0;c<2;c++) {
-  // EBE quantities
-  fCRCBckQRe[c] = NULL;
-  fCRCBckQIm[c] = NULL;
-  fCRCBckMult[c] = NULL;
- }
- for(Int_t c=0;c<2;c++) {
-  for(Int_t c2=0;c2<2;c2++) {
-   for(Int_t y=0;y<4;y++) {
-    fCRCBckCorrPro[c][c2][y] = NULL;
-    fCRCBckSumWeigHist[c][c2][y] = NULL;
-    fCRCBckCorrHist[c][c2][y] = NULL;
-   } // end of for(Int_t y=0;y<2;y++)
-  } // end of for(Int_t c2=0;c2<2;c2++)
- } // end of for(Int_t c=0;c<2;c++)
+ for(Int_t c=0;c<fCRCBcknCR;c++) {
+  for (Int_t h=0;h<fCRCnHarm;h++) {
+   for(Int_t eb=0;eb<fCRCBcknEBWidth;eb++) {
+    for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++) {
+     fCRCBckCorrHist[c][eb][h][eg] = NULL;
+     fCRCBckCorrPro[c][eb][h][eg] = NULL;
+     fCRCBckCorrSqPro[c][eb][h][eg] = NULL;
+     fCRCBckSumWeigHist[c][eb][h][eg] = NULL;
+     fCRCBckSumWeigSqHist[c][eb][h][eg] = NULL;
+    } // end of for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++)
+   } // end of for(Int_t eg=0;eg<fCRCBcknEBWidth;eg++)
+  } // end of for (Int_t h=0;h<fCRCnHarm;h++)
+ } // end of for(Int_t c=0;c<fCRCBcknCR;c++)
  
 } // end of AliFlowAnalysisCRC::InitializeArraysForCRCBck()
 
@@ -17212,6 +17200,20 @@ Int_t AliFlowAnalysisCRC::GetCRCBin(Int_t cf, Int_t yf, Int_t c2f, Int_t y2f)
 
 //=======================================================================================================================
 
+Int_t AliFlowAnalysisCRC::GetCRCBckBin(Int_t cf, Int_t c2f)
+{
+ Int_t CRCBin=0,bin=0;
+ for(Int_t c=0;c<2;c++) {
+  for(Int_t c2=0;c2<2;c2++) {
+   if (c==cf && c2==c2f) CRCBin = bin;
+   else bin++;
+  }
+ }
+ return CRCBin;
+} // end of AliFlowAnalysisCRC::GetCRCBckBin();
+
+//=======================================================================================================================
+
 void AliFlowAnalysisCRC::CalculateCRCCorrPOIPOI()
 {
  // reduced CRC correlations are stored in fCRCCorrPro.
@@ -17512,74 +17514,118 @@ void AliFlowAnalysisCRC::CalculateCRCPtCorr()
 void AliFlowAnalysisCRC::CalculateCRCBckCorr()
 {
  // reduced CRC correlations are stored in fCRCCorrPro.
- 
+
  // quantities:
  Double_t twoAB=0., dM2AB=0.;
  Double_t mp=0., p1n0kRe=0., p1n0kIm=0., p2n0kRe=0., p2n0kIm=0.;
  Double_t mq = 0., q1n0kRe = 0., q1n0kIm = 0., q2n0kRe = 0., q2n0kIm = 0.;
  Double_t mR=0., dReR1n=0., dImR1n = 0., dReR2n = 0., dImR2n = 0.;
- Int_t nEtaBinEG = (Int_t)(fEtaGap/fCRCBckEtaBinWidth);
- Int_t nEtaBinMaxwEG = fCRCBcknEtaBins - (nEtaBinEG + 1);
- Int_t binC;
  
- for(Int_t b=1;b<=fCRCBcknEtaBins;b++) {
-  
-  p1n0kRe = fCRCBckQRe[0]->GetBinContent(fCRCBckQRe[0]->GetBin(b));
-  p1n0kIm = fCRCBckQIm[0]->GetBinContent(fCRCBckQIm[0]->GetBin(b));
-  mp = fCRCBckMult[0]->GetBinContent(fCRCBckMult[0]->GetBin(b));
-  dReR1n = fCRCBckQRe[1]->GetBinContent(fCRCBckQRe[1]->GetBin(b));
-  dImR1n = fCRCBckQIm[1]->GetBinContent(fCRCBckQIm[1]->GetBin(b));
-  mR = fCRCBckMult[1]->GetBinContent(fCRCBckMult[1]->GetBin(b));
-  
-  if(mp>1 && mR>1) {
-   dM2AB = mR*(mR-1);
-   twoAB = (pow(dReR1n,2.)+pow(dImR1n,2.)-mR) / dM2AB;
-   fCRCBckCorrPro[0][0][0]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,twoAB,dM2AB);
-   fCRCBckCorrPro[0][0][1]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(twoAB,2.),dM2AB);
-   fCRCBckSumWeigHist[0][0][0]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,dM2AB);
-   fCRCBckSumWeigHist[0][0][1]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(dM2AB,2.));
-   dM2AB = mp*(mp-1);
-   twoAB = (pow(p1n0kRe,2.)+pow(p1n0kIm,2.)-mp) / dM2AB;
-   fCRCBckCorrPro[0][0][0]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,twoAB,dM2AB);
-   fCRCBckCorrPro[0][0][1]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(twoAB,2.),dM2AB);
-   fCRCBckSumWeigHist[0][0][0]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,dM2AB);
-   fCRCBckSumWeigHist[0][0][1]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(dM2AB,2.));
-   
-   dM2AB = mp*mR;
-   twoAB = (p1n0kRe*dReR1n+p1n0kIm*dImR1n) / dM2AB;
-   fCRCBckCorrPro[1][0][0]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,twoAB,dM2AB);
-   fCRCBckCorrPro[1][0][1]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(twoAB,2.),dM2AB);
-   fCRCBckSumWeigHist[1][0][0]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,dM2AB);
-   fCRCBckSumWeigHist[1][0][1]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(dM2AB,2.));
-  }
-  
- } // end of for(Int_t b=0;b<fCRCBcknEtaBins;b++)
+ Int_t EtaBinA=0, EtaBinB=0, CRCBin=0, EBinMin=0, EBinMax=0, EBinMin2=0, EBinMax2=0;
+ Double_t s = 1E-5;
+ Double_t dEtaRange = fCRCEtaMax-fCRCEtaMin;
  
- for(Int_t c=0;c<2;c++) {
-  for(Int_t c2=0;c2<2;c2++) {
-   for(Int_t b=1;b<=nEtaBinMaxwEG;b++) {
+ for (Int_t h=0;h<fCRCnHarm;h++) {
+  for(Int_t c=0;c<2;c++) {
+   for(Int_t c2=0;c2<2;c2++) {
+    CRCBin = GetCRCBckBin(c,c2);
     
-    p1n0kRe = fCRCBckQRe[c]->GetBinContent(fCRCBckQRe[c]->GetBin(b));
-    p1n0kIm = fCRCBckQIm[c]->GetBinContent(fCRCBckQIm[c]->GetBin(b));
-    mp = fCRCBckMult[c]->GetBinContent(fCRCBckMult[c]->GetBin(b));
-    dReR1n = fCRCBckQRe[c2]->GetBinContent(fCRCBckQRe[c2]->GetBin(b+nEtaBinEG+1));
-    dImR1n = fCRCBckQIm[c2]->GetBinContent(fCRCBckQIm[c2]->GetBin(b+nEtaBinEG+1));
-    mR = fCRCBckMult[c2]->GetBinContent(fCRCBckMult[c2]->GetBin(b+nEtaBinEG+1));
+    for(Int_t eb=0; eb<fCRCBcknEBWidth; eb++) {
+     
+     Double_t dEtaBin = (eb+1)*0.1;
+     
+     // CRCBck same eta
+     
+     Int_t inEtaBin = (Int_t)(dEtaRange/dEtaBin);
+     
+     for(Int_t e=0; e<inEtaBin; e++) {
+      
+      EBinMin = fCRCQRe[c][h]->FindBin(fCRCEtaMin+dEtaBin*e);
+      EBinMax = fCRCQRe[c][h]->FindBin(fCRCEtaMin+dEtaBin*(e+1)-s);
+      
+      p1n0kRe=0;
+      p1n0kIm=0;
+      mp=0;
+      dReR1n=0;
+      dImR1n=0;
+      mR=0;
+      
+      for(Int_t EBin=EBinMin; EBin<=EBinMax; EBin++) {
+       p1n0kRe += fCRCQRe[c][h]->GetBinContent(EBin);
+       p1n0kIm += fCRCQIm[c][h]->GetBinContent(EBin);
+       mp      += fCRCMult[c][h]->GetBinContent(EBin);
+       dReR1n  += fCRCQRe[c2][h]->GetBinContent(EBin);
+       dImR1n  += fCRCQIm[c2][h]->GetBinContent(EBin);
+       mR      += fCRCMult[c2][h]->GetBinContent(EBin);
+      }
+      
+      if(mp>1 && mR>1) {
+       if(c!=c2) {
+        dM2AB = mp*mR;
+        twoAB = (p1n0kRe*dReR1n+p1n0kIm*dImR1n) / dM2AB;
+       } else {
+        dM2AB = mR*(mR-1);
+        twoAB = (pow(dReR1n,2.)+pow(dImR1n,2.)-mR) / dM2AB;
+       }
+       fCRCBckCorrPro[CRCBin][eb][h][0]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,twoAB,dM2AB);
+       fCRCBckCorrSqPro[CRCBin][eb][h][0]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,pow(twoAB,2.),dM2AB);
+       fCRCBckSumWeigHist[CRCBin][eb][h][0]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,dM2AB);
+       fCRCBckSumWeigSqHist[CRCBin][eb][h][0]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,pow(dM2AB,2.));
+      } // end of if(mp>1 && mR>1)
+      
+     } // end of for(Int_t e=0; e<inEtaBin; e++)
+     
+     // CRCBck with eta gap
+     
+     for(Int_t eg=1; eg<fCRCBcknEtaGap; eg++) {
+      
+      Double_t dEtaGap = (eg-1)*0.1;
+      Double_t dEtaRangewEG = dEtaRange-dEtaGap-dEtaBin;
+      Int_t inEtaBinwEG = (Int_t)(dEtaRangewEG/dEtaBin);
+      
+      for(Int_t e=0; e<inEtaBinwEG; e++) {
+       
+       EBinMin = fCRCQRe[c][h]->FindBin(fCRCEtaMin+dEtaBin*e);
+       EBinMax = fCRCQRe[c][h]->FindBin(fCRCEtaMin+dEtaBin*(e+1)-s);
+       EBinMin2 = fCRCQRe[c2][h]->FindBin(fCRCEtaMin+dEtaBin*(e+1)+dEtaGap);
+       EBinMax2 = fCRCQRe[c2][h]->FindBin(fCRCEtaMin+dEtaBin*(e+2)+dEtaGap-s);
+       
+       p1n0kRe=0;
+       p1n0kIm=0;
+       mp=0;
+       dReR1n=0;
+       dImR1n=0;
+       mR=0;
+       
+       for(Int_t EBin=EBinMin; EBin<=EBinMax; EBin++) {
+        p1n0kRe += fCRCQRe[c][h]->GetBinContent(EBin);
+        p1n0kIm += fCRCQIm[c][h]->GetBinContent(EBin);
+        mp      += fCRCMult[c][h]->GetBinContent(EBin);
+       }
+       for(Int_t EBin=EBinMin2; EBin<=EBinMax2; EBin++) {
+        dReR1n += fCRCQRe[c2][h]->GetBinContent(EBin);
+        dImR1n += fCRCQIm[c2][h]->GetBinContent(EBin);
+        mR     += fCRCMult[c2][h]->GetBinContent(EBin);
+       }
+       
+       if(mp>1 && mR>1) {
+         dM2AB = mp*mR;
+         twoAB = (p1n0kRe*dReR1n+p1n0kIm*dImR1n) / dM2AB;
+        fCRCBckCorrPro[CRCBin][eb][h][eg]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,twoAB,dM2AB);
+        fCRCBckCorrSqPro[CRCBin][eb][h][eg]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,pow(twoAB,2.),dM2AB);
+        fCRCBckSumWeigHist[CRCBin][eb][h][eg]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,dM2AB);
+        fCRCBckSumWeigSqHist[CRCBin][eb][h][eg]->Fill(fCRCEtaMin+(e+0.5)*dEtaBin,pow(dM2AB,2.));
+       } // end of if(mp>1 && mR>1)
+       
+      } // end of for(Int_t e=0; e<inEtaBinwEG; e++)
+      
+     } // end of for(Int_t eg=0; eg<fCRCnEtaGap; eg++)
+     
+    } // end of for(Int_t eb=0; eb<fCRCnEtaBins; eb++)
     
-    if(mp>1 && mR>1) {
-     dM2AB = mp*mR;
-     twoAB = (p1n0kRe*dReR1n+p1n0kIm*dImR1n) / dM2AB;
-     if (c==c2) {binC=0;}
-     else       {binC=1;}
-     fCRCBckCorrPro[binC][0][2]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,twoAB,dM2AB);
-     fCRCBckCorrPro[binC][0][3]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(twoAB,2.),dM2AB);
-     fCRCBckSumWeigHist[binC][0][2]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,dM2AB);
-     fCRCBckSumWeigHist[binC][0][3]->Fill(fCRCEtaMin+(b-0.5)*fCRCBckEtaBinWidth,pow(dM2AB,2.));
-    }
-    
-   } // end of for(Int_t b=0;b<nEtaBinMaxwEG;b++)
-  } // end of for(Int_t c2=0;c2<2;c2++) {
- } // end of for(Int_t c=0;c<2;c++)
+   } // end of for(Int_t c2=0;c2<2;c2++)
+  } // end of for(Int_t c=0;c<2;c++)
+ } // end of for (Int_t h=0;h<fCRCnHarm;h++)
  
 } // end of AliFlowAnalysisCRC::CalculateCRCBckCorr();
 
@@ -18588,47 +18634,38 @@ void AliFlowAnalysisCRC::FinalizeCRCBckCorr()
  cout << "calculate final 2-p correlations bck" << endl;
  cout << endl;
  
- Int_t nEtaBinEG = (Int_t)(fEtaGap/fCRCBckEtaBinWidth);
- Int_t nEtaBinMaxwEG = fCRCBcknEtaBins - (nEtaBinEG + 1);
- 
- for(Int_t c=0;c<2;c++) {
-  for(Int_t b=1;b<=fCRCBcknEtaBins;b++) {
-   // CRCBck same eta-bin:
-   Double_t Corr = fCRCBckCorrPro[c][0][0]->GetBinContent(b);
-   Double_t SqCorr = fCRCBckCorrPro[c][0][1]->GetBinContent(b);
-   Double_t Weig = fCRCBckSumWeigHist[c][0][0]->GetBinContent(b);
-   Double_t SqWeig = fCRCBckSumWeigHist[c][0][1]->GetBinContent(b);
-   Double_t spread=0., termA=0., termB=0.;
-   if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
-   else {
-    cout<<" WARNING: Imaginary 'spread' for BckCorr !!!"<<endl;
-   }
-   if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
-   if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
-   Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-   fCRCBckCorrHist[c][0][0]->SetBinContent(b,Corr);
-   fCRCBckCorrHist[c][0][0]->SetBinError(b,CorrErr);
-  } // end of for(Int_t b=1;b<=fCRCBcknEtaBins;b++)
- } // end of for(Int_t c=0;c<2;c++)
- 
- for(Int_t c=0;c<2;c++) {
-  for(Int_t b=1;b<=nEtaBinMaxwEG;b++) {
-   Double_t Corr = fCRCBckCorrPro[c][0][2]->GetBinContent(b);
-   Double_t SqCorr = fCRCBckCorrPro[c][0][3]->GetBinContent(b);
-   Double_t Weig = fCRCBckSumWeigHist[c][0][2]->GetBinContent(b);
-   Double_t SqWeig = fCRCBckSumWeigHist[c][0][3]->GetBinContent(b);
-   Double_t spread=0., termA=0., termB=0.;
-   if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
-   else {
-    cout<<" WARNING: Imaginary 'spread' for BckCorr !!!"<<endl;
-   }
-   if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
-   if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
-   Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-   fCRCBckCorrHist[c][0][1]->SetBinContent(b,Corr);
-   fCRCBckCorrHist[c][0][1]->SetBinError(b,CorrErr);
-  } // end of for(Int_t b=1;b<=nEtaBinMaxwEG;b++)
- } // end of for(Int_t c=0;c<2;c++)
+Double_t dEtaRange = fCRCEtaMax-fCRCEtaMin;
+Int_t inEtaBins = 0;
+ for(Int_t c=0;c<fCRCBcknCR;c++) {
+  for (Int_t h=0;h<fCRCnHarm;h++) {
+   for(Int_t eb=0;eb<fCRCBcknEBWidth;eb++) {
+    Double_t dEtaBin = (eb+1)*0.1;
+    for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++) {
+     if (eg==0) {
+      inEtaBins = (Int_t)(dEtaRange/dEtaBin);
+     } else if (eg>0) {
+      Double_t dEtaGap = (eg-1)*0.1;
+      Double_t dEtaRangewEG = dEtaRange-dEtaGap-dEtaBin;
+      inEtaBins = (Int_t)(dEtaRangewEG/dEtaBin);
+     }
+     for(Int_t b=1;b<=inEtaBins;b++) {
+      Double_t Corr = fCRCBckCorrPro[c][eb][h][eg]->GetBinContent(b);
+      Double_t SqCorr = fCRCBckCorrSqPro[c][eb][h][eg]->GetBinContent(b);
+      Double_t Weig = fCRCBckSumWeigHist[c][eb][h][eg]->GetBinContent(b);
+      Double_t SqWeig = fCRCBckSumWeigSqHist[c][eb][h][eg]->GetBinContent(b);
+      Double_t spread=0., termA=0., termB=0.;
+      if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
+      else { cout<<" WARNING: Imaginary 'spread' for BckCorr !!!"<<endl; }
+      if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
+      if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
+      Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+      fCRCBckCorrHist[c][eb][h][eg]->SetBinContent(b,Corr);
+      fCRCBckCorrHist[c][eb][h][eg]->SetBinError(b,CorrErr);
+     } // end of for(Int_t b=1;b<=inEtaBins;b++)
+    } // end of for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++)
+   } // end of for(Int_t eg=0;eg<fCRCBcknEBWidth;eg++)
+  } // end of for (Int_t h=0;h<fCRCnHarm;h++)
+ } // end of for(Int_t c=0;c<fCRCBcknCR;c++)
  
  cout << "*************************************" << endl;
  cout << endl;
@@ -19344,7 +19381,7 @@ void AliFlowAnalysisCRC::StoreCRCFlags()
  
  fCRCFlags->Fill(0.5,(Int_t)fCalculateCRC);
  fCRCFlags->Fill(1.5,(Int_t)fCalculateCRCPt);
- fCRCFlags->Fill(2.5,(Int_t)fUseEtaGap);
+ fCRCFlags->Fill(2.5,(Int_t)fCalculateCRCBck);
  fCRCFlags->Fill(3.5,(Int_t)fNUAforCRC);
  
 } // end of void AliFlowAnalysisCRC::StoreCRCFlags()
@@ -20624,7 +20661,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
   this->SetCRCFlags(CRCFlags);
   fCalculateCRC = (Bool_t)fCRCFlags->GetBinContent(1);
   fCalculateCRCPt = (Bool_t)fCRCFlags->GetBinContent(2);
-  fUseEtaGap = (Bool_t)fCRCFlags->GetBinContent(3);
+  fCalculateCRCBck = (Bool_t)fCRCFlags->GetBinContent(3);
   fNUAforCRC = (Bool_t)fCRCFlags->GetBinContent(4);
  } else {
   cout<<"WARNING: CRCFlags is NULL in AFAWQC::GPFCRC() !!!!"<<endl;
@@ -20795,23 +20832,33 @@ void AliFlowAnalysisCRC::GetPointersForCRCBck()
  
  TH1D *CRCBckCorrHist = NULL;
  TProfile *CRCBckCorrPro = NULL;
+ TProfile *CRCBckCorrSqPro = NULL;
  TH1D *CRCBckSumWeigHist = NULL;
+ TH1D *CRCBckSumWeigSqHist = NULL;
  
- for(Int_t c=0;c<2;c++) {
-  for(Int_t c2=0;c2<2;c2++) {
-   for(Int_t y=0;y<4;y++) {
-    CRCBckCorrHist = dynamic_cast<TH1D*>(fCRCList->FindObject(Form("fCRCBckCorrHist[%d][%d][%d]",c,c2,y)));
-    if(CRCBckCorrHist) { this->SetCRCBckCorrHist(CRCBckCorrHist,c,c2,y); }
-    else { cout<<"WARNING: CRCBckCorrHist is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
-    CRCBckCorrPro = dynamic_cast<TProfile*>(fCRCList->FindObject(Form("fCRCBckCorrPro[%d][%d][%d]",c,c2,y)));
-    if(CRCBckCorrPro) { this->SetCRCBckCorrPro(CRCBckCorrPro,c,c2,y); }
-    else { cout<<"WARNING: CRCBckCorrPro is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
-    CRCBckSumWeigHist = dynamic_cast<TH1D*>(fCRCList->FindObject(Form("fCRCBckSumWeigHist[%d][%d][%d]",c,c2,y)));
-    if(CRCBckSumWeigHist) { this->SetCRCBckSumWeigHist(CRCBckSumWeigHist,c,c2,y); }
-    else { cout<<"WARNING: CRCBckSumWeigHist is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
-   } // end of for(Int_t y=0;y<2;y++)
-  } // end of for(Int_t c2=0;c2<2;c2++)
- } // end of for(Int_t c=0;c<2;c++)
+ for(Int_t c=0;c<fCRCBcknCR;c++) {
+  for (Int_t h=0;h<fCRCnHarm;h++) {
+   for(Int_t eb=0;eb<fCRCBcknEBWidth;eb++) {
+    for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++) {
+     CRCBckCorrHist = dynamic_cast<TH1D*>(fCRCList->FindObject(Form("fCRCBckCorrHist[%d][%d][%d][%d]",c,eb,h,eg)));
+     if(CRCBckCorrHist) { this->SetCRCBckCorrHist(CRCBckCorrHist,c,eb,h,eg); }
+     else { cout<<"WARNING: CRCBckCorrHist is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
+     CRCBckCorrPro = dynamic_cast<TProfile*>(fCRCList->FindObject(Form("fCRCBckCorrPro[%d][%d][%d][%d]",c,eb,h,eg)));
+     if(CRCBckCorrPro) { this->SetCRCBckCorrPro(CRCBckCorrPro,c,eb,h,eg); }
+     else { cout<<"WARNING: CRCBckCorrPro is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
+     CRCBckCorrSqPro = dynamic_cast<TProfile*>(fCRCList->FindObject(Form("fCRCBckCorrSqPro[%d][%d][%d][%d]",c,eb,h,eg)));
+     if(CRCBckCorrSqPro) { this->SetCRCBckCorrSqPro(CRCBckCorrSqPro,c,eb,h,eg); }
+     else { cout<<"WARNING: CRCBckCorrSqPro is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
+     CRCBckSumWeigHist = dynamic_cast<TH1D*>(fCRCList->FindObject(Form("fCRCBckSumWeigHist[%d][%d][%d][%d]",c,eb,h,eg)));
+     if(CRCBckSumWeigHist) { this->SetCRCBckSumWeigHist(CRCBckSumWeigHist,c,eb,h,eg); }
+     else { cout<<"WARNING: CRCBckSumWeigHist is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
+     CRCBckSumWeigSqHist = dynamic_cast<TH1D*>(fCRCList->FindObject(Form("fCRCBckSumWeigSqHist[%d][%d][%d][%d]",c,eb,h,eg)));
+     if(CRCBckSumWeigSqHist) { this->SetCRCBckSumWeigHist(CRCBckSumWeigSqHist,c,eb,h,eg); }
+     else { cout<<"WARNING: CRCBckSumWeigSqHist is NULL in AFAWQC::GPFCRCBck() !!!!"<<endl; }
+    } // end of for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++)
+   } // end of for(Int_t eg=0;eg<fCRCBcknEBWidth;eg++)
+  } // end of for (Int_t h=0;h<fCRCnHarm;h++)
+ } // end of for(Int_t c=0;c<fCRCBcknCR;c++)
  
  cout << "... pointers CRCBck OK" << endl;
  
@@ -21356,7 +21403,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
  fCRCFlags->SetStats(kFALSE);
  fCRCFlags->GetXaxis()->SetBinLabel(1,"fCalculateCRC");
  fCRCFlags->GetXaxis()->SetBinLabel(2,"fCalculateCRCPt");
- fCRCFlags->GetXaxis()->SetBinLabel(3,"fUseEtaGap");
+ fCRCFlags->GetXaxis()->SetBinLabel(3,"fCalculateCRCBck");
  fCRCFlags->GetXaxis()->SetBinLabel(4,"fNUAforCRC");
  fCRCList->Add(fCRCFlags);
  
@@ -21499,35 +21546,52 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
  
  //=======================================================================================================================
  
- void AliFlowAnalysisCRC::BookEverythingForCRCBck()
- {
-  // EbE quantities
-  for(Int_t c=0;c<2;c++) {
-   fCRCBckQRe[c] = new TH1D(Form("fCRCPtQRec%d",c),Form("fCRCPtQRec%d",c),fCRCBcknEtaBins,fCRCEtaMin,fCRCEtaMax);
-   fCRCBckQIm[c] = new TH1D(Form("fCRCPtQImc%d",c),Form("fCRCPtQImc%d",c),fCRCBcknEtaBins,fCRCEtaMin,fCRCEtaMax);
-   fCRCBckMult[c] = new TH1D(Form("fCRCPtMultc%d",c),Form("fCRCPtMultc%d",c),fCRCBcknEtaBins,fCRCEtaMin,fCRCEtaMax);
-  }
-  
-  // Histos and profiles:
-  for(Int_t c=0;c<2;c++) {
-   for(Int_t c2=0;c2<2;c2++) {
-    for(Int_t y=0;y<4;y++) {
-     fCRCBckCorrHist[c][c2][y] = new TH1D(Form("fCRCBckCorrHist[%d][%d][%d]",c,c2,y),
-                                          Form("fCRCBckCorrHist[%d][%d][%d]",c,c2,y),fCRCBcknEtaBins,fCRCEtaMin,fCRCEtaMax);
-     fCRCBckCorrHist[c][c2][y]->Sumw2();
-     fCRCList->Add(fCRCBckCorrHist[c][c2][y]);
-     fCRCBckCorrPro[c][c2][y] = new TProfile(Form("fCRCBckCorrPro[%d][%d][%d]",c,c2,y),
-                                             Form("fCRCBckCorrPro[%d][%d][%d]",c,c2,y),fCRCBcknEtaBins,fCRCEtaMin,fCRCEtaMax,"s");
-     fCRCBckCorrPro[c][c2][y]->Sumw2();
-     fCRCList->Add(fCRCBckCorrPro[c][c2][y]);
-     fCRCBckSumWeigHist[c][c2][y] = new TH1D(Form("fCRCBckSumWeigHist[%d][%d][%d]",c,c2,y),
-                                             Form("fCRCBckSumWeigHist[%d][%d][%d]",c,c2,y),fCRCBcknEtaBins,fCRCEtaMin,fCRCEtaMax);
-     fCRCBckSumWeigHist[c][c2][y]->Sumw2();
-     fCRCList->Add(fCRCBckSumWeigHist[c][c2][y]);
-    } // end of for(Int_t y=0;y<2;y++)
-   } // end of for(Int_t c2=0;c2<2;c2++)
-  } // end of for(Int_t c=0;c<2;c++)
-  
+void AliFlowAnalysisCRC::BookEverythingForCRCBck()
+{
+ Double_t dEtaRange = fCRCEtaMax-fCRCEtaMin;
+ Int_t inEtaBins = 0;
+ Double_t dEtaMax = 0., dEtaGap = 0.;
+ // Histos and profiles:
+ for(Int_t c=0;c<fCRCBcknCR;c++) {
+  for (Int_t h=0;h<fCRCnHarm;h++) {
+   for(Int_t eb=0;eb<fCRCBcknEBWidth;eb++) {
+    Double_t dEtaBin = (eb+1)*0.1;
+    for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++) {
+     if (eg==0) {
+      dEtaGap = 0.;
+      inEtaBins = (Int_t)(dEtaRange/dEtaBin);
+      dEtaMax = fCRCEtaMin+inEtaBins*dEtaBin;
+     } else if (eg>0) {
+      dEtaGap = (eg-1)*0.1;
+      Double_t dEtaRangewEG = dEtaRange-dEtaGap-dEtaBin;
+      inEtaBins = (Int_t)(dEtaRangewEG/dEtaBin);
+      dEtaMax = fCRCEtaMin+inEtaBins*dEtaBin;
+     }
+     fCRCBckCorrHist[c][eb][h][eg] = new TH1D(Form("fCRCBckCorrHist[%d][%d][%d][%d]",c,eb,h,eg),
+                                              Form("fCRCBckCorrHist[%d][%d][%d][%d]",c,eb,h,eg),inEtaBins,fCRCEtaMin,dEtaMax);
+     fCRCBckCorrHist[c][eb][h][eg]->Sumw2();
+     fCRCList->Add(fCRCBckCorrHist[c][eb][h][eg]);
+     fCRCBckCorrPro[c][eb][h][eg] = new TProfile(Form("fCRCBckCorrPro[%d][%d][%d][%d]",c,eb,h,eg),
+                                                 Form("fCRCBckCorrPro[%d][%d][%d][%d]",c,eb,h,eg),inEtaBins,fCRCEtaMin,dEtaMax,"s");
+     fCRCBckCorrPro[c][eb][h][eg]->Sumw2();
+     fCRCList->Add(fCRCBckCorrPro[c][eb][h][eg]);
+     fCRCBckCorrSqPro[c][eb][h][eg] = new TProfile(Form("fCRCBckCorrSqPro[%d][%d][%d][%d]",c,eb,h,eg),
+                                                   Form("fCRCBckCorrSqPro[%d][%d][%d][%d]",c,eb,h,eg),inEtaBins,fCRCEtaMin,dEtaMax,"s");
+     fCRCBckCorrSqPro[c][eb][h][eg]->Sumw2();
+     fCRCList->Add(fCRCBckCorrSqPro[c][eb][h][eg]);
+     fCRCBckSumWeigHist[c][eb][h][eg] = new TH1D(Form("fCRCBckSumWeigHist[%d][%d][%d][%d]",c,eb,h,eg),
+                                                 Form("fCRCBckSumWeigHist[%d][%d][%d][%d]",c,eb,h,eg),inEtaBins,fCRCEtaMin,dEtaMax);
+     fCRCBckSumWeigHist[c][eb][h][eg]->Sumw2();
+     fCRCList->Add(fCRCBckSumWeigHist[c][eb][h][eg]);
+     fCRCBckSumWeigSqHist[c][eb][h][eg] = new TH1D(Form("fCRCBckSumWeigSqHist[%d][%d][%d][%d]",c,eb,h,eg),
+                                                   Form("fCRCBckSumWeigSqHist[%d][%d][%d][%d]",c,eb,h,eg),inEtaBins,fCRCEtaMin,dEtaMax);
+     fCRCBckSumWeigSqHist[c][eb][h][eg]->Sumw2();
+     fCRCList->Add(fCRCBckSumWeigSqHist[c][eb][h][eg]);
+    } // end of for(Int_t eg=0;eg<fCRCBcknEtaGap;eg++)
+   } // end of for(Int_t eg=0;eg<fCRCBcknEBWidth;eg++)
+  } // end of for (Int_t h=0;h<fCRCnHarm;h++)
+ } // end of for(Int_t c=0;c<fCRCBcknCR;c++)
+ 
  } // end of AliFlowAnalysisCRCPt::BookEverythingForCRCBck()
  
  //=======================================================================================================================
@@ -22882,12 +22946,6 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
     if(fCRCPtQIm[c][h]) fCRCPtQIm[c][h]->Reset();
     if(fCRCPtMult[c][h]) fCRCPtMult[c][h]->Reset();
    }
-  }
-  // CRCBck
-  for(Int_t c=0;c<2;c++) {
-   if(fCRCBckQRe[c]) fCRCBckQRe[c]->Reset();
-   if(fCRCBckQIm[c]) fCRCBckQIm[c]->Reset();
-   if(fCRCBckMult[c]) fCRCBckMult[c]->Reset();
   }
   
  } // end of void AliFlowAnalysisCRC::ResetEventByEventQuantities();

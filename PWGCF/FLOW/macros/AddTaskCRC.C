@@ -1,5 +1,18 @@
-void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t pTMin, Double_t pTMax, Bool_t UseEtaGap = kTRUE, Double_t EtaGap = 0., Bool_t doQA = kTRUE, Bool_t bUse11h = kFALSE, const char* suffix = "")
-{
+void AddTaskCRC(Double_t centrMin,
+                Double_t centrMax,
+                Double_t ptMin=0.2,
+                Double_t ptMax=5.0,
+                Double_t etaMin=-0.8,
+                Double_t etaMax=0.8,
+                TString analysisTypeUser="AOD",
+                Int_t AODfilterBit=768,
+                TString TPCMultOut="2010",
+                TString EvTrigger="MB",
+                Bool_t bCalculateCRCPt,
+                Bool_t bCalculateCRCBck,
+                Bool_t bEventCutsQA=kTRUE,
+                Bool_t bTrackCutsQA=kTRUE,
+                const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
  gSystem->Load("libVMC");
@@ -33,12 +46,16 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
   return NULL;
  }
  
- // specify charge/CEA in all names
- TString CRCsuffix = ":CRC";
+ // set the analysis type automatically
+ TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+ if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
+ // or manually, if specified
+ if(analysisTypeUser != ""){
+  analysisType = analysisTypeUser;
+ }
  
- TString HarmName = "_n";
- HarmName += (Int_t)iHarmonic;
- CRCsuffix += HarmName;
+ // define CRC suffix
+ TString CRCsuffix = ":CRC";
  
  TString CentrName = "_";
  CentrName += (Int_t)centrMin;
@@ -47,23 +64,14 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  CRCsuffix += CentrName;
  
  TString pTName = "_";
- Int_t rt = (Int_t)(pTMin*10.);
- Int_t r = (Int_t)(pTMin);
- pTName += ( pTMin < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
+ Int_t rt = (Int_t)(ptMin*10.);
+ Int_t r = (Int_t)(ptMin);
+ pTName += ( ptMin < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
  pTName += "-";
- rt = (Int_t)(pTMax*10.);
- r = (Int_t)(pTMax);
- pTName += ( pTMax < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
+ rt = (Int_t)(ptMax*10.);
+ r = (Int_t)(ptMax);
+ pTName += ( ptMax < 1. ? Form("0.%i",rt) : Form("%i.%i",r,rt-r*10));
  CRCsuffix += pTName;
- 
- TString EtaGapName = "_EG";
- if (!UseEtaGap) { EtaGapName += "NULL"; }
- else            { EtaGapName += Form("0.%i",(Int_t)(EtaGap*10.)); }
- CRCsuffix += EtaGapName;
- 
- // specify some variables
- // Float_t centrMin = 20.;
- // Float_t centrMax = 30.;
  
  // create instance of the class: because possible qa plots are added in a second output slot,
  // the flow analysis task must know if you want to save qa plots at the time of class construction
@@ -71,89 +79,79 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  taskFEname += CRCsuffix;
  taskFEname += suffix;
  // create instance of the class
- AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", doQA);
+ Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
+ AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
  // add the task to the manager
  mgr->AddTask(taskFE);
  // set the trigger selection
- if (bUse11h) { taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
- else         { taskFE->SelectCollisionCandidates(AliVEvent::kMB); }
+ if (EvTrigger == "Cen")
+  taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+ else if (EvTrigger == "MB")
+  taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+ else if (EvTrigger == "Any")
+  taskFE->SelectCollisionCandidates(AliVEvent::kAny);
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
  // configure some event cuts, starting with centrality
- cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
- // method used for centrality determination
- cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
- cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
- // vertex-z cut
- cutsEvent->SetPrimaryVertexZrange(-10.,10.);
- // enable the qa plots
- cutsEvent->SetQA(doQA);
- // explicit multiplicity outlier cut
- cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
- if (bUse11h) { cutsEvent->SetLHC11h(kTRUE); }
- else         { cutsEvent->SetLHC10h(kTRUE); }
+ if(analysisType == "MC") {
+  cutsEvent->SetImpactParameterRange(centrMin,centrMax);
+  cutsEvent->SetQA(kFALSE);
+ }
+ else if (analysisType == "AOD") {
+  cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
+  // method used for centrality determination
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
+  // vertex-z cut
+  cutsEvent->SetPrimaryVertexZrange(-10.,10.);
+  // enable the qa plots
+  cutsEvent->SetQA(bEventCutsQA);
+  // explicit multiplicity outlier cut
+  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+  if (TPCMultOut == "2011")
+   cutsEvent->SetLHC11h(kTRUE);
+  else if (TPCMultOut == "2010")
+   cutsEvent->SetLHC10h(kTRUE);
+ }
  
  // pass these cuts to your flow event task
  taskFE->SetCutsEvent(cutsEvent);
- 
- // create the track cuts for RPs
- //AliFlowTrackCuts* cutsRP = AliFlowTrackCuts::GetAODTrackCutsForFilterBit(768, "RP cuts");
  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("RP cuts");
- cutsRP->SetMinimalTPCdedx(-999999999);
- cutsRP->SetAODfilterBit(768);
- cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
- cutsRP->SetPtRange(pTMin,pTMax);
- cutsRP->SetEtaRange(-0.8,0.8);
- //   cutsRP->SetMinNClustersTPC(70);
- //   cutsRP->SetMinChi2PerClusterTPC(0.2);
- //   cutsRP->SetMaxChi2PerClusterTPC(4.0);
- //   cutsRP->SetRequireTPCRefit(kFALSE);
- //   cutsRP->SetMaxDCAToVertexXY(2.4);
- //   cutsRP->SetMaxDCAToVertexZ(3.2);
- //   cutsRP->SetDCAToVertex2D(kTRUE);
- //   cutsRP->SetAcceptKinkDaughters(kFALSE);
- //   cutsRP->SetMinimalTPCdedx(10.);
- cutsRP->SetQA(doQA);
+ AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI cuts");
+ 
+ if (analysisType == "MC") {
+  // Track cuts for RPs
+  cutsRP->SetParamType(AliFlowTrackCuts::kMC);
+  cutsRP->SetCutMC(kTRUE);
+  cutsRP->SetPtRange(ptMin,ptMax);
+  cutsRP->SetEtaRange(etaMin,etaMax);
+  cutsRP->SetQA(bTrackCutsQA);
+  // Track cuts for POIs
+  cutsPOI->SetParamType(AliFlowTrackCuts::kMC);
+  cutsPOI->SetCutMC(kTRUE);
+  cutsPOI->SetPtRange(ptMin,ptMax);
+  cutsPOI->SetEtaRange(etaMin,etaMax);
+  cutsPOI->SetQA(bTrackCutsQA);
+ }
+ else if (analysisType == "AOD") {
+  // Track cuts for RPs
+  cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+  cutsRP->SetAODfilterBit(768);
+  cutsRP->SetMinimalTPCdedx(-999999999);
+  cutsRP->SetPtRange(ptMin,ptMax);
+  cutsRP->SetEtaRange(etaMin,etaMax);
+  cutsRP->SetQA(bTrackCutsQA);
+  // Track cuts for POIs
+  cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+  cutsPOI->SetAODfilterBit(768);
+  cutsPOI->SetMinimalTPCdedx(-999999999);
+  cutsPOI->SetPtRange(ptMin,ptMax);
+  cutsPOI->SetEtaRange(etaMin,etaMax);
+  cutsPOI->SetQA(bTrackCutsQA);
+ }
  
  taskFE->SetCutsRP(cutsRP);
- 
- // create the track cuts for POIs
- AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI cuts");
- cutsPOI->SetMinimalTPCdedx(-999999999);
- cutsPOI->SetAODfilterBit(768);
- cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
- cutsPOI->SetPtRange(pTMin,pTMax);
- cutsPOI->SetEtaRange(-0.8,0.8);
- //   cutsPOI->SetMinNClustersTPC(70);
- //   cutsPOI->SetMinChi2PerClusterTPC(0.2);
- //   cutsPOI->SetMaxChi2PerClusterTPC(4.0);
- //   cutsPOI->SetRequireTPCRefit(kTRUE);
- //   cutsPOI->SetMaxDCAToVertexXY(2.4);
- //   cutsPOI->SetMaxDCAToVertexZ(3.2);
- //   cutsPOI->SetDCAToVertex2D(kTRUE);
- //   cutsPOI->SetAcceptKinkDaughters(kFALSE);
- //   cutsPOI->SetMinimalTPCdedx(10.);
- cutsPOI->SetQA(doQA);
- 
- //cutsPOI->SetRequireCharge(kTRUE);
- //cutsPOI->SetMinNsigmaToVertex(4);
- //cutsPOI->SetRequireSigmaToVertex(kTRUE);
- //cutsPOI->SetMinNClustersITS(2);
- //cutsPOI->SetRequireITSRefit(kTRUE);
- //cutsPOI->SetMaxChi2PerClusterITS(36.);
- 
- /*   cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCTOFNsigma, 0.9);
-  cutsPOI->SetPriors((centrMin+centrMax)*0.5); // set priors and PID as a function of the centrality
-  //cutsPOI->SetAllowTOFmismatchFlag(kTRUE);
-  cutsPOI->SetRequireStrictTOFTPCagreement(kTRUE);
-  cutsPOI->GetBayesianResponse()->ForceOldDedx();*/ // for 2010 data to use old TPC PID Response instead of the official one
- //example: francesco's tunig TPC Bethe Bloch for data:
- //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
- //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
- 
- //  cutsPOI->SetCharge(charge);
- 
  taskFE->SetCutsPOI(cutsPOI);
  
  // get the default name of the output file ("AnalysisResults.root")
@@ -176,7 +174,7 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  
  // create an additional container for the QA output of the flow event task
  // the QA histograms will be stored in a sub-folder of the output file called 'QA'
- if(doQA) {
+ if(bCutsQA) {
   TString taskFEQAname = file;
   taskFEQAname += ":CutsQA";
   taskFEQAname += CRCsuffix;
@@ -199,9 +197,14 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  taskCRCname += suffix;
  AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, UseParticleWeights);
  // set thei triggers
- taskQC->SelectCollisionCandidates(AliVEvent::kMB);
+ if (EvTrigger == "Cen")
+  taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+ else if (EvTrigger == "MB")
+  taskQC->SelectCollisionCandidates(AliVEvent::kMB);
+ else if (EvTrigger == "Any")
+  taskQC->SelectCollisionCandidates(AliVEvent::kAny);
  // and set the correct harmonic n
- taskQC->SetHarmonic(iHarmonic);
+ taskQC->SetHarmonic(1);
  // set standard flow settings
  taskQC->SetCalculateDiffFlow(kTRUE);
  taskQC->SetCalculateDiffFlowVsEta(kTRUE);
@@ -210,9 +213,8 @@ void AddTaskCRC(Int_t iHarmonic, Double_t centrMin, Double_t centrMax, Double_t 
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
- taskQC->SetCalculateCRCPt(kTRUE);
- taskQC->SetUseEtaGap(UseEtaGap);
- taskQC->SetEtaGap(EtaGap);
+ taskQC->SetCalculateCRCPt(bCalculateCRCPt);
+ taskQC->SetCalculateCRCBck(bCalculateCRCBck);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  
