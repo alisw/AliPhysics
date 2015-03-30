@@ -80,8 +80,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *ntriggerContainer = "",
     double jetradius = 0.5,
     const char *ntrackcuts = "standard",
-    const char *components = "particles:clusters:tracks:mcjets:recjets:triggers",
-    EMCalTriggerPtAnalysis::ETriggerMethod_t triggermethod =  EMCalTriggerPtAnalysis::kTriggerString,
+    const char *components = "particles:clusters:tracks:mcjets:recjets:triggers:patchevent",
+    const char * triggermethod = "string",
     bool useOfflinePatches = kFALSE
 )
 {
@@ -100,7 +100,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   bool isAOD = (mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class());
 
   // Decode components
-  bool doClusters(false), doMCParticles(false), doTracks(false), doMCJets(false), doRecJets(false), doTriggers(false);
+  bool doClusters(false), doMCParticles(false), doTracks(false), doMCJets(false), doRecJets(false), doTriggers(false), doTriggersEvents(false);
   TObjArray *compsplit = TString(components).Tokenize(":");
   TIter tokenIter(compsplit);
   TObjString *compstring(NULL);
@@ -111,6 +111,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 	  if(!compstring->String().CompareTo("mcjets")) doMCJets = true;
 	  if(!compstring->String().CompareTo("recjets")) doRecJets = true;
 	  if(!compstring->String().CompareTo("triggers")) doTriggers = true;
+	  if(!compstring->String().CompareTo("patchevent")) doTriggersEvents = true;
   }
 
   std::cout << "Track task configuration:" << std::endl;
@@ -130,7 +131,10 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
   /*
    * Set event selection
    */
-  gEventSelection = triggermethod;
+  gEventSelection = EMCalTriggerPtAnalysis::kTriggerString;
+  if(triggermethod == "patches") gEventSelection = EMCalTriggerPtAnalysis::kTriggerPatches;
+  else if(triggermethod == "combined") gEventSelection = EMCalTriggerPtAnalysis::kTriggerMixed;
+  else if(triggermethod == "string") gEventSelection = EMCalTriggerPtAnalysis::kTriggerString;
 
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
   if(isMC && !useOfflinePatches) trgconf->SetSwapThresholds();
@@ -189,6 +193,12 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
    * for(int ijpt = 0; ijpt < 4; ijpt++)
        AddRecJetComponent(defaultselect, TrackCutsFactory(ntrackcuts), jetpt[ijpt], isMC, isSwapEta);
    */
+  if(doTriggersEvents){
+    EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent * triggereventcomp = new EMCalTriggerPtAnalysis::AliEMCalTriggerPatchAnalysisComponent("patchineventanalysis", kTRUE);
+    if(isMC) triggereventcomp->SetSwapOnlineThresholds(true);
+    triggereventcomp->SetTriggerMethod(gEventSelection);
+    defaultselect->AddAnalysisComponent(triggereventcomp);
+  }
 
   pttriggertask->AddAnalysisGroup(defaultselect);
 
