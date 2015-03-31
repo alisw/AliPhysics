@@ -627,13 +627,13 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 
   Double_t pinTPC=0.,poutTPC=0.,TPCSignal=0.;
   Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
-  Double_t massTOF=0.,timeTOF=0.,trackLenghtTOF=0.,betaTOF=0.;
+  Double_t massTOF=0.,timeTOF=0.,trackLenghtTOF=0.,betaTOF=0.,gamma=0.;
 
   ULong_t  status=0;
   //  ULong_t  statusT=0;
   ULong_t  statusPi=0;
 
-  Bool_t   isTPC=kFALSE,isTOF=kFALSE,IsHeITSRefit=kFALSE,IsPiITSRefit=kFALSE ;
+  Bool_t   isTPC=kFALSE,hasTOF=kFALSE,IsHeITSRefit=kFALSE,IsPiITSRefit=kFALSE ;
 
   Float_t nSigmaNegPion=0.;
 
@@ -648,8 +648,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   Double_t BCNumber=0.;
   Double_t OrbitNumber=0.;
   Double_t PeriodNumber=0.;
-
-  Double_t        Helium3Mass = 2.80839; 
+  //RAMONA
+  //  Double_t        Helium3Mass = 2.80839; 
+  Double_t        Helium3Mass = 2.80894; //tri-mass
   Double_t        PionMass    = 0.13957; 
   // TLORENTZ vectors
   
@@ -806,7 +807,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     Float_t impactXY=-999, impactZ=-999;
     Float_t impactXYpi=-999, impactZpi=-999;
 
-    
+    Double_t ptcExp  = -999;
+    Double_t expbeta = -999;
+    Double_t pullTOF = -999; 
     //*************************************************************
     
     runNumber = lESDevent->GetRunNumber();
@@ -834,7 +837,13 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       
       status  = (ULong_t)esdtrack->GetStatus();
       isTPC   = (((status) & AliESDtrack::kTPCin)  != 0);
-      isTOF   = ((((status) & AliESDtrack::kTOFout) != 0) && (((status) & AliESDtrack::kTIME) != 0));
+      //  hasTOF   = ((((status) & AliESDtrack::kTOFout) != 0) && (((status) & AliESDtrack::kTIME) != 0));
+      
+      Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
+      hasTOF     = kFALSE;
+      if (hasTOFout) hasTOF = kTRUE;
+      Float_t trackLenghtTOF = esdtrack->GetIntegratedLength(); 
+      if (trackLenghtTOF < 350.) hasTOF = kFALSE;
       
       UInt_t mapITS=esdtrack->GetITSClusterMap();
             
@@ -858,7 +867,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       
       AliExternalTrackParam trackIn(*esdtrack->GetInnerParam()); 
       pinTPC= trackIn.GetP(); 
-      
+   
       //pinTPC= esdtrack->GetTPCMomentum();
 
       poutTPC=pinTPC;
@@ -868,23 +877,25 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	fhBB->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
       }
       
-      timeTOF=esdtrack->GetTOFsignal();                 // ps
-      trackLenghtTOF= esdtrack->GetIntegratedLength();  // cm
+      Double_t p    = esdtrack->P();
+      //timeTOF=esdtrack->GetTOFsignal();                 // ps
+      timeTOF=esdtrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);      // ps
+      // trackLenghtTOF= esdtrack->GetIntegratedLength();  // cm
       
-      if(isTOF){
+      if(hasTOF){
 	
-	if(!esdtrack->GetOuterParam())continue;    
+	// if(!esdtrack->GetOuterParam())continue;    
+	// AliExternalTrackParam trackOut(*esdtrack->GetOuterParam()); 
+	// poutTPC = trackOut.GetP(); 
 	
-	AliExternalTrackParam trackOut(*esdtrack->GetOuterParam()); 
+	betaTOF= trackLenghtTOF/(timeTOF * 2.99792457999999984e-02);
 	
-	poutTPC = trackOut.GetP(); 
+	fhTOF->Fill(pinTPC*esdtrack->GetSign(),betaTOF);
+	gamma =  1/TMath::Sqrt(1 - betaTOF*betaTOF);
+	massTOF = pinTPC/TMath::Sqrt(gamma*gamma - 1);
 	
-	betaTOF= (trackLenghtTOF/timeTOF)/2.99792458e-2;
-	
-	fhTOF->Fill(poutTPC*esdtrack->GetSign(),betaTOF);
-	
-	Double_t mass2=(poutTPC*poutTPC)*((((speedOfLight*speedOfLight)*(timeTOF*timeTOF))-(trackLenghtTOF*trackLenghtTOF))/(trackLenghtTOF*trackLenghtTOF));
-	if(mass2>0) massTOF=TMath::Sqrt(mass2);
+	// Double_t mass2=(poutTPC*poutTPC)*((((speedOfLight*speedOfLight)*(timeTOF*timeTOF))-(trackLenghtTOF*trackLenghtTOF))/(trackLenghtTOF*trackLenghtTOF));
+	// if(mass2>0) massTOF=TMath::Sqrt(mass2);
 	fhMassTOF->Fill(massTOF);
 	
 	if(esdtrack->GetSign() < 0.)fBetavsTPCsignalNeg->Fill(betaTOF,TPCSignal);
@@ -898,8 +909,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       // bbtheoM=(1 - 0.08*5)*bbtheo;                  //! OK 
       // bbtheoP=(1 + 0.08*5)*bbtheo;                  //! OK
       
-
-      bbtheo = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)0,esdtrack,(AliPID::EParticleType) 7);
+      bbtheo = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)0,esdtrack,(AliPID::EParticleType) 7); 
       
       if(esdtrack->GetSign()<0){
 	zNathashaNeg=bbtheo;//(TPCSignal-bbtheo)/bbtheo;
@@ -928,18 +938,35 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     
       //      nSigmaNegPion=(fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 2));
       
-      bbtheoM = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 7)));
+      Bool_t isHeITSrefit=((status) & (AliESDtrack::kITSrefit));
+   
+      //RAMONA : This is the original line
+      //      bbtheoM = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 7)));
+      // if( bbtheoM < 3.) {
+
+      //------ new
+      ptcExp = AliExternalTrackParam::BetheBlochAleph(pinTPC/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
+      bbtheoM  = (TPCSignal - ptcExp)/(0.07*ptcExp);
+      expbeta = TMath::Sqrt(1-((Helium3Mass*Helium3Mass)/(pinTPC*pinTPC+Helium3Mass*Helium3Mass))); 
+      pullTOF  = (betaTOF - expbeta)/(0.007*expbeta);
+      //-------
       
       //      if( TPCSignal > bbtheoM ) {
       //      if( bbtheoM > -3.) {
-      if( bbtheoM < 3.) {
+   
+      if( TMath::Abs(bbtheoM) <= 3.) {
 	
-	if(pinTPC>0.6){
+	// if(pinTPC>0.6){ //RAMONA
+	//new
+	if(pinTPC>0.6 && hasTOF && TMath::Abs(pullTOF)<=3){
 	  
+	  if(isHeITSrefit==kFALSE)continue;
+	  if(TMath::Abs(massTOF) > 5.0)continue;
+	  if(TMath::Abs(massTOF) < 1.8 )continue;
+	 
+	  //------------------------------
 	  fhBBHe->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
 	  HeTPC[nHeTPC++]=j;
-	  
-	  Bool_t isHeITSrefit=((status) & (AliESDtrack::kITSrefit));
 	  
 	  esdtrack->GetImpactParameters(impactXY, impactZ);
 	  
@@ -962,7 +989,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  tHelPy	        =(Float_t)esdtrack->Py();
 	  tHelPz	        =(Float_t)esdtrack->Pz();
 	  tHelEta	        =(Float_t)esdtrack->Eta();
-	  tHelisTOF	        =(Float_t)isTOF;
+	  tHelisTOF	        =(Float_t)hasTOF;
 	  tHelpoutTPC	        =(Float_t)poutTPC;
 	  tHeltimeTOF	        =(Float_t)timeTOF;
 	  tHeltrackLenghtTOF    =(Float_t)trackLenghtTOF;
@@ -1111,8 +1138,10 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	if(vertex.GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)>3) continue;
 	
 	//salvo solo fino a 3.1 GeV/c2
-	
-	vHelium.SetXYZM(2*momHeVettAt[0],2*momHeVettAt[1],2*momHeVettAt[2],Helium3Mass); 
+	//RAMONA
+	//	vHelium.SetXYZM(2*momHeVettAt[0],2*momHeVettAt[1],2*momHeVettAt[2],Helium3Mass); 
+	//new
+	vHelium.SetXYZM(momHeVettAt[0],momHeVettAt[1],momHeVettAt[2],Helium3Mass); 
 	vPion.SetXYZM(momPionVettAt[0],momPionVettAt[1],momPionVettAt[2],PionMass);       
 	vSum=vHelium+vPion;
 	
