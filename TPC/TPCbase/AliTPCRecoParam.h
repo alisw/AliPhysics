@@ -144,7 +144,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
   const Double_t * GetSystematicErrorCluster() const { return fSystematicErrorCluster;}
-
+  
+  const Double_t * GetSystematicErrorClusterInnerDeepY() const { return fSystematicErrorClusterInnerDeepY;}
+  const Double_t * GetSystematicErrorClusterInnerDeepZ() const { return fSystematicErrorClusterInnerDeepZ;}
+  
   void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
   Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
 
@@ -234,6 +237,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   Double_t fSystematicErrors[5];  ///< systematic errors in the track parameters - to be added to TPC covariance matrix
   Double_t fSystematicErrorClusterInner[2];  ///< systematic error of the cluster - used to downscale the information
+  Double_t fSystematicErrorClusterInnerDeepY[2];  ///< systematic error of the Y cluster err for additional, slow decaying distortions
+  Double_t fSystematicErrorClusterInnerDeepZ[2];  ///< systematic error of the Z cluster err for additional, slow decaying distortions
+
   Double_t fSystematicErrorCluster[2];        ///< systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
 public:
@@ -242,7 +248,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 21)
+  ClassDef(AliTPCRecoParam, 22)
   /// \endcond
 };
 

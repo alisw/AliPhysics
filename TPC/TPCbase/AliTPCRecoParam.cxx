@@ -120,6 +120,11 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSystematicErrorClusterInner[0]=0.5;   // 0.5 cm
   fSystematicErrorClusterInner[1]=5;     // 5 cm slope
   //
+  fSystematicErrorClusterInnerDeepY[0]=0;
+  fSystematicErrorClusterInnerDeepY[1]=20;
+  fSystematicErrorClusterInnerDeepZ[0]=0;
+  fSystematicErrorClusterInnerDeepZ[1]=20;
+  //
   fSystematicErrorCluster[0]=0;   // sy cluster error
   fSystematicErrorCluster[1]=0;   // sz cluster error
 
