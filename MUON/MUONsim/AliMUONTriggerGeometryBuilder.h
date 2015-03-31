@@ -124,7 +124,7 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
     Float_t   fDXsave;    //!<! add
     TGeoRotation fRsupportpipe; ///< pipe support rotation 
         
-  ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON Trigger stations geometry construction class
+  ClassDef(AliMUONTriggerGeometryBuilder,2) // MUON Trigger stations geometry construction class
 };
 
 #endif //ALI_MUON_TRIGGER_GEOMETRY_BUILDER_H

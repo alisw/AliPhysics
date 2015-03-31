@@ -140,7 +140,7 @@ protected:
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
   Int_t fLHCclockPhaseSw; //! lhc clock phase switch
   Int_t fIsGEM;        // flag isGEM readout
-  ClassDef(AliTPC,14)  // Time Projection Chamber class
+  ClassDef(AliTPC,15)  // Time Projection Chamber class
 };
 
 
