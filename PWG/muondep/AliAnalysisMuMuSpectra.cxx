@@ -459,6 +459,7 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
       
       h->SetBinContent(j+1,y);
       h->SetBinError(j+1,yerr);
+      h->GetXaxis()->SetBinLabel(j+1,b.AsString().Data());
     }
   }
   
