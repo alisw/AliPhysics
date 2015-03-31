@@ -242,12 +242,28 @@ fRequestTOFPID=RequestTOFPID;
 fPtTOFPIDmin=PtTOFPIDmin;
 fPtTOFPIDmax=PtTOFPIDmax;
 }
+ void SetRunShufflingbalance(Bool_t RunShufflingbalance){
+   fRunShufflingbalance=RunShufflingbalance;
+ }
 
- void detdeltacutPion(Double_t Piondeltacutmin,Double_t Piondeltacutmax){
+ void setElectronRejectionTRUTH(Bool_t ElectronRejectionTRUTH)
+ {
+   fElectronRejectionTRUTH=ElectronRejectionTRUTH;
+ }
+
+ void setElectronRejection(Bool_t ElectronRejection, Bool_t ElectronOnlyRejection, Double_t ElectronRejectionMinPt, Double_t ElectronRejectionMaxPt,Double_t ElectronRejectionNSigma){
+   fElectronRejection=ElectronRejection;
+   fElectronOnlyRejection=ElectronOnlyRejection;
+   fElectronRejectionMinPt=ElectronRejectionMinPt;
+   fElectronRejectionMaxPt=ElectronRejectionMaxPt;
+   fElectronRejectionNSigma=ElectronRejectionNSigma;   
+ }
+
+ void setdeltacutPion(Double_t Piondeltacutmin,Double_t Piondeltacutmax){
    fPiondeltacutmin=Piondeltacutmin;
    fPiondeltacutmax=Piondeltacutmax;
  }
- void detdeltacutProton(Double_t Protondeltacutmin, Double_t Protondeltacutmax){
+ void setdeltacutProton(Double_t Protondeltacutmin, Double_t Protondeltacutmax){
    fProtondeltacutmin=Protondeltacutmin;
    fProtondeltacutmax=Protondeltacutmax;
  }
@@ -492,6 +508,10 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
     TH1F *fProtonPt;//!
     TH1F *fProtonEta;//!
     TH1F *fProtonPhi;//!
+  TH2D *fHistdEdxVsPTPCbeforePIDelectron; //!
+  TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //!
+  TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
+  TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //!
     // TH3F *fHistocentNSigmaTPC;//! nsigma TPC
     // TH3F *fHistocentNSigmaTOF;//! nsigma TOF 
  
@@ -612,6 +632,16 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
     Bool_t ffillefficiency;  //if kTRUE then THNsparses used for eff. calculation are filled up
     Bool_t fmesoneffrequired;
     Bool_t fkaonprotoneffrequired;
+    Bool_t fRunShufflingbalance;
+
+  Bool_t fElectronRejectionTRUTH;//flag to use electron rejection by PDG code in TRUTH
+  Bool_t   fElectronRejection;//flag to use electron rejection by Nsigma method in data and MC
+  Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
+  Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
+  Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
+  Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
+
+    
    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
   //*****************************************************************************V0 related objects are here
@@ -659,6 +689,7 @@ Float_t fFracTPCcls;
   Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
 Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
   Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+  TObjArray* GetShuffledTracks(TObjArray *tracks);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
 
 
