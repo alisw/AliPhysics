@@ -641,6 +641,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hEtaShift[iCut] = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
 		fESDList[iCut]->Add(hEtaShift[iCut]);
 		hESDConvGammaPt[iCut] = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt",250,0,25);
+		if(fDoCentralityFlat > 0) hESDConvGammaPt[iCut]->Sumw2();
 		fESDList[iCut]->Add(hESDConvGammaPt[iCut]);
 
 		if (fDoPhotonQA == 2){
@@ -664,10 +665,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 		if (fDoPhotonQA > 0){
 			hESDConvGammaR[iCut] = new TH1F("ESD_ConvGamma_R","ESD_ConvGamma_R",800,0,200);
+			if(fDoCentralityFlat > 0) hESDConvGammaR[iCut]->Sumw2();
 			fESDList[iCut]->Add(hESDConvGammaR[iCut]);
 			hESDConvGammaEta[iCut] = new TH1F("ESD_ConvGamma_Eta","ESD_ConvGamma_Eta",2000,-2,2);
+			if(fDoCentralityFlat > 0) hESDConvGammaEta[iCut]->Sumw2();
 			fESDList[iCut]->Add(hESDConvGammaEta[iCut]);
 			hESDConvGammaPhi[iCut] = new TH1F("ESD_ConvGamma_Phi","ESD_ConvGamma_Phi",360,0,2*TMath::Pi());
+			if(fDoCentralityFlat > 0) hESDConvGammaPhi[iCut]->Sumw2();
 			fESDList[iCut]->Add(hESDConvGammaPhi[iCut]);
 		}
 		
@@ -1207,11 +1211,16 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		hCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent));
 		if((fDoCentralityFlat > 0)) hCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), weightCentrality);
 		
-		hCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), weightCentrality);
-		
-		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
-		else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), weightCentrality);
+		if((fDoCentralityFlat > 0)) hCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), weightCentrality);
+		else hCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks());
 
+		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
+		else if((fDoCentralityFlat > 0)){
+			hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), weightCentrality);
+		} else {
+			hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+		}
+			
 		if(fIsMC){
 			// Process MC Particle
 			if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection() != 0){
@@ -1248,8 +1257,14 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
 		ProcessPhotonCandidates(); // Process this cuts gammas
 
-		hNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries(), weightCentrality);
-		hNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries(), weightCentrality);
+		if(fDoCentralityFlat > 0){
+			hNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries(), weightCentrality);
+			hNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries(), weightCentrality);
+		} else {
+			hNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries());
+			hNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
+		}
+		
 		if(fDoMesonAnalysis){ // Meson Analysis
 			if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseMCPSmearing() && fIsMC){
 				fUnsmearedPx = new Double_t[fGammaCandidates->GetEntries()]; // Store unsmeared Momenta
@@ -1328,12 +1343,24 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 			!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
 			fGammaCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 		
+			Double_t weightCentrality = 1.;
+			if((fDoCentralityFlat > 0)){
+				weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForCentralityFlattening(fInputEvent);
+			} else weightCentrality = 1.;
+			
 			if(fIsFromMBHeader){
-				hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt()); 
+				if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), weightCentrality); 
+				else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt()); 
 				if (fDoPhotonQA > 0){
-					hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
-					hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-					hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+					if(fDoCentralityFlat > 0){
+						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightCentrality);
+						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), weightCentrality);
+						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), weightCentrality);
+					} else { 
+						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
+						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
+						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+					}
 				}   
 			}
 			if(fIsMC){
@@ -1383,12 +1410,25 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 			if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectSharedElectronV0s(PhotonCandidate,i,GammaCandidatesStepOne->GetEntries())) continue;
 			if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
 				fGammaCandidates->Add(PhotonCandidate);
+				
+				Double_t weightCentrality = 1.;
+				if((fDoCentralityFlat > 0)){
+					weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForCentralityFlattening(fInputEvent);
+				} else weightCentrality = 1.;
+				
 				if(fIsFromMBHeader){
-					hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+					if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), weightCentrality); 
+					else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt()); 
 					if (fDoPhotonQA > 0){
-						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
-						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+						if(fDoCentralityFlat > 0){
+							hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightCentrality);
+							hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), weightCentrality);
+							hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), weightCentrality);
+						} else { 
+							hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
+							hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
+							hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+						}
 					}
 				}
 			}
@@ -1432,12 +1472,25 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 			}
 			if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
 			fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
+			
+			Double_t weightCentrality = 1.;
+			if((fDoCentralityFlat > 0)){
+				weightCentrality = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForCentralityFlattening(fInputEvent);
+			} else weightCentrality = 1.;
+
 			if(fIsFromMBHeader){
-				hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
+				if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), weightCentrality);
+				else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 				if (fDoPhotonQA > 0){
-					hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
-					hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-					hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+					if(fDoCentralityFlat > 0){
+						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightCentrality);
+						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), weightCentrality);
+						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi(), weightCentrality);
+					} else { 
+						hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
+						hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
+						hESDConvGammaPhi[fiCut]->Fill(PhotonCandidate->Phi());
+					}
 				}
 			}
 			if(fIsMC){
@@ -2037,9 +2090,14 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 				} else weightCentrality = 1.;
 				
 				if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-					hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), weightCentrality);
-					if(pi0cand->GetAlpha()<0.1) hESDMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(), weightCentrality);
-				
+					if(fDoCentralityFlat > 0){
+						hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), weightCentrality);
+						if(pi0cand->GetAlpha()<0.1) hESDMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(), weightCentrality);
+					} else {
+						hESDMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+						if(pi0cand->GetAlpha()<0.1) hESDMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
+					}
+					
 					if (fDoMesonQA > 0){
 						if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
 							hESDMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());  
@@ -2074,7 +2132,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 							}
 						}
 						Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
-						sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+						if(fDoCentralityFlat > 0) sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+						else  sESDMotherInvMassPtZM[fiCut]->Fill(sparesFill, 1);
 					}
 					
 
@@ -2522,10 +2581,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 				backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 				if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 					->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-					hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), weightCentrality);
+					if(fDoCentralityFlat > 0) hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), weightCentrality);
+					else hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
 					if(fDoTHnSparse){
 						Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-						sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+						if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+						else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, 1);
 					}
 				}
 				delete backgroundCandidate;
@@ -2558,10 +2619,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 					backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 					if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 						->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-						hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), weightCentrality);
+						if(fDoCentralityFlat > 0) hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), weightCentrality);
+						else hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
 						if(fDoTHnSparse){
 							Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-							sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+							if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+							else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, 1);
 						}
 					}
 					delete backgroundCandidate;
@@ -2595,10 +2658,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 						backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 						if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
 							->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-							hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), weightCentrality);
+							if(fDoCentralityFlat > 0) hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), weightCentrality);
+							else hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt());
 							if(fDoTHnSparse){
 								Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
-								sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+								if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, weightCentrality); //instead of weight 1
+								else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, 1);
 							}
 						}
 						delete backgroundCandidate;
@@ -2650,10 +2715,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 					AliAODConversionMother backgroundCandidate(gamma0,gamma1);
 					backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 					if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-						hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), weightCentrality);
+						if(fDoCentralityFlat > 0) hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), weightCentrality);
+						else hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
 						if(fDoTHnSparse){
 							Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-							sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight); //missing the centrality weight
+							if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight*weightCentrality); 
+							else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight); 
 						}
 					}
 				}
@@ -2687,10 +2754,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
                         backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
                         if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
                             ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-                            hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), weightCentrality);
+                            if(fDoCentralityFlat > 0) hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), weightCentrality);
+							else hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt());
                             if(fDoTHnSparse){
                                 Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-                                sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);   //missing the centrality weight
+								if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight*weightCentrality);
+                                else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight);   
                             }
                         }
                     }

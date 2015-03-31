@@ -132,7 +132,22 @@ void AddTask_GammaConvV1(TString mode){
                                                      kFALSE,  //enable Weighting
                                                      kFALSE,  //use THnSparse
 													 kFALSE,
-													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root"); 
+													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
+													 0); 
+   AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(138,  //change different set of cuts
+                                                     isMC,
+                                                     kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
+                                                     kTRUE, // enable additional QA task
+                                                     "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
+                                                     0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+                                                     "1000000060084000001500000",
+                                                     "LHC11h_2",  //name of the period for added signals and weighting
+                                                     kFALSE,  //enable Weighting
+                                                     kFALSE,  //use THnSparse
+													 kFALSE,
+													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
+													 1); 
+
 //    AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(124,  //change different set of cuts
 //                                                      isMC,
 //                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
