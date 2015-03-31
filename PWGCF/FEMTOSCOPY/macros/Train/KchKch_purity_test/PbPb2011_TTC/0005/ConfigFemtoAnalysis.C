@@ -164,8 +164,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[20];
 //AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
 //    AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
-  AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
-  //AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];//Dhevan's dphi* cut
+ // AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
+  AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];//Dhevan's dphi* cut
   AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
   AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[20*10];//20->20*10 due to kT
   AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
@@ -309,8 +309,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	//  sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
 	  
           if (ichg < 2) {
-	    sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();//AliFemto dphi* cut
-    //	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();  //Dhevan's dphi* cut
+	//    sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();//AliFemto dphi* cut
+    	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();  //Dhevan's dphi* cut
 	  if (runtype == 0) {
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
