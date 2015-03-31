@@ -61,7 +61,7 @@ public:
   
   Bool_t AddFit(const char* fitType);
 
-  //  AliAnalysisMuMuJpsiResult* CountJpsi(TH1& h); // Not implemented
+  AliAnalysisMuMuJpsiResult* CountJpsi(TH1& h);
 
   /** All the fit functions should have a prototype starting like :
 
@@ -105,13 +105,14 @@ public:
   void FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP();
   void FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2();
   void FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP();
-  //  void FitMPTPSIPSIPRIMENA60NEWPOL4EXP_BKGMPTPOL2(); // Not implemented
+  void FitMPTPSIPSIPRIMENA60NEWPOL4EXP_BKGMPTPOL2();
   
-  //  void FitPSIPSIPRIMECOMB_CB2VWG_MPTCB2VWG_BKGMPTPOL2(); //Not implemented
+  void FitPSIPSIPRIMECOMB_CB2VWG_MPTCB2VWG_BKGMPTPOL2();
   
 //  void FitMPT2NA60NEWVWG_BKGMPTPOL4();
 //  void FitMPT2NA60NEWPOL2EXP_BKGMPTPOL4();
 //  void FitMPT2NA60NEWPOL4EXP_BKGMPTPOL4();
+
 
   Int_t NofRuns() const;
   
@@ -133,7 +134,11 @@ public:
   
   virtual AliAnalysisMuMuJpsiResult* Mother() const { return static_cast<AliAnalysisMuMuJpsiResult*>(AliAnalysisMuMuResult::Mother()); }
 
-  void PrintValue(const char* key, const char* opt, Double_t value, Double_t errorStat, Double_t rms=0.0) const; 
+  void PrintValue(const char* key, const char* opt, Double_t value, Double_t errorStat, Double_t rms=0.0) const;
+
+  void ProcessMinvFit(TFitResultPtr fitResult, TF1* fitTotal, TF1* bckInit, const char* fitOption, Int_t iParKPsip, Int_t iLastParBkg);
+
+  void ProcessBkgFit(TFitResultPtr fitResultInit, TF1* bckInit, const char* bkgFuncName, const char* fitOption);
 
   TString FitFunctionName() const { return fFitFunction; }
   
