@@ -259,6 +259,10 @@ fPhiRPv0Cv3(NULL),
   fProtonPt(0),
   fProtonEta(0),
   fProtonPhi(0),
+fHistdEdxVsPTPCbeforePIDelectron(NULL),
+  fHistNSigmaTPCvsPtbeforePIDelectron(NULL),
+  fHistdEdxVsPTPCafterPIDelectron(NULL),
+  fHistNSigmaTPCvsPtafterPIDelectron(NULL),
   fCorrelatonTruthPrimary(0),
   fCorrelatonTruthPrimarymix(0),
   fTHnCorrUNID(0),
@@ -297,7 +301,7 @@ fTwoTrackCutMaxRadius(2.5),
  fPIDCutval4(0.0),
  fHighPtKaonNSigmaPID(-1),
  fHighPtKaonSigma(3.5),
-  fUseExclusiveNSigma(kFALSE),
+  fUseExclusiveNSigma(kFALSE), 
   fRemoveTracksT0Fill(kFALSE),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
@@ -316,6 +320,14 @@ fRemoveDuplicates(kFALSE),
   ffillefficiency(kFALSE),
   fmesoneffrequired(kFALSE),
   fkaonprotoneffrequired(kFALSE),
+ fRunShufflingbalance(kFALSE),
+ //for electron rejection at single rack level
+   fElectronRejectionTRUTH(kFALSE),
+  fElectronRejection(kFALSE),
+  fElectronOnlyRejection(kFALSE),
+  fElectronRejectionNSigma(-1.),
+  fElectronRejectionMinPt(0.),
+  fElectronRejectionMaxPt(1000.), 
 fAnalysisUtils(0x0),
  fDCAXYCut(0),
  fV0TrigCorr(kFALSE),
@@ -550,6 +562,10 @@ fPhiRPv0Cv3(NULL),
   fProtonPt(0),
   fProtonEta(0),
   fProtonPhi(0),
+     fHistdEdxVsPTPCbeforePIDelectron(NULL),
+  fHistNSigmaTPCvsPtbeforePIDelectron(NULL),
+  fHistdEdxVsPTPCafterPIDelectron(NULL),
+  fHistNSigmaTPCvsPtafterPIDelectron(NULL),
   fCorrelatonTruthPrimary(0),
  fCorrelatonTruthPrimarymix(0),
   fTHnCorrUNID(0),
@@ -588,7 +604,7 @@ fTwoTrackCutMaxRadius(2.5),
  fPIDCutval4(0.0),
 fHighPtKaonNSigmaPID(-1),
  fHighPtKaonSigma(3.5),
-  fUseExclusiveNSigma(kFALSE),
+  fUseExclusiveNSigma(kFALSE),   
   fRemoveTracksT0Fill(kFALSE),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
@@ -607,6 +623,14 @@ fRemoveDuplicates(kFALSE),
   ffillefficiency(kFALSE),
  fmesoneffrequired(kFALSE),
  fkaonprotoneffrequired(kFALSE),
+    fRunShufflingbalance(kFALSE),
+//for electron rejection at single rack level
+      fElectronRejectionTRUTH(kFALSE),
+  fElectronRejection(kFALSE),
+  fElectronOnlyRejection(kFALSE),
+  fElectronRejectionNSigma(-1.),
+  fElectronRejectionMinPt(0.),
+  fElectronRejectionMaxPt(1000.),
    fAnalysisUtils(0x0),
    fDCAXYCut(0),
  fV0TrigCorr(kFALSE),
@@ -824,10 +848,12 @@ fOutput->Add(fhistImpactParmvsMult);
  }
 
  if(fAnalysisType =="MCAOD"){//for "MC" this creates a lot of problems which were not solved so removed from "MC" case
+ if(fSampleType=="pPb" || fSampleType=="PbPb"){
 fNchNpartCorr=new TH2F("fNchNpartCorr","fNchNpartCorr",500,0.0,500.0,4001,-0.5,40000.5);
 fNchNpartCorr->GetXaxis()->SetTitle("Npart (a.u.)");
 fNchNpartCorr->GetYaxis()->SetTitle("Nch(a.u.)");
 fOutput->Add(fNchNpartCorr);
+   }
  }
 
  TString gmultName[4] = {"V0A_MANUAL","V0C_MANUAL","V0M_MANUAL","TRACKS_MANUAL"};
@@ -1603,6 +1629,23 @@ fOutput->Add(fHistFinalPtCentInvAntiLambda);
     
   //*****************************************************PIDQA histos*****************************************************//
 
+// for electron rejection only TPC nsigma histograms
+  if(fAnalysisType=="MCAOD" || fAnalysisType=="AOD"){
+  if(fElectronRejection) {
+ 
+    fHistdEdxVsPTPCbeforePIDelectron = new TH2D ("dEdxVsPTPCbeforeelectron","dEdxVsPTPCbeforeelectron", 1000, -10.0, 10.0, 1000, 0, 1000); 
+    fOutputList->Add(fHistdEdxVsPTPCbeforePIDelectron);
+    
+    fHistNSigmaTPCvsPtbeforePIDelectron = new TH2D ("NSigmaTPCvsPtbeforeelectron","NSigmaTPCvsPtbeforeelectron", 1000, -10, 10, 1000, 0, 500); 
+    fOutputList->Add(fHistNSigmaTPCvsPtbeforePIDelectron);
+    
+    fHistdEdxVsPTPCafterPIDelectron = new TH2D ("dEdxVsPTPCafterelectron","dEdxVsPTPCafterelectron", 1000, -10, 10, 1000, 0, 1000); 
+    fOutputList->Add(fHistdEdxVsPTPCafterPIDelectron);
+
+    fHistNSigmaTPCvsPtafterPIDelectron = new TH2D ("NSigmaTPCvsPtafterelectron","NSigmaTPCvsPtafterelectron", 1000, -10, 10, 1000, 0, 500); 
+    fOutputList->Add(fHistNSigmaTPCvsPtafterPIDelectron); 
+  }
+}
  
   //nsigma plot
   for(Int_t ipart=0;ipart<NSpecies;ipart++){
@@ -1866,6 +1909,9 @@ if(fAnalysisType == "MC"){
    if(gReactionPlane==999.) return;
  }
 
+   TObjArray* tracksMCtruth_t=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
+ tracksMCtruth_t->SetOwner(kTRUE);  //***********************************IMPORTANT!
+
 
 TObjArray* tracksMCtruth=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
  tracksMCtruth->SetOwner(kTRUE);  //***********************************IMPORTANT!
@@ -1894,6 +1940,11 @@ for (Int_t iTracks = 0; iTracks < gMCEvent->GetNumberOfPrimaries(); iTracks++) {
            Int_t particletypeTruth=-999;
 	  
 	  Int_t pdgtruth = particle->GetPdgCode();
+
+	  //electron rejection(not necessary if we consider physical primary tracks-basiccaly to avoid gamma conversions)
+	  if(fElectronRejectionTRUTH){
+	    if (TMath::Abs(pdgtruth)==11) continue;
+	  }
 
  //To determine multiplicity in case of PP
  nooftrackstruth++;
@@ -2001,15 +2052,15 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
     LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,Inv_mass,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth,clustermap,sharemap);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
  copy6->SetUniqueID(eventno * 100000 + (Int_t)nooftrackstruth);
- tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
+ tracksMCtruth_t->Add(copy6);//************** TObjArray used for truth correlation function calculation
   }
  }//track loop ends
 
  if(nooftrackstruth>0.0){
 if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
-
-AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
 /*
+AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
+
  if(collGeometry){
 Float_t NpartProj= collGeometry-> ProjectileParticipants();
 Float_t NpartTarg = collGeometry->TargetParticipants();
@@ -2018,7 +2069,11 @@ fNchNpartCorr->Fill(Npart,nooftrackstruth);//Creating some problem while being w
  }
 */
  }
-
+if(fRunShufflingbalance){
+    tracksMCtruth = GetShuffledTracks(tracksMCtruth_t);
+  }
+ else tracksMCtruth=CloneAndReduceTrackList(tracksMCtruth_t);
+ 
   if (fRandomizeReactionPlane)//only for TRuth MC??
   {
     Double_t centralityDigits = cent_v0*1000. - (Int_t)(cent_v0*1000.);
@@ -2065,6 +2120,8 @@ if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership
   }
   }
  //still in main event loop
+
+if(tracksMCtruth_t) delete tracksMCtruth_t;
 
 if(tracksMCtruth) delete tracksMCtruth;
 
@@ -2163,7 +2220,10 @@ skipParticlesAbove = eventHeader->NProduced();
      gReactionPlane=GetEventPlane((AliVEvent*)aod,kTRUE,cent_v0);//get the truth event plane
    if(gReactionPlane==999.) return;
  }
- 
+
+TObjArray* tracksMCtruth_t=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
+ tracksMCtruth_t->SetOwner(kTRUE);  //***********************************IMPORTANT!
+   
    //TObjArray* tracksMCtruth=0;
 TObjArray* tracksMCtruth=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
  tracksMCtruth->SetOwner(kTRUE);  //***********************************IMPORTANT!
@@ -2223,6 +2283,15 @@ isduplicate=kTRUE;
 
  if(!partMC) continue;//for safety
 
+  //get particle ID
+Int_t pdgtruth=((AliAODMCParticle*)partMC)->GetPdgCode();
+Int_t particletypeTruth=-999;
+
+   //electron rejection(not necessary if we consider physical primary tracks-basiccaly to avoid gamma conversions)
+   if(fElectronRejectionTRUTH){
+	    if (TMath::Abs(pdgtruth)==11) continue;
+	  }
+   
  //To determine multiplicity in case of PP
  nooftrackstruth++;
  //cout<<"**************************************"<<TMath::Abs(partMC->GetLabel())<<endl;
@@ -2233,9 +2302,7 @@ if(ffillhistQATruth)
  MCtrutheta->Fill(partMC->Eta());
  MCtruthphi->Fill(partMC->Phi());
     }
- //get particle ID
-Int_t pdgtruth=((AliAODMCParticle*)partMC)->GetPdgCode();
-Int_t particletypeTruth=-999;
+
  if (TMath::Abs(pdgtruth)==211)
    {
  particletypeTruth=SpPion;
@@ -2299,12 +2366,19 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
     LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,Inv_mass,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth,clustermap,sharemap);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
  copy6->SetUniqueID(eventno * 100000 + (Int_t)nooftrackstruth);
- tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
+ tracksMCtruth_t->Add(copy6);//************** TObjArray used for truth correlation function calculation
   }
   }//MC truth track loop ends
 
 //*********************still in event loop
 
+ if(fRunShufflingbalance){
+    tracksMCtruth = GetShuffledTracks(tracksMCtruth_t);
+  }
+ else tracksMCtruth=CloneAndReduceTrackList(tracksMCtruth_t);
+
+ 
+ 
    if (fRandomizeReactionPlane)//only for TRuth MC??
   {
     Double_t centralityDigits = cent_v0*1000. - (Int_t)(cent_v0*1000.);
@@ -2312,10 +2386,13 @@ if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fmin
     AliInfo(Form("Shifting phi of all tracks by %f (digits %f)", angle, centralityDigits));
     ShiftTracks(tracksMCtruth, angle);  
   }
- 
+
+
+   
 if(nooftrackstruth>0.0){
 if (fSampleType=="pPb" || fSampleType=="PbPb" || fPPVsMultUtils==kTRUE || fCentralityMethod == "MC_b") fCentralityCorrelationMC->Fill(cent_v0, nooftrackstruth);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
-
+ 
+ if(fSampleType=="pPb" || fSampleType=="PbPb"){ //GetCocktailHeader(0) is creating problem for Phojet(AOD60), anyhow for pp it has no use  
    AliGenEventHeader* eventHeader = header->GetCocktailHeader(0);  // get first MC header from either ESD/AOD (including cocktail header if available)
       if (eventHeader)
       {	     
@@ -2326,7 +2403,8 @@ Float_t NpartTarg = collGeometry->TargetParticipants();
 Float_t Npart= (NpartProj + NpartTarg);
 fNchNpartCorr->Fill(Npart,nooftrackstruth);
          }
-      }    
+      }
+ }
  }
  
  Float_t weghtval=1.0;
@@ -2362,6 +2440,8 @@ if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership
   }
 
  //still in main event loop
+
+if(tracksMCtruth_t) delete tracksMCtruth_t;
 
 if(tracksMCtruth) delete tracksMCtruth;
 
@@ -2404,6 +2484,10 @@ if(tracksMCtruth) delete tracksMCtruth;
 
   
    //TObjArray* tracksUNID=0;
+
+   TObjArray* tracksUNID_t = new TObjArray;
+   tracksUNID_t->SetOwner(kTRUE);
+   
    TObjArray* tracksUNID = new TObjArray;
    tracksUNID->SetOwner(kTRUE);
 
@@ -2481,6 +2565,12 @@ isduplicate2=kTRUE;
   if(!track) continue;//for safety
  //accepted all(primaries+secondary) reconstructed tracks(pt 0.2 to 10.0,,eta -0.8 to 0.8)
 
+  if (fElectronRejection){
+	//Fill QA after the PID
+	fHistdEdxVsPTPCafterPIDelectron -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPIDelectron -> Fill(track->P()*track->Charge(),TMath::Abs(fPID->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron))); }
+
+  
  if(fV0TrigCorr){ 
 if(IsTrackFromV0(aod,track)) continue;// remove auto correlation
   }
@@ -2522,8 +2612,14 @@ if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtT
    effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletypeMC);
  LRCParticlePID* copy = new LRCParticlePID(particletypeMC,Inv_mass,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
    copy->SetUniqueID(eventno * 100000 +(Int_t)trackscount);
-   tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
+   tracksUNID_t->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
+
+   if(fRunShufflingbalance){
+    tracksUNID = GetShuffledTracks(tracksUNID_t);
+  }
+   else tracksUNID=CloneAndReduceTrackList(tracksUNID_t);
+   
 
 //get the pdg code of the corresponding truth particle
  Int_t pdgCode = ((AliAODMCParticle*)recomatched)->GetPdgCode();
@@ -2570,7 +2666,8 @@ if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!H
 
 //do track identification(nsigma method)
   particletypeMC=GetParticle(PIDtrack,fFIllPIDQAHistos);//******************************problem is here
-  
+
+  //Plot NSIGMA distr of MC particles with thei PDG code (TRUTH PID)
 switch(TMath::Abs(pdgCode)){
   case 2212:
     if(fFIllPIDQAHistos){
@@ -2723,6 +2820,7 @@ if(particletypeMC==SpKaon )
 
  if(particletypeMC==SpUndefined) continue;
 
+
     if(fRequestEventPlane){
       FillPIDEventPlane(cent_v0,particletypeMC,track->Phi(),gReactionPlane);
     }
@@ -2850,6 +2948,7 @@ if(pool1)
 fEventCounter->Fill(15);
   }
 
+if(tracksUNID_t) delete tracksUNID_t;
 if(tracksUNID)  delete tracksUNID;
 
 if(tracksID) delete tracksID;
@@ -2940,10 +3039,15 @@ TExMap *trackMap = new TExMap();
    trackMap->Add(gid,itrk);
  }//track looop ends
    }
+   TObjArray*  tracksUNID_t= new TObjArray;//track info before doing PID
+   tracksUNID_t->SetOwner(kTRUE);  // IMPORTANT!
 
-   TObjArray*  tracksUNID= new TObjArray;//track info before doing PID
+   //TObjArray* tracksUNID=0;
+
+    
+   TObjArray*  tracksUNID= new TObjArray;//track info before doing PID(required for reshuffling of charges for balance function calculation)
    tracksUNID->SetOwner(kTRUE);  // IMPORTANT!
-
+  
    TObjArray* tracksID= new TObjArray;//only pions, kaons,protons i.e. after doing the PID selection
    tracksID->SetOwner(kTRUE);  // IMPORTANT!
  
@@ -2967,6 +3071,11 @@ TExMap *trackMap = new TExMap();
   if(tracktype!=1) continue; 
 
   if(!track) continue;//for safety
+
+  if (fElectronRejection){
+  	//Fill QA after the PID
+	fHistdEdxVsPTPCafterPIDelectron -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPIDelectron -> Fill(track->P()*track->Charge(),TMath::Abs(fPID->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron)));} 
 
   if(fV0TrigCorr){ 
 if(IsTrackFromV0(aod,track)) continue;// remove auto correlation
@@ -3013,9 +3122,15 @@ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleT
    effmatrix=GetTrackbyTrackeffvalue(track,effcent,zvtx,particletype);
  LRCParticlePID* copy = new LRCParticlePID(particletype,Inv_mass,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix,track->GetTPCClusterMapPtr(),track->GetTPCSharedMapPtr());
   copy->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
-  tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
+  tracksUNID_t->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
-
+  
+  
+   if(fRunShufflingbalance){
+    tracksUNID = GetShuffledTracks(tracksUNID_t);
+  }
+   else tracksUNID=CloneAndReduceTrackList(tracksUNID_t);
+  
 //now start the particle identificaion process:) 
 
 //track passing filterbit 768 have proper TPC response,or need to be checked explicitly before doing PID????
@@ -3053,7 +3168,6 @@ if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!H
 //ignore the Spundefined particles as they also contain pion, kaon, proton outside the nsigma cut(also if tracks don't have proper TOF PID in a certain Pt interval) & these tracks are actually counted when we do the the efficiency correction, so considering them as unidentified particles & doing the efficiency correction(i.e defining unidentified=pion+Kaon+proton+SpUndefined is right only without efficiency correction) for them will be two times wrong!!!!! 
   if (particletype==SpUndefined) continue;//this condition creating a modulated structure in delphi projection in mixed event case(only when we are dealing with identified particles i.e. tracksID)!!!!!!!!!!!
 
-  //cout<<"***************************************************************************************Particle="<<particletype<<endl;
 
     if(fRequestEventPlane){
       FillPIDEventPlane(cent_v0,particletype,track->Phi(),gReactionPlane);
@@ -3217,7 +3331,7 @@ if(pool1)
 fEventCounter->Fill(15);
  
 //still in main event loop
-
+if(tracksUNID_t) delete tracksUNID_t;
 
 if(tracksUNID)  delete tracksUNID;
 
@@ -3228,7 +3342,45 @@ if(fV0TrigCorr) {
   }
 
 } // *************************event loop ends******************************************
-//_______________________________________________________________________
+//________________________________________________________________________
+TObjArray* AliTwoParticlePIDCorr::GetShuffledTracks(TObjArray *tracks){//taken from TaskBFpsi
+  // Clones TObjArray and returns it with tracks after shuffling the charges
+
+  TObjArray* tracksShuffled = new TObjArray;
+  tracksShuffled->SetOwner(kTRUE);
+
+  vector<Short_t> *chargeVector = new vector<Short_t>;   //original charge of accepted tracks 
+
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  {
+    LRCParticlePID* track = (LRCParticlePID*) tracks->UncheckedAt(i);
+    chargeVector->push_back(track->Charge());
+  }  
+ 
+  random_shuffle(chargeVector->begin(), chargeVector->end());
+  
+  for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
+    LRCParticlePID* track = (LRCParticlePID*) tracks->UncheckedAt(i);
+
+    //==============================correction(At the moment we are assuming that the correction factoer is harge independent)
+    //Double_t correction = GetTrackbyTrackCorrectionMatrix(track->Eta(), track->Phi(),track->Pt(), chargeVector->at(i), gCentrality);
+    //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+    //tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i), correction));
+
+
+     LRCParticlePID* copy100 = new LRCParticlePID(track->getparticle(),track->GetInvMass(),chargeVector->at(i), track->Pt(),track->Eta(), track->Phi(), track->geteffcorrectionval(),track->GetTPCPadMap(),track->GetTPCSharedMap());
+     copy100->SetUniqueID(track->GetUniqueID());
+     tracksShuffled->Add(copy100);
+
+  }
+
+  delete chargeVector;
+   
+  return tracksShuffled;
+}
+
+//________________________________________________________________________
+
 TObjArray* AliTwoParticlePIDCorr::CloneAndReduceTrackList(TObjArray* tracks)
 {
   // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
@@ -3563,7 +3715,8 @@ if(mixcase==kTRUE && firstTime)   fTHnTrigcountMCTruthPrim->Fill(trigval,1,1.0/t
    // if (tracksasso && trig->IsEqual(asso))  continue;
 
   if (tracksasso && (trig->GetUniqueID()==asso->GetUniqueID())) continue;
-          
+
+  //Pt ordering acts as a nested loop which avoids double counting and a pair counts only once in case of unidentified particles
  if (fPtOrder)
  if (asso->Pt() >= trig->Pt()) continue;
 
@@ -3992,8 +4145,47 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vert
      if(TMath::Abs(track->Eta())> fmaxeta) return 0;
      if(track->Phi()<0. || track->Phi()>2*TMath::Pi()) return 0;
      //if (!HasTPCPID(track)) return 0;//trigger & associated particles must have TPC PID,Is it required???
+     
+ //===========================PID (so far only for electron rejection)===============================//		    
+     if(fElectronRejection) {//adapted from TaskBFpsi
+
+	// get the electron nsigma
+	Double_t nSigma = TMath::Abs(fPID->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
+	
+	//Fill QA before the PID
+	if (fill){
+	fHistdEdxVsPTPCbeforePIDelectron -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
+	fHistNSigmaTPCvsPtbeforePIDelectron -> Fill(track->P()*track->Charge(),nSigma);} 
+	//end of QA-before pid
+	
+	// check only for given momentum range
+	if( pt > fElectronRejectionMinPt && pt < fElectronRejectionMaxPt ){
+	  	  
+	  //look only at electron nsigma
+	  if(fElectronOnlyRejection){
+	    
+	    //Make the decision based on the n-sigma of electrons
+	    if(nSigma < fElectronRejectionNSigma) return 0;
+	  }
+	  else{
+	    
+	    Double_t nSigmaPions   = TMath::Abs(fPID->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion));
+	    Double_t nSigmaKaons   = TMath::Abs(fPID->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon));
+	    Double_t nSigmaProtons = TMath::Abs(fPID->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kProton));
+	    
+	    //Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+	    if(nSigma < fElectronRejectionNSigma
+	       && nSigmaPions   > fElectronRejectionNSigma
+	       && nSigmaKaons   > fElectronRejectionNSigma
+	       && nSigmaProtons > fElectronRejectionNSigma ) return 0;
+	  }
+	}
+	
+      }
+      //===========================end of PID (so far only for electron rejection)===============================//
+     
 // DCA XY
-	if (fdcacut && fDCAXYCut)
+      if (fdcacut && fDCAXYCut)
 	{
 	  if (!vertex)
 	    return 0;
@@ -4166,7 +4358,7 @@ else{
 Int_t AliTwoParticlePIDCorr::FindMinNSigma(AliAODTrack *track,Bool_t FillQAHistos) 
 {
   //this function is always called after calling the function CalculateNSigmas(AliAODTrack *track)
-if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!HasTOFPID(track)) )return SpUndefined;//so any track having Pt>0.6 withot having proper TOF response will be defined as SpUndefined
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<fPtTOFPIDmax && (!HasTOFPID(track)) )return SpUndefined;//so any track having Pt>0.5 withot having proper TOF response will be defined as SpUndefined
 //get the identity of the particle with the minimum Nsigma
   Float_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
   switch (fPIDType){
@@ -4465,16 +4657,16 @@ if(fUseExclusiveNSigma){ //if one particle has double counting and exclusive nsi
     }
   }
 }
-  else{//use the deltapion method with rel. rise in TPC only for trk->Pt()>fPtTOFPIDmax
+  else{//use the deltapion method with rel. rise in TPC only for trk->Pt()>=fPtTOFPIDmax
     Double_t delta_pion=fPID->GetSignalDelta(AliPIDResponse::kTPC,trk, AliPID::kPion, kFALSE);
-     deltapion_val=delta_pion;//globaal variable, can be used anywhere in the code after calling the function GetParticle()
+     deltapion_val=delta_pion;//global variable, can be used anywhere in the code after calling the function GetParticle()
      	//before deltapion cut
     for(Int_t ipart=0;ipart<NSpecies;ipart++){
 	  if(ipart!=SpPion) continue;//only around pion's mean position;same histo for Pr and Pi
      TH2F *h=GetHistogram2D(Form("deltapion_%d",ipart));
     h->Fill(trk->Pt(),delta_pion);
     }
-    //deltapion cut
+    //Now apply deltapion cut
     if (delta_pion>fPiondeltacutmin && delta_pion<fPiondeltacutmax) {
 	TH2F *h1=GetHistogram2D(Form("NSigmaRec_%d_%d",SpPion,NSigmaTPC));
 	h1->Fill(trk->Pt(),fPID->NumberOfSigmasTPC(trk, AliPID::kPion));
@@ -5126,7 +5318,7 @@ else if(fAnalysisType == "MC"){
       }
       
       //exclude non stable particles
-      if(!(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
+      if(fselectprimaryTruth && !(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
 
       if(track->Charge() == 0) continue;
 
