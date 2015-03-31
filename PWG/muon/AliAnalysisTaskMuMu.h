@@ -56,7 +56,7 @@ public:
   
   virtual void DisableHistograms(const char* pattern="*");
   
-  void SetCountInBins( Bool_t disableHistoLoop=kTRUE ) { fCountInBins = kTRUE; fDisableHistoLoop = disableHistoLoop; }
+  void SetCountInBins( const char* binWhat, const char* binQuantity, const char* binFlavor, Bool_t disableHistoLoop=kFALSE );
   
   void DisableHistoLoop( Bool_t disableHistoLoop=kTRUE ) { fDisableHistoLoop = disableHistoLoop; }
 
@@ -95,7 +95,7 @@ private:
   
   void FillHistos(const char* eventSelection, const char* triggerClassName, const char* centrality);
   
-  void FillCounters(const char* eventSelection, const char* triggerClassName, const char* centrality, Int_t currentRun, const char* binningName="ntrcorr"/*"dnchdeta"*/);
+  void FillCounters(const char* eventSelection, const char* triggerClassName, const char* centrality, Int_t currentRun);
   
   void Fill(const char* eventSelection, const char* triggerClassName);
   
@@ -130,9 +130,17 @@ private:
   
   Bool_t fCountInBins; //Flag to count events in bins
   
+  //____Same nomenclature as in AliAnalysisMuMuBinning.cxx
+  TString fbinWhat; // Name for the binning to use in the counters (what it is for, i.e. "psi")
+
+  TString fbinQuantity; // Name for the binning to use in the counters (quantity, i.e. "ntrcorr")
+
+  TString fbinFlavor; // Name for the binning to use in the counters (binning flavor)
+  //______
+
   Bool_t fDisableHistoLoop; //Flag to not enter in the Filling histos Loop without disabling the histogramming (neccesary to have dNhcdEta event info avaliable)
   
-  ClassDef(AliAnalysisTaskMuMu,26) // a class to analyse muon pairs (and single also ;-) )
+  ClassDef(AliAnalysisTaskMuMu,27) // a class to analyse muon pairs (and single also ;-) )
 };
 
 #endif
