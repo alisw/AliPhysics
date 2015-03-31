@@ -182,7 +182,7 @@ class AliGenerator : public TNamed, public AliRndm
     AliGenerator(const AliGenerator &gen);
     AliGenerator & operator=(const AliGenerator &gen);
 
-    ClassDef(AliGenerator,5) // Base class for event generators
+    ClassDef(AliGenerator,6) // Base class for event generators
 };
 
 #endif
