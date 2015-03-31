@@ -207,9 +207,14 @@ Bool_t AliAnalysisMuMuEventCutter::IsMCEventNSD(const AliVEvent& event) const
     {
       Int_t nsd1,nsd2,ndd;
       Int_t npProj = hDpmJet->ProjectileParticipants();
-//      Int_t npProj = hDpmJet->TargetParticipants();
+      Int_t npTgt = hDpmJet->TargetParticipants();
       
-//      std::cout << hDpmJet->ProcessType() << std::endl;
+      // In p-Pb collisions: npProj >=1 (Pb) and npTgt = 1 (p) ->We have to use npProj
+      // In Pb-p collisions: npProj =1 (p) and npTgt >= 1 (Pb) ->We have to use npTgt
+      if ( npTgt >= npProj ) npProj = npTgt; // In order to use the correct value to compare to nsd1 and nsd2 (If in Pb-p we use npProj(=1), as soon as we have 1 nucleon difracted the event is flagged as SD, which is not correct)
+
+//      Int_t pType = hDpmJet->ProcessType();
+//      std::cout << "Nof Proj part = " << npProj << " ; Nof Tgt part = " << npTgt << std::endl;
       hDpmJet->GetNDiffractive(nsd1,nsd2,ndd);
       
       if (ndd==0 && (npProj==nsd1 || npProj==nsd2))
@@ -309,14 +314,21 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzQA(const AliVEvent& event, /*const AliV
     AliVVertex* SPDVertex = AliAnalysisMuonUtility::GetVertexSPD(static_cast<const AliVEvent*>(&event));
     if ( SPDVertex )
     {
-     if ( SPDVertex->GetNContributors() > 0 )
+      TString vtxTyp = SPDVertex->GetTitle();
+     if ( SPDVertex->GetNContributors() > 0 && !vtxTyp.Contains("vertexer: Z") )
      {
        Double_t cov[6]={0};
        SPDVertex->GetCovarianceMatrix(cov);
        zRes = TMath::Sqrt(cov[5]);
        zvertex = SPDVertex->GetZ();
-     }
-     else return kFALSE;
+
+         if ( (zRes <= zResCut) && TMath::Abs(zvertex - vertex->GetZ()) <= zDifCut )
+         {
+           return kTRUE;
+         }
+         else return kFALSE;
+       }
+       else return kFALSE;
     }
     else
     {
@@ -329,12 +341,6 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzQA(const AliVEvent& event, /*const AliV
     AliError("Cut on SPD z Vertex requested for an event with no vertex info");
     return kFALSE;
   }
-  
-  if ( (zRes < zResCut) && TMath::Abs(zvertex - vertex->GetZ()) <= zDifCut )
-  {
-    return kTRUE;
-  }
-  else return kFALSE;
 }
 
 
