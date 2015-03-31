@@ -1520,7 +1520,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 	
 	fInputEvent = InputEvent();
 	
-// 	cout << "new event" << endl; 
+// 	cout << "new event" << endl;
 	
 	if(fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){
 		fMCStack = fMCEvent->Stack();
@@ -1607,7 +1607,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 			if(fInputEvent->IsA()==AliAODEvent::Class())
 				ProcessAODMCParticles();
 		}
-		
+
 		// it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
 		ProcessClusters();  					// process calo clusters
 		ProcessPhotonCandidates(); 				// Process this cuts gammas
@@ -1646,7 +1646,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 		
 		if(fIsMC && fInputEvent->IsA()==AliAODEvent::Class()){
 			ProcessConversionPhotonsForMissingTagsAOD(); //Count missing tags
-		} else if (fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){	
+		} else if (fIsMC && fInputEvent->IsA()==AliESDEvent::Class()){
 			ProcessConversionPhotonsForMissingTags(); //Count missing tags
 		}
 		
@@ -1667,7 +1667,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 		fGammaCandidates->Clear(); // delete this cuts good gammas
 		fClusterCandidates->Clear(); // delete cluster candidates
 	}
-	
+
 	if(fIsMC && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
 		RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
 		fV0Reader->RelabelAODs(kFALSE);
@@ -1895,7 +1895,13 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 // 		if (fDoPhotonQA > 0) fHistoTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
 	}
 
-	if(Photon->IsPrimary()){
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+	Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+
+	if(isPrimary){
 		// Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
 		if(fIsFromMBHeader){
 			fHistoTruePrimaryClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
@@ -2070,7 +2076,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
 {
-	
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 	Double_t magField = fInputEvent->GetMagneticField();
 	if( magField  < 0.0 ){
 		magField =  1.0;
@@ -2128,7 +2138,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 		fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 		if (fDoPhotonQA > 0) fHistoTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
 	}
-	if(Photon->IsPrimary()){
+
+	Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+	if(isPrimary){
 		// Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
 		if(fIsFromMBHeader){
 			fCharPhotonMCInfo = 6;
@@ -2245,7 +2257,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 {
-	
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 	if (AODMCTrackArray == NULL) return;
 	
@@ -2254,7 +2270,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 		
 		AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
 		if (!particle) continue;
-		if (!particle->IsPrimary()) continue;
+
+		Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+		if (!isPrimary) continue;
 		
 		Int_t isMCFromMBHeader = -1;
 		if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -2780,8 +2798,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 						}
 					}
 				}
+
 				Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
-				
 				if(!isPrimary){ // Secondary Meson
 					Int_t secMotherLabel = ((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetMother(0);
 					Float_t weightedSec= 1;
@@ -2868,7 +2886,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
 {
-	
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 	// Process True Mesons
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 	if (AODMCTrackArray == NULL) return;
@@ -2974,7 +2996,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 					}
 				}
 			}
-			if(!(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->IsPrimary())){ // Secondary Meson
+
+			Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+			if(!isPrimary){ // Secondary Meson
 				Int_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetMother();
 				Float_t weightedSec= 1;
 				if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, 0x0, fInputEvent) && static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
@@ -3502,6 +3526,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
 //_________________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
 
+	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+	Double_t mcProdVtxX 	= primVtxMC->GetX();
+	Double_t mcProdVtxY 	= primVtxMC->GetY();
+	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 		
 	for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
@@ -3524,7 +3553,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
 				if (gamma0MotherLabel>-1){
 					if(((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 111){
 						if (!CheckIfContainedInStringAndAppend(fStringRecTruePi0s[fiCut],gamma0MotherLabel)){ 
-							if (!(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->IsPrimary())){
+							Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+							if (!isPrimary){
 								Int_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->GetMother();
 								Float_t weightedSec= 1;
 								if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, 0x0, fInputEvent) && static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){

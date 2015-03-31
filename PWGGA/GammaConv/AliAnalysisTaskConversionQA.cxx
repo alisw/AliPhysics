@@ -864,7 +864,13 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 				if(pdgCode == 111) kind = 3; // pi0 Dalitz
 				else if (pdgCode == 221) kind = 4; // eta Dalitz
 				else if (!(negDaughter->GetMCProcessCode() != 5 || posDaughter->GetMCProcessCode() !=5)){
-					if(pdgCode == 22 && Photon->IsPrimary()){
+					const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+					Double_t mcProdVtxX 	= primVtxMC->GetX();
+					Double_t mcProdVtxY 	= primVtxMC->GetY();
+					Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+					Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+
+					if(pdgCode == 22 && isPrimary){
 						kind = 0; // primary photons
 					} else if (pdgCode == 22){
 						kind = 5; //secondary photons
