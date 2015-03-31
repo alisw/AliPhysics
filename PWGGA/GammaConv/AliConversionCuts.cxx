@@ -939,8 +939,8 @@ Bool_t AliConversionCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClon
       if(particle->GetMother() > -1){
          if((static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
             return kFALSE; // no photon as mothers!
-         }
-         if(!(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()))->IsPrimary())){
+		 }
+		 if(!(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()))->IsPrimary())){
             return kFALSE; // the gamma has a mother, and it is not a primary particle
          }
       }

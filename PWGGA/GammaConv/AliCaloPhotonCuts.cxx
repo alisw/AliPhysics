@@ -490,17 +490,18 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
 	// MonteCarlo Photon Selection
 
 	if(!aodmcArray)return kFALSE;
+
 	if (particle->GetPdgCode() == 22){
 		if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
 		if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
-		if(particle->GetMother() > -1){
-			if((static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
+		if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
 				return kFALSE; // no photon as mothers!
-			}
-			if(!(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()))->IsPrimary())){
-				return kFALSE; // the gamma has a mother, and it is not a primary particle
-			}
 		}
+		// decision on prim/sec moved to main task
+//		Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+//		if(!isPrimary){
+//			return kFALSE; // the gamma has a mother, and it is not a primary particle
+//		}
 		return kTRUE; // return in case of accepted gamma
 	}
 	return kFALSE;

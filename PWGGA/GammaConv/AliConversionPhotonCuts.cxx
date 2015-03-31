@@ -640,14 +640,14 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
 				return kFALSE;
 		}
 
-		if(particle->GetMother() > -1){
-			if((static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
+		if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
 				return kFALSE; // no photon as mothers!
-			}
-			if(!(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()))->IsPrimary())){
-				return kFALSE; // the gamma has a mother, and it is not a primary particle
-			}
 		}
+			// removed, decision on primary and secondary taken in main task
+//			Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+//			if(!isPrimary){
+//				return kFALSE; // the gamma has a mother, and it is not a primary particle
+//			}
 
 		if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 
