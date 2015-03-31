@@ -864,37 +864,32 @@ Bool_t AliEmcalTriggerMaker::NextTrigger(Bool_t &isOfflineSimple)
 }
 
 /**
- * Accept trigger patch as Level0 patch. Different handlings are needed for Data and
- * Monte Carlo:
- *  - In Monte-Carlo the patch is accepted if the Level0 bit is set
- *  - In Data the Level0 bit is not set. Therefor patches are accepted if this FASTOR
- *    and the neighboring FASTORS have proper Level0 times set
+ * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
+ * in the same TRU
  * \param trg Triggers object with the pointer set to the patch to inspect
  * \return True if the patch is accepted, false otherwise.
  */
 Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
-  // Check whether the patch is a level0 patch
-  if(MCEvent()){
-    // For Monte-Carlo select
-    Int_t tbits(-1);
-    trg.GetTriggerBits(tbits);
-    return tbits & (1 << fTriggerBitConfig->GetLevel0Bit());
-  } else {
-    // For Data check from the level0 times if the trigger has fired at level0,
-    // accept the patch only if all 4 TRUs have level0 times either 8 or 9
-    Int_t row, col;trg.GetPosition(col, row);
-    int nvalid(0);
-    for(int ipos = 0; ipos < 2; ipos++){
-      if(row + ipos >= kPatchRows) continue;    // boundary check
-      for(int jpos = 0; jpos < 2; jpos++){
-        if(col + jpos >= kPatchCols) continue;  // boundary check
-        Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
-        if(l0times > 7 && l0times < 10) nvalid++;
-      }
+  Int_t row, col;trg.GetPosition(col, row);
+  Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
+  fGeom->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
+  fGeom->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
+  int nvalid(0);
+  for(int ipos = 0; ipos < 2; ipos++){
+    if(row + ipos >= kPatchRows) continue;    // boundary check
+    for(int jpos = 0; jpos < 2; jpos++){
+      if(col + jpos >= kPatchCols) continue;  // boundary check
+      // Check whether we are in the same TRU
+      trumod = -1;
+      fGeom->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
+      fGeom->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
+      if(trumod != truref) continue;
+      Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
+      if(l0times > 7 && l0times < 10) nvalid++;
     }
-    if (nvalid != 4) return false;
-    return true;
   }
+  if (nvalid != 4) return false;
+  return true;
 }
 
 /**
