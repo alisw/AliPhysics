@@ -28,8 +28,9 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const Double_t Zbin2 = -2.0.,
 						      const Double_t Zbin3 = 2.0.,
 						      const Double_t Zbin4 = 5.,
-						      const Double_t Zbin5 = 10.
- 						    )
+						      const Double_t Zbin5 = 10.,
+						      const char * file = ""  
+							 )
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for PbPb data 
   //Defaults to 10h data with MB trigger.
@@ -56,6 +57,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   task->SetMinAssociatedPt(MinAssociatedPt);
   task->SetMaxAssociatedPt(MaxAssociatedPt);
   task->SetAcceptanceCut(Acceptancecut);
+  if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
+//   if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
 
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];

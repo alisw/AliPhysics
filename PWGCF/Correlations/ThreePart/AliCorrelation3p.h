@@ -13,7 +13,7 @@
 
 #include "TNamed.h"
 #include "TArrayD.h"
-
+#include "THn.h"
 class TH1;
 class TH1F;
 class TH2F;
@@ -45,7 +45,7 @@ class AliCorrelation3p : public TNamed {
   /// fill histograms from particles
   int Fill(const AliVParticle* trigger		,const AliVParticle* p1	,const AliVParticle* p2	, const int weight=1);
   int Fill(const AliVParticle* trigger		,const AliVParticle* p1				);
-  int FillTrigger();
+  int FillTrigger(const AliVParticle*ptrigger);
   int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool all=false);
   /// overloaded from TObject: cleanup
   virtual void Clear(Option_t * option ="");
@@ -63,7 +63,7 @@ class AliCorrelation3p : public TNamed {
   AliCorrelation3p& operator+=(const AliCorrelation3p& other);
   void SetMixedEvent(AliCorrelation3p* pME) {fMixedEvent=pME;}
   void SetAcceptanceCut(float AccCut){fAcceptanceCut = AccCut;}
-
+  void SetWeight(THnT<Float_t>*weight){fWeights = weight;}
   enum {
     kHistpT,  // TH1F
     kHistPhi, // TH1F
@@ -126,6 +126,9 @@ class AliCorrelation3p : public TNamed {
   float fhPhiEtaDeltaPhi12Cut1; // phi vs. eta plots: cut on phi between associated particles 
   float fhPhiEtaDeltaPhi12Cut2; // phi vs. eta plots: cut on phi between associated particles 
   float fAcceptanceCut;
+  THnF * fWeights;//!
+  Int_t fMultWeightIndex;//
+  Int_t fVZWeightIndex;//
   AliCorrelation3p* fMixedEvent; // mixed event analysis
   TArrayD 	fMBinEdges; //Contains bin edges in centrality.
   TArrayD 	fZBinEdges; //Edges for vZ binning.
