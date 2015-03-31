@@ -85,7 +85,7 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   Double_t etaMax = -2;
   Int_t nbinsEta = GetNbins(etaMin,etaMax,0.05);
 
-  TObjArray* bins = Binning()->CreateBinObjArray("psi","integrated,ptvsy,yvspt,pt,y,phi,nch,dnchdeta,ntrcorr,ntrcorrpt,ntrcorry,relntrcorr","");//We may include ,v0a,v0acent
+  TObjArray* bins = Binning()->CreateBinObjArray("psi","integrated,ptvsy,yvspt,pt,y,phi,nch,dnchdeta,ntrcorr,ntrcorrpt,ntrcorry,relntrcorr,v0acorr,v0ccorr,v0mcorr","");//We may include ,v0a,v0acent
   
   CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"Pt","#mu+#mu- Pt distribution",
                   200,0,20,-2);
@@ -123,6 +123,17 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   CreatePairHistos(kHistoForData,eventSelection,triggerClassName,centrality,"PtRecVsSim","#mu+#mu- Pt distribution rec vs sim",
                   200,0,20,200,0,20);
   
+  //________________
+  Double_t multMin = -0.5;  //Tracklets multiplicity range
+  Double_t multMax = 500.5;
+  Int_t nbinsMult = GetNbins(multMin,multMax,1.);
+
+  CreatePairHistos(kHistoForData,eventSelection,triggerClassName,centrality,"NchForJpsi","Corrected multiplicity distribution for 2.9 < m_{#mu^{+}#mu^{-}} < 3.3",
+                   nbinsMult,multMin,multMax);
+  CreatePairHistos(kHistoForData,eventSelection,triggerClassName,centrality,"NchForPsiP","Corrected multiplicity distribution for 3.6 < m_{#mu^{+}#mu^{-}} < 3.9",
+                   nbinsMult,multMin,multMax);
+  //________________
+
   TIter next(bins);
   AliAnalysisMuMuBinning::Range* r;
   Int_t nb(0);
@@ -331,7 +342,7 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection, const ch
     }
     
     
-    TObjArray* bins = Binning()->CreateBinObjArray("psi","integrated,ptvsy,yvspt,pt,y,phi,nch,dnchdeta,ntrcorr,ntrcorrpt,ntrcorry,relntrcorr",""); // We may include: ,v0a,v0acent
+    TObjArray* bins = Binning()->CreateBinObjArray("psi","integrated,ptvsy,yvspt,pt,y,phi,nch,dnchdeta,ntrcorr,ntrcorrpt,ntrcorry,relntrcorr,v0acorr,v0ccorr,v0mcorr",""); // We may include: ,v0a,v0acent
     TIter nextBin(bins);
     AliAnalysisMuMuBinning::Range* r;
     
@@ -344,6 +355,70 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection, const ch
       {
         ok = kTRUE;
         if ( pair4MomentumMC ) okMC = kTRUE;
+
+        //_________________________
+        TH1* h(0x0);
+        if ( pair4Momentum.M() >= 2.9 && pair4Momentum.M() <= 3.3 )
+        {
+          h = Histo(eventSelection,triggerClassName,centrality,pairCutName,"NchForJpsi");
+
+          Double_t ntrcorr = (-1.);
+          TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
+          if (list)
+          {
+            Int_t i(-1);
+            Bool_t parFound(kFALSE);
+            while ( i < list->GetEntries() - 1 && !parFound )
+            {
+              i++;
+              while ( list->At(i)->IsA() != TParameter<Double_t>::Class() && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+              {
+                i++;
+              }
+
+              TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(list->At(i));
+
+              if ( TString(p->GetName()).Contains("NtrCorr") )
+              {
+                parFound = kTRUE;
+                ntrcorr = p->GetVal();
+              }
+            }
+          }
+
+          h->Fill(ntrcorr);
+        }
+        else if ( pair4Momentum.M() >= 3.6 && pair4Momentum.M() <= 3.9)
+        {
+          h = Histo(eventSelection,triggerClassName,centrality,pairCutName,"NchForPsiP");
+
+          Double_t ntrcorr = (-1.);
+          TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
+          if (list)
+          {
+            Int_t i(-1);
+            Bool_t parFound(kFALSE);
+            while ( i < list->GetEntries() - 1 && !parFound )
+            {
+              i++;
+              while ( list->At(i)->IsA() != TParameter<Double_t>::Class() && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+              {
+                i++;
+              }
+
+              TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(list->At(i));
+
+              if ( TString(p->GetName()).Contains("NtrCorr") )
+              {
+                parFound = kTRUE;
+                ntrcorr = p->GetVal();
+              }
+            }
+          }
+          h->Fill(ntrcorr);
+        }
+        //_________________________
+
       }
       else if ( r->Is2D() )
       {
@@ -456,7 +531,6 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection, const ch
               }
             }
           }
-//          else AliFatal("No dNchdEta info on Event");
           
         }
         else if ( r->Quantity() == "NTRCORR" || r->Quantity() == "RELNTRCORR" )
@@ -484,9 +558,89 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection, const ch
               }
             }
           }
-//          else AliFatal("No ntrcorr info on Event");
           
         }
+        else if ( r->Quantity() == "V0ACORR" )
+        {
+          TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
+          if (list)
+          {
+            Int_t i(-1);
+            Bool_t parFound(kFALSE);
+            while ( i < list->GetEntries() - 1 && !parFound )
+            {
+              i++;
+              while ( list->At(i)->IsA() != TParameter<Double_t>::Class() && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+              {
+                i++;
+              }
+
+              TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(list->At(i));
+
+              if ( TString(p->GetName()).Contains("V0ACorr") )
+              {
+                parFound = kTRUE;
+                ok = r->IsInRange(p->GetVal());
+              }
+            }
+          }
+
+        }
+        else if ( r->Quantity() == "V0CCORR" )
+        {
+          TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
+          if (list)
+          {
+            Int_t i(-1);
+            Bool_t parFound(kFALSE);
+            while ( i < list->GetEntries() - 1 && !parFound )
+            {
+              i++;
+              while ( list->At(i)->IsA() != TParameter<Double_t>::Class() && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+              {
+                i++;
+              }
+
+              TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(list->At(i));
+
+              if ( TString(p->GetName()).Contains("V0CCorr") )
+              {
+                parFound = kTRUE;
+                ok = r->IsInRange(p->GetVal());
+              }
+            }
+          }
+          //          else AliFatal("No ntrcorr info on Event");
+
+        }
+        else if ( r->Quantity() == "V0MCORR" )
+        {
+          TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
+          if (list)
+          {
+            Int_t i(-1);
+            Bool_t parFound(kFALSE);
+            while ( i < list->GetEntries() - 1 && !parFound )
+            {
+              i++;
+              while ( list->At(i)->IsA() != TParameter<Double_t>::Class() && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
+              {
+                i++;
+              }
+
+              TParameter<Double_t>* p = static_cast<TParameter<Double_t>*>(list->At(i));
+
+              if ( TString(p->GetName()).Contains("V0MCorr") )
+              {
+                parFound = kTRUE;
+                ok = r->IsInRange(p->GetVal());
+              }
+            }
+          }
+
+        }
+
+
       }
       
       if ( ok || okMC )
@@ -696,7 +850,7 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
   
   Int_t nMCTracks = MCEvent()->GetNumberOfTracks();
   
-  TObjArray* bins = Binning()->CreateBinObjArray("psi","integrated,ptvsy,yvspt,pt,y,phi,nch,dnchdeta,ntrcorr,ntrcorrpt,ntrcorry,relntrcorr","");//We may include: ,v0a,v0acent.
+  TObjArray* bins = Binning()->CreateBinObjArray("psi","integrated,ptvsy,yvspt,pt,y,phi,nch,dnchdeta,ntrcorr,ntrcorrpt,ntrcorry,relntrcorr,v0acorr,v0ccorr,v0mcorr","");//We may include: ,v0a,v0acent.
   TIter nextBin(bins);
   AliAnalysisMuMuBinning::Range* r;
   
