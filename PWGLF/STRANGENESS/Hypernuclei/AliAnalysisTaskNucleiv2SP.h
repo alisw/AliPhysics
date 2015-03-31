@@ -98,7 +98,13 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   TH2F *hQyVzCvsCentrality;
   TH2F *hQxVzMvsCentrality;
   TH2F *hQyVzMvsCentrality;
+  
+  // Flattness
 
+  TH2F *hqEPCvsCentrality; 
+  TH2F *hqEPAvsCentrality;
+  TH2F *hqEPvsCentrality;
+ 
   // TTree
   TTree *ftree;                //! Some Information on the tracks
   Double_t tCentrality      ;
