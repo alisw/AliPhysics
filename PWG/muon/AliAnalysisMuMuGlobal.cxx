@@ -119,6 +119,10 @@ void AliAnalysisMuMuGlobal::FillHistosForEvent(const char* eventSelection,
           
           Histo(eventSelection,triggerClassName,centrality,"SPDZvertexResolutionNContributors")->Fill(vertexFromSPD->GetNContributors(),TMath::Sqrt(cov[5]));
         }
+        if (!IsHistogramDisabled("SPDVertexType"))
+        {
+          Histo(eventSelection,triggerClassName,centrality,"SPDVertexType")->Fill(vertexFromSPD->GetTitle(),1.0);
+        }
 
       }
       if (!IsHistogramDisabled("VertexType"))
@@ -292,6 +296,23 @@ void AliAnalysisMuMuGlobal::FillHistosForMCEvent(const char* eventSelection,
     {
       MCHisto(eventSelection,triggerClassName,centrality,"RecSPDZvertexVsMCZvertex")->Fill(Zvertex,vertexFromSPD->GetZ());
       MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexVsMCZvertex")->Fill(Zvertex,1);
+
+      TString vtxTyp = vertexFromSPD->GetTitle();
+      if ( !vtxTyp.Contains("vertexer: Z") )
+      {
+        MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexAndNoVtexerZVsMCZvertex")->Fill(Zvertex,1);
+
+        Double_t cov[6]={0};
+        vertexFromSPD->GetCovarianceMatrix(cov);
+        Double_t zRes = TMath::Sqrt(cov[5]);
+        Double_t zvertex = vertexFromSPD->GetZ();
+        if ( (zRes <= 0.25) && TMath::Abs(zvertex - vertex->GetZ()) <= 0.5 ) //These events are those passing AliAnalysisMuMuEventCutter::IsSPDzQA()
+        {
+          MCHisto(eventSelection,triggerClassName,centrality,"NofEvPassingVtxQAVsMCZvertex")->Fill(Zvertex,1);
+        }
+        else MCHisto(eventSelection,triggerClassName,centrality,"NofEvNotPassingVtxResCutVsMCZvertex")->Fill(Zvertex,1);
+      }
+      else MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexAndVtexerZVsMCZvertex")->Fill(Zvertex,1);
     }
     else MCHisto(eventSelection,triggerClassName,centrality,"NofEvWOSPDZvertexVsMCZvertex")->Fill(Zvertex,1);
   }
@@ -331,11 +352,26 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
                     "NofEvWOSPDZvertexVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax);
   
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvWSPDZvertexAndNoVtexerZVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) and no vertexer: Z vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvPassingVtxQAVsMCZvertex","Number of events with SPD vertex passing QA vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvNotPassingVtxResCutVsMCZvertex","Number of events with SPD vertex not passing resolution cut vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvWSPDZvertexAndVtexerZVsMCZvertex","Number of events with SPD vertex and vertexer: Z vs MC vertex",nbins,xmin,xmax);
+
+  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
+                    "NofEvWOSPDZvertexVsMCZvertex","Number of events without SPD vertex vs MC vertex",nbins,xmin,xmax);
+
 
   xmin = -5;
   xmax = 5;
   nbins = GetNbins(xmin,xmax,0.01);
-  
+
   CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"ZvertexMinusZvertexSPD","Primary vertex z - SPD vertex",nbins,xmin,xmax);
   
   xmin = -1;
@@ -371,6 +407,10 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
   
   CreateEventHistos(kHistoForMCInput | kHistoForData,eventSelection,triggerClassName,centrality,
                     "VertexClass","Type of vertex used",10,0,10);
+
+  CreateEventHistos(kHistoForMCInput | kHistoForData,eventSelection,triggerClassName,centrality,
+                    "SPDVertexType","Type of SPD vertexer used",10,0,10);
+
 
 
   xmin = 0;
