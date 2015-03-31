@@ -104,6 +104,9 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
   hQyVzCvsCentrality(0),
   hQxVzMvsCentrality(0),
   hQyVzMvsCentrality(0),
+  hqEPCvsCentrality(0), 
+  hqEPAvsCentrality(0),
+  hqEPvsCentrality(0), 
   ftree(0),           
   tCentrality(0),     
   tType(0),  
@@ -177,6 +180,9 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name)
   hQyVzCvsCentrality(0),
   hQxVzMvsCentrality(0),
   hQyVzMvsCentrality(0),
+  hqEPCvsCentrality(0), 
+  hqEPAvsCentrality(0), 
+  hqEPvsCentrality(0), 
   ftree(0),           
   tCentrality(0),     
   tType(0),  
@@ -312,26 +318,26 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   }
 
   if(! fHistTrackMultiplicity ){
-    fHistTrackMultiplicity  = new TH2F( "fHistTrackMultiplicity", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicity  = new TH2F( "fHistTrackMultiplicity", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,0,105);
     fHistTrackMultiplicity->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicity->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicity);
   } 
 
   if(! fHistTrackMultiplicityCentral ){
-    fHistTrackMultiplicityCentral  = new TH2F( "fHistTrackMultiplicityCentral", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicityCentral  = new TH2F( "fHistTrackMultiplicityCentral", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,0,105);
     fHistTrackMultiplicityCentral->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityCentral->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicityCentral);
   } 
   if(! fHistTrackMultiplicitySemiCentral ){
-    fHistTrackMultiplicitySemiCentral  = new TH2F( "fHistTrackMultiplicitySemiCentral", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicitySemiCentral  = new TH2F( "fHistTrackMultiplicitySemiCentral", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,0,105);
     fHistTrackMultiplicitySemiCentral->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicitySemiCentral->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicitySemiCentral);
   } 
   if(! fHistTrackMultiplicityMB ){
-    fHistTrackMultiplicityMB  = new TH2F( "fHistTrackMultiplicityMB", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,-0.5,104.5);
+    fHistTrackMultiplicityMB  = new TH2F( "fHistTrackMultiplicityMB", "Nb of Tracks MB Events |Vz| < 10", 250,0, 25000,105,0,105);
     fHistTrackMultiplicityMB->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityMB->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicityMB);
@@ -356,12 +362,12 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     fListHist->Add(fhMassTOF);
   }
   
-  EPVzAvsCentrality  = new TH2D("EPVzAvsCentrality" , "EPVzAvsCentrality" , 80, -2, 2,105,-0.5,105.5);
-  EPVzCvsCentrality  = new TH2D("EPVzCvsCentrality" , "EPVzCvsCentrality" , 80, -2, 2,105,-0.5,105.5);
-  EPTPCvsCentrality  = new TH2D("EPTPCvsCentrality" , "EPTPCvsCentrality" , 80, -2, 2,105,-0.5,105.5);
-  EPVzvsCentrality   = new TH2D("EPVzvsCentrality"  , "EPVzvsCentrality"  , 80, -2, 2,105,-0.5,105.5);
-  EPTPCpvsCentrality = new TH2D("EPTPCpvsCentrality", "EPTPCpvsCentrality", 80, -2, 2,105,-0.5,105.5);
-  EPTPCnvsCentrality = new TH2D("EPTPCnvsCentrality", "EPTPCnvsCentrality", 80, -2, 2,105,-0.5,105.5);
+  EPVzAvsCentrality  = new TH2D("EPVzAvsCentrality" , "EPVzAvsCentrality" , 80, -2, 2,105,0,105);
+  EPVzCvsCentrality  = new TH2D("EPVzCvsCentrality" , "EPVzCvsCentrality" , 80, -2, 2,105,0,105);
+  EPTPCvsCentrality  = new TH2D("EPTPCvsCentrality" , "EPTPCvsCentrality" , 80, -2, 2,105,0,105);
+  EPVzvsCentrality   = new TH2D("EPVzvsCentrality"  , "EPVzvsCentrality"  , 80, -2, 2,105,0,105);
+  EPTPCpvsCentrality = new TH2D("EPTPCpvsCentrality", "EPTPCpvsCentrality", 80, -2, 2,105,0,105);
+  EPTPCnvsCentrality = new TH2D("EPTPCnvsCentrality", "EPTPCnvsCentrality", 80, -2, 2,105,0,105);
 
   fListHist->Add(EPVzAvsCentrality);
   fListHist->Add(EPVzCvsCentrality);
@@ -384,17 +390,17 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hEvPlaneTPCvsEvPVz2040);                      
   fListHist->Add(hEvPlaneTPCvsEvPVz4060);   
 
-  hCos2DeltaTPCVzAvsCentrality   = new TH2F("hCos2DeltaTPCVzAvsCentrality"  ,"hCos2DeltaTPCVzAvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaTPCVzCvsCentrality   = new TH2F("hCos2DeltaTPCVzCvsCentrality"  ,"hCos2DeltaTPCVzCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzAVzCvsCentrality   = new TH2F("hCos2DeltaVzAVzCvsCentrality"  ,"hCos2DeltaVzAVzCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzMVzAvsCentrality   = new TH2F("hCos2DeltaVzMVzAvsCentrality"  ,"hCos2DeltaVzMVzAvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzMVzCvsCentrality   = new TH2F("hCos2DeltaVzMVzCvsCentrality"  ,"hCos2DeltaVzMVzCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzATPCvsCentrality   = new TH2F("hCos2DeltaVzATPCvsCentrality"  ,"hCos2DeltaVzATPCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzCTPCvsCentrality   = new TH2F("hCos2DeltaVzCTPCvsCentrality"  ,"hCos2DeltaVzCTPCvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzCVzAvsCentrality   = new TH2F("hCos2DeltaVzCVzAvsCentrality"  ,"hCos2DeltaVzCVzAvsCentrality"  ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzMTPCpvsCentrality  = new TH2F("hCos2DeltaVzMTPCpvsCentrality" ,"hCos2DeltaVzMTPCpvsCentrality" ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaVzMTPCnvsCentrality  = new TH2F("hCos2DeltaVzMTPCnvsCentrality" ,"hCos2DeltaVzMTPCnvsCentrality" ,100,-1.1,1.1,105,-0.5,105.5);
-  hCos2DeltaTPCpTPCnvsCentrality = new TH2F("hCos2DeltaTPCpTPCnvsCentrality","hCos2DeltaTPCpTPCnvsCentrality",100,-1.1,1.1,105,-0.5,105.5);
+  hCos2DeltaTPCVzAvsCentrality   = new TH2F("hCos2DeltaTPCVzAvsCentrality"  ,"hCos2DeltaTPCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaTPCVzCvsCentrality   = new TH2F("hCos2DeltaTPCVzCvsCentrality"  ,"hCos2DeltaTPCVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzAVzCvsCentrality   = new TH2F("hCos2DeltaVzAVzCvsCentrality"  ,"hCos2DeltaVzAVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzMVzAvsCentrality   = new TH2F("hCos2DeltaVzMVzAvsCentrality"  ,"hCos2DeltaVzMVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzMVzCvsCentrality   = new TH2F("hCos2DeltaVzMVzCvsCentrality"  ,"hCos2DeltaVzMVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzATPCvsCentrality   = new TH2F("hCos2DeltaVzATPCvsCentrality"  ,"hCos2DeltaVzATPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCTPCvsCentrality   = new TH2F("hCos2DeltaVzCTPCvsCentrality"  ,"hCos2DeltaVzCTPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCVzAvsCentrality   = new TH2F("hCos2DeltaVzCVzAvsCentrality"  ,"hCos2DeltaVzCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzMTPCpvsCentrality  = new TH2F("hCos2DeltaVzMTPCpvsCentrality" ,"hCos2DeltaVzMTPCpvsCentrality" ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzMTPCnvsCentrality  = new TH2F("hCos2DeltaVzMTPCnvsCentrality" ,"hCos2DeltaVzMTPCnvsCentrality" ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaTPCpTPCnvsCentrality = new TH2F("hCos2DeltaTPCpTPCnvsCentrality","hCos2DeltaTPCpTPCnvsCentrality",100,-1.1,1.1,105,0,105);
 
   fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
   fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
@@ -409,15 +415,15 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hCos2DeltaTPCpTPCnvsCentrality);
 
  
-  hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,-0.5,105.5);
+  hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,0,105);
   fListHist->Add(hQVzAQVzCvsCentrality);
  
-  hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQxVzMvsCentrality = new TH2F("hQxVzMvsCentrality","hQxVzMvsCentrality",100,-5,5,105,-0.5,105.5);
-  hQyVzMvsCentrality = new TH2F("hQyVzMvsCentrality","hQyVzMvsCentrality",100,-5,5,105,-0.5,105.5);
+  hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-5,5,105,0,105);
+  hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-5,5,105,0,105);
+  hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,0,105);
+  hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,0,105);
+  hQxVzMvsCentrality = new TH2F("hQxVzMvsCentrality","hQxVzMvsCentrality",100,-5,5,105,0,105);
+  hQyVzMvsCentrality = new TH2F("hQyVzMvsCentrality","hQyVzMvsCentrality",100,-5,5,105,0,105);
 
   fListHist->Add(hQxVzAvsCentrality);
   fListHist->Add(hQyVzAvsCentrality);
@@ -425,6 +431,14 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hQyVzCvsCentrality);
   fListHist->Add(hQxVzMvsCentrality);
   fListHist->Add(hQyVzMvsCentrality);
+
+  hqEPCvsCentrality   = new TH2F("hqEPCvsCentrality","hqEPCvsCentrality",100,-5,5,105,0,105);
+  hqEPAvsCentrality   = new TH2F("hqEPAvsCentrality","hqEPAvsCentrality",100,-5,5,105,0,105);
+  hqEPvsCentrality    = new TH2F("hqEPvsCentrality" ,"hqEPvsCentrality" ,100,-5,5,105,0,105);
+
+  fListHist->Add(hqEPCvsCentrality);  
+  fListHist->Add(hqEPAvsCentrality);  
+  fListHist->Add(hqEPvsCentrality );  
 
   if(!ftree){
    
@@ -445,7 +459,7 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     ftree->Branch("timpactXY"        ,&timpactXY        ,"timpactXY/D"      );
     ftree->Branch("timpactZ"         ,&timpactZ         ,"timpactZ/D"       );
     ftree->Branch("tpull"            ,&tpull            ,"tpull/D"          );
-    ftree->Branch("tphi"             ,&tphi             ,"tphi/D"          );
+    ftree->Branch("tphi"             ,&tphi             ,"tphi/D"           );
 
   }
 
@@ -501,7 +515,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   ULong_t  status=0;
  
   Double_t pmax  = 10.;
-  Double_t ptmax = 7.;
+  Double_t ptmax = 6.2;
   // Primary vertex cut
   
   const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
@@ -573,7 +587,11 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Double_t evPlAngV0A = pl->CalculateVZEROEventPlane(lESDevent, 8, 2, qxEPa, qyEPa);
   Double_t evPlAngV0C = pl->CalculateVZEROEventPlane(lESDevent, 9, 2, qxEPc, qyEPc);
   Double_t evPlAngV0  = pl->CalculateVZEROEventPlane(lESDevent,10, 2, qxEP,  qyEP);
-  
+
+  hqEPCvsCentrality  ->Fill(TMath::Sqrt(qxEPa*qxEPa+qyEPa*qyEPa) , percentile); 
+  hqEPAvsCentrality  ->Fill(TMath::Sqrt(qxEPc*qxEPc+qyEPc*qyEPc) , percentile); 
+  hqEPvsCentrality   ->Fill(TMath::Sqrt(qxEP *qxEP +qyEP *qyEP ) , percentile); 
+
   Double_t Qx2  = 0, Qy2  = 0;
   Double_t Qx2p = 0, Qy2p = 0;
   Double_t Qx2n = 0, Qy2n = 0;
@@ -617,6 +635,8 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   EPTPCpvsCentrality ->Fill(evPlAngTPCp , percentile); 
   EPTPCnvsCentrality ->Fill(evPlAngTPCn , percentile); 
 
+  
+
   if(percentile>=0 && percentile<=5)
     hEvPlaneTPCvsEvPVz05  ->Fill(evPlAngTPC,evPlAngV0); 
   if(percentile>=0 && percentile<=7.5)
@@ -650,7 +670,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   hQVzAQVzCvsCentrality->Fill(QV0AQV0C,percentile);
   
   //NUA correction
-
+ 
   hQxVzAvsCentrality->Fill(qxEPa,percentile);
   hQyVzAvsCentrality->Fill(qyEPa,percentile);
   hQxVzCvsCentrality->Fill(qxEPc,percentile);
@@ -792,7 +812,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       
       uqV0A = TMath::Cos(2*tPhi)*qxEPa+TMath::Sin(2*tPhi)*qyEPa;
       uqV0C = TMath::Cos(2*tPhi)*qxEPc+TMath::Sin(2*tPhi)*qyEPc;
-       
+
       tCentrality      = percentile;
       tType            = eventtype;
       tHasTOF          = hasTOF;
@@ -810,7 +830,11 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       tpull            = pullTPC;
       tphi             = tPhi;
 
-      ftree->Fill();
+      if(pt<2.2)   
+	ftree->Fill();
+      else
+	if(hasTOF==1)
+	  ftree->Fill();
     } 
   }  //track
   
