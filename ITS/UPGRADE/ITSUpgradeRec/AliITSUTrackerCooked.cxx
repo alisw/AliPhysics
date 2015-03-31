@@ -299,7 +299,7 @@ void AliITSUTrackerCooked::LoopOverSeeds(Int_t idx[], Int_t n) {
   //--------------------------------------------------------------------
   // Loop over a subset of track seeds
   //--------------------------------------------------------------------
-  AliITSUthreadData data[kSeedingLayer2];
+  AliITSUthreadData *data = new AliITSUthreadData[kSeedingLayer2];
 
   for (Int_t i=0; i<n; i++) {
       Int_t s=idx[i];
@@ -364,6 +364,7 @@ void AliITSUTrackerCooked::LoopOverSeeds(Int_t idx[], Int_t n) {
       delete fSeeds->RemoveAt(s);
       fSeeds->AddAt(best,s);
   }
+  delete[] data;
 }
 
 
