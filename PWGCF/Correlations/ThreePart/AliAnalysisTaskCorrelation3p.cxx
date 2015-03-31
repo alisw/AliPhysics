@@ -32,7 +32,6 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "THn.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "TFile.h"
@@ -71,7 +70,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
-//   , fefficiencies(kFALSE)
+  , fWeights(NULL)
   , fRandom(NULL)
   , fMcArray(NULL)
   , fTrackCuts(NULL)
@@ -136,7 +135,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
-//   , fefficiencies(kFALSE)
+  , fWeights(NULL)
   , fRandom(NULL)
   , fMcArray(NULL)
   , fTrackCuts(NULL)
@@ -270,6 +269,9 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 //     InitializeEffHistograms();
 //   }
   // all tasks must post data once for all outputs
+    if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights);
+    
+    
   PostData(1, fOutput);
 }
 
@@ -305,8 +307,8 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 //   FillHistogram("EventsperRun", fRunFillValue);
   //To fill with tracks and pions:
   TObjArray allrelevantParticles;
-  fNTriggers=0;//Reset fNTriggers
-  fNAssociated=0;//Reset fNAssociated
+  fNTriggers=0.0;//Reset fNTriggers
+  fNAssociated=0.0;//Reset fNAssociated
   //Fill all the tracks
    GetTracks(&allrelevantParticles, pEvent);
 //   FillHistogram("centVsNofTracks",fCentralityPercentile,);
@@ -347,15 +349,28 @@ void AliAnalysisTaskCorrelation3p::Terminate(Option_t *)
 Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, AliVEvent *pEvent)
 {
   Int_t nofTracks = 0;
+  Int_t MultBin; Int_t VZbin;
+  if(fWeights){
+    MultBin = fWeights->GetAxis(0)->FindBin(fMultiplicity);
+    VZbin   = fWeights->GetAxis(1)->FindBin(fVertex[2]);
+  }
   nofTracks=pEvent->GetNumberOfTracks();
   FillHistogram("trackCount",nofTracks);
   for (int i=0; i<nofTracks; i++) {
+    Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
+    if(fWeights){
+      Int_t phibin = fWeights->GetAxis(2)->FindBin(t->Phi());
+      Int_t etabin = fWeights->GetAxis(2)->FindBin(t->Eta());
+      Int_t pTbin  = fWeights->GetAxis(2)->FindBin(t->Pt());
+      Int_t x[5] = {MultBin,VZbin,phibin,etabin,pTbin};
+      Weight *= fWeights->GetBinContent(x);
+    }
 //     FillHistogram("TracksperRun",fRunFillValue);
-    FillHistogram("trackUnselectedPt",t->Pt());
-    FillHistogram("trackUnselectedPhi",t->Phi());
-    FillHistogram("trackUnselectedTheta",t->Theta());
+    FillHistogram("trackUnselectedPt",t->Pt(),Weight);
+    FillHistogram("trackUnselectedPhi",t->Phi(),Weight);
+    FillHistogram("trackUnselectedTheta",t->Theta(),Weight);
     if (!IsSelected(t)) continue;
     allrelevantParticles->Add(t);
 //     if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::pp){
@@ -368,20 +383,20 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 //     }
     
 //     FillHistogram("selectedTracksperRun",fRunFillValue);
-    FillHistogram("trackPt",t->Pt());
-    FillHistogram("trackPhi",t->Phi());
-    FillHistogram("trackTheta",t->Theta());
+    FillHistogram("trackPt",t->Pt(),Weight);
+    FillHistogram("trackPhi",t->Phi(),Weight);
+    FillHistogram("trackTheta",t->Theta(),Weight);
     if(IsSelectedTrigger(t)){
       fNTriggers+=1;
-      FillHistogram("trackTriggerPt",t->Pt());
-      FillHistogram("trackTriggerPhi",t->Phi());
-      FillHistogram("trackTriggerTheta",t->Theta());
+      FillHistogram("trackTriggerPt",t->Pt(),Weight);
+      FillHistogram("trackTriggerPhi",t->Phi(),Weight);
+      FillHistogram("trackTriggerTheta",t->Theta(),Weight);
     }
     if(IsSelectedAssociated(t)){
       fNAssociated+=1;
-      FillHistogram("trackAssociatedPt",t->Pt());
-      FillHistogram("trackAssociatedPhi",t->Phi());
-      FillHistogram("trackAssociatedTheta",t->Theta());
+      FillHistogram("trackAssociatedPt",t->Pt(),Weight);
+      FillHistogram("trackAssociatedPhi",t->Phi(),Weight);
+      FillHistogram("trackAssociatedTheta",t->Theta(),Weight);
     }
   }
   
@@ -918,7 +933,8 @@ void AliAnalysisTaskCorrelation3p::FillHistogram(const char* key, Double_t x, Do
   TH2 * hist = dynamic_cast<TH2*>(fOutput->FindObject(key)) ;
   if(hist)
     hist->Fill(x,y) ;
-  else AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
+  else if(dynamic_cast<TH1*>(fOutput->FindObject(key)))dynamic_cast<TH1*>(fOutput->FindObject(key))->Fill(x,y);
+  else AliError(Form("can not find histogram (of instance TH2 or TH1) <%s> ",key)) ;
 }
 
 void AliAnalysisTaskCorrelation3p::FillHistogram(const char* key, Double_t x, Double_t y, Double_t z)
@@ -926,7 +942,8 @@ void AliAnalysisTaskCorrelation3p::FillHistogram(const char* key, Double_t x, Do
   TH3 * hist = dynamic_cast<TH3*>(fOutput->FindObject(key)) ;
   if(hist)
     hist->Fill(x,y,z) ;
-  else AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
+  else if(dynamic_cast<TH2*>(fOutput->FindObject(key)))dynamic_cast<TH2*>(fOutput->FindObject(key))->Fill(x,y,z);
+  else AliError(Form("can not find histogram (of instance TH3 or TH2) <%s> ",key)) ;
 }
 
 void AliAnalysisTaskCorrelation3p::FillHistogram(const char* key, Double_t x, Double_t y, Double_t z,Double_t a, Double_t b)

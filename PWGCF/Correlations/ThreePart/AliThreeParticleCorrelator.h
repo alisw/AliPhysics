@@ -30,6 +30,7 @@
 #include <AliMCEventHandler.h>
 #include <AliAnalysisManager.h>
 #include <TRandom3.h>
+#include "THn.h"
 
 using std::vector;
 using std::cout;
@@ -124,7 +125,7 @@ class AliThreeParticleCorrelator : public TNamed {
     }
 
     int Incrementtrigger() const {
-      return fCorrelation->FillTrigger();
+      return fCorrelation->FillTrigger(fTrigger);
     }
     //3p correlation
     int Correlate(AliVParticle* p1, AliVParticle* p2, int weight) const {
@@ -198,7 +199,17 @@ class AliThreeParticleCorrelator : public TNamed {
     fMultiplicity = m;
   }
   
-  
+  /// Set the efficiency weights.
+  void SetWeights(THnT<Float_t>* weights){
+    for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
+      (*o)->SetWeight(weights);
+      //And for all ME workers.
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights);
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights);
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights);
+    }
+  }
+    
   /// get ME analysis object corresponding to parameter
   C* GetCorrespondingME(C* o, int type=0) {
     for (unsigned i=0, e=fCorrelations.size(); i<e; i++) {

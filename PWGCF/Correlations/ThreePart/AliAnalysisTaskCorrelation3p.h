@@ -7,6 +7,9 @@
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include "TArrayD.h"
+#include "TFile.h"
+#include "THn.h"
+
 class AliCorrelation3p;
 class AliESDtrackCuts;
 class AliAODTrack;
@@ -67,6 +70,13 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setphospi0s(bool phos) {fphospions = phos;}
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
+  void SetWeights(const char* file){
+    TFile* wfile = TFile::Open(file,"READ");
+    if(wfile){
+      fWeights = dynamic_cast<THnF*>(wfile->Get("hnWeight")->Clone("hnWeight"));}
+    else{fWeights = NULL;}
+    wfile->Close();
+  }
 //   void SetEfficiencies(){fefficiencies=kTRUE;}
   void Askforgensettings();
   TF1* pTdistribution(TH1D* hist, const char* name);
@@ -116,9 +126,9 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
-//   Bool_t 	    fefficiencies;//if true, only histograms for measured and MC tracks are collected.
-  TRandom3 *	    fRandom;
-  TClonesArray*     fMcArray;
+  THnF *            fWeights;//!THnF to hold the correction weights.
+  TRandom3 *	    fRandom;//
+  TClonesArray*     fMcArray;//
   //Objects that contain needed/used objects for the task:
   AliESDtrackCuts*  fTrackCuts;    //! track cuts object
   TObject*          fCorrelator;   //! correlation steering class
@@ -138,8 +148,8 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Double_t	    fMaxVz; //Vertex cut variable.
   Double_t 	    fMaxMult; //Is set automatically when setting the binning.
   Double_t 	    fMaxNumberOfTracksInPPConsidered; //Maximum number of tracks in an pp event used for correlations.
-  Int_t 	    fNTriggers;//Contains the number of triggers in a given event.
-  Int_t 	    fNAssociated;//Number of associated in the event.
+  Double_t 	    fNTriggers;//Contains the number of triggers in a given event.
+  Double_t 	    fNAssociated;//Number of associated in the event.
   ////tracks:
   float 	    fAcceptancecut; //maximum eta
   Double_t 	    fMinTriggerPt;
