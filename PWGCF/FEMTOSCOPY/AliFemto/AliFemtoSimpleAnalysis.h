@@ -24,7 +24,8 @@ class AliFemtoPicoEventCollectionVectorHideAway;
 
 class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
-  // friend class AliFemtoLikeSignAnalysis;
+/// \class AliFemtoSimpleAnalysis
+/// \brief friend class AliFemtoLikeSignAnalysis;
 
  public:
   AliFemtoSimpleAnalysis();
@@ -78,7 +79,9 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   virtual void Finish();
 
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoSimpleAnalysis, 0)
+  /// \endcond
 #endif 
 
 
@@ -90,26 +93,28 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 		 AliFemtoParticleCollection* ParticlesPssingCut2=0,
 		 Bool_t enablePairMonitors=kFALSE);
 
-  AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway; //! Mixing Buffer used for Analyses which wrap this one 
+  AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway; //!<! Mixing Buffer used for Analyses which wrap this one
 
-  AliFemtoPairCut*             fPairCut;             //  cut applied to pairs 
-  AliFemtoCorrFctnCollection*  fCorrFctnCollection;  //  correlation functions of this analysis 
-  AliFemtoEventCut*            fEventCut;            //  cut to select events 
-  AliFemtoParticleCut*         fFirstParticleCut;    //  select particles of type #1 
-  AliFemtoParticleCut*         fSecondParticleCut;   //  select particles of type #2 
-  AliFemtoPicoEventCollection* fMixingBuffer;        //  mixing buffer used in this simplest analysis 
-  AliFemtoPicoEvent*           fPicoEvent;           //! The current event, in the small (pico) form 
-  unsigned int fNumEventsToMix;                      //  How many "previous" events get mixed with this one, to make background 
-  unsigned int fNeventsProcessed;                    //  How many events processed so far 
+  AliFemtoPairCut*             fPairCut;             ///< cut applied to pairs
+  AliFemtoCorrFctnCollection*  fCorrFctnCollection;  ///< correlation functions of this analysis
+  AliFemtoEventCut*            fEventCut;            ///< cut to select events
+  AliFemtoParticleCut*         fFirstParticleCut;    ///< select particles of type #1
+  AliFemtoParticleCut*         fSecondParticleCut;   ///< select particles of type #2
+  AliFemtoPicoEventCollection* fMixingBuffer;        ///< mixing buffer used in this simplest analysis
+  AliFemtoPicoEvent*           fPicoEvent;           //!<! The current event, in the small (pico) form
+  unsigned int fNumEventsToMix;                      ///< How many "previous" events get mixed with this one, to make background
+  unsigned int fNeventsProcessed;                    ///< How many events processed so far
 
-  unsigned int fMinSizePartCollection;               //  Don't use event if it has fewer than this many particles passing ParticleCuts default 0
+  unsigned int fMinSizePartCollection;               ///< Don't use event if it has fewer than this many particles passing ParticleCuts default 0
 
   Bool_t fVerbose;
   Bool_t fPerformSharedDaughterCut;
   Bool_t fEnablePairMonitors;
 
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoSimpleAnalysis, 0)
+  /// \endcond
 #endif
 
     };
