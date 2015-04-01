@@ -47,19 +47,23 @@
 #include <cstdio>
 
 #ifdef __ROOT__ 
+/// \cond CLASSIMP
 ClassImp(AliFemtoAODTrackCut)
+/// \endcond
 #endif
 
 
-// electron
-// 0.13 - 1.8
-// 0       7.594129e-02    8.256141e-03
-// 1       -5.535827e-01   8.170825e-02
-// 2       1.728591e+00    3.104210e-01
-// 3       -2.827893e+00   5.827802e-01
-// 4       2.503553e+00    5.736207e-01
-// 5       -1.125965e+00   2.821170e-01
-// 6       2.009036e-01    5.438876e-02
+/// \class AliFemtoAODTrackCut
+/// \brief electron
+///
+/// 0.13 - 1.8
+/// 0       7.594129e-02    8.256141e-03
+/// 1       -5.535827e-01   8.170825e-02
+/// 2       1.728591e+00    3.104210e-01
+/// 3       -2.827893e+00   5.827802e-01
+/// 4       2.503553e+00    5.736207e-01
+/// 5       -1.125965e+00   2.821170e-01
+/// 6       2.009036e-01    5.438876e-02
 
 // pion
 // 0.13 - 2.0
@@ -91,7 +95,8 @@ AliFemtoAODTrackCut::AliFemtoAODTrackCut() :
     fNTracksFailed(0),
     fMostProbable(0)
 {
-  // Default constructor
+  /// Default constructor
+
   fNTracksPassed = fNTracksFailed = 0;
   fCharge = 0;  // takes both charges 0
   fPt[0]=0.0;              fPt[1] = 100.0;//100
@@ -105,14 +110,16 @@ AliFemtoAODTrackCut::AliFemtoAODTrackCut() :
 }
 //------------------------------
 AliFemtoAODTrackCut::~AliFemtoAODTrackCut(){
-  /* noop */
+  /// noop
+
 }
 //------------------------------
 bool AliFemtoAODTrackCut::Pass(const AliFemtoTrack* track)
 {
-  // test the particle and return 
-  // true if it meets all the criteria
-  // false if it doesn't meet at least one of the criteria
+  /// test the particle and return
+  /// true if it meets all the criteria
+  /// false if it doesn't meet at least one of the criteria
+
   float tMost[5];
   
   if (((track->ITSchi2() + track->TPCchi2())/(track->ITSncls() + track->TPCncls())) > fMaxchiNdof) {
@@ -232,7 +239,8 @@ bool AliFemtoAODTrackCut::Pass(const AliFemtoTrack* track)
 //------------------------------
 AliFemtoString AliFemtoAODTrackCut::Report()
 {
-  // Prepare report from the execution
+  /// Prepare report from the execution
+
   string tStemp;
   char tCtemp[100];
   snprintf(tCtemp , 100, "Particle mass:\t%E\n",this->Mass());
@@ -250,7 +258,8 @@ AliFemtoString AliFemtoAODTrackCut::Report()
 }
 TList *AliFemtoAODTrackCut::ListSettings()
 {
-  // return a list of settings in a writable form
+  /// return a list of settings in a writable form
+
   TList *tListSetttings = new TList();
   char buf[200];
   snprintf(buf, 200, "AliFemtoAODTrackCut.mass=%f", this->Mass());
@@ -312,7 +321,8 @@ TList *AliFemtoAODTrackCut::ListSettings()
 // 6       2.009036e-01    5.438876e-02
 float AliFemtoAODTrackCut::PidFractionElectron(float mom) const
 {
-  // Provide a parameterized fraction of electrons dependent on momentum
+  /// Provide a parameterized fraction of electrons dependent on momentum
+
   if (mom<0.13) return 0.0;
   if (mom>1.8) return 0.0;
   return (7.594129e-02 
@@ -331,7 +341,8 @@ float AliFemtoAODTrackCut::PidFractionElectron(float mom) const
 // 2       1.042004e-01    1.503945e-02
 float AliFemtoAODTrackCut::PidFractionPion(float mom) const
 {
-  // Provide a parameterized fraction of pions dependent on momentum
+  /// Provide a parameterized fraction of pions dependent on momentum
+
   if (mom<0.13) return 0.0;
   if (mom>2.0) return 0.0;
   return ( 1.063457e+00
@@ -347,7 +358,8 @@ float AliFemtoAODTrackCut::PidFractionPion(float mom) const
 // 3       6.704652e-02    7.783990e-03
 float AliFemtoAODTrackCut::PidFractionKaon(float mom) const
 {
-  // Provide a parameterized fraction of kaons dependent on momentum
+  /// Provide a parameterized fraction of kaons dependent on momentum
+
   if (mom<0.18) return 0.0;
   if (mom>2.0) return 0.0;
   return (-7.289406e-02
@@ -364,7 +376,8 @@ float AliFemtoAODTrackCut::PidFractionKaon(float mom) const
 // 3       -4.608098e-02   8.336400e-03
 float AliFemtoAODTrackCut::PidFractionProton(float mom) const
 {
-  // Provide a parameterized fraction of protons dependent on momentum
+  /// Provide a parameterized fraction of protons dependent on momentum
+
   if (mom<0.26) return  0.0;
   if (mom>2.0) return 0.0;
   return (-3.730200e-02  
