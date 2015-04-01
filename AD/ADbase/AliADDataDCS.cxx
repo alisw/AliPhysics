@@ -126,7 +126,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 
     aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[iAlias].Data());
     if(!aliasArr){
-      AliError(Form("Alias %s not found!", fAliasNames[iAlias].Data()));
+      AliError(Form("Missing data points for alias %s!", fAliasNames[iAlias].Data()));
       success = kFALSE;
       continue;
     }
@@ -134,7 +134,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
     //Introduce(iAlias, aliasArr);
     
     if(aliasArr->GetEntries()<2){
-      AliWarning(Form("Alias %s has just %d entries!",
+      AliWarning(Form("Alias %s has just %d data points!",
 		    fAliasNames[iAlias].Data(),aliasArr->GetEntries()));
     }
     
