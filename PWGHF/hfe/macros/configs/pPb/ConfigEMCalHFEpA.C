@@ -14,7 +14,8 @@ Int_t centralityIndex=0,
 Bool_t isAOD = kFALSE,
 Bool_t isEMCal = kFALSE,
 Bool_t isTrigger = kFALSE,
-Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
+Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
+Bool_t isTender = kFALSE
 )
 
 {
@@ -96,6 +97,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 		//Bool_t isTrigger = kFALSE;
 	if(isTrigger) task->SetUseTrigger();
 	
+	if(isTender) task->SetUseTender();
 		//task->SetUseTender();
 
 	
@@ -129,15 +131,18 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//partner cuts
 	
-	if(configIndex==29) task->SetAdditionalCuts(0.3,80);
-	
-	else if(configIndex==85) task->SetAdditionalCuts(0.2,80);
+	if(configIndex==29) task->SetAdditionalCuts(0.1,80);
+    else if(configIndex==30) task->SetAdditionalCuts(0.15,80);
+    else if(configIndex==31) task->SetAdditionalCuts(0.2,80);
+    else if(configIndex==32) task->SetAdditionalCuts(0.25,80);
+	else if(configIndex==84) task->SetAdditionalCuts(0.3,80);
+	else if(configIndex==85) task->SetAdditionalCuts(0.35,80);
 	else if(configIndex==86) task->SetAdditionalCuts(0.4,80);
-	else if(configIndex==87) task->SetAdditionalCuts(0.6,80);	
-	else if(configIndex==30) task->SetAdditionalCuts(0.5,80);
-	else if(configIndex==31) task->SetAdditionalCuts(0.7,80);
-	else if(configIndex==32) task->SetAdditionalCuts(0.9,80);
-	else if(configIndex==84) task->SetAdditionalCuts(0.1,80);
+	else if(configIndex==87) task->SetAdditionalCuts(0.45,80);
+    
+	
+	
+    
 	else if(configIndex==33) task->SetAdditionalCuts(0,60);
 	else if(configIndex==34) task->SetAdditionalCuts(0,70);
 	else if(configIndex==35) task->SetAdditionalCuts(0,90);
@@ -188,7 +193,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 		
 	//this line is to set the change on the E/p cut used in the efficiency calculations.
-    task->SetEoverPnsigma(kTRUE);
+    //task->SetEoverPnsigma(kTRUE);
 	
 	
 	if(centralityIndex==0) task->SetCentrality(0,20);
