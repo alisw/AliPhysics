@@ -63,25 +63,29 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
   
   GetThresholds();
 
+  Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
+
   for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
-    Int_t count = 0; 
+    test[specie] = 1.0 ; 
+    count[specie] = 0; 
+    Float_t rv = 0.;
+    
     if(!AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie))) 
       continue ;
-    //printf("\tAliZDCQAChecker -> specie %d, AliRecoParam::ConvertIndex(specie) %d, AliRecoParam::kLowMult %d, IsEventSpecieSet(specie) %d\n",
-    //  specie, AliRecoParam::ConvertIndex(specie) ,AliRecoParam::kLowMult,
-    //  AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)));
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+      continue ; 
     
     // ====================================================================
     // 	Checks for p-p events
     // ====================================================================
     if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult){
       if(list[specie]->GetEntries()==0){  
+        test[specie] = 0.0 ;   
         AliWarning("\t The list to be checked is empty!"); // nothing to check
         return;
       }
       //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       TIter next(list[specie]); 
-      count = 0; 
       TH1 * hdata;	  
       
       Float_t res=0., percentageDiff=0.30;
@@ -119,36 +123,28 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	      if(ihitHisto==11){
 	        if(TMath::Abs(meanZNC)>1.e-10){
-                  if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZNA)>1.e-10){
-                  if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
-                    res=1.;
-                  else percentageDiff=
-                    res=.5;
+                  if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZPC)>1.e-10){
-                  if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZPA)>1.e-10){
-                  if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	      }
 	      ihitHisto++;
@@ -173,36 +169,28 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	      if(idigHisto==11){
 	        if(TMath::Abs(sumADCZNC)>1.e-10){
-                  if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZNA)>1.e-10){
-                  if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZPC)>1.e-10){
-                  if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZPA)>1.e-10){
-                  if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	      }
 	      idigHisto++;	      
@@ -225,21 +213,25 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 		   res=1.;
 		 }
 		 else if((hdata->GetBinContent(ibin))<10.){
-		   res=0.5;
 		   if(ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18){
+		     res=0.5;
 		     iDetPM = kFALSE;
 		   }
+		   else res=1.;
 		 }
 		 //
 		 resADC += res;
-            	 test[specie] += res;
-            	 count++;
+            	 //test[specie] += res;
+            	 //count[specie]++;
 	      }
 	      if(nentries != -99) messages.Add(new TObjString(Form("#entries %d",nentries)));
 	      else messages.Add(new TObjString("#entries not known"));
 	      //
-	      Float_t rv=1.;
+	      rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resADC/hdata->GetNbinsX();
+              test[specie] += res;
+              count[specie]++;
+	      //
 	      if(rv == 1.) messages.Add(new TObjString("ADCs are OK!")); 
 	      else if(iDetPM==kFALSE){
 	        messages.Add(new TObjString("Problem with some ADC!"));
@@ -249,10 +241,6 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==23){
-	      // Reference values must be inserted in the order:
-	      // ZNC, ZPC, ZNA, ZPA, ZEM1, ZEM2
-	      // 2012 -> Reference values from RUN 177399
-	      //Double_t refTDCs[6] = {-322.7,-321.4,-321.6,-321.7,-316.2,-315.4};
 	      //  11/2012 -> QA threshold values x TDCs are read from configuration file
 	      Double_t refTDCs[6];
 	      refTDCs[0] = fZDCQAThr_ZNCTDCRefThr;
@@ -264,26 +252,23 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      //
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
-		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<3.){
-		   res=1.;
-		 }
-		 else if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<5.){
-		   res=0.8;
-            	 }
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<3.) res=1.;
+		 else if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<5.) res=0.8;
 		 else res=0.5;
 		 //
 		 resTDC += res;
-		 test[specie] += res;
-            	 count++;
+		 //test[specie] += res;
+            	 //count[specie]++;
 	      }
-	      Float_t rv=1.;
+	      rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
+	      // Changed to have the general flag for DQM histo according to histo messages
+              test[specie] += res;
+              count[specie]++;
+	      //
 	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
 	      else if(rv<1. && rv>0.75) messages.Add(new TObjString("Minor problem with TDCs"));
-	      else{
-	        messages.Add(new TObjString("Serious problem in ZDC timing"));
-                messages.Add(new TObjString("IF THIS IS A PHYSICS RUN"));
-	      }
+	      else messages.Add(new TObjString("IF this is a PHYSICS RUN ZDC has a serious problem!"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    irawHisto++;
@@ -311,36 +296,28 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	    if(irecHisto==11){
 	      if(TMath::Abs(meanZNC)>1.e-10){
-            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(meanZNA)>1.e-10){
-            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(meanZPC)>1.e-10){
-            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(meanZPA)>1.e-10){
-            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	    }
 	    irecHisto++;	    
@@ -367,36 +344,28 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	    if(esdInd==15){
 	      if(TMath::Abs(sumADCZNC)>1.e-10){
-            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(sumADCZNA)>1.e-10){
-            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff)res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(sumADCZPC)>1.e-10){
-            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(sumADCZPA)>1.e-10){
-            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
             }
             esdInd++;
@@ -413,14 +382,13 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
     // 	Checks for A-A events
     // ====================================================================
     if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) {
-      if(list[specie]->GetEntries()==0){  
+      if(list[specie]->GetEntries()==0){
+        test[specie] = 0.0 ;   
         AliWarning("\t The list to be checked is empty!");
-        return ;
+        return;
       }
-      //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       //
       TIter next(list[specie]); 
-      count = 0; 
       TH1 * hdata;	  
       
       Float_t res=0., percentageDiff=0.10;
@@ -458,55 +426,43 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
 	      if(ihitHisto==3){
 	        if(TMath::Abs(meanZNC)>1.e-10 && TMath::Abs(meanZNA)>1.e-10){
-                  if((2*TMath::Abs(meanZNC-meanZNA)/(meanZNA+meanZNC))<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((2*TMath::Abs(meanZNC-meanZNA)/(meanZNA+meanZNC))<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZPC)>1.e-10 && TMath::Abs(meanZPA)>1.e-10){
-                  if((TMath::Abs(meanZPC-meanZPA)/(meanZPA+meanZPC))<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(meanZPC-meanZPA)/(meanZPA+meanZPC))<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
               }
 	      // --- Check whether (mean PMQi - PMC)/PMC < percentageDiff
 	      if(ihitHisto==11){
 	        if(TMath::Abs(meanZNC)>1.e-10){
-                  if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZNA)>1.e-10){
-                  if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZPC)>1.e-10){
-                  if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(meanZPA)>1.e-10){
-                  if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	      }
 	      ihitHisto++;
@@ -532,55 +488,43 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
 	      if(idigHisto==3){
 	        if(TMath::Abs(sumADCZNC)>1.e-10 && TMath::Abs(sumADCZNA)>1.e-10){
-                  if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZPC)>1.e-10 && TMath::Abs(sumADCZPA)>1.e-10){
-                  if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
               }
 	      // --- Check whether (sumADC PMQi - PMC)/PMC < percentageDiff
 	      if(idigHisto==11){
 	        if(TMath::Abs(sumADCZNC)>1.e-10){
-                  if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZNA)>1.e-10){
-                  if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZPC)>1.e-10){
-                  if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	        if(TMath::Abs(sumADCZPA)>1.e-10){
-                  if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
-                    res=1.;
-                  else 
-                    res=.5;
+                  if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) res=1.;
+                  else res=.5;
                   test[specie] += res;
-                  count++;
+                  count[specie]++;
 		}
 	      }
               idigHisto++;
@@ -599,24 +543,28 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    if(irawHisto==22){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
-		 if((hdata->GetBinContent(ibin))>10.){
-		   res=1.;
-		 }
-		 else if((hdata->GetBinContent(ibin))<10. && 
-		   (ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18)){
-		   res=0.5;
-		   iDetPM = kFALSE;
+		 if((hdata->GetBinContent(ibin))>10.) res=1.;
+		 else if((hdata->GetBinContent(ibin))<10.){
+		   if(ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18){
+		     res=0.5;
+		     iDetPM = kFALSE;
+		   }
+		   else res=1.;
 		 }
 		 //
 		 resADC += res;
-            	 test[specie] += res;
-            	 count++;
+            	 //test[specie] += res;
+            	 //count[specie]++;
 	      }
 	      if(nentries != -99) messages.Add(new TObjString(Form("#entries %d",nentries)));
 	      else messages.Add(new TObjString("#entries not known"));
 	      //
-	      Float_t rv=1.;
+	      rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resADC/hdata->GetNbinsX();
+	      // Changed to have the general flag for DQM histo according to histo messages
+              test[specie] += res;
+              count[specie]++;
+	      //
 	      if(rv > 0.98) messages.Add(new TObjString("ADCs are OK!")); 
 	      else if(iDetPM==kFALSE){
 	        messages.Add(new TObjString("Problem with ADCs!"));
@@ -626,8 +574,6 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==23){
-	      // Reference values from RUN 137161
-	      //Double_t refTDCs[6] = {-320.7,-319.0,-318.6,-319.9,-321.3,-320.8};
 	      //  11/2012 -> QA threshold values x TDCs are read from configuration file
 	      Double_t refTDCs[6];
 	      refTDCs[0] = fZDCQAThr_ZNCTDCRefThr;
@@ -639,26 +585,23 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      //
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
-		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<3.){
-		   res=1.;
-		 }
-		 else if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.){
-		   res=0.8;
-            	 }
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<3.) res=1.;
+		 else if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.) res=0.8;
 		 else res=0.5;
 		 //
 		 resTDC += res;
-		 test[specie] += res;
-            	 count++;
+		 //test[specie] += res;
+            	 //count[specie]++;
 	      }
-	      Float_t rv=1.;
+	      rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
+	      // Changed to have the general flag for DQM histo according to histo messages
+              test[specie] += res;
+              count[specie]++;
+	      //
 	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
 	      else if(rv<1 && rv>0.75) messages.Add(new TObjString("Minor problem with TDCs"));
-	      else{
-	        messages.Add(new TObjString("Serious problem in ZDC timing"));
-                messages.Add(new TObjString("IF THIS IS A PHYSICS RUN"));
-	      }
+	      else messages.Add(new TObjString("IF this is a PHYSICS RUN ZDC Have a SERIOUS problem!"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    irawHisto++;
@@ -687,55 +630,43 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
 	    if(irecHisto==3){
 	      if(TMath::Abs(meanZNC)>1.e-10 && TMath::Abs(meanZNA)>1.e-10){
-            	if((2*TMath::Abs(meanZNC-meanZNA)/(meanZNA+meanZNC))<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((2*TMath::Abs(meanZNC-meanZNA)/(meanZNA+meanZNC))<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(meanZPC)>1.e-10 && TMath::Abs(meanZPA)>1.e-10){
-            	if((TMath::Abs(meanZPC-meanZPA)/(meanZPA+meanZPC))<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(meanZPC-meanZPA)/(meanZPA+meanZPC))<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
             }
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	    if(irecHisto==11){
 	      if((TMath::Abs(meanZNC)>1.e-10) && (pmCZNC>1.e-10)){
-            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if((TMath::Abs(meanZNA)>1.e-10) && (pmCZNA>1.e-10)){
-            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if((TMath::Abs(meanZPC)>1.e-10) && (pmCZPC>1.e-10)){
-            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if((TMath::Abs(meanZPA)>1.e-10) && (pmCZPA>1.e-10)){
-            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	    }
 	    irecHisto++;	 
@@ -763,61 +694,49 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
 	    if(esdInd==5){
 	      if(TMath::Abs(sumADCZNC)>1.e-10 && TMath::Abs(sumADCZNA)>1.e-10){
-            	if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(sumADCZPC)>1.e-10 && TMath::Abs(sumADCZPA)>1.e-10){
-            	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
             }
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
 	    if(esdInd==15){
 	      if(TMath::Abs(sumADCZNC)>1.e-10){
-            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff)res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(sumADCZNA)>1.e-10){
-            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 /*	      if(TMath::Abs(sumADCZPC)>1.e-10){
-            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 	      if(TMath::Abs(sumADCZPA)>1.e-10){
-            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) res=1.;
+            	else res=.5;
             	test[specie] += res;
-            	count++;
+            	count[specie]++;
 	      }
 */
             }
             esdInd++;
           }  
-	  else {
+	  else{
             AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
             return ;
           } 
@@ -839,7 +758,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
       AliWarning(Form("\n\t No check needed in ZDC QA for %s task in COSMIC events\n",taskName)); 
       return ; 
     } // Cosmic
-    if(TMath::Abs(count)>1.e-10) test[specie] = test[specie]/count;
+    if(TMath::Abs(count[specie])>1.e-10) test[specie] = test[specie]/count[specie];
     AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\t ZDC QA check result = %1.2f\n",test[specie]));
   } // Loop on species
 }  
