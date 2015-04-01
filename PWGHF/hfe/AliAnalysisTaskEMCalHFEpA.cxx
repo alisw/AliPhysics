@@ -6,7 +6,7 @@
  * Contributors are mentioned in the code where appropriate.              *               
  *                                                                        *               
  * Permission to use, copy, modify and distribute this software and its   *               
- * documentation strictly for non-commercial purposes is hereby granted   *               
+ * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *               
  * copies and that both the copyright notice and this permission notice   *               
  * appear in the supporting documentation. The authors make no claims     *               
@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: September 16, 2014.								      //
+	//		version: March19 th, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -1713,7 +1713,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	//______________________________________________________________________
 	//new track loop to select events
 	//track pt cut (at least 2)
-	
+	/*
 	if(fUseTrigger){
 		if(fIsAOD){
 			double fTrackMulti=0;
@@ -1734,9 +1734,11 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		}
 	}
 	fNevent->Fill(13);	
+     */
 	//______________________________________________________________________
 	//Using more cuts than I have beeing using
 	//eta cut and primary (at least 2)
+    /*
 	if(fUseTrigger){
 		if(fIsAOD){
 			double fTrackMulti2=0;
@@ -1824,6 +1826,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		}
 	}
 	fNevent->Fill(16);	
+     */
 //______________________________________________________________________
 	
 	
@@ -1835,7 +1838,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		if(fIsAOD) 
 		{
-			fCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
+				//fCentrality = fAOD->GetHeader()->GetCentralityP();
+			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
 		}
 		else
 		{
@@ -2143,11 +2147,12 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	fNCluster_pure->Fill(ClsNo2);
 	
 	
-	
+	/*
 	if(ClsNo2<=0){
 		fNevent->Fill(22); //events with no cluster
 		return;
 	} 
+     */
 	
 	//in order to include time cut
 	//fEMCALCells = fAOD->GetEMCALCells();
@@ -2159,8 +2164,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	if(fIsAOD){
 		
-			//AliAODHeader * aodh = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
-          //  if(!aodh) AliFatal("Not a standard AOD");
+			//AliAODHeader * aodh = fAOD->GetHeader();
 			//Int_t bc= aodh->GetBunchCrossNumber();
 
 		
@@ -2233,6 +2237,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			
 		}
 	}
+
 	
 	
 	fNevent->Fill(24); //events with cluster
@@ -2249,8 +2254,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	///_____________________________________________________________________
 	///Track loop
-	Int_t NTracks=fVevent->GetNumberOfTracks();
+	Int_t NTracks=0;
 	
+    if(!fUseTender) NTracks=fVevent->GetNumberOfTracks();
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//To use tender
 	if(fUseTender){
@@ -2259,26 +2265,74 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		ClsNo = fCaloClusters_tender->GetEntries();
 		
+		
 	}
+	
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	for(Int_t iTracks = 0; iTracks < NTracks; iTracks++) 
 	{
-		AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
+		//AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
+		AliVParticle* Vtrack = 0x0;
+		if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+		
+		
+		//just a test of pdg information
+		//Vtrack  = fVevent->GetTrack(iTracks);
+		//AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+        //printf("\n\n Track label of track %d is %d  - from Vevent \n\n", iTracks, track->GetLabel());
+        
+        
+        /*
+		if(fIsMC  && track->GetLabel()>=0)
+		{
+			if(fIsAOD)
+			{
+				fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+				Int_t pdg = fMCparticle->GetPdgCode();
+				printf("\n\n pdg code of track %d is %d  - from Vevent \n\n", iTracks, pdg);
+			}
+		}
+		//just a test of pdg information -- remove until here
+		*/
+		
+		if(fUseTender){
+			TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+			Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
+			TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		}
+			
 		if (!Vtrack) 
 		{
 			printf("ERROR: Could not receive track %d\n", iTracks);
 			continue;
 		}
-		
-			//main place where track is defined
-		
+			
+			
 		AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
 		AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+        
+        //printf("\n\n Track label of track %d is %d  - after tender \n\n", iTracks, track_tender->GetLabel());
 		
+		//remove
+		/*
+		if(fIsMC  && atrack->GetLabel()>=0)
+		{
+			if(fIsAOD)
+			{
+				fMCparticle = (AliAODMCParticle*) fMCarray->At(atrack->GetLabel());
+				Int_t pdg = fMCparticle->GetPdgCode();
+				printf("\n\n pdg code of track %d is %d  - from Tender \n\n", iTracks, pdg);
+			}
+		}
+			//until here
+		*/
+					
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//To use tender
+		/*
 		if(fUseTender){
 			TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 			track = static_cast<AliAODTrack*>(fTracks_tender->At(iTracks));
@@ -2287,8 +2341,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				continue;
 			}
 		}
+		*/
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////
-				
+						
 		Double_t fTPCnSigma = -999;
 		Double_t fTOFnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
@@ -2301,8 +2356,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		//December 9th 2013
 		//Etacut test on the begging
 		fEtad[0]->Fill(track->Eta());
-			//if(track->Eta()<fEtaCutMin || track->Eta()>fEtaCutMax) continue;
-		fEtad[1]->Fill(track->Eta());
+		//if(track->Eta()<fEtaCutMin || track->Eta()>fEtaCutMax) continue;
+		
 		
 			
 		
@@ -2334,17 +2389,28 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		Double_t fEMCflag = kFALSE;
 		if(track->GetEMCALcluster()>0)
 		{
-			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+				//fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			
+			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//to use tender
 			if(fUseTender){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
-				TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-				fClus = static_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+				if(EMCalIndex>0){
+					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+					if (!fClus) {
+						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
+						continue;
+					}
+				}
 			}
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-			
+            printf("\n\n cluster label of track %d is %d  - from tender \n\n", iTracks, fClus->GetLabel());
+            
+            
 			if(fClus->IsEMCAL())
 			{
 				
@@ -2380,10 +2446,10 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			// Vertex
 		
 		fVtxZ[0]->Fill(fZvtx);
-		if(iTracks == 0)fNTracks[0]->Fill(fNOtrks);
-		fNTracks_pt[0]->Fill(fNOtrks, fPt);
-		fNTracks_eta[0]->Fill(fNOtrks, track->Eta());
-		fNTracks_phi[0]->Fill(fNOtrks, track->Phi());
+		if(iTracks == 0)fNTracks[0]->Fill(NTracks);
+		fNTracks_pt[0]->Fill(NTracks, fPt);
+		fNTracks_eta[0]->Fill(NTracks, track->Eta());
+		fNTracks_phi[0]->Fill(NTracks, track->Phi());
 
 		
 		fNClusters[0]->Fill(ClsNo);
@@ -2416,10 +2482,17 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			 SetDCaToVertex2D(kTRUE)
 			 */	
 			
-			if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; 
+				//if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+			
+						
+					
+			if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 		}
 		
-//RecKine: ITSTPC cuts  
+			
+		
+
+			//RecKine: ITSTPC cuts  
 		if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
 //RecKink
 		if(fRejectKinkMother) 
@@ -2460,7 +2533,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 		
-//DCA cut done by hand -- July 29th, 2014  -> fix it... has to be in absolute values!!!!
+//DCA cut done by hand --  has to be in absolute values!!!! Fixed
+//not using because line if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;   already apply DCA cut
+		/*
 		if(fIsAOD){
 			Double_t d0z0[2], cov[3];
 			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
@@ -2468,29 +2543,29 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			Double_t DCAxy = d0z0[0];
 			Double_t DCAz = d0z0[1];
 			
-			if(DCAxy >= fDCAcutr || DCAz>=fDCAcutz) continue;
+			if(TMath::Abs(DCAxy) >= fDCAcutr || TMath::Abs(DCAz)>=fDCAcutz) continue;
 		}
+		*/
 		
-		
-		
+		fEtad[1]->Fill(track->Eta());
 		
 		
 //______________________________________________________________________________________
-		
+		/*
 		if(fIsAOD){	
 				//AOD test -- Francesco suggestion
 				//aod test -- Francesco suggestion
 			AliAODTrack *aod_track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
-			if(!aod_track) AliFatal("Not a standard AOD");
-
+			
 			Int_t type=aod_track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());
-			if(type==AliAODTrack::kFromDecayVtx) fPtSec->Fill(aod_track->Pt());
-		
+			if(type==AliAODTrack::kSecondary) fPtSec->Fill(aod_track->Pt());
+			
 				//Int_t type2=track->GetType();
-			if(type==AliAODTrack::kPrimary) fPtPrim2->Fill(track->Pt());
-			if(type==AliAODTrack::kFromDecayVtx) fPtSec2->Fill(track->Pt());
+				//if(type==AliAODTrack::kPrimary) fPtPrim2->Fill(track->Pt());
+				//if(type==AliAODTrack::kSecondary) fPtSec2->Fill(track->Pt());
 		}
+		*/
 			
 		
 ///_____________________________________________________________
@@ -2514,6 +2589,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 				}
 			
 				Int_t pdg = fMCparticle->GetPdgCode();
+				
+				//printf("\n\n pdg code of track %d is %d \n\n", iTracks, pdg);
+				
 				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
 				{
 				
@@ -2595,14 +2673,20 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		if(track->GetEMCALcluster()>0)
 		{
-			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//to use tender
 			if(fUseTender){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
-				TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-				fClus = static_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+				if(EMCalIndex>0){
+					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+					if (!fClus) {
+						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
+						continue;
+					}
+				}
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
@@ -2748,10 +2832,10 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		// Vertex
 		
 		fVtxZ[1]->Fill(fZvtx);
-		if(iTracks == 0)fNTracks[1]->Fill(fNOtrks);
-		fNTracks_pt[1]->Fill(fNOtrks, fPt);
-		fNTracks_eta[1]->Fill(fNOtrks, track->Eta());
-		fNTracks_phi[1]->Fill(fNOtrks, track->Phi());
+		if(iTracks == 0)fNTracks[1]->Fill(NTracks);
+		fNTracks_pt[1]->Fill(NTracks, fPt);
+		fNTracks_eta[1]->Fill(NTracks, track->Eta());
+		fNTracks_phi[1]->Fill(NTracks, track->Phi());
 		fNClusters[1]->Fill(ClsNo);
 		fTPCNcls_pid[1]->Fill(TPCNcls, TPCNcls_pid);
 		
@@ -2991,8 +3075,14 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			if(fUseTender){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
-				TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-				fClus = static_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+				if(track->GetEMCALcluster()>0){
+					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+					if (!fClus) {
+						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
+						continue;
+					}
+				}
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
@@ -3504,10 +3594,10 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			// Vertex
 		
 		fVtxZ[2]->Fill(fZvtx);
-		if(iTracks == 0)fNTracks[2]->Fill(fNOtrks);
-		fNTracks_pt[2]->Fill(fNOtrks, fPt);
-		fNTracks_eta[2]->Fill(fNOtrks, track->Eta());
-		fNTracks_phi[2]->Fill(fNOtrks, track->Phi());
+		if(iTracks == 0)fNTracks[2]->Fill(NTracks);
+		fNTracks_pt[2]->Fill(NTracks, fPt);
+		fNTracks_eta[2]->Fill(NTracks, track->Eta());
+		fNTracks_phi[2]->Fill(NTracks, track->Phi());
 		fNClusters[2]->Fill(ClsNo);
 		fTPCNcls_pid[2]->Fill(TPCNcls, TPCNcls_pid);
 		
@@ -4046,7 +4136,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		
 		
 		
-}//end of Background function
+}//end of fPtElec_ULS function
 
 	//______________________________________________________________________
 void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack)
@@ -4793,6 +4883,8 @@ Double_t AliAnalysisTaskEMCalHFEpA::CalculateWeight(Int_t pdg_particle, Double_t
 {
 		//weight for d3 based on MinJung parametrization //sent by Jan
 	    Double_t weight=1;
+    
+    if(!fUseTrigger){
 		if(pdg_particle==111){
 			if(x>= 0.100000 &&  x < 0.112797 ) weight=1.262120;
 			if(x>= 0.112797 &&  x < 0.127231 ) weight=1.277765;
@@ -4888,8 +4980,294 @@ Double_t AliAnalysisTaskEMCalHFEpA::CalculateWeight(Int_t pdg_particle, Double_t
 			
 		}
 	    else weight=1;
+        
+    }//not trigger
+    
+    //trigger case LHC14b3a,b,c
+    if(fUseTrigger){
+        /*
+        if(pdg_particle==111){
+            if(x>= 0.000000 &&  x < 0.150000 ) weight=0.184739;
+            if(x>= 0.150000 &&  x < 0.300000 ) weight=0.542457;
+            if(x>= 0.300000 &&  x < 0.450000 ) weight=0.640086;
+            if(x>= 0.450000 &&  x < 0.600000 ) weight=0.719211;
+            if(x>= 0.600000 &&  x < 0.750000 ) weight=0.802058;
+            if(x>= 0.750000 &&  x < 0.900000 ) weight=0.872328;
+            if(x>= 0.900000 &&  x < 1.050000 ) weight=0.909539;
+            if(x>= 1.050000 &&  x < 1.200000 ) weight=0.902128;
+            if(x>= 1.200000 &&  x < 1.350000 ) weight=0.856060;
+            if(x>= 1.350000 &&  x < 1.500000 ) weight=0.781363;
+            if(x>= 1.500000 &&  x < 1.650000 ) weight=0.690907;
+            if(x>= 1.650000 &&  x < 1.800000 ) weight=0.596944;
+            if(x>= 1.800000 &&  x < 1.950000 ) weight=0.508692;
+            if(x>= 1.950000 &&  x < 2.100000 ) weight=0.428444;
+            if(x>= 2.100000 &&  x < 2.250000 ) weight=0.355568;
+            if(x>= 2.250000 &&  x < 2.400000 ) weight=0.294189;
+            if(x>= 2.400000 &&  x < 2.550000 ) weight=0.243107;
+            if(x>= 2.550000 &&  x < 2.700000 ) weight=0.198858;
+            if(x>= 2.700000 &&  x < 2.850000 ) weight=0.164813;
+            if(x>= 2.850000 &&  x < 3.000000 ) weight=0.136211;
+            if(x>= 3.000000 &&  x < 3.150000 ) weight=0.113481;
+            if(x>= 3.150000 &&  x < 3.300000 ) weight=0.094175;
+            if(x>= 3.300000 &&  x < 3.450000 ) weight=0.078833;
+            if(x>= 3.450000 &&  x < 3.600000 ) weight=0.066644;
+            if(x>= 3.600000 &&  x < 3.750000 ) weight=0.056415;
+            if(x>= 3.750000 &&  x < 3.900000 ) weight=0.047912;
+            if(x>= 3.900000 &&  x < 4.050000 ) weight=0.041049;
+            if(x>= 4.050000 &&  x < 4.200000 ) weight=0.035102;
+            if(x>= 4.200000 &&  x < 4.350000 ) weight=0.030359;
+            if(x>= 4.350000 &&  x < 4.500000 ) weight=0.026312;
+            if(x>= 4.500000 &&  x < 4.650000 ) weight=0.022776;
+            if(x>= 4.650000 &&  x < 4.800000 ) weight=0.019874;
+            if(x>= 4.800000 &&  x < 4.950000 ) weight=0.017438;
+            if(x>= 4.950000 &&  x < 5.100000 ) weight=0.015261;
+            if(x>= 5.100000 &&  x < 5.250000 ) weight=0.013505;
+            if(x>= 5.250000 &&  x < 5.400000 ) weight=0.011960;
+            if(x>= 5.400000 &&  x < 5.550000 ) weight=0.010597;
+            if(x>= 5.550000 &&  x < 5.700000 ) weight=0.009430;
+            if(x>= 5.700000 &&  x < 5.850000 ) weight=0.008402;
+            if(x>= 5.850000 &&  x < 6.000000 ) weight=0.007526;
+            if(x>= 6.000000 &&  x < 6.150000 ) weight=0.006773;
+            if(x>= 6.150000 &&  x < 6.300000 ) weight=0.006066;
+            if(x>= 6.300000 &&  x < 6.450000 ) weight=0.005481;
+            if(x>= 6.450000 &&  x < 6.600000 ) weight=0.004961;
+            if(x>= 6.600000 &&  x < 6.750000 ) weight=0.004503;
+            if(x>= 6.750000 &&  x < 6.900000 ) weight=0.004069;
+            if(x>= 6.900000 &&  x < 7.050000 ) weight=0.003708;
+            if(x>= 7.050000 &&  x < 7.200000 ) weight=0.003372;
+            if(x>= 7.200000 &&  x < 7.350000 ) weight=0.003092;
+            if(x>= 7.350000 &&  x < 7.500000 ) weight=0.002839;
+            if(x>= 7.500000 &&  x < 7.650000 ) weight=0.002596;
+            if(x>= 7.650000 &&  x < 7.800000 ) weight=0.002392;
+            if(x>= 7.800000 &&  x < 7.950000 ) weight=0.002197;
+            if(x>= 7.950000 &&  x < 8.100000 ) weight=0.002019;
+            if(x>= 8.100000 &&  x < 8.250000 ) weight=0.001868;
+            if(x>= 8.250000 &&  x < 8.400000 ) weight=0.001724;
+            if(x>= 8.400000 &&  x < 8.550000 ) weight=0.001597;
+            if(x>= 8.550000 &&  x < 8.700000 ) weight=0.001478;
+            if(x>= 8.700000 &&  x < 8.850000 ) weight=0.001375;
+            if(x>= 8.850000 &&  x < 9.000000 ) weight=0.001281;
+            if(x>= 9.000000 &&  x < 9.150000 ) weight=0.001186;
+            if(x>= 9.150000 &&  x < 9.300000 ) weight=0.001107;
+            if(x>= 9.300000 &&  x < 9.450000 ) weight=0.001035;
+            if(x>= 9.450000 &&  x < 9.600000 ) weight=0.000964;
+            if(x>= 9.600000 &&  x < 9.750000 ) weight=0.000909;
+            if(x>= 9.750000 &&  x < 9.900000 ) weight=0.000847;
+            if(x>= 9.900000 &&  x < 10.050000 ) weight=0.000792;
+            if(x>= 10.050000 &&  x < 10.200000 ) weight=0.000743;
+            if(x>= 10.200000 &&  x < 10.350000 ) weight=0.000694;
+            if(x>= 10.350000 &&  x < 10.500000 ) weight=0.000657;
+            if(x>= 10.500000 &&  x < 10.650000 ) weight=0.000616;
+            if(x>= 10.650000 &&  x < 10.800000 ) weight=0.000582;
+            if(x>= 10.800000 &&  x < 10.950000 ) weight=0.000550;
+            if(x>= 10.950000 &&  x < 11.100000 ) weight=0.000514;
+            if(x>= 11.100000 &&  x < 11.250000 ) weight=0.000487;
+            if(x>= 11.250000 &&  x < 11.400000 ) weight=0.000460;
+            if(x>= 11.400000 &&  x < 11.550000 ) weight=0.000437;
+            if(x>= 11.550000 &&  x < 11.700000 ) weight=0.000414;
+            if(x>= 11.700000 &&  x < 11.850000 ) weight=0.000391;
+            if(x>= 11.850000 &&  x < 12.000000 ) weight=0.000370;
+            if(x>= 12.000000 &&  x < 12.150000 ) weight=0.000351;
+            if(x>= 12.150000 &&  x < 12.300000 ) weight=0.000335;
+            if(x>= 12.300000 &&  x < 12.450000 ) weight=0.000317;
+            if(x>= 12.450000 &&  x < 12.600000 ) weight=0.000298;
+            if(x>= 12.600000 &&  x < 12.750000 ) weight=0.000285;
+            if(x>= 12.750000 &&  x < 12.900000 ) weight=0.000270;
+            if(x>= 12.900000 &&  x < 13.050000 ) weight=0.000258;
+            if(x>= 13.050000 &&  x < 13.200000 ) weight=0.000245;
+            if(x>= 13.200000 &&  x < 13.350000 ) weight=0.000232;
+            if(x>= 13.350000 &&  x < 13.500000 ) weight=0.000223;
+            if(x>= 13.500000 &&  x < 13.650000 ) weight=0.000212;
+            if(x>= 13.650000 &&  x < 13.800000 ) weight=0.000202;
+            if(x>= 13.800000 &&  x < 13.950000 ) weight=0.000192;
+            if(x>= 13.950000 &&  x < 14.100000 ) weight=0.000183;
+            if(x>= 14.100000 &&  x < 14.250000 ) weight=0.000174;
+            if(x>= 14.250000 &&  x < 14.400000 ) weight=0.000166;
+            if(x>= 14.400000 &&  x < 14.550000 ) weight=0.000160;
+            if(x>= 14.550000 &&  x < 14.700000 ) weight=0.000152;
+            if(x>= 14.700000 &&  x < 14.850000 ) weight=0.000145;
+            if(x>= 14.850000 &&  x < 15.000000 ) weight=0.000139;
+            if(x>= 15.000000 &&  x < 15.150000 ) weight=0.000131;
+            if(x>= 15.150000 &&  x < 15.300000 ) weight=0.000127;
+            if(x>= 15.300000 &&  x < 15.450000 ) weight=0.000121;
+            if(x>= 15.450000 &&  x < 15.600000 ) weight=0.000115;
+            if(x>= 15.600000 &&  x < 15.750000 ) weight=0.000110;
+            if(x>= 15.750000 &&  x < 15.900000 ) weight=0.000106;
+            if(x>= 15.900000 &&  x < 16.050000 ) weight=0.000101;
+            if(x>= 16.050000 &&  x < 16.200000 ) weight=0.000096;
+            if(x>= 16.200000 &&  x < 16.350000 ) weight=0.000092;
+            if(x>= 16.350000 &&  x < 16.500000 ) weight=0.000088;
+            if(x>= 16.500000 &&  x < 16.650000 ) weight=0.000085;
+            if(x>= 16.650000 &&  x < 16.800000 ) weight=0.000081;
+            if(x>= 16.800000 &&  x < 16.950000 ) weight=0.000077;
+            if(x>= 16.950000 &&  x < 17.100000 ) weight=0.000074;
+            if(x>= 17.100000 &&  x < 17.250000 ) weight=0.000071;
+            if(x>= 17.250000 &&  x < 17.400000 ) weight=0.000068;
+            if(x>= 17.400000 &&  x < 17.550000 ) weight=0.000065;
+            if(x>= 17.550000 &&  x < 17.700000 ) weight=0.000063;
+            if(x>= 17.700000 &&  x < 17.850000 ) weight=0.000060;
+            if(x>= 17.850000 &&  x < 18.000000 ) weight=0.000057;
+            if(x>= 18.000000 &&  x < 18.150000 ) weight=0.000055;
+            if(x>= 18.150000 &&  x < 18.300000 ) weight=0.000053;
+            if(x>= 18.300000 &&  x < 18.450000 ) weight=0.000050;
+            if(x>= 18.450000 &&  x < 18.600000 ) weight=0.000048;
+            if(x>= 18.600000 &&  x < 18.750000 ) weight=0.000046;
+            if(x>= 18.750000 &&  x < 18.900000 ) weight=0.000044;
+            if(x>= 18.900000 &&  x < 19.050000 ) weight=0.000042;
+            if(x>= 19.050000 &&  x < 19.200000 ) weight=0.000041;
+            if(x>= 19.200000 &&  x < 19.350000 ) weight=0.000039;
+            if(x>= 19.350000 &&  x < 19.500000 ) weight=0.000037;
+            if(x>= 19.500000 &&  x < 19.650000 ) weight=0.000036;
+            if(x>= 19.650000 &&  x < 19.800000 ) weight=0.000034;
+            if(x>= 19.800000 &&  x < 19.950000 ) weight=0.000033;
+            if(x>= 19.950000 &&  x < 20.100000 ) weight=0.000031;
+            if(x>= 20.100000 &&  x < 20.250000 ) weight=0.000030;
+            if(x>= 20.250000 &&  x < 20.400000 ) weight=0.000029;
+            if(x>= 20.400000 &&  x < 20.550000 ) weight=0.000028;
+            if(x>= 20.550000 &&  x < 20.700000 ) weight=0.000027;
+            if(x>= 20.700000 &&  x < 20.850000 ) weight=0.000026;
+            if(x>= 20.850000 &&  x < 21.000000 ) weight=0.000025;
+            if(x>= 21.000000 &&  x < 21.150000 ) weight=0.000023;
+            if(x>= 21.150000 &&  x < 21.300000 ) weight=0.000023;
+            if(x>= 21.300000 &&  x < 21.450000 ) weight=0.000021;
+            if(x>= 21.450000 &&  x < 21.600000 ) weight=0.000021;
+            if(x>= 21.600000 &&  x < 21.750000 ) weight=0.000020;
+            if(x>= 21.750000 &&  x < 21.900000 ) weight=0.000019;
+            if(x>= 21.900000 &&  x < 22.050000 ) weight=0.000018;
+            if(x>= 22.050000 &&  x < 22.200000 ) weight=0.000018;
+            if(x>= 22.200000 &&  x < 22.350000 ) weight=0.000017;
+            if(x>= 22.350000 &&  x < 22.500000 ) weight=0.000016;
+            if(x>= 22.500000 &&  x < 22.650000 ) weight=0.000016;
+            if(x>= 22.650000 &&  x < 22.800000 ) weight=0.000015;
+            if(x>= 22.800000 &&  x < 22.950000 ) weight=0.000014;
+            if(x>= 22.950000 &&  x < 23.100000 ) weight=0.000014;
+            if(x>= 23.100000 &&  x < 23.250000 ) weight=0.000013;
+            if(x>= 23.250000 &&  x < 23.400000 ) weight=0.000013;
+            if(x>= 23.400000 &&  x < 23.550000 ) weight=0.000012;
+            if(x>= 23.550000 &&  x < 23.700000 ) weight=0.000012;
+            if(x>= 23.700000 &&  x < 23.850000 ) weight=0.000011;
+            if(x>= 23.850000 &&  x < 24.000000 ) weight=0.000011;
+            if(x>= 24.000000 &&  x < 24.150000 ) weight=0.000011;
+            if(x>= 24.150000 &&  x < 24.300000 ) weight=0.000010;
+            if(x>= 24.300000 &&  x < 24.450000 ) weight=0.000010;
+            if(x>= 24.450000 &&  x < 24.600000 ) weight=0.000009;
+            if(x>= 24.600000 &&  x < 24.750000 ) weight=0.000009;
+            if(x>= 24.750000 &&  x < 24.900000 ) weight=0.000009;
+            if(x>= 24.900000 &&  x < 25.050000 ) weight=0.000008;
+            if(x>= 25.050000 &&  x < 25.200000 ) weight=0.000008;
+            if(x>= 25.200000 &&  x < 25.350000 ) weight=0.000008;
+            if(x>= 25.350000 &&  x < 25.500000 ) weight=0.000008;
+            if(x>= 25.500000 &&  x < 25.650000 ) weight=0.000007;
+            if(x>= 25.650000 &&  x < 25.800000 ) weight=0.000007;
+            if(x>= 25.800000 &&  x < 25.950000 ) weight=0.000007;
+            if(x>= 25.950000 &&  x < 26.100000 ) weight=0.000007;
+            if(x>= 26.100000 &&  x < 26.250000 ) weight=0.000006;
+            if(x>= 26.250000 &&  x < 26.400000 ) weight=0.000006;
+            if(x>= 26.400000 &&  x < 26.550000 ) weight=0.000006;
+            if(x>= 26.550000 &&  x < 26.700000 ) weight=0.000006;
+            if(x>= 26.700000 &&  x < 26.850000 ) weight=0.000006;
+            if(x>= 26.850000 &&  x < 27.000000 ) weight=0.000005;
+            if(x>= 27.000000 &&  x < 27.150000 ) weight=0.000005;
+            if(x>= 27.150000 &&  x < 27.300000 ) weight=0.000005;
+            if(x>= 27.300000 &&  x < 27.450000 ) weight=0.000005;
+            if(x>= 27.450000 &&  x < 27.600000 ) weight=0.000005;
+            if(x>= 27.600000 &&  x < 27.750000 ) weight=0.000005;
+            if(x>= 27.750000 &&  x < 27.900000 ) weight=0.000004;
+            if(x>= 27.900000 &&  x < 28.050000 ) weight=0.000004;
+            if(x>= 28.050000 &&  x < 28.200000 ) weight=0.000004;
+            if(x>= 28.200000 &&  x < 28.350000 ) weight=0.000004;
+            if(x>= 28.350000 &&  x < 28.500000 ) weight=0.000004;
+            if(x>= 28.500000 &&  x < 28.650000 ) weight=0.000004;
+            if(x>= 28.650000 &&  x < 28.800000 ) weight=0.000004;
+            if(x>= 28.800000 &&  x < 28.950000 ) weight=0.000004;
+            if(x>= 28.950000 &&  x < 29.100000 ) weight=0.000003;
+            if(x>= 29.100000 &&  x < 29.250000 ) weight=0.000003;
+            if(x>= 29.250000 &&  x < 29.400000 ) weight=0.000003;
+            if(x>= 29.400000 &&  x < 29.550000 ) weight=0.000003;
+            if(x>= 29.550000 &&  x < 29.700000 ) weight=0.000003;
+            if(x>= 29.700000 &&  x < 29.850000 ) weight=0.000003;
+            if(x>= 29.850000 &&  x < 30.000000 ) weight=0.000003;
+
+        }
+         */
+        
+        if(pdg_particle==111){
+            if(x>= 0.000000 &&  x < 0.150000 ) weight=5.413029;
+            if(x>= 0.150000 &&  x < 0.300000 ) weight=1.843465;
+            if(x>= 0.300000 &&  x < 0.450000 ) weight=1.562291;
+            if(x>= 0.450000 &&  x < 0.600000 ) weight=1.390412;
+            if(x>= 0.600000 &&  x < 0.750000 ) weight=1.246792;
+            if(x>= 0.750000 &&  x < 0.900000 ) weight=1.146358;
+            if(x>= 0.900000 &&  x < 1.050000 ) weight=1.099458;
+            if(x>= 1.050000 &&  x < 1.200000 ) weight=1.108490;
+            if(x>= 1.200000 &&  x < 1.350000 ) weight=1.168142;
+            if(x>= 1.350000 &&  x < 1.500000 ) weight=1.279816;
+            if(x>= 1.500000 &&  x < 1.650000 ) weight=1.447372;
+            if(x>= 1.650000 &&  x < 1.800000 ) weight=1.675200;
+            if(x>= 1.800000 &&  x < 1.950000 ) weight=1.965825;
+            if(x>= 1.950000 &&  x < 2.100000 ) weight=2.334030;
+            if(x>= 2.100000 &&  x < 2.250000 ) weight=2.812404;
+            if(x>= 2.250000 &&  x < 2.400000 ) weight=3.399171;
+            if(x>= 2.400000 &&  x < 2.550000 ) weight=4.113419;
+            if(x>= 2.550000 &&  x < 2.700000 ) weight=5.028714;
+            if(x>= 2.700000 &&  x < 2.850000 ) weight=6.067468;
+            if(x>= 2.850000 &&  x < 3.000000 ) weight=7.341577;
+            if(x>= 3.000000 &&  x < 3.150000 ) weight=8.812074;
+            if(x>= 3.150000 &&  x < 3.300000 ) weight=10.618540;
+            if(x>= 3.300000 &&  x < 3.450000 ) weight=12.685035;
+            if(x>= 3.450000 &&  x < 3.600000 ) weight=15.005012;
+            if(x>= 3.600000 &&  x < 3.750000 ) weight=17.725825;
+            if(x>= 3.750000 &&  x < 3.900000 ) weight=20.871579;
+            if(x>= 3.900000 &&  x < 4.050000 ) weight=24.360849;
+            if(x>= 4.050000 &&  x < 4.200000 ) weight=28.488189;
+            if(x>= 4.200000 &&  x < 4.350000 ) weight=32.938705;
+            if(x>= 4.350000 &&  x < 4.500000 ) weight=38.004920;
+            if(x>= 4.500000 &&  x < 4.650000 ) weight=43.905847;
+            if(x>= 4.650000 &&  x < 4.800000 ) weight=50.316566;
+            if(x>= 4.800000 &&  x < 4.950000 ) weight=57.346497;
+            if(x>= 4.950000 &&  x < 5.100000 ) weight=65.527849;
+            if(x>= 5.100000 &&  x < 5.250000 ) weight=74.047274;
+            if(x>= 5.250000 &&  x < 5.400000 ) weight=83.615531;
+            if(x>= 5.400000 &&  x < 5.550000 ) weight=94.362690;
+            if(x>= 5.550000 &&  x < 5.700000 ) weight=106.045286;
+            if(x>= 5.700000 &&  x < 5.850000 ) weight=119.012986;
+            if(x>= 5.850000 &&  x < 6.000000 ) weight=132.880543;
+            if(x>= 6.000000 &&  x < 6.150000 ) weight=147.654408;
+            if(x>= 6.150000 &&  x < 6.300000 ) weight=164.856176;
+            if(x>= 6.300000 &&  x < 6.450000 ) weight=182.443341;
+            if(x>= 6.450000 &&  x < 6.600000 ) weight=201.580388;
+            if(x>= 6.600000 &&  x < 6.750000 ) weight=222.096149;
+            if(x>= 6.750000 &&  x < 6.900000 ) weight=245.731663;
+            if(x>= 6.900000 &&  x < 7.050000 ) weight=269.694559;
+            if(x>= 7.050000 &&  x < 7.200000 ) weight=296.517907;
+            if(x>= 7.200000 &&  x < 7.350000 ) weight=323.392152;
+            if(x>= 7.350000 &&  x < 7.500000 ) weight=352.243121;
+            if(x>= 7.500000 &&  x < 7.650000 ) weight=385.261159;
+            if(x>= 7.650000 &&  x < 7.800000 ) weight=418.118716;
+            if(x>= 7.800000 &&  x < 7.950000 ) weight=455.113426;
+            if(x>= 7.950000 &&  x < 8.100000 ) weight=495.331199;
+            if(x>= 8.100000 &&  x < 8.250000 ) weight=535.194415;
+            if(x>= 8.250000 &&  x < 8.400000 ) weight=580.109285;
+            if(x>= 8.400000 &&  x < 8.550000 ) weight=626.069818;
+            if(x>= 8.550000 &&  x < 8.700000 ) weight=676.485515;
+            if(x>= 8.700000 &&  x < 8.850000 ) weight=727.181488;
+            if(x>= 8.850000 &&  x < 9.000000 ) weight=780.772898;
+            if(x>= 9.000000 &&  x < 9.150000 ) weight=843.460957;
+            if(x>= 9.150000 &&  x < 9.300000 ) weight=903.110782;
+            if(x>= 9.300000 &&  x < 9.450000 ) weight=966.468529;
+            if(x>= 9.450000 &&  x < 9.600000 ) weight=1036.956505;
+            if(x>= 9.600000 &&  x < 9.750000 ) weight=1100.209143;
+            if(x>= 9.750000 &&  x < 9.900000 ) weight=1180.666364;
+            if(x>= 9.900000 &&  x < 10.050000 ) weight=1262.838652;
+            if(x>= 10) weight=1345.690689;
+            
+        }
+        
+      else weight=1;
+        
+    }//close fUseTrigger
 	
-	    return weight;
+    return weight;
 	
 }
 Double_t AliAnalysisTaskEMCalHFEpA::SetEoverPCutPtDependentMC(Double_t pt)
