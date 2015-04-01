@@ -65,7 +65,7 @@ class AliZDCRawStream: public TObject {
 	 kAD3=106, kAD4=107, kAD5=108, kAD6=109, kAD7=110, kAD8=111, kAD9=112, kAD10=113, 
 	 kAD11=114, kAD12=115, kAD13=116, kAD14=117, kAD15=118, kAD0D=119, kAD1D=120, kAD2D=121,
 	 kAD3D=122, kAD4D=123, kAD5D=124, kAD6D=125, kAD7D=126, kAD8D=127, kAD9D=128, kAD10D=129,
-	 kAD11D=130, kAD12D=131, kAD13D=132, kAD14D=133, kAD15D=134
+	 kAD11D=130, kAD12D=131, kAD13D=132, kAD14D=133, kAD15D=134, kL0=135
 	 };
     
     // Error codes in raw data streaming
@@ -175,11 +175,17 @@ class AliZDCRawStream: public TObject {
     void SetNChannelsOn(Int_t val) {fNChannelsOn = val;}
     void SetSector(Int_t i, Int_t val) {fSector[i] = val;}
     void SetMapRead(Bool_t value) {fIsMapRead=value;}
-    void SetMapADCMod(Int_t iraw, Int_t imod) {fMapADC[iraw][0]=imod;}
-    void SetMapADCCh(Int_t iraw, Int_t ich)   {fMapADC[iraw][1]=ich;}
-    void SetMapADCSig(Int_t iraw, Int_t isig) {fMapADC[iraw][2]=isig;}
-    void SetMapDet(Int_t iraw, Int_t idet)    {fMapADC[iraw][3]=idet;}
-    void SetMapTow(Int_t iraw, Int_t itow)    {fMapADC[iraw][4]=itow;}
+    //  Set ADC map
+    void SetMapADCMod(Int_t iraw, Int_t imod) {if(iraw<48) fMapADC[iraw][0]=imod;}
+    void SetMapADCCh(Int_t iraw, Int_t ich)   {if(iraw<48) fMapADC[iraw][1]=ich;}
+    void SetMapADCSig(Int_t iraw, Int_t isig) {if(iraw<48) fMapADC[iraw][2]=isig;}
+    void SetMapDet(Int_t iraw, Int_t idet)    {if(iraw<48) fMapADC[iraw][3]=idet;}
+    void SetMapTow(Int_t iraw, Int_t itow)    {if(iraw<48) fMapADC[iraw][4]=itow;}
+    //  SetTDC map
+    void SetTDCModFromMap(Int_t ich, Int_t mod)  {if(ich<32) fTDCMap[ich][0]=mod;}
+    void SetTDCChFromMap(Int_t ich, Int_t ch)    {if(ich<32) fTDCMap[ich][1]=ch;}
+    void SetTDCSignFromMap(Int_t ich, Int_t sig) {if(ich<32) fTDCMap[ich][2]=sig;}
+    
     void SetReadCDH(Bool_t value) {fReadCDH=value;}
     void SetSODReading(Bool_t iset) {fSODReading = iset;}
      
@@ -290,12 +296,13 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsZDCTDCHeader;  // true if datum is a ZDC TDC header
     Bool_t fIsZDCTDCdatum;   // true if the current is a TDC datum
     Int_t  fZDCTDCdatum;     // datum for ZDC TDC
+    Int_t  fZDCTDCsignal;    // signal connected in ZDC TDC
     //
     Bool_t fIsADDTDCHeader;  // true if datum is an ADD TDC channel
     Bool_t fIsADDTDCdatum;   // true when streaming ADD TDC data
     Int_t  fADDTDCdatum;     // datum for ADD TDC
    
-    ClassDef(AliZDCRawStream, 20)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 21)    // class for reading ZDC raw data
 };
 
 #endif
