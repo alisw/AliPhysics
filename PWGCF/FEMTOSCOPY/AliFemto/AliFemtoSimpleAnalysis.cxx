@@ -1,31 +1,29 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoSimpleAnalysis - the most basic analysis there is. All other  //
-// inherit from this one. Provides basic functionality for the analysis. //
-// To properly set up the analysis the following steps should be taken:  //
-//                                                                       //
-// - create particle cuts and add them via SetFirstParticleCut and       //
-//   SetSecondParticleCut. If one analyzes identical particle            //
-//   correlations, the first particle cut must be also the second        //
-//   particle cut.                                                       //
-//                                                                       //
-// - create pair cuts and add them via SetPairCut                        //
-//                                                                       //
-// - create one or many correlation functions and add them via           //
-//   AddCorrFctn method.                                                 //
-//                                                                       //
-// - specify how many events are to be strored in the mixing buffer for  //
-//   background construction                                             //
-//                                                                       //
-// Then, when the analysis is run, for each event, the EventBegin is     //
-// called before any processing is done, then the ProcessEvent is called //
-// which takes care of creating real and mixed pairs and sending them    //
-// to all the registered correlation functions. At the end of each event,//
-// after all pairs are processed, EventEnd is called. After the whole    //
-// analysis finishes (there is no more events to process) Finish() is    //
-// called.                                                               //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoSimpleAnalysis
+/// \brief AliFemtoSimpleAnalysis - the most basic analysis there is. All other
+///
+/// inherit from this one. Provides basic functionality for the analysis.
+/// To properly set up the analysis the following steps should be taken:
+///
+/// - create particle cuts and add them via SetFirstParticleCut and
+///  SetSecondParticleCut. If one analyzes identical particle
+///  correlations, the first particle cut must be also the second
+///  particle cut.
+///
+/// - create pair cuts and add them via SetPairCut
+///
+/// - create one or many correlation functions and add them via
+///  AddCorrFctn method.
+///
+/// - specify how many events are to be strored in the mixing buffer for
+///  background construction
+///
+/// Then, when the analysis is run, for each event, the EventBegin is
+/// called before any processing is done, then the ProcessEvent is called
+/// which takes care of creating real and mixed pairs and sending them
+/// to all the registered correlation functions. At the end of each event,
+/// after all pairs are processed, EventEnd is called. After the whole
+/// analysis finishes (there is no more events to process) Finish() is
+/// called.
 
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoTrackCut.h"
@@ -37,7 +35,9 @@
 // blah blah
 
 #ifdef __ROOT__
+/// \cond CLASSIMP
 ClassImp(AliFemtoSimpleAnalysis)
+/// \endcond
 #endif
 
 AliFemtoEventCut*    copyTheCut(AliFemtoEventCut*);
@@ -52,8 +52,9 @@ void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
 			       AliFemtoParticleCollection*  partCollection,
 			       bool performSharedDaughterCut=kFALSE)
 {
-  // Fill particle collections from the event
-  // by the particles that pass all the cuts
+  /// Fill particle collections from the event
+  /// by the particles that pass all the cuts
+
   switch (partCut->Type()) {
   case hbtTrack:       // cut is cutting on Tracks
   {
@@ -151,8 +152,9 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis() :
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE)
 {
-  // Default constructor
-  //  mControlSwitch     = 0;
+  /// Default constructor
+  ///  mControlSwitch     = 0;
+
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
 }
@@ -175,8 +177,9 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) 
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE)
 {
-  // Copy constructor
-  //AliFemtoSimpleAnalysis();
+  /// Copy constructor
+  /// AliFemtoSimpleAnalysis();
+
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
 
@@ -225,7 +228,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) 
 }
 //____________________________
 AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis(){
-  // destructor
+  /// destructor
+
   cout << " AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()" << endl;
   if (fEventCut) delete fEventCut; fEventCut=0;
   if (fFirstParticleCut == fSecondParticleCut) fSecondParticleCut=0;
@@ -250,7 +254,8 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis(){
 //______________________
 AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAnalysis& aAna)
 {
-  // Assignment operator
+  /// Assignment operator
+
   if (this == &aAna)
     return *this;
 
@@ -308,7 +313,8 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
 }
 //______________________
 AliFemtoCorrFctn* AliFemtoSimpleAnalysis::CorrFctn(int n){
-  // return pointer to n-th correlation function
+  /// return pointer to n-th correlation function
+
   if ( n<0 || n > (int)fCorrFctnCollection->size() )
     return NULL;
   AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin();
@@ -320,7 +326,8 @@ AliFemtoCorrFctn* AliFemtoSimpleAnalysis::CorrFctn(int n){
 //____________________________
 AliFemtoString AliFemtoSimpleAnalysis::Report()
 {
-  // Create a simple report from the analysis execution
+  /// Create a simple report from the analysis execution
+
   cout << "AliFemtoSimpleAnalysis - constructing Report..."<<endl;
   string temp = "-----------\nHbt Analysis Report:\n";
   temp += "\nEvent Cuts:\n";
@@ -346,7 +353,7 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
 }
 //_________________________
 void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
-  // Add event to processed events
+  /// Add event to processed events
 
   fPicoEvent=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
   AddEventProcessed();
@@ -456,9 +463,9 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 //_________________________
 void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleCollection *partCollection1,
 				       AliFemtoParticleCollection *partCollection2, Bool_t enablePairMonitors){
-// Build pairs, check pair cuts, and call CFs' AddRealPair() or
-// AddMixedPair() methods. If no second particle collection is
-// specfied, make pairs within first particle collection.
+/// Build pairs, check pair cuts, and call CFs' AddRealPair() or
+/// AddMixedPair() methods. If no second particle collection is
+/// specfied, make pairs within first particle collection.
 
   string type = typeIn;
 
@@ -537,8 +544,9 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn, AliFemtoParticleColle
 }
 //_________________________
 void AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev){
-  // Perform initialization operations at the beginning of the event processing
-  //cout << " AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev) " << endl;
+  /// Perform initialization operations at the beginning of the event processing
+  /// cout << " AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev) " << endl;
+
   fFirstParticleCut->EventBegin(ev);
   fSecondParticleCut->EventBegin(ev);
   fPairCut->EventBegin(ev);
@@ -548,7 +556,8 @@ void AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev){
 }
 //_________________________
 void AliFemtoSimpleAnalysis::EventEnd(const AliFemtoEvent* ev){
-  // Fiinsh operations at the end of event processing
+  /// Fiinsh operations at the end of event processing
+
   fFirstParticleCut->EventEnd(ev);
   fSecondParticleCut->EventEnd(ev);
   fPairCut->EventEnd(ev);
@@ -558,7 +567,8 @@ void AliFemtoSimpleAnalysis::EventEnd(const AliFemtoEvent* ev){
 }
 //_________________________
 void AliFemtoSimpleAnalysis::Finish(){
-  // Perform finishing operations after all events are processed
+  /// Perform finishing operations after all events are processed
+
   AliFemtoCorrFctnIterator iter;
   for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     (*iter)->Finish();
@@ -566,13 +576,15 @@ void AliFemtoSimpleAnalysis::Finish(){
 }
 //_________________________
 void AliFemtoSimpleAnalysis::AddEventProcessed() {
-  // Increase count of processed events
+  /// Increase count of processed events
+
   fNeventsProcessed++;
 }
 //_________________________
 TList* AliFemtoSimpleAnalysis::ListSettings()
 {
-  // Collect settings list
+  /// Collect settings list
+
   TList *tListSettings = new TList();
 
   TList *p1Cut = fFirstParticleCut->ListSettings();
@@ -611,8 +623,9 @@ TList* AliFemtoSimpleAnalysis::ListSettings()
 //_________________________
 TList* AliFemtoSimpleAnalysis::GetOutputList()
 {
-  // Collect the list of output objects
-  // to be written
+  /// Collect the list of output objects
+  /// to be written
+
   TList *tOutputList = new TList();
 
   TList *p1Cut = fFirstParticleCut->GetOutputList();
