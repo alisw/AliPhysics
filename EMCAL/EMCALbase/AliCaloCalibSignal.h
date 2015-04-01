@@ -203,11 +203,10 @@ public:
   static const int fgkPhosLEDRefs = 0; // no LED monitor channels for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  // From numbers above: PHOS has more possible towers (17920) than EMCAL (13824) 
-  // so use PHOS numbers to set max. array sizes
-  static const int fgkMaxTowers = 17920; // fgkPhosModules * fgkPhosCols * fgkPhosRows; 
+  // From numbers above: EMCal+DCal has more possible towers than PHOS
+  static const int fgkMaxTowers = 23040;// AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   // for LED references; maximum from EMCAL
-  static const int fgkMaxRefs = 288; // AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALLEDRefs
+    static const int fgkMaxRefs = 480; // AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALLEDRefs;
 
   static const int fgkNumSecInHr = 3600;  // number of seconds in an hour, for the fractional hour conversion on the time graph
   
@@ -222,7 +221,7 @@ public:
   int fNLowGain[fgkMaxTowers]; // same, for low gain
   int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 8) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 9) // don't forget to change version if you change class member list..
     
 };
     

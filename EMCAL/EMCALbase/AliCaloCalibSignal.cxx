@@ -108,7 +108,7 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
     fColumns = AliEMCALGeoParams::fgkEMCALCols;
     fRows = AliEMCALGeoParams::fgkEMCALRows;
     fLEDRefs = AliEMCALGeoParams::fgkEMCALLEDRefs;
-    fModules = AliEMCALGeoParams::fgkEMCALModules;
+    fModules = 20; // AliEMCALGeoParams::fgkEMCALModules is set to a higher number due to simulation constraints...
     fCaloString = "EMCAL";
   }
 
