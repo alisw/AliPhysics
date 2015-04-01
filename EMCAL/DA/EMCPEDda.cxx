@@ -245,6 +245,7 @@ int main(int argc, char **argv) { // Main routine, EMC pedestal detector algorit
 #ifdef LOCAL_DEBUG
 #else
   status = daqDA_FES_storeFile(RESULT_FILE, FILE_ID);
+  status = daqDA_DB_storeFile(RESULT_FILE, RESULT_FILE); // also to DAQ DB
 #endif
   
   return status;
