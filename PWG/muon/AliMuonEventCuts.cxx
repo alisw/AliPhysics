@@ -62,6 +62,9 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fCentralityClasses(0x0),
   fAnalysisUtils(0x0),
   fEventTriggerMask(0),
+  fEventL0Inputs(0),
+  fEventL1Inputs(0),
+  fEventL2Inputs(0),
   fSelectedTrigClassesInEvent(0x0)
 {
   /// Default ctor.
@@ -84,6 +87,9 @@ AliAnalysisCuts(name, title),
   fCentralityClasses(0x0),
   fAnalysisUtils(0x0),
   fEventTriggerMask(0),
+  fEventL0Inputs(0),
+  fEventL1Inputs(0),
+  fEventL2Inputs(0),
   fSelectedTrigClassesInEvent(0x0)
 {
   /// Constructor
@@ -113,6 +119,9 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fCentralityClasses(( obj.fCentralityClasses ) ? static_cast<TAxis*>(obj.fCentralityClasses->Clone() ) : 0x0),
   fAnalysisUtils(( obj.fAnalysisUtils ) ? static_cast<AliAnalysisUtils*>(obj.fAnalysisUtils->Clone() ) : 0x0),
   fEventTriggerMask(obj.fEventTriggerMask),
+  fEventL0Inputs(obj.fEventL0Inputs),
+  fEventL1Inputs(obj.fEventL1Inputs),
+  fEventL2Inputs(obj.fEventL2Inputs),
   fSelectedTrigClassesInEvent(( obj.fSelectedTrigClassesInEvent ) ? static_cast<TObjArray*>(obj.fSelectedTrigClassesInEvent->Clone() ) : 0x0)
 {
   /// Copy constructor
@@ -147,6 +156,9 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     delete fAnalysisUtils;
     fAnalysisUtils = ( obj.fAnalysisUtils ) ? static_cast<AliAnalysisUtils*>(obj.fAnalysisUtils->Clone() ) : 0x0;
     fEventTriggerMask = obj.fEventTriggerMask;
+    fEventL0Inputs = obj.fEventL0Inputs;
+    fEventL1Inputs = obj.fEventL1Inputs;
+    fEventL2Inputs = obj.fEventL2Inputs;
     delete fSelectedTrigClassesInEvent;
     fSelectedTrigClassesInEvent = ( obj.fSelectedTrigClassesInEvent ) ? static_cast<TObjArray*>(obj.fSelectedTrigClassesInEvent->Clone() ) : 0x0;
   }
@@ -242,12 +254,20 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event )
 {
   /// Update the transient data member per event
   
-  if ( fSelectedTrigClassesInEvent && ( fEventTriggerMask == event->GetTriggerMask() ) ) return kFALSE;
+  UInt_t l0Inputs = event->GetHeader()->GetL0TriggerInputs();
+  UInt_t l1Inputs = event->GetHeader()->GetL1TriggerInputs();
+  UInt_t l2Inputs = event->GetHeader()->GetL2TriggerInputs();
   
-  BuildTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(event), AliAnalysisMuonUtility::GetL0TriggerInputs(event), AliAnalysisMuonUtility::GetL1TriggerInputs(event), AliAnalysisMuonUtility::GetL2TriggerInputs(event));
+  if ( fSelectedTrigClassesInEvent && ( fEventTriggerMask == event->GetTriggerMask() ) &&
+      ( fEventL0Inputs == l0Inputs ) && ( fEventL1Inputs == l1Inputs ) && ( fEventL2Inputs == l2Inputs ) ) return kFALSE;
   
+  BuildTriggerClasses(AliAnalysisMuonUtility::GetFiredTriggerClasses(event), l0Inputs, l1Inputs, l2Inputs);
+
   fEventTriggerMask = event->GetTriggerMask();
-  
+  fEventL0Inputs = l0Inputs;
+  fEventL1Inputs = l1Inputs;
+  fEventL2Inputs = l2Inputs;
+
   return kTRUE;
 }
 
