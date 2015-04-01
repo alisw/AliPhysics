@@ -30,6 +30,8 @@ public:
   static const Int_t  fNModulesInTRU        = 96  ;//#FastOR/TRU
   static const Int_t  fNModulesInTRUEta     =  8  ;//#FastOR/TRU in Eta
   static const Int_t  fNModulesInTRUPhi     = 12  ;//#FastOR/TRU in Phi
+  static const Int_t  fSTURegionNEta        = 2 * fNTRUEta * fNModulesInTRUEta;                //EMCAL+DCAL region eta size
+  static const Int_t  fSTURegionNPhi        = 8 * fNTRUPhi * fNModulesInTRUPhi + 2 * fNPhi / 3;//EMCAL+DCAL region phi size
   
   //********************************************
   //SM type 
