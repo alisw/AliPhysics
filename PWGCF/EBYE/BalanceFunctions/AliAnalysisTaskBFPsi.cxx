@@ -662,16 +662,16 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
   for (Int_t i=0; i<nCentralityBins; i++)
     fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
 
-  // No file specified -> run without corrections
+  // No file specified -> Abort
   if(!filename.Contains(".root")) {
-    AliInfo(Form("No correction file specified (= %s) --> run without corrections",filename.Data()));
+    AliFatal(Form("No correction file specified (= %s) but correction requested ==> ABORT",filename.Data()));
     return;
   }
 
   //Open the input file
   TFile *f = TFile::Open(filename);
   if(!f->IsOpen()) {
-    AliInfo(Form("File %s not found --> run without corrections",filename.Data()));
+    AliFatal(Form("File %s not found but correction requested ==> ABORT",filename.Data()));
     return;
   }
     
@@ -682,7 +682,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionPlus[iCent]= dynamic_cast<TH3F *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
-      AliError(Form("fHist %s not found!!!",histoName.Data()));
+      AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return;
     }
     
@@ -690,7 +690,7 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
     fHistCorrectionMinus[iCent] = dynamic_cast<TH3F *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
-      AliError(Form("fHist %s not found!!!",histoName.Data()));
+      AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return; 
     }
   }//loop over centralities: ONLY the PbPb case is covered
