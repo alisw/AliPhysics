@@ -1987,8 +1987,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
 
 	Int_t accepted = 0;
 	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-		if( index >= MCStack->GetNprimary()){ // Secondary Particle
-			if( ((TParticle*)MCStack->Particle(index))->GetMother(0) < 0) return 1; // Secondary Particle without Mother??
+		if(!MCStack) return 0; // no MCStack available, return 0
+		if(index >= MCStack->GetNprimary()){ // initial particle is secondary particle
+			if( ((TParticle*)MCStack->Particle(index))->GetMother(0) < 0) return 0; // material particle, return 0
 			return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
 		}
 		for(Int_t i = 0;i<fnHeaders;i++){
@@ -2004,9 +2005,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
 		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 		if (AODMCTrackArray){
 			AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
-			if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
+			if(!aodMCParticle) return 0; // no particle
 			if(!aodMCParticle->IsPrimary()){
-				if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
+				if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
 				return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
 			}
 			index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
