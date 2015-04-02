@@ -1,9 +1,7 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// This is an analysis which calculated the background from like sign    //
-// pairs in the same event                                               //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoLikeSignAnalysis
+/// \brief This is an analysis which calculated the background from like sign
+///
+/// pairs in the same event
 
 #include "AliFemtoLikeSignAnalysis.h"
 #include "AliFemtoParticleCollection.h"
@@ -11,7 +9,9 @@
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"
 
 #ifdef __ROOT__ 
+/// \cond CLASSIMP
 ClassImp(AliFemtoLikeSignAnalysis)
+/// \endcond
 #endif
 
 // this little function used to apply ParticleCuts (TrackCuts or V0Cuts) and fill ParticleCollections of picoEvent
@@ -30,7 +30,8 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min
   fOverFlow(0),  
   fUnderFlow(0)  
 {
-  // standard constructor
+  /// standard constructor
+
   fVertexBins = bins;
   fVertexZ[0] = min;
   fVertexZ[1] = max;
@@ -47,7 +48,8 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysi
   fOverFlow(0),  
   fUnderFlow(0)  
 {
-  // copy constructor
+  /// copy constructor
+
   fVertexBins = a.fVertexBins; 
   fVertexZ[0] = a.fVertexZ[0]; 
   fVertexZ[1] = a.fVertexZ[1];
@@ -75,13 +77,15 @@ AliFemtoLikeSignAnalysis& AliFemtoLikeSignAnalysis::operator=(const AliFemtoLike
 
 //____________________________ 
 AliFemtoLikeSignAnalysis::~AliFemtoLikeSignAnalysis(){
-  // destructor
+  /// destructor
+
   delete fPicoEventCollectionVectorHideAway; fPicoEventCollectionVectorHideAway=0;
 }
 //____________________________
 AliFemtoString AliFemtoLikeSignAnalysis::Report()
 {  
-  // prepare report
+  /// prepare report
+
   char tCtemp[200];
   cout << "AliFemtoLikeSignAnalysis - constructing Report..."<<endl;
   AliFemtoString temp = "-----------\nHbt Analysis Report:\n";
@@ -101,8 +105,9 @@ AliFemtoString AliFemtoLikeSignAnalysis::Report()
 }
 //_________________________
 void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
-  // perform all the analysis tasks for a single event
-  // get right mixing buffer
+  /// perform all the analysis tasks for a single event
+  /// get right mixing buffer
+
   double vertexZ = hbtEvent->PrimVertPos().z();
   fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ); 
   if (!fMixingBuffer) {

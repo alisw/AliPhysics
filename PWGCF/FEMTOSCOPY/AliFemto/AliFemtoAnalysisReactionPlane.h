@@ -1,10 +1,8 @@
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliFemtoAnalysisReactionPlane - Femtoscopic analysis which mixes event //
-// with respect to the z position of the primary vertex and event total   //
-// multiplicity and uses only events in certain reaction plane angle bin  //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoAnalysisReactionPlane
+/// \brief AliFemtoAnalysisReactionPlane - Femtoscopic analysis which mixes event
+///
+/// with respect to the z position of the primary vertex and event total
+/// multiplicity and uses only events in certain reaction plane angle bin
 
 #ifndef ALIFEMTOANALYSISREACTIONPLANE_H
 #define ALIFEMTOANALYSISREACTIONPLANE_H
@@ -39,7 +37,9 @@ protected:
   unsigned short fRPBins;             // Number of reaction plane angle orientation bins
   double fCurrentRP;                  // Reaction plane angle of the current event
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoAnalysisReactionPlane, 0)
+  /// \endcond
 #endif
     
 };
