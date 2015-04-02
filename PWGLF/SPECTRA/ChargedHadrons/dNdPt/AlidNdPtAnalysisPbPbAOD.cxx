@@ -92,6 +92,7 @@ fDeltaPhiSymCent(0),
 fMCRecTracksMult(0),
 fMCGenTracksMult(0),
 fCrossCheckFilterBitPhiCent(0),
+fTriggerStringsFired(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
@@ -694,6 +695,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCrossCheckFilterBitPhiCent->GetAxis(2)->SetTitle("Centrality");
   fCrossCheckFilterBitPhiCent->Sumw2();
   
+  fTriggerStringsFired = new TH1F("fTriggerStringsFired","fTriggerStringsFired",15,0,15);
+  fTriggerStringsFired->SetBit(TH1::kCanRebin);
+  fTriggerStringsFired->GetYaxis()->SetTitle("number of fired triggers");
+  fTriggerStringsFired->Sumw2();
+  
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaPhiCent);
@@ -758,6 +764,8 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fMCGenTracksMult);
   
   fOutputList->Add(fCrossCheckFilterBitPhiCent);
+  
+  fOutputList->Add(fTriggerStringsFired);
   
   StoreCutSettingsToHistogram();
   
@@ -882,7 +890,15 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 //   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
   Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
  
-  //cout << eventAOD->GetFiredTriggerClasses().Data() << endl;
+  //cout << "Fired Trigger Classes: " << eventAOD->GetFiredTriggerClasses().Data() << endl;
+  
+  TString sFiredTrigger = eventAOD->GetFiredTriggerClasses();
+  TObjArray *oaFiredTrigger = sFiredTrigger.Tokenize(" ");
+  for(Int_t iString = 0; iString < oaFiredTrigger->GetEntries(); iString++)
+  {
+	TObjString *os = (TObjString*)oaFiredTrigger->At(iString);
+	fTriggerStringsFired->Fill(os->GetString().Data(),1);
+  }
 
   if( dCentrality < 0 ) return;
   

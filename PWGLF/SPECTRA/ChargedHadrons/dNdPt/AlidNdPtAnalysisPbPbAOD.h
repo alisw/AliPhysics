@@ -27,6 +27,8 @@ class iostream;
 #include "TString.h"
 #include "TProfile.h"
 #include "TVector2.h"
+#include "TObjArray.h"
+#include "TObjString.h"
 
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
@@ -246,6 +248,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TH1F		*fMCGenTracksMult; // number of generated tracks vs reference multiplcity
 	
 	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
+	
+	TH1F		*fTriggerStringsFired; // distribution of fired trigger strings
 
 	// global variables
     Bool_t fIsMonteCarlo;
@@ -315,7 +319,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,14); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,15); // has to be at least 1, otherwise not streamable...
 };
 
 #endif
