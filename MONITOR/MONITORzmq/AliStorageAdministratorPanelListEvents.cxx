@@ -342,7 +342,7 @@ void AliStorageAdministratorPanelListEvents::TriggerClassesFromLogbook()
 void AliStorageAdministratorPanelListEvents::onGetListButton()
 {
     //prepare and send request message
-    struct serverRequestStruct requestMessage;
+    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
     struct listRequestStruct list;
     
     //build query
@@ -362,8 +362,8 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
     else{strcpy(list.system[1],"");}
     list.triggerMask = 0;
     
-    requestMessage.messageType = REQUEST_LIST_EVENTS;
-    requestMessage.list = list;
+    requestMessage->messageType = REQUEST_LIST_EVENTS;
+    requestMessage->list = list;
     
     if(!fEventManager->Send(requestMessage,fServerSocket))
     {

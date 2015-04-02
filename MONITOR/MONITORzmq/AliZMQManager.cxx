@@ -254,15 +254,15 @@ bool AliZMQManager::Send(vector<serverListStruct> list,storageSockets socket)
     return true;
 }
 
-bool AliZMQManager::Send(struct serverRequestStruct request,storageSockets socket)
+bool AliZMQManager::Send(struct serverRequestStruct *request,storageSockets socket)
 {
     int sizeOfRequest = sizeof(struct serverRequestStruct)+sizeof(struct listRequestStruct)+sizeof(struct eventStruct);
     
-    cout<<"MANAGER -- sending serverRequestStruct:"<<request.messageType<<"\t"<<request.list.runNumber[0]<<endl;
+    cout<<"MANAGER -- sending serverRequestStruct:"<<request->messageType<<"\t"<<request->list.runNumber[0]<<endl;
     
     zmq_msg_t buffer;
     if(!zmqInit(&buffer,sizeOfRequest)){return false;}
-    memcpy(zmq_msg_data(&buffer),&request,sizeOfRequest);
+    memcpy(zmq_msg_data(&buffer),request,sizeOfRequest);
     if(!zmqSend(&buffer,fSockets[socket],0))
     {
         zmq_msg_close(&buffer);
@@ -274,6 +274,8 @@ bool AliZMQManager::Send(struct serverRequestStruct request,storageSockets socke
 
 bool AliZMQManager::Send(struct clientRequestStruct *request,storageSockets socket)
 {
+    cout<<"MANAGER -- sending clientRequestStruct:"<<request->messageType<<"\t"<<endl;
+    
     //put clientRequestStruct in buffer
     zmq_msg_t buffer;
     if(!zmqInit(&buffer,sizeof(struct clientRequestStruct))){return false;}
@@ -451,7 +453,7 @@ bool AliZMQManager::Get(std::vector<serverListStruct>* &result,storageSockets so
     }
 }
 
-bool AliZMQManager::Get(AliESDEvent *result, storageSockets socket)
+bool AliZMQManager::Get(AliESDEvent* &result, storageSockets socket)
 {
     //reveive buffer
     zmq_msg_t buffer;
@@ -475,7 +477,9 @@ bool AliZMQManager::Get(AliESDEvent *result, storageSockets socket)
     AliESDEvent* data = (AliESDEvent*)(mess->ReadObjectAny(AliESDEvent::Class()));
     if (data)
     {
+        cout<<"MANAGER -- received valid event"<<endl;
         data->GetStdContent();
+        cout<<"MANAGER -- reading std content:"<<data->GetEventNumberInFile()<<endl;
         zmq_msg_close(&buffer);
         result = data;
         return true;
@@ -506,7 +510,7 @@ bool AliZMQManager::Get(struct serverRequestStruct* &result, storageSockets sock
     }
 }
 
-bool AliZMQManager::Get(struct clientRequestStruct *result, storageSockets socket)
+bool AliZMQManager::Get(struct clientRequestStruct* &result, storageSockets socket)
 {
     zmq_msg_t buffer;
     if(!zmqInit(&buffer)){return false;}
@@ -518,6 +522,7 @@ bool AliZMQManager::Get(struct clientRequestStruct *result, storageSockets socke
     else
     {
         result = new struct clientRequestStruct(*(static_cast<struct clientRequestStruct*>(zmq_msg_data(&buffer))));
+        cout<<"MANAGER -- received client request:"<<result->messageType<<endl;
         zmq_msg_close(&buffer);
         return true;
     }

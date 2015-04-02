@@ -64,8 +64,8 @@ fRemoveEventsPercentage(0)
     //create directory for storage if it doesn't exist
     gSystem->Exec(Form("mkdir -p %s",fStoragePath.c_str()));
     
-//    fDIMListenerThread = new AliDIMListenerThread();
-//    fEventsCollectorThread = new AliEventsCollectorThread(this);
+    fDIMListenerThread = new AliDIMListenerThread();
+    fEventsCollectorThread = new AliEventsCollectorThread(this);
     fCommunicationThread = new AliCommunicationThread(this);
 }
 

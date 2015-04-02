@@ -21,7 +21,7 @@ public:
     void RecreateSocket(storageSockets socket);
     
 	bool Send(std::vector<serverListStruct> list,storageSockets socket);
-	bool Send(struct serverRequestStruct request,storageSockets socket);
+	bool Send(struct serverRequestStruct *request,storageSockets socket);
 	bool Send(struct clientRequestStruct *request,storageSockets socket);
 	bool Send(AliESDEvent *event,storageSockets socket);
 	bool Send(long message,storageSockets socket);
@@ -29,9 +29,9 @@ public:
     bool SendAsXml(AliESDEvent *event,storageSockets socket);
 	
     bool Get(std::vector<serverListStruct>* &result,storageSockets socket);
-    bool Get(AliESDEvent *result, storageSockets socket);
+    bool Get(AliESDEvent* &result, storageSockets socket);
 	bool Get(struct serverRequestStruct* &result, storageSockets socket);
-	bool Get(struct clientRequestStruct *result, storageSockets socket);
+	bool Get(struct clientRequestStruct* &result, storageSockets socket);
 	bool Get(long *result, storageSockets socket);
 	bool Get(bool *result, storageSockets socket);
 

@@ -52,7 +52,7 @@ void AliCommunicationThread::CommunicationHandle()
         
         do { // try receive requests until success
             receiveStatus = eventManager->Get(request,socket);
-            sleep(1);
+//            sleep(1);
         } while (receiveStatus == false);
         
         cout<<"COMMUNICATION -- received request"<<endl;

@@ -231,7 +231,7 @@ void AliEveEventManager::GetNextEvent()
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
     
-    AliESDEvent *tmpEvent = NULL;
+    AliESDEvent *tmpEvent;
     
     // get list of marked events:
     struct listRequestStruct list;
@@ -248,9 +248,9 @@ void AliEveEventManager::GetNextEvent()
     strcpy(list.system[1],"");
     
     
-    struct serverRequestStruct requestMessage;
-    requestMessage.messageType = REQUEST_LIST_EVENTS;
-    requestMessage.list = list;
+    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+    requestMessage->messageType = REQUEST_LIST_EVENTS;
+    requestMessage->list = list;
     
     cout<<"Sending request for marked events list"<<endl;
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
@@ -289,8 +289,8 @@ void AliEveEventManager::GetNextEvent()
                 mark.runNumber = receivedList[iter].runNumber;
                 mark.eventNumber = receivedList[iter].eventNumber;
                 
-                requestMessage.messageType = REQUEST_GET_EVENT;
-                requestMessage.event = mark;
+                requestMessage->messageType = REQUEST_GET_EVENT;
+                requestMessage->event = mark;
                 cout<<"Waiting for event from Storage Manager...";
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
                 eventManager->Get(tmpEvent,SERVER_COMMUNICATION_REQ);
@@ -340,8 +340,10 @@ void AliEveEventManager::GetNextEvent()
                         cout<<"EVENT DISPLAY -- no scalers"<<endl;
                     }
                     
+                    cout<<"EVENT DISPLAY -- deleting old event...";
                     delete fCurrentEvent[fWritingToEventIndex];
                     fCurrentEvent[fWritingToEventIndex]=0;
+                    cout<<"deleted"<<endl;
                 }
                 fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                 fIsNewEventAvaliable = true;

@@ -49,6 +49,7 @@ void AliEventsCollectorThread::Kill()
 void AliEventsCollectorThread::CollectorHandle()
 {
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
+    eventManager->CreateSocket(EVENTS_SERVER_SUB);
     
     int chunkNumber=0;
     int previousChunkNumber=-1;
