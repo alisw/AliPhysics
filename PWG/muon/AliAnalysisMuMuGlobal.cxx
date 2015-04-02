@@ -186,9 +186,9 @@ void AliAnalysisMuMuGlobal::FillHistosForEvent(const char* eventSelection,
       {
         Histo(eventSelection,triggerClassName,centrality,"V0CMult")->Fill(v0cMult);
       }
-      if (!IsHistogramDisabled("V0Mult"))
+      if (!IsHistogramDisabled("V0TotMult"))
       {
-        Histo(eventSelection,triggerClassName,centrality,"V0Mult")->Fill(multV0);
+        Histo(eventSelection,triggerClassName,centrality,"V0TotMult")->Fill(multV0);
       }
     }
     
@@ -349,8 +349,6 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
                     "RecSPDZvertexVsMCZvertex","Reconstructed SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax,nbins,xmin,xmax);
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
                     "NofEvWSPDZvertexVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax);
-  CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
-                    "NofEvWOSPDZvertexVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) vs MC vertex",nbins,xmin,xmax);
   
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,
                     "NofEvWSPDZvertexAndNoVtexerZVsMCZvertex","Number of events with SPD vertex (w/ Ncontrib>=1) and no vertexer: Z vs MC vertex",nbins,xmin,xmax);
@@ -438,9 +436,9 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
   xmax = 600;
   nbins = GetNbins(xmin,xmax,1);
   
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0AMult","V0A multiplicity;V0A mult;N_{events}",nbins,xmin,xmax);
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CMult","V0C multiplicity;V0C mult;N_{events}",nbins,xmin,xmax);
-  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0Mult","V0 multiplicity;V0 mult;N_{events}",nbins,xmin,xmax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0AMult","V0A multiplicity (Corrected by AliESDUtils);V0A mult;N_{events}",nbins,xmin,xmax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0CMult","V0C multiplicity (Corrected by AliESDUtils);V0C mult;N_{events}",nbins,xmin,xmax);
+  CreateEventHistos(kHistoForData,eventSelection,triggerClassName,centrality,"V0TotMult","V0 multiplicity;V0 mult;N_{events}",nbins,xmin,xmax);
   
   if ( !IsHistogramDisabled("Centrality") )
   {
