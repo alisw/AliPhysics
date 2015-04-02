@@ -104,7 +104,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(Bool_t useMC=kFALSE,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   //printf("Create the task\n");
-  AliAnalysisTaskFlowTPCTOFEPSPtest *task = ConfigHFE_FLOW_TOFTPC(useMC,appendixx,trigger,aodfilter,scalarProduct,cutPileup,variableM,tpcCls, tpcClsr, tpcClspid, itsCls, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,withetacorrection,withmultcorrection,ITSclustersback,minTPCback,maxTPCback,wei);  
+  AliAnalysisTaskFlowTPCTOFEPSP *task = ConfigHFE_FLOW_TOFTPC(useMC,appendixx,trigger,aodfilter,scalarProduct,cutPileup,variableM,tpcCls, tpcClsr, tpcClspid, itsCls, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,etarange,withetacorrection,withmultcorrection,ITSclustersback,minTPCback,maxTPCback,wei);  
   
   task->SetNbBinsCentralityQCumulant(4);
   //task->SetBinCentralityLess(0,0.0);
