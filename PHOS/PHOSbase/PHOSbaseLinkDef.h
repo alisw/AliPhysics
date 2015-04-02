@@ -25,6 +25,7 @@
 #pragma link C++ class AliPHOSRawFitterv3+;
 #pragma link C++ class AliPHOSRawFitterv4+;
 #pragma link C++ class AliPHOSRawDigiProducer+;
+#pragma link C++ class AliPHOSCpvBadChannelsMap+;
 #pragma link C++ class AliPHOSEmcBadChannelsMap+;
 #pragma link C++ class AliPHOSSurvey+;
 #pragma link C++ class AliPHOSSurvey1+;

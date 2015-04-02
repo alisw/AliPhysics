@@ -225,10 +225,11 @@ int main( int argc, char **argv )
   fSave->Close();
   cout<<"Occupancy = "<<Occupancy<<"; minOccupancy = "<<minOccupancy<<endl;
   if(Occupancy>minOccupancy){//if we have enough statistics to calculate calibration
-    status = daqDA_FES_storeFile("CpvCalibrSupplyNew.root","CpvCalibrSupply.root");
+    status = daqDA_FES_storeFile("CpvCalibrSupplyNew.root","CPVAMPLITUDES");
     if(status) printf("Failed to store CpvCalibrSupplyNew.root in DAQ FXS!\n");
-    TFile * fDummy = TFile::Open("dummy.root");
+    TFile * fDummy = TFile::Open("dummy.root","RECREATE");
     status = daqDA_DB_storeFile("dummy.root","CpvCalibrSupply.root");
+    fDummy->Close();
     if(status) printf("Failed to store dummy.root as CpvCalibrSupply.root in DAQ DB!\n");
   }
   else{//store CpvCalibrSupply.root in DAQ DB for future

@@ -291,7 +291,7 @@ int main( int argc, char **argv )
   cout<< "meanOccupancy = "<<meanOccupancy<<"; minOccupancy = "<<minOccupancy<<endl;
   
   if(meanOccupancy>minOccupancy){//send file to FES if only statistics is enough
-    status = daqDA_FES_storeFile("CpvBadMap.root","CpvBadMap.root");
+    status = daqDA_FES_storeFile("CpvBadMap.root","CPVBADMAP");
     if(status) printf("Failed to store CpvBadMap.root in DAQ FXS!\n");
     //store dummy file in DAQ DB
     TFile *fDummy = TFile::Open("dummy.root","RECREATE");
