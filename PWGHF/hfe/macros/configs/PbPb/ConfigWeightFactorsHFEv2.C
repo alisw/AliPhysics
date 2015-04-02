@@ -1,4 +1,4 @@
-void ConfigWeightFactorsHFEv2(AliAnalysisTaskFlowTPCTOFEPSPtest *task, Bool_t syst = kFALSE, Int_t collType = 1, TString filename = "nonHFEcorrect.root"){
+void ConfigWeightFactorsHFEv2(AliAnalysisTaskFlowTPCTOFEPSP *task, Bool_t syst = kFALSE, Int_t collType = 1, TString filename = "nonHFEcorrect.root"){
   //
   // Set weighting factors for nonHFE backgrounds
   // Option "Type": 0 for default PbPb (old weights for Hijing); 1 for Pb-Pb LHC11a10abis; 2 Pb-Pb LHC11a10b_plus; 3 Pb-Pb LHC11a10b_plus for LHC11a10abis ; 4 Pb-Pb LHC11a10b_plus for LHC11a10bbis; 
