@@ -1062,88 +1062,80 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // Get ncl:sector map estimator without having ncl map
     TH3D * hisNclpos = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
     TH3D * hisNclneg = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
+    Int_t nbins= hisNclpos->GetZaxis()->GetNbins();
+    TAxis* paxisPhi=hisNclpos->GetZaxis();
     TH3D * hisNcl= 0;
-    //new TH3F(*hisNclpos);
+    //
+    // 0.) As an estimator most probable value of the ncl/nclfindable used
+    //
+    static TGraphErrors * graphNclMostProbPhi[5]={0};
+    static TGraphErrors * graphNclMostProbPhiSector[5]={0};
+    TVectorD vecMP(nbins);
+    TVectorD vecPhi(nbins);
+    TVectorD vecMostProb(nbins);
+    TVectorD vecSector(nbins);
+    TVectorD vecNclSector(nbins);
+    TVectorD vecNcl(nbins);
     //
     //
-    // 1.) Profile estimator
-    //
-    static TGraphErrors * graphNclPhiProfile[5]={0};
-    static TGraphErrors * graphNclPhiProfileSector[6]={0};
-    Double_t vecNcl[144];
-    Double_t vecNclSector[18];
-    Double_t vecSector[18];
-
-    hisNcl=new TH3D(*hisNclpos);
-    hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
-    graphNclPhiProfile[0]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
-    graphNclPhiProfile[2]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl=new TH3D(*hisNclneg);
-    hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2);
-    graphNclPhiProfile[1]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);
-    graphNclPhiProfile[3]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-    graphNclPhiProfile[4]=new TGraphErrors(((TH2*)(hisNcl->Project3D("xz")))->ProfileX());
-      //
-    Int_t nbins=graphNclPhiProfile[0]->GetN();
-    for (Int_t igr=0;igr<nbins; igr++){      
-      graphNclPhiProfile[0]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4)%nbins]/TMath::Pi();   // correct phi for the mean curvature and express it in the sector coordinates
-      graphNclPhiProfile[1]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4)%nbins]/TMath::Pi();
-      graphNclPhiProfile[2]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr+4+nbins)%nbins]/TMath::Pi();
-      graphNclPhiProfile[3]->GetX()[igr]=9.*graphNclPhiProfile[4]->GetX()[(igr-4+nbins)%nbins]/TMath::Pi();
-    }
-    for (Int_t igr=0;igr<4; igr++){
-      for (Int_t isec=0; isec<18; isec++){
-	Int_t bins=0;
-	for (Int_t ibin=0;ibin<nbins; ibin++){    
-	  if (TMath::Abs(graphNclPhiProfile[igr]->GetX()[ibin]-isec-0.5)>0.4) continue;
-	  vecNcl[bins]=graphNclPhiProfile[igr]->GetY()[ibin];
-	  bins++;
-	}
-	vecSector[isec]=isec;
-	vecNclSector[isec]=TMath::MinElement(bins, vecNcl);
-      }
-      graphNclPhiProfileSector[igr]=new TGraphErrors(18, vecSector, vecNclSector);      
-      graphNclPhiProfileSector[igr+2]=new TGraphErrors(18, vecSector, vecNclSector);      
-    }
-    for (Int_t igr=4;igr<6; igr++){
-      for (Int_t isec=0; isec<18; isec++){
-	graphNclPhiProfileSector[igr]->GetY()[isec]=TMath::Max(graphNclPhiProfileSector[(igr%2)*2]->GetY()[isec], graphNclPhiProfileSector[(igr%2)*2+1]->GetY()[isec]);
-      }
-    }    
-    for (Int_t igr=0;igr<4; igr++){
-      graphNclPhiProfile[igr]->SetMarkerStyle(21+igr);
-      graphNclPhiProfile[igr]->SetMarkerColor(1+igr);
-      graphNclPhiProfileSector[igr]->SetMarkerStyle(21+igr);
-      graphNclPhiProfileSector[igr]->SetMarkerColor(1+igr);
-    } 
-    (*pcstream)<<"tpcQA"<<
-      "grNclSectorC.="<<graphNclPhiProfileSector[4]<<
-      "grNclSectorA.="<<graphNclPhiProfileSector[5];
-    //
-    // 2.) As an estimator most probable value of the ncl/nclfindable used
-    //
-    static TGraphErrors * graphNclMostProbPhiProfile[5]={0};
-    static TGraphErrors * graphNclMostProbPhiProfileSector[5]={0};
-
     for (Int_t igr=0; igr<4; igr++){
-      TVectorD vecPhi(nbins);
-      TVectorD vecMostProb(nbins);
       hisNcl= ((igr%2==0)) ?  new TH3D(*hisNclpos) : new TH3D(*hisNclneg);   // track sign
       if (igr<2) {
 	hisNcl->GetYaxis()->SetRangeUser(0.2,0.9);   // A side
       }else{
 	hisNcl->GetYaxis()->SetRangeUser(-0.9,-0.2); // C side
       }
+      Int_t sign=((igr%2==0)) ? 1:-1;
+      TH2* his2=  (TH2*)hisNcl->Project3D("xz");
       for (Int_t ibin=1; ibin<=nbins; ibin++){
-	
+	TH1 * his1D = (TH1*)his2->ProjectionY("his1D",ibin,ibin);
+	vecMP[ibin-1]=his1D->GetBinCenter(his1D->GetMaximumBin());
+	vecPhi[ibin-1]=9.*paxisPhi->GetBinCenter((ibin+sign*4+nbins)%nbins)/TMath::Pi();
+	delete his1D;
       }
+      graphNclMostProbPhi[igr]=new TGraphErrors(nbins,vecPhi.GetMatrixArray(), vecMP.GetMatrixArray());          
+      graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
+      graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
+      graphNclMostProbPhi[igr]->SetLineColor(1+igr);
+      delete his2;
       delete hisNcl;
       hisNcl=0;
     }
+    //
+    //
+    for (Int_t igr=0;igr<4; igr++){
+      for (Int_t isec=0; isec<18; isec++){
+	Int_t bins=0;
+	for (Int_t ibin=0;ibin<nbins; ibin++){    
+	  if (TMath::Abs(graphNclMostProbPhi[igr]->GetX()[ibin]-isec-0.5)>0.4) continue;
+	  vecNcl[bins]=graphNclMostProbPhi[igr]->GetY()[ibin];
+	  bins++;
+	}
+	vecSector[isec]=isec;
+	vecNclSector[isec]=TMath::Median(bins, vecNcl.GetMatrixArray());
+      }
+      graphNclMostProbPhiSector[igr]=new TGraphErrors(18, vecSector.GetMatrixArray(), vecNclSector.GetMatrixArray());      
+    }
 
+    for (Int_t igr=0;igr<4; igr++){
+       graphNclMostProbPhi[igr]->SetMarkerStyle(21+igr);
+       graphNclMostProbPhi[igr]->SetMarkerColor(1+igr);
+       graphNclMostProbPhiSector[igr]->SetMarkerStyle(21+igr);
+       graphNclMostProbPhiSector[igr]->SetMarkerColor(1+igr);
+    } 
 
+    (*pcstream)<<"tpcQA"<<
+      "grNclPhiPosA.="<< graphNclMostProbPhi[0]<<  //   phi NCL/findable profile
+      "grNclPhiNegA.="<< graphNclMostProbPhi[1]<<  // 
+      "grNclPhiPosC.="<< graphNclMostProbPhi[2]<<  // 
+      "grNclPhiNegC.="<< graphNclMostProbPhi[3];   // 
+
+    (*pcstream)<<"tpcQA"<<
+      "grNclSectorPosA.="<< graphNclMostProbPhiSector[0]<<  //  sector NCL/findable profile
+      "grNclSectorNegA.="<< graphNclMostProbPhiSector[1]<<  // 
+      "grNclSectorPosC.="<< graphNclMostProbPhiSector[2]<<  // 
+      "grNclSectorNegC.="<< graphNclMostProbPhiSector[3];   // 
+ 
 
     return 0;
 }
