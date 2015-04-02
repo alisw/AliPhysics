@@ -58,12 +58,14 @@ void AliEventsCollectorThread::CollectorHandle()
     vector<struct eventStruct> eventsToUpdate;
     struct eventStruct currentEvent;
     
+    bool receiveStatus = false;
+    
     while(!fFinished)
     {
         cout<<"CLIENT -- waiting for event..."<<endl;
-        event = eventManager->GetESDEvent(EVENTS_SERVER_SUB,5000);
+        receiveStatus = eventManager->Get(event,EVENTS_SERVER_SUB);
         
-        if(event)
+        if(event && receiveStatus)
         {
             cout<<"CLIENT -- received event"<<endl;
             fManager->fReceivingStatus=STATUS_OK;

@@ -52,7 +52,7 @@ int main()
 
 	while(1)
 	{
-		event = manager->GetESDEvent(EVENTS_SERVER_SUB);
+        manager->Get(event,EVENTS_SERVER_SUB);
 		cout<<"sending xml"<<endl;
 		manager->Send(getXml(event),XML_PUB);
 		cout<<"xml sent"<<endl;

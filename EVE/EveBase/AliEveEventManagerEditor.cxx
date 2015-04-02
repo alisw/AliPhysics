@@ -406,12 +406,12 @@ void AliEveEventManagerWindow::Update(int state)
 #ifdef ZMQ
 
   AliESDEvent*  esd = fM->GetESD();
-  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+//  AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
   AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
 
   if (!fM->IsOnlineMode()) {
 
-      listEventsTab->SetOfflineMode(kTRUE);
+//      listEventsTab->SetOfflineMode(kTRUE);
 
       fFirstEvent->SetEnabled(!autoLoad);
       fPrevEvent ->SetEnabled(!autoLoad);
@@ -430,7 +430,7 @@ void AliEveEventManagerWindow::Update(int state)
     fLastEvent ->SetEnabled(!autoLoad);
     fNextEvent ->SetEnabled(kFALSE);
     fMarkEvent ->SetEnabled(kFALSE);
-    listEventsTab->SetOfflineMode(kTRUE);
+//    listEventsTab->SetOfflineMode(kTRUE);
     fInfoLabel->SetText(Form("/ %d",fM->GetEventId()));
   }
   else if (0 == state && fStorageStatus->GetText()->Contains("DOWN")) {
@@ -440,7 +440,7 @@ void AliEveEventManagerWindow::Update(int state)
     fLastEvent ->SetEnabled(!autoLoad);
     fNextEvent ->SetEnabled(kFALSE);
     fMarkEvent ->SetEnabled(kFALSE);
-    listEventsTab->SetOfflineMode(kTRUE);
+//    listEventsTab->SetOfflineMode(kTRUE);
   }
   else if (0 == state && fStorageStatus->GetText()->Contains("OK")) {
     fEventServerStatus->SetText("Event Server: Waiting");
@@ -449,7 +449,7 @@ void AliEveEventManagerWindow::Update(int state)
     fLastEvent ->SetEnabled(!autoLoad);
     fNextEvent ->SetEnabled(!autoLoad);
     fMarkEvent ->SetEnabled(kTRUE);
-    listEventsTab->SetOfflineMode(kFALSE);
+//    listEventsTab->SetOfflineMode(kFALSE);
   }
   else {
     fEventServerStatus->SetText("Event Server: OK");
@@ -458,7 +458,7 @@ void AliEveEventManagerWindow::Update(int state)
     fLastEvent ->SetEnabled(!autoLoad);
     fNextEvent ->SetEnabled(!autoLoad);
     fMarkEvent ->SetEnabled(kTRUE);
-    listEventsTab->SetOfflineMode(kFALSE);
+//    listEventsTab->SetOfflineMode(kFALSE);
   }
 #endif
 
@@ -498,7 +498,6 @@ void AliEveEventManagerWindow::Update(int state)
 void AliEveEventManagerWindow::StorageManagerChangedState(int state)
 {
 #ifdef ZMQ
-
   Bool_t autoLoad = fM->GetAutoLoad();
   AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
   AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();

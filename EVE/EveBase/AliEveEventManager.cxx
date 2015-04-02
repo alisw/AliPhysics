@@ -151,7 +151,7 @@ fEventInUse(1),
 fWritingToEventIndex(0),
 fIsNewEventAvaliable(false),
 fOnlineMode(kFALSE),
-fStorageDown(false),
+fStorageDown(true),
 fFinished(false),
 fViewsSaver(0),
 fSaveViews(false)
@@ -224,6 +224,9 @@ void AliEveEventManager::GetNextEvent()
     cout<<"\n\nGet next event called\n\n"<<endl;
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
+    eventManager->CreateSocket(SERVER_COMMUNICATION_REQ);
+    eventManager->CreateSocket(EVENTS_SERVER_SUB);
+    
     
     fCurrentEvent[0]=0;
     fCurrentEvent[1]=0;
@@ -245,28 +248,37 @@ void AliEveEventManager::GetNextEvent()
     strcpy(list.system[1],"");
     
     
-    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
-    requestMessage->messageType = REQUEST_LIST_EVENTS;
-    requestMessage->list = list;
+    struct serverRequestStruct requestMessage;
+    requestMessage.messageType = REQUEST_LIST_EVENTS;
+    requestMessage.list = list;
     
     cout<<"Sending request for marked events list"<<endl;
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
     cout<<"Waiting for response"<<endl;
-    vector<serverListStruct> receivedList = eventManager->GetServerListVector(SERVER_COMMUNICATION_REQ,3000);
-    cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
+    vector<serverListStruct> *tmpVector;
+    vector<serverListStruct> &receivedList = *tmpVector;
+    bool isVectorOk = false;
+    if(eventManager->Get(tmpVector,SERVER_COMMUNICATION_REQ))
+    {
+        cout<<"EVENT DISPLAY -- received list of marked events"<<endl;
+//        receivedList = *tmpVector;
     
-    for(int i=0;i<receivedList.size();i++){cout<<"ev:"<<receivedList[i].eventNumber<<endl;}
+        for(int i=0;i<tmpVector->size();i++)
+        {
+            cout<<"ev:"<<receivedList[i].eventNumber<<endl;
+        }
+        isVectorOk = true;
+    }
     int iter=0;
     
     cout<<"Starting subscriber's loop"<<endl;
     while(!fFinished)
     {
-        if(!fLoopMarked || receivedList.size()<=0)
+        if(!fLoopMarked || !isVectorOk)
         {
             cout<<"Waiting for event from online reconstruction...";
-            tmpEvent = eventManager->GetESDEvent(EVENTS_SERVER_SUB,5000);
+            if(!eventManager->Get(tmpEvent,EVENTS_SERVER_SUB)){sleep(1);}
             cout<<"received.";
-            if(!tmpEvent){sleep(1);}
         }
         else
         {
@@ -277,11 +289,11 @@ void AliEveEventManager::GetNextEvent()
                 mark.runNumber = receivedList[iter].runNumber;
                 mark.eventNumber = receivedList[iter].eventNumber;
                 
-                requestMessage->messageType = REQUEST_GET_EVENT;
-                requestMessage->event = mark;
+                requestMessage.messageType = REQUEST_GET_EVENT;
+                requestMessage.event = mark;
                 cout<<"Waiting for event from Storage Manager...";
                 eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-                tmpEvent = eventManager->GetESDEvent(SERVER_COMMUNICATION_REQ);
+                eventManager->Get(tmpEvent,SERVER_COMMUNICATION_REQ);
                 cout<<"received.";
                 iter++;
                 sleep(1);
@@ -340,7 +352,6 @@ void AliEveEventManager::GetNextEvent()
         else{cout<<"Did not receive new event."<<endl;}
         
     }
-    delete requestMessage;
     
 #endif
 }
@@ -354,24 +365,39 @@ void AliEveEventManager::CheckStorageStatus()
     configManager->ConnectEventManagerSignals();
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
+    storageSockets socket = CLIENT_COMMUNICATION_REQ;
+    eventManager->CreateSocket(socket);
     
     struct clientRequestStruct *request = new struct clientRequestStruct;
     request->messageType = REQUEST_CONNECTION;
+
+    long response;
+    bool receiveStatus = false;
+    bool sendStatus = false;
+    
+    StorageManagerDown();// assume that storage manager is down
     
     while (!fFinished)
     {
-        if(eventManager->Send(request,CLIENT_COMMUNICATION_REQ,10000))
+        do {// send request message until success
+            sendStatus = eventManager->Send(request,socket);
+        } while (sendStatus == false);
+        
+        receiveStatus = eventManager->Get(&response,socket); // try to reveive response
+        if(receiveStatus == false) // if failed (or timeouted)
         {
-            StorageManagerOk();
-            cout<<"EVENT DISPLAY -- Storage Manager is OK!!"<<endl;
-            long response = eventManager->GetLong(CLIENT_COMMUNICATION_REQ);
-            fStorageDown = kFALSE;
+            eventManager->RecreateSocket(socket); // destroy and open socket again, to be able to send message (currently, as receive failed, socket is still in RECV state
+
+            if(!fStorageDown) // if requires change
+            {
+                cout<<"EVENT DISPLAY -- storage DOWN"<<endl;
+                StorageManagerDown();
+            }
         }
-        else
+        else if(fStorageDown) // if success and requires change
         {
-            StorageManagerDown();
-            cout<<"WARNING -- Storage Manager is DOWN!!"<<endl;
-            fStorageDown = kTRUE;
+            cout<<"EVENT DISPLAY -- storage OK"<<endl;
+            StorageManagerOk();
         }
         sleep(1);
     }
@@ -1002,7 +1028,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
             
             // send request and receive event:
             eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-            resultEvent = eventManager->GetESDEvent(SERVER_COMMUNICATION_REQ);
+            eventManager->Get(resultEvent,SERVER_COMMUNICATION_REQ);
             
             if(resultEvent)
             {
@@ -1032,7 +1058,7 @@ void AliEveEventManager::GotoEvent(Int_t event)
             
             fMutex->Lock();
             eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-            resultEvent = eventManager->GetESDEvent(SERVER_COMMUNICATION_REQ);
+            eventManager->Get(resultEvent,SERVER_COMMUNICATION_REQ);
             
             if(resultEvent)
             {
@@ -1346,8 +1372,8 @@ void AliEveEventManager::MarkCurrentEvent()
      */
     
     eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
-    bool response =  eventManager->GetBool(SERVER_COMMUNICATION_REQ);
-    
+    bool response;
+    eventManager->Get(&response,SERVER_COMMUNICATION_REQ);
     
     if(response)
     {
@@ -2020,12 +2046,14 @@ void AliEveEventManager::NoEventLoaded()
 }
 void AliEveEventManager::StorageManagerOk()
 {
+    fStorageDown = false;
     // Emit StorageManagerOk signal.
     Emit("StorageManagerOk()");
 }
 void AliEveEventManager::StorageManagerDown()
 {
-    // Emit StorageManagerOk signal.
+    fStorageDown = true;
+    // Emit StorageManagerDown signal.
     Emit("StorageManagerDown()");
 }
 

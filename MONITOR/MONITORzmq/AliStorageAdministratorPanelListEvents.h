@@ -25,7 +25,8 @@ private:
 	virtual ~AliStorageAdministratorPanelListEvents();
 	
 	static AliStorageAdministratorPanelListEvents *fInstance;
-	
+    void TriggerClassesFromLogbook();
+    
 	//gui components and methods
 	TGLabel *fStatusLabel;
 	TGNumberEntry *fRunMinEntry;
@@ -56,7 +57,8 @@ private:
 	void onLoadButton();
 
 	std::vector<serverListStruct> fEventsListVector;
-
+    std::vector<TString> fTriggerClasses;
+    
 	virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t);
 	void CloseWindow();
 

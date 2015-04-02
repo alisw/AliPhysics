@@ -111,7 +111,8 @@ void AliStorageAdministratorPanelMarkEvent::onMarkButton()
 	requestMessage->event = mark;
 
 	fEventManager->Send(requestMessage,fServerSocket);
-	bool response = fEventManager->GetBool(fServerSocket);
+    bool response;
+    fEventManager->Get(&response,fServerSocket);
 	
 	if(response)
 	{

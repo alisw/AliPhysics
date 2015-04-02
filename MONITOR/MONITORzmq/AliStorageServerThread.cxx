@@ -54,14 +54,21 @@ void AliStorageServerThread::StartCommunication()
 {
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
     storageSockets socket = SERVER_COMMUNICATION_REP;
+    eventManager->CreateSocket(socket);
     
     struct serverRequestStruct *request;
+    
+    bool receiveStatus = false;
+    bool sendStatus = false;
     
     while(1)
     {
         cout<<"Server waiting for requests"<<endl;
-        request = eventManager->GetServerStruct(socket);
-        cout<<"Server received request"<<endl;
+        do{ // try to receive requests until success
+            receiveStatus = eventManager->Get(request,socket);
+        } while(receiveStatus == false);
+        
+        cout<<"Server received request:"<<request->messageType<<endl;
         switch(request->messageType)
         {
             case REQUEST_LIST_EVENTS:
@@ -69,17 +76,16 @@ void AliStorageServerThread::StartCommunication()
                 cout<<"SERVER -- received request for list of events"<<endl;
                 vector<serverListStruct> result = fDatabase->GetList(request->list);
                 cout<<"SERVER -- got list from database"<<endl;
-                eventManager->Send(result,socket);
-                cout<<"SERVER -- list was sent"<<endl;
+                sendStatus = eventManager->Send(result,socket);
+                if(sendStatus){cout<<"SERVER -- list was sent"<<endl;}
+                else{cout<<"SERVER -- couldn't send list"<<endl;}
                 break;
             }
             case REQUEST_GET_EVENT:
             {
                 cout<<"get event"<<endl;
-                TThread::Lock();
                 AliESDEvent *event = fDatabase->GetEvent(request->event);
-                TThread::UnLock();
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
@@ -87,7 +93,7 @@ void AliStorageServerThread::StartCommunication()
             {
                 cout<<"NEXT EVENT request received"<<endl;
                 AliESDEvent *event = fDatabase->GetNextEvent(request->event);
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
@@ -95,7 +101,7 @@ void AliStorageServerThread::StartCommunication()
             {
                 cout<<"PREV request"<<endl;
                 AliESDEvent *event = fDatabase->GetPrevEvent(request->event);
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
@@ -103,7 +109,7 @@ void AliStorageServerThread::StartCommunication()
             {
                 cout<<"LAST request"<<endl;
                 AliESDEvent *event = fDatabase->GetLastEvent();
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
@@ -111,7 +117,7 @@ void AliStorageServerThread::StartCommunication()
             {
                 cout<<"FIRST request"<<endl;
                 AliESDEvent *event = fDatabase->GetFirstEvent();
-                eventManager->Send(event,socket);
+                sendStatus = eventManager->Send(event,socket);
                 delete event;
                 break;
             }
@@ -119,17 +125,21 @@ void AliStorageServerThread::StartCommunication()
             {
                 cout<<"MARK request"<<endl;
                 struct eventStruct *markData  = &(request->event);
-                eventManager->Send(MarkEvent(*markData),socket);
+                sendStatus = eventManager->Send(MarkEvent(*markData),socket);
                 break;
             }
             default:
             {
-                cout<<"unknown request message"<<endl;
-                eventManager->Send(false,socket);
+                cout<<"SERVER -- unknown request message"<<endl;
+                sendStatus = false;
                 break;
             }
         }
-        
+        if(sendStatus == false)
+        {
+            eventManager->RecreateSocket(socket);// if couldn't send, recreate socket to be able to receive messages (currently socket is in SEND state)
+        }
+        delete request;
     }
 }
 

@@ -17,33 +17,33 @@ class AliZMQManager
 {
 public:
 	static AliZMQManager* GetInstance();
+    void CreateSocket(storageSockets socket);
+    void RecreateSocket(storageSockets socket);
     
-	void Send(std::vector<serverListStruct> list,storageSockets socket);
-	bool Send(struct serverRequestStruct *request,storageSockets socket,int timeout = -1);
-	bool Send(struct clientRequestStruct *request,storageSockets socket,int timeout = -1);
-	void Send(AliESDEvent *event,storageSockets socket);
-	void Send(long message,storageSockets socket);
-	void Send(bool message,storageSockets socket);
-	void SendAsXml(AliESDEvent *event,storageSockets socket);
+	bool Send(std::vector<serverListStruct> list,storageSockets socket);
+	bool Send(struct serverRequestStruct request,storageSockets socket);
+	bool Send(struct clientRequestStruct *request,storageSockets socket);
+	bool Send(AliESDEvent *event,storageSockets socket);
+	bool Send(long message,storageSockets socket);
+	bool Send(bool message,storageSockets socket);
+    bool SendAsXml(AliESDEvent *event,storageSockets socket);
 	
-	std::vector<serverListStruct> GetServerListVector(storageSockets socket,int timeout=-1);
-	AliESDEvent* GetESDEvent(storageSockets socket,int timeout=-1);
-	struct serverRequestStruct* GetServerStruct(storageSockets socket);
-	struct clientRequestStruct* GetClientStruct(storageSockets socket,int timeout=-1);
-	long GetLong(storageSockets socket);
-	bool GetBool(storageSockets socket);
+    bool Get(std::vector<serverListStruct>* &result,storageSockets socket);
+    bool Get(AliESDEvent *result, storageSockets socket);
+	bool Get(struct serverRequestStruct* &result, storageSockets socket);
+	bool Get(struct clientRequestStruct *result, storageSockets socket);
+	bool Get(long *result, storageSockets socket);
+	bool Get(bool *result, storageSockets socket);
 
 private:
 	AliZMQManager();
 	~AliZMQManager();
 	static AliZMQManager *fManagerInstance;
-    void CreateSockets();
     
     // ZMQ methods wrappers:
     bool zmqInit(zmq_msg_t *msg,size_t size=0);             // these methids return true on success
     bool zmqSend(zmq_msg_t *msg,void *socket,int flags);
     bool zmqRecv(zmq_msg_t *msg,void *socket,int flags);
-    bool zmqPoll(void *socket,int timeout);
     
     // hostnames and ports read from config file:
 	std::string fStorageServer;

@@ -35,6 +35,7 @@ void AliCommunicationThread::CommunicationHandle()
 {
     AliZMQManager *eventManager = AliZMQManager::GetInstance();
     storageSockets socket = CLIENT_COMMUNICATION_REP;
+    eventManager->CreateSocket(socket);
     
     struct clientRequestStruct *request;
     struct clientRequestStruct *response = new struct clientRequestStruct;
@@ -42,55 +43,66 @@ void AliCommunicationThread::CommunicationHandle()
     cout<<"COMMUNICATION -- Communication stated"<<endl;
     
     // mutex mtx;
+    bool receiveStatus = false;
+    bool sendStatus = false;
     
     while(!fFinished)
     {
         cout<<"COMMUNICATION -- waiting for requests"<<endl;
-        request = eventManager->GetClientStruct(socket);
-        if(request)
+        
+        do { // try receive requests until success
+            receiveStatus = eventManager->Get(request,socket);
+            sleep(1);
+        } while (receiveStatus == false);
+        
+        cout<<"COMMUNICATION -- received request"<<endl;
+        switch(request->messageType)
         {
-	  //      lock_guard<mutex> lock(mtx);
-            cout<<"COMMUNICATION -- received request"<<endl;
-            switch(request->messageType)
-            {
-                case REQUEST_CONNECTION:
-                    eventManager->Send((long)fManager->fConnectionStatus,socket);
-                    break;
-                case REQUEST_RECEIVING:
-                    eventManager->Send((long)fManager->fReceivingStatus,socket);
-                    break;
-                case REQUEST_SAVING:
-                    eventManager->Send((long)fManager->fSavingStatus,socket);
-                    break;
-                case REQUEST_CURRENT_SIZE:
-                    eventManager->Send((long)fManager->fCurrentStorageSize,socket);
-                    break;
-                case REQUEST_GET_PARAMS:
-                    response->maxStorageSize = fManager->fMaximumStorageSize;
-                    response->maxOccupation = fManager->fStorageOccupationLevel;
-                    response->removeEvents = fManager->fRemoveEventsPercentage;
-                    response->eventsInChunk = fManager->fNumberOfEventsInFile;
-                    
-                    eventManager->Send(response,socket);
-                    break;
-                case REQUEST_SET_PARAMS:
-                    SetStorageParams(request->maxStorageSize,
-                                     request->maxOccupation,
-                                     request->removeEvents,
-                                     request->eventsInChunk);
-                    
-                    fManager->fMaximumStorageSize = request->maxStorageSize;
-                    fManager->fStorageOccupationLevel = request->maxOccupation;
-                    fManager->fRemoveEventsPercentage = request->removeEvents;
-                    fManager->fNumberOfEventsInFile = request->eventsInChunk;
-                    
-                    eventManager->Send(true,socket);
-                    break;
-                default:break;
-            }
-            delete request;
+            case REQUEST_CONNECTION:
+                sendStatus = eventManager->Send((long)fManager->fConnectionStatus,socket);
+                break;
+            case REQUEST_RECEIVING:
+                sendStatus = eventManager->Send((long)fManager->fReceivingStatus,socket);
+                break;
+            case REQUEST_SAVING:
+                sendStatus = eventManager->Send((long)fManager->fSavingStatus,socket);
+                break;
+            case REQUEST_CURRENT_SIZE:
+                sendStatus = eventManager->Send((long)fManager->fCurrentStorageSize,socket);
+                break;
+            case REQUEST_GET_PARAMS:
+                response->maxStorageSize = fManager->fMaximumStorageSize;
+                response->maxOccupation = fManager->fStorageOccupationLevel;
+                response->removeEvents = fManager->fRemoveEventsPercentage;
+                response->eventsInChunk = fManager->fNumberOfEventsInFile;
+                
+                sendStatus = eventManager->Send(response,socket);
+                break;
+            case REQUEST_SET_PARAMS:
+                SetStorageParams(request->maxStorageSize,
+                                 request->maxOccupation,
+                                 request->removeEvents,
+                                 request->eventsInChunk);
+                
+                fManager->fMaximumStorageSize = request->maxStorageSize;
+                fManager->fStorageOccupationLevel = request->maxOccupation;
+                fManager->fRemoveEventsPercentage = request->removeEvents;
+                fManager->fNumberOfEventsInFile = request->eventsInChunk;
+
+                sendStatus = eventManager->Send(true,socket);
+                break;
+            default:
+                cout<<"COMMUNICATION -- unknown request"<<endl;
+                sendStatus = false;
+                break;
         }
-        else{sleep(1);}
+        if(sendStatus == false)
+        {
+            eventManager->RecreateSocket(socket);// if couldn't send, recreate socket to be able to receive messages (currently socket is in SEND state)
+        }
+    
+        delete request;
+
     }
 }
 

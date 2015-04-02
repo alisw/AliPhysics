@@ -46,7 +46,7 @@ int main(int argc, char **argv)
         while(1)
         {
             cout<<"waiting for event..."<<flush;
-            event = manager->GetESDEvent(EVENTS_SERVER_SUB);
+            manager->Get(event,EVENTS_SERVER_SUB);
             
             if(event)
             {
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
             requestMessage->messageType = REQUEST_GET_LAST_EVENT;
             
             manager->Send(requestMessage,socket);
-            event = manager->GetESDEvent(socket);
+            manager->Get(event,socket);
             if(event)
             {
                 cout<<"Last event - Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
@@ -168,7 +168,9 @@ int main(int argc, char **argv)
         requestMessage->list = list;
         
         manager->Send(requestMessage,socket);
-        vector<serverListStruct> receivedList = manager->GetServerListVector(socket,3000);
+        vector<serverListStruct> *tmpVector;
+        manager->Get(tmpVector,socket);
+        vector<serverListStruct> &receivedList = *tmpVector;
         
         cout<<"FAKE DISPLAY -- received list of marked events"<<endl;
         
@@ -189,7 +191,7 @@ int main(int argc, char **argv)
                 requestMessage->event = mark;
                 
                 manager->Send(requestMessage,socket);
-                event = manager->GetESDEvent(socket);
+                manager->Get(event,socket);
              
                 if(event)
                 {
@@ -212,7 +214,8 @@ int main(int argc, char **argv)
         cout<<"***************************"<<endl;
         socket = SERVER_COMMUNICATION_REP;
         
-        int request = manager->GetLong(socket);
+        long request;
+        manager->Get(&request,socket);
         cout<<"\nreceived request:"<<request<<endl;
         
         if(request==55)
@@ -236,7 +239,8 @@ int main(int argc, char **argv)
         }
         
         cout<<"waiting for bool"<<endl;
-        bool boolMessage = manager->GetBool(socket);
+        bool boolMessage;
+        manager->Get(&boolMessage,socket);
         cout<<"received bool:"<<boolMessage<<endl;
         
         cout<<"sending server request struct"<<endl;
@@ -252,7 +256,8 @@ int main(int argc, char **argv)
         cout<<"server request struct sent"<<endl;
         
         cout<<"waiting for client struct"<<endl;
-        struct clientRequestStruct *crs = manager->GetClientStruct(socket);
+        struct clientRequestStruct *crs;
+        manager->Get(crs,socket);
         cout<<"received client request struct:"<<crs->messageType<<"\tmaxOcc:"<<crs->maxOccupation<<"\tmaxsize:"<<crs->maxStorageSize<<endl;
         
         
@@ -279,7 +284,9 @@ int main(int argc, char **argv)
         cout<<"\nsending long request"<<endl;
         manager->Send((long)55,socket);
         
-        vector<serverListStruct> result = manager->GetServerListVector(socket);
+        vector<serverListStruct> *tmpVector;
+        manager->Get(tmpVector,socket);
+        vector<serverListStruct> &result = *tmpVector;
         
         cout<<"received vector list:"<<endl;
         for(int i=0;i<result.size();i++)
@@ -291,7 +298,8 @@ int main(int argc, char **argv)
         cout<<"bool message sent"<<endl;
         
         cout<<"waiting for server request struct"<<endl;
-        struct serverRequestStruct *srs = manager->GetServerStruct(socket);
+        struct serverRequestStruct *srs;
+        manager->Get(srs,socket);
         
         cout<<"received server request struct:"<<srs->messageType<<"\trun:"<<srs->event.runNumber<<"\tevent:"<<srs->event.eventNumber<<endl;
         
@@ -308,7 +316,8 @@ int main(int argc, char **argv)
         cout<<"client request struct sent"<<endl;
         
         cout<<"waiting for AliESDevent"<<endl;
-        AliESDEvent *event = manager->GetESDEvent(socket);
+        AliESDEvent *event = NULL;
+        manager->Get(event,socket);
         
         cout<<"received event with run number"<<event->GetRunNumber()<<"\ttracks:"<<event->GetNumberOfTracks()<<endl;
     }
@@ -329,7 +338,7 @@ void* GetNextEvent(void*)
     while(1)
     {
         //if(tmpEvent){delete tmpEvent;tmpEvent=0;}
-        tmpEvent = eventManager->GetESDEvent(EVENTS_SERVER_SUB);
+        eventManager->Get(tmpEvent,EVENTS_SERVER_SUB);
         
         if(tmpEvent)
         {

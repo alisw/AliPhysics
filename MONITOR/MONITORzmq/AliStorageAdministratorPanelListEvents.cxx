@@ -1,4 +1,5 @@
 #include "AliStorageAdministratorPanelListEvents.h"
+#include "AliOnlineReconstructionUtil.h"
 
 #include <iostream>
 #include <sstream>
@@ -7,6 +8,11 @@
 #include <TG3DLine.h>
 #include <TGButton.h>
 #include <TGFrame.h>
+
+#include <TEnv.h>
+#include <TSQLServer.h>
+#include <TSQLResult.h>
+#include <TSQLRow.h>
 
 using namespace std;
 
@@ -62,11 +68,13 @@ fCurrentEvent(0),
 fOnlineMode(0)
 {
     fEventManager = AliZMQManager::GetInstance();
+    fEventManager->CreateSocket(fServerSocket);
     
     SetName("List");
     SetLayoutBroken(kTRUE);
     
     InitWindow();
+//    TriggerClassesFromLogbook();
 }
 
 AliStorageAdministratorPanelListEvents::~AliStorageAdministratorPanelListEvents()
@@ -290,13 +298,51 @@ void AliStorageAdministratorPanelListEvents::InitWindow()
     Resize(252,809);
 }
 
-
+void AliStorageAdministratorPanelListEvents::TriggerClassesFromLogbook()
+{
+    // read crededentials to logbook from config file:
+    TEnv settings;
+    settings.ReadFile(AliOnlineReconstructionUtil::GetPathToServerConf(), kEnvUser);
+    const char *dbHost = settings.GetValue("logbook.host", "");
+    Int_t   dbPort =  settings.GetValue("logbook.port", 0);
+    const char *dbName =  settings.GetValue("logbook.db", "");
+    const char *user =  settings.GetValue("logbook.user", "");
+    const char *password = settings.GetValue("logbook.pass", "");
+    
+    // get entry from logbook:
+    cout<<"creating sql server...";
+    TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
+    cout<<"created"<<endl;
+    
+    TString sqlQuery = "SELECT * FROM TRIGGER_CLASSES";
+    
+    TSQLResult* result = server->Query(sqlQuery);
+    if (!result){
+        Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+        return;
+    }
+    
+    if (result->GetRowCount() == 0){
+        Printf("ERROR: No entries");
+        delete result;
+        return;
+    }
+    
+    // read values from logbook entry:
+    TSQLRow* row;
+    int i=0;
+    while((row=result->Next()))
+    {
+        fTriggerClasses.push_back(row->GetField(0));
+        fTriggerBox->AddEntry(row->GetField(0),i++);
+    }
+}
 
 
 void AliStorageAdministratorPanelListEvents::onGetListButton()
 {
     //prepare and send request message
-    struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
+    struct serverRequestStruct requestMessage;
     struct listRequestStruct list;
     
     //build query
@@ -316,15 +362,26 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
     else{strcpy(list.system[1],"");}
     list.triggerMask = 0;
     
-    requestMessage->messageType = REQUEST_LIST_EVENTS;
-    requestMessage->list = list;
+    requestMessage.messageType = REQUEST_LIST_EVENTS;
+    requestMessage.list = list;
     
-    if(!fEventManager->Send(requestMessage,fServerSocket)){return;}
+    if(!fEventManager->Send(requestMessage,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- couldn't send get list request"<<endl;
+        return;
+    }
     
     fListBox->RemoveAll();
     fListBox->AddEntry(new TGString("Run   Event   System   Mult   Marked"),0);
     
-    vector<serverListStruct> receivedList = fEventManager->GetServerListVector(fServerSocket);
+    vector<serverListStruct> *tmpVector;
+    if(!fEventManager->Get(tmpVector,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- problems getting server's response"<<endl;
+        fEventManager->RecreateSocket(fServerSocket);
+        return;
+    }
+    vector<serverListStruct> &receivedList = *tmpVector;
     
     if(receivedList.size()==0){
         fStatusLabel->SetText("List is empty");
@@ -340,7 +397,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
                                              receivedList[i].multiplicity,
                                              receivedList[i].marked)),i+1);
     }
-    fListBox->MoveResize(8,442,230,436);
+    fListBox->MoveResize(8,510,230,436);
     fEventsListVector = receivedList;
     
     gClient->HandleInput();
@@ -349,7 +406,7 @@ void AliStorageAdministratorPanelListEvents::onGetListButton()
     MapSubwindows();
     MapWindow();
     Layout();
-    delete requestMessage;
+    delete tmpVector;
 }
 
 
@@ -373,9 +430,19 @@ void AliStorageAdministratorPanelListEvents::onMarkButton()
     requestMessage->messageType = REQUEST_MARK_EVENT;
     requestMessage->event = mark;
     
-    fEventManager->Send(requestMessage,fServerSocket);
+    if(!fEventManager->Send(requestMessage,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- couldn't send mark request"<<endl;
+        return;
+    }
     
-    bool response = fEventManager->GetBool(fServerSocket);
+    bool response;
+    if(!fEventManager->Get(&response,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- problems getting server's response"<<endl;
+        fEventManager->RecreateSocket(fServerSocket);
+        return;
+    }
     
     if(response)
     {
@@ -403,8 +470,19 @@ void AliStorageAdministratorPanelListEvents::onLoadButton()
     requestMessage->messageType = REQUEST_GET_EVENT;
     requestMessage->event = eventToLoad;
     
-    fEventManager->Send(requestMessage,fServerSocket);
-    AliESDEvent *resultEvent = fEventManager->GetESDEvent(fServerSocket);
+    if(!fEventManager->Send(requestMessage,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- couldn't send get event request"<<endl;
+        return;
+        
+    }
+    AliESDEvent *resultEvent;
+    if(!fEventManager->Get(resultEvent,fServerSocket))
+    {
+        cout<<"ADMIN PANEL -- problems getting server's response"<<endl;
+        fEventManager->RecreateSocket(fServerSocket);
+        return;
+    }
     
     if(resultEvent)
     {

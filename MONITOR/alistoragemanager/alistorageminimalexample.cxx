@@ -26,7 +26,7 @@ int main()
     
     while(1)
     {
-        tmpEvent = eventManager->GetESDEvent(EVENTS_SERVER_SUB);
+        eventManager->Get(tmpEvent,EVENTS_SERVER_SUB);
         
         if(tmpEvent)
         {
