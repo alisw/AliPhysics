@@ -1,9 +1,8 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// This is an analysis which calculated the background from like sign    //
-// pairs in the same event                                               //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoLikeSignAnalysis
+/// \brief This is an analysis which calculated the background from like sign
+///
+/// pairs in the same event
+
 #ifndef ALIFEMTOLIKESIGNANALYSIS_H
 #define ALIFEMTOLIKESIGNANALYSIS_H
 //#ifndef StMaker_H
@@ -44,7 +43,9 @@ protected:
   unsigned int fUnderFlow;      /* number of events encountered which had too small z-vertex */
 
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoLikeSignAnalysis, 0)
+  /// \endcond
 #endif
 
 };

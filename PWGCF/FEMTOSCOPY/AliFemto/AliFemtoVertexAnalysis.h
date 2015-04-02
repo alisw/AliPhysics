@@ -1,9 +1,7 @@
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliFemtoVertexAnalysis - Femtoscopic analysis which mixes events       //
-// with respect to the z position of the primary vertex                   //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+/// \class AliFemtoVertexAnalysis
+/// \brief AliFemtoVertexAnalysis - Femtoscopic analysis which mixes events
+///
+/// with respect to the z position of the primary vertex
 
 /***************************************************************************
  * Collection and analysis for vertex dependent event mixing
@@ -35,7 +33,9 @@ protected:
   unsigned int fUnderFlow;       /* number of events encountered which had too small z-vertex */
   
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoVertexAnalysis, 0)
+  /// \endcond
 #endif
     
 };
