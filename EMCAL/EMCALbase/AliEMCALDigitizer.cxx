@@ -66,7 +66,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALCalibData.h"
 #include "AliEMCALSimParam.h"
-#include "AliEMCALRawDigit.h"
+#include "AliEMCALTriggerRawDigit.h"
 #include "AliCaloCalibPedestal.h"
 
   namespace
@@ -822,8 +822,8 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
   }
   
   const Int_t nTRU = geom->GetNTotalTRU();
-  TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    nTRU*96);
-  TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", nTRU*96);
+  TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",           nTRU*96);
+  TClonesArray* digitsTRG = new TClonesArray("AliEMCALTriggerRawDigit", nTRU*96);
   
   rl->LoadSDigits("EMCAL");
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++)
@@ -973,9 +973,9 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
           timeSamples[j] = ((j << 16) | (timeSamples[j] & 0xFFFF));
         }
         
-        new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
+        new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALTriggerRawDigit(id, timeSamples, nSamples);
         
-        if (AliDebugLevel()) ((AliEMCALRawDigit*)digitsTRG->At(digitsTRG->GetEntriesFast() - 1))->Print("");
+        if (AliDebugLevel()) ((AliEMCALTriggerRawDigit*)digitsTRG->At(digitsTRG->GetEntriesFast() - 1))->Print("");
       }
     }
   }
