@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -16,24 +16,29 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // CPV Preprocessor class. It runs by Shuttle at the end of the run,
-// calculates calibration coefficients and dead/bad channels
+// calculates pedestals, calibration coefficients and dead/bad channels
 // to be posted in OCDB.
 //
 // Author: Boris Polichtchouk, 25 January 2008
+// Updated:Sergey Evdokimov, 28 Mar 2015
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliPHOSCpvPreprocessor.h"
 #include "AliLog.h"
 #include "AliCDBMetaData.h"
+#include "AliPHOSCpvBadChannelsMap.h"
 #include "AliPHOSCpvCalibData.h"
 #include "TFile.h"
+#include "TF1.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TMap.h"
-#include "TRandom.h"
 #include "TKey.h"
 #include "TList.h"
 #include "TObjString.h"
-
+#include "TFitResult.h"
+#include "TFitResultPtr.h"
+#include "AliCDBEntry.h"
 ClassImp(AliPHOSCpvPreprocessor)
 
 //_______________________________________________________________________________________
@@ -50,7 +55,7 @@ AliPreprocessor("CPV",shuttle)
   // Constructor
 
   AddRunType("PHYSICS");
-  AddRunType("STANDALONE");
+  AddRunType("PEDESTAL");
 
 }
 
@@ -60,119 +65,182 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
   // process data retrieved by the Shuttle
 
   // The fileName with the histograms which have been produced by
-  // AliPHOSCpvDAs.
+  // CPVPEDda.cxx, CPVBCMda.cxx or CPVGAINda.cxx.
   // It is a responsibility of the SHUTTLE framework to form the fileName.
+  
+  AliCDBMetaData md;
+  md.SetResponsible("Sergey Evdokimov");
   
   TString runType = GetRunType();
   Log(Form("Run type: %s",runType.Data()));
 
   if(runType=="PHYSICS") {
+    Bool_t BCM = false, GAIN = false;
+    Bool_t storeOK_BCM=false, storeOK_GAIN=false;
+    AliPHOSCpvCalibData* calib=0;
+    AliPHOSCpvBadChannelsMap* badMap=0;
+    //===================================================
+    //=============== Bad Channels Map ==================
+    //===================================================
+    TList* list = GetFileSources(kDAQ, "CPVBADMAP");
+    if(!list) {
+      Log("CPVBADMAP sources list not found, moving to gain calibration.");
+    }else BCM=true;
+    
+    if(BCM)
+      {
+	TIter iter(list);
+	TObjString *source;
+	badMap = new AliPHOSCpvBadChannelsMap();
+	while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+	  AliInfo(Form("found source %s", source->String().Data()));
+	  
+	  TString fileName = GetFile(kDAQ, "CPVBADMAP", source->GetName());
+	  AliInfo(Form("Got filename: %s",fileName.Data()));
+	  
+	  TFile f(fileName);
+	  
+	  if(!f.IsOpen()) {
+	    Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
+	    return 1;
+	  }
 
-    gRandom->SetSeed(0); //the seed is set to the current  machine clock!
-    AliPHOSCpvCalibData calibData;
-
-    TList* list = GetFileSources(kDAQ, "AMPLITUDES");
+	  for(Int_t iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2)
+	    if(f.Get(Form("hBadChMap%d",iDDL))){
+	      TH2* hBadMap = (TH2*)f.Get(Form("hBadChMap%d",iDDL));
+	      for(Int_t iX = 0; iX<AliPHOSCpvParam::kPadPcX;iX++)
+		for(Int_t iY = 0; iY<AliPHOSCpvParam::kPadPcY;iY++)
+		  if(hBadMap->GetBinContent(iX+1,iY+1))
+		    badMap->SetBadChannel(AliPHOSCpvParam::DDL2Mod(iDDL),iX+1,iY+1);
+	    }
+	}//while((source = dynamic_cast<TObjString *> (iter.Next())))
+	Bool_t storeOK_BCM = Store("Calib", "CpvBadChannels", badMap, &md, 0, kTRUE);
+      }//if(BCM)
+    //===================================================
+    //=============== GAIN calibration ==================
+    //===================================================
+    list = GetFileSources(kDAQ, "CPVAMPLITUDES");
     if(!list) {
       Log("Sources list not found, exit.");
-      return 1;
-    }
+    }else GAIN=true;
 
-    TIter iter(list);
-    TObjString *source;
+    if(GAIN){
+      //Retrieve the last Cpv calibration & BadChMap objects
+      AliCDBEntry* entryCalib = GetFromOCDB("Calib", "CpvGainPedestals");
+      if(!entryCalib){
+	Log(Form("Cannot find any AliCDBEntry for [Calib, CpvGainPedestals]!\nGoing to create new CpvGainPedestals object."));
+	calib = new AliPHOSCpvCalibData();
+      }
+      else
+	calib = (AliPHOSCpvCalibData*)entryCalib->GetObject();
+
+      //I think that we don't need bad map because bad channels exclusion is done at CPVGAINda working time.
+      // if(!storeOK_BCM){//check if we already prepared BCM in for current run
+      // 	AliCDBEntry* entryBadMap = GetFromOCDB("Calib", "CpvBadChannels");
+      // 	if(!entryBadMap){
+      // 	  Log(Form("Cannot find any AliCDBEntry for [Calib, CpvBadChannels]!"));
+      // 	  badMap = new AliPHOSCpvBadChannelsMap();//dummy bad channels map just to simplify following code
+      // 	}else
+      // 	  badMap = (AliPHOSCpvBadChannelsMap*)entryCalib->GetObject();
+      // }
+      
+      TIter iter(list);
+      TObjString *source;
   
-    while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
-      AliInfo(Form("found source %s", source->String().Data()));
+      while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+	AliInfo(Form("found source %s", source->String().Data()));
 
-      TString fileName = GetFile(kDAQ, "AMPLITUDES", source->GetName());
-      AliInfo(Form("Got filename: %s",fileName.Data()));
+	TString fileName = GetFile(kDAQ, "CPVAMPLITUDES", source->GetName());
+	AliInfo(Form("Got filename: %s",fileName.Data()));
 
-      TFile f(fileName);
+	TFile f(fileName);
 
-      if(!f.IsOpen()) {
-	Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
-	return 1;
-      }
-
-      const Int_t nMod=5;   // 1:5 modules
-      const Int_t nCol=56;  // 1:56 columns in each CPV module (along the global Z axis)
-      const Int_t nRow=128; // 1:128 rows in each CPV module
-
-      Double_t coeff;
-      char hnam[80];
-      TH1F* histo=0;
-    
-      //Get the reference histogram
-      //(author: Gustavo Conesa Balbastre)
-
-      TList * keylist = f.GetListOfKeys();
-      Int_t nkeys   = f.GetNkeys();
-      Bool_t ok = kFALSE;
-      TKey  *key;
-      TString refHistoName= "";
-      Int_t ikey = 0;
-      Int_t counter = 0;
-      TH1F* hRef = 0;
-    
-      //Check if the file contains any histogram
-    
-      if(nkeys< 2){
-	Log(Form("Not enough histograms (%d) for calibration.",nkeys));
-	return 1;
-      }
-
-      while(!ok){
-	ikey = gRandom->Integer(nkeys);
-	key = (TKey*)keylist->At(ikey);
-	refHistoName = key->GetName();
-	hRef = (TH1F*)f.Get(refHistoName);
-	counter++;
-	// Check if the reference histogram has too little statistics
-	if(hRef->GetEntries()>2) ok=kTRUE;
-	if(!ok && counter >= nkeys){
-	  Log("No histogram with enough statistics for reference.");
+	if(!f.IsOpen()) {
+	  Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
 	  return 1;
 	}
-      }
-    
-      Log(Form("reference histogram %s, %.1f entries, mean=%.3f, rms=%.3f.",
-	       hRef->GetName(),hRef->GetEntries(),
-	       hRef->GetMean(),hRef->GetRMS()));
-
-      Double_t refMean=hRef->GetMean();
-    
-      // Calculates relative calibration coefficients for all non-zero channels
-      
-      for(Int_t mod=0; mod<nMod; mod++) {
-	for(Int_t col=0; col<nCol; col++) {
-	  for(Int_t row=0; row<nRow; row++) {
-	    snprintf(hnam,80,"%d_%d_%d",mod,row,col); // mod_X_Z
-	    histo = (TH1F*)f.Get(hnam);
-	    //TODO: dead channels exclusion!
-	    if(histo) {
-	      coeff = histo->GetMean()/refMean;
-	      if(coeff>0)
-		calibData.SetADCchannelCpv(mod+1,col+1,row+1,1./coeff);
-	      AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
-	    }
-	  }
+	Int_t minimalStatistics = 50;// minimal statistics to calculate calibration coeff
+	Float_t coeff;
+	for(Int_t iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2){
+	  TH2* entriesMap=(TH2*)f.Get(Form("hEntriesMap%d",iDDL));
+	  if(!entriesMap)continue;
+	  for(Int_t iX = 0; iX<AliPHOSCpvParam::kPadPcX;iX++)
+	    for(Int_t iY = 0; iY<AliPHOSCpvParam::kPadPcY;iY++)
+	      if(entriesMap->GetBinContent(iX+1,iY+1)){//we have some statistics for current channel
+		TH1* hAmpl = (TH1*)f.Get(Form("hAmplA0_DDL%d_iX%d_iY%d",iDDL,iX,iY));
+		if(!hAmpl)continue;
+		if(hAmpl->Integral(10,-1)<minimalStatistics)continue;
+		TF1* fitFunc = new TF1("fitFunc","landau",0.,4000.);
+		fitFunc->SetParameters(1.,200.,60.);fitFunc->SetParLimits(1,10.,2000.);
+		TFitResultPtr r = hAmpl->Fit("landau","SQL","",10.,4000.);
+		coeff = 200./r->Parameter(1);
+		calib->SetADCchannelCpv(AliPHOSCpvParam::DDL2Mod(iDDL),iX+1,iY+1,coeff);
+	      }
 	}
+      }//while ((source =...
+      
+      //Store CPV calibration data
+      Bool_t storeOK_GAIN = Store("Calib", "CpvGainPedestals", calib, &md, 0, kTRUE);
+    }//if(GAIN)
+    if(storeOK_GAIN) Log("PHYSICS run: I successfully updated gain calibration coeffs!");
+    if(storeOK_BCM) Log("PHYSICS run: I successfully updated bad channel map!");
+    if(!(storeOK_GAIN||storeOK_BCM)) Log("PHYSICS run: I did nothing this time");
+    return 0;
+  }//if(runType=="PHYSICS")
+
+  if(runType=="PEDESTAL") {
+    Bool_t PED = false;
+    Bool_t storeOK_PED=false;
+    AliPHOSCpvCalibData* calib=0;
+    //===================================================
+    //================== PEDESTALS ======================
+    //===================================================
+    TList* list = GetFileSources(kDAQ, "CPVPEDS");
+    if(!list) {
+      Log("Sources list not found, exit.");
+    }else PED=true;
+
+    if(PED){
+      //Retrieve the last Cpv calibration object
+      AliCDBEntry* entryCalib = GetFromOCDB("Calib", "CpvGainPedestals");
+      if(!entryCalib){
+	Log(Form("Cannot find any AliCDBEntry for [Calib, CpvGainPedestals]!\nGoing to create new CpvGainPedestals object."));
+	calib = new AliPHOSCpvCalibData();
       }
-    
-      f.Close();
-    }
+      else
+	calib = (AliPHOSCpvCalibData*)entryCalib->GetObject();
+      TIter iter(list);
+      TObjString *source;
   
-    //Store CPV calibration data
-  
-    AliCDBMetaData cpvMetaData;
-    Bool_t cpvOK = Store("Calib", "CpvGainPedestals", &calibData, &cpvMetaData);
+      while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+	AliInfo(Form("found source %s", source->String().Data()));
 
-    if(cpvOK) return 0;
-    else
-      return 1;
-  }
+	TString fileName = GetFile(kDAQ, "CPVPEDS", source->GetName());
+	AliInfo(Form("Got filename: %s",fileName.Data()));
 
+	TFile f(fileName);
+
+	if(!f.IsOpen()) {
+	  Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
+	  return 1;
+	}
+      
+	for(Int_t iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL;iDDL+=2){
+	  TH2* pedMap=(TH2*)f.Get(Form("fPedMeanMap%d",iDDL));
+	  if(!pedMap)continue;
+	  for(Int_t iX = 0; iX<AliPHOSCpvParam::kPadPcX;iX++)
+	    for(Int_t iY = 0; iY<AliPHOSCpvParam::kPadPcY;iY++)
+	      calib->SetADCpedestalCpv(AliPHOSCpvParam::DDL2Mod(iDDL),iX+1,iY+1,pedMap->GetBinContent(iX+1,iY+1));
+	}
+      }//while ((source =...	
+      //Store CPV calibration data
+      Bool_t storeOK_PED = Store("Calib", "CpvGainPedestals", calib, &md, 0, kTRUE);
+    }//if(PED)
+    if(storeOK_PED) Log("PEDESTAL run: I successfully updated pedestals!");
+    if(!storeOK_PED) Log("PEDESTAL run: I did nothing this time");
+  }//if(runType=="PEDESTAL")
   Log(Form("Unknown or unused run type %s. Do nothing and return OK.",runType.Data()));
   return 0;
-
+  
 }
 

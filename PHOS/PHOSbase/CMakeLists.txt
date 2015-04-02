@@ -38,6 +38,7 @@ set(SRCS
     AliPHOSClusterizer.cxx
     AliPHOSClusterizerv1.cxx
     AliPHOSCpv3GConnection.cxx
+    AliPHOSCpvBadChannelsMap.cxx
     AliPHOSCpvCalibData.cxx
     AliPHOSCpvGainCalibDA.cxx
     AliPHOSCpvParam.cxx

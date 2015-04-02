@@ -1,7 +1,7 @@
 #ifndef ALIPHOSCPVCALIBDATA_H
 #define ALIPHOSCPVCALIBDATA_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////
@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
+#include "AliPHOSCpvParam.h"
 
 class AliPHOSCpvCalibData: public TNamed {
 
@@ -28,10 +29,10 @@ class AliPHOSCpvCalibData: public TNamed {
   void SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value);
 
  protected:
-  Float_t  fADCchannelCpv[5][56][128];  // width of one CPV ADC channel ([mod][col][row])
-  Float_t  fADCpedestalCpv[5][56][128]; // value of the CPV ADC pedestal ([mod][col][row])
+  Float_t  fADCchannelCpv[AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY];  // width of one CPV ADC channel ([mod][col][row])
+  Float_t  fADCpedestalCpv[AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY]; // value of the CPV ADC pedestal ([mod][col][row])
   //
-  ClassDef(AliPHOSCpvCalibData,1)    // CPV Calibration data
+  ClassDef(AliPHOSCpvCalibData,2)    // CPV Calibration data
 
 };
 

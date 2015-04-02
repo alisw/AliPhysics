@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -18,6 +18,7 @@
 //                                                                           //
 // class for CPV calibration.                                                //
 // Author: Boris Polichtchouk (Boris.Polichtchouk@cern.ch).                  //
+// Updated: Sergey Evdokimov on 28 Mar 2015
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -51,9 +52,9 @@ AliPHOSCpvCalibData::AliPHOSCpvCalibData(const AliPHOSCpvCalibData& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<56; column++) {
-      for(Int_t row=0; row<128; row++) {
+  for(Int_t module=0; module<AliPHOSCpvParam::kNDDL; module++) {
+    for(Int_t column=0; column<AliPHOSCpvParam::kPadPcX; column++) {
+      for(Int_t row=0; row<AliPHOSCpvParam::kPadPcY; row++) {
 	fADCchannelCpv[module][column][row] = calibda.GetADCchannelCpv(module,column,row);
 	fADCpedestalCpv[module][column][row] = calibda.GetADCpedestalCpv(module,column,row);
       }
@@ -68,9 +69,9 @@ AliPHOSCpvCalibData &AliPHOSCpvCalibData::operator =(const AliPHOSCpvCalibData& 
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<56; column++) {
-      for(Int_t row=0; row<128; row++) {
+  for(Int_t module=0; module<AliPHOSCpvParam::kNDDL; module++) {
+    for(Int_t column=0; column<AliPHOSCpvParam::kPadPcX; column++) {
+      for(Int_t row=0; row<AliPHOSCpvParam::kPadPcY; row++) {
 	fADCchannelCpv[module][column][row] = calibda.GetADCchannelCpv(module,column,row);
 	fADCpedestalCpv[module][column][row] = calibda.GetADCpedestalCpv(module,column,row);
       }
@@ -88,13 +89,12 @@ AliPHOSCpvCalibData::~AliPHOSCpvCalibData()
 //________________________________________________________________
 void AliPHOSCpvCalibData::Reset()
 {
-  // Set all pedestals and all ADC channels to its default (ideal) values.
-
-  for (Int_t module=0; module<5; module++){
-    for (Int_t column=0; column<56; column++){
-      for (Int_t row=0; row<128; row++){
-	fADCpedestalCpv[module][column][row] = 0.012;
-	fADCchannelCpv[module][column][row] = 0.0012;
+  // Set all pedestals and all ADC channels to its dummy values.
+  for(Int_t module=0; module<AliPHOSCpvParam::kNDDL; module++) {
+    for(Int_t column=0; column<AliPHOSCpvParam::kPadPcX; column++) {
+      for(Int_t row=0; row<AliPHOSCpvParam::kPadPcY; row++) {
+	fADCpedestalCpv[module][column][row] = 0;
+	fADCchannelCpv[module][column][row] = 1;
       }
     }
   }
@@ -108,10 +108,10 @@ void  AliPHOSCpvCalibData::Print(Option_t *option) const
 
   if (strstr(option,"ped")) {
     printf("\n	----	Pedestal values	----\n\n");
-    for (Int_t module=0; module<5; module++){
+    for (Int_t module=0; module<AliPHOSCpvParam::kNDDL; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column<56; column++){
-	for (Int_t row=0; row<128; row++){
+      for (Int_t column=0; column<AliPHOSCpvParam::kPadPcX; column++){
+	for (Int_t row=0; row<AliPHOSCpvParam::kPadPcY; row++){
 	  printf("%4.1f",fADCpedestalCpv[module][column][row]);
 	}
 	printf("\n");
@@ -121,10 +121,10 @@ void  AliPHOSCpvCalibData::Print(Option_t *option) const
 
   if (strstr(option,"gain")) {
     printf("\n	----	ADC channel values	----\n\n");
-    for (Int_t module=0; module<5; module++){
+    for (Int_t module=0; module<AliPHOSCpvParam::kNDDL; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column<56; column++){
-	for (Int_t row=0; row<128; row++){
+      for (Int_t column=0; column<AliPHOSCpvParam::kPadPcX; column++){
+	for (Int_t row=0; row<AliPHOSCpvParam::kPadPcY; row++){
 	  printf("%4.1f",fADCchannelCpv[module][column][row]);
 	}
 	printf("\n");

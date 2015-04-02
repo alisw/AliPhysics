@@ -1,6 +1,6 @@
 #ifndef ALIPHOSCPVPREPROCESSOR_H
 #define ALIPHOSCPVPREPROCESSOR_H
-/* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9,6 +9,7 @@
 
 
 #include "AliPreprocessor.h"
+#include "TFile.h"
 
 class AliPHOSCpvPreprocessor : public AliPreprocessor {
 public:
@@ -20,7 +21,7 @@ protected:
 
   virtual UInt_t Process(TMap* valueSet);
 
-  ClassDef(AliPHOSCpvPreprocessor,1);
+  ClassDef(AliPHOSCpvPreprocessor,2);
 
 };
 

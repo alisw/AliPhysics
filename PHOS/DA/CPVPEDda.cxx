@@ -154,7 +154,7 @@ int main( int argc, char **argv )
     status = daqDA_DB_storeFile("CpvPeds.root","CpvPeds.root");
     if(status) printf("Failed to store CpvPeds.root in DAQ DB!\n");
   
-    status = daqDA_FES_storeFile("CpvPeds.root","CpvPeds.root");
+    status = daqDA_FES_storeFile("CpvPeds.root","CPVPEDS");
     if(status) printf("Failed to store CpvPeds.root in DAQ FXS!\n");
 
     for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL++){
