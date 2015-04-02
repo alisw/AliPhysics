@@ -197,7 +197,7 @@ class AliMUON : public  AliDetector
 
   AliMUONDigitCalibrator* fDigitCalibrator; //!<! digit calibrator (for raw2sdigits)
   
-    ClassDef(AliMUON,25)  // MUON Detector base class
+    ClassDef(AliMUON,26)  // MUON Detector base class
 };
 #endif
 
