@@ -194,7 +194,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
     }
   }
   
-  Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24x48
+  Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24 rows x 48 cols
   Double_t nTot = fgknSM * nTowersPerSM ;
   TList *lstF = 0;
   Int_t calibSpecieId = (Int_t)TMath::Log2( AliRecoParam::kCalib );
@@ -293,18 +293,19 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    //Int_t sigmaG    = 100; // deviation from mean value (increased to 100)
 	    //Int_t sigmaGTRU = 5; // deviation from mean value for TRUs
 	    Double_t dL1GEntries = hL1GammaPatch->GetEntries();
-	    Int_t badL1G[48][64]   = {{0}} ;
-	    Int_t badL1GTRU[2][16] = {{0}} ;
+	    Int_t badL1G[48][104] //cols and rows including DCAL
+	    Int_t badL1GTRU[2][23] = {{0}} ; //23 TRUs PER SIDE with DCAL (before 16)
 	    Int_t nBadL1G    = 0;
 	    Int_t nBadL1GTRU = 0;
-	    Double_t binContentTRU[2][16] = {{0.}};
+	    Double_t binContentTRU[2][23] = {{0.}};//23 TRUs PER SIDE with DCAL (before 16)
 	    for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
 	      for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
 		Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
 		if (binContent != 0) {
 		  
 		  // fill counter for TRUs
-		  binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;
+		  //binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;//OLD TRU SCHEME 
+		  binContentTRU[(Int_t)((ix-1)/8)][(Int_t)((iy-1)/12)] += binContent;  //NEW TRU SCHEME TO BE CHECKED
 		  
 		  // OLD METHOD (if a patch triggers > sigmaG * mean value (1/#patch positions total) says "hot spot !")
 		  // if ((double)binContent/(double)dL1GEntries > sigmaG*dL1GmeanTrig) {
@@ -325,8 +326,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    
 	    // check TRUs
 	    for(Int_t ix = 1; ix <=  2; ix++) {
-	      for(Int_t iy = 1; iy <=  16; iy++) {
-		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {
+	      for(Int_t iy = 1; iy <=  23; iy++) { //23 TRUs PER SIDE with DCAL (before 16)
+		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {//NEED TO CHECK THIS DEFINITION
 		  badL1GTRU[ix-1][iy-1] += 1;
 		  nBadL1GTRU += 1;
 		}
@@ -378,7 +379,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    //Double_t dL1JmeanTrig = 1/126.;
 	    //Int_t sigmaJ = 5; // deviation from  mean value
 	    Double_t dL1JEntries = hL1JetPatch->GetEntries();
-	    Int_t badL1J[12][16] = {{0}} ;
+	    Int_t badL1J[12][16] = {{0}} ;//NEED TO CHECK THIS FOR JETs !!!!!!!
 	    Int_t nBadL1J = 0;
 	    for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
 	      for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
@@ -434,7 +435,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	if(hFrameR->GetEntries() !=0) {
 	  lstF = hFrameR->GetListOfFunctions();
 	  
-	  Int_t badLink[32] = {0};
+	  Int_t badLink[46] = {0}; //#nTRUs EMCAL (32) + DCAL (14)
 	  Int_t nBadLink = 0;
 	  for(Int_t ix = 1; ix <= hFrameR->GetNbinsX(); ix++) {
 	    Double_t binContent = hFrameR->GetBinContent(ix) ; 
