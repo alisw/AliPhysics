@@ -78,6 +78,6 @@ class AliMUONTriggerElectronics : public TObject
       AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
       
-   ClassDef(AliMUONTriggerElectronics,4) //Manager class for muon trigger electronics
+   ClassDef(AliMUONTriggerElectronics,5) //Manager class for muon trigger electronics
 };
 #endif

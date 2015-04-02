@@ -90,7 +90,7 @@ class AliTRDPIDResponse : public TObject {
     const AliTRDdEdxParams * fkTRDdEdxParams; //parametrisation for truncated mean
     Double_t  fGainNormalisationFactor;         // Gain normalisation factor
   
-  ClassDef(AliTRDPIDResponse, 3)    // Tool for TRD PID
+  ClassDef(AliTRDPIDResponse, 4)    // Tool for TRD PID
 };
 
 AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices(ETRDPIDMethod PIDmethod) const {
