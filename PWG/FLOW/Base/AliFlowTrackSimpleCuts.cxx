@@ -24,6 +24,9 @@
 
 #include <limits.h>
 #include <float.h>
+#include "TH2.h"
+#include "TAxis.h"
+#include "TRandom.h"
 #include "TNamed.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
@@ -54,6 +57,8 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
   fCutMass(kFALSE),
   fMassMax(FLT_MAX),
   fMassMin(-FLT_MAX),
+  fEtaPhiEff(0x0),
+  fCutEtaPhiEff(kFALSE),
   fPOItype(1)
 {
   //constructor 
@@ -122,6 +127,10 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
   if(fCutMass) {if (track->Mass() < fMassMin || track->Mass() >= fMassMax ) return kFALSE;}
   if(fCutEtaGap) {if (track->Eta() > fEtaGapMin && track->Eta() < fEtaGapMax) return kFALSE;}
   //if(fCutPID) {if (track->PID() != fPID) return kFALSE;}
+  if(fCutEtaPhiEff) {
+      Int_t binX(fEtaPhiEff->GetXaxis()->FindBin(track->Eta())), binY(fEtaPhiEff->GetYaxis()->FindBin(track->Phi()+fEtaPhiEff->GetYaxis()->GetXmin()));
+      if(fEtaPhiEff->GetBinContent(binX, binY) < gRandom->Uniform(0,1)*(fEtaPhiEff->GetMaximum())) return kFALSE;
+  }
   return kTRUE;
 }
 
