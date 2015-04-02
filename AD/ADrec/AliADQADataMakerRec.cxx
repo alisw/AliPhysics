@@ -505,7 +505,7 @@ void AliADQADataMakerRec::InitRaws()
     // Creation of Pedestal histograms 
     h2i = new TH2I(Form("H2I_Pedestal_Int%d",iInt), Form("Pedestal (Int%d);Channel;Pedestal [ADC counts]",iInt)
 		   ,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
-    Add2RawsList(h2i,(iInt == 0 ? kPedestalInt0 : kPedestalInt1), expert, !image, !saveCorr); iHisto++;
+    Add2RawsList(h2i,(iInt == 0 ? kPedestalInt0 : kPedestalInt1), expert, image, !saveCorr); iHisto++;
     
     h2d = new TH2F(Form("H2D_PedestalDiff_Int%d",iInt), Form("Pedestal difference Online - OCDB (Int%d);Channel; Pedestal Online - OCDB",iInt)
 		   ,kNChannelBins, kChannelMin, kChannelMax,81,-10.5,70.5);
