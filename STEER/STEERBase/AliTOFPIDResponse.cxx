@@ -35,6 +35,7 @@ ClassImp(AliTOFPIDResponse)
 TF1 *AliTOFPIDResponse::fTOFtailResponse = NULL; // function to generate a TOF tail
 TH1F *AliTOFPIDResponse::fHmismTOF = NULL; // TOF mismatch distribution
 TH1D *AliTOFPIDResponse::fHchannelTOFdistr=NULL;  // TOF channel distance distribution
+TH1D *AliTOFPIDResponse::fHTOFtailResponse=NULL; // histogram to generate a TOF tail
 
 //_________________________________________________________________________
 AliTOFPIDResponse::AliTOFPIDResponse(): 
@@ -42,6 +43,7 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPmax(0),         // zero at 0.5 GeV/c for pp
   fTime0(0)
 {
+  AliLog::SetClassDebugLevel("AliTOFPIDResponse",0);
   fPar[0] = 0.008;
   fPar[1] = 0.008;
   fPar[2] = 0.002;
@@ -55,7 +57,9 @@ AliTOFPIDResponse::AliTOFPIDResponse():
     fTOFtailResponse->SetParameter(3,0.89);
     fTOFtailResponse->SetNpx(10000);
   }
-    
+
+  LoadTOFtailHisto();
+  
 
   // Reset T0 info
   ResetT0info();
@@ -88,12 +92,16 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
     fTOFtailResponse->SetNpx(10000);
   }
 
+  LoadTOFtailHisto();
+
   // Reset T0 info
   ResetT0info();
   SetMomBoundary();
 }
 //_________________________________________________________________________
 void AliTOFPIDResponse::SetTOFtail(Float_t tail){
+  LoadTOFtailHisto();
+
   if(!fTOFtailResponse){
     fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
     fTOFtailResponse->SetParameter(0,1);
@@ -104,9 +112,20 @@ void AliTOFPIDResponse::SetTOFtail(Float_t tail){
   }
   else{
     fTOFtailResponse->SetParameter(3,tail);
+
+    if(fHTOFtailResponse){ // adjust the TOF tail histo
+      fHTOFtailResponse->Reset();
+      for(Int_t i=1;i<=200;i++){
+	Float_t x = fHTOFtailResponse->GetBinCenter(i);
+	Float_t wx = fHTOFtailResponse->GetBinWidth(i)*0.5;
+	fHTOFtailResponse->SetBinContent(i,fTOFtailResponse->Integral(x-wx,x+wx));
+      }
+    }
   }
 }
 void AliTOFPIDResponse::SetTOFtailAllPara(Float_t mean,Float_t tail){
+  LoadTOFtailHisto();
+
   if(!fTOFtailResponse){
     fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
     fTOFtailResponse->SetParameter(0,1);
@@ -118,6 +137,16 @@ void AliTOFPIDResponse::SetTOFtailAllPara(Float_t mean,Float_t tail){
   else{
     fTOFtailResponse->SetParameter(1,mean);
     fTOFtailResponse->SetParameter(3,tail);
+
+
+    if(fHTOFtailResponse){ // adjust the TOF tail histo
+      fHTOFtailResponse->Reset();
+      for(Int_t i=1;i<=200;i++){
+	Float_t x = fHTOFtailResponse->GetBinCenter(i);
+	Float_t wx = fHTOFtailResponse->GetBinWidth(i)*0.5;
+	fHTOFtailResponse->SetBinContent(i,fTOFtailResponse->Integral(x-wx,x+wx));
+      }
+    }
   }  
 }
 
@@ -282,8 +311,8 @@ Double_t AliTOFPIDResponse::GetTailRandomValue(Float_t pt,Float_t eta,Float_t ti
     }
   }
 
-  if(fTOFtailResponse)
-    return fTOFtailResponse->GetRandom();
+  if(fHTOFtailResponse)
+    return fHTOFtailResponse->GetRandom();
   else
     return 0.0;
 }
@@ -321,4 +350,24 @@ Int_t AliTOFPIDResponse::GetTOFchannel(AliVParticle *trk) const{
   if(channel < 1 || etaAbs > 1) channel = 1; 
   
   return channel;
+}
+//_________________________________________________________________________
+Int_t AliTOFPIDResponse::LoadTOFtailHisto(){
+  if(! fHTOFtailResponse){
+    TFile *fAddTail = new TFile("$ALICE_ROOT/TOF/data/addTOFtail.root");
+    if(fAddTail) fHTOFtailResponse = (TH1D *) fAddTail->Get("hTOFTail");
+    if(! fHTOFtailResponse){
+      AliError("Cannot retrive TOF tail histogram from file $ALICE_ROOT/TOF/data/addTOFtail.root ... skipped!");
+      delete fAddTail; 
+      return 2;
+    }
+    else{
+      AliInfo("Loaded TOF tail histogram from file $ALICE_ROOT/TOF/data/addTOFtail.root");
+      fHTOFtailResponse->SetDirectory(0x0); 
+    }
+    delete fAddTail; 
+    return 0;
+  }
+
+  return 1;
 }

@@ -72,6 +72,8 @@ public:
   void    SetTOFtailAllPara(Float_t mean,Float_t tail);
 
  private:
+  Int_t LoadTOFtailHisto();
+
   Double_t fSigma;        // intrinsic TOF resolution
 
   // obsolete
@@ -90,8 +92,9 @@ public:
   static TF1 *fTOFtailResponse; // function to generate a TOF tail
   static TH1F *fHmismTOF; // TOF mismatch distribution
   static TH1D *fHchannelTOFdistr;// TOF channel distance distribution
+  static TH1D *fHTOFtailResponse;// histogram to generate a TOF tail
 
-  ClassDef(AliTOFPIDResponse,5)   // TOF PID class
+  ClassDef(AliTOFPIDResponse,6)   // TOF PID class
 };
 
 #endif
