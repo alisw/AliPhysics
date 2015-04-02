@@ -412,8 +412,13 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   Double_t evPlaneV0 = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0",fESD,2));
   if(evPlaneV0 > TMath::Pi()) evPlaneV0 = evPlaneV0 - TMath::Pi();
-  fevPlaneV0[iCent]->Fill(evPlaneV0);
-
+  
+  Int_t Bin = fevPlaneV0[0]->FindBin(evPlaneV0);
+  Double_t EPweight = GetEPweight(Bin);
+  
+  if (iCent==0) fevPlaneV0[iCent]->Fill(evPlaneV0,EPweight);
+  else fevPlaneV0[iCent]->Fill(evPlaneV0);
+  
   AliEventplane* esdTPCep = fESD->GetEventplane();
   TVector2 *standardQ = 0x0;
   Double_t qx = -999., qy = -999.;
@@ -481,8 +486,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneTPCpos = TMath::ATan2(Qy2pos, Qx2pos)/2;
 
   Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),cent};
-  fEPres->Fill(evPlaneRes);
-
+  if (iCent==0) fEPres->Fill(evPlaneRes,EPweight);
+  else fEPres->Fill(evPlaneRes);
+  
   // Selection of primary pi0 and eta in MC to compute the weight
   if(fIsMC && fMC && fStack){
     Int_t nParticles = fStack->GetNtrack();
@@ -640,7 +646,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
        
     if (m20>0.02 && m02>0.02){
       Double_t corr[7]={(Double_t)iCent,(Double_t)iPt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi};
-      fCorr->Fill(corr);
+      if (iCent==0) fCorr->Fill(corr,EPweight);
+      else fCorr->Fill(corr);
     }
 
     if(!fIsMC && fTPCnSigma>-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3){ 
@@ -1112,6 +1119,15 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetWeight(TParticle *particle, Int_t iCe
     }
   }
   return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEPweight(Int_t bin) 
+{
+  Int_t wBin = bin-1;
+  Double_t weightEP[] = {0.982991,0.988171,0.9899237,0.9914497,0.9906325,0.9956888,0.9972689,1.000973,1.002418,1.006948,1.007226,1.008336,1.01335,1.011154,1.018333,1.019898,1.026543,1.023092,1.028325,1.026844,1.031437,1.03014,1.031728,1.030307,1.037547,1.03471,1.03722,1.039466,1.037632,1.041682,1.042824,1.037494,1.046057,1.046622,1.042124,1.043161,1.040339,1.040997,1.043782,1.039092,1.039026,1.033509,1.035641,1.034528,1.031159,1.029701,1.033969,1.021809,1.02614,1.017396,1.017012,1.013525,1.012976,1.007164,1.006868,1.00653,0.9983816,0.9962069,0.9987208,0.9958153,0.9902154,0.9837839,0.9805614,0.9825041,0.9821056,0.9785275,0.9793774,0.9739373,0.9722809,0.9728094,0.972367,0.9687113,0.96755,0.9635185,0.9605392,0.9610214,0.9614648,0.9591571,0.9603319,0.9610102,0.9675955,0.9609205,0.9605896,0.9625102,0.9589448,0.9624427,0.966783,0.9632197,0.9626284,0.9706073,0.9693101,0.9717702,0.9703041,0.9747158,0.9741852,0.9755416,0.9798203,0.9797912,0.9790047,0.9802287};
+
+  if (wBin<0 || wBin>99) return 1;
+  return weightEP[wBin];
 }
 //_________________________________________
 Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPi0EtaFromHFdecay(TParticle *particle) 

@@ -71,6 +71,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetEtaweight(Double_t mcEtapT,Int_t iCent) const;
   Double_t GetSigmaEMCal(Double_t EoverP, Double_t pt, Int_t iCent) const;
   Double_t GetWeight(TParticle *particle, Int_t iCent); 
+  Double_t GetEPweight(Int_t bin);
   Bool_t   IsElectronFromPi0(TParticle *particle,  Double_t &weight, Int_t iCent);
   Bool_t   IsElectronFromEta(TParticle *particle,  Double_t &weight, Int_t iCent);
   Bool_t   IsElectronFromGamma(TParticle *particle, Double_t &weight, Int_t iCent);
