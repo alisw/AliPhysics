@@ -1245,11 +1245,11 @@ void AliShuttle::SendMLRunInfo(const char* status)
 //______________________________________________________________________________________________
 Int_t AliShuttle::GetMem(Int_t pid)
 {
-	// invokes ps to get the memory consumption of the process <pid>
+	// invokes ps to get the resident memory consumption of the process <pid>
 	// returns -1 in case of error
 	
 	TString checkStr;
-	checkStr.Form("ps -o vsize --pid %d | tail -n 1", pid);
+	checkStr.Form("ps -o rss --pid %d | tail -n 1", pid);
 	FILE* pipe = gSystem->OpenPipe(checkStr, "r");
 	if (!pipe)
 	{
