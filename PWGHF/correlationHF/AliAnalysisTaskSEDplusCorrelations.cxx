@@ -509,10 +509,20 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
     Double_t ptDplusCand = d->Pt();
     Double_t rapDplusCand=d->YDplus();    
     Int_t iPtDplus = fDplusCuts->PtBin(ptDplusCand);
-    if(iPtDplus<0)continue;
-    
+    if(iPtDplus<0){
+      //Vertexing cleaning... 
+      if(recVtx)fDplusCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);	 
+      if(unsetvtx) d->UnsetOwnPrimaryVtx();
+      continue;
+    }    
     // D+ Fiducial Acceptance in pt and eta
-    if(!fDplusCuts->IsInFiducialAcceptance(ptDplusCand,rapDplusCand)) continue;
+    if(!fDplusCuts->IsInFiducialAcceptance(ptDplusCand,rapDplusCand)) {
+      //Vertexing cleaning... 
+      if(recVtx)fDplusCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);	 
+      if(unsetvtx) d->UnsetOwnPrimaryVtx();
+
+      continue;
+    }
     fHistNEvents->Fill(10); 
     
     if(fMontecarlo){
