@@ -15,6 +15,7 @@
 
 class AliFlowTrackSimple;
 class TParticle;
+class TH2;
 
 class AliFlowTrackSimpleCuts : public TNamed {
 
@@ -37,6 +38,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   void SetCharge(Int_t c)       {this->fCharge = c; fCutCharge=kTRUE; }
   void SetMassMax(Double_t max) {this->fMassMax = max; fCutMass=kTRUE; }
   void SetMassMin(Double_t min) {this->fMassMin = min; fCutMass=kTRUE; }
+  void SetEtaPhiEff(TH2* eff)   {this->fEtaPhiEff = eff; fCutEtaPhiEff=kTRUE; }
   
   //getters
   Double_t GetPtMax() const     {return this->fPtMax; }
@@ -81,9 +83,15 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t   fCutMass; // cut on mass?
   Double_t fMassMax; //max mass
   Double_t fMassMin; //min mass
+  TH2*     fEtaPhiEff; //eta, phi efficiency map
+  Bool_t   fCutEtaPhiEff; //apply eta, phi efficiency map?
   Int_t    fPOItype; //which poi type do we produce? (RP=0, POI=1,2,3,4,5...)
 
-  ClassDef(AliFlowTrackSimpleCuts,3)
+  // not implemented: copy and assignment operator
+  AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts&);        
+  AliFlowTrackSimpleCuts& operator=(const AliFlowTrackSimpleCuts&);
+  
+  ClassDef(AliFlowTrackSimpleCuts,4)
 };
 
 #endif
