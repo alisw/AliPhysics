@@ -81,7 +81,7 @@ void AliEMCalTriggerBinningFactory::CreateDefaultPtBinning(TArrayD &binning) con
   definitions.insert(std::pair<double,double>(40., 2.5));
   definitions.insert(std::pair<double,double>(50., 5.));
   definitions.insert(std::pair<double,double>(100., 10.));
-  definitions.insert(std::pair<double, double>(200., 20.));
+  //definitions.insert(std::pair<double, double>(200., 20.));
   double currentval = 0;
   for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
     double limit = id->first, binwidth = id->second;
