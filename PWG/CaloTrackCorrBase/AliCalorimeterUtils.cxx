@@ -73,7 +73,7 @@ fNSuperModulesUsed(0),            fRunNumber(0),
 fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
 {
   InitParameters();
-  for(Int_t i = 0; i < 12; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t i = 0; i < 22; i++) fEMCALMatrix[i] = 0 ;
   for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix [i] = 0 ;
 }
 
