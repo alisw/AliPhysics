@@ -1,11 +1,11 @@
 /*
-   //gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/TPC");
-   //.L $ALICE_ROOT/PWGPP/TPC/macros/MakeReportTPC.C+
+   //gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/TPC");
+   //.L $ALICE_PHYSICS/PWGPP/TPC/macros/MakeReportTPC.C+
    //
    //MakeReportTPC();
 
-   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+   gSystem->AddIncludePath("-I$ALICE_PHYSICS/TPC/macros");
+   gROOT->LoadMacro("$ALICE_PHYSICS/TPC/macros/AliXRDPROOFtoolkit.cxx+")
    AliXRDPROOFtoolkit tool;
    TChain * chain = tool.MakeChain("summaryTPCQA.txt","tpcQA",0,200000);
 

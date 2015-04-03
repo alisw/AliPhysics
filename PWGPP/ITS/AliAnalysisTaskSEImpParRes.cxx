@@ -1296,7 +1296,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	return;
       }
       
-      //load MC header for ESD;//see $ALICE_ROOT/PWGPP/global/AliAnalysisTaskSEVertexESD.cxx
+      //load MC header for ESD;//see $ALICE_PHYSICS/PWGPP/global/AliAnalysisTaskSEVertexESD.cxx
       AliHeader *mcHeader = eventHandler->MCEvent()->Header();
       if (!mcHeader) {
 	AliDebug(AliLog::kError, "Header not available");

@@ -16,8 +16,8 @@
 
   //2. Make a chain e.g.:
   //
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/TPC/macros");
+  gROOT->LoadMacro("$ALICE_PHYSICS/TPC/macros/AliXRDPROOFtoolkit.cxx+");
   AliXRDPROOFtoolkit tool; 
   TChain * chainEsd = tool.MakeChain("esd.txt","esdTree",0,5);
   chainEsd->Lookup();
@@ -25,7 +25,7 @@
 
  
   //3. Make a analysis manager with attached task:
-  .L $ALICE_ROOT/PWGPP/macros/taskComp.C
+  .L $ALICE_PHYSICS/PWGPP/macros/taskComp.C
   Init();
   AliAnalysisManager *mgr = MakeManager();
   
@@ -64,8 +64,8 @@
   AliComparisonRes * compObj = (AliComparisonRes*)array->FindObject("AliComparisonRes");
   //
   //7. Get debug streamer on PROOF
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/TPC/macros");
+  gROOT->LoadMacro("$ALICE_PHYSICS/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
   TChain * chainTr = tool.MakeChain("cmp.txt","RC",0,1000000);
   chainTr->Lookup();

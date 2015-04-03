@@ -1,7 +1,7 @@
 makePeriodPlots( const char* mergedQAfile, const char *periodName ){
 //what do I do?
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx++");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx++");
   gROOT->LoadMacro("AliHighPtTreeAnalysis.cxx++");
 
   AliHighPtTreeAnalysis *a = new AliHighPtTreeAnalysis();

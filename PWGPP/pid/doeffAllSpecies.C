@@ -19,9 +19,9 @@ performAllPi(){
   gSystem->Load("libNetx");
   gSystem->Load("libPWGPPpid");
   
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/pid");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/pid");
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/pid/doeffPi.C++");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/pid/doeffPi.C++");
   
   // tune these parameters
   cmin = 1; // centrality min 1
@@ -109,7 +109,7 @@ performAllPi(){
   doeffPi(0,0.1,etamin,etamax);
   kOverAll2Sigma=kFALSE;
   kOverAll=kFALSE;
-  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffPi_C");
+  gSystem->Unload("$ALICE_PHYSICS/PWGPP/pid/doeffPi_C");
 }
 
 performAllPr(){
@@ -127,9 +127,9 @@ performAllPr(){
   gSystem->Load("libNetx");
   gSystem->Load("libPWGPPpid");
   
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/pid");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/pid");
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/pid/doeffPr.C++");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/pid/doeffPr.C++");
   
   // tune these parameters
   cmin = 1; // centrality min 1
@@ -217,7 +217,7 @@ performAllPr(){
   doeffPr(0,0.1,etamin,etamax);
   kOverAll2Sigma=kFALSE;
   kOverAll=kFALSE;
-  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffPr_C");
+  gSystem->Unload("$ALICE_PHYSICS/PWGPP/pid/doeffPr_C");
 }
 
 performAllKa(){
@@ -235,9 +235,9 @@ performAllKa(){
   gSystem->Load("libNetx");
   gSystem->Load("libPWGPPpid");
 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/pid");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/pid");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/pid/doeffKa.C++");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/pid/doeffKa.C++");
 
   // tune these parameters
   cmin = 4; // centrality min 1
@@ -325,7 +325,7 @@ performAllKa(){
   doeffKa(0,0.1,etamin,etamax);
   kOverAll2Sigma=kFALSE;
   kOverAll=kFALSE;
-  gSystem->Unload("$ALICE_ROOT/PWGPP/pid/doeffKa_C");
+  gSystem->Unload("$ALICE_PHYSICS/PWGPP/pid/doeffKa_C");
 }
 
 TGraphErrors *MakeRatio(const char *nf1,const char *nf2,const char *nfo=""/*output file*/,const char *title=""/*title*/){

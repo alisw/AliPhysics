@@ -271,7 +271,7 @@ void processContainer(TObject* inputObject, TTreeSRedirector* pcstream, TString 
 
 void loadLibraries()
 {
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -     I$ALICE_ROOT/PWGPP/TRD");
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/PWGPP -     I$ALICE_PHYSICS/PWGPP/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libANALYSIScalib");

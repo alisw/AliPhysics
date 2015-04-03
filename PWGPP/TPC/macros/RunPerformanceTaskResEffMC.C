@@ -14,12 +14,12 @@
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGPP");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("esds.txt",10, 0);
   //TChain* chain = CreateESDChain("/u/jacek/alice/dNdPt/input/LHC10a8/esds_104867_MC_LHC10a8.txt",3, 0);
   chain->Lookup();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TPC/macros/RunPerformanceTaskResEffMC.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTaskResEffMC.C");
   RunPerformanceTaskResEffMC(chain, kTRUE, kFALSE, kFALSE);
 
   //2. Make final spectra and store them in the

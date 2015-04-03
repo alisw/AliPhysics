@@ -13,7 +13,7 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libOADB");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include ");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include ");
 
   if (mode==0) {
     // Connect to Proof
@@ -46,7 +46,7 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
 
   // physics and centrality selection
   if (usePS) {
-    gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask *physicsSelectionTask = AddTaskPhysicsSelection(kFALSE);
     // Trigger analysis defaults
     AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("CustomTA");
@@ -133,7 +133,7 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
     physicsSelectionTask->GetPhysicsSelection()->SetCustomOADBObjects(oadbDefaultPbPb,0,0); 
   }
 
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
   // Create task

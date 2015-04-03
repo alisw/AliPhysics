@@ -5,7 +5,7 @@
 
 void MakePerformanceSummary(const char *infile, Int_t run, const char* outfile) {
 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/PWGPP/TPC");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/TPC");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTender");

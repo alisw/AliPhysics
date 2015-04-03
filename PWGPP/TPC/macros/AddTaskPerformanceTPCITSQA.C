@@ -17,7 +17,7 @@
 // gSystem->Load("libTender");
 // gSystem->Load("libPWGPP");
 //
-// gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceTPCITSQA.C");
+// gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskPerformanceTPCITSQA.C");
 // AliPerformanceTask *tpcQA = AddTaskPerformanceTPC("kFALSE","kTRUE","triggerClass"); 
 // 
 // Output:
