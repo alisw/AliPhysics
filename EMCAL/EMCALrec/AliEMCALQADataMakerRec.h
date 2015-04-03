@@ -35,6 +35,7 @@ class TObjArray ;
 class AliCaloRawAnalyzer;
 class AliEMCALGeometry;
 #include "AliCaloConstants.h"
+#include "AliEMCALTriggerMappingV2.h"
 
 class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
@@ -176,7 +177,7 @@ private:
 //  TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
 //  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
 
-  ClassDef(AliEMCALQADataMakerRec,6)  // description
+  ClassDef(AliEMCALQADataMakerRec,7)  // description
 
 };
 

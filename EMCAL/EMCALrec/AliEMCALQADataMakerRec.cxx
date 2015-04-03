@@ -309,23 +309,23 @@ void AliEMCALQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   const Option_t *profileOption = "s";
 
-  Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
+  Int_t nTowersPerSM = 2*AliEMCALTriggerMappingV2::fNEta*2*AliEMCALTriggerMappingV2::fNPhi; // number of towers in a SuperModule; 24x48
   Int_t nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
     
   //Defining histograms binning, each 2D histogram covers all SMs
   Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
-  Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
-  Int_t nbinsPhi = nSMSectors * AliEMCALGeoParams::fgkEMCALRows;
+  Int_t nbinsZ = AliEMCALTriggerMappingV2::fSTURegionNEta;
+  Int_t nbinsPhi = AliEMCALTriggerMappingV2::fSTURegionNPhi;
 	
-  Int_t nTRUCols = 2*AliEMCALGeoParams::fgkEMCALTRUCols; //total TRU columns for 2D TRU histos
-  Int_t nTRURows = nSMSectors*AliEMCALGeoParams::fgkEMCALTRUsPerSM*AliEMCALGeoParams::fgkEMCALTRURows; //total TRU rows for 2D TRU histos
+  Int_t nTRUCols = nbinsZ; //total TRU columns for 2D TRU histos
+  Int_t nTRURows = nbinsPhi; //total TRU rows for 2D TRU histos
    // counter info: number of channels per event (bins are SM index)
   TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod;SM Id;# of towers",
 			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ;
-  Add2RawsList(h0, kNsmodLG, expert, !image, !saveCorr) ;
+  Add2RawsList(h0, kNsmodLG, !expert, !image, !saveCorr) ;
   TProfile * h1 = new TProfile("hHighEmcalSupermodules", "High Gain EMC: # of towers vs SuperMod;SM Id;# of towers",  
 			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ; 
-  Add2RawsList(h1, kNsmodHG, expert, !image, !saveCorr) ;
+  Add2RawsList(h1, kNsmodHG, !expert, !image, !saveCorr) ;
 
   // where did max sample occur? (bins are towers)
   TProfile * h2 = new TProfile("hLowEmcalRawtime", "Low Gain EMC: Time at Max vs towerId;Tower Id;Time [ticks]", 
@@ -338,18 +338,18 @@ void AliEMCALQADataMakerRec::InitRaws()
   // how much above pedestal was the max sample?  (bins are towers)
   TProfile * h4 = new TProfile("hLowEmcalRawMaxMinusMin", "Low Gain EMC: Max - Min vs towerId;Tower Id;Max-Min [ADC counts]", 
 			       nTot, -0.5, nTot-0.5, profileOption) ;
-  Add2RawsList(h4, kSigLG, expert, !image, !saveCorr) ;
+  Add2RawsList(h4, kSigLG, !expert, !image, !saveCorr) ;
   TProfile * h5 = new TProfile("hHighEmcalRawMaxMinusMin", "High Gain EMC: Max - Min vs towerId;Tower Id;Max-Min [ADC counts]",
 			       nTot, -0.5, nTot-0.5, profileOption) ;
-  Add2RawsList(h5, kSigHG, expert, !image, !saveCorr) ;
+  Add2RawsList(h5, kSigHG, !expert, !image, !saveCorr) ;
 
   // total counter: channels per event
   TH1I * h6 = new TH1I("hLowNtot", "Low Gain EMC: Total Number of found towers;# of Towers;Counts", 200, 0, nTot) ;
   h6->Sumw2() ;
-  Add2RawsList(h6, kNtotLG, expert, !image, !saveCorr) ;
+  Add2RawsList(h6, kNtotLG, !expert, !image, !saveCorr) ;
   TH1I * h7 = new TH1I("hHighNtot", "High Gain EMC: Total Number of found towers;# of Towers;Counts", 200,0, nTot) ;
   h7->Sumw2() ;
-  Add2RawsList(h7, kNtotHG, expert, !image, !saveCorr) ;
+  Add2RawsList(h7, kNtotHG, !expert, !image, !saveCorr) ;
 
   // pedestal (bins are towers)
   TProfile * h8 = new TProfile("hLowEmcalRawPed", "Low Gain EMC: Pedestal vs towerId;Tower Id;Pedestal [ADC counts]", 
@@ -361,7 +361,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 	
  
   // now repeat the same for TRU and LEDMon data
-  Int_t nTot2x2 = fSuperModules * AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // max number of TRU channels for all SuperModules
+  Int_t nTot2x2 = AliEMCALTriggerMappingV2::fNTotalTRU*AliEMCALTriggerMappingV2::fNModulesInTRU; // max number of TRU channels for all SuperModules
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hT0 = new TProfile("hTRUEmcalSupermodules", "TRU EMC: # of TRU channels vs SuperMod;SM Id;# of TRU channels",
@@ -400,7 +400,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // and also LED Mon..
   // LEDMon has both high and low gain channels, just as regular FEE/towers
-  Int_t nTotLEDMon = fSuperModules * AliEMCALGeoParams::fgkEMCALLEDRefs; // max number of LEDMon channels for all SuperModules
+  Int_t nTotLEDMon = fSuperModules * AliEMCALGeoParams::fgkEMCALLEDRefs; // max number of LEDMon channels for all SuperModules //TO BE CHANGED HOW IS IT NOW WITH DCAL?
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hL0 = new TProfile("hLowLEDMonEmcalSupermodules", "LowLEDMon Gain EMC: # of strips vs SuperMod;SM Id;# of strips",
@@ -495,8 +495,8 @@ void AliEMCALQADataMakerRec::InitRaws()
 	//STU histgrams
 
  //histos
- Int_t nSTUCols = AliEMCALGeoParams::fgkEMCALSTUCols;
- Int_t nSTURows = AliEMCALGeoParams::fgkEMCALSTURows;
+ Int_t nSTUCols = nbinsZ;
+ Int_t nSTURows = nbinsPhi;
 //		kAmpL1, kGL1, kJL1,
 //		kGL1V0, kJL1V0, kSTUTRU  
 	
@@ -515,7 +515,7 @@ void AliEMCALQADataMakerRec::InitRaws()
  TH2I *hS4 = new TH2I("hL1JV0", "L1 Jet patch amplitude versus V0 signal", 500, 0, 50000, 1000, 0, 1000);
  Add2RawsList(hS4, kJL1V0, expert, !image, !saveCorr) ;
 
- TH1I *hS5 = new TH1I("hFrameR","Link between TRU and STU", 32, 0, 32);
+ TH1I *hS5 = new TH1I("hFrameR","Link between TRU and STU", AliEMCALTriggerMappingV2::fNTotalTRU, 0, AliEMCALTriggerMappingV2::fNTotalTRU);
  Add2RawsList(hS5, kSTUTRU, !expert, image, !saveCorr) ;
 
  hS0->SetOption("COLZ");
@@ -580,11 +580,11 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     SetEventSpecie(AliRecoParam::kCalib) ;	
   }
 
-  const Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
-  const Int_t nRows        = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
-  const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
-  const Int_t n2x2PerSM    = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
-  const Int_t n2x2PerTRU   = AliEMCALGeoParams::fgkEMCAL2x2PerTRU;
+  const Int_t nTowersPerSM = 2*AliEMCALTriggerMappingV2::fNEta*2*AliEMCALTriggerMappingV2::fNPhi; // number of towers in a SuperModule; 24x48
+  const Int_t nRows        = 2*AliEMCALTriggerMappingV2::fNPhi; // number of rows per SuperModule
+  const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule //TO BE CHECKED/CHANGED
+  const Int_t n2x2PerSM    = AliEMCALTriggerMappingV2::fNTRU * AliEMCALTriggerMappingV2::fNModulesInTRU; // number of TRU 2x2's per SuperModule
+  const Int_t n2x2PerTRU   = AliEMCALTriggerMappingV2::fNModulesInTRU;
   const Int_t nTot2x2	   = fSuperModules * n2x2PerSM; // total TRU channel
 
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
@@ -984,7 +984,7 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 
 //_____________________________________________________________________________________
 void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo) 
-{  
+{  //I THINK THIS WHOLE METHOD SHOULD BE CHANGED BUT NEED TIME! 
   // reset histogram
   histo->Reset("ICE") ; 
   histo->ResetStats(); 
@@ -1034,7 +1034,7 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
 } 
 //____________________________________________________________________________ 
 void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globColumn, Int_t module, Int_t ddl, Int_t branch, Int_t column ) const
-{ // from local to global indices
+{ // from local to global indices//I THINK THIS WHOLE METHOD SHOULD BE CHANGED BUT NEED THE TRU SCHEME! 
   Int_t mrow;
   Int_t mcol;
   Int_t trow;
@@ -1089,19 +1089,22 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
   Int_t sizeL1gpatch = 2; 
   Int_t sizeL1jsubr = 4; 
 
-  Int_t iEMCALtrig[AliEMCALGeoParams::fgkEMCALSTUCols][AliEMCALGeoParams::fgkEMCALSTURows];
-  memset(iEMCALtrig, 0, sizeof(int) * AliEMCALGeoParams::fgkEMCALSTUCols * AliEMCALGeoParams::fgkEMCALSTURows);
+  //FOR DCAL
+  Int_t iEMCALtrig[AliEMCALTriggerMappingV2::fSTURegionNEta][AliEMCALTriggerMappingV2::fSTURegionNPhi];
+  memset(iEMCALtrig, 0, sizeof(int) * AliEMCALTriggerMappingV2::fSTURegionNEta * AliEMCALTriggerMappingV2::fSTURegionNPhi);
+  //Int_t iEMCALtrig[AliEMCALGeoParams::fgkEMCALSTUCols][AliEMCALGeoParams::fgkEMCALSTURows];
+  //memset(iEMCALtrig, 0, sizeof(int) * AliEMCALGeoParams::fgkEMCALSTUCols * AliEMCALGeoParams::fgkEMCALSTURows);
 		
   if (inSTU->ReadPayLoad()) 
     {
       //Fw version (use in case of change in L1 jet 
       Int_t fw = inSTU->GetFwVersion();
-      Int_t sizeL1jpatch = 2+(fw >> 16);
+      Int_t sizeL1jpatch = 2+(fw >> 16);//NEED TO CHECK THIS!!! 
 
       //To check link
       Int_t mask = inSTU->GetFrameReceived() ^ inSTU->GetRegionEnable();
 
-      for (int i = 0; i < 32; i++)
+      for (int i = 0; i < AliEMCALTriggerMappingV2::fNTotalTRU; i++)
 	{
 		if (!((mask >> i) &  0x1)) FillRawsData(kSTUTRU, i);
 	}
@@ -1110,22 +1113,22 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
       Int_t iV0Sig = inSTU->GetV0A()+inSTU->GetV0C();
       
       //FastOR amplitude receive from TRU
-      for (Int_t i = 0; i < 32; i++)
+      for (Int_t i = 0; i < AliEMCALTriggerMappingV2::fNTotalTRU; i++)
 	{
 	  UInt_t adc[96];
 	  for (Int_t j = 0; j < 96; j++) adc[j] = 0;
 	  
 	  inSTU->GetADC(i, adc);
 	  
-	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i);
+	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i);//CHANGE WITH TRIGGERMAPPINGV2 METHOD
 				
 	  for (Int_t j = 0; j < 96; j++)
 	    {
 	      Int_t idx;
-	      fGeom->GetAbsFastORIndexFromTRU(iTRU, j, idx);
+	      fGeom->GetAbsFastORIndexFromTRU(iTRU, j, idx);//CHANGE WITH TRIGGERMAPPINGV2 METHOD
 				
 	      Int_t px, py;
-	      fGeom->GetPositionInEMCALFromAbsFastORIndex(idx, px, py);
+	      fGeom->GetPositionInEMCALFromAbsFastORIndex(idx, px, py); //CHANGE WITH TRIGGERMAPPINGV2 METHOD
 					
 	      iEMCALtrig[px][py] = adc[j];
 	    }
@@ -1135,13 +1138,19 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
       Int_t iTRUSTU, x, y;
       for (Int_t i = 0; i < inSTU->GetNL1GammaPatch(0); i++)
 	{
-	  if (inSTU->GetL1GammaPatch(i, 0, iTRUSTU, x, y)) // col (0..23), row (0..3)
+	  if (inSTU->GetL1GammaPatch(i, 0, iTRUSTU, x, y)) // col (0..7), row (0..11)
 	    {
 	      Int_t iTRU;
-	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU);
-	      
+	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU);//CHANGE WITH TRIGGERMAPPINGV2 METHOD
+	      //New position in CALORIMETER!
+	      //if (iTRU<30)
+	      	//Int_t phiG = 11 - y, etaG = x + 8 * int(iTRU/2); //position with new EMCAL TRU configuration !!check iTRU/2.. 
+	      //else if ((iTRU>29 && iTRU<32) || (iTRU>43))
+	      	//Int_t etaG = 23 - x, phiG = y + 4 * int(iTRU/2); //position in EMCAL 1/3 SMs !!check iTRU/2
+	      //else
+	      	//Int_t phiG = 11 - y, etaG = x + 8 * int(iTRU/2); //position in DCAL SMs !!!!Still have to check this!!!
 	      Int_t etaG = 23-x, phiG = y + 4 * int(iTRU/2); //position in EMCal
-	      if (iTRU%2) etaG += 24; //C-side
+	      if (iTRU%2) etaG += 24; //C-side// NEED THE NEW TRU NUMBERING SCHEME !!!!!
 					
 	      etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1;
 				
@@ -1154,7 +1163,8 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 		{
 		  for (Int_t L1Gy = 0; L1Gy < sizeL1gpatch; L1Gy ++)
 		    {
-		      if (etaG+L1Gx < 48 && phiG+L1Gy < 64) iL1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
+		      if (etaG+L1Gx < AliEMCALTriggerMappingV2::fSTURegionNEta && phiG+L1Gy < AliEMCALTriggerMappingV2::fSTURegionNPhi) 
+		      	  iL1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
 		      //cout << iEMCALtrig[etaG+L1Gx][phiG+L1Gy] << endl;
 		    }
 		}
@@ -1171,7 +1181,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	  if (inSTU->GetL1JetPatch(i, 0, x, y)) // col (0,15), row (0,11)
 	    {
 	      
-	      Int_t etaJ = sizeL1jsubr * (11-y-sizeL1jpatch + 1);
+	      Int_t etaJ = sizeL1jsubr * (11-y-sizeL1jpatch + 1); //CHECK THIS FOR JETS
 	      Int_t phiJ = sizeL1jsubr * (15-x-sizeL1jpatch + 1);
 	      
 	      //position of patch L1J (FOR bottom-left)
@@ -1183,7 +1193,8 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 		{
 		  for (Int_t L1Jy = 0; L1Jy < sizeL1jpatch*4; L1Jy ++)
 		    {
-		      if (etaJ+L1Jx < 48 && phiJ+L1Jy < 64) iL1JPatchAmp += iEMCALtrig[etaJ+L1Jx][phiJ+L1Jy];
+		      if (etaJ+L1Jx < AliEMCALTriggerMappingV2::fSTURegionNEta && phiJ+L1Jy < AliEMCALTriggerMappingV2::fSTURegionNPhi) 
+		      	  iL1JPatchAmp += iEMCALtrig[etaJ+L1Jx][phiJ+L1Jy];
 		    }
 		}
 		
@@ -1194,9 +1205,9 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
     }
 		
   //Fill FOR amplitude histo
-  for (Int_t i = 0; i < 48; i++)
+  for (Int_t i = 0; i < AliEMCALTriggerMappingV2::fSTURegionNEta; i++)
     {
-      for (Int_t j = 0; j < 60; j++)
+      for (Int_t j = 0; j < AliEMCALTriggerMappingV2::fSTURegionNPhi; j++)
 	{
 	  if (iEMCALtrig[i][j] != 0) FillRawsData(kAmpL1, i, j, iEMCALtrig[i][j]);
 	}
