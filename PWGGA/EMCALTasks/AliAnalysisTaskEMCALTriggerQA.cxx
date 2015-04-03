@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//------------------------------------------------------------------------//
-//  Fill histograms with basic QA information for EMCAL offline trigger   //
-//  Author: Nicolas Arbor (LPSC-Grenoble), Rachid Guernane (LPSC-Grenoble)//
-//          Gustavo Conesa Balbastre  (LPSC-Grenoble)                     //
-//                                                                        //
-//  $Id$ //
-//------------------------------------------------------------------------//
-
 #include <TList.h>
 #include <TH2F.h>
 #include <TF1.h>
@@ -45,8 +37,12 @@
 
 #include "AliAnalysisTaskEMCALTriggerQA.h"
 
-ClassImp(AliAnalysisTaskEMCALTriggerQA)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEMCALTriggerQA) ;
+/// \endcond
 
+//______________________________________________________________________________
+/// Constructor. Init stuff.
 //______________________________________________________________________________
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) :
 AliAnalysisTaskSE(name),
@@ -63,6 +59,7 @@ fEventMB   (0),            fEventL0   (0),
 fEventL1G  (0),            fEventL1G2 (0),
 fEventL1J  (0),            fEventL1J2 (0),
 fEventCen  (0),            fEventSem  (0),
+fMomentum(),
 //Histograms
 fhNEvents(0),              fhFORAmp(0),
 fhFORAmpL1G(0),            fhFORAmpL1G2(0),
@@ -100,28 +97,24 @@ fMapTrigL0L1G(),           fMapTrigL0L1J(),
 fMapTrigL1G  (),           fMapTrigL1G2 (),
 fMapTrigL1J  (),           fMapTrigL1J2 ()
 {
-  // Constructor
-	
   InitHistogramArrays();
 	
   DefineOutput(1, TList::Class());
-  
 }
 
 //______________________________________________
+/// Set the AODB bad channels at least once.
+//______________________________________________
 void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
 {
-  // Set the AODB  bad channels at least once
-  
-  //Set it only once
+  // Set it only once
   if(fOADBSet) return ;
   
   if(fOADBFilePath == "") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;
   
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
   
-  if(DebugLevel() > 0)
-    printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Get AODB parameters from EMCAL in %s for run %d\n",fOADBFilePath.Data(),runnumber);
+  AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d",fOADBFilePath.Data(),runnumber));
   
   Int_t nSM = fGeometry->GetNumberOfSuperModules();
   
@@ -135,8 +128,7 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
     
     if(arrayBC)
     {
-      if(DebugLevel() > 0)
-        printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Remove EMCAL bad cells \n");
+      AliInfo("Remove EMCAL bad cells");
       
       for (Int_t i=0; i<nSM; ++i)
       {
@@ -157,19 +149,17 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
         fRecoUtils->SetEMCALChannelStatusMap(i,hbm);
         
       } // loop
-    } else if(DebugLevel() > 0)
-      printf("AliAnalysisTaskEMCALClusterize::SetOADBParameters() - Do NOT remove EMCAL bad channels\n"); // run array
+    } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
   }  // Remove bad
   
   fOADBSet = kTRUE;
-  
 }
 
 //________________________________________________
+/// Cells analysis. Fill FEE energy per channel array.
+//________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
 {
-  // Cells analysis
-  // Fill FEE energy per channel array
   Int_t posX    = -1, posY = -1;
   Int_t nSupMod = -1, ieta = -1, iphi = -1, nModule = -1, nIphi = -1, nIeta = -1;
   Short_t absId = -1;
@@ -199,8 +189,8 @@ void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
       
       if(indexX >= fgkFALTROCols || indexY >= fgkFALTRORows )
       {
-        if(DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",
-                                    posX,posY);
+        AliWarning(Form("Wrong Position (x,y) = (%d,%d)",posX,posY));
+          
         continue;
       }
       
@@ -223,17 +213,15 @@ void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
       if(fEventL1J2) fMapCellL1J2[indexY][indexX] += amp;
 			
       //printf("cell[%i,%i] amp=%f\n",indexY,indexX,fMapCell[indexY][indexX]);
-			
     }
   }
-
 }
 
 //______________________________________________________________________________
+/// Fill L0, L1 patch arrays.
+//______________________________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
 {
-  // Trigger analysis, fill L0, L1 arrays
-  
   AliVCaloTrigger& trg= * (InputEvent()->GetCaloTrigger("EMCAL"));
   
   fV0Trigger = trg.GetL1V0(0)+trg.GetL1V0(1); // used elsewhere
@@ -337,17 +325,19 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
 //    if (!triggerclasses.Contains("CPBI2")) fEventL1G = fEventL1G2 = fEventL1J = fEventL1J2 = kFALSE; // pp running
 //  }
 	 
-  if(fTRUTotal > fMaxTRUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps() - Large fTRUTotal %f\n",fTRUTotal);
-  if(fSTUTotal > fMaxSTUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps() - Large fSTUTotal %d\n",fSTUTotal);
-	
+  if(fTRUTotal > fMaxTRUSignal && DebugLevel() > 0)
+      AliInfo(Form("Large fTRUTotal %f",fTRUTotal));
+    
+  if(fSTUTotal > fMaxSTUSignal && DebugLevel() > 0)
+      AliInfo(Form("Large fSTUTotal %d",fSTUTotal));
 }
 
 //___________________________________________________
+/// Loop on clusters and fill the corresponding histograms.
+/// Not used in case of MC analysis, REVISE in future.
+//___________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
 {
-  // Loop on clusters and fill corresponding histograms
-  
-  // Not interesting in case of data analysis, REVISE in future
   if(fMCData) return ;
   
   // Init OADB
@@ -374,8 +364,6 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   Float_t phi    = 0;
   
   Int_t nSupMod = -1, ieta = -1, iphi = -1;
-
-  TLorentzVector mom;
   
   //Get vertex for momentum calculation
   Double_t vertex[] = {0.0,0.0,0.0};
@@ -398,7 +386,7 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     
     if(clus->GetNCells() < 2) continue ; // Avoid 1 cell clusters, noisy, exotic.
     
-    clus->GetMomentum(mom, vertex);
+    clus->GetMomentum(fMomentum, vertex);
     
     Bool_t shared = kFALSE;
     Int_t  idAbs  = -1, iphi0 = -1, ieta0 = -1;
@@ -411,11 +399,11 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     iphi/=2;
     
     if(ieta > fgkFALTROCols || iphi > fgkFALTRORows )
-      printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",ieta,iphi);
+     AliWarning(Form("Wrong Position (x,y) = (%d,%d)",ieta,iphi));
     
     e   = clus->E();
-    eta = mom.Eta();
-    phi = mom.Phi();
+    eta = fMomentum.Eta();
+    phi = fMomentum.Phi();
     if( phi < 0 ) phi+=TMath::TwoPi();
     
     if(e > emax)
@@ -479,14 +467,14 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
 }
 
 //______________________________________________________________________________________________
+/// Fill normal cluster related histograms depending on the trigger type selection,
+/// 10 options, MB, L0, L1 Gamma ... defined in enum triggerType.
+//______________________________________________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(Int_t triggerNumber, Bool_t max,
                                                           Float_t e,  Float_t eta, Float_t phi,
                                                           Float_t ieta, Float_t iphi,
                                                           Float_t centrality, Float_t fV0AC)
 {
-  //Fill normal cluster related histograms depending on the trigger type selection
-  // (10 options, MB, L0, L1 Gamma ... defined in enum triggerType)
-	
   if(!max)
   {
     fhClus   [triggerNumber]->Fill(e);
@@ -542,10 +530,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(Int_t triggerNumber, B
 }
 
 //_____________________________________________________________
+/// FEE-TRU-STU correlation checks.
+//_____________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillCorrelationHistograms()
 {
-  //FEE-TRU-STU correlation checks
-  
   Double_t ampFOR[30] = {0.}, ampL0[30] = {0.}, ampL1[30] = {0.};
   for (Int_t i = 0; i < fgkFALTRORows; i++)
   {
@@ -576,22 +564,24 @@ void AliAnalysisTaskEMCALTriggerQA::FillCorrelationHistograms()
     if (ampFOR[i] != 0 && ampL1[i] != 0)
     {
       fhFEESTU->Fill(ampL1[i]/ampFOR[i],i);
-      if(ampL1[i]/ampFOR[i] > fMaxSTUFEERatio  && DebugLevel() > 0 ) printf("AliAnalysisTaskEMCALTriggerQA::FillCorrelationHistograms() - Large STU/FEE ratio %f\n",ampL1[i]/ampFOR[i]);
+      if(ampL1[i]/ampFOR[i] > fMaxSTUFEERatio  && DebugLevel() > 0 )
+          AliWarning(Form("Large STU/FEE ratio %f",ampL1[i]/ampFOR[i]));
     }
     
     if (ampL0[i]  != 0 && ampL1[i] != 0)
     {
       fhTRUSTU->Fill(ampL1[i]/ampL0[i] ,i);
-      if(ampL1[i]/ampL0[i] > fMaxSTUTRURatio  && DebugLevel() > 0 ) printf("AliAnalysisTaskEMCALTriggerQA::FillCorrelationHistograms() - Large STU/TRU ratio %f\n",ampL1[i]/ampL0[i]);
+      if(ampL1[i]/ampL0[i] > fMaxSTUTRURatio  && DebugLevel() > 0 )
+          AliWarning(Form("Large STU/TRU ratio %f",ampL1[i]/ampL0[i]));
     }
   }
 }
 
 //_____________________________________________________________
+/// Fill a TH1 histogram, each bin corresponds to a even trigger type.
+//_____________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillEventCounterHistogram()
 {
-  // Fill a TH1 histogram, each bin corresponds to a even trigger type
-  
   fhNEvents->Fill(0.5); // All physics events
   
   if( fEventMB )
@@ -642,14 +632,13 @@ void AliAnalysisTaskEMCALTriggerQA::FillEventCounterHistogram()
   }
   
   if(fEventL1J && fEventL1G) fhNEvents->Fill(11.5);
-  
 }
 
 //______________________________________________________________
+/// L1 Gamma trigger patches histograms.
+//______________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
 {
-  // L1 Gamma
-  
   // Study fakes  - Make it more understandable!!!
   
   Int_t    areAllFakes        = 2;
@@ -664,7 +653,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   Int_t    shiftCol  = -1;
   Int_t    shiftRow  = -1;
   
-  // loop on patchs
+  // loop on patches
   for (Int_t posx = 0; posx < fgkFALTROCols; posx++)
   {
     for (Int_t posy = 0; posy < fgkFALTRORows; posy++)
@@ -797,14 +786,13 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   if( fFillV0SigHisto ) fhGPMaxVV0TT->Fill(fV0Trigger, patchMax);
   if( fEventL1G )  fhL1GPatchMax ->Fill(colMax,rowMax);
   if( fEventL1G2 ) fhL1G2PatchMax->Fill(colMax,rowMax);
-  
 }
 
 //____________________________________________________________
+/// L1 jet trigger patches histograms.
+//____________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillL1JetPatchHistograms()
 {
-  // L1 Jet
-  
   Double_t patchMax =  0;
   Int_t    colMax   = -1;
   Int_t    rowMax   = -1;
@@ -838,14 +826,13 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1JetPatchHistograms()
   if( fFillV0SigHisto ) fhJPMaxVV0TT->Fill(fV0Trigger, patchMax);
   if( fEventL1J )  fhL1JPatchMax ->Fill(colMax,rowMax);
   if( fEventL1J2 ) fhL1J2PatchMax->Fill(colMax,rowMax);
-  
 }
 
 //______________________________________________________
+/// Matrix with signal per channel.
+//______________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillMapHistograms()
 {
-  //Matrix with signal per channel
-  
   for (Int_t i = 0; i < fgkFALTRORows; i++)
   {
     for (Int_t j = 0; j < fgkFALTROCols; j++) //check x,y direction for reading FOR ((0,0) = top left);
@@ -873,11 +860,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillMapHistograms()
 }
 
 //____________________________________________________
+/// Fill V0 histograms, only for ESDs.
+//____________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
 {
-  //V0 analysis, only for ESDs
-  
-  
   AliESDVZERO* eventV0 = dynamic_cast<AliESDVZERO*> (InputEvent()->GetVZEROData());
   
   if(eventV0)
@@ -891,7 +877,9 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
     if (fSTUTotal != 0 && fFillV0SigHisto)
     {
       fhV0STU->Fill(fV0A+fV0C,fSTUTotal);
-      if( fV0A+fV0C > fMaxV0Signal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large fV0A+fV0C %f\n",fV0A+fV0C);
+      
+      if( fV0A+fV0C > fMaxV0Signal && DebugLevel() > 0)
+        AliWarning(Form("Large fV0A+fV0C %f",fV0A+fV0C));
     }
     
     // Not interesting in case of data analysis, REVISE in future
@@ -915,23 +903,23 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
 }
 
 //________________________________________
+/// Init analysis parameters not set before.
+//________________________________________
 void AliAnalysisTaskEMCALTriggerQA::Init()
 {
-  //Init analysis parameters not set before
-	
   if(!fRecoUtils)
   {
     fRecoUtils    = new AliEMCALRecoUtils ;
     fRecoUtils->SwitchOnBadChannelsRemoval();
   }
-  
 }
 
 //_____________________________________________________
+/// Init to 0 and per event different cell/patch maps,
+/// depending on trigger type.
+//_____________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::InitCellPatchMaps()
 {
-  //Init to 0 and per event different cell/patch maps, depending on trigger type
-
   for (Int_t i = 0; i < fgkFALTRORows; i++)
   {
     for (Int_t j = 0; j < fgkFALTROCols; j++)
@@ -954,11 +942,12 @@ void AliAnalysisTaskEMCALTriggerQA::InitCellPatchMaps()
 }
 
 //________________________________________________
+/// Init geometry and set the geometry matrix,
+/// for the first event, skip the rest
+/// Also set once the run dependent calibrations
+//________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
 {
-  // Init geometry and set the geometry matrix, for the first event, skip the rest
-  // Also set once the run dependent calibrations
-  
   if(fGeoSet) return;
   
   // Init the trigger bit once, correct depending on version
@@ -988,8 +977,8 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
         fBitEGA = 6;
         fBitEJE = 8;
       }
-    }  else printf("AliAnalysisTaskEMCALTriggerQA - Streamer info for trigger class not available, bit not changed\n");
-  } else printf("AliAnalysisTaskEMCALTriggerQA - Streamer list not available!, bit not changed\n");
+    }  else AliInfo("Streamer info for trigger class not available, bit not changed");
+  } else AliInfo("Streamer list not available!, bit not changed");
   
   Int_t runnumber = InputEvent()->GetRunNumber() ;
   
@@ -1000,22 +989,21 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
       if     (runnumber < 140000) fGeoName = "EMCAL_FIRSTYEARV1";
       else if(runnumber < 171000) fGeoName = "EMCAL_COMPLETEV1";
       else                        fGeoName = "EMCAL_COMPLETE12SMV1";
-      if(DebugLevel() > 0)
-        printf("AliAnalysisTaskEMCALTriggerQA::InitGeometry() - Set EMCAL geometry name to <%s> for run %d\n",fGeoName.Data(),runnumber);
+        
+      AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fGeoName.Data(),runnumber));
     }
     
     fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
   }
   
   fGeoSet = kTRUE;
-	
 }
 
 //_______________________________________________________
+/// Histograms array initialization called in constructor.
+//_______________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
 {
-  //Histograms array initialization
-  
   for (Int_t i = 0; i < fgkTriggerCombi; i++)
   {
     fhV0     [i] = 0;
@@ -1035,11 +1023,12 @@ void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
 }
 
 //_____________________________________________________________________________
+/// Check what trigger is the event, set the corresponding bit.
+//_____________________________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
 {
-  // Check what trigger is the event, set the corresponding bit
-  
   // Init trigger event bit
+    
   fEventMB   = kFALSE;
   fEventL0   = kFALSE;
   fEventL1G  = kFALSE;
@@ -1049,7 +1038,7 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   fEventCen  = kFALSE;
   fEventSem  = kFALSE;
   
-  //Min bias event trigger?
+  // Minimum bias event trigger?
   if((triggerclasses.Contains("CINT") || triggerclasses.Contains("CPBI2_B1") ) &&
      (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
 		 triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
@@ -1080,14 +1069,13 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
 
   //printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n ",
 	//       fEventMB,fEventL0,fEventL1G,fEventL1G2,fEventL1J,fEventL1J2,fEventCen,fEventSem,triggerclasses.Data());
-  
 }
 
 //___________________________________________________________
+/// Init histograms and geometry.
+//___________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
 {
-  // Init histograms and geometry
-  
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
@@ -1255,31 +1243,31 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1GPatchNotAllFakeMax  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotAllFakeMax  ->SetZTitle("counts");
 	
-	fhL1GPatchNotAllFakeMaxE   = new TH1F("hL1G1PatchNotAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma1 Patch Max associated to an energetic cell",
+  fhL1GPatchNotAllFakeMaxE   = new TH1F("hL1G1PatchNotAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma1 Patch Max associated to an energetic cell",
                                         fNBinsClusterE,0,fMaxClusterE);
-	fhL1GPatchNotAllFakeMaxE ->SetXTitle("Energy (GeV)");
+  fhL1GPatchNotAllFakeMaxE ->SetXTitle("Energy (GeV)");
   
 	
   fhL1GPatchAllFakeMaxE   = new TH1F("hL1G1PatchAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma1 Patch Max not associated to an energetic cell",
                                      fNBinsClusterE,0,fMaxClusterE);
-	fhL1GPatchAllFakeMaxE ->SetXTitle("Energy (GeV)");
+  fhL1GPatchAllFakeMaxE ->SetXTitle("Energy (GeV)");
   
   fhL1GPatchNotAllFakeE   = new TH1F("hL1G1PatchNotAllFakeE","Energy distribution of FOR in events with L1 Gamma1 Patch not associated to an energetic cell",
                                      fNBinsClusterE,0,fMaxClusterE);
-	fhL1GPatchNotAllFakeE ->SetXTitle("Energy (GeV)");
+  fhL1GPatchNotAllFakeE ->SetXTitle("Energy (GeV)");
 	
   fhL1GPatchAllFakeE   = new TH1F("hL1G1PatchAllFakeE","Energy distribution of FOR in events with L1 Gamma1 Patch  associated to an energetic cell",
                                   fNBinsClusterE,0,fMaxClusterE);
-	fhL1GPatchAllFakeE ->SetXTitle("Energy (GeV)");
+  fhL1GPatchAllFakeE ->SetXTitle("Energy (GeV)");
 	
 	
   fhL1GPatchFakeE   = new TH1F("hL1G1PatchFakeE","Energy distribution of FOR with L1 Gamma1 Patch not associated to an energetic cell",
                                fNBinsClusterE,0,fMaxClusterE);
-	fhL1GPatchFakeE ->SetXTitle("Energy (GeV)");
+  fhL1GPatchFakeE ->SetXTitle("Energy (GeV)");
 	
   fhL1GPatchNotFakeE   = new TH1F("hL1G1PatchNotFakeE","Energy distribution of FOR with L1 Gamma1 Patch  associated to an energetic cell",
                                   fNBinsClusterE,0,fMaxClusterE);
-	fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
+  fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
 	
   fhNPatchFake   = new TH2F("hNPatchFake","number of fake patchs vs. all patchs are fake",
                             3,0,3, 2880,0,2880);
@@ -1306,7 +1294,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1J2Patch  ->SetXTitle("Index #eta (columnns)");
   fhL1J2Patch  ->SetYTitle("Index #phi (rows)");
   fhL1J2Patch  ->SetZTitle("counts");
-  
   
   fhFEESTU     = new TH2F("hFEESTU","STU / FEE vs channel", fNBinsSTUFEERatio,0,fMaxSTUFEERatio,30,0,30);
   fhFEESTU    ->SetXTitle("STU/FEE signal");
@@ -1609,10 +1596,10 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
 }
 
 //______________________________________________________
+// Main method executed per event, all the action is happens here.
+//______________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 {
-  // Main loop
-	
   AliVEvent* event = InputEvent();
   
   if (!event)

@@ -1,6 +1,15 @@
+///
+/// \file ConfigCaloFilter.C
+/// \brief Configuration analysis task filtering events and calorimeter data into AOD format.
+///
+/// Basic example of configuration, using alternative configuration way.
+/// Configuration is applied at the initialization time of the task.
+/// The suggested macro is though AddTaskCaloFilter.C
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 AliAnalysisTaskCaloFilter * ConfigCaloFilter()
 {
-  // Configure calorimeter filter analysis
   AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter("EMCALFilter");
   filter->SelectCollisionCandidates(); 
   filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kEMCAL); //kPHOS, kEMCAL or kBoth
@@ -17,5 +26,4 @@ AliAnalysisTaskCaloFilter * ConfigCaloFilter()
   filter->PrintInfo();   
 
   return filter;
-
 }
