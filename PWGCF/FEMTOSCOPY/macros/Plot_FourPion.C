@@ -40,7 +40,7 @@ int FileSetting=0;
 bool MCcase_def=0;// MC data?
 int CollisionType_def=0;// PbPb, pPb, pp
 //
-int Mbin_def=1;// 0-9: centrality bin in widths of 5%
+int Mbin_def=0;// 0-9: centrality bin in widths of 5%
 bool SameCharge_def=1;// same-charge?
 int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
 int MixedCharge4pionType_def = 1;// 1(---+) or 2(--++)
@@ -50,7 +50,7 @@ int TPNbin=3;// TPN bin for r3 and r4
 int Gbin = int( (0) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 155 (t=T)
 int Ktbin_def=1;// 1(0.2-0.3),..., 6(0.7-0.8), 10 = Full Range
 //
-bool ReNormBuiltBaseline=1;// Re-normalize Built Baseline
+bool ReNormBuiltBaseline=0;// Re-normalize Built Baseline
 bool MRC=1;// Momentum Resolution Corrections?
 bool MuonCorrection=1;// correct for Muons?
 bool FSICorrection=1;// correct For Final-State-Interactions
@@ -249,10 +249,10 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   }
 
   if(CollisionType==0){
-    ReNormL_3=0.095;//.095 (default), 0.075
-    ReNormH_3=0.105;//.105 (default), 0.085
-    ReNormL_4=0.14;//.14 (default), 0.13
-    ReNormH_4=0.16;//.16 (default), 0.14
+    ReNormL_3=0.095 + 0.03*(Mbin/9.);//.095 (default), 0.075
+    ReNormH_3=0.105 + 0.03*(Mbin/9.);//.105 (default), 0.085
+    ReNormL_4=0.125 + 0.04*(Mbin/9.);//.14 (default), 0.13
+    ReNormH_4=0.145 + 0.04*(Mbin/9.);//.16 (default), 0.14
     // older values
     //ReNormL_3=0.095;
     //ReNormH_3=0.105;
@@ -365,6 +365,9 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	//_file0 = new TFile("Results/PDC_11h_LowPtMultBinning_M0to1.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_Norm0p06to0p08_RawWeightFileLowpTBinningWithHighpTConstraint.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_LowPtMultBinningHighPtConstraint_M0to1.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_noMRCnoMuon.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_EWfitsWithNorm.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_QoutSum_QsideSum.root","READ");
 	if(FileSetting==0) _file0 = new TFile("Results/PDC_11h_2FitBuilds.root","READ");// new one
 	if(FileSetting==5) _file0 = new TFile("Results/PDC_11h_Cubic_Linear.root","READ");
 	if(FileSetting==1 || FileSetting==2) _file0 = new TFile("Results/PDC_11h_RcohFinite_lam0p6_0p8.root","READ");
@@ -373,18 +376,20 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	if(FileSetting==6) _file0 = new TFile("Results/PDC_10h_Cubic_Linear.root","READ");
 	if(FileSetting==7 || FileSetting==8) _file0 = new TFile("Results/PDC_11h_MRC10percIncrease_Muon92percent.root","READ");
       }else{
-	if(FileSetting==0) _file0 = new TFile("Results/PDC_11h_M3to10_ZvtxEM.root","READ");// new one
+	//if(FileSetting==0) _file0 = new TFile("Results/PDC_11h_M3to10_ZvtxEM.root","READ");
+	if(FileSetting==0) _file0 = new TFile("Results/PDC_11h_M2to10.root","READ");// new one
       }
     }
   }else if(CollisionType==1){// pPb
     //_file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm_HighNorm.root","READ");
     //_file0 = new TFile("Results/PDC_13bc_HighNorm_RcohFinite.root","READ");
-    _file0 = new TFile("Results/PDC_13bc_kINT7_2FitBuilds.root","READ");
+    _file0 = new TFile("Results/PDC_13bc_kINT7_2FitBuilds.root","READ");// used for paper proposal
   }else{// pp
     //_file0 = new TFile("Results/PDC_10bcde_kMB_LowNorm_HighNorm.root","READ");
     //_file0 = new TFile("Results/PDC_10bcde_kMB_HighNorm_RcohFinite.root","READ");
     //_file0 = new TFile("Results/PDC_10bcde_kMB_2FitBuilds.root","READ");
-    _file0 = new TFile("Results/PDC_10bcde_kMB_Norm0p8to1p5.root","READ");// new one
+    _file0 = new TFile("Results/PDC_10bcde_kMB_Norm0p8to1p5.root","READ");// used for paper proposal
+    //_file0 = new TFile("Results/PDC_10bcde_kMB_NrecGreater10_Norm0p8to1p5.root","READ");
   }
   
   SetFSIindex(10.);
@@ -553,6 +558,10 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	    BuildNeg_ThreeParticle_2D[c1]->Scale(norm_3[0]/norm_3[term]);
 	    BuildNeg_ThreeParticle_2D[c1]->RebinY(ThreeParticleRebin);
 	    //
+	    TString *proName=new TString(nameTPN3->Data()); TString *proNameNeg=new TString(nameNegTPN3->Data());
+	    proName->Append("_pro");  proNameNeg->Append("_pro");
+	    TPN_ThreeParticle[c1] = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), TPNbin, TPNbin);
+	    //
 	    for(int binx=1; binx<=Build_ThreeParticle_2D[c1]->GetNbinsX(); binx++) {
 	      for(int biny=1; biny<=Build_ThreeParticle_2D[c1]->GetNbinsY(); biny++) {
 		Build_ThreeParticle_2D[c1]->SetBinError(binx, biny, 0);
@@ -570,9 +579,6 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	      }
 	    }
 	  
-	    TString *proName=new TString(nameTPN3->Data()); TString *proNameNeg=new TString(nameNegTPN3->Data());
-	    proName->Append("_pro");  proNameNeg->Append("_pro");
-	    TPN_ThreeParticle[c1] = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), TPNbin, TPNbin);
 	    //
 	    proName->Append("_FullWeight"); proNameNeg->Append("_FullWeight");
 	    Build_ThreeParticle[c1] = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), Gbin, Gbin);
@@ -624,6 +630,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	    *name4 += term+1;
 	    
 	    TString *nameNorm4=new TString(name4->Data());
+	    //TString *nameNorm4=new TString("FourParticle_Charge1_0_Charge2_0_Charge3_0_Charge4_0_M_0_ED_0_Term_");
+	    //*nameNorm4 += term+1;
 	    nameNorm4->Append("_Norm");
 	    //
 	    TString *nameK4=new TString(name4->Data());
@@ -1128,7 +1136,9 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   N3QS->Scale(1/f33);
   N3QS->Multiply(K3avg[ch1_3][ch2_3][ch3_3][0]);
 
-  
+  cout<<MRC_SC_3[0]->GetBinContent(2)/MRC_SC_3[2]->GetBinContent(2)<<endl;
+  //cout<<K3avg[ch1_3][ch2_3][ch3_3][0]->GetBinContent(3)<<endl;
+
   TH1D *C3QS = (TH1D*)N3QS->Clone();
   C3QS->Divide(TERM5_3);
   if(SameCharge) C3QS->Multiply(C3muonCorrectionSC[0]);
@@ -1193,10 +1203,10 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   }
   
   //cout<<Build_ThreeParticle[ch1_3]->GetBinContent(2)<<endl;
-  //TH1D *C3raw = (TH1D*)TERM1_3->Clone();
+  //TH1D *C3raw = (TH1D*)TERM2_3->Clone();
   //C3raw->Divide(TERM5_3);
   //C3raw->SetMarkerColor(4);
-  //C3raw->Draw("same");
+  ///C3raw->Draw();
 
   legend2->AddEntry(C3QS,"C_{3}^{QS}","p");
   if(!MCcase){
@@ -1298,6 +1308,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     r3 = (TH1D*)n3QS->Clone();
     TPN_ThreeParticle[ch1_3]->Multiply(MRC_SC_3[2]);
     r3->Divide(TPN_ThreeParticle[ch1_3]);
+    //r3->Divide(CumulantBuild_ThreeParticle[ch1_3]);
     r3->GetXaxis()->SetRangeUser(0,0.08);
     r3->SetMinimum(0.5); r3->SetMaximum(2.5);
     r3->GetYaxis()->SetTitle("r_{3}");
@@ -1407,16 +1418,28 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   N4QS->Add(TERMS_4[12], -f41);
   //
   N4QS->Scale(1/f44);
-  //K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->Scale(1.005);// K scale variation
+  // K4 scale variation
+  /*TProfile *K4Test=new TProfile("K4Test","",TERMS_4[0]->GetNbinsX(), 0, TERMS_4[0]->GetXaxis()->GetBinUpEdge(TERMS_4[0]->GetNbinsX()),0,100.,"");
+  for(int ii=0; ii<=K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetNbinsX(); ii++){
+    double newValue = K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetBinContent(ii+1) - 1.0;
+    newValue *= 1.;
+    newValue += 1.;
+    double q4 = K4Test->GetXaxis()->GetBinCenter(ii+1);
+    K4Test->Fill(q4, newValue);
+  }
+  N4QS->Multiply(K4Test);// K4 scale variation
+  */
   N4QS->Multiply(K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]);
   //N4QS->Divide(K4avg[ch1_4][ch2_4][ch3_4][ch4_4][1]);// K factorization test (MC1)
   //N4QS->Divide(K4avg[ch1_4][ch2_4][ch3_4][ch4_4][11]);// K factorization test (MC2)
-  
+  //cout<<"K4 = "<<K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetBinContent(3)<<"  "<<K4Test->GetBinContent(3)<<endl;
+
   TH1D *C4QS=(TH1D*)N4QS->Clone();
   C4QS->GetXaxis()->SetRangeUser(0,0.16);
   C4QS->SetMinimum(0.5);
   C4QS->SetMarkerColor(4);
- 
+  
+  //cout<<K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetBinContent(4)<<endl;
   
   //
   /*TH1D *C4QS_basic=(TH1D*)TERMS_4[0]->Clone();
@@ -1713,14 +1736,14 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
       PrimeBuild_FourParticle[ch1_4]->Draw("same");
       PrimePrimeBuild_FourParticle[ch1_4]->Draw("same");
       CumulantBuild_FourParticle[ch1_4]->Draw("same");
-      /*BuildFromFits1->Draw("same");
-      PrimeBuildFromFits1->Draw("same");
-      PrimePrimeBuildFromFits1->Draw("same");
-      CumulantBuildFromFits1->Draw("same");
-      BuildFromFits2->Draw("same");
-      PrimeBuildFromFits2->Draw("same");
-      PrimePrimeBuildFromFits2->Draw("same");
-      CumulantBuildFromFits2->Draw("same");*/
+      //BuildFromFits1->Draw("same");
+      //PrimeBuildFromFits1->Draw("same");
+      //PrimePrimeBuildFromFits1->Draw("same");
+      //CumulantBuildFromFits1->Draw("same");
+      //BuildFromFits2->Draw("same");
+      //PrimeBuildFromFits2->Draw("same");
+      //PrimePrimeBuildFromFits2->Draw("same");
+      //CumulantBuildFromFits2->Draw("same");
     }    
     if(CollisionType!=0){
       BuildFromFits1->Draw("same");
@@ -1740,8 +1763,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     legend3->AddEntry(a4QS,"a_{4}^{QS}","p");
     if(SameCharge) legend3->AddEntry(b4QS,"b_{4}^{QS}","p");
     if(SameCharge) legend3->AddEntry(c4QS,"c_{4}^{QS}","p");
-    if(!SameCharge && MixedCharge4pionType==1) legend3->AddEntry(c4QS,"c_{4}^{QS}{2-pion+3-pion removal}","p");
-    if(!SameCharge && MixedCharge4pionType==2) legend3->AddEntry(c4QS,"c_{4}^{QS}{2-pion+2-pair removal}","p");
+    if(!SameCharge && MixedCharge4pionType==1) legend3->AddEntry(c4QS,"c_{4}^{QS}","p");
+    if(!SameCharge && MixedCharge4pionType==2) legend3->AddEntry(c4QS,"c_{4}^{QS}","p");
     //legend3->AddEntry(c4QS,"c_{4}^{QS}{2-pion+2-pair removal}","p");
     
     if(SameCharge && CollisionType==0) legend3->AddEntry(Build_FourParticle[ch1_4],"Built from C_{2}","l");
